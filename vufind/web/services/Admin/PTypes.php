@@ -69,4 +69,13 @@ class PTypes extends ObjectEditor {
 		return UserAccount::userHasRole('opacAdmin');
 	}
 
+	function customListActions(){
+		if(UserAccount::userHasRole('opacAdmin')){
+			return array(
+				array('label' => 'Load Patron Types', 'onclick' =>'Pika.Admin.loadPtypes()'),
+			);
+		}
+		return false;
+	}
+
 }

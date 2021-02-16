@@ -1,16 +1,16 @@
 Pika.Admin = (function(){
 	return {
-		copyLibraryHooplaSettings: function (id) {
+		copyLibraryHooplaSettings: function (id){
 			return this.basicAjaxHandler('copyHooplaSettingsFromLibrary', id);
 		},
-		copyLocationHooplaSettings: function (id) {
-				return this.buttonAjaxHandler('displayCopyFromPrompt', id, "copyHooplaSettings");
+		copyLocationHooplaSettings: function (id){
+			return this.buttonAjaxHandler('displayCopyFromPrompt', id, "copyHooplaSettings");
 		},
-		clearLocationHooplaSettings: function (id) {
+		clearLocationHooplaSettings: function (id){
 			return this.basicAjaxHandler('clearLocationHooplaSettings', id);
 		},
 
-		clearLibraryHooplaSettings: function (id) {
+		clearLibraryHooplaSettings: function (id){
 			return this.basicAjaxHandler('clearLibraryHooplaSettings', id);
 		},
 		copyLocationHours: function (id){
@@ -35,53 +35,49 @@ Pika.Admin = (function(){
 			return this.buttonAjaxHandler('libraryClonePrompt', null, "cloneLibrary");
 		},
 
-		basicAjaxHandler: function (ajaxMethod, id, from) {
+		basicAjaxHandler: function (ajaxMethod, id, from){
 			Pika.Account.ajaxLogin(function (){
 				Pika.loadingMessage();
 				var url = "/Admin/AJAX?method=" + ajaxMethod + "&id=" + id;
-				if (from !== undefined)
-				{
+				if (from !== undefined){
 					url = url + "&fromId=" + from;
 				}
-				$.getJSON(url, function (data) {
+				$.getJSON(url, function (data){
 					Pika.showMessage(data.title, data.body, 1, 1);
 				}).fail(Pika.ajaxFail);
 			});
 			return false;
 		},
 
-		buttonAjaxHandler: function(ajaxMethod, id, command) {
+		buttonAjaxHandler: function (ajaxMethod, id, command){
 			Pika.Account.ajaxLogin(function (){
 				Pika.loadingMessage();
 				var url = "/Admin/AJAX?method=" + ajaxMethod + "&id=" + id;
-				if (command !== undefined)
-				{
+				if (command !== undefined){
 					url = url + "&command=" + command;
 				}
-				$.getJSON(url, function (data) {
+				$.getJSON(url, function (data){
 					Pika.showMessageWithButtons(data.title, data.body, data.buttons);
 				}).fail(Pika.ajaxFail);
 			});
 			return false;
 		},
-		cloneAjaxHandler: function(ajaxMethod, from, name, code)
-		{
+		cloneAjaxHandler: function (ajaxMethod, from, name, code){
 			Pika.Account.ajaxLogin(function (){
 				Pika.loadingMessage();
-				var url = "/Admin/AJAX?method=" + ajaxMethod + "&from=" + from + "&name=" +name + "&code=" + code;
+				var url = "/Admin/AJAX?method=" + ajaxMethod + "&from=" + from + "&name=" + name + "&code=" + code;
 
-				$.getJSON(url, function (data) {
+				$.getJSON(url, function (data){
 					Pika.showMessageWithButtons(data.title, data.body, data.buttons);
 				}).fail(Pika.ajaxFail);
 			});
 			return false;
 		},
-		cloneLibraryHandler: function(ajaxMethod, from, displayName,subdomain, abName, facetLabelInput)
-		{
+		cloneLibraryHandler: function (ajaxMethod, from, displayName, subdomain, abName, facetLabelInput){
 			Pika.Account.ajaxLogin(function (){
 				Pika.loadingMessage();
-				var url = "/Admin/AJAX?method=" + ajaxMethod + "&from=" + from + "&displayName=" +displayName + "&subdomain=" + subdomain + "&abName=" + abName + "&facetLabel=" +facetLabelInput.value;
-				$.getJSON(url, function (data) {
+				var url = "/Admin/AJAX?method=" + ajaxMethod + "&from=" + from + "&displayName=" + displayName + "&subdomain=" + subdomain + "&abName=" + abName + "&facetLabel=" + facetLabelInput.value;
+				$.getJSON(url, function (data){
 					Pika.showMessageWithButtons(data.title, data.body, data.buttons);
 				}).fail(Pika.ajaxFail);
 			});
@@ -117,6 +113,17 @@ Pika.Admin = (function(){
 		},
 		cloneLibrary: function (copyFromId, displayName, subdomain, abName){
 			return this.cloneLibraryHandler('cloneLibrary', copyFromId, displayName, subdomain, abName, facetLabelInput);
+		},
+		loadPtypes: function (){
+			Pika.Account.ajaxLogin(function (){
+				Pika.confirm("Loading Patron Types will remove any Patron Types currently saved. Continue?", function (){
+					Pika.loadingMessage();
+					$.getJSON("/Admin/AJAX?method=loadPtypes", function (data){
+						Pika.showMessage('Success', 'Patron Types loaded.')
+					}).fail(Pika.ajaxFail);
+				});
+				return false;
+			});
 		}
 	};
 }(Pika.Admin || {}));

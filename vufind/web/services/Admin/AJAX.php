@@ -17,6 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use Pika\CirculationSystemDrivers\SierraDNA;
+
 require_once ROOT_DIR . '/AJAXHandler.php';
 
 class Admin_AJAX extends AJAXHandler {
@@ -40,6 +42,7 @@ class Admin_AJAX extends AJAXHandler {
         'cloneLocation',
         'cloneLibrary',
         'fileExists',
+				'loadPtypes',
 
 	);
 
@@ -866,6 +869,23 @@ class Admin_AJAX extends AJAXHandler {
 			return ["exists" => "true"];
 		}
 		return ["exists" => "false"];
+	}
+
+	function loadPtypes(){
+		$results = [
+			'title' => 'Load Patron Types',
+			'body'  => '<div class="alert alert-danger">Failed to load Patron Types</div>',
+		];
+
+		$sierraDna = new SierraDNA();
+		$res = $sierraDna->loadPtypes();
+		if($res){
+			$results = [
+				'title' => 'Load Patron Types',
+				'body'  => '<div class="alert alert-success">Patron Types loaded.</div>',
+			];
+		}
+		return $results;
 	}
 
 }
