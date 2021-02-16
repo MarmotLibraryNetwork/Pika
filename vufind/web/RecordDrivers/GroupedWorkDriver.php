@@ -2686,7 +2686,7 @@ class GroupedWorkDriver extends RecordInterface {
 			{
 				if($source != "external_econtent" && $source !="ils"){
 					$type = $record[1];
-					if($type == true || $type == 1)
+					if($type == 1)
 					{
 						$type = "";
 					}
