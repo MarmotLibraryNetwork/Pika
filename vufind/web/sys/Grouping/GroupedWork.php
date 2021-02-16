@@ -84,13 +84,11 @@ class GroupedWork extends DB_DataObject {
 		if (!empty($this->permanent_id)){
 
 			// Get site name from covers directory
-			global $configArray;
-			$partParts = explode("/", $configArray['Site']['coverPath']);
-			$siteName  = $partParts[count($partParts) - 2];
+			global $configArray, $serverName;
 
 			$localPath          = $configArray['Site']['local'];
 			$recordGroupingPath = realpath("$localPath/../record_grouping/");
-			$commandToRun       = "java -jar $recordGroupingPath/record_grouping.jar $siteName singleWork {$this->permanent_id}";
+			$commandToRun       = "java -jar $recordGroupingPath/record_grouping.jar $serverName singleWork {$this->permanent_id}";
 			$result             = shell_exec($commandToRun);
 			$result             = json_decode($result);
 			if (!empty($result->success)){

@@ -840,7 +840,7 @@ CREATE TABLE `library` (
   `showWikipediaContent` tinyint(1) DEFAULT 1,
   `payFinesLink` varchar(512) DEFAULT 'default',
   `payFinesLinkText` varchar(512) DEFAULT 'Click to Pay Fines Online',
-  `eContentSupportAddress` varchar(256) DEFAULT 'askmarmot@marmot.org',
+  `eContentSupportAddress` varchar(256) DEFAULT 'pika@marmot.org',
   `ilsCode` varchar(75) DEFAULT NULL,
   `systemMessage` text DEFAULT NULL,
   `restrictSearchByLibrary` tinyint(1) DEFAULT 0,
@@ -2442,8 +2442,18 @@ CREATE TABLE `variables` (
   KEY `name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
+--
+-- Dumping data for table `materials_request_status`
+--
+
+LOCK TABLES `variables` WRITE;
+/*!40000 ALTER TABLE `variables` DISABLE KEYS */;
+INSERT INTO `variables` (`name`,`value`) VALUES ('bypass_export_validation','false'),('last_export_valid','false'),('validateChecksumsFromDisk','false'),('last_grouping_time','0'),('last_reindex_time','0'),('last_overdrive_extract_time','0'),('solr_grouped_minimum_number_records','0'),('partial_reindex_running','false'),('full_reindex_running','false'),('overdriveMaxProductsToUpdate','2500'),('offline_mode_when_offline_login_allowed', 'false'),('fullReindexIntervalWarning', '86400'),('fullReindexIntervalCritical', '129600'),('lastHooplaExport', 'false'),('allow_sierra_fast_export', 'false');
+/*!40000 ALTER TABLE `variables` ENABLE KEYS */;
+UNLOCK TABLES;
+
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;

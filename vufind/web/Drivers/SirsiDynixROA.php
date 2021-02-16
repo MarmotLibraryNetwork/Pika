@@ -685,7 +685,8 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 	{
 		/** @var Memcache $memCache */
 		global $memCache;
-		$memCacheKey = "sirsiROA_session_token_info_$username";
+		$hashKey = md5($username.$password);
+		$memCacheKey = "sirsiROA_session_token_info_".$hashKey;
 		$session = $memCache->get($memCacheKey);
 		if ($session) {
 			list(, $sessionToken, $sirsiRoaUserID) = $session;

@@ -164,18 +164,25 @@ class ItemAPI extends AJAXHandler {
 
 	/**
 	 * Load a marc record for a particular id from the server
+	 * @deprecated Use Record AJAX DownloadMarc instead
 	 */
 	function getMarcRecord(){
-		global $configArray;
-		$id         = $_REQUEST['id'];
-		$shortId    = str_replace('.', '', $id);
-		$firstChars = substr($shortId, 0, 4);
+		require_once ROOT_DIR . '/services/SourceAndId.php';
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
+		$sourceAndId      = new SourceAndId($_REQUEST['id']);
+		$marcData         = MarcLoader::loadMarcRecordByILSId($sourceAndId);
+		$downloadFileName = urlencode($sourceAndId);
+		header('Content-Description: File Transfer');
 		header('Content-Type: application/octet-stream');
-		header("Content-Transfer-Encoding: Binary");
-		header("Content-disposition: attachment; filename=\"" . $id . ".mrc\"");
-		$individualName = $configArray['Reindex']['individualMarcPath'] . "/{$firstChars}/{$shortId}.mrc";
-		readfile($individualName);
-		die();
+		header("Content-Disposition: attachment; filename*={$downloadFileName}.mrc");
+		header('Content-Transfer-Encoding: binary');
+		header('Expires: 0');
+		header('Cache-Control: must-revalidate');
+		header('Pragma: public');
+		header('Content-Length: ' . strlen($marcData->toRaw()));
+		ob_clean();
+		flush();
+		echo($marcData->toRaw());
 	}
 
 	/**
