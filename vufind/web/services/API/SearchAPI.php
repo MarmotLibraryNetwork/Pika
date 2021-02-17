@@ -69,7 +69,7 @@ class SearchAPI extends AJAXHandler {
 
 		// Last Export Valid //
 		$lastExportValidVariable = new Variable('last_export_valid');
-		if ($lastExportValidVariable){
+		if (!empty($lastExportValidVariable->N)){
 			//Check to see if the last export was valid
 			if ($lastExportValidVariable->value == false){
 				$status[] = self::STATUS_WARN;
@@ -82,12 +82,12 @@ class SearchAPI extends AJAXHandler {
 
 		// Full Index //
 		$lastFullIndexVariable = new Variable('lastFullReindexFinish');
-		if ($lastFullIndexVariable){
+		if (!empty($lastFullIndexVariable->N)){
 			$fullIndexWarningInterval          = self::FULL_INDEX_INTERVAL_WARN;
 
 			// Look up override value
 			$fullIndexWarningIntervalVar = new Variable('fullReindexIntervalWarning');
-			if ($fullIndexWarningIntervalVar){
+			if (!empty($fullIndexWarningIntervalVar->N)){
 				$fullIndexWarningInterval = $fullIndexWarningIntervalVar->value;
 			}
 
@@ -95,7 +95,7 @@ class SearchAPI extends AJAXHandler {
 			if ($lastFullIndexVariable->value < ($currentTime - $fullIndexWarningInterval)){
 				$fullIndexCriticalInterval    = self::FULL_INDEX_INTERVAL_CRITICAL;
 				$fullIndexCriticalIntervalVar = new Variable('fullReindexIntervalCritical');
-				if ($fullIndexCriticalIntervalVar){
+				if (!empty($fullIndexCriticalIntervalVar->N)){
 					$fullIndexCriticalInterval = $fullIndexCriticalIntervalVar->value;
 				}
 				$status[] = ($lastFullIndexVariable->value < ($currentTime - $fullIndexCriticalInterval)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
@@ -110,14 +110,14 @@ class SearchAPI extends AJAXHandler {
 		// Check if a fullReindex is running now
 		$fullIndexRunning         = false;
 		$fullIndexRunningVariable = new Variable('full_reindex_running');
-		if ($fullIndexRunningVariable){
+		if (!empty($fullIndexRunningVariable->N)){
 			$fullIndexRunning = $fullIndexRunningVariable->value == 'true' || $fullIndexRunningVariable->value == '1';
 		}
 
 		//Check to see if a regrouping is running since that will also delay partial indexing
 		$recordGroupingRunning         = false;
 		$recordGroupingRunningVariable = new Variable('record_grouping_running');
-		if ($recordGroupingRunningVariable){
+		if (!empty($recordGroupingRunningVariable->N)){
 			$recordGroupingRunning = $recordGroupingRunningVariable->value == 'true' || $recordGroupingRunning == '1';
 		}
 
@@ -127,7 +127,7 @@ class SearchAPI extends AJAXHandler {
 		if (!$fullIndexRunning && !$recordGroupingRunning && ($curHour >= 7 && $curHour <= 21)){
 			$isPartialIndexPaused       = false;
 			$partialIndexPauseIntervals = new Variable('partial_index_pause_intervals');
-			if ($partialIndexPauseIntervals){
+			if (!empty($partialIndexPauseIntervals->N)){
 
 				if (!empty($partialIndexPauseIntervals->value)){
 					// Format should be hh:mm-hh:mm;hh:mm-hh:mm (some spacing tolerated) (24 hour format; Intervals can't cross 24:00/00:00)
@@ -154,7 +154,7 @@ class SearchAPI extends AJAXHandler {
 			if (!$isPartialIndexPaused){
 				// Partial Index //
 				$lastPartialIndexVariable = new Variable('lastPartialReindexFinish');
-				if ($lastPartialIndexVariable){
+				if (!empty($lastPartialIndexVariable->N)){
 					//Get the last time either a full or partial index finished
 					$lastIndexFinishedWasFull = false;
 					$lastIndexTime            = $lastPartialIndexVariable->value;
@@ -183,7 +183,7 @@ class SearchAPI extends AJAXHandler {
 			global $configArray;
 			if ($configArray['Catalog']['ils'] == 'Sierra'){
 				$lastSierraExtractVariable = new Variable('last_sierra_extract_time');
-				if ($lastSierraExtractVariable){
+				if (!empty($lastSierraExtractVariable->N)){
 					//Check to see if the last sierra extract finished more than SIERRA_EXTRACT_INTERVAL_WARN seconds ago
 					$lastSierraExtractTime = $lastSierraExtractVariable->value;
 					if ($lastSierraExtractTime < ($currentTime - self::SIERRA_EXTRACT_INTERVAL_WARN)){
@@ -197,7 +197,7 @@ class SearchAPI extends AJAXHandler {
 
 				//Sierra Export Remaining items
 				$remainingSierraRecords = new Variable('remaining_sierra_records');
-				if ($remainingSierraRecords){
+				if (!empty($remainingSierraRecords->N)){
 					if ($remainingSierraRecords->value >= self::SIERRA_MAX_REMAINING_ITEMS_WARN){
 						$notes[]  = "{$remainingSierraRecords->value} changed items remain to be processed from Sierra";
 						$status[] = $remainingSierraRecords->value >= self::SIERRA_MAX_REMAINING_ITEMS_CRITICAL ? self::STATUS_CRITICAL : self::STATUS_WARN;
@@ -228,7 +228,7 @@ class SearchAPI extends AJAXHandler {
 				$numRecords = $data['status']['grouped']['index']['numDocs']['_content'];
 
 				$minNumRecordVariable = new Variable('solr_grouped_minimum_number_records');
-				if ($minNumRecordVariable){
+				if (!empty($minNumRecordVariable->N)){
 					$minNumRecords = $minNumRecordVariable->value;
 					if (!empty($minNumRecords) && $numRecords < $minNumRecords){
 						// Warn till more that 500 works below the limit
@@ -272,7 +272,7 @@ class SearchAPI extends AJAXHandler {
 
 			// OverDrive Extract //
 			$lastOverDriveExtractVariable = new Variable('last_overdrive_extract_time');
-			if ($lastOverDriveExtractVariable){
+			if (!empty($lastOverDriveExtractVariable->N)){
 				//Check to see if the last overdrive extract finished more than OVERDRIVE_EXTRACT_INTERVAL_WARN seconds ago
 				$lastOverDriveExtractTime = $lastOverDriveExtractVariable->value;
 				if ($lastOverDriveExtractTime < ($currentTime - self::OVERDRIVE_EXTRACT_INTERVAL_WARN)){

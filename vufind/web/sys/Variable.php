@@ -32,17 +32,13 @@ class Variable extends DB_DataObject {
 	public $value;
 
 	/**
-	 * Variable constructor. Optionally auto-fetch a variable if the name is passed in the constuctor call
+	 * Variable constructor. Optionally auto-fetch a variable if the name is passed in the constructor call
 	 * @param null|string $variableNameToFetch The name of the variable to fetch.
 	 */
 	function __construct($variableNameToFetch = null){
 		if (!empty($variableNameToFetch)){
 			$this->name = $variableNameToFetch;
-			if ($this->find(true)){
-				return $this;
-			}else{
-				return false;
-			}
+			$this->find(true);
 		}
 	}
 
