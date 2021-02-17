@@ -1611,6 +1611,51 @@ class GroupedWorkDriver extends RecordInterface {
 					$selectedAvailability = urldecode($matches[1]);
 				}elseif (preg_match('/^available_at(?:[\w_]*):"?(.+?)"?$/', $filter, $matches)){
 					$selectedDetailedAvailability = urldecode($matches[1]);
+					$availableAtLocationsToMatch = [];
+					if (!empty($selectedDetailedAvailability)){
+						// Look up the location codes of the records owned for the location matching the facet we are filtering by
+						global $serverName;
+						global $memCache;
+						/** @var Memcache $memCache */
+						$memCacheKey = "availableAtLocationsToMatch_{$selectedDetailedAvailability}_{$serverName}";
+						$result = $memCache->get($memCacheKey);
+						if (is_array($result)){
+							$availableAtLocationsToMatch = $result;
+						}else{
+							$recordsOwned = new LocationRecordOwned();
+							$recordsOwned->query('SELECT location FROM location_records_owned LEFT JOIN location USING (locationId) WHERE facetLabel = "' . $selectedDetailedAvailability . '"');
+							if ($recordsOwned->N){
+								while ($recordsOwned->fetch()){
+									// strip out simple regex found in some of the codes
+									$loc = str_replace('.*', '', $recordsOwned->location);
+									if (strlen($loc)){
+										if (strpos($loc, '|') !== false){
+											$availableAtLocationsToMatch = array_merge($availableAtLocationsToMatch, explode('|', $loc));
+										} else{
+											$availableAtLocationsToMatch[] = $loc;
+										}
+									}
+								}
+							}
+							// Check if we are fetching location codes owned by the library instead.
+							$recordsOwned->query('SELECT location FROM library_records_owned LEFT JOIN library USING (libraryId) WHERE facetLabel = "' . $selectedDetailedAvailability . '"');
+							if ($recordsOwned->N){
+								while ($recordsOwned->fetch()){
+									// strip out simple regex found in some of the codes
+									$loc = str_replace('.*', '', $recordsOwned->location);
+									if (strlen($loc)){
+										if (strpos($loc, '|') !== false){
+											$availableAtLocationsToMatch = array_merge($availableAtLocationsToMatch, explode('|', $loc));
+										} else{
+											$availableAtLocationsToMatch[] = $loc;
+										}
+									}
+								}
+							}
+							global $configArray;
+							$memCache->set($memCacheKey, $availableAtLocationsToMatch, 0, $configArray['Caching']['solr_record']);
+						}
+					}
 				}
 			}
 		}
@@ -1716,14 +1761,16 @@ class GroupedWorkDriver extends RecordInterface {
 					$manifestationIsAvailable = true;
 				}elseif ($manifestation['available']){
 					foreach ($manifestation['itemSummary'] as $itemSummary){
-//						if (strlen($itemSummary['shelfLocation']) && substr_compare($itemSummary['shelfLocation'], $selectedDetailedAvailability, 0)){
-						// I can not figure out the reason to use substr_compare() here;
-						// it returns 0 when two strings are equal, and we want that situation to trigger $manifestationIsAvailable
-						// TODO: determine what valid near matches, partial matches should be included.
-						if (strlen($itemSummary['shelfLocation']) && strcasecmp($itemSummary['shelfLocation'], $selectedDetailedAvailability) == 0){
-							if ($itemSummary['available']){
-								$manifestationIsAvailable = true;
-								break;
+						if ($itemSummary['available']){
+							if (!empty($itemSummary['locationCode'])){
+								foreach ($availableAtLocationsToMatch as $locationToMatch){
+									if (stripos($itemSummary['locationCode'], $locationToMatch) === 0){
+										// Checking that the shelf location code starts with the owning location codes associated with the
+										// facet value we are filtering by for the available at facet
+										$manifestationIsAvailable = true;
+										break;
+									}
+								}
 							}
 						}
 					}
