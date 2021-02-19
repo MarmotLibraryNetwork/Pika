@@ -2737,26 +2737,6 @@ class GroupedWorkDriver extends RecordInterface {
 				}
 			}
 		}
-		foreach($recordsFromIndex as $key => $record)
-		{
-			$source = explode(':',$key)[0];
-			if($record[1] == "eBook" || $record[1] == "eAudiobook" || $record[1] = "eVideo" || $record[1] == "eMagazine")
-			{
-				if($source != "external_econtent" && $source !="ils"){
-					$type = $record[1];
-					if($type == 1)
-					{
-						$type = "";
-					}
-					if($source=="rbdgitalmags")
-					{
-						$source = "RBdigital";
-					}
-					$recordsFromIndex[$key][1] = ucwords($source) . " " . $type;
-				}
-			}
-
-		}
 		return $recordsFromIndex;
 	}
 
@@ -2963,6 +2943,9 @@ class GroupedWorkDriver extends RecordInterface {
 
 				$relatedRecord['eContentSource'] = $curItem[9];
 				$relatedRecord['isEContent']     = true;
+				if (!$forCovers){
+					$relatedRecord['format'] = $relatedRecord['eContentSource'] . ' ' . $recordDetails[1]; // Break out eContent manifestations by the source of the eContent
+				}
 			}elseif (!empty($curItem[11])){
 				// Special Physical Records, like KitKeeper
 				$relatedUrls[] = [
