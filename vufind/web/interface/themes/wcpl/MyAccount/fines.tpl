@@ -17,7 +17,7 @@
 		{if  count($userFines) == 1 && $user->fines}
 			<div class="alert alert-info">
 				Your account has <strong>{$user->fines}</strong> in fines.
-				<br />
+				<p><br />&nbsp;</p>
 				<p>The items below are far enough past their due date that they have been assigned replacement fees. If you return the items, these fees will be removed. If the items are truly lost or damaged, you can visit the library to make arrangements to pay or <a title="Pay Fines Online" href="https://wakenc.comprisesmartpay.com/">pay online</a></p>
 			</div>
 		{/if}
