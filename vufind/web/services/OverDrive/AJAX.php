@@ -373,68 +373,70 @@ class OverDrive_AJAX extends AJAXHandler {
 		global $interface;
 		$user           = UserAccount::getLoggedInUser();
 		$overDriveUsers = $user->getRelatedOverDriveUsers();
-		$id             = $_REQUEST['id'];
-		if (empty($_REQUEST['formatType'])){
-			$recordDriver   = new \OverDriveRecordDriver($id);
-			$formats        = $recordDriver->getItems();
-			$lendingPeriods = [];
-			$formatClass    = [];
-			$isMagazine     = false;
-			foreach ($formats as $format){
-				if ($format->textId == 'magazine-overdrive'){
-					$isMagazine = true;
-					break;
-				} else{
-					$tmp = $format->getFormatClass();
-					if ($tmp){ // avoid things with out a format class (magazine)
-						$formatClass[] = $tmp;
+		if (!empty($overDriveUsers)){
+			$id = $_REQUEST['id'];
+			if (empty($_REQUEST['formatType'])){
+				$recordDriver   = new \OverDriveRecordDriver($id);
+				$formats        = $recordDriver->getItems();
+				$lendingPeriods = [];
+				$formatClass    = [];
+				$isMagazine     = false;
+				foreach ($formats as $format){
+					if ($format->textId == 'magazine-overdrive'){
+						$isMagazine = true;
+						break;
+					}else{
+						$tmp = $format->getFormatClass();
+						if ($tmp){ // avoid things with out a format class (magazine)
+							$formatClass[] = $tmp;
+						}
 					}
 				}
+				$formatClass = array_unique($formatClass);
+				$formatClass = count($formatClass) == 1 ? $formatClass[0] : null;  // can only setting lending period options for one format class (count() should be either 1 or 0 (0 for magazines)
+			}else{
+				$overDriveFormat = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductFormats();
+				$formatClass     = $overDriveFormat->getFormatClass($_REQUEST['formatType']);
+				$interface->assign('formatType', $_REQUEST['formatType']);
 			}
-			$formatClass = array_unique($formatClass);
-			$formatClass = count($formatClass) == 1 ? $formatClass[0] : null;  // can only setting lending period options for one format class (count() should be either 1 or 0 (0 for magazines)
-		}else{
-			$overDriveFormat = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductFormats();
-			$formatClass     = $overDriveFormat->getFormatClass($_REQUEST['formatType']);
-			$interface->assign('formatType', $_REQUEST['formatType']);
-		}
 
-		$interface->assign('overDriveId', $id);
-		$interface->assign('overDriveUsers', $overDriveUsers);
+			$interface->assign('overDriveId', $id);
+			$interface->assign('overDriveUsers', $overDriveUsers);
 
-		if ($formatClass){
-			foreach ($overDriveUsers as &$tmpUser){
-				if ($tmpUser->promptForOverDriveLendingPeriods){
-					$cache    ??= new Pika\Cache();
-					$cacheKey = $cache->makePatronKey('overdrive_settings', $tmpUser->id);
-					$settings = $cache->get($cacheKey);
-					if (empty($settings)){
-						$driver   ??= OverDriveDriverFactory::getDriver(); //PHPStorm highlights this as an error, but it *does* in fact work. pascal 10/16/20
-						$settings = $driver->getUserOverDriveAccountSettings($tmpUser);
-					}
-					if (isset($settings['lendingPeriods'][$formatClass])){
-						$tmpUser->lendingPeriod       = $settings['lendingPeriods'][$formatClass]->lendingPeriod; // Assign setting to the User Object for the template to use
-						$lendingPeriods[$tmpUser->id] = $settings['lendingPeriods'][$formatClass]->options;
+			if ($formatClass){
+				foreach ($overDriveUsers as &$tmpUser){
+					if ($tmpUser->promptForOverDriveLendingPeriods){
+						$cache    ??= new Pika\Cache();
+						$cacheKey = $cache->makePatronKey('overdrive_settings', $tmpUser->id);
+						$settings = $cache->get($cacheKey);
+						if (empty($settings)){
+							$driver   ??= OverDriveDriverFactory::getDriver(); //PHPStorm highlights this as an error, but it *does* in fact work. pascal 10/16/20
+							$settings = $driver->getUserOverDriveAccountSettings($tmpUser);
+						}
+						if (isset($settings['lendingPeriods'][$formatClass])){
+							$tmpUser->lendingPeriod       = $settings['lendingPeriods'][$formatClass]->lendingPeriod; // Assign setting to the User Object for the template to use
+							$lendingPeriods[$tmpUser->id] = $settings['lendingPeriods'][$formatClass]->options;
+						}
 					}
 				}
+				$interface->assign('lendingPeriods', $lendingPeriods);
 			}
-			$interface->assign('lendingPeriods', $lendingPeriods);
-		}
 
-		if (count($overDriveUsers) > 1 || ($user->promptForOverDriveLendingPeriods && !$isMagazine)){
-			return [
-				'promptNeeded' => true,
-				'promptTitle'  => 'OverDrive Checkout Options',
-				'prompts'      => $interface->fetch('OverDrive/ajax-overdrive-checkout-prompt.tpl'),
-				'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return Pika.OverDrive.processOverDriveCheckoutPrompts();">',
-			];
-		}elseif (count($overDriveUsers) == 1){
-			$_REQUEST['patronId'] = $user->id;
-			return $this->checkoutOverDriveTitle();
+			if (count($overDriveUsers) > 1 || ($user->promptForOverDriveLendingPeriods && !$isMagazine)){
+				return [
+					'promptNeeded' => true,
+					'promptTitle'  => 'OverDrive Checkout Options',
+					'prompts'      => $interface->fetch('OverDrive/ajax-overdrive-checkout-prompt.tpl'),
+					'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return Pika.OverDrive.processOverDriveCheckoutPrompts();">',
+				];
+			}elseif (count($overDriveUsers) == 1){
+				$_REQUEST['patronId'] = $user->id;
+				return $this->checkoutOverDriveTitle();
+			}
 		}else{
 			// No Overdrive Account Found, give the user an error message
 			global $logger;
-			$logger->log('No valid Overdrive account was found to check out an Overdrive title.', PEAR_LOG_ERR);
+			$logger->log('No valid Overdrive account was found to check out an Overdrive title. UserID : ' . $user->id, PEAR_LOG_ERR);
 			return [
 				'promptNeeded' => true,
 				'promptTitle'  => 'Error',
