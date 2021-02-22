@@ -39,7 +39,7 @@ class SuggestedTitles extends MyAccount {
 		/** @var Solr $solrDb */
 		$solrDb = new $class($url);
 
-		$resourceList = array();
+		$resourceList = [];
 		$curIndex     = 0;
 		if (is_array($suggestions)){
 			$suggestionIds = array_keys($suggestions);
