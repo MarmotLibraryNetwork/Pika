@@ -14,6 +14,8 @@
  */
 
 require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
+require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
 
 class Suggestions {
 	/*
@@ -35,29 +37,32 @@ class Suggestions {
 		}
 
 		//Load all titles the user is not interested in
-		$notInterestedTitles   = array();
 		$notInterested         = new NotInterested();
 		$notInterested->userId = $userId;
-		$notInterested->find();
-		while ($notInterested->fetch()){
-			$notInterestedTitles[$notInterested->groupedWorkPermanentId] = $notInterested->groupedWorkPermanentId;
-		}
+		$notInterestedTitles   = $notInterested->fetchAll('groupedWorkPermanentId');
 		$timer->logTime("Loaded titles the patron is not interested in");
 
 		//Load all titles the user has rated.  Need to load all so we don't recommend things they already rated
-		$allRatedTitles      = array();
-		$allLikedRatedTitles = array();
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
-		$ratings         = new UserWorkReview();
-		$ratings->userId = $userId;
+		$allRatedTitles      = [];
+		$allLikedRatedTitles = [];
+		$ratings             = new UserWorkReview();
+		$ratings->userId     = $userId;
+		$ratings->orderBy('rating DESC, dateRated DESC, id DESC');
 		$ratings->find();
 		while ($ratings->fetch()){
 			$allRatedTitles[$ratings->groupedWorkPermanentId] = $ratings->groupedWorkPermanentId;
+			//TODO: clone ratings object instead?
 			if ($ratings->rating >= 4){
 				$allLikedRatedTitles[] = $ratings->groupedWorkPermanentId;
 			}
 		}
 		$timer->logTime("Loaded titles the patron has rated");
+
+		$readingHistoryDB         = new ReadingHistoryEntry();
+		$readingHistoryDB->userId = $userId;
+		$readingHistoryDB->whereAdd("groupedWorkPermanentId != ''");
+		$readingHistoryDB->orderBy('checkOutDate DESC');
+		$readHistoryWorkIds = array_unique($readingHistoryDB->fetchAll('groupedWorkPermanentId'));
 
 		// Setup Search Engine Connection
 		$class = $configArray['Index']['engine'];
@@ -65,7 +70,7 @@ class Suggestions {
 		/** @var Solr $db */
 		$db    = new $class($url);
 
-		$suggestions = array();
+		$suggestions = [];
 		if ($doNovelistRecommendations){
 			//Get a list of all titles the user has rated (3 star and above)
 			$ratings = new UserWorkReview();
@@ -73,82 +78,74 @@ class Suggestions {
 			$ratings->whereAdd('rating >= 3', 'AND');
 			$ratings->orderBy('rating DESC, dateRated DESC, id DESC');
 			//Use just recent ratings to make real-time recommendations faster
-			$ratings->limit(0, $numTitlesToLoadNovelistRecommendationsFor);
+//			$ratings->limit(0, $numTitlesToLoadNovelistRecommendationsFor);
 
-			$ratings->find();
-			//echo("User has rated {$ratings->N} titles<br/>");
-			require_once ROOT_DIR . '/services/API/WorkAPI.php';
-			$workApi = new WorkAPI();
-			if ($ratings->N > 0){
-				while ($ratings->fetch()){
+			if ($ratings->find()){
+				while ($ratings->fetch() && count($suggestions) < $maxRecommendations){
 					$groupedWorkId = $ratings->groupedWorkPermanentId;
-					//echo("Found resource for $resourceId - {$resource->title}<br/>");
-					$ratedTitles[$ratings->groupedWorkPermanentId] = clone $ratings;
 					$timer->logTime("Cloned Rating data");
-					$isbns = $workApi->getIsbnsForWork($groupedWorkId);
-					$timer->logTime("Loaded ISBNs for work");
-					if (count($isbns) > 0){
-						Suggestions::getNovelistRecommendations($ratings, $groupedWorkId, $isbns, $allRatedTitles, $suggestions, $notInterestedTitles);
-						$timer->logTime("Got recommendations from Novelist for $groupedWorkId");
+
+					disableErrorHandler();
+					$record = $db->getRecord($groupedWorkId, 'isbn,title_display');
+					enableErrorHandler();
+					if (!empty($record['isbn'])){
+						$timer->logTime("Loaded ISBNs for work");
+							$isbns = $record['isbn'];
+							$title = $record['title_display'];
+							Suggestions::getNovelistRecommendations($ratings, $groupedWorkId, $title, $isbns, $allRatedTitles, $suggestions, $notInterestedTitles, $readHistoryWorkIds);
+							$timer->logTime("Got recommendations from Novelist for $groupedWorkId");
 					}
-					/*if (count($suggestions) >= $maxRecommendations){
-						break;
-					}*/
 				}
 			}
 			$timer->logTime("Loaded novelist recommendations");
 		}
 
-		if ($doSimilarlyRatedRecommendations && count($suggestions) < $maxRecommendations){
-			//Get a list of all titles the user has rated (3 star and above)
-			$ratings = new UserWorkReview();
-			$ratings->whereAdd("userId = $userId", 'AND');
-			$ratings->whereAdd('rating >= 3', 'AND');
-			$ratings->orderBy('rating DESC, dateRated DESC, id DESC');
-			//Use just recent ratings to make real-time recommendations faster
-			$ratings->limit(0, $numTitlesToLoadNovelistRecommendationsFor);
+		if (count($suggestions) < $maxRecommendations){
+			if ($doSimilarlyRatedRecommendations){
+				//Get a list of all titles the user has rated (3 star and above)
+				$ratings = new UserWorkReview();
+				$ratings->whereAdd("userId = $userId", 'AND');
+				$ratings->whereAdd('rating >= 3', 'AND');
+				$ratings->orderBy('rating DESC, dateRated DESC, id DESC');
+				//Use just recent ratings to make real-time recommendations faster
+				$ratings->limit(0, $numTitlesToLoadNovelistRecommendationsFor);
 
-			$ratings->find();
-			//echo("User has rated {$ratings->N} titles<br/>");
-			require_once ROOT_DIR . '/services/API/WorkAPI.php';
-			$workApi = new WorkAPI();
-			if ($ratings->N > 0){
-				while ($ratings->fetch()){
-					Suggestions::getSimilarlyRatedTitles($workApi, $db, $ratings, $userId, $allRatedTitles, $suggestions, $notInterestedTitles);
+				$ratings->find();
+				//echo("User has rated {$ratings->N} titles<br/>");
+				if ($ratings->N > 0){
+					while ($ratings->fetch()){
+						Suggestions::getSimilarlyRatedTitles($db, $ratings, $userId, $allRatedTitles, $suggestions, $notInterestedTitles, $readHistoryWorkIds);
+					}
 				}
+				$timer->logTime("Loaded recommendations based on similarly rated titles");
 			}
-			$timer->logTime("Loaded recommendations based on similarly rated titles");
-		}
+
 
 		//Get metadata recommendations if enabled, we have ratings, and we don't have enough suggestions yet
-		if ($doMetadataRecommendations && count($allLikedRatedTitles) > 0 && count($suggestions) < $maxRecommendations){
-			//Get recommendations based on everything I've rated using more like this functionality
-//			$class = $configArray['Index']['engine'];
-//			$url   = $configArray['Index']['url'];
-//			/** @var Solr $db */
-//			$db = new $class($url);
-			//$db->debug = true;
-			$moreLikeTheseSuggestions = $db->getMoreLikeThese($allLikedRatedTitles, $notInterestedTitles);
-			if (isset($moreLikeTheseSuggestions['response']['docs'])){
-				foreach ($moreLikeTheseSuggestions['response']['docs'] as $suggestion){
-					if (!array_key_exists($suggestion['id'], $allRatedTitles) && !array_key_exists($suggestion['id'], $notInterestedTitles)){
-						$suggestions[$suggestion['id']] = array(
-							'rating'    => $suggestion['rating'] - 2.5,
-							'titleInfo' => $suggestion,
-							'basedOn'   => 'MetaData for all titles rated',
-						);
+			if ($doMetadataRecommendations && count($allLikedRatedTitles) > 0){
+				//Get recommendations based on everything I've rated using more like this functionality
+				$moreLikeTheseSuggestions = $db->getMoreLikeThese($allLikedRatedTitles, $notInterestedTitles);
+				if (isset($moreLikeTheseSuggestions['response']['docs'])){
+					foreach ($moreLikeTheseSuggestions['response']['docs'] as $suggestion){
+						if (!array_key_exists($suggestion['id'], $allRatedTitles) && !in_array($suggestion['id'], $readHistoryWorkIds)){
+							$suggestions[$suggestion['id']] = [
+								'rating'    => $suggestion['rating'] - 2.5,
+								'titleInfo' => $suggestion,
+								'basedOn'   => 'MetaData for all titles rated',
+							];
+						}
+						if (count($suggestions) == $maxRecommendations){
+							break;
+						}
 					}
-					if (count($suggestions) == $maxRecommendations){
-						break;
+				}else{
+					if (isset($moreLikeTheseSuggestions['error'])){
+						global $logger;
+						$logger->log('Error looking for Suggested Titles : ' . $moreLikeTheseSuggestions['error']['msg'], PEAR_LOG_ERR);
 					}
 				}
-			}else{
-				if (isset($moreLikeTheseSuggestions['error'])){
-					global $logger;
-					$logger->log('Error looking for Suggested Titles : ' . $moreLikeTheseSuggestions['error']['msg'], PEAR_LOG_ERR);
-				}
+				$timer->logTime("Loaded recommendations based on ratings");
 			}
-			$timer->logTime("Loaded recommendations based on ratings");
 		}
 
 
@@ -165,8 +162,7 @@ class Suggestions {
 	/**
 	 * Load titles that have been rated by other users which are similar to this.
 	 *
-	 * @param WorkAPI $workApi
-	 * @param SearchObject_Solr|SearchObject_Base $db
+	 * @param Solr $db
 	 * @param UserWorkReview $ratedTitle
 	 * @param integer $userId
 	 * @param array $ratedTitles
@@ -174,7 +170,7 @@ class Suggestions {
 	 * @param integer[] $notInterestedTitles
 	 * @return int The number of suggestions for this title
 	 */
-	static function getSimilarlyRatedTitles($workApi, $db, $ratedTitle, $userId, $ratedTitles, &$suggestions, $notInterestedTitles){
+	private static function getSimilarlyRatedTitles($db, $ratedTitle, $userId, $ratedTitles, &$suggestions, $notInterestedTitles, $readHistoryWorkIds){
 		$numRecommendations = 0;
 		//If there is no ISBN, can we come up with an alternative algorithm?
 		//Possibly using common ratings with other patrons?
@@ -244,47 +240,49 @@ class Suggestions {
 					'series'          => $series,
 				);
 				$numRecommendations++;
-				Suggestions::addTitleToSuggestions($ratedTitle, $similarTitle['title'], $similarTitle['recordId'], $similarTitle, $ratedTitles, $suggestions, $notInterestedTitles);
+				Suggestions::addTitleToSuggestions($ratedTitle, $similarTitle['title'], $similarTitle['recordId'], $similarTitle, $ratedTitles, $suggestions, $notInterestedTitles, $readHistoryWorkIds);
 			}
 		}
 		return $numRecommendations;
 	}
 
-	static function getNovelistRecommendations($userRating, $groupedWorkId, $isbn, $allRatedTitles, &$suggestions, $notInterestedTitles){
+	private static function getNovelistRecommendations($userRating, $groupedWorkId, $sourceTitle, $isbn, $allRatedTitles, &$suggestions, $notInterestedTitles, $readHistoryWorkIds){
 		//We now have the title, we can get the related titles from Novelist
-		$novelist = NovelistFactory::getNovelist();
+		$novelist       = NovelistFactory::getNovelist();
+		$enrichmentInfo = $novelist->getSimilarTitles($groupedWorkId, $isbn);
 		//Use loadEnrichmentInfo even though there is more data than we need since it uses caching.
-		$enrichmentInfo     = $novelist->getSimilarTitles($groupedWorkId, $isbn);
-		$numRecommendations = 0;
 
-		if (isset($enrichmentInfo->similarTitleCountOwned) && $enrichmentInfo->similarTitleCountOwned > 0){
-			//For each related title
+		if (!empty($enrichmentInfo->similarTitleCountOwned)){
 			foreach ($enrichmentInfo->similarTitles as $similarTitle){
 				if ($similarTitle['libraryOwned']){
-					Suggestions::addTitleToSuggestions($userRating, $groupedWorkId, $groupedWorkId, $similarTitle, $allRatedTitles, $suggestions, $notInterestedTitles);
-					$numRecommendations++;
+					Suggestions::addTitleToSuggestions($userRating, $sourceTitle, $groupedWorkId, $similarTitle, $allRatedTitles, $suggestions, $notInterestedTitles, $readHistoryWorkIds);
 				}
 			}
 		}
-		return $numRecommendations;
 	}
 
-	static function addTitleToSuggestions($userRating, $sourceTitle, $sourceId, $similarTitle, $allRatedTitles, &$suggestions, $notInterestedTitles){
+	private static function addTitleToSuggestions($userRating, $sourceTitle, $sourceId, $similarTitle, $allRatedTitles, &$suggestions, $notInterestedTitles, $readHistoryWorkIds){
 		//Don't suggest titles that have already been rated
-		if (array_key_exists($similarTitle['id'], $allRatedTitles)){
+		$suggestTitleId = $similarTitle['id'];
+		if (array_key_exists($suggestTitleId, $allRatedTitles)){
 			return;
 		}
 		//Don't suggest titles the user is not interested in.
-		if (array_key_exists($similarTitle['id'], $notInterestedTitles)){
+		if (in_array($suggestTitleId, $notInterestedTitles)){
+			return;
+		}
+
+		//Don't suggest titles the user has already read.
+		if (in_array($suggestTitleId, $readHistoryWorkIds)){
 			return;
 		}
 
 		$rating           = 0;
-		$suggestedBasedOn = array();
+		$suggestedBasedOn = [];
 		//Get the existing rating if any
-		if (array_key_exists($similarTitle['id'], $suggestions)){
-			$rating           = $suggestions[$similarTitle['id']]['rating'];
-			$suggestedBasedOn = $suggestions[$similarTitle['id']]['basedOn'];
+		if (array_key_exists($suggestTitleId, $suggestions)){
+			$rating           = $suggestions[$suggestTitleId]['rating'];
+			$suggestedBasedOn = $suggestions[$suggestTitleId]['basedOn'];
 		}
 		//Update the suggestion score.
 		//Using the scale:
@@ -299,19 +297,16 @@ class Suggestions {
 			$rating += 2;
 		}
 		if (count($suggestedBasedOn) < 3){
-			$suggestedBasedOn[] = array('title' => $sourceTitle, 'id' => $sourceId);
+			$suggestedBasedOn[] = ['title' => $sourceTitle, 'id' => $sourceId];
 		}
-		$suggestions[$similarTitle['id']] = array(
+		$suggestions[$suggestTitleId] = [
 			'rating'    => $rating,
 			'titleInfo' => $similarTitle,
 			'basedOn'   => $suggestedBasedOn,
-		);
+		];
 	}
 
 	static function compareSuggestions($a, $b){
-		if ($a['rating'] == $b['rating']){
-			return 0;
-		}
-		return ($a['rating'] <= $b['rating']) ? 1 : -1;
+		return $b['rating'] <=> $a['rating'];
 	}
 }
