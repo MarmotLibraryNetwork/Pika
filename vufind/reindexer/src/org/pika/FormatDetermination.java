@@ -984,7 +984,7 @@ public class FormatDetermination {
 						result.add("Playaway");
 					} else if (noteValue.contains("vertical file")) {
 						result.add("VerticalFile");
-					} else if (noteValue.contains("board book") || noteValue.contains("board page")){
+					} else if (noteValue.contains("Board books") || noteValue.contains("board pages")){
 						result.add("BoardBook");
 					}
 				}
@@ -1099,7 +1099,7 @@ public class FormatDetermination {
 							if (okToAdd){
 								result.add("GraphicNovel");
 							}
-						}else if (subfieldData.contains("board book")){
+						}else if (subfieldData.contains("Board books")){
 								result.add("BoardBook");
 						}
 					}
@@ -1139,7 +1139,7 @@ public class FormatDetermination {
 							if (okToAdd){
 								result.add("GraphicNovel");
 							}
-						}else if (subfieldData.contains("board book"))
+						}else if (subfieldData.contains("Board books"))
 						{
 							result.add("BoardBook");
 						}
