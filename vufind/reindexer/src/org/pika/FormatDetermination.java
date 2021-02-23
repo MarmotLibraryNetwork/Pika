@@ -711,6 +711,7 @@ public class FormatDetermination {
 					|| printFormats.contains("MusicalScore")
 					|| printFormats.contains("BookClubKit")
 					|| printFormats.contains("Kit")
+					|| printFormats.contains("BoardBook")
 			){
 				printFormats.remove("Book");
 
@@ -983,6 +984,8 @@ public class FormatDetermination {
 						result.add("Playaway");
 					} else if (noteValue.contains("vertical file")) {
 						result.add("VerticalFile");
+					} else if (noteValue.contains("board book") || noteValue.contains("board page")){
+						result.add("BoardBook");
 					}
 				}
 			}
@@ -1096,6 +1099,8 @@ public class FormatDetermination {
 							if (okToAdd){
 								result.add("GraphicNovel");
 							}
+						}else if (subfieldData.contains("board book")){
+								result.add("BoardBook");
 						}
 					}
 				}
@@ -1134,6 +1139,9 @@ public class FormatDetermination {
 							if (okToAdd){
 								result.add("GraphicNovel");
 							}
+						}else if (subfieldData.contains("board book"))
+						{
+							result.add("BoardBook");
 						}
 					}
 				}
