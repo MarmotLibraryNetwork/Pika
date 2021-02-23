@@ -38,4 +38,14 @@ class WSJ extends MyAccount {
 		}
 	}
 
+
+	public function __construct(){
+		/** @var Library $library */
+		global $library;
+		global $interface;
+		$interface->assign('WSJLibraryName', $library->displayName);
+		// Need to set the display name for the information blurb on the login page because the traditional
+		// $librarySystemName template variable is set to the location display name when the location is known.
+		parent::__construct();
+	}
 }
