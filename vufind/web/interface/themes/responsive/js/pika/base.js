@@ -8,6 +8,7 @@ var Pika = (function(){
 	$(document).ready(function(){
 		Pika.initializeModalDialogs();
 		Pika.setupFieldSetToggles(); // appears to be only used for ManageRequests. pascal 12/29/2020
+		Pika.setupCheckBoxSwitches();
 		Pika.initCarousels();
 
 		$("#modalDialog").modal({show:false});
@@ -248,6 +249,14 @@ var Pika = (function(){
 
 			elem.parentNode.replaceChild(input, elem);
 			return input;
+		},
+
+		setupCheckBoxSwitches: function (){
+			// Initiate any checkbox with a data attribute set to data-switch=""  as a switch
+			// add html elements needed to style checkBoxes as switches
+			$('input[type="checkbox"][data-switch]')
+					.wrap( "<label class='switch'></label>" ) // label required to cause the box checking
+					.after('<span class="slider"></span>');
 		},
 
 		setupFieldSetToggles: function (){

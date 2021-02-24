@@ -63,12 +63,6 @@
 			{/if}
 	{/if}
 		</div>
-		{* TODO: sorting Bookings listings *}
-{*		<script type="text/javascript">
-			$(document).ready(function() {literal} { {/literal}
-				$("#holdsTableavailable").tablesorter({literal}{cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', headers: { 0: { sorter: false}, 3: {sorter : 'date'}, 4: {sorter : 'date'}, 7: { sorter: false} } }{/literal});
-				{literal} }); {/literal}
-		</script>*}
 	{else} {* Check to see if user is logged in *}
       {* This should never get displayed. Users should automatically be redirected to login page*}
       {include file="MyAccount/loginRequired.tpl"}
