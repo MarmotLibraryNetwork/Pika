@@ -14,9 +14,9 @@
 			</div>
 		</div>
 		<div class="form-group">
-			<label for="public" class="col-sm-3 control-label">{translate text="Access"}:</label>
+			<label for="public" class="col-sm-3 control-label">{translate text="Allow Public Access"}:</label>
 			<div class="col-sm-9">
-				<input type="checkbox" name="public" id="public" data-on-text="Public" data-off-text="Private"/>
+				<input type="checkbox" name="public" id="public" data-switch="">
 			</div>
 		</div>
 	  <input type="hidden" name="groupedWorkId" value="{$groupedWorkId}">
@@ -24,7 +24,5 @@
 	<br/>
 {/strip}
 <script type="text/javascript">{literal}
-	$(document).ready(function(){
-		var publicSwitch = $('#public').bootstrapSwitch();
-	});
+	$(document).ready(Pika.setupCheckBoxSwitches);
 {/literal}</script>

@@ -45,7 +45,6 @@
 		<script src="/interface/themes/responsive/js/lib/jquery-ui-1.12.1.custom.min.js?v={$gitBranch|urlencode}"></script>
 {*		<script src="/interface/themes/responsive/js/lib/jquery-ui-1.10.4.custom.min.js?v={$gitBranch|urlencode}"></script>*}
 	{* autocomplete still uses jquery=-ui*}
-		<script src="/interface/themes/responsive/js/lib/bootstrap-switch.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/jquery.touchwipe.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/jquery.rwdImageMaps.min.js?v={$gitBranch|urlencode}"></script>
 			{* Used for Archive Image maps on Exhibit pages *}

@@ -1,0 +1,57 @@
+// Based on https://www.w3schools.com/howto/howto_css_switch.asp
+
+@slider-width: 45px;
+@circle-radius: 20px;
+@circle-offset: 3px;
+@switch-transition-time: .4s;
+
+@total-height: @circle-radius + 2 * @circle-offset;
+@distance-to-slide: @slider-width - @circle-radius - 2 * @circle-offset;
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: @slider-width;
+  height: @total-height;
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    &:checked + .slider {
+      background-color: @btn-primary-bg;
+      &:before {
+        -webkit-transform: translateX(@distance-to-slide);
+        -ms-transform: translateX(@distance-to-slide);
+        transform: translateX(@distance-to-slide);
+      }
+    }
+    &:focus + .slider {
+      box-shadow: 0 0 1px @btn-primary-bg;
+    }
+  }
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: @switch-transition-time;
+  transition: @switch-transition-time;
+  border-radius: @total-height;
+  &::before {
+    position: absolute;
+    content: "";
+    height: @circle-radius;
+    width: @circle-radius;
+    left: @circle-offset;
+    bottom: @circle-offset;
+    background-color: white;
+    -webkit-transition: @switch-transition-time;
+    transition: @switch-transition-time;
+    border-radius: 50%;
+  }
+}
