@@ -1409,7 +1409,14 @@ class MyAccount_AJAX extends AJAXHandler {
 				$interface->assign('expirationNearMessage', str_replace('%date%', $user->expires, $interface->getVariable('expirationNearMessage')));
 			}
 			$result['expirationFinesNotice'] = $interface->fetch('MyAccount/expirationFinesNotice.tpl');
+			//Fines Badge
+			$result['fines'] = '';
+			$fines = $user->getTotalFines(true);
 
+			if($fines > 0)
+			{
+				$result['fines'] = '<span class="badge badge-danger">$' . $fines . '</span>';
+			}
 			// Get My Tags
 			$tagList = $user->getTags();
 			$interface->assign('tagList', $tagList);

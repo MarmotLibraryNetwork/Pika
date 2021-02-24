@@ -120,6 +120,7 @@ Pika.Account = (function(){
 				$(".bookings-placeholder").html(data.bookings);
 				$("#availableHoldsNotice-placeHolder").html(data.availableHoldsNotice);
 				$(".expirationFinesNotice-placeholder").html(data.expirationFinesNotice);
+				$(".fineBadge-placeholder").html(data.fines);
 				$("#tagsMenu-placeholder").html(data.tagsMenu);
 			}).fail(function (){
 				$(".checkouts-placeholder,.checkouts-placeholder,.readingHistory-placeholder,.materialsRequests-placeholder,.bookings-placeholder").html();
