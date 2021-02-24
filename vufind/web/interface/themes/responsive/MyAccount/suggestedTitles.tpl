@@ -28,8 +28,8 @@
             {/foreach}
 				</div>
       {else}
-				<div class="alert alert-info">You have not rated any titles. Please rate some titles so we can display
-					suggestions for you.
+				<div class="alert alert-info">
+					You have not rated any titles. Please rate some titles so we can display suggestions for you.
 				</div>
       {/if}
 	</div>
