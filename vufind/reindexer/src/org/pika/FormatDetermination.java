@@ -984,7 +984,7 @@ public class FormatDetermination {
 						result.add("Playaway");
 					} else if (noteValue.contains("vertical file")) {
 						result.add("VerticalFile");
-					} else if (noteValue.contains("board books") || noteValue.contains("board pages")){
+					} else if (noteValue.contains("board pages")){
 						result.add("BoardBook");
 					}
 				}
