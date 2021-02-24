@@ -805,7 +805,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		//if the status and location are null, we can assume this is not a valid item
 		if (!isItemValid(itemStatus, itemLocation)) return null;
-		if (itemStatus.isEmpty()) {
+		if (itemStatus == null || itemStatus.isEmpty()) {
 			logger.warn("Item contained no status value for item " + itemInfo.getItemIdentifier() + " for location " + itemLocation + " in record " + identifier);
 		}
 
@@ -1071,7 +1071,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	void loadItemCallNumber(Record record, DataField itemField, ItemInfo itemInfo) {
-		boolean hasCallNumber = false;
 		String volume = null;
 		if (itemField != null){
 			volume = getItemSubfieldData(volumeSubfield, itemField);
@@ -1088,186 +1087,87 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				fullCallNumber.append(callNumberPreStamp);
 			}
 			if (callNumber != null){
-				if (fullCallNumber.length() > 0 && fullCallNumber.charAt(fullCallNumber.length() - 1) != ' '){
-					fullCallNumber.append(' ');
-				}
+				addTrailingSpace(fullCallNumber);
 				fullCallNumber.append(callNumber);
 				sortableCallNumber.append(callNumber);
 			}
 			if (callNumberCutter != null){
-				if (fullCallNumber.length() > 0 && fullCallNumber.charAt(fullCallNumber.length() - 1) != ' '){
-					fullCallNumber.append(' ');
-				}
+				addTrailingSpace(fullCallNumber);
 				fullCallNumber.append(callNumberCutter);
-				if (sortableCallNumber.length() > 0 && sortableCallNumber.charAt(sortableCallNumber.length() - 1) != ' '){
-					sortableCallNumber.append(' ');
-				}
+				addTrailingSpace(sortableCallNumber);
 				sortableCallNumber.append(callNumberCutter);
 			}
 			if (callNumberPostStamp != null){
-				if (fullCallNumber.length() > 0 && fullCallNumber.charAt(fullCallNumber.length() - 1) != ' '){
-					fullCallNumber.append(' ');
-				}
+				addTrailingSpace(fullCallNumber);
 				fullCallNumber.append(callNumberPostStamp);
-				if (sortableCallNumber.length() > 0 && sortableCallNumber.charAt(sortableCallNumber.length() - 1) != ' '){
-					sortableCallNumber.append(' ');
-				}
+				addTrailingSpace(sortableCallNumber);
 				sortableCallNumber.append(callNumberPostStamp);
 			}
-			//Do create an item level call number that is just a volume (contrary to ARL-203)
-			// This is needed for periodicals which may only have a volume in the call number
-			// (It is also needed for when selecting an item in item-level holds in Sierra)
-			if (volume != null && !volume.isEmpty() /*&& fullCallNumber.length() > 0*/){
-				if (fullCallNumber.length() > 0 && fullCallNumber.charAt(fullCallNumber.length() - 1) != ' '){
-					fullCallNumber.append(' ');
-				}
+			if (fullCallNumber.length() > 0 && volume != null && !volume.isEmpty()){
+				addTrailingSpace(fullCallNumber);
 				fullCallNumber.append(volume);
 			}
 			if (fullCallNumber.length() > 0){
-				hasCallNumber = true;
 				itemInfo.setCallNumber(fullCallNumber.toString().trim());
 				itemInfo.setSortableCallNumber(sortableCallNumber.toString().trim());
+				return;
 			}
 		}
-		if (!hasCallNumber){
-			String callNumber = null;
-			if (use099forBibLevelCallNumbers()) {
-				DataField localCallNumberField = record.getDataField("099");
-				if (localCallNumberField != null) {
-					callNumber = "";
-					for (Subfield curSubfield : localCallNumberField.getSubfields()) {
-						callNumber += " " + curSubfield.getData().trim();
-					}
+		// Attempt to build bib-level call number now
+		StringBuilder callNumber = null;
+		if (use099forBibLevelCallNumbers()) {
+			DataField localCallNumberField = record.getDataField("099");
+			if (localCallNumberField != null) {
+				callNumber = new StringBuilder();
+				for (Subfield curSubfield : localCallNumberField.getSubfields()) {
+					callNumber.append(" ").append(curSubfield.getData().trim());
 				}
 			}
-			//MDN #ARL-217 do not use 099 as a call number
-			if (callNumber == null) {
-				DataField deweyCallNumberField = record.getDataField("092");
-				if (deweyCallNumberField != null) {
-					callNumber = "";
-					for (Subfield curSubfield : deweyCallNumberField.getSubfields()) {
-						callNumber += " " + curSubfield.getData().trim();
-					}
+		}
+		//MDN #ARL-217 do not use 099 as a call number
+		if (callNumber == null) {
+			DataField deweyCallNumberField = record.getDataField("092");
+			if (deweyCallNumberField != null) {
+				callNumber = new StringBuilder();
+				for (Subfield curSubfield : deweyCallNumberField.getSubfields()) {
+					callNumber.append(" ").append(curSubfield.getData().trim());
 				}
 			}
-			// Sacramento - look in the 932
-			if (callNumber == null) {
-				DataField sacramentoCallNumberField = record.getDataField("932");
-				if (sacramentoCallNumberField != null) {
-					callNumber = "";
-					for (Subfield curSubfield : sacramentoCallNumberField.getSubfields()) {
-						callNumber += " " + curSubfield.getData().trim();
-					}
+		}
+		// Sacramento - look in the 932
+		if (callNumber == null) {
+			DataField sacramentoCallNumberField = record.getDataField("932");
+			if (sacramentoCallNumberField != null) {
+				callNumber = new StringBuilder();
+				for (Subfield curSubfield : sacramentoCallNumberField.getSubfields()) {
+					callNumber.append(" ").append(curSubfield.getData().trim());
 				}
 			}
-			if (callNumber != null) {
-
-				if (volume != null && volume.length() > 0 && !callNumber.endsWith(volume)){
-					if (callNumber.length() > 0 && callNumber.charAt(callNumber.length() - 1) != ' '){
-						callNumber += " ";
-					}
-					callNumber += volume;
-				}
-				itemInfo.setCallNumber(callNumber.trim());
-				itemInfo.setSortableCallNumber(callNumber.trim());
+		}
+		if (callNumber != null) {
+			if (volume != null && volume.length() > 0 && !callNumber.toString().endsWith(volume)){
+				addTrailingSpace(callNumber);
+				callNumber.append(volume);
 			}
+			final String str = callNumber.toString().trim();
+			itemInfo.setCallNumber(str);
+			itemInfo.setSortableCallNumber(str);
+			return;
+		}
+		// Create an item level call number that is just a volume See D-782
+		// This is needed for periodicals which may only have the volume part for the call number
+		// (It is also needed for when selecting an item in item-level holds in Sierra)
+		if (useItemBasedCallNumbers && volume != null && !volume.isEmpty()){
+			itemInfo.setCallNumber(volume);
+			itemInfo.setSortableCallNumber(volume);
 		}
 	}
-//	void loadItemCallNumber(Record record, DataField itemField, ItemInfo itemInfo) {
-//		boolean hasCallNumber = false;
-//		String volume = null;
-//		if (itemField != null){
-//			volume = getItemSubfieldData(volumeSubfield, itemField);
-//		}
-//		if (useItemBasedCallNumbers && itemField != null) {
-//			String callNumberPreStamp  = getItemSubfieldDataWithoutTrimming(callNumberPrestampSubfield, itemField);
-//			String callNumber          = getItemSubfieldDataWithoutTrimming(callNumberSubfield, itemField);
-//			String callNumberCutter    = getItemSubfieldDataWithoutTrimming(callNumberCutterSubfield, itemField);
-//			String callNumberPostStamp = getItemSubfieldData(callNumberPoststampSubfield, itemField);
-//
-//			StringBuilder fullCallNumber     = new StringBuilder();
-//			StringBuilder sortableCallNumber = new StringBuilder();
-//			if (callNumberPreStamp != null) {
-//				fullCallNumber.append(callNumberPreStamp);
-//			}
-//			if (callNumber != null){
-//				addTrailingSpace(fullCallNumber);
-//				fullCallNumber.append(callNumber);
-//				sortableCallNumber.append(callNumber);
-//			}
-//			if (callNumberCutter != null){
-//				addTrailingSpace(fullCallNumber);
-//				fullCallNumber.append(callNumberCutter);
-//				addTrailingSpace(sortableCallNumber);
-//				sortableCallNumber.append(callNumberCutter);
-//			}
-//			if (callNumberPostStamp != null){
-//				addTrailingSpace(fullCallNumber);
-//				fullCallNumber.append(callNumberPostStamp);
-//				addTrailingSpace(sortableCallNumber);
-//				sortableCallNumber.append(callNumberPostStamp);
-//			}
-//			//ARL-203 do not create an item level call number that is just a volume
-//			if (volume != null && fullCallNumber.length() > 0){
-//				addTrailingSpace(fullCallNumber);
-//				fullCallNumber.append(volume);
-//			}
-//			if (fullCallNumber.length() > 0){
-//				hasCallNumber = true;
-//				itemInfo.setCallNumber(fullCallNumber.toString().trim());
-//				itemInfo.setSortableCallNumber(sortableCallNumber.toString().trim());
-//			}
-//		}
-//		if (!hasCallNumber){
-//			String callNumber = null;
-//			if (use099forBibLevelCallNumbers()) {
-//				DataField localCallNumberField = record.getDataField("099");
-//				if (localCallNumberField != null) {
-//					callNumber = "";
-//					for (Subfield curSubfield : localCallNumberField.getSubfields()) {
-//						callNumber += " " + curSubfield.getData().trim();
-//					}
-//				}
-//			}
-//			//MDN #ARL-217 do not use 099 as a call number
-//			if (callNumber == null) {
-//				DataField deweyCallNumberField = record.getDataField("092");
-//				if (deweyCallNumberField != null) {
-//					callNumber = "";
-//					for (Subfield curSubfield : deweyCallNumberField.getSubfields()) {
-//						callNumber += " " + curSubfield.getData().trim();
-//					}
-//				}
-//			}
-//			// Sacramento - look in the 932
-//			if (callNumber == null) {
-//				DataField sacramentoCallNumberField = record.getDataField("932");
-//				if (sacramentoCallNumberField != null) {
-//					callNumber = "";
-//					for (Subfield curSubfield : sacramentoCallNumberField.getSubfields()) {
-//						callNumber += " " + curSubfield.getData().trim();
-//					}
-//				}
-//			}
-//			if (callNumber != null) {
-//
-//				if (volume != null && volume.length() > 0 && !callNumber.endsWith(volume)){
-//					if (callNumber.length() > 0 && callNumber.charAt(callNumber.length() - 1) != ' '){
-//						callNumber += " ";
-//					}
-//					callNumber += volume;
-//				}
-//				itemInfo.setCallNumber(callNumber.trim());
-//				itemInfo.setSortableCallNumber(callNumber.trim());
-//			}
-//		}
-//	}
-//
-//	private void addTrailingSpace(StringBuilder stringBuilder) {
-//		if (stringBuilder.length() > 0 && stringBuilder.charAt(stringBuilder.length() - 1) != ' ') {
-//			stringBuilder.append(' ');
-//		}
-//	}
+
+	private void addTrailingSpace(StringBuilder stringBuilder) {
+		if (stringBuilder.length() > 0 && stringBuilder.charAt(stringBuilder.length() - 1) != ' ') {
+			stringBuilder.append(' ');
+		}
+	}
 
 	protected boolean use099forBibLevelCallNumbers() {
 		return true;
@@ -1371,9 +1271,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 						logger.error("Error determining if the new value of subfield is already part of the string", e);
 					}
 					if (okToAdd) {
-						if (subfieldData.length() > 0 && subfieldData.charAt(subfieldData.length() - 1) != ' ') {
-							subfieldData.append(' ');
-						}
+						addTrailingSpace(subfieldData);
 						subfieldData.append(trimmedValue);
 					}else if (logger.isDebugEnabled()){
 						logger.debug("Not appending subfield because the value looks redundant");
@@ -1399,9 +1297,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			} else {
 				StringBuilder subfieldData = new StringBuilder();
 				for (Subfield subfield:subfields) {
-					if (subfieldData.length() > 0 && subfieldData.charAt(subfieldData.length() - 1) != ' '){
-						subfieldData.append(' ');
-					}
+					addTrailingSpace(subfieldData);
 					subfieldData.append(subfield.getData());
 				}
 				return subfieldData.toString();
