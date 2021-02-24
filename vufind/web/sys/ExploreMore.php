@@ -1052,7 +1052,10 @@ class ExploreMore {
 				if (!$currentlyShowingBook){
 					$section['link'] = $bookDriver->getRecordUrl() . '?pagePid=' . $firstPageInSection['pid'];
 				}
-				$exploreMoreSectionsToShow['tableOfContents']['values'][] = $section;
+				if(isset($section['link'])){
+					$exploreMoreSectionsToShow['tableOfContents']['values'][] = $section;
+				}
+				else{ $exploreMoreSectionsToShow['tableOfContents'] = false;}
 			}
 		}
 		$interface->assign('bookPid', $bookDriver->getUniqueId());
