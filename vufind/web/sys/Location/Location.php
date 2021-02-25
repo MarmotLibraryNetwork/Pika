@@ -52,7 +52,6 @@ class Location extends DB_DataObject {
 	public $validHoldPickupBranch;  //tinyint(4)
 	public $nearbyLocation1;    //int(11)
 	public $nearbyLocation2;    //int(11)
-	public $holdingBranchLabel;     //varchar(40)
 	public $scope;
 	public $facetLabel;
 	public $restrictSearchByLocation;
@@ -72,14 +71,12 @@ class Location extends DB_DataObject {
 	public $systemsToRepeatIn;
 	public $homeLink;
 	public $defaultPType;
-	public $ptypesToAllowRenewals;
 	public $boostByLocation;
 	public $additionalLocalBoostFactor;
 	public $recordsToBlackList;
 	public $publicListsToInclude;
 	public $automaticTimeoutLength;
 	public $automaticTimeoutLengthLoggedOut;
-	//public $suppressHoldings;
 	public $additionalCss;
 	public $showTextThis;
 	public $showEmailThis;
@@ -227,15 +224,12 @@ class Location extends DB_DataObject {
 			'ilsSection' => array(
 				'property' => 'ilsSection', 'type' => 'section', 'label' => 'ILS/Account Integration', 'hideInLists' => true,
 				'helpLink' => 'https://docs.google.com/document/d/1337l_JDZAZDuSCugRWpHa4CVAfBBm8SMrAlda6hdf5o',
-				'properties' => array(
-					array('property' => 'holdingBranchLabel', 'type' => 'text', 'label' => 'Holding Branch Label', 'description' => 'The label used within in the ILS'),
-					array('property' => 'scope', 'type' => 'text', 'label' => 'Scope', 'description' => 'The scope for the system in Sierra to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.'),
-					array('property' => 'defaultPType', 'type' => 'text', 'label' => 'Default P-Type', 'description' => 'The P-Type to use when accessing a subdomain if the patron is not logged in.  Use -1 to use the library default PType.', 'default' => -1),
-					array('property' => 'validHoldPickupBranch', 'type' => 'enum', 'values' => array('1' => 'Valid for all patrons', '0' => 'Valid for patrons of this branch only', '2' => 'Not Valid'), 'label' => 'Valid Hold Pickup Branch?', 'description' => 'Determines if the location can be used as a pickup location if it is not the patrons home location or the location they are in.', 'hideInLists' => true, 'default' => 1),
-					array('property' => 'showHoldButton', 'type' => 'checkbox', 'label' => 'Show Hold Button', 'description' => 'Whether or not the hold button is displayed so patrons can place holds on items', 'hideInLists' => true, 'default' => true),
-					array('property' => 'ptypesToAllowRenewals', 'type' => 'text', 'label' => 'PTypes that can renew', 'description' => 'A list of P-Types that can renew items or * to allow all P-Types to renew items.', 'hideInLists' => true, 'default' => '*'),
-					//array('property'=>'suppressHoldings','type'=>'checkbox', 'label'=>'Suppress Holdings', 'description'=>'Whether or not all items for the title should be suppressed', 'hideInLists' => true, 'default'=>false),
-				),
+				'properties' => [
+					['property' => 'scope', 'type' => 'text', 'label' => 'Scope', 'description' => 'The scope for the system in Sierra to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.'],
+					['property' => 'defaultPType', 'type' => 'text', 'label' => 'Default P-Type', 'description' => 'The P-Type to use when accessing a subdomain if the patron is not logged in.  Use -1 to use the library default PType.', 'default' => -1],
+					['property' => 'validHoldPickupBranch', 'type' => 'enum', 'values' => ['1' => 'Valid for all patrons', '0' => 'Valid for patrons of this branch only', '2' => 'Not Valid'], 'label' => 'Valid Hold Pickup Branch?', 'description' => 'Determines if the location can be used as a pickup location if it is not the patrons home location or the location they are in.', 'hideInLists' => true, 'default' => 1],
+					['property' => 'showHoldButton', 'type' => 'checkbox', 'label' => 'Show Hold Button', 'description' => 'Whether or not the hold button is displayed so patrons can place holds on items', 'hideInLists' => true, 'default' => true],
+				],
 			),
 
 			'searchingSection'  => array(

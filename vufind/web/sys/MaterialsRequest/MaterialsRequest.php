@@ -176,7 +176,7 @@ class MaterialsRequest extends DB_DataObject {
 		require_once ROOT_DIR . '/sys/Location/Location.php';
 		$holdLocation = new Location();
 		if ($holdLocation->get($locationId)) {
-			return $holdLocation->holdingBranchLabel;
+			return $holdLocation->displayName;
 		}
 		return false;
 	}

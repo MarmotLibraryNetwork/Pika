@@ -395,7 +395,6 @@ function getLibraryLocationUpdates(){
 			'continueOnError' => true,
 			'sql'             => array(
 				"ALTER TABLE `location` ADD `defaultPType` INT(11) NOT NULL DEFAULT '-1';",
-				"ALTER TABLE `location` ADD `ptypesToAllowRenewals` VARCHAR(128) NOT NULL DEFAULT '*';"
 			),
 		),
 
@@ -426,7 +425,6 @@ function getLibraryLocationUpdates(){
 					"ALTER TABLE location ADD includeDigitalCollection TINYINT(1) DEFAULT '1'",
 					"UPDATE location SET restrictSearchByLocation = 1 WHERE defaultLocationFacet <> ''",
 					"ALTER TABLE location DROP defaultLocationFacet",
-					"ALTER TABLE location ADD suppressHoldings TINYINT(1) DEFAULT '0'",
 					"ALTER TABLE location ADD address MEDIUMTEXT",
 					"ALTER TABLE location ADD phone VARCHAR(15)  DEFAULT ''",
 					"ALTER TABLE location ADD showDisplayNameInHeader TINYINT DEFAULT 0",
@@ -1168,6 +1166,16 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			'description' => 'Remove obsolete library setting includeOutOfSystemExternalLinks',
 			'sql'         => [
 				'ALTER TABLE `library` DROP COLUMN `includeOutOfSystemExternalLinks`;'
+			],
+		],
+
+		'obsolete_location_settings_removal_2021.01.0' => [
+			'title'       => 'Remove obsolete location settings',
+			'description' => 'Remove obsolete location settings holdingBranchLabel suppressHoldings ptypesToAllowRenewals',
+			'sql'         => [
+				'ALTER TABLE `location` DROP COLUMN `ptypesToAllowRenewals`;',
+				'ALTER TABLE `location` DROP COLUMN `holdingBranchLabel`;',
+				'ALTER TABLE `location` DROP COLUMN `suppressHoldings`;',
 			],
 		],
 
