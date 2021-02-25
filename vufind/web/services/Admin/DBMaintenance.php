@@ -1430,6 +1430,22 @@ class DBMaintenance extends Admin_Admin {
 						'ALTER TABLE `pika`.`offline_hold` ADD COLUMN `pickupLocation` VARCHAR(5) NULL AFTER `itemId`;',
 					]
 				],
+				'add_board_book_format' => [
+					'title'       => 'Add new board book format',
+					'description' => 'Add Board Book format to translation maps',
+					'sql'         => [
+						"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+						((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
+						'BoardBook', 'book')
+						,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+						'BoardBook', 'Board Book')
+						,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+						'BoardBook', 'Book')
+						,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+						'BoardBook', '10')"
+						,
+					]
+				],
 
 			)); // End of main array
 	}
