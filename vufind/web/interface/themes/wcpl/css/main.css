@@ -8682,6 +8682,32 @@ hr.menu {
   right: 0;
   left: auto;
 }
+.badge.badge-danger {
+  background: red;
+}
+.badge.badge-warning {
+  background: #ffc107;
+  color: black;
+}
+.badge.badge-primary {
+  background: #007bff;
+}
+.badge.badge-secondary {
+  background: #6c757d;
+}
+.badge.badge-success {
+  background: #28a745;
+}
+.badge.badge-info {
+  background: #17a2b8;
+}
+.badge.badge-light {
+  background: #f8f9fa;
+  color: black;
+}
+.badge.badge-dark {
+  background: #343a40;
+}
 #home-page-browse-header {
   background-color: #d7dce3;
   padding-bottom: 15px;
@@ -10596,7 +10622,4 @@ fieldset[disabled] .btn-masquerade.active {
   background-color: #2fb6f1;
   background: linear-gradient(to bottom, #2fb6f1, #2fb6f1 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #2fb6f1 90%, #2fb6f1);
   font-size: 22px;
-}
-.badge.badge-danger {
-  background: red;
 }

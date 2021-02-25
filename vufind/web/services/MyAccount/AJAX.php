@@ -1412,10 +1412,14 @@ class MyAccount_AJAX extends AJAXHandler {
 			//Fines Badge
 			$result['fines'] = '';
 			$fines = $user->getTotalFines(true);
-
-			if($fines > 0)
+			$minimum = $homeLibrary->minimumFineAmount;
+			if($fines >= $minimum && $fines != 0)
 			{
 				$result['fines'] = '<span class="badge badge-danger">$' . $fines . '</span>';
+			}
+			else if($fines > 0 && $fines < $minimum)
+			{
+				$result['fines'] = '<span class ="badge">$' . $fines . '</span>';
 			}
 			// Get My Tags
 			$tagList = $user->getTags();

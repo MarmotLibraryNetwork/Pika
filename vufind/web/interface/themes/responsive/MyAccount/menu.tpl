@@ -53,7 +53,8 @@
 						</div>
 
 						{if $showFines}
-							<div class="myAccountLink{if $action=="Fines"} active{/if}" title="{translate text='Fines and Messages'}"><a href="/MyAccount/Fines">{translate text='Fines and Messages'}</a></div>
+							<div class="myAccountLink{if $action=="Fines"} active{/if}" title="{translate text='Fines and Messages'}"><a href="/MyAccount/Fines">{translate text='Fines and Messages'}
+									{if !$offline}&nbsp;<span class="fineBadge-placeholder"></span>{/if}</a></div>
 						{/if}
 						<div class="myAccountLink{if $action=="MyLists"} active{/if}">
 							<a href="/MyAccount/MyLists">
