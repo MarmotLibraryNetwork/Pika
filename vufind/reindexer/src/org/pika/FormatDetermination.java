@@ -882,7 +882,9 @@ public class FormatDetermination {
 						result.add("GoReader");
 					} else if (editionData.contains("wonderbook")) {
 						result.add("WonderBook");
-//				} else if (find4KUltraBluRayPhrases(editionData)) {
+					} else if (editionData.contains("board book")){
+						result.add("BoardBook");
+//			  } else if (find4KUltraBluRayPhrases(editionData)) {
 //					result.add("4KUltraBlu-Ray");
 						// not sure this is a good idea yet. see D-2432
 					} else {
