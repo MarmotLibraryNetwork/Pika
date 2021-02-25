@@ -108,7 +108,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		boolean available = false;
 		String  status    = itemInfo.getStatusCode();
 
-		if (!status.isEmpty() && availableStatus.indexOf(status.charAt(0)) >= 0) {
+		if (status != null && !status.isEmpty() && availableStatus.indexOf(status.charAt(0)) >= 0) {
 			if (isEmptyDueDate(itemInfo.getDueDate())) {
 				available = true;
 			}
