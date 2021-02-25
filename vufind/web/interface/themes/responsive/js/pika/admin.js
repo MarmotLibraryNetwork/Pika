@@ -116,7 +116,7 @@ Pika.Admin = (function(){
 		},
 		loadPtypes: function (){
 			Pika.Account.ajaxLogin(function (){
-				Pika.confirm("Loading Patron Types will remove any Patron Types currently saved. Continue?", function (){
+				Pika.confirm("Loading Patron Types from Sierra will remove any Patron Types currently saved in Pika. Do you wish to continue?", function (){
 					Pika.loadingMessage();
 					$.getJSON("/Admin/AJAX?method=loadPtypes", function (data){
 						Pika.showMessage('Success', 'Patron Types loaded.')

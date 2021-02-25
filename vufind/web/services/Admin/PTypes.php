@@ -70,10 +70,14 @@ class PTypes extends ObjectEditor {
 	}
 
 	function customListActions(){
+		global $configArray;
 		if(UserAccount::userHasRole('opacAdmin')){
-			return array(
-				array('label' => 'Load Patron Types', 'onclick' =>'Pika.Admin.loadPtypes()'),
-			);
+			$ils = strtolower($configArray['Catalog']['ils']);
+			if($ils == "sierra"){
+				return [
+					['label' => 'Load Patron Types', 'onclick' => 'Pika.Admin.loadPtypes()'],
+				];
+			}
 		}
 		return false;
 	}

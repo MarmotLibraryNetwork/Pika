@@ -46,17 +46,16 @@ class SierraDNA {
 	}
 
 	public function loadPtypes() {
+		$c = $this->countPtypes();
+		if($c && (int)$c >= 1) {
+			$this->emptyPtypeTable();
+		}
 		$ptypes = $this->fetchPtypes();
 		$this->savePtypes($ptypes);
 		return true;
 	}
 
 	protected function savePtypes($pTypes) {
-//		$insertPtypeSql = <<<EOT
-//INSERT INTO ptype
-//	(pType, maxHolds,label)
-//VALUES ()
-//EOT;
 		$e = [];
 		foreach ($pTypes as $pType) {
 			$pt = new \PType();
@@ -100,7 +99,15 @@ EOT;
 	}
 
 protected function emptyPtypeTable() {
-		$sql = "TRUNCATE ptype";
+	$pt = new \PType();
+	$sql = "TRUNCATE ptype";
+	$pt->query($sql);
+}
+
+protected function countPtypes() {
+	// TODO: is there a way to do count(*)
+	$pt = new \PType();
+	return count($pt->fetchAll());
 }
 
 	private function _connect() {
