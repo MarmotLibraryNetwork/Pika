@@ -93,6 +93,7 @@ class ExploreMore {
 			}elseif ($recordDriver instanceof BookDriver || $recordDriver instanceof CompoundDriver){
 				if ($recordDriver->getFormat() != 'Postcard'){
 					/** @var CompoundDriver $bookDriver */
+					$isBook = $recordDriver->getFormat();
 					$exploreMoreSectionsToShow = $this->setupTableOfContentsForBook($recordDriver, $exploreMoreSectionsToShow, true);
 					$timer->logTime("Loaded table of contents for book");
 				}
@@ -1032,30 +1033,36 @@ class ExploreMore {
 	private function setupTableOfContentsForBook($bookDriver, $exploreMoreSectionsToShow, $currentlyShowingBook) {
 		global $interface;
 		$bookContents = $bookDriver->loadBookContents();
+
 		if (count($bookContents) > 1){
 			$exploreMoreSectionsToShow['tableOfContents'] = array(
 					'title' => 'Table of Contents',
 					'format' => 'tableOfContents',
 					'values' => array()
 			);
-			if (!$currentlyShowingBook){
-				$exploreMoreSectionsToShow['tableOfContents']['format'] = 'textOnlyList';
-			}
+
 			foreach ($bookContents as $section){
 				$firstPageInSection = reset($section['pages']);
+				if (!$currentlyShowingBook){
+					$exploreMoreSectionsToShow['tableOfContents']['format'] = 'textOnlyList';
+				}
 				if ($firstPageInSection){
 					$section = [
 						'pid'   => $firstPageInSection['pid'],
 						'label' => $section['title'],
 					];
+				}else{
+					$section =[
+						'pid' => $section['pid'],
+						'label' => $section['title'],
+					];
 				}
+
 				if (!$currentlyShowingBook){
 					$section['link'] = $bookDriver->getRecordUrl() . '?pagePid=' . $firstPageInSection['pid'];
 				}
-				if(isset($section['link'])){
-					$exploreMoreSectionsToShow['tableOfContents']['values'][] = $section;
-				}
-				else{ $exploreMoreSectionsToShow['tableOfContents'] = false;}
+				$exploreMoreSectionsToShow['tableOfContents']['values'][] = $section;
+
 			}
 		}
 		$interface->assign('bookPid', $bookDriver->getUniqueId());
