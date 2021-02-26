@@ -401,7 +401,6 @@ function loadSearchInformation(){
 	global $instanceName;
 	global $configArray;
 
-	$module = $_GET['module'] ?? null;
 
 	$searchSource = 'global';
 	if (!empty($_GET['searchSource'])){
@@ -416,6 +415,7 @@ function loadSearchInformation(){
 		$_REQUEST['searchSource'] = $searchSource;
 	}else{
 		//Use a default search source
+		$module = $_GET['module'] ?? null;
 		if ($module == 'Person'){
 			$searchSource = 'genealogy';
 		}elseif ($module == 'Archive'){
