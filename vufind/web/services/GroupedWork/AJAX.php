@@ -804,38 +804,42 @@ class GroupedWork_AJAX extends AJAXHandler {
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 
 		//Get a list of all lists for the user
-		$containingLists    = array();
-		$nonContainingLists = array();
-		$listsTooLarge      = array();
+		$containingLists    = [];
+		$nonContainingLists = [];
+		$listsTooLarge      = [];
 
 		$userLists          = new UserList();
 		$userLists->user_id = UserAccount::getActiveUserId();
 		$userLists->deleted = 0;
-		$userLists->orderBy('title');
+		$userLists->orderBy('dateUpdated > unix_timestamp()-300 desc, if(dateUpdated > unix_timestamp()-300 , dateUpdated, 0) desc, title');
+		// Sort lists first by any that have been recently updated (within the last 5 mins)  eg a user is currently build a specific list
+		// second sort factor for multiple lists updated within the last five minutes is the last updated time; other lists come next
+		// finally alphabetical order for lists that haven't been updated recently
+		//This complex sorting allows for a list that has had an entry added to it recently,
+		// to show as the default selected list in the dropdown list of which user lists to add a title to
 		$userLists->find();
 
 		while ($userLists->fetch()){
 			//Check to see if the user has already added the title to the list.
-            if($userLists->numValidListItems()>= 2000)
-            {
-                $listsTooLarge[] = array(
-                    'id'    =>  $userLists->id,
-                    'title' =>  $userLists->title,
-                );
-            }
+			if ($userLists->numValidListItems() >= 2000){
+				$listsTooLarge[] = [
+					'id'    => $userLists->id,
+					'title' => $userLists->title,
+				];
+			}
 			$userListEntry                         = new UserListEntry();
 			$userListEntry->listId                 = $userLists->id;
 			$userListEntry->groupedWorkPermanentId = $id;
 			if ($userListEntry->find(true)){
-				$containingLists[] = array(
+				$containingLists[] = [
 					'id'    => $userLists->id,
 					'title' => $userLists->title,
-				);
-			}elseif(!$userListEntry->find(true) && $userLists->numValidListItems()<2000){
-				$nonContainingLists[] = array(
+				];
+			}elseif (!$userListEntry->find(true) && $userLists->numValidListItems() < 2000){
+				$nonContainingLists[] = [
 					'id'    => $userLists->id,
 					'title' => $userLists->title,
-				);
+				];
 			}
 
 		}
@@ -844,11 +848,11 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$interface->assign('nonContainingLists', $nonContainingLists);
 		$interface->assign('largeLists', $listsTooLarge);
 
-		$results = array(
+		$results = [
 			'title'        => 'Add To List',
 			'modalBody'    => $interface->fetch("GroupedWork/save.tpl"),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.GroupedWork.saveToList(\"{$id}\");'>Save To List</button>",
-		);
+		];
 		return $results;
 	}
 
