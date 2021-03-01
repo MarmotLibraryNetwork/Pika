@@ -211,7 +211,7 @@ class SearchObject_Solr extends SearchObject_Base
 			return;
 		}
 		// Extract field and value from URL string:
-		list($field, $value) = $this->parseFilter($newFilter);
+		[$field, $value] = $this->parseFilter($newFilter);
 		if ($field == ''){
 			$field = count($this->filterList) + 1;
 		}
@@ -1105,12 +1105,12 @@ class SearchObject_Solr extends SearchObject_Base
 			case 'author' :
 				// Base URL is different for author searches:
 				if ($this->searchSubType == 'home'){
-					return $this->serverUrl . "/Author/Home?";
+					return $this->serverUrl . '/Author/Home?';
 				}
 				if ($this->searchSubType == 'search'){
 					return $this->serverUrl . "/Author/Search?";
 				}
-				break;
+			// Restored saved author searches will not have a searchSubType set so need to fall back to the default Base URL (so no break statement)
 			default :
 				// If none of the special cases were met, use the default from the parent:
 				return parent::getBaseUrl();
@@ -1125,15 +1125,14 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @access  protected
 	 * @return  array    Array of URL parameters (key=url_encoded_value format)
 	 */
-	protected function getSearchParams()
-	{
-		if (is_null($this->params)) {
-			$params = array();
-			switch ($this->searchType) {
+	protected function getSearchParams(){
+		if (is_null($this->params)){
+			$params = [];
+			switch ($this->searchType){
 				// Author Home screen
 				case "author":
-					if ($this->searchSubType == 'home') $params[] = "author=" . urlencode($this->searchTerms[0]['lookfor']);
-					if ($this->searchSubType == 'search') $params[] = "lookfor=" . urlencode($this->searchTerms[0]['lookfor']);
+					//restored saved author searches
+					$params[] = ($this->searchSubType == 'home' ? 'author=' : 'lookfor=') . urlencode($this->searchTerms[0]['lookfor']);
 					$params[] = "basicSearchType=Author";
 					break;
 				// New Items or Reserves modules may have a few extra parameters to preserve:
@@ -1141,21 +1140,21 @@ class SearchObject_Solr extends SearchObject_Base
 				case "reserves":
 				case "favorites":
 				case "list":
-					$preserveParams = array(
+					$preserveParams = [
 						// for newitem:
 						'range', 'department',
 						// for reserves:
 						'course', 'inst', 'dept',
 						// for favorites/list:
 						'tag', 'pagesize'
-					);
-					foreach ($preserveParams as $current) {
-						if (isset($_GET[$current])) {
-							if (is_array($_GET[$current])) {
-								foreach ($_GET[$current] as $value) {
+					];
+					foreach ($preserveParams as $current){
+						if (isset($_GET[$current])){
+							if (is_array($_GET[$current])){
+								foreach ($_GET[$current] as $value){
 									$params[] = $current . '[]=' . urlencode($value);
 								}
-							} else {
+							}else{
 								$params[] = $current . '=' . urlencode($_GET[$current]);
 							}
 						}
@@ -1167,7 +1166,7 @@ class SearchObject_Solr extends SearchObject_Base
 					break;
 			}
 
-			if (isset($_REQUEST['basicType'])) {
+			if (isset($_REQUEST['basicType'])){
 				if ($_REQUEST['basicType'] == 'AllFields'){
 					$_REQUEST['basicType'] = 'Keyword';
 				}
@@ -1175,7 +1174,7 @@ class SearchObject_Solr extends SearchObject_Base
 					$_REQUEST['basicType'] = reset($_REQUEST['basicType']);
 				}
 				$params[] = 'basicType=' . $_REQUEST['basicType'];
-			} else if (isset($_REQUEST['type'])) {
+			}elseif (isset($_REQUEST['type'])){
 				if ($_REQUEST['type'] == 'AllFields'){
 					$_REQUEST['type'] = 'Keyword';
 				}

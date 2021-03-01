@@ -841,7 +841,7 @@ abstract class SearchObject_Base {
 		// View
 		if ($this->view != null) {
 			$params[] = "view=" . urlencode($this->view);
-		}else if (isset($_REQUEST['view'])){
+		}elseif (isset($_REQUEST['view'])){
 			$view = $_REQUEST['view'];
 			if (is_array($view)){
 				$view = array_pop($view);
@@ -850,12 +850,12 @@ abstract class SearchObject_Base {
 		}
 
 		if ($this->searchSource){
-			$params[] = "searchSource=" . $this->searchSource;
+			$params[] = 'searchSource=' . $this->searchSource;
 		}
 
 		// Join all parameters with an escaped ampersand,
 		//   add to the base url and return
-		return $url . join("&", $params);
+		return $url . implode('&', $params);
 	}
 
 	/**

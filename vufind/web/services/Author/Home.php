@@ -170,6 +170,16 @@ class Author_Home extends Union_Results {
 		$template = $searchObject->getDisplayTemplate();
 		$interface->assign('resultsTemplate', $template);
 
+		// 'Finish' the search... complete timers and log search history.
+		$searchObject->close();
+		$interface->assign('time', round($searchObject->getTotalSpeed(), 2));
+		// Show the save/unsave code on screen
+		// The ID won't exist until after the search has been put in the search history
+		//    so this needs to occur after the close() on the searchObject
+		$interface->assign('showSaved',   true);
+		$interface->assign('savedSearch', $searchObject->isSavedSearch());
+		$interface->assign('searchId',    $searchObject->getSearchId());
+
 		//Load similar author information.
 		$groupedWorkId = null;
 		$workIsbns     = [];
