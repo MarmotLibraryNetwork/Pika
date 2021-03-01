@@ -39,7 +39,7 @@
 {/foreach}
 
 <div class="adminTableRegion" id="adminTableRegion">
-	<table class="adminTable table stripe order-column table-condensed smallText" id="adminTable">
+	<table class="adminTable table stripe order-column table-condensed" id="adminTable">
 		<thead>
 			<tr>
 				{foreach from=$structure item=property key=id}
