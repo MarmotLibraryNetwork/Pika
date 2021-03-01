@@ -55,6 +55,18 @@
 						{/foreach}
 						</tbody>
 					</table>
+{*			{if count($ratings) > 5}*}
+{*				<script type="text/javascript">*}
+{*					{literal}*}
+{*					$(document).ready(function(){*}
+{*						$('#myRatingsTable').DataTable({*}
+{*							"order": [[0, "asc"]],*}
+{*							pageLength: 25*}
+{*						});*}
+{*					})*}
+{*					{/literal}*}
+{*				</script>*}
+{*			{/if}*}
 				{else}
 					<div class="alert alert-info">You have not rated any titles yet.</div>
 				{/if}
@@ -81,17 +93,18 @@
 						{/foreach}
 					</tbody>
 				</table>
-				<script type="text/javascript">
-					{literal}
-					$(document).ready(function(){
-						$('#notInterestedTable').DataTable({
-							"order": [[0, "asc"]],
-							pageLength: 100
-						});
-					})
-
-					{/literal}
-				</script>
+				{if count($notInterested) > 5}
+					<script type="text/javascript">
+						{literal}
+						$(document).ready(function(){
+							$('#notInterestedTable').DataTable({
+								"order": [[0, "asc"]],
+								pageLength: 25
+							});
+						})
+						{/literal}
+					</script>
+				{/if}
 			{/if}
 			</div>
 	</div>
