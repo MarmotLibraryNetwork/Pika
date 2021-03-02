@@ -145,7 +145,7 @@ public class GroupedReindexMain {
 
 					// Log info about missing hoopla data
 					if (hooplaRecordWithOutExtractInfo.size() > 200){
-						logger.warn("More than 200 Hoopla records found with out extract info (from the Hoopla API)");
+						logger.warn(hooplaRecordWithOutExtractInfo.size() + " Hoopla records found with out extract info (from the Hoopla API)");
 					}
 					if (logger.isInfoEnabled() && hooplaRecordWithOutExtractInfo.size() > 0) {
 						logger.info("Hoopla Records without  : " + String.join(", ", hooplaRecordWithOutExtractInfo));

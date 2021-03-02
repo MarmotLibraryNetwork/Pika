@@ -202,6 +202,7 @@ public class FormatDetermination {
 						case "print":
 						case "microfilm":
 						case "kit":
+						case "boardbook":
 							econtentItem.setFormat("eBook");
 							econtentItem.setFormatCategory("eBook");
 							econtentRecord.setFormatBoost(10);
