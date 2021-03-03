@@ -231,7 +231,7 @@
 			$(document).ready(function(){
 				$('.table').DataTable({
 
-					columnDefs: [{orderable: false, targets: [1,2,3,4,5]}],
+					columnDefs: [{orderable: true, targets: [1,2,3,4,5]}],
 					pageLength: 100,
 					initComplete: function(){
 
@@ -248,6 +248,9 @@
 												column
 																.search( val ? '^'+val+'$' : '', true, false)
 																.draw();
+											})
+											.on('click', function(e){
+													e.stopPropagation();
 											});
 							column.data().unique().sort().each(function (d,j) {
 								select.append('<option value"' +d+'">'+d+'</option>')
@@ -255,6 +258,7 @@
 						});
 					}
 				});
+
 			});
 
 			{/literal}
