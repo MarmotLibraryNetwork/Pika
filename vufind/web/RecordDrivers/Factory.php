@@ -34,7 +34,7 @@ class RecordDriverFactory {
 	 *
 	 * @access  public
 	 * @param   array|AbstractFedoraObject   $record     The fields retrieved from the Solr index.
-	 * @return  RecordInterface     The record driver for handling the record.
+	 * @return PEAR_Error|RecordInterface
 	 */
 	static function initRecordDriver($record){
 		global $configArray;
@@ -111,7 +111,7 @@ class RecordDriverFactory {
 				}
 			}
 			$timer->logTime("Found Driver for archive object from solr doc {$record['PID']} " . $driver);
-		}else{
+		}elseif (is_array($record) && array_key_exists('recordtype', $record)){
 			// for example, Load Person records (at least from buildRSS)
 			$driver = ucwords($record['recordtype']) . 'Record';
 			$path   = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
@@ -135,6 +135,8 @@ class RecordDriverFactory {
 					$path   = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
 				}
 			}
+		} else {
+			return new PEAR_Error("Problem loading record: ". $record);
 		}
 
 		return self::initAndReturnDriver($record, $driver, $path);
@@ -217,62 +219,58 @@ class RecordDriverFactory {
 	 * @param AbstractFedoraObject $record
 	 * @return PEAR_Error|RecordInterface
 	 */
-	public static function initIslandoraDriverFromObject($record)
-	{
-		global $configArray;
-		global $timer;
-
+	public static function initIslandoraDriverFromObject($record){
 		if ($record == null){
 			return null;
 		}
 
+		global $configArray;
+		global $timer;
+
 		require_once ROOT_DIR . '/sys/Islandora/IslandoraObjectCache.php';
-		$islandoraObjectCache = new IslandoraObjectCache();
+		$islandoraObjectCache      = new IslandoraObjectCache();
 		$islandoraObjectCache->pid = $record->id;
-		if ($islandoraObjectCache->find(true) && !isset($_REQUEST['reload'])) {
+		if ($islandoraObjectCache->find(true) && !isset($_REQUEST['reload'])){
 			$driver = $islandoraObjectCache->driverName;
-			$path = $islandoraObjectCache->driverPath;
-		} else {
+			$path   = $islandoraObjectCache->driverPath;
+		}else{
 			$models = $record->models;
 			$timer->logTime("Loaded models for object");
-			foreach ($models as $model) {
+			foreach ($models as $model){
 				$recordType = $model;
 				//Get rid of islandora namespace information
-				$recordType = str_replace(array(
-						'info:fedora/islandora:', 'sp_', 'sp-', '_cmodel', 'CModel', 'islandora:',
-				), '', $recordType);
-
-				$driverNameParts = explode('_', $recordType);
+				$recordType           = str_replace(['info:fedora/islandora:', 'sp_', 'sp-', '_cmodel', 'CModel', 'islandora:'], '', $recordType);
+				$driverNameParts      = explode('_', $recordType);
 				$normalizedRecordType = '';
-				foreach ($driverNameParts as $driverPart) {
+				foreach ($driverNameParts as $driverPart){
 					$normalizedRecordType .= (ucfirst($driverPart));
 				}
 
-				if ($normalizedRecordType == 'Compound') {
-					$genre = isset($record['mods_genre_s']) ? $record['mods_genre_s'] : null;
-					if ($genre != null) {
+				if ($normalizedRecordType == 'Compound'){
+					$genre = $record['mods_genre_s'] ?? null;
+					if ($genre != null){
 						$normalizedRecordType = ucfirst($genre);
-						$driver = $normalizedRecordType . 'Driver';
-						$path = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
-						if (!is_readable($path)) {
+						$driver               = $normalizedRecordType . 'Driver';
+						$path                 = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
+						if (!is_readable($path)){
 							//print_r($record);
 							$normalizedRecordType = 'Compound';
 						}
 					}
 				}
 				$driver = $normalizedRecordType . 'Driver';
-				$path = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
+				$path   = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
 
 				// If we can't load the driver, fall back to the default, index-based one:
-				if (!is_readable($path)) {
+				if (!is_readable($path)){
 					//print_r($record);
 					PEAR_Singleton::raiseError('Unable to load Driver for ' . $recordType . " ($normalizedRecordType)");
-				} else {
-					$islandoraObjectCache = new IslandoraObjectCache();
-					$islandoraObjectCache->pid = $record->id;
+				}else{
+					$islandoraObjectCache             = new IslandoraObjectCache();
+					$islandoraObjectCache->pid        = $record->id;
 					$islandoraObjectCache->driverName = $driver;
 					$islandoraObjectCache->driverPath = $path;
-					$islandoraObjectCache->title = $record->label;
+					$islandoraObjectCache->title      = $record->label;
 					$islandoraObjectCache->insert();
 					break;
 				}
