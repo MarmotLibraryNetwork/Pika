@@ -1477,7 +1477,7 @@ class GroupedWorkDriver extends RecordInterface {
 		}
 
 		//Group the records based on format
-		$relatedManifestations = array();
+		$relatedManifestations = [];
 		foreach ($relatedRecords as $curRecord){
 			if (!array_key_exists($curRecord['format'], $relatedManifestations)){
 				$relatedManifestations[$curRecord['format']] = [
@@ -1522,8 +1522,13 @@ class GroupedWorkDriver extends RecordInterface {
 			if (isset($curRecord['isEContent']) && $curRecord['isEContent']){
 				$relatedManifestations[$curRecord['format']]['isEContent'] = true;
 
-				//$relatedManifestations[$curRecord['format']]['format'] = ucwords($curRecord['source']) . " " . $curRecord['format'];
-
+				//Set Manifestation eContent Source
+				if (empty($relatedManifestations[$curRecord['format']]['eContentSource'])){
+					$relatedManifestations[$curRecord['format']]['eContentSource'] = $curRecord['eContentSource'];
+				}elseif ($curRecord['eContentSource'] != $relatedManifestations[$curRecord['format']]['eContentSource']){
+					global $logger;
+					$logger->log("Format Manifestation has multiple econtent sources containing record {$curRecord['id']}", PEAR_LOG_WARNING);
+				}
 			}
 			if (!$relatedManifestations[$curRecord['format']]['available'] && $curRecord['available']){
 				$relatedManifestations[$curRecord['format']]['available'] = $curRecord['available'];
@@ -1599,12 +1604,15 @@ class GroupedWorkDriver extends RecordInterface {
 		$selectedFormatCategory       = null;
 		$selectedAvailability         = null;
 		$selectedDetailedAvailability = null;
+		$selectedEcontentSource       = null;
 		if (isset($_REQUEST['filter'])){
 			foreach ($_REQUEST['filter'] as $filter){
 				if (preg_match('/^format_category(?:\w*):"?(.+?)"?$/', $filter, $matches)){
 					$selectedFormatCategory = urldecode($matches[1]);
 				}elseif (preg_match('/^format(?:\w*):"?(.+?)"?$/', $filter, $matches)){
 					$selectedFormat = urldecode($matches[1]);
+				}elseif (preg_match('/^econtent_source(?:\w*):"?(.+?)"?$/', $filter, $matches)){
+					$selectedEcontentSource[] = urldecode($matches[1]);
 				}elseif (preg_match('/^availability_toggle(?:\w*):"?(.+?)"?$/', $filter, $matches)){
 					$selectedAvailability = urldecode($matches[1]);
 				}elseif (preg_match('/^availability_by_format(?:[\w_]*):"?(.+?)"?$/', $filter, $matches)){
@@ -1707,7 +1715,8 @@ class GroupedWorkDriver extends RecordInterface {
 				}
 			}
 
-			if ($selectedFormat && stripos($manifestation['format'],$selectedFormat) === false){
+			// Set Up Manifestation Display when a format facet is set
+			if ($selectedFormat && stripos($manifestation['format'], $selectedFormat) === false){
 				//Do a secondary check to see if we have a more detailed format in the facet
 				$detailedFormat = mapValue('format_by_detailed_format', $selectedFormat);
 				//Also check the reverse
@@ -1716,8 +1725,7 @@ class GroupedWorkDriver extends RecordInterface {
 					$manifestation['hideByDefault'] = true;
 				}
 			}
-			if ($selectedFormat && $selectedFormat == "Book" && $manifestation['format'] != "Book")
-			{
+			if ($selectedFormat && $selectedFormat == "Book" && $manifestation['format'] != "Book"){
 				//Do a secondary check to see if we have a more detailed format in the facet
 				$detailedFormat = mapValue('format_by_detailed_format', $selectedFormat);
 				//Also check the reverse
@@ -1727,6 +1735,13 @@ class GroupedWorkDriver extends RecordInterface {
 				}
 			}
 
+			// Set Up Manifestation Display when a eContent source facet is set
+			if ($selectedEcontentSource && !$manifestation['isEContent'] || (!empty($manifestation['eContentSource']) && !in_array($manifestation['eContentSource'], $selectedEcontentSource))){
+				$manifestation['hideByDefault'] = true;
+			}
+
+
+			// Set Up Manifestation Display when a format category facet is set
 			if ($selectedFormatCategory && $selectedFormatCategory != $manifestation['formatCategory']){
 				if (($manifestation['format'] == 'eAudiobook') && ($selectedFormatCategory == 'eBook' || $selectedFormatCategory == 'Audio Books')){
 					//This is a special case where the format is in 2 categories
@@ -1736,6 +1751,8 @@ class GroupedWorkDriver extends RecordInterface {
 					$manifestation['hideByDefault'] = true;
 				}
 			}
+
+			// Set Up Manifestation Display when a availability facet is set
 			if ($selectedAvailability == 'Available Online' && !($manifestation['availableOnline'])){
 				$manifestation['hideByDefault'] = true;
 			}elseif ($selectedAvailability == 'Available Now'){
