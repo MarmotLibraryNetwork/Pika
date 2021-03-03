@@ -28,7 +28,13 @@
 					</div>
 				</div>
 			{else}
-				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label}{if $property.required}<span class="required-input">*</span>{/if}</label>
+				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>
+					{$property.label}
+					{if $property.required}<span class="required-input">*</span>{/if}
+					{if $property.isIndexingSetting}
+						&nbsp;<span class="glyphicon glyphicon-time" aria-hidden="true" title="This setting is a change to indexing"></span>
+					{/if}
+				</label>
 			{/if}
 		{/if}
 		{* Output the editing control*}
@@ -216,6 +222,9 @@
 			<div class="checkbox">
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>
 					<input type="checkbox" name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked="checked"{/if}> {$property.label}
+					{if $property.isIndexingSetting}
+						&nbsp;<span class="glyphicon glyphicon-time" aria-hidden="true" title="This setting is a change to indexing"></span>
+					{/if}
 				</label>
 			</div>
 
@@ -227,6 +236,7 @@
 {elseif $property.type == 'hidden'}
 	<input type="hidden" name='{$propName}' value='{$propValue}'>
 {/if}
+
 {if $property.showDescription}
 	<div class="propertyDescription">{$property.description}</div>
 {/if}
