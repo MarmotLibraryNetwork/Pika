@@ -20,6 +20,9 @@
 require_once 'Authentication.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 
+use Pika\Logger;
+
+
 class ILSAuthentication implements Authentication {
 	private $username;
 	private $password;
@@ -27,8 +30,11 @@ class ILSAuthentication implements Authentication {
 	/** @var  AccountProfile */
 	private $accountProfile;
 	private $catalogConnection;
+	private $logger;
 
-	public function __construct($additionalInfo) {
+	public function __construct($additionalInfo = []) {
+		$this->logger = new Logger(__CLASS__);
+
 		if (array_key_exists('driver', $additionalInfo)){
 			$this->driverName     = $additionalInfo['driver'];
 			$this->accountProfile = $additionalInfo['accountProfile'];
@@ -36,11 +42,10 @@ class ILSAuthentication implements Authentication {
 		$this->catalogConnection = CatalogFactory::getCatalogConnectionInstance($this->driverName, $this->accountProfile);
 	}
 
-	public function authenticate($validatedViaSSO){
-		global $logger;
+	public function authenticate($validatedViaSSO = false){
 		//Check to see if the username and password are provided
 		if (!array_key_exists('username', $_REQUEST) && !array_key_exists('password', $_REQUEST)){
-			$logger->log("Username and password not provided, returning user if it exists", PEAR_LOG_INFO);
+			$this->logger->info("Username and password not provided, returning user if it exists");
 			//If not, check to see if we have a valid user already authenticated
 			if (UserAccount::isLoggedIn()){ //TODO: prevent in case of masquerade??
 				return UserAccount::getLoggedInUser();
@@ -56,7 +61,8 @@ class ILSAuthentication implements Authentication {
 			$this->password = reset($this->password);
 		}
 
-		$logger->log("Authenticating user '{$this->username}', '{$this->password}' via the ILS", PEAR_LOG_DEBUG);
+//		$this->logger->debug("Authenticating user '{$this->username}', '{$this->password}' via the ILS");
+		// only leave above logging uncommented when debugging a specific issues
 		if(!$validatedViaSSO && ($this->username == '' || $this->password == '')){
 			$user = new PEAR_Error('authentication_error_blank');
 		} else {
@@ -67,6 +73,7 @@ class ILSAuthentication implements Authentication {
 				/** @var User $patron */
 				$patron = $catalog->patronLogin($this->username, $this->password, null, $validatedViaSSO);
 				if ($patron && !PEAR_Singleton::isError($patron)) {
+					$this->logger->debug("Authenticated user with id {$patron->id} via the ILS");
 					/** @var User $user */
 					$user = $patron;
 				} elseif (PEAR_Singleton::isError($patron)){
@@ -82,11 +89,11 @@ class ILSAuthentication implements Authentication {
 	}
 
 	public function validateAccount($username, $password, $parentAccount, $validatedViaSSO) {
-		global $logger;
 		$this->username = $username;
 		$this->password = $password;
 
-		$logger->log("validating account for user '{$this->username}', '{$this->password}' via the ILS", PEAR_LOG_DEBUG);
+//		$this->logger->debug("validating account for user '{$this->username}', '{$this->password}' via the ILS");
+		// only leave above logging uncommented when debugging a specific issues
 		if($this->username == '' || ($this->password == '' && !$validatedViaSSO)){
 			$validUser = new PEAR_Error('authentication_error_blank');
 		} else {
@@ -96,6 +103,7 @@ class ILSAuthentication implements Authentication {
 			if ($catalog->status) {
 				$patron = $catalog->patronLogin($this->username, $this->password, $parentAccount, $validatedViaSSO);
 				if ($patron && !PEAR_Singleton::isError($patron)) {
+					$this->logger->info("validated account for user '{$patron->id}");
 					$validUser = $patron;
 				} elseif (PEAR_Singleton::isError($patron)){
 					$validUser = $patron;

@@ -17,6 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use Pika\Logger;
+
 require_once 'PEAR.php';
 require_once 'Authentication.php';
 require_once 'LDAPConfigurationParameter.php';
@@ -26,12 +28,14 @@ class LDAPAuthentication implements Authentication {
 	private $username;
 	private $password;
 	private $ldapConfigurationParameter;
+	private $logger;
 
-	public function __construct($additionalInfo){
+	public function __construct($additionalInfo = []){
+		$this->logger = new Logger(__CLASS__);
 		$this->ldapConfigurationParameter = new LDAPConfigurationParameter();
 	}
 
-	public function authenticate($validatedViaSSO){
+	public function authenticate($validatedViaSSO = false){
 		$this->username = $_POST['username'];
 		$this->password = $_POST['password'];
 		if ($this->username == '' || $this->password == ''){

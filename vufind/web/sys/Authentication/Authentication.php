@@ -18,7 +18,7 @@
  */
 
 interface Authentication {
-	public function __construct($additionalInfo);
+	public function __construct($additionalInfo = []);
 
 	/**
 	 * Authenticate the user in the system
@@ -27,7 +27,7 @@ interface Authentication {
 	 *
 	 * @return mixed
 	 */
-	public function authenticate($validatedViaSSO);
+	public function authenticate($validatedViaSSO = false);
 
 	/**
 	 * @param $username       string

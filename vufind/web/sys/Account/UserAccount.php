@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 use Pika\Cache;
 use Pika\Logger;
 
@@ -29,15 +30,14 @@ class UserAccount {
 	/** @var User|false $guidingUserObjectFromDB */
 	private static $guidingUserObjectFromDB = null;
 	private static $userRoles = null;
-	private static $validatedAccounts = array();
+	private static $validatedAccounts = [];
 
 	private $cache;
 	private $logger;
 
-	public function __construct()
-	{
+	public function __construct(){
 		$this->cache  = new Cache();
-		$this->logger = new Logger('UserAccount');
+		$this->logger = new Logger(__CLASS__);
 	}
 
 	/**
@@ -49,7 +49,7 @@ class UserAccount {
 	 * @return bool|User
 	 */
 	public static function isLoggedIn(){
-		$logger = new Logger('UserAccount');
+		$logger = new Logger(__CLASS__);
 		global $library;
 		global $action;
 		global $module;
@@ -84,7 +84,7 @@ class UserAccount {
 							UserAccount::$isLoggedIn = false;
 
 						}else{
-							$logger->debug("We got a valid user from CAS, getting the user from the database");
+							$logger->debug('We got a valid user from CAS, getting the user from the database');
 							//We have a valid user via CAS, need to do a log into Pika
 							$_REQUEST['casLogin']    = true;
 							UserAccount::$isLoggedIn = true;
@@ -105,11 +105,7 @@ class UserAccount {
 	}
 
 	public static function getActiveUserId(){
-		if (isset($_SESSION['activeUserId'])){
-			return $_SESSION['activeUserId'];
-		}else{
-			return false;
-		}
+		return $_SESSION['activeUserId'] ?? false;
 	}
 
 	public static function userHasRole($roleName){
@@ -129,7 +125,7 @@ class UserAccount {
 
 	public static function getActiveRoles(){
 		if (UserAccount::$userRoles == null){
-			UserAccount::$userRoles = array();
+			UserAccount::$userRoles = [];
 			if (UserAccount::isLoggedIn()){
 
 				//Roles for the user
@@ -146,9 +142,9 @@ class UserAccount {
 					$testRole = isset($_REQUEST['test_role']) ? $_REQUEST['test_role'] : (isset($_COOKIE['test_role']) ? $_COOKIE['test_role'] : '');
 					if ($testRole != ''){
 						//Ignore the standard roles for the user
-						UserAccount::$userRoles = array();
+						UserAccount::$userRoles = [];
 
-						$testRoles = is_array($testRole) ? $testRole : array($testRole);
+						$testRoles = is_array($testRole) ? $testRole : [$testRole];
 						foreach ($testRoles as $tmpRole){
 							$role = new Role();
 							if (is_numeric($tmpRole)){
@@ -276,12 +272,12 @@ class UserAccount {
 	 * @return bool|null|User
 	 */
 
-	public static function getLoggedInUser() {
+	public static function getLoggedInUser(){
 		global $action;
 		global $module;
 		global $library;
 		global $interface;
-		$logger = new Pika\Logger('UserAccount');
+		$logger = new Pika\Logger(__CLASS__);
 		$cache  = new Pika\Cache();
 		if (UserAccount::$isLoggedIn != null){
 			if (UserAccount::$isLoggedIn){
@@ -294,12 +290,12 @@ class UserAccount {
 		}
 		$userData = false;
 		if (isset($_SESSION['activeUserId'])){
-			$activeUserId = $_SESSION['activeUserId'];
+			$activeUserId   = $_SESSION['activeUserId'];
 			$patronCacheKey = $cache->makePatronKey('patron', $activeUserId);
-			$userData = $cache->get($patronCacheKey, false);
-			if ($userData === false || isset($_REQUEST['reload'])) {
+			$userData       = $cache->get($patronCacheKey, false);
+			if ($userData === false || isset($_REQUEST['reload'])){
 				//Load the user from the database
-				$userData = new User();
+				$userData     = new User();
 				$userData->id = $activeUserId;
 				$userData->find(true);
 				if ($userData->N != 0 && $userData->N != false){
@@ -389,19 +385,19 @@ class UserAccount {
 	 * @throws UnknownAuthenticationMethodException
 	 */
 	public static function login(){
-		$logger = new Pika\Logger('UserAccount');
+		$logger = new Pika\Logger(__CLASS__);
 		$cache  = new Pika\Cache();
 		global $configArray;
 
-		$validUsers = array();
+		$validUsers = [];
 
 		$validatedViaSSO = false;
 		if (isset($_REQUEST['casLogin'])){
 			$logger->info("Logging the user in via CAS");
 			//Check CAS first
 		//	require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
-			$casAuthentication = new CASAuthentication(null);
-			$casUsername       = $casAuthentication->authenticate(false);
+			$casAuthentication = new CASAuthentication();
+			$casUsername       = $casAuthentication->authenticate();
 			if ($casUsername == false || PEAR_Singleton::isError($casUsername)){
 				//The user could not be authenticated in CAS
 				$logger->info("The user could not be logged in");
@@ -425,36 +421,41 @@ class UserAccount {
 		//more than one system
 		foreach ($driversToTest as $driverName => $driverData){
 			// Perform authentication:
-			$authN    = AuthenticationFactory::initAuthentication($driverData['authenticationMethod'], $driverData);
-			$tempUser = $authN->authenticate($validatedViaSSO);
+			try {
+				$authN    = AuthenticationFactory::initAuthentication($driverData['authenticationMethod'], $driverData);
+				$tempUser = $authN->authenticate($validatedViaSSO);
 
-			// If we authenticated, store the user in the session:
-			if (!PEAR_Singleton::isError($tempUser)){
-				if ($validatedViaSSO){
-					$_SESSION['loggedInViaCAS'] = true;
-				}
-				global $library;
-				if (isset($library) && $library->preventExpiredCardLogin && $tempUser->expired){
-					// Create error
-					$cardExpired = new PEAR_Error('expired_library_card');
-					return $cardExpired;
-				}
+				// If we authenticated, store the user in the session:
+				if (!PEAR_Singleton::isError($tempUser)){
+					if ($validatedViaSSO){
+						$_SESSION['loggedInViaCAS'] = true;
+					}
+					global $library;
+					if (isset($library) && $library->preventExpiredCardLogin && $tempUser->expired){
+						// Create error
+						$cardExpired = new PEAR_Error('expired_library_card');
+						return $cardExpired;
+					}
 
-				$patronCacheKey = $cache->makePatronKey('patron', $tempUser->id);
-				$cache->set($patronCacheKey, $tempUser, $configArray['Caching']['user']);
+					$patronCacheKey = $cache->makePatronKey('patron', $tempUser->id);
+					$cache->set($patronCacheKey, $tempUser, $configArray['Caching']['user']);
 
-				$validUsers[] = $tempUser;
-				if ($primaryUser == null){
-					$primaryUser = $tempUser;
-					self::updateSession($primaryUser);
+					$validUsers[] = $tempUser;
+					if ($primaryUser == null){
+						$primaryUser = $tempUser;
+						self::updateSession($primaryUser);
+					}else{
+						//We have more than one account with these credentials, automatically link them
+						$primaryUser->addLinkedUser($tempUser);
+					}
 				}else{
-					//We have more than one account with these credentials, automatically link them
-					$primaryUser->addLinkedUser($tempUser);
+					$username = isset($_REQUEST['username']) ? $_REQUEST['username'] : 'No username provided';
+					$logger->error("Error authenticating patron $username for driver {$driverName}",
+						['last_error' => $tempUser->toString()]);
 				}
-			}else{
-				$username = isset($_REQUEST['username']) ? $_REQUEST['username'] : 'No username provided';
-				$logger->error("Error authenticating patron $username for driver {$driverName}",
-				 ['last_error' => $tempUser->toString()]);
+			} catch (UnknownAuthenticationMethodException $e){
+				$logger->error($e->getMessage() . $e->getTraceAsString());
+				$tempUser = new PEAR_Error('Unknown Authentication Method');
 			}
 		}
 
@@ -482,7 +483,7 @@ class UserAccount {
 	public static function validateAccount($username, $password, $accountSource = null, $parentAccount = null){
 		global $library;
 		global $configArray;
-		$logger = new Pika\Logger('UserAccount');
+		$logger = new Pika\Logger(__CLASS__);
 		$cache  = new Pika\Cache();
 
 		if (array_key_exists($username . $password, UserAccount::$validatedAccounts)){
@@ -516,17 +517,21 @@ class UserAccount {
 
 		foreach ($driversToTest as $driverName => $additionalInfo){
 			if ($accountSource == null || $accountSource == $additionalInfo['accountProfile']->name){
-				$authN         = AuthenticationFactory::initAuthentication($additionalInfo['authenticationMethod'], $additionalInfo);
-				$validatedUser = $authN->validateAccount($username, $password, $parentAccount, $validatedViaSSO);
-				if ($validatedUser && !PEAR_Singleton::isError($validatedUser)){
-					$patronCacheKey = $cache->makePatronKey('patron', $validatedUser->id);
-					$cache->set($patronCacheKey, $validatedUser, $configArray['Caching']['user']);
-					$logger->debug("Cached user {$validatedUser->id}");
-					if ($validatedViaSSO){
-						$_SESSION['loggedInViaCAS'] = true;
+				try {
+					$authN         = AuthenticationFactory::initAuthentication($additionalInfo['authenticationMethod'], $additionalInfo);
+					$validatedUser = $authN->validateAccount($username, $password, $parentAccount, $validatedViaSSO);
+					if ($validatedUser && !PEAR_Singleton::isError($validatedUser)){
+						$patronCacheKey = $cache->makePatronKey('patron', $validatedUser->id);
+						$cache->set($patronCacheKey, $validatedUser, $configArray['Caching']['user']);
+						$logger->debug("Cached user {$validatedUser->id}");
+						if ($validatedViaSSO){
+							$_SESSION['loggedInViaCAS'] = true;
+						}
+						UserAccount::$validatedAccounts[$username . $password] = $validatedUser;
+						return $validatedUser;
 					}
-					UserAccount::$validatedAccounts[$username . $password] = $validatedUser;
-					return $validatedUser;
+				} catch (UnknownAuthenticationMethodException $e){
+					$logger->error($e->getMessage());
 				}
 			}
 		}
@@ -578,7 +583,7 @@ class UserAccount {
 		$accountProfiles = $cache->get('account_profiles_' . $instanceName);
 
 		if ($accountProfiles == false || isset($_REQUEST['reload'])){
-			$accountProfiles = array();
+			$accountProfiles = [];
 
 			//Load a list of authentication methods to test and see which (if any) result in a valid login.
 			require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
@@ -586,11 +591,11 @@ class UserAccount {
 			$accountProfile->orderBy('weight, name');
 			$accountProfile->find();
 			while ($accountProfile->fetch()){
-				$additionalInfo                         = array(
+				$additionalInfo                         = [
 					'driver'               => $accountProfile->driver,
 					'authenticationMethod' => $accountProfile->authenticationMethod,
 					'accountProfile'       => clone($accountProfile)
-				);
+				];
 				$accountProfiles[$accountProfile->name] = $additionalInfo;
 			}
 			if (count($accountProfiles) == 0){
@@ -608,11 +613,11 @@ class UserAccount {
 					$accountProfile->patronApiUrl = $configArray['OPAC']['patron_host'];
 				}
 
-				$additionalInfo                         = array(
+				$additionalInfo                         = [
 					'driver'               => $accountProfile->driver,
 					'authenticationMethod' => 'ILS',
 					'accountProfile'       => $accountProfile
-				);
+				];
 				$accountProfiles[$accountProfile->name] = $additionalInfo;
 			}
 

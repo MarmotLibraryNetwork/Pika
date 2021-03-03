@@ -17,19 +17,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 use jasig\phpcas\CAS;
-//require_once 'Authentication.php';
+use Pika\Logger;
+
 require_once ROOT_DIR . '/CatalogConnection.php';
-//require_once 'CAS.php';
 
 class CASAuthentication implements Authentication {
 	static $clientInitialized = false;
+	private $logger;
 
-
-	public function __construct($additionalInfo) {
-
+	public function __construct($additionalInfo = []) {
+		$this->logger = new Logger(__CLASS__);
 	}
 
-	public function authenticate($validatedViaSSO){
+	public function authenticate($validatedViaSSO = false){
 		$this->initializeCASClient();
 
 		try{
