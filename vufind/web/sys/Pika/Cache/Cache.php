@@ -296,7 +296,7 @@ class Cache implements CacheInterface
 			} else {
 				$result = 'false';
 			}
-			$this->logger->info($action . ':' . $key . ':' . strval($result));
+			$this->logger->debug($action . ':' . $key . ':' . strval($result));
 		}
 	}
 }
