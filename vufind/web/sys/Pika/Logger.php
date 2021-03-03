@@ -42,7 +42,7 @@ class Logger extends MonoLogger {
 		parent::__construct($name);
 		global $configArray;
 
-		$logLevel = isset($configArray['Logging']['logLevel']) ? $configArray['Logging']['logLevel'] : "ERROR";
+		$logLevel = isset($configArray['Logging']['logLevel']) ? strtoupper($configArray['Logging']['logLevel']) : "ERROR";
 		$logPath = $configArray['Logging']['file'];
 		$logPathParts = explode(":", $logPath);
 		$logFile = $logPathParts[0];
