@@ -34,84 +34,80 @@ require_once ROOT_DIR . '/sys/Indexing/TranslationMap.php';
 class Admin_TranslationMaps extends ObjectEditor {
 	function launch(){
 		global $interface;
-		$objectAction = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
-		if ($objectAction == 'loadFromFile'){
-			$id             = $_REQUEST['id'];
-			$translationMap = new TranslationMap();
-			if ($translationMap->get($id)){
-				$interface->assign('mapName', $translationMap->name);
-				$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($translationMap));
-			}
-			$interface->assign('id', $id);
-			$shortPageTitle = "Import Translation Map Data";
-//			$interface->assign('shortPageTitle', $shortPageTitle);
-			$this->display('../Admin/importTranslationMapData.tpl', $shortPageTitle);
-			exit();
-		}elseif ($objectAction == 'doAppend' || $objectAction == 'doReload'){
-			$id = $_REQUEST['id'];
-
+		$objectAction = $_REQUEST['objectAction'] ?? null;
+		switch ($objectAction){
+			case 'loadFromFile':
+				$id             = $_REQUEST['id'];
+				$translationMap = new TranslationMap();
+				if ($translationMap->get($id)){
+					$interface->assign('mapName', $translationMap->name);
+					$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($translationMap));
+				}
+				$interface->assign('id', $id);
+				$this->display('../Admin/importTranslationMapData.tpl', 'Import Translation Map Data');
+				exit();
+			case 'doAppend':
+			case 'doReload':
+			$id                 = $_REQUEST['id'];
 			$translationMapData = $_REQUEST['translationMapData'];
-			//Truncate the current data
 			$translationMap     = new TranslationMap();
 			$translationMap->id = $id;
 			if ($translationMap->find(true)){
-				$newValues = array();
+				$newValues = [];
 				if ($objectAction == 'doReload'){
+					//Truncate the current data
 					/** @var TranslationMapValue $value */
-					foreach ($translationMap->translationMapValues as $value){
-						$value->delete();
+						foreach ($translationMap->translationMapValues as $value){
+							$value->delete();
+						}
+						$translationMap->translationMapValues = [];
+						$translationMap->update();
+					}else{
+						foreach ($translationMap->translationMapValues as $value){
+							$newValues[$value->value] = $value;
+						}
 					}
-					$translationMap->translationMapValues = array();
+
+					//Parse the new data
+					$data = preg_split('/\\r\\n|\\r|\\n/', $translationMapData);
+
+					foreach ($data as $dataRow){
+						if (strlen(trim($dataRow)) != 0 && $dataRow[0] != '#'){
+							$dataFields                             = preg_split('/[,=]/', $dataRow, 2);
+							$value                                  = trim(str_replace('"', '', $dataFields[0]));
+							$translationMapValue                    = array_key_exists($value, $newValues) ? $newValues[$value] : new TranslationMapValue();
+							$translationMapValue->value             = $value;
+							$translationMapValue->translation       = trim(str_replace('"', '', $dataFields[1]));
+							$translationMapValue->translationMapId  = $id;
+							$newValues[$translationMapValue->value] = $translationMapValue;
+						}
+					}
+					$translationMap->translationMapValues = $newValues;
 					$translationMap->update();
 				}else{
-					foreach ($translationMap->translationMapValues as $value){
-						$newValues[$value->value] = $value;
-					}
+					$interface->assign('error', "Sorry we could not find a translation map with that id");
 				}
 
-				//Parse the new data
-				$data = preg_split('/\\r\\n|\\r|\\n/', $translationMapData);
 
-				foreach ($data as $dataRow){
-					if (strlen(trim($dataRow)) != 0 && $dataRow[0] != '#'){
-						$dataFields = preg_split('/[,=]/', $dataRow, 2);
-						$value      = trim(str_replace('"', '', $dataFields[0]));
-						if (array_key_exists($value, $newValues)){
-							$translationMapValue = $newValues[$value];
-						}else{
-							$translationMapValue = new TranslationMapValue();
-						}
-						$translationMapValue->value            = $value;
-						$translationMapValue->translation      = trim(str_replace('"', '', $dataFields[1]));
-						$translationMapValue->translationMapId = $id;
-
-						$newValues[$translationMapValue->value] = $translationMapValue;
-					}
+				//Show the results
+				$_REQUEST['objectAction'] = 'edit';
+				break;
+			case 'viewAsINI':
+				$id                 = $_REQUEST['id'];
+				$translationMap     = new TranslationMap();
+				$translationMap->id = $id;
+				if ($translationMap->find(true)){
+					$interface->assign('id', $id);
+					$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($translationMap));
+					$interface->assign('translationMapValues', $translationMap->translationMapValues);
+					$interface->assign('objectName', $translationMap->label());
+					$this->display('../Admin/viewTranslationMapAsIni.tpl', 'View Translation Map Data');
+					exit();
+				}else{
+					$interface->assign('error', "Sorry we could not find a translation map with that id");
 				}
-				$translationMap->translationMapValues = $newValues;
-				$translationMap->update();
-			}else{
-				$interface->assign('error', "Sorry we could not find a translation map with that id");
-			}
 
-
-			//Show the results
-			$_REQUEST['objectAction'] = 'edit';
-		}elseif ($objectAction == 'viewAsINI'){
-			$id                 = $_REQUEST['id'];
-			$translationMap     = new TranslationMap();
-			$translationMap->id = $id;
-			if ($translationMap->find(true)){
-				$interface->assign('id', $id);
-				$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($translationMap));
-				$interface->assign('translationMapValues', $translationMap->translationMapValues);
-				$interface->assign('objectName', $translationMap->label());
-				$this->display('../Admin/viewTranslationMapAsIni.tpl', 'View Translation Map Data');
-				exit();
-			}else{
-				$interface->assign('error', "Sorry we could not find a translation map with that id");
-			}
-
+				break;
 		}
 		parent::launch();
 	}
