@@ -1618,11 +1618,11 @@ class DBMaintenance extends Admin_Admin {
 		}
 	}
 
-	function setLibraryCatalogURLs(){
+	function setCatalogURLs(){
 		global $configArray;
 		$error     = [];
 		$localPath = $configArray['Site']['local'];
-		$sitesPath = realpath("$localPath/../../Sites/");
+		$sitesPath = realpath("$localPath/../../sites/");
 		$sites     = array_diff(scandir($sitesPath), ['..', '.']);
 		$library   = new Library();
 		$libraries = $library->fetchAll();

@@ -1204,7 +1204,7 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			'sql'             => [
 				"ALTER TABLE `library` ADD COLUMN `catalogUrl` VARCHAR(45) NULL AFTER `subdomain`",
 				"ALTER TABLE `location` ADD COLUMN `catalogUrl` VARCHAR(45) NULL AFTER `subdomain`",
-				'setLibraryCatalogURLs',
+				'setCatalogURLs',
 			],
 		],
 	);
