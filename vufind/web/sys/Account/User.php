@@ -509,34 +509,6 @@ class User extends DB_DataObject {
 		return $hooplaUsers;
 	}
 
-	function isValidForRBDigital(){
-		if ($this->parentUser == null || ($this->getBarcode() != $this->parentUser->getBarcode())){
-//			return false;
-			return true;
-			//TODO: implement
-//			$userHomeLibrary = $this->getHomeLibrary();
-//			if ($userHomeLibrary && $userHomeLibrary->RBDigitalLibraryID > 0){
-//				return true;
-//			}
-		}
-		return false;
-	}
-
-	function getRelatedRBDigitalUsers(){
-		$RBDigitalUsers = array();
-		if ($this->isValidForRBDigital()){
-			$RBDigitalUsers[$this->cat_username . ':' . $this->cat_password] = $this;
-		}
-		foreach ($this->getLinkedUsers() as $linkedUser){
-			if ($linkedUser->isValidForRBDigital()){
-				if (!array_key_exists($linkedUser->cat_username . ':' . $linkedUser->cat_password, $RBDigitalUsers)){
-					$RBDigitalUsers[$linkedUser->cat_username . ':' . $linkedUser->cat_password] = $linkedUser;
-				}
-			}
-		}
-		return $RBDigitalUsers;
-	}
-
 	/**
 	 * Returns a list of users that can view this account through Pika's Linked Accounts
 	 *
@@ -985,15 +957,6 @@ class User extends DB_DataObject {
 			$hooplaCheckedOutItems = $hooplaDriver->getHooplaCheckedOutItems($this);
 			$allCheckedOut         = array_merge($allCheckedOut, $hooplaCheckedOutItems);
 		}
-
-		//Get checked out titles from RBDigital
-		//Do not load RBDigital titles if the parent barcode (if any) is the same as the current barcode
-//		if ($this->isValidForRBDigital()){
-//			require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
-//			$RBDigitalDriver          = new RBdigitalDriver();
-//			$RBDigitalCheckedOutItems = $RBDigitalDriver->getCheckouts($this);
-//			$allCheckedOut            = array_merge($allCheckedOut, $RBDigitalCheckedOutItems);
-//		}
 
 		if ($includeLinkedUsers){
 			if ($this->getLinkedUsers() != null){
