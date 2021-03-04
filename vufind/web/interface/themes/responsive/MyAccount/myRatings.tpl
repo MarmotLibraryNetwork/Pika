@@ -34,7 +34,7 @@
 							<tr id="myRating{$rating.groupedWorkId|escape}" class="result {if ($smarty.foreach.recordLoop.iteration % 2) == 0}alt{/if} record{$smarty.foreach.recordLoop.iteration}">
 								<td>
 									{if isset($rating.dateRated)}
-										{$rating.dateRated|date_format}
+										<span data-date="{$rating.dateRated}">{$rating.dateRated|date_format}</span>
 									{/if}
 								</td>
 								<td class="myAccountCell">
@@ -67,9 +67,8 @@
 					}
 					$.fn.dataTable.ext.order['dom-date'] = function (settings, col){
 						return this.api().column(col, {order:'index'}).nodes().map(function (td, i){
-							var date = $(td).html().trim();
-							var myDate = new Date(date);
-							return(myDate);
+
+							return $('span', td).attr("data-date");
 						});
 					}
 					$(document).ready(function(){
@@ -82,7 +81,8 @@
 											{"orderable": false}
 
 							],
-							pageLength: 25,
+							pageLength: 10,
+							"order": [[0, "desc"]]
 
 						});
 					})
