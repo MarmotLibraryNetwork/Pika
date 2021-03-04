@@ -22,7 +22,7 @@ require_once ROOT_DIR . '/Drivers/ScreenScrapingDriver.php';
 abstract class Horizon extends ScreenScrapingDriver{
 
 	protected $db;
-	protected $useDb = true;
+	protected $useDb = false;
 	protected $hipUrl;
 	protected $hipProfile;
 	protected $selfRegProfile;
@@ -38,7 +38,9 @@ abstract class Horizon extends ScreenScrapingDriver{
 		$this->selfRegProfile = $configArray['Catalog']['selfRegProfile'];
 
 		// Connect to database
-		if (!isset($configArray['Catalog']['useDb']) || $configArray['Catalog']['useDb'] == true){
+		// Connecting via Database is likely obsolete now.
+		//TODO: sybase & mssql functions no longer in php7
+		if (!empty($configArray['Catalog']['useDb'])){
 			try{
 				if (strcasecmp($configArray['System']['operatingSystem'], 'windows') == 0 ){
 					sybase_min_client_severity(11);
@@ -53,12 +55,11 @@ abstract class Horizon extends ScreenScrapingDriver{
 						// Select the database
 						mssql_select_db($configArray['Catalog']['database']);
 					}
+				$this->useDb = true;
 			}catch (Exception $e){
 					global $logger;
 				$logger->log("Could not load Horizon database", PEAR_LOG_ERR);
 			}
-		}else{
-				$this->useDb = false;
 		}
 	}
 
