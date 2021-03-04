@@ -3085,7 +3085,7 @@ abstract class IslandoraDriver extends RecordInterface {
 					'sortIndex'   => 9,
 					'pid'         => $contributingLibraryPid,
 					'libraryName' => $libraryTitle,
-					'baseUrl'     => 'https://' . $contributingLibrary->subdomain . '.marmot.org', //TODO: This needs to change for other libraries
+					'baseUrl'     => 'https://' . $contributingLibrary->catalogUrl,
 				];
 			}else{
 				$this->contributingLibrary = null;

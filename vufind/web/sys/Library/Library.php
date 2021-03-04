@@ -51,6 +51,7 @@ class Library extends DB_DataObject {
 	public $isDefault;
 	public $libraryId; 				//int(11)
 	public $subdomain; 				//varchar(15)
+	public $catalogUrl;
 	public $displayName; 			//varchar(50)
 	public $showDisplayNameInHeader;
 	public $headerText;
@@ -312,8 +313,8 @@ class Library extends DB_DataObject {
 		'list'  => 'List',
 	);
 
-	function keys() {
-		return array('libraryId', 'subdomain');
+	function keys(){
+		return ['libraryId', 'subdomain'];
 	}
 
 	static function getObjectStructure(){
@@ -415,14 +416,15 @@ class Library extends DB_DataObject {
 		//$Instructions = 'For more information on ???, see the <a href="">online documentation</a>.';
 
 		$structure = array(
-			'isDefault'               => array('property' => 'isDefault', 'type' => 'checkbox', 'label' => 'Default Library (one per install!)', 'description' => 'The default library instance for loading scoping information etc', 'hideInLists' => true),
-			'libraryId'               => array('property' => 'libraryId', 'type' => 'label', 'label' => 'Library Id', 'description' => 'The unique id of the library within the database'),
-			'subdomain'               => array('property' => 'subdomain', 'type' => 'text', 'label' => 'Subdomain', 'description' => 'A unique id to identify the library within the system'),
-			'displayName'             => array('property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'A name to identify the library within the system', 'size' => '40'),
-			'showDisplayNameInHeader' => array('property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false),
-			'abbreviatedDisplayName'  => array('property' => 'abbreviatedDisplayName', 'type' => 'text', 'label' => 'Abbreviated Display Name', 'description' => 'A short name to identify the library when space is low', 'size' => '40'),
-			'systemMessage'           => array('property' => 'systemMessage', 'type' => 'html', 'label' => 'System Message', 'description' => 'A message to be displayed at the top of the screen', 'size' => '80', 'hideInLists' => true,
-					'allowableTags' => '<p><div><span><a><strong><b><em><i><ul><ol><li><br><hr><h1><h2><h3><h4><h5><h6><sub><sup><img><script>'),
+			'isDefault'               => ['property' => 'isDefault', 'type' => 'checkbox', 'label' => 'Default Library (one per install!)', 'description' => 'The default library instance for loading scoping information etc', 'hideInLists' => true],
+			'libraryId'               => ['property' => 'libraryId', 'type' => 'label', 'label' => 'Library Id', 'description' => 'The unique id of the library within the database'],
+			'subdomain'               => ['property' => 'subdomain', 'type' => 'text', 'label' => 'Subdomain', 'description' => 'The unique subdomain of the catalog url for this library'],
+			'catalogUrl'              => ['property' => 'catalogUrl', 'type' => 'label', 'label' => 'Catalog URL', 'description' => 'The catalog url used for this library'],
+			'displayName'             => ['property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'A name to identify the library within the system', 'size' => '40'],
+			'showDisplayNameInHeader' => ['property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false],
+			'abbreviatedDisplayName'  => ['property' => 'abbreviatedDisplayName', 'type' => 'text', 'label' => 'Abbreviated Display Name', 'description' => 'A short name to identify the library when space is low', 'size' => '40'],
+			'systemMessage'           => ['property' => 'systemMessage', 'type' => 'html', 'label' => 'System Message', 'description' => 'A message to be displayed at the top of the screen', 'size' => '80', 'hideInLists' => true,
+			                              'allowableTags' => '<p><div><span><a><strong><b><em><i><ul><ol><li><br><hr><h1><h2><h3><h4><h5><h6><sub><sup><img><script>'],
 
 			// Basic Display //
 			'displaySection' => array(
@@ -1170,38 +1172,39 @@ class Library extends DB_DataObject {
 			if ($scopingSetting == null){
 				return null;
 			}else{
-				if ($scopingSetting == 'local' || $scopingSetting == 'econtent' || $scopingSetting == 'library' || $scopingSetting == 'location'){
-					Library::$searchLibrary[$searchSource] = Library::getActiveLibrary();
-				}else{
-					if ($scopingSetting == 'marmot' || $scopingSetting == 'unscoped'){
+				switch ($scopingSetting){
+					case 'local':
+					case 'econtent':
+					case 'library':
+					case 'location':
+						Library::$searchLibrary[$searchSource] = Library::getActiveLibrary();
+						break;
+					case 'marmot':
+					case 'unscoped':
 						//Get the default library
 						$library            = new Library();
 						$library->isDefault = true;
-						$library->find();
-						if ($library->N > 0){
-							$library->fetch();
+						if ($library->find(true)){
 							Library::$searchLibrary[$searchSource] = clone($library);
 						}else{
 							Library::$searchLibrary[$searchSource] = null;
 						}
-					}else{
+						break;
+					default:
 						$location = Location::getSearchLocation();
 						if (is_null($location)){
 							//Check to see if we have a library for the subdomain
 							$library            = new Library();
 							$library->subdomain = $scopingSetting;
-							$library->find();
-							if ($library->N > 0){
-								$library->fetch();
+							if ($library->find(true)){
 								Library::$searchLibrary[$searchSource] = clone($library);
-								return clone($library);
 							}else{
 								Library::$searchLibrary[$searchSource] = null;
 							}
 						}else{
 							Library::$searchLibrary[$searchSource] = self::getLibraryForLocation($location->locationId);
 						}
-					}
+						break;
 				}
 			}
 		}
@@ -1262,97 +1265,98 @@ class Library extends DB_DataObject {
 	private $data = array();
 
 	public function __get($name){
-		if ($name == "holidays"){
-			if (!isset($this->holidays)){
-				$this->holidays = $this->getOneToManyOptions('Holiday', 'date');
-			}
-			return $this->holidays;
-		}elseif ($name == "moreDetailsOptions"){
-			if (!isset($this->moreDetailsOptions)){
-				$this->moreDetailsOptions = $this->getOneToManyOptions('LibraryMoreDetails', 'weight');
-			}
-			return $this->moreDetailsOptions;
-		}elseif ($name == "archiveMoreDetailsOptions"){
-			if (!isset($this->archiveMoreDetailsOptions)){
-				$this->archiveMoreDetailsOptions = $this->getOneToManyOptions('LibraryArchiveMoreDetails', 'weight');
-			}
-			return $this->archiveMoreDetailsOptions;
-		}elseif ($name == "facets"){
-			if (!isset($this->facets) && $this->libraryId){
-				$this->facets = $this->getOneToManyOptions('LibraryFacetSetting', 'weight');
-			}
-			return $this->facets;
-		}elseif ($name == "archiveSearchFacets"){
-			if (!isset($this->archiveSearchFacets)){
-				$this->archiveSearchFacets = $this->getOneToManyOptions('LibraryArchiveSearchFacetSetting', 'weight');
-			}
-			return $this->archiveSearchFacets;
-		}elseif ($name == 'libraryLinks'){
-			if (!isset($this->libraryLinks)){
-				$libraryLinks = $this->getOneToManyOptions('LibraryLink', 'weight');
-				// handle missing linkText
-				foreach ($libraryLinks as $libLink){
-					if (!isset($libLink->linkText) || $libLink->linkText == ''){
-						$libLink->linkText = 'link-' . $libLink->id;
-					}
+		switch ($name){
+			case "holidays":
+				if (!isset($this->holidays)){
+					$this->holidays = $this->getOneToManyOptions('Holiday', 'date');
 				}
-				$this->libraryLinks = $libraryLinks;
-			}
-			return $this->libraryLinks;
-		}elseif ($name == 'libraryTopLinks'){
-			if (!isset($this->libraryTopLinks)){
-				$this->libraryTopLinks = $this->getOneToManyOptions('LibraryTopLinks', 'weight');
-			}
-			return $this->libraryTopLinks;
-		}elseif ($name == 'recordsOwned'){
-			if (!isset($this->recordsOwned)){
-				$this->recordsOwned = $this->getOneToManyOptions('LibraryRecordOwned');
-			}
-			return $this->recordsOwned;
-		}elseif ($name == 'recordsToInclude'){
-			if (!isset($this->recordsToInclude)){
-				$this->recordsToInclude = $this->getOneToManyOptions('LibraryRecordToInclude', 'weight');
-			}
-			return $this->recordsToInclude;
-		}elseif ($name == 'browseCategories'){
-			if (!isset($this->browseCategories)){
-				$this->browseCategories = $this->getOneToManyOptions('LibraryBrowseCategory', 'weight');
-			}
-			return $this->browseCategories;
-		}elseif ($name == 'materialsRequestFieldsToDisplay'){
-			if (!isset($this->materialsRequestFieldsToDisplay)){
-				$this->materialsRequestFieldsToDisplay = $this->getOneToManyOptions('MaterialsRequestFieldsToDisplay', 'weight');
-			}
-			return $this->materialsRequestFieldsToDisplay;
-		}elseif ($name == 'materialsRequestFormats'){
-			if (!isset($this->materialsRequestFormats)){
-				$this->materialsRequestFormats = $this->getOneToManyOptions('MaterialsRequestFormats', 'weight');
-			}
-			return $this->materialsRequestFormats;
-		}elseif ($name == 'materialsRequestFormFields'){
-			if (!isset($this->materialsRequestFormFields)){
-				$this->materialsRequestFormFields = $this->getOneToManyOptions('MaterialsRequestFormFields', 'weight');
-			}
-			return $this->materialsRequestFormFields;
-		}elseif ($name == 'exploreMoreBar'){
-			if (!isset($this->exploreMoreBar)){
-				$this->exploreMoreBar = $this->getOneToManyOptions('ArchiveExploreMoreBar', 'weight');
-			}
-			return $this->exploreMoreBar;
-		}elseif ($name == 'combinedResultSections'){
-			if (!isset($this->combinedResultSections)){
-				$this->combinedResultSections = $this->getOneToManyOptions('LibraryCombinedResultSection', 'weight');
-			}
-			return $this->combinedResultSections;
-		}elseif ($name == 'hooplaSettings'){
-			if (!isset($this->hooplaSettings)){
-				$this->hooplaSettings = $this->getOneToManyOptions('LibraryHooplaSettings');
-			}
-			return $this->hooplaSettings;
-		}elseif ($name == 'patronNameDisplayStyle'){
-			return $this->patronNameDisplayStyle;
-		}else{
-			return $this->data[$name];
+				return $this->holidays;
+			case "moreDetailsOptions":
+				if (!isset($this->moreDetailsOptions)){
+					$this->moreDetailsOptions = $this->getOneToManyOptions('LibraryMoreDetails', 'weight');
+				}
+				return $this->moreDetailsOptions;
+			case "archiveMoreDetailsOptions":
+				if (!isset($this->archiveMoreDetailsOptions)){
+					$this->archiveMoreDetailsOptions = $this->getOneToManyOptions('LibraryArchiveMoreDetails', 'weight');
+				}
+				return $this->archiveMoreDetailsOptions;
+			case "facets":
+				if (!isset($this->facets) && $this->libraryId){
+					$this->facets = $this->getOneToManyOptions('LibraryFacetSetting', 'weight');
+				}
+				return $this->facets;
+			case "archiveSearchFacets":
+				if (!isset($this->archiveSearchFacets)){
+					$this->archiveSearchFacets = $this->getOneToManyOptions('LibraryArchiveSearchFacetSetting', 'weight');
+				}
+				return $this->archiveSearchFacets;
+			case 'libraryLinks':
+				if (!isset($this->libraryLinks)){
+					$libraryLinks = $this->getOneToManyOptions('LibraryLink', 'weight');
+					// handle missing linkText
+					foreach ($libraryLinks as $libLink){
+						if (!isset($libLink->linkText) || $libLink->linkText == ''){
+							$libLink->linkText = 'link-' . $libLink->id;
+						}
+					}
+					$this->libraryLinks = $libraryLinks;
+				}
+				return $this->libraryLinks;
+			case 'libraryTopLinks':
+				if (!isset($this->libraryTopLinks)){
+					$this->libraryTopLinks = $this->getOneToManyOptions('LibraryTopLinks', 'weight');
+				}
+				return $this->libraryTopLinks;
+			case 'recordsOwned':
+				if (!isset($this->recordsOwned)){
+					$this->recordsOwned = $this->getOneToManyOptions('LibraryRecordOwned');
+				}
+				return $this->recordsOwned;
+			case 'recordsToInclude':
+				if (!isset($this->recordsToInclude)){
+					$this->recordsToInclude = $this->getOneToManyOptions('LibraryRecordToInclude', 'weight');
+				}
+				return $this->recordsToInclude;
+			case 'browseCategories':
+				if (!isset($this->browseCategories)){
+					$this->browseCategories = $this->getOneToManyOptions('LibraryBrowseCategory', 'weight');
+				}
+				return $this->browseCategories;
+			case 'materialsRequestFieldsToDisplay':
+				if (!isset($this->materialsRequestFieldsToDisplay)){
+					$this->materialsRequestFieldsToDisplay = $this->getOneToManyOptions('MaterialsRequestFieldsToDisplay', 'weight');
+				}
+				return $this->materialsRequestFieldsToDisplay;
+			case 'materialsRequestFormats':
+				if (!isset($this->materialsRequestFormats)){
+					$this->materialsRequestFormats = $this->getOneToManyOptions('MaterialsRequestFormats', 'weight');
+				}
+				return $this->materialsRequestFormats;
+			case 'materialsRequestFormFields':
+				if (!isset($this->materialsRequestFormFields)){
+					$this->materialsRequestFormFields = $this->getOneToManyOptions('MaterialsRequestFormFields', 'weight');
+				}
+				return $this->materialsRequestFormFields;
+			case 'exploreMoreBar':
+				if (!isset($this->exploreMoreBar)){
+					$this->exploreMoreBar = $this->getOneToManyOptions('ArchiveExploreMoreBar', 'weight');
+				}
+				return $this->exploreMoreBar;
+			case 'combinedResultSections':
+				if (!isset($this->combinedResultSections)){
+					$this->combinedResultSections = $this->getOneToManyOptions('LibraryCombinedResultSection', 'weight');
+				}
+				return $this->combinedResultSections;
+			case 'hooplaSettings':
+				if (!isset($this->hooplaSettings)){
+					$this->hooplaSettings = $this->getOneToManyOptions('LibraryHooplaSettings');
+				}
+				return $this->hooplaSettings;
+			case 'patronNameDisplayStyle':
+				return $this->patronNameDisplayStyle;
+			default:
+				return $this->data[$name];
 		}
 	}
 

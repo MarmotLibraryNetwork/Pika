@@ -56,11 +56,25 @@ class Locations extends ObjectEditor {
 	}
 
 	function customListActions(){
-		if(UserAccount::userHasRoleFromList(array('opacAdmin','libraryAdmin'))){
+		if (UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin'])){
 			return [
 				['label' => 'Clone Location', 'onclick' => 'Pika.Admin.cloneLocationFromSelection()'],
 			];
 		}
+	}
+
+	function getAdditionalObjectActions($existingObject){
+		$objectActions = [];
+		$idCol         = $this->getIdKeyColumn();
+		if (!empty($existingObject->$idCol)){
+			if (UserAccount::userHasRole('opacAdmin')){
+				$objectActions[] = [
+					'text'    => 'Set Catalog URL',
+					'onclick' => 'Pika.Admin.setCatalogUrlPrompt(' . $existingObject->locationId . ', 1)', // second parameter for js function indicates these are Locations.
+				];
+			}
+		}
+		return $objectActions;
 	}
 
 	function getObjectStructure(){
@@ -76,7 +90,7 @@ class Locations extends ObjectEditor {
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'libraryManager', 'locationManager');
+		return ['opacAdmin', 'libraryAdmin', 'libraryManager', 'locationManager'];
 	}
 
 	function canAddNew(){

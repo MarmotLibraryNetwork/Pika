@@ -1196,5 +1196,16 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 				"ALTER TABLE library ALTER showTextThis SET DEFAULT 1;"
 			],
 		],
+
+		'add_library_catalogurl_2021.02.0' => [
+			'title'           => 'Library catalog URL',
+			'description'     => 'Add Library setting catalog URL',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE `library` ADD COLUMN `catalogUrl` VARCHAR(45) NULL AFTER `subdomain`",
+				"ALTER TABLE `location` ADD COLUMN `catalogUrl` VARCHAR(45) NULL AFTER `subdomain`",
+				'setLibraryCatalogURLs',
+			],
+		],
 	);
 }

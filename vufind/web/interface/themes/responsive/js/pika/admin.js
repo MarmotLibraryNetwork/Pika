@@ -9,6 +9,12 @@ Pika.Admin = (function(){
 		clearLocationHooplaSettings: function (id){
 			return this.basicAjaxHandler('clearLocationHooplaSettings', id);
 		},
+		setCatalogUrlPrompt: function (id , isLocation){
+			if (typeof isLocation === 'undefined'){
+				isLocation=0;
+			}
+			return this.buttonAjaxHandler('setCatalogUrlPrompt&isLocation='+isLocation, id);
+		},
 
 		clearLibraryHooplaSettings: function (id){
 			return this.basicAjaxHandler('clearLibraryHooplaSettings', id);
@@ -124,6 +130,34 @@ Pika.Admin = (function(){
 				});
 				return false;
 			});
-		}
+		},
+		setCatalogUrl: function(id, isLocation){
+			Pika.Account.ajaxLogin(function (){
+				if (typeof isLocation === 'undefined'){
+					isLocation=0;
+				}
+				var url = "/Admin/AJAX",
+						catalogUrl = $('#catalogUrlForm>#catalogUrl').val(),
+						params = {
+							'method': 'setCatalogUrl'
+							,catalogUrl: catalogUrl
+							,id: id
+							,isLocation: isLocation
+						};
+				// console.log($('#catalogUrlForm>#catalogUrl'), $('#catalogUrlForm>#catalogUrl').val(), catalogUrl);
+				Pika.loadingMessage();
+				$.getJSON(url, params,
+						function(data) {
+							if (data.success) {
+								Pika.showMessage(data.title, data.body, 4000, true);
+							} else {
+								Pika.showMessage("Error", data.body);
+							}
+						}
+				).fail(Pika.ajaxFail);
+			});
+			return false;
+		},
+
 	};
 }(Pika.Admin || {}));

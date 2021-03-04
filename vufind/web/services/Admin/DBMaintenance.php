@@ -1618,4 +1618,68 @@ class DBMaintenance extends Admin_Admin {
 		}
 	}
 
+	function setLibraryCatalogURLs(){
+		global $configArray;
+		$error     = [];
+		$localPath = $configArray['Site']['local'];
+		$sitesPath = realpath("$localPath/../../Sites/");
+		$sites     = array_diff(scandir($sitesPath), ['..', '.']);
+		$library   = new Library();
+		$libraries = $library->fetchAll();
+		/** @var Library $library */
+		foreach ($libraries as $library){
+			//Attempt to match left-most subdomain
+			if (!empty($library->subdomain)){
+				foreach ($sites as $i => $urlLink){
+					if (preg_match('/^' . preg_quote($library->subdomain) . '[23]??\..*/si', $urlLink)){
+						// [23]?? to match marmot test urls
+						$library->catalogUrl = $urlLink;
+						$library->update();
+						unset($sites[$i]);
+						break;
+					}
+				}
+				if (empty($library->catalogUrl)){
+					//Now attempt to match subdomain interior of the url
+					foreach ($sites as $i => $urlLink){
+						if (preg_match('/\.' . preg_quote($library->subdomain) . '\..*/si', $urlLink)){
+							$library->catalogUrl = $urlLink;
+							$library->update();
+							unset($sites[$i]);
+							break;
+						}
+					}
+				}
+			}
+			if (empty($library->catalogUrl)){
+				$error[] = 'Did not set an URL for ' . $library->subdomain;
+			}
+		}
+		$location  = new Location();
+		$locations = $location->fetchAll();
+		/** @var Location $location */
+		foreach ($locations as $location){
+			foreach ($sites as $i => $urlLink){
+				if (!empty($location->subdomain)){
+					if (preg_match('/^' . preg_quote($location->subdomain) . '[23]??\..*/si', $urlLink)){
+						$location->catalogUrl = $urlLink;
+						$location->update();
+						unset($sites[$i]);
+						break;
+					}
+				}elseif (!empty($location->code)){
+					if (preg_match('/^' . preg_quote($location->code) . '[23]??\..*/si', $urlLink)){
+						$location->catalogUrl = $urlLink;
+						$location->update();
+						unset($sites[$i]);
+						break;
+					}
+				}
+			}
+		}
+		if (!empty($error)){
+			print_r($error);
+		}
+	}
+
 }
