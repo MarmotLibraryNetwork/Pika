@@ -77,6 +77,19 @@ loadSearchInformation();
 
 $timer->logTime('Bootstrap done');
 
+
+/**
+ * Global function to get the site Name for this instance of Pika
+ * eg pika.test, pika.production, pika.localhost
+ * @return string
+ */
+function getSiteName(){
+	global $configArray;
+	$partParts = explode('/', $configArray['Site']['coverPath']);
+	$siteName  = $partParts[count($partParts) - 2];
+	return $siteName;
+}
+
 function initMemcache(){
 	//Connect to memcache
 	/** @var Memcache $memCache */

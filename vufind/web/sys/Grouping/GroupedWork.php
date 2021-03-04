@@ -80,15 +80,15 @@ class GroupedWork extends DB_DataObject {
 //	}
 
 	function forceRegrouping(){
-//		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		if (!empty($this->permanent_id)){
 
 			// Get site name from covers directory
-			global $configArray, $serverName;
+			global $configArray;
 
+			$siteName           = getSiteName();
 			$localPath          = $configArray['Site']['local'];
 			$recordGroupingPath = realpath("$localPath/../record_grouping/");
-			$commandToRun       = "java -jar $recordGroupingPath/record_grouping.jar $serverName singleWork {$this->permanent_id}";
+			$commandToRun       = "java -jar $recordGroupingPath/record_grouping.jar $siteName singleWork {$this->permanent_id}";
 			$result             = shell_exec($commandToRun);
 			$result             = json_decode($result);
 			if (!empty($result->success)){

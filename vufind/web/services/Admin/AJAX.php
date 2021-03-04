@@ -279,11 +279,10 @@ class Admin_AJAX extends AJAXHandler {
 								}
 								if (!$duplicateUrl/* || $emptyLocationUrl*/){
 									// Get site name from covers directory
-									global $configArray;
-									$partParts                     = explode('/', $configArray['Site']['coverPath']);
-									$siteName                      = $partParts[count($partParts) - 2];
+									$siteName = getSiteName();
 									$libraryOrLocation->catalogUrl = $emptyNewUrl ? "null" : $newUrl; // Set here for eventual updating after symbolic link actions are completed.
 									if ($newUrl != $siteName){
+										global $configArray;
 										$localPath   = $configArray['Site']['local'];
 										$sitesPath   = realpath("$localPath/../../sites/");
 										$currentLink = "$sitesPath\\$currentUrl";

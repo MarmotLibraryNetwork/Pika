@@ -138,9 +138,7 @@ class WorkAPI extends AJAXHandler {
 
 		// Get site name from covers directory
 		global $configArray;
-		$partParts = explode("/", $configArray['Site']['coverPath']);
-		$siteName  = $partParts[count($partParts) - 2];
-
+		$siteName           = getSiteName();
 		$localPath          = $configArray['Site']['local'];
 		$recordGroupingPath = realpath("$localPath/../record_grouping/");
 		$commandToRun       = "java -jar $recordGroupingPath/record_grouping.jar $siteName generateWorkId $title $author $format $languageCode $subtitle";
