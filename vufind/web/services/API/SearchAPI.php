@@ -543,12 +543,6 @@ class SearchAPI extends AJAXHandler {
 		return $jsonResults;
 	}
 
-// Looks to be a defunct call
-	function getSearchBar(){
-		global $interface;
-		return $interface->fetch('API/searchbar.tpl');
-	}
-
 	function getListWidget(){
 		global $interface;
 		if (isset($_REQUEST['username']) && isset($_REQUEST['password'])){
