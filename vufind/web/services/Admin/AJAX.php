@@ -226,9 +226,6 @@ class Admin_AJAX extends AJAXHandler {
 					'catalogUrl' => $url,
 					'isLocation' => $isLocation,
 				]);
-				if (!empty($configArray['Site']['isDevelopment'])){
-					$interface->assign('isDevelopment', true);
-				}
 				$results['body']    = $interface->fetch('Admin/setCatalogUrlPrompt.tpl');
 				$results['buttons'] = "<button class='tool btn btn-primary' onclick='$(\"#catalogUrlForm\").submit()'>Set Catalog URL</button>";
 			}else{
@@ -285,10 +282,11 @@ class Admin_AJAX extends AJAXHandler {
 										global $configArray;
 										$localPath   = $configArray['Site']['local'];
 										$sitesPath   = realpath("$localPath/../../sites/");
-										$currentLink = "$sitesPath\\$currentUrl";
-										$linkTarget  = "$sitesPath\\$siteName";
+										$dirSep      = DIRECTORY_SEPARATOR;
+										$currentLink = "$sitesPath$dirSep$currentUrl";
+										$linkTarget  = "$sitesPath$dirSep$siteName";
 										$makeNewLink = !$emptyNewUrl;
-										$linkName    = $makeNewLink ?  "$sitesPath\\$newUrl" : null;
+										$linkName    = $makeNewLink ?  "$sitesPath$dirSep$newUrl" : null;
 										$linkRemoved = '';
 										if ($currentLink != $linkTarget){ // Don't remove if we are using the site name Folder
 											if (!empty($currentUrl) && file_exists($currentLink)){
@@ -354,7 +352,7 @@ class Admin_AJAX extends AJAXHandler {
 	}
 
 
-	//							if (stripos(PHP_OS, 'linux') !== false){
+//								if (stripos(PHP_OS, 'linux') !== false){
 //								$commandToRun = "ln -s $linkTarget $linkName";
 //								$result       = shell_exec($commandToRun);
 //							}elseif (stripos(PHP_OS, 'win') !== false){
