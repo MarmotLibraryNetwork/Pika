@@ -1660,14 +1660,7 @@ class DBMaintenance extends Admin_Admin {
 		/** @var Location $location */
 		foreach ($locations as $location){
 			foreach ($sites as $i => $urlLink){
-				if (!empty($location->subdomain)){
-					if (preg_match('/^' . preg_quote($location->subdomain) . '[23]??\..*/si', $urlLink)){
-						$location->catalogUrl = $urlLink;
-						$location->update();
-						unset($sites[$i]);
-						break;
-					}
-				}elseif (!empty($location->code)){
+				if (!empty($location->code)){
 					if (preg_match('/^' . preg_quote($location->code) . '[23]??\..*/si', $urlLink)){
 						$location->catalogUrl = $urlLink;
 						$location->update();

@@ -379,13 +379,6 @@ class UInterface extends Smarty {
 						$responsiveLogo = $locationLogo;
 						break;
 					}
-				}// This overrides the theme's logo image for a library if the image directory contains a image file named as:
-				elseif (!empty($location->subdomain)){
-					$locationLogo = "/interface/themes/$themeName/images/{$location->subdomain}_logo_responsive.png";
-					if (file_exists('.' . $locationLogo)){
-						$responsiveLogo = $locationLogo;
-						break;
-					}
 				}
 			}
 			if (isset($responsiveLogo)){

@@ -38,9 +38,8 @@ class Location extends DB_DataObject {
 
 	public $__table = 'location';   // table name
 	public $locationId;        //int(11)
-	public $subdomain;
-	public $catalogUrl;
 	public $code;          //varchar(5)
+	public $catalogUrl;
 	public $subLocation;
 	public $displayName;      //varchar(40)
 	public $showDisplayNameInHeader;
@@ -194,10 +193,9 @@ class Location extends DB_DataObject {
 
 		$structure = array(
 			'locationId'                      => ['property' => 'locationId', 'type' => 'label', 'label' => 'Location Id', 'description' => 'The unique id of the location within the database'],
-			'subdomain'                       => ['property' => 'subdomain', 'type' => 'text', 'label' => 'Subdomain', 'description' => 'The subdomain to use while identifying this branch.', 'hideInLists' => true],
-			'catalogUrl'                      => ['property' => 'catalogUrl', 'type' => 'label', 'label' => 'Catalog URL', 'description' => 'The catalog url used for this location'],
 			'code'                            => ['property' => 'code', 'type' => 'text', 'label' => 'Code', 'description' => 'The code for use when communicating with the ILS', 'required' => true],
-			'subLocation'                     => ['property' => 'subLocation', 'type' => 'text', 'label' => 'Sub Location Code', 'description' => 'The sub location or collection used to identify this location', 'hideInLists' => true],
+			'catalogUrl'                      => ['property' => 'catalogUrl', 'type' => 'label', 'label' => 'Catalog URL', 'description' => 'The catalog url used for this location'],
+			'subLocation'                     => ['property' => 'subLocation', 'type' => 'text', 'label' => 'Sub Location Code (Koha IlS Only)', 'description' => 'The sub location or collection used to identify this location', 'hideInLists' => true],
 			'displayName'                     => ['property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'The full name of the location for display to the user', 'size' => '40'],
 			'showDisplayNameInHeader'         => ['property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false],
 			'libraryId'                       => ['property' => 'libraryId', 'type' => 'enum', 'label' => 'Library', 'values' => $libraryList, 'description' => 'A link to the library which the location belongs to'],
@@ -724,6 +722,7 @@ class Location extends DB_DataObject {
 			//Check to see if a branch location has been specified.
 			$locationCode = $this->getBranchLocationCode();
 			if (!empty($locationCode) && $locationCode != 'all'){
+				//Check to see if we can get the active location based off the sublocation
 				$activeLocation              = new Location();
 				$activeLocation->subLocation = $locationCode;
 				if ($activeLocation->find(true)){
@@ -735,7 +734,7 @@ class Location extends DB_DataObject {
 						Location::$activeLocation = null;
 					}
 				}else{
-					//Check to see if we can get the active location based off the sublocation
+					//Check to see if we can get the active location based off the location's code
 					$activeLocation       = new Location();
 					$activeLocation->code = $locationCode;
 					if ($activeLocation->find(true)){
@@ -745,19 +744,6 @@ class Location extends DB_DataObject {
 						}else{
 							// If the active location doesn't belong to the library we are browsing at, turn off the active location
 							Location::$activeLocation = null;
-						}
-					}else{
-						//Check to see if we can get the active location based off the sublocation
-						$activeLocation            = new Location();
-						$activeLocation->subdomain = $locationCode;
-						if ($activeLocation->find(true)){
-							//Only use the location if we are in the subdomain for the parent library
-							if ($library->libraryId == $activeLocation->libraryId){
-								Location::$activeLocation = clone $activeLocation;
-							}else{
-								// If the active location doesn't belong to the library we are browsing at, turn off the active location
-								Location::$activeLocation = null;
-							}
 						}
 					}
 				}
@@ -817,13 +803,8 @@ class Location extends DB_DataObject {
 		if (isset($this->branchLocationCode) && $this->branchLocationCode != 'unset'){
 			return $this->branchLocationCode;
 		}
-		if (isset($_GET['branch'])){
-			$this->branchLocationCode = $_GET['branch'];
-		}elseif (isset($_COOKIE['branch'])){
-			$this->branchLocationCode = $_COOKIE['branch'];
-		}else{
-			$this->branchLocationCode = '';
-		}
+		$this->branchLocationCode = $_GET['branch'] ?? $_COOKIE['branch'] ?? '';
+
 		if ($this->branchLocationCode == 'all'){
 			$this->branchLocationCode = '';
 		}
@@ -1003,22 +984,16 @@ class Location extends DB_DataObject {
 
 	function getSublocationCode(){
 		if ($this->sublocationCode == 'unset'){
-			if (isset($_GET['sublocation'])){
-				$this->sublocationCode = $_GET['sublocation'];
-			}elseif (isset($_COOKIE['sublocation'])){
-				$this->sublocationCode = $_COOKIE['sublocation'];
-			}else{
-				$this->sublocationCode = '';
-			}
+			$this->sublocationCode = $_GET['sublocation'] ?? $_COOKIE['sublocation'] ?? '';
 		}
 		return $this->sublocationCode;
 	}
 
 	function getLocationsFacetsForLibrary($libraryId){
+		$facets              = [];
 		$location            = new Location();
 		$location->libraryId = $libraryId;
 		$location->find();
-		$facets = array();
 		if ($location->N > 0){
 			while ($location->fetch()){
 				$facets[] = $location->facetLabel;
