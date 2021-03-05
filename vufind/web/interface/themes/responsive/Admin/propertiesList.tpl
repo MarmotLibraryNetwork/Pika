@@ -228,11 +228,17 @@
 	{if $objectType == "TranslationMap"}
 		<script type="text/javascript">
 			{literal}
+			$.fn.dataTable.ext.order['dom-numeric'] = function (settings, col){
+				return this.api().column(col, {order:'index'}).nodes().map(function (td, i){
+					return $('a', td).text().trim() * 1;
+				});
+			}
 			$(document).ready(function(){
 				$('.table').DataTable({
 
-					columnDefs: [{orderable: false, targets: [1,2,3,4,5]}],
+					columnDefs: [{orderable: true, targets: [1,2,3,4,5]}],
 					pageLength: 100,
+					"columnDefs": [{"orderDataType": "dom-numeric", "type": "numeric", "targets": 0}],
 					initComplete: function(){
 
 						this.api().columns([1,2,3,4]).every( function(){
@@ -248,6 +254,9 @@
 												column
 																.search( val ? '^'+val+'$' : '', true, false)
 																.draw();
+											})
+											.on('click', function(e){
+													e.stopPropagation();
 											});
 							column.data().unique().sort().each(function (d,j) {
 								select.append('<option value"' +d+'">'+d+'</option>')
@@ -255,6 +264,7 @@
 						});
 					}
 				});
+
 			});
 
 			{/literal}
@@ -263,12 +273,18 @@
 	{else}
 	<script type="text/javascript">
 		{literal}
+		$.fn.dataTable.ext.order['dom-numeric'] = function (settings, col){
+			return this.api().column(col, {order:'index'}).nodes().map(function (td, i){
+				return $('a', td).text().trim() * 1;
+			});
+		}
 		$(document).ready(function(){
 			$('#adminTable').DataTable({
-				"order": [[0, "asc"]],
-				pageLength: 100
+				pageLength: 100,
+				"columnDefs": [{"orderDataType": "dom-numeric", "type": "numeric", "targets": 0}],
+				"order": [[0, "asc"]]
 			});
-		})
+		});
 
 		{/literal}
 	</script>

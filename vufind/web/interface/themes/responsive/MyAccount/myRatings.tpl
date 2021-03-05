@@ -34,7 +34,7 @@
 							<tr id="myRating{$rating.groupedWorkId|escape}" class="result {if ($smarty.foreach.recordLoop.iteration % 2) == 0}alt{/if} record{$smarty.foreach.recordLoop.iteration}">
 								<td>
 									{if isset($rating.dateRated)}
-										{$rating.dateRated|date_format}
+										<span data-date="{$rating.dateRated}">{$rating.dateRated|date_format}</span>
 									{/if}
 								</td>
 								<td class="myAccountCell">
@@ -55,18 +55,40 @@
 						{/foreach}
 						</tbody>
 					</table>
-{*			{if count($ratings) > 5}*}
-{*				<script type="text/javascript">*}
-{*					{literal}*}
-{*					$(document).ready(function(){*}
-{*						$('#myRatingsTable').DataTable({*}
-{*							"order": [[0, "asc"]],*}
-{*							pageLength: 25*}
-{*						});*}
-{*					})*}
-{*					{/literal}*}
-{*				</script>*}
-{*			{/if}*}
+			{if count($ratings) > 5}
+				<script type="text/javascript">
+					{literal}
+					$.fn.dataTable.ext.order['dom-rating'] = function  ( settings, col )
+					{
+						return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
+
+							return $('.title-rating', td).attr("data-user_rating") * 1;
+						} );
+					}
+					$.fn.dataTable.ext.order['dom-date'] = function (settings, col){
+						return this.api().column(col, {order:'index'}).nodes().map(function (td, i){
+
+							return $('span', td).attr("data-date");
+						});
+					}
+					$(document).ready(function(){
+						$('#myRatingsTable').DataTable({
+							"columns":[
+											{"orderDataType": "dom-date"},
+											null,
+											null,
+											{"orderDataType": "dom-rating"},
+											{"orderable": false}
+
+							],
+							pageLength: 10,
+							"order": [[0, "desc"]]
+
+						});
+					})
+					{/literal}
+				</script>
+			{/if}
 				{else}
 					<div class="alert alert-info">You have not rated any titles yet.</div>
 				{/if}

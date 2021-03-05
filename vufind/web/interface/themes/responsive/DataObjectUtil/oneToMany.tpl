@@ -174,4 +174,52 @@
 		}
 		{/literal}
 	</script>
+	{if $propName == "translationMapValues"}
+
+	<script type="text/javascript">
+
+		{literal}
+		$.fn.dataTable.ext.order['dom-text'] = function  ( settings, col )
+		{
+			return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
+				return $('input', td).val();
+			} );
+		}
+
+		$(document).ready( function(){
+			$('#translationMapValues thead th:not(:last-child)').each( function () {
+				var title = $(this).text();
+				$(this).html('<input type="text" placeholder="Search ' + title + '" />');
+			});
+				$("#translationMapValues").DataTable({
+					"columns": [
+						{"orderDataType": "dom-text", type: 'string'},
+						{"orderDataType": "dom-text", type: 'string'},
+						null
+					],
+					paging: false,
+					"dom": 'lrtip',
+					initComplete: function () {
+						this.api().columns([0, 1]).every(function () {
+							var that = this;
+
+							$('input', this.header())
+											.on('keyup change clear', function () {
+												if (that.search() !== this.value) {
+													that
+																	.search(this.value)
+																	.draw();
+												}
+											})
+											.on('click', function (e) {
+												e.stopPropagation();
+											});
+						});
+					}
+				});
+			});
+		{/literal}
+	</script>
+
+	{/if}
 </div>
