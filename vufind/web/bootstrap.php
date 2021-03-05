@@ -316,7 +316,7 @@ function getLibraryObject(){
 		$location->catalogUrl = $_SERVER['SERVER_NAME'];
 		if ($location->find(true)){
 			$location->setActiveLocation(clone $location);
-			$library   = $library::getLibraryForLocation($location->locationId);
+			$library = $library::getLibraryForLocation($location->locationId);
 		}else{
 			$library            = new Library();
 			$library->isDefault = 1;
