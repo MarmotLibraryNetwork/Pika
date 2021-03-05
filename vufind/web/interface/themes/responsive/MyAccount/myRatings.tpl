@@ -107,7 +107,7 @@
 					<tbody>
 						{foreach from=$notInterested item=notInterestedTitle}
 							<tr id="notInterested{$notInterestedTitle.id}">
-								<td>{$notInterestedTitle.dateMarked|date_format}</td>
+								<td><span data-date="{$notInterestedTitle.dateMarked}">{$notInterestedTitle.dateMarked|date_format}</span></td>
 								<td><a href="{$notInterestedTitle.link}">{$notInterestedTitle.title}</a></td>
 								<td>{$notInterestedTitle.author}</td>
 								<td><span class="btn btn-xs btn-warning" onclick="return Pika.GroupedWork.clearNotInterested('{$notInterestedTitle.id}');">Clear</span></td>
@@ -116,16 +116,31 @@
 					</tbody>
 				</table>
 				{if count($notInterested) > 5}
-					<script type="text/javascript">
-						{literal}
-						$(document).ready(function(){
-							$('#notInterestedTable').DataTable({
-								"order": [[0, "asc"]],
-								pageLength: 25
-							});
-						})
-						{/literal}
-					</script>
+				<script type="text/javascript">
+					{literal}
+
+					$.fn.dataTable.ext.order['dom-ni-date'] = function (settings, col){
+						return this.api().column(col, {order:'index'}).nodes().map(function (td, i){
+
+							return $('span', td).attr("data-date");
+						});
+					}
+					$(document).ready(function(){
+						$('#notInterestedTable').DataTable({
+							"columns":[
+								{"orderDataType": "dom-ni-date"},
+								null,
+								null,
+								{"orderable": false}
+
+							],
+							pageLength: 10,
+							"order": [[0, "desc"]]
+
+						});
+					})
+					{/literal}
+				</script>
 				{/if}
 			{/if}
 			</div>
