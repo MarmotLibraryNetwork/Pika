@@ -147,7 +147,7 @@
 			</div>
 			{if $propName == "cover"}
 			<div class="row">
-				<br />
+				<br>
 
 				<div class="col-md-2"><label for="fileName" class="label-left">File Name</label></div>
 				<div class="col-md-7"><input type="text" name="fileName" value="{$propValue}" class="form-control"></div>
@@ -201,7 +201,7 @@
 					{
 						if (data.exists == "true")
 							{
-								$("<br /><div class='row'><div class='col-md-12'><div id='existsAlert' class='alert alert-danger'>Filename Already Exists - submitting will replace an existing file. <label for='overWriteOverRide'>Overwrite: </label><input type='checkbox' id='overWriteOverRide'></div></div></div>").insertAfter(prop);
+								$("<br><div class='row'><div class='col-md-12'><div id='existsAlert' class='alert alert-danger'>Filename Already Exists - submitting will replace an existing file. <label for='overWriteOverRide'>Overwrite: </label><input type='checkbox' id='overWriteOverRide'></div></div></div>").insertAfter(prop);
 
 								$(':input[type="submit"]').prop('disabled', true);
 								$("#overWriteOverRide").change(function() {

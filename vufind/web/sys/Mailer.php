@@ -115,7 +115,7 @@ class VuFindMailer {
 			//Mail to false just emits the information to screen
 			$formattedMail = '';
 			foreach ($headers as $key => $header){
-				$formattedMail .= $key . ': ' . $header . '<br />';
+				$formattedMail .= $key . ': ' . $header . '<br>';
 			}
 			$formattedMail .= $body;
 			$logger->log("Sending e-mail", PEAR_LOG_INFO);

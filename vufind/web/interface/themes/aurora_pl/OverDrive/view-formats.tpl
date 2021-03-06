@@ -21,7 +21,7 @@
 
 				<div class="eContentHoldingNotes">
 					{if $overDriveFormat->size != 0 && strcasecmp($overDriveFormat->size, 'unknown') != 0}
-						Size: {$overDriveFormat->fileSize|file_size}<br/>
+						Size: {$overDriveFormat->fileSize|file_size}<br>
 					{/if}
 				</div>
 				<div class="eContentHoldingActions">

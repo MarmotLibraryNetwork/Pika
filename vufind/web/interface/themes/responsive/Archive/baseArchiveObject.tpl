@@ -21,7 +21,7 @@
 						<div class="result-label col-sm-4">Alternate Name{if count($alternateNames) > 1}s{/if}: </div>
 						<div class="result-value col-sm-8">
 							{foreach from=$alternateNames item=alternateName}
-								{$alternateName}<br/>
+								{$alternateName}<br>
 							{/foreach}
 						</div>
 					</div>
@@ -107,7 +107,7 @@
 						<div class="result-value col-sm-8">
 							{$addressInfo.addressStreetNumber} {$addressInfo.addressStreet}
 							{if $addressInfo.address2}
-								<br/>{$addressInfo.address2}
+								<br>{$addressInfo.address2}
 							{/if}
 							{if $addressInfo.addressCity || $addressInfo.addressState || $addressInfo.addressZipCode}
 								{$addressInfo.addressCity}
@@ -117,13 +117,13 @@
 								{$addressInfo.addressState} {$addressInfo.addressZipCode}
 							{/if}
 							{if $addressInfo.addressCounty}
-								<br/>{$addressInfo.addressCounty}
+								<br>{$addressInfo.addressCounty}
 							{/if}
 							{if $addressInfo.addressCountry}
-								<br/>{$addressInfo.addressCountry}
+								<br>{$addressInfo.addressCountry}
 							{/if}
 							{if $addressInfo.addressOtherRegion}
-								<br/>{implode subject=$addressInfo.addressOtherRegion}
+								<br>{implode subject=$addressInfo.addressOtherRegion}
 							{/if}
 						</div>
 					</div>

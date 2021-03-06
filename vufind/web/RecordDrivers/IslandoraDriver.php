@@ -1924,8 +1924,8 @@ abstract class IslandoraDriver extends RecordInterface {
 			$transcriptionInfo = [];
 			foreach ($this->transcriptions as $transcription){
 				$transcriptionText = $this->getModsValue('transcriptionText', 'marmot', $transcription);
-				$transcriptionText = str_replace("\r\n", '<br/>', $transcriptionText);
-				$transcriptionText = str_replace("&#xD;", '<br/>', $transcriptionText);
+				$transcriptionText = str_replace("\r\n", '<br>', $transcriptionText);
+				$transcriptionText = str_replace("&#xD;", '<br>', $transcriptionText);
 
 				//Add links to timestamps
 				$transcriptionTextWithLinks = $transcriptionText;
@@ -2315,7 +2315,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		$address2 = FedoraUtils::cleanValue($this->getModsValue('address2', 'marmot', $entity));
 		if ($address2) {
 			if (strlen($entityTitle) > 0) {
-				$entityTitle .= '<br/>';
+				$entityTitle .= '<br>';
 			}
 			$entityTitle .= $address2;
 			$hasAddressInfo = true;
@@ -2323,7 +2323,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		$addressCity = FedoraUtils::cleanValue($this->getModsValue('addressCity', 'marmot', $entity));
 		if ($addressCity) {
 			if (strlen($entityTitle) > 0) {
-				$entityTitle .= '<br/>';
+				$entityTitle .= '<br>';
 			}
 			$entityTitle .= $addressCity;
 			$hasAddressInfo = true;
@@ -2333,7 +2333,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			if ($addressState) {
 				$entityTitle .= ', ';
 			} elseif (strlen($entityTitle) > 0) {
-				$entityTitle .= '<br/>';
+				$entityTitle .= '<br>';
 			}
 			$entityTitle .= $addressState;
 			$hasAddressInfo = true;
@@ -2346,7 +2346,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		$addressCounty = FedoraUtils::cleanValue($this->getModsValue('addressCounty', 'marmot', $entity));
 		if ($addressCounty) {
 			if (strlen($entityTitle) > 0) {
-				$entityTitle .= '<br/>';
+				$entityTitle .= '<br>';
 			}
 			$entityTitle .= $addressCounty;
 			$hasAddressInfo = true;
@@ -2355,7 +2355,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		$addressCountry = FedoraUtils::cleanValue($this->getModsValue('addressCountry', 'marmot', $entity));
 		if ($addressCountry) {
 			if (strlen($entityTitle) > 0) {
-				$entityTitle .= '<br/>';
+				$entityTitle .= '<br>';
 			}
 			$entityTitle .= $addressCountry;
 			if ($entityTitle != 'USA'){
@@ -2366,7 +2366,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		if ($addressOtherRegions) {
 			foreach ($addressOtherRegions as $addressOtherRegion) {
 				if (strlen($entityTitle) > 0) {
-					$entityTitle .= '<br/>';
+					$entityTitle .= '<br>';
 				}
 				$entityTitle .= $addressOtherRegion;
 			}
@@ -2381,7 +2381,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		$longitude = $this->getModsValue('longitude', 'marmot', $entity);
 		if ($latitude || $longitude) {
 			if (strlen($entityTitle) > 0) {
-				$entityTitle .= '<br/>';
+				$entityTitle .= '<br>';
 			}
 			$entityTitle .= "$latitude, $longitude";
 			return $entityTitle;
@@ -2856,8 +2856,8 @@ abstract class IslandoraDriver extends RecordInterface {
 
 		$rightsStatements = $this->getModsValues('rightsStatement', 'marmot');
 		foreach ($rightsStatements as $id => $rightsStatement){
-			$rightsStatement = str_replace("\r\n", '<br/>', $rightsStatement);
-			$rightsStatement = str_replace("&#xD;", '<br/>', $rightsStatement);
+			$rightsStatement = str_replace("\r\n", '<br>', $rightsStatement);
+			$rightsStatement = str_replace("&#xD;", '<br>', $rightsStatement);
 			$rightsStatements[$id] = $rightsStatement;
 		}
 

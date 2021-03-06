@@ -50,7 +50,7 @@
 			<div class="result-label col-sm-4">Collection PID: </div>
 			<div class="result-value col-sm-8">
 				{foreach from=$collectionInfo item="collection"}
-					<a href="{$collection.link}">{$collection.pid}</a> ({$collection.label})<br/>
+					<a href="{$collection.link}">{$collection.pid}</a> ({$collection.label})<br>
 				{/foreach}
 			</div>
 		</div>

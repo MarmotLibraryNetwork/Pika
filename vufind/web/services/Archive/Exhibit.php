@@ -52,8 +52,8 @@ class Archive_Exhibit extends Archive_Object {
 		$interface->assign('repositoryLink', $repositoryLink);
 
 		$description = html_entity_decode($this->recordDriver->getDescription());
-		$description = str_replace("\r\n", '<br/>', $description);
-		$description = str_replace("&#xD;", '<br/>', $description);
+		$description = str_replace("\r\n", '<br>', $description);
+		$description = str_replace("&#xD;", '<br>', $description);
 		if (strlen($description)){
 			$interface->assign('description', $description);
 		}

@@ -11,15 +11,14 @@
 							Delete
 						</a>
 					{/if}
-					<br/>
+					<br>
 				{/foreach}
 			{else}
 				<p class="alert alert-info">
 					{translate text='No Tags'}, {translate text='Be the first to tag this record'}!
 				</p>
 			{/if}
-
-			<br/>
+			<br>
 			<div>
 				<a href="#" onclick="return Pika.GroupedWork.showTagForm(this, '{$recordDriver->getPermanentId()|escape}');" class="btn btn-sm btn-default">
 					{translate text="Add Tag"}

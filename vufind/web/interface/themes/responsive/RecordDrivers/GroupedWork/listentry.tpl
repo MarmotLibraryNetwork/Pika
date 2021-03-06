@@ -3,7 +3,7 @@
 	{if $smarty.get.pagesize}{assign var="pageSize" value=$smarty.get.pagesize}{else}{assign var="pageSize" value=20}{/if}
 	{if $smarty.get.sort}{assign var="listSort" value=$smarty.get.sort}{else}{assign var="listSort" value=""}{/if}
 	<div class="row">
-		<div class="col-md-1"><input type="checkbox" name="marked" id="favorite_{$summId|escape}" class="form-control-static" value="{$summId|escape}" /></div>
+		<div class="col-md-1"><input type="checkbox" name="marked" id="favorite_{$summId|escape}" class="form-control-static" value="{$summId|escape}"></div>
 	<div class="col-md-11 rslt">
 		<div id="groupedRecord{$summId|escape}" class="resultsList" data-order="{$resultIndex}">
 		<a name="record{$summId|escape:"url"}"></a>

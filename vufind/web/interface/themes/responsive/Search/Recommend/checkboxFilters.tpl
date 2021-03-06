@@ -5,10 +5,10 @@
 			<td style="vertical-align:top; padding: 3px;">
 				<input type="checkbox" name="filter[]" value="{$current.filter|escape}"
 				       {if $current.selected}checked="checked"{/if}
-				       onclick="document.location.href='{$current.toggleUrl|escape}';" />
+				       onclick="document.location.href='{$current.toggleUrl|escape}';">
 			</td>
 			<td>
-				{translate text=$current.desc}<br />
+				{translate text=$current.desc}<br>
 			</td>
 		</tr>
 	{/foreach}

@@ -38,7 +38,7 @@
 					{else}
 						{$academicPerson.label}
 					{/if}
-					<br/>
+					<br>
 				{/foreach}
 			</div>
 		</div>
@@ -61,7 +61,7 @@
 		</div>
 	{/if}
 	{if $defenceDate}
-		Defence Date:{$defenceDate}<br/>
+		Defence Date:{$defenceDate}<br>
 	{/if}
 	{if $acceptedDate}
 		{$acceptedDate}
@@ -107,6 +107,6 @@
 				</div>
 			</div>
 		{/if}
-		<br/>
+		<br>
 	{/foreach}
 {/strip}

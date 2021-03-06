@@ -29,7 +29,7 @@
 		        <input type="checkbox" class="form-control-static mlcb" value="{$myList.id}"/>
 	        </div>
             <div class="col-md-2">
-							<img src="/bookcover.php?id={$myList.id}&size=medium&type=userList" />
+							<img src="/bookcover.php?id={$myList.id}&size=medium&type=userList">
             </div>
             <div class="col-md-9">
                 <div class="row">
@@ -73,7 +73,7 @@
                                                 <img src="{img filename='email-icon.png'}" alt="E-mail this" style="cursor:pointer;">
                                             </a>
                                             <a href="#" id="FavExcel" onclick="return Pika.Lists.exportListFromLists('{$myList.id}');" title="Export List to Excel">
-                                                <img src="{img filename='excel.png'}" alt="Export to Excel" />
+                                                <img src="{img filename='excel.png'}" alt="Export to Excel">
                                             </a>
                                             <a href="https://twitter.com/compose/tweet?text={$myList.name|escape:"html"}+{$url|escape:"html"}/MyAccount/MyList/{$myList.id}" target="_blank" title="Share on Twitter">
                                                 <img src="{img filename='twitter-icon.png'}" alt="Share on Twitter">

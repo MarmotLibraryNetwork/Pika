@@ -233,7 +233,6 @@ class CarlX extends SIP2Driver{
 				$mysip->patronpwd = $patron->cat_password;
 
 				$in = $mysip->msgRenewAll();
-				//print_r($in . '<br/>');
 				$msg_result = $mysip->get_message($in);
 				//print_r($msg_result);
 
@@ -1692,7 +1691,6 @@ class CarlX extends SIP2Driver{
 				$mysip->patronpwd = $patron->cat_password;
 
 				$in = $mysip->msgRenew($itemId, '', '', '', 'N', 'N', 'Y');
-				//print_r($in . '<br/>');
 				$msg_result = $mysip->get_message($in);
 				//print_r($msg_result);
 

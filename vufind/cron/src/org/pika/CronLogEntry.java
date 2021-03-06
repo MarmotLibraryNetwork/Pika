@@ -57,7 +57,7 @@ public class CronLogEntry {
 			cleanedNote = cleanedNote.replaceAll("<pre>", "<code>");
 			cleanedNote = cleanedNote.replaceAll("</pre>", "</code>");
 			//Replace multiple line breaks
-			cleanedNote = cleanedNote.replaceAll("(?:<br?>\\s*)+", "<br/>");
+			cleanedNote = cleanedNote.replaceAll("(?:<br?>\\s*)+", "<br>");
 			cleanedNote = cleanedNote.replaceAll("<meta.*?>", "");
 			cleanedNote = cleanedNote.replaceAll("<title>.*?</title>", "");
 			notesText.append("<li>").append(cleanedNote).append("</li>");

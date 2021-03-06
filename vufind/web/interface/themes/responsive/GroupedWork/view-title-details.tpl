@@ -18,7 +18,7 @@
 					{if $contributor.title}
 						&nbsp;<a href="/Search/Results?lookfor={$contributor.title}&amp;basicType=Title">{$contributor.title}</a>
 					{/if}
-					<br/>
+					<br>
 					{/foreach}
 					{if $smarty.foreach.loop.index >= 5}
 					<div>
@@ -42,7 +42,7 @@
 			<div class="result-label col-sm-3">{translate text='ISBN'}:</div>
 			<div class="col-sm-9 result-value">
 				{foreach from=$recordDriver->getISBNs() item=tmpIsbn name=loop}
-					{$tmpIsbn|escape}<br/>
+					{$tmpIsbn|escape}<br>
 				{/foreach}
 			</div>
 		</div>
@@ -60,7 +60,7 @@
 			<div class="result-label col-sm-3">{translate text='UPC'}:</div>
 			<div class="col-sm-9 result-value">
 				{foreach from=$recordDriver->getUPCs() item=tmpUpc name=loop}
-					{$tmpUpc|escape}<br/>
+					{$tmpUpc|escape}<br>
 				{/foreach}
 			</div>
 		</div>
@@ -72,7 +72,7 @@
 			<div class="result-label col-sm-3">{translate text='Accelerated Reader'}:</div>
 			<div class="col-sm-9 result-value">
 				{if $arData.interestLevel}
-					{$arData.interestLevel|escape}<br/>
+					{$arData.interestLevel|escape}<br>
 				{/if}
 				Level {$arData.readingLevel|escape}, {$arData.pointValue|escape} Points
 			</div>

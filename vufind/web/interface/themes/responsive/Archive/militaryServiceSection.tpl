@@ -43,6 +43,6 @@
 				</div>
 			{/foreach}
 		{/if}
-		<br/>
+		<br>
 	{/foreach}
 {/strip}

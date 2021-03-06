@@ -161,7 +161,7 @@ abstract class ObjectEditor extends Admin_Admin {
 				}
 				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, PEAR_LOG_DEBUG);
 				@session_start();
-				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br/>{$errorDescription}";
+				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br>{$errorDescription}";
 
 				return false;
 			}

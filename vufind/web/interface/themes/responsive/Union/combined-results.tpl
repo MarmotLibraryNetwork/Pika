@@ -7,7 +7,7 @@
 		{*
 		{include file="Union/results-displayMode-toggle.tpl"}
 		*}
-		<br/>
+		<br>
 		<div class="clearer"></div>
 	</div>
 

@@ -64,7 +64,7 @@
 				<div class="row">
 					<div class="result-label col-tn-3">{translate text=$snippet.caption}: </div>
 					<div class="col-tn-9 result-value">
-						{if !empty($snippet.snippet)}<span class="quotestart">&#8220;</span>...{$snippet.snippet|highlight}...<span class="quoteend">&#8221;</span><br />{/if}
+						{if !empty($snippet.snippet)}<span class="quotestart">&#8220;</span>...{$snippet.snippet|highlight}...<span class="quoteend">&#8221;</span><br>{/if}
 					</div>
 				</div>
 			{/foreach}

@@ -1,9 +1,9 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html>
 <html lang="{$userLang}" class="embeddedListWidget">
 {strip}
 <head>
 	<title>{$widget->name}</title>
-  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 
 	{include file="cssAndJsIncludes.tpl" includeAutoLogoutCode=false}
 	{*TODO a smaller suite of javascript for List Widgets*}
@@ -13,9 +13,9 @@
 	{/if}
 
   {if $widget->customCss}
-  	<link rel="stylesheet" type="text/css" href="{$widget->customCss}" />
+  	<link rel="stylesheet" type="text/css" href="{$widget->customCss}">
   {/if}
-  <base href="" target="_parent" />
+  <base href="" target="_parent">
 </head>
 
 <body class="embeddedListWidgetBody">

@@ -8,9 +8,9 @@
         <a href="http://openlibrary.org{$work.key}" title="{translate text='Get full text'}" rel="external" onclick="window.open (this.href, 'child'); return false">
           <span class="olSubjectCover">
           {if $work.cover_id}
-            <img src="http://covers.openlibrary.org/b/{$work.cover_id_type|escape}/{$work.cover_id|escape}-S.jpg" class="olSubjectImage" alt="{$work.title|escape}" />
+            <img src="http://covers.openlibrary.org/b/{$work.cover_id_type|escape}/{$work.cover_id|escape}-S.jpg" class="olSubjectImage" alt="{$work.title|escape}">
           {else}
-            <img src="/images/noCover2.png" class="olSubjectImage" alt="{$work.title|escape}" />
+            <img src="/images/noCover2.png" class="olSubjectImage" alt="{$work.title|escape}">
           {/if}
           </span>
           <span>{$work.title|truncate:50}</span>

@@ -26,7 +26,7 @@
 						{/if}
 						{if $postmark.datePostmarked}){/if}
 					{/if}
-					<br/>
+					<br>
 				{/foreach}
 			</div>
 		</div>

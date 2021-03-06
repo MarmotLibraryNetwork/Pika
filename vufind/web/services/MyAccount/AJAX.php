@@ -802,7 +802,7 @@ class MyAccount_AJAX extends AJAXHandler {
                 {
                     $listId = $_REQUEST['id'];
                     return array('title' => 'Transfer List',
-                        'body'=>'<label for="barcode">Please enter recipient barcode</label> <input type="text" name="barcode" id="barcode" class="form-control" />' .
+                        'body'=>'<label for="barcode">Please enter recipient barcode</label> <input type="text" name="barcode" id="barcode" class="form-control">' .
                                 '<div class="validation" id="validation" style="display:none; color:darkred;">Invalid Barcode</div>'.
                                 '<script>$("#barcode").on("change keyup paste", function(data){Pika.Lists.checkUser($("#barcode").val())});</script>',
                         'buttons'=>'<button value="transfer" disabled="disabled" id="transfer" class="btn btn-danger" onclick="Pika.Lists.transferList('. $listId . ', document.getElementById(\'barcode\').value);return false;">Transfer</button>');
@@ -1134,7 +1134,7 @@ class MyAccount_AJAX extends AJAXHandler {
 			return [
 				'title'        => 'Email a list',
 				'modalBody'    => $interface->fetch('MyAccount/emailListPopup.tpl'),
-				//			'modalButtons' => '<input type="submit" name="submit" value="Send" class="btn btn-primary" onclick="$(\'#emailListForm\').submit();" />'
+				//			'modalButtons' => '<input type="submit" name="submit" value="Send" class="btn btn-primary" onclick="$(\'#emailListForm\').submit();">'
 				'modalButtons' => '<span class="tool btn btn-primary" onclick="$(\'#emailListForm\').submit();">Send E-Mail</span>',
 			];
 		}

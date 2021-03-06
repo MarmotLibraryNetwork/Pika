@@ -21,7 +21,7 @@
 		</div>
 	  <input type="hidden" name="groupedWorkId" value="{$groupedWorkId}">
 	</form>
-	<br/>
+	<br>
 {/strip}
 <script type="text/javascript">{literal}
 	$(document).ready(Pika.setupCheckBoxSwitches);

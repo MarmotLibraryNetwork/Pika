@@ -71,17 +71,17 @@
 					<div class="btn-group btn-group-sm" role="group" aria-label="Select Dates" data-toggle="buttons">
 						<label class="btn btn-default btn-sm{if !empty($smarty.request.dateFilter) && in_array('unknown', $smarty.request.dateFilter)} active{/if}">
 							{if $displayType == 'map'}
-								<input name="dateFilter" onchange="Pika.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0)" type="radio" value="all"><strong>All</strong><br/>({$recordCount})
+								<input name="dateFilter" onchange="Pika.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0)" type="radio" value="all"><strong>All</strong><br>({$recordCount})
 							{elseif $displayType == 'timeline'}
-								<input name="dateFilter" onchange="Pika.Archive.reloadTimelineResults('{$exhibitPid|urlencode}', 0)" type="radio" value="all"><strong>All</strong><br/>({$recordCount})
+								<input name="dateFilter" onchange="Pika.Archive.reloadTimelineResults('{$exhibitPid|urlencode}', 0)" type="radio" value="all"><strong>All</strong><br>({$recordCount})
 							{/if}
 						</label>
 						{foreach from=$dateFacetInfo item=facet}
 							<label class="btn btn-default btn-sm{if !empty($smarty.request.dateFilter) && in_array($facet.value, $smarty.request.dateFilter)} active{/if}">
 								{if $displayType == 'map'}
-									<input name="dateFilter" onchange="Pika.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0)" type="radio" autocomplete="off" value="{$facet.value}"><strong>{$facet.label}</strong><br/>({$facet.count})
+									<input name="dateFilter" onchange="Pika.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0)" type="radio" autocomplete="off" value="{$facet.value}"><strong>{$facet.label}</strong><br>({$facet.count})
 								{elseif $displayType == 'timeline'}
-									<input name="dateFilter" onchange="Pika.Archive.reloadTimelineResults('{$exhibitPid|urlencode}', 0)" type="radio" autocomplete="off" value="{$facet.value}"{if !empty($smarty.request.dateFilter) && in_array($facet.value, $smarty.request.dateFilter)} checked="checked"{/if}><strong>{$facet.label}</strong><br/>({$facet.count})
+									<input name="dateFilter" onchange="Pika.Archive.reloadTimelineResults('{$exhibitPid|urlencode}', 0)" type="radio" autocomplete="off" value="{$facet.value}"{if !empty($smarty.request.dateFilter) && in_array($facet.value, $smarty.request.dateFilter)} checked="checked"{/if}><strong>{$facet.label}</strong><br>({$facet.count})
 								{/if}
 							</label>
 						{/foreach}
@@ -89,9 +89,9 @@
 							<div class="btn-group btn-group-sm" role="group" aria-label="Unknown Date" data-toggle="buttons">
 								<label class="btn btn-default btn-sm{if !empty($smarty.request.dateFilter) && in_array('unknown', $smarty.request.dateFilter)} active{/if}">
 									{if $displayType == 'map'}
-										<input name="dateFilter" onchange="Pika.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0)" type="radio" autocomplete="off" value="unknown"><strong>Unknown</strong><br/>({$numObjectsWithUnknownDate})
+										<input name="dateFilter" onchange="Pika.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0)" type="radio" autocomplete="off" value="unknown"><strong>Unknown</strong><br>({$numObjectsWithUnknownDate})
 									{elseif $displayType == 'timeline'}
-										<input name="dateFilter" onchange="Pika.Archive.reloadTimelineResults('{$exhibitPid|urlencode}', 0)" type="radio" autocomplete="off" value="unknown"><strong>Unknown</strong><br/>({$numObjectsWithUnknownDate})
+										<input name="dateFilter" onchange="Pika.Archive.reloadTimelineResults('{$exhibitPid|urlencode}', 0)" type="radio" autocomplete="off" value="unknown"><strong>Unknown</strong><br>({$numObjectsWithUnknownDate})
 									{/if}
 								</label>
 							</div>

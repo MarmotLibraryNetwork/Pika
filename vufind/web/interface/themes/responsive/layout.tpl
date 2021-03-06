@@ -17,7 +17,7 @@
 		{if $metadataTemplate}
 			{include file=$metadataTemplate}
 		{/if}
-			<meta property="og:site_name" content="{$librarySystemName|removeTrailingPunctuation|escape:html}" />
+			<meta property="og:site_name" content="{$librarySystemName|removeTrailingPunctuation|escape:html}">
 		{if $og_title}
 			<meta property="og:title" content="{$og_title|removeTrailingPunctuation|escape:html}" />
 		{/if}

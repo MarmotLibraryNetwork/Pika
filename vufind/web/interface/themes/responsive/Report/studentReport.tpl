@@ -28,7 +28,7 @@
 			</form>
 
 			{if $reportData}
-				<br/>
+				<br>
 				<p>
 					{assign var=reportCount value=$reportData|@count}
 					There are a total of <strong>{$reportCount-1}</strong> rows that meet your criteria.

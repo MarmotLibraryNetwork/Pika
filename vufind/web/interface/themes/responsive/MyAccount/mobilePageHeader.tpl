@@ -36,7 +36,7 @@
         {if $showPatronBarcodeImage}
 
 							<div style="text-align: center; min-height: 200px;">
-								<br />
+								<br>
 								<svg id="barcode" style="margin: 0 auto;"></svg>
                   {literal}
 								<script src="https://cdn.jsdelivr.net/jsbarcode/3.6.0/"></script>

@@ -4,7 +4,7 @@
 		<h2>
 			{$recordDriver->getTitle()|escape}
 			{if $recordDriver->getFormats()}
-				<br/><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
+				<br><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
 			{/if}
 		</h2>
 

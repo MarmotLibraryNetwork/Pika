@@ -189,7 +189,7 @@
 		$(document).ready( function(){
 			$('#translationMapValues thead th:not(:last-child)').each( function () {
 				var title = $(this).text();
-				$(this).html('<input type="text" placeholder="Search ' + title + '" />');
+				$(this).html('<input type="text" placeholder="Search ' + title + '">');
 			});
 				$("#translationMapValues").DataTable({
 					"columns": [

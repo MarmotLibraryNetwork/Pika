@@ -694,7 +694,7 @@ class Aspencat implements DriverInterface{
 				$errorMsg = trim($errorMsg);
 				$errorMsg = str_replace(array("\r","\n"), '', $errorMsg);
 				$errorMsg = translate($errorMsg);
-				$hold_result['message'] .= $errorMsg . '<br/>';
+				$hold_result['message'] .= $errorMsg . '<br>';
 			}
 			return $hold_result;
 		}

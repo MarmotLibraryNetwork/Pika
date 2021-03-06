@@ -51,7 +51,7 @@ class Admin_OverDriveAPIData extends Admin_Admin
 						if ($hasAdvantageAccounts)  {
 							$contents .= "<h4>Advantage Accounts</h4>";
 							foreach ($advantageAccounts->advantageAccounts as $accountInfo) {
-								$contents .= $accountInfo->name . ' - ' . $accountInfo->collectionToken . '<br/>';
+								$contents .= $accountInfo->name . ' - ' . $accountInfo->collectionToken . '<br>';
 								$productInfo = $driver->getProductsInAccount($accountInfo->collectionToken, null, 0, 1);
 								if (!empty($productInfo->totalItems)) {
 									$contents .= "<p>Total Items: {$productInfo->totalItems}</p>";
@@ -74,7 +74,7 @@ class Admin_OverDriveAPIData extends Admin_Admin
 						if ($metadata) {
 							$contents .= $this->easy_printr("Metadata for $overDriveId in shared collection", "metadata_{$overDriveId}_{$productKey}", $metadata);
 						} else {
-							$contents .= ("No metadata<br/>");
+							$contents .= ("No metadata<br>");
 						}
 
 						if ($hasAdvantageAccounts) {
@@ -84,7 +84,7 @@ class Admin_OverDriveAPIData extends Admin_Admin
 								if ($metadata) {
 									$contents .= $this->easy_printr("Metadata response", "metadata_{$overDriveId}_{$accountInfo->collectionToken}", $metadata);
 								} else {
-									$contents .= ("No metadata<br/>");
+									$contents .= ("No metadata<br>");
 								}
 							}
 						}
@@ -93,12 +93,12 @@ class Admin_OverDriveAPIData extends Admin_Admin
 						$contents     .= ("<h4>Availability - Main collection: {$libraryInfo->name}</h4>");
 						$availability = $driver->getProductAvailability($overDriveId, $productKey);
 						if ($availability && !isset($availability->errorCode)) {
-							$contents .= ("Copies Owned: {$availability->copiesOwned} <br/>");
-							$contents .= ("Available Copies: {$availability->copiesAvailable }<br/>");
-							$contents .= ("Num Holds (entire collection): {$availability->numberOfHolds }<br/>");
+							$contents .= ("Copies Owned: {$availability->copiesOwned} <br>");
+							$contents .= ("Available Copies: {$availability->copiesAvailable }<br>");
+							$contents .= ("Num Holds (entire collection): {$availability->numberOfHolds }<br>");
 							$contents .= $this->easy_printr("Availability response", "availability_{$overDriveId}_{$productKey}", $availability);
 						} else {
-							$contents .= ("Not owned<br/>");
+							$contents .= ("Not owned<br>");
 							if ($availability) {
 								$contents .= $this->easy_printr("Availability response", "availability_{$overDriveId}_{$productKey}", $availability);
 							}
@@ -110,12 +110,12 @@ class Admin_OverDriveAPIData extends Admin_Admin
 								$availability = $driver->getProductAvailability($overDriveId, $accountInfo->collectionToken);
 								if ($availability && !isset($availability->errorCode)) {
 									//TODO: how to determine the difference between advantage and advantage plus
-									$contents .= ("Copies Owned (Shared + Advantage): {$availability->copiesOwned }<br/>");
-									$contents .= ("Available Copies (Shared + Advantage): {$availability->copiesAvailable }<br/>");
-									$contents .= ("Num Holds (Shared + Advantage): {$availability->numberOfHolds }<br/>");
+									$contents .= ("Copies Owned (Shared + Advantage): {$availability->copiesOwned }<br>");
+									$contents .= ("Available Copies (Shared + Advantage): {$availability->copiesAvailable }<br>");
+									$contents .= ("Num Holds (Shared + Advantage): {$availability->numberOfHolds }<br>");
 									$contents .= $this->easy_printr("Availability response", "availability_{$overDriveId}_{$accountInfo->collectionToken}", $availability);
 								} else {
-									$contents .= ("Not owned<br/>");
+									$contents .= ("Not owned<br>");
 									if ($availability) {
 										$contents .= $this->easy_printr("Availability response", "availability_{$overDriveId}_{$accountInfo->collectionToken}", $availability);
 									}

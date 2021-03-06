@@ -612,13 +612,13 @@ class memcacheAdmin {
 				$i = 0;
 				if (!isset($_GET['singleout']) && count($this->MEMCACHE_SERVERS) > 1) {
 					foreach ($this->MEMCACHE_SERVERS as $server) {
-						echo (++$i) . '. <a href="?singleout=' . $i . '">' . $server . '</a><br/>';
+						echo (++$i) . '. <a href="?singleout=' . $i . '">' . $server . '</a><br>';
 					}
 				} else {
 					echo $this->MEMCACHE_SERVERS[0];
 				}
 				if (isset($_GET['singleout'])) {
-					echo '<a href="">(all servers)</a><br/>';
+					echo '<a href="">(all servers)</a><br>';
 				}
 				echo "</td></tr>\n",
 					"<tr class=tr-1><td class=td-0>Total Memcache Cache</td><td>" . $this->bsize($memcacheStats['limit_maxbytes']) . "</td></tr>\n",
@@ -703,9 +703,9 @@ class memcacheAdmin {
 						echo
 						"<tr class=tr-$m>",
 						"<td class=td-0><a href=\"$dumpUrl\">$slabId</a></td>",
-						"<td class=td-last><b>Item count:</b> ", $slab['number'], '<br/><b>Age:</b>', $this->duration($this->time - $slab['age']), '<br/> <b>Evicted:</b>', ((isset($slab['evicted']) && $slab['evicted'] == 1) ? 'Yes' : 'No');
+						"<td class=td-last><b>Item count:</b> ", $slab['number'], '<br><b>Age:</b>', $this->duration($this->time - $slab['age']), '<br> <b>Evicted:</b>', ((isset($slab['evicted']) && $slab['evicted'] == 1) ? 'Yes' : 'No');
 						if ((isset($_GET['dumpslab']) && $_GET['dumpslab'] == $slabId) && (isset($_GET['server']) && $_GET['server'] == array_search($server, $this->MEMCACHE_SERVERS))) {
-							echo "<br/><b>Items: item</b><br/>";
+							echo "<br><b>Items: item</b><br>";
 							$items = $this->dumpCacheSlab($server, $slabId, $slab['number']);
 							// maybe someone likes to do a pagination here :)
 //						$i = 0;
@@ -743,8 +743,8 @@ class memcacheAdmin {
 			<table cellspacing=0><tbody>
 				<tr><th>Server<th>Key</th><th>Value</th><th>Delete</th></tr>
 			 <tr class="tr-0"><td class=td-0>', $theserver, "</td><td class=td-0>", $theKey,
-					" <br/>flag:", $r['VALUE'][$theKey]['stat']['flag'],
-					" <br/>Size:", $this->bsize($r['VALUE'][$theKey]['stat']['size']),
+					" <br>flag:", $r['VALUE'][$theKey]['stat']['flag'],
+					" <br>Size:", $this->bsize($r['VALUE'][$theKey]['stat']['size']),
 					"</td><td class=td-0>", chunk_split($r['VALUE'][$theKey]['value'], 40), "</td>",
 					'<td><a href="?op=5&server=', (int)$_GET['server'], '&key=', base64_encode($theKey), "\">Delete</a></td>", '</tr>
 			</tbody></table>

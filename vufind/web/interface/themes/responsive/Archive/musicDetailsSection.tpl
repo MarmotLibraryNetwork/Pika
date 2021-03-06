@@ -6,7 +6,7 @@
 				{foreach from=$musicGenres item="musicGenre"}
 					{if $musicGenre.link}<a href="{$musicGenre.link}">{/if}
 					{$musicGenre.label}{if $musicGenre.lccn} ({$musicGenre.lccn}){/if}
-					{if $musicGenre.link}</a>{/if}<br/>
+					{if $musicGenre.link}</a>{/if}<br>
 				{/foreach}
 			</div>
 		</div>
@@ -27,7 +27,7 @@
 					{if $album.recordLabel}
 						&nbsp;- {$album.recordLabel}
 					{/if}
-					<br/>
+					<br>
 				{/foreach}
 			</div>
 		</div>
