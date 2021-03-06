@@ -63,7 +63,7 @@
 							<td>
 							{if $property.type == 'label'}
 								{if $dataItem->class != 'objectDeleted'}
-									<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>&nbsp;</span>{$propValue}</a>
+									<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>&nbsp;{$propValue}</a>
 								{/if}
 							{elseif $property.type == 'text' || $property.type == 'textarea' || $property.type == 'hidden' || $property.type == 'file' || $property.type == 'integer' || $property.type == 'email'}
 								{$propValue}
