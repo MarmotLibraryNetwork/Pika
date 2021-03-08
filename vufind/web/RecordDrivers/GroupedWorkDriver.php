@@ -1736,7 +1736,7 @@ class GroupedWorkDriver extends RecordInterface {
 			}
 
 			// Set Up Manifestation Display when a eContent source facet is set
-			if ($selectedEcontentSource && !$manifestation['isEContent'] || (!empty($manifestation['eContentSource']) && !in_array($manifestation['eContentSource'], $selectedEcontentSource))){
+			if ($selectedEcontentSource && (!$manifestation['isEContent'] || (!empty($manifestation['eContentSource']) && !in_array($manifestation['eContentSource'], $selectedEcontentSource)))){
 				$manifestation['hideByDefault'] = true;
 			}
 
