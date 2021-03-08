@@ -131,7 +131,7 @@ abstract class Record_Record extends Action {
 		global $interface;
 		$module = $interface->getVariable('module');
 
-		$mainTemplate = $module == "Record" ? 'invalidRecord.tpl' :'../Record/invalidRecord.tpl';
+		$mainTemplate = $module == 'Record' ? 'invalidRecord.tpl' :'../Record/invalidRecord.tpl';
 		$this->display($mainTemplate, 'Invalid Record');
 		die();
 	}

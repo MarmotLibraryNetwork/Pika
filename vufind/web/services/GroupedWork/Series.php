@@ -35,7 +35,6 @@ class GroupedWork_Series extends Action {
 		if (!$recordDriver->isValid){
 			$interface->assign('id', $id);
 			$logger->log("Did not find a record for id {$id} in solr.", PEAR_LOG_DEBUG);
-			$interface->setTemplate('../Record/invalidRecord.tpl');
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
 			die();
 		}

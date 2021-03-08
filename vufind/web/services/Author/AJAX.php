@@ -104,10 +104,10 @@ class Author_AJAX extends AJAXHandler {
 				}
 				if (!empty($authorInfo)){
 					global $interface;
-					$returnVal['success'] = true;
-					$returnVal['article'] = $authorInfo;
 					$interface->assign('wiki_lang', $wiki_lang);
 					$interface->assign('info', $authorInfo);
+					$returnVal['success']           = true;
+					$returnVal['article']           = $authorInfo;
 					$returnVal['formatted_article'] = $interface->fetch('Author/wikipedia_article.tpl');
 				}
 			}
