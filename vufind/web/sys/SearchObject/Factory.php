@@ -36,15 +36,14 @@ class SearchObjectFactory {
 	 * @param   string  $engine     The type of SearchObject to build (Solr/Summon).
 	 * @return  mixed               The search object on success, false otherwise
 	 */
-	static function initSearchObject($engine = 'Solr')
-	{
+	static function initSearchObject($engine = 'Solr'){
 		global $configArray;
 
 		$path = "{$configArray['Site']['local']}/sys/SearchObject/{$engine}.php";
-		if (is_readable($path)) {
+		if (is_readable($path)){
 			require_once $path;
 			$class = 'SearchObject_' . $engine;
-			if (class_exists($class)) {
+			if (class_exists($class)){
 				/** @var Solr|SearchObject_Base $searchObject */
 				$searchObject = new $class();
 				return $searchObject;

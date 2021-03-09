@@ -43,7 +43,7 @@ abstract class SearchObject_Base {
 	protected $searchSource = 'local';
 
 	// Filters
-	protected $filterList = array();
+	protected $filterList = [];
 	// Page number
 	protected $page = 1;
 	// Result limit
@@ -62,19 +62,19 @@ abstract class SearchObject_Base {
 	protected $resultsModule = 'Search';
 	protected $resultsAction = 'Results';
 	// Facets information
-	protected $facetConfig = array();    // Array of valid facet fields=>labels
-	protected $facetOptions = array();
-	protected $checkboxFacets = array(); // Boolean facets represented as checkboxes
-	protected $translatedFacets = array();  // Facets that need to be translated
-	protected $pidFacets = array();
+	protected $facetConfig = [];    // Array of valid facet fields=>labels
+	protected $facetOptions = [];
+	protected $checkboxFacets = [];    // Boolean facets represented as checkboxes
+	protected $translatedFacets = [];  // Facets that need to be translated
+	protected $pidFacets = [];
 	// Default Search Handler
 	protected $defaultIndex = null;
 	// Available sort options
-	protected $sortOptions = array();
+	protected $sortOptions = [];
 	// An ID number for saving/retrieving search
-	protected $searchId    = null;
+	protected $searchId = null;
 	protected $savedSearch = false;
-	protected $searchType  = 'basic';
+	protected $searchType = 'basic';
 	// Possible values of $searchType:
 	protected $isAdvanced = false;
 	protected $basicSearchType = 'basic';
@@ -86,15 +86,15 @@ abstract class SearchObject_Base {
 	protected $debugSolrQuery = false;
 	protected $isPrimarySearch = false;
 	// Search options for the user
-	protected $advancedTypes = array();
-	protected $basicTypes = array();
-	protected $browseTypes = array();
+	protected $advancedTypes = [];
+	protected $basicTypes = [];
+	protected $browseTypes = [];
 	// Spelling
-	protected $spellcheck    = true;
-	protected $suggestions   = array();
+	protected $spellcheck = true;
+	protected $suggestions = [];
 	// Recommendation modules associated with the search:
-	/** @var bool|array $recommend  */
-	protected $recommend     = false;
+	/** @var bool|array $recommend */
+	protected $recommend = false;
 	// The INI file to load recommendations settings from:
 	protected $recommendIni = 'searches';
 
@@ -123,21 +123,17 @@ abstract class SearchObject_Base {
 		// Debugging
 		if ($configArray['System']['debugSolr']){
 			//Verify that the ip is ok
-			$debug = false;
 			if (!empty($configArray['MaintenanceMode']['maintenanceIps'])){
 				global $locationSingleton;
 				$activeIp     = $locationSingleton->getActiveIp();
 				$allowableIps = explode(',', $configArray['MaintenanceMode']['maintenanceIps']);
 				if (in_array($activeIp, $allowableIps)){
-					$debug = true;
+					$this->debug = true;
+					if ($configArray['System']['debugSolrQuery'] == true){
+						$this->debugSolrQuery = true;
+					}
 				}
 			}
-			if ($debug && $configArray['System']['debugSolrQuery'] == true){
-				$this->debugSolrQuery = true;
-			}
-			$this->debug = $debug;
-		}else{
-			$this->debug = false;
 		}
 		$timer->logTime('Setup Base Search Object');
 	}
@@ -200,7 +196,7 @@ abstract class SearchObject_Base {
 	 */
 	public function hasFilter($filter){
 		// Extract field and value from URL string:
-		list($field, $value) = $this->parseFilter($filter);
+		[$field, $value] = $this->parseFilter($filter);
 
 		if (isset($this->filterList[$field]) && in_array($value, $this->filterList[$field])){
 			return true;
@@ -209,7 +205,7 @@ abstract class SearchObject_Base {
 	}
 
 	public function clearFilters(){
-		$this->filterList = array();
+		$this->filterList = [];
 	}
 
 
@@ -225,7 +221,7 @@ abstract class SearchObject_Base {
 			return;
 		}
 		// Extract field and value from URL string:
-		list($field, $value) = $this->parseFilter($newFilter);
+		[$field, $value] = $this->parseFilter($newFilter);
 		if ($field == ''){
 			$field = count($this->filterList) + 1;
 		}
@@ -244,7 +240,7 @@ abstract class SearchObject_Base {
 	 */
 	public function removeFilter($oldFilter){
 		// Extract field and value from URL string:
-		list($field, $value) = $this->parseFilter($oldFilter);
+		[$field, $value] = $this->parseFilter($oldFilter);
 
 		// Make sure the field exists
 		if (isset($this->filterList[$field])){
@@ -776,16 +772,15 @@ abstract class SearchObject_Base {
 	 *
 	 * @access  protected
 	 */
-	protected function initFilters()
-	{
-		if (isset($_REQUEST['filter'])) {
-			if (is_array($_REQUEST['filter'])) {
-				foreach($_REQUEST['filter'] as $filter) {
-					if (!is_array($filter)) {
+	protected function initFilters(){
+		if (!empty($_REQUEST['filter'])){
+			if (is_array($_REQUEST['filter'])){
+				foreach ($_REQUEST['filter'] as $filter){
+					if (!is_array($filter)){
 						$this->addFilter(strip_tags($filter));
 					}
 				}
-			} else {
+			}else{
 				$this->addFilter(strip_tags($_REQUEST['filter']));
 			}
 		}
@@ -1142,7 +1137,7 @@ abstract class SearchObject_Base {
 	public function addCheckboxFacet($filter, $desc){
 		// Extract the facet field name from the filter, then add the
 		// relevant information to the array.
-		list($fieldName) = explode(':', $filter);
+		[$fieldName] = explode(':', $filter);
 		$this->checkboxFacets[$fieldName] = ['desc' => $desc, 'filter' => $filter];
 	}
 
@@ -1161,7 +1156,7 @@ abstract class SearchObject_Base {
 		// the same field both in the checkbox facet list and the regular facet
 		// list.
 		$filters  = $this->getFilterList();
-		$deselect = array();
+		$deselect = [];
 		foreach ($filters as $currentSet){
 			foreach ($currentSet as $current){
 				$deselect[$current['field']] = $current['removalUrl'];
@@ -1170,7 +1165,7 @@ abstract class SearchObject_Base {
 
 		// Now build up an array of checkbox facets with status booleans and
 		// toggle URLs.
-		$facets = array();
+		$facets = [];
 		foreach ($this->checkboxFacets as $field => $details){
 			$facets[$field] = $details;
 			if (isset($deselect[$field])){
@@ -1757,11 +1752,11 @@ abstract class SearchObject_Base {
 		$token = strtok($input,' ');
 		while ($token) {
 			// find bracketed tokens
-			if ($token{0}=='(') {$token .= ' '.strtok(')').')';}
+			if ($token[0] =='(') {$token .= ' '.strtok(')').')';}
 			// find double quoted tokens
-			if ($token{0}=='"') {$token .= ' '.strtok('"').'"';}
+			if ($token[0] =='"') {$token .= ' '.strtok('"').'"';}
 			// find single quoted tokens
-			if ($token{0}=="'") {$token .= ' '.strtok("'")."'";}
+			if ($token[0] =="'") {$token .= ' '.strtok("'")."'";}
 			$tokens[] = $token;
 			$token = strtok(' ');
 		}
@@ -1813,11 +1808,11 @@ abstract class SearchObject_Base {
 	 * @param   string      $location           'top' or 'side'
 	 * @return  array       Array of templates to display at the specified location.
 	 */
-	public function getRecommendationsTemplates($location = 'top')
-	{
-		$returnValue = array();
-		if (isset($this->recommend[$location]) && !empty($this->recommend[$location])) {
-			foreach($this->recommend[$location] as $current) {
+	public function getRecommendationsTemplates($location = 'top'){
+		$returnValue = [];
+		if (isset($this->recommend[$location]) && !empty($this->recommend[$location])){
+			/** @var RecommendationInterface $current */
+			foreach ($this->recommend[$location] as $current){
 				$returnValue[] = $current->getTemplate();
 			}
 		}

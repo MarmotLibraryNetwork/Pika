@@ -30,7 +30,7 @@ import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrServer;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -79,7 +79,7 @@ public class SierraExportAPIMain {
 	private static Date    startTime = new Date();
 
 	// Connector to Solr for deleting index entries
-	private static ConcurrentUpdateSolrServer updateServer;
+	private static ConcurrentUpdateSolrClient updateServer;
 
 	private static char bibLevelLocationsSubfield = 'a'; //TODO: may need to make bib-level locations field an indexing setting
 
@@ -244,7 +244,7 @@ public class SierraExportAPIMain {
 
 		// Since we only need the reindexer at this time to delete entries, let's just skip over the reindexer to the Solr handler
 		String solrPort = PikaConfigIni.getIniValue("Reindex", "solrPort");
-		updateServer = new ConcurrentUpdateSolrServer("http://localhost:" + solrPort + "/solr/grouped", 500, 8);
+		updateServer = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped").withQueueSize(500).withThreadCount(8).build();
 //		updateServer.setRequestWriter(new BinaryRequestWriter());
 
 
@@ -1590,7 +1590,8 @@ public class SierraExportAPIMain {
 								processedIds.add(shortId);
 								logger.debug("Processed " + identifier);
 							} catch (MarcException e) {
-								logger.info("Error loading marc record from file, will load manually. ", e);
+								logger.info("Error loading marc record from file, will load manually. While processing ids: " +ids, e);
+								//This might be where the flatirons warnings come from.
 							}
 						}
 						// For any records that failed in the fast method,

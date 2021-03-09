@@ -70,7 +70,7 @@ class Solr implements IndexEngine {
 	/**
 	 * An array of characters that are illegal in search strings
 	 */
-	private $illegal = array('!', ':', ';', '[', ']', '{', '}');
+	private $illegal = ['!', ':', ';', '[', ']', '{', '}'];
 
 	/**
 	 * The path to the JSON file specifying available search types:
@@ -102,8 +102,8 @@ class Solr implements IndexEngine {
 	/**
 	 * Selected shard settings.
 	 */
-	private $_solrShards = array();
-	private $_solrShardsFieldsToStrip = array();
+	private $_solrShards = [];
+	private $_solrShardsFieldsToStrip = [];
 
 	/**
 	 * Should we collect highlighting data?
@@ -122,7 +122,7 @@ class Solr implements IndexEngine {
 	/** @var string */
 	private $searchSource = null;
 
-	private static $serversPinged = array();
+	private static $serversPinged = [];
 
 	public Pika\Cache $cache;
 	public Pika\Logger $logger;
@@ -251,7 +251,7 @@ class Solr implements IndexEngine {
 
 	private function _loadShards($newShards){
 		// Deal with session-based shard settings:
-		$shards = array();
+		$shards = [];
 		global $configArray;
 		foreach ($newShards as $current) {
 			if (isset($configArray['IndexShards'][$current])) {
@@ -358,8 +358,8 @@ class Solr implements IndexEngine {
 			$this->pingServer();
 			// Query String Parameters
 			$options = [
-			 'ids' => "$id",
-			 'fl' => $fieldsToReturn,
+				'ids' => "$id",
+				'fl'  => $fieldsToReturn,
 			];
 
 			global $timer;
@@ -386,9 +386,7 @@ class Solr implements IndexEngine {
 		if ($this->debug) {
 			$this->logger->debug("Get Record by Barcode: $barcode");
 		}
-		if ($fieldsToReturn == null) {
-			$fieldsToReturn = SearchObject_Solr::$fields;
-		}
+		$fieldsToReturn ??= SearchObject_Solr::$fields;
 
 		// Query String Parameters
 		$options = [
@@ -410,7 +408,7 @@ class Solr implements IndexEngine {
 	 */
 	function getRecordByIsbn($ISBNs, $fieldsToReturn = null){
 		// Query String Parameters
-		$fieldsToReturn = $fieldsToReturn ?? SearchObject_Solr::$fields;
+		$fieldsToReturn ??= SearchObject_Solr::$fields;
 		$options        = [
 			'q'  => 'isbn:' . implode(' OR ', $ISBNs),
 			'fl' => $fieldsToReturn
@@ -556,15 +554,15 @@ class Solr implements IndexEngine {
 			'target_audience_full,target_audience_full,literary_form,isbn,upc,language_' . $solrScope);
 
 		// Query String Parameters
-		$options = array(
+		$options = [
 			'q'                    => "id:$id",
 			'qt'                   => 'morelikethis2',
 			'mlt.interestingTerms' => 'details',
 			'rows'                 => 25,
 			'fl'                   => SearchObject_Solr::$fields
-		);
+		];
 		if ($originalResult){
-			$options['fq'] = array();
+			$options['fq'] = [];
 			if (isset($originalResult['target_audience_full'])){
 				if (is_array($originalResult['target_audience_full'])){
 					$filter = '';
@@ -668,12 +666,12 @@ class Solr implements IndexEngine {
 		global $configArray;
 		// Query String Parameters
 		$idString = implode(' OR ', $ids);
-		$options  = array(
+		$options  = [
 			'q'                    => "id:($idString)",
 			'qt'                   => 'morelikethese',
 			'mlt.interestingTerms' => 'details',
 			'rows'                 => 25
-		);
+		];
 
 		$searchLibrary  = Library::getSearchLibrary();
 		$searchLocation = Location::getSearchLocation();
@@ -1128,10 +1126,9 @@ class Solr implements IndexEngine {
 	 * @static
 	 * @return	string							The query
 	 */
-	function buildQuery($search, $forDisplay = false)
-	{
-		$groups   = array();
-		$excludes = array();
+	function buildQuery($search, $forDisplay = false){
+		$groups   = [];
+		$excludes = [];
 		$query    = '';
 		if (is_array($search)) {
 
@@ -1158,7 +1155,7 @@ class Solr implements IndexEngine {
 				} else {
 					// Advanced Search
 					if (isset($params['group'])) {
-						$thisGroup = array();
+						$thisGroup = [];
 						// Process each search group
 						foreach ($params['group'] as $group) {
 							// Build this group individually as a basic search
@@ -1168,7 +1165,7 @@ class Solr implements IndexEngine {
 							if ($group['field'] == 'AllFields') {
 								$group['field'] = 'Keyword';
 							}
-							$thisGroup[] = $this->buildQuery(array($group));
+							$thisGroup[] = $this->buildQuery([$group]);
 						}
 						// Is this an exclusion (NOT) group or a normal group?
 						if ($params['group'][0]['bool'] == 'NOT') {
@@ -1277,20 +1274,19 @@ class Solr implements IndexEngine {
 		return $sortField . ' ' . $sortDirection;
 	}
 
-	function disableScoping()
-	{
+	function disableScoping(){
 		$this->scopingDisabled = true;
 		global $configArray;
-		if (isset($configArray['ShardPreferences']['defaultChecked']) && !empty($configArray['ShardPreferences']['defaultChecked'])) {
+		if (isset($configArray['ShardPreferences']['defaultChecked']) && !empty($configArray['ShardPreferences']['defaultChecked'])){
 			$checkedShards = $configArray['ShardPreferences']['defaultChecked'];
-			$shards        = is_array($checkedShards) ? $checkedShards : array($checkedShards);
-		} else {
+			$shards        = is_array($checkedShards) ? $checkedShards : [$checkedShards];
+		}else{
 			// If no default is configured, use all shards...
-			if (isset($configArray['IndexShards'])) {
+			if (isset($configArray['IndexShards'])){
 				$shards = array_keys($configArray['IndexShards']);
 			}
 		}
-		if (isset($shards)) {
+		if (isset($shards)){
 			$this->_loadShards($shards);
 		}
 	}
@@ -1336,31 +1332,31 @@ class Solr implements IndexEngine {
 	 * @throws  object              PEAR Error
 	 */
 	function search(
-	 $query,
-	 $handler = null,
-	 $filter = null,
-	 $start = 0,
-	 $limit = 20,
-	 $facet = null,
-	 $spell = '',
-	 $dictionary = null,
-	 $sort = null,
-	 $fields = null,
-	 $method = 'POST',
-	 $returnSolrError = false
+		$query,
+		$handler = null,
+		$filter = null,
+		$start = 0,
+		$limit = 20,
+		$facet = null,
+		$spell = '',
+		$dictionary = null,
+		$sort = null,
+		$fields = null,
+		$method = 'POST',
+		$returnSolrError = false
 	) {
 		global $timer;
 		global $configArray;
 		// Query String Parameters
-		$options = array('q' => $query, 'rows' => $limit, 'start' => $start, 'indent' => 'yes');
+		$options = ['q' => $query, 'rows' => $limit, 'start' => $start, 'indent' => 'yes'];
 
 		// Add Sorting
 		if ($sort && !empty($sort)) {
 			// There may be multiple sort options (ranked, with tie-breakers);
 			// process each individually, then assemble them back together again:
 			$sortParts = explode(',', $sort);
-			for ($x = 0; $x < count($sortParts); $x++) {
-				$sortParts[$x] = $this->_normalizeSort($sortParts[$x]);
+			foreach ($sortParts as &$sortPart){
+				$sortPart = $this->_normalizeSort($sortPart);
 			}
 			$options['sort'] = implode(',', $sortParts);
 		}
@@ -1376,36 +1372,26 @@ class Solr implements IndexEngine {
 			echo("Invalid query " . print_r($query, true));
 		}
 		if (preg_match('/\\".+?\\"/', $query)) {
-			if ($handler == 'Keyword') {
-				$handler = 'KeywordProper';
-			} else {
-				if ($handler == 'Author') {
+			switch ($handler){
+				case 'AllFields':
+				case 'Keyword':
+					$handler = 'KeywordProper';
+					break;
+				case 'Author':
 					$handler = 'AuthorProper';
-				} else {
-					if ($handler == 'Subject') {
-						$handler = 'SubjectProper';
-					} else {
-						if ($handler == 'AllFields') {
-							$handler = 'KeywordProper';
-						} else {
-							if ($handler == 'Title') {
-								$handler = 'TitleProper';
-							} else {
-								if ($handler == 'Title') {
-									$handler = 'TitleProper';
-								} else {
-									if ($handler == 'IslandoraKeyword') {
-										$handler = 'IslandoraKeywordProper';
-									} else {
-										if ($handler == 'IslandoraSubject') {
-											$handler = 'IslandoraSubjectProper';
-										}
-									}
-								}
-							}
-						}
-					}
-				}
+					break;
+				case 'Subject':
+					$handler = 'SubjectProper';
+					break;
+				case 'Title':
+					$handler = 'TitleProper';
+					break;
+				case 'IslandoraKeyword':
+					$handler = 'IslandoraKeywordProper';
+					break;
+				case 'IslandoraSubject':
+					$handler = 'IslandoraSubjectProper';
+					break;
 			}
 		}
 
@@ -1421,6 +1407,7 @@ class Solr implements IndexEngine {
 				// Specify the default dismax search handler so we can use any
 				// global settings defined by the user:
 				$options['qt'] = 'dismax';
+				//TODO: dismax handler is obsolete
 
 				// Load any custom Dismax parameters from the YAML search spec file:
 				if (isset($ss['DismaxParams']) &&
@@ -1435,7 +1422,7 @@ class Solr implements IndexEngine {
 					if (is_array($filter)) {
 						$filter[] = $ss['FilterQuery'];
 					} else {
-						$filter = array($ss['FilterQuery']);
+						$filter = [$ss['FilterQuery']];
 					}
 				}
 			} else {
@@ -1484,55 +1471,66 @@ class Solr implements IndexEngine {
 		}
 
 		//Apply automatic boosting (only to biblio and econtent queries)
-		if (preg_match('/.*(grouped).*/i', $this->host)) {
+		$isPikaGroupedWorkIndex = preg_match('/.*(grouped).*/i', $this->host);
+		if ($isPikaGroupedWorkIndex) {
 			//unset($options['qt']); //Force the query to never use dismax handling
 			$searchLibrary = Library::getSearchLibrary($this->searchSource);
 			//Boost items owned at our location
 			$searchLocation = Location::getSearchLocation($this->searchSource);
 
-			$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation);
-
-			if (isset($options['qt']) && $options['qt'] == 'dismax') {
-				//Boost by number of holdings
-				if (count($boostFactors) > 0 && $configArray['Index']['enableBoosting']) {
-					$options['bf'] = "sum(" . implode(',', $boostFactors) . ")";
-				}
-				//print ($options['bq']);
-			} else {
-				$baseQuery = $options['q'];
-				//Boost items in our system
-				if (count($boostFactors) > 0) {
+			if (!empty($configArray['Index']['enableBoosting'])){
+				$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation);
+				if (!empty($boostFactors)){
 					$boost = "sum(" . implode(',', $boostFactors) . ")";
-				} else {
-					$boost = '';
+					if (!empty($options['qt']) && $options['qt'] == 'dismax'){
+						$options['bf'] = $boost;
+					} else{
+						$options['q'] = "{!boost b=$boost} " . $options['q'];
+					}
 				}
-				if (empty($boost) || !$configArray['Index']['enableBoosting']) {
-					$options['q'] = $baseQuery;
-				} else {
-					$options['q'] = "{!boost b=$boost} $baseQuery";
-				}
-				//echo ("Advanced Query " . $options['q']);
+				$timer->logTime("apply boosting");
 			}
 
-			$timer->logTime("apply boosting");
+//			$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation);
+//			if (isset($options['qt']) && $options['qt'] == 'dismax'){
+//				//Boost by number of holdings
+//				if (count($boostFactors) > 0 && $configArray['Index']['enableBoosting']){
+//					$options['bf'] = "sum(" . implode(',', $boostFactors) . ")";
+//				}
+//				//print ($options['bq']);
+//			}else{
+//				$baseQuery = $options['q'];
+//				//Boost items in our system
+//				if (count($boostFactors) > 0){
+//					$boost = "sum(" . implode(',', $boostFactors) . ")";
+//				}else{
+//					$boost = '';
+//				}
+//				if (empty($boost) || !$configArray['Index']['enableBoosting']){
+//					$options['q'] = $baseQuery;
+//				}else{
+//					$options['q'] = "{!boost b=$boost} $baseQuery";
+//				}
+//				//echo ("Advanced Query " . $options['q']);
+//			}
 
 			$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
 
 			$timer->logTime("apply filters based on location");
 		} else {
 			//Non book search (genealogy)
-			$scopingFilters = array();
+			$scopingFilters = [];
 		}
 		if ($filter != null && $scopingFilters != null) {
 			if (!is_array($filter)) {
-				$filter = array($filter);
+				$filter = [$filter];
 			}
 			//Check the filters to make sure they are for the correct scope
-			$validFields = $this->_loadValidFields();
 			global $solrScope;
-			$validFilters = array();
+			$validFields  = $this->_loadValidFields();
+			$validFilters = [];
 			foreach ($filter as $id => $filterTerm) {
-				list($fieldName, $term) = explode(":", $filterTerm, 2);
+				[$fieldName, $term] = explode(':', $filterTerm, 2);
 				if (!in_array($fieldName, $validFields)) {
 					//Special handling for availability_by_format
 					if (preg_match("/^availability_by_format_([^_]+)_[\\w_]+$/", $fieldName)) {
@@ -1550,11 +1548,11 @@ class Solr implements IndexEngine {
 						foreach ($dynamicFields as $dynamicField) {
 							if (preg_match("/^{$dynamicField}[^_]+$/", $fieldName)) {
 								//This is a dynamic field with the wrong scope
-								$validFilters[$id] = $dynamicField . $solrScope . ":" . $term;
+								$validFilters[$id] = $dynamicField . $solrScope . ':' . $term;
 								break;
 							} elseif ($fieldName == rtrim($dynamicField, '_')) {
 								//This is a regular field that is now a dynamic field so needs the scope applied
-								$validFilters[$id] = $dynamicField . $solrScope . ":" . $term;
+								$validFilters[$id] = $dynamicField . $solrScope . ':' . $term;
 								break;
 							}
 						}
@@ -1581,7 +1579,7 @@ class Solr implements IndexEngine {
 
 			//Determine which fields should be treated as enums
 			global $solrScope;
-			if (preg_match('/.*(grouped).*/i', $this->host)) {
+			if ($isPikaGroupedWorkIndex) {
 				$options["f.target_audience_full.facet.method"]                = 'enum';
 				$options["f.target_audience.facet.method"]                     = 'enum';
 				$options["f.literary_form_full.facet.method"]                  = 'enum';
@@ -1629,9 +1627,11 @@ class Solr implements IndexEngine {
 			}
 
 			unset($facet['field']);
-			$options['facet.prefix'] = (isset($facet['prefix'])) ? $facet['prefix'] : null;
+			if (!empty($facet['prefix'])){
+				$options['facet.prefix'] = $facet['prefix'] ?? null;
+			}
 			unset($facet['prefix']);
-			$options['facet.sort'] = (isset($facet['sort'])) ? $facet['sort'] : 'count';
+			$options['facet.sort'] =  $facet['sort'] ?? 'count';
 			unset($facet['sort']);
 			if (isset($facet['offset'])) {
 				$options['facet.offset'] = $facet['offset'];
@@ -1641,7 +1641,7 @@ class Solr implements IndexEngine {
 				$options['facet.limit'] = $facet['limit'];
 				unset($facet['limit']);
 			}
-			if (preg_match('/.*(grouped).*/i', $this->host)) {
+			if ($isPikaGroupedWorkIndex) {
 				if (isset($searchLibrary) && $searchLibrary->showAvailableAtAnyLocation) {
 					$options['f.available_at.facet.missing'] = 'true';
 				}
@@ -1687,8 +1687,8 @@ class Solr implements IndexEngine {
 		if ($this->_highlight) {
 			global $solrScope;
 			$highlightFields = $fields . ",table_of_contents";
-			$highlightFields = str_replace(",related_record_ids_$solrScope", '', $highlightFields);
-			$highlightFields = str_replace(",related_items_$solrScope", '', $highlightFields);
+
+			// Exclude format & format category from highlighting
 			$highlightFields = str_replace(",format_$solrScope", '', $highlightFields);
 			$highlightFields = str_replace(",format_category_$solrScope", '', $highlightFields);
 
@@ -1702,7 +1702,8 @@ class Solr implements IndexEngine {
 		}
 
 		if ($this->debugSolrQuery) {
-			$solrSearchDebug = print_r($options, true) . "\n";
+//			$solrSearchDebug = print_r($options, true) . "\n";
+			$solrSearchDebug = json_encode($options, JSON_PRETTY_PRINT) . "\n";
 
 			if ($filters) {
 				$solrSearchDebug .= "\nFilterQuery: ";
@@ -1741,21 +1742,21 @@ class Solr implements IndexEngine {
 	 * @param Location $searchLocation
 	 * @return array
 	 */
-	public function getScopingFilters($searchLibrary, $searchLocation)
-	{
+	public function getScopingFilters($searchLibrary, $searchLocation){
 		global $solrScope;
 
-		$filter = array();
+		$filter = [];
 
 		//Simplify detecting which works are relevant to our scope
-		if (!$solrScope) {
-			if (isset($searchLocation)) {
+		if ($solrScope){
+			$filter[] = "scope_has_related_records:$solrScope";
+		}else{
+			// A solr scope should be defined usually. It is probably an anomalous situation to fall back to this, and should be fixed; (or noted here explicitly.)
+			if (isset($searchLocation)){
 				$filter[] = "scope_has_related_records:{$searchLocation->code}";
-			} elseif (isset($searchLibrary)) {
+			}elseif (isset($searchLibrary)){
 				$filter[] = "scope_has_related_records:{$searchLibrary->subdomain}";
 			}
-		} else {
-			$filter[] = "scope_has_related_records:$solrScope";
 		}
 
 		$blacklistRecords = null;
@@ -1769,21 +1770,10 @@ class Solr implements IndexEngine {
 				$blacklistRecords .= "\n" . $searchLibrary->recordsToBlackList;
 			}
 		}
-		if (!is_null($blacklistRecords)) {
+		if (!is_null($blacklistRecords)){
 			$recordsToBlacklist = preg_split('/\s|\r\n|\r|\n/s', $blacklistRecords);
-			$blacklist          = "NOT (";
-			$numRecords         = 0;
-			foreach ($recordsToBlacklist as $curRecord) {
-				if (strlen($curRecord) > 0) {
-					$numRecords++;
-					if ($numRecords > 1) {
-						$blacklist .= " OR ";
-					}
-					$blacklist .= "id:" . $curRecord;
-				}
-			}
-			$blacklist .= ")";
-			$filter[]  = $blacklist;
+			$blacklist          = '-id:(' . implode(' OR ', $recordsToBlacklist) . ')';
+			$filter[]           = $blacklist;
 		}
 
 		//Process anything that the user is not interested in.
@@ -2530,19 +2520,6 @@ class Solr implements IndexEngine {
 	}
 
 	/**
-	 * Get the boolean clause limit.
-	 *
-	 * @return int
-	 * @access public
-	 */
-	public function getBooleanClauseLimit(){
-		global $configArray;
-
-		// Use setting from config.ini if present, otherwise assume 1024:
-		return $configArray['Index']['maxBooleanClauses'] ?? 1024;
-	}
-
-	/**
 	 * Extract terms from the Solr index.
 	 *
 	 * @param string $field           Field to extract terms from
@@ -2561,7 +2538,7 @@ class Solr implements IndexEngine {
 	 */
 	public function getTerms($field, $start, $limit, $returnSolrError = false){
 		$this->pingServer();
-		$url = $this->host . '/term';
+		$url = $this->host . '/terms';
 
 		$parameters = [
 			'terms'            => 'true',
@@ -2602,7 +2579,7 @@ class Solr implements IndexEngine {
 			global $configArray;
 			$schemaUrl = $configArray['Index']['url'] . '/grouped/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
 			$schema    = simplexml_load_file($schemaUrl);
-			$fields    = array();
+			$fields    = [];
 			/** @var SimpleXMLElement $field */
 			foreach ($schema->fields->dynamicField as $field){
 				$fields[] = substr((string)$field['name'], 0, -1);
@@ -2612,25 +2589,24 @@ class Solr implements IndexEngine {
 		return $fields;
 	}
 
-	private function _loadValidFields()
-	{
+	private function _loadValidFields(){
 		global $solrScope;
-		if (isset($_REQUEST['allFields'])) {
-			return array('*');
+		if (isset($_REQUEST['allFields'])){
+			return ['*'];
 		}
 		$fields = $this->cache->get("schema_fields_$solrScope");
-		if (!$fields || isset($_REQUEST['reload'])) {
+		if (empty($fields) || isset($_REQUEST['reload'])){
 			global $configArray;
 			$schemaUrl = $configArray['Index']['url'] . '/grouped/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
 			$schema    = simplexml_load_file($schemaUrl);
-			$fields    = array();
+			$fields    = [];
 			/** @var SimpleXMLElement $field */
-			foreach ($schema->fields->field as $field) {
+			foreach ($schema->fields->field as $field){
 				//print_r($field);
 				$fields[] = (string)$field['name'];
 			}
-			if ($solrScope) {
-				foreach ($schema->fields->dynamicField as $field) {
+			if ($solrScope){
+				foreach ($schema->fields->dynamicField as $field){
 					$fields[] = substr((string)$field['name'], 0, -1) . $solrScope;
 				}
 			}
@@ -2662,5 +2638,3 @@ class Solr implements IndexEngine {
 	}
 
 }
-
-
