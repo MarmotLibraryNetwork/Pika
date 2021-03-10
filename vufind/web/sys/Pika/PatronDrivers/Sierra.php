@@ -747,13 +747,14 @@ class Sierra {
 		}
 
 		// 6.11 web notes TODO: uncomment if it's ever safe to display web notes field
-//		if(isset($pInfo->varFields)) {
-//			$webNote = $this->_getVarField('e',$pInfo->varFields);
-//			if(count($webNote) > 0) {
-//				$index = array_key_first($webNote);
-//				$patron->web_note = $webNote[$index]->content;
-//			}
-		//}
+		if(isset($pInfo->varFields) && isset($this->configArray['Catalog']['sierraPatronWebNoteField']) && $this->configArray['Catalog']['sierraPatronWebNoteField'] != '') {
+			$webNotesVarField = $this->configArray['Catalog']['sierraPatronWebNoteField'];
+			$webNote = $this->_getVarField($webNotesVarField,$pInfo->varFields);
+			if(count($webNote) > 0) {
+				$index = array_key_first($webNote);
+				$patron->web_note = $webNote[$index]->content;
+			}
+		}
 
 		if($createPatron) {
 			$patron->created = date('Y-m-d');
