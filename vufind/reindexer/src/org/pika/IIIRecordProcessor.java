@@ -100,7 +100,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 
 	protected boolean isLibraryUseOnly(ItemInfo itemInfo) {
 		String status = itemInfo.getStatusCode();
-		return !status.isEmpty() && libraryUseOnlyStatus.indexOf(status.charAt(0)) >= 0;
+		return status != null && !status.isEmpty() && libraryUseOnlyStatus.indexOf(status.charAt(0)) >= 0;
 	}
 
 	@Override
