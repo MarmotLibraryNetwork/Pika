@@ -41,11 +41,19 @@ class SierraDNA {
 	public function __construct() {
 		global $configArray;
 		$this->configArray = $configArray;
-		$this->connectionString = $configArray['Catalog']['sierra_conn_php'];
+		if (isset($configArray['Catalog']['sierra_conn_php'])){
+			$this->connectionString = $configArray['Catalog']['sierra_conn_php'];
+		} else {
+			$this->connectionString = false;
+			$this->logger->error("No Sierra DNA connection string set.");
+		}
 		$this->logger = new Logger('CirculationSystemDrives/SierraDNA');
 	}
 
 	public function loadPtypes() {
+		if(!$this->connectionString) {
+			return false;
+		}
 		$c = $this->countPtypes();
 		if($c && (int)$c >= 1) {
 			$this->emptyPtypeTable();
@@ -87,6 +95,9 @@ WHERE pb.ptype_code_num = pt.value
 EOT;
 
 		$con = $this->_connect();
+		if(!$con) {
+			return false;
+		}
 		$res = pg_query($con, $sql);
 		if(!$res){
 			$e = pg_result_error($res);
@@ -99,6 +110,9 @@ EOT;
 	}
 
 protected function emptyPtypeTable() {
+	if (!$this->connectionString){
+		return false;
+	}
 	$pt = new \PType();
 	$sql = "TRUNCATE ptype";
 	$pt->query($sql);
@@ -111,7 +125,10 @@ protected function countPtypes() {
 }
 
 	private function _connect() {
-		return \pg_connect($this->connectionString);
+		if($this->connectionString){
+			return \pg_connect($this->connectionString);
+		}
+		return false;
 	}
 
 }
