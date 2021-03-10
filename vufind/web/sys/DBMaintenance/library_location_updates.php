@@ -1214,6 +1214,7 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			'continueOnError' => true,
 			'sql'             => [
 				"ALTER TABLE `location` DROP COLUMN `subdomain`",
+				"ALTER TABLE `library` DROP COLUMN `subdomain`",
 			],
 		],
 
