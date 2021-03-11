@@ -749,7 +749,9 @@
 			  }
 			}
 						-->
-				<int name="rows">20</int>
+			<int name="rows">20</int>
+			<!-- Default search field -->
+			<str name="df">keywords</str>
 			<str name="spellcheck.extendedResults">true</str>
 			<str name="spellcheck.onlyMorePopular">true</str>
 			<str name="spellcheck.count">20</str>
@@ -784,6 +786,8 @@
 	</requestHandler>
 -->
 
+	<!--TODO: these are not fields for  genealogy -->
+<!--
 	<requestHandler name="morelikethis" class="solr.MoreLikeThisHandler">
 		<lst name="defaults">
 			<str name="mlt.fl">title,title_short,callnumber-label,topic,language,author,publishDate</str>
@@ -803,6 +807,7 @@
 			<int name="rows">5</int>
 		</lst>
 	</requestHandler>
+-->
 
 	<!-- Search Components
 
@@ -856,7 +861,7 @@
 	  -->
 	<searchComponent name="spellcheck" class="solr.SpellCheckComponent">
 
-		<str name="queryAnalyzerFieldType">text_general</str>
+<!--		<str name="queryAnalyzerFieldType">spellingShingle</str>-->
 
 		<!-- Multiple "Spell Checkers" can be declared and used by this
 			 component

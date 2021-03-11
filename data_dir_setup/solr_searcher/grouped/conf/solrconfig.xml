@@ -297,7 +297,6 @@
 					indexing, this requires 8 bytes (long) * numVersionBuckets
 					of heap space per Solr core.
 		-->
-		<!--TODO: move solr logs to the standard logging directory -->
 		<updateLog>
 			<str name="dir">${solr.ulog.dir:}</str>
 			<int name="numVersionBuckets">${solr.ulog.numVersionBuckets:65536}</int>
@@ -701,7 +700,7 @@
 					<str name="q">dvd</str>
 				</lst>
 				<lst>
-					<str name="Frogs">dvd</str>
+					<str name="q">dvd</str>
 				</lst>
 				<lst>
 					<str name="q">Cats</str>
@@ -912,9 +911,9 @@
 			<str name="echoParams">explicit</str>
 			<int name="rows">20</int>
 			<!-- Default value is 10. Set at 20, which seems to be our default value. Pascal 1/13/2021 -->
-			<!-- Default search field
-			   <str name="df">text</str>
-			  -->
+			<!-- Default search field -->
+			<str name="df">keywords</str>
+
 			<!-- Change from JSON to XML format (the default prior to Solr 7.0)
 			   <str name="wt">xml</str>
 			  -->
@@ -1204,7 +1203,7 @@
 	<!--See https://lucene.apache.org/solr/guide/7_7/index-replication.html -->
 	<requestHandler name="/replication" class="solr.ReplicationHandler" >
 		<lst name="follower">
-			<str name="masterUrl">http://localhost:${solr.masterport}/solr/grouped</str>
+			<str name="masterUrl">http://localhost:${solr.masterport:8180}/solr/grouped</str>
 			<str name="pollInterval">00:01:00</str>
 		</lst>
 		<int name="maxNumberOfBackups">3</int>
