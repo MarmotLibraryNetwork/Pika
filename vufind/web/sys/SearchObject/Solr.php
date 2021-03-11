@@ -42,8 +42,8 @@ class SearchObject_Solr extends SearchObject_Base
 	public static $fields = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,title_sub,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisher,publishDate,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed';
 	private $fieldsFull = '*,score';
 	// HTTP Method
-	//    private $method = 'GET';
-	private $method = 'POST';
+	private $method = 'GET';
+//	private $method = 'POST';
 	// Result
 	private $indexResult;
 
@@ -1253,7 +1253,7 @@ class SearchObject_Solr extends SearchObject_Base
 		}
 
 		// Tag searches need to be handled differently
-		if (count($search) == 1 && isset($search[0]['index']) && $search[0]['index'] == 'tag'){
+		if (!empty($search[0]['index']) && $search[0]['index'] == 'tag'){
 			// If we managed to find some tag matches, the query will be a list of Ids.
 			// If we didn't find any tag matches, we should return an empty record set.
 			$this->publicQuery = $search[0]['lookfor'];
@@ -2116,19 +2116,6 @@ class SearchObject_Solr extends SearchObject_Base
 	}
 
 	/**
-	 * Retrieves a document specified by the ID.
-	 *
-	 * @param   string[]  $ids        An array of documents to retrieve from Solr
-	 * @access  public
-	 * @throws  object              PEAR Error
-	 * @return  string              The requested resource
-	 */
-	function searchForRecordIds($ids){
-		$this->indexResult = $this->indexEngine->searchForRecordIds($ids);
-	}
-
-
-	/**
 	 * Retrieves a document specified by the item barcode.
 	 *
 	 * @param   string  $barcode    A barcode of an item in the document to retrieve from Solr
@@ -2154,7 +2141,7 @@ class SearchObject_Solr extends SearchObject_Base
 
 	private function getFieldsToReturn() {
 		if (isset($_REQUEST['allFields'])){
-			$fieldsToReturn = '*,score';
+			$fieldsToReturn = $this->fieldsFull;
 		}else{
 			$fieldsToReturn = SearchObject_Solr::$fields;
 			global $solrScope;

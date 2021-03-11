@@ -477,8 +477,9 @@
 				size="16384"
 				initialSize="4096"
 				cleanupThread="true"/>
-<!--TODO: this is prolly not used, but exists in examples -->
+
 		<!-- custom cache currently used by block join -->
+		<!-- See https://solr.apache.org/guide/8_7/other-parsers.html#block-join-children-query-parser-->
 		<cache name="perSegFilter"
 			   class="solr.search.LRUCache"
 			   size="10"
@@ -814,19 +815,15 @@
 			 related headers
 		  -->
 		<httpCaching never304="true" />
-
-<!--		<httpCaching lastModifiedFrom="openTime" etagSeed="Solr">
-			This is the original setting. I don't see the usefulless of it. Pascal 1/13/2021
-			-->
-			<!-- If you include a <cacheControl> directive, it will be used to
+		<!-- If you include a <cacheControl> directive, it will be used to
 			 generate a Cache-Control header (as well as an Expires header
 			 if the value contains "max-age=")
 
-						By default, no Cache-Control header is generated.
+			 By default, no Cache-Control header is generated.
 
-						You can use the <cacheControl> option even if you have set
-						never304="true"
-			 -->
+			 You can use the <cacheControl> option even if you have set
+			 never304="true"
+		  -->
 		<!--
 		   <httpCaching never304="true" >
 			 <cacheControl>max-age=30, public</cacheControl>
@@ -861,7 +858,7 @@
 		   <httpCaching lastModifiedFrom="openTime"
 						etagSeed="Solr">
 			 <cacheControl>max-age=30, public</cacheControl>
-		</httpCaching>
+		   </httpCaching>
 		  -->
 	</requestDispatcher>
 

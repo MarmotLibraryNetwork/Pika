@@ -497,12 +497,13 @@
 				initialSize="0"/>
 
 		<!-- custom cache currently used by block join -->
-		<cache name="perSegFilter"
+		<!-- See https://solr.apache.org/guide/8_7/other-parsers.html#block-join-children-query-parser-->
+		<!--<cache name="perSegFilter"
 			   class="solr.search.LRUCache"
 			   size="10"
 			   initialSize="0"
 			   autowarmCount="10"
-			   regenerator="solr.NoOpRegenerator" />
+			   regenerator="solr.NoOpRegenerator" />-->
 
 		<!-- Field Value Cache
 
