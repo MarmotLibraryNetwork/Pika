@@ -77,7 +77,7 @@
 			<analyzer type="index">
 				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1"/>
-				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" enablePositionIncrements="true"/>
+				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
 				<filter class="solr.SnowballPorterFilterFactory" language="English" protected="protwords.txt"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
@@ -90,7 +90,7 @@
 				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
 				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnCaseChange="1"/>
-				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" enablePositionIncrements="true"/>
+				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
 				<filter class="solr.SnowballPorterFilterFactory" language="English" protected="protwords.txt"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
@@ -182,6 +182,7 @@
 
 		<!-- Core Fields  -->
 		<field name="id" type="string" indexed="true" stored="true"/>
+		<field name="shortId" type="integer" indexed="true" stored="true"/>
 		<field name="recordtype" type="string" indexed="true" stored="true"/>
 
 		<field name="title" type="text" indexed="true" stored="true"/>

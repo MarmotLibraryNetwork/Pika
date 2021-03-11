@@ -440,7 +440,7 @@
 		<!--NOTE: values for caches are different than default installs. Pascal 1/21/2021 -->
 
 		<filterCache
-				class="solr.FastLRUCache"
+				class="solr.CaffeineCache"
 				size="300000"
 				initialSize="300000"
 				autowarmCount="50000"/>
@@ -449,7 +449,7 @@
 					 document ids (DocList) based on a query, a sort, and the range
 					 of documents requested.  -->
 		<queryResultCache
-				class="solr.LRUCache"
+				class="solr.CaffeineCache"
 				size="100000"
 				initialSize="100000"
 				autowarmCount="50000"/>
@@ -457,12 +457,13 @@
 		<!-- documentCache caches Lucene Document objects (the stored fields for each document).
 				 Since Lucene internal document ids are transient, this cache will not be autowarmed.  -->
 		<documentCache
-				class="solr.LRUCache"
+				class="solr.CaffeineCache"
 				size="50000"
 				initialSize="50000"
 				autowarmCount="10000"/>
 
 		<!-- custom cache currently used by block join -->
+		<!-- See https://solr.apache.org/guide/8_7/other-parsers.html#block-join-children-query-parser-->
 		<cache name="perSegFilter"
 			   class="solr.search.LRUCache"
 			   size="10"
@@ -477,7 +478,7 @@
 			 even if not configured here.
 		-->
 		<!--
-		 <fieldValueCache class="solr.FastLRUCache"
+		 <fieldValueCache class="solr.CaffeineCache"
 											size="512"
 											autowarmCount="128"
 											showItems="32" />
@@ -605,64 +606,102 @@
 
 	</query>
 
-	<!-- Request Dispatcher
+	<requestDispatcher>
+		<!-- Request Parsing
 
-			 This section contains instructions for how the SolrDispatchFilter
-			 should behave when processing requests for this SolrCore.
+			 These settings indicate how Solr Requests may be parsed, and
+			 what restrictions may be placed on the ContentStreams from
+			 those requests
 
-			 handleSelect is a legacy option that affects the behavior of requests
-			 such as /select?qt=XXX
+			 enableRemoteStreaming - enables use of the stream.file
+			 and stream.url parameters for specifying remote streams.
 
-			 handleSelect="true" will cause the SolrDispatchFilter to process
-			 the request and dispatch the query to a handler specified by the
-			 "qt" param, assuming "/select" isn't already registered.
+			 multipartUploadLimitInKB - specifies the max size (in KiB) of
+			 Multipart File Uploads that Solr will allow in a Request.
 
-			 handleSelect="false" will cause the SolrDispatchFilter to
-			 ignore "/select" requests, resulting in a 404 unless a handler
-			 is explicitly registered with the name "/select"
+			 formdataUploadLimitInKB - specifies the max size (in KiB) of
+			 form data (application/x-www-form-urlencoded) sent via
+			 POST. You can use POST to pass request parameters not
+			 fitting into the URL.
 
-			 handleSelect="true" is not recommended for new users, but is the default
-			 for backwards compatibility
-		-->
-	<requestDispatcher handleSelect="true">
-		<!--Make sure your system has some authentication before enabling remote streaming!  -->
-		<requestParsers enableRemoteStreaming="true" multipartUploadLimitInKB="2048000"/>
+			 addHttpRequestToContext - if set to true, it will instruct
+			 the requestParsers to include the original HttpServletRequest
+			 object in the context map of the SolrQueryRequest under the
+			 key "httpRequest". It will not be used by any of the existing
+			 Solr components, but may be useful when developing custom
+			 plugins.
 
-		<!-- Set HTTP caching related parameters (for proxy caches and clients).
+			 *** WARNING ***
+			 Before enabling remote streaming, you should make sure your
+			 system has authentication enabled.
 
-				 To get the behaviour of Solr 1.2 (ie: no caching related headers)
-				 use the never304="true" option and do not specify a value for
-				 <cacheControl>
-		-->
-		<!-- <httpCaching never304="true"> -->
-		<httpCaching lastModifiedFrom="openTime"
-					 etagSeed="Solr">
-			<!-- lastModFrom="openTime" is the default, the Last-Modified value
-						(and validation against If-Modified-Since requests) will all be
-						relative to when the current Searcher was opened.
-						You can change it to lastModFrom="dirLastMod" if you want the
-						value to exactly corrispond to when the physical index was last
-						modified.
+		<requestParsers enableRemoteStreaming="false"
+						multipartUploadLimitInKB="-1"
+						formdataUploadLimitInKB="-1"
+						addHttpRequestToContext="false"/>
 
-						etagSeed="..." is an option you can change to force the ETag
-						header (and validation against If-None-Match requests) to be
-						differnet even if the index has not changed (ie: when making
-						significant changes to your config file)
-
-						lastModifiedFrom and etagSeed are both ignored if you use the
-						never304="true" option.
 			 -->
-			<!-- If you include a <cacheControl> directive, it will be used to
-						generate a Cache-Control header, as well as an Expires header
-						if the value contains "max-age="
+		<requestParsers enableRemoteStreaming="true" />
+		<!-- multipartUploadLimitInKB   A value of -1 means MAX_INT, which is also the system default if omitted.
+		 TODO: determine and document what remoteStreaming is exactly. Pascal 1/13/2021
+		  -->
+		<!-- HTTP Caching
 
-						By default, no Cache-Control header is generated.
+			 Set HTTP caching related parameters (for proxy caches and clients).
 
-						You can use the <cacheControl> option even if you have set
-						never304="true"
-			 -->
-			<!-- <cacheControl>max-age=30, public</cacheControl> -->
+			 The options below instruct Solr not to output any HTTP Caching
+			 related headers
+		  -->
+<!--		 <httpCaching never304="true"> -->
+		<httpCaching lastModifiedFrom="openTime" etagSeed="Solr">
+			<!--		This is the original setting. It seems to make sense for the genealogy index Pascal. 3/8/2021 -->
 		</httpCaching>
+
+		<!-- If you include a <cacheControl> directive, it will be used to
+		 generate a Cache-Control header (as well as an Expires header
+		 if the value contains "max-age=")
+
+					By default, no Cache-Control header is generated.
+
+					You can use the <cacheControl> option even if you have set
+					never304="true"
+		 -->
+		<!--
+		   <httpCaching never304="true" >
+			 <cacheControl>max-age=30, public</cacheControl>
+		   </httpCaching>
+		  -->
+		<!-- To enable Solr to respond with automatically generated HTTP
+			 Caching headers, and to response to Cache Validation requests
+			 correctly, set the value of never304="false"
+
+			 This will cause Solr to generate Last-Modified and ETag
+			 headers based on the properties of the Index.
+
+			 The following options can also be specified to affect the
+			 values of these headers...
+
+			 lastModFrom - the default value is "openTime" which means the
+			 Last-Modified value (and validation against If-Modified-Since
+			 requests) will all be relative to when the current Searcher
+			 was opened.  You can change it to lastModFrom="dirLastMod" if
+			 you want the value to exactly correspond to when the physical
+			 index was last modified.
+
+			 etagSeed="..." is an option you can change to force the ETag
+			 header (and validation against If-None-Match requests) to be
+			 different even if the index has not changed (ie: when making
+			 significant changes to your config file)
+
+			 (lastModifiedFrom and etagSeed are both ignored if you use
+			 the never304="true" option)
+		  -->
+		<!--
+		   <httpCaching lastModifiedFrom="openTime"
+						etagSeed="Solr">
+			 <cacheControl>max-age=30, public</cacheControl>
+		</httpCaching>
+			 -->
 	</requestDispatcher>
 
 
@@ -674,15 +713,43 @@
 		 If no qt is defined, the requestHandler that declares default="true"
 		 will be used.
 	-->
-	<requestHandler name="standard" class="solr.StandardRequestHandler" default="true">
+	<requestHandler name="/select" class="solr.SearchHandler">
 		<!-- default values for query parameters -->
 		<lst name="defaults">
 			<str name="echoParams">explicit</str>
-			<!--
-			 <int name="rows">10</int>
-			 <str name="fl">*</str>
-			 <str name="version">2.1</str>
-				-->
+			<!-- Pascal 1/13/2021
+			echoParams includes the parameters of a query in the response (specifically the responseHeader).
+			explicit includes the parameters in the request plus parameters set here.
+			eg
+			{
+			  "responseHeader": {
+				"status": 0,
+				"QTime": 9,
+				"params": {
+				  "q": "solr",
+				  "indent": "true",
+				  "spellcheck": "true",
+				  "spellcheck.onlyMorePopular": "true",
+				  "spellcheck.count": "20",
+				  "wt": "json",
+				  "spellcheck.extendedResults": "true",
+				  "_": "1615229717319"
+				}
+			  },
+			  "response": {
+				"numFound": 0,
+				"start": 0,
+				"docs": []
+			  },
+			  "spellcheck": {
+				"suggestions": [
+				  "correctlySpelled",
+				  false
+				]
+			  }
+			}
+						-->
+				<int name="rows">20</int>
 			<str name="spellcheck.extendedResults">true</str>
 			<str name="spellcheck.onlyMorePopular">true</str>
 			<str name="spellcheck.count">20</str>
@@ -700,6 +767,9 @@
 		 searches (i.e. Title vs. Author), you can also configure individual
 		 settings in the searchspecs.yaml file.
 	-->
+	<!-- The setting different from default settings here is the spellcheck components, but the same as the select
+	handler above, so I don't think it needs explicitly defined. Pascal 3/8/2021 -->
+<!--
 	<requestHandler name="dismax" class="solr.SearchHandler">
 		<lst name="defaults">
 			<str name="defType">dismax</str>
@@ -712,6 +782,7 @@
 			<str>spellcheck</str>
 		</arr>
 	</requestHandler>
+-->
 
 	<requestHandler name="morelikethis" class="solr.MoreLikeThisHandler">
 		<lst name="defaults">
@@ -733,6 +804,127 @@
 		</lst>
 	</requestHandler>
 
+	<!-- Search Components
+
+		 Search components are registered to SolrCore and used by
+		 instances of SearchHandler (which can access them by name)
+
+		 By default, the following components are available:
+
+		 <searchComponent name="query"     class="solr.QueryComponent" />
+		 <searchComponent name="facet"     class="solr.FacetComponent" />
+		 <searchComponent name="mlt"       class="solr.MoreLikeThisComponent" />
+		 <searchComponent name="highlight" class="solr.HighlightComponent" />
+		 <searchComponent name="stats"     class="solr.StatsComponent" />
+		 <searchComponent name="debug"     class="solr.DebugComponent" />
+
+		 Default configuration in a requestHandler would look like:
+
+		 <arr name="components">
+		   <str>query</str>
+		   <str>facet</str>
+		   <str>mlt</str>
+		   <str>highlight</str>
+		   <str>stats</str>
+		   <str>debug</str>
+		 </arr>
+
+		 If you register a searchComponent to one of the standard names,
+		 that will be used instead of the default.
+
+		 To insert components before or after the 'standard' components, use:
+
+		 <arr name="first-components">
+		   <str>myFirstComponentName</str>
+		 </arr>
+
+		 <arr name="last-components">
+		   <str>myLastComponentName</str>
+		 </arr>
+
+		 NOTE: The component registered with the name "debug" will
+		 always be executed after the "last-components"
+
+	   -->
+	<!-- Spell Check
+
+		 The spell check component can return a list of alternative spelling
+		 suggestions.
+
+		 http://wiki.apache.org/solr/SpellCheckComponent
+		 https://solr.apache.org/guide/8_7/spell-checking.html
+	  -->
+	<searchComponent name="spellcheck" class="solr.SpellCheckComponent">
+
+		<str name="queryAnalyzerFieldType">text_general</str>
+
+		<!-- Multiple "Spell Checkers" can be declared and used by this
+			 component
+		  -->
+
+		<!-- a spellchecker built from a field of the main index -->
+		<lst name="spellchecker">
+			<str name="name">default</str>
+			<str name="field">spellingShingle</str>
+			<str name="classname">solr.DirectSolrSpellChecker</str>
+			<!-- the spellcheck distance measure used, the default is the internal levenshtein -->
+			<str name="distanceMeasure">internal</str>
+			<!-- minimum accuracy needed to be considered a valid spellcheck suggestion -->
+			<!-- default value is .5 Pascal 3/8/2021-->
+			<float name="accuracy">0.75</float>
+			<!-- the maximum #edits we consider when enumerating terms: can be 1 or 2 -->
+			<int name="maxEdits">2</int>
+			<!-- the minimum shared prefix when enumerating terms -->
+			<int name="minPrefix">1</int>
+			<!-- maximum number of inspections per result. -->
+			<int name="maxInspections">5</int>
+			<!-- minimum length of a query term to be considered for correction -->
+			<int name="minQueryLength">4</int>
+			<!-- maximum threshold of documents a query term can appear to be considered for correction -->
+			<float name="maxQueryFrequency">0.01</float>
+			<!-- uncomment this to require suggestions to occur in 1% of the documents
+			  <float name="thresholdTokenFrequency">.01</float>
+			-->
+		</lst>
+
+		<lst name="spellchecker">
+			<str name="name">basicSpell</str>
+			<str name="field">spelling</str>
+			<str name="classname">solr.DirectSolrSpellChecker</str>
+			<!-- the spellcheck distance measure used, the default is the internal levenshtein -->
+			<str name="distanceMeasure">internal</str>
+			<!-- minimum accuracy needed to be considered a valid spellcheck suggestion -->
+			<!-- default value is .5 Pascal 3/8/2021-->
+			<float name="accuracy">0.75</float>
+			<!-- the maximum #edits we consider when enumerating terms: can be 1 or 2 -->
+			<int name="maxEdits">2</int>
+			<!-- the minimum shared prefix when enumerating terms -->
+			<int name="minPrefix">1</int>
+			<!-- maximum number of inspections per result. -->
+			<int name="maxInspections">5</int>
+			<!-- minimum length of a query term to be considered for correction -->
+			<int name="minQueryLength">4</int>
+			<!-- maximum threshold of documents a query term can appear to be considered for correction -->
+			<float name="maxQueryFrequency">0.01</float>
+			<!-- uncomment this to require suggestions to occur in 1% of the documents
+			  <float name="thresholdTokenFrequency">.01</float>
+			-->
+		</lst>
+
+		<!-- a spellchecker that can break or combine words.  See "/spell" handler below for usage -->
+		<!--
+		<lst name="spellchecker">
+		  <str name="name">wordbreak</str>
+		  <str name="classname">solr.WordBreakSolrSpellChecker</str>
+		  <str name="field">name</str>
+		  <str name="combineWords">true</str>
+		  <str name="breakWords">true</str>
+		  <int name="maxChanges">10</int>
+		</lst>
+		-->
+	</searchComponent>
+<!--  Previous spell checker settings
+		 The second spell checker
 	<searchComponent name="spellcheck" class="org.apache.solr.handler.component.SpellCheckComponent">
 		<lst name="spellchecker">
 			<str name="name">default</str>
@@ -753,135 +945,111 @@
 	</searchComponent>
 	<queryConverter name="queryConverter" class="org.apache.solr.spelling.SpellingQueryConverter"/>
 
+  -->
+	<!-- Highlighting Component
 
-	<!--
+		 http://wiki.apache.org/solr/HighlightingParameters
+	  -->
+	<searchComponent class="solr.HighlightComponent" name="highlight">
+		<highlighting>
+			<!-- Configure the standard fragmenter -->
+			<!-- This could most likely be commented out in the "default" case -->
+			<fragmenter name="gap"
+						default="true"
+						class="solr.highlight.GapFragmenter">
+				<lst name="defaults">
+					<int name="hl.fragsize">100</int>
+				</lst>
+			</fragmenter>
 
-	 Search components are registered to SolrCore and used by Search Handlers
+			<!-- A regular-expression-based fragmenter
+				 (for sentence extraction)
+			  -->
+			<fragmenter name="regex"
+						class="solr.highlight.RegexFragmenter">
+				<lst name="defaults">
+					<!-- slightly smaller fragsizes work better because of slop -->
+					<int name="hl.fragsize">70</int>
+					<!-- allow 50% slop on fragment sizes -->
+					<float name="hl.regex.slop">0.5</float>
+					<!-- a basic sentence pattern -->
+					<str name="hl.regex.pattern">[-\w ,/\n\&quot;&apos;]{20,200}</str>
+				</lst>
+			</fragmenter>
 
-	 By default, the following components are avaliable:
+			<!-- Configure the standard formatter -->
+			<formatter name="html"
+					   default="true"
+					   class="solr.highlight.HtmlFormatter">
+				<lst name="defaults">
+					<str name="hl.simple.pre"><![CDATA[<em>]]></str>
+					<str name="hl.simple.post"><![CDATA[</em>]]></str>
+				</lst>
+			</formatter>
 
-	 <searchComponent name="query"     class="org.apache.solr.handler.component.QueryComponent" />
-	 <searchComponent name="facet"     class="org.apache.solr.handler.component.FacetComponent" />
-	 <searchComponent name="mlt"       class="org.apache.solr.handler.component.MoreLikeThisComponent" />
-	 <searchComponent name="highlight" class="org.apache.solr.handler.component.HighlightComponent" />
-	 <searchComponent name="stats"     class="org.apache.solr.handler.component.StatsComponent" />
-	 <searchComponent name="debug"     class="org.apache.solr.handler.component.DebugComponent" />
+			<!-- Configure the standard encoder -->
+			<encoder name="html"
+					 class="solr.highlight.HtmlEncoder" />
 
-	 If you register a searchComponent to one of the standard names, that will be used instead.
+			<!-- Configure the standard fragListBuilder -->
+			<fragListBuilder name="simple"
+							 class="solr.highlight.SimpleFragListBuilder"/>
 
-	 -->
+			<!-- Configure the single fragListBuilder -->
+			<fragListBuilder name="single"
+							 class="solr.highlight.SingleFragListBuilder"/>
 
-	<requestHandler name="/search" class="org.apache.solr.handler.component.SearchHandler">
-		<lst name="defaults">
-			<str name="echoParams">explicit</str>
-		</lst>
-		<!--
-		By default, this will register the following components:
+			<!-- Configure the weighted fragListBuilder -->
+			<fragListBuilder name="weighted"
+							 default="true"
+							 class="solr.highlight.WeightedFragListBuilder"/>
 
-		<arr name="components">
-			<str>query</str>
-			<str>facet</str>
-			<str>mlt</str>
-			<str>highlight</str>
-			<str>debug</str>
-		</arr>
+			<!-- default tag FragmentsBuilder -->
+			<fragmentsBuilder name="default"
+							  default="true"
+							  class="solr.highlight.ScoreOrderFragmentsBuilder">
+				<!--
+				<lst name="defaults">
+				  <str name="hl.multiValuedSeparatorChar">/</str>
+				</lst>
+				-->
+			</fragmentsBuilder>
 
-		To insert handlers before or after the 'standard' components, use:
+			<!-- multi-colored tag FragmentsBuilder -->
+			<fragmentsBuilder name="colored"
+							  class="solr.highlight.ScoreOrderFragmentsBuilder">
+				<lst name="defaults">
+					<str name="hl.tag.pre"><![CDATA[
+			   <b style="background:yellow">,<b style="background:lawgreen">,
+			   <b style="background:aquamarine">,<b style="background:magenta">,
+			   <b style="background:palegreen">,<b style="background:coral">,
+			   <b style="background:wheat">,<b style="background:khaki">,
+			   <b style="background:lime">,<b style="background:deepskyblue">]]></str>
+					<str name="hl.tag.post"><![CDATA[</b>]]></str>
+				</lst>
+			</fragmentsBuilder>
 
-		<arr name="first-components">
-			<str>first</str>
-		</arr>
+			<boundaryScanner name="default"
+							 default="true"
+							 class="solr.highlight.SimpleBoundaryScanner">
+				<lst name="defaults">
+					<str name="hl.bs.maxScan">10</str>
+					<str name="hl.bs.chars">.,!? &#9;&#10;&#13;</str>
+				</lst>
+			</boundaryScanner>
 
-		<arr name="last-components">
-			<str>last</str>
-		</arr>
-
-		-->
-		<arr name="last-components">
-			<str>spellcheck</str>
-			<str>elevator</str>
-		</arr>
-	</requestHandler>
-
-	<requestHandler name="/get" class="solr.RealTimeGetHandler">
-		<lst name="defaults">
-			<str name="omitHeader">true</str>
-			<str name="wt">json</str>
-			<str name="indent">true</str>
-		</lst>
-	</requestHandler>
-
-	<searchComponent name="elevator" class="org.apache.solr.handler.component.QueryElevationComponent">
-		<!-- pick a fieldType to analyze queries -->
-		<str name="queryFieldType">string</str>
-		<str name="config-file">elevate.xml</str>
+			<boundaryScanner name="breakIterator"
+							 class="solr.highlight.BreakIteratorBoundaryScanner">
+				<lst name="defaults">
+					<!-- type should be one of CHARACTER, WORD(default), LINE and SENTENCE -->
+					<str name="hl.bs.type">WORD</str>
+					<!-- language and country are used when constructing Locale object.  -->
+					<!-- And the Locale object will be used when getting instance of BreakIterator -->
+					<str name="hl.bs.language">en</str>
+					<str name="hl.bs.country">US</str>
+				</lst>
+			</boundaryScanner>
+		</highlighting>
 	</searchComponent>
-
-	<requestHandler name="/elevate" class="org.apache.solr.handler.component.SearchHandler" startup="lazy">
-		<lst name="defaults">
-			<str name="echoParams">explicit</str>
-		</lst>
-		<arr name="last-components">
-			<str>elevator</str>
-		</arr>
-	</requestHandler>
-
-
-	<highlighting>
-		<!-- Configure the standard fragmenter -->
-		<!-- This could most likely be commented out in the "default" case -->
-		<fragmenter name="gap" class="org.apache.solr.highlight.GapFragmenter" default="true">
-			<lst name="defaults">
-				<int name="hl.fragsize">100</int>
-			</lst>
-		</fragmenter>
-
-		<!-- A regular-expression-based fragmenter (f.i., for sentence extraction) -->
-		<fragmenter name="regex" class="org.apache.solr.highlight.RegexFragmenter">
-			<lst name="defaults">
-				<!-- slightly smaller fragsizes work better because of slop -->
-				<int name="hl.fragsize">70</int>
-				<!-- allow 50% slop on fragment sizes -->
-				<float name="hl.regex.slop">0.5</float>
-				<!-- a basic sentence pattern -->
-				<str name="hl.regex.pattern">[-\w ,/\n\"']{20,200}</str>
-			</lst>
-		</fragmenter>
-
-		<!-- Configure the standard formatter -->
-		<formatter name="html" class="org.apache.solr.highlight.HtmlFormatter" default="true">
-			<lst name="defaults">
-				<str name="hl.simple.pre"><![CDATA[<em>]]></str>
-				<str name="hl.simple.post"><![CDATA[</em>]]></str>
-			</lst>
-		</formatter>
-	</highlighting>
-
-
-	<!-- queryResponseWriter plugins... query responses will be written using the
-		writer specified by the 'wt' request parameter matching the name of a registered
-		writer.
-		The "default" writer is the default and will be used if 'wt' is not specified
-		in the request. XMLResponseWriter will be used if nothing is specified here.
-		The json, python, and ruby writers are also available by default.
-
-		<queryResponseWriter name="xml" class="org.apache.solr.request.XMLResponseWriter" default="true"/>
-		<queryResponseWriter name="json" class="org.apache.solr.request.JSONResponseWriter"/>
-		<queryResponseWriter name="python" class="org.apache.solr.request.PythonResponseWriter"/>
-		<queryResponseWriter name="ruby" class="org.apache.solr.request.RubyResponseWriter"/>
-		<queryResponseWriter name="php" class="org.apache.solr.request.PHPResponseWriter"/>
-		<queryResponseWriter name="phps" class="org.apache.solr.request.PHPSerializedResponseWriter"/>
-
-		<queryResponseWriter name="custom" class="com.example.MyResponseWriter"/>
-	-->
-
-	<!-- config for the admin interface -->
-	<admin>
-		<defaultQuery>shakespeare</defaultQuery>
-
-		<!-- configure a healthcheck file for servers behind a loadbalancer
-		<healthcheck type="file">server-enabled</healthcheck>
-		-->
-	</admin>
 
 </config>

@@ -531,15 +531,15 @@ abstract class SearchObject_Base {
 			}
 		}
 
-		$this->searchTerms[] = array(
-            'index'   => $type,
-            'lookfor' => $searchTerm
-		);
+		$this->searchTerms[] = [
+			'index'   => $type,
+			'lookfor' => $searchTerm
+		];
 		return true;
 	}
 
 	public function setSearchTerms($searchTerms){
-		$this->searchTerms   = array();
+		$this->searchTerms   = [];
 		$this->searchTerms[] = $searchTerms;
 	}
 
@@ -730,11 +730,11 @@ abstract class SearchObject_Base {
 			$defaultSort = $this->searchSource->defaultSort;
 			if ($defaultSort == 'newest_to_oldest'){
 				$defaultSort = 'year';
-			}else if ($defaultSort == 'oldest_to_newest'){
+			}elseif ($defaultSort == 'oldest_to_newest'){
 				$defaultSort = 'year asc';
-			}else if ($defaultSort == 'user_rating'){
+			}elseif ($defaultSort == 'user_rating'){
 				$defaultSort = 'rating desc';
-			}else if ($defaultSort == 'popularity'){
+			}elseif ($defaultSort == 'popularity'){
 				$defaultSort = 'popularity desc';
 			}
 		}
@@ -745,11 +745,11 @@ abstract class SearchObject_Base {
 				$sort = $_REQUEST['sort'];
 			}
 			$this->sort = $sort;
-		}else if ($defaultSort != ''){
+		}elseif ($defaultSort != ''){
 			$this->sort = $defaultSort;
 		} else {
 			// Is there a search-specific sort type set?
-			$type = isset($_REQUEST['type']) ? $_REQUEST['type'] : false;
+			$type = $_REQUEST['type'] ?? false;
 			if ($type && isset($this->defaultSortByType[$type])) {
 				$this->sort = $this->defaultSortByType[$type];
 				// If no search-specific sort type was found, use the overall default:
@@ -1878,7 +1878,7 @@ abstract class SearchObject_Base {
 			// Make sure the current location's set of recommendations is an array;
 			// if it's a single string, this normalization will simplify processing.
 			if (!is_array($currentSet)){
-				$currentSet = array($currentSet);
+				$currentSet = [$currentSet];
 			}
 			// Now loop through all recommendation settings for the location.
 			foreach ($currentSet as $current){
@@ -2126,7 +2126,9 @@ public function getNextPrevLinks(){
 						//Convert back to 1 based index
 						if (isset($previousRecord)) {
 							$interface->assign('previousIndex', $currentResultIndex - 1 + 1);
-							$interface->assign('previousTitle', $previousRecord['title_display']);
+							if (!empty($previousRecord['title_display'])){
+								$interface->assign('previousTitle', $previousRecord['title_display']);
+							}
 							if ($previousRecord['recordtype'] == 'grouped_work'){
 								require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 								$groupedWork = New GroupedWorkDriver($previousRecord);
@@ -2145,6 +2147,10 @@ public function getNextPrevLinks(){
 							} elseif (strpos($previousRecord['id'], 'list') === 0){
 								$interface->assign('previousType', 'MyAccount/MyList');
 								$interface->assign('previousId', str_replace('list', '', $previousRecord['id']));
+							}elseif ($previousRecord['recordtype'] == 'person'){
+								$interface->assign('previousTitle', $previousRecord['title']);
+								$interface->assign('previousType', 'Person');
+								$interface->assign('previousId', str_replace('person', '', $previousRecord['id']));
 							}else{
 								$interface->assign('previousType', 'Record');
 								$interface->assign('previousId', $previousRecord['id']);
@@ -2163,7 +2169,9 @@ public function getNextPrevLinks(){
 						//Convert back to 1 based index
 						$interface->assign('nextIndex', $currentResultIndex + 1 + 1);
 						if (isset($nextRecord)){
-							$interface->assign('nextTitle', $nextRecord['title_display']);
+							if (!empty($nextRecord['title_display'])){
+								$interface->assign('nextTitle', $nextRecord['title_display']);
+							}
 							if ($nextRecord['recordtype'] == 'grouped_work'){
 								require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 								$groupedWork    = new GroupedWorkDriver($nextRecord);
@@ -2182,6 +2190,10 @@ public function getNextPrevLinks(){
 							} elseif (strpos($nextRecord['id'], 'list') === 0){
 								$interface->assign('nextType', 'MyAccount/MyList');
 								$interface->assign('nextId', str_replace('list', '', $nextRecord['id']));
+							}elseif ($previousRecord['recordtype'] == 'person'){
+								$interface->assign('nextTitle', $nextRecord['title']);
+								$interface->assign('nextType', 'Person');
+								$interface->assign('nextId', str_replace('person', '', $nextRecord['id']));
 							}else{
 								$interface->assign('nextType', 'Record');
 								$interface->assign('nextId', $nextRecord['id']);
