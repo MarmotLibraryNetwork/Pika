@@ -11,8 +11,10 @@ else
 	read -p "Proceed with SOLR configuration updates?" -n 1 -r
 	echo    # (optional) move to a new line
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
-		cp -r solr_master /data/vufind-plus/$1
-		cp -r solr_searcher /data/vufind-plus/$1
+		PIKASERVER=$1
+		CURRENT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
+		cp -r ${CURRENT_DIR}/solr_master /data/vufind-plus/${PIKASERVER}
+		cp -r ${CURRENT_DIR}/solr_searcher /data/vufind-plus/${PIKASERVER}
 		exit 0
-	f1
+	fi
 fi
