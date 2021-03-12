@@ -1,7 +1,7 @@
 <div class="col-tn-12 col-xs-12">
 	<div class="row">
 		<div id="header_black" class="col-tn-12 col-xs-12">
-			<a href="http://www.adams.edu/">
+			<a href="https://www.aims.edu/">
 				<img src="/interface/themes/aims/images/logo_responsive.png" alt="Aims Community College">
 			</a>
 		</div>
