@@ -1,4 +1,3 @@
-<script type="text/javascript" src="/MaterialsRequest/ajax.js"></script>
 <div id="main-content">
 
 	<span class='availableHoldsNoticePlaceHolder'></span>
