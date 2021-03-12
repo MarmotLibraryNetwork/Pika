@@ -33,5 +33,6 @@ Class-Path: lib/solr-solrj-8.7.0.jar
   solrj-lib/woodstox-core-asl-4.4.1.jar
   solrj-lib/zookeeper-3.6.2.jar
   solrj-lib/zookeeper-jute-3.6.2.jar
+  solrj-lib/slf4j-nop-1.7.24.jar
 
 
