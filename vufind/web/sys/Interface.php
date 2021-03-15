@@ -193,6 +193,7 @@ class UInterface extends Smarty {
 			}
 			$this->assign('showEcommerceLink', $showECommerceLink);
 			$this->assign('minimumFineAmount', $homeLibrary->minimumFineAmount);
+			$this->assign('fineAlertAmount', $homeLibrary->fineAlertAmount);
 		}
 	}
 

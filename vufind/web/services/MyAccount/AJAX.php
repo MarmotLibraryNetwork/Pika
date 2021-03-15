@@ -1413,11 +1413,12 @@ class MyAccount_AJAX extends AJAXHandler {
 			$result['fines'] = '';
 			$fines = $user->getTotalFines(true);
 			$minimum = $homeLibrary->minimumFineAmount;
-			if($fines >= $minimum && $fines != 0)
+			$alert = $homeLibrary->fineAlertAmount;
+			if($fines >= $alert && $fines != 0)
 			{
 				$result['fines'] = '<span class="badge badge-danger">$' . $fines . '</span>';
 			}
-			else if($fines > 0 && $fines < $minimum)
+			else if($fines > 0 && $fines < $alert)
 			{
 				$result['fines'] = '<span class ="badge">$' . $fines . '</span>';
 			}
