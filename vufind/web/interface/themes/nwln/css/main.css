@@ -10596,7 +10596,6 @@ fieldset[disabled] .btn-masquerade.active {
 .sidebar-links .panel-body,
 #account-settings-accordion .panel-body {
   background-color: transparent;
-  border: 1px solid #c5c5c5;
 }
 .facetTitle,
 .exploreMoreTitle {
