@@ -8032,7 +8032,7 @@ hr.menu {
 }
 #header-container {
   padding-top: 0;
-  height: 130px;
+  height: 110px;
   background-color: #ffffff;
   background: linear-gradient(to bottom, #ffffff, #ffffff 85%, #ffffff);
   border-bottom: 8px solid #fff;
@@ -8052,7 +8052,7 @@ hr.menu {
   text-align: center;
   text-shadow: 1px 1px #fff;
   vertical-align: middle;
-  line-height: 122px !important;
+  line-height: 102px !important;
   border-bottom: 4px solid #ffffff;
   color: #8b8b8b !important;
 }
@@ -10441,10 +10441,7 @@ fieldset[disabled] .btn-masquerade.active {
   margin-top: 0;
   padding: 15px;
   position: absolute;
-  top: -50px;
-  height: 190px;
-  left: 0;
-  background: white;
+  height: 170px;
 }
 .header-button {
   border: 0;
