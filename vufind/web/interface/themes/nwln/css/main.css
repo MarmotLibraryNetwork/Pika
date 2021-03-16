@@ -10608,11 +10608,11 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .facetValue {
   padding: 3px 5px;
-  font-size: medium;
+  font-size: 13px;
 }
 .facetValue a {
   color: #428bca;
-  line-height: 1.7;
+  line-height: 1.2;
   border-bottom: none;
 }
 .searchTypeHome,
