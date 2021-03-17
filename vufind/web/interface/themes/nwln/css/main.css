@@ -10620,9 +10620,6 @@ fieldset[disabled] .btn-masquerade.active {
   color: #333;
   background-color: #fff;
 }
-#horizontal-search-box {
-  background: rgba(230, 230, 230, 0.9);
-}
 #home-page-login {
   text-shadow: none;
 }
