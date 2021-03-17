@@ -8032,7 +8032,7 @@ hr.menu {
 }
 #header-container {
   padding-top: 0;
-  height: 110px;
+  height: 150px;
   background-color: #ffffff;
   background: linear-gradient(to bottom, #ffffff, #ffffff 85%, #ffffff);
   border-bottom: 8px solid #fff;
@@ -8052,7 +8052,7 @@ hr.menu {
   text-align: center;
   text-shadow: 1px 1px #fff;
   vertical-align: middle;
-  line-height: 102px !important;
+  line-height: 142px !important;
   border-bottom: 4px solid #ffffff;
   color: #8b8b8b !important;
 }
@@ -8445,8 +8445,8 @@ hr.menu {
 }
 .sidebar-links .panel-heading {
   padding: 5px 15px;
-  background-color: #FFF;
-  background: linear-gradient(to bottom, #FFF, #FFF);
+  background-color: #006aac;
+  background: linear-gradient(to bottom, #006aac, #006aac);
   border-bottom: 1px solid #a1a1a1;
 }
 .sidebar-links .panel > a,
@@ -8459,13 +8459,13 @@ hr.menu {
 .sidebar-links .panel.active > a,
 .sidebar-links .panel.active > a:visited,
 .sidebar-links .panel.active > a:hover {
-  color: #333333;
+  color: #FFF;
   text-shadow: 1px 1px #555555;
   outline: none;
 }
 .sidebar-links .active .panel-heading {
-  background-color: #FFF;
-  background: linear-gradient(to bottom, #FFF, #e6e6e6);
+  background-color: #006aac;
+  background: linear-gradient(to bottom, #006aac, #004b79);
 }
 .sidebar-links .panel-body {
   font-size: 13px;
@@ -9823,8 +9823,8 @@ a.browse-thumbnail-sorted.active {
   text-shadow: 1px 1px #fff;
 }
 #more-details-accordion .active .panel-heading {
-  background-color: #FFF;
-  background: linear-gradient(to bottom, #FFF, #e6e6e6);
+  background-color: #006aac;
+  background: linear-gradient(to bottom, #006aac, #004b79);
 }
 #more-details-accordion .active .panel-title {
   color: #fff;
@@ -10440,8 +10440,7 @@ fieldset[disabled] .btn-masquerade.active {
 #header-logo {
   margin-top: 0;
   padding: 15px;
-  position: absolute;
-  height: 170px;
+  height: 140px;
 }
 .header-button {
   border: 0;
@@ -10570,13 +10569,13 @@ fieldset[disabled] .btn-masquerade.active {
 #more-details-accordion .panel-heading,
 .sidebar-links .panel-heading,
 #account-settings-accordion .panel-heading {
-  background: #FFF;
+  background: #006aac;
 }
 #account-settings-accordion .active .panel-heading,
 #more-details-accordion .active .panel-heading,
 .sidebar-links .active .panel-heading,
 #account-settings-accordion .active .panel-heading {
-  background: #FFF;
+  background: #006aac;
 }
 #account-settings-accordion .panel,
 #more-details-accordion .panel,
@@ -10617,18 +10616,30 @@ fieldset[disabled] .btn-masquerade.active {
   color: #333;
   background-color: #fff;
 }
+#horizontal-search-box {
+  background: rgba(230, 230, 230, 0.9);
+}
 #home-page-login {
   text-shadow: none;
 }
 #more-details-accordion .active .panel-title,
 #account-settings-accordion .active .panel-title {
-  color: #333333;
-  text-shadow: 1px 1px #fff;
+  color: #FFF;
+  text-shadow: 1px 1px #333;
+}
+#more-details-accordion .panel-title,
+#account-settings-accordion .panel-title {
+  color: #FFF;
+  text-shadow: 1px 1px #333;
 }
 .sidebar-links .panel.active > a,
 .sidebar-links .panel.active > a:visited,
 .sidebar-links .panel.active > a:hover {
-  text-shadow: 1px 1px #fff;
+  text-shadow: 1px 1px #333;
+}
+.panel-title {
+  color: #FFF;
+  text-shadow: 1px 1px #333;
 }
 #refineSearch ~ #home-account-links {
   padding-top: 15px;
