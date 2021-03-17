@@ -1,3 +1,8 @@
+@font-face {
+  font-family: "Bangla MN";
+  src: url("../fonts/BanglaMN.ttf");
+  src: url("../fonts/BanglaMN.woff") format("woff"), url("../fonts/BanglaMN.eot") format("embedded-opentype"), url("../fonts/BanglaMN.svg#filename") format("svg");
+}
 article,
 aside,
 details,
@@ -8032,7 +8037,7 @@ hr.menu {
 }
 #header-container {
   padding-top: 0;
-  height: 150px;
+  height: 160px;
   background-color: #ffffff;
   background: linear-gradient(to bottom, #ffffff, #ffffff 85%, #ffffff);
   border-bottom: 8px solid #fff;
@@ -8052,7 +8057,7 @@ hr.menu {
   text-align: center;
   text-shadow: 1px 1px #fff;
   vertical-align: middle;
-  line-height: 142px !important;
+  line-height: 152px !important;
   border-bottom: 4px solid #ffffff;
   color: #8b8b8b !important;
 }
@@ -8066,7 +8071,7 @@ hr.menu {
 #library-name-header {
   font-size: 25px;
   color: #444;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Bangla MN;
   font-weight: bold;
   white-space: normal;
   padding-top: 5px;
@@ -10440,7 +10445,7 @@ fieldset[disabled] .btn-masquerade.active {
 #header-logo {
   margin-top: 0;
   padding: 15px;
-  height: 140px;
+  height: 160px;
 }
 .header-button {
   border: 0;
