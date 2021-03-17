@@ -8,7 +8,7 @@
 #header-logo{
     margin-top: 0;
     padding: 15px;
-    position: absolute;
+
 
     height: @header-logo-height;
 
@@ -184,6 +184,10 @@
   background-color: #fff;
 }
 
+#horizontal-search-box{
+  background: rgba(230,230,230,.9);
+}
+
 #home-page-login {
   text-shadow: none;
 }
@@ -192,8 +196,12 @@
   .active {
     .panel-title {
       color: @accordion-active-header-color;
-      text-shadow: 1px 1px #fff;
+      text-shadow: 1px 1px #333;
     }
+  }
+  .panel-title{
+    color: @accordion-active-header-color;
+    text-shadow: 1px 1px #333;
   }
 }
 .sidebar-links {
@@ -202,11 +210,16 @@
       & > a { // keep the title's link underlining the same color as the title
         // these end up applying to content in .active div.panel-title
         &, &:visited, &:hover {
-          text-shadow: 1px 1px #fff;
+          text-shadow: 1px 1px #333;
         }
       }
     }
   }
+
+}
+.panel-title{
+  color: @accordion-active-header-color;
+  text-shadow: 1px 1px #333;
 }
 //TODO: I think this should go into the main styling.
 #refineSearch~#home-account-links{
