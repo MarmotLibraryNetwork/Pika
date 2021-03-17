@@ -10599,7 +10599,12 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .facetTitle,
 .exploreMoreTitle {
-  background: #f0f0f0;
+  background: #eee;
+}
+.facetTitle.panel-title,
+exploreMoreTitle.panel-title {
+  color: #333;
+  text-shadow: 1px 1px #fff;
 }
 .facetDetails {
   padding: 10px;
@@ -10614,6 +10619,9 @@ fieldset[disabled] .btn-masquerade.active {
   color: #428bca;
   line-height: 1.2;
   border-bottom: none;
+}
+.facetList {
+  background: #006aac;
 }
 .searchTypeHome,
 .searchSource {
