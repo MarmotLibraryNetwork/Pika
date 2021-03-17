@@ -8065,7 +8065,7 @@ hr.menu {
 }
 #library-name-header {
   font-size: 25px;
-  color: #000;
+  color: #444;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: bold;
   white-space: normal;
@@ -10472,6 +10472,10 @@ fieldset[disabled] .btn-masquerade.active {
 #headingInfo {
   display: inline-block;
   vertical-align: middle;
+}
+#library-name-header {
+  padding-top: 25px;
+  padding-left: 25px;
 }
 #home-page-browse-header {
   margin-left: 0;
