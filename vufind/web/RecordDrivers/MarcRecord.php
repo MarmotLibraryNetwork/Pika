@@ -1105,55 +1105,55 @@ class MarcRecord extends IndexRecord
 		return null;
 	}
 
-	function getDescription()
-	{
+	function getDescription(){
+		/** @var Library $library */
 		global $interface;
 		global $library;
 
 		$useMarcSummary = true;
-		$summary = '';
-		$isbn = $this->getCleanISBN();
-		$upc = $this->getCleanUPC();
-		if ($isbn || $upc) {
-			if (!$library || ($library && $library->preferSyndeticsSummary == 1)) {
+		$summary        = '';
+		$isbn           = $this->getCleanISBN();
+		$upc            = $this->getCleanUPC();
+		if ($isbn || $upc){
+			if (!$library || ($library && $library->preferSyndeticsSummary == 1)){
 				require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
 				$summaryInfo = GoDeeperData::getSummary($isbn, $upc);
-				if (isset($summaryInfo['summary'])) {
-					$summary = $summaryInfo['summary'];
+				if (isset($summaryInfo['summary'])){
+					$summary        = $summaryInfo['summary'];
 					$useMarcSummary = false;
 				}
 			}
 		}
-		if ($useMarcSummary && $this->marcRecord != false) {
-			if ($summaryFields = $this->marcRecord->getFields('520')) {
-				$summaries = array();
-				$summary = '';
-				foreach ($summaryFields as $summaryField) {
+		if ($useMarcSummary && $this->marcRecord != false){
+			if ($summaryFields = $this->marcRecord->getFields('520')){
+				$summaries = [];
+				$summary   = '';
+				foreach ($summaryFields as $summaryField){
 					//Check to make sure we don't have an exact duplicate of this field
 					$curSummary = $this->getSubfieldData($summaryField, 'a');
-					$okToAdd = true;
-					foreach ($summaries as $existingSummary) {
-						if ($existingSummary == $curSummary) {
+					$okToAdd    = true;
+					foreach ($summaries as $existingSummary){
+						if ($existingSummary == $curSummary){
 							$okToAdd = false;
 							break;
 						}
 					}
-					if ($okToAdd) {
+					if ($okToAdd){
 						$summaries[] = $curSummary;
-						$summary .= '<p>' . $curSummary . '</p>';
+						$summary     .= '<p>' . $curSummary . '</p>';
 					}
 				}
 				$interface->assign('summary', $summary);
 				$interface->assign('summaryTeaser', strip_tags($summary));
-			} elseif ($library && $library->preferSyndeticsSummary == 0) {
+			}elseif ($library && $library->preferSyndeticsSummary == 0){
 				require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
 				$summaryInfo = GoDeeperData::getSummary($isbn, $upc);
-				if (isset($summaryInfo['summary'])) {
+				if (isset($summaryInfo['summary'])){
 					$summary = $summaryInfo['summary'];
 				}
 			}
 		}
-		if (strlen($summary) == 0) {
+		if (strlen($summary) == 0){
 			$summary = $this->getGroupedWorkDriver()->getDescriptionFast();
 		}
 
