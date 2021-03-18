@@ -1427,7 +1427,7 @@ class DBMaintenance extends Admin_Admin {
 					'description'     => '',
 					'continueOnError' => true,
 					'sql'             => [
-						'ALTER TABLE `pika`.`offline_hold` ADD COLUMN `pickupLocation` VARCHAR(5) NULL AFTER `itemId`;',
+						'ALTER TABLE `offline_hold` ADD COLUMN `pickupLocation` VARCHAR(5) NULL AFTER `itemId`;',
 					]
 				],
 				'add_board_book_format' => [

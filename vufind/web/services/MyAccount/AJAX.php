@@ -314,10 +314,10 @@ class MyAccount_AJAX extends AJAXHandler {
 	}
 
 	function cancelHold(){
-		$result = array(
+		$result = [
 			'success' => false,
 			'message' => 'Error cancelling hold.',
-		);
+		];
 
 		if (!UserAccount::isLoggedIn()){
 			$result['message'] = 'You must be logged in to cancel a hold.  Please close this dialog and login again.';
@@ -354,11 +354,11 @@ class MyAccount_AJAX extends AJAXHandler {
 
 		$interface->assign('cancelResults', $result);
 
-		$cancelResult = array(
+		$cancelResult = [
 			'title'   => 'Cancel Hold',
 			'body'    => $interface->fetch('MyAccount/cancelhold.tpl'),
 			'success' => $result['success'],
-		);
+		];
 		return $cancelResult;
 	}
 

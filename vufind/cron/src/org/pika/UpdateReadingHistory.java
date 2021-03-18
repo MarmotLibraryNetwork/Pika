@@ -39,7 +39,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 	private Logger              logger;
 	private PreparedStatement   insertReadingHistoryStmt;
 
-	public void doCronProcess(String serverName, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String serverName, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Update Reading History");
 		processLog.saveToDatabase(pikaConn, logger);
 

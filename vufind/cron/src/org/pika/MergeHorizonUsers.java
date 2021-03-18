@@ -47,7 +47,7 @@ public class MergeHorizonUsers implements IProcessHandler {
 	PreparedStatement removeDuplicateUserStmt;
 
 	@Override
-	public void doCronProcess(String servername, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Merge Horizon Users");
 		processLog.saveToDatabase(pikaConn, logger);
 

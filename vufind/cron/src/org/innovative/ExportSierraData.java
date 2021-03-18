@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020  Marmot Library Network
+ * Copyright (C) 2021  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,10 +17,7 @@ package org.innovative;
 import org.apache.log4j.Logger;
 import org.ini4j.Ini;
 import org.ini4j.Profile;
-import org.pika.CronLogEntry;
-import org.pika.CronProcessLogEntry;
-import org.pika.IProcessHandler;
-import org.pika.PikaConfigIni;
+import org.pika.*;
 
 import java.sql.*;
 
@@ -37,7 +34,7 @@ public class ExportSierraData implements IProcessHandler {
 	private Logger logger;
 	private String ils;
 	@Override
-	public void doCronProcess(String servername, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		this.logger = logger;
 		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Export Sierra Data");
 		processLog.saveToDatabase(pikaConn, logger);

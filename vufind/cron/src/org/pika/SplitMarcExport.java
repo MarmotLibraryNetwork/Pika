@@ -37,7 +37,7 @@ import java.util.Set;
 public class SplitMarcExport implements IProcessHandler {
 
 	@Override
-	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection eContentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Split Marc Records");
 		processLog.saveToDatabase(pikaConn, logger);
 		ArrayList<MarcSplitOption> splitOptions = new ArrayList<>();

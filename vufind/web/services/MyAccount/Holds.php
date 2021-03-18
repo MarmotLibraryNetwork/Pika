@@ -25,8 +25,7 @@
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 class MyAccount_Holds extends MyAccount{
-	function launch()
-	{
+	function launch(){
 		global $configArray,
 		       $interface,
 		       $library;
@@ -55,7 +54,7 @@ class MyAccount_Holds extends MyAccount{
 		if(!$showPlacedColumn && isset($configArray['OPAC']['showDatePlaced'])) {
 			$showPlacedColumn = (boolean)$configArray['OPAC']['showDatePlaced'];
 		}
-		$showDateWhenSuspending          = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha');
+		$showDateWhenSuspending          = ($ils == 'Symphony' || $ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Koha');
 		if (isset($configArray['suspend_requires_reactivation_date'])) {
 			$suspendRequiresReactivationDate = $configArray['suspend_requires_reactivation_date'];
 		}
@@ -68,44 +67,44 @@ class MyAccount_Holds extends MyAccount{
 
 
 		// Define sorting options
-		$unavailableHoldSortOptions = array(
-			'title'  => 'Title',
-			'author' => 'Author',
-			'format' => 'Format',
-			'status' => 'Status',
+		$unavailableHoldSortOptions = [
+			'title'    => 'Title',
+			'author'   => 'Author',
+			'format'   => 'Format',
+			'status'   => 'Status',
 			'location' => 'Pickup Location',
-		);
+		];
 		if ($showPosition){
 			$unavailableHoldSortOptions['position'] = 'Position';
 		}
-		if ($showPlacedColumn) {
+		if ($showPlacedColumn){
 			$unavailableHoldSortOptions['placed'] = 'Date Placed';
 		}
 
-		$availableHoldSortOptions = array(
-			'title'  => 'Title',
-			'author' => 'Author',
-			'format' => 'Format',
-			'expire' => 'Expiration Date',
+		$availableHoldSortOptions = [
+			'title'    => 'Title',
+			'author'   => 'Author',
+			'format'   => 'Format',
+			'expire'   => 'Expiration Date',
 			'location' => 'Pickup Location',
-		);
+		];
 
 		if (count($user->getLinkedUsers()) > 0){
 			$unavailableHoldSortOptions['libraryAccount'] = 'Library Account';
 			$availableHoldSortOptions['libraryAccount']   = 'Library Account';
 		}
 
-		$interface->assign('sortOptions', array(
+		$interface->assign('sortOptions', [
 			'available'   => $availableHoldSortOptions,
 			'unavailable' => $unavailableHoldSortOptions
-		));
+		]);
 
 		$selectedAvailableSortOption   = !empty($_REQUEST['availableHoldSort']) ? $_REQUEST['availableHoldSort'] : 'expire';
 		$selectedUnavailableSortOption = !empty($_REQUEST['unavailableHoldSort']) ? $_REQUEST['unavailableHoldSort'] : ($showPosition ? 'position' : 'title') ;
-		$interface->assign('defaultSortOption', array(
+		$interface->assign('defaultSortOption', [
 			'available'   => $selectedAvailableSortOption,
 			'unavailable' => $selectedUnavailableSortOption
-			));
+		]);
 
 
 		if ($library->showLibraryHoursNoticeOnAccountPages) {
@@ -139,35 +138,58 @@ class MyAccount_Holds extends MyAccount{
 		}
 
 // Not displayed, so skipping fetching offline holds for the patron
-//		//Load holds that have been entered offline
-//		if ($user){
-//			//TODO: Offline holds are not displayed on the My Holds page
-//			require_once ROOT_DIR . '/sys/OfflineHold.php';
-//			$twoDaysAgo = time() - 48 * 60 * 60;
-//			$twoWeeksAgo = time() - 14 * 24 * 60 * 60;
-//			$offlineHoldsObj = new OfflineHold();
-//			$offlineHoldsObj->patronId = $user->id;
-//			$offlineHoldsObj->whereAdd("status = 'Not Processed' OR (status = 'Hold Placed' AND timeEntered >= $twoDaysAgo) OR (status = 'Hold Failed' AND timeEntered >= $twoWeeksAgo)");
-//			// mysql has these functions as well: "status = 'Not Processed' OR (status = 'Hold Placed' AND timeEntered >= DATE_SUB(NOW(), INTERVAL 2 DAYS)) OR (status = 'Hold Failed' AND timeEntered >= DATE_SUB(NOW(), INTERVAL 2 WEEKS))");
-//			$offlineHolds = array();
-//			if ($offlineHoldsObj->find()){
-//				while ($offlineHoldsObj->fetch()){
-//					//Load the title
-//					$offlineHold = array();
-//					require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-//					$recordDriver = new MarcRecord($offlineHoldsObj->bibId);
-//					if ($recordDriver->isValid()){
-//						$offlineHold['title'] = $recordDriver->getTitle();
-//					}
-//					$offlineHold['bibId'] = $offlineHoldsObj->bibId;
-//					$offlineHold['timeEntered'] = $offlineHoldsObj->timeEntered;
-//					$offlineHold['status'] = $offlineHoldsObj->status;
-//					$offlineHold['notes'] = $offlineHoldsObj->notes;
-//					$offlineHolds[] = $offlineHold;
-//				}
-//			}
-//			$interface->assign('offlineHolds', $offlineHolds);
-//		}
+		//Load holds that have been entered offline
+		global $offlineMode;
+		global $configArray;
+		$useOfflineHolds = $configArray['Catalog']['useOfflineHoldsInsteadOfRegularHolds'] ?? false;
+		if ($user && ($offlineMode ||$useOfflineHolds)){
+			$offlineHolds = [];
+			require_once ROOT_DIR . '/sys/Circa/OfflineHold.php';
+			$users = array_merge([$user], $user->getLinkedUsers());
+			foreach ($users as $patron){
+				$offlineHoldsObj           = new OfflineHold();
+				$offlineHoldsObj->patronId = $patron->id;
+				$offlineHoldsObj->whereAdd("status = 'Not Processed'");
+//				$offlineHoldsObj->whereAdd(" (status != 'Not Processed' AND FROM_UNIXTIME(timeEntered) >= DATE_SUB(NOW(), INTERVAL 2 DAY)) OR (status = 'Hold Failed' AND FROM_UNIXTIME(timeEntered) >= DATE_SUB(NOW(), INTERVAL 2 WEEK)) ");
+				// the more complicated sql doesn't come into effect because usually not in offline mode once holds are processed.
+				if ($offlineHoldsObj->find()){
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
+					while ($offlineHoldsObj->fetch()){
+						//Load the title
+						$offlineHold = [
+							'user'   => $patron->getNameAndLibraryLabel(),
+							'userId' => $patron->id,
+						];
+						$location    = new Location();
+						if ($location->get('code', $offlineHoldsObj->pickupLocation)){
+							$offlineHold['location'] = $location->displayName;
+						}
+						$sourceAndId  = new SourceAndId('ils:' . $offlineHoldsObj->bibId);
+						$recordDriver = new MarcRecord($sourceAndId);
+						if ($recordDriver->isValid()){
+							$offlineHold['title']           = $recordDriver->getTitle();
+							$offlineHold['author']          = $recordDriver->getPrimaryAuthor();
+							$offlineHold['sortTitle']       = $recordDriver->getSortableTitle();
+							$offlineHold['format']          = $recordDriver->getFormat();
+							$offlineHold['isbn']            = $recordDriver->getCleanISBN();
+							$offlineHold['upc']             = $recordDriver->getCleanUPC();
+							$offlineHold['format_category'] = $recordDriver->getFormatCategory();
+							$offlineHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
+							$offlineHold['link']            = $recordDriver->getRecordUrl();
+						}
+						$offlineHold['id']          = $offlineHoldsObj->bibId;
+						$offlineHold['bibId']       = $offlineHoldsObj->bibId;
+						$offlineHold['timeEntered'] = $offlineHoldsObj->timeEntered;
+						$offlineHold['status']      = $offlineHoldsObj->status;
+						//$offlineHold['notes']       = $offlineHoldsObj->notes;
+						$offlineHold['cancelable'] = true;
+						$offlineHold['cancelId']   = $offlineHoldsObj->id;
+						$offlineHolds[]            = $offlineHold;
+					}
+				}
+			}
+			$interface->assign('offlineHolds', $offlineHolds);
+		}
 
 
 		// Set up explanation blurb for My Holds page

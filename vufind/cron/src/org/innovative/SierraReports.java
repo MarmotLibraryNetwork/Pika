@@ -22,6 +22,7 @@ import org.pika.CronLogEntry;
 import org.pika.CronProcessLogEntry;
 import org.pika.IProcessHandler;
 import org.pika.PikaConfigIni;
+import org.pika.PikaSystemVariables;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -29,8 +30,7 @@ import java.io.IOException;
 import java.sql.*;
 
 /**
- * Description goes here
- * VuFind-Plus
+ * Pika
  * User: Mark Noble
  * Date: 5/18/14
  * Time: 8:24 PM
@@ -40,7 +40,7 @@ public class SierraReports implements IProcessHandler {
 	private Logger logger;
 	private String ils;
 	@Override
-	public void doCronProcess(String servername, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		this.logger = logger;
 		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Sierra Reports");
 		processLog.saveToDatabase(pikaConn, logger);

@@ -21,5 +21,5 @@ import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
 
 public interface IProcessHandler {
-	public void doCronProcess(String serverName, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger);
+	public void doCronProcess(String serverName, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables);
 }
