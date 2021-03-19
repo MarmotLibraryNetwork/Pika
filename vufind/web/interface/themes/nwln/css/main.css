@@ -10607,7 +10607,8 @@ fieldset[disabled] .btn-masquerade.active {
   background: #eee;
 }
 .facetTitle.panel-title,
-exploreMoreTitle.panel-title {
+exploreMoreTitle.panel-title,
+.form-group .panel-title {
   color: #333;
   text-shadow: 1px 1px #fff;
 }
@@ -10698,4 +10699,7 @@ exploreMoreTitle.panel-title {
   text-shadow: 1px 1px #fff;
   font-size: 16px;
   text-align: left;
+}
+.label-info {
+  background-color: #006aac;
 }
