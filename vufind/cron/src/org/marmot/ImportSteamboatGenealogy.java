@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 
 import au.com.bytecode.opencsv.CSVReader;
 import org.pika.PikaConfigIni;
+import org.pika.PikaSystemVariables;
 
 public class ImportSteamboatGenealogy implements IProcessHandler{
 	private CronProcessLogEntry processLog;
@@ -44,7 +45,7 @@ public class ImportSteamboatGenealogy implements IProcessHandler{
 	private PreparedStatement   updatePersonStmt;
 
 	@Override
-	public void doCronProcess(String servername, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String servername, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		
 		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Import Steamboat Genealogy");
 		if (!loadConfig(processSettings)){

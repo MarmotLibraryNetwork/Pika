@@ -32,7 +32,7 @@ import java.util.Date;
  */
 public class BuildGroupedWorkVersion4To5Map implements IProcessHandler {
 	@Override
-	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Build Grouped Work Version 4 To 5 Map");
 		processLog.saveToDatabase(pikaConn, logger);
 

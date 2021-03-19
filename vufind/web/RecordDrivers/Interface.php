@@ -250,10 +250,9 @@ abstract class RecordInterface {
 		global $timer;
 		$moreDetailsOptions = [];
 		$description        = $this->getDescription();
-		if (strlen($description) == 0){
+		if (empty($description)){
 			$description = 'Description not provided';
 		}
-		$description = strip_tags($description, '<a><b><p><i><em><strong><ul><li><ol>');
 		$interface->assign('description', $description);
 		$moreDetailsOptions['description'] = [
 			'label'         => 'Description',

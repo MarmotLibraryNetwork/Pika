@@ -237,6 +237,9 @@ class GoDeeperData {
 		}elseif (!empty($configArray['Contentcafe']['pw']) && !empty($configArray['Contentcafe']['showSummary'])){
 			$summaryData = self::getContentCafeSummary($isbn, $upc);
 		}
+		if (isset($summaryData['summary'])){
+			$summaryData['summary'] = strip_tags($summaryData['summary'], '<a><b><p><i><em><strong><ul><li><ol><br>');
+		}
 		return $summaryData;
 	}
 
@@ -253,7 +256,15 @@ class GoDeeperData {
 				$temp = [];
 				if (isset($response[0]->AnnotationItems->AnnotationItem)){
 					foreach ($response[0]->AnnotationItems->AnnotationItem as $summary){
-						$temp[strlen($summary->Annotation)] = $summary->Annotation;
+						if (strpos($summary->Annotation, '&amp;;') !== false){
+							// Try to slightly fix doubling encoding troubles
+							global $pikaLogger;
+							$pikaLogger->error('Probable bad encoding for summary from content cafe', [$isbn, $upc, $summary->Annotation]);
+							$summary->Annotation = str_replace(['&amp;', '&;',], ["&", "'",], $summary->Annotation);
+						}
+
+							$temp[strlen($summary->Annotation)] = $summary->Annotation;
+
 					}
 					$summaryData['summary'] = end($temp); // Grab the Longest Summary
 				}

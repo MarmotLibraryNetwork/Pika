@@ -58,7 +58,7 @@
 ////	private static PreparedStatement addNoteToHooplaExportLogStmt;
 //
 //	@Override
-//	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+//	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 //		Date startTime = new Date();
 //		logger.info(startTime.toString() + ": Starting Hoopla Export");
 //		startTimeStamp = startTime.getTime() / 1000;

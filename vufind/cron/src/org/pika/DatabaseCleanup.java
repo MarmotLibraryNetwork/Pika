@@ -35,7 +35,7 @@ import org.ini4j.Profile.Section;
 public class DatabaseCleanup implements IProcessHandler {
 
 	@Override
-	public void doCronProcess(String servername, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String servername, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Database Cleanup");
 		processLog.saveToDatabase(pikaConn, logger);
 

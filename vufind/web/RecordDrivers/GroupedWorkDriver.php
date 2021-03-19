@@ -1023,57 +1023,24 @@ class GroupedWorkDriver extends RecordInterface {
 		if ($this->fastDescription != null){
 			return $this->fastDescription;
 		}
-		if (!empty($this->fields['display_description'])){
-			$this->fastDescription = $this->fields['display_description'];
-		}else{
-			$this->fastDescription = "";
-			//This logic mirrors that used in the indexer.  No need to repeat if we didn't find anything in the indexer.
-			/*$relatedRecords = $this->getRelatedRecords();
-			//Look for a description from a book in english
-			foreach ($relatedRecords as $relatedRecord){
-				$language = is_array($relatedRecord['language']) ? $relatedRecord['language'][0] : $relatedRecord['language'];
-				if (($relatedRecord['format'] == 'Book' || $relatedRecord['format'] == 'eBook') && $language == 'English'){
-					if ($relatedRecord['driver']){
-						$fastDescription = $relatedRecord['driver']->getDescriptionFast();
-						if ($fastDescription != null && strlen($fastDescription) > 0){
-							$this->fastDescription = $fastDescription;
-							return $this->fastDescription;
-						}
-					}
-				}
-			}
-			//Didn't get a description, get the description from the first record that isn't a book or ebook
-			foreach ($relatedRecords as $relatedRecord){
-				$language = is_array($relatedRecord['language']) ? $relatedRecord['language'][0] : $relatedRecord['language'];
-				if (($relatedRecord['format'] != 'Book' && $relatedRecord['format'] != 'eBook') || !$language == 'English'){
-					if ($relatedRecord['driver']){
-						$fastDescription = $relatedRecord['driver']->getDescriptionFast();
-						if ($fastDescription != null && strlen($fastDescription) > 0){
-							$this->fastDescription =  $fastDescription;
-						}
-					}
-				}
-			}
-			$this->fastDescription =  '';
-			return $this->fastDescription;*/
-		}
+		$this->fastDescription = empty($this->fields['display_description']) ? '' : $this->fields['display_description'];
 		return $this->fastDescription;
 	}
 
 	function getDescription(){
 		$description = null;
 		$cleanIsbn   = $this->getCleanISBN();
-		if ($cleanIsbn != null && strlen($cleanIsbn) > 0){
+		if (!empty($cleanIsbn)){
 			require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
 			$summaryInfo = GoDeeperData::getSummary($cleanIsbn, $this->getCleanUPC());
 			if (isset($summaryInfo['summary'])){
 				$description = $summaryInfo['summary'];
 			}
 		}
-		if ($description == null){
+		if (empty($description)){
 			$description = $this->getDescriptionFast();
 		}
-		if ($description == null || strlen($description) == 0){
+		if (empty($description)){
 			$description = 'Description Not Provided';
 		}
 		return $description;
