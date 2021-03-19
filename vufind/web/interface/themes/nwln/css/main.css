@@ -10700,7 +10700,9 @@ exploreMoreTitle.panel-title,
   font-size: 16px;
   text-align: left;
 }
-.label-info,
-.label-default {
+.label-info {
   background-color: #006aac;
+}
+.label-default {
+  background-color: #056DAC;
 }
