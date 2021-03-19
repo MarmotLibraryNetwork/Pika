@@ -8300,8 +8300,8 @@ hr.menu {
   color: red;
 }
 #home-page-search {
-  background-color: #f0f0f0;
-  background: linear-gradient(to bottom, #f0f0f0, #f0f0f0);
+  background-color: #006aac;
+  background: linear-gradient(to bottom, #006aac, #3E91CA);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8347,7 +8347,7 @@ hr.menu {
 .searchSource {
   margin: 5px 0 0;
   color: #fff;
-  background-color: #f0f0f0;
+  background-color: #3E91CA;
   border: none;
   width: 90% !important;
 }
@@ -8358,8 +8358,8 @@ hr.menu {
   font-size: 85%;
 }
 #horizontal-search-box {
-  background-color: #f0f0f0;
-  background: linear-gradient(to bottom, #f0f0f0, #f0f0f0);
+  background-color: #006aac;
+  background: linear-gradient(to bottom, #006aac, #3E91CA);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -9886,8 +9886,8 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
 }
 #explore-more-sidebar {
-  background-color: #f0f0f0;
-  background: linear-gradient(to bottom, #f0f0f0, #f0f0f0);
+  background-color: #006aac;
+  background: linear-gradient(to bottom, #006aac, #3E91CA);
 }
 #explore-more-header {
   padding: 10px 25px 5px 0;
@@ -10463,6 +10463,7 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .header-button {
   font-weight: bolder;
+  background: #056DAC;
 }
 .header-button:hover {
   box-shadow: 2px 2px 5px darkgrey;
