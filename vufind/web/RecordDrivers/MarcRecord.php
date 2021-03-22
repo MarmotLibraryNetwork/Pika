@@ -2371,6 +2371,43 @@ class MarcRecord extends IndexRecord
 		}
 		return $opacMessage;
 	}
+
+
+	public function getItemVolume($itemId){
+		if (!empty($itemId)){
+			global $instanceName;
+			$cache    = new Pika\Cache(initCache());
+			$cacheKey = $itemId . '_volume_field_' . $instanceName;
+			$volume   = $cache->get($cacheKey);
+			if (empty($volume)){
+				if (!empty($this->indexingProfile)){
+					$itemTag            = $this->indexingProfile->itemTag;
+					$itemIdSubField     = $this->indexingProfile->itemRecordNumber;
+					$itemVolumeSubField = $this->indexingProfile->volume;
+					if (!empty($itemTag) && !empty($itemIdSubField) && $this->getMarcRecord() && $this->isValid()){
+						$itemRecords = $this->marcRecord->getFields($itemTag);
+						foreach ($itemRecords as $itemRecord){
+							/** @var File_MARC_Subfield $subfield */
+							$subfield = $itemRecord->getSubfield($itemIdSubField);
+							if (!empty($subfield)){
+								$itemRecordId = $subfield->getData();
+								if ($itemRecordId == $itemId){
+									$volume = $itemRecord->getSubfield($itemVolumeSubField)->getData();
+									if (!empty($volume)){
+										$cache->set($cacheKey, $volume, 600);
+										return $volume;
+									}
+									return false;
+								}
+							}
+						}
+					}
+				}
+			}
+			return $volume;
+		}
+		return false;
+	}
 }
 
 

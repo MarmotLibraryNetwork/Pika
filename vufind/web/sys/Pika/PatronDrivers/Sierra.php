@@ -1849,9 +1849,7 @@ EOT;
 				$pickupBranch = new Location();
 				$where        = "code = '{$hold->pickupLocation->code}'";
 				$pickupBranch->whereAdd($where);
-				$pickupBranch->find(1);
-				if ($pickupBranch->N > 0){
-					$pickupBranch->fetch();
+				if ($pickupBranch->find(1)){
 					$h['currentPickupId']   = $pickupBranch->locationId;
 					$h['currentPickupName'] = $pickupBranch->displayName;
 					$h['location']          = $pickupBranch->displayName;
@@ -1900,7 +1898,7 @@ EOT;
 				// record type and record id
 				$recordType = $hold->recordType;
 				// for item level holds we need to grab the bib id.
-				$id = $hold->record->id; //$m[1];
+				$itemId = $id = $hold->record->id; //$m[1];
 				if($recordType == 'i') {
 					$id = $this->_getBibIdFromItemId($id);
 				}
@@ -1908,9 +1906,9 @@ EOT;
 				$recordXD  = $this->getCheckDigit($id);
 
 				// get more info from record
-				$bibId = '.b'.$id.$recordXD;
-				$recordSourceAndId = new \SourceAndId($this->accountProfile->recordSource . ":" . $bibId);
-				$record = RecordDriverFactory::initRecordDriverById($recordSourceAndId);
+				$bibId             = '.b' . $id . $recordXD;
+				$recordSourceAndId = new \SourceAndId($this->accountProfile->recordSource . ':' . $bibId);
+				$record            = RecordDriverFactory::initRecordDriverById($recordSourceAndId);
 				if ($record->isValid()){
 					$h['id']              = $record->getUniqueID();
 					$h['shortId']         = $record->getShortId();
