@@ -123,7 +123,7 @@ class UInterface extends Smarty {
 
 
 		// Determine Offline Mode
-		global $offlineMode;
+		global $offlineMode;  //Assignment of this global variable happens here
 		$offlineMode = false;
 		if ($configArray['Catalog']['offline']){
 			$offlineMode = true;

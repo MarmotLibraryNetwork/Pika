@@ -38,7 +38,7 @@ class Admin_Libraries extends ObjectEditor {
 	function viewExistingObjects(){
 		global $interface;
 		//Basic List
-		$allObjects = $this->getAllObjects();
+		$allObjects = $this->getAllObjectsByPermission();
 		if (count($allObjects) === 1){
 			$this->navigateToLibraryPage(reset($allObjects)->libraryId);
 		}
@@ -46,7 +46,13 @@ class Admin_Libraries extends ObjectEditor {
 		$interface->setTemplate('../Admin/propertiesList.tpl');
 	}
 
-	function getAllObjects($orderBy = null){
+	/**
+	 * Fetch a list of libraries based on an Admin User's roles
+	 *
+	 * @param null $orderBy
+	 * @return array
+	 */
+	function getAllObjectsByPermission($orderBy = null){
 		$libraryList = [];
 
 		UserAccount::getLoggedInUser();

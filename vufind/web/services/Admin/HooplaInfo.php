@@ -47,11 +47,11 @@ class Admin_HooplaInfo extends Admin_Admin {
 		$endDate->setTime(23,59,59); //second before midnight
 
 		require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
-		$driver      = new HooplaDriver();
-		$startTime   = $startDate->getTimestamp();
-		$endTime     = $endDate->getTimestamp();
-		$libraries   = new Admin_Libraries();
-		$libraryList = $libraries->getAllObjects(); // accounts for permissions
+		$driver          = new HooplaDriver();
+		$startTime       = $startDate->getTimestamp();
+		$endTime         = $endDate->getTimestamp();
+		$libraries       = new Admin_Libraries();
+		$libraryList     = $libraries->getAllObjectsByPermission(); // accounts for permissions
 		$hooplaLibraries = [];
 		/** @var Library[] $libraryList */
 		foreach ($libraryList as $library){
@@ -60,14 +60,12 @@ class Admin_HooplaInfo extends Admin_Admin {
 				if (isset($checkOutsResponse->checkouts)){
 					$hooplaLibraries[] = [
 						'libraryName' => $library->displayName,
-						'checkouts' => $checkOutsResponse->checkouts,
+						'checkouts'   => $checkOutsResponse->checkouts,
 					];
-//					echo $library->displayName . ' Total Checkouts : '. $checkOutsResponse->checkouts . "\n";
 				}
 
 			}
 		}
-//		echo '</pre>';
 
 		global $interface;
 		$interface->assign('startDate', $startDate->getTimestamp());
@@ -79,6 +77,6 @@ class Admin_HooplaInfo extends Admin_Admin {
 	}
 
 	function getAllowableRoles(){
-		return ['opacAdmin'/*, 'cataloging'*//*, 'libraryAdmin', 'libraryManager'*/];
+		return ['opacAdmin', 'cataloging'/*, 'libraryAdmin', 'libraryManager'*/];
 	}
 }
