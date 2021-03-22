@@ -587,7 +587,7 @@ class Library extends DB_DataObject {
 					'includeAllRecordsInDateAddedFacets'          => array('property' => 'includeAllRecordsInDateAddedFacets',          'type' => 'checkbox', 'label' => 'Include All Records In Date Added Facets',                 'description' => 'Turn on to include all records (owned and included) in date added facets.', 'hideInLists' => true, 'default'=>false),
 					'includeOnOrderRecordsInDateAddedFacetValues' => array('property' => 'includeOnOrderRecordsInDateAddedFacetValues', 'type' => 'checkbox', 'label' => 'Include On Order Records In All Date Added Facet Values',  'description' => 'Use On Order records (date added value (tomorrow)) in calculations for all date added facet values. (eg. Added in the last day, week, etc.)', 'hideInLists' => true, 'default'=>true),
 
-					'facets' => array(
+					'facets' => [
 						'property'                   => 'facets',
 						'type'                       => 'oneToMany',
 						'label'                      => 'Facets',
@@ -601,19 +601,19 @@ class Library extends DB_DataObject {
 						'storeDb'                    => true,
 						'allowEdit'                  => true,
 						'canEdit'                    => true,
-						'additionalOneToManyActions' => array(
-							array(
+						'additionalOneToManyActions' => [
+							[
 								'text' => 'Copy Library Facets',
 								'url'  => '/Admin/Libraries?id=$id&amp;objectAction=copyFacetsFromLibrary',
-							),
-							array(
-								'text'  => 'Reset Facets To Default',
-								'url'   => '/Admin/Libraries?id=$id&amp;objectAction=resetFacetsToDefault',
-								'class' => 'btn-warning',
-                                'allowed_roles' => 'opacAdmin',
-							),
-						),
-					),
+							],
+							[
+								'text'          => 'Reset Facets To Default',
+								'url'           => '/Admin/Libraries?id=$id&amp;objectAction=resetFacetsToDefault',
+								'class'         => 'btn-warning',
+								'allowed_roles' => ['opacAdmin', 'libraryAdmin'],
+							],
+						],
+					],
 				)
 				),
 
@@ -638,7 +638,7 @@ class Library extends DB_DataObject {
 							'storeDb'                    => true,
 							'allowEdit'                  => true,
 							'canEdit'                    => false,
-							'additionalOneToManyActions' => array(),
+							'additionalOneToManyActions' => [],
 						),
 				)),
 			)),
@@ -695,14 +695,14 @@ class Library extends DB_DataObject {
 					'storeDb'                    => true,
 					'allowEdit'                  => true,
 					'canEdit'                    => false,
-					'additionalOneToManyActions' => array(
-						0 => array(
-							'text'  => 'Reset More Details To Default',
-							'url'   => '/Admin/Libraries?id=$id&amp;objectAction=resetMoreDetailsToDefault',
-							'class' => 'btn-warning',
-                            'allowed_roles' => 'opacAdmin',
-						),
-					),
+					'additionalOneToManyActions' => [
+						[
+							'text'          => 'Reset More Details To Default',
+							'url'           => '/Admin/Libraries?id=$id&amp;objectAction=resetMoreDetailsToDefault',
+							'class'         => 'btn-warning',
+							'allowed_roles' => 'opacAdmin',
+						],
+					],
 				),
 			)),
 
@@ -812,13 +812,13 @@ class Library extends DB_DataObject {
 						'storeDb'                    => true,
 						'allowEdit'                  => false,
 						'canEdit'                    => false,
-						'additionalOneToManyActions' => array(
-							0 => array(
+						'additionalOneToManyActions' => [
+							[
 								'text'  => 'Set Materials Request Form Structure To Default',
 								'url'   => '/Admin/Libraries?id=$id&amp;objectAction=defaultMaterialsRequestForm',
 								'class' => 'btn-warning',
-							),
-						),
+							],
+						],
 					),
 
 				),
@@ -882,13 +882,13 @@ class Library extends DB_DataObject {
 						'storeDb'       => true,
 						'allowEdit'     => true,
 						'canEdit'       => false,
-						'additionalOneToManyActions' => array(
-							array(
+						'additionalOneToManyActions' => [
+							[
 								'text'    => 'Clear Hoopla Settings',
 								'onclick' => 'Pika.Admin.clearLibraryHooplaSettings($id)',
 								'class'   => 'btn-warning',
-							),
-						),
+							],
+						],
 					),
 				),
 			),
@@ -944,13 +944,13 @@ class Library extends DB_DataObject {
 							'storeDb'                    => true,
 							'allowEdit'                  => true,
 							'canEdit'                    => false,
-							'additionalOneToManyActions' => array(
-								0 => array(
+							'additionalOneToManyActions' => [
+								[
 									'text'  => 'Reset Archive More Details To Default',
 									'url'   => '/Admin/Libraries?id=$id&amp;objectAction=resetArchiveMoreDetailsToDefault',
 									'class' => 'btn-warning',
-								),
-							),
+								],
+							],
 						),
 					)),
 
@@ -993,13 +993,13 @@ class Library extends DB_DataObject {
 					'storeDb'       => true,
 					'allowEdit'     => false,
 					'canEdit'       => false,
-					'additionalOneToManyActions' => array(
-						0 => array(
+					'additionalOneToManyActions' => [
+						[
 							'text'  => 'Set Archive Explore More Options To Default',
 							'url'   => '/Admin/Libraries?id=$id&amp;objectAction=defaultArchiveExploreMoreOptions',
 							'class' => 'btn-warning',
-						)
-					)
+						]
+					]
 				),
 
 				'archiveSearchFacets' => array(
@@ -1016,17 +1016,17 @@ class Library extends DB_DataObject {
 					'storeDb'                    => true,
 					'allowEdit'                  => true,
 					'canEdit'                    => true,
-					'additionalOneToManyActions' => array(
-						array(
+					'additionalOneToManyActions' => [
+						[
 							'text' => 'Copy Library Archive Search Facets',
 							'url'  => '/Admin/Libraries?id=$id&amp;objectAction=copyArchiveSearchFacetsFromLibrary',
-						),
-						array(
+						],
+						[
 							'text'  => 'Reset Archive Search Facets To Default',
 							'url'   => '/Admin/Libraries?id=$id&amp;objectAction=resetArchiveSearchFacetsToDefault',
 							'class' => 'btn-warning',
-						),
-					),
+						],
+					],
 				),
 			)),
 
