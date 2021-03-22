@@ -1920,7 +1920,7 @@ EOT;
 					$h['coverUrl']        = $record->getBookcoverUrl('medium');
 					if($recordType == 'i') {
 						// Get volume for Item holds
-						$h['volume'] = $record->getItemVolume('.i'. $itemId . $this->getCheckDigit($itemId));
+						$h['volume'] = $record->getItemVolume('.i' . $itemId . $this->getCheckDigit($itemId));
 					}
 				};
 			}
