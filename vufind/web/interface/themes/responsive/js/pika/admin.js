@@ -121,11 +121,12 @@ Pika.Admin = (function(){
 			return this.cloneLibraryHandler('cloneLibrary', copyFromId, displayName, subdomain, abName, facetLabelInput);
 		},
 		loadPtypes: function (){
+
 			Pika.Account.ajaxLogin(function (){
 				Pika.confirm("Loading Patron Types from Sierra will remove any Patron Types currently saved in Pika. Do you wish to continue?", function (){
 					Pika.loadingMessage();
 					$.getJSON("/Admin/AJAX?method=loadPtypes", function (data){
-						Pika.showMessage('Success', 'Patron Types loaded.', 0, true)
+						Pika.showMessage(data.title, data.body, 0, true)
 					}).fail(Pika.ajaxFail);
 				});
 				return false;

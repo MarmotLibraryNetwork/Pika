@@ -1014,16 +1014,16 @@ class Admin_AJAX extends AJAXHandler {
 
 	function loadPtypes(){
 		$results = [
-			'title' => 'Load Patron Types',
-			'body'  => '<div class="alert alert-danger">Failed to load Patron Types</div>',
+			'title' => 'Error',
+			'body'  => 'Failed to load Patron Types',
 		];
 
 		$sierraDna = new SierraDNA();
 		$res       = $sierraDna->loadPtypes();
 		if ($res){
 			$results = [
-				'title' => 'Load Patron Types',
-				'body'  => '<div class="alert alert-success">Patron Types loaded.</div>',
+				'title' => 'Success',
+				'body'  => 'Patron Types loaded.',
 			];
 		}
 		return $results;
