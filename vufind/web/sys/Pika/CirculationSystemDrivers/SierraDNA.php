@@ -40,6 +40,7 @@ class SierraDNA {
 
 	public function __construct() {
 		global $configArray;
+		$this->logger = new Logger('CirculationSystemDrives/SierraDNA');
 		$this->configArray = $configArray;
 		if (isset($configArray['Catalog']['sierra_conn_php'])){
 			$this->connectionString = $configArray['Catalog']['sierra_conn_php'];
@@ -47,7 +48,7 @@ class SierraDNA {
 			$this->connectionString = false;
 			$this->logger->error("No Sierra DNA connection string set.");
 		}
-		$this->logger = new Logger('CirculationSystemDrives/SierraDNA');
+
 	}
 
 	public function loadPtypes() {
