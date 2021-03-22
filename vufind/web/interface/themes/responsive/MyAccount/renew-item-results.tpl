@@ -6,5 +6,4 @@
 		<div class="alert alert-danger">{$renewResults.message}</div>
 	{/if}
 </div>
-}
 {/strip}
