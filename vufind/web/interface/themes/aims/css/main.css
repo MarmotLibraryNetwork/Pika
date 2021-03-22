@@ -3367,6 +3367,7 @@ input[type="button"].btn-block {
   font-size: 12px;
   line-height: 1.5;
   border-radius: 3px;
+  border-radius: 0px;
 }
 .btn-group-lg > .btn {
   padding: 10px 16px;
@@ -9547,9 +9548,8 @@ a.browse-thumbnail-sorted.active {
   vertical-align: top;
 }
 .facetValue {
-  padding: 0 0 0 30px;
+  padding: 5px 0px 5px 20px;
   color: #888888;
-  font-size: small;
 }
 .facetValue a {
   color: #888888;
@@ -9766,6 +9766,7 @@ a.browse-thumbnail-sorted.active {
     font-size: 12px;
     line-height: 1.5;
     border-radius: 3px;
+    border-radius: 0px;
   }
 }
 .search-results-navigation {
@@ -10596,4 +10597,13 @@ a#logoutLink {
 #horizontal-search-box {
   background-color: #221f1f;
   padding: 15px 0;
+}
+.btn,
+.btn-sm {
+  border-radius: 0px;
+}
+@media (max-width: 992px) {
+  .nielsenlibrarytxt {
+    font-size: 18px;
+  }
 }
