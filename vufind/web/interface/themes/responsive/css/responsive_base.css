@@ -9896,9 +9896,8 @@ a.browse-thumbnail-sorted.active {
   vertical-align: top;
 }
 .facetValue {
-  padding: 0 0 0 30px;
+  padding: 6px 0px 6px 20px;
   color: #888888;
-  font-size: small;
 }
 .facetValue a {
   color: #888888;
