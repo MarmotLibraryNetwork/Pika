@@ -9548,9 +9548,8 @@ a.browse-thumbnail-sorted.active {
   vertical-align: top;
 }
 .facetValue {
-  padding: 0 0 0 30px;
+  padding: 5px 0px 5px 20px;
   color: #888888;
-  font-size: small;
 }
 .facetValue a {
   color: #888888;
@@ -10602,4 +10601,9 @@ a#logoutLink {
 .btn,
 .btn-sm {
   border-radius: 0px;
+}
+@media (max-width: 992px) {
+  .nielsenlibrarytxt {
+    font-size: 18px;
+  }
 }
