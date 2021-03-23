@@ -1450,7 +1450,7 @@ class DBMaintenance extends Admin_Admin {
 					'title'       =>'Add Fines Display Amount Option to Library',
 					'description' => 'Add option in Library ECommerce to display badges only above set amount',
 					'sql'         => [
-						"ALTER TABLE `pika`.`library` ADD COLUMN `fineAlertAmount` FLOAT(11) NOT NULL DEFAULT '0.00' AFTER `minimumFineAmount`"
+						"ALTER TABLE `library` ADD COLUMN `fineAlertAmount` FLOAT(11) NOT NULL DEFAULT '0.00' AFTER `minimumFineAmount`"
 					]
 				],
 
