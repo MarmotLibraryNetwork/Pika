@@ -474,10 +474,10 @@ class Library extends DB_DataObject {
 				'enableMaterialsBooking'               => array('property'=>'enableMaterialsBooking', 'type'=>'checkbox', 'label'=>'Enable Materials Booking (Sierra Only)', 'description'=>'Check to enable integration of Sierra\'s Materials Booking module.', 'hideInLists' => true, 'default' => 0),
 				'allowLinkedAccounts'                  => array('property'=>'allowLinkedAccounts', 'type'=>'checkbox', 'label'=>'Allow Linked Accounts', 'description' => 'Whether or not users can link multiple library cards under a single Pika account.', 'hideInLists' => true, 'default' => 1),
 				'showLibraryHoursNoticeOnAccountPages' => array('property'=>'showLibraryHoursNoticeOnAccountPages', 'type'=>'checkbox', 'label'=>'Show Library Hours Notice on Account Pages', 'description'=>'Whether or not the Library Hours notice should be shown at the top of My Account\'s Checked Out, Holds and Bookings pages.', 'hideInLists' => true, 'default'=>true),
-				'pTypesSection'                        => array('property' => 'pTypesSectionSection', 'type' => 'section', 'label' => 'P-Types', 'hideInLists' => true,
+				'pTypesSection'                        => array('property' => 'pTypesSectionSection', 'type' => 'section', 'label' => 'P-Types (Sierra Only)', 'hideInLists' => true,
 						'helpLink'=>'https://docs.google.com/document/d/1337l_JDZAZDuSCugRWpHa4CVAfBBm8SMrAlda6hdf5o','properties' => array(
-					'pTypes'       => array('property'=>'pTypes', 'type'=>'text', 'label'=>'P-Types', 'description'=>'A list of pTypes that are valid for the library.  Separate multiple pTypes with commas.'),
-					'defaultPType' => array('property'=>'defaultPType', 'type'=>'text', 'label'=>'Default P-Type', 'description'=>'The P-Type to use when accessing a subdomain if the patron is not logged in.'),
+						'pTypes'       => ['property' =>'pTypes', 'type' =>'text', 'label' =>'P-Types', 'description' =>'A list of pTypes that are valid for the library.  Separate multiple pTypes with commas. -1 to disable pType calculations for this library.', 'isIndexingSetting' => true],
+						'defaultPType' => ['property' =>'defaultPType', 'type' =>'text', 'label' =>'Default P-Type', 'description' =>'The P-Type to use when accessing a subdomain if the patron is not logged in.'],
 				)),
 				'barcodeSection' => array('property' => 'barcodeSection', 'type' => 'section', 'label' => 'Barcode', 'hideInLists' => true,
 						'helpLink' => 'https://docs.google.com/document/d/12YnemF8l97ZbQ9kxGxhIkHBxmeD1pywAUcjNJ4mraw4', 'properties' => array(

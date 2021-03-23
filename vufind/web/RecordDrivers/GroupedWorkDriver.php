@@ -2872,8 +2872,8 @@ class GroupedWorkDriver extends RecordInterface {
 			$bookable         = $scopingDetails[7] == 'true';
 			$inLibraryUseOnly = $scopingDetails[8] == 'true';
 			$libraryOwned     = $scopingDetails[9] == 'true';
-			$holdablePTypes   = isset($scopingDetails[10]) ? $scopingDetails[10] : '';
-			$bookablePTypes   = isset($scopingDetails[11]) ? $scopingDetails[11] : '';
+			$holdablePTypes   = $scopingDetails[10] ?? '';
+			$bookablePTypes   = $scopingDetails[11] ?? '';
 			$status           = $curItem[13];
 
 			if (!$available && strtolower($status) == 'library use only'){
@@ -2883,6 +2883,7 @@ class GroupedWorkDriver extends RecordInterface {
 				$allLibraryUseOnly = false;
 			}
 
+			// If holdable pTypes were calculated for this scope, determine if the record is holdable to the scope's pTypes
 			if (strlen($holdablePTypes) > 0 && !in_array($holdablePTypes, self::SIERRA_PTYPE_WILDCARDS)){
 				$holdablePTypes = explode(',', $holdablePTypes);
 				$matchingPTypes = array_intersect($holdablePTypes, $activePTypes);
@@ -2895,6 +2896,7 @@ class GroupedWorkDriver extends RecordInterface {
 				$recordHoldable = true;
 			}
 
+			// If bookable pTypes were calculated for this scope, determine if the record is bookable to the scope's pTypes
 			if (strlen($bookablePTypes) > 0 && !in_array($bookablePTypes, self::SIERRA_PTYPE_WILDCARDS)){
 				$bookablePTypes = explode(',', $bookablePTypes);
 				$matchingPTypes = array_intersect($bookablePTypes, $activePTypes);
