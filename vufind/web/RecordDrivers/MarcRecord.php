@@ -2392,10 +2392,13 @@ class MarcRecord extends IndexRecord
 							if (!empty($subfield)){
 								$itemRecordId = $subfield->getData();
 								if ($itemRecordId == $itemId){
-									$volume = $itemRecord->getSubfield($itemVolumeSubField)->getData();
-									if (!empty($volume)){
-										$cache->set($cacheKey, $volume, 600);
-										return $volume;
+									$volumeSubField = $itemRecord->getSubfield($itemVolumeSubField);
+									if (!empty($volumeSubField)){
+										$volume = $volumeSubField->getData();
+										if (!empty($volume)){
+											$cache->set($cacheKey, $volume, 600);
+											return $volume;
+										}
 									}
 									return false;
 								}
