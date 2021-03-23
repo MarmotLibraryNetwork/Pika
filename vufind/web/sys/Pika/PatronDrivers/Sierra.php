@@ -1980,10 +1980,6 @@ EOT;
 			$this->logger->warn("Failed to remove patron from memcache: ".$patronObjectCacheKey);
 		}
 
-		// get title of record
-		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
-		$recordTitle  = $record->isValid() ? $record->getTitle() : null;
-
 		$params = [
 			'recordType'     => $recordType,
 			'recordNumber'   => (int)$recordNumber,
@@ -1998,7 +1994,7 @@ EOT;
 		$r = $this->_doRequest($operation, $params, "POST");
 
 		// check if error we need to do an item level hold
-		if($this->apiLastError && stristr($this->apiLastError,"Volume record selection is required to proceed")
+		if($this->apiLastError && stristr($this->apiLastError,'Volume record selection is required to proceed')
 		   || (stristr($this->apiLastError,"This record is not available") && (integer)$this->configArray['Catalog']['api_version'] == 4)) {
 			$items = $this->getItemVolumes($patron, $recordId);
 			$return = [
@@ -2025,19 +2021,24 @@ EOT;
 		}
 		// success! weeee :)
 		$return['success'] = true;
+
+		// get title of record
+		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
+		$recordTitle  = $record->isValid() ? $record->getTitle() : null;
+
 		if($recordTitle) {
 			$recordTitle = trim($recordTitle, ' /');
 			$return['message'] = "Your hold for <strong>{$recordTitle}</strong> was successfully placed.";
 		} else {
-			$return['message'] = "Your hold was successfully placed.";
+			$return['message'] = 'Your hold was successfully placed.';
 		}
 
 		return $return;
 	}
 
 
-	public function placeItemHold($patron, $recordId, $itemId, $pickupBranch){
-		return $this->placeHold($patron, $itemId, $pickupBranch);
+	public function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null){
+		return $this->placeHold($patron, $itemId, $pickupBranch, $cancelDate);
 	}
 
 	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch){
