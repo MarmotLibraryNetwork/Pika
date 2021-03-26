@@ -37,7 +37,7 @@
 						</div>
 				{/if}
 
-				{if count($issueSummary.holdings) > 0}
+				{if !empty($issueSummary.holdings)}
 					<button onclick="Pika.showMessage('{$issueSummary.location}', $('#issue-summary-holdings-{$smarty.foreach.summaryLoop.iteration}').html())" class="btn btn-xs btn-info">Show Individual Issues</button>
 					&nbsp;
 				{/if}
@@ -47,7 +47,7 @@
 				{/if}
 			</div>
 
-			{if count($issueSummary.holdings) > 0}
+			{if !empty($issueSummary.holdings)}
 				<div id='issue-summary-holdings-{$smarty.foreach.summaryLoop.iteration}' class="issue-summary-holdings striped" style="display:none;">
 					{include file="Record/copiesTableHeader.tpl"}
 					{foreach from=$issueSummary.holdings item=holding}

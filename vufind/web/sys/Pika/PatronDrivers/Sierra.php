@@ -1996,8 +1996,10 @@ EOT;
 		// check if error we need to do an item level hold
 		if($this->apiLastError && stristr($this->apiLastError,'Volume record selection is required to proceed')
 		   || (stristr($this->apiLastError,"This record is not available") && (integer)$this->configArray['Catalog']['api_version'] == 4)) {
-			$items = $this->getItemVolumes($patron, $recordId);
-			$return = [
+
+			$itemsAsVolumes = $r->details->itemsAsVolumes ?? null; // Response when item level hold is required includes the list of items
+			$items          = $this->getItemVolumes($patron, $recordId, $itemsAsVolumes);
+			$return         = [
 				'message'    => 'This title requires item level holds, please select an item to place a hold on.',
 				'success'    => 'true',
 				'canceldate' => $neededBy,
@@ -2572,49 +2574,61 @@ EOT;
 	 * patron.
 	 * @param $patron User
 	 * @param $bibId
+	 * @param null $itemsAsVolumes  list of items already provided by a call from the API
 	 * @return array|false
+	 * @throws ErrorException
 	 */
-	public function getItemVolumes($patron, $bibId){
+	public function getItemVolumes($patron, $bibId, $itemsAsVolumes = null){
 		// get item records from solr
-		$record      = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bibId);
-		$solrRecords = $record->getGroupedWorkDriver()->getRelatedRecord($this->accountProfile->recordSource . ':' . $bibId);
+		$itemDetails = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bibId);
+		$solrRecords = $itemDetails->getGroupedWorkDriver()->getRelatedRecord($this->accountProfile->recordSource . ':' . $bibId);
+		$apiVersion  = (int)$this->configArray['Catalog']['api_version'];
 
 		// get holdable item ids for patron from api.
 		// will only be available in v6+
 		$holdableItemNumbers = [];
-		$apiVersion = (int)$this->configArray['Catalog']['api_version'];
-		if ($apiVersion >= 6){
-			$recordNumber = substr($bibId, 2, -1); // remove the .x and the last check digit
-			$patronIlsId  = $this->getPatronId($patron->barcode);
-			$operation    = "patrons/" . $patronIlsId . "/holds/requests/form";
-			$params       = ['recordNumber' => $recordNumber];
-			$res          = $this->_doRequest($operation, $params);
+		if (empty($itemsAsVolumes)){
+			if ($apiVersion >= 6){
+				$recordNumber = substr($bibId, 2, -1); // remove the .x and the last check digit
+				$patronIlsId  = $this->getPatronId($patron->barcode);
+				$operation    = "patrons/$patronIlsId/holds/requests/form";
+				$params       = ['recordNumber' => $recordNumber];
+				$res          = $this->_doRequest($operation, $params);
 
-			if (!$res){
-				// error
-				return false;
+				if (!empty($res->itemsAsVolumes)){
+					// holdable ids
+					foreach ($res->itemsAsVolumes as $itemAsVolume){
+						$holdableItemNumbers[] = $itemAsVolume->id;
+					}
+				}
+
+				//Even if we get a bad response, we can still fallback to a list of items based on the Pika holdability determinations below
+
 			}
-
+		} else {
 			// holdable ids
-			foreach ($res->itemsAsVolumes as $itemAsVolume){
+			foreach ($itemsAsVolumes as $itemAsVolume){
 				$holdableItemNumbers[] = $itemAsVolume->id;
 			}
+
 		}
 		// TODO: END API CHECK HERE
 		$items = [];
-		foreach ($solrRecords['itemDetails'] as $record){
+		foreach ($solrRecords['itemDetails'] as $itemDetails){
 			// is holdable? skip if not.
 			if ($apiVersion >= 6){
-				$itemNumber = substr($record['itemId'], 2, -1);
+				$itemNumber = substr($itemDetails['itemId'], 2, -1);
 				if (!in_array($itemNumber, $holdableItemNumbers)){
 					continue;
 				}
+			} elseif (!$itemDetails['holdable']) {
+				continue; // Item is not holdable based on Pika calculations; don't add to list
 			}
 			$items[] = [
-				'itemNumber' => $record['itemId'],
-				'location'   => $record['shelfLocation'],
-				'callNumber' => $record['callNumber'],
-				'status'     => $record['status']
+				'itemNumber' => $itemDetails['itemId'],
+				'location'   => $itemDetails['shelfLocation'],
+				'callNumber' => $itemDetails['callNumber'],
+				'status'     => $itemDetails['status']
 			];
 		}
 
@@ -2999,6 +3013,9 @@ EOT;
 				$this->logger->warning($message);
 			}
 			$this->apiLastError = $message;
+			if (!empty($c->response->details->itemsAsVolumes)){
+				return $c->response;
+			}
 			return false;
 		}
 		// no errors
