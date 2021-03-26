@@ -1998,6 +1998,15 @@ EOT;
 		   || (stristr($this->apiLastError,"This record is not available") && (integer)$this->configArray['Catalog']['api_version'] == 4)) {
 
 			$itemsAsVolumes = $r->details->itemsAsVolumes ?? null; // Response when item level hold is required includes the list of items
+			if (!empty($r->detail->itemIds)){
+				// API version ~5.5 style response is a list of Ids; convert to a form matching the others;
+				$itemsAsVolumes = [];
+				foreach ($r->detail->itemIds as $itemId){
+					$obj              = new \stdClass();
+					$obj->id          = $itemId;
+					$itemsAsVolumes[] = $obj;
+				}
+			}
 			$items          = $this->getItemVolumes($patron, $recordId, $itemsAsVolumes);
 			$return         = [
 				'message'    => 'This title requires item level holds, please select an item to place a hold on.',
@@ -2582,12 +2591,12 @@ EOT;
 		// get item records from solr
 		$itemDetails = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bibId);
 		$solrRecords = $itemDetails->getGroupedWorkDriver()->getRelatedRecord($this->accountProfile->recordSource . ':' . $bibId);
-		$apiVersion  = (int)$this->configArray['Catalog']['api_version'];
 
 		// get holdable item ids for patron from api.
 		// will only be available in v6+
 		$holdableItemNumbers = [];
 		if (empty($itemsAsVolumes)){
+			$apiVersion  = (int)$this->configArray['Catalog']['api_version'];
 			if ($apiVersion >= 6){
 				$recordNumber = substr($bibId, 2, -1); // remove the .x and the last check digit
 				$patronIlsId  = $this->getPatronId($patron->barcode);
@@ -2602,7 +2611,7 @@ EOT;
 					}
 				}
 
-				//Even if we get a bad response, we can still fallback to a list of items based on the Pika holdability determinations below
+				// Even if we get a bad response, we can still fallback to a list of items based on the Pika holdability determinations below
 
 			}
 		} else {
@@ -2612,11 +2621,10 @@ EOT;
 			}
 
 		}
-		// TODO: END API CHECK HERE
 		$items = [];
 		foreach ($solrRecords['itemDetails'] as $itemDetails){
-			// is holdable? skip if not.
-			if ($apiVersion >= 6){
+			// in the list of items provided by the API; skip if not.
+			if (!empty($holdableItemNumbers)){
 				$itemNumber = substr($itemDetails['itemId'], 2, -1);
 				if (!in_array($itemNumber, $holdableItemNumbers)){
 					continue;
@@ -3014,6 +3022,9 @@ EOT;
 			}
 			$this->apiLastError = $message;
 			if (!empty($c->response->details->itemsAsVolumes)){
+				return $c->response;
+			} elseif (!empty($c->response->detail->itemIds)){
+				// API version 5.5 has a list of itemIds instead when "Volume record selection is required to proceed."
 				return $c->response;
 			}
 			return false;
