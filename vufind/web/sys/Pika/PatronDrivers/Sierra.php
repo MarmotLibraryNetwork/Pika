@@ -221,12 +221,15 @@ class Sierra {
 			$checkout['checkoutDate']   = strtotime($entry->outDate);
 			$checkout['renewCount']     = $entry->numberOfRenewals;
 			$checkout['barcode']        = $entry->barcode;
-//			$checkout['request']        = $entry->callNumber;
 			$checkout['itemid']         = $itemId;
 			$checkout['canrenew']       = true;
 			$checkout['renewIndicator'] = $checkoutId;
 			$checkout['renewMessage']   = '';
-			$recordDriver = new MarcRecord($this->accountProfile->recordSource . ":" . $bibId);
+			if (!empty($entry->callNumber)){
+				// Add call number value for internal ILL processing for Northern Waters
+				$checkout['_callNumber'] = $entry->callNumber;
+			}
+			$recordDriver = new MarcRecord($this->accountProfile->recordSource . ':' . $bibId);
 			if ($recordDriver->isValid()) {
 				$checkout['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
 				$checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
@@ -237,10 +240,10 @@ class Sierra {
 				$checkout['title_sort']    = $recordDriver->getSortableTitle();
 				$checkout['link']          = $recordDriver->getLinkUrl();
 			} else {
-				$checkout['coverUrl']      = "";
-				$checkout['groupedWorkId'] = "";
-				$checkout['format']        = "Unknown";
-				$checkout['author']        = "";
+				$checkout['coverUrl']      = '';
+				$checkout['groupedWorkId'] = '';
+				$checkout['format']        = 'Unknown';
+				$checkout['author']        = '';
 			}
 
 			$checkouts[] = $checkout;
