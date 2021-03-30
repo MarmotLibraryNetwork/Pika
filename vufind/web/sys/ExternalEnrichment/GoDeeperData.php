@@ -260,10 +260,14 @@ class GoDeeperData {
 							// Try to slightly fix doubling encoding troubles
 							global $pikaLogger;
 							$pikaLogger->error('Probable bad encoding for summary from content cafe', [$isbn, $upc, $summary->Annotation]);
-							$summary->Annotation = str_replace(['&amp;', '&;',], ["&", "'",], $summary->Annotation);
+							$summary->Annotation = str_replace(['&amp;', '&;',], ['&', "'",], $summary->Annotation);
+						}elseif (strpos($summary->Annotation, '&amp;') !== false){
+							// Otherwise replace xml encoding with & character
+							// (to fix html entities. eg. &amp;#160; to &#160;)
+							$summary->Annotation = str_replace('&amp;', '&', $summary->Annotation);
 						}
 
-							$temp[strlen($summary->Annotation)] = $summary->Annotation;
+						$temp[strlen($summary->Annotation)] = $summary->Annotation;
 
 					}
 					$summaryData['summary'] = end($temp); // Grab the Longest Summary

@@ -62,8 +62,8 @@ class SearchAPI extends AJAXHandler {
 
 
 	function getIndexStatus(){
-		$notes  = array();
-		$status = array();
+		$notes  = [];
+		$status = [];
 
 		$currentTime = time();
 
@@ -343,15 +343,21 @@ class SearchAPI extends AJAXHandler {
 
 		// Now that we have checked everything we are monitoring, consolidate the message and set the status to the most critical
 		if (count($notes) > 0){
-			$result = array(
+			$result = [
 				'status'  => in_array(self::STATUS_CRITICAL, $status) ? self::STATUS_CRITICAL : self::STATUS_WARN, // Criticals trump Warnings;
 				'message' => implode('; ', $notes),
-			);
+			];
+		}elseif ($fullIndexRunning){
+			$result = [
+				'status'  => self::STATUS_OK,
+				'message' => "Monitoring Paused during full reindex.",
+			];
+
 		}else{
-			$result = array(
+			$result = [
 				'status'  => self::STATUS_OK,
 				'message' => "Everything is current",
-			);
+			];
 		}
 
 		if (isset($_REQUEST['prtg'])){
