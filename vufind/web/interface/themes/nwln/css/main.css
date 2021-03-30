@@ -10713,6 +10713,12 @@ exploreMoreTitle.panel-title,
   line-height: 1.2;
   border-bottom: none;
 }
+.panel-group .panel.panel-default .panel-heading {
+  background: #f5f5f5;
+}
+.panel.panel-default .panel-heading {
+  background: #006aac;
+}
 .facetList {
   background: #006aac;
 }
