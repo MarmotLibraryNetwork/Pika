@@ -1,5 +1,5 @@
 {strip}
-	<h2>{*In *}{$interLibraryLoanName}</h2>
+	<h2>In {$interLibraryLoanName}</h2>
 	<div class="row" id="prospectorSection">
 		<div class="col-tn-12 col-sm-3">
 			<img class="center-block" src="{img filename='innReachEncoreLogo.png'}" style="max-width: 100%" alt="{$interLibraryLoanName} Logo">
