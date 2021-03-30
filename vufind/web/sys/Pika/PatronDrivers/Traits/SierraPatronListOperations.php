@@ -39,6 +39,8 @@ trait SierraPatronListOperations {
 	use PatronListOperations;
 
 
+ public $classicListsRegex = '/<tr[^>]*?class="patFuncEntry"[^>]*?>.*?<input type="checkbox" id ="(\\d+)".*?<a.*?>(.*?)<\/a>.*?<td[^>]*class="patFuncDetails">(.*?)<\/td>.*?<\/tr>/si';
+
 	/**
 	 * Import Lists from the ILS
 	 *
@@ -69,7 +71,8 @@ trait SierraPatronListOperations {
 				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 
 				// Now that we have the table, get the actual list names and ids
-				preg_match_all('/<tr[^>]*?class="patFuncEntry"[^>]*?>.*?<input type="checkbox" id ="(\\d+)".*?<a.*?>(.*?)<\/a>.*?<td[^>]*class="patFuncDetails">(.*?)<\/td>.*?<\/tr>/si', $allListTable, $listDetails, PREG_SET_ORDER);
+				// (You can set $this->classicListsRegex in the Class handler for the specific library to handle differences for that library)
+				preg_match_all($this->classicListsRegex, $allListTable, $listDetails, PREG_SET_ORDER);
 				if (!empty($listDetails)){
 					foreach ($listDetails as $listDetail){
 						$classicListId          = $listDetail[1];
@@ -94,7 +97,8 @@ trait SierraPatronListOperations {
 							$classicListTitlesTable = $listsDetailsMatches[1];
 
 							// Get the bib numbers for the title
-							preg_match_all('/<input type="checkbox" name="(b\\d{1,7})".*?<span[^>]*class="patFuncTitle(?:Main)?">(.*?)<\/span>/si', $classicListTitlesTable, $bibNumberMatches, PREG_SET_ORDER);
+							$classicListEntryRegex = '/<input type="checkbox" name="(?:name_pfmark_cancelx)(b\\d+?)".*?<span[^>]*class="patFuncTitle(?:Main)?">(.*?)<\/span>/si';
+							preg_match_all($classicListEntryRegex, $classicListTitlesTable, $bibNumberMatches, PREG_SET_ORDER);
 							if (!empty($bibNumberMatches)){
 								foreach ($bibNumberMatches as $bibNumberMatch){
 									$shortBibNumber  = $bibNumberMatch[1];
@@ -174,7 +178,7 @@ trait SierraPatronListOperations {
 		];
 		$c->setHeaders($headers);
 
-		$cookie   = tempnam("/tmp", "CURLCOOKIE");
+		$cookie   = @tempnam("/tmp", "CURLCOOKIE");
 		$curlOpts = [
 			CURLOPT_CONNECTTIMEOUT    => 20,
 			CURLOPT_TIMEOUT           => 60,

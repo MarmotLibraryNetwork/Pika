@@ -256,9 +256,11 @@ Pika.Lists = (function(){
 		},
 
 		importListsFromClassic: function (){
-			if (confirm("This will import any lists you had defined in the old catalog.  This may take several minutes depending on the size of your lists. Are you sure you want to continue?")){
-				window.location = "/MyAccount/ImportListsFromClassic";
-			}
+			Pika.Account.ajaxLogin(function(){
+				Pika.confirm("This will import any lists you had defined in the old catalog.  This may take several minutes depending on the size of your lists. Are you sure you want to continue?", function(){
+					window.location = "/MyAccount/ImportListsFromClassic";
+				});
+			});
 			return false;
 		}//,
 

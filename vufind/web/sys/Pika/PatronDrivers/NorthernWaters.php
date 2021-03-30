@@ -25,8 +25,17 @@
 
 namespace Pika\PatronDrivers;
 
+use Pika\SierraPatronListOperations;
+
+require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/SierraPatronListOperations.php";
 
 class NorthernWaters extends Sierra {
+
+	use SierraPatronListOperations {
+		importListsFromIls as protected importListsFromIlsFromTrait;
+	}
+
+
 	public function getMyCheckouts($patron, $linkedAccount = false){
 		$myCheckOuts = parent::getMyCheckouts($patron, $linkedAccount);
 		foreach ($myCheckOuts as &$checkOut){
@@ -42,6 +51,13 @@ class NorthernWaters extends Sierra {
 			}
 		}
 		return $myCheckOuts;
+	}
+
+	function importListsFromIls(\User $patron){
+		$this->classicListsRegex = '/<tr[^>]*?class="patFuncEntry"[^>]*?>.*?<a.*?listNum=(.*?)">(.*?)<\/a>.*?<td[^>]*class="patFuncDetails">(.*?)<\/td>.*?<\/tr>/si';
+		// Regex to screen scrape Northern Waters' Sierra Classic Opac user lists
+
+		return $this->importListsFromIlsFromTrait($patron);
 	}
 
 }

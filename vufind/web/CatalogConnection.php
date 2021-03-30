@@ -1173,10 +1173,10 @@ class CatalogConnection
 		if ($this->checkFunction('importListsFromIls')){
 			return $this->driver->importListsFromIls($patron);
 		}else{
-			return array(
+			return [
 					'success' => false,
-					'errors' => array('Importing Lists has not been implemented for this ILS.')
-			);
+					'errors' => ['Importing Lists has not been implemented for this ILS.']
+			];
 		}
 	}
 
