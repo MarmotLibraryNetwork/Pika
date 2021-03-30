@@ -4,7 +4,7 @@
 		{assign var="totalFines" value=$user->getTotalFines()}
 		{if ($showFines && $totalFines > 0) || ($showExpirationWarnings && $user->expireClose)}
 			<div id="myAccountFines">
-				{if $showFines && ($totalFines >= $fineAlertAmount)}
+				{if $showFines && ($totalFines >= $fineAlertAmount) && ($totalFines > 0.00)}
 
 						<div class="myAccountLink">
 							<a href="/MyAccount/Fines/"  style="color:red; font-weight:bold;">
