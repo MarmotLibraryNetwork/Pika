@@ -237,7 +237,7 @@ trait SierraPatronListOperations {
 			}
 		}
 
-		$scope    = $this->getLibraryScope(); // IMPORTANT: Scope is needed for Bookings Actions to work
+		$scope    = $this->getLibrarySierraScope(); // IMPORTANT: Scope is needed for Bookings Actions to work
 		$optUrl   = $patronAction ? $vendorOpacUrl . '/patroninfo~S' . $scope . '/' . $sierraPatronId . '/' . $pageToCall
 			: $vendorOpacUrl . '/' . $pageToCall;
 		// Most curl calls are patron interactions, getting the bookings calendar isn't
@@ -265,7 +265,7 @@ trait SierraPatronListOperations {
 	 * @param bool $checkLibraryRestrictions  Whether or not to condition the use of Sierra OPAC scope by the library setting $restrictSearchByLibrary;
 	 * @return mixed|string
 	 */
-	protected function getLibraryScope($checkLibraryRestrictions = false){
+	protected function getLibrarySierraScope($checkLibraryRestrictions = false){
 
 		//Load the holding label for the branch where the user is physically.
 		$searchLocation = \Location::getSearchLocation();
@@ -279,12 +279,12 @@ trait SierraPatronListOperations {
 				return $searchLibrary->scope;
 			}
 		}
-		return $this->getDefaultScope();
+		return $this->getDefaultSierraScope();
 	}
 
-	protected function getDefaultScope(){
+	protected function getDefaultSierraScope(){
 		global $configArray;
-		return isset($configArray['OPAC']['defaultScope']) ? $configArray['OPAC']['defaultScope'] : '93';
+		return $configArray['OPAC']['defaultScope'] ?? '93';
 	}
 
 }
