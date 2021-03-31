@@ -193,9 +193,9 @@ class Location extends DB_DataObject {
 
 		$structure = array(
 			'locationId'                      => ['property' => 'locationId', 'type' => 'label', 'label' => 'Location Id', 'description' => 'The unique id of the location within the database'],
-			'code'                            => ['property' => 'code', 'type' => 'text', 'label' => 'Code', 'description' => 'The code for use when communicating with the ILS', 'required' => true],
+			'code'                            => ['property' => 'code', 'type' => 'text', 'label' => 'Code', 'description' => 'The code for use when communicating with the ILS', 'required' => true, 'isIndexingSetting' => true],
 			'catalogUrl'                      => ['property' => 'catalogUrl', 'type' => 'label', 'label' => 'Catalog URL', 'description' => 'The catalog url used for this location'],
-			'subLocation'                     => ['property' => 'subLocation', 'type' => 'text', 'label' => 'Sub Location Code (Koha IlS Only)', 'description' => 'The sub location or collection used to identify this location', 'hideInLists' => true],
+			'subLocation'                     => ['property' => 'subLocation', 'type' => 'text', 'label' => 'Sub Location Code (Koha ILS Only)', 'description' => 'The sub location or collection used to identify this location', 'hideInLists' => true, 'isIndexingSetting' => true],
 			'displayName'                     => ['property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'The full name of the location for display to the user', 'size' => '40'],
 			'showDisplayNameInHeader'         => ['property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false],
 			'libraryId'                       => ['property' => 'libraryId', 'type' => 'enum', 'label' => 'Library', 'values' => $libraryList, 'description' => 'A link to the library which the location belongs to'],
@@ -231,15 +231,15 @@ class Location extends DB_DataObject {
 
 			'searchingSection'  => array(
 				'property' => 'searchingSection', 'type' => 'section', 'label' => 'Searching', 'hideInLists' => true,
-                'helpLink' => 'https://docs.google.com/document/d/1QQ7bNfGx75ImTguxEOmf7eCtdrVN9vi8FpWtWY_O3OU',
-                'properties' => array(
+				'helpLink'   => 'https://docs.google.com/document/d/1QQ7bNfGx75ImTguxEOmf7eCtdrVN9vi8FpWtWY_O3OU',
+				'properties' => array(
 					array('property' => 'restrictSearchByLocation', 'type' => 'checkbox', 'label' => 'Restrict Search By Location', 'description' => 'Whether or not search results should only include titles from this location', 'hideInLists' => true, 'default' => false),
-					array('property' => 'publicListsToInclude', 'type' => 'enum', 'values' => array(0 => 'No Lists', '1' => 'Lists from this library', '4' => 'Lists from library list publishers Only', '2' => 'Lists from this location', '5' => 'Lists from list publishers at this location Only', '6' => 'Lists from all list publishers', '3' => 'All Lists'), 'label' => 'Public Lists To Include', 'description' => 'Which lists should be included in this scope'),
+					array('property' => 'publicListsToInclude', 'type' => 'enum', 'values' => [0 => 'No Lists', '1' => 'Lists from this library', '4' => 'Lists from library list publishers Only', '2' => 'Lists from this location', '5' => 'Lists from list publishers at this location Only', '6' => 'Lists from all list publishers', '3' => 'All Lists'], 'label' => 'Public Lists To Include', 'description' => 'Which lists should be included in this scope', 'isIndexingSetting' => true),
 					array('property' => 'boostByLocation', 'type' => 'checkbox', 'label' => 'Boost By Location', 'description' => 'Whether or not boosting of titles owned by this location should be applied', 'hideInLists' => true, 'default' => true),
 					array('property' => 'additionalLocalBoostFactor', 'type' => 'integer', 'label' => 'Additional Local Boost Factor', 'description' => 'An additional numeric boost to apply to any locally owned and locally available titles', 'hideInLists' => true, 'default' => 1),
 					array(
 						'property' => 'searchBoxSection', 'type' => 'section', 'label' => 'Search Box', 'hideInLists' => true, 'properties' => array(
-						array('property' => 'systemsToRepeatIn', 'type' => 'text', 'label' => 'Systems To Repeat In', 'description' => 'A list of library codes that you would like to repeat search in separated by pipes |.', 'hideInLists' => true),
+						array('property' => 'systemsToRepeatIn', 'type' => 'text', 'label' => 'Other Libraries or Locations To Repeat In', 'description' => 'A list of library codes that you would like to repeat search in separated by pipes |.', 'hideInLists' => true),
 						array('property' => 'repeatSearchOption', 'type' => 'enum', 'values' => array('none' => 'None', 'librarySystem' => 'Library System', 'marmot' => 'Entire Consortium'), 'label' => 'Repeat Search Options (requires Restrict Search By Location to be ON)', 'description' => 'Where to allow repeating search. Valid options are: none, librarySystem, marmot, all', 'default' => 'marmot'),
 						array('property' => 'repeatInOnlineCollection', 'type' => 'checkbox', 'label' => 'Repeat In Online Collection', 'description' => 'Turn on to allow repeat search in the Online Collection.', 'hideInLists' => true, 'default' => false),
 						array('property' => 'repeatInProspector', 'type' => 'checkbox', 'label' => 'Repeat In ' . $innReachEncoreName, 'description' => 'Turn on to allow repeat search in ' . $innReachEncoreName . ' functionality.', 'hideInLists' => true, 'default' => false),
@@ -254,14 +254,14 @@ class Location extends DB_DataObject {
 							array('property' => 'availabilityToggleLabelLocal',                'type' => 'text',     'label' => 'Local Collection Toggle Label', 'description' => 'The label to show when viewing the local collection i.e. Library Name / Local Collection.  Leave blank to hide the button.', 'default' => '{display name}'),
 							array('property' => 'availabilityToggleLabelAvailable',            'type' => 'text',     'label' => 'Available Toggle Label', 'description' => 'The label to show when viewing available items i.e. Available Now / Available Locally / Available Here.', 'default' => 'Available Now'),
 							array('property' => 'availabilityToggleLabelAvailableOnline',      'type' => 'text',     'label' => 'Available Online Toggle Label', 'description' => 'The label to show when viewing available items i.e. Available Online.', 'default' => 'Available Online'),
-							array('property' => 'baseAvailabilityToggleOnLocalHoldingsOnly',   'type' => 'checkbox', 'label' => 'Base Availability Toggle on Local Holdings Only', 'description'=>'Turn on to use local materials only in availability toggle.', 'hideInLists' => true, 'default'=>false),
-							array('property' => 'includeOnlineMaterialsInAvailableToggle',     'type' => 'checkbox', 'label' => 'Include Online Materials in Available Toggle', 'description'=>'Turn on to include online materials in both the Available Now and Available Online Toggles.', 'hideInLists' => true, 'default'=>false),
-							array('property' => 'facetLabel',                                  'type' => 'text',     'label' => 'Facet Label', 'description'=>'The label of the facet that identifies this location.', 'hideInLists' => true, 'size'=>'40'),
-							array('property' => 'includeAllLibraryBranchesInFacets',           'type' => 'checkbox', 'label' => 'Include All Library Branches In Facets', 'description'=>'Turn on to include all branches of the library within facets (ownership and availability).', 'hideInLists' => true, 'default'=>true),
-							array('property' => 'additionalLocationsToShowAvailabilityFor',    'type' => 'text',     'label' => 'Additional Locations to Include in Available At Facet', 'description'=>'A list of library codes that you would like included in the available at facet separated by pipes |.', 'size'=>'20', 'hideInLists' => true,),
-							array('property' => 'includeAllRecordsInShelvingFacets',           'type' => 'checkbox', 'label' => 'Include All Records In Shelving Facets', 'description'=>'Turn on to include all records (owned and included) in shelving related facets (detailed location, collection).', 'hideInLists' => true, 'default'=>false),
-							array('property' => 'includeAllRecordsInDateAddedFacets',          'type' => 'checkbox', 'label' => 'Include All Records In Date Added Facets', 'description'=>'Turn on to include all records (owned and included) in date added facets.', 'hideInLists' => true, 'default'=>false),
-							array('property' => 'includeOnOrderRecordsInDateAddedFacetValues', 'type' => 'checkbox', 'label' => 'Include On Order Records In All Date Added Facet Values',  'description' => 'Use On Order records (date added value (tomorrow)) in calculations for all date added facet values. (eg. Added in the last day, week, etc.)', 'hideInLists' => true, 'default'=>true),
+							array('property' => 'baseAvailabilityToggleOnLocalHoldingsOnly',   'type' => 'checkbox', 'label' => 'Base Availability Toggle on Local Holdings Only', 'description'=>'Turn on to use local materials only in availability toggle.', 'hideInLists' => true, 'default'=>false, 'isIndexingSetting' => true),
+							array('property' => 'includeOnlineMaterialsInAvailableToggle',     'type' => 'checkbox', 'label' => 'Include Online Materials in Available Toggle', 'description'=>'Turn on to include online materials in both the Available Now and Available Online Toggles.', 'hideInLists' => true, 'default'=>false, 'isIndexingSetting' => true),
+							array('property' => 'facetLabel',                                  'type' => 'text',     'label' => 'Facet Label', 'description'=>'The label of the facet that identifies this location.', 'hideInLists' => true, 'size'=>'40', 'isIndexingSetting' => true),
+							array('property' => 'includeAllLibraryBranchesInFacets',           'type' => 'checkbox', 'label' => 'Include All Library Branches In Facets', 'description'=>'Turn on to include all branches of the library within facets (ownership and availability).', 'hideInLists' => true, 'default'=>true, 'isIndexingSetting' => true),
+							array('property' => 'additionalLocationsToShowAvailabilityFor',    'type' => 'text',     'label' => 'Additional Locations to Include in Available At Facet', 'description'=>'A list of library codes that you would like included in the available at facet separated by pipes |.', 'size'=>'20', 'hideInLists' => true, 'isIndexingSetting' => true),
+							array('property' => 'includeAllRecordsInShelvingFacets',           'type' => 'checkbox', 'label' => 'Include All Records In Shelving Facets', 'description'=>'Turn on to include all records (owned and included) in shelving related facets (detailed location, collection).', 'hideInLists' => true, 'default'=>false, 'isIndexingSetting' => true),
+							array('property' => 'includeAllRecordsInDateAddedFacets',          'type' => 'checkbox', 'label' => 'Include All Records In Date Added Facets', 'description'=>'Turn on to include all records (owned and included) in date added facets.', 'hideInLists' => true, 'default'=>false, 'isIndexingSetting' => true),
+							array('property' => 'includeOnOrderRecordsInDateAddedFacetValues', 'type' => 'checkbox', 'label' => 'Include On Order Records In All Date Added Facet Values',  'description' => 'Use On Order records (date added value (tomorrow)) in calculations for all date added facet values. (eg. Added in the last day, week, etc.)', 'hideInLists' => true, 'default'=>true, 'isIndexingSetting' => true),
 							'facets' => array(
 								'property'      => 'facets',
 								'type'          => 'oneToMany',
@@ -415,16 +415,16 @@ class Location extends DB_DataObject {
 			),
 
 			/* OVERDRIVE SECTION */
-			'overdriveSection'  => array(
+			'overdriveSection'  => [
 				'property' => 'overdriveSection', 'type' => 'section', 'label' => 'OverDrive', 'hideInLists' => true,
-                'helpLink' => 'https://docs.google.com/document/d/1HG7duKI4-gbOlgDvMlQrib52LV0BBUhzGD7Q69QLziM',
-                'properties' => array(
-					'enableOverdriveCollection' => array('property' => 'enableOverdriveCollection', 'type' => 'checkbox', 'label' => 'Enable Overdrive Collection', 'description' => 'Whether or not titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true),
-					'includeOverDriveAdult'     => array('property' => 'includeOverDriveAdult', 'type' => 'checkbox', 'label' => 'Include Adult Titles', 'description' => 'Whether or not adult titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true),
-					'includeOverDriveTeen'      => array('property' => 'includeOverDriveTeen', 'type' => 'checkbox', 'label' => 'Include Teen Titles', 'description' => 'Whether or not teen titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true),
-					'includeOverDriveKids'      => array('property' => 'includeOverDriveKids', 'type' => 'checkbox', 'label' => 'Include Kids Titles', 'description' => 'Whether or not kids titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true),
-				),
-			),
+				'helpLink' => 'https://docs.google.com/document/d/1HG7duKI4-gbOlgDvMlQrib52LV0BBUhzGD7Q69QLziM',
+				'properties' => [
+					'enableOverdriveCollection' => ['property' => 'enableOverdriveCollection', 'type' => 'checkbox', 'label' => 'Enable Overdrive Collection', 'description' => 'Whether or not titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true],
+					'includeOverDriveAdult'     => ['property' => 'includeOverDriveAdult', 'type' => 'checkbox', 'label' => 'Include Adult Titles', 'description' => 'Whether or not adult titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true],
+					'includeOverDriveTeen'      => ['property' => 'includeOverDriveTeen', 'type' => 'checkbox', 'label' => 'Include Teen Titles', 'description' => 'Whether or not teen titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true],
+					'includeOverDriveKids'      => ['property' => 'includeOverDriveKids', 'type' => 'checkbox', 'label' => 'Include Kids Titles', 'description' => 'Whether or not kids titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true],
+				],
+			],
 
 			/* HOOPLA SECTION */
 			'hooplaSection' => array(
@@ -444,6 +444,7 @@ class Location extends DB_DataObject {
 						'storeDb'       => true,
 						'allowEdit'     => true,
 						'canEdit'       => false,
+						'isIndexingSetting'          => true,
 						'additionalOneToManyActions' => array(
 							array(
 								'text'    => 'Copy Hoopla Settings From Parent Library',
@@ -483,42 +484,44 @@ class Location extends DB_DataObject {
                 ),
 			),
 
-			'recordsOwned' => array(
-				'property'      => 'recordsOwned',
-				'type'          => 'oneToMany',
-				'label'         => 'Records Owned',
-				'description'   => 'Information about what records are owned by the location',
-				'keyThis'       => 'locationId',
-				'keyOther'      => 'locationId',
-				'subObjectType' => 'LocationRecordOwned',
-				'structure'     => $locationRecordOwnedStructure,
-				'sortable'      => true,
-				'storeDb'       => true,
-				'allowEdit'     => false,
-				'canEdit'       => false,
-			),
+			'recordsOwned' => [
+				'property'          => 'recordsOwned',
+				'type'              => 'oneToMany',
+				'label'             => 'Records Owned',
+				'description'       => 'Information about what records are owned by the location',
+				'keyThis'           => 'locationId',
+				'keyOther'          => 'locationId',
+				'subObjectType'     => 'LocationRecordOwned',
+				'structure'         => $locationRecordOwnedStructure,
+				'sortable'          => true,
+				'storeDb'           => true,
+				'allowEdit'         => false,
+				'canEdit'           => false,
+				'isIndexingSetting' => true,
+			],
 
-			'recordsToInclude' => array(
-				'property'      => 'recordsToInclude',
-				'type'          => 'oneToMany',
-				'label'         => 'Records To Include',
-				'description'   => 'Information about what records to include in this scope',
-				'keyThis'       => 'locationId',
-				'keyOther'      => 'locationId',
-				'subObjectType' => 'LocationRecordToInclude',
-				'structure'     => $locationRecordToIncludeStructure,
-				'sortable'      => true,
-				'storeDb'       => true,
-				'allowEdit'     => false,
-				'canEdit'       => false,
-                'additionalOneToManyActions' => array(
-                    array(
-                        'text' => 'Copy Included Records from Location',
-                        'onclick' => 'Pika.Admin.copyLocationIncludedRecords($id)',
-                    ),
-                ),
-			),
-			'includeLibraryRecordsToInclude' => array('property' => 'includeLibraryRecordsToInclude', 'type' => 'checkbox', 'label' => 'Include Library Records To Include', 'description' => 'Whether or not the records to include from the parent library should be included for this location', 'hideInLists' => true, 'default' => true),
+			'recordsToInclude'               => [
+				'property'                   => 'recordsToInclude',
+				'type'                       => 'oneToMany',
+				'label'                      => 'Records To Include',
+				'description'                => 'Information about what records to include in this scope',
+				'keyThis'                    => 'locationId',
+				'keyOther'                   => 'locationId',
+				'subObjectType'              => 'LocationRecordToInclude',
+				'structure'                  => $locationRecordToIncludeStructure,
+				'sortable'                   => true,
+				'storeDb'                    => true,
+				'allowEdit'                  => false,
+				'canEdit'                    => false,
+				'isIndexingSetting'          => true,
+				'additionalOneToManyActions' => [
+					[
+						'text'    => 'Copy Included Records from Location',
+						'onclick' => 'Pika.Admin.copyLocationIncludedRecords($id)',
+					],
+				],
+			],
+			'includeLibraryRecordsToInclude' => ['property' => 'includeLibraryRecordsToInclude', 'type' => 'checkbox', 'label' => 'Include Library Records To Include', 'description' => 'Whether or not the records to include from the parent library should be included for this location', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true],
 		);
 
 		if (UserAccount::userHasRoleFromList(['locationManager', 'libraryManager']) && !UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin'])){
