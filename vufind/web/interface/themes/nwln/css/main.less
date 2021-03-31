@@ -90,6 +90,7 @@
   }
   &.selected {
     border: 1px solid @selectedCategoryBorderColor;
+
     div {
       background: @selectedCategoryColor;
       font-size: @browse-category-font-size;
@@ -102,6 +103,16 @@
     background: #E4E4E4;
     transition: all .3s ease-in-out;
   }
+}
+
+#browse-category-carousel .browse-category.selected div{
+  color: white;
+  text-shadow: 1px 1px #333;
+}
+#browse-sub-category-menu button.selected
+{
+  color: white;
+  text-shadow: 1px 1px #333;
 }
 
 #browse-category-picker {
@@ -217,6 +228,14 @@
   //background: rgba(230,230,230,.9);
 }
 
+#horizontal-search-box #horizontal-search-label{
+  color: white;
+  text-shadow: 1px 1px #333;
+}
+#advancedSearchLink{
+  color: white;
+  text-shadow: 1px 1px #333;
+}
 #home-page-login {
   text-shadow: none;
 }

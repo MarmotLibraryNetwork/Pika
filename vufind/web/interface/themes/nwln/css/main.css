@@ -10615,6 +10615,14 @@ fieldset[disabled] .btn-masquerade.active {
   -webkit-transition: all 0.3s ease-in-out;
   transition: all 0.3s ease-in-out;
 }
+#browse-category-carousel .browse-category.selected div {
+  color: white;
+  text-shadow: 1px 1px #333;
+}
+#browse-sub-category-menu button.selected {
+  color: white;
+  text-shadow: 1px 1px #333;
+}
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
   height: 90px;
