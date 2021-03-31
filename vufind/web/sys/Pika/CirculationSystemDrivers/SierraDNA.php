@@ -55,11 +55,15 @@ class SierraDNA {
 		if(!$this->connectionString) {
 			return false;
 		}
+		$ptypes = $this->fetchPtypes();
+		if(!$ptypes) {
+			return false;
+		}
 		$c = $this->countPtypes();
 		if($c && (int)$c >= 1) {
 			$this->emptyPtypeTable();
 		}
-		$ptypes = $this->fetchPtypes();
+
 		$this->savePtypes($ptypes);
 		return true;
 	}
@@ -127,7 +131,9 @@ protected function countPtypes() {
 
 	private function _connect() {
 		if($this->connectionString){
-			return \pg_connect($this->connectionString);
+			if($db = \pg_connect($this->connectionString)){
+				return $db;
+			}
 		}
 		return false;
 	}
