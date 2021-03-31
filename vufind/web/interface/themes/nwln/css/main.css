@@ -10735,6 +10735,17 @@ exploreMoreTitle.panel-title,
   color: #333;
   background-color: #fff;
 }
+#horizontal-search-box #horizontal-search-label {
+  color: white;
+  text-shadow: 1px 1px #333;
+  white-space: nowrap;
+  padding-top: 7px;
+  margin-left: -4px;
+}
+#advancedSearchLink {
+  color: white;
+  text-shadow: 1px 1px #333;
+}
 #home-page-login {
   text-shadow: none;
 }
