@@ -23,7 +23,7 @@
 			});
 			$( "#reactivationDate" ).datepicker({
 				startDate: Date(),
-				orientation:"top"
+				orientation:"bottom"
 			});
 		});
 		{/literal}
