@@ -62,8 +62,7 @@ class FavoriteHandler
 	 * @param   User       $user        User object owning tag/note metadata.
 	 * @param   bool       $allowEdit   Should we display edit controls?
 	 */
-	public function __construct($list, $user, $allowEdit = true)
-	{
+	public function __construct($list, $user, $allowEdit = true){
 		$this->list                = $list;
 		$this->user                = $user;
 		$this->listId              = $list->id;
@@ -88,7 +87,7 @@ class FavoriteHandler
 
 		// Get the Favorites //
 		$userListSort = $this->isUserListSort ? $this->userListSortOptions[$this->sort] : null;
-		list($this->favorites, $this->catalogIds, $this->archiveIds) = $list->getListEntries($userListSort); // when using a user list sorting, rather than solr sorting, get results in order
+		[$this->favorites, $this->catalogIds, $this->archiveIds] = $list->getListEntries($userListSort); // when using a user list sorting, rather than solr sorting, get results in order
 		// we start with a default userlist sorting until we determine whether the userlist is Mixed items or not.
 
 		$this->ids = $this->favorites; // TODO: Remove references to this->ids and use $this->favorites instead
@@ -139,8 +138,7 @@ class FavoriteHandler
 	 *
 	 * @access  public
 	 */
-	public function buildListForDisplay()
-	{
+	public function buildListForDisplay(){
 		global $interface;
 
 		$recordsPerPage = isset($_REQUEST['pagesize']) && (is_numeric($_REQUEST['pagesize'])) ? $_REQUEST['pagesize'] : 20;
@@ -153,12 +151,12 @@ class FavoriteHandler
 		if ($endRecord > count($this->favorites)){
 			$endRecord = count($this->favorites);
 		}
-		$pageInfo = array(
+		$pageInfo = [
 			'resultTotal' => count($this->favorites),
 			'startRecord' => $startRecord,
 			'endRecord'   => $endRecord,
 			'perPage'     => $recordsPerPage
-		);
+		];
 
 		$sortOptions = $defaultSortOptions = array();
 
@@ -171,7 +169,7 @@ class FavoriteHandler
 		*/
 
 		// Catalog Search
-		$catalogResourceList = array();
+		$catalogResourceList = [];
 		if (count($this->catalogIds) > 0) {
 			// Initialise from the current search globals
 			/** @var SearchObject_Solr $catalogSearchObject */
@@ -194,11 +192,11 @@ class FavoriteHandler
 				}
 			}
 			foreach ($this->userListSortOptions as $option => $value_ignored) { // Non-Solr options
-				$sortOptions[$option]        = array(
+				$sortOptions[$option]        = [
 					'sortUrl'  => $catalogSearchObject->renderLinkWithSort($option),
 					'desc'     => "sort_{$option}_userlist", // description in translation dictionary
 					'selected' => ($option == $this->sort)
-				);
+				];
 				$defaultSortOptions[$option] = "sort_{$option}_userlist";
 			}
 
@@ -249,7 +247,7 @@ class FavoriteHandler
 
 
 		// Archive Search
-		$archiveResourceList = array();
+		$archiveResourceList = [];
 		if (count($this->archiveIds) > 0) {
 
 			// Initialise from the current search globals
@@ -275,11 +273,11 @@ class FavoriteHandler
 			}
 			foreach ($this->userListSortOptions as $option => $value_ignored) { // Non-Solr options
 				if (!isset($sortOptions[$option])) { // Skip if already done by the catalog searches above
-					$sortOptions[$option]        = array(
+					$sortOptions[$option]        = [
 						'sortUrl'  => $archiveSearchObject->renderLinkWithSort($option),
 						'desc'     => "sort_{$option}_userlist", // description in translation dictionary
 						'selected' => ($option == $this->sort)
-					);
+					];
 					$defaultSortOptions[$option] = "sort_{$option}_userlist";
 				}
 			}
