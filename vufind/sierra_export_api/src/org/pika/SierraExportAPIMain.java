@@ -1318,8 +1318,6 @@ public class SierraExportAPIMain {
 					return false;
 				}
 
-				//TODO: order tags
-
 			} else {
 				logger.error("Error exporting marc record for " + id + " call returned null");
 				return false;
@@ -1411,7 +1409,7 @@ public class SierraExportAPIMain {
 								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.barcodeSubfield, curItem.getString("barcode")));
 							}
 							//location
-							if (curItem.has("location") && indexingProfile.locationSubfield != ' ') {
+							if (indexingProfile.locationSubfield != ' ' && curItem.has("location")) {
 								String locationCode = curItem.getJSONObject("location").getString("code");
 								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.locationSubfield, locationCode));
 							}
@@ -1429,37 +1427,44 @@ public class SierraExportAPIMain {
 								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.dueDateSubfield, ""));
 							}
 							//total checkouts
-							if (fixedFields.has("76") && indexingProfile.totalCheckoutsSubfield != ' ') {
+							if (indexingProfile.totalCheckoutsSubfield != ' ' && fixedFields.has("76")) {
 								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.totalCheckoutsSubfield, fixedFields.getJSONObject("76").getString("value")));
 							}
 							//last year checkouts
-							if (fixedFields.has("110") && indexingProfile.lastYearCheckoutsSubfield != ' ') {
+							if (indexingProfile.lastYearCheckoutsSubfield != ' ' && fixedFields.has("110")) {
 								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.lastYearCheckoutsSubfield, fixedFields.getJSONObject("110").getString("value")));
 							}
 							//year to date checkouts
-							if (fixedFields.has("109") && indexingProfile.yearToDateCheckoutsSubfield != ' ') {
+							if (indexingProfile.yearToDateCheckoutsSubfield != ' ' && fixedFields.has("109")) {
 								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.yearToDateCheckoutsSubfield, fixedFields.getJSONObject("109").getString("value")));
 							}
 							//total renewals
-							if (fixedFields.has("77") && indexingProfile.totalRenewalsSubfield != ' ') {
+							if (indexingProfile.totalRenewalsSubfield != ' ' && fixedFields.has("77")) {
 								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.totalRenewalsSubfield, fixedFields.getJSONObject("77").getString("value")));
 							}
 							//iType
-							if (fixedFields.has("61") && indexingProfile.iTypeSubfield != ' ') {
+							if (indexingProfile.iTypeSubfield != ' ' && fixedFields.has("61")) {
 								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.iTypeSubfield, fixedFields.getJSONObject("61").getString("value")));
 							}
 							//date created
-							if (curItem.has("createdDate") && indexingProfile.dateCreatedSubfield != ' ') {
+							if (indexingProfile.dateCreatedSubfield != ' ' && curItem.has("createdDate")) {
 								Date createdDate = sierraAPIDateFormatter.parse(curItem.getString("createdDate"));
 								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.dateCreatedSubfield, indexingProfile.dateCreatedFormatter.format(createdDate)));
 							}
 							//last check in date
-							if (fixedFields.has("68") && indexingProfile.lastCheckinDateSubfield != ' ') {
+							if (indexingProfile.lastCheckinDateSubfield != ' ' && fixedFields.has("68")) {
 								Date lastCheckin = sierraAPIDateFormatter.parse(fixedFields.getJSONObject("68").getString("value"));
 								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.lastCheckinDateSubfield, indexingProfile.lastCheckinFormatter.format(lastCheckin)));
 							}
+							//opac message field
+							final boolean usesOpacMessageField = indexingProfile.opacMessageSubfield != ' ';
+							if (usesOpacMessageField && fixedFields.has("108")) {
+								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.opacMessageSubfield, fixedFields.getJSONObject("108").getString("value")));
+							}
 							//icode2
-							if (fixedFields.has("60") && indexingProfile.iCode2Subfield != ' ') {
+							if (indexingProfile.iCode2Subfield != ' ' && (!usesOpacMessageField || indexingProfile.opacMessageSubfield != indexingProfile.iCode2Subfield) && fixedFields.has("60")) {
+								// Using opacMessage field in place of the icode2 field for Northern Waters for suppression.
+								// (do not fetch icode2 when it is the same value as the opac message field
 								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.iCode2Subfield, fixedFields.getJSONObject("60").getString("value")));
 							}
 

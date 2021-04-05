@@ -104,7 +104,8 @@ class IndexingProfile extends DB_DataObject{
 	public $lastCheckinDate;
 	public $lastCheckinFormat;
 	public $iCode2;
-	public $useICode2Suppression;
+	public $opacMessage;
+	public $useICode2Suppression; // (Now really item suppression switch)
 	public $iCode2sToSuppress;
 	public $sierraRecordFixedFieldsTag;
 	public $bCode3;
@@ -259,7 +260,8 @@ class IndexingProfile extends DB_DataObject{
 					'dateCreatedFormat'   => ['property' => 'dateCreatedFormat', 'type' => 'text', 'label' => 'Date Created Format', 'maxLength' => 20, 'description' => 'The format of the date created.  I.e. yyMMdd see SimpleDateFormat for Java'],
 					'lastCheckinDate'     => ['property' => 'lastCheckinDate', 'type' => 'text', 'label' => 'Last Check in Date', 'maxLength' => 1, 'description' => 'Subfield for when the item was last checked in'],
 					'lastCheckinFormat'   => ['property' => 'lastCheckinFormat', 'type' => 'text', 'label' => 'Last Check In Format', 'maxLength' => 20, 'description' => 'The format of the date the item was last checked in.  I.e. yyMMdd see SimpleDateFormat for Java'],
-					'iCode2'              => ['property' => 'iCode2', 'type' => 'text', 'label' => 'Item Suppression Field', 'maxLength' => 1, 'description' => 'Subfield for itemSuppressionField'],
+					'iCode2'              => ['property' => 'iCode2', 'type' => 'text', 'label' => 'Item Suppression Field', 'maxLength' => 1, 'description' => 'Subfield for the item Suppression Field'],
+					'opacMessage'         => ['property' => 'opacMessage', 'type' => 'text', 'label' => 'Opac Message Field (Sierra Only)', 'maxLength' => 1, 'description' => 'Subfield for Sierra Opac Message field'],
 					'format'              => ['property' => 'format', 'type' => 'text', 'label' => 'Format subfield', 'maxLength' => 1, 'description' => 'The subfield to use when determining format based on item information'],
 					'iType'               => ['property' => 'iType', 'type' => 'text', 'label' => 'iType', 'maxLength' => 1, 'description' => 'Subfield for iType'],
 					'eContentDescriptor'  => ['property' => 'eContentDescriptor', 'type' => 'text', 'label' => 'eContent Descriptor', 'maxLength' => 1, 'description' => 'Subfield that indicates the item should be treated as eContent (For Libraries using the Marmot ILS eContent Standard)'],
