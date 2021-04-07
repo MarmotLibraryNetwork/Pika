@@ -87,6 +87,8 @@ class Sierra {
 	protected $apiUrl;
 	/* @var $tokenUrl string The url for token */
 	protected $tokenUrl;
+	/* @var $aboutUrl string The url for "about" info that includes version numbers */
+	protected $aboutUrl;
 	// many ids come from url. example: https://sierra.marmot.org/iii/sierra-api/v5/items/5130034
 	protected $urlIdRegExp = "/.*\/(\d*)$/";
 
@@ -105,9 +107,11 @@ class Sierra {
 		$baseApiUrl     = trim($accountProfile->patronApiUrl, '/ ');
 		$apiUrl         = $baseApiUrl . '/iii/sierra-api/v' . $configArray['Catalog']['api_version'] . '/';
 		$tokenUrl       = $baseApiUrl . '/iii/sierra-api/token';
+		$aboutUrl       = $baseApiUrl . '/iii/sierra-api/about';
+
 		$this->apiUrl   = $apiUrl;
 		$this->tokenUrl = $tokenUrl;
-
+		$this->aboutUrl = $aboutUrl;
 		// grab an oAuthToken
 		if(!isset($this->oAuthToken)) {
 			if(!$this->_oAuthToken()) {
@@ -127,7 +131,7 @@ class Sierra {
 	 * @return array
 	 * @throws ErrorException
 	 */
-	public function getMyCheckouts($patron, $linkedAccount = false){
+	public function getMyCheckouts($patron, $linkedAccount = false) {
 
 		$patronCheckoutsCacheKey = $this->cache->makePatronKey('checkouts', $patron->id);
 		if(!$linkedAccount) {
@@ -2230,9 +2234,21 @@ EOT;
 		$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 		$this->cache->delete($patronObjectCacheKey);
 
-		$success = $this->_curlOptInOptOut($patron, 'OptIn');
-		if(!$success) {
-			$this->logger->warning('Unable to opt in patron '. $patron->barcode . ' from ILS reading history. Falling back to Pika.');
+		$success = false;
+		$apiInfo = $this->_getApiInfo();
+
+		if($apiInfo['VersionMajor'] >= 6 && $apiInfo['VersionMinor'] >= 2) {
+			$operation = 'patrons/' . $patron->ilsUserId . '/checkouts/history/activationStatus';
+			$params = ["readingHistoryActivation" => true];
+			$r = $this->_doRequest($operation, $params, "POST");
+			if($r == "") {
+				$success = true;
+			}
+		} else {
+			$success = $this->_curlOptInOptOut($patron, 'OptIn');
+		}
+		if (!$success){
+			$this->logger->warning('Unable to opt in patron ' . $patron->barcode . ' from ILS reading history. Falling back to Pika.');
 		}
 		$patron->trackReadingHistory = true;
 		$patron->update();
@@ -2250,7 +2266,19 @@ EOT;
 		$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 		$this->cache->delete($patronObjectCacheKey);
 
-		$success = $this->_curlOptInOptOut($patron, 'OptOut');
+		$success = false;
+		$apiInfo = $this->_getApiInfo();
+
+		if($apiInfo['VersionMajor'] >= 6 && $apiInfo['VersionMinor'] >= 2) {
+			$operation = 'patrons/' . $patron->ilsUserId . '/checkouts/history/activationStatus';
+			$params = ["readingHistoryActivation" => false];
+			$r = $this->_doRequest($operation, $params, "POST");
+			if($r == "") {
+				$success = true;
+			}
+		} else{
+			$success = $this->_curlOptInOptOut($patron, 'OptOut');
+		}
 		if(!$success) {
 			$this->logger->warning('Unable to opt out patron '. $patron->barcode . ' from ILS reading history. Falling back to Pika.');
 		}
@@ -2260,6 +2288,40 @@ EOT;
 		return true;
 	}
 
+
+	/**
+	 * Get API info
+	 *
+	 * @return array|null
+	 */
+	protected function _getApiInfo() {
+
+		$r = $this->_doRequest('about');
+		$r = strip_tags($r);
+		$info = [];
+		$lines = preg_split('/\n/', $r, -1, PREG_SPLIT_NO_EMPTY);
+
+		foreach ($lines as $line) {
+			$line = trim($line);
+			if(empty($line) || !strpos($line, ':')) {
+				continue;
+			}
+			$parts = explode(':', $line);
+			$index = trim($parts[0]);
+			$index = str_replace(' ', '', $index);
+
+			if($index == "Version") {
+				$indexParts = explode('.', $parts[1]);
+				if(count($indexParts) >= 2) {
+					$info['VersionMajor'] = (int)$indexParts[0];
+					$info['VersionMinor'] = (int)$indexParts[1];
+				}
+			}
+			$info[$index] = trim($parts[1]);
+		}
+
+		return $info;
+	}
 	/**
 	 * Delete all Reading History within the ILS for the patron.
 	 *
@@ -2961,7 +3023,11 @@ EOT;
 			CURLOPT_HEADER         => false,
 		];
 		// instantiate the Curl object and set the base url
-		$operationUrl = $this->apiUrl.$operation;
+		if($operation == 'about'){
+			$operationUrl = $this->aboutUrl;
+		}else{
+			$operationUrl = $this->apiUrl.$operation;
+		}
 		try {
 			$c = new Curl();
 		} catch (Exception $e) {
