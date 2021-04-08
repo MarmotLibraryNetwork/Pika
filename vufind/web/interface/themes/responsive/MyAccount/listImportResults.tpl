@@ -32,5 +32,6 @@
 		</div>
 *}
 	{/if}
+		<a href="/MyAccount/MyLists/" title="Return to My Lists" class="btn btn-default btn-sm">Return to My Lists</a>
 	</div>
 {/strip}
