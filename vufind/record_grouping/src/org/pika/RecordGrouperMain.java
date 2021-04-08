@@ -297,6 +297,9 @@ public class RecordGrouperMain {
 					if (catalogReader.hasNext()) {
 						Record curBib = catalogReader.next();
 
+						recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, source, curProfile.doAutomaticEcontentSuppression);
+						// This ensures the overdrive grouping suppression still takes place.
+
 						if (recordGroupingProcessor.processMarcRecord(curBib, true, recordIdentifier)) {
 							if (logger.isDebugEnabled()) {
 								logger.debug(recordIdentifier + " was successfully grouped.");

@@ -130,9 +130,11 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 	public boolean processMarcRecord(Record marcRecord, boolean primaryDataChanged, RecordIdentifier primaryIdentifier) {
 		if (primaryIdentifier != null) {
 			//Get data for the grouped record
-			GroupedWorkBase workForTitle = setupBasicWorkForIlsRecord(primaryIdentifier, marcRecord, profile);
+			if (!primaryIdentifier.isSuppressed()) {
+				GroupedWorkBase workForTitle = setupBasicWorkForIlsRecord(primaryIdentifier, marcRecord, profile);
 
-			addGroupedWorkToDatabase(primaryIdentifier, workForTitle, primaryDataChanged);
+				addGroupedWorkToDatabase(primaryIdentifier, workForTitle, primaryDataChanged);
+			}
 			return true;
 		} else {
 			//The record is not grouped

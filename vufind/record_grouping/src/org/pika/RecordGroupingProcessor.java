@@ -218,9 +218,7 @@ class RecordGroupingProcessor {
 					List<DataField> linkFields = getDataFields(marcRecord, "856");
 					for (DataField linkField : linkFields) {
 						if (linkField.getSubfield('u') != null) {
-							//Check the url to see if it is from OverDrive or Hoopla
-							//TODO: no actual hoopla suppression here?
-							//TODO: Would this block sideloaded hoopla?
+							//Check the url to see if it is from OverDrive
 							String linkData = linkField.getSubfield('u').getData().trim();
 							if (overdrivePattern.matcher(linkData).matches()) {
 								identifier.setSuppressed(true);

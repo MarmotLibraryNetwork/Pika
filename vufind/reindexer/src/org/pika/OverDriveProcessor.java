@@ -219,25 +219,11 @@ public class OverDriveProcessor {
 //								String targetAudience  = loadOverDriveSubjects(groupedWork, productId);
 
 								//Load the formats for the record.  For OverDrive, we will create a separate item for each format.
-								HashSet<String> validFormats    = loadOverDriveFormats(groupedWork, productId, identifier);
+								HashSet<String> validFormats    = loadOverDriveFormats(groupedWork, overDriveRecord, productId, identifier);
 								String          detailedFormats = String.join(",", validFormats);
 								//overDriveRecord.addFormats(validFormats);
 
 								loadOverDriveIdentifiers(groupedWork, productId, primaryFormat);
-
-								long maxFormatBoost = 1;
-								for (String curFormat : validFormats) {
-									long formatBoost = 1;
-									try {
-										formatBoost = Long.parseLong(indexer.translateSystemValue("format_boost_overdrive", curFormat.replace(' ', '_'), identifier));
-									} catch (Exception e) {
-										logger.warn("Could not translate format boost for " + primaryFormat);
-									}
-									if (formatBoost > maxFormatBoost) {
-										maxFormatBoost = formatBoost;
-									}
-								}
-								overDriveRecord.setFormatBoost(maxFormatBoost);
 
 								//Load availability & determine which scopes are valid for the record
 								getProductAvailabilityStmt.setLong(1, productId);
@@ -271,15 +257,14 @@ public class OverDriveProcessor {
 										itemInfo.setCallNumber("Online OverDrive");
 										itemInfo.setSortableCallNumber("Online OverDrive");
 										itemInfo.setDateAdded(dateAdded);
+										itemInfo.setFormat(primaryFormat);
+										itemInfo.setSubFormats(detailedFormats);
+										itemInfo.setFormatCategory(formatCategory);
 
 										overDriveRecord.addItem(itemInfo);
 
 										long    libraryId = availabilityRS.getLong("libraryId");
 										boolean available = availabilityRS.getBoolean("available");
-
-										itemInfo.setFormat(primaryFormat);
-										itemInfo.setSubFormats(detailedFormats);
-										itemInfo.setFormatCategory(formatCategory);
 
 										//Need to set an identifier based on the scope so we can filter later.
 										itemInfo.setItemIdentifier(Long.toString(libraryId));
@@ -526,14 +511,14 @@ public class OverDriveProcessor {
 		return primaryLanguage;
 	}
 
-	private HashSet<String> loadOverDriveFormats(GroupedWorkSolr groupedWork, Long productId, String identifier) throws SQLException {
+	private HashSet<String> loadOverDriveFormats(GroupedWorkSolr groupedWork, RecordInfo overDriveRecord, Long productId, String identifier) throws SQLException {
 		//Load formats
 		getProductFormatsStmt.setLong(1, productId);
 		HashSet<String> formats;
 		try (ResultSet formatsRS = getProductFormatsStmt.executeQuery()) {
 			formats = new HashSet<>();
 			HashSet<String> eContentDevices = new HashSet<>();
-			long            formatBoost     = 1L;
+			long maxFormatBoost = 1;
 			while (formatsRS.next()) {
 				String format = formatsRS.getString("name");
 				formats.add(format);
@@ -542,16 +527,20 @@ public class OverDriveProcessor {
 				for (String device : devices) {
 					eContentDevices.add(device.trim());
 				}
-				String formatBoostStr = indexer.translateSystemValue("format_boost_overdrive", format.replace(' ', '_'), identifier);
+				long formatBoost = 1;
 				try {
-					long curFormatBoost = Long.parseLong(formatBoostStr);
-					if (curFormatBoost > formatBoost) {
-						formatBoost = curFormatBoost;
-					}
-				} catch (NumberFormatException e) {
-					logger.warn("Could not parse format_boost " + formatBoostStr);
+					formatBoost = Long.parseLong(indexer.translateSystemValue("format_boost_overdrive", format.replace(' ', '_'), identifier));
+				} catch (Exception e) {
+					logger.warn("Could not translate format boost for " + identifier);
+				}
+				if (formatBoost > maxFormatBoost) {
+					maxFormatBoost = formatBoost;
 				}
 			}
+
+			overDriveRecord.setFormatBoost(maxFormatBoost);
+
+
 			//By default, formats are good for all locations
 			groupedWork.addEContentDevices(eContentDevices);
 		}
