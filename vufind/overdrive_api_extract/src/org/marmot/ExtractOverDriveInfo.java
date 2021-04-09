@@ -59,7 +59,6 @@ class ExtractOverDriveInfo {
 	private final TreeMap<String, String> overDriveProductsKeys      = new TreeMap<>(); // specifically <AccountId, overDriveProductsKey>
 	private final TreeMap<Long, String>   libToOverDriveAPIKeyMap    = new TreeMap<>();
 	private final TreeMap<Long, Long>     libToSharedCollectionIdMap = new TreeMap<>(); // specifically <libraryId, sharedCollectionId>
-	//TODO: do this 3 above need to be tree map rather than HashMap?
 //	private final TreeMap<Long, Long>     advantageCollectionsBySize = new TreeMap<>(); // specifically <libraryId, numProducts>
 	private final Set<String>             overDriveFormats           = new HashSet<String>() {{
 		add("audiobook-mp3");
@@ -75,11 +74,11 @@ class ExtractOverDriveInfo {
 		add("video-streaming");
 	}};
 
-	private HashMap<String, OverDriveRecordInfo> overDriveTitles             = new HashMap<>();
-	private HashMap<String, Long>                advantageCollectionToLibMap = new HashMap<>();
-	private HashMap<String, OverDriveDBInfo>     databaseProducts            = new HashMap<>();
-	private HashMap<String, Long>                existingLanguageIds         = new HashMap<>();
-	private HashMap<String, Long>                existingSubjectIds          = new HashMap<>();
+	private final HashMap<String, OverDriveRecordInfo> overDriveTitles             = new HashMap<>();
+	private final HashMap<String, Long>                advantageCollectionToLibMap = new HashMap<>();
+	private final HashMap<String, OverDriveDBInfo>     databaseProducts            = new HashMap<>();
+	private final HashMap<String, Long>                existingLanguageIds         = new HashMap<>();
+	private final HashMap<String, Long>                existingSubjectIds          = new HashMap<>();
 
 	private PreparedStatement loadProductStmt;
 	private PreparedStatement addProductStmt;
@@ -203,6 +202,20 @@ class ExtractOverDriveInfo {
 				}
 			}
 
+			// When an advantage account is shared, we will take over the pikalibraryIds so that 1 is the shared advantage account for the first overall account, 2 for the second advantage account for the 2nd shared
+			String sharedAdvantageAccountKey = PikaConfigIni.getIniValue("OverDrive", "sharedAdvantageAccountKey");
+			if (sharedAdvantageAccountKey != null && !sharedAdvantageAccountKey.isEmpty()) {
+				String[] tempSharedAdvantageAccountKey = sharedAdvantageAccountKey.split(",");
+				String[] tempsharedAdvantageName       = PikaConfigIni.getIniValue("OverDrive", "sharedAdvantageAccountKey").split(",");
+				i = 0;
+				for (String sharedAdvantageKey : tempSharedAdvantageAccountKey) {
+					long pikaLibraryId = i + 1;
+					advantageCollectionToLibMap.put(tempsharedAdvantageName[i++].trim(), pikaLibraryId);
+					libToOverDriveAPIKeyMap.put(pikaLibraryId, sharedAdvantageKey);
+					libToSharedCollectionIdMap.put(pikaLibraryId, -pikaLibraryId);
+				}
+			}
+
 
 			if (individualIdToProcess == null) {
 				//Load last extract time regardless of if we are doing full index or partial index
@@ -235,27 +248,30 @@ class ExtractOverDriveInfo {
 				existingSubjectIds.put(loadSubjectsRS.getString("name").toLowerCase(), loadSubjectsRS.getLong("id"));
 			}
 
-			try (
-					PreparedStatement advantageCollectionMapStmt = pikaConn.prepareStatement("SELECT libraryId, overdriveAdvantageName, overdriveAdvantageProductsKey, sharedOverdriveCollection FROM library  WHERE enableOverdriveCollection = 1");
-					// Only include libraries that have enabled Overdrive Collection in Pika, even if they have an Advantage account  (eg. CMC)
-					ResultSet advantageCollectionMapRS = advantageCollectionMapStmt.executeQuery();
-			) {
-				while (advantageCollectionMapRS.next()) {
-					//1 = (pika) libraryId, 2 = overDriveAdvantageName, 3 = overDriveAdvantageProductsKey
+			if (advantageCollectionToLibMap.isEmpty()) {
+				// If the advantageCollectionToLibMap is already populated, skip this step as we are using shared advantage accounts
+				try (
+						PreparedStatement advantageCollectionMapStmt = pikaConn.prepareStatement("SELECT libraryId, overdriveAdvantageName, overdriveAdvantageProductsKey, sharedOverdriveCollection FROM library WHERE enableOverdriveCollection = 1");
+						// Only include libraries that have enabled Overdrive Collection in Pika, even if they have an Advantage account  (eg. CMC)
+						ResultSet advantageCollectionMapRS = advantageCollectionMapStmt.executeQuery();
+				) {
+					while (advantageCollectionMapRS.next()) {
+						//1 = (pika) libraryId, 2 = overDriveAdvantageName, 3 = overDriveAdvantageProductsKey
 
-					final long   pikaLibraryId          = advantageCollectionMapRS.getLong(1);
-					final String overDriveAdvantageName = advantageCollectionMapRS.getString(2);
-					if (overDriveAdvantageName != null && !overDriveAdvantageName.isEmpty()) {
-						advantageCollectionToLibMap.put(overDriveAdvantageName, pikaLibraryId);
-						libToOverDriveAPIKeyMap.put(pikaLibraryId, advantageCollectionMapRS.getString(3));
+						final long   pikaLibraryId          = advantageCollectionMapRS.getLong(1);
+						final String overDriveAdvantageName = advantageCollectionMapRS.getString(2);
+						if (overDriveAdvantageName != null && !overDriveAdvantageName.isEmpty()) {
+							advantageCollectionToLibMap.put(overDriveAdvantageName, pikaLibraryId);
+							libToOverDriveAPIKeyMap.put(pikaLibraryId, advantageCollectionMapRS.getString(3));
+						}
+						long sharedCollectionId = advantageCollectionMapRS.getLong(4);
+						if (sharedCollectionId < 0L) {
+							libToSharedCollectionIdMap.put(pikaLibraryId, sharedCollectionId);
+						}
 					}
-					long sharedCollectionId = advantageCollectionMapRS.getLong(4);
-					if (sharedCollectionId < 0L) {
-						libToSharedCollectionIdMap.put(pikaLibraryId, sharedCollectionId);
-					}
+				} catch (SQLException e) {
+					logger.error("Error loading Advantage Collection names", e);
 				}
-			} catch (SQLException e) {
-				logger.error("Error loading Advantage Collection names", e);
 			}
 
 			//Load products from API 
@@ -923,22 +939,31 @@ class ExtractOverDriveInfo {
 						}
 						for (int j = 0; j < products.length(); j++) {
 							JSONObject          curProduct = products.getJSONObject(j);
-							OverDriveRecordInfo curRecord  = new OverDriveRecordInfo(libraryId, curProduct);
-							final String overdriveId = curRecord.getId();
-							if (curRecord.getTitle() != null) {
-								if (overDriveTitles.containsKey(overdriveId)) {
-									// If the title has already been loaded, just mark that collection for libraryId owns it also
-									OverDriveRecordInfo oldRecord = overDriveTitles.get(overdriveId);
-									oldRecord.getCollections().add(libraryId);
+							OverDriveRecordInfo curRecord  = null;
+							try {
+								curRecord = new OverDriveRecordInfo(libraryId, curProduct);
+								final String overdriveId = curRecord.getId();
+								if (curRecord.getTitle() != null) {
+									if (overDriveTitles.containsKey(overdriveId)) {
+										// If the title has already been loaded, just mark that collection for libraryId owns it also
+										OverDriveRecordInfo oldRecord = overDriveTitles.get(overdriveId);
+										oldRecord.getCollections().add(libraryId);
+									} else {
+										//logger.debug("Loading record " + curRecord.getId());
+										overDriveTitles.put(overdriveId, curRecord);
+									}
 								} else {
-									//logger.debug("Loading record " + curRecord.getId());
-									overDriveTitles.put(overdriveId, curRecord);
+									final String note = "Product " + overdriveId + " did not have a title, skipping";
+									logger.debug(note);
+									results.addNote(note);
+									//Could not parse the record make sure we log that there was an error
+									errorsWhileLoadingProducts = true;
+									results.incrementErrors();
 								}
-							} else {
-								final String note = "Product " + overdriveId + " did not have a title, skipping";
-								logger.debug(note);
+							} catch (JSONException e) {
+								final String note = "Error loading a product into memory";
+								logger.info(note, e);
 								results.addNote(note);
-								//Could not parse the record make sure we log that there was an error
 								errorsWhileLoadingProducts = true;
 								results.incrementErrors();
 							}
@@ -1061,6 +1086,7 @@ class ExtractOverDriveInfo {
 //									}
 									//Sometimes a product is owned by just advantage accounts or other shared overdrive accounts so we need to check those accounts too
 									for (String advantageKey : libToOverDriveAPIKeyMap.values()) {
+										//TODO: shared advantage accounts, only call once per shared account
 										if (!advantageKey.equals(apiKey)) {
 											url = new StringBuilder("https://api.overdrive.com/v1/collections/" + advantageKey + "/products/" + curProduct.overDriveId + "/metadata");
 											WebServiceResponse advantageMetaDataResponse = callOverDriveURL(url.toString());
