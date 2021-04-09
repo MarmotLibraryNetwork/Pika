@@ -22,115 +22,144 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 
 use Pika\PatronDrivers\EcontentSystem\OverDriveDriverFactory;
 
-class Admin_OverDriveAPIData extends Admin_Admin
-{
-	function launch()
-	{
+class Admin_OverDriveAPIData extends Admin_Admin {
+
+	function launch(){
+//		require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
 		$driver = OverDriveDriverFactory::getDriver();
 
 		$overdriveAccounts = $driver->getOverDriveAccountIds();
 
-		if (!empty($overdriveAccounts)) {
+		if (!empty($overdriveAccounts)){
 			$contents = '';
-			foreach ($overdriveAccounts as $sharedCollectionId => $overdriveAccountId) {
+			foreach ($overdriveAccounts as $sharedCollectionId => $overdriveAccountId){
 				$libraryInfo = $driver->getLibraryAccountInformation($overdriveAccountId);
-				if ($libraryInfo) {
-					$contents .= "<h3>Main - {$libraryInfo->name}</h3>";
-					$contents .= "<p>Shared Collection Id : $sharedCollectionId</p>";
-					$contents .= "Website: <a href='{$libraryInfo->links->dlrHomepage->href}'>{$libraryInfo->links->dlrHomepage->href}</a>";
-					$productInfo = $driver->getProductsInAccount($libraryInfo->collectionToken, null, 0, 1);
-					if (!empty($productInfo->totalItems)) {
-						$contents .= "<p>Total Items: {$productInfo->totalItems}</p>";
+				if ($libraryInfo){
+					if (empty($_REQUEST['id'])){
+						$contents    .= "<h3>Main - {$libraryInfo->name}</h3>";
+						$contents    .= "<p>Shared Collection Id : $sharedCollectionId</p>";
+						$contents    .= "Website: <a href='{$libraryInfo->links->dlrHomepage->href}'>{$libraryInfo->links->dlrHomepage->href}</a>";
+						$productInfo = $driver->getProductsInAccount($libraryInfo->collectionToken, null, 0, 1);
+						if (!empty($productInfo->totalItems)){
+							$contents .= "<p>Total Items: {$productInfo->totalItems}</p>";
+						}
+						$contents .= $this->easy_printr('Library Account Information', "libraryAccountInfo_{$libraryInfo->collectionToken}", $libraryInfo);
 					}
-					$contents .= $this->easy_printr('Library Account Information', "libraryAccountInfo_{$libraryInfo->collectionToken}", $libraryInfo);
 
 					$hasAdvantageAccounts = false;
 					try {
-						$advantageAccounts = $driver->getAdvantageAccountInformation($overdriveAccountId);
+						$advantageAccounts    = $driver->getAdvantageAccountInformation($overdriveAccountId);
 						$hasAdvantageAccounts = !empty($advantageAccounts) && !isset($advantageAccounts->errorCode);
-						if ($hasAdvantageAccounts)  {
-							$contents .= "<h4>Advantage Accounts</h4>";
-							foreach ($advantageAccounts->advantageAccounts as $accountInfo) {
-								$contents .= $accountInfo->name . ' - ' . $accountInfo->collectionToken . '<br>';
-								$productInfo = $driver->getProductsInAccount($accountInfo->collectionToken, null, 0, 1);
-								if (!empty($productInfo->totalItems)) {
-									$contents .= "<p>Total Items: {$productInfo->totalItems}</p>";
+						if (empty($_REQUEST['id'])){
+							if ($hasAdvantageAccounts){
+								$contents .= "<h4>Advantage Accounts</h4>";
+								foreach ($advantageAccounts->advantageAccounts as $accountInfo){
+									$contents    .= $accountInfo->name . ' - ' . $accountInfo->collectionToken . '<br>';
+									$productInfo = $driver->getProductsInAccount($accountInfo->collectionToken, null, 0, 1);
+									if (!empty($productInfo->totalItems)){
+										$contents .= "<p>Total Items: {$productInfo->totalItems}</p>";
+									}
 								}
-
+							}else{
+								$contents .= '<div class="alert alert-warning">No advantage accounts for this collection</div>';
 							}
-						} else {
-							$contents .= '<div class="alert alert-warning">No advantage accounts for this collection</div>';
 						}
-					} catch (Exception $e) {
+					} catch (Exception $e){
 						$contents .= '<div class="alert alert-danger">Error retrieving Advantage Info</div>';
 					}
 
-					if (!empty($_REQUEST['id'])) {
+					if (!empty($_REQUEST['id'])){
 						$overDriveId = trim($_REQUEST['id']);
 						$productKey  = $libraryInfo->collectionToken;
-						$contents    .= "<h3>Metadata</h3>";
-						$contents    .= "<h4>Metadata for $overDriveId</h4>";
-						$metadata    = $driver->getProductMetadata($overDriveId, $productKey);
-						if ($metadata) {
-							$contents .= $this->easy_printr("Metadata for $overDriveId in shared collection", "metadata_{$overDriveId}_{$productKey}", $metadata);
-						} else {
-							$contents .= ("No metadata<br>");
+						if (empty($_REQUEST['formAction'])){
+							$_REQUEST['formAction'] = 'Metadata'; // If an id is supplied in the url but not an action assume metadata call
 						}
 
-						if ($hasAdvantageAccounts) {
-							foreach ($advantageAccounts->advantageAccounts as $accountInfo) {
-								$contents .= ("<h4>Metadata - {$accountInfo->name}</h4>");
-								$metadata = $driver->getProductMetadata($overDriveId, $accountInfo->collectionToken);
-								if ($metadata) {
-									$contents .= $this->easy_printr("Metadata response", "metadata_{$overDriveId}_{$accountInfo->collectionToken}", $metadata);
-								} else {
-									$contents .= ("No metadata<br>");
+						if ($_REQUEST['formAction'] == 'Metadata'){
+							$contents .= "<h3>Metadata</h3>";
+							$contents .= "<h4>Metadata for $overDriveId</h4>";
+							$metadata = $driver->getProductMetadata($overDriveId, $productKey);
+							if ($metadata){
+								$contents .= $this->easy_printr("Metadata - {$libraryInfo->name} shared collection", "metadata_{$overDriveId}_{$productKey}", $metadata);
+							}else{
+								$contents .= ("No metadata<br>");
+							}
+							if ($hasAdvantageAccounts){
+								foreach ($advantageAccounts->advantageAccounts as $accountInfo){
+									$contents .= ("<h4>Metadata - {$accountInfo->name}</h4>");
+									$metadata = $driver->getProductMetadata($overDriveId, $accountInfo->collectionToken);
+									if ($metadata){
+										$contents .= $this->easy_printr("Metadata response", "metadata_{$overDriveId}_{$accountInfo->collectionToken}", $metadata);
+									}else{
+										$contents .= ("No metadata<br>");
+									}
 								}
 							}
-						}
-
-						$contents     .= "<h3>Availability</h3>";
-						$contents     .= ("<h4>Availability - Main collection: {$libraryInfo->name}</h4>");
-						$availability = $driver->getProductAvailability($overDriveId, $productKey);
-						if ($availability && !isset($availability->errorCode)) {
-							$contents .= ("Copies Owned: {$availability->copiesOwned} <br>");
-							$contents .= ("Available Copies: {$availability->copiesAvailable }<br>");
-							$contents .= ("Num Holds (entire collection): {$availability->numberOfHolds }<br>");
-							$contents .= $this->easy_printr("Availability response", "availability_{$overDriveId}_{$productKey}", $availability);
-						} else {
-							$contents .= ("Not owned<br>");
-							if ($availability) {
+						}elseif ($_REQUEST['formAction'] == 'Availability'){
+							$contents     .= "<div class='col-tn-12'><h3>Availability</h3></div>";
+							$contents     .= ("<h4>Availability - Main collection: {$libraryInfo->name}</h4>");
+							$availability = $driver->getProductAvailability($overDriveId, $productKey);
+							if ($availability && !isset($availability->errorCode)){
+								$contents .= $this->buildAvailabilityHTMLtable($availability);
 								$contents .= $this->easy_printr("Availability response", "availability_{$overDriveId}_{$productKey}", $availability);
+							}else{
+								$contents .= ("Not owned<br>");
+								if ($availability){
+									$contents .= $this->easy_printr("Availability response", "availability_{$overDriveId}_{$productKey}", $availability);
+								}
 							}
-						}
+							$contents     .= "<h4>Availability - Alternate - Main collection: {$libraryInfo->name}</h4>";
+							$availability = $driver->getProductAvailabilityAlt($overDriveId, $productKey);
+							if ($availability && !isset($availability->errorCode) && $availability->totalItems != 0){
+								$contents .= $this->buildAvailabilityHTMLtable($availability->availability[0]);
+								$contents .= $this->easy_printr("Availability Alternate response", "availability_alt_{$overDriveId}_{$productKey}", $availability);
+							}else{
+								$contents .= ("Not owned<br>");
+								if ($availability){
+									$contents .= $this->easy_printr("Availability Alternate response", "availability_alt_{$overDriveId}_{$productKey}", $availability);
+								}
+							}
 
-						if ($hasAdvantageAccounts) {
-							foreach ($advantageAccounts->advantageAccounts as $accountInfo) {
-								$contents     .= ("<h4>Availability - {$accountInfo->name}</h4>");
-								$availability = $driver->getProductAvailability($overDriveId, $accountInfo->collectionToken);
-								if ($availability && !isset($availability->errorCode)) {
-									//TODO: how to determine the difference between advantage and advantage plus
-									$contents .= ("Copies Owned (Shared + Advantage): {$availability->copiesOwned }<br>");
-									$contents .= ("Available Copies (Shared + Advantage): {$availability->copiesAvailable }<br>");
-									$contents .= ("Num Holds (Shared + Advantage): {$availability->numberOfHolds }<br>");
-									$contents .= $this->easy_printr("Availability response", "availability_{$overDriveId}_{$accountInfo->collectionToken}", $availability);
-								} else {
-									$contents .= ("Not owned<br>");
-									if ($availability) {
+
+							if ($hasAdvantageAccounts){
+								foreach ($advantageAccounts->advantageAccounts as $accountInfo){
+									$contents     .= ("<h4>Availability - {$accountInfo->name}</h4>");
+									$availability = $driver->getProductAvailability($overDriveId, $accountInfo->collectionToken);
+									if ($availability && !isset($availability->errorCode)){
+										//TODO: how to determine the difference between advantage and advantage plus
+										$contents .= $this->buildAvailabilityHTMLtable($availability);
 										$contents .= $this->easy_printr("Availability response", "availability_{$overDriveId}_{$accountInfo->collectionToken}", $availability);
+									}else{
+										$contents .= ("Not owned<br>");
+										if ($availability){
+											$contents .= $this->easy_printr("Availability response", "availability_{$overDriveId}_{$accountInfo->collectionToken}", $availability);
+										}
+									}
+
+									$contents     .= ("<h4>Availability Alternate - {$accountInfo->name}</h4>");
+									$availability = $driver->getProductAvailabilityAlt($overDriveId, $accountInfo->collectionToken);
+									if ($availability && !isset($availability->errorCode) && $availability->totalItems != 0){
+										$contents .= $this->buildAvailabilityHTMLtable($availability->availability[0]);
+										$contents .= $this->easy_printr("Availability Alternate response", "availability_alt_{$overDriveId}_{$accountInfo->collectionToken}", $availability);
+									}else{
+										$contents .= ("Not owned<br>");
+										if ($availability){
+											$contents .= $this->easy_printr("Availability Alternate response", "availability_alt_{$overDriveId}_{$accountInfo->collectionToken}", $availability);
+										}
 									}
 								}
 							}
 						}
+
 					}
 
-				} else {
+				}else{
 					$contents .= '<div class="alert alert-danger">Failed to get library information for OverDrive.</div>';
 				}
 				$contents .= '<hr>';
 			}
 
-		} else {
+		}else{
 			$contents = '<div class="alert alert-danger">No Overdrive Account is set.</div>';
 		}
 
@@ -139,10 +168,9 @@ class Admin_OverDriveAPIData extends Admin_Admin
 		$this->display('overdriveApiData.tpl', 'OverDrive API Data');
 	}
 
-	function easy_printr($title, $section, &$var)
-	{
+	function easy_printr($title, $section, &$var){
 		$contents = "<a onclick='$(\"#{$section}\").toggle();return false;' href='#'>{$title}</a>";
-		$contents .=  "<pre style='display:none' id='{$section}'>";
+		$contents .= "<pre style='display:none' id='{$section}'>";
 		$contents .= htmlspecialchars(json_encode($var, JSON_PRETTY_PRINT));  // Display as JSON
 //		$contents .= print_r($var, true);
 		$contents .= '</pre>';
@@ -150,6 +178,21 @@ class Admin_OverDriveAPIData extends Admin_Admin
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin', 'cataloging');
+		return ['opacAdmin', 'cataloging'];
+	}
+
+	/**
+	 * @param $availability object JSON availability object from availability response
+	 * @return string
+	 */
+	function buildAvailabilityHTMLtable($availability){
+		global $interface;
+		$interface->assign("availability", $availability);
+		$contents = $interface->fetch("Admin/OverDriveAPIInfoAvailabilityTable.tpl");
+//		$contents = ("Copies Owned (Shared + Advantage): {$availability->copiesOwned}<br>");
+//		$contents .= ("Available Copies (Shared + Advantage): {$availability->copiesAvailable}<br>");
+//		$contents .= ("Num Holds (Shared + Advantage): {$availability->numberOfHolds}<br>");
+		return $contents;
+
 	}
 }

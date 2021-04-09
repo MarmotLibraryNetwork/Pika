@@ -5,9 +5,13 @@
 			<form class="form-inline col-tn-12">
 				<div class="form-group"  style="min-width: 40%">
 					<label for="overDriveId" class="sr-only control-label">OverDrive Record Id:</label>
-					<input id ="overDriveId" type="text" name="id" class="form-control" placeholder="OverDrive Record Id">
+					<input id ="overDriveId" type="text" name="id" class="form-control" placeholder="OverDrive Record Id"{if !empty($smarty.get.id)}value="{$smarty.get.id}" {/if}>
 				</div>
-				<button class="btn btn-primary" type="submit">Go</button>
+				<span class="form-group">
+					<input class="btn btn-default" type="submit" value="Availability" name="formAction">
+					<input class="btn btn-default" type="submit" value="Metadata" name="formAction">
+				</span>
+
 			</form>
 		</div>
 		<div class="row">
