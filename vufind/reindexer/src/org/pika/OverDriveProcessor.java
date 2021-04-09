@@ -37,6 +37,7 @@ public class OverDriveProcessor {
 	private GroupedWorkIndexer indexer;
 	private Logger             logger;
 	private boolean            fullReindex;
+	private boolean            hasSharedAdvantageAccount = false;
 	private PreparedStatement  getProductInfoStmt;
 	private PreparedStatement  getNumCopiesStmt;
 	private PreparedStatement  getProductMetadataStmt;
@@ -46,9 +47,15 @@ public class OverDriveProcessor {
 	private PreparedStatement  getProductSubjectsStmt;
 	private PreparedStatement  getProductIdentifiersStmt;
 
-	public OverDriveProcessor(GroupedWorkIndexer groupedWorkIndexer, Connection econtentConn, Logger logger, boolean fullReindex) {
+	public OverDriveProcessor(GroupedWorkIndexer groupedWorkIndexer, Connection econtentConn, Logger logger, boolean fullReindex, String serverName) {
 		this.indexer = groupedWorkIndexer;
 		this.logger = logger;
+		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
+		String sharedAdvantageAccounts = PikaConfigIni.getIniValue("OverDrive", "sharedAdvantageAccountKey");
+		if (sharedAdvantageAccounts != null && !sharedAdvantageAccounts.isEmpty()){
+			hasSharedAdvantageAccount = true;
+		}
+
 		try {
 			getProductInfoStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_products WHERE overdriveId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getNumCopiesStmt = econtentConn.prepareStatement("SELECT sum(copiesOwned) AS totalOwned FROM overdrive_api_product_availability WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -246,8 +253,8 @@ public class OverDriveProcessor {
 									overDriveRecord.setPublicationDate(primaryFormat.equals("eMagazine") ? metadata.get("publishDateMagazine") : metadata.get("publicationDate"));
 //									overDriveRecord.setPhysicalDescription("");
 
-									totalCopiesOwned = 0;
-									//TODO: totalCopiesOwned will now have to account for multiple overdrive accounts
+									totalCopiesOwned = 0; //Since totalCopiedOwned only contributes to the grouped work's holdings count,
+									// this doesn't need to have special handling for multiple overdrive accounts.
 									while (availabilityRS.next()) {
 										//Just create one item for each with a list of sub formats.
 										ItemInfo itemInfo = new ItemInfo();
@@ -273,7 +280,6 @@ public class OverDriveProcessor {
 										int copiesOwned = availabilityRS.getInt("copiesOwned");
 										itemInfo.setNumCopies(copiesOwned);
 										totalCopiesOwned = Math.max(copiesOwned, totalCopiesOwned);
-										//TODO: totalCopiesOwned will now have to account for multiple overdrive accounts
 
 										if (available) {
 											itemInfo.setDetailedStatus("Available Online");
@@ -314,8 +320,10 @@ public class OverDriveProcessor {
 												}
 											}
 										} else {
+											// Handle Advantage copies
 											for (Scope curScope : indexer.getScopes()) {
-												if (curScope.isIncludeOverDriveCollection() && curScope.getLibraryId().equals(libraryId)) {
+												if (curScope.isIncludeOverDriveCollection() && (hasSharedAdvantageAccount || curScope.getLibraryId().equals(libraryId))) {
+													//TODO: would need more complicated logic when there are multiple shared accounts plus sharedAdvantageAccount
 													boolean okToInclude = false;
 													if (isAdult && curScope.isIncludeOverDriveAdultCollection()) {
 														okToInclude = true;
@@ -351,7 +359,7 @@ public class OverDriveProcessor {
 										}//End processing availability
 									}
 								}
-								groupedWork.addHoldings(totalCopiesOwned); //TODO: determine how this should work with multiple overdrive accounts
+								groupedWork.addHoldings(totalCopiesOwned);
 							}
 						}
 					}
