@@ -188,7 +188,7 @@ public class GroupedWorkIndexer {
 				if (sourceName.equalsIgnoreCase("overdrive")) {
 					//Overdrive doesn't have an indexing profile.
 					//Only load processor if there are overdrive titles
-					overDriveProcessor = new OverDriveProcessor(this, econtentConn, logger, fullReindex);
+					overDriveProcessor = new OverDriveProcessor(this, econtentConn, logger, fullReindex, serverName);
 				} else {
 					getIndexingProfile.setString(1, sourceName);
 					try (ResultSet indexingProfileRS = getIndexingProfile.executeQuery()) {
