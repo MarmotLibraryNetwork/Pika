@@ -18,10 +18,10 @@
  */
 
 
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 require_once ROOT_DIR . '/services/OverDrive/AJAX.php';
 
-class eContentSupport extends Action {
+class eContentSupport extends MyAccount {
 	function launch(){
 		// Overdrive download links can potentially have a link back to this page.
 		// Submitting the form will cause the ajax popup to be run.
@@ -41,7 +41,7 @@ class eContentSupport extends Action {
 		}
 		$interface->assign('overDriveErrorMessages', $errorMessage);
 
-		if (isset($_REQUEST['submit'])){
+		if (isset($_REQUEST['submit']) && $_REQUEST['submit'] == 'submitted'){
 			$_GET['method'] = 'submitSupportForm';
 			$overdriveAJAX->launch();
 		}elseif (isset($_REQUEST['lightbox'])){

@@ -2,6 +2,7 @@ From: {$name}
 Email: {$email}
 Home Library: {$homeLibrary}
 
+{if $overDriveId}OverDrive Id : {$overDriveId}{/if}
 Book Title/Author: {$bookAuthor}
 Device: {$deviceName}
 Format: {$format}
