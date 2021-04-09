@@ -1184,7 +1184,8 @@ class ExtractOverDriveInfo {
 				metaDataStatement.setString(++curCol, thumbnail);
 				metaDataStatement.setString(++curCol, cover);
 				metaDataStatement.setBoolean(++curCol, metaData.has("isOwnedByCollections") && metaData.getBoolean("isOwnedByCollections"));
-				metaDataStatement.setString(++curCol, metaData.toString(2));
+				metaDataStatement.setString(++curCol, metaData.toString(2).replaceAll("\uD83D\uDE03", "").replaceAll("\uD83D\uDE0A", ""));
+				// quick fix to remove troublesome emojis from the rawdata
 
 				if (databaseMetaData.getId() != -1) {
 					metaDataStatement.setLong(++curCol, databaseMetaData.getId());
