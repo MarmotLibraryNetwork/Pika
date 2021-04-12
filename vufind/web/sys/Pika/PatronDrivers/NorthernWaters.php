@@ -60,4 +60,36 @@ class NorthernWaters extends Sierra {
 		return $this->importListsFromIlsFromTrait($patron);
 	}
 
+	public function getSelfRegistrationFields(){
+		$fields = parent::getSelfRegistrationFields();
+
+		$fields[] = ['property'   => 'county',
+		             'type'       => 'text',
+		             'label'      => 'County of Residence',
+		             'description'=> 'County of Residence',
+		             'maxLength'  => 30,
+		             'required'   => false];
+
+		$fields[] = ['property'   => 'township',
+		             'type'       => 'text',
+		             'label'      => 'Township of Residence',
+		             'description'=> 'Township of Residence',
+		             'maxLength'  => 30,
+		             'required'   => false];
+
+		return $fields;
+	}
+
+	public function selfRegister($extraSelfRegParams = false)
+	{
+		$extraSelfRegParams = [];
+		if (isset($_REQUEST['county']) && !empty($_REQUEST['county'])){
+			$extraSelfRegParams['patronCodes']['pcode2'] = trim($_REQUEST['county']);
+		}
+		if (isset($_REQUEST['township']) && !empty($_REQUEST['township'])){
+			$extraSelfRegParams['patronCodes']['pcode3'] = trim($_REQUEST['township']);
+		}
+
+		return parent::selfRegister($extraSelfRegParams);
+	}
 }
