@@ -1,6 +1,6 @@
 {strip}
 {* Add availability as needed *}
-{if $showAvailability && $availability && count($availability) > 0}
+{if $showAvailability && !empty($availability)}
 	<div>
 		<table class="table">
 			<thead>
