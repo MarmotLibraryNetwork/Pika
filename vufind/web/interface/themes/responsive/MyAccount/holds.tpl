@@ -1,6 +1,6 @@
 {strip}
 	{if $loggedIn}
-
+		{include file="MyAccount/patronWebNotes.tpl"}
 		{* Alternate Mobile MyAccount Menu *}
 		{include file="MyAccount/mobilePageHeader.tpl"}
 

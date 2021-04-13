@@ -1,11 +1,7 @@
 {strip}
 	<div id="main-content">
       {if $loggedIn}
-      {if $user->web_note}
-				<div class="row">
-					<div id="web_note" class="alert alert-info text-center col-xs-12">{$user->web_note}</div>
-				</div>
-      {/if}
+	      {include file="MyAccount/patronWebNotes.tpl"}
 
           {* Alternate Mobile MyAccount Menu *}
           {include file="MyAccount/mobilePageHeader.tpl"}

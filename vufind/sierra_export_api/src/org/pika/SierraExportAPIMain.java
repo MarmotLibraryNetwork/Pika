@@ -1555,7 +1555,7 @@ public class SierraExportAPIMain {
 				} catch (Exception e) {
 					logger.error("Error getting information about items", e);
 				}
-			} else if (itemIdToStartWith == 1L) {
+			} else if (itemIdToStartWith == 1L && logger.isDebugEnabled()) {
 				logger.debug("finished getting items for " + id + " elapsed time " + (new Date().getTime() - startTime) + "ms found none");
 			}
 		} while (hasMoreItems);
