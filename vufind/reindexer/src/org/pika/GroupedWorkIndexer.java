@@ -221,8 +221,8 @@ public class GroupedWorkIndexer {
 								case "Aurora":
 									indexingRecordProcessors.put(sourceName, new AuroraRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
-								case "SantaFe":
-									indexingRecordProcessors.put(sourceName, new SantaFeRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								case "NorthernWaters":
+									indexingRecordProcessors.put(sourceName, new NorthernWatersRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
 								case "Sacramento":
 									indexingRecordProcessors.put(sourceName, new SacramentoRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));

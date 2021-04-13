@@ -1015,6 +1015,7 @@ public class GroupedWorkSolr implements Cloneable {
 				this.title = shortTitle;
 				this.titleFormat = recordFormat;
 				if (sortableTitle != null) {
+					//TODO: strip trailing punctuation
 					//Strip out anything in brackets unless that would cause us to show nothing
 					tmpTitle = removeBracketsPattern.matcher(sortableTitle).replaceAll("").trim();
 					if (tmpTitle.length() > 0) {

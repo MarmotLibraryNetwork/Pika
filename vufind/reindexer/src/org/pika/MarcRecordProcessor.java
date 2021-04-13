@@ -572,6 +572,7 @@ abstract class MarcRecordProcessor {
 						literaryForms.add(Character.toString(literaryFormChar));
 					}
 				}
+				//TODO: explain with comment why we would add empty value; or remove. Is it removed already?
 				if (literaryForms.size() == 0) {
 					literaryForms.add(" ");
 				}

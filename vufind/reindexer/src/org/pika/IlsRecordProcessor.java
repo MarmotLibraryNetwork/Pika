@@ -700,23 +700,34 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	RecordInfo getEContentIlsRecord(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier, DataField itemField) {
-		String   itemLocation    = getItemSubfieldData(locationSubfieldIndicator, itemField);
-		String   itemSublocation = getItemSubfieldData(subLocationSubfield, itemField);
-		String   iTypeValue      = getItemSubfieldData(iTypeSubfield, itemField);
 		ItemInfo itemInfo        = new ItemInfo();
+		String   itemLocation    = getItemSubfieldData(locationSubfieldIndicator, itemField);
 
-		loadDateAdded(identifier, itemField, itemInfo);
 		itemInfo.setIsEContent(true);
 		itemInfo.setLocationCode(itemLocation);
-		if (itemSublocation != null && itemSublocation.length() > 0) {
-			itemInfo.setSubLocation(translateValue("sub_location", itemSublocation, identifier));
-		}
-		itemInfo.setITypeCode(iTypeValue);
-		itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), identifier));
-		loadItemCallNumber(record, itemField, itemInfo);
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
 		itemInfo.setShelfLocation(getShelfLocationForItem(itemInfo, itemField, identifier));
-		itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
+		loadDateAdded(identifier, itemField, itemInfo);
+		loadItemCallNumber(record, itemField, itemInfo);
+		if (subLocationSubfield != ' ') {
+			String   itemSublocation = getItemSubfieldData(subLocationSubfield, itemField);
+			if (itemSublocation != null && itemSublocation.length() > 0) {
+				itemInfo.setSubLocation(translateValue("sub_location", itemSublocation, identifier));
+			}
+		}
+		if (iTypeSubfield != ' ') {
+			String iTypeValue = getItemSubfieldData(iTypeSubfield, itemField);
+			if (iTypeValue != null && !iTypeValue.isEmpty()) {
+				itemInfo.setITypeCode(iTypeValue);
+				itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), identifier));
+			}
+		}
+		if (collectionSubfield != ' ') {
+			final String collectionValue = getItemSubfieldData(collectionSubfield, itemField);
+			if (collectionValue != null && !collectionValue.isEmpty()) {
+				itemInfo.setCollection(translateValue("collection", collectionValue, identifier));
+			}
+		}
 
 		Subfield eContentSubfield = itemField.getSubfield(eContentSubfieldIndicator);
 		if (eContentSubfield != null) {
@@ -756,6 +767,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return relatedRecord;
 	}
 
+	protected String getILSeContentSourceType(Record record, DataField itemField) {
+		return "Unknown Source";
+	}
 
 	protected void loadDateAdded(RecordIdentifier recordIdentifier, DataField itemField, ItemInfo itemInfo) {
 		String dateAddedStr = getItemSubfieldData(dateCreatedSubfield, itemField);
@@ -770,10 +784,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				logger.error("Error processing date added for record identifier " + recordIdentifier + " profile " + indexingProfileSourceDisplayName + " using format " + dateAddedFormat, e);
 			}
 		}
-	}
-
-	protected String getILSeContentSourceType(Record record, DataField itemField) {
-		return "Unknown Source";
 	}
 
 	private SimpleDateFormat dateAddedFormatter = null;
@@ -1317,11 +1327,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	private int getIlsHoldsForTitle(String recordIdentifier) {
-		if (numberOfHoldsByIdentifier.containsKey(recordIdentifier)){
-			return numberOfHoldsByIdentifier.get(recordIdentifier);
-		}else {
-			return 0;
-		}
+		return numberOfHoldsByIdentifier.getOrDefault(recordIdentifier, 0);
 	}
 
 	protected boolean isItemSuppressed(DataField curItem) {
