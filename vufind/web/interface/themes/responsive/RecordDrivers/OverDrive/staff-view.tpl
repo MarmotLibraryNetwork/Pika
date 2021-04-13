@@ -33,7 +33,7 @@
 							   target="_blank" class="btn btn-sm btn-default">UnMerge from Work
 							</a>
             {/if}
-            {if $userRoles && (in_array('opacAdmin', $userRoles) || in_array('archives', $userRoles))}
+	        {if $enableArchive == true && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('archives', $userRoles))}
 							<button onclick="return Pika.GroupedWork.reloadIslandora('{$recordDriver->getGroupedWorkId()}')"
 							        class="btn btn-sm btn-default">Clear Islandora Cache
 							</button>
