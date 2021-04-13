@@ -37,22 +37,36 @@ public class NorthernWatersRecordProcessor extends IIIRecordProcessor {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 	}
 
+	private boolean iseContentRecord(Record record) {
+		String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
+		return matType != null && matType.equals("7"); // 7 is NWLN matType E-media
+	}
+
+	@Override
+	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, RecordIdentifier identifier, Record record) {
+		if (!iseContentRecord(record)) {
+			super.loadUnsuppressedPrintItems(groupedWork, recordInfo, identifier, record);
+		}
+	}
+
 	@Override
 	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, RecordIdentifier identifier, Record record) {
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
-		List<DataField>  items                       = MarcUtil.getDataFields(record, itemTag);
-		if (items.size() > 0) {
-			String url = MarcUtil.getFirstFieldVal(record, "856u");
-			if (url != null && !url.isEmpty()) {
-				for (DataField itemField : items) {
-					if (!isItemSuppressed(itemField)) {
-						RecordInfo eContentRecord = getEContentIlsRecord(groupedWork, record, identifier, itemField);
-						unsuppressedEcontentRecords.add(eContentRecord);
+		if (iseContentRecord(record)) {
+			List<DataField> items = MarcUtil.getDataFields(record, itemTag);
+			if (items.size() > 0) {
+				String url = MarcUtil.getFirstFieldVal(record, "856u");
+				if (url != null && !url.isEmpty()) {
+					for (DataField itemField : items) {
+						if (!isItemSuppressed(itemField)) {
+							RecordInfo eContentRecord = getEContentIlsRecord(groupedWork, record, identifier, itemField);
+							unsuppressedEcontentRecords.add(eContentRecord);
+						}
 					}
 				}
 			}
 		}
-			return unsuppressedEcontentRecords;
+		return unsuppressedEcontentRecords;
 	}
 
 	@Override
@@ -63,6 +77,8 @@ public class NorthernWatersRecordProcessor extends IIIRecordProcessor {
 		if (url != null && !url.isEmpty()) {
 			if (url.contains("overdrive.com") || url.contains("/ContentDetails.htm")){
 				return "OverDrive";
+			} else if (url.contains("wistatedocuments.org")){
+				return "Wisconsin Digital Archives";
 			}
 		}
 		return super.getILSeContentSourceType(record, itemField);
