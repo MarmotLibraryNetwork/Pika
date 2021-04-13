@@ -40,7 +40,7 @@ class NorthernWaters extends Sierra {
 		$myCheckOuts = parent::getMyCheckouts($patron, $linkedAccount);
 		foreach ($myCheckOuts as &$checkOut){
 			if (!empty($checkOut['_callNumber']) && strpos($checkOut['_callNumber'], 'WISCAT') !== false){
-				$title                  = str_replace('WISCAT:', '', $checkOut['_callNumber']);
+				$title                  = trim(str_replace('WISCAT:', '', $checkOut['_callNumber']));
 				$checkOut['title']      = $title;
 				$checkOut['title_sort'] = $title;
 				$checkOut['canrenew']   = false;
