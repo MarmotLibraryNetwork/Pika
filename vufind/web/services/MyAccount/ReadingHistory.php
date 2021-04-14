@@ -26,7 +26,7 @@ class ReadingHistory extends MyAccount {
 	private $logger;
 
 	public function __construct(){
-		$this->logger = new Logger('ReadingHistory');
+		$this->logger = new Logger(__CLASS__);
 		parent::__construct();
 	}
 
@@ -126,11 +126,11 @@ class ReadingHistory extends MyAccount {
 					'checkedOut' => 'Checkout Date',
 					'format'     => 'Format',
 				];
-				$selectedSortOption = isset($_REQUEST['accountSort']) ? $_REQUEST['accountSort'] : 'checkedOut';
+				$selectedSortOption = $_REQUEST['accountSort'] ?? 'checkedOut';
 				$interface->assign('sortOptions', $sortOptions);
 
 				$interface->assign('defaultSortOption', $selectedSortOption);
-				$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+				$page = $_REQUEST['page'] ?? 1;
 				$interface->assign('page', $page);
 
 				$recordsPerPage = isset($_REQUEST['pagesize']) && (is_numeric($_REQUEST['pagesize'])) ? $_REQUEST['pagesize'] : 25;
