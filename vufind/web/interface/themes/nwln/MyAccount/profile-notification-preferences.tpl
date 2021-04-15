@@ -30,9 +30,17 @@
 	 *}
 	<div class="form-group">
 		<div class="col-xs-4"><label for="workPhone">{translate text='Work Phone Number'}:</label></div>
-		<div class="col-xs-8">{if $edit && $canUpdateContactInfo && $ils != 'Horizon'}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control">
+		<div class="col-xs-8">{if $edit && $canUpdateContactInfo && $ils != 'Horizon'}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control simplePhoneFormat">
 				<p class='alert alert-warning'><strong>(Format: xxx-xxx-xxxx) &nbsp; Be sure to include the dashes.</strong></p>
 			{else}{$profile->workPhone|escape}{/if}</div>
 	</div>
-
+	<script type="text/javascript">
+		jQuery.validator.addMethod("simplePhoneFormat",
+		{literal}
+			function (value, element){
+				return this.optional(element) || /^\d{3}-\d{3}-\d{4}$/.test(value);
+			}, "Format: xxx-xxx-xxxx");
+		{/literal}
+		$("#contactUpdateForm").validate();
+	</script>
 {/strip}

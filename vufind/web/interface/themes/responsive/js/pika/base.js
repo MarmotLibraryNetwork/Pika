@@ -470,4 +470,10 @@ jQuery.validator.addMethod(
 jQuery.validator.addMethod("alphaNumeric", function(value, element) {
 	return this.optional(element) || /^[a-z0-9]+$/i.test(value);
 }, "Please enter only letters and digits.");
+/* Added to just the /nwln/MyAccount/profile-notification-preferences.tpl template for now
+
+jQuery.validator.addMethod("simplePhoneFormat", function(value, element) {
+	return this.optional(element) || /^\d{3}-\d{3}-\d{4}$/.test(value);
+}, "Format: xxx-xxx-xxxx");
+*/
 
