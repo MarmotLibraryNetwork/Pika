@@ -62,7 +62,9 @@ class NorthernWaters extends Sierra {
 
 	public function getSelfRegistrationFields(){
 		$fields = parent::getSelfRegistrationFields();
-
+		if(isset($fields['success']) && $fields['success'] == false) {
+			return $fields;
+		}
 		$fields[] = ['property'   => 'county',
 		             'type'       => 'text',
 		             'label'      => 'County of Residence',
@@ -82,14 +84,17 @@ class NorthernWaters extends Sierra {
 
 	public function selfRegister($extraSelfRegParams = false)
 	{
-		$extraSelfRegParams = [];
+		$countyTownshipString = '';
 		if (isset($_REQUEST['county']) && !empty($_REQUEST['county'])){
-			$extraSelfRegParams['patronCodes']['pcode2'] = trim($_REQUEST['county']);
+			$county = trim($_REQUEST['county']);
+			$countyTownshipString .= "County: " . $county . "  ";
 		}
 		if (isset($_REQUEST['township']) && !empty($_REQUEST['township'])){
-			$extraSelfRegParams['patronCodes']['pcode3'] = trim($_REQUEST['township']);
+			$township = trim($_REQUEST['township']);
+			$countyTownshipString .= "Township: " . $township;
 		}
-
+		$extraSelfRegParams['varFields'][] = ["fieldTag" => "x",
+		                                      "content"  => $countyTownshipString];
 		return parent::selfRegister($extraSelfRegParams);
 	}
 }
