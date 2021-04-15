@@ -184,36 +184,6 @@
 
 								{/if}
 
-								{if $showSMSNoticesInProfile}
-									<div class="form-group">
-										<div class="col-xs-4"><label for="smsNotices">{translate text='Receive SMS/Text Messages'}:</label></div>
-										<div class="col-xs-8">
-											{if $edit == true && $canUpdateContactInfo == true}
-												<p class="help-block alert alert-warning">
-													SMS/Text Messages are sent <strong>in addition</strong> to postal mail/e-mail/phone alerts. <strong>Message and data rates may apply.</strong>
-													<br><br>
-													To sign up for SMS/Text messages, you must opt-in above and enter your Mobile (cell phone) number below.
-													<br><br>
-													<strong>To opt-out from SMS Alerts, U.S.-based patrons can send a text message with the word STOP, STOP ALL, END, QUIT, CANCEL, or
-														 UNSUBSCRIBE to 82453 or 35143 from the mobile phone number specified during the opt-in process.</strong>
-													<br><br>
-													<a href="https://www.saclibrarycatalog.org/smsterms~S51" data-title="SMS Notice Terms" target="_blank">View Terms and Conditions</a>
-												</p>
-											{/if}
-										</div>
-									</div>
-									<div class="form-group">
-										<div class="col-xs-4"><label for="mobileNumber">{translate text='Mobile Number'}:</label></div>
-										<div class="col-xs-8">
-											{if $edit == true && $canUpdateContactInfo == true}
-												<input type="tel" name="mobileNumber" value="{$profile->mobileNumber}" class="form-control">
-											{else}
-												{$profile->mobileNumber}
-											{/if}
-										</div>
-									</div>
-								{/if}
-
 								{if !$offline && $edit == true && $canUpdateContactInfo}
 									<div class="form-group">
 										<div class="col-xs-8 col-xs-offset-4">
@@ -221,29 +191,16 @@
 										</div>
 									</div>
 								{/if}
-{*								<script type="text/javascript">
-									$("#contactUpdateForm").validate(
-													{literal}
-													{
-														rules: {
-															phone: {
-																minlength: 10
-															}
-														},
-														messages: {
-															phone: {
-																digits: 'Please use numbers only.',
-																minlength: 'Please provide a 10 digit phone number.'
-															}
-														}
-													}
-									{/literal}
-									)
-								</script>*}
+
 							</form>
 						</div>
 					</div>
 				</div>
+
+				{* SMS prefrences *}
+				{if $showSMSNoticesInProfile}
+					{include file="MyAccount/profile-sms-notices.tpl"}
+				{/if}
 
 				{if $allowPinReset && !$offline}
 					<div class="panel active">
@@ -280,7 +237,7 @@
 									</div>
 									<div class="form-group">
 										<div class="col-xs-8 col-xs-offset-4">
-											<input type="submit" value="Update" name="update" class="btn btn-primary">
+													<input type="submit" value="Update PIN" name="update" class="btn btn-primary">
 										</div>
 									</div>
 									<script type="text/javascript">

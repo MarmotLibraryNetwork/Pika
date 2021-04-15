@@ -1,11 +1,7 @@
 {strip}
 	<div id="main-content">
 		{if $loggedIn}
-			{if $user->web_note}
-				<div class="row">
-					<div id="web_note" class="alert alert-info text-center col-xs-12">{$user->web_note}</div>
-				</div>
-			{/if}
+			{include file="MyAccount/patronWebNotes.tpl"}
 
 			{* Alternate Mobile MyAccount Menu *}
 			{include file="MyAccount/mobilePageHeader.tpl"}
@@ -78,7 +74,7 @@
 								</div>
 								{if $showUsernameField}
 									<div class="form-group">
-										<div class="col-xs-4"><strong>Username:</strong></div>
+										<div class="col-xs-4"><label for="alternate_username">Username:</label></div>
 										<div class="col-xs-8"><input type="text" name="alternate_username" id="alternate_username" value="{if !is_numeric(trim($profile->alt_username))}{$profile->alt_username|escape}{/if}" size="25" maxlength="25" class="form-control">
 											<a href="#" onclick="$('#usernameHelp').toggle()">What is this?</a>
 											<div id="usernameHelp" style="display:none">
@@ -206,58 +202,8 @@
 										{translate text='account_profile_notification_notice'}
 									</p>
 
-									<div class="form-group">
-										<div class="col-xs-4"><strong>{translate text='Receive notices by'}:</strong></div>
-										<div class="col-xs-8">
-											{if $edit == true && $canUpdateContactInfo == true}
-												<div class="btn-group btn-group-sm" data-toggle="buttons">
-													{if $treatPrintNoticesAsPhoneNotices}
-															{* Tell the User the notice is Phone even though in the ILS it will be print *}
-															{* MDN 2/24/2016 - If the user changes their notice preference, make it phone to be more accurate, but show as selected if either print or mail is shown *}
-															<label for="sendEmail" class="btn btn-sm btn-default {if $profile->notices == 'a'}active{/if}"><input type="radio" value="p" id="sendEmail" name="notices" {if $profile->notices == 'a' || $profile->notices == 'p'}checked="checked"{/if}> Telephone</label>
-													{else}
-															<label for="noticesMail" class="btn btn-sm btn-default {if $profile->notices == 'a'}active{/if}"><input type="radio" value="a" id="noticesMail" name="notices" {if $profile->notices == 'a'}checked="checked"{/if}> Postal Mail</label>
-															<label for="noticesTel" class="btn btn-sm btn-default {if $profile->notices == 'p'}active{/if}"><input type="radio" value="p" id="noticesTel" name="notices" {if $profile->notices == 'p'}checked="checked"{/if}> Telephone</label>
-													{/if}
-													<label for="noticesEmail" class="btn btn-sm btn-default {if $profile->notices == 'z'}active{/if}"><input type="radio" value="z" id="noticesEmail" name="notices" {if $profile->notices == 'z'}checked="checked"{/if}> Email</label>
-													<label for="noticesNone" class="btn btn-sm btn-default {if $profile->notices == '-'}active{/if}"><input type="radio" value="-" id="noticesNone" name="notices" {if $profile->notices == '-'}checked="checked"{/if}> No Preference</label>
-												</div>
-											{else}
-												{$profile->noticePreferenceLabel|escape}
-											{/if}
-										</div>
-									</div>
-								{/if}
+									{include file="MyAccount/profile-notification-preferences.tpl"}
 
-								{if $showSMSNoticesInProfile}
-									<div class="form-group">
-										<div class="col-xs-4"><label for="smsNotices">{translate text='Receive SMS/Text Messages'}:</label></div>
-										<div class="col-xs-8">
-											{if $edit == true && $canUpdateContactInfo == true}
-												<input type="checkbox" name="smsNotices" id="smsNotices" {if $profile->mobileNumber}checked='checked'{/if} data-switch="">
-												<p class="help-block alert alert-warning">
-													SMS/Text Messages are sent <strong>in addition</strong> to postal mail/e-mail/phone alerts. <strong>Message and data rates may apply.</strong>
-													<br><br>
-													To sign up for SMS/Text messages, you must opt-in above and enter your Mobile (cell phone) number below.
-													<br><br>
-													<strong>To opt-out from SMS Alerts, U.S.-based patrons can send a text message with the word STOP, STOP ALL, END, QUIT, CANCEL, or
-														 UNSUBSCRIBE to 82453 or 35143 from the mobile phone number specified during the opt-in process.</strong>
-													<br><br>
-													<a href="{if $smsTermsLink}{$smsTermsLink}{else}/Help/Home?topic=smsTerms{/if}" data-title="SMS Notice Terms" class="modalDialogTrigger">View Terms and Conditions</a>
-												</p>
-											{/if}
-										</div>
-									</div>
-									<div class="form-group">
-										<div class="col-xs-4"><label for="mobileNumber">{translate text='Mobile Number'}:</label></div>
-										<div class="col-xs-8">
-											{if $edit == true && $canUpdateContactInfo == true}
-												<input type="tel" name="mobileNumber" value="{$profile->mobileNumber}" class="form-control">
-											{else}
-												{$profile->mobileNumber}
-											{/if}
-										</div>
-									</div>
 								{/if}
 
 								{if !$offline && $edit == true && $canUpdateContactInfo}
@@ -271,6 +217,11 @@
 						</div>
 					</div>
 				</div>
+
+				{* SMS prefrences *}
+				{if $showSMSNoticesInProfile}
+					{include file="MyAccount/profile-sms-notices.tpl"}
+				{/if}
 
 				{if $allowPinReset && !$offline}
 					<div class="panel active">
@@ -307,7 +258,7 @@
 									</div>
 									<div class="form-group">
 										<div class="col-xs-8 col-xs-offset-4">
-											<input type="submit" value="Update" name="update" class="btn btn-primary">
+													<input type="submit" value="Update PIN" name="update" class="btn btn-primary">
 										</div>
 									</div>
 									<script type="text/javascript">
@@ -349,7 +300,7 @@
 					{/if}
 
           {*Hoopla Options*}
-				{if $profile->isValidforHoopla()}
+				{if $profile->isValidForHoopla()}
 				<div class="panel active">
 					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#hooplaPanel">
 						<div class="panel-heading">

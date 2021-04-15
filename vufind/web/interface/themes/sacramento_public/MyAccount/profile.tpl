@@ -347,7 +347,7 @@
 						{/if}
 
             {*Hoopla Options*}
-            {if $profile->isValidforHoopla()}
+            {if $profile->isValidForHoopla()}
 							<div class="panel active">
 								<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#hooplaPanel">
 									<div class="panel-heading">
