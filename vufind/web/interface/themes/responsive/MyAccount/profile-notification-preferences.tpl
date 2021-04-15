@@ -12,7 +12,6 @@
 						<label for="noticesMail" class="btn btn-sm btn-default {if $profile->notices == 'a'}active{/if}"><input type="radio" value="a" id="noticesMail" name="notices" {if $profile->notices == 'a'}checked="checked"{/if}> Postal Mail</label>
 						<label for="noticesTel" class="btn btn-sm btn-default {if $profile->notices == 'p'}active{/if}"><input type="radio" value="p" id="noticesTel" name="notices" {if $profile->notices == 'p'}checked="checked"{/if}> Telephone</label>
 					{/if}
-					<label for="noticesText" class="btn btn-sm btn-default {if $profile->notices == 't'}active{/if}"><input type="radio" value="t" id="noticesText" name="notices" {if $profile->notices == 'p'}checked="checked"{/if}> Text</label>
 					<label for="noticesEmail" class="btn btn-sm btn-default {if $profile->notices == 'z'}active{/if}"><input type="radio" value="z" id="noticesEmail" name="notices" {if $profile->notices == 'z'}checked="checked"{/if}> Email</label>
 					<label for="noticesNone" class="btn btn-sm btn-default {if $profile->notices == '-'}active{/if}"><input type="radio" value="-" id="noticesNone" name="notices" {if $profile->notices == '-'}checked="checked"{/if}> No Preference</label>
 				</div>
