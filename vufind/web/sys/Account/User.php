@@ -24,7 +24,7 @@ use Pika\Cache;
 
 class User extends DB_DataObject {
 
-	public $__table = 'user';                            // table name
+	public $__table = 'user';                // table name
 	public $id;                              // int(11)  not_null primary_key auto_increment
 	public $source;
 //	public $username;                        // string(30)  not_null unique_key
@@ -99,7 +99,7 @@ class User extends DB_DataObject {
 	public $notices;
 	// $noticePreferenceLabel
 	// This is strict and used for comparison in several places. values are:
-  // Mail, Telephone, E-mail
+	// Mail, Telephone, E-mail
 	public $noticePreferenceLabel;
 	private $numMaterialsRequests = 0;
 	private $readingHistorySize = 0;
@@ -111,10 +111,10 @@ class User extends DB_DataObject {
 	public $ilsUserId;
 	private $linkedUserObjects;
 // Account Blocks //
-	private $blockAll = null; // set to null to signal unset, boolean when set
+	private $blockAll = null;        // set to null to signal unset, boolean when set
 	private $blockedAccounts = null; // set to null to signal unset, array when set
 
-	private $data = array();
+	private $data = [];
 
 	// CarlX Option
 	public $emailReceiptFlag;
@@ -124,7 +124,7 @@ class User extends DB_DataObject {
 
 	function getTags(){
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
-		$tagList = array();
+		$tagList = [];
 
 		$escapedId = $this->escape($this->id, false);
 		$sql       = "SELECT id, groupedWorkPermanentId, tag, COUNT(groupedWorkPermanentId) AS cnt " .
@@ -144,7 +144,7 @@ class User extends DB_DataObject {
 	function getLists(){
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 
-		$lists = array();
+		$lists = [];
 
 		$escapedId = $this->escape($this->id, false);
 		$sql       = "SELECT user_list.* FROM user_list " .
@@ -205,12 +205,12 @@ class User extends DB_DataObject {
 				$this->getStaffSettings();
 			}
 			return $this->materialsRequestReplyToAddress;
-		}elseif ($name == 'materialsRequestEmailSignature') {
-			if (!isset($this->materialsRequestEmailSignature)) {
+		}elseif ($name == 'materialsRequestEmailSignature'){
+			if (!isset($this->materialsRequestEmailSignature)){
 				$this->getStaffSettings();
 			}
 			return $this->materialsRequestEmailSignature;
-		}elseif ($name == 'barcode') {
+		}elseif ($name == 'barcode'){
 			return $this->getBarcode();
 		}else{
 			return $this->data[$name];
@@ -229,7 +229,7 @@ class User extends DB_DataObject {
 
 	function getRoles($isGuidingUser = false){
 		if (is_null($this->roles)){
-			$this->roles = array();
+			$this->roles = [];
 			if ($this->id){
 				//Load roles for the user from the user
 				require_once ROOT_DIR . '/sys/Administration/Role.php';
@@ -244,7 +244,7 @@ class User extends DB_DataObject {
 				if ($canUseTestRoles){
 					$testRole = isset($_REQUEST['test_role']) ? $_REQUEST['test_role'] : (isset($_COOKIE['test_role']) ? $_COOKIE['test_role'] : false);
 					if ($testRole){
-						$testRoles = is_array($testRole) ? $testRole : array($testRole);
+						$testRoles = is_array($testRole) ? $testRole : [$testRole];
 						foreach ($testRoles as $tmpRole){
 							$role = new Role();
 							if (is_numeric($tmpRole)){
@@ -336,7 +336,7 @@ class User extends DB_DataObject {
 			$role->query("DELETE FROM user_roles WHERE userId = " . $escapedId);
 			//Now add the new values.
 			if (count($this->roles) > 0){
-				$values = array();
+				$values = [];
 				foreach ($this->roles as $roleId => $roleName){
 					$values[] = "({$this->id},{$roleId})";
 				}
@@ -353,7 +353,7 @@ class User extends DB_DataObject {
 	 */
 	function getLinkedUsers(){
 		if (is_null($this->linkedUsers)){
-			$this->linkedUsers = array();
+			$this->linkedUsers = [];
 			/* var Library $library */
 			global $library;
 			/** @var Memcache $memCache */
@@ -370,7 +370,7 @@ class User extends DB_DataObject {
 							$linkedUser     = new User();
 							$linkedUser->id = $userLink->linkedAccountId;
 							if ($linkedUser->find(true)){
-								$cacheKey = $_SERVER['SERVER_NAME']."-patron-".$linkedUser->id;
+								$cacheKey = $_SERVER['SERVER_NAME'] . "-patron-" . $linkedUser->id;
 								$userData = $memCache->get($cacheKey);
 								if (empty($userData) || isset($_REQUEST['reload'])){
 									//Load full information from the catalog
@@ -392,7 +392,7 @@ class User extends DB_DataObject {
 
 	function getLinkedUserObjects(){
 		if (is_null($this->linkedUserObjects)){
-			$this->linkedUserObjects = array();
+			$this->linkedUserObjects = [];
 			/* var Library $library */
 			global $library;
 			if ($this->id && $library->allowLinkedAccounts){
@@ -435,7 +435,7 @@ class User extends DB_DataObject {
 	private function setAccountBlocks(){
 		// default settings
 		$this->blockAll        = false;
-		$this->blockedAccounts = array();
+		$this->blockedAccounts = [];
 
 		require_once ROOT_DIR . '/sys/Administration/BlockPatronAccountLink.php';
 		$accountBlock                   = new BlockPatronAccountLink();
@@ -494,7 +494,7 @@ class User extends DB_DataObject {
 	}
 
 	function getRelatedHooplaUsers(){
-		$hooplaUsers = array();
+		$hooplaUsers = [];
 		if ($this->isValidForHoopla()){
 			$hooplaUsers[$this->cat_username . ':' . $this->cat_password] = $this;
 		}
@@ -509,34 +509,6 @@ class User extends DB_DataObject {
 		return $hooplaUsers;
 	}
 
-	function isValidForRBDigital(){
-		if ($this->parentUser == null || ($this->getBarcode() != $this->parentUser->getBarcode())){
-//			return false;
-			return true;
-			//TODO: implement
-//			$userHomeLibrary = $this->getHomeLibrary();
-//			if ($userHomeLibrary && $userHomeLibrary->RBDigitalLibraryID > 0){
-//				return true;
-//			}
-		}
-		return false;
-	}
-
-	function getRelatedRBDigitalUsers(){
-		$RBDigitalUsers = array();
-		if ($this->isValidForRBDigital()){
-			$RBDigitalUsers[$this->cat_username . ':' . $this->cat_password] = $this;
-		}
-		foreach ($this->getLinkedUsers() as $linkedUser){
-			if ($linkedUser->isValidForRBDigital()){
-				if (!array_key_exists($linkedUser->cat_username . ':' . $linkedUser->cat_password, $RBDigitalUsers)){
-					$RBDigitalUsers[$linkedUser->cat_username . ':' . $linkedUser->cat_password] = $linkedUser;
-				}
-			}
-		}
-		return $RBDigitalUsers;
-	}
-
 	/**
 	 * Returns a list of users that can view this account through Pika's Linked Accounts
 	 *
@@ -544,7 +516,7 @@ class User extends DB_DataObject {
 	 */
 	function getViewers(){
 		if (is_null($this->viewers)){
-			$this->viewers = array();
+			$this->viewers = [];
 			/* var Library $library */
 			global $library;
 			if ($this->id && $library->allowLinkedAccounts){
@@ -670,20 +642,20 @@ class User extends DB_DataObject {
 		$displayBarcode         = $barcodeProperty == 'cat_username';
 		$thisIsNotAListOfAdmins = isset($_REQUEST['objectAction']) && $_REQUEST['objectAction'] != 'list';
 		$roleList               = Role::fetchAllRoles($thisIsNotAListOfAdmins);  // Lookup available roles in the system, don't show the role description is lists of admins
-		$structure              = array(
-			'id'              => array('property' => 'id', 'type' => 'label', 'label' => 'Administrator Id', 'description' => 'The unique id of the in the system'),
-			'firstname'       => array('property' => 'firstname', 'type' => 'label', 'label' => 'First Name', 'description' => 'The first name for the user.'),
-			'lastname'        => array('property' => 'lastname', 'type' => 'label', 'label' => 'Last Name', 'description' => 'The last name of the user.'),
-			'homeLibraryName' => array('property' => 'homeLibraryName', 'type' => 'label', 'label' => 'Home Library', 'description' => 'The library the user belongs to.'),
-			'homeLocation'    => array('property' => 'homeLocation', 'type' => 'label', 'label' => 'Home Location', 'description' => 'The branch the user belongs to.'),
-		);
+		$structure              = [
+			'id'              => ['property' => 'id', 'type' => 'label', 'label' => 'Administrator Id', 'description' => 'The unique id of the in the system'],
+			'firstname'       => ['property' => 'firstname', 'type' => 'label', 'label' => 'First Name', 'description' => 'The first name for the user.'],
+			'lastname'        => ['property' => 'lastname', 'type' => 'label', 'label' => 'Last Name', 'description' => 'The last name of the user.'],
+			'homeLibraryName' => ['property' => 'homeLibraryName', 'type' => 'label', 'label' => 'Home Library', 'description' => 'The library the user belongs to.'],
+			'homeLocation'    => ['property' => 'homeLocation', 'type' => 'label', 'label' => 'Home Location', 'description' => 'The branch the user belongs to.'],
+		];
 
 		if ($displayBarcode || $thisIsNotAListOfAdmins){
 			//When not displaying barcode, show it for the individual admin
-			$structure['barcode'] = array('property' => $barcodeProperty, 'type' => 'label', 'label' => 'Barcode', 'description' => 'The barcode for the user.');
+			$structure['barcode'] = ['property' => $barcodeProperty, 'type' => 'label', 'label' => 'Barcode', 'description' => 'The barcode for the user.'];
 		}
 
-		$structure['roles'] = array('property' => 'roles', 'type' => 'multiSelect', 'listStyle' => 'checkbox', 'values' => $roleList, 'label' => 'Roles', 'description' => 'A list of roles that the user has.');
+		$structure['roles'] = ['property' => 'roles', 'type' => 'multiSelect', 'listStyle' => 'checkbox', 'values' => $roleList, 'label' => 'Roles', 'description' => 'A list of roles that the user has.'];
 
 		return $structure;
 	}
@@ -805,7 +777,7 @@ class User extends DB_DataObject {
 	 * Clear out the cached version of the patron profile.
 	 */
 	function clearCache(){
-		$cache = new Cache();
+		$cache          = new Cache();
 		$patronCacheKey = $cache->makePatronKey('patron', $this->id);
 		$cache->delete($patronCacheKey);
 	}
@@ -986,15 +958,6 @@ class User extends DB_DataObject {
 			$allCheckedOut         = array_merge($allCheckedOut, $hooplaCheckedOutItems);
 		}
 
-		//Get checked out titles from RBDigital
-		//Do not load RBDigital titles if the parent barcode (if any) is the same as the current barcode
-//		if ($this->isValidForRBDigital()){
-//			require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
-//			$RBDigitalDriver          = new RBdigitalDriver();
-//			$RBDigitalCheckedOutItems = $RBDigitalDriver->getCheckouts($this);
-//			$allCheckedOut            = array_merge($allCheckedOut, $RBDigitalCheckedOutItems);
-//		}
-
 		if ($includeLinkedUsers){
 			if ($this->getLinkedUsers() != null){
 				/** @var User $user */
@@ -1010,7 +973,7 @@ class User extends DB_DataObject {
 		$ilsHolds = $this->getCatalogDriver()->getMyHolds($this, !$includeLinkedUsers);
 		// When working with linked users with Sierra Encore, curl connections need to be reset for logins to process correctly
 		if (PEAR_Singleton::isError($ilsHolds)){
-			$ilsHolds = array();
+			$ilsHolds = [];
 		}
 
 		//Get holds from OverDrive
@@ -1018,7 +981,7 @@ class User extends DB_DataObject {
 			$overDriveDriver = Pika\PatronDrivers\EcontentSystem\OverDriveDriverFactory::getDriver();
 			$overDriveHolds  = $overDriveDriver->getOverDriveHolds($this);
 		}else{
-			$overDriveHolds = array();
+			$overDriveHolds = [];
 		}
 
 		$allHolds = array_merge_recursive($ilsHolds, $overDriveHolds);
@@ -1075,7 +1038,7 @@ class User extends DB_DataObject {
 			}
 			uasort($allHolds['available'], $holdSort);
 		}
-		if(isset($allHolds['unavailable']) && count($allHolds['unavailable']) >= 1){
+		if (isset($allHolds['unavailable']) && count($allHolds['unavailable']) >= 1){
 			switch ($unavailableSort){
 				case 'author' :
 				case 'location' :
@@ -1103,7 +1066,7 @@ class User extends DB_DataObject {
 	public function getMyBookings($includeLinkedUsers = true){
 		$ilsBookings = $this->getCatalogDriver()->getMyBookings($this);
 		if (PEAR_Singleton::isError($ilsBookings)){
-			$ilsBookings = array();
+			$ilsBookings = [];
 		}
 
 		if ($includeLinkedUsers){
@@ -1118,14 +1081,13 @@ class User extends DB_DataObject {
 	}
 
 
-
 	public function getMyFines($includeLinkedUsers = true){
 
 		if (!isset($this->ilsFinesForUser)){
 			$this->ilsFinesForUser = $this->getCatalogDriver()->getMyFines($this, false, !$includeLinkedUsers);
 			// When working with linked users with Sierra Encore, curl connections need to be reset for logins to process correctly
 			if (PEAR_Singleton::isError($this->ilsFinesForUser)){
-				$this->ilsFinesForUser = array();
+				$this->ilsFinesForUser = [];
 			}
 		}
 		$ilsFines[$this->id] = $this->ilsFinesForUser;
@@ -1149,8 +1111,8 @@ class User extends DB_DataObject {
 	 * Get a list of locations where a record can be picked up.  Handles linked accounts
 	 * and filtering to make sure that the user is able to
 	 *
-	 * @param string $recordSource          The source of the record that we are placing a hold on
-	 * @param bool   $includeLinkedAccounts Whether or not to include accounts linked to this account
+	 * @param string $recordSource The source of the record that we are placing a hold on
+	 * @param bool $includeLinkedAccounts Whether or not to include accounts linked to this account
 	 * @return Location[]
 	 */
 	public function getValidPickupBranches($recordSource, $includeLinkedAccounts = true){
@@ -1160,9 +1122,9 @@ class User extends DB_DataObject {
 		if ($recordSource == $this->getAccountProfile()->recordSource){
 			$locations = $userLocation->getPickupBranches($this, $this->homeLocationId);
 		}else{
-			$locations = array();
+			$locations = [];
 		}
-		if($includeLinkedAccounts) {
+		if ($includeLinkedAccounts){
 			$linkedUsers = $this->getLinkedUsers();
 			foreach ($linkedUsers as $linkedUser){
 				if ($recordSource == $linkedUser->source){
@@ -1206,9 +1168,9 @@ class User extends DB_DataObject {
 	 *
 	 * Place a hold for the current user within their ILS
 	 *
-	 * @param   string $recordId The id of the bib record
-	 * @param   string $pickupBranch The branch where the user wants to pickup the item when available
-	 * @param   null|string $cancelDate The date to cancel the hold if it isn't fulfilled
+	 * @param string $recordId The id of the bib record
+	 * @param string $pickupBranch The branch where the user wants to pickup the item when available
+	 * @param null|string $cancelDate The date to cancel the hold if it isn't fulfilled
 	 * @return  mixed                    An array with the following keys:
 	 *                                    result - true/false
 	 *                                    message - the message to display
@@ -1216,17 +1178,18 @@ class User extends DB_DataObject {
 	 */
 	function placeHold($recordId, $pickupBranch, $cancelDate = null){
 		global $offlineMode;
-		if ($offlineMode){
-			global $configArray;
+		global $configArray;
+		$useOfflineHolds = $configArray['Catalog']['useOfflineHoldsInsteadOfRegularHolds'] ?? false;
+		if ($offlineMode || $useOfflineHolds){
 			$enableOfflineHolds = $configArray['Catalog']['enableOfflineHolds'];
-			if ($enableOfflineHolds){
-				$result = $this->placeOfflineHold($recordId);
+			if ($enableOfflineHolds || $useOfflineHolds){
+				$result = $this->placeOfflineHold($recordId, $pickupBranch);
 			}else{
-				$result = array(
-					'bib' => $recordId,
+				$result = [
+					'bib'     => $recordId,
 					'success' => false,
 					'message' => 'The circulation system is currently offline.  Please try again later.'
-				);
+				];
 			}
 		}else{
 			if (empty($cancelDate)){
@@ -1251,17 +1214,17 @@ class User extends DB_DataObject {
 			$enableOfflineHolds = $configArray['Catalog']['enableOfflineHolds'];
 			if ($enableOfflineHolds){
 				//TODO: Offline Volume Level Holds aren't possible at this time
-				$result = array(
+				$result = [
 					'success' => false,
 					'message' => 'The circulation system is currently offline.  Please try again later.'
-				);
+				];
 			}else{
-				$result = array(
-					'bib' => $recordId,
+				$result = [
+					'bib'     => $recordId,
 					//					'volumeId' => $volumeId, // TODO: No special handling exists in forms for the return I believe. pascal 11/27/2018
 					'success' => false,
 					'message' => 'The circulation system is currently offline.  Please try again later.'
-				);
+				];
 			}
 		}else{
 			if (empty($cancelDate)){
@@ -1282,25 +1245,28 @@ class User extends DB_DataObject {
 	/**
 	 * Record an Offline Hold that can be processed later when the circulation system is back online
 	 *
-	 * @param   string $recordId The id of the bib record
-	 * @param   null|string $itemId The id of the item to hold
+	 * @param string $recordId The id of the bib record
+	 * @param null $pickupLocation Optional pickup branch location
+	 * @param null|string $itemId The id of the item to hold
 	 * @return array
 	 */
-	function placeOfflineHold($recordId, $itemId = null){
+	function placeOfflineHold($recordId, $pickupLocation = null, $itemId = null){
+		$sourceAndId = new SourceAndId('ils:' . $recordId);
 
 		require_once ROOT_DIR . '/sys/Circa/OfflineHold.php';
-		$offlineHold                = new OfflineHold();
-		$offlineHold->bibId         = $recordId;
-		$offlineHold->itemId        = $itemId;
-		$offlineHold->patronBarcode = $this->getBarcode();
-		$offlineHold->patronId      = $this->id;
-		$offlineHold->timeEntered   = time();
-		$offlineHold->status        = 'Not Processed';
+		$offlineHold                 = new OfflineHold();
+		$offlineHold->bibId          = $sourceAndId->getRecordId(); //TODO: store full source and id (will need handling in catalog drive place hold actions)
+		$offlineHold->itemId         = $itemId;
+		$offlineHold->pickupLocation = $pickupLocation;
+		$offlineHold->patronBarcode  = $this->getBarcode();
+		$offlineHold->patronId       = $this->id;
+		$offlineHold->timeEntered    = time();
+		$offlineHold->status         = 'Not Processed';
 
 		$title = null;
 		// Retrieve Full Marc Record
 		require_once ROOT_DIR . '/RecordDrivers/Factory.php';
-		$record = RecordDriverFactory::initRecordDriverById('ils:' . $recordId);
+		$record = RecordDriverFactory::initRecordDriverById($sourceAndId);
 		if (!empty($record) && $record->isValid()){
 			$title = $record->getTitle();
 		}
@@ -1319,6 +1285,26 @@ class User extends DB_DataObject {
 				'success' => false,
 				'message' => 'The circulation system is currently offline and we could not place this hold.  Please try again later.'];
 		}
+	}
+
+	function cancelOfflineHold($recordId, $cancelId){
+		require_once ROOT_DIR . '/sys/Circa/OfflineHold.php';
+		$sourceAndId        = new SourceAndId('ils:' . $recordId);
+		$offlineHold        = new OfflineHold();
+		$offlineHold->bibId = $sourceAndId->getRecordId(); //TODO: store full source and id (will need handling in catalog drive place hold actions)
+		$offlineHold->id    = $cancelId;
+		if ($offlineHold->find(true)){
+			if ($offlineHold->delete()){
+				return [
+					'success' => true,
+					'message' => 'Offline hold canceled.',
+				];
+			}
+		}
+		return [
+			'success' => false,
+			'message' => 'Failed to cancel Offline hold.',
+		];
 	}
 
 	private function getHoldNotNeededAfterDate(){
@@ -1397,10 +1383,10 @@ class User extends DB_DataObject {
 		$locationFromILS = false;
 		if (!empty($homeBranchCode)){
 			$homeBranchCode = strtolower($homeBranchCode);
-			if(!empty($currentHomeLocation->code) && $currentHomeLocation->code == $homeBranchCode){
+			if (!empty($currentHomeLocation->code) && $currentHomeLocation->code == $homeBranchCode){
 				// If the current home location's code matches the home branch code, prevent an unneeded database lookup
 				$locationFromILS = $currentHomeLocation;
-			} else{
+			}else{
 				$tempLocation = new Location();
 				if ($tempLocation->get('code', $homeBranchCode)){
 					$locationFromILS = $tempLocation;
@@ -1411,12 +1397,12 @@ class User extends DB_DataObject {
 		$updateUserNeeded = true;
 		$updateLocation   = false;
 		if (!empty($currentHomeLocation) && !empty($locationFromILS) && $currentHomeLocation->locationId == $locationFromILS->locationId){
-				// Nothing's changed, Just set alternate locations
-				$updateLocation = $currentHomeLocation;
-				if ($this->homeLibraryId == $locationFromILS->libraryId){
-					// Make sure the home library id is set too
-					$updateUserNeeded = false;
-				}
+			// Nothing's changed, Just set alternate locations
+			$updateLocation = $currentHomeLocation;
+			if ($this->homeLibraryId == $locationFromILS->libraryId){
+				// Make sure the home library id is set too
+				$updateUserNeeded = false;
+			}
 		}elseif (!empty($locationFromILS)){
 			// Got a good location from the ILS
 			$updateLocation = $locationFromILS;
@@ -1541,28 +1527,29 @@ class User extends DB_DataObject {
 	 *
 	 * This is responsible for placing item level holds.
 	 *
-	 * @param   string $recordId The id of the bib record
-	 * @param   string $itemId The id of the item to hold
-	 * @param   string $pickupBranch The branch where the user wants to pickup the item when available
-	 * @param   null|string $cancelDate The date to cancel the hold if it isn't fulfilled
+	 * @param string $recordId The id of the bib record
+	 * @param string $itemId The id of the item to hold
+	 * @param string $pickupBranch The branch where the user wants to pickup the item when available
+	 * @param null|string $cancelDate The date to cancel the hold if it isn't fulfilled
 	 * @return  mixed                    True if successful, false if unsuccessful
 	 *                                   If an error occurs, return a PEAR_Error
 	 * @access  public
 	 */
 	function placeItemHold($recordId, $itemId, $pickupBranch, $cancelDate = null){
 		global $offlineMode;
-		if ($offlineMode){
-			global $configArray;
+		global $configArray;
+		$useOfflineHolds = $configArray['Catalog']['useOfflineHoldsInsteadOfRegularHolds'] ?? false;
+		if ($offlineMode || $useOfflineHolds){
 			$enableOfflineHolds = $configArray['Catalog']['enableOfflineHolds'];
-			if ($enableOfflineHolds){
-				$result = $this->placeOfflineHold($recordId);
+			if ($enableOfflineHolds || $useOfflineHolds){
+				$result = $this->placeOfflineHold($recordId, $pickupBranch, $itemId);
 			}else{
-				$result = array(
-					'bib' => $recordId,
+				$result = [
+					'bib'     => $recordId,
 					//					'itemId'  => $itemId, // TODO: No special handling exists in forms for the return I believe. pascal 11/27/2018
 					'success' => false,
 					'message' => 'The circulation system is currently offline.  Please try again later.'
-				);
+				];
 			}
 		}else{
 			if (empty($cancelDate)){
@@ -1611,7 +1598,24 @@ class User extends DB_DataObject {
 	 * @return array            Information about the result of the cancellation process
 	 */
 	function cancelHold($recordId, $cancelId){
-		$result = $this->getCatalogDriver()->cancelHold($this, $recordId, $cancelId);
+		global $offlineMode;
+		global $configArray;
+		$useOfflineHolds = $configArray['Catalog']['useOfflineHoldsInsteadOfRegularHolds'] ?? false;
+		if ($offlineMode || $useOfflineHolds){
+			$enableOfflineHolds = $configArray['Catalog']['enableOfflineHolds'];
+			if ($enableOfflineHolds || $useOfflineHolds){
+				$result = $this->cancelOfflineHold($recordId, $cancelId);
+			}
+			else{
+				$result = [
+					'bib'     => $recordId,
+					'success' => false,
+					'message' => 'The circulation system is currently offline.  Please try again later.'
+				];
+			}
+		}else{
+			$result = $this->getCatalogDriver()->cancelHold($this, $recordId, $cancelId);
+		}
 		$this->clearCache();
 		return $result;
 	}

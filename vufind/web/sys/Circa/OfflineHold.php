@@ -37,4 +37,5 @@ class OfflineHold extends DB_DataObject {
 	public $patronId;
 	public $status; //valid values - 'Not Processed', 'Hold Placed', 'Hold Failed'
 	public $notes;
+	public $pickupLocation; //varchar(5)
 }

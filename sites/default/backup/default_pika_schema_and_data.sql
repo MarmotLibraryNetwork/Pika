@@ -813,6 +813,7 @@ CREATE TABLE `library` (
   `enableProspectorIntegration` tinyint(4) NOT NULL DEFAULT 0,
   `showRatings` tinyint(4) NOT NULL DEFAULT 1,
   `minimumFineAmount` float NOT NULL DEFAULT 0,
+  `fineAlertAmount` float NOT NULL DEFAULT 0,
   `enableGenealogy` tinyint(4) NOT NULL DEFAULT 0,
   `enableCourseReserves` tinyint(1) NOT NULL DEFAULT 0,
   `exportOptions` varchar(100) NOT NULL DEFAULT 'RefWorks|EndNote',

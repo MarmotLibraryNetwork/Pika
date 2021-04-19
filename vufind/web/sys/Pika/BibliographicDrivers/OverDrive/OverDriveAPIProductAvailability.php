@@ -36,10 +36,17 @@ class OverDriveAPIProductAvailability extends \DB_DataObject{
 			//TODO: fetch shared collection name
 			return 'Shared Digital Collection';
 		}else{
-			$library            = new \Library();
-			$library->libraryId = $this->libraryId;
-			$library->find(true);
-			return $library->displayName;
+			global $configArray;
+			if (!empty($configArray['OverDrive']['sharedAdvantageName'])){
+				// When using shared Advantage accounts; the library id corresponds to the index of shared main account eg 1 for the first; 2 for the second
+				$sharedAdvantageNames = explode(',', $configArray['OverDrive']['sharedAdvantageName']);
+				return $sharedAdvantageNames[$this->libraryId - 1];
+			} else{
+				$library            = new \Library();
+				$library->libraryId = $this->libraryId;
+				$library->find(true);
+				return $library->displayName;
+			}
 		}
 	}
 } 

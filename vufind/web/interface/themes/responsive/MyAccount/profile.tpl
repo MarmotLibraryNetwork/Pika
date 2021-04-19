@@ -176,133 +176,12 @@
 										{translate text='account_profile_notification_notice'}
 									</p>
 
-								{if $ils != 'CarlX'}
-									<div class="form-group">
-										<div class="col-xs-4"><strong>{translate text='Receive notices by'}:</strong></div>
-										<div class="col-xs-8">
-											{if $edit == true && $canUpdateContactInfo == true}
-												<div class="btn-group btn-group-sm" data-toggle="buttons">
-													{if $treatPrintNoticesAsPhoneNotices}
-															{* Tell the User the notice is Phone even though in the ILS it will be print *}
-															{* MDN 2/24/2016 - If the user changes their notice preference, make it phone to be more accurate, but show as selected if either print or mail is shown *}
-															<label for="sendEmail" class="btn btn-sm btn-default {if $profile->notices == 'a'}active{/if}"><input type="radio" value="p" id="sendEmail" name="notices" {if $profile->notices == 'a' || $profile->notices == 'p'}checked="checked"{/if}> Telephone</label>
-													{else}
-															<label for="noticesMail" class="btn btn-sm btn-default {if $profile->notices == 'a'}active{/if}"><input type="radio" value="a" id="noticesMail" name="notices" {if $profile->notices == 'a'}checked="checked"{/if}> Postal Mail</label>
-															<label for="noticesTel" class="btn btn-sm btn-default {if $profile->notices == 'p'}active{/if}"><input type="radio" value="p" id="noticesTel" name="notices" {if $profile->notices == 'p'}checked="checked"{/if}> Telephone</label>
-													{/if}
-													<label for="noticesEmail" class="btn btn-sm btn-default {if $profile->notices == 'z'}active{/if}"><input type="radio" value="z" id="noticesEmail" name="notices" {if $profile->notices == 'z'}checked="checked"{/if}> Email</label>
-													<label for="noticesNone" class="btn btn-sm btn-default {if $profile->notices == '-'}active{/if}"><input type="radio" value="-" id="noticesNone" name="notices" {if $profile->notices == '-'}checked="checked"{/if}> No Preference</label>
-												</div>
-											{else}
-												{$profile->noticePreferenceLabel|escape}
-											{/if}
-										</div>
-									</div>
-								{/if}
-
-									{if $ils == 'CarlX'} {* CarlX Notification Options *}
-
-										<div class="form-group">
-											<div class="col-xs-4"><strong>{translate text='Email notices'}:</strong></div>
-											<div class="col-xs-8">
-												{if $edit == true && $canUpdateContactInfo == true}
-													<div class="btn-group btn-group-sm" data-toggle="buttons">
-															<label for="sendEmail" class="btn btn-sm btn-default {if $profile->notices == 'send email'}active{/if}"><input type="radio" value="send email" id="sendEmail" name="notices" {if $profile->notices == 'send email'}checked="checked"{/if}> Send Email</label>
-															<label for="dontSendEmail" class="btn btn-sm btn-default {if $profile->notices == 'do not send email'}active{/if}"><input type="radio" value="do not send email" id="dontSendEmail" name="notices" {if $profile->notices == 'do not send email'}checked="checked"{/if}> Do not send email</label>
-															<label for="optOut" class="btn btn-sm btn-default {if $profile->notices == 'opted out'}active{/if}"><input type="radio" value="opted out" id="optOut" name="notices" {if $profile->notices == 'opted out'}checked="checked"{/if}> Opt-out</label>
-													</div>
-												{else}
-													{$profile->notices}
-												{/if}
-											</div>
-										</div>
-
-
-										<div class="form-group">
-										<div class="col-xs-4"><label for="emailReceiptFlag" class="control-label">{translate text='Email receipts for checkouts and renewals'}:</label></div>
-										<div class="col-xs-8">
-											{if $edit == true}
-												<input type="checkbox" name="emailReceiptFlag" id="emailReceiptFlag" {if $profile->emailReceiptFlag==1}checked='checked'{/if} data-switch="">
-											{else}
-												{if $profile->emailReceiptFlag==0}No{else}Yes{/if}
-											{/if}
-										</div>
-									</div>
-
-										<div class="form-group">
-											<div class="col-xs-4"><label for="phoneType" class="">{translate text='Phone Carrier for SMS notices'}:</label></div>
-											<div class="col-xs-8">
-												{if $edit == true && $canUpdateContactInfo == true}
-													<select name="phoneType" id="phoneType" class="form-control">
-														{if count($phoneTypes) > 0}
-															{foreach from=$phoneTypes item=phoneTypeLabel key=phoneType}
-																<option value="{$phoneType}" {if $phoneType == $profile->phoneType}selected="selected"{/if}>{$phoneTypeLabel}</option>
-															{/foreach}
-														{else}
-															<option></option>
-														{/if}
-													</select>
-												{else}
-													{assign var=i value=$profile->phoneType}
-													{$phoneTypes[$i]}
-												{/if}
-											</div>
-										</div>
-
-
-									<div class="form-group">
-										<div class="col-xs-4"><label for="availableHoldNotice" class="control-label">{translate text='SMS notices for available holds'}:</label></div>
-										<div class="col-xs-8">
-											{if $edit == true}
-												<input type="checkbox" name="availableHoldNotice" id="availableHoldNotice" {if $profile->availableHoldNotice==1}checked='checked'{/if} data-switch="">
-											{else}
-												{if $profile->availableHoldNotice==0}No{else}Yes{/if}
-											{/if}
-										</div>
-									</div>
-
-									<div class="form-group">
-										<div class="col-xs-4"><label for="comingDueNotice" class="control-label">{translate text='SMS notices for due date reminders'}:</label></div>
-										<div class="col-xs-8">
-											{if $edit == true}
-												<input type="checkbox" name="comingDueNotice" id="comingDueNotice" {if $profile->comingDueNotice==1}checked='checked'{/if} data-switch="">
-											{else}
-												{if $profile->comingDueNotice==0}No{else}Yes{/if}
-											{/if}
-										</div>
-									</div>
-
+									{if $ils != 'CarlX'}
+										{include file="MyAccount/profile-notification-preferences.tpl"}
+									{else}
+										{include file="MyAccount/profile-notification-preferences-carlx.tpl"}
 									{/if}
-								{/if}
 
-								{if $showSMSNoticesInProfile}
-									<div class="form-group">
-										<div class="col-xs-4"><label for="smsNotices">{translate text='Receive SMS/Text Messages'}:</label></div>
-										<div class="col-xs-8">
-											{if $edit == true && $canUpdateContactInfo == true}
-												<p class="help-block alert alert-warning">
-													SMS/Text Messages are sent <strong>in addition</strong> to postal mail/e-mail/phone alerts. <strong>Message and data rates may apply.</strong>
-													<br><br>
-													To sign up for SMS/Text messages, you must opt-in above and enter your Mobile (cell phone) number below.
-													<br><br>
-													<strong>To opt-out from SMS Alerts, U.S.-based patrons can send a text message with the word STOP, STOP ALL, END, QUIT, CANCEL, or
-														 UNSUBSCRIBE to 82453 or 35143 from the mobile phone number specified during the opt-in process.</strong>
-													<br><br>
-													<a href="https://www.saclibrarycatalog.org/smsterms~S51" data-title="SMS Notice Terms" target="_blank">View Terms and Conditions</a>
-												</p>
-											{/if}
-										</div>
-									</div>
-									<div class="form-group">
-										<div class="col-xs-4"><label for="mobileNumber">{translate text='Mobile Number'}:</label></div>
-										<div class="col-xs-8">
-											{if $edit == true && $canUpdateContactInfo == true}
-												<input type="tel" name="mobileNumber" value="{$profile->mobileNumber}" class="form-control">
-											{else}
-												{$profile->mobileNumber}
-											{/if}
-										</div>
-									</div>
 								{/if}
 
 								{if !$offline && $edit == true && $canUpdateContactInfo}
@@ -312,29 +191,16 @@
 										</div>
 									</div>
 								{/if}
-{*								<script type="text/javascript">
-									$("#contactUpdateForm").validate(
-													{literal}
-													{
-														rules: {
-															phone: {
-																minlength: 10
-															}
-														},
-														messages: {
-															phone: {
-																digits: 'Please use numbers only.',
-																minlength: 'Please provide a 10 digit phone number.'
-															}
-														}
-													}
-									{/literal}
-									)
-								</script>*}
+
 							</form>
 						</div>
 					</div>
 				</div>
+
+				{* SMS prefrences *}
+				{if $showSMSNoticesInProfile}
+					{include file="MyAccount/profile-sms-notices.tpl"}
+				{/if}
 
 				{if $allowPinReset && !$offline}
 					<div class="panel active">
@@ -371,7 +237,7 @@
 									</div>
 									<div class="form-group">
 										<div class="col-xs-8 col-xs-offset-4">
-											<input type="submit" value="Update" name="update" class="btn btn-primary">
+													<input type="submit" value="Update PIN" name="update" class="btn btn-primary">
 										</div>
 									</div>
 									<script type="text/javascript">

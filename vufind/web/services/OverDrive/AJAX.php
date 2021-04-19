@@ -499,6 +499,7 @@ class OverDrive_AJAX extends AJAXHandler {
 			$name = $user->firstname . ' ' . $user->lastname;
 			$interface->assign('name', $name);
 			$interface->assign('email', $user->email);
+			$interface->assign('libraryCardNumber', $user->getBarcode());
 		}
 
 		if (!empty($_REQUEST['id'])){
@@ -515,6 +516,7 @@ class OverDrive_AJAX extends AJAXHandler {
 				}
 				$interface->assign('formats', $formats);
 			}
+			$interface->assign('overDriveId', $overDriveId);
 		}
 
 		$results = [
@@ -540,7 +542,7 @@ class OverDrive_AJAX extends AJAXHandler {
 				$to = $configArray['Site']['email'];
 			}else{
 				return [
-					'title'   => "Support Request Not Sent",
+					'title'   => 'Support Request Not Sent',
 					'message' => "<p>We're sorry, but your request could not be submitted because we do not have a support email address on file.</p><p>Please contact your local library.</p>"
 				];
 			}
@@ -569,6 +571,8 @@ class OverDrive_AJAX extends AJAXHandler {
 			$body        = $interface->fetch('OverDrive/eContentSupportEmail.tpl');
 			$emailResult = $mail->send($to, $sendingAddress, $subject, $body, $patronEmail);
 			if (PEAR::isError($emailResult)){
+				global $pikaLogger;
+				$pikaLogger->error('eContent Support email not sent: ' . $emailResult->getMessage());
 				return [
 					'title'   => "Support Request Not Sent",
 					'message' => "<p>We're sorry, an error occurred while submitting your request.</p>" . $emailResult->getMessage()

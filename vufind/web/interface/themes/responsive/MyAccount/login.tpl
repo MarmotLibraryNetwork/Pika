@@ -1,6 +1,6 @@
 {strip}
 <div id="page-content" class="col-xs-12">
-	<h2>{if $action == "WSJ"}Log into your account to access WSJ site{else}{translate text='Log into your account'}{/if}</h2>
+	<h2>{if $action == "WSJ"}Log into your account to access WSJ site{elseif $action == "eContentSupport"}Log into your account to submit eContent support request{else}{translate text='Log into your account'}{/if}</h2>
 	<div id="loginFormWrapper">
 		{if $message}{* Errors for Full Login Page *}
 			<p class="alert alert-danger" id="loginError" >{$message|translate}</p>
@@ -28,7 +28,11 @@
 				</p>
 			</div>
 		{else}
-			<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal">
+			{*			<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal">*}
+			{* Removing the login action here will actually make thing easier as it will allow the user to return to
+			where ever there were before log out with out the disrupting redirect to MyAccount/Home
+			Recall the actual loggin in takes place within index.php any way. *}
+			<form method="post" id="loginForm" class="form-horizontal">
 				<div id="missingLoginPrompt" style="display: none">Please enter both {$usernameLabel} and {$passwordLabel}.</div>
 				<div id="loginFormFields">
 					<div id="loginUsernameRow" class="form-group">

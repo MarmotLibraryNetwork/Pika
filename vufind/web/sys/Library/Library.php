@@ -51,6 +51,7 @@ class Library extends DB_DataObject {
 	public $isDefault;
 	public $libraryId; 				//int(11)
 	public $subdomain; 				//varchar(15)
+	public $catalogUrl;
 	public $displayName; 			//varchar(50)
 	public $showDisplayNameInHeader;
 	public $headerText;
@@ -84,6 +85,7 @@ class Library extends DB_DataObject {
 	public $payFinesLink;
 	public $payFinesLinkText;
 	public $minimumFineAmount;
+	public $fineAlertAmount;
 	public $showRefreshAccountButton;    // specifically to refresh account after paying fines online
 	public $repeatSearchOption;
 	public $repeatInOnlineCollection;
@@ -312,8 +314,8 @@ class Library extends DB_DataObject {
 		'list'  => 'List',
 	);
 
-	function keys() {
-		return array('libraryId', 'subdomain');
+	function keys(){
+		return ['libraryId', 'subdomain'];
 	}
 
 	static function getObjectStructure(){
@@ -415,14 +417,15 @@ class Library extends DB_DataObject {
 		//$Instructions = 'For more information on ???, see the <a href="">online documentation</a>.';
 
 		$structure = array(
-			'isDefault'               => array('property' => 'isDefault', 'type' => 'checkbox', 'label' => 'Default Library (one per install!)', 'description' => 'The default library instance for loading scoping information etc', 'hideInLists' => true),
-			'libraryId'               => array('property' => 'libraryId', 'type' => 'label', 'label' => 'Library Id', 'description' => 'The unique id of the library within the database'),
-			'subdomain'               => array('property' => 'subdomain', 'type' => 'text', 'label' => 'Subdomain', 'description' => 'A unique id to identify the library within the system'),
-			'displayName'             => array('property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'A name to identify the library within the system', 'size' => '40'),
-			'showDisplayNameInHeader' => array('property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false),
-			'abbreviatedDisplayName'  => array('property' => 'abbreviatedDisplayName', 'type' => 'text', 'label' => 'Abbreviated Display Name', 'description' => 'A short name to identify the library when space is low', 'size' => '40'),
-			'systemMessage'           => array('property' => 'systemMessage', 'type' => 'html', 'label' => 'System Message', 'description' => 'A message to be displayed at the top of the screen', 'size' => '80', 'hideInLists' => true,
-					'allowableTags' => '<p><div><span><a><strong><b><em><i><ul><ol><li><br><hr><h1><h2><h3><h4><h5><h6><sub><sup><img><script>'),
+			'isDefault'               => ['property' => 'isDefault', 'type' => 'checkbox', 'label' => 'Default Library (one per install!)', 'description' => 'The default library instance for loading scoping information etc', 'hideInLists' => true],
+			'libraryId'               => ['property' => 'libraryId', 'type' => 'label', 'label' => 'Library Id', 'description' => 'The unique id of the library within the database'],
+			'subdomain'               => ['property' => 'subdomain', 'type' => 'text', 'label' => 'Subdomain', 'description' => 'The unique subdomain of the catalog url for this library', 'isIndexingSetting' => true],
+			'catalogUrl'              => ['property' => 'catalogUrl', 'type' => 'label', 'label' => 'Catalog URL', 'description' => 'The catalog url used for this library'],
+			'displayName'             => ['property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'A name to identify the library within the system', 'size' => '40'],
+			'showDisplayNameInHeader' => ['property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false],
+			'abbreviatedDisplayName'  => ['property' => 'abbreviatedDisplayName', 'type' => 'text', 'label' => 'Abbreviated Display Name', 'description' => 'A short name to identify the library when space is low', 'size' => '40'],
+			'systemMessage'           => ['property' => 'systemMessage', 'type' => 'html', 'label' => 'System Message', 'description' => 'A message to be displayed at the top of the screen', 'size' => '80', 'hideInLists' => true,
+			                              'allowableTags' => '<p><div><span><a><strong><b><em><i><ul><ol><li><br><hr><h1><h2><h3><h4><h5><h6><sub><sup><img><script>'],
 
 			// Basic Display //
 			'displaySection' => array(
@@ -471,10 +474,10 @@ class Library extends DB_DataObject {
 				'enableMaterialsBooking'               => array('property'=>'enableMaterialsBooking', 'type'=>'checkbox', 'label'=>'Enable Materials Booking (Sierra Only)', 'description'=>'Check to enable integration of Sierra\'s Materials Booking module.', 'hideInLists' => true, 'default' => 0),
 				'allowLinkedAccounts'                  => array('property'=>'allowLinkedAccounts', 'type'=>'checkbox', 'label'=>'Allow Linked Accounts', 'description' => 'Whether or not users can link multiple library cards under a single Pika account.', 'hideInLists' => true, 'default' => 1),
 				'showLibraryHoursNoticeOnAccountPages' => array('property'=>'showLibraryHoursNoticeOnAccountPages', 'type'=>'checkbox', 'label'=>'Show Library Hours Notice on Account Pages', 'description'=>'Whether or not the Library Hours notice should be shown at the top of My Account\'s Checked Out, Holds and Bookings pages.', 'hideInLists' => true, 'default'=>true),
-				'pTypesSection'                        => array('property' => 'pTypesSectionSection', 'type' => 'section', 'label' => 'P-Types', 'hideInLists' => true,
+				'pTypesSection'                        => array('property' => 'pTypesSectionSection', 'type' => 'section', 'label' => 'P-Types (Sierra Only)', 'hideInLists' => true,
 						'helpLink'=>'https://docs.google.com/document/d/1337l_JDZAZDuSCugRWpHa4CVAfBBm8SMrAlda6hdf5o','properties' => array(
-					'pTypes'       => array('property'=>'pTypes', 'type'=>'text', 'label'=>'P-Types', 'description'=>'A list of pTypes that are valid for the library.  Separate multiple pTypes with commas.'),
-					'defaultPType' => array('property'=>'defaultPType', 'type'=>'text', 'label'=>'Default P-Type', 'description'=>'The P-Type to use when accessing a subdomain if the patron is not logged in.'),
+						'pTypes'       => ['property' =>'pTypes', 'type' =>'text', 'label' =>'P-Types', 'description' =>'A list of pTypes that are valid for the library.  Separate multiple pTypes with commas. -1 to disable pType calculations for this library.', 'isIndexingSetting' => true],
+						'defaultPType' => ['property' =>'defaultPType', 'type' =>'text', 'label' =>'Default P-Type', 'description' =>'The P-Type to use when accessing a subdomain if the patron is not logged in.'],
 				)),
 				'barcodeSection' => array('property' => 'barcodeSection', 'type' => 'section', 'label' => 'Barcode', 'hideInLists' => true,
 						'helpLink' => 'https://docs.google.com/document/d/12YnemF8l97ZbQ9kxGxhIkHBxmeD1pywAUcjNJ4mraw4', 'properties' => array(
@@ -545,45 +548,47 @@ class Library extends DB_DataObject {
 				'payFinesLink'             => array('property'=>'payFinesLink', 'type'=>'text', 'label'=>'Pay Fines Link', 'description'=>'The link to pay fines.  Leave as default to link to classic (should have eCommerce link enabled)', 'hideInLists' => true, 'default' => 'default', 'size' => 80),
 				'payFinesLinkText'         => array('property'=>'payFinesLinkText', 'type'=>'text', 'label'=>'Pay Fines Link Text', 'description'=>'The text when linking to pay fines.', 'hideInLists' => true, 'default' => 'Click to Pay Fines Online ', 'size' => 80),
 				'minimumFineAmount'        => array('property'=>'minimumFineAmount', 'type'=>'currency', 'displayFormat'=>'%0.2f', 'label'=>'Minimum Fine Amount', 'description'=>'The minimum fine amount to display the e-commerce link', 'hideInLists' => true,),
+				'fineAlertAmount'        => array('property'=>'fineAlertAmount', 'type'=>'currency', 'displayFormat'=>'%0.2f', 'label'=>'Fine Alert Amount', 'description'=>'The minimum fine amount to display the account fines warning', 'hideInLists' => true,),
 				'showRefreshAccountButton' => array('property'=>'showRefreshAccountButton', 'type'=>'checkbox', 'label'=>'Show Refresh Account Button', 'description'=>'Whether or not a Show Refresh Account button is displayed in a pop-up when a user clicks the E-Commerce Link', 'hideInLists' => true, 'default' => true),
 			)),
 
 			// Searching //
 			'searchingSection' => array('property'=>'searchingSection', 'type' => 'section', 'label' =>'Searching', 'hideInLists' => true,
 					'helpLink'=>'https://docs.google.com/document/d/1QQ7bNfGx75ImTguxEOmf7eCtdrVN9vi8FpWtWY_O3OU', 'properties' => array(
-				'restrictSearchByLibrary'                  => array('property' => 'restrictSearchByLibrary', 'type'=>'checkbox', 'label'=>'Restrict Search By Library', 'description'=>'Whether or not search results should only include titles from this library', 'hideInLists' => true),
-				'publicListsToInclude'                     => array('property' => 'publicListsToInclude', 'type'=>'enum', 'values' => array(0 => 'No Lists', '1' => 'Lists from this library', '3'=>'Lists from library list publishers Only', '4'=>'Lists from all list publishers', '2' => 'All Lists'), 'label'=>'Public Lists To Include', 'description'=>'Which lists should be included in this scope'),
-				'boostByLibrary'                           => array('property' => 'boostByLibrary', 'type'=>'checkbox', 'label'=>'Boost By Library', 'description'=>'Whether or not boosting of titles owned by this library should be applied', 'hideInLists' => true),
-				'additionalLocalBoostFactor'               => array('property' => 'additionalLocalBoostFactor', 'type'=>'integer', 'label'=>'Additional Local Boost Factor', 'description'=>'An additional numeric boost to apply to any locally owned and locally available titles', 'hideInLists' => true),
-				'allowAutomaticSearchReplacements'         => array('property' => 'allowAutomaticSearchReplacements', 'type'=>'checkbox', 'label'=>'Allow Automatic Search Corrections', 'description'=>'Turn on to allow Pika to replace search terms that have no results if the current search term looks like a misspelling.', 'hideInLists' => true, 'default'=>true),
-				'applyNumberOfHoldingsBoost'               => array('property' => 'applyNumberOfHoldingsBoost', 'type'=>'checkbox', 'label'=>'Apply Number Of Holdings Boost', 'description'=>'Whether or not the relevance will use boosting by number of holdings in the catalog.', 'hideInLists' => true, 'default' => 1),
-				'searchBoxSection' => array('property' => 'searchBoxSection', 'type' => 'section', 'label' => 'Search Box', 'hideInLists' => true, 'properties' => array(
+					'restrictSearchByLibrary'                  => array('property' => 'restrictSearchByLibrary', 'type'=>'checkbox', 'label'=>'Restrict Search By Library', 'description'=>'Whether or not search results should only include titles from this library', 'hideInLists' => true),
+					'publicListsToInclude'                     => ['property' => 'publicListsToInclude', 'type' =>'enum', 'values' => [0 => 'No Lists', '1' => 'Lists from this library', '3' =>'Lists from library list publishers Only', '4' =>'Lists from all list publishers', '2' => 'All Lists'], 'label' =>'Public Lists To Include', 'description' =>'Which lists should be included in this scope', 'isIndexingSetting' => true],
+					'boostByLibrary'                           => array('property' => 'boostByLibrary', 'type'=>'checkbox', 'label'=>'Boost By Library', 'description'=>'Whether or not boosting of titles owned by this library should be applied', 'hideInLists' => true),
+					'additionalLocalBoostFactor'               => array('property' => 'additionalLocalBoostFactor', 'type'=>'integer', 'label'=>'Additional Local Boost Factor', 'description'=>'An additional numeric boost to apply to any locally owned and locally available titles', 'hideInLists' => true),
+					'allowAutomaticSearchReplacements'         => array('property' => 'allowAutomaticSearchReplacements', 'type'=>'checkbox', 'label'=>'Allow Automatic Search Corrections', 'description'=>'Turn on to allow Pika to replace search terms that have no results if the current search term looks like a misspelling.', 'hideInLists' => true, 'default'=>true),
+					'applyNumberOfHoldingsBoost'               => array('property' => 'applyNumberOfHoldingsBoost', 'type'=>'checkbox', 'label'=>'Apply Number Of Holdings Boost', 'description'=>'Whether or not the relevance will use boosting by number of holdings in the catalog.', 'hideInLists' => true, 'default' => 1),
+					'searchBoxSection' => array('property' => 'searchBoxSection', 'type' => 'section', 'label' => 'Search Box', 'hideInLists' => true, 'properties' => array(
 					'horizontalSearchBar'                    => array('property' => 'horizontalSearchBar',      'type'=>'checkbox', 'label' => 'Use Horizontal Search Bar',   'description' => 'Instead of the default sidebar search box, a horizontal search bar is shown below the header that spans the screen.', 'hideInLists' => true, 'default' => false),
-					'systemsToRepeatIn'                      => array('property' => 'systemsToRepeatIn',        'type' => 'text',   'label' => 'Systems To Repeat In',        'description' => 'A list of library codes that you would like to repeat search in separated by pipes |.', 'size'=>'20', 'hideInLists' => true,),
+					'systemsToRepeatIn'                      => array('property' => 'systemsToRepeatIn',        'type' => 'text',   'label' => 'Other Libraries or Locations To Repeat In',        'description' => 'A list of library or location codes that you would like to repeat search in separated by pipes |.', 'size'=>'20', 'hideInLists' => true,),
+					//Note $systemsToRepeatIn matches by Location->code of Library->subdomain
 					'repeatSearchOption'                     => array('property' => 'repeatSearchOption',       'type'=>'enum',     'label' => 'Repeat Search Options (requires Restrict Search to Library to be ON)',       'description'=>'Where to allow repeating search. Valid options are: none, librarySystem, marmot, all', 'values'=>array('none'=>'None', 'librarySystem'=>'Library System','marmot'=>'Consortium'),),
 					'repeatInOnlineCollection'               => array('property' => 'repeatInOnlineCollection', 'type'=>'checkbox', 'label' => 'Repeat In Online Collection', 'description'=>'Turn on to allow repeat search in the Online Collection.', 'hideInLists' => true, 'default'=>false),
 					'showAdvancedSearchbox'                  => array('property' => 'showAdvancedSearchbox',    'type'=>'checkbox', 'label' => 'Show Advanced Search Link',   'description'=>'Whether or not users should see the advanced search link below the search box.', 'hideInLists' => true, 'default' => 1),
 				)),
-				'searchResultsSection' => array('property' => 'searchResultsSection', 'type' => 'section', 'label' => 'Search Results', 'hideInLists' => true, 'properties' => array(
+					'searchResultsSection' => array('property' => 'searchResultsSection', 'type' => 'section', 'label' => 'Search Results', 'hideInLists' => true, 'properties' => array(
 					'showSearchTools'                        => array('property' => 'showSearchTools',                    'type' => 'checkbox',    'label' => 'Show Search Tools',                                          'description' => 'Turn on to activate search tools (save search, export to excel, rss feed, etc).', 'hideInLists' => true),
 					'showInSearchResultsMainDetails'         => array('property' => 'showInSearchResultsMainDetails',     'type' => 'multiSelect', 'label' => 'Optional details to show for a record in search results : ', 'description' => 'Selected details will be shown in the main details section of a record on a search results page.', 'listStyle' => 'checkboxSimple', 'values' => self::$searchResultsMainDetailsOptions),
 					'alwaysShowSearchResultsMainDetails'     => array('property' => 'alwaysShowSearchResultsMainDetails', 'type' => 'checkbox',    'label' => 'Always Show Selected Search Results Main Details',           'description' => 'Turn on to always show the selected details even when there is no info supplied for a detail, or the detail varies due to multiple formats and/or editions). Does not apply to Series & Language', 'hideInLists' => true),
 				)),
-				'searchFacetsSection' => array('property' => 'searchFacetsSection', 'type' => 'section', 'label' => 'Search Facets', 'hideInLists' => true, 'properties' => array(
+					'searchFacetsSection' => array('property' => 'searchFacetsSection', 'type' => 'section', 'label' => 'Search Facets', 'hideInLists' => true, 'properties' => array(
 					'availabilityToggleLabelSuperScope'           => array('property' => 'availabilityToggleLabelSuperScope',           'type' => 'text',     'label' => 'SuperScope Toggle Label',                                  'description' => 'The label to show when viewing super scope i.e. Consortium Name / Entire Collection / Everything.  Does not show if superscope is not enabled.', 'default' => 'Entire Collection'),
 					'availabilityToggleLabelLocal'                => array('property' => 'availabilityToggleLabelLocal',                'type' => 'text',     'label' => 'Local Collection Toggle Label',                            'description' => 'The label to show when viewing the local collection i.e. Library Name / Local Collection.  Leave blank to hide the button.', 'default' => ''),
 					'availabilityToggleLabelAvailable'            => array('property' => 'availabilityToggleLabelAvailable',            'type' => 'text',     'label' => 'Available Toggle Label',                                   'description' => 'The label to show when viewing available items i.e. Available Now / Available Locally / Available Here.', 'default' => 'Available Now'),
 					'availabilityToggleLabelAvailableOnline'      => array('property' => 'availabilityToggleLabelAvailableOnline',      'type' => 'text',     'label' => 'Available Online Toggle Label', 'description' => 'The label to show when viewing available items i.e. Available Online.', 'default' => 'Available Online'),
-					'includeOnlineMaterialsInAvailableToggle'     => array('property' => 'includeOnlineMaterialsInAvailableToggle',     'type' => 'checkbox', 'label' => 'Include Online Materials in Available Toggle', 'description'=>'Turn on to include online materials in both the Available Now and Available Online Toggles.', 'hideInLists' => true, 'default'=>false),
-					'facetLabel'                                  => array('property' => 'facetLabel',                                  'type' => 'text',     'label' => 'Library System Facet Label',                               'description' => 'The label for the library system in the Library System Facet.', 'size'=>'40', 'hideInLists' => true,),
-					'restrictOwningBranchesAndSystems'            => array('property' => 'restrictOwningBranchesAndSystems',            'type' => 'checkbox', 'label' => 'Restrict Owning Branch and System Facets to this library', 'description' => 'Whether or not the Owning Branch and Owning System Facets will only display values relevant to this library.', 'hideInLists' => true),
+					'includeOnlineMaterialsInAvailableToggle'     => array('property' => 'includeOnlineMaterialsInAvailableToggle',     'type' => 'checkbox', 'label' => 'Include Online Materials in Available Toggle', 'description'=>'Turn on to include online materials in both the Available Now and Available Online Toggles.', 'hideInLists' => true, 'default'=>false, 'isIndexingSetting' => true),
+					'facetLabel'                                  => array('property' => 'facetLabel',                                  'type' => 'text',     'label' => 'Library System Facet Label',                               'description' => 'The label for the library system in the Library System Facet.', 'size'=>'40', 'hideInLists' => true, 'isIndexingSetting' => true),
+					'restrictOwningBranchesAndSystems'            => array('property' => 'restrictOwningBranchesAndSystems',            'type' => 'checkbox', 'label' => 'Restrict Owning Branch and System Facets to this library', 'description' => 'Whether or not the Owning Branch and Owning System Facets will only display values relevant to this library.', 'hideInLists' => true, 'isIndexingSetting' => true),
 					'showAvailableAtAnyLocation'                  => array('property' => 'showAvailableAtAnyLocation',                  'type' => 'checkbox', 'label' => 'Show Available At Any Location?',                          'description' => 'Whether or not to show any Marmot Location within the Available At facet', 'hideInLists' => true),
-					'additionalLocationsToShowAvailabilityFor'    => array('property' => 'additionalLocationsToShowAvailabilityFor',    'type' => 'text',     'label' => 'Additional Locations to Include in Available At Facet',    'description' => 'A list of library codes that you would like included in the available at facet separated by pipes |.', 'size'=>'20', 'hideInLists' => true,),
-					'includeAllRecordsInShelvingFacets'           => array('property' => 'includeAllRecordsInShelvingFacets',           'type' => 'checkbox', 'label' => 'Include All Records In Shelving Facets',                   'description' => 'Turn on to include all records (owned and included) in shelving related facets (detailed location, collection).', 'hideInLists' => true, 'default'=>false),
-					'includeAllRecordsInDateAddedFacets'          => array('property' => 'includeAllRecordsInDateAddedFacets',          'type' => 'checkbox', 'label' => 'Include All Records In Date Added Facets',                 'description' => 'Turn on to include all records (owned and included) in date added facets.', 'hideInLists' => true, 'default'=>false),
-					'includeOnOrderRecordsInDateAddedFacetValues' => array('property' => 'includeOnOrderRecordsInDateAddedFacetValues', 'type' => 'checkbox', 'label' => 'Include On Order Records In All Date Added Facet Values',  'description' => 'Use On Order records (date added value (tomorrow)) in calculations for all date added facet values. (eg. Added in the last day, week, etc.)', 'hideInLists' => true, 'default'=>true),
+					'additionalLocationsToShowAvailabilityFor'    => array('property' => 'additionalLocationsToShowAvailabilityFor',    'type' => 'text',     'label' => 'Additional Locations to Include in Available At Facet',    'description' => 'A list of library codes that you would like included in the available at facet separated by pipes |.', 'size'=>'20', 'hideInLists' => true, 'isIndexingSetting' => true),
+					'includeAllRecordsInShelvingFacets'           => array('property' => 'includeAllRecordsInShelvingFacets',           'type' => 'checkbox', 'label' => 'Include All Records In Shelving Facets',                   'description' => 'Turn on to include all records (owned and included) in shelving related facets (detailed location, collection).', 'hideInLists' => true, 'default'=>false, 'isIndexingSetting' => true),
+					'includeAllRecordsInDateAddedFacets'          => array('property' => 'includeAllRecordsInDateAddedFacets',          'type' => 'checkbox', 'label' => 'Include All Records In Date Added Facets',                 'description' => 'Turn on to include all records (owned and included) in date added facets.', 'hideInLists' => true, 'default'=>false, 'isIndexingSetting' => true),
+					'includeOnOrderRecordsInDateAddedFacetValues' => array('property' => 'includeOnOrderRecordsInDateAddedFacetValues', 'type' => 'checkbox', 'label' => 'Include On Order Records In All Date Added Facet Values',  'description' => 'Use On Order records (date added value (tomorrow)) in calculations for all date added facet values. (eg. Added in the last day, week, etc.)', 'hideInLists' => true, 'default'=>true, 'isIndexingSetting' => true),
 
-					'facets' => array(
+					'facets' => [
 						'property'                   => 'facets',
 						'type'                       => 'oneToMany',
 						'label'                      => 'Facets',
@@ -597,23 +602,23 @@ class Library extends DB_DataObject {
 						'storeDb'                    => true,
 						'allowEdit'                  => true,
 						'canEdit'                    => true,
-						'additionalOneToManyActions' => array(
-							array(
+						'additionalOneToManyActions' => [
+							[
 								'text' => 'Copy Library Facets',
 								'url'  => '/Admin/Libraries?id=$id&amp;objectAction=copyFacetsFromLibrary',
-							),
-							array(
-								'text'  => 'Reset Facets To Default',
-								'url'   => '/Admin/Libraries?id=$id&amp;objectAction=resetFacetsToDefault',
-								'class' => 'btn-warning',
-                                'allowed_roles' => 'opacAdmin',
-							),
-						),
-					),
+							],
+							[
+								'text'          => 'Reset Facets To Default',
+								'url'           => '/Admin/Libraries?id=$id&amp;objectAction=resetFacetsToDefault',
+								'class'         => 'btn-warning',
+								'allowed_roles' => ['opacAdmin', 'libraryAdmin'],
+							],
+						],
+					],
 				)
 				),
 
-				'combinedResultsSection' => array(
+					'combinedResultsSection' => array(
 					'property'   => 'combinedResultsSection', 'type' => 'section', 'label' => 'Combined Results', 'hideInLists' => true,
 					'helpLink'   => 'https://docs.google.com/document/d/1dcG12grGAzYlWAl6LWUnr9t-wdqcmMTJVwjLuItRNwk',
 					'properties' => array(
@@ -634,7 +639,7 @@ class Library extends DB_DataObject {
 							'storeDb'                    => true,
 							'allowEdit'                  => true,
 							'canEdit'                    => false,
-							'additionalOneToManyActions' => array(),
+							'additionalOneToManyActions' => [],
 						),
 				)),
 			)),
@@ -691,14 +696,14 @@ class Library extends DB_DataObject {
 					'storeDb'                    => true,
 					'allowEdit'                  => true,
 					'canEdit'                    => false,
-					'additionalOneToManyActions' => array(
-						0 => array(
-							'text'  => 'Reset More Details To Default',
-							'url'   => '/Admin/Libraries?id=$id&amp;objectAction=resetMoreDetailsToDefault',
-							'class' => 'btn-warning',
-                            'allowed_roles' => 'opacAdmin',
-						),
-					),
+					'additionalOneToManyActions' => [
+						[
+							'text'          => 'Reset More Details To Default',
+							'url'           => '/Admin/Libraries?id=$id&amp;objectAction=resetMoreDetailsToDefault',
+							'class'         => 'btn-warning',
+							'allowed_roles' => 'opacAdmin',
+						],
+					],
 				),
 			)),
 
@@ -808,13 +813,13 @@ class Library extends DB_DataObject {
 						'storeDb'                    => true,
 						'allowEdit'                  => false,
 						'canEdit'                    => false,
-						'additionalOneToManyActions' => array(
-							0 => array(
+						'additionalOneToManyActions' => [
+							[
 								'text'  => 'Set Materials Request Form Structure To Default',
 								'url'   => '/Admin/Libraries?id=$id&amp;objectAction=defaultMaterialsRequestForm',
 								'class' => 'btn-warning',
-							),
-						),
+							],
+						],
 					),
 
 				),
@@ -847,47 +852,48 @@ class Library extends DB_DataObject {
 
 			'overdriveSection' => array('property'=>'overdriveSection', 'type' => 'section', 'label' =>'OverDrive', 'hideInLists' => true,
 					'helpLink'=>'https://docs.google.com/document/d/1HG7duKI4-gbOlgDvMlQrib52LV0BBUhzGD7Q69QLziM', 'properties' => array(
-				'enableOverdriveCollection'      => array('property'=>'enableOverdriveCollection', 'type'=>'checkbox', 'label'=>'Enable Overdrive Collection', 'description'=>'Whether or not titles from the Overdrive collection should be included in searches', 'hideInLists' => true),
-				'sharedOverdriveCollection'      => array('property'=>'sharedOverdriveCollection', 'type'=>'enum',     'label'=>'Shared Overdrive Collection', 'description'=>'Which shared Overdrive collection should be included in searches', 'hideInLists' => true, 'values' => $sharedOverdriveCollectionChoices, 'default' => -1),
-				'includeOverDriveAdult'          => array('property'=>'includeOverDriveAdult',     'type'=>'checkbox', 'label'=>'Include Adult Titles', 'description'=>'Whether or not adult titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true),
-				'includeOverDriveTeen'           => array('property'=>'includeOverDriveTeen',      'type'=>'checkbox', 'label'=>'Include Teen Titles', 'description'=>'Whether or not teen titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true),
-				'includeOverDriveKids'           => array('property'=>'includeOverDriveKids',      'type'=>'checkbox', 'label'=>'Include Kids Titles', 'description'=>'Whether or not kids titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true),
+				'enableOverdriveCollection'      => array('property'=>'enableOverdriveCollection', 'type'=>'checkbox', 'label'=>'Enable Overdrive Collection', 'description'=>'Whether or not titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'isIndexingSetting' => true),
+				'sharedOverdriveCollection'      => array('property'=>'sharedOverdriveCollection', 'type'=>'enum',     'label'=>'Shared Overdrive Collection', 'description'=>'Which shared Overdrive collection should be included in searches', 'hideInLists' => true, 'values' => $sharedOverdriveCollectionChoices, 'default' => -1, 'isIndexingSetting' => true),
+				'includeOverDriveAdult'          => array('property'=>'includeOverDriveAdult',     'type'=>'checkbox', 'label'=>'Include Adult Titles', 'description'=>'Whether or not adult titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true),
+				'includeOverDriveTeen'           => array('property'=>'includeOverDriveTeen',      'type'=>'checkbox', 'label'=>'Include Teen Titles', 'description'=>'Whether or not teen titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true),
+				'includeOverDriveKids'           => array('property'=>'includeOverDriveKids',      'type'=>'checkbox', 'label'=>'Include Kids Titles', 'description'=>'Whether or not kids titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true),
 				'repeatInOverdrive'              => array('property'=>'repeatInOverdrive',         'type'=>'checkbox', 'label'=>'Repeat In Overdrive', 'description'=>'Turn on to allow repeat search in Overdrive functionality.', 'hideInLists' => true, 'default' => 0),
 				'overdriveAuthenticationILSName' => array('property'=>'overdriveAuthenticationILSName', 'type'=>'text', 'label'=>'The ILS Name Overdrive uses for user Authentication', 'description'=>'The name of the ILS that OverDrive uses to authenticate users logging into the Overdrive website.', 'size'=>'20', 'hideInLists' => true),
 				'overdriveRequirePin'            => array('property'=>'overdriveRequirePin',        'type'=>'checkbox', 'label'=>'Is a Pin Required to log into Overdrive website?', 'description'=>'Turn on if users need a PIN to log into the Overdrive website.', 'hideInLists' => true, 'default' => 0),
 				'overdriveAdvantageName'         => array('property'=>'overdriveAdvantageName',     'type'=>'text',     'label'=>'Overdrive Advantage Name', 'description'=>'The name of the OverDrive Advantage account if any.', 'size'=>'80', 'hideInLists' => true,),
-				'overdriveAdvantageProductsKey'  => array('property'=>'overdriveAdvantageProductsKey', 'type'=>'text', 'label'=>'Overdrive Advantage Products Key', 'description'=>'The products key for use when building urls to the API from the advantageAccounts call.', 'size'=>'80', 'hideInLists' => false,),
+				'overdriveAdvantageProductsKey'  => array('property'=>'overdriveAdvantageProductsKey', 'type'=>'text', 'label'=>'Overdrive Advantage Products Key', 'description'=>'The products key for use when building urls to the API from the advantageAccounts call.', 'size'=>'80', 'hideInLists' => false, 'isIndexingSetting' => true),
 				'eContentSupportAddress'         => array('property' => 'eContentSupportAddress', 'type' => 'multiemail', 'label' => 'Overdrive Support Address', 'description' => 'An e-mail address to receive support requests for patrons with eContent problems.', 'size' => '80', 'hideInLists' => true, 'default' => 'pika@marmot.org'),
 			)),
 
-			'hooplaSection' => array(
+			'hooplaSection' => [
 				'property'   => 'hooplaSection', 'type' => 'section', 'label' => 'Hoopla', 'hideInLists' => true,
 				'helpLink'   => 'https://docs.google.com/document/d/13uA65V1LXEt7c_ZjpOga0xFoVp-q0pFXtU1a5Jfo_5A',
-				'properties' => array(
-					'hooplaLibraryID' => array('property' => 'hooplaLibraryID', 'type' => 'integer', 'label' => 'Hoopla Library ID', 'description' => 'The ID Number Hoopla uses for this library', 'hideInLists' => true),
-					'hooplaSettings'  => array(
-						'property'      => 'hooplaSettings',
-						'type'          => 'oneToMany',
-						'label'         => 'Hoopla Settings',
-						'description'   => 'Configure which Hoopla tiles are in search results',
-						'keyThis'       => 'libraryId',
-						'keyOther'      => 'libraryId',
-						'subObjectType' => 'LibraryHooplaSettings',
-						'structure'     => $hooplaSettingsStructure,
-						'sortable'      => false,
-						'storeDb'       => true,
-						'allowEdit'     => true,
-						'canEdit'       => false,
-						'additionalOneToManyActions' => array(
-							array(
+				'properties' => [
+					'hooplaLibraryID' => ['property' => 'hooplaLibraryID', 'type' => 'integer', 'label' => 'Hoopla Library ID', 'description' => 'The ID Number Hoopla uses for this library', 'hideInLists' => true],
+					'hooplaSettings'  => [
+						'property'                   => 'hooplaSettings',
+						'type'                       => 'oneToMany',
+						'label'                      => 'Hoopla Settings',
+						'description'                => 'Configure which Hoopla tiles are in search results',
+						'keyThis'                    => 'libraryId',
+						'keyOther'                   => 'libraryId',
+						'subObjectType'              => 'LibraryHooplaSettings',
+						'structure'                  => $hooplaSettingsStructure,
+						'sortable'                   => false,
+						'storeDb'                    => true,
+						'allowEdit'                  => true,
+						'canEdit'                    => false,
+						'isIndexingSetting'          => true,
+						'additionalOneToManyActions' => [
+							[
 								'text'    => 'Clear Hoopla Settings',
 								'onclick' => 'Pika.Admin.clearLibraryHooplaSettings($id)',
 								'class'   => 'btn-warning',
-							),
-						),
-					),
-				),
-			),
+							],
+						],
+					],
+				],
+			],
 
 			'edsSection' => array(
 				'property'   => 'edsSection', 'type' => 'section', 'label' => 'EBSCO EDS', 'hideInLists' => true,
@@ -940,13 +946,13 @@ class Library extends DB_DataObject {
 							'storeDb'                    => true,
 							'allowEdit'                  => true,
 							'canEdit'                    => false,
-							'additionalOneToManyActions' => array(
-								0 => array(
+							'additionalOneToManyActions' => [
+								[
 									'text'  => 'Reset Archive More Details To Default',
 									'url'   => '/Admin/Libraries?id=$id&amp;objectAction=resetArchiveMoreDetailsToDefault',
 									'class' => 'btn-warning',
-								),
-							),
+								],
+							],
 						),
 					)),
 
@@ -989,13 +995,13 @@ class Library extends DB_DataObject {
 					'storeDb'       => true,
 					'allowEdit'     => false,
 					'canEdit'       => false,
-					'additionalOneToManyActions' => array(
-						0 => array(
+					'additionalOneToManyActions' => [
+						[
 							'text'  => 'Set Archive Explore More Options To Default',
 							'url'   => '/Admin/Libraries?id=$id&amp;objectAction=defaultArchiveExploreMoreOptions',
 							'class' => 'btn-warning',
-						)
-					)
+						]
+					]
 				),
 
 				'archiveSearchFacets' => array(
@@ -1012,17 +1018,17 @@ class Library extends DB_DataObject {
 					'storeDb'                    => true,
 					'allowEdit'                  => true,
 					'canEdit'                    => true,
-					'additionalOneToManyActions' => array(
-						array(
+					'additionalOneToManyActions' => [
+						[
 							'text' => 'Copy Library Archive Search Facets',
 							'url'  => '/Admin/Libraries?id=$id&amp;objectAction=copyArchiveSearchFacetsFromLibrary',
-						),
-						array(
+						],
+						[
 							'text'  => 'Reset Archive Search Facets To Default',
 							'url'   => '/Admin/Libraries?id=$id&amp;objectAction=resetArchiveSearchFacetsToDefault',
 							'class' => 'btn-warning',
-						),
-					),
+						],
+					],
 				),
 			)),
 
@@ -1170,38 +1176,39 @@ class Library extends DB_DataObject {
 			if ($scopingSetting == null){
 				return null;
 			}else{
-				if ($scopingSetting == 'local' || $scopingSetting == 'econtent' || $scopingSetting == 'library' || $scopingSetting == 'location'){
-					Library::$searchLibrary[$searchSource] = Library::getActiveLibrary();
-				}else{
-					if ($scopingSetting == 'marmot' || $scopingSetting == 'unscoped'){
+				switch ($scopingSetting){
+					case 'local':
+					case 'econtent':
+					case 'library':
+					case 'location':
+						Library::$searchLibrary[$searchSource] = Library::getActiveLibrary();
+						break;
+					case 'marmot':
+					case 'unscoped':
 						//Get the default library
 						$library            = new Library();
 						$library->isDefault = true;
-						$library->find();
-						if ($library->N > 0){
-							$library->fetch();
+						if ($library->find(true)){
 							Library::$searchLibrary[$searchSource] = clone($library);
 						}else{
 							Library::$searchLibrary[$searchSource] = null;
 						}
-					}else{
+						break;
+					default:
 						$location = Location::getSearchLocation();
 						if (is_null($location)){
 							//Check to see if we have a library for the subdomain
 							$library            = new Library();
 							$library->subdomain = $scopingSetting;
-							$library->find();
-							if ($library->N > 0){
-								$library->fetch();
+							if ($library->find(true)){
 								Library::$searchLibrary[$searchSource] = clone($library);
-								return clone($library);
 							}else{
 								Library::$searchLibrary[$searchSource] = null;
 							}
 						}else{
 							Library::$searchLibrary[$searchSource] = self::getLibraryForLocation($location->locationId);
 						}
-					}
+						break;
 				}
 			}
 		}
@@ -1262,97 +1269,98 @@ class Library extends DB_DataObject {
 	private $data = array();
 
 	public function __get($name){
-		if ($name == "holidays"){
-			if (!isset($this->holidays)){
-				$this->holidays = $this->getOneToManyOptions('Holiday', 'date');
-			}
-			return $this->holidays;
-		}elseif ($name == "moreDetailsOptions"){
-			if (!isset($this->moreDetailsOptions)){
-				$this->moreDetailsOptions = $this->getOneToManyOptions('LibraryMoreDetails', 'weight');
-			}
-			return $this->moreDetailsOptions;
-		}elseif ($name == "archiveMoreDetailsOptions"){
-			if (!isset($this->archiveMoreDetailsOptions)){
-				$this->archiveMoreDetailsOptions = $this->getOneToManyOptions('LibraryArchiveMoreDetails', 'weight');
-			}
-			return $this->archiveMoreDetailsOptions;
-		}elseif ($name == "facets"){
-			if (!isset($this->facets) && $this->libraryId){
-				$this->facets = $this->getOneToManyOptions('LibraryFacetSetting', 'weight');
-			}
-			return $this->facets;
-		}elseif ($name == "archiveSearchFacets"){
-			if (!isset($this->archiveSearchFacets)){
-				$this->archiveSearchFacets = $this->getOneToManyOptions('LibraryArchiveSearchFacetSetting', 'weight');
-			}
-			return $this->archiveSearchFacets;
-		}elseif ($name == 'libraryLinks'){
-			if (!isset($this->libraryLinks)){
-				$libraryLinks = $this->getOneToManyOptions('LibraryLink', 'weight');
-				// handle missing linkText
-				foreach ($libraryLinks as $libLink){
-					if (!isset($libLink->linkText) || $libLink->linkText == ''){
-						$libLink->linkText = 'link-' . $libLink->id;
-					}
+		switch ($name){
+			case "holidays":
+				if (!isset($this->holidays)){
+					$this->holidays = $this->getOneToManyOptions('Holiday', 'date');
 				}
-				$this->libraryLinks = $libraryLinks;
-			}
-			return $this->libraryLinks;
-		}elseif ($name == 'libraryTopLinks'){
-			if (!isset($this->libraryTopLinks)){
-				$this->libraryTopLinks = $this->getOneToManyOptions('LibraryTopLinks', 'weight');
-			}
-			return $this->libraryTopLinks;
-		}elseif ($name == 'recordsOwned'){
-			if (!isset($this->recordsOwned)){
-				$this->recordsOwned = $this->getOneToManyOptions('LibraryRecordOwned');
-			}
-			return $this->recordsOwned;
-		}elseif ($name == 'recordsToInclude'){
-			if (!isset($this->recordsToInclude)){
-				$this->recordsToInclude = $this->getOneToManyOptions('LibraryRecordToInclude', 'weight');
-			}
-			return $this->recordsToInclude;
-		}elseif ($name == 'browseCategories'){
-			if (!isset($this->browseCategories)){
-				$this->browseCategories = $this->getOneToManyOptions('LibraryBrowseCategory', 'weight');
-			}
-			return $this->browseCategories;
-		}elseif ($name == 'materialsRequestFieldsToDisplay'){
-			if (!isset($this->materialsRequestFieldsToDisplay)){
-				$this->materialsRequestFieldsToDisplay = $this->getOneToManyOptions('MaterialsRequestFieldsToDisplay', 'weight');
-			}
-			return $this->materialsRequestFieldsToDisplay;
-		}elseif ($name == 'materialsRequestFormats'){
-			if (!isset($this->materialsRequestFormats)){
-				$this->materialsRequestFormats = $this->getOneToManyOptions('MaterialsRequestFormats', 'weight');
-			}
-			return $this->materialsRequestFormats;
-		}elseif ($name == 'materialsRequestFormFields'){
-			if (!isset($this->materialsRequestFormFields)){
-				$this->materialsRequestFormFields = $this->getOneToManyOptions('MaterialsRequestFormFields', 'weight');
-			}
-			return $this->materialsRequestFormFields;
-		}elseif ($name == 'exploreMoreBar'){
-			if (!isset($this->exploreMoreBar)){
-				$this->exploreMoreBar = $this->getOneToManyOptions('ArchiveExploreMoreBar', 'weight');
-			}
-			return $this->exploreMoreBar;
-		}elseif ($name == 'combinedResultSections'){
-			if (!isset($this->combinedResultSections)){
-				$this->combinedResultSections = $this->getOneToManyOptions('LibraryCombinedResultSection', 'weight');
-			}
-			return $this->combinedResultSections;
-		}elseif ($name == 'hooplaSettings'){
-			if (!isset($this->hooplaSettings)){
-				$this->hooplaSettings = $this->getOneToManyOptions('LibraryHooplaSettings');
-			}
-			return $this->hooplaSettings;
-		}elseif ($name == 'patronNameDisplayStyle'){
-			return $this->patronNameDisplayStyle;
-		}else{
-			return $this->data[$name];
+				return $this->holidays;
+			case "moreDetailsOptions":
+				if (!isset($this->moreDetailsOptions)){
+					$this->moreDetailsOptions = $this->getOneToManyOptions('LibraryMoreDetails', 'weight');
+				}
+				return $this->moreDetailsOptions;
+			case "archiveMoreDetailsOptions":
+				if (!isset($this->archiveMoreDetailsOptions)){
+					$this->archiveMoreDetailsOptions = $this->getOneToManyOptions('LibraryArchiveMoreDetails', 'weight');
+				}
+				return $this->archiveMoreDetailsOptions;
+			case "facets":
+				if (!isset($this->facets) && $this->libraryId){
+					$this->facets = $this->getOneToManyOptions('LibraryFacetSetting', 'weight');
+				}
+				return $this->facets;
+			case "archiveSearchFacets":
+				if (!isset($this->archiveSearchFacets)){
+					$this->archiveSearchFacets = $this->getOneToManyOptions('LibraryArchiveSearchFacetSetting', 'weight');
+				}
+				return $this->archiveSearchFacets;
+			case 'libraryLinks':
+				if (!isset($this->libraryLinks)){
+					$libraryLinks = $this->getOneToManyOptions('LibraryLink', 'weight');
+					// handle missing linkText
+					foreach ($libraryLinks as $libLink){
+						if (!isset($libLink->linkText) || $libLink->linkText == ''){
+							$libLink->linkText = 'link-' . $libLink->id;
+						}
+					}
+					$this->libraryLinks = $libraryLinks;
+				}
+				return $this->libraryLinks;
+			case 'libraryTopLinks':
+				if (!isset($this->libraryTopLinks)){
+					$this->libraryTopLinks = $this->getOneToManyOptions('LibraryTopLinks', 'weight');
+				}
+				return $this->libraryTopLinks;
+			case 'recordsOwned':
+				if (!isset($this->recordsOwned)){
+					$this->recordsOwned = $this->getOneToManyOptions('LibraryRecordOwned');
+				}
+				return $this->recordsOwned;
+			case 'recordsToInclude':
+				if (!isset($this->recordsToInclude)){
+					$this->recordsToInclude = $this->getOneToManyOptions('LibraryRecordToInclude', 'weight');
+				}
+				return $this->recordsToInclude;
+			case 'browseCategories':
+				if (!isset($this->browseCategories)){
+					$this->browseCategories = $this->getOneToManyOptions('LibraryBrowseCategory', 'weight');
+				}
+				return $this->browseCategories;
+			case 'materialsRequestFieldsToDisplay':
+				if (!isset($this->materialsRequestFieldsToDisplay)){
+					$this->materialsRequestFieldsToDisplay = $this->getOneToManyOptions('MaterialsRequestFieldsToDisplay', 'weight');
+				}
+				return $this->materialsRequestFieldsToDisplay;
+			case 'materialsRequestFormats':
+				if (!isset($this->materialsRequestFormats)){
+					$this->materialsRequestFormats = $this->getOneToManyOptions('MaterialsRequestFormats', 'weight');
+				}
+				return $this->materialsRequestFormats;
+			case 'materialsRequestFormFields':
+				if (!isset($this->materialsRequestFormFields)){
+					$this->materialsRequestFormFields = $this->getOneToManyOptions('MaterialsRequestFormFields', 'weight');
+				}
+				return $this->materialsRequestFormFields;
+			case 'exploreMoreBar':
+				if (!isset($this->exploreMoreBar)){
+					$this->exploreMoreBar = $this->getOneToManyOptions('ArchiveExploreMoreBar', 'weight');
+				}
+				return $this->exploreMoreBar;
+			case 'combinedResultSections':
+				if (!isset($this->combinedResultSections)){
+					$this->combinedResultSections = $this->getOneToManyOptions('LibraryCombinedResultSection', 'weight');
+				}
+				return $this->combinedResultSections;
+			case 'hooplaSettings':
+				if (!isset($this->hooplaSettings)){
+					$this->hooplaSettings = $this->getOneToManyOptions('LibraryHooplaSettings');
+				}
+				return $this->hooplaSettings;
+			case 'patronNameDisplayStyle':
+				return $this->patronNameDisplayStyle;
+			default:
+				return $this->data[$name];
 		}
 	}
 

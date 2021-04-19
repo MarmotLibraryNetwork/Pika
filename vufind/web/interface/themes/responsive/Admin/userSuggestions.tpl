@@ -6,7 +6,7 @@
 		{else}
 			<a href='/Admin/UserSuggestions?showHidden'>Show Hidden Suggestions</a>
 		{/if}
-		<br />
+		<br>
 		<form id='suggestionsForm' method="post" action="/Admin/UserSugestions">
 			<div class='adminTableRegion' style='overflow:auto;'>
 				<table class="table table-bordered table-striped" id='suggestions'>
@@ -29,7 +29,7 @@
 								<td><a href="mailto:{$suggestion->email|escape:"hex"}">{$suggestion->email|escape:"hexentity"}</a></td>
 								<td>{$suggestion->suggestion|escape:"htmlall"}</td>
 								<td>{$suggestion->enteredOn|date_format:"%Y-%m-%d %H:%M"}</td>
-								<td class="centered"><input type='checkbox' name='hide[{$id}]' {if $suggestion->hide == 1}checked='checked'{/if} /></td>
+								<td class="centered"><input type='checkbox' name='hide[{$id}]' {if $suggestion->hide == 1}checked='checked'{/if}></td>
 								<td class='notes'><textarea rows='2' cols='20' name='internalNotes[{$id}]'>{$suggestion->internalNotes|escape:"htmlall"}</textarea></td>
 								<td class="centered"><input type='checkbox' name='delete[{$id}]'/></td>
 							</tr>

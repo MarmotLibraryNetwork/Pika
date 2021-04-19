@@ -77,6 +77,9 @@ if [ $# = 1 ];then
   #echo "setting up Pika log rotation. Note: Servername must be manually set."
   #cp $WD/install/pika /etc/logrotate.d/
   #-----------------
+  echo "Set ownership for sites directory"
+  chown apache $WD/sites
+  #-----------------
   echo "Creating symbolic link in /etc/httpd/conf.d to apache config file"
   ln -s $WD/sites/$HOST/httpd-$HOST.conf /etc/httpd/conf.d/httpd-$HOST.conf
   #-----------------

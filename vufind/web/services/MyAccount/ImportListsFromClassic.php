@@ -44,10 +44,6 @@ class ImportListsFromClassic extends MyAccount {
 		$results = $user->importListsFromIls();
 		$interface->assign('importResults', $results);
 
-		//Reload all lists for the user
-		$listList = $user->getLists();
-		$interface->assign('listList', $listList);
-
 		$this->display('listImportResults.tpl', 'Import Lists');
 	}
 

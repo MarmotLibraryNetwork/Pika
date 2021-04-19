@@ -36,7 +36,7 @@ public class MaterialsRequest implements IProcessHandler{
 	private Logger              logger;
 
 	@Override
-	public void doCronProcess(String serverName, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String serverName, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Materials Request");
 		processLog.saveToDatabase(pikaConn, logger);
 		this.logger   = logger;

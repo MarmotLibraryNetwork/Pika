@@ -82,7 +82,7 @@
 			<a class="btn btn-default" href="/Archive/{$pid}/DownloadPDF">Download Book As PDF</a>
 			<a class="btn btn-default" href="/Archive/{$activePage}/DownloadPDF" id="downloadPageAsPDF">Download Page As PDF</a>
 			*}
-			<br/>
+			<br>
 			{if $hasPdf && ($anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload))}
 				<a class="btn btn-default" href="/Archive/{$pid}/DownloadPDF">Download PDF</a>
 			{elseif ($hasPdf && !$loggedIn && $verifiedMasterDownload)}

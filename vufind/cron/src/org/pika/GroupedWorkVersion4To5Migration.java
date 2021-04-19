@@ -27,7 +27,7 @@ import java.sql.*;
  */
 public class GroupedWorkVersion4To5Migration implements IProcessHandler {
 	@Override
-	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Grouped Work Version 4 To 5 Migration");
 		processLog.saveToDatabase(pikaConn, logger);
 		String sql = "SELECT\n" +

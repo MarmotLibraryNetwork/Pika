@@ -9,7 +9,7 @@
 		<div class="col-xs-12 col-sm-9 col-md-9 col-lg-10">
 			<div class="row">
 				<div class="col-xs-12">
-					<a href="{$summUrl}" class="result-title notranslate">{$summTitle|removeTrailingPunctuation|escape}</a><br />
+					<a href="{$summUrl}" class="result-title notranslate">{$summTitle|removeTrailingPunctuation|escape}</a><br>
 					{if $summTitleStatement}
 						&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|truncate:180:"..."|highlight}
 					{/if}

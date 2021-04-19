@@ -89,9 +89,10 @@ class MyRatings extends MyAccount {
 		$records      = $searchObject->getRecords(array_keys($notInterestedIds));
 		foreach ($records as $record){
 			$groupedWorkDriver = new GroupedWorkDriver($record);
-			$groupedWorkId     = $notInterestedObj->groupedWorkPermanentId;
+			$groupedWorkId     = $groupedWorkDriver->getPermanentId();
 			$notInterestedObj  = $notInterestedIds[$groupedWorkId];
 			if ($groupedWorkDriver->isValid){
+
 				$notInterested[] = array(
 					'id'         => $notInterestedObj->id,
 					'title'      => $groupedWorkDriver->getTitle(),

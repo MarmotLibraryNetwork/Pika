@@ -15,9 +15,9 @@
 		{/if}
 		{if !empty($largeLists)}
 			<p>
-				{translate text='The following lists currently have the maximum number of items in them'}:<br />
+				{translate text='The following lists currently have the maximum number of items in them'}:<br>
 				{foreach from=$largeLists item="list"}
-				  <a href="/MyAccount/MyList/{$list.id}">{$list.title|escape:"html"}</a><br />
+				  <a href="/MyAccount/MyList/{$list.id}">{$list.title|escape:"html"}</a><br>
 				{/foreach}
 			</p>
 		{/if}

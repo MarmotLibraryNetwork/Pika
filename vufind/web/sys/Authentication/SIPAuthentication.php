@@ -17,20 +17,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use Pika\Logger;
+
 require_once ROOT_DIR . '/sys/SIP2.php';
 require_once 'Authentication.php';
 
 class SIPAuthentication implements Authentication {
   private static $processedUsers = array();
+	private $logger;
 
-	public function __construct($additionalInfo) {
+	public function __construct($additionalInfo = []) {
+		$this->logger = new Logger(__CLASS__);
 
 	}
 	
 	public function validateAccount($username, $password, $parentAccount, $validatedViaSSO) {
 		global $configArray;
 		global $timer;
-		global $logger;
 		if (isset($username) && isset($password)) {
 			//Check to see if we have already processed this user
 			if (array_key_exists($username, self::$processedUsers)){
@@ -90,7 +93,7 @@ class SIPAuthentication implements Authentication {
 					}
 					$mysip->disconnect();
 				}else{
-					$logger->log("Unable to connect to SIP server", PEAR_LOG_ERR);
+					$this->logger->error('Unable to connect to SIP server');
 				}
 			}
 		}
@@ -104,7 +107,7 @@ class SIPAuthentication implements Authentication {
 		}
 		
 	}
-	public function authenticate($validatedViaSSO) {
+	public function authenticate($validatedViaSSO = false) {
 		global $configArray;
 		global $timer;
 
@@ -191,8 +194,7 @@ class SIPAuthentication implements Authentication {
 
 				} else {
 					$user = new PEAR_Error('authentication_error_technical');
-					global $logger;
-					$logger->log("Unable to connect to SIP server", PEAR_LOG_ERR);
+					$this->logger->error('Unable to connect to SIP server');
 				}
 			} else {
 				$user = new PEAR_Error('authentication_error_blank');
@@ -261,8 +263,7 @@ class SIPAuthentication implements Authentication {
 				}
 				if (empty($user->homeLocationId)) {
 					// Logging for Diagnosing PK-1846
-					global $logger;
-					$logger->log('Sip Authentication: Attempted look up user\'s homeLocationId and failed to find one. User : ' . $user->id, PEAR_LOG_WARNING);
+					$this->logger->warning('Sip Authentication: Attempted look up user\'s homeLocationId and failed to find one. User : ' . $user->id);
 				}
 			}
 		}

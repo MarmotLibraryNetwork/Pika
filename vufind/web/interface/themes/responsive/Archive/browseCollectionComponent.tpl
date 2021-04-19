@@ -10,7 +10,7 @@
 				<div id="related-objects-for-exhibit" class="exploreMoreItemsContainer">
 					<div class="row">
 						<div id="exhibit-results-loading" class="col-xs-12" style="display: none">
-							<br/>
+							<br>
 							<div class="alert alert-info">
 								Updating results, please wait.
 							</div>

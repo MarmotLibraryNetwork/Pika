@@ -15,7 +15,7 @@
 			<div class="citation">
 			{$citation}
 			</div>
-			<br />
+			<br>
 		{/foreach}
 		{if $recordCount}
 			{translate text="Showing"}

@@ -39,7 +39,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 	private Logger              logger;
 	private PreparedStatement   insertReadingHistoryStmt;
 
-	public void doCronProcess(String serverName, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String serverName, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Update Reading History");
 		processLog.saveToDatabase(pikaConn, logger);
 
@@ -71,7 +71,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 
 			while (userResults.next()) {
 				// For each patron
-				Long    userId                            = userResults.getLong("id");
+				long    userId                            = userResults.getLong("id");
 				String  cat_username                      = userResults.getString("cat_username");
 				String  cat_password                      = userResults.getString("cat_password");
 				boolean initialReadingHistoryLoaded       = userResults.getBoolean("initialReadingHistoryLoaded");
@@ -128,7 +128,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 				processLog.incUpdated();
 				processLog.saveToDatabase(pikaConn, logger);
 				try {
-					Thread.sleep(500);
+					Thread.sleep(400);
 				} catch (Exception e) {
 					logger.warn("Sleep was interrupted while processing reading history for user.");
 				}
@@ -277,6 +277,10 @@ public class UpdateReadingHistory implements IProcessHandler {
 		if ((sourceId == null || sourceId.length() == 0) && (title == null || title.length() == 0) && (author == null || author.length() == 0)) {
 			//Don't try to add records we know nothing about.
 			//Note: Source & sourceID won't exist for InterLibrary Loan titles
+			return;
+		}
+		if (title != null && title.contains("WISCAT LOAN")){
+			// Ignore Northern Waters WISCAT ILL entries in Sierra Reading History because they contain no usable information
 			return;
 		}
 		if (readingHistoryTitle.has("permanentId")) {
@@ -434,19 +438,30 @@ public class UpdateReadingHistory implements IProcessHandler {
 
 			//Check to see if this is an existing checkout.  If it is, skip inserting
 			if (checkedOutTitlesAlreadyInReadingHistory != null) {
+				final boolean isWiscatIllCheckout = checkedOutItem.has("_callNumber") && checkedOutItem.getString("_callNumber").contains("WISCAT:");
+				// Northern Waters ILL checkouts live on the same bib per library so will have duplicate source & sourceId
+				// We can detect these ILL checkouts by looking at the special checkout field _callNumber
+
 				for (CheckedOutTitle curTitle : checkedOutTitlesAlreadyInReadingHistory) {
 					boolean sourceMatches   = Util.compareStrings(curTitle.getSource(), source);
 					boolean sourceIdMatches = Util.compareStrings(curTitle.getSourceId(), sourceId);
 					boolean titleMatches    = false;
-					if (checkedOutItem.has("title")){
-						titleMatches    = Util.compareStrings(curTitle.getTitle(), checkedOutItem.getString("title"));
+					if (checkedOutItem.has("title")) {
+						titleMatches = Util.compareStrings(curTitle.getTitle(), checkedOutItem.getString("title"));
 					}
-
+					if (isWiscatIllCheckout){
+						if (sourceMatches && sourceIdMatches && titleMatches) {
+							checkedOutTitlesAlreadyInReadingHistory.remove(curTitle);
+							return;
+						}
+					} else {
 						if ((sourceMatches && sourceIdMatches) || titleMatches) {
-						checkedOutTitlesAlreadyInReadingHistory.remove(curTitle);
-						return;
+							checkedOutTitlesAlreadyInReadingHistory.remove(curTitle);
+							return;
+						}
 					}
 				}
+
 			}
 
 			//This is a newly checked out title

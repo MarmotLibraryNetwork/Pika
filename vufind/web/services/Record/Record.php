@@ -58,7 +58,7 @@ abstract class Record_Record extends Action {
 		}
 
 		//TODO: This RDF link doesn't seem to work
-		$interface->assign('addHeader', '<link rel="alternate" type="application/rdf+xml" title="RDF Representation" href="/Record/' . urlencode($this->sourceAndId->getRecordId()) . '/RDF" />');
+		$interface->assign('addHeader', '<link rel="alternate" type="application/rdf+xml" title="RDF Representation" href="/Record/' . urlencode($this->sourceAndId->getRecordId()) . '/RDF">');
 
 		// Retrieve User Search History
 		$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false);
@@ -129,7 +129,7 @@ abstract class Record_Record extends Action {
 		global $interface;
 		$module = $interface->getVariable('module');
 
-		$mainTemplate = $module == "Record" ? 'invalidRecord.tpl' :'../Record/invalidRecord.tpl';
+		$mainTemplate = $module == 'Record' ? 'invalidRecord.tpl' :'../Record/invalidRecord.tpl';
 		$this->display($mainTemplate, 'Invalid Record');
 		die();
 	}

@@ -42,7 +42,7 @@ import java.util.List;
 public class ValidateMarcExport implements IProcessHandler {
 	private Logger logger;
 
-	public void doCronProcess(String servername, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		this.logger = logger;
 		boolean                    allExportsValid  = true;
 		ArrayList<IndexingProfile> indexingProfiles = loadIndexingProfiles(pikaConn);

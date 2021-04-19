@@ -77,6 +77,19 @@ loadSearchInformation();
 
 $timer->logTime('Bootstrap done');
 
+
+/**
+ * Global function to get the site Name for this instance of Pika
+ * eg pika.test, pika.production, pika.localhost
+ * @return string
+ */
+function getSiteName(){
+	global $configArray;
+	$partParts = explode('/', $configArray['Site']['coverPath']);
+	$siteName  = $partParts[count($partParts) - 2];
+	return $siteName;
+}
+
 function initMemcache(){
 	//Connect to memcache
 	/** @var Memcache $memCache */
@@ -288,108 +301,30 @@ function handleCookie($cookieName, $cookieValue){
 	}
 }
 
+/**
+ * Set the global $library variable based on URL; and set the global $location variable when the URL is associated
+ * with a specific location
+ */
 function getLibraryObject(){
-	global $timer;
-
 	// Make the library information global so we can work with it later.
 	global $library;
 
-	//Get the subdomain for the request
-	global $subdomain; // THis is setting the global $subdomain variable; TODO: check where this is getting used
-	$timer->logTime('starting looking for library object.');
-
-//	/** @var Memcache $memCache */
-//	global $memCache;
-//	$memCacheKey      = 'subdomainToUseFor_' . $_SERVER['SERVER_NAME'];
-//	$subdomainsToTest = $memCache->get($memCacheKey);
-//	if ($subdomainsToTest == false || isset($_REQUEST['reload'])){
-		$subdomainsToTest = array();
-		// split the servername based on
-		if (strpos($_SERVER['SERVER_NAME'], '.')){
-			$serverComponents                = explode('.', $_SERVER['SERVER_NAME']);
-			$possibleMarmotTestSiteSubdomain = '';
-			if (count($serverComponents) >= 3){
-				//URL is probably of the form subdomain.marmot.org or subdomain.opac.marmot.org
-				if ($serverComponents[0] == 'librarycatalog'){
-					// Special Handling for Sacramento Production URLs which don't follow the conventional URL structure, but will need to identified by the second component for some of the URLs
-					$subdomainsToTest[] = $serverComponents[1];
-				}else{
-					$subdomainsToTest[]              = $serverComponents[0];
-					$possibleMarmotTestSiteSubdomain = $serverComponents[0];
-				}
-			}elseif (count($serverComponents) == 2){
-				//URL could be either subdomain.localhost or marmot.org. Only use the subdomain
-				//If the second component is localhost.
-				if (strcasecmp($serverComponents[1], 'localhost') == 0){
-					$subdomainsToTest[]              = $serverComponents[0];
-					$possibleMarmotTestSiteSubdomain = $serverComponents[0];
-				}
-			}
-			//Trim off test indicator when doing lookups for library/location. eg opac2, opac3, opact, etc
-			$lastChar = substr($possibleMarmotTestSiteSubdomain, -1);
-			if ($lastChar == '2' || $lastChar == '3' || $lastChar == 't' || $lastChar == 'd' || $lastChar == 'x'){
-				$subdomainsToTest[] = substr($possibleMarmotTestSiteSubdomain, 0, -1);
+	$library             = new Library();
+	$library->catalogUrl = $_SERVER['SERVER_NAME'];
+	if (!$library->find(true)){
+		$location             = new Location();
+		$location->catalogUrl = $_SERVER['SERVER_NAME'];
+		if ($location->find(true)){
+			$location->setActiveLocation(clone $location);
+			$library = $library::getLibraryForLocation($location->locationId);
+		}else{
+			$library            = new Library();
+			$library->isDefault = 1;
+			if ($library->find(true) != 1){
+				die('Could not determine the correct library to use for this installation');
 			}
 		}
-		$timer->logTime('found ' . count($subdomainsToTest) . ' subdomains to test');
-//	}
-
-		// Load the library system information
-		foreach ($subdomainsToTest as $i => $subdomain){
-			$timer->logTime("testing subdomain $i $subdomain");
-			$Library            = new Library();
-			$Library->subdomain = $subdomain;
-//			$timer->logTime("searched for library by subdomain $subdomain");
-			if ($Library->find() == 1){
-				$Library->fetch();
-				$library = $Library;
-				$timer->logTime("found the library based on subdomain");
-				break;
-			}else{
-				//The subdomain can also indicate a location.
-				$Location = new Location();
-				$Location->whereAdd("code = '$subdomain'");
-				$Location->whereAdd("subdomain = '$subdomain'", 'OR');
-				if ($Location->find() == 1){
-					$Location->fetch();
-
-					// We found a location for the subdomain, get the library.
-					/** @var Library $librarySingleton */
-					global $librarySingleton;
-					global $locationSingleton;
-					$library = $librarySingleton->getLibraryForLocation($Location->locationId);
-					$locationSingleton->setActiveLocation(clone $Location);
-					$timer->logTime("found the library based on location subdomain or code.");
-					break;
-				}else{
-					//Check to see if there is only one library in the system
-					$Library = new Library();
-					if ($Library->count() == 1){
-						if ($Library->find(true)){
-							$library = $Library;
-						}else {
-							die('Could not determine the correct library to use for this install');
-						}
-
-						$timer->logTime("there is only one library for this install");
-						break;
-					}elseif ($i == count($subdomainsToTest) - 1){
-						//If we are on the last subdomain to test, get the default library
-						$Library            = new Library();
-						$Library->isDefault = 1;
-						if ($Library->find() == 1){
-							$Library->fetch();
-							$library = $Library;
-							$timer->logTime("found the library based on the default");
-						}else{
-							die('Could not determine the correct library to use for this install');
-						}
-					}
-				}
-			}
-		}
-//		$memCache->set($memCacheKey, [$subdomain], null, 36000);
-	$timer->logTime('Fetched library and location objects');
+	}
 }
 
 function loadSearchInformation(){

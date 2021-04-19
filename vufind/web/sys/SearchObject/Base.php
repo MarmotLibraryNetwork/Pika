@@ -1549,18 +1549,18 @@ abstract class SearchObject_Base {
 	{
 		// Advanced search
 		if (isset($this->searchTerms[0]['group'])) {
-			$output = "GROUP JOIN : " . $this->searchTerms[0]['join'] . "<br/>\n";
+			$output = "GROUP JOIN : " . $this->searchTerms[0]['join'] . "<br>\n";
 			for ($i = 0; $i < count($this->searchTerms); $i++) {
-				$output .= "BOOL ($i) : " . $this->searchTerms[$i]['group'][0]['bool'] . "<br/>\n";
+				$output .= "BOOL ($i) : " . $this->searchTerms[$i]['group'][0]['bool'] . "<br>\n";
 				for ($j = 0; $j < count($this->searchTerms[$i]['group']); $j++) {
-					$output .= "TERMS ($i)($j) : " . $this->searchTerms[$i]['group'][$j]['lookfor'] . "<br/>\n";
-					$output .= "INDEX ($i)($j) : " . $this->searchTerms[$i]['group'][$j]['field'] . "<br/>\n";
+					$output .= "TERMS ($i)($j) : " . $this->searchTerms[$i]['group'][$j]['lookfor'] . "<br>\n";
+					$output .= "INDEX ($i)($j) : " . $this->searchTerms[$i]['group'][$j]['field'] . "<br>\n";
 				}
 			}
 			// Basic search
 		} else {
-			$output = "TERMS : " . $this->searchTerms[0]['lookfor'] . "<br/>\n";
-			$output .= "INDEX : " . $this->searchTerms[0]['index']   . "<br/>\n";
+			$output = "TERMS : " . $this->searchTerms[0]['lookfor'] . "<br>\n";
+			$output .= "INDEX : " . $this->searchTerms[0]['index']   . "<br>\n";
 		}
 
 		return $output;
@@ -1574,20 +1574,20 @@ abstract class SearchObject_Base {
 	 */
 	public function debugOutput()
 	{
-		$output = "VIEW : " . $this->view . "<br/>\n";
+		$output = "VIEW : " . $this->view . "<br>\n";
 		$output .= $this->debugOutputSearchTerms();
 
 		foreach ($this->filterList as $field => $filter) {
 			foreach ($filter as $value) {
-				$output .= "FILTER : $field => $value<br/>\n";
+				$output .= "FILTER : $field => $value<br>\n";
 			}
 		}
-		$output .= "PAGE : "   . $this->page         . "<br/>\n";
-		$output .= "SORT : "   . $this->sort         . "<br/>\n";
-		$output .= "TIMING : START : "   . $this->initTime       . "<br/>\n";
-		$output .= "TIMING : QUERY.S : " . $this->queryStartTime . "<br/>\n";
-		$output .= "TIMING : QUERY.E : " . $this->queryEndTime   . "<br/>\n";
-		$output .= "TIMING : FINISH : "  . $this->endTime        . "<br/>\n";
+		$output .= "PAGE : "   . $this->page         . "<br>\n";
+		$output .= "SORT : "   . $this->sort         . "<br>\n";
+		$output .= "TIMING : START : "   . $this->initTime       . "<br>\n";
+		$output .= "TIMING : QUERY.S : " . $this->queryStartTime . "<br>\n";
+		$output .= "TIMING : QUERY.E : " . $this->queryEndTime   . "<br>\n";
+		$output .= "TIMING : FINISH : "  . $this->endTime        . "<br>\n";
 
 		return $output;
 	}

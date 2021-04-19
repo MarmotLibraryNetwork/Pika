@@ -26,7 +26,7 @@
 						<td>{$info.time}</td>
 						<td><a href="{$info.url|escape}">{if empty($info.description)}{translate text="history_empty_search"}{else}{$info.description|escape}{/if}</a></td>
 						<td>{foreach from=$info.filters item=filters key=field}{foreach from=$filters item=filter}
-							<b>{translate text=$field|escape}</b>: {$filter.display|escape}<br/>
+							<b>{translate text=$field|escape}</b>: {$filter.display|escape}<br>
 						{/foreach}{/foreach}</td>
 						<td>{$info.source}</td>
 						<td>{$info.hits}</td>
@@ -34,7 +34,7 @@
 					</tr>
 					{/foreach}
 				</table>
-				<br/>
+				<br>
 			{/if}
 
 			{if $links}

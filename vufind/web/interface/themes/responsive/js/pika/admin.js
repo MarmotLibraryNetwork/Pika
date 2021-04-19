@@ -9,6 +9,12 @@ Pika.Admin = (function(){
 		clearLocationHooplaSettings: function (id){
 			return this.basicAjaxHandler('clearLocationHooplaSettings', id);
 		},
+		setCatalogUrlPrompt: function (id , isLocation){
+			if (typeof isLocation === 'undefined'){
+				isLocation=0;
+			}
+			return this.buttonAjaxHandler('setCatalogUrlPrompt&isLocation='+isLocation, id);
+		},
 
 		clearLibraryHooplaSettings: function (id){
 			return this.basicAjaxHandler('clearLibraryHooplaSettings', id);
@@ -115,15 +121,44 @@ Pika.Admin = (function(){
 			return this.cloneLibraryHandler('cloneLibrary', copyFromId, displayName, subdomain, abName, facetLabelInput);
 		},
 		loadPtypes: function (){
+
 			Pika.Account.ajaxLogin(function (){
 				Pika.confirm("Loading Patron Types from Sierra will remove any Patron Types currently saved in Pika. Do you wish to continue?", function (){
 					Pika.loadingMessage();
 					$.getJSON("/Admin/AJAX?method=loadPtypes", function (data){
-						Pika.showMessage('Success', 'Patron Types loaded.', 0, true)
+						Pika.showMessage(data.title, data.body, 0, true)
 					}).fail(Pika.ajaxFail);
 				});
 				return false;
 			});
-		}
+		},
+		setCatalogUrl: function(id, isLocation){
+			Pika.Account.ajaxLogin(function (){
+				if (typeof isLocation === 'undefined'){
+					isLocation=0;
+				}
+				var url = "/Admin/AJAX",
+						catalogUrl = $('#catalogUrlForm>#catalogUrl').val(),
+						params = {
+							'method': 'setCatalogUrl'
+							,catalogUrl: catalogUrl
+							,id: id
+							,isLocation: isLocation
+						};
+				// console.log($('#catalogUrlForm>#catalogUrl'), $('#catalogUrlForm>#catalogUrl').val(), catalogUrl);
+				Pika.loadingMessage();
+				$.getJSON(url, params,
+						function(data) {
+							if (data.success) {
+								Pika.showMessage(data.title, data.body, 4000, true);
+							} else {
+								Pika.showMessage("Error", data.body);
+							}
+						}
+				).fail(Pika.ajaxFail);
+			});
+			return false;
+		},
+
 	};
 }(Pika.Admin || {}));

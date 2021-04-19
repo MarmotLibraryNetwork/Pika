@@ -119,6 +119,14 @@ public class GroupedWorkIndexer {
 		GroupedReindexMain.addNoteToReindexLog("Setting up update server and solr server");
 		final String baseSolrUrl = "http://localhost:" + solrPort + "/solr/grouped";
 		if (fullReindex){
+			Boolean isRunning = systemVariables.getBooleanValuedVariable("systemVariables");
+			if (isRunning == null){ // Not found
+				isRunning = false;
+			}
+			if (isRunning){
+				logger.error("System Variable 'full_reindex_running' is on at beginning of full reindex. This could indicate a full index is already running, or there was an error during the last full reindex.");
+			}
+
 			//MDN 10-21-2015 - use the grouped core since we are using replication.
 			solrServer   = new HttpSolrClient.Builder(baseSolrUrl).build();
 			updateServer = new ConcurrentUpdateSolrClient.Builder(baseSolrUrl).withQueueSize(500).withThreadCount(8).build();
@@ -182,7 +190,7 @@ public class GroupedWorkIndexer {
 				if (sourceName.equalsIgnoreCase("overdrive")) {
 					//Overdrive doesn't have an indexing profile.
 					//Only load processor if there are overdrive titles
-					overDriveProcessor = new OverDriveProcessor(this, econtentConn, logger, fullReindex);
+					overDriveProcessor = new OverDriveProcessor(this, econtentConn, logger, fullReindex, serverName);
 				} else {
 					getIndexingProfile.setString(1, sourceName);
 					try (ResultSet indexingProfileRS = getIndexingProfile.executeQuery()) {
@@ -215,8 +223,8 @@ public class GroupedWorkIndexer {
 								case "Aurora":
 									indexingRecordProcessors.put(sourceName, new AuroraRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
-								case "SantaFe":
-									indexingRecordProcessors.put(sourceName, new SantaFeRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								case "NorthernWaters":
+									indexingRecordProcessors.put(sourceName, new NorthernWatersRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
 								case "Sacramento":
 									indexingRecordProcessors.put(sourceName, new SacramentoRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));

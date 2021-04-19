@@ -124,6 +124,10 @@ Pika.Menu = (function(){
 					switchPosition, // Meant to remain constant for the event handler below
 					// masqueradeMode = $('#masquerade-header').is(':visible'),
 					switchPositionAdjustment = $('#masquerade-header').height();
+			if (!$('#masquerade-header').is(':visible'))
+			{
+				switchPositionAdjustment =0;
+			}
 			// if (menu.is(':visible')) {
 			// 	switchPosition = menu.offset().top - switchPositionAdjustment;
 			// 	// console.log('Initial offset : ' + menu.offset().top, 'switch position : ' + switchPosition);

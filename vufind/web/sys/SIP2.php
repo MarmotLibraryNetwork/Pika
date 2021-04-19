@@ -999,7 +999,6 @@ class sip2
 		if ($this->debug) {
 			global $logger;
 			$logger->log( $message, PEAR_LOG_ERR);
-			//echo($message . "<br/>\r\n");
 		}
 	}
 

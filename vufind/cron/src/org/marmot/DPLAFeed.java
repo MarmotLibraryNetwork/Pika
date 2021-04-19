@@ -41,7 +41,7 @@ public class DPLAFeed implements IProcessHandler {
 	private Logger              logger;
 
 	@Override
-	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "DPLA Feed");
 		processLog.saveToDatabase(pikaConn, logger);
 

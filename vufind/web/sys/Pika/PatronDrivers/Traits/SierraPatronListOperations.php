@@ -39,6 +39,8 @@ trait SierraPatronListOperations {
 	use PatronListOperations;
 
 
+ public $classicListsRegex = '/<tr[^>]*?class="patFuncEntry"[^>]*?>.*?<input type="checkbox" id ="(\\d+)".*?<a.*?>(.*?)<\/a>.*?<td[^>]*class="patFuncDetails">(.*?)<\/td>.*?<\/tr>/si';
+
 	/**
 	 * Import Lists from the ILS
 	 *
@@ -69,7 +71,8 @@ trait SierraPatronListOperations {
 				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 
 				// Now that we have the table, get the actual list names and ids
-				preg_match_all('/<tr[^>]*?class="patFuncEntry"[^>]*?>.*?<input type="checkbox" id ="(\\d+)".*?<a.*?>(.*?)<\/a>.*?<td[^>]*class="patFuncDetails">(.*?)<\/td>.*?<\/tr>/si', $allListTable, $listDetails, PREG_SET_ORDER);
+				// (You can set $this->classicListsRegex in the Class handler for the specific library to handle differences for that library)
+				preg_match_all($this->classicListsRegex, $allListTable, $listDetails, PREG_SET_ORDER);
 				if (!empty($listDetails)){
 					foreach ($listDetails as $listDetail){
 						$classicListId          = $listDetail[1];
@@ -94,7 +97,8 @@ trait SierraPatronListOperations {
 							$classicListTitlesTable = $listsDetailsMatches[1];
 
 							// Get the bib numbers for the title
-							preg_match_all('/<input type="checkbox" name="(b\\d{1,7})".*?<span[^>]*class="patFuncTitle(?:Main)?">(.*?)<\/span>/si', $classicListTitlesTable, $bibNumberMatches, PREG_SET_ORDER);
+							$classicListEntryRegex = '/<input type="checkbox" name="(?:name_pfmark_cancelx)(b\\d+?)".*?<span[^>]*class="patFuncTitle(?:Main)?">(.*?)<\/span>/si';
+							preg_match_all($classicListEntryRegex, $classicListTitlesTable, $bibNumberMatches, PREG_SET_ORDER);
 							if (!empty($bibNumberMatches)){
 								foreach ($bibNumberMatches as $bibNumberMatch){
 									$shortBibNumber  = $bibNumberMatch[1];
@@ -174,7 +178,7 @@ trait SierraPatronListOperations {
 		];
 		$c->setHeaders($headers);
 
-		$cookie   = tempnam("/tmp", "CURLCOOKIE");
+		$cookie   = @tempnam("/tmp", "CURLCOOKIE");
 		$curlOpts = [
 			CURLOPT_CONNECTTIMEOUT    => 20,
 			CURLOPT_TIMEOUT           => 60,
@@ -237,7 +241,7 @@ trait SierraPatronListOperations {
 			}
 		}
 
-		$scope    = $this->getLibraryScope(); // IMPORTANT: Scope is needed for Bookings Actions to work
+		$scope    = $this->getLibrarySierraScope(); // IMPORTANT: Scope is needed for Bookings Actions to work
 		$optUrl   = $patronAction ? $vendorOpacUrl . '/patroninfo~S' . $scope . '/' . $sierraPatronId . '/' . $pageToCall
 			: $vendorOpacUrl . '/' . $pageToCall;
 		// Most curl calls are patron interactions, getting the bookings calendar isn't
@@ -265,7 +269,7 @@ trait SierraPatronListOperations {
 	 * @param bool $checkLibraryRestrictions  Whether or not to condition the use of Sierra OPAC scope by the library setting $restrictSearchByLibrary;
 	 * @return mixed|string
 	 */
-	protected function getLibraryScope($checkLibraryRestrictions = false){
+	protected function getLibrarySierraScope($checkLibraryRestrictions = false){
 
 		//Load the holding label for the branch where the user is physically.
 		$searchLocation = \Location::getSearchLocation();
@@ -279,12 +283,12 @@ trait SierraPatronListOperations {
 				return $searchLibrary->scope;
 			}
 		}
-		return $this->getDefaultScope();
+		return $this->getDefaultSierraScope();
 	}
 
-	protected function getDefaultScope(){
+	protected function getDefaultSierraScope(){
 		global $configArray;
-		return isset($configArray['OPAC']['defaultScope']) ? $configArray['OPAC']['defaultScope'] : '93';
+		return $configArray['OPAC']['defaultScope'] ?? '93';
 	}
 
 }

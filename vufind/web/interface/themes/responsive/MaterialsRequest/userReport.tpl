@@ -1,5 +1,3 @@
-<script type="text/javascript" src="/services/MaterialsRequest/ajax.js"></script>
-
 	<div id="main-content" class="col-md-12">
 		<h3>Materials Request Requests by User Report</h3>
 		{if $error}

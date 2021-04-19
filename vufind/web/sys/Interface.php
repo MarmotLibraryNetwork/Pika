@@ -123,7 +123,7 @@ class UInterface extends Smarty {
 
 
 		// Determine Offline Mode
-		global $offlineMode;
+		global $offlineMode;  //Assignment of this global variable happens here
 		$offlineMode = false;
 		if ($configArray['Catalog']['offline']){
 			$offlineMode = true;
@@ -193,6 +193,7 @@ class UInterface extends Smarty {
 			}
 			$this->assign('showEcommerceLink', $showECommerceLink);
 			$this->assign('minimumFineAmount', $homeLibrary->minimumFineAmount);
+			$this->assign('fineAlertAmount', $homeLibrary->fineAlertAmount);
 		}
 	}
 
@@ -278,7 +279,6 @@ class UInterface extends Smarty {
 		global $library;
 		global $locationSingleton;
 		global $configArray;
-		global $subdomain;
 		global $offlineMode;
 
 		$productionServer = $configArray['Site']['isProduction'];
@@ -370,21 +370,21 @@ class UInterface extends Smarty {
 		$this->assign('logoAlt', empty($library->useHomeLinkForLogo) ? 'Return to Catalog Home' : 'Library Home Page');
 
 		// Check for overriding images of the theme's main logo
-		$themes = explode(',', $library->themeName);
-		foreach ($themes as $themeName){
-			// This overrides the theme's logo image for a location if the image directory contains a image file named as:
-			if ($location != null && file_exists('./interface/themes/' . $themeName . '/images/' . $location->code . '_logo_responsive.png')){
-				$responsiveLogo = '/interface/themes/' . $themeName . '/images/' . $location->code . '_logo_responsive.png';
-				break;
+		if (is_object($location)){
+			$themes = explode(',', $library->themeName);
+			foreach ($themes as $themeName){
+				// This overrides the theme's logo image for a location if the image directory contains a image file named as:
+				if (!empty($location->code)){
+					$locationLogo = "/interface/themes/$themeName/images/{$location->code}_logo_responsive.png";
+					if (file_exists('.' . $locationLogo)){
+						$responsiveLogo = $locationLogo;
+						break;
+					}
+				}
 			}
-			// This overrides the theme's logo image for a library if the image directory contains a image file named as:
-			if ($subdomain != null && file_exists('./interface/themes/' . $themeName . '/images/' . $subdomain . '_logo_responsive.png')){
-				$responsiveLogo = '/interface/themes/' . $themeName . '/images/' . $subdomain . '_logo_responsive.png';
-				break;
+			if (isset($responsiveLogo)){
+				$this->assign('responsiveLogo', $responsiveLogo);
 			}
-		}
-		if (isset($responsiveLogo)){
-			$this->assign('responsiveLogo', $responsiveLogo);
 		}
 
 		// Footer Info

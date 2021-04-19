@@ -78,17 +78,8 @@ class Search_Results extends Union_Results {
 //		$searchObject->viewOptions = $this->viewOptions; // set valid view options for the search object
 
 		// Build RSS Feed for Results (if requested)
-		if ($searchObject->getView() == 'rss') {
-			// Throw the XML to screen
-			echo $searchObject->buildRSS();
-			// And we're done
-			exit;
-		}else if ($searchObject->getView() == 'excel'){
-			// Throw the Excel spreadsheet to screen for download
-			echo $searchObject->buildExcel();
-			// And we're done
-			exit;
-		}
+		$this->processAlternateOutputs($searchObject);
+
 		$displayMode = $searchObject->getView();
 		if ($displayMode == 'covers') {
 			$searchObject->setLimit(24); // a set of 24 covers looks better in display

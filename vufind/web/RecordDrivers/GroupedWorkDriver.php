@@ -1023,57 +1023,24 @@ class GroupedWorkDriver extends RecordInterface {
 		if ($this->fastDescription != null){
 			return $this->fastDescription;
 		}
-		if (!empty($this->fields['display_description'])){
-			$this->fastDescription = $this->fields['display_description'];
-		}else{
-			$this->fastDescription = "";
-			//This logic mirrors that used in the indexer.  No need to repeat if we didn't find anything in the indexer.
-			/*$relatedRecords = $this->getRelatedRecords();
-			//Look for a description from a book in english
-			foreach ($relatedRecords as $relatedRecord){
-				$language = is_array($relatedRecord['language']) ? $relatedRecord['language'][0] : $relatedRecord['language'];
-				if (($relatedRecord['format'] == 'Book' || $relatedRecord['format'] == 'eBook') && $language == 'English'){
-					if ($relatedRecord['driver']){
-						$fastDescription = $relatedRecord['driver']->getDescriptionFast();
-						if ($fastDescription != null && strlen($fastDescription) > 0){
-							$this->fastDescription = $fastDescription;
-							return $this->fastDescription;
-						}
-					}
-				}
-			}
-			//Didn't get a description, get the description from the first record that isn't a book or ebook
-			foreach ($relatedRecords as $relatedRecord){
-				$language = is_array($relatedRecord['language']) ? $relatedRecord['language'][0] : $relatedRecord['language'];
-				if (($relatedRecord['format'] != 'Book' && $relatedRecord['format'] != 'eBook') || !$language == 'English'){
-					if ($relatedRecord['driver']){
-						$fastDescription = $relatedRecord['driver']->getDescriptionFast();
-						if ($fastDescription != null && strlen($fastDescription) > 0){
-							$this->fastDescription =  $fastDescription;
-						}
-					}
-				}
-			}
-			$this->fastDescription =  '';
-			return $this->fastDescription;*/
-		}
+		$this->fastDescription = empty($this->fields['display_description']) ? '' : $this->fields['display_description'];
 		return $this->fastDescription;
 	}
 
 	function getDescription(){
 		$description = null;
 		$cleanIsbn   = $this->getCleanISBN();
-		if ($cleanIsbn != null && strlen($cleanIsbn) > 0){
+		if (!empty($cleanIsbn)){
 			require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
 			$summaryInfo = GoDeeperData::getSummary($cleanIsbn, $this->getCleanUPC());
 			if (isset($summaryInfo['summary'])){
 				$description = $summaryInfo['summary'];
 			}
 		}
-		if ($description == null){
+		if (empty($description)){
 			$description = $this->getDescriptionFast();
 		}
-		if ($description == null || strlen($description) == 0){
+		if (empty($description)){
 			$description = 'Description Not Provided';
 		}
 		return $description;
@@ -1477,7 +1444,7 @@ class GroupedWorkDriver extends RecordInterface {
 		}
 
 		//Group the records based on format
-		$relatedManifestations = array();
+		$relatedManifestations = [];
 		foreach ($relatedRecords as $curRecord){
 			if (!array_key_exists($curRecord['format'], $relatedManifestations)){
 				$relatedManifestations[$curRecord['format']] = [
@@ -1522,8 +1489,13 @@ class GroupedWorkDriver extends RecordInterface {
 			if (isset($curRecord['isEContent']) && $curRecord['isEContent']){
 				$relatedManifestations[$curRecord['format']]['isEContent'] = true;
 
-				//$relatedManifestations[$curRecord['format']]['format'] = ucwords($curRecord['source']) . " " . $curRecord['format'];
-
+				//Set Manifestation eContent Source
+				if (empty($relatedManifestations[$curRecord['format']]['eContentSource'])){
+					$relatedManifestations[$curRecord['format']]['eContentSource'] = $curRecord['eContentSource'];
+				}elseif ($curRecord['eContentSource'] != $relatedManifestations[$curRecord['format']]['eContentSource']){
+					global $logger;
+					$logger->log("Format Manifestation has multiple econtent sources containing record {$curRecord['id']}", PEAR_LOG_WARNING);
+				}
 			}
 			if (!$relatedManifestations[$curRecord['format']]['available'] && $curRecord['available']){
 				$relatedManifestations[$curRecord['format']]['available'] = $curRecord['available'];
@@ -1599,12 +1571,15 @@ class GroupedWorkDriver extends RecordInterface {
 		$selectedFormatCategory       = null;
 		$selectedAvailability         = null;
 		$selectedDetailedAvailability = null;
+		$selectedEcontentSource       = null;
 		if (isset($_REQUEST['filter'])){
 			foreach ($_REQUEST['filter'] as $filter){
 				if (preg_match('/^format_category(?:\w*):"?(.+?)"?$/', $filter, $matches)){
 					$selectedFormatCategory = urldecode($matches[1]);
 				}elseif (preg_match('/^format(?:\w*):"?(.+?)"?$/', $filter, $matches)){
 					$selectedFormat = urldecode($matches[1]);
+				}elseif (preg_match('/^econtent_source(?:\w*):"?(.+?)"?$/', $filter, $matches)){
+					$selectedEcontentSource[] = urldecode($matches[1]);
 				}elseif (preg_match('/^availability_toggle(?:\w*):"?(.+?)"?$/', $filter, $matches)){
 					$selectedAvailability = urldecode($matches[1]);
 				}elseif (preg_match('/^availability_by_format(?:[\w_]*):"?(.+?)"?$/', $filter, $matches)){
@@ -1707,7 +1682,8 @@ class GroupedWorkDriver extends RecordInterface {
 				}
 			}
 
-			if ($selectedFormat && stripos($manifestation['format'],$selectedFormat) === false){
+			// Set Up Manifestation Display when a format facet is set
+			if ($selectedFormat && stripos($manifestation['format'], $selectedFormat) === false){
 				//Do a secondary check to see if we have a more detailed format in the facet
 				$detailedFormat = mapValue('format_by_detailed_format', $selectedFormat);
 				//Also check the reverse
@@ -1716,8 +1692,7 @@ class GroupedWorkDriver extends RecordInterface {
 					$manifestation['hideByDefault'] = true;
 				}
 			}
-			if ($selectedFormat && $selectedFormat == "Book" && $manifestation['format'] != "Book")
-			{
+			if ($selectedFormat && $selectedFormat == "Book" && $manifestation['format'] != "Book"){
 				//Do a secondary check to see if we have a more detailed format in the facet
 				$detailedFormat = mapValue('format_by_detailed_format', $selectedFormat);
 				//Also check the reverse
@@ -1727,6 +1702,13 @@ class GroupedWorkDriver extends RecordInterface {
 				}
 			}
 
+			// Set Up Manifestation Display when a eContent source facet is set
+			if ($selectedEcontentSource && (!$manifestation['isEContent'] || (!empty($manifestation['eContentSource']) && !in_array($manifestation['eContentSource'], $selectedEcontentSource)))){
+				$manifestation['hideByDefault'] = true;
+			}
+
+
+			// Set Up Manifestation Display when a format category facet is set
 			if ($selectedFormatCategory && $selectedFormatCategory != $manifestation['formatCategory']){
 				if (($manifestation['format'] == 'eAudiobook') && ($selectedFormatCategory == 'eBook' || $selectedFormatCategory == 'Audio Books')){
 					//This is a special case where the format is in 2 categories
@@ -1736,6 +1718,8 @@ class GroupedWorkDriver extends RecordInterface {
 					$manifestation['hideByDefault'] = true;
 				}
 			}
+
+			// Set Up Manifestation Display when a availability facet is set
 			if ($selectedAvailability == 'Available Online' && !($manifestation['availableOnline'])){
 				$manifestation['hideByDefault'] = true;
 			}elseif ($selectedAvailability == 'Available Now'){
@@ -2888,8 +2872,8 @@ class GroupedWorkDriver extends RecordInterface {
 			$bookable         = $scopingDetails[7] == 'true';
 			$inLibraryUseOnly = $scopingDetails[8] == 'true';
 			$libraryOwned     = $scopingDetails[9] == 'true';
-			$holdablePTypes   = isset($scopingDetails[10]) ? $scopingDetails[10] : '';
-			$bookablePTypes   = isset($scopingDetails[11]) ? $scopingDetails[11] : '';
+			$holdablePTypes   = $scopingDetails[10] ?? '';
+			$bookablePTypes   = $scopingDetails[11] ?? '';
 			$status           = $curItem[13];
 
 			if (!$available && strtolower($status) == 'library use only'){
@@ -2899,6 +2883,7 @@ class GroupedWorkDriver extends RecordInterface {
 				$allLibraryUseOnly = false;
 			}
 
+			// If holdable pTypes were calculated for this scope, determine if the record is holdable to the scope's pTypes
 			if (strlen($holdablePTypes) > 0 && !in_array($holdablePTypes, self::SIERRA_PTYPE_WILDCARDS)){
 				$holdablePTypes = explode(',', $holdablePTypes);
 				$matchingPTypes = array_intersect($holdablePTypes, $activePTypes);
@@ -2911,6 +2896,7 @@ class GroupedWorkDriver extends RecordInterface {
 				$recordHoldable = true;
 			}
 
+			// If bookable pTypes were calculated for this scope, determine if the record is bookable to the scope's pTypes
 			if (strlen($bookablePTypes) > 0 && !in_array($bookablePTypes, self::SIERRA_PTYPE_WILDCARDS)){
 				$bookablePTypes = explode(',', $bookablePTypes);
 				$matchingPTypes = array_intersect($bookablePTypes, $activePTypes);

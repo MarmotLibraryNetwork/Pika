@@ -359,6 +359,14 @@ function getIndexingUpdates(){
 			]
 		],
 
+			'add_opac_message_2021.02' => [
+			'title'       => 'Add opac message subfield setting to indexing profile',
+			'description' => 'Include opac message subfield in order for Sierra Extract to get the field for items.',
+			'sql'         => [
+				"ALTER TABLE `indexing_profiles` ADD COLUMN `opacMessage` CHAR(1) NULL DEFAULT NULL AFTER `iCode2`;",
+			]
+		],
+
 	);
 }
 

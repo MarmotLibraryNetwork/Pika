@@ -40,6 +40,7 @@ import org.apache.log4j.Logger;
 
 import au.com.bytecode.opencsv.CSVReader;
 import org.pika.PikaConfigIni;
+import org.pika.PikaSystemVariables;
 
 public class GenealogyCleanup implements IProcessHandler {
 	private Connection          pikaConn;
@@ -47,7 +48,7 @@ public class GenealogyCleanup implements IProcessHandler {
 	private CronProcessLogEntry processLog;
 
 	@Override
-	public void doCronProcess(String servername,  Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String servername,  Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		this.pikaConn = pikaConn;
 		this.logger   = logger;
 		processLog    = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Genealogy Cleanup");

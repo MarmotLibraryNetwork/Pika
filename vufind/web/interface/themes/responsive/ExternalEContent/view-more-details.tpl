@@ -58,7 +58,7 @@
 			<div class="result-label col-sm-3">{translate text='Accelerated Reader'}:</div>
 			<div class="col-sm-9 result-value">
 				{if $arData.interestLevel}
-					{$arData.interestLevel|escape}<br/>
+					{$arData.interestLevel|escape}<br>
 				{/if}
 				Level {$arData.readingLevel|escape}, {$arData.pointValue|escape} Points
 			</div>

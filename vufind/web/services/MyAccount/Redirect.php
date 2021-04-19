@@ -49,7 +49,7 @@ class Redirect extends Action {
 		$service = $_REQUEST['service'];
 
 		switch ($service) {
-			case "redirectToRBditalMagazine":
+//			case "redirectToRBditalMagazine":
 
 
 		}

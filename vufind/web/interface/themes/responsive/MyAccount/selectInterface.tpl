@@ -1,15 +1,27 @@
+{strip}
+	<style type="text/css">
+		{*This is to offset the negative margins in .row so that the radio selects display on narrow-width devices *}
+		{literal}
+		.selectLibraryOption{
+			margin: 0 20px;
+		}
+		{/literal}
+	</style>
 <div id="page-content" class="content">
-	<br/>
+	{if $error}
+		col<div class="alert alert-danger">{$error}</div>
+	{/if}
 	<div class="alert alert-info">{translate text='Select the Library Catalog you wish to use'}</div>
 	<div id="selectLibraryMenu">
 		<form id="selectLibrary" method="get" action="/MyAccount/SelectInterface" class="form">
 			<input type="hidden" name="gotoModule" value="{$gotoModule}">
 			<input type="hidden" name="gotoAction" value="{$gotoAction}">
 			<div>
-				<div class="row">
-				{foreach from=$libraries item=libraryInfo}
-					<div class="selectLibraryOption col-tn-12 col-sm-6 col-md-4">
-						<label for="library{$libraryInfo.id}"><input type="radio" id="library{$libraryInfo.id}" name="library" value="{$libraryInfo.id}"> {$libraryInfo.displayName}</label>
+				<div class="row home-page-browse-grid">
+					{* home-page-browse-grid applys columns to our divs below *}
+				{foreach from=$libraries item=displayName key=id}
+					<div class="selectLibraryOption">
+						<label for="library{$id}"><input type="radio" id="library{$id}" name="library" value="{$id}"> {$displayName}</label>
 					</div>
 				{/foreach}
 				</div>
@@ -24,5 +36,6 @@
 			</div>
 		</form>
 	</div>
-	<br/>
+	<br>
 </div>
+{/strip}

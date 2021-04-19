@@ -17,14 +17,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use Pika\Logger;
+
 require_once 'Authentication.php';
 
 class DatabaseAuthentication implements Authentication {
-	public function __construct($additionalInfo) {
+	private $logger;
+
+	public function __construct($additionalInfo = []) {
+		$this->logger = new Logger(__CLASS__);
 
 	}
 
-	public function authenticate($validatedViaSSO) {
+	public function authenticate($validatedViaSSO = false) {
 		$username = $_POST['username'];
 		$password = $_POST['password'];
 		return $this->login($username, $password);

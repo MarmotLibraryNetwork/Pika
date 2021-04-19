@@ -699,144 +699,145 @@ class Novelist3{
 	 * @param string $seriesName
 	 */
 	private function loadNoveListTitles($currentId, $items, &$titleList, &$titlesOwned, $seriesName = ''){
-		global $timer;
-		$timer->logTime("Start loadNoveListTitle");
+		if (!empty($items)){
+			global $timer;
+			$timer->logTime("Start loadNoveListTitle");
 
-		/** @var SearchObject_Solr $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject();
-		//$searchObject->disableScoping();
-		if (function_exists('disableErrorHandler')){
-			disableErrorHandler();
-		}
-
-		//Get all of the records that could match based on ISBN
-		$allIsbnsArray     = [];
-		$limitISBNSperItem = (int)1000 / count($items);
-		// We have to limit the number of ISBNs to search for because some titles will have so many isbns associated with it
-		// that the isbn search we build will be too large for a search query.
-		// Using a 1,000 ISBNs as a safe total number; then split the total so each series entry as the same upper limit of ISBNs to use.
-		foreach ($items as $item){
-			$allIsbnsArray = array_merge($allIsbnsArray, array_slice($item->isbns, 0, $limitISBNSperItem));
-		}
-		$allIsbns = implode(' OR ', $allIsbnsArray);
-		$searchObject->setBasicQuery($allIsbns, "isbn");
-		$searchObject->clearFacets();
-		$searchObject->disableSpelling();
-		$searchObject->disableLogging();
-		$searchObject->setLimit(count($items));
-		$response = $searchObject->processSearch(true, false, false);
-
-		//Get all the titles from the catalog
-		$titlesFromCatalog = [];
-		if (!empty($response['response']['docs'])){
-			foreach ($response['response']['docs'] as $fields){
-				$groupedWorkDriver = new GroupedWorkDriver($fields);
-				$timer->logTime("Create driver");
-
-				if ($groupedWorkDriver->isValid){
-					//Load data about the record
-
-					//See if we can get the series title from the record
-					$curTitle = [
-						'title'           => $groupedWorkDriver->getTitle(),
-						'title_short'     => $groupedWorkDriver->getTitle(),
-						'author'          => $groupedWorkDriver->getPrimaryAuthor(),
-						//'publicationDate' => (string)$item->PublicationDate,
-						'isbn'            => $groupedWorkDriver->getCleanISBN(), // This prefers the Novelist Primary ISBN
-						'allIsbns'        => $groupedWorkDriver->getISBNs(),     // This will list the search index Primary ISBN first
-						'isbn10'          => $groupedWorkDriver->getCleanISBN(), // This prefers the Novelist Primary ISBN
-						'upc'             => $groupedWorkDriver->getCleanUPC(),
-						'recordId'        => $groupedWorkDriver->getPermanentId(),
-						'recordtype'      => 'grouped_work',
-						'id'              => $groupedWorkDriver->getPermanentId(), //This allows the record to be displayed in various locations.
-						'libraryOwned'    => true,
-						'shortId'         => $groupedWorkDriver->getPermanentId(),
-						'format_category' => $groupedWorkDriver->getFormatCategory(),
-						'ratingData'      => $groupedWorkDriver->getRatingData(),
-						'fullRecordLink'  => $groupedWorkDriver->getLinkUrl(),
-						'recordDriver'    => $groupedWorkDriver,
-						'smallCover'      => $groupedWorkDriver->getBookcoverUrl('small'),
-						'mediumCover'     => $groupedWorkDriver->getBookcoverUrl('medium'),
-					];
-					$timer->logTime("Load title information");
-					$titlesOwned++;
-					$titlesFromCatalog[] = $curTitle;
-				}
+			/** @var SearchObject_Solr $searchObject */
+			$searchObject = SearchObjectFactory::initSearchObject();
+			//$searchObject->disableScoping();
+			if (function_exists('disableErrorHandler')){
+				disableErrorHandler();
 			}
-		} elseif (isset($response['error'])) {
-			global $logger;
-			$logger->log('Error while searching for series titles : ' . $response['error']['msg'], PEAR_LOG_ERR);
-		}
 
-		//Loop through items an match to records we found in the catalog.
-		$titleList = [];
-		foreach ($items as $index => $item){
-			$titleList[$index] = null;
-		}
-		//Do 2 passes, one to check based on primary_isbn only and one to check based on all isbns
-		foreach ($items as $index => $item){
-			$isInCatalog             = false;
-			$currentTitleFromCatalog = null;
-			foreach ($titlesFromCatalog as $titleIndex => $currentTitleFromCatalog){
-				if (in_array($item->primary_isbn, $currentTitleFromCatalog['allIsbns'])){
-					$isInCatalog = true;
-					break;
-				}
+			//Get all of the records that could match based on ISBN
+			$allIsbnsArray     = [];
+			$limitISBNSperItem = (int)1000 / count($items);
+			// We have to limit the number of ISBNs to search for because some titles will have so many isbns associated with it
+			// that the isbn search we build will be too large for a search query.
+			// Using a 1,000 ISBNs as a safe total number; then split the total so each series entry as the same upper limit of ISBNs to use.
+			foreach ($items as $item){
+				$allIsbnsArray = array_merge($allIsbnsArray, array_slice($item->isbns, 0, $limitISBNSperItem));
 			}
-			if ($isInCatalog){
-				$this->addTitleToTitleList($currentId, $titleList, $seriesName, $currentTitleFromCatalog, $titlesFromCatalog, $titleIndex, $item, $index);
-				// updates $titleList
-			}
-		}
+			$allIsbns = implode(' OR ', $allIsbnsArray);
+			$searchObject->setBasicQuery($allIsbns, "isbn");
+			$searchObject->clearFacets();
+			$searchObject->disableSpelling();
+			$searchObject->disableLogging();
+			$searchObject->setLimit(count($items));
+			$response = $searchObject->processSearch(true, false, false);
 
-		global $configArray;
-		foreach ($titleList as $index => $title){
-			if ($titleList[$index] == null){
-				$isInCatalog = false;
-				$item        = $items[$index];
-				foreach ($titlesFromCatalog as $titleIndex => $currentTitleFromCatalog){
-					foreach ($item->isbns as $isbn){
-						if (in_array($isbn, $currentTitleFromCatalog['allIsbns'])){
-							$isInCatalog = true;
-							break 2;
-						}
+			//Get all the titles from the catalog
+			$titlesFromCatalog = [];
+			if (!empty($response['response']['docs'])){
+				foreach ($response['response']['docs'] as $fields){
+					$groupedWorkDriver = new GroupedWorkDriver($fields);
+					$timer->logTime("Create driver");
+
+					if ($groupedWorkDriver->isValid){
+						//Load data about the record
+
+						//See if we can get the series title from the record
+						$curTitle = [
+							'title'           => $groupedWorkDriver->getTitle(),
+							'title_short'     => $groupedWorkDriver->getTitle(),
+							'author'          => $groupedWorkDriver->getPrimaryAuthor(),
+							//'publicationDate' => (string)$item->PublicationDate,
+							'isbn'            => $groupedWorkDriver->getCleanISBN(), // This prefers the Novelist Primary ISBN
+							'allIsbns'        => $groupedWorkDriver->getISBNs(),     // This will list the search index Primary ISBN first
+							'isbn10'          => $groupedWorkDriver->getCleanISBN(), // This prefers the Novelist Primary ISBN
+							'upc'             => $groupedWorkDriver->getCleanUPC(),
+							'recordId'        => $groupedWorkDriver->getPermanentId(),
+							'recordtype'      => 'grouped_work',
+							'id'              => $groupedWorkDriver->getPermanentId(), //This allows the record to be displayed in various locations.
+							'libraryOwned'    => true,
+							'shortId'         => $groupedWorkDriver->getPermanentId(),
+							'format_category' => $groupedWorkDriver->getFormatCategory(),
+							'ratingData'      => $groupedWorkDriver->getRatingData(),
+							'fullRecordLink'  => $groupedWorkDriver->getLinkUrl(),
+							'recordDriver'    => $groupedWorkDriver,
+							'smallCover'      => $groupedWorkDriver->getBookcoverUrl('small'),
+							'mediumCover'     => $groupedWorkDriver->getBookcoverUrl('medium'),
+						];
+						$timer->logTime("Load title information");
+						$titlesOwned++;
+						$titlesFromCatalog[] = $curTitle;
 					}
 				}
+			}elseif (isset($response['error'])){
+				global $logger;
+				$logger->log('Error while searching for series titles : ' . $response['error']['msg'], PEAR_LOG_ERR);
+			}
 
+			//Loop through items and match to records we found in the catalog.
+			$titleList = [];
+			foreach ($items as $index => $item){
+				$titleList[$index] = null;
+			}
+			//Do 2 passes, one to check based on primary_isbn only and one to check based on all isbns
+			foreach ($items as $index => $item){
+				$isInCatalog             = false;
+				$currentTitleFromCatalog = null;
+				foreach ($titlesFromCatalog as $titleIndex => $currentTitleFromCatalog){
+					if (in_array($item->primary_isbn, $currentTitleFromCatalog['allIsbns'])){
+						$isInCatalog = true;
+						break;
+					}
+				}
 				if ($isInCatalog){
 					$this->addTitleToTitleList($currentId, $titleList, $seriesName, $currentTitleFromCatalog, $titlesFromCatalog, $titleIndex, $item, $index);
 					// updates $titleList
+				}
+			}
 
-					unset($titlesFromCatalog[$titleIndex]);
-				}else{
-					//TODO: replace with ISBN class
-					$isbn     = reset($item->isbns);
-					$isbn13   = strlen($isbn) == 13 ? $isbn : ISBNConverter::convertISBN10to13($isbn);
-					$isbn10   = strlen($isbn) == 10 ? $isbn : ISBNConverter::convertISBN13to10($isbn);
-					$curTitle = [
-						'title'        => $item->full_title,
-						'author'       => $item->author,
-						//'publicationDate' => (string)$item->PublicationDate,
-						'isbn'         => $isbn13,
-						'isbn10'       => $isbn10,
-						'recordId'     => -1,
-						'libraryOwned' => false,
-						'smallCover'   => $cover = $configArray['Site']['coverUrl'] . "/bookcover.php?size=small&isn=" . $isbn13,
-						'mediumCover'  => $cover = $configArray['Site']['coverUrl'] . "/bookcover.php?size=medium&isn=" . $isbn13,
-					];
+			global $configArray;
+			foreach ($titleList as $index => $title){
+				if ($titleList[$index] == null){
+					$isInCatalog = false;
+					$item        = $items[$index];
+					foreach ($titlesFromCatalog as $titleIndex => $currentTitleFromCatalog){
+						foreach ($item->isbns as $isbn){
+							if (in_array($isbn, $currentTitleFromCatalog['allIsbns'])){
+								$isInCatalog = true;
+								break 2;
+							}
+						}
+					}
 
-					$curTitle['isCurrent'] = $currentId == $curTitle['recordId'];
-					$curTitle['series']    = isset($seriesName) ? $seriesName : '';
-					$curTitle['volume']    = isset($item->volume) ? $item->volume : '';
-					$curTitle['reason']    = isset($item->reason) ? $item->reason : '';
+					if ($isInCatalog){
+						$this->addTitleToTitleList($currentId, $titleList, $seriesName, $currentTitleFromCatalog, $titlesFromCatalog, $titleIndex, $item, $index);
+						// updates $titleList
 
-					$titleList[$index] = $curTitle;
+						unset($titlesFromCatalog[$titleIndex]);
+					}else{
+						//TODO: replace with ISBN class
+						$isbn     = reset($item->isbns);
+						$isbn13   = strlen($isbn) == 13 ? $isbn : ISBNConverter::convertISBN10to13($isbn);
+						$isbn10   = strlen($isbn) == 10 ? $isbn : ISBNConverter::convertISBN13to10($isbn);
+						$curTitle = [
+							'title'        => $item->full_title,
+							'author'       => $item->author,
+							//'publicationDate' => (string)$item->PublicationDate,
+							'isbn'         => $isbn13,
+							'isbn10'       => $isbn10,
+							'recordId'     => -1,
+							'libraryOwned' => false,
+							'smallCover'   => $cover = $configArray['Site']['coverUrl'] . "/bookcover.php?size=small&isn=" . $isbn13,
+							'mediumCover'  => $cover = $configArray['Site']['coverUrl'] . "/bookcover.php?size=medium&isn=" . $isbn13,
+						];
+
+						$curTitle['isCurrent'] = $currentId == $curTitle['recordId'];
+						$curTitle['series']    = isset($seriesName) ? $seriesName : '';
+						$curTitle['volume']    = isset($item->volume) ? $item->volume : '';
+						$curTitle['reason']    = isset($item->reason) ? $item->reason : '';
+
+						$titleList[$index] = $curTitle;
+					}
+
 				}
 
 			}
-
 		}
-
 	}
 
 	private function loadRelatedContent($relatedContent, &$enrichment){

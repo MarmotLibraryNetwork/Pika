@@ -1,6 +1,6 @@
 {strip}
 	{if $loggedIn}
-
+		{include file="MyAccount/patronWebNotes.tpl"}
 		{* Alternate Mobile MyAccount Menu *}
 		{include file="MyAccount/mobilePageHeader.tpl"}
 
@@ -84,6 +84,18 @@
 			{/if}
 		{/foreach}
 	{/if}
+	{if !empty($offlineHolds)}
+		<h3>Offline Holds</h3>
+		<p class="alert alert-warning">
+			These titles will have a hold placed on them when access to the circulation system is restored.
+		</p>
+
+		{foreach from=$offlineHolds item=offlineHold name="recordLoop"}
+			{include file="MyAccount/offlineHold.tpl" record=$offlineHold section='Offline' resultIndex=$smarty.foreach.recordLoop.iteration}
+		{/foreach}
+
+	{/if}
+
 	{else} {* Check to see if user is logged in *}
       {include file="MyAccount/loginRequired.tpl"}
 	{/if}

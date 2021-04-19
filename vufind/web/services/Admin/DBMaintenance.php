@@ -1427,7 +1427,7 @@ class DBMaintenance extends Admin_Admin {
 					'description'     => '',
 					'continueOnError' => true,
 					'sql'             => [
-						'ALTER TABLE `pika`.`offline_hold` ADD COLUMN `pickupLocation` VARCHAR(5) NULL AFTER `itemId`;',
+						'ALTER TABLE `offline_hold` ADD COLUMN `pickupLocation` VARCHAR(5) NULL AFTER `itemId`;',
 					]
 				],
 				'add_board_book_format' => [
@@ -1444,6 +1444,13 @@ class DBMaintenance extends Admin_Admin {
 						,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
 						'BoardBook', '10')"
 						,
+					]
+				],
+				'add_fine_display_option' => [
+					'title'       =>'Add Fines Display Amount Option to Library',
+					'description' => 'Add option in Library ECommerce to display badges only above set amount',
+					'sql'         => [
+						"ALTER TABLE `library` ADD COLUMN `fineAlertAmount` FLOAT(11) NOT NULL DEFAULT '0.00' AFTER `minimumFineAmount`"
 					]
 				],
 
@@ -1615,6 +1622,63 @@ class DBMaintenance extends Admin_Admin {
 				$indexingProfile->coverSource = 'SideLoad General';
 			}
 			$indexingProfile->update();
+		}
+	}
+
+	function setCatalogURLs(){
+		global $configArray;
+		$error     = [];
+		$localPath = $configArray['Site']['local'];
+		$sitesPath = realpath("$localPath/../../sites/");
+		$sites     = array_diff(scandir($sitesPath), ['..', '.']);
+		$library   = new Library();
+		$libraries = $library->fetchAll();
+		/** @var Library $library */
+		foreach ($libraries as $library){
+			//Attempt to match left-most subdomain
+			if (!empty($library->subdomain)){
+				foreach ($sites as $i => $urlLink){
+					if (preg_match('/^' . preg_quote($library->subdomain) . '[23]??\..*/si', $urlLink)){
+						// [23]?? to match marmot test urls
+						$library->catalogUrl = $urlLink;
+						$library->update();
+						unset($sites[$i]);
+						break;
+					}
+				}
+				if (empty($library->catalogUrl)){
+					//Now attempt to match subdomain interior of the url
+					foreach ($sites as $i => $urlLink){
+						if (preg_match('/\.' . preg_quote($library->subdomain) . '\..*/si', $urlLink)){
+							$library->catalogUrl = $urlLink;
+							$library->update();
+							unset($sites[$i]);
+							break;
+						}
+					}
+				}
+			}
+			if (empty($library->catalogUrl)){
+				$error[] = 'Did not set an URL for ' . $library->subdomain;
+			}
+		}
+		$location  = new Location();
+		$locations = $location->fetchAll();
+		/** @var Location $location */
+		foreach ($locations as $location){
+			foreach ($sites as $i => $urlLink){
+				if (!empty($location->code)){
+					if (preg_match('/^' . preg_quote($location->code) . '[23]??\..*/si', $urlLink)){
+						$location->catalogUrl = $urlLink;
+						$location->update();
+						unset($sites[$i]);
+						break;
+					}
+				}
+			}
+		}
+		if (!empty($error)){
+			print_r($error);
 		}
 	}
 

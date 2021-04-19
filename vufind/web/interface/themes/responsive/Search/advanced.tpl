@@ -180,7 +180,7 @@
 															</div>
 																<div id="yearDefaultLinks">
 																	{assign var=thisyear value=$smarty.now|date_format:"%Y"}
-																	Published in the last:<br/>
+																	Published in the last:<br>
 																	<a onclick="$('#publishDateyearfrom').val('{$thisyear-1}');$('#publishDateyearto').val('');" href='javascript:void(0);'>year</a>
 																	&bullet; <a onclick="$('#publishDateyearfrom').val('{$thisyear-5}');$('#publishDateyearto').val('');" href='javascript:void(0);'>5&nbsp;years</a>
 																	&bullet; <a onclick="$('#publishDateyearfrom').val('{$thisyear-10}');$('#publishDateyearto').val('');" href='javascript:void(0);'>10&nbsp;years</a>

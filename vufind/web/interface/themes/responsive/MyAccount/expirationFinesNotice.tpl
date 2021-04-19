@@ -4,22 +4,20 @@
 		{assign var="totalFines" value=$user->getTotalFines()}
 		{if ($showFines && $totalFines > 0) || ($showExpirationWarnings && $user->expireClose)}
 			<div id="myAccountFines">
-				{if $showFines && ($totalFines > $minimumFineAmount)}
-					{if $showEcommerceLink}
+				{if $showFines && ($totalFines >= $fineAlertAmount) && ($totalFines > 0.00)}
+
 						<div class="myAccountLink">
 							<a href="/MyAccount/Fines/"  style="color:red; font-weight:bold;">
 								Your account{if count($user->getLinkedUsers())>0}s have{else} has{/if} ${$totalFines|number_format:2} in {translate text='Fines'}.
 							</a>
 						</div>
+					{if $showEcommerceLink && ($totalFines > $minimumFineAmount)}
 						<div class="myAccountLink">
 							<a href="{$ecommerceLink}" target="_blank"{if $showRefreshAccountButton} onclick="Pika.Account.ajaxLightbox('/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
 								{if $payFinesLinkText}{$payFinesLinkText}{else}Pay {translate text='Fines'} Online{/if}
 							</a>
 						</div>
-					{else}
-						<div class="myAccountLink" title="Please contact your local library to pay {translate text='Fines'} or charges." style="color:red; font-weight:bold;" onclick="alert('Please contact your local library to pay {translate text='Fines'} or charges.')">
-							Your account{if count($user->getLinkedUsers())>0}s have{else} has{/if} ${$totalFines|number_format:2} in {translate text='Fines'}.
-						</div>
+
 					{/if}
 				{/if}
 

@@ -442,6 +442,7 @@ class OverDriveRecordDriver extends RecordInterface {
 					$includeSharedTitles = $searchLibrary->enableOverdriveCollection != 0;
 				}
 				$pikaLibraryIdForOverDriveAdvantageAccount = $this->getLibraryIdForOverDriveAdvantageAccount();
+				//TODO: provide shared account id; if there are ever multiple shared accounts with shared advantage accounts as well
 				if ($includeSharedTitles){
 					$sharedCollectionId = $searchLibrary->sharedOverdriveCollection;
 					if ($pikaLibraryIdForOverDriveAdvantageAccount){
@@ -475,7 +476,9 @@ class OverDriveRecordDriver extends RecordInterface {
 			'mine'  => $this->getAvailability(),
 			'other' => []
 		];
+
 		$libraryIdForOverDriveAdvantageAccount = $this->getLibraryIdForOverDriveAdvantageAccount();
+		//TODO: provide shared account id; if there are ever multiple shared accounts with shared advantage accounts as well
 		if ($libraryIdForOverDriveAdvantageAccount){
 			foreach ($availability['mine'] as $key => $availabilityItem){
 				if ($availabilityItem->libraryId > 0 && $availabilityItem->libraryId != $libraryIdForOverDriveAdvantageAccount){
@@ -492,11 +495,22 @@ class OverDriveRecordDriver extends RecordInterface {
 	/**
 	 * Get the most appropriate library Id to use for looking up an Advantage Account's pika Library Id.
 	 * At this point, used only for calculating available copies counts
+	 *
+	 * @param int|null $sharedCollectionId  The shared account associated with this Advantage Account
+	 *                                      If none is provided, the first shared account is assumed.
 	 * @return false|int libraryId for the appropriate OverDrive Advantage Account
 	 */
-	public function getLibraryIdForOverDriveAdvantageAccount(){
+	public function getLibraryIdForOverDriveAdvantageAccount(int $sharedCollectionId = null){
 		//For eContent, we need to be more specific when restricting copies
 		//since patrons can't use copies that are only available to other libraries.
+
+		global $configArray;
+		if (!empty($configArray['OverDrive']['sharedAdvantageName'])){
+			// When using shared Advantage accounts;
+			// the library id corresponds to the index of shared main account eg 1 for the first; 2 for the second
+			return empty($sharedCollectionId) ? 1 : abs($sharedCollectionId);
+			// if we don't know what the shared collection is, fallback to assuming that it would be the first one
+		}
 
 		$homeLibrary = UserAccount::getUserHomeLibrary();
 		if (!empty($homeLibrary)){

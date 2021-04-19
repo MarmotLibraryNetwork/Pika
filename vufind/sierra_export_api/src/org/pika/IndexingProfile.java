@@ -65,6 +65,7 @@ public class IndexingProfile {
 	SimpleDateFormat lastCheckinFormatter;
 	char             shelvingLocationSubfield;
 	char             iCode2Subfield;
+	char             opacMessageSubfield;
 	char             callNumberPrestampSubfield;
 	char             callNumberSubfield;
 	char             callNumberCutterSubfield;
@@ -219,6 +220,10 @@ public class IndexingProfile {
 		this.iCode2Subfield = getCharFromString(ICode2Subfield);
 	}
 
+	public void setOpacMessageSubfield(String opacMessageSubfield) {
+		this.opacMessageSubfield = getCharFromString(opacMessageSubfield);
+	}
+
 	public void setMaterialTypeSubField(String subfield) {
 		this.materialTypeSubField = getCharFromString(subfield);
 	}
@@ -340,6 +345,7 @@ public class IndexingProfile {
 		indexingProfile.setDateCreatedSubfield(indexingProfileRS.getString("dateCreated"));
 		indexingProfile.setLastCheckinDateSubfield(indexingProfileRS.getString("lastCheckinDate"));
 		indexingProfile.setICode2Subfield(indexingProfileRS.getString("iCode2"));
+		indexingProfile.setOpacMessageSubfield(indexingProfileRS.getString("opacMessage"));
 		indexingProfile.setVolume(indexingProfileRS.getString("volume"));
 		indexingProfile.setItemUrl(indexingProfileRS.getString("itemUrl"));
 		indexingProfile.setBcode3Subfield(indexingProfileRS.getString("bCode3"));

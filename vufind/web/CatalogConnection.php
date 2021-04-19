@@ -479,7 +479,7 @@ class CatalogConnection
 
 				// Set search query if one
 				if($searchTerm != false) {
-					$this->search = true;
+					$this->search      = true;
 					$this->searchTerm  = trim($searchTerm);
 					$this->searchField = $searchField;
 				}
@@ -512,16 +512,16 @@ class CatalogConnection
 
 				$readingHistoryDB->find();
 
-				$readingHistoryTitles = array();
+				$readingHistoryTitles = [];
 				while ($readingHistoryDB->fetch()){
 					$historyEntry           = $this->getHistoryEntryForDatabaseEntry($readingHistoryDB);
 					$readingHistoryTitles[] = $historyEntry;
 				}
 
-				return array('historyActive' => $patron->trackReadingHistory, 'titles' => $readingHistoryTitles, 'numTitles' => $totalReadingHistoryEntries);
+				return ['historyActive' => $patron->trackReadingHistory, 'titles' => $readingHistoryTitles, 'numTitles' => $totalReadingHistoryEntries];
 			}else{
 				//Reading history disabled
-				return array('historyActive' => $patron->trackReadingHistory, 'titles' => array(), 'numTitles' => 0);
+				return ['historyActive' => $patron->trackReadingHistory, 'titles' => [], 'numTitles' => 0];
 			}
 
 		}elseif ($this->driver->hasNativeReadingHistory() && method_exists($this->driver, 'getReadingHistory')){
@@ -921,7 +921,7 @@ class CatalogConnection
 	 * @return mixed
 	 */
 	public function getHistoryEntryForDatabaseEntry(ReadingHistoryEntry $readingHistoryDB) {
-		$historyEntry = array();
+		$historyEntry = [];
 
 		$historyEntry['itemindex']   = $readingHistoryDB->id;
 		$historyEntry['deletable']   = true;
@@ -955,12 +955,17 @@ class CatalogConnection
 			$sourceAndID = new sourceAndId($readingHistoryDB->source . ':' . $readingHistoryDB->sourceId);
 			$recordDriver = RecordDriverFactory::initRecordDriverById($sourceAndID);
 			if (!empty($recordDriver) && $recordDriver->isValid()){
-				$historyEntry['ratingData']  = $recordDriver->getRatingData();
-				$historyEntry['coverUrl']    = $recordDriver->getBookcoverUrl('medium');
-				$historyEntry['linkUrl']     = $recordDriver->getLinkUrl();
-				$historyEntry['permanentId'] = $recordDriver->getPermanentId();
-				if (empty($historyEntry['title'])){
-					$historyEntry['title'] = $recordDriver->getTitle();
+				if (strpos($recordDriver->getTitle(), 'WISCAT LOAN') !== false){
+					// only include the cover Northern Waters ILL loan reading history
+					$historyEntry['coverUrl']    = $recordDriver->getBookcoverUrl('medium');
+				} else{
+					$historyEntry['ratingData']  = $recordDriver->getRatingData();
+					$historyEntry['coverUrl']    = $recordDriver->getBookcoverUrl('medium');
+					$historyEntry['linkUrl']     = $recordDriver->getLinkUrl();
+					$historyEntry['permanentId'] = $recordDriver->getPermanentId();
+					if (empty($historyEntry['title'])){
+						$historyEntry['title'] = $recordDriver->getTitle();
+					}
 				}
 			}
 			//TODO: update history db entry with any missing information?
@@ -1173,10 +1178,10 @@ class CatalogConnection
 		if ($this->checkFunction('importListsFromIls')){
 			return $this->driver->importListsFromIls($patron);
 		}else{
-			return array(
+			return [
 					'success' => false,
-					'errors' => array('Importing Lists has not been implemented for this ILS.')
-			);
+					'errors' => ['Importing Lists has not been implemented for this ILS.']
+			];
 		}
 	}
 

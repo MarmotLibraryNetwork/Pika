@@ -145,7 +145,7 @@ class RecordGroupingProcessor {
 
 	//	private static Pattern overdrivePattern = Pattern.compile("(?i)^http://.*?lib\\.overdrive\\.com/ContentDetails\\.htm\\?id=[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$");
 	//above pattern not strictly valid because urls don't have to contain the lib.overdrive.com
-	private static Pattern overdrivePattern = Pattern.compile("(?i)^http://.*?/ContentDetails\\.htm\\?id=[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$|^http://link\\.overdrive\\.com");
+	private static final Pattern overdrivePattern = Pattern.compile("(?i)^http://.*?/ContentDetails\\.htm\\?id=[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$|^http://link\\.overdrive\\.com.*");
 
 	RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, String recordSource, boolean doAutomaticEcontentSuppression) {
 		RecordIdentifier    identifier         = null;
@@ -218,9 +218,7 @@ class RecordGroupingProcessor {
 					List<DataField> linkFields = getDataFields(marcRecord, "856");
 					for (DataField linkField : linkFields) {
 						if (linkField.getSubfield('u') != null) {
-							//Check the url to see if it is from OverDrive or Hoopla
-							//TODO: no actual hoopla suppression here?
-							//TODO: Would this block sideloaded hoopla?
+							//Check the url to see if it is from OverDrive
 							String linkData = linkField.getSubfield('u').getData().trim();
 							if (overdrivePattern.matcher(linkData).matches()) {
 								identifier.setSuppressed(true);

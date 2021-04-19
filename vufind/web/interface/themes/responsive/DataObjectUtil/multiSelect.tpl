@@ -32,7 +32,7 @@
 			</div>
 		{/if}
 	{else}
-		<br />
+		<br>
 		<select name='{$propName}' id='{$propName}' multiple="multiple">
 		{foreach from=$property.values item=propertyName key=propertyValue}
 			<option value='{$propertyValue}' {if $propValue == $propertyValue}selected='selected'{/if}>{$propertyName}</option>

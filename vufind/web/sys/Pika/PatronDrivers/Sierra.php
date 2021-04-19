@@ -87,6 +87,8 @@ class Sierra {
 	protected $apiUrl;
 	/* @var $tokenUrl string The url for token */
 	protected $tokenUrl;
+	/* @var $aboutUrl string The url for "about" info that includes version numbers */
+	protected $aboutUrl;
 	// many ids come from url. example: https://sierra.marmot.org/iii/sierra-api/v5/items/5130034
 	protected $urlIdRegExp = "/.*\/(\d*)$/";
 
@@ -105,9 +107,11 @@ class Sierra {
 		$baseApiUrl     = trim($accountProfile->patronApiUrl, '/ ');
 		$apiUrl         = $baseApiUrl . '/iii/sierra-api/v' . $configArray['Catalog']['api_version'] . '/';
 		$tokenUrl       = $baseApiUrl . '/iii/sierra-api/token';
+		$aboutUrl       = $baseApiUrl . '/iii/sierra-api/about';
+
 		$this->apiUrl   = $apiUrl;
 		$this->tokenUrl = $tokenUrl;
-
+		$this->aboutUrl = $aboutUrl;
 		// grab an oAuthToken
 		if(!isset($this->oAuthToken)) {
 			if(!$this->_oAuthToken()) {
@@ -127,7 +131,7 @@ class Sierra {
 	 * @return array
 	 * @throws ErrorException
 	 */
-	public function getMyCheckouts($patron, $linkedAccount = false){
+	public function getMyCheckouts($patron, $linkedAccount = false) {
 
 		$patronCheckoutsCacheKey = $this->cache->makePatronKey('checkouts', $patron->id);
 		if(!$linkedAccount) {
@@ -221,12 +225,15 @@ class Sierra {
 			$checkout['checkoutDate']   = strtotime($entry->outDate);
 			$checkout['renewCount']     = $entry->numberOfRenewals;
 			$checkout['barcode']        = $entry->barcode;
-//			$checkout['request']        = $entry->callNumber;
 			$checkout['itemid']         = $itemId;
 			$checkout['canrenew']       = true;
 			$checkout['renewIndicator'] = $checkoutId;
 			$checkout['renewMessage']   = '';
-			$recordDriver = new MarcRecord($this->accountProfile->recordSource . ":" . $bibId);
+			if (!empty($entry->callNumber)){
+				// Add call number value for internal ILL processing for Northern Waters
+				$checkout['_callNumber'] = $entry->callNumber;
+			}
+			$recordDriver = new MarcRecord($this->accountProfile->recordSource . ':' . $bibId);
 			if ($recordDriver->isValid()) {
 				$checkout['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
 				$checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
@@ -237,10 +244,10 @@ class Sierra {
 				$checkout['title_sort']    = $recordDriver->getSortableTitle();
 				$checkout['link']          = $recordDriver->getLinkUrl();
 			} else {
-				$checkout['coverUrl']      = "";
-				$checkout['groupedWorkId'] = "";
-				$checkout['format']        = "Unknown";
-				$checkout['author']        = "";
+				$checkout['coverUrl']      = '';
+				$checkout['groupedWorkId'] = '';
+				$checkout['format']        = 'Unknown';
+				$checkout['author']        = '';
 			}
 
 			$checkouts[] = $checkout;
@@ -747,13 +754,14 @@ class Sierra {
 		}
 
 		// 6.11 web notes TODO: uncomment if it's ever safe to display web notes field
-//		if(isset($pInfo->varFields)) {
-//			$webNote = $this->_getVarField('e',$pInfo->varFields);
-//			if(count($webNote) > 0) {
-//				$index = array_key_first($webNote);
-//				$patron->web_note = $webNote[$index]->content;
-//			}
-		//}
+		if(isset($pInfo->varFields) && isset($this->configArray['Catalog']['sierraPatronWebNoteField']) && $this->configArray['Catalog']['sierraPatronWebNoteField'] != '') {
+			$webNotesVarField = $this->configArray['Catalog']['sierraPatronWebNoteField'];
+			$webNote = $this->_getVarField($webNotesVarField,$pInfo->varFields);
+			if(count($webNote) > 0) {
+				$index = array_key_first($webNote);
+				$patron->web_note = $webNote[$index]->content;
+			}
+		}
 
 		if($createPatron) {
 			$patron->created = date('Y-m-d');
@@ -924,7 +932,10 @@ class Sierra {
 					break;
 				case 'phone': // primary phone
 					// todo: does this need to set an empty object-- if someone wanted to remove their phone #?
-					if(!empty($val)){
+					// yes, this appears to be the case for the phone numbers.
+					//  It also looks like when remove the phone number it doesn't get removed in the User database for the user either
+					// Playing with regular and work number on at the same time, I can't remove both of them.
+					if(!empty($val)){ // (block out this empty check does allow us to remove the number from sierra, but apparently not pika)
 						$phones[] = (object)['number'=>$val, 'type'=>'t'];
 					}
 					break;
@@ -1848,9 +1859,7 @@ EOT;
 				$pickupBranch = new Location();
 				$where        = "code = '{$hold->pickupLocation->code}'";
 				$pickupBranch->whereAdd($where);
-				$pickupBranch->find(1);
-				if ($pickupBranch->N > 0){
-					$pickupBranch->fetch();
+				if ($pickupBranch->find(1)){
 					$h['currentPickupId']   = $pickupBranch->locationId;
 					$h['currentPickupName'] = $pickupBranch->displayName;
 					$h['location']          = $pickupBranch->displayName;
@@ -1899,7 +1908,7 @@ EOT;
 				// record type and record id
 				$recordType = $hold->recordType;
 				// for item level holds we need to grab the bib id.
-				$id = $hold->record->id; //$m[1];
+				$itemId = $id = $hold->record->id; //$m[1];
 				if($recordType == 'i') {
 					$id = $this->_getBibIdFromItemId($id);
 				}
@@ -1907,9 +1916,9 @@ EOT;
 				$recordXD  = $this->getCheckDigit($id);
 
 				// get more info from record
-				$bibId = '.b'.$id.$recordXD;
-				$recordSourceAndId = new \SourceAndId($this->accountProfile->recordSource . ":" . $bibId);
-				$record = RecordDriverFactory::initRecordDriverById($recordSourceAndId);
+				$bibId             = '.b' . $id . $recordXD;
+				$recordSourceAndId = new \SourceAndId($this->accountProfile->recordSource . ':' . $bibId);
+				$record            = RecordDriverFactory::initRecordDriverById($recordSourceAndId);
 				if ($record->isValid()){
 					$h['id']              = $record->getUniqueID();
 					$h['shortId']         = $record->getShortId();
@@ -1919,6 +1928,10 @@ EOT;
 					$h['format']          = $record->getFormat();
 					$h['link']            = $record->getRecordUrl();
 					$h['coverUrl']        = $record->getBookcoverUrl('medium');
+					if($recordType == 'i') {
+						// Get volume for Item holds
+						$h['volume'] = $record->getItemVolume('.i' . $itemId . $this->getCheckDigit($itemId));
+					}
 				};
 			}
 			if($hold->status->code == "b" || $hold->status->code == "j" || $hold->status->code == "i") {
@@ -1977,10 +1990,6 @@ EOT;
 			$this->logger->warn("Failed to remove patron from memcache: ".$patronObjectCacheKey);
 		}
 
-		// get title of record
-		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
-		$recordTitle  = $record->isValid() ? $record->getTitle() : null;
-
 		$params = [
 			'recordType'     => $recordType,
 			'recordNumber'   => (int)$recordNumber,
@@ -1995,10 +2004,21 @@ EOT;
 		$r = $this->_doRequest($operation, $params, "POST");
 
 		// check if error we need to do an item level hold
-		if($this->apiLastError && stristr($this->apiLastError,"Volume record selection is required to proceed")
+		if($this->apiLastError && stristr($this->apiLastError,'Volume record selection is required to proceed')
 		   || (stristr($this->apiLastError,"This record is not available") && (integer)$this->configArray['Catalog']['api_version'] == 4)) {
-			$items = $this->getItemVolumes($patron, $recordId);
-			$return = [
+
+			$itemsAsVolumes = $r->details->itemsAsVolumes ?? null; // Response when item level hold is required includes the list of items
+			if (!empty($r->detail->itemIds)){
+				// API version ~5.5 style response is a list of Ids; convert to a form matching the others;
+				$itemsAsVolumes = [];
+				foreach ($r->detail->itemIds as $itemId){
+					$obj              = new \stdClass();
+					$obj->id          = $itemId;
+					$itemsAsVolumes[] = $obj;
+				}
+			}
+			$items          = $this->getItemVolumes($patron, $recordId, $itemsAsVolumes);
+			$return         = [
 				'message'    => 'This title requires item level holds, please select an item to place a hold on.',
 				'success'    => 'true',
 				'canceldate' => $neededBy,
@@ -2022,19 +2042,24 @@ EOT;
 		}
 		// success! weeee :)
 		$return['success'] = true;
+
+		// get title of record
+		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
+		$recordTitle  = $record->isValid() ? $record->getTitle() : null;
+
 		if($recordTitle) {
 			$recordTitle = trim($recordTitle, ' /');
 			$return['message'] = "Your hold for <strong>{$recordTitle}</strong> was successfully placed.";
 		} else {
-			$return['message'] = "Your hold was successfully placed.";
+			$return['message'] = 'Your hold was successfully placed.';
 		}
 
 		return $return;
 	}
 
 
-	public function placeItemHold($patron, $recordId, $itemId, $pickupBranch){
-		return $this->placeHold($patron, $itemId, $pickupBranch);
+	public function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null){
+		return $this->placeHold($patron, $itemId, $pickupBranch, $cancelDate);
 	}
 
 	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch){
@@ -2212,9 +2237,21 @@ EOT;
 		$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 		$this->cache->delete($patronObjectCacheKey);
 
-		$success = $this->_curlOptInOptOut($patron, 'OptIn');
-		if(!$success) {
-			$this->logger->warning('Unable to opt in patron '. $patron->barcode . ' from ILS reading history. Falling back to Pika.');
+		$success = false;
+		$apiInfo = $this->_getApiInfo();
+
+		if($apiInfo['VersionMajor'] >= 6 && $apiInfo['VersionMinor'] >= 2) {
+			$operation = 'patrons/' . $patron->ilsUserId . '/checkouts/history/activationStatus';
+			$params = ["readingHistoryActivation" => true];
+			$r = $this->_doRequest($operation, $params, "POST");
+			if($r == "") {
+				$success = true;
+			}
+		} else {
+			$success = $this->_curlOptInOptOut($patron, 'OptIn');
+		}
+		if (!$success){
+			$this->logger->warning('Unable to opt in patron ' . $patron->barcode . ' from ILS reading history. Falling back to Pika.');
 		}
 		$patron->trackReadingHistory = true;
 		$patron->update();
@@ -2232,7 +2269,19 @@ EOT;
 		$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 		$this->cache->delete($patronObjectCacheKey);
 
-		$success = $this->_curlOptInOptOut($patron, 'OptOut');
+		$success = false;
+		$apiInfo = $this->_getApiInfo();
+
+		if($apiInfo['VersionMajor'] >= 6 && $apiInfo['VersionMinor'] >= 2) {
+			$operation = 'patrons/' . $patron->ilsUserId . '/checkouts/history/activationStatus';
+			$params = ["readingHistoryActivation" => false];
+			$r = $this->_doRequest($operation, $params, "POST");
+			if($r == "") {
+				$success = true;
+			}
+		} else{
+			$success = $this->_curlOptInOptOut($patron, 'OptOut');
+		}
 		if(!$success) {
 			$this->logger->warning('Unable to opt out patron '. $patron->barcode . ' from ILS reading history. Falling back to Pika.');
 		}
@@ -2242,6 +2291,40 @@ EOT;
 		return true;
 	}
 
+
+	/**
+	 * Get API info
+	 *
+	 * @return array|null
+	 */
+	protected function _getApiInfo() {
+
+		$r = $this->_doRequest('about');
+		$r = strip_tags($r);
+		$info = [];
+		$lines = preg_split('/\n/', $r, -1, PREG_SPLIT_NO_EMPTY);
+
+		foreach ($lines as $line) {
+			$line = trim($line);
+			if(empty($line) || !strpos($line, ':')) {
+				continue;
+			}
+			$parts = explode(':', $line);
+			$index = trim($parts[0]);
+			$index = str_replace(' ', '', $index);
+
+			if($index == "Version") {
+				$indexParts = explode('.', $parts[1]);
+				if(count($indexParts) >= 2) {
+					$info['VersionMajor'] = (int)$indexParts[0];
+					$info['VersionMinor'] = (int)$indexParts[1];
+				}
+			}
+			$info[$index] = trim($parts[1]);
+		}
+
+		return $info;
+	}
 	/**
 	 * Delete all Reading History within the ILS for the patron.
 	 *
@@ -2568,49 +2651,60 @@ EOT;
 	 * patron.
 	 * @param $patron User
 	 * @param $bibId
+	 * @param null $itemsAsVolumes  list of items already provided by a call from the API
 	 * @return array|false
+	 * @throws ErrorException
 	 */
-	public function getItemVolumes($patron, $bibId){
+	public function getItemVolumes($patron, $bibId, $itemsAsVolumes = null){
 		// get item records from solr
-		$record      = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bibId);
-		$solrRecords = $record->getGroupedWorkDriver()->getRelatedRecord($this->accountProfile->recordSource . ':' . $bibId);
+		$itemDetails = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bibId);
+		$solrRecords = $itemDetails->getGroupedWorkDriver()->getRelatedRecord($this->accountProfile->recordSource . ':' . $bibId);
 
 		// get holdable item ids for patron from api.
 		// will only be available in v6+
 		$holdableItemNumbers = [];
-		$apiVersion = (int)$this->configArray['Catalog']['api_version'];
-		if ($apiVersion >= 6){
-			$recordNumber = substr($bibId, 2, -1); // remove the .x and the last check digit
-			$patronIlsId  = $this->getPatronId($patron->barcode);
-			$operation    = "patrons/" . $patronIlsId . "/holds/requests/form";
-			$params       = ['recordNumber' => $recordNumber];
-			$res          = $this->_doRequest($operation, $params);
+		if (empty($itemsAsVolumes)){
+			$apiVersion  = (int)$this->configArray['Catalog']['api_version'];
+			if ($apiVersion >= 6){
+				$recordNumber = substr($bibId, 2, -1); // remove the .x and the last check digit
+				$patronIlsId  = $this->getPatronId($patron->barcode);
+				$operation    = "patrons/$patronIlsId/holds/requests/form";
+				$params       = ['recordNumber' => $recordNumber];
+				$res          = $this->_doRequest($operation, $params);
 
-			if (!$res){
-				// error
-				return false;
+				if (!empty($res->itemsAsVolumes)){
+					// holdable ids
+					foreach ($res->itemsAsVolumes as $itemAsVolume){
+						$holdableItemNumbers[] = $itemAsVolume->id;
+					}
+				}
+
+				// Even if we get a bad response, we can still fallback to a list of items based on the Pika holdability determinations below
+
 			}
-
+		} else {
 			// holdable ids
-			foreach ($res->itemsAsVolumes as $itemAsVolume){
+			foreach ($itemsAsVolumes as $itemAsVolume){
 				$holdableItemNumbers[] = $itemAsVolume->id;
 			}
+
 		}
-		// TODO: END API CHECK HERE
 		$items = [];
-		foreach ($solrRecords['itemDetails'] as $record){
-			// is holdable? skip if not.
-			if ($apiVersion >= 6){
-				$itemNumber = substr($record['itemId'], 2, -1);
+		foreach ($solrRecords['itemDetails'] as $itemDetails){
+			// in the list of items provided by the API; skip if not.
+			if (!empty($holdableItemNumbers)){
+				$itemNumber = substr($itemDetails['itemId'], 2, -1);
 				if (!in_array($itemNumber, $holdableItemNumbers)){
 					continue;
 				}
+			} elseif (!$itemDetails['holdable']) {
+				continue; // Item is not holdable based on Pika calculations; don't add to list
 			}
 			$items[] = [
-				'itemNumber' => $record['itemId'],
-				'location'   => $record['shelfLocation'],
-				'callNumber' => $record['callNumber'],
-				'status'     => $record['status']
+				'itemNumber' => $itemDetails['itemId'],
+				'location'   => $itemDetails['shelfLocation'],
+				'callNumber' => $itemDetails['callNumber'],
+				'status'     => $itemDetails['status']
 			];
 		}
 
@@ -2932,7 +3026,11 @@ EOT;
 			CURLOPT_HEADER         => false,
 		];
 		// instantiate the Curl object and set the base url
-		$operationUrl = $this->apiUrl.$operation;
+		if($operation == 'about'){
+			$operationUrl = $this->aboutUrl;
+		}else{
+			$operationUrl = $this->apiUrl.$operation;
+		}
 		try {
 			$c = new Curl();
 		} catch (Exception $e) {
@@ -2995,6 +3093,12 @@ EOT;
 				$this->logger->warning($message);
 			}
 			$this->apiLastError = $message;
+			if (!empty($c->response->details->itemsAsVolumes)){
+				return $c->response;
+			} elseif (!empty($c->response->detail->itemIds)){
+				// API version 5.5 has a list of itemIds instead when "Volume record selection is required to proceed."
+				return $c->response;
+			}
 			return false;
 		}
 		// no errors

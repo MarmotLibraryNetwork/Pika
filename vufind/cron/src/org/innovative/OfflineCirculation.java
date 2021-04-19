@@ -45,7 +45,7 @@ public class OfflineCirculation implements IProcessHandler {
 	private CookieManager       manager = new CookieManager();
 	private String              ils     = "Sierra";
 	@Override
-	public void doCronProcess(String servername, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		this.logger = logger;
 		processLog  = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Offline Circulation");
 		processLog.saveToDatabase(pikaConn, logger);
@@ -56,16 +56,25 @@ public class OfflineCirculation implements IProcessHandler {
 		CookieHandler.setDefault(manager);
 
 		//Check to see if the system is offline
-		if (PikaConfigIni.getBooleanIniValue("Catalog", "offline")) {
+		Boolean offline_mode_when_offline_login_allowed = systemVariables.getBooleanValuedVariable("offline_mode_when_offline_login_allowed");
+		if (offline_mode_when_offline_login_allowed == null){
+			offline_mode_when_offline_login_allowed = false;
+		}
+		if (offline_mode_when_offline_login_allowed || PikaConfigIni.getBooleanIniValue("Catalog", "offline")) {
 			logger.error("Pika Offline Mode is currently on. Ensure the ILS is available before running OfflineCirculation.");
 			processLog.addNote("Not processing offline circulation because the system is currently offline.");
 		}
-		else{
-		//process checkouts and check ins (do this before holds)
-		processOfflineCirculationEntries(pikaConn);
+		else {
+			if (PikaConfigIni.getBooleanIniValue("Catalog", "useOfflineHoldsInsteadOfRegularHolds")) {
+				logger.error("Pika useOfflineHoldsInsteadOfRegularHolds Mode is currently on. Disable this setting before running OfflineCirculation.");
+				processLog.addNote("Not processing offline circulation because the useOfflineHoldsInsteadOfRegularHolds setting is currently on.");
+			} else {
+				//process checkouts and check ins (do this before holds)
+				processOfflineCirculationEntries(pikaConn);
 
-		//process holds
-		processOfflineHolds(pikaConn);
+				//process holds
+				processOfflineHolds(pikaConn);
+			}
 		}
 		processLog.setFinished();
 		processLog.saveToDatabase(pikaConn, logger);
@@ -131,8 +140,9 @@ public class OfflineCirculation implements IProcessHandler {
 			Object placeHoldDataRaw = placeHoldUrl.getContent();
 			if (placeHoldDataRaw instanceof InputStream) {
 				String placeHoldDataJson = Util.convertStreamToString((InputStream) placeHoldDataRaw);
-//				processLog.addNote("Result = " + placeHoldDataJson);
-				logger.info("Result = " + placeHoldDataJson);
+				if (logger.isInfoEnabled()) {
+					logger.info("Result = " + placeHoldDataJson);
+				}
 				JSONObject placeHoldData = new JSONObject(placeHoldDataJson);
 				JSONObject result        = placeHoldData.getJSONObject("result");
 				String message = result.getString("message");

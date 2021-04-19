@@ -25,7 +25,7 @@ import org.ini4j.Profile.Section;
 public class BookcoverCleanup implements IProcessHandler {
 	private static final int DEFAULTAGE = 7;
 
-	public void doCronProcess(String serverName, Section processSettings, Connection pikaConn, Connection eContentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String serverName, Section processSettings, Connection pikaConn, Connection eContentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Bookcover Cleanup");
 		processLog.saveToDatabase(pikaConn, logger);
 

@@ -397,7 +397,7 @@ class Marmot extends Sierra {
 	public function getBookingCalendar(User $patron, \SourceAndId $sourceAndId){
 		// Create Hourly Calendar URL
 		$bib       = $this->getShortId($sourceAndId->getRecordId());
-		$scope     = $this->getLibraryScope();
+		$scope     = $this->getLibrarySierraScope();
 		$timestamp = time(); // the webpac hourly calendar give 30 (maybe 31) days worth from the given timestamp.
 		// Since today is the soonest a user could book, let's get from today
 		$hourlyCalendarUrl = "webbook~S$scope?/$bib/hourlycal$timestamp=&back=";
@@ -482,7 +482,7 @@ class Marmot extends Sierra {
 			return false;
 		}
 
-		$scope    = $this->getLibraryScope(); // IMPORTANT: Scope is needed for Bookings Actions to work
+		$scope    = $this->getLibrarySierraScope(); // IMPORTANT: Scope is needed for Bookings Actions to work
 		$patronId = $this->getPatronId($patron->barcode);
 		$optUrl   = $patronAction ? $vendorOpacUrl . '/patroninfo~S' . $scope . '/' . $patronId . '/' . $pageToCall
 			: $vendorOpacUrl . '/' . $pageToCall;
@@ -602,7 +602,7 @@ class Marmot extends Sierra {
 
 		$id_         = $this->getShortId($sourceAndId->getRecordId());
 		$host        = $this->accountProfile->vendorOpacUrl;
-		$branchScope = $this->getLibraryScope();
+		$branchScope = $this->getLibrarySierraScope();
 		$url         = $host . "/search~S{$branchScope}/.b" . $id_ . "/.b" . $id_ . "/1,1,1,B/$checkInGridId&FF=1,0,";
 		$c           = new Curl();
 		$headers     = [
@@ -677,7 +677,7 @@ class Marmot extends Sierra {
 	 * @throws ErrorException
 	 */
 	public function getIssueSummaries($recordId){
-		$scope         = $this->getLibraryScope(true); // Use library scope if searching is restricted to the library
+		$scope         = $this->getLibrarySierraScope(true); // Use library scope if searching is restricted to the library
 		$id_           = $this->getShortId($recordId);
 		$host          = $this->accountProfile->vendorOpacUrl;
 		$c             = new Curl();
@@ -689,7 +689,7 @@ class Marmot extends Sierra {
 			"Accept-Language" => "en-us,en;q=0.5",
 			"User-Agent"      => "Pika"
 		];
-		$cookie   = tempnam("/tmp", "CURLCOOKIE");
+		$cookie   = @tempnam("/tmp", "CURLCOOKIE");
 		$curlOpts = [
 			CURLOPT_CONNECTTIMEOUT    => 20,
 			CURLOPT_TIMEOUT           => 60,
@@ -779,7 +779,7 @@ class Marmot extends Sierra {
 	 * @param bool $checkLibraryRestrictions  Whether or not to condition the use of Sierra OPAC scope by the library setting $restrictSearchByLibrary;
 	 * @return mixed|string
 	 */
-	protected function getLibraryScope($checkLibraryRestrictions = false){
+	protected function getLibrarySierraScope($checkLibraryRestrictions = false){
 
 		//Load the holding label for the branch where the user is physically.
 		$searchLocation = Location::getSearchLocation();
@@ -793,12 +793,12 @@ class Marmot extends Sierra {
 				return $searchLibrary->scope;
 			}
 		}
-		return $this->getDefaultScope();
+		return $this->getDefaultSierraScope();
 	}
 
-	protected function getDefaultScope(){
+	protected function getDefaultSierraScope(){
 		global $configArray;
-		return isset($configArray['OPAC']['defaultScope']) ? $configArray['OPAC']['defaultScope'] : '93';
+		return $configArray['OPAC']['defaultScope'] ?? '93';
 	}
 
 	/**

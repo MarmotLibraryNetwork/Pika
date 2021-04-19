@@ -40,7 +40,7 @@
 					{if $contributor.title}
 						&nbsp;<a href="/Search/Results?lookfor={$contributor.title}&amp;basicType=Title">{$contributor.title}</a>
 					{/if}
-				<br/>
+				<br>
 				{/foreach}
 				{if $smarty.foreach.loop.index >= 5}
 					<div>
@@ -59,10 +59,10 @@
 			<div class="col-sm-8 result-value">
 				{if is_array($series) && !isset($series.seriesTitle)}
 					{foreach from=$series item=seriesItem name=loop}
-						<a href="/Search/Results?basicType=Series&lookfor=%22{$seriesItem.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$seriesItem.seriesTitle|removeTrailingPunctuation|escape}</a>{if $seriesItem.volume} volume {$seriesItem.volume}{/if}<br/>
+						<a href="/Search/Results?basicType=Series&lookfor=%22{$seriesItem.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$seriesItem.seriesTitle|removeTrailingPunctuation|escape}</a>{if $seriesItem.volume} volume {$seriesItem.volume}{/if}<br>
 					{/foreach}
 				{else}
-					<a href="/Search/Results?basicType=Series&lookfor=%22{$series.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$series.seriesTitle|removeTrailingPunctuation|escape}</a>{if $series.volume} volume {$series.volume}{/if}<br/>
+					<a href="/Search/Results?basicType=Series&lookfor=%22{$series.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$series.seriesTitle|removeTrailingPunctuation|escape}</a>{if $series.volume} volume {$series.volume}{/if}<br>
 				{/if}
 			</div>
 		</div>

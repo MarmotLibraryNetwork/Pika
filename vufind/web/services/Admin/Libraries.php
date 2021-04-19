@@ -35,13 +35,30 @@ class Admin_Libraries extends ObjectEditor {
 		return 'Library Systems';
 	}
 
-	function getAllObjects($orderBy = null){
+	function viewExistingObjects(){
+		global $interface;
+		//Basic List
+		$allObjects = $this->getAllObjectsByPermission();
+		if (count($allObjects) === 1){
+			$this->navigateToLibraryPage(reset($allObjects)->libraryId);
+		}
+		$interface->assign('dataList', $allObjects);
+		$interface->setTemplate('../Admin/propertiesList.tpl');
+	}
+
+	/**
+	 * Fetch a list of libraries based on an Admin User's roles
+	 *
+	 * @param null $orderBy
+	 * @return array
+	 */
+	function getAllObjectsByPermission($orderBy = null){
 		$libraryList = [];
 
 		UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('opacAdmin')){
 			$library = new Library();
-			$library->orderBy($orderBy?? 'subdomain');
+			$library->orderBy($orderBy ?? 'subdomain');
 			$library->find();
 			while ($library->fetch()){
 				$libraryList[$library->libraryId] = clone $library;
@@ -70,15 +87,17 @@ class Admin_Libraries extends ObjectEditor {
 	function getIdKeyColumn(){
 		return 'libraryId';
 	}
-    function customListActions(){
-	    if(UserAccount::userHasRole('opacAdmin')){
-        return array(
-            array('label' => 'Clone Library', 'onclick' =>'Pika.Admin.cloneLibraryFromSelection()'),
-        );
-		    }
-    }
+
+	function customListActions(){
+		if (UserAccount::userHasRole('opacAdmin')){
+			return [
+				['label' => 'Clone Library', 'onclick' => 'Pika.Admin.cloneLibraryFromSelection()'],
+			];
+		}
+	}
+
 	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'libraryManager');
+		return ['opacAdmin', 'libraryAdmin', 'libraryManager'];
 	}
 
 	function canAddNew(){
@@ -91,38 +110,43 @@ class Admin_Libraries extends ObjectEditor {
 		return UserAccount::userHasRole('opacAdmin');
 	}
 
-//	function getAdditionalObjectActions($existingObject){
-//		$objectActions = array();
-//		if ($existingObject != null){
-////			$objectActions[] = array(
-////				'text' => 'Reset Facets To Default',
-////				'url' => '/Admin/Libraries?id=' . $existingObject->libraryId . '&amp;objectAction=resetFacetsToDefault',
-////			);
-////			$objectActions[] = array(
-////					'text' => 'Reset More Details To Default',
-////					'url' => '/Admin/Libraries?id=' . $existingObject->libraryId . '&amp;objectAction=resetMoreDetailsToDefault',
-////			);
-////			$objectActions[] = array(
-////				'text' => 'Copy Library Facets',
-////				'url' => '/Admin/Libraries?id=' . $existingObject->libraryId . '&amp;objectAction=copyFacetsFromLibrary',
-////			);
-////			$objectActions[] = array(
-////				'text' => 'Set Materials Request Form Structure To Default',
-////				'url' => '/Admin/Libraries?id=' . $existingObject->libraryId . '&amp;objectAction=defaultMaterialsRequestForm',
-////			);
-////			$objectActions[] = array(
-////				'text' => 'Set Materials Request Formats To Default',
-////				'url' => '/Admin/Libraries?id=' . $existingObject->libraryId . '&amp;objectAction=defaultMaterialsRequestFormats',
-////			);
-////			$objectActions[] = array(
-////				'text' => 'Set Archive Explore More Options To Default',
-////				'url' => '/Admin/Libraries?id=' . $existingObject->libraryId . '&amp;objectAction=defaultArchiveExploreMoreOptions',
-////			);
-//		}else{
-//			echo("Existing object is null");
-//		}
-//		return $objectActions;
-//	}
+	function getAdditionalObjectActions($existingObject){
+		$objectActions = [];
+		$idCol         = $this->getIdKeyColumn();
+		if (!empty($existingObject->$idCol)){
+			if (UserAccount::userHasRole('opacAdmin')){
+				$objectActions[] = [
+					'text'    => 'Set Catalog URL',
+					'onclick' => 'Pika.Admin.setCatalogUrlPrompt(' . $existingObject->libraryId . ', 0)',
+				];
+			}
+//			$objectActions[] = array(
+//				'text' => 'Reset Facets To Default',
+//				'url' => '/Admin/Libraries?id=' . $existingObject->libraryId . '&amp;objectAction=resetFacetsToDefault',
+//			);
+//			$objectActions[] = array(
+//					'text' => 'Reset More Details To Default',
+//					'url' => '/Admin/Libraries?id=' . $existingObject->libraryId . '&amp;objectAction=resetMoreDetailsToDefault',
+//			);
+//			$objectActions[] = array(
+//				'text' => 'Copy Library Facets',
+//				'url' => '/Admin/Libraries?id=' . $existingObject->libraryId . '&amp;objectAction=copyFacetsFromLibrary',
+//			);
+//			$objectActions[] = array(
+//				'text' => 'Set Materials Request Form Structure To Default',
+//				'url' => '/Admin/Libraries?id=' . $existingObject->libraryId . '&amp;objectAction=defaultMaterialsRequestForm',
+//			);
+//			$objectActions[] = array(
+//				'text' => 'Set Materials Request Formats To Default',
+//				'url' => '/Admin/Libraries?id=' . $existingObject->libraryId . '&amp;objectAction=defaultMaterialsRequestFormats',
+//			);
+//			$objectActions[] = array(
+//				'text' => 'Set Archive Explore More Options To Default',
+//				'url' => '/Admin/Libraries?id=' . $existingObject->libraryId . '&amp;objectAction=defaultArchiveExploreMoreOptions',
+//			);
+		}
+		return $objectActions;
+	}
 
 	function copyFacetsFromLibrary(){
 		$libraryId = $_REQUEST['id'];
@@ -145,7 +169,7 @@ class Admin_Libraries extends ObjectEditor {
 			}
 			$library->facets = $facetsToCopy;
 			$library->update();
-			header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
+			$this->navigateToLibraryPage($libraryId);
 		}else{
 			//Prompt user for the library to copy from
 			$allLibraries = $this->getAllObjects();
@@ -186,7 +210,7 @@ class Admin_Libraries extends ObjectEditor {
 			}
 			$library->facets = $facetsToCopy;
 			$library->update();
-			header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
+			$this->navigateToLibraryPage($libraryId);
 		}else{
 			//Prompt user for the library to copy from
 			$allLibraries = $this->getAllObjects();
@@ -221,7 +245,7 @@ class Admin_Libraries extends ObjectEditor {
 			$_REQUEST['objectAction'] = 'edit';
 		}
 		$structure = $this->getObjectStructure();
-		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
+		$this->navigateToLibraryPage($libraryId);
 	}
 
 	function resetArchiveSearchFacetsToDefault(){
@@ -239,7 +263,7 @@ class Admin_Libraries extends ObjectEditor {
 			$_REQUEST['objectAction'] = 'edit';
 		}
 		$structure = $this->getObjectStructure(); //TODO: Needed?
-		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
+		$this->navigateToLibraryPage($libraryId);
 	}
 
 	function resetMoreDetailsToDefault(){
@@ -269,7 +293,7 @@ class Admin_Libraries extends ObjectEditor {
 			$_REQUEST['objectAction'] = 'edit';
 		}
 		$structure = $this->getObjectStructure();
-		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
+		$this->navigateToLibraryPage($libraryId);
 	}
 
 	function resetArchiveMoreDetailsToDefault(){
@@ -288,7 +312,7 @@ class Admin_Libraries extends ObjectEditor {
 			$_REQUEST['objectAction'] = 'edit';
 		}
 		$structure = $this->getObjectStructure();
-		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
+		$this->navigateToLibraryPage($libraryId);
 	}
 
 	function defaultMaterialsRequestForm(){
@@ -302,9 +326,7 @@ class Admin_Libraries extends ObjectEditor {
 			$library->materialsRequestFormFields = $defaultFieldsToDisplay;
 			$library->update();
 		}
-		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
-		die();
-
+		$this->navigateToLibraryPage($libraryId);
 	}
 
 	function defaultMaterialsRequestFormats(){
@@ -318,8 +340,7 @@ class Admin_Libraries extends ObjectEditor {
 			$library->materialsRequestFormats = $defaultMaterialsRequestFormats;
 			$library->update();
 		}
-		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
-		die();
+		$this->navigateToLibraryPage($libraryId);
 	}
 
 	function defaultArchiveExploreMoreOptions(){
@@ -332,12 +353,21 @@ class Admin_Libraries extends ObjectEditor {
 			$library->exploreMoreBar = ArchiveExploreMoreBar::getDefaultArchiveExploreMoreOptions($libraryId);
 			$library->update();
 		}
-		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
-		die();
+		$this->navigateToLibraryPage($libraryId);
 	}
 
 	function getInstructions(){
 		return 'For more information about Library Setting configuration, see the <a href="https://docs.google.com/document/d/1hZIPEX_l2I9TIhpXXQVHPwfC0NxUO3Wuf72hWhC_JCU">online documentation</a>.';
+	}
+
+	/**
+	 * Send user directly to a Library's admin page
+	 *
+	 * @param $libraryId  ID of the library to navigate to.
+	 */
+	private function navigateToLibraryPage($libraryId): void{
+		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
+		die();
 	}
 
 }

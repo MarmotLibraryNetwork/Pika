@@ -14,7 +14,7 @@
 				{foreach from=$materials item="material"}
 					{if $material.link}<a href="{$material.link}">{/if}
 					{$material.label}{if $material.aatID} ({$material.aatID}){/if}
-					{if $material.link}</a>{/if}<br/>
+					{if $material.link}</a>{/if}<br>
 				{/foreach}
 			</div>
 		</div>
@@ -26,7 +26,7 @@
 				{foreach from=$stylesAndPeriods item="styleAndPeriod"}
 					{if $styleAndPeriod.link}<a href="{$styleAndPeriod.link}">{/if}
 					{$styleAndPeriod.label}{if $styleAndPeriod.aatID} ({$styleAndPeriod.aatID}){/if}
-					{if $styleAndPeriod.link}</a>{/if}<br/>
+					{if $styleAndPeriod.link}</a>{/if}<br>
 				{/foreach}
 			</div>
 		</div>
@@ -38,7 +38,7 @@
 				{foreach from=$techniques item="technique"}
 					{if $technique.link}<a href="{$technique.link}">{/if}
 					{$technique.label}{if $technique.aatID} ({$technique.aatID}){/if}
-					{if $technique.link}</a>{/if}<br/>
+					{if $technique.link}</a>{/if}<br>
 				{/foreach}
 			</div>
 		</div>
@@ -49,7 +49,7 @@
 			<div class="result-label col-sm-4">Measurements: </div>
 			<div class="result-value col-sm-8">
 				{foreach from=$measurements item="measurement"}
-					{$measurement}<br/>
+					{$measurement}<br>
 				{/foreach}
 			</div>
 		</div>
@@ -60,7 +60,7 @@
 			<div class="result-label col-sm-4">Installations: </div>
 			<div class="result-value col-sm-8">
 				{foreach from=$installations item="installation"}
-					{$installation}<br/>
+					{$installation}<br>
 				{/foreach}
 			</div>
 		</div>

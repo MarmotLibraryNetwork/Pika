@@ -7,7 +7,11 @@
 	<div class="form-group" id="propertyRow{$propName}">
 		{* Output the label *}
 		{if $property.type == 'enum'}
-			<label for='{$propName}Select'{if $property.description} title="{$property.description}"{/if}>{$property.label}{if $property.required}<span class="required-input">*</span>{/if}</label>
+			<label for='{$propName}Select'{if $property.description} title="{$property.description}"{/if}>{$property.label}{if $property.required}<span class="required-input">*</span>{/if}
+				{if $property.isIndexingSetting}
+					&nbsp;<span class="glyphicon glyphicon-time" aria-hidden="true" title="This setting is a change to indexing"></span>
+				{/if}
+			</label>
 		{elseif $property.type == 'oneToMany' && !empty($property.helpLink)}
 			<div class="row">
 			<div class="col-xs-11">
@@ -28,7 +32,13 @@
 					</div>
 				</div>
 			{else}
-				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label}{if $property.required}<span class="required-input">*</span>{/if}</label>
+				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>
+					{$property.label}
+					{if $property.required}<span class="required-input">*</span>{/if}
+					{if $property.isIndexingSetting}
+						&nbsp;<span class="glyphicon glyphicon-time" aria-hidden="true" title="This setting is a change to indexing"></span>
+					{/if}
+				</label>
 			{/if}
 		{/if}
 		{* Output the editing control*}
@@ -141,7 +151,7 @@
 			</div>
 			{if $propName == "cover"}
 			<div class="row">
-				<br />
+				<br>
 
 				<div class="col-md-2"><label for="fileName" class="label-left">File Name</label></div>
 				<div class="col-md-7"><input type="text" name="fileName" value="{$propValue}" class="form-control"></div>
@@ -195,7 +205,7 @@
 					{
 						if (data.exists == "true")
 							{
-								$("<br /><div class='row'><div class='col-md-12'><div id='existsAlert' class='alert alert-danger'>Filename Already Exists - submitting will replace an existing file. <label for='overWriteOverRide'>Overwrite: </label><input type='checkbox' id='overWriteOverRide'></div></div></div>").insertAfter(prop);
+								$("<br><div class='row'><div class='col-md-12'><div id='existsAlert' class='alert alert-danger'>Filename Already Exists - submitting will replace an existing file. <label for='overWriteOverRide'>Overwrite: </label><input type='checkbox' id='overWriteOverRide'></div></div></div>").insertAfter(prop);
 
 								$(':input[type="submit"]').prop('disabled', true);
 								$("#overWriteOverRide").change(function() {
@@ -216,6 +226,9 @@
 			<div class="checkbox">
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>
 					<input type="checkbox" name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked="checked"{/if}> {$property.label}
+					{if $property.isIndexingSetting}
+						&nbsp;<span class="glyphicon glyphicon-time" aria-hidden="true" title="This setting is a change to indexing"></span>
+					{/if}
 				</label>
 			</div>
 
@@ -227,6 +240,7 @@
 {elseif $property.type == 'hidden'}
 	<input type="hidden" name='{$propName}' value='{$propValue}'>
 {/if}
+
 {if $property.showDescription}
 	<div class="propertyDescription">{$property.description}</div>
 {/if}

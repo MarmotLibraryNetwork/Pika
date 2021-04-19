@@ -40,16 +40,16 @@ class CompoundDriver extends IslandoraDriver {
 		return $this->getViewAction();
 	}
 
-	public function loadBookContents() {
+	public function loadBookContents(){
 		global $configArray;
-		$objectUrl = $configArray['Islandora']['objectUrl'];
+		$objectUrl      = $configArray['Islandora']['objectUrl'];
 		$rels_predicate = 'isConstituentOf';
-		$sections = array();
+		$sections       = [];
 
 		$fedoraUtils = FedoraUtils::getInstance();
 
 		$escaped_pid = str_replace(':', '_', $this->getUniqueID());
-		$query = <<<EOQ
+		$query       = <<<EOQ
 PREFIX islandora-rels-ext: <http://islandora.ca/ontology/relsext#>
 SELECT ?object ?title ?seq
 FROM <#ri>
@@ -63,50 +63,58 @@ WHERE {
 EOQ;
 
 		$queryResults = $fedoraUtils->doSparqlQuery($query);
+		global $logger;
+		$logger->log("query for Book contents", PEAR_LOG_DEBUG);
+		$logger->log($queryResults, PEAR_LOG_DEBUG);
 
 		if (count($queryResults) == 0){
-			$sectionDetails = array(
-					'pid'        => $this->getUniqueID(),
-					'title'      => $this->getTitle(),
-					'seq'        => 0,
-					'cover'      => $this->getBookcoverUrl('small'),
-					'transcript' => ''
-			);
+			$sectionDetails = [
+				'pid'        => $this->getUniqueID(),
+				'title'      => $this->getTitle(),
+				'seq'        => 0,
+				'cover'      => $this->getBookcoverUrl('small'),
+				'transcript' => ''
+			];
 			$sectionObject  = $fedoraUtils->getObject($this->getUniqueID());
 			$sectionDetails = $this->loadPagesForSection($sectionObject, $sectionDetails);
+			$logger->log("no result section details for this object" . $this->getUniqueID(), PEAR_LOG_DEBUG);
+			$logger->log($sectionDetails, PEAR_LOG_DEBUG);
 
 			$sections[$this->getUniqueID()] = $sectionDetails;
 		}else{
 			// Sort the objects into their proper order.
-			$sort = function($a, $b) {
+			$sort = function ($a, $b){
 				$a = $a['seq']['value'];
 				$b = $b['seq']['value'];
-				if ($a === $b) {
+				if ($a === $b){
 					return 0;
 				}
-				if (empty($a)) {
+				if (empty($a)){
 					return 1;
 				}
-				if (empty($b)) {
+				if (empty($b)){
 					return -1;
 				}
 				return $a - $b;
 			};
 			uasort($queryResults, $sort);
 
-			foreach ($queryResults as $result) {
+			foreach ($queryResults as $result){
+				$logger->log("for loop", PEAR_LOG_DEBUG);
+				$logger->log($result, PEAR_LOG_DEBUG);
+
 				$objectPid = $result['object']['value'];
 				//TODO: check access
 				/** @var FedoraObject $sectionObject */
-				$sectionObject = $fedoraUtils->getObject($objectPid);
-				$sectionDetails = array(
-						'pid' => $objectPid,
-						'title' => $result['title']['value'],
-						'seq' => $result['seq']['value'],
-						'cover' => $fedoraUtils->getObjectImageUrl($sectionObject, 'thumbnail'),
-						'transcript' => ''
-				);
-				$pdfStream = $sectionObject->getDatastream('PDF');
+				$sectionObject  = $fedoraUtils->getObject($objectPid);
+				$sectionDetails = [
+					'pid'        => $objectPid,
+					'title'      => $result['title']['value'],
+					'seq'        => $result['seq']['value'],
+					'cover'      => $fedoraUtils->getObjectImageUrl($sectionObject, 'thumbnail'),
+					'transcript' => ''
+				];
+				$pdfStream      = $sectionObject->getDatastream('PDF');
 				if ($pdfStream != null){
 					$sectionDetails['pdf'] = $objectUrl . '/' . $objectPid . '/datastream/PDF/view';;
 				}
@@ -142,7 +150,7 @@ EOQ;
 		$objectUrl = $configArray['Islandora']['objectUrl'];
 
 		$fedoraUtils = FedoraUtils::getInstance();
-		$query = <<<EOQ
+		$query       = <<<EOQ
 PREFIX islandora-rels-ext: <http://islandora.ca/ontology/relsext#>
 SELECT ?pid ?page ?label ?width ?height
 FROM <#ri>
@@ -162,10 +170,13 @@ ORDER BY ?page
 EOQ;
 
 		$results = $fedoraUtils->doSparqlQuery($query);
+		global $logger;
+		$logger->log("Pages for section with object id : " .$sectionObject->id, PEAR_LOG_DEBUG);
+		$logger->log($results, PEAR_LOG_DEBUG);
 
 		// Get rid of the "extra" info...
-		$map = function($o) {
-			foreach ($o as $key => &$info) {
+		$map   = function ($o){
+			foreach ($o as $key => &$info){
 				$info = $info['value'];
 			}
 
@@ -174,19 +185,20 @@ EOQ;
 			return $o;
 		};
 		$pages = array_map($map, $results);
+		$logger->log($pages, PEAR_LOG_DEBUG);
 
 		// Sort the pages into their proper order.
-		$sort = function($a, $b) {
+		$sort = function ($a, $b){
 			$a = (is_array($a) && isset($a['page'])) ? $a['page'] : 0;
 			$b = (is_array($b) && isset($b['page'])) ? $b['page'] : 0;
-			if ($a == $b) {
+			if ($a == $b){
 				return 0;
 			}
 			return ($a < $b) ? -1 : 1;
 		};
 		uasort($pages, $sort);
 
-		foreach ($pages as $index=>$page){
+		foreach ($pages as $index => $page){
 			//Get additional details about the page
 			$pageObject = $fedoraUtils->getObject($page['pid']);
 			if ($pageObject->getDataStream('JP2') != null){
@@ -197,27 +209,27 @@ EOQ;
 			}
 			//Get MODS before the HOCR or OCR
 			$modsForPage = $fedoraUtils->getModsData($pageObject);
-			$transcript = $fedoraUtils->getModsValue('transcriptionText', 'marmot', $modsForPage);
+			$transcript  = $fedoraUtils->getModsValue('transcriptionText', 'marmot', $modsForPage);
 			if (strlen($transcript) > 0){
 				$page['transcript'] = 'mods:' . $page['pid'];
 			}else{
 				$hasTranscript = false;
-				$parents = $pageObject->getParents();
-				foreach ($parents as $parent) {
+				$parents       = $pageObject->getParents();
+				foreach ($parents as $parent){
 					$parentObject = $fedoraUtils->getObject($parent);
-					if ($parentObject != null) {
+					if ($parentObject != null){
 						$modsForParent = $fedoraUtils->getModsData($parentObject);
-						$transcript = $fedoraUtils->getModsValue('transcriptionText', 'marmot', $modsForParent);
-						if (strlen($transcript) > 0) {
+						$transcript    = $fedoraUtils->getModsValue('transcriptionText', 'marmot', $modsForParent);
+						if (strlen($transcript) > 0){
 							$page['transcript'] = 'mods:' . $parentObject->id;
-							$hasTranscript = true;
+							$hasTranscript      = true;
 						}
 					}
 				}
-				if (!$hasTranscript) {
-					if ($pageObject->getDataStream('HOCR') != null && $pageObject->getDataStream('HOCR')->size > 1) {
+				if (!$hasTranscript){
+					if ($pageObject->getDataStream('HOCR') != null && $pageObject->getDataStream('HOCR')->size > 1){
 						$page['transcript'] = $page['pid'] . '/datastream/HOCR/view';
-					} elseif ($pageObject->getDataStream('OCR') != null && $pageObject->getDataStream('OCR')->size > 1) {
+					}elseif ($pageObject->getDataStream('OCR') != null && $pageObject->getDataStream('OCR')->size > 1){
 						$page['transcript'] = $page['pid'] . '/datastream/OCR/view';
 					}
 				}

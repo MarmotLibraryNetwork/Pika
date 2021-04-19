@@ -111,7 +111,7 @@ class Suggestions {
 				$ratings->limit(0, $numTitlesToLoadNovelistRecommendationsFor);
 
 				$ratings->find();
-				//echo("User has rated {$ratings->N} titles<br/>");
+				//echo("User has rated {$ratings->N} titles<br>");
 				if ($ratings->N > 0){
 					while ($ratings->fetch()){
 						Suggestions::getSimilarlyRatedTitles($db, $ratings, $userId, $allRatedTitles, $suggestions, $notInterestedTitles, $readHistoryWorkIds);

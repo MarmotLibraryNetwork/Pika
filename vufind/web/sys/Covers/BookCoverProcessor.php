@@ -1296,7 +1296,7 @@ class BookCoverProcessor {
 			$id = $this->configArray['Contentcafe']['id']; // alternate way to pass the content cafe id to this method.
 		}
 		$pw  = $this->configArray['Contentcafe']['pw'];
-		$url = isset($this->configArray['Contentcafe']['url']) ? $this->configArray['Contentcafe']['url'] : 'http://contentcafe2.btol.com';
+		$url = $this->configArray['Contentcafe']['url'] ?? 'http://contentcafe2.btol.com'; // http://images.btol.com would also work
 		$url .= "/ContentCafe/Jacket.aspx?UserID={$id}&Password={$pw}&Return=1&Type={$size}&erroroverride=1&Value=";
 
 		$lookupCode = $this->isn;

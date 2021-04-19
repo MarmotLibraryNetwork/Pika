@@ -111,6 +111,6 @@
 				</div>
 			{/foreach}
 		*}
-		<br/>
+		<br>
 	{/foreach}
 {/strip}

@@ -38,8 +38,8 @@ class Location extends DB_DataObject {
 
 	public $__table = 'location';   // table name
 	public $locationId;        //int(11)
-	public $subdomain;
 	public $code;          //varchar(5)
+	public $catalogUrl;
 	public $subLocation;
 	public $displayName;      //varchar(40)
 	public $showDisplayNameInHeader;
@@ -192,57 +192,54 @@ class Location extends DB_DataObject {
 		$browseCategoryInstructions = 'For more information on how to setup browse categories, see the <a href="https://docs.google.com/document/d/1ZpdQCwa27hw002bjnBQeWGF7YlIrqz0rUV-xwWe6u3k">online documentation</a>.';
 
 		$structure = array(
-			'locationId'                      => array('property' => 'locationId', 'type' => 'label', 'label' => 'Location Id', 'description' => 'The unique id of the location within the database'),
-			'subdomain'                       => array('property' => 'subdomain', 'type' => 'text', 'label' => 'Subdomain', 'description' => 'The subdomain to use while identifying this branch.  Can be left if it matches the code.', 'required' => false),
-			'code'                            => array('property' => 'code', 'type' => 'text', 'label' => 'Code', 'description' => 'The code for use when communicating with the ILS', 'required' => true),
-			'subLocation'                     => array('property' => 'subLocation', 'type' => 'text', 'label' => 'Sub Location Code', 'description' => 'The sub location or collection used to identify this '),
-			'displayName'                     => array('property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'The full name of the location for display to the user', 'size' => '40'),
-			'showDisplayNameInHeader'         => array('property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false),
-			array('property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'A link to the library which the location belongs to'),
-			'isMainBranch'                    => array(
-				'property' => 'isMainBranch', 'type' => 'checkbox', 'label' => 'Is Main Branch', 'description' => 'Is this location the main branch for it\'s library', /*'hideInLists' => false,*/
-				'default'  => false,
-			),
-			'showInLocationsAndHoursList'     => array('property' => 'showInLocationsAndHoursList', 'type' => 'checkbox', 'label' => 'Show In Locations And Hours List', 'description' => 'Whether or not this location should be shown in the list of library hours and locations', 'hideInLists' => true, 'default' => true),
-			'address'                         => array('property' => 'address', 'type' => 'textarea', 'label' => 'Address', 'description' => 'The address of the branch.', 'hideInLists' => true),
-			'phone'                           => array('property' => 'phone', 'type' => 'text', 'label' => 'Phone Number', 'description' => 'The main phone number for the site .', 'size' => '40', 'hideInLists' => true),
-			'nearbyLocation1'                 => array('property' => 'nearbyLocation1', 'type' => 'enum', 'values' => $locationLookupList, 'label' => 'Nearby Location 1', 'description' => 'A secondary location which is nearby and could be used for pickup of materials.', 'hideInLists' => true),
-			'nearbyLocation2'                 => array('property' => 'nearbyLocation2', 'type' => 'enum', 'values' => $locationLookupList, 'label' => 'Nearby Location 2', 'description' => 'A tertiary location which is nearby and could be used for pickup of materials.', 'hideInLists' => true),
-			'automaticTimeoutLength'          => array('property' => 'automaticTimeoutLength', 'type' => 'integer', 'label' => 'Automatic Timeout Length (logged in)', 'description' => 'The length of time before the user is automatically logged out in seconds.', 'size' => '8', 'hideInLists' => true, 'default' => self::DEFAULT_AUTOLOGOUT_TIME),
-			'automaticTimeoutLengthLoggedOut' => array('property' => 'automaticTimeoutLengthLoggedOut', 'type' => 'integer', 'label' => 'Automatic Timeout Length (logged out)', 'description' => 'The length of time before the catalog resets to the home page set to 0 to disable.', 'size' => '8', 'hideInLists' => true, 'default' => self::DEFAULT_AUTOLOGOUT_TIME_LOGGED_OUT),
+			'locationId'                      => ['property' => 'locationId', 'type' => 'label', 'label' => 'Location Id', 'description' => 'The unique id of the location within the database'],
+			'code'                            => ['property' => 'code', 'type' => 'text', 'label' => 'Code', 'description' => 'The code for use when communicating with the ILS', 'required' => true, 'isIndexingSetting' => true],
+			'catalogUrl'                      => ['property' => 'catalogUrl', 'type' => 'label', 'label' => 'Catalog URL', 'description' => 'The catalog url used for this location'],
+			'subLocation'                     => ['property' => 'subLocation', 'type' => 'text', 'label' => 'Sub Location Code (Koha ILS Only)', 'description' => 'The sub location or collection used to identify this location', 'hideInLists' => true, 'isIndexingSetting' => true],
+			'displayName'                     => ['property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'The full name of the location for display to the user', 'size' => '40'],
+			'showDisplayNameInHeader'         => ['property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false],
+			'libraryId'                       => ['property' => 'libraryId', 'type' => 'enum', 'label' => 'Library', 'values' => $libraryList, 'description' => 'A link to the library which the location belongs to'],
+			'isMainBranch'                    => ['property' => 'isMainBranch', 'type' => 'checkbox', 'label' => 'Is Main Branch', 'description' => 'Is this location the main branch for it\'s library', 'default' => false],
+			'showInLocationsAndHoursList'     => ['property' => 'showInLocationsAndHoursList', 'type' => 'checkbox', 'label' => 'Show In Locations And Hours List', 'description' => 'Whether or not this location should be shown in the list of library hours and locations', 'hideInLists' => true, 'default' => true],
+			'address'                         => ['property' => 'address', 'type' => 'textarea', 'label' => 'Address', 'description' => 'The address of the branch.', 'hideInLists' => true],
+			'phone'                           => ['property' => 'phone', 'type' => 'text', 'label' => 'Phone Number', 'description' => 'The main phone number for the site .', 'size' => '40', 'hideInLists' => true],
+			'nearbyLocation1'                 => ['property' => 'nearbyLocation1', 'type' => 'enum', 'values' => $locationLookupList, 'label' => 'Nearby Location 1', 'description' => 'A secondary location which is nearby and could be used for pickup of materials.', 'hideInLists' => true],
+			'nearbyLocation2'                 => ['property' => 'nearbyLocation2', 'type' => 'enum', 'values' => $locationLookupList, 'label' => 'Nearby Location 2', 'description' => 'A tertiary location which is nearby and could be used for pickup of materials.', 'hideInLists' => true],
+			'automaticTimeoutLength'          => ['property' => 'automaticTimeoutLength', 'type' => 'integer', 'label' => 'Automatic Timeout Length (logged in)', 'description' => 'The length of time before the user is automatically logged out in seconds.', 'size' => '8', 'hideInLists' => true, 'default' => self::DEFAULT_AUTOLOGOUT_TIME],
+			'automaticTimeoutLengthLoggedOut' => ['property' => 'automaticTimeoutLengthLoggedOut', 'type' => 'integer', 'label' => 'Automatic Timeout Length (logged out)', 'description' => 'The length of time before the catalog resets to the home page set to 0 to disable.', 'size' => '8', 'hideInLists' => true, 'default' => self::DEFAULT_AUTOLOGOUT_TIME_LOGGED_OUT],
 
-			'displaySection' => array(
+			'displaySection' => [
 				'property' => 'displaySection', 'type' => 'section', 'label' => 'Basic Display', 'hideInLists' => true,
-                'helpLink'   => 'https://docs.google.com/document/d/1C7T7SYSKDCX8mzBXj8WomzG4UVukVw9OllGQmWljUrs',
-				'properties' => array(
-					array('property' => 'homeLink', 'type' => 'text', 'label' => 'Home Link', 'description' => 'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the vufind home location.', 'hideInLists' => true, 'size' => '40'),
-					array('property' => 'additionalCss', 'type' => 'textarea', 'label' => 'Additional CSS', 'description' => 'Extra CSS to apply to the site.  Will apply to all pages.', 'hideInLists' => true),
-					array('property' => 'headerText', 'type' => 'html', 'label' => 'Header Text', 'description' => 'Optional Text to display in the header, between the logo and the log in/out buttons.  Will apply to all pages.', 'allowableTags' => '<p><div><span><a><strong><b><em><i><ul><ol><li><br><hr><h1><h2><h3><h4><h5><h6><img>', 'hideInLists' => true),
-				),
-			),
+				'helpLink'   => 'https://docs.google.com/document/d/1C7T7SYSKDCX8mzBXj8WomzG4UVukVw9OllGQmWljUrs',
+				'properties' => [
+					['property' => 'homeLink', 'type' => 'text', 'label' => 'Home Link', 'description' => 'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the vufind home location.', 'hideInLists' => true, 'size' => '40'],
+					['property' => 'additionalCss', 'type' => 'textarea', 'label' => 'Additional CSS', 'description' => 'Extra CSS to apply to the site.  Will apply to all pages.', 'hideInLists' => true],
+					['property' => 'headerText', 'type' => 'html', 'label' => 'Header Text', 'description' => 'Optional Text to display in the header, between the logo and the log in/out buttons.  Will apply to all pages.', 'allowableTags' => '<p><div><span><a><strong><b><em><i><ul><ol><li><br><hr><h1><h2><h3><h4><h5><h6><img>', 'hideInLists' => true],
+				],
+			],
 
-			'ilsSection' => array(
+			'ilsSection' => [
 				'property' => 'ilsSection', 'type' => 'section', 'label' => 'ILS/Account Integration', 'hideInLists' => true,
 				'helpLink' => 'https://docs.google.com/document/d/1337l_JDZAZDuSCugRWpHa4CVAfBBm8SMrAlda6hdf5o',
 				'properties' => [
-					['property' => 'scope', 'type' => 'text', 'label' => 'Scope', 'description' => 'The scope for the system in Sierra to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.'],
+					['property' => 'scope', 'type' => 'text', 'label' => 'Sierra Scope', 'description' => 'The scope for the system in Sierra to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.'],
 					['property' => 'defaultPType', 'type' => 'text', 'label' => 'Default P-Type', 'description' => 'The P-Type to use when accessing a subdomain if the patron is not logged in.  Use -1 to use the library default PType.', 'default' => -1],
 					['property' => 'validHoldPickupBranch', 'type' => 'enum', 'values' => ['1' => 'Valid for all patrons', '0' => 'Valid for patrons of this branch only', '2' => 'Not Valid'], 'label' => 'Valid Hold Pickup Branch?', 'description' => 'Determines if the location can be used as a pickup location if it is not the patrons home location or the location they are in.', 'hideInLists' => true, 'default' => 1],
 					['property' => 'showHoldButton', 'type' => 'checkbox', 'label' => 'Show Hold Button', 'description' => 'Whether or not the hold button is displayed so patrons can place holds on items', 'hideInLists' => true, 'default' => true],
 				],
-			),
+			],
 
 			'searchingSection'  => array(
 				'property' => 'searchingSection', 'type' => 'section', 'label' => 'Searching', 'hideInLists' => true,
-                'helpLink' => 'https://docs.google.com/document/d/1QQ7bNfGx75ImTguxEOmf7eCtdrVN9vi8FpWtWY_O3OU',
-                'properties' => array(
+				'helpLink'   => 'https://docs.google.com/document/d/1QQ7bNfGx75ImTguxEOmf7eCtdrVN9vi8FpWtWY_O3OU',
+				'properties' => array(
 					array('property' => 'restrictSearchByLocation', 'type' => 'checkbox', 'label' => 'Restrict Search By Location', 'description' => 'Whether or not search results should only include titles from this location', 'hideInLists' => true, 'default' => false),
-					array('property' => 'publicListsToInclude', 'type' => 'enum', 'values' => array(0 => 'No Lists', '1' => 'Lists from this library', '4' => 'Lists from library list publishers Only', '2' => 'Lists from this location', '5' => 'Lists from list publishers at this location Only', '6' => 'Lists from all list publishers', '3' => 'All Lists'), 'label' => 'Public Lists To Include', 'description' => 'Which lists should be included in this scope'),
+					array('property' => 'publicListsToInclude', 'type' => 'enum', 'values' => [0 => 'No Lists', '1' => 'Lists from this library', '4' => 'Lists from library list publishers Only', '2' => 'Lists from this location', '5' => 'Lists from list publishers at this location Only', '6' => 'Lists from all list publishers', '3' => 'All Lists'], 'label' => 'Public Lists To Include', 'description' => 'Which lists should be included in this scope', 'isIndexingSetting' => true),
 					array('property' => 'boostByLocation', 'type' => 'checkbox', 'label' => 'Boost By Location', 'description' => 'Whether or not boosting of titles owned by this location should be applied', 'hideInLists' => true, 'default' => true),
 					array('property' => 'additionalLocalBoostFactor', 'type' => 'integer', 'label' => 'Additional Local Boost Factor', 'description' => 'An additional numeric boost to apply to any locally owned and locally available titles', 'hideInLists' => true, 'default' => 1),
 					array(
 						'property' => 'searchBoxSection', 'type' => 'section', 'label' => 'Search Box', 'hideInLists' => true, 'properties' => array(
-						array('property' => 'systemsToRepeatIn', 'type' => 'text', 'label' => 'Systems To Repeat In', 'description' => 'A list of library codes that you would like to repeat search in separated by pipes |.', 'hideInLists' => true),
+						array('property' => 'systemsToRepeatIn', 'type' => 'text', 'label' => 'Other Libraries or Locations To Repeat In', 'description' => 'A list of library codes that you would like to repeat search in separated by pipes |.', 'hideInLists' => true),
 						array('property' => 'repeatSearchOption', 'type' => 'enum', 'values' => array('none' => 'None', 'librarySystem' => 'Library System', 'marmot' => 'Entire Consortium'), 'label' => 'Repeat Search Options (requires Restrict Search By Location to be ON)', 'description' => 'Where to allow repeating search. Valid options are: none, librarySystem, marmot, all', 'default' => 'marmot'),
 						array('property' => 'repeatInOnlineCollection', 'type' => 'checkbox', 'label' => 'Repeat In Online Collection', 'description' => 'Turn on to allow repeat search in the Online Collection.', 'hideInLists' => true, 'default' => false),
 						array('property' => 'repeatInProspector', 'type' => 'checkbox', 'label' => 'Repeat In ' . $innReachEncoreName, 'description' => 'Turn on to allow repeat search in ' . $innReachEncoreName . ' functionality.', 'hideInLists' => true, 'default' => false),
@@ -257,14 +254,14 @@ class Location extends DB_DataObject {
 							array('property' => 'availabilityToggleLabelLocal',                'type' => 'text',     'label' => 'Local Collection Toggle Label', 'description' => 'The label to show when viewing the local collection i.e. Library Name / Local Collection.  Leave blank to hide the button.', 'default' => '{display name}'),
 							array('property' => 'availabilityToggleLabelAvailable',            'type' => 'text',     'label' => 'Available Toggle Label', 'description' => 'The label to show when viewing available items i.e. Available Now / Available Locally / Available Here.', 'default' => 'Available Now'),
 							array('property' => 'availabilityToggleLabelAvailableOnline',      'type' => 'text',     'label' => 'Available Online Toggle Label', 'description' => 'The label to show when viewing available items i.e. Available Online.', 'default' => 'Available Online'),
-							array('property' => 'baseAvailabilityToggleOnLocalHoldingsOnly',   'type' => 'checkbox', 'label' => 'Base Availability Toggle on Local Holdings Only', 'description'=>'Turn on to use local materials only in availability toggle.', 'hideInLists' => true, 'default'=>false),
-							array('property' => 'includeOnlineMaterialsInAvailableToggle',     'type' => 'checkbox', 'label' => 'Include Online Materials in Available Toggle', 'description'=>'Turn on to include online materials in both the Available Now and Available Online Toggles.', 'hideInLists' => true, 'default'=>false),
-							array('property' => 'facetLabel',                                  'type' => 'text',     'label' => 'Facet Label', 'description'=>'The label of the facet that identifies this location.', 'hideInLists' => true, 'size'=>'40'),
-							array('property' => 'includeAllLibraryBranchesInFacets',           'type' => 'checkbox', 'label' => 'Include All Library Branches In Facets', 'description'=>'Turn on to include all branches of the library within facets (ownership and availability).', 'hideInLists' => true, 'default'=>true),
-							array('property' => 'additionalLocationsToShowAvailabilityFor',    'type' => 'text',     'label' => 'Additional Locations to Include in Available At Facet', 'description'=>'A list of library codes that you would like included in the available at facet separated by pipes |.', 'size'=>'20', 'hideInLists' => true,),
-							array('property' => 'includeAllRecordsInShelvingFacets',           'type' => 'checkbox', 'label' => 'Include All Records In Shelving Facets', 'description'=>'Turn on to include all records (owned and included) in shelving related facets (detailed location, collection).', 'hideInLists' => true, 'default'=>false),
-							array('property' => 'includeAllRecordsInDateAddedFacets',          'type' => 'checkbox', 'label' => 'Include All Records In Date Added Facets', 'description'=>'Turn on to include all records (owned and included) in date added facets.', 'hideInLists' => true, 'default'=>false),
-							array('property' => 'includeOnOrderRecordsInDateAddedFacetValues', 'type' => 'checkbox', 'label' => 'Include On Order Records In All Date Added Facet Values',  'description' => 'Use On Order records (date added value (tomorrow)) in calculations for all date added facet values. (eg. Added in the last day, week, etc.)', 'hideInLists' => true, 'default'=>true),
+							array('property' => 'baseAvailabilityToggleOnLocalHoldingsOnly',   'type' => 'checkbox', 'label' => 'Base Availability Toggle on Local Holdings Only', 'description'=>'Turn on to use local materials only in availability toggle.', 'hideInLists' => true, 'default'=>false, 'isIndexingSetting' => true),
+							array('property' => 'includeOnlineMaterialsInAvailableToggle',     'type' => 'checkbox', 'label' => 'Include Online Materials in Available Toggle', 'description'=>'Turn on to include online materials in both the Available Now and Available Online Toggles.', 'hideInLists' => true, 'default'=>false, 'isIndexingSetting' => true),
+							array('property' => 'facetLabel',                                  'type' => 'text',     'label' => 'Facet Label', 'description'=>'The label of the facet that identifies this location.', 'hideInLists' => true, 'size'=>'40', 'isIndexingSetting' => true),
+							array('property' => 'includeAllLibraryBranchesInFacets',           'type' => 'checkbox', 'label' => 'Include All Library Branches In Facets', 'description'=>'Turn on to include all branches of the library within facets (ownership and availability).', 'hideInLists' => true, 'default'=>true, 'isIndexingSetting' => true),
+							array('property' => 'additionalLocationsToShowAvailabilityFor',    'type' => 'text',     'label' => 'Additional Locations to Include in Available At Facet', 'description'=>'A list of library codes that you would like included in the available at facet separated by pipes |.', 'size'=>'20', 'hideInLists' => true, 'isIndexingSetting' => true),
+							array('property' => 'includeAllRecordsInShelvingFacets',           'type' => 'checkbox', 'label' => 'Include All Records In Shelving Facets', 'description'=>'Turn on to include all records (owned and included) in shelving related facets (detailed location, collection).', 'hideInLists' => true, 'default'=>false, 'isIndexingSetting' => true),
+							array('property' => 'includeAllRecordsInDateAddedFacets',          'type' => 'checkbox', 'label' => 'Include All Records In Date Added Facets', 'description'=>'Turn on to include all records (owned and included) in date added facets.', 'hideInLists' => true, 'default'=>false, 'isIndexingSetting' => true),
+							array('property' => 'includeOnOrderRecordsInDateAddedFacetValues', 'type' => 'checkbox', 'label' => 'Include On Order Records In All Date Added Facet Values',  'description' => 'Use On Order records (date added value (tomorrow)) in calculations for all date added facet values. (eg. Added in the last day, week, etc.)', 'hideInLists' => true, 'default'=>true, 'isIndexingSetting' => true),
 							'facets' => array(
 								'property'      => 'facets',
 								'type'          => 'oneToMany',
@@ -418,16 +415,16 @@ class Location extends DB_DataObject {
 			),
 
 			/* OVERDRIVE SECTION */
-			'overdriveSection'  => array(
+			'overdriveSection'  => [
 				'property' => 'overdriveSection', 'type' => 'section', 'label' => 'OverDrive', 'hideInLists' => true,
-                'helpLink' => 'https://docs.google.com/document/d/1HG7duKI4-gbOlgDvMlQrib52LV0BBUhzGD7Q69QLziM',
-                'properties' => array(
-					'enableOverdriveCollection' => array('property' => 'enableOverdriveCollection', 'type' => 'checkbox', 'label' => 'Enable Overdrive Collection', 'description' => 'Whether or not titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true),
-					'includeOverDriveAdult'     => array('property' => 'includeOverDriveAdult', 'type' => 'checkbox', 'label' => 'Include Adult Titles', 'description' => 'Whether or not adult titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true),
-					'includeOverDriveTeen'      => array('property' => 'includeOverDriveTeen', 'type' => 'checkbox', 'label' => 'Include Teen Titles', 'description' => 'Whether or not teen titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true),
-					'includeOverDriveKids'      => array('property' => 'includeOverDriveKids', 'type' => 'checkbox', 'label' => 'Include Kids Titles', 'description' => 'Whether or not kids titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true),
-				),
-			),
+				'helpLink' => 'https://docs.google.com/document/d/1HG7duKI4-gbOlgDvMlQrib52LV0BBUhzGD7Q69QLziM',
+				'properties' => [
+					'enableOverdriveCollection' => ['property' => 'enableOverdriveCollection', 'type' => 'checkbox', 'label' => 'Enable Overdrive Collection', 'description' => 'Whether or not titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true],
+					'includeOverDriveAdult'     => ['property' => 'includeOverDriveAdult', 'type' => 'checkbox', 'label' => 'Include Adult Titles', 'description' => 'Whether or not adult titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true],
+					'includeOverDriveTeen'      => ['property' => 'includeOverDriveTeen', 'type' => 'checkbox', 'label' => 'Include Teen Titles', 'description' => 'Whether or not teen titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true],
+					'includeOverDriveKids'      => ['property' => 'includeOverDriveKids', 'type' => 'checkbox', 'label' => 'Include Kids Titles', 'description' => 'Whether or not kids titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true],
+				],
+			],
 
 			/* HOOPLA SECTION */
 			'hooplaSection' => array(
@@ -447,6 +444,7 @@ class Location extends DB_DataObject {
 						'storeDb'       => true,
 						'allowEdit'     => true,
 						'canEdit'       => false,
+						'isIndexingSetting'          => true,
 						'additionalOneToManyActions' => array(
 							array(
 								'text'    => 'Copy Hoopla Settings From Parent Library',
@@ -486,42 +484,44 @@ class Location extends DB_DataObject {
                 ),
 			),
 
-			'recordsOwned' => array(
-				'property'      => 'recordsOwned',
-				'type'          => 'oneToMany',
-				'label'         => 'Records Owned',
-				'description'   => 'Information about what records are owned by the location',
-				'keyThis'       => 'locationId',
-				'keyOther'      => 'locationId',
-				'subObjectType' => 'LocationRecordOwned',
-				'structure'     => $locationRecordOwnedStructure,
-				'sortable'      => true,
-				'storeDb'       => true,
-				'allowEdit'     => false,
-				'canEdit'       => false,
-			),
+			'recordsOwned' => [
+				'property'          => 'recordsOwned',
+				'type'              => 'oneToMany',
+				'label'             => 'Records Owned',
+				'description'       => 'Information about what records are owned by the location',
+				'keyThis'           => 'locationId',
+				'keyOther'          => 'locationId',
+				'subObjectType'     => 'LocationRecordOwned',
+				'structure'         => $locationRecordOwnedStructure,
+				'sortable'          => true,
+				'storeDb'           => true,
+				'allowEdit'         => false,
+				'canEdit'           => false,
+				'isIndexingSetting' => true,
+			],
 
-			'recordsToInclude' => array(
-				'property'      => 'recordsToInclude',
-				'type'          => 'oneToMany',
-				'label'         => 'Records To Include',
-				'description'   => 'Information about what records to include in this scope',
-				'keyThis'       => 'locationId',
-				'keyOther'      => 'locationId',
-				'subObjectType' => 'LocationRecordToInclude',
-				'structure'     => $locationRecordToIncludeStructure,
-				'sortable'      => true,
-				'storeDb'       => true,
-				'allowEdit'     => false,
-				'canEdit'       => false,
-                'additionalOneToManyActions' => array(
-                    array(
-                        'text' => 'Copy Included Records from Location',
-                        'onclick' => 'Pika.Admin.copyLocationIncludedRecords($id)',
-                    ),
-                ),
-			),
-			'includeLibraryRecordsToInclude' => array('property' => 'includeLibraryRecordsToInclude', 'type' => 'checkbox', 'label' => 'Include Library Records To Include', 'description' => 'Whether or not the records to include from the parent library should be included for this location', 'hideInLists' => true, 'default' => true),
+			'recordsToInclude'               => [
+				'property'                   => 'recordsToInclude',
+				'type'                       => 'oneToMany',
+				'label'                      => 'Records To Include',
+				'description'                => 'Information about what records to include in this scope',
+				'keyThis'                    => 'locationId',
+				'keyOther'                   => 'locationId',
+				'subObjectType'              => 'LocationRecordToInclude',
+				'structure'                  => $locationRecordToIncludeStructure,
+				'sortable'                   => true,
+				'storeDb'                    => true,
+				'allowEdit'                  => false,
+				'canEdit'                    => false,
+				'isIndexingSetting'          => true,
+				'additionalOneToManyActions' => [
+					[
+						'text'    => 'Copy Included Records from Location',
+						'onclick' => 'Pika.Admin.copyLocationIncludedRecords($id)',
+					],
+				],
+			],
+			'includeLibraryRecordsToInclude' => ['property' => 'includeLibraryRecordsToInclude', 'type' => 'checkbox', 'label' => 'Include Library Records To Include', 'description' => 'Whether or not the records to include from the parent library should be included for this location', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true],
 		);
 
 		if (UserAccount::userHasRoleFromList(['locationManager', 'libraryManager']) && !UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin'])){
@@ -705,7 +705,7 @@ class Location extends DB_DataObject {
 	 * Returns the active location to use when doing search scoping, etc.
 	 * This does not include the IP address
 	 *
-	 * @return Location
+	 * @return Location|null
 	 */
 	function getActiveLocation(){
 		if (Location::$activeLocation != 'unset'){
@@ -725,6 +725,7 @@ class Location extends DB_DataObject {
 			//Check to see if a branch location has been specified.
 			$locationCode = $this->getBranchLocationCode();
 			if (!empty($locationCode) && $locationCode != 'all'){
+				//Check to see if we can get the active location based off the sublocation
 				$activeLocation              = new Location();
 				$activeLocation->subLocation = $locationCode;
 				if ($activeLocation->find(true)){
@@ -736,7 +737,7 @@ class Location extends DB_DataObject {
 						Location::$activeLocation = null;
 					}
 				}else{
-					//Check to see if we can get the active location based off the sublocation
+					//Check to see if we can get the active location based off the location's code
 					$activeLocation       = new Location();
 					$activeLocation->code = $locationCode;
 					if ($activeLocation->find(true)){
@@ -746,19 +747,6 @@ class Location extends DB_DataObject {
 						}else{
 							// If the active location doesn't belong to the library we are browsing at, turn off the active location
 							Location::$activeLocation = null;
-						}
-					}else{
-						//Check to see if we can get the active location based off the sublocation
-						$activeLocation            = new Location();
-						$activeLocation->subdomain = $locationCode;
-						if ($activeLocation->find(true)){
-							//Only use the location if we are in the subdomain for the parent library
-							if ($library->libraryId == $activeLocation->libraryId){
-								Location::$activeLocation = clone $activeLocation;
-							}else{
-								// If the active location doesn't belong to the library we are browsing at, turn off the active location
-								Location::$activeLocation = null;
-							}
 						}
 					}
 				}
@@ -818,13 +806,8 @@ class Location extends DB_DataObject {
 		if (isset($this->branchLocationCode) && $this->branchLocationCode != 'unset'){
 			return $this->branchLocationCode;
 		}
-		if (isset($_GET['branch'])){
-			$this->branchLocationCode = $_GET['branch'];
-		}elseif (isset($_COOKIE['branch'])){
-			$this->branchLocationCode = $_COOKIE['branch'];
-		}else{
-			$this->branchLocationCode = '';
-		}
+		$this->branchLocationCode = $_GET['branch'] ?? $_COOKIE['branch'] ?? '';
+
 		if ($this->branchLocationCode == 'all'){
 			$this->branchLocationCode = '';
 		}
@@ -967,7 +950,8 @@ class Location extends DB_DataObject {
 		if (isset($_GET['test_ip'])){
 			$ip = $_GET['test_ip'];
 			//Set a cookie so we don't have to transfer the ip from page to page.
-			setcookie('test_ip', $ip, 0, '/', NULL, 1, 1);
+//			setcookie('test_ip', $ip, 0, '/', NULL, 1, 1);
+			handleCookie('test_ip', $ip);
 //		}elseif (isset($_COOKIE['test_ip']) && $_COOKIE['test_ip'] != '127.0.0.1' && strlen($_COOKIE['test_ip']) > 0){
 		}elseif (!empty($_COOKIE['test_ip']) && $_COOKIE['test_ip'] != '127.0.0.1'){
 			$ip = $_COOKIE['test_ip'];
@@ -1003,22 +987,16 @@ class Location extends DB_DataObject {
 
 	function getSublocationCode(){
 		if ($this->sublocationCode == 'unset'){
-			if (isset($_GET['sublocation'])){
-				$this->sublocationCode = $_GET['sublocation'];
-			}elseif (isset($_COOKIE['sublocation'])){
-				$this->sublocationCode = $_COOKIE['sublocation'];
-			}else{
-				$this->sublocationCode = '';
-			}
+			$this->sublocationCode = $_GET['sublocation'] ?? $_COOKIE['sublocation'] ?? '';
 		}
 		return $this->sublocationCode;
 	}
 
 	function getLocationsFacetsForLibrary($libraryId){
+		$facets              = [];
 		$location            = new Location();
 		$location->libraryId = $libraryId;
 		$location->find();
-		$facets = array();
 		if ($location->N > 0){
 			while ($location->fetch()){
 				$facets[] = $location->facetLabel;

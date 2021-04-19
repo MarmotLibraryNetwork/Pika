@@ -29,14 +29,14 @@
 		var htmlLink =	"<tr id='newLinkId_" + numNewLink + "'>";
 				htmlLink += "	<td>";
 				htmlLink += "		<span class='ui-icon ui-icon-arrowthick-2-n-s' style='pointer:cursor;'></span>";
-				htmlLink += "		<input class='weightValue' type='hidden' name='weightNewLink[" + numNewLink + "]' value='900'/>";
+				htmlLink += "		<input class='weightValue' type='hidden' name='weightNewLink[" + numNewLink + "]' value='900'>";
 				htmlLink += "	</td>";
 			  htmlLink += "	<td>";
-			  htmlLink += "		<input type='hidden' name='newLink[" + numNewLink + "]' value='" + numNewLink + "'/>";
-			  htmlLink += "		<input class='required' type='text' size='40' name='nameNewLink[" + numNewLink + "]' value=''/>";
+			  htmlLink += "		<input type='hidden' name='newLink[" + numNewLink + "]' value='" + numNewLink + "'>";
+			  htmlLink += "		<input class='required' type='text' size='40' name='nameNewLink[" + numNewLink + "]' value=''>";
 			  htmlLink += "	</td>";
 			  htmlLink += "	<td>";
-			  htmlLink += "		<input class='required' type='text' size='40' name='linkNewLink[" + numNewLink + "]' value=''/>";
+			  htmlLink += "		<input class='required' type='text' size='40' name='linkNewLink[" + numNewLink + "]' value=''>";
 			  htmlLink += "	</td>";
 			  htmlLink += "	<td>";
 				htmlLink += "		&nbsp;";
@@ -70,16 +70,16 @@
 					<tr id='linkId_{$link->id}'>
 						<td>
 							<span class="glyphicon glyphicon-resize-vertical" style='pointer:cursor;'></span>
-							<input class='weightValue' type="hidden" id="Weight[{$link->id}]" name="weight[{$link->id}]" value="{$link->weight}"/>
+							<input class='weightValue' type="hidden" id="Weight[{$link->id}]" name="weight[{$link->id}]" value="{$link->weight}">
 						</td>
 						<td>
-							<input type='hidden' id='toDelete_{$link->id}' name='toDelete_{$link->id}' value='0'/>
-							<input type='hidden' name='id[{$link->id}]' value='{$link->id}'/>
-							<input type='hidden' name='listWidgetListsId[{$link->id}]' value='{$link->listWidgetListsId}'/>
-							<input class='required' type='text' size='40' name='name[{$link->id}]' value='{$link->name}'/>
+							<input type='hidden' id='toDelete_{$link->id}' name='toDelete_{$link->id}' value='0'>
+							<input type='hidden' name='id[{$link->id}]' value='{$link->id}'>
+							<input type='hidden' name='listWidgetListsId[{$link->id}]' value='{$link->listWidgetListsId}'>
+							<input class='required' type='text' size='40' name='name[{$link->id}]' value='{$link->name}'>
 						</td>
 						<td>
-							<input class='required'	type='text' size='40' name='link[{$link->id}]' value='{$link->link}'/>
+							<input class='required'	type='text' size='40' name='link[{$link->id}]' value='{$link->link}'>
 						</td>
 						<td>
 							<a href="#" onclick='deleteLink({$link->id});'>
@@ -93,8 +93,8 @@
 		<div class="Actions">
 			<a href="#" onclick="addNewLink();return false;"	class="button">Add New</a>
 		</div>
-		<br/>
-		<input type='hidden' name='objectAction' value='save' />
-		<input type="submit" name="submit" value="Save Changes"/>
+		<br>
+		<input type='hidden' name='objectAction' value='save' >
+		<input type="submit" name="submit" value="Save Changes">
 	</form>
 </div>

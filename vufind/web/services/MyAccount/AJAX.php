@@ -314,10 +314,10 @@ class MyAccount_AJAX extends AJAXHandler {
 	}
 
 	function cancelHold(){
-		$result = array(
+		$result = [
 			'success' => false,
 			'message' => 'Error cancelling hold.',
-		);
+		];
 
 		if (!UserAccount::isLoggedIn()){
 			$result['message'] = 'You must be logged in to cancel a hold.  Please close this dialog and login again.';
@@ -354,11 +354,11 @@ class MyAccount_AJAX extends AJAXHandler {
 
 		$interface->assign('cancelResults', $result);
 
-		$cancelResult = array(
+		$cancelResult = [
 			'title'   => 'Cancel Hold',
 			'body'    => $interface->fetch('MyAccount/cancelhold.tpl'),
 			'success' => $result['success'],
-		);
+		];
 		return $cancelResult;
 	}
 
@@ -802,7 +802,7 @@ class MyAccount_AJAX extends AJAXHandler {
                 {
                     $listId = $_REQUEST['id'];
                     return array('title' => 'Transfer List',
-                        'body'=>'<label for="barcode">Please enter recipient barcode</label> <input type="text" name="barcode" id="barcode" class="form-control" />' .
+                        'body'=>'<label for="barcode">Please enter recipient barcode</label> <input type="text" name="barcode" id="barcode" class="form-control">' .
                                 '<div class="validation" id="validation" style="display:none; color:darkred;">Invalid Barcode</div>'.
                                 '<script>$("#barcode").on("change keyup paste", function(data){Pika.Lists.checkUser($("#barcode").val())});</script>',
                         'buttons'=>'<button value="transfer" disabled="disabled" id="transfer" class="btn btn-danger" onclick="Pika.Lists.transferList('. $listId . ', document.getElementById(\'barcode\').value);return false;">Transfer</button>');
@@ -1134,7 +1134,7 @@ class MyAccount_AJAX extends AJAXHandler {
 			return [
 				'title'        => 'Email a list',
 				'modalBody'    => $interface->fetch('MyAccount/emailListPopup.tpl'),
-				//			'modalButtons' => '<input type="submit" name="submit" value="Send" class="btn btn-primary" onclick="$(\'#emailListForm\').submit();" />'
+				//			'modalButtons' => '<input type="submit" name="submit" value="Send" class="btn btn-primary" onclick="$(\'#emailListForm\').submit();">'
 				'modalButtons' => '<span class="tool btn btn-primary" onclick="$(\'#emailListForm\').submit();">Send E-Mail</span>',
 			];
 		}
@@ -1413,11 +1413,12 @@ class MyAccount_AJAX extends AJAXHandler {
 			$result['fines'] = '';
 			$fines = $user->getTotalFines(true);
 			$minimum = $homeLibrary->minimumFineAmount;
-			if($fines >= $minimum && $fines != 0)
+			$alert = $homeLibrary->fineAlertAmount;
+			if($fines >= $alert && $fines != 0)
 			{
 				$result['fines'] = '<span class="badge badge-danger">$' . $fines . '</span>';
 			}
-			else if($fines > 0 && $fines < $minimum)
+			else if($fines > 0 && $fines < $alert)
 			{
 				$result['fines'] = '<span class ="badge">$' . $fines . '</span>';
 			}

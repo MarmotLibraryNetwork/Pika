@@ -93,7 +93,19 @@
 		{if $property.additionalOneToManyActions && $id}{* Only display these actions for an existing object *}
 			<div class="btn-group pull-right">
 				{foreach from=$property.additionalOneToManyActions item=action}
-					{if $action.allowed_roles && $userRoles && (in_array($action.allowed_roles, $userRoles))}
+					{assign var="actionAllowed" value=false}
+					{if is_array($action.allowed_roles)}
+						{if !empty($userRoles)}
+							{foreach from=$action.allowed_roles item=allowedRole}
+								{if in_array($allowedRole, $userRoles)}
+									{assign var="actionAllowed" value=true}
+								{/if}
+							{/foreach}
+						{/if}
+					{elseif	$action.allowed_roles && !empty($userRoles) && in_array($action.allowed_roles, $userRoles)}
+						{assign var="actionAllowed" value=true}
+					{/if}
+					{if $actionAllowed}
 					<a class="btn {if $action.class}{$action.class}{else}btn-default{/if} btn-sm"{if $action.url} href="{$action.url|replace:'$id':$id}"{/if}{if $action.onclick} onclick="{$action.onclick|replace:'$id':$id}"{/if}>{$action.text}</a>
 					{elseif $action.allowed_roles && $userRoles && (!in_array($action.allowed_roles, $userRoles))}
 						<small></small>
@@ -174,4 +186,52 @@
 		}
 		{/literal}
 	</script>
+	{if $propName == "translationMapValues"}
+
+	<script type="text/javascript">
+
+		{literal}
+		$.fn.dataTable.ext.order['dom-text'] = function  ( settings, col )
+		{
+			return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
+				return $('input', td).val();
+			} );
+		}
+
+		$(document).ready( function(){
+			$('#translationMapValues thead th:not(:last-child)').each( function () {
+				var title = $(this).text();
+				$(this).html('<input type="text" placeholder="Search ' + title + '">');
+			});
+				$("#translationMapValues").DataTable({
+					"columns": [
+						{"orderDataType": "dom-text", type: 'string'},
+						{"orderDataType": "dom-text", type: 'string'},
+						null
+					],
+					paging: false,
+					"dom": 'lrtip',
+					initComplete: function () {
+						this.api().columns([0, 1]).every(function () {
+							var that = this;
+
+							$('input', this.header())
+											.on('keyup change clear', function () {
+												if (that.search() !== this.value) {
+													that
+																	.search(this.value)
+																	.draw();
+												}
+											})
+											.on('click', function (e) {
+												e.stopPropagation();
+											});
+						});
+					}
+				});
+			});
+		{/literal}
+	</script>
+
+	{/if}
 </div>

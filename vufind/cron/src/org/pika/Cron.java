@@ -170,7 +170,7 @@ public class Cron {
 					//Mark the time the run was started rather than finished so really long running processes
 					//can go on while faster processes execute multiple times in other threads.
 					markProcessStarted(processToRun);
-					processHandlerInstance.doCronProcess(serverName, processSettings, pikaConn, econtentConn, cronEntry, logger);
+					processHandlerInstance.doCronProcess(serverName, processSettings, pikaConn, econtentConn, cronEntry, logger, systemVariables);
 					//Log how long the process took
 					Date  endTime        = new Date();
 					long  elapsedMillis  = endTime.getTime() - currentTime.getTime();

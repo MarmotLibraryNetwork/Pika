@@ -165,7 +165,7 @@ class UserList extends DB_DataObject
 	 */
 	function getListEntries($sort = null){
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-		$listEntry = new UserListEntry();
+		$listEntry         = new UserListEntry();
 		$listEntry->listId = $this->id;
 		if ($sort == 'author' || $sort == 'title') {
 
@@ -181,8 +181,9 @@ class UserList extends DB_DataObject
     (user_list_entry.groupedWorkPermanentId LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT pid FROM islandora_object_cache) )
 )'
 		);
+		//TODO: checking the islandora cache does not really check that pid is valid. Probably should remove
 
-		$listEntries = $archiveIDs = $catalogIDs = array();
+		$listEntries = $archiveIDs = $catalogIDs = [];
 		$listEntry->find();
 		while ($listEntry->fetch()){
 			if (strpos($listEntry->groupedWorkPermanentId, ':') !== false) {
@@ -193,7 +194,7 @@ class UserList extends DB_DataObject
 			$listEntries[] = $listEntry->groupedWorkPermanentId;
 		}
 
-		return array($listEntries, $catalogIDs, $archiveIDs);
+		return [$listEntries, $catalogIDs, $archiveIDs];
 	}
 
 	/**

@@ -1,6 +1,6 @@
 {strip}
 {* Add availability as needed *}
-{if $showAvailability && $availability && count($availability) > 0}
+{if $showAvailability && !empty($availability)}
 	<div>
 		<table class="table">
 			<thead>
@@ -32,7 +32,7 @@
 			{/foreach}
 			</tbody>
 		</table>
-		<br/>
+		<br>
 		<div class="note">
 			{if strcasecmp($source, 'OverDrive') == 0}
 				Note: Copies owned by the Digital library are available to patrons of any Marmot Library.  Titles owned by a specific library are only available for use by patrons of that library.

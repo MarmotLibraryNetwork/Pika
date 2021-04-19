@@ -37,6 +37,7 @@ public class OverDriveProcessor {
 	private GroupedWorkIndexer indexer;
 	private Logger             logger;
 	private boolean            fullReindex;
+	private boolean            hasSharedAdvantageAccount = false;
 	private PreparedStatement  getProductInfoStmt;
 	private PreparedStatement  getNumCopiesStmt;
 	private PreparedStatement  getProductMetadataStmt;
@@ -46,9 +47,15 @@ public class OverDriveProcessor {
 	private PreparedStatement  getProductSubjectsStmt;
 	private PreparedStatement  getProductIdentifiersStmt;
 
-	public OverDriveProcessor(GroupedWorkIndexer groupedWorkIndexer, Connection econtentConn, Logger logger, boolean fullReindex) {
+	public OverDriveProcessor(GroupedWorkIndexer groupedWorkIndexer, Connection econtentConn, Logger logger, boolean fullReindex, String serverName) {
 		this.indexer = groupedWorkIndexer;
 		this.logger = logger;
+		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
+		String sharedAdvantageAccounts = PikaConfigIni.getIniValue("OverDrive", "sharedAdvantageAccountKey");
+		if (sharedAdvantageAccounts != null && !sharedAdvantageAccounts.isEmpty()){
+			hasSharedAdvantageAccount = true;
+		}
+
 		try {
 			getProductInfoStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_products WHERE overdriveId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getNumCopiesStmt = econtentConn.prepareStatement("SELECT sum(copiesOwned) AS totalOwned FROM overdrive_api_product_availability WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -219,25 +226,11 @@ public class OverDriveProcessor {
 //								String targetAudience  = loadOverDriveSubjects(groupedWork, productId);
 
 								//Load the formats for the record.  For OverDrive, we will create a separate item for each format.
-								HashSet<String> validFormats    = loadOverDriveFormats(groupedWork, productId, identifier);
+								HashSet<String> validFormats    = loadOverDriveFormats(groupedWork, overDriveRecord, productId, identifier);
 								String          detailedFormats = String.join(",", validFormats);
 								//overDriveRecord.addFormats(validFormats);
 
 								loadOverDriveIdentifiers(groupedWork, productId, primaryFormat);
-
-								long maxFormatBoost = 1;
-								for (String curFormat : validFormats) {
-									long formatBoost = 1;
-									try {
-										formatBoost = Long.parseLong(indexer.translateSystemValue("format_boost_overdrive", curFormat.replace(' ', '_'), identifier));
-									} catch (Exception e) {
-										logger.warn("Could not translate format boost for " + primaryFormat);
-									}
-									if (formatBoost > maxFormatBoost) {
-										maxFormatBoost = formatBoost;
-									}
-								}
-								overDriveRecord.setFormatBoost(maxFormatBoost);
 
 								//Load availability & determine which scopes are valid for the record
 								getProductAvailabilityStmt.setLong(1, productId);
@@ -260,8 +253,8 @@ public class OverDriveProcessor {
 									overDriveRecord.setPublicationDate(primaryFormat.equals("eMagazine") ? metadata.get("publishDateMagazine") : metadata.get("publicationDate"));
 //									overDriveRecord.setPhysicalDescription("");
 
-									totalCopiesOwned = 0;
-									//TODO: totalCopiesOwned will now have to account for multiple overdrive accounts
+									totalCopiesOwned = 0; //Since totalCopiedOwned only contributes to the grouped work's holdings count,
+									// this doesn't need to have special handling for multiple overdrive accounts.
 									while (availabilityRS.next()) {
 										//Just create one item for each with a list of sub formats.
 										ItemInfo itemInfo = new ItemInfo();
@@ -271,15 +264,14 @@ public class OverDriveProcessor {
 										itemInfo.setCallNumber("Online OverDrive");
 										itemInfo.setSortableCallNumber("Online OverDrive");
 										itemInfo.setDateAdded(dateAdded);
+										itemInfo.setFormat(primaryFormat);
+										itemInfo.setSubFormats(detailedFormats);
+										itemInfo.setFormatCategory(formatCategory);
 
 										overDriveRecord.addItem(itemInfo);
 
 										long    libraryId = availabilityRS.getLong("libraryId");
 										boolean available = availabilityRS.getBoolean("available");
-
-										itemInfo.setFormat(primaryFormat);
-										itemInfo.setSubFormats(detailedFormats);
-										itemInfo.setFormatCategory(formatCategory);
 
 										//Need to set an identifier based on the scope so we can filter later.
 										itemInfo.setItemIdentifier(Long.toString(libraryId));
@@ -288,7 +280,6 @@ public class OverDriveProcessor {
 										int copiesOwned = availabilityRS.getInt("copiesOwned");
 										itemInfo.setNumCopies(copiesOwned);
 										totalCopiesOwned = Math.max(copiesOwned, totalCopiesOwned);
-										//TODO: totalCopiesOwned will now have to account for multiple overdrive accounts
 
 										if (available) {
 											itemInfo.setDetailedStatus("Available Online");
@@ -329,8 +320,10 @@ public class OverDriveProcessor {
 												}
 											}
 										} else {
+											// Handle Advantage copies
 											for (Scope curScope : indexer.getScopes()) {
-												if (curScope.isIncludeOverDriveCollection() && curScope.getLibraryId().equals(libraryId)) {
+												if (curScope.isIncludeOverDriveCollection() && (hasSharedAdvantageAccount || curScope.getLibraryId().equals(libraryId))) {
+													//TODO: would need more complicated logic when there are multiple shared accounts plus sharedAdvantageAccount
 													boolean okToInclude = false;
 													if (isAdult && curScope.isIncludeOverDriveAdultCollection()) {
 														okToInclude = true;
@@ -366,7 +359,7 @@ public class OverDriveProcessor {
 										}//End processing availability
 									}
 								}
-								groupedWork.addHoldings(totalCopiesOwned); //TODO: determine how this should work with multiple overdrive accounts
+								groupedWork.addHoldings(totalCopiesOwned);
 							}
 						}
 					}
@@ -526,14 +519,14 @@ public class OverDriveProcessor {
 		return primaryLanguage;
 	}
 
-	private HashSet<String> loadOverDriveFormats(GroupedWorkSolr groupedWork, Long productId, String identifier) throws SQLException {
+	private HashSet<String> loadOverDriveFormats(GroupedWorkSolr groupedWork, RecordInfo overDriveRecord, Long productId, String identifier) throws SQLException {
 		//Load formats
 		getProductFormatsStmt.setLong(1, productId);
 		HashSet<String> formats;
 		try (ResultSet formatsRS = getProductFormatsStmt.executeQuery()) {
 			formats = new HashSet<>();
 			HashSet<String> eContentDevices = new HashSet<>();
-			long            formatBoost     = 1L;
+			long maxFormatBoost = 1;
 			while (formatsRS.next()) {
 				String format = formatsRS.getString("name");
 				formats.add(format);
@@ -542,16 +535,20 @@ public class OverDriveProcessor {
 				for (String device : devices) {
 					eContentDevices.add(device.trim());
 				}
-				String formatBoostStr = indexer.translateSystemValue("format_boost_overdrive", format.replace(' ', '_'), identifier);
+				long formatBoost = 1;
 				try {
-					long curFormatBoost = Long.parseLong(formatBoostStr);
-					if (curFormatBoost > formatBoost) {
-						formatBoost = curFormatBoost;
-					}
-				} catch (NumberFormatException e) {
-					logger.warn("Could not parse format_boost " + formatBoostStr);
+					formatBoost = Long.parseLong(indexer.translateSystemValue("format_boost_overdrive", format.replace(' ', '_'), identifier));
+				} catch (Exception e) {
+					logger.warn("Could not translate format boost for " + identifier);
+				}
+				if (formatBoost > maxFormatBoost) {
+					maxFormatBoost = formatBoost;
 				}
 			}
+
+			overDriveRecord.setFormatBoost(maxFormatBoost);
+
+
 			//By default, formats are good for all locations
 			groupedWork.addEContentDevices(eContentDevices);
 		}

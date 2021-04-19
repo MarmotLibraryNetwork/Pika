@@ -51,7 +51,7 @@ class MyAccount_MyList extends MyAccount {
 			$list          = new UserList();
 			$list->user_id = UserAccount::getActiveUserId();
 			$list->public  = false;
-			$list->title   = "My Favorites";
+			$list->title   = 'My Favorites';
 		}
 
 		// Ensure user has privileges to view the list
@@ -118,29 +118,28 @@ class MyAccount_MyList extends MyAccount {
 						header("Location: /MyAccount/MyLists");
 						die();
 						break;
-                    case 'deleteAll':
-                        $list->removeAllListEntries();
-                        break;
-                    case 'deleteMarked':
-                        //get a list of all titles that were selected
-                        if(isset($_REQUEST['myListActionData'])) {
-                            $itemsToRemove = explode(",",$_REQUEST['myListActionData']);
-                            foreach ($itemsToRemove as $id) {
-                                //add back the leading . to get the full bib record
-                                $list->removeListEntry($id);
-                                $list->update();
-                            }
-                        }
-                        break;
+					case 'deleteAll':
+						$list->removeAllListEntries();
+						break;
+					case 'deleteMarked':
+						//get a list of all titles that were selected
+						if (isset($_REQUEST['myListActionData'])){
+							$itemsToRemove = explode(",", $_REQUEST['myListActionData']);
+							foreach ($itemsToRemove as $id){
+								//add back the leading . to get the full bib record
+								$list->removeListEntry($id);
+								$list->update();
+							}
+						}
+						break;
 					case 'bulkAddTitles':
 						$notes                 = $this->bulkAddTitles($list);
 						$_SESSION['listNotes'] = $notes;
 						session_commit();
 						break;
-
-                            case 'exportToExcel':
-                                $this->exportToExcel($list);
-                                break;
+					case 'exportToExcel':
+						$this->exportToExcel($list);
+						break;
 
 				}
 
@@ -157,48 +156,44 @@ class MyAccount_MyList extends MyAccount {
 				$list->update();
 			}
 			//Redirect back to avoid having the parameters stay in the URL (keeping both pagesize and current page).
-            $queryString = "";
-            if(!empty($_REQUEST['myListPageSize']))
-            {
-                $queryString = "?pagesize=" . $_REQUEST['myListPageSize'];
-            }
-            if(!empty($_REQUEST['myListPage']))
-            {
-                if (!empty($_REQUEST['myListPageSize'])) {
-                    $queryString = "?pagesize=" . $_REQUEST['myListPageSize'] . "&page=" . $_REQUEST['myListPage'];
-                    }
-                else{
-                    $queryString = "?page=" . $_REQUEST['myListPage'];
-                }
-            }
-            if(!empty($_REQUEST['myListSort'])) {
+			$queryString = "";
+			if (!empty($_REQUEST['myListPageSize'])){
+				$queryString = "?pagesize=" . $_REQUEST['myListPageSize'];
+			}
+			if (!empty($_REQUEST['myListPage'])){
+				if (!empty($_REQUEST['myListPageSize'])){
+					$queryString = "?pagesize=" . $_REQUEST['myListPageSize'] . "&page=" . $_REQUEST['myListPage'];
+				}else{
+					$queryString = "?page=" . $_REQUEST['myListPage'];
+				}
+			}
+			if (!empty($_REQUEST['myListSort'])){
 
 
-                $queryString = $queryString . "&sort=" . $_REQUEST['myListSort'];
-            }
+				$queryString = $queryString . "&sort=" . $_REQUEST['myListSort'];
+			}
 			header("Location: /MyAccount/MyList/{$list->id}" . $queryString);
 			die();
     //if list is public the export to excel still needs to function
-		}elseif ($list->public && (isset($_REQUEST['myListActionHead']) || isset($_REQUEST['myListActionItem']) ))
-        {
-            if (!empty($_REQUEST['myListActionHead'])) {
-                $actionToPerform = $_REQUEST['myListActionHead'];
-                switch ($actionToPerform){
-                    case 'exportToExcel':
-                        $this->exportToExcel($list);
-                        break;
-                    default:
-                        break;
-                }
-            }
-            header("Location: /MyAccount/MyList/{$list->id}");
-            die();
-        }
+		}elseif ($list->public && (isset($_REQUEST['myListActionHead']) || isset($_REQUEST['myListActionItem']) )){
+			if (!empty($_REQUEST['myListActionHead'])){
+				$actionToPerform = $_REQUEST['myListActionHead'];
+				switch ($actionToPerform){
+					case 'exportToExcel':
+						$this->exportToExcel($list);
+						break;
+					default:
+						break;
+				}
+			}
+			header("Location: /MyAccount/MyList/{$list->id}");
+			die();
+		}
 
 		// Send list to template so title/description can be displayed:
 		$interface->assign('favList', $list);
-        $shortTitle = $list->title;
-        $interface->assign('shortPageTitle', $shortTitle);
+		$shortTitle = $list->title;
+		$interface->assign('shortPageTitle', $shortTitle);
 
 		$interface->assign('listSelected', $list->id);
 
@@ -217,17 +212,19 @@ class MyAccount_MyList extends MyAccount {
 	 * @return array
 	 */
 	function bulkAddTitles($list){
+		global $interface;
 		$numAdded        = 0;
 		$notes           = array();
 		$listItems       = $list->numValidListItems();
 		$titlesToAdd     = $_REQUEST['titlesToAdd'];
 		$titleSearches[] = preg_split("/\\r\\n|\\r|\\n/", $titlesToAdd);
+		$archiveEnabled  = $interface->getVariable('enableArchive') ?? false;
 
 		foreach ($titleSearches[0] as $titleSearch){
 			$titleSearch = trim($titleSearch);
 			if (!empty($titleSearch)){
 				$_REQUEST['lookfor'] = $titleSearch;
-				$isArchiveId         = strpos($titleSearch, ':') !== false;
+				$isArchiveId         = $archiveEnabled && strpos($titleSearch, ':') !== false; // Only check for archive pids if the archive is available.
 				$_REQUEST['type']    = $isArchiveId ? 'IslandoraKeyword' : 'Keyword';// Initialise from the current search globals
 				$searchObject        = SearchObjectFactory::initSearchObject($isArchiveId ? 'Islandora' : 'Solr');
 				if (!empty($searchObject)){
@@ -236,12 +233,11 @@ class MyAccount_MyList extends MyAccount {
 					$searchObject->clearFacets();
 					$results = $searchObject->processSearch(false, false);
 					if ($results['response'] && $results['response']['numFound'] >= 1) {
-                        $firstDoc = $results['response']['docs'][0];
-                        //Get the id of the document
-                        $id = $isArchiveId ? $firstDoc['PID'] : $firstDoc['id'];
-                        if (($listItems+$numAdded+1) <= 2000) {
-                            $numAdded++;
-                        }
+						$firstDoc = $results['response']['docs'][0];
+						$id       = $isArchiveId ? $firstDoc['PID'] : $firstDoc['id']; //Get the id of the document
+						if (($listItems + $numAdded + 1) <= 2000){
+							$numAdded++;
+						}
 						$userListEntry                         = new UserListEntry();
 						$userListEntry->listId                 = $list->id;
 						$userListEntry->groupedWorkPermanentId = $id;

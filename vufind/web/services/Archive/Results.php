@@ -116,7 +116,7 @@ class Archive_Results extends Union_Results {
 
 					// Unexpected error -- let's treat this as a fatal condition.
 				} else {
-					PEAR_Singleton::raiseError(new PEAR_Error('Unable to process query<br />' .
+					PEAR_Singleton::raiseError(new PEAR_Error('Unable to process query<br>' .
                         'Solr Returned: ' . $errorMessage));
 				}
 			}

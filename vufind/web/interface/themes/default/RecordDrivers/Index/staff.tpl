@@ -16,7 +16,7 @@
       <td>
         <div style="width: 500px; overflow: auto;">
         {foreach from=$values item='value'}
-          {$value|escape}<br />
+          {$value|escape}<br>
         {/foreach}
         </div>
       </td>

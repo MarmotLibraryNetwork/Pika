@@ -4,7 +4,7 @@
 	{/if}
 	<form{* name="placeHoldForm"*} id="bookMaterialForm">
 	{* TODO: the fallback POST action of form is not implemented *}
-		<input type='hidden' name='module' id='module' value='{$activeRecordProfileModule}' />
+		<input type='hidden' name='module' id='module' value='{$activeRecordProfileModule}'>
 		<input type="hidden" name="id" value="{$id|replace:'ils:':''}">
 	<fieldset>
 		<div class="row">

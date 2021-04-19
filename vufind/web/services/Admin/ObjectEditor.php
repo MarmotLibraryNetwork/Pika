@@ -161,7 +161,7 @@ abstract class ObjectEditor extends Admin_Admin {
 				}
 				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, PEAR_LOG_DEBUG);
 				@session_start();
-				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br/>{$errorDescription}";
+				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br>{$errorDescription}";
 
 				return false;
 			}
@@ -252,39 +252,42 @@ abstract class ObjectEditor extends Admin_Admin {
 			//Work with an existing object
 			$curObject = $this->getExistingObjectById($id);
 			if (!is_null($curObject)){
-				if ($objectAction == 'save'){
-					//Update the object
-					$validationResults = $this->updateFromUI($curObject, $structure);
-					if ($validationResults['validatedOk']){
-						$ret = $curObject->update();
-						if ($ret === false){
-							if ($curObject->_lastError){
-								$errorDescription = $curObject->_lastError->getUserInfo();
-							}else{
-								$errorDescription = 'Unknown error';
+				switch ($objectAction){
+					case 'save':
+						//Update the object
+						$validationResults = $this->updateFromUI($curObject, $structure);
+						if ($validationResults['validatedOk']){
+							$ret = $curObject->update();
+							if ($ret === false){
+								if ($curObject->_lastError){
+									$errorDescription = $curObject->_lastError->getUserInfo();
+								}else{
+									$errorDescription = 'Unknown error';
+								}
+								session_start();
+								$_SESSION['lastError'] = "An error occurred updating {$this->getObjectType()} with id of $id <br><br><blockquote class=\"alert-warning\">{$errorDescription}</blockquote>";
+								$errorOccurred         = true;
 							}
+						}else{
+							$errorDescription = '<blockquote class="alert-warning">' . implode('</blockquote><blockquote class="alert-warning">', $validationResults['errors']) . '</blockquote>';
 							session_start();
-							$_SESSION['lastError'] = "An error occurred updating {$this->getObjectType()} with id of $id <br><br><blockquote class=\"alert-warning\">{$errorDescription}</blockquote>";
+							$_SESSION['lastError'] = "An error occurred validating {$this->getObjectType()} with id of $id <br><br>{$errorDescription}";
 							$errorOccurred         = true;
 						}
-					}else{
-						$errorDescription      = '<blockquote class="alert-warning">' . implode('</blockquote><blockquote class="alert-warning">', $validationResults['errors']) . '</blockquote>';
-						session_start();
-						$_SESSION['lastError'] = "An error occurred validating {$this->getObjectType()} with id of $id <br><br>{$errorDescription}";
-						$errorOccurred         = true;
-					}
-				}elseif ($objectAction == 'delete'){
-					if ($this->canDelete()){
-						//Delete the object
-						$ret = $curObject->delete();
-						if ($ret === false){
-							$_SESSION['lastError'] = "Unable to delete {$this->getObjectType()} with id of $id";
+						break;
+					case 'delete':
+						if ($this->canDelete()){
+							//Delete the object
+							$ret = $curObject->delete();
+							if ($ret === false){
+								$_SESSION['lastError'] = "Unable to delete {$this->getObjectType()} with id of $id";
+								$errorOccurred         = true;
+							}
+						}else{
+							$_SESSION['lastError'] = "Not allowed to delete {$this->getObjectType()} with id of $id";
 							$errorOccurred         = true;
 						}
-					} else {
-						$_SESSION['lastError'] = "Not allowed to delete {$this->getObjectType()} with id of $id";
-						$errorOccurred         = true;
-					}
+						break;
 				}
 			}else{
 				//Couldn't find the object.  Something went haywire.

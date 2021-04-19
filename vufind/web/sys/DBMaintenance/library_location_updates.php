@@ -1196,5 +1196,26 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 				"ALTER TABLE library ALTER showTextThis SET DEFAULT 1;"
 			],
 		],
+
+		'2021.02.0_add_catalog_url' => [
+			'title'           => 'Library/Location catalog URLs',
+			'description'     => 'Add Library setting catalog URL',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE `library` ADD COLUMN `catalogUrl` VARCHAR(45) NULL AFTER `subdomain`",
+				"ALTER TABLE `location` ADD COLUMN `catalogUrl` VARCHAR(45) NULL AFTER `code`",
+				'setCatalogURLs',
+			],
+		],
+
+		'2021.02.0_obsolete_location_subdomain' => [
+			'title'           => 'Remove Location subdomain',
+			'description'     => 'run AFTER CONFIRMING catalog URLs update succeeded.',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE `location` DROP COLUMN `subdomain`",
+			],
+		],
+
 	);
 }
