@@ -1212,10 +1212,11 @@ class Solr implements IndexEngine {
 	 * @access private
 	 */
 	private function _normalizeSort($sort){
-		// Break apart sort into field name and sort direction (note error
-		// suppression to prevent notice when direction is left blank):
+		// Break apart sort into field name and sort direction
 		$sort = trim($sort);
-		[$sortField, $sortDirection] = explode(' ', $sort);
+		@list($sortField, $sortDirection) = explode(' ', $sort);
+		// (note : error suppression with @to prevent notice when direction is left blank)
+		// this notice suppression doesn't work when replacing list() with []
 
 		// Default sort order (may be overridden by switch below):
 		$defaultSortDirection = 'asc';
@@ -1238,13 +1239,12 @@ class Solr implements IndexEngine {
 				if ($searchLibrary != null){
 					$sortField = 'callnumber_sort_' . $searchLibrary->subdomain;
 				}
-
 				break;
 		}
 
 		// Normalize sort direction to either "asc" or "desc":
 		$sortDirection = strtolower(trim($sortDirection));
-		if ($sortDirection != 'desc' && $sortDirection != 'asc'){
+		if ($sortDirection != 'asc' && $sortDirection != 'desc'){
 			$sortDirection = $defaultSortDirection;
 		}
 
@@ -2486,7 +2486,6 @@ class Solr implements IndexEngine {
 		$fields = $this->cache->get($schemaCacheKey);
 		if (!$fields || isset($_REQUEST['reload'])) {
 			global $configArray;
-			$schemaUrl = $configArray['Index']['url'] . '/' . $this->index . '/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
 			$schemaUrl =  $this->host . '/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
 			$schema    = simplexml_load_file($schemaUrl);
 			$fields    = [];
