@@ -2487,6 +2487,7 @@ class Solr implements IndexEngine {
 		if (!$fields || isset($_REQUEST['reload'])) {
 			global $configArray;
 			$schemaUrl = $configArray['Index']['url'] . '/' . $this->index . '/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
+			$schemaUrl =  $this->host . '/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
 			$schema    = simplexml_load_file($schemaUrl);
 			$fields    = [];
 			/** @var SimpleXMLElement $field */
@@ -2494,7 +2495,9 @@ class Solr implements IndexEngine {
 				//print_r($field);
 				$fields[] = (string)$field['name'];
 			}
-			if (!empty($solrScope)) {
+			if ($this->index == 'grouped' && !empty($solrScope)) {
+				// Only process for grouped work index where dymanic fields have the wildcard at the end
+				// islandora dynamic fields start with the wildcard eg *_s
 				foreach ($schema->fields->dynamicField as $field) {
 					$fields[] = substr((string)$field['name'], 0, -1) . $solrScope;
 				}
