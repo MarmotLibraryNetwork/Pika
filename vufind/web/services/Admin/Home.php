@@ -39,7 +39,7 @@ class Home extends Admin_Admin {
 				$interface->assign('data', $data['status']);
 			}
 
-			$masterIndexUrl = str_replace(':8080', $configArray['Reindex']['solrPort'], $configArray['Index']['url']) . '/admin/cores';
+			$masterIndexUrl = str_replace('8080', $configArray['Reindex']['solrPort'], $configArray['Index']['url']) . '/admin/cores';
 			$masterJson      = @file_get_contents($masterIndexUrl);
 
 			if ($masterJson){
