@@ -30,7 +30,7 @@
 
   <int name="maxBooleanClauses">${solr.max.booleanClauses:2048}</int>
   <str name="sharedLib">${solr.sharedLib:}</str>
-  <str name="masterport">${solr.masterport:8180}</str>
+<!--  <str name="masterport">${solr.masterport:8180}</str>-->
 
   <solrcloud>
 

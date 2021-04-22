@@ -102,7 +102,7 @@ if [[ $# = 1 ]] || [[ $# = 2 ]];then
 
 else
   echo ""
-  echo "Usage:  $0 {PikaServer} {Solr Version (optional):${SOLR_VERSION}}"
+  echo "Usage:  $0 {PikaServer} {Solr Version (optional) default:${SOLR_VERSION}}"
   echo "eg: $0 marmot.test "
   echo ""
   exit 1
