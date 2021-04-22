@@ -19,7 +19,7 @@
 #
 
 PIKASERVER=$1
-SOLR_VERSION="8.7.0"
+SOLR_VERSION="8.8.2"
 SOLR_INDEXER_NAME=solr_master
 SOLR_SEARCHER_NAME=solr_searcher
 
@@ -57,7 +57,7 @@ if [[ $# = 1 ]];then
 		ln -s /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}/ /var/${SOLR_INDEXER_NAME}/data
 		ln -s /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}/ /var/${SOLR_SEARCHER_NAME}/data
 
-		read -p "Proceed with SOLR installation?" -n 1 -r
+		read -p "Directories set up complete. Proceed with SOLR installation?" -n 1 -r
 		echo    # (optional) move to a new line
 		if [[ $REPLY =~ ^[Yy]$ ]]; then
 
@@ -66,29 +66,34 @@ if [[ $# = 1 ]];then
 			wget https://mirrors.sonic.net/apache/lucene/solr/${SOLR_VERSION}/solr-${SOLR_VERSION}.tgz
 			# this is a mirror site
 
-
 			#TODO: confirm hash
 			#wget https://downloads.apache.org/lucene/solr/${SOLR_VERSION}/solr-${SOLR_VERSION}-src.tgz.asc
 
-			#Extract installation script
-			tar xzf solr-${SOLR_VERSION}.tgz solr-${SOLR_VERSION}/bin/install_solr_service.sh --strip-components=2
+			read -p "Download Solr package. Proceed with SOLR installation?" -n 1 -r
+			echo    # (optional) move to a new line
+			if [[ $REPLY =~ ^[Yy]$ ]]; then
 
-			# Install indexing solr core
-			./install_solr_service.sh solr-${SOLR_VERSION}.tgz -u solr -s ${SOLR_INDEXER_NAME} -p 8180 -n
+				#Extract installation script
+				tar xzf solr-${SOLR_VERSION}.tgz solr-${SOLR_VERSION}/bin/install_solr_service.sh --strip-components=2
 
-			# move environment file back to original name (undos a change made by the install_solr_service script
-			SOLR_INSTALL_DIR="/opt/solr-${SOLR_VERSION}/"
-			mv "$SOLR_INSTALL_DIR/bin/solr.in.sh.orig" "$SOLR_INSTALL_DIR/bin/solr.in.sh"
+				# Install indexing solr core
+				./install_solr_service.sh solr-${SOLR_VERSION}.tgz -u solr -s ${SOLR_INDEXER_NAME} -p 8180 -n
 
-			# Install searching solr core
-			./install_solr_service.sh solr-${SOLR_VERSION}.tgz -u solr -s ${SOLR_SEARCHER_NAME} -p 8080 -n
+				# move environment file back to original name (undoes a change made by the install_solr_service script
+				SOLR_INSTALL_DIR="/opt/solr-${SOLR_VERSION}/"
+				mv "$SOLR_INSTALL_DIR/bin/solr.in.sh.orig" "$SOLR_INSTALL_DIR/bin/solr.in.sh"
 
-			chown solr /var/${SOLR_INDEXER_NAME}/logs
-			chown solr /var/${SOLR_SEARCHER_NAME}/logs
-			chown solr --recursive /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}
-			chown solr --recursive /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}
+				# Install searching solr core
+				./install_solr_service.sh solr-${SOLR_VERSION}.tgz -u solr -s ${SOLR_SEARCHER_NAME} -p 8080 -n
 
-			#TODO: modify bin/solr.in.sh to set the SOLR_HEAP variable
+				chown solr /var/${SOLR_INDEXER_NAME}/logs
+				chown solr /var/${SOLR_SEARCHER_NAME}/logs
+				chown solr --recursive /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}
+				chown solr --recursive /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}
+
+				# Set the replicator port for searcher
+				echo 'SOLR_OPTS="$SOLR_OPTS -Dsolr.masterport=8180"' >> /etc/default/${SOLR_SEARCHER_NAME}.in.sh
+			fi
 		fi
 	fi
 
