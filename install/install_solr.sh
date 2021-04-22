@@ -31,7 +31,10 @@ CURRENT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 # /etc/default SOLR environment variable file
 
 
-if [[ $# = 1 ]];then
+if [[ $# = 1 ]] || [[ $# = 2 ]];then
+	if [[ $# = 2 ]];then
+		SOLR_VERSION=$2
+	fi
 	echo "Please turn off any existing Solr installation before proceeding.  Current indexes will be moved."
 	read -p "Proceed with SOLR installation?" -n 1 -r
 	echo    # (optional) move to a new line
@@ -99,7 +102,7 @@ if [[ $# = 1 ]];then
 
 else
   echo ""
-  echo "Usage:  $0 {PikaServer}"
+  echo "Usage:  $0 {PikaServer} {Solr Version (optional):${SOLR_VERSION}}"
   echo "eg: $0 marmot.test "
   echo ""
   exit 1
