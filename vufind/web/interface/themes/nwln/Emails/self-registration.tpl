@@ -2,7 +2,7 @@ Hello {$patronName},
 
 Welcome! Thank you for registering as a patron of the Northern Waters Library Network. Your code number is {$barcode}.Please keep this code!
 
-To begin using online resources log into your account at
+To begin using online resources log into your account at {$catalogUrl}
 
 Explore Gale Courses [https://education.gale.com/l-nwater/]
 
