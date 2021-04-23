@@ -1457,7 +1457,7 @@ class Library extends DB_DataObject {
 		if((isset($this->selfRegistrationDefaultpType) && (int)$this->selfRegistrationDefaultpType < 0) || empty($this->selfRegistrationDefaultpType) ) {
 			$this->selfRegistrationDefaultpType = "null";
 		}
-		if(isset($this->selfRegistrationAgencyCode) || empty($this->selfRegistrationAgencyCode)) {
+		if(empty($this->selfRegistrationAgencyCode)) {
 			$this->selfRegistrationAgencyCode = "null";
 		}
 		if (isset($this->showInMainDetails) && is_array($this->showInMainDetails)){
