@@ -1453,6 +1453,25 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER TABLE `library` ADD COLUMN `fineAlertAmount` FLOAT(11) NOT NULL DEFAULT '0.00' AFTER `minimumFineAmount`"
 					]
 				],
+				'add_OverDrive_Magazine_Issues_table' => [
+					'title'       => 'Add OverDrive Magazine Issues to database',
+					'description' => 'Add a table to the econtent database in which to store OverDrive Magazines',
+					'sql'         => [
+						"CREATE TABLE IF NOT EXISTS `econtent`.`overdrive_api_magazine_issues`(
+    						id INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    						overdriveId varchar(50),
+    						crossRefId varchar (50),
+    					  title varchar(255),
+    						edition varchar(50),
+    						coverUrl varchar(100),
+    						parentId varchar(50),
+    						econtent_table varchar(50) DEFAULT 'overdrive_api_products',
+    						dateAdded INT(11),
+    						dateUpdated INT(11)
+						)"
+						,
+					]
+				],
 
 			)); // End of main array
 	}
