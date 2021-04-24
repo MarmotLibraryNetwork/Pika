@@ -114,7 +114,7 @@ class Library extends DB_DataObject {
 	public $overdriveRequirePin;
 	public $overdriveAdvantageName;
 	public $overdriveAdvantageProductsKey;
-    public $eContentSupportAddress;
+	public $eContentSupportAddress;
 
 	/* HOOPLA */
 	public $hooplaLibraryID;
@@ -1457,7 +1457,7 @@ class Library extends DB_DataObject {
 		if((isset($this->selfRegistrationDefaultpType) && (int)$this->selfRegistrationDefaultpType < 0) || empty($this->selfRegistrationDefaultpType) ) {
 			$this->selfRegistrationDefaultpType = "null";
 		}
-		if((isset($this->selfRegistrationAgencyCode) && (int)$this->selfRegistrationAgencyCode < 1) || empty($this->selfRegistrationAgencyCode)) {
+		if(empty($this->selfRegistrationAgencyCode)) {
 			$this->selfRegistrationAgencyCode = "null";
 		}
 		if (isset($this->showInMainDetails) && is_array($this->showInMainDetails)){
