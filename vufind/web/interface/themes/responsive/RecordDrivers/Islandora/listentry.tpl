@@ -3,8 +3,9 @@
 		{* Because colons give css & jquery trouble the Ids from Islandora have : replaced with _ *}
 		<a name="record{$summId|escape:"url"}"></a>{* TODO: remove colons from these Ids as well *}
 		<div class="row">
+			<div class="col-md-1"><input type="checkbox" name="marked" id="favorite_{$summId|escape}" class="form-control-static" value="{$summId|escape}"></div>
 			{if $showCovers}
-			<div class="col-xs-12 col-sm-3 col-md-3 col-lg-2 text-center">
+			<div class="col-xs-11 col-sm-3 col-md-3 col-lg-2 text-center">
 				{if $disableCoverArt != 1}
 					<a href="{$summUrl}">
 						<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image'}">
@@ -13,7 +14,7 @@
 			</div>
 			{/if}
 
-			<div class="{if !$showCovers}col-xs-10 col-sm-10 col-md-10 col-lg-11{else}col-xs-7 col-sm-7 col-md-7 col-lg-9{/if}">
+			<div class="{if !$showCovers}col-xs-9 col-sm-9 col-md-9 col-lg-10{else}col-xs-6 col-sm-6 col-md-6 col-lg-8{/if}">
 				<div class="row">
 					<div class="col-xs-12">
 						<span class="result-index">{$resultIndex})</span>&nbsp;
