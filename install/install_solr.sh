@@ -19,6 +19,7 @@
 #
 
 PIKASERVER=$1
+SOLR_HEAP_SIZE=$2
 SOLR_VERSION="8.8.2"
 SOLR_INDEXER_NAME=solr_master
 SOLR_SEARCHER_NAME=solr_searcher
@@ -31,9 +32,9 @@ CURRENT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 # /etc/default SOLR environment variable file
 
 
-if [[ $# = 1 ]] || [[ $# = 2 ]];then
-	if [[ $# = 2 ]];then
-		SOLR_VERSION=$2
+if [[ $# = 2 ]] || [[ $# = 3 ]];then
+	if [[ $# = 3 ]];then
+		SOLR_VERSION=$3
 	fi
 	echo "Please turn off any existing Solr installation before proceeding.  Current indexes will be moved."
 	read -p "Proceed with SOLR installation?" -n 1 -r
@@ -96,14 +97,18 @@ if [[ $# = 1 ]] || [[ $# = 2 ]];then
 
 				# Set the replicator port for searcher
 				echo 'SOLR_OPTS="$SOLR_OPTS -Dsolr.masterport=8180"' >> /etc/default/${SOLR_SEARCHER_NAME}.in.sh
+
+				# Set solr heap size
+					echo "SOLR_HEAP=\"${SOLR_HEAP_SIZE}\"" >> /etc/default/${SOLR_SEARCHER_NAME}.in.sh
+					echo "SOLR_HEAP=\"${SOLR_HEAP_SIZE}\"" >> /etc/default/${SOLR_INDEXER_NAME}.in.sh
 			fi
 		fi
 	fi
 
 else
   echo ""
-  echo "Usage:  $0 {PikaServer} {Solr Version (optional) default:${SOLR_VERSION}}"
-  echo "eg: $0 marmot.test "
+  echo "Usage:  $0 {PikaServer} {Solr Heap Size (include g or m)} {Solr Version (optional) default:${SOLR_VERSION}}"
+  echo "eg: $0 marmot.test 2g"
   echo ""
   exit 1
 fi
