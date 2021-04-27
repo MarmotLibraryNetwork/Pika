@@ -78,8 +78,10 @@ class NorthernWaters extends Sierra {
 		$loc->orderBy('displayName');
 		$homeLocations = $loc->fetchAll('code', 'displayName');
 
-		foreach ($fields as $field) if ($field['property'] == 'homelibrarycode') {
-			$field['values'] = $homeLocations;
+		for ($i = 0; $i < count($fields); $i++ ){
+			if ($fields[$i]['property'] == 'homelibrarycode'){
+				$fields[$i]['values'] = $homeLocations;
+			}
 		}
 		$fields[] = ['property'   => 'county',
 		             'type'       => 'text',

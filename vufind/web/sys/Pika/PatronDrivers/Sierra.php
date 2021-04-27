@@ -1366,9 +1366,10 @@ EOT;
 		$l->libraryId             = $library->libraryId;
 		$l->validHoldPickupBranch = '1';
 		$l->find();
-		if(!$l->N) {
-			return ['success'=>false, 'barcode'=>''];
-		}
+		// todo: pulling this code to accommodate NorthernWaters setup. Should return an empty array if nothing is found.
+		//if(!$l->N) {
+			//return ['success'=>false, 'barcode'=>''];
+		//}
 		$l->orderBy('displayName');
 		$homeLocations = $l->fetchAll('code', 'displayName');
 
