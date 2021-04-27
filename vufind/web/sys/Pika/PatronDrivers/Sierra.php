@@ -1359,9 +1359,8 @@ EOT;
 	 */
 	public function getSelfRegistrationFields(){
 		$fields = [];
-
-		global /** @var Library $library */
-		$library;
+		/** @var Library $library */
+		global $library;
 		// get the valid home/pickup locations
 		$l                        = new Location();
 		$l->libraryId             = $library->libraryId;

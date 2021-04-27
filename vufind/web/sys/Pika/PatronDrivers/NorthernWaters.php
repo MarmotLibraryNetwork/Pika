@@ -62,8 +62,25 @@ class NorthernWaters extends Sierra {
 
 	public function getSelfRegistrationFields(){
 		$fields = parent::getSelfRegistrationFields();
+
 		if(isset($fields['success']) && $fields['success'] == false) {
 			return $fields;
+		}
+
+		// get the valid home/pickup locations
+		$l                        = new Location();
+		$l->validHoldPickupBranch = '1';
+		$l->find();
+		if(!$l->N) {
+			return ['success'=>false, 'barcode'=>''];
+		}
+		$l->orderBy('displayName');
+		$homeLocations = $l->fetchAll('code', 'displayName');
+
+		foreach ($fields as $field) {
+			if ($field['property'] == 'homelibrarycode') {
+				$field['values'] = $homeLocations;
+			}
 		}
 		$fields[] = ['property'   => 'county',
 		             'type'       => 'text',
