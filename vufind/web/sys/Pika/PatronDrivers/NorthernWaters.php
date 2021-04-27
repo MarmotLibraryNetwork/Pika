@@ -25,6 +25,7 @@
 
 namespace Pika\PatronDrivers;
 
+use Location;
 use Pika\SierraPatronListOperations;
 
 require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/SierraPatronListOperations.php";
