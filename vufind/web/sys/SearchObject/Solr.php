@@ -840,33 +840,31 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @access  public
 	 * @return  array   Array of HTML chunks for individual records.
 	 */
-	public function getResultRecordHTML()
-	{
+	public function getResultRecordHTML(){
 		global $interface;
 		global $memoryWatcher;
-		$html = array();
-		if (isset($this->indexResult['response'])) {
-			$allWorkIds = array();
-			for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-				$allWorkIds[] = $this->indexResult['response']['docs'][$x]['id'];
+		$html = [];
+		if (isset($this->indexResult['response'])){
+			$allWorkIds = [];
+			foreach($this->indexResult['response']['docs'] as &$doc){
+				$allWorkIds[] = $doc['id'];
 			}
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			GroupedWorkDriver::loadArchiveLinksForWorks($allWorkIds);
-			for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-				$memoryWatcher->logMemory("Started loading record information for index $x");
-				$current = &$this->indexResult['response']['docs'][$x];
-				if (!$this->debug) {
+			foreach($this->indexResult['response']['docs'] as $x => &$current){
+				$memoryWatcher->logMemory("Started loading index document information for result $x");
+				if (!$this->debug){
 					unset($current['explain']);
 					unset($current['score']);
 				}
 				$interface->assign('recordIndex', $x + 1);
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 				$record = RecordDriverFactory::initRecordDriver($current);
-				if (!PEAR_Singleton::isError($record)) {
+				if (!PEAR_Singleton::isError($record)){
 					$interface->assign('recordDriver', $record);
 					$html[] = $interface->fetch($record->getSearchResult($this->view));
-				} else {
-					$html[] = "Unable to find record";
+				}else{
+					$html[] = 'Unable to find record';
 				}
 				//Free some memory
 				$record = 0;
@@ -924,7 +922,9 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @param   array   $ids        Record IDs to load
 	 */
 	public function setQueryIDs($ids){
-		$this->query = 'id:(' . implode(' OR ', $ids) . ')';
+		$this->query = 'id:(' . implode(' ', $ids) . ')';
+		// separating by a single space appears to be the equivalent of ORing as below
+//		$this->query = 'id:(' . implode(' OR ', $ids) . ')';
 	}
 
 	/**
@@ -1270,7 +1270,7 @@ class SearchObject_Solr extends SearchObject_Base
 			}else{
 				$query = $this->indexEngine->buildQuery($search, false);
 			}
-			$timer->logTime("build query");
+			$timer->logTime('build query');
 			if (PEAR_Singleton::isError($query)){
 				return $query;
 			}
@@ -1411,12 +1411,12 @@ class SearchObject_Solr extends SearchObject_Base
 			// If the spellcheck query is purely numeric, skip it if
 			// the appropriate setting is turned on.
 			if ($this->spellSkipNumeric && is_numeric($spellcheck)) {
-				$spellcheck = "";
+				$spellcheck = '';
 			}
 		} else {
-			$spellcheck = "";
+			$spellcheck = '';
 		}
-		$timer->logTime("create spell check");
+		$timer->logTime('create spell check');
 
 		// Get time before the query
 		$this->startQueryTimer();

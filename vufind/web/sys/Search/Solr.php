@@ -1982,6 +1982,12 @@ class Solr implements IndexEngine {
 		}
 		$queryString = implode('&', $query);
 
+		if (strlen($queryString) > 8000){
+			// For extremely long queries, like lists we will get an error: "URI Too Long"
+			// Official limit on JETTY is 8192 bytes
+			$method = 'POST';
+		}
+
 		$url                 = $this->host . '/select/';
 		$this->fullSearchUrl = $url . '?' . $queryString;
 		if ($this->debug && $this->debugSolrQuery && $this->isPrimarySearch){
@@ -2088,7 +2094,7 @@ class Solr implements IndexEngine {
 				$errorMsg = substr($result, strpos($result, '<pre>'));
 				$errorMsg = substr($errorMsg, strlen('<pre>'), strpos($result, "</pre>"));
 				if ($returnSolrError) {
-					return array('response' => array('numfound' => 0, 'docs' => array()), 'error' => $errorMsg);
+					return ['response' => ['numfound' => 0, 'docs' => []], 'error' => $errorMsg];
 				} else {
 					$errorMessage = 'Unable to process query ' . ($this->debug ? urldecode($queryString) : '');
 					PEAR_Singleton::raiseError(new PEAR_Error($errorMessage . '<br>' .
