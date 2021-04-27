@@ -68,20 +68,18 @@ class NorthernWaters extends Sierra {
 			return $fields;
 		}
 
-		// get the valid home/pickup locations
-		$l                        = new Location();
-		$l->validHoldPickupBranch = '1';
-		$l->find();
-		if(!$l->N) {
+		// override home/pickup locations
+		$loc                        = new Location();
+		$loc->validHoldPickupBranch = '1';
+		$loc->find();
+		if(!$loc->N) {
 			return ['success'=>false, 'barcode'=>''];
 		}
-		$l->orderBy('displayName');
-		$homeLocations = $l->fetchAll('code', 'displayName');
+		$loc->orderBy('displayName');
+		$homeLocations = $loc->fetchAll('code', 'displayName');
 
-		foreach ($fields as $field) {
-			if ($field['property'] == 'homelibrarycode') {
-				$field['values'] = $homeLocations;
-			}
+		foreach ($fields as $field) if ($field['property'] == 'homelibrarycode') {
+			$field['values'] = $homeLocations;
 		}
 		$fields[] = ['property'   => 'county',
 		             'type'       => 'text',
