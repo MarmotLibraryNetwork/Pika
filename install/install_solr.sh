@@ -97,6 +97,8 @@ if [[ $# = 2 ]] || [[ $# = 3 ]];then
 
 				# Set the replicator port for searcher
 				echo 'SOLR_OPTS="$SOLR_OPTS -Dsolr.masterport=8180"' >> /etc/default/${SOLR_SEARCHER_NAME}.in.sh
+				echo 'SOLR_OPTS="$SOLR_OPTS -Dsolr.disable.shardsWhitelist=true"' >> /etc/default/${SOLR_SEARCHER_NAME}.in.sh
+				#Second setting is to make version 8.8.2 work for searcher. See https://solr.apache.org/guide/8_8/distributed-requests.html#configuring-the-shardhandlerfactory
 
 				# Set solr heap size
 					echo "SOLR_HEAP=\"${SOLR_HEAP_SIZE}\"" >> /etc/default/${SOLR_SEARCHER_NAME}.in.sh

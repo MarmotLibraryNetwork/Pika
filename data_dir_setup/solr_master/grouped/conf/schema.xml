@@ -259,6 +259,7 @@
 		<field name="series_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
 		<field name="series_with_volume" type="textProper" indexed="false" stored="true" multiValued="true"/>
 
+		<!-- subject facets-->
 		<field name="subject_facet" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="subject" type="text" indexed="true" stored="true" multiValued="true"/>
 		<field name="subject_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
@@ -275,8 +276,13 @@
 		<field name="geographic_facet" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="era" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="era_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+
 		<field name="literary_form_full" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<!-- Detailed version of the literary form. Typically consists of values: Non Fiction, Fiction, Dramas,
+			Essays, Novels, Humor, Satires, etc., Letters, Short Stories, Mixed Forms, Poetry, Speeches, Unknown,
+			Not Coded-->
 		<field name="literary_form" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<!--simple version of literary form. Consists of values: Fiction, Non Fiction, Unknown, Not Coded -->
 
 		<!-- audience -->
 		<field name="target_audience_full" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
