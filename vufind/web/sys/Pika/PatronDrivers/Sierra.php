@@ -1527,7 +1527,8 @@ EOT;
 		$emailAddress = $patron->email;
 		$patronName   = $patron->firstname . ' ' . $patron->lastname;
 		$libraryName  = $library->displayName;
-		$catalogUrl   = $this->configArray['Site']['url'];
+		$catalogUrl   = $library->catalogUrl;
+		//$catalogUrl   = $this->configArray['Site']['url'];
 
 		$interface->assign('emailAddress', $emailAddress);
 		$interface->assign('patronName', $patronName);

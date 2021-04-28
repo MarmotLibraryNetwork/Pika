@@ -1,6 +1,6 @@
 Hello {$patronName},
 
-Welcome! Thank you for registering as a patron of the Northern Waters Library Network. Your code number is {$barcode}.Please keep this code!
+Welcome! Thank you for registering as a patron of the Northern Waters Library Network. Your code number is {$barcode}. Please keep this code!
 
 To begin using online resources log into your account at {$catalogUrl}
 
