@@ -1523,14 +1523,13 @@ EOT;
 		if(!$patron) {
 			return false;
 		}
-		$location = new Location();
-		$location->code = $patron->homeLocationCode;
-		$location->fetchAll();
+
+		$lib = $patron->getHomeLibrary();
 
 		$emailAddress = $patron->email;
 		$patronName   = $patron->firstname . ' ' . $patron->lastname;
-		$libraryName  = $location->displayName;
-		$catalogUrl   = $location->catalogUrl;
+		$libraryName  = $lib->displayName;
+		$catalogUrl   = $lib->catalogUrl;
 		//$catalogUrl   = $this->configArray['Site']['url'];
 
 		$interface->assign('emailAddress', $emailAddress);
