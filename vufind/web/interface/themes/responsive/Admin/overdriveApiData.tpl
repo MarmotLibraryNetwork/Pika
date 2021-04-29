@@ -10,6 +10,7 @@
 				<span class="form-group">
 					<input class="btn btn-default" type="submit" value="Availability" name="formAction">
 					<input class="btn btn-default" type="submit" value="Metadata" name="formAction">
+					<input class="btn btn-default" type="submit" value="Magazine Issues" name="formAction">
 				</span>
 
 			</form>
