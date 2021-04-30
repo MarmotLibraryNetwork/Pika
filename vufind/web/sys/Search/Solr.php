@@ -1420,7 +1420,7 @@ class Solr implements IndexEngine {
 				$options['q'] = $this->_buildAdvancedQuery($handler, $query);
 			}
 		}
-		$timer->logTime("build query");
+		$timer->logTime('build query');
 
 		// Limit Fields
 		if ($fields) {
@@ -1443,49 +1443,25 @@ class Solr implements IndexEngine {
 		//Apply automatic boosting (only to biblio and econtent queries)
 		$isPikaGroupedWorkIndex = preg_match('/.*(grouped).*/i', $this->host);
 		if ($isPikaGroupedWorkIndex) {
-			$searchLibrary = Library::getSearchLibrary($this->searchSource);
-			//Boost items owned at our location
+			$searchLibrary  = Library::getSearchLibrary($this->searchSource);
 			$searchLocation = Location::getSearchLocation($this->searchSource);
 
 			if (!empty($configArray['Index']['enableBoosting'])){
 				$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation);
 				if (!empty($boostFactors)){
-					$boost = "sum(" . implode(',', $boostFactors) . ")";
-					if (!empty($options['qt']) && $options['qt'] == 'dismax'){
+					$boost = 'sum(' . implode(',', $boostFactors) . ')';
+					if (!empty($options['defType']) && $options['defType'] == 'dismax'){
 						$options['bf'] = $boost;
 					} else{
 						$options['q'] = "{!boost b=$boost} " . $options['q'];
 					}
 				}
-				$timer->logTime("apply boosting");
+				$timer->logTime('apply boosting');
 			}
-
-//			$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation);
-//			if (isset($options['qt']) && $options['qt'] == 'dismax'){
-//				//Boost by number of holdings
-//				if (count($boostFactors) > 0 && $configArray['Index']['enableBoosting']){
-//					$options['bf'] = "sum(" . implode(',', $boostFactors) . ")";
-//				}
-//				//print ($options['bq']);
-//			}else{
-//				$baseQuery = $options['q'];
-//				//Boost items in our system
-//				if (count($boostFactors) > 0){
-//					$boost = "sum(" . implode(',', $boostFactors) . ")";
-//				}else{
-//					$boost = '';
-//				}
-//				if (empty($boost) || !$configArray['Index']['enableBoosting']){
-//					$options['q'] = $baseQuery;
-//				}else{
-//					$options['q'] = "{!boost b=$boost} $baseQuery";
-//				}
-//				//echo ("Advanced Query " . $options['q']);
-//			}
 
 			$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
 
-			$timer->logTime("apply filters based on location");
+			$timer->logTime('apply filters based on location');
 		} else {
 			//Non book search (genealogy)
 			$scopingFilters = [];
@@ -1696,9 +1672,9 @@ class Solr implements IndexEngine {
 			$options['debugQuery'] = 'on';
 		}
 
-		$timer->logTime("end solr setup");
+		$timer->logTime('end solr setup');
 		$result = $this->_select($method, $options, $returnSolrError);
-		$timer->logTime("run select");
+		$timer->logTime('run select');
 		if (PEAR_Singleton::isError($result)) {
 			PEAR_Singleton::raiseError($result);
 		}
