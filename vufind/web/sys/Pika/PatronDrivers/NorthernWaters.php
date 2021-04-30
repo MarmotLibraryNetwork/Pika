@@ -25,6 +25,7 @@
 
 namespace Pika\PatronDrivers;
 
+use Location;
 use Pika\SierraPatronListOperations;
 
 require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/SierraPatronListOperations.php";
@@ -62,8 +63,25 @@ class NorthernWaters extends Sierra {
 
 	public function getSelfRegistrationFields(){
 		$fields = parent::getSelfRegistrationFields();
+
 		if(isset($fields['success']) && $fields['success'] == false) {
 			return $fields;
+		}
+
+		// override home/pickup locations
+		$loc                        = new Location();
+		$loc->validHoldPickupBranch = '1';
+		$loc->find();
+		if(!$loc->N) {
+			return ['success'=>false, 'barcode'=>''];
+		}
+		$loc->orderBy('displayName');
+		$homeLocations = $loc->fetchAll('code', 'displayName');
+
+		for ($i = 0; $i < count($fields); $i++ ){
+			if ($fields[$i]['property'] == 'homelibrarycode'){
+				$fields[$i]['values'] = $homeLocations;
+			}
 		}
 		$fields[] = ['property'   => 'county',
 		             'type'       => 'text',

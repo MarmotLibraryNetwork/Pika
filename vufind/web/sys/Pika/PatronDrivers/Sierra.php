@@ -1359,17 +1359,17 @@ EOT;
 	 */
 	public function getSelfRegistrationFields(){
 		$fields = [];
-
-		global /** @var Library $library */
-		$library;
+		/** @var Library $library */
+		global $library;
 		// get the valid home/pickup locations
 		$l                        = new Location();
 		$l->libraryId             = $library->libraryId;
 		$l->validHoldPickupBranch = '1';
 		$l->find();
-		if(!$l->N) {
-			return ['success'=>false, 'barcode'=>''];
-		}
+		// todo: pulling this code to accommodate NorthernWaters setup. Should return an empty array if nothing is found.
+		//if(!$l->N) {
+			//return ['success'=>false, 'barcode'=>''];
+		//}
 		$l->orderBy('displayName');
 		$homeLocations = $l->fetchAll('code', 'displayName');
 
@@ -1524,10 +1524,13 @@ EOT;
 			return false;
 		}
 
+		$lib = $patron->getHomeLibrary();
+
 		$emailAddress = $patron->email;
 		$patronName   = $patron->firstname . ' ' . $patron->lastname;
-		$libraryName  = $library->displayName;
-		$catalogUrl   = $this->configArray['Site']['url'];
+		$libraryName  = $lib->displayName;
+		$catalogUrl   = $lib->catalogUrl;
+		//$catalogUrl   = $this->configArray['Site']['url'];
 
 		$interface->assign('emailAddress', $emailAddress);
 		$interface->assign('patronName', $patronName);

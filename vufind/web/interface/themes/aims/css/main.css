@@ -8707,48 +8707,48 @@ hr.menu {
 }
 .browse-category.category0 {
   background-color: #da1418;
-  background: -webkit-gradient(linear, left top, left bottom, from(#da1418), color-stop(82%, #da1418), color-stop(83%, #d2f1f0), color-stop(84%, #221f1f), color-stop(88%, #221f1f), color-stop(89%, #d2f1f0), color-stop(90%, #da1418), to(#da1418));
-  background: linear-gradient(to bottom, #da1418, #da1418 82%, #d2f1f0 83%, #221f1f 84%, #221f1f 88%, #d2f1f0 89%, #da1418 90%, #da1418);
+  background: -webkit-gradient(linear, left top, left bottom, from(#da1418), color-stop(82%, #da1418), color-stop(83%, none), color-stop(84%, none), color-stop(88%, none), color-stop(89%, none), color-stop(90%, #da1418), to(#da1418));
+  background: linear-gradient(to bottom, #da1418, #da1418 82%, none 83%, none 84%, none 88%, none 89%, #da1418 90%, #da1418);
 }
 .browse-category.category1 {
   background-color: #da1418;
-  background: -webkit-gradient(linear, left top, left bottom, from(#da1418), color-stop(82%, #da1418), color-stop(83%, #d2f1f0), color-stop(84%, #221f1f), color-stop(88%, #221f1f), color-stop(89%, #d2f1f0), color-stop(90%, #da1418), to(#da1418));
-  background: linear-gradient(to bottom, #da1418, #da1418 82%, #d2f1f0 83%, #221f1f 84%, #221f1f 88%, #d2f1f0 89%, #da1418 90%, #da1418);
+  background: -webkit-gradient(linear, left top, left bottom, from(#da1418), color-stop(82%, #da1418), color-stop(83%, none), color-stop(84%, none), color-stop(88%, none), color-stop(89%, none), color-stop(90%, #da1418), to(#da1418));
+  background: linear-gradient(to bottom, #da1418, #da1418 82%, none 83%, none 84%, none 88%, none 89%, #da1418 90%, #da1418);
 }
 .browse-category.category2 {
   background-color: #da1418;
-  background: -webkit-gradient(linear, left top, left bottom, from(#da1418), color-stop(82%, #da1418), color-stop(83%, #d2f1f0), color-stop(84%, #221f1f), color-stop(88%, #221f1f), color-stop(89%, #d2f1f0), color-stop(90%, #da1418), to(#da1418));
-  background: linear-gradient(to bottom, #da1418, #da1418 82%, #d2f1f0 83%, #221f1f 84%, #221f1f 88%, #d2f1f0 89%, #da1418 90%, #da1418);
+  background: -webkit-gradient(linear, left top, left bottom, from(#da1418), color-stop(82%, #da1418), color-stop(83%, none), color-stop(84%, none), color-stop(88%, none), color-stop(89%, none), color-stop(90%, #da1418), to(#da1418));
+  background: linear-gradient(to bottom, #da1418, #da1418 82%, none 83%, none 84%, none 88%, none 89%, #da1418 90%, #da1418);
 }
 .browse-category.category3 {
   background-color: #da1418;
-  background: -webkit-gradient(linear, left top, left bottom, from(#da1418), color-stop(82%, #da1418), color-stop(83%, #d2f1f0), color-stop(84%, #221f1f), color-stop(88%, #221f1f), color-stop(89%, #d2f1f0), color-stop(90%, #da1418), to(#da1418));
-  background: linear-gradient(to bottom, #da1418, #da1418 82%, #d2f1f0 83%, #221f1f 84%, #221f1f 88%, #d2f1f0 89%, #da1418 90%, #da1418);
+  background: -webkit-gradient(linear, left top, left bottom, from(#da1418), color-stop(82%, #da1418), color-stop(83%, none), color-stop(84%, none), color-stop(88%, none), color-stop(89%, none), color-stop(90%, #da1418), to(#da1418));
+  background: linear-gradient(to bottom, #da1418, #da1418 82%, none 83%, none 84%, none 88%, none 89%, #da1418 90%, #da1418);
 }
 .browse-category.category4 {
   background-color: #da1418;
-  background: -webkit-gradient(linear, left top, left bottom, from(#da1418), color-stop(82%, #da1418), color-stop(83%, #d2f1f0), color-stop(84%, #221f1f), color-stop(88%, #221f1f), color-stop(89%, #d2f1f0), color-stop(90%, #da1418), to(#da1418));
-  background: linear-gradient(to bottom, #da1418, #da1418 82%, #d2f1f0 83%, #221f1f 84%, #221f1f 88%, #d2f1f0 89%, #da1418 90%, #da1418);
+  background: -webkit-gradient(linear, left top, left bottom, from(#da1418), color-stop(82%, #da1418), color-stop(83%, none), color-stop(84%, none), color-stop(88%, none), color-stop(89%, none), color-stop(90%, #da1418), to(#da1418));
+  background: linear-gradient(to bottom, #da1418, #da1418 82%, none 83%, none 84%, none 88%, none 89%, #da1418 90%, #da1418);
 }
 .browse-category.category5 {
   background-color: #da1418;
-  background: -webkit-gradient(linear, left top, left bottom, from(#da1418), color-stop(82%, #da1418), color-stop(83%, #d2f1f0), color-stop(84%, #221f1f), color-stop(88%, #221f1f), color-stop(89%, #d2f1f0), color-stop(90%, #da1418), to(#da1418));
-  background: linear-gradient(to bottom, #da1418, #da1418 82%, #d2f1f0 83%, #221f1f 84%, #221f1f 88%, #d2f1f0 89%, #da1418 90%, #da1418);
+  background: -webkit-gradient(linear, left top, left bottom, from(#da1418), color-stop(82%, #da1418), color-stop(83%, none), color-stop(84%, none), color-stop(88%, none), color-stop(89%, none), color-stop(90%, #da1418), to(#da1418));
+  background: linear-gradient(to bottom, #da1418, #da1418 82%, none 83%, none 84%, none 88%, none 89%, #da1418 90%, #da1418);
 }
 .browse-category.category6 {
   background-color: #da1418;
-  background: -webkit-gradient(linear, left top, left bottom, from(#da1418), color-stop(82%, #da1418), color-stop(83%, #d2f1f0), color-stop(84%, #221f1f), color-stop(88%, #221f1f), color-stop(89%, #d2f1f0), color-stop(90%, #da1418), to(#da1418));
-  background: linear-gradient(to bottom, #da1418, #da1418 82%, #d2f1f0 83%, #221f1f 84%, #221f1f 88%, #d2f1f0 89%, #da1418 90%, #da1418);
+  background: -webkit-gradient(linear, left top, left bottom, from(#da1418), color-stop(82%, #da1418), color-stop(83%, none), color-stop(84%, none), color-stop(88%, none), color-stop(89%, none), color-stop(90%, #da1418), to(#da1418));
+  background: linear-gradient(to bottom, #da1418, #da1418 82%, none 83%, none 84%, none 88%, none 89%, #da1418 90%, #da1418);
 }
 .browse-category.category7 {
   background-color: #da1418;
-  background: -webkit-gradient(linear, left top, left bottom, from(#da1418), color-stop(82%, #da1418), color-stop(83%, #d2f1f0), color-stop(84%, #221f1f), color-stop(88%, #221f1f), color-stop(89%, #d2f1f0), color-stop(90%, #da1418), to(#da1418));
-  background: linear-gradient(to bottom, #da1418, #da1418 82%, #d2f1f0 83%, #221f1f 84%, #221f1f 88%, #d2f1f0 89%, #da1418 90%, #da1418);
+  background: -webkit-gradient(linear, left top, left bottom, from(#da1418), color-stop(82%, #da1418), color-stop(83%, none), color-stop(84%, none), color-stop(88%, none), color-stop(89%, none), color-stop(90%, #da1418), to(#da1418));
+  background: linear-gradient(to bottom, #da1418, #da1418 82%, none 83%, none 84%, none 88%, none 89%, #da1418 90%, #da1418);
 }
 .browse-category.category8 {
   background-color: #da1418;
-  background: -webkit-gradient(linear, left top, left bottom, from(#da1418), color-stop(82%, #da1418), color-stop(83%, #d2f1f0), color-stop(84%, #221f1f), color-stop(88%, #221f1f), color-stop(89%, #d2f1f0), color-stop(90%, #da1418), to(#da1418));
-  background: linear-gradient(to bottom, #da1418, #da1418 82%, #d2f1f0 83%, #221f1f 84%, #221f1f 88%, #d2f1f0 89%, #da1418 90%, #da1418);
+  background: -webkit-gradient(linear, left top, left bottom, from(#da1418), color-stop(82%, #da1418), color-stop(83%, none), color-stop(84%, none), color-stop(88%, none), color-stop(89%, none), color-stop(90%, #da1418), to(#da1418));
+  background: linear-gradient(to bottom, #da1418, #da1418 82%, none 83%, none 84%, none 88%, none 89%, #da1418 90%, #da1418);
 }
 #selected-browse-label {
   background-color: #fff;
