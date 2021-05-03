@@ -60,8 +60,8 @@
 			</select>
 		</div>
 		<div class="form-group">
-			<label for="problem" class="control-label">Please describe your issue:</label><br>
-			<textarea rows="10" cols="40" name="problem" id="problem" class="form-control"></textarea>
+			<label for="problem" class="control-label">Please describe your issue: <span class="requiredIndicator">*</span></label><br>
+			<textarea rows="10" cols="40" name="problem" id="problem" class="form-control required"></textarea>
 		</div>
 		{if $lightbox == false}
 			<div class="form-group">

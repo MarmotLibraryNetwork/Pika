@@ -149,6 +149,26 @@ class Admin_OverDriveAPIData extends Admin_Admin {
 									}
 								}
 							}
+						}elseif ($_REQUEST['formAction'] == 'Magazine Issues'){
+							$contents .= "<h3>Magazine Issues</h3>";
+							$contents .= "<h4>Issues for $overDriveId</h4>";
+							$issuesData = $driver->getIssuesData($overDriveId, $productKey);
+							if ($issuesData){
+								$contents .= $this->easy_printr("Issues - {$libraryInfo->name} shared collection", "issues_{$overDriveId}_{$productKey}", $issuesData);
+							}else{
+								$contents .= ("No magazine issues found.<br>");
+							}
+							if ($hasAdvantageAccounts){
+								foreach ($advantageAccounts->advantageAccounts as $accountInfo){
+									$contents .= ("<h4>Issues for - {$accountInfo->name}</h4>");
+									$issuesData = $driver->getIssuesData($overDriveId, $accountInfo->collectionToken);
+									if ($issuesData){
+										$contents .= $this->easy_printr("Metadata response", "issues_{$overDriveId}_{$accountInfo->collectionToken}", $issuesData);
+									}else{
+										$contents .= ("No magazine issues found.<br>");
+									}
+								}
+							}
 						}
 
 					}

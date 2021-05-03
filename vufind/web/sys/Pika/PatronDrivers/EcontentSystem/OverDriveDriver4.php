@@ -448,6 +448,13 @@ class OverDriveDriver4 {
 		return $this->_callUrl($availabilityUrl);
 	}
 
+	public function getIssuesData($overDriveId, $productsKey){
+		$overDriveId = strtoupper($overDriveId);
+		$issuesDataUrl = "https://api.overdrive.com/v1/collections/$productsKey/products/$overDriveId/issues";
+		return $this->_callUrl($issuesDataUrl);
+	}
+
+
 	private array $checkouts = [];
 
 	/**
