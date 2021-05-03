@@ -355,7 +355,7 @@ public class HooplaExportMain {
 				updateHooplaTitleInDB.setBoolean(10, curTitle.getBoolean("children"));
 				double price = 0;
 				if (!curTitle.has("price")){
-					logger.warn("Hoopla title " + titleId + "has no price set.");
+					logger.warn("Hoopla title " + titleId + " has no price set.");
 				} else {
 					price = curTitle.getDouble("price");
 				}

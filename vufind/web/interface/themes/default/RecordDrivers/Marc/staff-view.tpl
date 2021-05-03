@@ -89,6 +89,9 @@
 
 		{if $hooplaExtract}
 			<h3>Hoopla Extract Information</h3>
+			{if $matchedByAccessUrl}
+				<div class="alert alert-warning">Extract Information was matched by id in access url instead of record id.</div>
+			{/if}
 			<table class="table-striped table table-condensed notranslate">
 					{foreach from=$hooplaExtract key='field' item='values'}
 							{if $field != 'id'}{* this id is the database table id, and will confuse most users as the hoopla id*}

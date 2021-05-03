@@ -32,17 +32,34 @@
 							</span>
 						</div>
 					</div>
+					<div class="form-group">
+						<label for="hooplaId" class="control-label col-sm-2">Hoopla Record Id</label>
+						<div class="col-sm-3">
+						<input type="text" name="hooplaId" id="hooplaId" class="form-control"{if $smarty.get.hooplaId} value="{$smarty.get.hooplaId}"{/if}>
+						</div>
+					</div>
+
 					<button class="btn btn-primary" type="submit">Go</button>
 			</form>
 		</div>
 
 		<div id="main-content">
 			<h2>Hoopla API Info</h2>
+			{if !empty($hooplaRecordData)}
+			<div class="row">
+				<div class="col-tn-12">
+					<pre>
+						{$hooplaRecordData}
+					</pre>
+				</div>
+			</div>
+			{/if}
 			<div class="row">
 				<div class="col-tn-12">
 					<table class="table stripe" id="hooplaCheckoutsReport">
 						<thead>
 						<tr>
+							<th>Hoopla Library Id</th>
 							<th>Library</th>
 							<th>Check Outs</th>
 						</tr>
@@ -50,6 +67,7 @@
 						<tbody>
             {foreach from=$hooplaLibraryCheckouts item=checkout}
 							<tr>
+								<td>{$checkout.hooplaLibraryId}</td>
 								<td>{$checkout.libraryName}</td>
 								<td>{$checkout.checkouts}</td>
 							</tr>
@@ -64,7 +82,7 @@
 		{literal}
 		$(document).ready(function(){
 			$('#hooplaCheckoutsReport').DataTable({
-				"order": [[0, "asc"]],
+				"order": [[1, "asc"]],
 				pageLength: 100
 			});
 		})
