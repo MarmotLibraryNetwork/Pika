@@ -799,10 +799,9 @@ class CarlX extends SIP2Driver{
 	public function selfRegister(){
 		global $library,
 		       $configArray,
-		       $active_ip,
 		       $interface;
-		$success = false;
-
+		$success      = false;
+		$active_ip    = Location::getActiveIp();
 		$lastPatronID = new Variable();
 		$lastPatronID->get('name', 'last_selfreg_patron_id');
 

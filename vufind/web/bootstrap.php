@@ -258,11 +258,6 @@ function loadLibraryAndLocation(){
 	$locationSingleton = new Location();
 	$timer->logTime('Created Location singleton');
 
-	global $active_ip;
-	$active_ip = $locationSingleton->getActiveIp();
-	handleCookie('test_ip', $active_ip);
-	$timer->logTime('Got active ip address');
-
 	$branch = $locationSingleton->getBranchLocationCode();
 	handleCookie('branch', $branch);
 	$timer->logTime('Got branch');
