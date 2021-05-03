@@ -22,7 +22,7 @@
 				{translate text="Showing"} {$recordStart} - {$recordEnd} {translate text='of'} {$recordCount|number_format}
 			{/if}
 		{/if}
-		<span class="hidden-phone">
+		<span>
 			 &nbsp;{translate text='query time'}: {$qtime}s
 		</span>
 		{if $replacementTerm}

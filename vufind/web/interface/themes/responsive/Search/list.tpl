@@ -21,7 +21,7 @@
 			{else}
 				No results found in {$sectionLabel}
 			{/if}
-			<span class="hidden-phone">
+			<span>
 			 {translate text='query time'}: {$qtime}s
 			</span>
 		</div>

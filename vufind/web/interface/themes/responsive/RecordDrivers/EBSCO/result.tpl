@@ -32,7 +32,7 @@
 		{/if}
 
 		{if strlen($summSourceDatabase)}
-			<div class="row hidden-phone">
+			<div class="row">
 				<div class="result-label col-tn-3">{translate text='Found in'}:</div>
 				<div class="col-tn-9 result-value">{$summSourceDatabase|escape}</div>
 			</div>
@@ -58,13 +58,13 @@
 		{/if}
 
 		{if $summPhysical}
-			<div class="row hidden-phone">
+			<div class="row">
 				<div class="result-label col-tn-3">{translate text='Physical Desc'}:</div>
 				<div class="col-tn-9 result-value">{$summPhysical.0|escape}</div>
 			</div>
 		{/if}
 
-		<div class="row hidden-phone">
+		<div class="row">
 			<div class="result-label col-tn-3">{translate text='Full Text'}:</div>
 			<div class="col-tn-9 result-value">{if $summHasFullText}Yes{else}No{/if}</div>
 		</div>
