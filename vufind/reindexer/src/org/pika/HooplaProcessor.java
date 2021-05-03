@@ -28,6 +28,8 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Extracts data from Hoopla Marc records to fill out information within the work to be indexed.
@@ -110,7 +112,8 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 		if (record != null) {
 			try {
-				if (getHooplaExtractInfo(identifier.getIdentifier())) {
+				String url = MarcUtil.getFirstFieldVal(record, "856u");
+				if (getHooplaExtractInfo(identifier.getIdentifier(), url)) {
 					updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
 //					updateGroupedWorkSolrDataBasedOnHooplaExtract(groupedWork, identifier);
 				}
@@ -118,6 +121,22 @@ class HooplaProcessor extends MarcRecordProcessor {
 				logger.error("Error updating solr based on hoopla marc record", e);
 			}
 		}
+	}
+
+	private final Pattern hooplaIdInAccessUrl = Pattern.compile("title/(\\d*)");
+	private boolean getHooplaExtractInfo(String identifier, String url) {
+		if (!getHooplaExtractInfo(identifier)){
+			// Parse url for alternate Id
+			Matcher idInUrl = hooplaIdInAccessUrl.matcher(url);
+			if (idInUrl.find()){
+				String newId = idInUrl.group(1);
+				if (fullReindex) {
+					logger.warn("For " + identifier + ", trying Hoopla Id from Url : " + newId);
+				}
+				return getHooplaExtractInfo(newId);
+			}
+		}
+		return false;
 	}
 
 	private boolean getHooplaExtractInfo(String identifier) {

@@ -61,7 +61,7 @@ class HooplaRecordDriver extends SideLoadedRecord {
 
 	function getActions(){
 		//TODO: If this is added to the related record, pass in the value
-		$actions = array();
+		$actions = [];
 
 		if ($this->isHooplaIntegrationEnabled()){
 			$actions[] = $this->getHooplaIntegrationActions();
@@ -174,16 +174,27 @@ class HooplaRecordDriver extends SideLoadedRecord {
 
 	public function getStaffView(){
 		parent::getStaffView();
+		global $interface;
 
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaExtract.php';
 		$hooplaExtract = new HooplaExtract();
 		$hooplaId      = HooplaDriver::recordIDtoHooplaID($this->sourceAndId);
-		if ($hooplaExtract->get('hooplaId', $hooplaId) == 1){
-			$hooplaData = array();
+		$success       = $hooplaExtract->get('hooplaId', $hooplaId);
+		if (!$success){
+			foreach ($this->getAccessLink() as $link){
+				if (preg_match('/title\/(\d*)/', $link['url'], $matches)){
+					if ($success = $hooplaExtract->get('hooplaId', $matches[1])){
+						$interface->assign('matchedByAccessUrl', true);
+						break;
+					}
+				}
+			}
+		}
+		if ($success == 1){
+			$hooplaData = [];
 			foreach ($hooplaExtract->table() as $fieldName => $value_ignored){
 				$hooplaData[$fieldName] = $hooplaExtract->$fieldName;
 			}
-			global $interface;
 			$interface->assign('hooplaExtract', $hooplaData);
 		}
 

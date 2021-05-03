@@ -70,12 +70,12 @@ class HooplaDriver
 		$this->logger->info('Hoopla API URL :' .$url);
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
-		$headers  = array(
+		$headers  = [
 			'Accept: application/json',
 			'Content-Type: application/json',
 			'Authorization: Bearer ' . $this->accessToken,
 			'Originating-App-Id: Pika',
-		);
+		];
 		if (!empty($additionalHeaders) && is_array($additionalHeaders)) {
 			$headers = array_merge($headers, $additionalHeaders);
 		}
@@ -468,5 +468,13 @@ class HooplaDriver
 		$result = $this->getAPIResponse($url);
 		return $result;
 
+	}
+
+	public function getHooplaRecordMetaData($libraryId, $hooplaId){
+		$url = $this->hooplaAPIBaseURL . '/api/v1/libraries/' . $libraryId
+			. "/content?limit=1&startToken=" . ($hooplaId - 1);
+
+		$result = $this->getAPIResponse($url);
+		return $result;
 	}
 }

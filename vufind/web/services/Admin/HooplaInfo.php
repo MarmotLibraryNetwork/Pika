@@ -59,15 +59,25 @@ class Admin_HooplaInfo extends Admin_Admin {
 				$checkOutsResponse = $driver->getLibraryHooplaTotalCheckOuts($library->hooplaLibraryID, $startTime, $endTime);
 				if (isset($checkOutsResponse->checkouts)){
 					$hooplaLibraries[] = [
-						'libraryName' => $library->displayName,
-						'checkouts'   => $checkOutsResponse->checkouts,
+						'hooplaLibraryId' => $library->hooplaLibraryID,
+						'libraryName'     => $library->displayName,
+						'checkouts'       => $checkOutsResponse->checkouts,
 					];
 				}
 
 			}
 		}
-
 		global $interface;
+
+		if (!empty($_REQUEST['hooplaId'])){
+			$_REQUEST['hooplaId'] = str_replace(['MWT', 'mwt'], '', $_REQUEST['hooplaId']);
+			$response             = $driver->getHooplaRecordMetaData($library->hooplaLibraryID, $_REQUEST['hooplaId']);
+			$hooplaData           = json_encode($response, JSON_PRETTY_PRINT);
+			$interface->assign('hooplaRecordData', $hooplaData);
+		}
+
+
+
 		$interface->assign('startDate', $startDate->getTimestamp());
 		$interface->assign('endDate', $endDate->getTimestamp());
 
