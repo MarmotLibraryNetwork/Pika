@@ -931,13 +931,10 @@ class Sierra {
 					}
 					break;
 				case 'phone': // primary phone
-					// todo: does this need to set an empty object-- if someone wanted to remove their phone #?
-					// yes, this appears to be the case for the phone numbers.
-					//  It also looks like when remove the phone number it doesn't get removed in the User database for the user either
-					// Playing with regular and work number on at the same time, I can't remove both of them.
-					if(!empty($val)){ // (block out this empty check does allow us to remove the number from sierra, but apparently not pika)
-						$phones[] = (object)['number'=>$val, 'type'=>'t'];
-					}
+					$val = trim($val);
+					$phones[] = (object)['number'=>$val, 'type'=>'t'];
+					$patron->phone = $val;
+					$patron->update();
 					break;
 				case 'workPhone': // alt phone
 					if(!empty($val)){
