@@ -148,7 +148,9 @@ class HooplaProcessor extends MarcRecordProcessor {
 					}
 					if (getHooplaExtractInfo(newId)){
 						GroupedReindexMain.hooplaRecordWithOutExtractInfo.remove(identifier);
-						GroupedReindexMain.hooplaRecordUsingUrlIdExtractInfo.add(identifier);
+						if (!GroupedReindexMain.hooplaRecordUsingUrlIdExtractInfo.contains(identifier)) {
+							GroupedReindexMain.hooplaRecordUsingUrlIdExtractInfo.add(identifier);
+						}
 						return true;
 					}
 				}
