@@ -55,6 +55,7 @@ public class GroupedReindexMain {
 
 
 	public static ArrayList<String> hooplaRecordWithOutExtractInfo = new ArrayList<>();
+	public static ArrayList<String> hooplaRecordUsingUrlIdExtractInfo = new ArrayList<>();
 
 
 	/**
@@ -149,6 +150,12 @@ public class GroupedReindexMain {
 					}
 					if (logger.isInfoEnabled() && hooplaRecordWithOutExtractInfo.size() > 0) {
 						logger.info("Hoopla Records without  : " + String.join(", ", hooplaRecordWithOutExtractInfo));
+					}
+					if (hooplaRecordUsingUrlIdExtractInfo.size() > 200){
+						logger.warn(hooplaRecordUsingUrlIdExtractInfo.size() + " Hoopla records required using id parsed from record url for extract info (from the Hoopla API)");
+					}
+					if (logger.isInfoEnabled() && hooplaRecordUsingUrlIdExtractInfo.size() > 0) {
+						logger.info("Hoopla Records using Id from Url  : " + String.join(", ", hooplaRecordWithOutExtractInfo));
 					}
 				}
 

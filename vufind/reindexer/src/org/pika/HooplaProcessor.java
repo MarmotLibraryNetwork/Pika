@@ -40,16 +40,16 @@ import java.util.regex.Pattern;
  * Time: 10:30 AM
  */
 class HooplaProcessor extends MarcRecordProcessor {
-	protected boolean                      fullReindex;
-	private   String                       sourceDisplayName;
-	private   String                       source;
-	private   String                       individualMarcPath;
-	private   int                          numCharsToCreateFolderFrom;
-	private   boolean                      createFolderFromLeadingCharacters;
-	private   PreparedStatement            hooplaExtractInfoStatement;
-	private   HooplaExtractInfo            hooplaExtractInfo;
-	private   HashSet<HooplaInclusionRule> libraryHooplaInclusionRules  = new HashSet<>();
-	private   HashSet<HooplaInclusionRule> locationHooplaInclusionRules = new HashSet<>();
+	protected     boolean                      fullReindex;
+	private       String                       sourceDisplayName;
+	private       String                       source;
+	private       String                       individualMarcPath;
+	private       int                          numCharsToCreateFolderFrom;
+	private       boolean                      createFolderFromLeadingCharacters;
+	private       PreparedStatement            hooplaExtractInfoStatement;
+	private       HooplaExtractInfo            hooplaExtractInfo;
+	private final HashSet<HooplaInclusionRule> libraryHooplaInclusionRules  = new HashSet<>();
+	private final HashSet<HooplaInclusionRule> locationHooplaInclusionRules = new HashSet<>();
 
 	HooplaProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, logger, fullReindex);
@@ -69,37 +69,41 @@ class HooplaProcessor extends MarcRecordProcessor {
 			hooplaExtractInfoStatement = pikaConn.prepareStatement("SELECT * FROM hoopla_export WHERE hooplaId = ? LIMIT 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			//Load Hoopla Inclusion Rules
+			try (
 			PreparedStatement libraryHooplaInclusionRulesStatement  = pikaConn.prepareStatement("SELECT * FROM library_hoopla_setting");
+			ResultSet         libraryRulesResultSet                 = libraryHooplaInclusionRulesStatement.executeQuery()
+			) {
+				while ((libraryRulesResultSet.next())) {
+					HooplaInclusionRule rule = new HooplaInclusionRule(logger);
+
+					rule.setLibraryId(libraryRulesResultSet.getLong("libraryId"));
+					rule.setKind(libraryRulesResultSet.getString("kind"));
+					rule.setMaxPrice(libraryRulesResultSet.getFloat("maxPrice"));
+					rule.setExcludeParentalAdvisory(libraryRulesResultSet.getBoolean("excludeParentalAdvisory"));
+					rule.setExcludeProfanity(libraryRulesResultSet.getBoolean("excludeProfanity"));
+					rule.setIncludeChildrenTitlesOnly(libraryRulesResultSet.getBoolean("includeChildrenTitlesOnly"));
+
+					libraryHooplaInclusionRules.add(rule);
+				}
+			}
+
+			try (
 			PreparedStatement locationHooplaInclusionRulesStatement = pikaConn.prepareStatement("SELECT * FROM location_hoopla_setting");
-			ResultSet         libraryRulesResultSet                 = libraryHooplaInclusionRulesStatement.executeQuery();
-			while ((libraryRulesResultSet.next())) {
-				HooplaInclusionRule rule = new HooplaInclusionRule(logger);
+			ResultSet         locationRulesResultSet                = locationHooplaInclusionRulesStatement.executeQuery()
+			) {
+				while ((locationRulesResultSet.next())) {
+					HooplaInclusionRule rule = new HooplaInclusionRule(logger);
 
-				rule.setLibraryId(libraryRulesResultSet.getLong("libraryId"));
-				rule.setKind(libraryRulesResultSet.getString("kind"));
-				rule.setMaxPrice(libraryRulesResultSet.getFloat("maxPrice"));
-				rule.setExcludeParentalAdvisory(libraryRulesResultSet.getBoolean("excludeParentalAdvisory"));
-				rule.setExcludeProfanity(libraryRulesResultSet.getBoolean("excludeProfanity"));
-				rule.setIncludeChildrenTitlesOnly(libraryRulesResultSet.getBoolean("includeChildrenTitlesOnly"));
+					rule.setLocationId(locationRulesResultSet.getLong("locationId"));
+					rule.setKind(locationRulesResultSet.getString("kind"));
+					rule.setMaxPrice(locationRulesResultSet.getFloat("maxPrice"));
+					rule.setExcludeParentalAdvisory(locationRulesResultSet.getBoolean("excludeParentalAdvisory"));
+					rule.setExcludeProfanity(locationRulesResultSet.getBoolean("excludeProfanity"));
+					rule.setIncludeChildrenTitlesOnly(locationRulesResultSet.getBoolean("includeChildrenTitlesOnly"));
 
-				libraryHooplaInclusionRules.add(rule);
+					locationHooplaInclusionRules.add(rule);
+				}
 			}
-			libraryRulesResultSet.close();
-
-			ResultSet locationRulesResultSet = locationHooplaInclusionRulesStatement.executeQuery();
-			while ((locationRulesResultSet.next())) {
-				HooplaInclusionRule rule = new HooplaInclusionRule(logger);
-
-				rule.setLocationId(locationRulesResultSet.getLong("locationId"));
-				rule.setKind(locationRulesResultSet.getString("kind"));
-				rule.setMaxPrice(locationRulesResultSet.getFloat("maxPrice"));
-				rule.setExcludeParentalAdvisory(locationRulesResultSet.getBoolean("excludeParentalAdvisory"));
-				rule.setExcludeProfanity(locationRulesResultSet.getBoolean("excludeProfanity"));
-				rule.setIncludeChildrenTitlesOnly(locationRulesResultSet.getBoolean("includeChildrenTitlesOnly"));
-
-				locationHooplaInclusionRules.add(rule);
-			}
-			locationRulesResultSet.close();
 
 		} catch (SQLException e) {
 			logger.error("Failed to set SQL statement to fetch Hoopla Extract data", e);
@@ -112,8 +116,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 		if (record != null) {
 			try {
-				String url = MarcUtil.getFirstFieldVal(record, "856u");
-				if (getHooplaExtractInfo(identifier.getIdentifier(), url)) {
+				if (getHooplaExtractInfo(identifier.getIdentifier(), record)) {
 					updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
 //					updateGroupedWorkSolrDataBasedOnHooplaExtract(groupedWork, identifier);
 				}
@@ -124,16 +127,31 @@ class HooplaProcessor extends MarcRecordProcessor {
 	}
 
 	private final Pattern hooplaIdInAccessUrl = Pattern.compile("title/(\\d*)");
-	private boolean getHooplaExtractInfo(String identifier, String url) {
-		if (!getHooplaExtractInfo(identifier)){
+
+	/**
+	 * @param identifier M
+	 * @param record
+	 * @return
+	 */
+	private boolean getHooplaExtractInfo(String identifier, Record record) {
+		if (getHooplaExtractInfo(identifier)) {
+			return true;
+		} else {
 			// Parse url for alternate Id
-			Matcher idInUrl = hooplaIdInAccessUrl.matcher(url);
-			if (idInUrl.find()){
-				String newId = idInUrl.group(1);
-				if (fullReindex) {
-					logger.warn("For " + identifier + ", trying Hoopla Id from Url : " + newId);
+			String url = MarcUtil.getFirstFieldVal(record, "856u");
+			if (url != null) {
+				Matcher idInUrl = hooplaIdInAccessUrl.matcher(url);
+				if (idInUrl.find()){
+					String newId = idInUrl.group(1);
+					if (fullReindex && logger.isInfoEnabled()) {
+						logger.info("For " + identifier + ", trying Hoopla Id from Url : " + newId);
+					}
+					if (getHooplaExtractInfo(newId)){
+						GroupedReindexMain.hooplaRecordWithOutExtractInfo.remove(identifier);
+						GroupedReindexMain.hooplaRecordUsingUrlIdExtractInfo.add(identifier);
+						return true;
+					}
 				}
-				return getHooplaExtractInfo(newId);
 			}
 		}
 		return false;
@@ -172,7 +190,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 					hooplaExtractInfo.setChildren(children);
 					return true;
 				} else if (fullReindex) {
-					logger.info("Did not find Hoopla Extract information for " + identifier);
+//					logger.info("Did not find Hoopla Extract information for " + identifier);
 					if (!GroupedReindexMain.hooplaRecordWithOutExtractInfo.contains(identifier)) {
 						GroupedReindexMain.hooplaRecordWithOutExtractInfo.add(identifier);
 					}
