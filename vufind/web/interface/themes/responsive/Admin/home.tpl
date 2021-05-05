@@ -91,7 +91,7 @@
 			</tr>
 			<tr>
 				<th>Index Size: </th>
-				<td>{$data.grouped.index.size}</td>
+				<td>{$data.genealogy.index.size}</td>
 			</tr>
 			<tr>
 			<tr>
