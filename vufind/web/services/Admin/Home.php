@@ -44,7 +44,17 @@ class Home extends Admin_Admin {
 
 			if ($masterJson){
 				$masterData = json_decode($masterJson, true);
-				$interface->assign('master_data', $masterData['status']);
+				$interface->assign('masterData', $masterData['status']);
+			}
+		}
+
+		if (!empty($configArray['Islandora']['solrUrl'])){
+			$archiveSolrUrl = $configArray['Islandora']['solrUrl'] . '/admin/cores?wt=json';
+			$json = @file_get_contents($archiveSolrUrl);
+			if (!empty($json)){
+				$data = json_decode($json, true);
+				$interface->assign('archiveData', $data['status']);
+				$interface->assign('archiveSolrCore', $configArray['Islandora']['solrCore']);
 			}
 		}
 
