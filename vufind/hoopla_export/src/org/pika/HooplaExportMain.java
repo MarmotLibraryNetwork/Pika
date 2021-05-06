@@ -344,7 +344,8 @@ public class HooplaExportMain {
 				JSONObject curTitle = responseTitles.getJSONObject(i);
 				titleId = curTitle.getLong("titleId");
 				updateHooplaTitleInDB.setLong(1, titleId);
-				updateHooplaTitleInDB.setBoolean(2, curTitle.getBoolean("active"));
+				final boolean isActive = curTitle.getBoolean("active");
+				updateHooplaTitleInDB.setBoolean(2, isActive);
 				updateHooplaTitleInDB.setString(3, curTitle.getString("title"));
 				updateHooplaTitleInDB.setString(4, curTitle.getString("kind"));
 				updateHooplaTitleInDB.setBoolean(5, curTitle.getBoolean("pa"));
@@ -354,8 +355,8 @@ public class HooplaExportMain {
 				updateHooplaTitleInDB.setBoolean(9, curTitle.getBoolean("abridged"));
 				updateHooplaTitleInDB.setBoolean(10, curTitle.getBoolean("children"));
 				double price = 0;
-				if (!curTitle.has("price")){
-					logger.warn("Hoopla title " + titleId + " has no price set.");
+				if (!curTitle.has("price") && isActive){
+					logger.warn("Active Hoopla title " + titleId + " has no price set.");
 				} else {
 					price = curTitle.getDouble("price");
 				}
