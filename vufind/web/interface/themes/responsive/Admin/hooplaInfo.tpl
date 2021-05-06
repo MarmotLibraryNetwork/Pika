@@ -1,5 +1,8 @@
 {strip}
 	<div id="page-content" class="col-tn-12">
+		<h2>Hoopla API Info</h2>
+		{if $isHooplaEnabled}
+
 		<h4>Report Filters</h4>
 		<div class="navbar row">
 			<form id="HooplaInfoFilter">
@@ -44,7 +47,6 @@
 		</div>
 
 		<div id="main-content">
-			<h2>Hoopla API Info</h2>
 			{if !empty($hooplaRecordData)}
 			<div class="row">
 				<div class="col-tn-12">
@@ -77,7 +79,6 @@
 				</div>
 			</div>
 		</div>
-	</div>
 	<script type="text/javascript">
 		{literal}
 		$(document).ready(function(){
@@ -89,4 +90,8 @@
 
 		{/literal}
 	</script>
+		{else}
+		<div class="alert alert-warning">Hoopla API is not enabled.</div>
+	{/if}
+	</div>
 {/strip}

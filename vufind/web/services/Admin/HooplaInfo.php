@@ -33,59 +33,60 @@ class Admin_HooplaInfo extends Admin_Admin {
 
 
 	function launch(){
-		if (isset($_REQUEST['startDate'])){
-			$startDate = new DateTime($_REQUEST['startDate']);
-		}else{
-			$startDate = new DateTime();
-			date_sub($startDate, new DateInterval('P1M')); // 1 day ago
-		}
-		if (isset($_REQUEST['endDate'])){
-			$endDate = new DateTime($_REQUEST['endDate']);
-		}else{
-			$endDate = new DateTime();
-		}
-		$endDate->setTime(23,59,59); //second before midnight
-
 		require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
 		$driver          = new HooplaDriver();
-		$startTime       = $startDate->getTimestamp();
-		$endTime         = $endDate->getTimestamp();
-		$libraries       = new Admin_Libraries();
-		$libraryList     = $libraries->getAllObjectsByPermission(); // accounts for permissions
-		$hooplaLibraries = [];
-		$hooplaLibraryId = null;
-		/** @var Library[] $libraryList */
-		foreach ($libraryList as $library){
-			if (!empty($library->hooplaLibraryID)){
-				$checkOutsResponse = $driver->getLibraryHooplaTotalCheckOuts($library->hooplaLibraryID, $startTime, $endTime);
-				if (isset($checkOutsResponse->checkouts)){
-					$hooplaLibraries[] = [
-						'hooplaLibraryId' => $library->hooplaLibraryID,
-						'libraryName'     => $library->displayName,
-						'checkouts'       => $checkOutsResponse->checkouts,
-					];
-					if (!empty($_REQUEST['hooplaId']) && !is_null($hooplaLibraryId)){
-						$hooplaLibraryId = $library->hooplaLibraryID;
+		$isHooplaEnabled = $driver->isHooplaEnabled();
+		if ($isHooplaEnabled){
+			if (isset($_REQUEST['startDate'])){
+				$startDate = new DateTime($_REQUEST['startDate']);
+			}else{
+				$startDate = new DateTime();
+				date_sub($startDate, new DateInterval('P1M')); // 1 day ago
+			}
+			if (isset($_REQUEST['endDate'])){
+				$endDate = new DateTime($_REQUEST['endDate']);
+			}else{
+				$endDate = new DateTime();
+			}
+			$endDate->setTime(23, 59, 59);                                                                                                                                                                                                                                               //second before midnight
+			$startTime       = $startDate->getTimestamp();
+			$endTime         = $endDate->getTimestamp();
+			$libraries       = new Admin_Libraries();
+			$libraryList     = $libraries->getAllObjectsByPermission();                                                                                                                                                                                                                    // accounts for permissions
+			$hooplaLibraries = [];
+			$hooplaLibraryId = null;
+			/** @var Library[] $libraryList */
+			foreach ($libraryList as $library){
+				if (!empty($library->hooplaLibraryID)){
+					$checkOutsResponse = $driver->getLibraryHooplaTotalCheckOuts($library->hooplaLibraryID, $startTime, $endTime);
+					if (isset($checkOutsResponse->checkouts)){
+						$hooplaLibraries[] = [
+							'hooplaLibraryId' => $library->hooplaLibraryID,
+							'libraryName'     => $library->displayName,
+							'checkouts'       => $checkOutsResponse->checkouts,
+						];
+						if (!empty($_REQUEST['hooplaId']) && is_null($hooplaLibraryId)){
+							$hooplaLibraryId = $library->hooplaLibraryID;
+						}
 					}
-				}
 
+				}
+			}
+
+			global $interface;
+			$interface->assign('isHooplaEnabled', $isHooplaEnabled);
+			$interface->assign('hooplaLibraryCheckouts', $hooplaLibraries);
+			$interface->assign('startDate', $startDate->getTimestamp());
+			$interface->assign('endDate', $endDate->getTimestamp());
+
+			if (!empty($_REQUEST['hooplaId'])){
+				$_REQUEST['hooplaId'] = trim(str_replace(['MWT', 'mwt'], '', $_REQUEST['hooplaId']));
+				$response             = $driver->getHooplaRecordMetaData($hooplaLibraryId, $_REQUEST['hooplaId']);
+				$hooplaData           = json_encode($response, JSON_PRETTY_PRINT);
+				$interface->assign('hooplaRecordData', $hooplaData);
 			}
 		}
-		global $interface;
 
-		if (!empty($_REQUEST['hooplaId'])){
-			$_REQUEST['hooplaId'] = trim(str_replace(['MWT', 'mwt'], '', $_REQUEST['hooplaId']));
-			$response             = $driver->getHooplaRecordMetaData($hooplaLibraryId, $_REQUEST['hooplaId']);
-			$hooplaData           = json_encode($response, JSON_PRETTY_PRINT);
-			$interface->assign('hooplaRecordData', $hooplaData);
-		}
-
-
-
-		$interface->assign('startDate', $startDate->getTimestamp());
-		$interface->assign('endDate', $endDate->getTimestamp());
-
-		$interface->assign('hooplaLibraryCheckouts', $hooplaLibraries);
 		$this->display('hooplaInfo.tpl', 'Hoopla API Info');
 
 	}
