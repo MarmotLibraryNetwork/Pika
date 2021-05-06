@@ -53,6 +53,7 @@ class Admin_HooplaInfo extends Admin_Admin {
 		$libraries       = new Admin_Libraries();
 		$libraryList     = $libraries->getAllObjectsByPermission(); // accounts for permissions
 		$hooplaLibraries = [];
+		$hooplaLibraryId = null;
 		/** @var Library[] $libraryList */
 		foreach ($libraryList as $library){
 			if (!empty($library->hooplaLibraryID)){
@@ -63,6 +64,9 @@ class Admin_HooplaInfo extends Admin_Admin {
 						'libraryName'     => $library->displayName,
 						'checkouts'       => $checkOutsResponse->checkouts,
 					];
+					if (!empty($_REQUEST['hooplaId']) && !is_null($hooplaLibraryId)){
+						$hooplaLibraryId = $library->hooplaLibraryID;
+					}
 				}
 
 			}
@@ -70,8 +74,8 @@ class Admin_HooplaInfo extends Admin_Admin {
 		global $interface;
 
 		if (!empty($_REQUEST['hooplaId'])){
-			$_REQUEST['hooplaId'] = str_replace(['MWT', 'mwt'], '', $_REQUEST['hooplaId']);
-			$response             = $driver->getHooplaRecordMetaData($library->hooplaLibraryID, $_REQUEST['hooplaId']);
+			$_REQUEST['hooplaId'] = trim(str_replace(['MWT', 'mwt'], '', $_REQUEST['hooplaId']));
+			$response             = $driver->getHooplaRecordMetaData($hooplaLibraryId, $_REQUEST['hooplaId']);
 			$hooplaData           = json_encode($response, JSON_PRETTY_PRINT);
 			$interface->assign('hooplaRecordData', $hooplaData);
 		}
