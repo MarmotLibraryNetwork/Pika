@@ -62,6 +62,12 @@ class HooplaDriver
 		return preg_replace('/^MWT/', '', $hooplaId->getRecordId());
 	}
 
+	/**
+	 * @return bool
+	 */
+	public function isHooplaEnabled(): bool{
+		return $this->hooplaEnabled;
+	}
 
 	// Originally copied from SirsiDynixROA Driver
 	// $customRequest is for curl, can be 'PUT', 'DELETE', 'POST'
