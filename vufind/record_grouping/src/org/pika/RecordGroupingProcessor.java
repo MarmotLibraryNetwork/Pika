@@ -150,6 +150,9 @@ class RecordGroupingProcessor {
 	RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, String recordSource, boolean doAutomaticEcontentSuppression) {
 		RecordIdentifier    identifier         = null;
 		List<VariableField> recordNumberFields = marcRecord.getVariableFields(recordNumberTag);
+		if (recordNumberFields.size() > 1){
+			logger.warn("Record found with multiple recordNumber Tags for " + recordSource);
+		}
 		for (VariableField recordNumberFieldValue : recordNumberFields) {
 			//Make sure we only get one ils identifier
 //			logger.debug("getPrimaryIdentifierFromMarcRecord - Got record number field");
@@ -162,8 +165,12 @@ class RecordGroupingProcessor {
 					if (recordNumberSubfield != null && (recordNumberPrefix.length() == 0 || recordNumberSubfield.getData().length() > recordNumberPrefix.length())) {
 						if (recordNumberSubfield.getData().startsWith(recordNumberPrefix)) {
 							String recordNumber = recordNumberSubfield.getData().trim();
-							identifier = new RecordIdentifier(recordSource, recordNumber);
-							break;
+							if (!recordNumber.contains("/") && !recordNumber.contains("\\")) {
+								identifier = new RecordIdentifier(recordSource, recordNumber);
+								break;
+							} else {
+								logger.warn("Record number contained a / or \\ character for " + recordSource + " : " + recordNumber + "; Skipping grouping for this record.");
+							}
 						}
 					}
 				} else {
@@ -171,19 +178,24 @@ class RecordGroupingProcessor {
 //					logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a control field");
 					ControlField curRecordNumberField = (ControlField) recordNumberFieldValue;
 					String       recordNumber         = curRecordNumberField.getData().trim();
-					identifier = new RecordIdentifier(recordSource, recordNumber);
-					break;
+					if (!recordNumber.contains("/") && !recordNumber.contains("\\")) {
+						identifier = new RecordIdentifier(recordSource, recordNumber);
+						break;
+					} else {
+						logger.warn("Record number contained a / or \\ character for " + recordSource + " : " + recordNumber + "; Skipping grouping for this record.");
+					}
 				}
 			}
 		}
 
 		if (doAutomaticEcontentSuppression) {
+			// Suppress Overdrive (or Hoopla for Marmot) records from grouping, typically from the ils profile
+			// This is based on the assumption that OverDrive records will be loaded through APIs
+			// (or sideloaded for Hoopla)
 			if (logger.isDebugEnabled()) {
-				logger.debug("getPrimaryIdentifierFromMarcRecord - Doing automatic Econtent Suppression");
+				logger.debug("getPrimaryIdentifierFromMarcRecord - Doing automatic eContent Suppression");
 			}
 
-			//Check to see if the record is an overdrive record
-			//TODO: is this needed at the grouping level
 			if (useEContentSubfield) {
 				boolean allItemsSuppressed = true;
 
