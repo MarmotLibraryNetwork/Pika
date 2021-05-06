@@ -150,9 +150,6 @@ class RecordGroupingProcessor {
 	RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, String recordSource, boolean doAutomaticEcontentSuppression) {
 		RecordIdentifier    identifier         = null;
 		List<VariableField> recordNumberFields = marcRecord.getVariableFields(recordNumberTag);
-		if (recordNumberFields.size() > 1){
-			logger.warn("Record found with multiple recordNumber Tags for " + recordSource);
-		}
 		for (VariableField recordNumberFieldValue : recordNumberFields) {
 			//Make sure we only get one ils identifier
 //			logger.debug("getPrimaryIdentifierFromMarcRecord - Got record number field");
@@ -167,6 +164,9 @@ class RecordGroupingProcessor {
 							String recordNumber = recordNumberSubfield.getData().trim();
 							if (!recordNumber.contains("/") && !recordNumber.contains("\\")) {
 								identifier = new RecordIdentifier(recordSource, recordNumber);
+								if (recordNumberFields.size() > 1){
+									logger.warn("Record found with multiple recordNumber Tags for " + identifier);
+								}
 								break;
 							} else {
 								logger.warn("Record number contained a / or \\ character for " + recordSource + " : " + recordNumber + "; Skipping grouping for this record.");
@@ -180,6 +180,9 @@ class RecordGroupingProcessor {
 					String       recordNumber         = curRecordNumberField.getData().trim();
 					if (!recordNumber.contains("/") && !recordNumber.contains("\\")) {
 						identifier = new RecordIdentifier(recordSource, recordNumber);
+						if (recordNumberFields.size() > 1){
+							logger.warn("Record found with multiple recordNumber Tags for " + identifier);
+						}
 						break;
 					} else {
 						logger.warn("Record number contained a / or \\ character for " + recordSource + " : " + recordNumber + "; Skipping grouping for this record.");
