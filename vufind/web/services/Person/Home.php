@@ -51,7 +51,7 @@ class Person_Home extends Action {
 
 		// Retrieve Genealogy Solr Document
 		$record = $searchObject->getRecord($person->solrId());
-		if (!empty($record)){
+		if (empty($record)){
 			global $pikaLogger;
 			$pikaLogger->debug("Did not find a record for person id {$id} in solr.");
 			$this->displayInvalidRecord();
