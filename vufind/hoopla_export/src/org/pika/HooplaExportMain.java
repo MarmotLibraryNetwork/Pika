@@ -355,10 +355,11 @@ public class HooplaExportMain {
 				updateHooplaTitleInDB.setBoolean(9, curTitle.getBoolean("abridged"));
 				updateHooplaTitleInDB.setBoolean(10, curTitle.getBoolean("children"));
 				double price = 0;
-				if (!curTitle.has("price") && isActive){
-					logger.warn("Active Hoopla title " + titleId + " has no price set.");
-				} else {
+				if (curTitle.has("price")) {
 					price = curTitle.getDouble("price");
+				} else if (isActive) {
+					// Only warn about missing price for active hoopla titles
+					logger.warn("Active Hoopla title " + titleId + " has no price set.");
 				}
 				updateHooplaTitleInDB.setDouble(11, price);
 
