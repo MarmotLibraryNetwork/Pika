@@ -701,7 +701,7 @@ class Library extends DB_DataObject {
 							'text'          => 'Reset More Details To Default',
 							'url'           => '/Admin/Libraries?id=$id&amp;objectAction=resetMoreDetailsToDefault',
 							'class'         => 'btn-warning',
-							'allowed_roles' => 'opacAdmin',
+							'allowed_roles' => ['opacAdmin', 'libraryAdmin']
 						],
 					],
 				),
