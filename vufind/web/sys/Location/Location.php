@@ -339,8 +339,8 @@ class Location extends DB_DataObject {
 					'showEmailThis'            => array('property' => 'showEmailThis', 'type' => 'checkbox', 'label' => 'Show Email This', 'description' => 'Whether or not the Email This link is shown', 'hideInLists' => true, 'default' => 1),
 					'showShareOnExternalSites' => array('property' => 'showShareOnExternalSites', 'type' => 'checkbox', 'label' => 'Show Sharing To External Sites', 'description' => 'Whether or not sharing on external sites (Twitter, Facebook, Pinterest, etc. is shown)', 'hideInLists' => true, 'default' => 1),
 					'showComments'             => array('property' => 'showComments', 'type' => 'checkbox', 'label' => 'Enable User Reviews', 'description' => 'Whether or not user reviews are shown (also disables adding user reviews)', 'hideInLists' => true, 'default' => 1),
-					'showQRCode'               => array('property' => 'showQRCode', 'type' => 'checkbox', 'label' => 'Show QR Code', 'description' => 'Whether or not the catalog should show a QR Code in full record view', 'hideInLists' => true, 'default' => 1),
 					'showStaffView'            => array('property' => 'showStaffView', 'type' => 'checkbox', 'label' => 'Show Staff View', 'description' => 'Whether or not the staff view is displayed in full record view.', 'hideInLists' => true, 'default' => true),
+					'showQRCode'               => array('property' => 'showQRCode', 'type' => 'checkbox', 'label' => 'Show QR Code', 'description' => 'Whether or not the catalog should show a QR Code in full record view', 'hideInLists' => true, 'default' => 1),
 					'moreDetailsOptions'       => array(
 						'property'      => 'moreDetailsOptions',
 						'type'          => 'oneToMany',

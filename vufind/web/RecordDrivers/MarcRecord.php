@@ -1688,7 +1688,7 @@ class MarcRecord extends IndexRecord
 			}
 		}
 		if ($isPeriodical) {
-			global $library;
+//			global $library;
 			$interface->assign('showCheckInGrid', $library->showCheckInGrid);
 			$issues = $this->loadPeriodicalInformation();
 			$interface->assign('periodicalIssues', $issues);
@@ -1696,6 +1696,7 @@ class MarcRecord extends IndexRecord
 		$links = $this->getLinks();
 		$interface->assign('links', $links);
 		$interface->assign('show856LinksAsTab', $library->show856LinksAsTab);
+		//TODO: this does get assigned already in Interface method loadDisplayOptions()
 
 		if ($library->show856LinksAsTab && count($links) > 0) {
 			$moreDetailsOptions['links'] = array(
