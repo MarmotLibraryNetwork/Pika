@@ -81,6 +81,9 @@ class NorthernWaters extends Sierra {
 		for ($i = 0; $i < count($fields); $i++ ){
 			if ($fields[$i]['property'] == 'homelibrarycode'){
 				$fields[$i]['values'] = $homeLocations;
+			} elseif ($fields[$i]['property'] == 'altaddress') {
+				$fields[$i]['label'] = 'Address of Residence';
+				$fields[$i]['description'] = 'Address of Residence';
 			}
 		}
 		$fields[] = ['property'   => 'county',
@@ -92,8 +95,8 @@ class NorthernWaters extends Sierra {
 
 		$fields[] = ['property'   => 'township',
 		             'type'       => 'text',
-		             'label'      => 'Township of Residence',
-		             'description'=> 'Township of Residence',
+		             'label'      => 'Township, Village or City of Residence',
+		             'description'=> 'Township, Village or City of Residence',
 		             'maxLength'  => 30,
 		             'required'   => false];
 

@@ -580,23 +580,46 @@ class Sacramento extends Sierra {
 			'maxLength'   => 32,
 			'required'    => true
 		);
-		$fields[] = array(
-			'property'    => 'primaryphone',
-			'type'        => 'text',
-			'label'       => 'Phone (xxx-xxx-xxxx)',
-			'description' => 'Phone',
-			'maxLength'   => 128,
-			'required'    => false
-		);
-		$fields[] = array(
-			'property'    => 'email',
-			'type'        => 'email',
-			'label'       => 'E-Mail',
-			'description' => 'E-Mail',
-			'maxLength'   => 128,
-			'required'    => false
-		);
-
+		// require phone for folsom
+		if($library->subdomain == "folsom") {
+			$fields[] = [
+				'property'    => 'primaryphone',
+				'type'        => 'text',
+				'label'       => 'Phone (xxx-xxx-xxxx)',
+				'description' => 'Phone',
+				'maxLength'   => 128,
+				'required'    => true
+			];
+		} else{
+			$fields[] = [
+				'property'    => 'primaryphone',
+				'type'        => 'text',
+				'label'       => 'Phone (xxx-xxx-xxxx)',
+				'description' => 'Phone',
+				'maxLength'   => 128,
+				'required'    => false
+			];
+		}
+		// require email for folsom
+		if($library->subdomain == "folsom"){
+			$fields[] = [
+				'property'    => 'email',
+				'type'        => 'email',
+				'label'       => 'E-Mail',
+				'description' => 'E-Mail',
+				'maxLength'   => 128,
+				'required'    => true
+			];
+		} else {
+			$fields[] = [
+				'property'    => 'email',
+				'type'        => 'email',
+				'label'       => 'E-Mail',
+				'description' => 'E-Mail',
+				'maxLength'   => 128,
+				'required'    => false
+			];
+		}
 		$fields[] = array(
 			'property'    => 'guardianFirstName',
 			'type'        => 'text',
