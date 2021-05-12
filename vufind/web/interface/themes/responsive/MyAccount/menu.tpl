@@ -359,9 +359,12 @@
 					</a>
 					<div id="circulationMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
+							{if $loggedIn && $userRoles && in_array('opacAdmin', $userRoles)}
+								<div class="adminMenuLink{if $action == "MigrateCircs" && $module == "Circa"} active{/if}"><a href="/Circa/MigrateCircs">Migrate Circs</a></div>
+							{/if}
 							<div class="adminMenuLink{if $action == "OfflineCirculation" && $module == "Circa"} active{/if}"><a href="/Circa/OfflineCirculation">Offline Circulation</a></div>
-							<div class="adminMenuLink{if $action == "OfflineHoldsReport" && $module == "Circa"} active{/if}"><a href="/Circa/OfflineHoldsReport">Offline Holds Report</a></div>
 							<div class="adminMenuLink{if $action == "OfflineCirculationReport" && $module == "Circa"} active{/if}"><a href="/Circa/OfflineCirculationReport">Offline Circulation Report</a></div>
+							<div class="adminMenuLink{if $action == "OfflineHoldsReport" && $module == "Circa"} active{/if}"><a href="/Circa/OfflineHoldsReport">Offline Holds Report</a></div>
 						</div>
 					</div>
 				</div>
