@@ -54,9 +54,9 @@ class IndexRecord extends RecordInterface
 	 * @var    array
 	 * @access protected
 	 */
-	protected $snippetCaptions = array(
+	protected $snippetCaptions = [
 		'display_description' => 'Description'
-	);
+	];
 
 	/**
 	 * Should we highlight fields in search results?
@@ -99,7 +99,7 @@ class IndexRecord extends RecordInterface
 		$searchSettings        = getExtraConfigArray('searches');
 		$this->highlight       = $configArray['Index']['enableHighlighting'];
 		$this->snippet         = $configArray['Index']['enableSnippets'];
-		$this->snippetCaptions = isset($searchSettings['Snippet_Captions']) && is_array($searchSettings['Snippet_Captions']) ? $searchSettings['Snippet_Captions'] : array();
+		$this->snippetCaptions = empty($searchSettings['Snippet_Captions']) ? [] : $searchSettings['Snippet_Captions'];
 
 		if ($groupedWork == null){
 			$this->loadGroupedWork();
@@ -778,8 +778,7 @@ class IndexRecord extends RecordInterface
 	 * @return mixed        Caption if found, false if none available.
 	 * @access protected
 	 */
-	protected function getSnippetCaption($field)
-	{
+	protected function getSnippetCaption($field){
 		if (isset($this->snippetCaptions[$field])){
 			return $this->snippetCaptions[$field];
 		}else{
@@ -799,18 +798,17 @@ class IndexRecord extends RecordInterface
 	 * with 'snippet' and 'caption' keys.
 	 * @access protected
 	 */
-	protected function getHighlightedSnippets()
-	{
-		$snippets = array();
+	protected function getHighlightedSnippets(){
+		$snippets = [];
 		// Only process snippets if the setting is enabled:
-		if ($this->snippet && isset($this->fields['_highlighting'])) {
-			if (is_array($this->fields['_highlighting'])) {
-				foreach ($this->fields['_highlighting'] as $key => $value) {
-					if (!in_array($key, $this->forbiddenSnippetFields)) {
-						$snippets[] = array(
+		if ($this->snippet && isset($this->fields['_highlighting'])){
+			if (is_array($this->fields['_highlighting'])){
+				foreach ($this->fields['_highlighting'] as $key => $value){
+					if (!in_array($key, $this->forbiddenSnippetFields)){
+						$snippets[] = [
 							'snippet' => $value[0],
 							'caption' => $this->getSnippetCaption($key)
-						);
+						];
 					}
 				}
 			}

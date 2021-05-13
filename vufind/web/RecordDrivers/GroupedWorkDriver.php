@@ -107,7 +107,7 @@ class GroupedWorkDriver extends RecordInterface {
 			$searchSettings        = getExtraConfigArray('searches');
 			$this->highlight       = $configArray['Index']['enableHighlighting'];
 			$this->snippet         = $configArray['Index']['enableSnippets'];
-			$this->snippetCaptions = isset($searchSettings['Snippet_Captions']) && is_array($searchSettings['Snippet_Captions']) ? $searchSettings['Snippet_Captions'] : array();
+			$this->snippetCaptions = empty($searchSettings['Snippet_Captions']) ? [] : $searchSettings['Snippet_Captions'];
 		} else {
 			$this->isValid = false;
 		}
