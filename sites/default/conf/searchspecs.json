@@ -666,15 +666,6 @@
     }
   },
 
-  "econtentText": {
-    "QueryFields": {
-      "econtentText": [
-        ["onephrase", 500],
-        ["and", 100]
-      ]
-    }
-  },
-
   "GenealogyKeyword": {
     "DismaxFields": [
       "keywords"

@@ -42,7 +42,7 @@ class IndexRecord extends RecordInterface
 	protected $forbiddenSnippetFields = array(
 		'author', 'author-letter', 'auth_author2', 'title', 'title_short', 'title_full',
 		'title_auth', 'title_sub', 'title_display', 'spelling', 'id',
-		'fulltext_unstemmed', 'econtentText_unstemmed',
+		'fulltext_unstemmed', //TODO: fulltext_unstemmed probably obsolete
 		'spellingShingle', 'collection', 'title_proper',
 		'display_description'
 	);
