@@ -933,13 +933,13 @@ class Sierra {
 				case 'phone': // primary phone
 					$val = trim($val);
 					$phones[] = (object)['number'=>$val, 'type'=>'t'];
-					$patron->phone = $val;
-					$patron->update();
+					if($val != $patron->phone){
+						$patron->phone = $val;
+						$patron->update();
+					}
 					break;
 				case 'workPhone': // alt phone
-					if(!empty($val)){
-						$phones[] = (object)['number'=>$val, 'type'=>'p'];
-					}
+					$phones[] = (object)['number'=>$val, 'type'=>'p'];
 					break;
 				case 'mobileNumber': // mobile phone -- this triggers sms opt in for sierra
 					if(!empty($val)){
@@ -991,6 +991,27 @@ class Sierra {
 			$params['emails'] = $emails;
 		}
 		if(isset($phones) && !empty($phones)) {
+			// we need to send all phone #s on user account (ie, work phone even if it's turned off in Pika) in array or
+			// missing phones will be overwritten in Sierra.
+			$phonesCount = count($phones);
+			if((isset($patron->phone) && isset($patron->workPhone)) && $phonesCount != 2) {
+				$addHomePhone = false;
+				$addAltPhone  = false;
+				foreach ($phones as $phone){
+					if($phone->type == 't') {
+						$addAltPhone = true;
+					} elseif ($phone->type == 'p') {
+						$addHomePhone = true;
+					}
+				}
+				if($addAltPhone) {
+					$phones[] = (object)['number'=>$patron->workPhone, 'type'=>'p'];
+				}
+				if($addHomePhone) {
+					$phones[] = (object)['number'=>$patron->phone, 'type'=>'t'];
+				}
+
+			}
 			$params['phones'] = $phones;
 		}
 		// allow address updates?
@@ -1483,17 +1504,6 @@ EOT;
 				'label'       => 'Confirm PIN',
 				'description' => 'Please reenter your PIN.',
 				'maxLength'   => 10,
-				'required'    => true
-			];
-		}
-		// Bemis Signature Field
-		if ($library && $library->subdomain == 'bemis'){
-			$fields[] = [
-				'property'    => 'signature',
-				'type'        => 'text',
-				'label'       => 'Signature',
-				'description' => 'Enter your name',
-				'maxLength'   => 40,
 				'required'    => true
 			];
 		}
