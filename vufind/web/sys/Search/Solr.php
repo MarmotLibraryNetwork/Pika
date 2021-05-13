@@ -168,7 +168,7 @@ class Solr implements IndexEngine {
 		}
 
 		// Deal with field-stripping shard settings:
-		if (isset($searchSettings['StripFields']) && is_array($searchSettings['StripFields'])){
+		if (!empty($searchSettings['StripFields'])){
 			$this->_solrShardsFieldsToStrip = $searchSettings['StripFields'];
 		}
 
@@ -1033,7 +1033,7 @@ class Solr implements IndexEngine {
 		}
 
 		// Munge the user query in a few different ways:
-		$customMunge = isset($ss['CustomMunge']) ? $ss['CustomMunge'] : null;
+		$customMunge = $ss['CustomMunge'] ?? null;
 		$values      = $this->_buildMungeValues($lookfor, $customMunge, $tokenize);
 
 		// Apply the $searchSpecs property to the data:
