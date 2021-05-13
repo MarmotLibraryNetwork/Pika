@@ -49,13 +49,41 @@ class Marmot extends Sierra {
 		parent::__construct($accountProfile);
 	}
 
+	public function getSelfRegistrationFields(){
+		/** @var Library $library */
+		global $library;
+		$fields = parent::getSelfRegistrationFields();
+
+		$libSubDomain = $library->subdomain;
+		// Bemis Signature Field
+		if ($libSubDomain == 'bemis' || $libSubDomain == 'bemis2'){
+			$fields[] = [
+				'property'    => 'signature',
+				'type'        => 'text',
+				'label'       => 'Signature',
+				'description' => 'Enter your name',
+				'maxLength'   => 40,
+				'required'    => true
+			];
+		}
+		// mesa cmu field
+		if ($libSubDomain == 'mesa' || $libSubDomain == 'mesa2'){
+			$fields[] = [
+				'property'    => 'isCmuStudent',
+				'type'        => 'checkbox',
+				'label'       => 'Are you a student at Colorado Mesa University?',
+				'description' => 'Please check if you are a CMU student',
+				'required'    => false
+			];
+		}
+	}
+
 	/**
 	 * @param bool $extraSelfRegParams
 	 * @return array
 	 * @throws \ErrorException
 	 */
-	public function selfRegister($extraSelfRegParams = false)
-	{
+	public function selfRegister($extraSelfRegParams = false) {
 		
 		global $library;
 		// include test and production
@@ -78,6 +106,10 @@ class Marmot extends Sierra {
 			                                       " in the Unique ID field, verify notice preference, update barcode & exp. date, then change alias & p-type"];
 			$extraSelfRegParams['varFields'][] = ["fieldTag" => "q",
 			                                      "content"  => "dig access"];
+			if(!empty($_REQUEST['isCmuStudent'])) {
+				$extraSelfRegParams['varFields'][] = ["fieldTag" => "x",
+				                                      "content"  => "CMU Student"];
+			}
 		}
 		return parent::selfRegister($extraSelfRegParams);
 	}
