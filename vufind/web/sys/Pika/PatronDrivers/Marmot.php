@@ -76,6 +76,8 @@ class Marmot extends Sierra {
 				'required'    => false
 			];
 		}
+
+		return $fields;
 	}
 
 	/**
