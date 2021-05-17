@@ -1133,4 +1133,88 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		parent::setPrimarySearch($flag);
 		$this->indexEngine->isPrimarySearch = $flag;
 	}
+
+	public function getNextPrevLinks(){
+		global $interface;
+		//Setup next and previous links based on the search results.
+		if (isset($_REQUEST['searchId']) && isset($_REQUEST['recordIndex']) && ctype_digit($_REQUEST['searchId']) && ctype_digit($_REQUEST['recordIndex'])){
+			//rerun the search
+			require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
+			$s     = new SearchEntry();
+			$s->id = $_REQUEST['searchId'];
+			$interface->assign('searchId', $_REQUEST['searchId']);
+			$currentPage = isset($_REQUEST['page']) && ctype_digit($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+			$interface->assign('page', $currentPage);
+
+			if ($s->find(true)){
+				$minSO = unserialize($s->search_object);
+				/** @var SearchObject_Solr $searchObject */
+				$searchObject = SearchObjectFactory::deminify($minSO);
+				$searchObject->setPage($currentPage);
+				//Run the search
+				$result = $searchObject->processSearch(true, false, false);
+
+				//Check to see if we need to run a search for the next or previous page
+				$currentResultIndex  = $_REQUEST['recordIndex'] - 1;
+				$recordsPerPage      = $searchObject->getLimit();
+				$adjustedResultIndex = $currentResultIndex - ($recordsPerPage * ($currentPage - 1));
+
+				if (($currentResultIndex) % $recordsPerPage == 0 && $currentResultIndex > 0){
+					//Need to run a search for the previous page
+					$interface->assign('previousPage', $currentPage - 1);
+					$previousSearchObject = clone $searchObject;
+					$previousSearchObject->setPage($currentPage - 1);
+					$previousSearchObject->processSearch(true, false, false);
+					$previousResults = $previousSearchObject->getResultRecordSet();
+				}elseif (($currentResultIndex + 1) % $recordsPerPage == 0 && ($currentResultIndex + 1) < $searchObject->getResultTotal()){
+					//Need to run a search for the next page
+					$nextSearchObject = clone $searchObject;
+					$interface->assign('nextPage', $currentPage + 1);
+					$nextSearchObject->setPage($currentPage + 1);
+					$nextSearchObject->processSearch(true, false, false);
+					$nextResults = $nextSearchObject->getResultRecordSet();
+				}
+
+				if (!PEAR_Singleton::isError($result) && $searchObject->getResultTotal() > 0){
+					$recordSet = $searchObject->getResultRecordSet();
+					//Record set is 0 based, but we are passed a 1 based index
+					if ($currentResultIndex > 0){
+						if (isset($previousResults)){
+							$previousRecord = $previousResults[count($previousResults) - 1];
+						}else{
+							$previousId = $adjustedResultIndex - 1;
+							if (isset($recordSet[$previousId])){
+								$previousRecord = $recordSet[$previousId];
+							}
+						}
+
+						//Convert back to 1 based index
+						if (isset($previousRecord)){
+							$interface->assign('previousIndex', $currentResultIndex - 1 + 1);
+							$interface->assign('previousTitle', $previousRecord['title']);
+							$interface->assign('previousType', 'Person');
+							$interface->assign('previousId', str_replace('person', '', $previousRecord['id']));
+						}
+					}
+					if ($currentResultIndex + 1 < $searchObject->getResultTotal()){
+						if (isset($nextResults)){
+							$nextRecord = $nextResults[0];
+						}else{
+							$nextRecordIndex = $adjustedResultIndex + 1;
+							if (isset($recordSet[$nextRecordIndex])){
+								$nextRecord = $recordSet[$nextRecordIndex];
+							}
+						}
+						//Convert back to 1 based index
+						$interface->assign('nextIndex', $currentResultIndex + 1 + 1);
+						if (isset($nextRecord)){
+							$interface->assign('nextTitle', $nextRecord['title']);
+							$interface->assign('nextType', 'Person');
+							$interface->assign('nextId', str_replace('person', '', $nextRecord['id']));
+						}
+					}
+				}
+			}
+		}
+	}
 }

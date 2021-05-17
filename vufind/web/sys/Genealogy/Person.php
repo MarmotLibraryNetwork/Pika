@@ -328,22 +328,19 @@ class Person extends SolrDataObject {
 				}
 			case 'obituaries':
 				if (is_null($this->obituaries)){
-					$this->obituaries = [];
-					if ($this->personId > 0){
-						//Load roles for the user from the user
-						$obit           = new Obituary();
-						$obit->personId = $this->personId;
+					if (!empty($this->personId)){
+						$this->obituaries = [];
+						$obit             = new Obituary();
+						$obit->personId   = $this->personId;
 						$obit->orderBy('source ASC');
 						$obit->find();
 						while ($obit->fetch()){
-							$this->obituaries[$obit->obituaryId] = clone($obit);
+							$this->obituaries[$obit->obituaryId] = clone $obit;
 						}
 					}
-					$timer->logTime("Loaded obituaries");
-					return $this->obituaries;
-				}else{
-					return $this->obituaries;
+					$timer->logTime('Loaded obituaries');
 				}
+				return $this->obituaries;
 			default:
 				return $this->data[$name];
 		}

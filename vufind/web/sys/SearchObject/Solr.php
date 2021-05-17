@@ -26,8 +26,7 @@ require_once ROOT_DIR . '/RecordDrivers/Factory.php';
  * This is the default implementation of the SearchObjectBase class, providing the
  * Solr-driven functionality used by VuFind's standard Search module.
  */
-class SearchObject_Solr extends SearchObject_Base
-{
+class SearchObject_Solr extends SearchObject_Base {
 	// Publicly viewable version
 	private $publicQuery = null;
 	// Facets
@@ -2191,5 +2190,127 @@ class SearchObject_Solr extends SearchObject_Base
 
 	public function pingServer($failOnError = true){
 		return $this->indexEngine->pingServer($failOnError);
+	}
+
+	public function getNextPrevLinks(){
+		global $interface;
+		global $timer;
+		//Setup next and previous links based on the search results.
+		if (isset($_REQUEST['searchId']) && isset($_REQUEST['recordIndex']) && ctype_digit($_REQUEST['searchId']) && ctype_digit($_REQUEST['recordIndex'])){
+			//rerun the search
+			require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
+			$s           = new SearchEntry();
+			$s->id       = $_REQUEST['searchId'];
+			$currentPage = isset($_REQUEST['page']) && ctype_digit($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+			$interface->assign('searchId', $_REQUEST['searchId']);
+			$interface->assign('page', $currentPage);
+
+			if ($s->find(true)){
+				$minSO = unserialize($s->search_object);
+				/** @var SearchObject_Solr $searchObject */
+				$searchObject = SearchObjectFactory::deminify($minSO);
+				$searchObject->setPage($currentPage);
+				//Run the search
+				$result = $searchObject->processSearch(true);
+
+				//Check to see if we need to run a search for the next or previous page
+				$currentResultIndex  = $_REQUEST['recordIndex'] - 1;
+				$recordsPerPage      = $searchObject->getLimit();
+				$adjustedResultIndex = $currentResultIndex - ($recordsPerPage * ($currentPage - 1));
+
+				if (($currentResultIndex) % $recordsPerPage == 0 && $currentResultIndex > 0){
+					//Need to run a search for the previous page
+					$interface->assign('previousPage', $currentPage - 1);
+					$previousSearchObject = clone $searchObject;
+					$previousSearchObject->setPage($currentPage - 1);
+					$previousSearchObject->processSearch(true);
+					$previousResults = $previousSearchObject->getResultRecordSet();
+				}elseif (($currentResultIndex + 1) % $recordsPerPage == 0 && ($currentResultIndex + 1) < $searchObject->getResultTotal()){
+					//Need to run a search for the next page
+					$nextSearchObject = clone $searchObject;
+					$interface->assign('nextPage', $currentPage + 1);
+					$nextSearchObject->setPage($currentPage + 1);
+					$nextSearchObject->processSearch(true);
+					$nextResults = $nextSearchObject->getResultRecordSet();
+				}
+
+				if (!PEAR_Singleton::isError($result) && $searchObject->getResultTotal() > 0){
+					$recordSet = $searchObject->getResultRecordSet();
+					//Record set is 0 based, but we are passed a 1 based index
+					if ($currentResultIndex > 0){
+						if (isset($previousResults)){
+							$previousRecord = $previousResults[count($previousResults) -1];
+						}else{
+							$previousId = $adjustedResultIndex - 1;
+							if (isset($recordSet[$previousId])){
+								$previousRecord = $recordSet[$previousId];
+							}
+						}
+
+						//Convert back to 1 based index
+						if (isset($previousRecord)) {
+							$interface->assign('previousIndex', $currentResultIndex - 1 + 1);
+							if (!empty($previousRecord['title_display'])){
+								$interface->assign('previousTitle', $previousRecord['title_display']);
+							}
+							if ($previousRecord['recordtype'] == 'grouped_work'){
+								require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+								$groupedWork    = new GroupedWorkDriver($previousRecord);
+								$relatedRecords = $groupedWork->getRelatedRecords(true);
+								$timer->logTime('Loaded related records for previous result');
+								if (count($relatedRecords) == 1){
+									$previousRecord = reset($relatedRecords);
+									[$previousType, $previousId] = explode('/', trim($previousRecord['url'], '/'));
+									$interface->assign('previousId', $previousId);
+									$interface->assign('previousType', $previousType);
+								}else{
+									$interface->assign('previousType', 'GroupedWork');
+									$interface->assign('previousId', $previousRecord['id']);
+								}
+							}elseif ($previousRecord['recordtype'] == 'list'){
+								$interface->assign('previousType', 'MyAccount/MyList');
+								$interface->assign('previousId', str_replace('list', '', $previousRecord['id']));
+							}
+						}
+					}
+					if ($currentResultIndex + 1 < $searchObject->getResultTotal()){
+						if (isset($nextResults)){
+							$nextRecord = $nextResults[0];
+						}else{
+							$nextRecordIndex = $adjustedResultIndex + 1;
+							if (isset($recordSet[$nextRecordIndex])){
+								$nextRecord = $recordSet[$nextRecordIndex];
+							}
+						}
+						//Convert back to 1 based index
+						$interface->assign('nextIndex', $currentResultIndex + 1 + 1);
+						if (isset($nextRecord)){
+							if (!empty($nextRecord['title_display'])){
+								$interface->assign('nextTitle', $nextRecord['title_display']);
+							}
+							if ($nextRecord['recordtype'] == 'grouped_work'){
+								require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+								$groupedWork    = new GroupedWorkDriver($nextRecord);
+								$relatedRecords = $groupedWork->getRelatedRecords(true);
+								$timer->logTime('Loaded related records for next result');
+								if (count($relatedRecords) == 1) {
+									$nextRecord = reset($relatedRecords);
+									[$nextType, $nextId] = explode('/', trim($nextRecord['url'], '/'));
+									$interface->assign('nextId', $nextId);
+									$interface->assign('nextType', $nextType);
+								} else {
+									$interface->assign('nextType', 'GroupedWork');
+									$interface->assign('nextId', $nextRecord['id']);
+								}
+							}elseif ($previousRecord['recordtype'] == 'list'){
+								$interface->assign('nextType', 'MyAccount/MyList');
+								$interface->assign('nextId', str_replace('list', '', $nextRecord['id']));
+							}
+						}
+					}
+				}
+			}
+			$timer->logTime('Got next/previous links');
+		}
 	}
 }
