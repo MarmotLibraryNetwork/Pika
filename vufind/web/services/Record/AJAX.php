@@ -37,7 +37,6 @@ class Record_AJAX extends AJAXHandler {
 
 	protected array $methodsThatRespondWithHTML = array(
 	 'getBookingCalendar',
-	 'GetProspectorInfo', // Appears deprecated. pascal 4/26/2019
 	);
 
 	protected array $methodsThatRespondWithXML = array(
@@ -52,45 +51,6 @@ class Record_AJAX extends AJAXHandler {
 		return "<result>" . (UserAccount::isLoggedIn() ? "True" : "False") . "</result>";
 	}
 
-// TODO Appears deprecated.  GroupedWork version appears to be the version still in use.  pascal 4/26/2019
-	function GetProspectorInfo(){
-		global $configArray;
-		global $interface;
-		$id = $_REQUEST['id'];
-		$interface->assign('id', $id);
-
-		$searchObject = SearchObjectFactory::initSearchObject();
-		$searchObject->init();
-		// Setup Search Engine Connection
-		$class = $configArray['Index']['engine'];
-		$url   = $configArray['Index']['url'];
-		/** @var SearchObject_Solr $db */
-		$db = new $class($url);
-
-		// Retrieve Full record from Solr
-		if (!($record = $db->getRecord($id))){
-			PEAR_Singleton::raiseError(new PEAR_Error('Record Does Not Exist'));
-		}
-
-		require_once ROOT_DIR . '/sys/InterLibraryLoanDrivers/Prospector.php';
-		$prospector = new Prospector();
-
-		$searchTerms = array(
-			array(
-				'lookfor' => $record['title'],
-				'index'   => 'Title',
-			),
-		);
-		if (isset($record['author'])){
-			$searchTerms[] = array(
-				'lookfor' => $record['author'],
-				'index'   => 'Author',
-			);
-		}
-		$prospectorResults = $prospector->getTopSearchResults($searchTerms, 10);
-		$interface->assign('prospectorResults', $prospectorResults['records']);
-		return $interface->fetch('Record/ajax-prospector.tpl');
-	}
 
 	function getPlaceHoldForm(){
 		$user = UserAccount::getLoggedInUser();
