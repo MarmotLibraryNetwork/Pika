@@ -165,7 +165,12 @@ class RecordGroupingProcessor {
 							if (!recordNumber.contains("/") && !recordNumber.contains("\\")) {
 								identifier = new RecordIdentifier(recordSource, recordNumber);
 								if (recordNumberFields.size() > 1){
-									logger.warn("Record found with multiple recordNumber Tags for " + identifier);
+									final String message = "Record found with multiple recordNumber Tags for " + identifier;
+									if (fullRegrouping) {
+										logger.warn(message);
+									} else {
+										logger.info(message);
+									}
 								}
 								break;
 							} else {
