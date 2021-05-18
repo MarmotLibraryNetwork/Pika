@@ -35,7 +35,6 @@ class HooplaRecordDriver extends SideLoadedRecord {
 	 * @throws File_MARC_Exception
 	 */
 	public function getAccessLink($actions = null){
-		$title      = translate('hoopla_url_action');
 		$marcRecord = $this->getMarcRecord();
 		if (!empty($marcRecord)){
 			/** @var File_MARC_Data_Field[] $linkFields */
@@ -49,11 +48,12 @@ class HooplaRecordDriver extends SideLoadedRecord {
 				}
 			}
 			if ($fileOrUrl != null){
-				$actions[] = array(
+				$title     = translate('hoopla_url_action');
+				$actions[] = [
 					'url'          => $fileOrUrl,
 					'title'        => $title,
 					'requireLogin' => false,
-				);
+				];
 			}
 		}
 		return $actions;
@@ -107,10 +107,10 @@ class HooplaRecordDriver extends SideLoadedRecord {
 	private function getHooplaIntegrationActions(){
 		$id        = $this->getId();
 		$title     = translate('hoopla_checkout_action');
-		return array(
+		return [
 			'onclick' => "return Pika.Hoopla.getHooplaCheckOutPrompt('$id')",
 			'title'   => $title,
-		);
+		];
 
 	}
 	public function getMoreDetailsOptions(){
@@ -177,25 +177,18 @@ class HooplaRecordDriver extends SideLoadedRecord {
 		global $interface;
 
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaExtract.php';
+		$hooplaId      = HooplaDriver::recordIDtoHooplaID($this->sourceAndId, $this);
 		$hooplaExtract = new HooplaExtract();
-		$hooplaId      = HooplaDriver::recordIDtoHooplaID($this->sourceAndId);
 		$success       = $hooplaExtract->get('hooplaId', $hooplaId);
-		if (!$success){
-			foreach ($this->getAccessLink() as $link){
-				if (preg_match('/title\/(\d*)/', $link['url'], $matches)){
-					if ($success = $hooplaExtract->get('hooplaId', $matches[1])){
-						$interface->assign('matchedByAccessUrl', true);
-						break;
-					}
-				}
-			}
-		}
 		if ($success == 1){
 			$hooplaData = [];
 			foreach ($hooplaExtract->table() as $fieldName => $value_ignored){
 				$hooplaData[$fieldName] = $hooplaExtract->$fieldName;
 			}
 			$interface->assign('hooplaExtract', $hooplaData);
+		}
+		if (!strpos($this->sourceAndId, $hooplaId)){
+			$interface->assign('matchedByAccessUrl', true);
 		}
 
 		return 'RecordDrivers/Marc/staff-view.tpl';

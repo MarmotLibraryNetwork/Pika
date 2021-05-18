@@ -52,14 +52,35 @@ class HooplaDriver
 	}
 
 	/**
-	 * Clean an assumed Hoopla RecordID to Hoopla ID number
+	 * Clean an assumed Hoopla RecordID to Hoopla ID number for the API
+	 * NOTE: these Ids may be different numbers now.
 	 *
-	 * @param $hooplaId
-	 *
-	 * @return string
+	 * @param SourceAndId $hooplaRecordId  The Id of the Marc Record
+	 * @param HooplaRecordDriver|null $hooplaRecord  RecordDriver for the marc record
+	 * @return string The id for the Hoopla API
 	 */
-	public static function recordIDtoHooplaID(SourceAndId $hooplaId){
-		return preg_replace('/^MWT/', '', $hooplaId->getRecordId());
+	public static function recordIDtoHooplaID(SourceAndId $hooplaRecordId, HooplaRecordDriver $hooplaRecord = null){
+		require_once ROOT_DIR . '/sys/Hoopla/HooplaExtract.php';
+		$hooplaId      = preg_replace('/^MWT/', '', $hooplaRecordId->getRecordId());
+		$hooplaExtract = new HooplaExtract();
+		$success       = $hooplaExtract->get('hooplaId', $hooplaId);
+		if (!$success){
+			if (empty($hooplaRecord)){
+				require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
+				$hooplaRecord = new HooplaRecordDriver($hooplaRecordId);
+			}
+			if ($hooplaRecord->isValid()){
+				foreach ($hooplaRecord->getAccessLink() as $link){
+					if (preg_match('/title\/(\d*)/', $link['url'], $matches)){
+						$hooplaId = $matches[1];
+						break;
+					}
+				}
+			}
+
+		}
+
+		return $hooplaId;
 	}
 
 	/**
@@ -230,23 +251,22 @@ class HooplaDriver
 	/**
 	 * @param $user User
 	 */
-	public function getHooplaCheckedOutItems($user)
-	{
-		$checkedOutItems = array();
-		if ($this->hooplaEnabled) {
+	public function getHooplaCheckedOutItems($user){
+		$checkedOutItems = [];
+		if ($this->hooplaEnabled){
 			$hooplaCheckedOutTitlesURL = $this->getHooplaBasePatronURL($user);
-			if (!empty($hooplaCheckedOutTitlesURL)) {
-				$hooplaCheckedOutTitlesURL  .= '/checkouts/current';
-				$checkOutsResponse = $this->getAPIResponse($hooplaCheckedOutTitlesURL);
-				if (is_array($checkOutsResponse)) {
-					if (count($checkOutsResponse)) { // Only get Patron status if there are checkouts
+			if (!empty($hooplaCheckedOutTitlesURL)){
+				$hooplaCheckedOutTitlesURL .= '/checkouts/current';
+				$checkOutsResponse         = $this->getAPIResponse($hooplaCheckedOutTitlesURL);
+				if (is_array($checkOutsResponse)){
+					if (count($checkOutsResponse)){ // Only get Patron status if there are checkouts
 						$hooplaPatronStatus = $this->getHooplaPatronStatus($user);
 					}
-					foreach ($checkOutsResponse as $checkOut) {
+					foreach ($checkOutsResponse as $checkOut){
 						$hooplaRecordID  = 'MWT' . $checkOut->contentId;
-						$simpleSortTitle = preg_replace('/^The\s|^A\s/i', '', $checkOut->title); // remove beginning The or A
+						$simpleSortTitle = preg_replace('/^The\s|^A\s/i', '', $checkOut->title);   // remove beginning The or A
 
-						$currentTitle = array(
+						$currentTitle = [
 							'checkoutSource' => 'Hoopla',
 							'user'           => $user->getNameAndLibraryLabel(),
 							'userId'         => $user->id,
@@ -258,16 +278,16 @@ class HooplaDriver
 							'checkoutdate'   => $checkOut->borrowed,
 							'dueDate'        => $checkOut->due,
 							'hooplaUrl'      => $checkOut->url
-						);
+						];
 
-						if (isset($hooplaPatronStatus->borrowsRemaining)) {
+						if (isset($hooplaPatronStatus->borrowsRemaining)){
 							$currentTitle['borrowsRemaining'] = $hooplaPatronStatus->borrowsRemaining;
 						}
 
 						require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 //						$hooplaRecordDriver = new HooplaRecordDriver($hooplaRecordID);
-						$hooplaRecordDriver = new HooplaRecordDriver('hoopla:'.$hooplaRecordID); //TODO: need a proper solution here
-						if ($hooplaRecordDriver->isValid()) {
+						$hooplaRecordDriver = new HooplaRecordDriver('hoopla:' . $hooplaRecordID); //TODO: need a proper solution here
+						if ($hooplaRecordDriver->isValid()){
 							// Get Record For other details
 							$currentTitle['coverUrl']      = $hooplaRecordDriver->getBookcoverUrl('medium');
 							$currentTitle['linkUrl']       = $hooplaRecordDriver->getLinkUrl();
@@ -277,10 +297,10 @@ class HooplaDriver
 							$currentTitle['author']        = $hooplaRecordDriver->getPrimaryAuthor();
 							$currentTitle['format']        = implode(', ', $hooplaRecordDriver->getFormat());
 						}
-						$key = $currentTitle['checkoutSource'] . $currentTitle['hooplaId']; // This matches the key naming scheme in the Overdrive Driver
+						$key                   = $currentTitle['checkoutSource'] . $currentTitle['hooplaId']; // This matches the key naming scheme in the Overdrive Driver
 						$checkedOutItems[$key] = $currentTitle;
 					}
-				} else {
+				}else{
 					$this->logger->warn('Error retrieving checkouts from Hoopla.');
 				}
 			}
@@ -291,13 +311,12 @@ class HooplaDriver
 	/**
 	 * @return string
 	 */
-	private function getAccessToken()
-	{
-		if (empty($this->accessToken)) {
+	private function getAccessToken(){
+		if (empty($this->accessToken)){
 			$accessToken = $this->cache->get(self::memCacheKey);
-			if (empty($accessToken)) {
+			if (empty($accessToken)){
 				$this->renewAccessToken();
-			} else {
+			}else{
 				$this->accessToken = $accessToken;
 			}
 
@@ -308,7 +327,7 @@ class HooplaDriver
 	private function renewAccessToken(){
 		global $configArray;
 		if (!empty($configArray['Hoopla']['HooplaAPIUser']) && !empty($configArray['Hoopla']['HooplaAPIpassword'])) {
-			$url = 'https://' . str_replace(array('http://', 'https://'),'', $this->hooplaAPIBaseURL) . '/v2/token';
+			$url = 'https://' . str_replace(['http://', 'https://'],'', $this->hooplaAPIBaseURL) . '/v2/token';
 			// Ensure https is used
 
 			$username = $configArray['Hoopla']['HooplaAPIUser'];
@@ -362,24 +381,24 @@ class HooplaDriver
 	 *
 	 * @return array
 	 */
-	public function checkoutHooplaItem(SourceAndId $hooplaId, $user) {
-		if ($this->hooplaEnabled) {
+	public function checkoutHooplaItem(SourceAndId $hooplaId, $user){
+		if ($this->hooplaEnabled){
 			$checkoutURL = $this->getHooplaBasePatronURL($user);
-			if (!empty($checkoutURL)) {
+			if (!empty($checkoutURL)){
 
 				$hooplaId         = self::recordIDtoHooplaID($hooplaId);
 				$checkoutURL      .= '/' . $hooplaId;
-				$checkoutResponse = $this->getAPIResponse($checkoutURL, array(), 'POST');
-				if ($checkoutResponse) {
-					if (!empty($checkoutResponse->contentId)) {
-						return array(
+				$checkoutResponse = $this->getAPIResponse($checkoutURL, [], 'POST');
+				if ($checkoutResponse){
+					if (!empty($checkoutResponse->contentId)){
+						return [
 							'success'   => true,
 							'message'   => $checkoutResponse->message,
 							'title'     => $checkoutResponse->title,
 							'HooplaURL' => $checkoutResponse->url,
 							'due'       => $checkoutResponse->due
-						);
- 						// Example Success Response
+						];
+						// Example Success Response
 						//{
 						//	'contentId': 10051356,
 						//  'title': 'The Night Before Christmas',
@@ -389,35 +408,35 @@ class HooplaDriver
 						//  'url': 'https://www-dev.hoopladigital.com/title/10051356',
 						//  'message': 'You can now enjoy this title through Friday, February 2.  You can stream it to your browser, or download it for offline viewing using our Amazon, Android, or iOS mobile apps.'
 						//}
-					} else {
-						return array(
+					}else{
+						return [
 							'success' => false,
 							'message' => isset($checkoutResponse->message) ? $checkoutResponse->message : 'An error occurred checking out the Hoopla title.'
-						);
+						];
 					}
 
-				} else {
-					return array(
+				}else{
+					return [
 						'success' => false,
 						'message' => 'An error occurred checking out the Hoopla title.'
-					);
+					];
 				}
-			} elseif (!$this->getHooplaLibraryID($user)) {
-				return array(
+			}elseif (!$this->getHooplaLibraryID($user)){
+				return [
 					'success' => false,
 					'message' => 'Your library does not have Hoopla integration enabled.'
-				);
-			} else {
-				return array(
+				];
+			}else{
+				return [
 					'success' => false,
 					'message' => 'There was an error retrieving your library card number.'
-				);
+				];
 			}
-		} else {
-			return array(
+		}else{
+			return [
 				'success' => false,
 				'message' => 'Hoopla integration is not enabled.'
-			);
+			];
 		}
 	}
 
@@ -429,41 +448,41 @@ class HooplaDriver
 	 *
 	 * @return array
 	 */
-	public function returnHooplaItem(SourceAndId $hooplaId, $user) {
-		if ($this->hooplaEnabled) {
+	public function returnHooplaItem(SourceAndId $hooplaId, $user){
+		if ($this->hooplaEnabled){
 			$returnHooplaItemURL = $this->getHooplaBasePatronURL($user);
-			if (!empty($returnHooplaItemURL)) {
-				$itemId = self::recordIDtoHooplaID($hooplaId);
+			if (!empty($returnHooplaItemURL)){
+				$itemId              = self::recordIDtoHooplaID($hooplaId);
 				$returnHooplaItemURL .= "/$itemId";
-				$result = $this->getAPIResponseReturnHooplaTitle($returnHooplaItemURL);
-				if ($result) {
-					return array(
+				$result              = $this->getAPIResponseReturnHooplaTitle($returnHooplaItemURL);
+				if ($result){
+					return [
 						'success' => true,
 						'message' => 'The title was successfully returned.'
-					);
-				} else {
-					return array(
+					];
+				}else{
+					return [
 						'success' => false,
 						'message' => 'There was an error returning this title.'
-					);
+					];
 				}
 
-			} elseif (!$this->getHooplaLibraryID($user)) {
-				return array(
+			}elseif (!$this->getHooplaLibraryID($user)){
+				return [
 					'success' => false,
 					'message' => 'Your library does not have Hoopla integration enabled.'
-				);
-			} else {
-				return array(
+				];
+			}else{
+				return [
 					'success' => false,
 					'message' => 'There was an error retrieving your library card number.'
-				);
+				];
 			}
-		} else {
-			return array(
+		}else{
+			return [
 				'success' => false,
 				'message' => 'Hoopla integration is not enabled.'
-			);
+			];
 		}
 	}
 

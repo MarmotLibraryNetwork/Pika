@@ -66,7 +66,7 @@ class Hoopla_AJAX extends AJAXHandler {
 				$interface->assign('hooplaId', $id);
 
 				//TODO: need to determine what happens to cards without a Hoopla account
-				$hooplaUserStatuses = array();
+				$hooplaUserStatuses = [];
 				foreach ($hooplaUsers as $tmpUser){
 					$checkOutStatus                   = $driver->getHooplaPatronStatus($tmpUser);
 					$hooplaUserStatuses[$tmpUser->id] = $checkOutStatus;
@@ -77,11 +77,11 @@ class Hoopla_AJAX extends AJAXHandler {
 					$interface->assign('hooplaUserStatuses', $hooplaUserStatuses);
 
 					return
-						array(
+						[
 							'title'   => 'Hoopla Check Out',
 							'body'    => $interface->fetch('Hoopla/ajax-hoopla-checkout-prompt.tpl'),
 							'buttons' => '<button class="btn btn-primary" type= "button" title="Check Out" onclick="return Pika.Hoopla.checkOutHooplaTitle(\'' . $id . '\');">Check Out</button>',
-						);
+						];
 				}elseif (count($hooplaUsers) == 1){
 					/** @var User $hooplaUser */
 					$hooplaUser = reset($hooplaUsers);
@@ -98,30 +98,30 @@ class Hoopla_AJAX extends AJAXHandler {
 						$hooplaRegistrationUrl .= (parse_url($hooplaRegistrationUrl, PHP_URL_QUERY) ? '&' : '?') . 'showRegistration=true'; // Add Registration URL parameter
 
 						return
-							array(
+							[
 								'title'   => 'Create Hoopla Account',
 								'body'    => $interface->fetch('Hoopla/ajax-hoopla-single-user-checkout-prompt.tpl'),
 								'buttons' =>
 									'<button id="theHooplaButton" class="btn btn-default" type="button" title="Check Out" onclick="return Pika.Hoopla.checkOutHooplaTitle(\'' . $id . '\', ' . $hooplaUser->id . ');">I registered, Check Out now</button>'
 									. '<a class="btn btn-primary" role="button" href="' . $hooplaRegistrationUrl . '" target="_blank" title="Register at Hoopla" onclick="$(\'#theHooplaButton+a,#theHooplaButton\').toggleClass(\'btn-primary btn-default\');">Register at Hoopla</a>',
-							);
+							];
 
 					}
 					if ($hooplaUser->hooplaCheckOutConfirmation){
 						$interface->assign('hooplaPatronStatus', $checkOutStatus);
 						return
-							array(
+							[
 								'title'   => 'Confirm Hoopla Check Out',
 								'body'    => $interface->fetch('Hoopla/ajax-hoopla-single-user-checkout-prompt.tpl'),
 								'buttons' => '<button class="btn btn-primary" type="button" title="Check Out" onclick="return Pika.Hoopla.checkOutHooplaTitle(\'' . $id . '\', ' . $hooplaUser->id . ');">Check Out</button>',
-							);
+							];
 					}else{
 						// Go ahead and checkout the title
-						return array(
+						return [
 							'title'   => 'Checking out Hoopla title',
 							'body'    => '<script>Pika.Hoopla.checkOutHooplaTitle(\'' . $id . '\', ' . $hooplaUser->id . ')</script>',
 							'buttons' => '',
-						);
+						];
 					}
 				}else{
 					// No Hoopla Account Found, give the user an error message
@@ -129,28 +129,28 @@ class Hoopla_AJAX extends AJAXHandler {
 					global $logger;
 					$logger->log('No valid Hoopla account was found to check out a Hoopla title.', PEAR_LOG_ERR);
 					return
-						array(
+						[
 							'title'   => 'Invalid Hoopla Account',
 							'body'    => '<p class="alert alert-danger">' . $invalidAccountMessage . '</p>',
 							'buttons' => '',
-						);
+						];
 				}
-			} else {
+			}else{
 				return
-					array(
+					[
 						'title'   => 'Invalid Hoopla ID',
 						'body'    => '<p class="alert alert-danger">Invalid Hoopla Id provided.</p>',
 						'buttons' => '',
-					);
+					];
 			}
 		}else{
 			return
-				array(
+				[
 					'title'   => 'Error',
 					'body'    => 'You must be logged in to checkout an item.'
 						. '<script>Globals.loggedIn = false;  Pika.Hoopla.getHooplaCheckOutPrompt(\'' . $id . '\')</script>',
 					'buttons' => '',
-				);
+				];
 		}
 
 	}
@@ -170,7 +170,7 @@ class Hoopla_AJAX extends AJAXHandler {
 				require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
 				$driver = new HooplaDriver();
 				$result = $driver->checkoutHooplaItem($sourceAndId, $patron);
-				if (!empty($_REQUEST['stopHooplaConfirmation'])) {
+				if (!empty($_REQUEST['stopHooplaConfirmation'])){
 					$patron->hooplaCheckOutConfirmation = false;
 					$patron->update();
 				}
@@ -178,20 +178,20 @@ class Hoopla_AJAX extends AJAXHandler {
 					$checkOutStatus = $driver->getHooplaPatronStatus($patron);
 					$interface->assign('hooplaPatronStatus', $checkOutStatus);
 					$title = empty($result['title']) ? "Title checked out successfully" : $result['title'] . " checked out successfully";
-					return array(
+					return [
 						'success' => true,
 						'title'   => $title,
 						'message' => $interface->fetch('Hoopla/hoopla-checkout-success.tpl'),
 						'buttons' => '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">View My Check Outs</a>',
-					);
+					];
 				}else{
 					return $result;
 				}
 			}else{
-				return array('success' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.');
+				return ['success' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.'];
 			}
 		}else{
-			return array('success' => false, 'message' => 'You must be logged in to checkout an item.');
+			return ['success' => false, 'message' => 'You must be logged in to checkout an item.'];
 		}
 	}
 
@@ -200,17 +200,17 @@ class Hoopla_AJAX extends AJAXHandler {
 		if ($user){
 			$patronId = $_REQUEST['patronId'];
 			$patron   = $user->getUserReferredTo($patronId);
-			if ($patron) {
-				$sourceAndID = new HooplaSourceAndId($_REQUEST['id']);
+			if ($patron){
 				require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
-				$driver = new HooplaDriver();
-				$result = $driver->returnHooplaItem($sourceAndID, $patron);
+				$sourceAndID = new HooplaSourceAndId($_REQUEST['id']);
+				$driver      = new HooplaDriver();
+				$result      = $driver->returnHooplaItem($sourceAndID, $patron);
 				return $result;
 			}else{
-				return array('success' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to return titles for that user.');
+				return ['success' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to return titles for that user.'];
 			}
 		}else{
-			return array('success' => false, 'message' => 'You must be logged in to return an item.');
+			return ['success' => false, 'message' => 'You must be logged in to return an item.'];
 		}
 	}
 
