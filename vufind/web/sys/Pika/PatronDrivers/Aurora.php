@@ -39,7 +39,7 @@ class Aurora extends Sierra {
 		$fields = parent::getSelfRegistrationFields();
 		for ($i = 0;$i < count($fields);$i++){
 			if ($fields[$i]['property'] == 'email'){
-				$fields[$i]['require'] = true;
+				$fields[$i]['required'] = true;
 			}
 		}
 		return $fields;
