@@ -141,12 +141,14 @@ public class SierraExportAPIMain {
 		if (offline_mode_when_offline_login_allowed || PikaConfigIni.getBooleanIniValue("Catalog", "offline")) {
 			final String message = "Pika Offline Mode is currently on. Pausing for 1 min.";
 			logger.info(message);
+			initializeExportLogEntry(pikaConn);
 			addNoteToExportLog(message);
 			try {
 				Thread.sleep(60000);
 			} catch (Exception e) {
 				logger.error("Sleep was interrupted while pausing in Sierra Extract.");
 			}
+			finalizeExportLogEntry(pikaConn, new Date().getTime());
 			closeDBConnections(pikaConn);
 			System.exit(0);
 		}
@@ -270,23 +272,7 @@ public class SierraExportAPIMain {
 //		updateServer.setRequestWriter(new BinaryRequestWriter());
 
 
-		//Start an export log entry
-		logger.info("Creating log entry for Sierra API Extract");
-		try (PreparedStatement createLogEntryStatement = pikaConn.prepareStatement("INSERT INTO sierra_api_export_log (startTime, lastUpdate, notes) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS)) {
-			createLogEntryStatement.setLong(1, startTime.getTime() / 1000);
-			createLogEntryStatement.setLong(2, startTime.getTime() / 1000);
-			createLogEntryStatement.setString(3, "Initialization of Sierra API Extract complete");
-			createLogEntryStatement.executeUpdate();
-			ResultSet generatedKeys = createLogEntryStatement.getGeneratedKeys();
-			if (generatedKeys.next()) {
-				exportLogId = generatedKeys.getLong(1);
-			}
-
-			addNoteToExportLogStmt = pikaConn.prepareStatement("UPDATE sierra_api_export_log SET notes = ?, lastUpdate = ? WHERE id = ?");
-		} catch (SQLException e) {
-			logger.error("Unable to create log entry for record grouping process", e);
-			System.exit(0);
-		}
+		initializeExportLogEntry(pikaConn);
 
 		//Process MARC record changes
 		getBibsAndItemUpdatesFromSierra(pikaConn);
@@ -321,6 +307,38 @@ public class SierraExportAPIMain {
 
 		retrieveDataFromSierraDNA(pikaConn);
 
+		finalizeExportLogEntry(pikaConn, endTime);
+
+		updatePartialExtractRunning(false);
+
+		closeDBConnections(pikaConn);
+		Date currentTime = new Date();
+		logger.info(currentTime + " : Finished Sierra Extract");
+	}
+
+	private static void initializeExportLogEntry(Connection pikaConn) {
+		//Start an export log entry
+		if (logger.isInfoEnabled()) {
+			logger.info("Creating log entry for Sierra API Extract");
+		}
+		try (PreparedStatement createLogEntryStatement = pikaConn.prepareStatement("INSERT INTO sierra_api_export_log (startTime, lastUpdate, notes) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS)) {
+			createLogEntryStatement.setLong(1, startTime.getTime() / 1000);
+			createLogEntryStatement.setLong(2, startTime.getTime() / 1000);
+			createLogEntryStatement.setString(3, "Initialization of Sierra API Extract complete");
+			createLogEntryStatement.executeUpdate();
+			ResultSet generatedKeys = createLogEntryStatement.getGeneratedKeys();
+			if (generatedKeys.next()) {
+				exportLogId = generatedKeys.getLong(1);
+			}
+
+			addNoteToExportLogStmt = pikaConn.prepareStatement("UPDATE sierra_api_export_log SET notes = ?, lastUpdate = ? WHERE id = ?");
+		} catch (SQLException e) {
+			logger.error("Unable to create log entry for record grouping process", e);
+			System.exit(0);
+		}
+	}
+
+	private static void finalizeExportLogEntry(Connection pikaConn, long endTime) {
 		try (PreparedStatement finishedStatement = pikaConn.prepareStatement("UPDATE sierra_api_export_log SET endTime = ?, numRemainingRecords = ? WHERE id = ?")) {
 			finishedStatement.setLong(1, endTime / 1000);
 			finishedStatement.setLong(2, allBibsToUpdate.size());
@@ -329,12 +347,6 @@ public class SierraExportAPIMain {
 		} catch (SQLException e) {
 			logger.error("Unable to update sierra api export log with completion time.", e);
 		}
-
-		updatePartialExtractRunning(false);
-
-		closeDBConnections(pikaConn);
-		Date currentTime = new Date();
-		logger.info(currentTime + " : Finished Sierra Extract");
 	}
 
 	private static void closeDBConnections(Connection connection) {
