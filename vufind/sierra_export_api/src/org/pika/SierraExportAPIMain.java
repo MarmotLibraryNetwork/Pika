@@ -133,6 +133,25 @@ public class SierraExportAPIMain {
 //			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 //		}
 
+		//Check to see if the system is offline
+		Boolean offline_mode_when_offline_login_allowed = systemVariables.getBooleanValuedVariable("offline_mode_when_offline_login_allowed");
+		if (offline_mode_when_offline_login_allowed == null){
+			offline_mode_when_offline_login_allowed = false;
+		}
+		if (offline_mode_when_offline_login_allowed || PikaConfigIni.getBooleanIniValue("Catalog", "offline")) {
+			final String message = "Pika Offline Mode is currently on. Pausing for 1 min.";
+			logger.info(message);
+			addNoteToExportLog(message);
+			try {
+				Thread.sleep(60000);
+			} catch (Exception e) {
+				logger.error("Sleep was interrupted while pausing in Sierra Extract.");
+			}
+			closeDBConnections(pikaConn);
+			System.exit(0);
+		}
+
+
 		String profileToLoad         = "ils";
 		String singleRecordToProcess = null;
 		if (args.length > 1) {
@@ -166,6 +185,7 @@ public class SierraExportAPIMain {
 		String apiVersion = PikaConfigIni.getIniValue("Catalog", "api_version");
 		if (apiVersion == null || apiVersion.length() == 0) {
 			logger.error("Sierra API version must be set.");
+			closeDBConnections(pikaConn);
 			System.exit(1);
 		}
 
@@ -187,12 +207,14 @@ public class SierraExportAPIMain {
 		}
 		if (apiBaseUrl == null || apiBaseUrl.length() == 0) {
 			logger.error("Sierra API url must be set in account profile column vendorOpacUrl.");
+			closeDBConnections(pikaConn);
 			System.exit(1);
 		}
 
 		//Diagnostic routine to probe how near-real time the API info is
 		if (timeAPI) {
 			measureDelayInItemsAPIupdates();
+			closeDBConnections(pikaConn);
 			System.exit(0);
 		}
 
@@ -310,15 +332,19 @@ public class SierraExportAPIMain {
 
 		updatePartialExtractRunning(false);
 
+		closeDBConnections(pikaConn);
+		Date currentTime = new Date();
+		logger.info(currentTime + " : Finished Sierra Extract");
+	}
+
+	private static void closeDBConnections(Connection connection) {
 		try {
 			//Close the connection
-			pikaConn.close();
+			connection.close();
 		} catch (Exception e) {
-			System.out.println("Error closing connection: " + e.toString());
+			System.out.println("Error closing connection: " + e);
 			logger.error("Error closing connection to Pika DB", e);
 		}
-		Date currentTime = new Date();
-		logger.info(currentTime.toString() + " : Finished Sierra Extract");
 	}
 
 	private static void initializeRecordGrouper(Connection pikaConn) {
