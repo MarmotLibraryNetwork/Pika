@@ -21,8 +21,8 @@
  *
  *
  * @category Pika
- * @author   : Pascal Brammeier
- * Date: 5/13/2019
+ * @author   Pascal Brammeier
+ * Date      5/13/2019
  *
  */
 
