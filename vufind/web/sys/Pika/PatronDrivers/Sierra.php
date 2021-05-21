@@ -98,7 +98,7 @@ class Sierra {
 
 		$this->configArray    = $configArray;
 		$this->accountProfile = $accountProfile;
-		$this->logger = new Logger('SierraPatronAPI');
+		$this->logger = new Logger(__CLASS__);
 
 		$cache       = initCache();
 		$this->cache = new Cache($cache);
@@ -537,6 +537,8 @@ class Sierra {
 			$updatePatron = true;
 			$patron->firstname = $firstName;
 			$patron->lastname  = $lastName;
+			// empty display name so it will reset to new name
+			$patron->displayName = '';
 		}
 
 		// 5.4 check email
@@ -1444,7 +1446,7 @@ EOT;
 		             'description'=> 'Mailing Address.',
 		             'maxLength'  => 40,
 		             'required'   => true];
-
+// todo: this shouldn't always show -- need a check here
 		$fields[] = ['property'   => 'altaddress',
 		             'type'       => 'text',
 		             'label'      => 'Physical Address',
