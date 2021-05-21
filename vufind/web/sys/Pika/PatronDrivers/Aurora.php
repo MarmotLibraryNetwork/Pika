@@ -33,10 +33,12 @@ class Aurora extends Sierra {
 
 	public function __construct($accountProfile) {
 		parent::__construct($accountProfile);
+
 	}
 
 	public function getSelfRegistrationFields(){
 		$fields = parent::getSelfRegistrationFields();
+
 		for ($i = 0;$i < count($fields);$i++){
 			if ($fields[$i]['property'] == 'email'){
 				$fields[$i]['required'] = true;
