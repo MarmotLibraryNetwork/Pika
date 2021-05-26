@@ -70,8 +70,12 @@ public class OfflineCirculation implements IProcessHandler {
 				processLog.addNote("Not processing offline circulation because the useOfflineHoldsInsteadOfRegularHolds setting is currently on.");
 			} else {
 				//process checkouts and check ins (do this before holds)
-				String offlineHoldsOnly = processSettings.get("offlineHoldsOnly");
-				if (!offlineHoldsOnly.equals("true") && !offlineHoldsOnly.equals("1")) {
+				boolean offlineHoldsOnly    = false;
+				String  offlineHoldsOnlyStr = processSettings.get("offlineHoldsOnly");
+				if (offlineHoldsOnlyStr != null) {
+					offlineHoldsOnly = offlineHoldsOnlyStr.equals("true") || offlineHoldsOnlyStr.equals("1");
+				}
+				if (!offlineHoldsOnly) {
 					processOfflineCirculationEntries(pikaConn);
 				} else {
 					logger.info("Processing Offline Holds only.");
