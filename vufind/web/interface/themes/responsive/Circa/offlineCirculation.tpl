@@ -2,7 +2,9 @@
 <form action="" method="post" id="offlineCircForm">
 	<div id="main-content" class="full-result-content">
 		<h2>Offline Circulation</h2>
-
+		<div class="alert alert-info">
+			For more information about Offline Circulation, see the <a href="https://docs.google.com/document/d/16l5_mdJiPoSJC__OhP055XZdieaTulD4mmAkce2NHtc">online documentation</a>.
+		</div>
 		{if $error}
 			<div class="alert alert-danger">
 				{$error}
@@ -65,42 +67,37 @@
 	function clearOfflineCircResults(){
 		$("#offline-circulation-result").hide();
 	}
-	function checkCptKey(e)
-	{
+
+	function checkCptKey(e){
 		var shouldBubble = true;
-		switch (e.keyCode)
-		{
+		switch (e.keyCode){
 			// user pressed the Tab
-			case 9:
-			{
+			case 9:{
 				//$(".cptIcdProcedureSelect").toggleClass("cptIcdProcedureSelectVisible");
 				//shouldBubble = false;
 				break;
-			};
+			}
 			// user pressed the Enter
-			case 13:
-			{
+			case 13:{
 				//$(".cptIcdProcedureSelect").toggleClass("cptIcdProcedureSelectVisible");
 				shouldBubble = false;
 				break;
-			};
+			}
 			// user pressed the ESC
-			case 27:
-			{
+			case 27:{
 				//$(".cptIcdProcedureSelect").toggleClass("cptIcdProcedureSelectVisible");
 				break;
-			};
-		};
+			}
+		}
 		/* this propagates the jQuery event if true */
 		return shouldBubble;
-	};
+	}
 	/* user pressed special keys while in Selector
 	*
 	* Probably disables return key from barcode scanner. plb 6-26-2015
 	*
 	* */
-	$("#patronBarcode").keydown(function(e)
-	{
+	$("#patronBarcode").keydown(function (e){
 		return checkCptKey(e, $(this));
 	});
 	$("#offlineCircForm").validate();
