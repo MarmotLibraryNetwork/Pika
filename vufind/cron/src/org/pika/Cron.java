@@ -141,9 +141,14 @@ public class Cron {
 			if (processToRun.getArguments() != null) {
 				//Add arguments into the section
 				for (String argument : processToRun.getArguments()) {
-					String[] argumentOptions = argument.split("=");
-					logger.info("Adding section setting " + argumentOptions[0] + " = " + argumentOptions[1]);
-					cronIni.put("runtimeArguments", argumentOptions[0], argumentOptions[1]);
+					String[] argumentOptions = new String[0];
+					try {
+						argumentOptions = argument.split("=");
+						logger.info("Adding section setting " + argumentOptions[0] + " = " + argumentOptions[1]);
+						cronIni.put("runtimeArguments", argumentOptions[0], argumentOptions[1]);
+					} catch (IndexOutOfBoundsException e) {
+						cronIni.put("runtimeArguments", argument, true);
+					}
 				}
 				processSettings = cronIni.get("runtimeArguments");
 			} else {
