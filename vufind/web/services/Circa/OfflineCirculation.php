@@ -29,39 +29,25 @@
 require_once ROOT_DIR . '/sys/Circa/OfflineCirculationEntry.php';
 
 class Circa_OfflineCirculation extends Action{
-	function launch()
-	{
+	function launch(){
 		global $interface, $configArray;
 		$error = '';
 
 		if (isset($_POST['submit'])){
-			//Store information into the database
-			$login = $_REQUEST['login'];
-			$interface->assign('lastLogin', $login);
+			$login     = $_REQUEST['login'];
 			$password1 = $_REQUEST['password1'];
+			$interface->assign('lastLogin', $login);
 			$interface->assign('lastPassword1', $password1);
-			/*
-			$initials = $_REQUEST['initials'];
-			$interface->assign('lastInitials', $initials);
-			$password2 = $_REQUEST['password2'];
-			$interface->assign('lastPassword2', $password2);
-			*/
 
 			$loginInfoValid = true;
 			if (strlen($login) == 0){
-				$error .= "Please enter your login.<br>";
+				$error          .= "Please enter your login.<br>";
 				$loginInfoValid = false;
 			}
 			if (strlen($password1) == 0){
-				$error .= "Please enter your login password.<br>";
+				$error          .= "Please enter your login password.<br>";
 				$loginInfoValid = false;
 			}
-			/*if (strlen($initials) == 0){
-				$initials = $login;
-			}
-			if (strlen($password2) == 0){
-				$password2 = $password1;
-			}*/
 
 			if ($loginInfoValid){
 				//$barcodesToCheckIn = $_REQUEST['barcodesToCheckIn'];
@@ -77,8 +63,6 @@ class Circa_OfflineCirculation extends Action{
 						$offlineCirculationEntry->itemBarcode = $barcode;
 						$offlineCirculationEntry->login = $login;
 						$offlineCirculationEntry->loginPassword = $password1;
-						$offlineCirculationEntry->initials = $initials;
-						$offlineCirculationEntry->initialsPassword = $password2;
 						$offlineCirculationEntry->type = 'Check In';
 						$offlineCirculationEntry->status = 'Not Processed';
 						$offlineCirculationEntry->insert();
@@ -86,16 +70,15 @@ class Circa_OfflineCirculation extends Action{
 				}*/
 				$numItemsCheckedOut = 0;
 				if (strlen(trim($barcodesToCheckOut)) > 0 && strlen($patronBarcode) > 0){
-					$patronId = null;
+					$patronId              = null;
 					$userObj               = new User();
 					$userObj->cat_password = $patronBarcode;
-					if ($userObj->find()){
-						$userObj->fetch();
+					if ($userObj->find(true)){
 						$patronId = $userObj->id;
 					}
 					$barcodesToCheckOut = preg_split('/[\\s\\r\\n]+/', $barcodesToCheckOut);
 					if (!is_array($barcodesToCheckOut)){
-						$barcodesToCheckOut = array($barcodesToCheckOut);
+						$barcodesToCheckOut = [$barcodesToCheckOut];
 					}
 					foreach ($barcodesToCheckOut as $barcode){
 						$barcode = trim($barcode);
@@ -105,8 +88,6 @@ class Circa_OfflineCirculation extends Action{
 							$offlineCirculationEntry->itemBarcode   = $barcode;
 							$offlineCirculationEntry->login         = $login;
 							$offlineCirculationEntry->loginPassword = $password1;
-							//$offlineCirculationEntry->initials = $initials;
-							//$offlineCirculationEntry->initialsPassword = $password2;
 							$offlineCirculationEntry->patronBarcode = $patronBarcode;
 							$offlineCirculationEntry->patronId      = $patronId;
 							$offlineCirculationEntry->type          = 'Check Out';
@@ -121,13 +102,16 @@ class Circa_OfflineCirculation extends Action{
 				}
 				$results = "Successfully added <strong>{$numItemsCheckedOut}</strong> items to offline circulation transactions for patron <strong>{$patronBarcode}</strong>.<br>";
 			}
-			if (isset($results)) $interface->assign('results', $results);
-			else $error .= 'No Items were checked out.<br>';
+			if (isset($results)){
+				$interface->assign('results', $results);
+			}else{
+				$error .= 'No Items were checked out.<br>';
+			}
 		}
 
 		$interface->assign('error', $error);
 
-		$ils_name = $configArray['Catalog']['ils'] ? $configArray['Catalog']['ils'] : 'ILS';
+		$ils_name = $configArray['Catalog']['ils'] ?? 'ILS';
 		$interface->assign('ILSname', $ils_name);
 
 		//Get view & load template
