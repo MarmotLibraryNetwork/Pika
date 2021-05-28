@@ -110,7 +110,7 @@ class Marmot extends Sierra {
 			                                      "content"  => "dig access"];
 			if(!empty($_REQUEST['isCmuStudent'])) {
 				$extraSelfRegParams['varFields'][] = ["fieldTag" => "x",
-				                                      "content"  => "CMU Student"];
+				                                      "content"  => "Mesa County college student"];
 			}
 		}
 		return parent::selfRegister($extraSelfRegParams);

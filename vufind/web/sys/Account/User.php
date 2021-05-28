@@ -602,6 +602,11 @@ class User extends DB_DataObject {
 
 
 	function update($dataObject = false){
+		$phone = $this->phone;
+		if(count_chars($phone) > 30) {
+			$phoneParts = chunk_split($phone, 30);
+			$this->phone = $phoneParts[0];
+		}
 		$result = parent::update();
 		$this->clearCache(); // Every update to object requires clearing the Memcached version of the object
 		return $result;
@@ -622,6 +627,10 @@ class User extends DB_DataObject {
 		}
 		if (!isset($this->bypassAutoLogout)){
 			$this->bypassAutoLogout = 0;
+		}
+		if(count_chars($this->phone) > 30) {
+			$phoneParts = chunk_split($this->phone, 30);
+			$this->phone = $phoneParts[0];
 		}
 
 		$r = parent::insert();
