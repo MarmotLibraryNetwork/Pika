@@ -1,5 +1,5 @@
 {strip}
-	<h2>{*In *}{$interLibraryLoanName}</h2>
+	<h2>{*In *}Didn't find what you're looking for?</h2>
 	<div class="row" id="prospectorSection">
 
 		<div class="col-tn-12">
