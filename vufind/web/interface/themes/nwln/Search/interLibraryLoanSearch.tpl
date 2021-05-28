@@ -6,6 +6,7 @@
 		</div>
 		<div class="col-tn-12 col-sm-9">
 			Didn’t find what you need? Items not owned by {if $consortiumName}{$consortiumName}{elseif $homeLibrary}{$homeLibrary}{else}the library{/if} can be requested from other {$interLibraryLoanName} libraries to be delivered to your local library for pickup.
+			You can see what's available across the {$interLibraryLoanName} system here. Contact your local library to request items through {$interLibraryLoanName}.
 		</div>
 	</div>
 
