@@ -1217,5 +1217,14 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			],
 		],
 
+		'2021.02.0_location_phone' => [
+			'title'           => 'Increase Location phone column',
+			'description'     => 'Increase Location phone column to 25 chars.',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE `location` CHANGE COLUMN `phone` `phone` VARCHAR(25) NULL DEFAULT ''",
+			],
+		],
+
 	);
 }
