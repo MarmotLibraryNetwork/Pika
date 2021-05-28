@@ -134,10 +134,11 @@ Pika.OverDrive = (function(){
 			return false;
 		},
 
-		forceUpdateFromAPI:function(overDriveId){
+		forceUpdateFromAPI:function(overDriveId, pageReload){
 			var url = '/OverDrive/' + overDriveId + '/AJAX?method=forceUpdateFromAPI';
 			$.getJSON(url, function (data){
-					Pika.showMessage("Success", data.message, true, true);
+					if (typeof pageReload === 'undefined') pageReload = true;
+					Pika.showMessage("Success", data.message, true, pageReload);
 				}
 			);
 			return false;

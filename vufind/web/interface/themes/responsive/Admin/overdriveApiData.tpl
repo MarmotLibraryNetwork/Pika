@@ -15,6 +15,9 @@
 
 			</form>
 		</div>
+		<button onclick="return Pika.OverDrive.forceUpdateFromAPI($('#overDriveId').val(), false)"
+		        class="btn btn-sm btn-default">Mark to re-fetch update From API
+		</button>
 		<div class="row">
 			<div class="col-tn-12">{$overDriveAPIData}</div>
 		</div>
