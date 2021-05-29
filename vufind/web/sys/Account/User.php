@@ -604,7 +604,7 @@ class User extends DB_DataObject {
 	function update($dataObject = false){
 		$phone = $this->phone;
 		if(count_chars($phone) > 30) {
-			$phoneParts = chunk_split($phone, 30);
+			$phoneParts = str_split($phone, 30);
 			$this->phone = $phoneParts[0];
 		}
 		$result = parent::update();
@@ -629,7 +629,7 @@ class User extends DB_DataObject {
 			$this->bypassAutoLogout = 0;
 		}
 		if(count_chars($this->phone) > 30) {
-			$phoneParts = chunk_split($this->phone, 30);
+			$phoneParts = str_split($this->phone, 30);
 			$this->phone = $phoneParts[0];
 		}
 
