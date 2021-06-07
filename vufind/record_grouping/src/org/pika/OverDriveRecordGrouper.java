@@ -74,14 +74,14 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 		//primary creator in overdrive is always first name, last name.
 
 		String groupingFormat;
-		if (mediaType.equalsIgnoreCase("ebook")){
+		if (mediaType.equalsIgnoreCase("ebook")) {
 			groupingFormat = "book";
 			//Overdrive Graphic Novels can be derived from having a specific subject in the metadata
 			overDriveSubjectsStmt.setLong(1, id);
-			try (ResultSet overDriveSubjectRS = overDriveSubjectsStmt.executeQuery()){
-				while (overDriveSubjectRS.next()){
+			try (ResultSet overDriveSubjectRS = overDriveSubjectsStmt.executeQuery()) {
+				while (overDriveSubjectRS.next()) {
 					String subject = overDriveSubjectRS.getString("name");
-					if (subject.equals("Comic and Graphic Books")){
+					if (subject.equals("Comic and Graphic Books")) {
 						groupingFormat = "comic";
 						break;
 					}
@@ -89,6 +89,8 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 			} catch (Exception e) {
 				logger.error("Error looking for overdrive graphic novel info", e);
 			}
+		}else if (mediaType.equalsIgnoreCase("external service")){
+			groupingFormat = "book";
 		} else {
 			groupingFormat = mediaType;
 		}

@@ -224,6 +224,9 @@ public class RecordGrouperMain {
 	}
 
 	private static boolean processSingleWork(String groupedWorkId) {
+		if (logger.isInfoEnabled()) {
+			logger.info("Grouping single work : " + groupedWorkId);
+		}
 		boolean success = true;
 		String sql = "SELECT type, identifier FROM grouped_work_primary_identifiers \n" +
 				"INNER JOIN grouped_work ON (grouped_work_primary_identifiers.grouped_work_id = grouped_work.id) \n" +
@@ -248,6 +251,9 @@ public class RecordGrouperMain {
 
 	private static boolean processSingleRecord(RecordIdentifier recordIdentifier) {
 		String source = recordIdentifier.getSource();
+		if (logger.isInfoEnabled()) {
+			logger.info("Grouping single record : " + recordIdentifier);
+		}
 		if (source.equalsIgnoreCase("overdrive")) {
 			OverDriveRecordGrouper recordGroupingProcessor = new OverDriveRecordGrouper(pikaConn, econtentConnection, logger);
 			try {
