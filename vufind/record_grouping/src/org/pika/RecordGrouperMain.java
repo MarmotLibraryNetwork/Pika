@@ -259,8 +259,8 @@ public class RecordGrouperMain {
 			try {
 				String OverdriveRecordSQL = "SELECT overdrive_api_products.id, overdriveId, mediaType, title, subtitle, primaryCreatorRole, primaryCreatorName, code, publisher " +
 						"FROM overdrive_api_products INNER JOIN overdrive_api_product_metadata ON overdrive_api_product_metadata.productId = overdrive_api_products.id " +
-						"INNER JOIN overdrive_api_product_languages_ref ON overdrive_api_product_languages_ref.productId = overdrive_api_products.id " +
-						"INNER JOIN overdrive_api_product_languages ON overdrive_api_product_languages_ref.languageId = overdrive_api_product_languages.id " +
+						"LEFT JOIN overdrive_api_product_languages_ref ON overdrive_api_product_languages_ref.productId = overdrive_api_products.id " +
+						"LEFT JOIN overdrive_api_product_languages ON overdrive_api_product_languages_ref.languageId = overdrive_api_product_languages.id " +
 						"WHERE overdriveId = ?";
 
 				PreparedStatement overDriveRecordsStmt = econtentConnection.prepareStatement(OverdriveRecordSQL, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -271,7 +271,6 @@ public class RecordGrouperMain {
 						recordGroupingProcessor.processOverDriveRecord(recordIdentifier, overDriveRecordRS, true);
 						return true;
 					}
-					//TODO: missing from overdrive extract data ??
 				}
 			} catch (SQLException e) {
 				logger.error("Error processing OverDrive data", e);
@@ -526,7 +525,7 @@ public class RecordGrouperMain {
 		long processStartTime = new Date().getTime();
 
 		if (logger.isInfoEnabled()) {
-			logger.info("Starting grouping of records " + new Date().toString());
+			logger.info("Starting grouping of records " + new Date());
 		}
 
 		systemVariables = new PikaSystemVariables(logger, pikaConn);
@@ -607,7 +606,6 @@ public class RecordGrouperMain {
 			}
 		}
 
-		RecordGroupingProcessor recordGroupingProcessor = null;
 		if (!onlyDoCleanup) {
 
 			if (!explodeMarcsOnly) {
@@ -644,7 +642,10 @@ public class RecordGrouperMain {
 
 				//Cleanup the data
 				removeGroupedWorksWithoutPrimaryIdentifiers(pikaConn);
-				updateLastGroupingTime();
+				if (indexingProfileToRun == null) {
+					// Do not update grouping time when processing a specific indexing profile
+					updateLastGroupingTime();
+				}
 
 				pikaConn.setAutoCommit(true);
 				if (logger.isInfoEnabled()) {
@@ -657,15 +658,10 @@ public class RecordGrouperMain {
 			markRecordGroupingRunning(false);
 		}
 
-		if (recordGroupingProcessor != null) {
-			recordGroupingProcessor.dumpStats();
-			//TODO: each profile should run this??
-		}
-
 		long endTime     = new Date().getTime();
 		long elapsedTime = endTime - processStartTime;
 		if (logger.isInfoEnabled()) {
-			logger.info("Finished grouping records " + new Date().toString());
+			logger.info("Finished grouping records " + new Date());
 			logger.info("Elapsed Minutes " + (elapsedTime / 60000));
 		}
 
@@ -1087,7 +1083,8 @@ public class RecordGrouperMain {
 		try {
 //			String            OverdriveRecordSQL = "SELECT overdrive_api_products.id, overdriveId, mediaType, title, subtitle, primaryCreatorRole, primaryCreatorName, code, publisher FROM overdrive_api_products INNER JOIN overdrive_api_product_metadata ON overdrive_api_product_metadata.productId = overdrive_api_products.id INNER JOIN overdrive_api_product_languages_ref ON overdrive_api_product_languages_ref.productId = overdrive_api_products.id INNER JOIN overdrive_api_product_languages ON overdrive_api_product_languages_ref.languageId = overdrive_api_product_languages.id WHERE deleted = 0 AND isOwnedByCollections = 1";
 			// Because we may be dealing with multiple overdrive accounts now, the flag isOwnedByCollections is not a reliable filter (one collect many own while the other doesn't)
-			String            OverdriveRecordSQL = "SELECT overdrive_api_products.id, overdriveId, mediaType, title, subtitle, primaryCreatorRole, primaryCreatorName, code, publisher FROM overdrive_api_products INNER JOIN overdrive_api_product_metadata ON overdrive_api_product_metadata.productId = overdrive_api_products.id INNER JOIN overdrive_api_product_languages_ref ON overdrive_api_product_languages_ref.productId = overdrive_api_products.id INNER JOIN overdrive_api_product_languages ON overdrive_api_product_languages_ref.languageId = overdrive_api_product_languages.id WHERE deleted = 0";
+			String            OverdriveRecordSQL = "SELECT overdrive_api_products.id, overdriveId, mediaType, title, subtitle, primaryCreatorRole, primaryCreatorName, code, publisher FROM overdrive_api_products INNER JOIN overdrive_api_product_metadata ON overdrive_api_product_metadata.productId = overdrive_api_products.id LEFT JOIN overdrive_api_product_languages_ref ON overdrive_api_product_languages_ref.productId = overdrive_api_products.id LEFT JOIN overdrive_api_product_languages ON overdrive_api_product_languages_ref.languageId = overdrive_api_product_languages.id WHERE deleted = 0";
+			//LEFT joins needed to fetch titles with out language information
 			PreparedStatement overDriveRecordsStmt;
 			if (lastGroupingTime != null && !fullRegroupingClearGroupingTables && !fullRegroupingNoClear) {
 				overDriveRecordsStmt = econtentConnection.prepareStatement(OverdriveRecordSQL + " AND (dateUpdated >= ? OR lastMetadataChange >= ? OR lastAvailabilityChange >= ?)", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
