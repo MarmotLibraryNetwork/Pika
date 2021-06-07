@@ -420,10 +420,13 @@ class BookCoverProcessor {
 		if ($overDriveProduct->get('overdriveId', $sourceAndId->getRecordId())){
 			$overDriveMetadata = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductMetaData();
 			if ($overDriveMetadata->get('productId', $overDriveProduct->id)){
-				$coverUrl = $overDriveMetadata->cover;
+				$coverUrl = $overDriveMetadata->cover; // full size image
 				if ($coverUrl != null){
 					return $this->processImageURL($coverUrl);
 				}
+			} else {
+				$coverUrl = $overDriveProduct->cover; // Thumbnail image
+				return $this->processImageURL($coverUrl);
 			}
 		}
 		return false;
