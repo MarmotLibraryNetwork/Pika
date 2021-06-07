@@ -142,7 +142,8 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 					idGenerator.update(fullTitle.getBytes());
 				}
 
-				String author = getAuthoritativeAuthor();				if (author.equals("")) {
+				String author = getAuthoritativeAuthor();
+				if (author.equals("")) {
 					idGenerator.update("--null--".getBytes());
 				} else {
 					idGenerator.update(author.getBytes());
