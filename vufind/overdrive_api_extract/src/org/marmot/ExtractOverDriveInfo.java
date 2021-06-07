@@ -373,6 +373,23 @@ class ExtractOverDriveInfo {
 			} else {
 				getIndividualProductStmt.setString(1, individualIdToProcess);
 				productsNeedingUpdatesRS = getIndividualProductStmt.executeQuery();
+				if (!productsNeedingUpdatesRS.last()) {
+					// Don't have metadata for this Id;
+					String productUrl = "https://api.overdrive.com/v1/collections/" + getProductsKeyForSharedCollection(-1L)
+									+ "/products/" + individualIdToProcess;
+					WebServiceResponse productsResponse = callOverDriveURL(productUrl);
+					if (productsResponse.getResponseCode() == 200) {
+						JSONObject productInfo = productsResponse.getResponse();
+						if (productInfo == null) {
+							return;
+						}
+						OverDriveRecordInfo curRecord  = new OverDriveRecordInfo(-0L, productInfo);
+						addProductToDB(curRecord);
+					}
+
+				} else {
+					productsNeedingUpdatesRS.beforeFirst(); // go back to start for fetching below
+				}
 			}
 
 
@@ -1103,13 +1120,15 @@ class ExtractOverDriveInfo {
 											}
 										}
 									}
-									if (!ownedByAdvantage) {
-										//Not owned by any collections, make sure we set that it isn't owned.
-										if (logger.isDebugEnabled()) {
-											logger.debug("Product " + curProduct.overDriveId + " is not owned by any collections.");
-										}
-										updateDBMetadataForProduct(curProduct, metadata, curTime);
-									}
+									// The following block is no longer accurate when handling multiple overdrive accounts.
+									// So we will always
+//									if (!ownedByAdvantage) {
+//										//Not owned by any collections, make sure we set that it isn't owned.
+//										if (logger.isDebugEnabled()) {
+//											logger.debug("Product " + curProduct.overDriveId + " is not owned by any collections.");
+//										}
+//										updateDBMetadataForProduct(curProduct, metadata, curTime);
+//									}
 								}
 
 								curProduct.metadataUpdated = true;
