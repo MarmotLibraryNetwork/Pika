@@ -89,8 +89,6 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 			} catch (Exception e) {
 				logger.error("Error looking for overdrive graphic novel info", e);
 			}
-		}else if (mediaType.equalsIgnoreCase("external service")){
-			groupingFormat = "book";
 		} else {
 			groupingFormat = mediaType;
 		}
@@ -103,9 +101,12 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 		}
 
 		// Set Grouping Language (use ISO 639-2 Bibliographic code)
-		String groupingLanguage = translationMaps.get("iso639-1TOiso639-2B").translateValue(productLanguageCode, primaryIdentifier.toString());
+		String groupingLanguage = "";
+			if (productLanguageCode != null) {
+				groupingLanguage = translationMaps.get("iso639-1TOiso639-2B").translateValue(productLanguageCode, primaryIdentifier.toString());
+			}
 
-		//Replace & with and for better matching
+			//Replace & with and for better matching
 		groupedWork.setTitle(title, subtitle);
 
 		if (author != null) {
@@ -124,6 +125,7 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 				break;
 			default:
 				logger.warn("Unrecognized OverDrive mediaType (using book at grouping category) for " + primaryIdentifier + " : " + groupingFormat);
+			case "external service":
 			case "magazine":
 			case "audiobook":
 			case "ebook":
