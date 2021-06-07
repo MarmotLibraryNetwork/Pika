@@ -358,6 +358,14 @@ class ExtractOverDriveInfo {
 
 	private void updateMetadataAndAvailability(String individualIdToProcess) {
 		try {
+
+			for (Map.Entry<String, String> entry : overDriveProductsKeys.entrySet()) {
+				String accountId          = entry.getKey();
+				String productKey         = entry.getValue();
+				Long   sharedCollectionId = (accountIds.indexOf(accountId) + 1) * -1L;
+				libToOverDriveAPIKeyMap.put(sharedCollectionId, productKey);
+			}
+
 			final String message = "Starting to update metadata and availability for products";
 			logger.debug(message);
 			results.addNote(message);
@@ -374,7 +382,7 @@ class ExtractOverDriveInfo {
 				getIndividualProductStmt.setString(1, individualIdToProcess);
 				productsNeedingUpdatesRS = getIndividualProductStmt.executeQuery();
 				if (!productsNeedingUpdatesRS.last()) {
-					// Don't have metadata for this Id;
+					// Don't have metadata for this Id we are specifically fetching ;
 					String productUrl = "https://api.overdrive.com/v1/collections/" + getProductsKeyForSharedCollection(-1L)
 									+ "/products/" + individualIdToProcess;
 					WebServiceResponse productsResponse = callOverDriveURL(productUrl);
@@ -383,8 +391,12 @@ class ExtractOverDriveInfo {
 						if (productInfo == null) {
 							return;
 						}
-						OverDriveRecordInfo curRecord  = new OverDriveRecordInfo(-0L, productInfo);
+						OverDriveRecordInfo curRecord  = new OverDriveRecordInfo(-1L, productInfo);
+						curRecord.getCollections().addAll(libToOverDriveAPIKeyMap.keySet());
+						// Don't know which library, so add all at this point.
 						addProductToDB(curRecord);
+						setNeedsUpdated(individualIdToProcess, true);
+
 					}
 
 				} else {
@@ -394,12 +406,6 @@ class ExtractOverDriveInfo {
 
 
 			TreeMap<Long, HashMap<String, SharedStats>> overdriveAccountsSharedStatsHashMaps = new TreeMap<>();
-			for (Map.Entry<String, String> entry : overDriveProductsKeys.entrySet()) {
-				String accountId          = entry.getKey();
-				String productKey         = entry.getValue();
-				Long   sharedCollectionId = (accountIds.indexOf(accountId) + 1) * -1L;
-				libToOverDriveAPIKeyMap.put(sharedCollectionId, productKey);
-			}
 
 			ArrayList<MetaAvailUpdateData> productsToUpdate = new ArrayList<>();
 			while (productsNeedingUpdatesRS.next()) {
@@ -1163,7 +1169,8 @@ class ExtractOverDriveInfo {
 			try {
 				int               curCol            = 0;
 				PreparedStatement metaDataStatement = addMetaDataStmt;
-				if (databaseMetaData.getId() != -1) {
+				final boolean     isUpdateStatement = databaseMetaData.getId() != -1;
+				if (isUpdateStatement) {
 					metaDataStatement = updateMetaDataStmt;
 				}
 				metaDataStatement.setLong(++curCol, updateData.databaseId);
@@ -1206,7 +1213,7 @@ class ExtractOverDriveInfo {
 				metaDataStatement.setString(++curCol, metaData.toString(2).replaceAll("\uD83D\uDE03", "").replaceAll("\uD83D\uDE0A", ""));
 				// quick fix to remove troublesome emojis from the rawdata
 
-				if (databaseMetaData.getId() != -1) {
+				if (isUpdateStatement) {
 					metaDataStatement.setLong(++curCol, databaseMetaData.getId());
 				}
 				metaDataStatement.executeUpdate();
@@ -1489,6 +1496,11 @@ class ExtractOverDriveInfo {
 				updateProductAvailabilityStmt.setLong(2, curTime);
 				results.incrementAvailabilityChanges();
 				results.saveResults();
+			}
+			else {
+				updateProductAvailabilityStmt.setLong(2, 0L);
+				setNeedsUpdated(overDriveInfo.getId(), true);
+				// If we did not get availability on initial load; mark to try again.
 			}
 			updateProductAvailabilityStmt.setLong(3, productId);
 			updateProductAvailabilityStmt.executeUpdate();
