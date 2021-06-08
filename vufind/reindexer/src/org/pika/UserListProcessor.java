@@ -72,37 +72,42 @@ public class UserListProcessor {
 
 	public Long processPublicUserLists(long lastReindexTime, ConcurrentUpdateSolrClient updateServer, HttpSolrClient solrServer) {
 		GroupedReindexMain.addNoteToReindexLog("Starting to process public lists");
-		Long numListsProcessed = 0L;
+		long numListsProcessed = 0L;
 		try {
 			PreparedStatement listsStmt;
+			final String      sql = "SELECT user_list.id AS id, deleted, public, title, description, user_list.created, dateUpdated, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user ON user_id = user.id ";
 			if (fullReindex) {
 				//Delete all lists from the index
 				updateServer.deleteByQuery("recordtype:list");
 				//Get a list of all public lists
-				listsStmt = pikaConn.prepareStatement("SELECT user_list.id as id, deleted, public, title, description, user_list.created, dateUpdated, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user on user_id = user.id WHERE public = 1 AND deleted = 0");
+				listsStmt = pikaConn.prepareStatement(sql + "WHERE public = 1 AND deleted = 0");
 			} else {
 				//Get a list of all lists that are were changed since the last update
-				listsStmt = pikaConn.prepareStatement("SELECT user_list.id as id, deleted, public, title, description, user_list.created, dateUpdated, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user on user_id = user.id WHERE dateUpdated > ?");
+				listsStmt = pikaConn.prepareStatement(sql + "WHERE dateUpdated > ?");
 				listsStmt.setLong(1, lastReindexTime);
 			}
 
-			PreparedStatement getTitlesForListStmt      = pikaConn.prepareStatement("SELECT groupedWorkPermanentId, notes from user_list_entry WHERE listId = ?");
-			PreparedStatement getLibraryForHomeLocation = pikaConn.prepareStatement("SELECT libraryId, locationId from location");
-			PreparedStatement getCodeForHomeLocation    = pikaConn.prepareStatement("SELECT code, locationId from location");
 
-			try (ResultSet librariesByHomeLocationRS = getLibraryForHomeLocation.executeQuery()) {
+			try (
+							PreparedStatement getLibraryForHomeLocation = pikaConn.prepareStatement("SELECT libraryId, locationId FROM location");
+							ResultSet librariesByHomeLocationRS = getLibraryForHomeLocation.executeQuery()
+			) {
 				while (librariesByHomeLocationRS.next()) {
 					librariesByHomeLocation.put(librariesByHomeLocationRS.getLong("locationId"), librariesByHomeLocationRS.getLong("libraryId"));
 				}
 			}
 
-			try (ResultSet codesByHomeLocationRS = getCodeForHomeLocation.executeQuery()) {
+			try (
+							PreparedStatement getCodeForHomeLocation    = pikaConn.prepareStatement("SELECT code, locationId FROM location");
+							ResultSet codesByHomeLocationRS = getCodeForHomeLocation.executeQuery()
+			) {
 				while (codesByHomeLocationRS.next()) {
 					locationCodesByHomeLocation.put(codesByHomeLocationRS.getLong("locationId"), codesByHomeLocationRS.getString("code"));
 				}
 			}
 
-			ResultSet allPublicListsRS = listsStmt.executeQuery();
+			PreparedStatement getTitlesForListStmt = pikaConn.prepareStatement("SELECT groupedWorkPermanentId, notes FROM user_list_entry WHERE listId = ?");
+			ResultSet         allPublicListsRS     = listsStmt.executeQuery();
 			while (allPublicListsRS.next()) {
 				updateSolrForList(updateServer, solrServer, getTitlesForListStmt, allPublicListsRS);
 				numListsProcessed++;
@@ -127,7 +132,8 @@ public class UserListProcessor {
 		int  isPublic = allPublicListsRS.getInt("public");
 		long userId   = allPublicListsRS.getLong("user_id");
 		if (deleted == 1 || isPublic == 0) {
-			updateServer.deleteByQuery("id:list");
+			// Remove list from search when deleted or made private
+			updateServer.deleteByQuery("id:list" + listId);
 		} else {
 			logger.debug("Processing list " + listId + " " + allPublicListsRS.getString("title"));
 			userListSolr.setId(listId);
