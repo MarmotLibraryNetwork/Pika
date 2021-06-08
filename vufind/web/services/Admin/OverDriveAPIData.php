@@ -72,26 +72,50 @@ class Admin_OverDriveAPIData extends Admin_Admin {
 						$overDriveId = trim($_REQUEST['id']);
 						$productKey  = $libraryInfo->collectionToken;
 						if (empty($_REQUEST['formAction'])){
-							$_REQUEST['formAction'] = 'Metadata'; // If an id is supplied in the url but not an action assume metadata call
+							$_REQUEST['formAction'] = 'Product'; // If an id is supplied in the url but not an action assume Product Response call
 						}
 
-						if ($_REQUEST['formAction'] == 'Metadata'){
+						if ($_REQUEST['formAction'] == 'Product'){
+							$contents .= "<h3>Product</h3>";
+							$contents .= "<h4>Product for $overDriveId</h4>";
+							$searchResponse = $driver->getProductById($overDriveId, $productKey);
+							if ($searchResponse){
+								if (!empty($searchResponse->contentDetails[0]->href)){
+									$siteTitleUrl = $searchResponse->contentDetails[0]->href;
+									$contents .= '<a href="'.$siteTitleUrl .'">OverDrive Site Title Page</a><br>';
+								}
+								$contents .= $this->easy_printr("Product - {$libraryInfo->name} shared collection", "product_{$overDriveId}_{$productKey}", $searchResponse);
+							}else{
+								$contents .= ("No product<br>");
+							}
+							if ($hasAdvantageAccounts){
+								foreach ($advantageAccounts->advantageAccounts as $accountInfo){
+									$contents .= ("<h4>Product - {$accountInfo->name}</h4>");
+									$searchResponse = $driver->getProductById($overDriveId, $accountInfo->collectionToken);
+									if ($searchResponse){
+										$contents .= $this->easy_printr("Product response", "product_{$overDriveId}_{$accountInfo->collectionToken}", $searchResponse);
+									}else{
+										$contents .= ("No product<br>");
+									}
+								}
+							}
+						}elseif ($_REQUEST['formAction'] == 'Metadata'){
 							$contents .= "<h3>Metadata</h3>";
 							$contents .= "<h4>Metadata for $overDriveId</h4>";
-							$metadata = $driver->getProductMetadata($overDriveId, $productKey);
-							if ($metadata){
-								$contents .= $this->easy_printr("Metadata - {$libraryInfo->name} shared collection", "metadata_{$overDriveId}_{$productKey}", $metadata);
+							$searchResponse = $driver->getProductMetadata($overDriveId, $productKey);
+							if ($searchResponse){
+								$contents .= $this->easy_printr("Metadata - {$libraryInfo->name} shared collection", "metadata_{$overDriveId}_{$productKey}", $searchResponse);
 							}else{
-								$contents .= ("No metadata<br>");
+								$contents .= ("No searchResponse<br>");
 							}
 							if ($hasAdvantageAccounts){
 								foreach ($advantageAccounts->advantageAccounts as $accountInfo){
 									$contents .= ("<h4>Metadata - {$accountInfo->name}</h4>");
-									$metadata = $driver->getProductMetadata($overDriveId, $accountInfo->collectionToken);
-									if ($metadata){
-										$contents .= $this->easy_printr("Metadata response", "metadata_{$overDriveId}_{$accountInfo->collectionToken}", $metadata);
+									$searchResponse = $driver->getProductMetadata($overDriveId, $accountInfo->collectionToken);
+									if ($searchResponse){
+										$contents .= $this->easy_printr("Metadata response", "metadata_{$overDriveId}_{$accountInfo->collectionToken}", $searchResponse);
 									}else{
-										$contents .= ("No metadata<br>");
+										$contents .= ("No searchResponse<br>");
 									}
 								}
 							}
@@ -168,6 +192,13 @@ class Admin_OverDriveAPIData extends Admin_Admin {
 										$contents .= ("No magazine issues found.<br>");
 									}
 								}
+							}
+						}elseif ($_REQUEST['formAction'] == 'Search CrossRefId'){
+							$searchResponse = $driver->searchAPI($productKey, $overDriveId); //cross Ref Id
+							if ($searchResponse){
+								$contents .= '<br>' . $this->easy_printr("Search - {$libraryInfo->name} shared collection", "search_{$overDriveId}_{$productKey}", $searchResponse);
+							}else{
+								$contents .= ('<br>' . "No search Response<br>");
 							}
 						}
 

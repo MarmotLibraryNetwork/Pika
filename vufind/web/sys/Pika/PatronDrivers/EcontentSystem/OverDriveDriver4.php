@@ -427,8 +427,7 @@ class OverDriveDriver4 {
 	}
 
 	public function getProductById($overDriveId, $productsKey){
-		$productsUrl = "https://api.overdrive.com/v1/collections/$productsKey/products";
-		$productsUrl .= "?crossRefId=$overDriveId";
+		$productsUrl = "https://api.overdrive.com/v1/collections/$productsKey/products/$overDriveId";
 		return $this->_callUrl($productsUrl);
 	}
 
@@ -436,6 +435,19 @@ class OverDriveDriver4 {
 		$overDriveId = strtoupper($overDriveId);
 		$metadataUrl = "https://api.overdrive.com/v1/collections/$productsKey/products/$overDriveId/metadata";
 		return $this->_callUrl($metadataUrl);
+	}
+
+	public function searchAPI($productsKey, $crossRefId = null, $overDriveId = null){
+		$searchUrl = "https://api.overdrive.com/v1/collections/$productsKey/products?";
+		if (!empty($crossRefId)){
+			$searchUrl .= "crossRefId=$crossRefId";
+		} elseif (!empty($overDriveId)){
+			$searchUrl .= "q=$crossRefId";
+//			$searchUrl .= "identifiers=$overDriveId";
+		} else {
+			return false;
+		}
+		return $this->_callUrl($searchUrl);
 	}
 
 	public function getProductAvailability($overDriveId, $productsKey){
