@@ -406,6 +406,8 @@ class OverDrive_AJAX extends AJAXHandler {
 	function getOverDriveCheckoutPrompts(){
 		global $interface;
 		$user           = UserAccount::getLoggedInUser();
+		$issueId = "";
+		$isMagazine =false;
 		$overDriveUsers = $user->getRelatedOverDriveUsers();
 		if (!empty($overDriveUsers)){
 			$id = $_REQUEST['id'];
@@ -414,10 +416,13 @@ class OverDrive_AJAX extends AJAXHandler {
 				$formats        = $recordDriver->getItems();
 				$lendingPeriods = [];
 				$formatClass    = [];
-				$isMagazine     = false;
+
 				foreach ($formats as $format){
 					if ($format->textId == 'magazine-overdrive'){
 						$isMagazine = true;
+						if(!empty($_REQUEST['issueId'])){
+						$issueId = $_REQUEST['issueId'];
+							}
 						break;
 					}else{
 						$tmp = $format->getFormatClass();
@@ -433,7 +438,8 @@ class OverDrive_AJAX extends AJAXHandler {
 				$formatClass     = $overDriveFormat->getFormatClass($_REQUEST['formatType']);
 				$interface->assign('formatType', $_REQUEST['formatType']);
 			}
-
+			$interface->assign('issueId', $issueId);
+			$interface->assign('isMagazine', $isMagazine);
 			$interface->assign('overDriveId', $id);
 			$interface->assign('overDriveUsers', $overDriveUsers);
 
@@ -624,6 +630,42 @@ class OverDrive_AJAX extends AJAXHandler {
 			}
 		}else{
 			return $this->getSupportForm();
+		}
+	}
+
+	function getOverDriveIssueCheckoutPrompt(){
+		$user = UserAccount::getLoggedInUser();
+		if($user){
+		global $interface;
+		$overdriveId = $_REQUEST['overdriveId'];
+		$issues = new \Pika\BibliographicDrivers\OverDrive\OverDriveAPIMagazineIssues;
+		$issues->overdriveId = $overdriveId;
+		$issues->find();
+		$title = '';
+		$coverUrl = '';
+		$edition = '';
+		$description = '';
+		$parentId = '';
+		while ($issues->fetch()){
+			$title =  $issues->title;
+			$coverUrl = $issues->coverUrl;
+			$edition = $issues->edition;
+			$description = $issues->description;
+			$parentId = $issues->parentId;
+		}
+
+		return [
+			'title' => "Checkout Magazine Issue",
+			'body' => "<div class='row'><div class='col-sm-3'><img class='img-responsive' src='". $coverUrl ."' /></div><div class='col-sm-9'><div class='row' ><strong>". $title ."</strong> - ". $edition ."</div><div class='row' style='max-height:300px;overflow:hidden;'>". $description ."</div></div></div></div>",
+			'buttons' =>"<button class='btn btn-primary' onclick=\"Pika.OverDrive.checkOutOverDriveTitle('". $parentId ."','magazine-overdrive', '". $overdriveId."')\">Checkout</button>"
+		];
+		}
+		else{
+			return [
+				'title' => "Checkout Magazine Issue",
+				'body' => "You must be logged in.",
+				'buttons' => "<button class='btn btn-default' onclick='Pika.Account.ajaxLogin()'>Login</button>"
+			];
 		}
 	}
 
