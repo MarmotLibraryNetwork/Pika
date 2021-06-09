@@ -1,3 +1,4 @@
+<?php
 /*
  * Copyright (C) 2020  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
@@ -12,12 +13,32 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.marmot;
-
 /**
- * Created by mnoble on 11/20/2017.
+ * Stores information about a product that has been loaded from the OverDrive APIs
+ *
  */
-public class OverDrive/3e4af195-7180-497b-9f83-76f43bc0d9f0/HomeSharedStats {
-	public Integer copiesOwnedByShared = 0;
-	public Integer copiesAvailableInShared = 0;
+
+
+namespace Pika\BibliographicDrivers\OverDrive;
+
+
+class OverDriveAPIMagazineIssues extends \DB_DataObject
+{
+	public $__table = 'overdrive_api_magazine_issues';   // table name
+
+	public $id;
+	public $overdriveId;
+	public $crossRefId;
+	public $title;
+	public $edition;
+	public $coverUrl;
+	public $parentId;
+	public $econtent_table;
+	public $dateAdded;
+	public $dateUpdated;
+	public $description;
+
+
+
+
 }

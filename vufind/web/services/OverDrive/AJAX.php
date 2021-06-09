@@ -39,6 +39,10 @@ class OverDrive_AJAX extends AJAXHandler {
 		'forceUpdateFromAPI',
 		'getSupportForm',
 		'submitSupportForm',
+		'getIssuesList',
+		'getOverDriveIssueCheckoutPrompt',
+		'issueCheckoutPrompts',
+		'doOverDriveMagazineIssueCheckout'
 	];
 
 	protected $methodsThatRespondThemselves = [];
@@ -329,6 +333,36 @@ class OverDrive_AJAX extends AJAXHandler {
 		}else{
 			return ['success' => false, 'message' => 'You must be logged in to '.translate("freeze"). 'an item'];
 		}
+	}
+
+	function getIssuesList(){
+		$parentId = $_REQUEST['parentId'];
+			$overdriveIssues = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIMagazineIssues();
+			$data = [];
+
+				$overdriveIssues->parentId = $parentId;
+				$overdriveIssues->find();
+				$issuesList = array_reverse($overdriveIssues->fetchAll());
+				$i=0;
+				foreach($issuesList as $issue)
+				{
+					$formatted =  "<div id=\"scrollerTitleIssues" . $i ."\" class=\"scrollerTitle\" onclick=\"Pika.OverDrive.checkoutOverdriveMagazineByIssueID('" . $issue->overdriveId . "')\"><img src=\"". $issue->coverUrl . "\" class=\"scrollerTitleCover\" alt=\"" . $issue->edition ."\"></div>";
+
+					$issues = [
+						'id' => $issue->overdriveId,
+						'image' => $issue->coverUrl,
+						'author' => '',
+						'title' => $issue->edition,
+						'formattedTitle' => $formatted
+					];
+
+					$data[$i] = $issues;
+					$i++;
+				}
+			global $timer;
+			$timer->logTime("Finished getIssues for OverDrive record {$parentId}");
+
+		return $data;
 	}
 
 	function freezeOverDriveHold(){
