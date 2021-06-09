@@ -28,7 +28,7 @@ import java.util.zip.CRC32;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import org.apache.commons.codec.binary.Base64;
+
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -1992,7 +1992,7 @@ class ExtractOverDriveInfo {
 			conn.setRequestMethod("POST");
 			conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
 			//logger.debug("Client Key is " + clientSecret);
-			String encoded = Base64.encodeBase64String((clientKey + ":" + clientSecret).getBytes());
+			String encoded = Base64.getEncoder().encodeToString((clientKey + ":" + clientSecret).getBytes());
 			conn.setRequestProperty("Authorization", "Basic " + encoded);
 			conn.setReadTimeout(30000);
 			conn.setConnectTimeout(30000);
