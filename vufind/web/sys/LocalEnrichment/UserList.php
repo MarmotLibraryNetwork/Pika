@@ -149,15 +149,17 @@ class UserList extends DB_DataObject
 		return $result;
 	}
 	function delete($useWhere = false){
-		$this->deleted = 1;
+		$this->deleted     = 1;
 		$this->dateUpdated = time();
-		return parent::delete();
+		return parent::update();
+		// Mark the list as deleted so that indexing can remove it from search
+		// The Cron Process DatabaseCleanup will actually delete the list from the databse
 	}
 
 	/**
 	 * @var array An array of resources keyed by the list id since we can iterate over multiple lists while fetching from the DB
 	 */
-	private $listTitles = array();
+	private $listTitles = [];
 
 	/**
 	 * @param null $sort  optional SQL for the query's ORDER BY clause
@@ -172,7 +174,7 @@ class UserList extends DB_DataObject
 		}
 		if ($sort) $listEntry->orderBy($sort);
 
-		// These conditions retrieve list items with a valid groupedworked or archive ID.
+		// These conditions retrieve list items with a valid groupedwork ID or archive ID.
 		// (This prevents list strangeness when our searches don't find the ID in the search indexes)
 		$listEntry->whereAdd(
 			'(
