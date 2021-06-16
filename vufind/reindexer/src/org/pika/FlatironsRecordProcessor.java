@@ -81,6 +81,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 					if (eContentLocation == null){
 						eContentLocation = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + 'a');
 						// This is a fallback; The Pika extractor puts the bibLevelLocationsSubfield in Fixed field tag
+						// subfield h is proper and correct for Flatirons.
 					}
 				}
 				//TODO: multiple locations?
@@ -104,6 +105,10 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 					String url = itemInfo.geteContentUrl();
 					if (url.contains("ebrary.com")) {
 						itemInfo.seteContentSource("ebrary");
+					} else if (url.contains("gutenberg.org")){
+						itemInfo.seteContentSource("Project Gutenberg");
+					} else if (url.contains("safaribooksonline.com")){
+						itemInfo.seteContentSource("Safari Books");
 					}
 
 					itemInfo.setCallNumber("Online");
@@ -123,6 +128,13 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 		return unsuppressedEcontentRecords;
 	}
 
+	/**
+	 * Determine an ILS eContent source for records with item records attached
+	 *
+	 * @param record  Marc Data
+	 * @param itemField Item Record
+	 * @return
+	 */
 	@Override
 	protected String getILSeContentSourceType(Record record, DataField itemField) {
 		if (itemField.getSubfield(locationSubfieldIndicator) != null) {
