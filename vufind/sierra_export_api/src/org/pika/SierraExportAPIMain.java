@@ -59,6 +59,7 @@ public class SierraExportAPIMain {
 
 	private static IndexingProfile   indexingProfile;
 	private static MarcRecordGrouper recordGroupingProcessor;
+	private static boolean           isFlatirons = false;
 //	private static GroupedWorkIndexer groupedWorkIndexer;
 
 	private static String  apiBaseUrl            = null;
@@ -183,6 +184,10 @@ public class SierraExportAPIMain {
 			}
 		}
 		indexingProfile = IndexingProfile.loadIndexingProfile(pikaConn, profileToLoad, logger);
+		if (indexingProfile.marcPath.contains("flatirons")){
+			isFlatirons = true;
+			bibLevelLocationsSubfield = 'h';
+		}
 
 		String apiVersion = PikaConfigIni.getIniValue("Catalog", "api_version");
 		if (apiVersion == null || apiVersion.length() == 0) {
@@ -1279,7 +1284,12 @@ public class SierraExportAPIMain {
 					@SuppressWarnings("unchecked") Iterator<String> tags      = (Iterator<String>) fieldData.keys();
 					while (tags.hasNext()) {
 						String tag = tags.next();
-						if (fieldData.get(tag) instanceof JSONObject) {
+						if (isFlatirons && (tag.equals(indexingProfile.recordNumberTag) || tag.equals(indexingProfile.sierraRecordFixedFieldsTag))){
+							// Skip duplicating tags that appear here
+							// These are strange special purpose tags used by other vendors for flatirons. (some kind of authority control for the record Number tag)
+							continue;
+						}
+							if (fieldData.get(tag) instanceof JSONObject) {
 							JSONObject fieldDataDetails = fieldData.getJSONObject(tag);
 							char       ind1             = fieldDataDetails.getString("ind1").charAt(0);
 							char       ind2             = fieldDataDetails.getString("ind2").charAt(0);
@@ -1292,7 +1302,8 @@ public class SierraExportAPIMain {
 								String     subfieldValue        = subfieldData.getString(subfieldIndicatorStr); //TODO: this doesn't interpret some slash-u notations
 								dataField.addSubfield(marcFactory.newSubfield(subfieldIndicator, subfieldValue));
 							}
-							marcRecord.addVariableField(dataField);
+								marcRecord.addVariableField(dataField);
+
 						} else {
 							String fieldValue = fieldData.getString(tag);
 							marcRecord.addVariableField(marcFactory.newControlField(tag, fieldValue));
