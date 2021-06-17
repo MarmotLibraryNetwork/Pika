@@ -1374,14 +1374,14 @@ EOT;
 		             'description'=> 'Mailing Address.',
 		             'maxLength'  => 40,
 		             'required'   => true];
-
-		$fields[] = ['property'   => 'altaddress',
-		             'type'       => 'text',
-		             'label'      => 'Physical Address',
-		             'description'=> 'Physical Address.',
-		             'maxLength'  => 40,
-		             'required'   => false];
-
+		if ($library && $library->showWorkPhoneInProfile){
+			$fields[] = ['property'    => 'altaddress',
+			             'type'        => 'text',
+			             'label'       => 'Physical Address',
+			             'description' => 'Physical Address.',
+			             'maxLength'   => 40,
+			             'required'    => false];
+		}
 		$fields[] = ['property'   => 'city',
 		             'type'       => 'text',
 		             'label'      => 'City',
