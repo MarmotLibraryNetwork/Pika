@@ -197,7 +197,7 @@ class RecordGroupingProcessor {
 		}
 
 		if (doAutomaticEcontentSuppression) {
-			// Suppress Overdrive (or Hoopla for Marmot) records from grouping, typically from the ils profile
+			// Suppress Overdrive (or Hoopla for Marmot with ils eContent record with items) records from grouping, typically from the ils profile
 			// This is based on the assumption that OverDrive records will be loaded through APIs
 			// (or sideloaded for Hoopla)
 			if (logger.isDebugEnabled()) {
