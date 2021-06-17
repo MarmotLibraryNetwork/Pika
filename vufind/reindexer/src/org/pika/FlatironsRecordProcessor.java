@@ -109,6 +109,8 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 						itemInfo.seteContentSource("Project Gutenberg");
 					} else if (url.contains("safaribooksonline.com")){
 						itemInfo.seteContentSource("Safari Books");
+					} else if (url.contains("galegroup.com")){
+						itemInfo.seteContentSource("Gale");
 					}
 
 					itemInfo.setCallNumber("Online");
