@@ -760,7 +760,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			itemInfo.seteContentUrl(urlSubfield.getData().trim());
 		} else {
 			loadEContentUrl(record, itemInfo, identifier);
-
 		}
 		itemInfo.setDetailedStatus("Available Online");
 
