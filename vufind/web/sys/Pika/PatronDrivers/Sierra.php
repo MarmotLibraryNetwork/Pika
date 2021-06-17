@@ -1310,7 +1310,7 @@ EOT;
 		} while ($barcodeTest === true);
 		$params['barcodes'][] = $barcode;
 
-		// agency code
+		// agency code -- not all sierra libraries use the agency field
 		if($library->selfRegistrationAgencyCode >= 1) {
 			$params['fixedFields']["158"] = [
 			 "label" => "PAT AGENCY",
@@ -1446,14 +1446,14 @@ EOT;
 		             'description'=> 'Mailing Address.',
 		             'maxLength'  => 40,
 		             'required'   => true];
-// todo: this shouldn't always show -- need a check here
-		$fields[] = ['property'   => 'altaddress',
-		             'type'       => 'text',
-		             'label'      => 'Physical Address',
-		             'description'=> 'Physical Address.',
-		             'maxLength'  => 40,
-		             'required'   => false];
-
+		if ($library && $library->showWorkPhoneInProfile){
+			$fields[] = ['property'    => 'altaddress',
+			             'type'        => 'text',
+			             'label'       => 'Physical Address',
+			             'description' => 'Physical Address.',
+			             'maxLength'   => 40,
+			             'required'    => false];
+		}
 		$fields[] = ['property'   => 'city',
 		             'type'       => 'text',
 		             'label'      => 'City',
