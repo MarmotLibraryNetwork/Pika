@@ -1293,18 +1293,18 @@ class MarcRecord extends IndexRecord
 			$recordDetails = $this->getGroupedWorkDriver()->getSolrField('record_details');
 			if ($recordDetails){
 				if (!is_array($recordDetails)){
-					$recordDetails = array($recordDetails);
+					$recordDetails = [$recordDetails];
 				}
 				foreach ($recordDetails as $recordDetailRaw){
 					$recordDetail = explode('|', $recordDetailRaw);
 					if ($recordDetail[0] == $this->getIdWithSource()){
-						$this->format = array($recordDetail[1]);
+						$this->format = [$recordDetail[1]];
 						return $this->format;
 					}
 				}
 			}
 			//We did not find a record for this in the index.  It's probably been deleted.
-			$this->format = array('Unknown');
+			$this->format = ['Unknown'];
 		}
 		return $this->format;
 	}
