@@ -112,6 +112,9 @@ class OverDrive_AJAX extends AJAXHandler {
 				}
 				$driver            = OverDriveDriverFactory::getDriver();
 				$overDriveId       = $_REQUEST['id'] ?? $_REQUEST['overDriveId'];
+				if(!empty($_REQUEST['issueId'])){
+					$overDriveId     = $_REQUEST['issueId'];
+				}
 				$lendingPeriod     = empty($_REQUEST['lendingPeriod']) ? null : $_REQUEST['lendingPeriod'];
 				$formatType        = empty($_REQUEST['formatType']) ? null : $_REQUEST['formatType'];
 				$result            = $driver->checkoutOverDriveTitle($overDriveId, $patron, $lendingPeriod, $formatType);
@@ -436,6 +439,13 @@ class OverDrive_AJAX extends AJAXHandler {
 			}else{
 				$overDriveFormat = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductFormats();
 				$formatClass     = $overDriveFormat->getFormatClass($_REQUEST['formatType']);
+				if($_REQUEST['formatType']=="magazine-overdrive")
+				{
+					$isMagazine = true;
+					if(!empty($_REQUEST['issueId'])){
+						$issueId = $_REQUEST['issueId'];
+					}
+				}
 				$interface->assign('formatType', $_REQUEST['formatType']);
 			}
 			$interface->assign('issueId', $issueId);
