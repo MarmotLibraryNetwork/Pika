@@ -240,7 +240,15 @@ class SearchAPI extends AJAXHandler {
 
 			}else{
 				$status[] = self::STATUS_CRITICAL;
-				$notes[]  = 'Could not get status from Solr. Solr is down or unresponsive';
+				$notes[]  = 'Could not get status from Solr searcher core. Solr is down or unresponsive';
+			}
+
+			// Check that the indexing core is up
+			$masterIndexUrl = str_replace('8080', $configArray['Reindex']['solrPort'], $configArray['Index']['url']) . '/admin/cores';
+			$masterJson      = @file_get_contents($masterIndexUrl);
+			if (!$masterJson){
+					$status[] = self::STATUS_CRITICAL;
+					$notes[]  = 'Could not get status from Solr indexer core. Solr is down or unresponsive';
 			}
 
 
