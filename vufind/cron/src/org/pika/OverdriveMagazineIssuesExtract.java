@@ -124,10 +124,20 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 	public void getAllMagazineIssuesById(String overdriveId, String crossRefId, Logger logger, Connection econtentConn)
 	{
 		try {
-			String overDriveUrl = "https://api.overdrive.com/v1/collections/"+ overDriveProductsKeys.firstEntry().getValue() + "/products/" + overdriveId + "/issues?limit=2000&sort=saledate:asc";
+			boolean small = false;
+			int x = 0;
+			while (small == false)
+			{
+			int issuesPerQuery = 2000;
+			String overDriveUrl = "https://api.overdrive.com/v1/collections/"+ overDriveProductsKeys.firstEntry().getValue() + "/products/" + overdriveId + "/issues?limit="+ issuesPerQuery+"&sort=saledate:asc&offset=" + x;
 			WebServiceResponse overdriveCall = callOverDriveURL(overDriveUrl, logger);
 			JSONObject jsonObject = overdriveCall.getResponse();
 			JSONArray products = jsonObject.getJSONArray("products");
+			int returnedRecords = jsonObject.getInt("totalItems");
+			if (returnedRecords < issuesPerQuery)
+			{
+				small = true;
+			}
 			String magazineParentId = overdriveId;
 			for(int i = 0; i< products.length(); i++)
 			{
