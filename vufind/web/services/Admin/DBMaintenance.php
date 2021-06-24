@@ -1465,11 +1465,20 @@ class DBMaintenance extends Admin_Admin {
     						edition varchar(50),
     						coverUrl varchar(100),
     						parentId varchar(50),
+    						description TEXT, 
     						econtent_table varchar(50) DEFAULT 'overdrive_api_products',
     						dateAdded INT(11),
     						dateUpdated INT(11)
 						)"
 						,
+					]
+				],
+				'add_OverDrive_Issues_to_Library_Option' =>[
+					'title'       =>'Add Magazine Issues option to library database',
+					'description' => 'Add Magazine Issues to more information accordion in library database',
+					'sql'         => [
+						"INSERT INTO `library_more_details` (`libraryId`,`weight`,`source`,`collapseByDefault`)
+							SELECT libraryId,'13','issue','0' FROM library;"
 					]
 				],
 

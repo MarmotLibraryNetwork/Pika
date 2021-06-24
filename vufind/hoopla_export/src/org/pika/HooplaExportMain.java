@@ -425,13 +425,9 @@ public class HooplaExportMain {
 
 			if (conn instanceof HttpsURLConnection) {
 				HttpsURLConnection sslConn = (HttpsURLConnection) conn;
-				sslConn.setHostnameVerifier(new HostnameVerifier() {
-
-					@Override
-					public boolean verify(String hostname, SSLSession session) {
-						//Do not verify host names
-						return true;
-					}
+				sslConn.setHostnameVerifier((hostname, session) -> {
+					//Do not verify host names
+					return true;
 				});
 			}
 			conn.setDoInput(true);
