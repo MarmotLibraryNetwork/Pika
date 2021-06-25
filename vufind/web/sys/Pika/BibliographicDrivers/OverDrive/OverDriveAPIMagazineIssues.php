@@ -33,7 +33,6 @@ class OverDriveAPIMagazineIssues extends \DB_DataObject
 	public $edition;
 	public $coverUrl;
 	public $parentId;
-	public $econtent_table;
 	public $dateAdded;
 	public $dateUpdated;
 	public $description;
