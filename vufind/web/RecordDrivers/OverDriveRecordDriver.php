@@ -907,7 +907,7 @@ class OverDriveRecordDriver extends RecordInterface {
 		if ($this->isMagazine()){
 			$moreDetailsOptions['issues'] = [
 				'label' => 'Magazine Issues',
-				'body'  => $interface->fetch('Overdrive/view-issues.tpl'),
+				'body'  => $interface->fetch('OverDrive/view-issues.tpl'),
 				'hideByDefault' => false
 			];
 		}
