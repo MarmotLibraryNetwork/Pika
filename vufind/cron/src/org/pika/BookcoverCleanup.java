@@ -82,7 +82,7 @@ public class BookcoverCleanup implements IProcessHandler {
 									processLog.incUpdated();
 								} else {
 									processLog.incErrors();
-									processLog.addNote("Unable to delete file " + curFile.toString());
+									processLog.addNote("Unable to delete file " + curFile);
 								}
 							}
 						}
@@ -98,6 +98,51 @@ public class BookcoverCleanup implements IProcessHandler {
 			}
 		} catch (Exception e) {
 			logger.error("Unknown Error while cleaning covers.", e);
+		}
+			String   qrCodePath              = PikaConfigIni.getIniValue("Site", "qrcodePath");
+		if (qrCodePath != null && !qrCodePath.isEmpty()) {
+			try {
+				final String note = "Deleting qrcode images older than " + coverAge + " days";
+				processLog.addNote(note);
+				if (logger.isInfoEnabled()) {
+					logger.info(note);
+				}
+				int    numFilesDeleted    = 0;
+				File   coverDirectoryFile = new File(qrCodePath);
+				if (!coverDirectoryFile.exists()) {
+					processLog.incErrors();
+					processLog.addNote("Directory " + coverDirectoryFile.getAbsolutePath() + " does not exist.  Please check configuration file.");
+					processLog.saveToDatabase(pikaConn, logger);
+				} else {
+					processLog.addNote("Cleaning up qrcode images in " + coverDirectoryFile.getAbsolutePath());
+					processLog.saveToDatabase(pikaConn, logger);
+					File[] filesToCheck = coverDirectoryFile.listFiles((dir, name) -> name.toLowerCase().endsWith("png") || name.toLowerCase().endsWith("jpg"));
+					if (filesToCheck != null) {
+						for (File curFile : filesToCheck) {
+							//Remove any files created more than 2 weeks ago.
+							if (curFile.lastModified() < (currentTime - coverAge * 24 * 3600 * 1000)) {
+								if (curFile.delete()) {
+									numFilesDeleted++;
+									processLog.incUpdated();
+								} else {
+									processLog.incErrors();
+									processLog.addNote("Unable to delete file " + curFile);
+								}
+							}
+						}
+					}
+					if (numFilesDeleted > 0) {
+						final String aNote = "Removed " + numFilesDeleted + " files from " + qrCodePath + ".";
+						processLog.addNote("\t" + aNote);
+						if (logger.isInfoEnabled()) {
+							logger.info(aNote);
+						}
+					}
+				}
+
+			} catch (Exception e) {
+				logger.error("Unknown Error while cleaning covers.", e);
+			}
 		}
 		processLog.setFinished();
 		processLog.saveToDatabase(pikaConn, logger);
