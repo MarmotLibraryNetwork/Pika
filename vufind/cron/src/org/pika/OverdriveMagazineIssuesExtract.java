@@ -2,6 +2,7 @@ package org.pika;
 
 import com.sun.mail.imap.Rights;
 import com.sun.org.apache.xpath.internal.operations.Bool;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.ini4j.Profile;
 import org.json.*;
@@ -163,16 +164,16 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 				JSONObject image = images.getJSONObject("cover");
 				String coverUrl = image.getString("href");
 				String magazineIssueId = issue.getString("id");
-				String magazineTitle = issue.getString("sortTitle");
+				String magazineTitle = StringEscapeUtils.escapeHtml4(issue.getString("sortTitle")).replace("'", "&apos;");
 				String magazineCrossRef = issue.getString("crossRefId");
-				String magazineEdition = issue.getString("edition");
+				String magazineEdition = StringEscapeUtils.escapeHtml4(issue.getString("edition")).replace("'", "&apos;");
 				JSONObject links = issue.getJSONObject("links");
 				JSONObject metadata = links.getJSONObject("metadata");
 				String magazineIssueMetadataURL = metadata.getString("href");
 
 				WebServiceResponse metadataCall = callOverDriveURL(magazineIssueMetadataURL, logger);
 				JSONObject magazineMetaCall = metadataCall.getResponse();
-				String magazineDescription = magazineMetaCall.getString("shortDescription").replaceAll("’", "&apos;");
+				String magazineDescription = StringEscapeUtils.escapeHtml4(magazineMetaCall.getString("shortDescription")).replace("'", "&apos;");
 
 
 				long dateTime = System.currentTimeMillis() / 1000;
@@ -235,16 +236,16 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 					JSONObject image = images.getJSONObject("cover");
 					String coverUrl = image.getString("href");
 					String magazineIssueId = issue.getString("id");
-					String magazineTitle = issue.getString("sortTitle");
+					String magazineTitle = StringEscapeUtils.escapeHtml4(issue.getString("sortTitle")).replace("'", "&apos;");
 					String magazineCrossRef = issue.getString("crossRefId");
-					String magazineEdition = issue.getString("edition");
+					String magazineEdition = StringEscapeUtils.escapeHtml4(issue.getString("edition")).replace("'", "&apos;");
 					JSONObject links = issue.getJSONObject("links");
 					JSONObject metadata = links.getJSONObject("metadata");
 					String magazineIssueMetadataURL = metadata.getString("href");
 
 					WebServiceResponse metadataCall = callOverDriveURL(magazineIssueMetadataURL, logger);
 					JSONObject magazineMetaCall = metadataCall.getResponse();
-					String magazineDescription = magazineMetaCall.getString("shortDescription").replaceAll("’", "&apos;");
+					String magazineDescription = StringEscapeUtils.escapeHtml4(magazineMetaCall.getString("shortDescription")).replace("'", "&apos;");
 
 
 					long dateTime = System.currentTimeMillis() / 1000;
