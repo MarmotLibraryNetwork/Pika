@@ -164,16 +164,16 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 				JSONObject image = images.getJSONObject("cover");
 				String coverUrl = image.getString("href");
 				String magazineIssueId = issue.getString("id");
-				String magazineTitle = StringEscapeUtils.escapeHtml4(issue.getString("sortTitle")).replace("'", "&apos;");
+				String magazineTitle = issue.getString("sortTitle").replace("'", "&apos;");
 				String magazineCrossRef = issue.getString("crossRefId");
-				String magazineEdition = StringEscapeUtils.escapeHtml4(issue.getString("edition")).replace("'", "&apos;");
+				String magazineEdition = issue.getString("edition").replace("'", "&apos;");
 				JSONObject links = issue.getJSONObject("links");
 				JSONObject metadata = links.getJSONObject("metadata");
 				String magazineIssueMetadataURL = metadata.getString("href");
 
 				WebServiceResponse metadataCall = callOverDriveURL(magazineIssueMetadataURL, logger);
 				JSONObject magazineMetaCall = metadataCall.getResponse();
-				String magazineDescription = StringEscapeUtils.escapeHtml4(magazineMetaCall.getString("shortDescription")).replace("'", "&apos;");
+				String magazineDescription = magazineMetaCall.getString("shortDescription").replace("'", "&apos;");
 
 
 				long dateTime = System.currentTimeMillis() / 1000;
@@ -236,16 +236,16 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 					JSONObject image = images.getJSONObject("cover");
 					String coverUrl = image.getString("href");
 					String magazineIssueId = issue.getString("id");
-					String magazineTitle = StringEscapeUtils.escapeHtml4(issue.getString("sortTitle")).replace("'", "&apos;");
+					String magazineTitle = issue.getString("sortTitle").replace("'", "&apos;");
 					String magazineCrossRef = issue.getString("crossRefId");
-					String magazineEdition = StringEscapeUtils.escapeHtml4(issue.getString("edition")).replace("'", "&apos;");
+					String magazineEdition = issue.getString("edition").replace("'", "&apos;");
 					JSONObject links = issue.getJSONObject("links");
 					JSONObject metadata = links.getJSONObject("metadata");
 					String magazineIssueMetadataURL = metadata.getString("href");
 
 					WebServiceResponse metadataCall = callOverDriveURL(magazineIssueMetadataURL, logger);
 					JSONObject magazineMetaCall = metadataCall.getResponse();
-					String magazineDescription = StringEscapeUtils.escapeHtml4(magazineMetaCall.getString("shortDescription")).replace("'", "&apos;");
+					String magazineDescription = magazineMetaCall.getString("shortDescription").replace("'", "&apos;");
 
 
 					long dateTime = System.currentTimeMillis() / 1000;
