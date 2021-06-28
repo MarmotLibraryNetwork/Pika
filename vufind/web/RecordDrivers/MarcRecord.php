@@ -2352,18 +2352,21 @@ class MarcRecord extends IndexRecord
 			$opacMessageField = $configArray['Catalog']['OpacMessageField'];
 			// Include MarcTag and subfields with a colon to separate for easylook up: example '945:i:r'
 			// of form ItemTagNumber:ItemIdSubfield:OpacMessageSubfield
-			[$itemTag, $itemIdSubfield, $opacMessageSubfield] = explode(':', $opacMessageField, 3);
+			[$itemTag, $itemIdSubfield, $opacMessageSubfieldIndicator] = explode(':', $opacMessageField, 3);
 			if ($this->getMarcRecord() && $this->isValid()){
 				$itemRecords = $this->marcRecord->getFields($itemTag);
 				foreach ($itemRecords as $itemRecord){
 					/** @var File_MARC_Subfield $subfield */
-					$subfield     = $itemRecord->getSubfield($itemIdSubfield);
+					$subfield = $itemRecord->getSubfield($itemIdSubfield);
 					if (!empty($subfield)){
 						$itemRecordId = $subfield->getData();
 						if ($itemRecordId == $itemId){
-							$opacMessage = $itemRecord->getSubfield($opacMessageSubfield)->getData();
-							if (!empty($opacMessage)){
-								$memCache->set($opacMessageKey, $opacMessage, 0, 600);
+							$opacMessageSubfield = $itemRecord->getSubfield($opacMessageSubfieldIndicator);
+							if (!empty($opacMessageSubfield)){
+								$opacMessage = $opacMessageSubfield->getData();
+								if (!empty($opacMessage)){
+									$memCache->set($opacMessageKey, $opacMessage, 0, 600);
+								}
 							}
 						}
 					}
