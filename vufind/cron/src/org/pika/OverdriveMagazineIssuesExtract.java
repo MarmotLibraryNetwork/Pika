@@ -116,15 +116,16 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 
 						  if (processSettings.get("fullReindex") != null){
 						  	processLog.addNote("Adding/Updating all magazine issues");
-						  	getAllMagazineIssuesById(magazines.getString("overdriveId"), magazines.getString("crossRefId"),logger, processLog, econtentConn);
+						  	getAllMagazineIssuesById(magazines.getString("overdriveId"), magazines.getString("crossRefId"),logger, processLog, econtentConn, pikaConn);
 						  }else{
 						  	processLog.addNote("Adding New Magazine Issues");
-						  	getNewMagazineIssuesById(magazines.getString("overdriveId"), magazines.getString("crossRefId"), logger, processLog, econtentConn);
+						  	getNewMagazineIssuesById(magazines.getString("overdriveId"), magazines.getString("crossRefId"), logger, processLog, econtentConn, pikaConn);
 						  }
 
 
 
-				  		//logger.info("Processed " + magazines.getString("overdriveId"));
+				  		processLog.addNote("Processed " + magazines.getString("overdriveId"));
+
 				  	}
 				  }else{
 				  	logger.info("Zero magazines found in database");
@@ -138,18 +139,23 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 			processLog.saveToDatabase(pikaConn, logger);
 
 	}
-	public void getAllMagazineIssuesById(String overdriveId, String crossRefId, Logger logger, CronProcessLogEntry processLog, Connection econtentConn)
+	public void getAllMagazineIssuesById(String overdriveId, String crossRefId, Logger logger, CronProcessLogEntry processLog, Connection econtentConn, Connection pikaConn)
 	{
 
 		try {
 			boolean small = false;
 			int x = 0;
-			while (small == false)
-			{
-			int issuesPerQuery = 2000;
-			String overDriveUrl = "https://api.overdrive.com/v1/collections/"+ overDriveProductsKeys.firstEntry().getValue() + "/products/" + overdriveId + "/issues?limit="+ issuesPerQuery+"&sort=saledate:asc&offset=" + x;
-			WebServiceResponse overdriveCall = callOverDriveURL(overDriveUrl, logger);
-			JSONObject jsonObject = overdriveCall.getResponse();
+			while (small == false) {
+				int issuesPerQuery = 2000;
+				String overDriveUrl = "https://api.overdrive.com/v1/collections/" + overDriveProductsKeys.firstEntry().getValue() + "/products/" + overdriveId + "/issues?limit=" + issuesPerQuery + "&sort=saledate:asc&offset=" + x;
+				WebServiceResponse overdriveCall = callOverDriveURL(overDriveUrl, logger);
+				JSONObject jsonObject = overdriveCall.getResponse();
+				if (jsonObject.getInt("totalItems") == 0) {
+					processLog.addNote("No magazines found for " + overdriveId);
+					processLog.incErrors();
+					processLog.saveToDatabase(pikaConn,logger);
+					break;
+				}
 			JSONArray products = jsonObject.getJSONArray("products");
 			int returnedRecords = jsonObject.getInt("totalItems");
 			if (returnedRecords < issuesPerQuery)
@@ -203,14 +209,19 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 			}
 				x = x+issuesPerQuery;
 				processLog.addNote("Added or Updated " + updates + " magazine issues to database for magazine id: " + magazineParentId);
+				processLog.addUpdates(updates);
+				processLog.incUpdated();
+				processLog.saveToDatabase(pikaConn,logger);
 			}
 		}catch(Exception e)
 		{
-			e.printStackTrace();
+			processLog.addNote("Error: " + e );
+			processLog.incErrors();
+			processLog.saveToDatabase(pikaConn,logger);
 		}
 	}
 
-	public void getNewMagazineIssuesById(String overdriveId, String crossRefId, Logger logger, CronProcessLogEntry processLog, Connection econtentConn)
+	public void getNewMagazineIssuesById(String overdriveId, String crossRefId, Logger logger, CronProcessLogEntry processLog, Connection econtentConn, Connection pikaConn)
 	{
 		try {
 			boolean small = false;
@@ -222,6 +233,12 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 				String overDriveUrl = "https://api.overdrive.com/v1/collections/"+ overDriveProductsKeys.firstEntry().getValue() + "/products/" + overdriveId + "/issues?limit="+ issuesPerQuery +"&offset="+x;
 				WebServiceResponse overdriveCall = callOverDriveURL(overDriveUrl, logger);
 				JSONObject jsonObject = overdriveCall.getResponse();
+				if (jsonObject.getInt("totalItems") == 0) {
+					processLog.addNote("No magazines found for " + overdriveId);
+					processLog.incErrors();
+					processLog.saveToDatabase(pikaConn,logger);
+					break;
+				}
 				JSONArray products = jsonObject.getJSONArray("products");
 				int returnedRecords = jsonObject.getInt("totalItems");
 				if (returnedRecords < issuesPerQuery)
@@ -263,11 +280,16 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 
 			}
 				processLog.addNote("Added " + updates + " magazine issues to database for magazine id: " + magazineParentId);
+				processLog.addUpdates(updates);
+				processLog.incUpdated();
+				processLog.saveToDatabase(pikaConn, logger);
 				x = x+issuesPerQuery;
 			}
 		}catch(Exception e)
 		{
-			e.printStackTrace();
+			processLog.addNote("Error: " + e );
+			processLog.incErrors();
+			processLog.saveToDatabase(pikaConn,logger);
 		}
 	}
 
