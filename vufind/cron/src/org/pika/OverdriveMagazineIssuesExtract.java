@@ -77,7 +77,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 			if (advantageCollectionToLibMap.isEmpty()) {
 				// If the advantageCollectionToLibMap is already populated, skip this step as we are using shared advantage accounts
 				try (
-								PreparedStatement advantageCollectionMapStmt = pikaConn.prepareStatement("SELECT libraryId, overdriveAdvantageName, overdriveAdvantageProductsKey, sharedOverdriveCollection FROM library WHERE enableOverdriveCollection = 1");
+								PreparedStatement advantageCollectionMapStmt = pikaConn.prepareStatement("SELECT libraryId, overdriveAdvantageProductsKey, sharedOverdriveCollection FROM library WHERE enableOverdriveCollection = 1");
 								// Only include libraries that have enabled Overdrive Collection in Pika, even if they have an Advantage account  (eg. CMC)
 								ResultSet advantageCollectionMapRS = advantageCollectionMapStmt.executeQuery();
 				) {
@@ -85,12 +85,12 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 						//1 = (pika) libraryId, 2 = overDriveAdvantageName, 3 = overDriveAdvantageProductsKey
 
 						final long   pikaLibraryId          = advantageCollectionMapRS.getLong(1);
-						final String overDriveAdvantageName = advantageCollectionMapRS.getString(2);
-						if (overDriveAdvantageName != null && !overDriveAdvantageName.isEmpty()) {
-							advantageCollectionToLibMap.put(overDriveAdvantageName, pikaLibraryId);
-							libToOverDriveAPIKeyMap.put(pikaLibraryId, advantageCollectionMapRS.getString(3));
+						final String overDriveAdvantageProducts = advantageCollectionMapRS.getString(2);
+						if (overDriveAdvantageProducts != null && !overDriveAdvantageProducts.isEmpty()) {
+							advantageCollectionToLibMap.put(overDriveAdvantageProducts, pikaLibraryId);
+
 						}
-						long sharedCollectionId = advantageCollectionMapRS.getLong(4);
+						long sharedCollectionId = advantageCollectionMapRS.getLong(3);
 						if (sharedCollectionId < 0L) {
 							libToSharedCollectionIdMap.put(pikaLibraryId, sharedCollectionId);
 						}
@@ -98,7 +98,6 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 				} catch (SQLException e) {
 					logger.error("Error loading Advantage Collection names", e);
 				}
-
 			}
 
 			//Load products from API
@@ -145,17 +144,32 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 		try {
 			boolean small = false;
 			int x = 0;
+			for (Map.Entry<String, String> entry : overDriveProductsKeys.entrySet()) {
+				String accountId          = entry.getKey();
+				String productKey         = entry.getValue();
+				Long   sharedCollectionId = (accountIds.indexOf(accountId) + 1) * -1L;
+				libToOverDriveAPIKeyMap.put(sharedCollectionId, productKey);
+			}
 			while (small == false) {
 				int issuesPerQuery = 2000;
-				String overDriveUrl = "https://api.overdrive.com/v1/collections/" + overDriveProductsKeys.firstEntry().getValue() + "/products/" + overdriveId + "/issues?limit=" + issuesPerQuery + "&sort=saledate:asc&offset=" + x;
+				String overDriveUrl = "https://api.overdrive.com/v1/collections/" + getProductsKeyForSharedCollection(-1L, logger) + "/products/" + overdriveId + "/issues?limit=" + issuesPerQuery + "&sort=saledate:asc&offset=" + x;
 				WebServiceResponse overdriveCall = callOverDriveURL(overDriveUrl, logger);
 				JSONObject jsonObject = overdriveCall.getResponse();
 				if (jsonObject.getInt("totalItems") == 0) {
-					processLog.addNote("No magazines found for " + overdriveId);
-					processLog.incErrors();
-					processLog.saveToDatabase(pikaConn,logger);
-					break;
+					processLog.addNote("No magazines found for " + overdriveId + " trying advantage");
+					for (String advantageCollections : advantageCollectionToLibMap.keySet()) {
+						overDriveUrl = "https://api.overdrive.com/v1/collections/" + advantageCollections + "/products/" + overdriveId + "/issues?limit=" + issuesPerQuery + "&sort=saledate:asc&offset=" + x;
+						overdriveCall = callOverDriveURL(overDriveUrl, logger);
+						jsonObject = overdriveCall.getResponse();
+
+					if(jsonObject.getInt("totalItems") ==0) {
+						processLog.incErrors();
+						processLog.addNote("No magazines found for " + overdriveId);
+						processLog.saveToDatabase(pikaConn, logger);
+						break;
+					}
 				}
+			}
 			JSONArray products = jsonObject.getJSONArray("products");
 			int returnedRecords = jsonObject.getInt("totalItems");
 			if (returnedRecords < issuesPerQuery)
@@ -215,7 +229,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 			}
 		}catch(Exception e)
 		{
-			processLog.addNote("Error: " + e );
+			processLog.addNote("Error: " + e.getMessage() );
 			processLog.incErrors();
 			processLog.saveToDatabase(pikaConn,logger);
 		}
@@ -287,7 +301,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 			}
 		}catch(Exception e)
 		{
-			processLog.addNote("Error: " + e );
+			processLog.addNote("Error: " + e.getMessage() );
 			processLog.incErrors();
 			processLog.saveToDatabase(pikaConn,logger);
 		}
