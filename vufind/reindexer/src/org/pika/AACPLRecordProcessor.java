@@ -42,21 +42,36 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		//get a list of bibs that have order records on them
 		File ordersFile = new File(marcPath + "/Pika_orders.mrc");
 		if (ordersFile.exists()) {
-			try {
-				MarcReader ordersReader = new MarcStreamReader(new FileInputStream(ordersFile));
-				while (ordersReader.hasNext()) {
-					Record marcRecord = ordersReader.next();
-					VariableField recordNumberField = marcRecord.getVariableField("001");
-					if (recordNumberField != null && recordNumberField instanceof ControlField) {
-						ControlField recordNumberCtlField = (ControlField) recordNumberField;
-						bibsWithOrders.add(recordNumberCtlField.getData());
+			int     attempts = 0;
+			boolean success  = true;
+			do {
+				try {
+					MarcReader ordersReader = new MarcStreamReader(new FileInputStream(ordersFile));
+					while (ordersReader.hasNext()) {
+						Record        marcRecord        = ordersReader.next();
+						VariableField recordNumberField = marcRecord.getVariableField("001");
+						if (recordNumberField instanceof ControlField) {
+							ControlField recordNumberCtlField = (ControlField) recordNumberField;
+							bibsWithOrders.add(recordNumberCtlField.getData());
+						}
 					}
-
+					logger.info("Finished reading records with orders");
+				} catch (Exception e) {
+					//The Symphony Extractor may be writing the orders file so sometimes we get "Premature end of file encountered"
+					attempts++;
+					if (attempts >= 3) {
+						logger.error("Error reading orders file after " + attempts + " attempts", e);
+						// Let the loop end after 3 attempts
+					} else {
+						success = false;
+						try {
+							Thread.sleep(50);
+						} catch (InterruptedException interruptedException) {
+							// Ignore exception
+						}
+					}
 				}
-				logger.info("Finished reading records with orders");
-			} catch (Exception e) {
-				logger.error("Error reading orders file ", e);
-			}
+			} while (!success);
 		} else {
 			logger.warn("Could not find orders file at " + ordersFile.getAbsolutePath());
 		}
