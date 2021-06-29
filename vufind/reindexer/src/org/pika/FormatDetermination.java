@@ -1130,7 +1130,9 @@ public class FormatDetermination {
 							result.add("PlayawayView");
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
-						}else if (subfieldData.contains("graphic novel")) {
+						}else if (subfieldData.contains("graphic novel")
+										|| subfieldData.contains("comic books, strips, etc") // Library of Congress authorized term
+						) {
 							boolean okToAdd = false;
 							if (field.getSubfield('v') != null){
 								String subfieldVData = field.getSubfield('v').getData().toLowerCase();
