@@ -169,7 +169,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 						break;
 					}
 				}
-			}
+		}
 			JSONArray products = jsonObject.getJSONArray("products");
 			int returnedRecords = jsonObject.getInt("totalItems");
 			if (returnedRecords < issuesPerQuery)
@@ -248,10 +248,19 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 				WebServiceResponse overdriveCall = callOverDriveURL(overDriveUrl, logger);
 				JSONObject jsonObject = overdriveCall.getResponse();
 				if (jsonObject.getInt("totalItems") == 0) {
-					processLog.addNote("No magazines found for " + overdriveId);
-					processLog.incErrors();
-					processLog.saveToDatabase(pikaConn,logger);
-					break;
+					processLog.addNote("No magazines found for " + overdriveId + " trying advantage");
+					for (String advantageCollections : advantageCollectionToLibMap.keySet()) {
+						overDriveUrl = "https://api.overdrive.com/v1/collections/" + advantageCollections + "/products/" + overdriveId + "/issues?limit=" + issuesPerQuery + "&sort=saledate:asc&offset=" + x;
+						overdriveCall = callOverDriveURL(overDriveUrl, logger);
+						jsonObject = overdriveCall.getResponse();
+
+						if(jsonObject.getInt("totalItems") ==0) {
+							processLog.incErrors();
+							processLog.addNote("No magazines found for " + overdriveId);
+							processLog.saveToDatabase(pikaConn, logger);
+							break;
+						}
+					}
 				}
 				JSONArray products = jsonObject.getJSONArray("products");
 				int returnedRecords = jsonObject.getInt("totalItems");
