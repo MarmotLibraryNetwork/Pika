@@ -183,7 +183,6 @@ public class GroupedReindexMain {
 		sendCompletionMessage(numWorksProcessed, numListsProcessed);
 		
 		addNoteToReindexLog("Finished Reindex for " + serverName);
-		logger.info("Finished Reindex for " + serverName);
 		long endTime     = new Date().getTime();
 		long elapsedTime = endTime - startTime;
 		logger.info("Elapsed Minutes " + (elapsedTime / 60000));
