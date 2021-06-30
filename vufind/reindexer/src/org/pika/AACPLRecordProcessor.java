@@ -43,8 +43,9 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		File ordersFile = new File(marcPath + "/Pika_orders.mrc");
 		if (ordersFile.exists()) {
 			int     attempts = 0;
-			boolean success  = true;
+			boolean success;
 			do {
+				success = true;
 				try {
 					MarcReader ordersReader = new MarcStreamReader(new FileInputStream(ordersFile));
 					while (ordersReader.hasNext()) {
@@ -62,7 +63,6 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 					if (attempts >= 3) {
 						logger.error("Error reading orders file after " + attempts + " attempts", e);
 						// Let the loop end after 3 attempts
-						success = true;
 					} else {
 						success = false;
 						try {
