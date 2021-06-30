@@ -198,7 +198,7 @@ class Sierra {
 //				$checkout['renewMessage']   = '';
 				$checkout['coverUrl']       = $coverUrl;
 				$checkout['barcode']        = $entry->barcode;
-				$checkout['request']        = $entry->callNumber;
+				$checkout['request']        = $entry->callNumber ?? null;
 				$checkout['author']         = $titleAndAuthor['author'];
 				$checkout['title']          = $titleAndAuthor['title'];
 				$checkout['title_sort']     = $titleAndAuthor['sort_title'];
