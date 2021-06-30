@@ -192,6 +192,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 				format = "eMusic";
 				break;
 			case "t":
+				// This is the general eContent bib format value
 				//Check to see if this is a serial resource
 				String leader = record.getLeader().toString();
 				if (leader.length() >= 7) {
