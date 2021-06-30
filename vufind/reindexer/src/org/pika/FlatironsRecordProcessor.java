@@ -101,7 +101,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 						itemInfo.seteContentUrl(isRecordEContent.getUrl());
 					}
 
-					itemInfo.seteContentSource("External eContent");
+					itemInfo.seteContentSource("eContent");
 					String url = itemInfo.geteContentUrl();
 					if (url.contains("ebrary.com")) {
 						itemInfo.seteContentSource("ebrary");
@@ -150,7 +150,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 				return "Carnegie Online";
 			}
 		}
-		return "Unknown Source";
+		return "eContent";
 	}
 
 	protected boolean isBibSuppressed(Record record) {
