@@ -2,7 +2,6 @@ package org.pika;
 
 import com.sun.mail.imap.Rights;
 import com.sun.org.apache.xpath.internal.operations.Bool;
-import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.ini4j.Profile;
 import org.json.*;

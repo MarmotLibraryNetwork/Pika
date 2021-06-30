@@ -24,6 +24,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.*;
@@ -349,60 +350,81 @@ public class UpdateReadingHistory implements IProcessHandler {
 	}
 
 	private void processTitlesForUser(Long userId, String cat_username, String cat_password, ArrayList<CheckedOutTitle> checkedOutTitlesAlreadyInReadingHistory) throws SQLException {
-		try {
-			// Call the patron API to get their checked out items
-			URL    patronApiUrl  = new URL(pikaUrl + "/API/UserAPI?method=getPatronCheckedOutItems&username=" + encode(cat_username) + "&password=" + encode(cat_password));
-			Object patronDataRaw = patronApiUrl.getContent();
-			if (patronDataRaw instanceof InputStream) {
-				String patronDataJson = Util.convertStreamToString((InputStream) patronDataRaw);
-				if (logger.isDebugEnabled()) {
-					logger.debug(patronApiUrl.toString());
-					logger.debug("Json for patron checked out items " + patronDataJson);
-				}
-				try {
-					JSONObject patronData = new JSONObject(patronDataJson);
-					JSONObject result     = patronData.getJSONObject("result");
-					if (result.getBoolean("success") && result.has("checkedOutItems")) {
-						if (result.get("checkedOutItems").getClass() == JSONObject.class) {
-							JSONObject checkedOutItems = result.getJSONObject("checkedOutItems");
-							@SuppressWarnings("unchecked")
-							Iterator<String> keys = (Iterator<String>) checkedOutItems.keys();
-							while (keys.hasNext()) {
-								String     curKey         = keys.next();
-								JSONObject checkedOutItem = checkedOutItems.getJSONObject(curKey);
-								processCheckedOutTitle(checkedOutItem, userId, checkedOutTitlesAlreadyInReadingHistory);
-							}
-						} else if (result.get("checkedOutItems").getClass() == JSONArray.class) {
-							JSONArray checkedOutItems = result.getJSONArray("checkedOutItems");
-							for (int i = 0; i < checkedOutItems.length(); i++) {
-								processCheckedOutTitle(checkedOutItems.getJSONObject(i), userId, checkedOutTitlesAlreadyInReadingHistory);
-							}
-						} else {
-							processLog.incErrors();
-							processLog.addNote("Unexpected JSON for patron checked out items received " + result.get("checkedOutItems").getClass());
-						}
-					} else if (logger.isInfoEnabled()) {
-						logger.info("Call to getPatronCheckedOutItems returned a success code of false for user Id " + userId);
+		boolean connected = true;
+		int attempts = 0;
+		do {
+			try {
+				// Call the patron API to get their checked out items
+				URL    patronApiUrl  = new URL(pikaUrl + "/API/UserAPI?method=getPatronCheckedOutItems&username=" + encode(cat_username) + "&password=" + encode(cat_password));
+				Object patronDataRaw = patronApiUrl.getContent();
+				if (patronDataRaw instanceof InputStream) {
+					String patronDataJson = Util.convertStreamToString((InputStream) patronDataRaw);
+					if (logger.isDebugEnabled()) {
+						logger.debug(patronApiUrl.toString());
+						logger.debug("Json for patron checked out items " + patronDataJson);
 					}
-				} catch (JSONException e) {
-					final String message = "Unable to load patron information for user Id " + userId + ", exception loading response ";
-					logger.error(message, e);
-					logger.error(patronDataJson);
+					try {
+						JSONObject patronData = new JSONObject(patronDataJson);
+						JSONObject result     = patronData.getJSONObject("result");
+						if (result.getBoolean("success") && result.has("checkedOutItems")) {
+							if (result.get("checkedOutItems").getClass() == JSONObject.class) {
+								JSONObject checkedOutItems = result.getJSONObject("checkedOutItems");
+								@SuppressWarnings("unchecked")
+								Iterator<String> keys = (Iterator<String>) checkedOutItems.keys();
+								while (keys.hasNext()) {
+									String     curKey         = keys.next();
+									JSONObject checkedOutItem = checkedOutItems.getJSONObject(curKey);
+									processCheckedOutTitle(checkedOutItem, userId, checkedOutTitlesAlreadyInReadingHistory);
+								}
+							} else if (result.get("checkedOutItems").getClass() == JSONArray.class) {
+								JSONArray checkedOutItems = result.getJSONArray("checkedOutItems");
+								for (int i = 0; i < checkedOutItems.length(); i++) {
+									processCheckedOutTitle(checkedOutItems.getJSONObject(i), userId, checkedOutTitlesAlreadyInReadingHistory);
+								}
+							} else {
+								processLog.incErrors();
+								processLog.addNote("Unexpected JSON for patron checked out items received " + result.get("checkedOutItems").getClass());
+							}
+						} else if (logger.isInfoEnabled()) {
+							logger.info("Call to getPatronCheckedOutItems returned a success code of false for user Id " + userId);
+						}
+					} catch (JSONException e) {
+						final String message = "Unable to load patron information for user Id " + userId + ", exception loading response ";
+						logger.error(message, e);
+						logger.error(patronDataJson);
+						processLog.incErrors();
+						processLog.addNote(message + e.toString());
+					}
+				} else {
+					logger.error("Unable to load patron information for user Id " + userId + ": expected to get back an input stream, received a "
+									+ patronDataRaw.getClass().getName());
 					processLog.incErrors();
-					processLog.addNote(message + e.toString());
 				}
-			} else {
-				logger.error("Unable to load patron information for user Id " + userId + ": expected to get back an input stream, received a "
-						+ patronDataRaw.getClass().getName());
+			} catch (ConnectException e) {
+				// If connection is refused, pause and try again up to 3 times.
+				attempts++;
+				if (attempts >= 3){
+					logger.error("Refused connection to User API after " + attempts + " attempts for user Id " + userId, e);
+					connected = true;
+				} else {
+					connected = false;
+					if (logger.isDebugEnabled()){
+						logger.debug("Connection exception during User API call. Will attempt to connect again.");
+						try {
+							Thread.sleep(500);
+						} catch (InterruptedException interruptedException) {
+							//Ignore exception
+						}
+					}
+				}
+			} catch (MalformedURLException e) {
+				logger.error("Bad url for patron API " + e.toString());
+				processLog.incErrors();
+			} catch (IOException e) {
+				logger.error("Unable to retrieve information from patron API for user Id " + userId, e);
 				processLog.incErrors();
 			}
-		} catch (MalformedURLException e) {
-			logger.error("Bad url for patron API " + e.toString());
-			processLog.incErrors();
-		} catch (IOException e) {
-			logger.error("Unable to retrieve information from patron API for user Id " + userId, e);
-			processLog.incErrors();
-		}
+		} while (!connected);
 	}
 
 	private void processCheckedOutTitle(JSONObject checkedOutItem, long userId, ArrayList<CheckedOutTitle> checkedOutTitlesAlreadyInReadingHistory) throws JSONException, SQLException, IOException {
