@@ -593,6 +593,9 @@ public class GroupingFormatDetermination {
 		if (printFormats.contains("GraphicNovel") && printFormats.contains("SoundDisc")){
 			printFormats.remove("GraphicNovel");
 		}
+		if (printFormats.contains("GraphicNovel") && printFormats.contains("DVD")){
+			printFormats.remove("GraphicNovel");
+		}
 		if (printFormats.contains("WindowsGame") && printFormats.contains("SoundDisc")){
 			printFormats.remove("WindowsGame");
 		}
