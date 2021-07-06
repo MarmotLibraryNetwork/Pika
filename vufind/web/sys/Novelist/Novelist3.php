@@ -26,12 +26,14 @@ class Novelist3{
 	private $novelistEnabled = false;
 	private $profile;
 	private $pwd;
+	private $apiUrl;
 	private $cachingPeriod = 43200; // 12 hours
 
 	public function __construct(){
 		global $configArray;
 		if (!empty($configArray['Novelist']['profile'])){
 			$this->novelistEnabled = true;
+			$this->apiUrl          = $configArray['Novelist']['apiBaseUrl'];
 			$this->profile         = $configArray['Novelist']['profile'];
 			$this->pwd             = $configArray['Novelist']['pwd'];
 			if (!empty($configArray['Caching']['novelist_enrichment'])){
@@ -135,7 +137,7 @@ class Novelist3{
 			if (count($ISBNs)){
 				//Check each ISBN for enrichment data
 				foreach ($ISBNs as $isbn){
-					$requestUrl = "http://novselect.ebscohost.com/Data/ContentByQuery?profile={$this->profile}&password={$this->pwd}&ClientIdentifier={$isbn}&isbn={$isbn}&version=2.1&tmpstmp=" . time();
+					$requestUrl = $this->apiUrl . "/Data/ContentByQuery?profile={$this->profile}&password={$this->pwd}&ClientIdentifier={$isbn}&isbn={$isbn}&version=2.1&tmpstmp=" . time();
 					try{
 						//Get the JSON from the service
 						$curl     = new Curl();
@@ -242,7 +244,7 @@ class Novelist3{
 		if (count($ISBNs)){
 			//Check each ISBN for enrichment data
 			foreach ($ISBNs as $isbn){
-				$requestUrl = "http://novselect.ebscohost.com/Data/ContentByQuery?profile={$this->profile}&password={$this->pwd}&ClientIdentifier={$isbn}&isbn={$isbn}&version=2.1&tmpstmp=" . time();
+				$requestUrl = $this->apiUrl . "/Data/ContentByQuery?profile={$this->profile}&password={$this->pwd}&ClientIdentifier={$isbn}&isbn={$isbn}&version=2.1&tmpstmp=" . time();
 				try{
 					//Get the JSON from the service
 					$curl = new Curl();
@@ -371,7 +373,7 @@ class Novelist3{
 
 			//Check each ISBN for enrichment data
 			foreach ($ISBNs as $isbn){
-				$requestUrl = "http://novselect.ebscohost.com/Data/ContentByQuery?profile={$this->profile}&password={$this->pwd}&ClientIdentifier={$isbn}&isbn={$isbn}&version=2.1&tmpstmp=" . time();
+				$requestUrl = $this->apiUrl . "/Data/ContentByQuery?profile={$this->profile}&password={$this->pwd}&ClientIdentifier={$isbn}&isbn={$isbn}&version=2.1&tmpstmp=" . time();
 				try{
 					//Get the JSON from the service
 					$curl = new Curl();
@@ -464,7 +466,7 @@ class Novelist3{
 
 			//Check each ISBN for enrichment data
 			foreach ($ISBNs as $isbn){
-				$requestUrl = "http://novselect.ebscohost.com/Data/ContentByQuery?profile={$this->profile}&password={$this->pwd}&ClientIdentifier={$isbn}&isbn={$isbn}&version=2.1&tmpstmp=" . time();
+				$requestUrl = $this->apiUrl . "/Data/ContentByQuery?profile={$this->profile}&password={$this->pwd}&ClientIdentifier={$isbn}&isbn={$isbn}&version=2.1&tmpstmp=" . time();
 				try{
 					//Get the JSON from the service
 					$curl = new Curl();
@@ -570,7 +572,7 @@ class Novelist3{
 		if (count($ISBNs)){
 			//Check each ISBN for enrichment data
 			foreach ($ISBNs as $isbn){
-				$requestUrl = "http://novselect.ebscohost.com/Data/ContentByQuery?profile={$this->profile}&password={$this->pwd}&ClientIdentifier={$isbn}&isbn={$isbn}&version=2.1&tmpstmp=" . time();
+				$requestUrl = $this->apiUrl . "/Data/ContentByQuery?profile={$this->profile}&password={$this->pwd}&ClientIdentifier={$isbn}&isbn={$isbn}&version=2.1&tmpstmp=" . time();
 				try{
 					//Get the JSON from the service
 					$curl = new Curl();

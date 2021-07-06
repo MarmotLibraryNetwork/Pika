@@ -553,6 +553,7 @@ class OverDriveDriver4 {
 									// Get Parent Magazine Record
 										$metaDataResponse                = $this->getProductMetadata($curTitle->reserveId, $this->getProductsKey($user));
 										if (!empty($metaDataResponse)){
+											$bookshelfItem['coverUrl'] = $metaDataResponse->images->cover->href ?? null;
 
 											//TODO: save issue data to database; and include a Database lookup above.  new table?
 											$parentIssueMetaData             = new OverDriveAPIProduct();
@@ -596,7 +597,9 @@ class OverDriveDriver4 {
 								$formats                 = $overDriveRecord->getFormats();
 								$bookshelfItem['format'] = reset($formats);
 							}
-							$bookshelfItem['coverUrl']   = $overDriveRecord->getCoverUrl('medium');
+							if (empty($bookshelfItem['coverUrl'])){
+								$bookshelfItem['coverUrl'] = $overDriveRecord->getCoverUrl('medium');
+							}
 							$bookshelfItem['recordUrl']  = $overDriveRecord->getRecordUrl();
 							$bookshelfItem['title']      = $overDriveRecord->getTitle();
 							$bookshelfItem['author']     = $overDriveRecord->getAuthor();
@@ -605,7 +608,7 @@ class OverDriveDriver4 {
 						}
 
 					}
-					$key                    = $bookshelfItem['checkoutSource'] . $bookshelfItem['overDriveId'] . $bookshelfItem['user'];
+					$key                    = $bookshelfItem['checkoutSource'] . ( $bookshelfItem['issueId']  ?? $bookshelfItem['overDriveId'] ) . $bookshelfItem['user'];
 					$checkedOutTitles[$key] = $bookshelfItem;
 				}
 				if (!empty($supplementalTitles)){
