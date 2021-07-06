@@ -997,6 +997,11 @@ public class GroupingFormatDetermination {
 								result.add("GraphicNovel");
 							}
 						}
+					} else if (subfield.getCode() == 'v') {
+						String subfieldData = subfield.getData().toLowerCase();
+						if (subfieldData.contains("comic books, strips, etc")) {
+							result.add("GraphicNovel");
+						}
 					}
 				}
 			}

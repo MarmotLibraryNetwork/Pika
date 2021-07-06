@@ -1111,6 +1111,11 @@ public class FormatDetermination {
 						}else if (subfieldData.contains("board books")){
 								result.add("BoardBook");
 						}
+					} else if (subfield.getCode() == 'v') {
+						String subfieldData = subfield.getData().toLowerCase();
+						if (subfieldData.contains("comic books, strips, etc")) {
+							result.add("GraphicNovel");
+						}
 					}
 				}
 			}
