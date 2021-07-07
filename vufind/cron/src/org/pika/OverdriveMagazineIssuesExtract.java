@@ -193,16 +193,25 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 				WebServiceResponse metadataCall = callOverDriveURL(magazineIssueMetadataURL, logger);
 				JSONObject magazineMetaCall = metadataCall.getResponse();
 				String magazineDescription = magazineMetaCall.getString("shortDescription").replace("'", "&apos;");
+				JSONArray formatsArray = magazineMetaCall.getJSONArray("formats");
+				String pubDateString = null;
+				for(int n = 0; n<formatsArray.length(); n++)
+				{
+					JSONObject formatsObject = formatsArray.getJSONObject(n);
+					pubDateString = formatsObject.getString("onSaleDate");
+				}
 
+				Date pubDate = new SimpleDateFormat("MM/dd/yyyy").parse(pubDateString);
+				Long published = pubDate.getTime()/1000;
 
 				long dateTime = System.currentTimeMillis() / 1000;
 
 				PreparedStatement doesIdExist = econtentConn.prepareStatement("SELECT id from `overdrive_api_magazine_issues` WHERE overdriveId ='" + magazineIssueId + "'");
 				ResultSet idResult = doesIdExist.executeQuery();
 				if (!idResult.first()) {
-					String insert = ("'" + magazineIssueId + "','" + magazineCrossRef + "','" + magazineTitle + "','" + magazineEdition + "','" + coverUrl + "','" + magazineParentId + "','" + magazineDescription + "', " + dateTime + "," + dateTime);
+					String insert = ("'" + magazineIssueId + "','" + magazineCrossRef + "','" + magazineTitle + "','" + magazineEdition + "','" + published + "','" + coverUrl + "','" + magazineParentId + "','" + magazineDescription + "', " + dateTime + "," + dateTime);
 					PreparedStatement updateDatabase = econtentConn.prepareStatement("INSERT INTO `overdrive_api_magazine_issues` " +
-									"(overdriveId, crossRefId, title, edition, coverUrl, parentId, description, dateAdded, dateUpdated) " +
+									"(overdriveId, crossRefId, title, edition, pubDate, coverUrl, parentId, description, dateAdded, dateUpdated) " +
 									"VALUES(" + insert + ")");
 					updates = updates +  updateDatabase.executeUpdate();
 					logger.info("Added " + updates + "magazine issues to database for magazine id: " + magazineParentId);
@@ -212,6 +221,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 													"crossRefId ='" + magazineCrossRef + "', " +
 													"title ='" + magazineTitle + "', " +
 													"edition ='" + magazineEdition + "', " +
+													"pubDate ='" + published + "', "+
 													"coverUrl ='" + coverUrl + "', " +
 													"description ='" + magazineDescription + "', " +
 													"dateUpdated =" + dateTime +
@@ -228,7 +238,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 			}
 		}catch(Exception e)
 		{
-			processLog.addNote("Error: " + e.getMessage() );
+			e.printStackTrace();
 			processLog.incErrors();
 			processLog.saveToDatabase(pikaConn,logger);
 		}
@@ -285,16 +295,25 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 					WebServiceResponse metadataCall = callOverDriveURL(magazineIssueMetadataURL, logger);
 					JSONObject magazineMetaCall = metadataCall.getResponse();
 					String magazineDescription = magazineMetaCall.getString("shortDescription").replace("'", "&apos;");
+					JSONArray formatsArray = magazineMetaCall.getJSONArray("formats");
+					String pubDateString = null;
+					for(int n = 0; n<formatsArray.length(); n++)
+					{
+						JSONObject formatsObject = formatsArray.getJSONObject(n);
+						pubDateString = formatsObject.getString("onSaleDate");
+					}
 
+					Date pubDate = new SimpleDateFormat("MM/dd/yyyy").parse(pubDateString);
+					Long published = pubDate.getTime()/1000;
 
 					long dateTime = System.currentTimeMillis() / 1000;
 
 					PreparedStatement doesIdExist = econtentConn.prepareStatement("SELECT id from `overdrive_api_magazine_issues` WHERE overdriveId ='" + magazineIssueId + "'");
 					ResultSet idResult = doesIdExist.executeQuery();
 					if (!idResult.first()) {
-						String insert = ("'" + magazineIssueId + "','" + magazineCrossRef + "','" + magazineTitle + "','" + magazineEdition + "','" + coverUrl + "','" + magazineParentId + "','" + magazineDescription + "', " + dateTime + "," + dateTime);
+						String insert = ("'" + magazineIssueId + "','" + magazineCrossRef + "','" + magazineTitle + "','" + magazineEdition + "', '"+ published +"','" + coverUrl + "','" + magazineParentId + "','" + magazineDescription + "', " + dateTime + "," + dateTime);
 						PreparedStatement updateDatabase = econtentConn.prepareStatement("INSERT INTO `overdrive_api_magazine_issues` " +
-										"(overdriveId, crossRefId, title, edition, coverUrl, parentId, description, dateAdded, dateUpdated) " +
+										"(overdriveId, crossRefId, title, edition, pubDate, coverUrl, parentId, description, dateAdded, dateUpdated) " +
 										"VALUES(" + insert + ")");
 						updates = updates + updateDatabase.executeUpdate();
 
@@ -309,7 +328,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 			}
 		}catch(Exception e)
 		{
-			processLog.addNote("Error: " + e.getMessage() );
+			e.printStackTrace();
 			processLog.incErrors();
 			processLog.saveToDatabase(pikaConn,logger);
 		}
