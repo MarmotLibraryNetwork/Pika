@@ -1478,7 +1478,7 @@ class DBMaintenance extends Admin_Admin {
 					'description' => 'Add Magazine Issues to more information accordion in library database',
 					'sql'         => [
 						"INSERT INTO `library_more_details` (`libraryId`,`weight`,`source`,`collapseByDefault`)
-							SELECT libraryId,'0','issue','0' FROM library;"
+							SELECT libraryId,'0','issues','0' FROM library;"
 					]
 				],
 
