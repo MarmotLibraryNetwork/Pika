@@ -15,6 +15,7 @@
 
 			{if $profileUpdateErrors}
 				{foreach from=$profileUpdateErrors item=errorMsg}
+					{* TODO: Needing an exact match to display a success message is problematic. Need a better way to indicate success  *}
 					{if $errorMsg == 'Your pin number was updated successfully.'}
 						<div class="alert alert-success">{$errorMsg}</div>
 					{else}
