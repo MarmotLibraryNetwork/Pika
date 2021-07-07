@@ -270,7 +270,7 @@ Pika.OverDrive = (function(){
 			return false;
 		},
 		checkoutOverdriveMagazineByIssueID: function (overDriveId){
-			Pika.Account.ajaxLogin(function(){
+
 				Pika.loadingMessage();
 				var url = "/OverDrive/AJAX?method=getOverDriveIssueCheckoutPrompt&overdriveId=" + overDriveId;
 				$.getJSON(url, function(data){
@@ -279,7 +279,7 @@ Pika.OverDrive = (function(){
 				}).fail(function(){
 					Pika.showMessage("Error Loading Title", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
 				});
-			});
+
 			return false;
 		},
 

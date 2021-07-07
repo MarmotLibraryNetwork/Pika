@@ -644,13 +644,13 @@ class OverDrive_AJAX extends AJAXHandler {
 	}
 
 	function getOverDriveIssueCheckoutPrompt(){
-		$user = UserAccount::getLoggedInUser();
-		if($user){
+
 		global $interface;
 		$overdriveId = $_REQUEST['overdriveId'];
 		$issues = new \Pika\BibliographicDrivers\OverDrive\OverDriveAPIMagazineIssues;
 		$issues->overdriveId = $overdriveId;
 		$issues->find();
+		$issues->orderBy("pubDate");
 		$title = '';
 		$coverUrl = '';
 		$edition = '';
@@ -669,14 +669,7 @@ class OverDrive_AJAX extends AJAXHandler {
 			'body' => "<div class='row'><div class='col-sm-3'><img class='img-responsive' src='". $coverUrl ."' /></div><div class='col-sm-9'><div class='row' ><strong>". $title ."</strong> - ". $edition ."</div><div class='row' style='max-height:300px;overflow:hidden;'>". $description ."</div></div></div></div>",
 			'buttons' =>"<button class='btn btn-primary' onclick=\"Pika.OverDrive.checkOutOverDriveTitle('". $parentId ."','magazine-overdrive', '". $overdriveId."')\">Checkout</button>"
 		];
-		}
-		else{
-			return [
-				'title' => "Checkout Magazine Issue",
-				'body' => "You must be logged in.",
-				'buttons' => "<button class='btn btn-default' onclick='Pika.Account.ajaxLogin()'>Login</button>"
-			];
-		}
+
 	}
 
 
