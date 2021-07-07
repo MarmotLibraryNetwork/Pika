@@ -472,6 +472,19 @@ class OverDrive_AJAX extends AJAXHandler {
 				$interface->assign('lendingPeriods', $lendingPeriods);
 			}
 
+			if($isMagazine)
+			{
+				$rd = new OverdriveRecordDriver($id);
+				$issues = $rd->getMagazineIssues();
+				$interface->assign('issues', $issues);
+				return [
+					'promptNeeded' => true,
+					'promptTitle'  => 'OverDrive Magazine Issue Checkout Options',
+					'prompts'      => $interface->fetch('OverDrive/ajax-overdrive-issue-checkout-prompt.tpl'),
+					'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return Pika.OverDrive.processOverDriveCheckoutPrompts();">',
+				];
+			}
+
 			if (count($overDriveUsers) > 1 || ($user->promptForOverDriveLendingPeriods && !$isMagazine)){
 				return [
 					'promptNeeded' => true,

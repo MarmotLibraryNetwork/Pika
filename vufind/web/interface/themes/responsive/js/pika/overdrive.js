@@ -66,7 +66,7 @@ Pika.OverDrive = (function(){
 			var overdriveCheckoutPromptsForm = $("#overdriveCheckoutPromptsForm"),
 					patronId = $("#patronId").val(),
 					overdriveId = overdriveCheckoutPromptsForm.find("input[name=overdriveId]").val(),
-					issueId = overdriveCheckoutPromptsForm.find("input[name=issueId]").val(),
+					issueId = overdriveCheckoutPromptsForm.find("#issuesToCheckout").val(),
 
 					lendingPeriod = $('#lendingPeriodSelect' + patronId).val(),
 					formatType = $('#formatType').val(),
