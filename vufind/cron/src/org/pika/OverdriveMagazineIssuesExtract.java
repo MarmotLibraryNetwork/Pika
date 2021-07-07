@@ -239,8 +239,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 		}catch(Exception e)
 		{
 			e.printStackTrace();
-			processLog.incErrors();
-			processLog.saveToDatabase(pikaConn,logger);
+
 		}
 	}
 
@@ -329,8 +328,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 		}catch(Exception e)
 		{
 			e.printStackTrace();
-			processLog.incErrors();
-			processLog.saveToDatabase(pikaConn,logger);
+
 		}
 	}
 
