@@ -1463,6 +1463,7 @@ class DBMaintenance extends Admin_Admin {
     						crossRefId varchar (50),
     					  title varchar(255),
     						edition varchar(100),
+    						pubDate INT(11),
     						coverUrl varchar(100),
     						parentId varchar(50),
     						description TEXT, 

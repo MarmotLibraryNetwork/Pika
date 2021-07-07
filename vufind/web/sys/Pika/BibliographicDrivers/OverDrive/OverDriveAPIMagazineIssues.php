@@ -31,6 +31,7 @@ class OverDriveAPIMagazineIssues extends \DB_DataObject
 	public $crossRefId;
 	public $title;
 	public $edition;
+	public $pubDate;
 	public $coverUrl;
 	public $parentId;
 	public $dateAdded;
