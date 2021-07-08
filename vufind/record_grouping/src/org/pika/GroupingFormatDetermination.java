@@ -979,7 +979,6 @@ public class GroupingFormatDetermination {
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
 						}else if (subfieldData.contains("graphic novel")
-						 || subfieldData.contains("comic books, strips, etc") // Library of Congress authorized term
 						 || subfieldData.contains("comic and graphic books")  // OverDrive Marc
 						) {
 							boolean okToAdd = false;
@@ -999,7 +998,7 @@ public class GroupingFormatDetermination {
 						}
 					} else if (subfield.getCode() == 'v') {
 						String subfieldData = subfield.getData().toLowerCase();
-						if (subfieldData.contains("comic books, strips, etc")) {
+						if (subfieldData.contains("comic books, strips, etc") || subfieldData.contains("comic books,strips, etc")) {
 							result.add("GraphicNovel");
 						}
 					}
