@@ -1082,7 +1082,7 @@ class Sierra {
 		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 		$this->cache->delete($patronCacheKey);
 		// todo: A success message won't be displayed unless the words are EXACTLY as below.
-		return [['Your pin number was updated successfully.']];
+		return 'Your pin number was updated successfully.';
 	}
 
 	/**
