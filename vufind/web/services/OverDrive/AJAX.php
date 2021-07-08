@@ -474,7 +474,7 @@ class OverDrive_AJAX extends AJAXHandler {
 
 			if($isMagazine)
 			{
-				$rd = new OverdriveRecordDriver($id);
+				$rd = new OverDriveRecordDriver($id);
 				$issues = $rd->getMagazineIssues();
 				$interface->assign('issues', $issues);
 				return [
