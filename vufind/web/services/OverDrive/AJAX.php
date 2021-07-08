@@ -660,7 +660,7 @@ class OverDrive_AJAX extends AJAXHandler {
 
 		global $interface;
 		$overdriveId = $_REQUEST['overdriveId'];
-		$issues = new \Pika\BibliographicDrivers\OverDrive\OverDriveAPIMagazineIssues;
+		$issues = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIMagazineIssues;
 		$issues->overdriveId = $overdriveId;
 		$issues->find();
 		$issues->orderBy("pubDate");
