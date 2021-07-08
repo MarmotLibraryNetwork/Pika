@@ -663,7 +663,7 @@ class OverDrive_AJAX extends AJAXHandler {
 		$issues = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIMagazineIssues;
 		$issues->overdriveId = $overdriveId;
 		$issues->find();
-		$issues->orderBy("pubDate");
+		$issues->orderBy("pubDate DESC");
 		$title = '';
 		$coverUrl = '';
 		$edition = '';
