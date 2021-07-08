@@ -1634,9 +1634,11 @@ EOT;
 			} else {
 				$title = 'Unknown';
 			}
-			$amount = number_format($fine->itemCharge, 2);
-			$amount = $amount + number_format($fine->processingFee, 2);
-			$amount = $amount + number_format($fine->billingFee, 2);
+			$owed = $fine->itemCharge;
+			$owed = $owed + $fine->processingFee;
+			$owed = $owed + $fine->billingFee;
+			$amount = number_format($owed, 2);
+
 			if(isset($fine->assessedDate) && !empty($fine->assessedDate)) {
 				$date   = date('m-d-Y', strtotime($fine->assessedDate));
 				if(!$date) {
