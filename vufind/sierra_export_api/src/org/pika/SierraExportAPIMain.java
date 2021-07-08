@@ -1316,6 +1316,9 @@ public class SierraExportAPIMain {
 				}
 				logger.debug("Converted JSON to MARC for Bib");
 
+				// Prepare Record Number tag
+				DataField recordNumberField = marcFactory.newDataField(indexingProfile.recordNumberTag, ' ', ' ', "" + indexingProfile.recordNumberField /*convert to string*/, getfullSierraBibId(id));
+
 				//Load Sierra Fixed Field / Bib Level Tag
 				JSONObject fixedFieldResults = getMarcJSONFromSierraApiURL(apiBaseUrl + "/bibs/" + id + "?fields=fixedFields,locations");
 				if (fixedFieldResults != null && !fixedFieldResults.has("code")) {
@@ -1344,16 +1347,16 @@ public class SierraExportAPIMain {
 								}
 							} else {
 								sierraFixedField.addSubfield(marcFactory.newSubfield(bibLevelLocationsSubfield, location));
+								if (isFlatirons){
+									recordNumberField.addSubfield(marcFactory.newSubfield('b', location));
+								}
 							}
 						}
 					}
 					marcRecord.addVariableField(sierraFixedField);
 
 					//Add the identifier
-					DataField recordNumberField = marcFactory.newDataField(indexingProfile.recordNumberTag, ' ', ' ', "" + indexingProfile.recordNumberField /*convert to string*/, getfullSierraBibId(id));
 					marcRecord.addVariableField(recordNumberField);
-
-					//TODO: Add locations for Flatirons
 
 					if (fixedFields.has("27")) { // Copies fixed field
 						//Get Items for the bib record
