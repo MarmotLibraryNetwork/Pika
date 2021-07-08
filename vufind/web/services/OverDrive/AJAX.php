@@ -346,8 +346,9 @@ class OverDrive_AJAX extends AJAXHandler {
 				$overdriveIssues->parentId = $parentId;
 				$overdriveIssues->find();
 				$overdriveIssues->orderBy("pubDate DESC");
+				$issuesList = $overdriveIssues->fetchAll();
 				$i=0;
-				foreach($overdriveIssues as $issue)
+				foreach($issuesList as $issue)
 				{
 					$formatted =  "<div id=\"scrollerTitleIssues" . $i ."\" class=\"scrollerTitle\" onclick=\"Pika.OverDrive.checkoutOverdriveMagazineByIssueID('" . $issue->overdriveId . "')\"><img src=\"". $issue->coverUrl . "\" class=\"scrollerTitleCover\" alt=\"" . $issue->edition ."\"></div>";
 
