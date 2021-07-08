@@ -1582,7 +1582,7 @@ EOT;
 		}
 		// make the call
 		$params = [
-			'fields' => 'default,assessedDate,itemCharge,chargeType,paidAmount,datePaid,description,returnDate,location,description'
+			'fields' => 'default,assessedDate,itemCharge,processingFee,billingFee,chargeType,paidAmount,datePaid,description,returnDate,location,description'
 		];
 		$operation = 'patrons/'.$patronId.'/fines';
 		$fInfo = $this->_doRequest($operation, $params);
@@ -1635,6 +1635,8 @@ EOT;
 				$title = 'Unknown';
 			}
 			$amount = number_format($fine->itemCharge, 2);
+			$amount = $amount + number_format($fine->processingFee, 2);
+			$amount = $amount + number_format($fine->billingFee, 2);
 			if(isset($fine->assessedDate) && !empty($fine->assessedDate)) {
 				$date   = date('m-d-Y', strtotime($fine->assessedDate));
 				if(!$date) {
