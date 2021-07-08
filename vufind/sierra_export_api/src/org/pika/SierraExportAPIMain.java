@@ -41,6 +41,7 @@ import org.marc4j.*;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
+import org.marc4j.marc.impl.SortedMarcFactoryImpl;
 
 /**
  * Export data from the Sierra ILS to Pika
@@ -1277,8 +1278,11 @@ public class SierraExportAPIMain {
 					}
 				}
 				String    leader     = marcResults.has("leader") ? marcResults.getString("leader") : "";
-				Record    marcRecord = marcFactory.newRecord(leader);
+				Record    marcRecord = new SortedMarcFactoryImpl().newRecord(leader); // Use the SortedMarcFactoryImpl (which puts the tags in numerical order
 				JSONArray fields     = marcResults.getJSONArray("fields");
+				if (leader.isEmpty()){
+					logger.warn("Sierra MARC JSON missing leader information for " + id);
+				}
 				for (int i = 0; i < fields.length(); i++) {
 					JSONObject                                      fieldData = fields.getJSONObject(i);
 					@SuppressWarnings("unchecked") Iterator<String> tags      = (Iterator<String>) fieldData.keys();
