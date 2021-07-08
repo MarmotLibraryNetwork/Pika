@@ -32,6 +32,7 @@ import java.util.*;
  */
 class FlatironsRecordProcessor extends IIIRecordProcessor {
 	char locationsSubfield = 'b'; // usually stored in the 998, but for flatirons it is in the record number tag (907)
+	char sierraFixedFilesLocationsSubfield = 'h'; // typically subfield 'a' but is 'h' for flatirons
 
 	FlatironsRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
@@ -58,76 +59,93 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 		boolean          isEContent                  = isRecordEContent.isEContent();
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		if (isEContent) {
-			List<DataField>  itemRecords                 = MarcUtil.getDataFields(record, itemTag);
-			for (DataField itemField : itemRecords) {
-				if (!isItemSuppressed(itemField)) {
-					//Check to see if the item has an eContent indicator
-					RecordInfo eContentRecord = getEContentIlsRecord(groupedWork, record, identifier, itemField);
-					if (eContentRecord != null) {
-						unsuppressedEcontentRecords.add(eContentRecord);
-
-						//Set the target audience based on the location code for the record based on the item locations
-						this.loadTargetAudiences(groupedWork, record, eContentRecord.getRelatedItems(), identifier);
-					}
-				}
-			}
+			List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
 			if (itemRecords.size() == 0) {
-				//Much of the econtent for flatirons has no items.  Need to determine the location based on the 907b field
-				String eContentLocation = MarcUtil.getFirstFieldVal(record, recordNumberTag + locationsSubfield);
-				if (eContentLocation == null){
-					eContentLocation = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + 'h');
+				// Item-less eContent
+				Set<String> eContentLocations;
+
+				//Much of the eContent for flatirons has no items.  Need to determine the location based on the 907b field; or fallback to Sierra Fixed Field locations
+				String firstEContentLocation = MarcUtil.getFirstFieldVal(record, recordNumberTag + locationsSubfield);
+				// If there are multiple locations, use Sierra Fixed Field location subfields instead
+				if (firstEContentLocation == null || firstEContentLocation.equalsIgnoreCase("multi")) {
 					// This is a fallback; Sierra includes the bibLevelLocationsSubfield in Fixed field tag
 					// in the subfield h  (Standard for other sites is a)
-					if (eContentLocation == null){
-						eContentLocation = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + 'a');
+					firstEContentLocation = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + sierraFixedFilesLocationsSubfield);
+					if (firstEContentLocation == null) {
+						eContentLocations = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + 'a');
 						// This is a fallback; The Pika extractor puts the bibLevelLocationsSubfield in Fixed field tag
-						// subfield h is proper and correct for Flatirons.
+						// subfield h is proper and correct for Flatirons, but records previously extracted may have put them
+						// in subfield a instead.
+					} else {
+						eContentLocations = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + sierraFixedFilesLocationsSubfield);
+					}
+				} else {
+					eContentLocations = MarcUtil.getFieldList(record, recordNumberTag + locationsSubfield);
+				}
+				for (String eContentLocation : eContentLocations) {
+					if (eContentLocation != null) {
+						ItemInfo itemInfo = new ItemInfo();
+						itemInfo.setIsEContent(true);
+						itemInfo.setDetailedStatus("Available Online");
+						itemInfo.setCallNumber("Online");
+						itemInfo.setLocationCode(eContentLocation);
+						itemInfo.setShelfLocation(translateValue("shelf_location", eContentLocation, identifier));
+
+						//Set the target audience based on the location code for the record based on the bib level location
+						final String lastCharacter   = eContentLocation.substring(eContentLocation.length() - 1);
+						final String target_audience = translateValue("target_audience", lastCharacter, identifier);
+						groupedWork.addTargetAudience(target_audience);
+						groupedWork.addTargetAudienceFull(target_audience);
+
+						//Check the 856 tag to see if there is a link there
+						loadEContentUrl(record, itemInfo, identifier);
+						String url = itemInfo.geteContentUrl();
+						if (url == null) {
+							//possibly not a good url to use if loadEContentUrl() didn't return something
+							url = isRecordEContent.getUrl();
+							itemInfo.seteContentUrl(url);
+						}
+
+						//Determine eContent Source
+						itemInfo.seteContentSource("eContent");
+						if (url.contains("ebrary.com")) {
+							itemInfo.seteContentSource("ebrary");
+						} else if (url.contains("gutenberg.org")) {
+							itemInfo.seteContentSource("Project Gutenberg");
+						} else if (url.contains("safaribooksonline.com")) {
+							itemInfo.seteContentSource("Safari Books");
+						} else if (url.contains("uniteforliteracy.com")) {
+							itemInfo.seteContentSource("Unite For Literacy");
+						} else if (url.contains("galegroup.com")) {
+							itemInfo.seteContentSource("Gale");
+						}
+
+
+						RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier.getIdentifier());
+						relatedRecord.setSubSource(indexingProfileSource);
+						relatedRecord.addItem(itemInfo);
+
+						loadEContentFormatInformation(record, relatedRecord, itemInfo);
+
+						unsuppressedEcontentRecords.add(relatedRecord);
 					}
 				}
-				//TODO: multiple locations?
-				if (eContentLocation != null) {
-					ItemInfo itemInfo = new ItemInfo();
-					itemInfo.setIsEContent(true);
-					itemInfo.setLocationCode(eContentLocation);
+			} else {
+				// Item-record eContent
+				for (DataField itemField : itemRecords) {
+					if (!isItemSuppressed(itemField)) {
+						//Check to see if the item has an eContent indicator
+						RecordInfo eContentRecord = getEContentIlsRecord(groupedWork, record, identifier, itemField);
+						if (eContentRecord != null) {
+							unsuppressedEcontentRecords.add(eContentRecord);
 
-					//Set the target audience based on the location code for the record based on the bib level location
-					String lastCharacter = eContentLocation.substring(eContentLocation.length() - 1);
-					groupedWork.addTargetAudience(translateValue("target_audience", lastCharacter, identifier));
-					groupedWork.addTargetAudienceFull(translateValue("target_audience", lastCharacter, identifier));
-
-					//Check the 856 tag to see if there is a link there
-					loadEContentUrl(record, itemInfo, identifier);
-					if (itemInfo.geteContentUrl() == null) {
-						itemInfo.seteContentUrl(isRecordEContent.getUrl());
+							//Set the target audience based on the location code for the record based on the item locations
+							loadTargetAudiences(groupedWork, record, eContentRecord.getRelatedItems(), identifier);
+						}
 					}
-
-					itemInfo.seteContentSource("eContent");
-					String url = itemInfo.geteContentUrl();
-					if (url.contains("ebrary.com")) {
-						itemInfo.seteContentSource("ebrary");
-					} else if (url.contains("gutenberg.org")){
-						itemInfo.seteContentSource("Project Gutenberg");
-					} else if (url.contains("safaribooksonline.com")){
-						itemInfo.seteContentSource("Safari Books");
-					} else if (url.contains("uniteforliteracy.com")){
-						itemInfo.seteContentSource("Unite For Literacy");
-					} else if (url.contains("galegroup.com")){
-						itemInfo.seteContentSource("Gale");
-					}
-
-					itemInfo.setCallNumber("Online");
-					itemInfo.setShelfLocation(translateValue("shelf_location", eContentLocation, identifier));
-					RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier.getIdentifier());
-					relatedRecord.setSubSource(indexingProfileSource);
-					relatedRecord.addItem(itemInfo);
-
-					loadEContentFormatInformation(record, relatedRecord, itemInfo);
-
-					itemInfo.setDetailedStatus("Available Online");
-
-					unsuppressedEcontentRecords.add(relatedRecord);
 				}
 			}
+
 		}
 		return unsuppressedEcontentRecords;
 	}
@@ -260,8 +278,9 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 			}
 		}
 
-		groupedWork.addTargetAudiences(translateCollection("target_audience", targetAudiences, identifier.getSourceAndId()));
-		groupedWork.addTargetAudiencesFull(translateCollection("target_audience", targetAudiences, identifier.getSourceAndId()));
+		final HashSet<String> target_audiences = translateCollection("target_audience", targetAudiences, identifier.getSourceAndId());
+		groupedWork.addTargetAudiences(target_audiences);
+		groupedWork.addTargetAudiencesFull(target_audiences);
 	}
 
 	private class IsRecordEContent {
