@@ -1074,7 +1074,7 @@ class Sierra {
 
 		if(!$r) {
 			$message = $this->_getPrettyError();
-			return [['Could not update PIN: '. $message]];
+			return 'Could not update PIN: '. $message;
 		}
 		$patron->cat_password = $newPin;
 		$patron->update();
