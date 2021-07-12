@@ -45,6 +45,8 @@ class SearchAPI extends AJAXHandler {
 	const PARTIAL_INDEX_INTERVAL_CRITICAL     = 3600;   // 1 Hour (in seconds)
 	const SIERRA_EXTRACT_INTERVAL_WARN        = 900;    // 15 Minutes (in seconds)
 	const SIERRA_EXTRACT_INTERVAL_CRITICAL    = 3600;   // 1 Hour (in seconds)
+	const LAST_EXTRACT_INTERVAL_WARN          = 7200;    // 2 Hours (in seconds)
+	const LAST_EXTRACT_INTERVAL_CRITICAL      = 14400;  // 4 Hours (in seconds)
 	const OVERDRIVE_EXTRACT_INTERVAL_WARN     = 14400;  // 4 Hours (in seconds)
 	const OVERDRIVE_EXTRACT_INTERVAL_CRITICAL = 18000;  // 5 Hours (in seconds)
 	const SOLR_RESTART_INTERVAL_WARN          = 86400;  // 24 Hours (in seconds)
@@ -179,6 +181,25 @@ class SearchAPI extends AJAXHandler {
 				}
 			}
 
+			// Verify Actual Extraction of ILS records is happening.
+			// That ils MARC records are in fact being updated.
+			// This is for the case when all of the processes are running but new data isn't actually being delivered
+			// so nothing in fact is being updated.
+			require_once ROOT_DIR . '/sys/Extracting/IlsExtractInfo.php';
+			$ilsExtractInfo = new IlsExtractInfo();
+			$ilsExtractInfo->orderBy('lastExtracted DESC');
+			$ilsExtractInfo->limit(1);
+			// SELECT * FROM pika.ils_extract_info ORDER BY lastExtracted DESC LIMIT 1;
+			//TODO: handling for multiple ILSes
+			if ($ilsExtractInfo->find(true)){
+				// Fetch the last updated MARC Record
+				$lastExtractTime = $ilsExtractInfo->lastExtracted;
+				if ($lastExtractTime < ($currentTime - self::LAST_EXTRACT_INTERVAL_WARN)){
+					$status[] = ($lastExtractTime < ($currentTime - self::LAST_EXTRACT_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
+					$notes[]  = 'The last ILS record was extracted ' . round(($currentTime - ($lastExtractTime)) / 60, 2) . ' minutes ago';
+				}
+			}
+
 			// Sierra Extract //
 			global $configArray;
 			if ($configArray['Catalog']['ils'] == 'Sierra'){
@@ -188,7 +209,7 @@ class SearchAPI extends AJAXHandler {
 					$lastSierraExtractTime = $lastSierraExtractVariable->value;
 					if ($lastSierraExtractTime < ($currentTime - self::SIERRA_EXTRACT_INTERVAL_WARN)){
 						$status[] = ($lastSierraExtractVariable->value < ($currentTime - self::SIERRA_EXTRACT_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-						$notes[]  = 'Sierra Last Extract time  ' . date('m-d-Y H:i:s', $lastSierraExtractVariable->value) . ' - ' . round(($currentTime - ($lastSierraExtractVariable->value)) / 60, 2) . ' minutes ago';
+						$notes[]  = 'Sierra Last Extract time  ' . date('m-d-Y H:i:s', $lastSierraExtractTime) . ' - ' . round(($currentTime - ($lastExtractTime)) / 60, 2) . ' minutes ago';
 					}
 				}else{
 					$status[] = self::STATUS_WARN;
@@ -203,122 +224,120 @@ class SearchAPI extends AJAXHandler {
 						$status[] = $remainingSierraRecords->value >= self::SIERRA_MAX_REMAINING_ITEMS_CRITICAL ? self::STATUS_CRITICAL : self::STATUS_WARN;
 					}
 				}
-
 			}
 
-		// Solr Restart //
-		if ($configArray['Index']['engine'] == 'Solr'){
-			$json = @file_get_contents($configArray['Index']['url'] . '/admin/cores');
-			if (!empty($json)){
-				$data = json_decode($json, true);
+			// Solr Restart //
+			if ($configArray['Index']['engine'] == 'Solr'){
+				$json = @file_get_contents($configArray['Index']['url'] . '/admin/cores');
+				if (!empty($json)){
+					$data = json_decode($json, true);
 
-				$uptime        = $data['status']['grouped']['uptime'] / 1000;  // Grouped Index, puts uptime into seconds.
-				$solrStartTime = strtotime($data['status']['grouped']['startTime']);
-				if ($uptime >= self::SOLR_RESTART_INTERVAL_WARN){ // Grouped Index
-					$status[] = ($uptime >= self::SOLR_RESTART_INTERVAL_CRITICAL) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-					$notes[]  = 'Solr Index (Grouped) last restarted ' . date('m-d-Y H:i:s', $solrStartTime) . ' - ' . round($uptime / 3600, 2) . ' hours ago';
-				}
+					$uptime        = $data['status']['grouped']['uptime'] / 1000;  // Grouped Index, puts uptime into seconds.
+					$solrStartTime = strtotime($data['status']['grouped']['startTime']);
+					if ($uptime >= self::SOLR_RESTART_INTERVAL_WARN){ // Grouped Index
+						$status[] = ($uptime >= self::SOLR_RESTART_INTERVAL_CRITICAL) ? self::STATUS_CRITICAL : self::STATUS_WARN;
+						$notes[]  = 'Solr Index (Grouped) last restarted ' . date('m-d-Y H:i:s', $solrStartTime) . ' - ' . round($uptime / 3600, 2) . ' hours ago';
+					}
 
-				$numRecords = $data['status']['grouped']['index']['numDocs'];
+					$numRecords = $data['status']['grouped']['index']['numDocs'];
 
-				$minNumRecordVariable = new Variable('solr_grouped_minimum_number_records');
-				if (!empty($minNumRecordVariable->N)){
-					$minNumRecords = $minNumRecordVariable->value;
-					if (!empty($minNumRecords) && $numRecords < $minNumRecords){
-						// Warn till more that 500 works below the limit
-						$status[] = $numRecords < ($minNumRecords - 500) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-						$notes[]  = "Solr Index (Grouped) Record Count ($numRecords) in below the minimum ($minNumRecords)";
-					}elseif ($numRecords > $minNumRecords + 10000){
+					$minNumRecordVariable = new Variable('solr_grouped_minimum_number_records');
+					if (!empty($minNumRecordVariable->N)){
+						$minNumRecords = $minNumRecordVariable->value;
+						if (!empty($minNumRecords) && $numRecords < $minNumRecords){
+							// Warn till more that 500 works below the limit
+							$status[] = $numRecords < ($minNumRecords - 500) ? self::STATUS_CRITICAL : self::STATUS_WARN;
+							$notes[]  = "Solr Index (Grouped) Record Count ($numRecords) in below the minimum ($minNumRecords)";
+						}elseif ($numRecords > $minNumRecords + 10000){
+							$status[] = self::STATUS_WARN;
+							$notes[]  = "Solr Index (Grouped) Record Count ($numRecords) is more than 10,000 above the minimum ($minNumRecords)";
+						}
+
+					}else{
 						$status[] = self::STATUS_WARN;
-						$notes[]  = "Solr Index (Grouped) Record Count ($numRecords) is more than 10,000 above the minimum ($minNumRecords)";
+						$notes[]  = 'The minimum number of records for Solr Index (Grouped) has not been set.';
 					}
 
 				}else{
-					$status[] = self::STATUS_WARN;
-					$notes[]  = 'The minimum number of records for Solr Index (Grouped) has not been set.';
+					$status[] = self::STATUS_CRITICAL;
+					$notes[]  = 'Could not get status from Solr searcher core. Solr is down or unresponsive';
 				}
 
-			}else{
-				$status[] = self::STATUS_CRITICAL;
-				$notes[]  = 'Could not get status from Solr searcher core. Solr is down or unresponsive';
-			}
-
-			// Check that the indexing core is up
-			$masterIndexUrl = str_replace('8080', $configArray['Reindex']['solrPort'], $configArray['Index']['url']) . '/admin/cores';
-			$masterJson      = @file_get_contents($masterIndexUrl);
-			if (!$masterJson){
+				// Check that the indexing core is up
+				$masterIndexUrl = str_replace('8080', $configArray['Reindex']['solrPort'], $configArray['Index']['url']) . '/admin/cores';
+				$masterJson     = @file_get_contents($masterIndexUrl);
+				if (!$masterJson){
 					$status[] = self::STATUS_CRITICAL;
 					$notes[]  = 'Could not get status from Solr indexer core. Solr is down or unresponsive';
+				}
+
+
+				// Count Number of Back-up Index Folders
+				$solrSearcherPath = rtrim($configArray['Index']['local'], '/');
+				$solrSearcherPath = str_replace('solr', 'solr_searcher/grouped/', $solrSearcherPath); // modify path to solr search grouped core path
+				if (strpos($solrSearcherPath, 'grouped')){ // If we didn't make a good path, skip the rest of these checks
+					$indexBackupDirectories    = glob($solrSearcherPath . 'index.*', GLOB_ONLYDIR);
+					$numIndexBackupDirectories = count($indexBackupDirectories);
+					if ($numIndexBackupDirectories >= 7){
+						$status[] = self::STATUS_CRITICAL;
+						$notes[]  = "There are $numIndexBackupDirectories Solr Searcher Grouped Index directories";
+					}elseif ($numIndexBackupDirectories >= 4){
+						$status[] = self::STATUS_WARN;
+						$notes[]  = "There are $numIndexBackupDirectories Solr Searcher Grouped Index directories";
+					}
+
+				}
 			}
 
+			if (!empty($configArray['OverDrive']['url'])){
+				// Checking that the url is set as a proxy for Overdrive being enabled
 
-			// Count Number of Back-up Index Folders
-			$solrSearcherPath = rtrim($configArray['Index']['local'], '/');
-			$solrSearcherPath = str_replace('solr', 'solr_searcher/grouped/', $solrSearcherPath); // modify path to solr search grouped core path
-			if (strpos($solrSearcherPath, 'grouped')){ // If we didn't make a good path, skip the rest of these checks
-				$indexBackupDirectories    = glob($solrSearcherPath . 'index.*', GLOB_ONLYDIR);
-				$numIndexBackupDirectories = count($indexBackupDirectories);
-				if ($numIndexBackupDirectories >= 7){
-					$status[] = self::STATUS_CRITICAL;
-					$notes[]  = "There are $numIndexBackupDirectories Solr Searcher Grouped Index directories";
-				}elseif ($numIndexBackupDirectories >= 4){
+				// OverDrive Extract //
+				$lastOverDriveExtractVariable = new Variable('last_overdrive_extract_time');
+				if (!empty($lastOverDriveExtractVariable->N)){
+					//Check to see if the last overdrive extract finished more than OVERDRIVE_EXTRACT_INTERVAL_WARN seconds ago
+					$lastOverDriveExtractTime = $lastOverDriveExtractVariable->value;
+					if ($lastOverDriveExtractTime < ($currentTime - self::OVERDRIVE_EXTRACT_INTERVAL_WARN)){
+						$status[] = ($lastOverDriveExtractTime < ($currentTime - self::OVERDRIVE_EXTRACT_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
+						$notes[]  = 'OverDrive Extract last finished ' . date('m-d-Y H:i:s', $lastOverDriveExtractTime) . ' - ' . round(($currentTime - ($lastOverDriveExtractTime)) / 3600, 2) . ' hours ago';
+					}
+				}else{
 					$status[] = self::STATUS_WARN;
-					$notes[]  = "There are $numIndexBackupDirectories Solr Searcher Grouped Index directories";
+					$notes[]  = 'OverDrive Extract has never been run';
 				}
 
-			}
-		}
-
-		if (!empty($configArray['OverDrive']['url'])){
-			// Checking that the url is set as a proxy for Overdrive being enabled
-
-			// OverDrive Extract //
-			$lastOverDriveExtractVariable = new Variable('last_overdrive_extract_time');
-			if (!empty($lastOverDriveExtractVariable->N)){
-				//Check to see if the last overdrive extract finished more than OVERDRIVE_EXTRACT_INTERVAL_WARN seconds ago
-				$lastOverDriveExtractTime = $lastOverDriveExtractVariable->value;
-				if ($lastOverDriveExtractTime < ($currentTime - self::OVERDRIVE_EXTRACT_INTERVAL_WARN)){
-					$status[] = ($lastOverDriveExtractTime < ($currentTime - self::OVERDRIVE_EXTRACT_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-					$notes[]  = 'OverDrive Extract last finished ' . date('m-d-Y H:i:s', $lastOverDriveExtractTime) . ' - ' . round(($currentTime - ($lastOverDriveExtractTime)) / 3600, 2) . ' hours ago';
+				// Overdrive extract errors
+				require_once ROOT_DIR . '/sys/Log/OverDriveExtractLogEntry.php';
+				$logEntry = new OverDriveExtractLogEntry();
+				$logEntry->orderBy('id DESC');
+				$logEntry->limit(1);
+				if ($logEntry->find(true)){
+					if ($logEntry->numErrors > 0){
+						$status[] = self::STATUS_WARN;
+						$notes[]  = "Last OverDrive Extract round had {$logEntry->numErrors} errors";
+					}
 				}
-			}else{
-				$status[] = self::STATUS_WARN;
-				$notes[]  = 'OverDrive Extract has never been run';
-			}
-		}
 
-			// Overdrive extract errors
-			require_once ROOT_DIR . '/sys/Log/OverDriveExtractLogEntry.php';
-			$logEntry = new OverDriveExtractLogEntry();
-			$logEntry->orderBy('id DESC');
-			$logEntry->limit(1);
-			if ($logEntry->find(true)){
-				if ($logEntry->numErrors > 0){
-					$status[] = self::STATUS_WARN;
-					$notes[]  = "Last OverDrive Extract round had {$logEntry->numErrors} errors";
+				// Check How Many Overdrive Items have been deleted in the last 24 hours
+				$overdriveItems          = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
+				$overdriveItems->deleted = true;
+				$overdriveItems->whereAdd('dateDeleted > unix_timestamp(DATE_SUB(CURDATE(),INTERVAL 1 DAY) )');
+				// where deleted = 1 and dateDeleted > unix_timestamp(DATE_SUB(CURDATE(),INTERVAL 1 DAY) )
+				$deletedOverdriveItems = $overdriveItems->count();
+				if ($deletedOverdriveItems !== false && $deletedOverdriveItems >= self::OVERDRIVE_DELETED_ITEMS_WARN){
+					$notes[]  = "$deletedOverdriveItems Overdrive Items have been marked as deleted in the last 24 hours";
+					$status[] = $deletedOverdriveItems >= self::OVERDRIVE_DELETED_ITEMS_CRITICAL ? self::STATUS_CRITICAL : self::STATUS_WARN;
 				}
-			}
 
-			// Check How Many Overdrive Items have been deleted in the last 24 hours
-			$overdriveItems          = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
-			$overdriveItems->deleted = true;
-			$overdriveItems->whereAdd('dateDeleted > unix_timestamp(DATE_SUB(CURDATE(),INTERVAL 1 DAY) )');
-			// where deleted = 1 and dateDeleted > unix_timestamp(DATE_SUB(CURDATE(),INTERVAL 1 DAY) )
-			$deletedOverdriveItems = $overdriveItems->count();
-			if ($deletedOverdriveItems !== false && $deletedOverdriveItems >= self::OVERDRIVE_DELETED_ITEMS_WARN){
-				$notes[]  = "$deletedOverdriveItems Overdrive Items have been marked as deleted in the last 24 hours";
-				$status[] = $deletedOverdriveItems >= self::OVERDRIVE_DELETED_ITEMS_CRITICAL ? self::STATUS_CRITICAL : self::STATUS_WARN;
-			}
-
-			// Check How Many Overdrive Products need to be extracted and haven't been processed yet.
-			$overdriveProduct              = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
-			$overdriveProduct->needsUpdate = 1;
-			$overdriveProduct->deleted     = 0;
-			$numOutstandingChanges         = $overdriveProduct->count();
-			if (!empty($numOutstandingChanges) && $numOutstandingChanges >= self::OVERDRIVE_UNPROCESSED_ITEMS_WARN) {
-				$notes[]  = "$numOutstandingChanges Overdrive Items needing to be processed";
-				$status[] = $numOutstandingChanges >= self::OVERDRIVE_UNPROCESSED_ITEMS_CRITICAL ? self::STATUS_CRITICAL : self::STATUS_WARN;
-
+				// Check How Many Overdrive Products need to be extracted and haven't been processed yet.
+				$overdriveProduct              = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
+				$overdriveProduct->needsUpdate = 1;
+				$overdriveProduct->deleted     = 0;
+				$numOutstandingChanges         = $overdriveProduct->count();
+				if (!empty($numOutstandingChanges) && $numOutstandingChanges >= self::OVERDRIVE_UNPROCESSED_ITEMS_WARN){
+					$notes[]  = "$numOutstandingChanges Overdrive Items needing to be processed";
+					$status[] = $numOutstandingChanges >= self::OVERDRIVE_UNPROCESSED_ITEMS_CRITICAL ? self::STATUS_CRITICAL : self::STATUS_WARN;
+				}
 			}
 
 		}
