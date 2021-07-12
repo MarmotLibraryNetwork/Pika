@@ -43,17 +43,23 @@ class Admin_IndexingProfiles extends ObjectEditor {
 			if ($indexProfile->get($id) && !empty($indexProfile->marcPath)){
 
 				$marcPath = $indexProfile->marcPath;
-				if ($handle = opendir($marcPath)){
+				if ($handle = @opendir($marcPath)){
 					while (false !== ($entry = readdir($handle))){
 						if ($entry != "." && $entry != ".."){
-							$files[$entry] = filectime($marcPath . DIR_SEP . $entry);
+							$files[$entry] = filemtime($marcPath . DIR_SEP . $entry);
 						}
 					}
 					closedir($handle);
 					$interface->assign('files', $files);
 					$interface->assign('IndexProfileName', $indexProfile->name);
 					$this->display('marcFiles.tpl', 'Marc Files');
+				} else {
+					echo "Failed to open file path: {$indexProfile->marcPath}";
+					die;
 				}
+			} else {
+				echo "Invalid indexing profile or marc path is not set.";
+				die;
 			}
 		} else {
 			parent::launch();
