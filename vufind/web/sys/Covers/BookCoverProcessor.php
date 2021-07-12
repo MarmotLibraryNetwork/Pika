@@ -385,9 +385,9 @@ class BookCoverProcessor {
 	 * @return bool
 	 */
 	private function getCHNCCover(SourceAndId $sourceAndId){
-		if ($this->getSideLoadedCover($sourceAndId)){
-			return true;
-		}
+//		if ($this->getSideLoadedCover($sourceAndId)){
+//			return true;
+//		}
 		$this->format = "Digital Newspaper";
 		return $this->getDefaultCover();
 	}
