@@ -1,5 +1,6 @@
 package org.pika;
 
+import com.sun.tools.internal.xjc.model.CNonElement;
 import org.apache.log4j.Logger;
 import org.ini4j.Profile.Section;
 import org.w3c.dom.*;
@@ -14,29 +15,32 @@ public class NYTList implements IProcessHandler {
 
 	@Override
 	public void doCronProcess(String serverName, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
+			CronProcessLogEntry processEntry = new CronProcessLogEntry(cronEntry.getLogEntryId(), "NYT Updates");
+			processEntry.saveToDatabase(pikaConn, logger);
 		try{
 			if(!systemVariables.getBooleanValuedVariable("full_reindex_running"))
 			{
-				  String url = serverName + ":8080/solr/admin/cores?wt=json";
-					if(isSolrRunning(url))
+				  String url = "http://" + serverName + ":8080/solr/admin/cores?wt=json";
+
+					if(isSolrRunning(url, logger, processEntry))
 					{
-							addNYTItemsToList("https://" + serverName);
+						 addNYTItemsToList("https://" + serverName, logger, processEntry, pikaConn);
 					}
 					else{
-						System.out.println("Solr Down");
+						logger.error("Solr Down");
 					}
 			}
 			else{
-				System.out.print("Full Reindex Running");
+				logger.error("Full Reindex Running");
 			}
 		}
 		catch(Exception e )
 		{
-				e.printStackTrace();
+				logger.error(e);
 		}
 	}
 
-	public boolean isSolrRunning(String url) throws MalformedURLException {
+	public boolean isSolrRunning(String url, Logger logger, CronProcessLogEntry processEntry) throws MalformedURLException {
 
 			URL solrLocation = new URL(url);
 		try {
@@ -50,19 +54,18 @@ public class NYTList implements IProcessHandler {
 		  JSONObject statusObject = obj.getJSONObject("status");
 			JSONObject groupedObject = statusObject.getJSONObject("grouped");
 			Integer uptime = Integer.parseInt(groupedObject.get("uptime").toString());
-			if (uptime > 0 && uptime < 99000000)
+			if (uptime > 0 && uptime < 999000000)
 			{
 				return true;
 			}
 		} catch (Exception e) {
-			System.out.println("Cannot reach Solr server or server down");
+			logger.error("Cannot reach Solr server or server down");
+			processEntry.incErrors();
 		}
 		return false;
 	}
 
-	public void addNYTItemsToList(String serverName) throws MalformedURLException {
-		System.out.print("You have arrived");
-
+	public void addNYTItemsToList(String serverName, Logger logger, CronProcessLogEntry processEntry, Connection pikaConn ) throws MalformedURLException {
 		String url = serverName + "/API/ListAPI?method=getAvailableListsFromNYT";
 		URL apiLocation = new URL(url);
 		try{
@@ -71,12 +74,10 @@ public class NYTList implements IProcessHandler {
 			while (scan.hasNext())
 			  str += scan.nextLine();
 			scan.close();
-
 			JSONObject obj = new JSONObject(str);
 			JSONObject result = obj.getJSONObject("result");
 			JSONArray results = new JSONArray();
 			results = result.getJSONArray("results");
-
 			for(int i = 0; i < results.length(); i++)
 			{
 				JSONObject newresult = (JSONObject) results.get(i);
@@ -85,22 +86,29 @@ public class NYTList implements IProcessHandler {
 				String updateUrl = serverName + "/API/ListAPI?method=createUserListFromNYT&listToUpdate=" + encoded_list_name;
 				URL updateLocation = new URL(updateUrl);
 				Scanner updateScan = new Scanner(updateLocation.openStream());
-				String updateStr = new String();
-				while (updateScan.hasNext())
-					 updateStr += updateScan.nextLine();
+				String updateStr = "";
+				while (updateScan.hasNext()) {
+					updateStr += updateScan.nextLine();
+				}
+				JSONObject updateStatus = new JSONObject(updateStr);
+
+				JSONObject resultJSON =	updateStatus.getJSONObject("result");
+				if(resultJSON.getBoolean("success"))
+				{
+						processEntry.addNote("Updated List: " + encoded_list_name);
+						processEntry.saveToDatabase(pikaConn, logger);
+
+				}
+				else {
+					processEntry.addNote("Could not update list: " + encoded_list_name);
+				}
 				updateScan.close();
-
 			}
-
-
-
-
 		}catch(Exception e)
 		{
-			e.printStackTrace();
+			logger.error("Cannot reach Solr server or server down");
 		}
 	}
-
 }
 
 class NYTListOptions
