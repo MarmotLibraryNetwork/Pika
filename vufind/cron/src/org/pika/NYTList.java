@@ -10,11 +10,13 @@ import java.sql.Connection;
 import java.util.Scanner;
 
 public class NYTList implements IProcessHandler {
+	private PikaSystemVariables systemVariables;
 
 	@Override
 	public void doCronProcess(String serverName, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		CronProcessLogEntry processEntry = new CronProcessLogEntry(cronEntry.getLogEntryId(), "NYT Updates");
 		processEntry.saveToDatabase(pikaConn, logger);
+		this.systemVariables = systemVariables;
 		try {
 			final Boolean fullReindexRunning = systemVariables.getBooleanValuedVariable("full_reindex_running");
 			if (fullReindexRunning != null && !fullReindexRunning) {
@@ -23,7 +25,7 @@ public class NYTList implements IProcessHandler {
 				if (isSolrRunning(url, logger, processEntry)) {
 					addNYTItemsToList(PikaConfigIni.getIniValue("Site", "url"), logger, processEntry, pikaConn);
 				} else {
-					final String message = "Solr Down; Not Updating NY Times User Lists";
+					final String message = "Solr Down or index incomplete; Not Updating NY Times User Lists";
 					logger.error(message);
 					processEntry.addNote(message);
 				}
@@ -54,7 +56,21 @@ public class NYTList implements IProcessHandler {
 			JSONObject groupedObject = statusObject.getJSONObject("grouped");
 			int        uptime        = Integer.parseInt(groupedObject.get("uptime").toString());
 			if (uptime > 0 && uptime < 999000000) {
-				return true;
+				// Now check that index size is close to the expected size we have in solr_grouped_minimum_number_records
+				// If not, that indicates an incomplete index that will likely not have all the NY Time titles we want in it.
+				String documentCount = groupedObject.getJSONObject("index").get("numDocs").toString();
+				long documentsInIndex = Long.parseLong(documentCount);
+				Long indexCountLevel  = systemVariables.getLongValuedVariable("solr_grouped_minimum_number_records");
+				if (indexCountLevel == null){
+					logger.error("No system variable 'solr_grouped_minimum_number_records' found.");
+				} else if ((indexCountLevel - documentsInIndex) > 10000) {
+					final String message = "Index document count is more than 10,000 below solr_grouped_minimum_number_records : " + documentsInIndex;
+					logger.error(message);
+					processEntry.addNote(message);
+					processEntry.incErrors();
+				} else {
+					return true;
+				}
 			}
 		} catch (Exception e) {
 			logger.error("Cannot reach Solr server or server down");
