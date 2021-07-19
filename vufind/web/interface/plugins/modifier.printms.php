@@ -36,26 +36,26 @@ function smarty_modifier_printms($ms) {
     $minutes = ($minutes % 60);
 
     if ($hours) {
-        $days = floor($hours/60);
-        $hours = ($hours % 60);
+        $days = floor($hours/24);
+        $hours = ($hours % 24);
         
         if ($days) {
             $years = floor($days/365);
             $days = ($days % 365);
             
             if ($years) {
-                return sprintf("%dyears %ddays %dhours %dminutes %dseconds",
+                return sprintf("%d years, %d days, %d hours, %d minutes, %d seconds",
                                $years, $days, $hours, $minutes, $seconds);
             } else {
-                return sprintf("%ddays %dhours %dminutes %dseconds",
+                return sprintf("%d days, %d hours, %d minutes, %d seconds",
                                $days, $hours, $minutes, $seconds);
             }
         } else {
-            return sprintf("%dhours %dminutes %dseconds",
+            return sprintf("%d hours, %d minutes, %d seconds",
                            $hours, $minutes, $seconds);
         }
     } else {
-        return sprintf("%dminutes %dseconds",
+        return sprintf("%d minutes, %d seconds",
                        $minutes, $seconds);
     }
 }
