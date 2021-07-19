@@ -72,7 +72,43 @@
 				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
 				-->
 				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
-				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory"
+						generateWordParts="1"
+						generateNumberParts="1"
+						splitOnCaseChange="1"
+						catenateAll="0"
+						stemEnglishPossessive="1"
+
+						catenateWords="1"
+						catenateNumbers="1"
+						splitOnNumerics="0"
+				/>
+				<!--
+				// Turn off splitOnNumerics Pascal 7/19/21 tokenizes Ids like ".b1234x" into "b","1234,"x"   See D-3984
+
+				From documentation : https://solr.apache.org/guide/8_8/filter-descriptions.html#word-delimiter-graph-filter
+
+									generateWordParts
+						(integer, default 1) If non-zero, splits words at delimiters. For example:"CamelCase", "hot-spot" -> "Camel", "Case", "hot", "spot"
+					generateNumberParts
+						(integer, default 1) If non-zero, splits numeric strings at delimiters:"1947-32" ->*"1947", "32"
+					splitOnCaseChange
+						(integer, default 1) If 0, words are not split on camel-case changes:"BugBlaster-XL" -> "BugBlaster", "XL". Example 1 below illustrates the default (non-zero) splitting behavior.
+					splitOnNumerics
+						(integer, default 1) If 0, don’t split words on transitions from alpha to numeric:"FemBot3000" -> "Fem", "Bot3000"
+					catenateWords
+						(integer, default 0) If non-zero, maximal runs of word parts will be joined: "hot-spot-sensor’s" -> "hotspotsensor"
+					catenateNumbers
+						(integer, default 0) If non-zero, maximal runs of number parts will be joined: 1947-32" -> "194732"
+					catenateAll
+						(0/1, default 0) If non-zero, runs of word and number parts will be joined: "Zap-Master-9000" -> "ZapMaster9000"
+					preserveOriginal
+						(integer, default 0) If non-zero, the original token is preserved: "Zap-Master-9000" -> "Zap-Master-9000", "Zap", "Master", "9000"
+					protected
+						(optional) The pathname of a file that contains a list of protected words that should be passed through without splitting.
+					stemEnglishPossessive
+						(integer, default 1) If 1, strips the possessive 's from each subword.
+				-->
 				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
 				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
 				<filter class="solr.ICUFoldingFilterFactory"/>
@@ -89,7 +125,7 @@
 		<fieldType name="textProper" class="solr.TextField" positionIncrementGap="100">
 			<analyzer>
 				<tokenizer class="solr.ICUTokenizerFactory"/>
-				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" splitOnNumerics="0" stemEnglishPossessive="1"/>
 				<filter class="solr.ICUFoldingFilterFactory"/>
 				<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
@@ -231,7 +267,7 @@
 		<field name="auth_author2" type="textProper" indexed="true" stored="true" multiValued="true"/>
 		<field name="auth_author2Str" type="string" indexed="true" stored="false" multiValued="true"/>
 		<field name="author_additional" type="text" indexed="true" stored="true" multiValued="true"/>
-		<field name="author_additionalStr" type="string" indexed="true" stored="false" multiValued="true"/>
+<!--		<field name="author_additionalStr" type="string" indexed="true" stored="false" multiValued="true"/>  Pretty sure this is redundant pascal. 7/19/21 -->
 
 		<!-- format -->
 		<field name="grouping_category" type="string" indexed="true" stored="true" multiValued="false" omitNorms="true"/>
@@ -348,9 +384,6 @@
 		So TP245.T9, translates "TP" to "TP - Chemical Technology".  This field uses the translation file
 		callnumber_subject_map.properties
 		 Currently this field only contributes to the KeywordProper search -->
-		<field name="local_callnumber" type="callnumber-search" indexed="true" stored="true" multiValued="true"/>
-		<field name="local_callnumber_exact" type="text-exact" indexed="true" stored="true" multiValued="true"/>
-		<field name="local_callnumber_left" type="text-left" indexed="true" stored="true" multiValued="true"/>
 		<dynamicField name="local_callnumber_*" type="callnumber-search" indexed="true" stored="true" multiValued="true"/>
 		<dynamicField name="local_callnumber_exact_*" type="text-exact" indexed="true" stored="true" multiValued="true"/>
 		<dynamicField name="local_callnumber_left_*" type="text-left" indexed="true" stored="true" multiValued="true"/>
@@ -393,7 +426,7 @@ TODO: need to set df parameter?
 	<copyField source="auth_author" dest="auth_authorStr"/>
 	<copyField source="author2" dest="author2Str"/>
 	<copyField source="auth_author2" dest="auth_author2Str"/>
-	<copyField source="author_additional" dest="author_additionalStr"/>
+<!--	<copyField source="author_additional" dest="author_additionalStr"/>  Pretty sure this is redundant pascal. 7/19/21-->
 <!--	<copyField source="publisher" dest="publisherStr"/>  Pretty sure this is redundant pascal 11/12/20-->
 	<!-- CopyFields for Proper (Unstemmed) searching -->
 	<copyField source="title" dest="title_proper"/>
