@@ -317,7 +317,7 @@
 		<field name="auth_author2Str" type="string" indexed="true" stored="false" multiValued="true"/>
 		<field name="author_additional" type="text" indexed="true" stored="true" multiValued="true"/>
         <!--505r:245c-->
-<!--		<field name="author_additionalStr" type="string" indexed="true" stored="false" multiValued="true"/> Pretty sure this is redundant pascal. 7/19/21
+<!--		<field name="author_additionalStr" type="string" indexed="true" stored="false" multiValued="true"/> Pretty sure this is redundant pascal. 7/19/21 -->
 
 		<!-- format -->
 		<field name="grouping_category" type="string" indexed="true" stored="true" multiValued="false" omitNorms="true"/>
