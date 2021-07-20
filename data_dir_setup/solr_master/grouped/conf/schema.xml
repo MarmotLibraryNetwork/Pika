@@ -248,7 +248,8 @@
 		<field name="title_full" type="text" indexed="true" stored="true" multiValued="true"/> <!-- Title full includes the author -->
 <!--		<field name="title_fullStr" type="string" indexed="true" stored="true" multiValued="true"/>-->
 		<field name="title_alt" type="text" indexed="true" stored="true" multiValued="true"/>
-		<field name="title_old" type="text" indexed="true" stored="true" multiValued="true"/>
+		<!--Removing title_old and title_new for now, until we create a use. Pascal 7/20/2021 -->
+<!--		<field name="title_old" type="text" indexed="true" stored="true" multiValued="true"/>-->
 		<!--MARC 780 tag Preceding Entry
 		$a - Main entry heading (NR)
 		$s - Uniform title (NR)
@@ -256,7 +257,7 @@
 
 		Looks to be the previous title in a series
 		-->
-		<field name="title_new" type="text" indexed="true" stored="true" multiValued="true"/>
+<!--		<field name="title_new" type="text" indexed="true" stored="true" multiValued="true"/>-->
 		<!--MARC 785 tag Succeeding Entry
 		$a - Main entry heading (NR)
 		$s - Uniform title (NR)

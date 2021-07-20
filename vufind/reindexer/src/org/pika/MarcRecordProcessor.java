@@ -1061,9 +1061,9 @@ abstract class MarcRecordProcessor {
 		//title alt
 		groupedWork.addAlternateTitles(MarcUtil.getFieldList(record, "130adfgklnpst:240a:246abnp:700tnr:730adfgklnpst:740a"));
 		//title old
-		groupedWork.addOldTitles(MarcUtil.getFieldList(record, "780ast"));
+//		groupedWork.addOldTitles(MarcUtil.getFieldList(record, "780ast"));
 		//title new
-		groupedWork.addNewTitles(MarcUtil.getFieldList(record, "785ast"));
+//		groupedWork.addNewTitles(MarcUtil.getFieldList(record, "785ast"));
 	}
 
 	private void loadBibCallNumbers(GroupedWorkSolr groupedWork, Record record, String identifier) {

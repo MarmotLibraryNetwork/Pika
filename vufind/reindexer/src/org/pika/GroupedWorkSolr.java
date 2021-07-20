@@ -104,8 +104,8 @@ public class GroupedWorkSolr implements Cloneable {
 	private TreeSet<String>          targetAudience           = new TreeSet<>();
 	private String                   title;
 	private HashSet<String>          titleAlt                 = new HashSet<>();
-	private HashSet<String>          titleOld                 = new HashSet<>();
-	private HashSet<String>          titleNew                 = new HashSet<>();
+//	private HashSet<String>          titleOld                 = new HashSet<>();
+//	private HashSet<String>          titleNew                 = new HashSet<>();
 	private String                   titleSort;
 	private String                   titleFormat              = "";
 	private HashSet<String>          topics                   = new HashSet<>();
@@ -207,9 +207,9 @@ public class GroupedWorkSolr implements Cloneable {
 		// noinspection unchecked
 		clonedWork.titleAlt = (HashSet<String>) titleAlt.clone();
 		// noinspection unchecked
-		clonedWork.titleOld = (HashSet<String>) titleOld.clone();
+//		clonedWork.titleOld = (HashSet<String>) titleOld.clone();
 		// noinspection unchecked
-		clonedWork.titleNew = (HashSet<String>) titleNew.clone();
+//		clonedWork.titleNew = (HashSet<String>) titleNew.clone();
 		// noinspection unchecked
 		clonedWork.topics = (HashSet<String>) topics.clone();
 		// noinspection unchecked
@@ -244,8 +244,8 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("title_full", fullTitles);
 		doc.addField("title_sort", titleSort);
 		doc.addField("title_alt", titleAlt);
-		doc.addField("title_old", titleOld);
-		doc.addField("title_new", titleNew);
+//		doc.addField("title_old", titleOld);
+//		doc.addField("title_new", titleNew);
 
 		//author and variations
 		doc.addField("auth_author", authAuthor);
@@ -1095,13 +1095,13 @@ public class GroupedWorkSolr implements Cloneable {
 		this.titleAlt.addAll(altTitles);
 	}
 
-	void addOldTitles(Set<String> oldTitles) {
-		this.titleOld.addAll(oldTitles);
-	}
+//	void addOldTitles(Set<String> oldTitles) {
+//		this.titleOld.addAll(oldTitles);
+//	}
 
-	void addNewTitles(Set<String> newTitles){
-		this.titleNew.addAll(newTitles);
-	}
+//	void addNewTitles(Set<String> newTitles){
+//		this.titleNew.addAll(newTitles);
+//	}
 
 	public void setAuthor(String author) {
 		if (primaryAuthors.containsKey(author)){

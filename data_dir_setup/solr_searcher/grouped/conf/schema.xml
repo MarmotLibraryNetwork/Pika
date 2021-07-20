@@ -73,42 +73,42 @@
 				-->
 				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
 				<filter class="solr.WordDelimiterGraphFilterFactory"
-                        generateWordParts="1"
-                        generateNumberParts="1"
-                        splitOnCaseChange="1"
-                        catenateAll="0"
-                        stemEnglishPossessive="1"
+						generateWordParts="1"
+						generateNumberParts="1"
+						splitOnCaseChange="1"
+						catenateAll="0"
+						stemEnglishPossessive="1"
 
-                        catenateWords="1"
-                        catenateNumbers="1"
-                        splitOnNumerics="0"
-                />
-                <!--
-                // Turn off splitOnNumerics Pascal 7/19/21 tokenizes Ids like ".b1234x" into "b","1234,"x"   See D-3984
+						catenateWords="1"
+						catenateNumbers="1"
+						splitOnNumerics="0"
+				/>
+				<!--
+				// Turn off splitOnNumerics Pascal 7/19/21 tokenizes Ids like ".b1234x" into "b","1234,"x"   See D-3984
 
-                From documentation : https://solr.apache.org/guide/8_8/filter-descriptions.html#word-delimiter-graph-filter
+				From documentation : https://solr.apache.org/guide/8_8/filter-descriptions.html#word-delimiter-graph-filter
 
-                                    generateWordParts
-                        (integer, default 1) If non-zero, splits words at delimiters. For example:"CamelCase", "hot-spot" -> "Camel", "Case", "hot", "spot"
-                    generateNumberParts
-                        (integer, default 1) If non-zero, splits numeric strings at delimiters:"1947-32" ->*"1947", "32"
-                    splitOnCaseChange
-                        (integer, default 1) If 0, words are not split on camel-case changes:"BugBlaster-XL" -> "BugBlaster", "XL". Example 1 below illustrates the default (non-zero) splitting behavior.
-                    splitOnNumerics
-                        (integer, default 1) If 0, don’t split words on transitions from alpha to numeric:"FemBot3000" -> "Fem", "Bot3000"
-                    catenateWords
-                        (integer, default 0) If non-zero, maximal runs of word parts will be joined: "hot-spot-sensor’s" -> "hotspotsensor"
-                    catenateNumbers
-                        (integer, default 0) If non-zero, maximal runs of number parts will be joined: 1947-32" -> "194732"
-                    catenateAll
-                        (0/1, default 0) If non-zero, runs of word and number parts will be joined: "Zap-Master-9000" -> "ZapMaster9000"
-                    preserveOriginal
-                        (integer, default 0) If non-zero, the original token is preserved: "Zap-Master-9000" -> "Zap-Master-9000", "Zap", "Master", "9000"
-                    protected
-                        (optional) The pathname of a file that contains a list of protected words that should be passed through without splitting.
-                    stemEnglishPossessive
-                        (integer, default 1) If 1, strips the possessive 's from each subword.
-                -->
+									generateWordParts
+						(integer, default 1) If non-zero, splits words at delimiters. For example:"CamelCase", "hot-spot" -> "Camel", "Case", "hot", "spot"
+					generateNumberParts
+						(integer, default 1) If non-zero, splits numeric strings at delimiters:"1947-32" ->*"1947", "32"
+					splitOnCaseChange
+						(integer, default 1) If 0, words are not split on camel-case changes:"BugBlaster-XL" -> "BugBlaster", "XL". Example 1 below illustrates the default (non-zero) splitting behavior.
+					splitOnNumerics
+						(integer, default 1) If 0, don’t split words on transitions from alpha to numeric:"FemBot3000" -> "Fem", "Bot3000"
+					catenateWords
+						(integer, default 0) If non-zero, maximal runs of word parts will be joined: "hot-spot-sensor’s" -> "hotspotsensor"
+					catenateNumbers
+						(integer, default 0) If non-zero, maximal runs of number parts will be joined: 1947-32" -> "194732"
+					catenateAll
+						(0/1, default 0) If non-zero, runs of word and number parts will be joined: "Zap-Master-9000" -> "ZapMaster9000"
+					preserveOriginal
+						(integer, default 0) If non-zero, the original token is preserved: "Zap-Master-9000" -> "Zap-Master-9000", "Zap", "Master", "9000"
+					protected
+						(optional) The pathname of a file that contains a list of protected words that should be passed through without splitting.
+					stemEnglishPossessive
+						(integer, default 1) If 1, strips the possessive 's from each subword.
+				-->
 				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
 				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
 				<filter class="solr.ICUFoldingFilterFactory"/>
@@ -132,32 +132,32 @@
 			</analyzer>
 		</fieldType>
 		<!-- This is an example of using the KeywordTokenizer along
-         With various TokenFilterFactories to produce a sortable field
-         that does not include some properties of the source text
-      -->
+		 With various TokenFilterFactories to produce a sortable field
+		 that does not include some properties of the source text
+	  -->
 		<fieldType name="alphaOnlySort" class="solr.TextField" sortMissingLast="true" omitNorms="true">
 			<analyzer>
 				<!-- KeywordTokenizer does no actual tokenizing, so the entire
-             input string is preserved as a single token
-          -->
+			 input string is preserved as a single token
+		  -->
 				<tokenizer class="solr.KeywordTokenizerFactory"/>
 				<!-- The LowerCase TokenFilter does what you expect, which can be
-             when you want your sorting to be case insensitive
-          -->
+			 when you want your sorting to be case insensitive
+		  -->
 				<filter class="solr.LowerCaseFilterFactory"/>
 				<!-- The TrimFilter removes any leading or trailing whitespace -->
 				<filter class="solr.TrimFilterFactory"/>
 				<!-- The PatternReplaceFilter gives you the flexibility to use
-             Java Regular expression to replace any sequence of characters
-             matching a pattern with an arbitrary replacement string,
-             which may include back references to portions of the original
-             string matched by the pattern.
+			 Java Regular expression to replace any sequence of characters
+			 matching a pattern with an arbitrary replacement string,
+			 which may include back references to portions of the original
+			 string matched by the pattern.
 
-             See the Java Regular Expression documentation for more
-             information on pattern and replacement string syntax.
+			 See the Java Regular Expression documentation for more
+			 information on pattern and replacement string syntax.
 
-             http://java.sun.com/j2se/1.5.0/docs/api/java/util/regex/package-summary.html
-          -->
+			 http://java.sun.com/j2se/1.5.0/docs/api/java/util/regex/package-summary.html
+		  -->
 				<filter class="solr.PatternReplaceFilterFactory" pattern="([^a-z1-9\s])" replacement="" replace="all"/>
 			</analyzer>
 		</fieldType>
@@ -167,44 +167,44 @@
 					 input string is preserved as a single token
 				-->
 				<tokenizer class="solr.KeywordTokenizerFactory"/>
-                <filter class="solr.WordDelimiterGraphFilterFactory"
-                        generateWordParts="1"
-                        splitOnCaseChange="1"
-                        catenateAll="0"
-                        stemEnglishPossessive="1"
+				<filter class="solr.WordDelimiterGraphFilterFactory"
+						generateWordParts="1"
+						splitOnCaseChange="1"
+						catenateAll="0"
+						stemEnglishPossessive="1"
 
-                        catenateWords="1"
-                        catenateNumbers="1"
-                        splitOnNumerics="0"
-                        generateNumberParts="0"
+						catenateWords="1"
+						catenateNumbers="1"
+						splitOnNumerics="0"
+						generateNumberParts="0"
 
-                />
-                <!--
-                // Turn off splitOnNumerics and generateNumberParts Pascal 7/19/21   Keep call number parts together
+				/>
+				<!--
+				// Turn off splitOnNumerics and generateNumberParts Pascal 7/19/21   Keep call number parts together
 
-                From documentation : https://solr.apache.org/guide/8_8/filter-descriptions.html#word-delimiter-graph-filter
+				From documentation : https://solr.apache.org/guide/8_8/filter-descriptions.html#word-delimiter-graph-filter
 
-                                    generateWordParts
-                        (integer, default 1) If non-zero, splits words at delimiters. For example:"CamelCase", "hot-spot" -> "Camel", "Case", "hot", "spot"
-                    generateNumberParts
-                        (integer, default 1) If non-zero, splits numeric strings at delimiters:"1947-32" ->*"1947", "32"
-                    splitOnCaseChange
-                        (integer, default 1) If 0, words are not split on camel-case changes:"BugBlaster-XL" -> "BugBlaster", "XL". Example 1 below illustrates the default (non-zero) splitting behavior.
-                    splitOnNumerics
-                        (integer, default 1) If 0, don’t split words on transitions from alpha to numeric:"FemBot3000" -> "Fem", "Bot3000"
-                    catenateWords
-                        (integer, default 0) If non-zero, maximal runs of word parts will be joined: "hot-spot-sensor’s" -> "hotspotsensor"
-                    catenateNumbers
-                        (integer, default 0) If non-zero, maximal runs of number parts will be joined: 1947-32" -> "194732"
-                    catenateAll
-                        (0/1, default 0) If non-zero, runs of word and number parts will be joined: "Zap-Master-9000" -> "ZapMaster9000"
-                    preserveOriginal
-                        (integer, default 0) If non-zero, the original token is preserved: "Zap-Master-9000" -> "Zap-Master-9000", "Zap", "Master", "9000"
-                    protected
-                        (optional) The pathname of a file that contains a list of protected words that should be passed through without splitting.
-                    stemEnglishPossessive
-                        (integer, default 1) If 1, strips the possessive 's from each subword.
-                -->
+									generateWordParts
+						(integer, default 1) If non-zero, splits words at delimiters. For example:"CamelCase", "hot-spot" -> "Camel", "Case", "hot", "spot"
+					generateNumberParts
+						(integer, default 1) If non-zero, splits numeric strings at delimiters:"1947-32" ->*"1947", "32"
+					splitOnCaseChange
+						(integer, default 1) If 0, words are not split on camel-case changes:"BugBlaster-XL" -> "BugBlaster", "XL". Example 1 below illustrates the default (non-zero) splitting behavior.
+					splitOnNumerics
+						(integer, default 1) If 0, don’t split words on transitions from alpha to numeric:"FemBot3000" -> "Fem", "Bot3000"
+					catenateWords
+						(integer, default 0) If non-zero, maximal runs of word parts will be joined: "hot-spot-sensor’s" -> "hotspotsensor"
+					catenateNumbers
+						(integer, default 0) If non-zero, maximal runs of number parts will be joined: 1947-32" -> "194732"
+					catenateAll
+						(0/1, default 0) If non-zero, runs of word and number parts will be joined: "Zap-Master-9000" -> "ZapMaster9000"
+					preserveOriginal
+						(integer, default 0) If non-zero, the original token is preserved: "Zap-Master-9000" -> "Zap-Master-9000", "Zap", "Master", "9000"
+					protected
+						(optional) The pathname of a file that contains a list of protected words that should be passed through without splitting.
+					stemEnglishPossessive
+						(integer, default 1) If 1, strips the possessive 's from each subword.
+				-->
 				<filter class="solr.LengthFilterFactory" min="2" max="100"/>
 				<!-- The LowerCase TokenFilter does what you expect, which can be when you want your sorting to be case insensitive -->
 				<filter class="solr.LowerCaseFilterFactory"/>
@@ -284,7 +284,8 @@
 <!--		<field name="title_fullStr" type="string" indexed="true" stored="true" multiValued="true"/>-->
 		<!--TODO: How is title_full & title_fullStr different? Can one be removed? -->
 		<field name="title_alt" type="text" indexed="true" stored="true" multiValued="true"/>
-		<field name="title_old" type="text" indexed="true" stored="true" multiValued="true"/>
+		<!--Removing title_old and title_new for now, until we create a use. Pascal 7/20/2021 -->
+<!--		<field name="title_old" type="text" indexed="true" stored="true" multiValued="true"/>-->
 		<!--MARC 780 tag Preceding Entry
 		$a - Main entry heading (NR)
 		$s - Uniform title (NR)
@@ -292,7 +293,7 @@
 
 		Looks to be the previous title in a series
 		-->
-		<field name="title_new" type="text" indexed="true" stored="true" multiValued="true"/>
+<!--		<field name="title_new" type="text" indexed="true" stored="true" multiValued="true"/>-->
 		<!--MARC 785 tag Succeeding Entry
 		$a - Main entry heading (NR)
 		$s - Uniform title (NR)
@@ -456,18 +457,18 @@
 
 		<!-- Fields from Pika Enrichment -->
 		<field name="tag" type="string" indexed="true" stored="true" multiValued="true"/>
-        <!--TODO: nothing is indexed into this field "tag"-->
+		<!--TODO: nothing is indexed into this field "tag"-->
 		<field name="rating" type="float" indexed="true" stored="true" multiValued="false" default="2.5"/>
 		<field name="rating_facet" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="system_list" type="string" indexed="true" stored="true" multiValued="true"/>
 
 		<!-- Special fields for Lists -->
 		<field name="num_titles" type="integer" indexed="true" stored="true" multiValued="false"/>
-        <!--TODO: this field can be removed likely. It is only used by lists and will have the same value as num_holdings.
-         (Also currently it has the same values as popularity)-->
+		<!--TODO: this field can be removed likely. It is only used by lists and will have the same value as num_holdings.
+		 (Also currently it has the same values as popularity)-->
 		<!-- Field to get random titles -->
 		<dynamicField name="random*" type="random" indexed="true" stored="true"/>
-        <!--TODO: nothing is generating a random field to the extent that I can tell -->
+		<!--TODO: nothing is generating a random field to the extent that I can tell -->
 
 	</fields>
 	<uniqueKey>id</uniqueKey>

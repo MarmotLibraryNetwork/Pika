@@ -921,18 +921,6 @@ class IndexRecord extends RecordInterface
 	}
 
 	/**
-	 * Get an array of newer titles for the record.
-	 *
-	 * @access  protected
-	 * @return  array
-	 */
-	protected function getNewerTitles()
-	{
-		return isset($this->fields['title_new']) ?
-		$this->fields['title_new'] : array();
-	}
-
-	/**
 	 * Get the item's place of publication.
 	 *
 	 * @access  protected
@@ -944,16 +932,26 @@ class IndexRecord extends RecordInterface
 	}
 
 	/**
-	 * Get an array of previous titles for the record.
+	 * TODO: not called anywhere
+	 * Get an array of newer titles for the record's series.
 	 *
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getPreviousTitles()
-	{
-		return isset($this->fields['title_old']) ?
-		$this->fields['title_old'] : array();
-	}
+//	protected function getNewerTitles(){
+//		return $this->fields['title_new'] ?? [];
+//	}
+
+	/**
+	 * TODO: not called anywhere
+	 * Get an array of previous titles for the record's series.
+	 *
+	 * @access  protected
+	 * @return  array
+	 */
+//	protected function getPreviousTitles(){
+//		return $this->fields['title_old'] ?? [];
+//	}
 
 	/**
 	 * Get the main author of the record.
