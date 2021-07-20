@@ -138,6 +138,24 @@ public class GroupedWorkIndexer {
 			if (!stopReplicationResponse.isSuccess()){
 				logger.error("Error restarting replication " + stopReplicationResponse.getMessage());
 			}
+			if (logger.isInfoEnabled()){
+				logger.info("Replication Disable command response :" + stopReplicationResponse.getMessage());
+			}
+
+			// Stop replication polling by the searcher
+			url = PikaConfigIni.getIniValue("Index", "url");
+			if (url != null && !url.isEmpty()){
+				url += "replication?command=disablepoll";
+				URLPostResponse stopSearcherReplicationPollingResponse = Util.getURL(url, logger);
+				if (!stopSearcherReplicationPollingResponse.isSuccess()){
+					logger.error("Error disabling polling of solr searcher for replication.");
+				}
+				if (logger.isInfoEnabled()){
+					logger.info("Searcher Replication Polling Disable command response : " + stopSearcherReplicationPollingResponse.getMessage());
+				}
+			} else {
+				logger.error("Unable to get solr search index url. Could not disable replication polling.");
+			}
 
 			updateFullReindexRunning(true);
 		}else{
@@ -745,6 +763,25 @@ public class GroupedWorkIndexer {
 				logger.error("Error shutting down update server", e);
 			}*/
 			}
+			if (logger.isInfoEnabled()){
+				logger.info("Replication Enable command response :" + startReplicationResponse.getMessage());
+			}
+
+			// Start replication polling by the searcher
+			url = PikaConfigIni.getIniValue("Index", "url");
+			if (url != null && !url.isEmpty()) {
+				url += "replication?command=enablepoll";
+				URLPostResponse startSearcherReplicationPollingResponse = Util.getURL(url, logger);
+				if (!startSearcherReplicationPollingResponse.isSuccess()) {
+					logger.error("Error disabling polling of solr searcher for replication.");
+				}
+				if (logger.isInfoEnabled()){
+					logger.info("Searcher Replication Polling Enable command response : " + startSearcherReplicationPollingResponse.getMessage());
+				}
+			} else {
+				logger.error("Unable to get solr search index url. Could not re-enable replication polling.");
+			}
+
 		}else {
 			try {
 				GroupedReindexMain.addNoteToReindexLog("Doing a soft commit to make sure changes are saved");
