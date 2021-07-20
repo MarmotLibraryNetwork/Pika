@@ -43,7 +43,7 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashSet<String>          alternateIds             = new HashSet<>();
 	private String                   authAuthor;
 	private HashMap<String, Long>    primaryAuthors           = new HashMap<>();
-	private String                   authorLetter;
+//	private String                   authorLetter;
 	private HashSet<String>          authorAdditional         = new HashSet<>();
 	private String                   authorDisplay;
 	private HashSet<String>          author2                  = new HashSet<>();
@@ -250,7 +250,7 @@ public class GroupedWorkSolr implements Cloneable {
 		//author and variations
 		doc.addField("auth_author", authAuthor);
 		doc.addField("author", getPrimaryAuthor());
-		doc.addField("author-letter", authorLetter);
+//		doc.addField("author-letter", authorLetter);
 		doc.addField("auth_author2", authAuthor2);
 		doc.addField("author2", author2);
 		doc.addField("author2-role", author2Role);
@@ -1198,9 +1198,9 @@ public class GroupedWorkSolr implements Cloneable {
 		this.groupingCategory = groupingCategory;
 	}
 
-	void setAuthorLetter(String authorLetter) {
-		this.authorLetter = authorLetter;
-	}
+//	void setAuthorLetter(String authorLetter) {
+//		this.authorLetter = authorLetter;
+//	}
 
 	void addAuthAuthor2(Set<String> fieldList) {
 		this.authAuthor2.addAll(fieldList);

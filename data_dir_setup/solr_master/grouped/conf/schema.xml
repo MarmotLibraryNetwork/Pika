@@ -256,7 +256,7 @@
 		<field name="author_exact" type="text-exact" indexed="true" stored="true" />
 		<field name="author_left" type="text-left" indexed="true" stored="true" />
 		<field name="author_display" type="string" indexed="true" stored="true" multiValued="false"/> <!-- The title to display to the user -->
-		<field name="author-letter" type="string" indexed="true" stored="true"/>
+<!--		<field name="author-letter" type="string" indexed="true" stored="true"/>-->
 		<!--TODO: remove author-letter from index. Can't determine what its use would be -->
 		<field name="authorStr" type="string" indexed="true" stored="true" docValues="true"/>
 		<field name="auth_author" type="textProper" indexed="true" stored="false"/>

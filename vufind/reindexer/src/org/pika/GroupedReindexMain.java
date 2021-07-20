@@ -41,7 +41,7 @@ public class GroupedReindexMain {
 	private static String profileToIndex;
 	private static String baseLogPath;
 	private static String solrPort;
-	private static String solrDir;
+//	private static String solrDir; // Only used for reloadSchema method that is commented out
 	
 	//Reporting information
 	private static long reindexLogId;
@@ -379,11 +379,12 @@ public class GroupedReindexMain {
 			System.exit(1);
 		}
 
-		solrDir = PikaConfigIni.getIniValue("Index", "local");
-		if (solrDir == null){
-			solrDir = "/data/pika/" + serverName + "/solr";
-		}
-		
+		// Only used for reloadSchema method that is commented out
+//		solrDir = PikaConfigIni.getIniValue("Index", "local");
+//		if (solrDir == null){
+//			solrDir = "/data/pika/" + serverName + "/solr";
+//		}
+
 		logger.info("Setting up database connections");
 		//Setup connections to pika and econtent databases
 		String databaseConnectionInfo = PikaConfigIni.getIniValue("Database", "database_vufind_jdbc");

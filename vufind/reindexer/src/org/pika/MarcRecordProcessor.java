@@ -960,7 +960,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.setAuthor(MarcUtil.getFirstFieldVal(record, "100abcdq:110ab"));
 
 		//author-letter = 100a, first
-		groupedWork.setAuthorLetter(MarcUtil.getFirstFieldVal(record, "100a"));
+//		groupedWork.setAuthorLetter(MarcUtil.getFirstFieldVal(record, "100a"));
 		// TODO: remove author-letter from index. Can't determine what its use would be.
 
 		//auth_author2 = 700abcd

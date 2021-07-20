@@ -64,7 +64,7 @@ class GroupedWorkDriver extends RecordInterface {
 	 * @access protected
 	 */
 	protected $forbiddenSnippetFields = array(
-		'author', 'author-letter', 'auth_author2', 'title', 'title_short', 'title_full',
+		'author', /*'author-letter',*/ 'auth_author2', 'title', 'title_short', 'title_full',
 		'title_auth', 'title_sub', 'title_display', 'spelling', 'id',
 		'fulltext_unstemmed', //TODO: fulltext_unstemmed probably obsolete
 		'spellingShingle', 'collection', 'title_proper',
