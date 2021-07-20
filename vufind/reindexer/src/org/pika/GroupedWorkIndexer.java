@@ -145,7 +145,7 @@ public class GroupedWorkIndexer {
 			// Stop replication polling by the searcher
 			url = PikaConfigIni.getIniValue("Index", "url");
 			if (url != null && !url.isEmpty()){
-				url += "/replication?command=disablepoll";
+				url += "/grouped/replication?command=disablepoll";
 				URLPostResponse stopSearcherReplicationPollingResponse = Util.getURL(url, logger);
 				if (!stopSearcherReplicationPollingResponse.isSuccess()){
 					logger.error("Error disabling polling of solr searcher for replication.");
@@ -770,7 +770,7 @@ public class GroupedWorkIndexer {
 			// Start replication polling by the searcher
 			url = PikaConfigIni.getIniValue("Index", "url");
 			if (url != null && !url.isEmpty()) {
-				url += "/replication?command=enablepoll";
+				url += "/grouped/replication?command=enablepoll";
 				URLPostResponse startSearcherReplicationPollingResponse = Util.getURL(url, logger);
 				if (!startSearcherReplicationPollingResponse.isSuccess()) {
 					logger.error("Error disabling polling of solr searcher for replication.");
