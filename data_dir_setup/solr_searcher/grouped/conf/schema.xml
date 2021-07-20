@@ -282,26 +282,27 @@
 		<field name="title_short" type="text" indexed="true" stored="true"/>
 		<field name="title_full" type="text" indexed="true" stored="true" multiValued="true"/> <!-- Title full includes the author -->
 <!--		<field name="title_fullStr" type="string" indexed="true" stored="true" multiValued="true"/>-->
-        <!--TODO: How is title_full & title_fullStr different? Can one be removed? -->
+		<!--TODO: How is title_full & title_fullStr different? Can one be removed? -->
 		<field name="title_alt" type="text" indexed="true" stored="true" multiValued="true"/>
 		<field name="title_old" type="text" indexed="true" stored="true" multiValued="true"/>
-        <!--MARC 780 tag Preceding Entry
-        $a - Main entry heading (NR)
-        $s - Uniform title (NR)
-        $t - Title (NR)
+		<!--MARC 780 tag Preceding Entry
+		$a - Main entry heading (NR)
+		$s - Uniform title (NR)
+		$t - Title (NR)
 
-        Looks to be the previous title in a series
-        -->
+		Looks to be the previous title in a series
+		-->
 		<field name="title_new" type="text" indexed="true" stored="true" multiValued="true"/>
-        <!--MARC 785 tag Succeeding Entry
-        $a - Main entry heading (NR)
-        $s - Uniform title (NR)
-        $t - Title (NR)
+		<!--MARC 785 tag Succeeding Entry
+		$a - Main entry heading (NR)
+		$s - Uniform title (NR)
+		$t - Title (NR)
 
-        Looks to be the next title in a series
-         -->
+		Looks to be the next title in a series
+		 -->
 		<!-- Author variations -->
 		<field name="author" type="text" indexed="true" stored="true" />
+		<!-- First MARC tag 100abcdq or 110ab -->
 		<field name="author_exact" type="text-exact" indexed="true" stored="true" />
 		<field name="author_left" type="text-left" indexed="true" stored="true" />
 		<field name="author_display" type="string" indexed="true" stored="true" multiValued="false"/> <!-- The title to display to the user -->
@@ -309,14 +310,18 @@
 		<!--TODO: remove author-letter from index. Can't determine what its use would be -->
 		<field name="authorStr" type="string" indexed="true" stored="true" docValues="true"/>
 		<field name="auth_author" type="textProper" indexed="true" stored="false"/>
+		<!-- First MARC tag 100abcd -->
 		<field name="auth_authorStr" type="string" indexed="true" stored="false"/>
 		<field name="author2" type="text" indexed="true" stored="true" multiValued="true"/>
+		<!-- All MARC tags 110ab, 111ab, 700abcd, 710ab, 711ab, and 800a -->
 		<field name="author2Str" type="string" indexed="true" stored="true" multiValued="true"/>
 		<field name="author2-role" type="string" indexed="true" stored="true" multiValued="true"/> <!-- The contributor with role and title appended -->
+		<!-- All MARC tags 700abcdetmnr and 710abcdetmnr with translation of relator code (subfield 4) appended after pipe character "|" -->
 		<field name="auth_author2" type="textProper" indexed="true" stored="true" multiValued="true"/>
+		<!-- All MARC tags 700abcd -->
 		<field name="auth_author2Str" type="string" indexed="true" stored="false" multiValued="true"/>
 		<field name="author_additional" type="text" indexed="true" stored="true" multiValued="true"/>
-        <!--505r:245c-->
+		<!-- All MARC tags 505r and 245c -->
 <!--		<field name="author_additionalStr" type="string" indexed="true" stored="false" multiValued="true"/> Pretty sure this is redundant pascal. 7/19/21 -->
 
 		<!-- format -->
