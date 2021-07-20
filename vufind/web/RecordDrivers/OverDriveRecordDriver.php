@@ -917,6 +917,10 @@ class OverDriveRecordDriver extends RecordInterface {
 			'label' => 'More Details',
 			'body'  => $interface->fetch('OverDrive/view-more-details.tpl'),
 		];
+		$moreDetailsOptions['subjects'] = [
+			'label' => 'Subjects',
+			'body' => $interface->fetch('OverDrive/view-subjects.tpl'),
+		];
 		$moreDetailsOptions['citations']   = [
 			'label' => 'Citations',
 			'body'  => $interface->fetch('Record/cite.tpl'),
