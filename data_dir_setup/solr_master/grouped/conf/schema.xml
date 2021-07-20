@@ -246,7 +246,7 @@
 		<field name="title_sub" type="text" indexed="true" stored="true"/>
 		<field name="title_short" type="text" indexed="true" stored="true"/>
 		<field name="title_full" type="text" indexed="true" stored="true" multiValued="true"/> <!-- Title full includes the author -->
-		<field name="title_fullStr" type="string" indexed="true" stored="true" multiValued="true"/>
+<!--		<field name="title_fullStr" type="string" indexed="true" stored="true" multiValued="true"/>-->
 		<field name="title_alt" type="text" indexed="true" stored="true" multiValued="true"/>
 		<field name="title_old" type="text" indexed="true" stored="true" multiValued="true"/>
 		<field name="title_new" type="text" indexed="true" stored="true" multiValued="true"/>
@@ -419,7 +419,7 @@ TODO: need to set df parameter?
   Please use "df" parameter on the request instead. For more details, see SOLR-10585.
 -->
 	<!-- CopyFields for Faceting on Text -->
-	<copyField source="title_full" dest="title_fullStr"/>
+<!--	<copyField source="title_full" dest="title_fullStr"/>-->
 	<copyField source="author" dest="authorStr"/>
 	<copyField source="author" dest="author_exact"/>
 	<copyField source="author" dest="author_left"/>
