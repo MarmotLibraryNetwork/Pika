@@ -145,8 +145,6 @@
       "title_full^400",
       "title^300",
       "title_alt^200",
-      "title_new^100",
-      "title_old",
       "series^100",
       "series2"
     ],
@@ -163,12 +161,6 @@
       ],
       "title_alt": [
         ["and", 200]
-      ],
-      "title_new": [
-        ["and", 100]
-      ],
-      "title_old": [
-        ["and", null]
       ],
       "series": [
         ["onephrase", 100],
@@ -203,9 +195,6 @@
         ],
         "title_alt": [
           ["and", 100]
-        ],
-        "title_new": [
-          ["and", 50]
         ]
       },
       "title_exact": [
@@ -309,9 +298,6 @@
         ],
         "title_alt": [
           ["and", 100]
-        ],
-        "title_new": [
-          ["and", 50]
         ],
         "title_full": [
           ["and", 200],
