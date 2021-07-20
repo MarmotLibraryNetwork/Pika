@@ -415,8 +415,11 @@
 		<field name="display_description" type="text" indexed="true" stored="true"/>
 
 		<!-- Identifiers -->
-		<field name="lccn" type="string" indexed="true" stored="true" multiValued="true"/>
+<!--		<field name="lccn" type="string" indexed="true" stored="true" multiValued="true"/>-->
 		<field name="oclc" type="string" indexed="true" stored="true" multiValued="true"/>
+		<!-- All MARC tags 035a
+		 $a - System control number - MARC code (enclosed in parentheses) of the organization originating the system control number, followed immediately by the number.
+		 -->
 		<field name="primary_isbn" type="textProper" indexed="false" stored="true" multiValued="false"/>
 		<field name="isbn" type="textProper" indexed="true" stored="true" multiValued="true"/>
 		<field name="issn" type="textProper" indexed="true" stored="true" multiValued="true"/>

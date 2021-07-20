@@ -81,7 +81,7 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashSet<String>          translations             = new HashSet<>();
 	private Long                     languageBoost            = 1L;
 	private Long                     languageBoostSpanish     = 1L;
-	private HashSet<String>          lccns                    = new HashSet<>();
+//	private HashSet<String>          lccns                    = new HashSet<>();
 	private HashSet<String>          lcSubjects               = new HashSet<>();
 	private int                      lexileScore              = -1;
 	private String                   lexileCode               = "";
@@ -177,7 +177,7 @@ public class GroupedWorkSolr implements Cloneable {
 		// noinspection unchecked
 		clonedWork.translations = (HashSet<String>) translations.clone();
 		// noinspection unchecked
-		clonedWork.lccns = (HashSet<String>) lccns.clone();
+//		clonedWork.lccns = (HashSet<String>) lccns.clone();
 		// noinspection unchecked
 		clonedWork.lcSubjects = (HashSet<String>) lcSubjects.clone();
 		// noinspection unchecked
@@ -366,7 +366,7 @@ public class GroupedWorkSolr implements Cloneable {
 		keywords.addAll(oclcs);
 		keywords.addAll(barcodes);
 		keywords.addAll(issns);
-		keywords.addAll(lccns);
+//		keywords.addAll(lccns);
 		keywords.addAll(upcs.keySet());
 		HashSet<String> callNumbers = getAllCallNumbers();
 		keywords.addAll(callNumbers);
@@ -375,7 +375,7 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("table_of_contents", contents);
 		//broad search terms
 		//identifiers
-		doc.addField("lccn", lccns);
+//		doc.addField("lccn", lccns);
 		doc.addField("oclc", oclcs);
 		//Get the primary isbn
 		doc.addField("primary_isbn", primaryIsbn);
