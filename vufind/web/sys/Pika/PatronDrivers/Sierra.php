@@ -1446,14 +1446,7 @@ EOT;
 		             'description'=> 'Mailing Address.',
 		             'maxLength'  => 40,
 		             'required'   => true];
-		if ($library && $library->showWorkPhoneInProfile){
-			$fields[] = ['property'    => 'altaddress',
-			             'type'        => 'text',
-			             'label'       => 'Physical Address',
-			             'description' => 'Physical Address.',
-			             'maxLength'   => 40,
-			             'required'    => false];
-		}
+
 		$fields[] = ['property'   => 'city',
 		             'type'       => 'text',
 		             'label'      => 'City',
@@ -1489,6 +1482,15 @@ EOT;
 		             'maxLength'  => 20,
 		             'required'   => false];
 
+		if ($library && $library->showWorkPhoneInProfile){
+			$fields[] = ['property'   => 'altphone',
+			             'type'       => 'text',
+			             'label'      => 'Work phone (XXX-XXX-XXXX)',
+			             'description'=> 'Work Phone',
+			             'maxLength'  => 40,
+			             'required'   => true];
+		}
+		
 		// if library uses pins
 		if($this->accountProfile->loginConfiguration == "barcode_pin") {
 			$fields[] = [
