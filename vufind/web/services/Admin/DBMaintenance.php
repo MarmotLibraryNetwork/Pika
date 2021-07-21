@@ -1464,7 +1464,7 @@ class DBMaintenance extends Admin_Admin {
     					  title varchar(255),
     						edition varchar(100),
     						pubDate INT(11),
-    						coverUrl varchar(100),
+    						coverUrl varchar(200),
     						parentId varchar(50),
     						description TEXT, 
     						dateAdded INT(11),
