@@ -77,6 +77,16 @@ class Marmot extends Sierra {
 			];
 		}
 
+		// vail fields
+		if ($libSubDomain == 'vail' || $libSubDomain == 'vail2'){
+			$fields[] = ['property'    => 'altaddress',
+			             'type'        => 'text',
+			             'label'       => 'Physical Address',
+			             'description' => 'Physical Address.',
+			             'maxLength'   => 40,
+			             'required'    => false];
+		}
+
 		return $fields;
 	}
 
