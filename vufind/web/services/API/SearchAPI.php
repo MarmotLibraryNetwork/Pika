@@ -193,10 +193,10 @@ class SearchAPI extends AJAXHandler {
 			//TODO: handling for multiple ILSes
 			if ($ilsExtractInfo->find(true)){
 				// Fetch the last updated MARC Record
-				$lastExtractTime = $ilsExtractInfo->lastExtracted;
-				if ($lastExtractTime < ($currentTime - self::LAST_EXTRACT_INTERVAL_WARN)){
-					$status[] = ($lastExtractTime < ($currentTime - self::LAST_EXTRACT_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-					$notes[]  = 'The last ILS record was extracted ' . round(($currentTime - ($lastExtractTime)) / 60, 2) . ' minutes ago';
+				$lastIlsRecordExtractTime = $ilsExtractInfo->lastExtracted;
+				if ($lastIlsRecordExtractTime < ($currentTime - self::LAST_EXTRACT_INTERVAL_WARN)){
+					$status[] = ($lastIlsRecordExtractTime < ($currentTime - self::LAST_EXTRACT_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
+					$notes[]  = 'The last ILS record was extracted ' . round(($currentTime - ($lastIlsRecordExtractTime)) / 60, 2) . ' minutes ago';
 				}
 			}
 
@@ -209,7 +209,7 @@ class SearchAPI extends AJAXHandler {
 					$lastSierraExtractTime = $lastSierraExtractVariable->value;
 					if ($lastSierraExtractTime < ($currentTime - self::SIERRA_EXTRACT_INTERVAL_WARN)){
 						$status[] = ($lastSierraExtractVariable->value < ($currentTime - self::SIERRA_EXTRACT_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-						$notes[]  = 'Sierra Last Extract time  ' . date('m-d-Y H:i:s', $lastSierraExtractTime) . ' - ' . round(($currentTime - ($lastExtractTime)) / 60, 2) . ' minutes ago';
+						$notes[]  = 'Sierra Last Extract time  ' . date('m-d-Y H:i:s', $lastSierraExtractTime) . ' - ' . round(($currentTime - ($lastSierraExtractTime)) / 60, 2) . ' minutes ago';
 					}
 				}else{
 					$status[] = self::STATUS_WARN;
