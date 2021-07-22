@@ -13,8 +13,8 @@ else
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
 		PIKASERVER=$1
 		CURRENT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
-		cp -r ${CURRENT_DIR}/solr_master /data/vufind-plus/${PIKASERVER}
-		cp -r ${CURRENT_DIR}/solr_searcher /data/vufind-plus/${PIKASERVER}
+		cp -vr ${CURRENT_DIR}/solr_master /data/vufind-plus/${PIKASERVER}
+		cp -vr ${CURRENT_DIR}/solr_searcher /data/vufind-plus/${PIKASERVER}
 		exit 0
 	fi
 fi
