@@ -209,7 +209,7 @@ class SearchAPI extends AJAXHandler {
 					$lastSierraExtractTime = $lastSierraExtractVariable->value;
 					if ($lastSierraExtractTime < ($currentTime - self::SIERRA_EXTRACT_INTERVAL_WARN)){
 						$status[] = ($lastSierraExtractVariable->value < ($currentTime - self::SIERRA_EXTRACT_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-						$notes[]  = 'Sierra Last Extract time  ' . date('m-d-Y H:i:s', $lastSierraExtractTime) . ' - ' . round(($currentTime - ($lastSierraExtractTime)) / 60, 2) . ' minutes ago';
+						$notes[]  = 'Sierra Last Extract time ' . date('m-d-Y H:i:s', $lastSierraExtractTime) . ' - ' . round(($currentTime - ($lastSierraExtractTime)) / 60, 2) . ' minutes ago';
 					}
 				}else{
 					$status[] = self::STATUS_WARN;
