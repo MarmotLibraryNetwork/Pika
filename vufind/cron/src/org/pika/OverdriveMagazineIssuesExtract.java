@@ -39,11 +39,11 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 			PreparedStatement magazineIdStatement;
 		try{
 			if (processSettings.get("fullReindex") != null) {
-				magazineIdStatement = econtentConn.prepareStatement("SELECT overdriveId, crossRefId from overdrive_api_products WHERE mediaType='magazine'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				magazineIdStatement = econtentConn.prepareStatement("SELECT overdriveId, crossRefId from overdrive_api_products WHERE mediaType='magazine' AND deleted != 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				processLog.addNote("Adding/Updating all magazine issues");
 				processLog.saveToDatabase(pikaConn, logger);
 			}else{
-				magazineIdStatement = econtentConn.prepareStatement("SELECT overdriveId, crossRefId from overdrive_api_products WHERE mediaType='magazine' ORDER BY id DESC", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				magazineIdStatement = econtentConn.prepareStatement("SELECT overdriveId, crossRefId from overdrive_api_products WHERE mediaType='magazine' AND deleted != 1 ORDER BY id DESC", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				processLog.addNote("Adding New Magazine Issues");
 				processLog.saveToDatabase(pikaConn, logger);
 			}
@@ -109,7 +109,12 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 			//Load products from API
 			clientSecret        = PikaConfigIni.getIniValue("OverDrive", "clientSecret");
 			clientKey           = PikaConfigIni.getIniValue("OverDrive", "clientKey");
-
+			for (Map.Entry<String, String> entry : overDriveProductsKeys.entrySet()) {
+				String accountId          = entry.getKey();
+				String productKey         = entry.getValue();
+				Long   sharedCollectionId = (accountIds.indexOf(accountId) + 1) * -1L;
+				libToOverDriveAPIKeyMap.put(sharedCollectionId, productKey);
+			}
 			if(clientSecret == null || clientKey == null || clientSecret.length() == 0 || clientKey.length() == 0 || accountIds.isEmpty())
 			{
 				logger.info("Did not find correct configuration in config.ini, not loading overdrive magazines");
@@ -151,117 +156,114 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 		try {
 			boolean small = false;
 			int x = 0;
-			for (Map.Entry<String, String> entry : overDriveProductsKeys.entrySet()) {
-				String accountId          = entry.getKey();
-				String productKey         = entry.getValue();
-				Long   sharedCollectionId = (accountIds.indexOf(accountId) + 1) * -1L;
-				libToOverDriveAPIKeyMap.put(sharedCollectionId, productKey);
-			}
-			while (small == false) {
-				int issuesPerQuery = 2000;
-				String overDriveUrl = "https://api.overdrive.com/v1/collections/" + getProductsKeyForSharedCollection(-1L, logger) + "/products/" + overdriveId + "/issues?limit=" + issuesPerQuery + "&sort=saledate:asc&offset=" + x;
-				WebServiceResponse overdriveCall = callOverDriveURL(overDriveUrl, logger);
-				boolean overdriveHasError = false;
-				if (overdriveCall.getResponseCode() == 400) {
-					overdriveHasError = true;
-				}
-				JSONObject jsonObject = overdriveCall.getResponse();
-				if (overdriveHasError || jsonObject.getInt("totalItems") == 0) {
-					//set overdriveHasError back to false for advantage call handling
-					overdriveHasError = false;
-					logger.info("No for " + overdriveId + " try advantage");
-					for (String advantageCollections : advantageCollectionToLibMap.keySet()) {
-						overDriveUrl = "https://api.overdrive.com/v1/collections/" + advantageCollections + "/products/" + overdriveId + "/issues?limit=" + issuesPerQuery + "&sort=saledate:asc&offset=" + x;
-						overdriveCall = callOverDriveURL(overDriveUrl, logger);
 
-						if (overdriveCall.getResponseCode() == 400) {
-							JSONObject overdriveError = new JSONObject(overdriveCall.getError());
-							String errorMessage = overdriveError.getString("message");
-							logger.error(errorMessage + " " + overdriveId);
-							overdriveHasError = true;
-							break;
+			while (small == false) {
+				for(Map.Entry<Long,String> sharedCollections: libToOverDriveAPIKeyMap.entrySet()) {
+					int issuesPerQuery = 2000;
+					String overDriveUrl = "https://api.overdrive.com/v1/collections/" + getProductsKeyForSharedCollection(sharedCollections.getKey(), logger) + "/products/" + overdriveId + "/issues?limit=" + issuesPerQuery + "&sort=saledate:asc&offset=" + x;
+					WebServiceResponse overdriveCall = callOverDriveURL(overDriveUrl, logger);
+					boolean overdriveHasError = false;
+					if (overdriveCall.getResponseCode() != 200) {
+						overdriveHasError = true;
+					}
+					JSONObject jsonObject = overdriveCall.getResponse();
+					if (overdriveHasError || jsonObject.getInt("totalItems") == 0) {
+						//set overdriveHasError back to false for advantage call handling
+						overdriveHasError = false;
+						logger.info("No for " + overdriveId + " try advantage");
+						for (String advantageCollections : advantageCollectionToLibMap.keySet()) {
+							overDriveUrl = "https://api.overdrive.com/v1/collections/" + advantageCollections + "/products/" + overdriveId + "/issues?limit=" + issuesPerQuery + "&sort=saledate:asc&offset=" + x;
+							overdriveCall = callOverDriveURL(overDriveUrl, logger);
+
+							if (overdriveCall.getResponseCode() != 200) {
+								JSONObject overdriveError = new JSONObject(overdriveCall.getError());
+								String errorMessage = overdriveError.getString("message");
+								logger.error(errorMessage + " " + overdriveId);
+								overdriveHasError = true;
+								break;
+							}
+							jsonObject = overdriveCall.getResponse();
+							if (jsonObject.getInt("totalItems") == 0) {
+								processLog.incErrors();
+								processLog.addNote("No magazines found for " + overdriveId);
+								processLog.saveToDatabase(pikaConn, logger);
+								break;
+							}
 						}
-						jsonObject = overdriveCall.getResponse();
-						if (jsonObject.getInt("totalItems") == 0) {
-							processLog.incErrors();
-							processLog.addNote("No magazines found for " + overdriveId);
-							processLog.saveToDatabase(pikaConn, logger);
-							break;
+
+					}
+					if (overdriveHasError || !jsonObject.has("products")) {
+						break;
+					}
+					JSONArray products = jsonObject.getJSONArray("products");
+					int returnedRecords = jsonObject.getInt("totalItems");
+					if (returnedRecords < issuesPerQuery) {
+						small = true;
+					}
+					String magazineParentId = overdriveId;
+					int updates = 0;
+					for (int i = 0; i < products.length(); i++) {
+						JSONObject issue = (JSONObject) products.get(i);
+						JSONObject images = issue.getJSONObject("images");
+						JSONObject image = images.getJSONObject("cover");
+						String coverUrl = image.getString("href");
+						String magazineIssueId = issue.getString("id");
+						String magazineTitle = issue.getString("sortTitle").replace("'", "&apos;");
+						String magazineCrossRef = issue.getString("crossRefId");
+						String magazineEdition = issue.getString("edition").replace("'", "&apos;");
+						JSONObject links = issue.getJSONObject("links");
+						JSONObject metadata = links.getJSONObject("metadata");
+						String magazineIssueMetadataURL = metadata.getString("href");
+
+						WebServiceResponse metadataCall = callOverDriveURL(magazineIssueMetadataURL, logger);
+						JSONObject magazineMetaCall = metadataCall.getResponse();
+						String magazineDescription;
+						if (magazineMetaCall.has("shortDescription")) {
+							magazineDescription = magazineMetaCall.getString("shortDescription").replace("'", "&apos;");
+						} else {
+							magazineDescription = magazineTitle + " " + magazineEdition;
+						}
+						JSONArray formatsArray = magazineMetaCall.getJSONArray("formats");
+						String pubDateString = null;
+						for (int n = 0; n < formatsArray.length(); n++) {
+							JSONObject formatsObject = formatsArray.getJSONObject(n);
+							pubDateString = formatsObject.getString("onSaleDate");
+						}
+
+						Date pubDate = new SimpleDateFormat("MM/dd/yyyy").parse(pubDateString);
+						Long published = pubDate.getTime() / 1000;
+
+						long dateTime = System.currentTimeMillis() / 1000;
+
+						PreparedStatement doesIdExist = econtentConn.prepareStatement("SELECT id from `overdrive_api_magazine_issues` WHERE overdriveId ='" + magazineIssueId + "'");
+						ResultSet idResult = doesIdExist.executeQuery();
+						if (!idResult.first()) {
+							String insert = ("'" + magazineIssueId + "','" + magazineCrossRef + "','" + magazineTitle + "','" + magazineEdition + "','" + published + "','" + coverUrl + "','" + magazineParentId + "','" + magazineDescription + "', " + dateTime + "," + dateTime);
+							PreparedStatement updateDatabase = econtentConn.prepareStatement("INSERT INTO `overdrive_api_magazine_issues` " +
+											"(overdriveId, crossRefId, title, edition, pubDate, coverUrl, parentId, description, dateAdded, dateUpdated) " +
+											"VALUES(" + insert + ")");
+							updates = updates + updateDatabase.executeUpdate();
+							logger.info("Added " + updates + " magazine issues to database for magazine id: " + magazineParentId);
+						} else {
+							PreparedStatement updateDatabase = econtentConn.prepareStatement(
+											"UPDATE `overdrive_api_magazine_issues` SET " +
+															"crossRefId ='" + magazineCrossRef + "', " +
+															"title ='" + magazineTitle + "', " +
+															"edition ='" + magazineEdition + "', " +
+															"pubDate ='" + published + "', " +
+															"coverUrl ='" + coverUrl + "', " +
+															"description ='" + magazineDescription + "', " +
+															"dateUpdated =" + dateTime +
+															" WHERE overdriveId='" + magazineIssueId + "'");
+							updates = updates + updateDatabase.executeUpdate();
+
 						}
 					}
-
+					x = x + issuesPerQuery;
+					processLog.addUpdates(updates);
+					processLog.incUpdated();
+					processLog.saveToDatabase(pikaConn, logger);
 				}
-				if (overdriveHasError|| !jsonObject.has("products")){break;}
-			JSONArray products = jsonObject.getJSONArray("products");
-			int returnedRecords = jsonObject.getInt("totalItems");
-			if (returnedRecords < issuesPerQuery)
-			{
-				small = true;
-			}
-			String magazineParentId = overdriveId;
-			int updates = 0;
-			for(int i = 0; i< products.length(); i++) {
-				JSONObject issue = (JSONObject) products.get(i);
-				JSONObject images = issue.getJSONObject("images");
-				JSONObject image = images.getJSONObject("cover");
-				String coverUrl = image.getString("href");
-				String magazineIssueId = issue.getString("id");
-				String magazineTitle = issue.getString("sortTitle").replace("'", "&apos;");
-				String magazineCrossRef = issue.getString("crossRefId");
-				String magazineEdition = issue.getString("edition").replace("'", "&apos;");
-				JSONObject links = issue.getJSONObject("links");
-				JSONObject metadata = links.getJSONObject("metadata");
-				String magazineIssueMetadataURL = metadata.getString("href");
-
-				WebServiceResponse metadataCall = callOverDriveURL(magazineIssueMetadataURL, logger);
-				JSONObject magazineMetaCall = metadataCall.getResponse();
-				String magazineDescription;
-				if (magazineMetaCall.has("shortDescription")) {
-					magazineDescription = magazineMetaCall.getString("shortDescription").replace("'", "&apos;");
-				}else{
-					magazineDescription = magazineTitle + " " + magazineEdition;
-				}
-				JSONArray formatsArray = magazineMetaCall.getJSONArray("formats");
-				String pubDateString = null;
-				for(int n = 0; n<formatsArray.length(); n++)
-				{
-					JSONObject formatsObject = formatsArray.getJSONObject(n);
-					pubDateString = formatsObject.getString("onSaleDate");
-				}
-
-				Date pubDate = new SimpleDateFormat("MM/dd/yyyy").parse(pubDateString);
-				Long published = pubDate.getTime()/1000;
-
-				long dateTime = System.currentTimeMillis() / 1000;
-
-				PreparedStatement doesIdExist = econtentConn.prepareStatement("SELECT id from `overdrive_api_magazine_issues` WHERE overdriveId ='" + magazineIssueId + "'");
-				ResultSet idResult = doesIdExist.executeQuery();
-				if (!idResult.first()) {
-					String insert = ("'" + magazineIssueId + "','" + magazineCrossRef + "','" + magazineTitle + "','" + magazineEdition + "','" + published + "','" + coverUrl + "','" + magazineParentId + "','" + magazineDescription + "', " + dateTime + "," + dateTime);
-					PreparedStatement updateDatabase = econtentConn.prepareStatement("INSERT INTO `overdrive_api_magazine_issues` " +
-									"(overdriveId, crossRefId, title, edition, pubDate, coverUrl, parentId, description, dateAdded, dateUpdated) " +
-									"VALUES(" + insert + ")");
-					updates = updates +  updateDatabase.executeUpdate();
-					logger.info("Added " + updates + " magazine issues to database for magazine id: " + magazineParentId);
-				} else {
-					PreparedStatement updateDatabase = econtentConn.prepareStatement(
-									"UPDATE `overdrive_api_magazine_issues` SET " +
-													"crossRefId ='" + magazineCrossRef + "', " +
-													"title ='" + magazineTitle + "', " +
-													"edition ='" + magazineEdition + "', " +
-													"pubDate ='" + published + "', "+
-													"coverUrl ='" + coverUrl + "', " +
-													"description ='" + magazineDescription + "', " +
-													"dateUpdated =" + dateTime +
-													" WHERE overdriveId='" + magazineIssueId + "'");
-					updates = updates + updateDatabase.executeUpdate();
-
-				}
-			}
-				x = x+issuesPerQuery;
-				processLog.addUpdates(updates);
-				processLog.incUpdated();
-				processLog.saveToDatabase(pikaConn,logger);
 			}
 		}catch(Exception e)
 		{
@@ -277,12 +279,11 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 			int x = 0;
 			int issuesPerQuery = 25;
 			while (small == false){
-
-
-				String overDriveUrl = "https://api.overdrive.com/v1/collections/"+ overDriveProductsKeys.firstEntry().getValue() + "/products/" + overdriveId + "/issues?limit="+ issuesPerQuery +"&offset="+x;
+				for(Map.Entry<Long,String> sharedCollections: libToOverDriveAPIKeyMap.entrySet()) {
+				String overDriveUrl = "https://api.overdrive.com/v1/collections/"+ getProductsKeyForSharedCollection(sharedCollections.getKey(), logger) + "/products/" + overdriveId + "/issues?limit="+ issuesPerQuery +"&offset="+x;
 				WebServiceResponse overdriveCall = callOverDriveURL(overDriveUrl, logger);
 				boolean overdriveHasError = false;
-				if(overdriveCall.getResponseCode() == 400)
+				if(overdriveCall.getResponseCode() != 200)
 				{
 					overdriveHasError = true;
 				}
@@ -295,7 +296,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 						overDriveUrl = "https://api.overdrive.com/v1/collections/" + advantageCollections + "/products/" + overdriveId + "/issues?limit=" + issuesPerQuery + "&sort=saledate:asc&offset=" + x;
 						overdriveCall = callOverDriveURL(overDriveUrl, logger);
 
-						if(overdriveCall.getResponseCode() == 400)
+						if(overdriveCall.getResponseCode() != 200)
 						{
 							JSONObject overdriveError = new JSONObject(overdriveCall.getError());
 							String errorMessage = overdriveError.getString("message");
@@ -372,6 +373,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 				processLog.incUpdated();
 				processLog.saveToDatabase(pikaConn, logger);
 				x = x+issuesPerQuery;
+			}
 			}
 		}catch(Exception e)
 		{
