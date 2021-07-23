@@ -9,9 +9,11 @@
 				<span class="result-index">{$resultIndex})</span>&nbsp;
 				<span class="result-title notranslate">
 				{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+{*
 				{if $record.volume}
 					, {$record.series} {$record.volume}&nbsp;
 				{/if}
+*}
 					</span>
 			</div>
 		</div>
@@ -31,6 +33,13 @@
 			{/if}
 		</div>
 
+		{if $seriesVolume}
+			{* For Grouped Work Series Page *}
+			<div class="row">
+				<div class="result-label col-tn-3">{translate text='Series Volume'}:</div>
+				<div class="col-tn-9 result-value">{$seriesVolume}</div>
+			</div>
+		{/if}
 
 		{if $record.publicationDate}
 			<div class="row">
