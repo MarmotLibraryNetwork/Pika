@@ -53,6 +53,14 @@
 					</div>
 				{/if}
 
+				{if $seriesVolume}
+					{* For Grouped Work Series Page *}
+					<div class="row">
+						<div class="result-label col-tn-3">{translate text='Series Volume'}:</div>
+						<div class="col-tn-9 result-value">{$seriesVolume}</div>
+					</div>
+				{/if}
+
 				{if $showSeries}
 					{assign var=indexedSeries value=$recordDriver->getIndexedSeries()}
 					{if $summSeries || $indexedSeries}

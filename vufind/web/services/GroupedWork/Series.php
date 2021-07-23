@@ -58,13 +58,15 @@ class GroupedWork_Series extends Action {
 				if (!empty($title['author'])){
 					$author                 = preg_replace('/[^\w]*$/i', '', $title['author']);
 					$seriesAuthors[$author] = $author;
+					//TODO: avoid, duplications like Beth Revis & Revis, Beth.
 				}
 				$interface->assign('recordIndex', $recordIndex);
 				$interface->assign('resultIndex', $recordIndex++);
+				$interface->assign('seriesVolume', $title['volume'] ?? null);
 				if ($title['libraryOwned']){
 					/** @var GroupedWorkDriver $tmpRecordDriver */
 					$tmpRecordDriver = $title['recordDriver'];
-					$resourceList[]  = $interface->fetch($tmpRecordDriver->getSearchResult('list'));
+					$resourceList[]  = $interface->fetch($tmpRecordDriver->getSearchResult());
 				}else{
 					$interface->assign('record', $title);
 					$resourceList[] = $interface->fetch('RecordDrivers/Index/nonowned_result.tpl');
