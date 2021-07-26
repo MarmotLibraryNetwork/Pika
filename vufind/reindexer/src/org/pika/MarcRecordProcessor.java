@@ -48,11 +48,11 @@ abstract class MarcRecordProcessor {
 	/**
 	 * Load MARC record from disk based on identifier
 	 * Then call updateGroupedWorkSolrDataBasedOnMarc to do the actual update of the work
-	 *
-	 * @param groupedWork the work to be updated
+	 *  @param groupedWork the work to be updated
 	 * @param identifier the identifier to load information for
+	 * @param loadedNovelistSeries
 	 */
-	public abstract void processRecord(GroupedWorkSolr groupedWork, RecordIdentifier identifier);
+	public abstract void processRecord(GroupedWorkSolr groupedWork, RecordIdentifier identifier, boolean loadedNovelistSeries);
 
 	protected void loadSubjects(GroupedWorkSolr groupedWork, Record record){
 		List<DataField> subjectFields = MarcUtil.getDataFields(record, new String[]{"600", "610", "611", "630", "648", "650", "651", "655", "690"});
@@ -294,52 +294,11 @@ abstract class MarcRecordProcessor {
 
 	}
 
-	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier, String format) {
+	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier, String format, boolean loadedNovelistSeries) {
 		loadTitles(groupedWork, record, format, identifier);
 		loadAuthors(groupedWork, record, identifier);
 		loadSubjects(groupedWork, record);
-		/*List<DataField> seriesFields = getDataFields(record, "490");
-		HashSet<String> allSeries = new HashSet<>();
-		for (DataField seriesField : seriesFields){
-			if (seriesField.getIndicator1() == '0' || seriesField.getIndicator1() == '1'){
-				if (seriesField.getSubfield('a') != null){
-					allSeries.add()
-				}
-
-			}
-		}*/
-		List<DataField> seriesFields = MarcUtil.getDataFields(record, "830");
-		HashSet<String> seriesWithVolumes = new HashSet<>();
-		for (DataField seriesField : seriesFields){
-			String series = Util.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "ap","")).toString();
-			//Remove anything in parens since it's normally just the format
-			series = series.replaceAll("\\s+\\(.*?\\)", "");
-			//Remove the word series at the end since this gets cataloged inconsistently
-			series = series.replaceAll("(?i)\\s+series$", "");
-			if (seriesField.getSubfield('v') != null){
-				//Separate out the volume so we can link specially
-				series += "|" + seriesField.getSubfield('v').getData();
-			}
-			seriesWithVolumes.add(series);
-		}
-		seriesFields = MarcUtil.getDataFields(record, "800");
-		for (DataField seriesField : seriesFields){
-			String series = Util.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "pqt","")).toString();
-			//Remove anything in parens since it's normally just the format
-			series = series.replaceAll("\\s+\\(.*?\\)", "");
-			//Remove the word series at the end since this gets cataloged inconsistently
-			series = series.replaceAll("(?i)\\s+series$", "");
-
-			if (seriesField.getSubfield('v') != null){
-				//Separate out the volume so we can link specially
-				series += "|" + seriesField.getSubfield('v').getData();
-			}
-			seriesWithVolumes.add(series);
-		}
-		groupedWork.addSeriesWithVolume(seriesWithVolumes);
-
-		groupedWork.addSeries(MarcUtil.getFieldList(record, "830ap:800pqt"));
-		groupedWork.addSeries2(MarcUtil.getFieldList(record, "490a"));
+		loadSeries(groupedWork, record, loadedNovelistSeries);
 		groupedWork.addDateSpan(MarcUtil.getFieldList(record, "362a"));
 		groupedWork.addContents(MarcUtil.getFieldList(record, "505a:505t"));
 		groupedWork.addIssns(MarcUtil.getFieldList(record, "022a"));
@@ -363,6 +322,33 @@ abstract class MarcRecordProcessor {
 		groupedWork.setAcceleratedReaderReadingLevel(getAcceleratedReaderReadingLevel(record));
 		groupedWork.setAcceleratedReaderPointValue(getAcceleratedReaderPointLevel(record));*/
 		groupedWork.addKeywords(MarcUtil.getAllSearchableFields(record, 100, 900));
+	}
+
+	private void loadSeries(GroupedWorkSolr groupedWork, Record record, boolean loadedNovelistSeries) {
+		// Only do Series processing if we haven't loaded a Novelist Series, since those will replace
+		// all the MARC series info anyway
+		if (!loadedNovelistSeries) {
+			List<DataField> seriesFields = MarcUtil.getDataFields(record, "830");
+			for (DataField seriesField : seriesFields){
+				String series = MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "ap","").toString();
+				String volume = "";
+				if (seriesField.getSubfield('v') != null){
+					volume = seriesField.getSubfield('v').getData();
+				}
+				groupedWork.addSeries(series, volume);
+			}
+			seriesFields = MarcUtil.getDataFields(record, "800");
+			for (DataField seriesField : seriesFields){
+				String series = MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "pqt","").toString();
+				String volume = "";
+				if (seriesField.getSubfield('v') != null){
+					volume = seriesField.getSubfield('v').getData();
+				}
+				groupedWork.addSeries(series, volume);
+			}
+
+			groupedWork.addSeries2(MarcUtil.getFieldList(record, "490a"));
+		}
 	}
 
 	private void loadFountasPinnell(GroupedWorkSolr groupedWork, Record record, String identifier) {
@@ -404,7 +390,7 @@ abstract class MarcRecordProcessor {
 	}
 
 
-	protected abstract void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier);
+	protected abstract void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier, boolean loadedNovelistSeries);
 
 	protected Pattern abridgedPattern = Pattern.compile("(?i)(?<!un)abridged[\\s.\\]]");
 	// phrase "abridged" but not "unabridged" case-insensitive, followed by word-break, period, or right bracket

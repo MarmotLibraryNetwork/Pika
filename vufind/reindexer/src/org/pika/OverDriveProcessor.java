@@ -73,7 +73,7 @@ public class OverDriveProcessor {
 	}
 
 	private SimpleDateFormat dateAddedParser = new SimpleDateFormat("yyyy-MM-dd");
-	public void processRecord(GroupedWorkSolr groupedWork, String identifier) {
+	public void processRecord(GroupedWorkSolr groupedWork, String identifier, boolean loadedNovelistSeries) {
 		try {
 			indexer.overDriveRecordsIndexed.add(identifier);
 			getProductInfoStmt.setString(1, identifier);
@@ -101,6 +101,7 @@ public class OverDriveProcessor {
 							} else {
 
 								RecordInfo overDriveRecord = groupedWork.addRelatedRecord("overdrive", identifier);
+								groupedWork.addAlternateId(productRS.getString("crossRefId"));
 
 								HashMap<String, String> metadata;
 								String                  formatCategory;
@@ -191,8 +192,10 @@ public class OverDriveProcessor {
 									logger.error("Error processing Overdrive title info for " + identifier, e);
 								}
 								groupedWork.addFullTitle(fullTitle);
-								groupedWork.addSeries(series);
-								groupedWork.addSeriesWithVolume(series);
+								if (!loadedNovelistSeries) {
+									groupedWork.addSeries(series, "");
+									//TODO: add volume info?, from either subtitle or sort title with phrase "book X"
+								}
 								groupedWork.setAuthor(productRS.getString("primaryCreatorName")); //TODO: use fileAs name??, look at grouper; use a isEcontent flag for counting
 								groupedWork.setAuthAuthor(productRS.getString("primaryCreatorName"));
 								groupedWork.setAuthorDisplay(productRS.getString("primaryCreatorName"));

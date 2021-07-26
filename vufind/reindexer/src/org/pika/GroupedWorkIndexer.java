@@ -32,8 +32,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 
-import org.apache.log4j.Logger;
-
 /**
  * Indexer
  *
@@ -1078,6 +1076,9 @@ public class GroupedWorkIndexer {
 		groupedWork.setId(permanentId);
 		groupedWork.setGroupingCategory(grouping_category);
 
+		//Load Novelist data for the work
+		boolean loadedNovelistSeries = loadNovelistInfo(groupedWork);
+
 		getGroupedWorkPrimaryIdentifiers.setLong(1, id);
 		int numPrimaryIdentifiers;
 		try (ResultSet groupedWorkPrimaryIdentifiers = getGroupedWorkPrimaryIdentifiers.executeQuery()) {
@@ -1100,7 +1101,7 @@ public class GroupedWorkIndexer {
 				}
 
 				//This does the bulk of the work building fields for the solr document
-				updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier);
+				updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier, loadedNovelistSeries);
 
 				//If we didn't add any records to the work (because they are all suppressed) revert to the original
 				if (groupedWork.getNumRecords() == numRecords) {
@@ -1139,8 +1140,6 @@ public class GroupedWorkIndexer {
 			loadLexileDataForWork(groupedWork);
 			//Load accelerated reader data for the work
 			loadAcceleratedDataForWork(groupedWork);
-			//Load Novelist data
-			loadNovelistInfo(groupedWork);
 
 			//Write the record to Solr.
 			try {
@@ -1199,6 +1198,9 @@ public class GroupedWorkIndexer {
 		groupedWork.setId(permanentId);
 		groupedWork.setGroupingCategory(grouping_category);
 
+		//Load Novelist data for the work
+		boolean loadedNovelistSeries = loadNovelistInfo(groupedWork);
+
 		getGroupedWorkPrimaryIdentifiers.setLong(1, id);
 		int numPrimaryIdentifiers;
 		try (ResultSet groupedWorkPrimaryIdentifiers = getGroupedWorkPrimaryIdentifiers.executeQuery()) {
@@ -1221,7 +1223,7 @@ public class GroupedWorkIndexer {
 				}
 
 				//This does the bulk of the work building fields for the solr document
-				updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier);
+				updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier, loadedNovelistSeries);
 
 				//If we didn't add any records to the work (because they are all suppressed) revert to the original
 				if (groupedWork.getNumRecords() == numRecords) {
@@ -1260,8 +1262,6 @@ public class GroupedWorkIndexer {
 			loadLexileDataForWork(groupedWork);
 			//Load accelerated reader data for the work
 			loadAcceleratedDataForWork(groupedWork);
-			//Load Novelist data
-			loadNovelistInfo(groupedWork);
 
 			//Write the record to Solr.
 			try {
@@ -1309,7 +1309,7 @@ public class GroupedWorkIndexer {
 				groupedWork.addAwards(lexileTitle.getAwards());
 				final String lexileSeries = lexileTitle.getSeries();
 				if (lexileSeries != null && !lexileSeries.isEmpty()) {
-					groupedWork.addSeries(lexileSeries);
+					groupedWork.addSeries(lexileSeries, "");
 				}
 				lexileDataMatches++;
 				if (logger.isDebugEnabled() && fullReindex) {
@@ -1428,38 +1428,37 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void loadNovelistInfo(GroupedWorkSolr groupedWork){
+	private boolean loadNovelistInfo(GroupedWorkSolr groupedWork){
+		boolean loadedNovelistSeries = false;
 		try{
 			getNovelistStmt.setString(1, groupedWork.getId());
-			ResultSet novelistRS = getNovelistStmt.executeQuery();
-			if (novelistRS.next()){
-				String series = novelistRS.getString("seriesTitle");
-				if (!novelistRS.wasNull()){
-					groupedWork.clearSeriesData();
-					groupedWork.addSeries(series);
-					String volume = novelistRS.getString("volume");
-					if (novelistRS.wasNull()){
-						volume = "";
+			try (ResultSet novelistRS = getNovelistStmt.executeQuery()) {
+				if (novelistRS.next()) {
+					String series = novelistRS.getString("seriesTitle");
+					if (!novelistRS.wasNull()) {
+						groupedWork.clearSeriesData();
+						String volume = novelistRS.getString("volume");
+						groupedWork.addSeries(series, volume);
+						loadedNovelistSeries = true;
 					}
-					groupedWork.addSeriesWithVolume(series + "|" + volume);
 				}
 			}
-			novelistRS.close();
 		}catch (Exception e){
 			logger.error("Unable to load novelist data", e);
 		}
+		return loadedNovelistSeries;
 	}
 
-	private void updateGroupedWorkForPrimaryIdentifier(GroupedWorkSolr groupedWork, RecordIdentifier identifier)  {
+	private void updateGroupedWorkForPrimaryIdentifier(GroupedWorkSolr groupedWork, RecordIdentifier identifier, boolean loadedNovelistSeries)  {
 		groupedWork.addAlternateId(identifier.getIdentifier());
 		final String indexingSource = identifier.getSource().toLowerCase();
 		switch (indexingSource) {
 			case "overdrive":
-				overDriveProcessor.processRecord(groupedWork, identifier.getIdentifier());
+				overDriveProcessor.processRecord(groupedWork, identifier.getIdentifier(), loadedNovelistSeries);
 				break;
 			default:
 				if (indexingRecordProcessors.containsKey(indexingSource)) {
-					indexingRecordProcessors.get(indexingSource).processRecord(groupedWork, identifier);
+					indexingRecordProcessors.get(indexingSource).processRecord(groupedWork, identifier, loadedNovelistSeries);
 				}else if (logger.isDebugEnabled()){
 					logger.debug("Could not find a record processor for " + identifier);
 				}

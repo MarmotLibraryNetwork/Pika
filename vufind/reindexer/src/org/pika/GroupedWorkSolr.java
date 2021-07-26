@@ -1253,80 +1253,80 @@ public class GroupedWorkSolr implements Cloneable {
 		this.subjects.addAll(Util.trimTrailingPunctuation(fieldList));
 	}
 
-	void addSeries(Set<String> fieldList) {
-		for(String curField : fieldList){
-			this.addSeries(curField);
-		}
-	}
-
 	void clearSeriesData(){
 		this.series.clear();
 		this.seriesWithVolume.clear();
 	}
 
-	void addSeries(String series) {
-		addSeriesInfoToField(series, this.series);
-	}
-	void addSeriesWithVolume(Set<String> fieldList){
-		for(String curField : fieldList){
-			this.addSeriesWithVolume(curField);
-		}
-	}
+	/**
+	 * This will normalize/clean any series statement as well as series volume statement and
+	 * populate both the series & series_with_volumes Solr fields
+	 *
+	 * @param series Series Statement
+	 * @param volume Volume within the series or empty if there is none
+	 */
+	void addSeries(String series, String volume){
+		if (series != null && !series.isEmpty()) {
+			volume = (volume == null || volume.isEmpty()) ? "" : getNormalizedSeriesVolume(volume);
+			String seriesInfo                = getNormalizedSeries(series, true);
+			String seriesInfoWithVolume      = seriesInfo + "|" + volume;
+			String seriesInfoLower           = seriesInfo.toLowerCase();
+			String volumeLower               = volume.toLowerCase();
+			String seriesInfoWithVolumeLower = seriesInfoLower + "|" + volumeLower;
 
-	void addSeriesWithVolume(String series){
-		if (series != null) {
-			String[] seriesParts = series.split("\\|",2);
-			String seriesName = seriesParts[0];
-			String seriesInfo = getNormalizedSeries(seriesName, true);
-			String volume= "";
-			if (seriesParts.length > 1){
-				volume = getNormalizedSeriesVolume(seriesParts[1]);
-			}
-			String seriesInfoLower = seriesInfo.toLowerCase();
-			String volumeLower = volume.toLowerCase();
-			String seriesInfoWithVolume = seriesInfo + "|" + (volume.length() > 0 ? volume : "");
-			String normalizedSeriesInfoWithVolume = seriesInfoWithVolume.toLowerCase();
-
-			if (!this.seriesWithVolume.containsKey(normalizedSeriesInfoWithVolume)) {
+			if (!this.series.containsKey(seriesInfoLower)) {
 				boolean okToAdd = true;
-				for (String existingSeries2 : this.seriesWithVolume.keySet()) {
-					String[] existingSeriesInfo = existingSeries2.split("\\|", 2);
-					String existingSeriesName = existingSeriesInfo[0];
-					String existingVolume = "";
-					if (existingSeriesInfo.length > 1){
-						existingVolume = existingSeriesInfo[1];
+				for (String existingSeries2 : this.series.keySet()) {
+					if (existingSeries2.contains(seriesInfoLower)) {
+						okToAdd = false;
+						break;
+					} else if (seriesInfoLower.contains(existingSeries2)) {
+						//Remove shortest versions of series statement?
+						this.series.remove(existingSeries2);
+						break;
 					}
+				}
+				if (okToAdd) {
+					this.series.put(seriesInfoLower, seriesInfo);
+				}
+			}
+
+			if (!this.seriesWithVolume.containsKey(seriesInfoWithVolumeLower)) {
+				boolean okToAdd = true;
+				final boolean volumeEmpty = volume.isEmpty();
+				for (String existingSeries : this.seriesWithVolume.keySet()) {
+					String[]      existingSeriesInfo      = existingSeries.split("\\|", 2);
+					String        existingSeriesNameLower = existingSeriesInfo[0];
+					String        existingVolume          = (existingSeriesInfo.length > 1) ? existingSeriesInfo[1] : "";
+					final boolean existingVolumeEmpty     = existingVolume.isEmpty();
+
 					//Get the longer series name
-					if (existingSeriesName.indexOf(seriesInfoLower) != -1) {
+					if (existingSeriesNameLower.contains(seriesInfoLower)) {
 						//Use the old one unless it doesn't have a volume
-						if (existingVolume.length() == 0){
-							this.seriesWithVolume.remove(existingSeries2);
+						if (existingVolumeEmpty) {
+							this.seriesWithVolume.remove(existingSeries);
 							break;
-						}else{
-							if (volumeLower.equals(existingVolume)) {
-								okToAdd = false;
-								break;
-							}else if (volumeLower.length() == 0){
+						} else {
+							if (volumeEmpty || volumeLower.equals(existingVolume)) {
 								okToAdd = false;
 								break;
 							}
 						}
-					} else if (seriesInfoLower.indexOf(existingSeriesName) != -1) {
+					} else if (seriesInfoLower.contains(existingSeriesNameLower)) {
 						//Before removing the old series, make sure the new one has a volume
-						if (existingVolume.length() > 0 && existingVolume.equals(volumeLower)){
-							this.seriesWithVolume.remove(existingSeries2);
-							break;
-						}else if (volume.length() == 0 && existingVolume.length() > 0){
+						if (volumeEmpty && !existingVolumeEmpty) {
 							okToAdd = false;
 							break;
-						}else if (volume.length() == 0 && existingVolume.length() == 0){
-							this.seriesWithVolume.remove(existingSeries2);
+						} else if (volumeEmpty ||
+										(!existingVolumeEmpty && existingVolume.equals(volumeLower))
+						) {
+							this.seriesWithVolume.remove(existingSeries);
 							break;
 						}
 					}
 				}
 				if (okToAdd) {
-					this.seriesWithVolume.put(normalizedSeriesInfoWithVolume, seriesInfoWithVolume);
+					this.seriesWithVolume.put(seriesInfoWithVolumeLower, seriesInfoWithVolume);
 				}
 			}
 		}
@@ -1351,10 +1351,11 @@ public class GroupedWorkSolr implements Cloneable {
 			if (!seriesField.containsKey(normalizedSeries)) {
 				boolean okToAdd = true;
 				for (String existingSeries2 : seriesField.keySet()) {
-					if (existingSeries2.indexOf(normalizedSeries) != -1) {
+					if (existingSeries2.contains(normalizedSeries)) {
 						okToAdd = false;
 						break;
-					} else if (normalizedSeries.indexOf(existingSeries2) != -1) {
+					} else if (normalizedSeries.contains(existingSeries2)) {
+						//Remove shortest versions of series statement?
 						seriesField.remove(existingSeries2);
 						break;
 					}
@@ -1366,32 +1367,44 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 	}
 
+	/**
+	 * Attempt to turn the series volume to a numeric string
+	 *
+	 * @param volume  the series volume statement
+	 * @return numeric string
+	 */
 	String getNormalizedSeriesVolume(String volume){
 		volume = Util.trimTrailingPunctuation(volume);
-		volume = volume.replaceAll("(bk\\.?|book)", "");
-		volume = volume.replaceAll("(volume|vol\\.|v\\.)", "");
-		volume = volume.replaceAll("libro", "");
-		volume = volume.replaceAll("one", "1");
-		volume = volume.replaceAll("two", "2");
-		volume = volume.replaceAll("three", "3");
-		volume = volume.replaceAll("four", "4");
-		volume = volume.replaceAll("five", "5");
-		volume = volume.replaceAll("six", "6");
-		volume = volume.replaceAll("seven", "7");
-		volume = volume.replaceAll("eight", "8");
-		volume = volume.replaceAll("nine", "9");
-		volume = volume.replaceAll("[\\[\\]#]", "");
-		volume = Util.trimTrailingPunctuation(volume.trim());
+		if (!volume.matches("^\\d+$")) {
+			volume = volume.replaceAll("(bk\\.?|book)", "");
+			volume = volume.replaceAll("(volume|vol\\.|v\\.)", "").trim();
+			if (!volume.matches("^\\d+$")) {
+				volume = volume.replaceAll("libro", "");
+				volume = volume.replaceAll("one", "1");
+				volume = volume.replaceAll("two", "2");
+				volume = volume.replaceAll("three", "3");
+				volume = volume.replaceAll("four", "4");
+				volume = volume.replaceAll("five", "5");
+				volume = volume.replaceAll("six", "6");
+				volume = volume.replaceAll("seven", "7");
+				volume = volume.replaceAll("eight", "8");
+				volume = volume.replaceAll("nine", "9");
+				volume = volume.replaceAll("[\\[\\]#]", "");
+				volume = Util.trimTrailingPunctuation(volume.trim());
+			}
+		}
 		return volume;
 	}
 
-	String getNormalizedSeries(String series, boolean removeVolume){
+	String getNormalizedSeries(String series, boolean removeVolume) {
 		series = Util.trimTrailingPunctuation(series);
-		if (removeVolume){
+		//TODO: removeVolume codeblock likely obsolete
+		if (removeVolume) {
 			series = series.replaceAll("[#|]\\s*\\d+$", "");
 		}
 		//Remove anything in parens since it's normally just the format
-		series = series.replaceAll("\\s+\\(.*?\\)", "");
+		series = series.replaceAll("\\s+\\(.*\\)", "");
+		// the parentheses regex "\\s+\\(.*?\\)" fails for string "Andy Carpenter mystery (Macmillan Audio (Firm))"
 		series = series.replaceAll(" & ", " and ");
 		series = series.replaceAll("--", " ");
 		series = series.replaceAll(",\\s+(the|an)$", "");
