@@ -1137,7 +1137,7 @@ public class GroupedWorkIndexer {
 			//Load local (Pika) enrichment for the work
 			loadLocalEnrichment(groupedWork);
 			//Load lexile data for the work
-			loadLexileDataForWork(groupedWork);
+			loadLexileDataForWork(groupedWork, loadedNovelistSeries);
 			//Load accelerated reader data for the work
 			loadAcceleratedDataForWork(groupedWork);
 
@@ -1259,7 +1259,7 @@ public class GroupedWorkIndexer {
 			//Load local (Pika) enrichment for the work
 			loadLocalEnrichment(groupedWork);
 			//Load lexile data for the work
-			loadLexileDataForWork(groupedWork);
+			loadLexileDataForWork(groupedWork, loadedNovelistSeries);
 			//Load accelerated reader data for the work
 			loadAcceleratedDataForWork(groupedWork);
 
@@ -1297,7 +1297,7 @@ public class GroupedWorkIndexer {
 		return lexileDataMatches;
 	}
 
-	private void loadLexileDataForWork(GroupedWorkSolr groupedWork) {
+	private void loadLexileDataForWork(GroupedWorkSolr groupedWork, boolean loadedNovelistSeries) {
 		for (String isbn : groupedWork.getIsbns()) {
 			if (lexileInformation.containsKey(isbn)) {
 				LexileTitle lexileTitle = lexileInformation.get(isbn);
@@ -1307,9 +1307,11 @@ public class GroupedWorkIndexer {
 				}
 				groupedWork.setLexileScore(lexileTitle.getLexileScore());
 				groupedWork.addAwards(lexileTitle.getAwards());
-				final String lexileSeries = lexileTitle.getSeries();
-				if (lexileSeries != null && !lexileSeries.isEmpty()) {
-					groupedWork.addSeries(lexileSeries, "");
+				if (!loadedNovelistSeries) {
+					final String lexileSeries = lexileTitle.getSeries();
+					if (lexileSeries != null && !lexileSeries.isEmpty()) {
+						groupedWork.addSeries(lexileSeries.replace("Ser.", "Series"), "");
+					}
 				}
 				lexileDataMatches++;
 				if (logger.isDebugEnabled() && fullReindex) {

@@ -169,18 +169,16 @@ public class Util {
 		URLPostResponse retVal;
 		HttpURLConnection conn;
 		try {
-			logger.debug("Getting URL " + url);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Getting URL " + url);
+			}
 			URL emptyIndexURL = new URL(url);
 			conn = (HttpURLConnection) emptyIndexURL.openConnection();
 			if (conn instanceof HttpsURLConnection){
 				HttpsURLConnection sslConn = (HttpsURLConnection)conn;
-				sslConn.setHostnameVerifier(new HostnameVerifier() {
-					
-					@Override
-					public boolean verify(String hostname, SSLSession session) {
-						//Do not verify host names
-						return true;
-					}
+				sslConn.setHostnameVerifier((hostname, session) -> {
+					//Do not verify host names
+					return true;
 				});
 			}
 			conn.setConnectTimeout(3000);
@@ -215,8 +213,8 @@ public class Util {
 			logger.error("URL to post (" + url + ") is malformed", e);
 			retVal = new URLPostResponse(false, -1, "URL to post (" + url + ") is malformed");
 		} catch (IOException e) {
-			logger.error("Error posting to url \r\n" + url, e);
-			retVal = new URLPostResponse(false, -1, "Error posting to url \r\n" + url + "\r\n" + e.toString());
+			logger.error("Error posting to url " + url, e);
+			retVal = new URLPostResponse(false, -1, "Error posting to url " + url + "\n" + e);
 		}
 		logger.debug("  Finished calling url");
 		return retVal;
