@@ -786,29 +786,6 @@
 	</requestHandler>
 -->
 
-	<!--TODO: these are not fields for  genealogy -->
-<!--
-	<requestHandler name="morelikethis" class="solr.MoreLikeThisHandler">
-		<lst name="defaults">
-			<str name="mlt.fl">title,title_short,callnumber-label,topic,language,author,publishDate</str>
-			<str name="mlt.qf">
-				title^75
-				title_short^100
-				callnumber-label^400
-				topic^300
-				language^30
-				author^75
-				publishDate
-			</str>
-			<int name="mlt.mintf">1</int>
-			<int name="mlt.mindf">1</int>
-			<str name="mlt.boost">true</str>
-			<int name="mlt.count">5</int>
-			<int name="rows">5</int>
-		</lst>
-	</requestHandler>
--->
-
 	<!-- Search Components
 
 		 Search components are registered to SolrCore and used by

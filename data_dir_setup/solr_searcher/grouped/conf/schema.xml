@@ -346,10 +346,11 @@
 
 		<!-- series -->
 		<field name="series" type="text" indexed="true" stored="true" multiValued="true"/>
+		<field name="series_with_volume" type="textProper" indexed="false" stored="true" multiValued="true"/>
+		<!--Not indexed used for display only. Takes any entry in series and appends series volume number after a pipe | character -->
 		<field name="series2" type="text" indexed="true" stored="true" multiValued="true"/>
 		<!--TODO: is series2 really needed?? -->
 		<field name="series_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
-		<field name="series_with_volume" type="textProper" indexed="false" stored="true" multiValued="true"/>
 
 		<!-- subject facets-->
 		<field name="subject_facet" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
@@ -475,7 +476,9 @@
 
 	</fields>
 	<uniqueKey>id</uniqueKey>
-<!--	<defaultSearchField>keywords</defaultSearchField>
+	<!-- uniqueKey is required for MoreLikeThis handlers-->
+
+	<!--	<defaultSearchField>keywords</defaultSearchField>
 TODO: need to set df parameter?
 * Setting <defaultSearchField> in schema is no longer allowed and will cause an exception.
   Please use "df" parameter on the request instead. For more details, see SOLR-10585.
