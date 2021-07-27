@@ -386,11 +386,21 @@
 		<!-- All MARC tags 035a
 		 $a - System control number - MARC code (enclosed in parentheses) of the organization originating the system control number, followed immediately by the number.
 		 -->
-		<field name="primary_isbn" type="textProper" indexed="false" stored="true" multiValued="false"/>
-		<field name="isbn" type="textProper" indexed="true" stored="true" multiValued="true"/>
-		<field name="issn" type="textProper" indexed="true" stored="true" multiValued="true"/>
-		<field name="primary_upc" type="textProper" indexed="false" stored="true" multiValued="false"/>
-		<field name="upc" type="textProper" indexed="true" stored="true" multiValued="true"/>
+
+		<!--
+		primary_isbn, isbn, issn, primary_upc, & upc were all type="textProper".
+		Switch to regular "string". I don't think any of these fields need any special analyzer or index handling
+		pascal 7/27/2021
+		-->
+		<field name="isbn" type="string" indexed="true" stored="true" multiValued="true"/>
+		<field name="canceled_isbn" type="string" indexed="true" stored="true" multiValued="true"/>
+		<!--MARC 020z Canceled/invalid ISBN
+		Often Used by Academic libraries to compare eContent records  See D-2534
+		 -->
+		<field name="issn" type="string" indexed="true" stored="true" multiValued="true"/>
+		<field name="upc" type="string" indexed="true" stored="true" multiValued="true"/>
+		<field name="primary_isbn" type="string" indexed="false" stored="true" multiValued="false"/>
+		<field name="primary_upc" type="string" indexed="false" stored="true" multiValued="false"/>
 
 		<!-- Call Numbers -->
 		<field name="callnumber-a" type="string" indexed="true" stored="true"/>

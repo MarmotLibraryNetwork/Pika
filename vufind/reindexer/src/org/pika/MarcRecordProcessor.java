@@ -304,6 +304,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.addIssns(MarcUtil.getFieldList(record, "022a"));
 		groupedWork.addOclcNumbers(MarcUtil.getFieldList(record, "035a"));
 		groupedWork.addIsbns(MarcUtil.getFieldList(record, "020a"), format);
+		groupedWork.addCanceledIsbns(MarcUtil.getFieldList(record, "020z"));
 		List<DataField> upcFields = MarcUtil.getDataFields(record, "024");
 		for (DataField upcField : upcFields){
 			if (upcField.getIndicator1() == '1' && upcField.getSubfield('a') != null){

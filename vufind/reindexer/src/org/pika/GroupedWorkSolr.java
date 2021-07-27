@@ -75,6 +75,7 @@ public class GroupedWorkSolr implements Cloneable {
 	private boolean                  primaryIsbnIsBook;
 	private Long                     primaryIsbnUsageCount;
 	private HashMap<String, Long>    isbns                    = new HashMap<>();
+	private HashSet<String>          canceledIsbns            = new HashSet<>();
 	private HashSet<String>          issns                    = new HashSet<>();
 	private HashSet<String>          keywords                 = new HashSet<>();
 	private HashSet<String>          languages                = new HashSet<>();
@@ -168,6 +169,8 @@ public class GroupedWorkSolr implements Cloneable {
 		clonedWork.geographicFacets = (HashSet<String>) geographicFacets.clone();
 		// noinspection unchecked
 		clonedWork.isbns = (HashMap<String, Long>) isbns.clone();
+		// noinspection unchecked
+		clonedWork.canceledIsbns = (HashSet<String>) canceledIsbns.clone();
 		// noinspection unchecked
 		clonedWork.issns = (HashSet<String>) issns.clone();
 		// noinspection unchecked
@@ -380,6 +383,7 @@ public class GroupedWorkSolr implements Cloneable {
 		//Get the primary isbn
 		doc.addField("primary_isbn", primaryIsbn);
 		doc.addField("isbn", isbns.keySet());
+		doc.addField("canceled_isbn", canceledIsbns);
 		doc.addField("issn", issns);
 		doc.addField("primary_upc", getPrimaryUpc());
 		doc.addField("upc", upcs.keySet());
@@ -1180,6 +1184,9 @@ public class GroupedWorkSolr implements Cloneable {
 
 	void addIssns(Set<String> issns) {
 		this.issns.addAll(issns);
+	}
+	void addCanceledIsbns(Set<String> isbns){
+		this.canceledIsbns.addAll(isbns);
 	}
 
 	void addUpc(String upc) {

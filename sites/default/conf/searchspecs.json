@@ -42,6 +42,7 @@
   "ISN": {
     "DismaxFields": [
       "isbn",
+      "canceled_isbn",
       "issn",
       "upc"
     ],
@@ -51,6 +52,10 @@
         ["or", null]
       ],
       "isbn": [
+        ["and", 100],
+        ["or", null]
+      ],
+      "canceled_isbn": [
         ["and", 100],
         ["or", null]
       ],
