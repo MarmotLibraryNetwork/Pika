@@ -2223,19 +2223,19 @@ class GroupedWorkDriver extends RecordInterface {
 
 		//Load more details options
 		$moreDetailsOptions                = $this->getBaseMoreDetailsOptions($isbn);
-		$moreDetailsOptions['moreDetails'] = array(
+		$moreDetailsOptions['moreDetails'] = [
 			'label' => 'More Details',
 			'body'  => $interface->fetch('GroupedWork/view-title-details.tpl'),
-		);
-		$moreDetailsOptions['subjects']    = array(
+		];
+		$moreDetailsOptions['subjects']    = [
 			'label' => 'Subjects',
 			'body'  => $interface->fetch('GroupedWork/view-subjects.tpl'),
-		);
+		];
 		if ($interface->getVariable('showStaffView')){
-			$moreDetailsOptions['staff'] = array(
+			$moreDetailsOptions['staff'] = [
 				'label' => 'Staff View',
 				'body'  => $interface->fetch($this->getStaffView()),
-			);
+			];
 		}
 
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
