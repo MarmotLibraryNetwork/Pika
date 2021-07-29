@@ -741,13 +741,13 @@ class Solr implements IndexEngine {
 								$isbn = new ISBN($fieldValue);
 								$isbn13 = $isbn->get13();
 								if ($isbn13){
-									$fieldValue = '(' . $isbn13 . ')';
+									$fieldValue = $isbn13;
 								}
 
 //								$isbn10 = $isbn->get10();
 //								$isbn13 = $isbn->get13();
 //								if ($isbn10 && $isbn13){
-//									$fieldValue = '(' . $isbn10 . ' OR ' . $isbn13 . ')';
+//									$fieldValue =  $isbn10 . ' OR ' . $isbn13;
 //								}
 
 							}
