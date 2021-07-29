@@ -580,7 +580,11 @@ class Solr implements IndexEngine {
 		}
 
 		$result = $this->client->get($this->host . '/morelikethis2', $options);
+		if (is_object($result)){
+			$this->logger->error("More Like this response : " . $this->client->getRawResponse());
+		}
 		if ($this->client->isError()) {
+			$this->logger->error("MoreLikeThis2 error : " . $this->client->getErrorMessage());
 			PEAR_Singleton::raiseError($this->client->getErrorMessage());
 		}
 		return $result;
