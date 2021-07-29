@@ -1185,8 +1185,16 @@ public class GroupedWorkSolr implements Cloneable {
 	void addIssns(Set<String> issns) {
 		this.issns.addAll(issns);
 	}
+
 	void addCanceledIsbns(Set<String> isbns){
-		this.canceledIsbns.addAll(isbns);
+		for (String isbn:isbns){
+			addCanceledIsbn(isbn);
+		}
+	}
+
+	void addCanceledIsbn(String isbnStr) {
+		ISBN isbn = new ISBN(isbnStr);
+		canceledIsbns.add(isbn.toString());
 	}
 
 	void addUpc(String upc) {

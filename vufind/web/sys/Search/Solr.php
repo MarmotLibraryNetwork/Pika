@@ -727,18 +727,25 @@ class Solr implements IndexEngine {
 
 					switch ($field){
 						case 'isbn':
+						case 'canceled_isbn':
+						case 'primary_isbn':
 							if (!preg_match('/^((?:\sOR\s)?["(]?\d{9,13}X?[\s")]*)+$/', $fieldValue)){
 								continue 2;
 							}else{
+								// Now only 13 digit ISBN numbers are in the search index so just search for those
 								require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
 								$isbn = new ISBN($fieldValue);
-								if ($isbn->isValid()){
-									$isbn10 = $isbn->get10();
-									$isbn13 = $isbn->get13();
-									if ($isbn10 && $isbn13){
-										$fieldValue = '(' . $isbn->get10() . ' OR ' . $isbn->get13() . ')';
-									}
+								$isbn13 = $isbn->get13();
+								if ($isbn13){
+									$fieldValue = '(' . $isbn13 . ')';
 								}
+
+//								$isbn10 = $isbn->get10();
+//								$isbn13 = $isbn->get13();
+//								if ($isbn10 && $isbn13){
+//									$fieldValue = '(' . $isbn10 . ' OR ' . $isbn13 . ')';
+//								}
+
 							}
 							break;
 						case 'id': //todo : double check that this includes all valid id schemes
@@ -1314,7 +1321,6 @@ class Solr implements IndexEngine {
 				case 'IslandoraSubject':
 					$handler = 'IslandoraSubjectProper';
 					break;
-
 			}
 		}
 

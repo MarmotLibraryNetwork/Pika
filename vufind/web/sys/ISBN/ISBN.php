@@ -186,5 +186,3 @@ class ISBN {
 		return (substr($isbn, 12) == self::getISBN13CheckDigit(substr($isbn, 0, 12)));
 	}
 }
-
-?>

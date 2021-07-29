@@ -693,7 +693,7 @@ public class GroupedWorkIndexer {
 	private void clearIndex() {
 		//Check to see if we should clear the existing index
 		if (logger.isInfoEnabled()) {
-			logger.info("Clearing existing marc records from index");
+			logger.info("Clearing existing grouped work documents from index");
 		}
 		try {
 			updateServer.deleteByQuery("recordtype:grouped_work");
