@@ -1951,30 +1951,29 @@ abstract class SearchObject_Base {
 	 */
 	protected function buildAdvancedDisplayQuery(){
 		// Groups and exclusions. This mirrors some logic in Solr.php
-		$groups   = array();
-		$excludes = array();
+		$groups   = [];
+		$excludes = [];
 
 		foreach ($this->searchTerms as $search){
-			$thisGroup = array();
+			$thisGroup = [];
 			// Process each search group
 			foreach ($search['group'] as $group){
 				// Build this group individually as a basic search
-				$thisGroup[] = $group['field'] .
-					":{$group['lookfor']}";
+				$thisGroup[] = $group['field'] . ':' . $group['lookfor'];
 			}
 			// Is this an exclusion (NOT) group or a normal group?
 			if ($search['group'][0]['bool'] == 'NOT'){
-				$excludes[] = join(" OR ", $thisGroup);
+				$excludes[] = implode(' OR ', $thisGroup);
 			}else{
-				$groups[] = join(" " . $search['group'][0]['bool'] . " ", $thisGroup);
+				$groups[] = implode(' ' . $search['group'][0]['bool'] . ' ', $thisGroup);
 			}
 		}
 
 		// Base 'advanced' query
-		$output = "(" . join(") " . $this->searchTerms[0]['join'] . " (", $groups) . ")";
+		$output = '(' . implode(') ' . $this->searchTerms[0]['join'] . ' (', $groups) . ')';
 		// Concatenate exclusion after that
 		if (count($excludes) > 0){
-			$output .= " NOT ((" . join(") OR (", $excludes) . "))";
+			$output .= ' NOT ((' . implode(') OR (', $excludes) . '))';
 		}
 
 		return $output;

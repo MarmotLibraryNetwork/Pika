@@ -737,11 +737,18 @@ class Solr implements IndexEngine {
 								continue 2;
 							}else{
 								// Now only 13 digit ISBN numbers are in the search index so just search for those
-								require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
-								$isbn = new ISBN($fieldValue);
-								$isbn13 = $isbn->get13();
-								if ($isbn13){
-									$fieldValue = $isbn13;
+//								require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
+//								$isbn = new ISBN($fieldValue);
+//								$isbn13 = $isbn->get13();
+//								if ($isbn13){
+//									$fieldValue = $isbn13;
+//								} else
+									if (strlen($fieldValue) == 10){
+									require_once ROOT_DIR . '/sys/ISBN/ISBNConverter.php';
+									$temp = ISBNConverter::convertISBN10to13($fieldValue);
+									if (!empty($temp)){
+										$fieldValue = $temp;
+									}
 								}
 
 //								$isbn10 = $isbn->get10();
@@ -870,7 +877,7 @@ class Solr implements IndexEngine {
 			$orQuery  = implode(' OR ', $tokenized);
 
 			// Build possible inputs for searching:
-			$values              = array();
+			$values              = [];
 			$values['onephrase'] = '"' . str_replace('"', '', implode(' ', $tokenized)) . '"';
 			if (count($tokenized) > 1) {
 				$values['proximal'] = $values['onephrase'] . '~10';
@@ -909,7 +916,7 @@ class Solr implements IndexEngine {
 			// tokenization).	We'll just set all possible values to the same thing,
 			// except that we'll try to do the "one phrase" in quotes if possible.
 			$onephrase = strstr($lookfor, '"') ? $lookfor : '"' . $lookfor . '"';
-			$values    = array(
+			$values    = [
 				'exact'               => $onephrase,
 				'onephrase'           => $onephrase,
 				'and'                 => $lookfor,
@@ -917,7 +924,7 @@ class Solr implements IndexEngine {
 				'proximal'            => $lookfor,
 				'single_word_removal' => $onephrase,
 				'exact_quoted'        => '"' . $lookfor . '"',
-			);
+			];
 		}
 
 		//Create localized call number
@@ -925,7 +932,7 @@ class Solr implements IndexEngine {
 		if (strpos($lookfor, '*') !== false) {
 			$noWildCardLookFor = str_replace('*', '', $lookfor);
 		}
-		$values['localized_callnumber'] = '"' . str_replace(array('"', ':', '/'), ' ', $noWildCardLookFor) . '"';
+		$values['localized_callnumber'] = '"' . str_replace(['"', ':', '/'], ' ', $noWildCardLookFor) . '"';
 
 		// Apply custom munge operations if necessary
 		if (is_array($custom) && $basic) {
@@ -1058,6 +1065,7 @@ class Solr implements IndexEngine {
 		return $this->_buildQueryComponent($handler, $query, false);
 	}
 
+	private array $builtQueries = [];
 	/* Build Query string from search parameters
 	 *
 	 * @access	public
@@ -1068,11 +1076,19 @@ class Solr implements IndexEngine {
 	 * @return	string							The query
 	 */
 	function buildQuery($search, $forDisplay = false){
+		$key = serialize([$search, $forDisplay]);
+		if (isset($this->builtQueries[$key])){
+			return $this->builtQueries[$key];
+		}
+		$memcacheKey = 'solrQuery' . $this->index . $key;
+		$query       = $this->cache->get($memcacheKey);
+		if (!empty($query)){
+			return $query;
+		}
+
 		$groups   = [];
 		$excludes = [];
-		$query    = '';
 		if (is_array($search)) {
-
 			foreach ($search as $params) {
 				//Check to see if need to break up a basic search into an advanced search
 				$modifiedQuery = false;
@@ -1110,9 +1126,9 @@ class Solr implements IndexEngine {
 						}
 						// Is this an exclusion (NOT) group or a normal group?
 						if ($params['group'][0]['bool'] == 'NOT') {
-							$excludes[] = join(" OR ", $thisGroup);
+							$excludes[] = implode(' OR ', $thisGroup);
 						} else {
-							$groups[] = join(" " . $params['group'][0]['bool'] . " ", $thisGroup);
+							$groups[] = implode(' ' . $params['group'][0]['bool'] . ' ', $thisGroup);
 						}
 					}
 
@@ -1151,11 +1167,11 @@ class Solr implements IndexEngine {
 
 		// Put our advanced search together
 		if (count($groups) > 0) {
-			$query = "(" . join(") " . $search[0]['join'] . " (", $groups) . ")";
+			$query = '(' . implode(') ' . $search[0]['join'] . ' (', $groups) . ')';
 		}
 		// and concatenate exclusion after that
 		if (count($excludes) > 0) {
-			$query .= " NOT ((" . join(") OR (", $excludes) . "))";
+			$query .= ' NOT ((' . implode(') OR (', $excludes) . '))';
 		}
 
 		// Ensure we have a valid query to this point
@@ -1163,6 +1179,8 @@ class Solr implements IndexEngine {
 			$query = '*:*';
 		}
 
+		$this->cache->set($memcacheKey, $query, 60);
+		$this->builtQueries[$key] = $query;
 		return $query;
 	}
 

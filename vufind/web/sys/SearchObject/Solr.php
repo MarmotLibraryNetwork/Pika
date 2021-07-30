@@ -1039,38 +1039,37 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @access  public
 	 * @return  string   user friendly version of 'query'
 	 */
-	public function displayQuery()
-	{
+	public function displayQuery(){
 		// Maybe this is a restored object...
-		if ($this->query == null) {
-			$fullQuery = $this->indexEngine->buildQuery($this->searchTerms, false);
+		if ($this->query == null){
+			$fullQuery    = $this->indexEngine->buildQuery($this->searchTerms, false);
 			$displayQuery = $this->indexEngine->buildQuery($this->searchTerms, true);
-			$this->query = $fullQuery;
+			$this->query  = $fullQuery;
 			if ($fullQuery != $displayQuery){
 				$this->publicQuery = $displayQuery;
 			}
 		}
 
 		// Do we need the complex answer? Advanced searches
-		if ($this->searchType == $this->advancedSearchType) {
+		if ($this->searchType == $this->advancedSearchType){
 			$output = $this->buildAdvancedDisplayQuery();
 			// If there is a hardcoded public query (like tags) return that
-		} else if ($this->publicQuery != null) {
+		}elseif ($this->publicQuery != null){
 			$output = $this->publicQuery;
 			// If we don't already have a public query, and this is a basic search
 			// with case-insensitive booleans, we need to do some extra work to ensure
 			// that we display the user's query back to them unmodified (i.e. without
 			// capitalized Boolean operators)!
-		} else if (!$this->indexEngine->hasCaseSensitiveBooleans()) {
+		}elseif (!$this->indexEngine->hasCaseSensitiveBooleans()){
 			$output = $this->publicQuery = $this->indexEngine->buildQuery($this->searchTerms, true);
 			// Simple answer
-		} else {
+		}else{
 			$output = $this->query;
 		}
 
 		// Empty searches will look odd to users
-		if ($output == '*:*') {
-			$output = "";
+		if ($output == '*:*'){
+			$output = '';
 		}
 
 		return $output;
@@ -1239,7 +1238,7 @@ class SearchObject_Solr extends SearchObject_Base {
 
 		if ($this->searchSource == 'econtent'){
 			global $solrScope;
-			$this->addHiddenFilter("econtent_source_{$solrScope}", '*');
+			$this->addHiddenFilter("econtent_source_$solrScope", '*');
 		}
 
 		// Our search has already been processed in init()
@@ -1248,7 +1247,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		// Build a recommendations module appropriate to the current search:
 		if ($recommendations) {
 			$this->initRecommendations();
-			$timer->logTime("initRecommendations");
+			$timer->logTime('initRecommendations');
 		}
 
 		// Tag searches need to be handled differently
@@ -1258,9 +1257,9 @@ class SearchObject_Solr extends SearchObject_Base {
 			$this->publicQuery = $search[0]['lookfor'];
 			if (!$this->processTagSearch($search[0]['lookfor'])){
 				// Save search so it displays correctly on the "no hits" page:
-				return array('response' => array('numFound' => 0, 'docs' => array()));
+				return ['response' => ['numFound' => 0, 'docs' => []]];
 			}
-			$timer->logTime("process Tag search");
+			$timer->logTime('process Tag search');
 		}else{
 
 			// Build Query

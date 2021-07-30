@@ -611,7 +611,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 
 		// Empty searches will look odd to users
 		if ($output == '*:*'){
-			$output = "";
+			$output = '';
 		}
 
 		return $output;
