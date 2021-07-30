@@ -219,7 +219,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 						Date pubDate = new SimpleDateFormat("MM/dd/yyyy").parse(pubDateString);
 						Long published = pubDate.getTime() / 1000;
 						long dateTime = System.currentTimeMillis() / 1000;
-
+						doesIdExist.setString(1, magazineIssueId);
 						ResultSet idResult = doesIdExist.executeQuery();
 						if (!idResult.first()) {
 							insertIssues.setString(1, magazineIssueId);
@@ -265,6 +265,10 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 	public void getNewMagazineIssuesById(String overdriveId, String crossRefId, Logger logger, CronProcessLogEntry processLog, Connection econtentConn, Connection pikaConn)
 	{
 		try {
+			PreparedStatement insertIssues = econtentConn.prepareStatement("INSERT INTO `overdrive_api_magazine_issues` " +
+							"SET overdriveId = ?, crossRefId = ?, title = ?, edition = ?, pubDate = ?, coverUrl = ?, parentId = ?, " +
+							"description = ?, dateAdded = ?, dateUpdated = ?");
+			PreparedStatement doesIdExist = econtentConn.prepareStatement("SELECT id from `overdrive_api_magazine_issues` WHERE overdriveId ='?'");
 			boolean small = false;
 			int x = 0;
 			int issuesPerQuery = 25;
@@ -341,17 +345,21 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 					}
 					Date pubDate = new SimpleDateFormat("MM/dd/yyyy").parse(pubDateString);
 					Long published = pubDate.getTime()/1000;
-
 					long dateTime = System.currentTimeMillis() / 1000;
-
-					PreparedStatement doesIdExist = econtentConn.prepareStatement("SELECT id from `overdrive_api_magazine_issues` WHERE overdriveId ='" + magazineIssueId + "'");
+					doesIdExist.setString(1, magazineIssueId);
 					ResultSet idResult = doesIdExist.executeQuery();
 					if (!idResult.first()) {
-						String insert = ("'" + magazineIssueId + "','" + magazineCrossRef + "','" + magazineTitle + "','" + magazineEdition + "', '"+ published +"','" + coverUrl + "','" + magazineParentId + "','" + magazineDescription + "', " + dateTime + "," + dateTime);
-						PreparedStatement updateDatabase = econtentConn.prepareStatement("INSERT INTO `overdrive_api_magazine_issues` " +
-										"(overdriveId, crossRefId, title, edition, pubDate, coverUrl, parentId, description, dateAdded, dateUpdated) " +
-										"VALUES(" + insert + ")");
-						updates = updates + updateDatabase.executeUpdate();
+						insertIssues.setString(1, magazineIssueId);
+						insertIssues.setString(2, crossRefId);
+						insertIssues.setString(3, magazineTitle);
+						insertIssues.setString(4, magazineEdition);
+						insertIssues.setLong(5, published);
+						insertIssues.setString(6, coverUrl);
+						insertIssues.setString(7, magazineParentId);
+						insertIssues.setString(8, magazineDescription);
+						insertIssues.setLong(9, dateTime);
+						insertIssues.setLong(10, dateTime);
+						updates = updates + insertIssues.executeUpdate();
 						//if we get results back don't try the next shared account.
 						if (updates > 0)
 						{
