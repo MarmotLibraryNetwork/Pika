@@ -146,7 +146,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 				PreparedStatement updateIssues = econtentConn.prepareStatement("UPDATE `overdrive_api_magazine_issues` " +
 								"SET crossRefId = ?, title = ?, edition = ?, pubDate = ?, coverUrl = ?, parentId = ?, " +
 								"description = ?, dateAdded = ?, dateUpdated = ? WHERE overdriveId = ? ");
-				PreparedStatement doesIdExist = econtentConn.prepareStatement("SELECT id from `overdrive_api_magazine_issues` WHERE overdriveId ='?'");
+				PreparedStatement doesIdExist = econtentConn.prepareStatement("SELECT id from `overdrive_api_magazine_issues` WHERE overdriveId =?");
 				for(Map.Entry<Long,String> sharedCollections: libToOverDriveAPIKeyMap.entrySet()) {
 					int issuesPerQuery = 2000;
 					String overDriveUrl = "https://api.overdrive.com/v1/collections/" + getProductsKeyForSharedCollection(sharedCollections.getKey(), logger) + "/products/" + overdriveId + "/issues?limit=" + issuesPerQuery + "&sort=saledate:asc&offset=" + x;
@@ -268,7 +268,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 			PreparedStatement insertIssues = econtentConn.prepareStatement("INSERT INTO `overdrive_api_magazine_issues` " +
 							"SET overdriveId = ?, crossRefId = ?, title = ?, edition = ?, pubDate = ?, coverUrl = ?, parentId = ?, " +
 							"description = ?, dateAdded = ?, dateUpdated = ?");
-			PreparedStatement doesIdExist = econtentConn.prepareStatement("SELECT id from `overdrive_api_magazine_issues` WHERE overdriveId ='?'");
+			PreparedStatement doesIdExist = econtentConn.prepareStatement("SELECT id from `overdrive_api_magazine_issues` WHERE overdriveId =?");
 			boolean small = false;
 			int x = 0;
 			int issuesPerQuery = 25;
