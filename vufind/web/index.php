@@ -189,6 +189,8 @@ if ($isLoggedIn && $module == 'MyAccount' && $action == 'Home'){
 		$action = 'Holds';
 //		header('Location:/MyAccount/Holds');
 //		exit();
+	}elseif ($user->getNumBookingsTotal() > 0){
+		$action = 'Bookings';
 	}
 }
 
