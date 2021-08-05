@@ -164,7 +164,7 @@ class Marmot extends Sierra {
 
 	public function bookMaterial(User $patron, \SourceAndId $recordId, $startDate, $startTime = null, $endDate = null, $endTime = null){
 		if (empty($recordId) || empty($startDate)){ // at least these two fields should be required input
-			return array('success' => false, 'message' => empty($startDate) ? 'Start Date Required.' : 'Record ID required');
+			return ['success' => false, 'message' => empty($startDate) ? 'Start Date Required.' : 'Record ID required'];
 		}
 		if (!$startTime){
 			$startTime = '8:00am';   // set a default start time if not specified (a morning time)
@@ -181,17 +181,18 @@ class Marmot extends Sierra {
 
 		$startDateTime = new \DateTime("$startDate $startTime");// create a date with input and set it to the format the ILS expects
 		if (!$startDateTime){
-			return array('success' => false, 'message' => 'Invalid Start Date or Time.');
+			return ['success' => false, 'message' => 'Invalid Start Date or Time.'];
 		}
 
 		$endDateTime = new \DateTime("$endDate $endTime"); // create a date with input and set it to the format the ILS expects
 		if (!$endDateTime){
-			return array('success' => false, 'message' => 'Invalid End Date or Time.');
+			return ['success' => false, 'message' => 'Invalid End Date or Time.'];
 		}
 
-		$bookingUrl = "/webbook?/$bib=&back=";
+		$scope    = $this->getLibrarySierraScope(); // IMPORTANT: Scope is needed for Bookings Actions to work
+		$bookingUrl = "/webbook~S$scope?/$bib=&back=";
 		// the strange get url parameters ?/$bib&back= is needed to avoid a response from the server claiming a 502 proxy error
-		// Scope appears to be unnecessary at this point.
+		// Scope is needed when multiple libraries have booking enabled in sierra.  (Scope wasn't previously required factor)
 
 		// Get pagen from form
 		/** @var Curl $c */
@@ -199,10 +200,17 @@ class Marmot extends Sierra {
 		$curlResponse = $c->getResponse();
 
 		if (preg_match('/You cannot book this material/i', $curlResponse)){
-			return array(
+			return [
 				'success' => false,
 				'message' => 'Sorry, you cannot schedule this item.'
-			);
+			];
+		}
+		if (preg_match('/No Such Record/i', $curlResponse)){
+			// When bib has been deleted, response will include "<h2>No Such Record</h2>"
+			return [
+				'success' => false,
+				'message' => 'The record for this item no longer exists.'
+			];
 		}
 
 		$tag               = 'input';
@@ -238,10 +246,13 @@ class Marmot extends Sierra {
 				}
 			}
 		}
+		if (preg_match('/name="webbook_loc".+?option value="(.+?)">/si', $curlResponse, $matches)){
+			$loc = $matches[1];
+		}
 
 		$patronId = $this->getPatronId($patron); // username seems to be the patron Id
 
-		$post = array(
+		$post = [
 			'webbook_pnum'        => $patronId,
 			'webbook_pagen'       => empty($pageN) ? '2' : $pageN, // needed, reading from screen scrape; 2 or 4 are the only values i have seen so far. plb 7-16-2015
 			'webbook_bgn_Month'   => $startDateTime->format('m'),
@@ -257,7 +268,7 @@ class Marmot extends Sierra {
 			'webbook_end_n_Min'   => $endDateTime->format('i'),
 			'webbook_end_n_AMPM'  => $endDateTime->format('H') > 11 ? 'PM' : 'AM', // has to be uppercase for the screen scraping
 			'webbook_note'        => '', // the web note doesn't seem to be displayed to the user any where after submit
-		);
+		];
 		if (!empty($loc)){
 			// if we have this info add it, don't include otherwise.
 			$post['webbook_loc'] = $loc;
@@ -266,19 +277,19 @@ class Marmot extends Sierra {
 		if ($c->error){
 
 			$this->logger->warn('Curl error during booking, code: ' . $c->getErrorMessage());
-			return array(
+			return [
 				'success' => false,
 				'message' => 'There was an error communicating with the circulation system.'
-			);
+			];
 		}
 
 		// Look for Success Messages
 		$numMatches = preg_match('/<span.\s?class="bookingsConfirmMsg">(?P<success>.+?)<\/span>/', $curlResponse, $matches);
 		if ($numMatches){
-			return array(
+			return [
 				'success' => true,
 				'message' => is_array($matches['success']) ? implode('<br>', $matches['success']) : $matches['success']
-			);
+			];
 		}
 
 		// Look for Account Error Messages
@@ -286,11 +297,11 @@ class Marmot extends Sierra {
 		$numMatches = preg_match('/<h1>(?P<error>There is a problem with your record\..\sPlease see a librarian.)<\/h1>/', $curlResponse, $matches);
 		// ?P<name> syntax will creates named matches in the matches array
 		if ($numMatches){
-			return array(
+			return [
 				'success' => false,
 				'message' => is_array($matches['error']) ? implode('<br>', $matches['error']) : $matches['error'],
 				'retry'   => true, // communicate back that we think the user could adjust their input to get success
-			);
+			];
 		}
 
 
@@ -298,19 +309,19 @@ class Marmot extends Sierra {
 		$numMatches = preg_match('/<span.\s?class="errormessage">(?P<error>.+?)<\/span>/is', $curlResponse, $matches);
 		// ?P<name> syntax will creates named matches in the matches array
 		if ($numMatches){
-			return array(
+			return [
 				'success' => false,
 				'message' => is_array($matches['error']) ? implode('<br>', $matches['error']) : $matches['error'],
 				'retry'   => true, // communicate back that we think the user could adjust their input to get success
-			);
+			];
 		}
 
 		// Catch all Failure
 		$this->logger->error('Unkown error during booking');
-		return array(
+		return [
 			'success' => false,
 			'message' => 'There was an unexpected result while scheduling your item'
-		);
+		];
 	}
 
 	/**
@@ -323,15 +334,15 @@ class Marmot extends Sierra {
 	public function cancelBookedMaterial(\User $patron, $cancelIds){
 		//NOTE the library's scope for the classic OPAC is needed to delete bookings!
 		if (empty($cancelIds)){
-			return array('success' => false, 'message' => 'Item ID required');
+			return ['success' => false, 'message' => 'Item ID required'];
 		}elseif (!is_array($cancelIds)){
-			$cancelIds = array($cancelIds);  // for a single item
+			$cancelIds = [$cancelIds];  // for a single item
 		}
 
-		$post = array(
+		$post = [
 			'canbooksome' => 'YES'
 			//			'requestCanBookSome' => 'requestCanBookSome',
-		);
+		];
 
 		foreach ($cancelIds as $i => $cancelId){
 			if (is_numeric($i)){
@@ -344,12 +355,12 @@ class Marmot extends Sierra {
 
 		$html = $this->_curlLegacy($patron, 'bookings', $post);
 
-		$errors = array();
+		$errors = [];
 		if (!$html){
-			return array(
+			return [
 				'success' => false,
 				'message' => 'There was an error communicating with the circulation system.'
-			);
+			];
 		}
 
 		// check the bookings again, to verify that they were in fact really cancelled.
@@ -375,15 +386,15 @@ class Marmot extends Sierra {
 		}
 
 		if (empty($errors)){
-			return array(
+			return [
 				'success' => true,
 				'message' => 'Your scheduled item' . (count($cancelIds) > 1 ? 's were' : ' was') . ' successfully canceled.'
-			);
+			];
 		}else{
-			return array(
+			return [
 				'success' => false,
 				'message' => $errors
-			);
+			];
 		}
 	}
 
@@ -447,7 +458,7 @@ class Marmot extends Sierra {
 		$hourlyCalendarUrl = "webbook~S$scope?/$bib/hourlycal$timestamp=&back=";
 
 		//Can only get the hourly calendar html by submitting the bookings form
-		$post                   = array(
+		$post                   = [
 			'webbook_pnum'        => $this->getPatronId($patron),
 			'webbook_pagen'       => '2', // needed, reading from screen scrape; 2 or 4 are the only values i have seen so far. plb 7-16-2015
 			//			'refresh_cal' => '0', // not needed
@@ -464,20 +475,20 @@ class Marmot extends Sierra {
 			'webbook_end_n_Min'   => '',
 			'webbook_end_n_AMPM'  => '',
 			'webbook_note'        => '',
-		);
+		];
 		$HourlyCalendarResponse = $this->_curlLegacy($patron, $hourlyCalendarUrl, $post, false);
 
 		// Extract Hourly Calendar from second response
 		if (preg_match('/<div class="bookingsSelectCal">.*?<table border>(?<HourlyCalendarTable>.*?<\/table>.*?)<\/table>.*?<\/div>/si', $HourlyCalendarResponse, $table)){
 			// Modify Calendar html for our needs
-			$calendarTable = str_replace(array('unavailable', 'available', 'closed', 'am'), array('active', 'success', 'active', ''), $table['HourlyCalendarTable']);
+			$calendarTable = str_replace(['unavailable', 'available', 'closed', 'am'], ['active', 'success', 'active', ''], $table['HourlyCalendarTable']);
 			$calendarTable = preg_replace('#<th.*?>.*?</th>#s', '<th colspan="2">Date</th><th colspan="17">Time <small>(6 AM - 11 PM)&nbsp; Times in green are Available.</small></th>', $calendarTable); // cut out the table header with the unwanted links in it.
-			$calendarTable = '<table class="table table-condensed">' . $calendarTable . '</table>'; // add table tag with styling attributes
+			$calendarTable = '<table class="table table-condensed">' . $calendarTable . '</table>';                                                                                                       // add table tag with styling attributes
 			return $calendarTable;
 		}
 	}
 
-	private function _curlLegacy($patron, $pageToCall, $postParams = array(), $patronAction = true){
+	private function _curlLegacy($patron, $pageToCall, $postParams = [], $patronAction = true){
 
 		$c = new Curl();
 
@@ -494,7 +505,7 @@ class Marmot extends Sierra {
 		];
 		$c->setHeaders($headers);
 
-		$cookie   = tempnam("/tmp", "CURLCOOKIE");
+		$cookie   = @tempnam("/tmp", "CURLCOOKIE");
 		$curlOpts = [
 			CURLOPT_CONNECTTIMEOUT    => 20,
 			CURLOPT_TIMEOUT           => 60,
@@ -543,8 +554,8 @@ class Marmot extends Sierra {
 			return false;
 		}
 
-		if (stripos($pageToCall, 'webbook?/') !== false){
-			// Hack to complete booking a record
+		if (stripos($pageToCall, '/webbook') !== false){
+			// Hack to complete booking a record (needs to make a subsequent curl call)
 			return $c;
 		}
 		return $r;
