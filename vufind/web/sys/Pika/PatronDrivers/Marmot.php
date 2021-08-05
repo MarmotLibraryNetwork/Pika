@@ -205,8 +205,8 @@ class Marmot extends Sierra {
 				'message' => 'Sorry, you cannot schedule this item.'
 			];
 		}
-		if (preg_match('/No Such Record/i', $curlResponse)){
-			// When bib has been deleted, response will include "<h2>No Such Record</h2>"
+		if (preg_match('/No Such Record|can\'t read bib/i', $curlResponse)){
+			// When bib has been deleted, response will include "<h2>No Such Record</h2>" or "<h1>can't read bib</h1>"
 			return [
 				'success' => false,
 				'message' => 'The record for this item no longer exists.'
