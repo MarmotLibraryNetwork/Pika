@@ -127,7 +127,7 @@ public class ValidateMarcExport implements IProcessHandler {
 											} catch (MarcException me) {
 												if (!lastProcessedRecordLogged.equals(lastRecordProcessed)) {
 													logger.warn("Error processing individual record on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue", me);
-													processLog.addNote("Error processing individual record on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue.  " + me.toString());
+													processLog.addNote("Error processing individual record on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue.  " + me);
 													numErrors++;
 													processLog.incErrors();
 													processLog.saveToDatabase(pikaConn, logger);
@@ -140,7 +140,7 @@ public class ValidateMarcExport implements IProcessHandler {
 										processLog.addNote("&nbsp;&nbsp;&nbsp;&nbsp;File is valid.  Found " + numRecordsToIndex + " records that will be indexed and " + numSuppressedRecords + " records that will be suppressed.");
 									} catch (Exception e) {
 										logger.error("&nbsp;&nbsp;&nbsp;&nbsp;Error loading catalog bibs on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed, e);
-										processLog.addNote("Error loading catalog bibs on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + ". " + e.toString());
+										processLog.addNote("Error loading catalog bibs on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + ". " + e);
 										allExportsValid = false;
 										processLog.saveToDatabase(pikaConn, logger);
 									}
@@ -171,6 +171,7 @@ public class ValidateMarcExport implements IProcessHandler {
 						}
 					}
 				}
+				processLog.saveToDatabase(pikaConn, logger);
 			}
 		} catch (SQLException e) {
 			logger.error("SQL Error while validating MARC", e);
@@ -183,7 +184,7 @@ public class ValidateMarcExport implements IProcessHandler {
 			updateExportValidSetting.executeUpdate();
 		} catch (Exception e) {
 			logger.error("Error updating variable ", e);
-			processLog.addNote("Error updating variable  " + e.toString());
+			processLog.addNote("Error updating variable  " + e);
 		} finally {
 			processLog.setFinished();
 			processLog.saveToDatabase(pikaConn, logger);

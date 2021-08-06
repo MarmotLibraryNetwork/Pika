@@ -404,7 +404,8 @@ public class UpdateReadingHistory implements IProcessHandler {
 				// If connection is refused, pause and try again up to 3 times.
 				attempts++;
 				if (attempts >= 3){
-					logger.error("Refused connection to User API after " + attempts + " attempts for user Id " + userId, e);
+					// Attempted 3 times, log error and move on to next user
+					logger.error("Refused connection to User API after " + attempts + " attempts for user Id " + userId);
 					connected = true;
 				} else {
 					connected = false;
