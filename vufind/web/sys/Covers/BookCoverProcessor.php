@@ -428,16 +428,28 @@ class BookCoverProcessor {
 	private function getOverDriveCover(SourceAndId $sourceAndId){
 		$overDriveProduct = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
 		if ($overDriveProduct->get('overdriveId', $sourceAndId->getRecordId())){
+			if ($overDriveProduct->mediaType == 'Magazine'){
+				// Use Latest Issue if magazine
+				$overDriveLatestMagazine           = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIMagazineIssues();
+				$overDriveLatestMagazine->parentId = $sourceAndId->getRecordId();
+				$overDriveLatestMagazine->orderBy('pubDate DESC');
+				if ($overDriveLatestMagazine->find(true)){
+					if (!empty($overDriveLatestMagazine->coverUrl)){
+						return $this->processImageURL($overDriveLatestMagazine->coverUrl);
+					}
+				}
+			}
+			// Attempt to use Metadata for cover
 			$overDriveMetadata = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductMetaData();
 			if ($overDriveMetadata->get('productId', $overDriveProduct->id)){
 				$coverUrl = $overDriveMetadata->cover; // full size image
 				if ($coverUrl != null){
 					return $this->processImageURL($coverUrl);
 				}
-			} else {
-				$coverUrl = $overDriveProduct->cover; // Thumbnail image
-				return $this->processImageURL($coverUrl);
 			}
+			// Use cover url provided with the title info
+			$coverUrl = $overDriveProduct->cover; // Thumbnail image
+			return $this->processImageURL($coverUrl);
 		}
 		return false;
 	}

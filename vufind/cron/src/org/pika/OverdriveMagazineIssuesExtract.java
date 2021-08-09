@@ -6,6 +6,7 @@ import org.ini4j.Profile;
 import org.json.*;
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
@@ -20,6 +21,7 @@ import java.util.Date;
 public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 	private       String                  clientSecret;
 	private       String                  clientKey;
+	private       String                  bookCoverUrl;
 	private final List<String>            accountIds                  = new ArrayList<>();
 	private       String                  overDriveAPIToken;
 	private       String                  overDriveAPITokenType;
@@ -28,9 +30,9 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 	private final TreeMap<Long, String>   libToOverDriveAPIKeyMap     = new TreeMap<>();
 	private final TreeMap<Long, Long>     libToSharedCollectionIdMap  = new TreeMap<>(); // specifically <libraryId, sharedCollectionId>
 	private final HashMap<String, Long>   advantageCollectionToLibMap = new HashMap<>();
-	private PreparedStatement insertIssues;
-	private PreparedStatement updateIssues;
-	private PreparedStatement doesIdExist;
+	private       PreparedStatement       insertIssues;
+	private       PreparedStatement       updateIssues;
+	private       PreparedStatement       doesIdExist;
 
 	@Override
 	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
@@ -117,6 +119,8 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 								"SET crossRefId = ?, title = ?, edition = ?, pubDate = ?, coverUrl = ?, parentId = ?, " +
 								"description = ?, dateUpdated = ? WHERE overdriveId = ? ");
 				doesIdExist = econtentConn.prepareStatement("SELECT id FROM `overdrive_api_magazine_issues` WHERE overdriveId =?");
+				bookCoverUrl = PikaConfigIni.getIniValue("Site", "url");
+				bookCoverUrl += "/bookcover.php?size=medium&type=overdrive&reload&id=";
 
 				try (
 				PreparedStatement magazineIdStatement = econtentConn.prepareStatement("SELECT overdriveId, crossRefId from overdrive_api_products WHERE mediaType='magazine' AND deleted != 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -292,20 +296,26 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 
 			} while (!lastBatch);
 		} catch (Exception e) {
-			logger.error(e.getMessage() + ": " + magazineParentId);
+			logger.error("Fetch all issues - " +e.getMessage() + ": " + magazineParentId);
 		}
 	}
 
 	public void getNewMagazineIssuesById(String magazineParentId, Logger logger, CronProcessLogEntry processLog, Connection econtentConn, Connection pikaConn) {
 		try {
-			final int  issuesPerQuery = 25;
+			final int  issuesPerQuery = 6; // Most of the new updates will be single issues; so keep the number of issues we fetch small
 			JSONObject jsonObject     = null;
 			String     overDriveUrl   = "";
 			boolean    issuesFound    = false;
 			for (Map.Entry<Long, String> sharedCollections : libToOverDriveAPIKeyMap.entrySet()) {
 				final String sharedCollectionsProductKey = sharedCollections.getValue();
+				// From the API documentation :
+				// Sort based on the date an issue became available for sale.
+				// By default, issues are sorted in descending order (newest issue to oldest).
+				// To sort by oldest to newest, enter sort=saledate:asc.
+				//
+				// So we will use the default sort, and populate till we get a magazine we've already processed
 
-				overDriveUrl = "https://api.overdrive.com/v1/collections/" + sharedCollectionsProductKey + "/products/" + magazineParentId + "/issues?limit=" + issuesPerQuery + "&sort=saledate:asc";
+				overDriveUrl = "https://api.overdrive.com/v1/collections/" + sharedCollectionsProductKey + "/products/" + magazineParentId + "/issues?limit=" + issuesPerQuery;
 				WebServiceResponse overdriveCall     = callOverDriveURL(overDriveUrl, logger);
 				boolean            overdriveHasError = false;
 				if (overdriveCall.getResponseCode() != 200) {
@@ -331,7 +341,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 					logger.info("No issues found for " + magazineParentId + " trying advantage accounts");
 				}
 				for (String advantageCollections : advantageCollectionToLibMap.keySet()) {
-					overDriveUrl = "https://api.overdrive.com/v1/collections/" + advantageCollections + "/products/" + magazineParentId + "/issues?limit=" + issuesPerQuery + "&sort=saledate:asc";
+					overDriveUrl = "https://api.overdrive.com/v1/collections/" + advantageCollections + "/products/" + magazineParentId + "/issues?limit=" + issuesPerQuery;
 					WebServiceResponse overdriveCall = callOverDriveURL(overDriveUrl, logger);
 
 					if (overdriveCall.getResponseCode() != 200) {
@@ -360,8 +370,9 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 				return;
 			}
 
-			int     x         = 0;
-			boolean lastBatch = false;
+			int     x          = 0;
+			boolean lastBatch  = false;
+			boolean hadUpdates = false;
 			do {
 				int       updates         = 0;
 				int       returnedRecords = jsonObject.getInt("totalItems");
@@ -413,8 +424,13 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 						insertIssues.setLong(9, dateTime);
 						insertIssues.setLong(10, dateTime);
 						updates = updates + insertIssues.executeUpdate();
+					} else {
+						// We found an issue we've processed before, so let's break out of our batch loop
+						lastBatch = true;
+						//TODO: break out of for loop as well?
 					}
 				}
+				if (updates > 0) hadUpdates = true;
 				processLog.addUpdates(updates);
 				processLog.saveToDatabase(pikaConn, logger);
 
@@ -434,8 +450,36 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 
 
 			} while (!lastBatch);
+			if (hadUpdates){
+				try {
+					// Update Cover URL
+					HttpURLConnection conn;
+					URL emptyIndexURL = new URL(bookCoverUrl + magazineParentId);
+					conn = (HttpURLConnection) emptyIndexURL.openConnection();
+					if (conn instanceof HttpsURLConnection){
+						HttpsURLConnection sslConn = (HttpsURLConnection)conn;
+						sslConn.setHostnameVerifier((hostname, session) -> {
+							//Do not verify host names
+							return true;
+						});
+					}
+					conn.setConnectTimeout(3000);
+					conn.setReadTimeout(5000);
+					if (conn.getResponseCode() != 200) {
+						if (logger.isDebugEnabled()){
+							logger.debug("Failed to update OverDrive Magazine cover for " + magazineParentId);
+						}
+					}
+				} catch (IOException e) {
+					//We can likely ignore all the time outs. As long as the Pika server recieved the cover url call, it should reload the cover for us.
+					if (logger.isDebugEnabled()){
+						logger.debug("Error while updating Pika cover for OverDrive Magazine " + magazineParentId, e);
+					}
+				}
+
+			}
 		} catch (Exception e) {
-			logger.error(e.getMessage() + ": " + magazineParentId);
+			logger.error("Fetch new issues - " +e.getMessage() + " : " + magazineParentId);
 		}
 	}
 

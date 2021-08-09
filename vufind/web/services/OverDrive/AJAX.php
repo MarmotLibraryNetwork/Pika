@@ -339,32 +339,31 @@ class OverDrive_AJAX extends AJAXHandler {
 	}
 
 	function getIssuesList(){
-		$parentId = $_REQUEST['parentId'];
-			$overdriveIssues = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIMagazineIssues();
-			$data = [];
+		$parentId        = $_REQUEST['parentId'];
+		$overdriveIssues = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIMagazineIssues();
+		$data            = [];
 
-				$overdriveIssues->parentId = $parentId;
-				$overdriveIssues->find();
-				$overdriveIssues->orderBy("pubDate DESC");
-				$issuesList = $overdriveIssues->fetchAll();
-				$i=0;
-				foreach($issuesList as $issue)
-				{
-					$formatted =  "<div id=\"scrollerTitleIssues" . $i ."\" class=\"scrollerTitle\" onclick=\"Pika.OverDrive.checkoutOverdriveMagazineByIssueID('" . $issue->overdriveId . "')\"><img src=\"". $issue->coverUrl . "\" class=\"scrollerTitleCover\" alt=\"" . $issue->edition ."\"></div>";
+		$overdriveIssues->parentId = $parentId;
+		$overdriveIssues->orderBy("pubDate DESC");
+		$overdriveIssues->find();
+		$issuesList = $overdriveIssues->fetchAll();
+		$i          = 0;
+		foreach ($issuesList as $issue){
+			$formatted = "<div id=\"scrollerTitleIssues" . $i . "\" class=\"scrollerTitle\" onclick=\"Pika.OverDrive.checkoutOverdriveMagazineByIssueID('" . $issue->overdriveId . "')\"><img src=\"" . $issue->coverUrl . "\" class=\"scrollerTitleCover\" alt=\"" . $issue->edition . "\"></div>";
 
-					$issues = [
-						'id' => $issue->overdriveId,
-						'image' => $issue->coverUrl,
-						'author' => '',
-						'title' => $issue->edition,
-						'formattedTitle' => $formatted
-					];
+			$issues = [
+				'id'             => $issue->overdriveId,
+				'image'          => $issue->coverUrl,
+				'author'         => '',
+				'title'          => $issue->edition,
+				'formattedTitle' => $formatted
+			];
 
-					$data[$i] = $issues;
-					$i++;
-				}
-			global $timer;
-			$timer->logTime("Finished getIssues for OverDrive record {$parentId}");
+			$data[$i] = $issues;
+			$i++;
+		}
+		global $timer;
+		$timer->logTime("Finished getIssues for OverDrive record {$parentId}");
 
 		return $data;
 	}

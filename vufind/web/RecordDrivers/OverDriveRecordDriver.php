@@ -275,8 +275,8 @@ class OverDriveRecordDriver extends RecordInterface {
 			$this->issues = [];
 			if($this->valid){
 				$overdriveIssues->parentId = $parentId;
-				$overdriveIssues->find();
 				$overdriveIssues->orderBy("pubDate DESC");
+				$overdriveIssues->find();
 				$issuesList = $overdriveIssues->fetchAll();
 
 				foreach($issuesList as $issue)
