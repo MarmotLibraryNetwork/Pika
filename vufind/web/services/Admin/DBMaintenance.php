@@ -1455,7 +1455,7 @@ class DBMaintenance extends Admin_Admin {
 				],
 				'add_OverDrive_Magazine_Issues_table' => [
 					'title'       => 'Add OverDrive Magazine Issues to database',
-					'description' => 'Add a table to the econtent database in which to store OverDrive Magazines',
+					'description' => 'Add a table to the econtent database in which to store OverDrive Magazines. [THIS NEEDS the econtent db to named econtent]',
 					'sql'         => [
 						"CREATE TABLE IF NOT EXISTS `econtent`.`overdrive_api_magazine_issues`(
     						id INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
