@@ -1105,7 +1105,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$largeCoverUrl = $recordDriver->getBookcoverUrl('large', true) . '&reload';
 		$ret           = file_get_contents($largeCoverUrl);
 
-		return array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.');
+		return ['success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'];
 	}
 
 	function reloadIslandora(){

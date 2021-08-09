@@ -42,7 +42,8 @@ class OverDrive_AJAX extends AJAXHandler {
 		'getIssuesList',
 		'getOverDriveIssueCheckoutPrompt',
 		'issueCheckoutPrompts',
-		'doOverDriveMagazineIssueCheckout'
+		'doOverDriveMagazineIssueCheckout',
+		'reloadCover',
 	];
 
 	protected $methodsThatRespondThemselves = [];
@@ -686,4 +687,37 @@ class OverDrive_AJAX extends AJAXHandler {
 	}
 
 
+	function reloadCover(){
+		require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
+		$recordDriver = new OverDriveRecordDriver($_REQUEST['id']);
+
+		//Reload small cover
+		$smallCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('small',true) ) . '&reload';
+		file_get_contents($smallCoverUrl);
+
+		//Reload medium cover
+		$mediumCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('medium',true)) . '&reload';
+		file_get_contents($mediumCoverUrl);
+
+		//Reload large cover
+		$largeCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('large',true)) . '&reload';
+		file_get_contents($largeCoverUrl);
+
+		//Also reload covers for the grouped work
+		$groupedWorkDriver = $recordDriver->getGroupedWorkDriver();
+
+		//Reload small cover
+		$smallCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('small', true)) . '&reload';
+		file_get_contents($smallCoverUrl);
+
+		//Reload medium cover
+		$mediumCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('medium', true)) . '&reload';
+		file_get_contents($mediumCoverUrl);
+
+		//Reload large cover
+		$largeCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('large', true)) . '&reload';
+		file_get_contents($largeCoverUrl);
+
+		return ['success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'];
+	}
 }
