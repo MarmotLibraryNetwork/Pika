@@ -1469,7 +1469,8 @@ class DBMaintenance extends Admin_Admin {
     						description TEXT, 
     						dateAdded INT(11),
     						dateUpdated INT(11)
-						)"
+						)
+						CHARACTER SET = utf8 ;"
 						,
 					]
 				],
