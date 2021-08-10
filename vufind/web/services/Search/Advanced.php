@@ -71,7 +71,7 @@ class Search_Advanced extends Search_AdvancedBase {
 
 
 		// Send search type settings to the template
-		$interface->assign('advSearchTypes', $searchObject->getAdvancedTypes());
+		$interface->assign('advancedSearchTypes', $searchObject->getAdvancedSearchTypes());
 
 		// If we found a saved search, let's assign some details to the interface:
 		if ($savedSearch){

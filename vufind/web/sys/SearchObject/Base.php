@@ -86,7 +86,7 @@ abstract class SearchObject_Base {
 	protected $debugSolrQuery = false;
 	protected $isPrimarySearch = false;
 	// Search options for the user
-	protected $advancedTypes = [];
+	protected $advancedSearchTypes = [];
 	protected $basicTypes = [];
 	protected $browseTypes = [];
 	// Spelling
@@ -1016,11 +1016,10 @@ abstract class SearchObject_Base {
 	 * @access  public
 	 * @return  mixed    various internal variables
 	 */
-	public function getAdvancedTypes()  {return $this->advancedTypes;}
 	public function getBasicTypes(){
 		$searchIndex      = $this->getSearchIndex();
 		$basicSearchTypes = $this->basicTypes;
-		$searchSource     = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+		$searchSource     = $_REQUEST['searchSource'] ?? 'local';
 		if ($this->searchType != 'genealogy' && $searchSource != 'genealogy' &&
 			$this->searchType != 'islandora' && $searchSource != 'islandora'
 		){
@@ -1030,6 +1029,7 @@ abstract class SearchObject_Base {
 		}
 		return $basicSearchTypes;
 	}
+	public function getAdvancedSearchTypes()  {return $this->advancedSearchTypes;}
 	public function getFilters()        {return $this->filterList;}
 	public function getPage()           {return $this->page;}
 	public function getLimit()          {return $this->limit;}
@@ -1932,8 +1932,8 @@ abstract class SearchObject_Base {
 	{
 		if (isset($this->basicTypes[$field])) {
 			return translate($this->basicTypes[$field]);
-		} else if (isset($this->advancedTypes[$field])) {
-			return translate($this->advancedTypes[$field]);
+		} else if (isset($this->advancedSearchTypes[$field])) {
+			return translate($this->advancedSearchTypes[$field]);
 		} else if (isset($this->browseTypes[$field])) {
 			return translate($this->browseTypes[$field]);
 		} else {
@@ -2233,7 +2233,7 @@ class minSO
 
 		// Add Hidden Filters if Present
 		if (method_exists($searchObject, 'getHiddenFilters')) {
-			$this->hf = $searchObject->getHiddenFilters();
+			$this->hf = $searchObject->getHddenFilters();
 		}
 
 		// Add Facet Configurations if Present

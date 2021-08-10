@@ -115,7 +115,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 			$this->basicTypes = $searchSettings['Basic_Searches'];
 		}
 		if (isset($searchSettings['Advanced_Searches'])){
-			$this->advancedTypes = $searchSettings['Advanced_Searches'];
+			$this->advancedSearchTypes = $searchSettings['Advanced_Searches'];
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
