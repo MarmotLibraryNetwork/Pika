@@ -471,7 +471,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 						}
 					}
 				} catch (IOException e) {
-					//We can likely ignore all the time outs. As long as the Pika server recieved the cover url call, it should reload the cover for us.
+					//We can likely ignore all the time outs. As long as the Pika server received the cover url call, it should reload the cover for us.
 					if (logger.isDebugEnabled()){
 						logger.debug("Error while updating Pika cover for OverDrive Magazine " + magazineParentId, e);
 					}
