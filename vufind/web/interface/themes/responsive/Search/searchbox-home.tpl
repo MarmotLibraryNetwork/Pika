@@ -73,9 +73,8 @@
 									{/if}
 
 									<li class="catalogType">
-										{*<a id="advancedSearch" title="{translate text='Advanced Search'}" onclick="Pika.Account.ajaxLightbox('/Search/AdvancedPopup', false)">*}
 										<a id="advancedSearch" title="{translate text='Advanced Search'}" href="/Search/Advanced">
-											{*<i class="icon-plus-sign"></i>*} {translate text="Advanced"}
+											{translate text="Advanced"}
 										</a>
 									</li>
 
