@@ -1482,6 +1482,13 @@ class DBMaintenance extends Admin_Admin {
 							SELECT DISTINCT libraryId,'0','issues','0' FROM library_more_details;"
 					]
 				],
+				'add_Index_to_OverDrive_Issues' =>[
+					'title'       =>'Add Index to Magazine Issues table',
+					'description' => 'Index parentId Column.  [THIS NEEDS the econtent db to named econtent]',
+					'sql'         => [
+						"ALTER TABLE `econtent`.`overdrive_api_magazine_issues` ADD INDEX `parentId` (`parentId` ASC);"
+					]
+				],
 
 			)); // End of main array
 	}
