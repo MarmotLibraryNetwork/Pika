@@ -946,6 +946,7 @@ class OverDriveDriver4 {
 						$result['message'] .= "\r\n\r\nYou have reached the maximum number of OverDrive titles you can checkout one time.";
 						break;
 					case 'NoCopiesAvailable' :
+					case 'NoCopiesAvailable_AvailableInCpcForFastLaneMembersOnly' :
 						$result['noCopies'] = true;
 						$result['message']  .= "\r\n\r\nWould you like to place a hold instead?";
 						break;
