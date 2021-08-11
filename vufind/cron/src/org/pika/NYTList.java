@@ -37,6 +37,7 @@ public class NYTList implements IProcessHandler {
 		} catch (Exception e) {
 			logger.error(e);
 		}
+		processEntry.setFinished();
 		processEntry.saveToDatabase(pikaConn, logger);
 	}
 
