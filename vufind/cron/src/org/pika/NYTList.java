@@ -107,9 +107,12 @@ public class NYTList implements IProcessHandler {
 					JSONObject updateStatus = new JSONObject(updateStr.toString());
 					JSONObject resultJSON   = updateStatus.getJSONObject("result");
 					if (resultJSON.getBoolean("success")) {
-						processEntry.addNote("Updated List: " + encoded_list_name);
+						String message = resultJSON.getString("message").split("<br>")[1];
+						processEntry.addNote("Updated List: " + encoded_list_name + " " + message);
+						processEntry.incUpdated();
 					} else {
-						processEntry.addNote("Could not update list: " + encoded_list_name);
+						processEntry.addNote("Could not update list: " + encoded_list_name + " " + resultJSON.getString("message"));
+						processEntry.incErrors();
 					}
 					processEntry.saveToDatabase(pikaConn, logger);
 				} catch (Exception e){
