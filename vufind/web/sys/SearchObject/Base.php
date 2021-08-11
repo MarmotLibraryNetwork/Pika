@@ -2233,7 +2233,7 @@ class minSO
 
 		// Add Hidden Filters if Present
 		if (method_exists($searchObject, 'getHiddenFilters')) {
-			$this->hf = $searchObject->getHddenFilters();
+			$this->hf = $searchObject->getHiddenFilters();
 		}
 
 		// Add Facet Configurations if Present
