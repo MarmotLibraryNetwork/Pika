@@ -137,6 +137,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 								logger.debug("Processed " + magazines.getString("overdriveId"));
 							}
 						}
+						processLog.addNote("Completed updates.");
 					} else {
 						logger.info("Zero magazines found in database");
 					}
@@ -145,6 +146,9 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
+		processLog.addNote("Finished cron process.");
+		processLog.setFinished();
+		processLog.saveToDatabase(pikaConn, logger);
 	}
 
 	public void getAllMagazineIssuesById(String magazineParentId, Logger logger, CronProcessLogEntry processLog, Connection econtentConn, Connection pikaConn) {
