@@ -283,6 +283,7 @@ class Solr implements IndexEngine {
 		$results = $this->cache->get('searchSpecs');
 		if (empty($results)) {
 			$searchSpecs = file_get_contents($this->searchSpecsFile);
+			$searchSpecs = preg_replace('/\s*(?!<\")\/\*[^\*]+\*\/(?!\")\s*/', '', $searchSpecs); // Remove any text within /**/ as comments to ignore
 			$results     = json_decode($searchSpecs, true);
 			$this->cache->set('searchSpecs', $results, $configArray['Caching']['searchSpecs']);
 		}
@@ -698,36 +699,40 @@ class Solr implements IndexEngine {
 	 * applySearchSpecs -- internal method to build query string from search parameters
 	 *
 	 * @access  private
-	 * @param array  $structure the SearchSpecs-derived structure or substructure defining the search, derived from the
-	 *                          json file
-	 * @param array  $values    the various values in an array with keys 'onephrase', 'and', 'or' (and perhaps others)
-	 * @param string $joiner
-	 * @return  string              A search string suitable for adding to a query URL
-	 * @throws  object              PEAR Error
-	 * @static
+	 * @param array $mungeRules   The SearchSpecs-derived structure or substructure defining the search, derived from the
+	 *                            json file
+	 * @param array $mungedValues The values for the various munge types
+	 * @param string $joiner      Joiner of sub-queries
+	 *
+	 * @return  string            A search string suitable for adding to a query URL
 	 */
-	private function _applySearchSpecs($structure, $values, $joiner = "OR"){
-		global $solrScope;
-		$clauses = array();
-		foreach ($structure as $field => $clauseArray) {
+	private function _applySearchSpecs($mungeRules, $mungedValues, $joiner = 'OR'){
+		$clauses = [];
+		foreach ($mungeRules as $field => $clauseArray) {
 			if (is_numeric($field)){
 				$sw           = array_shift($clauseArray); // shift off the join string and weight
 				$internalJoin = ' ' . $sw[0] . ' ';
-				$searchString = '(' . $this->_applySearchSpecs($clauseArray, $values, $internalJoin) . ')'; // Build it up recursively
-				$weight       = $sw[1]; // ...and add a weight if we have one
+				$searchString = '(' . $this->_applySearchSpecs($clauseArray, $mungedValues, $internalJoin) . ')'; // Build it up recursively
+				$weight       = $sw[1];                                                                           // ...and add a weight if we have one
 				if (!empty($weight)){
 					$searchString .= '^' . $weight;
 				}
 				// push it onto the stack of clauses
 				$clauses[] = $searchString;
 			} else {
-				if ($solrScope && ($field == 'local_callnumber' || $field == 'local_callnumber_left' || $field == 'local_callnumber_exact')) {
-					$field .= '_' . $solrScope;
+				global $solrScope;
+				if ($solrScope){
+					// $dynamicFields = $this->_loadDynamicFields();
+					// if (in_array($field.'_', $dynamicFields)){
+					// if we ever expand the search spec to any other dynamic fields, use above lines
+					if ($field == 'local_callnumber' || $field == 'local_callnumber_left' || $field == 'local_callnumber_exact'){
+						$field .= '_' . $solrScope;
+					}
 				}
 
 				// Otherwise, we've got a (list of) [munge, weight] pairs to deal with
 				foreach ($clauseArray as $spec) {
-					$fieldValue = $values[$spec[0]];
+					$fieldValue = $mungedValues[$spec[0]];
 
 					switch ($field){
 						case 'isbn':
@@ -816,7 +821,7 @@ class Solr implements IndexEngine {
 	 * @return array
 	 */
 	public function getBoostFactors($searchLibrary, $searchLocation){
-		$boostFactors = array();
+		$boostFactors = [];
 
 		global $solrScope;
 		global $language;
@@ -860,13 +865,13 @@ class Solr implements IndexEngine {
 	 * versions of the search string for use in _applySearchSpecs().
 	 *
 	 * @access  private
-	 * @param string $lookfor The string to search for in the field
-	 * @param array  $custom  Custom munge settings from YAML search specs
-	 * @param bool   $basic   Is $lookfor a basic (true) or advanced (false) query?
-	 * @return  array         Array for use as _applySearchSpecs() values param
+	 * @param string $lookfor              The string to search for in the field
+	 * @param array  $customMunges         Custom munge settings from YAML search specs
+	 * @param bool   $isBasicSearchQuery   Is $lookfor a basic (true) or advanced (false) query?
+	 * @return  array                      Array for use as _applySearchSpecs() values param
 	 */
-	private function _buildMungeValues($lookfor, $custom = null, $basic = true){
-		if ($basic) {
+	private function _buildMungeValues($lookfor, $customMunges = null, $isBasicSearchQuery = true){
+		if ($isBasicSearchQuery) {
 			$cleanedQuery = str_replace(':', ' ', $lookfor);
 
 			// Tokenize Input
@@ -877,46 +882,74 @@ class Solr implements IndexEngine {
 			$orQuery  = implode(' OR ', $tokenized);
 
 			// Build possible inputs for searching:
-			$values              = [];
-			$values['onephrase'] = '"' . str_replace('"', '', implode(' ', $tokenized)) . '"';
-			if (count($tokenized) > 1) {
-				$values['proximal'] = $values['onephrase'] . '~10';
-			} elseif (!array_key_exists(0, $tokenized)) {
-				$values['proximal'] = '';
-			} else {
-				$values['proximal'] = $tokenized[0];
+			$mungedValues              = [];
+			$mungedValues['onephrase'] = '"' . str_replace('"', '', implode(' ', $tokenized)) . '"';
+			$numTokens                 = count($tokenized);
+			if ($numTokens > 1){
+				$mungedValues['proximal'] = $mungedValues['onephrase'] . '~10';
+			}elseif ($numTokens == 1){
+				$mungedValues['proximal'] = $tokenized[0];
+			}else{
+				$mungedValues['proximal'] = '';
 			}
 
-			$values['exact']        = str_replace(':', '\\:', $lookfor);
-			$values['exact_quoted'] = '"' . $lookfor . '"';
-			$values['and']          = $andQuery;
-			$values['or']           = $orQuery;
-			$singleWordRemoval      = '';
-			if (count($tokenized) <= 4) {
-				$singleWordRemoval = '"' . str_replace('"', '', implode(' ', $tokenized)) . '"';
+			$mungedValues['exact']        = str_replace(':', '\\:', $lookfor);
+			$mungedValues['exact_quoted'] = '"' . $lookfor . '"';
+			$mungedValues['and']          = $andQuery;
+			$mungedValues['or']           = $orQuery;
+			//TODO: move single_word_removal to a custom munge
+			if ($numTokens <= 4) {
+				$mungedValues['single_word_removal'] = $mungedValues['onephrase'];
 			} else {
-				for ($i = 0; $i < count($tokenized); $i++) {
-					$newTerm = '"';
-					for ($j = 0; $j < count($tokenized); $j++) {
+				$singleWordRemoval            = [];
+				for ($i = 0;$i < $numTokens;$i++) {
+					$newTerm = [];
+					for ($j = 0;$j < $numTokens;$j++) {
 						if ($j != $i) {
-							$newTerm .= $tokenized[$j] . ' ';
+							$newTerm[] = $tokenized[$j];
 						}
 					}
-					$newTerm = trim($newTerm) . '"';
-					if (strlen($singleWordRemoval) > 0) {
-						$singleWordRemoval .= ' OR ';
+					$singleWordRemoval[] =  '"' . implode(' ', $newTerm) .  '"';
+				}
+				$mungedValues['single_word_removal'] = implode(' OR ', $singleWordRemoval);
+			}
+
+			// Apply custom munge operations if necessary
+			// (This is currently not used with our current searchspecs) Pascal 8/11/2021
+			if (is_array($customMunges)) {
+				foreach ($customMunges as $mungeName => $mungeOps) {
+					$mungedValues[$mungeName] = $lookfor;
+
+					// Skip munging if tokenization is disabled.
+					foreach ($mungeOps as $operation) {
+						switch ($operation[0]) {
+							case 'exact':
+								$mungedValues[$mungeName] = '"' . $mungedValues[$mungeName] . '"';
+								break;
+							case 'append':
+								$mungedValues[$mungeName] .= $operation[1];
+								break;
+							case 'lowercase':
+								$mungedValues[$mungeName] = strtolower($mungedValues[$mungeName]);
+								break;
+							case 'preg_replace':
+								$mungedValues[$mungeName] = preg_replace($operation[1], $operation[2], $mungedValues[$mungeName]);
+								break;
+							case 'uppercase':
+								$mungedValues[$mungeName] = strtoupper($mungedValues[$mungeName]);
+								break;
+						}
 					}
-					$singleWordRemoval .= $newTerm;
 				}
 			}
-			$values['single_word_removal'] = $singleWordRemoval;
+
 		} else {
 			// If we're skipping tokenization, we just want to pass $lookfor through
 			// unmodified (it's probably an advanced search that won't benefit from
 			// tokenization).	We'll just set all possible values to the same thing,
 			// except that we'll try to do the "one phrase" in quotes if possible.
 			$onephrase = strstr($lookfor, '"') ? $lookfor : '"' . $lookfor . '"';
-			$values    = [
+			$mungedValues    = [
 				'exact'               => $onephrase,
 				'onephrase'           => $onephrase,
 				'and'                 => $lookfor,
@@ -928,41 +961,11 @@ class Solr implements IndexEngine {
 		}
 
 		//Create localized call number
-		$noWildCardLookFor = str_replace('*', '', $lookfor);
-		if (strpos($lookfor, '*') !== false) {
-			$noWildCardLookFor = str_replace('*', '', $lookfor);
-		}
-		$values['localized_callnumber'] = '"' . str_replace(['"', ':', '/'], ' ', $noWildCardLookFor) . '"';
+//		$noWildCardLookFor                    = str_replace('*', '', $lookfor);
+//		$mungedValues['localized_callnumber'] = '"' . str_replace(['"', ':', '/'], ' ', $noWildCardLookFor) . '"';
+		$mungedValues['localized_callnumber'] = '"' . str_replace(['*', '"', ':', '/'], ' ', $lookfor) . '"';
 
-		// Apply custom munge operations if necessary
-		if (is_array($custom) && $basic) {
-			foreach ($custom as $mungeName => $mungeOps) {
-				$values[$mungeName] = $lookfor;
-
-				// Skip munging if tokenization is disabled.
-				foreach ($mungeOps as $operation) {
-					switch ($operation[0]) {
-						case 'exact':
-							$values[$mungeName] = '"' . $values[$mungeName] . '"';
-							break;
-						case 'append':
-							$values[$mungeName] .= $operation[1];
-							break;
-						case 'lowercase':
-							$values[$mungeName] = strtolower($values[$mungeName]);
-							break;
-						case 'preg_replace':
-							$values[$mungeName] = preg_replace($operation[1],
-							 $operation[2], $values[$mungeName]);
-							break;
-						case 'uppercase':
-							$values[$mungeName] = strtoupper($values[$mungeName]);
-							break;
-					}
-				}
-			}
-		}
-		return $values;
+		return $mungedValues;
 	}
 
 	/**
@@ -1003,11 +1006,11 @@ class Solr implements IndexEngine {
 		}
 
 		// Munge the user query in a few different ways:
-		$customMunge = $ss['CustomMunge'] ?? null;
-		$values      = $this->_buildMungeValues($lookfor, $customMunge, $tokenize);
+		$customMunge  = $ss['CustomMunge'] ?? null;
+		$mungedValues = $this->_buildMungeValues($lookfor, $customMunge, $tokenize);
 
 		// Apply the $searchSpecs property to the data:
-		$baseQuery = $this->_applySearchSpecs($ss['QueryFields'], $values);
+		$baseQuery = $this->_applySearchSpecs($ss['QueryFields'], $mungedValues);
 
 		// Apply filter query if applicable:
 		if (isset($ss['FilterQuery'])) {
@@ -2098,7 +2101,7 @@ class Solr implements IndexEngine {
 		preg_match_all('/"[^"]*"[~[0-9]+]*|"[^"]*"|[^ ]+/', $input, $words);
 		$words = $words[0];
 
-		$newWords = array();
+		$newWords = [];
 		for ($i = 0; $i < count($words); $i++) {
 			if (in_array($words[$i], ['OR', 'AND', 'NOT'])) {
 				// Join words with AND, OR, NOT
