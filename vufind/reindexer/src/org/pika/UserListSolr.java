@@ -32,7 +32,8 @@ public class UserListSolr {
 	private HashSet<String> relatedRecordIds = new HashSet<>();
 	private String author;
 	private String title;
-	private String contents = ""; //A list of the titles and authors for the list
+//	private String contents = ""; //A list of the titles and authors for the list
+	private HashSet<String>          contents                 = new HashSet<>();
 	private String description;
 	private long numTitles = 0;
 	private long created;
@@ -114,10 +115,7 @@ public class UserListSolr {
 
 	public void addListTitle(String groupedWorkId, Object title, Object author) {
 		relatedRecordIds.add("grouped_work:" + groupedWorkId);
-		if (contents.length() > 0){
-			contents += "\r\n";
-		}
-		contents += title + " - " + author;
+		contents.add(title + " - " + author);
 		numTitles++;
 	}
 
