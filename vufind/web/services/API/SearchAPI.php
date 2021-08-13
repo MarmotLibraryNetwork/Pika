@@ -153,6 +153,7 @@ class SearchAPI extends AJAXHandler {
 				}
 			}
 
+			// When partialIndexMonitoring is paused, skip last index time and skip last extract times,
 			if (!$isPartialIndexPaused){
 				// Partial Index //
 				$lastPartialIndexVariable = new Variable('lastPartialReindexFinish');
@@ -179,49 +180,49 @@ class SearchAPI extends AJAXHandler {
 					$status[] = self::STATUS_WARN;
 					$notes[]  = 'Partial index has never been run';
 				}
-			}
 
-			// Verify Actual Extraction of ILS records is happening.
-			// That ils MARC records are in fact being updated.
-			// This is for the case when all of the processes are running but new data isn't actually being delivered
-			// so nothing in fact is being updated.
-			require_once ROOT_DIR . '/sys/Extracting/IlsExtractInfo.php';
-			$ilsExtractInfo = new IlsExtractInfo();
-			$ilsExtractInfo->orderBy('lastExtracted DESC');
-			$ilsExtractInfo->limit(1);
-			// SELECT * FROM pika.ils_extract_info ORDER BY lastExtracted DESC LIMIT 1;
-			//TODO: handling for multiple ILSes
-			if ($ilsExtractInfo->find(true)){
-				// Fetch the last updated MARC Record
-				$lastIlsRecordExtractTime = $ilsExtractInfo->lastExtracted;
-				if ($lastIlsRecordExtractTime < ($currentTime - self::LAST_EXTRACT_INTERVAL_WARN)){
-					$status[] = ($lastIlsRecordExtractTime < ($currentTime - self::LAST_EXTRACT_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-					$notes[]  = 'The last ILS record was extracted ' . round(($currentTime - ($lastIlsRecordExtractTime)) / 60, 2) . ' minutes ago';
-				}
-			}
-
-			// Sierra Extract //
-			global $configArray;
-			if ($configArray['Catalog']['ils'] == 'Sierra'){
-				$lastSierraExtractVariable = new Variable('last_sierra_extract_time');
-				if (!empty($lastSierraExtractVariable->N)){
-					//Check to see if the last sierra extract finished more than SIERRA_EXTRACT_INTERVAL_WARN seconds ago
-					$lastSierraExtractTime = $lastSierraExtractVariable->value;
-					if ($lastSierraExtractTime < ($currentTime - self::SIERRA_EXTRACT_INTERVAL_WARN)){
-						$status[] = ($lastSierraExtractVariable->value < ($currentTime - self::SIERRA_EXTRACT_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-						$notes[]  = 'Sierra Last Extract time ' . date('m-d-Y H:i:s', $lastSierraExtractTime) . ' - ' . round(($currentTime - ($lastSierraExtractTime)) / 60, 2) . ' minutes ago';
+				// Verify Actual Extraction of ILS records is happening.
+				// That ils MARC records are in fact being updated.
+				// This is for the case when all of the processes are running but new data isn't actually being delivered
+				// so nothing in fact is being updated.
+				require_once ROOT_DIR . '/sys/Extracting/IlsExtractInfo.php';
+				$ilsExtractInfo = new IlsExtractInfo();
+				$ilsExtractInfo->orderBy('lastExtracted DESC');
+				$ilsExtractInfo->limit(1);
+				// SELECT * FROM pika.ils_extract_info ORDER BY lastExtracted DESC LIMIT 1;
+				//TODO: handling for multiple ILSes
+				if ($ilsExtractInfo->find(true)){
+					// Fetch the last updated MARC Record
+					$lastIlsRecordExtractTime = $ilsExtractInfo->lastExtracted;
+					if ($lastIlsRecordExtractTime < ($currentTime - self::LAST_EXTRACT_INTERVAL_WARN)){
+						$status[] = ($lastIlsRecordExtractTime < ($currentTime - self::LAST_EXTRACT_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
+						$notes[]  = 'The last ILS record was extracted ' . round(($currentTime - ($lastIlsRecordExtractTime)) / 60, 2) . ' minutes ago';
 					}
-				}else{
-					$status[] = self::STATUS_WARN;
-					$notes[]  = 'Sierra Extract has never been run';
 				}
 
-				//Sierra Export Remaining items
-				$remainingSierraRecords = new Variable('remaining_sierra_records');
-				if (!empty($remainingSierraRecords->N)){
-					if ($remainingSierraRecords->value >= self::SIERRA_MAX_REMAINING_ITEMS_WARN){
-						$notes[]  = "{$remainingSierraRecords->value} changed items remain to be processed from Sierra";
-						$status[] = $remainingSierraRecords->value >= self::SIERRA_MAX_REMAINING_ITEMS_CRITICAL ? self::STATUS_CRITICAL : self::STATUS_WARN;
+				// Sierra Extract //
+				global $configArray;
+				if ($configArray['Catalog']['ils'] == 'Sierra'){
+					$lastSierraExtractVariable = new Variable('last_sierra_extract_time');
+					if (!empty($lastSierraExtractVariable->N)){
+						//Check to see if the last sierra extract finished more than SIERRA_EXTRACT_INTERVAL_WARN seconds ago
+						$lastSierraExtractTime = $lastSierraExtractVariable->value;
+						if ($lastSierraExtractTime < ($currentTime - self::SIERRA_EXTRACT_INTERVAL_WARN)){
+							$status[] = ($lastSierraExtractVariable->value < ($currentTime - self::SIERRA_EXTRACT_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
+							$notes[]  = 'Sierra Last Extract time ' . date('m-d-Y H:i:s', $lastSierraExtractTime) . ' - ' . round(($currentTime - ($lastSierraExtractTime)) / 60, 2) . ' minutes ago';
+						}
+					}else{
+						$status[] = self::STATUS_WARN;
+						$notes[]  = 'Sierra Extract has never been run';
+					}
+
+					//Sierra Export Remaining items
+					$remainingSierraRecords = new Variable('remaining_sierra_records');
+					if (!empty($remainingSierraRecords->N)){
+						if ($remainingSierraRecords->value >= self::SIERRA_MAX_REMAINING_ITEMS_WARN){
+							$notes[]  = "{$remainingSierraRecords->value} changed items remain to be processed from Sierra";
+							$status[] = $remainingSierraRecords->value >= self::SIERRA_MAX_REMAINING_ITEMS_CRITICAL ? self::STATUS_CRITICAL : self::STATUS_WARN;
+						}
 					}
 				}
 			}
@@ -289,7 +290,7 @@ class SearchAPI extends AJAXHandler {
 				}
 			}
 
-			if (!empty($configArray['OverDrive']['url'])){
+			if (!empty($configArray['OverDrive']['url']) && !$isPartialIndexPaused){
 				// Checking that the url is set as a proxy for Overdrive being enabled
 
 				// OverDrive Extract //
