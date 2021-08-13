@@ -1092,51 +1092,10 @@ abstract class MarcRecordProcessor {
 				}
 			}
 		}
-		if (fullReindex && itemInfo.geteContentUrl() == null) {
-			logger.warn("Item for " + identifier + "  had no eContent URL set");
-		}
+//		if (fullReindex && itemInfo.geteContentUrl() == null) {
+//			logger.warn("Item for " + identifier + " had no eContent URL set");
+//		}
 		//will turn back on after initial problem records have been cleaned up. pascal 8/30/2019
-	}
-
-	/**
-	 * Get the title (245abnp) from a record, without non-filing chars as specified
-	 * in 245 2nd indicator, and lower cased.
-	 *
-	 * @return 245a and 245b and 245n and 245p values concatenated, with trailing punctuation removed, and
-	 *         with non-filing characters omitted. Null returned if no title can
-	 *         be found.
-	 */
-	protected String getSortableTitle(Record record) {
-		DataField titleField = record.getDataField("245");
-		if (titleField == null || titleField.getSubfield('a') == null)
-			return "";
-
-		// Skip non-filing chars, if possible.
-		int nonFilingInt = getInd2AsInt(titleField);
-		String title    = MarcUtil.getFirstFieldVal(record, "245a");
-		if (title == null){
-			return null;
-		} else if (title.length() > nonFilingInt) {
-			title = title.substring(nonFilingInt);
-		}
-
-		if (title.length() == 0) {
-			return null;
-		}
-
-		String subTitle = MarcUtil.getFirstFieldVal(record, "245bnp");
-		if (subTitle != null && title.toLowerCase().endsWith(subTitle.toLowerCase())) {
-			title = title.substring(0, title.lastIndexOf(subTitle));
-			title = title.trim().replaceAll(":+$", ""); // remove ending white space; then remove any ending colon characters.
-		}
-		title += " "+ subTitle;
-		title = title.toLowerCase();
-		String title_alt  = MarcUtil.getFirstFieldVal(record, "245abnp"); //old style TOOD: temp
-		if (title_alt.length() > nonFilingInt) {
-			title_alt = title_alt.substring(nonFilingInt);
-		}
-
-		return title;
 	}
 
 	/**
@@ -1144,11 +1103,11 @@ abstract class MarcRecordProcessor {
 	 *          a DataField
 	 * @return the integer (0-9, 0 if blank or other) in the 2nd indicator
 	 */
-	private int getInd2AsInt(DataField df) {
+	int getInd2AsInt(DataField df) {
 		char ind2char = df.getIndicator2();
 		int result = 0;
 		if (Character.isDigit(ind2char))
-			result = Integer.valueOf(String.valueOf(ind2char));
+			result = Integer.parseInt(String.valueOf(ind2char));
 		return result;
 	}
 }
