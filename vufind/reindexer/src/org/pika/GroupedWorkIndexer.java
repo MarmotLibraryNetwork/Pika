@@ -115,7 +115,8 @@ public class GroupedWorkIndexer {
 
 		//Initialize the updateServer and solr server
 		GroupedReindexMain.addNoteToReindexLog("Setting up update server and solr server");
-		final String baseSolrUrl = "http://localhost:" + solrPort + "/solr/grouped";
+//		final String baseSolrUrl = "http://localhost:" + solrPort + "/solr/grouped";
+		final String baseSolrUrl = "http://titan.marmot.org:" + solrPort + "/solr/grouped";
 		if (fullReindex){
 			Boolean isRunning = systemVariables.getBooleanValuedVariable("systemVariables");
 			if (isRunning == null){ // Not found
@@ -158,6 +159,7 @@ public class GroupedWorkIndexer {
 			updateFullReindexRunning(true);
 		}else{
 			//TODO: Bypass this if called from an export process?
+			//TODO: Bypass when process user lists only
 
 			//Check to make sure that at least a couple of minutes have elapsed since the last index
 			//Periodically in the middle of the night we get indexes every minute or multiple times a minute
@@ -166,10 +168,6 @@ public class GroupedWorkIndexer {
 			long minIndexingInterval = 2 * 60;
 			if (elapsedTime < minIndexingInterval && !singleWorkIndex) {
 				try {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Pausing between indexes, last index ran " + Math.ceil(elapsedTime / 60) + " minutes ago");
-						logger.debug("Pausing for " + (minIndexingInterval - elapsedTime) + " seconds");
-					}
 					GroupedReindexMain.addNoteToReindexLog("Pausing between indexes, last index ran " + Math.ceil(elapsedTime / 60) + " minutes ago");
 					GroupedReindexMain.addNoteToReindexLog("Pausing for " + (minIndexingInterval - elapsedTime) + " seconds");
 					Thread.sleep((minIndexingInterval - elapsedTime) * 1000);
@@ -735,7 +733,7 @@ public class GroupedWorkIndexer {
 	}
 
 
-	void finishIndexing(boolean processingIndividualWork){
+	void finishIndexing(boolean processingIndividualWork, boolean processingUserListsOnly){
 		GroupedReindexMain.addNoteToReindexLog("Finishing indexing");
 		if (fullReindex) {
 			try {
@@ -792,13 +790,13 @@ public class GroupedWorkIndexer {
 			}
 		}
 
-		writeWorksWithInvalidLiteraryForms();
-		if (!processingIndividualWork) {
+		if (!processingIndividualWork && !processingUserListsOnly) {
 			updateLastReindexTime();
 		}
 
 		//Write validation information
 		if (fullReindex) {
+			writeWorksWithInvalidLiteraryForms();
 			writeValidationInformation();
 			writeStats();
 			updateFullReindexRunning(false);
@@ -1609,10 +1607,13 @@ public class GroupedWorkIndexer {
 			return null;
 		}
 	}
-
 	long processPublicUserLists() {
+		return processPublicUserLists(false);
+	}
+
+	long processPublicUserLists(boolean userListsOnly) {
 		UserListProcessor listProcessor = new UserListProcessor(this, pikaConn, logger, fullReindex, availableAtLocationBoostValue, ownedByLocationBoostValue);
-		return listProcessor.processPublicUserLists(lastReindexTime, updateServer, solrServer);
+		return listProcessor.processPublicUserLists(lastReindexTime, updateServer, solrServer, userListsOnly);
 	}
 
 	public boolean isGiveOnOrderItemsTheirOwnShelfLocation() {

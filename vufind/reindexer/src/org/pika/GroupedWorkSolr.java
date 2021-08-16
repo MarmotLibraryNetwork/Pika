@@ -562,6 +562,7 @@ public class GroupedWorkSolr implements Cloneable {
 			SolrInputField field = doc.getField("local_days_since_added_" + scope.getScopeName());
 			if (field != null){
 				Integer daysSinceAdded = (Integer)field.getFirstValue();
+				//TODO: only populate if there are values to add
 				doc.addField("local_time_since_added_" + scope.getScopeName(), Util.getTimeSinceAdded(daysSinceAdded, scope.isIncludeOnOrderRecordsInDateAddedFacetValues()));
 			}
 		}
