@@ -92,6 +92,7 @@ class SelfReg extends Action {
 		$numericOnlyPins      = $configArray['Catalog']['numericOnlyPins'];
 		$alphaNumericOnlyPins = $configArray['Catalog']['alphaNumericOnlyPins'];
 		$pinMinimumLength     = $configArray['Catalog']['pinMinimumLength'];
+		$pinMaximumLength     = $configArray['Catalog']['pinMaximumLength'];
 		$selfRegStateRegex    = $configArray['Catalog']['selfRegStateRegex'];
 		$selfRegStateMessage  = $configArray['Catalog']['selfRegStateMessage'];
 		$selfRegZipRegex      = $configArray['Catalog']['selfRegZipRegex'];
@@ -99,6 +100,7 @@ class SelfReg extends Action {
 		$interface->assign('numericOnlyPins', $numericOnlyPins);
 		$interface->assign('alphaNumericOnlyPins', $alphaNumericOnlyPins);
 		$interface->assign('pinMinimumLength', $pinMinimumLength);
+		$interface->assign('pinMaximumLength', $pinMaximumLength);
 		$interface->assign('selfRegStateRegex', $selfRegStateRegex);
 		$interface->assign('selfRegStateMessage', $selfRegStateMessage);
 		$interface->assign('selfRegZipRegex', $selfRegZipRegex);
