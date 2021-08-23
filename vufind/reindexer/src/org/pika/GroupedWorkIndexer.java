@@ -115,8 +115,7 @@ public class GroupedWorkIndexer {
 
 		//Initialize the updateServer and solr server
 		GroupedReindexMain.addNoteToReindexLog("Setting up update server and solr server");
-//		final String baseSolrUrl = "http://localhost:" + solrPort + "/solr/grouped";
-		final String baseSolrUrl = "http://titan.marmot.org:" + solrPort + "/solr/grouped";
+		final String baseSolrUrl = "http://localhost:" + solrPort + "/solr/grouped";
 		if (fullReindex){
 			Boolean isRunning = systemVariables.getBooleanValuedVariable("systemVariables");
 			if (isRunning == null){ // Not found

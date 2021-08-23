@@ -197,31 +197,49 @@ public class UserListProcessor {
 					String groupedWorkId = allTitlesRS.getString("groupedWorkPermanentId");
 					if (!allTitlesRS.wasNull() && groupedWorkId.length() > 0 && !groupedWorkId.contains(":")) {
 						// Skip archive object Ids
-						groupedWorkIds.append(groupedWorkId).append(',');
+//						groupedWorkIds.append(groupedWorkId).append(',');
+
+						SolrQuery query = new SolrQuery();
+						query.setQuery("id:" + groupedWorkId + " AND recordtype:grouped_work");
+						query.setFields("title", "author");
+
+						try {
+							QueryResponse    response = solrServer.query(query);
+							SolrDocumentList results  = response.getResults();
+							//Should only ever get one response
+							if (results.size() >= 1) {
+								SolrDocument curWork = results.get(0);
+								userListSolr.addListTitle(groupedWorkId, curWork.getFieldValue("title"), curWork.getFieldValue("author"));
+							}
+						} catch (Exception e) {
+							logger.error("Error loading information about title " + groupedWorkId);
+						}
+
+
 					}
 					//TODO: Handle Archive Objects from a User List
 				}
 			}
-			if (groupedWorkIds.length() > 0) {
-				SolrQuery query = new SolrQuery();
-				query.setRequestHandler("/get"); // The slash is needed to set the url path rather than the obsolete qt parameter
-				query.setParam("ids", groupedWorkIds.toString());
-//				query.setQuery("recordtype:grouped_work");
-//				query.setFilterQueries("recordtype:grouped_work");
-				query.setFields("id", "title", "author");
-
-				String groupedWorkId = "";
-				try {
-					QueryResponse    response = solrServer.query(query);
-					SolrDocumentList results  = response.getResults();
-					for (SolrDocument curWork : results) {
-						groupedWorkId = curWork.getFieldValue("id").toString();
-						userListSolr.addListTitle(groupedWorkId, curWork.getFieldValue("title"), curWork.getFieldValue("author"));
-					}
-				} catch (Exception e) {
-					logger.error("Error loading information about title " + groupedWorkId);
-				}
-			}
+//			if (groupedWorkIds.length() > 0) {
+//				SolrQuery query = new SolrQuery();
+//				query.setRequestHandler("/get"); // The slash is needed to set the url path rather than the obsolete qt parameter
+//				query.setParam("ids", groupedWorkIds.toString());
+////				query.setQuery("recordtype:grouped_work");
+////				query.setFilterQueries("recordtype:grouped_work");
+//				query.setFields("id", "title", "author");
+//
+//				String groupedWorkId = "";
+//				try {
+//					QueryResponse    response = solrServer.query(query);
+//					SolrDocumentList results  = response.getResults();
+//					for (SolrDocument curWork : results) {
+//						groupedWorkId = curWork.getFieldValue("id").toString();
+//						userListSolr.addListTitle(groupedWorkId, curWork.getFieldValue("title"), curWork.getFieldValue("author"));
+//					}
+//				} catch (Exception e) {
+//					logger.error("Error loading information about title " + groupedWorkId, e);
+//				}
+//			}
 
 			// Index in the solr catalog
 			updateServer.add(userListSolr.getSolrDocument(availableAtLocationBoostValue, ownedByLocationBoostValue));
