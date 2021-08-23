@@ -1694,7 +1694,7 @@ class Solr implements IndexEngine {
 				$blacklistRecords .= "\n" . $searchLibrary->recordsToBlackList;
 		}
 		if (!empty($blacklistRecords)){
-			$recordsToBlacklist = preg_split('/\s|\r\n|\r|\n/s', $blacklistRecords);
+			$recordsToBlacklist = preg_split('/\s|\r\n|\r|\n/', $blacklistRecords, -1, PREG_SPLIT_NO_EMPTY);
 			$blacklist          = '-id:(' . implode(' OR ', $recordsToBlacklist) . ')';
 			$filter[]           = $blacklist;
 		}
