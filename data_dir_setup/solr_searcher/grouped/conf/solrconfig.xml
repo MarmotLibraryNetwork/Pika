@@ -756,8 +756,7 @@
 		<!--
 		https://lucene.apache.org/solr/guide/7_7/query-settings-in-solrconfig.html
 
-		Note: 7.7 example did not set this at all.
-		Updated to 4 Pascal 1/13/2021
+		Note: 7.7 example did not set this at all. Pascal 1/13/2021
 		-->
 
 	</query>

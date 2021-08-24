@@ -78,7 +78,19 @@
 				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1"  splitOnNumerics="0" stemEnglishPossessive="1"/>
 				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
+				<!--
+				This filter discards, or stops analysis of, tokens that are on the given stop words list.
+				A standard stop words list is included in the Solr conf directory, named stopwords.txt,
+				which is appropriate for typical English language text.
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#stop-filter
+				-->
 				<filter class="solr.LowerCaseFilterFactory"/>
+				<!--
+				Converts any uppercase letters in a token to the equivalent lowercase token. All other characters are left unchanged.
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#lower-case-filter
+				-->
 				<filter class="solr.SnowballPorterFilterFactory" language="English" protected="protwords.txt"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 				<filter class="solr.ICUFoldingFilterFactory"/>
@@ -91,7 +103,19 @@
 				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnCaseChange="1" splitOnNumerics="0" stemEnglishPossessive="1"/>
 				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
+				<!--
+				This filter discards, or stops analysis of, tokens that are on the given stop words list.
+				A standard stop words list is included in the Solr conf directory, named stopwords.txt,
+				which is appropriate for typical English language text.
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#stop-filter
+				-->
 				<filter class="solr.LowerCaseFilterFactory"/>
+				<!--
+				Converts any uppercase letters in a token to the equivalent lowercase token. All other characters are left unchanged.
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#lower-case-filter
+				-->
 				<filter class="solr.SnowballPorterFilterFactory" language="English" protected="protwords.txt"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 				<filter class="solr.ICUFoldingFilterFactory"/>
@@ -101,10 +125,59 @@
 		<fieldType name="textProper" class="solr.TextField" positionIncrementGap="100">
 			<analyzer type="index">
 				<tokenizer class="solr.ICUTokenizerFactory"/>
+				<!--
+				This tokenizer processes multilingual text and tokenizes it appropriately based on its script attribute.
+				Requires additional jar files
+
+				https://solr.apache.org/guide/8_8/tokenizers.html#icu-tokenizer
+				-->
 				<filter class="solr.ICUFoldingFilterFactory"/>
+				<!--
+				This filter is a custom Unicode normalization form that applies the foldings specified in Unicode TR #30: Character Foldings
+				in addition to the NFKC_Casefold normalization form as described in ICU Normalizer 2 Filter.
+				This filter is a better substitute for the combined behavior of the ASCII Folding Filter, Lower Case Filter,
+				and ICU Normalizer 2 Filter.
+
+				To use this filter, you must add additional .jars to Solr’s classpath
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
+				-->
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnNumerics="0" stemEnglishPossessive="1"/>
+				<!--
+				This filter splits tokens at word delimiters.
+				TODO: If you use this filter during indexing, you must follow it with a Flatten Graph Filter to squash tokens on top of one another like the Word Delimiter Filter, because the indexer can’t directly consume a graph. To get fully correct positional queries when tokens are split, you should instead use this filter at query time.
+
+				Note: although this filter produces correct token graphs, it cannot consume an input token graph correctly.
+
+				The rules for determining delimiters are determined as follows:
+
+					A change in case within a word: "CamelCase" -> "Camel", "Case". This can be disabled by setting splitOnCaseChange="0".
+
+					A transition from alpha to numeric characters or vice versa: "Gonzo5000" -> "Gonzo", "5000" "4500XL" -> "4500", "XL". This can be disabled by setting splitOnNumerics="0".
+
+					Non-alphanumeric characters (discarded): "hot-spot" -> "hot", "spot"
+
+					A trailing "'s" is removed: "O’Reilly’s" -> "O", "Reilly"
+
+					Any leading or trailing delimiters are discarded: "-hot-spot-" -> "hot", "spot" (original examples uses double dashes not allowed in xml comments)
+
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#word-delimiter-graph-filter
+				-->
 				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
+				<!--
+				This filter discards, or stops analysis of, tokens that are on the given stop words list.
+				A standard stop words list is included in the Solr conf directory, named stopwords.txt,
+				which is appropriate for typical English language text.
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#stop-filter
+				-->
 				<filter class="solr.LowerCaseFilterFactory"/>
+				<!--
+				Converts any uppercase letters in a token to the equivalent lowercase token. All other characters are left unchanged.
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#lower-case-filter
+				-->
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 			<analyzer type="query">
@@ -112,7 +185,19 @@
 				<filter class="solr.ICUFoldingFilterFactory"/>
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnNumerics="0" stemEnglishPossessive="1"/>
 				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
+				<!--
+				This filter discards, or stops analysis of, tokens that are on the given stop words list.
+				A standard stop words list is included in the Solr conf directory, named stopwords.txt,
+				which is appropriate for typical English language text.
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#stop-filter
+				-->
 				<filter class="solr.LowerCaseFilterFactory"/>
+				<!--
+				Converts any uppercase letters in a token to the equivalent lowercase token. All other characters are left unchanged.
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#lower-case-filter
+				-->
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 		</fieldType>
@@ -123,7 +208,19 @@
 				<filter class="solr.ICUFoldingFilterFactory"/>
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="0" catenateNumbers="0" catenateAll="0"/>
 				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
+				<!--
+				This filter discards, or stops analysis of, tokens that are on the given stop words list.
+				A standard stop words list is included in the Solr conf directory, named stopwords.txt,
+				which is appropriate for typical English language text.
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#stop-filter
+				-->
 				<filter class="solr.LowerCaseFilterFactory"/>
+				<!--
+				Converts any uppercase letters in a token to the equivalent lowercase token. All other characters are left unchanged.
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#lower-case-filter
+				-->
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 		</fieldType>
@@ -132,14 +229,38 @@
 			<analyzer type="index">
 				<tokenizer class="solr.StandardTokenizerFactory"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
+				<!--
+				Converts any uppercase letters in a token to the equivalent lowercase token. All other characters are left unchanged.
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#lower-case-filter
+				-->
 				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
+				<!--
+				This filter discards, or stops analysis of, tokens that are on the given stop words list.
+				A standard stop words list is included in the Solr conf directory, named stopwords.txt,
+				which is appropriate for typical English language text.
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#stop-filter
+				-->
 				<filter class="solr.ShingleFilterFactory" maxShingleSize="2" outputUnigrams="false"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 			<analyzer type="query">
 				<tokenizer class="solr.StandardTokenizerFactory"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
+				<!--
+				Converts any uppercase letters in a token to the equivalent lowercase token. All other characters are left unchanged.
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#lower-case-filter
+				-->
 				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
+				<!--
+				This filter discards, or stops analysis of, tokens that are on the given stop words list.
+				A standard stop words list is included in the Solr conf directory, named stopwords.txt,
+				which is appropriate for typical English language text.
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#stop-filter
+				-->
 				<filter class="solr.ShingleFilterFactory" maxShingleSize="2" outputUnigrams="false"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
