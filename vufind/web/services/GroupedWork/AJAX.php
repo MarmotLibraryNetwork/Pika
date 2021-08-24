@@ -152,20 +152,20 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$id           = $_REQUEST['id'];
 		$recordDriver = new GroupedWorkDriver($id);
 
-		$enrichmentResult = array();
+		$enrichmentResult = [];
 		$enrichmentData   = $recordDriver->loadEnrichment();
 		$memoryWatcher->logMemory('Loaded Enrichment information from Novelist');
 
 		//Process series data
-		$titles = array();
+		$titles = [];
 		if (empty($enrichmentData['novelist']->seriesTitles)){
-			$enrichmentResult['seriesInfo'] = array('titles' => $titles, 'currentIndex' => 0);
+			$enrichmentResult['seriesInfo'] = ['titles' => $titles, 'currentIndex' => 0];
 		}else{
 			foreach ($enrichmentData['novelist']->seriesTitles as $key => $record){
 				$titles[] = $this->getScrollerTitle($record, $key, 'Series');
 			}
 
-			$seriesInfo                     = array('titles' => $titles, 'currentIndex' => $enrichmentData['novelist']->seriesDefaultIndex);
+			$seriesInfo                     = ['titles' => $titles, 'currentIndex' => $enrichmentData['novelist']->seriesDefaultIndex];
 			$enrichmentResult['seriesInfo'] = $seriesInfo;
 		}
 		$memoryWatcher->logMemory('Loaded Series information');
@@ -212,12 +212,12 @@ class GroupedWork_AJAX extends AJAXHandler {
 		// Send the similar items to the template; if there is only one, we need
 		// to force it to be an array or things will not display correctly.
 		if (!empty($similar['response']['docs'])){
-			$similarTitles = array();
+			$similarTitles = [];
 			foreach ($similar['response']['docs'] as $key => $similarTitle){
 				$similarTitleDriver = new GroupedWorkDriver($similarTitle);
 				$similarTitles[]    = $similarTitleDriver->getScrollerTitle($key, 'MoreLikeThis');
 			}
-			$similarTitlesInfo                 = array('titles' => $similarTitles, 'currentIndex' => 0);
+			$similarTitlesInfo                 = ['titles' => $similarTitles, 'currentIndex' => 0];
 			$enrichmentResult['similarTitles'] = $similarTitlesInfo;
 		}
 		$memoryWatcher->logMemory('Loaded More Like This scroller data');
@@ -1105,7 +1105,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$largeCoverUrl = $recordDriver->getBookcoverUrl('large', true) . '&reload';
 		$ret           = file_get_contents($largeCoverUrl);
 
-		return array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.');
+		return ['success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'];
 	}
 
 	function reloadIslandora(){

@@ -43,7 +43,7 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashSet<String>          alternateIds             = new HashSet<>();
 	private String                   authAuthor;
 	private HashMap<String, Long>    primaryAuthors           = new HashMap<>();
-	private String                   authorLetter;
+//	private String                   authorLetter;
 	private HashSet<String>          authorAdditional         = new HashSet<>();
 	private String                   authorDisplay;
 	private HashSet<String>          author2                  = new HashSet<>();
@@ -75,13 +75,14 @@ public class GroupedWorkSolr implements Cloneable {
 	private boolean                  primaryIsbnIsBook;
 	private Long                     primaryIsbnUsageCount;
 	private HashMap<String, Long>    isbns                    = new HashMap<>();
+	private HashSet<String>          canceledIsbns            = new HashSet<>();
 	private HashSet<String>          issns                    = new HashSet<>();
 	private HashSet<String>          keywords                 = new HashSet<>();
 	private HashSet<String>          languages                = new HashSet<>();
 	private HashSet<String>          translations             = new HashSet<>();
 	private Long                     languageBoost            = 1L;
 	private Long                     languageBoostSpanish     = 1L;
-	private HashSet<String>          lccns                    = new HashSet<>();
+//	private HashSet<String>          lccns                    = new HashSet<>();
 	private HashSet<String>          lcSubjects               = new HashSet<>();
 	private int                      lexileScore              = -1;
 	private String                   lexileCode               = "";
@@ -104,8 +105,8 @@ public class GroupedWorkSolr implements Cloneable {
 	private TreeSet<String>          targetAudience           = new TreeSet<>();
 	private String                   title;
 	private HashSet<String>          titleAlt                 = new HashSet<>();
-	private HashSet<String>          titleOld                 = new HashSet<>();
-	private HashSet<String>          titleNew                 = new HashSet<>();
+//	private HashSet<String>          titleOld                 = new HashSet<>();
+//	private HashSet<String>          titleNew                 = new HashSet<>();
 	private String                   titleSort;
 	private String                   titleFormat              = "";
 	private HashSet<String>          topics                   = new HashSet<>();
@@ -169,6 +170,8 @@ public class GroupedWorkSolr implements Cloneable {
 		// noinspection unchecked
 		clonedWork.isbns = (HashMap<String, Long>) isbns.clone();
 		// noinspection unchecked
+		clonedWork.canceledIsbns = (HashSet<String>) canceledIsbns.clone();
+		// noinspection unchecked
 		clonedWork.issns = (HashSet<String>) issns.clone();
 		// noinspection unchecked
 		clonedWork.keywords = (HashSet<String>) keywords.clone();
@@ -177,7 +180,7 @@ public class GroupedWorkSolr implements Cloneable {
 		// noinspection unchecked
 		clonedWork.translations = (HashSet<String>) translations.clone();
 		// noinspection unchecked
-		clonedWork.lccns = (HashSet<String>) lccns.clone();
+//		clonedWork.lccns = (HashSet<String>) lccns.clone();
 		// noinspection unchecked
 		clonedWork.lcSubjects = (HashSet<String>) lcSubjects.clone();
 		// noinspection unchecked
@@ -207,9 +210,9 @@ public class GroupedWorkSolr implements Cloneable {
 		// noinspection unchecked
 		clonedWork.titleAlt = (HashSet<String>) titleAlt.clone();
 		// noinspection unchecked
-		clonedWork.titleOld = (HashSet<String>) titleOld.clone();
+//		clonedWork.titleOld = (HashSet<String>) titleOld.clone();
 		// noinspection unchecked
-		clonedWork.titleNew = (HashSet<String>) titleNew.clone();
+//		clonedWork.titleNew = (HashSet<String>) titleNew.clone();
 		// noinspection unchecked
 		clonedWork.topics = (HashSet<String>) topics.clone();
 		// noinspection unchecked
@@ -244,13 +247,13 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("title_full", fullTitles);
 		doc.addField("title_sort", titleSort);
 		doc.addField("title_alt", titleAlt);
-		doc.addField("title_old", titleOld);
-		doc.addField("title_new", titleNew);
+//		doc.addField("title_old", titleOld);
+//		doc.addField("title_new", titleNew);
 
 		//author and variations
 		doc.addField("auth_author", authAuthor);
 		doc.addField("author", getPrimaryAuthor());
-		doc.addField("author-letter", authorLetter);
+//		doc.addField("author-letter", authorLetter);
 		doc.addField("auth_author2", authAuthor2);
 		doc.addField("author2", author2);
 		doc.addField("author2-role", author2Role);
@@ -366,7 +369,7 @@ public class GroupedWorkSolr implements Cloneable {
 		keywords.addAll(oclcs);
 		keywords.addAll(barcodes);
 		keywords.addAll(issns);
-		keywords.addAll(lccns);
+//		keywords.addAll(lccns);
 		keywords.addAll(upcs.keySet());
 		HashSet<String> callNumbers = getAllCallNumbers();
 		keywords.addAll(callNumbers);
@@ -375,11 +378,12 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("table_of_contents", contents);
 		//broad search terms
 		//identifiers
-		doc.addField("lccn", lccns);
+//		doc.addField("lccn", lccns);
 		doc.addField("oclc", oclcs);
 		//Get the primary isbn
 		doc.addField("primary_isbn", primaryIsbn);
 		doc.addField("isbn", isbns.keySet());
+		doc.addField("canceled_isbn", canceledIsbns);
 		doc.addField("issn", issns);
 		doc.addField("primary_upc", getPrimaryUpc());
 		doc.addField("upc", upcs.keySet());
@@ -558,6 +562,7 @@ public class GroupedWorkSolr implements Cloneable {
 			SolrInputField field = doc.getField("local_days_since_added_" + scope.getScopeName());
 			if (field != null){
 				Integer daysSinceAdded = (Integer)field.getFirstValue();
+				//TODO: only populate if there are values to add
 				doc.addField("local_time_since_added_" + scope.getScopeName(), Util.getTimeSinceAdded(daysSinceAdded, scope.isIncludeOnOrderRecordsInDateAddedFacetValues()));
 			}
 		}
@@ -1095,13 +1100,13 @@ public class GroupedWorkSolr implements Cloneable {
 		this.titleAlt.addAll(altTitles);
 	}
 
-	void addOldTitles(Set<String> oldTitles) {
-		this.titleOld.addAll(oldTitles);
-	}
+//	void addOldTitles(Set<String> oldTitles) {
+//		this.titleOld.addAll(oldTitles);
+//	}
 
-	void addNewTitles(Set<String> newTitles){
-		this.titleNew.addAll(newTitles);
-	}
+//	void addNewTitles(Set<String> newTitles){
+//		this.titleNew.addAll(newTitles);
+//	}
 
 	public void setAuthor(String author) {
 		if (primaryAuthors.containsKey(author)){
@@ -1182,6 +1187,17 @@ public class GroupedWorkSolr implements Cloneable {
 		this.issns.addAll(issns);
 	}
 
+	void addCanceledIsbns(Set<String> isbns){
+		for (String isbn:isbns){
+			addCanceledIsbn(isbn);
+		}
+	}
+
+	void addCanceledIsbn(String isbnStr) {
+		ISBN isbn = new ISBN(isbnStr);
+		canceledIsbns.add(isbn.toString());
+	}
+
 	void addUpc(String upc) {
 		if (upcs.containsKey(upc)){
 			upcs.put(upc, upcs.get(upc) + 1);
@@ -1198,9 +1214,9 @@ public class GroupedWorkSolr implements Cloneable {
 		this.groupingCategory = groupingCategory;
 	}
 
-	void setAuthorLetter(String authorLetter) {
-		this.authorLetter = authorLetter;
-	}
+//	void setAuthorLetter(String authorLetter) {
+//		this.authorLetter = authorLetter;
+//	}
 
 	void addAuthAuthor2(Set<String> fieldList) {
 		this.authAuthor2.addAll(fieldList);
@@ -1253,80 +1269,80 @@ public class GroupedWorkSolr implements Cloneable {
 		this.subjects.addAll(Util.trimTrailingPunctuation(fieldList));
 	}
 
-	void addSeries(Set<String> fieldList) {
-		for(String curField : fieldList){
-			this.addSeries(curField);
-		}
-	}
-
 	void clearSeriesData(){
 		this.series.clear();
 		this.seriesWithVolume.clear();
 	}
 
-	void addSeries(String series) {
-		addSeriesInfoToField(series, this.series);
-	}
-	void addSeriesWithVolume(Set<String> fieldList){
-		for(String curField : fieldList){
-			this.addSeriesWithVolume(curField);
-		}
-	}
+	/**
+	 * This will normalize/clean any series statement as well as series volume statement and
+	 * populate both the series & series_with_volumes Solr fields
+	 *
+	 * @param series Series Statement
+	 * @param volume Volume within the series or empty if there is none
+	 */
+	void addSeries(String series, String volume){
+		if (series != null && !series.isEmpty()) {
+			volume = (volume == null || volume.isEmpty()) ? "" : getNormalizedSeriesVolume(volume);
+			String seriesInfo                = getNormalizedSeries(series, true);
+			String seriesInfoWithVolume      = seriesInfo + "|" + volume;
+			String seriesInfoLower           = seriesInfo.toLowerCase();
+			String volumeLower               = volume.toLowerCase();
+			String seriesInfoWithVolumeLower = seriesInfoLower + "|" + volumeLower;
 
-	void addSeriesWithVolume(String series){
-		if (series != null) {
-			String[] seriesParts = series.split("\\|",2);
-			String seriesName = seriesParts[0];
-			String seriesInfo = getNormalizedSeries(seriesName, true);
-			String volume= "";
-			if (seriesParts.length > 1){
-				volume = getNormalizedSeriesVolume(seriesParts[1]);
-			}
-			String seriesInfoLower = seriesInfo.toLowerCase();
-			String volumeLower = volume.toLowerCase();
-			String seriesInfoWithVolume = seriesInfo + "|" + (volume.length() > 0 ? volume : "");
-			String normalizedSeriesInfoWithVolume = seriesInfoWithVolume.toLowerCase();
-
-			if (!this.seriesWithVolume.containsKey(normalizedSeriesInfoWithVolume)) {
+			if (!this.series.containsKey(seriesInfoLower)) {
 				boolean okToAdd = true;
-				for (String existingSeries2 : this.seriesWithVolume.keySet()) {
-					String[] existingSeriesInfo = existingSeries2.split("\\|", 2);
-					String existingSeriesName = existingSeriesInfo[0];
-					String existingVolume = "";
-					if (existingSeriesInfo.length > 1){
-						existingVolume = existingSeriesInfo[1];
+				for (String existingSeries2 : this.series.keySet()) {
+					if (existingSeries2.contains(seriesInfoLower)) {
+						okToAdd = false;
+						break;
+					} else if (seriesInfoLower.contains(existingSeries2)) {
+						//Remove shortest versions of series statement?
+						this.series.remove(existingSeries2);
+						break;
 					}
+				}
+				if (okToAdd) {
+					this.series.put(seriesInfoLower, seriesInfo);
+				}
+			}
+
+			if (!this.seriesWithVolume.containsKey(seriesInfoWithVolumeLower)) {
+				boolean okToAdd = true;
+				final boolean volumeEmpty = volume.isEmpty();
+				for (String existingSeries : this.seriesWithVolume.keySet()) {
+					String[]      existingSeriesInfo      = existingSeries.split("\\|", 2);
+					String        existingSeriesNameLower = existingSeriesInfo[0];
+					String        existingVolume          = (existingSeriesInfo.length > 1) ? existingSeriesInfo[1] : "";
+					final boolean existingVolumeEmpty     = existingVolume.isEmpty();
+
 					//Get the longer series name
-					if (existingSeriesName.indexOf(seriesInfoLower) != -1) {
+					if (existingSeriesNameLower.contains(seriesInfoLower)) {
 						//Use the old one unless it doesn't have a volume
-						if (existingVolume.length() == 0){
-							this.seriesWithVolume.remove(existingSeries2);
+						if (existingVolumeEmpty) {
+							this.seriesWithVolume.remove(existingSeries);
 							break;
-						}else{
-							if (volumeLower.equals(existingVolume)) {
-								okToAdd = false;
-								break;
-							}else if (volumeLower.length() == 0){
+						} else {
+							if (volumeEmpty || volumeLower.equals(existingVolume)) {
 								okToAdd = false;
 								break;
 							}
 						}
-					} else if (seriesInfoLower.indexOf(existingSeriesName) != -1) {
+					} else if (seriesInfoLower.contains(existingSeriesNameLower)) {
 						//Before removing the old series, make sure the new one has a volume
-						if (existingVolume.length() > 0 && existingVolume.equals(volumeLower)){
-							this.seriesWithVolume.remove(existingSeries2);
-							break;
-						}else if (volume.length() == 0 && existingVolume.length() > 0){
+						if (volumeEmpty && !existingVolumeEmpty) {
 							okToAdd = false;
 							break;
-						}else if (volume.length() == 0 && existingVolume.length() == 0){
-							this.seriesWithVolume.remove(existingSeries2);
+						} else if (volumeEmpty ||
+										(!existingVolumeEmpty && existingVolume.equals(volumeLower))
+						) {
+							this.seriesWithVolume.remove(existingSeries);
 							break;
 						}
 					}
 				}
 				if (okToAdd) {
-					this.seriesWithVolume.put(normalizedSeriesInfoWithVolume, seriesInfoWithVolume);
+					this.seriesWithVolume.put(seriesInfoWithVolumeLower, seriesInfoWithVolume);
 				}
 			}
 		}
@@ -1351,10 +1367,11 @@ public class GroupedWorkSolr implements Cloneable {
 			if (!seriesField.containsKey(normalizedSeries)) {
 				boolean okToAdd = true;
 				for (String existingSeries2 : seriesField.keySet()) {
-					if (existingSeries2.indexOf(normalizedSeries) != -1) {
+					if (existingSeries2.contains(normalizedSeries)) {
 						okToAdd = false;
 						break;
-					} else if (normalizedSeries.indexOf(existingSeries2) != -1) {
+					} else if (normalizedSeries.contains(existingSeries2)) {
+						//Remove shortest versions of series statement?
 						seriesField.remove(existingSeries2);
 						break;
 					}
@@ -1366,32 +1383,44 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 	}
 
+	/**
+	 * Attempt to turn the series volume to a numeric string
+	 *
+	 * @param volume  the series volume statement
+	 * @return numeric string
+	 */
 	String getNormalizedSeriesVolume(String volume){
 		volume = Util.trimTrailingPunctuation(volume);
-		volume = volume.replaceAll("(bk\\.?|book)", "");
-		volume = volume.replaceAll("(volume|vol\\.|v\\.)", "");
-		volume = volume.replaceAll("libro", "");
-		volume = volume.replaceAll("one", "1");
-		volume = volume.replaceAll("two", "2");
-		volume = volume.replaceAll("three", "3");
-		volume = volume.replaceAll("four", "4");
-		volume = volume.replaceAll("five", "5");
-		volume = volume.replaceAll("six", "6");
-		volume = volume.replaceAll("seven", "7");
-		volume = volume.replaceAll("eight", "8");
-		volume = volume.replaceAll("nine", "9");
-		volume = volume.replaceAll("[\\[\\]#]", "");
-		volume = Util.trimTrailingPunctuation(volume.trim());
+		if (!volume.matches("^\\d+$")) {
+			volume = volume.replaceAll("(bk\\.?|book)", "");
+			volume = volume.replaceAll("(volume|vol\\.|v\\.)", "").trim();
+			if (!volume.matches("^\\d+$")) {
+				volume = volume.replaceAll("libro", "");
+				volume = volume.replaceAll("one", "1");
+				volume = volume.replaceAll("two", "2");
+				volume = volume.replaceAll("three", "3");
+				volume = volume.replaceAll("four", "4");
+				volume = volume.replaceAll("five", "5");
+				volume = volume.replaceAll("six", "6");
+				volume = volume.replaceAll("seven", "7");
+				volume = volume.replaceAll("eight", "8");
+				volume = volume.replaceAll("nine", "9");
+				volume = volume.replaceAll("[\\[\\]#]", "");
+				volume = Util.trimTrailingPunctuation(volume.trim());
+			}
+		}
 		return volume;
 	}
 
-	String getNormalizedSeries(String series, boolean removeVolume){
+	String getNormalizedSeries(String series, boolean removeVolume) {
 		series = Util.trimTrailingPunctuation(series);
-		if (removeVolume){
+		//TODO: removeVolume codeblock likely obsolete
+		if (removeVolume) {
 			series = series.replaceAll("[#|]\\s*\\d+$", "");
 		}
 		//Remove anything in parens since it's normally just the format
-		series = series.replaceAll("\\s+\\(.*?\\)", "");
+		series = series.replaceAll("\\s+\\(.*\\)", "");
+		// the parentheses regex "\\s+\\(.*?\\)" fails for string "Andy Carpenter mystery (Macmillan Audio (Firm))"
 		series = series.replaceAll(" & ", " and ");
 		series = series.replaceAll("--", " ");
 		series = series.replaceAll(",\\s+(the|an)$", "");

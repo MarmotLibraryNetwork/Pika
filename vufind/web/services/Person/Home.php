@@ -24,61 +24,48 @@ require_once ROOT_DIR . '/sys/Genealogy/Person.php';
 
 class Person_Home extends Action {
 
-	private $id;
-	private $db;
-	private $recordDriver;
-
-
-	function __construct($record_id = null){
+	function launch(){
 		global $interface;
 		global $configArray;
 		global $timer;
-		$user = UserAccount::getLoggedInUser();
+
+		// Get Person Id
+		$id = $_GET['id'];
+		$interface->assign('id', $id);
+		if (empty($id) || !ctype_digit($id)){
+			$this->displayInvalidRecord();
+		}
 
 		//Check to see if a user is logged in with admin permissions
-		if ($user && UserAccount::userHasRole('genealogyContributor')){
-			$interface->assign('userIsAdmin', true);
-		}else{
-			$interface->assign('userIsAdmin', false);
-		}
+		$user        = UserAccount::getLoggedInUser();
+		$userIsAdmin = $user && UserAccount::userHasRole('genealogyContributor');
+		$interface->assign('userIsAdmin', $userIsAdmin);
 
-		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
-
-		//Load basic information needed in subclasses
-		if ($record_id == null || !isset($record_id)){
-			$this->id = $_GET['id'];
-		}else{
-			$this->id = $record_id;
-		}
+		// Load person from the database
+		$person = new Person();
+		$person->get($id);
 
 		// Setup Search Engine Connection
-		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/Search/' . $configArray['Genealogy']['engine'] . '.php';
-		$timer->logTime('Include search engine');
+		$searchObject = SearchObjectFactory::initSearchObject($configArray['Genealogy']['searchObject']);
+		$searchObject->init();
 
-		// Initialise from the current search globals
-		$this->db = SearchObjectFactory::initSearchObject($configArray['Genealogy']['searchObject']);
-		$this->db->init($searchSource);
-
-		// Retrieve Full Marc Record
-		if (!($record = $this->db->getRecord('person' . $this->id))){
-			PEAR_Singleton::raiseError(new PEAR_Error('Record Does Not Exist'));
+		// Retrieve Genealogy Solr Document
+		$record = $searchObject->getRecord($person->solrId());
+		if (empty($record)){
+			global $pikaLogger;
+			$pikaLogger->debug("Did not find a record for person id {$id} in solr.");
+			$this->displayInvalidRecord();
 		}
-		$this->record = $record;
 
-		//Load person from the database to get additional information
-		/* @var Person $person */
-		$person = new Person();
-		$person->get($this->id);
 		$record['picture'] = $person->picture;
 
 		$interface->assign('record', $record);
 		$interface->assign('person', $person);
-		$this->recordDriver = RecordDriverFactory::initRecordDriver($record);
-		$interface->assign('recordDriver', $this->recordDriver);
+		$recordDriver = RecordDriverFactory::initRecordDriver($record);
+		$interface->assign('recordDriver', $recordDriver);
 		$timer->logTime('Initialized the Record Driver');
 
-		$marriages       = array();
+		$marriages       = [];
 		$personMarriages = $person->marriages;
 		if (isset($personMarriages)){
 			foreach ($personMarriages as $marriage){
@@ -91,14 +78,13 @@ class Person_Home extends Action {
 		$interface->assign('obituaries', $person->obituaries);
 
 		//Do actions needed if this is the main action.
-		$interface->assign('id', $this->id);
+		$interface->assign('id', $id);
 
 		// Retrieve User Search History
-		$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ?
-			$_SESSION['lastSearchURL'] : false);
+		$interface->assign('lastsearch', $_SESSION['lastSearchURL'] ?? false);
 
 		// Send down text for inclusion in breadcrumbs
-		$interface->assign('breadcrumbText', $this->recordDriver->getBreadcrumb());
+		$interface->assign('breadcrumbText', $recordDriver->getBreadcrumb());
 
 		$formattedBirthdate = $person->formatPartialDate($person->birthDateDay, $person->birthDateMonth, $person->birthDateYear);
 		$interface->assign('birthDate', $formattedBirthdate);
@@ -107,90 +93,15 @@ class Person_Home extends Action {
 		$interface->assign('deathDate', $formattedDeathdate);
 
 		//Setup next and previous links based on the search results.
-		if (isset($_REQUEST['searchId'])){
-			//rerun the search
-			$s           = new SearchEntry();
-			$s->id       = $_REQUEST['searchId'];
-			$currentPage = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-			$interface->assign('searchId', $_REQUEST['searchId']);
-			$interface->assign('page', $currentPage);
-
-			$s->find();
-			if ($s->N > 0){
-				$s->fetch();
-				$minSO        = unserialize($s->search_object);
-				$searchObject = SearchObjectFactory::deminify($minSO);
-				$searchObject->setPage($currentPage);
-				//Run the search
-				$result = $searchObject->processSearch(true, false, false);
-
-				//Check to see if we need to run a search for the next or previous page
-				$currentResultIndex = $_REQUEST['recordIndex'] - 1;
-				$recordsPerPage     = $searchObject->getLimit();
-
-				if (($currentResultIndex) % $recordsPerPage == 0 && $currentResultIndex > 0){
-					//Need to run a search for the previous page
-					$interface->assign('previousPage', $currentPage - 1);
-					$previousSearchObject = clone $searchObject;
-					$previousSearchObject->setPage($currentPage - 1);
-					$previousSearchObject->processSearch(true, false, false);
-					$previousResults = $previousSearchObject->getResultRecordSet();
-				}elseif (($currentResultIndex + 1) % $recordsPerPage == 0 && ($currentResultIndex + 1) < $searchObject->getResultTotal()){
-					//Need to run a search for the next page
-					$nextSearchObject = clone $searchObject;
-					$interface->assign('nextPage', $currentPage + 1);
-					$nextSearchObject->setPage($currentPage + 1);
-					$nextSearchObject->processSearch(true, false, false);
-					$nextResults = $nextSearchObject->getResultRecordSet();
-				}
-
-				if (PEAR_Singleton::isError($result)){
-					//If we get an error executing the search, just eat it for now.
-				}else{
-					if ($searchObject->getResultTotal() < 1){
-						//No results found
-					}else{
-						$recordSet = $searchObject->getResultRecordSet();
-						//Record set is 0 based, but we are passed a 1 based index
-						if ($currentResultIndex > 0){
-							if (isset($previousResults)){
-								$previousRecord = $previousResults[count($previousResults) - 1];
-							}else{
-								$previousRecord = $recordSet[$currentResultIndex - 1 - (($currentPage - 1) * $recordsPerPage)];
-							}
-							$interface->assign('previousId', $previousRecord['id']);
-							//Convert back to 1 based index
-							$interface->assign('previousIndex', $currentResultIndex - 1 + 1);
-							$interface->assign('previousTitle', $previousRecord['title']);
-						}
-						if ($currentResultIndex + 1 < $searchObject->getResultTotal()){
-
-							if (isset($nextResults)){
-								$nextRecord = $nextResults[0];
-							}else{
-								$nextRecord = $recordSet[$currentResultIndex + 1 - (($currentPage - 1) * $recordsPerPage)];
-							}
-							$interface->assign('nextId', $nextRecord['id']);
-							//Convert back to 1 based index
-							$interface->assign('nextIndex', $currentResultIndex + 1 + 1);
-							$interface->assign('nextTitle', $nextRecord['title']);
-						}
-
-					}
-				}
-			}
-			$timer->logTime('Got next/previous links');
-		}
-	}
-
-	function launch(){
-
-		$titleField = $this->recordDriver->getName(); //$this->record['firstName'] . ' ' . $this->record['lastName'];
-//		if ($titleField){
-//			$interface->setPageTitle($titleField);
-//		}
+		$searchObject->getNextPrevLinks();
 
 		// Display Page
+		$titleField = $recordDriver->getName();
 		$this->display('view.tpl', $titleField);
+	}
+
+	private function displayInvalidRecord(): void{
+		$this->display('invalidRecord.tpl', 'Invalid Record');
+		die();
 	}
 }

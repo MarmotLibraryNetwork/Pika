@@ -1,7 +1,7 @@
 {strip}
 <div id="record{$summId|escape}" class="resultsList row">
 	<div class="imageColumn col-md-3">
-		<div class="selectTitle hidden-phone col-md-4">
+		<div class="selectTitle col-md-4">
 			<label for="selected{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}" class="resultIndex checkbox"><strong>{$resultIndex}</strong>
 				<input type="checkbox" name="selected[{$summShortId|escape:"url"}]" id="selected{$summShortId|escape:"url"}" style="display:none">&nbsp;
 			</label>
@@ -22,7 +22,7 @@
 		<div class="row">
 			{if $summScore}({$summScore}) {/if}
 			<strong>
-				<a href="/Person/{$summShortId}" class="title">{if !$summTitle}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}</a>
+				<a href="{$recordDriver->getLinkUrl()}" class="title">{if !$summTitle}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}</a>
 				{if $summTitleStatement}
 					<div class="searchResultSectionInfo">
 					{$summTitleStatement|removeTrailingPunctuation|truncate:180:"..."|highlight}

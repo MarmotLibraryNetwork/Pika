@@ -832,6 +832,7 @@ class Admin_AJAX extends AJAXHandler {
 				$location               = clone $copyFromLocation;
 				$location->code         = $code;
 				$location->displayName  = $name;
+				$location->catalogUrl   = '';
 
 
 				if ($location->insert()){
@@ -990,6 +991,7 @@ class Admin_AJAX extends AJAXHandler {
 				$library->abbreviatedDisplayName = $abName;
 				$library->isDefault              = false;
 				$library->facetLabel             = $facetLabel;
+				$library->catalogUrl             = '';
 
 				if ($library->insert()){
 					$editLink           = "/Admin/Libraries?objectAction=edit&id=" . $library->libraryId;

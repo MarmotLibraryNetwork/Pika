@@ -32,10 +32,10 @@ Interface IndexEngine {
 	function getRecord($id);
 
 	/**
-	 * Get records similiar to one record
+	 * Get records similar to one record
 	 *
 	 * @access  public
-	 * @param id          The record id
+	 * @param  string          The record id
 	 * @return  array       An array of query results
 	 * @throws  object      PEAR Error
 	 */

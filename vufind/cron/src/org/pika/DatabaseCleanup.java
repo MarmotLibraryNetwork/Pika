@@ -44,7 +44,24 @@ public class DatabaseCleanup implements IProcessHandler {
 		removeSpammySearches(pikaConn, logger, processLog);
 		removeLongSearches(pikaConn, logger, processLog);
 		cleanupReadingHistory(pikaConn, logger, processLog);
-		cleanupIndexingReports(pikaConn, logger, processLog);
+
+		try (
+			PreparedStatement getIndexingProfilesStmt = pikaConn.prepareStatement("SELECT * FROM indexing_profiles");
+			ResultSet         indexingProfilesRS      = getIndexingProfilesStmt.executeQuery()
+		){
+			while (indexingProfilesRS.next()) {
+				String name               = indexingProfilesRS.getString("name");
+				String marcPath           = indexingProfilesRS.getString("marcPath");
+//				String individualMarcPath = indexingProfilesRS.getString("individualMarcPath");
+				int filesDeleted = cleanupIndexingGroupingReports(marcPath,pikaConn, logger, processLog);
+				processLog.addNote("Deleted " + filesDeleted + " indexing & grouping report files for " + name);
+				processLog.addUpdates(filesDeleted);
+				processLog.saveToDatabase(pikaConn, logger);
+			}
+		} catch (Exception e) {
+			logger.error("Error loading indexing profiles", e);
+		}
+
 		removeOldMaterialsRequests(pikaConn, logger, processLog);
 		removeUserDataForDeletedUsers(pikaConn, logger, processLog);
 		cleanupILSExtractInfo(pikaConn, logger, processLog);
@@ -137,7 +154,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			}
 		} catch (Exception e) {
 			processLog.incErrors();
-			processLog.addNote("Unable to cleanup user data for deleted users. " + e.toString());
+			processLog.addNote("Unable to cleanup user data for deleted users. " + e);
 			logger.error("Error cleaning up user data for deleted users", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
@@ -198,22 +215,58 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.addNote("Removed " + numDeletions + " old materials requests.");
 		} catch (SQLException e) {
 			processLog.incErrors();
-			processLog.addNote("Unable to remove old materials requests. " + e.toString());
+			processLog.addNote("Unable to remove old materials requests. " + e);
 			logger.error("Error deleting long searches", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
 	}
 
-	private void cleanupIndexingReports(Connection pikaConn, Logger logger, CronProcessLogEntry processLog) {
-		//Remove indexing reports
+	private int cleanupIndexingGroupingReports(String marcPath, Connection pikaConn, Logger logger, CronProcessLogEntry processLog) {
+		int filesDeleted = 0;
+		//Remove indexing & grouping reports for the indexing profile
 		try {
 			//Get the data directory where reports are stored
-			File dataDir = new File(PikaConfigIni.getIniValue("Reindex", "marcPath"));
+			File dataDir = new File(marcPath);
 			dataDir = dataDir.getParentFile();
+
 			//Get a list of dates that should be kept
-			SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
-			GregorianCalendar today = new GregorianCalendar();
-			ArrayList<String> validDatesToKeep = new ArrayList<>();
+			ArrayList<String> validDatesToKeep = getValidDatesToKeep();
+
+			//List all csv files in the directory
+			File[] filesToCheck = dataDir.listFiles((dir, name) -> name.matches(".*\\d{4}-\\d{2}-\\d{2}\\.csv"));
+			if (filesToCheck != null) {
+			//Check to see if we should keep or delete the file
+			Pattern getDatePattern = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})", Pattern.CANON_EQ);
+				for (File curFile : filesToCheck) {
+					//Get the date from the file
+					Matcher fileMatcher = getDatePattern.matcher(curFile.getName());
+					if (fileMatcher.find()) {
+						String date = fileMatcher.group();
+						if (!validDatesToKeep.contains(date)) {
+							if (curFile.delete()){
+								filesDeleted++;
+							}
+						}
+					}
+				}
+			}
+
+		} catch (Exception e) {
+			processLog.incErrors();
+			processLog.addNote("Error removing old indexing reports. " + e);
+			logger.error("Error removing old indexing reports", e);
+			processLog.saveToDatabase(pikaConn, logger);
+		}
+		return filesDeleted;
+	}
+
+	private ArrayList<String> validDatesToKeep;
+
+	private ArrayList<String> getValidDatesToKeep() {
+		SimpleDateFormat  dateFormatter    = new SimpleDateFormat("yyyy-MM-dd");
+		GregorianCalendar today            = new GregorianCalendar();
+		if (validDatesToKeep == null) {
+			validDatesToKeep = new ArrayList<>();
 			//Keep the last 7 days
 			for (int i = 0; i < 7; i++) {
 				validDatesToKeep.add(dateFormatter.format(today.getTime()));
@@ -226,29 +279,8 @@ public class DatabaseCleanup implements IProcessHandler {
 				validDatesToKeep.add(dateFormatter.format(today.getTime()));
 				today.add(Calendar.MONTH, -1);
 			}
-
-			//List all csv files in the directory
-			File[] filesToCheck = dataDir.listFiles((dir, name) -> name.matches(".*\\d{4}-\\d{2}-\\d{2}\\.csv"));
-
-			//Check to see if we should keep or delete the file
-			Pattern getDatePattern = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})", Pattern.CANON_EQ);
-			for (File curFile : filesToCheck) {
-				//Get the date from the file
-				Matcher fileMatcher = getDatePattern.matcher(curFile.getName());
-				if (fileMatcher.find()) {
-					String date = fileMatcher.group();
-					if (!validDatesToKeep.contains(date)) {
-						curFile.delete();
-					}
-				}
-			}
-
-		} catch (Exception e) {
-			processLog.incErrors();
-			processLog.addNote("Error removing old indexing reports. " + e.toString());
-			logger.error("Error removing old indexing reports", e);
-			processLog.saveToDatabase(pikaConn, logger);
 		}
+		return validDatesToKeep;
 	}
 
 	private void removeLongSearches(Connection pikaConn, Logger logger, CronProcessLogEntry processLog) {
@@ -264,7 +296,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.saveToDatabase(pikaConn, logger);
 		} catch (SQLException e) {
 			processLog.incErrors();
-			processLog.addNote("Unable to delete long searches. " + e.toString());
+			processLog.addNote("Unable to delete long searches. " + e);
 			logger.error("Error deleting long searches", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
@@ -284,7 +316,7 @@ public class DatabaseCleanup implements IProcessHandler {
 
 		} catch (SQLException e) {
 			processLog.incErrors();
-			processLog.addNote("Unable to delete spammy searches. " + e.toString());
+			processLog.addNote("Unable to delete spammy searches. " + e);
 			logger.error("Error deleting spammy searches", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
@@ -318,7 +350,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.saveToDatabase(pikaConn, logger);
 		} catch (SQLException e) {
 			processLog.incErrors();
-			processLog.addNote("Unable to delete expired searches. " + e.toString());
+			processLog.addNote("Unable to delete expired searches. " + e);
 			logger.error("Error deleting expired searches", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
@@ -340,7 +372,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.saveToDatabase(pikaConn, logger);
 		} catch (SQLException e) {
 			processLog.incErrors();
-			processLog.addNote("Unable to delete expired sessions. " + e.toString());
+			processLog.addNote("Unable to delete expired sessions. " + e);
 			logger.error("Error deleting expired sessions", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
@@ -357,7 +389,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			}
 		} catch (SQLException e) {
 			processLog.incErrors();
-			processLog.addNote("Unable to remove outdated ILS extract information " + e.toString());
+			processLog.addNote("Unable to remove outdated ILS extract information " + e);
 			logger.error("Error removing deleted ILS extract information", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
@@ -375,7 +407,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 		catch(SQLException e){
 			processLog.incErrors();
-			processLog.addNote("Unable to remove reindexing log entries " + e.toString());
+			processLog.addNote("Unable to remove reindexing log entries " + e);
 			logger.error("Error deleting old reindexing log entries", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
@@ -390,7 +422,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 		catch(SQLException e){
 			processLog.incErrors();
-			processLog.addNote("Unable to remove old Sierra API Export Log items " + e.toString());
+			processLog.addNote("Unable to remove old Sierra API Export Log items " + e);
 			logger.error("Error deleting old Sierra API Export Log Items", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
@@ -405,7 +437,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 		catch(SQLException e){
 			processLog.incErrors();
-			processLog.addNote("Unable to remove old Cron Log items " + e.toString());
+			processLog.addNote("Unable to remove old Cron Log items " + e);
 			logger.error("Error deleting old Cron Log Items", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
@@ -421,7 +453,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 		catch(SQLException e){
 			processLog.incErrors();
-			processLog.addNote("Unable to remove old Cron Process Log items " + e.toString());
+			processLog.addNote("Unable to remove old Cron Process Log items " + e);
 			logger.error("Error deleting old Cron Process Log Items", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
@@ -436,7 +468,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 		catch(SQLException e){
 			processLog.incErrors();
-			processLog.addNote("Unable to remove old record grouping log items " + e.toString());
+			processLog.addNote("Unable to remove old record grouping log items " + e);
 			logger.error("Error deleting old record grouping log Items", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
@@ -451,7 +483,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 		catch(SQLException e){
 			processLog.incErrors();
-			processLog.addNote("Unable to remove old hoopla export logs " + e.toString());
+			processLog.addNote("Unable to remove old hoopla export logs " + e);
 			logger.error("Error deleting old hoopla export logs Items", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
@@ -471,7 +503,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		catch(SQLException e)
 		{
 			processLog.incErrors();
-			processLog.addNote("Unable to remove old overdrive extract logs " + e.toString());
+			processLog.addNote("Unable to remove old overdrive extract logs " + e);
 			logger.error("Error deleting old overdrive extract logs", e);
 			processLog.saveToDatabase(econtentConn, logger);
 		}
@@ -513,7 +545,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 		catch(SQLException e){
 			processLog.incErrors();
-			processLog.addNote("Unable to remove deleted overdrive API products " + e.toString());
+			processLog.addNote("Unable to remove deleted overdrive API products " + e);
 			logger.error("Error deleting deleted overdrive API products", e);
 			processLog.saveToDatabase(econtentConn, logger);
 		}
@@ -531,7 +563,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 		catch(SQLException e){
 			processLog.incErrors();
-			processLog.addNote("Unable to remove old offline circulation items " + e.toString());
+			processLog.addNote("Unable to remove old offline circulation items " + e);
 			logger.error("Error deleting old offline circulation Items", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
@@ -546,7 +578,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 		catch(SQLException e){
 			processLog.incErrors();
-			processLog.addNote("Unable to remove old offline hold items " + e.toString());
+			processLog.addNote("Unable to remove old offline hold items " + e);
 			logger.error("Error deleting old offline hold Items", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
@@ -570,7 +602,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		catch(SQLException e)
 		{
 			processLog.incErrors();
-			processLog.addNote("Unable to remove outdated deleted lists " + e.toString());
+			processLog.addNote("Unable to remove outdated deleted lists " + e);
 			logger.error("Error deleting outdated user lists", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
@@ -591,7 +623,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		catch(SQLException e)
 		{
 			processLog.incErrors();
-			processLog.addNote("Unable to remove orphaned list entries " + e.toString());
+			processLog.addNote("Unable to remove orphaned list entries " + e);
 			logger.error("Error deleting orphaned list entries", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
@@ -646,7 +678,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.addNote("Removed " + numDuplicateRecords + " reading history entries that were duplicates (check 2)");
 		} catch (SQLException e) {
 			processLog.incErrors();
-			processLog.addNote("Unable to delete duplicate reading history entries. " + e.toString());
+			processLog.addNote("Unable to delete duplicate reading history entries. " + e);
 			logger.error("Error deleting duplicate reading history entries", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
@@ -660,7 +692,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			final String errorMessage = "Error fixing invalid sourceIds for reading history entries";
 			logger.error(errorMessage, e);
 			processLog.incErrors();
-			processLog.addNote(errorMessage + e.toString());
+			processLog.addNote(errorMessage + e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
 
@@ -674,7 +706,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 		catch(SQLException e){
 			processLog.incErrors();
-			processLog.addNote("Unable to delete reading history items "+ e.toString());
+			processLog.addNote("Unable to delete reading history items "+ e);
 			logger.error("Error deleting reading history items", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}

@@ -33,12 +33,13 @@ Pika.OverDrive = (function(){
 			return false;
 		},
 
-		checkOutOverDriveTitle: function(overDriveId, formatType){
+		checkOutOverDriveTitle: function(overDriveId, formatType, issueId){
 			Pika.Account.ajaxLogin(function(){
 				Pika.loadingMessage();
 				//Get any prompts needed for placing holds (e-mail and format depending on the interface.
 				var url = "/OverDrive/" + overDriveId + "/AJAX?method=getOverDriveCheckoutPrompts"
-				+ (formatType === undefined ? "" : "&formatType=" + formatType);
+				+ (formatType === undefined ? "" : "&formatType=" + formatType)
+				+ (issueId === undefined ? "" : "&issueId=" + issueId);
 				$.getJSON(url, function(data){
 					if (data.promptNeeded){
 						Pika.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
@@ -53,7 +54,8 @@ Pika.OverDrive = (function(){
 							Pika.showMessage("Error Checking Out Title", data.message);
 						}
 					}
-				}).fail(function(){
+				}).fail(function(e){
+					console.log(e);
 					Pika.showMessage("Error Checking Out Title", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
 				});
 			});
@@ -64,17 +66,20 @@ Pika.OverDrive = (function(){
 			var overdriveCheckoutPromptsForm = $("#overdriveCheckoutPromptsForm"),
 					patronId = $("#patronId").val(),
 					overdriveId = overdriveCheckoutPromptsForm.find("input[name=overdriveId]").val(),
+					issueId = overdriveCheckoutPromptsForm.find("#issuesToCheckout").val(),
+
 					lendingPeriod = $('#lendingPeriodSelect' + patronId).val(),
 					formatType = $('#formatType').val(),
 					useDefaultLendingPeriods = $('#useDefaultLendingPeriods' + patronId).is(":checked") === true; // only set if the element is found and is checked; otherwise set as false
-			Pika.OverDrive.doOverDriveCheckout(patronId, overdriveId, lendingPeriod, useDefaultLendingPeriods, formatType);
+			Pika.OverDrive.doOverDriveCheckout(patronId, overdriveId, lendingPeriod, useDefaultLendingPeriods, formatType, issueId);
 		},
 
-		doOverDriveCheckout: function(patronId, overDriveId, lendingPeriod, useDefaultLendingPeriods, formatType){
+		doOverDriveCheckout: function(patronId, overDriveId, lendingPeriod, useDefaultLendingPeriods, formatType, issueId){
 			Pika.Account.ajaxLogin(function(){
 				var ajaxUrl = "/OverDrive/" + overDriveId + "/AJAX?method=checkoutOverDriveTitle&patronId=" + patronId
 				+ ((lendingPeriod !== undefined) ? "&lendingPeriod=" + lendingPeriod : "")
 				+ ((formatType !== undefined && formatType != "") ? "&formatType=" + formatType : "")
+				+((issueId !== undefined && issueId !="") ? "&issueId=" + issueId: "")
 				+ (useDefaultLendingPeriods !== undefined && useDefaultLendingPeriods === true ? "&useDefaultLendingPeriods" : "");
 				$.getJSON(ajaxUrl, function(data){
 					if (data.success) {
@@ -264,6 +269,20 @@ Pika.OverDrive = (function(){
 				}
 			return false;
 		},
+		checkoutOverdriveMagazineByIssueID: function (overDriveId){
+
+				Pika.loadingMessage();
+				var url = "/OverDrive/AJAX?method=getOverDriveIssueCheckoutPrompt&overdriveId=" + overDriveId;
+				$.getJSON(url, function(data){
+					Pika.showMessageWithButtons(data.title, data.body, data.buttons);
+
+				}).fail(function(){
+					Pika.showMessage("Error Loading Title", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
+				});
+
+			return false;
+		},
+
 
 		submitHelpForm: function(){
 			$.post('/OverDrive/AJAX?method=submitSupportForm', $("#eContentSupport").serialize(),

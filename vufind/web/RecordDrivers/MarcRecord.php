@@ -909,9 +909,9 @@ class MarcRecord extends IndexRecord
 				$subTitle       = $this->getSubtitle();
 				if (strcasecmp($subTitle, $shortTitle) !== 0){ // If the short title and the subtitle are the same skip this check
 					$subTitleLength = strlen($subTitle);
-					if ($subTitleLength > 0 && strcasecmp(substr($shortTitle, -$subTitleLength), $subTitle) === 0){ // TODO: do these work with multibyte characters? Diacritic characters?
+					if ($subTitleLength > 0 && strcasecmp(mb_substr($shortTitle, -$subTitleLength), $subTitle) === 0){ // TODO: do these work with multibyte characters? Diacritic characters?
 						// If the subtitle is at the end of the short title, trim out the subtitle from the short title
-						$shortTitle = trim(rtrim(trim(substr($shortTitle, 0, -$subTitleLength)), ':'));
+						$shortTitle = trim(rtrim(trim(mb_substr($shortTitle, 0, -$subTitleLength)), ':'));
 						// remove ending white space and colon characters
 					}
 				}
@@ -934,7 +934,7 @@ class MarcRecord extends IndexRecord
 			try {
 				$charsToTrim = $titleField->getIndicator(2);
 				if (is_numeric($charsToTrim)){
-					return substr($untrimmedTitle, $charsToTrim);
+					return mb_substr($untrimmedTitle, $charsToTrim);
 				}
 			} catch (File_MARC_Exception $e){
 			}
@@ -1256,8 +1256,8 @@ class MarcRecord extends IndexRecord
 		$chars = 300;
 		if (strlen($description) > $chars){
 			$description .= ' ';
-			$description = substr($description, 0, $chars);
-			$description = substr($description, 0, strrpos($description, ' '));
+			$description = mb_substr($description, 0, $chars);
+			$description = mb_substr($description, 0, strrpos($description, ' '));
 			$description .= '...';
 		}
 		return $description;
@@ -1293,18 +1293,18 @@ class MarcRecord extends IndexRecord
 			$recordDetails = $this->getGroupedWorkDriver()->getSolrField('record_details');
 			if ($recordDetails){
 				if (!is_array($recordDetails)){
-					$recordDetails = array($recordDetails);
+					$recordDetails = [$recordDetails];
 				}
 				foreach ($recordDetails as $recordDetailRaw){
 					$recordDetail = explode('|', $recordDetailRaw);
 					if ($recordDetail[0] == $this->getIdWithSource()){
-						$this->format = array($recordDetail[1]);
+						$this->format = [$recordDetail[1]];
 						return $this->format;
 					}
 				}
 			}
 			//We did not find a record for this in the index.  It's probably been deleted.
-			$this->format = array('Unknown');
+			$this->format = ['Unknown'];
 		}
 		return $this->format;
 	}
@@ -1688,7 +1688,7 @@ class MarcRecord extends IndexRecord
 			}
 		}
 		if ($isPeriodical) {
-			global $library;
+//			global $library;
 			$interface->assign('showCheckInGrid', $library->showCheckInGrid);
 			$issues = $this->loadPeriodicalInformation();
 			$interface->assign('periodicalIssues', $issues);
@@ -1696,6 +1696,7 @@ class MarcRecord extends IndexRecord
 		$links = $this->getLinks();
 		$interface->assign('links', $links);
 		$interface->assign('show856LinksAsTab', $library->show856LinksAsTab);
+		//TODO: this does get assigned already in Interface method loadDisplayOptions()
 
 		if ($library->show856LinksAsTab && count($links) > 0) {
 			$moreDetailsOptions['links'] = array(
@@ -2351,18 +2352,21 @@ class MarcRecord extends IndexRecord
 			$opacMessageField = $configArray['Catalog']['OpacMessageField'];
 			// Include MarcTag and subfields with a colon to separate for easylook up: example '945:i:r'
 			// of form ItemTagNumber:ItemIdSubfield:OpacMessageSubfield
-			[$itemTag, $itemIdSubfield, $opacMessageSubfield] = explode(':', $opacMessageField, 3);
+			[$itemTag, $itemIdSubfield, $opacMessageSubfieldIndicator] = explode(':', $opacMessageField, 3);
 			if ($this->getMarcRecord() && $this->isValid()){
 				$itemRecords = $this->marcRecord->getFields($itemTag);
 				foreach ($itemRecords as $itemRecord){
 					/** @var File_MARC_Subfield $subfield */
-					$subfield     = $itemRecord->getSubfield($itemIdSubfield);
+					$subfield = $itemRecord->getSubfield($itemIdSubfield);
 					if (!empty($subfield)){
 						$itemRecordId = $subfield->getData();
 						if ($itemRecordId == $itemId){
-							$opacMessage = $itemRecord->getSubfield($opacMessageSubfield)->getData();
-							if (!empty($opacMessage)){
-								$memCache->set($opacMessageKey, $opacMessage, 0, 600);
+							$opacMessageSubfield = $itemRecord->getSubfield($opacMessageSubfieldIndicator);
+							if (!empty($opacMessageSubfield)){
+								$opacMessage = $opacMessageSubfield->getData();
+								if (!empty($opacMessage)){
+									$memCache->set($opacMessageKey, $opacMessage, 0, 600);
+								}
 							}
 						}
 					}

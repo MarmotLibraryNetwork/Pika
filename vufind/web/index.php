@@ -189,6 +189,8 @@ if ($isLoggedIn && $module == 'MyAccount' && $action == 'Home'){
 		$action = 'Holds';
 //		header('Location:/MyAccount/Holds');
 //		exit();
+	}elseif ($user->getNumBookingsTotal() > 0){
+		$action = 'Bookings';
 	}
 }
 
@@ -282,40 +284,36 @@ function processFollowup(){
  *
  * @return void
  */
-function processShards()
-{
+function processShards(){
 	global $configArray;
 	global $interface;
 
 	// If shards are not configured, give up now:
-	if (!isset($configArray['IndexShards']) || empty($configArray['IndexShards'])) {
+	if (empty($configArray['IndexShards'])){
 		return;
 	}
 
 	// If a shard selection list is found as an incoming parameter, we should save
 	// it in the session for future reference:
 	$useDefaultShards = false;
-	if (array_key_exists('shard', $_REQUEST)) {
+	if (array_key_exists('shard', $_REQUEST)){
 		if ($_REQUEST['shard'] == ''){
 			$useDefaultShards = true;
 		}else{
 			$_SESSION['shards'] = $_REQUEST['shard'];
 		}
 
-	} else if (!array_key_exists('shards', $_SESSION)) {
+	}elseif (!array_key_exists('shards', $_SESSION)){
 		$useDefaultShards = true;
 	}
 	if ($useDefaultShards){
 		// If no selection list was passed in, use the default...
 
 		// If we have a default from the configuration, use that...
-		if (isset($configArray['ShardPreferences']['defaultChecked'])
-				&& !empty($configArray['ShardPreferences']['defaultChecked'])
-				) {
-			$checkedShards = $configArray['ShardPreferences']['defaultChecked'];
-			$_SESSION['shards'] = is_array($checkedShards) ?
-			$checkedShards : array($checkedShards);
-		} else {
+		if (!empty($configArray['ShardPreferences']['defaultChecked'])){
+			$checkedShards      = $configArray['ShardPreferences']['defaultChecked'];
+			$_SESSION['shards'] = is_array($checkedShards) ? $checkedShards : [$checkedShards];
+		}else{
 			// If no default is configured, use all shards...
 			$_SESSION['shards'] = array_keys($configArray['IndexShards']);
 		}
@@ -325,10 +323,10 @@ function processShards()
 	// to the interface, with keys being shard names and values being a boolean
 	// value indicating whether or not the shard is currently selected.
 	if (isset($configArray['ShardPreferences']['showCheckboxes'])
-	&& $configArray['ShardPreferences']['showCheckboxes'] == true
-	) {
-		$shards = array();
-		foreach ($configArray['IndexShards'] as $shardName => $shardAddress) {
+		&& $configArray['ShardPreferences']['showCheckboxes'] == true
+	){
+		$shards = [];
+		foreach ($configArray['IndexShards'] as $shardName => $shardAddress){
 			$shards[$shardName] = in_array($shardName, $_SESSION['shards']);
 		}
 		$interface->assign('shards', $shards);

@@ -407,7 +407,7 @@ abstract class HorizonROA implements DriverInterface
 
 	public function hasNativeReadingHistory()
 	{
-		false;
+		return false;
 		// TODO: Implement hasNativeReadingHistory() method.
 	}
 

@@ -362,10 +362,20 @@ class BookCoverProcessor {
 		return false;
 	}
 
+	/**
+	 * Create cover image for Colorado State Government Documents
+	 *
+	 * @return bool
+	 */
 	private function getColoradoGovDocCover(){
-		$filename = "interface/themes/responsive/images/state_flag_of_colorado.png";
-		if ($this->processImageURL($filename)){
+		$this->format = "ColoradoFlag";
+		if ($this->getDefaultCover(200)){
 			return true;
+		}else{
+			$filename = "interface/themes/responsive/images/state_flag_of_colorado.png";
+			if ($this->processImageURL($filename)){
+				return true;
+			}
 		}
 		return false;
 	}
@@ -375,9 +385,9 @@ class BookCoverProcessor {
 	 * @return bool
 	 */
 	private function getCHNCCover(SourceAndId $sourceAndId){
-		if ($this->getSideLoadedCover($sourceAndId)){
-			return true;
-		}
+//		if ($this->getSideLoadedCover($sourceAndId)){
+//			return true;
+//		}
 		$this->format = "Digital Newspaper";
 		return $this->getDefaultCover();
 	}
@@ -418,16 +428,28 @@ class BookCoverProcessor {
 	private function getOverDriveCover(SourceAndId $sourceAndId){
 		$overDriveProduct = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
 		if ($overDriveProduct->get('overdriveId', $sourceAndId->getRecordId())){
+			if ($overDriveProduct->mediaType == 'Magazine'){
+				// Use Latest Issue if magazine
+				$overDriveLatestMagazine           = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIMagazineIssues();
+				$overDriveLatestMagazine->parentId = $sourceAndId->getRecordId();
+				$overDriveLatestMagazine->orderBy('pubDate DESC');
+				if ($overDriveLatestMagazine->find(true)){
+					if (!empty($overDriveLatestMagazine->coverUrl)){
+						return $this->processImageURL($overDriveLatestMagazine->coverUrl);
+					}
+				}
+			}
+			// Attempt to use Metadata for cover
 			$overDriveMetadata = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductMetaData();
 			if ($overDriveMetadata->get('productId', $overDriveProduct->id)){
 				$coverUrl = $overDriveMetadata->cover; // full size image
 				if ($coverUrl != null){
 					return $this->processImageURL($coverUrl);
 				}
-			} else {
-				$coverUrl = $overDriveProduct->cover; // Thumbnail image
-				return $this->processImageURL($coverUrl);
 			}
+			// Use cover url provided with the title info
+			$coverUrl = $overDriveProduct->cover; // Thumbnail image
+			return $this->processImageURL($coverUrl);
 		}
 		return false;
 	}
@@ -809,8 +831,10 @@ class BookCoverProcessor {
 
 	/**
 	 * Display a "cover unavailable" graphic and terminate execution.
+	 *
+	 * @return bool
 	 */
-	function getDefaultCover(){
+	function getDefaultCover($vertical_cutoff_px = 0){
 		//Get the resource for the cover so we can load the title and author
 		$title  = '';
 		$author = '';
@@ -839,7 +863,7 @@ class BookCoverProcessor {
 		$coverBuilder = new DefaultCoverImageBuilder();
 		if (!empty($title) && $coverBuilder->blankCoverExists($this->format, $this->category)){
 			$this->log("Building a default cover, format is {$this->format} category is {$this->category}", PEAR_LOG_DEBUG);
-			$coverBuilder->getCover($title, $author, $this->format, $this->category, $this->cacheFile);
+			$coverBuilder->getCover($title, $author, $this->format, $this->category, $this->cacheFile, $vertical_cutoff_px);
 			return $this->processImageURL($this->cacheFile);
 		}else{
 			$themes = array_unique(explode(',', $this->configArray['Site']['theme']));

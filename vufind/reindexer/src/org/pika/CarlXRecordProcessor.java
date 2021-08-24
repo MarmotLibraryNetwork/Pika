@@ -36,8 +36,8 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 	}
 
 	@Override
-	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier) {
-		super.updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
+	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier, boolean loadedNovelistSeries) {
+		super.updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier, loadedNovelistSeries);
 		//Add variations of the identifier
 		String shortIdentifier = identifier.getIdentifier().replace("CARL", "");
 		groupedWork.addAlternateId(shortIdentifier);

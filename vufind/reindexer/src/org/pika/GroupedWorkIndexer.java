@@ -17,12 +17,13 @@ package org.pika;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.commons.text.similarity.FuzzyScore;
-import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
-import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrServer;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.common.SolrInputDocument;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -30,8 +31,6 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
-
-import org.apache.log4j.Logger;
 
 /**
  * Indexer
@@ -43,10 +42,10 @@ import org.apache.log4j.Logger;
  */
 public class GroupedWorkIndexer {
 	private       String                                   serverName;
-	private       Logger                                   logger;
+	private       org.apache.log4j.Logger                  logger;
 	private final PikaSystemVariables                      systemVariables;
-	private       SolrServer                               solrServer;
-	private       ConcurrentUpdateSolrServer               updateServer;
+	private       HttpSolrClient                           solrServer;
+	private       ConcurrentUpdateSolrClient               updateServer;
 	private       HashMap<String, MarcRecordProcessor>     indexingRecordProcessors              = new HashMap<>();
 	private       OverDriveProcessor                       overDriveProcessor;
 	private       HashMap<String, HashMap<String, String>> translationMaps                       = new HashMap<>();
@@ -83,7 +82,7 @@ public class GroupedWorkIndexer {
 
 
 
-	public GroupedWorkIndexer(String serverName, Connection pikaConn, Connection econtentConn, boolean fullReindex, boolean singleWorkIndex, Logger logger) {
+	public GroupedWorkIndexer(String serverName, Connection pikaConn, Connection econtentConn, boolean fullReindex, boolean singleWorkIndex, org.apache.log4j.Logger logger) {
 		indexStartTime                        = new Date().getTime() / 1000;
 		this.serverName                       = serverName;
 		this.logger                           = logger;
@@ -116,6 +115,7 @@ public class GroupedWorkIndexer {
 
 		//Initialize the updateServer and solr server
 		GroupedReindexMain.addNoteToReindexLog("Setting up update server and solr server");
+		final String baseSolrUrl = "http://localhost:" + solrPort + "/solr/grouped";
 		if (fullReindex){
 			Boolean isRunning = systemVariables.getBooleanValuedVariable("systemVariables");
 			if (isRunning == null){ // Not found
@@ -126,20 +126,39 @@ public class GroupedWorkIndexer {
 			}
 
 			//MDN 10-21-2015 - use the grouped core since we are using replication.
-			solrServer   = new HttpSolrServer("http://localhost:" + solrPort + "/solr/grouped");
-			updateServer = new ConcurrentUpdateSolrServer("http://localhost:" + solrPort + "/solr/grouped", 500, 8);
+			solrServer   = new HttpSolrClient.Builder(baseSolrUrl).build();
+			updateServer = new ConcurrentUpdateSolrClient.Builder(baseSolrUrl).withQueueSize(500).withThreadCount(8).build();
 			updateServer.setRequestWriter(new BinaryRequestWriter());
 
 			//Stop replication from the master
-			String url                              = "http://localhost:" + solrPort + "/solr/grouped/replication?command=disablereplication";
+			String url                              = baseSolrUrl + "/replication?command=disablereplication";
 			URLPostResponse stopReplicationResponse = Util.getURL(url, logger);
 			if (!stopReplicationResponse.isSuccess()){
 				logger.error("Error restarting replication " + stopReplicationResponse.getMessage());
+			}
+			if (logger.isInfoEnabled()){
+				logger.info("Replication Disable command response :" + stopReplicationResponse.getMessage());
+			}
+
+			// Stop replication polling by the searcher
+			url = PikaConfigIni.getIniValue("Index", "url");
+			if (url != null && !url.isEmpty()){
+				url += "/grouped/replication?command=disablepoll";
+				URLPostResponse stopSearcherReplicationPollingResponse = Util.getURL(url, logger);
+				if (!stopSearcherReplicationPollingResponse.isSuccess()){
+					logger.error("Error disabling polling of solr searcher for replication.");
+				}
+				if (logger.isInfoEnabled()){
+					logger.info("Searcher Replication Polling Disable command response : " + stopSearcherReplicationPollingResponse.getMessage());
+				}
+			} else {
+				logger.error("Unable to get solr search index url. Could not disable replication polling.");
 			}
 
 			updateFullReindexRunning(true);
 		}else{
 			//TODO: Bypass this if called from an export process?
+			//TODO: Bypass when process user lists only
 
 			//Check to make sure that at least a couple of minutes have elapsed since the last index
 			//Periodically in the middle of the night we get indexes every minute or multiple times a minute
@@ -148,10 +167,6 @@ public class GroupedWorkIndexer {
 			long minIndexingInterval = 2 * 60;
 			if (elapsedTime < minIndexingInterval && !singleWorkIndex) {
 				try {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Pausing between indexes, last index ran " + Math.ceil(elapsedTime / 60) + " minutes ago");
-						logger.debug("Pausing for " + (minIndexingInterval - elapsedTime) + " seconds");
-					}
 					GroupedReindexMain.addNoteToReindexLog("Pausing between indexes, last index ran " + Math.ceil(elapsedTime / 60) + " minutes ago");
 					GroupedReindexMain.addNoteToReindexLog("Pausing for " + (minIndexingInterval - elapsedTime) + " seconds");
 					Thread.sleep((minIndexingInterval - elapsedTime) * 1000);
@@ -170,9 +185,9 @@ public class GroupedWorkIndexer {
 			}else{
 				updatePartialReindexRunning(true);
 			}
-			updateServer = new ConcurrentUpdateSolrServer("http://localhost:" + solrPort + "/solr/grouped", 500, 8);
+			updateServer = new ConcurrentUpdateSolrClient.Builder(baseSolrUrl).withQueueSize(500).withThreadCount(8).build();
 			updateServer.setRequestWriter(new BinaryRequestWriter());
-			solrServer = new HttpSolrServer("http://localhost:" + solrPort + "/solr/grouped");
+			solrServer   = new HttpSolrClient.Builder(baseSolrUrl).build();
 		}
 
 		loadScopes();
@@ -675,7 +690,7 @@ public class GroupedWorkIndexer {
 	private void clearIndex() {
 		//Check to see if we should clear the existing index
 		if (logger.isInfoEnabled()) {
-			logger.info("Clearing existing marc records from index");
+			logger.info("Clearing existing grouped work documents from index");
 		}
 		try {
 			updateServer.deleteByQuery("recordtype:grouped_work");
@@ -717,7 +732,7 @@ public class GroupedWorkIndexer {
 	}
 
 
-	void finishIndexing(boolean processingIndividualWork){
+	void finishIndexing(boolean processingIndividualWork, boolean processingUserListsOnly){
 		GroupedReindexMain.addNoteToReindexLog("Finishing indexing");
 		if (fullReindex) {
 			try {
@@ -743,25 +758,44 @@ public class GroupedWorkIndexer {
 				logger.error("Error shutting down update server", e);
 			}*/
 			}
+			if (logger.isInfoEnabled()){
+				logger.info("Replication Enable command response :" + startReplicationResponse.getMessage());
+			}
+
+			// Start replication polling by the searcher
+			url = PikaConfigIni.getIniValue("Index", "url");
+			if (url != null && !url.isEmpty()) {
+				url += "/grouped/replication?command=enablepoll";
+				URLPostResponse startSearcherReplicationPollingResponse = Util.getURL(url, logger);
+				if (!startSearcherReplicationPollingResponse.isSuccess()) {
+					logger.error("Error disabling polling of solr searcher for replication.");
+				}
+				if (logger.isInfoEnabled()){
+					logger.info("Searcher Replication Polling Enable command response : " + startSearcherReplicationPollingResponse.getMessage());
+				}
+			} else {
+				logger.error("Unable to get solr search index url. Could not re-enable replication polling.");
+			}
+
 		}else {
 			try {
 				GroupedReindexMain.addNoteToReindexLog("Doing a soft commit to make sure changes are saved");
 				updateServer.commit(false, false, true);
 				GroupedReindexMain.addNoteToReindexLog("Shutting down the update server");
 				updateServer.blockUntilFinished();
-				updateServer.shutdown();
+				updateServer.shutdownNow();
 			} catch (Exception e) {
 				logger.error("Error shutting down update server", e);
 			}
 		}
 
-		writeWorksWithInvalidLiteraryForms();
-		if (!processingIndividualWork) {
+		if (!processingIndividualWork && !processingUserListsOnly) {
 			updateLastReindexTime();
 		}
 
 		//Write validation information
 		if (fullReindex) {
+			writeWorksWithInvalidLiteraryForms();
 			writeValidationInformation();
 			writeStats();
 			updateFullReindexRunning(false);
@@ -1039,6 +1073,9 @@ public class GroupedWorkIndexer {
 		groupedWork.setId(permanentId);
 		groupedWork.setGroupingCategory(grouping_category);
 
+		//Load Novelist data for the work
+		boolean loadedNovelistSeries = loadNovelistInfo(groupedWork);
+
 		getGroupedWorkPrimaryIdentifiers.setLong(1, id);
 		int numPrimaryIdentifiers;
 		try (ResultSet groupedWorkPrimaryIdentifiers = getGroupedWorkPrimaryIdentifiers.executeQuery()) {
@@ -1061,7 +1098,7 @@ public class GroupedWorkIndexer {
 				}
 
 				//This does the bulk of the work building fields for the solr document
-				updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier);
+				updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier, loadedNovelistSeries);
 
 				//If we didn't add any records to the work (because they are all suppressed) revert to the original
 				if (groupedWork.getNumRecords() == numRecords) {
@@ -1097,11 +1134,9 @@ public class GroupedWorkIndexer {
 			//Load local (Pika) enrichment for the work
 			loadLocalEnrichment(groupedWork);
 			//Load lexile data for the work
-			loadLexileDataForWork(groupedWork);
+			loadLexileDataForWork(groupedWork, loadedNovelistSeries);
 			//Load accelerated reader data for the work
 			loadAcceleratedDataForWork(groupedWork);
-			//Load Novelist data
-			loadNovelistInfo(groupedWork);
 
 			//Write the record to Solr.
 			try {
@@ -1160,6 +1195,9 @@ public class GroupedWorkIndexer {
 		groupedWork.setId(permanentId);
 		groupedWork.setGroupingCategory(grouping_category);
 
+		//Load Novelist data for the work
+		boolean loadedNovelistSeries = loadNovelistInfo(groupedWork);
+
 		getGroupedWorkPrimaryIdentifiers.setLong(1, id);
 		int numPrimaryIdentifiers;
 		try (ResultSet groupedWorkPrimaryIdentifiers = getGroupedWorkPrimaryIdentifiers.executeQuery()) {
@@ -1182,7 +1220,7 @@ public class GroupedWorkIndexer {
 				}
 
 				//This does the bulk of the work building fields for the solr document
-				updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier);
+				updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier, loadedNovelistSeries);
 
 				//If we didn't add any records to the work (because they are all suppressed) revert to the original
 				if (groupedWork.getNumRecords() == numRecords) {
@@ -1218,11 +1256,9 @@ public class GroupedWorkIndexer {
 			//Load local (Pika) enrichment for the work
 			loadLocalEnrichment(groupedWork);
 			//Load lexile data for the work
-			loadLexileDataForWork(groupedWork);
+			loadLexileDataForWork(groupedWork, loadedNovelistSeries);
 			//Load accelerated reader data for the work
 			loadAcceleratedDataForWork(groupedWork);
-			//Load Novelist data
-			loadNovelistInfo(groupedWork);
 
 			//Write the record to Solr.
 			try {
@@ -1258,7 +1294,7 @@ public class GroupedWorkIndexer {
 		return lexileDataMatches;
 	}
 
-	private void loadLexileDataForWork(GroupedWorkSolr groupedWork) {
+	private void loadLexileDataForWork(GroupedWorkSolr groupedWork, boolean loadedNovelistSeries) {
 		for (String isbn : groupedWork.getIsbns()) {
 			if (lexileInformation.containsKey(isbn)) {
 				LexileTitle lexileTitle = lexileInformation.get(isbn);
@@ -1268,9 +1304,11 @@ public class GroupedWorkIndexer {
 				}
 				groupedWork.setLexileScore(lexileTitle.getLexileScore());
 				groupedWork.addAwards(lexileTitle.getAwards());
-				final String lexileSeries = lexileTitle.getSeries();
-				if (lexileSeries != null && !lexileSeries.isEmpty()) {
-					groupedWork.addSeries(lexileSeries);
+				if (!loadedNovelistSeries) {
+					final String lexileSeries = lexileTitle.getSeries();
+					if (lexileSeries != null && !lexileSeries.isEmpty()) {
+						groupedWork.addSeries(lexileSeries.replace("Ser.", "Series"), "");
+					}
 				}
 				lexileDataMatches++;
 				if (logger.isDebugEnabled() && fullReindex) {
@@ -1389,38 +1427,37 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void loadNovelistInfo(GroupedWorkSolr groupedWork){
+	private boolean loadNovelistInfo(GroupedWorkSolr groupedWork){
+		boolean loadedNovelistSeries = false;
 		try{
 			getNovelistStmt.setString(1, groupedWork.getId());
-			ResultSet novelistRS = getNovelistStmt.executeQuery();
-			if (novelistRS.next()){
-				String series = novelistRS.getString("seriesTitle");
-				if (!novelistRS.wasNull()){
-					groupedWork.clearSeriesData();
-					groupedWork.addSeries(series);
-					String volume = novelistRS.getString("volume");
-					if (novelistRS.wasNull()){
-						volume = "";
+			try (ResultSet novelistRS = getNovelistStmt.executeQuery()) {
+				if (novelistRS.next()) {
+					String series = novelistRS.getString("seriesTitle");
+					if (!novelistRS.wasNull()) {
+						groupedWork.clearSeriesData();
+						String volume = novelistRS.getString("volume");
+						groupedWork.addSeries(series, volume);
+						loadedNovelistSeries = true;
 					}
-					groupedWork.addSeriesWithVolume(series + "|" + volume);
 				}
 			}
-			novelistRS.close();
 		}catch (Exception e){
 			logger.error("Unable to load novelist data", e);
 		}
+		return loadedNovelistSeries;
 	}
 
-	private void updateGroupedWorkForPrimaryIdentifier(GroupedWorkSolr groupedWork, RecordIdentifier identifier)  {
+	private void updateGroupedWorkForPrimaryIdentifier(GroupedWorkSolr groupedWork, RecordIdentifier identifier, boolean loadedNovelistSeries)  {
 		groupedWork.addAlternateId(identifier.getIdentifier());
 		final String indexingSource = identifier.getSource().toLowerCase();
 		switch (indexingSource) {
 			case "overdrive":
-				overDriveProcessor.processRecord(groupedWork, identifier.getIdentifier());
+				overDriveProcessor.processRecord(groupedWork, identifier.getIdentifier(), loadedNovelistSeries);
 				break;
 			default:
 				if (indexingRecordProcessors.containsKey(indexingSource)) {
-					indexingRecordProcessors.get(indexingSource).processRecord(groupedWork, identifier);
+					indexingRecordProcessors.get(indexingSource).processRecord(groupedWork, identifier, loadedNovelistSeries);
 				}else if (logger.isDebugEnabled()){
 					logger.debug("Could not find a record processor for " + identifier);
 				}
@@ -1569,10 +1606,13 @@ public class GroupedWorkIndexer {
 			return null;
 		}
 	}
-
 	long processPublicUserLists() {
+		return processPublicUserLists(false);
+	}
+
+	long processPublicUserLists(boolean userListsOnly) {
 		UserListProcessor listProcessor = new UserListProcessor(this, pikaConn, logger, fullReindex, availableAtLocationBoostValue, ownedByLocationBoostValue);
-		return listProcessor.processPublicUserLists(lastReindexTime, updateServer, solrServer);
+		return listProcessor.processPublicUserLists(lastReindexTime, updateServer, solrServer, userListsOnly);
 	}
 
 	public boolean isGiveOnOrderItemsTheirOwnShelfLocation() {

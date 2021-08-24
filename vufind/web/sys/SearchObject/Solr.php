@@ -26,8 +26,7 @@ require_once ROOT_DIR . '/RecordDrivers/Factory.php';
  * This is the default implementation of the SearchObjectBase class, providing the
  * Solr-driven functionality used by VuFind's standard Search module.
  */
-class SearchObject_Solr extends SearchObject_Base
-{
+class SearchObject_Solr extends SearchObject_Base {
 	// Publicly viewable version
 	private $publicQuery = null;
 	// Facets
@@ -39,11 +38,11 @@ class SearchObject_Solr extends SearchObject_Base
 	// Index
 	private $index = null;
 	// Field List
-	public static $fields = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,title_sub,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisherStr,publishDate,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed';
+	public static $fields = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,title_sub,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisher,publishDate,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed';
 	private $fieldsFull = '*,score';
 	// HTTP Method
-	//    private $method = 'GET';
-	private $method = 'POST';
+	private $method = 'GET';
+//	private $method = 'POST';
 	// Result
 	private $indexResult;
 
@@ -132,7 +131,7 @@ class SearchObject_Solr extends SearchObject_Base
 			$this->basicTypes = $searchSettings['Basic_Searches'];
 		}
 		if (isset($searchSettings['Advanced_Searches'])){
-			$this->advancedTypes = $searchSettings['Advanced_Searches'];
+			$this->advancedSearchTypes = $searchSettings['Advanced_Searches'];
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
@@ -184,15 +183,14 @@ class SearchObject_Solr extends SearchObject_Base
 	 *
 	 * @access  protected
 	 */
-	protected function initFilters()
-	{
+	protected function initFilters(){
 		// Use the default behavior of the parent class, but add support for the
 		// special illustrations filter.
 		parent::initFilters();
-		if (isset($_REQUEST['illustration'])) {
-			if ($_REQUEST['illustration'] == 1) {
+		if (isset($_REQUEST['illustration'])){
+			if ($_REQUEST['illustration'] == 1){
 				$this->addFilter('illustrated:Illustrated');
-			} else if ($_REQUEST['illustration'] == 0) {
+			}elseif ($_REQUEST['illustration'] == 0){
 				$this->addFilter('illustrated:"Not Illustrated"');
 			}
 		}
@@ -258,13 +256,13 @@ class SearchObject_Solr extends SearchObject_Base
 						$field = 'econtent_source_' . $solrScope;
 					}elseif ((strcmp($field, 'collection') == 0) || (strcmp($field, 'collection_group') == 0)){
 						$field = 'collection_' . $solrScope;
-					}elseif ((strcmp($field, 'detailed_location') == 0) || (strcmp($field, 'detailed_location') == 0)){
+					}elseif ((strcmp($field, 'detailed_location') == 0)){
 						$field = 'detailed_location_' . $solrScope;
-					}elseif ((strcmp($field, 'owning_location') == 0) || (strcmp($field, 'owning_location') == 0)){
+					}elseif ((strcmp($field, 'owning_location') == 0)){
 						$field = 'owning_location_' . $solrScope;
-					}elseif ((strcmp($field, 'owning_system') == 0) || (strcmp($field, 'owning_system') == 0)){
+					}elseif ((strcmp($field, 'owning_system') == 0)){
 						$field = 'owning_system_' . $solrScope;
-					}elseif ((strcmp($field, 'available_at') == 0) || (strcmp($field, 'available_at') == 0)){
+					}elseif ((strcmp($field, 'available_at') == 0)){
 						$field = 'available_at_' . $solrScope;
 					}
 				}
@@ -295,8 +293,7 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @var string $searchSource
 	 * @return  boolean
 	 */
-	public function init($searchSource = null, $searchTerm = null)
-	{
+	public function init($searchSource = null, $searchTerm = null){
 		// Call the standard initialization routine in the parent:
 		parent::init($searchSource);
 
@@ -321,7 +318,7 @@ class SearchObject_Solr extends SearchObject_Base
 		$this->initFilters();
 
 		if ($searchTerm == null){
-			$searchTerm = isset($_REQUEST['lookfor']) ? $_REQUEST['lookfor'] : null;
+			$searchTerm = $_REQUEST['lookfor'] ?? null;
 		}
 
 		global $module;
@@ -366,10 +363,10 @@ class SearchObject_Solr extends SearchObject_Base
 				if (is_array($author)){
 					$author = array_pop($author);
 				}
-				$this->searchTerms[] = array(
+				$this->searchTerms[] = [
                     'index'   => 'Author',
                     'lookfor' => trim(strip_tags($author))
-				);
+				];
 			}
 
 			// *** Author/Search
@@ -426,8 +423,7 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @access  public
 	 * @return  boolean
 	 */
-	public function initAdvancedFacets()
-	{
+	public function initAdvancedFacets(){
 		// Call the standard initialization routine in the parent:
 		parent::init();
 
@@ -444,7 +440,7 @@ class SearchObject_Solr extends SearchObject_Base
 			$facets = Library::getDefaultFacets();
 		}
 
-		$this->facetConfig = array();
+		$this->facetConfig = [];
 
 		// The below block of code is common with SideFacets method _construct()
 		global $solrScope;
@@ -453,7 +449,7 @@ class SearchObject_Solr extends SearchObject_Base
 
 			//Adjust facet name for local scoping
 			if ($solrScope){
-				if (in_array($facetName, array(
+				if (in_array($facetName, [
 					'availability_toggle',
 					'format',
 					'format_category',
@@ -465,7 +461,7 @@ class SearchObject_Solr extends SearchObject_Base
 					'owning_library',
 					'available_at',
 					'collection',
-				))){
+				])){
 					$facetName .= '_' . $solrScope;
 				}
 
@@ -487,13 +483,13 @@ class SearchObject_Solr extends SearchObject_Base
 //					$facetName = 'availability_toggle_' . $userLocation->code;
 //				}
 //			}
-			if (isset($searchLocation)) {
-				if ($facet->facetName == 'time_since_added' && $searchLocation->restrictSearchByLocation) {
+			if (isset($searchLocation)){
+				if ($facet->facetName == 'time_since_added' && $searchLocation->restrictSearchByLocation){
 					$facetName = 'local_time_since_added_' . $searchLocation->code;
 				}
 			}
 
-				if ($facet->showInAdvancedSearch){
+			if ($facet->showInAdvancedSearch){
 				$this->facetConfig[$facetName] = $facet->displayName;
 			}
 		}
@@ -501,7 +497,7 @@ class SearchObject_Solr extends SearchObject_Base
 		//********************
 
 		$facetLimit = $this->getFacetSetting('Advanced_Settings', 'facet_limit');
-		if (is_numeric($facetLimit)) {
+		if (is_numeric($facetLimit)){
 			$this->facetLimit = $facetLimit;
 		}
 
@@ -510,10 +506,10 @@ class SearchObject_Solr extends SearchObject_Base
 
 		//********************
 		// Basic Search logic
-		$this->searchTerms[] = array(
-            'index'   => $this->defaultIndex,
-            'lookfor' => ""
-		);
+		$this->searchTerms[] = [
+			'index'   => $this->defaultIndex,
+			'lookfor' => ""
+		];
 
 		return true;
 	}
@@ -568,15 +564,10 @@ class SearchObject_Solr extends SearchObject_Base
 	}
 
 	public function getDebugTiming() {
-		if (!$this->debug){
-			return null;
-		}else{
-			if (!isset($this->indexResult['debug'])){
-				return null;
-			}else{
-				return json_encode($this->indexResult['debug']['timing']);
-			}
+		if ($this->debug && isset($this->indexResult['debug'])){
+				return json_encode($this->indexResult['debug']['timing'], JSON_PRETTY_PRINT);
 		}
+		return null;
 	}
 
 	/**
@@ -848,33 +839,31 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @access  public
 	 * @return  array   Array of HTML chunks for individual records.
 	 */
-	public function getResultRecordHTML()
-	{
+	public function getResultRecordHTML(){
 		global $interface;
 		global $memoryWatcher;
-		$html = array();
-		if (isset($this->indexResult['response'])) {
-			$allWorkIds = array();
-			for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-				$allWorkIds[] = $this->indexResult['response']['docs'][$x]['id'];
+		$html = [];
+		if (isset($this->indexResult['response'])){
+			$allWorkIds = [];
+			foreach($this->indexResult['response']['docs'] as &$doc){
+				$allWorkIds[] = $doc['id'];
 			}
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			GroupedWorkDriver::loadArchiveLinksForWorks($allWorkIds);
-			for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-				$memoryWatcher->logMemory("Started loading record information for index $x");
-				$current = &$this->indexResult['response']['docs'][$x];
-				if (!$this->debug) {
+			foreach($this->indexResult['response']['docs'] as $x => &$current){
+				$memoryWatcher->logMemory("Started loading index document information for result $x");
+				if (!$this->debug){
 					unset($current['explain']);
 					unset($current['score']);
 				}
 				$interface->assign('recordIndex', $x + 1);
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 				$record = RecordDriverFactory::initRecordDriver($current);
-				if (!PEAR_Singleton::isError($record)) {
+				if (!PEAR_Singleton::isError($record)){
 					$interface->assign('recordDriver', $record);
 					$html[] = $interface->fetch($record->getSearchResult($this->view));
-				} else {
-					$html[] = "Unable to find record";
+				}else{
+					$html[] = 'Unable to find record';
 				}
 				//Free some memory
 				$record = 0;
@@ -932,7 +921,9 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @param   array   $ids        Record IDs to load
 	 */
 	public function setQueryIDs($ids){
-		$this->query = 'id:(' . implode(' OR ', $ids) . ')';
+		$this->query = 'id:(' . implode(' ', $ids) . ')';
+		// separating by a single space appears to be the equivalent of ORing as below
+//		$this->query = 'id:(' . implode(' OR ', $ids) . ')';
 	}
 
 	/**
@@ -1048,38 +1039,37 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @access  public
 	 * @return  string   user friendly version of 'query'
 	 */
-	public function displayQuery()
-	{
+	public function displayQuery(){
 		// Maybe this is a restored object...
-		if ($this->query == null) {
-			$fullQuery = $this->indexEngine->buildQuery($this->searchTerms, false);
+		if ($this->query == null){
+			$fullQuery    = $this->indexEngine->buildQuery($this->searchTerms, false);
 			$displayQuery = $this->indexEngine->buildQuery($this->searchTerms, true);
-			$this->query = $fullQuery;
+			$this->query  = $fullQuery;
 			if ($fullQuery != $displayQuery){
 				$this->publicQuery = $displayQuery;
 			}
 		}
 
 		// Do we need the complex answer? Advanced searches
-		if ($this->searchType == $this->advancedSearchType) {
+		if ($this->searchType == $this->advancedSearchType){
 			$output = $this->buildAdvancedDisplayQuery();
 			// If there is a hardcoded public query (like tags) return that
-		} else if ($this->publicQuery != null) {
+		}elseif ($this->publicQuery != null){
 			$output = $this->publicQuery;
 			// If we don't already have a public query, and this is a basic search
 			// with case-insensitive booleans, we need to do some extra work to ensure
 			// that we display the user's query back to them unmodified (i.e. without
 			// capitalized Boolean operators)!
-		} else if (!$this->indexEngine->hasCaseSensitiveBooleans()) {
+		}elseif (!$this->indexEngine->hasCaseSensitiveBooleans()){
 			$output = $this->publicQuery = $this->indexEngine->buildQuery($this->searchTerms, true);
 			// Simple answer
-		} else {
+		}else{
 			$output = $this->query;
 		}
 
 		// Empty searches will look odd to users
-		if ($output == '*:*') {
-			$output = "";
+		if ($output == '*:*'){
+			$output = '';
 		}
 
 		return $output;
@@ -1248,7 +1238,7 @@ class SearchObject_Solr extends SearchObject_Base
 
 		if ($this->searchSource == 'econtent'){
 			global $solrScope;
-			$this->addHiddenFilter("econtent_source_{$solrScope}", '*');
+			$this->addHiddenFilter("econtent_source_$solrScope", '*');
 		}
 
 		// Our search has already been processed in init()
@@ -1257,20 +1247,19 @@ class SearchObject_Solr extends SearchObject_Base
 		// Build a recommendations module appropriate to the current search:
 		if ($recommendations) {
 			$this->initRecommendations();
+			$timer->logTime('initRecommendations');
 		}
-		$timer->logTime("initRecommendations");
-
 
 		// Tag searches need to be handled differently
-		if (count($search) == 1 && isset($search[0]['index']) && $search[0]['index'] == 'tag'){
+		if (!empty($search[0]['index']) && $search[0]['index'] == 'tag'){
 			// If we managed to find some tag matches, the query will be a list of Ids.
 			// If we didn't find any tag matches, we should return an empty record set.
 			$this->publicQuery = $search[0]['lookfor'];
 			if (!$this->processTagSearch($search[0]['lookfor'])){
 				// Save search so it displays correctly on the "no hits" page:
-				return array('response' => array('numFound' => 0, 'docs' => array()));
+				return ['response' => ['numFound' => 0, 'docs' => []]];
 			}
-			$timer->logTime("process Tag search");
+			$timer->logTime('process Tag search');
 		}else{
 
 			// Build Query
@@ -1279,7 +1268,7 @@ class SearchObject_Solr extends SearchObject_Base
 			}else{
 				$query = $this->indexEngine->buildQuery($search, false);
 			}
-			$timer->logTime("build query");
+			$timer->logTime('build query');
 			if (PEAR_Singleton::isError($query)){
 				return $query;
 			}
@@ -1378,7 +1367,7 @@ class SearchObject_Solr extends SearchObject_Base
 		}
 
 		// Build a list of facets we want from the index
-		$facetSet = array();
+		$facetSet = [];
 		if (!empty($this->facetConfig)) {
 			$facetSet['limit'] = $this->facetLimit;
 			foreach ($this->facetConfig as $facetField => $facetName) {
@@ -1420,12 +1409,12 @@ class SearchObject_Solr extends SearchObject_Base
 			// If the spellcheck query is purely numeric, skip it if
 			// the appropriate setting is turned on.
 			if ($this->spellSkipNumeric && is_numeric($spellcheck)) {
-				$spellcheck = "";
+				$spellcheck = '';
 			}
 		} else {
-			$spellcheck = "";
+			$spellcheck = '';
 		}
-		$timer->logTime("create spell check");
+		$timer->logTime('create spell check');
 
 		// Get time before the query
 		$this->startQueryTimer();
@@ -1688,16 +1677,15 @@ class SearchObject_Solr extends SearchObject_Base
 	 *                                  the return array.
 	 * @return  array   Facets data arrays
 	 */
-	public function getFacetList($filter = null, $expandingLinks = false)
-	{
+	public function getFacetList($filter = null, $expandingLinks = false){
 		global $solrScope;
 		// If there is no filter, we'll use all facets as the filter:
-		if (is_null($filter)) {
+		if (is_null($filter)){
 			$filter = $this->facetConfig;
 		}
 
 		// Start building the facet list:
-		$list = array();
+		$list = [];
 
 		// If we have no facets to process, give up now
 		if (!isset($this->indexResult['facet_counts'])){
@@ -1730,7 +1718,7 @@ class SearchObject_Solr extends SearchObject_Base
 				$location = new Location();
 				$location->whereAddIn('code', $locationsToLookfor, 'string');
 				$location->find();
-				$additionalAvailableAtLocations = array();
+				$additionalAvailableAtLocations = [];
 				while ($location->fetch()){
 					$additionalAvailableAtLocations[] = $location->facetLabel;
 				}
@@ -1741,7 +1729,7 @@ class SearchObject_Solr extends SearchObject_Base
 			$relatedHomeLocationFacets = $locationSingleton->getLocationsFacetsForLibrary($homeLibrary->libraryId);
 		}
 
-		$allFacets = array_merge($this->indexResult['facet_counts']['facet_fields'], $this->indexResult['facet_counts']['facet_dates']);
+		$allFacets = array_merge($this->indexResult['facet_counts']['facet_fields'], $this->indexResult['facet_counts']['facet_ranges']);
 		foreach ($allFacets as $field => $data) {
 			// Skip filtered fields and empty arrays:
 			if (!in_array($field, $validFields) || count($data) < 1) {
@@ -1761,11 +1749,11 @@ class SearchObject_Solr extends SearchObject_Base
 				}
 			}
 			// Initialize the settings for the current field
-			$list[$field] = array();
+			$list[$field] = [];
 			// Add the on-screen label
 			$list[$field]['label'] = $filter[$field];
 			// Build our array of values for this field
-			$list[$field]['list']    = array();
+			$list[$field]['list']    = [];
 			$foundInstitution        = false;
 			$doInstitutionProcessing = false;
 			$foundBranch             = false;
@@ -1787,7 +1775,7 @@ class SearchObject_Solr extends SearchObject_Base
 			// Loop through values:
 			foreach ($data as $facet) {
 				// Initialize the array of data about the current facet:
-				$currentSettings              = array();
+				$currentSettings              = [];
 				$currentSettings['value']     = $facet[0];
 				$currentSettings['display']   = $translate ? translate($facet[0]) : $facet[0];
 				$currentSettings['count']     = $facet[1];
@@ -2070,7 +2058,7 @@ class SearchObject_Solr extends SearchObject_Base
 			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['id']) ? $curDoc['id'] : '');
 			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['title_display']) ? $curDoc['title_display'] : '');
 			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['author']) ? $curDoc['author'] : '');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publisherStr']) ? implode(', ', $curDoc['publisherStr']) : '');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publisher']) ? implode(', ', $curDoc['publisherStr']) : '');
 			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publishDate']) ? implode(', ', $curDoc['publishDate']) : '');
 			$callNumber = '';
 			if (isset($curDoc['local_callnumber_' . $solrScope])){
@@ -2126,19 +2114,6 @@ class SearchObject_Solr extends SearchObject_Base
 	}
 
 	/**
-	 * Retrieves a document specified by the ID.
-	 *
-	 * @param   string[]  $ids        An array of documents to retrieve from Solr
-	 * @access  public
-	 * @throws  object              PEAR Error
-	 * @return  string              The requested resource
-	 */
-	function searchForRecordIds($ids){
-		$this->indexResult = $this->indexEngine->searchForRecordIds($ids);
-	}
-
-
-	/**
 	 * Retrieves a document specified by the item barcode.
 	 *
 	 * @param   string  $barcode    A barcode of an item in the document to retrieve from Solr
@@ -2164,13 +2139,11 @@ class SearchObject_Solr extends SearchObject_Base
 
 	private function getFieldsToReturn() {
 		if (isset($_REQUEST['allFields'])){
-			$fieldsToReturn = '*,score';
+			$fieldsToReturn = $this->fieldsFull;
 		}else{
 			$fieldsToReturn = SearchObject_Solr::$fields;
 			global $solrScope;
 			if ($solrScope != false){
-				//$fieldsToReturn .= ',related_record_ids_' . $solrScope;
-				//$fieldsToReturn .= ',related_items_' . $solrScope;
 				$fieldsToReturn .= ',format_' . $solrScope;
 				$fieldsToReturn .= ',format_category_' . $solrScope;
 				$fieldsToReturn .= ',collection_' . $solrScope;
@@ -2183,10 +2156,10 @@ class SearchObject_Solr extends SearchObject_Base
 				$fieldsToReturn .= ',available_at_' . $solrScope;
 				$fieldsToReturn .= ',itype_' . $solrScope;
 
-			}else{
-				//$fieldsToReturn .= ',related_record_ids';
-				//$fieldsToReturn .= ',related_record_items';
-				//$fieldsToReturn .= ',related_items_related_record_ids';
+			}
+			else{
+				//TODO: this block is obsolete, since all these facets are scoped.  Likely would cause empty document returns
+				// if no scope is set
 				$fieldsToReturn .= ',format';
 				$fieldsToReturn .= ',format_category';
 				$fieldsToReturn .= ',days_since_added';
@@ -2216,5 +2189,127 @@ class SearchObject_Solr extends SearchObject_Base
 
 	public function pingServer($failOnError = true){
 		return $this->indexEngine->pingServer($failOnError);
+	}
+
+	public function getNextPrevLinks(){
+		global $interface;
+		global $timer;
+		//Setup next and previous links based on the search results.
+		if (isset($_REQUEST['searchId']) && isset($_REQUEST['recordIndex']) && ctype_digit($_REQUEST['searchId']) && ctype_digit($_REQUEST['recordIndex'])){
+			//rerun the search
+			require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
+			$s           = new SearchEntry();
+			$s->id       = $_REQUEST['searchId'];
+			$currentPage = isset($_REQUEST['page']) && ctype_digit($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+			$interface->assign('searchId', $_REQUEST['searchId']);
+			$interface->assign('page', $currentPage);
+
+			if ($s->find(true)){
+				$minSO = unserialize($s->search_object);
+				/** @var SearchObject_Solr $searchObject */
+				$searchObject = SearchObjectFactory::deminify($minSO);
+				$searchObject->setPage($currentPage);
+				//Run the search
+				$result = $searchObject->processSearch(true);
+
+				//Check to see if we need to run a search for the next or previous page
+				$currentResultIndex  = $_REQUEST['recordIndex'] - 1;
+				$recordsPerPage      = $searchObject->getLimit();
+				$adjustedResultIndex = $currentResultIndex - ($recordsPerPage * ($currentPage - 1));
+
+				if (($currentResultIndex) % $recordsPerPage == 0 && $currentResultIndex > 0){
+					//Need to run a search for the previous page
+					$interface->assign('previousPage', $currentPage - 1);
+					$previousSearchObject = clone $searchObject;
+					$previousSearchObject->setPage($currentPage - 1);
+					$previousSearchObject->processSearch(true);
+					$previousResults = $previousSearchObject->getResultRecordSet();
+				}elseif (($currentResultIndex + 1) % $recordsPerPage == 0 && ($currentResultIndex + 1) < $searchObject->getResultTotal()){
+					//Need to run a search for the next page
+					$nextSearchObject = clone $searchObject;
+					$interface->assign('nextPage', $currentPage + 1);
+					$nextSearchObject->setPage($currentPage + 1);
+					$nextSearchObject->processSearch(true);
+					$nextResults = $nextSearchObject->getResultRecordSet();
+				}
+
+				if (!PEAR_Singleton::isError($result) && $searchObject->getResultTotal() > 0){
+					$recordSet = $searchObject->getResultRecordSet();
+					//Record set is 0 based, but we are passed a 1 based index
+					if ($currentResultIndex > 0){
+						if (isset($previousResults)){
+							$previousRecord = $previousResults[count($previousResults) -1];
+						}else{
+							$previousId = $adjustedResultIndex - 1;
+							if (isset($recordSet[$previousId])){
+								$previousRecord = $recordSet[$previousId];
+							}
+						}
+
+						//Convert back to 1 based index
+						if (isset($previousRecord)) {
+							$interface->assign('previousIndex', $currentResultIndex - 1 + 1);
+							if (!empty($previousRecord['title_display'])){
+								$interface->assign('previousTitle', $previousRecord['title_display']);
+							}
+							if ($previousRecord['recordtype'] == 'grouped_work'){
+								require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+								$groupedWork    = new GroupedWorkDriver($previousRecord);
+								$relatedRecords = $groupedWork->getRelatedRecords(true);
+								$timer->logTime('Loaded related records for previous result');
+								if (count($relatedRecords) == 1){
+									$previousRecord = reset($relatedRecords);
+									[$previousType, $previousId] = explode('/', trim($previousRecord['url'], '/'));
+									$interface->assign('previousId', $previousId);
+									$interface->assign('previousType', $previousType);
+								}else{
+									$interface->assign('previousType', 'GroupedWork');
+									$interface->assign('previousId', $previousRecord['id']);
+								}
+							}elseif ($previousRecord['recordtype'] == 'list'){
+								$interface->assign('previousType', 'MyAccount/MyList');
+								$interface->assign('previousId', str_replace('list', '', $previousRecord['id']));
+							}
+						}
+					}
+					if ($currentResultIndex + 1 < $searchObject->getResultTotal()){
+						if (isset($nextResults)){
+							$nextRecord = $nextResults[0];
+						}else{
+							$nextRecordIndex = $adjustedResultIndex + 1;
+							if (isset($recordSet[$nextRecordIndex])){
+								$nextRecord = $recordSet[$nextRecordIndex];
+							}
+						}
+						//Convert back to 1 based index
+						$interface->assign('nextIndex', $currentResultIndex + 1 + 1);
+						if (isset($nextRecord)){
+							if (!empty($nextRecord['title_display'])){
+								$interface->assign('nextTitle', $nextRecord['title_display']);
+							}
+							if ($nextRecord['recordtype'] == 'grouped_work'){
+								require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+								$groupedWork    = new GroupedWorkDriver($nextRecord);
+								$relatedRecords = $groupedWork->getRelatedRecords(true);
+								$timer->logTime('Loaded related records for next result');
+								if (count($relatedRecords) == 1) {
+									$nextRecord = reset($relatedRecords);
+									[$nextType, $nextId] = explode('/', trim($nextRecord['url'], '/'));
+									$interface->assign('nextId', $nextId);
+									$interface->assign('nextType', $nextType);
+								} else {
+									$interface->assign('nextType', 'GroupedWork');
+									$interface->assign('nextId', $nextRecord['id']);
+								}
+							}elseif ($previousRecord['recordtype'] == 'list'){
+								$interface->assign('nextType', 'MyAccount/MyList');
+								$interface->assign('nextId', str_replace('list', '', $nextRecord['id']));
+							}
+						}
+					}
+				}
+			}
+			$timer->logTime('Got next/previous links');
+		}
 	}
 }

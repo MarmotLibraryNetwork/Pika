@@ -41,8 +41,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 	//private $fields = '*,score';
 	private $fields = 'PID,fgs_label_s,dc.title,mods_abstract_s,mods_genre_s,RELS_EXT_hasModel_uri_s,dateCreated,score,fgs_createdDate_dt,fgs_lastModifiedDate_dt';
 	// HTTP Method
-	//    private $method = 'GET';
-	private $method = 'POST';
+	private $method = 'GET';
 	// Result
 	private $indexResult;
 
@@ -80,7 +79,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 		// Include our solr index
 		$this->searchType      = 'islandora';
 		$this->basicSearchType = 'islandora';
-		$this->indexEngine     = new Solr($configArray['Islandora']['solrUrl'], isset($configArray['Islandora']['solrCore']) ? $configArray['Islandora']['solrCore'] : 'islandora');
+		$this->indexEngine     = new Solr($configArray['Islandora']['solrUrl'], $configArray['Islandora']['solrCore'] ?? 'islandora');
 		$timer->logTime('Created Index Engine for Islandora');
 
 		//Make sure to turn off sharding for islandora
@@ -116,7 +115,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 			$this->basicTypes = $searchSettings['Basic_Searches'];
 		}
 		if (isset($searchSettings['Advanced_Searches'])){
-			$this->advancedTypes = $searchSettings['Advanced_Searches'];
+			$this->advancedSearchTypes = $searchSettings['Advanced_Searches'];
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
@@ -612,7 +611,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 
 		// Empty searches will look odd to users
 		if ($output == '*:*'){
-			$output = "";
+			$output = '';
 		}
 
 		return $output;

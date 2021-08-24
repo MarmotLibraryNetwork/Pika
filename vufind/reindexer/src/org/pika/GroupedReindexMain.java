@@ -36,12 +36,12 @@ public class GroupedReindexMain {
 
 	//General configuration
 	private static String serverName;
-	private static boolean fullReindex = false;
-	private static String individualWorkToProcess;
+	private static boolean fullReindex   = false;
+	private static boolean userListsOnly = false;
+	private static String  individualWorkToProcess;
 	private static String profileToIndex;
 	private static String baseLogPath;
-	private static String solrPort;
-	private static String solrDir;
+//	private static String solrDir; // Only used for reloadSchema method that is commented out
 	
 	//Reporting information
 	private static long reindexLogId;
@@ -75,6 +75,9 @@ public class GroupedReindexMain {
 		
 		if (args.length >= 2) {
 			switch (args[1].toLowerCase()){
+				case "userlists" :
+					userListsOnly = true;
+					break;
 				case "fullreindex" :
 					fullReindex = true;
 					break;
@@ -133,8 +136,11 @@ public class GroupedReindexMain {
 					} catch (Exception e) {
 						logger.error("Unable to process individual work " + individualWorkToProcess, e);
 					}
-				}else if(profileToIndex != null && !profileToIndex.isEmpty()){
+				}else if(profileToIndex != null && !profileToIndex.isEmpty()) {
 					numWorksProcessed = groupedWorkIndexer.processGroupedWorks(profileToIndex);
+				} else if (userListsOnly){
+					logger.info("Processing User Lists only");
+					numListsProcessed = groupedWorkIndexer.processPublicUserLists(userListsOnly);
 				} else {
 					logger.info("Running Reindex");
 					numWorksProcessed = groupedWorkIndexer.processGroupedWorks(siteMapsByScope, uniqueGroupedWorks);
@@ -159,7 +165,7 @@ public class GroupedReindexMain {
 					}
 				}
 
-				groupedWorkIndexer.finishIndexing(individualWorkToProcess != null);
+				groupedWorkIndexer.finishIndexing(individualWorkToProcess != null, userListsOnly);
 				long lexileDataMatches = groupedWorkIndexer.getLexileDataMatches();
 				if (lexileDataMatches > 0){
 					addNoteToReindexLog("Lexile matches for " + lexileDataMatches + " grouped Works");
@@ -183,7 +189,6 @@ public class GroupedReindexMain {
 		sendCompletionMessage(numWorksProcessed, numListsProcessed);
 		
 		addNoteToReindexLog("Finished Reindex for " + serverName);
-		logger.info("Finished Reindex for " + serverName);
 		long endTime     = new Date().getTime();
 		long elapsedTime = endTime - startTime;
 		logger.info("Elapsed Minutes " + (elapsedTime / 60000));
@@ -330,36 +335,6 @@ public class GroupedReindexMain {
 	}
 
 	private static void initializeReindex() {
-		// Delete the existing reindex.log file
-		File solrMarcLog = new File(baseLogPath + "/" + serverName + "/logs/grouped_reindex.log");
-		if (solrMarcLog.exists()){
-			if (!solrMarcLog.delete()){
-				logger.warn("Could not remove " + solrMarcLog.toString());
-			}
-		}
-		for (int i = 1; i <= 10; i++){
-			solrMarcLog = new File(baseLogPath + "/" + serverName + "/logs/grouped_reindex.log." + i);
-			if (solrMarcLog.exists()){
-				if (!solrMarcLog.delete()){
-					logger.warn("Could not remove " + solrMarcLog.toString());
-				}
-			}
-		}
-		solrMarcLog = new File("org.solrmarc.log");
-		if (solrMarcLog.exists()){
-			if (!solrMarcLog.delete()){
-				logger.warn("Could not remove " + solrMarcLog.toString());
-			}
-		}
-		for (int i = 1; i <= 4; i++){
-			solrMarcLog = new File("org.solrmarc.log." + i);
-			if (solrMarcLog.exists()){
-				if (!solrMarcLog.delete()){
-					logger.warn("Could not remove " + solrMarcLog.toString());
-				}
-			}
-		}
-		
 		// Initialize the logger
 		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j.grouped_reindex.properties");
 		if (log4jFile.exists()) {
@@ -368,23 +343,43 @@ public class GroupedReindexMain {
 			System.out.println("Could not find log4j configuration " + log4jFile.getAbsolutePath());
 			System.exit(1);
 		}
-		
+
 		logger.info("Starting Reindex for " + serverName);
 
 		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
 
 		baseLogPath = PikaConfigIni.getIniValue("Site", "baseLogPath");
-		solrPort = PikaConfigIni.getIniValue("Reindex", "solrPort");
+		String solrPort = PikaConfigIni.getIniValue("Reindex", "solrPort");
 		if (solrPort == null || solrPort.length() == 0) {
 			logger.error("You must provide the port where the solr index is loaded in the import configuration file");
 			System.exit(1);
 		}
 
-		solrDir = PikaConfigIni.getIniValue("Index", "local");
-		if (solrDir == null){
-			solrDir = "/data/pika/" + serverName + "/solr";
+		// Delete the existing reindex.log file
+/*  Hadn't work for ages because previously baseLogPath wasn't populated.
+		It should work now, but disabling. pascal 7/20/21
+		File solrMarcLog = new File(baseLogPath + "/" + serverName + "/logs/grouped_reindex.log");
+		if (solrMarcLog.exists()){
+			if (!solrMarcLog.delete()){
+				logger.warn("Could not remove " + solrMarcLog);
+			}
 		}
-		
+		for (int i = 1; i <= 10; i++){
+			solrMarcLog = new File(baseLogPath + "/" + serverName + "/logs/grouped_reindex.log." + i);
+			if (solrMarcLog.exists()){
+				if (!solrMarcLog.delete()){
+					logger.warn("Could not remove " + solrMarcLog);
+				}
+			}
+		}
+*/
+
+		// Only used for reloadSchema method that is commented out
+//		solrDir = PikaConfigIni.getIniValue("Index", "local");
+//		if (solrDir == null){
+//			solrDir = "/data/pika/" + serverName + "/solr";
+//		}
+
 		logger.info("Setting up database connections");
 		//Setup connections to pika and econtent databases
 		String databaseConnectionInfo = PikaConfigIni.getIniValue("Database", "database_vufind_jdbc");
@@ -449,7 +444,7 @@ public class GroupedReindexMain {
 		}
 
 		//Update variables table to mark the index as complete
-		if (individualWorkToProcess == null){
+		if (individualWorkToProcess == null && !userListsOnly){
 			PikaSystemVariables systemVariables = new PikaSystemVariables(logger, pikaConn);
 			if (!systemVariables.setVariable(fullReindex ? "lastFullReindexFinish" : "lastPartialReindexFinish", finishedTimestamp)){
 				logger.error("Unable to update variables with completion time.");

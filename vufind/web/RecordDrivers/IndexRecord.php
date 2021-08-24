@@ -40,9 +40,9 @@ class IndexRecord extends RecordInterface
 	 * @access protected
 	 */
 	protected $forbiddenSnippetFields = array(
-		'author', 'author-letter', 'auth_author2', 'title', 'title_short', 'title_full',
+		'author', /*'author-letter',*/ 'auth_author2', 'title', 'title_short', 'title_full',
 		'title_auth', 'title_sub', 'title_display', 'spelling', 'id',
-		'fulltext_unstemmed', 'econtentText_unstemmed',
+		'fulltext_unstemmed', //TODO: fulltext_unstemmed probably obsolete
 		'spellingShingle', 'collection', 'title_proper',
 		'display_description'
 	);
@@ -54,9 +54,9 @@ class IndexRecord extends RecordInterface
 	 * @var    array
 	 * @access protected
 	 */
-	protected $snippetCaptions = array(
+	protected $snippetCaptions = [
 		'display_description' => 'Description'
-	);
+	];
 
 	/**
 	 * Should we highlight fields in search results?
@@ -99,7 +99,7 @@ class IndexRecord extends RecordInterface
 		$searchSettings        = getExtraConfigArray('searches');
 		$this->highlight       = $configArray['Index']['enableHighlighting'];
 		$this->snippet         = $configArray['Index']['enableSnippets'];
-		$this->snippetCaptions = isset($searchSettings['Snippet_Captions']) && is_array($searchSettings['Snippet_Captions']) ? $searchSettings['Snippet_Captions'] : array();
+		$this->snippetCaptions = empty($searchSettings['Snippet_Captions']) ? [] : $searchSettings['Snippet_Captions'];
 
 		if ($groupedWork == null){
 			$this->loadGroupedWork();
@@ -778,8 +778,7 @@ class IndexRecord extends RecordInterface
 	 * @return mixed        Caption if found, false if none available.
 	 * @access protected
 	 */
-	protected function getSnippetCaption($field)
-	{
+	protected function getSnippetCaption($field){
 		if (isset($this->snippetCaptions[$field])){
 			return $this->snippetCaptions[$field];
 		}else{
@@ -799,18 +798,17 @@ class IndexRecord extends RecordInterface
 	 * with 'snippet' and 'caption' keys.
 	 * @access protected
 	 */
-	protected function getHighlightedSnippets()
-	{
-		$snippets = array();
+	protected function getHighlightedSnippets(){
+		$snippets = [];
 		// Only process snippets if the setting is enabled:
-		if ($this->snippet && isset($this->fields['_highlighting'])) {
-			if (is_array($this->fields['_highlighting'])) {
-				foreach ($this->fields['_highlighting'] as $key => $value) {
-					if (!in_array($key, $this->forbiddenSnippetFields)) {
-						$snippets[] = array(
+		if ($this->snippet && isset($this->fields['_highlighting'])){
+			if (is_array($this->fields['_highlighting'])){
+				foreach ($this->fields['_highlighting'] as $key => $value){
+					if (!in_array($key, $this->forbiddenSnippetFields)){
+						$snippets[] = [
 							'snippet' => $value[0],
 							'caption' => $this->getSnippetCaption($key)
-						);
+						];
 					}
 				}
 			}
@@ -923,18 +921,6 @@ class IndexRecord extends RecordInterface
 	}
 
 	/**
-	 * Get an array of newer titles for the record.
-	 *
-	 * @access  protected
-	 * @return  array
-	 */
-	protected function getNewerTitles()
-	{
-		return isset($this->fields['title_new']) ?
-		$this->fields['title_new'] : array();
-	}
-
-	/**
 	 * Get the item's place of publication.
 	 *
 	 * @access  protected
@@ -946,16 +932,26 @@ class IndexRecord extends RecordInterface
 	}
 
 	/**
-	 * Get an array of previous titles for the record.
+	 * TODO: not called anywhere
+	 * Get an array of newer titles for the record's series.
 	 *
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getPreviousTitles()
-	{
-		return isset($this->fields['title_old']) ?
-		$this->fields['title_old'] : array();
-	}
+//	protected function getNewerTitles(){
+//		return $this->fields['title_new'] ?? [];
+//	}
+
+	/**
+	 * TODO: not called anywhere
+	 * Get an array of previous titles for the record's series.
+	 *
+	 * @access  protected
+	 * @return  array
+	 */
+//	protected function getPreviousTitles(){
+//		return $this->fields['title_old'] ?? [];
+//	}
 
 	/**
 	 * Get the main author of the record.

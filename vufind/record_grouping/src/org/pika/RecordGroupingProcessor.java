@@ -162,8 +162,20 @@ class RecordGroupingProcessor {
 					if (recordNumberSubfield != null && (recordNumberPrefix.length() == 0 || recordNumberSubfield.getData().length() > recordNumberPrefix.length())) {
 						if (recordNumberSubfield.getData().startsWith(recordNumberPrefix)) {
 							String recordNumber = recordNumberSubfield.getData().trim();
-							identifier = new RecordIdentifier(recordSource, recordNumber);
-							break;
+							if (!recordNumber.contains("/") && !recordNumber.contains("\\")) {
+								identifier = new RecordIdentifier(recordSource, recordNumber);
+								if (recordNumberFields.size() > 1){
+									final String message = "Record found with multiple recordNumber Tags for " + identifier;
+									if (fullRegrouping) {
+										logger.warn(message);
+									} else {
+										logger.info(message);
+									}
+								}
+								break;
+							} else {
+								logger.warn("Record number contained a / or \\ character for " + recordSource + " : " + recordNumber + "; Skipping grouping for this record.");
+							}
 						}
 					}
 				} else {
@@ -171,19 +183,27 @@ class RecordGroupingProcessor {
 //					logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a control field");
 					ControlField curRecordNumberField = (ControlField) recordNumberFieldValue;
 					String       recordNumber         = curRecordNumberField.getData().trim();
-					identifier = new RecordIdentifier(recordSource, recordNumber);
-					break;
+					if (!recordNumber.contains("/") && !recordNumber.contains("\\")) {
+						identifier = new RecordIdentifier(recordSource, recordNumber);
+						if (recordNumberFields.size() > 1){
+							logger.warn("Record found with multiple recordNumber Tags for " + identifier);
+						}
+						break;
+					} else {
+						logger.warn("Record number contained a / or \\ character for " + recordSource + " : " + recordNumber + "; Skipping grouping for this record.");
+					}
 				}
 			}
 		}
 
 		if (doAutomaticEcontentSuppression) {
+			// Suppress Overdrive (or Hoopla for Marmot with ils eContent record with items) records from grouping, typically from the ils profile
+			// This is based on the assumption that OverDrive records will be loaded through APIs
+			// (or sideloaded for Hoopla)
 			if (logger.isDebugEnabled()) {
-				logger.debug("getPrimaryIdentifierFromMarcRecord - Doing automatic Econtent Suppression");
+				logger.debug("getPrimaryIdentifierFromMarcRecord - Doing automatic eContent Suppression");
 			}
 
-			//Check to see if the record is an overdrive record
-			//TODO: is this needed at the grouping level
 			if (useEContentSubfield) {
 				boolean allItemsSuppressed = true;
 

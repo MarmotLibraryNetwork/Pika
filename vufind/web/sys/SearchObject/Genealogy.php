@@ -41,8 +41,8 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	// Field List
 	private $fields = '*,score';
 	// HTTP Method
-	//    private $method = 'GET';
-	private $method = 'POST';
+	private $method = 'GET';
+//	private $method = 'POST';
 	// Result
 	private $indexResult;
 
@@ -51,13 +51,13 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	/** @var Solr */
 	private $indexEngine = null;
 	// Facets information
-	private $allFacetSettings = array();    // loaded from facets.ini
+	private $allFacetSettings = [];    // loaded from facets.ini
 
 	// Spelling
 	private $spellingLimit = 3;
-	private $spellQuery    = array();
-	private $dictionary    = 'default';
-	private $spellSimple   = false;
+	private $spellQuery = [];
+	private $dictionary = 'default';
+	private $spellSimple = false;
 	private $spellSkipNumeric = true;
 
 	/**
@@ -81,11 +81,11 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		$timer->logTime('Created Index Engine for Genealogy');
 
 		//Make sure to turn off sharding for genealogy
-		$this->indexEngine->setShards(array());
+		$this->indexEngine->setShards([]);
 
 		// Get default facet settings
 		$this->allFacetSettings = getExtraConfigArray('genealogyFacets');
-		$this->facetConfig      = array();
+		$this->facetConfig      = [];
 		$facetLimit             = $this->getFacetSetting('Results_Settings', 'facet_limit');
 		if (is_numeric($facetLimit)){
 			$this->facetLimit = $facetLimit;
@@ -109,16 +109,16 @@ class SearchObject_Genealogy extends SearchObject_Base {
 			$this->basicTypes = $searchSettings['Basic_Searches'];
 		}
 		if (isset($searchSettings['Advanced_Searches'])){
-			$this->advancedTypes = $searchSettings['Advanced_Searches'];
+			$this->advancedSearchTypes = $searchSettings['Advanced_Searches'];
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
 		if (isset($searchSettings['Sorting'])){
 			$this->sortOptions = $searchSettings['Sorting'];
 		}else{
-			$this->sortOptions = array('relevance' => 'sort_relevance',
-			                           'year'      => 'sort_year', 'year asc' => 'sort_year asc',
-			                           'title'     => 'sort_title');
+			$this->sortOptions = ['relevance' => 'sort_relevance',
+			                      'year'      => 'sort_year', 'year asc' => 'sort_year asc',
+			                      'title'     => 'sort_title'];
 		}
 
 		// Load Spelling preferences
@@ -145,8 +145,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 * @access  public
 	 * @return  boolean
 	 */
-	public function init($searchSource = null)
-	{
+	public function init($searchSource = 'genealogy'){
 		// Call the standard initialization routine in the parent:
 		parent::init('genealogy');
 
@@ -155,9 +154,9 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		// our work here is done; if there is an error, we should report failure;
 		// if restoreSavedSearch returns false, we should proceed as normal.
 		$restored = $this->restoreSavedSearch();
-		if ($restored === true) {
+		if ($restored === true){
 			return true;
-		} elseif (PEAR_Singleton::isError($restored)) {
+		}elseif (PEAR_Singleton::isError($restored)){
 			return false;
 		}
 
@@ -170,12 +169,12 @@ class SearchObject_Genealogy extends SearchObject_Base {
 
 		//********************
 		// Basic Search logic
-		if (!$this->initBasicSearch()) {
+		if (!$this->initBasicSearch()){
 			$this->initAdvancedSearch();
 		}
 
 		// If a query override has been specified, log it here
-		if (isset($_REQUEST['q'])) {
+		if (isset($_REQUEST['q'])){
 			$this->query = $_REQUEST['q'];
 		}
 
@@ -189,16 +188,15 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 * @access  public
 	 * @return  boolean
 	 */
-	public function initAdvancedFacets()
-	{
+	public function initAdvancedFacets(){
 		// Call the standard initialization routine in the parent:
 		parent::init();
 
 		//********************
 		// Adjust facet options to use advanced settings
-		$this->facetConfig = isset($this->allFacetSettings['Advanced']) ? $this->allFacetSettings['Advanced'] : array();
-		$facetLimit = $this->getFacetSetting('Advanced_Settings', 'facet_limit');
-		if (is_numeric($facetLimit)) {
+		$this->facetConfig = isset($this->allFacetSettings['Advanced']) ? $this->allFacetSettings['Advanced'] : [];
+		$facetLimit        = $this->getFacetSetting('Advanced_Settings', 'facet_limit');
+		if (is_numeric($facetLimit)){
 			$this->facetLimit = $facetLimit;
 		}
 
@@ -207,26 +205,25 @@ class SearchObject_Genealogy extends SearchObject_Base {
 
 		//********************
 		// Basic Search logic
-		$this->searchTerms[] = array(
-            'index'   => $this->defaultIndex,
-            'lookfor' => ""
-            );
+		$this->searchTerms[] = [
+			'index'   => $this->defaultIndex,
+			'lookfor' => ""
+		];
 
-            return true;
+		return true;
 	}
 
 	/**
 	 * Return the specified setting from the facets.ini file.
 	 *
 	 * @access  public
-	 * @param   string $section   The section of the facets.ini file to look at.
-	 * @param   string $setting   The setting within the specified file to return.
+	 * @param string $section The section of the facets.ini file to look at.
+	 * @param string $setting The setting within the specified file to return.
 	 * @return  string    The value of the setting (blank if none).
 	 */
-	public function getFacetSetting($section, $setting)
-	{
+	public function getFacetSetting($section, $setting){
 		return isset($this->allFacetSettings[$section][$setting]) ?
-		$this->allFacetSettings[$section][$setting] : '';
+			$this->allFacetSettings[$section][$setting] : '';
 	}
 
 	/**
@@ -235,14 +232,13 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 *
 	 * @access  private
 	 */
-	protected function purge()
-	{
+	protected function purge(){
 		// Call standard purge:
 		parent::purge();
 
 		// Make some Solr-specific adjustments:
-		$this->query        = null;
-		$this->publicQuery  = null;
+		$this->query       = null;
+		$this->publicQuery = null;
 	}
 
 	/**
@@ -250,12 +246,17 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 *
 	 * @access  public
 	 */
-	public function useBasicDictionary() {
+	public function useBasicDictionary(){
 		$this->dictionary = 'basicSpell';
 	}
 
-	public function getQuery()          {return $this->query;}
-	public function getIndexEngine()    {return $this->indexEngine;}
+	public function getQuery(){
+		return $this->query;
+	}
+
+	public function getIndexEngine(){
+		return $this->indexEngine;
+	}
 
 	/**
 	 * Return the field (index) searched by a basic search
@@ -263,14 +264,9 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 * @access  public
 	 * @return  string   The searched index
 	 */
-	public function getSearchIndex()
-	{
+	public function getSearchIndex(){
 		// Use normal parent method for non-advanced searches.
-		if ($this->searchType == $this->basicSearchType) {
-			return parent::getSearchIndex();
-		} else {
-			return null;
-		}
+		return $this->searchType == $this->basicSearchType ? parent::getSearchIndex() : null;
 	}
 
 	/**
@@ -278,19 +274,17 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 * results suitable for use on a user's "favorites" page.
 	 *
 	 * @access  public
-	 * @param   object  $user       User object owning tag/note metadata.
-	 * @param   int     $listId     ID of list containing desired tags/notes (or
+	 * @param object $user User object owning tag/note metadata.
+	 * @param int $listId ID of list containing desired tags/notes (or
 	 *                              null to show tags/notes from all user's lists).
-	 * @param   bool    $allowEdit  Should we display edit controls?
+	 * @param bool $allowEdit Should we display edit controls?
 	 * @return  array   Array of HTML chunks for individual records.
 	 */
-	public function getResultListHTML($user, $listId = null, $allowEdit = true)
-	{
+	public function getResultListHTML($user, $listId = null, $allowEdit = true){
 		global $interface;
 
-		$html = array();
-		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-			$current = & $this->indexResult['response']['docs'][$x];
+		$html = [];
+		foreach ($this->indexResult['response']['docs'] as $current){
 			$record = RecordDriverFactory::initRecordDriver($current);
 			$html[] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
 		}
@@ -303,8 +297,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 * @access  public
 	 * @return  array   recordSet
 	 */
-	public function getResultRecordSet()
-	{
+	public function getResultRecordSet(){
 		//Marmot add shortIds without dot for use in display.
 		$recordSet = $this->indexResult['response']['docs'];
 		foreach ($recordSet as $key => $record){
@@ -320,16 +313,20 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 * @access  public
 	 * @return  array   Array of HTML chunks for individual records.
 	 */
-	public function getResultRecordHTML()
-	{
+	public function getResultRecordHTML(){
 		global $interface;
 
-		$html = array();
-		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-			$current = & $this->indexResult['response']['docs'][$x];
+		$html = [];
+		for ($x = 0;$x < count($this->indexResult['response']['docs']);$x++){
+			$current = &$this->indexResult['response']['docs'][$x];
 			$interface->assign('recordIndex', $x + 1);
 			$record = RecordDriverFactory::initRecordDriver($current);
-			$html[] = $interface->fetch($record->getSearchResult());
+			if (!PEAR_Singleton::isError($record)){
+				$interface->assign('recordDriver', $record);
+				$html[] = $interface->fetch($record->getSearchResult($this->view));
+			}else{
+				$html[] = 'Unable to find record';
+			}
 		}
 		return $html;
 	}
@@ -338,10 +335,9 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 * Set an overriding array of record IDs.
 	 *
 	 * @access  public
-	 * @param   array   $ids        Record IDs to load
+	 * @param array $ids Record IDs to load
 	 */
-	public function setQueryIDs($ids)
-	{
+	public function setQueryIDs($ids){
 		$this->query = 'id:(' . implode(' OR ', $ids) . ')';
 	}
 
@@ -349,10 +345,9 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 * Set an overriding string.
 	 *
 	 * @access  public
-	 * @param   string  $newQuery   Query string
+	 * @param string $newQuery Query string
 	 */
-	public function setQueryString($newQuery)
-	{
+	public function setQueryString($newQuery){
 		$this->query = $newQuery;
 	}
 
@@ -360,15 +355,16 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 * Set an overriding facet sort order.
 	 *
 	 * @access  public
-	 * @param   string  $newSort   Sort string
+	 * @param string $newSort Sort string
 	 */
-	public function setFacetSortOrder($newSort)
-	{
+	public function setFacetSortOrder($newSort){
 		// As of Solr 1.4 valid values are:
 		// 'count' = relevancy ranked
 		// 'index' = index order, most likely alphabetical
 		// more info : http://wiki.apache.org/solr/SimpleFacetParameters#facet.sort
-		if ($newSort == 'count' || $newSort == 'index') $this->facetSort = $newSort;
+		if ($newSort == 'count' || $newSort == 'index'){
+			$this->facetSort = $newSort;
+		}
 	}
 
 	/**
@@ -378,10 +374,9 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 *  eg. all facet data starting with 'R'
 	 *
 	 * @access  public
-	 * @param   string  $prefix   Data for prefix
+	 * @param string $prefix Data for prefix
 	 */
-	public function addFacetPrefix($prefix)
-	{
+	public function addFacetPrefix($prefix){
 		$this->facetPrefix = $prefix;
 	}
 
@@ -392,36 +387,37 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 * @access  public
 	 * @return  array     Spelling suggestion data arrays
 	 */
-	public function getSpellingSuggestions()
-	{
+	public function getSpellingSuggestions(){
 		global $configArray;
 
-		$returnArray = array();
-		if (count($this->suggestions) == 0) return $returnArray;
+		$returnArray = [];
+		if (count($this->suggestions) == 0){
+			return $returnArray;
+		}
 		$tokens = $this->spellingTokens($this->buildSpellingQuery());
 
-		foreach ($this->suggestions as $term => $details) {
+		foreach ($this->suggestions as $term => $details){
 			// Find out if our suggestion is part of a token
-			$inToken = false;
-			$targetTerm = "";
-			foreach ($tokens as $token) {
+			$inToken    = false;
+			$targetTerm = '';
+			foreach ($tokens as $token){
 				// TODO - Do we need stricter matching here?
 				//   Similar to that in replaceSearchTerm()?
-				if (stripos($token, $term) !== false) {
+				if (stripos($token, $term) !== false){
 					$inToken = true;
 					// We need to replace the whole token
 					$targetTerm = $token;
 					// Go and replace this token
 					$returnArray = $this->doSpellingReplace($term,
-					$targetTerm, $inToken, $details, $returnArray);
+						$targetTerm, $inToken, $details, $returnArray);
 				}
 			}
 			// If no tokens we found, just look
 			//    for the suggestion 'as is'
-			if ($targetTerm == "") {
-				$targetTerm = $term;
+			if ($targetTerm == ""){
+				$targetTerm  = $term;
 				$returnArray = $this->doSpellingReplace($term,
-				$targetTerm, $inToken, $details, $returnArray);
+					$targetTerm, $inToken, $details, $returnArray);
 			}
 		}
 		return $returnArray;
@@ -493,13 +489,13 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 * Actually process and submit the search
 	 *
 	 * @access  public
-	 * @param   bool   $returnIndexErrors  Should we die inside the index code if
+	 * @param bool $returnIndexErrors Should we die inside the index code if
 	 *                                     we encounter an error (false) or return
 	 *                                     it for access via the getIndexError()
 	 *                                     method (true)?
-	 * @param   bool   $recommendations    Should we process recommendations along
+	 * @param bool $recommendations Should we process recommendations along
 	 *                                     with the search itself?
-	 * @param   bool   $preventQueryModification   Should we allow the search engine
+	 * @param bool $preventQueryModification Should we allow the search engine
 	 *                                             to modify the query or is it already
 	 *                                             a well formatted query
 	 * @return  object solr result structure (for now)
@@ -509,29 +505,29 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		$search = $this->searchTerms;
 
 		// Build a recommendations module appropriate to the current search:
-		if ($recommendations) {
+		if ($recommendations){
 			$this->initRecommendations();
 		}
 
 		// Build Query
 		$query = $preventQueryModification ? $search : $this->indexEngine->buildQuery($search, false);
-		if (PEAR_Singleton::isError($query)) {
+		if (PEAR_Singleton::isError($query)){
 			return $query;
 		}
 
 		// Only use the query we just built if there isn't an override in place.
-		if ($this->query == null) {
+		if ($this->query == null){
 			$this->query = $query;
 		}
 
 		// Define Filter Query
 		$filterQuery = $this->hiddenFilters;
-		foreach ($this->filterList as $field => $filter) {
+		foreach ($this->filterList as $field => $filter){
 			if (empty($field)){
 				//Remove any empty filters if we get them
 				//(typically happens when a subdomain has a function disabled that is enabled in the main scope)
 				unset($this->filterList[$field]);
-			} else{
+			}else{
 				foreach ($filter as $value){
 					// Special case -- allow trailing wildcards:
 					if (substr($value, -1) == '*'){
@@ -547,24 +543,24 @@ class SearchObject_Genealogy extends SearchObject_Base {
 
 		// If we are only searching one field use the DisMax handler
 		//    for that field. If left at null let solr take care of it
-		if (count($search) == 1 && isset($search[0]['index'])) {
+		if (count($search) == 1 && isset($search[0]['index'])){
 			$this->index = $search[0]['index'];
 		}
 
 		// Build a list of facets we want from the index
-		$facetSet = array();
-		if (!empty($this->facetConfig)) {
+		$facetSet = [];
+		if (!empty($this->facetConfig)){
 			$facetSet['limit'] = $this->facetLimit;
-			foreach ($this->facetConfig as $facetField => $facetName) {
+			foreach ($this->facetConfig as $facetField => $facetName){
 				$facetSet['field'][] = $facetField;
 			}
-			if ($this->facetOffset != null) {
+			if ($this->facetOffset != null){
 				$facetSet['offset'] = $this->facetOffset;
 			}
-			if ($this->facetPrefix != null) {
+			if ($this->facetPrefix != null){
 				$facetSet['prefix'] = $this->facetPrefix;
 			}
-			if ($this->facetSort != null) {
+			if ($this->facetSort != null){
 				$facetSet['sort'] = $this->facetSort;
 			}
 		}
@@ -574,18 +570,18 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		}
 
 		// Build our spellcheck query
-		if ($this->spellcheck) {
-			if ($this->spellSimple) {
+		if ($this->spellcheck){
+			if ($this->spellSimple){
 				$this->useBasicDictionary();
 			}
 			$spellcheck = $this->buildSpellingQuery();
 
 			// If the spellcheck query is purely numeric, skip it if
 			// the appropriate setting is turned on.
-			if ($this->spellSkipNumeric && is_numeric($spellcheck)) {
+			if ($this->spellSkipNumeric && is_numeric($spellcheck)){
 				$spellcheck = '';
 			}
-		} else {
+		}else{
 			$spellcheck = '';
 		}
 
@@ -598,7 +594,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 
 		// The first record to retrieve:
 		//  (page - 1) * limit = start
-		$recordStart = ($this->page - 1) * $this->limit;
+		$recordStart       = ($this->page - 1) * $this->limit;
 		$this->indexResult = $this->indexEngine->search(
 			$this->query,      // Query string
 			$this->index,      // DisMax Handler
@@ -625,20 +621,20 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		}
 
 		// Process spelling suggestions if no index error resulted from the query
-		if ($this->spellcheck && !isset($this->indexResult['error'])) {
+		if ($this->spellcheck && !isset($this->indexResult['error'])){
 			// Shingle dictionary
 			$this->processSpelling();
 			// Make sure we don't endlessly loop
-			if ($this->dictionary == 'default') {
+			if ($this->dictionary == 'default'){
 				// Expand against the basic dictionary
 				$this->basicSpelling();
 			}
 		}
 
 		// If extra processing is needed for recommendations, do it now:
-		if ($recommendations && is_array($this->recommend)) {
-			foreach($this->recommend as $currentSet) {
-				foreach($currentSet as $current) {
+		if ($recommendations && is_array($this->recommend)){
+			foreach ($this->recommend as $currentSet){
+				foreach ($currentSet as $current){
 					$current->process();
 				}
 			}
@@ -649,7 +645,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 			$explainInfo = $this->indexResult['debug']['explain'];
 			foreach ($this->indexResult['response']['docs'] as $key => $result){
 				if (array_key_exists($result['id'], $explainInfo)){
-					$result['explain'] = $explainInfo[$result['id']];
+					$result['explain']                           = $explainInfo[$result['id']];
 					$this->indexResult['response']['docs'][$key] = $result;
 				}
 			}
@@ -669,13 +665,13 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		$this->spellQuery = [];
 
 		// Basic search
-		if ($this->searchType == $this->basicSearchType) {
+		if ($this->searchType == $this->basicSearchType){
 			return $this->query; // Just the search query is fine
 
 			// Advanced search
-		} else {
-			foreach ($this->searchTerms as $search) {
-				foreach ($search['group'] as $field) {
+		}else{
+			foreach ($this->searchTerms as $search){
+				foreach ($search['group'] as $field){
 					// Add just the search terms to the list
 					$this->spellQuery[] = $field['lookfor'];
 				}
@@ -694,23 +690,23 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		global $configArray;
 
 		// Do nothing if spelling is disabled
-		if (!$configArray['Spelling']['enabled']) {
+		if (!$configArray['Spelling']['enabled']){
 			return;
 		}
 
 		// Do nothing if there are no suggestions
 		$suggestions = $this->indexResult['spellcheck']['suggestions'] ?? [];
-		if (empty($suggestions)) {
+		if (empty($suggestions)){
 			return;
 		}
 
 		// Loop through the array of search terms we have suggestions for
-		$suggestionList = array();
-		foreach ($suggestions as $suggestion) {
+		$suggestionList = [];
+		foreach ($suggestions as $suggestion){
 			$ourTerm = $suggestion[0];
 
 			// Skip numeric terms if numeric suggestions are disabled
-			if ($this->spellSkipNumeric && is_numeric($ourTerm)) {
+			if ($this->spellSkipNumeric && is_numeric($ourTerm)){
 				continue;
 			}
 
@@ -723,29 +719,29 @@ class SearchObject_Genealogy extends SearchObject_Base {
 			// Make sure the suggestion is for a valid search term.
 			// Sometimes shingling will have bridged two search fields (in
 			// an advanced search) or skipped over a stopword.
-			if (!$this->findSearchTerm($ourTerm)) {
+			if (!$this->findSearchTerm($ourTerm)){
 				$validTerm = false;
 			}
 
 			// Unless this term had no hits
-			if ($ourHit != 0) {
+			if ($ourHit != 0){
 				// Filter out suggestions we are already using
 				$newList = $this->filterSpellingTerms($newList);
 			}
 
 			// Make sure it has suggestions and is valid
-			if (count($newList) > 0 && $validTerm) {
+			if (count($newList) > 0 && $validTerm){
 				// Did we get more suggestions then our limit?
-				if ($count > $this->spellingLimit) {
+				if ($count > $this->spellingLimit){
 					// Cut the list at the limit
 					array_splice($newList, $this->spellingLimit);
 				}
 				$suggestionList[$ourTerm]['freq'] = $ourHit;
 				// Format the list nicely
-				foreach ($newList as $item) {
-					if (is_array($item)) {
+				foreach ($newList as $item){
+					if (is_array($item)){
 						$suggestionList[$ourTerm]['suggestions'][$item['word']] = $item['freq'];
-					} else {
+					}else{
 						$suggestionList[$ourTerm]['suggestions'][$item] = 0;
 					}
 				}
@@ -759,15 +755,17 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 *   we are already searching for
 	 *
 	 * @access  private
-	 * @param   array    $termList List of suggestions
+	 * @param array $termList List of suggestions
 	 * @return  array    Filtered list
 	 */
-	private function filterSpellingTerms($termList) {
+	private function filterSpellingTerms($termList){
 		$newList = [];
-		if (empty($termList)) return $newList;
+		if (empty($termList)){
+			return $newList;
+		}
 
-		foreach ($termList as $term) {
-			if (!$this->findSearchTerm($term['word'])) {
+		foreach ($termList as $term){
+			if (!$this->findSearchTerm($term['word'])){
 				$newList[] = $term;
 			}
 		}
@@ -803,21 +801,21 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		$newList = $newSearch->getRawSuggestions();
 
 		// If there were no shingle suggestions
-		if (count($this->suggestions) == 0) {
+		if (count($this->suggestions) == 0){
 			// Just use the basic ones as provided
 			$this->suggestions = $newList;
 
 			// Otherwise
-		} else {
+		}else{
 			// For all the new suggestions
-			foreach ($newList as $word => $data) {
+			foreach ($newList as $word => $data){
 				// Check the old suggestions
 				$found = false;
-				foreach ($this->suggestions as $k => $v) {
+				foreach ($this->suggestions as $k => $v){
 					// Make sure it wasn't part of a shingle which has been suggested at a higher level.
 					$found = preg_match("/\b$word\b/", $k) ? true : $found;
 				}
-				if (!$found) {
+				if (!$found){
 					$this->suggestions[$word] = $data;
 				}
 			}
@@ -828,52 +826,51 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 * Process facets from the results object
 	 *
 	 * @access  public
-	 * @param   array   $filter         Array of field => on-screen description
+	 * @param array $filter Array of field => on-screen description
 	 *                                  listing all of the desired facet fields;
 	 *                                  set to null to get all configured values.
-	 * @param   bool    $expandingLinks If true, we will include expanding URLs
+	 * @param bool $expandingLinks If true, we will include expanding URLs
 	 *                                  (i.e. get all matches for a facet, not
 	 *                                  just a limit to the current search) in
 	 *                                  the return array.
 	 * @return  array   Facets data arrays
 	 */
-	public function getFacetList($filter = null, $expandingLinks = false)
-	{
+	public function getFacetList($filter = null, $expandingLinks = false){
 		// If there is no filter, we'll use all facets as the filter:
-		if (is_null($filter)) {
+		if (is_null($filter)){
 			$filter = $this->facetConfig;
 		}
 
 		// Start building the facet list:
-		$list = array();
+		$list = [];
 
 		// If we have no facets to process, give up now
-		if (!isset($this->indexResult['facet_counts']) || (!is_array($this->indexResult['facet_counts']['facet_fields']) && !is_array($this->indexResult['facet_counts']['facet_dates']))){
+		if (!isset($this->indexResult['facet_counts']) || (!is_array($this->indexResult['facet_counts']['facet_fields']) && !is_array($this->indexResult['facet_counts']['facet_ranges']))){
 			return $list;
 		}
 
 		// Loop through every field returned by the result set
 		$validFields = array_keys($filter);
 
-		$allFacets = array_merge($this->indexResult['facet_counts']['facet_fields'], $this->indexResult['facet_counts']['facet_dates']);
-		foreach ($allFacets as $field => $data) {
+		$allFacets = array_merge($this->indexResult['facet_counts']['facet_fields'], $this->indexResult['facet_counts']['facet_ranges']);
+		foreach ($allFacets as $field => $data){
 			// Skip filtered fields and empty arrays:
-			if (!in_array($field, $validFields) || count($data) < 1) {
+			if (!in_array($field, $validFields) || count($data) < 1){
 				continue;
 			}
 
 			// Initialize the settings for the current field
 			$list[$field]          = [];
 			$list[$field]['label'] = $filter[$field]; // Add the on-screen label
-			$list[$field]['list']  = []; // Build our array of values for this field
+			$list[$field]['list']  = [];              // Build our array of values for this field
 
 			// Should we translate values for the current facet?
 			$translate = in_array($field, $this->translatedFacets);
 
 			// Loop through values:
-			foreach ($data as $facet) {
+			foreach ($data as $facet){
 				// Initialize the array of data about the current facet:
-				$currentSettings              = array();
+				$currentSettings              = [];
 				$currentSettings['value']     = $facet[0];
 				$currentSettings['display']   = $translate ? translate($facet[0]) : $facet[0];
 				$currentSettings['count']     = $facet[1];
@@ -882,14 +879,14 @@ class SearchObject_Genealogy extends SearchObject_Base {
 				// If we want to have expanding links (all values matching the facet)
 				// in addition to limiting links (filter current search with facet),
 				// do some extra work:
-				if ($expandingLinks) {
+				if ($expandingLinks){
 					$currentSettings['expandUrl'] = $this->getExpandingFacetLink($field, $facet[0]);
 				}
 
 				// Is this field a current filter?
-				if (in_array($field, array_keys($this->filterList))) {
+				if (in_array($field, array_keys($this->filterList))){
 					// and is this value a selected filter?
-					if (in_array($facet[0], $this->filterList[$field])) {
+					if (in_array($facet[0], $this->filterList[$field])){
 						$currentSettings['isApplied']  = true;
 						$currentSettings['removalUrl'] = $this->renderLinkWithoutFilter("$field:{$facet[0]}");
 					}
@@ -904,14 +901,14 @@ class SearchObject_Genealogy extends SearchObject_Base {
 
 			if ($field == 'veteranOf'){
 				//Add a field for Any war
-				$currentSettings              = array();
+				$currentSettings              = [];
 				$currentSettings['value']     = '[* TO *]';
 				$currentSettings['display']   = $translate ? translate('Any War') : 'Any War';
 				$currentSettings['count']     = '';
 				$currentSettings['isApplied'] = false;
-				if (in_array($field, array_keys($this->filterList))) {
+				if (in_array($field, array_keys($this->filterList))){
 					// and is this value a selected filter?
-					if (in_array($currentSettings['value'], $this->filterList[$field])) {
+					if (in_array($currentSettings['value'], $this->filterList[$field])){
 						$currentSettings['isApplied']  = true;
 						$currentSettings['removalUrl'] = $this->renderLinkWithoutFilter("$field:{$facet[0]}");
 					}
@@ -939,21 +936,21 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 * with it.
 	 *
 	 * @access  public
-	 * @param   string      $preferredSection       Section to favor when loading
+	 * @param string $preferredSection Section to favor when loading
 	 *                                              settings; if multiple sections
 	 *                                              contain the same facet, this
 	 *                                              section's description will be
 	 *                                              favored.
 	 */
 	public function activateAllFacets($preferredSection = false){
-		foreach($this->allFacetSettings as $section => $values) {
-			foreach($values as $key => $value) {
+		foreach ($this->allFacetSettings as $section => $values){
+			foreach ($values as $key => $value){
 				$this->addFacet($key, $value);
 			}
 		}
 
-		if ($preferredSection && is_array($this->allFacetSettings[$preferredSection])) {
-			foreach($this->allFacetSettings[$preferredSection] as $key => $value) {
+		if ($preferredSection && is_array($this->allFacetSettings[$preferredSection])){
+			foreach ($this->allFacetSettings[$preferredSection] as $key => $value){
 				$this->addFacet($key, $value);
 			}
 		}
@@ -963,7 +960,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 * Turn our results into an RSS feed
 	 *
 	 * @access  public
-	 * @param null|array $result      Existing result set (null to do new search)
+	 * @param null|array $result Existing result set (null to do new search)
 	 * @return  string                XML document
 	 */
 	public function buildRSS($result = null){
@@ -1017,17 +1014,16 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 * @public  array      $result      Existing result set (null to do new search)
 	 * @return  string                  Excel document
 	 */
-	public function buildExcel($result = null)
-	{
+	public function buildExcel($result = null){
 		// First, get the search results if none were provided
 		// (we'll go for 50 at a time)
-		if (is_null($result)) {
+		if (is_null($result)){
 			$this->limit = 2000;
-			$result = $this->processSearch(false, false);
+			$result      = $this->processSearch(false, false);
 		}
 
 		// Prepare the spreadsheet
-		ini_set('include_path', ini_get('include_path'.';/PHPExcel/Classes'));
+		ini_set('include_path', ini_get('include_path' . ';/PHPExcel/Classes'));
 		include 'PHPExcel.php';
 		include 'PHPExcel/Writer/Excel2007.php';
 		$objPHPExcel = new PHPExcel();
@@ -1037,7 +1033,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		$objPHPExcel->getActiveSheet()->setTitle('Results');
 
 		//Add headers to the table
-		$sheet = $objPHPExcel->getActiveSheet();
+		$sheet  = $objPHPExcel->getActiveSheet();
 		$curRow = 1;
 		$curCol = 0;
 		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'First Name');
@@ -1050,16 +1046,16 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Block');
 		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Lot');
 		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Grave');
-		$maxColumn = $curCol -1;
+		$maxColumn = $curCol - 1;
 
-		for ($i = 0; $i < count($result['response']['docs']); $i++) {
+		for ($i = 0;$i < count($result['response']['docs']);$i++){
 			$curDoc = $result['response']['docs'][$i];
 			$curRow++;
 			$curCol = 0;
 			//Get supplemental information from the database
 			require_once ROOT_DIR . '/sys/Genealogy/Person.php';
-			$person = new Person();
-			$id = str_replace('person', '', $curDoc['id']);
+			$person           = new Person();
+			$id               = str_replace('person', '', $curDoc['id']);
 			$person->personId = $id;
 			if ($person->find(true)){
 				//Output the row to excel
@@ -1069,14 +1065,14 @@ class SearchObject_Genealogy extends SearchObject_Base {
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->formatPartialDate($person->deathDateDay, $person->deathDateMonth, $person->deathDateYear));
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['veteranOf']) ? implode(', ', $curDoc['veteranOf']) : '');
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['cemeteryName']) ? $curDoc['cemeteryName'] : '');
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->addition) ;
+				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->addition);
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->block);
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->lot);
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->grave);
 			}
 		}
 
-		for ($i = 0; $i < $maxColumn; $i++){
+		for ($i = 0;$i < $maxColumn;$i++){
 			$sheet->getColumnDimensionByColumn($i)->setAutoSize(true);
 		}
 
@@ -1097,14 +1093,24 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	/**
 	 * Retrieves a document specified by the ID.
 	 *
-	 * @param   string  $id         The document to retrieve from Solr
+	 * @param string $id The document to retrieve from Solr
+	 * @param null|string $fieldsToReturn An optional list of fields to return separated by commas
+	 * @return  array              The requested document
+	 * @throws Exception
 	 * @access  public
-	 * @throws  object              PEAR Error
-	 * @return  string              The requested resource
 	 */
-	function getRecord($id)
-	{
-		return $this->indexEngine->getRecord($id);
+	function getRecord($id, $fieldsToReturn = null){
+		return $this->indexEngine->getRecord($id, $fieldsToReturn);
+	}
+
+	/**
+	 * Retrieves Solr Documents for an array of grouped Work Ids
+	 * @param string[] $ids The groupedWork Id of the Solr document to retrieve
+	 * @param null|string $fieldsToReturn An optional list of fields to return separated by commas
+	 * @return array The Solr document of the grouped Work
+	 */
+	function getRecords($ids){
+		return $this->indexEngine->getRecords($ids, $fieldsToReturn = null, count($ids));
 	}
 
 	/**
@@ -1117,7 +1123,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	protected function getSearchParams(){
 		$params = parent::getSearchParams();
 
-		$params[] = 'genealogyType=' . (isset($_REQUEST['genealogyType']) ? $_REQUEST['genealogyType'] : 'GenealogyKeyword'); //TODO: can this be replaced with general $_REQUEST['type']
+		$params[] = 'genealogyType=' . ($_REQUEST['genealogyType'] ?? 'GenealogyKeyword'); //TODO: can this be replaced with general $_REQUEST['type']
 		$params[] = 'searchSource=' . $_REQUEST['searchSource'];
 
 		return $params;
@@ -1126,5 +1132,89 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	public function setPrimarySearch($flag){
 		parent::setPrimarySearch($flag);
 		$this->indexEngine->isPrimarySearch = $flag;
+	}
+
+	public function getNextPrevLinks(){
+		global $interface;
+		//Setup next and previous links based on the search results.
+		if (isset($_REQUEST['searchId']) && isset($_REQUEST['recordIndex']) && ctype_digit($_REQUEST['searchId']) && ctype_digit($_REQUEST['recordIndex'])){
+			//rerun the search
+			require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
+			$s     = new SearchEntry();
+			$s->id = $_REQUEST['searchId'];
+			$interface->assign('searchId', $_REQUEST['searchId']);
+			$currentPage = isset($_REQUEST['page']) && ctype_digit($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+			$interface->assign('page', $currentPage);
+
+			if ($s->find(true)){
+				$minSO = unserialize($s->search_object);
+				/** @var SearchObject_Solr $searchObject */
+				$searchObject = SearchObjectFactory::deminify($minSO);
+				$searchObject->setPage($currentPage);
+				//Run the search
+				$result = $searchObject->processSearch(true, false, false);
+
+				//Check to see if we need to run a search for the next or previous page
+				$currentResultIndex  = $_REQUEST['recordIndex'] - 1;
+				$recordsPerPage      = $searchObject->getLimit();
+				$adjustedResultIndex = $currentResultIndex - ($recordsPerPage * ($currentPage - 1));
+
+				if (($currentResultIndex) % $recordsPerPage == 0 && $currentResultIndex > 0){
+					//Need to run a search for the previous page
+					$interface->assign('previousPage', $currentPage - 1);
+					$previousSearchObject = clone $searchObject;
+					$previousSearchObject->setPage($currentPage - 1);
+					$previousSearchObject->processSearch(true, false, false);
+					$previousResults = $previousSearchObject->getResultRecordSet();
+				}elseif (($currentResultIndex + 1) % $recordsPerPage == 0 && ($currentResultIndex + 1) < $searchObject->getResultTotal()){
+					//Need to run a search for the next page
+					$nextSearchObject = clone $searchObject;
+					$interface->assign('nextPage', $currentPage + 1);
+					$nextSearchObject->setPage($currentPage + 1);
+					$nextSearchObject->processSearch(true, false, false);
+					$nextResults = $nextSearchObject->getResultRecordSet();
+				}
+
+				if (!PEAR_Singleton::isError($result) && $searchObject->getResultTotal() > 0){
+					$recordSet = $searchObject->getResultRecordSet();
+					//Record set is 0 based, but we are passed a 1 based index
+					if ($currentResultIndex > 0){
+						if (isset($previousResults)){
+							$previousRecord = $previousResults[count($previousResults) - 1];
+						}else{
+							$previousId = $adjustedResultIndex - 1;
+							if (isset($recordSet[$previousId])){
+								$previousRecord = $recordSet[$previousId];
+							}
+						}
+
+						//Convert back to 1 based index
+						if (isset($previousRecord)){
+							$interface->assign('previousIndex', $currentResultIndex - 1 + 1);
+							$interface->assign('previousTitle', $previousRecord['title']);
+							$interface->assign('previousType', 'Person');
+							$interface->assign('previousId', str_replace('person', '', $previousRecord['id']));
+						}
+					}
+					if ($currentResultIndex + 1 < $searchObject->getResultTotal()){
+						if (isset($nextResults)){
+							$nextRecord = $nextResults[0];
+						}else{
+							$nextRecordIndex = $adjustedResultIndex + 1;
+							if (isset($recordSet[$nextRecordIndex])){
+								$nextRecord = $recordSet[$nextRecordIndex];
+							}
+						}
+						//Convert back to 1 based index
+						$interface->assign('nextIndex', $currentResultIndex + 1 + 1);
+						if (isset($nextRecord)){
+							$interface->assign('nextTitle', $nextRecord['title']);
+							$interface->assign('nextType', 'Person');
+							$interface->assign('nextId', str_replace('person', '', $nextRecord['id']));
+						}
+					}
+				}
+			}
+		}
 	}
 }

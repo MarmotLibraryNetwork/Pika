@@ -69,7 +69,7 @@ class GroupedWork_Series extends Action {
 					$resourceList[]  = $interface->fetch($tmpRecordDriver->getSearchResult());
 				}else{
 					$interface->assign('record', $title);
-					$resourceList[] = $interface->fetch('RecordDrivers/Index/nonowned_result.tpl');
+					$resourceList[] = $interface->fetch('RecordDrivers/GroupedWork/nonowned_result.tpl');
 				}
 			}
 		}

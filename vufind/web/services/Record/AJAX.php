@@ -37,7 +37,6 @@ class Record_AJAX extends AJAXHandler {
 
 	protected array $methodsThatRespondWithHTML = array(
 	 'getBookingCalendar',
-	 'GetProspectorInfo', // Appears deprecated. pascal 4/26/2019
 	);
 
 	protected array $methodsThatRespondWithXML = array(
@@ -52,45 +51,6 @@ class Record_AJAX extends AJAXHandler {
 		return "<result>" . (UserAccount::isLoggedIn() ? "True" : "False") . "</result>";
 	}
 
-// TODO Appears deprecated.  GroupedWork version appears to be the version still in use.  pascal 4/26/2019
-	function GetProspectorInfo(){
-		global $configArray;
-		global $interface;
-		$id = $_REQUEST['id'];
-		$interface->assign('id', $id);
-
-		$searchObject = SearchObjectFactory::initSearchObject();
-		$searchObject->init();
-		// Setup Search Engine Connection
-		$class = $configArray['Index']['engine'];
-		$url   = $configArray['Index']['url'];
-		/** @var SearchObject_Solr $db */
-		$db = new $class($url);
-
-		// Retrieve Full record from Solr
-		if (!($record = $db->getRecord($id))){
-			PEAR_Singleton::raiseError(new PEAR_Error('Record Does Not Exist'));
-		}
-
-		require_once ROOT_DIR . '/sys/InterLibraryLoanDrivers/Prospector.php';
-		$prospector = new Prospector();
-
-		$searchTerms = array(
-			array(
-				'lookfor' => $record['title'],
-				'index'   => 'Title',
-			),
-		);
-		if (isset($record['author'])){
-			$searchTerms[] = array(
-				'lookfor' => $record['author'],
-				'index'   => 'Author',
-			);
-		}
-		$prospectorResults = $prospector->getTopSearchResults($searchTerms, 10);
-		$interface->assign('prospectorResults', $prospectorResults['records']);
-		return $interface->fetch('Record/ajax-prospector.tpl');
-	}
 
 	function getPlaceHoldForm(){
 		$user = UserAccount::getLoggedInUser();
@@ -443,18 +403,18 @@ class Record_AJAX extends AJAXHandler {
 			if ($errorMessage){
 				$interface->assign('errorMessage', $errorMessage);
 			}
-			$results = array(
+			$results = [
 				'title'        => 'Schedule ' . $title,
 				'modalBody'    => $interface->fetch("Record/book-materials-form.tpl"),
 				'modalButtons' => '<button class="btn btn-primary" onclick="$(\'#bookMaterialForm\').submit()">Schedule Item</button>'
 				// Clicking invokes submit event, which allows the validator to act before calling the ajax handler
-			);
+			];
 		}else{
-			$results = array(
+			$results = [
 				'title'        => 'Please log in',
 				'modalBody'    => "You must be logged in.  Please close this dialog and login before scheduling this item.",
 				'modalButtons' => ""
-			);
+			];
 		}
 		return $results;
 	}
@@ -507,12 +467,12 @@ class Record_AJAX extends AJAXHandler {
 						}
 						return $result;
 					}
-					return array('success' => false, 'message' => 'Start Date is required.');
+					return ['success' => false, 'message' => 'Start Date is required.'];
 				}
 			}
-			return array('success' => false, 'message' => 'Record ID is required.');
+			return ['success' => false, 'message' => 'Record ID is required.'];
 		}
-		return array('success' => false, 'message' => 'User not logged in.');
+		return ['success' => false, 'message' => 'User not logged in.'];
 	}
 
 	function forceReExtract(){
@@ -526,22 +486,22 @@ class Record_AJAX extends AJAXHandler {
 				$extractInfo->ilsId             = $recordId->getRecordId();
 				if ($extractInfo->find(true)){
 					if ($extractInfo->markForReExtraction()){
-						return array('success' => true, 'message' => 'Record was marked for re-extraction.');
+						return ['success' => true, 'message' => 'Record was marked for re-extraction.'];
 					}else{
-						return array('success' => false, 'message' => 'Failed to mark record for re-extraction.');
+						return ['success' => false, 'message' => 'Failed to mark record for re-extraction.'];
 					}
 				}else{
 					// This is for cases where a record is present but has never been extracted before
 //					$extractInfo->lastExtracted = null;
 					if ($extractInfo->insert()){
-						return array('success' => true, 'message' => 'Record was marked for re-extraction.');
+						return ['success' => true, 'message' => 'Record was marked for re-extraction.'];
 					}else{
-						return array('success' => false, 'message' => 'Failed to mark record for re-extraction.');
+						return ['success' => false, 'message' => 'Failed to mark record for re-extraction.'];
 					}
 				}
 			}
 		}
-		return array('success' => false, 'message' => 'Invalid record Id.');
+		return ['success' => false, 'message' => 'Invalid record Id.'];
 	}
 
 }

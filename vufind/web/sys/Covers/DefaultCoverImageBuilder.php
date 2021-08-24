@@ -57,7 +57,7 @@ class DefaultCoverImageBuilder {
 	 * @param string $format_category
 	 * @param string $filename
 	 */
-	public function getCover($title, $author, $format, $format_category, $filename){
+	public function getCover($title, $author, $format, $format_category, $filename, $vertical_cutoff_px = 0){
 		$coverName = strtolower(preg_replace('/\W/', '', $format));
 		if (!file_exists(ROOT_DIR . '/images/blankCovers/' . $coverName . '.jpg')){
 			$coverName = strtolower(preg_replace('/\W/', '', $format_category));
@@ -75,10 +75,10 @@ class DefaultCoverImageBuilder {
 		$colorText = imagecolorallocate($blankCover, $this->colorText['red'], $this->colorText['green'], $this->colorText['blue']);
 
 		//Add the title to the background image
-		$textYPos = $this->addWrappedTextToImage($blankCover, $this->titleFont, $title, 25, 5, 10, $colorText);
+		$textYPos = $this->addWrappedTextToImage($blankCover, $this->titleFont, $title, 25, 5, 10, $colorText, $vertical_cutoff_px);
 		if (strlen($author) > 0){
 			//Add the author to the background image
-			$this->addWrappedTextToImage($blankCover, $this->authorFont, $author, 18, 10, $textYPos + 6, $colorText);
+			$this->addWrappedTextToImage($blankCover, $this->authorFont, $author, 18, 10, $textYPos + 6, $colorText, $vertical_cutoff_px);
 		}
 
 		imagepng($blankCover, $filename);
@@ -97,7 +97,10 @@ class DefaultCoverImageBuilder {
 	 * @param int      $color       The color identifier
 	 * @return float|int  The starting vertical position for the line of text. Use to set where the next line of text should start at
 	 */
-	private function addWrappedTextToImage($imageHandle, $font, $text, $fontSize, $lineSpacing, $startY, $color){
+	private function addWrappedTextToImage($imageHandle, $font, $text, $fontSize, $lineSpacing, $startY, $color, $vertical_cutoff_px = 0){
+		if (!empty($vertical_cutoff_px)){
+			$this->imagePrintableAreaHeight = $vertical_cutoff_px;
+		}
 		$textBox           = imageftbbox($fontSize, 0, $font, $text);
 		$totalTextWidth    = abs($textBox[4] - $textBox[6]); //Get the total string length
 		$numLines          = ceil((float)$totalTextWidth / (float)$this->imagePrintableAreaWidth); //Determine how many lines we will need to break the text into

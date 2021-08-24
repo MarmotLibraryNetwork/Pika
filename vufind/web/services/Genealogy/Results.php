@@ -35,7 +35,7 @@ class Genealogy_Results extends Union_Results {
 			$interface->assign('userIsAdmin', false);
 		}
 
-		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+//		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/Search/' . $configArray['Genealogy']['engine'] . '.php';
@@ -44,7 +44,7 @@ class Genealogy_Results extends Union_Results {
 		// Initialise from the current search globals
 		/** @var SearchObject_Genealogy $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject($configArray['Genealogy']['searchObject']);
-		$searchObject->init($searchSource);
+		$searchObject->init();
 		$searchObject->setPrimarySearch(true);
 
 		$this->processAlternateOutputs($searchObject);

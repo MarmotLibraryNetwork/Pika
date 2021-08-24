@@ -5,6 +5,7 @@
 {if $allowEdit}
 <a href="/MyAccount/MyLists/" title="Return to My Lists" class="btn btn-default btn-sm">Return to My Lists</a>
 {/if}
+{if isset($favList)}
 	<form action="/MyAccount/MyList/{$favList->id}" id="myListFormHead">
 		<div>
 			<input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
@@ -101,9 +102,9 @@
 
 
 								<div class="btn-group btn-group-sm">
-									<div class="share-tools" >
+									<div class="share-tools">
 										<span class="share-tools-label hidden-inline-xs">SHARE LIST</span>
-										<a herf="#" onclick="return Pika.Lists.emailListAction({$favList->id})" title="share via e-mail">
+										<a href="#" onclick="return Pika.Lists.emailListAction({$favList->id})" title="share via e-mail">
 											<img src="{img filename='email-icon.png'}" alt="E-mail this" style="cursor:pointer;">
 										</a>
 										<a href="#" id="FavExcel" onclick="return Pika.Lists.exportListFromLists('{$myList.id}');" title="Export List to Excel">
@@ -177,16 +178,16 @@
 				<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 			</form>
 
-		{if $recordCount}
-			<div class="resulthead row">
-				<div class="col-xs-12">
-						{translate text="Showing"} <b>{$recordStart}</b> - <b>{$recordEnd}</b> {translate text='of'} <b>{$recordCount}</b>
-						{if $debug}
-							&nbsp;There are {$favList->numValidListItems()} valid Items.
-						{/if}
+			{if $recordCount}
+				<div class="resulthead row">
+					<div class="col-xs-12">
+							{translate text="Showing"} <b>{$recordStart}</b> - <b>{$recordEnd}</b> {translate text='of'} <b>{$recordCount}</b>
+							{if $debug}
+								&nbsp;There are {$favList->numValidListItems()} valid Items.
+							{/if}
+					</div>
 				</div>
-			</div>
-		{/if}
+			{/if}
 
 			{if $allowEdit && $userSort}
 				<div class="alert alert-info alert-dismissible" role="alert">
@@ -195,7 +196,6 @@
 				</div>
 			{/if}
 
-			<input type="hidden" name="myListActionItem" id="myListActionItem">
 			<div id="UserList">{*Keep only list entries in div for custom sorting functions*}
 				{foreach from=$resourceList item=resource name="recordLoop" key=resourceId}
 					<div class="result{if ($smarty.foreach.recordLoop.iteration % 2) == 0} alt{/if}">
@@ -264,4 +264,10 @@
 				</div>
 		{/if}
 	{/if}
+{else}
+	<h3 id="listTitle">Invalid List</h3>
+	<div class="alert alert-warning">
+		Invalid List
+	</div>
+{/if}
 {*{/strip}*}

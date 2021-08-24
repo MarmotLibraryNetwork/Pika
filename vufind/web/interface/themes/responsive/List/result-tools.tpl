@@ -12,7 +12,7 @@
 
 		{if $showEmailThis == 1 || $showShareOnExternalSites == 1}
 			<div class="btn-group btn-group-sm">
-					<div class="share-tools" >
+					<div class="share-tools">
 						<span class="share-tools-label hidden-inline-xs">SHARE LIST</span>
 						<a herf="#" onclick="return Pika.Lists.emailListAction({$summShortId})" title="share via e-mail">
 							<img src="{img filename='email-icon.png'}" alt="E-mail this" style="cursor:pointer;">

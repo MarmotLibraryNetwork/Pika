@@ -1,3 +1,50 @@
+/*
+# Munge types are string manipulation rules, and consist of:
+#
+# onephrase: eliminate all quotes and do it as a single phrase.
+#   testing "one two"
+#    ...becomes ("testing one two")
+#
+# and: AND the terms together
+#  testing "one two"
+#   ...becomes (testing AND "one two")
+#
+# or: OR the terms together
+#  testing "one two"
+#   ...becomes (testing OR "one two")
+#
+# proximal: Include a proximal search term of the onephrase value if there are more than one tokens in the search phrase.eg
+#   testing "one two"
+#    ...becomes ("testing one two"~10)
+#
+# single_word_removal: for search phrases with more than 4 tokens, parse into search phrases OR-ed together
+# where each alternate phrase has one token missing; (phrases with four or less tokens is the same as onephrase)
+#  single word removal search phrase
+#   ...becomes ("word removal search phrase" OR "single removal search phrase" OR "single word search phrase" OR "single word removal phrase" OR "single word removal search")
+
+
+
+# Additional Munge types can be defined in the CustomMunge section.  Each array
+# entry under CustomMunge defines a new named munge type.  Each array entry under
+# the name of the munge type specifies a string manipulation operation.  Operations
+# will be applied in the order listed, and different operations take different
+# numbers of parameters.
+#
+# Munge operations:
+#
+# [append, text] - Append text to the end of the user's search string
+# [lowercase] - Convert string to lowercase
+# [preg_replace, pattern, replacement] - Perform a regular expression replace
+#     using the preg_replace() PHP function.  If you use backreferences in your
+#     replacement phrase, be sure to escape dollar signs (i.e. \$1, not $1).
+# [ucfirst] - Uppercase the first letter of each word in the string
+# [uppercase] - Convert string to uppercase
+#
+#
+
+
+*/
+
 {
   "Author": {
     "QueryFields": {
@@ -42,6 +89,7 @@
   "ISN": {
     "DismaxFields": [
       "isbn",
+      "canceled_isbn",
       "issn",
       "upc"
     ],
@@ -51,6 +99,10 @@
         ["or", null]
       ],
       "isbn": [
+        ["and", 100],
+        ["or", null]
+      ],
+      "canceled_isbn": [
         ["and", 100],
         ["or", null]
       ],
@@ -145,8 +197,6 @@
       "title_full^400",
       "title^300",
       "title_alt^200",
-      "title_new^100",
-      "title_old",
       "series^100",
       "series2"
     ],
@@ -163,12 +213,6 @@
       ],
       "title_alt": [
         ["and", 200]
-      ],
-      "title_new": [
-        ["and", 100]
-      ],
-      "title_old": [
-        ["and", null]
       ],
       "series": [
         ["onephrase", 100],
@@ -192,20 +236,12 @@
         "title_left": [
           ["localized_callnumber", 1600]
         ],
-        "title_proper": [
-          ["exact", 800],
-          ["onephrase", 500],
-          ["and", 200]
-        ],
         "title": [
           ["onephrase", 200],
           ["and", 125]
         ],
         "title_alt": [
           ["and", 100]
-        ],
-        "title_new": [
-          ["and", 50]
         ]
       },
       "title_exact": [
@@ -213,6 +249,11 @@
       ],
       "title_left": [
         ["localized_callnumber", 1600]
+      ],
+      "title_proper": [
+        ["exact", 800],
+        ["onephrase", 500],
+        ["and", 200]
       ],
       "series_proper": [
         ["exact", 800],
@@ -264,6 +305,7 @@
     ],
     "QueryFields": {
       "series": [
+        ["exact", 600],
         ["onephrase", 500],
         ["and", 200],
         ["or", 100]
@@ -308,9 +350,6 @@
         ],
         "title_alt": [
           ["and", 100]
-        ],
-        "title_new": [
-          ["and", 50]
         ],
         "title_full": [
           ["and", 200],
@@ -661,15 +700,6 @@
     "QueryFields": {
       "era": [
         ["and", null]
-      ]
-    }
-  },
-
-  "econtentText": {
-    "QueryFields": {
-      "econtentText": [
-        ["onephrase", 500],
-        ["and", 100]
       ]
     }
   },
@@ -1065,6 +1095,7 @@
       ]
     }
   },
+
   "IslandoraSubject": {
     "QueryFields": {
       "mods_subject_subject_mt": [
@@ -1075,6 +1106,7 @@
       ]
     }
   },
+
   "IslandoraSubjectProper": {
     "QueryFields": {
       "mods_subject_subject_ms": [
@@ -1085,6 +1117,7 @@
       ]
     }
   },
+
   "IslandoraRelationshipsById": {
     "QueryFields": {
       "mods_extension_marmotLocal_hasCreator_entityPid_ms": [

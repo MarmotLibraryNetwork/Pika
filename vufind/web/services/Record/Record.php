@@ -30,8 +30,6 @@ abstract class Record_Record extends Action {
 
 	function __construct($record_id = null){
 		global $interface;
-		global $configArray;
-		global $timer;
 
 		//Load basic information needed in subclasses
 		$this->sourceAndId = new SourceAndId(empty($record_id) ? $_GET['id'] : $record_id);
@@ -73,7 +71,7 @@ abstract class Record_Record extends Action {
 		$interface->assign('exportFormats', $this->recordDriver->getExportFormats());
 
 		//Get Next/Previous Links
-		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+		$searchSource = $_REQUEST['searchSource'] ?? 'local';
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init($searchSource);
 		$searchObject->getNextPrevLinks();

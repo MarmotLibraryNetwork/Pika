@@ -8,16 +8,6 @@ sites/*
 !sites/default/backup
 !sites/default/
 !sites/default/conf/
-sites/default/solr/docs/*
-sites/default/solr/example/*
-sites/default/solr/licenses/*
-#sites/default/solr/logs/*
-sites/default/solr/tmp/*
-sites/default/solr/server/logs/*
-sites/default/solr/server/tmp/*
-sites/default/solr/server/solr/configsets/*
-sites/default/solr/jetty/*
-sites/default/solr/jetty/solr-webapp/webapp/*
 vufind/web/interface/cache/*
 vufind/web/interface/compile/*
 vufind/web/phpinfo.php
@@ -95,7 +85,7 @@ org.eclipse.*.prefs
 out/
 # ignore any thing shevled by intellij
 .shelf/
-#ignore intellig settings files
+#ignore intellij settings files
 *.ipr
 *.iws
 

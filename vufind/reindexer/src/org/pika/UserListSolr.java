@@ -18,6 +18,7 @@ import org.apache.solr.common.SolrInputDocument;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 /**
  * Description goes here
@@ -32,7 +33,8 @@ public class UserListSolr {
 	private HashSet<String> relatedRecordIds = new HashSet<>();
 	private String author;
 	private String title;
-	private String contents = ""; //A list of the titles and authors for the list
+//	private String contents = ""; //A list of the titles and authors for the list
+	private HashSet<String>          contents                 = new HashSet<>();
 	private String description;
 	private long numTitles = 0;
 	private long created;
@@ -67,8 +69,14 @@ public class UserListSolr {
 		doc.addField("num_holdings", numTitles);
 		doc.addField("num_titles", numTitles);
 
-		Date dateAdded = new Date(created * 1000);
-		doc.addField("days_since_added", Util.getDaysSinceAddedForDate(dateAdded));
+		Long                  daysSinceAdded = null;
+		LinkedHashSet<String> timeSinceAdded = new LinkedHashSet<>();
+		if (created != 0) {
+			Date dateAdded = new Date(created * 1000);
+			daysSinceAdded = Util.getDaysSinceAddedForDate(dateAdded);
+			timeSinceAdded = Util.getTimeSinceAddedForDate(dateAdded);
+			doc.addField("days_since_added", daysSinceAdded);
+		}
 
 		//Do things based on scoping
 		for (Scope scope: groupedWorkIndexer.getScopes()) {
@@ -89,11 +97,16 @@ public class UserListSolr {
 						;
 			}
 			if (okToInclude) {
-				doc.addField("local_time_since_added_" + scope.getScopeName(), Util.getTimeSinceAddedForDate(dateAdded));
-				doc.addField("local_days_since_added_" + scope.getScopeName(), Util.getDaysSinceAddedForDate(dateAdded));
-				doc.addField("format_" + scope.getScopeName(), "List");
-				doc.addField("format_category_" + scope.getScopeName(), "Lists");
-				doc.addField("scope_has_related_records", scope.getScopeName());
+				final String scopeName = scope.getScopeName();
+				if (created != 0) {
+					doc.addField("local_days_since_added_" + scopeName, daysSinceAdded);
+					if (timeSinceAdded.size() > 0) {
+						doc.addField("local_time_since_added_" + scopeName, timeSinceAdded);
+					}
+				}
+				doc.addField("format_" + scopeName, "List");
+				doc.addField("format_category_" + scopeName, "Lists");
+				doc.addField("scope_has_related_records", scopeName);
 			}
 		}
 
@@ -114,10 +127,7 @@ public class UserListSolr {
 
 	public void addListTitle(String groupedWorkId, Object title, Object author) {
 		relatedRecordIds.add("grouped_work:" + groupedWorkId);
-		if (contents.length() > 0){
-			contents += "\r\n";
-		}
-		contents += title + " - " + author;
+		contents.add(title + " - " + author);
 		numTitles++;
 	}
 

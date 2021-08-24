@@ -1455,21 +1455,38 @@ class DBMaintenance extends Admin_Admin {
 				],
 				'add_OverDrive_Magazine_Issues_table' => [
 					'title'       => 'Add OverDrive Magazine Issues to database',
-					'description' => 'Add a table to the econtent database in which to store OverDrive Magazines',
+					'description' => 'Add a table to the econtent database in which to store OverDrive Magazines. [THIS NEEDS the econtent db to named econtent]',
 					'sql'         => [
 						"CREATE TABLE IF NOT EXISTS `econtent`.`overdrive_api_magazine_issues`(
     						id INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     						overdriveId varchar(50),
     						crossRefId varchar (50),
     					  title varchar(255),
-    						edition varchar(50),
-    						coverUrl varchar(100),
+    						edition varchar(100),
+    						pubDate INT(11),
+    						coverUrl varchar(200),
     						parentId varchar(50),
-    						econtent_table varchar(50) DEFAULT 'overdrive_api_products',
+    						description TEXT, 
     						dateAdded INT(11),
     						dateUpdated INT(11)
-						)"
+						)
+						CHARACTER SET = utf8 ;"
 						,
+					]
+				],
+				'add_OverDrive_Issues_to_Library_Option' =>[
+					'title'       =>'Add Magazine Issues option to library database',
+					'description' => 'Add Magazine Issues to more information accordion in library database',
+					'sql'         => [
+						"INSERT INTO `library_more_details` (`libraryId`,`weight`,`source`,`collapseByDefault`)
+							SELECT DISTINCT libraryId,'0','issues','0' FROM library_more_details;"
+					]
+				],
+				'add_Index_to_OverDrive_Issues' =>[
+					'title'       =>'Add Index to Magazine Issues table',
+					'description' => 'Index parentId Column.  [THIS NEEDS the econtent db to named econtent]',
+					'sql'         => [
+						"ALTER TABLE `econtent`.`overdrive_api_magazine_issues` ADD INDEX `parentId` (`parentId` ASC);"
 					]
 				],
 

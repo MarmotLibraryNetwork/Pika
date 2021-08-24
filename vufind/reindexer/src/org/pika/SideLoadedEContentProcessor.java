@@ -18,7 +18,6 @@ import org.apache.log4j.Logger;
 import org.marc4j.marc.Record;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
 
@@ -40,7 +39,7 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 	}
 
 	@Override
-	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier) {
+	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier, boolean loadedNovelistSeries) {
 		//For ILS Records, we can create multiple different records, one for print and order items,
 		//and one or more for ILS eContent items.
 		//For Sideloaded Econtent there will only be one related record
@@ -60,7 +59,7 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 				}
 			}
 			if (primaryFormat == null) primaryFormat = "Unknown";
-			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier.getIdentifier(), primaryFormat);
+			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier.getIdentifier(), primaryFormat, loadedNovelistSeries);
 
 			//Special processing for ILS Records
 			String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(record, "520a"));

@@ -21,11 +21,10 @@
  * Date: 3/2/2020
  *
  */
-
 trait GenealogyTrait {
 
 	function formatPartialDate($day, $month, $year){
-		$months        = array(
+		$months        = [
 			1  => 'January',
 			2  => 'February',
 			3  => 'March',
@@ -38,7 +37,7 @@ trait GenealogyTrait {
 			10 => 'October',
 			11 => 'November',
 			12 => 'December'
-		);
+		];
 		$formattedDate = '';
 		if ($month > 0){
 			$formattedDate = $months[$month];

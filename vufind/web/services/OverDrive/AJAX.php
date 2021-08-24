@@ -39,6 +39,11 @@ class OverDrive_AJAX extends AJAXHandler {
 		'forceUpdateFromAPI',
 		'getSupportForm',
 		'submitSupportForm',
+		'getIssuesList',
+		'getOverDriveIssueCheckoutPrompt',
+		'issueCheckoutPrompts',
+		'doOverDriveMagazineIssueCheckout',
+		'reloadCover',
 	];
 
 	protected $methodsThatRespondThemselves = [];
@@ -108,6 +113,9 @@ class OverDrive_AJAX extends AJAXHandler {
 				}
 				$driver            = OverDriveDriverFactory::getDriver();
 				$overDriveId       = $_REQUEST['id'] ?? $_REQUEST['overDriveId'];
+				if(!empty($_REQUEST['issueId'])){
+					$overDriveId     = $_REQUEST['issueId'];
+				}
 				$lendingPeriod     = empty($_REQUEST['lendingPeriod']) ? null : $_REQUEST['lendingPeriod'];
 				$formatType        = empty($_REQUEST['formatType']) ? null : $_REQUEST['formatType'];
 				$result            = $driver->checkoutOverDriveTitle($overDriveId, $patron, $lendingPeriod, $formatType);
@@ -331,6 +339,36 @@ class OverDrive_AJAX extends AJAXHandler {
 		}
 	}
 
+	function getIssuesList(){
+		$parentId        = $_REQUEST['parentId'];
+		$overdriveIssues = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIMagazineIssues();
+		$data            = [];
+
+		$overdriveIssues->parentId = $parentId;
+		$overdriveIssues->orderBy("pubDate DESC");
+		$overdriveIssues->find();
+		$issuesList = $overdriveIssues->fetchAll();
+		$i          = 0;
+		foreach ($issuesList as $issue){
+			$formatted = "<div id=\"scrollerTitleIssues" . $i . "\" class=\"scrollerTitle\" onclick=\"Pika.OverDrive.checkoutOverdriveMagazineByIssueID('" . $issue->overdriveId . "')\"><img src=\"" . $issue->coverUrl . "\" class=\"scrollerTitleCover\" alt=\"" . $issue->edition . "\"></div>";
+
+			$issues = [
+				'id'             => $issue->overdriveId,
+				'image'          => $issue->coverUrl,
+				'author'         => '',
+				'title'          => $issue->edition,
+				'formattedTitle' => $formatted
+			];
+
+			$data[$i] = $issues;
+			$i++;
+		}
+		global $timer;
+		$timer->logTime("Finished getIssues for OverDrive record {$parentId}");
+
+		return $data;
+	}
+
 	function freezeOverDriveHold(){
 		$user = UserAccount::getLoggedInUser();
 		if ($user){
@@ -372,6 +410,8 @@ class OverDrive_AJAX extends AJAXHandler {
 	function getOverDriveCheckoutPrompts(){
 		global $interface;
 		$user           = UserAccount::getLoggedInUser();
+		$issueId = "";
+		$isMagazine =false;
 		$overDriveUsers = $user->getRelatedOverDriveUsers();
 		if (!empty($overDriveUsers)){
 			$id = $_REQUEST['id'];
@@ -380,10 +420,13 @@ class OverDrive_AJAX extends AJAXHandler {
 				$formats        = $recordDriver->getItems();
 				$lendingPeriods = [];
 				$formatClass    = [];
-				$isMagazine     = false;
+
 				foreach ($formats as $format){
 					if ($format->textId == 'magazine-overdrive'){
 						$isMagazine = true;
+						if(!empty($_REQUEST['issueId'])){
+						$issueId = $_REQUEST['issueId'];
+							}
 						break;
 					}else{
 						$tmp = $format->getFormatClass();
@@ -397,9 +440,17 @@ class OverDrive_AJAX extends AJAXHandler {
 			}else{
 				$overDriveFormat = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductFormats();
 				$formatClass     = $overDriveFormat->getFormatClass($_REQUEST['formatType']);
+				if($_REQUEST['formatType']=="magazine-overdrive")
+				{
+					$isMagazine = true;
+					if(!empty($_REQUEST['issueId'])){
+						$issueId = $_REQUEST['issueId'];
+					}
+				}
 				$interface->assign('formatType', $_REQUEST['formatType']);
 			}
-
+			$interface->assign('issueId', $issueId);
+			$interface->assign('isMagazine', $isMagazine);
 			$interface->assign('overDriveId', $id);
 			$interface->assign('overDriveUsers', $overDriveUsers);
 
@@ -420,6 +471,19 @@ class OverDrive_AJAX extends AJAXHandler {
 					}
 				}
 				$interface->assign('lendingPeriods', $lendingPeriods);
+			}
+
+			if($isMagazine)
+			{
+				$rd = new OverDriveRecordDriver($id);
+				$issues = $rd->getMagazineIssues();
+				$interface->assign('issues', $issues);
+				return [
+					'promptNeeded' => true,
+					'promptTitle'  => 'OverDrive Magazine Issue Checkout Options',
+					'prompts'      => $interface->fetch('OverDrive/ajax-overdrive-issue-checkout-prompt.tpl'),
+					'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return Pika.OverDrive.processOverDriveCheckoutPrompts();">',
+				];
 			}
 
 			if (count($overDriveUsers) > 1 || ($user->promptForOverDriveLendingPeriods && !$isMagazine)){
@@ -593,5 +657,67 @@ class OverDrive_AJAX extends AJAXHandler {
 		}
 	}
 
+	function getOverDriveIssueCheckoutPrompt(){
 
+		global $interface;
+		$overdriveId = $_REQUEST['overdriveId'];
+		$issues = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIMagazineIssues;
+		$issues->overdriveId = $overdriveId;
+		$issues->find();
+		$issues->orderBy("pubDate DESC");
+		$title = '';
+		$coverUrl = '';
+		$edition = '';
+		$description = '';
+		$parentId = '';
+		while ($issues->fetch()){
+			$title =  $issues->title;
+			$coverUrl = $issues->coverUrl;
+			$edition = $issues->edition;
+			$description = $issues->description;
+			$parentId = $issues->parentId;
+		}
+
+		return [
+			'title' => "Checkout Magazine Issue",
+			'body' => "<div class='row'><div class='col-sm-3'><img class='img-responsive' src='". $coverUrl ."' /></div><div class='col-sm-9'><div class='row' ><strong>". $title ."</strong> - ". $edition ."</div><div class='row' style='max-height:300px;overflow:hidden;'>". $description ."</div></div></div></div>",
+			'buttons' =>"<button class='btn btn-primary' onclick=\"Pika.OverDrive.checkOutOverDriveTitle('". $parentId ."','magazine-overdrive', '". $overdriveId."')\">Checkout</button>"
+		];
+
+	}
+
+
+	function reloadCover(){
+		require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
+		$recordDriver = new OverDriveRecordDriver($_REQUEST['id']);
+
+		//Reload small cover
+		$smallCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('small',true) ) . '&reload';
+		file_get_contents($smallCoverUrl);
+
+		//Reload medium cover
+		$mediumCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('medium',true)) . '&reload';
+		file_get_contents($mediumCoverUrl);
+
+		//Reload large cover
+		$largeCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('large',true)) . '&reload';
+		file_get_contents($largeCoverUrl);
+
+		//Also reload covers for the grouped work
+		$groupedWorkDriver = $recordDriver->getGroupedWorkDriver();
+
+		//Reload small cover
+		$smallCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('small', true)) . '&reload';
+		file_get_contents($smallCoverUrl);
+
+		//Reload medium cover
+		$mediumCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('medium', true)) . '&reload';
+		file_get_contents($mediumCoverUrl);
+
+		//Reload large cover
+		$largeCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('large', true)) . '&reload';
+		file_get_contents($largeCoverUrl);
+
+		return ['success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'];
+	}
 }

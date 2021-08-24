@@ -85,55 +85,51 @@ abstract class Search_AdvancedBase extends Action{
 	protected function processFacets($facetList, $searchObject = false)
 	{
 		// Process the facets, assuming they came back
-		$facets = array();
-		foreach ($facetList as $facet => $list) {
-			$currentList = array();
-			$valueSelected = false;
+		$processedFacets = [];
+		foreach ($facetList as $facetName => $list) {
+			$listOfValuesForCurrentFacet = [];
+			$isAnyValueSelected          = false;
 			foreach ($list['list'] as $value) {
 				// Build the filter string for the URL:
-				$fullFilter = $facet.':"'.$value['value'].'"';
+				$fullFilter = $facetName.':"'.$value['value'].'"';
 
 				// If we haven't already found a selected facet and the current
 				// facet has been applied to the search, we should store it as
 				// the selected facet for the current control.
 				if ($searchObject && $searchObject->hasFilter($fullFilter)) {
 					$selected = true;
+					$isAnyValueSelected = true;
 					// Remove the filter from the search object -- we don't want
 					// it to show up in the "applied filters" sidebar since it
 					// will already be accounted for by being selected in the
 					// filter select list!
 					$searchObject->removeFilter($fullFilter);
-					$valueSelected = true;
 				} else {
 					$selected = false;
 				}
-				$currentList[$value['value']] = array('filter' => $fullFilter, 'selected' => $selected);
+				$listOfValuesForCurrentFacet[$value['value']] = ['filter' => $fullFilter, 'selected' => $selected];
 			}
 
-			$keys = array_keys($currentList);
+			$keys = array_keys($listOfValuesForCurrentFacet);
 
 			//Add a value for not selected which will be the first item
-			if (strpos($facet, 'availability_toggle') === false){
+			if (strpos($facetName, 'availability_toggle') !== false){
+				//Don't sort Available Now facet and make sure the Entire Collection is selected if no value is selected
+				if (!$isAnyValueSelected && array_key_exists('Entire Collection', $listOfValuesForCurrentFacet)){
+					$listOfValuesForCurrentFacet['Entire Collection']['selected'] = true;
+				}
+			}else{
 				// Perform a natural case sort on the array of facet values:
 				natcasesort($keys);
 
-				$facets[$list['label']]['values']['Any ' . $list['label']] = array('filter' => '','selected' => !$valueSelected );
-			}else{
-				//Don't sort Available Now facet and make sure the Entire Collection is selected if no value is selected
-				if (!$valueSelected){
-					foreach ($currentList as $key => $value){
-						if ($key == 'Entire Collection'){
-							$currentList[$key]['selected'] = true;
-						}
-					}
-				}
+				$processedFacets[$list['label']]['values']['Any ' . $list['label']] = ['filter' => '', 'selected' => !$isAnyValueSelected];
 			}
 
-			$facets[$list['label']]['facetName'] = $facet;
+			$processedFacets[$list['label']]['facetName'] = $facetName;
 			foreach($keys as $key) {
-				$facets[$list['label']]['values'][$key] = $currentList[$key];
+				$processedFacets[$list['label']]['values'][$key] = $listOfValuesForCurrentFacet[$key];
 			}
 		}
-		return $facets;
+		return $processedFacets;
 	}
 }
