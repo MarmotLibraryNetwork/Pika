@@ -167,7 +167,11 @@ class Marmot extends Sierra {
 			return ['success' => false, 'message' => empty($startDate) ? 'Start Date Required.' : 'Record ID required'];
 		}
 		if (!$startTime){
-			$startTime = '8:00am';   // set a default start time if not specified (a morning time)
+			if ($startDate == date('m/d/Y')){
+				$startTime = date('h:ia', strtotime('+1 minute'));
+			} else{
+				$startTime = '8:00am';   // set a default start time if not specified (a morning time)
+			}
 		}
 		if (!$endDate){
 			$endDate = $startDate;   // set a default end date to the start date if not specified
@@ -400,18 +404,18 @@ class Marmot extends Sierra {
 
 	public function cancelAllBookedMaterial($patron){
 		//NOTE the library's scope for the classic OPAC is needed to delete bookings!
-		$post = array(
+		$post = [
 			'canbookall' => 'YES'
-		);
+		];
 
 		$html = $this->_curlLegacy($patron, 'bookings', $post);
 
-		$errors = array();
+		$errors = [];
 		if (!$html){
-			return array(
+			return [
 				'success' => false,
 				'message' => 'There was an error communicating with the circulation system.'
-			);
+			];
 		}
 
 		// get the bookings again, to verify that they were in fact really cancelled.
@@ -428,15 +432,15 @@ class Marmot extends Sierra {
 		}
 
 		if (empty($errors)){
-			return array(
+			return [
 				'success' => true,
 				'message' => 'Your scheduled items were successfully canceled.'
-			);
+			];
 		}else{
-			return array(
+			return [
 				'success' => false,
 				'message' => $errors
-			);
+			];
 		}
 	}
 
