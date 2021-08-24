@@ -1762,6 +1762,11 @@ private $staffPtypes = null;
 	}
 
 	public function updatePin(){
+		global $configArray;
+
+		$pinMinimumLength = $configArray['Catalog']['pinMinimumLength'];
+		$pinMaximumLength = $configArray['Catalog']['pinMaximumLength'];
+
 		if (isset($_REQUEST['pin'])){
 			$oldPin = $_REQUEST['pin'];
 		}else{
@@ -1782,6 +1787,10 @@ private $staffPtypes = null;
 		}
 		if ($newPin != $confirmNewPin){
 			return "New PINs do not match. Please try again.";
+		}
+		$pinLength = strlen($newPin);
+		if ($pinLength < $pinMinimumLength || $pinLength > $pinMaximumLength) {
+			return "PIN must be between " . $pinMinimumLength . " and " . $pinMaximumLength . " characters.";
 		}
 		$result = $this->getCatalogDriver()->updatePin($this, $oldPin, $newPin, $confirmNewPin);
 		$this->clearCache();
