@@ -15,6 +15,7 @@
 
 namespace Pika\PatronDrivers\eContentSystem;
 
+use Pika\BibliographicDrivers\OverDrive\OverDriveAPIMagazineIssues;
 use Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct;
 use Pika\Cache;
 use Pika\Logger;
@@ -551,17 +552,14 @@ class OverDriveDriver4 {
 										$bookshelfItem['isFormatSelected']  = true;  // so that the format gets displayed (had to add an exception to the download section to skip magazines and videos)
 
 									// Get Parent Magazine Record
-										$metaDataResponse                = $this->getProductMetadata($curTitle->reserveId, $this->getProductsKey($user));
-										if (!empty($metaDataResponse)){
-											$bookshelfItem['coverUrl'] = $metaDataResponse->images->cover->href ?? null;
-
-											//TODO: save issue data to database; and include a Database lookup above.  new table?
-											$parentIssueMetaData             = new OverDriveAPIProduct();
-											$parentIssueMetaData->crossRefId = $metaDataResponse->parentMagazineTitleId;
-											if ($parentIssueMetaData->find(true)){
-												$bookshelfItem['overDriveId'] = $parentIssueMetaData->overdriveId;
-												$bookshelfItem['edition']     = $metaDataResponse->edition;
-											}
+										$magIssues = new OverDriveAPIMagazineIssues();
+										$magIssues->overdriveId = $bookshelfItem['issueId'];
+										$magIssues->find();
+										$issues = $magIssues->fetchAll();
+										foreach($issues as $issue)
+										{
+											$bookshelfItem[overDriveId] = $issue->parentId;
+											$bookshelfItem[edition] = $issue->edition;
 										}
 
 										break;
