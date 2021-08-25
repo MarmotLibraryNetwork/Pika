@@ -1518,7 +1518,7 @@ class User extends DB_DataObject {
 				foreach ($this->getLinkedUsers() as $user){
 
 					$additionalResults = $user->cancelAllBookedMaterial(false);
-					if (!$additionalResults['success']){ // if we recieved failures
+					if (!$additionalResults['success']){ // if we received failures
 						if ($result['success']){
 							$result = $additionalResults; // first set of failures, overwrite currently successful results
 						}else{ // if there were already failures, add the extra failure messages
