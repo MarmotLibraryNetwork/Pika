@@ -1440,7 +1440,7 @@ class DBMaintenance extends Admin_Admin {
 						,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
 						'BoardBook', 'Board Book')
 						,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
-						'BoardBook', 'Book')
+						'BoardBook', 'Books')
 						,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
 						'BoardBook', '10')"
 						,
