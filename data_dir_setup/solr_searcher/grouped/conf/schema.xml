@@ -383,7 +383,6 @@
 
 		<!-- Publication information -->
 		<field name="publisher" type="textProper" indexed="true" stored="true" multiValued="true"/>
-<!--		<field name="publisherStr" type="string" indexed="true" stored="true" multiValued="true"/>Pretty sure this is redundant pascal 11/12/20-->
 		<field name="publishDate" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="publishDateSort" type="string" indexed="true" stored="true"/>
 		<field name="edition" type="string" indexed="true" stored="true" multiValued="true"/>
@@ -551,7 +550,6 @@ TODO: need to set df parameter?
 	<copyField source="author2" dest="author2Str"/>
 	<copyField source="auth_author2" dest="auth_author2Str"/>
 <!--	<copyField source="author_additional" dest="author_additionalStr"/> Pretty sure this is redundant pascal. 7/19/21 -->
-<!--	<copyField source="publisher" dest="publisherStr"/> Pretty sure this is redundant pascal 11/12/20-->
 	<!-- CopyFields for Proper (Unstemmed) searching -->
 	<copyField source="title" dest="title_proper"/>
 	<copyField source="title" dest="title_exact"/>
@@ -568,8 +566,4 @@ TODO: need to set df parameter?
 	<copyField source="local_callnumber_*" dest="local_callnumber_exact_*"/>
 	<copyField source="local_callnumber_*" dest="local_callnumber_left_*"/>
 
-	<!-- Default Boolean Operator -->
-<!--	<solrQueryParser defaultOperator="AND"/>
-obsolete now.
-TODO: how does this affect our queries?? -->
 </schema>

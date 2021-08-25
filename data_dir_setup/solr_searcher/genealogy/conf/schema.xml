@@ -373,8 +373,4 @@ TODO: need to set df parameter?
 	<!-- ** Basic, single word spelling -->
 	<copyField source="keywords" dest="spelling"/>
 
-	<!-- Default Boolean Operator -->
-<!--	<solrQueryParser defaultOperator="AND"/>
-obsolete now.
-TODO: how does this affect our queries?? -->
 </schema>
