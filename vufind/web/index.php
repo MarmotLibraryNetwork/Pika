@@ -34,7 +34,7 @@ session_set_save_handler($handler);
 // register shutdown function needed to avoid oddities of using an object as session handler
 register_shutdown_function('session_write_close');
 @session_start();
-$timer->logTime("Initialized Pika\\Session");
+$timer->logTime('Initialized Pika\Session');
 
 // instantiate global logger
 $pikaLogger = new Pika\Logger('Pika', true);
@@ -388,7 +388,7 @@ function loadModuleActionId(){
 
 	$module     = null;
 	$action     = null;
-	$id         = isset($_REQUEST['id']) ? $_REQUEST['id'] : null;
+	$id         = $_REQUEST['id'] ?? null;
 	$requestURI = $_SERVER['REQUEST_URI'];
 	$allRecordModules = 'OverDrive|GroupedWork|Record|ExternalEContent|Person|LibrarianReview|Library';
 	foreach ($indexingProfiles as $profile){

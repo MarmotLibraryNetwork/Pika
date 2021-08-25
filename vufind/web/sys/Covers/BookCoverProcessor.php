@@ -1319,9 +1319,7 @@ class BookCoverProcessor {
 				$size = 'S';
 				break;
 		}
-		if (!$id){
-			$id = $this->configArray['Contentcafe']['id']; // alternate way to pass the content cafe id to this method.
-		}
+		$id ??= $this->configArray['Contentcafe']['id']; // alternate way to pass the content cafe id to this method.
 		$pw  = $this->configArray['Contentcafe']['pw'];
 		$url = $this->configArray['Contentcafe']['url'] ?? 'http://contentcafe2.btol.com'; // http://images.btol.com would also work
 		$url .= "/ContentCafe/Jacket.aspx?UserID={$id}&Password={$pw}&Return=1&Type={$size}&erroroverride=1&Value=";
