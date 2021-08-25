@@ -83,11 +83,11 @@ class SearchObject_Islandora extends SearchObject_Base {
 		$timer->logTime('Created Index Engine for Islandora');
 
 		//Make sure to turn off sharding for islandora
-		$this->indexEngine->setShards(array());
+		$this->indexEngine->setShards([]);
 
 		// Get default facet settings
 		$this->allFacetSettings = getExtraConfigArray('islandoraFacets');
-		$this->facetConfig      = array();
+		$this->facetConfig      = [];
 		$facetLimit             = $this->getFacetSetting('Results_Settings', 'facet_limit');
 		if (is_numeric($facetLimit)){
 			$this->facetLimit = $facetLimit;
