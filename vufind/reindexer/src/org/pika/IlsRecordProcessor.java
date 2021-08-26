@@ -113,6 +113,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private HashMap<String, Integer> numberOfHoldsByIdentifier = new HashMap<>();
 
 	HashMap<String, TranslationMap> translationMaps = new HashMap<>();
+	//The indexing profile based translation maps
 	private ArrayList<TimeToReshelve> timesToReshelve = new ArrayList<>();
 
 	private FormatDetermination formatDetermination;
@@ -388,7 +389,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			loadUnsuppressedPrintItems(groupedWork, recordInfo, identifier, record);
 			loadOnOrderItems(groupedWork, recordInfo, record, recordInfo.getNumPrintCopies() > 0);
 			//If we don't get anything remove the record we just added
+			boolean isItemlessPhysicalRecordToRemove = false;
 			if (checkIfBibShouldBeRemovedAsItemless(recordInfo)) {
+				isItemlessPhysicalRecordToRemove = true;
 				groupedWork.removeRelatedRecord(recordInfo);
 				if (logger.isDebugEnabled()) {
 					logger.debug("Removing related print record for " + identifier + " because there are no print copies, no on order copies and suppress itemless bibs is on");
@@ -397,12 +400,16 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				allRelatedRecords.add(recordInfo);
 			}
 
-			//Since print formats are loaded at the record level, do it after we have loaded items
-			loadPrintFormatInformation(recordInfo, record);
-
 			//Now look for any eContent that is defined within the ils
 			List<RecordInfo> econtentRecords = loadUnsuppressedEContentItems(groupedWork, identifier, record);
+			if (isItemlessPhysicalRecordToRemove && econtentRecords.size() == 0){
+				// If the ILS record is both an itemless record and isn't econtent skip further processing of the record
+				return;
+			}
 			allRelatedRecords.addAll(econtentRecords);
+
+			//Since print formats are loaded at the record level, do it after we have loaded items
+			loadPrintFormatInformation(recordInfo, record);
 
 			//Do updates based on the overall bib (shared regardless of scoping)
 			String primaryFormat = null;
