@@ -65,7 +65,9 @@
 								{if $dataItem->class != 'objectDeleted'}
 									<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>&nbsp;{$propValue}</a>
 								{/if}
-							{elseif $property.type == 'text' || $property.type == 'textarea' || $property.type == 'hidden' || $property.type == 'file' || $property.type == 'integer' || $property.type == 'email'}
+							{elseif $property.type == 'text' || $property.type == 'textarea' || $property.type == 'hidden'
+							|| $property.type == 'file' || $property.type == 'integer' || $property.type == 'email'
+							|| $property.type == 'dateReadOnly'}
 								{$propValue}
 							{elseif $property.type == 'date'}
 								{$propValue|date_format}
@@ -282,7 +284,19 @@
 			$('#adminTable').DataTable({
 				pageLength: 100,
 				"columnDefs": [{"orderDataType": "dom-numeric", "type": "numeric", "targets": 0}],
+					{/literal}
+				{if $objectType == "MergedGroupedWork"}
+					{* TODO: CJ this sort column is actually mysql date time string. Initial glances this looks to be sorting okay
+					 but there could be a better sorting method to pick out. - pascal *}
+					{literal}
+				"order": [[4, "desc"]]
+					{/literal}
+				{else}
+					{literal}
 				"order": [[0, "asc"]]
+					{/literal}
+				{/if}
+					{literal}
 			});
 		});
 

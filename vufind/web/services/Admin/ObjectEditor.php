@@ -37,7 +37,7 @@ abstract class ObjectEditor extends Admin_Admin {
 
 		//Define the structure of the object.
 		$structure         = $this->getObjectStructure();
-		$objectAction      = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
+		$objectAction      = $_REQUEST['objectAction'] ?? null;
 		$customListActions = $this->customListActions();
 		$interface->assign('structure', $structure);
 		$interface->assign('customListActions', $customListActions);

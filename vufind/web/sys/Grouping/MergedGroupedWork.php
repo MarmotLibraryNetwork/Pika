@@ -79,6 +79,12 @@ class MergedGroupedWork extends CommonGroupingAlterationOperations {
 				'storeDb'     => true,
 				'required'    => true,
 			],
+			[
+				'property'    => 'updated',
+				'type'        => 'dateReadOnly',
+				'label'       => 'Date Updated',
+				'description' => 'The date the merged grouped work was last updated in the database',
+			],
 			//			// For display only
 			//			array(
 			//				'property'         => 'full_title',

@@ -88,6 +88,10 @@
 			{*<input type='text' name='{$propName}' id='{$propName}' value='{$propValue}' {if $property.maxLength}maxLength='10'{/if}	class='form-control {if $property.required}required{/if} date'>*}
 			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue}' {if $property.maxLength}maxLength='10'{/if}	class='form-control {if $property.required}required{/if} datePika'>
 			{* datePika is for the form validator *}
+		{elseif $property.type == 'dateReadOnly'}
+			{if !empty($propValue)}
+				<div id="{$propName}">{$propValue|date_format:"%b %d, %Y %r"}</div>
+			{/if}
 		{elseif $property.type == 'partialDate'}
 			{include file="DataObjectUtil/partialDate.tpl"}
 
