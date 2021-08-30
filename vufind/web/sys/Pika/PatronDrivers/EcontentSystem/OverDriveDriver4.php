@@ -552,14 +552,14 @@ class OverDriveDriver4 {
 										$bookshelfItem['isFormatSelected']  = true;  // so that the format gets displayed (had to add an exception to the download section to skip magazines and videos)
 
 									// Get Parent Magazine Record
-										$magIssues = new OverDriveAPIMagazineIssues();
+										$magIssues              = new OverDriveAPIMagazineIssues();
 										$magIssues->overdriveId = $bookshelfItem['issueId'];
-										$magIssues->find();
-										$issues = $magIssues->fetchAll();
-										foreach($issues as $issue)
-										{
-											$bookshelfItem[overDriveId] = $issue->parentId;
-											$bookshelfItem[edition] = $issue->edition;
+										if ($magIssues->find(true)){
+											$bookshelfItem['overDriveId'] = $magIssues->parentId;
+											$bookshelfItem['edition']     = $magIssues->edition;
+											$bookshelfItem['coverUrl']    = $magIssues->coverUrl;
+										} else {
+											$this->logger->error('Failed to find OverDrive magazine issue ' . $bookshelfItem['issueId']);
 										}
 
 										break;
