@@ -328,7 +328,7 @@ class RecordGroupingProcessor {
 				logger.error("008 not long enough to have a movie running time for " + identifier);
 			}
 		} else if (fullRegrouping){
-			logger.warn("Missing 008 : " + identifier.toString());
+			logger.warn("Missing 008 for grouping Movie : " + identifier.toString());
 		}
 		// if any part of that failed, try parsing a playtime number from the physical description
 		if (author == null) {
@@ -546,7 +546,7 @@ class RecordGroupingProcessor {
 				}
 			}
 		} else {
-				logger.warn("Missing 008 : " + identifier.toString());
+			logger.warn("Missing 008 for grouping language : " + identifier.toString());
 		}
 		if (languageCode == null) {
 			// If we still don't have a language, try using the first 041a if present
