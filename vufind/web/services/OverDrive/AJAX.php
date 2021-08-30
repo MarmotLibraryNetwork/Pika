@@ -410,8 +410,8 @@ class OverDrive_AJAX extends AJAXHandler {
 	function getOverDriveCheckoutPrompts(){
 		global $interface;
 		$user           = UserAccount::getLoggedInUser();
-		$issueId = "";
-		$isMagazine =false;
+		$issueId        = "";
+		$isMagazine     = false;
 		$overDriveUsers = $user->getRelatedOverDriveUsers();
 		if (!empty($overDriveUsers)){
 			$id = $_REQUEST['id'];
@@ -473,17 +473,23 @@ class OverDrive_AJAX extends AJAXHandler {
 				$interface->assign('lendingPeriods', $lendingPeriods);
 			}
 
-			if($isMagazine)
-			{
-				$rd = new OverDriveRecordDriver($id);
-				$issues = $rd->getMagazineIssues();
-				$interface->assign('issues', $issues);
-				return [
-					'promptNeeded' => true,
-					'promptTitle'  => 'OverDrive Magazine Issue Checkout Options',
-					'prompts'      => $interface->fetch('OverDrive/ajax-overdrive-issue-checkout-prompt.tpl'),
-					'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return Pika.OverDrive.processOverDriveCheckoutPrompts();">',
-				];
+			if ($isMagazine){
+				if (!empty($issueId) && count($overDriveUsers) == 1 ){
+					// Issue has already been selected and there are no linked users
+					// (Presuming no lending period settings for magazines)
+					$_REQUEST['patronId'] = $user->id;
+					return $this->checkoutOverDriveTitle();
+				} else{
+					$rd     = new OverDriveRecordDriver($id);
+					$issues = $rd->getMagazineIssues();
+					$interface->assign('issues', $issues);
+					return [
+						'promptNeeded' => true,
+						'promptTitle'  => 'OverDrive Magazine Issue Checkout Options',
+						'prompts'      => $interface->fetch('OverDrive/ajax-overdrive-issue-checkout-prompt.tpl'),
+						'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return Pika.OverDrive.processOverDriveCheckoutPrompts();">',
+					];
+				}
 			}
 
 			if (count($overDriveUsers) > 1 || ($user->promptForOverDriveLendingPeriods && !$isMagazine)){
