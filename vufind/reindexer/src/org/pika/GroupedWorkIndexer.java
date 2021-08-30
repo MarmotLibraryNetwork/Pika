@@ -1606,12 +1606,13 @@ public class GroupedWorkIndexer {
 			return null;
 		}
 	}
+
 	long processPublicUserLists() {
 		return processPublicUserLists(false);
 	}
 
 	long processPublicUserLists(boolean userListsOnly) {
-		UserListProcessor listProcessor = new UserListProcessor(this, pikaConn, logger, fullReindex, availableAtLocationBoostValue, ownedByLocationBoostValue);
+		UserListProcessor listProcessor = new UserListProcessor(this, pikaConn, logger, fullReindex);
 		return listProcessor.processPublicUserLists(lastReindexTime, updateServer, solrServer, userListsOnly);
 	}
 

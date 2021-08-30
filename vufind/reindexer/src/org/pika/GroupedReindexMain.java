@@ -144,6 +144,11 @@ public class GroupedReindexMain {
 				} else {
 					logger.info("Running Reindex");
 					numWorksProcessed = groupedWorkIndexer.processGroupedWorks(siteMapsByScope, uniqueGroupedWorks);
+					if (fullReindex){
+						// Delay 15 seconds for solr indexer to wrap up and recover before beginning lists
+						// (Processing the lists requires querying solr for title/author name
+						Thread.sleep(15000);
+					}
 					numListsProcessed = groupedWorkIndexer.processPublicUserLists();
 				}
 				if (fullReindex) {
