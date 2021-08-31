@@ -85,6 +85,7 @@ class UInterface extends Smarty {
 		$this->compile_check = true;
 		// debugging
 		if (!empty($configArray['System']['debug'])){
+			$this->assign('debug', $configArray['System']['debug']);
 			if (isset($configArray['System']['debugTemplates'])){
 				$this->debugging = (bool)$configArray['System']['debugTemplates'];
 				$this->assign('deviceName', get_device_name()); // footer, only displayed when debug is on
@@ -391,7 +392,7 @@ class UInterface extends Smarty {
 		$sessionId = session_id();
 		if ($sessionId){
 			$rememberMe = isset($_COOKIE['rememberMe']) ? $_COOKIE['rememberMe'] : false;
-			$sessionStr = $sessionId . ', remember me ' . $rememberMe;
+			$sessionStr = $sessionId . ', remember me : ' . ($rememberMe ? 1 : 0);
 		} else {
 			$sessionStr = ' - not saved';
 		}

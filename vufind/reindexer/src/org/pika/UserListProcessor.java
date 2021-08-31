@@ -16,10 +16,11 @@ package org.pika;
 
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrServer;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
@@ -44,19 +45,15 @@ public class UserListProcessor {
 	private Connection            pikaConn;
 	private Logger                logger;
 	private boolean               fullReindex;
-	private int                   availableAtLocationBoostValue;
-	private int                   ownedByLocationBoostValue;
 	private HashMap<Long, Long>   librariesByHomeLocation     = new HashMap<>();
 	private HashMap<Long, String> locationCodesByHomeLocation = new HashMap<>();
 	private HashSet<Long>         listPublisherUsers          = new HashSet<>();
 
-	public UserListProcessor(GroupedWorkIndexer indexer, Connection pikaConn, Logger logger, boolean fullReindex, int availableAtLocationBoostValue, int ownedByLocationBoostValue) {
+	public UserListProcessor(GroupedWorkIndexer indexer, Connection pikaConn, Logger logger, boolean fullReindex) {
 		this.indexer                       = indexer;
 		this.pikaConn                      = pikaConn;
 		this.logger                        = logger;
 		this.fullReindex                   = fullReindex;
-		this.availableAtLocationBoostValue = availableAtLocationBoostValue;
-		this.ownedByLocationBoostValue     = ownedByLocationBoostValue;
 		//Load a list of all list publishers
 		try (
 			PreparedStatement listPublishersStmt = pikaConn.prepareStatement("SELECT userId FROM `user_roles` INNER JOIN roles ON user_roles.roleId = roles.roleId WHERE name = 'listPublisher'");
@@ -70,15 +67,25 @@ public class UserListProcessor {
 		}
 	}
 
-	public Long processPublicUserLists(long lastReindexTime, ConcurrentUpdateSolrServer updateServer, SolrServer solrServer) {
+	public Long processPublicUserLists(long lastReindexTime, ConcurrentUpdateSolrClient updateServer, HttpSolrClient solrServer, boolean userListsOnly) {
 		GroupedReindexMain.addNoteToReindexLog("Starting to process public lists");
 		long numListsProcessed = 0L;
+		long numListsSkipped = 0L;
 		try {
 			PreparedStatement listsStmt;
 			final String      sql = "SELECT user_list.id AS id, deleted, public, title, description, user_list.created, dateUpdated, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user ON user_id = user.id ";
-			if (fullReindex) {
+			if (fullReindex || userListsOnly) {
 				//Delete all lists from the index
-				updateServer.deleteByQuery("recordtype:list");
+				logger.info("Deleting all lists from index");
+				try {
+					UpdateResponse response = updateServer.deleteByQuery("recordtype:list");
+					if (logger.isInfoEnabled()){
+						//TODO: getResponse is an object
+						logger.info(response.getResponse());
+					}
+				} catch (SolrServerException | IOException e) {
+					logger.warn("Error deleting lists from index", e);
+				}
 				//Get a list of all public lists
 				listsStmt = pikaConn.prepareStatement(sql + "WHERE public = 1 AND deleted = 0");
 			} else {
@@ -106,15 +113,22 @@ public class UserListProcessor {
 				}
 			}
 
+			try (
 			PreparedStatement getTitlesForListStmt = pikaConn.prepareStatement("SELECT groupedWorkPermanentId, notes FROM user_list_entry WHERE listId = ?");
-			ResultSet         allPublicListsRS     = listsStmt.executeQuery();
-			while (allPublicListsRS.next()) {
-				updateSolrForList(updateServer, solrServer, getTitlesForListStmt, allPublicListsRS);
-				numListsProcessed++;
-			}
-			if (numListsProcessed > 0 && fullReindex) {
-				GroupedReindexMain.addNoteToReindexLog("Committing changes for public lists, processed " + numListsProcessed);
-				updateServer.commit(true, true);
+			ResultSet         allPublicListsRS     = listsStmt.executeQuery()
+			) {
+				while (allPublicListsRS.next()) {
+					if (updateSolrForList(updateServer, solrServer, getTitlesForListStmt, allPublicListsRS)) {
+						numListsProcessed++;
+					} else {
+						numListsSkipped++;
+					}
+				}
+				if (numListsProcessed > 0 && (fullReindex || userListsOnly)) {
+					updateServer.commit(true, true);
+					GroupedReindexMain.addNoteToReindexLog("Committing changes for public lists, processed " + numListsProcessed);
+					GroupedReindexMain.addNoteToReindexLog("Number of public lists skipped (belonged to no scopes) : " + numListsSkipped);
+				}
 			}
 
 		} catch (Exception e) {
@@ -124,81 +138,151 @@ public class UserListProcessor {
 		return numListsProcessed;
 	}
 
-	private void updateSolrForList(ConcurrentUpdateSolrServer updateServer, SolrServer solrServer, PreparedStatement getTitlesForListStmt, ResultSet allPublicListsRS) throws SQLException, SolrServerException, IOException {
+	/**
+	 * @param updateServer
+	 * @param solrServer
+	 * @param getTitlesForListStmt
+	 * @param allPublicListsRS
+	 * @return Whether the list was indexed or not
+	 * @throws SQLException
+	 * @throws SolrServerException
+	 * @throws IOException
+	 */
+	private boolean updateSolrForList(ConcurrentUpdateSolrClient updateServer, HttpSolrClient solrServer, PreparedStatement getTitlesForListStmt, ResultSet allPublicListsRS) throws SQLException, SolrServerException, IOException {
 		UserListSolr userListSolr = new UserListSolr(indexer);
-		Long         listId       = allPublicListsRS.getLong("id");
+		long         listId       = allPublicListsRS.getLong("id");
 
 		int  deleted  = allPublicListsRS.getInt("deleted");
 		int  isPublic = allPublicListsRS.getInt("public");
 		long userId   = allPublicListsRS.getLong("user_id");
 		if (deleted == 1 || isPublic == 0) {
 			// Remove list from search when deleted or made private
-			updateServer.deleteByQuery("id:list" + listId);
-		} else {
-			logger.debug("Processing list " + listId + " " + allPublicListsRS.getString("title"));
-			userListSolr.setId(listId);
-			userListSolr.setTitle(allPublicListsRS.getString("title"));
-			userListSolr.setDescription(allPublicListsRS.getString("description"));
-			userListSolr.setCreated(allPublicListsRS.getLong("created"));
-			userListSolr.setOwnerHasListPublisherRole(listPublisherUsers.contains(userId));
-
-			String displayName = allPublicListsRS.getString("displayName");
-			String firstName   = allPublicListsRS.getString("firstname");
-			String lastName    = allPublicListsRS.getString("lastname");
-			if (displayName != null && displayName.length() > 0) {
-				userListSolr.setAuthor(displayName);
-			} else {
-				if (firstName == null) firstName = "";
-				if (lastName == null) lastName = "";
-				String firstNameFirstChar = "";
-				if (firstName.length() > 0) {
-					firstNameFirstChar = firstName.charAt(0) + ". ";
-				}
-				userListSolr.setAuthor(firstNameFirstChar + lastName);
+			try {
+				updateServer.deleteByQuery("id:list" + listId);
+			} catch (SolrServerException | IOException e) {
+				logger.error("Failed to delete User List " + listId, e);
 			}
-
+		} else {
+			// Set all the properties needed to determine the scopes the user list belongs to
+			userListSolr.setOwnerHasListPublisherRole(listPublisherUsers.contains(userId));
 			long patronHomeLibrary = allPublicListsRS.getLong("homeLocationId");
 			if (librariesByHomeLocation.containsKey(patronHomeLibrary)) {
 				userListSolr.setOwningLibrary(librariesByHomeLocation.get(patronHomeLibrary));
 			} else {
 				//Don't know the owning library for some reason
+				if (logger.isInfoEnabled()) {
+					logger.info("Don't know library for user " + userId + ", owner of public list " + listId);
+				}
 				userListSolr.setOwningLibrary(-1);
 			}
 			if (locationCodesByHomeLocation.containsKey(patronHomeLibrary)) {
 				userListSolr.setOwningLocation(locationCodesByHomeLocation.get(patronHomeLibrary));
 			} else {
 				//Don't know the owning location
+				if (logger.isInfoEnabled()) {
+					logger.info("Don't know location for user " + userId + ", owner of public list " + listId);
+				}
 				userListSolr.setOwningLocation("");
 			}
 
-			//Get information about all of the list titles.
-			getTitlesForListStmt.setLong(1, listId);
-			try (ResultSet allTitlesRS = getTitlesForListStmt.executeQuery()) {
-				while (allTitlesRS.next()) {
-					String groupedWorkId = allTitlesRS.getString("groupedWorkPermanentId");
-					if (!allTitlesRS.wasNull() && groupedWorkId.length() > 0 && !groupedWorkId.contains(":")) {
-						// Skip archive object Ids
-						SolrQuery query = new SolrQuery();
-						query.setQuery("id:" + groupedWorkId + " AND recordtype:grouped_work");
-						query.setFields("title", "author");
 
-						try {
-							QueryResponse    response = solrServer.query(query);
-							SolrDocumentList results  = response.getResults();
-							//Should only ever get one response
-							if (results.size() >= 1) {
-								SolrDocument curWork = results.get(0);
-								userListSolr.addListTitle(groupedWorkId, curWork.getFieldValue("title"), curWork.getFieldValue("author"));
-							}
-						} catch (Exception e) {
-							logger.error("Error loading information about title " + groupedWorkId);
-						}
+			// If the list does not appear in any scope, skip further processing
+			int numberOfScopes = userListSolr.getScopes().size();
+			if (numberOfScopes > 0) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("Processing list " + listId + " " + allPublicListsRS.getString("title"));
+				}
+
+				userListSolr.setId(listId);
+				userListSolr.setTitle(allPublicListsRS.getString("title"));
+				userListSolr.setDescription(allPublicListsRS.getString("description"));
+				userListSolr.setCreated(allPublicListsRS.getLong("created"));
+
+				String displayName = allPublicListsRS.getString("displayName");
+				if (displayName != null && displayName.length() > 0) {
+					userListSolr.setAuthor(displayName);
+				} else {
+					if (logger.isDebugEnabled()) {
+						logger.debug("User " + userId + " owner of public list " + listId +
+										" does not have their display name set, falling back to first initial, last name"
+						);
 					}
-					//TODO: Handle Archive Objects from a User List
+					String firstName = allPublicListsRS.getString("firstname");
+					String lastName  = allPublicListsRS.getString("lastname");
+					if (firstName == null) firstName = "";
+					if (lastName == null) lastName = "";
+					String firstNameFirstChar = "";
+					if (firstName.length() > 0) {
+						firstNameFirstChar = firstName.charAt(0) + ". ";
+					}
+					userListSolr.setAuthor(firstNameFirstChar + lastName);
+				}
+
+
+				//Get information about all the list titles.
+				getTitlesForListStmt.setLong(1, listId);
+//				StringBuilder groupedWorkIds = new StringBuilder();
+				try (ResultSet allTitlesRS = getTitlesForListStmt.executeQuery()) {
+					while (allTitlesRS.next()) {
+						String groupedWorkId = allTitlesRS.getString("groupedWorkPermanentId");
+						if (!allTitlesRS.wasNull() && groupedWorkId.length() > 0 && !groupedWorkId.contains(":")) {
+							// Skip archive object Ids
+//						groupedWorkIds.append(groupedWorkId).append(',');
+
+							SolrQuery query = new SolrQuery();
+							query.setQuery("id:" + groupedWorkId + " AND recordtype:grouped_work");
+							query.setFields("title", "author");
+
+							try {
+								QueryResponse    response = solrServer.query(query);
+								SolrDocumentList results  = response.getResults();
+								//Should only ever get one response
+								if (results.size() >= 1) {
+									SolrDocument curWork = results.get(0);
+									userListSolr.addListTitle(groupedWorkId, curWork.getFieldValue("title"), curWork.getFieldValue("author"));
+								}
+							} catch (Exception e) {
+								logger.error("User Lists: Error loading information about list entry title " + groupedWorkId, e);
+							}
+
+
+						}
+						//TODO: Handle Archive Objects from a User List
+					}
+				}
+				//TODO: we can query all of the grouped work Ids in a single solr query and process all the results  (set the return size)
+				// Attempted below. Queries were much slower to process for marmot test
+
+//			if (groupedWorkIds.length() > 0) {
+//				SolrQuery query = new SolrQuery();
+//				query.setRequestHandler("/get"); // The slash is needed to set the url path rather than the obsolete qt parameter
+//				query.setParam("ids", groupedWorkIds.toString());
+////				query.setQuery("recordtype:grouped_work");
+////				query.setFilterQueries("recordtype:grouped_work");
+//				query.setFields("id", "title", "author");
+//
+//				String groupedWorkId = "";
+//				try {
+//					QueryResponse    response = solrServer.query(query);
+//					SolrDocumentList results  = response.getResults();
+//					for (SolrDocument curWork : results) {
+//						groupedWorkId = curWork.getFieldValue("id").toString();
+//						userListSolr.addListTitle(groupedWorkId, curWork.getFieldValue("title"), curWork.getFieldValue("author"));
+//					}
+//				} catch (Exception e) {
+//					logger.error("Error loading information about title " + groupedWorkId, e);
+//				}
+//			}
+
+				// Index in the solr catalog
+				updateServer.add(userListSolr.getSolrDocument());
+				return true;
+			} else {
+				if (logger.isDebugEnabled()){
+					logger.debug("List " + listId + " belonged to no search scopes and was not indexed");
 				}
 			}
-			// Index in the solr catalog
-			updateServer.add(userListSolr.getSolrDocument(availableAtLocationBoostValue, ownedByLocationBoostValue));
 		}
+		return false;
 	}
 }

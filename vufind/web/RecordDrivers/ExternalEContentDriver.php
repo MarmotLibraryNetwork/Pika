@@ -127,9 +127,34 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		return 'ExternalEContent';
 	}
 
-	//TODO: doesn't get used, should it?
-	function getEContentFormat($fileOrUrl, $iType){
-		return mapValue('econtent_itype_format', $iType);
+	private $format;
+	/**
+	 * Load the format for the record based off of information stored within the grouped work.
+	 * Which was calculated at index time.
+	 *
+	 * @return string[]
+	 */
+	function getFormat(){
+		if (empty($this->format)){
+			//Rather than loading formats here, let's leverage the work we did at index time
+			$recordDetails = $this->getGroupedWorkDriver()->getSolrField('record_details');
+			if ($recordDetails){
+				if (!is_array($recordDetails)){
+					$recordDetails = [$recordDetails];
+				}
+				foreach ($recordDetails as $recordDetailRaw){
+					$recordDetail = explode('|', $recordDetailRaw);
+					$idWithOutPrefix = str_replace('external_econtent:', '', $recordDetail[0]);
+					if ($idWithOutPrefix == $this->getIdWithSource()){
+						$this->format = [$recordDetail[1]];
+						return $this->format;
+					}
+				}
+			}
+			//We did not find a record for this in the index.  It's probably been deleted.
+			$this->format = ['Unknown'];
+		}
+		return $this->format;
 	}
 
 //	/**

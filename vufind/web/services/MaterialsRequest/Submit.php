@@ -27,6 +27,16 @@ require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestStatus.php';
  */
 class MaterialsRequest_Submit extends MyAccount {
 
+	/**
+	 * Remove any non-number character (except X) because ISBNs have an X check digit
+	 *
+	 * @param $string
+	 * @return array|string|string[]|null
+	 */
+	private function removeNonNumbers($string){
+		return preg_replace('/[^\dX]/i', '', $string);
+	}
+
 	function launch(){
 		global $configArray;
 		global $interface;
@@ -114,9 +124,9 @@ class MaterialsRequest_Submit extends MyAccount {
 							$materialsRequest->author                 = empty($_REQUEST['author']) ? '' : strip_tags($_REQUEST['author']);
 							$materialsRequest->ageLevel               = isset($_REQUEST['ageLevel']) ? strip_tags($_REQUEST['ageLevel']) : '';
 							$materialsRequest->bookType               = isset($_REQUEST['bookType']) ? strip_tags($_REQUEST['bookType']) : '';
-							$materialsRequest->isbn                   = isset($_REQUEST['isbn']) ? strip_tags($_REQUEST['isbn']) : '';
-							$materialsRequest->upc                    = isset($_REQUEST['upc']) ? strip_tags($_REQUEST['upc']) : '';
-							$materialsRequest->issn                   = isset($_REQUEST['issn']) ? strip_tags($_REQUEST['issn']) : '';
+							$materialsRequest->isbn                   = isset($_REQUEST['isbn']) ? $this->removeNonNumbers(strip_tags($_REQUEST['isbn'])) : '';
+							$materialsRequest->upc                    = isset($_REQUEST['upc']) ? $this->removeNonNumbers(strip_tags($_REQUEST['upc'])): '';
+							$materialsRequest->issn                   = isset($_REQUEST['issn']) ? $this->removeNonNumbers(strip_tags($_REQUEST['issn'])) : '';
 							$materialsRequest->oclcNumber             = isset($_REQUEST['oclcNumber']) ? strip_tags($_REQUEST['oclcNumber']) : '';
 							$materialsRequest->publisher              = empty($_REQUEST['publisher']) ? '' : strip_tags($_REQUEST['publisher']);
 							$materialsRequest->publicationYear        = empty($_REQUEST['publicationYear']) ? '' : strip_tags($_REQUEST['publicationYear']);

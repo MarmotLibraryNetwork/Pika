@@ -262,7 +262,7 @@
 <script type="text/javascript">
 	{* Define our search arrays so they are usuable in the javascript *}
 	var searchFields = {ldelim}
-	{foreach from=$advSearchTypes item=searchDesc key=searchVal}
+	{foreach from=$advancedSearchTypes item=searchDesc key=searchVal}
 	"{$searchVal}" : "{translate text=$searchDesc}",
 	{/foreach}
 	{rdelim};

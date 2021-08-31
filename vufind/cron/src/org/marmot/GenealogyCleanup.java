@@ -150,7 +150,7 @@ public class GenealogyCleanup implements IProcessHandler {
 	private void reindexPeople(Section processSettings) {
 		String reindexSetting = processSettings.get("reindex");
 		if (reindexSetting == null || !reindexSetting.equals("true")) {
-			processLog.addNote("Skipping reindexing people becuase reindex was not true.");
+			processLog.addNote("Skipping reindexing people because reindex was not true.");
 			return;
 		}
 

@@ -198,7 +198,7 @@ class Sierra {
 //				$checkout['renewMessage']   = '';
 				$checkout['coverUrl']       = $coverUrl;
 				$checkout['barcode']        = $entry->barcode;
-				$checkout['request']        = $entry->callNumber;
+				$checkout['request']        = $entry->callNumber ?? null;
 				$checkout['author']         = $titleAndAuthor['author'];
 				$checkout['title']          = $titleAndAuthor['title'];
 				$checkout['title_sort']     = $titleAndAuthor['sort_title'];
@@ -1074,7 +1074,7 @@ class Sierra {
 
 		if(!$r) {
 			$message = $this->_getPrettyError();
-			return [['Could not update PIN: '. $message]];
+			return 'Could not update PIN: '. $message;
 		}
 		$patron->cat_password = $newPin;
 		$patron->update();
@@ -1310,7 +1310,7 @@ EOT;
 		} while ($barcodeTest === true);
 		$params['barcodes'][] = $barcode;
 
-		// agency code
+		// agency code -- not all sierra libraries use the agency field
 		if($library->selfRegistrationAgencyCode >= 1) {
 			$params['fixedFields']["158"] = [
 			 "label" => "PAT AGENCY",
@@ -1584,7 +1584,7 @@ EOT;
 		}
 		// make the call
 		$params = [
-			'fields' => 'default,assessedDate,itemCharge,chargeType,paidAmount,datePaid,description,returnDate,location,description'
+			'fields' => 'default,assessedDate,itemCharge,processingFee,billingFee,chargeType,paidAmount,datePaid,description,returnDate,location,description'
 		];
 		$operation = 'patrons/'.$patronId.'/fines';
 		$fInfo = $this->_doRequest($operation, $params);
@@ -1636,7 +1636,11 @@ EOT;
 			} else {
 				$title = 'Unknown';
 			}
-			$amount = number_format($fine->itemCharge, 2);
+			$owed = $fine->itemCharge;
+			$owed = $owed + $fine->processingFee;
+			$owed = $owed + $fine->billingFee;
+			$amount = number_format($owed, 2);
+
 			if(isset($fine->assessedDate) && !empty($fine->assessedDate)) {
 				$date   = date('m-d-Y', strtotime($fine->assessedDate));
 				if(!$date) {

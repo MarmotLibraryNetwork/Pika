@@ -20,7 +20,7 @@ class SearchSources {
 	}
 
 	private static function getSearchSourcesDefault(){
-		$searchOptions = array();
+		$searchOptions = [];
 		//Check to see if marmot catalog is a valid option
 		global $library;
 		global $configArray;
@@ -28,7 +28,7 @@ class SearchSources {
 		$repeatInWorldCat     = false;
 		$repeatInProspector   = true;
 		$repeatInOverdrive    = false;
-		$systemsToRepeatIn    = array();
+		$systemsToRepeatIn    = [];
 		$searchGenealogy      = true;
 		$repeatCourseReserves = false;
 		$searchArchive        = false;
@@ -75,11 +75,11 @@ class SearchSources {
 
 		//Local search
 		if (!empty($location) && $location->restrictSearchByLocation){
-			$searchOptions['local'] = array(
+			$searchOptions['local'] = [
 				'name'        => $location->displayName,
 				'description' => "The {$location->displayName} catalog.",
 				'catalogType' => 'catalog'
-			);
+			];
 		}elseif (isset($library)){
 			$searchOptions['local'] = array(
 				'name'        => strlen($library->abbreviatedDisplayName) > 0 ? $library->abbreviatedDisplayName : $library->displayName,
@@ -89,51 +89,45 @@ class SearchSources {
 		}else{
 			$marmotAdded            = true;
 			$consortiumName         = $configArray['Site']['libraryName'];
-			$searchOptions['local'] = array(
+			$searchOptions['local'] = [
 				'name'        => "Entire $consortiumName Catalog",
 				'description' => "The entire $consortiumName catalog.",
 				'catalogType' => 'catalog'
-			);
+			];
 		}
 
 		if ($location != null && $location->restrictSearchByLocation &&
 					($repeatSearchSetting == 'marmot' || $repeatSearchSetting == 'librarySystem')
 		){
-			$searchOptions[$library->subdomain] = array(
+			$searchOptions[$library->subdomain] = [
 				'name'        => $library->displayName,
 				'description' => "The entire {$library->displayName} catalog not limited to a particular branch.",
 				'catalogType' => 'catalog'
-			);
+			];
 		}
 
 		//Process additional systems to repeat in
 		if (count($systemsToRepeatIn) > 0){
 			foreach ($systemsToRepeatIn as $system){
-				if (strlen($system) > 0){
+				if (!empty($system)){
 					$repeatInLibrary            = new Library();
 					$repeatInLibrary->subdomain = $system;
-					$repeatInLibrary->find();
-					if ($repeatInLibrary->N == 1){
-						$repeatInLibrary->fetch();
-
-						$searchOptions[$repeatInLibrary->subdomain] = array(
+					if ($repeatInLibrary->find(true)){
+						$searchOptions[$repeatInLibrary->subdomain] = [
 							'name'        => $repeatInLibrary->displayName,
 							'description' => '',
 							'catalogType' => 'catalog'
-						);
+						];
 					}else{
 						//See if this is a repeat within a location
 						$repeatInLocation       = new Location();
 						$repeatInLocation->code = $system;
-						$repeatInLocation->find();
-						if ($repeatInLocation->N == 1){
-							$repeatInLocation->fetch();
-
-							$searchOptions[$repeatInLocation->code] = array(
+						if ($repeatInLocation->find(true)){
+							$searchOptions[$repeatInLocation->code] = [
 								'name'        => $repeatInLocation->displayName,
 								'description' => '',
 								'catalogType' => 'catalog'
-							);
+							];
 						}
 					}
 				}
@@ -149,11 +143,11 @@ class SearchSources {
 
 		if ($includeOnlineOption){
 			//eContent Search
-			$searchOptions['econtent'] = array(
+			$searchOptions['econtent'] = [
 				'name'        => 'Online Collection',
 				'description' => 'Digital Media available for use online and with portable devices',
 				'catalogType' => 'catalog'
-			);
+			];
 		}
 
 		//Marmot Global search
@@ -163,90 +157,90 @@ class SearchSources {
 			&& $marmotAdded == false
 		){
 			$consortiumName          = $configArray['Site']['libraryName'];
-			$searchOptions['marmot'] = array(
+			$searchOptions['marmot'] = [
 				'name'        => "$consortiumName Catalog",
 				'description' => 'A consortium of libraries who share resources with your library.',
 				'catalogType' => 'catalog'
-			);
+			];
 		}
 
 		if ($searchEbsco){
-			$searchOptions['ebsco'] = array(
+			$searchOptions['ebsco'] = [
 				'name'        => 'EBSCO',
 				'description' => 'EBSCO',
 				'catalogType' => 'ebsco'
-			);
+			];
 		}
 
 		if ($searchArchive){
-			$searchOptions['islandora'] = array(
+			$searchOptions['islandora'] = [
 				'name'        => 'Local Digital Archive',
 				'description' => 'Local Digital Archive in Colorado',
 				'catalogType' => 'islandora'
-			);
+			];
 		}
 
 		//Genealogy Search
 		if ($searchGenealogy){
-			$searchOptions['genealogy'] = array(
+			$searchOptions['genealogy'] = [
 				'name'        => 'Genealogy Records',
 				'description' => 'Genealogy Records from Colorado',
 				'catalogType' => 'genealogy'
-			);
+			];
 		}
 
 		if ($enableCombinedResults && !$showCombinedResultsFirst){
-			$searchOptions['combinedResults'] = array(
+			$searchOptions['combinedResults'] = [
 				'name'        => $combinedResultsName,
 				'description' => "Combined results from multiple sources.",
 				'catalogType' => 'combined'
-			);
+			];
 		}
 
 		//Overdrive
 		if ($repeatInOverdrive){
-			$searchOptions['overdrive'] = array(
+			$searchOptions['overdrive'] = [
 				'name'        => 'OverDrive Digital Catalog',
 				'description' => 'Downloadable Books, Videos, Music, and eBooks with free use for library card holders.',
 				'external'    => true,
 				'catalogType' => 'catalog'
-			);
+			];
 		}
 
 		if ($repeatInProspector){
 			$innReachEncoreName          = $configArray['InterLibraryLoan']['innReachEncoreName'];
-			$searchOptions['prospector'] = array(
+			$searchOptions['prospector'] = [
 				'name'        => $innReachEncoreName . ' Catalog',
 				'description' => $innReachEncoreName == 'Prospector' ? 'A shared catalog of academic, public, and special libraries all over Colorado.' : 'A shared catalog for inter-library loaning.',
 				'external'    => true,
 				'catalogType' => 'catalog'
-			);
+			];
 		}
 
 		//Course reserves for colleges
 		if ($repeatCourseReserves){
 			//Mesa State
-			$searchOptions['course-reserves-course-name'] = array(
+			$searchOptions['course-reserves-course-name'] = [
 				'name'        => 'Course Reserves by Name or Number',
 				'description' => 'Search course reserves by course name or number',
 				'external'    => true,
 				'catalogType' => 'courseReserves'
-			);
-			$searchOptions['course-reserves-instructor']  = array(
+			];
+			$searchOptions['course-reserves-instructor']  = [
 				'name'        => 'Course Reserves by Instructor',
 				'description' => 'Search course reserves by professor, lecturer, or instructor name',
 				'external'    => true,
 				'catalogType' => 'courseReserves'
-			);
+			];
 		}
 
 		if ($repeatInWorldCat){
-			$searchOptions['worldcat'] = array(
+			$searchOptions['worldcat'] = [
 				'name'        => 'WorldCat',
 				'description' => 'A shared catalog of libraries all over the world.',
 				'external'    => true,
 				'catalogType' => 'catalog'
-			);
+			];
 		}
 
 		return $searchOptions;

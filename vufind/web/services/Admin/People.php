@@ -43,7 +43,7 @@ class People extends ObjectEditor {
 	}
 
 	function getPrimaryKeyColumn(){
-		return array('lastName', 'firstName', 'middleName', 'birthDate');
+		return ['lastName', 'firstName', 'middleName', 'birthDate'];
 	}
 
 	function getIdKeyColumn(){
@@ -51,7 +51,7 @@ class People extends ObjectEditor {
 	}
 
 	function getAllowableRoles(){
-		return array('genealogyContributor');
+		return ['genealogyContributor'];
 	}
 
 	function getRedirectLocation($objectAction, $curObject){

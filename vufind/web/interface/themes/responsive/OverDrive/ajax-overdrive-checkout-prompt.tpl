@@ -2,6 +2,7 @@
 <form method="post" action="" id="overdriveCheckoutPromptsForm" class="form">
 	<div>
 		<input type="hidden" name="overdriveId" value="{$overDriveId}">
+		{if !empty($issueId)}<input type="hidden" name="issueId" value="{$issueId}">{/if}
 			{if !empty($formatType)}<input type="hidden" id="formatType" value="{$formatType}">{/if}
 		{if count($overDriveUsers) > 1} {* Linked Users contains the active user as well*}
 			<div class="form-group">
@@ -49,4 +50,5 @@
 		{/foreach}
 	</div>
 </form>
+
 {/strip}

@@ -40,13 +40,14 @@ class OverDriveRecordDriver extends RecordInterface {
 	private $upcs = null;
 	private $asins = null;
 	private $items;
-
+	private $issues;
 	/**
 	 * The Grouped Work that this record is connected to
 	 * @var  GroupedWork
 	 */
 	protected $groupedWork;
 	protected $groupedWorkDriver = null;
+
 
 	/**
 	 * Constructor.  We build the object using all the data retrieved
@@ -63,6 +64,7 @@ class OverDriveRecordDriver extends RecordInterface {
 		if (is_string($recordId)){
 			//The record is the identifier for the overdrive title
 			$this->id                            = $recordId;
+
 			$this->overDriveProduct              = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
 			$this->overDriveProduct->overdriveId = $recordId;
 			if ($this->overDriveProduct->find(true)){
@@ -259,6 +261,36 @@ class OverDriveRecordDriver extends RecordInterface {
 
 		return $items;
 	}
+	/**
+	 * Assign necessary Smarty variables and return a template name to
+	 * load in order to display issues extracted from the base record
+	 * Returns
+	 * null if no data is available.
+	 */
+	public function getMagazineIssues(){
+		$parentId = strtolower($this->id);
+
+		if($this->issues == null){
+			$overdriveIssues = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIMagazineIssues();
+			$this->issues = [];
+			if($this->valid){
+				$overdriveIssues->parentId = $parentId;
+				$overdriveIssues->orderBy("pubDate DESC");
+				$overdriveIssues->find();
+				$issuesList = $overdriveIssues->fetchAll();
+
+				foreach($issuesList as $issue)
+				{
+					$this->issues[] = $issue;
+				}
+
+			}
+			global $timer;
+			$timer->logTime("Finished getIssues for OverDrive record {$parentId}");
+		}
+		return $this->issues;
+
+	}
 
 		/**
 	 * Assign necessary Smarty variables and return a template name to
@@ -332,6 +364,7 @@ class OverDriveRecordDriver extends RecordInterface {
 		$overDriveAPIProduct->selectAdd("overdrive_api_product_metadata.rawData as metaDataRaw");
 		if ($overDriveAPIProduct->find(true)){
 			$interface->assign('overDriveProduct', $overDriveAPIProduct);
+
 			$productRaw = json_decode($overDriveAPIProduct->productRaw);
 			//Remove links to overdrive that could be used to get semi-sensitive data
 			unset($productRaw->links);
@@ -732,6 +765,17 @@ class OverDriveRecordDriver extends RecordInterface {
 	public function getSubTitle(){
 		return $this->overDriveProduct->subtitle;
 	}
+	/**
+	 * Is the record a magazine
+	 *
+	 * @return  bool
+	 */
+	public function isMagazine(){
+		if (in_array("OverDrive Magazine",$this->getFormats())){
+			return true;
+		}
+		return false;
+	}
 
 	/**
 	 * Get an array of all the formats associated with the record.
@@ -826,10 +870,12 @@ class OverDriveRecordDriver extends RecordInterface {
 
 		/** @var OverDriveAPIProductFormats[] $overDriveTitleHoldings */
 		$overDriveTitleHoldings = $this->getHoldings();
+
 		$scopedAvailability     = $this->getScopedAvailability();
 		$interface->assign('overDriveTitleHoldings', $overDriveTitleHoldings);
 		$interface->assign('availability', $scopedAvailability['mine']);
 		$interface->assign('availabilityOther', $scopedAvailability['other']);
+		$interface->assign('id', $this->id);
 		$numberOfHolds = 0;
 		foreach ($scopedAvailability['mine'] as $availability){
 			if ($availability->numberOfHolds > 0){
@@ -860,10 +906,20 @@ class OverDriveRecordDriver extends RecordInterface {
 				'hideByDefault' => false
 			];
 		}
-
+		if ($this->isMagazine()){
+			$moreDetailsOptions['issues'] = [
+				'label' => 'Magazine Issues',
+				'body'  => $interface->fetch('OverDrive/view-issues.tpl'),
+				'hideByDefault' => false
+			];
+		}
 		$moreDetailsOptions['moreDetails'] = [
 			'label' => 'More Details',
 			'body'  => $interface->fetch('OverDrive/view-more-details.tpl'),
+		];
+		$moreDetailsOptions['subjects'] = [
+			'label' => 'Subjects',
+			'body' => $interface->fetch('OverDrive/view-subjects.tpl'),
 		];
 		$moreDetailsOptions['citations']   = [
 			'label' => 'Citations',
@@ -873,6 +929,7 @@ class OverDriveRecordDriver extends RecordInterface {
 			'label' => 'Copy Details',
 			'body'  => $interface->fetch('OverDrive/view-copies.tpl'),
 		];
+
 		if ($interface->getVariable('showStaffView')){
 			$moreDetailsOptions['staff'] = [
 				'label' => 'Staff View',

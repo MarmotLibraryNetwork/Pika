@@ -22,18 +22,13 @@
 				{translate text="Showing"} {$recordStart} - {$recordEnd} {translate text='of'} {$recordCount|number_format}
 			{/if}
 		{/if}
-		<span class="hidden-phone">
+		<span>
 			 &nbsp;{translate text='query time'}: {$qtime}s
 		</span>
 		{if $replacementTerm}
 			<div id="replacement-search-info">
 				<span class="replacement-search-info-text">Showing Results for </span>{$replacementTerm}<span class="replacement-search-info-text">.  Search instead for <span class="replacement-search-info-text"><a href="{$oldSearchUrl}">{$oldTerm}</a>
 			</div>
-		{/if}
-
-		{if $numUnscopedResults && $numUnscopedResults != $recordCount}
-			<div class="unscopedResultCount">
-				There are <b>{$numUnscopedResults}</b> results in the entire {$consortiumName} collection. <a href="{$unscopedSearchUrl}">Search the entire collection.</a>			</div>
 		{/if}
 
 		{if $spellingSuggestions}

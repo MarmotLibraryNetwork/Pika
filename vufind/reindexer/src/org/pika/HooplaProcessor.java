@@ -111,7 +111,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 	}
 
 	@Override
-	public void processRecord(GroupedWorkSolr groupedWork, RecordIdentifier identifier) {
+	public void processRecord(GroupedWorkSolr groupedWork, RecordIdentifier identifier, boolean loadedNovelistSeries) {
 		Record record = loadMarcRecordFromDisk(identifier.getIdentifier());
 
 		if (record != null) {
@@ -121,7 +121,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 						if (hooplaExtractInfo.isActive()) {
 							// Only Include titles that are active according to the Hoopla Extract
 
-							updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
+							updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier, loadedNovelistSeries);
 
 						} else  if (logger.isInfoEnabled()){
 							logger.info("Excluding due to title inactive for everyone hoopla id# " + hooplaExtractInfo.getTitleId() + " :" + hooplaExtractInfo.getTitle());
@@ -253,7 +253,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 	}
 
 	@Override
-	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier) {
+	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier, boolean loadedNovelistSeries) {
 		//First get format
 		String format = MarcUtil.getFirstFieldVal(record, "099a");
 		if (format != null) {
@@ -264,7 +264,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		}
 
 		//Do updates based on the overall bib (shared regardless of scoping)
-		updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, null, identifier.getIdentifier(), format);
+		updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, null, identifier.getIdentifier(), format, loadedNovelistSeries);
 
 		//Do special processing for Hoopla which does not have individual items within the record
 		//Instead, each record has essentially unlimited items that can be used at one time.

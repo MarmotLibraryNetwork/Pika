@@ -365,11 +365,11 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 					// Set for Account Updating
 					self::$userPreferredAddresses[$sirsiRoaUserID] = $preferredAddress;
 					// Used by My Account Profile to update Contact Info
-					if ($preferredAddress == 1){
+					if ($preferredAddress == 1 && !empty($lookupMyAccountInfoResponse->fields->address1)){
 						$address = $lookupMyAccountInfoResponse->fields->address1;
-					}elseif ($preferredAddress == 2){
+					}elseif ($preferredAddress == 2 && !empty($lookupMyAccountInfoResponse->fields->address2)){
 						$address = $lookupMyAccountInfoResponse->fields->address2;
-					}elseif ($preferredAddress == 3){
+					}elseif ($preferredAddress == 3 && !empty($lookupMyAccountInfoResponse->fields->address3)){
 						$address = $lookupMyAccountInfoResponse->fields->address3;
 					}else{
 						$address = [];

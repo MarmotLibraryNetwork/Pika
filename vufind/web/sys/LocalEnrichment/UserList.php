@@ -166,34 +166,35 @@ class UserList extends DB_DataObject
 	 * @return array      of list entries
 	 */
 	function getListEntries($sort = null){
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-		$listEntry         = new UserListEntry();
-		$listEntry->listId = $this->id;
-		if ($sort == 'author' || $sort == 'title') {
-
-		}
-		if ($sort) $listEntry->orderBy($sort);
-
-		// These conditions retrieve list items with a valid groupedwork ID or archive ID.
-		// (This prevents list strangeness when our searches don't find the ID in the search indexes)
-		$listEntry->whereAdd(
-			'(
-     (user_list_entry.groupedWorkPermanentId NOT LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work) )
-    OR
-    (user_list_entry.groupedWorkPermanentId LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT pid FROM islandora_object_cache) )
-)'
-		);
-		//TODO: checking the islandora cache does not really check that pid is valid. Probably should remove
-
 		$listEntries = $archiveIDs = $catalogIDs = [];
-		$listEntry->find();
-		while ($listEntry->fetch()){
-			if (strpos($listEntry->groupedWorkPermanentId, ':') !== false) {
-				$archiveIDs[] = $listEntry->groupedWorkPermanentId;
-			} else {
-				$catalogIDs[] = $listEntry->groupedWorkPermanentId;
+		if (!empty($this->id)){
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+			$listEntry         = new UserListEntry();
+			$listEntry->listId = $this->id;
+			if (!empty($sort) && $sort != 'author' && $sort != 'title'){
+				// Only do database sorting for options that are for the database; The others will be sorted by search later on
+				$listEntry->orderBy($sort);
 			}
-			$listEntries[] = $listEntry->groupedWorkPermanentId;
+			// These conditions retrieve list items with a valid groupedWork ID or archive ID.
+			// (This prevents list strangeness when our searches don't find the ID in the search indexes)
+			$listEntry->whereAdd(
+				'(' .
+				'(user_list_entry.groupedWorkPermanentId NOT LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work) )' .
+				' OR ' .
+				'(user_list_entry.groupedWorkPermanentId LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT pid FROM islandora_object_cache) )' .
+				')'
+			//TODO: checking the islandora cache does not really check that pid is valid. Probably should remove
+			);
+			if($listEntry->find()){
+				while ($listEntry->fetch()){
+					if (strpos($listEntry->groupedWorkPermanentId, ':') !== false){
+						$archiveIDs[] = $listEntry->groupedWorkPermanentId;
+					}else{
+						$catalogIDs[] = $listEntry->groupedWorkPermanentId;
+					}
+					$listEntries[] = $listEntry->groupedWorkPermanentId;
+				}
+			}
 		}
 
 		return [$listEntries, $catalogIDs, $archiveIDs];
@@ -207,7 +208,7 @@ class UserList extends DB_DataObject
 		if (!$cleanListOfBadWords && isset($this->listTitles[$this->id])){
 			return $this->listTitles[$this->id];
 		}
-		$listTitles = array();
+		$listTitles = [];
 
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 		$listEntry         = new UserListEntry();
@@ -316,7 +317,7 @@ class UserList extends DB_DataObject
 		global $interface;
 		$browseRecords = array();
 		$sort               = in_array($this->defaultSort, array_keys($this->userListSortOptions)) ? $this->userListSortOptions[$this->defaultSort] : null;
-		list($listEntries)  = $this->getListEntries($sort);
+		[$listEntries]  = $this->getListEntries($sort);
 		$listEntries        = array_slice($listEntries, $start, $numItems);
 		$groupedWorkIds = array();
 		$archiveIds = array();

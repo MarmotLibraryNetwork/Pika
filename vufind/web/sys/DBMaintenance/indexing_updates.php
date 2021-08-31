@@ -367,6 +367,26 @@ function getIndexingUpdates(){
 			]
 		],
 
+			'create_table_indexing_profile_marc_validation_2021.03' => [
+			'title'       => 'Create the table indexing_profile_marc_validation',
+			'description' => 'For tracking Validated MARC export files',
+			'sql'         => [
+				'CREATE TABLE `pika`.`indexing_profile_marc_validation` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `source` VARCHAR(45) NOT NULL,
+  `fileName` VARCHAR(45) NOT NULL,
+  `fileLastModifiedTime` INT UNSIGNED NOT NULL,
+  `validationTime` INT UNSIGNED NOT NULL,
+  `validated` TINYINT(1) UNSIGNED NULL,
+  `totalRecords` INT UNSIGNED NULL,
+  `recordSuppressed` INT UNSIGNED NULL,
+  `errors` INT UNSIGNED NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `uniqueIndex` (`source` ASC, `fileName` ASC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;'
+			]
+		],
+
 	);
 }
 

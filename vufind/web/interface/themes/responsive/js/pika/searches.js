@@ -392,12 +392,5 @@ Pika.Searches = (function(){
 				}
 			);
 		}
-
-/* Advanced Popup has been turned off. plb 10-22-2015
-		submitAdvancedSearch: function(){
-			$('#advancedPopup').submit();
-			return false;
-		}
-*/
 	}
 }(Pika.Searches || {}));

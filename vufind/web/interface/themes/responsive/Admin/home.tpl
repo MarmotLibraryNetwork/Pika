@@ -16,25 +16,29 @@
 		</table>
 	{/if}
 
-	<h2>Searcher Engine</h2>
+	<h2>Searcher Core</h2>
 
 	<h3>Grouped Index</h3>
 	<table class="table table-bordered">
 		<tr>
-			<th>Record Count: </th>
-			<td>{$data.grouped.index.numDocs._content}</td>
+			<th>Document Count: </th>
+			<td>{$data.grouped.index.numDocs}</td>
+		</tr>
+		<tr>
+			<th>Index Size: </th>
+			<td>{$data.grouped.index.size}</td>
 		</tr>
 		<tr>
 			<th>Start Time: </th>
-			<td>{$data.grouped.startTime._content|date_format:"%b %d, %Y %l:%M:%S%p"}</td>
+			<td>{$data.grouped.startTime|date_format:"%b %d, %Y %l:%M:%S%p"}</td>
 		</tr>
 		<tr>
 			<th>Last Modified: </th>
-			<td>{$data.grouped.index.lastModified._content|date_format:"%b %d, %Y %l:%M:%S%p"}</td>
+			<td>{$data.grouped.index.lastModified|date_format:"%b %d, %Y %l:%M:%S%p"}</td>
 		</tr>
 		<tr>
 			<th>Uptime: </th>
-			<td>{$data.grouped.uptime._content|printms}</td>
+			<td>{$data.grouped.uptime|printms}</td>
 		</tr>
 		<tr>
 			<th>Full Status: </th>
@@ -44,58 +48,106 @@
 		</tr>
 	</table>
 
-	<h3>Genealogy Index</h3>
-	<table class="table table-bordered">
-		<tr>
-			<th>Record Count: </th>
-			<td>{$data.genealogy.index.numDocs._content}</td>
-		</tr>
-		<tr>
-			<th>Start Time: </th>
-			<td>{$data.genealogy.startTime._content|date_format:"%b %d, %Y %l:%M:%S%p"}</td>
-		</tr>
-		<tr>
-			<th>Last Modified: </th>
-			<td>{$data.genealogy.index.lastModified._content|date_format:"%b %d, %Y %l:%M:%S%p"}</td>
-		</tr>
-		<tr>
-			<th>Uptime: </th>
-			<td>{$data.genealogy.uptime._content|printms}</td>
-		</tr>
-		<tr>
-			<th>Full Status: </th>
-			<td><a onclick="$('#searcherGenealogyStatus').show();">Show full status</a>
-				<div id="searcherGenealogyStatus" style="display:none"><pre>{$data.genealogy|print_r}</pre></div>
-			</td>
-		</tr>
-	</table>
+	{if !empty($data.genealogy) && !empty($data.genealogy.index.numDocs)}
+		<h3>Genealogy Index</h3>
+		<table class="table table-bordered">
+			<tr>
+				<th>Document Count: </th>
+				<td>{$data.genealogy.index.numDocs}</td>
+			</tr>
+			<tr>
+				<th>Index Size: </th>
+				<td>{$data.genealogy.index.size}</td>
+			</tr>
+			<tr>
+			<tr>
+				<th>Start Time: </th>
+				<td>{$data.genealogy.startTime|date_format:"%b %d, %Y %l:%M:%S%p"}</td>
+			</tr>
+			<tr>
+				<th>Last Modified: </th>
+				<td>{$data.genealogy.index.lastModified|date_format:"%b %d, %Y %l:%M:%S%p"}</td>
+			</tr>
+			<tr>
+				<th>Uptime: </th>
+				<td>{$data.genealogy.uptime|printms}</td>
+			</tr>
+			<tr>
+				<th>Full Status: </th>
+				<td><a onclick="$('#searcherGenealogyStatus').show();">Show full status</a>
+					<div id="searcherGenealogyStatus" style="display:none"><pre>{$data.genealogy|print_r}</pre></div>
+				</td>
+			</tr>
+		</table>
+	{/if}
 
-
-	{if $master_data}
-		<h2>Master/Re-Indexer Engine</h2>
+	{if $masterData}
+		<hr>
+		<h2>Indexer Core</h2>
 
 		<h3>Grouped Index</h3>
 		<table class="table table-bordered">
 			<tr>
-				<th>Record Count: </th>
-				<td>{$master_data.grouped.index.numDocs._content}</td>
+				<th>Document Count: </th>
+				<td>{$masterData.grouped.index.numDocs}</td>
 			</tr>
 			<tr>
+				<th>Index Size: </th>
+				<td>{$masterData.grouped.index.size}</td>
+			</tr>
+			<tr>
+			<tr>
 				<th>Start Time: </th>
-				<td>{$master_data.grouped.startTime._content|date_format:"%b %d, %Y %l:%M:%S%p"}</td>
+				<td>{$masterData.grouped.startTime|date_format:"%b %d, %Y %l:%M:%S%p"}</td>
 			</tr>
 			<tr>
 				<th>Last Modified: </th>
-				<td>{$master_data.grouped.index.lastModified._content|date_format:"%b %d, %Y %l:%M:%S%p"}</td>
+				<td>{$masterData.grouped.index.lastModified|date_format:"%b %d, %Y %l:%M:%S%p"}</td>
 			</tr>
 			<tr>
 				<th>Uptime: </th>
-				<td>{$master_data.grouped.uptime._content|printms}</td>
+				<td>{$masterData.grouped.uptime|printms}</td>
 			</tr>
 			<tr>
 				<th>Full Status: </th>
 				<td><a onclick="$('#masterStatus').show();">Show full status</a>
-					<div id="masterStatus" style="display:none"><pre>{$master_data|print_r}</pre></div>
+					<div id="masterStatus" style="display:none"><pre>{$masterData|print_r}</pre></div>
+				</td>
+			</tr>
+		</table>
+	{/if}
+
+	{if $archiveData}
+		<hr>
+		<h2>Archive Solr</h2>
+
+		<h3>{$archiveSolrCore} Index</h3>
+		<table class="table table-bordered">
+			<tr>
+				<th>Document Count: </th>
+				<td>{$archiveData.collection1.index.numDocs}</td>
+			</tr>
+			<tr>
+				<th>Index Size: </th>
+				<td>{$archiveData.collection1.index.size}</td>
+			</tr>
+			<tr>
+			<tr>
+				<th>Start Time: </th>
+				<td>{$archiveData.collection1.startTime|date_format:"%b %d, %Y %l:%M:%S%p"}</td>
+			</tr>
+			<tr>
+				<th>Last Modified: </th>
+				<td>{$archiveData.collection1.index.lastModified|date_format:"%b %d, %Y %l:%M:%S%p"}</td>
+			</tr>
+			<tr>
+				<th>Uptime: </th>
+				<td>{$archiveData.collection1.uptime|printms}</td>
+			</tr>
+			<tr>
+				<th>Full Status: </th>
+				<td><a onclick="$('#archiveStatus').show();">Show full status</a>
+					<div id="archiveStatus" style="display:none"><pre>{$archiveData|print_r}</pre></div>
 				</td>
 			</tr>
 		</table>

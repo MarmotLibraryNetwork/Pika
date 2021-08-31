@@ -31,10 +31,12 @@
 				{/if}
 				<small class='version_info'>{if !$productionServer} / {/if}v. {$gitBranch}{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles))} ({$gitCommit}){/if}</small>
 				{if $debug}
-					<small class='session_info'> / session. {$session}</small>
-				{/if}
-				{if $debug}
+					<small class='session_info'> / session {$session}</small>
+					<small class='session_info'> / Smarty v. {$smarty.version}</small>
 					<small class='scope_info'> / scope {$solrScope}</small>
+					{if (!empty($smarty.cookies.test_ip))}
+						<small> / test_ip : {$smarty.cookies.test_ip}</small>
+					{/if}
 				{/if}
 			</div>
 			<div class="col-tn-12 col-sm-4 text-center pull-left">

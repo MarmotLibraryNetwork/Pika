@@ -224,7 +224,6 @@ class AnodeAPI extends AJAXHandler {
 				unset($groupedWork['title_short']);
 				unset($groupedWork['title_full']);
 				unset($groupedWork['author_display']);
-				unset($groupedWork['publisherStr']);
 				unset($groupedWork['topic_facet']);
 				unset($groupedWork['subject_facet']);
 				unset($groupedWork['lexile_score']);

@@ -372,7 +372,7 @@ Pika.Account = (function(){
 
 		cancelSelectedHolds: function() {
 			if (Globals.loggedIn) {
-				var selectedTitles = this.getSelectedTitles()
+				var selectedTitles = Pika.Account.getSelectedTitles()
 								.replace(/waiting|available/g, ''),// strip out of name for now.
 						numHolds = $("input.titleSelect:checked").length;
 				// if numHolds equals 0, quit because user has canceled in getSelectedTitles()
@@ -429,27 +429,31 @@ Pika.Account = (function(){
 
 		cancelSelectedBookings: function(){
 			Pika.Account.ajaxLogin(function (){
-				var selectedTitles = this.getSelectedTitles(),
+				var selectedTitles = Pika.Account.getSelectedTitles(),
 						numBookings = $("input.titleSelect:checked").length;
 				// if numBookings equals 0, quit because user has canceled in getSelectedTitles()
-				if (numBookings > 0 && confirm('Cancel ' + numBookings + ' selected scheduled item' + (numBookings > 1 ? 's' : '') + '?')) {
-					Pika.loadingMessage();
-					$.getJSON("/MyAccount/AJAX?method=cancelBooking&"+selectedTitles, function(data){
-						Pika.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
-						if (data.success) {
-							// remove canceled items from page
-							$("input.titleSelect:checked").closest('div.result').remove();
-						} else if (data.failed) { // remove items that didn't fail
-							var searchArray = data.failed.map(function(ele){return ele.toString()});
-							// convert any number values to string, this is needed bcs inArray() below does strict comparisons
-							// & id will be a string. (sometimes the id values are of type number )
-							$("input.titleSelect:checked").each(function(){
-								var id = $(this).attr('id').replace(/selected/g, ''); //strip down to just the id part
-								if ($.inArray(id, searchArray) == -1) // if the item isn't one of the failed cancels, get rid of its containing div.
-									$(this).closest('div.result').remove();
-							});
-						}
-					}).fail(Pika.ajaxFail);
+				if (numBookings > 0){
+					Pika.confirm('Cancel ' + numBookings + ' selected scheduled item' + (numBookings > 1 ? 's' : '') + '?',function () {
+						Pika.loadingMessage();
+						$.getJSON("/MyAccount/AJAX?method=cancelBooking&" + selectedTitles, function (data){
+							Pika.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
+							if (data.success){
+								// remove canceled items from page
+								$("input.titleSelect:checked").closest('div.result').remove();
+							}else if (data.failed){ // remove items that didn't fail
+								var searchArray = data.failed.map(function (ele){
+									return ele.toString()
+								});
+								// convert any number values to string, this is needed bcs inArray() below does strict comparisons
+								// & id will be a string. (sometimes the id values are of type number )
+								$("input.titleSelect:checked").each(function (){
+									var id = $(this).attr('id').replace(/selected/g, ''); //strip down to just the id part
+									if ($.inArray(id, searchArray) == -1) // if the item isn't one of the failed cancels, get rid of its containing div.
+										$(this).closest('div.result').remove();
+								});
+							}
+						}).fail(Pika.ajaxFail);
+					});
 				}
 			});
 			return false;
@@ -591,7 +595,7 @@ Pika.Account = (function(){
 		plb 9-14-2015
 
 		freezeSelectedHolds: function (){
-			var selectedTitles = this.getSelectedTitles();
+			var selectedTitles = Pika.Account.getSelectedTitles();
 			if (selectedTitles.length == 0){
 				return false;
 			}

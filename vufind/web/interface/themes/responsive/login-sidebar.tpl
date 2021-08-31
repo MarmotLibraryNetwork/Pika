@@ -2,7 +2,7 @@
 	<div id="home-page-login" class="text-center row"{if $displaySidebarMenu} style="display: none"{/if}>
 		{if $masqueradeMode}
 			<div class="sidebar-masquerade-section">
-				<div class="logoutOptions hidden-phone" >
+				<div class="logoutOptions">
 					<a id="masqueradedMyAccountNameLink" href="/MyAccount/Home">Masquerading As {$userDisplayName|capitalize}</a>
 					<div class="bottom-border-line"></div> {* divs added to aid anythink styling. plb 11-19-2014 *}
 				</div>
@@ -11,7 +11,7 @@
 					<div class="bottom-border-line"></div>
 				</div>
 			</div>
-			<div class="logoutOptions hidden-phone" {if !$loggedIn} style="display: none;"{/if}>
+			<div class="logoutOptions"{if !$loggedIn} style="display: none;"{/if}>
 				<a id="myAccountNameLink" href="/MyAccount/Home">Logged In As {$guidingUser->displayName|capitalize}</a>
 				<div class="bottom-border-line"></div> {* divs added to aid anythink styling. plb 11-19-2014 *}
 			</div>
@@ -21,7 +21,7 @@
 			</div>
 
 		{else}
-			<div class="logoutOptions hidden-phone" {if !$loggedIn} style="display: none;"{/if}>
+			<div class="logoutOptions"{if !$loggedIn} style="display: none;"{/if}>
 				<a id="myAccountNameLink" href="/MyAccount/Home">Logged In As {$userDisplayName|capitalize}</a>
 				<div class="bottom-border-line"></div> {* divs added to aid anythink styling. plb 11-19-2014 *}
 			</div>

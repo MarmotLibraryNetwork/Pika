@@ -398,7 +398,8 @@ abstract class RecordInterface {
 	}
 
 	public static function getValidMoreDetailsSources(){
-		return array(
+		return [
+			'issues'            => 'Magazine Issues',
 			'description'       => 'Description',
 			'series'            => 'Also in This Series',
 			'formats'           => 'Formats',
@@ -423,11 +424,12 @@ abstract class RecordInterface {
 			'citations'         => 'Citations',
 			'copyDetails'       => 'Copy Details (OverDrive)',
 			'staff'             => 'Staff View',
-		);
+		];
 	}
 
 	public static function getDefaultMoreDetailsOptions(){
-		return array(
+		return [
+			'issues'            => 'open',
 			'description'       => 'open',
 			'series'            => 'open',
 			'formats'           => 'open',
@@ -452,7 +454,7 @@ abstract class RecordInterface {
 			'citations'         => 'closed',
 			'copyDetails'       => 'closed',
 			'staff'             => 'closed',
-		);
+		];
 	}
 
 	public abstract function getItemActions($itemInfo);

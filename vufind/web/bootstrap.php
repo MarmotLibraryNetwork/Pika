@@ -258,11 +258,6 @@ function loadLibraryAndLocation(){
 	$locationSingleton = new Location();
 	$timer->logTime('Created Location singleton');
 
-	global $active_ip;
-	$active_ip = $locationSingleton->getActiveIp();
-	handleCookie('test_ip', $active_ip);
-	$timer->logTime('Got active ip address');
-
 	$branch = $locationSingleton->getBranchLocationCode();
 	handleCookie('branch', $branch);
 	$timer->logTime('Got branch');
@@ -309,19 +304,28 @@ function getLibraryObject(){
 	// Make the library information global so we can work with it later.
 	global $library;
 
+	// Determine library by library url
 	$library             = new Library();
 	$library->catalogUrl = $_SERVER['SERVER_NAME'];
 	if (!$library->find(true)){
+		// Determine library by location url
 		$location             = new Location();
 		$location->catalogUrl = $_SERVER['SERVER_NAME'];
 		if ($location->find(true)){
 			$location->setActiveLocation(clone $location);
 			$library = $library::getLibraryForLocation($location->locationId);
 		}else{
+			// Fallback to site default library by
 			$library            = new Library();
 			$library->isDefault = 1;
 			if ($library->find(true) != 1){
-				die('Could not determine the correct library to use for this installation');
+				// Finally, if there is only one library use that
+				$library            = new Library();
+				if ($library->count() == 1){
+					$library->find(true);
+				} else {
+					die('Could not determine the correct library to use for this installation');
+				}
 			}
 		}
 	}

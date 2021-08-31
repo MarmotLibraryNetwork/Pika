@@ -30,7 +30,7 @@ import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrServer;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -41,6 +41,7 @@ import org.marc4j.*;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
+import org.marc4j.marc.impl.SortedMarcFactoryImpl;
 
 /**
  * Export data from the Sierra ILS to Pika
@@ -80,7 +81,7 @@ public class SierraExportAPIMain {
 	private static Date    startTime = new Date();
 
 	// Connector to Solr for deleting index entries
-	private static ConcurrentUpdateSolrServer updateServer;
+	private static ConcurrentUpdateSolrClient updateServer;
 
 	private static char bibLevelLocationsSubfield = 'a'; //TODO: may need to make bib-level locations field an indexing setting
 
@@ -134,6 +135,27 @@ public class SierraExportAPIMain {
 //			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 //		}
 
+		//Check to see if the system is offline
+		Boolean offline_mode_when_offline_login_allowed = systemVariables.getBooleanValuedVariable("offline_mode_when_offline_login_allowed");
+		if (offline_mode_when_offline_login_allowed == null){
+			offline_mode_when_offline_login_allowed = false;
+		}
+		if (offline_mode_when_offline_login_allowed || PikaConfigIni.getBooleanIniValue("Catalog", "offline")) {
+			final String message = "Pika Offline Mode is currently on. Pausing for 1 min.";
+			logger.info(message);
+			initializeExportLogEntry(pikaConn);
+			addNoteToExportLog(message);
+			try {
+				Thread.sleep(60000);
+			} catch (Exception e) {
+				logger.error("Sleep was interrupted while pausing in Sierra Extract.");
+			}
+			finalizeExportLogEntry(pikaConn, new Date().getTime());
+			closeDBConnections(pikaConn);
+			System.exit(0);
+		}
+
+
 		String profileToLoad         = "ils";
 		String singleRecordToProcess = null;
 		if (args.length > 1) {
@@ -171,6 +193,7 @@ public class SierraExportAPIMain {
 		String apiVersion = PikaConfigIni.getIniValue("Catalog", "api_version");
 		if (apiVersion == null || apiVersion.length() == 0) {
 			logger.error("Sierra API version must be set.");
+			closeDBConnections(pikaConn);
 			System.exit(1);
 		}
 
@@ -192,12 +215,14 @@ public class SierraExportAPIMain {
 		}
 		if (apiBaseUrl == null || apiBaseUrl.length() == 0) {
 			logger.error("Sierra API url must be set in account profile column vendorOpacUrl.");
+			closeDBConnections(pikaConn);
 			System.exit(1);
 		}
 
 		//Diagnostic routine to probe how near-real time the API info is
 		if (timeAPI) {
 			measureDelayInItemsAPIupdates();
+			closeDBConnections(pikaConn);
 			System.exit(0);
 		}
 
@@ -249,27 +274,11 @@ public class SierraExportAPIMain {
 
 		// Since we only need the reindexer at this time to delete entries, let's just skip over the reindexer to the Solr handler
 		String solrPort = PikaConfigIni.getIniValue("Reindex", "solrPort");
-		updateServer = new ConcurrentUpdateSolrServer("http://localhost:" + solrPort + "/solr/grouped", 500, 8);
+		updateServer = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped").withQueueSize(500).withThreadCount(8).build();
 //		updateServer.setRequestWriter(new BinaryRequestWriter());
 
 
-		//Start an export log entry
-		logger.info("Creating log entry for Sierra API Extract");
-		try (PreparedStatement createLogEntryStatement = pikaConn.prepareStatement("INSERT INTO sierra_api_export_log (startTime, lastUpdate, notes) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS)) {
-			createLogEntryStatement.setLong(1, startTime.getTime() / 1000);
-			createLogEntryStatement.setLong(2, startTime.getTime() / 1000);
-			createLogEntryStatement.setString(3, "Initialization of Sierra API Extract complete");
-			createLogEntryStatement.executeUpdate();
-			ResultSet generatedKeys = createLogEntryStatement.getGeneratedKeys();
-			if (generatedKeys.next()) {
-				exportLogId = generatedKeys.getLong(1);
-			}
-
-			addNoteToExportLogStmt = pikaConn.prepareStatement("UPDATE sierra_api_export_log SET notes = ?, lastUpdate = ? WHERE id = ?");
-		} catch (SQLException e) {
-			logger.error("Unable to create log entry for record grouping process", e);
-			System.exit(0);
-		}
+		initializeExportLogEntry(pikaConn);
 
 		//Process MARC record changes
 		getBibsAndItemUpdatesFromSierra(pikaConn);
@@ -304,6 +313,38 @@ public class SierraExportAPIMain {
 
 		retrieveDataFromSierraDNA(pikaConn);
 
+		finalizeExportLogEntry(pikaConn, endTime);
+
+		updatePartialExtractRunning(false);
+
+		closeDBConnections(pikaConn);
+		Date currentTime = new Date();
+		logger.info(currentTime + " : Finished Sierra Extract");
+	}
+
+	private static void initializeExportLogEntry(Connection pikaConn) {
+		//Start an export log entry
+		if (logger.isInfoEnabled()) {
+			logger.info("Creating log entry for Sierra API Extract");
+		}
+		try (PreparedStatement createLogEntryStatement = pikaConn.prepareStatement("INSERT INTO sierra_api_export_log (startTime, lastUpdate, notes) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS)) {
+			createLogEntryStatement.setLong(1, startTime.getTime() / 1000);
+			createLogEntryStatement.setLong(2, startTime.getTime() / 1000);
+			createLogEntryStatement.setString(3, "Initialization of Sierra API Extract complete");
+			createLogEntryStatement.executeUpdate();
+			ResultSet generatedKeys = createLogEntryStatement.getGeneratedKeys();
+			if (generatedKeys.next()) {
+				exportLogId = generatedKeys.getLong(1);
+			}
+
+			addNoteToExportLogStmt = pikaConn.prepareStatement("UPDATE sierra_api_export_log SET notes = ?, lastUpdate = ? WHERE id = ?");
+		} catch (SQLException e) {
+			logger.error("Unable to create log entry for record grouping process", e);
+			System.exit(0);
+		}
+	}
+
+	private static void finalizeExportLogEntry(Connection pikaConn, long endTime) {
 		try (PreparedStatement finishedStatement = pikaConn.prepareStatement("UPDATE sierra_api_export_log SET endTime = ?, numRemainingRecords = ? WHERE id = ?")) {
 			finishedStatement.setLong(1, endTime / 1000);
 			finishedStatement.setLong(2, allBibsToUpdate.size());
@@ -312,18 +353,16 @@ public class SierraExportAPIMain {
 		} catch (SQLException e) {
 			logger.error("Unable to update sierra api export log with completion time.", e);
 		}
+	}
 
-		updatePartialExtractRunning(false);
-
+	private static void closeDBConnections(Connection connection) {
 		try {
 			//Close the connection
-			pikaConn.close();
+			connection.close();
 		} catch (Exception e) {
-			System.out.println("Error closing connection: " + e.toString());
+			System.out.println("Error closing connection: " + e);
 			logger.error("Error closing connection to Pika DB", e);
 		}
-		Date currentTime = new Date();
-		logger.info(currentTime.toString() + " : Finished Sierra Extract");
 	}
 
 	private static void initializeRecordGrouper(Connection pikaConn) {
@@ -1239,8 +1278,11 @@ public class SierraExportAPIMain {
 					}
 				}
 				String    leader     = marcResults.has("leader") ? marcResults.getString("leader") : "";
-				Record    marcRecord = marcFactory.newRecord(leader);
+				Record    marcRecord = new SortedMarcFactoryImpl().newRecord(leader); // Use the SortedMarcFactoryImpl (which puts the tags in numerical order
 				JSONArray fields     = marcResults.getJSONArray("fields");
+				if (leader.isEmpty()){
+					logger.warn("Sierra MARC JSON missing leader information for " + id);
+				}
 				for (int i = 0; i < fields.length(); i++) {
 					JSONObject                                      fieldData = fields.getJSONObject(i);
 					@SuppressWarnings("unchecked") Iterator<String> tags      = (Iterator<String>) fieldData.keys();
@@ -1274,6 +1316,9 @@ public class SierraExportAPIMain {
 				}
 				logger.debug("Converted JSON to MARC for Bib");
 
+				// Prepare Record Number tag
+				DataField recordNumberField = marcFactory.newDataField(indexingProfile.recordNumberTag, ' ', ' ', "" + indexingProfile.recordNumberField /*convert to string*/, getfullSierraBibId(id));
+
 				//Load Sierra Fixed Field / Bib Level Tag
 				JSONObject fixedFieldResults = getMarcJSONFromSierraApiURL(apiBaseUrl + "/bibs/" + id + "?fields=fixedFields,locations");
 				if (fixedFieldResults != null && !fixedFieldResults.has("code")) {
@@ -1302,16 +1347,16 @@ public class SierraExportAPIMain {
 								}
 							} else {
 								sierraFixedField.addSubfield(marcFactory.newSubfield(bibLevelLocationsSubfield, location));
+								if (isFlatirons){
+									recordNumberField.addSubfield(marcFactory.newSubfield('b', location));
+								}
 							}
 						}
 					}
 					marcRecord.addVariableField(sierraFixedField);
 
 					//Add the identifier
-					DataField recordNumberField = marcFactory.newDataField(indexingProfile.recordNumberTag, ' ', ' ', "" + indexingProfile.recordNumberField /*convert to string*/, getfullSierraBibId(id));
 					marcRecord.addVariableField(recordNumberField);
-
-					//TODO: Add locations for Flatirons
 
 					if (fixedFields.has("27")) { // Copies fixed field
 						//Get Items for the bib record
@@ -1606,7 +1651,8 @@ public class SierraExportAPIMain {
 								processedIds.add(shortId);
 								logger.debug("Processed " + identifier);
 							} catch (MarcException e) {
-								logger.info("Error loading marc record from file, will load manually. ", e);
+								logger.info("Error loading marc record from file, will load manually. While processing ids: " +ids, e);
+								//This might be where the flatirons warnings come from.
 							}
 						}
 						// For any records that failed in the fast method,

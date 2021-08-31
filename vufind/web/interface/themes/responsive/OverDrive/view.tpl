@@ -65,7 +65,6 @@
 
 			</div>
 		</div>
-
 		<div class="row">
 			{include file=$moreDetailsTemplate}
 		</div>

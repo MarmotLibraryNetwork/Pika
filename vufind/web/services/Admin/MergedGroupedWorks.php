@@ -34,7 +34,7 @@ class Admin_MergedGroupedWorks extends ObjectEditor {
 	}
 
 	function getAllObjects($orderBy = null){
-		return parent::getAllObjects('id DESC');
+		return parent::getAllObjects('updated DESC');
 	}
 
 	function getObjectStructure(){

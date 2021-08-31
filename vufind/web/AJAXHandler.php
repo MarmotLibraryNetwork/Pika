@@ -60,7 +60,7 @@ abstract class AJAXHandler extends Action {
 				$this->sendHTTPHeaders('application/json');
 				echo $this->jsonUTF8EncodeResponse($result);
 			}elseif (property_exists($this, 'methodsThatRespondWithJSONResultWrapper') && in_array($method, $this->methodsThatRespondWithJSONResultWrapper)){
-				$result = array('result' => $this->$method());
+				$result = ['result' => $this->$method()];
 				$this->sendHTTPHeaders('application/json');
 				echo $this->jsonUTF8EncodeResponse($result);
 			}elseif (property_exists($this, 'methodsThatRespondWithHTML') && in_array($method, $this->methodsThatRespondWithHTML)){
@@ -81,7 +81,7 @@ abstract class AJAXHandler extends Action {
 				$this->$method();
 			}else{
 				$this->sendHTTPHeaders('application/json');
-				echo $this->jsonUTF8EncodeResponse(array('error' => "invalid_method '$method'"));
+				echo $this->jsonUTF8EncodeResponse(['error' => "invalid_method '$method'"]);
 			}
 		}
 	}
@@ -100,18 +100,19 @@ abstract class AJAXHandler extends Action {
 			$error            = json_last_error();
 			if ($error != JSON_ERROR_NONE || $json === false){
 				if (function_exists('json_last_error_msg')){
-					$json = json_encode(array('error' => 'error_encoding_data', 'message' => json_last_error_msg()));
+					$json = json_encode(['error' => 'error_encoding_data', 'message' => json_last_error_msg()]);
 				}else{
-					$json = json_encode(array('error' => 'error_encoding_data', 'message' => json_last_error()));
+					$json = json_encode(['error' => 'error_encoding_data', 'message' => json_last_error()]);
 				}
 				global $configArray;
 				if ($configArray['System']['debug']){
-					print_r($utf8EncodedValue);
+					$this->logger->error("Error while JSON encoding: ", $json);
+//					print_r($utf8EncodedValue);
 				}
 			}
 		} catch (Exception $e){
-			$json = json_encode(array('error' => 'error_encoding_data', 'message' => $e));
-			$this->logger->error("Error encoding json data",['stack_trace'=>$e->getTraceAsString()]);
+			$json = json_encode(['error' => 'error_encoding_data', 'message' => $e]);
+			$this->logger->error("Error encoding json data", ['stack_trace' => $e->getTraceAsString()]);
 		}
 		return $json;
 	}
@@ -119,6 +120,6 @@ abstract class AJAXHandler extends Action {
 	final function sendHTTPHeaders($ContentType){
 		header('Content-type: ' . $ContentType);
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');   // Date in the past
 	}
 }

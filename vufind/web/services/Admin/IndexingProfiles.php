@@ -26,8 +26,6 @@
  * Time: 1:23 PM
  */
 
-require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
 
@@ -43,17 +41,23 @@ class Admin_IndexingProfiles extends ObjectEditor {
 			if ($indexProfile->get($id) && !empty($indexProfile->marcPath)){
 
 				$marcPath = $indexProfile->marcPath;
-				if ($handle = opendir($marcPath)){
+				if ($handle = @opendir($marcPath)){
 					while (false !== ($entry = readdir($handle))){
 						if ($entry != "." && $entry != ".."){
-							$files[$entry] = filectime($marcPath . DIR_SEP . $entry);
+							$files[$entry] = filemtime($marcPath . DIR_SEP . $entry);
 						}
 					}
 					closedir($handle);
 					$interface->assign('files', $files);
 					$interface->assign('IndexProfileName', $indexProfile->name);
 					$this->display('marcFiles.tpl', 'Marc Files');
+				} else {
+					echo "Failed to open file path: {$indexProfile->marcPath}";
+					die;
 				}
+			} else {
+				echo "Invalid indexing profile or marc path is not set.";
+				die;
 			}
 		} else {
 			parent::launch();
@@ -82,7 +86,7 @@ class Admin_IndexingProfiles extends ObjectEditor {
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin');
+		return ['opacAdmin'];
 	}
 
 	function getPrimaryKeyColumn(){
@@ -108,17 +112,21 @@ class Admin_IndexingProfiles extends ObjectEditor {
 	}
 
 	function getAdditionalObjectActions($existingObject){
-		$actions = array();
+		$actions = [];
 		if ($existingObject && $existingObject->id != ''){
-			$actions[] = array(
+			$actions[] = [
 				'text' => 'View MARC files',
 				'url'  => '/Admin/IndexingProfiles?objectAction=viewMarcFiles&id=' . $existingObject->id,
-			);
+			];
+			$actions[] = [
+				'text' => 'View MARC Validations',
+				'url'  => '/Admin/MarcValidations?source=' . $existingObject->sourceName,
+			];
 		}else{
-			$actions[] = array(
+			$actions[] = [
 				'text'    => 'Populate as a Sideload',
 				'onclick' => "$('#indexingClass').val('SideLoadedEContent');$('#groupingClass').val('SideLoadedRecordGrouper');$('#recordDriver').val('SideLoadedRecord');$('#catalogDriver').val('na');$('#recordUrlComponent').val('');$(this).parent().after($('<div>Remember to update the relevant library and location Records to Include/Own settings.</div>').addClass('alert alert-warning')); return false",
-			);
+			];
 		}
 
 		return $actions;

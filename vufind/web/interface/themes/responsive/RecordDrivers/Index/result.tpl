@@ -3,7 +3,7 @@
 <div id="record{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}" class="resultsList row">
 	<div class="imageColumn col-md-3">
 		<div class="row">
-			<div class="selectTitle hidden-phone col-md-4">
+			<div class="selectTitle col-md-4">
 				<label for="selected{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}" class="resultIndex checkbox"><strong>{$resultIndex}</strong>
 					<input type="checkbox" class="titleSelect" name="selected[{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}]" id="selected{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}">&nbsp;
 				</label>
@@ -64,7 +64,7 @@
 				{/if}
 
 				{if $summEditions}
-					<div class="row hidden-phone">
+					<div class="row">
 						<div class="result-label col-md-3" id="resultInformationEdition{$summShortId|escape}">{translate text='Edition'}:</div>
 						<div class="col-md-9 result-value">{$summEditions.0|escape}</div>
 					</div>
@@ -82,7 +82,7 @@
 
 				{* Highlighted term *}
 				{if !empty($summSnippetCaption) || !!empty($summSnippet)}
-					<div class="row hidden-phone">
+					<div class="row">
 						{if !empty($summSnippetCaption)}<div class="result-label col-md-3">{translate text=$summSnippetCaption}:</div>{/if}
 						{if !empty($summSnippet)}<div class="col-md-9 result-value"><span class="quotestart">&#8220;</span>...{$summSnippet|highlight}...<span class="quoteend">&#8221;</span></div>{/if}
 					</div>
@@ -104,7 +104,7 @@
 				</div>
 
 				{if $summPhysical}
-					<div class="row hidden-phone">
+					<div class="row">
 						<div class="result-label col-md-3">{translate text='Physical Desc'}:</div>
 						<div class="col-md-9 result-value">{$summPhysical.0|escape}</div>
 					</div>

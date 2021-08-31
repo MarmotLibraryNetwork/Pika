@@ -17,7 +17,7 @@ package org.marmot;
 /**
  * Created by mnoble on 11/20/2017.
  */
-public class SharedStats {
+public class OverDrive/3e4af195-7180-497b-9f83-76f43bc0d9f0/HomeSharedStats {
 	public Integer copiesOwnedByShared = 0;
 	public Integer copiesAvailableInShared = 0;
 }

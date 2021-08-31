@@ -21,7 +21,7 @@
 			{else}
 				No results found in {$sectionLabel}
 			{/if}
-			<span class="hidden-phone">
+			<span>
 			 {translate text='query time'}: {$qtime}s
 			</span>
 		</div>
@@ -54,13 +54,6 @@
 			</div>
 		{/if}
 
-		{if $numUnscopedResults && $numUnscopedResults != $recordCount}
-		{* avoids when both searches are unscoped *}
-			<div class="unscopedResultCount">
-				There are <b>{$numUnscopedResults}</b> results in the entire {$consortiumName} collection. <a href="{$unscopedSearchUrl}">Search the entire collection.</a>
-			</div>
-		{/if}
-
 		{* User's viewing mode toggle switch *}
 		{include file="Search/results-displayMode-toggle.tpl"}
 
@@ -87,14 +80,6 @@
 	{/if}
 
 	{*Additional Suggestions on the last page of search results or no results returned *}
-
-	{if $unscopedResults}
-		<h2>More results from the {$consortiumName} Catalog</h2>
-		<div class="unscopedResultCount">
-		There are <b>{$numUnscopedResults}</b> results in the entire {$consortiumName} collection. <a href="{$unscopedSearchUrl}">Search the entire collection.</a>
-		</div>
-		{$unscopedResults}{* Unscoped Results already set for display *}
-	{/if}
 
 	{if $showProspectorLink}
 		{* Prospector Results *}

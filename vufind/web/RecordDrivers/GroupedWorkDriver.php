@@ -64,9 +64,9 @@ class GroupedWorkDriver extends RecordInterface {
 	 * @access protected
 	 */
 	protected $forbiddenSnippetFields = array(
-		'author', 'author-letter', 'auth_author2', 'title', 'title_short', 'title_full',
+		'author', /*'author-letter',*/ 'auth_author2', 'title', 'title_short', 'title_full',
 		'title_auth', 'title_sub', 'title_display', 'spelling', 'id',
-		'fulltext_unstemmed', 'econtentText_unstemmed',
+		'fulltext_unstemmed', //TODO: fulltext_unstemmed probably obsolete
 		'spellingShingle', 'collection', 'title_proper',
 		'display_description'
 	);
@@ -107,7 +107,7 @@ class GroupedWorkDriver extends RecordInterface {
 			$searchSettings        = getExtraConfigArray('searches');
 			$this->highlight       = $configArray['Index']['enableHighlighting'];
 			$this->snippet         = $configArray['Index']['enableSnippets'];
-			$this->snippetCaptions = isset($searchSettings['Snippet_Captions']) && is_array($searchSettings['Snippet_Captions']) ? $searchSettings['Snippet_Captions'] : array();
+			$this->snippetCaptions = empty($searchSettings['Snippet_Captions']) ? [] : $searchSettings['Snippet_Captions'];
 		} else {
 			$this->isValid = false;
 		}
@@ -2223,19 +2223,19 @@ class GroupedWorkDriver extends RecordInterface {
 
 		//Load more details options
 		$moreDetailsOptions                = $this->getBaseMoreDetailsOptions($isbn);
-		$moreDetailsOptions['moreDetails'] = array(
+		$moreDetailsOptions['moreDetails'] = [
 			'label' => 'More Details',
 			'body'  => $interface->fetch('GroupedWork/view-title-details.tpl'),
-		);
-		$moreDetailsOptions['subjects']    = array(
+		];
+		$moreDetailsOptions['subjects']    = [
 			'label' => 'Subjects',
 			'body'  => $interface->fetch('GroupedWork/view-subjects.tpl'),
-		);
+		];
 		if ($interface->getVariable('showStaffView')){
-			$moreDetailsOptions['staff'] = array(
+			$moreDetailsOptions['staff'] = [
 				'label' => 'Staff View',
 				'body'  => $interface->fetch($this->getStaffView()),
-			);
+			];
 		}
 
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
@@ -2843,17 +2843,17 @@ class GroupedWorkDriver extends RecordInterface {
 			$itemId        = $curItem[1] == 'null' ? '' : $curItem[1];
 			$shelfLocation = $curItem[2];
 
-//			if (!$forCovers){
-//				if (!empty($itemId) && $recordDriver != null && $recordDriver->hasOpacFieldMessage()){
-//					$opacMessage = $recordDriver->getOpacFieldMessage($itemId);
-//					if ($opacMessage && $opacMessage != '-' && $opacMessage != ' '){
-//						$opacMessageTranslation = translate('opacFieldMessageCode_' . $opacMessage);
-//						if ($opacMessageTranslation != 'opacFieldMessageCode_'){ // Only display if the code has a translation
-//							$shelfLocation = "$opacMessageTranslation $shelfLocation";
-//						}
-//					}
-//				}
-//			}
+			if (!$forCovers){
+				if (!empty($itemId) && $recordDriver != null && $recordDriver->hasOpacFieldMessage()){
+					$opacMessage = $recordDriver->getOpacFieldMessage($itemId);
+					if ($opacMessage && $opacMessage != '-' && $opacMessage != ' '){
+						$opacMessageTranslation = translate('opacFieldMessageCode_' . $opacMessage);
+						if ($opacMessageTranslation != 'opacFieldMessageCode_'){ // Only display if the code has a translation
+							$shelfLocation = "$opacMessageTranslation $shelfLocation";
+						}
+					}
+				}
+			}
 
 			$scopeKey     = $curItem[0] . ':' . $itemId;
 			$callNumber   = $curItem[3];

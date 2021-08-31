@@ -52,7 +52,6 @@ class Aurora extends Sierra {
 		foreach($_POST as $key=>$val) {
 			$_POST[$key] = strtoupper($val);
 		}
-		
 		$extraSelfRegParams = [];
 
 		$extraSelfRegParams['patronCodes']['pcode1'] = 's';

@@ -47,7 +47,7 @@ abstract class Archive_Object extends Action {
 	 * @param string $pageTitle What to display is the html title tag
 	 * @param bool|string $sidebarTemplate Sets the sidebar template, set to false or empty string for no sidebar
 	 */
-	function display($mainContentTemplate, $pageTitle = null, $sidebarTemplate = 'Search/home-sidebar.tpl') {
+	function display($mainContentTemplate, $pageTitle = null, $sidebarTemplate = 'Search/home-sidebar.tpl'){
 		global $interface;
 		global $logger;
 
@@ -60,44 +60,44 @@ abstract class Archive_Object extends Action {
 //		$this->initializeExhibitContextDataFromCookie();
 
 		$isExhibitContext = !empty($_SESSION['ExhibitContext']) and $this->recordDriver->getUniqueID() != $_SESSION['ExhibitContext'];
-		if ($isExhibitContext && empty($_COOKIE['exhibitNavigation'])) {
+		if ($isExhibitContext && empty($_COOKIE['exhibitNavigation'])){
 			$isExhibitContext = false;
 			$this->endExhibitContext();
 		}
-		if ($isExhibitContext) {
+		if ($isExhibitContext){
 			$logger->log("In exhibit context, setting exhibit navigation", PEAR_LOG_DEBUG);
 			$this->setExhibitNavigation();
-		} elseif (isset($_SESSION['lastSearchURL'])) {
+		}elseif (isset($_SESSION['lastSearchURL'])){
 			$logger->log("In search context, setting search navigation", PEAR_LOG_DEBUG);
 			$this->setArchiveSearchNavigation();
-		} else {
+		}else{
 			$logger->log("Not in any context, not setting navigation", PEAR_LOG_DEBUG);
 		}
 
 		//Check to see if usage is restricted or not.
 		$viewingRestrictions = $this->recordDriver->getViewingRestrictions();
 		if (count($viewingRestrictions) > 0){
-			$canView = false;
-			$validHomeLibraries = array();
-			$userPTypes = array();
+			$canView            = false;
+			$validHomeLibraries = [];
+			$userPTypes         = [];
 
 			$user = UserAccount::getLoggedInUser();
 			if ($user && $user->getHomeLibrary()){
 				$validHomeLibraries[] = $user->getHomeLibrary()->subdomain;
-				$userPTypes = $user->getRelatedPTypes();
-				$linkedAccounts = $user->getLinkedUsers();
+				$userPTypes           = $user->getRelatedPTypes();
+				$linkedAccounts       = $user->getLinkedUsers();
 				foreach ($linkedAccounts as $linkedAccount){
 					$validHomeLibraries[] = $linkedAccount->getHomeLibrary()->subdomain;
 				}
 			}
 
 			global $locationSingleton;
-			$physicalLocation = $locationSingleton->getPhysicalLocation();
+			$physicalLocation         = $locationSingleton->getPhysicalLocation();
 			$physicalLibrarySubdomain = null;
 			if ($physicalLocation){
-				$physicalLibrary = new Library();
+				$physicalLibrary            = new Library();
 				$physicalLibrary->libraryId = $physicalLocation->libraryId;
-				if ($physicalLibrary->find(true)) {
+				if ($physicalLibrary->find(true)){
 					$physicalLibrarySubdomain = $physicalLibrary->subdomain;
 				}
 			}
@@ -105,17 +105,17 @@ abstract class Archive_Object extends Action {
 			foreach ($viewingRestrictions as $restriction){
 				$restrictionType = 'homeLibraryOrIP';
 				if (strpos($restriction, ':') !== false){
-					list($restrictionType, $restriction) = explode(':', $restriction, 2);
+					[$restrictionType, $restriction] = explode(':', $restriction, 2);
 				}
-				$restrictionType = strtolower(trim($restrictionType));
-				$restrictionType = str_replace(' ', '', strtolower($restrictionType));
-				$restriction = trim($restriction);
+				$restrictionType  = strtolower(trim($restrictionType));
+				$restrictionType  = str_replace(' ', '', strtolower($restrictionType));
+				$restriction      = trim($restriction);
 				$restrictionLower = strtolower($restriction);
 				if ($restrictionLower == 'anonymousmasterdownload' || $restrictionLower == 'verifiedmasterdownload'){
 					continue;
 				}
 
-				if ($restrictionType == 'homelibraryorip' || $restrictionType == 'patronsfrom') {
+				if ($restrictionType == 'homelibraryorip' || $restrictionType == 'patronsfrom'){
 					$libraryDomain = trim($restriction);
 					if ($restrictionLower == 'default' || array_search($libraryDomain, $validHomeLibraries) !== false){
 						//User is valid based on their login
@@ -123,7 +123,7 @@ abstract class Archive_Object extends Action {
 						break;
 					}
 				}
-				if ($restrictionType == 'homelibraryorip' || $restrictionType == 'withinlibrary') {
+				if ($restrictionType == 'homelibraryorip' || $restrictionType == 'withinlibrary'){
 					$libraryDomain = trim($restriction);
 					if ($libraryDomain == $physicalLibrarySubdomain){
 						//User is valid based on being in the library
@@ -494,7 +494,7 @@ abstract class Archive_Object extends Action {
 		global $interface;
 		global $logger;
 		$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false);
-		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'islandora';
+		$searchSource = $_REQUEST['searchSource'] ?? 'islandora';
 		//TODO: What if it ain't islandora? (direct navigation to archive object page)
 		/** @var SearchObject_Islandora $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');

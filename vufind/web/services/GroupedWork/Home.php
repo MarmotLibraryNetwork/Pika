@@ -18,7 +18,7 @@
  */
 
 /**
- * Description goes here
+ * Grouped Work Record View Page
  *
  * @category Pika
  * @author Mark Noble <pika@marmot.org>
@@ -31,7 +31,6 @@ class GroupedWork_Home extends Action {
 	function launch(){
 		global $interface;
 		global $timer;
-		global $logger;
 
 		$id = strip_tags($_REQUEST['id']);
 
@@ -49,7 +48,8 @@ class GroupedWork_Home extends Action {
 			}
 
 			$interface->assign('id', $id);
-			$logger->log("Did not find a record for id {$id} in solr.", PEAR_LOG_DEBUG);
+			global $pikaLogger;
+			$pikaLogger->notice("Did not find a grouped work for id $id in solr.");
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
 			die();
 		}
@@ -67,7 +67,7 @@ class GroupedWork_Home extends Action {
 		$timer->logTime('Initialized the Record Driver');
 
 		// Retrieve User Search History
-		$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false);
+		$interface->assign('lastsearch', $_SESSION['lastSearchURL'] ?? false);
 
 		//Get Next/Previous Links
 		$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';

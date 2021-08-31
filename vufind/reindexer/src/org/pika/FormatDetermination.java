@@ -700,6 +700,9 @@ public class FormatDetermination {
 		if (printFormats.contains("GraphicNovel") && printFormats.contains("SoundDisc")){
 			printFormats.remove("GraphicNovel");
 		}
+		if (printFormats.contains("GraphicNovel") && printFormats.contains("DVD")){
+			printFormats.remove("GraphicNovel");
+		}
 		if (printFormats.contains("WindowsGame") && printFormats.contains("SoundDisc")){
 			printFormats.remove("WindowsGame");
 		}
@@ -1087,7 +1090,9 @@ public class FormatDetermination {
 							result.add("PlayawayView");
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
-						}else if (subfieldData.contains("graphic novel")) {
+						}else if (subfieldData.contains("graphic novel")
+										|| subfieldData.contains("comic and graphic books")  // OverDrive Marc
+						) {
 							boolean okToAdd = false;
 							if (field.getSubfield('v') != null){
 								String subfieldVData = field.getSubfield('v').getData().toLowerCase();
@@ -1104,6 +1109,11 @@ public class FormatDetermination {
 							}
 						}else if (subfieldData.contains("board books")){
 								result.add("BoardBook");
+						}
+					} else if (subfield.getCode() == 'v') {
+						String subfieldData = subfield.getData().toLowerCase();
+						if (subfieldData.contains("comic books, strips, etc") || subfieldData.contains("comic books,strips, etc")) {
+							result.add("GraphicNovel");
 						}
 					}
 				}
@@ -1127,7 +1137,9 @@ public class FormatDetermination {
 							result.add("PlayawayView");
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
-						}else if (subfieldData.contains("graphic novel")) {
+						}else if (subfieldData.contains("graphic novel")
+										|| subfieldData.contains("comic books, strips, etc") // Library of Congress authorized term
+						) {
 							boolean okToAdd = false;
 							if (field.getSubfield('v') != null){
 								String subfieldVData = field.getSubfield('v').getData().toLowerCase();

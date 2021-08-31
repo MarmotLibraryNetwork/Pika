@@ -59,12 +59,12 @@ class Admin_ArchiveUsage extends Admin_Admin{
 			$searchObject->addFieldsToReturn(array('fedora_datastream_latest_OBJ_SIZE_ms'));
 			$searchObject->setApplyStandardFilters(false);
 
-			$usageByNamespace[$archiveLibraries->ilsCode] = array(
-					'displayName' => $archiveLibraries->displayName,
-					'numObjects' => 0,
-					'numDpla' => 0,
-					'driveSpace' => 0
-			);
+			$usageByNamespace[$archiveLibraries->ilsCode] = [
+				'displayName' => $archiveLibraries->displayName,
+				'numObjects'  => 0,
+				'numDpla'     => 0,
+				'driveSpace'  => 0
+			];
 
 			if (isset($dplaUsage[$archiveLibraries->archiveNamespace])){
 				$usageByNamespace[$archiveLibraries->ilsCode]['numDpla'] = $dplaUsage[$archiveLibraries->archiveNamespace];

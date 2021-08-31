@@ -21,6 +21,14 @@ require_once ROOT_DIR . '/sys/Search/Solr.php';
 require_once 'DB/DataObject.php';
 
 abstract class SolrDataObject extends DB_DataObject{
+
+	private Pika\Logger $logger;
+
+	public function __construct(){
+		global $pikaLogger;
+		$this->logger = $pikaLogger->withName(__CLASS__);
+	}
+
 	/**
 	 * Return an array describing the structure of the object fields, etc.
 	 */
@@ -30,55 +38,48 @@ abstract class SolrDataObject extends DB_DataObject{
 		return $this->updateDetailed(true);
 	}
 	private $updateStarted = false;
+
 	function updateDetailed($insertInSolr = true){
 		if ($this->updateStarted){
 			return true;
 		}
 		$this->updateStarted = true;
 
-		global $logger;
 		$result = parent::update();
 		if (!$insertInSolr){
-			$logger->log("updateDetailed, not inserting in solr because insertInSolr was false", PEAR_LOG_DEBUG);
+			$this->logger->debug('UpdateDetailed, not inserting in solr because insertInSolr was false');
 			$this->updateStarted = false;
 			return $result == 1;
-		}else{
-			if ($result !== FALSE){
-				$logger->log("Updating Solr", PEAR_LOG_DEBUG);
-				if (!$this->saveToSolr()){
-					$logger->log("Could not update Solr", PEAR_LOG_ERR);
-					//Could not save to solr
-					$this->updateStarted = false;
-					return false;
-				}
-			}else{
-				$logger->log("Saving to database failed, not updating solr", PEAR_LOG_ERR);
+		}elseif ($result !== false){
+			$this->logger->debug('Updating Solr');
+			if ($this->saveToSolr()){
 				$this->updateStarted = false;
-				return false;
+				return true;
+			}else{
+				$this->logger->error('Could not update Solr');
+				//Could not save to solr
 			}
-			$this->updateStarted = false;
-			return true;
+		}else{
+			$this->logger->error('Saving to database failed, not updating solr');
 		}
+		$this->updateStarted = false;
+		return false;
 	}
+
 	function insert(){
-		return $this->insertDetailed(true);
+		return $this->insertDetailed();
 	}
+
 	function insertDetailed($insertInSolr = true){
-		$result = parent::insert($insertInSolr);
+		$result = parent::insert();
 		if (!$insertInSolr){
 			return $result;
-		}else{
-			if ($result !== 0){
-				if (!$this->saveToSolr()){
-					//Could not save to solr
-					return false;
-				}
-			}else{
-				return false;
-			}
+		}elseif ($result !== 0 && $this->saveToSolr()){
 			return true;
 		}
+		return false;
 	}
+
 	function delete($useWhere = false){
 		$result = parent::delete();
 		if ($result != FALSE){
@@ -108,22 +109,20 @@ abstract class SolrDataObject extends DB_DataObject{
 		global $configArray;
 		$host = $configArray[$this->getConfigSection()]['url'];
 
-		global $logger;
-		$logger->log("Deleting Record {$this->solrId()}", PEAR_LOG_INFO);
+		$this->logger->info("Deleting Record {$this->solrId()}");
 
-		$cores = $this->cores();
-		foreach ($cores as $corename){
-			$index = new Solr($host, $corename);
+		$this->initializeCores();
+		/** @var Solr $index */
+		foreach ($this->index as $coreName => $index){
 			if ($index->deleteRecord($this->solrId())) {
 				$index->commit();
 			} else {
-				return new PEAR_Error("Could not remove from $corename index");
+				return new PEAR_Error("Could not remove $this->solrId() from $coreName index");
 			}
 		}
 		return true;
 	}
 
-	protected $_quickReindex = false;
 	private $saveStarted = false;
 	function saveToSolr($quick = false){
 		if ($this->saveStarted){
@@ -131,71 +130,110 @@ abstract class SolrDataObject extends DB_DataObject{
 		}
 		$this->saveStarted = true;
 
-		global $timer;
-		global $configArray;
-		$this->_quickReindex = $quick;
-		$host = $configArray[$this->getConfigSection()]['url'];
-		global $logger;
-		$logger->log("Updating " . $this->solrId() . " in solr", PEAR_LOG_INFO);
-
-		$cores           = $this->cores();
-		$objectStructure = $this->getObjectStructure();
-		$doc             = array();
+		$this->logger->debug("Updating {$this->solrId()} in solr");
+		$objectStructure     = $this->getObjectStructure();
+		$doc                 = [];
 		foreach ($objectStructure as $property){
-			if ((isset($property['storeSolr']) && $property['storeSolr']) || (isset($property['properties']) && count($property['properties']) > 0)){
+			if (!empty($property['storeSolr']) || !empty($property['properties'])){
 				$doc = $this->updateSolrDocumentForProperty($doc, $property);
 			}
 		}
-		$timer->logTime('Built Contents to save to Solr');
 
-		foreach ($cores as $corename){
-			$index = new Solr($host, $corename);
-
-			$xml = $index->getSaveXML($doc, !$this->_quickReindex, $this->_quickReindex);
-			//$logger->log('XML ' . print_r($xml, true), PEAR_LOG_INFO);
-			$timer->logTime('Created XML to save to the main index');
-			if ($index->saveRecord($xml)) {
-				if (!$this->_quickReindex){
-					$result = $index->commit();
-					//$logger->log($xml, PEAR_LOG_INFO);
-					//$logger->log("Result saving to $corename index " . print_r($result, true), PEAR_LOG_INFO);
+		$jsonString = $this->jsonUTF8EncodeResponse([$doc]);
+		if ($jsonString){
+			$this->initializeCores();
+			/** @var Solr $index */
+			foreach ($this->index as $coreName => $index){
+				if ($index->saveRecord($jsonString)){
+					if ($quick){
+						$result = $index->commit();
+					}
+				}else{
+					$this->saveStarted = false;
+					return new PEAR_Error("Could not save to $coreName");
 				}
-			} else {
-				$this->saveStarted = false;
-				return new PEAR_Error("Could not save to $corename");
 			}
-			$timer->logTime("Saved to the $corename index");
+			$this->saveStarted = false;
+			return true;
 		}
 		$this->saveStarted = false;
-		return true;
+		return false;
+	}
+
+	function jsonUTF8EncodeResponse($response){
+		try {
+			require_once ROOT_DIR . '/sys/Utils/ArrayUtils.php';
+			$utf8EncodedValue = ArrayUtils::utf8EncodeArray($response);
+			$json             = json_encode($utf8EncodedValue);
+			$error            = json_last_error();
+			if ($error != JSON_ERROR_NONE){
+				$json = false;
+			}
+		} catch (Exception $e){
+			$json = false;
+			$this->logger->error("Error encoding json data",['stack_trace'=>$e->getTraceAsString()]);
+		}
+		return $json;
+	}
+
+	private $index = [];
+	private function initializeCores(){
+		if (empty($this->index)){
+			global $configArray;
+			$host = $configArray[$this->getConfigSection()]['url'];
+			foreach ($this->cores() as $coreName){
+				$this->index[$coreName] = new Solr($host, $coreName);
+			}
+		}
 	}
 
 	function updateSolrDocumentForProperty($doc, $property){
-		if (isset($property['storeSolr']) && $property['storeSolr']){
+		if (!empty($property['storeSolr'])){
 			$propertyName = $property['property'];
-			if ($property['type'] == 'method'){
-				$methodName = isset($property['methodName']) ? $property['methodName'] : $property['property'];
-				$doc[$propertyName] = $this->$methodName();
-			}elseif ($property['type'] == 'crSeparated'){
-				if (strlen($this->$propertyName)){
-					$propertyValues = explode("\r\n", $this->$propertyName);
-					$doc[$propertyName] = $propertyValues;
-				}
-			}elseif ($property['type'] == 'date' || $property['type'] == 'partialDate'){
-				if ($this->$propertyName != null && strlen($this->$propertyName) > 0){
-					//get the date array and reformat for solr
-					$dateParts = date_parse($this->$propertyName);
-					if ($dateParts['year'] != false && $dateParts['month'] != false && $dateParts['day'] != false){
-						$time = $dateParts['year'] . '-' . $dateParts['month'] . '-' . $dateParts['day'] . 'T00:00:00Z';
-						$doc[$propertyName] = $time;
+			switch ($property['type']){
+				case 'method':
+					$methodName = $property['methodName'] ?? $property['property'];
+					$results    = $this->$methodName();
+					if (is_array($results)){
+						array_walk($results, 'trim');
+						$doc[$propertyName] = $results;
+					} else{
+						$value = trim($results);
+						if (strlen($value)) $doc[$propertyName] = $value;
 					}
-				}
-			}else{
-				if (isset($this->$propertyName)){
-					$doc[$propertyName] = $this->$propertyName;
-				}
+					break;
+				case 'crSeparated':
+					if (strlen($this->$propertyName)){
+						$propertyValues = explode("\r\n", $this->$propertyName);
+						$values         = [];
+						array_walk($propertyValues, 'trim');
+						foreach ($propertyValues as $value){
+							if (strlen($value)){
+								$values[] = $value;
+							}
+						}
+						$doc[$propertyName] = $values;
+					}
+					break;
+				case 'date':
+				case 'partialDate':
+					if (!empty($this->$propertyName)){
+						//get the date array and reformat for solr
+						$dateParts = date_parse($this->$propertyName);
+						if ($dateParts['year'] != false && $dateParts['month'] != false && $dateParts['day'] != false){
+							$time               = trim($dateParts['year'] . '-' . $dateParts['month'] . '-' . $dateParts['day'] . 'T00:00:00Z');
+							if (strlen($time)) $doc[$propertyName] = $time;
+						}
+					}
+					break;
+				default:
+					if (isset($this->$propertyName)){
+						$value = trim($this->$propertyName);
+						if (strlen($value)) $doc[$propertyName] = $value;
+					}
+					break;
 			}
-		}elseif (isset($property['properties']) && count($property['properties']) > 0){
+		}elseif (!empty($property['properties'])){
 			$properties = $property['properties'];
 			foreach ($properties as $subProperty){
 				$doc = $this->updateSolrDocumentForProperty($doc, $subProperty);
@@ -209,13 +247,14 @@ abstract class SolrDataObject extends DB_DataObject{
 		global $configArray;
 		$host = $configArray[$this->getConfigSection()]['url'];
 
-		$cores = $this->cores();
-		foreach ($cores as $corename){
-			global $logger;
-			$logger->log("Optimizing Solr Core! $corename", PEAR_LOG_INFO);
-
-			$index = new Solr($host, $corename);
-			$index->optimize();
+		$this->initializeCores();
+		/** @var Solr $index */
+		foreach ($this->index as $coreName => $index){
+			$this->logger->debug("Optimizing Solr Core! $coreName");
+			$result = $index->optimize();
+			if (PEAR_Singleton::isError($result)){
+				PEAR_Singleton::raiseError($result);
+			}
 		}
 		return true;
 	}

@@ -113,6 +113,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private HashMap<String, Integer> numberOfHoldsByIdentifier = new HashMap<>();
 
 	HashMap<String, TranslationMap> translationMaps = new HashMap<>();
+	//The indexing profile based translation maps
 	private ArrayList<TimeToReshelve> timesToReshelve = new ArrayList<>();
 
 	private FormatDetermination formatDetermination;
@@ -310,12 +311,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	@Override
-	public void processRecord(GroupedWorkSolr groupedWork, RecordIdentifier identifier){
+	public void processRecord(GroupedWorkSolr groupedWork, RecordIdentifier identifier, boolean loadedNovelistSeries){
 		Record record = loadMarcRecordFromDisk(identifier.getIdentifier());
 
 		if (record != null){
 			try{
-				updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
+				updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier, loadedNovelistSeries);
 			}catch (Exception e) {
 				logger.error("Error updating solr based on marc record", e);
 			}
@@ -366,7 +367,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	@Override
-	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier) {
+	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier, boolean loadedNovelistSeries) {
 		//For ILS Records, we can create multiple different records, one for print and order items,
 		//and one or more for eContent items.
 		HashSet<RecordInfo> allRelatedRecords = new HashSet<>();
@@ -388,7 +389,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			loadUnsuppressedPrintItems(groupedWork, recordInfo, identifier, record);
 			loadOnOrderItems(groupedWork, recordInfo, record, recordInfo.getNumPrintCopies() > 0);
 			//If we don't get anything remove the record we just added
+			boolean isItemlessPhysicalRecordToRemove = false;
 			if (checkIfBibShouldBeRemovedAsItemless(recordInfo)) {
+				isItemlessPhysicalRecordToRemove = true;
 				groupedWork.removeRelatedRecord(recordInfo);
 				if (logger.isDebugEnabled()) {
 					logger.debug("Removing related print record for " + identifier + " because there are no print copies, no on order copies and suppress itemless bibs is on");
@@ -397,12 +400,16 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				allRelatedRecords.add(recordInfo);
 			}
 
-			//Since print formats are loaded at the record level, do it after we have loaded items
-			loadPrintFormatInformation(recordInfo, record);
-
 			//Now look for any eContent that is defined within the ils
 			List<RecordInfo> econtentRecords = loadUnsuppressedEContentItems(groupedWork, identifier, record);
+			if (isItemlessPhysicalRecordToRemove && econtentRecords.size() == 0){
+				// If the ILS record is both an itemless record and isn't econtent skip further processing of the record
+				return;
+			}
 			allRelatedRecords.addAll(econtentRecords);
+
+			//Since print formats are loaded at the record level, do it after we have loaded items
+			loadPrintFormatInformation(recordInfo, record);
 
 			//Do updates based on the overall bib (shared regardless of scoping)
 			String primaryFormat = null;
@@ -416,7 +423,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				primaryFormat = "Unknown";
 				//logger.info("No primary format for " + identifier + " found setting to unknown to load standard marc data");
 			}
-			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier.getIdentifier(), primaryFormat);
+			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier.getIdentifier(), primaryFormat, loadedNovelistSeries);
 
 			//Special processing for ILS Records
 			String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(record, "520a"));
@@ -760,7 +767,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			itemInfo.seteContentUrl(urlSubfield.getData().trim());
 		} else {
 			loadEContentUrl(record, itemInfo, identifier);
-
 		}
 		itemInfo.setDetailedStatus("Available Online");
 

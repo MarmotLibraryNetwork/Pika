@@ -78,6 +78,46 @@ TitleScroller.prototype.loadTitlesFromJsonData = function(data) {
 	}
 };
 
+TitleScroller.prototype.loadIssuesFromAjax = function(jsonUrl){
+	var scroller = this,
+			scrollerBody = $('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody");
+	jsonUrl = decodeURIComponent(jsonUrl);
+	scrollerBody.hide();
+	$("#titleScrollerSelectedTitle" + this.scrollerShortName + ",#titleScrollerSelectedAuthor" + this.scrollerShortName).html("");
+	$(".scrollerLoadingContainer").show();
+	$.getJSON(jsonUrl, function (data){
+		if (data.error) throw {description: data.error};
+		if (data.length == 0){
+			ScrollerBody.html("No issues were found for this magazine. Please try again later");
+			$('#' + this.scrollerId + " .scrollerBodyContainer .scrollerLoadingContainer").hide();
+			scrollerBody.show();
+		}else{
+			scroller.scrollerTitles = [];
+			var i = 0;
+			$.each(data, function (key, val){
+				scroller.scrollerTitles[i++] = val;
+			});
+			if (scroller.container && data.length > 0){
+				$("#" + scroller.container).fadeIn();
+			}
+			scroller.numScrollerTitles = data.length;
+			if (this.style == 'horizontal' || this.style == 'vertical'){
+				// vertical or horizontal widgets should start in the middle of the data. plb 11-24-2014
+				scroller.currentScrollerIndex = data.currentIndex;
+			}else{
+				scroller.currentScrollerIndex = 0;
+			}
+			//console.log('current index is : '+scroller.currentScrollerIndex);
+			TitleScroller.prototype.updateScroller.call(scroller);
+
+		}
+
+	})
+			.fail(function(er){
+
+			})
+}
+
 TitleScroller.prototype.updateScroller = function() {
 	var scrollerBody = $('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody");
 	try {
@@ -201,7 +241,7 @@ TitleScroller.prototype.swipeDown = function(customSwipeInterval) {
 };
 
 TitleScroller.prototype.activateCurrentTitle = function() {
-	if (this.numScrollerTitles == 0) {
+	if (this.numScrollerTitles === 0) {
 		return;
 	}
 	var scrollerTitles = this.scrollerTitles,

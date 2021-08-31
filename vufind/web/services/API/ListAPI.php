@@ -209,7 +209,7 @@ class ListAPI extends AJAXHandler {
 		$rssFeed .= '</rss>';
 
 		$xml = '<?xml version="1.0" encoding="UTF-8"?' . ">\n";
-		$xml .= $$rssFeed;
+		$xml .= $rssFeed;
 
 		$this->sendHTTPHeaders('text/xml');
 		echo $xml;

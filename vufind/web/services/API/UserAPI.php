@@ -562,6 +562,7 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Sample Response:
 	 * <code>
+	 * TODO: update
 	 * {"result":{
 	 *   "success":true,
 	 *   "checkedOutItems":{
@@ -1058,6 +1059,7 @@ class UserAPI extends AJAXHandler {
 			[$username, $password] = $this->loadUsernameAndPassword();
 			$user = UserAccount::validateAccount($username, $password);
 			if ($user && !PEAR_Singleton::isError($user)){
+				//TODO: go through the user object & include paging/sort options
 				$readingHistory = $this->getCatalogConnection()->getReadingHistory($user);
 
 				return ['success' => true, 'readingHistory' => $readingHistory['titles']];

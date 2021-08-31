@@ -107,7 +107,7 @@ trait MARC_AJAX_Basic {
 		$largeCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('large', true)) . '&reload';
 		file_get_contents($largeCoverUrl);
 
-		return array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.');
+		return ['success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'];
 	}
 
 }

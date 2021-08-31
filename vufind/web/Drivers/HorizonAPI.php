@@ -108,7 +108,7 @@ abstract class HorizonAPI extends Horizon{
 					$Address1 = (string)$lookupMyAccountInfoResponse->AddressInfo->line1;
 					if (isset($lookupMyAccountInfoResponse->AddressInfo->cityState)){
 						$cityState = (string)$lookupMyAccountInfoResponse->AddressInfo->cityState;
-						list($City, $State) = explode(', ', $cityState);
+						@list($City, $State) = explode(', ', $cityState);
 					}else{
 						$City = "";
 						$State = "";

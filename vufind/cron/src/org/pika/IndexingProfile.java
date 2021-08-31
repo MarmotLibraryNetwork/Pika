@@ -23,17 +23,19 @@ package org.pika;
  * Time: 10:38 PM
  */
 public class IndexingProfile {
-	public Long id;
-	public String name;
-	public String marcPath;
-	public String marcEncoding;
-	public String individualMarcPath;
-	public int numCharsToCreateFolderFrom;
-	public boolean createFolderFromLeadingCharacters;
-	public String recordNumberTag;
-	private String recordNumberPrefix;
-	private char eContentDescriptor = ' ';
-	private String itemTag;
+	public  Long    id;
+	public  String  sourceName;
+	public  String  marcPath;
+	public  String  filenamesToInclude;
+	public  String  marcEncoding;
+	public  String  individualMarcPath;
+	public  int     numCharsToCreateFolderFrom;
+	public  boolean createFolderFromLeadingCharacters;
+	public  String  recordNumberTag;
+	public  char    recordNumberField;
+	private String  recordNumberPrefix;
+	private char    eContentDescriptor = ' ';
+	private String  itemTag;
 	private boolean doAutomaticEcontentSuppression;
 
 	public String getRecordNumberTag() {

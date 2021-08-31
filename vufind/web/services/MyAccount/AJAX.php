@@ -370,20 +370,32 @@ class MyAccount_AJAX extends AJAXHandler {
 				$result         = $user->cancelAllBookedMaterial();
 				$totalCancelled = $numCancelled = null;
 			}else{
-				$cancelIds = !empty($_REQUEST['cancelId']) ? $_REQUEST['cancelId'] : array();
+				$cancelIds = !empty($_REQUEST['cancelId']) ? $_REQUEST['cancelId'] : [];
 
 				$totalCancelled = 0;
 				$numCancelled   = 0;
-				$result         = array(
+				$result         = [
 					'success' => true,
 					'message' => 'Your scheduled items were successfully canceled.',
-				);
+				];
 				foreach ($cancelIds as $userId => $cancelId){
 					$patron         = $user->getUserReferredTo($userId);
 					$userResult     = $patron->cancelBookedMaterial($cancelId);
-					$numCancelled   += $userResult['success'] ? count($cancelId) : count($cancelId) - count($userResult['message']);
-					$totalCancelled += count($cancelId);
-					// either all were canceled or total canceled minus the number of errors (1 error per failure)
+					if (is_array($cancelId)){
+						// Either all were canceled or total canceled minus the number of errors (1 error per failure)
+						$count = count($cancelId);
+						if ($userResult['success']){
+							$numCancelled += $count;
+						}else{
+							$numCancelled += $count - count($userResult['message']);
+						}
+						$totalCancelled += $count;
+					} else {
+						$totalCancelled++;
+						if ($userResult['success']){
+							$numCancelled++;
+						}
+					}
 
 					if (!$userResult['success']){
 						if ($result['success']){ // the first failure
@@ -399,10 +411,10 @@ class MyAccount_AJAX extends AJAXHandler {
 			global $logger;
 			$logger->log('Booking : ' . $e->getMessage(), PEAR_LOG_ERR);
 
-			$result = array(
+			$result = [
 				'success' => false,
 				'message' => 'We could not connect to the circulation system, please try again later.',
-			);
+			];
 		}
 		$failed = (!$result['success'] && is_array($result['message']) && !empty($result['message'])) ? array_keys($result['message']) : null; //returns failed id for javascript function
 
@@ -411,12 +423,12 @@ class MyAccount_AJAX extends AJAXHandler {
 		$interface->assign('numCancelled', $numCancelled);
 		$interface->assign('totalCancelled', $totalCancelled);
 
-		$cancelResult = array(
+		$cancelResult = [
 			'title'     => 'Cancel Booking',
 			'modalBody' => $interface->fetch('MyAccount/cancelBooking.tpl'),
 			'success'   => $result['success'],
 			'failed'    => $failed,
-		);
+		];
 		return $cancelResult;
 	}
 
@@ -1143,7 +1155,7 @@ class MyAccount_AJAX extends AJAXHandler {
 	function renewItem(){
 		if (isset($_REQUEST['patronId']) && isset($_REQUEST['recordId']) && isset($_REQUEST['renewIndicator'])){
 			if (strpos($_REQUEST['renewIndicator'], '|') > 0){
-				list($itemId, $itemIndex) = explode('|', $_REQUEST['renewIndicator']);
+				[$itemId, $itemIndex] = explode('|', $_REQUEST['renewIndicator']);
 			}else{
 				$itemId    = $_REQUEST['renewIndicator'];
 				$itemIndex = null;

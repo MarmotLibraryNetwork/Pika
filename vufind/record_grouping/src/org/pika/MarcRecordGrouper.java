@@ -82,7 +82,7 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 		if (hasSierraLanguageFixedField) {
 			File curFile = new File("../../sites/default/translation_maps/language_map.properties");
 			if (curFile.exists()) {
-				String mapName                        = curFile.getName().replace(".properties", "").replace("_map", "");
+				String mapName = curFile.getName().replace(".properties", "").replace("_map", "");
 				translationMaps.put(mapName, loadTranslationMap(curFile, mapName));
 			} else {
 				logger.error("Language translation map for MARC grouping not found");
@@ -161,8 +161,8 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 					languageCode = oo8languageCode;
 				}
 			}
-		} else if (fullRegrouping){
-			logger.warn("Missing 008 : " + identifier.toString());
+		} else if (fullRegrouping && logger.isInfoEnabled()){
+			logger.info("Missing 008 for grouping language : " + identifier.toString());
 		}
 		if (languageCode == null) {
 			if (hasSierraLanguageFixedField) {

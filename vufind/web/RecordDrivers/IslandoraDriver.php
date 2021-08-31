@@ -60,10 +60,10 @@ abstract class IslandoraDriver extends RecordInterface {
 
 		global $configArray;
 		// Load highlighting/snippet preferences:
-		$searchSettings = getExtraConfigArray('searches');
-		$this->highlight = $configArray['Index']['enableHighlighting'];
-		$this->snippet = $configArray['Index']['enableSnippets'];
-		$this->snippetCaptions = isset($searchSettings['Snippet_Captions']) && is_array($searchSettings['Snippet_Captions']) ? $searchSettings['Snippet_Captions'] : [];
+		$searchSettings        = getExtraConfigArray('searches');
+		$this->highlight       = $configArray['Index']['enableHighlighting'];
+		$this->snippet         = $configArray['Index']['enableSnippets'];
+		$this->snippetCaptions = empty($searchSettings['Snippet_Captions']) ? [] : $searchSettings['Snippet_Captions'];
 	}
 
 	public function getSemanticData(){
