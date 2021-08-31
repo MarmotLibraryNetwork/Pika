@@ -5,7 +5,7 @@
 		<div class="alert alert-info">
 			<p>Please enter a new PIN.</p>
 			<p><strong>&bull; {if $alphaNumericOnlyPins}Use numbers and letters.{else}Use only numbers.{/if}</strong></p>
-			{if $pinMinimumLength == $pinMaximimLength}
+			{if $pinMinimumLength == $pinMaximumLength}
 			<p><strong>&bull; Your new PIN must be {$pinMinimumLength} characters in length.</strong></p>
       {else}
 				<p><strong>&bull; Your new PIN must be {$pinMinimumLength} to {$pinMaximumLength} characters in length.</strong></p>
