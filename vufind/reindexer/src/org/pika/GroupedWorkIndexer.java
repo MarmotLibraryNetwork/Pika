@@ -974,18 +974,20 @@ public class GroupedWorkIndexer {
 				processGroupedWork(id, permanentId, grouping_category, siteMapsByScope, uniqueGroupedWorks);
 
 				numWorksProcessed++;
-				if (fullReindex && (numWorksProcessed % 10000 == 0)){
-					//Testing shows that regular commits do seem to improve performance.
-					//However, we can't do it too often or we get errors with too many searchers warming.
-					//This is happening now with the auto commit settings in solrconfig.xml
+				if (numWorksProcessed % 500 == 0){
+					GroupedReindexMain.updateNumWorksProcessed(numWorksProcessed);
+					if (fullReindex && (numWorksProcessed % 10000 == 0)){
+						//Testing shows that regular commits do seem to improve performance.
+						//However, we can't do it too often or we get errors with too many searchers warming.
+						//This is happening now with the auto commit settings in solrconfig.xml
 					/*try {
 						logger.info("Doing a regular commit during full indexing");
 						updateServer.commit(false, false, true);
 					}catch (Exception e){
 						logger.warn("Error committing changes", e);
 					}*/
-					GroupedReindexMain.addNoteToReindexLog(" " + numWorksProcessed + " grouped works processed.");
-					GroupedReindexMain.updateNumWorksProcessed(numWorksProcessed);
+						GroupedReindexMain.addNoteToReindexLog(" " + numWorksProcessed + " grouped works processed.");
+					}
 				}
 				if (maxWorksToProcess != -1 && numWorksProcessed >= maxWorksToProcess){
 					logger.warn("Stopping processing now because we've reached the max works to process.");
@@ -1042,18 +1044,20 @@ public class GroupedWorkIndexer {
 				processGroupedWork(id, permanentId, grouping_category);
 
 				numWorksProcessed++;
-				if ((numWorksProcessed % 10000 == 0)){
-					//Testing shows that regular commits do seem to improve performance.
-					//However, we can't do it too often or we get errors with too many searchers warming.
-					//This is happening now with the auto commit settings in solrconfig.xml
+				if (numWorksProcessed % 500 == 0) {
+					GroupedReindexMain.updateNumWorksProcessed(numWorksProcessed);
+					if (numWorksProcessed % 10000 == 0) {
+						//Testing shows that regular commits do seem to improve performance.
+						//However, we can't do it too often or we get errors with too many searchers warming.
+						//This is happening now with the auto commit settings in solrconfig.xml
 					/*try {
 						logger.info("Doing a regular commit during full indexing");
 						updateServer.commit(false, false, true);
 					}catch (Exception e){
 						logger.warn("Error committing changes", e);
 					}*/
-					GroupedReindexMain.addNoteToReindexLog(" " + numWorksProcessed + " grouped works processed.");
-					GroupedReindexMain.updateNumWorksProcessed(numWorksProcessed);
+						GroupedReindexMain.addNoteToReindexLog(" " + numWorksProcessed + " grouped works processed.");
+					}
 				}
 				if (lastUpdated == null){
 					setLastUpdatedTime.setLong(1, indexStartTime - 1); //Set just before the index started so we don't index multiple times
