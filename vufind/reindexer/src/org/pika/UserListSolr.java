@@ -147,19 +147,20 @@ public class UserListSolr {
 	public void determineListScopes(){
 		for (Scope scope: groupedWorkIndexer.getScopes()) {
 			boolean okToInclude;
+			final int publicListsToInclude = scope.getPublicListsToInclude();
 			if (scope.isLibraryScope()) {
-				okToInclude = (scope.getPublicListsToInclude() == 2) || //All public lists
-								((scope.getPublicListsToInclude() == 1) && (scope.getLibraryId() == owningLibrary)) || //All lists for the current library
-								((scope.getPublicListsToInclude() == 3) && ownerHasListPublisherRole && (scope.getLibraryId() == owningLibrary)) || //All lists for list publishers at the current library
-								((scope.getPublicListsToInclude() == 4) && ownerHasListPublisherRole) //All lists for list publishers
+				okToInclude = (publicListsToInclude == 2) || //All public lists
+								((publicListsToInclude == 1) && (scope.getLibraryId() == owningLibrary)) || //All lists for the current library
+								((publicListsToInclude == 3) && ownerHasListPublisherRole && (scope.getLibraryId() == owningLibrary)) || //All lists for list publishers at the current library
+								((publicListsToInclude == 4) && ownerHasListPublisherRole) //All lists for list publishers
 				;
 			} else {
-				okToInclude = (scope.getPublicListsToInclude() == 3) || //All public lists
-								((scope.getPublicListsToInclude() == 1) && (scope.getLibraryId() == owningLibrary)) || //All lists for the current library
-								((scope.getPublicListsToInclude() == 2) && scope.getScopeName().equals(owningLocation)) || //All lists for the current location
-								((scope.getPublicListsToInclude() == 4) && ownerHasListPublisherRole && (scope.getLibraryId() == owningLibrary)) || //All lists for list publishers at the current library
-								((scope.getPublicListsToInclude() == 5) && ownerHasListPublisherRole && scope.getScopeName().equals(owningLocation)) || //All lists for list publishers the current location
-								((scope.getPublicListsToInclude() == 6) && ownerHasListPublisherRole) //All lists for list publishers
+				okToInclude = (publicListsToInclude == 3) || //All public lists
+								((publicListsToInclude == 1) && (scope.getLibraryId() == owningLibrary)) || //All lists for the current library
+								((publicListsToInclude == 2) && scope.getScopeName().equals(owningLocation)) || //All lists for the current location
+								((publicListsToInclude == 4) && ownerHasListPublisherRole && (scope.getLibraryId() == owningLibrary)) || //All lists for list publishers at the current library
+								((publicListsToInclude == 5) && ownerHasListPublisherRole && scope.getScopeName().equals(owningLocation)) || //All lists for list publishers the current location
+								((publicListsToInclude == 6) && ownerHasListPublisherRole) //All lists for list publishers
 				;
 			}
 			if (okToInclude) {
