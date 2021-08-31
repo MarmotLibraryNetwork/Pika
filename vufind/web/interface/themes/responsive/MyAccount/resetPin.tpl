@@ -5,7 +5,11 @@
 		<div class="alert alert-info">
 			<p>Please enter a new PIN.</p>
 			<p><strong>&bull; {if $alphaNumericOnlyPins}Use numbers and letters.{else}Use only numbers.{/if}</strong></p>
-			<p><strong>&bull; Your new PIN must be at least {$pinMinimumLength} characters in length.</strong></p>
+			{if $pinMinimumLength == $pinMaximimLength}
+			<p><strong>&bull; Your new PIN must be {$pinMinimumLength} characters in length.</strong></p>
+      {else}
+				<p><strong>&bull; Your new PIN must be {$pinMinimumLength} to {$pinMaximumLength} characters in length.</strong></p>
+			{/if}
 		</div>
 
 		<form id="resetPin" method="POST" action="/MyAccount/ResetPin" class="form-horizontal">
@@ -40,10 +44,13 @@
 	$(function () {
 		$("#resetPin").validate({
 			rules: {
-				pin1: {minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}0{/if}{literal}},
+				pin1: {
+					minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}{literal},
+					maxlength:{/literal}{if $pinMaximumLength}{$pinMaximumLength}{else}8{/if}{literal}
+				},
 				pin2: {
 					equalTo: "#pin1",
-					minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}0{/if}{literal}
+					minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}{literal}
 				}
 			}
 		});

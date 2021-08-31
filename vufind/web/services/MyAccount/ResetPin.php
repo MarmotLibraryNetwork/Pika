@@ -51,9 +51,11 @@ class ResetPin extends Action{
 		$numericOnlyPins      = $configArray['Catalog']['numericOnlyPins'];
 		$alphaNumericOnlyPins = $configArray['Catalog']['alphaNumericOnlyPins'];
 		$pinMinimumLength     = $configArray['Catalog']['pinMinimumLength'];
+		$pinMaximumLength     = $configArray['Catalog']['pinMaximumLength'];
 		$interface->assign('numericOnlyPins', $numericOnlyPins);
 		$interface->assign('alphaNumericOnlyPins', $alphaNumericOnlyPins);
 		$interface->assign('pinMinimumLength', $pinMinimumLength);
+		$interface->assign('pinMaximumLength', $pinMaximumLength);
 
 		if (isset($_REQUEST['submit'])){
 			$this->catalog = CatalogFactory::getCatalogConnectionInstance();
@@ -63,35 +65,45 @@ class ResetPin extends Action{
 				$confirmNewPin = trim($_REQUEST['pin2']);
 				$resetToken    = $_REQUEST['resetToken'];
 				$userID        = $_REQUEST['uid'];
-
-				if (!empty($userID)) {
+				$newPinLength  = strlen($newPin);
+				if (!empty($userID)){
 					$patron = new User;
 					$patron->get($userID);
 
-					if (empty($patron->id)) {
+					if (empty($patron->id)){
 						// Did not find a matching user to the uid
 						// This check could be optional if the resetPin method verifies that the ILS user matches the Pika user.
-						$resetPinResult = array(
+						$resetPinResult = [
 							'error' => 'Invalid parameter. Your PIN can not be reset'
-						);
-					} elseif (empty($newPin)) {
-						$resetPinResult = array(
+						];
+					}elseif (empty($newPin)){
+						$resetPinResult = [
 							'error' => 'Please enter a new PIN number.'
-						);
-					} elseif (empty($confirmNewPin)) {
-						$resetPinResult = array(
+						];
+					}elseif (empty($confirmNewPin)){
+						$resetPinResult = [
 							'error' => 'Please confirm your new PIN number.'
-						);
-					} elseif ($newPin !== $confirmNewPin) {
-						$resetPinResult = array(
+						];
+					}elseif ($newPin !== $confirmNewPin){
+						$resetPinResult = [
 							'error' => 'The new PIN numbers you entered did not match. Please try again.'
-						);
-					} elseif (empty($resetToken) || empty($userID)) {
+						];
+					}elseif (empty($resetToken) || empty($userID)){
 						// These checks is for Horizon Driver, this may need to be moved into resetPin function if used for another ILS
-						$resetPinResult = array(
+						$resetPinResult = [
 							'error' => 'Required parameter missing. Your PIN can not be reset.'
-						);
-					} else {
+						];
+					}elseif ($newPinLength < $pinMinimumLength or $newPinLength > $pinMaximumLength){
+						if ($pinMinimumLength == $pinMaximumLength){
+							$errorMsg = "New PIN must be exactly " . $pinMinimumLength . " characters.";
+						}else{
+							$errorMsg = "New PIN must be " . $pinMinimumLength . " to " . $pinMaximumLength . " characters.";
+						}
+
+						$resetPinResult = [
+							'error' => $errorMsg
+						];
+					}else{
 						$resetPinResult = $driver->resetPin($patron, $newPin, $resetToken);
 					}
 				}
