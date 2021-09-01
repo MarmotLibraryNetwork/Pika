@@ -771,6 +771,7 @@ class Solr implements IndexEngine {
 							}
 							break;
 						case 'alternate_ids': //todo: this doesn't have all Id schemes included
+							//TODO: Only do this filtering in a keyword search See D-1548
 							if (!preg_match('/^"?(\d+|.?[boi]\d+x?|[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|MWT\d+|CARL\d+)"?$/i',
 								$fieldValue)){
 								continue 2;
@@ -1015,9 +1016,11 @@ class Solr implements IndexEngine {
 		// Apply filter query if applicable:
 		if (isset($ss['FilterQuery'])) {
 			return "({$baseQuery}) AND ({$ss['FilterQuery']})";
+//			return  empty($baseQuery) ? "({$ss['FilterQuery']})" : "($baseQuery) AND ({$ss['FilterQuery']})";
 		}
 
 		return "($baseQuery)";
+//		return empty($baseQuery) ? '' : "($baseQuery)";
 	}
 
 	/**
@@ -1119,9 +1122,9 @@ class Solr implements IndexEngine {
 						// Process each search group
 						foreach ($params['group'] as $group) {
 							// Build this group individually as a basic search
-							if (strpos($group['lookfor'], ' ') > 0) {
-								$group['lookfor'] = '(' . $group['lookfor'] . ')';
-							}
+//							if (strpos($group['lookfor'], ' ') > 0) {
+//								$group['lookfor'] = '(' . $group['lookfor'] . ')';
+//							}
 							if ($group['field'] == 'AllFields') {
 								$group['field'] = 'Keyword';
 							}
