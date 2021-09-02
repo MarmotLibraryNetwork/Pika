@@ -4,7 +4,7 @@
 	 This template will be embedded in an alert info div tag
 	 *}
 <p style="margin-bottom: 15px">
-For more information on how to ungroup works, see the <a href="https://docs.google.com/document/d/1fTjDQ04gctT6GpTmKU8uGZyZRgLW6z09eE4DwNsOxOw">online documentation</a>.
+For more information on how to ungroup works, see the <a href="https://marmot-support.atlassian.net/l/c/bcJcpX05">online documentation</a>.
 	.
 </p>
 	<div class="alert alert-warning">

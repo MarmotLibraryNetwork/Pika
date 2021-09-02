@@ -97,7 +97,7 @@ class Admin_ListWidgets extends ObjectEditor {
 	}
 
 	function getInstructions(){
-		return 'For more information on how to create List Widgets, please see the <a href="https://docs.google.com/document/d/1nftHL4yrUWjWeuW7qSUz3L9XHR0vs8pTU4E-Aa6LPpk">online documentation</a>';
+		return 'For more information on how to create List Widgets, please see the <a href="https://marmot-support.atlassian.net/l/c/CByg62XD">online documentation</a>';
 	}
 
 	function viewIndividualObject($structure){

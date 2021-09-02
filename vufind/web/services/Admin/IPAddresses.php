@@ -64,7 +64,7 @@ class IPAddresses extends ObjectEditor {
 	}
 
 	function getInstructions(){
-		return 'For more information on how to use IP Addresses, see the <a href="https://docs.google.com/document/d/1M9UUzFUIV9G0KrsttgGV-MZK5zL7qdDx7I0-sIu5ZYc/edit">online documentation</a>.';
+		return 'For more information on how to use IP Addresses, see the <a href="https://marmot-support.atlassian.net/l/c/NJVpKn1v">online documentation</a>.';
 	}
 
 }

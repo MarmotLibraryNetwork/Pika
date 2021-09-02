@@ -3,7 +3,7 @@
 	<div id="main-content" class="full-result-content">
 		<h2>Offline Circulation</h2>
 		<div class="alert alert-info">
-			For more information about Offline Circulation, see the <a href="https://docs.google.com/document/d/16l5_mdJiPoSJC__OhP055XZdieaTulD4mmAkce2NHtc">online documentation</a>.
+			For more information about Offline Circulation, see the <a href="https://marmot-support.atlassian.net/l/c/ZM1de8yJ">online documentation</a>.
 		</div>
 		{if $error}
 			<div class="alert alert-danger">

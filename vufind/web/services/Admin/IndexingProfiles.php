@@ -108,7 +108,7 @@ class Admin_IndexingProfiles extends ObjectEditor {
 	}
 
 	function getInstructions(){
-		return 'For more information about indexing profiles, see the <a href="https://docs.google.com/document/d/1OA_HKMmgf4nm2l3ckojHiTHnlbo4dKMNnec3wCtGsLk">online documentation</a>.';
+		return 'For more information about indexing profiles, see the <a href="https://marmot-support.atlassian.net/l/c/r3tAyWAB">online documentation</a>.';
 	}
 
 	function getAdditionalObjectActions($existingObject){

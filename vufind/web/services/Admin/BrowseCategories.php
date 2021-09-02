@@ -60,7 +60,7 @@ class Admin_BrowseCategories extends ObjectEditor {
 	}
 
 	function getInstructions(){
-		return 'For more information on how to create browse categories, see the <a href="https://docs.google.com/document/d/1ZpdQCwa27hw002bjnBQeWGF7YlIrqz0rUV-xwWe6u3k">online documentation</a>.';
+		return 'For more information on how to create browse categories, see the <a href="https://marmot-support.atlassian.net/l/c/98rtRQZ2">online documentation</a>.';
 	}
 
 }
