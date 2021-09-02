@@ -452,7 +452,7 @@
 									</div>
 									<div class="col-tn-12">
 										<div class="alert alert-info">
-											For more information about what each role can do, see the <a href="https://marmot-support.atlassian.net/l/c/zJP1kcDf">online documentation</a>.
+											For more information about what each role can do, see the <a target="_blank" href="https://marmot-support.atlassian.net/l/c/zJP1kcDf">online documentation</a>.
 										</div>
 									</div>
 								</div>
