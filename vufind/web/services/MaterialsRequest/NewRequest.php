@@ -75,7 +75,7 @@ class MaterialsRequest_NewRequest extends Action {
 
 			$user = UserAccount::getActiveUserObj();
 			if ($user){
-				$request->phone = str_replace(array('### TEXT ONLY ', '### TEXT ONLY'), '', $user->phone);
+				$request->phone = $user->phone;
 				if ($user->email != 'notice@salidalibrary.org'){
 					$request->email = $user->email;
 				}

@@ -631,15 +631,6 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			),
 		),
 
-		'add_sms_indicator_to_phone' => array(
-			'title'           => 'Add SMS Indicator to Phone flag',
-			'description'     => 'Allow libraries to determine if a flag should be added to the primary phone number when someone subscribes to SMS messaging.',
-			'continueOnError' => true,
-			'sql'             => array(
-				"ALTER TABLE `library` ADD COLUMN `addSMSIndicatorToPhone` TINYINT(1) NULL DEFAULT '0';",
-			),
-		),
-
 		'external_materials_request' => array(
 			'title'           => 'Allow linking to an external materials request system',
 			'description'     => 'Allow libraries to link to an external materials request system rather than using the built in system',
@@ -1223,6 +1214,15 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			'continueOnError' => true,
 			'sql'             => [
 				"ALTER TABLE `location` CHANGE COLUMN `phone` `phone` VARCHAR(25) NULL DEFAULT ''",
+			],
+		],
+
+		'2021.03.0_remove_sms_indicator' => [
+			'title'           => 'Remove obsolete library setting SMS Indicator',
+			'description'     => '',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE `library` DROP COLUMN `addSMSIndicatorToPhone`",
 			],
 		],
 
