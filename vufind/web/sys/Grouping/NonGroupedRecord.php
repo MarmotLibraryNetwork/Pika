@@ -35,6 +35,8 @@ class NonGroupedRecord extends CommonGroupingAlterationOperations {
 	public $recordId;
 	public $notes;
 	private $groupedWork;
+	public $userId;
+	public $updated;
 
 	static function getObjectStructure(){
 		global /** @var IndexingProfile[] $indexingProfiles */
@@ -50,7 +52,7 @@ class NonGroupedRecord extends CommonGroupingAlterationOperations {
 				'property'    => 'id',
 				'type'        => 'hidden',
 				'label'       => 'Id',
-				'description' => 'The unique id of the merged grouped work in the database',
+				'description' => 'The unique id of the non-grouped record in the database',
 				'storeDb'     => true,
 				'primaryKey'  => true,
 			],
@@ -84,6 +86,12 @@ class NonGroupedRecord extends CommonGroupingAlterationOperations {
 				'description' => 'Notes related to the record.',
 				'storeDb'     => true,
 				'required'    => true,
+			],
+			[
+				'property'    => 'updated',
+				'type'        => 'dateReadOnly',
+				'label'       => 'Date Updated',
+				'description' => 'The date the non-grouped record was last updated in the database',
 			],
 		];
 		return $structure;
