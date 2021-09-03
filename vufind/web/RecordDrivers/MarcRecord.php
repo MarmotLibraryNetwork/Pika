@@ -373,7 +373,6 @@ class MarcRecord extends IndexRecord
 
 		global $configArray;
 		if ($configArray['Catalog']['ils'] == 'Sierra'){
-
 			// Determine whether or not we need to show the Re-extract button
 			// (Right now, only appropriate for Sierra libraries)
 			require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
@@ -382,16 +381,16 @@ class MarcRecord extends IndexRecord
 			if (in_array($this->sourceAndId->getSource(), $ilsRecordSources)){
 				$interface->assign("recordExtractable", true);
 			}
+		}
 
-			require_once ROOT_DIR . '/sys/Extracting/IlsExtractInfo.php';
-			$extractInfo                    = new IlsExtractInfo();
-			$extractInfo->indexingProfileId = $this->sourceAndId->getIndexingProfile()->id;
-			$extractInfo->ilsId             = $this->sourceAndId->getRecordId();
-			if ($extractInfo->find(true)){
-				$interface->assign('lastRecordExtractTime', is_null($extractInfo->lastExtracted) ? 'null' : $extractInfo->lastExtracted);
-				// Mark with text 'null' so that the template handles the display properly
-				$interface->assign('recordExtractMarkedDeleted', $extractInfo->deleted);
-			}
+		require_once ROOT_DIR . '/sys/Extracting/IlsExtractInfo.php';
+		$extractInfo                    = new IlsExtractInfo();
+		$extractInfo->indexingProfileId = $this->sourceAndId->getIndexingProfile()->id;
+		$extractInfo->ilsId             = $this->sourceAndId->getRecordId();
+		if ($extractInfo->find(true)){
+			$interface->assign('lastRecordExtractTime', is_null($extractInfo->lastExtracted) ? 'null' : $extractInfo->lastExtracted);
+			// Mark with text 'null' so that the template handles the display properly
+			$interface->assign('recordExtractMarkedDeleted', $extractInfo->deleted);
 		}
 
 		if ($this->groupedWork != null){
