@@ -189,9 +189,7 @@ class Location extends DB_DataObject {
 		$hooplaSettingsStructure = LocationHooplaSettings::getObjectStructure();
 		unset($hooplaSettingsStructure['locationId']);
 
-		$browseCategoryInstructions = 'For more information on how to setup browse categories, see the <a href="https://docs.google.com/document/d/1ZpdQCwa27hw002bjnBQeWGF7YlIrqz0rUV-xwWe6u3k">online documentation</a>.';
-
-		$structure = array(
+		$structure = [
 			'locationId'                      => ['property' => 'locationId', 'type' => 'label', 'label' => 'Location Id', 'description' => 'The unique id of the location within the database'],
 			'code'                            => ['property' => 'code', 'type' => 'text', 'label' => 'Code', 'description' => 'The code for use when communicating with the ILS', 'required' => true, 'isIndexingSetting' => true],
 			'catalogUrl'                      => ['property' => 'catalogUrl', 'type' => 'label', 'label' => 'Catalog URL', 'description' => 'The catalog url used for this location'],
@@ -210,7 +208,7 @@ class Location extends DB_DataObject {
 
 			'displaySection' => [
 				'property' => 'displaySection', 'type' => 'section', 'label' => 'Basic Display', 'hideInLists' => true,
-				'helpLink'   => 'https://docs.google.com/document/d/1C7T7SYSKDCX8mzBXj8WomzG4UVukVw9OllGQmWljUrs',
+				'helpLink'   => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
 				'properties' => [
 					['property' => 'homeLink', 'type' => 'text', 'label' => 'Home Link', 'description' => 'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the vufind home location.', 'hideInLists' => true, 'size' => '40'],
 					['property' => 'additionalCss', 'type' => 'textarea', 'label' => 'Additional CSS', 'description' => 'Extra CSS to apply to the site.  Will apply to all pages.', 'hideInLists' => true],
@@ -220,7 +218,7 @@ class Location extends DB_DataObject {
 
 			'ilsSection' => [
 				'property' => 'ilsSection', 'type' => 'section', 'label' => 'ILS/Account Integration', 'hideInLists' => true,
-				'helpLink' => 'https://docs.google.com/document/d/1337l_JDZAZDuSCugRWpHa4CVAfBBm8SMrAlda6hdf5o',
+				'helpLink' => 'https://marmot-support.atlassian.net/l/c/SaLWEWH7',
 				'properties' => [
 					['property' => 'scope', 'type' => 'text', 'label' => 'Sierra Scope', 'description' => 'The scope for the system in Sierra to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.'],
 					['property' => 'defaultPType', 'type' => 'text', 'label' => 'Default P-Type', 'description' => 'The P-Type to use when accessing a subdomain if the patron is not logged in.  Use -1 to use the library default PType.', 'default' => -1],
@@ -229,75 +227,75 @@ class Location extends DB_DataObject {
 				],
 			],
 
-			'searchingSection'  => array(
-				'property' => 'searchingSection', 'type' => 'section', 'label' => 'Searching', 'hideInLists' => true,
-				'helpLink'   => 'https://docs.google.com/document/d/1QQ7bNfGx75ImTguxEOmf7eCtdrVN9vi8FpWtWY_O3OU',
-				'properties' => array(
-					array('property' => 'restrictSearchByLocation', 'type' => 'checkbox', 'label' => 'Restrict Search By Location', 'description' => 'Whether or not search results should only include titles from this location', 'hideInLists' => true, 'default' => false),
-					array('property' => 'publicListsToInclude', 'type' => 'enum', 'values' => [0 => 'No Lists', '1' => 'Lists from this library', '4' => 'Lists from library list publishers Only', '2' => 'Lists from this location', '5' => 'Lists from list publishers at this location Only', '6' => 'Lists from all list publishers', '3' => 'All Lists'], 'label' => 'Public Lists To Include', 'description' => 'Which lists should be included in this scope', 'isIndexingSetting' => true),
-					array('property' => 'boostByLocation', 'type' => 'checkbox', 'label' => 'Boost By Location', 'description' => 'Whether or not boosting of titles owned by this location should be applied', 'hideInLists' => true, 'default' => true),
-					array('property' => 'additionalLocalBoostFactor', 'type' => 'integer', 'label' => 'Additional Local Boost Factor', 'description' => 'An additional numeric boost to apply to any locally owned and locally available titles', 'hideInLists' => true, 'default' => 1),
-					array(
-						'property' => 'searchBoxSection', 'type' => 'section', 'label' => 'Search Box', 'hideInLists' => true, 'properties' => array(
-						array('property' => 'systemsToRepeatIn', 'type' => 'text', 'label' => 'Other Libraries or Locations To Repeat In', 'description' => 'A list of library codes that you would like to repeat search in separated by pipes |.', 'hideInLists' => true),
-						array('property' => 'repeatSearchOption', 'type' => 'enum', 'values' => array('none' => 'None', 'librarySystem' => 'Library System', 'marmot' => 'Entire Consortium'), 'label' => 'Repeat Search Options (requires Restrict Search By Location to be ON)', 'description' => 'Where to allow repeating search. Valid options are: none, librarySystem, marmot, all', 'default' => 'marmot'),
-						array('property' => 'repeatInOnlineCollection', 'type' => 'checkbox', 'label' => 'Repeat In Online Collection', 'description' => 'Turn on to allow repeat search in the Online Collection.', 'hideInLists' => true, 'default' => false),
-						array('property' => 'repeatInProspector', 'type' => 'checkbox', 'label' => 'Repeat In ' . $innReachEncoreName, 'description' => 'Turn on to allow repeat search in ' . $innReachEncoreName . ' functionality.', 'hideInLists' => true, 'default' => false),
-						array('property' => 'repeatInWorldCat', 'type' => 'checkbox', 'label' => 'Repeat In WorldCat', 'description' => 'Turn on to allow repeat search in WorldCat functionality.', 'hideInLists' => true, 'default' => false),
-						array('property' => 'repeatInOverdrive', 'type' => 'checkbox', 'label' => 'Repeat In Overdrive', 'description' => 'Turn on to allow repeat search in Overdrive functionality.', 'hideInLists' => true, 'default' => false),
-					),
-					),
-					array(
-						'property' => 'searchFacetsSection', 'type' => 'section', 'label' => 'Search Facets', 'hideInLists' => true,
-						'properties' => array(
-							array('property' => 'availabilityToggleLabelSuperScope',           'type' => 'text',     'label' => 'SuperScope Toggle Label', 'description' => 'The label to show when viewing super scope i.e. Consortium Name / Entire Collection / Everything.  Does not show if superscope is not enabled.', 'default' => 'Entire Collection'),
-							array('property' => 'availabilityToggleLabelLocal',                'type' => 'text',     'label' => 'Local Collection Toggle Label', 'description' => 'The label to show when viewing the local collection i.e. Library Name / Local Collection.  Leave blank to hide the button.', 'default' => '{display name}'),
-							array('property' => 'availabilityToggleLabelAvailable',            'type' => 'text',     'label' => 'Available Toggle Label', 'description' => 'The label to show when viewing available items i.e. Available Now / Available Locally / Available Here.', 'default' => 'Available Now'),
-							array('property' => 'availabilityToggleLabelAvailableOnline',      'type' => 'text',     'label' => 'Available Online Toggle Label', 'description' => 'The label to show when viewing available items i.e. Available Online.', 'default' => 'Available Online'),
-							array('property' => 'baseAvailabilityToggleOnLocalHoldingsOnly',   'type' => 'checkbox', 'label' => 'Base Availability Toggle on Local Holdings Only', 'description'=>'Turn on to use local materials only in availability toggle.', 'hideInLists' => true, 'default'=>false, 'isIndexingSetting' => true),
-							array('property' => 'includeOnlineMaterialsInAvailableToggle',     'type' => 'checkbox', 'label' => 'Include Online Materials in Available Toggle', 'description'=>'Turn on to include online materials in both the Available Now and Available Online Toggles.', 'hideInLists' => true, 'default'=>false, 'isIndexingSetting' => true),
-							array('property' => 'facetLabel',                                  'type' => 'text',     'label' => 'Facet Label', 'description'=>'The label of the facet that identifies this location.', 'hideInLists' => true, 'size'=>'40', 'isIndexingSetting' => true),
-							array('property' => 'includeAllLibraryBranchesInFacets',           'type' => 'checkbox', 'label' => 'Include All Library Branches In Facets', 'description'=>'Turn on to include all branches of the library within facets (ownership and availability).', 'hideInLists' => true, 'default'=>true, 'isIndexingSetting' => true),
-							array('property' => 'additionalLocationsToShowAvailabilityFor',    'type' => 'text',     'label' => 'Additional Locations to Include in Available At Facet', 'description'=>'A list of library codes that you would like included in the available at facet separated by pipes |.', 'size'=>'20', 'hideInLists' => true, 'isIndexingSetting' => true),
-							array('property' => 'includeAllRecordsInShelvingFacets',           'type' => 'checkbox', 'label' => 'Include All Records In Shelving Facets', 'description'=>'Turn on to include all records (owned and included) in shelving related facets (detailed location, collection).', 'hideInLists' => true, 'default'=>false, 'isIndexingSetting' => true),
-							array('property' => 'includeAllRecordsInDateAddedFacets',          'type' => 'checkbox', 'label' => 'Include All Records In Date Added Facets', 'description'=>'Turn on to include all records (owned and included) in date added facets.', 'hideInLists' => true, 'default'=>false, 'isIndexingSetting' => true),
-							array('property' => 'includeOnOrderRecordsInDateAddedFacetValues', 'type' => 'checkbox', 'label' => 'Include On Order Records In All Date Added Facet Values',  'description' => 'Use On Order records (date added value (tomorrow)) in calculations for all date added facet values. (eg. Added in the last day, week, etc.)', 'hideInLists' => true, 'default'=>true, 'isIndexingSetting' => true),
-							'facets' => array(
-								'property'      => 'facets',
-								'type'          => 'oneToMany',
-								'label'         => 'Facets',
-								'description'   => 'A list of facets to display in search results',
-								'keyThis'       => 'locationId',
-								'keyOther'      => 'locationId',
-								'subObjectType' => 'LocationFacetSetting',
-								'structure'     => $facetSettingStructure,
-								'sortable'      => true,
-								'storeDb'       => true,
-								'allowEdit'     => true,
-								'canEdit'       => true,
-                                'additionalOneToManyActions' => array(
-                                    array(
-                                        'text' => 'Copy Facets Settings from Location',
-                                        'onclick' => 'Pika.Admin.copyFacetsSettings($id)',
-                                    ),
-                                    array(
-                                      'text' => 'Reset Facets to Default',
-                                      'onclick' => 'Pika.Admin.resetFacetsToDefault($id)',
-                                    ),
-                                ),
-                            ),
+			'searchingSection'  => [
+				'property'   => 'searchingSection', 'type' => 'section', 'label' => 'Searching', 'hideInLists' => true,
+				'helpLink'   => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
+				'properties' => [
+					['property' => 'restrictSearchByLocation', 'type' => 'checkbox', 'label' => 'Restrict Search By Location', 'description' => 'Whether or not search results should only include titles from this location', 'hideInLists' => true, 'default' => false],
+					['property' => 'publicListsToInclude', 'type' => 'enum', 'values' => [0 => 'No Lists', '1' => 'Lists from this library', '4' => 'Lists from library list publishers Only', '2' => 'Lists from this location', '5' => 'Lists from list publishers at this location Only', '6' => 'Lists from all list publishers', '3' => 'All Lists'], 'label' => 'Public Lists To Include', 'description' => 'Which lists should be included in this scope', 'isIndexingSetting' => true],
+					['property' => 'boostByLocation', 'type' => 'checkbox', 'label' => 'Boost By Location', 'description' => 'Whether or not boosting of titles owned by this location should be applied', 'hideInLists' => true, 'default' => true],
+					['property' => 'additionalLocalBoostFactor', 'type' => 'integer', 'label' => 'Additional Local Boost Factor', 'description' => 'An additional numeric boost to apply to any locally owned and locally available titles', 'hideInLists' => true, 'default' => 1],
+					['property'   => 'searchBoxSection', 'type' => 'section', 'label' => 'Search Box', 'hideInLists' => true,
+					 'properties' => [
+						 ['property' => 'systemsToRepeatIn', 'type' => 'text', 'label' => 'Other Libraries or Locations To Repeat In', 'description' => 'A list of library codes that you would like to repeat search in separated by pipes |.', 'hideInLists' => true],
+						 ['property' => 'repeatSearchOption', 'type' => 'enum', 'values' => ['none' => 'None', 'librarySystem' => 'Library System', 'marmot' => 'Entire Consortium'], 'label' => 'Repeat Search Options (requires Restrict Search By Location to be ON)', 'description' => 'Where to allow repeating search. Valid options are: none, librarySystem, marmot, all', 'default' => 'marmot'],
+						 ['property' => 'repeatInOnlineCollection', 'type' => 'checkbox', 'label' => 'Repeat In Online Collection', 'description' => 'Turn on to allow repeat search in the Online Collection.', 'hideInLists' => true, 'default' => false],
+						 ['property' => 'repeatInProspector', 'type' => 'checkbox', 'label' => 'Repeat In ' . $innReachEncoreName, 'description' => 'Turn on to allow repeat search in ' . $innReachEncoreName . ' functionality.', 'hideInLists' => true, 'default' => false],
+						 ['property' => 'repeatInWorldCat', 'type' => 'checkbox', 'label' => 'Repeat In WorldCat', 'description' => 'Turn on to allow repeat search in WorldCat functionality.', 'hideInLists' => true, 'default' => false],
+						 ['property' => 'repeatInOverdrive', 'type' => 'checkbox', 'label' => 'Repeat In Overdrive', 'description' => 'Turn on to allow repeat search in Overdrive functionality.', 'hideInLists' => true, 'default' => false],
+					 ],
+					],
+					[
+						'property'   => 'searchFacetsSection', 'type' => 'section', 'label' => 'Search Facets', 'hideInLists' => true,
+						'properties' => [
+							['property' => 'availabilityToggleLabelSuperScope', 'type' => 'text', 'label' => 'SuperScope Toggle Label', 'description' => 'The label to show when viewing super scope i.e. Consortium Name / Entire Collection / Everything.  Does not show if superscope is not enabled.', 'default' => 'Entire Collection'],
+							['property' => 'availabilityToggleLabelLocal', 'type' => 'text', 'label' => 'Local Collection Toggle Label', 'description' => 'The label to show when viewing the local collection i.e. Library Name / Local Collection.  Leave blank to hide the button.', 'default' => '{display name}'],
+							['property' => 'availabilityToggleLabelAvailable', 'type' => 'text', 'label' => 'Available Toggle Label', 'description' => 'The label to show when viewing available items i.e. Available Now / Available Locally / Available Here.', 'default' => 'Available Now'],
+							['property' => 'availabilityToggleLabelAvailableOnline', 'type' => 'text', 'label' => 'Available Online Toggle Label', 'description' => 'The label to show when viewing available items i.e. Available Online.', 'default' => 'Available Online'],
+							['property' => 'baseAvailabilityToggleOnLocalHoldingsOnly', 'type' => 'checkbox', 'label' => 'Base Availability Toggle on Local Holdings Only', 'description' => 'Turn on to use local materials only in availability toggle.', 'hideInLists' => true, 'default' => false, 'isIndexingSetting' => true],
+							['property' => 'includeOnlineMaterialsInAvailableToggle', 'type' => 'checkbox', 'label' => 'Include Online Materials in Available Toggle', 'description' => 'Turn on to include online materials in both the Available Now and Available Online Toggles.', 'hideInLists' => true, 'default' => false, 'isIndexingSetting' => true],
+							['property' => 'facetLabel', 'type' => 'text', 'label' => 'Facet Label', 'description' => 'The label of the facet that identifies this location.', 'hideInLists' => true, 'size' => '40', 'isIndexingSetting' => true],
+							['property' => 'includeAllLibraryBranchesInFacets', 'type' => 'checkbox', 'label' => 'Include All Library Branches In Facets', 'description' => 'Turn on to include all branches of the library within facets (ownership and availability).', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true],
+							['property' => 'additionalLocationsToShowAvailabilityFor', 'type' => 'text', 'label' => 'Additional Locations to Include in Available At Facet', 'description' => 'A list of library codes that you would like included in the available at facet separated by pipes |.', 'size' => '20', 'hideInLists' => true, 'isIndexingSetting' => true],
+							['property' => 'includeAllRecordsInShelvingFacets', 'type' => 'checkbox', 'label' => 'Include All Records In Shelving Facets', 'description' => 'Turn on to include all records (owned and included) in shelving related facets (detailed location, collection).', 'hideInLists' => true, 'default' => false, 'isIndexingSetting' => true],
+							['property' => 'includeAllRecordsInDateAddedFacets', 'type' => 'checkbox', 'label' => 'Include All Records In Date Added Facets', 'description' => 'Turn on to include all records (owned and included) in date added facets.', 'hideInLists' => true, 'default' => false, 'isIndexingSetting' => true],
+							['property' => 'includeOnOrderRecordsInDateAddedFacetValues', 'type' => 'checkbox', 'label' => 'Include On Order Records In All Date Added Facet Values', 'description' => 'Use On Order records (date added value (tomorrow)) in calculations for all date added facet values. (eg. Added in the last day, week, etc.)', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true],
+							'facets' => [
+								'property'                   => 'facets',
+								'type'                       => 'oneToMany',
+								'label'                      => 'Facets',
+								'description'                => 'A list of facets to display in search results',
+								'keyThis'                    => 'locationId',
+								'keyOther'                   => 'locationId',
+								'subObjectType'              => 'LocationFacetSetting',
+								'structure'                  => $facetSettingStructure,
+								'sortable'                   => true,
+								'storeDb'                    => true,
+								'allowEdit'                  => true,
+								'canEdit'                    => true,
+								'additionalOneToManyActions' => [
+									[
+										'text'    => 'Copy Facets Settings from Location',
+										'onclick' => 'Pika.Admin.copyFacetsSettings($id)',
+									],
+									[
+										'text'    => 'Reset Facets to Default',
+										'onclick' => 'Pika.Admin.resetFacetsToDefault($id)',
+									],
+								],
+							],
 
-						),
-					),
-					'combinedResultsSection' => array(
+						],
+					],
+					'combinedResultsSection' => [
 						'property'   => 'combinedResultsSection', 'type' => 'section', 'label' => 'Combined Results', 'hideInLists' => true,
-						'helpLink'   => 'https://docs.google.com/document/d/1dcG12grGAzYlWAl6LWUnr9t-wdqcmMTJVwjLuItRNwk',
-						'properties' => array(
-							'useLibraryCombinedResultsSettings' => array('property' => 'useLibraryCombinedResultsSettings', 'type' => 'checkbox', 'label' => 'Use Library Settings', 'description' => 'Whether or not settings from the library should be used rather than settings from here', 'hideInLists' => true, 'default' => true),
-							'enableCombinedResults'             => array('property' => 'enableCombinedResults', 'type' => 'checkbox', 'label' => 'Enable Combined Results', 'description' => 'Whether or not combined results should be shown ', 'hideInLists' => true, 'default' => false),
-							'combinedResultsLabel'              => array('property' => 'combinedResultsLabel', 'type' => 'text', 'label' => 'Combined Results Label', 'description' => 'The label to use in the search source box when combined results is active.', 'size' => '20', 'hideInLists' => true, 'default' => 'Combined Results'),
-							'defaultToCombinedResults'          => array('property' => 'defaultToCombinedResults', 'type' => 'checkbox', 'label' => 'Default To Combined Results', 'description' => 'Whether or not combined results should be the default search source when active ', 'hideInLists' => true, 'default' => true),
-							'combinedResultSections'            => array(
+						'helpLink'   => 'https://marmot-support.atlassian.net/l/c/tq17UkKT',
+						'properties' => [
+							'useLibraryCombinedResultsSettings' => ['property' => 'useLibraryCombinedResultsSettings', 'type' => 'checkbox', 'label' => 'Use Library Settings', 'description' => 'Whether or not settings from the library should be used rather than settings from here', 'hideInLists' => true, 'default' => true],
+							'enableCombinedResults'             => ['property' => 'enableCombinedResults', 'type' => 'checkbox', 'label' => 'Enable Combined Results', 'description' => 'Whether or not combined results should be shown ', 'hideInLists' => true, 'default' => false],
+							'combinedResultsLabel'              => ['property' => 'combinedResultsLabel', 'type' => 'text', 'label' => 'Combined Results Label', 'description' => 'The label to use in the search source box when combined results is active.', 'size' => '20', 'hideInLists' => true, 'default' => 'Combined Results'],
+							'defaultToCombinedResults'          => ['property' => 'defaultToCombinedResults', 'type' => 'checkbox', 'label' => 'Default To Combined Results', 'description' => 'Whether or not combined results should be the default search source when active ', 'hideInLists' => true, 'default' => true],
+							'combinedResultSections'            => [
 								'property'                   => 'combinedResultSections',
 								'type'                       => 'oneToMany',
 								'label'                      => 'Combined Results Sections',
@@ -311,37 +309,37 @@ class Location extends DB_DataObject {
 								'storeDb'                    => true,
 								'allowEdit'                  => true,
 								'canEdit'                    => false,
-								'additionalOneToManyActions' => array(),
-							),
-						),
-					),
-				),
-			),
+								'additionalOneToManyActions' => [],
+							],
+						],
+					],
+				],
+			],
 
 			// Catalog Enrichment //
-			'enrichmentSection' => array(
+			'enrichmentSection' => [
 				'property' => 'enrichmentSection', 'type' => 'section', 'label' => 'Catalog Enrichment', 'hideInLists' => true,
-				'helpLink' => 'https://docs.google.com/document/d/1fJ2Sc62fTieJlPvaFz4XUoSr8blou_3MfxDGh1luI84',
-				'properties' => array(
-					array('property' => 'showStandardReviews', 'type' => 'checkbox', 'label' => 'Show Standard Reviews', 'description' => 'Whether or not reviews from Content Cafe/Syndetics are displayed on the full record page.', 'hideInLists' => true, 'default' => true),
-					array('property' => 'showGoodReadsReviews', 'type' => 'checkbox', 'label' => 'Show GoodReads Reviews', 'description' => 'Whether or not reviews from GoodReads are displayed on the full record page.', 'hideInLists' => true, 'default' => true),
-					'showFavorites' => array('property' => 'showFavorites', 'type' => 'checkbox', 'label' => 'Enable User Lists', 'description' => 'Whether or not users can maintain favorites lists', 'hideInLists' => true, 'default' => 1),
+				'helpLink' => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk/l/c/5b3zzY8E',
+				'properties' => [
+					['property' => 'showStandardReviews', 'type' => 'checkbox', 'label' => 'Show Standard Reviews', 'description' => 'Whether or not reviews from Content Cafe/Syndetics are displayed on the full record page.', 'hideInLists' => true, 'default' => true],
+					['property' => 'showGoodReadsReviews', 'type' => 'checkbox', 'label' => 'Show GoodReads Reviews', 'description' => 'Whether or not reviews from GoodReads are displayed on the full record page.', 'hideInLists' => true, 'default' => true],
+					'showFavorites' => ['property' => 'showFavorites', 'type' => 'checkbox', 'label' => 'Enable User Lists', 'description' => 'Whether or not users can maintain favorites lists', 'hideInLists' => true, 'default' => 1],
 					//TODO database column rename?
-				),
-			),
+				],
+			],
 
 			// Full Record Display //
-			'fullRecordSection' => array(
+			'fullRecordSection' => [
 				'property' => 'fullRecordSection', 'type' => 'section', 'label' => 'Full Record Display', 'hideInLists' => true,
-				'helpLink' => 'https://docs.google.com/document/d/1ZZsoKW2NOfGMad36BkWeF5ROqH5Wyg5up3eIhki5Lec',
-				'properties' => array(
-//	disabled					'showTextThis'  => array('property'=>'showTextThis', 'type'=>'checkbox', 'label'=>'Show Text This', 'description'=>'Whether or not the Text This link is shown', 'hideInLists' => true, 'default' => 1),
-					'showEmailThis'            => array('property' => 'showEmailThis', 'type' => 'checkbox', 'label' => 'Show Email This', 'description' => 'Whether or not the Email This link is shown', 'hideInLists' => true, 'default' => 1),
-					'showShareOnExternalSites' => array('property' => 'showShareOnExternalSites', 'type' => 'checkbox', 'label' => 'Show Sharing To External Sites', 'description' => 'Whether or not sharing on external sites (Twitter, Facebook, Pinterest, etc. is shown)', 'hideInLists' => true, 'default' => 1),
-					'showComments'             => array('property' => 'showComments', 'type' => 'checkbox', 'label' => 'Enable User Reviews', 'description' => 'Whether or not user reviews are shown (also disables adding user reviews)', 'hideInLists' => true, 'default' => 1),
-					'showStaffView'            => array('property' => 'showStaffView', 'type' => 'checkbox', 'label' => 'Show Staff View', 'description' => 'Whether or not the staff view is displayed in full record view.', 'hideInLists' => true, 'default' => true),
-					'showQRCode'               => array('property' => 'showQRCode', 'type' => 'checkbox', 'label' => 'Show QR Code', 'description' => 'Whether or not the catalog should show a QR Code in full record view', 'hideInLists' => true, 'default' => 1),
-					'moreDetailsOptions'       => array(
+				'helpLink' => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
+				'properties' => [
+//	disabled					'showTextThis'  => ['property' =>'showTextThis', 'type' =>'checkbox', 'label' =>'Show Text This', 'description' =>'Whether or not the Text This link is shown', 'hideInLists' => true, 'default' => 1],
+					'showEmailThis'            => ['property' => 'showEmailThis', 'type' => 'checkbox', 'label' => 'Show Email This', 'description' => 'Whether or not the Email This link is shown', 'hideInLists' => true, 'default' => 1],
+					'showShareOnExternalSites' => ['property' => 'showShareOnExternalSites', 'type' => 'checkbox', 'label' => 'Show Sharing To External Sites', 'description' => 'Whether or not sharing on external sites (Twitter, Facebook, Pinterest, etc. is shown)', 'hideInLists' => true, 'default' => 1],
+					'showComments'             => ['property' => 'showComments', 'type' => 'checkbox', 'label' => 'Enable User Reviews', 'description' => 'Whether or not user reviews are shown (also disables adding user reviews)', 'hideInLists' => true, 'default' => 1],
+					'showStaffView'            => ['property' => 'showStaffView', 'type' => 'checkbox', 'label' => 'Show Staff View', 'description' => 'Whether or not the staff view is displayed in full record view.', 'hideInLists' => true, 'default' => true],
+					'showQRCode'               => ['property' => 'showQRCode', 'type' => 'checkbox', 'label' => 'Show QR Code', 'description' => 'Whether or not the catalog should show a QR Code in full record view', 'hideInLists' => true, 'default' => 1],
+					'moreDetailsOptions'       => [
 						'property'      => 'moreDetailsOptions',
 						'type'          => 'oneToMany',
 						'label'         => 'Full Record Options',
@@ -354,44 +352,45 @@ class Location extends DB_DataObject {
 						'storeDb'       => true,
 						'allowEdit'     => true,
 						'canEdit'       => true,
-                        'additionalOneToManyActions' => array(
-                            array(
-                                'text' => 'Copy Full Record Display from Location',
-                                'onclick' => 'Pika.Admin.copyFullRecordDisplay($id)',
-                            ),
-                            array(
-                              'text' => 'Reset Full Record Display to Default',
-                              'onclick' => 'Pika.Admin.resetMoreDetailsToDefault($id)',
-                            ),
-                        ),
-					),
-				),
-			),
+						'additionalOneToManyActions' => [
+							[
+								'text'    => 'Copy Full Record Display from Location',
+								'onclick' => 'Pika.Admin.copyFullRecordDisplay($id)',
+							],
+							[
+								'text'    => 'Reset Full Record Display to Default',
+								'onclick' => 'Pika.Admin.resetMoreDetailsToDefault($id)',
+							],
+						],
+					],
+				],
+			],
 
 			// Browse Category Section //
-			array(
-				'property'   => 'browseCategorySection', 'type' => 'section', 'label' => 'Browse Categories', 'hideInLists' => true, 'instructions' => $browseCategoryInstructions,
-				'helpLink' => 'https://docs.google.com/document/d/1ZpdQCwa27hw002bjnBQeWGF7YlIrqz0rUV-xwWe6u3k',
-                'properties' => array(
-					'defaultBrowseMode'         => array(
+			'browseCategorySection' => [
+				'property'   => 'browseCategorySection', 'type' => 'section', 'label' => 'Browse Categories', 'hideInLists' => true,
+				'instructions' => 'For more information on how to setup browse categories, see the <a href="https://marmot-support.atlassian.net/l/c/98rtRQZ2">online documentation</a>.',
+				'helpLink' => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
+				'properties' => [
+					'defaultBrowseMode'         => [
 						'property' => 'defaultBrowseMode', 'type' => 'enum', 'label' => 'Default Viewing Mode for Browse Categories', 'description' => 'Sets how browse categories will be displayed when users haven\'t chosen themselves.', 'hideInLists' => true,
-						'values'   => array(
+						'values'   => [
 							''       => null, // empty value option is needed so that if no option is specifically chosen for location, the library setting will be used instead.
 							'covers' => 'Show Covers Only',
 							'grid'   => 'Show as Grid',
-						),
-					),
-					'browseCategoryRatingsMode' => array(
+						],
+					],
+					'browseCategoryRatingsMode' => [
 						'property' => 'browseCategoryRatingsMode', 'type' => 'enum', 'label' => 'Ratings Mode for Browse Categories ("covers" browse mode only)', 'description' => 'Sets how ratings will be displayed and how user ratings will be enabled when a user is viewing a browse category in the "covers" browse mode. (This only applies when User Ratings have been enabled.)',
-						'values'   => array(
+						'values'   => [
 							''      => null, // empty value option is needed so that if no option is specifically chosen for location, the library setting will be used instead.
 							'popup' => 'Show rating stars and enable user rating via pop-up form.',
 							'stars' => 'Show rating stars and enable user ratings by clicking the stars.',
 							'none'  => 'Do not show rating stars.',
-						),
-					),
+						],
+					],
 
-					'browseCategories' => array(
+					'browseCategories' => [
 						'property'      => 'browseCategories',
 						'type'          => 'oneToMany',
 						'label'         => 'Browse Categories',
@@ -404,20 +403,20 @@ class Location extends DB_DataObject {
 						'storeDb'       => true,
 						'allowEdit'     => false,
 						'canEdit'       => false,
-                        'additionalOneToManyActions' => array(
-                            array(
-                                'text' => 'Copy Browse Categories from Location',
-                                'onclick' => 'Pika.Admin.copyBrowseCategories($id)',
-                            ),
-                        ),
-					),
-				),
-			),
+						'additionalOneToManyActions' => [
+							[
+								'text'    => 'Copy Browse Categories from Location',
+								'onclick' => 'Pika.Admin.copyBrowseCategories($id)',
+							],
+						],
+					],
+				],
+			],
 
 			/* OVERDRIVE SECTION */
 			'overdriveSection'  => [
 				'property' => 'overdriveSection', 'type' => 'section', 'label' => 'OverDrive', 'hideInLists' => true,
-				'helpLink' => 'https://docs.google.com/document/d/1HG7duKI4-gbOlgDvMlQrib52LV0BBUhzGD7Q69QLziM',
+				'helpLink' => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
 				'properties' => [
 					'enableOverdriveCollection' => ['property' => 'enableOverdriveCollection', 'type' => 'checkbox', 'label' => 'Enable Overdrive Collection', 'description' => 'Whether or not titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true],
 					'includeOverDriveAdult'     => ['property' => 'includeOverDriveAdult', 'type' => 'checkbox', 'label' => 'Include Adult Titles', 'description' => 'Whether or not adult titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true],
@@ -427,68 +426,69 @@ class Location extends DB_DataObject {
 			],
 
 			/* HOOPLA SECTION */
-			'hooplaSection' => array(
+			'hooplaSection' => [
 				'property'   => 'hooplaSection', 'type' => 'section', 'label' => 'Hoopla', 'hideInLists' => true,
-				'helpLink'   => 'https://docs.google.com/document/d/13uA65V1LXEt7c_ZjpOga0xFoVp-q0pFXtU1a5Jfo_5A',
-				'properties' => array(
-					'hooplaSettings' => array(
-						'property'      => 'hooplaSettings',
-						'type'          => 'oneToMany',
-						'label'         => 'Hoopla Settings',
-						'description'   => 'Configure which Hoopla tiles are in search results',
-						'keyThis'       => 'locationId',
-						'keyOther'      => 'locationId',
-						'subObjectType' => 'LocationHooplaSettings',
-						'structure'     => $hooplaSettingsStructure,
-						'sortable'      => false,
-						'storeDb'       => true,
-						'allowEdit'     => true,
-						'canEdit'       => false,
+				'helpLink'   => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
+				'properties' => [
+					'hooplaSettings' => [
+						'property'                   => 'hooplaSettings',
+						'type'                       => 'oneToMany',
+						'label'                      => 'Hoopla Settings',
+						'description'                => 'Configure which Hoopla tiles are in search results',
+						'keyThis'                    => 'locationId',
+						'keyOther'                   => 'locationId',
+						'subObjectType'              => 'LocationHooplaSettings',
+						'structure'                  => $hooplaSettingsStructure,
+						'sortable'                   => false,
+						'storeDb'                    => true,
+						'allowEdit'                  => true,
+						'canEdit'                    => false,
 						'isIndexingSetting'          => true,
-						'additionalOneToManyActions' => array(
-							array(
+						'additionalOneToManyActions' => [
+							[
 								'text'    => 'Copy Hoopla Settings From Parent Library',
 								'onclick' => 'Pika.Admin.copyLibraryHooplaSettings($id)',
-							),
-							array(
-							    'text'     => 'Copy Hoopla Settings From Location',
-                                'onclick'   => 'Pika.Admin.copyLocationHooplaSettings($id)',
-                            ),
-							array(
+							],
+							[
+								'text'    => 'Copy Hoopla Settings From Location',
+								'onclick' => 'Pika.Admin.copyLocationHooplaSettings($id)',
+							],
+							[
 								'text'    => 'Clear Hoopla Settings',
 								'onclick' => 'Pika.Admin.clearLocationHooplaSettings($id)',
 								'class'   => 'btn-warning',
-							),
+							],
+						],
+					],
+				],
+			],
 
-						),
-					),
-				),
-			),
-
-			array(
-				'property'      => 'hours',
-				'type'          => 'oneToMany',
-				'keyThis'       => 'locationId',
-				'keyOther'      => 'locationId',
-				'subObjectType' => 'LocationHours',
-				'structure'     => $hoursStructure,
-				'label'         => 'Hours',
-				'description'   => 'Library Hours',
-				'sortable'      => false,
-				'storeDb'       => true,
-                'additionalOneToManyActions' => array(
-                  array(
-                    'text' => 'Copy Hours from Location',
-                    'onclick' => 'Pika.Admin.copyLocationHours($id)',
-                  ),
-                ),
-			),
+			[
+				'property'                   => 'hours',
+				'type'                       => 'oneToMany',
+				'keyThis'                    => 'locationId',
+				'keyOther'                   => 'locationId',
+				'subObjectType'              => 'LocationHours',
+				'structure'                  => $hoursStructure,
+				'label'                      => 'Hours',
+				'description'                => 'Library Hours',
+				'helpLink'                   => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
+				'sortable'                   => false,
+				'storeDb'                    => true,
+				'additionalOneToManyActions' => [
+					[
+						'text'    => 'Copy Hours from Location',
+						'onclick' => 'Pika.Admin.copyLocationHours($id)',
+					],
+				],
+			],
 
 			'recordsOwned' => [
 				'property'          => 'recordsOwned',
 				'type'              => 'oneToMany',
 				'label'             => 'Records Owned',
 				'description'       => 'Information about what records are owned by the location',
+				'helpLink'          => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
 				'keyThis'           => 'locationId',
 				'keyOther'          => 'locationId',
 				'subObjectType'     => 'LocationRecordOwned',
@@ -505,6 +505,7 @@ class Location extends DB_DataObject {
 				'type'                       => 'oneToMany',
 				'label'                      => 'Records To Include',
 				'description'                => 'Information about what records to include in this scope',
+				'helpLink'                   => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
 				'keyThis'                    => 'locationId',
 				'keyOther'                   => 'locationId',
 				'subObjectType'              => 'LocationRecordToInclude',
@@ -522,7 +523,7 @@ class Location extends DB_DataObject {
 				],
 			],
 			'includeLibraryRecordsToInclude' => ['property' => 'includeLibraryRecordsToInclude', 'type' => 'checkbox', 'label' => 'Include Library Records To Include', 'description' => 'Whether or not the records to include from the parent library should be included for this location', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true],
-		);
+		];
 
 		if (UserAccount::userHasRoleFromList(['locationManager', 'libraryManager']) && !UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin'])){
 			// restrict permissions for location and library managers, unless they also have higher permissions of library or opac admin

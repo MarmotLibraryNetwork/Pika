@@ -357,7 +357,7 @@ class Admin_Libraries extends ObjectEditor {
 	}
 
 	function getInstructions(){
-		return 'For more information about Library Setting configuration, see the <a href="https://docs.google.com/document/d/1hZIPEX_l2I9TIhpXXQVHPwfC0NxUO3Wuf72hWhC_JCU">online documentation</a>.';
+		return 'For more information about Library Setting configuration, see the <a href="https://marmot-support.atlassian.net/l/c/0d8FVDHL">online documentation</a>.';
 	}
 
 	/**

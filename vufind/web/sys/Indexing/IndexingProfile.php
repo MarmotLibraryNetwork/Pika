@@ -132,28 +132,28 @@ class IndexingProfile extends DB_DataObject{
 		unset($translationMapStructure['indexingProfileId']);
 
 		//Sections that are set open by default allow the javascript form validator to check that required fields are in fact filled in.
-		$structure = array(
-			'id'                         => array('property'=>'id',                           'type'=>'label',  'label'=>'Id', 'description'=>'The unique id within the database'),
-			'name'                       => array('property' => 'name',                       'type' => 'text', 'label' => 'Display Name', 'maxLength' => 50, 'description' => 'The display name for this indexing profile', 'required' => true),
-			'sourceName'                 => array('property' => 'sourceName',                 'type' => 'text', 'label' => 'Source Name', 'maxLength' => 50, 'description' => 'The source name of this indexing profile to use internally. eg. for specifying the record source', 'required' => true
-			                                      , 'serverValidation' => 'validateSourceName'),
-			'recordUrlComponent'         => array('property' => 'recordUrlComponent',         'type' => 'text', 'label' => 'Record URL Component', 'maxLength' => 50, 'description' => 'The Module to use within the URL', 'required' => true, 'default' => 'Record', 'serverValidation' => 'validateRecordUrlComponent'),
+		$structure = [
+			'id'                         => ['property' =>'id', 'type' =>'label', 'label' =>'Id', 'description' =>'The unique id within the database'],
+			'name'                       => ['property' => 'name', 'type' => 'text', 'label' => 'Display Name', 'maxLength' => 50, 'description' => 'The display name for this indexing profile', 'required' => true],
+			'sourceName'                 => ['property'           => 'sourceName', 'type' => 'text', 'label' => 'Source Name', 'maxLength' => 50, 'description' => 'The source name of this indexing profile to use internally. eg. for specifying the record source', 'required' => true
+			                                 , 'serverValidation' => 'validateSourceName'],
+			'recordUrlComponent'         => ['property' => 'recordUrlComponent', 'type' => 'text', 'label' => 'Record URL Component', 'maxLength' => 50, 'description' => 'The Module to use within the URL', 'required' => true, 'default' => 'Record', 'serverValidation' => 'validateRecordUrlComponent'],
 
-			'serverFileSection' => array('property'=>'serverFileSection', 'type' => 'section', 'label' =>'MARC File Settings ', 'hideInLists' => true, 'open' => true,
-			                            'helpLink' => '', 'properties' => array(
+			'serverFileSection' => ['property' =>'serverFileSection', 'type' => 'section', 'label' =>'MARC File Settings ', 'hideInLists' => true, 'open' => true,
+			                        'helpLink' => '', 'properties' => [
 
-			'marcPath'                          => array('property' => 'marcPath', 'type' => 'text', 'label' => 'MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where MARC records can be found', 'required' => true),
-			'filenamesToInclude'                => array('property' => 'filenamesToInclude', 'type' => 'text', 'label' => 'Filenames to Include', 'maxLength' => 250, 'description' => 'A regular expression to determine which files should be grouped and indexed', 'required' => true, 'default' => '.*\.ma?rc'),
-			'marcEncoding'                      => array('property' => 'marcEncoding', 'type' => 'enum', 'label' => 'MARC Encoding', 'values' => array('MARC8' => 'MARC8', 'UTF8' => 'UTF8', 'UNIMARC' => 'UNIMARC', 'ISO8859_1' => 'ISO8859_1', 'BESTGUESS' => 'BESTGUESS'), 'default' => 'MARC8'),
-			'groupUnchangedFiles'               => array('property' => 'groupUnchangedFiles', 'type' => 'checkbox', 'label' => 'Group unchanged files', 'description' => 'Whether or not files that have not changed since the last time grouping has run will be processed.', 'default' => true),
-			'individualMARCFileSettingsSection' => array(
+					'marcPath'                          => ['property' => 'marcPath', 'type' => 'text', 'label' => 'MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where MARC records can be found', 'required' => true],
+					'filenamesToInclude'                => ['property' => 'filenamesToInclude', 'type' => 'text', 'label' => 'Filenames to Include', 'maxLength' => 250, 'description' => 'A regular expression to determine which files should be grouped and indexed', 'required' => true, 'default' => '.*\.ma?rc'],
+					'marcEncoding'                      => ['property' => 'marcEncoding', 'type' => 'enum', 'label' => 'MARC Encoding', 'values' => ['MARC8' => 'MARC8', 'UTF8' => 'UTF8', 'UNIMARC' => 'UNIMARC', 'ISO8859_1' => 'ISO8859_1', 'BESTGUESS' => 'BESTGUESS'], 'default' => 'MARC8'],
+					'groupUnchangedFiles'               => ['property' => 'groupUnchangedFiles', 'type' => 'checkbox', 'label' => 'Group unchanged files', 'description' => 'Whether or not files that have not changed since the last time grouping has run will be processed.', 'default' => true],
+					'individualMARCFileSettingsSection' => [
 				'property' => 'individualMARCFileSettingsSection', 'type' => 'section', 'label' => 'Individual Record Files', 'hideInLists' => true, 'open' => true,
-				'helpLink' => '', 'properties' => array(
-					'individualMarcPath'                => array('property' => 'individualMarcPath', 'type' => 'text', 'label' => 'Individual MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where individual MARC records can be found', 'required' => true),
-					'numCharsToCreateFolderFrom'        => array('property' => 'numCharsToCreateFolderFrom', 'type' => 'integer', 'label' => 'Number of characters to create folder from', 'maxLength' => 50, 'description' => 'The number of characters to use when building a sub folder for individual marc records', 'required' => false, 'default' => '4'),
-					'createFolderFromLeadingCharacters' => array('property'=>'createFolderFromLeadingCharacters', 'type'=>'checkbox', 'label'=>'Create Folder From Leading Characters', 'description'=>'Whether we should look at the start or end of the folder when .', 'hideInLists' => true, 'default' => 0),
-						)),
-				)),
+				'helpLink' => '', 'properties' => [
+							'individualMarcPath'                => ['property' => 'individualMarcPath', 'type' => 'text', 'label' => 'Individual MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where individual MARC records can be found', 'required' => true],
+							'numCharsToCreateFolderFrom'        => ['property' => 'numCharsToCreateFolderFrom', 'type' => 'integer', 'label' => 'Number of characters to create folder from', 'maxLength' => 50, 'description' => 'The number of characters to use when building a sub folder for individual marc records', 'required' => false, 'default' => '4'],
+							'createFolderFromLeadingCharacters' => ['property' =>'createFolderFromLeadingCharacters', 'type' =>'checkbox', 'label' =>'Create Folder From Leading Characters', 'description' =>'Whether we should look at the start or end of the folder when .', 'hideInLists' => true, 'default' => 0],
+						]],
+				]],
 
 			'DriverSection' => ['property' => 'DriverSection', 'type' => 'section', 'label' => 'Pika Driver Settings', 'hideInLists' => true, 'open' => true,
 			                    'helpLink' => '', 'properties' => [
@@ -219,15 +219,15 @@ class IndexingProfile extends DB_DataObject{
 				]],
 
 
-			'bibRecordSection' => array('property'=>'bibRecordSection', 'type' => 'section', 'label' =>'Record Settings', 'hideInLists' => true, 'open' => true,
-			                            'helpLink' => '', 'properties' => array(
-					'recordNumberTag'            => array('property' => 'recordNumberTag',            'type' => 'text', 'label' => 'Record Number Tag', 'maxLength' => 3, 'description' => 'The MARC tag where the record number can be found', 'required' => true),
-					'recordNumberField'          => array('property' => 'recordNumberField',          'type' => 'text', 'label' => 'Record Number Field', 'maxLength' => 1, 'description' => 'The subfield of the record number tag where the record number can be found', 'required' => true, 'default' => 'a'),
-					'recordNumberPrefix'         => array('property' => 'recordNumberPrefix',         'type' => 'text', 'label' => 'Record Number Prefix', 'maxLength' => 10, 'description' => 'A prefix to identify the bib record number if multiple MARC tags exist'),
-					'sierraRecordFixedFieldsTag' => array('property' => 'sierraRecordFixedFieldsTag', 'type' => 'text', 'label' => 'Sierra Record/Bib level Fixed Fields Tag (ils profile only)', 'maxLength' => 3, 'description' => 'The MARC tag where the Sierra fixed fields can be found, specifically the bcode3'),
-					'materialTypeField'          => array('property' => 'materialTypeField',          'type' => 'text', 'label' => 'Material Type Sub Field (ils profile only)', 'maxLength' => 1, 'description' => 'Bib level Subfield for Material Type (depends on setting the Sierra Record/Bib level Fixed Fields Tag)', 'hideInLists' => true),
-					'sierraLanguageFixedField'   => array('property' => 'sierraLanguageFixedField',   'type' => 'text', 'label' => 'Sierra Language Fixed Field (ils profile only)', 'maxLength' => 1, 'description' => 'Bib level Subfield for Language (depends on setting the Sierra Record/Bib level Fixed Fields Tag)', 'hideInLists' => true),
-				)),
+			'bibRecordSection' => ['property' =>'bibRecordSection', 'type' => 'section', 'label' =>'Record Settings', 'hideInLists' => true, 'open' => true,
+			                       'helpLink' => '', 'properties' => [
+					'recordNumberTag'            => ['property' => 'recordNumberTag', 'type' => 'text', 'label' => 'Record Number Tag', 'maxLength' => 3, 'description' => 'The MARC tag where the record number can be found', 'required' => true],
+					'recordNumberField'          => ['property' => 'recordNumberField', 'type' => 'text', 'label' => 'Record Number Field', 'maxLength' => 1, 'description' => 'The subfield of the record number tag where the record number can be found', 'required' => true, 'default' => 'a'],
+					'recordNumberPrefix'         => ['property' => 'recordNumberPrefix', 'type' => 'text', 'label' => 'Record Number Prefix', 'maxLength' => 10, 'description' => 'A prefix to identify the bib record number if multiple MARC tags exist'],
+					'sierraRecordFixedFieldsTag' => ['property' => 'sierraRecordFixedFieldsTag', 'type' => 'text', 'label' => 'Sierra Record/Bib level Fixed Fields Tag (ils profile only)', 'maxLength' => 3, 'description' => 'The MARC tag where the Sierra fixed fields can be found, specifically the bcode3'],
+					'materialTypeField'          => ['property' => 'materialTypeField', 'type' => 'text', 'label' => 'Material Type Sub Field (ils profile only)', 'maxLength' => 1, 'description' => 'Bib level Subfield for Material Type (depends on setting the Sierra Record/Bib level Fixed Fields Tag)', 'hideInLists' => true],
+					'sierraLanguageFixedField'   => ['property' => 'sierraLanguageFixedField', 'type' => 'text', 'label' => 'Sierra Language Fixed Field (ils profile only)', 'maxLength' => 1, 'description' => 'Bib level Subfield for Language (depends on setting the Sierra Record/Bib level Fixed Fields Tag)', 'hideInLists' => true],
+				]],
 
 			'itemRecordSection' => ['property' => 'itemRecordSection', 'type' => 'section', 'label' => 'Item Tag Settings (ils profile only)', 'hideInLists' => true,
 			                        'helpLink' => '', 'properties' => [
@@ -330,7 +330,7 @@ class IndexingProfile extends DB_DataObject{
 					'orderCode3'          => ['property' => 'orderCode3', 'type' => 'text', 'label' => 'Order Code3 Subfield', 'maxLength' => 1, 'description' => 'Code 3 for the order record'],
 				]],
 
-			'translationMaps' => array(
+			'translationMaps' => [
 				'property'      => 'translationMaps',
 				'type'          => 'oneToMany',
 				'label'         => 'Translation Maps',
@@ -343,9 +343,9 @@ class IndexingProfile extends DB_DataObject{
 				'storeDb'       => true,
 				'allowEdit'     => true,
 				'canEdit'       => true,
-			),
+			],
 
-			'timeToReshelve' => array(
+			'timeToReshelve' => [
 				'property'      => 'timeToReshelve',
 				'type'          => 'oneToMany',
 				'label'         => 'Time to Reshelve',
@@ -358,16 +358,16 @@ class IndexingProfile extends DB_DataObject{
 				'storeDb'       => true,
 				'allowEdit'     => true,
 				'canEdit'       => false,
-			),
+			],
 
-		);
+		];
 
 		if ($configArray['Catalog']['ils'] == 'Sierra'){
 			$sierraMappingStructure = SierraExportFieldMapping::getObjectStructure();
 			unset($sierraMappingStructure['indexingProfileId']);
 			$structure['sierraFieldMappings'] = [
 				'property'      => 'sierraFieldMappings',
-				'helpLink'      => 'https://docs.google.com/document/d/1keYVtc0QXugyQhHnjGTmJSetfPZJdR4jHxw27AncZ4I/',
+				'helpLink'      => 'https://marmot-support.atlassian.net/l/c/ETNK5ZJ4',
 				'type'          => 'oneToMany',
 				'label'         => 'Sierra API Item Field Mappings (Sierra Systems only)',
 				'description'   => 'For mapping Item tags from the Sierra API to the equivalent values in the indexing profile (and Sierra\'s export profile).',

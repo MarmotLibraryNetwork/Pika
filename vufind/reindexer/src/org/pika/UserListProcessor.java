@@ -75,16 +75,19 @@ public class UserListProcessor {
 			PreparedStatement listsStmt;
 			final String      sql = "SELECT user_list.id AS id, deleted, public, title, description, user_list.created, dateUpdated, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user ON user_id = user.id ";
 			if (fullReindex || userListsOnly) {
-				//Delete all lists from the index
-				logger.info("Deleting all lists from index");
-				try {
-					UpdateResponse response = updateServer.deleteByQuery("recordtype:list");
-					if (logger.isInfoEnabled()){
-						//TODO: getResponse is an object
-						logger.info(response.getResponse());
+				if (userListsOnly) {
+					// Delete all lists from the index
+					// (During a full re-index all documents are deleted, so lists should already be gone.)
+					logger.info("Deleting all lists from index");
+					try {
+						UpdateResponse response = updateServer.deleteByQuery("recordtype:list");
+						if (logger.isInfoEnabled()){
+							//TODO: getResponse is an object
+							logger.info(response.getResponse());
+						}
+					} catch (SolrServerException | IOException e) {
+						logger.warn("Error deleting lists from index", e);
 					}
-				} catch (SolrServerException | IOException e) {
-					logger.warn("Error deleting lists from index", e);
 				}
 				//Get a list of all public lists
 				listsStmt = pikaConn.prepareStatement(sql + "WHERE public = 1 AND deleted = 0");
@@ -152,15 +155,17 @@ public class UserListProcessor {
 		UserListSolr userListSolr = new UserListSolr(indexer);
 		long         listId       = allPublicListsRS.getLong("id");
 
-		int  deleted  = allPublicListsRS.getInt("deleted");
-		int  isPublic = allPublicListsRS.getInt("public");
 		long userId   = allPublicListsRS.getLong("user_id");
-		if (deleted == 1 || isPublic == 0) {
-			// Remove list from search when deleted or made private
-			try {
-				updateServer.deleteByQuery("id:list" + listId);
-			} catch (SolrServerException | IOException e) {
-				logger.error("Failed to delete User List " + listId, e);
+		if (!fullReindex /* && !userListsOnly*/) {
+			int deleted  = allPublicListsRS.getInt("deleted");
+			int isPublic = allPublicListsRS.getInt("public");
+			if (deleted == 1 || isPublic == 0) {
+				// Remove list from search when deleted or made private
+				try {
+					updateServer.deleteByQuery("id:list" + listId);
+				} catch (SolrServerException | IOException e) {
+					logger.error("Failed to delete User List " + listId, e);
+				}
 			}
 		} else {
 			// Set all the properties needed to determine the scopes the user list belongs to
@@ -184,6 +189,7 @@ public class UserListProcessor {
 				}
 				userListSolr.setOwningLocation("");
 			}
+			userListSolr.setCreated(allPublicListsRS.getLong("created"));
 
 
 			// If the list does not appear in any scope, skip further processing
@@ -230,7 +236,8 @@ public class UserListProcessor {
 //						groupedWorkIds.append(groupedWorkId).append(',');
 
 							SolrQuery query = new SolrQuery();
-							query.setQuery("id:" + groupedWorkId + " AND recordtype:grouped_work");
+							query.setQuery("id:" + groupedWorkId);
+//							query.setQuery("id:" + groupedWorkId + " AND recordtype:grouped_work");
 							query.setFields("title", "author");
 
 							try {

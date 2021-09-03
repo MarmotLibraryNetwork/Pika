@@ -156,7 +156,7 @@
 										<div class="col-xs-4"><label for="phone">{translate text='Primary Phone Number'}:</label></div>
 										<div class="col-xs-8">
 											{if $edit && $canUpdateContactInfo && ($ils != 'Horizon')}
-												<input type="tel" name="phone" id="phone" value="{$profile->phone|replace:'### TEXT ONLY':''|replace:'TEXT ONLY':''|escape}" size="50" maxlength="75" class="form-control">
+												<input type="tel" name="phone" id="phone" value="{$profile->phone|escape}" size="50" maxlength="75" class="form-control">
 											{else}
 												{$profile->phone|escape}
 											{/if}
@@ -465,7 +465,7 @@
 									</div>
 									<div class="col-tn-12">
 										<div class="alert alert-info">
-											For more information about what each role can do, see the <a href="https://docs.google.com/spreadsheets/d/1sPR8mIidkg00B2XzgiEq1MMDO3Y2ZOZNH-y_xonN-zA">online documentation</a>.
+											For more information about what each role can do, see the <a href="https://marmot-support.atlassian.net/l/c/zJP1kcDf">online documentation</a>.
 										</div>
 									</div>
 								</div>

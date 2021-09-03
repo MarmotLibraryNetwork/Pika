@@ -1,7 +1,7 @@
 <form action="/MyAccount/MyLists" id="myListFormHead">
     <h3 id="listsTitle">My Lists</h3>
 	<div class="alert alert-info">
-		For more information about User Lists, see the <a href="https://docs.google.com/document/d/1gHb1E1Foyb_ntwlK9R3-IY8HhPEkKsHGmHQJBPVm2QA">online documentation</a>.
+		For more information about User Lists, see the <a href="https://marmot-support.atlassian.net/l/c/NVtFyBaG">online documentation</a>.
 	</div>
     <div id="listTopButtons" class="btn-toolbar">
         <div class="btn-group">

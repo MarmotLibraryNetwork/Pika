@@ -81,7 +81,7 @@ class Admin_PreferredGroupingAuthors extends ObjectEditor {
 	}
 
 	function getInstructions(){
-		return '<p>For more information about preferred grouping authors, see the <a href="https://docs.google.com/document/d/17OBmsE3ak-FUa5dVzcOtnJAeWypWa--aYzYZsrdliXk">online documentation</a>.</p><br>' .
+		return '<p>For more information about preferred grouping authors, see the <a href="https://marmot-support.atlassian.net/l/c/9jTUbB1P">online documentation</a>.</p><br>' .
 		  '<blockquote class="alert-warning">Note: The <em>Preferred Grouping Author</em> will replace <strong>every</strong> instance of the <em>Source Grouping Author</em> for <u><strong>any</strong> grouped work</u> with that Grouping Author, not just for a single grouped work of interest.</blockquote>';
 	}
 

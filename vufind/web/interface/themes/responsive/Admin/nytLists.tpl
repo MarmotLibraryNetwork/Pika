@@ -1,7 +1,7 @@
 {strip}
 	<h1>Pika Lists based on the New York Times API</h1>
 	<div class="alert alert-info">
-		For more information on using the New York Times lists, see the <a href="https://docs.google.com/document/d/12i9DJIW79ccRX2ijPeCMalKrCd_iWP_rIWtpoHDxDq4/edit">online documentation</a>.
+		For more information on using the New York Times lists, see the <a href="https://marmot-support.atlassian.net/l/c/QiEJFkxb">online documentation</a>.
 	</div>
 
 

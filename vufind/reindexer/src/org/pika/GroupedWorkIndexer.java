@@ -688,23 +688,35 @@ public class GroupedWorkIndexer {
 	}
 
 	private void clearIndex() {
-		//Check to see if we should clear the existing index
-		if (logger.isInfoEnabled()) {
-			logger.info("Clearing existing grouped work documents from index");
-		}
+		logger.info("Clearing all documents from index");
 		try {
-			updateServer.deleteByQuery("recordtype:grouped_work");
-			//With this commit, we get errors in the log "Previous SolrRequestInfo was not closed!"
-			//Allow auto commit functionality to handle this
-			//updateServer.commit(true, false, false);
+			updateServer.deleteByQuery("*:*", 500);
+			Thread.sleep(10000);
+			//TODO: actually check the index folder that index files have been deleted. (There should be only 2 files left in the index folder)
+
+			// https://solr.apache.org/guide/8_7/reindexing.html#delete-all-documents
+			//
+			// It’s important to verify that all documents have been deleted, as that ensures the Lucene index
+			// segments have been deleted as well.
+			//
+			//To verify that there are no segments in your index, look in the data directory and confirm it is
+			// empty. Since the data directory can be customized, see the section Specifying a Location for
+			// Index Data with the dataDir Parameter for where to look to find the index files.
+			//
+			//Note you will need to verify the indexes have been removed in every shard and every replica on
+			// every node of a cluster. It is not sufficient to only query for the number of documents
+			// because you may have no documents but still have index segments.
+			//
+			//Once the indexes have been cleared, you can start reindexing by re-running the original index process.
+
 		} catch (Exception e) {
-			logger.error("Error deleting from index", e);
+			logger.error("Error clearing all documents from index", e);
 		}
 	}
 
 	void deleteRecord(String id) {
 		if (logger.isInfoEnabled()) {
-			logger.info("Clearing existing work from index");
+			logger.info("Clearing existing work from index " + id);
 		}
 		try {
 			updateServer.deleteById(id);
@@ -726,8 +738,8 @@ public class GroupedWorkIndexer {
 			SiteMap siteMap = new SiteMap(logger, pikaConn, Integer.parseInt(maxUniqueTitlesDefault), Integer.parseInt(maxPopTitlesDefault));
 			siteMap.createSiteMaps(url, dataDir, siteMapsByScope, uniqueGroupedWorks);
 
-		} catch (IOException ex) {
-			logger.error("Error creating site map");
+		} catch (IOException e) {
+			logger.error("Error creating site map", e);
 		}
 	}
 
@@ -962,18 +974,20 @@ public class GroupedWorkIndexer {
 				processGroupedWork(id, permanentId, grouping_category, siteMapsByScope, uniqueGroupedWorks);
 
 				numWorksProcessed++;
-				if (fullReindex && (numWorksProcessed % 5000 == 0)){
-					//Testing shows that regular commits do seem to improve performance.
-					//However, we can't do it too often or we get errors with too many searchers warming.
-					//This is happening now with the auto commit settings in solrconfig.xml
+				if (numWorksProcessed % 500 == 0){
+					GroupedReindexMain.updateNumWorksProcessed(numWorksProcessed);
+					if (fullReindex && (numWorksProcessed % 10000 == 0)){
+						//Testing shows that regular commits do seem to improve performance.
+						//However, we can't do it too often or we get errors with too many searchers warming.
+						//This is happening now with the auto commit settings in solrconfig.xml
 					/*try {
 						logger.info("Doing a regular commit during full indexing");
 						updateServer.commit(false, false, true);
 					}catch (Exception e){
 						logger.warn("Error committing changes", e);
 					}*/
-					GroupedReindexMain.addNoteToReindexLog("Processed " + numWorksProcessed + " grouped works processed.");
-					GroupedReindexMain.updateNumWorksProcessed(numWorksProcessed);
+						GroupedReindexMain.addNoteToReindexLog(" " + numWorksProcessed + " grouped works processed.");
+					}
 				}
 				if (maxWorksToProcess != -1 && numWorksProcessed >= maxWorksToProcess){
 					logger.warn("Stopping processing now because we've reached the max works to process.");
@@ -1030,18 +1044,20 @@ public class GroupedWorkIndexer {
 				processGroupedWork(id, permanentId, grouping_category);
 
 				numWorksProcessed++;
-				if ((numWorksProcessed % 5000 == 0)){
-					//Testing shows that regular commits do seem to improve performance.
-					//However, we can't do it too often or we get errors with too many searchers warming.
-					//This is happening now with the auto commit settings in solrconfig.xml
+				if (numWorksProcessed % 500 == 0) {
+					GroupedReindexMain.updateNumWorksProcessed(numWorksProcessed);
+					if (numWorksProcessed % 10000 == 0) {
+						//Testing shows that regular commits do seem to improve performance.
+						//However, we can't do it too often or we get errors with too many searchers warming.
+						//This is happening now with the auto commit settings in solrconfig.xml
 					/*try {
 						logger.info("Doing a regular commit during full indexing");
 						updateServer.commit(false, false, true);
 					}catch (Exception e){
 						logger.warn("Error committing changes", e);
 					}*/
-					GroupedReindexMain.addNoteToReindexLog("Processed " + numWorksProcessed + " grouped works processed.");
-					GroupedReindexMain.updateNumWorksProcessed(numWorksProcessed);
+						GroupedReindexMain.addNoteToReindexLog(" " + numWorksProcessed + " grouped works processed.");
+					}
 				}
 				if (lastUpdated == null){
 					setLastUpdatedTime.setLong(1, indexStartTime - 1); //Set just before the index started so we don't index multiple times

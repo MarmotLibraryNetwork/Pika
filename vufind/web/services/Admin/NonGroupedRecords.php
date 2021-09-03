@@ -59,7 +59,7 @@ class Admin_NonGroupedRecords extends ObjectEditor {
 	}
 
 	function getListInstructions(){
-		return 'For more information on how to ungroup works, see the <a href="https://docs.google.com/document/d/1fTjDQ04gctT6GpTmKU8uGZyZRgLW6z09eE4DwNsOxOw">online documentation</a>.';
+		return 'For more information on how to ungroup works, see the <a href="https://marmot-support.atlassian.net/l/c/bcJcpX05">online documentation</a>.';
 	}
 
 

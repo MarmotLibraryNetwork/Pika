@@ -285,7 +285,7 @@
 				pageLength: 100,
 				"columnDefs": [{"orderDataType": "dom-numeric", "type": "numeric", "targets": 0}],
 					{/literal}
-				{if $objectType == "MergedGroupedWork"}
+				{if $objectType == "MergedGroupedWork" || $objectType == "NonGroupedRecord"}
 					{* TODO: CJ this sort column is actually mysql date time string. Initial glances this looks to be sorting okay
 					 but there could be a better sorting method to pick out. - pascal *}
 					{literal}
