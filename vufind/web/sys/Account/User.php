@@ -1790,8 +1790,12 @@ private $staffPtypes = null;
 			return "New PINs do not match. Please try again.";
 		}
 		$pinLength = strlen($newPin);
-		if ($pinLength < $pinMinimumLength || $pinLength > $pinMaximumLength) {
-			return "PIN must be between " . $pinMinimumLength . " and " . $pinMaximumLength . " characters.";
+		if ($pinLength < $pinMinimumLength OR $pinLength > $pinMaximumLength) {
+			if ($pinMinimumLength == $pinMaximumLength){
+				return "New PIN must be exactly " . $pinMinimumLength . " characters.";
+			}else{
+				return "New PIN must be " . $pinMinimumLength . " to " . $pinMaximumLength . " characters.";
+			}
 		}
 		$result = $this->getCatalogDriver()->updatePin($this, $oldPin, $newPin, $confirmNewPin);
 		$this->clearCache();

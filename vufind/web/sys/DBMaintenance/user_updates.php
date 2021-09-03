@@ -210,5 +210,14 @@ function getUserUpdates(){
 			],
 		],
 
+		'cat_password_update_2021.03' => [
+			'title'           => 'Update cat password to 64 chars',
+			'description'     => 'Update cat password to 64 chars',
+			'continueOnError' => true,
+			'sql'             => [
+				'ALTER TABLE user CHANGE COLUMN `cat_password` `cat_password` VARCHAR(64) NULL DEFAULT NULL ',
+			],
+		],
+
 	);
 }
