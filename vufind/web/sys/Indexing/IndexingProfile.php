@@ -139,13 +139,13 @@ class IndexingProfile extends DB_DataObject{
 			                                 , 'serverValidation' => 'validateSourceName'],
 			'recordUrlComponent'         => ['property' => 'recordUrlComponent', 'type' => 'text', 'label' => 'Record URL Component', 'maxLength' => 50, 'description' => 'The Module to use within the URL', 'required' => true, 'default' => 'Record', 'serverValidation' => 'validateRecordUrlComponent'],
 
+			'groupUnchangedFiles'               => ['property' => 'groupUnchangedFiles', 'type' => 'checkbox', 'label' => 'Group Unchanged Files', 'description' => 'Whether or not files that have not changed since the last time grouping has run will be regrouped.', 'default' => true],
 			'serverFileSection' => ['property' =>'serverFileSection', 'type' => 'section', 'label' =>'MARC File Settings ', 'hideInLists' => true, 'open' => true,
 			                        'helpLink' => '', 'properties' => [
 
 					'marcPath'                          => ['property' => 'marcPath', 'type' => 'text', 'label' => 'MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where MARC records can be found', 'required' => true],
 					'filenamesToInclude'                => ['property' => 'filenamesToInclude', 'type' => 'text', 'label' => 'Filenames to Include', 'maxLength' => 250, 'description' => 'A regular expression to determine which files should be grouped and indexed', 'required' => true, 'default' => '.*\.ma?rc'],
 					'marcEncoding'                      => ['property' => 'marcEncoding', 'type' => 'enum', 'label' => 'MARC Encoding', 'values' => ['MARC8' => 'MARC8', 'UTF8' => 'UTF8', 'UNIMARC' => 'UNIMARC', 'ISO8859_1' => 'ISO8859_1', 'BESTGUESS' => 'BESTGUESS'], 'default' => 'MARC8'],
-					'groupUnchangedFiles'               => ['property' => 'groupUnchangedFiles', 'type' => 'checkbox', 'label' => 'Group unchanged files', 'description' => 'Whether or not files that have not changed since the last time grouping has run will be processed.', 'default' => true],
 					'individualMARCFileSettingsSection' => [
 				'property' => 'individualMARCFileSettingsSection', 'type' => 'section', 'label' => 'Individual Record Files', 'hideInLists' => true, 'open' => true,
 				'helpLink' => '', 'properties' => [
