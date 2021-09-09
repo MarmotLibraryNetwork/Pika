@@ -439,27 +439,6 @@ class GroupedWorkDriver extends RecordInterface {
 		return 'RecordDrivers/GroupedWork/suggestionEntry.tpl';
 	}
 
-	public function getScrollerTitle($index, $scrollerName){
-		global $interface;
-		$interface->assign('index', $index);
-		$interface->assign('scrollerName', $scrollerName);
-		$interface->assign('id', $this->getPermanentId());
-		$interface->assign('title', $this->getTitle());
-		$interface->assign('linkUrl', $this->getLinkUrl());
-		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
-		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-
-		$interface->assign('recordDriver', $this);
-
-		return array(
-			'id'             => $this->getPermanentId(),
-			'image'          => $this->getBookcoverUrl('medium'),
-			'title'          => $this->getTitle(),
-			'author'         => $this->getPrimaryAuthor(),
-			'formattedTitle' => $interface->fetch('RecordDrivers/GroupedWork/scroller-title.tpl')
-		);
-	}
-
 	/**
 	 * Get an XML RDF representation of the data in this record.
 	 *

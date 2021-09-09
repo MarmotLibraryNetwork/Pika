@@ -215,7 +215,15 @@ class GroupedWork_AJAX extends AJAXHandler {
 			$similarTitles = [];
 			foreach ($similar['response']['docs'] as $key => $similarTitle){
 				$similarTitleDriver = new GroupedWorkDriver($similarTitle);
-				$similarTitles[]    = $similarTitleDriver->getScrollerTitle($key, 'MoreLikeThis');
+				$record = [
+					'id'             => $similarTitleDriver->getPermanentId(),
+					'mediumCover'    => $similarTitleDriver->getBookcoverUrl('medium'),
+					'title'          => $similarTitleDriver->getTitle(),
+					'author'         => $similarTitleDriver->getPrimaryAuthor(),
+					'fullRecordLink' => $similarTitleDriver->getLinkUrl()
+				];
+
+				$similarTitles[]    = $this->getScrollerTitle($record, $key, 'MoreLikeThis');
 			}
 			$similarTitlesInfo                 = ['titles' => $similarTitles, 'currentIndex' => 0];
 			$enrichmentResult['similarTitles'] = $similarTitlesInfo;
@@ -244,10 +252,15 @@ class GroupedWork_AJAX extends AJAXHandler {
 		return $enrichmentResult;
 	}
 
-	function getScrollerTitle($record, $index, $scrollerName){
-		$cover = $record['mediumCover'];
+	/**
+	 * @param $record array
+	 * @param $titleIndexNumber
+	 * @param $scrollerName string
+	 * @return array
+	 */
+	function getScrollerTitle($record, $titleIndexNumber, $scrollerName){
 		$title = preg_replace("/\\s*(\\/|:)\\s*$/", "", $record['title']);
-		if (isset($record['series']) && $record['series'] != null){
+		if (!empty($record['series'])){
 			if (is_array($record['series'])){
 				foreach ($record['series'] as $series){
 					if (strcasecmp($series, 'none') !== 0){
@@ -259,58 +272,30 @@ class GroupedWork_AJAX extends AJAXHandler {
 			}else{
 				$series = $record['series'];
 			}
-			if (isset($series)){
-				$title .= ' (' . $series;
-				if (isset($record['volume'])){
-					$title .= ' Volume ' . $record['volume'];
-				}
-				$title .= ')';
+			if (!empty($series)){
+				$title .= ' (' . $series . (isset($record['volume']) ? ' Volume ' . $record['volume'] : '') . ')';
 			}
 		}
-
-		if (isset($record['id'])){
-			global $interface;
-			$interface->assign('index', $index);
-			$interface->assign('scrollerName', $scrollerName);
-			$interface->assign('id', $record['id']);
-			$interface->assign('title', $title);
-			$interface->assign('linkUrl', $record['fullRecordLink']);
-			$interface->assign('bookCoverUrl', $record['mediumCover']);
-			$interface->assign('bookCoverUrlMedium', $record['mediumCover']);
-			$formattedTitle = $interface->fetch('RecordDrivers/GroupedWork/scroller-title.tpl');
-		}else{
-			$originalId     = $_REQUEST['id'];
-			$formattedTitle = "<div id=\"scrollerTitle{$scrollerName}{$index}\" class=\"scrollerTitle\" onclick=\"return Pika.showElementInPopup('$title', '#noResults{$index}')\">" .
-				"<img src=\"{$cover}\" class=\"scrollerTitleCover\" alt=\"{$title} Cover\"/>" .
-				"</div>";
-			$formattedTitle .= "<div id=\"noResults{$index}\" style=\"display:none\">
-					<div class=\"row\">
-						<div class=\"result-label col-md-3\">Author: </div>
-						<div class=\"col-md-9 result-value notranslate\">
-							<a href='/Author/Home?author=\"{$record['author']}\"'>{$record['author']}</a>
-						</div>
-					</div>
-					<div class=\"series row\">
-						<div class=\"result-label col-md-3\">Series: </div>
-						<div class=\"col-md-9 result-value\">
-							<a href=\"/GroupedWork/{$originalId}/Series\">{$series}</a>
-						</div>
-					</div>
-					<div class=\"row related-manifestation\">
-						<div class=\"col-sm-12\">
-							The library does not own any copies of this title.
-						</div>
-					</div>
-				</div>";
+		global $interface;
+		if (!isset($record['id'])){
+			$interface->assign('noResultOriginalId',  $_REQUEST['id']);
+			$interface->assign('series',  $series);
 		}
+		$interface->assign('index', $titleIndexNumber);
+		$interface->assign('scrollerName', $scrollerName);
+		$interface->assign('id', $record['id']);
+		$interface->assign('title', $title);
+		$interface->assign('author', $record['author']);
+		$interface->assign('linkUrl', $record['fullRecordLink']);
+		$interface->assign('bookCoverUrlMedium', $record['mediumCover']);
 
-		return array(
-			'id'             => isset($record['id']) ? $record['id'] : '',
-			'image'          => $cover,
+		return [
+			'id'             => $record['id'] ?? '',
+			'image'          => $record['mediumCover'],
 			'title'          => $title,
-			'author'         => isset($record['author']) ? $record['author'] : '',
-			'formattedTitle' => $formattedTitle,
-		);
+			'author'         => $record['author'] ?? '',
+			'formattedTitle' => $interface->fetch('RecordDrivers/GroupedWork/scroller-title.tpl')
+		];
 	}
 
 	function getGoDeeperData(){
