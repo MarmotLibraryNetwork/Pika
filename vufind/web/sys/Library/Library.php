@@ -747,6 +747,7 @@ class Library extends DB_DataObject {
 					'storeDb'       => true,
 					'allowEdit'     => false,
 					'canEdit'       => false,
+					'directLink'    => true,
 					],
 				]],
 
