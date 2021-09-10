@@ -77,6 +77,7 @@
 			<analyzer type="index">
 				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1"  splitOnNumerics="0" stemEnglishPossessive="1"/>
+				<filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
 				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
 				<!--
 				This filter discards, or stops analysis of, tokens that are on the given stop words list.
@@ -101,6 +102,19 @@
 			<analyzer type="query">
 				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
 				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+				<!-- Do our synonym filtering before word delimiter filters so that we don't create unwanted synonyms
+				 	eg. 'wi-fi' => 'wi', 'fi' => 'wi', 'wisconsin', 'fi'
+				 	See D-4066
+				 -->
+				<!-- https://solr.apache.org/guide/8_7/filter-descriptions.html#synonym-graph-filter
+					If you use this filter during indexing, you must follow it with a Flatten Graph Filter to squash
+					 tokens on top of one another like the Synonym Filter, because the indexer can’t directly consume
+					 a graph. To get fully correct positional queries when your synonym replacements are multiple
+					 tokens, you should instead apply synonyms using this filter at query time.
+
+					Although this filter produces correct token graphs, it cannot consume an input token graph correctly.
+				-->
+				<filter class="solr.FlattenGraphFilterFactory"/> <!-- WordDelimiterGraphFilterFactory cannot consume SynonymGraphFilterFactory graphs -->
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnCaseChange="1" splitOnNumerics="0" stemEnglishPossessive="1"/>
 				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
 				<!--
@@ -145,7 +159,6 @@
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnNumerics="0" stemEnglishPossessive="1"/>
 				<!--
 				This filter splits tokens at word delimiters.
-				TODO: If you use this filter during indexing, you must follow it with a Flatten Graph Filter to squash tokens on top of one another like the Word Delimiter Filter, because the indexer can’t directly consume a graph. To get fully correct positional queries when tokens are split, you should instead use this filter at query time.
 
 				Note: although this filter produces correct token graphs, it cannot consume an input token graph correctly.
 
@@ -164,6 +177,7 @@
 
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#word-delimiter-graph-filter
 				-->
+				<filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
 				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
 				<!--
 				This filter discards, or stops analysis of, tokens that are on the given stop words list.
@@ -184,6 +198,7 @@
 				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
 				<filter class="solr.ICUFoldingFilterFactory"/>
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnNumerics="0" stemEnglishPossessive="1"/>
+				<filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
 				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
 				<!--
 				This filter discards, or stops analysis of, tokens that are on the given stop words list.
@@ -207,6 +222,7 @@
 				<tokenizer class="solr.ICUTokenizerFactory"/>
 				<filter class="solr.ICUFoldingFilterFactory"/>
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="0" catenateNumbers="0" catenateAll="0"/>
+				<filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
 				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
 				<!--
 				This filter discards, or stops analysis of, tokens that are on the given stop words list.
@@ -358,10 +374,10 @@
 -->
 
 		<!-- Spelling -->
-        <field name="spelling" type="textSpell" indexed="true" stored="true"/>
+		<field name="spelling" type="textSpell" indexed="true" stored="true"/>
 		<field name="spellingShingle" type="textSpellShingle" indexed="true" stored="true" multiValued="true"/>
 
-    </fields>
+	</fields>
 	<uniqueKey>id</uniqueKey>
 <!--	<defaultSearchField>keywords</defaultSearchField>
 TODO: need to set df parameter?

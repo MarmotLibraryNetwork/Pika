@@ -250,6 +250,7 @@ class Search_Results extends Union_Results {
 
 					// Unexpected error -- let's treat this as a fatal condition.
 				} else {
+					//TODO: give the user better error page; set debug mode for test sites only
 					PEAR_Singleton::raiseError(new PEAR_Error('Unable to process query<br>' .
                         'Solr Returned: ' . print_r($error, true)));
 				}
