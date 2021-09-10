@@ -165,11 +165,11 @@ Pika.Browse = (function(){
 						,subCategoryTextId : subCategoryTextId
 						,browseMode : this.browseMode
 					};
-			// Set selected button as active
 			$('#browse-sub-category-menu button').removeClass('selected');
-			$('#browse-sub-category-'+subCategoryTextId).addClass('selected');
+			newSubCategoryLabel = $('#browse-sub-category-'+subCategoryTextId)
+					.addClass('selected') // Set selected button as active
+					.text(); // get label from corresponding button
 
-			newSubCategoryLabel = $('#browse-sub-category-'+subCategoryTextId).text(); // get label from corresponding button
 			// Set the new browse category label (below the carousel)
 			$('.selected-browse-sub-category-label-search-text').fadeOut(function(){
 				$(this).html(newSubCategoryLabel).fadeIn()

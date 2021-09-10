@@ -247,7 +247,7 @@ class Browse_AJAX extends AJAXHandler {
 				}
 			}
 
-			$result         = array('success' => false);
+			$result         = ['success' => false];
 			$browseCategory = $this->getBrowseCategory();
 			if ($browseCategory){
 				global $interface;

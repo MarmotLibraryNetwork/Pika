@@ -172,7 +172,7 @@ class Search_Home extends Action {
 								if ($temp->textId == $_REQUEST['subCategory']){
 									$validSubCategory = true;
 								}
-								$subCategories[] = array('label' => $temp->label, 'textId' => $temp->textId);
+								$subCategories[] = ['label' => $temp->label, 'textId' => $temp->textId];
 							}
 						}
 						if ($validSubCategory){
