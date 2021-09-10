@@ -324,24 +324,8 @@ abstract class ObjectEditor extends Admin_Admin {
 		return true;
 	}
 
-	function getFilters(){
-		return array();
-	}
-
 	function getModule(){
 		return 'Admin';
-	}
-
-	function getFilterValues(){
-		$filters = $this->getFilters();
-		foreach ($filters as $filter){
-			if ($_REQUEST[$filter['filter']]){
-				$filter['value'] = $_REQUEST[$filter['filter']];
-			}else{
-				$filter['value'] = '';
-			}
-		}
-		return $filters;
 	}
 
 	public function canAddNew(){

@@ -50,7 +50,10 @@
 					$(function(){ldelim}
 						{* .filter(':visible') clauses below ensures that a menu option is triggered if the side bar option is visible is visible :  *}
 
-						{if ($module == "Search" && $action != 'History') || $module == "Series" || $module == "Author" || $module == "Genealogy" || $module == "Library"
+					{if in_array($action, array('MarcValidations', 'IndexingStats'))}
+						{* Select none of the menu options *}
+						$(function () {ldelim} Pika.Menu.collapseSideBar(); {rdelim});
+					{elseif ($module == "Search" && $action != 'History') || $module == "Series" || $module == "Author" || $module == "Genealogy" || $module == "Library"
 							|| ($module == 'MyAccount' && $action == 'MyList' && !$listEditAllowed)
 							|| ($module == 'EBSCO' && $action == 'Results')
 							|| ($module == 'Union' && $action == 'CombinedResults')
@@ -59,7 +62,7 @@
 								{* Treat Public Lists not owned by user as a Search Page rather than an MyAccount Page *}
 								{* Click Search Menu Bar Button *}
 							$('.menu-bar-option:nth-child(1)>a', '#vertical-menu-bar').filter(':visible').click();
-						{elseif (!$isLoginPage && !in_array($action, array('EmailResetPin', 'ResetPin', 'RequestPinReset', 'EmailPin', 'SelfReg', 'OfflineCirculation'))) && ($module == "MyAccount" || $module == "Admin" || $module == "Log" || $module == "Circa" || $module == "LibrarianReview" || $module == "Report" || ($module == 'Search' && $action == 'History'))}
+						{elseif (!$isLoginPage && !in_array($action, array('EmailResetPin', 'ResetPin', 'RequestPinReset', 'EmailPin', 'SelfReg', 'OfflineCirculation', 'MarcValidations'))) && ($module == "MyAccount" || $module == "Admin" || $module == "Log" || $module == "Circa" || $module == "LibrarianReview" || $module == "Report" || ($module == 'Search' && $action == 'History'))}
 							{* Prevent this action on the Pin Reset Page && Login Page && Offline Circulation Page*}
 							{* Click Account Menu Bar Button *}
 							$('.menu-bar-option:nth-child(2)>a', '#vertical-menu-bar').filter(':visible').click();

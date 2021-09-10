@@ -38,15 +38,15 @@ class MarcValidation extends DB_DataObject {
 	public $errors;
 	static function getObjectStructure(){
 		$structure = [
-//			'id'                   => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'],
-			'source'               => ['property' => 'source', 'type' => 'label', 'label' => 'source', 'description' => ''],
-			'fileName'             => ['property' => 'fileName', 'type' => 'label', 'label' => 'fileName', 'description' => ''],
-			'fileLastModifiedTime' => ['property' => 'fileLastModifiedTime', 'type' => 'label', 'label' => 'fileLastModifiedTime', 'description' => ''],
-			'validationTime'       => ['property' => 'validationTime', 'type' => 'label', 'label' => 'validationTime', 'description' => ''],
-			'validated'            => ['property' => 'validated', 'type' => 'label', 'label' => 'validated', 'description' => ''],
-			'totalRecords'         => ['property' => 'totalRecords', 'type' => 'label', 'label' => 'totalRecords', 'description' => ''],
-			'recordSuppressed'     => ['property' => 'recordSuppressed', 'type' => 'label', 'label' => 'recordSuppressed', 'description' => ''],
-			'errors'               => ['property' => 'errors', 'type' => 'label', 'label' => 'errors', 'description' => ''],
+			'source'               => ['property' => 'source', 'type' => 'readOnly', 'label' => 'source', 'description' => ''],
+			'fileName'             => ['property' => 'fileName', 'type' => 'readOnly', 'label' => 'fileName', 'description' => ''],
+			'fileLastModifiedTime' => ['property' => 'fileLastModifiedTime', 'type' => 'dateReadOnly', 'label' => 'fileLastModifiedTime', 'description' => ''],
+			'validationTime'       => ['property' => 'validationTime', 'type' => 'dateReadOnly', 'label' => 'validationTime', 'description' => ''],
+			'validated'            => ['property' => 'validated', 'type' => 'readOnly', 'label' => 'validated', 'description' => ''],
+			'totalRecords'         => ['property' => 'totalRecords', 'type' => 'readOnly', 'label' => 'totalRecords', 'description' => ''],
+			'recordSuppressed'     => ['property' => 'recordSuppressed', 'type' => 'readOnly', 'label' => 'recordSuppressed', 'description' => ''],
+			'errors'               => ['property' => 'errors', 'type' => 'readOnly', 'label' => 'errors', 'description' => ''],
+//'canEdit' => false
 		];
 		return $structure;
 	}
