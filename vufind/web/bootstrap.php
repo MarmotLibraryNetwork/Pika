@@ -139,7 +139,7 @@ function initDatabase(){
 }
 
 function requireSystemLibraries(){
-	global $timer;
+//	global $timer;
 	// Require System Libraries
 	require_once ROOT_DIR . '/sys/Interface.php';
 	require_once ROOT_DIR . '/sys/Account/UserAccount.php';
@@ -209,15 +209,6 @@ function handlePEARError($error, $method = null){
 	$interface->setTemplate('../error.tpl');
 	$interface->display('layout.tpl');
 
-	// Exceptions we don't want to log
-	$doLog = true;
-	// Microsoft Web Discussions Toolbar polls the server for these two files
-	//    it's not script kiddie hacking, just annoying in logs, ignore them.
-	if (strpos($_SERVER['REQUEST_URI'], "cltreq.asp") !== false) $doLog = false;
-	if (strpos($_SERVER['REQUEST_URI'], "owssvr.dll") !== false) $doLog = false;
-	// If we found any exceptions, finish here
-	if (!$doLog) exit();
-
 	// Log the error for administrative purposes -- we need to build a variety
 	// of pieces so we can supply information at five different verbosity levels:
 	$baseError = $error->toString();
@@ -250,11 +241,7 @@ function handlePEARError($error, $method = null){
 
 function loadLibraryAndLocation(){
 	global $timer;
-	global $librarySingleton;
 	global $locationSingleton;
-	//Create global singleton instances for Library and Location
-	$librarySingleton = new Library();
-	$timer->logTime('Created library singleton');
 	$locationSingleton = new Location();
 	$timer->logTime('Created Location singleton');
 

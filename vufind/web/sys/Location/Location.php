@@ -578,10 +578,7 @@ class Location extends DB_DataObject {
 		$alternateLibraryInList = false;
 
 		//Get the library for the patron's home branch.
-		/** @var Library $librarySingleton */
-		global $librarySingleton;
 		if ($patronProfile){
-//			$homeLibrary = $librarySingleton->getLibraryForLocation($patronProfile->homeLocationId);
 			$homeLibrary = $patronProfile->getHomeLibrary();
 		}
 
