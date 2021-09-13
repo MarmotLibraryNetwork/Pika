@@ -349,6 +349,85 @@
 <!--		<field name="title_fullStr" type="string" indexed="true" stored="true" multiValued="true"/>-->
 		<!--TODO: How is title_full & title_fullStr different? Can one be removed? -->
 		<field name="title_alt" type="text" indexed="true" stored="true" multiValued="true"/>
+		<!-- Alternate Titles
+		130adfgklnpst:240a:246abnp:700tnr:730adfgklnpst:740a
+
+		MARC 130 Tag    Uniform Title
+
+		https://www.loc.gov/marc/bibliographic/bd130.html
+
+		Uniform title used as a main entry in a bibliographic record. Main entry under a uniform title is used
+		when a work is entered directly under title and the work has appeared under varying titles, necessitating that
+		a particular title be chosen to represent the work. Cataloging rules also prescribe the use of this field when
+		the work is entered directly under title and additions or deletions to the title proper must be accommodated.
+		In this latter case, the title may not actually vary from iteration to iteration.
+
+		The title that appears on the work being cataloged is contained in field 245.
+		There will be no 100, 110, or 111 field in records with field 130.
+
+		Subfields that are included to be indexed are :
+		$a - Uniform title (NR)
+		$d - Date of treaty signing (R)
+		$f - Date of a work (NR)
+		$g - Miscellaneous information (R)
+		$k - Form subheading (R)
+		$l - Language of a work (NR)
+		$n - Number of part/section of a work (R)
+		$p - Name of part/section of a work (R)
+		$s - Version (R)
+		$t - Title of a work (NR)
+
+
+
+		MARC 240 Tag     Uniform Title
+
+		https://www.loc.gov/marc/bibliographic/bd240.html
+
+		Uniform title for an item when the bibliographic description is entered under a main entry field that contains
+		a personal (field 100), corporate (110), or meeting (111) name.
+
+		Used when a work has appeared under varying titles, necessitating that a particular title be chosen to
+		represent the work. Cataloging rules also prescribe the use of this field when additions or deletions to the
+		title must be accommodated. In the latter case, the title may not actually vary from iteration to iteration.
+
+		The title that appears on the work being cataloged is contained in field 245 (Title Statement). Field 240 is
+		not used when field 130 (Main Entry-Uniform Title) is present.
+
+		Subfields that are included to be indexed are :
+		$a - Uniform title (NR)
+
+
+
+		MARC 246 Tag     Varying Form of Title (R)
+
+		https://www.loc.gov/marc/bibliographic/bd246.html
+
+
+		Varying forms of the title appearing on different parts of an item or a portion of the title proper, or an
+		alternative form of the title when the form differs substantially from the title statement in field 245 and
+		if they contribute to the further identification of the item.
+
+		For items including several works but lacking a collective title, field 246 is used only for titles related to
+		the title selected as the title proper, usually the first work named in the chief source of information.
+		Titles related to other works are recorded in field 740 (Added Entry-Uncontrolled Related/Analytical Title)
+		or one of the other 7XX (Added Entry) fields.
+
+		When displayed/printed as a note, varying forms of titles are usually preceded by an introductory term or
+		phrase that is generated as a display constant based on the second indicator value.
+
+		Subfields that are included to be indexed are :
+		$a - Title proper/short title (NR)
+		$b - Remainder of title (NR)
+		$n - Number of part/section of a work (R)
+		$p - Name of part/section of a work (R)
+
+		700tnr
+
+		730adfgklnpst
+
+		740a
+		-->
+
 		<!--Removing title_old and title_new for now, until we create a use. Pascal 7/20/2021 -->
 <!--		<field name="title_old" type="text" indexed="true" stored="true" multiValued="true"/>-->
 		<!--MARC 780 tag Preceding Entry
