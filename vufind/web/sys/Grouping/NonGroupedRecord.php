@@ -154,8 +154,8 @@ class NonGroupedRecord extends CommonGroupingAlterationOperations {
 		$groupedWork = $this->getGroupedWork();
 		if ($groupedWork){
 			if (!$groupedWork->forceRegrouping()){
-				global $logger;
-				$logger->log('Error occurred marking grouped work ' . $groupedWork->permanent_id . ' for forced regrouping', PEAR_LOG_ERR);
+				global $pikaLogger;
+				$pikaLogger->error('Error occurred marking grouped work ' . $groupedWork->permanent_id . ' for forced regrouping');
 			};
 		}
 	}

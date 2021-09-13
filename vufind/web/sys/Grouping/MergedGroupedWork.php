@@ -162,16 +162,16 @@ class MergedGroupedWork extends CommonGroupingAlterationOperations {
 		$groupedWork->permanent_id = $this->destinationGroupedWorkId;
 		if ($groupedWork->find(true)){
 			if (!$groupedWork->forceRegrouping()){
-				global $logger;
-				$logger->log('Error occurred marking destination grouped work ' . $this->destinationGroupedWorkId . ' for forced regrouping', PEAR_LOG_ERR);
+				global $pikaLogger;
+				$pikaLogger->error('Error occurred marking destination grouped work ' . $this->destinationGroupedWorkId . ' for forced regrouping');
 			};
 		}
 		$groupedWork               = new GroupedWork();
 		$groupedWork->permanent_id = $this->sourceGroupedWorkId;
 		if ($groupedWork->find(true)){
 			if (!$groupedWork->forceRegrouping()){
-				global $logger;
-				$logger->log('Error occurred marking destination grouped work ' . $this->sourceGroupedWorkId . ' for forced regrouping', PEAR_LOG_ERR);
+				global $pikaLogger;
+				$pikaLogger->error('Error occurred marking destination grouped work ' . $this->sourceGroupedWorkId . ' for forced regrouping');
 			};
 		}
 	}
