@@ -66,9 +66,10 @@
 									<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>&nbsp;{$propValue}</a>
 								{/if}
 							{elseif $property.type == 'text' || $property.type == 'textarea' || $property.type == 'hidden'
-							|| $property.type == 'file' || $property.type == 'integer' || $property.type == 'email'
-							|| $property.type == 'dateReadOnly'}
-								{$propValue}
+							|| $property.type == 'file' || $property.type == 'integer' || $property.type == 'email'}
+									{$propValue}
+							{elseif $property.type == 'dateReadOnly'}
+									{$propValue|date_format:"%F %T"} {* Use this format so that this column can sort numerically by the datetime *}
 							{elseif $property.type == 'date'}
 								{$propValue|date_format}
 							{elseif $property.type == 'partialDate'}
