@@ -100,7 +100,7 @@ class Admin_Variables extends ObjectEditor {
 				'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=IncrementVariable&amp;direction=up&amp;id=" . $existingObject->id,
 			);
 			$actions[] = array(
-				'text' => '<span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span> Decrease by 500',
+				'text' => '<span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span> Decrease by 1,000',
 				'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=IncrementVariable&amp;direction=down&amp;id=" . $existingObject->id,
 			);
 			if ($existingObject->value == '1' || $existingObject->value == 'true'){
@@ -143,11 +143,15 @@ class Admin_Variables extends ObjectEditor {
 			$variable = new Variable();
 			$variable->get($id);
 			if ($variable){
-				$amount = 0;
-				if ($_REQUEST['direction'] == 'up'){
-					$amount = 10000;
-				}elseif ($_REQUEST['direction'] == 'down'){
-					$amount = -500;
+				switch ($_REQUEST['direction']){
+					case 'up':
+						$amount = 10000;
+						break;
+					case 'down':
+						$amount = -1000;
+						break;
+					default:
+						$amount = 0;
 				}
 				if ($amount){
 					$variable->value += $amount;
