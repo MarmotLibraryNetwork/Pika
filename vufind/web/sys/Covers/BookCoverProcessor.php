@@ -1464,7 +1464,7 @@ class BookCoverProcessor {
 
 //	private function makeIsbn10And13(){
 //		if (!empty($this->isn) && strlen($this->isn) >= 10){
-//			require_once ROOT_DIR . '/Drivers/marmot_inc/ISBNConverter.php';
+//			require_once ROOT_DIR . '/sys/ISBN/ISBNConverter.php';
 //			if (strlen($this->isn) == 10){
 //				//$this->log("Provided ISBN is 10 digits.", PEAR_LOG_INFO);
 //				$this->isbn10 = $this->isn;

@@ -465,9 +465,6 @@ function vufind_autoloader($class) {
 		}elseif (file_exists('Drivers/' . $class . '.php')){
 			$className = ROOT_DIR . '/Drivers/' . $class . '.php';
 			require_once $className;
-		}elseif (file_exists('Drivers/marmot_inc/' . $class . '.php')){
-			$className = ROOT_DIR . '/Drivers/marmot_inc/' . $class . '.php';
-			require_once $className;
 		}elseif (file_exists('sys/Library/' . $class . '.php')){
 			$className = ROOT_DIR . '/sys/Library/' . $class . '.php';
 			require_once $className;
