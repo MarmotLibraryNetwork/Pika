@@ -47,7 +47,7 @@
 			{if strpos($field, "scoping_details") !== false}
 				<td colspan="2">
 					<strong>{$field|escape}</strong>
-				<table id="scoping_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-x: scroll; font-size: smaller">{*TODO: style rule should go in css *}
+				<table id="scoping_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: anywhere; font-size: smaller">
 					<tr>
 						<th>Bib Id</th><th>Item Id</th><th>Grouped Status</th><th>Status</th><th>Locally Owned</th><th>Available</th><th>Holdable</th><th>Bookable</th><th>In Library Use Only</th><th>Library Owned</th><th>Holdable PTypes</th><th>Bookable PTypes</th><th>Local Url</th>
 					</tr>
@@ -66,7 +66,7 @@
 			{elseif strpos($field, "item_details") !== false}
 				<td colspan="2">
 					<strong>{$field|escape}</strong>
-				<table id="item_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-x: scroll; font-size: x-small">{*TODO: style rule should go in css *}
+				<table id="item_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: anywhere; font-size: x-small">
 					<tr>
 						<th>Bib Id</th><th>Item Id</th><th>Shelf Loc</th><th>Call Num</th><th>Format</th><th>Format Category</th><th>Num Copies</th><th>Is Order Item</th><th>Is eContent</th><th>eContent Source</th><th>eContent File</th><th>eContent URL</th><th>subformat</th><th>Detailed Status</th><th>Last Checkin</th><th>Location</th><th>Sub-location</th>
 					</tr>
@@ -85,7 +85,7 @@
 			{elseif strpos($field, "record_details") !== false}
 				<td colspan="2">
 					<strong>{$field|escape}</strong>
-				<table id="record_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-x: scroll; font-size: smaller">{*TODO: style rule should go in css *}
+				<table id="record_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: anywhere; font-size: smaller">
 					<tr>
 						<th>Bib Id</th><th>Format</th><th>Format Category</th><th>Edition</th><th>Language</th><th>Publisher</th><th>Publication Date</th><th>Physical Description</th><th>Abridged</th>
 					</tr>

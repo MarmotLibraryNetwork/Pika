@@ -146,7 +146,7 @@
 					{if get_class($field) == "File_MARC_Control_Field"}
 						<tr><th>{$field->getTag()}</th><td colspan="3">{$field->getData()|escape|replace:' ':'&nbsp;'}</td></tr>
 					{else}
-						<tr><th>{$field->getTag()}</th><th>{$field->getIndicator(1)}</th><th>{$field->getIndicator(2)}</th><td>
+						<tr><th>{$field->getTag()}</th><th>{$field->getIndicator(1)}</th><th>{$field->getIndicator(2)}</th><td style="overflow-wrap: anywhere">
 						{foreach from=$field->getSubfields() item=subfield}
 						<strong>|{$subfield->getCode()}</strong>&nbsp;{$subfield->getData()|escape}
 						{/foreach}
