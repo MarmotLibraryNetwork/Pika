@@ -18,7 +18,7 @@
  */
 
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/LoanRule.php';
+require_once ROOT_DIR . '/sys/Pika/CirculationSystemDrivers/LoanRule.php';
 
 class LoanRules extends ObjectEditor {
 	function launch(){
@@ -85,15 +85,15 @@ class LoanRules extends ObjectEditor {
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin');
+		return ['opacAdmin'];
 	}
 
 	function customListActions(){
-		$actions   = array();
-		$actions[] = array(
+		$actions   = [];
+		$actions[] = [
 			'label'  => 'Reload From CSV',
 			'action' => 'reloadFromCsv',
-		);
+		];
 		return $actions;
 	}
 

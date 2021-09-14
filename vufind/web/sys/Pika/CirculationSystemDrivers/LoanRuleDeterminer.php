@@ -7,23 +7,20 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 /**
- * Table Definition for library
+ * The Loan Rule Determiners are for Sierra systems
  */
 require_once 'DB/DataObject.php';
 
-class LoanRuleDeterminer extends DB_DataObject
-{
+class LoanRuleDeterminer extends DB_DataObject {
 	public $__table = 'loan_rule_determiners';   // table name
 	public $id;
 	public $rowNumber;
@@ -34,38 +31,38 @@ class LoanRuleDeterminer extends DB_DataObject
 	public $loanRuleId;
 	public $active;
 
-	function keys() {
-		return array('id');
+	function keys(){
+		return ['id'];
 	}
 
 	static function getObjectStructure(){
-		$structure = array(
-			'id'         => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the p-type within the database', 'hideInLists' => true),
-			'rowNumber'  => array('property' => 'rowNumber', 'type' => 'integer', 'label' => 'Row Number', 'description' => 'The row number of the determiner', 'hideInLists' => false),
-			'location'   => array('property' => 'location', 'type' => 'text', 'label' => 'Location', 'description' => 'The locations this row applies to'),
-			'patronType' => array('property' => 'patronType', 'type' => 'text', 'label' => 'Patron Type', 'description' => 'The pTypes this row applies to'),
-			'itemType'   => array('property' => 'itemType', 'type' => 'text', 'label' => 'Item Type', 'description' => 'The iTypes this row applies to'),
-			'ageRange'   => array('property' => 'ageRange', 'type' => 'text', 'label' => 'Age Range', 'description' => 'The age range this row applies to'),
-			'loanRuleId' => array('property' => 'loanRuleId', 'type' => 'integer', 'label' => 'Loan Rule Id', 'description' => 'The loan rule that this determiner row triggers'),
-			'active'     => array('property' => 'active', 'type' => 'checkbox', 'label' => 'Active?', 'description' => 'Whether or not the determiner row is active.'),
-		);
+		$structure = [
+			'id'         => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the p-type within the database', 'hideInLists' => true],
+			'rowNumber'  => ['property' => 'rowNumber', 'type' => 'integer', 'label' => 'Row Number', 'description' => 'The row number of the determiner', 'hideInLists' => false],
+			'location'   => ['property' => 'location', 'type' => 'text', 'label' => 'Location', 'description' => 'The locations this row applies to'],
+			'patronType' => ['property' => 'patronType', 'type' => 'text', 'label' => 'Patron Type', 'description' => 'The pTypes this row applies to'],
+			'itemType'   => ['property' => 'itemType', 'type' => 'text', 'label' => 'Item Type', 'description' => 'The iTypes this row applies to'],
+			'ageRange'   => ['property' => 'ageRange', 'type' => 'text', 'label' => 'Age Range', 'description' => 'The age range this row applies to'],
+			'loanRuleId' => ['property' => 'loanRuleId', 'type' => 'integer', 'label' => 'Loan Rule Id', 'description' => 'The loan rule that this determiner row triggers'],
+			'active'     => ['property' => 'active', 'type' => 'checkbox', 'label' => 'Active?', 'description' => 'Whether or not the determiner row is active.'],
+		];
 		return $structure;
 	}
 
 	function insert(){
 		parent::insert();
-		/** @var Memcache $memCache */
-		global 	$memCache;
-		global $instanceName;
-		$memCache->delete($instanceName . '_loan_rule_determiners');
+//		/** @var Memcache $memCache */
+//		global 	$memCache;
+//		global $instanceName;
+//		$memCache->delete($instanceName . '_loan_rule_determiners');
 	}
 
 	function update($dataObject = false){
 		parent::update($dataObject);
-		/** @var Memcache $memCache */
-		global $memCache;
-		global $instanceName;
-		$memCache->delete($instanceName . '_loan_rule_determiners');
+//		/** @var Memcache $memCache */
+//		global $memCache;
+//		global $instanceName;
+//		$memCache->delete($instanceName . '_loan_rule_determiners');
 	}
 
 //	private $iTypeArray = null;
