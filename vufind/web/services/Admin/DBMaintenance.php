@@ -989,10 +989,10 @@ class DBMaintenance extends Admin_Admin {
 					),
 				),
 
-				'ils_marc_checksums' => array(
+				'ils_marc_checksums' => [
 					'title'       => 'ILS MARC Checksums',
 					'description' => 'Add a table to store checksums of MARC records stored in the ILS so we can determine if the record needs to be updated during grouping.',
-					'sql'         => array(
+					'sql'         => [
 						"CREATE TABLE IF NOT EXISTS ils_marc_checksums (
 							id INT(11) NOT NULL AUTO_INCREMENT,
 							ilsId VARCHAR(20) NOT NULL,
@@ -1004,8 +1004,20 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER TABLE ils_marc_checksums CHANGE dateFirstDetected dateFirstDetected BIGINT SIGNED NULL",
 						"ALTER TABLE ils_marc_checksums ADD source VARCHAR(50) NOT NULL DEFAULT 'ils'",
 						"ALTER TABLE ils_marc_checksums ADD UNIQUE (`source`, `ilsId`)",
-					),
-				),
+					],
+				],
+
+				'Fix_ils_marc_checksums_indexes-2021.03.1' => [
+					'title'       => 'Fix ILS MARC Checksums indexes',
+					'description' => 'ilsId unique key needs to accommodate for source as well',
+					'sql'         => [
+						"ALTER TABLE `ils_marc_checksums` 
+							DROP INDEX `ilsId` ,
+							ADD INDEX `ilsId` (`ilsId` ASC),
+							DROP INDEX `source` ,
+							ADD UNIQUE INDEX `sourceAndIlsId` (`source` ASC, `ilsId` ASC); ",
+					],
+				],
 
 				'work_level_ratings' => array(
 					'title'       => 'Work Level Ratings',
