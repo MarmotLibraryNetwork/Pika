@@ -68,15 +68,16 @@
 					<strong>{$field|escape}</strong>
 				<table id="item_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: break-word; font-size: x-small">
 					<tr>
-						<th>Bib Id</th><th>Item Id</th><th>Shelf Loc</th><th>Call Num</th><th>Format</th><th>Format Category</th><th>Num Copies</th><th>Is Order Item</th><th>Is eContent</th><th>eContent Source</th><th>eContent File</th><th>eContent URL</th><th>subformat</th><th>Detailed Status</th><th>Last Checkin</th><th>Location</th><th>Sub-location</th>
+						<th>Bib Id</th><th>Item Id</th><th>Shelf Loc</th><th>Call Num</th><th>Format</th><th>Format Category</th><th>Num Copies</th><th>Is Order Item</th><th>Is eContent</th><th>eContent Source</th>{*<th>eContent File</th>*}<th>eContent URL</th><th>subformat</th><th>Detailed Status</th><th>Last Checkin</th><th>Location</th>{*<th>Sub-location</th>*}
 					</tr>
 					{foreach from=$values item="item"}
 					<tr>
-						{*{assign var="item" value=$item|rtrim:"|"}*}
-						{assign var="details" value="|"|explode:$item}
-						{foreach from=$details item='detail'}
+					{assign var="details" value="|"|explode:$item}
+						{foreach from=$details item='detail' key="k"}
 						{*{foreach from=explode($values, "|") item='detail'}*}
-						<td>{$detail|replace:',':', '}</td>
+                {if !in_array($k, array(10,16,17))}{*skip econtentFile, sublocation, and last extrac empty field *}
+						<td {if in_array($k, array(0,1,11))} style="overflow-wrap: anywhere; min-width: 50px" {/if}>{$detail|replace:',':', '}</td>
+								{/if}
 					{/foreach}
 					</tr>
 					{/foreach}
