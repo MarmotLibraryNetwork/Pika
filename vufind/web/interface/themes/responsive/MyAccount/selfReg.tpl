@@ -116,7 +116,8 @@
 	{literal}
 	$(function(){
 		$('#zip').rules('add', {zipcodeUS:true});
-		$('#pin').rules('add', {minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}0{/if}{literal}});
+		$('#pin').rules('add', {minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}{literal}});
+		$('#pin').rules('add', {maxlength:{/literal}{if $pinMaximumLength}{$pinMaximumLength}{else}64{/if}{literal}});
 		$('#pin1').rules('add', {equalTo: "#pin",minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}0{/if}{literal}});
 		{/literal}
 		{if $selfRegStateRegex && $selfRegStateMessage}
