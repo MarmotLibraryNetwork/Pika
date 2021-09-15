@@ -55,9 +55,8 @@
 					<tr>
 						{*{assign var="item" value=$item|rtrim:"|"}*}
 						{assign var="details" value="|"|explode:$item}
-						{foreach from=$details item='detail'}
-						{*{foreach from=explode($values, "|") item='detail'}*}
-						<td>{$detail|replace:',':', '}</td>
+						{foreach from=$details item='detail'  key="k"}
+						<td{if in_array($k, array(0,1))} style="overflow-wrap: anywhere; min-width: 50px" {/if}>{$detail|replace:',':', '}</td>
 					{/foreach}
 					</tr>
 					{/foreach}
@@ -76,7 +75,7 @@
 						{foreach from=$details item='detail' key="k"}
 						{*{foreach from=explode($values, "|") item='detail'}*}
                 {if !in_array($k, array(10,16,17))}{*skip econtentFile, sublocation, and last extrac empty field *}
-						<td {if in_array($k, array(0,1,11))} style="overflow-wrap: anywhere; min-width: 50px" {/if}>{$detail|replace:',':', '}</td>
+						<td{if in_array($k, array(0,1,11))} style="overflow-wrap: anywhere; min-width: 50px" {/if}>{$detail|replace:',':', '}</td>
 								{/if}
 					{/foreach}
 					</tr>
