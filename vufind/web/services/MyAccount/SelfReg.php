@@ -48,6 +48,9 @@ class SelfReg extends Action {
 		$selfRegFields = $this->catalog->getSelfRegistrationFields();
 		// For Arlington, this function call causes a page redirect to an external web page. plb 1-15-2016
 
+		$pinMinimumLength     = $configArray['Catalog']['pinMinimumLength'];
+		$pinMaximumLength     = $configArray['Catalog']['pinMaximumLength'];
+
 		if (isset($_REQUEST['submit'])) {
 
 			if (isset($configArray['ReCaptcha']['privateKey'])){
@@ -59,8 +62,16 @@ class SelfReg extends Action {
 			}else{
 				$recaptchaValid = true;
 			}
-
-
+			if ($library->enableSelfRegistration && isset($_POST['pin'])){
+				$pinLength = count_chars($_POST['pin']);
+				if ($pinLength < $pinMinimumLength or $pinLength > $pinMaximumLength){
+					if ($pinMinimumLength == $pinMaximumLength){
+						return "New PIN must be exactly " . $pinMinimumLength . " characters.";
+					}else{
+						return "New PIN must be " . $pinMinimumLength . " to " . $pinMaximumLength . " characters.";
+					}
+				}
+			}
 			if (!$recaptchaValid) {
 				$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');
 			} else {
@@ -78,7 +89,6 @@ class SelfReg extends Action {
 
 		}
 
-
 		$interface->assign('submitUrl', '/MyAccount/SelfReg');
 		$interface->assign('structure', $selfRegFields);
 		$interface->assign('saveButtonText', 'Register');
@@ -91,8 +101,6 @@ class SelfReg extends Action {
 
 		$numericOnlyPins      = $configArray['Catalog']['numericOnlyPins'];
 		$alphaNumericOnlyPins = $configArray['Catalog']['alphaNumericOnlyPins'];
-		$pinMinimumLength     = $configArray['Catalog']['pinMinimumLength'];
-		$pinMaximumLength     = $configArray['Catalog']['pinMaximumLength'];
 		$selfRegStateRegex    = $configArray['Catalog']['selfRegStateRegex'];
 		$selfRegStateMessage  = $configArray['Catalog']['selfRegStateMessage'];
 		$selfRegZipRegex      = $configArray['Catalog']['selfRegZipRegex'];
