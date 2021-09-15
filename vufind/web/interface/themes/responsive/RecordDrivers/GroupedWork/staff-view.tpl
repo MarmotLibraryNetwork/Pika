@@ -93,7 +93,7 @@
 						{assign var="details" value="|"|explode:$item}
 						{foreach from=$details item='detail' key="k"}
 						{*{foreach from=explode($values, "|") item='detail'}*}
-						<td{if $k=0} style="overflow-wrap: anywhere; min-width: 50px" {/if}>{$detail|replace:',':', '}</td>
+						<td{if $k==0} style="overflow-wrap: anywhere; min-width: 50px" {/if}>{$detail|replace:',':', '}</td>
 					{/foreach}
 					</tr>
 					{/foreach}
