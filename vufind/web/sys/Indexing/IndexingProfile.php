@@ -33,7 +33,7 @@ class IndexingProfile extends DB_DataObject{
 	const COVER_SOURCES = [
 		'SideLoad General'                    => 'SideLoad General',
 		'ILS MARC'                            => 'ILS MARC',
-		'Zinio'                               => 'Zinio',
+//		'Zinio'                               => 'Zinio',
 		'Colorado State Government Documents' => 'Colorado State Government Documents',
 		'Classroom Video on Demand'           => 'Classroom Video on Demand',
 		'Films on Demand'                     => 'Films on Demand',
