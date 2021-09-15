@@ -244,20 +244,13 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		loadDateAdded(identifier, itemField, itemInfo);
 		String itemLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		itemInfo.setLocationCode(itemLocation);
-//		String itemSublocation = getItemSubfieldData(subLocationSubfield, itemField);
-//		if (itemSublocation == null){
-//			itemSublocation = "";
-//		}
-//		if (itemSublocation.length() > 0){
-//			itemInfo.setSubLocation(translateValue("sub_location", itemSublocation, identifier));
-//		}
 		itemInfo.setITypeCode(getItemSubfieldData(iTypeSubfield, itemField));
 		itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), identifier));
 		loadItemCallNumber(record, itemField, itemInfo);
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
 
 		String econtentSource = MarcUtil.getFirstFieldVal(record, "092a");
-		if (fullReindex && econtentSource == null || econtentSource.equals("")) {
+		if (fullReindex && (econtentSource == null || econtentSource.isEmpty())) {
 			logger.warn("Did not find an econtent source for " + identifier);
 		}
 //		itemInfo.setShelfLocation(econtentSource);

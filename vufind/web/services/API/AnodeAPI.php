@@ -117,7 +117,7 @@ class AnodeAPI extends AJAXHandler {
 
 	function getAnodeGroupedWorks($result, $branch){
 		if (!isset($result['titles'])){
-			$result['titles'] = array();
+			$result['titles'] = [];
 		}else{
 			foreach ($result['titles'] as &$groupedWork){
 				$itemAPI           = new ItemAPI();
@@ -183,32 +183,32 @@ class AnodeAPI extends AJAXHandler {
 						$item['availableHere']        = true;
 						$groupedWork['availableHere'] = true;
 					}
-					$groupedWork['items'][] = array(
+					$groupedWork['items'][] = [
 						'01_bibIdentifier'  => $item[0],
 						'02_itemIdentifier' => $item[1],
 						'05_statusGrouped'  => $item[2],
 						'06_status'         => $item[3],
 						'07_availableHere'  => $item['availableHere'],
 						'11_available'      => $item[5],
-					);
+					];
 					foreach ($groupedWorkRecord['item_details'] as $itemDetail){
 						if (strpos($itemDetail, $item[0] . '|' . $item[1]) === 0){
 							$itemDetail                                             = explode('|', $itemDetail);
-							$groupedWork['items'][count($groupedWork['items']) - 1] += array(
+							$groupedWork['items'][count($groupedWork['items']) - 1] += [
 								'08_itemShelfLocation' => $itemDetail[2],
-								'09_itemLocationCode'  => $itemDetail[15],
+								'09_itemLocationCode'  => $itemDetail[14],
 								'10_itemCallNumber'    => $itemDetail[3],
-							);
+							];
 							break;
 						}
 					}
 					foreach ($groupedWorkRecord['record_details'] as $bibRecord){
 						if (strpos($bibRecord, $item[0]) === 0){
 							$bibRecord                                              = explode('|', $bibRecord);
-							$groupedWork['items'][count($groupedWork['items']) - 1] += array(
+							$groupedWork['items'][count($groupedWork['items']) - 1] += [
 								'03_bibFormat'         => $bibRecord[1],
 								'04_bibFormatCategory' => $bibRecord[2],
-							);
+							];
 							break;
 						}
 					}

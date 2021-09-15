@@ -1330,7 +1330,7 @@ class MarcRecord extends IndexRecord
 	}
 
 	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null, $volumeData = null){
-		$actions = array();
+		$actions = [];
 		global $interface;
 		global $library;
 		if (isset($interface)){
@@ -1358,53 +1358,53 @@ class MarcRecord extends IndexRecord
 		if ($isHoldable && $showHoldButton){
 			if (!empty($volumeData)){
 				foreach ($volumeData as $volumeInfo){
-					if (isset($volumeInfo->holdable) && $volumeInfo->holdable) {
+					if (isset($volumeInfo->holdable) && $volumeInfo->holdable){
 						$bibIdWithVolumeId = $this->getIdWithSource();
 						$bibIdWithVolumeId .= ':' . $volumeInfo->volumeId;
-						$actions[] = array(
+						$actions[]         = [
 							'title'        => 'Hold ' . $volumeInfo->displayLabel,
 							'url'          => '',
 							'onclick'      => "return Pika.Record.showPlaceHold('{$this->getModule()}', '$bibIdWithVolumeId');",
 							'requireLogin' => false,
-						);
+						];
 					}
 				}
-			} else {
-				$actions[] = array(
+			}else{
+				$actions[] = [
 					'title'        => 'Place Hold',
 					'url'          => '',
 					'onclick'      => "return Pika.Record.showPlaceHold('{$this->getModule()}', '{$this->getIdWithSource()}');",
 					'requireLogin' => false,
-				);
+				];
 			}
 		}
-		if ($isBookable && $library->enableMaterialsBooking) {
-			$actions[] = array(
+		if ($isBookable && $library->enableMaterialsBooking){
+			$actions[] = [
 				'title'        => 'Schedule Item',
 				'url'          => '',
 				'onclick'      => "return Pika.Record.showBookMaterial('{$this->getModule()}', '{$this->getId()}');",
 				'requireLogin' => false,
-			);
+			];
 		}
 
 		$archiveLink = GroupedWorkDriver::getArchiveLinkForWork($this->getGroupedWorkId());
 		if ($archiveLink != null){
-			$actions[] = array(
+			$actions[] = [
 				'title'        => 'View Online',
 				'url'          => $archiveLink,
 				'requireLogin' => false,
-			);
+			];
 		}
 
 		//Special Itemless Print Record Actions with url links, like KitKeeper Records
 		if (empty($actions) && !empty($relatedUrls) && $isAvailable){
 			//TODO: not sure what the best check is at this point
 			foreach ($relatedUrls as $relatedUrl){
-				$actions[] = array(
+				$actions[] = [
 					'title'        => 'Reserve Online',
 					'url'          => $relatedUrl['url'],
 					'requireLogin' => false,
-				);
+				];
 			}
 
 		}

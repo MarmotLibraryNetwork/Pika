@@ -31,26 +31,25 @@ class LDRecordOffer {
 		$this->relatedRecord = $record;
 	}
 
-	public function getOffers() {
-		$offers = array();
+	public function getOffers(){
+		$offers = [];
 		if (isset($this->relatedRecord['itemSummary'])){
 			foreach ($this->relatedRecord['itemSummary'] as $itemData){
-				if ($itemData['isLibraryItem'] || $itemData['isEContent']) {
-					$offerData = array(
-							"availability" => $this->getOfferAvailability($itemData),
-							'availableDeliveryMethod' => $this->getDeliveryMethod(),
-							"itemOffered" => array(
-									'@type' => 'CreativeWork',
-									'@id' => $this->getOfferLinkUrl(), //URL to the record
-							),
-							"offeredBy" => $this->getLibraryUrl(), //URL to the library that owns the item
-							"price" => '0',
-							"inventoryLevel" => $itemData['availableCopies'],
-					);
+				if ($itemData['isLibraryItem'] || $itemData['isEContent']){
+					$offerData    = [
+						'availability'            => $this->getOfferAvailability($itemData),
+						'availableDeliveryMethod' => $this->getDeliveryMethod(),
+						"itemOffered"             => [
+							'@type' => 'CreativeWork',
+							'@id'   => $this->getOfferLinkUrl(), //URL to the record
+						],
+						'offeredBy'               => $this->getLibraryUrl(), //URL to the library that owns the item
+						'price'                   => '0',
+						'inventoryLevel'          => $itemData['availableCopies'],
+					];
 					$locationCode = $itemData['locationCode'];
-					$subLocation = $itemData['subLocation'];
 					if (strlen($locationCode) > 0){
-						$offerData['availableAtOrFrom'] = $this->getBranchUrl($locationCode, $subLocation);
+						$offerData['availableAtOrFrom'] = $this->getBranchUrl($locationCode);
 					}
 					$offers[] = $offerData;
 				}
@@ -66,18 +65,19 @@ class LDRecordOffer {
 
 	function getOfferLinkUrl() {
 		global $configArray;
-		return $configArray['Site']['url'] . $this->relatedRecord['url'];
+		global $library;
+		return ($library->catalogUrl ?? $configArray['Site']['url']) . $this->relatedRecord['url'];
 	}
 
-	function getLibraryUrl() {
+	function getLibraryUrl(){
+		$offerBy = [];
 		global $configArray;
-		$offerBy = array();
 		global $library;
-		$offerBy[] = array(
-				"@type" => "Library",
-				"@id" => $configArray['Site']['url'] . "/Library/{$library->libraryId}/System",
-				"name" => $library->displayName
-		);
+		$offerBy[] = [
+			'@type' => 'Library',
+			'@id'   => ($library->catalogUrl ?? $configArray['Site']['url']) . "/Library/{$library->libraryId}/System",
+			'name'  => $library->displayName
+		];
 		return $offerBy;
 	}
 
@@ -106,40 +106,31 @@ class LDRecordOffer {
 			}
 			return $availability;
 		}
-		return "";
+		return '';
 	}
 
-	function getBranchUrl($locationCode, $subLocation) {
+	function getBranchUrl($locationCode){
+		/** @var Library $library */
 		global $configArray;
 		global $library;
-		$locations = new Location();
+		$branches             = [];
+		$locations            = new Location();
 		$locations->libraryId = $library->libraryId;
 		$locations->whereAdd("LEFT('$locationCode', LENGTH(code)) = code");
-		if ($subLocation){
-			$locations->subLocation = $subLocation;
-		}
 		$locations->orderBy('isMainBranch DESC, displayName'); // List Main Branches first, then sort by name
-		$locations->find();
-		$subLocations = array();
-		while ($locations->fetch()) {
-
-			$subLocations[] = array(
+		if ($locations->find()){
+			while ($locations->fetch()){
+				$branches[] = [
 					'@type' => 'Place',
-					'name' => $locations->displayName,
-					'@id' => $configArray['Site']['url'] . "/Library/{$locations->locationId}/Branch"
-
-			);
+					'name'  => $locations->displayName,
+					'@id'   => ($library->catalogUrl ?? $configArray['Site']['url']) . "/Library/{$locations->locationId}/Branch"
+				];
+			}
 		}
-		return $subLocations;
-
+		return $branches;
 	}
 
 	function getDeliveryMethod() {
-		if ($this->relatedRecord['isEContent']) {
-			return 'DeliveryModeDirectDownload';
-		} else {
-			return 'DeliveryModePickUp';
-		}
-
+		return $this->relatedRecord['isEContent'] ? 'DeliveryModeDirectDownload' : 'DeliveryModePickUp';
 	}
 }

@@ -1366,8 +1366,8 @@ class GroupedWorkDriver extends RecordInterface {
 				$activePTypes[$library->defaultPType] = $library->defaultPType;
 			}
 			[$scopingInfo, $validRecordIds, $validItemIds] = $this->loadScopingDetails($solrScope);
-			$timer->logTime("Loaded Scoping Details from the index");
-			$memoryWatcher->logMemory("Loaded scoping details from the index");
+			$timer->logTime('Loaded Scoping Details from the index');
+			$memoryWatcher->logMemory('Loaded scoping details from the index');
 
 			$recordsFromIndex = $this->loadRecordDetailsFromIndex($validRecordIds);
 			$timer->logTime("Loaded Record Details from the index");
@@ -1375,8 +1375,8 @@ class GroupedWorkDriver extends RecordInterface {
 
 			//Get a list of related items filtered according to scoping
 			$this->loadItemDetailsFromIndex($validItemIds);
-			$timer->logTime("Loaded Item Details from the index");
-			$memoryWatcher->logMemory("Loaded Item Details from the index");
+			$timer->logTime('Loaded Item Details from the index');
+			$memoryWatcher->logMemory('Loaded Item Details from the index');
 
 			//Load the work from the database so we can use it in each record diver
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
@@ -2705,31 +2705,29 @@ class GroupedWorkDriver extends RecordInterface {
 
 	/**
 	 * @param array $validItemIdsForScope Array of items filtered by scope
-	 * @return array
+	 * @return void
 	 */
 	protected function loadItemDetailsFromIndex($validItemIdsForScope){
 		$relatedItemsFieldName = 'item_details';
-		$itemsFromIndex        = [];
 		if (isset($this->fields[$relatedItemsFieldName])){
 			$itemsFromIndexRaw = $this->fields[$relatedItemsFieldName];
 			if (!is_array($itemsFromIndexRaw)){
 				$itemsFromIndexRaw = [$itemsFromIndexRaw];
 			}
-			$onOrderItems = []; // We will consolidate on order items if they are all for the same location (for display)
 
 			foreach ($itemsFromIndexRaw as $tmpItem){
-				$itemDetails    = explode('|', $tmpItem);
-				$itemIdentifier = $itemDetails[0] . ':' . $itemDetails[1];
+				$itemDetailsArray = explode('|', $tmpItem);
+				$recordIdForItem  = $itemDetailsArray[0];
+				$itemIdentifier   = $recordIdForItem . ':' . $itemDetailsArray[1];
 				if (in_array($itemIdentifier, $validItemIdsForScope)){
-					$itemsFromIndex[] = $itemDetails;
-					if (!array_key_exists($itemDetails[0], $this->relatedItemsByRecordId)){
-						$this->relatedItemsByRecordId[$itemDetails[0]] = [];
+					$itemDetails = new \Pika\BibliographicDrivers\GroupedWork\ItemDetails($itemDetailsArray);
+					if (!array_key_exists($recordIdForItem, $this->relatedItemsByRecordId)){
+						$this->relatedItemsByRecordId[$recordIdForItem] = [];
 					}
-					$this->relatedItemsByRecordId[$itemDetails[0]][] = $itemDetails;
+					$this->relatedItemsByRecordId[$recordIdForItem][] = $itemDetails;
 				}
 			}
 		}
-		return $itemsFromIndex;
 	}
 
 	const SIERRA_PTYPE_WILDCARDS = array('999', '9999');
@@ -2818,9 +2816,10 @@ class GroupedWorkDriver extends RecordInterface {
 
 		$i                 = 0;
 		$allLibraryUseOnly = true;
+		/** @var \Pika\BibliographicDrivers\GroupedWork\ItemDetails $curItem */
 		foreach ($this->relatedItemsByRecordId[$recordDetails[0]] as $curItem){
-			$itemId        = $curItem[1] == 'null' ? '' : $curItem[1];
-			$shelfLocation = $curItem[2];
+			$itemId        = $curItem->itemIdentifier;
+			$shelfLocation = $curItem->shelfLocation;
 
 			if (!$forCovers){
 				if (!empty($itemId) && $recordDriver != null && $recordDriver->hasOpacFieldMessage()){
@@ -2834,13 +2833,12 @@ class GroupedWorkDriver extends RecordInterface {
 				}
 			}
 
-			$scopeKey     = $curItem[0] . ':' . $itemId;
-			$callNumber   = $curItem[3];
-			$numCopies    = (int)$curItem[6];
-			$isOrderItem  = $curItem[7] == 'true';
-			$isEcontent   = $curItem[8] == 'true';
-			$locationCode = isset($curItem[15]) ? $curItem[15] : '';
-			$subLocation  = isset($curItem[16]) ? $curItem[16] : '';
+			$scopeKey     = $curItem->recordIdentifier . ':' . $itemId;
+			$callNumber   = $curItem->callNumber;
+			$numCopies    = $curItem->numCopies;
+			$isOrderItem  = $curItem->isOrderItem;
+			$isEcontent   = $curItem->isEContent;
+			$locationCode = $curItem->locationCode;
 
 			$scopingDetails = $scopingInfo[$scopeKey];
 			//Get Scoping information for this record
@@ -2853,7 +2851,7 @@ class GroupedWorkDriver extends RecordInterface {
 			$libraryOwned     = $scopingDetails[9] == 'true';
 			$holdablePTypes   = $scopingDetails[10] ?? '';
 			$bookablePTypes   = $scopingDetails[11] ?? '';
-			$status           = $curItem[13];
+			$status           = $curItem->detailedStatus;
 
 			if (!$available && strtolower($status) == 'library use only'){
 				$status = 'Checked Out (library use only)';
@@ -2894,27 +2892,25 @@ class GroupedWorkDriver extends RecordInterface {
 				// the scope local url should override the item url if it is set
 				if (strlen($scopingDetails[12]) > 0){
 					$relatedUrls[] = [
-						'source' => $curItem[9],
-						'file'   => $curItem[10],
+						'source' => $curItem->eContentSource,
 						'url'    => $scopingDetails[12]
 					];
 				}else{
 					$relatedUrls[] = [
-						'source' => $curItem[9],
-						'file'   => $curItem[10],
-						'url'    => $curItem[11]
+						'source' => $curItem->eContentSource,
+						'url'    => $curItem->eContentUrl
 					];
 				}
 
-				$relatedRecord['eContentSource'] = $curItem[9];
+				$relatedRecord['eContentSource'] = $curItem->eContentSource;
 				$relatedRecord['isEContent']     = true;
 				if (!$forCovers){
 					$relatedRecord['format'] = $relatedRecord['eContentSource'] . ' ' . $recordDetails[1]; // Break out eContent manifestations by the source of the eContent
 				}
-			}elseif (!empty($curItem[11])){
+			}elseif (!empty($curItem->eContentUrl)){
 				// Special Physical Records, like KitKeeper
 				$relatedUrls[] = [
-					'url' => $curItem[11]
+					'url' => $curItem->eContentUrl
 				];
 			}
 
@@ -2955,7 +2951,7 @@ class GroupedWorkDriver extends RecordInterface {
 //			if (count($volumeData)){
 //				/** @var IlsVolumeInfo $volumeDataPoint */
 //				foreach ($volumeData as $volumeDataPoint){
-//					if ((strlen($volumeDataPoint->relatedItems) == 0) || (strpos($volumeDataPoint->relatedItems, $curItem[1]) !== false)){
+//					if ((strlen($volumeDataPoint->relatedItems) == 0) || (strpos($volumeDataPoint->relatedItems, $curItem->itemIdentifier) !== false)){
 //						if ($holdable){
 //							$volumeDataPoint->holdable = true;
 //						}
@@ -3042,12 +3038,11 @@ class GroupedWorkDriver extends RecordInterface {
 				'sectionId'          => $sectionId,
 				'section'            => $section,
 				'relatedUrls'        => $relatedUrls,
-				'lastCheckinDate'    => isset($curItem[14]) ? $curItem[14] : '',
+				'lastCheckinDate'    => $curItem->lastCheckinDate,
 //				'volume'             => $volumeRecordLabel,
 //				'volumeId'           => $volumeId,
 				'isEContent'         => $isEcontent,
 				'locationCode'       => $locationCode,
-				'subLocation'        => $subLocation,
 				'itemId'             => $itemId
 			];
 			if (!$forCovers){

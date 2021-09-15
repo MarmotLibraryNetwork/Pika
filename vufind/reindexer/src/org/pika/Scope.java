@@ -96,23 +96,22 @@ public class Scope implements Comparable<Scope>{
 	 *
 	 * @param recordType        The type of record being checked based on profile
 	 * @param locationCode      The location code for the item.  Set to blank if location codes
-	 * @param subLocationCode   The sub location code to check.  Set to blank if no sub location code
 	 * @return                  Whether or not the item is included within the scope
 	 */
-	InclusionResult isItemPartOfScope(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode, String iType, TreeSet<String> audiences, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
+	InclusionResult isItemPartOfScope(@NotNull String recordType, @NotNull String locationCode, String iType, TreeSet<String> audiences, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
 		if (locationCode == null){
 			//No location code, skip this item
 			return new InclusionResult(false, econtentUrl);
 		}
 
 		for(OwnershipRule curRule: ownershipRules){
-			if (curRule.isItemOwned(recordType, locationCode, subLocationCode)){
+			if (curRule.isItemOwned(recordType, locationCode)){
 				return new InclusionResult(true, econtentUrl);
 			}
 		}
 
 		for(InclusionRule curRule: inclusionRules){
-			if (curRule.isItemIncluded(recordType, locationCode, subLocationCode, iType, audiences, format, isHoldable, isOnOrder, isEContent, marcRecord)){
+			if (curRule.isItemIncluded(recordType, locationCode, iType, audiences, format, isHoldable, isOnOrder, isEContent, marcRecord)){
 				if (econtentUrl != null) {
 					// Do any URL Replacement needed
 					econtentUrl = curRule.getLocalUrl(econtentUrl);
@@ -131,12 +130,11 @@ public class Scope implements Comparable<Scope>{
 	 *
 	 * @param recordType        The type of record being checked based on profile
 	 * @param locationCode      The location code for the item.  Set to blank if location codes
-	 * @param subLocationCode   The sub location code to check.  Set to blank if no sub location code
 	 * @return                  Whether or not the item is included within the scope
 	 */
-	boolean isItemOwnedByScope(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode){
+	boolean isItemOwnedByScope(@NotNull String recordType, @NotNull String locationCode){
 		for(OwnershipRule curRule: ownershipRules){
-			if (curRule.isItemOwned(recordType, locationCode, subLocationCode)){
+			if (curRule.isItemOwned(recordType, locationCode)){
 				return true;
 			}
 		}

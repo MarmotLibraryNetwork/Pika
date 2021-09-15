@@ -1358,26 +1358,25 @@ class IndexRecord extends RecordInterface
 	/**
 	 * Load Record actions when we don't have detailed information about the record yet
 	 */
-	public function getRecordActionsFromIndex()
-	{
+	public function getRecordActionsFromIndex(){
 		$groupedWork = $this->getGroupedWorkDriver();
-		if ($groupedWork != null) {
+		if ($groupedWork != null){
 			$relatedRecords = $groupedWork->getRelatedRecords();
-			foreach ($relatedRecords as $relatedRecord) {
-				if ($relatedRecord['id'] == $this->getIdWithSource()) {
+			foreach ($relatedRecords as $relatedRecord){
+				if ($relatedRecord['id'] == $this->getIdWithSource()){
 					return $relatedRecord['actions'];
 				}
 			}
 		}
-		return array();
+		return [];
 	}
 
 	public function getItemActions($itemInfo){
-		return array();
+		return [];
 	}
 
 	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null){
-		return array();
+		return [];
 	}
 
 	public function getModule() {

@@ -324,7 +324,7 @@ public class GroupedWorkIndexer {
 	}
 
 	private void loadLocationScopes() throws SQLException {
-		PreparedStatement locationInformationStmt = pikaConn.prepareStatement("SELECT library.libraryId, locationId, code, subLocation, " +
+		PreparedStatement locationInformationStmt = pikaConn.prepareStatement("SELECT library.libraryId, locationId, code, " +
 				"library.subdomain, location.facetLabel, location.displayName, library.pTypes, library.restrictOwningBranchesAndSystems, location.publicListsToInclude, " +
 				"library.enableOverdriveCollection AS enableOverdriveCollectionLibrary, " +
 				"location.enableOverdriveCollection AS enableOverdriveCollectionLocation, " +
@@ -345,7 +345,6 @@ public class GroupedWorkIndexer {
 		ResultSet locationInformationRS = locationInformationStmt.executeQuery();
 		while (locationInformationRS.next()){
 			String code        = locationInformationRS.getString("code").toLowerCase();
-			String subLocation = locationInformationRS.getString("subLocation");
 			String facetLabel  = locationInformationRS.getString("facetLabel");
 			String displayName = locationInformationRS.getString("displayName");
 			if (facetLabel.length() == 0){
@@ -363,11 +362,7 @@ public class GroupedWorkIndexer {
 			Scope locationScopeInfo = new Scope();
 			locationScopeInfo.setIsLibraryScope(false);
 			locationScopeInfo.setIsLocationScope(true);
-			String scopeName = code;
-			if (subLocation != null && subLocation.length() > 0){
-				scopeName = subLocation.toLowerCase();
-			}
-			locationScopeInfo.setScopeName(scopeName);
+			locationScopeInfo.setScopeName(code);
 			locationScopeInfo.setLibraryId(libraryId);
 			locationScopeInfo.setLocationId(locationId);
 			locationScopeInfo.setRelatedPTypes(pTypes.split(","));
@@ -394,7 +389,7 @@ public class GroupedWorkIndexer {
 			locationOwnedRecordRulesStmt.setLong(1, locationId);
 			ResultSet locationOwnedRecordRulesRS = locationOwnedRecordRulesStmt.executeQuery();
 			while (locationOwnedRecordRulesRS.next()){
-				locationScopeInfo.addOwnershipRule(new OwnershipRule(locationOwnedRecordRulesRS.getString("sourceName"), locationOwnedRecordRulesRS.getString("location"), locationOwnedRecordRulesRS.getString("subLocation")));
+				locationScopeInfo.addOwnershipRule(new OwnershipRule(locationOwnedRecordRulesRS.getString("sourceName"), locationOwnedRecordRulesRS.getString("location")));
 			}
 
 			locationRecordInclusionRulesStmt.setLong(1, locationId);
@@ -402,7 +397,6 @@ public class GroupedWorkIndexer {
 			while (locationRecordInclusionRulesRS.next()){
 				locationScopeInfo.addInclusionRule(new InclusionRule(locationRecordInclusionRulesRS.getString("sourceName"),
 						locationRecordInclusionRulesRS.getString("location"),
-						locationRecordInclusionRulesRS.getString("subLocation"),
 						locationRecordInclusionRulesRS.getString("iType"),
 						locationRecordInclusionRulesRS.getString("audience"),
 						locationRecordInclusionRulesRS.getString("format"),
@@ -424,7 +418,6 @@ public class GroupedWorkIndexer {
 				while (libraryRecordInclusionRulesRS.next()){
 					locationScopeInfo.addInclusionRule(new InclusionRule(libraryRecordInclusionRulesRS.getString("sourceName"),
 							libraryRecordInclusionRulesRS.getString("location"),
-							libraryRecordInclusionRulesRS.getString("subLocation"),
 							libraryRecordInclusionRulesRS.getString("iType"),
 							libraryRecordInclusionRulesRS.getString("audience"),
 							libraryRecordInclusionRulesRS.getString("format"),
@@ -520,7 +513,7 @@ public class GroupedWorkIndexer {
 			libraryOwnedRecordRulesStmt.setLong(1, libraryId);
 			ResultSet libraryOwnedRecordRulesRS = libraryOwnedRecordRulesStmt.executeQuery();
 			while (libraryOwnedRecordRulesRS.next()){
-				newScope.addOwnershipRule(new OwnershipRule(libraryOwnedRecordRulesRS.getString("sourceName"), libraryOwnedRecordRulesRS.getString("location"), libraryOwnedRecordRulesRS.getString("subLocation")));
+				newScope.addOwnershipRule(new OwnershipRule(libraryOwnedRecordRulesRS.getString("sourceName"), libraryOwnedRecordRulesRS.getString("location")));
 			}
 
 			libraryRecordInclusionRulesStmt.setLong(1, libraryId);
@@ -528,7 +521,6 @@ public class GroupedWorkIndexer {
 			while (libraryRecordInclusionRulesRS.next()){
 				newScope.addInclusionRule(new InclusionRule(libraryRecordInclusionRulesRS.getString("sourceName"),
 						libraryRecordInclusionRulesRS.getString("location"),
-						libraryRecordInclusionRulesRS.getString("subLocation"),
 						libraryRecordInclusionRulesRS.getString("iType"),
 						libraryRecordInclusionRulesRS.getString("audience"),
 						libraryRecordInclusionRulesRS.getString("format"),

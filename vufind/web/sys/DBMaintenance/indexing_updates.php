@@ -68,7 +68,6 @@ function getIndexingUpdates(){
 							  `callNumberPoststamp` varchar(1) DEFAULT NULL,
 							  `location` char(1) DEFAULT NULL,
 							  `locationsToSuppress` varchar(100) DEFAULT NULL,
-							  `subLocation` char(1) DEFAULT NULL,
 							  `shelvingLocation` char(1) DEFAULT NULL,
 							  `volume` varchar(1) DEFAULT NULL,
 							  `itemUrl` char(1) DEFAULT NULL,
@@ -115,7 +114,6 @@ function getIndexingUpdates(){
 							  `libraryId` int(11) NOT NULL,
 							  `indexingProfileId` int(11) NOT NULL,
 							  `location` varchar(100) NOT NULL,
-							  `subLocation` varchar(100) NOT NULL,
 							  PRIMARY KEY (`id`)
 							) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
 				"CREATE TABLE IF NOT EXISTS `library_records_to_include` (
@@ -123,7 +121,6 @@ function getIndexingUpdates(){
 							  `libraryId` int(11) NOT NULL,
 							  `indexingProfileId` int(11) NOT NULL,
 							  `location` varchar(100) NOT NULL,
-							  `subLocation` varchar(100) NOT NULL,
 							  `includeHoldableOnly` tinyint(4) NOT NULL DEFAULT '1',
 							  `includeItemsOnOrder` tinyint(1) NOT NULL DEFAULT '0',
 							  `includeEContent` tinyint(1) NOT NULL DEFAULT '0',
@@ -136,7 +133,6 @@ function getIndexingUpdates(){
 							  `locationId` int(11) NOT NULL,
 							  `indexingProfileId` int(11) NOT NULL,
 							  `location` varchar(100) NOT NULL,
-							  `subLocation` varchar(100) NOT NULL,
 							  PRIMARY KEY (`id`)
 							) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
 				"CREATE TABLE IF NOT EXISTS `location_records_to_include` (
@@ -144,7 +140,6 @@ function getIndexingUpdates(){
 							  `locationId` int(11) NOT NULL,
 							  `indexingProfileId` int(11) NOT NULL,
 							  `location` varchar(100) NOT NULL,
-							  `subLocation` varchar(100) NOT NULL,
 							  `includeHoldableOnly` tinyint(4) NOT NULL DEFAULT '1',
 							  `includeItemsOnOrder` tinyint(1) NOT NULL DEFAULT '0',
 							  `includeEContent` tinyint(1) NOT NULL DEFAULT '0',
@@ -372,20 +367,32 @@ function getIndexingUpdates(){
 			'description' => 'For tracking Validated MARC export files',
 			'sql'         => [
 				'CREATE TABLE `pika`.`indexing_profile_marc_validation` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `source` VARCHAR(45) NOT NULL,
-  `fileName` VARCHAR(45) NOT NULL,
-  `fileLastModifiedTime` INT UNSIGNED NOT NULL,
-  `validationTime` INT UNSIGNED NOT NULL,
-  `validated` TINYINT(1) UNSIGNED NULL,
-  `totalRecords` INT UNSIGNED NULL,
-  `recordSuppressed` INT UNSIGNED NULL,
-  `errors` INT UNSIGNED NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `uniqueIndex` (`source` ASC, `fileName` ASC)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;'
+				  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+				  `source` VARCHAR(45) NOT NULL,
+				  `fileName` VARCHAR(45) NOT NULL,
+				  `fileLastModifiedTime` INT UNSIGNED NOT NULL,
+				  `validationTime` INT UNSIGNED NOT NULL,
+				  `validated` TINYINT(1) UNSIGNED NULL,
+				  `totalRecords` INT UNSIGNED NULL,
+				  `recordSuppressed` INT UNSIGNED NULL,
+				  `errors` INT UNSIGNED NULL,
+				  PRIMARY KEY (`id`),
+				  UNIQUE INDEX `uniqueIndex` (`source` ASC, `fileName` ASC)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8;'
 			]
 		],
+		'2021.04.0_remove_sublocation_recordsOwned_recordToInclude' => [
+			'title'           => 'Remove unused Koha setting sublocation from recordsOwned and recordToInclude',
+			'description'     => '',
+			'continueOnError' => true,
+			'sql'             => [
+				'ALTER TABLE `indexing_profiles` DROP COLUMN `subLocation`; ',
+				'ALTER TABLE `library_records_owned` DROP COLUMN `subLocation`; ',
+				'ALTER TABLE `library_records_to_include` DROP COLUMN `subLocation`;',
+				'ALTER TABLE `location_records_owned` DROP COLUMN `subLocation`; ',
+				'ALTER TABLE `location_records_to_include` DROP COLUMN `subLocation`; '
+			],
+		]
 
 	);
 }
@@ -420,7 +427,6 @@ function setupIndexingProfiles($update){
 	$ilsIndexingProfile->callNumberPoststamp     = $configArray['Reindex']['callNumberPoststampSubfield'];
 	$ilsIndexingProfile->location                = $configArray['Reindex']['locationSubfield'];
 	$ilsIndexingProfile->locationsToSuppress     = isset($configArray['Reindex']['locationsToSuppress']) ? $configArray['Reindex']['locationsToSuppress'] : '';
-	$ilsIndexingProfile->subLocation             = '';
 	$ilsIndexingProfile->shelvingLocation        = $configArray['Reindex']['locationSubfield'];
 	$ilsIndexingProfile->collection              = $configArray['Reindex']['collectionSubfield'];
 	$ilsIndexingProfile->volume                  = $configArray['Reindex']['volumeSubfield'];
@@ -484,7 +490,6 @@ function setupIndexingProfiles($update){
 		$ownershipRule->indexingProfileId = $ilsIndexingProfile->id;
 		$ownershipRule->libraryId         = $allLibraries->libraryId;
 		$ownershipRule->location          = $allLibraries->ilsCode;
-		$ownershipRule->subLocation       = '';
 		$ownershipRule->insert();
 
 		//Other print titles
@@ -493,7 +498,6 @@ function setupIndexingProfiles($update){
 			$inclusionRule->indexingProfileId   = $ilsIndexingProfile->id;
 			$inclusionRule->libraryId           = $allLibraries->libraryId;
 			$inclusionRule->location            = ".*";
-			$inclusionRule->subLocation         = '';
 			$inclusionRule->includeHoldableOnly = 1;
 			$inclusionRule->includeEContent     = 0;
 			$inclusionRule->includeItemsOnOrder = 0;
@@ -507,7 +511,6 @@ function setupIndexingProfiles($update){
 			$inclusionRule->indexingProfileId   = $ilsIndexingProfile->id;
 			$inclusionRule->libraryId           = $allLibraries->libraryId;
 			$inclusionRule->location            = str_replace(',', '|', $allLibraries->econtentLocationsToInclude);
-			$inclusionRule->subLocation         = '';
 			$inclusionRule->includeHoldableOnly = 0;
 			$inclusionRule->includeEContent     = 1;
 			$inclusionRule->includeItemsOnOrder = 0;
@@ -521,7 +524,6 @@ function setupIndexingProfiles($update){
 			$inclusionRule->indexingProfileId = $hooplaIndexingProfile->id;
 			$inclusionRule->libraryId = $allLibraries->libraryId;
 			$inclusionRule->location = '.*';
-			$inclusionRule->subLocation = '';
 			$inclusionRule->includeHoldableOnly = 0;
 			$inclusionRule->includeEContent = 1;
 			$inclusionRule->includeItemsOnOrder = 0;
@@ -538,7 +540,6 @@ function setupIndexingProfiles($update){
 		$ownershipRule->indexingProfileId = $ilsIndexingProfile->id;
 		$ownershipRule->locationId        = $allLocations->locationId;
 		$ownershipRule->location          = $allLocations->code;
-		$ownershipRule->subLocation       = '';
 		$ownershipRule->insert();
 
 		//Other print titles
@@ -547,7 +548,6 @@ function setupIndexingProfiles($update){
 			$inclusionRule->indexingProfileId   = $ilsIndexingProfile->id;
 			$inclusionRule->locationId          = $allLocations->locationId;
 			$inclusionRule->location            = ".*";
-			$inclusionRule->subLocation         = '';
 			$inclusionRule->includeHoldableOnly = 1;
 			$inclusionRule->includeEContent     = 0;
 			$inclusionRule->includeItemsOnOrder = 0;
@@ -561,7 +561,6 @@ function setupIndexingProfiles($update){
 			$inclusionRule->indexingProfileId   = $ilsIndexingProfile->id;
 			$inclusionRule->locationId          = $allLocations->locationId;
 			$inclusionRule->location            = str_replace(',', '|', $allLibraries->econtentLocationsToInclude);
-			$inclusionRule->subLocation         = '';
 			$inclusionRule->includeHoldableOnly = 0;
 			$inclusionRule->includeEContent     = 1;
 			$inclusionRule->includeItemsOnOrder = 0;
@@ -577,7 +576,6 @@ function setupIndexingProfiles($update){
 			$inclusionRule->indexingProfileId   = $hooplaIndexingProfile->id;
 			$inclusionRule->locationId          = $allLocations->locationId;
 			$inclusionRule->location            = '.*';
-			$inclusionRule->subLocation         = '';
 			$inclusionRule->includeHoldableOnly = 0;
 			$inclusionRule->includeEContent     = 1;
 			$inclusionRule->includeItemsOnOrder = 0;

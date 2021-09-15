@@ -38,29 +38,29 @@ class System extends Action {
 			$interface->assign('library', $librarySystem);
 		}
 
-		$semanticData = array(
+		$semanticData = [
 			'@context' => 'http://schema.org',
 			'@type'    => 'Organization',
 			'name'     => $librarySystem->displayName,
-		);
+		];
 		//add branches
 		$locations            = new Location();
 		$locations->libraryId = $librarySystem->libraryId;
 		$locations->orderBy('isMainBranch DESC, displayName'); // List Main Branches first, then sort by name
 		$locations->find();
-		$subLocations = array();
-		$branches     = array();
+		$subLocations = [];
+		$branches     = [];
 		while ($locations->fetch()){
-			$branches[]     = array(
+			$branches[]     = [
 				'name' => $locations->displayName,
 				'link' => $configArray['Site']['url'] . "/Library/{$locations->locationId}/Branch"
-			);
-			$subLocations[] = array(
+			];
+			$subLocations[] = [
 				'@type' => 'Organization',
 				'name'  => $locations->displayName,
 				'url'   => $configArray['Site']['url'] . "/Library/{$locations->locationId}/Branch"
 
-			);
+			];
 		}
 		if (count($subLocations)){
 			$semanticData['subOrganization'] = $subLocations;

@@ -81,7 +81,7 @@ class HooplaRecordDriver extends SideLoadedRecord {
 	}
 
 	public function getItemActions($itemInfo){
-		return array();
+		return [];
 	}
 
 	/**

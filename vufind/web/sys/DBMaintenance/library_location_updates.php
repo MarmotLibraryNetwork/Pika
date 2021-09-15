@@ -429,8 +429,6 @@ function getLibraryLocationUpdates(){
 					"ALTER TABLE location ADD phone VARCHAR(15)  DEFAULT ''",
 					"ALTER TABLE location ADD showDisplayNameInHeader TINYINT DEFAULT 0",
 					"ALTER TABLE `location` CHANGE `code` `code` varchar(50)",
-					"ALTER TABLE `location` ADD subLocation varchar(50)",
-					"ALTER TABLE location DROP INDEX `code` , ADD UNIQUE `code` ( `code` , `subLocation` ) ",
 			),
 		),
 
@@ -1223,6 +1221,18 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			'continueOnError' => true,
 			'sql'             => [
 				"ALTER TABLE `library` DROP COLUMN `addSMSIndicatorToPhone`",
+			],
+		],
+
+		'2021.04.0_remove_sublocation' => [
+			'title'           => 'Remove unused Koha setting sublocation',
+			'description'     => '',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE `location` 
+					DROP COLUMN `subLocation`,
+					DROP INDEX `code` ,
+					ADD UNIQUE INDEX `code` (`code` ASC); ",
 			],
 		],
 

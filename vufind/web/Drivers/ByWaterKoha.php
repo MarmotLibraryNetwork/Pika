@@ -688,30 +688,30 @@ EOD;
 					// For Aspencat locations with a sublocation code should display the library district as the pickup location
 					// all others should display the location.
 					if ($curPickupBranch->find(true)){
-						$curPickupBranch->fetch();
-						// check the sublocation for a value.
-						if(isset($curPickupBranch->subLocation) && $curPickupBranch->subLocation != '') {
-							// if it's a sublocation, use the library settings for the pickup location
-							$library = new Library();
-							$library->libraryId = $curPickupBranch->libraryId;
-							if($library->find(true)) {
-								$library->fetch();
-								$curHold['currentPickupId']   = $curPickupBranch->locationId;
-								$curHold['currentPickupName'] = $library->displayName;
-								$curHold['location']          = $library->displayName;
-							} else {
-								// TODO: Don't really need this as a location must belong to a library.
-								// Keeping it just in case.
-								$curHold['currentPickupId']   = $curPickupBranch->locationId;
-								$curHold['currentPickupName'] = $curPickupBranch->displayName;
-								$curHold['location']          = $curPickupBranch->displayName;
-							}
-						} else {
+						// obsoleted sublocation
+//						// check the sublocation for a value.
+//						if(isset($curPickupBranch->subLocation) && $curPickupBranch->subLocation != '') {
+//							// if it's a sublocation, use the library settings for the pickup location
+//							$library = new Library();
+//							$library->libraryId = $curPickupBranch->libraryId;
+//							if($library->find(true)) {
+//								$library->fetch();
+//								$curHold['currentPickupId']   = $curPickupBranch->locationId;
+//								$curHold['currentPickupName'] = $library->displayName;
+//								$curHold['location']          = $library->displayName;
+//							} else {
+//								// TODO: Don't really need this as a location must belong to a library.
+//								// Keeping it just in case.
+//								$curHold['currentPickupId']   = $curPickupBranch->locationId;
+//								$curHold['currentPickupName'] = $curPickupBranch->displayName;
+//								$curHold['location']          = $curPickupBranch->displayName;
+//							}
+//						} else {
 							// not a sublocation, use the location settings.
 							$curHold['currentPickupId']   = $curPickupBranch->locationId;
 							$curHold['currentPickupName'] = $curPickupBranch->displayName;
 							$curHold['location']          = $curPickupBranch->displayName;
-						}
+//						}
 					}
 
 					if (!empty($bibId)){

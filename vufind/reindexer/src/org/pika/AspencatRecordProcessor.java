@@ -411,13 +411,14 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 		/*String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		String location = translateValue("location", locationCode);*/
 		String location        = "";
-		String subLocationCode = getItemSubfieldData(subLocationSubfield, itemField);
-		if (subLocationCode != null && subLocationCode.length() > 0) {
-			location += translateValue("sub_location", subLocationCode, identifier);
-		} else {
+		// Removed sublocation from tables and classes
+//		String subLocationCode = getItemSubfieldData(subLocationSubfield, itemField);
+//		if (subLocationCode != null && subLocationCode.length() > 0) {
+//			location += translateValue("sub_location", subLocationCode, identifier);
+//		} else {
 			String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 			location = translateValue("location", locationCode, identifier);
-		}
+//		}
 		String shelvingLocation = getItemSubfieldData(shelvingLocationSubfield, itemField);
 		if (shelvingLocation != null && shelvingLocation.length() > 0) {
 			if (location.length() > 0) {

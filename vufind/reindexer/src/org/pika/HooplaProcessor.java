@@ -375,7 +375,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		//Figure out ownership information
 		for (Scope curScope : indexer.getScopes()) {
 			String                originalUrl = itemInfo.geteContentUrl();
-			Scope.InclusionResult result      = curScope.isItemPartOfScope(source, "", "", null, groupedWork.getTargetAudiences(), recordInfo.getPrimaryFormat(), false, false, true, record, originalUrl);
+			Scope.InclusionResult result      = curScope.isItemPartOfScope(source, "", null, groupedWork.getTargetAudiences(), recordInfo.getPrimaryFormat(), false, false, true, record, originalUrl);
 			if (result.isIncluded) {
 
 				boolean isHooplaIncluded = true;
@@ -421,13 +421,13 @@ class HooplaProcessor extends MarcRecordProcessor {
 		scopingInfo.setGroupedStatus("Available Online");
 		scopingInfo.setHoldable(false);
 		if (curScope.isLocationScope()) {
-			scopingInfo.setLocallyOwned(curScope.isItemOwnedByScope(source, "", ""));
+			scopingInfo.setLocallyOwned(curScope.isItemOwnedByScope(source, ""));
 			if (curScope.getLibraryScope() != null) {
-				scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope(source, "", ""));
+				scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope(source, ""));
 			}
 		}
 		if (curScope.isLibraryScope()) {
-			scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope(source, "", ""));
+			scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope(source, ""));
 		}
 		//Check to see if we need to do url rewriting
 		if (originalUrl != null && !originalUrl.equals(result.localUrl)) {

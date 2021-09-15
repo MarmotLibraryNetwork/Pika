@@ -249,10 +249,6 @@ function loadLibraryAndLocation(){
 	handleCookie('branch', $branch);
 	$timer->logTime('Got branch');
 
-	$sublocation = $locationSingleton->getSublocationCode();
-	handleCookie('sublocation', $sublocation);
-	$timer->logTime('Got sublocation');
-
 	getLibraryObject();
 }
 
@@ -389,9 +385,6 @@ function loadSearchInformation(){
 	}
 	if ($searchLocation){
 		$solrScope = strtolower($searchLocation->code);
-		if (!empty($searchLocation->subLocation)){
-			$solrScope = strtolower($searchLocation->subLocation);
-		}
 		$scopeType = 'Location';
 	}
 
