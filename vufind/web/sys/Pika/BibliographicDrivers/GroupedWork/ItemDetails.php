@@ -59,11 +59,10 @@ class ItemDetails {
 		$this->isOrderItem      = $itemDetailsArray[7] == '1' || $itemDetailsArray[7] == 'true';
 		$this->isEContent       = $itemDetailsArray[8] == '1' || $itemDetailsArray[8] == 'true';
 		$this->eContentSource   = $itemDetailsArray[9];
-		//TODO: have to decrement indexes below by one after econtentFile is removed from the item_details field
-		$this->eContentUrl      = $itemDetailsArray[11];
-		$this->subFormat        = $itemDetailsArray[12];
-		$this->detailedStatus   = $itemDetailsArray[13];
-		$this->lastCheckinDate  = $itemDetailsArray[14] ?? '';
-		$this->locationCode     = $itemDetailsArray[15] ?? '';
+		$this->eContentUrl      = $itemDetailsArray[10];
+		$this->subFormat        = $itemDetailsArray[11];
+		$this->detailedStatus   = $itemDetailsArray[12];
+		$this->lastCheckinDate  = $itemDetailsArray[13] ?? '';
+		$this->locationCode     = $itemDetailsArray[14] ?? '';
 	}
 }

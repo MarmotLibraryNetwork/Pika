@@ -55,7 +55,7 @@
 					<tr>
 						{*{assign var="item" value=$item|rtrim:"|"}*}
 						{assign var="details" value="|"|explode:$item}
-						{foreach from=$details item='detail'  key="k"}
+						{foreach from=$details item='detail' key="k"}
 						<td{if in_array($k, array(0,1))} style="overflow-wrap: anywhere; min-width: 50px" {/if}>{$detail|replace:',':', '}</td>
 					{/foreach}
 					</tr>
@@ -74,7 +74,7 @@
 					{assign var="details" value="|"|explode:$item}
 						{foreach from=$details item='detail' key="k"}
 						{*{foreach from=explode($values, "|") item='detail'}*}
-						<td{if in_array($k, array(0,1,11))} style="overflow-wrap: anywhere; min-width: 50px" {/if}>{$detail|replace:',':', '}</td>
+						<td{if in_array($k, array(0,1,10))} style="overflow-wrap: anywhere; min-width: 50px" {/if}>d{if in_array($k, array(7,8))}{if $detail}true{else}false{/if}{else}{$detail|replace:',':', '}{/if}</td>
 					{/foreach}
 					</tr>
 					{/foreach}
@@ -91,9 +91,9 @@
 					<tr>
 						{*{assign var="item" value=$item|rtrim:"|"}*}
 						{assign var="details" value="|"|explode:$item}
-						{foreach from=$details item='detail'}
+						{foreach from=$details item='detail' key="k"}
 						{*{foreach from=explode($values, "|") item='detail'}*}
-						<td>{$detail|replace:',':', '}</td>
+						<td{if $k=0} style="overflow-wrap: anywhere; min-width: 50px" {/if}>{$detail|replace:',':', '}</td>
 					{/foreach}
 					</tr>
 					{/foreach}
