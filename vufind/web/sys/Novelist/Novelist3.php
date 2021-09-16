@@ -272,7 +272,15 @@ class Novelist3{
 
 						//Series Information
 						if (isset($data->FeatureContent->SeriesInfo)){
-							$this->loadSeriesInfo($groupedRecordId, $data->FeatureContent->SeriesInfo, $novelistData);
+							//verify that API returned ISBN matches the current ISBN before it is added
+							if(in_array($novelistData->primaryISBN, $ISBNs))
+							{
+								$this->loadSeriesInfo($groupedRecordId, $data->FeatureContent->SeriesInfo, $novelistData);
+							}else{
+								global $logger;
+								$logger->log("Novelist ISBN for record " . $groupedRecordId . " does not match local holdings", PEAR_LOGWARNING);
+								$novelistData->primaryISBN = $ISBNs[0];
+							}
 						}
 
 						//Similar Titles
