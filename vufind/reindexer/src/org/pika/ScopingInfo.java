@@ -98,24 +98,23 @@ class ScopingInfo {
 		this.libraryOwned = libraryOwned;
 	}
 
-	String getScopingDetails(){
+	String getScopingDetails() {
 		String itemIdentifier = item.getItemIdentifier();
 		if (itemIdentifier == null) itemIdentifier = "";
 		return item.getFullRecordIdentifier() + "|" +
-				itemIdentifier + "|" +
-				groupedStatus + "|" +
-				status + "|" +
-				locallyOwned + "|" +
-				available + "|" +
-				holdable + "|" +
-				bookable + "|" +
-				inLibraryUseOnly + "|" +
-				libraryOwned + "|" +
-				Util.getCleanDetailValue(holdablePTypes) + "|" +
-				Util.getCleanDetailValue(bookablePTypes) + "|" +
-				Util.getCleanDetailValue(localUrl)
-//				+ "|" // no longer used for display in pika. TODO: Would like to remove, but parsing elsewhere may be dependent on final pipe
-				;
+						itemIdentifier + "|" +
+						groupedStatus + "|" +
+						status + "|" +
+						(locallyOwned ? "1" : "0") + "|" +
+						(available ? "1" : "0") + "|" +
+						(holdable ? "1" : "0") + "|" +
+						(bookable ? "1" : "0") + "|" +
+						(inLibraryUseOnly ? "1" : "0") + "|" +
+						(libraryOwned ? "1" : "0") + "|" +
+						Util.getCleanDetailValue(holdablePTypes) + "|" +
+						Util.getCleanDetailValue(bookablePTypes) + "|" +
+						Util.getCleanDetailValue(localUrl)
+						;
 	}
 
 	void setLocalUrl(String localUrl) {

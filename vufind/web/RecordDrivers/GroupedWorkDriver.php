@@ -1370,8 +1370,8 @@ class GroupedWorkDriver extends RecordInterface {
 			$memoryWatcher->logMemory('Loaded scoping details from the index');
 
 			$recordsFromIndex = $this->loadRecordDetailsFromIndex($validRecordIds);
-			$timer->logTime("Loaded Record Details from the index");
-			$memoryWatcher->logMemory("Loaded Record Details from the index");
+			$timer->logTime('Loaded Record Details from the index');
+			$memoryWatcher->logMemory('Loaded Record Details from the index');
 
 			//Get a list of related items filtered according to scoping
 			$this->loadItemDetailsFromIndex($validItemIds);
@@ -1386,10 +1386,11 @@ class GroupedWorkDriver extends RecordInterface {
 			//This will be false if the record is old
 			if ($groupedWork->find(true)){
 				//Generate record information based on the information we have in the index
+				/** @var \Pika\BibliographicDrivers\GroupedWork\RecordDetails $recordDetails */
 				foreach ($recordsFromIndex as $recordDetails){
 					$relatedRecord                        = $this->setupRelatedRecordDetails($recordDetails, $groupedWork, $timer, $scopingInfo, $activePTypes, $searchLocation, $library, $forCovers);
 					$relatedRecords[$relatedRecord['id']] = $relatedRecord;
-					$memoryWatcher->logMemory("Setup related record details for " . $relatedRecord['id']);
+					$memoryWatcher->logMemory('Setup related record details for ' . $relatedRecord['id']);
 				}
 			}
 
@@ -2668,10 +2669,11 @@ class GroupedWorkDriver extends RecordInterface {
 				$scopingInfoRaw = [$scopingInfoRaw];
 			}
 			foreach ($scopingInfoRaw as $tmpItem){
-				$scopingDetails         = explode('|', $tmpItem);
-				$scopeKey               = $scopingDetails[0] . ':' . ($scopingDetails[1] == 'null' ? '' : $scopingDetails[1]);
-				$scopingInfo[$scopeKey] = $scopingDetails;
-				$validRecordIds[]       = $scopingDetails[0];
+				$scopingDetailsArray         = explode('|', $tmpItem);
+				$scopeDetails = new \Pika\BibliographicDrivers\GroupedWork\ScopeDetails($scopingDetailsArray);
+				$scopeKey               = $scopeDetails->recordFullIdentifier . ':' . $scopeDetails->itemIdentifier;
+				$scopingInfo[$scopeKey] = $scopeDetails;
+				$validRecordIds[]       = $scopeDetails->recordFullIdentifier;
 				$validItemIds[]         = $scopeKey;
 			}
 		}
@@ -2685,7 +2687,7 @@ class GroupedWorkDriver extends RecordInterface {
 	 * @return array
 	 */
 	protected function loadRecordDetailsFromIndex($validRecordIds){
-		$relatedRecordFieldName = "record_details";
+		$relatedRecordFieldName = 'record_details';
 		$recordsFromIndex       = [];
 		if (isset($this->fields[$relatedRecordFieldName])){
 			$relatedRecordIdsRaw = $this->fields[$relatedRecordFieldName];
@@ -2693,10 +2695,11 @@ class GroupedWorkDriver extends RecordInterface {
 				$relatedRecordIdsRaw = [$relatedRecordIdsRaw];
 			}
 			foreach ($relatedRecordIdsRaw as $tmpItem){
-				$recordDetails = explode('|', $tmpItem);
+				$recordDetailsArray = explode('|', $tmpItem);
+				$recordDetails = new \Pika\BibliographicDrivers\GroupedWork\RecordDetails($recordDetailsArray);
 				//Check to see if the record is valid
-				if (in_array($recordDetails[0], $validRecordIds)){
-					$recordsFromIndex[$recordDetails[0]] = $recordDetails;
+				if (in_array($recordDetails->recordFullIdentifier, $validRecordIds)){
+					$recordsFromIndex[$recordDetails->recordFullIdentifier] = $recordDetails;
 				}
 			}
 		}
@@ -2735,7 +2738,7 @@ class GroupedWorkDriver extends RecordInterface {
 	//TODO: switch to const when php version is >= 5.6
 
 	/**
-	 * @param array $recordDetails
+	 * @param \Pika\BibliographicDrivers\GroupedWork\RecordDetails $recordDetails
 	 * @param GroupedWork $groupedWork
 	 * @param Timer $timer
 	 * @param array $scopingInfo
@@ -2750,28 +2753,28 @@ class GroupedWorkDriver extends RecordInterface {
 		//Check to see if we have any volume data for the record
 		global $memoryWatcher;
 
-		//		list($source) = explode(':', $recordDetails[0], 1); // this does not work for 'overdrive:27770ba9-9e68-410c-902b-de2de8e2b7fe', returns 'overdrive:27770ba9-9e68-410c-902b-de2de8e2b7fe'
+		//		list($source) = explode(':', $recordDetails->recordFullIdentifier, 1); // this does not work for 'overdrive:27770ba9-9e68-410c-902b-de2de8e2b7fe', returns 'overdrive:27770ba9-9e68-410c-902b-de2de8e2b7fe'
 		// when loading book covers.
-		[$source] = explode(':', $recordDetails[0], 2);
+		[$source] = explode(':', $recordDetails->recordFullIdentifier, 2);
 		require_once ROOT_DIR . '/RecordDrivers/Factory.php';
-		$recordDriver = RecordDriverFactory::initRecordDriverById($recordDetails[0], $groupedWork);
-		$timer->logTime("Loaded Record Driver for $recordDetails[0]");
-		$memoryWatcher->logMemory("Loaded Record Driver for $recordDetails[0]");
+		$recordDriver = RecordDriverFactory::initRecordDriverById($recordDetails->recordFullIdentifier, $groupedWork);
+		$timer->logTime("Loaded Record Driver for $recordDetails->recordFullIdentifier");
+		$memoryWatcher->logMemory("Loaded Record Driver for $recordDetails->recordFullIdentifier");
 
 //		$volumeData = $recordDriver->getVolumeInfoForRecord();
 
 		//Setup the base record
 		$relatedRecord = [
-			'id'                     => $recordDetails[0],
+			'id'                     => $recordDetails->recordFullIdentifier,
 			'driver'                 => $recordDriver,
 			'url'                    => $recordDriver != null ? $recordDriver->getRecordUrl() : '',
-			'format'                 => $recordDetails[1],
-			'formatCategory'         => $recordDetails[2],
-			'edition'                => $recordDetails[3],
-			'language'               => $recordDetails[4],
-			'publisher'              => $recordDetails[5],
-			'publicationDate'        => $recordDetails[6],
-			'physical'               => $recordDetails[7],
+			'format'                 => $recordDetails->primaryFormat,
+			'formatCategory'         => $recordDetails->primaryFormatCategory,
+			'edition'                => $recordDetails->edition,
+			'language'               => $recordDetails->primaryLanguage,//TODO :might be obsolete now
+			'publisher'              => $recordDetails->publisher,
+			'publicationDate'        => $recordDetails->publicationDate,
+			'physical'               => $recordDetails->physicalDescription,
 			'callNumber'             => '',
 			'available'              => false,
 			'availableOnline'        => false,
@@ -2797,12 +2800,12 @@ class GroupedWorkDriver extends RecordInterface {
 			'groupedStatus'          => 'Currently Unavailable',
 			'source'                 => $source,
 			'actions'                => [],
-			'schemaDotOrgType'       => $this->getSchemaOrgType($recordDetails[1]),
-			'schemaDotOrgBookFormat' => $this->getSchemaOrgBookFormat($recordDetails[1]),
-			'abridged'               => !empty($recordDetails[8]),
+			'schemaDotOrgType'       => $this->getSchemaOrgType($recordDetails->primaryFormat),
+			'schemaDotOrgBookFormat' => $this->getSchemaOrgBookFormat($recordDetails->primaryFormat),
+			'abridged'               => $recordDetails->abridged,
 		];
-		$timer->logTime("Setup base related record");
-		$memoryWatcher->logMemory("Setup base related record");
+		$timer->logTime('Setup base related record');
+		$memoryWatcher->logMemory('Setup base related record');
 
 		//Process the items for the record and add additional information as needed
 		$localShelfLocation   = null;
@@ -2817,7 +2820,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$i                 = 0;
 		$allLibraryUseOnly = true;
 		/** @var \Pika\BibliographicDrivers\GroupedWork\ItemDetails $curItem */
-		foreach ($this->relatedItemsByRecordId[$recordDetails[0]] as $curItem){
+		foreach ($this->relatedItemsByRecordId[$recordDetails->recordFullIdentifier] as $curItem){
 			$itemId        = $curItem->itemIdentifier;
 			$shelfLocation = $curItem->shelfLocation;
 
@@ -2840,17 +2843,18 @@ class GroupedWorkDriver extends RecordInterface {
 			$isEcontent   = $curItem->isEContent;
 			$locationCode = $curItem->locationCode;
 
+			/** @var \Pika\BibliographicDrivers\GroupedWork\ScopeDetails $scopingDetails */
 			$scopingDetails = $scopingInfo[$scopeKey];
 			//Get Scoping information for this record
-			$groupedStatus    = $scopingDetails[2];
-			$locallyOwned     = $scopingDetails[4] == 'true';
-			$available        = $scopingDetails[5] == 'true';
-			$holdable         = $scopingDetails[6] == 'true';
-			$bookable         = $scopingDetails[7] == 'true';
-			$inLibraryUseOnly = $scopingDetails[8] == 'true';
-			$libraryOwned     = $scopingDetails[9] == 'true';
-			$holdablePTypes   = $scopingDetails[10] ?? '';
-			$bookablePTypes   = $scopingDetails[11] ?? '';
+			$groupedStatus    = $scopingDetails->groupedStatus;
+			$locallyOwned     = $scopingDetails->locallyOwned;
+			$available        = $scopingDetails->available;
+			$holdable         = $scopingDetails->holdable;
+			$bookable         = $scopingDetails->bookable;
+			$inLibraryUseOnly = $scopingDetails->inLibraryUseOnly;
+			$libraryOwned     = $scopingDetails->libraryOwned;
+			$holdablePTypes   = $scopingDetails->holdablePTypes;
+			$bookablePTypes   = $scopingDetails->bookablePTypes;
 			$status           = $curItem->detailedStatus;
 
 			if (!$available && strtolower($status) == 'library use only'){
@@ -2890,10 +2894,10 @@ class GroupedWorkDriver extends RecordInterface {
 			//Update the record with information from the item and from scoping.
 			if ($isEcontent){
 				// the scope local url should override the item url if it is set
-				if (strlen($scopingDetails[12]) > 0){
+				if (!empty($scopingDetails->localUrl)){
 					$relatedUrls[] = [
 						'source' => $curItem->eContentSource,
-						'url'    => $scopingDetails[12]
+						'url'    => $scopingDetails->localUrl
 					];
 				}else{
 					$relatedUrls[] = [
@@ -2905,7 +2909,7 @@ class GroupedWorkDriver extends RecordInterface {
 				$relatedRecord['eContentSource'] = $curItem->eContentSource;
 				$relatedRecord['isEContent']     = true;
 				if (!$forCovers){
-					$relatedRecord['format'] = $relatedRecord['eContentSource'] . ' ' . $recordDetails[1]; // Break out eContent manifestations by the source of the eContent
+					$relatedRecord['format'] = $relatedRecord['eContentSource'] . ' ' . $recordDetails->primaryFormat; // Break out eContent manifestations by the source of the eContent
 				}
 			}elseif (!empty($curItem->eContentUrl)){
 				// Special Physical Records, like KitKeeper
@@ -3079,15 +3083,15 @@ class GroupedWorkDriver extends RecordInterface {
 			$relatedRecord['callNumber'] = $libraryCallNumber;
 		}
 
-		ksort($relatedRecord['itemDetails']); // ItemDetails is used in the MarcRecord driver to set up displaying the copies section. See MarcReocrd->loadCopies()
+		ksort($relatedRecord['itemDetails']); // ItemDetails is used in the MarcRecord driver to set up displaying the copies section. See MarcRecord->loadCopies()
 		ksort($relatedRecord['itemSummary']);
-		$timer->logTime("Setup record items");
-		$memoryWatcher->logMemory("Setup record items");
+		$timer->logTime('Setup record items');
+		$memoryWatcher->logMemory('Setup record items');
 
 		if (!$forCovers){
 			$relatedRecord['actions'] = $recordDriver != null ? $recordDriver->getRecordActions($relatedRecord['availableLocally'] || $relatedRecord['availableOnline'], $recordHoldable, $recordBookable, $relatedUrls/*, $volumeData*/) : array();
-			$timer->logTime("Loaded actions");
-			$memoryWatcher->logMemory("Loaded actions");
+			$timer->logTime('Loaded actions');
+			$memoryWatcher->logMemory('Loaded actions');
 		}
 
 		$recordDriver = null;
