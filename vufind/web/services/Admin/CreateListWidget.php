@@ -32,25 +32,22 @@ require_once ROOT_DIR . '/sys/DataObjectUtil.php';
  *
  */
 class CreateListWidget extends Action {
-	function launch() 	{
-//		global $configArray;
-//		global $interface;
-		$user = UserAccount::getLoggedInUser();
-
-		$source = $_REQUEST['source'];
+	function launch(){
+		$user     = UserAccount::getLoggedInUser();
+		$source   = $_REQUEST['source'];
 		$sourceId = $_REQUEST['id'];
-		if (!empty($user) && !empty($source) && !empty($sourceId)) { // make sure we received this input & the user is logged in
-			$existingWidget = isset($_REQUEST['widgetId']) ? $_REQUEST['widgetId'] : -1;
-			$widgetName     = isset($_REQUEST['widgetName']) ? $_REQUEST['widgetName'] : '';
+		if (!empty($user) && !empty($source) && !empty($sourceId)){ // make sure we received this input & the user is logged in
+			$existingWidget = $_REQUEST['widgetId'] ?? -1;
+			$widgetName     = $_REQUEST['widgetName'] ?? '';
 
-			if ($existingWidget == -1) {
+			if ($existingWidget == -1){
 				$widget       = new ListWidget();
 				$widget->name = $widgetName;
-				if (UserAccount::userHasRoleFromList(['libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager'])) {
+				if (UserAccount::userHasRoleFromList(['libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager'])){
 					//Get all widgets for the library
 					$userLibrary       = UserAccount::getUserHomeLibrary();
 					$widget->libraryId = $userLibrary->libraryId;
-				} else {
+				}else{
 					$widget->libraryId = -1;
 				}
 				$widget->customCss             = '';
@@ -62,18 +59,18 @@ class CreateListWidget extends Action {
 				$widget->listDisplayType       = 'tabs';
 				$widget->showMultipleTitles    = 1;
 				$widget->insert();
-			} else {
+			}else{
 				$widget     = new ListWidget();
 				$widget->id = $existingWidget;
 				$widget->find(true);
 			}
 
 			//Make sure to save the search
-			if ($source == 'search') {
+			if ($source == 'search'){
 				$searchObject     = new SearchEntry();
 				$searchObject->id = $sourceId;
 				$searchObject->find(true);
-				$searchObject->saved = 1;
+				$searchObject->saved   = 1;
 				$searchObject->user_id = $user->id;
 				$searchObject->update();
 			}
@@ -88,8 +85,7 @@ class CreateListWidget extends Action {
 			$widgetList->insert();
 
 			//Redirect to the widget
-//		header("Location: $path/Admin/ListWidgets?objectAction=view&id={$widget->id}" ); // path not defined. plb 7-8-2015
-			header("Location: /Admin/ListWidgets?objectAction=view&id={$widget->id}" );
+			header("Location: /Admin/ListWidgets?objectAction=view&id={$widget->id}");
 		}
 	}
 }

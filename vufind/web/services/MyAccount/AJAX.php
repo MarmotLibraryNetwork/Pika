@@ -726,7 +726,7 @@ class MyAccount_AJAX extends AJAXHandler {
 			global $interface;
 
 			$titles = $listAPI->getListTitles();
-			$timer->logTime("getListTitles");
+			$timer->logTime('getListTitles');
 			$addStrandsTracking = false;
 			if ($titles['success'] == true){
 				if (isset($titles['strands'])){

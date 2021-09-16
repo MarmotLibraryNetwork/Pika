@@ -576,14 +576,13 @@ class SearchObject_Solr extends SearchObject_Base {
 	 *
 	 * @access  private
 	 */
-	protected function purge()
-	{
+	protected function purge(){
 		// Call standard purge:
 		parent::purge();
 
 		// Make some Solr-specific adjustments:
-		$this->query        = null;
-		$this->publicQuery  = null;
+		$this->query       = null;
+		$this->publicQuery = null;
 	}
 
 	/**
@@ -1120,16 +1119,16 @@ class SearchObject_Solr extends SearchObject_Base {
 			$params = [];
 			switch ($this->searchType){
 				// Author Home screen
-				case "author":
+				case 'author':
 					//restored saved author searches
 					$params[] = ($this->searchSubType == 'home' ? 'author=' : 'lookfor=') . urlencode($this->searchTerms[0]['lookfor']);
-					$params[] = "basicSearchType=Author";
+					$params[] = 'basicSearchType=Author';
 					break;
 				// New Items or Reserves modules may have a few extra parameters to preserve:
-				case "newitem":
-				case "reserves":
-				case "favorites":
-				case "list":
+				case 'newitem':
+				case 'reserves':
+				case 'favorites':
+				case 'list':
 					$preserveParams = [
 						// for newitem:
 						'range', 'department',

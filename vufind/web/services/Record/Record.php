@@ -61,7 +61,7 @@ abstract class Record_Record extends Action {
 		$interface->assign('addHeader', '<link rel="alternate" type="application/rdf+xml" title="RDF Representation" href="/Record/' . urlencode($this->sourceAndId->getRecordId()) . '/RDF">');
 
 		// Retrieve User Search History
-		$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false);
+		$interface->assign('lastsearch', $_SESSION['lastSearchURL'] ?? false);
 		//TODO camel case lastsearch
 
 		// Send down text for inclusion in breadcrumbs

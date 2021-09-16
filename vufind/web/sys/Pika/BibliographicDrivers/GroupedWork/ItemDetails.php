@@ -46,7 +46,7 @@ class ItemDetails {
 	/**
 	 * Populate the object for the solr field
 	 *
-	 * @param $itemDetailsArray []  Exploded string of line from the Solr document item_details field
+	 * @param $itemDetailsArray string[]  Exploded string of line from the Solr document item_details field
 	 */
 	public function __construct($itemDetailsArray){
 		$this->recordIdentifier = $itemDetailsArray[0];

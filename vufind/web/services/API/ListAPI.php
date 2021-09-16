@@ -417,7 +417,7 @@ class ListAPI extends AJAXHandler {
 
 		if (!$listId){
 			if (!isset($_REQUEST['id'])){
-				return array('success' => false, 'message' => 'The id of the list to load must be provided as the id parameter.');
+				return ['success' => false, 'message' => 'The id of the list to load must be provided as the id parameter.'];
 			}
 			$listId = $_REQUEST['id'];
 		}
@@ -443,17 +443,17 @@ class ListAPI extends AJAXHandler {
 			if (is_numeric($searchInfo[1])){
 				$titles = $this->getSavedSearchTitles($searchInfo[1], $numTitlesToShow);
 				if ($titles === false){ // Didn't find saved search
-					return array('success' => false, 'message' => 'The specified search could not be found.');
+					return ['success' => false, 'message' => 'The specified search could not be found.'];
 				}else{ // successful search with or without any results. (javascript can handle no results returned.)
-					return array('success' => true, 'listTitle' => $listId, 'listDescription' => "Search Results", 'titles' => $titles, 'cacheLength' => 4);
+					return ['success' => true, 'listTitle' => $listId, 'listDescription' => "Search Results", 'titles' => $titles, 'cacheLength' => 4];
 				}
 			}else{
 				//Do a default search
 				$titles = $this->getSystemListTitles($listId, $numTitlesToShow);
 				if (count($titles) > 0){
-					return array('success' => true, 'listTitle' => $listId, 'listDescription' => "System Generated List", 'titles' => $titles, 'cacheLength' => 4);
+					return ['success' => true, 'listTitle' => $listId, 'listDescription' => "System Generated List", 'titles' => $titles, 'cacheLength' => 4];
 				}else{
-					return array('success' => false, 'message' => 'The specified list could not be found.');
+					return ['success' => false, 'message' => 'The specified list could not be found.'];
 				}
 			}
 
@@ -470,12 +470,12 @@ class ListAPI extends AJAXHandler {
 			switch ($listId){
 				case 'recommendations':
 					if (!$user){
-						return array('success' => false, 'message' => 'A valid user must be provided to load recommendations.');
+						return ['success' => false, 'message' => 'A valid user must be provided to load recommendations.'];
 					}else{
 						$userId = $user->id;
 						require_once ROOT_DIR . '/sys/LocalEnrichment/Suggestions.php';
 						$suggestions = Suggestions::getSuggestions($userId);
-						$titles      = array();
+						$titles      = [];
 						foreach ($suggestions as $id => $suggestion){
 							$imageUrl = $configArray['Site']['coverUrl'] . "/bookcover.php?id=" . $id;
 							if (isset($suggestion['titleInfo']['issn'])){
@@ -492,21 +492,21 @@ class ListAPI extends AJAXHandler {
 							}
 							$smallImageUrl = $imageUrl . "&size=small";
 							$imageUrl      .= "&size=medium";
-							$titles[]      = array(
+							$titles[]      = [
 								'id'          => $id,
 								'image'       => $imageUrl,
 								'small_image' => $smallImageUrl,
 								'title'       => $suggestion['titleInfo']['title'],
 								'author'      => $suggestion['titleInfo']['author'],
-							);
+							];
 						}
-						return array('success' => true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles' => $titles, 'cacheLength' => 0);
+						return ['success' => true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles' => $titles, 'cacheLength' => 0];
 					}
 				case 'highestRated':
 				case 'recentlyReviewed':
 				case 'mostPopular':
 				default :
-						return array('success' => false, 'message' => 'The specified list could not be found.');
+					return ['success' => false, 'message' => 'The specified list could not be found.'];
 
 			}
 		}

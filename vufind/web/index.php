@@ -641,12 +641,12 @@ function killSpammySearchPhrases(){
 		if (is_array($_REQUEST['lookfor'])) {
 			foreach ($_REQUEST['lookfor'] as $i => $searchTerm) {
 				if (preg_match('/http:|mailto:|https:/i', $searchTerm)) {
-					PEAR_Singleton::raiseError("Sorry it looks like you are searching for a website, please rephrase your query.");
+					PEAR_Singleton::raiseError('Sorry it looks like you are searching for a website, please rephrase your query.');
 					$_REQUEST['lookfor'][$i] = '';
 					$_GET['lookfor'][$i]     = '';
 				}
 				if (strlen($searchTerm) >= 256) {
-					PEAR_Singleton::raiseError("Sorry your query is too long, please rephrase your query.");
+					PEAR_Singleton::raiseError('Sorry your query is too long, please rephrase your query.');
 					$_REQUEST['lookfor'][$i] = '';
 					$_GET['lookfor'][$i]     = '';
 				}
@@ -657,12 +657,12 @@ function killSpammySearchPhrases(){
 		else {
 			$searchTerm = $_REQUEST['lookfor'];
 			if (preg_match('/http:|mailto:|https:/i', $searchTerm)) {
-				PEAR_Singleton::raiseError("Sorry it looks like you are searching for a website, please rephrase your query.");
+				PEAR_Singleton::raiseError('Sorry it looks like you are searching for a website, please rephrase your query.');
 				$_REQUEST['lookfor'] = '';
 				$_GET['lookfor']     = '';
 			}
 			if (strlen($searchTerm) >= 256) {
-				PEAR_Singleton::raiseError("Sorry your query is too long, please rephrase your query.");
+				PEAR_Singleton::raiseError('Sorry your query is too long, please rephrase your query.');
 				$_REQUEST['lookfor'] = '';
 				$_GET['lookfor']     = '';
 			}
@@ -676,7 +676,7 @@ function setUpSearchDisplayOptions($module, $action){
 	global $timer;
 
 	global $solrScope;
-	global $scopeType;
+	global $scopeType; // Library, Location or Unscoped
 	global $isGlobalScope;
 	$interface->assign('scopeType', $scopeType);
 	$interface->assign('solrScope', "$solrScope - $scopeType");
@@ -700,13 +700,13 @@ function setUpSearchDisplayOptions($module, $action){
 	// Set $_REQUEST['type']
 	switch ($searchSource){
 		case 'genealogy':
-			$_REQUEST['type'] = isset($_REQUEST['genealogyType']) ? $_REQUEST['genealogyType'] : 'GenealogyKeyword';
+			$_REQUEST['type'] = $_REQUEST['genealogyType'] ?? 'GenealogyKeyword';
 			break;
 		case 'islandora':
-			$_REQUEST['type'] = isset($_REQUEST['islandoraType']) ? $_REQUEST['islandoraType'] : 'IslandoraKeyword';
+			$_REQUEST['type'] = $_REQUEST['islandoraType'] ?? 'IslandoraKeyword';
 			break;
 		case 'ebsco':
-			$_REQUEST['type'] = isset($_REQUEST['ebscoType']) ? $_REQUEST['ebscoType'] : 'TX';
+			$_REQUEST['type'] = $_REQUEST['ebscoType'] ?? 'TX';
 			break;
 		default:
 			if (isset($_REQUEST['basicType'])){
@@ -723,7 +723,7 @@ function setUpSearchDisplayOptions($module, $action){
 	$timer->logTime('Create Search Object');
 	$searchObject->init();
 	$timer->logTime('Init Search Object');
-	$basicSearchTypes = is_object($searchObject) ? $searchObject->getBasicTypes() : array();
+	$basicSearchTypes = is_object($searchObject) ? $searchObject->getBasicTypes() : [];
 	$interface->assign('basicSearchTypes', $basicSearchTypes);
 
 	// Set search results display mode in search-box //

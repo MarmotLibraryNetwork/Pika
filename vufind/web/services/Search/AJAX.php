@@ -182,7 +182,7 @@ class AJAX extends AJAXHandler {
 		global $memCache;
 		global $timer;
 
-		$listName = strip_tags(isset($_GET['scrollerName']) ? $_GET['scrollerName'] : 'List' . $_GET['id']);
+		$listName = strip_tags($_GET['scrollerName'] ?? 'List' . $_GET['id']);
 
 		//Determine the caching parameters
 		require_once(ROOT_DIR . '/services/API/ListAPI.php');
@@ -202,10 +202,10 @@ class AJAX extends AJAXHandler {
 			$showRatings = isset($_REQUEST['showRatings']) && $_REQUEST['showRatings'];
 			$interface->assign('showRatings', $showRatings); // overwrite values that come from library settings
 
-			$numTitlesToShow = isset($_REQUEST['numTitlesToShow']) ? $_REQUEST['numTitlesToShow'] : 25;
+			$numTitlesToShow = $_REQUEST['numTitlesToShow'] ?? 25;
 
 			$titles = $listAPI->getListTitles(null, $numTitlesToShow);
-			$timer->logTime("getListTitles");
+			$timer->logTime('getListTitles');
 			if ($titles['success'] == true){
 				$titles = $titles['titles'];
 				if (is_array($titles)){
@@ -213,7 +213,7 @@ class AJAX extends AJAXHandler {
 						$interface->assign('key', $key);
 						// 20131206 James Staub: bookTitle is in the list API and it removes the final frontslash, but I didn't get $rawData['bookTitle'] to load
 
-						$titleShort = preg_replace(array('/\:.*?$/', '/\s*\/$\s*/'), '', $rawData['title']);
+						$titleShort = preg_replace(['/\:.*?$/', '/\s*\/$\s*/'], '', $rawData['title']);
 //						$titleShort = preg_replace('/\:.*?$/','', $rawData['title']);
 //						$titleShort = preg_replace('/\s*\/$\s*/','', $titleShort);
 
@@ -224,9 +224,9 @@ class AJAX extends AJAXHandler {
 
 						$interface->assign('title', $titleShort);
 						$interface->assign('author', $rawData['author']);
-						$interface->assign('description', isset($rawData['description']) ? $rawData['description'] : null);
-						$interface->assign('length', isset($rawData['length']) ? $rawData['length'] : null);
-						$interface->assign('publisher', isset($rawData['publisher']) ? $rawData['publisher'] : null);
+						$interface->assign('description', $rawData['description'] ?? null);
+						$interface->assign('length', $rawData['length'] ?? null);
+						$interface->assign('publisher', $rawData['publisher'] ?? null);
 						$interface->assign('shortId', $rawData['shortId']);
 						$interface->assign('id', $rawData['id']);
 						$interface->assign('titleURL', $rawData['titleURL']);
@@ -246,11 +246,11 @@ class AJAX extends AJAXHandler {
 				}
 				$currentIndex = count($titles) > 5 ? floor(count($titles) / 2) : 0;
 
-				$listData = array('titles' => $titles, 'currentIndex' => $currentIndex);
+				$listData = ['titles' => $titles, 'currentIndex' => $currentIndex];
 
 				$memCache->set($cacheInfo['cacheName'], $listData, 0, $cacheInfo['cacheLength']);
 			}else{
-				$listData = array('titles' => array(), 'currentIndex' => 0);
+				$listData = ['titles' => [], 'currentIndex' => 0];
 				if ($titles['message']){
 					$listData['error'] = $titles['message'];
 				} // send error message to widget javascript

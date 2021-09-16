@@ -64,7 +64,7 @@ class ListWidget extends DB_DataObject {
 	private $lists;
 
 	function keys() {
-		return array('id');
+		return ['id'];
 	}
 
 	static function getObjectStructure(){
@@ -84,17 +84,17 @@ class ListWidget extends DB_DataObject {
 			$libraryList[$homeLibrary->libraryId] = $homeLibrary->displayName;
 		}
 
-		$structure = array(
-			'id'          => array(
+		$structure = [
+			'id'          => [
 				'property'    => 'id',
 				'type'        => 'hidden',
 				'label'       => 'Id',
 				'description' => 'The unique id of the list widget file.',
 				'primaryKey'  => true,
 				'storeDb'     => true,
-			),
-			'libraryId'   => array('property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'A link to the library which the location belongs to'),
-			'name'        => array(
+			],
+			'libraryId'   => ['property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'A link to the library which the location belongs to'],
+			'name'        => [
 				'property'         => 'name',
 				'type'             => 'text',
 				'label'            => 'Name',
@@ -103,8 +103,8 @@ class ListWidget extends DB_DataObject {
 				'size'             => 100,
 				'serverValidation' => 'validateName',
 				'storeDb'          => true,
-			),
-			'showListWidgetTitle' => array(
+			],
+			'showListWidgetTitle' => [
 				'property'    => 'showListWidgetTitle',
 				'type'        => 'checkbox',
 				'label'       => 'Show the list widget\'s title bar',
@@ -112,28 +112,28 @@ class ListWidget extends DB_DataObject {
 				'storeDb'     => true,
 				'hideInLists' => true,
 				'default'     => true,
-			),
-			'showViewMoreLink'    => array(
+			],
+			'showViewMoreLink'    => [
 				'property'    => 'showViewMoreLink',
 				'type'        => 'checkbox',
 				'label'       => 'Show the View More link on the title bar of the widget.',
 				'storeDb'     => true,
 				'hideInLists' => true,
 				'default'     => false,
-			),
-			'viewMoreLinkMode'    => array(
+			],
+			'viewMoreLinkMode'    => [
 				'property'    => 'viewMoreLinkMode',
 				'type'        => 'enum',
-				'values'      => array(
+				'values'      => [
 					'list'   => 'List',
 					'covers' => 'Covers'
-				),
+				],
 				'label'       => 'Display mode for search results link',
 				'description' => 'The mode to show full search results in when the View More link is clicked.',
 				'storeDb'     => true,
 				'hideInLists' => true,
-			),
-			'description' => array(
+			],
+			'description' => [
 				'property'    => 'description',
 				'type'        => 'textarea',
 				'rows'        => 3,
@@ -142,47 +142,47 @@ class ListWidget extends DB_DataObject {
 				'description' => 'A description for the widget',
 				'storeDb'     => true,
 				'hideInLists' => true,
-			),
-			'showTitleDescriptions' => array(
+			],
+			'showTitleDescriptions' => [
 				'property'    => 'showTitleDescriptions',
 				'type'        => 'checkbox',
 				'label'       => 'Should the description pop-up be shown when hovering over titles?',
 				'storeDb'     => true,
 				'default'     => true,
 				'hideInLists' => true,
-			),
-			'numTitlesToShow' => array(
+			],
+			'numTitlesToShow' => [
 				'property'    => 'numTitlesToShow',
 				'type'        => 'integer',
 				'label'       => 'The number of titles that should be shown for the widget',
 				'storeDb'     => true,
 				'default'     => 25,
 				'hideInLists' => true,
-			),
-			'showTitle'       => array(
+			],
+			'showTitle'       => [
 				'property'    => 'showTitle',
 				'type'        => 'checkbox',
 				'label'       => 'Should the title for the currently selected item be shown?',
 				'storeDb'     => true,
 				'default'     => true,
 				'hideInLists' => true,
-			),
-			'showAuthor'      => array(
+			],
+			'showAuthor'      => [
 				'property'    => 'showAuthor',
 				'type'        => 'checkbox',
 				'label'       => 'Should the author (catalog items) /format (archive items) for the currently selected item be shown?',
 				'storeDb'     => true,
 				'default'     => true,
 				'hideInLists' => true,
-			),
-			'showRatings'     => array(
+			],
+			'showRatings'     => [
 				'property'    => 'showRatings',
 				'type'        => 'checkbox',
 				'label'       => 'Should ratings widgets be shown under each cover?',
 				'storeDb'     => true,
 				'default'     => false,
 				'hideInLists' => true,
-			),
+			],
 //			'showMultipleTitles' => array(
 //				'property'    => 'showMultipleTitles',
 //				'type'        => 'checkbox',
@@ -191,7 +191,7 @@ class ListWidget extends DB_DataObject {
 //				'default'     => true,
 //				'hideInLists' => true,
 //			),
-			'style' => array(
+			'style' => [
 				'property'    => 'style',
 				'type'        => 'enum',
 				'label'       => 'The style to use when displaying the list widget',
@@ -199,23 +199,23 @@ class ListWidget extends DB_DataObject {
 				'storeDb'     => true,
 				'default'     => 'horizontal',
 				'hideInLists' => true,
-			),
-			'autoRotate'       => array(
+			],
+			'autoRotate'       => [
 				'property'    => 'autoRotate',
 				'type'        => 'checkbox',
 				'label'       => 'Should the widget automatically rotate between titles?',
 				'storeDb'     => true,
 				'hideInLists' => true,
-			),
-			'coverSize'        => array(
+			],
+			'coverSize'        => [
 				'property'    => 'coverSize',
 				'type'        => 'enum',
 				'label'       => 'The cover size to use when showing a widget',
-				'values'      => array('small' => 'Small', 'medium' => 'Medium'),
+				'values'      => ['small' => 'Small', 'medium' => 'Medium'],
 				'storeDb'     => true,
 				'default'     => 'small',
 				'hideInLists' => true,
-			),
+			],
 //			'onSelectCallback' => array(
 //				'property'    => 'onSelectCallback',
 //				'type'        => 'text',
@@ -224,7 +224,7 @@ class ListWidget extends DB_DataObject {
 //				'storeDb'     => true,
 //				'hideInLists' => true,
 //			),
-			'customCss' => array(
+			'customCss' => [
 				'property'    => 'customCss',
 				'type'        => 'url',
 				'label'       => 'Custom CSS File',
@@ -234,8 +234,8 @@ class ListWidget extends DB_DataObject {
 				'storeDb'     => true,
 				'required'    => false,
 				'hideInLists' => true,
-			),
-			'listDisplayType' => array(
+			],
+			'listDisplayType' => [
 				'property'    => 'listDisplayType',
 				'type'        => 'enum',
 				'values'      => self::$displayTypes,
@@ -243,8 +243,8 @@ class ListWidget extends DB_DataObject {
 				'description' => 'The method used to show the user the multiple lists associated with the widget.',
 				'storeDb'     => true,
 				'hideInLists' => true,
-			),
-			'lists'               => array(
+			],
+			'lists'               => [
 				'property'         => 'lists',
 				'type'             => 'oneToMany',
 				'keyThis'          => 'id',
@@ -258,8 +258,8 @@ class ListWidget extends DB_DataObject {
 				'serverValidation' => 'validateLists',
 //				'editLink'         => 'ListWidgetsListsLinks',
 				'hideInLists'      => true,
-			),
-		);
+			],
+		];
 		return $structure;
 	}
 
@@ -274,14 +274,14 @@ class ListWidget extends DB_DataObject {
 		$widget       = new ListWidget();
 		$widget->whereAdd("name = '$this->name'", 'AND');
 		if ($this->id){
-			$widget->whereAdd("id != " . $this->id, 'AND');
+			$widget->whereAdd('id != ' . $this->id, 'AND');
 		}
 		$widget->whereAdd("libraryId = $this->libraryId", "AND");
 		$widget->find();
 
 		if ($widget->N != 0){
 			//The title is not unique
-			$validationResults['errors'][] = "This widget has already been created.  Please select another name.";
+			$validationResults['errors'][] = 'This widget has already been created.  Please select another name.';
 		}
 		//Make sure there aren't errors
 		if (count($validationResults['errors']) > 0){
@@ -291,7 +291,7 @@ class ListWidget extends DB_DataObject {
 	}
 
 	public function __get($name){
-		if ($name == "lists"){
+		if ($name == 'lists'){
 			if (!isset($this->lists) && !empty($this->id)){
 				//Get the list of lists that are being displayed for the widget
 				$this->lists                  = [];
@@ -309,7 +309,7 @@ class ListWidget extends DB_DataObject {
 	}
 
 	public function __set($name, $value){
-		if ($name == "lists") {
+		if ($name == 'lists') {
 			$this->lists = $value;
 		}
 	}
@@ -380,12 +380,12 @@ class ListWidget extends DB_DataObject {
 
 	public function validateLists(){
 		//Setup validation return array
-		$validationResults = array(
+		$validationResults = [
 			'validatedOk' => true,
-			'errors'      => array(),
-		);
+			'errors'      => [],
+		];
 
-		$listNames = array();
+		$listNames = [];
 		require_once ROOT_DIR . '/services/API/ListAPI.php';
 		$listAPI    = new ListAPI();
 		$allListIds = $listAPI->getAllListIds();
