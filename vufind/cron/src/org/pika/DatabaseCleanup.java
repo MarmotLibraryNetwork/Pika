@@ -701,7 +701,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			PreparedStatement readingHistoryToRemoveQuery = pikaConn.prepareStatement("DELETE FROM `user_reading_history_work` WHERE deleted = 1 AND datediff(now(), from_unixtime(checkInDate)) > 365", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			int               numDeletedRecords           = readingHistoryToRemoveQuery.executeUpdate();
 			if (numDeletedRecords > 0) {
-				processLog.addNote("Removed " + numDeletedRecords + " records that were marked as deleted");
+				processLog.addNote("Removed " + numDeletedRecords + " reading history entries that were marked as deleted");
 			}
 		}
 		catch(SQLException e){
