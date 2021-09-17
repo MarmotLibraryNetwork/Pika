@@ -211,27 +211,28 @@ function handlePEARError($error, $method = null){
 
 	// Log the error for administrative purposes -- we need to build a variety
 	// of pieces so we can supply information at five different verbosity levels:
-	$baseError = $error->toString();
-	$basicServer = " (Server: IP = {$_SERVER['REMOTE_ADDR']}, " .
-        "Referer = " . (isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '') . ", " .
-        "User Agent = " . (isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '') . ", " .
-        "Request URI = {$_SERVER['REQUEST_URI']})";
+	$baseError      = $error->toString();
+	$basicServer    = " (Server: IP = {$_SERVER['REMOTE_ADDR']}, " .
+		', Referer = ' . ($_SERVER['HTTP_REFERER'] ?? '') .
+		', User Agent = ' . ($_SERVER['HTTP_USER_AGENT'] ?? '') .
+		", Request URI = {$_SERVER['REQUEST_URI']})";
 	$detailedServer = "\nServer Context:\n" . print_r($_SERVER, true);
 	$basicBacktrace = "\nBacktrace:\n";
-	if (is_array($error->backtrace)) {
-		foreach($error->backtrace as $line) {
-			$basicBacktrace .= (isset($line['file']) ? $line['file'] : 'none') . "  line " . (isset($line['line']) ? $line['line'] : 'none') . " - " .
-                "class = " . (isset($line['class']) ? $line['class'] : 'none') . ", function = " . (isset($line['function']) ? $line['function'] : 'none') . "\n";
+	if (is_array($error->backtrace)){
+		foreach ($error->backtrace as $line){
+			$basicBacktrace .= ($line['file'] ?? 'none') . '  line ' . ($line['line'] ?? 'none')
+				. ' - class = ' . ($line['class'] ?? 'none') . ', function = ' . ($line['function'] ?? 'none') . "\n";
 		}
 	}
 	$detailedBacktrace = "\nBacktrace:\n" . print_r($error->backtrace, true);
-	$errorDetails = array(
-	1 => $baseError,
-	2 => $baseError . $basicServer,
-	3 => $baseError . $basicServer . $basicBacktrace,
-	4 => $baseError . $detailedServer . $basicBacktrace,
-	5 => $baseError . $detailedServer . $detailedBacktrace
-	);
+	$errorDetails      = [
+		1 => $baseError,
+		2 => $baseError . $basicServer,
+		3 => $baseError . $basicServer . $basicBacktrace,
+		4 => $baseError . $detailedServer . $basicBacktrace,
+		5 => $baseError . $detailedServer . $detailedBacktrace
+	];
+
 
 	global $logger;
 	$logger->log($errorDetails, PEAR_LOG_ERR);

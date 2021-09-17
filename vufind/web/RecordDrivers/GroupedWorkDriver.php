@@ -1056,7 +1056,7 @@ class GroupedWorkDriver extends RecordInterface {
 		return $this->archiveLink;
 	}
 
-	static $archiveLinksForWorkIds = array();
+	static $archiveLinksForWorkIds = [];
 
 	/**
 	 * @param string[] $groupedWorkIds
@@ -1067,7 +1067,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$archiveLink = null;
 		if ($library->enableArchive && count($groupedWorkIds) > 0){
 			require_once ROOT_DIR . '/sys/Islandora/IslandoraSamePikaCache.php';
-			$groupedWorkIdsToSearch = array();
+			$groupedWorkIdsToSearch = [];
 			foreach ($groupedWorkIds as $groupedWorkId){
 				//Check for cached links
 				$samePikaCache                         = new IslandoraSamePikaCache();
@@ -1096,7 +1096,7 @@ class GroupedWorkDriver extends RecordInterface {
 				//Clear existing filters so search filters don't apply to this query
 				$searchObject->clearFilters();
 				$searchObject->clearFacets();
-				$searchObject->addFieldsToReturn(array('mods_extension_marmotLocal_externalLink_samePika_link_s'));
+				$searchObject->addFieldsToReturn(['mods_extension_marmotLocal_externalLink_samePika_link_s']);
 
 				$searchObject->setLimit(count($groupedWorkIdsToSearch));
 
@@ -1119,7 +1119,7 @@ class GroupedWorkDriver extends RecordInterface {
 										$numUpdates                 = $samePikaCache->update();
 										if ($numUpdates == 0){
 											global $logger;
-											$logger->log("Did not update same pika cache " . print_r($samePikaCache->_lastError, true), PEAR_LOG_ERR);
+											$logger->log('Did not update same pika cache ' . print_r($samePikaCache->_lastError, true), PEAR_LOG_ERR);
 										}
 									}
 									GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $archiveLink;
@@ -1130,7 +1130,7 @@ class GroupedWorkDriver extends RecordInterface {
 					}
 				}
 			}
-			$timer->logTime("Loaded archive links for work " . count($groupedWorkIds) . " works");
+			$timer->logTime('Loaded archive links for work ' . count($groupedWorkIds) . ' works');
 
 			$searchObject = null;
 			unset($searchObject);
@@ -2733,9 +2733,7 @@ class GroupedWorkDriver extends RecordInterface {
 		}
 	}
 
-	const SIERRA_PTYPE_WILDCARDS = array('999', '9999');
-	static $SIERRA_PTYPE_WILDCARDS = array('999', '9999');
-	//TODO: switch to const when php version is >= 5.6
+	const SIERRA_PTYPE_WILDCARDS = ['999', '9999'];
 
 	/**
 	 * @param \Pika\BibliographicDrivers\GroupedWork\RecordDetails $recordDetails
