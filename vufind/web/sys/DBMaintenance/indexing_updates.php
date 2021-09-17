@@ -387,6 +387,15 @@ function getIndexingUpdates(){
 			]
 		],
 
+		'2021.04.0_add_grouping_time_for_sideloads' => [
+			'title'           => 'Add a last grouped time to each indexing profile',
+			'description'     => 'Enable grouping time tracking for sideloads.',
+			'continueOnError' => true,
+			'sql'             => [
+				'ALTER TABLE `indexing_profiles` ADD `lastGroupedTime` INT UNSIGNED NULL; ',
+			],
+		],
+
 	);
 }
 

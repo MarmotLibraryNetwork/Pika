@@ -17,7 +17,6 @@ package org.pika;
 import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.regex.Pattern;
 
@@ -56,6 +55,7 @@ public class IndexingProfile {
 	char    eContentDescriptor;
 	boolean doAutomaticEcontentSuppression;
 	boolean groupUnchangedFiles;
+	long    lastGroupedTime;
 	boolean usingSierraAPIExtract        = false;
 	String  sierraRecordFixedFieldsTag;
 	char    sierraLanguageFixedField     = ' ';
@@ -94,6 +94,7 @@ public class IndexingProfile {
 		this.itemTag                           = indexingProfileRS.getString("itemTag");
 		this.doAutomaticEcontentSuppression    = indexingProfileRS.getBoolean("doAutomaticEcontentSuppression");
 		this.groupUnchangedFiles               = indexingProfileRS.getBoolean("groupUnchangedFiles");
+		this.lastGroupedTime                   = indexingProfileRS.getLong("lastGroupedTime");
 		this.sierraRecordFixedFieldsTag        = indexingProfileRS.getString("sierraRecordFixedFieldsTag");
 		this.useICode2Suppression              = indexingProfileRS.getBoolean("useICode2Suppression");
 
