@@ -88,7 +88,7 @@ public class RecordInfo {
 	}
 
 	void setEdition(String edition) {
-		this.edition = edition;
+		this.edition = edition.replaceAll("[\\s.,;]$", "");
 	}
 
 	void setPrimaryLanguage(String primaryLanguage) {
@@ -96,11 +96,11 @@ public class RecordInfo {
 	}
 
 	void setPublisher(String publisher) {
-		this.publisher = publisher;
+		this.publisher = publisher.replaceAll("[\\s.,;]$", "");
 	}
 
 	void setPublicationDate(String publicationDate) {
-		this.publicationDate = publicationDate;
+		this.publicationDate = publicationDate.replaceAll("[\\s.,;]$", "");
 	}
 
 	void setPhysicalDescription(String physicalDescription) {
@@ -200,8 +200,8 @@ public class RecordInfo {
 		itemInfo.setRecordInfo(this);
 	}
 
-	private HashSet<String> allFormats     = null;
-	private Pattern         nonWordPattern = Pattern.compile("\\W");
+	private       HashSet<String> allFormats     = null;
+	private final Pattern         nonWordPattern = Pattern.compile("\\W");
 
 	HashSet<String> getAllSolrFieldEscapedFormats() {
 		if (allFormats == null) {

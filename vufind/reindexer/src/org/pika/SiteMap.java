@@ -35,32 +35,32 @@ import java.util.*;
  */
 class SiteMap {
 
-	private Logger logger;
-	private int maxPopularTitles;
-	private int maxUniqueTitles;
-	private Connection vufindConn;
+	private Logger                         logger;
+	private int                            maxPopularTitles;
+	private int                            maxUniqueTitles;
+	private Connection                     pikaConn;
 	private HashMap<Long, ArrayList<Long>> librariesByHomeLocation;
-	private ArrayList<SiteMapEntry> uniqueItemsToWrite;
-	private int fileID;
-	private int countTracker;
-	private int currentSiteMapCount;
-	private Long libraryIdToWrite;
-	private String scopeName;
-	private String filePath;
-	private final int maxGoogleSiteMapCount = 50000;
+	private ArrayList<SiteMapEntry>        uniqueItemsToWrite;
+	private int                            fileID;
+	private int                            countTracker;
+	private int                            currentSiteMapCount;
+	private Long                           libraryIdToWrite;
+	private String                         scopeName;
+	private String                         filePath;
+	private final int                      maxGoogleSiteMapCount = 50000;
 
 	SiteMap(Logger log, Connection connection, int maxUnique, int maxPopular) {
-		this.logger = log;
-		this.vufindConn = connection;
-		this.maxPopularTitles = maxPopular;
-		this.maxUniqueTitles = maxUnique;
+		this.logger             = log;
+		this.pikaConn           = connection;
+		this.maxPopularTitles   = maxPopular;
+		this.maxUniqueTitles    = maxUnique;
 		librariesByHomeLocation = new HashMap<>();
 		prepareLocationIds();
 	}
 
 	private void prepareLocationIds() {
 		try {
-			PreparedStatement getLibraryForHomeLocation = vufindConn.prepareStatement("SELECT libraryId, locationId from location");
+			PreparedStatement getLibraryForHomeLocation = pikaConn.prepareStatement("SELECT libraryId, locationId FROM location");
 			ResultSet librariesByHomeLocationRS = getLibraryForHomeLocation.executeQuery();
 			while (librariesByHomeLocationRS.next()) {
 				Long locationId = librariesByHomeLocationRS.getLong("locationId");
@@ -288,7 +288,7 @@ class SiteMap {
 	private int getVariableValue(String variableName, int defaultValue) throws SQLException {
 		ResultSet rs = null;
 		try {
-			PreparedStatement st = vufindConn.prepareStatement("SELECT value from variables WHERE name = ?");
+			PreparedStatement st = pikaConn.prepareStatement("SELECT value from variables WHERE name = ?");
 			st.setString(1, variableName);
 			rs = st.executeQuery();
 
@@ -296,7 +296,7 @@ class SiteMap {
 				return Integer.parseInt(rs.getString("value"));
 			}
 
-			PreparedStatement insertVariableStmt = vufindConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('" + variableName + "', ?)");
+			PreparedStatement insertVariableStmt = pikaConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('" + variableName + "', ?)");
 			insertVariableStmt.setString(1, Long.toString(defaultValue));
 			insertVariableStmt.executeUpdate();
 			insertVariableStmt.close();

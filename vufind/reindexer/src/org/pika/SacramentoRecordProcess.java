@@ -34,6 +34,7 @@ import java.util.*;
 class SacramentoRecordProcessor extends IIIRecordProcessor {
 	private final String kitKeeperMaterialType     = "o";
 	private final String bibLevelLocationsSubfield = "a";
+	private final String econtentSourceField       = "901a";
 
 	SacramentoRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
@@ -139,7 +140,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 		} else {
 			//No items so we can continue on.
 
-			String econtentSource = MarcUtil.getFirstFieldVal(record, "901a");
+			String econtentSource = MarcUtil.getFirstFieldVal(record, econtentSourceField);
 			if (econtentSource != null) {
 				// For Sacramento, if the itemless record doesn't have a specified eContent source, don't treat it as an econtent record
 				//Get the url

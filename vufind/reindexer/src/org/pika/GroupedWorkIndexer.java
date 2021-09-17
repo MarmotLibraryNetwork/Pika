@@ -49,6 +49,7 @@ public class GroupedWorkIndexer {
 	private       HashMap<String, MarcRecordProcessor>     indexingRecordProcessors              = new HashMap<>();
 	private       OverDriveProcessor                       overDriveProcessor;
 	private       HashMap<String, HashMap<String, String>> translationMaps                       = new HashMap<>();
+	// The file based translation Maps
 	private       HashMap<String, LexileTitle>             lexileInformation                     = new HashMap<>();
 	private       HashMap<String, ARTitle>                 arInformation                         = new HashMap<>();
 	private       String                                   solrPort                              = PikaConfigIni.getIniValue("Reindex", "solrPort");
@@ -100,10 +101,13 @@ public class GroupedWorkIndexer {
 
 		systemVariables = new PikaSystemVariables(this.logger, this.pikaConn);
 		//Load the last Index time
-		lastReindexTime = systemVariables.getLongValuedVariable("last_reindex_time");
-
-		//Check to see if a partial reindex is running
-		partialReindexRunning = systemVariables.getBooleanValuedVariable("partial_reindex_running");
+		final Long longValuedVariable = systemVariables.getLongValuedVariable("last_reindex_time");
+		if (longValuedVariable == null){
+			// Set Variable for the first time
+			systemVariables.setVariable("last_reindex_time", 0L);
+		} else {
+			lastReindexTime = longValuedVariable;
+		}
 
 		//Load a few statements we will need later
 		try{
@@ -159,6 +163,17 @@ public class GroupedWorkIndexer {
 		}else{
 			//TODO: Bypass this if called from an export process?
 			//TODO: Bypass when process user lists only
+
+			//Check to see if a partial reindex is running
+			final Boolean aBoolean = systemVariables.getBooleanValuedVariable("partial_reindex_running");
+			if (aBoolean == null) {
+				// Set Variable for the first time
+				logger.warn("System Variable 'partial_reindex_running' was not set");
+				updatePartialReindexRunning(true);
+				partialReindexRunning = true;
+			} else {
+				partialReindexRunning = aBoolean;
+			}
 
 			//Check to make sure that at least a couple of minutes have elapsed since the last index
 			//Periodically in the middle of the night we get indexes every minute or multiple times a minute
@@ -271,7 +286,7 @@ public class GroupedWorkIndexer {
 			logger.error("Error loading record processors for ILS records", e);
 		}
 		//Load translation maps
-		loadSystemTranslationMaps();
+		loadSystemTranslationMaps(); // This loads the file-based mmaps
 
 		//Setup prepared statements to load local enrichment
 		try {
@@ -765,22 +780,7 @@ public class GroupedWorkIndexer {
 			if (logger.isInfoEnabled()){
 				logger.info("Replication Enable command response :" + startReplicationResponse.getMessage());
 			}
-
-			// Start replication polling by the searcher
-			url = PikaConfigIni.getIniValue("Index", "url");
-			if (url != null && !url.isEmpty()) {
-				url += "/grouped/replication?command=enablepoll";
-				URLPostResponse startSearcherReplicationPollingResponse = Util.getURL(url, logger);
-				if (!startSearcherReplicationPollingResponse.isSuccess()) {
-					logger.error("Error disabling polling of solr searcher for replication.");
-				}
-				if (logger.isInfoEnabled()){
-					logger.info("Searcher Replication Polling Enable command response : " + startSearcherReplicationPollingResponse.getMessage());
-				}
-			} else {
-				logger.error("Unable to get solr search index url. Could not re-enable replication polling.");
-			}
-
+			enableSearcherSolrPolling();
 		}else {
 			try {
 				GroupedReindexMain.addNoteToReindexLog("Doing a soft commit to make sure changes are saved");
@@ -794,6 +794,7 @@ public class GroupedWorkIndexer {
 		}
 
 		if (!processingIndividualWork && !processingUserListsOnly) {
+//			enableSearcherSolrPolling();
 			updateLastReindexTime();
 		}
 
@@ -805,6 +806,34 @@ public class GroupedWorkIndexer {
 			updateFullReindexRunning(false);
 		}else{
 			updatePartialReindexRunning(false);
+		}
+	}
+
+	private void enableSearcherSolrPolling() {
+		int     tries   = 0;
+		boolean success = false;
+		String url = PikaConfigIni.getIniValue("Index", "url");
+		if (url != null && !url.isEmpty()) {
+			url += "/grouped/replication?command=enablepoll";
+			do {
+				URLPostResponse startSearcherReplicationPollingResponse = null;
+				try {
+					startSearcherReplicationPollingResponse = Util.getURL(url, logger);
+					success = startSearcherReplicationPollingResponse.isSuccess();
+				} catch (Exception e) {
+					if (tries == 2){
+						logger.error("Failed to get response to enable polling for 3 tries");
+					}
+				}
+				if (!success && tries == 2 ) {
+					logger.error("Error enabling polling of solr searcher for replication after 3 tries.");
+				}
+				if (logger.isInfoEnabled()) {
+					logger.info("Searcher Replication Polling Enable command response : " + startSearcherReplicationPollingResponse.getMessage());
+				}
+			} while (!success || ++tries < 3);
+		} else {
+			logger.error("Unable to get solr search index url. Could not re-enable replication polling.");
 		}
 	}
 
@@ -1321,9 +1350,9 @@ public class GroupedWorkIndexer {
 				lexileDataMatches++;
 				if (logger.isDebugEnabled() && fullReindex) {
 					FuzzyScore   score                = new FuzzyScore(Locale.ENGLISH);
-					String groupTitle           = groupedWork.getTitle();
+					String       groupTitle           = groupedWork.getTitle();
 					final String groupWorkPermanentId = groupedWork.getId();
-					String lexTitle              = lexileTitle.getTitle();
+					String       lexTitle             = lexileTitle.getTitle();
 					if (groupTitle.length() > 10) {
 						// Only check titles with more than 10 characters, bcs the mismatch testing is probably not useful with less
 						groupTitle = groupTitle.toLowerCase();

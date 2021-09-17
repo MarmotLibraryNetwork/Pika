@@ -140,6 +140,9 @@ public class ItemInfo {
 	}
 
 	int getNumCopies() {
+		//TODO: yeah, rethink this for OverDrive. It should indicate number of available copies;
+		// currently indicates total copies, if not set to 1 below.
+
 		//Deal with OverDrive always available
 		if (numCopies > 1000){
 			return 1;

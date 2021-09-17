@@ -34,7 +34,8 @@ import java.util.regex.Pattern;
  * Time: 11:02 AM
  */
 class AACPLRecordProcessor extends IlsRecordProcessor {
-	private HashSet<String> bibsWithOrders = new HashSet<>();
+	private       HashSet<String> bibsWithOrders      = new HashSet<>();
+	private final String          econtentSourceField = "092a";
 
 	AACPLRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
@@ -50,7 +51,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 					MarcReader ordersReader = new MarcStreamReader(new FileInputStream(ordersFile));
 					while (ordersReader.hasNext()) {
 						Record        marcRecord        = ordersReader.next();
-						VariableField recordNumberField = marcRecord.getVariableField("001");
+						VariableField recordNumberField = marcRecord.getVariableField(recordNumberTag);
 						if (recordNumberField instanceof ControlField) {
 							ControlField recordNumberCtlField = (ControlField) recordNumberField;
 							bibsWithOrders.add(recordNumberCtlField.getData());
@@ -132,10 +133,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 
 	@Override
 	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
-		//For Arlington we can load the literary forms based off of the location code:
-		// ??f?? = Fiction
-		// ??n?? = Non-Fiction
-		// ??x?? = Other
+		//For AACPL we can load the literary forms based off of the shelf location code:
 		String literaryForm = null;
 		for (ItemInfo printItem : printItems) {
 			String locationCode = printItem.getShelfLocationCode();

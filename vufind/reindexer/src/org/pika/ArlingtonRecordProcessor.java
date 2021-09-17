@@ -37,11 +37,6 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 
 	ArlingtonRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
-		availableStatus = "-o";
-
-		loadOrderInformationFromExport();
-
-		validCheckedOutStatusCodes.add("o");
 	}
 
 
@@ -254,7 +249,6 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 				ItemInfo itemInfo = new ItemInfo();
 				itemInfo.setIsEContent(true);
 				itemInfo.setLocationCode(bibLocation);
-//				itemInfo.seteContentProtectionType("external");
 				itemInfo.setCallNumber("Online");
 				itemInfo.seteContentSource(econtentSource);
 				itemInfo.setShelfLocation(econtentSource);

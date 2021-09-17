@@ -319,7 +319,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 							} else {
 								logger.debug("Found eContent Source " + sourceType);
 							}
-						} else {
+						} else if (fullReindex){
 							//Need to figure out how to load a source
 							logger.warn("Did not find an eContent source for " + identifier);
 						}
