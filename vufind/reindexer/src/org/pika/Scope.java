@@ -93,25 +93,24 @@ public class Scope implements Comparable<Scope>{
 	/**
 	 * Determine if the item is part of the current scope based on location code and pType
 	 *
-	 *
-	 * @param recordType        The type of record being checked based on profile
-	 * @param locationCode      The location code for the item.  Set to blank if location codes
-	 * @return                  Whether or not the item is included within the scope
+	 * @param indexingProfileSourceName The type of record being checked based on profile
+	 * @param locationCode              The location code for the item.  Set to blank if location codes
+	 * @return Whether or not the item is included within the scope
 	 */
-	InclusionResult isItemPartOfScope(@NotNull String recordType, @NotNull String locationCode, String iType, TreeSet<String> audiences, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
-		if (locationCode == null){
+	InclusionResult isItemPartOfScope(@NotNull String indexingProfileSourceName, @NotNull String locationCode, String iType, TreeSet<String> audiences, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl) {
+		if (locationCode == null) {
 			//No location code, skip this item
 			return new InclusionResult(false, econtentUrl);
 		}
 
-		for(OwnershipRule curRule: ownershipRules){
-			if (curRule.isItemOwned(recordType, locationCode)){
+		for (OwnershipRule curRule : ownershipRules) {
+			if (curRule.isItemOwned(indexingProfileSourceName, locationCode)) {
 				return new InclusionResult(true, econtentUrl);
 			}
 		}
 
-		for(InclusionRule curRule: inclusionRules){
-			if (curRule.isItemIncluded(recordType, locationCode, iType, audiences, format, isHoldable, isOnOrder, isEContent, marcRecord)){
+		for (InclusionRule curRule : inclusionRules) {
+			if (curRule.isItemIncluded(indexingProfileSourceName, locationCode, iType, audiences, format, isHoldable, isOnOrder, isEContent, marcRecord)) {
 				if (econtentUrl != null) {
 					// Do any URL Replacement needed
 					econtentUrl = curRule.getLocalUrl(econtentUrl);
@@ -127,14 +126,13 @@ public class Scope implements Comparable<Scope>{
 	/**
 	 * Determine if the item is part of the current scope based on location code and pType
 	 *
-	 *
-	 * @param recordType        The type of record being checked based on profile
-	 * @param locationCode      The location code for the item.  Set to blank if location codes
-	 * @return                  Whether or not the item is included within the scope
+	 * @param indexingProfileSourceName The type of record being checked based on profile
+	 * @param locationCode              The location code for the item.  Set to blank if location codes
+	 * @return Whether or not the item is included within the scope
 	 */
-	boolean isItemOwnedByScope(@NotNull String recordType, @NotNull String locationCode){
-		for(OwnershipRule curRule: ownershipRules){
-			if (curRule.isItemOwned(recordType, locationCode)){
+	boolean isItemOwnedByScope(@NotNull String indexingProfileSourceName, @NotNull String locationCode) {
+		for (OwnershipRule curRule : ownershipRules) {
+			if (curRule.isItemOwned(indexingProfileSourceName, locationCode)) {
 				return true;
 			}
 		}

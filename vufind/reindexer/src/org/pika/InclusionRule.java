@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
  * Time: 11:31 AM
  */
 class InclusionRule {
-	private String recordType;
+	private String  indexingProfileSourceName;
 	private Pattern locationCodePattern;
 	private Pattern iTypePattern;
 	private boolean matchAllAudiences = false;
@@ -45,11 +45,11 @@ class InclusionRule {
 	private String urlToMatch;
 	private String urlReplacement;
 
-	InclusionRule(String recordType, String locationCode, String iType, String audience, String format, boolean includeHoldableOnly, boolean includeItemsOnOrder, boolean includeEContent, String marcTagToMatch, String marcValueToMatch, boolean includeExcludeMatches, String urlToMatch, String urlReplacement){
-		this.recordType = recordType;
-		this.includeHoldableOnly = includeHoldableOnly;
-		this.includeItemsOnOrder = includeItemsOnOrder;
-		this.includeEContent = includeEContent;
+	InclusionRule(String indexingProfileSourceName, String locationCode, String iType, String audience, String format, boolean includeHoldableOnly, boolean includeItemsOnOrder, boolean includeEContent, String marcTagToMatch, String marcValueToMatch, boolean includeExcludeMatches, String urlToMatch, String urlReplacement){
+		this.indexingProfileSourceName = indexingProfileSourceName;
+		this.includeHoldableOnly       = includeHoldableOnly;
+		this.includeItemsOnOrder       = includeItemsOnOrder;
+		this.includeEContent           = includeEContent;
 
 		if (locationCode.length() == 0){
 			locationCode = ".*";
@@ -99,7 +99,7 @@ class InclusionRule {
 			return  false;
 		}else if (!includeEContent && isEContent){
 			return  false;
-		}else if (!this.recordType.equals(recordType)){
+		}else if (!this.indexingProfileSourceName.equals(recordType)){
 			return  false;
 		}
 

@@ -29,11 +29,11 @@ import java.util.regex.Pattern;
  */
 public class OwnershipRule {
 
-	private final String recordType;
+	private final String  indexingProfileSourceName;
 	private final Pattern locationCodePattern;
 
-	OwnershipRule(String recordType, @NotNull String locationCode){
-		this.recordType = recordType;
+	OwnershipRule(String indexingProfileSourceName, @NotNull String locationCode){
+		this.indexingProfileSourceName = indexingProfileSourceName;
 
 		if (locationCode.length() == 0){
 			locationCode = ".*";
@@ -42,9 +42,9 @@ public class OwnershipRule {
 	}
 
 	private HashMap<String, Boolean> ownershipResults = new HashMap<>();
-	boolean isItemOwned(@NotNull String recordType, @NotNull String locationCode){
+	boolean isItemOwned(@NotNull String indexingProfileSourceName, @NotNull String locationCode){
 		boolean isOwned = false;
-		if (this.recordType.equals(recordType)){
+		if (this.indexingProfileSourceName.equals(indexingProfileSourceName)){
 			if (ownershipResults.containsKey(locationCode)){
 				return ownershipResults.get(locationCode);
 			}
