@@ -257,6 +257,7 @@
 							<div class="adminMenuLink{if $action == "PreferredGroupingTitles"} active{/if}"><a href="/Admin/PreferredGroupingTitles">Preferred Grouping Titles</a></div>
 							<div class="adminMenuLink{if $action == "AuthorEnrichment"} active{/if}"><a href="/Admin/AuthorEnrichment">Author Enrichment</a></div>
 							<div class="adminMenuLink{if $action == "Covers"} active{/if}"><a href="/Admin/Covers">Upload Custom Cover</a></div>
+							<div class="adminMenuLink{if $action == "ClearNovelistCache"} active{/if}"><a href="/Admin/ClearNovelistCache">Clear Novelist Cache</a></div>
 						</div>
 					</div>
 				</div>
