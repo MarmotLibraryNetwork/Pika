@@ -1916,18 +1916,18 @@ abstract class SearchObject_Base {
 	 * @param   string      $field          Field name to display.
 	 * @return  string                      Human-readable version of field name.
 	 */
-	protected function getHumanReadableFieldName($field)
-	{
-		if (isset($this->basicTypes[$field])) {
-			return translate($this->basicTypes[$field]);
-		} else if (isset($this->advancedSearchTypes[$field])) {
-			return translate($this->advancedSearchTypes[$field]);
-		} else if (isset($this->browseTypes[$field])) {
-			return translate($this->browseTypes[$field]);
-		} else {
-			return $field;
-		}
-	}
+//	protected function getHumanReadableFieldName($field)
+//	{
+//		if (isset($this->basicTypes[$field])) {
+//			return translate($this->basicTypes[$field]);
+//		} else if (isset($this->advancedSearchTypes[$field])) {
+//			return translate($this->advancedSearchTypes[$field]);
+//		} else if (isset($this->browseTypes[$field])) {
+//			return translate($this->browseTypes[$field]);
+//		} else {
+//			return $field;
+//		}
+//	}
 
 	/**
 	 * Get a human-readable presentation version of the advanced search query
