@@ -29,7 +29,6 @@ class AJAX extends AJAXHandler {
 	protected $methodsThatRespondWithHTML = array(
 		'GetAutoSuggestList',
 		'getProspectorResults',
-		'SysListTitles',
 	);
 
 	protected $methodsThatRespondWithJSONUnstructured = array(
@@ -165,16 +164,8 @@ class AJAX extends AJAXHandler {
 	}
 
 	/**
-	 * For historical purposes.  Make sure the old API wll still work.
-	 */
-	function SysListTitles(){
-		if (!isset($_GET['id'])){
-			$_GET['id'] = $_GET['name'];
-		}
-		return $this->GetListTitles();
-	}
-
-	/**
+	 * Fetching list widget entries 
+	 *
 	 * @return array Data representing the list information
 	 */
 	function GetListTitles(){
@@ -195,7 +186,7 @@ class AJAX extends AJAXHandler {
 		}
 
 		$listData = $memCache->get($cacheName);
-		if (!$listData || isset($_REQUEST['reload']) || (isset($listData['titles']) && count($listData['titles']) == 0)){
+		if (!$listData || isset($_REQUEST['reload']) || empty($listData['titles'])){
 			global $interface;
 			$interface->assign('listName', $listName);
 
