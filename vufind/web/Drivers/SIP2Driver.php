@@ -56,8 +56,8 @@ abstract class SIP2Driver implements DriverInterface{
 					}else{
 						$itemSip2Data['holdQueueLength'] = 0;
 					}
-					$currentLocationSIPField = isset($configArray['Catalog']['currentLocationSIPField']) ? $configArray['Catalog']['currentLocationSIPField'] : 'AP';
-					if ($configArray['Catalog']['realtimeLocations'] == true && isset($result['variable'][$currentLocationSIPField][0])){
+					$currentLocationSIPField = $configArray['SIP2']['currentLocationSIPField'] ?? 'AP';
+					if ($configArray['SIP2']['realtimeLocations'] == true && isset($result['variable'][$currentLocationSIPField][0])){
 						//Looks like horizon is returning these backwards via SIP.
 						//AQ should be current, but is always returning the same code.
 						//AP should be permanent, but is returning the current location
