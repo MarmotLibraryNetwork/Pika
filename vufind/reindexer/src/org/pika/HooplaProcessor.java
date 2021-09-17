@@ -437,9 +437,11 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 	protected void loadTitles(GroupedWorkSolr groupedWork, Record record, String format, String identifier) {
 		//title (full title done by index process by concatenating short and subtitle
-		Set<String> titleTags = MarcUtil.getFieldList(record, "245a");
-		if (titleTags.size() > 1) {
-			logger.info("More than 1 245a title tag for Hoopla record : " + identifier);
+		if (logger.isInfoEnabled()) {
+			Set<String> titleTags = MarcUtil.getFieldList(record, "245a");
+			if (titleTags.size() > 1) {
+				logger.info("More than 1 245a title tag for Hoopla record : " + identifier);
+			}
 		}
 		super.loadTitles(groupedWork, record, format, identifier);
 	}
