@@ -648,7 +648,7 @@ public class RecordGrouperMain {
 				if (indexingProfileToRun == null) {
 					// Do not update grouping time when processing a specific indexing profile
 					if (!finishingGroupingEarly) {
-						// Only update last grouping time when grouping
+						// Only update last grouping time when grouping got through all indexing profiles
 						updateLastGroupingTime();
 					}
 				}
