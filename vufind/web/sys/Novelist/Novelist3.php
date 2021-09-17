@@ -278,6 +278,7 @@ class Novelist3{
 								$this->loadSeriesInfo($groupedRecordId, $data->FeatureContent->SeriesInfo, $novelistData);
 							}else{
 								global $logger;
+								//log the incorrect ISBN
 								$logger->log("Novelist ISBN for record " . $groupedRecordId . " does not match local holdings", PEAR_LOGWARNING);
 								$novelistData->primaryISBN = $ISBNs[0];
 							}
