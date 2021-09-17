@@ -50,25 +50,25 @@ public class MergeUpdate {
 		if (log4jFile.exists()) {
 			PropertyConfigurator.configure(log4jFile.getAbsolutePath());
 		} else {
-			logger.info("Could not find log4j configuration " + log4jFile.toString());
+			logger.error("Could not find log4j configuration " + log4jFile);
 			System.exit(1);
 		}
 
-		logger.info(currentTime.toString() + ": Starting Merge");
+		logger.info(currentTime + ": Starting Merge");
 		MergeMarcUpdatesAndDeletes merge = new MergeMarcUpdatesAndDeletes();
 
 		try {
 			if (merge.startProcess(configIni, logger)) {
 				currentTime = new Date();
-				logger.info(currentTime.toString() + ": Successful Merge");
+				logger.info(currentTime + ": Successful Merge");
 			} else {
 				currentTime = new Date();
-				logger.info(currentTime.toString() + ": Merge Failed");
+				logger.info(currentTime + ": Merge Failed");
 			}
 		} catch (Exception ex) {
 			currentTime = new Date();
 			logger.error(ex);
-			logger.info(currentTime.toString() + ": Merge Failed");
+			logger.info(currentTime + ": Merge Failed");
 		}
 	}
 
