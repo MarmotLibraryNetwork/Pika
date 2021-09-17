@@ -2501,7 +2501,7 @@ class GroupedWorkDriver extends RecordInterface {
 	 * @return  array
 	 */
 	protected function getPublishers(){
-		return $this->fields['publisherStr'] ?? [];
+		return $this->fields['publisher'] ?? [];
 	}
 
 	/**
