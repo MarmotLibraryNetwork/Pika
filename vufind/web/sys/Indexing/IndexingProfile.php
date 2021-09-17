@@ -53,6 +53,8 @@ class IndexingProfile extends DB_DataObject{
 	public $individualMarcPath;
 	public $numCharsToCreateFolderFrom;
 	public $createFolderFromLeadingCharacters;
+	public $groupUnchangedFiles;
+	public $lastGroupedTime;
 	public $groupingClass;
 	public $indexingClass;
 	public $recordDriver;
@@ -118,7 +120,6 @@ class IndexingProfile extends DB_DataObject{
 	public $orderCopies;
 	public $orderCode3;
 	public $doAutomaticEcontentSuppression;
-	public $groupUnchangedFiles;
 	public $materialTypeField;
 	public $sierraLanguageFixedField;
 	public $formatDeterminationMethod;
@@ -132,14 +133,15 @@ class IndexingProfile extends DB_DataObject{
 
 		//Sections that are set open by default allow the javascript form validator to check that required fields are in fact filled in.
 		$structure = [
-			'id'                         => ['property' =>'id', 'type' =>'label', 'label' =>'Id', 'description' =>'The unique id within the database'],
-			'name'                       => ['property' => 'name', 'type' => 'text', 'label' => 'Display Name', 'maxLength' => 50, 'description' => 'The display name for this indexing profile', 'required' => true],
-			'sourceName'                 => ['property'           => 'sourceName', 'type' => 'text', 'label' => 'Source Name', 'maxLength' => 50, 'description' => 'The source name of this indexing profile to use internally. eg. for specifying the record source', 'required' => true
-			                                 , 'serverValidation' => 'validateSourceName'],
-			'recordUrlComponent'         => ['property' => 'recordUrlComponent', 'type' => 'text', 'label' => 'Record URL Component', 'maxLength' => 50, 'description' => 'The Module to use within the URL', 'required' => true, 'default' => 'Record', 'serverValidation' => 'validateRecordUrlComponent'],
+			'id'                  => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'],
+			'name'                => ['property' => 'name', 'type' => 'text', 'label' => 'Display Name', 'maxLength' => 50, 'description' => 'The display name for this indexing profile', 'required' => true],
+			'sourceName'          => ['property'           => 'sourceName', 'type' => 'text', 'label' => 'Source Name', 'maxLength' => 50, 'description' => 'The source name of this indexing profile to use internally. eg. for specifying the record source', 'required' => true
+			                          , 'serverValidation' => 'validateSourceName'],
+			'recordUrlComponent'  => ['property' => 'recordUrlComponent', 'type' => 'text', 'label' => 'Record URL Component', 'maxLength' => 50, 'description' => 'The Module to use within the URL', 'required' => true, 'default' => 'Record', 'serverValidation' => 'validateRecordUrlComponent'],
+			'groupUnchangedFiles' => ['property' => 'groupUnchangedFiles', 'type' => 'checkbox', 'label' => 'Group Unchanged Files', 'description' => 'Whether or not files that have not changed since the last time grouping has run will be regrouped.', 'default' => true],
+			'lastGroupedTime'     => ['property' => 'lastGroupedTime', 'type' => 'dateReadOnly', 'label' => 'Last Grouped Time', 'description' => 'Date Time for when this indexing profile was last grouped.'],
 
-			'groupUnchangedFiles'               => ['property' => 'groupUnchangedFiles', 'type' => 'checkbox', 'label' => 'Group Unchanged Files', 'description' => 'Whether or not files that have not changed since the last time grouping has run will be regrouped.', 'default' => true],
-			'serverFileSection' => ['property' =>'serverFileSection', 'type' => 'section', 'label' =>'MARC File Settings ', 'hideInLists' => true, 'open' => true,
+			'serverFileSection'   => ['property' =>'serverFileSection', 'type' => 'section', 'label' =>'MARC File Settings ', 'hideInLists' => true, 'open' => true,
 			                        'helpLink' => '', 'properties' => [
 
 					'marcPath'                          => ['property' => 'marcPath', 'type' => 'text', 'label' => 'MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where MARC records can be found', 'required' => true],

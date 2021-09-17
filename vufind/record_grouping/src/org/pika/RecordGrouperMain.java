@@ -19,7 +19,6 @@ package org.pika;
 import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.marc4j.MarcException;
 import org.marc4j.MarcPermissiveStreamReader;
@@ -66,6 +65,7 @@ public class RecordGrouperMain {
 	//Reporting information
 	private static long              groupingLogId;
 	private static PreparedStatement addNoteToGroupingLogStmt;
+	private static PreparedStatement updateProfileLastGroupedTimeStmt;
 
 	public static void main(String[] args) {
 		// Get the configuration filename
@@ -579,6 +579,8 @@ public class RecordGrouperMain {
 		//Get the last grouping time
 		lastGroupingTime = systemVariables.getLongValuedVariable("last_grouping_time");
 
+		getGroupingTimeLimit(processStartTime);
+
 		//Check to see if we need to clear the database
 		boolean clearDatabasePriorToGrouping = false;
 		boolean onlyDoCleanup                = false;
@@ -626,7 +628,8 @@ public class RecordGrouperMain {
 
 			// Main Record Grouping Processing
 			if (indexingProfileToRun == null || indexingProfileToRun.equalsIgnoreCase("overdrive")) {
-				groupOverDriveRecords(pikaConn, econtentConnection, explodeMarcsOnly);
+//				groupOverDriveRecords(pikaConn, econtentConnection, explodeMarcsOnly);
+				//TODO: temp, don't commit!!
 			}
 			if (indexingProfiles.size() > 0) {
 				groupIlsRecords(pikaConn, indexingProfiles, explodeMarcsOnly);
@@ -644,7 +647,10 @@ public class RecordGrouperMain {
 				removeGroupedWorksWithoutPrimaryIdentifiers(pikaConn);
 				if (indexingProfileToRun == null) {
 					// Do not update grouping time when processing a specific indexing profile
-					updateLastGroupingTime();
+					if (!finishingGroupingEarly) {
+						// Only update last grouping time when grouping
+						updateLastGroupingTime();
+					}
 				}
 
 				pikaConn.setAutoCommit(true);
@@ -683,7 +689,23 @@ public class RecordGrouperMain {
 		}
 	}
 
+	private static long startTime;
+	private static long groupingTimeLimitInMilliSeconds = 0;
+	private static void getGroupingTimeLimit(long processStartTime) {
+		Long maxGroupingTime = systemVariables.getLongValuedVariable("grouping_time_limit");
+		if (maxGroupingTime != null && maxGroupingTime > 0){
+			startTime                       = processStartTime;
+			groupingTimeLimitInMilliSeconds = maxGroupingTime * 60 * 1000;
+		}
+	}
+
+	private static boolean finishingGroupingEarly = false;
+	private static boolean passedTimeLimit(){
+		return groupingTimeLimitInMilliSeconds > 0 && new Date().getTime() - startTime > groupingTimeLimitInMilliSeconds;
+	}
+
 	private static void removeDeletedRecords(String source, String dataDirPath) {
+//		final boolean debugSierraExtract = logger.isDebugEnabled() && source.equals("ils");
 		if (marcRecordIdsInDatabase.size() > 0) {
 			addNoteToGroupingLog("Deleting " + marcRecordIdsInDatabase.size() + " record ids for profile " + source + " from the ils_marc_checksums table since they are no longer in the export.");
 			for (String recordNumber : marcRecordIdsInDatabase.keySet()) {
@@ -694,13 +716,12 @@ public class RecordGrouperMain {
 					int numRemoved = removeMarcRecordChecksum.executeUpdate();
 					if (numRemoved != 1) {
 						logger.warn("Could not delete " + source + ":" + recordNumber + " from ils_marc_checksums table");
-					} else if (source.equals("ils")) {
-						//This is to diagnose Sierra API Extract issues
-						if (logger.isDebugEnabled()) {
-							logger.debug("Deleted ils record " + source + ":" + recordNumber + " from the ils checksum table.");
-						}
-
 					}
+//					else if (debugSierraExtract) {
+//						//This is to diagnose Sierra API Extract issues
+//						logger.debug("Deleted ils record " + source + ":" + recordNumber + " from the ils checksum table.");
+//					}
+
 				} catch (SQLException e) {
 					logger.error("Error removing id " + source + ":" + recordNumber + " from ils_marc_checksums table", e);
 				}
@@ -719,17 +740,15 @@ public class RecordGrouperMain {
 					int numRemoved = removePrimaryIdentifier.executeUpdate();
 					if (numRemoved != 1) {
 						logger.warn("Could not delete " + recordNumber + " from grouped_work_primary_identifiers table");
-					} else if (source.equals("ils")) {
-						//TODO: this is temporary. this is to diagnose Sierra API Extract issues
-						if (logger.isDebugEnabled()) {
-							logger.debug("Deleting grouped work primary identifier entry for record " + recordNumber);
-						}
 					}
+//					else if (debugSierraExtract) {
+//							logger.debug("Deleting grouped work primary identifier entry for record " + recordNumber);
+//					}
 				} catch (SQLException e) {
 					logger.error("Error removing " + recordNumber + " from grouped_work_primary_identifiers table", e);
 				}
 			}
-			TreeSet<String> theList = new TreeSet<String>(primaryIdentifiersInDatabase.keySet());
+			TreeSet<String> theList = new TreeSet<>(primaryIdentifiersInDatabase.keySet());
 			writeExistingRecordsFile(theList, "remaining_primary_identifiers_to_be_deleted", dataDirPath);
 			primaryIdentifiersInDatabase.clear();
 		}
@@ -739,7 +758,7 @@ public class RecordGrouperMain {
 		systemVariables.setVariable("record_grouping_running", isRunning);
 	}
 
-	private static SimpleDateFormat dayFormatter = new SimpleDateFormat("yyyy-MM-dd");
+	private static final SimpleDateFormat dayFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
 	private static void writeExistingRecordsFile(TreeSet<String> recordNumbersInExport, String filePrefix, String dataDirPath) {
 		try {
@@ -894,176 +913,213 @@ public class RecordGrouperMain {
 			}
 		}
 	}
+	private static boolean updateProfileLastGroupedTime(long profileId, long newLastGroupedTime){
+		try {
+			updateProfileLastGroupedTimeStmt.setLong(1, newLastGroupedTime);
+			updateProfileLastGroupedTimeStmt.setLong(2, profileId);
+			int result = updateProfileLastGroupedTimeStmt.executeUpdate();
+			return result > 0;
+		} catch (SQLException e) {
+			logger.error("Error updating indexing profile " + profileId + " last grouped time", e);
+		}
+	return false;
+	}
 
 	private static void groupIlsRecords(Connection pikaConn, ArrayList<IndexingProfile> indexingProfiles, boolean explodeMarcsOnly) {
+		try {
+			updateProfileLastGroupedTimeStmt = pikaConn.prepareStatement("UPDATE indexing_profiles SET lastGroupedTime = ? WHERE id = ?");
+		} catch (SQLException e) {
+			logger.error("Error Setting up updateProfileLastGroupedTimeStmt ", e);
+		}
 		//Get indexing profiles
 		for (IndexingProfile curProfile : indexingProfiles) {
-			addNoteToGroupingLog("Processing profile " + curProfile.sourceName);
+			if (!passedTimeLimit()) {
+				addNoteToGroupingLog("Processing profile " + curProfile.sourceName);
 
-			String marcPath = curProfile.marcPath;
-
-			//Check to see if we should process the profile
-			boolean         processProfile = curProfile.groupUnchangedFiles || fullRegroupingClearGroupingTables;
-			ArrayList<File> filesToProcess = new ArrayList<>();
-			//Check to see if we have any new files, if so we will process all of them to be sure deletes and overlays process properly
-			Pattern filesToMatchPattern = Pattern.compile(curProfile.filenamesToInclude, Pattern.CASE_INSENSITIVE);
-			File[]  catalogBibFiles     = new File(marcPath).listFiles();
-			if (catalogBibFiles != null) {
-				for (File curBibFile : catalogBibFiles) {
-					if (filesToMatchPattern.matcher(curBibFile.getName()).matches()) {
-						filesToProcess.add(curBibFile);
-						if (!processProfile && curBibFile.lastModified() > lastGroupingTime * 1000) {
-							//If the file has changed since the last grouping time we should process it again
-							// (Normally we want to skip grouping if the records haven't changed, since the last time we have grouped them)
-							processProfile = true;
+				//Check to see if we should process the profile
+				long            profileStartGroupingTime      = new Date().getTime() / 1000;
+				String          marcPath                      = curProfile.marcPath;
+				boolean         processProfile                = curProfile.groupUnchangedFiles || fullRegroupingClearGroupingTables;
+				ArrayList<File> filesToProcess                = new ArrayList<>();
+				Pattern         filesToMatchPattern           = Pattern.compile(curProfile.filenamesToInclude, Pattern.CASE_INSENSITIVE);
+				File[]          catalogBibFiles               = new File(marcPath).listFiles();
+				//Check to see if we have any new files, if so we will process all of them to be sure deletes and overlays process properly
+				if (catalogBibFiles != null) {
+					for (File curBibFile : catalogBibFiles) {
+						if (filesToMatchPattern.matcher(curBibFile.getName()).matches()) {
+							filesToProcess.add(curBibFile);
+							final long fileLastModifiedTime = curBibFile.lastModified();
+							if (!processProfile) {
+								if (curProfile.lastGroupedTime == 0) {
+									if (fileLastModifiedTime > lastGroupingTime * 1000) {
+										//If the file has changed since the last grouping time we should process it again
+										// (Normally we want to skip grouping if the records haven't changed, since the last time we have grouped them)
+										processProfile = true;
+									}
+								} else if (fileLastModifiedTime > curProfile.lastGroupedTime * 1000){
+									// Now we can tracking grouping time for specific sideloads so that they can also be processed outside of the regular full regrouping
+									processProfile = true;
+								}
+							}
 						}
 					}
 				}
-			}
-			if (!processProfile) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("Checking if " + curProfile.sourceName + " has had any records marked for regrouping.");
-				}
-				if (!curProfile.usingSierraAPIExtract && checkForForcedRegrouping(pikaConn, curProfile.sourceName)) {
-					processProfile = true;
-					addNoteToGroupingLog(curProfile.sourceName + " has no file changes but will be processed because records have been marked for forced regrouping.");
-				}
-			}
-
-			if (!processProfile) {
-				addNoteToGroupingLog("Skipping processing profile " + curProfile.sourceName + " because nothing has changed");
-			} else {
-				loadIlsChecksums(pikaConn, curProfile.sourceName);
-				loadExistingPrimaryIdentifiers(pikaConn, curProfile.sourceName);
-
-				MarcRecordGrouper recordGroupingProcessor;
-				switch (curProfile.groupingClass) {
-					case "MarcRecordGrouper":
-						recordGroupingProcessor = new MarcRecordGrouper(pikaConn, curProfile, logger, fullRegroupingNoClear || fullRegroupingClearGroupingTables);
-						break;
-					case "SideLoadedRecordGrouper":
-						recordGroupingProcessor = new SideLoadedRecordGrouper(pikaConn, curProfile, logger, fullRegroupingNoClear || fullRegroupingClearGroupingTables);
-						break;
-					case "HooplaRecordGrouper":
-						recordGroupingProcessor = new HooplaRecordGrouper(pikaConn, curProfile, logger, fullRegroupingNoClear || fullRegroupingClearGroupingTables);
-						break;
-					default:
-						logger.error("Unknown class for record grouping " + curProfile.groupingClass);
-						continue;
+				if (!processProfile) {
+					if (logger.isDebugEnabled()) {
+						logger.debug("Checking if " + curProfile.sourceName + " has had any records marked for regrouping.");
+					}
+					if (!curProfile.usingSierraAPIExtract && checkForForcedRegrouping(pikaConn, curProfile.sourceName)) {
+						//TODO: remove this check now.
+						processProfile = true;
+						addNoteToGroupingLog(curProfile.sourceName + " has no file changes but will be processed because records have been marked for forced regrouping.");
+					}
 				}
 
-				String          marcEncoding                     = curProfile.marcEncoding;
-				TreeSet<String> recordNumbersInExport            = new TreeSet<>();
-				TreeSet<String> suppressedRecordNumbersInExport  = new TreeSet<>();
-				TreeSet<String> suppressedControlNumbersInExport = new TreeSet<>();
-				TreeSet<String> marcRecordsOverwritten           = new TreeSet<>();
-				TreeSet<String> marcRecordsWritten               = new TreeSet<>();
-				TreeSet<String> recordNumbersToIndex             = new TreeSet<>();
+				if (!processProfile) {
+					addNoteToGroupingLog("Skipping processing profile " + curProfile.sourceName + " because nothing has changed");
+				} else {
+					loadIlsChecksums(pikaConn, curProfile.sourceName);
+					loadExistingPrimaryIdentifiers(pikaConn, curProfile.sourceName);
 
-				String lastRecordProcessed = "";
-				for (File curBibFile : filesToProcess) {
-					String recordId            = "";
-					int    numRecordsProcessed = 0;
-					int    numRecordsRead      = 0;
-					try (FileInputStream marcFileStream = new FileInputStream(curBibFile)) {
-						MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, marcEncoding);
-						while (catalogReader.hasNext()) {
-							recordId = ""; // reset the record Id in case of exceptions
-							try {
-								Record           curBib           = catalogReader.next();
-								RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, curProfile.sourceName, curProfile.doAutomaticEcontentSuppression);
-								if (recordIdentifier == null) {
-//									if (logger.isDebugEnabled()) {
-//										logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
-//									}
-									String controlNumber = curBib.getControlNumber();
-									if (controlNumber != null) {
-										suppressedControlNumbersInExport.add(controlNumber);
-									} else {
-										logger.warn("Bib did not have control number or identifier, the " + numRecordsRead + "-th record of the file " + curBibFile.getAbsolutePath());
-										if (logger.isInfoEnabled()) {
-											logger.info(curBib.toString());
-										}
-									}
-								} else if (recordIdentifier.isSuppressed()) {
-//									if (logger.isDebugEnabled()) {
-//										logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
-//									}
-									suppressedRecordNumbersInExport.add(recordIdentifier.getIdentifier());
-								} else {
-									recordId = recordIdentifier.getIdentifier();
+					MarcRecordGrouper recordGroupingProcessor;
+					switch (curProfile.groupingClass) {
+						case "MarcRecordGrouper":
+							recordGroupingProcessor = new MarcRecordGrouper(pikaConn, curProfile, logger, fullRegroupingNoClear || fullRegroupingClearGroupingTables);
+							break;
+						case "SideLoadedRecordGrouper":
+							recordGroupingProcessor = new SideLoadedRecordGrouper(pikaConn, curProfile, logger, fullRegroupingNoClear || fullRegroupingClearGroupingTables);
+							break;
+						case "HooplaRecordGrouper":
+							recordGroupingProcessor = new HooplaRecordGrouper(pikaConn, curProfile, logger, fullRegroupingNoClear || fullRegroupingClearGroupingTables);
+							break;
+						default:
+							logger.error("Unknown class for record grouping " + curProfile.groupingClass);
+							continue;
+					}
 
-									boolean marcUpToDate = writeIndividualMarc(curProfile, curBib, recordIdentifier, marcRecordsWritten, marcRecordsOverwritten);
-									// when fullRegroupingClearGroupingTables is true writeIndividualMarc() should return false
-									recordNumbersInExport.add(recordIdentifier.toString());
-									if (!explodeMarcsOnly) {
-										if (!marcUpToDate || fullRegroupingNoClear) {
-											if (recordGroupingProcessor.processMarcRecord(curBib, !marcUpToDate, recordIdentifier)) {
-												recordNumbersToIndex.add(recordIdentifier.toString());
-											} else {
-												suppressedRecordNumbersInExport.add(recordIdentifier.toString());
+					String          marcEncoding                     = curProfile.marcEncoding;
+					long            totalRecordsGroupedForProfile    = 0;
+					TreeSet<String> recordNumbersInExport            = new TreeSet<>();
+					TreeSet<String> suppressedRecordNumbersInExport  = new TreeSet<>();
+					TreeSet<String> suppressedControlNumbersInExport = new TreeSet<>();
+					TreeSet<String> marcRecordsOverwritten           = new TreeSet<>();
+					TreeSet<String> marcRecordsWritten               = new TreeSet<>();
+					TreeSet<String> recordNumbersToIndex             = new TreeSet<>();
+
+					String lastRecordProcessed = "";
+					for (File curBibFile : filesToProcess) {
+						String recordId            = "";
+						int    numRecordsProcessed = 0;
+						int    numRecordsRead      = 0;
+						try (FileInputStream marcFileStream = new FileInputStream(curBibFile)) {
+							MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, marcEncoding);
+							while (catalogReader.hasNext()) {
+								recordId = ""; // reset the record Id in case of exceptions
+								try {
+									Record           curBib           = catalogReader.next();
+									RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, curProfile.sourceName, curProfile.doAutomaticEcontentSuppression);
+									if (recordIdentifier == null) {
+	//									if (logger.isDebugEnabled()) {
+	//										logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
+	//									}
+										String controlNumber = curBib.getControlNumber();
+										if (controlNumber != null) {
+											suppressedControlNumbersInExport.add(controlNumber);
+										} else {
+											logger.warn("Bib did not have control number or identifier, the " + numRecordsRead + "-th record of the file " + curBibFile.getAbsolutePath());
+											if (logger.isInfoEnabled()) {
+												logger.info(curBib.toString());
 											}
-											numRecordsProcessed++;
 										}
-										//Mark that the record was processed
-										String fullId = recordIdentifier.toString().toLowerCase().trim();
-										marcRecordIdsInDatabase.remove(fullId);
-										primaryIdentifiersInDatabase.remove(fullId);
+									} else if (recordIdentifier.isSuppressed()) {
+	//									if (logger.isDebugEnabled()) {
+	//										logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
+	//									}
+										suppressedRecordNumbersInExport.add(recordIdentifier.getIdentifier());
+									} else {
+										recordId = recordIdentifier.getIdentifier();
+
+										boolean marcUpToDate = writeIndividualMarc(curProfile, curBib, recordIdentifier, marcRecordsWritten, marcRecordsOverwritten);
+										// when fullRegroupingClearGroupingTables is true writeIndividualMarc() should return false
+										recordNumbersInExport.add(recordIdentifier.toString());
+										if (!explodeMarcsOnly) {
+											if (!marcUpToDate || fullRegroupingNoClear) {
+												if (recordGroupingProcessor.processMarcRecord(curBib, !marcUpToDate, recordIdentifier)) {
+													recordNumbersToIndex.add(recordIdentifier.toString());
+												} else {
+													suppressedRecordNumbersInExport.add(recordIdentifier.toString());
+												}
+												numRecordsProcessed++;
+											}
+											//Mark that the record was processed
+											String fullId = recordIdentifier.toString().toLowerCase().trim();
+											marcRecordIdsInDatabase.remove(fullId);
+											primaryIdentifiersInDatabase.remove(fullId);
+										}
+										lastRecordProcessed = recordId;
 									}
-									lastRecordProcessed = recordId;
+								} catch (MarcException e) {
+									if (!recordId.isEmpty()) {
+										logger.warn("Error processing individual record for " + recordId + " on the " + numRecordsRead + "-th record of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue", e);
+									} else {
+										logger.warn("Error processing individual record on the " + numRecordsRead + "-th record of " + curBibFile.getAbsolutePath() + "  The last record processed was " + lastRecordProcessed + ", trying to continue", e);
+									}
 								}
-							} catch (MarcException e) {
-								if (!recordId.isEmpty()) {
-									logger.warn("Error processing individual record for " + recordId + " on the " + numRecordsRead + "-th record of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue", e);
-								} else {
-									logger.warn("Error processing individual record on the " + numRecordsRead + "-th record of " + curBibFile.getAbsolutePath() + "  The last record processed was " + lastRecordProcessed + ", trying to continue", e);
+								numRecordsRead++;
+								if (numRecordsRead % 100000 == 0) {
+									recordGroupingProcessor.dumpStats();
 								}
+								//TODO: temp?
+	//							if (numRecordsRead % 5000 == 0) {
+	//								updateLastUpdateTimeInLog();
+	//								//Let the hard drives rest a bit so other things can happen.
+	//								Thread.sleep(100);
+	//							}
 							}
-							numRecordsRead++;
-							if (numRecordsRead % 100000 == 0) {
-								recordGroupingProcessor.dumpStats();
+						} catch (Exception e) {
+							if (!recordId.isEmpty()) {
+								logger.error("Error loading  bibs on record " + numRecordsRead + " in profile " + curProfile.sourceName + " on the record  " + recordId, e);
+							} else {
+								logger.error("Error loading  bibs on record " + numRecordsRead + " in profile " + curProfile.sourceName + " the last record processed was " + lastRecordProcessed, e);
 							}
-							//TODO: temp?
-//							if (numRecordsRead % 5000 == 0) {
-//								updateLastUpdateTimeInLog();
-//								//Let the hard drives rest a bit so other things can happen.
-//								Thread.sleep(100);
-//							}
 						}
-					} catch (Exception e) {
-						if (!recordId.isEmpty()) {
-							logger.error("Error loading  bibs on record " + numRecordsRead + " in profile " + curProfile.sourceName + " on the record  " + recordId, e);
-						} else {
-							logger.error("Error loading  bibs on record " + numRecordsRead + " in profile " + curProfile.sourceName + " the last record processed was " + lastRecordProcessed, e);
-						}
+						addNoteToGroupingLog("&nbsp;&nbsp; - Finished checking " + numRecordsRead + " records with " + numRecordsProcessed + " actual changes grouped from the marc file " + curBibFile.getName() + " in profile " + curProfile.sourceName);
+						totalRecordsGroupedForProfile += numRecordsProcessed;
 					}
-					addNoteToGroupingLog("&nbsp;&nbsp; - Finished grouping " + numRecordsRead + " records with " + numRecordsProcessed + " actual changes from the marc file " + curBibFile.getName() + " in profile " + curProfile.sourceName);
-				}
 
-				addNoteToGroupingLog("&nbsp;&nbsp; - Records Processed: " + recordNumbersInExport.size());
-				addNoteToGroupingLog("&nbsp;&nbsp; - Records Suppressed: " + suppressedRecordNumbersInExport.size());
-				addNoteToGroupingLog("&nbsp;&nbsp; - Records Written: " + marcRecordsWritten.size());
-				addNoteToGroupingLog("&nbsp;&nbsp; - Records Overwritten: " + marcRecordsOverwritten.size());
+					addNoteToGroupingLog("&nbsp;&nbsp; - Records in Export(s)  : " + recordNumbersInExport.size());
+					addNoteToGroupingLog("&nbsp;&nbsp; - Records Suppressed    : " + suppressedRecordNumbersInExport.size());
+					addNoteToGroupingLog("&nbsp;&nbsp; - New Records Written   : " + marcRecordsWritten.size());
+					addNoteToGroupingLog("&nbsp;&nbsp; - Records Overwritten   : " + marcRecordsOverwritten.size());
+					addNoteToGroupingLog("&nbsp;&nbsp; - Total Records Grouped : " + totalRecordsGroupedForProfile);
 
-				removeDeletedRecords(curProfile.sourceName, marcPath);
+					removeDeletedRecords(curProfile.sourceName, marcPath);
 
-				String profileName = curProfile.sourceName.replaceAll(" ", "_");
-				writeExistingRecordsFile(recordNumbersInExport, "record_grouping_" + profileName + "_bibs_in_export", marcPath);
-				if (suppressedRecordNumbersInExport.size() > 0) {
-					writeExistingRecordsFile(suppressedRecordNumbersInExport, "record_grouping_" + profileName + "_bibs_to_ignore", marcPath);
+					if (!updateProfileLastGroupedTime(curProfile.id, profileStartGroupingTime)){
+						logger.error("Failed to set last grouping time for " + curProfile.sourceName );
+					}
+
+					String profileName = curProfile.sourceName.replaceAll(" ", "_");
+					writeExistingRecordsFile(recordNumbersInExport, "record_grouping_" + profileName + "_bibs_in_export", marcPath);
+					if (suppressedRecordNumbersInExport.size() > 0) {
+						writeExistingRecordsFile(suppressedRecordNumbersInExport, "record_grouping_" + profileName + "_bibs_to_ignore", marcPath);
+					}
+					if (suppressedControlNumbersInExport.size() > 0) {
+						writeExistingRecordsFile(suppressedControlNumbersInExport, "record_grouping_" + profileName + "_control_numbers_to_ignore", marcPath);
+					}
+					if (recordNumbersToIndex.size() > 0) {
+						writeExistingRecordsFile(recordNumbersToIndex, "record_grouping_" + profileName + "_bibs_to_index", marcPath);
+					}
+					if (marcRecordsWritten.size() > 0) {
+						writeExistingRecordsFile(marcRecordsWritten, "record_grouping_" + profileName + "_new_bibs_written", marcPath);
+					}
+					if (marcRecordsOverwritten.size() > 0) {
+						writeExistingRecordsFile(marcRecordsOverwritten, "record_grouping_" + profileName + "_changed_bibs_written", marcPath);
+					}
 				}
-				if (suppressedControlNumbersInExport.size() > 0) {
-					writeExistingRecordsFile(suppressedControlNumbersInExport, "record_grouping_" + profileName + "_control_numbers_to_ignore", marcPath);
-				}
-				if (recordNumbersToIndex.size() > 0) {
-					writeExistingRecordsFile(recordNumbersToIndex, "record_grouping_" + profileName + "_bibs_to_index", marcPath);
-				}
-				if (marcRecordsWritten.size() > 0) {
-					writeExistingRecordsFile(marcRecordsWritten, "record_grouping_" + profileName + "_new_bibs_written", marcPath);
-				}
-				if (marcRecordsOverwritten.size() > 0) {
-					writeExistingRecordsFile(marcRecordsOverwritten, "record_grouping_" + profileName + "_changed_bibs_written", marcPath);
-				}
+			} else {
+				finishingGroupingEarly = true;
+				addNoteToGroupingLog("Passed grouping time limit. Skipping profile " + curProfile.sourceName);
 			}
 
 		}
