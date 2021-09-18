@@ -163,7 +163,6 @@ class Novelist3{
 							$novelistData->hasNovelistData = true;
 							$novelistData->lastUpdate      = time(); //Update the last update time to optimize caching
 							$novelistData->primaryISBN     = $data->TitleInfo->primary_isbn ?? null;
-
 							//Series Information
 							if (isset($data->FeatureContent->SeriesInfo)){
 								$this->loadSeriesInfoFast($data->FeatureContent->SeriesInfo, $novelistData);
@@ -280,6 +279,7 @@ class Novelist3{
 								global $logger;
 								//log the incorrect ISBN
 								$logger->log("Novelist ISBN for record " . $groupedRecordId . " does not match local holdings", PEAR_LOGWARNING);
+								$this->loadSeriesInfo($groupedRecordId, $data->FeatureContent->SeriesInfo, $novelistData);
 								$novelistData->primaryISBN = $ISBNs[0];
 							}
 						}
