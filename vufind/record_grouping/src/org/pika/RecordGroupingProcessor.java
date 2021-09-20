@@ -835,15 +835,15 @@ class RecordGroupingProcessor {
 		}
 	}
 
-	void dumpStats() {
-		if (logger.isDebugEnabled()) {
-			long totalElapsedTime    = new Date().getTime() - startTime;
-			long totalElapsedMinutes = totalElapsedTime / (60 * 1000);
-			logger.debug("-----------------------------------------------------------");
-			logger.debug("Processed " + numRecordsProcessed + " records in " + totalElapsedMinutes + " minutes");
-			logger.debug("Created a total of " + numGroupedWorksAdded + " grouped works");
-		}
-	}
+//	void dumpStats() {
+//		if (logger.isDebugEnabled()) {
+//			long totalElapsedTime    = new Date().getTime() - startTime;
+//			long totalElapsedMinutes = totalElapsedTime / 60000;
+//			logger.debug("-----------------------------------------------------------");
+//			logger.debug("Processed " + numRecordsProcessed + " records in " + totalElapsedMinutes + " minutes");
+//			logger.debug("Created a total of " + numGroupedWorksAdded + " grouped works");
+//		}
+//	}
 
 	//TODO: This only gets used by the generate Author authorities, maybe the overdrive grouper
 //	private void loadTranslationMaps(String serverName) {
