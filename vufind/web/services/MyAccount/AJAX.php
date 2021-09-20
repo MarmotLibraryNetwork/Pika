@@ -73,7 +73,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		// Select List Creation using Object Editor functions
 		require_once ROOT_DIR . '/sys/Browse/SubBrowseCategories.php';
 		$temp                            = SubBrowseCategories::getObjectStructure();
-		$temp['subCategoryId']['values'] = array(0 => 'Select One') + $temp['subCategoryId']['values'];
+		$temp['subCategoryId']['values'] = [0 => 'Select One'] + $temp['subCategoryId']['values'];
 		// add default option that denotes nothing has been selected to the options list
 		// (this preserves the keys' numeric values (which is essential as they are the Id values) as well as the array's order)
 		// btw addition of arrays is kinda a cool trick.
@@ -82,20 +82,20 @@ class MyAccount_AJAX extends AJAXHandler {
 
 		// Display Page
 		$interface->assign('listId', strip_tags($_REQUEST['listId']));
-		$results = array(
+		$results = [
 			'title'        => 'Add as Browse Category to Home Page',
 			'modalBody'    => $interface->fetch('Browse/addBrowseCategoryForm.tpl'),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>Create Category</button>",
-		);
+		];
 		return $results;
 	}
 
 	function addAccountLink(){
 		if (!UserAccount::isLoggedIn()){
-			$result = array(
+			$result = [
 				'result'  => false,
 				'message' => 'Sorry, you must be logged in to manage accounts.',
-			);
+			];
 		}else{
 			$username = $_REQUEST['username'];
 			$password = $_REQUEST['password'];

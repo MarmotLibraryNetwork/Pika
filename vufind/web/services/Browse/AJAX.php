@@ -26,7 +26,7 @@ class Browse_AJAX extends AJAXHandler {
 	/** @var SearchObject_Solr|SearchObject_Base $searchObject */
 	private $searchObject;
 
-	protected $methodsThatRespondWithJSONUnstructured = array(
+	protected $methodsThatRespondWithJSONUnstructured = [
 		'getAddBrowseCategoryForm',
 		'createBrowseCategory',
 		'getMoreBrowseResults',
@@ -34,7 +34,7 @@ class Browse_AJAX extends AJAXHandler {
 		'getBrowseSubCategoryInfo',
 		'getActiveBrowseCategories',
 		'getSubCategories',
-	);
+	];
 
 	function getAddBrowseCategoryForm(){
 		global $interface;
@@ -42,7 +42,7 @@ class Browse_AJAX extends AJAXHandler {
 		// Select List Creation using Object Editor functions
 		require_once ROOT_DIR . '/sys/Browse/SubBrowseCategories.php';
 		$temp                            = SubBrowseCategories::getObjectStructure();
-		$temp['subCategoryId']['values'] = array(0 => 'Select One') + $temp['subCategoryId']['values'];
+		$temp['subCategoryId']['values'] = [0 => 'Select One'] + $temp['subCategoryId']['values'];
 		// add default option that denotes nothing has been selected to the options list
 		// (this preserves the keys' numeric values (which is essential as they are the Id values) as well as the array's order)
 		// btw addition of arrays is kinda a cool trick.
@@ -51,106 +51,134 @@ class Browse_AJAX extends AJAXHandler {
 
 		// Display Page
 		$interface->assign('searchId', strip_tags($_REQUEST['searchId']));
-		$results = array(
+		$results = [
 			'title'        => 'Add as Browse Category to Home Page',
 			'modalBody'    => $interface->fetch('Browse/addBrowseCategoryForm.tpl'),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>Create Category</button>",
-		);
+		];
 		return $results;
 	}
 
 	function createBrowseCategory(){
-		global $library;
-		global $locationSingleton;
-		$searchLocation     = $locationSingleton->getSearchLocation();
-		$categoryName       = $_REQUEST['categoryName'] ?? '';
-		$addAsSubCategoryOf = isset($_REQUEST['addAsSubCategoryOf']) && !empty($_REQUEST['addAsSubCategoryOf']) ? $_REQUEST['addAsSubCategoryOf'] : null;
-		// value of zero means nothing was selected.
-
-
-		//Get the text id for the category
-		$textId = str_replace(' ', '_', strtolower(trim($categoryName)));
-		$textId = preg_replace('/[^\w\d_]/', '', $textId);
-		if (strlen($textId) == 0){
-			return array(
-				'success' => false,
-				'message' => 'Please enter a category name',
-			);
-		}
-		if ($searchLocation){
-			$textId = $searchLocation->code . '_' . $textId;
-		}elseif ($library){
-			$textId = $library->subdomain . '_' . $textId;
-		}
-
-		//Check to see if we have an existing browse category
-		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-		$browseCategory         = new BrowseCategory();
-		$browseCategory->textId = $textId;
-		if ($browseCategory->find(true)){
-			return array(
-				'success' => false,
-				'message' => "Sorry the title of the category was not unique.  Please enter a new name.",
-			);
-		}else{
-			if (isset($_REQUEST['searchId']) && strlen($_REQUEST['searchId']) > 0){
-				$searchId = $_REQUEST['searchId'];
-
-				/** @var SearchObject_Solr|SearchObject_Base $searchObj */
-				$searchObj = SearchObjectFactory::initSearchObject();
-				$searchObj->init();
-				$searchObj = $searchObj->restoreSavedSearch($searchId, false, true);
-
-				if (!$browseCategory->updateFromSearch($searchObj)){
-					return array(
+		$user = UserAccount::getLoggedInUser();
+		if (UserAccount::isLoggedIn()){
+			global $locationSingleton;
+			$searchLocation = $locationSingleton->getSearchLocation();
+			if (!empty($searchLocation)){
+				if (UserAccount::userHasRole('locationManager')){
+					// Use home branch for location managers
+					$searchLocation = Location::getUserHomeLocation();
+				}elseif (UserAccount::userHasRole('opacAdmin')){
+					// Use the interface library for opac admins (can be different than user home library)
+					global $library;
+				}elseif (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager', 'contentEditor'])){
+					// Otherwise, use Users home library
+					$library = $user->getHomeLibrary();
+				}else{
+					return [
 						'success' => false,
-						'message' => "Sorry, this search is too complex to create a category from.",
-					);
+						'message' => 'You do not have permission to create a Browse Category',
+					];
 				}
-			}else{
-				$listId                       = $_REQUEST['listId'];
-				$browseCategory->sourceListId = $listId;
 			}
-
-			$browseCategory->label          = $categoryName;
-			$browseCategory->userId         = UserAccount::getActiveUserId();
-			$browseCategory->sharing        = 'everyone';
-			$browseCategory->catalogScoping = 'unscoped';
-			$browseCategory->description    = '';
-
-
-			//setup and add the category
-			if (!$browseCategory->insert()){
-				return array(
+			$categoryName       = $_REQUEST['categoryName'] ?? '';
+			$addAsSubCategoryOf = !empty($_REQUEST['addAsSubCategoryOf']) ? $_REQUEST['addAsSubCategoryOf'] : null;// value of zero means nothing was selected.
+			$textId             = str_replace(' ', '_', strtolower(trim($categoryName)));
+			$textId             = preg_replace('/[^\w\d_]/', '', $textId);
+			if (strlen($textId) == 0){
+				return [
 					'success' => false,
-					'message' => "There was an error saving the category.  Please contact Marmot.",
-				);
-			}elseif ($addAsSubCategoryOf){
-				$id                            = $browseCategory->id; // get from above insertion operation
-				$subCategory                   = new SubBrowseCategories();
-				$subCategory->browseCategoryId = $addAsSubCategoryOf;
-				$subCategory->subCategoryId    = $id;
-				if (!$subCategory->insert()){
-					return array(
-						'success' => false,
-						'message' => "There was an error saving the category as a sub-category.  Please contact Marmot.",
-					);
+					'message' => 'Please enter a category name',
+				];
+			}
+			if ($searchLocation){
+				$textId = $searchLocation->code . '_' . $textId;
+			}elseif ($library){
+				$textId = $library->subdomain . '_' . $textId;
+			}
+			//Check to see if we have an existing browse category
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+			$browseCategory         = new BrowseCategory();
+			$browseCategory->textId = $textId;
+			if ($browseCategory->find(true)){
+				return [
+					'success' => false,
+					'message' => "Sorry the title of the category was not unique.  Please enter a new name.",
+				];
+			}else{
+				if (!empty($_REQUEST['searchId'])){
+					$searchId = $_REQUEST['searchId'];
+
+					/** @var SearchObject_Solr|SearchObject_Base $searchObj */
+					$searchObj = SearchObjectFactory::initSearchObject();
+					$searchObj->init();
+					$searchObj = $searchObj->restoreSavedSearch($searchId, false, true);
+
+					if (!$browseCategory->updateFromSearch($searchObj)){
+						return [
+							'success' => false,
+							'message' => "Sorry, this search is too complex to create a category from.",
+						];
+					}
+				}else{
+					$listId                       = $_REQUEST['listId'];
+					$browseCategory->sourceListId = $listId;
 				}
 
-			}
+				$browseCategory->label          = $categoryName;
+				$browseCategory->userId         = UserAccount::getActiveUserId();
+				$browseCategory->sharing        = 'everyone';
+				$browseCategory->catalogScoping = 'unscoped';
+				$browseCategory->description    = '';
 
-			//Now add to the library/location
-			if ($library && !$addAsSubCategoryOf){ // Only add main browse categories to the library carousel
-				require_once ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php';
-				$libraryBrowseCategory                       = new LibraryBrowseCategory();
-				$libraryBrowseCategory->libraryId            = $library->libraryId;
-				$libraryBrowseCategory->browseCategoryTextId = $textId;
-				$libraryBrowseCategory->insert();
-			}
 
-			return array(
-				'success' => true,
-			);
+				//setup and add the category
+				if (!$browseCategory->insert()){
+					return [
+						'success' => false,
+						'message' => "There was an error saving the category.  Please contact Marmot.",
+					];
+				}elseif ($addAsSubCategoryOf){
+					$id                            = $browseCategory->id; // get from above insertion operation
+					$subCategory                   = new SubBrowseCategories();
+					$subCategory->browseCategoryId = $addAsSubCategoryOf;
+					$subCategory->subCategoryId    = $id;
+					if (!$subCategory->insert()){
+						return [
+							'success' => false,
+							'message' => "There was an error saving the category as a sub-category.  Please contact Marmot.",
+						];
+					}
+
+				}
+
+				//Now add to the library/location
+				if (!$addAsSubCategoryOf){
+					if ($library){
+						// Only add main browse categories to the library carousel
+						require_once ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php';
+						$libraryBrowseCategory                       = new LibraryBrowseCategory();
+						$libraryBrowseCategory->libraryId            = $library->libraryId;
+						$libraryBrowseCategory->browseCategoryTextId = $textId;
+						$libraryBrowseCategory->insert();
+					}elseif ($searchLocation){
+						require_once ROOT_DIR . '/sys/Browse/LocationBrowseCategory.php';
+						$locationBrowseCategory                       = new LocationBrowseCategory();
+						$locationBrowseCategory->locationId           = $searchLocation->locationId;
+						$locationBrowseCategory->browseCategoryTextId = $textId;
+						$locationBrowseCategory->insert();
+					}
+				}
+
+				return [
+					'success' => true,
+				];
+			}
+		}else{
+			return [
+				'success' => false,
+				'message' => 'Not Logged In.',
+			];
 		}
 	}
 
@@ -200,7 +228,7 @@ class Browse_AJAX extends AJAXHandler {
 
 		require_once ROOT_DIR . '/sys/LocalEnrichment/Suggestions.php';
 		$suggestions = Suggestions::getSuggestions(-1, self::ITEMS_PER_PAGE);
-		$records     = array();
+		$records     = [];
 		foreach ($suggestions as $suggestedItemId => $suggestionData){
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			if (array_key_exists('recordDriver', $suggestionData['titleInfo'])){
@@ -265,7 +293,7 @@ class Browse_AJAX extends AJAXHandler {
 					if ($sourceList->find(true)){
 						$records = $sourceList->getBrowseRecords(($pageToLoad - 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
 					}else{
-						$records = array();
+						$records = [];
 					}
 					$result['searchUrl'] = '/MyAccount/MyList/' . $browseCategory->sourceListId;
 
@@ -338,10 +366,10 @@ class Browse_AJAX extends AJAXHandler {
 	}
 
 	public $browseModes = // Valid Browse Modes
-		array(
+		[
 			'covers', // default Mode
 			'grid',
-		),
+		],
 		$browseMode; // Selected Browse Mode
 
 	function setBrowseMode(){
@@ -390,7 +418,7 @@ class Browse_AJAX extends AJAXHandler {
 	function getBrowseCategoryInfo($textId = null){
 		$textId = $this->setTextId($textId);
 		if ($textId == null){
-			return array('success' => false);
+			return ['success' => false];
 		}
 		$response['textId'] = $textId;
 
@@ -440,9 +468,9 @@ class Browse_AJAX extends AJAXHandler {
 	}
 
 	function getBrowseSubCategoryInfo(){
-		$subCategoryTextId = isset($_REQUEST['subCategoryTextId']) ? $_REQUEST['subCategoryTextId'] : null;
+		$subCategoryTextId = $_REQUEST['subCategoryTextId'] ?? null;
 		if ($subCategoryTextId == null){
-			return array('success' => false);
+			return ['success' => false];
 		}
 
 		// Get Main Category Info
@@ -468,7 +496,7 @@ class Browse_AJAX extends AJAXHandler {
 		}
 
 		// Update Stats
-		$this->upBrowseCategoryCounter();
+//		$this->upBrowseCategoryCounter();
 
 		$result = (isset($result)) ? array_merge($subCategoryResult, $result) : $subCategoryResult;
 		return $result;
@@ -477,14 +505,14 @@ class Browse_AJAX extends AJAXHandler {
 	function getMoreBrowseResults($textId = null, $pageToLoad = null){
 		$textId = $this->setTextId($textId);
 		if ($textId == null){
-			return array('success' => false);
+			return ['success' => false];
 		}
 
 		// Get More Results requires a defined page to load
 		if ($pageToLoad == null){
 			$pageToLoad = (int)$_REQUEST['pageToLoad'];
 			if (!is_int($pageToLoad)){
-				return array('success' => false);
+				return ['success' => false];
 			}
 		}
 		$result = $this->getBrowseCategoryResults($pageToLoad);
@@ -501,7 +529,7 @@ class Browse_AJAX extends AJAXHandler {
 		$this->setTextId();
 		$this->getBrowseCategory();
 		if ($this->browseCategory){
-			$subCategories = array();
+			$subCategories = [];
 			/** @var SubBrowseCategories $subCategory */
 			foreach ($this->browseCategory->getSubCategories() as $subCategory){
 
@@ -511,7 +539,7 @@ class Browse_AJAX extends AJAXHandler {
 				$temp->id = $subCategory->subCategoryId;
 				if ($temp->find(true)){
 					$this->subCategories[] = $temp;
-					$subCategories[]       = array('label' => $temp->label, 'textId' => $temp->textId);
+					$subCategories[]       = ['label' => $temp->label, 'textId' => $temp->textId];
 				}else{
 					global $logger;
 					$logger->log("Did not find subcategory with id {$subCategory->subCategoryId}", PEAR_LOG_WARNING);
@@ -556,17 +584,17 @@ class Browse_AJAX extends AJAXHandler {
 		// - the text id of the category
 		// - the display label
 		// - Clickable link to load the category
-		$formattedCategories = array();
+		$formattedCategories = [];
 		foreach ($browseCategories as $curCategory){
 			$categoryInformation         = new BrowseCategory();
 			$categoryInformation->textId = $curCategory->browseCategoryTextId;
 
 			if ($categoryInformation->find(true)){
-				$formattedCategories[] = array(
+				$formattedCategories[] = [
 					'text_id'       => $curCategory->browseCategoryTextId,
 					'display_label' => $categoryInformation->label,
 					'link'          => $configArray['Site']['url'] . '?browseCategory=' . $curCategory->browseCategoryTextId,
-				);
+				];
 			}
 		}
 		return $formattedCategories;
