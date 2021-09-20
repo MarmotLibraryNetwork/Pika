@@ -128,7 +128,12 @@ class NonGroupedRecord extends CommonGroupingAlterationOperations {
 		return $validationResults;
 	}
 
-	private function getGroupedWork(){
+	/**
+	 * Fetch the groupedWork associated with this ungrouped record entry
+	 *
+	 * @return false|GroupedWork
+	 */
+	public function getGroupedWork(){
 		if (isset($this->groupedWork)){
 			return $this->groupedWork;
 		}else{
@@ -165,12 +170,12 @@ class NonGroupedRecord extends CommonGroupingAlterationOperations {
 	 *
 	 */
 	protected function followUpActions(){
-		global $configArray;
-		if ($configArray['Catalog']['ils'] == 'Sierra'){
-			require_once ROOT_DIR . '/services/SourceAndId.php';
-			$sourceAndId = new SourceAndId($this->source . ':' . $this->recordId);
-			$this->markRecordForReExtraction($sourceAndId);
-		}
+//		global $configArray;
+//		if ($configArray['Catalog']['ils'] == 'Sierra'){
+//			require_once ROOT_DIR . '/services/SourceAndId.php';
+//			$sourceAndId = new SourceAndId($this->source . ':' . $this->recordId);
+//			$this->markRecordForReExtraction($sourceAndId);
+//		}
 		$this->markForForcedRegrouping();
 		}
 

@@ -180,24 +180,24 @@ class MergedGroupedWork extends CommonGroupingAlterationOperations {
 	 * Steps to take after saving data to database
 	 */
 	protected function followUpActions(){
-		global $configArray;
-		if ($configArray['Catalog']['ils'] == 'Sierra'){
-			// Merge Works require re-extraction in the Sierra API Extract process
-			// The full regrouping process will ignore forced-regrouping markings for Sierra records
-			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-			$groupedWork               = new GroupedWork();
-			$groupedWork->permanent_id = $this->sourceGroupedWorkId;
-			if ($groupedWork->find(true)){
-				require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
-				$groupedWorkPrimaryIdentifier                  = new GroupedWorkPrimaryIdentifier();
-				$groupedWorkPrimaryIdentifier->grouped_work_id = $groupedWork->id;
-				$groupedWorkPrimaryIdentifier->find();
-				while ($groupedWorkPrimaryIdentifier->fetch()){
-					$sourceAndId = $groupedWorkPrimaryIdentifier->getSourceAndId();
-					$this->markRecordForReExtraction($sourceAndId);
-				}
-			}
-		}
+//		global $configArray;
+//		if ($configArray['Catalog']['ils'] == 'Sierra'){
+//			// Merge Works require re-extraction in the Sierra API Extract process
+//			// The full regrouping process will ignore forced-regrouping markings for Sierra records
+//			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+//			$groupedWork               = new GroupedWork();
+//			$groupedWork->permanent_id = $this->sourceGroupedWorkId;
+//			if ($groupedWork->find(true)){
+//				require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
+//				$groupedWorkPrimaryIdentifier                  = new GroupedWorkPrimaryIdentifier();
+//				$groupedWorkPrimaryIdentifier->grouped_work_id = $groupedWork->id;
+//				$groupedWorkPrimaryIdentifier->find();
+//				while ($groupedWorkPrimaryIdentifier->fetch()){
+//					$sourceAndId = $groupedWorkPrimaryIdentifier->getSourceAndId();
+//					$this->markRecordForReExtraction($sourceAndId);
+//				}
+//			}
+//		}
 		$this->markForForcedRegrouping();
 	}
 
