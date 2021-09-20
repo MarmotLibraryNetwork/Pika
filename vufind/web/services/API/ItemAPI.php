@@ -24,6 +24,8 @@ require_once ROOT_DIR . '/CatalogConnection.php';
 
 class ItemAPI extends AJAXHandler {
 
+	use MARC_AJAX_Basic;
+
 	/** @var  Sierra|DriverInterface */
 	protected $catalog;
 
@@ -45,25 +47,25 @@ class ItemAPI extends AJAXHandler {
 	/** @var  Solr $db */
 	public $db;
 
-	protected $methodsThatRespondWithJSONUnstructured = array(
+	protected $methodsThatRespondWithJSONUnstructured = [
 		'getDescriptionByRecordId',
 		'getDescriptionByTitleAndAuthor',
-	);
+	];
 
-	protected $methodsThatRespondWithJSONResultWrapper = array(
+	protected $methodsThatRespondWithJSONResultWrapper = [
 		'getItem',
 		'getBasicItemInfo',
 		'getItemAvailability',
 		'loadSolrRecord',
 		'clearBookCoverCacheById',
 		'getCopyAndHoldCounts',
-	);
+	];
 
-	protected $methodsThatRespondThemselves = array(
+	protected $methodsThatRespondThemselves = [
 		'getBookcoverById',
 		'getBookCover',
 		'getMarcRecord',
-	);
+	];
 
 	function getDescriptionByTitleAndAuthor(){
 		global $configArray;
@@ -79,7 +81,7 @@ class ItemAPI extends AJAXHandler {
 		$this->db = new $class($url);
 
 		//Setup the results to return from the API method
-		$results = array();
+		$results = [];
 
 		//Search the database by title and author
 		if ($title && $author){
@@ -89,29 +91,29 @@ class ItemAPI extends AJAXHandler {
 		}elseif ($author){
 			$searchResults = $this->db->search("author:$author");
 		}else{
-			$results = array(
+			$results = [
 				'result'  => false,
 				'message' => 'Please enter a title and/or author',
-			);
+			];
 			return $results;
 		}
 
 		if ($searchResults['response']['numFound'] == 0){
-			$results = array(
+			$results = [
 				'result'  => false,
 				'message' => 'Sorry, we could not find a description for that title and author',
-			);
+			];
 		}else{
 			$firstRecord = $searchResults['response']['docs'][0];
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$groupedWork = new GroupedWorkDriver($firstRecord);
 
-			$results = array(
+			$results = [
 				'result'       => true,
 				'message'      => 'Found a summary for record ' . $firstRecord['title_display'] . ' by ' . $firstRecord['author_display'],
 				'recordsFound' => $searchResults['response']['numFound'],
 				'description'  => $groupedWork->getDescription(),
-			);
+			];
 		}
 		return $results;
 	}
@@ -135,29 +137,29 @@ class ItemAPI extends AJAXHandler {
 			}
 			$searchResults = $this->db->search("$recordId", 'Id');
 		}else{
-			$results = array(
+			$results = [
 				'result'  => false,
 				'message' => 'Please enter the record Id to look for',
-			);
+			];
 			return $results;
 		}
 
 		if ($searchResults['response']['numFound'] == 0){
-			$results = array(
+			$results = [
 				'result'  => false,
 				'message' => 'Sorry, we could not find a description for that record id',
-			);
+			];
 		}else{
 			$firstRecord = $searchResults['response']['docs'][0];
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$groupedWork = new GroupedWorkDriver($firstRecord);
 
-			$results = array(
+			$results = [
 				'result'       => true,
 				'message'      => 'Found a summary for record ' . $firstRecord['title_display'] . ' by ' . $firstRecord['author_display'],
 				'recordsFound' => $searchResults['response']['numFound'],
 				'description'  => $groupedWork->getDescription(),
-			);
+			];
 		}
 		return $results;
 	}
@@ -167,22 +169,7 @@ class ItemAPI extends AJAXHandler {
 	 * @deprecated Use Record AJAX DownloadMarc instead
 	 */
 	function getMarcRecord(){
-		require_once ROOT_DIR . '/services/SourceAndId.php';
-		require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-		$sourceAndId      = new SourceAndId($_REQUEST['id']);
-		$marcData         = MarcLoader::loadMarcRecordByILSId($sourceAndId);
-		$downloadFileName = urlencode($sourceAndId);
-		header('Content-Description: File Transfer');
-		header('Content-Type: application/octet-stream');
-		header("Content-Disposition: attachment; filename*={$downloadFileName}.mrc");
-		header('Content-Transfer-Encoding: binary');
-		header('Expires: 0');
-		header('Cache-Control: must-revalidate');
-		header('Pragma: public');
-		header('Content-Length: ' . strlen($marcData->toRaw()));
-		ob_clean();
-		flush();
-		echo($marcData->toRaw());
+		$this->downloadMarc();
 	}
 
 	/**
@@ -191,7 +178,7 @@ class ItemAPI extends AJAXHandler {
 	function getItem(){
 		global $timer;
 		global $configArray;
-		$itemData = array();
+		$itemData = [];
 
 		//Load basic information
 		$this->id       = $_GET['id'];
@@ -204,7 +191,7 @@ class ItemAPI extends AJAXHandler {
 
 		// Retrieve Full Marc Record
 		if (!($record = $this->db->getRecord($this->id))){
-			return array('error', 'Record does not exist');
+			return ['error', 'Record does not exist'];
 		}
 		$this->record = $record;
 
@@ -221,22 +208,21 @@ class ItemAPI extends AJAXHandler {
 		if (isset($record['issn'])){
 			$itemData['issn'] = $record['issn'][0];
 		}
-		$itemData['title']      = $record['title'];
-		$itemData['author']     = $record['author'];
-		$itemData['publisher']  = $record['publisher'];
-		$itemData['allIsbn']    = $record['isbn'];
-		$itemData['allUpc']     = isset($record['upc']) ? $record['upc'] : null;
-		$itemData['allIssn']    = isset($record['issn']) ? $record['issn'] : null;
-		$itemData['edition']    = isset($record['edition']) ? $record['edition'] : null;
-		$itemData['callnumber'] = isset($record['callnumber']) ? $record['callnumber'] : null;
-		$itemData['genre']      = isset($record['genre']) ? $record['genre'] : null;
-		$itemData['series']     = isset($record['series']) ? $record['series'] : null;
-		$itemData['physical']   = $record['physical'];
-		$itemData['lccn']       = isset($record['lccn']) ? $record['lccn'] : null;
-		$itemData['contents']   = isset($record['contents']) ? $record['contents'] : null;
-
-		$itemData['format']         = isset($record['format']) ? $record['format'] : null;
-		$itemData['formatCategory'] = isset($record['format_category']) ? $record['format_category'][0] : null;
+		$itemData['title']          = $record['title'];
+		$itemData['author']         = $record['author'];
+		$itemData['publisher']      = $record['publisher'];
+		$itemData['allIsbn']        = $record['isbn'];
+		$itemData['allUpc']         = $record['upc'] ?? null;
+		$itemData['allIssn']        = $record['issn'] ?? null;
+		$itemData['edition']        = $record['edition'] ?? null;
+		$itemData['callnumber']     = $record['callnumber'] ?? null;
+		$itemData['genre']          = $record['genre'] ?? null;
+		$itemData['series']         = $record['series'] ?? null;
+		$itemData['physical']       = $record['physical'];
+		$itemData['lccn']           = $record['lccn'] ?? null;
+		$itemData['contents']       = $record['contents'] ?? null;
+		$itemData['format']         = $record['format'] ?? null;
+		$itemData['formatCategory'] = $record['format_category'][0] ?? null;
 		$itemData['language']       = $record['language'];
 
 		//Retrieve description from MARC file
@@ -252,7 +238,7 @@ class ItemAPI extends AJAXHandler {
 	function getBasicItemInfo(){
 		global $timer;
 		global $configArray;
-		$itemData = array();
+		$itemData = [];
 
 		//Load basic information
 		$this->id       = $_GET['id'];
@@ -329,7 +315,7 @@ class ItemAPI extends AJAXHandler {
 		$itemData['format']         = isset($record['format']) ? $record['format'][0] : '';
 		$itemData['formatCategory'] = $record['format_category'][0];
 		$itemData['language']       = $record['language'];
-		$itemData['cover']          = $configArray['Site']['path'] . "/bookcover.php?id={$itemData['id']}&issn={$itemData['issn']}&isbn={$itemData['isbn']}&upc={$itemData['upc']}&category={$itemData['formatCategory']}&format={$itemData['format'][0]}";
+		$itemData['cover']          = "/bookcover.php?id={$itemData['id']}&issn={$itemData['issn']}&isbn={$itemData['isbn']}&upc={$itemData['upc']}&category={$itemData['formatCategory']}&format={$itemData['format'][0]}";
 
 		//Retrieve description from MARC file
 		$description = '';
@@ -349,7 +335,7 @@ class ItemAPI extends AJAXHandler {
 	}
 
 	function getItemAvailability(){
-		$itemData = array();
+		$itemData = [];
 
 		//Load basic information
 		$this->id       = $_GET['id'];
@@ -362,12 +348,12 @@ class ItemAPI extends AJAXHandler {
 		$recordDriver = RecordDriverFactory::initRecordDriverById($fullId);
 		if ($recordDriver->isValid()){
 			$copies   = $recordDriver->getCopies();
-			$holdings = array();
+			$holdings = [];
 			$i        = 0;
 			foreach ($copies as $copy){
 				$key              = $copy['shelfLocation'];
 				$key              = preg_replace('~\W~', '_', $key);
-				$holdings[$key][] = array(
+				$holdings[$key][] = [
 					'location'           => $copy['shelfLocation'],
 					'callnumber'         => $copy['callNumber'],
 					'status'             => $copy['status'],
@@ -384,7 +370,7 @@ class ItemAPI extends AJAXHandler {
 					'section'            => $copy['section'],
 					'sectionId'          => $copy['sectionId'],
 					'lastCheckinDate'    => $copy['lastCheckinDate'],
-				);
+				];
 			}
 			$itemData['holdings'] = $holdings;
 		}
@@ -432,10 +418,10 @@ class ItemAPI extends AJAXHandler {
 
 	function clearBookCoverCacheById(){
 		$id                 = strip_tags($_REQUEST['id']);
-		$sizes              = array('small', 'medium', 'large');
-		$extensions         = array('jpg', 'gif', 'png');
+		$sizes              = ['small', 'medium', 'large'];
+		$extensions         = ['jpg', 'gif', 'png'];
 		$record             = $this->loadSolrRecord($id);
-		$filenamesToCheck   = array();
+		$filenamesToCheck   = [];
 		$filenamesToCheck[] = $id;
 		if (isset($record['isbn'])){
 			$isbns = $record['isbn'];
@@ -449,7 +435,7 @@ class ItemAPI extends AJAXHandler {
 				$filenamesToCheck = array_merge($filenamesToCheck, $upcs);
 			}
 		}
-		$deletedFiles = array();
+		$deletedFiles = [];
 		global $configArray;
 		$coverPath = $configArray['Site']['coverPath'];
 		foreach ($filenamesToCheck as $filename){
@@ -464,25 +450,25 @@ class ItemAPI extends AJAXHandler {
 			}
 		}
 
-		return array('deletedFiles' => $deletedFiles);
+		return ['deletedFiles' => $deletedFiles];
 	}
 
 	public function getCopyAndHoldCounts(){
 		if (empty($_REQUEST['recordId'])){
-			return array('error' => 'Please provide a record to load data for');
+			return ['error' => 'Please provide a record to load data for'];
 		}
 		$recordId = $_REQUEST['recordId'];
 		/** @var GroupedWorkDriver|MarcRecord|OverDriveRecordDriver|ExternalEContentDriver $driver */
 		$driver = RecordDriverFactory::initRecordDriverById($recordId);
 		if ($driver == null || !$driver->isValid()){
-			return array('error' => 'Sorry we could not find a record with that ID');
+			return ['error' => 'Sorry we could not find a record with that ID'];
 		}else{
 			if ($driver instanceof GroupedWorkDriver){
 				/** @var GroupedWorkDriver $driver */
 				$manifestations = $driver->getRelatedManifestations();
-				$returnData     = array();
+				$returnData     = [];
 				foreach ($manifestations as $manifestation){
-					$manifestationSummary = array(
+					$manifestationSummary = [
 						'format'            => $manifestation['format'],
 						'copies'            => $manifestation['copies'],
 						'availableCopies'   => $manifestation['availableCopies'],
@@ -491,7 +477,7 @@ class ItemAPI extends AJAXHandler {
 						'isEContent'        => $manifestation['isEContent'],
 						'groupedStatus'     => $manifestation['groupedStatus'],
 						'numRelatedRecords' => $manifestation['numRelatedRecords'],
-					);
+					];
 					foreach ($manifestation['relatedRecords'] as $relatedRecord){
 						$manifestationSummary['relatedRecords'][] = $relatedRecord['id'];
 					}
@@ -502,24 +488,24 @@ class ItemAPI extends AJAXHandler {
 				/** @var OverDriveRecordDriver $driver */
 				$copies = count($driver->getItems());
 				$holds  = $driver->getNumHolds();
-				return array(
+				return [
 					'copies' => $copies,
 					'holds'  => $holds,
-				);
+				];
 			}elseif ($driver instanceof ExternalEContentDriver || $driver instanceof HooplaRecordDriver){
 				/** @var ExternalEContentDriver $driver */
-				return array(
+				return [
 					'copies' => 1,
 					'holds'  => 0,
-				);
+				];
 			}else{
 				/** @var MarcRecord| $driver */
 				$copies = count($driver->getCopies());
 				$holds  = $driver->getNumHolds();
-				return array(
+				return [
 					'copies' => $copies,
 					'holds'  => $holds,
-				);
+				];
 			}
 		}
 	}
