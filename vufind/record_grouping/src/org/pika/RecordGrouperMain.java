@@ -628,8 +628,7 @@ public class RecordGrouperMain {
 
 			// Main Record Grouping Processing
 			if (indexingProfileToRun == null || indexingProfileToRun.equalsIgnoreCase("overdrive")) {
-//				groupOverDriveRecords(pikaConn, econtentConnection, explodeMarcsOnly);
-				//TODO: temp, don't commit!!
+				groupOverDriveRecords(pikaConn, econtentConnection, explodeMarcsOnly);
 			}
 			if (indexingProfiles.size() > 0) {
 				groupIlsRecords(pikaConn, indexingProfiles, explodeMarcsOnly);
@@ -1066,9 +1065,9 @@ public class RecordGrouperMain {
 									}
 								}
 								numRecordsRead++;
-								if (numRecordsRead % 100000 == 0) {
-									recordGroupingProcessor.dumpStats();
-								}
+//								if (numRecordsRead % 100000 == 0) {
+//									recordGroupingProcessor.dumpStats();
+//								}
 								//TODO: temp?
 	//							if (numRecordsRead % 5000 == 0) {
 	//								updateLastUpdateTimeInLog();
@@ -1078,9 +1077,9 @@ public class RecordGrouperMain {
 							}
 						} catch (Exception e) {
 							if (!recordId.isEmpty()) {
-								logger.error("Error loading  bibs on record " + numRecordsRead + " in profile " + curProfile.sourceName + " on the record  " + recordId, e);
+								logger.error("Error loading bibs on record " + numRecordsRead + " in profile " + curProfile.sourceName + " on the record  " + recordId, e);
 							} else {
-								logger.error("Error loading  bibs on record " + numRecordsRead + " in profile " + curProfile.sourceName + " the last record processed was " + lastRecordProcessed, e);
+								logger.error("Error loading bibs on record " + numRecordsRead + " in profile " + curProfile.sourceName + " the last record processed was " + lastRecordProcessed, e);
 							}
 						}
 						addNoteToGroupingLog("&nbsp;&nbsp; - Finished checking " + numRecordsRead + " records with " + numRecordsProcessed + " actual changes grouped from the marc file " + curBibFile.getName() + " in profile " + curProfile.sourceName);
@@ -1092,6 +1091,7 @@ public class RecordGrouperMain {
 					addNoteToGroupingLog("&nbsp;&nbsp; - New Records Written   : " + marcRecordsWritten.size());
 					addNoteToGroupingLog("&nbsp;&nbsp; - Records Overwritten   : " + marcRecordsOverwritten.size());
 					addNoteToGroupingLog("&nbsp;&nbsp; - Total Records Grouped : " + totalRecordsGroupedForProfile);
+					addNoteToGroupingLog("&nbsp;&nbsp; - Elapsed Time (mins)   : " + (new Date().getTime() - startTime) / 60000);
 
 					removeDeletedRecords(curProfile.sourceName, marcPath);
 
