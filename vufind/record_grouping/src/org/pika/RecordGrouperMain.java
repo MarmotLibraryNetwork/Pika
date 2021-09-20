@@ -533,7 +533,7 @@ public class RecordGrouperMain {
 		//Start a reindex log entry
 		try {
 			if (logger.isInfoEnabled()) {
-				logger.info("Creating log entry for index");
+				logger.info("Creating log entry for grouping");
 			}
 			ResultSet generatedKeys;
 			try (PreparedStatement createLogEntryStatement = pikaConn.prepareStatement("INSERT INTO record_grouping_log (startTime, lastUpdate, notes) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS)) {
@@ -1091,7 +1091,7 @@ public class RecordGrouperMain {
 					addNoteToGroupingLog("&nbsp;&nbsp; - New Records Written   : " + marcRecordsWritten.size());
 					addNoteToGroupingLog("&nbsp;&nbsp; - Records Overwritten   : " + marcRecordsOverwritten.size());
 					addNoteToGroupingLog("&nbsp;&nbsp; - Total Records Grouped : " + totalRecordsGroupedForProfile);
-					addNoteToGroupingLog("&nbsp;&nbsp; - Elapsed Time (mins)   : " + (new Date().getTime() - startTime) / 60000);
+					addNoteToGroupingLog("&nbsp;&nbsp; - Elapsed Time (mins)   : " + ((new Date().getTime()/1000) - profileStartGroupingTime) / 60);
 
 					removeDeletedRecords(curProfile.sourceName, marcPath);
 
