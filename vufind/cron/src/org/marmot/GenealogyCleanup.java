@@ -70,7 +70,7 @@ public class GenealogyCleanup implements IProcessHandler {
 		reindexPeople(processSettings);
 		processLog.saveToDatabase(pikaConn, logger);
 		
-		optimizeIndex(processSettings);
+//		optimizeIndex(processSettings);
 		processLog.setFinished();
 		processLog.saveToDatabase(pikaConn, logger);
 	}
@@ -80,16 +80,16 @@ public class GenealogyCleanup implements IProcessHandler {
 	 * 
 	 * @param processSettings
 	 */
-	private void optimizeIndex(Section processSettings) {
-		processLog.addNote("Optimizing genealogy index");
-		String body = "<optimize/>";
-		if (!doSolrUpdate(processSettings, body)) {
-			processLog.addNote("Genealogy Optimization Failed.");
-			processLog.incErrors();
-		}else{
-			processLog.incUpdated();
-		}
-	}
+//	private void optimizeIndex(Section processSettings) {
+//		processLog.addNote("Optimizing genealogy index");
+//		String body = "<optimize/>";
+//		if (!doSolrUpdate(processSettings, body)) {
+//			processLog.addNote("Genealogy Optimization Failed.");
+//			processLog.incErrors();
+//		}else{
+//			processLog.incUpdated();
+//		}
+//	}
 
 	private boolean doSolrUpdate(Section processSettings, String body) {
 		try {
@@ -157,12 +157,13 @@ public class GenealogyCleanup implements IProcessHandler {
 		// Clear all existing people from the solr index
 		doSolrUpdate(processSettings, "<delete><query>*:*</query></delete>");
 		doSolrUpdate(processSettings, "<commit/>");
-		doSolrUpdate(processSettings, "<optimize/>");
+//		doSolrUpdate(processSettings, "<optimize/>");
 
 		// Run through all existing people in the database and index them.
-		try {
-			Statement peopleStatement = pikaConn.createStatement();
-			ResultSet personRs = peopleStatement.executeQuery("SELECT personId from person");
+		try (
+			PreparedStatement peopleStatement = pikaConn.prepareStatement("SELECT personId FROM person");
+			ResultSet personRs = peopleStatement.executeQuery()
+		){
 			int numPeople = 0;
 			while (personRs.next()) {
 				int personId = personRs.getInt("personId");
@@ -174,7 +175,6 @@ public class GenealogyCleanup implements IProcessHandler {
 					processLog.saveToDatabase(pikaConn, logger);
 				}
 			}
-			personRs.close();
 		} catch (SQLException e) {
 			System.out.println("Unable to load people to reindex " + e.toString());
 			e.printStackTrace();
@@ -189,8 +189,8 @@ public class GenealogyCleanup implements IProcessHandler {
 	private void importFiles(Section processSettings) {
 		String importFile = processSettings.get("importFile");
 		if (importFile == null || importFile.length() == 0) {
-			processLog.addNote("Skipping importing people becuase no importFile was specified.");
-			processLog.incErrors();
+			processLog.addNote("Skipping importing people because no importFile was specified.");
+//			processLog.incErrors();
 			return;
 		}
 
@@ -607,7 +607,7 @@ public class GenealogyCleanup implements IProcessHandler {
 		String deleteDuplicates = processSettings.get("deleteDuplicates");
 		if (deleteDuplicates == null || !deleteDuplicates.equalsIgnoreCase("true")) {
 			processLog.addNote("Skipping deleting duplicates, to activate set deleteDuplicates key to true.");
-			processLog.incErrors();
+//			processLog.incErrors();
 			return;
 		}
 
