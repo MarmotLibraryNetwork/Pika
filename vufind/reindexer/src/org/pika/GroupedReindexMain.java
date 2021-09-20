@@ -194,9 +194,11 @@ public class GroupedReindexMain {
 		sendCompletionMessage(numWorksProcessed, numListsProcessed);
 		
 		addNoteToReindexLog("Finished Reindex for " + serverName);
-		long endTime     = new Date().getTime();
-		long elapsedTime = endTime - startTime;
-		logger.info("Elapsed Minutes " + (elapsedTime / 60000));
+		if (logger.isInfoEnabled()) {
+			long endTime     = new Date().getTime();
+			long elapsedTime = endTime - startTime;
+			logger.info("Elapsed Minutes " + (elapsedTime / 60000));
+		}
 	}
 
 	private static void cleanupOldStatisticReports() {
@@ -413,7 +415,7 @@ public class GroupedReindexMain {
 		
 		//Start a reindex log entry 
 		try {
-			logger.info("Creating log entry for index");
+			logger.info("Creating log entry for indexing");
 			PreparedStatement createLogEntryStatement = pikaConn.prepareStatement("INSERT INTO reindex_log (startTime, lastUpdate, notes) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
 			createLogEntryStatement.setLong(1, new Date().getTime() / 1000);
 			createLogEntryStatement.setLong(2, new Date().getTime() / 1000);
@@ -432,9 +434,11 @@ public class GroupedReindexMain {
 	}
 	
 	private static void sendCompletionMessage(Long numWorksProcessed, Long numListsProcessed){
-		long elapsedTime = endTime - startTime;
-		float elapsedMinutes = (float)elapsedTime / (float)(60000); 
-		logger.info("Time elapsed: " + elapsedMinutes + " minutes");
+		if (logger.isInfoEnabled()) {
+			long  elapsedTime    = endTime - startTime;
+			float elapsedMinutes = (float) elapsedTime / (float) (60000);
+			logger.info("Time elapsed: " + elapsedMinutes + " minutes");
+		}
 
 		final long finishedTimestamp = new Date().getTime() / 1000;
 		try {
