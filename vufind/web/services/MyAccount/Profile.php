@@ -89,9 +89,11 @@ class MyAccount_Profile extends MyAccount
 				$numericOnlyPins      = $configArray['Catalog']['numericOnlyPins'];
 				$alphaNumericOnlyPins = $configArray['Catalog']['alphaNumericOnlyPins'];
 				$pinMinimumLength     = $configArray['Catalog']['pinMinimumLength'];
+				$pinMaximumLength     = $configArray['Catalog']['pinMaximumLength'];
 				$interface->assign('numericOnlyPins', $numericOnlyPins);
 				$interface->assign('alphaNumericOnlyPins', $alphaNumericOnlyPins);
 				$interface->assign('pinMinimumLength', $pinMinimumLength);
+				$interface->assign('pinMaximumLength', $pinMaximumLength);
 			}
 
 			$interface->assign('showUsernameField', $patron->getShowUsernameField());
