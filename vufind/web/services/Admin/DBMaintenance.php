@@ -1253,15 +1253,24 @@ class DBMaintenance extends Admin_Admin {
 					)
 				),
 
-				'add_search_source_to_saved_searches' => array(
+				'add_search_source_to_saved_searches' => [
 					'title'           => 'Store the Search Source with saved searches',
 					'description'     => 'Add column to store the source for a search in the search table',
 					'continueOnError' => true,
-					'sql'             => array(
+					'sql'             => [
 						"ALTER TABLE `search` 
 									ADD COLUMN `searchSource` VARCHAR(30) NOT NULL DEFAULT 'local' AFTER `search_object`;",
-					)
-				),
+					]
+				],
+
+				'2021.03.0_remove_obsolete_column_searches' => [
+					'title'           => 'Remove obsolete column from searches table',
+					'description'     => 'Remove unused column folder_id from searches table',
+					'continueOnError' => true,
+					'sql'             => [
+						"ALTER TABLE `search` DROP COLUMN `folder_id`, DROP INDEX `folder_id` ; ",
+					]
+				],
 
 				'record_grouping_log' => array(
 					'title'           => 'Record Grouping Log',

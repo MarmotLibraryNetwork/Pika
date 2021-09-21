@@ -1994,7 +1994,6 @@ CREATE TABLE `search` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL DEFAULT 0,
   `session_id` varchar(128) DEFAULT NULL,
-  `folder_id` int(11) DEFAULT NULL,
   `created` date NOT NULL DEFAULT '0000-00-00',
   `title` varchar(20) DEFAULT NULL,
   `saved` int(1) NOT NULL DEFAULT 0,
@@ -2002,7 +2001,6 @@ CREATE TABLE `search` (
   `searchSource` varchar(30) NOT NULL DEFAULT 'local',
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
-  KEY `folder_id` (`folder_id`),
   KEY `session_id` (`session_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
