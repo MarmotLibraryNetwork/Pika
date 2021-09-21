@@ -218,6 +218,13 @@ function getUserUpdates(){
 				'ALTER TABLE user CHANGE COLUMN `cat_password` `cat_password` VARCHAR(64) NULL DEFAULT NULL ',
 			],
 		],
-
+		'create_barcode_password_2021.04' => [
+			'title'           => 'Create barcode and password columns',
+			'description'     => 'Create barcode and password columns',
+			'continueOnError' => true,
+			'sql'             => [
+				'ALTER TABLE user ADD COLUMN barcode VARCHAR(64) NULL AFTER  ilsUserId, ADD COLUMN password VARCHAR(64) NULL AFTER barcode;',
+			],
+		],
 	);
 }
