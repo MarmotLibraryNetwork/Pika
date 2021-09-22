@@ -1078,12 +1078,14 @@ class ListAPI extends AJAXHandler {
 					//Note : each entry typically comes with an isbn10 & isbn13, which are usually equivalent; but we have seen
 					//  an example of this not being so (and the isbn10 being the one we needed [once converted to isbn13]).
 					foreach ($titleResult->isbns as $isbnEntry){
-						if (!empty($isbnEntry->isbn13)){
+						if (!empty($isbnEntry->isbn13) && ISBN::isValidISBN13($isbnEntry->isbn13)){
 							$ISBNs[] = $isbnEntry->isbn13;
 						}
 						if (!empty($isbnEntry->isbn10)){
-							$isbnObj = new ISBN($isbnEntry->isbn10);
-							$ISBNs[] = $isbnObj->get13();
+							// We have now seen an example where the isbn10 was "None"
+							if ($isbnObj->isValid()){
+								$ISBNs[] = $isbnObj->get13();
+							}
 						}
 					}
 				}
