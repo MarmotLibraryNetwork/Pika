@@ -825,13 +825,20 @@ public class GroupedWorkIndexer {
 						logger.error("Failed to get response to enable polling for 3 tries");
 					}
 				}
-				if (!success && tries == 2 ) {
-					logger.error("Error enabling polling of solr searcher for replication after 3 tries.");
+				if (!success) {
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						logger.error("Error during thread sleep", e);
+					}
+					if (tries == 2) {
+						logger.error("Error enabling polling of solr searcher for replication after 3 tries.");
+					}
 				}
 				if (logger.isInfoEnabled()) {
 					logger.info("Searcher Replication Polling Enable command response : " + startSearcherReplicationPollingResponse.getMessage());
 				}
-			} while (!success || ++tries < 3);
+			} while (!success && ++tries < 3);
 		} else {
 			logger.error("Unable to get solr search index url. Could not re-enable replication polling.");
 		}
