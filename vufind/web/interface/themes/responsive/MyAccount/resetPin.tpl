@@ -46,7 +46,7 @@
 			rules: {
 				pin1: {
 					minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}{literal},
-					maxlength:{/literal}{if $pinMaximumLength}{$pinMaximumLength}{else}8{/if}{literal}
+					maxlength:{/literal}{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}{literal}
 				},
 				pin2: {
 					equalTo: "#pin1",
