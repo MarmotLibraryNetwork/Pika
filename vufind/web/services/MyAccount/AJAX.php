@@ -264,10 +264,10 @@ class MyAccount_AJAX extends AJAXHandler {
 		}else{
 			$message = "Sorry, it looks like that search has expired.";
 		}
-		$result = array(
+		$result = [
 			'result'  => $saveOk,
 			'message' => $message,
-		);
+		];
 		return $result;
 	}
 
@@ -294,10 +294,10 @@ class MyAccount_AJAX extends AJAXHandler {
 		}else{
 			$message = "Sorry, it looks like that search has expired.";
 		}
-		$result = array(
+		$result = [
 			'result'  => $saveOk,
 			'message' => $message,
-		);
+		];
 		return $result;
 	}
 
