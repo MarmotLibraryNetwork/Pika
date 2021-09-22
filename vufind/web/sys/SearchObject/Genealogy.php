@@ -71,12 +71,15 @@ class SearchObject_Genealogy extends SearchObject_Base {
 
 		global $configArray;
 		global $timer;
+
+		$this->searchType      = 'genealogy';
+		$this->basicSearchType = 'genealogy';
+		$this->searchSource    = 'genealogy'; // This is required so that saved genealogy searches can be restored with the correct source
+
+		// Initialise the index
 		// Include our solr index
 		$class = $configArray['Genealogy']['engine'];
 		require_once ROOT_DIR . "/sys/Search/$class.php";
-		$this->searchType      = 'genealogy';
-		$this->basicSearchType = 'genealogy';
-		// Initialise the index
 		$this->indexEngine = new $class($configArray['Genealogy']['url'], $configArray['Genealogy']['default_core']);
 		$timer->logTime('Created Index Engine for Genealogy');
 
