@@ -62,116 +62,120 @@ class Browse_AJAX extends AJAXHandler {
 	function createBrowseCategory(){
 		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::isLoggedIn()){
-			global $locationSingleton;
-			$searchLocation = $locationSingleton->getSearchLocation();
-			if (!empty($searchLocation)){
-				if (UserAccount::userHasRole('locationManager')){
-					// Use home branch for location managers
-					$searchLocation = Location::getUserHomeLocation();
-				}elseif (UserAccount::userHasRole('opacAdmin')){
-					// Use the interface library for opac admins (can be different than user home library)
-					global $library;
-				}elseif (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager', 'contentEditor'])){
-					// Otherwise, use Users home library
-					$library = $user->getHomeLibrary();
-				}else{
+			if (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager', 'contentEditor', 'locationManager', 'opacAdmin'])){
+
+				// If the search location is defined, user that location for creating the browse category
+				global $locationSingleton;
+				$searchLocation = $locationSingleton->getSearchLocation();
+				if (empty($searchLocation)){
+					if (UserAccount::userHasRole('locationManager')){
+						// Use home branch for location managers
+						$searchLocation = Location::getUserHomeLocation();
+					}elseif (UserAccount::userHasRole('opacAdmin')){
+						// Use the interface library for opac admins (can be different from the user home library)
+						global $library;
+					}elseif (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager', 'contentEditor'])){
+						// Otherwise, use User's home library
+						$library = $user->getHomeLibrary();
+					}
+				}
+				$categoryName       = $_REQUEST['categoryName'] ?? '';
+				$addAsSubCategoryOf = !empty($_REQUEST['addAsSubCategoryOf']) ? $_REQUEST['addAsSubCategoryOf'] : null;// value of zero means nothing was selected.
+				$textId             = str_replace(' ', '_', strtolower(trim($categoryName)));
+				$textId             = preg_replace('/[^\w\d_]/', '', $textId);
+				if (empty($textId)){
 					return [
 						'success' => false,
-						'message' => 'You do not have permission to create a Browse Category',
+						'message' => 'Please enter a category name',
 					];
 				}
-			}
-			$categoryName       = $_REQUEST['categoryName'] ?? '';
-			$addAsSubCategoryOf = !empty($_REQUEST['addAsSubCategoryOf']) ? $_REQUEST['addAsSubCategoryOf'] : null;// value of zero means nothing was selected.
-			$textId             = str_replace(' ', '_', strtolower(trim($categoryName)));
-			$textId             = preg_replace('/[^\w\d_]/', '', $textId);
-			if (strlen($textId) == 0){
-				return [
-					'success' => false,
-					'message' => 'Please enter a category name',
-				];
-			}
-			if ($searchLocation){
-				$textId = $searchLocation->code . '_' . $textId;
-			}elseif ($library){
-				$textId = $library->subdomain . '_' . $textId;
-			}
-			//Check to see if we have an existing browse category
-			require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-			$browseCategory         = new BrowseCategory();
-			$browseCategory->textId = $textId;
-			if ($browseCategory->find(true)){
-				return [
-					'success' => false,
-					'message' => "Sorry the title of the category was not unique.  Please enter a new name.",
-				];
+				if ($searchLocation){
+					$textId = $searchLocation->code . '_' . $textId;
+				}elseif ($library){
+					$textId = $library->subdomain . '_' . $textId;
+				}
+
+				//Check to see if we have an existing browse category
+				require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+				$browseCategory         = new BrowseCategory();
+				$browseCategory->textId = $textId;
+				if ($browseCategory->find(true)){
+					return [
+						'success' => false,
+						'message' => "Sorry the title of the category was not unique.  Please enter a new name.",
+					];
+				}else{
+					if (!empty($_REQUEST['searchId'])){
+						$searchId = $_REQUEST['searchId'];
+
+						/** @var SearchObject_Solr|SearchObject_Base $searchObj */
+						$searchObj = SearchObjectFactory::initSearchObject();
+						$searchObj->init();
+						$searchObj = $searchObj->restoreSavedSearch($searchId, false, true);
+
+						if (!$browseCategory->updateFromSearch($searchObj)){
+							return [
+								'success' => false,
+								'message' => "Sorry, this search is too complex to create a category from.",
+							];
+						}
+					}else{
+						$listId                       = $_REQUEST['listId'];
+						$browseCategory->sourceListId = $listId;
+					}
+
+					$browseCategory->label          = $categoryName;
+					$browseCategory->userId         = UserAccount::getActiveUserId();
+					$browseCategory->sharing        = 'everyone';
+					$browseCategory->catalogScoping = 'unscoped';
+					$browseCategory->description    = '';
+
+
+					//setup and add the category
+					if (!$browseCategory->insert()){
+						return [
+							'success' => false,
+							'message' => "There was an error saving the category.  Please contact Marmot.",
+						];
+					}elseif ($addAsSubCategoryOf){
+						$id                            = $browseCategory->id; // get from above insertion operation
+						$subCategory                   = new SubBrowseCategories();
+						$subCategory->browseCategoryId = $addAsSubCategoryOf;
+						$subCategory->subCategoryId    = $id;
+						if (!$subCategory->insert()){
+							return [
+								'success' => false,
+								'message' => "There was an error saving the category as a sub-category.  Please contact Marmot.",
+							];
+						}
+					}
+
+					//Now add to the library/location
+					if (!$addAsSubCategoryOf){
+						if ($library){
+							// Only add main browse categories to the library carousel
+							require_once ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php';
+							$libraryBrowseCategory                       = new LibraryBrowseCategory();
+							$libraryBrowseCategory->libraryId            = $library->libraryId;
+							$libraryBrowseCategory->browseCategoryTextId = $textId;
+							$libraryBrowseCategory->insert();
+						}elseif ($searchLocation){
+							require_once ROOT_DIR . '/sys/Browse/LocationBrowseCategory.php';
+							$locationBrowseCategory                       = new LocationBrowseCategory();
+							$locationBrowseCategory->locationId           = $searchLocation->locationId;
+							$locationBrowseCategory->browseCategoryTextId = $textId;
+							$locationBrowseCategory->insert();
+						}
+					}
+
+					return [
+						'success' => true,
+					];
+				}
 			}else{
-				if (!empty($_REQUEST['searchId'])){
-					$searchId = $_REQUEST['searchId'];
-
-					/** @var SearchObject_Solr|SearchObject_Base $searchObj */
-					$searchObj = SearchObjectFactory::initSearchObject();
-					$searchObj->init();
-					$searchObj = $searchObj->restoreSavedSearch($searchId, false, true);
-
-					if (!$browseCategory->updateFromSearch($searchObj)){
-						return [
-							'success' => false,
-							'message' => "Sorry, this search is too complex to create a category from.",
-						];
-					}
-				}else{
-					$listId                       = $_REQUEST['listId'];
-					$browseCategory->sourceListId = $listId;
-				}
-
-				$browseCategory->label          = $categoryName;
-				$browseCategory->userId         = UserAccount::getActiveUserId();
-				$browseCategory->sharing        = 'everyone';
-				$browseCategory->catalogScoping = 'unscoped';
-				$browseCategory->description    = '';
-
-
-				//setup and add the category
-				if (!$browseCategory->insert()){
-					return [
-						'success' => false,
-						'message' => "There was an error saving the category.  Please contact Marmot.",
-					];
-				}elseif ($addAsSubCategoryOf){
-					$id                            = $browseCategory->id; // get from above insertion operation
-					$subCategory                   = new SubBrowseCategories();
-					$subCategory->browseCategoryId = $addAsSubCategoryOf;
-					$subCategory->subCategoryId    = $id;
-					if (!$subCategory->insert()){
-						return [
-							'success' => false,
-							'message' => "There was an error saving the category as a sub-category.  Please contact Marmot.",
-						];
-					}
-
-				}
-
-				//Now add to the library/location
-				if (!$addAsSubCategoryOf){
-					if ($library){
-						// Only add main browse categories to the library carousel
-						require_once ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php';
-						$libraryBrowseCategory                       = new LibraryBrowseCategory();
-						$libraryBrowseCategory->libraryId            = $library->libraryId;
-						$libraryBrowseCategory->browseCategoryTextId = $textId;
-						$libraryBrowseCategory->insert();
-					}elseif ($searchLocation){
-						require_once ROOT_DIR . '/sys/Browse/LocationBrowseCategory.php';
-						$locationBrowseCategory                       = new LocationBrowseCategory();
-						$locationBrowseCategory->locationId           = $searchLocation->locationId;
-						$locationBrowseCategory->browseCategoryTextId = $textId;
-						$locationBrowseCategory->insert();
-					}
-				}
-
 				return [
-					'success' => true,
+					'success' => false,
+					'message' => 'You do not have permission to create a Browse Category',
 				];
 			}
 		}else{
