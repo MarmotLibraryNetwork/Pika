@@ -1,8 +1,7 @@
 <?php
 /**
  * Pika Discovery Layer
- * Copyright (C) 2020  Marmot Library Network
- *
+ * Copyright (C) 2021  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,12 +21,11 @@
  */
 require_once 'DB/DataObject.php';
 
-class Session extends DB_DataObject
-{
+class Session extends DB_DataObject {
 	###START_AUTOCODE
 	/* the code below is auto generated do not remove the above tag */
 
-	public $__table = 'session';                        // table name
+	public $__table = 'session';             // table name
 	public $id;                              // int(11)  not_null primary_key auto_increment
 	public $session_id;                      // string(128)  unique_key
 	public $data;                            // blob(65535)  blob
@@ -38,8 +36,7 @@ class Session extends DB_DataObject
 	/* the code above is auto generated do not remove the tag below */
 	###END_AUTOCODE
 
-	function update($dataObject = false)
-	{
+	function update($dataObject = false){
 		$r = parent::update($dataObject);
 		global $interface;
 		if (isset($interface)){
