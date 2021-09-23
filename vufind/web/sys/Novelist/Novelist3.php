@@ -279,6 +279,7 @@ class Novelist3{
 								global $logger;
 								//log the incorrect ISBN
 								$logger->log("Novelist ISBN for record " . $groupedRecordId . " does not match local holdings", PEAR_LOGWARNING);
+								//$this->loadSeriesInfoMissingISBN($groupedRecordId, $data->FeatureContent->SeriesInfo, $novelistData);
 								$this->loadSeriesInfo($groupedRecordId, $data->FeatureContent->SeriesInfo, $novelistData);
 								$novelistData->primaryISBN = $ISBNs[0];
 							}
@@ -769,6 +770,8 @@ class Novelist3{
 							'recordDriver'    => $groupedWorkDriver,
 							'smallCover'      => $groupedWorkDriver->getBookcoverUrl('small'),
 							'mediumCover'     => $groupedWorkDriver->getBookcoverUrl('medium'),
+							'volume'          => $item->volume ?? ''
+
 						];
 						$timer->logTime("Load title information");
 						$titlesOwned++;
