@@ -1083,6 +1083,7 @@ class ListAPI extends AJAXHandler {
 						}
 						if (!empty($isbnEntry->isbn10)){
 							// We have now seen an example where the isbn10 was "None"
+							$isbnObj = new ISBN($isbnEntry->isbn10);
 							if ($isbnObj->isValid()){
 								$ISBNs[] = $isbnObj->get13();
 							}
