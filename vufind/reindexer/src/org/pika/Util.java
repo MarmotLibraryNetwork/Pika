@@ -220,7 +220,7 @@ public class Util {
 		return retVal;
 	}
 
-	private static Pattern trimPunctuationPattern = Pattern.compile("^(.*?)[\\s/,.;|]+$");
+	private static final Pattern trimPunctuationPattern = Pattern.compile("^(.*?)[\\s/,.;|]+$");
 	static String trimTrailingPunctuation(String format) {
 		if (format == null){
 			return "";
@@ -253,7 +253,7 @@ public class Util {
 		return trimmedCollection;
 	}
 
-	private static Pattern sortTrimmingPattern = Pattern.compile("(?i)^(?:(?:a|an|the|el|la|\"|')\\s)(.*)$");
+	private static final Pattern sortTrimmingPattern = Pattern.compile("(?i)^(?:(?:a|an|the|el|la|\"|')\\s)(.*)$");
 	static String makeValueSortable(String curTitle) {
 		if (curTitle == null) return "";
 		String sortTitle = curTitle.toLowerCase();

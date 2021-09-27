@@ -939,6 +939,7 @@ abstract class MarcRecordProcessor {
 	private void loadAuthors(GroupedWorkSolr groupedWork, Record record, String identifier) {
 		//auth_author = 100abcd, first
 		groupedWork.setAuthAuthor(MarcUtil.getFirstFieldVal(record, "100abcd"));
+
 		//author = a, first
 		//MDN 2/6/2016 - Do not use 710 because it is not truly the author.  This has the potential
 		//of showing some disconnects with how records are grouped, but improves the display of the author
@@ -952,6 +953,7 @@ abstract class MarcRecordProcessor {
 
 		//auth_author2 = 700abcd
 		groupedWork.addAuthAuthor2(MarcUtil.getFieldList(record, "700abcd"));
+
 		//author2 = 110ab:111ab:700abcd:710ab:711ab:800a
 		groupedWork.addAuthor2(MarcUtil.getFieldList(record, "110ab:111ab:700abcd:710ab:711ab:800a"));
 		//author_additional = 505r:245c
