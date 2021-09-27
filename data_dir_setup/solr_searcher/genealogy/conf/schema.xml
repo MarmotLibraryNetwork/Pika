@@ -103,8 +103,8 @@
 				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
 				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
 				<!-- Do our synonym filtering before word delimiter filters so that we don't create unwanted synonyms
-				 	eg. 'wi-fi' => 'wi', 'fi' => 'wi', 'wisconsin', 'fi'
-				 	See D-4066
+					eg. 'wi-fi' => 'wi', 'fi' => 'wi', 'wisconsin', 'fi'
+					See D-4066
 				 -->
 				<!-- https://solr.apache.org/guide/8_7/filter-descriptions.html#synonym-graph-filter
 					If you use this filter during indexing, you must follow it with a Flatten Graph Filter to squash
@@ -142,6 +142,11 @@
 				<!--
 				This tokenizer processes multilingual text and tokenizes it appropriately based on its script attribute.
 				Requires additional jar files
+
+				The default configuration for solr.ICUTokenizerFactory provides UAX#29 word break rules tokenization
+				(like solr.StandardTokenizer), but also includes custom tailorings for Hebrew (specializing handling
+				of double and single quotation marks), for syllable tokenization for Khmer, Lao, and Myanmar, and
+				dictionary-based word segmentation for CJK characters.
 
 				https://solr.apache.org/guide/8_8/tokenizers.html#icu-tokenizer
 				-->
@@ -220,6 +225,17 @@
 		<fieldType name="textSpell" class="solr.TextField" positionIncrementGap="100">
 			<analyzer>
 				<tokenizer class="solr.ICUTokenizerFactory"/>
+				<!--
+				This tokenizer processes multilingual text and tokenizes it appropriately based on its script attribute.
+				Requires additional jar files
+
+				The default configuration for solr.ICUTokenizerFactory provides UAX#29 word break rules tokenization
+				(like solr.StandardTokenizer), but also includes custom tailorings for Hebrew (specializing handling
+				of double and single quotation marks), for syllable tokenization for Khmer, Lao, and Myanmar, and
+				dictionary-based word segmentation for CJK characters.
+
+				https://solr.apache.org/guide/8_8/tokenizers.html#icu-tokenizer
+				-->
 				<filter class="solr.ICUFoldingFilterFactory"/>
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="0" catenateNumbers="0" catenateAll="0"/>
 				<filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->

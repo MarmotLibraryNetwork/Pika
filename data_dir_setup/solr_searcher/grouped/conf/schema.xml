@@ -167,6 +167,17 @@
 		<fieldType name="textProper" class="solr.TextField" positionIncrementGap="100">
 			<analyzer>
 				<tokenizer class="solr.ICUTokenizerFactory"/>
+				<!--
+				This tokenizer processes multilingual text and tokenizes it appropriately based on its script attribute.
+				Requires additional jar files
+
+				The default configuration for solr.ICUTokenizerFactory provides UAX#29 word break rules tokenization
+				(like solr.StandardTokenizer), but also includes custom tailorings for Hebrew (specializing handling
+				of double and single quotation marks), for syllable tokenization for Khmer, Lao, and Myanmar, and
+				dictionary-based word segmentation for CJK characters.
+
+				https://solr.apache.org/guide/8_8/tokenizers.html#icu-tokenizer
+				-->
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" splitOnNumerics="0" stemEnglishPossessive="1"/>
 				<filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
 				<filter class="solr.ICUFoldingFilterFactory"/>
@@ -451,11 +462,14 @@
 		<field name="author_exact" type="text-exact" indexed="true" stored="true" />
 		<field name="author_left" type="text-left" indexed="true" stored="true" />
 		<field name="author_display" type="string" indexed="true" stored="true" multiValued="false"/> <!-- The title to display to the user -->
-<!--		<field name="author-letter" type="string" indexed="true" stored="true"/>-->
-		<!--TODO: remove author-letter from index. Can't determine what its use would be -->
 		<field name="authorStr" type="string" indexed="true" stored="true" docValues="true"/>
 		<field name="auth_author" type="textProper" indexed="true" stored="false"/>
-		<!-- First MARC tag 100abcd -->
+		<!-- First MARC 100 - Main Entry-Personal Name
+			$a - Personal name (NR)
+			$b - Numeration (NR)
+			$c - Titles and words associated with a name (R)
+			$d - Dates associated with a name (NR)
+		-->
 		<field name="auth_authorStr" type="string" indexed="true" stored="false"/>
 		<field name="author2" type="text" indexed="true" stored="true" multiValued="true"/>
 		<!-- All MARC tags 110ab, 111ab, 700abcd, 710ab, 711ab, and 800a -->

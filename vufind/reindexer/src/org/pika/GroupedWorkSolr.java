@@ -253,7 +253,6 @@ public class GroupedWorkSolr implements Cloneable {
 		//author and variations
 		doc.addField("auth_author", authAuthor);
 		doc.addField("author", getPrimaryAuthor());
-//		doc.addField("author-letter", authorLetter);
 		doc.addField("auth_author2", authAuthor2);
 		doc.addField("author2", author2);
 		doc.addField("author2-role", author2Role);

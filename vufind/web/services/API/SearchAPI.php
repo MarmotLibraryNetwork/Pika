@@ -490,7 +490,6 @@ class SearchAPI extends AJAXHandler {
 				unset($record['callnumber-first']);
 				unset($record['title_auth']);
 				unset($record['callnumber-subject']);
-//				unset($record['author-letter']);
 				unset($record['marc_error']);
 //				unset($record['title_fullStr']);
 				unset($record['shortId']);

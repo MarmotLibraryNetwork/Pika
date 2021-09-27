@@ -226,7 +226,7 @@ ij_perl5_wrap_comments = false
 
 [{*.ant,*.fxml,*.jhm,*.jnlp,*.jrxml,*.rng,*.tld,*.wsdl,*.xml,*.xsd,*.xsl,*.xslt,*.xul,phpunit.xml.dist}]
 indent_size = 4
-indent_style = space
+indent_style = tab
 tab_width = 4
 ij_smart_tabs = false
 ij_xml_align_attributes = true
