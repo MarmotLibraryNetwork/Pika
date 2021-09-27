@@ -26,8 +26,7 @@ require_once ROOT_DIR . '/services/SourceAndId.php';
  * This class is designed to handle MARC records.  Much of its functionality
  * is inherited from the default index-based driver.
  */
-class MarcRecord extends IndexRecord
-{
+class MarcRecord extends IndexRecord {
 	/** @var File_MARC_Record $marcRecord */
 	protected $marcRecord = null;
 
@@ -65,7 +64,7 @@ class MarcRecord extends IndexRecord
 			$this->indexingProfile = $recordData->getIndexingProfile();
 		}else{ //TODO: find when this happens!
 			//When solr document is returned; see Solr buildRSS()
-			// Call the Index Records's constructor...
+			// Call the Index Record's constructor...
 			parent::__construct($recordData, $groupedWork);
 
 			// Also process the MARC record:
@@ -87,7 +86,7 @@ class MarcRecord extends IndexRecord
 			}
 		}
 		global $timer;
-		$timer->logTime("Base initialization of MarcRecord Driver");
+		$timer->logTime('Base initialization of MarcRecord Driver');
 		if (empty($groupedWork)){
 			parent::loadGroupedWork();
 		}else{
@@ -1036,11 +1035,16 @@ class MarcRecord extends IndexRecord
 		die();
 	}
 
+	/**
+	 * Return solr field for auth_author (100abcd of last processed bib on the work)
+	 *    (likely rarely or never set)
+	 *
+	 * or this record's 100ad (Personal name, Dates associated with a name)
+	 * or this records 110ab ( Corporate name or jurisdiction name as entry element,  Subordinate unit)
+	 *
+	 * @return mixed|string|null
+	 */
 	public function getPrimaryAuthor(){
-		return $this->getAuthor();
-	}
-
-	public function getAuthor(){
 		if (isset($this->fields['auth_author'])){
 			return $this->fields['auth_author'];
 		}else{

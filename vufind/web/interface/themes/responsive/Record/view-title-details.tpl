@@ -12,11 +12,11 @@
 		</div>
 	{/if}
 
-	{if $recordDriver->getAuthor()}
+	{if $recordDriver->getPrimaryAuthor()}
 		<div class="row">
 			<div class="result-label col-sm-4">Author: </div>
 			<div class="col-sm-8 result-value">
-				<a href='/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a><br>
+				<a href='/Author/Home?author="{$recordDriver->getPrimaryAuthor()|escape:"url"}"'>{$recordDriver->getPrimaryAuthor()|highlight}</a><br>
 			</div>
 		</div>
 	{/if}
