@@ -1424,17 +1424,12 @@ class IndexRecord extends RecordInterface
 	function getOGType(){
 		$pikaFormat = strtolower($this->getRecordType());
 		switch ($pikaFormat){
-			case 'books':
-			case 'book':
-			case 'ebook':
-			case 'audio books':
-				return 'book';
 			case 'music':
 				return 'music.album';
 			case 'movies':
 				return 'video.movie';
 			default:
-				return 'website';
+				return 'book';
 		}
 	}
 
