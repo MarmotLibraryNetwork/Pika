@@ -1942,7 +1942,7 @@ EOT;
 					$h['shortId']         = $record->getShortId();
 					$h['title']           = $record->getTitle();
 					$h['sortTitle']       = $record->getSortableTitle();
-					$h['author']          = $record->getAuthor();
+					$h['author']          = $record->getPrimaryAuthor();
 					$h['format']          = $record->getFormat();
 					$h['link']            = $record->getRecordUrl();
 					$h['coverUrl']        = $record->getBookcoverUrl('medium');

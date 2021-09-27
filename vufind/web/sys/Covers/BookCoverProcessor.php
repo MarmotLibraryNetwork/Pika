@@ -854,7 +854,7 @@ class BookCoverProcessor {
 			$recordDriver = RecordDriverFactory::initRecordDriverById($this->sourceAndId, $this->groupedWork);
 			if ($recordDriver->isValid()){
 				$title          = $recordDriver->getTitle();
-				$author         = $recordDriver->getAuthor();
+				$author         = $recordDriver->getPrimaryAuthor();
 				$this->category = 'blank'; // Use the blank image for record view default covers over the no Cover image
 			}
 		}

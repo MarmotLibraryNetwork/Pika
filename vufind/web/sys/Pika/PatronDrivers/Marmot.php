@@ -150,7 +150,7 @@ class Marmot extends Sierra {
 			if ($recordDriver->isValid()){
 				$booking->title         = $recordDriver->getTitle();
 				$booking->sortTitle     = $recordDriver->getSortableTitle();
-				$booking->author        = $recordDriver->getAuthor();
+				$booking->author        = $recordDriver->getPrimaryAuthor();
 				$booking->format        = $recordDriver->getFormat();
 				$booking->linkUrl       = $recordDriver->getRecordUrl();
 				$booking->coverUrl      = $recordDriver->getBookcoverUrl('medium');

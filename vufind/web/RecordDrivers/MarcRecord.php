@@ -605,8 +605,7 @@ class MarcRecord extends IndexRecord
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getFindingAids()
-	{
+	protected function getFindingAids(){
 		return $this->getFieldArray('555');
 	}
 
@@ -619,8 +618,7 @@ class MarcRecord extends IndexRecord
 	 * @access  private
 	 * @return  string
 	 */
-	private function getFirstFieldValue($field, $subfields = null)
-	{
+	private function getFirstFieldValue($field, $subfields = null){
 		$matches = $this->getFieldArray($field, $subfields);
 		return (is_array($matches) && count($matches) > 0) ?
 			$matches[0] : null;
@@ -1038,32 +1036,28 @@ class MarcRecord extends IndexRecord
 		die();
 	}
 
-	public function getPrimaryAuthor()
-	{
+	public function getPrimaryAuthor(){
 		return $this->getAuthor();
 	}
 
-	public function getAuthor()
-	{
-		if (isset($this->fields['auth_author'])) {
+	public function getAuthor(){
+		if (isset($this->fields['auth_author'])){
 			return $this->fields['auth_author'];
-		} else {
-			$author = $this->getFirstFieldValue('100', array('a', 'd'));
-			if (empty($author)) {
-				$author = $this->getFirstFieldValue('110', array('a', 'b'));
+		}else{
+			$author = $this->getFirstFieldValue('100', ['a', 'd']);
+			if (empty($author)){
+				$author = $this->getFirstFieldValue('110', ['a', 'b']);
 			}
 			return $author;
 		}
 	}
 
-	protected function getSecondaryAuthors()
-	{
+	protected function getSecondaryAuthors(){
 		return $this->getContributors();
 	}
 
-	public function getContributors()
-	{
-		return $this->getFieldArray(700, array('a', 'b', 'c', 'd'));
+	public function getContributors(){
+		return $this->getFieldArray(700, ['a', 'b', 'c', 'd']);
 	}
 
 	private $detailedContributors = null;
