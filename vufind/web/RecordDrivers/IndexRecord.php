@@ -297,8 +297,46 @@ class IndexRecord extends RecordInterface
 
 	public function getSemanticData()
 	{
-		// TODO: Implement getSemanticData() method.
-		return [];
+		//Schema.org
+		$semanticData[] = [
+			'@context'            => 'http://schema.org',
+			'@type'               => 'CreativeWork',
+			'name'                => $this->getTitle(),
+			'author'              => $this->getPrimaryAuthor(),
+			'isAccessibleForFree' => true,
+			'image'               => $this->getBookcoverUrl('medium', true),
+			'workExample'         => $this->getSemanticWorkExamples(),
+		];
+
+		//BibFrame
+		$semanticData[] = [
+			'@context' => [
+				"bf"       => 'http://bibframe.org/vocab/',
+				"bf2"      => 'http://bibframe.org/vocab2/',
+				"madsrdf"  => 'http://www.loc.gov/mads/rdf/v1#',
+				"rdf"      => 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+				"rdfs"     => 'http://www.w3.org/2000/01/rdf-schema',
+				"relators" => "http://id.loc.gov/vocabulary/relators/",
+				"xsd"      => "http://www.w3.org/2001/XMLSchema#"
+			],
+			'@graph'   => [
+				[
+					'@type'      => $this->getOGType(),
+					'bf:title'   => $this->getTitle(),
+					'bf:creator' => $this->getPrimaryAuthor(),
+				],
+			]
+		];
+
+		//Open graph data (goes in meta tags)
+		global $interface;
+		$interface->assign('og_title', $this->getTitle());
+		$interface->assign('og_type', $this->getOGType());
+		$interface->assign('og_image', $this->getBookcoverUrl('large', true));
+		$interface->assign('og_url', $this->getAbsoluteUrl());
+
+		//TODO: add audience, award, content
+		return $semanticData;
 	}
 
 
@@ -1382,4 +1420,22 @@ class IndexRecord extends RecordInterface
 	public function getModule() {
 		return 'Record';
 	}
+
+	function getOGType(){
+		$pikaFormat = strtolower($this->getRecordType());
+		switch ($pikaFormat){
+			case 'books':
+			case 'book':
+			case 'ebook':
+			case 'audio books':
+				return 'book';
+			case 'music':
+				return 'music.album';
+			case 'movies':
+				return 'video.movie';
+			default:
+				return 'website';
+		}
+	}
+
 }
