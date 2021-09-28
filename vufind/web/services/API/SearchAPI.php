@@ -484,7 +484,7 @@ class SearchAPI extends AJAXHandler {
 			//Remove fields as needed to improve the display.
 			foreach ($recordSet as $recordKey => $record){
 				unset($record['auth_author']);
-				unset($record['auth_authorStr']);
+//				unset($record['auth_authorStr']);
 				unset($record['callnumber-first-code']);
 				unset($record['spelling']);
 				unset($record['callnumber-first']);

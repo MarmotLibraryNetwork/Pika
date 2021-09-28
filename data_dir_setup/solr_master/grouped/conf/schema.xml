@@ -402,10 +402,18 @@
 		<!-- Author variations -->
 		<field name="author" type="text" indexed="true" stored="true" />
 		<!-- First MARC tag 100abcdq or 110ab -->
-		<field name="author_exact" type="text-exact" indexed="true" stored="true" />
-		<field name="author_left" type="text-left" indexed="true" stored="true" />
-		<field name="author_display" type="string" indexed="true" stored="true" multiValued="false"/> <!-- The title to display to the user -->
 		<field name="authorStr" type="string" indexed="true" stored="true" docValues="true"/>
+		<!-- authorStr is used an author facet.  It is copy field that uses author above as its source. -->
+		<!-- TODO: ? reverse the pattern here. populate the simple string field (authorStr) and make author field
+		above the  copy field? -->
+		<field name="author_exact" type="text-exact" indexed="true" stored="true" />
+		<!-- copy field with author as source -->
+		<field name="author_left" type="text-left" indexed="true" stored="true" />
+		<!-- copy field with author as source -->
+
+		<field name="author_display" type="string" indexed="true" stored="true" multiValued="false"/>
+		<!-- The title to display to the user -->
+		<!--trimmed 100a or 110ab -->
 		<field name="auth_author" type="textProper" indexed="true" stored="false"/>
 		<!-- First MARC 100 - Main Entry-Personal Name
 			$a - Personal name (NR)
@@ -413,16 +421,16 @@
 			$c - Titles and words associated with a name (R)
 			$d - Dates associated with a name (NR)
 		-->
-		<field name="auth_authorStr" type="string" indexed="true" stored="false"/>
+<!--		<field name="auth_authorStr" type="string" indexed="true" stored="false"/>-->
 		<field name="author2" type="text" indexed="true" stored="true" multiValued="true"/>
 		<!-- All MARC tags 110ab, 111ab, 700abcd, 710ab, 711ab, and 800a -->
-		<field name="author2Str" type="string" indexed="true" stored="true" multiValued="true"/>
+<!--		<field name="author2Str" type="string" indexed="true" stored="true" multiValued="true"/>-->
 		<field name="author2-role" type="string" indexed="true" stored="true" multiValued="true"/>
 		<!-- The contributor with role and title appended -->
 		<!-- All MARC tags 700abcdetmnr and 710abcdetmnr with translation of relator code (subfield 4) appended after pipe character "|" -->
 		<field name="auth_author2" type="textProper" indexed="true" stored="true" multiValued="true"/>
 		<!-- All MARC tags 700abcd -->
-		<field name="auth_author2Str" type="string" indexed="true" stored="false" multiValued="true"/>
+<!--		<field name="auth_author2Str" type="string" indexed="true" stored="false" multiValued="true"/>-->
 		<field name="author_additional" type="text" indexed="true" stored="true" multiValued="true"/>
 		<!-- All MARC tags 505r and 245c -->
 <!--		<field name="author_additionalStr" type="string" indexed="true" stored="false" multiValued="true"/>  Pretty sure this is redundant pascal. 7/19/21 -->
@@ -583,20 +591,16 @@
 
 	</fields>
 	<uniqueKey>id</uniqueKey>
-<!--	<defaultSearchField>keywords</defaultSearchField>
-TODO: need to set df parameter?
-* Setting <defaultSearchField> in schema is no longer allowed and will cause an exception.
-  Please use "df" parameter on the request instead. For more details, see SOLR-10585.
--->
+
 	<!-- CopyFields for Faceting on Text -->
 <!--	<copyField source="title_full" dest="title_fullStr"/>-->
 	<copyField source="author" dest="authorStr"/>
 	<copyField source="author" dest="author_exact"/>
 	<copyField source="author" dest="author_left"/>
-	<copyField source="auth_author" dest="auth_authorStr"/>
-	<copyField source="author2" dest="author2Str"/>
-	<copyField source="auth_author2" dest="auth_author2Str"/>
-<!--	<copyField source="author_additional" dest="author_additionalStr"/>  Pretty sure this is redundant pascal. 7/19/21-->
+<!--	<copyField source="auth_author" dest="auth_authorStr"/>-->
+<!--	<copyField source="author2" dest="author2Str"/>-->
+<!--	<copyField source="auth_author2" dest="auth_author2Str"/>-->
+
 	<!-- CopyFields for Proper (Unstemmed) searching -->
 	<copyField source="title" dest="title_proper"/>
 	<copyField source="title" dest="title_exact"/>
