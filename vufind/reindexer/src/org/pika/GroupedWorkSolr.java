@@ -43,7 +43,6 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashSet<String>          alternateIds             = new HashSet<>();
 	private String                   authAuthor;
 	private HashMap<String, Long>    primaryAuthors           = new HashMap<>();
-//	private String                   authorLetter;
 	private HashSet<String>          authorAdditional         = new HashSet<>();
 	private String                   authorDisplay;
 	private HashSet<String>          author2                  = new HashSet<>();
@@ -1131,6 +1130,23 @@ public class GroupedWorkSolr implements Cloneable {
 		keywords.add(author);
 	}
 
+	void addAuthAuthor2(Set<String> fieldList) {
+		this.authAuthor2.addAll(Util.trimTrailingPunctuation(fieldList));
+	}
+
+	void addAuthor2(Set<String> fieldList) {
+		this.author2.addAll(Util.trimTrailingPunctuation(fieldList));
+	}
+
+	void addAuthor2Role(Set<String> fieldList) {
+		this.author2Role.addAll(Util.trimTrailingPunctuation(fieldList));
+	}
+
+	void addAuthorAdditional(Set<String> fieldList) {
+		this.authorAdditional.addAll(Util.trimTrailingPunctuation(fieldList));
+	}
+
+
 	void addOclcNumbers(Set<String> oclcs) {
 		this.oclcs.addAll(oclcs);
 	}
@@ -1209,26 +1225,6 @@ public class GroupedWorkSolr implements Cloneable {
 		this.groupingCategory = groupingCategory;
 	}
 
-//	void setAuthorLetter(String authorLetter) {
-//		this.authorLetter = authorLetter;
-//	}
-
-	void addAuthAuthor2(Set<String> fieldList) {
-		this.authAuthor2.addAll(fieldList);
-	}
-
-	void addAuthor2(Set<String> fieldList) {
-		this.author2.addAll(fieldList);
-	}
-
-	void addAuthor2Role(Set<String> fieldList) {
-		this.author2Role.addAll(fieldList);
-	}
-
-	void addAuthorAdditional(Set<String> fieldList) {
-		this.authorAdditional.addAll(fieldList);
-	}
-
 	void addHoldings(int recordHoldings) {
 		this.numHoldings += recordHoldings;
 	}
@@ -1238,8 +1234,8 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	double getPopularity(){
-        return  popularity;
-    }
+		return  popularity;
+	}
 
 	void addTopic(Set<String> fieldList) {
 		this.topics.addAll(Util.trimTrailingPunctuation(fieldList));
