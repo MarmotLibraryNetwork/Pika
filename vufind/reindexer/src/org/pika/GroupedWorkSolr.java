@@ -1099,6 +1099,7 @@ public class GroupedWorkSolr implements Cloneable {
 //	}
 
 	public void setAuthor(String author) {
+		author = Util.trimTrailingPunctuation(author);
 		if (primaryAuthors.containsKey(author)){
 			primaryAuthors.put(author, primaryAuthors.get(author) + 1);
 		}else{
