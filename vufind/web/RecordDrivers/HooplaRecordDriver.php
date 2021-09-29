@@ -199,29 +199,4 @@ class HooplaRecordDriver extends SideLoadedRecord {
 		return '/Hoopla/' . $recordId;
 	}
 
-	/**
-	 * Return the unique identifier of this record within the Solr index;
-	 * useful for retrieving additional information (like tags and user
-	 * comments) from the external MySQL database.
-	 *
-	 * @access  public
-	 * @return  string              Unique identifier.
-	 */
-	public function getShortId(){
-		return $this->id;
-	}
-
-	function getRecordType(){
-		return 'hoopla';
-	}
-
-
-	function getNumHolds(){
-		return 0;
-	}
-
-	function getFormats(){
-		return $this->getFormat();
-	}
-
 }

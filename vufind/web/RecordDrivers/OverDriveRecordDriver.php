@@ -411,6 +411,13 @@ class OverDriveRecordDriver extends RecordInterface {
 		return $this->id;
 	}
 
+	/**
+	 * Generally, the indexing profile source name associated with this Record
+	 * However, OverDrive is the exception in that it has no indexing profile
+	 * and the sourceName is assumed to be overdrive.
+	 *
+	 * @return string
+	 */
 	function getRecordType(){
 		return 'overdrive';
 	}

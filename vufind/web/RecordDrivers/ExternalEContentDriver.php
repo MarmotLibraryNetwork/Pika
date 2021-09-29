@@ -107,6 +107,11 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
+	/**
+	 * The indexing profile source name associated with this Record
+	 *
+	 * @return string
+	 */
 	function getRecordType(){
 		return $this->profileType;
 	}

@@ -1835,12 +1835,13 @@ class MarcRecord extends IndexRecord {
 		}
 	}
 
+	/**
+	 * The indexing profile source name associated with this Record
+	 *
+	 * @return string
+	 */
 	function getRecordType(){
-		if ($this->profileType){
-			return $this->profileType;
-		}else{
-			return 'ils';
-		}
+		return $this->profileType ?? 'ils';
 	}
 
 	/**
