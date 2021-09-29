@@ -939,7 +939,6 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 					$curHold['format']          = $recordDriver->getFormat();
 					$curHold['isbn']            = $recordDriver->getCleanISBN();
 					$curHold['upc']             = $recordDriver->getCleanUPC();
-					$curHold['format_category'] = $recordDriver->getFormatCategory();
 					$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
 					$curHold['link']            = $recordDriver->getRecordUrl();
 

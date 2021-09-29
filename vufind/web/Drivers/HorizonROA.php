@@ -706,7 +706,6 @@ abstract class HorizonROA implements DriverInterface
 						$curHold['format']          = $recordDriver->getFormat();
 						$curHold['isbn']            = $recordDriver->getCleanISBN();
 						$curHold['upc']             = $recordDriver->getCleanUPC();
-						$curHold['format_category'] = $recordDriver->getFormatCategory();
 						$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
 						$curHold['link']            = $recordDriver->getRecordUrl();
 						$curHold['ratingData']      = $recordDriver->getRatingData(); //Load rating information

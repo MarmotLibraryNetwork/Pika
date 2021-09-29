@@ -1036,7 +1036,6 @@ class Aspencat implements DriverInterface{
 						$curHold['format']          = $recordDriver->getFormat();
 						$curHold['isbn']            = $recordDriver->getCleanISBN();
 						$curHold['upc']             = $recordDriver->getCleanUPC();
-						$curHold['format_category'] = $recordDriver->getFormatCategory();
 						$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
 						$curHold['link']            = $recordDriver->getRecordUrl();
 						$curHold['ratingData']      = $recordDriver->getRatingData();
@@ -1123,7 +1122,6 @@ class Aspencat implements DriverInterface{
 						$curHold['format']          = $recordDriver->getFormat();
 						$curHold['isbn']            = $recordDriver->getCleanISBN();
 						$curHold['upc']             = $recordDriver->getCleanUPC();
-						$curHold['format_category'] = $recordDriver->getFormatCategory();
 						$curHold['coverUrl']        = $recordDriver->getBookcoverUrl();
 						$curHold['link']            = $recordDriver->getRecordUrl();
 						$curHold['ratingData']      = $recordDriver->getRatingData();
@@ -1213,12 +1211,11 @@ class Aspencat implements DriverInterface{
 				$recordDriver = new MarcRecord($bibId);
 				if ($recordDriver->isValid()){
 					$curHold['sortTitle'] = $recordDriver->getSortableTitle();
-					$curHold['format'] = $recordDriver->getFormat();
-					$curHold['isbn'] = $recordDriver->getCleanISBN();
-					$curHold['upc'] = $recordDriver->getCleanUPC();
-					$curHold['format_category'] = $recordDriver->getFormatCategory();
-					$curHold['coverUrl'] = $recordDriver->getBookcoverUrl();
-					$curHold['link'] = $recordDriver->getRecordUrl();
+					$curHold['format']    = $recordDriver->getFormat();
+					$curHold['isbn']      = $recordDriver->getCleanISBN();
+					$curHold['upc']       = $recordDriver->getCleanUPC();
+					$curHold['coverUrl']  = $recordDriver->getBookcoverUrl();
+					$curHold['link']      = $recordDriver->getRecordUrl();
 
 					//Load rating information
 					$curHold['ratingData'] = $recordDriver->getRatingData();
