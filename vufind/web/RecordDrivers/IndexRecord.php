@@ -238,8 +238,7 @@ class IndexRecord extends RecordInterface {
 	 * @param   bool    $allowEdit  Should we display edit controls?
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getListEntry($user, $listId = null, $allowEdit = true)
-	{
+	public function getListEntry($user, $listId = null, $allowEdit = true){
 		global $interface;
 
 		// Extract bibliographic metadata from the record:
@@ -716,7 +715,8 @@ class IndexRecord extends RecordInterface {
 	 * @return  array
 	 */
 	public function getFormatCategory(){
-		return $this->fields['format_category'] ?? [];
+		global $solrScope;
+		return $this->fields['format_category_'.$solrScope] ?? [];
 	}
 
 	/**
@@ -1146,6 +1146,11 @@ class IndexRecord extends RecordInterface {
 		return $workAPI->getRatingData($this->getGroupedWorkId());
 	}
 
+	/**
+	 * The indexing profile source name associated with this Record
+	 *
+	 * @return string
+	 */
 	public function getRecordType(){
 		return 'unknown';
 	}
@@ -1358,7 +1363,7 @@ class IndexRecord extends RecordInterface {
 	}
 
 	function getOGType(){
-		$pikaFormat = strtolower($this->getRecordType());
+		$pikaFormat = strtolower($this->getFormatCategory()[0] ?? '');
 		switch ($pikaFormat){
 			case 'music':
 				return 'music.album';
