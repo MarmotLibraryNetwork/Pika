@@ -55,7 +55,6 @@ public class GroupedWorkSolr implements Cloneable {
 	private String                   callNumberFirst;
 	private String                   callNumberSubject;
 	private HashSet<String>          contents                 = new HashSet<>();
-	private HashSet<String>          dateSpans                = new HashSet<>();
 	private HashSet<String>          description              = new HashSet<>();
 	private String                   displayDescription       = "";
 	private String                   displayDescriptionFormat = "";
@@ -146,8 +145,6 @@ public class GroupedWorkSolr implements Cloneable {
 		clonedWork.barcodes = (HashSet<String>) barcodes.clone();
 		// noinspection unchecked
 		clonedWork.contents = (HashSet<String>) contents.clone();
-		// noinspection unchecked
-		clonedWork.dateSpans = (HashSet<String>) dateSpans.clone();
 		// noinspection unchecked
 		clonedWork.description = (HashSet<String>) description.clone();
 		// noinspection unchecked
@@ -270,7 +267,6 @@ public class GroupedWorkSolr implements Cloneable {
 		//faceting and refined searching
 		doc.addField("physical", physicals);
 		doc.addField("edition", editions);
-		doc.addField("dateSpan", dateSpans);
 		doc.addField("series", series.values());
 		doc.addField("series2", series2.values());
 		doc.addField("series_with_volume", seriesWithVolume.values());
@@ -1425,10 +1421,6 @@ public class GroupedWorkSolr implements Cloneable {
 
 	void addPhysical(Set<String> fieldList) {
 		this.physicals.addAll(fieldList);
-	}
-
-	void addDateSpan(Set<String> fieldList) {
-		this.dateSpans.addAll(fieldList);
 	}
 
 	void addEditions(Set<String> fieldList) {

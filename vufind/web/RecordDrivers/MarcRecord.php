@@ -1450,7 +1450,7 @@ class MarcRecord extends IndexRecord {
 	}
 
 	/**
-	 * Get the publication dates of the record.  See also getDateSpan().
+	 * Get the publication dates of the record.
 	 *
 	 * @access  public
 	 * @return  array

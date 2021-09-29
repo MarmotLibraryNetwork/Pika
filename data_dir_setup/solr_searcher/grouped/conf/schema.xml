@@ -504,8 +504,12 @@
 		<field name="publishDate" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="publishDateSort" type="string" indexed="true" stored="true"/>
 		<field name="edition" type="string" indexed="true" stored="true" multiValued="true"/>
-		<field name="dateSpan" type="string" indexed="true" stored="true" multiValued="true"/>
-			<!--field for MARC 362a Dates of Publication and/or Sequential Designation  -->
+		<!--		<field name="dateSpan" type="string" indexed="true" stored="true" multiValued="true"/>-->
+		<!--field for MARC 362a Dates of Publication and/or Sequential Designation  -->
+		<!--The MARC 361a data doesn't seem to have a format that would be easily parsable.
+		  There is nothing in the front end that uses it from solr or directly from the MARC.
+		  Nothing searches against the field, and I can't think of how it would be useful for a search
+		  -->
 
 		<!-- Things for faceting and refined searching -->
 		<field name="physical" type="string" indexed="true" stored="true" multiValued="true"/>

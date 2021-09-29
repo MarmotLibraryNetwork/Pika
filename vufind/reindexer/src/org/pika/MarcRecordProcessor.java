@@ -299,7 +299,6 @@ abstract class MarcRecordProcessor {
 		loadAuthors(groupedWork, record, identifier);
 		loadSubjects(groupedWork, record);
 		loadSeries(groupedWork, record, loadedNovelistSeries);
-		groupedWork.addDateSpan(MarcUtil.getFieldList(record, "362a"));
 		groupedWork.addContents(MarcUtil.getFieldList(record, "505a:505t"));
 		groupedWork.addIssns(MarcUtil.getFieldList(record, "022a"));
 		groupedWork.addOclcNumbers(MarcUtil.getFieldList(record, "035a"));

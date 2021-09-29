@@ -686,21 +686,6 @@ class IndexRecord extends RecordInterface {
 	}
 
 	/**
-	 * Get the date coverage for a record which spans a period of time (i.e. a
-	 * journal).  Use getPublicationDates for publication dates of particular
-	 * monographic items.
-	 *
-	 * The indexing of 362a Dates of Publication and/or Sequential Designation
-	 *
-	 * @access  protected
-	 * @return  array
-	 */
-//	TODO: no references to this function
-	protected function getDateSpan(){
-		return $this->fields['dateSpan'] ?? [];
-	}
-
-	/**
 	 * Get the edition of the current record.
 	 *
 	 * @access  protected
@@ -976,7 +961,7 @@ class IndexRecord extends RecordInterface {
 	}
 
 	/**
-	 * Get the publication dates of the record.  See also getDateSpan().
+	 * Get the publication dates of the record.
 	 *
 	 * @access  public
 	 * @return  array
