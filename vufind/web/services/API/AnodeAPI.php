@@ -82,37 +82,24 @@ class AnodeAPI extends AJAXHandler {
 	 *
 	 * @param string $id             - The initial grouped work
 	 * @return  array
-	 * @var    array $originalResult - The original record we are getting similar titles for.
 	 */
-	function getAnodeRelatedGroupedWorks($id = null, $originalResult = null){
-		global $configArray;
-		if (!isset($id)){
-			$id = $_REQUEST['id'];
-		}
-		if (isset($_GET['branch']) && in_array($_GET['branch'], array("bl", "se"))){
-			$branch = $_GET['branch'];
-		}else{
-			$branch = "catalog";
-		}
+	function getAnodeRelatedGroupedWorks($id = null){
 		//Load Similar titles (from Solr)
-		$class = $configArray['Index']['engine'];
-		$url   = $configArray['Index']['url'];
+		global $configArray;
+		$id     ??= $_REQUEST['id'];
+		$branch = isset($_GET['branch']) && in_array($_GET['branch'], ['bl', 'se']) ? $_GET['branch'] : 'catalog';
+		$class  = $configArray['Index']['engine'];
+		$url    = $configArray['Index']['url'];
 		/** @var Solr $db */
-		$db = new $class($url);
-//		$db->disableScoping();
+		$db      = new $class($url);
 		$similar = $db->getMoreLikeThis2($id);
-		if (isset($similar) && count($similar['response']['docs']) > 0){
-			$similarTitles = array();
-//			$similarTitles['titles'] = array();
-
-			foreach ($similar['response']['docs'] as $key => $similarTitle){
+		if (!empty($similar['response']['docs'])){
+			$similarTitles = [];
+			foreach ($similar['response']['docs'] as $similarTitle){
 				$similarTitles['titles'][] = $similarTitle;
 			}
 		}
-		$result = $this->getAnodeGroupedWorks($similarTitles, $branch);
-//var_dump($similarTitles);
-//var_dump($result);
-		return $result;
+		return $this->getAnodeGroupedWorks($similarTitles, $branch);
 	}
 
 	function getAnodeGroupedWorks($result, $branch){
