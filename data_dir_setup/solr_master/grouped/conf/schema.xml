@@ -133,9 +133,20 @@
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#stop-filter
 				-->
 				<filter class="solr.ICUFoldingFilterFactory"/>
-				<!-- ICU Tokenizer requires additional library to be added in the core's /lib folder to work.
-				  https://lucene.apache.org/solr/guide/7_7/tokenizers.html#tokenizers
-				  -->
+				<!--
+				This filter is a custom Unicode normalization form that applies the foldings specified in Unicode TR #30: Character Foldings
+				in addition to the NFKC_Casefold normalization form as described in ICU Normalizer 2 Filter.
+				This filter is a better substitute for the combined behavior of the ASCII Folding Filter, Lower Case Filter,
+				and ICU Normalizer 2 Filter.
+
+				To use this filter, you must add additional .jars to Solr’s classpath
+				See solr/contrib/analysis-extras/README.txt for instructions on which jars you need to add.
+
+				From the README.txt: ICU relies upon lucene-libs/lucene-analyzers-icu-X.Y.jar and lib/icu4j-X.Y.jar
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
+
+				-->
 				<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>
 				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
 				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
@@ -160,6 +171,19 @@
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" splitOnNumerics="0" stemEnglishPossessive="1"/>
 				<filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
 				<filter class="solr.ICUFoldingFilterFactory"/>
+				<!--
+				This filter is a custom Unicode normalization form that applies the foldings specified in Unicode TR #30: Character Foldings
+				in addition to the NFKC_Casefold normalization form as described in ICU Normalizer 2 Filter.
+				This filter is a better substitute for the combined behavior of the ASCII Folding Filter, Lower Case Filter,
+				and ICU Normalizer 2 Filter.
+
+				To use this filter, you must add additional .jars to Solr’s classpath
+				See solr/contrib/analysis-extras/README.txt for instructions on which jars you need to add.
+
+				From the README.txt: ICU relies upon lucene-libs/lucene-analyzers-icu-X.Y.jar and lib/icu4j-X.Y.jar
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
+				-->
 				<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
