@@ -107,6 +107,7 @@
 			<analyzer type="query">
 				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
 				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+				<!-- Important: Only apply synonym filter to query analyzers; not to index analyzers-->
 				<!-- Do our synonym filtering before word delimiter filters so that we don't create unwanted synonyms
 					eg. 'wi-fi' => 'wi', 'fi' => 'wi', 'wisconsin', 'fi'
 					See D-4066
