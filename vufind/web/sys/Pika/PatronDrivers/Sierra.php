@@ -411,7 +411,7 @@ class Sierra {
 
 		// find user pika id-- needed for cache key
 		// the username db field stores the sierra patron id. we'll use that to determine if the user exists.
-		// 1. check for a cached user object
+		// Check for a cached user object
 		$patron            = new User();
 //		$patron->whereAdd("ilsUserId = '{$patronId}'", 'OR');
 //		$patron->whereAdd("username = '{$patronId}'", 'OR'); // if ilsUserId can't be found fall back to username //TODO: temporary, username column is deprecated
@@ -425,7 +425,7 @@ class Sierra {
 			}
 		}
 
-		// 2. grab everything from the patron record the api can provide.
+		// grab everything from the patron record the api can provide.
 		$params = [
 			'fields' => 'names,addresses,phones,emails,expirationDate,homeLibraryCode,moneyOwed,patronType,barcodes,patronCodes,createdDate,blockInfo,message,pMessage,langPref,fixedFields,varFields,updatedDate,createdDate'
 		];
@@ -435,7 +435,7 @@ class Sierra {
 			return null;
 		}
 
-		// 3. Check to see if the user exists in the database
+		// Check to see if the user exists in the database
 
 		// does the user exist in database?
 		if(!$patron || $patron->N == 0) {
@@ -443,7 +443,7 @@ class Sierra {
 			$createPatron = true;
 		}
 
-		// 4. Find the right barcode
+		// Find the right barcode
 		// we need to monkey with the barcodes. barcodes can change!
 		// self registered users may have something in the api response that looks like this
 		// -- before getting a physical card
@@ -476,7 +476,7 @@ class Sierra {
 		// barcode isn't actually in database, but is stored in User->data['barcode']
 		$patron->barcode = $barcode;
 
-		// 5. check all the places barcodes are stored and determine if they need updated.
+		// check all the places barcodes are stored and determine if they need updated.
 		$loginMethod    = $this->accountProfile->loginConfiguration;
 		$patron->source = $this->accountProfile->name;
 
@@ -492,21 +492,21 @@ class Sierra {
 			}
 		}
 
-		// 5. Checks; make sure patron info from sierra matches database. update if needed.
-		// 5.1 ilsUserId
+		// Checks; make sure patron info from sierra matches database. update if needed.
+		// ilsUserId
 		$ilsUserId = $pInfo->id;
 		if($ilsUserId != $patron->ilsUserId) {
 			$patron->ilsUserId = $ilsUserId;
 			$updatePatron = true;
 		}
 
-		// 5.2 check patron type
+		// check patron type
 		if((int)$pInfo->patronType !== (int)$patron->patronType) {
 			$updatePatron = true;
 			$patron->patronType = $pInfo->patronType;
 		}
 
-		// 5.3 check names
+		// check names
 		if ($loginMethod == "name_barcode") {
 			if($patron->cat_username != $pInfo->names[0]) {
 				$updatePatron = true;
@@ -541,24 +541,23 @@ class Sierra {
 			$patron->displayName = '';
 		}
 
-		// 5.4 check email
+		// Check email
 		if((isset($pInfo->emails) && !empty($pInfo->emails)) && $pInfo->emails[0] != $patron->email) {
 			$updatePatron = true;
 			$patron->email = $pInfo->emails[0];
-		} else {
-			if(empty($patron->email)) {
-				$patron->email = '';
-			}
+		} elseif(empty($pInfo->email) || !isset($pInfo->emails)) {
+			$updatePatron = true;
+			$patron->email = '';
 		}
 
-		// 5.5 check locations
-		// 5.5.1 home locations
+		// Check locations
+		// home locations
 		if ($patron->setUserHomeLocations($pInfo->homeLibraryCode)){
 			$updatePatron = true;
 		}
 
-		// 6. things not stored in database so don't need to check for updates but do need to add to object.
-		// 6.1 alt username
+		// things not stored in database so don't need to check for updates but do need to add to object.
+		// alt username
 		// this is used on sites allowing username login.
 		if($this->hasUsernameField()) {
 			$fields = $pInfo->varFields;
@@ -574,7 +573,7 @@ class Sierra {
 			}
 		}
 
-		// 6.2 check phones
+		// check phones
 		$homePhone   = '';
 		$mobilePhone = '';
 		if(isset($pInfo->phones) && is_array($pInfo->phones)){
@@ -604,7 +603,7 @@ class Sierra {
 			$patron->phone = '';
 		}
 
-		// 6.3 fullname
+		// fullname
 		$patron->fullname  = $pInfo->names[0];
 
 		// 6.4 address
@@ -708,7 +707,7 @@ class Sierra {
 		$patron->state = $patronState;
 		$patron->zip   = $patronZip;
 
-		// 6.5 mobile phone
+		// mobile phone
 		// this triggers sms notifications for libraries using Sierra SMS
 		if(isset($mobilePhone)) {
 			$patron->mobileNumber = $mobilePhone;
@@ -716,10 +715,10 @@ class Sierra {
 			$patron->mobileNumber = '';
 		}
 
-		// 6.6 account expiration
+		// account expiration
 			$patron->setUserExpirationSettings(empty($pInfo->expirationDate) ? '' : $pInfo->expirationDate);
 
-		// 6.7 notices
+		// notices
 		$patron->notices = $pInfo->fixedFields->{'268'}->value;
 		switch($pInfo->fixedFields->{'268'}->value) {
 			case '-':
@@ -738,16 +737,16 @@ class Sierra {
 				$patron->noticePreferenceLabel = 'none';
 		}
 
-		// 6.8 number of checkouts from ils
+		// number of checkouts from ils
 		$patron->numCheckedOutIls  = $this->getNumCheckedOutsILS($patronId);
 		//TODO: Go back to the below if iii fixes bug. See: D-3447
 		//$patron->numCheckedOutIls = $pInfo->fixedFields->{'50'}->value;
 
-		// 6.9 fines
+		// fines
 		$patron->fines = number_format($pInfo->moneyOwed, 2, '.', '');
 		$patron->finesVal = number_format($pInfo->moneyOwed, 2, '.', '');
 
-		// 6.10 hold counts
+		// hold counts
 		$holds = $this->getMyHolds($patron);
 		if($holds && isset($holds['available'])){
 			$patron->numHoldsAvailableIls = count($holds['available']);
@@ -755,7 +754,7 @@ class Sierra {
 			$patron->numHoldsIls          = $patron->numHoldsAvailableIls + $patron->numHoldsRequestedIls;
 		}
 
-		// 6.11 web notes TODO: uncomment if it's ever safe to display web notes field
+		// web notes TODO: uncomment if it's ever safe to display web notes field
 		if(isset($pInfo->varFields) && isset($this->configArray['Catalog']['sierraPatronWebNoteField']) && $this->configArray['Catalog']['sierraPatronWebNoteField'] != '') {
 			$webNotesVarField = $this->configArray['Catalog']['sierraPatronWebNoteField'];
 			$webNote = $this->_getVarField($webNotesVarField,$pInfo->varFields);
@@ -946,11 +945,19 @@ class Sierra {
 				case 'mobileNumber': // mobile phone -- this triggers sms opt in for sierra
 					if(!empty($val)){
 						$phones[] = (object)['number'=>$val, 'type'=>'o'];
+					} else {
+						$phones[] = (object)['number'=>'', 'type'=>'o'];
 					}
 					break;
 				case 'email':
 					if(!empty($val)) {
 						$emails[] = $val;
+					} else {
+						$emails[] = '';
+					}
+					if($val != $patron->email) {
+						$patron->email = $val;
+						$patron->update();
 					}
 					break;
 				case 'pickupLocation':
