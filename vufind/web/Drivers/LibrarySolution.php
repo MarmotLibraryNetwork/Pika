@@ -474,11 +474,10 @@ class LibrarySolution extends ScreenScrapingDriver {
 				$recordDriver = new MarcRecord($this->accountProfile->recordSource . ":" . $bibId);
 				if ($recordDriver->isValid()){
 					$curHold['sortTitle'] = $recordDriver->getSortableTitle();
-					$curHold['format'] = $recordDriver->getFormat();
-					$curHold['isbn'] = $recordDriver->getCleanISBN();
-					$curHold['upc'] = $recordDriver->getCleanUPC();
-					$curHold['format_category'] = $recordDriver->getFormatCategory();
-					$curHold['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
+					$curHold['format']    = $recordDriver->getFormat();
+					$curHold['isbn']      = $recordDriver->getCleanISBN();
+					$curHold['upc']       = $recordDriver->getCleanUPC();
+					$curHold['coverUrl']  = $recordDriver->getBookcoverUrl('medium');
 
 					//Load rating information
 					$curHold['ratingData'] = $recordDriver->getRatingData();

@@ -25,8 +25,7 @@ require_once ROOT_DIR . '/RecordDrivers/Interface.php';
  * fields from the index.  It is invoked when a record-format-specific
  * driver cannot be found.
  */
-class IndexRecord extends RecordInterface
-{
+class IndexRecord extends RecordInterface {
 	protected $fields;
 	protected $index = false;
 
@@ -115,8 +114,7 @@ class IndexRecord extends RecordInterface
 	 * @access  public
 	 * @return  string              Breadcrumb text to represent this record.
 	 */
-	public function getBreadcrumb()
-	{
+	public function getBreadcrumb(){
 		return $this->getShortTitle();
 	}
 
@@ -210,8 +208,7 @@ class IndexRecord extends RecordInterface
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getExport($format)
-	{
+	public function getExport($format){
 		// Not currently supported for index-based records:
 		return null;
 	}
@@ -224,10 +221,9 @@ class IndexRecord extends RecordInterface
 	 * @access  public
 	 * @return  array               Strings representing export formats.
 	 */
-	public function getExportFormats()
-	{
+	public function getExportFormats(){
 		// No export formats currently supported for index-based records:
-		return array();
+		return [];
 	}
 
 	/**
@@ -242,8 +238,7 @@ class IndexRecord extends RecordInterface
 	 * @param   bool    $allowEdit  Should we display edit controls?
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getListEntry($user, $listId = null, $allowEdit = true)
-	{
+	public function getListEntry($user, $listId = null, $allowEdit = true){
 		global $interface;
 
 		// Extract bibliographic metadata from the record:
@@ -289,14 +284,12 @@ class IndexRecord extends RecordInterface
 	 * @access  public
 	 * @return  mixed               XML RDF data (false if unsupported or error).
 	 */
-	public function getRDFXML()
-	{
+	public function getRDFXML(){
 		// Not supported.
 		return false;
 	}
 
-	public function getSemanticData()
-	{
+	public function getSemanticData(){
 		//Schema.org
 		$semanticData[] = [
 			'@context'            => 'http://schema.org',
@@ -448,12 +441,12 @@ class IndexRecord extends RecordInterface
 		}
 		$formats = $this->getFormat();
 		$format  = reset($formats);
-		$parameters = array(
+		$parameters = [
 			'id'       => $id,
 			'size'     => $size,
 			'category' => $formatCategory,
 			'format'   => $format,
-		);
+		];
 		$isbn       = $this->getCleanISBN();
 		if ($isbn){
 			$parameters['isn'] = $isbn;
@@ -479,8 +472,7 @@ class IndexRecord extends RecordInterface
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getStaffView()
-	{
+	public function getStaffView(){
 		global $interface;
 		$interface->assign('details', $this->fields);
 
@@ -509,8 +501,7 @@ class IndexRecord extends RecordInterface
 	 * @access  public
 	 * @return  string              Unique identifier.
 	 */
-	public function getUniqueID()
-	{
+	public function getUniqueID(){
 		return $this->fields['id'];
 	}
 
@@ -523,8 +514,7 @@ class IndexRecord extends RecordInterface
 	 * @access  public
 	 * @return  bool
 	 */
-	public function hasFullText()
-	{
+	public function hasFullText(){
 		/* Full text is not supported yet.
 		 */
 		return false;
@@ -536,8 +526,7 @@ class IndexRecord extends RecordInterface
 	 * @access  public
 	 * @return  bool
 	 */
-	public function hasRDF()
-	{
+	public function hasRDF(){
 		// No RDF for Solr-based entries yet.
 		return false;
 	}
@@ -548,10 +537,9 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getAccessRestrictions()
-	{
+	protected function getAccessRestrictions(){
 		// Not currently stored in the Solr index
-		return array();
+		return [];
 	}
 
 	/**
@@ -562,25 +550,23 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return array
 	 */
-	public function getAllSubjectHeadings()
-	{
-		$topic = isset($this->fields['topic']) ? $this->fields['topic'] : array();
-		$geo = isset($this->fields['geographic']) ?
-		$this->fields['geographic'] : array();
-		$genre = isset($this->fields['genre']) ? $this->fields['genre'] : array();
+	public function getAllSubjectHeadings(){
+		$topic = $this->fields['topic'] ?? [];
+		$geo   = $this->fields['geographic'] ?? [];
+		$genre = $this->fields['genre'] ?? [];
 
 		// The Solr index doesn't currently store subject headings in a broken-down
 		// format, so we'll just send each value as a single chunk.  Other record
 		// drivers (i.e. MARC) can offer this data in a more granular format.
-		$retval = array();
-		foreach($topic as $t) {
-			$retval[] = array($t);
+		$retval = [];
+		foreach ($topic as $t){
+			$retval[] = [$t];
 		}
-		foreach($geo as $g) {
-			$retval[] = array($g);
+		foreach ($geo as $g){
+			$retval[] = [$g];
 		}
-		foreach($genre as $g) {
-			$retval[] = array($g);
+		foreach ($genre as $g){
+			$retval[] = [$g];
 		}
 
 		return $retval;
@@ -622,7 +608,7 @@ class IndexRecord extends RecordInterface
 	public function getCleanISBNs(){
 		require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
 
-		$cleanIsbns = array();
+		$cleanIsbns = [];
 		// Get all the ISBNs and initialize the return value:
 		$isbns = $this->getISBNs();
 
@@ -699,21 +685,6 @@ class IndexRecord extends RecordInterface
 	}
 
 	/**
-	 * Get the date coverage for a record which spans a period of time (i.e. a
-	 * journal).  Use getPublicationDates for publication dates of particular
-	 * monographic items.
-	 *
-	 * The indexing of 362a Dates of Publication and/or Sequential Designation
-	 *
-	 * @access  protected
-	 * @return  array
-	 */
-//	TODO: no references to this function
-	protected function getDateSpan(){
-		return $this->fields['dateSpan'] ?? [];
-	}
-
-	/**
 	 * Get the edition of the current record.
 	 *
 	 * @access  protected
@@ -730,7 +701,7 @@ class IndexRecord extends RecordInterface
 	 * @return  array
 	 */
 	public function getFormats(){
-		return isset($this->fields['format']) ? $this->fields['format'] : [];
+		return $this->fields['format'] ?? [];
 	}
 
 	public function getPrimaryFormat(){
@@ -744,7 +715,8 @@ class IndexRecord extends RecordInterface
 	 * @return  array
 	 */
 	public function getFormatCategory(){
-		return $this->fields['format_category'] ?? [];
+		global $solrScope;
+		return $this->fields['format_category_'.$solrScope] ?? [];
 	}
 
 	/**
@@ -767,7 +739,7 @@ class IndexRecord extends RecordInterface
 			}
 
 			if ($timer){
-				$timer->logTime("Loaded Grouped Work for record");
+				$timer->logTime('Loaded Grouped Work for record');
 			}
 		}
 	}
@@ -798,14 +770,12 @@ class IndexRecord extends RecordInterface
 	 * @return string
 	 * @access protected
 	 */
-	protected function getHighlightedAuthor()
-	{
+	protected function getHighlightedAuthor(){
 		// Don't check for highlighted values if highlighting is disabled:
-		if (!$this->highlight) {
+		if (!$this->highlight){
 			return '';
 		}
-		return (isset($this->fields['_highlighting']['author'][0]))
-		? $this->fields['_highlighting']['author'][0] : '';
+		return $this->fields['_highlighting']['author'][0] ?? '';
 	}
 
 	/**
@@ -863,14 +833,12 @@ class IndexRecord extends RecordInterface
 	 * @return string
 	 * @access protected
 	 */
-	protected function getHighlightedTitle()
-	{
+	protected function getHighlightedTitle(){
 		// Don't check for highlighted values if highlighting is disabled:
-		if (!$this->highlight) {
+		if (!$this->highlight){
 			return '';
 		}
-		return (isset($this->fields['_highlighting']['title'][0]))
-		? $this->fields['_highlighting']['title'][0] : '';
+		return $this->fields['_highlighting']['title'][0] ?? '';
 	}
 
 	/**
@@ -895,18 +863,13 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  array
 	 */
-	public function getISBNs()
-	{
+	public function getISBNs(){
 		// If ISBN is in the index, it should automatically be an array... but if
 		// it's not set at all, we should normalize the value to an empty array.
 		if (isset($this->fields['isbn'])){
-			if (is_array($this->fields['isbn'])){
-				return $this->fields['isbn'];
-			}else{
-				return array($this->fields['isbn']);
-			}
+			return is_array($this->fields['isbn']) ? $this->fields['isbn'] : [$this->fields['isbn']];
 		}else{
-			return array();
+			return [];
 		}
 	}
 
@@ -919,14 +882,13 @@ class IndexRecord extends RecordInterface
 		// If UPCs is in the index, it should automatically be an array... but if
 		// it's not set at all, we should normalize the value to an empty array.
 		if (isset($this->fields['upc'])){
-			return is_array($this->fields['upc']) ? $this->fields['upc'] : array($this->fields['upc']);
+			return is_array($this->fields['upc']) ? $this->fields['upc'] : [$this->fields['upc']];
 		}else{
-			return array();
+			return [];
 		}
 	}
 
-	public function getUPC()
-	{
+	public function getUPC(){
 		// If UPCs is in the index, it should automatically be an array... but if
 		// it's not set at all, we should normalize the value to an empty array.
 		return isset($this->fields['upc']) && is_array($this->fields['upc']) ? $this->fields['upc'][0] : '';
@@ -938,12 +900,11 @@ class IndexRecord extends RecordInterface
 	 * @access  public
 	 * @return  array
 	 */
-	public function getISSNs()
-	{
+	public function getISSNs(){
 		// If ISSN is in the index, it should automatically be an array... but if
 		// it's not set at all, we should normalize the value to an empty array.
 		return isset($this->fields['issn']) && is_array($this->fields['issn']) ?
-		$this->fields['issn'] : array();
+			$this->fields['issn'] : [];
 	}
 
 	/**
@@ -952,10 +913,8 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  array
 	 */
-	public function getLanguages()
-	{
-		return isset($this->fields['language']) ?
-		$this->fields['language'] : array();
+	public function getLanguages(){
+		return $this->fields['language'] ?? [];
 	}
 
 	/**
@@ -1002,7 +961,7 @@ class IndexRecord extends RecordInterface
 	}
 
 	/**
-	 * Get the publication dates of the record.  See also getDateSpan().
+	 * Get the publication dates of the record.
 	 *
 	 * @access  public
 	 * @return  array
@@ -1024,7 +983,7 @@ class IndexRecord extends RecordInterface
 		$dates  = $this->getPublicationDates();
 
 		$i         = 0;
-		$returnVal = array();
+		$returnVal = [];
 		while (isset($places[$i]) || isset($names[$i]) || isset($dates[$i])){
 			// Put all the pieces together, and do a little processing to clean up
 			// unwanted whitespace.
@@ -1047,10 +1006,8 @@ class IndexRecord extends RecordInterface
  * @access  protected
  * @return  array
  */
-	protected function getPublishers()
-	{
-		return isset($this->fields['publisher']) ?
-			$this->fields['publisher'] : array();
+	protected function getPublishers(){
+		return $this->fields['publisher'] ?? [];
 	}
 
 	/**
@@ -1059,10 +1016,8 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getSecondaryAuthors()
-	{
-		return isset($this->fields['author2']) ?
-		$this->fields['author2'] : array();
+	protected function getSecondaryAuthors(){
+		return $this->fields['author2'] ?? [];
 	}
 
 	/**
@@ -1073,14 +1028,12 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getSeries()
-	{
+	protected function getSeries(){
 		// Only use the contents of the series2 field if the series field is empty
-		if (isset($this->fields['series']) && !empty($this->fields['series'])) {
+		if (!empty($this->fields['series'])){
 			return $this->fields['series'];
 		}
-		return isset($this->fields['series2']) ?
-		$this->fields['series2'] : array();
+		return $this->fields['series2'] ?? [];
 	}
 
 	/**
@@ -1089,10 +1042,8 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  string
 	 */
-	protected function getShortTitle()
-	{
-		return isset($this->fields['title_short']) ?
-		$this->fields['title_short'] : '';
+	protected function getShortTitle(){
+		return $this->fields['title_short'] ?? '';
 	}
 
 	/**
@@ -1101,10 +1052,8 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  string
 	 */
-	protected function getSubtitle()
-	{
-		return isset($this->fields['title_sub']) ?
-		$this->fields['title_sub'] : '';
+	protected function getSubtitle(){
+		return $this->fields['title_sub'] ?? '';
 	}
 
 	/**
@@ -1113,10 +1062,9 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getSummary()
-	{
+	protected function getSummary(){
 		// Not currently stored in the Solr index
-		return array();
+		return [];
 	}
 
 	/**
@@ -1124,9 +1072,8 @@ class IndexRecord extends RecordInterface
 	 *
 	 * @return  string
 	 */
-	public function getTitle()
-	{
-		return isset($this->fields['title']) ? $this->fields['title'] : (isset($this->fields['title_display']) ? $this->fields['title_display'] : '');
+	public function getTitle(){
+		return $this->fields['title'] ?? $this->fields['title_display'] ?? '';
 	}
 
 	/**
@@ -1135,8 +1082,7 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  string
 	 */
-	protected function getTitleSection()
-	{
+	protected function getTitleSection(){
 		// Not currently stored in the Solr index
 		return null;
 	}
@@ -1148,11 +1094,10 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getURLs()
-	{
-		$urls = array();
-		if (isset($this->fields['url']) && is_array($this->fields['url'])) {
-			foreach($this->fields['url'] as $url) {
+	protected function getURLs(){
+		$urls = [];
+		if (isset($this->fields['url']) && is_array($this->fields['url'])){
+			foreach ($this->fields['url'] as $url){
 				// The index doesn't contain descriptions for URLs, so we'll just
 				// use the URL itself as the description.
 				$urls[$url] = $url;
@@ -1162,10 +1107,7 @@ class IndexRecord extends RecordInterface
 	}
 
 	public function getScore(){
-		if (isset($this->fields['score'])){
-			return $this->fields['score'];
-		}
-		return null;
+		return $this->fields['score'] ?? null;
 	}
 
 	public function getExplain(){
@@ -1176,10 +1118,7 @@ class IndexRecord extends RecordInterface
 	}
 
 	public function getId(){
-		if (isset($this->fields['id'])){
-			return $this->fields['id'];
-		}
-		return null;
+		return $this->fields['id'] ?? null;
 	}
 
 	/**
@@ -1190,19 +1129,15 @@ class IndexRecord extends RecordInterface
 			if (is_array($this->fields['format'])){
 				return $this->fields['format'];
 			}else{
-				return array($this->fields['format']);
+				return [$this->fields['format']];
 			}
 		}else{
-			return array("Unknown");
+			return ["Unknown"];
 		}
 	}
 
 	public function getLanguage(){
-		if (isset($this->fields['language'])){
-			return $this->fields['language'];
-		}else{
-			return "Implement this when not backed by Solr data";
-		}
+		return $this->fields['language'] ?? 'Implement this when not backed by Solr data';
 	}
 
 	public function getRatingData() {
@@ -1211,6 +1146,11 @@ class IndexRecord extends RecordInterface
 		return $workAPI->getRatingData($this->getGroupedWorkId());
 	}
 
+	/**
+	 * The indexing profile source name associated with this Record
+	 *
+	 * @return string
+	 */
 	public function getRecordType(){
 		return 'unknown';
 	}
@@ -1241,31 +1181,31 @@ class IndexRecord extends RecordInterface
 	public function getExploreMoreInfo(){
 		global $interface;
 		global $configArray;
-		$exploreMoreOptions = array();
-		if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
+		$exploreMoreOptions = [];
+		if ($configArray['Catalog']['showExploreMoreForFullRecords']){
 			$interface->assign('showMoreLikeThisInExplore', true);
 
 			if ($this->getCleanISBN()){
-				if ($interface->getVariable('showSimilarTitles')) {
-					$exploreMoreOptions['similarTitles'] = array(
-							'label' => 'Similar Titles From NoveList',
-							'body' => '<div id="novelisttitlesPlaceholder"></div>',
-							'hideByDefault' => true
-					);
+				if ($interface->getVariable('showSimilarTitles')){
+					$exploreMoreOptions['similarTitles'] = [
+						'label'         => 'Similar Titles From NoveList',
+						'body'          => '<div id="novelisttitlesPlaceholder"></div>',
+						'hideByDefault' => true
+					];
 				}
-				if ($interface->getVariable('showSimilarAuthors')) {
-					$exploreMoreOptions['similarAuthors'] = array(
-							'label' => 'Similar Authors From NoveList',
-							'body' => '<div id="novelistauthorsPlaceholder"></div>',
-							'hideByDefault' => true
-					);
+				if ($interface->getVariable('showSimilarAuthors')){
+					$exploreMoreOptions['similarAuthors'] = [
+						'label'         => 'Similar Authors From NoveList',
+						'body'          => '<div id="novelistauthorsPlaceholder"></div>',
+						'hideByDefault' => true
+					];
 				}
-				if ($interface->getVariable('showSimilarTitles')) {
-					$exploreMoreOptions['similarSeries'] = array(
-							'label' => 'Similar Series From NoveList',
-							'body' => '<div id="novelistseriesPlaceholder"></div>',
-							'hideByDefault' => true
-					);
+				if ($interface->getVariable('showSimilarTitles')){
+					$exploreMoreOptions['similarSeries'] = [
+						'label'         => 'Similar Series From NoveList',
+						'body'          => '<div id="novelistseriesPlaceholder"></div>',
+						'hideByDefault' => true
+					];
 				}
 			}
 
@@ -1287,20 +1227,19 @@ class IndexRecord extends RecordInterface
 	 * @access  public
 	 * @return  string              OpenURL parameters.
 	 */
-	public function getOpenURL()
-	{
+	public function getOpenURL(){
 		// Get the COinS ID -- it should be in the OpenURL section of config.ini,
 		// but we'll also check the COinS section for compatibility with legacy
 		// configurations (this moved between the RC2 and 1.0 releases).
 		$coinsID = 'pika';
 
 		// Start an array of OpenURL parameters:
-		$params = array(
-			'ctx_ver' => 'Z39.88-2004',
-			'ctx_enc' => 'info:ofi/enc:UTF-8',
-			'rfr_id' => "info:sid/{$coinsID}:generator",
+		$params = [
+			'ctx_ver'   => 'Z39.88-2004',
+			'ctx_enc'   => 'info:ofi/enc:UTF-8',
+			'rfr_id'    => "info:sid/{$coinsID}:generator",
 			'rft.title' => $this->getTitle(),
-		);
+		];
 
 		// Get a representative publication date:
 		$pubDate = $this->getPublicationDates();
@@ -1314,34 +1253,36 @@ class IndexRecord extends RecordInterface
 		$formats = $this->getFormats();
 
 		// If we have multiple formats, Book and Journal are most important...
-		if (in_array('Book', $formats)) {
+		if (in_array('Book', $formats)){
 			$format = 'Book';
-		} else if (in_array('Journal', $formats)) {
-			$format = 'Journal';
-		} else {
-			$format = $formats[0];
+		}else{
+			if (in_array('Journal', $formats)){
+				$format = 'Journal';
+			}else{
+				$format = $formats[0];
+			}
 		}
-		switch($format) {
+		switch ($format){
 			case 'Book':
 				$params['rft_val_fmt'] = 'info:ofi/fmt:kev:mtx:book';
-				$params['rft.genre'] = 'book';
-				$params['rft.btitle'] = $params['rft.title'];
+				$params['rft.genre']   = 'book';
+				$params['rft.btitle']  = $params['rft.title'];
 
 				$series = $this->getSeries(false);
-				if ($series != null) {
+				if ($series != null){
 					// Handle both possible return formats of getSeries:
 					$params['rft.series'] = $series['seriesTitle'];
 				}
 
 				$params['rft.au'] = $this->getPrimaryAuthor();
-				$publishers = $this->getPublishers();
-				if (count($publishers) == 1) {
+				$publishers       = $this->getPublishers();
+				if (count($publishers) == 1){
 					$params['rft.pub'] = $publishers[0];
-				}elseif (count($publishers) > 1) {
+				}elseif (count($publishers) > 1){
 					$params['rft.pub'] = $publishers;
 				}
 				$params['rft.edition'] = $this->getEdition();
-				$params['rft.isbn'] = $this->getCleanISBN();
+				$params['rft.isbn']    = $this->getCleanISBN();
 				break;
 			case 'Journal':
 				/* This is probably the most technically correct way to represent
@@ -1367,23 +1308,23 @@ class IndexRecord extends RecordInterface
 			default:
 				$params['rft_val_fmt'] = 'info:ofi/fmt:kev:mtx:dc';
 				$params['rft.creator'] = $this->getPrimaryAuthor();
-				$publishers = $this->getPublishers();
-				if (count($publishers) > 0) {
+				$publishers            = $this->getPublishers();
+				if (count($publishers) > 0){
 					$params['rft.pub'] = $publishers[0];
 				}
 				$params['rft.format'] = $format;
-				$langs = $this->getLanguages();
-				if (count($langs) > 0) {
+				$langs                = $this->getLanguages();
+				if (count($langs) > 0){
 					$params['rft.language'] = $langs[0];
 				}
 				break;
 		}
 
 		// Assemble the URL:
-		$parts = array();
-		foreach($params as $key => $value) {
+		$parts = [];
+		foreach ($params as $key => $value){
 			if (is_array($value)){
-				foreach($value as $arrVal){
+				foreach ($value as $arrVal){
 					$parts[] = $key . '[]=' . urlencode($arrVal);
 				}
 			}else{
@@ -1422,7 +1363,7 @@ class IndexRecord extends RecordInterface
 	}
 
 	function getOGType(){
-		$pikaFormat = strtolower($this->getRecordType());
+		$pikaFormat = strtolower($this->getFormatCategory()[0] ?? '');
 		switch ($pikaFormat){
 			case 'music':
 				return 'music.album';

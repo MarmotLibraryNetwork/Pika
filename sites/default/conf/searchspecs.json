@@ -69,6 +69,7 @@
     }
   },
 
+  /* Created for ticket ARL-91 */
   "AuthorProper": {
     "QueryFields": {
       "author_exact": [

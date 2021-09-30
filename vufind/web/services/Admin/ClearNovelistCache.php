@@ -33,18 +33,17 @@ class Admin_ClearNovelistCache extends Admin_Admin{
 		global $interface;
 		global $memCache;
 
-		require_once ROOT_DIR . '/sys/Novelist/Novelist3.php';
+//		require_once ROOT_DIR . '/sys/Novelist/Novelist3.php';
 		require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
 		if(isset($_REQUEST['submit'])){
 
 			$novelist = New NovelistData;
-			$novelist->whereAdd("id like '%'");
-			$novelist->delete(true);
+			$novelist->query('TRUNCATE `novelist_data`');
 			$memCache->flush();
 
 		}
 
-		$cache = new NovelistData();
+		$cache            = new NovelistData();
 		$numCachedObjects = $cache->count();
 
 		$interface->assign('numCachedObjects', $numCachedObjects);
@@ -53,6 +52,6 @@ class Admin_ClearNovelistCache extends Admin_Admin{
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin','libraryAdmin');
+		return ['opacAdmin', 'libraryAdmin'];
 	}
 }

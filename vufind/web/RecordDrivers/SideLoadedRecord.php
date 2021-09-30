@@ -100,6 +100,11 @@ class SideLoadedRecord extends BaseEContentDriver {
 		return $this->id;
 	}
 
+	/**
+	 * The indexing profile source name associated with this Record
+	 *
+	 * @return string
+	 */
 	function getRecordType(){
 		return $this->profileType;
 	}
