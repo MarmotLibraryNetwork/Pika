@@ -832,7 +832,13 @@ class Solr implements IndexEngine {
 			$boostFactors[] = "language_boost_{$solrScope}";
 		}
 
-		$boostFactors[] = (!empty($searchLibrary->applyNumberOfHoldingsBoost)) ? 'product(sum(popularity,1),format_boost)' : 'format_boost';
+//		$boostFactors[] = (!empty($searchLibrary->applyNumberOfHoldingsBoost)) ? 'product(sum(popularity,1),format_boost)' : 'format_boost';
+
+		if ((!empty($searchLibrary->applyNumberOfHoldingsBoost))){
+			$boostFactors[] = 'sum(popularity,1)';
+		}
+		$boostFactors[] = 'format_boost';
+
 		// popularity is indexed as zero or greater, but to apply to boosting we want it to be a value of 1 or greater
 		// hence sum(popularity,1)
 
