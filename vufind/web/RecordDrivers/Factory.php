@@ -316,11 +316,11 @@ class RecordDriverFactory {
 		if ($path) {
 			require_once $path;
 			if (class_exists($driver)) {
-				$timer->logTime("Start of loading record driver");
+				$timer->logTime('Start of loading record driver');
 				disableErrorHandler();
 				/** @var RecordInterface $obj */
 				$obj = new $driver($record);
-				$timer->logTime("Initialized Driver");
+				$timer->logTime('Initialized Driver');
 				if (PEAR_Singleton::isError($obj)) {
 					$logger->warn("Error loading record driver");
 				}
