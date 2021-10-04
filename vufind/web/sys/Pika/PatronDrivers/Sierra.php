@@ -542,10 +542,12 @@ class Sierra {
 		}
 
 		// Check email
+		// email is returned as array from sierra api
 		if((isset($pInfo->emails) && !empty($pInfo->emails)) && $pInfo->emails[0] != $patron->email) {
 			$updatePatron = true;
 			$patron->email = $pInfo->emails[0];
 		} elseif(empty($pInfo->email) || !isset($pInfo->emails)) {
+			// Check for empty email-- update db even if empty
 			$updatePatron = true;
 			$patron->email = '';
 		}
