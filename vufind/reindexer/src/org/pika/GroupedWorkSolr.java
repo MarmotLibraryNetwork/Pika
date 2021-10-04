@@ -532,6 +532,10 @@ public class GroupedWorkSolr implements Cloneable {
 					}
 
 					if (curScope.isLocallyOwned() || curScope.isLibraryOwned()) {
+						// usual default values :
+						// availableAtLocationBoostValue = 50
+						// ownedByLocationBoostValue = 10
+
 						if (curScope.isAvailable()) {
 							updateMaxValueField(doc, "lib_boost_" + curScopeName, availableAtBoostValue);
 						}else {

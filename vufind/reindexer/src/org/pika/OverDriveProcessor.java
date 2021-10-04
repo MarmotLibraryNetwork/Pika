@@ -577,7 +577,8 @@ public class OverDriveProcessor {
 				returnMetadata.put("publicationDate", publicationDate);
 				//Need to divide this because it seems to be all time checkouts for all libraries, not just our libraries
 				//Hopefully OverDrive will give us better stats in the near future that we can use.
-				groupedWork.addPopularity(metadataRS.getFloat("popularity") / 500f);
+				float popularity = metadataRS.getFloat("popularity");
+				groupedWork.addPopularity(popularity > 500F ? popularity / 500f : 1);
 				String shortDescription = metadataRS.getString("shortDescription");
 				groupedWork.addDescription(shortDescription, format);
 				String fullDescription = metadataRS.getString("fullDescription");

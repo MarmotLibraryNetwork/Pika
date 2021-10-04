@@ -81,7 +81,7 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 			}
 
 			//Do updates based on items
-			loadPopularity(groupedWork, identifier.getIdentifier());
+			groupedWork.addPopularity(1);
 
 			groupedWork.addHoldings(1);
 

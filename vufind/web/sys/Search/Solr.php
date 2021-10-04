@@ -833,9 +833,33 @@ class Solr implements IndexEngine {
 		}
 
 		$boostFactors[] = (!empty($searchLibrary->applyNumberOfHoldingsBoost)) ? 'product(sum(popularity,1),format_boost)' : 'format_boost';
+		// popularity is indexed as zero or greater, but to apply to boosting we want it to be a value of 1 or greater
+		// hence sum(popularity,1)
+
+		//For physical records, popularity is determined by the checkouts for each item with this formula :
+		//  year-to-date checkouts
+		//  plus half of last year's checkouts
+		//  plus a tenth of total checkouts minus last year's checkouts and minus the year-to-date checkouts
+		// Or a value of one, if the calculation above is zero
+		// So a record's popularity is the sum of this calculation for every item
+		//  plus twice the number of holds there are on the record
+
+		// For order records, the popularity is based on the number of copies for each order record
+
+		// For Overdrive, the popularity is the overdrive metadata measure popularity divided by 500; or 1 if it is less than 500
+
+		// For Sideloads and Hoopla, the popularity is the number of bibs
 
 		// Add rating as part of the ranking, normalize so ratings of less that 2.5 are below unrated entries.
 		$boostFactors[] = 'sum(rating,1)';
+
+		// Library Holdings Boost factors:
+		// when the usual default values from config.ini are :
+		// availableAtLocationBoostValue = 50
+		// ownedByLocationBoostValue = 10
+		// the lib_boost_[scope] field will be 50 when any item is available at the library,
+		// or it will be 10 when an item is owned,
+		// or it will be missing (effectively zero) when it is neither "available at" nor owned by the library
 
 		if (!empty($searchLibrary->boostByLibrary)) {
 			$boostFactors[] = ($searchLibrary->additionalLocalBoostFactor > 1) ? "sum(product(lib_boost_{$solrScope},{$searchLibrary->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";

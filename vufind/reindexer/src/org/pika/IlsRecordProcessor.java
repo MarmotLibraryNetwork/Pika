@@ -443,7 +443,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 
 			//Do updates based on items
-			loadPopularity(groupedWork, identifier.getIdentifier());
+			loadPopularity(groupedWork, identifier);
 			groupedWork.addBarcodes(MarcUtil.getFieldList(record, itemTag + barcodeSubfield));
 
 			loadOrderIds(groupedWork, record);
@@ -575,7 +575,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				}
 			}
 		}
-		if (recordInfo.getNumCopiesOnOrder() > 0 && !hasTangibleItems){
+		if (!hasTangibleItems && recordInfo.getNumCopiesOnOrder() > 0){
 			groupedWork.addKeywords("On Order");
 			groupedWork.addKeywords("Coming Soon");
 			/*//Don't do this anymore, see D-1893
@@ -1046,12 +1046,20 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		String ytdCheckoutsField = getItemSubfieldData(ytdCheckoutSubfield, itemField);
 		int ytdCheckouts = 0;
 		if (ytdCheckoutsField != null){
-			ytdCheckouts = Integer.parseInt(ytdCheckoutsField);
+			try {
+				ytdCheckouts = Integer.parseInt(ytdCheckoutsField);
+			} catch (NumberFormatException e) {
+				logger.warn("Did not get a number for year to date checkouts. Got " + ytdCheckoutsField + " for " + identifier);
+			}
 		}
 		String lastYearCheckoutsField = getItemSubfieldData(lastYearCheckoutSubfield, itemField);
 		int lastYearCheckouts = 0;
 		if (lastYearCheckoutsField != null){
-			lastYearCheckouts = Integer.parseInt(lastYearCheckoutsField);
+			try {
+				lastYearCheckouts = Integer.parseInt(lastYearCheckoutsField);
+			} catch (NumberFormatException e) {
+				logger.warn("Did not get a number for last year checkouts. Got " + lastYearCheckoutsField + " for " + identifier);
+			}
 		}
 		double itemPopularity = ytdCheckouts + .5 * (lastYearCheckouts) + .1 * (totalCheckouts - lastYearCheckouts - ytdCheckouts);
 		if (itemPopularity == 0){
@@ -1303,15 +1311,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return new ArrayList<>();
 	}
 
-	void loadPopularity(GroupedWorkSolr groupedWork, String recordIdentifier) {
+	void loadPopularity(GroupedWorkSolr groupedWork, RecordIdentifier identifier) {
 		//Add popularity based on the number of holds (we have already done popularity for prior checkouts)
 		//Active holds indicate that a title is more interesting so we will count each hold at double value
-		double popularity = 2 * getIlsHoldsForTitle(recordIdentifier);
+		double popularity = 2 * getIlsHoldsForTitle(identifier);
 		groupedWork.addPopularity(popularity);
 	}
 
-	private int getIlsHoldsForTitle(String recordIdentifier) {
-		return numberOfHoldsByIdentifier.getOrDefault(recordIdentifier, 0);
+	private int getIlsHoldsForTitle(RecordIdentifier identifier) {
+		return numberOfHoldsByIdentifier.getOrDefault(identifier.getIdentifier(), 0);
 	}
 
 	protected boolean isItemSuppressed(DataField curItem) {

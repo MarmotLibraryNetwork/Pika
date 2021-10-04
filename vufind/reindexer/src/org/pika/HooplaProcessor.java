@@ -366,6 +366,8 @@ class HooplaProcessor extends MarcRecordProcessor {
 		//From Pika to Hoopla, but that wouldn't count plays directly within the app
 		//(which may be ok).
 		groupedWork.addPopularity(1);
+
+//		groupedWork.addHoldings(1);
 	}
 
 	private void loadScopeInfoForEContentItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, ItemInfo itemInfo, Record record) {

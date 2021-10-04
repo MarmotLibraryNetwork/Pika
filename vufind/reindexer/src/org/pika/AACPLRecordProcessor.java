@@ -207,6 +207,9 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 				itemInfo.setShelfLocation("On Order");
 
 				recordInfo.addItem(itemInfo);
+
+				groupedWork.addPopularity(1);
+				// Update the popularity per order record
 			} else {
 				logger.debug("Skipping order item because there are print or order records available");
 			}

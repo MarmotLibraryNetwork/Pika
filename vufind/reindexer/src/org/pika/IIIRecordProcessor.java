@@ -466,10 +466,8 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			if (orderItems != null) {
 				for (OrderInfo orderItem : orderItems) {
 					createAndAddOrderItem(groupedWork, recordInfo, orderItem, record);
-					//For On Order Items, increment popularity based on number of copies that are being purchased.
-					groupedWork.addPopularity(orderItem.getNumCopies());
 				}
-				if (recordInfo.getNumCopiesOnOrder() > 0 && !hasTangibleItems) {
+				if (!hasTangibleItems && recordInfo.getNumCopiesOnOrder() > 0) {
 					groupedWork.addKeywords("On Order");
 					groupedWork.addKeywords("Coming Soon");
 				}
@@ -510,6 +508,9 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 
 		if (isOrderItemValid(status, null)) {
 			recordInfo.addItem(itemInfo);
+
+			//For On Order Items, increment popularity based on number of copies that are being purchased.
+			groupedWork.addPopularity(orderItem.getNumCopies());
 		}
 	}
 
