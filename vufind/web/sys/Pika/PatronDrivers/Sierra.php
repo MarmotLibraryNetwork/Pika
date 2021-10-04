@@ -546,7 +546,7 @@ class Sierra {
 		if((isset($pInfo->emails) && !empty($pInfo->emails)) && $pInfo->emails[0] != $patron->email) {
 			$updatePatron = true;
 			$patron->email = $pInfo->emails[0];
-		} elseif(empty($pInfo->email) || !isset($pInfo->emails)) {
+		} elseif((empty($pInfo->emails) || !isset($pInfo->emails))) {
 			// Check for empty email-- update db even if empty
 			$updatePatron = true;
 			$patron->email = '';
@@ -608,7 +608,7 @@ class Sierra {
 		// fullname
 		$patron->fullname  = $pInfo->names[0];
 
-		// 6.4 address
+		// address
 		// some libraries may not use ','  after city so make sure we have all the parts
 		// can assume street as a line and city, st. zip as a line
 		// Note: There are other unusual entries for address as well:
