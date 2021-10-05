@@ -45,21 +45,24 @@
 					<p>If you want to use these values every time you check out a title and skip being prompted to set the lending period at check out, please turn off <em><strong>{translate text='Set Lending Period During Checkout'}</strong></em></p>
 				</div>
 					{foreach from=$overDriveSettings.lendingPeriods item=lendingOption key="formatType"}
-						<div class="form-group">
-							<div class="col-xs-4"><label class="control-label">{$formatType}:</label></div>
-							<div class="col-xs-8">
-								<div class="btn-group btn-group-sm" data-toggle="buttons">
-										{foreach from=$lendingOption->options item=option}
-												{if !$offline}
-													<label for="{$formatType}_{$option}" class="btn btn-sm btn-default {if $lendingOption->lendingPeriod == $option}active{/if}"><input type="radio" name="lendingPeriods[{$formatType}]" value="{$option}" id="{$formatType}_{$option}" {if $lendingOption->lendingPeriod  == $option}checked="checked"{/if} class="form-control">&nbsp;{$option}</label>
-												{elseif $lendingOption->lendingPeriod == $option}
-														{$option}
-												{/if}
-										{/foreach}
+						{if !empty($lendingOption->options)}
+							{* Magazines are listed here but there is no options available. So we won't display in this form *}
+							<div class="form-group">
+								<div class="col-xs-4"><label class="control-label">{$formatType}:</label></div>
+								<div class="col-xs-8">
+									<div class="btn-group btn-group-sm" data-toggle="buttons">
+											{foreach from=$lendingOption->options item=option}
+													{if !$offline}
+														<label for="{$formatType}_{$option}" class="btn btn-sm btn-default {if $lendingOption->lendingPeriod == $option}active{/if}"><input type="radio" name="lendingPeriods[{$formatType}]" value="{$option}" id="{$formatType}_{$option}" {if $lendingOption->lendingPeriod  == $option}checked="checked"{/if} class="form-control">&nbsp;{$option}</label>
+													{elseif $lendingOption->lendingPeriod == $option}
+															{$option}
+													{/if}
+											{/foreach}
+									</div>
+									&nbsp;days
 								</div>
-								&nbsp;days
 							</div>
-						</div>
+						{/if}
 					{/foreach}
 				<div class="form-group">
 					<div class="col-xs-4"><label for="promptForOverDriveLendingPeriods" class="control-label">{translate text='Set Lending Period During Checkout'}:</label></div>
@@ -72,7 +75,7 @@
 					</div>
 				</div>
 
-      {/if}
+			{/if}
 
 			{if !$offline}
 				<div class="form-group">
