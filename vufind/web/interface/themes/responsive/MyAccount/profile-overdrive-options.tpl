@@ -52,8 +52,8 @@
 										{foreach from=$lendingOption->options item=option}
 												{if $edit}
 													<label for="{$formatType}_{$option}" class="btn btn-sm btn-default {if $lendingOption->lendingPeriod == $option}active{/if}"><input type="radio" name="lendingPeriods[{$formatType}]" value="{$option}" id="{$formatType}_{$option}" {if $lendingOption->lendingPeriod  == $option}checked="checked"{/if} class="form-control">&nbsp;{$option}</label>
-												{elseif $lendingOption->lendingPeriod}
-														{$option.name}
+												{elseif $lendingOption->lendingPeriod == $option}
+														{$option}
 												{/if}
 										{/foreach}
 								</div>
