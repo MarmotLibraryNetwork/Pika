@@ -155,13 +155,8 @@
 									<div class="form-group">
 										<div class="col-xs-4"><label for="phone">{translate text='Primary Phone Number'}:</label></div>
 										<div class="col-xs-8">
-<<<<<<< Updated upstream
-											{if $edit && $canUpdateContactInfo && ($ils != 'Horizon')}
-												<input type="tel" name="phone" id="phone" value="{$profile->phone|escape}" size="50" maxlength="75" class="form-control">
-=======
 											{if !$offline && $canUpdateContactInfo && ($ils != 'Horizon')}
-												<input type="tel" name="phone" id="phone" value="{$profile->phone|replace:'### TEXT ONLY':''|replace:'TEXT ONLY':''|escape}" size="50" maxlength="75" class="form-control">
->>>>>>> Stashed changes
+												<input type="tel" name="phone" id="phone" value="{$profile->phone|escape}" size="50" maxlength="75" class="form-control">
 											{else}
 												{$profile->phone|escape}
 											{/if}

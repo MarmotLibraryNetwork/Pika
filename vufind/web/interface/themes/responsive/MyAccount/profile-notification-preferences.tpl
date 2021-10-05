@@ -2,7 +2,7 @@
 	<div class="form-group">
 		<div class="col-xs-4"><strong>{translate text='Receive notices by'}:</strong></div>
 		<div class="col-xs-8">
-			{if $edit == true && $canUpdateContactInfo == true}
+			{if !$offline && $canUpdateContactInfo == true}
 				<div class="btn-group btn-group-sm" data-toggle="buttons">
 					{if $treatPrintNoticesAsPhoneNotices}
 						{* Tell the User the notice is Phone even though in the ILS it will be print *}

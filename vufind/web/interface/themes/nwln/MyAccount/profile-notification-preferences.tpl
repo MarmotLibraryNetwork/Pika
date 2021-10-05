@@ -2,7 +2,7 @@
 	<div class="form-group">
 		<div class="col-xs-4"><strong>{translate text='Receive notices by'}:</strong></div>
 		<div class="col-xs-8">
-			{if $edit == true && $canUpdateContactInfo == true}
+			{if !$offline && $canUpdateContactInfo == true}
 				<div class="btn-group btn-group-sm" data-toggle="buttons">
 					<label for="noticesTel" class="btn btn-sm btn-default {if $profile->notices == 'p'}active{/if}"><input type="radio" value="p" id="noticesTel" name="notices" {if $profile->notices == 'p'}checked="checked"{/if}> Telephone</label>
 					<label for="noticesText" class="btn btn-sm btn-default {if $profile->notices == 't'}active{/if}"><input type="radio" value="t" id="noticesText" name="notices" {if $profile->notices == 't'}checked="checked"{/if}> Text</label>
@@ -23,7 +23,7 @@
 	 *}
 	<div class="form-group">
 		<div class="col-xs-4"><label for="workPhone">{translate text='Work Phone Number'}:</label></div>
-		<div class="col-xs-8">{if $edit && $canUpdateContactInfo && $ils != 'Horizon'}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control simplePhoneFormat">
+		<div class="col-xs-8">{if !$offline && $canUpdateContactInfo && $ils != 'Horizon'}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control simplePhoneFormat">
 				<p class='alert alert-warning'><strong>(Format: xxx-xxx-xxxx) &nbsp; Be sure to include the dashes.</strong></p>
 			{else}{$profile->workPhone|escape}{/if}</div>
 	</div>

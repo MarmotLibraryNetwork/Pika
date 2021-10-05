@@ -25,13 +25,13 @@
 		<div class="form-group">
 			<div class="col-xs-4"><label for="overDriveEmail" class="control-label">{translate text='Email Address'}:</label></div>
 			<div class="col-xs-8">
-					{if $edit == true}<input name="overDriveEmail" id="overDriveEmail" class="form-control" value='{$profile->overDriveEmail|escape}' size='50' maxlength='75'>{else}{$profile->overDriveEmail|escape}{/if}
+					{if !$offline}<input name="overDriveEmail" id="overDriveEmail" class="form-control" value='{$profile->overDriveEmail|escape}' size='50' maxlength='75'>{else}{$profile->overDriveEmail|escape}{/if}
 			</div>
 		</div>
 		<div class="form-group">
 			<div class="col-xs-4"><label for="promptForOverDriveEmail" class="control-label">{translate text='Set Notification Email While Placing Hold'}:</label></div>
 			<div class="col-xs-8">
-					{if $edit == true}
+					{if !$offline}
 						<input type="checkbox" name="promptForOverDriveEmail" id="promptForOverDriveEmail" {if $profile->promptForOverDriveEmail==1}checked='checked'{/if} data-switch="">
 					{else}
 							{if $profile->promptForOverDriveEmail==0}No{else}Yes{/if}
@@ -50,7 +50,7 @@
 							<div class="col-xs-8">
 								<div class="btn-group btn-group-sm" data-toggle="buttons">
 										{foreach from=$lendingOption->options item=option}
-												{if $edit}
+												{if !$offline}
 													<label for="{$formatType}_{$option}" class="btn btn-sm btn-default {if $lendingOption->lendingPeriod == $option}active{/if}"><input type="radio" name="lendingPeriods[{$formatType}]" value="{$option}" id="{$formatType}_{$option}" {if $lendingOption->lendingPeriod  == $option}checked="checked"{/if} class="form-control">&nbsp;{$option}</label>
 												{elseif $lendingOption->lendingPeriod == $option}
 														{$option}
@@ -64,7 +64,7 @@
 				<div class="form-group">
 					<div class="col-xs-4"><label for="promptForOverDriveLendingPeriods" class="control-label">{translate text='Set Lending Period During Checkout'}:</label></div>
 					<div class="col-xs-8">
-							{if $edit == true}
+							{if !$offline}
 								<input type="checkbox" name="promptForOverDriveLendingPeriods" id="promptForOverDriveLendingPeriods" {if $profile->promptForOverDriveLendingPeriods==1}checked='checked'{/if} data-switch="">
 							{else}
 									{if $profile->promptForOverDriveLendingPeriods==0}No{else}Yes{/if}
@@ -74,7 +74,7 @@
 
       {/if}
 
-			{if !$offline && $edit == true}
+			{if !$offline}
 				<div class="form-group">
 					<div class="col-xs-8 col-xs-offset-4">
 						<input type="submit" value="Update OverDrive Options" name="updateOverDrive" class="btn btn-sm btn-primary">
