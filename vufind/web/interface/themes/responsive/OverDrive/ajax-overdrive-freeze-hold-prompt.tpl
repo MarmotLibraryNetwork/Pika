@@ -25,10 +25,13 @@ $(function(){
 	$( "#thawDate" ).datepicker({
 		format: "mm-dd-yyyy",
 		startDate: Date(),
-		orientation:"bottom"
 	});
 });
 {/literal}
+{*
+ 	Removed orientation:"bottom" to allow the default orientation:"auto" detect which direction to use
+	to avoid going over the browser's view edge
+ *}
 	</script>
 </form>
 {/strip}
