@@ -63,7 +63,7 @@ class SelfReg extends Action {
 				$recaptchaValid = true;
 			}
 			if ($library->enableSelfRegistration && isset($_POST['pin'])){
-				$pinLength = count_chars($_POST['pin']);
+				$pinLength = strlen($_POST['pin']);
 				if ($pinLength < $pinMinimumLength or $pinLength > $pinMaximumLength){
 					if ($pinMinimumLength == $pinMaximumLength){
 						return "New PIN must be exactly " . $pinMinimumLength . " characters.";
