@@ -80,6 +80,7 @@ public class GroupedWorkIndexer {
 	private TreeMap<String, ScopedIndexingStats> indexingStats     = new TreeMap<>();
 	TreeSet<String> overDriveRecordsIndexed = new TreeSet<>();
 	TreeSet<String> overDriveRecordsSkipped = new TreeSet<>();
+	private int  orphanedGroupedWorkPrimaryIdentifiersProcessed = 0;
 
 
 
@@ -967,6 +968,13 @@ public class GroupedWorkIndexer {
 		}
 	}
 
+	/**
+	 * Runs either the regular partial indexing or the regular full reindex
+	 *
+	 * @param siteMapsByScope
+	 * @param uniqueGroupedWorks
+	 * @return the number of works that were processed
+	 */
 	Long processGroupedWorks(HashMap<Scope, ArrayList<SiteMapEntry>> siteMapsByScope, HashSet<Long> uniqueGroupedWorks) {
 		long numWorksProcessed = 0L;
 		try {
@@ -1004,7 +1012,7 @@ public class GroupedWorkIndexer {
 				numWorksProcessed++;
 				if (numWorksProcessed % 500 == 0){
 					GroupedReindexMain.updateNumWorksProcessed(numWorksProcessed);
-					if (fullReindex && (numWorksProcessed % 10000 == 0)){
+					if (fullReindex && (numWorksProcessed % 25000 == 0)){
 						//Testing shows that regular commits do seem to improve performance.
 						//However, we can't do it too often or we get errors with too many searchers warming.
 						//This is happening now with the auto commit settings in solrconfig.xml
@@ -1033,14 +1041,21 @@ public class GroupedWorkIndexer {
 		if (logger.isInfoEnabled()) {
 			logger.info("Finished processing grouped works.  Processed a total of " + numWorksProcessed + " grouped works");
 		}
+		if (orphanedGroupedWorkPrimaryIdentifiersProcessed > 0){
+			String note = orphanedGroupedWorkPrimaryIdentifiersProcessed + " orphaned Grouped Work Primary Identifiers were processed. (indexing profile no longer exists for the ids)";
+			GroupedReindexMain.addNoteToReindexLog(note);
+			if (logger.isInfoEnabled()){
+				logger.info(note);
+			}
+		}
 		return numWorksProcessed;
 	}
 
 	/**
 	 * Index a specific indexing profile
 	 * 
-	 * @param indexingProfileToProcess
-	 * @return
+	 * @param indexingProfileToProcess The indexing profile that will be indexed
+	 * @return the number of works that were processed
 	 */
 	Long processGroupedWorks(String indexingProfileToProcess) {
 		long numWorksProcessed = 0L;
@@ -1103,10 +1118,11 @@ public class GroupedWorkIndexer {
 	}
 
 	/**
-	 *  Process a work during the full Reindexing process
-	 * @param id
-	 * @param permanentId
-	 * @param grouping_category
+	 *  Process a work during the regular full or partial Reindexing process or a single work
+	 *
+	 * @param id grouped work database id number
+	 * @param permanentId  the hash-number used as the grouped work permanentId
+	 * @param grouping_category the work's grouping category
 	 * @param siteMapsByScope
 	 * @param uniqueGroupedWorks
 	 * @throws SQLException
@@ -1495,33 +1511,17 @@ public class GroupedWorkIndexer {
 	private void updateGroupedWorkForPrimaryIdentifier(GroupedWorkSolr groupedWork, RecordIdentifier identifier, boolean loadedNovelistSeries)  {
 		groupedWork.addAlternateId(identifier.getIdentifier());
 		final String indexingSource = identifier.getSource().toLowerCase();
-		switch (indexingSource) {
-			case "overdrive":
-				overDriveProcessor.processRecord(groupedWork, identifier.getIdentifier(), loadedNovelistSeries);
-				break;
-			default:
-				if (indexingRecordProcessors.containsKey(indexingSource)) {
-					indexingRecordProcessors.get(indexingSource).processRecord(groupedWork, identifier, loadedNovelistSeries);
-				}else if (logger.isDebugEnabled()){
-					logger.debug("Could not find a record processor for " + identifier);
-				}
-				break;
+		if ("overdrive".equals(indexingSource)) {
+			overDriveProcessor.processRecord(groupedWork, identifier.getIdentifier(), loadedNovelistSeries);
+		} else if (indexingRecordProcessors.containsKey(indexingSource)) {
+				indexingRecordProcessors.get(indexingSource).processRecord(groupedWork, identifier, loadedNovelistSeries);
+			} else {
+			orphanedGroupedWorkPrimaryIdentifiersProcessed++;
+			if (logger.isDebugEnabled()) {
+				logger.debug("Could not find a record processor for " + identifier);
+			}
 		}
 	}
-
-	/*private void updateGroupedWorkForSecondaryIdentifier(GroupedWorkSolr groupedWork, String type, String identifier) {
-		type = type.toLowerCase();
-		if (type.equals("isbn")){
-			groupedWork.addIsbn(identifier);
-		}else if (type.equals("upc")){
-			groupedWork.addUpc(identifier);
-		}else if (type.equals("order")){
-			//Add as an alternate id
-			groupedWork.addAlternateId(identifier);
-		}else if (!type.equals("issn") && !type.equals("oclc")){
-			logger.warn("Unknown identifier type " + type);
-		}
-	}*/
 
 	/**
 	 * System translation maps are used for things that are not customizable (or that shouldn't be customized)

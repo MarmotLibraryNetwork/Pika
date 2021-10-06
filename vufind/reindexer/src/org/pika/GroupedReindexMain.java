@@ -40,7 +40,6 @@ public class GroupedReindexMain {
 	private static boolean userListsOnly = false;
 	private static String  individualWorkToProcess;
 	private static String profileToIndex;
-	private static String baseLogPath;
 //	private static String solrDir; // Only used for reloadSchema method that is commented out
 	
 	//Reporting information
@@ -105,7 +104,7 @@ public class GroupedReindexMain {
 
 		initializeReindex();
 		
-		addNoteToReindexLog("Initialized Reindex ");
+		addNoteToReindexLog("Initialized Reindex");
 		if (fullReindex){
 			addNoteToReindexLog("Performing full reindex");
 		}
@@ -190,7 +189,6 @@ public class GroupedReindexMain {
 
 		// Send completion information
 		endTime = new Date().getTime();
-		cleanupOldStatisticReports();
 		sendCompletionMessage(numWorksProcessed, numListsProcessed);
 		
 		addNoteToReindexLog("Finished Reindex for " + serverName);
@@ -199,10 +197,6 @@ public class GroupedReindexMain {
 			long elapsedTime = endTime - startTime;
 			logger.info("Elapsed Minutes " + (elapsedTime / 60000));
 		}
-	}
-
-	private static void cleanupOldStatisticReports() {
-
 	}
 
 //	private static void reloadDefaultSchemas() {
@@ -355,31 +349,11 @@ public class GroupedReindexMain {
 
 		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
 
-		baseLogPath = PikaConfigIni.getIniValue("Site", "baseLogPath");
 		String solrPort = PikaConfigIni.getIniValue("Reindex", "solrPort");
 		if (solrPort == null || solrPort.length() == 0) {
 			logger.error("You must provide the port where the solr index is loaded in the import configuration file");
 			System.exit(1);
 		}
-
-		// Delete the existing reindex.log file
-/*  Hadn't work for ages because previously baseLogPath wasn't populated.
-		It should work now, but disabling. pascal 7/20/21
-		File solrMarcLog = new File(baseLogPath + "/" + serverName + "/logs/grouped_reindex.log");
-		if (solrMarcLog.exists()){
-			if (!solrMarcLog.delete()){
-				logger.warn("Could not remove " + solrMarcLog);
-			}
-		}
-		for (int i = 1; i <= 10; i++){
-			solrMarcLog = new File(baseLogPath + "/" + serverName + "/logs/grouped_reindex.log." + i);
-			if (solrMarcLog.exists()){
-				if (!solrMarcLog.delete()){
-					logger.warn("Could not remove " + solrMarcLog);
-				}
-			}
-		}
-*/
 
 		// Only used for reloadSchema method that is commented out
 //		solrDir = PikaConfigIni.getIniValue("Index", "local");
