@@ -25,7 +25,7 @@ $(function(){
 	$( "#thawDate" ).datepicker({
 		format: "mm-dd-yyyy",
 		startDate: Date(),
-		orientation:"top"
+		orientation:"bottom"
 	});
 });
 {/literal}
