@@ -1789,6 +1789,7 @@ private $staffPtypes = null;
 		if ($newPin != $confirmNewPin){
 			return "New PINs do not match. Please try again.";
 		}
+		// pin min and max length check 
 		$pinLength = strlen($newPin);
 		if ($pinLength < $pinMinimumLength OR $pinLength > $pinMaximumLength) {
 			if ($pinMinimumLength == $pinMaximumLength){
