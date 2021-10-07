@@ -68,7 +68,6 @@ public class GroupedWorkIndexer {
 	private Long    indexStartTime;
 	private boolean fullReindex;
 	private long    lastReindexTime;
-	private boolean partialReindexRunning;
 	private boolean okToIndex = true;
 
 	private HashSet<String> worksWithInvalidLiteraryForms = new HashSet<>();
@@ -80,7 +79,7 @@ public class GroupedWorkIndexer {
 	private TreeMap<String, ScopedIndexingStats> indexingStats     = new TreeMap<>();
 	TreeSet<String> overDriveRecordsIndexed = new TreeSet<>();
 	TreeSet<String> overDriveRecordsSkipped = new TreeSet<>();
-	private int  orphanedGroupedWorkPrimaryIdentifiersProcessed = 0;
+	private int orphanedGroupedWorkPrimaryIdentifiersProcessed = 0;
 
 
 
@@ -166,14 +165,22 @@ public class GroupedWorkIndexer {
 			//TODO: Bypass when process user lists only
 
 			//Check to see if a partial reindex is running
+			boolean       partialReindexRunning;
 			final Boolean aBoolean = systemVariables.getBooleanValuedVariable("partial_reindex_running");
 			if (aBoolean == null) {
 				// Set Variable for the first time
 				logger.warn("System Variable 'partial_reindex_running' was not set");
-				updatePartialReindexRunning(true);
-				partialReindexRunning = true;
+				partialReindexRunning = false;
 			} else {
 				partialReindexRunning = aBoolean;
+			}
+			if (partialReindexRunning) {
+				//Oops, a reindex is already running.
+				String note = "A partial reindex is already running, check to make sure that reindexes don't overlap since that can cause poor performance";
+				logger.warn(note);
+				GroupedReindexMain.addNoteToReindexLog(note);
+			} else {
+				updatePartialReindexRunning(true);
 			}
 
 			//Check to make sure that at least a couple of minutes have elapsed since the last index
@@ -183,7 +190,7 @@ public class GroupedWorkIndexer {
 			long minIndexingInterval = 2 * 60;
 			if (elapsedTime < minIndexingInterval && !singleWorkIndex) {
 				try {
-					GroupedReindexMain.addNoteToReindexLog("Pausing between indexes, last index ran " + Math.ceil(elapsedTime / 60) + " minutes ago");
+					GroupedReindexMain.addNoteToReindexLog("Pausing between indexes, last index ran " + Math.ceil(elapsedTime / 60f) + " minutes ago");
 					GroupedReindexMain.addNoteToReindexLog("Pausing for " + (minIndexingInterval - elapsedTime) + " seconds");
 					Thread.sleep((minIndexingInterval - elapsedTime) * 1000);
 				} catch (InterruptedException e) {
@@ -193,14 +200,6 @@ public class GroupedWorkIndexer {
 				GroupedReindexMain.addNoteToReindexLog("Index last ran " + (elapsedTime) + " seconds ago");
 			}
 
-			if (partialReindexRunning){
-				//Oops, a reindex is already running.
-				//No longer really care about this since it doesn't happen and there are other ways of finding a stuck process
-				logger.warn("A partial reindex is already running, check to make sure that reindexes don't overlap since that can cause poor performance");
-				GroupedReindexMain.addNoteToReindexLog("A partial reindex is already running, check to make sure that reindexes don't overlap since that can cause poor performance");
-			}else{
-				updatePartialReindexRunning(true);
-			}
 			updateServer = new ConcurrentUpdateSolrClient.Builder(baseSolrUrl).withQueueSize(500).withThreadCount(8).build();
 			updateServer.setRequestWriter(new BinaryRequestWriter());
 			solrServer   = new HttpSolrClient.Builder(baseSolrUrl).build();
@@ -1022,7 +1021,7 @@ public class GroupedWorkIndexer {
 					}catch (Exception e){
 						logger.warn("Error committing changes", e);
 					}*/
-						GroupedReindexMain.addNoteToReindexLog(" " + numWorksProcessed + " grouped works processed.");
+						GroupedReindexMain.addNoteToReindexLog(numWorksProcessed + " grouped works processed.");
 					}
 				}
 				if (maxWorksToProcess != -1 && numWorksProcessed >= maxWorksToProcess){
@@ -1042,11 +1041,7 @@ public class GroupedWorkIndexer {
 			logger.info("Finished processing grouped works.  Processed a total of " + numWorksProcessed + " grouped works");
 		}
 		if (orphanedGroupedWorkPrimaryIdentifiersProcessed > 0){
-			String note = orphanedGroupedWorkPrimaryIdentifiersProcessed + " orphaned Grouped Work Primary Identifiers were processed. (indexing profile no longer exists for the ids)";
-			GroupedReindexMain.addNoteToReindexLog(note);
-			if (logger.isInfoEnabled()){
-				logger.info(note);
-			}
+			GroupedReindexMain.addNoteToReindexLog(orphanedGroupedWorkPrimaryIdentifiersProcessed + " orphaned Grouped Work Primary Identifiers were processed. (indexing profile no longer exists for the ids)");
 		}
 		return numWorksProcessed;
 	}
@@ -1099,7 +1094,7 @@ public class GroupedWorkIndexer {
 					}catch (Exception e){
 						logger.warn("Error committing changes", e);
 					}*/
-						GroupedReindexMain.addNoteToReindexLog(" " + numWorksProcessed + " grouped works processed.");
+						GroupedReindexMain.addNoteToReindexLog(numWorksProcessed + " grouped works processed.");
 					}
 				}
 				if (lastUpdated == null){
@@ -1158,20 +1153,20 @@ public class GroupedWorkIndexer {
 				}
 
 				//This does the bulk of the work building fields for the solr document
-				updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier, loadedNovelistSeries);
-
-				//If we didn't add any records to the work (because they are all suppressed) revert to the original
-				if (groupedWork.getNumRecords() == numRecords) {
-					//No change in the number of records, revert to the previous
-					if (logger.isDebugEnabled()) {
-						logger.debug("Record " + identifier + " did not contribute any records to the work, reverting to previous state " + groupedWork.getNumRecords());
+				if (updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier, loadedNovelistSeries)) {
+					//If we didn't add any records to the work (because they are all suppressed) revert to the original
+					if (groupedWork.getNumRecords() == numRecords) {
+						//No change in the number of records, revert to the previous
+						if (logger.isDebugEnabled()) {
+							logger.debug("Record " + identifier + " did not contribute any records to the work, reverting to previous state " + groupedWork.getNumRecords());
+						}
+						groupedWork = originalWork;
+					} else {
+						if (logger.isDebugEnabled()) {
+							logger.debug("Record " + identifier + " added to work " + permanentId);
+						}
+						numPrimaryIdentifiers++;
 					}
-					groupedWork = originalWork;
-				} else {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Record " + identifier + " added to work " + permanentId);
-					}
-					numPrimaryIdentifiers++;
 				}
 			}
 		}
@@ -1180,16 +1175,6 @@ public class GroupedWorkIndexer {
 			//Add a grouped work to any scopes that are relevant
 			groupedWork.updateIndexingStats(indexingStats);
 
-			//Update the grouped record based on data for each work
-			//getGroupedWorkIdentifiers.setLong(1, id);
-			/*ResultSet groupedWorkIdentifiers = getGroupedWorkIdentifiers.executeQuery();
-			//This just adds isbns, issns, upcs, and oclc numbers to the index
-			while (groupedWorkIdentifiers.next()) {
-				String type = groupedWorkIdentifiers.getString("type");
-				String identifier = groupedWorkIdentifiers.getString("identifier");
-				updateGroupedWorkForSecondaryIdentifier(groupedWork, type, identifier);
-			}
-			groupedWorkIdentifiers.close();*/
 
 			//Load local (Pika) enrichment for the work
 			loadLocalEnrichment(groupedWork);
@@ -1219,7 +1204,7 @@ public class GroupedWorkIndexer {
 				try {
 					updateServer.deleteById(permanentId);
 				}catch (Exception e){
-					logger.error("Error deleting suppressed record", e);
+					logger.error("Error deleting suppressed work " + permanentId, e);
 				}
 			}
 
@@ -1280,20 +1265,20 @@ public class GroupedWorkIndexer {
 				}
 
 				//This does the bulk of the work building fields for the solr document
-				updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier, loadedNovelistSeries);
-
-				//If we didn't add any records to the work (because they are all suppressed) revert to the original
-				if (groupedWork.getNumRecords() == numRecords) {
-					//No change in the number of records, revert to the previous
-					if (logger.isDebugEnabled()) {
-						logger.debug("Record " + identifier + " did not contribute any records to the work, reverting to previous state " + groupedWork.getNumRecords());
+				if (updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier, loadedNovelistSeries)) {
+					//If we didn't add any records to the work (because they are all suppressed) revert to the original
+					if (groupedWork.getNumRecords() == numRecords) {
+						//No change in the number of records, revert to the previous
+						if (logger.isDebugEnabled()) {
+							logger.debug("Record " + identifier + " did not contribute any records to the work, reverting to previous state " + groupedWork.getNumRecords());
+						}
+						groupedWork = originalWork;
+					} else {
+						if (logger.isDebugEnabled()) {
+							logger.debug("Record " + identifier + " added to work " + permanentId);
+						}
+						numPrimaryIdentifiers++;
 					}
-					groupedWork = originalWork;
-				} else {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Record " + identifier + " added to work " + permanentId);
-					}
-					numPrimaryIdentifiers++;
 				}
 			}
 		}
@@ -1301,17 +1286,6 @@ public class GroupedWorkIndexer {
 		if (numPrimaryIdentifiers > 0) {
 			//Add a grouped work to any scopes that are relevant
 			groupedWork.updateIndexingStats(indexingStats);
-
-			//Update the grouped record based on data for each work
-			//getGroupedWorkIdentifiers.setLong(1, id);
-			/*ResultSet groupedWorkIdentifiers = getGroupedWorkIdentifiers.executeQuery();
-			//This just adds isbns, issns, upcs, and oclc numbers to the index
-			while (groupedWorkIdentifiers.next()) {
-				String type = groupedWorkIdentifiers.getString("type");
-				String identifier = groupedWorkIdentifiers.getString("identifier");
-				updateGroupedWorkForSecondaryIdentifier(groupedWork, type, identifier);
-			}
-			groupedWorkIdentifiers.close();*/
 
 			//Load local (Pika) enrichment for the work
 			loadLocalEnrichment(groupedWork);
@@ -1341,7 +1315,7 @@ public class GroupedWorkIndexer {
 				try {
 					updateServer.deleteById(permanentId);
 				}catch (Exception e){
-					logger.error("Error deleting suppressed record", e);
+					logger.error("Error deleting suppressed work " + permanentId, e);
 				}
 			}
 
@@ -1508,19 +1482,27 @@ public class GroupedWorkIndexer {
 		return loadedNovelistSeries;
 	}
 
-	private void updateGroupedWorkForPrimaryIdentifier(GroupedWorkSolr groupedWork, RecordIdentifier identifier, boolean loadedNovelistSeries)  {
-		groupedWork.addAlternateId(identifier.getIdentifier());
+	/**
+	 * @param groupedWork Solr document object
+	 * @param identifier  record id for the primary identifier
+	 * @param loadedNovelistSeries whether the Novelist Series info was loaded
+	 * @return  whether a primary identifier had a processor and was processed
+	 */
+	private boolean updateGroupedWorkForPrimaryIdentifier(GroupedWorkSolr groupedWork, RecordIdentifier identifier, boolean loadedNovelistSeries) {
 		final String indexingSource = identifier.getSource().toLowerCase();
 		if ("overdrive".equals(indexingSource)) {
 			overDriveProcessor.processRecord(groupedWork, identifier.getIdentifier(), loadedNovelistSeries);
 		} else if (indexingRecordProcessors.containsKey(indexingSource)) {
-				indexingRecordProcessors.get(indexingSource).processRecord(groupedWork, identifier, loadedNovelistSeries);
-			} else {
+			indexingRecordProcessors.get(indexingSource).processRecord(groupedWork, identifier, loadedNovelistSeries);
+		} else {
 			orphanedGroupedWorkPrimaryIdentifiersProcessed++;
 			if (logger.isDebugEnabled()) {
-				logger.debug("Could not find a record processor for " + identifier);
+				logger.debug("Orphaned primary identifier, no processor for " + identifier);
 			}
+			return false;
 		}
+		groupedWork.addAlternateId(identifier.getIdentifier());
+		return true;
 	}
 
 	/**

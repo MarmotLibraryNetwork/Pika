@@ -141,6 +141,7 @@ public class GroupedReindexMain {
 					logger.info("Processing User Lists only");
 					numListsProcessed = groupedWorkIndexer.processPublicUserLists(userListsOnly);
 				} else {
+					// Regular Reindexing block
 					logger.info("Running Reindex");
 					numWorksProcessed = groupedWorkIndexer.processGroupedWorks(siteMapsByScope, uniqueGroupedWorks);
 					if (fullReindex){
@@ -322,7 +323,8 @@ public class GroupedReindexMain {
 		}
 		try {
 			Date date = new Date();
-			reindexNotes.append("<br>").append(dateFormat.format(date)).append(note);
+			reindexNotes.append("<br>").append(dateFormat.format(date)).append(" ").append(note);
+			// The space between the date and note is needed when the note begins with a number
 			addNoteToReindexLogStmt.setString(1, Util.trimTo(65535, reindexNotes.toString()));
 			addNoteToReindexLogStmt.setLong(2, new Date().getTime() / 1000);
 			addNoteToReindexLogStmt.setLong(3, reindexLogId);
