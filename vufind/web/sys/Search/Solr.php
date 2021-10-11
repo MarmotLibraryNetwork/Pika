@@ -585,8 +585,9 @@ class Solr implements IndexEngine {
 			$this->logger->error("More Like this response : " . $this->client->getRawResponse());
 		}
 		if ($this->client->isError()) {
-			$this->logger->error("MoreLikeThis2 error : " . $this->client->getErrorMessage());
-			PEAR_Singleton::raiseError($this->client->getErrorMessage());
+			$errorMessage = $this->client->getErrorMessage();
+			$this->logger->error('MoreLikeThis2 error : ' . $errorMessage);
+			PEAR_Singleton::raiseError($errorMessage);
 		}
 		return $result;
 	}
@@ -1009,26 +1010,25 @@ class Solr implements IndexEngine {
 	 * @param bool   $tokenize Should we tokenize $lookfor or pass it through?
 	 * @return  string              The query
 	 */
-	public function _buildQueryComponent($field, $lookfor, $tokenize = true)
-	{
+	public function _buildQueryComponent($field, $lookfor, $tokenize = true){
 		// Load the YAML search specifications:
 		$ss = $this->_getSearchSpecs($field);
 
-		if ($field == 'AllFields') {
+		if ($field == 'AllFields'){
 			$field = 'Keyword';
 		}
 
 		// If we received a field spec that wasn't defined in the YAML file,
 		// let's try simply passing it along to Solr.
-		if ($ss === false) {
+		if ($ss === false){
 			$allFields = $this->_loadValidFields();
-			if (in_array($field, $allFields)) {
+			if (in_array($field, $allFields)){
 				return $field . ':(' . $lookfor . ')';
 			}
 			$dynamicFields = $this->_loadDynamicFields();
 			global $solrScope;
-			foreach ($dynamicFields as $dynamicField) {
-				if ($dynamicField . $solrScope == $field) {
+			foreach ($dynamicFields as $dynamicField){
+				if ($dynamicField . $solrScope == $field){
 					return $field . ':(' . $lookfor . ')';
 				}
 			}
@@ -1044,7 +1044,7 @@ class Solr implements IndexEngine {
 		$baseQuery = $this->_applySearchSpecs($ss['QueryFields'], $mungedValues);
 
 		// Apply filter query if applicable:
-		if (isset($ss['FilterQuery'])) {
+		if (isset($ss['FilterQuery'])){
 			return "({$baseQuery}) AND ({$ss['FilterQuery']})";
 //			return  empty($baseQuery) ? "({$ss['FilterQuery']})" : "($baseQuery) AND ({$ss['FilterQuery']})";
 		}
@@ -1063,13 +1063,12 @@ class Solr implements IndexEngine {
 	 * @param string $query   The string to search for in the field
 	 * @return  string              The query
 	 */
-	private function _buildAdvancedQuery($handler, $query)
-	{
+	private function _buildAdvancedQuery($handler, $query){
 		// Special case -- if the user wants all records but the current handler
 		// has a filter query, apply the filter query:
-		if (trim($query) == '*:*') {
+		if (trim($query) == '*:*'){
 			$ss = $this->_getSearchSpecs($handler);
-			if (isset($ss['FilterQuery'])) {
+			if (isset($ss['FilterQuery'])){
 				return $ss['FilterQuery'];
 			}
 		}
@@ -1080,18 +1079,18 @@ class Solr implements IndexEngine {
 		// If the query already includes field specifications, we can't easily
 		// apply it to other fields through our defined handlers, so we'll leave
 		// it as-is:
-		if (strstr($query, ':')) {
+		if (strstr($query, ':')){
 			return $query;
 		}
 
 		// Convert empty queries to return all values in a field:
-		if (empty($query)) {
+		if (empty($query)){
 			$query = '[* TO *]';
 		}
 
 		// If the query ends in a question mark, the user may not really intend to
 		// use the question mark as a wildcard -- let's account for that possibility
-		if (substr($query, -1) == '?') {
+		if (substr($query, -1) == '?'){
 			$query = "({$query}) OR (" . substr($query, 0, strlen($query) - 1) . ")";
 		}
 
@@ -1436,16 +1435,17 @@ class Solr implements IndexEngine {
 		}
 		$timer->logTime('build query');
 
-		// Limit Fields
-		if ($fields) {
-			$options['fl'] = $fields;
-		} else {
-			// This should be an explicit list
-			$options['fl'] = '*,score';
-		}
-		if ($this->debug) {
-			$options['fl'] .= ',explain';
-		}
+		// Moved below to include boosting factors
+//		// Limit Fields
+//		if ($fields) {
+//			$options['fl'] = $fields;
+//		} else {
+//			// This should be an explicit list
+//			$options['fl'] = '*,score';
+//		}
+//		if ($this->debug) {
+//			$options['fl'] .= ',explain';
+//		}
 
 		if (is_object($this->searchSource)) {
 			$defaultFilters = preg_split('/\r\n/', $this->searchSource->defaultFilter);
@@ -1527,6 +1527,19 @@ class Solr implements IndexEngine {
 			$filters = $filter;
 		}
 
+		// Limit Fields
+		if ($fields) {
+			$options['fl'] = $fields;
+		} else {
+			// This should be an explicit list
+			$options['fl'] = '*,score';
+		}
+		if ($this->debug) {
+			if (!empty($boostFactors)){
+				$options['fl'] .= ','.  implode(',', $boostFactors);
+			}
+			$options['fl'] .= ',explain';
+		}
 
 		// Build Facet Options
 		if (!empty($facet['field']) && $configArray['Index']['enableFacets']) {
@@ -1991,7 +2004,7 @@ class Solr implements IndexEngine {
 		}
 
 		// Send Request
-		$timer->logTime("Prepare to send request to solr");
+		$timer->logTime('Prepare to send request to solr');
 		$memoryWatcher->logMemory('Prepare to send request to solr');
 		$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
 		switch ($method){
@@ -2099,7 +2112,7 @@ class Solr implements IndexEngine {
 
 		global $timer;
 		global $memoryWatcher;
-		$memoryWatcher->logMemory('received result from solr ');
+		$memoryWatcher->logMemory('received result from solr');
 		$timer->logTime('received result from solr');
 
 		// Inject highlighting details into results if necessary:

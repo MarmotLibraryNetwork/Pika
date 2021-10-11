@@ -1468,7 +1468,7 @@ abstract class SearchObject_Base {
 					//    User is trying to view a saved search from
 					//    another session (deliberate or expired) or
 					//    associated with another user.
-					return new PEAR_Error("Attempt to access invalid search ID");
+					return new PEAR_Error('Attempt to access invalid search ID');
 				}
 			}
 		}
@@ -1916,15 +1916,14 @@ abstract class SearchObject_Base {
 	 * @param   string      $field          Field name to display.
 	 * @return  string                      Human-readable version of field name.
 	 */
-//	protected function getHumanReadableFieldName($field)
-//	{
-//		if (isset($this->basicTypes[$field])) {
+//	protected function getHumanReadableFieldName($field){
+//		if (isset($this->basicTypes[$field])){
 //			return translate($this->basicTypes[$field]);
-//		} else if (isset($this->advancedSearchTypes[$field])) {
+//		}elseif (isset($this->advancedSearchTypes[$field])){
 //			return translate($this->advancedSearchTypes[$field]);
-//		} else if (isset($this->browseTypes[$field])) {
+//		}elseif (isset($this->browseTypes[$field])){
 //			return translate($this->browseTypes[$field]);
-//		} else {
+//		}else{
 //			return $field;
 //		}
 //	}
