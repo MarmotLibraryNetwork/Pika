@@ -153,8 +153,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		$this->spellcheck       = $configArray['Spelling']['enabled'];
 		$this->spellingLimit    = $configArray['Spelling']['limit'];
 		$this->spellSimple      = $configArray['Spelling']['simple'];
-		$this->spellSkipNumeric = isset($configArray['Spelling']['skip_numeric']) ?
-			$configArray['Spelling']['skip_numeric'] : true;
+		$this->spellSkipNumeric = $configArray['Spelling']['skip_numeric'] ?? true;
 
 		$this->indexEngine->debug          = $this->debug;
 		$this->indexEngine->debugSolrQuery = $this->debugSolrQuery;
@@ -332,10 +331,10 @@ class SearchObject_Solr extends SearchObject_Base {
 			// Tags, just treat them as normal searches for now.
 			// The search processor knows what to do with them.
 			if (!empty($_REQUEST['tag'])) {
-				$this->searchTerms[] = array(
+				$this->searchTerms[] = [
 					'index' => 'tag',
 					'lookfor' => strip_tags($_REQUEST['tag'])
-				);
+				];
 			}
 		} else {
 			$this->initAdvancedSearch();
@@ -720,12 +719,11 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @access  public
 	 * @return  array   Array of HTML chunks for individual records.
 	 */
-	public function getBrowseRecordHTML()
-	{
+	public function getBrowseRecordHTML(){
 		global $interface;
-		$html = array();
-		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-			$current = & $this->indexResult['response']['docs'][$x];
+		$html = [];
+		for ($x = 0;$x < count($this->indexResult['response']['docs']);$x++){
+			$current = &$this->indexResult['response']['docs'][$x];
 			$interface->assign('recordIndex', $x + 1);
 			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 			$record = RecordDriverFactory::initRecordDriver($current);
@@ -737,7 +735,7 @@ class SearchObject_Solr extends SearchObject_Base {
 				}
 
 			}else{
-				$html[] = "Unable to find record";
+				$html[] = 'Unable to find record';
 			}
 		}
 		return $html;

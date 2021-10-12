@@ -170,7 +170,7 @@ class Search_Results extends Union_Results {
 			require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
 			$searchSuggestions = new SearchSuggestions();
 			$commonSearches    = $searchSuggestions->getSpellingSearches($searchObject->displayQuery(), $searchObject->getSearchIndex());
-			$suggestions       = array();
+			$suggestions       = [];
 			foreach ($commonSearches as $commonSearch){
 				$suggestions[$commonSearch['phrase']] = '/Search/Results?lookfor=' . urlencode($commonSearch['phrase']);
 			}
