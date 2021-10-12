@@ -350,7 +350,7 @@ class Search_Results extends Union_Results {
 		if ($configArray['Statistics']['enabled'] && isset( $_GET['lookfor']) && !is_array($_GET['lookfor'])) {
 			require_once ROOT_DIR . '/sys/Search/SearchStatNew.php';
 			$searchStat = new SearchStatNew();
-			$searchStat->saveSearch( strip_tags($_GET['lookfor']),  strip_tags($_GET['type'] ?? (isset($_GET['basicType']) ? (is_array($_GET['basicType']) ? reset($_GET['basicType']) : $_GET['basicType']) : 'Keyword')), $searchObject->getResultTotal());
+			$searchStat->saveSearch(strip_tags($_GET['lookfor']), $searchObject->getResultTotal());
 		}
 
 		$interface->assign('sectionLabel', 'Library Catalog');

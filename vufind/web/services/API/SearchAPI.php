@@ -519,18 +519,18 @@ class SearchAPI extends AJAXHandler {
 
 			// Process Paging
 			$link                  = $searchObject->renderLinkPageTemplate();
-			$options               = array(
+			$options               = [
 				'totalItems' => $summary['resultTotal'],
 				'fileName'   => $link,
 				'perPage'    => $summary['perPage'],
-			);
+			];
 			$pager                 = new VuFindPager($options);
-			$jsonResults['paging'] = array(
+			$jsonResults['paging'] = [
 				'currentPage'  => $pager->pager->_currentPage,
 				'totalPages'   => $pager->pager->_totalPages,
 				'totalItems'   => $pager->pager->_totalItems,
 				'itemsPerPage' => $pager->pager->_perPage,
-			);
+			];
 			$interface->assign('pageLinks', $pager->getLinks());
 			$timer->logTime('finish hits processing');
 		}
@@ -549,15 +549,14 @@ class SearchAPI extends AJAXHandler {
 		$jsonResults['showSaved']   = true;
 		$jsonResults['savedSearch'] = $searchObject->isSavedSearch();
 		$jsonResults['searchId']    = $searchObject->getSearchId();
-		$currentPage                = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+		$currentPage                = $_REQUEST['page'] ?? 1;
 		$jsonResults['page']        = $currentPage;
 
 
 		if ($configArray['Statistics']['enabled'] && isset($_GET['lookfor']) && !is_array($_GET['lookfor'])){
 			require_once ROOT_DIR . '/sys/Search/SearchStatNew.php';
 			$searchStat = new SearchStatNew();
-			$type       = isset($_GET['type']) ? strip_tags($_GET['type']) : 'Keyword';
-			$searchStat->saveSearch(strip_tags($_GET['lookfor']), $type, $searchObject->getResultTotal());
+			$searchStat->saveSearch(strip_tags($_GET['lookfor']), $searchObject->getResultTotal());
 		}
 
 		// Save the ID of this search to the session so we can return to it easily:

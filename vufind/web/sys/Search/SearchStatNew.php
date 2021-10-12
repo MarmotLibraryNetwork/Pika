@@ -85,7 +85,7 @@ class SearchStatNew extends DB_DataObject {
 		return $results;
 	}
 
-	function saveSearch($phrase, $type = false, $numResults){
+	function saveSearch($phrase, $numResults){
 		//Don't bother to count things that didn't return results.
 		if (empty($numResults)){
 			return;
