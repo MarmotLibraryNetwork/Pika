@@ -15,7 +15,7 @@
 		</div>
 	{/if}
 
-	<p class="alert alert-info">{translate text='nohit_prefix'} - <b>{if $lookfor}{$lookfor|escape:"html"}{else}&lt;empty&gt;{/if}</b> - {translate text='nohit_suffix'}</p>
+	<p class="alert alert-info">{translate text='nohit_prefix'} <b>{if $lookfor}{$lookfor|escape:"html"}{else}&lt;empty&gt;{/if}</b> {translate text='nohit_suffix'}</p>
 
 {* Return to Advanced Search Link *}
 {if $searchType == 'advanced'}

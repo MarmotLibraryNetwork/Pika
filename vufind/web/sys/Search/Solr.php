@@ -1202,7 +1202,8 @@ class Solr implements IndexEngine {
 
 		// Put our advanced search together
 		if (count($groups) > 0) {
-			$query = '(' . implode(') ' . $search[0]['join'] . ' (', $groups) . ')';
+			$searchPhrasesConnector = ') ' . $search[0]['join'] . ' (';
+			$query     = '(' . implode($searchPhrasesConnector, $groups) . ')';
 		}
 		// and concatenate exclusion after that
 		if (count($excludes) > 0) {
@@ -2299,10 +2300,9 @@ class Solr implements IndexEngine {
 		return $input;
 	}
 
-	public function isAdvanced($query)
-	{
+	public function isAdvanced($query){
 		// Check for various conditions that flag an advanced Lucene query:
-		if ($query == '*:*') {
+		if ($query == '*:*'){
 			return true;
 		}
 
@@ -2312,46 +2312,45 @@ class Solr implements IndexEngine {
 		// removal doesn't interfere with the field specifier check below.
 		$query = preg_replace('/"[^"]*"/', 'quoted', $query);
 
-		// Check for field specifiers:
-		if (preg_match("/([^\(\s\:]+)\s?\:[^\s]/", $query, $matches)) {
-			//Make sure the field is actually one of our fields
-			$fieldName = $matches[1];
-			$fields    = $this->_loadValidFields();
-			if (in_array($fieldName, $fields)) {
-				return true;
-			}
-			/*$searchSpecs = $this->_getSearchSpecs();
-			if (array_key_exists($fieldName, $searchSpecs)){
-				return true;
-			}*/
-		}
-
-		// Check for parentheses and range operators:
-		if (strstr($query, '(') && strstr($query, ')')) {
-			return true;
-		}
-		$rangeReg = '/(\[.+\s+TO\s+.+\])|(\{.+\s+TO\s+.+\})/';
-		if (preg_match($rangeReg, $query)) {
-			return true;
-		}
-
-		// Build a regular expression to detect booleans -- AND/OR/NOT surrounded
-		// by whitespace, or NOT leading the query and followed by whitespace.
-		$boolReg = '/((\s+(AND|OR|NOT)\s+)|^NOT\s+)/';
-		if (!$this->caseSensitiveBooleans) {
-			$boolReg .= "i";
-		}
-		if (preg_match($boolReg, $query)) {
+		// Check for parentheses:
+		if (strpos($query, '(') !== false && strpos($query, ')') !== false){
 			return true;
 		}
 
 		// Check for wildcards and fuzzy matches:
-		if (strstr($query, '*') || strstr($query, '?') || strstr($query, '~')) {
+		if (strpos($query, '*') !== false || strpos($query, '?') !== false || strpos($query, '~') !== false){
+			return true;
+		}
+
+
+		// Build a regular expression to detect booleans -- AND/OR/NOT surrounded
+		// by whitespace, or NOT leading the query and followed by whitespace.
+		$boolReg = '/((\s+(AND|OR|NOT)\s+)|^NOT\s+)/';
+		if (!$this->caseSensitiveBooleans){
+			$boolReg .= 'i';
+		}
+		if (preg_match($boolReg, $query)){
+			return true;
+		}
+
+		// Check for field specifiers:
+		if (preg_match("/([^\(\s\:]+)\s?\:[^\s]/", $query, $matches)){
+			//Make sure the field is actually one of our fields
+			$fieldName = $matches[1];
+			$fields    = $this->_loadValidFields();
+			if (in_array($fieldName, $fields)){
+				return true;
+			}
+		}
+
+		// Check for range operators:
+		$rangeReg = '/(\[.+\s+TO\s+.+\])|(\{.+\s+TO\s+.+\})/';
+		if (preg_match($rangeReg, $query)){
 			return true;
 		}
 
 		// Check for boosts:
-		if (preg_match('/[\^][0-9]+/', $query)) {
+		if (preg_match('/[\^][0-9]+/', $query)){
 			return true;
 		}
 
@@ -2454,9 +2453,9 @@ class Solr implements IndexEngine {
 
 			// Tidy the data into a more usable format:
 			if (isset($data['terms'])){
-				$data['terms'] = array(
+				$data['terms'] = [
 					$data['terms'][0] => $this->_processTerms($data['terms'][1])
-				);
+				];
 			}
 			return $data;
 		}

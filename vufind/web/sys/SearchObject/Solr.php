@@ -88,7 +88,7 @@ class SearchObject_Solr extends SearchObject_Base {
 
 		// Get default facet settings
 		$this->allFacetSettings = getExtraConfigArray('facets');
-		$this->facetConfig      = array();
+		$this->facetConfig      = [];
 		$facetLimit             = $this->getFacetSetting('Results_Settings', 'facet_limit');
 		if (is_numeric($facetLimit)){
 			$this->facetLimit = $facetLimit;
@@ -332,7 +332,7 @@ class SearchObject_Solr extends SearchObject_Base {
 			// The search processor knows what to do with them.
 			if (!empty($_REQUEST['tag'])) {
 				$this->searchTerms[] = [
-					'index' => 'tag',
+					'index'   => 'tag',
 					'lookfor' => strip_tags($_REQUEST['tag'])
 				];
 			}
@@ -1179,19 +1179,18 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @return  boolean   A revised searchTerms array to get matching Solr records
 	 *                  (empty if no tag matches found).
 	 */
-	private function processTagSearch($lookfor)
-	{
+	private function processTagSearch($lookfor){
 		// Include the app database objects
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 
 		// Find our tag in the database
-		$tag = new UserTag();
+		$tag      = new UserTag();
 		$tag->tag = $lookfor;
 		$tag->selectAdd(null);
 		$tag->selectAdd('DISTINCT(groupedWorkPermanentId) as groupedWorkPermanentId');
 		if ($tag->find()){
-			$groupedWorkIds = array();
+			$groupedWorkIds = [];
 			while ($tag->fetch()){
 				// Grab the list of records tagged with this tag
 				$groupedWorkIds[] = $tag->groupedWorkPermanentId;
