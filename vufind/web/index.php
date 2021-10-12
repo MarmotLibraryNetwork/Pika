@@ -56,6 +56,7 @@ $timer->logTime('Checked availability mode');
 setUpTranslator();
 
 /** @var Location $locationSingleton */
+/** @var Library $library */
 global $locationSingleton;
 global $library;
 

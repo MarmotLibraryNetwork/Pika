@@ -121,7 +121,8 @@ class Search_Results extends Union_Results {
 		$interface->assign('lookfor',             $displayQuery);
 		$interface->assign('searchType',          $searchObject->getSearchType());
 		// Will assign null for an advanced search
-		$interface->assign('searchIndex',         $searchObject->getSearchIndex());
+		$searchIndex = $searchObject->getSearchIndex();
+		$interface->assign('searchIndex', $searchIndex);
 
 		// We'll need recommendations no matter how many results we found:
 		$interface->assign('topRecommendations',
@@ -138,7 +139,7 @@ class Search_Results extends Union_Results {
 		$interface->assign('showSaved',   true);
 		$interface->assign('savedSearch', $searchObject->isSavedSearch());
 		$interface->assign('searchId',    $searchObject->getSearchId());
-		$currentPage = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+		$currentPage = $_REQUEST['page'] ?? 1;
 		$interface->assign('page', $currentPage);
 
 		//Enable and disable functionality based on library settings
@@ -169,7 +170,7 @@ class Search_Results extends Union_Results {
 		if ($searchObject->getResultTotal() < 1) {
 			require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
 			$searchSuggestions = new SearchSuggestions();
-			$commonSearches    = $searchSuggestions->getSpellingSearches($searchObject->displayQuery(), $searchObject->getSearchIndex());
+			$commonSearches    = $searchSuggestions->getSpellingSearches($displayQuery);
 			$suggestions       = [];
 			foreach ($commonSearches as $commonSearch){
 				$suggestions[$commonSearch['phrase']] = '/Search/Results?lookfor=' . urlencode($commonSearch['phrase']);
@@ -182,16 +183,16 @@ class Search_Results extends Union_Results {
 			$disallowReplacements = isset($_REQUEST['disallowReplacements']) || isset($_REQUEST['replacementTerm']);
 			if (!$disallowReplacements && (!isset($facetSet) || count($facetSet) == 0)){
 				//We can try to find a suggestion, but only if we are not doing a phrase search.
-				if (strpos($searchObject->displayQuery(), '"') === false){
+				if (strpos($displayQuery, '"') === false){
 					require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
 					$searchSuggestions = new SearchSuggestions();
-					$commonSearches    = $searchSuggestions->getCommonSearchesMySql($searchObject->displayQuery(), $searchObject->getSearchIndex());
+					$commonSearches    = $searchSuggestions->getCommonSearchesMySql($displayQuery, $searchIndex);
 
 					//assign here before we start popping stuff off
 					$interface->assign('searchSuggestions', $commonSearches);
 
 					//If the first search in the list is used 10 times more than the next, just show results for that
-					$allSuggestions = $searchSuggestions->getAllSuggestions($searchObject->displayQuery(), $searchObject->getSearchIndex());
+					$allSuggestions = $searchSuggestions->getAllSuggestions($displayQuery, $searchIndex);
 					$numSuggestions = count($allSuggestions);
 					if ($numSuggestions == 1){
 						$firstSearch      = array_pop($allSuggestions);
@@ -260,7 +261,7 @@ class Search_Results extends Union_Results {
 
 		}
 		// Exactly One Result for an id search //
-		elseif ($searchObject->getResultTotal() == 1 && (strpos($searchObject->displayQuery(), 'id:') === 0 || $searchObject->getSearchType() == 'id')){
+		elseif ($searchObject->getResultTotal() == 1 && (strpos($displayQuery, 'id:') === 0 || $searchObject->getSearchType() == 'id')){
 			//Redirect to the home page for the record
 			$recordSet = $searchObject->getResultRecordSet();
 			$record = reset($recordSet);
@@ -339,11 +340,8 @@ class Search_Results extends Union_Results {
 		$memoryWatcher->logMemory('load result records');
 
 		//Setup explore more
-		$showExploreMoreBar = true;
-		if (isset($_REQUEST['page']) && $_REQUEST['page'] > 1){
-			$showExploreMoreBar = false;
-		}
-		$exploreMore = new ExploreMore();
+		$showExploreMoreBar = $currentPage > 1 ? false : true;
+		$exploreMore        = new ExploreMore();
 		$exploreMoreSearchTerm = $exploreMore->getExploreMoreQuery();
 		$interface->assign('exploreMoreSection', 'catalog');
 		$interface->assign('showExploreMoreBar', $showExploreMoreBar);

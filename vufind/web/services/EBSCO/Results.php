@@ -18,7 +18,7 @@
  */
 
 /**
- * Description goes here
+ * EDS (EBSCO Discovery Service) Search Results Processing
  *
  * @category Pika
  * @author Mark Noble <pika@marmot.org>
@@ -37,16 +37,15 @@ class EBSCO_Results extends Action{
 
 		$interface->setPageTitle('EBSCO Search Results');
 
-		$sort = isset($_REQUEST['sort']) ? $_REQUEST['sort'] : null;
-		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter'] : array();
-		$searchObject->getSearchResults($_REQUEST['lookfor'], $sort, $filters);
-
+		$sort         = $_REQUEST['sort'] ?? null;
+		$filters      = $_REQUEST['filter'] ?? [];
 		$displayQuery = $_REQUEST['lookfor'];
-		$pageTitle = $displayQuery;
+		$pageTitle    = $displayQuery;
 		if (strlen($pageTitle) > 20){
 			$pageTitle = substr($pageTitle, 0, 20) . '...';
 		}
 
+		$searchObject->getSearchResults($_REQUEST['lookfor'], $sort, $filters);
 		$interface->assign('qtime',               round($searchObject->getQuerySpeed(), 2));
 		$interface->assign('lookfor',             $displayQuery);
 
@@ -69,9 +68,9 @@ class EBSCO_Results extends Action{
 
 		if ($summary['resultTotal'] > 0){
 			$link    = $searchObject->renderLinkPageTemplate();
-			$options = array('totalItems' => $summary['resultTotal'],
-					'fileName' => $link,
-					'perPage' => $summary['perPage']);
+			$options = ['totalItems' => $summary['resultTotal'],
+			            'fileName'   => $link,
+			            'perPage'    => $summary['perPage']];
 			$pager   = new VuFindPager($options);
 			$interface->assign('pageLinks', $pager->getLinks());
 		}
