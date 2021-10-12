@@ -168,7 +168,7 @@ class Search_Results extends Union_Results {
 
 		// No Results Actions //
 		if ($searchObject->getResultTotal() < 1) {
-			require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
+			require_once ROOT_DIR . '/sys/Search/SearchSuggestions.php';
 			$searchSuggestions = new SearchSuggestions();
 			$commonSearches    = $searchSuggestions->getSpellingSearches($displayQuery);
 			$suggestions       = [];
@@ -184,7 +184,6 @@ class Search_Results extends Union_Results {
 			if (!$disallowReplacements && (!isset($facetSet) || count($facetSet) == 0)){
 				//We can try to find a suggestion, but only if we are not doing a phrase search.
 				if (strpos($displayQuery, '"') === false){
-					require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
 					$searchSuggestions = new SearchSuggestions();
 					$commonSearches    = $searchSuggestions->getCommonSearchesMySql($displayQuery, $searchIndex);
 

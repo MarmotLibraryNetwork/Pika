@@ -104,19 +104,19 @@ class AJAX extends AJAXHandler {
 	}
 
 	function GetAutoSuggestList(){
-		require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
+		require_once ROOT_DIR . '/sys/Search/SearchSuggestions.php';
 		global $timer;
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
-		$searchTerm        = isset($_REQUEST['searchTerm']) ? $_REQUEST['searchTerm'] : $_REQUEST['q'];
-		$searchType        = isset($_REQUEST['type']) ? $_REQUEST['type'] : '';
+		$searchTerm        = $_REQUEST['searchTerm'] ?? $_REQUEST['q'];
+		$searchType        = $_REQUEST['type'] ?? '';
 		$cacheKey          = 'auto_suggest_list_' . urlencode($searchType) . '_' . urlencode($searchTerm);
 		$searchSuggestions = $memCache->get($cacheKey);
 		if ($searchSuggestions == false || isset($_REQUEST['reload'])){
 			$suggestions       = new SearchSuggestions();
 			$commonSearches    = $suggestions->getAllSuggestions($searchTerm, $searchType);
-			$commonSearchTerms = array();
+			$commonSearchTerms = [];
 			foreach ($commonSearches as $searchTerm){
 				if (is_array($searchTerm)){
 					$commonSearchTerms[] = $searchTerm['phrase'];
