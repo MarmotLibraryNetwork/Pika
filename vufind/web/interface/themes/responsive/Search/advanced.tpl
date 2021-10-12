@@ -120,7 +120,7 @@
 					{* addGroup() returns the variable nextGroupNumber so the return false is necessary *}
 					<input type="submit" name="submit" value="{translate text="Find"}" class="btn btn-primary pull-right">
 					<br><br>
-					{if $facetList || $illustratedLimit || $showPublicationDate}
+					{if $facetList || $showPublicationDate}
 						<div class="accordion">
 							<div {*id="facet-accordion"*} class="panel panel-default">
 									<div class="panel-heading">
@@ -222,22 +222,6 @@
 														</td>
 													</tr>
 												{/foreach}
-											{/if}
-											{if $illustratedLimit}
-												<tr>
-													<th align="right">{translate text="Illustrated"}:</th>
-													<td>
-														{foreach from=$illustratedLimit item="current"}
-														<div class="radio">
-														<label>
-															<input type="radio" name="illustration"
-															       value="{$current.value|escape}"{if $current.selected} checked="checked"{/if}>
-															{translate text=$current.text}
-															</label>
-														</div>
-														{/foreach}
-													</td>
-												</tr>
 											{/if}
 
 										</table>

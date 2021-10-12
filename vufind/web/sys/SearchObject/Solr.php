@@ -178,24 +178,6 @@ class SearchObject_Solr extends SearchObject_Base {
 	}
 
 	/**
-	 * Add filters to the object based on values found in the $_REQUEST superglobal.
-	 *
-	 * @access  protected
-	 */
-	protected function initFilters(){
-		// Use the default behavior of the parent class, but add support for the
-		// special illustrations filter.
-		parent::initFilters();
-		if (isset($_REQUEST['illustration'])){
-			if ($_REQUEST['illustration'] == 1){
-				$this->addFilter('illustrated:Illustrated');
-			}elseif ($_REQUEST['illustration'] == 0){
-				$this->addFilter('illustrated:"Not Illustrated"');
-			}
-		}
-	}
-
-	/**
 	 * TODO: move to solr
 	 * Take a filter string and add it into the protected
 	 *   array checking for duplicates.
