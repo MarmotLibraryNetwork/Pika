@@ -68,8 +68,8 @@ $interface->loadDisplayOptions();
 $timer->logTime('Loaded display options within interface');
 
 // Determine Module and Action
-$module = (isset($_GET['module'])) ? $_GET['module'] : null;
-$action = (isset($_GET['action'])) ? $_GET['action'] : null;
+$module = $_GET['module'] ?? null;
+$action = $_GET['action'] ?? null;
 
 //Set these initially in case user login fails, we will need the module to be set.
 $interface->assign('module', $module);
@@ -146,9 +146,10 @@ if (!UserAccount::isLoggedIn() && ((isset($_POST['username']) && isset($_POST['p
 
 	elseif (isset($_REQUEST['followup']) || isset($_REQUEST['followupModule'])){
 		// Follow up when only the module or only the action is set
+		global $configArray;
 
-		$module = isset($_REQUEST['followupModule']) ? $_REQUEST['followupModule'] : $configArray['Site']['defaultModule'];
-		$action = isset($_REQUEST['followup']) ? $_REQUEST['followup'] : (isset($_REQUEST['followupAction']) ? $_REQUEST['followupAction'] : 'Home');
+		$module = $_REQUEST['followupModule'] ?? $configArray['Site']['defaultModule'];
+		$action = $_REQUEST['followup'] ?? $_REQUEST['followupAction'] ?? 'Home';
 
 		if (!empty($_REQUEST['recordId'])){
 			$_REQUEST['id'] = $_REQUEST['recordId'];
@@ -268,16 +269,16 @@ $memoryWatcher->writeMemory();
 
 
 
-function processFollowup(){
-	global $configArray;
-
-	switch($_REQUEST['followup']) {
-		case 'SaveSearch':
-			header("Location: /".$_REQUEST['followupModule']."/".$_REQUEST['followupAction']."?".$_REQUEST['recordId']);
-			die();
-			break;
-	}
-}
+//function processFollowup(){
+//	global $configArray;
+//
+//	switch($_REQUEST['followup']) {
+//		case 'SaveSearch':
+//			header("Location: /".$_REQUEST['followupModule']."/".$_REQUEST['followupAction']."?".$_REQUEST['recordId']);
+//			die();
+//			break;
+//	}
+//}
 
 /**
  * Process Solr-shard-related parameters and settings.
@@ -638,35 +639,39 @@ function killSpammySearchPhrases(){
 	if (!empty($_REQUEST['lookfor'])) {
 		// Advanced Search with only the default search group (multiple search groups are named lookfor0, lookfor1, ... )
 		// TODO: Actually the lookfor is inconsistent; reloading from results in an array : lookfor[]
-		if (is_array($_REQUEST['lookfor'])) {
-			foreach ($_REQUEST['lookfor'] as $i => $searchTerm) {
-				if (preg_match('/http:|mailto:|https:/i', $searchTerm)) {
-					PEAR_Singleton::raiseError('Sorry it looks like you are searching for a website, please rephrase your query.');
-					$_REQUEST['lookfor'][$i] = '';
-					$_GET['lookfor'][$i]     = '';
-				}
-				if (strlen($searchTerm) >= 256) {
-					PEAR_Singleton::raiseError('Sorry your query is too long, please rephrase your query.');
-					$_REQUEST['lookfor'][$i] = '';
-					$_GET['lookfor'][$i]     = '';
-				}
-			}
-
-		}
+//		if (is_array($_REQUEST['lookfor'])) {
+//			foreach ($_REQUEST['lookfor'] as $i => $searchTerm) {
+//				if (preg_match('/http:|mailto:|https:/i', $searchTerm)) {
+//					PEAR_Singleton::raiseError('Sorry it looks like you are searching for a website, please rephrase your query.');
+//					$_REQUEST['lookfor'][$i] = '';
+//					$_GET['lookfor'][$i]     = '';
+//				}
+//				if (strlen($searchTerm) >= 256) {
+//					PEAR_Singleton::raiseError('Sorry your query is too long, please rephrase your query.');
+//					$_REQUEST['lookfor'][$i] = '';
+//					$_GET['lookfor'][$i]     = '';
+//				}
+//			}
+//
+//		}
+//		else {
 		// Basic Search
-		else {
 			$searchTerm = $_REQUEST['lookfor'];
 			if (preg_match('/http:|mailto:|https:/i', $searchTerm)) {
+				$_REQUEST['lookfor'] = '';
+				$_GET['lookfor']     = '';
+				setUpSearchDisplayOptions($_GET['module'], $_GET['action']);
 				PEAR_Singleton::raiseError('Sorry it looks like you are searching for a website, please rephrase your query.');
 				$_REQUEST['lookfor'] = '';
 				$_GET['lookfor']     = '';
 			}
 			if (strlen($searchTerm) >= 256) {
-				PEAR_Singleton::raiseError('Sorry your query is too long, please rephrase your query.');
 				$_REQUEST['lookfor'] = '';
 				$_GET['lookfor']     = '';
+				setUpSearchDisplayOptions($_GET['module'], $_GET['action']);
+				PEAR_Singleton::raiseError('Sorry your query is too long, please rephrase your query.');
 			}
-		}
+//		}
 	}
 }
 
@@ -684,9 +689,7 @@ function setUpSearchDisplayOptions($module, $action){
 
 
 	if (isset($_REQUEST['basicType'])){
-		$interface->assign('basicSearchIndex', $_REQUEST['basicType']);
-	}else{
-		$interface->assign('basicSearchIndex', 'Keyword');
+		$interface->assign('basicSearchIndex', $_REQUEST['basicType'] ?? 'Keyword');
 	}
 
 	if (isset($_REQUEST['genealogyType'])){
@@ -737,13 +740,17 @@ function setUpSearchDisplayOptions($module, $action){
 	global $configArray;
 	if (isset($configArray['Genealogy']) && $library->enableGenealogy){
 		$genealogySearchObject = SearchObjectFactory::initSearchObject('Genealogy');
-		$interface->assign('genealogySearchTypes', is_object($genealogySearchObject) ? $genealogySearchObject->getBasicTypes() : array());
+		if ($genealogySearchObject != false){
+			$interface->assign('genealogySearchTypes', $genealogySearchObject->getBasicTypes() ?? []);
+		}
 	}
 
 	if ($library->enableArchive){
 		$islandoraSearchObject = SearchObjectFactory::initSearchObject('Islandora');
-		$interface->assign('islandoraSearchTypes', is_object($islandoraSearchObject) ? $islandoraSearchObject->getBasicTypes() : array());
-		$interface->assign('enableArchive', true);
+		if ($islandoraSearchObject != false){
+			$interface->assign('islandoraSearchTypes', $islandoraSearchObject->getBasicTypes() ?? []);
+			$interface->assign('enableArchive', true);
+		}
 	}
 
 	//TODO: Reenable once we do full EDS integration
