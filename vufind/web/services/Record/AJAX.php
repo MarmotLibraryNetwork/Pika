@@ -325,7 +325,7 @@ class Record_AJAX extends AJAXHandler {
 							'success'            => true,
 							'needsItemLevelHold' => true,
 							'message'            => $interface->fetch('Record/item-hold-popup.tpl'),
-							'title'              => isset($return['title']) ? $return['title'] : '',
+							'title'              => $return['title'] ?? '',
 						];
 					}else{                                                                                       // Completed Hold Attempt
 						$interface->assign('message', $return['message']);

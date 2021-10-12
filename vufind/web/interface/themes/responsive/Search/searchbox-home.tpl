@@ -171,13 +171,13 @@
 
 			</div>
 
-{* Original *}<!--
+{* Original *}{*<!--
 			<div class="row text-center">
 				{if $filterList}
 					<label for="keepFiltersSwitch" id="keepFiltersSwitchLabel"><input id="keepFiltersSwitch" type="checkbox" onclick="Pika.Searches.filterAll(this);"> Keep Applied Filters</label>
 				{/if}
 			</div>
-			{* Return to Advanced Search Link *}
+			{* Return to Advanced Search Link * }
 			{if $searchType == 'advanced'}
 				<div class="row text-center">
 					<a id="advancedSearchLink" href="/Search/Advanced">{translate text='Edit This Advanced Search'}</a>
@@ -188,12 +188,12 @@
 				</div>
 			{/if}
 
-			{* Show/Hide Search Facets & Sort Options *}
+			{* Show/Hide Search Facets & Sort Options * }
 			{if $recordCount || $sideRecommendations}
 				<div class="row text-center visible-xs">
 					<a class="btn btn-default" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
 				</div>
-			{/if}-->
+			{/if}-->*}
 
 			{if $filterList}
 				{* Data for searching within existing results *}

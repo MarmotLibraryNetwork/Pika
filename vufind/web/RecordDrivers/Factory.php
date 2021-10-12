@@ -40,7 +40,7 @@ class RecordDriverFactory {
 		global $configArray;
 		global $timer;
 
-		$timer->logTime("Starting to load record driver");
+		$timer->logTime('Starting to load record driver');
 
 		// Determine driver path based on record type:
 		if (is_object($record) && $record instanceof AbstractFedoraObject){
@@ -113,6 +113,7 @@ class RecordDriverFactory {
 			$timer->logTime("Found Driver for archive object from solr doc {$record['PID']} " . $driver);
 		}elseif (is_array($record) && array_key_exists('recordtype', $record)){
 			// for example, Load Person records (at least from buildRSS)
+			// Also SearchObject_Solr  getBrowseRecordHTML()
 			$driver = ucwords($record['recordtype']) . 'Record';
 			$path   = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
 			// If we can't load the driver, fall back to the default, index-based one:
@@ -307,21 +308,20 @@ class RecordDriverFactory {
 	 * @param $driver
 	 * @return PEAR_Error|RecordInterface
 	 */
-	public static function initAndReturnDriver($record, $driver, $path)
-	{
+	public static function initAndReturnDriver($record, $driver, $path){
 		global $timer;
 		global $memoryWatcher;
-		$logger = new Logger('Factory');
+		$logger = new Logger(__CLASS__);
 		// Build the object:
-		if ($path) {
+		if ($path){
 			require_once $path;
-			if (class_exists($driver)) {
+			if (class_exists($driver)){
 				$timer->logTime('Start of loading record driver');
 				disableErrorHandler();
 				/** @var RecordInterface $obj */
 				$obj = new $driver($record);
 				$timer->logTime('Initialized Driver');
-				if (PEAR_Singleton::isError($obj)) {
+				if (PEAR_Singleton::isError($obj)){
 					$logger->warn("Error loading record driver");
 				}
 				enableErrorHandler();
@@ -333,7 +333,7 @@ class RecordDriverFactory {
 		}
 
 		// If we got here, something went very wrong:
-		$timer->logTime("No path for record driver found");
+		$timer->logTime('No path for record driver found');
 		return new PEAR_Error("Problem loading record driver: {$driver}");
 	}
 

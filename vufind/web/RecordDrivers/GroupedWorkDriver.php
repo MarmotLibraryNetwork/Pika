@@ -1543,8 +1543,8 @@ class GroupedWorkDriver extends RecordInterface {
 				}
 			}
 		}
-		$timer->logTime("Finished initial processing of related records");
-		$memoryWatcher->logMemory("Finished initial processing of related records");
+		$timer->logTime('Finished initial processing of related records');
+		$memoryWatcher->logMemory('Finished initial processing of related records');
 
 		//Check to see if we have applied a format or format category facet
 		$selectedFormat               = null;
@@ -3087,7 +3087,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$memoryWatcher->logMemory('Setup record items');
 
 		if (!$forCovers){
-			$relatedRecord['actions'] = $recordDriver != null ? $recordDriver->getRecordActions($relatedRecord['availableLocally'] || $relatedRecord['availableOnline'], $recordHoldable, $recordBookable, $relatedUrls/*, $volumeData*/) : array();
+			$relatedRecord['actions'] = $recordDriver != null ? $recordDriver->getRecordActions($relatedRecord['availableLocally'] || $relatedRecord['availableOnline'], $recordHoldable, $recordBookable, $relatedUrls/*, $volumeData*/) : [];
 			$timer->logTime('Loaded actions');
 			$memoryWatcher->logMemory('Loaded actions');
 		}
