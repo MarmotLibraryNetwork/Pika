@@ -1,8 +1,15 @@
 {strip}
+		{if $debugSolrOutput}
+			<div id="debugSolrToggle" onclick="$('#debugSolrOutput').toggle()">Show Solr Output Debug</div>
+			<div id="debugSolrOutput" style="display:none">
+				<pre>{$debugSolrOutput}</pre>
+			</div>
+
+    {/if}
     {if $solrSearchDebug}
 			<div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">Show Search Options</div>
 			<div id="solrSearchOptions" style="display:none">
-				<pre>Search options: {$solrSearchDebug}</pre>
+				<pre>{$solrSearchDebug}</pre>
 			</div>
     {/if}
 

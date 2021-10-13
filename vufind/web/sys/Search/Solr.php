@@ -1633,7 +1633,7 @@ class Solr implements IndexEngine {
 			$options = array_merge($options, $facet['additionalOptions']);
 		}
 
-		$timer->logTime("build facet options");
+		$timer->logTime('build facet options');
 
 		//Check to see if there are filters we want to show all values for
 		if ($isPikaGroupedWorkIndex && isset($filters) && is_array($filters)) {
@@ -1676,25 +1676,23 @@ class Solr implements IndexEngine {
 			$options['f.title_full.hl.fragsize']          = 1000;
 		}
 
-		if ($this->debugSolrQuery) {
-//			$solrSearchDebug = print_r($options, true) . "\n";
-			$solrSearchDebug = json_encode($options, JSON_PRETTY_PRINT) . "\n";
+		if ($this->debugSolrQuery && $this->isPrimarySearch){
+			$solrSearchDebug = 'Search Query: ' . $options['q'] . "\n";
 
-			if ($filters) {
+			if ($filters){
 				$solrSearchDebug .= "\nFilterQuery: ";
-				foreach ($filters as $filterItem) {
+				foreach ($filters as $filterItem){
 					$solrSearchDebug .= " $filterItem";
 				}
 			}
 
-			if ($sort) {
+			if ($sort){
 				$solrSearchDebug .= "\nSort: " . $options['sort'];
 			}
+			$solrSearchDebug .= "\n\nSearch Options JSON: \n" . json_encode($options, JSON_PRETTY_PRINT) . "\n";
 
-			if ($this->isPrimarySearch) {
-				global $interface;
-				$interface->assign('solrSearchDebug', $solrSearchDebug);
-			}
+			global $interface;
+			$interface->assign('solrSearchDebug', $solrSearchDebug);
 		}
 		if ($this->debugSolrQuery || $this->debug) {
 			$options['debugQuery'] = 'on';

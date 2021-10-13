@@ -1374,7 +1374,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		if (!empty($this->facetOptions)){
 			$facetSet['additionalOptions'] = $this->facetOptions;
 		}
-		$timer->logTime("create facets");
+		$timer->logTime('create facets');
 
 		// Build our spellcheck query
 		if ($this->spellcheck) {
@@ -1455,14 +1455,18 @@ class SearchObject_Solr extends SearchObject_Base {
 		}
 
 		//Add debug information to the results if available
-		if ($this->debug && isset($this->indexResult['debug'])){
-			$explainInfo = $this->indexResult['debug']['explain'];
-			foreach ($this->indexResult['response']['docs'] as $key => $result){
-				if (array_key_exists($result['id'], $explainInfo)){
-					$result['explain'] = $explainInfo[$result['id']];
-					$this->indexResult['response']['docs'][$key] = $result;
+		if ($this->debug){
+			if (!empty($this->indexResult['debug']['explain'])){
+				$explainInfo = $this->indexResult['debug']['explain'];
+				foreach ($this->indexResult['response']['docs'] as &$result){
+					if (array_key_exists($result['id'], $explainInfo)){
+						$result['explain'] = $explainInfo[$result['id']];
+					}
 				}
 			}
+
+			global $interface;
+			$interface->assign('debugSolrOutput', $this->debugOutput());
 		}
 
 		// Return the result set
@@ -1475,24 +1479,23 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @access  private
 	 * @return  string    Spelling query
 	 */
-	private function buildSpellingQuery()
-	{
-		$this->spellQuery = array();
+	private function buildSpellingQuery(){
+		$this->spellQuery = [];
 		// Basic search
-		if ($this->searchType == $this->basicSearchType) {
+		if ($this->searchType == $this->basicSearchType){
 			// Just the search query is fine
 			return $this->query;
 
 			// Advanced search
-		} else {
-			foreach ($this->searchTerms as $search) {
-				foreach ($search['group'] as $field) {
+		}else{
+			foreach ($this->searchTerms as $search){
+				foreach ($search['group'] as $field){
 					// Add just the search terms to the list
 					$this->spellQuery[] = $field['lookfor'];
 				}
 			}
 			// Return the list put together as a string
-			return join(" ", $this->spellQuery);
+			return implode(' ', $this->spellQuery);
 		}
 	}
 
@@ -1501,29 +1504,27 @@ class SearchObject_Solr extends SearchObject_Base {
 	 *
 	 * @access  private
 	 */
-	private function processSpelling()
-	{
+	private function processSpelling(){
 		global $configArray;
 
 		// Do nothing if spelling is disabled
-		if (!$configArray['Spelling']['enabled']) {
+		if (!$configArray['Spelling']['enabled']){
 			return;
 		}
 
 		// Do nothing if there are no suggestions
-		$suggestions = isset($this->indexResult['spellcheck']['suggestions']) ?
-		$this->indexResult['spellcheck']['suggestions'] : array();
-		if (count($suggestions) == 0) {
+		$suggestions = $this->indexResult['spellcheck']['suggestions'] ?? [];
+		if (count($suggestions) == 0){
 			return;
 		}
 
 		// Loop through the array of search terms we have suggestions for
-		$suggestionList = array();
-		foreach ($suggestions as $suggestion) {
+		$suggestionList = [];
+		foreach ($suggestions as $suggestion){
 			$ourTerm = $suggestion[0];
 
 			// Skip numeric terms if numeric suggestions are disabled
-			if ($this->spellSkipNumeric && is_numeric($ourTerm)) {
+			if ($this->spellSkipNumeric && is_numeric($ourTerm)){
 				continue;
 			}
 
@@ -1536,29 +1537,29 @@ class SearchObject_Solr extends SearchObject_Base {
 			// Make sure the suggestion is for a valid search term.
 			// Sometimes shingling will have bridged two search fields (in
 			// an advanced search) or skipped over a stopword.
-			if (!$this->findSearchTerm($ourTerm)) {
+			if (!$this->findSearchTerm($ourTerm)){
 				$validTerm = false;
 			}
 
 			// Unless this term had no hits
-			if ($ourHit != 0) {
+			if ($ourHit != 0){
 				// Filter out suggestions we are already using
 				$newList = $this->filterSpellingTerms($newList);
 			}
 
 			// Make sure it has suggestions and is valid
-			if (count($newList) > 0 && $validTerm) {
+			if (count($newList) > 0 && $validTerm){
 				// Did we get more suggestions then our limit?
-				if ($count > $this->spellingLimit) {
+				if ($count > $this->spellingLimit){
 					// Cut the list at the limit
 					array_splice($newList, $this->spellingLimit);
 				}
 				$suggestionList[$ourTerm]['freq'] = $ourHit;
 				// Format the list nicely
-				foreach ($newList as $item) {
-					if (is_array($item)) {
+				foreach ($newList as $item){
+					if (is_array($item)){
 						$suggestionList[$ourTerm]['suggestions'][$item['word']] = $item['freq'];
-					} else {
+					}else{
 						$suggestionList[$ourTerm]['suggestions'][$item] = 0;
 					}
 				}
@@ -1575,12 +1576,14 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @param   array    $termList List of suggestions
 	 * @return  array    Filtered list
 	 */
-	private function filterSpellingTerms($termList) {
-		$newList = array();
-		if (count($termList) == 0) return $newList;
+	private function filterSpellingTerms($termList){
+		if (empty($termList)){
+			return [];
+		}
 
-		foreach ($termList as $term) {
-			if (!$this->findSearchTerm($term['word'])) {
+		$newList = [];
+		foreach ($termList as $term){
+			if (!$this->findSearchTerm($term['word'])){
 				$newList[] = $term;
 			}
 		}
@@ -1596,8 +1599,7 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @access  private
 	 * @return  array     Suggestions array
 	 */
-	private function basicSpelling()
-	{
+	private function basicSpelling(){
 		// TODO: There might be a way to run the
 		//   search against both dictionaries from
 		//   inside solr. Investigate. Currently
