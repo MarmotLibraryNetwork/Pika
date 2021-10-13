@@ -76,6 +76,7 @@ class FedoraUtils {
 		try{
 			$object = $this->repository->getObject($pid);
 		}catch (Exception $e){
+			$this->logger->notice("Failed to fetch object from islandora fedora, $pid" . $e->getMessage());
 			$object = null;
 		}
 		return $object;
