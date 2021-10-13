@@ -388,37 +388,38 @@ class Archive_Exhibit extends Archive_Object {
 							}
 							if ($updateCache){
 								/** @var PlaceDriver $placeEntityDriver */
-								$placeEntityDriver    = RecordDriverFactory::initRecordDriver($fedoraUtils->getObject($mappedPlace['pid']));
-								$mappedPlace['label'] = $placeEntityDriver->getTitle();
-								$mappedPlace['url']   = $placeEntityDriver->getRecordUrl();
-								if ($placeEntityDriver instanceof PlaceDriver){
-									$geoData = $placeEntityDriver->getGeoData();
-								}else{
-									//echo("Warning {$placeEntityDriver->getTitle()} ({$placeEntityDriver->getUniqueID()}) was not a place");
-									continue;
-								}
-
-								if ($geoData){
-									$mappedPlace['latitude']  = $geoData['latitude'];
-									$mappedPlace['longitude'] = $geoData['longitude'];
-								}
-								$cache      = new IslandoraObjectCache();
-								$cache->pid = $facetInfo[0];
-								//Should always find the cache now since it gets built when creating the record driver
-								if ($cache->find(true)){
-									if ($geoData){
-										$cache->latitude   = $mappedPlace['latitude'];
-										$cache->longitude  = $mappedPlace['longitude'];
-										$cache->hasLatLong = 1;
+								$fedoraObject               = $fedoraUtils->getObject($mappedPlace['pid']);
+								if (!empty($fedoraObject)){
+									$placeEntityDriver    = RecordDriverFactory::initRecordDriver($fedoraObject);
+									$mappedPlace['label'] = $placeEntityDriver->getTitle();
+									$mappedPlace['url']   = $placeEntityDriver->getRecordUrl();
+									if ($placeEntityDriver instanceof PlaceDriver){
+										$geoData = $placeEntityDriver->getGeoData();
 									}else{
-										$cache->latitude   = null;
-										$cache->longitude  = null;
-										$cache->hasLatLong = 0;
+										//echo("Warning {$placeEntityDriver->getTitle()} ({$placeEntityDriver->getUniqueID()}) was not a place");
+										continue;
 									}
-									$cache->lastUpdate = time();
-									$cache->update();
+									if ($geoData){
+										$mappedPlace['latitude']  = $geoData['latitude'];
+										$mappedPlace['longitude'] = $geoData['longitude'];
+									}
+									$cache      = new IslandoraObjectCache();
+									$cache->pid = $facetInfo[0];//Should always find the cache now since it gets built when creating the record driver
+									if ($cache->find(true)){
+										if ($geoData){
+											$cache->latitude   = $mappedPlace['latitude'];
+											$cache->longitude  = $mappedPlace['longitude'];
+											$cache->hasLatLong = 1;
+										}else{
+											$cache->latitude   = null;
+											$cache->longitude  = null;
+											$cache->hasLatLong = 0;
+										}
+										$cache->lastUpdate = time();
+										$cache->update();
+									}
+									$timer->logTime('Loaded information about related place');
 								}
-								$timer->logTime('Loaded information about related place');
 							}else{
 								$mappedPlace['label'] = $cache->title;
 								$mappedPlace['url']   = '/Archive/' . $cache->pid . '/Place';
