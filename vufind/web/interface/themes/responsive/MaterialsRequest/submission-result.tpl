@@ -1,6 +1,6 @@
 <div id="page-content" class="content">
 	<div id="main-content">
-		<h2>{translate text='Materials Request Result'}</h2>
+		<h2>{translate text='Materials_Request_alt'} Result</h2>
 		{if $success == 0}
 			<div class="alert alert-danger">
 			{$error}
