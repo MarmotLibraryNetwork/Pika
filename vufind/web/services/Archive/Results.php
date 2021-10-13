@@ -91,7 +91,7 @@ class Archive_Results extends Union_Results {
 		$interface->assign('showSaved',   true);
 		$interface->assign('savedSearch', $searchObject->isSavedSearch());
 		$interface->assign('searchId',    $searchObject->getSearchId());
-		$currentPage = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+		$currentPage = $_REQUEST['page'] ?? 1;
 		$interface->assign('page', $currentPage);
 
 		if ($searchObject->getResultTotal() < 1) {

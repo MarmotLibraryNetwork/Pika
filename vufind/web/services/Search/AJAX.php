@@ -328,7 +328,7 @@ class AJAX extends AJAXHandler {
 		$searchObject->close();
 
 		// Process for Display //
-		$recordSet = $searchObject->getResultRecordHTML($displayMode);
+		$recordSet = $searchObject->getResultRecordHTML();
 //		if ($displayMode == 'covers'){
 		$displayTemplate = 'Search/covers-list.tpl'; // structure for bookcover tiles
 

@@ -93,12 +93,6 @@ class Search_Results extends Union_Results {
 		// Hide Covers when the user has set that setting on the Search Results Page
 		$this->setShowCovers();
 
-		$displayQuery = $searchObject->displayQuery();
-		$pageTitle = $displayQuery;
-		if (strlen($pageTitle) > 20){
-			$pageTitle = substr($pageTitle, 0, 20) . '...';
-		}
-		$pageTitle .= ' | Search Results';
 		$interface->assign('sortList',   $searchObject->getSortList());
 		$interface->assign('rssLink',    $searchObject->getRSSUrl());
 		$interface->assign('excelLink',  $searchObject->getExcelUrl());
@@ -116,6 +110,7 @@ class Search_Results extends Union_Results {
 		// Some more variables
 		//   Those we can construct AFTER the search is executed, but we need
 		//   no matter whether there were any results
+		$displayQuery = $searchObject->displayQuery();
 		$interface->assign('qtime',               round($searchObject->getQuerySpeed(), 2));
 		$interface->assign('debugTiming',         $searchObject->getDebugTiming());
 		$interface->assign('lookfor',             $displayQuery);
@@ -228,32 +223,7 @@ class Search_Results extends Union_Results {
 			// Was the empty result set due to an error?
 			$error = $searchObject->getIndexError();
 			if ($error !== false) {
-				// If it's a parse error or the user specified an invalid field, we
-				// should display an appropriate message:
-				if (stristr($error['msg'], 'org.apache.lucene.queryParser.ParseException') || preg_match('/^undefined field/', $error['msg'])) {
-					$interface->assign('parseError', $error['msg']);
-
-					if (preg_match('/^undefined field/', $error['msg'])) {
-						// Setup to try as a possible subtitle search
-						$fieldName = trim(str_replace('undefined field', '', $error['msg'], $replaced)); // strip out the phrase 'undefined field' to get just the fieldname
-						$original = urlencode("$fieldName:");
-						if ($replaced === 1 && !empty($fieldName) && strpos($_SERVER['REQUEST_URI'], $original)) {
-						// ensure only 1 replacement was done, that the fieldname isn't an empty string, and the label is in fact in the Search URL
-							$new = urlencode("$fieldName :"); // include space in between the field name & colon to avoid the parse error
-							$thisUrl = str_replace($original, $new, $_SERVER['REQUEST_URI'], $replaced);
-							if ($replaced === 1) { // ensure only one modification was made
-								header("Location: " . $thisUrl);
-								exit();
-							}
-						}
-					}
-
-					// Unexpected error -- let's treat this as a fatal condition.
-				} else {
-					//TODO: give the user better error page; set debug mode for test sites only
-					PEAR_Singleton::raiseError(new PEAR_Error('Unable to process query<br>' .
-                        'Solr Returned: ' . print_r($error, true)));
-				}
+				$this->displaySolrError($error);
 			}
 
 			$timer->logTime('no hits processing');
@@ -333,7 +303,7 @@ class Search_Results extends Union_Results {
 		$interface->assign('displayMode', $displayMode); // For user toggle switches
 
 		// Big one - our results //
-		$recordSet = $searchObject->getResultRecordHTML($displayMode);
+		$recordSet = $searchObject->getResultRecordHTML();
 		$interface->assign('recordSet', $recordSet);
 		$timer->logTime('load result records');
 		$memoryWatcher->logMemory('load result records');
@@ -354,7 +324,7 @@ class Search_Results extends Union_Results {
 
 		$interface->assign('sectionLabel', 'Library Catalog');
 		// Done, display the page
-		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $pageTitle, 'Search/results-sidebar.tpl');
+		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $this->setPageTitle($displayQuery), 'Search/results-sidebar.tpl');
 	} // End launch()
 
 }

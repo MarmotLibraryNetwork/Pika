@@ -37,9 +37,7 @@ class SearchObjectFactory {
 	 * @return  mixed               The search object on success, false otherwise
 	 */
 	static function initSearchObject($engine = 'Solr'){
-		global $configArray;
-
-		$path = "{$configArray['Site']['local']}/sys/SearchObject/{$engine}.php";
+		$path =  ROOT_DIR . "/sys/SearchObject/$engine.php";
 		if (is_readable($path)){
 			require_once $path;
 			$class = 'SearchObject_' . $engine;

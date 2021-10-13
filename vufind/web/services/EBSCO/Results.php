@@ -40,10 +40,6 @@ class EBSCO_Results extends Action{
 		$sort         = $_REQUEST['sort'] ?? null;
 		$filters      = $_REQUEST['filter'] ?? [];
 		$displayQuery = $_REQUEST['lookfor'];
-		$pageTitle    = $displayQuery;
-		if (strlen($pageTitle) > 20){
-			$pageTitle = substr($pageTitle, 0, 20) . '...';
-		}
 
 		$searchObject->getSearchResults($_REQUEST['lookfor'], $sort, $filters);
 		$interface->assign('qtime',               round($searchObject->getQuerySpeed(), 2));
@@ -87,6 +83,10 @@ class EBSCO_Results extends Action{
 		$interface->assign('exploreMoreSearchTerm', $exploreMoreSearchTerm);
 
 		$displayTemplate = 'EBSCO/list-list.tpl'; // structure for regular results
+		$pageTitle       = $displayQuery;
+		if (strlen($pageTitle) > 20){
+			$pageTitle = substr($pageTitle, 0, 20) . '...';
+		}
 		$interface->assign('breadcrumbText', $searchObject->displayQuery());
 		$interface->assign('subpage', $displayTemplate);
 		$interface->assign('sectionLabel', 'EBSCO Research Databases');

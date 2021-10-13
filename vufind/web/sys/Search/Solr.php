@@ -1074,7 +1074,8 @@ class Solr implements IndexEngine {
 		}
 
 		// Strip out any colons that are NOT part of a field specification:
-		$query = preg_replace('/(\:\s+|\s+:)/', ' ', $query);
+		$queryBefore = $query;
+		$query = preg_replace('/(:\s+|\s+:)/', ' ', $query);
 
 		// If the query already includes field specifications, we can't easily
 		// apply it to other fields through our defined handlers, so we'll leave

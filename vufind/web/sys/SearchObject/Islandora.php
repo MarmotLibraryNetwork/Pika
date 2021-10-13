@@ -656,8 +656,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 	 *                                             a well formatted query
 	 * @return array
 	 */
-	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false)
-	{
+	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false){
 		// Our search has already been processed in init()
 		$search = $this->searchTerms;
 
