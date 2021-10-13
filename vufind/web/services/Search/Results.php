@@ -73,8 +73,8 @@ class Search_Results extends Union_Results {
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init($searchSource);
 		$searchObject->setPrimarySearch(true);
-		$timer->logTime("Init Search Object");
-		$memoryWatcher->logMemory("Init Search Object");
+		$timer->logTime('Init Search Object');
+		$memoryWatcher->logMemory('Init Search Object');
 //		$searchObject->viewOptions = $this->viewOptions; // set valid view options for the search object
 
 		// Build RSS Feed for Results (if requested)

@@ -1598,16 +1598,16 @@ class Solr implements IndexEngine {
 			} else {
 				$options['facet.field'] = null;
 			}
-
 			unset($facet['field']);
 
 			if (!empty($facet['prefix'])){
 				$options['facet.prefix'] = $facet['prefix'] ?? null;
 			}
 			unset($facet['prefix']);
-			$options['facet.sort'] =  $facet['sort'] ?? 'count';
 
+			$options['facet.sort'] =  $facet['sort'] ?? 'count';
 			unset($facet['sort']);
+
 			if (isset($facet['offset'])) {
 				$options['facet.offset'] = $facet['offset'];
 				unset($facet['offset']);
@@ -1622,15 +1622,16 @@ class Solr implements IndexEngine {
 				}
 			}
 
-			foreach ($facet as $param => $value) {
-				if ($param != 'additionalOptions') {
-					$options[$param] = $value;
-				}
+			if (isset($facet['additionalOptions'])) {
+				//Currently this is only used by the Archive Mapped Timeline Exhibits (Collections)
+				$options = array_merge($options, $facet['additionalOptions']);
+				unset($facet['additionalOptions']);
 			}
-		}
 
-		if (isset($facet['additionalOptions'])) {
-			$options = array_merge($options, $facet['additionalOptions']);
+			foreach ($facet as $param => $value){
+				$options[$param] = $value;
+			}
+
 		}
 
 		$timer->logTime('build facet options');
