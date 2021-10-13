@@ -7,7 +7,7 @@
 	{/if}
 
 	{* Listing Options *}
-	<div class="resulthead">
+	<div class="result-head">
 		{if $recordCount}
 			{translate text="Showing"}
 			<b> {$recordStart}</b> - <b>{$recordEnd} </b>

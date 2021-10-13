@@ -1,3 +1,6 @@
+{strip}
+<h2>{translate text='nohit_heading'}</h2>
+
 <p class="alert alert-info">{translate text='nohit_prefix'} - <b>{if $lookfor}{$lookfor|escape:"html"}{else}&lt;empty&gt;{/if}</b> - {translate text='nohit_suffix'}</p>
 
 {if $parseError}
@@ -16,7 +19,7 @@
 </div>
 <br>
 {/if}
-
+{/strip}
 {if $showExploreMoreBar}
   <div id="explore-more-bar-placeholder"></div>
   <script type="text/javascript">
