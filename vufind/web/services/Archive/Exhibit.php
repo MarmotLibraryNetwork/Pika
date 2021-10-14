@@ -425,8 +425,7 @@ class Archive_Exhibit extends Archive_Object {
 										}
 										$timer->logTime('Loaded information about related place');
 									} else {
-										echo "blabla;";
-//										$logger
+										$logger->log('Failed to initialize driver for place entity' . $mappedPlace['pid'], PEAR_LOG_ERR);
 									}
 								}
 							}else{
