@@ -59,33 +59,38 @@ class Archive_Exhibit extends Archive_Object {
 		}
 
 		$displayType = 'basic';
-		if ($pikaCollectionDisplay == 'map'){
-			$displayType = 'map';
-			$mapZoom     = $this->recordDriver->getModsValue('mapZoomLevel', 'marmot');
-			if ($mapZoom == null){
-				$mapZoom = 9;
-			}
-			$interface->assign('mapZoom', $mapZoom);
-			$interface->assign('showTimeline', 'true');
-		}elseif ($pikaCollectionDisplay == 'mapNoTimeline'){
-			$displayType = 'mapNoTimeline';
-			$mapZoom     = $this->recordDriver->getModsValue('mapZoomLevel', 'marmot');
-			$interface->assign('mapZoom', $mapZoom);
-			$interface->assign('showTimeline', 'false');
-		}elseif ($pikaCollectionDisplay == 'custom'){
-			$displayType = 'custom';
-			//Load the options to show
-			$collectionOptionsRaw = $this->recordDriver->getModsValue('collectionOptions', 'marmot');
-			$collectionOptions    = explode("\r\n", html_entity_decode($collectionOptionsRaw));
-		}elseif ($pikaCollectionDisplay == 'timeline'){
-			$displayType = 'timeline';
+		switch ($pikaCollectionDisplay){
+			case 'map':
+				$displayType = 'map';
+				$mapZoom     = $this->recordDriver->getModsValue('mapZoomLevel', 'marmot');
+				if ($mapZoom == null){
+					$mapZoom = 9;
+				}
+				$interface->assign('mapZoom', $mapZoom);
+				$interface->assign('showTimeline', 'true');
+				break;
+			case 'mapNoTimeline':
+				$displayType = 'mapNoTimeline';
+				$mapZoom     = $this->recordDriver->getModsValue('mapZoomLevel', 'marmot');
+				$interface->assign('mapZoom', $mapZoom);
+				$interface->assign('showTimeline', 'false');
+				break;
+			case 'custom':
+				$displayType = 'custom';
+				//Load the options to show
+				$collectionOptionsRaw = $this->recordDriver->getModsValue('collectionOptions', 'marmot');
+				$collectionOptions    = explode("\r\n", html_entity_decode($collectionOptionsRaw));
+				break;
+			case 'timeline':
+				$displayType = 'timeline';
+				break;
 		}
-		$additionalCollections = array();
+		$additionalCollections = [];
 		if ($this->recordDriver->getModsValue('pikaCollectionDisplay', 'marmot') == 'custom' && ($displayType == 'map' || $displayType == 'mapNoTimeline')){
 			//Load the options to show
 			$collectionOptionsOriginalRaw = $this->recordDriver->getModsValue('collectionOptions', 'marmot');
 			$collectionOptionsOriginal    = explode("\r\n", html_entity_decode($collectionOptionsOriginalRaw));
-			$additionalCollections        = array();
+			$additionalCollections        = [];
 			if (isset($collectionOptionsOriginal)){
 				foreach ($collectionOptionsOriginal as $collectionOption){
 					if (strpos($collectionOption, 'googleMap') === 0){
@@ -117,19 +122,18 @@ class Archive_Exhibit extends Archive_Object {
 		$interface->assign('showExploreMore', true);
 
 		$imageMapPID = $this->recordDriver->getModsValue('imageMapPID', 'marmot');
-		if ($imageMapPID != null && strlen($imageMapPID) > 0){
-			$interface->assign('hasImageMap', true);
-			$interface->assign('imageMapPID', $imageMapPID);
-
+		if (!empty($imageMapPID)){
 			/** @var FedoraObject $imageMapObject */
 			$imageMapObject = $fedoraUtils->getObject($imageMapPID);
-			$imageMapDriver = RecordDriverFactory::initRecordDriver($imageMapObject);
-			$imageMapImage  = $imageMapDriver->getBookcoverUrl('large');
-			$imageMapMap    = $imageMapObject->getDatastream('MAP')->content;
-
-			//Substitute the imageMap for the source in the map
-			$imageMapMap = preg_replace('/src="(.*?)"/', "src=\"{$imageMapImage}\"", $imageMapMap);
-			$interface->assign('imageMap', $imageMapMap);
+			if (!empty($imageMapObject)){
+				$imageMapDriver = RecordDriverFactory::initRecordDriver($imageMapObject);
+				$imageMapImage  = $imageMapDriver->getBookcoverUrl('large');
+				$imageMapMap    = $imageMapObject->getDatastream('MAP')->content;//Substitute the imageMap for the source in the map
+				$imageMapMap    = preg_replace('/src="(.*?)"/', "src=\"{$imageMapImage}\"", $imageMapMap);
+				$interface->assign('imageMap', $imageMapMap);
+				$interface->assign('hasImageMap', true);
+				$interface->assign('imageMapPID', $imageMapPID);
+			}
 		}
 
 		// Determine what type of page to show
@@ -347,9 +351,9 @@ class Archive_Exhibit extends Archive_Object {
 		$searchObject->setSort('fgs_label_s');
 		$interface->assign('showThumbnailsSorted', true);
 
-		$relatedImages  = array();
-		$mappedPlaces   = array();
-		$unmappedPlaces = array();
+		$relatedImages  = [];
+		$mappedPlaces   = [];
+		$unmappedPlaces = [];
 		$response       = $searchObject->processSearch(true, false);
 		$summary        = $searchObject->getResultSummary();
 		$recordIndex    = $summary['startRecord'];
@@ -390,35 +394,40 @@ class Archive_Exhibit extends Archive_Object {
 								/** @var PlaceDriver $placeEntityDriver */
 								$fedoraObject               = $fedoraUtils->getObject($mappedPlace['pid']);
 								if (!empty($fedoraObject)){
-									$placeEntityDriver    = RecordDriverFactory::initRecordDriver($fedoraObject);
-									$mappedPlace['label'] = $placeEntityDriver->getTitle();
-									$mappedPlace['url']   = $placeEntityDriver->getRecordUrl();
-									if ($placeEntityDriver instanceof PlaceDriver){
-										$geoData = $placeEntityDriver->getGeoData();
-									}else{
-										//echo("Warning {$placeEntityDriver->getTitle()} ({$placeEntityDriver->getUniqueID()}) was not a place");
-										continue;
-									}
-									if ($geoData){
-										$mappedPlace['latitude']  = $geoData['latitude'];
-										$mappedPlace['longitude'] = $geoData['longitude'];
-									}
-									$cache      = new IslandoraObjectCache();
-									$cache->pid = $facetInfo[0];//Should always find the cache now since it gets built when creating the record driver
-									if ($cache->find(true)){
-										if ($geoData){
-											$cache->latitude   = $mappedPlace['latitude'];
-											$cache->longitude  = $mappedPlace['longitude'];
-											$cache->hasLatLong = 1;
+									$placeEntityDriver = RecordDriverFactory::initRecordDriver($fedoraObject);
+									if (!PEAR::isError($placeEntityDriver)){
+										$mappedPlace['label'] = $placeEntityDriver->getTitle();
+										$mappedPlace['url']   = $placeEntityDriver->getRecordUrl();
+										if ($placeEntityDriver instanceof PlaceDriver){
+											$geoData = $placeEntityDriver->getGeoData();
 										}else{
-											$cache->latitude   = null;
-											$cache->longitude  = null;
-											$cache->hasLatLong = 0;
+											//echo("Warning {$placeEntityDriver->getTitle()} ({$placeEntityDriver->getUniqueID()}) was not a place");
+											continue;
 										}
-										$cache->lastUpdate = time();
-										$cache->update();
+										if ($geoData){
+											$mappedPlace['latitude']  = $geoData['latitude'];
+											$mappedPlace['longitude'] = $geoData['longitude'];
+										}
+										$cache      = new IslandoraObjectCache();
+										$cache->pid = $facetInfo[0];//Should always find the cache now since it gets built when creating the record driver
+										if ($cache->find(true)){
+											if ($geoData){
+												$cache->latitude   = $mappedPlace['latitude'];
+												$cache->longitude  = $mappedPlace['longitude'];
+												$cache->hasLatLong = 1;
+											}else{
+												$cache->latitude   = null;
+												$cache->longitude  = null;
+												$cache->hasLatLong = 0;
+											}
+											$cache->lastUpdate = time();
+											$cache->update();
+										}
+										$timer->logTime('Loaded information about related place');
+									} else {
+										echo "blabla;";
+//										$logger
 									}
-									$timer->logTime('Loaded information about related place');
 								}
 							}else{
 								$mappedPlace['label'] = $cache->title;
@@ -458,12 +467,10 @@ class Archive_Exhibit extends Archive_Object {
 									$interface->assign('selectedPlace', $mappedPlace['pid']);
 									$_SESSION['placePid'] = $mappedPlace['pid'];
 								}
+							}elseif (array_key_exists($mappedPlace['pid'], $unmappedPlaces)){
+								$unmappedPlaces[$mappedPlace['pid']]['count'] += $mappedPlace['count'];
 							}else{
-								if (array_key_exists($mappedPlace['pid'], $unmappedPlaces)){
-									$unmappedPlaces[$mappedPlace['pid']]['count'] += $mappedPlace['count'];
-								}else{
-									$unmappedPlaces[$mappedPlace['pid']] = $mappedPlace;
-								}
+								$unmappedPlaces[$mappedPlace['pid']] = $mappedPlace;
 							}
 						}
 					}
