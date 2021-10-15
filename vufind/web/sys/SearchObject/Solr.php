@@ -375,7 +375,7 @@ class SearchObject_Solr extends SearchObject_Base {
 					$this->setFacetSortOrder('count');
 				}
 			}
-		} else if ($module == 'Search' && ($action == 'NewItem' || $action == 'Reserves')) {
+		} else if ($module == 'Search' && $action == 'Reserves') {
 			// We don't need spell checking
 			$this->spellcheck = false;
 			$this->searchType = strtolower($action);
@@ -1063,8 +1063,6 @@ class SearchObject_Solr extends SearchObject_Base {
 	protected function getBaseUrl(){
 		//todo: some of these cases are obsolete
 		switch ($this->searchType){
-			case 'newitem' :
-				return $this->serverUrl . '/Search/NewItem?';
 			case 'reserves' :
 				return $this->serverUrl . '/Search/Reserves?';
 			case 'favorites' :
@@ -1104,14 +1102,11 @@ class SearchObject_Solr extends SearchObject_Base {
 					$params[] = ($this->authorSearchType == 'home' ? 'author=' : 'lookfor=') . urlencode($this->searchTerms[0]['lookfor']);
 					$params[] = 'basicSearchType=Author';
 					break;
-				// New Items or Reserves modules may have a few extra parameters to preserve:
-				case 'newitem':
+				// Reserves modules may have a few extra parameters to preserve:
 				case 'reserves':
 				case 'favorites':
 				case 'list':
 					$preserveParams = [
-						// for newitem:
-						'range', 'department',
 						// for reserves:
 						'course', 'inst', 'dept',
 						// for favorites/list:
@@ -1969,9 +1964,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		global $interface;
 
 		// On-screen display value for our search
-		if ($this->searchType == 'newitem') {
-			$lookFor = translate('New Items');
-		} elseif ($this->searchType == 'reserves') {
+		if ($this->searchType == 'reserves') {
 			$lookFor = translate('Course Reserves');
 		} else {
 			$lookFor = $this->displayQuery();
