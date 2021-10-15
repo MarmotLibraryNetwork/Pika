@@ -26,6 +26,7 @@
 require_once ROOT_DIR . '/AJAXHandler.php';
 //require_once ROOT_DIR . '/services/AJAX/Captcha_AJAX.php';
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
+require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 
 class GroupedWork_AJAX extends AJAXHandler {
@@ -1117,5 +1118,94 @@ class GroupedWork_AJAX extends AJAXHandler {
 			'success' => $samePikaCleared,
 			'message' => $cacheMessage,
 		);
+	}
+
+	/**
+	 * @throws Exception
+	 */
+	function exportSeriesToExcel(){
+
+		$id = $_REQUEST['id'];
+		require_once ROOT_DIR . "/sys/Novelist/Novelist3.php";
+		require_once ROOT_DIR . "/RecordDrivers/GroupedWorkDriver.php";
+		$recordDriver = new GroupedWorkDriver($id);
+		$novelist   = NovelistFactory::getNovelist();
+		$seriesInfo = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
+		$seriesTitle = $seriesInfo->seriesTitle;
+		$seriesTitles = $seriesInfo->seriesTitles;
+		$seriesEntries = [];
+		foreach($seriesTitles as $seriesEntry)
+		{
+			$seriesEntries[$seriesEntry['id']] = [
+																							'title' => $seriesEntry['title'],
+																							'author' => $seriesEntry['author'],
+																							'volume' => $seriesEntry['volume'],
+																							'primaryISBN' => $seriesEntry['isbn'],
+																							'groupedWorkId' => $seriesEntry['id']
+																					 ];
+		}
+		$objPHPExcel = new PHPExcel();
+		$objPHPExcel->getProperties()->setCreator("DCL")
+			->setLastModifiedBy("DCL")
+			->setTitle("Office 2007 XLSX Document")
+			->setSubject("Office 2007 XLSX Document")
+			->setDescription("Office 2007 XLSX, generated using PHP.")
+			->setKeywords("office 2007 openxml php")
+			->setCategory("List Items");
+
+		$objPHPExcel->setActiveSheetIndex(0)
+			->setCellValue('A1', $seriesTitle)
+			->setCellValue('A3', 'Title')
+			->setCellValue('B3', 'Author')
+			->setCellValue('C3', 'Volume')
+			->setCellValue('D3', 'ISBN')
+			->setCellValue('E3', 'Grouped Work ID');
+
+
+		$a = 4;
+		foreach ($seriesEntries as $entry) {
+			$objPHPExcel->setActiveSheetIndex(0)
+				->setCellValue('A' . $a, $entry['title'])
+				->setCellValue('B' . $a, $entry['author'])
+				->setCellValue('C' . $a, $entry['volume'])
+				->setCellValue('D' . $a, $entry['primaryISBN'])
+				->setCellValue('E' . $a, $entry['groupedWorkId']);
+			$a++;
+
+		}
+
+		$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setAutoSize(true);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setAutoSize(true);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
+
+		// Rename sheet
+		$strip = array("~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "=", "+", "[", "{", "]",
+		               "}", "\\", "|", ";", ":", "\"", "'", "&#8216;", "&#8217;", "&#8220;", "&#8221;", "&#8211;", "&#8212;",
+		               "â€”", "â€“", ",", "<", ".", ">", "/", "?");
+		$excelTitle = trim(str_replace($strip, "", strip_tags($seriesTitle)));
+		$excelTitle = str_replace(" ", "_", $excelTitle );
+		$objPHPExcel->getActiveSheet()->setTitle(substr($excelTitle,0,30));
+
+		// Redirect output to a client's web browser (Excel5)
+		header('Content-Type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment;filename="' . substr($excelTitle,0,27) . '.xls"');
+		header('Cache-Control: max-age=0');
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+
+		try {
+			$objWriter->save('php://output');
+			return array(
+				'success' => true,
+				'message' => "Excel File Created"
+			);
+		}
+		catch(Exception $e){
+			return array(
+				'success' => false,
+				'message' => "Something Happened"
+				);
+		}
 	}
 }

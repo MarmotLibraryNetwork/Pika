@@ -384,6 +384,10 @@ Pika.GroupedWork = (function(){
 			return this.basicShowMessageReloadOnSuccess('reloadIslandora', id);
 		},
 
+		exportSeriesToExcel: function(id){
+			this.basicShowMessageReloadOnSuccess('exportSeriesToExcel', id);
+		},
+
 		basicShowMessageReloadOnSuccess: function(method, id){
 			$.getJSON("/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=" + method, function (data){
 						if (data.success) {
