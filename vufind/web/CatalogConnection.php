@@ -759,7 +759,8 @@ class CatalogConnection
 					// Reading History entries tied to a grouped work
 					$readingHistoryDB                         = new ReadingHistoryEntry();
 					$readingHistoryDB->userId                 = $patron->id;
-					$readingHistoryDB->groupedWorkPermanentId = strtolower($groupedWorkId);
+					$groupedWorkId                            = strtolower($groupedWorkId);
+					$readingHistoryDB->groupedWorkPermanentId = $groupedWorkId;
 					$readingHistoryDB->find();
 					if ($readingHistoryDB->N > 0){
 						while ($readingHistoryDB->fetch()){
@@ -768,7 +769,9 @@ class CatalogConnection
 							if ($success){
 								// Set to false if any updates fail; stop checking after the first failure
 								$success = $result != false;
-								$this->logger->warn('Failed to delete selected reading history entry for user id ' . $patron->id);
+								if (!$success){
+									$this->logger->warn('Failed to delete selected reading history entry for work ' . $groupedWorkId . ' user id ' . $patron->id);
+								}
 							}
 						}
 					}
@@ -776,14 +779,17 @@ class CatalogConnection
 					// Reading history entries that aren't tied to a grouped work, like inter-library loan titles
 					$readingHistoryDB         = new ReadingHistoryEntry();
 					$readingHistoryDB->userId = $patron->id;
-					$readingHistoryDB->id     = str_replace('rsh', '', $titleId); // reading history ids are prefixes with rsh in the template
+					$historyEntryId           = str_replace('rsh', '', $titleId); // reading history ids are prefixes with rsh in the template
+					$readingHistoryDB->id     = $historyEntryId;
 					if ($readingHistoryDB->find(true)){
 						$readingHistoryDB->deleted = 1;
 						$result                    = $readingHistoryDB->update();
 						if ($success){
 							// Set to false if any updates fail; stop checking after the first failure
 							$success = $result != false;
-							$this->logger->warn('Failed to delete selected reading history entry for user id ' . $patron->id);
+							if (!$success){
+								$this->logger->warn('Failed to delete selected reading history entry ' . $historyEntryId . ' for user id ' . $patron->id);
+							}
 						}
 					}
 				}
