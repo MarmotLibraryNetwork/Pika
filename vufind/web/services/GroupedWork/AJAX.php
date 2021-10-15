@@ -64,6 +64,9 @@ class GroupedWork_AJAX extends AJAXHandler {
 		'getNovelistData',
 		'reloadCover',
 		'reloadIslandora',
+		'getSeriesEmailForm',
+		'sendSeriesEmail',
+		'exportSeriesToExcel',
 	);
 
 
@@ -646,6 +649,27 @@ class GroupedWork_AJAX extends AJAXHandler {
 		];
 	}
 
+	function getSeriesEmailForm(){
+		$id     =$_REQUEST['id'];
+		$recordDriver = new GroupedWorkDriver($id);
+		global $interface;
+		$interface->assign('id', $id);
+		if(UserAccount::isLoggedIn()){
+			$user = UserAccount::getActiveUserObj();
+			if (!empty($user->email)){
+				$interface->assign('from', $user->email);
+			}
+		}else{
+			$captchaCode = recaptchaGetQuestion();
+			$interface->assign('captcha', $captchaCode);
+		}
+		return [
+			'title'         => 'Share via E-mail',
+			'modalBody'     => $interface->fetch("GroupedWork/email-series.tpl"),
+			'modalButtons'  => "<button class='tool btn btn-primary' onclick='$(\"#emailForm\").submit()'>Send E-mail</button>"
+		];
+	}
+
 	function sendEmail(){
 		global $interface;
 		global $configArray;
@@ -678,6 +702,69 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 				$subject = translate('Library Catalog Record') . ': ' . $recordDriver->getTitle();
 				$body    = $interface->fetch('Emails/grouped-work-email.tpl');
+
+				require_once ROOT_DIR . '/sys/Mailer.php';
+				$mail        = new VuFindMailer();
+				$emailResult = $mail->send($to, $configArray['Site']['email'], $subject, $body, $from);
+
+				if ($emailResult === true){
+					$result = [
+						'result'  => true,
+						'message' => 'Your e-mail was sent successfully.',
+					];
+				}elseif (PEAR_Singleton::isError($emailResult)){
+					$result = [
+						'result'  => false,
+						'message' => "Your e-mail message could not be sent: {$emailResult}.",
+					];
+				}else{
+					$result = [
+						'result'  => false,
+						'message' => 'Your e-mail message could not be sent due to an unknown error.',
+					];
+					global $logger;
+					$logger->log("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body", PEAR_LOG_ERR);
+				}
+			}else{
+				$result = [
+					'result'  => false,
+					'message' => 'Sorry, we can&apos;t send e-mails with html or other data in it.',
+				];
+			}
+		}else{ // logged in check, or captcha check
+			$result = [
+				'result'  => false,
+				'message' => 'Not logged in or invalid captcha response',
+			];
+		}
+		return $result;
+	}
+
+	function sendSeriesEmail(){
+		global $interface;
+		global $configArray;
+		$recaptchaValid = recaptchaCheckAnswer();
+		if (UserAccount::isLoggedIn() || $recaptchaValid){
+			$message = $_REQUEST['message'];
+			if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
+				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+				$id           = $_REQUEST['id'];
+				$recordDriver = new GroupedWorkDriver($id);
+				$to           = strip_tags($_REQUEST['to']);
+				$from         = strip_tags($_REQUEST['from']);
+				$interface->assign('from', $from);
+				$interface->assign('message', $message);
+				$interface->assign('recordDriver', $recordDriver);
+				$interface->assign('url', $recordDriver->getAbsoluteUrl());
+				require_once ROOT_DIR . '/sys/Novelist/Novelist3.php';
+				$novelist   = NovelistFactory::getNovelist();
+				$seriesInfo = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
+				$seriesData = $seriesInfo ->seriesTitles ?? [];
+				$seriesTitle = $seriesInfo->seriesTitle ?? null;
+				$interface->assign('seriesTitle', $seriesTitle);
+				$interface->assign('seriesData', $seriesData);
+				$subject = translate('Library Catalog Series') . ': ' . $seriesTitle;
+				$body    = $interface->fetch('Emails/series-email.tpl');
 
 				require_once ROOT_DIR . '/sys/Mailer.php';
 				$mail        = new VuFindMailer();

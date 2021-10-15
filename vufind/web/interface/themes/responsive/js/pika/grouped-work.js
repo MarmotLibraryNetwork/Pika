@@ -335,6 +335,28 @@ Pika.GroupedWork = (function(){
 			return false;
 		},
 
+		sendSeriesEmail: function(id){
+
+			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+					params = {
+						'method': 'sendSeriesEmail'
+						, from: $('#from').val()
+						, to: $('#to').val()
+						, message: $('#message').val()
+						, 'g-recaptcha-response': (typeof grecaptcha !== 'undefined') ? grecaptcha.getResponse() : false
+					};
+			$.getJSON(url, params,
+					function (data){
+				if (data.result){
+					Pika.showMessage("Success", data.message);
+				}else{
+					Pika.showMessage("Error", data.message);
+				}
+			}
+			).fail(Pika.ajaxFail);
+			return false;
+		},
+
 		sendSMS: function (id){
 			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
 					params = {
@@ -403,6 +425,10 @@ Pika.GroupedWork = (function(){
 		showEmailForm: function(trigger, id){
 			return Pika.Account.ajaxLightbox("/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getEmailForm", false, trigger);
 			// return this.basicAjaxHandler('getEmailForm', id, trigger);
+		},
+
+		seriesEmailForm: function(trigger, id){
+			return Pika.Account.ajaxLightbox("/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getSeriesEmailForm", false, trigger);
 		},
 
 		showReviewForm: function(trigger, id){
