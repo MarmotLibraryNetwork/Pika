@@ -53,7 +53,9 @@ class GroupedWork_AJAX extends AJAXHandler {
 		'getEmailForm',
 		'sendEmail',
 		'saveToList',
+		'saveSeriesToList',
 		'getSaveToListForm',
+		'getSaveSeriesToListForm',
 		'sendSMS',
 		'markNotInterested',
 		'clearNotInterested',
@@ -867,6 +869,83 @@ class GroupedWork_AJAX extends AJAXHandler {
 		return $result;
 	}
 
+	function saveSeriesToList(){
+		$result = array();
+
+		if (!UserAccount::isLoggedIn()){
+			$result['success'] = false;
+			$result['message'] = 'Please log in before adding a title to list.';
+		}else{
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+			require_once ROOT_DIR . '/sys/Novelist/Novelist3.php';
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$result['success'] = true;
+			$id                = $_REQUEST['id'];
+			$listId            = $_REQUEST['listId'];
+			$notes             = null;
+
+			//Check to see if we need to create a list
+			$userList = new UserList();
+			$listOk   = true;
+			if (empty($listId)){
+				$userList->title       = "My Favorites";
+				$userList->user_id     = UserAccount::getActiveUserId();
+				$userList->public      = 0;
+				$userList->description = '';
+				$userList->insert();
+			}else{
+				$userList->id = $listId;
+				if (!$userList->find(true)){
+					$result['success'] = false;
+					$result['message'] = 'Sorry, we could not find that list in the system.';
+					$listOk            = false;
+				}
+			}
+
+			if ($listOk){
+				$recordDriver = new GroupedWorkDriver($id);
+				$novelist = NovelistFactory::getNovelist();
+				$seriesInfo = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
+				$seriesTitle = $seriesInfo->seriesTitle;
+				$seriesTitles = $seriesInfo->seriesTitles;
+				$i = 0;
+				foreach($seriesTitles as $title){
+					$userListEntry         = new UserListEntry();
+					$userListEntry->listId = $userList->id;
+					$itemId = $title['id'];
+					require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+					if (!GroupedWork::validGroupedWorkId($itemId)){
+						$result['success'] = false;
+						$result['message'] = 'Sorry, that is not a valid entry for the list.';
+					}else{
+						$userListEntry->groupedWorkPermanentId = $itemId;
+
+						$existingEntry = false;
+						if ($userListEntry->find(true)){
+							$existingEntry = true;
+						}
+						$notes = $seriesTitle . " volume " . $title['volume'];
+						$userListEntry->notes     = strip_tags($notes);
+						$userListEntry->dateAdded = time();
+						if ($existingEntry){
+							$userListEntry->update();
+						}else{
+							$userListEntry->insert();
+						}
+						$i++;
+					}
+				}
+				$result['success'] = true;
+				$result['message'] = 'Added ' . $i . ' titles to your list successfully.';
+				$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/MyList/' . $userList->id . '" role="button">View My list</a>';
+			}
+
+		}
+
+		return $result;
+	}
+
 	function getSaveToListForm(){
 		global $interface;
 
@@ -928,6 +1007,72 @@ class GroupedWork_AJAX extends AJAXHandler {
 		];
 		return $results;
 	}
+
+function getSaveSeriesToListForm(){
+	global $interface;
+	$id = $_REQUEST['id'];
+	require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+	require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+	require_once ROOT_DIR . '/sys/Novelist/Novelist3.php';
+	require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+	$recordDriver = new GroupedWorkDriver($id);
+	$interface->assign('id', $id);
+
+	$novelist   = NovelistFactory::getNovelist();
+	$seriesInfo = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
+	$seriesTitles = $seriesInfo->seriesTitles ?? [];
+	$seriesTitle = $seriesInfo->seriesTitle ?? null;
+
+
+	//Get a list of all lists for the user
+
+	$nonContainingLists = [];
+	$listsTooLarge      = [];
+
+	$userLists          = new UserList();
+	$userLists->user_id = UserAccount::getActiveUserId();
+	$userLists->deleted = 0;
+	$userLists->orderBy('dateUpdated > unix_timestamp()-300 desc, if(dateUpdated > unix_timestamp()-300 , dateUpdated, 0) desc, title');
+	// Sort lists first by any that have been recently updated (within the last 5 mins)  eg a user is currently build a specific list
+	// second sort factor for multiple lists updated within the last five minutes is the last updated time; other lists come next
+	// finally alphabetical order for lists that haven't been updated recently
+	//This complex sorting allows for a list that has had an entry added to it recently,
+	// to show as the default selected list in the dropdown list of which user lists to add a title to
+	$userLists->find();
+
+	while ($userLists->fetch()){
+		//Check to see if the user has already added the title to the list.
+		if ($userLists->numValidListItems() >= 2000){
+			$listsTooLarge[] = [
+				'id'    => $userLists->id,
+				'title' => $userLists->title,
+			];
+		}
+		$userListEntry                         = new UserListEntry();
+		$userListEntry->listId                 = $userLists->id;
+		$userListEntry->groupedWorkPermanentId = $id;
+		if ($userLists->numValidListItems() < 2000){
+			$nonContainingLists[] = [
+				'id'    => $userLists->id,
+				'title' => $userLists->title,
+			];
+		}
+
+	}
+
+	$interface->assign('nonContainingLists', $nonContainingLists);
+	$interface->assign('largeLists', $listsTooLarge);
+	$interface->assign('seriesTitles', $seriesTitles);
+	$interface->assign('seriesTitle', $seriesTitle);
+
+		$results = [
+			'title'         => 'Add Series to List',
+			'modalBody'     => $interface->fetch("GroupedWork/save-series.tpl"),
+			'modalButtons'  => "<button class='tool btn btn-primary' onclick='Pika.GroupedWork.saveSeriesToList(\"{$id}\");'>Save To List</button>",
+		];
+		return $results;
+}
+
 
 	function sendSMS(){
 		global $configArray;

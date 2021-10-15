@@ -313,6 +313,28 @@ Pika.GroupedWork = (function(){
 			return false;
 		},
 
+	saveSeriesToList: function(id)
+		{
+			Pika.Account.ajaxLogin(function (){
+				var listId = $('#addToList-list').val(),
+						url   = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+						params = {
+							'method': 'saveSeriesToList'
+							, listId: listId
+						};
+				$.getJSON(url, params,
+						function(data){
+								if(data.success){
+									Pika.showMessageWithButtons("Added Successfully", data.message, data.buttons);
+								}	else{
+									Pika.showMessage("Error", data.message);
+								}
+						}
+				)
+			});
+				return false;
+		},
+
 		sendEmail: function (id){
 			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
 					params = {
@@ -437,6 +459,9 @@ Pika.GroupedWork = (function(){
 
 		showSaveToListForm: function (trigger, id){
 			return this.basicAjaxHandler('getSaveToListForm', id, trigger);
+		},
+		showSaveSeriesToListForm: function (trigger, id){
+			return this.basicAjaxHandler('getSaveSeriesToListForm', id, trigger);
 		},
 
 		showSmsForm: function(trigger, id){

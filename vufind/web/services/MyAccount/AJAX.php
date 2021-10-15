@@ -645,14 +645,17 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	function getCreateListForm(){
 		global $interface;
-
+		$list['title'] = "";
+		if(isset($_REQUEST['defaultTitle'])){
+			$list['title'] = $_REQUEST['defaultTitle'];
+		}
 		if (isset($_REQUEST['groupedWorkId'])){
 			$id = $_REQUEST['groupedWorkId'];
 			$interface->assign('groupedWorkId', $id);
 		}else{
 			$id = '';
 		}
-
+		$interface->assign('list', $list);
 		return array(
 			'title'        => 'Create new List',
 			'modalBody'    => $interface->fetch("MyAccount/list-form.tpl"),
