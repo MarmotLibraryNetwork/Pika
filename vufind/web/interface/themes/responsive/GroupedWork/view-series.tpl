@@ -20,7 +20,9 @@
 		</div>
 	</div>
 	{/if}
-
+	<div class="row">
+      {include file='GroupedWork/series-tools.tpl' seriesList=$resourceList}
+	</div>
 	<div class="clearer">&nbsp;</div>
 
 	<div class="result-head">
