@@ -700,20 +700,21 @@ class Solr implements IndexEngine {
 	 * applySearchSpecs -- internal method to build query string from search parameters
 	 *
 	 * @access  private
-	 * @param array $mungeRules   The SearchSpecs-derived structure or substructure defining the search, derived from the
-	 *                            json file
-	 * @param array $mungedValues The values for the various munge types
-	 * @param string $joiner      Joiner of sub-queries
+	 * @param array $mungeRules            The SearchSpecs-derived structure or substructure defining the search,
+	 *                                     derived from the json file
+	 * @param array $mungedValues          The values for the various munge types
+	 * @param bool $isKeyWordSearchSpec    Is this the main search type keyword (with the most elaborate search spec)
+	 * @param string $joiner               Joiner of sub-queries  eg AND OR
 	 *
-	 * @return  string            A search string suitable for adding to a query URL
+	 * @return  string            A search string suitable for query Solr with
 	 */
-	private function _applySearchSpecs($mungeRules, $mungedValues, $joiner = 'OR'){
+	private function _applySearchSpecs($mungeRules, $mungedValues, bool $isKeyWordSearchSpec = false, $joiner = 'OR'){
 		$clauses = [];
 		foreach ($mungeRules as $field => $clauseArray) {
 			if (is_numeric($field)){
 				$sw           = array_shift($clauseArray); // shift off the join string and weight
 				$internalJoin = ' ' . $sw[0] . ' ';
-				$searchString = '(' . $this->_applySearchSpecs($clauseArray, $mungedValues, $internalJoin) . ')'; // Build it up recursively
+				$searchString = '(' . $this->_applySearchSpecs($clauseArray, $mungedValues, $isKeyWordSearchSpec, $internalJoin) . ')'; // Build it up recursively
 				$weight       = $sw[1];                                                                           // ...and add a weight if we have one
 				if (!empty($weight)){
 					$searchString .= '^' . $weight;
@@ -740,16 +741,20 @@ class Solr implements IndexEngine {
 						case 'canceled_isbn':
 						case 'primary_isbn':
 							if (!preg_match('/^((?:\sOR\s)?["(]?\d{9,13}X?[\s")]*)+$/', $fieldValue)){
+								//Match 9-13 digits with optional X at the end eg isbn structures
+								// Or phrases like ' OR [isbn]'  or ' OR ([isbn])' or ' OR "[isbn]"' where [isbn] is an actual isbn number
+								// Note the preceding space in front of the OR is needed
+								// TODO: note when these OR checks are needed
 								continue 2;
 							}else{
 								// Now only 13 digit ISBN numbers are in the search index so just search for those
-//								require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
-//								$isbn = new ISBN($fieldValue);
-//								$isbn13 = $isbn->get13();
-//								if ($isbn13){
-//									$fieldValue = $isbn13;
-//								} else
-									if (strlen($fieldValue) == 10){
+//									require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
+//									$isbn   = new ISBN($fieldValue);
+//									$isbn13 = $isbn->get13();
+//									if ($isbn13){
+//										$fieldValue = $isbn13;
+//									}else {
+								if (strlen($fieldValue) == 10){
 									require_once ROOT_DIR . '/sys/ISBN/ISBNConverter.php';
 									$temp = ISBNConverter::convertISBN10to13($fieldValue);
 									if (!empty($temp)){
@@ -757,47 +762,60 @@ class Solr implements IndexEngine {
 									}
 								}
 
-//								$isbn10 = $isbn->get10();
-//								$isbn13 = $isbn->get13();
-//								if ($isbn10 && $isbn13){
-//									$fieldValue =  $isbn10 . ' OR ' . $isbn13;
-//								}
+//									$isbn10 = $isbn->get10();
+//									$isbn13 = $isbn->get13();
+//									if ($isbn10 && $isbn13){
+//										$fieldValue = $isbn10 . ' OR ' . $isbn13;
+//									}
 
 							}
 							break;
-						case 'id': //todo : double check that this includes all valid id schemes
-							if (!preg_match('/^"?(\d+|.[boi]\d+x?|[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12})"?$/i',
-								$fieldValue)){
-								continue 2;
-							}
-							break;
-						case 'alternate_ids': //todo: this doesn't have all Id schemes included
-							//TODO: Only do this filtering in a keyword search See D-1548
-							if (!preg_match('/^"?(\d+|.?[boi]\d+x?|[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|MWT\d+|CARL\d+)"?$/i',
-								$fieldValue)){
-								continue 2;
-							}
-							break;
-						case 'issn':
-							if (!preg_match('/^"?[\dXx-]+"?$/', $fieldValue)){
-								continue 2;
-							}
-							break;
-						case 'upc':
-							if (!preg_match('/^"?\d+"?$/', $fieldValue)){
-								continue 2;
-							}
-							break;
+					}
+
+					if ($isKeyWordSearchSpec){
+						// Only do these field skips when working with the Keyword search spec
+						switch ($field){
+							case 'id':
+								if (!preg_match('/^"?(list\d+|[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12})"?$/i',
+									// Match list Id number OR grouped work permanent id
+									$fieldValue)){
+									continue 2;
+								}
+								break;
+							case 'alternate_ids': //todo: this doesn't have all Id schemes included
+								if (!preg_match('/^"?(\d+|.?[boi]\d+x?|[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|MWT\d+|CARL\d+)"?$/i',
+									// Match all digits OR Sierra-style bib, item or order numbers OR grouped work or overdrive Ids OR hoopla record numbers OR CARLX record Ids
+									$fieldValue)){
+									continue 2;
+								}
+								break;
+							case 'issn':
+								if (!preg_match('/^"?[\dXx-]+"?$/', $fieldValue)){
+									continue 2;
+								}
+								break;
+							case 'upc':
+								if (!preg_match('/^"?\d+"?$/', $fieldValue)){
+									continue 2;
+								}
+								break;
+						}
 					}
 
 					// build a string like title:("one two")
 					$searchString = $field . ':(' . $fieldValue . ')';
-					//Check to make sure we don't already have this clause.  We will get the same clause if we have a single word and are doing different munges
-					foreach ($clauses as $clause) {
-						if (strpos($clause, $searchString) === 0) {
-							continue 2;
-						}
+					//Check to make sure we don't already have this clause.
+					//  We will get the same clause if we have a single word and are doing different munges
+					if (in_array($searchString, $clauses)){
+						continue 2;
 					}
+					// The below might match against longer clauses that begin with the current one.
+					// That might be a good idea or a bad one. Replaced with the above check instead
+//					foreach ($clauses as $clause) {
+//						if (strpos($clause, $searchString) === 0) {
+//							continue 2;
+//						}
+//					}
 
 					// Add the weight it we have one. Yes, I know, it's redundant code.
 					$weight = $spec[1];
