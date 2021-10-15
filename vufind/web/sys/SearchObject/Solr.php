@@ -52,8 +52,8 @@ class SearchObject_Solr extends SearchObject_Base {
 	private $indexEngine = null;
 	// Facets information
 	private $allFacetSettings = array();    // loaded from facets.ini
-	// Optional, used on author screen for example
-	private $searchSubType  = '';
+	// Search types of author have two subtypes: home and search
+	private $authorSearchType  = '';
 
 	// Spelling
 	private $spellingLimit = 3;
@@ -336,27 +336,27 @@ class SearchObject_Solr extends SearchObject_Base {
 
 			// *** Author/Home
 			if ($action == 'Home' || $author_ajax_call) {
-				$this->searchSubType = 'home';
+				$this->authorSearchType = 'home';
 				// Remove our empty basic search (default)
-				$this->searchTerms = array();
+				$this->searchTerms = [];
 				// Prepare the search as a normal author search
 				$author = $_REQUEST['author'];
 				if (is_array($author)){
 					$author = array_pop($author);
 				}
 				$this->searchTerms[] = [
-                    'index'   => 'Author',
-                    'lookfor' => trim(strip_tags($author))
+					'index'   => 'Author',
+					'lookfor' => trim(strip_tags($author))
 				];
 			}
 
 			// *** Author/Search
 			if ($action == 'Search') {
-				$this->searchSubType = 'search';
+				$this->authorSearchType = 'search';
 				// We already have the 'lookfor', just set the index
 				$this->searchTerms[0]['index'] = 'Author';
 				// We really want author facet data
-				$this->facetConfig = array();
+				$this->facetConfig = [];
 				$this->addFacet('authorStr');
 				// Offset the facet list by the current page of results, and
 				// allow up to ten total pages of results -- since we can't
@@ -990,22 +990,23 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @access  public
 	 * @return  array    Sort value => description array.
 	 */
-	protected function getSortOptions()
-	{
+	protected function getSortOptions(){
 		// Author/Search screen
-		if ($this->searchType == 'author' && $this->searchSubType == 'search') {
+		if ($this->searchType == 'author' && $this->authorSearchType == 'search'){
 			// It's important to remember here we are talking about on-screen
 			//   sort values, not what is sent to Solr, since this screen
 			//   is really using facet sorting.
-			return array('relevance' => 'sort_author_relevance',
-                'author' => 'sort_author_author');
+			return [
+				'relevance' => 'sort_author_relevance',
+				'author'    => 'sort_author_author'
+			];
 		}
 
 		// Everywhere else -- use normal default behavior
-		$sortOptions = parent::getSortOptions();
+		$sortOptions   = parent::getSortOptions();
 		$searchLibrary = Library::getSearchLibrary($this->searchSource);
 		if ($searchLibrary == null){
-			unset($sortOptions['callnumber_sort'] );
+			unset($sortOptions['callnumber_sort']);
 		}
 		return $sortOptions;
 	}
@@ -1072,13 +1073,13 @@ class SearchObject_Solr extends SearchObject_Base {
 				return $this->serverUrl . '/MyAccount/MyList/' . urlencode($_GET['id']) . '?';
 			case 'author' :
 				// Base URL is different for author searches:
-				if ($this->searchSubType == 'home'){
+				if ($this->authorSearchType == 'home'){
 					return $this->serverUrl . '/Author/Home?';
 				}
-				if ($this->searchSubType == 'search'){
+				if ($this->authorSearchType == 'search'){
 					return $this->serverUrl . "/Author/Search?";
 				}
-			// Restored saved author searches will not have a searchSubType set so need to fall back to the default Base URL (so no break statement)
+			// Restored saved author searches will not have a authorSearchType set so need to fall back to the default Base URL (so no break statement)
 			default :
 				// If none of the special cases were met, use the default from the parent:
 				return parent::getBaseUrl();
@@ -1100,7 +1101,7 @@ class SearchObject_Solr extends SearchObject_Base {
 				// Author Home screen
 				case 'author':
 					//restored saved author searches
-					$params[] = ($this->searchSubType == 'home' ? 'author=' : 'lookfor=') . urlencode($this->searchTerms[0]['lookfor']);
+					$params[] = ($this->authorSearchType == 'home' ? 'author=' : 'lookfor=') . urlencode($this->searchTerms[0]['lookfor']);
 					$params[] = 'basicSearchType=Author';
 					break;
 				// New Items or Reserves modules may have a few extra parameters to preserve:
@@ -1408,7 +1409,7 @@ class SearchObject_Solr extends SearchObject_Base {
 
 		$this->indexResult = $this->indexEngine->search(
 			$this->query,      // Query string
-			$this->index,      // DisMax Handler
+			$this->index,      // The search Specification to Use
 			$filterQuery,      // Filter query
 			$recordStart,      // Starting record
 			$this->limit,      // Records per page
