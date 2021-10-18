@@ -2644,7 +2644,7 @@ class GroupedWorkDriver extends RecordInterface {
 		global $interface;
 		$interface->assign('og_title', $this->getTitle());
 		$interface->assign('og_type', $this->getOGType());
-		$interface->assign('og_image', $this->getBookcoverUrl('small', true));
+		$interface->assign('og_image', $this->getBookcoverUrl('medium', true));
 		$interface->assign('og_url', $this->getAbsoluteUrl());
 
 		//TODO: add audience, award, content

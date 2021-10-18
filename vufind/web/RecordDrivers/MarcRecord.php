@@ -2290,7 +2290,7 @@ class MarcRecord extends IndexRecord {
 			'author'              => $author,
 			'bookEdition'         => $this->getEdition(),
 			'isAccessibleForFree' => true,
-			'image'               => $this->getBookcoverUrl('small'),
+			'image'               => $this->getBookcoverUrl('medium'),
 			'offers'              => $offers,
 		);
 
@@ -2298,7 +2298,7 @@ class MarcRecord extends IndexRecord {
 		global $interface;
 		$interface->assign('og_title', $this->getTitle());
 		$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
-		$interface->assign('og_image', $this->getBookcoverUrl('small'));
+		$interface->assign('og_image', $this->getBookcoverUrl('medium'));
 		$interface->assign('og_url', $this->getAbsoluteUrl());
 		return $semanticData;
 	}
