@@ -2268,9 +2268,7 @@ class MarcRecord extends IndexRecord {
 		require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
 		$linkedDataRecord = new LDRecordOffer($this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource()));
 
-		if(!$offers = $linkedDataRecord->getOffers()) {
-			return [];
-		}
+		$offers = $linkedDataRecord->getOffers() ?? [];
 		// handle null @type
 		if($linkedDataRecord->getWorkType()) {
 			$type = $linkedDataRecord->getWorkType();
@@ -2292,15 +2290,15 @@ class MarcRecord extends IndexRecord {
 			'author'              => $author,
 			'bookEdition'         => $this->getEdition(),
 			'isAccessibleForFree' => true,
-			'image'               => $this->getBookcoverUrl('medium'),
-			"offers"              => $offers,
+			'image'               => $this->getBookcoverUrl('small'),
+			'offers'              => $offers,
 		);
 
 		//Open graph data (goes in meta tags)
 		global $interface;
 		$interface->assign('og_title', $this->getTitle());
 		$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
-		$interface->assign('og_image', $this->getBookcoverUrl('medium'));
+		$interface->assign('og_image', $this->getBookcoverUrl('small'));
 		$interface->assign('og_url', $this->getAbsoluteUrl());
 		return $semanticData;
 	}
