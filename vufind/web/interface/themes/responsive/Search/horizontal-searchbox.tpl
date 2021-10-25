@@ -15,7 +15,7 @@
 
 		{assign var="hiddenSearchSource" value=false}
 		{* Switch sizing when no search source is to be displayed *}
-		{if $searchSources|@count <= 1}
+		{if !empty($searchSources) && $searchSources|@count <= 1}
 			{assign var="hiddenSearchSource" value=true}
 			<input type="hidden" name="searchSource" value="{$searchSource}">
 		{/if}
@@ -37,14 +37,14 @@
 							          placeholder="&#128269; SEARCH" {* disabled in css by default. plb 11-19-2014 *}
 							          type="search"
 							          name="lookfor"
-							          value=""
+{*							          value=""*}
 							          title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term."
 							          onkeyup="return Pika.Searches.resetSearchType()"
 							          onfocus="$(this).select()"
 							          autocomplete="off"
 							          rows="1"
 											{strip}>
-								{$lookfor|escape:"html"}
+								{if $searchType != 'advanced'}{$lookfor|escape:"html"}{/if}
 								</textarea>
 				</div>
 

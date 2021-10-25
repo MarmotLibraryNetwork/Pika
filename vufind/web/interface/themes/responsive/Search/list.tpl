@@ -1,4 +1,17 @@
 <div id="searchInfo">
+
+    {if $searchType == 'advanced'}
+			<div class="well well-sm">
+{*				<h5>Advanced Search Query : </h5>*}
+				<code>{$lookfor|escape:"html"}</code>
+				<br>
+				<p class="help-block">
+				<a href="/Search/Advanced">{translate text='Edit This Advanced Search'}</a>
+				</p>
+			</div>
+    {/if}
+
+
 	{* Recommendations *}
 	{if $topRecommendations}
 		{foreach from=$topRecommendations item="recommendations"}
@@ -65,7 +78,7 @@
 
 	{if $showProspectorLink}
 		{* Prospector Results *}
-		<div id='prospectorSearchResultsPlaceholder'></div>
+		<div id="prospectorSearchResultsPlaceholder"></div>
 		{* javascript call for content at bottom of page*}
 	{elseif !empty($interLibraryLoanName) && !empty($interLibraryLoanUrl)}
 		{include file="Search/interLibraryLoanSearch.tpl"}
@@ -73,7 +86,7 @@
 
 	{if $showDplaLink}
 		{* DPLA Results *}
-		<div id='dplaSearchResultsPlaceholder'></div>
+		<div id="dplaSearchResultsPlaceholder"></div>
 	{/if}
 
 	{if $enableMaterialsRequest}

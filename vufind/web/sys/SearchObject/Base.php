@@ -1482,7 +1482,7 @@ abstract class SearchObject_Base {
 	protected function debugOutputSearchTerms(){
 		// Advanced search
 		if (isset($this->searchTerms[0]['group'])){
-			$output = "GROUP JOIN : " . $this->searchTerms[0]['join'] . "<br>\n";
+			$output = 'GROUP JOIN : ' . $this->searchTerms[0]['join'] . "<br>\n";
 			for ($i = 0;$i < count($this->searchTerms);$i++){
 				$output .= "BOOL ($i) : " . $this->searchTerms[$i]['group'][0]['bool'] . "<br>\n";
 				for ($j = 0;$j < count($this->searchTerms[$i]['group']);$j++){
@@ -1492,8 +1492,8 @@ abstract class SearchObject_Base {
 			}
 			// Basic search
 		}else{
-			$output = "TERMS : " . $this->searchTerms[0]['lookfor'] . "<br>\n";
-			$output .= "INDEX : " . $this->searchTerms[0]['index'] . "<br>\n";
+			$output = 'TERMS : ' . $this->searchTerms[0]['lookfor'] ?? '' . "<br>\n";
+			$output .= 'INDEX : ' . $this->searchTerms[0]['index'] ?? '' . "<br>\n";
 		}
 
 		return $output;
@@ -1925,7 +1925,7 @@ abstract class SearchObject_Base {
 		$arrayStructuredByParentheses = $parser->parse($advancedSearchDisplayQuery);
 
 		$searchTerms = [];
-		$defaultJoin = (is_string($arrayStructuredByParentheses[1]) && self::isBooleanKeyword($arrayStructuredByParentheses[1])) ? $arrayStructuredByParentheses[1] : 'AND';
+		$defaultJoin = (!empty($arrayStructuredByParentheses[1]) && is_string($arrayStructuredByParentheses[1]) && self::isBooleanKeyword($arrayStructuredByParentheses[1])) ? $arrayStructuredByParentheses[1] : 'AND';
 		$groupJoin   = $defaultJoin;
 		foreach ($arrayStructuredByParentheses as $value){
 			if (is_string($value)){
