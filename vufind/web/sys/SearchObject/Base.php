@@ -487,6 +487,7 @@ abstract class SearchObject_Base {
 		// Search URL.  If there's only one parameter, we can flatten it,
 		// but otherwise we should treat it as an error -- no point in going
 		// to great lengths for compatibility.
+		//TODO: document how this would come into play; or remove if it does
 		if (is_array($searchTerm)) {
 			if (count($searchTerm) == 1) {
 				$searchTerm = strip_tags(reset($searchTerm));
@@ -506,18 +507,16 @@ abstract class SearchObject_Base {
 			$type = $this->defaultIndex;
 		}
 
-		if (strpos($searchTerm, ':') > 0){
-			$tempSearchInfo = explode(':', $searchTerm, 2);
-			if (in_array($tempSearchInfo[0], $this->basicTypes)){
-				$type       = $tempSearchInfo[0];
-				$searchTerm = $tempSearchInfo[1];
-			}
-		}
+		if (strpos($searchTerm, ':') > 0 && $this->isAdvancedSearchFormDisplayQuery($searchTerm)){
+			$this->isAdvanced = true;
+			$this->searchTerms = $this->buildAdvancedSearchTermsFromAdvancedDisplayQuery($searchTerm);
 
-		$this->searchTerms[] = [
-			'index'   => $type,
-			'lookfor' => $searchTerm
-		];
+		}else{
+			$this->searchTerms[] = [
+				'index'   => $type,
+				'lookfor' => $searchTerm
+			];
+		}
 		return true;
 	}
 
@@ -642,25 +641,21 @@ abstract class SearchObject_Base {
 		}
 		// Check for a view parameter in the url.
 		if (isset($_REQUEST['view'])) {
-			if ($_REQUEST['view'] == 'rss') {
-				// we don't want to store rss in the Session variable
-				$this->view = 'rss';
-			}elseif ($_REQUEST['view'] == 'excel') {
-				// we don't want to store excel in the Session variable
-				$this->view = 'excel';
+			if ($_REQUEST['view'] == 'excel' || $_REQUEST['view'] == 'rss') {
+				// we don't want to store excel or rss in the Session variable
+				$this->view = $_REQUEST['view'];
 			} else {
-				// store non-rss views in Session for persistence
+				// store other views in $_SESSION for persistence
 				$validViews = $this->getViewOptions();
 				// make sure the url parameter is a valid view
-//				if (in_array($_REQUEST['view'], array_keys($validViews))) {
-				if (in_array($_REQUEST['view'], $validViews)) { // currently using a simple array listing the views (not listed in the keys)
+				if (in_array($_REQUEST['view'], $validViews)) {
 					$this->view = $_REQUEST['view'];
 					$_SESSION['lastView'] = $this->view;
 				} else {
 					$this->view = $this->defaultView;
 				}
 			}
-		} elseif (isset($_SESSION['lastView']) && !empty($_SESSION['lastView'])) {
+		} elseif (!empty($_SESSION['lastView'])) {
 			// if there is nothing in the URL, check the Session variable
 			$this->view = $_SESSION['lastView'];
 		} else {
@@ -969,22 +964,9 @@ abstract class SearchObject_Base {
 	 * @access  public
 	 * @return  mixed    various internal variables
 	 */
-	public function getBasicTypes(){
-		$basicSearchTypes = $this->basicTypes;
-		if ($this->searchType != $this->advancedSearchType){
-			$searchIndex  = $this->getSearchIndex();
-			$searchSource = $_REQUEST['searchSource'] ?? 'local';
-			if ($this->searchType != 'genealogy' && $searchSource != 'genealogy' &&
-				$this->searchType != 'islandora' && $searchSource != 'islandora'
-			){
-				if (!array_key_exists($searchIndex, $basicSearchTypes)){
-					$basicSearchTypes[$searchIndex] = $searchIndex;
-				}
-			}
-		}
-		return $basicSearchTypes;
-	}
+
 	public function getAdvancedSearchTypes()  {return $this->advancedSearchTypes;}
+	public function getBasicTypes()     {return $this->basicTypes;}
 	public function getFilters()        {return $this->filterList;}
 	public function getPage()           {return $this->page;}
 	public function getLimit()          {return $this->limit;}
@@ -1351,7 +1333,7 @@ abstract class SearchObject_Base {
 			$search->session_id    = session_id();
 			$search->created       = date('Y-m-d');
 			$search->searchSource  = $this->searchSource;
-			$search->search_object = serialize($this->minify());
+//			$search->search_object = serialize($this->minify()); // Only minify once after we have the saved search id below
 
 			$search->insert();
 			// Record the details
@@ -1373,7 +1355,7 @@ abstract class SearchObject_Base {
 		}
 		// Yes, retrieve it
 		require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
-		$search = new SearchEntry();
+		$search     = new SearchEntry();
 		$search->id = $lastSearchId;
 		if ($search->find(true)) {
 			// Found, make sure the user has the
@@ -1489,10 +1471,6 @@ abstract class SearchObject_Base {
 			// Add to search history
 			$this->addToHistory();
 		}
-
-		//if ($this->debug) {
-		//    echo $this->debugOutput();
-		//}
 	}
 
 	/**
@@ -1919,7 +1897,8 @@ abstract class SearchObject_Base {
 
 		// Base 'advanced' query
 		if (count($groups) > 0) {
-			$searchPhrasesConnector = ') ' . $search[0]['join'] . ' (';
+			// TODO: Only surround with parentheses when  count($groups) > 1   ???
+			$searchPhrasesConnector = ') ' . $this->searchTerms[0]['join'] . ' (';
 			$output     = '(' . implode($searchPhrasesConnector, $groups) . ')';
 		} else {
 			$output = ''; // Initialize string in case there are excludes below
@@ -1931,6 +1910,183 @@ abstract class SearchObject_Base {
 		}
 
 		return $output;
+	}
+
+	/**
+	 * Take a string that is presumably the Displayed query string from an Advanced Search
+	 * and reconstruct the Advanced Search Form style search terms array
+	 *
+	 * @param string $advancedSearchDisplayQuery
+	 * @return array
+	 */
+	public function buildAdvancedSearchTermsFromAdvancedDisplayQuery(string $advancedSearchDisplayQuery){
+		require_once ROOT_DIR . '/sys/SearchObject/ParensParser.php';
+		$parser                       = new ParensParser();
+		$arrayStructuredByParentheses = $parser->parse($advancedSearchDisplayQuery);
+
+		$searchTerms = [];
+		$defaultJoin = (is_string($arrayStructuredByParentheses[1]) && self::isBooleanKeyword($arrayStructuredByParentheses[1])) ? $arrayStructuredByParentheses[1] : 'AND';
+		$groupJoin   = $defaultJoin;
+		foreach ($arrayStructuredByParentheses as $value){
+			if (is_string($value)){
+				if (self::isBooleanKeyword($value)){
+					$groupJoin = trim($value);
+				}else{
+					$searchTerms['group'] = $this->parseBooleanSearchClauses($value);
+					$searchTerms['join']  = $groupJoin;
+				}
+
+			}elseif (is_array($value)){
+				//TODO: use of $defaultJoin
+				if (count($value) == 1 && is_array($value[0])){
+					// Doubled parentheses
+					$array = $this->handleSubArraysAdvancedSearchParsing($value[0], $groupJoin);
+					if (!empty($array)){
+						$searchTerms = array_merge($searchTerms, $array);
+					}
+				}else{
+					$array = $this->handleSubArraysAdvancedSearchParsing($value, $groupJoin);
+					if (!empty($array)){
+						$searchTerms = array_merge($searchTerms, $array);
+					}
+				}
+			}
+		}
+		return $searchTerms;
+	}
+
+	/**
+	 * Handle an entry of the $arrayStructuredByParentheses from method above and parse into the array structure expected
+	 * for the Advanced Search Form searches.
+	 *
+	 * @param array $value
+	 * @param string $groupJoin
+	 * @return array
+	 */
+	private function handleSubArraysAdvancedSearchParsing(array $value, string $groupJoin){
+		$searchTerms = [];
+		foreach ($value as $subValue){
+			if (is_string($subValue)){
+				if (self::isBooleanKeyword($subValue)){
+					$groupJoin = $subValue;
+				} else{
+					$groupArray = $this->parseBooleanSearchClauses($subValue);
+					$searchTerms[]    = [
+						'group' => $groupArray,
+						'join'  => $groupJoin,
+					];
+				}
+			}
+		}
+		return $searchTerms;
+	}
+
+	/**
+	 * Determine if a string is a boolena operator term.
+	 * This is used when attempting to construct an Advanced Search Form search query structure
+	 * from a presumed Advanced Search Form Display query.
+	 *
+	 * @param string $string
+	 * @return bool
+	 */
+	private static function isBooleanKeyword(string $string){
+		return in_array(trim($string), ['AND','OR','NOT']);
+	}
+
+	/**
+	 * Parse a search phrase from a clause of a presumed Advanced Search Form Display query.
+	 * It breaks up the phrases by capitalized boolean phrases and reconstructs the corresponding
+	 * search term arrays used for the Advanced Search Form queries.
+	 *
+	 * @param string $searchTerm
+	 * @param string|null $groupJoin
+	 * @return array
+	 */
+	private function parseBooleanSearchClauses(string $searchTerm, string $groupJoin = null){
+		$clauses       = [];
+		$searchPhrases = preg_split('/(?:\s(AND NOT|OR NOT|AND|OR|NOT)\s)/', $searchTerm, 0, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+		// Split by boolean phrases so that we have search phrases on their own; as well as the boolean operator without surrounding spaces
+
+		foreach ($searchPhrases as $i => $term){
+			if (self::isBooleanKeyword($term)){
+				// Our boolean operator
+				// TODO: handling for AND NOT as well as OR NOT
+				$bool = $term;
+			}else{
+				// A single search phrase
+				$aClause = $this->parseAdvancedSearchFormSearchWord($term);
+			}
+			if ($i % 2 == 1){
+//				$aClause['bool'] = $bool ?? ($groupJoin == 'NOT' ? 'NOT' : 'AND'); // I think we only need the groupJoin variable when it is NOT
+				$aClause['bool'] = $bool ?? 'AND';
+				$clauses[]       = $aClause;
+				unset($bool, $aClause);  // undo for the next round of phrases
+			}
+		}
+		if (isset($aClause)){
+			// Catch final search phrases
+			$aClause['bool'] = $bool ?? 'AND';
+			$clauses[]       = $aClause;
+		}
+		return $clauses;
+	}
+
+	/**
+	 * Parse a single search phrase that contains the Advanced Search Spec Handler and the phrase to search with (separated by a colon)
+	 * ie. SearchHandler:phrase
+	 * eg. Title:Othello
+	 *
+	 * @param string $searchTerm
+	 * @return array|void
+	 */
+	private function parseAdvancedSearchFormSearchWord(string $searchTerm){
+		if (strpos($searchTerm, ':')){
+			[$searchSpecHandler, $lookfor] = explode(':', $searchTerm, 2);
+			return [
+				'field'   => $searchSpecHandler,
+				'lookfor' => $lookfor,
+			];
+		}
+//		else {
+//			//TODO: error logging;
+//		}
+	}
+
+	public function convertBasicToAdvancedSearch(){
+		$searchTerms  = $this->searchTerms;
+		$searchString = $searchTerms[0]['lookfor'];
+		$searchIndex  = $searchTerms[0]['index'];
+
+		$this->searchTerms = [
+			[
+				'group' => [
+					0 => [
+						'field'   => $searchIndex,
+						'lookfor' => $searchString,
+						'bool'    => 'AND'
+					]
+				],
+				'join'  => 'AND'
+			]
+		];
+
+		$this->searchType = 'advanced';
+	}
+
+	/**
+	 * Determine whether a search string has a reference to an Advanced Search Handler (aka Advanced Search Types) and
+	 * therefore should be treated as an Adcanced Search Form public query.
+	 *
+	 * @param string $searchPhrase
+	 * @return bool
+	 */
+	public function isAdvancedSearchFormDisplayQuery(string $searchPhrase){
+		foreach ($this->advancedSearchTypes as $advancedSearchHandler => $label_ignored){
+			if (strpos($searchPhrase, $advancedSearchHandler . ':') !== false){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -2031,28 +2187,6 @@ abstract class SearchObject_Base {
 		$this->isPrimarySearch = $flag;
 	}
 
-	public function convertBasicToAdvancedSearch(){
-
-		$searchTerms = $this->searchTerms;
-		$searchString = $searchTerms[0]['lookfor'];
-		$searchIndex = $searchTerms[0]['index'];
-
-		$this->searchTerms = array(
-				array(
-					'group' => array(
-							0 => array(
-								'field' => $searchIndex,
-								'lookfor' => $searchString,
-								'bool' => 'AND'
-							)
-					),
-					'join' => 'AND'
-				)
-		);
-
-		$this->searchType = 'advanced';
-	}
-
 	/**
 	 * Return a url of the current search as an RSS feed.
 	 *
@@ -2125,12 +2259,11 @@ abstract class SearchObject_Base {
  * $searchObject->deminify(unserialize($search));
  *
  */
-class minSO
-{
-	public $t = array();
-	public $f = array();
-	public $hf = array();
-	public $fc = array();
+class minSO {
+	public $t = [];  // search terms
+	public $f = [];  // search filters
+	public $hf = []; // hidden search filters
+	public $fc = []; // facet configurations
 	public $id, $i, $s, $r, $ty, $sr;
 
 	/**
@@ -2141,8 +2274,7 @@ class minSO
 	 *
 	 * @access  public
 	 */
-	public function __construct($searchObject)
-	{
+	public function __construct($searchObject){
 		// Most values will transfer without changes
 		$this->id = $searchObject->getSearchId();
 		$this->i  = $searchObject->getStartTime();
@@ -2154,22 +2286,34 @@ class minSO
 
 		// Search terms, we'll shorten keys
 		$tempTerms = $searchObject->getSearchTerms();
-		foreach ($tempTerms as $term) {
-			$newTerm = array();
-			foreach ($term as $k => $v) {
-				switch ($k) {
-					case 'join'    :  $newTerm['j'] = $v; break;
-					case 'index'   :  $newTerm['i'] = $v; break;
-					case 'lookfor' :  $newTerm['l'] = $v; break;
+		foreach ($tempTerms as $term){
+			$newTerm = [];
+			foreach ($term as $k => $v){
+				switch ($k){
+					case 'join'    :
+						$newTerm['j'] = $v;
+						break;
+					case 'index'   :
+						$newTerm['i'] = $v;
+						break;
+					case 'lookfor' :
+						$newTerm['l'] = $v;
+						break;
 					case 'group' :
-						$newTerm['g'] = array();
-						foreach ($v as $line) {
-							$search = array();
-							foreach ($line as $k2 => $v2) {
-								switch ($k2) {
-									case 'bool'    :  $search['b'] = $v2; break;
-									case 'field'   :  $search['f'] = $v2; break;
-									case 'lookfor' :  $search['l'] = $v2; break;
+						$newTerm['g'] = [];
+						foreach ($v as $line){
+							$search = [];
+							foreach ($line as $k2 => $v2){
+								switch ($k2){
+									case 'bool'    :
+										$search['b'] = $v2;
+										break;
+									case 'field'   :
+										$search['f'] = $v2;
+										break;
+									case 'lookfor' :
+										$search['l'] = $v2;
+										break;
 								}
 							}
 							$newTerm['g'][] = $search;
@@ -2186,12 +2330,12 @@ class minSO
 
 
 		// Add Hidden Filters if Present
-		if (method_exists($searchObject, 'getHiddenFilters')) {
+		if (method_exists($searchObject, 'getHiddenFilters')){
 			$this->hf = $searchObject->getHiddenFilters();
 		}
 
 		// Add Facet Configurations if Present
-		if (method_exists($searchObject, 'getFacetConfig')) {
+		if (method_exists($searchObject, 'getFacetConfig')){
 			$this->fc = $searchObject->getFacetConfig();
 		}
 

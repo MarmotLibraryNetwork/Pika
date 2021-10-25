@@ -280,7 +280,7 @@ class Solr implements IndexEngine {
 	 */
 	private function _loadSearchSpecs(){
 		global $configArray;
-		$results = $this->cache->get('searchSpecs');
+		$results = $this->debugSolrQuery ? null : $this->cache->get('searchSpecs');
 		if (empty($results)) {
 			$searchSpecs = file_get_contents($this->searchSpecsFile);
 			$searchSpecs = preg_replace('/\s*(?!<\")\/\*[^\*]+\*\/(?!\")\s*/', '', $searchSpecs); // Remove any text within /**/ as comments to ignore
@@ -530,8 +530,8 @@ class Solr implements IndexEngine {
 			'rows'                 => 25,
 			'fl'                 => 'id,title_display,title_full,author,author_display', // These appear to be the only fields used for displaying
 			'fq'                 => [],
-//			'mlt.interestingTerms' => 'details', // This returns the interesting terms for this 'more like this' search but isn't used any where
-//			'fl'                   => SearchObject_Solr::$fields
+			//			'mlt.interestingTerms' => 'details', // This returns the interesting terms for this 'more like this' search but isn't used any where
+			//			'fl'                   => SearchObject_Solr::$fields
 		];
 		if ($originalResult){
 			if (!empty($originalResult['target_audience_full'])){
@@ -948,6 +948,8 @@ class Solr implements IndexEngine {
 			$mungedValues['and']          = $andQuery;
 			$mungedValues['or']           = $orQuery;
 			//TODO: move single_word_removal to a custom munge
+
+			// The single_word_removal munge is only used in the Keyword search spec against the title_proper and title_full fields.  pascal 10/15/2021
 			if ($numTokens <= 4) {
 				$mungedValues['single_word_removal'] = $mungedValues['onephrase'];
 			} else {
@@ -994,6 +996,8 @@ class Solr implements IndexEngine {
 			}
 
 		} else {
+			//TODO: this block is never used or called  Should it?  Did it?
+
 			// If we're skipping tokenization, we just want to pass $lookfor through
 			// unmodified (it's probably an advanced search that won't benefit from
 			// tokenization).	We'll just set all possible values to the same thing,
@@ -1011,9 +1015,10 @@ class Solr implements IndexEngine {
 		}
 
 		//Create localized call number
-//		$noWildCardLookFor                    = str_replace('*', '', $lookfor);
-//		$mungedValues['localized_callnumber'] = '"' . str_replace(['"', ':', '/'], ' ', $noWildCardLookFor) . '"';
-		$mungedValues['localized_callnumber'] = '"' . str_replace(['*', '"', ':', '/'], ' ', $lookfor) . '"';
+		// TODO: determine how this munge is useful (over the others) and document it here and the searchSpecs
+		$noWildCardLookFor                    = str_replace('*', '', $lookfor);  // Remove wild card characters
+		$mungedValues['localized_callnumber'] = '"' . str_replace(['"', ':', '/'], ' ', $noWildCardLookFor) . '"'; // Replace some special characters with spaces
+//		$mungedValues['localized_callnumber'] = '"' . str_replace(['*', '"', ':', '/'], ' ', $lookfor) . '"'; // same as above but replaces wildcard character with space as well
 
 		return $mungedValues;
 	}
@@ -1023,35 +1028,36 @@ class Solr implements IndexEngine {
 	 * query to perform the specified search on the specified field(s).
 	 *
 	 * @access  public            Has to be public since it can be called as part of a preg replace statement
-	 * @param string $field    The YAML search spec field name to search
+	 * @param string $searchSpecToUse    The YAML search spec field name to search
 	 * @param string $lookfor  The string to search for in the field
 	 * @param bool   $tokenize Should we tokenize $lookfor or pass it through?
 	 * @return  string              The query
 	 */
-	public function _buildQueryComponent($field, $lookfor, $tokenize = true){
+	public function _buildQueryComponent($searchSpecToUse, $lookfor, $tokenize = true){
 		// Load the YAML search specifications:
-		$ss = $this->_getSearchSpecs($field);
+		$ss = $this->_getSearchSpecs($searchSpecToUse);
 
-		if ($field == 'AllFields'){
-			$field = 'Keyword';
+		if ($searchSpecToUse == 'AllFields'){
+			$searchSpecToUse = 'Keyword';
 		}
 
 		// If we received a field spec that wasn't defined in the YAML file,
 		// let's try simply passing it along to Solr.
 		if ($ss === false){
 			$allFields = $this->_loadValidFields();
-			if (in_array($field, $allFields)){
-				return $field . ':(' . $lookfor . ')';
+			if (in_array($searchSpecToUse, $allFields)){
+				return $searchSpecToUse . ':(' . $lookfor . ')';
 			}
 			$dynamicFields = $this->_loadDynamicFields();
 			global $solrScope;
 			foreach ($dynamicFields as $dynamicField){
-				if ($dynamicField . $solrScope == $field){
-					return $field . ':(' . $lookfor . ')';
+				if ($dynamicField . $solrScope == $searchSpecToUse){
+					return $searchSpecToUse . ':(' . $lookfor . ')';
 				}
 			}
 			//Not a search by field
-			return '"' . $field . ':' . $lookfor . '"';
+			//TODO: note kinds of situations that fall here
+			return '"' . $searchSpecToUse . ':' . $lookfor . '"';
 		}
 
 		// Munge the user query in a few different ways:
@@ -1059,7 +1065,7 @@ class Solr implements IndexEngine {
 		$mungedValues = $this->_buildMungeValues($lookfor, $customMunge, $tokenize);
 
 		// Apply the $searchSpecs property to the data:
-		$baseQuery = $this->_applySearchSpecs($ss['QueryFields'], $mungedValues);
+		$baseQuery = $this->_applySearchSpecs($ss['QueryFields'], $mungedValues, $searchSpecToUse == 'Keyword');
 
 		// Apply filter query if applicable:
 		if (isset($ss['FilterQuery'])){
@@ -1067,8 +1073,8 @@ class Solr implements IndexEngine {
 //			return  empty($baseQuery) ? "({$ss['FilterQuery']})" : "($baseQuery) AND ({$ss['FilterQuery']})";
 		}
 
-		return "($baseQuery)";
-//		return empty($baseQuery) ? '' : "($baseQuery)";
+//		return "($baseQuery)";
+		return empty($baseQuery) ? '' : "($baseQuery)";
 	}
 
 	/**
@@ -1120,14 +1126,14 @@ class Solr implements IndexEngine {
 	}
 
 	private array $builtQueries = [];
-	/* Build Query string from search parameters
+
+	/** Build Query string from search parameters
 	 *
-	 * @access	public
-	 * @param	 array	 $search		  An array of search parameters
-	 * @param	 boolean $forDisplay  Whether or not the query is being built for display purposes
-	 * @throws	object							PEAR Error
-	 * @static
-	 * @return	string							The query
+	 * @access  public
+	 * @param string[] $search An array of search parameters
+	 * @param boolean $forDisplay Whether or not the query is being built for display purposes
+	 * @return  string              The query
+	 * @throws  object              PEAR Error
 	 */
 	function buildQuery($search, $forDisplay = false){
 		$key = serialize([$search, $forDisplay]);
@@ -1135,7 +1141,7 @@ class Solr implements IndexEngine {
 			return $this->builtQueries[$key];
 		}
 		$memcacheKey = 'solrQuery' . $this->index . $key;
-		$query       = $this->cache->get($memcacheKey);
+		$query       = $this->debugSolrQuery ? '' : $this->cache->get($memcacheKey); // skip memcache when debugging solr queries
 		if (!empty($query)){
 			return $query;
 		}
@@ -1145,25 +1151,30 @@ class Solr implements IndexEngine {
 		if (is_array($search)) {
 			foreach ($search as $params) {
 				//Check to see if need to break up a basic search into an advanced search
-				$modifiedQuery = false;
-				$that          = $this;
-				if (isset($params['lookfor']) && !$forDisplay) {
-					$lookfor       = preg_replace_callback(
-					 '/([\\w-]+):([\\w\\d\\s"-]+?)\\s?(?<=\b)(AND|OR|AND NOT|OR NOT|\\)|$)(?=\b)/',
-					 function ($matches) use ($that) {
-						 $field    = $matches[1];
-						 $lookfor  = $matches[2];
-						 $newQuery = $that->_buildQueryComponent($field, $lookfor);
-						 return $newQuery . $matches[3];
-					 },
-					 $params['lookfor']
-					);
-					$modifiedQuery = $lookfor != $params['lookfor'];
-				}
-				if ($modifiedQuery) {
-					//This is an advanced search
-					$query = $lookfor;
-				} else {
+//				$modifiedQuery = false;
+//				$that          = $this;
+//				if (isset($params['lookfor']) && !$forDisplay) {
+//					//TODO: note examples that are supposed to be converted
+//					// Note: this seems to be meant as an Advanced Search Form public query detector and parser, but doesn't work
+//					// and is not triggered by many Advanced Search Form public queries
+//					$lookfor       = preg_replace_callback(
+//						'/([\\w-]+):([\\w\\d\\s"-]+?)\\s?(?<=\b)(AND|OR|AND NOT|OR NOT|\\)|$)(?=\b)/',
+//						//     '/(\\w+):([\\w\\d\\s]+?)(\\sAND|OR|AND NOT|OR NOT|\\))/
+//						function ($matches) use ($that) {
+//							$field    = $matches[1];
+//							$lookfor  = $matches[2];
+//							$newQuery = $that->_buildQueryComponent($field, $lookfor);
+//							return $newQuery . $matches[3];
+//						},
+//						$params['lookfor']
+//					);
+//					$modifiedQuery = $lookfor != $params['lookfor'];
+//				}
+//				if ($modifiedQuery) {
+//					//This is an advanced search
+//					$query = $lookfor;
+//				} else {
+
 					// Advanced Search
 					if (isset($params['group'])) {
 						$thisGroup = [];
@@ -1186,7 +1197,7 @@ class Solr implements IndexEngine {
 						}
 					}
 
-					// Basic Search
+					// Basic Search or a basic search phrase (sub-clause of an advanced search)
 					if (isset($params['lookfor']) && $params['lookfor'] != '') {
 						// Clean and validate input
 						$lookfor = $this->validateInput($params['lookfor']);
@@ -1211,16 +1222,20 @@ class Solr implements IndexEngine {
 
 								$query = $params['index'] . ':' . $lookfor;
 							} else {*/
+
+							// Examples of this :
+							// when the search phrase contains a search field reference eg title_exact:test
 							$query .= $lookfor;
 							//}
 						}
 					}
-				}
+//				}
 			}
 		}
 
 		// Put our advanced search together
 		if (count($groups) > 0) {
+			// TODO: Only surround with parentheses when  count($groups) > 1   ???
 			$searchPhrasesConnector = ') ' . $search[0]['join'] . ' (';
 			$query     = '(' . implode($searchPhrasesConnector, $groups) . ')';
 		}
@@ -1416,7 +1431,7 @@ class Solr implements IndexEngine {
 
 				// Load any custom Dismax parameters from the YAML search spec file:
 				if (isset($ss['DismaxParams']) &&
-				 is_array($ss['DismaxParams'])) {
+					is_array($ss['DismaxParams'])) {
 					foreach ($ss['DismaxParams'] as $current) {
 						$options[$current[0]] = $current[1];
 					}
@@ -1756,7 +1771,7 @@ class Solr implements IndexEngine {
 			$blacklistRecords = $searchLocation->recordsToBlackList;
 		}
 		if (!empty($searchLibrary->recordsToBlackList)) {
-				$blacklistRecords .= "\n" . $searchLibrary->recordsToBlackList;
+			$blacklistRecords .= "\n" . $searchLibrary->recordsToBlackList;
 		}
 		if (!empty($blacklistRecords)){
 			$recordsToBlacklist = preg_split('/\s|\r\n|\r|\n/', $blacklistRecords, -1, PREG_SPLIT_NO_EMPTY);
@@ -2120,7 +2135,7 @@ class Solr implements IndexEngine {
 				} else {
 					$errorMessage = 'Unable to process query ' . ($this->debug ? urldecode($queryString) : '');
 					PEAR_Singleton::raiseError(new PEAR_Error($errorMessage . '<br>' .
-					 'Solr Returned: ' . $errorMsg));
+						'Solr Returned: ' . $errorMsg));
 				}
 			} else {
 				$result = json_decode($result, true);
@@ -2202,18 +2217,18 @@ class Solr implements IndexEngine {
 
 		// Normalize fancy quotes:
 		$quotes = array(
-		 "\xC2\xAB" => '"', // Â« (U+00AB) in UTF-8
-		 "\xC2\xBB" => '"', // Â» (U+00BB) in UTF-8
-		 "\xE2\x80\x98" => "'", // â€˜ (U+2018) in UTF-8
-		 "\xE2\x80\x99" => "'", // â€™ (U+2019) in UTF-8
-		 "\xE2\x80\x9A" => "'", // â€š (U+201A) in UTF-8
-		 "\xE2\x80\x9B" => "'", // â€› (U+201B) in UTF-8
-		 "\xE2\x80\x9C" => '"', // â€œ (U+201C) in UTF-8
-		 "\xE2\x80\x9D" => '"', // â€ (U+201D) in UTF-8
-		 "\xE2\x80\x9E" => '"', // â€ž (U+201E) in UTF-8
-		 "\xE2\x80\x9F" => '"', // â€Ÿ (U+201F) in UTF-8
-		 "\xE2\x80\xB9" => "'", // â€¹ (U+2039) in UTF-8
-		 "\xE2\x80\xBA" => "'", // â€º (U+203A) in UTF-8
+			"\xC2\xAB" => '"', // Â« (U+00AB) in UTF-8
+			"\xC2\xBB" => '"', // Â» (U+00BB) in UTF-8
+			"\xE2\x80\x98" => "'", // â€˜ (U+2018) in UTF-8
+			"\xE2\x80\x99" => "'", // â€™ (U+2019) in UTF-8
+			"\xE2\x80\x9A" => "'", // â€š (U+201A) in UTF-8
+			"\xE2\x80\x9B" => "'", // â€› (U+201B) in UTF-8
+			"\xE2\x80\x9C" => '"', // â€œ (U+201C) in UTF-8
+			"\xE2\x80\x9D" => '"', // â€ (U+201D) in UTF-8
+			"\xE2\x80\x9E" => '"', // â€ž (U+201E) in UTF-8
+			"\xE2\x80\x9F" => '"', // â€Ÿ (U+201F) in UTF-8
+			"\xE2\x80\xB9" => "'", // â€¹ (U+2039) in UTF-8
+			"\xE2\x80\xBA" => "'", // â€º (U+203A) in UTF-8
 		);
 		$input  = strtr($input, $quotes);
 
@@ -2242,7 +2257,7 @@ class Solr implements IndexEngine {
 
 		// Ensure wildcards are not at beginning of input
 		if ((substr($input, 0, 1) == '*') ||
-		 (substr($input, 0, 1) == '?')) {
+			(substr($input, 0, 1) == '?')) {
 			$input = substr($input, 1);
 		}
 
@@ -2319,6 +2334,7 @@ class Solr implements IndexEngine {
 	}
 
 	public function isAdvanced($query){
+		//TODO: refactor isAdvancedSolrQueryPhrase
 		// Check for various conditions that flag an advanced Lucene query:
 		if ($query == '*:*'){
 			return true;

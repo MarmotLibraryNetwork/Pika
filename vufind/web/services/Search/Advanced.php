@@ -23,13 +23,9 @@ class Search_Advanced extends Search_AdvancedBase {
 
 	function launch(){
 		global $interface;
-		global $searchObject;
 
-		// Create our search object if the one initialized in index.php is not available
-		if (!$searchObject){
-			/** @var SearchObject_Solr $searchObject */
-			$searchObject = SearchObjectFactory::initSearchObject();
-		}
+		/** @var SearchObject_Solr $searchObject */
+		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->initAdvancedFacets();
 		// We don't want this search in the search history
 		$searchObject->disableLogging();
@@ -71,4 +67,3 @@ class Search_Advanced extends Search_AdvancedBase {
 
 }
 
-?>
