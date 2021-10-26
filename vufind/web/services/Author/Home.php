@@ -33,6 +33,7 @@ class Author_Home extends Union_Results {
 		$searchObject = SearchObjectFactory::initSearchObject();
 //		$searchObject->viewOptions = $this->viewOptions; // set valid view options for the search object
 		$searchObject->init();
+		$searchObject->setPrimarySearch(true);
 
 		$this->processAlternateOutputs($searchObject);
 
