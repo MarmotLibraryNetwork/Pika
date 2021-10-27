@@ -177,6 +177,22 @@ class SearchObject_Solr extends SearchObject_Base {
 		$this->spellcheck = true;
 	}
 
+	public function getBasicTypes(){
+		$basicSearchTypes = $this->basicTypes;
+		if ($this->searchType != $this->advancedSearchType){
+			$searchIndex  = $this->getSearchIndex();
+			$searchSource = $_REQUEST['searchSource'] ?? 'local';
+			if ($this->searchType != 'genealogy' && $searchSource != 'genealogy' &&
+				$this->searchType != 'islandora' && $searchSource != 'islandora'
+			){
+				if (!array_key_exists($searchIndex, $basicSearchTypes)){
+					$basicSearchTypes[$searchIndex] = $searchIndex;
+				}
+			}
+		}
+		return $basicSearchTypes;
+	}
+
 	/**
 	 * TODO: move to solr
 	 * Take a filter string and add it into the protected
