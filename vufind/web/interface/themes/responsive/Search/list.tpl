@@ -1,9 +1,9 @@
 <div id="searchInfo">
 
     {if $searchType == 'advanced'}
-			<div class="well well-sm">
+			<div id="advanced-search" class="well well-sm">
 {*				<h5>Advanced Search Query : </h5>*}
-				<code>{$lookfor|escape:"html"}</code>
+				<code id="advanced-search-display-query">{$lookfor|escape:"html"}</code>
 				<br>
 				<p class="help-block">
 				<a href="/Search/Advanced">{translate text='Edit This Advanced Search'}</a>
