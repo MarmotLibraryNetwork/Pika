@@ -1703,7 +1703,7 @@ class ExtractOverDriveInfo {
 						JSONObject availability = availabilityArray.getJSONObject(i);
 						//Get the product to update
 						if (availability.has("reserveId")){
-							curOverDriveId = availability.getString("reserveId");
+							curOverDriveId = availability.getString("reserveId").toLowerCase();
 							MetaAvailUpdateData curProduct = productsToUpdateMap.get(curOverDriveId);
 							updateDBAvailabilityForProductV1(libraryId, curProduct, availability, curTime, sharedStats.get(curProduct.overDriveId));
 							productsToUpdateMap.remove(curOverDriveId);
