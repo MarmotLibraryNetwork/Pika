@@ -334,7 +334,6 @@ class Sierra {
 	 */
 	public function patronLogin($username, $password, $validatedViaSSO = FALSE){
 		// get the login configuration barcode_pin or name_barcode
-		// TODO: Need to pull login from session, db, memcache, etc, so login isn't called repeatably on each request.
 		$loginMethod = $this->accountProfile->loginConfiguration;
 		// check patron credentials depending on login config.
 		// the returns from _auth methods should be either a sierra patron id or false.
@@ -382,7 +381,7 @@ class Sierra {
 		// can't find patron
 		if (!$patronId) {
 			$msg = "Can't get patron id from Sierra API.";
-			$this->logger->warn($msg, ['barcode'=>$this->patronBarcode]);
+			$this->logger->debug($msg, ['barcode'=>$this->patronBarcode]);
 			return null;
 		}
 
@@ -467,30 +466,29 @@ class Sierra {
 			} else {
 				$this->logger->error("Sierra user id $patronId did not return a barcode");
 			}
-
 		} elseif (!empty($this->patronBarcode)) {
 			// Since Sacramento's student Id's aren't treated as barcodes, we have to ignore the barcodes array from the API
 			$barcode = $this->patronBarcode;
 		}
 
-		// barcode isn't actually in database, but is stored in User->data['barcode']
-		$patron->barcode = $barcode;
-
 		// check all the places barcodes are stored and determine if they need updated.
 		$loginMethod    = $this->accountProfile->loginConfiguration;
 		$patron->source = $this->accountProfile->name;
 
-		if ($loginMethod == "barcode_pin") {
-			if($patron->cat_username != $barcode) {
+		// todo: updating barcode doesn't depend on loginMethod
+		//if ($loginMethod == "barcode_pin") {
+			if($patron->barcode != $barcode/* || $patron->cat_username != $barcode*/) { // todo: [pins] remove references to cat_username obsolete use barcode
 				$updatePatron = true;
-				$patron->cat_username = $barcode;
+				$patron->barcode = $barcode;
+				//$patron->cat_username = $barcode; // todo: [pins] remove references to cat_username
 			}
-		} else {
-			if($patron->cat_password != $barcode) {
-				$updatePatron = true;
-				$patron->cat_password = $barcode;
-			}
-		}
+//		} else {
+//			if($patron->barcode != $barcode/* || $patron->cat_password != $barcode*/) { // todo: [pins] remove references to cat_password obsolete use barcode
+//				$updatePatron = true;
+//				$patron->barcode = $barcode;
+//				//$patron->cat_password = $barcode;
+//			}
+//		}
 
 		// Checks; make sure patron info from sierra matches database. update if needed.
 		// ilsUserId
@@ -756,7 +754,6 @@ class Sierra {
 			$patron->numHoldsIls          = $patron->numHoldsAvailableIls + $patron->numHoldsRequestedIls;
 		}
 
-		// web notes TODO: uncomment if it's ever safe to display web notes field
 		if(isset($pInfo->varFields) && isset($this->configArray['Catalog']['sierraPatronWebNoteField']) && $this->configArray['Catalog']['sierraPatronWebNoteField'] != '') {
 			$webNotesVarField = $this->configArray['Catalog']['sierraPatronWebNoteField'];
 			$webNote = $this->_getVarField($webNotesVarField,$pInfo->varFields);
@@ -1090,7 +1087,7 @@ class Sierra {
 
 		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 		$this->cache->delete($patronCacheKey);
-		// todo: A success message won't be displayed unless the words are EXACTLY as below.
+		// Important: A success message won't be displayed unless the words are EXACTLY as below.
 		return 'Your pin number was updated successfully.';
 	}
 
@@ -2801,11 +2798,6 @@ EOT;
 				if (preg_match('~\\b' . preg_quote($userNamePart) . '\\b~i', $patronName, $m)) {
 					$valid = true;
 				}
-
-				//else {
-					//$valid = false;
-					//break;
-				//}
 			}
 			// If a match is found, break outer foreach and valid is true
 			if ($valid === true) {
@@ -2895,7 +2887,7 @@ EOT;
 				// Note: for sacramento student ids, this call doesn't not return any barcodes
 				$barcode             = $r->barcodes[0];
 				$this->patronBarcode = $barcode;
-				//TODO: this call also returns the sierra id; keep it so we can skip an extra call after pin validation
+				// this call also returns the sierra id; keep it so we can skip an extra call after pin validation
 			}
 			if (!empty($r->id)){
 				// The call above can return an Id even if it doesn't return a barcode, eg for sacramento students
