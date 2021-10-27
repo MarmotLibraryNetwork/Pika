@@ -175,7 +175,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		//Get a list of all materials requests for the user
 		$allRequests = array();
 		if ($user){
-			$barCodeProperty = $user->getAccountProfile()->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
+			$barCodeProperty = 'barcode';
 
 			$materialsRequests = new MaterialsRequest();
 			$materialsRequests->joinAdd(new Location(), "LEFT");

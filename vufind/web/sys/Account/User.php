@@ -689,8 +689,9 @@ class User extends DB_DataObject {
 	static function getObjectStructure(){
 		require_once ROOT_DIR . '/sys/Administration/Role.php';
 		$user                   = UserAccount::getActiveUserObj();
-		$barcodeProperty        = $user->getAccountProfile()->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
-		$displayBarcode         = $barcodeProperty == 'cat_username';
+		$barcodeProperty        = 'barcode';
+		// todo: [pins] not sure about the following line of code
+		$displayBarcode         = $barcodeProperty == 'barcode';
 		$thisIsNotAListOfAdmins = isset($_REQUEST['objectAction']) && $_REQUEST['objectAction'] != 'list';
 		$roleList               = Role::fetchAllRoles($thisIsNotAListOfAdmins);  // Lookup available roles in the system, don't show the role description is lists of admins
 		$structure              = [

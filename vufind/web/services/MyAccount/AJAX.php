@@ -835,7 +835,7 @@ class MyAccount_AJAX extends AJAXHandler {
             $listId = $_REQUEST['id'];
             $user = UserAccount::getLoggedInUser();
             if($user->isStaff()) {
-                $barcodeProperty = $user->getAccountProfile()->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
+                $barcodeProperty = 'barcode';
                 $userTo = new User;
                 $userTo->get($barcodeProperty, $barcodeTo);
                 if ($userTo && $userTo->isStaff()){
@@ -866,7 +866,7 @@ class MyAccount_AJAX extends AJAXHandler {
         {
             $staffUser = UserAccount::getLoggedInUser();
             if($staffUser->isStaff()) {
-                $barcodeProperty = $staffUser->getAccountProfile()->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
+                $barcodeProperty = 'barcode';
                 $barcode = $_REQUEST['barcode'];
                 $user = new User;
                 $user->get($barcodeProperty, $barcode);
