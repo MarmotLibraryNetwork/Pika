@@ -99,12 +99,8 @@
 		</div>
 	{/if}
 
-	{if $enableMaterialsRequest}
-		<h2>Didn't find it?</h2>
-		<p>Can't find what you are looking for? <a href="/MaterialsRequest/NewRequest?lookfor={$lookfor}&basicType={$searchIndex}" onclick="return Pika.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase'}</a>.</p>
-	{elseif $externalMaterialsRequestUrl}
-		<h2>Didn't find it?</h2>
-		<p>Can't find what you are looking for? <a href="{$externalMaterialsRequestUrl}">{translate text='Suggest a purchase'}</a>.</p>
+	{if $enableMaterialsRequest || $externalMaterialsRequestUrl}
+		{include file="MaterialsRequest/solicit-new-materials-request.tpl"}
 	{/if}
 
     {include file="Search/searchTools.tpl" showAdminTools=false}
