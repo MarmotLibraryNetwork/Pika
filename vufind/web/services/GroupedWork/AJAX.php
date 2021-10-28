@@ -68,6 +68,9 @@ class GroupedWork_AJAX extends AJAXHandler {
 		'reloadIslandora',
 		'getSeriesEmailForm',
 		'sendSeriesEmail',
+	);
+
+	protected array $methodsThatRespondThemselves = array(
 		'exportSeriesToExcel',
 	);
 
