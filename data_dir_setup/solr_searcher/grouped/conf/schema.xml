@@ -609,7 +609,7 @@
 		<field name="author_exact" type="text-exact" indexed="true" stored="true" />
 		<!-- copy field with author as source -->
 		<!-- Note: in order to match against this field, the search query must include punctuation for the surname style
-		eg To match "Last, First" the search query must-"last, first".  "last first" will not match->
+		eg To match "Last, First" the search query must-"last, first".  "last first" will not match -->
 
 		<field name="author_left" type="text-left" indexed="true" stored="true" />
 		<!-- copy field with author as source -->
