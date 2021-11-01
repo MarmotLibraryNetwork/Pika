@@ -228,9 +228,9 @@ class User extends DB_DataObject {
 			$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
 			$this->logger->warn($name . " accessed by " . $calledBy['function'], array("trace" => $calledBy));
 			if ($accountProfile = $this->getAccountProfile()){
-				if ($accountProfile->loginConfiguration == 'barcode_pin' && $name = 'cat_username'){
+				if ($accountProfile->loginConfiguration == 'barcode_pin' && $name == 'cat_username'){
 					return $this->barcode;
-				}elseif ($accountProfile->loginConfiguration == 'name_barcode' && $name = 'cat_password'){
+				}elseif ($accountProfile->loginConfiguration == 'name_barcode' && $name == 'cat_password'){
 					return $this->barcode;
 				} else {
 					return $this->{$name};
@@ -250,10 +250,10 @@ class User extends DB_DataObject {
 			$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
 			$this->logger->warn($name . " being set by " . $calledBy['function'], array("trace" => $calledBy));
 			if ($accountProfile = $this->getAccountProfile()){
-				if ($accountProfile->loginConfiguration == 'barcode_pin' && $name = 'cat_username'){
+				if ($accountProfile->loginConfiguration == 'barcode_pin' && $name == 'cat_username'){
 					$this->barcode = $value;
 					return $this->update();
-				}elseif ($accountProfile->loginConfiguration == 'name_barcode' && $name = 'cat_password'){
+				}elseif ($accountProfile->loginConfiguration == 'name_barcode' && $name == 'cat_password'){
 					$this->barcode = $value;
 				} else {
 					$this->{$name} = $value;
@@ -353,20 +353,21 @@ class User extends DB_DataObject {
 	 * @return string|void
 	 */
 	public function getBarcode(){
-		if (isset($this->barcode)){
-			return $this->barcode;
-		}else{
-			/** @var AccountProfile $accountProfile */
-			if ($accountProfile = $this->getAccountProfile()){
-				if ($accountProfile->loginConfiguration == 'barcode_pin'){
-					$this->barcode = trim($this->cat_username);
-					return $this->barcode;
-				}elseif ($accountProfile->loginConfiguration == 'name_barcode'){
-					$this->barcode = trim($this->cat_password);
-					return $this->barcode;
-				}
-			}
-		}
+		return $this->barcode;
+//		if (isset($this->barcode)){
+//			return $this->barcode;
+//		}else{
+//			/** @var AccountProfile $accountProfile */
+//			if ($accountProfile = $this->getAccountProfile()){
+//				if ($accountProfile->loginConfiguration == 'barcode_pin'){
+//					$this->barcode = trim($this->cat_password);
+//					return $this->barcode;
+//				}elseif ($accountProfile->loginConfiguration == 'name_barcode'){
+//					$this->barcode = trim($this->cat_username);
+//					return $this->barcode;
+//				}
+//			}
+//		}
 	}
 
 
