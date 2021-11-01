@@ -281,7 +281,10 @@ class Novelist3{
 								$logger->log("Novelist ISBN for record " . $groupedRecordId . " does not match local holdings", PEAR_LOGWARNING);
 								//$this->loadSeriesInfoMissingISBN($groupedRecordId, $data->FeatureContent->SeriesInfo, $novelistData);
 								$this->loadSeriesInfo($groupedRecordId, $data->FeatureContent->SeriesInfo, $novelistData);
-								$novelistData->primaryISBN = $ISBNs[0];
+								require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+								$groupedWorkDriver = new GroupedWorkDriver($groupedRecordId);
+
+								$novelistData->primaryISBN = $groupedWorkDriver->getPrimaryIsbn();
 							}
 						}
 
