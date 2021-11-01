@@ -68,6 +68,11 @@ class GroupedWork_AJAX extends AJAXHandler {
 		'reloadIslandora',
 		'getSeriesEmailForm',
 		'sendSeriesEmail',
+		'getCreateSeriesForm',
+		'createSeriesList',
+	);
+
+	protected array $methodsThatRespondThemselves = array(
 		'exportSeriesToExcel',
 	);
 
@@ -894,6 +899,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 				$userList->public      = 0;
 				$userList->description = '';
 				$userList->insert();
+				$listId = $userList->id;
 			}else{
 				$userList->id = $listId;
 				if (!$userList->find(true)){
@@ -1007,6 +1013,127 @@ class GroupedWork_AJAX extends AJAXHandler {
 		];
 		return $results;
 	}
+function getCreateSeriesForm(){
+	global $interface;
+	require_once ROOT_DIR . '/sys/Novelist/Novelist3.php';
+	require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+
+	if (isset($_REQUEST['id'])){
+		$id = $_REQUEST['id'];
+		$interface->assign('groupedWorkId', $id);
+	}else{
+		$id = '';
+	}
+	$recordDriver = new GroupedWorkDriver($id);
+	$interface->assign('id', $id);
+	$novelist = NovelistFactory::getNovelist();
+	$seriesInfo = $novelist->getSeriesTitles($id, $recordDriver->getPrimaryIsbn());
+	$seriesTitle = $seriesInfo->seriesTitle??null;
+	if($seriesTitle !=null ){
+		$interface->assign('listTitle', $seriesTitle);
+	}
+
+	return array(
+		'title'        => 'Create new List',
+		'modalBody'    => $interface->fetch("GroupedWork/series-list-form.tpl"),
+		'modalButtons' => "<span class='tool btn btn-primary' onclick='return Pika.GroupedWork.createSeriesList(\"{$id}\");'>Create List</span>",
+	);
+}
+
+function createSeriesList(){
+	global $interface;
+	$id = $_REQUEST['groupedWorkId'];
+
+
+	$recordsToAdd = array();
+	$return      = array();
+	if (UserAccount::isLoggedIn()){
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+		require_once ROOT_DIR . '/sys/Novelist/Novelist3.php';
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$recordDriver = new GroupedWorkDriver($id);
+		$interface->assign('id', $id);
+		$novelist = NovelistFactory::getNovelist();
+		$seriesInfo = $novelist->getSeriesTitles($id, $recordDriver->getPrimaryIsbn());
+		$seriesTitles = $seriesInfo->seriesTitles ?? [];
+		$seriesTitle = $seriesInfo->seriesTitle?? null;
+		$user = UserAccount::getLoggedInUser();
+		$title = (isset($_REQUEST['title']) && !is_array($_REQUEST['title'])) ? urldecode($_REQUEST['title']) : '';
+		if (strlen(trim($title)) == 0){
+			$return['success'] = "false";
+			$return['message'] = "You must provide a title for the list";
+		}else{
+			//If the record is not valid, skip the whole thing since the title could be bad too
+			$e = 0;
+			foreach($seriesTitles as $seriesItem){
+				if (!empty($seriesItem['id'])){
+					$recordToAdd = urldecode($seriesItem['id']);
+					require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+					if (!GroupedWork::validGroupedWorkId($recordToAdd)){
+						$return['success'] = false;
+						$e++;
+						$return['message'] = $e . ' item(s) were not valid and could not be added to list';
+					}else{
+						$recordsToAdd[] = $recordToAdd;
+					}
+				}
+			}
+			$list          = new UserList();
+			$list->title   = strip_tags($title);
+			$list->user_id = $user->id;
+			//Check to see if there is already a list with this id
+			$existingList = false;
+			if ($list->find(true)){
+				$existingList = true;
+			}
+			$description = $_REQUEST['desc'] ?? '';
+			if (is_array($description)){
+				$description = reset($description);
+			}
+
+
+			$list->description = strip_tags(urldecode($description));
+			$list->public      = isset($_REQUEST['public']) && $_REQUEST['public'] == 'true';
+			if ($existingList){
+				$list->update();
+			}else{
+				$list->insert();
+			}
+
+			if (count($recordsToAdd) > 0){
+				//Check to see if the user has already added the title to the list.
+				foreach($recordsToAdd as $recordToAdd){
+					$userListEntry                         = new UserListEntry();
+					$userListEntry->listId                 = $list->id;
+					$userListEntry->groupedWorkPermanentId = $recordToAdd;
+					if (!$userListEntry->find(true)){
+						$userListEntry->dateAdded = time();
+						$userListEntry->insert();
+					}
+				}
+			}
+
+			$return['success'] = 'true';
+			$return['newId']   = $list->id;
+			if ($existingList){
+				$return['message'] = "Updated list <em>{$title}</em> successfully";
+			}else{
+				$return['message'] = "Created list <em>{$title}</em> successfully";
+				if($e > 0){$return['message'] .= $e . " records could not be added";}
+			}
+			if (!empty($list->id)){
+				$return['modalButtons'] = '<a class="btn btn-primary" href="/MyAccount/MyList/'. $list->id .'" role="button">View My List</a>';
+			}
+		}
+	}else{
+		$return['success'] = "false";
+		$return['message'] = "You must be logged in to create a list";
+	}
+
+	return $return;
+
+}
 
 function getSaveSeriesToListForm(){
 	global $interface;
@@ -1019,7 +1146,7 @@ function getSaveSeriesToListForm(){
 	$interface->assign('id', $id);
 
 	$novelist   = NovelistFactory::getNovelist();
-	$seriesInfo = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
+	$seriesInfo = $novelist->getSeriesTitles($id, $recordDriver->getPrimaryIsbn());
 	$seriesTitles = $seriesInfo->seriesTitles ?? [];
 	$seriesTitle = $seriesInfo->seriesTitle ?? null;
 
@@ -1396,6 +1523,7 @@ function getSaveSeriesToListForm(){
 
 		$a = 4;
 		foreach ($seriesEntries as $entry) {
+			$objPHPExcel->getActiveSheet()->getStyle('D' . $a)->getNumberFormat()->setFormatCode(PHPExcel_Style_numberFormat::FORMAT_NUMBER);
 			$objPHPExcel->setActiveSheetIndex(0)
 				->setCellValue('A' . $a, $entry['title'])
 				->setCellValue('B' . $a, $entry['author'])
@@ -1426,18 +1554,9 @@ function getSaveSeriesToListForm(){
 		header('Cache-Control: max-age=0');
 		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
 
-		try {
+
 			$objWriter->save('php://output');
-			return array(
-				'success' => true,
-				'message' => "Excel File Created"
-			);
-		}
-		catch(Exception $e){
-			return array(
-				'success' => false,
-				'message' => "Something Happened"
-				);
-		}
+			exit;
+
 	}
 }

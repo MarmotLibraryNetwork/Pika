@@ -1392,7 +1392,9 @@ class Solr implements IndexEngine {
 		if (is_array($query)) {
 			echo("Invalid query " . print_r($query, true));
 		}
-		if (preg_match('/\\".+?\\"/', $query)) {
+		if (preg_match('/\".+?\"/', $query)) {
+			// If the search query contains quoted phrase, switch from the regular search handler
+			// to a textProper version of the search handler
 			switch ($handler){
 				case 'AllFields':
 				case 'Keyword':

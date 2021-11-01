@@ -1411,10 +1411,10 @@ class GroupedWorkDriver extends RecordInterface {
 	public function getRelatedManifestations(){
 		global $timer;
 		global $memoryWatcher;
-		$timer->logTime("Starting to load related records in getRelatedManifestations");
+		$timer->logTime('Starting to load related records in getRelatedManifestations');
 		$relatedRecords = $this->getRelatedRecords();
-		$timer->logTime("Finished loading related records in getRelatedManifestations");
-		$memoryWatcher->logMemory("Finished loading related records");
+		$timer->logTime('Finished loading related records in getRelatedManifestations');
+		$memoryWatcher->logMemory('Finished loading related records');
 
 		// alter the status ranking array to use for comparison here
 		$statusRankings = [];
@@ -1502,8 +1502,8 @@ class GroupedWorkDriver extends RecordInterface {
 
 
 			if ($curRecord['hasLocalItem']){
-				$relatedManifestations[$curRecord['format']]['localCopies']          += (isset($curRecord['localCopies']) ? $curRecord['localCopies'] : 0);
-				$relatedManifestations[$curRecord['format']]['localAvailableCopies'] += (isset($curRecord['localAvailableCopies']) ? $curRecord['localAvailableCopies'] : 0);
+				$relatedManifestations[$curRecord['format']]['localCopies']          += ($curRecord['localCopies'] ?? 0);
+				$relatedManifestations[$curRecord['format']]['localAvailableCopies'] += ($curRecord['localAvailableCopies'] ?? 0);
 			}
 			if (isset($curRecord['itemSummary'])){
 				$relatedManifestations[$curRecord['format']]['itemSummary'] = $this->mergeItemSummary($relatedManifestations[$curRecord['format']]['itemSummary'], $curRecord['itemSummary']);
@@ -1547,7 +1547,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$memoryWatcher->logMemory('Finished initial processing of related records');
 
 		//Check to see if we have applied a format or format category facet
-		$selectedFormat               = null;
+		$selectedFormats              = null;
 		$selectedFormatCategory       = null;
 		$selectedAvailability         = null;
 		$selectedDetailedAvailability = null;
@@ -1557,7 +1557,7 @@ class GroupedWorkDriver extends RecordInterface {
 				if (preg_match('/^format_category(?:\w*):"?(.+?)"?$/', $filter, $matches)){
 					$selectedFormatCategory = urldecode($matches[1]);
 				}elseif (preg_match('/^format(?:\w*):"?(.+?)"?$/', $filter, $matches)){
-					$selectedFormat = urldecode($matches[1]);
+					$selectedFormats[] = urldecode($matches[1]);
 				}elseif (preg_match('/^econtent_source(?:\w*):"?(.+?)"?$/', $filter, $matches)){
 					$selectedEcontentSource[] = urldecode($matches[1]);
 				}elseif (preg_match('/^availability_toggle(?:\w*):"?(.+?)"?$/', $filter, $matches)){
@@ -1663,27 +1663,80 @@ class GroupedWorkDriver extends RecordInterface {
 			}
 
 			// Set Up Manifestation Display when a format facet is set
-			if ($selectedFormat && stripos($manifestation['format'], $selectedFormat) === false){
-				//Do a secondary check to see if we have a more detailed format in the facet
-				$detailedFormat = mapValue('format_by_detailed_format', $selectedFormat);
-				//Also check the reverse
-				$detailedFormat2 = mapValue('format_by_detailed_format', $manifestation['format']);
-				if ($manifestation['format'] != $detailedFormat && $detailedFormat2 != $selectedFormat){
-					$manifestation['hideByDefault'] = true;
+			$hasSelectedFormatMatches = false;
+			if (!empty($selectedFormats)){
+				foreach ($selectedFormats as $selectedFormat){
+					if (strcasecmp($selectedFormat, $manifestation['format']) == 0){
+						$hasSelectedFormatMatches = true;
+						if (!$manifestation['isEContent']){
+							$manifestation['isSelectedNonEcontentFormat'] = true;
+						}
+						break;
+					} elseif ($selectedFormat != 'Book' && $manifestation['format'] != 'Book') {
+						// Only do this logic when not working with books; to avoid false match on book with ebook
+						if (stripos($manifestation['format'], $selectedFormat) !== false){
+							// For example: when selectedFormat = ebook, will match against "overdrive ebook"
+
+							//TODO: this will cause the following additional matching
+							// when selectedFormat = cd, will match against "audio cd" and "music cd" also
+							// when selectedFormat = audio, will match against "audio cd" and "eaudiobook" also
+							// when selectedFormat = kit, will match against "book club kit" also
+							// when selectedFormat = video, will match against "evideo" also
+							// when selectedFormat = playaway, will match against "playaway view" also
+
+							$hasSelectedFormatMatches = true;
+							if (!$manifestation['isEContent']){
+								//(Should always be econtent, so this is probably unneeded; but just in case
+								$manifestation['isSelectedNonEcontentFormat'] = true;
+							}
+							break;
+						} else{
+							//TODO: I strongly suspect this check is no longer needed for econtent;
+							//It was used at one point to match Audio CD with CD, see PK-1729
+
+							$currentManifestationFormatDetailedFormat = strtolower(mapValue('format_by_detailed_format', $manifestation['format']));
+							if (strcasecmp($selectedFormat, $currentManifestationFormatDetailedFormat) == 0){
+								$hasSelectedFormatMatches = true;
+								if (!$manifestation['isEContent']){
+									$manifestation['isSelectedNonEcontentFormat'] = true;
+								}
+								break;
+							}
+						}
+					}
 				}
-			}
-			if ($selectedFormat && $selectedFormat == "Book" && $manifestation['format'] != "Book"){
-				//Do a secondary check to see if we have a more detailed format in the facet
-				$detailedFormat = mapValue('format_by_detailed_format', $selectedFormat);
-				//Also check the reverse
-				$detailedFormat2 = mapValue('format_by_detailed_format', $manifestation['format']);
-				if ($manifestation['format'] != $detailedFormat && $detailedFormat2 != $selectedFormat){
+				if (!$hasSelectedFormatMatches){
 					$manifestation['hideByDefault'] = true;
 				}
 			}
 
+			// Previous logic just in case I am missing something essential in the above. pascal 10/28/21
+//			if ($selectedFormat && stripos($manifestation['format'], $selectedFormat) === false){
+//				//Do a secondary check to see if we have a more detailed format in the facet
+//				// Map is at sites/default/translation_maps/format_by_detailed_format_map.properties
+//				// This is for situations where the reported format is specific like EPUB_eBook when we care that it is an ebook instead
+//				$selectedFormatDetailedFormat             = mapValue('format_by_detailed_format', $selectedFormat);
+//				$currentManifestationFormatDetailedFormat = mapValue('format_by_detailed_format', $manifestation['format']);
+//				if ($manifestation['format'] != $selectedFormatDetailedFormat && $currentManifestationFormatDetailedFormat != $selectedFormat){
+//					$manifestation['hideByDefault'] = true;
+//				}
+//			}
+//			if ($selectedFormat && $selectedFormat == "Book" && $manifestation['format'] != "Book"){
+//				//Do a secondary check to see if we have a more detailed format in the facet
+//				$selectedFormatDetailedFormat             = mapValue('format_by_detailed_format', $selectedFormat);
+//				$currentManifestationFormatDetailedFormat = mapValue('format_by_detailed_format', $manifestation['format']);
+//				if ($manifestation['format'] != $selectedFormatDetailedFormat && $currentManifestationFormatDetailedFormat != $selectedFormat){
+//					$manifestation['hideByDefault'] = true;
+//				}
+//			}
+
 			// Set Up Manifestation Display when a eContent source facet is set
-			if ($selectedEcontentSource && (!$manifestation['isEContent'] || (!empty($manifestation['eContentSource']) && !in_array($manifestation['eContentSource'], $selectedEcontentSource)))){
+			if ($selectedEcontentSource && (
+				(!$manifestation['isEContent'] && empty($manifestation['isSelectedNonEcontentFormat']))
+				// Hide non-econtent unless it is also a chosen format facet
+					|| (!empty($manifestation['eContentSource']) && !in_array($manifestation['eContentSource'], $selectedEcontentSource))
+				)
+			){
 				$manifestation['hideByDefault'] = true;
 			}
 
@@ -1752,8 +1805,8 @@ class GroupedWorkDriver extends RecordInterface {
 
 			$relatedManifestations[$key] = $manifestation;
 		}
-		$timer->logTime("Finished loading related manifestations");
-		$memoryWatcher->logMemory("Finished loading related manifestations");
+		$timer->logTime('Finished loading related manifestations');
+		$memoryWatcher->logMemory('Finished loading related manifestations');
 
 		return $relatedManifestations;
 	}

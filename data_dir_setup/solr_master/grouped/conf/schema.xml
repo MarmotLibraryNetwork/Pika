@@ -95,7 +95,8 @@
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
 
 				-->
-				<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+				<!--<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>-->
+				<!--The CommonGrams Filter is  prevented from going into effect here by the StopFiler above -->
 				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
 				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
@@ -182,13 +183,14 @@
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
 
 				-->
-				<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+				<!--<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>-->
+				<!--The CommonGrams Filter is  prevented from going into effect here by the StopFiler above -->
 				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
 				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 		</fieldType>
-		<!-- Text Field without Stemming, Synonyms, and stop Word removal -->
+		<!-- Text Field without Stemming, without Synonyms, and without stop Word removal -->
 		<fieldType name="textProper" class="solr.TextField" positionIncrementGap="100">
 			<analyzer type="index">
 				<tokenizer class="solr.ICUTokenizerFactory"/>
@@ -217,7 +219,10 @@
 
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
 				-->
-				<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+				<!--<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>-->
+				<!-- CommonGrams filtering does not seem to work with quoted search phrase,
+				which appears to be the reason we switch over to searching against textProper fields
+				See D-4122 -->
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 			<analyzer type="query">
@@ -249,7 +254,10 @@
 
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
 				-->
-				<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+				<!--<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>-->
+				<!-- CommonGrams filtering does not seem to work with quoted search phrase,
+				which appears to be the reason we switch over to searching against textProper fields
+				See D-4122 -->
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 		</fieldType>
@@ -355,8 +363,15 @@
 			</analyzer>
 		</fieldType>
 		<fieldType name="text-exact" class="solr.TextField" sortMissingLast="true" omitNorms="true">
+			<!--TODO: explain why this special handling is needed for these fields instead of just using a regular solr string field;
+			 OR TODO: replace with solr string field
+			  unquoted search phrases of these fields with multiple words bring in totally unwanted results. pascal 10/25/2021
+			-->
 			<analyzer>
-				<!-- KeywordTokenizer does no actual tokenizing, so the entire input string is preserved as a single token -->
+				<!-- KeywordTokenizer does no actual tokenizing, so the entire input string is preserved as a single token
+
+				 https://solr.apache.org/guide/8_8/tokenizers.html#keyword-tokenizer
+				 -->
 				<tokenizer class="solr.KeywordTokenizerFactory"/>
 				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1 zzzz"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
@@ -365,7 +380,7 @@
 
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#lower-case-filter
 				-->
-				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/><!--TODO: Shouldn't this always be redundant??  -->
 			</analyzer>
 		</fieldType>
 		<fieldType name="text-left" class="solr.TextField" sortMissingLast="true" omitNorms="true">
@@ -731,6 +746,10 @@
 
 	</fields>
 	<uniqueKey>id</uniqueKey>
+	<!-- Field to use to determine and enforce document uniqueness.
+		 Unless this field is marked with required="false", it will be a required field
+	  -->
+	<!-- uniqueKey is required for MoreLikeThis handlers-->
 
 	<!-- CopyFields for Faceting on Text -->
 <!--	<copyField source="title_full" dest="title_fullStr"/>-->

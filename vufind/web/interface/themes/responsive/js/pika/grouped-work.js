@@ -312,7 +312,34 @@ Pika.GroupedWork = (function(){
 			});
 			return false;
 		},
-
+	createSeriesList: function(id)
+	{
+		var form = $("#addListForm"),
+				isPublic = form.find("#public").prop("checked"),
+				groupedWorkId = id,
+				title = form.find("input[name=title]").val(),
+				desc = $("#listDesc").val(),
+				url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+				params = {
+					'method': 'createSeriesList',
+					title: title,
+					public: isPublic,
+					desc: desc,
+					groupedWorkId: groupedWorkId
+				};
+		$.getJSON(url, params,function (data) {
+			if (data.success) {
+				if (typeof data.modalButtons !== "undefined"){
+					Pika.showMessageWithButtons("Added Successfully", data.message, data.modalButtons);
+				} else{
+					Pika.showMessage("Added Successfully", data.message, true, true);
+				}
+			} else {
+				Pika.showMessage("Error", data.message);
+			}
+		}).fail(Pika.ajaxFail);
+		return false;
+	},
 	saveSeriesToList: function(id)
 		{
 			Pika.Account.ajaxLogin(function (){
@@ -428,10 +455,6 @@ Pika.GroupedWork = (function(){
 			return this.basicShowMessageReloadOnSuccess('reloadIslandora', id);
 		},
 
-		exportSeriesToExcel: function(id){
-			this.basicShowMessageReloadOnSuccess('exportSeriesToExcel', id);
-		},
-
 		basicShowMessageReloadOnSuccess: function(method, id){
 			$.getJSON("/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=" + method, function (data){
 						if (data.success) {
@@ -456,7 +479,9 @@ Pika.GroupedWork = (function(){
 		showReviewForm: function(trigger, id){
 			return this.basicAjaxHandler('getReviewForm', id, trigger);
 		},
-
+		showCreateSeriesListForm: function(trigger, id){
+			return this.basicAjaxHandler('getCreateSeriesForm', id, trigger);
+		},
 		showSaveToListForm: function (trigger, id){
 			return this.basicAjaxHandler('getSaveToListForm', id, trigger);
 		},
