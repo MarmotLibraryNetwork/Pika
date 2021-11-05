@@ -1379,7 +1379,6 @@ class Solr implements IndexEngine {
 			'q.op'   => 'AND',
 			'rows'   => $limit,
 			'start'  => $start,
-			'indent' => 'yes'
 		];
 
 		// Add Sorting
@@ -1739,6 +1738,7 @@ class Solr implements IndexEngine {
 		}
 		if ($this->debugSolrQuery || $this->debug) {
 			$options['debugQuery'] = 'on';
+			$options['indent']     = 'yes';
 		}
 
 		$timer->logTime('end solr setup');
