@@ -1374,7 +1374,13 @@ class Solr implements IndexEngine {
 		global $timer;
 		global $configArray;
 		// Query String Parameters
-		$options = ['q' => $query, 'rows' => $limit, 'start' => $start, 'indent' => 'yes'];
+		$options = [
+			'q'      => $query,
+			'q.op'   => 'AND',
+			'rows'   => $limit,
+			'start'  => $start,
+			'indent' => 'yes'
+		];
 
 		// Add Sorting
 		if (!empty($sort)) {
@@ -1984,7 +1990,7 @@ class Solr implements IndexEngine {
 
 		$this->pingServer();
 
-		$params['q.op']    = 'AND';    // This used to be set in the schema, but the parameter is obsolete.
+		$params['q.op']    ??= 'AND';    // This used to be set in the schema, but the parameter is obsolete.
 		// All of our query creation, processing, and term munging seems to be built on this assumption that terms are ANDed together.
 		// The Lucene (and therefore Solr) default is to "OR" terms together.
 		$params['wt']      = 'json';   // this is the default for modern Solr; We have to keep till Islandora is upgraded.
