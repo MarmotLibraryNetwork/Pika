@@ -223,7 +223,7 @@ function getUserUpdates(){
 			'description'     => 'Create barcode and password columns',
 			'continueOnError' => true,
 			'sql'             => [
-				'ALTER TABLE user ADD COLUMN barcode VARCHAR(64) NULL AFTER  ilsUserId, ADD COLUMN password VARCHAR(64) NULL AFTER barcode;',
+				'ALTER TABLE user ADD COLUMN barcode VARCHAR(64) NULL AFTER  ilsUserId, ADD COLUMN password VARCHAR(128) NULL AFTER barcode;',
 			],
 		],
 	);
