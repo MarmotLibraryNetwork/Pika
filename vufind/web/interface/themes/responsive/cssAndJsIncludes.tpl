@@ -16,6 +16,7 @@
 		</style>
 	{/if}
 	<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/dropzone.css">
+	<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/simpleJson.css">
 
 	{* Include correct all javascript *}
 	{if $ie8}
@@ -28,8 +29,9 @@
 		{* Load Libraries*}
 {*
 		{* dropzone *}
-
 		<script src="/interface/themes/responsive/js/lib/dropzone.js"></script>
+			{* json-tree *}
+			<script src="/interface/themes/responsive/js/lib/simpleJson.js?v={$gitBranch|urlencode}"></script>
 		{* Validator has two library files *}
 		{*<script src="/interface/themes/responsive/js/lib/jquery.validate.js?v={$gitBranch|urlencode}"></script>*}
 		<script src="/interface/themes/responsive/js/lib/jquery.validate.min.js?v={$gitBranch|urlencode}"></script>
@@ -81,6 +83,7 @@
 		{* Code is minified using uglify.js *}
 		<script src="/interface/themes/responsive/js/pika.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/dropzone.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/simpleJson.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/jquery.dataTables.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/dataTables.bootstrap.min.js?v={$gitBranch|urlencode}"></script>
 		{*<script src="/interface/themes/responsive/js/pika.min.js?v={$gitBranch|urlencode}"></script>*}

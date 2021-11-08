@@ -1,0 +1,62 @@
+﻿div.simpleJson {
+    font-family: Consolas;
+    font-size: 12px;
+}
+
+div.simpleJson ul {
+    padding: 0px;
+    padding-left: 16px;
+    margin: 0px;
+}
+
+div.simpleJson li {
+    list-style: none;
+    margin: 0px;
+}
+
+span.simpleJson-collapsibleMarker {
+    cursor: pointer;
+}
+
+div.simpleJson span.simpleJson-key {
+    color: darkred;
+}
+
+div.simpleJson span.simpleJson-string {
+    color: darkred;
+}
+
+div.simpleJson span.simpleJson-bool {
+    color: blue;
+}
+
+div.simpleJson span.simpleJson-collapsedText {
+    color: lightgrey;
+    display: none;
+}
+
+li.simpleJson-collapsed > span.simpleJson-collapsedText, div.simpleJson-collapsed > span.simpleJson-collapsedText {
+    display: inline;
+}
+
+.simpleJson-collapsed > ul {
+    display: none;
+}
+
+div.simpleJson span.simpleJson-collapsibleMarker {
+    height: 12px;
+    width: 12px;
+    display: inline-block;
+}
+
+div.simpleJson span.simpleJson-collapsibleMarker {
+    background-image: url( "../images/simpleJson-images.png" );
+}
+
+div.simpleJson span.simpleJson-collapsibleMarker:hover {
+    background-position-y: -12px;
+}
+
+div.simpleJson li.simpleJson-collapsed > span.simpleJson-collapsibleMarker, div.simpleJson-collapsed > span.simpleJson-collapsibleMarker {
+    background-position-x: -12px;
+}
