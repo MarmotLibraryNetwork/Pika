@@ -2202,7 +2202,12 @@ class Solr implements IndexEngine {
 				}
 			} else {
 				//If we are tokenizing, remove any punctuation
-				$tmpWord = trim(preg_replace('/[^\s\-\w.\'aàáâãåäæeèéêëiìíîïoòóôõöøuùúûü&]/', '', $words[$i]));
+				$tmpWord = trim(preg_replace('/[^\s\-\w.\'&]/u', '', $words[$i]));
+				// Removes any character that is NOT : whitespace, word characters, a period, a dash -, an apostrophe ', or an ampersand &
+				// NOTE: the u modifier causes pattern and subject strings to be treated as UTF-8.
+				// (this causes diacritical characters to be included in word character pattern also)
+				// Keep the dash to preserve range searches
+				//
 				if (strlen($tmpWord) > 0) {
 					$newWords[] = $tmpWord;
 				}
@@ -2213,7 +2218,7 @@ class Solr implements IndexEngine {
 	}
 
 	/**
-	 * Input Validater
+	 * Input Validator
 	 *
 	 * Cleans the input based on the Lucene Syntax rules.
 	 *
