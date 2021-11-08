@@ -25,15 +25,16 @@
  * This class implements the Sierra REST Patron API for patron interactions:
  *    https://sandbox.iii.com/iii/sierra-api/swagger/index.html#!/patrons
  *
+ *  Barcodes are now stored in barcode field
+ *  DEPRECATED: ~~Currently, in the database cat_password or cat_username represent the patron barcodes.~~
  *
- *  Currently, in the database cat_password or cat_username represent the patron barcodes.
  *
  *  For auth type barcode_pin
- *    barcode stored in cat_username field
+ *    barcode stored in barcode field
  *    pin is stored in cat_password field (this field can be removed when using the api)
  *
  *  For auth type name_barcode
- *    barcode is stored in cat_password field
+ *    barcode is stored in barcode field
  *    name is stored in cat_username field
  *
  *
@@ -475,20 +476,10 @@ class Sierra {
 		$loginMethod    = $this->accountProfile->loginConfiguration;
 		$patron->source = $this->accountProfile->name;
 
-		// todo: updating barcode doesn't depend on loginMethod
-		//if ($loginMethod == "barcode_pin") {
-			if($patron->barcode != $barcode/* || $patron->cat_username != $barcode*/) { // todo: [pins] remove references to cat_username obsolete use barcode
-				$updatePatron = true;
-				$patron->barcode = $barcode;
-				//$patron->cat_username = $barcode; // todo: [pins] remove references to cat_username
-			}
-//		} else {
-//			if($patron->barcode != $barcode/* || $patron->cat_password != $barcode*/) { // todo: [pins] remove references to cat_password obsolete use barcode
-//				$updatePatron = true;
-//				$patron->barcode = $barcode;
-//				//$patron->cat_password = $barcode;
-//			}
-//		}
+		if ($patron->barcode != $barcode){
+			$updatePatron    = true;
+			$patron->barcode = $barcode;
+		}
 
 		// Checks; make sure patron info from sierra matches database. update if needed.
 		// ilsUserId
@@ -825,7 +816,7 @@ class Sierra {
 			if ($this->accountProfile->loginConfiguration == "barcode_pin"){
 				$barcode = $patronOrBarcode->cat_username;
 			} else {
-				$barcode = $patronOrBarcode->cat_password;
+				$barcode = $patronOrBarcode->barcode;
 			}
 		} elseif (is_string($patronOrBarcode) || is_int($patronOrBarcode)) {
 			// the api expects barcode in form of string. Just in case cast to string.
@@ -1161,7 +1152,7 @@ class Sierra {
 
 		$loginMethod = $this->accountProfile->loginConfiguration;
 		if ($loginMethod == "barcode_pin"){
-			$patron->cat_username = $barcode;
+			$patron->barcode = $barcode;
 		} elseif ($loginMethod == "name_barcode") {
 			$patron->cat_password = $barcode;
 		}
@@ -2915,11 +2906,11 @@ EOT;
 		$patron            = new User();
 		$patron->ilsUserId = $patronId;
 		$patron->find(true);
-		// if we don't find a patron then new user create it. Will be populated
+		// if we don't find a patron in database, do insert. Will be populated with data retrieved from api
 		if ($patron->N == 0){
-			$patron->created      = date('Y-m-d');
-			$patron->ilsUserId    = $patronId;
-			$patron->cat_username = $barcode;
+			$patron->created   = date('Y-m-d');
+			$patron->ilsUserId = $patronId;
+			$patron->barcode   = $barcode;
 			$patron->insert();
 		}
 
@@ -3167,13 +3158,13 @@ EOT;
 		// first log patron in
 		if($this->accountProfile->loginConfiguration == "barcode_pin") {
 			$postData = [
-				'code' => $patron->cat_username,
+				'code' => $patron->barcode,
 				'pin'  => $patron->cat_password
 			];
 		} else {
 			$postData = [
 				'name' => $patron->cat_username,
-				'code' => $patron->cat_password
+				'code' => $patron->barcode
 			];
 		}
 		$loginUrl = $vendorOpacUrl . '/patroninfo/';
