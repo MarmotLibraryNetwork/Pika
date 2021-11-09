@@ -354,20 +354,6 @@ class User extends DB_DataObject {
 	 */
 	public function getBarcode(){
 		return $this->barcode;
-//		if (isset($this->barcode)){
-//			return $this->barcode;
-//		}else{
-//			/** @var AccountProfile $accountProfile */
-//			if ($accountProfile = $this->getAccountProfile()){
-//				if ($accountProfile->loginConfiguration == 'barcode_pin'){
-//					$this->barcode = trim($this->cat_password);
-//					return $this->barcode;
-//				}elseif ($accountProfile->loginConfiguration == 'name_barcode'){
-//					$this->barcode = trim($this->cat_username);
-//					return $this->barcode;
-//				}
-//			}
-//		}
 	}
 
 
