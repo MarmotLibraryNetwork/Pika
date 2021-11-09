@@ -2424,6 +2424,16 @@ EOT;
 	}
 
 
+	/**
+	 * Fetch a patrons reading history from Sierra ILS
+	 *
+	 * @param User $patron
+	 * @param int $page
+	 * @param int $recordsPerPage
+	 * @param string $sortOption
+	 * @return array|mixed
+	 * @throws ErrorException
+	 */
 	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut"){
 		// history enabled?
 		if ($patron->trackReadingHistory != 1){
