@@ -53,6 +53,31 @@ class Novelist3{
 		return false;
 	}
 
+	public function getRawNovelistJSON($isbn){
+		global $timer;
+		$requestUrl = $this->apiUrl . "/Data/ContentByQuery?profile={$this->profile}&password={$this->pwd}&ClientIdentifier={$isbn}&isbn={$isbn}&version=2.1&tmpstmp=" . time();
+		try{
+			//Get the JSON from the service
+			$curl     = new Curl();
+			$curl->setDefaultDecoder('json_decode');
+			$data = $curl->get($requestUrl);
+			if ($curl->isError()) {
+				$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+				//TODO: update logging
+//							$this->logger->warning($message);
+				global $logger;
+				$logger->log($message, PEAR_LOG_WARNING);
+				//No enrichment for this isbn, go to the next one
+
+			}
+			$timer->logTime("Made call to Novelist to get info for: $isbn");
+			return $data;
+
+		}catch (Exception $e) {
+			return $e;
+		}
+	}
+
 	/**
 	 * Generates the Novelist Enrichment data object, fetches it if is in the table, and runs through the logic of whether
 	 * or not the enrichment data should be updated from Novelist

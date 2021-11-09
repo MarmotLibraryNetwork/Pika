@@ -33,20 +33,36 @@ class Admin_ClearNovelistCache extends Admin_Admin{
 		global $interface;
 		global $memCache;
 
-//		require_once ROOT_DIR . '/sys/Novelist/Novelist3.php';
 		require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
+		$checkRecord = false;
 		if(isset($_REQUEST['submit'])){
 
-			$novelist = New NovelistData;
-			$novelist->query('TRUNCATE `novelist_data`');
-			$memCache->flush();
+			if (isset($_REQUEST['checkISBN'])){
+				$checkRecord = true;
+				$checkISBN     = $_REQUEST['checkISBN'];
+				$interface->assign('checkISBN', $checkISBN);
 
+				require_once ROOT_DIR . '/sys/Novelist/Novelist3.php';
+				$novelist = new Novelist3();
+				$json = $novelist->getRawNovelistJSON($checkISBN);
+				$novelistData = json_encode($json);
+				$interface->assign('novelistData', $novelistData);
+			}
 		}
+		if(isset($_REQUEST['truncateData']))
+			{
+				$novelist = New NovelistData;
+				$novelist->query('TRUNCATE `novelist_data`');
+				$memCache->flush();
+			}
+
 
 		$cache            = new NovelistData();
 		$numCachedObjects = $cache->count();
 
 		$interface->assign('numCachedObjects', $numCachedObjects);
+		$interface->assign('checkRecord', $checkRecord);
+
 		$this->display('clearNovelistCache.tpl', 'Clear Novelist Cache');
 
 	}

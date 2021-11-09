@@ -1374,7 +1374,12 @@ class Solr implements IndexEngine {
 		global $timer;
 		global $configArray;
 		// Query String Parameters
-		$options = ['q' => $query, 'rows' => $limit, 'start' => $start, 'indent' => 'yes'];
+		$options = [
+			'q'      => $query,
+			'q.op'   => 'AND',
+			'rows'   => $limit,
+			'start'  => $start,
+		];
 
 		// Add Sorting
 		if (!empty($sort)) {
@@ -1733,6 +1738,7 @@ class Solr implements IndexEngine {
 		}
 		if ($this->debugSolrQuery || $this->debug) {
 			$options['debugQuery'] = 'on';
+			$options['indent']     = 'yes';
 		}
 
 		$timer->logTime('end solr setup');
@@ -1984,7 +1990,10 @@ class Solr implements IndexEngine {
 
 		$this->pingServer();
 
-		$params['wt']      = 'json'; // this is the default for modern Solr; We have to keep till Islandora is upgraded.
+		$params['q.op']    ??= 'AND';    // This used to be set in the schema, but the parameter is obsolete.
+		// All of our query creation, processing, and term munging seems to be built on this assumption that terms are ANDed together.
+		// The Lucene (and therefore Solr) default is to "OR" terms together.
+		$params['wt']      = 'json';   // this is the default for modern Solr; We have to keep till Islandora is upgraded.
 		$params['json.nl'] = 'arrarr'; // Needed to process faceting; arrarr breaks ordered pairs into a series of arrays
 
 		// Build query string for use with GET or POST, with special handling for repeated parameters
@@ -2193,7 +2202,12 @@ class Solr implements IndexEngine {
 				}
 			} else {
 				//If we are tokenizing, remove any punctuation
-				$tmpWord = trim(preg_replace('/[^\s\-\w.\'aàáâãåäæeèéêëiìíîïoòóôõöøuùúûü&]/', '', $words[$i]));
+				$tmpWord = trim(preg_replace('/[^\s\-\w.\'&]/u', '', $words[$i]));
+				// Removes any character that is NOT : whitespace, word characters, a period, a dash -, an apostrophe ', or an ampersand &
+				// NOTE: the u modifier causes pattern and subject strings to be treated as UTF-8.
+				// (this causes diacritical characters to be included in word character pattern also)
+				// Keep the dash to preserve range searches
+				//
 				if (strlen($tmpWord) > 0) {
 					$newWords[] = $tmpWord;
 				}
@@ -2204,7 +2218,7 @@ class Solr implements IndexEngine {
 	}
 
 	/**
-	 * Input Validater
+	 * Input Validator
 	 *
 	 * Cleans the input based on the Lucene Syntax rules.
 	 *

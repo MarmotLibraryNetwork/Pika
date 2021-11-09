@@ -399,35 +399,17 @@ function getGroupedWorkUpdates(){
 			],
 		],
 
-//		'grouping_migration_populate_version_map-2020.06' => [
-//			'title'           => 'POST GROUPING STEP 1 : Populate Grouped Work Version Map with one to one matches',
-//			'description'     => 'Mapping via related records that result in a single version 5 grouping Id',
-//			'continueOnError' => false,
-//			'sql'             => [
-//				"UPDATE grouped_work_versions_map
-//					INNER JOIN
-//					(
-//					SELECT
-//						grouped_work_old.permanent_id AS oldID
-//					    , group_concat(DISTINCT grouped_work.permanent_id) AS newID
-//
-//					    FROM grouped_work_versions_map
-//					    LEFT JOIN grouped_work_old ON (grouped_work_versions_map.groupedWorkPermanentIdVersion4 = grouped_work_old.permanent_id)
-//					    LEFT JOIN grouped_work_primary_identifiers_old ON (grouped_work_primary_identifiers_old.grouped_work_id = grouped_work_old.id)
-//					    LEFT JOIN grouped_work_primary_identifiers ON (grouped_work_primary_identifiers.identifier = grouped_work_primary_identifiers_old.identifier AND grouped_work_primary_identifiers.type = grouped_work_primary_identifiers_old.type)
-//					    LEFT JOIN grouped_work ON (grouped_work_primary_identifiers.grouped_work_id = grouped_work.id)
-//					    WHERE grouped_work_versions_map.groupedWorkPermanentIdVersion5 IS NULL
-//					    GROUP BY grouped_work_old.permanent_id
-//					    HAVING COUNT(DISTINCT grouped_work.permanent_id) = 1
-//
-//
-//					) As relatedRecordMappingOneToOneMatches
-//					ON groupedWorkPermanentIdVersion4 = relatedRecordMappingOneToOneMatches.oldID
-//
-//					SET groupedWorkPermanentIdVersion5 = relatedRecordMappingOneToOneMatches.newID
-//					WHERE groupedWorkPermanentIdVersion5 IS NULL",
-//			],
-//		],
+		'2021.04.0_remove_old_grouping_tables' => [
+			'title'           => 'Remove old grouping tables',
+			'description'     => 'Remove old grouping tables from before grouping improvement',
+			'continueOnError' => true,
+			'sql'             => [
+				'DROP TABLE IF EXISTS `grouped_work_old`',
+				'DROP TABLE IF EXISTS `grouped_work_primary_identifiers_old`',
+				'DROP TABLE IF EXISTS `merged_grouped_works_old`',
+				'DROP TABLE IF EXISTS `nongrouped_records_old`',
+			],
+		],
 
 	);
 }

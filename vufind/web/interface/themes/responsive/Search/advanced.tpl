@@ -286,9 +286,10 @@
       {/literal}
       {* On form submission, remove any form variables that are empty from the url (in order to have cleaner urls) *}
       {literal}
-		$('#advSearchForm').onsubmit(function(event){
+		$('#advSearchForm').on("submit", function(event){
+			/*event.preventDefault();*/
 			var fields = $( this ).serializeArray().filter(function(value){	return value.value !== ''	});
-			window.location.href = $("#advSearchForm").attr('action') + '?' + $.param(fields);
+			window.location.href = $( this ).attr('action') + '?' + $.param(fields);
 			return false;
 		});
 		{/literal}
