@@ -790,8 +790,6 @@ abstract class MarcRecordProcessor {
 		HashSet<String> languageNames        = new HashSet<>();
 		HashSet<String> translationsNames    = new HashSet<>();
 		String          primaryLanguage      = null;
-		long            languageBoost        = 1L;
-		long            languageBoostSpanish = 1L;
 
 		String languageCode = MarcUtil.getFirstFieldVal(record, "008[35-37]");
 		if (languageCode != null && !languageCode.equals("   ") && !languageCode.equals("|||")) {
@@ -801,21 +799,6 @@ abstract class MarcRecordProcessor {
 				// The trim() is for some bad language codes that will have spaces on the ends
 				languageNames.add(languageName);
 				primaryLanguage = languageName;
-
-				String languageBoostStr = indexer.translateSystemValue("language_boost", languageCode, identifier.getSourceAndId());
-				if (languageBoostStr != null) {
-					long languageBoostVal = Long.parseLong(languageBoostStr);
-					if (languageBoostVal > languageBoost) {
-						languageBoost = languageBoostVal;
-					}
-				}
-				String languageBoostEs = indexer.translateSystemValue("language_boost_es", languageCode, identifier.getSourceAndId());
-				if (languageBoostEs != null) {
-					long languageBoostVal = Long.parseLong(languageBoostEs);
-					if (languageBoostVal > languageBoostSpanish) {
-						languageBoostSpanish = languageBoostVal;
-					}
-				}
 			}
 		} else if (languageCode == null) {
 			ControlField ohOhEightField = (ControlField) record.getVariableField("008");
@@ -861,21 +844,6 @@ abstract class MarcRecordProcessor {
 										// Set primary Language and language boosts if we haven't found a good value yet
 										// Only use the first 041a language code for the primary language and boosts
 										primaryLanguage = languageName;
-
-										String languageBoostStr = indexer.translateSystemValue("language_boost", code, identifier.getSourceAndId());
-										if (languageBoostStr != null) {
-											long languageBoostVal = Long.parseLong(languageBoostStr);
-											if (languageBoostVal > languageBoost) {
-												languageBoost = languageBoostVal;
-											}
-										}
-										String languageBoostEs = indexer.translateSystemValue("language_boost_es", code, identifier.getSourceAndId());
-										if (languageBoostEs != null) {
-											long languageBoostVal = Long.parseLong(languageBoostEs);
-											if (languageBoostVal > languageBoostSpanish) {
-												languageBoostSpanish = languageBoostVal;
-											}
-										}
 									}
 								}
 								if (length >= 3) {
@@ -929,8 +897,6 @@ abstract class MarcRecordProcessor {
 				ilsRecord.setPrimaryLanguage(primaryLanguage);
 			}
 			ilsRecord.setLanguages(languageNames);
-			ilsRecord.setLanguageBoost(languageBoost);
-			ilsRecord.setLanguageBoostSpanish(languageBoostSpanish);
 			ilsRecord.setTranslations(translationsNames);
 		}
 	}

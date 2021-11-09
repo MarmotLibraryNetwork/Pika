@@ -844,12 +844,6 @@ class Solr implements IndexEngine {
 		$boostFactors = [];
 
 		global $solrScope;
-		global $language;
-		if ($language == 'es') {
-			$boostFactors[] = "language_boost_es_{$solrScope}";
-		} else {
-			$boostFactors[] = "language_boost_{$solrScope}";
-		}
 
 //		$boostFactors[] = (!empty($searchLibrary->applyNumberOfHoldingsBoost)) ? 'product(sum(popularity,1),format_boost)' : 'format_boost';
 
@@ -1509,6 +1503,9 @@ class Solr implements IndexEngine {
 					if (!empty($options['defType']) && $options['defType'] == 'dismax'){
 						$options['bf'] = $boost;
 					} else{
+						// Set the boosting query for the standard query parser
+						// https://solr.apache.org/guide/8_8/other-parsers.html#boost-query-parser
+
 						$options['q'] = "{!boost b=$boost} " . $options['q'];
 					}
 				}

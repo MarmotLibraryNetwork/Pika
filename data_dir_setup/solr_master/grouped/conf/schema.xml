@@ -725,8 +725,7 @@
 		<!-- Language Related Fields -->
 		<dynamicField name="language_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
 		<dynamicField name="translation_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
-		<dynamicField name="language_boost_*" type="integer" indexed="true" stored="true" multiValued="false" omitNorms="true"/>
-		<dynamicField name="language_boost_es_*" type="integer" indexed="true" stored="true" multiValued="false" omitNorms="true"/>
+
 		<!-- Fields for boosting branch holdings -->
 		<dynamicField name="lib_boost_*" type="integer" indexed="true" stored="true" multiValued="false" omitNorms="true"/>
 		<!-- relevance determiners -->
