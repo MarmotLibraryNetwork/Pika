@@ -527,7 +527,7 @@ class Novelist3{
 					}
 				}catch (Exception $e) {
 
-					$this->logger->error("Error fetching data from NoveList $e", PEAR_LOG_ERR);
+					$this->logger->error("Error fetching data from NoveList $e");
 					if (isset($response)){
 						$this->logger->debug($response);
 					}
@@ -723,7 +723,7 @@ class Novelist3{
 	private function loadNoveListTitles($currentId, $items, &$titleList, &$titlesOwned, $seriesName = ''){
 		if (!empty($items)){
 			global $timer;
-			$timer->logTime("Start loadNoveListTitle");
+			$timer->logTime('Start loadNoveListTitle');
 
 			/** @var SearchObject_Solr $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
@@ -754,7 +754,7 @@ class Novelist3{
 			if (!empty($response['response']['docs'])){
 				foreach ($response['response']['docs'] as $fields){
 					$groupedWorkDriver = new GroupedWorkDriver($fields);
-					$timer->logTime("Create driver");
+					$timer->logTime('Create driver');
 
 					if ($groupedWorkDriver->isValid){
 						//Load data about the record
@@ -783,7 +783,7 @@ class Novelist3{
 							'volume'          => $item->volume ?? ''
 
 						];
-						$timer->logTime("Load title information");
+						$timer->logTime('Load title information');
 						$titlesOwned++;
 						$titlesFromCatalog[] = $curTitle;
 					}
