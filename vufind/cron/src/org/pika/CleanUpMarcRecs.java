@@ -148,6 +148,7 @@ public class CleanUpMarcRecs implements IProcessHandler {
 			logger.error("SQL Error while cleaning up individual marc files", e);
 			processLog.incErrors();
 		}
+		processLog.setFinished();
 		processLog.saveToDatabase(pikaConn, logger);
 	}
 
