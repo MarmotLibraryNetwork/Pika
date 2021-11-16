@@ -33,6 +33,11 @@ import java.util.List;
 
 /**
  * Pika
+ *
+ *  Delete individual marc files from disk when the file was last modified more the 180 days aga
+ *  and is not currently in the record grouping.
+ *  (Meaning the bib no longer is a member of it's collection and is taking up disk space)
+ *
  */
 public class CleanUpMarcRecs implements IProcessHandler {
 	private       Logger logger;
@@ -97,11 +102,10 @@ public class CleanUpMarcRecs implements IProcessHandler {
 															filesDeletedForProfile++;
 															processLog.incUpdated();
 														} else {
-															processLog.incErrors();
-
 															String note = "Unable to delete file " + individualMarcFile;
 															logger.error(note);
 															//processLog.addNote(note);
+															processLog.incErrors();
 															filesRetainedForProfile++;
 														}
 													} else {
@@ -111,12 +115,16 @@ public class CleanUpMarcRecs implements IProcessHandler {
 												} catch (SQLException e) {
 													logger.error("Error looking up grouped work primary identifier for file " + fileName);
 													processLog.incErrors();
+													filesRetainedForProfile++;
 												}
 											} else {
 												logger.error("Failed to find record id for " + individualMarcFile);
 												processLog.incErrors();
+												filesRetainedForProfile++;
 											}
-
+										} else {
+											// Not old enough to check to delete
+											filesRetainedForProfile++;
 										}
 									}
 								}

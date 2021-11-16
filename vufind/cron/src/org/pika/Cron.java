@@ -171,6 +171,7 @@ public class Cron {
 					processHandlerClassObject = processHandlerClass.newInstance();
 					IProcessHandler processHandlerInstance = (IProcessHandler) processHandlerClassObject;
 					cronEntry.addNote("Starting cron process " + processToRun.getProcessName());
+					cronEntry.saveToDatabase(pikaConn, logger);
 
 					//Mark the time the run was started rather than finished so really long running processes
 					//can go on while faster processes execute multiple times in other threads.
