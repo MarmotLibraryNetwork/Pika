@@ -2871,7 +2871,6 @@ EOT;
 	 * @throws ErrorException
 	 */
 	protected function _authBarcodePin($barcode, $pin) {
-
 		// if using username field check if username exists
 		// username replaces barcode
 		if($this->hasUsernameField()) {
@@ -2884,12 +2883,16 @@ EOT;
 			$provisionSierraUserId = null;
 			$operation = 'patrons/find';
 			$r = $this->_doRequest($operation, $params);
+
 			if(!empty($r->barcodes)) {
 				// Note: for sacramento student ids, this call doesn't not return any barcodes
 				$barcode             = $r->barcodes[0];
 				$this->patronBarcode = $barcode;
 				// this call also returns the sierra id; keep it so we can skip an extra call after pin validation
 			}
+			// todo: [pins] this creates issues when sites other than sacramento return bad patron data;
+			// ie for flatirons patron id 1444284 nothing is returned except for an id. This causes strange things with
+			// linked accounts.
 			if (!empty($r->id)){
 				// The call above can return an Id even if it doesn't return a barcode, eg for sacramento students
 				$provisionSierraUserId = $r->id;
@@ -2899,8 +2902,14 @@ EOT;
 		$params = [
 			"barcode"         => $barcode,
 			"pin"             => $pin,
-			"caseSensitivity" => false,  //This setting is required for Sacramento student Ids to get a good pin validation response.  I suspect that there is an ILS setting that overrides this any way (pascal 2/6/2020)
 		];
+
+		//This setting is required for Sacramento student Ids to get a good pin validation response.  I suspect that there is an ILS setting that overrides this any way (pascal 2/6/2020)
+		if ($this->configArray['Catalog']['pinCaseSensitive']) {
+			$params["caseSensitivity"] = true;
+		} else {
+			$params["caseSensitivity"] = false;
+		}
 
 		if (!$this->_doRequest("patrons/validate", $params, "POST")) {
 			return false;
@@ -3087,7 +3096,6 @@ EOT;
 
 		### ERROR CHECKS ###
 		// if an error does occur set the $this->apiLastError.
-
 		// get the info so we can check the headers for a good response.
 		$cInfo = $c->getInfo();
 		// first check for a curl error
@@ -3102,6 +3110,16 @@ EOT;
 			// this will be a 4xx response
 			// first we need to check the response for a code, message from the API because many failed operations (ie,
 			// freezeing a hold) will send back a 4xx response code if the operation couldn't be completed.
+
+			// when authenticating with pins, a 400 response will be returned for bad credentials.
+			// check for failed authentication
+			if($c->errorCode == 400 && $c->response->code == 108) {
+				// bad credentials
+				$message = 'Authentication Error: '.$c->response->httpStatus.': '.$c->response->name;
+				$this->apiLastError = $message;
+				$this->logger->debug($message);
+				return false;
+			}
 			if(isset($c->response->code)) {
 				$message = 'API Error: ' . $c->response->code . ': ' . $c->response->name;
 				if(isset($c->response->description)){
