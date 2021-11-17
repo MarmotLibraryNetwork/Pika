@@ -222,7 +222,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$memoryWatcher->logMemory('Loaded More Like This data from Solr');
 		// Send the similar items to the template; if there is only one, we need
 		// to force it to be an array or things will not display correctly.
-		if (!empty($similar['response']['docs'])){
+		if (is_array($similar) && !empty($similar['response']['docs'])){
 			$similarTitles = [];
 			foreach ($similar['response']['docs'] as $key => $similarTitle){
 				$similarTitleDriver = new GroupedWorkDriver($similarTitle);
