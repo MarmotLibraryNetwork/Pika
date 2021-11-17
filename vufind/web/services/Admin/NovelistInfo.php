@@ -27,7 +27,7 @@
  */
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
-class Admin_ClearNovelistCache extends Admin_Admin{
+class Admin_NovelistInfo extends Admin_Admin{
 
 	function launch(){
 		global $interface;
@@ -63,7 +63,7 @@ class Admin_ClearNovelistCache extends Admin_Admin{
 		$interface->assign('numCachedObjects', $numCachedObjects);
 		$interface->assign('checkRecord', $checkRecord);
 
-		$this->display('clearNovelistCache.tpl', 'Clear Novelist Cache');
+		$this->display('novelistInfo.tpl', 'Novelist Information');
 
 	}
 
