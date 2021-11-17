@@ -34,7 +34,11 @@
 	<tr>
 		<th>{$field|escape}</th>
 		<td>
-			{$value}
+				{if $field=='Novelist Primary ISBN'}
+						<span id="novelistPrimaryISBN">{$value}</span>
+				{else}
+            {$value}
+				{/if}
 		</td>
 	</tr>
 	{/foreach}

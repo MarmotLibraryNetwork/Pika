@@ -212,6 +212,11 @@ class GroupedWork_AJAX extends AJAXHandler {
 		}
 		$memoryWatcher->logMemory('Loaded Similar series from Novelist');
 
+		if (!empty($enrichmentData['novelist']->primaryISBN)){
+			// Populate primary novelist isbn in grouped work staff view (This enrichment call may be the first time it is fetched)
+			$enrichmentResult['novelistPrimaryISBN'] = $enrichmentData['novelist']->primaryISBN;
+		}
+
 		//Load Similar titles (from Solr)
 		$class = $configArray['Index']['engine'];
 		$url   = $configArray['Index']['url'];
@@ -294,10 +299,10 @@ class GroupedWork_AJAX extends AJAXHandler {
 		}
 		$interface->assign('index', $titleIndexNumber);
 		$interface->assign('scrollerName', $scrollerName);
-		$interface->assign('id', $record['id']);
+		$interface->assign('id', $record['id'] ?? null);
 		$interface->assign('title', $title);
 		$interface->assign('author', $record['author']);
-		$interface->assign('linkUrl', $record['fullRecordLink']);
+		$interface->assign('linkUrl', $record['fullRecordLink'] ?? null);
 		$interface->assign('bookCoverUrlMedium', $record['mediumCover']);
 
 		return [

@@ -172,6 +172,10 @@ Pika.GroupedWork = (function(){
 						// Initiate Any Explore More JCarousels
 						Pika.initCarousels('.ajax-carousel');
 
+						if (data.novelistPrimaryISBN){
+							$('#novelistPrimaryISBN').html(data.novelistPrimaryISBN);
+						}
+
 					} catch (e) {
 						alert("error loading enrichment: " + e);
 					}
