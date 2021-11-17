@@ -66,7 +66,10 @@ class OverDriveDriver4 {
 		$userAgent                = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
 		$this->defaultCurlOptions = [
 			CURLOPT_USERAGENT      => $userAgent,
-			CURLOPT_CONNECTTIMEOUT => 2,  // A low connect time out prevents Pika from slowing down when there is an Overdrive outage
+			CURLOPT_CONNECTTIMEOUT => 5,
+				// A low connect time out prevents Pika from slowing down when there is an Overdrive outage
+				// Previously 2 second connect time out, however this becomes an issue when Marmot's primary DNS is down
+				// there isn't enough time for backup DNS to respond See D-4131 D-3157
 			CURLOPT_TIMEOUT        => 10,
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_FOLLOWLOCATION => true,
@@ -109,7 +112,8 @@ class OverDriveDriver4 {
 				if (isset($tokenData->access_token)){
 					$this->cache->set($memCacheKey, $tokenData, $tokenData->expires_in - 10);
 				}else{
-					$this->logger->error('Failed to connect to the OverDrive API ', ['overdrive_connect_response' => $tokenData]);
+					$this->logger->error('Failed to connect to the OverDrive API ', ['overdrive_connect_response' => $tokenData, 'CURL Error' => $curl->curlErrorMessage]);
+					// Connection Time out is potential issue so we include possible curl errors
 					return false;
 				}
 			}else{
