@@ -540,6 +540,8 @@ class GroupedWorkDriver extends RecordInterface {
 				$summEdition      = $relatedRecord['edition'];
 				$summLanguage     = $relatedRecord['language'];
 			}else{
+				// Only display these details if it is the same for every related record, otherwise don't populate
+				// (or show the Varies by edition statement)
 				if ($summPublisher != $relatedRecord['publisher']){
 					$summPublisher = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
 				}
@@ -674,6 +676,8 @@ class GroupedWorkDriver extends RecordInterface {
 				$summEdition      = $relatedRecord['edition'];
 				$summLanguage     = $relatedRecord['language'];
 			}else{
+				// Only display these details if it is the same for every related record, otherwise don't populate
+				// (or show the Varies by edition statement)
 				if ($summPublisher != $relatedRecord['publisher']){
 					$summPublisher = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
 				}
@@ -2183,7 +2187,7 @@ class GroupedWorkDriver extends RecordInterface {
 			// Set the display Name for the review
 			if (!$userReview->displayName){
 				if (strlen(trim($userReview->firstname)) >= 1){
-					$userReview->displayName = substr($userReview->firstname, 0, 1) . '. ' . $userReview->lastname;
+					$userReview->displayName = mb_substr($userReview->firstname, 0, 1) . '. ' . $userReview->lastname;
 				}else{
 					$userReview->displayName = $userReview->lastname;
 				}
@@ -3192,6 +3196,7 @@ class GroupedWorkDriver extends RecordInterface {
 				$summEdition      = $relatedRecord['edition'];
 				$summLanguage     = $relatedRecord['language'];
 			}else{
+				// Only display these details if it is the same for every related record, otherwise don't populate
 				if ($summPublisher != $relatedRecord['publisher']){
 					$summPublisher = null;
 				}
