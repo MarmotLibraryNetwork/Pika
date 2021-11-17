@@ -202,8 +202,7 @@ class OverDrive_AJAX extends AJAXHandler {
 			if ($patron){
 				$driver      = OverDriveDriverFactory::getDriver();
 				$overDriveId = $_REQUEST['overDriveId'];
-				$formatType  = $_REQUEST['formatType'];
-				$result      = $driver->getDownloadLink($overDriveId, $formatType, $patron);
+				$result      = $driver->getDownloadLink($overDriveId, $patron);
 				return $result;
 			}else{
 				return ['success' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.'];
