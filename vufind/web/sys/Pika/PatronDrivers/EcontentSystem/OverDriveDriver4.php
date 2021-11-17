@@ -113,6 +113,7 @@ class OverDriveDriver4 {
 					$this->cache->set($memCacheKey, $tokenData, $tokenData->expires_in - 10);
 				}else{
 					$this->logger->error('Failed to connect to the OverDrive API ', ['overdrive_connect_response' => $tokenData, 'CURL Error' => $curl->curlErrorMessage]);
+					// Connection Time out is potential issue so we include possible curl errors
 					return false;
 				}
 			}else{
