@@ -44,6 +44,14 @@
 
 				{assign var=indexedSeries value=$recordDriver->getIndexedSeries()}
 				{assign var=series value=$recordDriver->getSeries()}
+          {if $showSeries && ($series)}
+						<div class="novelistSeries row">
+							<div class="result-label col-tn-3">{translate text='NoveList Series'}:</div>
+							<div class="col-tn-9 result-value">
+								<a href="/GroupedWork/{$recordDriver->getPermanentId()}/Series">{$series.seriesTitle}</a>{if $series.volume} volume {$series.volume}{/if}<br>
+							</div>
+						</div>
+          {/if}
 				{if $showSeries && ($indexedSeries)}
 					<div class="series row">
 						<div class="result-label col-tn-3">{translate text='Series'}:</div>
@@ -70,14 +78,7 @@
 					</div>
 
 				{/if}
-					{if $showSeries && ($series)}
-							<div class="novelistSeries row">
-								<div class="result-label col-tn-3">{translate text='Novelist Series'}:</div>
-								<div class="col-tn-9 result-value">
-									<a href="/GroupedWork/{$recordDriver->getPermanentId()}/Series">{$series.seriesTitle}</a>{if $series.volume} volume {$series.volume}{/if}<br>
-								</div>
-							</div>
-					{/if}
+
 
 				{if $showPublicationDetails}
 					<div class="row">
