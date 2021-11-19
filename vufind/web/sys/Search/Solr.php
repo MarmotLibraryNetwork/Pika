@@ -528,10 +528,10 @@ class Solr implements IndexEngine {
 		$options = [
 			'q'                    => "id:$id",
 			'rows'                 => 25,
-			'fl'                 => 'id,title_display,title_full,author,author_display', // These appear to be the only fields used for displaying
-			'fq'                 => [],
-			//			'mlt.interestingTerms' => 'details', // This returns the interesting terms for this 'more like this' search but isn't used any where
-			//			'fl'                   => SearchObject_Solr::$fields
+			'fl'                   => 'id,title_display,title_full,author,author_display', // These appear to be the only fields used for displaying
+			'fq'                   => [],
+//			'mlt.interestingTerms' => 'details', // This returns the interesting terms for this 'more like this' search but isn't used any where
+//			'fl'                   => SearchObject_Solr::$fields
 		];
 		if ($originalResult){
 			if (!empty($originalResult['target_audience_full'])){
@@ -581,9 +581,9 @@ class Solr implements IndexEngine {
 		}
 
 		$result = $this->client->get($this->host . '/morelikethis2', $options);
-		if (is_object($result)){
-			$this->logger->error("More Like this response : " . $this->client->getRawResponse());
-		}
+//		if (is_object($result)){
+//			$this->logger->error("More Like this response : " . $this->client->getRawResponse());
+//		}
 		if ($this->client->isError()) {
 			$errorMessage = $this->client->getErrorMessage();
 			$this->logger->error('MoreLikeThis2 error : ' . $errorMessage);
