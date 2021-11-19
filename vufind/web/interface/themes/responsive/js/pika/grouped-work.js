@@ -150,8 +150,7 @@ Pika.GroupedWork = (function(){
 						var similarTitlesNovelist = data.similarTitlesNovelist;
 						if (similarTitlesNovelist && similarTitlesNovelist.length > 0){
 							$("#novelisttitlesPlaceholder").html(similarTitlesNovelist);
-							$("#novelisttab_label,#similarTitlesPanel").show()
-									;
+							$("#novelisttab_label,#similarTitlesPanel").show();
 						}
 
 						var similarAuthorsNovelist = data.similarAuthorsNovelist;
