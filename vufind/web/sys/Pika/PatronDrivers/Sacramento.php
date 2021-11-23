@@ -88,11 +88,11 @@ class Sacramento extends Sierra {
 		if ($this->accountProfile->loginConfiguration == 'name_barcode'){
 			$postData = [
 				'name' => $patron->cat_username,
-				'code' => $patron->cat_password
+				'code' => $patron->barcode
 			];
 		}else{
 			$postData = [
-				'code' => $patron->cat_username,
+				'code' => $patron->barcode,
 				'pin'  => $patron->cat_password
 			];
 
@@ -191,13 +191,13 @@ class Sacramento extends Sierra {
 		// first log patron in
 		if($this->accountProfile->loginConfiguration == "barcode_pin") {
 			$postData = [
-			 'code' => $patron->cat_username,
+			 'code' => $patron->barcode,
 			 'pin'  => $patron->cat_password
 			];
 		} else {
 			$postData = [
 			 'name' => $patron->cat_username,
-			 'code' => $patron->cat_password
+			 'code' => $patron->barcode
 			];
 		}
 		$loginUrl = $vendorOpacUrl . '/patroninfo/';

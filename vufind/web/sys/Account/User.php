@@ -21,6 +21,7 @@
  */
 require_once 'DB/DataObject.php';
 use Pika\Cache;
+use Pika\Logger;
 
 class User extends DB_DataObject {
 
@@ -34,8 +35,11 @@ class User extends DB_DataObject {
 	public $email;                           // string(250)  not_null
 	public $phone;                           // string(30)
 	public $alt_username;                    // An alternate username used by patrons to login.
-	public $cat_username;                    // string(50)
-	public $cat_password;                    // string(50)
+	// cat_username and cat_password are protected for logging purposes
+	protected $cat_username;                    // string(50)
+	protected $cat_password;
+	public $barcode;                        // string(50) Replaces $cat_username for sites using barcode/pin auth
+	public $password;                       // string(128) password hash Replaces $cat_password
 	public $patronType;
 	public $created;                         // datetime(19)  not_null binary
 	public $homeLocationId;                  // int(11)
@@ -107,7 +111,6 @@ class User extends DB_DataObject {
 	private $catalogDriver;
 	private $materialsRequestReplyToAddress;
 	private $materialsRequestEmailSignature;
-	private $barcode;
 	public $ilsUserId;
 	private $linkedUserObjects;
 // Account Blocks //
@@ -121,6 +124,12 @@ class User extends DB_DataObject {
 	public $availableHoldNotice;
 	public $comingDueNotice;
 	public $phoneType;
+
+	private $logger;
+
+	public function __construct(){
+		$this->logger = new Logger(__CLASS__);
+	}
 
 	function getTags(){
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
@@ -210,14 +219,51 @@ class User extends DB_DataObject {
 				$this->getStaffSettings();
 			}
 			return $this->materialsRequestEmailSignature;
-		}elseif ($name == 'barcode'){
+		}
+
+		// handle barcodes, cat_password and cat_username
+		if ($name == 'barcode'){
 			return $this->getBarcode();
+		} elseif($name == 'cat_password' || $name == 'cat_username') {
+			$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
+			$this->logger->warn($name . " accessed by " . $calledBy['function'], array("trace" => $calledBy));
+			if ($accountProfile = $this->getAccountProfile()){
+				if ($accountProfile->loginConfiguration == 'barcode_pin' && $name == 'cat_username'){
+					return $this->barcode;
+				}elseif ($accountProfile->loginConfiguration == 'name_barcode' && $name == 'cat_password'){
+					return $this->barcode;
+				} else {
+					return $this->{$name};
+				}
+			} else {
+				return $this->{$name};
+			}
 		}else{
 			return $this->data[$name];
 		}
 	}
 
 	function __set($name, $value){
+		// Handle cat_* properties being set
+		// If needed update barcode or password field
+		if($name == 'cat_password' || $name == 'cat_username') {
+			$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
+			$this->logger->warn($name . " being set by " . $calledBy['function'], array("trace" => $calledBy));
+			if ($accountProfile = $this->getAccountProfile()){
+				if ($accountProfile->loginConfiguration == 'barcode_pin' && $name == 'cat_username'){
+					$this->barcode = $value;
+					return $this->update();
+				}elseif ($accountProfile->loginConfiguration == 'name_barcode' && $name == 'cat_password'){
+					$this->barcode = $value;
+				} else {
+					$this->{$name} = $value;
+				}
+			} else {
+				$this->{$name} = $value;
+			}
+			return $this->update();
+		}
+
 		if ($name == 'roles'){
 			$this->roles = $value;
 			//Update the database, first remove existing values
@@ -302,29 +348,12 @@ class User extends DB_DataObject {
 		}
 	}
 
-	function getBarcode(){
-		if (isset($this->barcode)){
-			return $this->barcode;
-		}else{
-			/** @var AccountProfile $accountProfile */
-			if ($accountProfile = $this->getAccountProfile()){
-				if ($accountProfile->loginConfiguration == 'barcode_pin'){
-					$this->barcode = trim($this->cat_username);
-					return $this->barcode;
-				}elseif ($accountProfile->loginConfiguration == 'name_barcode'){
-					$this->barcode = trim($this->cat_password);
-					return $this->barcode;
-				}
-			}
-//			global $configArray;
-//			if ($configArray['Catalog']['barcodeProperty'] == 'cat_username'){
-//				$this->barcode = trim($this->cat_username);
-//				return $this->barcode;
-//			}else{
-//				$this->barcode = trim($this->cat_password);
-//				return $this->barcode;
-//			}
-		}
+	/**
+	 * Patron barcode lookup based on login config.
+	 * @return string|void
+	 */
+	public function getBarcode(){
+		return $this->barcode;
 	}
 
 
@@ -647,8 +676,9 @@ class User extends DB_DataObject {
 	static function getObjectStructure(){
 		require_once ROOT_DIR . '/sys/Administration/Role.php';
 		$user                   = UserAccount::getActiveUserObj();
-		$barcodeProperty        = $user->getAccountProfile()->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
-		$displayBarcode         = $barcodeProperty == 'cat_username';
+		$barcodeProperty        = 'barcode';
+		// todo: [pins] not sure about the following line of code
+		$displayBarcode         = $barcodeProperty == 'barcode';
 		$thisIsNotAListOfAdmins = isset($_REQUEST['objectAction']) && $_REQUEST['objectAction'] != 'list';
 		$roleList               = Role::fetchAllRoles($thisIsNotAListOfAdmins);  // Lookup available roles in the system, don't show the role description is lists of admins
 		$structure              = [
@@ -999,8 +1029,7 @@ class User extends DB_DataObject {
 		if ($includeLinkedUsers){
 			if ($this->getLinkedUsers() != null){
 				/** @var User $user */
-				// TODO: this shouldn't reuse the same user object for a different user . ie; should be $user = new User();
-				// todo: This creates a highly likely case of variable collision.
+
 				foreach ($this->getLinkedUsers() as $user){
 					$allHolds = array_merge_recursive($allHolds, $user->getMyHolds(false, $unavailableSort, $availableSort));
 				}

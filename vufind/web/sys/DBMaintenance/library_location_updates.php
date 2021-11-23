@@ -1236,5 +1236,15 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			],
 		],
 
+		'2021.04_add_login_config' => [
+			'title'           => 'Add Login Configuration',
+			'description'     => 'Allow per library login configuration.',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE library ".
+				"ADD COLUMN loginConfiguration ENUM('barcode_pin', 'name_barcode', 'account_profile_based') NOT NULL DEFAULT 'account_profile_based';"
+			],
+		],
+
 	);
 }

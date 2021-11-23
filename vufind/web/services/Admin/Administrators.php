@@ -111,7 +111,7 @@ class Admin_Administrators extends ObjectEditor {
 		global $interface;
 		$user = UserAccount::getActiveUserObj();
 
-		$barcodeProperty = $user->getAccountProfile()->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
+		$barcodeProperty = 'barcode';
 		$barcode         = trim($_REQUEST['barcode']);
 		$interface->assign('barcode', $barcode);
 

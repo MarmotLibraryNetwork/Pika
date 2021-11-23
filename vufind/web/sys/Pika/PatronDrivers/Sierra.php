@@ -25,15 +25,16 @@
  * This class implements the Sierra REST Patron API for patron interactions:
  *    https://sandbox.iii.com/iii/sierra-api/swagger/index.html#!/patrons
  *
+ *  Barcodes are now stored in barcode field
+ *  DEPRECATED: ~~Currently, in the database cat_password or cat_username represent the patron barcodes.~~
  *
- *  Currently, in the database cat_password or cat_username represent the patron barcodes.
  *
  *  For auth type barcode_pin
- *    barcode stored in cat_username field
+ *    barcode stored in barcode field
  *    pin is stored in cat_password field (this field can be removed when using the api)
  *
  *  For auth type name_barcode
- *    barcode is stored in cat_password field
+ *    barcode is stored in barcode field
  *    name is stored in cat_username field
  *
  *
@@ -334,7 +335,6 @@ class Sierra {
 	 */
 	public function patronLogin($username, $password, $validatedViaSSO = FALSE){
 		// get the login configuration barcode_pin or name_barcode
-		// TODO: Need to pull login from session, db, memcache, etc, so login isn't called repeatably on each request.
 		$loginMethod = $this->accountProfile->loginConfiguration;
 		// check patron credentials depending on login config.
 		// the returns from _auth methods should be either a sierra patron id or false.
@@ -382,7 +382,7 @@ class Sierra {
 		// can't find patron
 		if (!$patronId) {
 			$msg = "Can't get patron id from Sierra API.";
-			$this->logger->warn($msg, ['barcode'=>$this->patronBarcode]);
+			$this->logger->debug($msg, ['barcode'=>$this->patronBarcode]);
 			return null;
 		}
 
@@ -467,29 +467,18 @@ class Sierra {
 			} else {
 				$this->logger->error("Sierra user id $patronId did not return a barcode");
 			}
-
 		} elseif (!empty($this->patronBarcode)) {
 			// Since Sacramento's student Id's aren't treated as barcodes, we have to ignore the barcodes array from the API
 			$barcode = $this->patronBarcode;
 		}
 
-		// barcode isn't actually in database, but is stored in User->data['barcode']
-		$patron->barcode = $barcode;
-
 		// check all the places barcodes are stored and determine if they need updated.
 		$loginMethod    = $this->accountProfile->loginConfiguration;
 		$patron->source = $this->accountProfile->name;
 
-		if ($loginMethod == "barcode_pin") {
-			if($patron->cat_username != $barcode) {
-				$updatePatron = true;
-				$patron->cat_username = $barcode;
-			}
-		} else {
-			if($patron->cat_password != $barcode) {
-				$updatePatron = true;
-				$patron->cat_password = $barcode;
-			}
+		if ($patron->barcode != $barcode){
+			$updatePatron    = true;
+			$patron->barcode = $barcode;
 		}
 
 		// Checks; make sure patron info from sierra matches database. update if needed.
@@ -756,7 +745,6 @@ class Sierra {
 			$patron->numHoldsIls          = $patron->numHoldsAvailableIls + $patron->numHoldsRequestedIls;
 		}
 
-		// web notes TODO: uncomment if it's ever safe to display web notes field
 		if(isset($pInfo->varFields) && isset($this->configArray['Catalog']['sierraPatronWebNoteField']) && $this->configArray['Catalog']['sierraPatronWebNoteField'] != '') {
 			$webNotesVarField = $this->configArray['Catalog']['sierraPatronWebNoteField'];
 			$webNote = $this->_getVarField($webNotesVarField,$pInfo->varFields);
@@ -828,7 +816,7 @@ class Sierra {
 			if ($this->accountProfile->loginConfiguration == "barcode_pin"){
 				$barcode = $patronOrBarcode->cat_username;
 			} else {
-				$barcode = $patronOrBarcode->cat_password;
+				$barcode = $patronOrBarcode->barcode;
 			}
 		} elseif (is_string($patronOrBarcode) || is_int($patronOrBarcode)) {
 			// the api expects barcode in form of string. Just in case cast to string.
@@ -1090,7 +1078,7 @@ class Sierra {
 
 		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 		$this->cache->delete($patronCacheKey);
-		// todo: A success message won't be displayed unless the words are EXACTLY as below.
+		// Important: A success message won't be displayed unless the words are EXACTLY as below.
 		return 'Your pin number was updated successfully.';
 	}
 
@@ -1164,7 +1152,7 @@ class Sierra {
 
 		$loginMethod = $this->accountProfile->loginConfiguration;
 		if ($loginMethod == "barcode_pin"){
-			$patron->cat_username = $barcode;
+			$patron->barcode = $barcode;
 		} elseif ($loginMethod == "name_barcode") {
 			$patron->cat_password = $barcode;
 		}
@@ -2436,6 +2424,16 @@ EOT;
 	}
 
 
+	/**
+	 * Fetch a patrons reading history from Sierra ILS
+	 *
+	 * @param User $patron
+	 * @param int $page
+	 * @param int $recordsPerPage
+	 * @param string $sortOption
+	 * @return array|mixed
+	 * @throws ErrorException
+	 */
 	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut"){
 		// history enabled?
 		if ($patron->trackReadingHistory != 1){
@@ -2801,11 +2799,6 @@ EOT;
 				if (preg_match('~\\b' . preg_quote($userNamePart) . '\\b~i', $patronName, $m)) {
 					$valid = true;
 				}
-
-				//else {
-					//$valid = false;
-					//break;
-				//}
 			}
 			// If a match is found, break outer foreach and valid is true
 			if ($valid === true) {
@@ -2878,7 +2871,6 @@ EOT;
 	 * @throws ErrorException
 	 */
 	protected function _authBarcodePin($barcode, $pin) {
-
 		// if using username field check if username exists
 		// username replaces barcode
 		if($this->hasUsernameField()) {
@@ -2891,12 +2883,16 @@ EOT;
 			$provisionSierraUserId = null;
 			$operation = 'patrons/find';
 			$r = $this->_doRequest($operation, $params);
+
 			if(!empty($r->barcodes)) {
 				// Note: for sacramento student ids, this call doesn't not return any barcodes
 				$barcode             = $r->barcodes[0];
 				$this->patronBarcode = $barcode;
-				//TODO: this call also returns the sierra id; keep it so we can skip an extra call after pin validation
+				// this call also returns the sierra id; keep it so we can skip an extra call after pin validation
 			}
+			// todo: [pins] this creates issues when sites other than sacramento return bad patron data;
+			// ie for flatirons patron id 1444284 nothing is returned except for an id. This causes strange things with
+			// linked accounts.
 			if (!empty($r->id)){
 				// The call above can return an Id even if it doesn't return a barcode, eg for sacramento students
 				$provisionSierraUserId = $r->id;
@@ -2906,8 +2902,14 @@ EOT;
 		$params = [
 			"barcode"         => $barcode,
 			"pin"             => $pin,
-			"caseSensitivity" => false,  //This setting is required for Sacramento student Ids to get a good pin validation response.  I suspect that there is an ILS setting that overrides this any way (pascal 2/6/2020)
 		];
+
+		//This setting is required for Sacramento student Ids to get a good pin validation response.  I suspect that there is an ILS setting that overrides this any way (pascal 2/6/2020)
+		if ($this->configArray['Catalog']['pinCaseSensitive']) {
+			$params["caseSensitivity"] = true;
+		} else {
+			$params["caseSensitivity"] = false;
+		}
 
 		if (!$this->_doRequest("patrons/validate", $params, "POST")) {
 			return false;
@@ -2923,11 +2925,11 @@ EOT;
 		$patron            = new User();
 		$patron->ilsUserId = $patronId;
 		$patron->find(true);
-		// if we don't find a patron then new user create it. Will be populated
+		// if we don't find a patron in database, do insert. Will be populated with data retrieved from api
 		if ($patron->N == 0){
-			$patron->created      = date('Y-m-d');
-			$patron->ilsUserId    = $patronId;
-			$patron->cat_username = $barcode;
+			$patron->created   = date('Y-m-d');
+			$patron->ilsUserId = $patronId;
+			$patron->barcode   = $barcode;
 			$patron->insert();
 		}
 
@@ -3094,7 +3096,6 @@ EOT;
 
 		### ERROR CHECKS ###
 		// if an error does occur set the $this->apiLastError.
-
 		// get the info so we can check the headers for a good response.
 		$cInfo = $c->getInfo();
 		// first check for a curl error
@@ -3109,6 +3110,16 @@ EOT;
 			// this will be a 4xx response
 			// first we need to check the response for a code, message from the API because many failed operations (ie,
 			// freezeing a hold) will send back a 4xx response code if the operation couldn't be completed.
+
+			// when authenticating with pins, a 400 response will be returned for bad credentials.
+			// check for failed authentication
+			if($c->errorCode == 400 && $c->response->code == 108) {
+				// bad credentials
+				$message = 'Authentication Error: '.$c->response->httpStatus.': '.$c->response->name;
+				$this->apiLastError = $message;
+				$this->logger->debug($message);
+				return false;
+			}
 			if(isset($c->response->code)) {
 				$message = 'API Error: ' . $c->response->code . ': ' . $c->response->name;
 				if(isset($c->response->description)){
@@ -3175,13 +3186,13 @@ EOT;
 		// first log patron in
 		if($this->accountProfile->loginConfiguration == "barcode_pin") {
 			$postData = [
-				'code' => $patron->cat_username,
+				'code' => $patron->barcode,
 				'pin'  => $patron->cat_password
 			];
 		} else {
 			$postData = [
 				'name' => $patron->cat_username,
-				'code' => $patron->cat_password
+				'code' => $patron->barcode
 			];
 		}
 		$loginUrl = $vendorOpacUrl . '/patroninfo/';

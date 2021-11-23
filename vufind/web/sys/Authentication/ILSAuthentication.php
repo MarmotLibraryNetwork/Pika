@@ -22,7 +22,6 @@ require_once ROOT_DIR . '/CatalogConnection.php';
 
 use Pika\Logger;
 
-
 class ILSAuthentication implements Authentication {
 	private $username;
 	private $password;
@@ -47,13 +46,13 @@ class ILSAuthentication implements Authentication {
 		if (!array_key_exists('username', $_REQUEST) && !array_key_exists('password', $_REQUEST)){
 			$this->logger->info("Username and password not provided, returning user if it exists");
 			//If not, check to see if we have a valid user already authenticated
-			if (UserAccount::isLoggedIn()){ //TODO: prevent in case of masquerade??
+			if (UserAccount::isLoggedIn()){
 				return UserAccount::getLoggedInUser();
 			}
 		}
 		$this->username = empty($_REQUEST['username']) ? '' : $_REQUEST['username'];
 		$this->password = empty($_REQUEST['password']) ? '' : $_REQUEST['password'];
-
+		// TODO: not sure why these checks are here?
 		if (is_array($this->username)){
 			$this->username = reset($this->username);
 		}
@@ -61,14 +60,13 @@ class ILSAuthentication implements Authentication {
 			$this->password = reset($this->password);
 		}
 
-//		$this->logger->debug("Authenticating user '{$this->username}', '{$this->password}' via the ILS");
+		// $this->logger->debug("Authenticating user '{$this->username}', '{$this->password}' via the ILS");
 		// only leave above logging uncommented when debugging a specific issues
 		if(!$validatedViaSSO && ($this->username == '' || $this->password == '')){
 			$user = new PEAR_Error('authentication_error_blank');
 		} else {
 			// Connect to the correct catalog depending on the driver for this account
 			$catalog = $this->catalogConnection;
-
 			if ($catalog->status) {
 				/** @var User $patron */
 				$patron = $catalog->patronLogin($this->username, $this->password, null, $validatedViaSSO);
@@ -92,7 +90,7 @@ class ILSAuthentication implements Authentication {
 		$this->username = $username;
 		$this->password = $password;
 
-//		$this->logger->debug("validating account for user '{$this->username}', '{$this->password}' via the ILS");
+		// $this->logger->debug("validating account for user '{$this->username}', '{$this->password}' via the ILS");
 		// only leave above logging uncommented when debugging a specific issues
 		if($this->username == '' || ($this->password == '' && !$validatedViaSSO)){
 			$validUser = new PEAR_Error('authentication_error_blank');
