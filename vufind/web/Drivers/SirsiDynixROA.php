@@ -1160,7 +1160,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 		if (isset(SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId])){
 			return SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId];
 		}else{
-			[, $sessionToken] = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+			[, $sessionToken] = $this->loginViaWebService($patron->barcode, $patron->cat_password);
 			return $sessionToken;
 		}
 	}
