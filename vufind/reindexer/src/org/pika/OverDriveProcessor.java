@@ -500,17 +500,6 @@ public class OverDriveProcessor {
 				if (primaryLanguage == null) {
 					primaryLanguage = language;
 				}
-				//The boost maps contain entries for en and es
-				String languageBoost = indexer.translateSystemValue("language_boost", overdriveLanguageCode, identifier);
-				if (languageBoost != null) {
-					Long languageBoostVal = Long.parseLong(languageBoost);
-					overDriveRecord.setLanguageBoost(languageBoostVal);
-				}
-				String languageBoostEs = indexer.translateSystemValue("language_boost_es", overdriveLanguageCode, identifier);
-				if (languageBoostEs != null) {
-					Long languageBoostVal = Long.parseLong(languageBoostEs);
-					overDriveRecord.setLanguageBoostSpanish(languageBoostVal);
-				}
 			}
 			overDriveRecord.setLanguages(languages);
 		}

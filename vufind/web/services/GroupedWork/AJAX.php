@@ -212,17 +212,19 @@ class GroupedWork_AJAX extends AJAXHandler {
 		}
 		$memoryWatcher->logMemory('Loaded Similar series from Novelist');
 
+		if (!empty($enrichmentData['novelist']->primaryISBN)){
+			// Populate primary novelist isbn in grouped work staff view (This enrichment call may be the first time it is fetched)
+			$enrichmentResult['novelistPrimaryISBN'] = $enrichmentData['novelist']->primaryISBN;
+		}
+
 		//Load Similar titles (from Solr)
 		$class = $configArray['Index']['engine'];
 		$url   = $configArray['Index']['url'];
 		/** @var Solr $db */
-		$db = new $class($url);
-		$db->disableScoping();
+		$db      = new $class($url);
 		$similar = $db->getMoreLikeThis2($id);
 		$memoryWatcher->logMemory('Loaded More Like This data from Solr');
-		// Send the similar items to the template; if there is only one, we need
-		// to force it to be an array or things will not display correctly.
-		if (!empty($similar['response']['docs'])){
+		if (is_array($similar) && !empty($similar['response']['docs'])){
 			$similarTitles = [];
 			foreach ($similar['response']['docs'] as $key => $similarTitle){
 				$similarTitleDriver = new GroupedWorkDriver($similarTitle);
@@ -294,10 +296,10 @@ class GroupedWork_AJAX extends AJAXHandler {
 		}
 		$interface->assign('index', $titleIndexNumber);
 		$interface->assign('scrollerName', $scrollerName);
-		$interface->assign('id', $record['id']);
+		$interface->assign('id', $record['id'] ?? null);
 		$interface->assign('title', $title);
 		$interface->assign('author', $record['author']);
-		$interface->assign('linkUrl', $record['fullRecordLink']);
+		$interface->assign('linkUrl', $record['fullRecordLink'] ?? null);
 		$interface->assign('bookCoverUrlMedium', $record['mediumCover']);
 
 		return [

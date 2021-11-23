@@ -528,10 +528,10 @@ class Solr implements IndexEngine {
 		$options = [
 			'q'                    => "id:$id",
 			'rows'                 => 25,
-			'fl'                 => 'id,title_display,title_full,author,author_display', // These appear to be the only fields used for displaying
-			'fq'                 => [],
-			//			'mlt.interestingTerms' => 'details', // This returns the interesting terms for this 'more like this' search but isn't used any where
-			//			'fl'                   => SearchObject_Solr::$fields
+			'fl'                   => 'id,title_display,title_full,author,author_display', // These appear to be the only fields used for displaying
+			'fq'                   => [],
+//			'mlt.interestingTerms' => 'details', // This returns the interesting terms for this 'more like this' search but isn't used any where
+//			'fl'                   => SearchObject_Solr::$fields
 		];
 		if ($originalResult){
 			if (!empty($originalResult['target_audience_full'])){
@@ -581,9 +581,9 @@ class Solr implements IndexEngine {
 		}
 
 		$result = $this->client->get($this->host . '/morelikethis2', $options);
-		if (is_object($result)){
-			$this->logger->error("More Like this response : " . $this->client->getRawResponse());
-		}
+//		if (is_object($result)){
+//			$this->logger->error("More Like this response : " . $this->client->getRawResponse());
+//		}
 		if ($this->client->isError()) {
 			$errorMessage = $this->client->getErrorMessage();
 			$this->logger->error('MoreLikeThis2 error : ' . $errorMessage);
@@ -844,12 +844,6 @@ class Solr implements IndexEngine {
 		$boostFactors = [];
 
 		global $solrScope;
-		global $language;
-		if ($language == 'es') {
-			$boostFactors[] = "language_boost_es_{$solrScope}";
-		} else {
-			$boostFactors[] = "language_boost_{$solrScope}";
-		}
 
 //		$boostFactors[] = (!empty($searchLibrary->applyNumberOfHoldingsBoost)) ? 'product(sum(popularity,1),format_boost)' : 'format_boost';
 
@@ -1509,6 +1503,9 @@ class Solr implements IndexEngine {
 					if (!empty($options['defType']) && $options['defType'] == 'dismax'){
 						$options['bf'] = $boost;
 					} else{
+						// Set the boosting query for the standard query parser
+						// https://solr.apache.org/guide/8_8/other-parsers.html#boost-query-parser
+
 						$options['q'] = "{!boost b=$boost} " . $options['q'];
 					}
 				}

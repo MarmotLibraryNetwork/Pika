@@ -141,7 +141,7 @@ public class Cron {
 			if (processToRun.getArguments() != null) {
 				//Add arguments into the section
 				for (String argument : processToRun.getArguments()) {
-					String[] argumentOptions = new String[0];
+					String[] argumentOptions;
 					try {
 						argumentOptions = argument.split("=");
 						logger.info("Adding section setting " + argumentOptions[0] + " = " + argumentOptions[1]);
@@ -156,7 +156,7 @@ public class Cron {
 			}
 
 			currentTime = new Date();
-			logger.info(currentTime.toString() + ": Running Process " + processToRun.getProcessName());
+			logger.info(currentTime + ": Running Process " + processToRun.getProcessName());
 			if (processToRun.getProcessClass() == null) {
 				logger.error("Could not run process " + processToRun.getProcessName() + " because there is not a class for the process.");
 				cronEntry.addNote("Could not run process " + processToRun.getProcessName() + " because there is not a class for the process.");
@@ -171,6 +171,7 @@ public class Cron {
 					processHandlerClassObject = processHandlerClass.newInstance();
 					IProcessHandler processHandlerInstance = (IProcessHandler) processHandlerClassObject;
 					cronEntry.addNote("Starting cron process " + processToRun.getProcessName());
+					cronEntry.saveToDatabase(pikaConn, logger);
 
 					//Mark the time the run was started rather than finished so really long running processes
 					//can go on while faster processes execute multiple times in other threads.

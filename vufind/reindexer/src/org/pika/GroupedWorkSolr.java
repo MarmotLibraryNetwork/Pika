@@ -495,8 +495,6 @@ public class GroupedWorkSolr implements Cloneable {
 					// Add_languages
 					addUniqueFieldValues(doc, "language_" + curScopeName, curRecord.getLanguages());
 					addUniqueFieldValues(doc, "translation_" + curScopeName, curRecord.getTranslations());
-					updateMaxValueField(doc, "language_boost_" + curScopeName, curRecord.getLanguageBoost());
-					updateMaxValueField(doc, "language_boost_es_" + curScopeName, curRecord.getLanguageBoostSpanish());
 
 					//Setup ownership & availability toggle values
 					setupAvailabilityToggleAndOwnershipForItemWithinScope(doc, curRecord, curItem, curScopeName, curScope);

@@ -63,26 +63,31 @@
 
 				{if $showSeries}
 					{assign var=indexedSeries value=$recordDriver->getIndexedSeries()}
-					{if $summSeries || $indexedSeries}
+            {if $summSeries}
+							<div class="novelistSeries{$summISBN} row">
+								<div class="result-label col-tn-3">NoveList Series: </div>
+								<div class="result-value col-tn-8">
+									<a href="/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}<br>
+								</div>
+							</div>
+            {/if}
+					{if $indexedSeries}
 						<div class="series{$summISBN} row">
 							<div class="result-label col-tn-3">Series: </div>
 							<div class="result-value col-tn-8">
-								{if $summSeries}
-									<a href="/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}<br>
-								{/if}
+
 								{if $indexedSeries}
 									{assign var=showMoreSeries value=false}
 									{if count($indexedSeries) > 4}
 										{assign var=showMoreSeries value=true}
 									{/if}
 									{foreach from=$indexedSeries item=seriesItem name=loop}
-										{if !isset($summSeries.seriesTitle) || ((strpos(strtolower($seriesItem.seriesTitle), strtolower($summSeries.seriesTitle)) === false) && (strpos(strtolower($summSeries.seriesTitle), strtolower($seriesItem.seriesTitle)) === false))}
 											<a href="/Search/Results?basicType=Series&lookfor=%22{$seriesItem.seriesTitle|escape:"url"}%22">{$seriesItem.seriesTitle|escape}</a>{if $seriesItem.volume} volume {$seriesItem.volume}{/if}<br>
 											{if $showMoreSeries && $smarty.foreach.loop.iteration == 3}
 												<a onclick="$('#moreSeries_{$summId}').show();$('#moreSeriesLink_{$summId}').hide();" id="moreSeriesLink_{$summId}">More Series...</a>
 												<div id="moreSeries_{$summId}" style="display:none">
 											{/if}
-										{/if}
+
 									{/foreach}
 									{if $showMoreSeries}
 										</div>
@@ -91,6 +96,7 @@
 							</div>
 						</div>
 					{/if}
+
 				{/if}
 
 				{if $showPublisher}

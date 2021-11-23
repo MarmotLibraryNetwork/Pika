@@ -49,8 +49,6 @@ public class RecordInfo {
 	private String          primaryLanguage;
 	private HashSet<String> languages            = new HashSet<>();
 	private HashSet<String> translations         = new HashSet<>();
-	private Long            languageBoost        = 1L;
-	private Long            languageBoostSpanish = 1L;
 
 	private HashSet<ItemInfo> relatedItems = new HashSet<>();
 
@@ -376,26 +374,6 @@ public class RecordInfo {
 
 	public HashSet<String> getTranslations() {
 		return translations;
-	}
-
-	public Long getLanguageBoost() {
-		return languageBoost;
-	}
-
-	public Long getLanguageBoostSpanish() {
-		return languageBoostSpanish;
-	}
-
-	void setLanguageBoost(Long languageBoost) {
-		if (languageBoost > this.languageBoost){
-			this.languageBoost = languageBoost;
-		}
-	}
-
-	void setLanguageBoostSpanish(Long languageBoostSpanish) {
-		if (languageBoostSpanish > this.languageBoostSpanish){
-			this.languageBoostSpanish = languageBoostSpanish;
-		}
 	}
 
 	void setLanguages(HashSet<String> languages) {

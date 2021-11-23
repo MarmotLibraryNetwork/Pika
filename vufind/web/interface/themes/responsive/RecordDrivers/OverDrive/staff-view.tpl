@@ -10,35 +10,35 @@
 			<a href="/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-default">Go To Grouped
 				Work</a>
 			<button onclick="return Pika.Record.reloadCover('{$recordDriver->getModule()}', '{$id}')"
-			        class="btn btn-sm btn-default">Reload Cover
+							class="btn btn-sm btn-default">Reload Cover
 			</button>
 			<button onclick="return Pika.GroupedWork.reloadEnrichment('{$recordDriver->getGroupedWorkId()}')"
-			        class="btn btn-sm btn-default">Reload Enrichment
+							class="btn btn-sm btn-default">Reload Enrichment
 			</button>
-        {if $loggedIn}
-            {if $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles) || in_array('contentEditor', $userRoles))}
-			        <a href="/Admin/LibrarianReviews?objectAction=addNew&groupedWorkPermanentId={$recordDriver->getPermanentId()}" target="_blank" class="btn btn-sm btn-default">Add Librarian Review</a>
-            {/if}
-            {if $userRoles && (in_array('opacAdmin', $userRoles) || in_array('cataloging', $userRoles))}
+				{if $loggedIn}
+						{if $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles) || in_array('contentEditor', $userRoles))}
+							<a href="/Admin/LibrarianReviews?objectAction=addNew&groupedWorkPermanentId={$recordDriver->getPermanentId()}" target="_blank" class="btn btn-sm btn-default">Add Librarian Review</a>
+						{/if}
+						{if $userRoles && (in_array('opacAdmin', $userRoles) || in_array('cataloging', $userRoles))}
 							<button onclick="return Pika.GroupedWork.forceReindex('{$recordDriver->getGroupedWorkId()}')"
-							        class="btn btn-sm btn-default">Force Reindex
+											class="btn btn-sm btn-default">Force Reindex
 							</button>
 							<button onclick="return Pika.GroupedWork.forceRegrouping('{$recordDriver->getGroupedWorkId()}')"
-							        class="btn btn-sm btn-default">Force Regrouping
+											class="btn btn-sm btn-default">Force Regrouping
 							</button>
 							<button onclick="return Pika.OverDrive.forceUpdateFromAPI('{$recordDriver->getUniqueId()}')"
-							        class="btn btn-sm btn-default">Force Update From API
+											class="btn btn-sm btn-default">Force Update From API
 							</button>
- 							<a href="/Admin/NonGroupedRecords?objectAction=addNew&recordId={$recordDriver->getId()}&source={$recordDriver->getRecordType()}&notes={$recordDriver->getTitle()|removeTrailingPunctuation|escape}%0A{$userDisplayName}, {$homeLibrary}, {$smarty.now|date_format}%0A"
-							   target="_blank" class="btn btn-sm btn-default">UnMerge from Work
+							<a href="/Admin/NonGroupedRecords?objectAction=addNew&recordId={$recordDriver->getId()}&source={$recordDriver->getRecordType()}&notes={$recordDriver->getTitle()|removeTrailingPunctuation|escape}%0A{$userDisplayName}, {$homeLibrary}, {$smarty.now|date_format}%0A"
+								 target="_blank" class="btn btn-sm btn-default">UnMerge from Work
 							</a>
-            {/if}
-	        {if $enableArchive == true && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('archives', $userRoles))}
+						{/if}
+					{if $enableArchive == true && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('archives', $userRoles))}
 							<button onclick="return Pika.GroupedWork.reloadIslandora('{$recordDriver->getGroupedWorkId()}')"
-							        class="btn btn-sm btn-default">Clear Islandora Cache
+											class="btn btn-sm btn-default">Clear Islandora Cache
 							</button>
-            {/if}
-        {/if}
+						{/if}
+				{/if}
 		</div>
 	</div>
 
@@ -57,45 +57,52 @@
 <div class="row">
 	<div class="result-label col-xs-6">Date Added: </div>
 	<div class="col-xs-6 result-value">
-		{$overDriveProduct->dateAdded|date_format:"%b %d, %Y %T"}
+			{* When the date is null, date_format displays the current time *}
+		{if $overDriveProduct->dateAdded}{$overDriveProduct->dateAdded|date_format:"%b %d, %Y %T"}{/if}
 	</div>
 </div>
 <div class="row">
 	<div class="result-label col-xs-6">Date Updated: </div>
 	<div class="col-xs-6 result-value">
-		{$overDriveProduct->dateUpdated|date_format:"%b %d, %Y %T"}
+			{* When the date is null, date_format displays the current time *}
+		{if $overDriveProduct->dateUpdated}{$overDriveProduct->dateUpdated|date_format:"%b %d, %Y %T"}{/if}
 	</div>
 </div>
 <div class="row">
 	{if $overDriveProduct->deleted}
 		<div class="result-label col-xs-6">Deleted: </div>
 		<div class="col-xs-6 result-value">
-			{$overDriveProduct->dateDeleted|date_format:"%b %d, %Y %T"}
+				{* When the date is null, date_format displays the current time *}
+			{if $overDriveProduct->dateDeleted}{$overDriveProduct->dateDeleted|date_format:"%b %d, %Y %T"}{/if}
 		</div>
 	{/if}
 </div>
 <div class="row">
 	<div class="result-label col-xs-6">Last Metadata Check: </div>
 	<div class="col-xs-6 result-value">
-		{$overDriveProduct->lastMetadataCheck|date_format:"%b %d, %Y %T"}
+			{* When the date is null, date_format displays the current time *}
+		{if $overDriveProduct->lastMetadataCheck}{$overDriveProduct->lastMetadataCheck|date_format:"%b %d, %Y %T"}{/if}
 	</div>
 </div>
 <div class="row">
 	<div class="result-label col-xs-6">Last Metadata Change: </div>
 	<div class="col-xs-6 result-value">
-		{$overDriveProduct->lastMetadataChange|date_format:"%b %d, %Y %T"}
+			{* When the date is null, date_format displays the current time *}
+			{if $overDriveProduct->lastMetadataChange}{$overDriveProduct->lastMetadataChange|date_format:"%b %d, %Y %T"}{/if}
 	</div>
 </div>
 <div class="row">
 	<div class="result-label col-xs-6">Last Availability Check: </div>
 	<div class="col-xs-6 result-value">
-		{$overDriveProduct->lastAvailabilityCheck|date_format:"%b %d, %Y %T"}
+			{* When the date is null, date_format displays the current time *}
+		{if $overDriveProduct->lastAvailabilityCheck}{$overDriveProduct->lastAvailabilityCheck|date_format:"%b %d, %Y %T"}{/if}
 	</div>
 </div>
 <div class="row">
 	<div class="result-label col-xs-6">Last Availability Change: </div>
 	<div class="col-xs-6 result-value">
-		{$overDriveProduct->lastAvailabilityChange|date_format:"%b %d, %Y %T"}
+			{* When the date is null, date_format displays the current time *}
+		{if $overDriveProduct->lastAvailabilityChange}{$overDriveProduct->lastAvailabilityChange|date_format:"%b %d, %Y %T"}{/if}
 	</div>
 </div><div class="row">
 	<div class="result-label col-xs-6">Last Grouped Work Modification Time: </div>

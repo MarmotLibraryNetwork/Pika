@@ -605,8 +605,13 @@
 		  Nothing searches against the field, and I can't think of how it would be useful for a search
 		  -->
 
+		<!-- Physical Descriptions -->
+		<field name="physical" type="string" indexed="false" stored="true" multiValued="true"/>
+		<!-- 300abcefg:530abcd -->
+		<!-- Stored but not indexed. There is no searching against this field, but the grouped work driver does
+		use the solr field to populate the Main Details entry Physical Description (summPhysicalDesc) -->
+
 		<!-- Things for faceting and refined searching -->
-		<field name="physical" type="string" indexed="true" stored="true" multiValued="true"/>
 
 		<!-- series -->
 		<field name="series" type="text" indexed="true" stored="true" multiValued="true"/>
@@ -725,8 +730,7 @@
 		<!-- Language Related Fields -->
 		<dynamicField name="language_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
 		<dynamicField name="translation_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
-		<dynamicField name="language_boost_*" type="integer" indexed="true" stored="true" multiValued="false" omitNorms="true"/>
-		<dynamicField name="language_boost_es_*" type="integer" indexed="true" stored="true" multiValued="false" omitNorms="true"/>
+
 		<!-- Fields for boosting branch holdings -->
 		<dynamicField name="lib_boost_*" type="integer" indexed="true" stored="true" multiValued="false" omitNorms="true"/>
 		<!-- relevance determiners -->

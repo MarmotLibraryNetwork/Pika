@@ -1,7 +1,7 @@
 /*
 # Munge types are string manipulation rules, and consist of:
 #
-# onephrase: eliminate all quotes and do it as a single phrase.
+# onephrase: eliminate all quotes and reformat as a single phrase within quotes.
 #   testing "one two"
 #    ...becomes ("testing one two")
 #

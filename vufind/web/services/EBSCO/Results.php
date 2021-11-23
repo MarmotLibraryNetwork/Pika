@@ -85,7 +85,7 @@ class EBSCO_Results extends Action{
 		$displayTemplate = 'EBSCO/list-list.tpl'; // structure for regular results
 		$pageTitle       = $displayQuery;
 		if (strlen($pageTitle) > 20){
-			$pageTitle = substr($pageTitle, 0, 20) . '...';
+			$pageTitle = mb_substr($pageTitle, 0, 20) . '...';
 		}
 		$interface->assign('breadcrumbText', $searchObject->displayQuery());
 		$interface->assign('subpage', $displayTemplate);

@@ -21,6 +21,7 @@ require_once ROOT_DIR . '/sys/ISBN/ISBNConverter.php';
 require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
 
 use Curl\Curl;
+use Pika\Logger;
 
 class Novelist3{
 	private $novelistEnabled = false;
@@ -28,9 +29,14 @@ class Novelist3{
 	private $pwd;
 	private $apiUrl;
 	private $cachingPeriod = 43200; // 12 hours
+	private Logger $logger;
 
+	/**
+	 * @throws Exception
+	 */
 	public function __construct(){
 		global $configArray;
+		$this->logger = new Logger(get_class($this));
 		if (!empty($configArray['Novelist']['profile'])){
 			$this->novelistEnabled = true;
 			$this->apiUrl          = $configArray['Novelist']['apiBaseUrl'];
@@ -63,10 +69,8 @@ class Novelist3{
 			$data = $curl->get($requestUrl);
 			if ($curl->isError()) {
 				$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
-				//TODO: update logging
-//							$this->logger->warning($message);
-				global $logger;
-				$logger->log($message, PEAR_LOG_WARNING);
+
+				$this->logger->warning($message);
 				//No enrichment for this isbn, go to the next one
 
 			}
@@ -170,10 +174,7 @@ class Novelist3{
 						$data = $curl->get($requestUrl);
 						if ($curl->isError()) {
 							$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
-							//TODO: update logging
-//							$this->logger->warning($message);
-							global $logger;
-							$logger->log($message, PEAR_LOG_WARNING);
+							$this->logger->warning($message);
 							//No enrichment for this isbn, go to the next one
 							continue;
 						}
@@ -200,13 +201,10 @@ class Novelist3{
 							}
 						}
 					}catch (Exception $e) {
-						//TODO: update logging
-//						$this->logger->error($e->getMessage(), ['stacktrace'=>$e->getTraceAsString()]);
+						$this->logger->error($e->getMessage(), ['stacktrace'=>$e->getTraceAsString()]);
 
-						global $logger;
-						$logger->log("Error fetching data from NoveList $e", PEAR_LOG_ERR);
 						if (isset($response)){
-							$logger->log($response, PEAR_LOG_DEBUG);
+							$this->logger->debug($response);
 						}
 						$enrichment = null;
 					}
@@ -278,10 +276,7 @@ class Novelist3{
 					if ($curl->isError()) {
 						$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
 
-						//TODO: update logging
-//							$this->logger->warning($message);
-						global $logger;
-						$logger->log($message, PEAR_LOG_WARNING);
+						$this->logger->warning($message);
 						//No enrichment for this isbn, go to the next one
 						continue;
 					}
@@ -301,9 +296,9 @@ class Novelist3{
 							{
 								$this->loadSeriesInfo($groupedRecordId, $data->FeatureContent->SeriesInfo, $novelistData);
 							}else{
-								global $logger;
+
 								//log the incorrect ISBN
-								$logger->log("Novelist ISBN for record " . $groupedRecordId . " does not match local holdings", PEAR_LOGWARNING);
+								$this->logger->warning("Novelist ISBN for record " . $groupedRecordId . " does not match local holdings");
 								//$this->loadSeriesInfoMissingISBN($groupedRecordId, $data->FeatureContent->SeriesInfo, $novelistData);
 								$this->loadSeriesInfo($groupedRecordId, $data->FeatureContent->SeriesInfo, $novelistData);
 								require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
@@ -347,12 +342,10 @@ class Novelist3{
 						}
 					}
 				}catch (Exception $e) {
-					//TODO: update logging
-//						$this->logger->error($e->getMessage(), ['stacktrace'=>$e->getTraceAsString()]);
-					global $logger;
-					$logger->log("Error fetching data from NoveList $e", PEAR_LOG_ERR);
+					$this->logger->error($e->getMessage(), ['stacktrace'=>$e->getTraceAsString()]);
+
 					if (isset($response)){
-						$logger->log($response, PEAR_LOG_DEBUG);
+						$this->logger->debug($response);
 					}
 					$enrichment = null;
 				}
@@ -419,10 +412,7 @@ class Novelist3{
 					$data = $curl->get($requestUrl);
 					if ($curl->isError()) {
 						$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
-						//TODO: update logging
-//							$this->logger->warning($message);
-						global $logger;
-						$logger->log($message, PEAR_LOG_WARNING);
+						$this->logger->warning($message);
 						//No enrichment for this isbn, go to the next one
 						continue;
 					}
@@ -446,10 +436,10 @@ class Novelist3{
 						break;
 					}
 				}catch (Exception $e) {
-					global $logger;
-					$logger->log("Error fetching data from NoveList $e", PEAR_LOG_ERR);
+
+					$this->logger->error("Error fetching data from NoveList $e");
 					if (isset($response)){
-						$logger->log($response, PEAR_LOG_DEBUG);
+						$this->logger->debug($response);
 					}
 					$enrichment = null;
 				}
@@ -512,10 +502,7 @@ class Novelist3{
 					$data = $curl->get($requestUrl);
 					if ($curl->isError()) {
 						$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
-						//TODO: update logging
-//							$this->logger->warning($message);
-						global $logger;
-						$logger->log($message, PEAR_LOG_WARNING);
+						$this->logger->warning($message);
 						//No enrichment for this isbn, go to the next one
 						continue;
 					}
@@ -539,10 +526,10 @@ class Novelist3{
 						break;
 					}
 				}catch (Exception $e) {
-					global $logger;
-					$logger->log("Error fetching data from NoveList $e", PEAR_LOG_ERR);
+
+					$this->logger->error("Error fetching data from NoveList $e");
 					if (isset($response)){
-						$logger->log($response, PEAR_LOG_DEBUG);
+						$this->logger->debug($response);
 					}
 					$enrichment = null;
 				}
@@ -620,10 +607,7 @@ class Novelist3{
 					if ($curl->isError()) {
 						$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
 
-						//TODO: update logging
-//							$this->logger->warning($message);
-						global $logger;
-						$logger->log($message, PEAR_LOG_WARNING);
+						$this->logger->warning($message);
 						//No enrichment for this isbn, go to the next one
 						continue;
 					}
@@ -643,12 +627,10 @@ class Novelist3{
 						}
 					}
 				}catch (Exception $e) {
-					//TODO: update logging
-//						$this->logger->error($e->getMessage(), ['stacktrace'=>$e->getTraceAsString()]);
-					global $logger;
-					$logger->log("Error fetching data from NoveList $e", PEAR_LOG_ERR);
+					$this->logger->error($e->getMessage(), ['stacktrace'=>$e->getTraceAsString()]);
+
 					if (isset($response)){
-						$logger->log($response, PEAR_LOG_DEBUG);
+						$this->logger->debug($response);
 					}
 					$enrichment = null;
 				}
@@ -741,7 +723,7 @@ class Novelist3{
 	private function loadNoveListTitles($currentId, $items, &$titleList, &$titlesOwned, $seriesName = ''){
 		if (!empty($items)){
 			global $timer;
-			$timer->logTime("Start loadNoveListTitle");
+			$timer->logTime('Start loadNoveListTitle');
 
 			/** @var SearchObject_Solr $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
@@ -772,7 +754,7 @@ class Novelist3{
 			if (!empty($response['response']['docs'])){
 				foreach ($response['response']['docs'] as $fields){
 					$groupedWorkDriver = new GroupedWorkDriver($fields);
-					$timer->logTime("Create driver");
+					$timer->logTime('Create driver');
 
 					if ($groupedWorkDriver->isValid){
 						//Load data about the record
@@ -801,14 +783,14 @@ class Novelist3{
 							'volume'          => $item->volume ?? ''
 
 						];
-						$timer->logTime("Load title information");
+						$timer->logTime('Load title information');
 						$titlesOwned++;
 						$titlesFromCatalog[] = $curTitle;
 					}
 				}
 			}elseif (isset($response['error'])){
-				global $logger;
-				$logger->log('Error while searching for series titles : ' . $response['error']['msg'], PEAR_LOG_ERR);
+
+				$this->logger->error('Error while searching for series titles : ' . $response['error']['msg']);
 			}
 
 			//Loop through items and match to records we found in the catalog.

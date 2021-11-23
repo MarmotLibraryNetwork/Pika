@@ -66,7 +66,10 @@ class OverDriveDriver4 {
 		$userAgent                = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
 		$this->defaultCurlOptions = [
 			CURLOPT_USERAGENT      => $userAgent,
-			CURLOPT_CONNECTTIMEOUT => 2,  // A low connect time out prevents Pika from slowing down when there is an Overdrive outage
+			CURLOPT_CONNECTTIMEOUT => 5,
+				// A low connect time out prevents Pika from slowing down when there is an Overdrive outage
+				// Previously 2 second connect time out, however this becomes an issue when Marmot's primary DNS is down
+				// there isn't enough time for backup DNS to respond See D-4131 D-3157
 			CURLOPT_TIMEOUT        => 10,
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_FOLLOWLOCATION => true,
@@ -109,7 +112,8 @@ class OverDriveDriver4 {
 				if (isset($tokenData->access_token)){
 					$this->cache->set($memCacheKey, $tokenData, $tokenData->expires_in - 10);
 				}else{
-					$this->logger->error('Failed to connect to the OverDrive API ', ['overdrive_connect_response' => $tokenData]);
+					$this->logger->error('Failed to connect to the OverDrive API ', ['overdrive_connect_response' => $tokenData, 'CURL Error' => $curl->curlErrorMessage]);
+					// Connection Time out is potential issue so we include possible curl errors
 					return false;
 				}
 			}else{
@@ -1055,28 +1059,40 @@ class OverDriveDriver4 {
 	 * @param User $user
 	 * @return array
 	 */
-	public function getDownloadLink($overDriveId, $format, User $user){
+	public function getDownloadLink($overDriveId, User $user){
 		global $configArray;
 
-		$errorUrl = urlencode($configArray['Site']['url'] . "/OverDrive/$overDriveId/eContentSupport");
-		$url      = $this->patronApi . "/v1/patrons/me/checkouts/{$overDriveId}/formats/{$format}/downloadlink";
-		$url      .= '?errorurl=' . $errorUrl;
-		switch ($format){
-			case 'ebook-overdrive':
-			case 'audiobook-overdrive':
-			case 'ebook-mediado':
-				$url .= '&odreadauthurl=' . $errorUrl;
-				break;
-			case 'video-streaming':
-				$url .= '&streamingauthurl=' . $errorUrl;
-				break;
-		}
+		//$errorUrl = urlencode($configArray['Site']['url'] . "/OverDrive/$overDriveId/eContentSupport");
+		$url      = $this->patronApi . "/v1/patrons/me/checkouts/{$overDriveId}/formats/downloadredirect";
+		//$url      .= '?errorurl=' . $errorUrl;
+		$tokenData = $this->_connectToPatronAPI($user);
+		$curlopts =[
+			CURLOPT_CONNECTTIMEOUT => 2,  // A low connect time out prevents Pika from slowing down when there is an Overdrive outage
+			CURLOPT_TIMEOUT        => 10,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_FOLLOWLOCATION => false,
+			CURLOPT_HEADER         => true
+			];
+		$headers = $this->_patronRequestHeaders($tokenData, $url);
 
-		$response = $this->_callPatronUrl($user, $url);
-		if (isset($response->links->contentlink)){
+		$curl = new Curl();
+		$curl->setOpts($curlopts);
+		$curl->setHeaders($headers);
+		$response = $curl->get($url);
+		$hData = array();
+		$fields = explode("\r\n",preg_replace('/\x0D\x0A[\x09\x20]+/','',$response));
+		foreach($fields as $field)
+		{
+			if(preg_match('/(?=Location:).*/m',$field,$match)){
+
+					$hData['Location'] = str_replace("Location:",'',$field);
+
+			}
+		}
+		if (isset($hData['Location'])){
 			$result['success']     = true;
 			$result['message']     = 'Created Download Link';
-			$result['downloadUrl'] = $response->links->contentlink->href;
+			$result['downloadUrl'] = $hData['Location'];
 		}else{
 			$result['success'] = false;
 			$result['message'] = 'Sorry, but we could not get a download link for you.';

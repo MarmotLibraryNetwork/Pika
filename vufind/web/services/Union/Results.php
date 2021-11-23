@@ -133,7 +133,7 @@ abstract class Union_Results extends Action {
 
 	protected function setPageTitle(string $pageTitle){
 		if (strlen($pageTitle) > 20){
-			$pageTitle = substr($pageTitle, 0, 20) . '...';
+			$pageTitle = mb_substr($pageTitle, 0, 20) . '...';
 		}
 		$pageTitle .= ' | Search Results';
 		return $pageTitle;
