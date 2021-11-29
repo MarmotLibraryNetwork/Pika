@@ -57,7 +57,7 @@ public class OverDriveProcessor {
 		}
 
 		try {
-			getProductInfoStmt = econtentConn.prepareStatement("SELECT overdrive_api_products.*, fileAs FROM overdrive_api_products LEFT JOIN overdrive_api_product_creators ON overdrive_api_product_creators.productId = overdrive_api_products.id WHERE overdriveId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getProductInfoStmt = econtentConn.prepareStatement("SELECT overdrive_api_products.*, fileAs FROM overdrive_api_products LEFT JOIN overdrive_api_product_creators ON (overdrive_api_product_creators.productId = overdrive_api_products.id AND primaryCreatorName = name) WHERE overdriveId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getNumCopiesStmt = econtentConn.prepareStatement("SELECT sum(copiesOwned) AS totalOwned FROM overdrive_api_product_availability WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			//TODO filter by libraries belonging to an overdrive account??
 			getProductMetadataStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_metadata WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);

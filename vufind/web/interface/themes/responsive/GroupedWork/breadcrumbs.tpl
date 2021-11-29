@@ -7,3 +7,11 @@
 {if $subTemplate!=""}
 &nbsp;<em>{$subTemplate|replace:'view-':''|replace:'.tpl':''|replace:'../MyResearch/':''|capitalize|translate}</em>
 {/if}
+{if $action == "Series"}
+	{if $lookfor}
+		<a href="{$url}/Union/Search?basicType=Series&lookfor={$lookfor}">Series</a>
+	{else}
+			Series
+		{/if}
+	<span class="divider">&raquo;</span><em>{$pageTitleShort}</em>
+		{/if}
