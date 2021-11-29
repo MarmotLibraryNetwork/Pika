@@ -156,7 +156,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 					$user->displayName = '';
 				}
 				$user->fullname     = isset($fullName) ? $fullName : '';
-				$user->cat_username = $barcode;
+				//$user->cat_username = $barcode;
+				$user->barcode = $barcode;
 
 				$Address1 = "";
 				$City     = "";
@@ -352,7 +353,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 					$user->displayName = '';
 				}
 				$user->fullname     = isset($fullName) ? $fullName : '';
-				$user->cat_username = $username;
+				//$user->cat_username = $username;
+				$user->barcode = $username;
 				$user->cat_password = $password;
 
 				$Address1 = "";
@@ -1573,7 +1575,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 		}
 
 		$patron = new User;
-		$patron->get('cat_username', $barcode);
+		//$patron->get('cat_username', $barcode);
+		$patron->get('barcode', $barcode);
 		if (!empty($patron->id)){
 			global $configArray;
 			$pikaUserID = $patron->id;
