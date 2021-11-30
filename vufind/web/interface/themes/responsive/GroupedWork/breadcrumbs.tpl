@@ -8,7 +8,7 @@
 &nbsp;<em>{$subTemplate|replace:'view-':''|replace:'.tpl':''|replace:'../MyResearch/':''|capitalize|translate}</em>
 {/if}
 {if $action == "Series"}
-	{if $lookfor}
+	{if $lookfor  !=""}
 		<a href="{$url}/Union/Search?basicType=Series&lookfor={$lookfor}">Series</a>
 	{else}
 			Series
