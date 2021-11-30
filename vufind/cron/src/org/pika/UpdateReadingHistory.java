@@ -24,9 +24,13 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -39,6 +43,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 	private String              pikaUrl;
 	private Logger              logger;
 	private PreparedStatement   insertReadingHistoryStmt;
+	private String userApiToken = "";
 
 	public void doCronProcess(String serverName, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Update Reading History");
@@ -56,13 +61,21 @@ public class UpdateReadingHistory implements IProcessHandler {
 			return;
 		}
 
+		userApiToken = PikaConfigIni.getIniValue("System", "userApiToken");
+		if (userApiToken == null || userApiToken.length() == 0) {
+			logger.error("Unable to get user API token for Pika in ConfigIni settings.  Please add token to the System section.");
+			processLog.incErrors();
+			processLog.addNote("Unable to get user API token for Pika in ConfigIni settings.  Please add token to the System section.");
+			return;
+		}
+
 		// Connect to the Pika MySQL database
 		try (
 //			PreparedStatement lookForPreviousEntriesBeforeInitialLoad = pikaConn.prepareStatement("SELECT COUNT(id) FROM user_reading_history_work WHERE userId = ?");
 //			PreparedStatement deletePreviousEntriesBeforeInitialLoad  = pikaConn.prepareStatement("DELETE FROM user_reading_history_work WHERE userId = ?");
 			// Get a list of all patrons that have reading history turned on.
 				//Order by make it so that reading histories that haven't been processed yet are done first.
-				PreparedStatement getUsersStmt                      = pikaConn.prepareStatement("SELECT id, cat_username, cat_password, initialReadingHistoryLoaded FROM user WHERE trackReadingHistory=1 ORDER BY initialReadingHistoryLoaded", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				PreparedStatement getUsersStmt                      = pikaConn.prepareStatement("SELECT id, barcode, initialReadingHistoryLoaded FROM user WHERE trackReadingHistory=1 ORDER BY initialReadingHistoryLoaded", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				PreparedStatement updateInitialReadingHistoryLoaded = pikaConn.prepareStatement("UPDATE user SET initialReadingHistoryLoaded = 1 WHERE id = ?");
 				PreparedStatement getUserCheckedOutTitlesAlreadyInReadingHistory        = pikaConn.prepareStatement("SELECT id, groupedWorkPermanentId, source, sourceId, title FROM user_reading_history_work WHERE userId=? AND checkInDate IS NULL", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				PreparedStatement updateReadingHistoryStmt          = pikaConn.prepareStatement("UPDATE user_reading_history_work SET checkInDate=? WHERE id = ?");
@@ -73,14 +86,13 @@ public class UpdateReadingHistory implements IProcessHandler {
 			while (userResults.next()) {
 				// For each patron
 				long    userId                            = userResults.getLong("id");
-				String  cat_username                      = userResults.getString("cat_username");
-				String  cat_password                      = userResults.getString("cat_password");
+				String  barcode                           = userResults.getString("barcode");
 				boolean initialReadingHistoryLoaded       = userResults.getBoolean("initialReadingHistoryLoaded");
 				boolean errorLoadingInitialReadingHistory = false;
 				if (!initialReadingHistoryLoaded) {
 					//Get the initial reading history from the ILS
 					try {
-						if (loadInitialReadingHistoryForUser(userId, cat_username, cat_password)) {
+						if (loadInitialReadingHistoryForUser(userId, barcode)) {
 							updateInitialReadingHistoryLoaded.setLong(1, userId);
 							updateInitialReadingHistoryLoaded.executeUpdate();
 						} else {
@@ -113,7 +125,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 					if (logger.isInfoEnabled()) {
 						logger.info("Loading Reading History for patron user Id " + userId);
 					}
-					processTitlesForUser(userId, cat_username, cat_password, checkedOutTitlesAlreadyInReadingHistory);
+					processTitlesForUser(userId, barcode, checkedOutTitlesAlreadyInReadingHistory);
 
 					//Any titles that are left in checkedOutTitlesAlreadyInReadingHistory were checked out previously and are no longer checked out.
 					Long curTime = new Date().getTime() / 1000;
@@ -148,22 +160,20 @@ public class UpdateReadingHistory implements IProcessHandler {
 		return str.matches("^\\d+$");
 	}
 
-	private boolean loadInitialReadingHistoryForUser(Long userId, String cat_username, String cat_password) throws SQLException {
+	private boolean loadInitialReadingHistoryForUser(Long userId, String barcode) throws SQLException {
 		boolean hadError  = false;
 		boolean additionalRoundRequired;
 		String  nextRound = "";
-		if (cat_username != null && !cat_username.isEmpty()) {
-			if (cat_password != null && !cat_password.isEmpty()) {
+		if (barcode != null && !barcode.isEmpty()) {
 				try {
+					String token = md5(barcode);
 					if (logger.isInfoEnabled()) {
 						logger.info("Loading initial reading history from ils for user Id " + userId);
 					}
 					do {
 						additionalRoundRequired = false;
 						// Call the patron API to get their checked out items
-						//			URL patronApiUrl = new URL(pikaUrl + "/API/UserAPI?method=getPatronReadingHistory&username=" + encode(cat_username) + "&password=" + encode(cat_password));
-
-						String loadReadingHistoryUrl = pikaUrl + "/API/UserAPI?method=loadReadingHistoryFromIls&username=" + encode(cat_username) + "&password=" + encode(cat_password)
+						String loadReadingHistoryUrl = pikaUrl + "/API/UserAPI?method=loadReadingHistoryFromIls&userId=" + userId + "&token=" + token
 								+ (isNumeric(nextRound) ? "&nextRound=" + nextRound : "");
 						URL patronApiUrl = new URL(loadReadingHistoryUrl);
 						// loadReadingHistoryFromIls is intended to be a faster call, or at least contain only enough information to add entries into the database.
@@ -228,7 +238,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 								logger.error(message, e);
 								logger.error(patronDataRaw); // Display the raw response when we have a JSON exception
 								processLog.incErrors();
-								processLog.addNote(message + e.toString());
+								processLog.addNote(message + e);
 								hadError = true;
 							}
 						} else {
@@ -239,7 +249,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 						}
 					} while (additionalRoundRequired && !hadError);
 				} catch (MalformedURLException e) {
-					logger.error("Bad url for patron API " + e.toString());
+					logger.error("Bad url for patron API " + e);
 					processLog.incErrors();
 					hadError = true;
 				} catch (IOException e) {
@@ -247,13 +257,9 @@ public class UpdateReadingHistory implements IProcessHandler {
 					processLog.incErrors();
 					hadError = true;
 				}
-			} else {
-				hadError = true;
-				logger.error("cat_password was empty for user Id " + userId);
-			}
 		} else {
 			hadError = true;
-			logger.error("A pika user's cat_username was empty for user Id" +userId);
+			logger.error("A pika user's barcode was empty for user Id" + userId);
 		}
 		return !hadError;
 	}
@@ -349,13 +355,14 @@ public class UpdateReadingHistory implements IProcessHandler {
 		}
 	}
 
-	private void processTitlesForUser(Long userId, String cat_username, String cat_password, ArrayList<CheckedOutTitle> checkedOutTitlesAlreadyInReadingHistory) throws SQLException {
+	private void processTitlesForUser(Long userId, String barcode, ArrayList<CheckedOutTitle> checkedOutTitlesAlreadyInReadingHistory) throws SQLException {
 		boolean connected = true;
 		int attempts = 0;
+		String token = md5(barcode);
 		do {
 			try {
 				// Call the patron API to get their checked out items
-				URL    patronApiUrl  = new URL(pikaUrl + "/API/UserAPI?method=getPatronCheckedOutItems&username=" + encode(cat_username) + "&password=" + encode(cat_password));
+				URL    patronApiUrl  = new URL(pikaUrl + "/API/UserAPI?method=getPatronCheckedOutItems&userId=" + userId + "&token=" + token);
 				Object patronDataRaw = patronApiUrl.getContent();
 				if (patronDataRaw instanceof InputStream) {
 					String patronDataJson = Util.convertStreamToString((InputStream) patronDataRaw);
@@ -522,6 +529,28 @@ public class UpdateReadingHistory implements IProcessHandler {
 			}
 		}
 		return result.toString();
+	}
+
+	/**
+	 * Build token for User API Calls
+	 * @param string barcode to hash with the userApiToken
+	 * @return Hash to use as url token for User API calls that support tokens
+	 */
+	private String md5(String string){
+		StringBuilder md5 = new StringBuilder();
+		try {
+			string = string + userApiToken;
+			MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+			messageDigest.reset();
+			messageDigest.update(string.getBytes(StandardCharsets.UTF_8));
+			md5 = new StringBuilder(new BigInteger(1, messageDigest.digest()).toString(16));
+			while (md5.length() < 32) {
+				md5.insert(0, "0");
+			}
+		} catch (NoSuchAlgorithmException e) {
+			logger.error("Error hashing string", e);
+		}
+		return md5.toString();
 	}
 
 }
