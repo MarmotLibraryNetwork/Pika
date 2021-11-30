@@ -596,10 +596,14 @@ class UserAPI extends AJAXHandler {
 		if ($offlineMode){
 			return ['success' => false, 'message' => 'Circulation system is offline'];
 		}else{
+			if (!empty($_REQUEST['token'])){
+				$user = $this->validateUserApiToken();
+			}else{
 			[$username, $password] = $this->loadUsernameAndPassword();
 			/** @var User $user */
 			$user = UserAccount::validateAccount($username, $password);
-			if ($user && !PEAR_Singleton::isError($user)){
+			}
+			if (!empty($user) && !PEAR_Singleton::isError($user)){
 				$allCheckedOut = $user->getMyCheckouts(false);
 
 				return ['success' => true, 'checkedOutItems' => $allCheckedOut];
@@ -740,11 +744,15 @@ class UserAPI extends AJAXHandler {
 	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function placeHold(){
-		[$username, $password] = $this->loadUsernameAndPassword();
 		$bibId = $_REQUEST['bibId'];
 
-		$patron = UserAccount::validateAccount($username, $password);
-		if ($patron && !PEAR_Singleton::isError($patron)){
+		if (!empty($_REQUEST['token'])){
+			$patron = $this->validateUserApiToken();
+		}else{
+			[$username, $password] = $this->loadUsernameAndPassword();
+			$patron = UserAccount::validateAccount($username, $password);
+		}
+		if (!empty($patron) && !PEAR_Singleton::isError($patron)){
 			if (isset($_REQUEST['campus'])){
 				$pickupBranch = trim($_REQUEST['campus']);
 			}else{
@@ -758,12 +766,16 @@ class UserAPI extends AJAXHandler {
 	}
 
 	function placeItemHold(){
-		[$username, $password] = $this->loadUsernameAndPassword();
 		$bibId  = $_REQUEST['bibId'];
 		$itemId = $_REQUEST['itemId'];
 
-		$patron = UserAccount::validateAccount($username, $password);
-		if ($patron && !PEAR_Singleton::isError($patron)){
+		if (!empty($_REQUEST['token'])){
+			$patron = $this->validateUserApiToken();
+		}else{
+			[$username, $password] = $this->loadUsernameAndPassword();
+			$patron = UserAccount::validateAccount($username, $password);
+		}
+		if (!empty($patron) && !PEAR_Singleton::isError($patron)){
 			if (isset($_REQUEST['campus'])){
 				$pickupBranch = trim($_REQUEST['campus']);
 			}else{
@@ -1079,12 +1091,16 @@ class UserAPI extends AJAXHandler {
 		if ($offlineMode){
 			return ['success' => false, 'message' => 'Circulation system is offline'];
 		}else{
-			[$username, $password] = $this->loadUsernameAndPassword();
 			$loadAdditional = null;
 			if (!empty($_REQUEST['nextRound']) && ctype_digit($_REQUEST['nextRound'])){
 				$loadAdditional = $_REQUEST['nextRound'];
 			}
-			$user = UserAccount::validateAccount($username, $password);
+			if (!empty($_REQUEST['token'])){
+				$user = $this->validateUserApiToken();
+			}else{
+				[$username, $password] = $this->loadUsernameAndPassword();
+				$user = UserAccount::validateAccount($username, $password);
+			}
 			if (!empty($user) && !PEAR_Singleton::isError($user)){
 				if ($user->trackReadingHistory){
 					$loadReadingHistoryResponse = $user->loadReadingHistoryFromIls($loadAdditional);
@@ -1265,8 +1281,8 @@ class UserAPI extends AJAXHandler {
 	 * @return array
 	 */
 	private function loadUsernameAndPassword(){
-		$username = isset($_REQUEST['username']) ? $_REQUEST['username'] : '';
-		$password = isset($_REQUEST['password']) ? $_REQUEST['password'] : '';
+		$username = $_REQUEST['username'] ?? '';
+		$password = $_REQUEST['password'] ?? '';
 		if (is_array($username)){
 			$username = reset($username);
 		}
@@ -1274,5 +1290,38 @@ class UserAPI extends AJAXHandler {
 			$password = reset($password);
 		}
 		return [$username, $password];
+	}
+
+	/**
+	 * Validate the API request's supplied token for the User of interest
+	 *
+	 * @return false|User
+	 */
+	private function validateUserApiToken(){
+		if (!empty($_REQUEST['token'])){
+			if (!empty($_REQUEST['userId'])){
+				if (ctype_digit($_REQUEST['userId'])){
+					$user = new User();
+					if ($user->get($_REQUEST['userId'])){
+						global $configArray;
+						if (!empty($configArray['System']['userApiToken'])){
+							$barcode      = $user->getBarcode();
+							$tokenToMatch = md5($barcode . $configArray['System']['userApiToken']);
+							if ($tokenToMatch == $_REQUEST['token']){
+								return $user;
+							}
+						}else{
+							global $pikaLogger;
+							$pikaLogger->error("Received User API call with token parameter but no token in config");
+						}
+					}
+				}
+			}else{
+				global $pikaLogger;
+				$pikaLogger->error("Received User API call with token parameter but no userId", [$_REQUEST]);
+				//TODO: request url
+			}
+		}
+		return false;
 	}
 }
