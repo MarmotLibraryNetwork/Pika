@@ -151,7 +151,7 @@ class OverDriveDriver4 {
 
 				$patronBarcode = $user->getBarcode();
 				if ($this->getRequirePin($user)){
-					$pinProperty = $user->getAccountProfile()->loginConfiguration == 'barcode_pin' ? 'cat_password' : 'cat_username';
+					$pinProperty = $user->getAccountProfile()->loginConfiguration == 'barcode_pin' ? 'cat_password' : 'barcode';
 					$patronPin   = $user->$pinProperty; // determine which column is the pin by using the opposing field to the barcode. (between pin & username)
 
 					$postFields = "grant_type=password&username={$patronBarcode}&password={$patronPin}&password_required=true&scope=websiteId:{$websiteId}+ilsname:{$ILSName}";

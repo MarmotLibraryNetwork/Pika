@@ -359,6 +359,13 @@ class UserAccount {
 	 * @param User $user
 	 */
 	public static function updateSession($user){
+
+		// it's possible $user is empty-- skip session update if so.
+		// todo: need error checking here
+//		if(empty($user)) {
+//			return;
+//		}
+
 		$_SESSION['activeUserId'] = $user->id;
 
 		if (isset($_REQUEST['rememberMe']) && ($_REQUEST['rememberMe'] === "true" || $_REQUEST['rememberMe'] === "on")){
