@@ -32,7 +32,7 @@ class AccountProfile extends DB_DataObject {
 	public $id;
 	public $name;
 	public $driver;
-	protected $loginConfiguration;
+	public $loginConfiguration; // todo: [pins] if we go with per library settings will need to revisit
 	public $authenticationMethod;
 	public $vendorOpacUrl;
 	public $patronApiUrl;
@@ -45,7 +45,7 @@ class AccountProfile extends DB_DataObject {
 			'weight'               => ['property' => 'weight', 'type' => 'integer', 'label' => 'Weight', 'description' => 'The sort order of the book store', 'default' => 0],
 			'name'                 => ['property' => 'name', 'type' => 'text', 'label' => 'Name', 'maxLength' => 50, 'description' => 'A name for this indexing profile', 'required' => true],
 			'driver'               => ['property' => 'driver', 'type' => 'text', 'label' => 'Driver', 'maxLength' => 50, 'description' => 'The name of the driver to use for authentication', 'required' => true],
-			'loginConfiguration'   => ['property' => 'loginConfiguration', 'type' => 'enum', 'label' => 'Login Configuration', 'values' => ['barcode_pin' => 'Barcode and Pin', 'name_barcode' => 'Name and Barcode', 'library_based' => 'Library Based'], 'description' => 'How to configure the prompts for this authentication profile', 'required' => true, 'default' => 'name_barcode'],
+			'loginConfiguration'   => ['property' => 'loginConfiguration', 'type' => 'enum', 'label' => 'Login Configuration', 'values' => ['barcode_pin' => 'Barcode and Pin', 'name_barcode' => 'Name and Barcode', /* todo: [pins] 'library_based' => 'Library Based'*/ ], 'description' => 'How to configure the prompts for this authentication profile', 'required' => true, 'default' => 'name_barcode'],
 			'authenticationMethod' => ['property' => 'authenticationMethod', 'type' => 'enum', 'label' => 'Authentication Method', 'values' => ['ils' => 'ILS', 'sip2' => 'SIP 2', 'db' => 'Database', 'ldap' => 'LDAP'], 'description' => 'The method of authentication to use', 'required' => true],
 			'vendorOpacUrl'        => ['property' => 'vendorOpacUrl', 'type' => 'text', 'label' => 'Vendor OPAC Url', 'maxLength' => 100, 'description' => 'A link to the url for the vendor opac', 'required' => true],
 			'patronApiUrl'         => ['property' => 'patronApiUrl', 'type' => 'text', 'label' => 'Patron API Url', 'maxLength' => 100, 'description' => 'A link to the patron api for the vendor opac if any', 'required' => false],
@@ -91,19 +91,33 @@ class AccountProfile extends DB_DataObject {
 	 */
 	private function getLoginConfiguration(){
 		if($this->loginConfiguration != 'library_based') {
-			return $this->loginConfiguration;
+			$loginConfig = $this->loginConfiguration;
 		}
-
-		global $library;
-
+// todo: [pins] will need to do something like this if we go with per library settings
+//		global $library;
+//		if($library) {
+//			$loginConfig = $library->loginConfiguration;
+//		}
+		return $loginConfig;
 	}
+// todo: [pins]
+//	public function __get($name) {
+//		switch ($name) {
+//			case 'loginConfiguration':
+//				$loginConfig = $this->getLoginConfiguration();
+//				return $loginConfig;
+//				break;
+//		}
+//	}
+//
+//	public function __set($name, $value) {
+//		switch($name) {
+//			case 'loginConfiguration':
+//				if($value){
+//					$this->loginConfiguration = $value;
+//				}
+//				break;
+//		}
+//	}
 
-	public function __get($name) {
-		switch ($name) {
-			case 'loginConfiguration':
-				$this->getLoginConfiguration();
-				break;
-		}
-	}
-
-}
+} // end class

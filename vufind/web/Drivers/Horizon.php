@@ -28,6 +28,7 @@ abstract class Horizon extends ScreenScrapingDriver{
 	protected $selfRegProfile;
 	/** @var  AccountProfile $accountProfile */
 	public $accountProfile;
+
 	function __construct($accountProfile) {
 		$this->accountProfile = $accountProfile;
 		// Load Configuration for this Module
