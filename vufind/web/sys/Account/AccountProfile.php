@@ -101,7 +101,7 @@ class AccountProfile extends DB_DataObject {
 	public function __get($name) {
 		switch ($name) {
 			case 'loginConfiguration':
-				$this->getLoginConfiguration();
+				return $this->getLoginConfiguration();
 				break;
 		}
 	}
