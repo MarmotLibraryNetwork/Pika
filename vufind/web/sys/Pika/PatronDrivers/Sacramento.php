@@ -95,7 +95,6 @@ class Sacramento extends Sierra {
 				'code' => $patron->barcode,
 				'pin'  => $patron->cat_password
 			];
-
 		}
 
 		$loginUrl = $vendorOpacUrl . '/patroninfo/';
