@@ -375,7 +375,7 @@ class Sierra {
 				}
 			}
 		} else {
-			$msg = "Invalid loginConfiguration setting.";
+			$msg = "Invalid loginConfiguration setting. : '$loginMethod'";
 			$this->logger->error($msg);
 			throw new InvalidArgumentException($msg);
 		}
@@ -1893,7 +1893,7 @@ EOT;
 
 			// determine if this is an innreach hold
 			// or if it's a regular ILS hold
-			if(strstr($hold->record->id, "@")) {
+			if(!empty($hold->record->id) && strstr($hold->record->id, "@")) {
 				///////////////
 				// INNREACH HOLD
 				///////////////
