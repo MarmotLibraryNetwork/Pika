@@ -484,6 +484,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 			}
 		} catch (Exception e) {
 			logger.error("Fetch new issues - " +e.getMessage() + " : " + magazineParentId);
+			processLog.incErrors();
 		}
 	}
 

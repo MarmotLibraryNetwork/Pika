@@ -87,7 +87,14 @@ public class OfflineCirculation implements IProcessHandler {
 				}
 
 				//process holds
-				processOfflineHolds(pikaConn);
+				if (userApiToken == null || userApiToken.length() == 0) {
+					// the userApiToken is needed for processing Offline Holds now.
+					logger.error("Unable to get user API token for Pika in ConfigIni settings.  Please add token to the System section.");
+					processLog.incErrors();
+					processLog.addNote("Unable to get user API token for Pika in ConfigIni settings.  Please add token to the System section.");
+				} else {
+					processOfflineHolds(pikaConn);
+				}
 			}
 		}
 		processLog.setFinished();
