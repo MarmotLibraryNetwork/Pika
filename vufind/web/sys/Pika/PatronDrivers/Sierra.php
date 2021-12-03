@@ -225,11 +225,15 @@ class Sierra {
 			$checkout['dueDate']        = strtotime($entry->dueDate);
 			$checkout['checkoutDate']   = strtotime($entry->outDate);
 			$checkout['renewCount']     = $entry->numberOfRenewals;
-			$checkout['barcode']        = $entry->barcode;
+			$checkout['barcode']        = $entry->barcode ?? '';
 			$checkout['itemid']         = $itemId;
 			$checkout['canrenew']       = true;
 			$checkout['renewIndicator'] = $checkoutId;
 			$checkout['renewMessage']   = '';
+			if (!isset($entry->barcode)){
+				// On occasion we see a checkout missing the item barcode when we can see that the item does in fact have a barcode
+				$this->logger->error('Sierra Checkout missing barcode for user id '. $patronId . ' item Id '. $itemId, [$entry]);
+			}
 			if (!empty($entry->callNumber)){
 				// Add call number value for internal ILL processing for Northern Waters
 				$checkout['_callNumber'] = $entry->callNumber;
