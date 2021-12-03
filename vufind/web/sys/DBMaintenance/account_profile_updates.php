@@ -25,12 +25,12 @@
  *
  */
  
- 
+/* todo: [pins] this will be needed if we use per library based settings
 function getAccountProfileUpdates() {
 	return array(
 		'login_method_2021.04' => [
-			'title'           => 'Add \"Library Based\" to Login Configuration options.',
-			'description'     => 'Add \"Library Based\" to Login Configuration options.',
+			'title'           => 'Add "Library Based" to Login Configuration options.',
+			'description'     => 'Add "Library Based" to Login Configuration options.',
 			'continueOnError' => true,
 			'sql'             => [
 				'ALTER TABLE account_profiles ' .

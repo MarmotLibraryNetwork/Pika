@@ -67,7 +67,7 @@
 									{* Only Display Barcode when the barcode is used as a username and not a password *}
 									<div class="form-group">
 										<div class="col-xs-4"><strong>{translate text='Library Card Number'}:</strong></div>
-										<div class="col-xs-8">{$profile->cat_username|escape}</div>
+										<div class="col-xs-8">{$profile->barcode|escape}</div>
 									</div>
 									{/if}
 									<div class="form-group">
