@@ -102,7 +102,7 @@
 			<input type="password" name='{$propName}' id='{$propName}'>
 
 		{elseif $property.type == 'pin'}
-			<input type="password" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class="form-control{if $numericOnlyPins} digits{else}{if $alphaNumericOnlyPins} alphaNumeric{/if}{/if}{if $property.required} required{/if}"{* doesn't work {if $pinMinimumLength > 0} data-rule-minlength="{$pinMinimumLength}"{/if}*}>
+			<input type="password" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class="form-control{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}{if $property.required} required{/if}"{* doesn't work {if $pinMinimumLength > 0} data-rule-minlength="{$pinMinimumLength}"{/if}*}>
 
 
 		{elseif $property.type == 'currency'}
