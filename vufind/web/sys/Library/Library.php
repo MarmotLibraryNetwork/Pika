@@ -83,7 +83,7 @@ class Library extends DB_DataObject {
 	public $repeatInOnlineCollection;
 	public $repeatInProspector;
 	public $repeatInWorldCat;
-	public $loginConfiguration;
+	/* public $loginConfiguration; todo: [pins] revisit if we go with per library settings. */
 
 	/* Self Registration */
 	public $selfRegistrationFormMessage;
@@ -514,7 +514,8 @@ class Library extends DB_DataObject {
 						]],
 					'loginSection' => ['property' => 'loginSection', 'type' => 'section', 'label' => 'Login', 'hideInLists' => true,
 					                   'helpLink' => 'https://marmot-support.atlassian.net/l/c/fqu5BzME', 'properties' => [
-							'loginConfiguration'   => ['property' => 'loginConfiguration', 'type' => 'enum', 'label' => 'Login Configuration', 'values' => ['barcode_pin' => 'Barcode and Pin', 'name_barcode' => 'Name and Barcode', 'account_profile_based' => 'Account Profile Based' ], 'description' => 'How to configure the prompts for this authentication profile', 'required' => true, 'hideInLists' => true, 'default' => 'account_profile_based',],
+															 // todo: [pins] revisit if we go with per library config.
+							/*'loginConfiguration'   => ['property' => 'loginConfiguration', 'type' => 'enum', 'label' => 'Login Configuration', 'values' => ['barcode_pin' => 'Barcode and Pin', 'name_barcode' => 'Name and Barcode', 'account_profile_based' => 'Account Profile Based' ], 'description' => 'How to configure the prompts for this authentication profile', 'required' => true, 'hideInLists' => true, 'default' => 'account_profile_based',],*/
 							'showLoginButton'         => ['property' =>'showLoginButton', 'type' =>'checkbox', 'label' =>'Show Login Button', 'description' =>'Whether or not the login button is displayed so patrons can log into the site', 'hideInLists' => true, 'default' => 1],
 
 							'preventExpiredCardLogin' => ['property' =>'preventExpiredCardLogin', 'type' =>'checkbox', 'label' =>'Prevent Login for Expired Cards', 'description' =>'Users with expired cards will not be allowed to login. They will recieve an expired card notice instead.', 'hideInLists' => true, 'default' => 0],

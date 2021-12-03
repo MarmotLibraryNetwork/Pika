@@ -121,7 +121,7 @@ abstract class Horizon extends ScreenScrapingDriver{
       'menu' => 'account',
       'profile' => $configArray['Catalog']['hipProfile'],
       'ri' => '',
-      'sec1' => $patron->cat_username,
+      'sec1' => $patron->barcode,
       'sec2' => $patron->cat_password,
       'session' => $sessionId,
 		);
@@ -155,7 +155,7 @@ abstract class Horizon extends ScreenScrapingDriver{
 		           "left join title_inverted on title_inverted.bib# = item.bib# " .
                "join borrower on borrower.borrower#=burb.borrower# " .
                "join borrower_barcode on borrower_barcode.borrower#=burb.borrower# " .
-               "where borrower_barcode.bbarcode='" . $patron->cat_username . "'" ;
+               "where borrower_barcode.bbarcode='" . $patron->barcode . "'" ;
 
 		if ($includeMessages == false){
 			$sql .= " and amount != 0";
@@ -283,7 +283,7 @@ abstract class Horizon extends ScreenScrapingDriver{
 				//'npp' => '10',
 				'profile' => $configArray['Catalog']['hipProfile'],
 				'ri' => '',
-				'sec1' => $user->cat_username,
+				'sec1' => $user->barcode,
 				'sec2' => $user->cat_password,
 				'session' => $sessionId,
 				//'spp' => '20'
