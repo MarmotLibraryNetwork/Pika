@@ -2075,7 +2075,7 @@ class GroupedWorkDriver extends RecordInterface {
 		if (isset($this->fields['series_with_volume'])){
 			$rawSeries = $this->fields['series_with_volume'];
 			if (is_string($rawSeries)){
-				$rawSeries[] = $rawSeries;
+				$rawSeries = [$rawSeries];
 			}
 			foreach ($rawSeries as $seriesInfo){
 				if (strpos($seriesInfo, '|') > 0){

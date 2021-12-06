@@ -562,8 +562,21 @@ class OverDriveDriver4 {
 											$bookshelfItem['overDriveId'] = $magIssues->parentId;
 											$bookshelfItem['edition']     = $magIssues->edition;
 											$bookshelfItem['coverUrl']    = $magIssues->coverUrl;
-										} else {
+										}else{
 											$this->logger->error('Failed to find OverDrive magazine issue ' . $bookshelfItem['issueId']);
+
+											// Still fetch magazine information from API (This helps prevent errors for updating Reading History)
+											$metaDataResponse = $this->getProductMetadata($curTitle->reserveId, $this->getProductsKey($user));
+											if (!empty($metaDataResponse)){
+												$bookshelfItem['coverUrl'] = $metaDataResponse->images->cover->href ?? null;
+
+												$parentIssueMetaData             = new OverDriveAPIProduct();
+												$parentIssueMetaData->crossRefId = $metaDataResponse->parentMagazineTitleId;
+												if ($parentIssueMetaData->find(true)){
+													$bookshelfItem['overDriveId'] = $parentIssueMetaData->overdriveId;
+													$bookshelfItem['edition']     = $metaDataResponse->edition;
+												}
+											}
 										}
 
 										break;

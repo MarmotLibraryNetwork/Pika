@@ -87,7 +87,14 @@ public class OfflineCirculation implements IProcessHandler {
 				}
 
 				//process holds
-				processOfflineHolds(pikaConn);
+				if (userApiToken == null || userApiToken.length() == 0) {
+					// the userApiToken is needed for processing Offline Holds now.
+					logger.error("Unable to get user API token for Pika in ConfigIni settings.  Please add token to the System section.");
+					processLog.incErrors();
+					processLog.addNote("Unable to get user API token for Pika in ConfigIni settings.  Please add token to the System section.");
+				} else {
+					processOfflineHolds(pikaConn);
+				}
 			}
 		}
 		processLog.setFinished();
@@ -101,14 +108,15 @@ public class OfflineCirculation implements IProcessHandler {
 	 */
 	private void processOfflineHolds(Connection pikaConn) {
 		processLog.addNote("Processing offline holds");
+		int holdsProcessed = 0;
 		String baseUrl         = PikaConfigIni.getIniValue("Site", "url");
-//		String barcodeProperty = PikaConfigIni.getIniValue("Catalog", "barcodeProperty");
 		try (
 			PreparedStatement holdsToProcessStmt =
 //							pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password FROM offline_hold LEFT JOIN user ON user.id = offline_hold.patronId WHERE status='Not Processed' ORDER BY timeEntered ASC, id ASC");
 							pikaConn.prepareStatement("SELECT offline_hold.*, user.id AS userId, user.barcode FROM offline_hold LEFT JOIN user ON user.id = offline_hold.patronId WHERE status='Not Processed' ORDER BY timeEntered ASC, id ASC");
 			// Match by Pika patron ID
 
+//		String barcodeProperty = PikaConfigIni.getIniValue("Catalog", "barcodeProperty");
 //			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password FROM `offline_hold` LEFT JOIN `user` ON (user." + barcodeProperty + " = offline_hold.patronBarcode) WHERE status = 'Not Processed' ORDER BY timeEntered ASC, id ASC");
 			// This was used for a data migration of holds transactions (where the assumption that a patron has logged into Pika is invalid)
 			// This matches by patron barcode when the barcode is saved in the cat_password field
@@ -119,13 +127,14 @@ public class OfflineCirculation implements IProcessHandler {
 			try (ResultSet holdsToProcessRS = holdsToProcessStmt.executeQuery()) {
 				while (holdsToProcessRS.next()) {
 					processOfflineHold(updateHold, baseUrl, holdsToProcessRS);
+					holdsProcessed++;
 				}
 			}
 		} catch (SQLException e) {
 			processLog.incErrors();
-			processLog.addNote("Error processing offline holds " + e.toString());
+			processLog.addNote("Error processing offline holds " + e);
 		}
-
+		processLog.addNote(holdsProcessed + " offline holds processed.");
 	}
 
 	private void processOfflineHold(PreparedStatement updateHold, String baseUrl, ResultSet holdsToProcessRS) throws SQLException {
@@ -204,11 +213,11 @@ public class OfflineCirculation implements IProcessHandler {
 	 */
 	private void processOfflineCirculationEntries(Connection pikaConn) {
 		processLog.addNote("Processing offline checkouts and check-ins");
+		int numProcessed = 0;
 		try {
 			PreparedStatement circulationEntryToProcessStmt = pikaConn.prepareStatement("SELECT offline_circulation.* FROM offline_circulation WHERE status='Not Processed' ORDER BY login ASC, initials ASC, patronBarcode ASC, timeEntered ASC");
 			PreparedStatement updateCirculationEntry        = pikaConn.prepareStatement("UPDATE offline_circulation SET timeProcessed = ?, status = ?, notes = ? WHERE id = ?");
 			String baseUrl                                  = PikaConfigIni.getIniValue("Catalog", "url") + "/iii/airwkst";
-			int numProcessed = 0;
 			try (ResultSet circulationEntriesToProcessRS = circulationEntryToProcessStmt.executeQuery()) {
 				while (circulationEntriesToProcessRS.next()) {
 					processOfflineCirculationEntry(updateCirculationEntry, baseUrl, circulationEntriesToProcessRS);
@@ -221,8 +230,9 @@ public class OfflineCirculation implements IProcessHandler {
 			}
 		} catch (SQLException e) {
 			processLog.incErrors();
-			processLog.addNote("Error processing offline holds " + e.toString());
+			processLog.addNote("Error processing offline circs " + e);
 		}
+		processLog.addNote(numProcessed + " offline circs processed.");
 	}
 
 	private void processOfflineCirculationEntry(PreparedStatement updateCirculationEntry, String baseAirpacUrl, ResultSet circulationEntriesToProcessRS) throws SQLException {
