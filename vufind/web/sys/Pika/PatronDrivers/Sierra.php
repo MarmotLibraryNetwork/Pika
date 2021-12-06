@@ -817,11 +817,7 @@ class Sierra {
 	public function getPatronId($patronOrBarcode, $searchSacramentoStudentIdField = false) {
 		// if a patron object was passed
 		if (is_object($patronOrBarcode)){
-			if ($this->accountProfile->loginConfiguration == "barcode_pin"){
-				$barcode = $patronOrBarcode->cat_username;
-			} else {
 				$barcode = $patronOrBarcode->barcode;
-			}
 		} elseif (is_string($patronOrBarcode) || is_int($patronOrBarcode)) {
 			// the api expects barcode in form of string. Just in case cast to string.
 			$barcode = (string)$patronOrBarcode;

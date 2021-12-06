@@ -186,7 +186,7 @@ class CatalogConnection
 			if ($user->find(true)){
 				if ($this->driver->accountProfile->loginConfiguration == 'barcode_pin') {
 					//We load the account based on the barcode make sure the pin matches
-					$userValid = /*$user->cat_password == $password  todo: [pins] <- remove  ||*/ ($user->password == $password);
+					$userValid = /*$user->password == $password  todo: [pins] <- change when move passwords to new colum  ||*/ ($user->cat_password == $password);
 				}else{
 					//We still load based on barcode, make sure the username is similar
 					$userValid = $this->areNamesSimilar($username, $user->cat_username);
