@@ -24,10 +24,6 @@
  * This interface class is the definition of the required methods for
  * interacting with the local catalog.
  *
- * The parameters are of no major concern as you can define the purpose of the
- * parameters for each method for whatever purpose your driver needs.
- * The most important element here is what the method will return.  In all cases
- * the method can return a PEAR_Error object if an error occurs.
  */
 interface DriverInterface
 {
@@ -149,8 +145,12 @@ interface DriverInterface
 	function cancelHold($patron, $recordId, $cancelId);
 
 	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate);
+	//TODO: refactor $recordId as last and optional, since it isn't required for any actual freeze hold actions in our ILS drivers
+	// (except carlx sip calls)
 
 	function thawHold($patron, $recordId, $itemToThawId);
+	//TODO: refactor $recordId as last and optional, since it isn't required for any actual thaw hold actions in our ILS drivers
+	// (except carlx sip calls)
 
 	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation);
 }
