@@ -105,48 +105,25 @@
 					<div class="result-value col-tn-8 col-lg-9">{$record.dueDate|date_format}</div>
 				</div>
 
-				{if !empty($record.formats) || ($record.isFormatSelected && isset($record.selectedFormat) && $record.selectedFormat.formatType != 'video-streaming' && $record.selectedFormat.formatType != 'magazine-overdrive')}
-					<div class="row econtent-download-row">
-						<div class="result-label col-md-4 col-lg-3">{translate text='Download'}</div>
-						<div class="result-value col-md-8 col-lg-9">
-								{if $record.isFormatSelected && isset($record.selectedFormat)}
-									You downloaded the <strong>{$record.selectedFormat.name}</strong> format of this title.
-								{elseif !empty($record.formats)}
-									<div class="form-inline">
-										<label for="downloadFormat_{$record.overDriveId}">Select one format to download.</label>
-										<br>
-										<select name="downloadFormat_{$record.overDriveId}" id="downloadFormat_{$record.overDriveId}"
-														class="input-sm form-control">
-											<option value="-1">Select a Format</option>
-												{foreach from=$record.formats item=format}
-													<option value="{$format.formatType}">{$format.name}</option>
-												{/foreach}
-										</select>
-										<a href="#" onclick="Pika.OverDrive.selectOverDriveDownloadFormat('{$record.userId}', '{$record.overDriveId}')" class="btn btn-sm btn-primary">Download</a>
-									</div>
-								{/if}
-						</div>
-					</div>
-				{/if}
 		</div>
 
 				{* Actions for Title *}
 			<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 				<div class="btn-group btn-group-vertical btn-block">
 					{if $record.overdriveMagazine}
-						<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.issueId}', 'magazine-overdrive')" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
+						<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.issueId}', 'magazine-overdrive')" class="btn btn-sm btn-primary">Get Magazine</a>
 					{/if}
 					{if $record.overdriveRead}
-						<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'ebook-overdrive')" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
+						<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'ebook-overdrive')" class="btn btn-sm btn-primary">Get eBook</a>
 					{/if}
 					{if $record.mediadoRead}
-						<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'ebook-mediado')" class="btn btn-sm btn-primary">Read&nbsp;Online&nbsp;MediaDo</a>
+						<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'ebook-mediado')" class="btn btn-sm btn-primary">Get Item</a>
 					{/if}
 					{if $record.overdriveListen}
-						<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'audiobook-overdrive')" class="btn btn-sm btn-primary">Listen&nbsp;Online</a>
+						<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'audiobook-overdrive')" class="btn btn-sm btn-primary">Get Audiobook</a>
 					{/if}
 					{if $record.overdriveVideo}
-						<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'video-streaming')" class="btn btn-sm btn-primary">Watch&nbsp;Online</a>
+						<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'video-streaming')" class="btn btn-sm btn-primary">Get Video</a>
 					{/if}
 					{if $record.isFormatSelected && !$record.overdriveVideo && !$record.overdriveMagazine}
 						<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', '{$record.selectedFormat.formatType}')" class="btn btn-sm btn-primary">Download&nbsp;Again</a>

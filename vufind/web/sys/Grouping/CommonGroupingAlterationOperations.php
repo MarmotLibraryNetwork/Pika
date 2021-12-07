@@ -67,6 +67,7 @@ abstract class CommonGroupingAlterationOperations extends DB_DataObject {
 	 * (Traditional process of marking for regrouping won't have the desired effect.)
 	 *
 	 * @param SourceAndId $sourceAndId The record to mark for Re-extraction
+	 * @return bool|int
 	 */
 	protected function markRecordForReExtraction($sourceAndId){
 		$indexingProfile = $sourceAndId->getIndexingProfile();
@@ -77,9 +78,14 @@ abstract class CommonGroupingAlterationOperations extends DB_DataObject {
 			$extractInfo->ilsId             = $sourceAndId->getRecordId();
 			if ($extractInfo->find(true)){
 				return $extractInfo->markForReExtraction();
-			} elseif ($indexingProfile->sourceName == 'ils'){
-				//TODO: the above should check against the accountProfiles
-				$extractInfo->insert();
+			}else{
+				// If there is no existing entry, only mark for extraction if the recordSource is associated with
+				require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
+				$accountProfile   = new AccountProfile();
+				$ilsRecordSources = $accountProfile->fetchAll('id', 'recordSource');
+				if (in_array($sourceAndId->getSource(), $ilsRecordSources)){
+					$extractInfo->insert(); // since there will be no date added, this automatically mark a new entry for re-extraction
+				}
 			}
 		}
 		return false;

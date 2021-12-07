@@ -15,7 +15,6 @@
 package org.innovative;
 
 import org.apache.log4j.Logger;
-import org.ini4j.Ini;
 import org.ini4j.Profile;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,7 +22,11 @@ import org.pika.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -42,13 +45,15 @@ import java.util.regex.Pattern;
 public class OfflineCirculation implements IProcessHandler {
 	private CronProcessLogEntry processLog;
 	private Logger              logger;
-	private CookieManager       manager = new CookieManager();
-	private String              ils     = "Sierra";
+	private CookieManager       manager      = new CookieManager();
+	private String              ils          = "Sierra";
+	private String              userApiToken = "";
 	@Override
 	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		this.logger = logger;
 		processLog  = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Offline Circulation");
 		processLog.saveToDatabase(pikaConn, logger);
+		userApiToken = PikaConfigIni.getIniValue("System", "userApiToken");
 
 //		ils = PikaConfigIni.getIniValue("Catalog", "ils"); //TODO: remove; was only used to check if millennium
 
@@ -82,7 +87,14 @@ public class OfflineCirculation implements IProcessHandler {
 				}
 
 				//process holds
-				processOfflineHolds(pikaConn);
+				if (userApiToken == null || userApiToken.length() == 0) {
+					// the userApiToken is needed for processing Offline Holds now.
+					logger.error("Unable to get user API token for Pika in ConfigIni settings.  Please add token to the System section.");
+					processLog.incErrors();
+					processLog.addNote("Unable to get user API token for Pika in ConfigIni settings.  Please add token to the System section.");
+				} else {
+					processOfflineHolds(pikaConn);
+				}
 			}
 		}
 		processLog.setFinished();
@@ -96,12 +108,15 @@ public class OfflineCirculation implements IProcessHandler {
 	 */
 	private void processOfflineHolds(Connection pikaConn) {
 		processLog.addNote("Processing offline holds");
+		int holdsProcessed = 0;
 		String baseUrl         = PikaConfigIni.getIniValue("Site", "url");
-//		String barcodeProperty = PikaConfigIni.getIniValue("Catalog", "barcodeProperty");
 		try (
-			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password FROM offline_hold LEFT JOIN user ON user.id = offline_hold.patronId WHERE status='Not Processed' ORDER BY timeEntered ASC, id ASC");
+			PreparedStatement holdsToProcessStmt =
+//							pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password FROM offline_hold LEFT JOIN user ON user.id = offline_hold.patronId WHERE status='Not Processed' ORDER BY timeEntered ASC, id ASC");
+							pikaConn.prepareStatement("SELECT offline_hold.*, user.id AS userId, user.barcode FROM offline_hold LEFT JOIN user ON user.id = offline_hold.patronId WHERE status='Not Processed' ORDER BY timeEntered ASC, id ASC");
 			// Match by Pika patron ID
 
+//		String barcodeProperty = PikaConfigIni.getIniValue("Catalog", "barcodeProperty");
 //			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password FROM `offline_hold` LEFT JOIN `user` ON (user." + barcodeProperty + " = offline_hold.patronBarcode) WHERE status = 'Not Processed' ORDER BY timeEntered ASC, id ASC");
 			// This was used for a data migration of holds transactions (where the assumption that a patron has logged into Pika is invalid)
 			// This matches by patron barcode when the barcode is saved in the cat_password field
@@ -112,13 +127,14 @@ public class OfflineCirculation implements IProcessHandler {
 			try (ResultSet holdsToProcessRS = holdsToProcessStmt.executeQuery()) {
 				while (holdsToProcessRS.next()) {
 					processOfflineHold(updateHold, baseUrl, holdsToProcessRS);
+					holdsProcessed++;
 				}
 			}
 		} catch (SQLException e) {
 			processLog.incErrors();
-			processLog.addNote("Error processing offline holds " + e.toString());
+			processLog.addNote("Error processing offline holds " + e);
 		}
-
+		processLog.addNote(holdsProcessed + " offline holds processed.");
 	}
 
 	private void processOfflineHold(PreparedStatement updateHold, String baseUrl, ResultSet holdsToProcessRS) throws SQLException {
@@ -127,50 +143,49 @@ public class OfflineCirculation implements IProcessHandler {
 		updateHold.setLong(1, new Date().getTime() / 1000);
 		updateHold.setLong(4, holdId);
 		try {
-			String patronPassword = encode(holdsToProcessRS.getString("cat_password"));
-			String patronName     = holdsToProcessRS.getString("cat_username");
-			if (patronName == null || patronName.length() == 0) {
-				patronName = holdsToProcessRS.getString("patronName");
-			}
-			patronName = encode(patronName);
-			String bibId           = encode(holdsToProcessRS.getString("bibId"));
-			String itemId          = encode(holdsToProcessRS.getString("itemId"));
-			String pickUpLocation  = encode(holdsToProcessRS.getString("pickupLocation"));
-			String placeHoldUrlStr = baseUrl + "/API/UserAPI?method=placeHold&username=" + patronName + "&password=" + patronPassword + "&bibId=" + bibId;
+			String userId  = holdsToProcessRS.getString("userId");
+			String barcode = holdsToProcessRS.getString("barcode");
+			if (!userId.isEmpty() && !barcode.isEmpty()) {
+				String token           = md5(barcode);
+				String bibId           = encode(holdsToProcessRS.getString("bibId"));
+				String itemId          = encode(holdsToProcessRS.getString("itemId"));
+				String pickUpLocation  = encode(holdsToProcessRS.getString("pickupLocation"));
+				String placeHoldUrlStr = baseUrl + "/API/UserAPI?method=placeHold&userId=" + userId + "&token=" + token + "&bibId=" + bibId;
 
-			if (itemId != null && itemId.length() > 0) {
-				placeHoldUrlStr += "&itemId=" + itemId;
-			}
-			if (pickUpLocation != null && !pickUpLocation.isEmpty()){
-				placeHoldUrlStr += "&campus=" + pickUpLocation;
-			}
+				if (itemId != null && itemId.length() > 0) {
+					placeHoldUrlStr += "&itemId=" + itemId;
+				}
+				if (pickUpLocation != null && !pickUpLocation.isEmpty()){
+					placeHoldUrlStr += "&campus=" + pickUpLocation;
+				}
 
-			URL    placeHoldUrl     = new URL(placeHoldUrlStr);
-			Object placeHoldDataRaw = placeHoldUrl.getContent();
-			if (placeHoldDataRaw instanceof InputStream) {
-				String placeHoldDataJson = Util.convertStreamToString((InputStream) placeHoldDataRaw);
-				if (logger.isInfoEnabled()) {
-					logger.info("Result = " + placeHoldDataJson);
-				}
-				JSONObject placeHoldData = new JSONObject(placeHoldDataJson);
-				JSONObject result        = placeHoldData.getJSONObject("result");
-				String message = result.getString("message");
-				if (message == null || message.isEmpty()) {
-					message = "Did not get valid message response from place hold attempt";
-				}
-				if (message.length() > 512) { // Column size of the offline hold note field is 512
-					message = message.substring(0, 511);
-				}
-				if (result.getBoolean("success") && (!result.has("items") || message.contains("item level hold"))) {
-					// Mark as hold failure if an item-level hold is prompted for
-					updateHold.setString(2, "Hold Succeeded");
-				} else {
-					updateHold.setString(2, "Hold Failed");
-				}
-				updateHold.setString(3, message);
+				URL    placeHoldUrl     = new URL(placeHoldUrlStr);
+				Object placeHoldDataRaw = placeHoldUrl.getContent();
+				if (placeHoldDataRaw instanceof InputStream) {
+					String placeHoldDataJson = Util.convertStreamToString((InputStream) placeHoldDataRaw);
+					if (logger.isInfoEnabled()) {
+						logger.info("Result = " + placeHoldDataJson);
+					}
+					JSONObject placeHoldData = new JSONObject(placeHoldDataJson);
+					JSONObject result        = placeHoldData.getJSONObject("result");
+					String message = result.getString("message");
+					if (message == null || message.isEmpty()) {
+						message = "Did not get valid message response from place hold attempt";
+					}
+					if (message.length() > 512) { // Column size of the offline hold note field is 512
+						message = message.substring(0, 511);
+					}
+					if (result.getBoolean("success") && (!result.has("items") || message.contains("item level hold"))) {
+						// Mark as hold failure if an item-level hold is prompted for
+						updateHold.setString(2, "Hold Succeeded");
+					} else {
+						updateHold.setString(2, "Hold Failed");
+					}
+					updateHold.setString(3, message);
 
+				}
+				processLog.incUpdated();
 			}
-			processLog.incUpdated();
 		} catch (JSONException e) {
 			processLog.incErrors();
 			processLog.addNote("Error Loading JSON response for placing hold " + holdId + " - '" + e.toString());
@@ -198,11 +213,11 @@ public class OfflineCirculation implements IProcessHandler {
 	 */
 	private void processOfflineCirculationEntries(Connection pikaConn) {
 		processLog.addNote("Processing offline checkouts and check-ins");
+		int numProcessed = 0;
 		try {
 			PreparedStatement circulationEntryToProcessStmt = pikaConn.prepareStatement("SELECT offline_circulation.* FROM offline_circulation WHERE status='Not Processed' ORDER BY login ASC, initials ASC, patronBarcode ASC, timeEntered ASC");
 			PreparedStatement updateCirculationEntry        = pikaConn.prepareStatement("UPDATE offline_circulation SET timeProcessed = ?, status = ?, notes = ? WHERE id = ?");
 			String baseUrl                                  = PikaConfigIni.getIniValue("Catalog", "url") + "/iii/airwkst";
-			int numProcessed = 0;
 			try (ResultSet circulationEntriesToProcessRS = circulationEntryToProcessStmt.executeQuery()) {
 				while (circulationEntriesToProcessRS.next()) {
 					processOfflineCirculationEntry(updateCirculationEntry, baseUrl, circulationEntriesToProcessRS);
@@ -215,8 +230,9 @@ public class OfflineCirculation implements IProcessHandler {
 			}
 		} catch (SQLException e) {
 			processLog.incErrors();
-			processLog.addNote("Error processing offline holds " + e.toString());
+			processLog.addNote("Error processing offline circs " + e);
 		}
+		processLog.addNote(numProcessed + " offline circs processed.");
 	}
 
 	private void processOfflineCirculationEntry(PreparedStatement updateCirculationEntry, String baseAirpacUrl, ResultSet circulationEntriesToProcessRS) throws SQLException {
@@ -524,5 +540,27 @@ public class OfflineCirculation implements IProcessHandler {
 			}
 		}
 		return result.toString();
+	}
+
+	/**
+	 * Build token for User API Calls
+	 * @param string barcode to hash with the userApiToken
+	 * @return Hash to use as url token for User API calls that support tokens
+	 */
+	private String md5(String string){
+		StringBuilder md5 = new StringBuilder();
+		try {
+			string = string + userApiToken;
+			MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+			messageDigest.reset();
+			messageDigest.update(string.getBytes(StandardCharsets.UTF_8));
+			md5 = new StringBuilder(new BigInteger(1, messageDigest.digest()).toString(16));
+			while (md5.length() < 32) {
+				md5.insert(0, "0");
+			}
+		} catch (NoSuchAlgorithmException e) {
+			logger.error("Error hashing string", e);
+		}
+	return md5.toString();
 	}
 }

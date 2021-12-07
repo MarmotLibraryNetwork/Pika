@@ -278,11 +278,11 @@ class BookCoverProcessor {
 	private function loadCoverBySpecifiedSource($coverSource, SourceAndId $sourceAndId = null){
 		$sourceAndId ??= $this->sourceAndId;
 		switch ($coverSource){
-			case 'Zinio':
-				if ($this->getZinioCover($sourceAndId)){
-					return true;
-				}
-				break;
+//			case 'Zinio':
+//				if ($this->getZinioCover($sourceAndId)){
+//					return true;
+//				}
+//				break;
 			case 'Colorado State Government Documents' :
 				if ($this->getColoradoGovDocCover()){
 					return true;
@@ -454,22 +454,22 @@ class BookCoverProcessor {
 		return false;
 	}
 
-	private function getZinioCover(SourceAndId $sourceAndId){
-		require_once ROOT_DIR . '/RecordDrivers/SideLoadedRecord.php';
-		$driver = new SideLoadedRecord($sourceAndId);
-		if ($driver && $driver->isValid()){
-			/** @var File_MARC_Data_Field[] $linkFields */
-			$linkFields = $driver->getMarcRecord()->getFields('856');
-			foreach ($linkFields as $linkField){
-				if ($linkField->getIndicator(1) == 4 && $linkField->getSubfield('3') != null && $linkField->getSubfield('3')->getData() == 'Image'){
-					$coverUrl = $linkField->getSubfield('u')->getData();
-					$coverUrl = str_replace('size=200', 'size=lg', $coverUrl);
-					return $this->processImageURL($coverUrl);
-				}
-			}
-		}
-		return false;
-	}
+//	private function getZinioCover(SourceAndId $sourceAndId){
+//		require_once ROOT_DIR . '/RecordDrivers/SideLoadedRecord.php';
+//		$driver = new SideLoadedRecord($sourceAndId);
+//		if ($driver && $driver->isValid()){
+//			/** @var File_MARC_Data_Field[] $linkFields */
+//			$linkFields = $driver->getMarcRecord()->getFields('856');
+//			foreach ($linkFields as $linkField){
+//				if ($linkField->getIndicator(1) == 4 && $linkField->getSubfield('3') != null && $linkField->getSubfield('3')->getData() == 'Image'){
+//					$coverUrl = $linkField->getSubfield('u')->getData();
+//					$coverUrl = str_replace('size=200', 'size=lg', $coverUrl);
+//					return $this->processImageURL($coverUrl);
+//				}
+//			}
+//		}
+//		return false;
+//	}
 
 	/**
 	 * @param SourceAndId $sourceAndId
@@ -854,7 +854,7 @@ class BookCoverProcessor {
 			$recordDriver = RecordDriverFactory::initRecordDriverById($this->sourceAndId, $this->groupedWork);
 			if ($recordDriver->isValid()){
 				$title          = $recordDriver->getTitle();
-				$author         = $recordDriver->getAuthor();
+				$author         = $recordDriver->getPrimaryAuthor();
 				$this->category = 'blank'; // Use the blank image for record view default covers over the no Cover image
 			}
 		}
@@ -1464,7 +1464,7 @@ class BookCoverProcessor {
 
 //	private function makeIsbn10And13(){
 //		if (!empty($this->isn) && strlen($this->isn) >= 10){
-//			require_once ROOT_DIR . '/Drivers/marmot_inc/ISBNConverter.php';
+//			require_once ROOT_DIR . '/sys/ISBN/ISBNConverter.php';
 //			if (strlen($this->isn) == 10){
 //				//$this->log("Provided ISBN is 10 digits.", PEAR_LOG_INFO);
 //				$this->isbn10 = $this->isn;

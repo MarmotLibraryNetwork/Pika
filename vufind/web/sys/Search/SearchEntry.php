@@ -43,10 +43,10 @@ class SearchEntry extends DB_DataObject {
 		$searches = array();
 
 		$sql = "SELECT * FROM search WHERE session_id = '" . $this->escape($sid) . "'";
-		if ($uid != null){
+		if (!empty($uid)){
 			$sql .= " OR user_id = '" . $this->escape($uid) . "'";
 		}
-		$sql .= " ORDER BY id";
+		$sql .= ' ORDER BY id';
 
 		$s = new SearchEntry();
 		$s->query($sql);
@@ -74,7 +74,7 @@ class SearchEntry extends DB_DataObject {
 		$sql = 'SELECT * FROM search WHERE saved=0 AND created<"' . $expirationDate . '"';
 		$s   = new SearchEntry();
 		$s->query($sql);
-		$searches = array();
+		$searches = [];
 		if ($s->N){
 			while ($s->fetch()){
 				$searches[] = clone($s);

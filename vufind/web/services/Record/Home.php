@@ -50,7 +50,8 @@ class Record_Home extends Record_Record {
 		$exploreMoreInfo = $this->recordDriver->getExploreMoreInfo();
 		$interface->assign('exploreMoreInfo', $exploreMoreInfo);
 
-		if($semanticData = $this->recordDriver->getSemanticData() && !empty($semanticData)) {
+		if(($semanticData = $this->recordDriver->getSemanticData()) && !empty($semanticData)) {
+			$interface->assign('metadataTemplate', 'GroupedWork/metadata.tpl');
 			$interface->assign('semanticData', json_encode($semanticData, JSON_PRETTY_PRINT));
 		} else {
 			$interface->assign('semanticData', false);

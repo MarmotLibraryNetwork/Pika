@@ -21,11 +21,11 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 
 class History extends Action {
-	private static $searchSourceLabels = array(
+	private static $searchSourceLabels = [
 		'local'     => 'Catalog',
 		'islandora' => 'Archive',
 		'genealogy' => 'Genealogy'
-	);
+	];
 
 	function launch(){
 		global $interface;
@@ -45,8 +45,8 @@ class History extends Action {
 		$noHistory = true;
 		if (count($searchHistory) > 0){
 			// Build an array of history entries
-			$links = array();
-			$saved = array();
+			$links = [];
+			$saved = [];
 
 			// Loop through the history
 			foreach ($searchHistory as $search){
@@ -70,7 +70,7 @@ class History extends Action {
 					// descriptions in the filter box.
 					$searchObject->activateAllFacets();
 
-					$newItem = array(
+					$newItem = [
 						'id'          => $search->id,
 						'time'        => date("g:ia, jS M Y", $searchObject->getStartTime()),
 						'url'         => $searchObject->renderSearchUrl(),
@@ -83,17 +83,17 @@ class History extends Action {
 						// Size is purely for debugging. Not currently displayed in the template.
 						// It's the size of the serialized, minified search in the database.
 						//'size'        => round($size/1024, 3)."kb"
-					);
+					];
 
 					if ($search->saved == 1){
 						// Saved searches
 						$saved[] = $newItem;
 					}else{
 						// All the others
-							$links[] = $newItem;
-						}
+						$links[] = $newItem;
 					}
 				}
+			}
 
 			// One final check, after a purge make sure we still have a history
 			if (count($links) > 0 || count($saved) > 0){

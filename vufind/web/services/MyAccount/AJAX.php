@@ -73,7 +73,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		// Select List Creation using Object Editor functions
 		require_once ROOT_DIR . '/sys/Browse/SubBrowseCategories.php';
 		$temp                            = SubBrowseCategories::getObjectStructure();
-		$temp['subCategoryId']['values'] = array(0 => 'Select One') + $temp['subCategoryId']['values'];
+		$temp['subCategoryId']['values'] = [0 => 'Select One'] + $temp['subCategoryId']['values'];
 		// add default option that denotes nothing has been selected to the options list
 		// (this preserves the keys' numeric values (which is essential as they are the Id values) as well as the array's order)
 		// btw addition of arrays is kinda a cool trick.
@@ -82,20 +82,20 @@ class MyAccount_AJAX extends AJAXHandler {
 
 		// Display Page
 		$interface->assign('listId', strip_tags($_REQUEST['listId']));
-		$results = array(
+		$results = [
 			'title'        => 'Add as Browse Category to Home Page',
 			'modalBody'    => $interface->fetch('Browse/addBrowseCategoryForm.tpl'),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>Create Category</button>",
-		);
+		];
 		return $results;
 	}
 
 	function addAccountLink(){
 		if (!UserAccount::isLoggedIn()){
-			$result = array(
+			$result = [
 				'result'  => false,
 				'message' => 'Sorry, you must be logged in to manage accounts.',
-			);
+			];
 		}else{
 			$username = $_REQUEST['username'];
 			$password = $_REQUEST['password'];
@@ -264,10 +264,10 @@ class MyAccount_AJAX extends AJAXHandler {
 		}else{
 			$message = "Sorry, it looks like that search has expired.";
 		}
-		$result = array(
+		$result = [
 			'result'  => $saveOk,
 			'message' => $message,
-		);
+		];
 		return $result;
 	}
 
@@ -294,10 +294,10 @@ class MyAccount_AJAX extends AJAXHandler {
 		}else{
 			$message = "Sorry, it looks like that search has expired.";
 		}
-		$result = array(
+		$result = [
 			'result'  => $saveOk,
 			'message' => $message,
-		);
+		];
 		return $result;
 	}
 
@@ -645,14 +645,17 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	function getCreateListForm(){
 		global $interface;
-
+		$list['title'] = "";
+		if(isset($_REQUEST['defaultTitle'])){
+			$list['title'] = $_REQUEST['defaultTitle'];
+		}
 		if (isset($_REQUEST['groupedWorkId'])){
 			$id = $_REQUEST['groupedWorkId'];
 			$interface->assign('groupedWorkId', $id);
 		}else{
 			$id = '';
 		}
-
+		$interface->assign('list', $list);
 		return array(
 			'title'        => 'Create new List',
 			'modalBody'    => $interface->fetch("MyAccount/list-form.tpl"),
@@ -726,7 +729,7 @@ class MyAccount_AJAX extends AJAXHandler {
 			global $interface;
 
 			$titles = $listAPI->getListTitles();
-			$timer->logTime("getListTitles");
+			$timer->logTime('getListTitles');
 			$addStrandsTracking = false;
 			if ($titles['success'] == true){
 				if (isset($titles['strands'])){
@@ -832,7 +835,7 @@ class MyAccount_AJAX extends AJAXHandler {
             $listId = $_REQUEST['id'];
             $user = UserAccount::getLoggedInUser();
             if($user->isStaff()) {
-                $barcodeProperty = $user->getAccountProfile()->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
+                $barcodeProperty = 'barcode';
                 $userTo = new User;
                 $userTo->get($barcodeProperty, $barcodeTo);
                 if ($userTo && $userTo->isStaff()){
@@ -863,7 +866,7 @@ class MyAccount_AJAX extends AJAXHandler {
         {
             $staffUser = UserAccount::getLoggedInUser();
             if($staffUser->isStaff()) {
-                $barcodeProperty = $staffUser->getAccountProfile()->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
+                $barcodeProperty = 'barcode';
                 $barcode = $_REQUEST['barcode'];
                 $user = new User;
                 $user->get($barcodeProperty, $barcode);

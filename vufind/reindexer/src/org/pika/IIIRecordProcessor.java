@@ -466,10 +466,8 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			if (orderItems != null) {
 				for (OrderInfo orderItem : orderItems) {
 					createAndAddOrderItem(groupedWork, recordInfo, orderItem, record);
-					//For On Order Items, increment popularity based on number of copies that are being purchased.
-					groupedWork.addPopularity(orderItem.getNumCopies());
 				}
-				if (recordInfo.getNumCopiesOnOrder() > 0 && !hasTangibleItems) {
+				if (!hasTangibleItems && recordInfo.getNumCopiesOnOrder() > 0) {
 					groupedWork.addKeywords("On Order");
 					groupedWork.addKeywords("Coming Soon");
 				}
@@ -510,6 +508,9 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 
 		if (isOrderItemValid(status, null)) {
 			recordInfo.addItem(itemInfo);
+
+			//For On Order Items, increment popularity based on number of copies that are being purchased.
+			groupedWork.addPopularity(orderItem.getNumCopies());
 		}
 	}
 
@@ -519,8 +520,6 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		HashSet<String> languageNames        = new HashSet<>();
 		HashSet<String> translationsNames    = new HashSet<>();
 		String          primaryLanguage      = null;
-		long            languageBoost        = 1L;
-		long            languageBoostSpanish = 1L;
 
 		String languageCode = MarcUtil.getFirstFieldVal(record, "008[35-37]");
 		String languageName = languageCode == null ? null : indexer.translateSystemValue("language", languageCode, "008: " + identifier);
@@ -537,21 +536,6 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			// The trim() is for some bad language codes that will have spaces on the ends
 			languageNames.add(languageName);
 			primaryLanguage = languageName;
-
-			String languageBoostStr = indexer.translateSystemValue("language_boost", languageCode, identifier.getSourceAndId());
-			if (languageBoostStr != null) {
-				long languageBoostVal = Long.parseLong(languageBoostStr);
-				if (languageBoostVal > languageBoost) {
-					languageBoost = languageBoostVal;
-				}
-			}
-			String languageBoostEs = indexer.translateSystemValue("language_boost_es", languageCode, identifier.getSourceAndId());
-			if (languageBoostEs != null) {
-				long languageBoostVal = Long.parseLong(languageBoostEs);
-				if (languageBoostVal > languageBoostSpanish) {
-					languageBoostSpanish = languageBoostVal;
-				}
-			}
 		}
 
 		List<DataField> languageDataFields = record.getDataFields("041");
@@ -593,21 +577,6 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 										// Set primary Language and language boosts if we haven't found a good value yet
 										// Only use the first 041a language code for the primary language and boosts
 										primaryLanguage = languageName;
-
-										String languageBoostStr = indexer.translateSystemValue("language_boost", code, identifier.getSourceAndId());
-										if (languageBoostStr != null) {
-											long languageBoostVal = Long.parseLong(languageBoostStr);
-											if (languageBoostVal > languageBoost) {
-												languageBoost = languageBoostVal;
-											}
-										}
-										String languageBoostEs = indexer.translateSystemValue("language_boost_es", code, identifier.getSourceAndId());
-										if (languageBoostEs != null) {
-											long languageBoostVal = Long.parseLong(languageBoostEs);
-											if (languageBoostVal > languageBoostSpanish) {
-												languageBoostSpanish = languageBoostVal;
-											}
-										}
 									}
 								}
 								if (length >= 3) {
@@ -665,8 +634,6 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 				ilsRecord.setPrimaryLanguage(primaryLanguage);
 			}
 			ilsRecord.setLanguages(languageNames);
-			ilsRecord.setLanguageBoost(languageBoost);
-			ilsRecord.setLanguageBoostSpanish(languageBoostSpanish);
 			ilsRecord.setTranslations(translationsNames);
 		}
 	}

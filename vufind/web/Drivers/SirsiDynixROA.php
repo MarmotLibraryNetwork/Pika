@@ -156,7 +156,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 					$user->displayName = '';
 				}
 				$user->fullname     = isset($fullName) ? $fullName : '';
-				$user->cat_username = $barcode;
+				//$user->cat_username = $barcode;
+				$user->barcode = $barcode;
 
 				$Address1 = "";
 				$City     = "";
@@ -352,7 +353,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 					$user->displayName = '';
 				}
 				$user->fullname     = isset($fullName) ? $fullName : '';
-				$user->cat_username = $username;
+				//$user->cat_username = $username;
+				$user->barcode = $username;
 				$user->cat_password = $password;
 
 				$Address1 = "";
@@ -939,7 +941,6 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 					$curHold['format']          = $recordDriver->getFormat();
 					$curHold['isbn']            = $recordDriver->getCleanISBN();
 					$curHold['upc']             = $recordDriver->getCleanUPC();
-					$curHold['format_category'] = $recordDriver->getFormatCategory();
 					$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
 					$curHold['link']            = $recordDriver->getRecordUrl();
 
@@ -1161,7 +1162,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 		if (isset(SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId])){
 			return SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId];
 		}else{
-			[, $sessionToken] = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+			[, $sessionToken] = $this->loginViaWebService($patron->barcode, $patron->cat_password);
 			return $sessionToken;
 		}
 	}
@@ -1574,7 +1575,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 		}
 
 		$patron = new User;
-		$patron->get('cat_username', $barcode);
+		//$patron->get('cat_username', $barcode);
+		$patron->get('barcode', $barcode);
 		if (!empty($patron->id)){
 			global $configArray;
 			$pikaUserID = $patron->id;

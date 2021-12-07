@@ -175,7 +175,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		//Get a list of all materials requests for the user
 		$allRequests = array();
 		if ($user){
-			$barCodeProperty = $user->getAccountProfile()->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
+			$barCodeProperty = 'barcode';
 
 			$materialsRequests = new MaterialsRequest();
 			$materialsRequests->joinAdd(new Location(), "LEFT");
@@ -367,6 +367,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Age Level');
 		}
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ISBN');
+		$activeSheet->getActiveSheet()->getStyle($curCol, $curRow)->getNumberFormat()->setFormatCode(PHPExcel_Style_numberFormat::FORMAT_NUMBER);
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'UPC');
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ISSN');
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'OCLC Number');

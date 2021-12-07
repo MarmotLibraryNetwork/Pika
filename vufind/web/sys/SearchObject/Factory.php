@@ -37,14 +37,12 @@ class SearchObjectFactory {
 	 * @return  mixed               The search object on success, false otherwise
 	 */
 	static function initSearchObject($engine = 'Solr'){
-		global $configArray;
-
-		$path = "{$configArray['Site']['local']}/sys/SearchObject/{$engine}.php";
+		$path =  ROOT_DIR . "/sys/SearchObject/$engine.php";
 		if (is_readable($path)){
 			require_once $path;
 			$class = 'SearchObject_' . $engine;
 			if (class_exists($class)){
-				/** @var Solr|SearchObject_Base $searchObject */
+				/** @var SearchObject_Base|SearchObject_Solr|SearchObject_Genealogy|SearchObject_Islandora $searchObject */
 				$searchObject = new $class();
 				return $searchObject;
 			}
@@ -67,14 +65,10 @@ class SearchObjectFactory {
 		// To avoid excessive constructor calls, we'll keep a static cache of
 		// objects to use for the deminification process:
 		/** @var SearchObject_Base[] $objectCache */
-		static $objectCache = array();
+		static $objectCache = [];
 
 		// Figure out the engine type for the object we're about to construct:
 		switch($minSO->ty) {
-			case 'WorldCat':
-			case 'WorldCatAdvanced':
-				$type = 'WorldCat';
-				break;
 			case 'islandora' :
 				$type = 'Islandora';
 				break;

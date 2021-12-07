@@ -23,13 +23,9 @@ class Search_Advanced extends Search_AdvancedBase {
 
 	function launch(){
 		global $interface;
-		global $searchObject;
 
-		// Create our search object if the one initialized in index.php is not available
-		if (!$searchObject){
-			/** @var SearchObject_Solr $searchObject */
-			$searchObject = SearchObjectFactory::initSearchObject();
-		}
+		/** @var SearchObject_Solr $searchObject */
+		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->initAdvancedFacets();
 		// We don't want this search in the search history
 		$searchObject->disableLogging();
@@ -57,19 +53,6 @@ class Search_Advanced extends Search_AdvancedBase {
 		}
 		$interface->assign('facetList', $facets);
 
-//		// Integer for % width of each column (be careful to avoid divide by zero!)
-//		$columnWidth = (count($facets) > 1) ? round(100 / count($facets), 0) : 0;
-//		$interface->assign('columnWidth', $columnWidth);
-
-		// Process settings to control special-purpose facets not supported by the
-		//     more generic configuration options.
-		$specialFacets = $searchObject->getFacetSetting('Advanced_Settings', 'special_facets');
-		if (stristr($specialFacets, 'illustrated')){
-			$interface->assign('illustratedLimit',
-				$this->getIllustrationSettings($savedSearch));
-		}
-
-
 		// Send search type settings to the template
 		$interface->assign('advancedSearchTypes', $searchObject->getAdvancedSearchTypes());
 
@@ -82,35 +65,5 @@ class Search_Advanced extends Search_AdvancedBase {
 		$this->display('advanced.tpl', 'Advanced Search', 'Search/results-sidebar.tpl');
 	}
 
-	/**
-	 * Get the possible legal values for the illustration limit radio buttons.
-	 *
-	 * @access  private
-	 * @param object $savedSearch Saved search object (false if none)
-	 * @return  array                   Legal options, with selected value flagged.
-	 */
-	private function getIllustrationSettings($savedSearch = false){
-		$illYes = array('text' => 'Has Illustrations', 'value' => 1, 'selected' => false);
-		$illNo  = array('text' => 'Not Illustrated', 'value' => 0, 'selected' => false);
-		$illAny = array('text' => 'No Preference', 'value' => -1, 'selected' => false);
-
-		// Find the selected value by analyzing facets -- if we find match, remove
-		// the offending facet to avoid inappropriate items appearing in the
-		// "applied filters" sidebar!
-		if ($savedSearch && $savedSearch->hasFilter('illustrated:Illustrated')){
-			$illYes['selected'] = true;
-			$savedSearch->removeFilter('illustrated:Illustrated');
-		}else{
-			if ($savedSearch && $savedSearch->hasFilter('illustrated:"Not Illustrated"')){
-				$illNo['selected'] = true;
-				$savedSearch->removeFilter('illustrated:"Not Illustrated"');
-			}else{
-				$illAny['selected'] = true;
-			}
-		}
-		return array($illYes, $illNo, $illAny);
-	}
-
 }
 
-?>

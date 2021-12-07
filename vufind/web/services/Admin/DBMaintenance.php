@@ -172,6 +172,8 @@ class DBMaintenance extends Admin_Admin {
 		$hoopla_updates = getHooplaUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/sierra_api_updates.php';
 		$sierra_api_updates = getSierraAPIUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/account_profile_updates.php';
+		$account_profile_updates = getAccountProfileUpdates();
 
 		return array_merge(
 			$library_location_updates,
@@ -182,6 +184,7 @@ class DBMaintenance extends Admin_Admin {
 			$islandora_updates,
 			$hoopla_updates,
 			$sierra_api_updates,
+			$account_profile_updates,
 			array(
 				'new_search_stats' => array(
 					'title'       => 'Create new search stats table with better performance',
@@ -989,10 +992,10 @@ class DBMaintenance extends Admin_Admin {
 					),
 				),
 
-				'ils_marc_checksums' => array(
+				'ils_marc_checksums' => [
 					'title'       => 'ILS MARC Checksums',
 					'description' => 'Add a table to store checksums of MARC records stored in the ILS so we can determine if the record needs to be updated during grouping.',
-					'sql'         => array(
+					'sql'         => [
 						"CREATE TABLE IF NOT EXISTS ils_marc_checksums (
 							id INT(11) NOT NULL AUTO_INCREMENT,
 							ilsId VARCHAR(20) NOT NULL,
@@ -1004,8 +1007,20 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER TABLE ils_marc_checksums CHANGE dateFirstDetected dateFirstDetected BIGINT SIGNED NULL",
 						"ALTER TABLE ils_marc_checksums ADD source VARCHAR(50) NOT NULL DEFAULT 'ils'",
 						"ALTER TABLE ils_marc_checksums ADD UNIQUE (`source`, `ilsId`)",
-					),
-				),
+					],
+				],
+
+				'Fix_ils_marc_checksums_indexes-2021.03.1' => [
+					'title'       => 'Fix ILS MARC Checksums indexes',
+					'description' => 'ilsId unique key needs to accommodate for source as well',
+					'sql'         => [
+						"ALTER TABLE `ils_marc_checksums` 
+							DROP INDEX `ilsId` ,
+							ADD INDEX `ilsId` (`ilsId` ASC),
+							DROP INDEX `source` ,
+							ADD UNIQUE INDEX `sourceAndIlsId` (`source` ASC, `ilsId` ASC); ",
+					],
+				],
 
 				'work_level_ratings' => array(
 					'title'       => 'Work Level Ratings',
@@ -1241,15 +1256,24 @@ class DBMaintenance extends Admin_Admin {
 					)
 				),
 
-				'add_search_source_to_saved_searches' => array(
+				'add_search_source_to_saved_searches' => [
 					'title'           => 'Store the Search Source with saved searches',
 					'description'     => 'Add column to store the source for a search in the search table',
 					'continueOnError' => true,
-					'sql'             => array(
+					'sql'             => [
 						"ALTER TABLE `search` 
 									ADD COLUMN `searchSource` VARCHAR(30) NOT NULL DEFAULT 'local' AFTER `search_object`;",
-					)
-				),
+					]
+				],
+
+				'2021.03.0_remove_obsolete_column_searches' => [
+					'title'           => 'Remove obsolete column from searches table',
+					'description'     => 'Remove unused column folder_id from searches table',
+					'continueOnError' => true,
+					'sql'             => [
+						"ALTER TABLE `search` DROP COLUMN `folder_id`, DROP INDEX `folder_id` ; ",
+					]
+				],
 
 				'record_grouping_log' => array(
 					'title'           => 'Record Grouping Log',

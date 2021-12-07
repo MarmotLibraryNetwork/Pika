@@ -39,14 +39,6 @@ class Library extends DB_DataObject {
 
 	use OneToManyDataObjectOperations;
 
-	/**
-	 * Needed override for OneToManyDataObjectOperations
-	 * @return string
-	 */
-	function getKeyOther(){
-		return 'libraryId';
-	}
-
 	public $__table = 'library';    // table name
 	public $isDefault;
 	public $libraryId; 				//int(11)
@@ -91,6 +83,7 @@ class Library extends DB_DataObject {
 	public $repeatInOnlineCollection;
 	public $repeatInProspector;
 	public $repeatInWorldCat;
+	/* public $loginConfiguration; todo: [pins] revisit if we go with per library settings. */
 
 	/* Self Registration */
 	public $selfRegistrationFormMessage;
@@ -313,6 +306,14 @@ class Library extends DB_DataObject {
 		'list'  => 'List',
 	);
 
+	/**
+	 * Needed override for OneToManyDataObjectOperations
+	 * @return string
+	 */
+	function getKeyOther(){
+		return 'libraryId';
+	}
+
 	function keys(){
 		return ['libraryId', 'subdomain'];
 	}
@@ -489,6 +490,7 @@ class Library extends DB_DataObject {
 							'showPatronBarcodeImage'               => ['property' => 'showPatronBarcodeImage', 'type' =>'checkbox', 'label' =>'Show a scannable barcode image in mobile menu', 'description' =>'', 'hideInLists' => true, 'default' => 0],
 							'patronNameDisplayStyle'               => ['property' =>'patronNameDisplayStyle', 'type' =>'enum', 'values' => ['firstinitial_lastname' =>'First Initial. Last Name', 'lastinitial_firstname' =>'First Name Last Initial.'], 'label' =>'Patron Display Name Style', 'description' =>'How to generate the patron display name'],
 							'allowProfileUpdates'                  => ['property' =>'allowProfileUpdates', 'type' =>'checkbox', 'label' =>'Allow Profile Updates', 'description' =>'Whether or not the user can update their own profile.', 'hideInLists' => true, 'default' => 1],
+							'allowPinReset'           => ['property' =>'allowPinReset', 'type' =>'checkbox', 'label' =>'Allow PIN Update', 'description' =>'Whether or not the user can update their PIN in the Account Settings page.', 'hideInLists' => true, 'default' => 0],
 							'allowPatronAddressUpdates'            => ['property' => 'allowPatronAddressUpdates', 'type' =>'checkbox', 'label' =>'Allow Patrons to Update Their Address', 'description' =>'Whether or not patrons should be able to update their own address in their profile.', 'hideInLists' => true, 'default' => 1],
 							'showAlternateLibraryOptionsInProfile' => ['property' => 'showAlternateLibraryOptionsInProfile', 'type' =>'checkbox', 'label' =>'Allow Patrons to Update their Alternate Libraries', 'description' =>'Allow Patrons to See and Change Alternate Library Settings in the Catalog Options Tab in their profile.', 'hideInLists' => true, 'default' => 1],
 							'showWorkPhoneInProfile'               => ['property' => 'showWorkPhoneInProfile', 'type' =>'checkbox', 'label' =>'Show Work Phone in Profile', 'description' =>'Whether or not patrons should be able to change a secondary/work phone number in their profile.', 'hideInLists' => true, 'default' => 0],
@@ -512,8 +514,10 @@ class Library extends DB_DataObject {
 						]],
 					'loginSection' => ['property' => 'loginSection', 'type' => 'section', 'label' => 'Login', 'hideInLists' => true,
 					                   'helpLink' => 'https://marmot-support.atlassian.net/l/c/fqu5BzME', 'properties' => [
+															 // todo: [pins] revisit if we go with per library config.
+							/*'loginConfiguration'   => ['property' => 'loginConfiguration', 'type' => 'enum', 'label' => 'Login Configuration', 'values' => ['barcode_pin' => 'Barcode and Pin', 'name_barcode' => 'Name and Barcode', 'account_profile_based' => 'Account Profile Based' ], 'description' => 'How to configure the prompts for this authentication profile', 'required' => true, 'hideInLists' => true, 'default' => 'account_profile_based',],*/
 							'showLoginButton'         => ['property' =>'showLoginButton', 'type' =>'checkbox', 'label' =>'Show Login Button', 'description' =>'Whether or not the login button is displayed so patrons can log into the site', 'hideInLists' => true, 'default' => 1],
-							'allowPinReset'           => ['property' =>'allowPinReset', 'type' =>'checkbox', 'label' =>'Allow PIN Update', 'description' =>'Whether or not the user can update their PIN in the Account Settings page.', 'hideInLists' => true, 'default' => 0],
+
 							'preventExpiredCardLogin' => ['property' =>'preventExpiredCardLogin', 'type' =>'checkbox', 'label' =>'Prevent Login for Expired Cards', 'description' =>'Users with expired cards will not be allowed to login. They will recieve an expired card notice instead.', 'hideInLists' => true, 'default' => 0],
 							'loginFormUsernameLabel'  => ['property' =>'loginFormUsernameLabel', 'type' =>'text', 'label' =>'Login Form Username Label', 'description' =>'The label to show for the username when logging in', 'size' =>'100', 'hideInLists' => true, 'default' =>'Your Name'],
 							'loginFormPasswordLabel'  => ['property' =>'loginFormPasswordLabel', 'type' =>'text', 'label' =>'Login Form Password Label', 'description' =>'The label to show for the password when logging in', 'size' =>'100', 'hideInLists' => true, 'default' =>'Library Card Number'],
@@ -533,7 +537,7 @@ class Library extends DB_DataObject {
 							'selfRegistrationSuccessMessage' => ['property' =>'selfRegistrationSuccessMessage', 'type' =>'html', 'label' =>'Self Registration Success Message', 'description' =>'Message shown to users when the self registration has been completed successfully.  Leave blank to give users the default message.', 'allowableTags' => '<p><div><span><a><strong><b><em><i><ul><ol><li><br><hr><h1><h2><h3><h4><h5><h6><script>', 'hideInLists' => true],
 						]],
 					'masqueradeModeSection' => ['property'   => 'masqueradeModeSection', 'type' => 'section', 'label' => 'Masquerade Mode', 'hideInLists' => true,
-					                            'properties' => [
+					                            'helpLink' =>'https://marmot-support.atlassian.net/l/c/Vfk2LzSr', 'properties' => [
 						                            'allowMasqueradeMode'                        => ['property' =>'allowMasqueradeMode', 'type' =>'checkbox', 'label' =>'Allow Masquerade Mode', 'description' => 'Whether or not staff users (depending on pType setting) can use Masquerade Mode.', 'hideInLists' => true, 'default' => false],
 						                            'masqueradeAutomaticTimeoutLength'           => ['property' =>'masqueradeAutomaticTimeoutLength', 'type' =>'integer', 'label' =>'Masquerade Mode Automatic Timeout Length', 'description' =>'The length of time before an idle user\'s Masquerade session automatically ends in seconds.', 'size' =>'8', 'hideInLists' => true, 'max' => 240],
 						                            'allowReadingHistoryDisplayInMasqueradeMode' => ['property' =>'allowReadingHistoryDisplayInMasqueradeMode', 'type' =>'checkbox', 'label' =>'Allow Display of Reading History in Masquerade Mode', 'description' =>'This option allows Guiding Users to view the Reading History of the masqueraded user.', 'hideInLists' => true, 'default' => false],
@@ -747,6 +751,7 @@ class Library extends DB_DataObject {
 					'storeDb'       => true,
 					'allowEdit'     => false,
 					'canEdit'       => false,
+					'directLink'    => true,
 					],
 				]],
 

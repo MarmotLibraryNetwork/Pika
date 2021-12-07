@@ -62,5 +62,36 @@ class Admin_NonGroupedRecords extends ObjectEditor {
 		return 'For more information on how to ungroup works, see the <a href="https://marmot-support.atlassian.net/l/c/bcJcpX05">online documentation</a>.';
 	}
 
-
+//	function getAdditionalObjectActions($existingObject){
+//		$objectActions = [];
+//		$idCol         = $this->getIdKeyColumn();
+//		if (empty($existingObject->$idCol)){
+//			$objectActions[] = [
+//				'text' => 'Ungroup and Merge',
+//				'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=ungroupAndMerge",
+//			];
+//		}
+//		return $objectActions;
+//	}
+//
+//	function ungroupAndMerge(){
+//		$structure = $this->getObjectStructure();
+//		$newObject = $this->insertObject($structure);
+//		$idCol     = $this->getIdKeyColumn();
+//		if (!empty($newObject->$idCol)){
+//			// Now that the new entry has been saved, which will have forced it to be regrouped,
+//			// re-fetch the entry so that we can get the new grouped work id
+//			$objectType = $this->getObjectType();
+//			/** @var NonGroupedRecord $ungroupedObject */
+//			$ungroupedObject         = new $objectType();
+//			$ungroupedObject->$idCol = $newObject->$idCol;
+//			if ($ungroupedObject->find(true)){
+//				$groupedWork = $ungroupedObject->getGroupedWork();
+//				if (!empty($groupedWork->permanent_id)){
+//					header("Location:/Admin/MergedGroupedWorks?objectAction=addNew&sourceGroupedWorkId={$groupedWork->permanent_id}");
+////					header("Location:/Admin/MergedGroupedWorks?objectAction=addNew&sourceGroupedWorkId={$recordDriver->getPermanentId()}&notes={$recordDriver->getTitle()|removeTrailingPunctuation|escape}%0A{$userDisplayName}, {$homeLibrary}, {$smarty.now|date_format}%0A");
+//				}
+//			}
+//		}
+//	}
 }

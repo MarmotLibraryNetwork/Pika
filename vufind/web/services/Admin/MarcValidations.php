@@ -66,8 +66,6 @@ class MarcValidations extends ObjectEditor {
 	function getObjectStructure(){
 		require_once ROOT_DIR . '/sys/Indexing/MarcValidation.php';
 		return MarcValidation::getObjectStructure();
-
-		// TODO: Implement getObjectStructure() method.
 	}
 
 	function getAllObjects($orderBy = null){

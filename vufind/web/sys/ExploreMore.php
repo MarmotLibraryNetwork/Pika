@@ -89,7 +89,7 @@ class ExploreMore {
 						);
 					}
 				}
-				$timer->logTime("Loaded table of contents");
+				$timer->logTime('Loaded table of contents');
 			}elseif ($recordDriver instanceof BookDriver || $recordDriver instanceof CompoundDriver){
 				if ($recordDriver->getFormat() != 'Postcard'){
 					/** @var CompoundDriver $bookDriver */
@@ -363,6 +363,10 @@ class ExploreMore {
 			$islandoraSearchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$islandoraSearchObject->init();
 			$islandoraActive = $islandoraSearchObject->pingServer(false);
+			if (!$islandoraActive){
+				global $pikaLogger;
+				$pikaLogger->warn('Explore More: Islandora search ping failed.');
+			}
 		}
 
 		//Check the archive to see if we match an entity.
@@ -375,7 +379,7 @@ class ExploreMore {
 		$exploreMoreOptions = $this->loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm);
 
 		if ($islandoraActive){
-			if (isset($configArray['Islandora']) && isset($configArray['Islandora']['solrUrl']) && !empty($searchTerm)) {
+			if (!empty($configArray['Islandora']['solrUrl']) && !empty($searchTerm)) {
 				require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 				$fedoraUtils = FedoraUtils::getInstance();
 
@@ -512,11 +516,7 @@ class ExploreMore {
 				}
 			}
 
-		} else {
-			global $logger;
-			$logger->log('Islandora Search Failed.', PEAR_LOG_WARNING);
 		}
-
 		/*if (count($exploreMoreOptions) > 0 && count($exploreMoreOptions) < 3){
 			$exploreMoreOptions[] = array(
 					'label' => "",

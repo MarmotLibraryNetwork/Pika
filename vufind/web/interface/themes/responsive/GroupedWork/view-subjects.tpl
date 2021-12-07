@@ -1,4 +1,10 @@
 {strip}
+		{* Note:  Each subject link is meant to be a search for that specifc subject phrase, which
+		 is why the phrases are quoted.  The quoting is meant to trigger the Subject Proper
+		 search specification to be used, which is meant to match against search phrases
+		 without stemming, synonym or stop-word processing in the solr field.
+		 *}
+
 	{$recordDriver->getSubjects()}
 	{* Loads & assigned the template variables *}
 

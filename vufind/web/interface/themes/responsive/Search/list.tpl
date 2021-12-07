@@ -1,4 +1,17 @@
 <div id="searchInfo">
+
+    {if $searchType == 'advanced'}
+			<div id="advanced-search" class="well well-sm">
+{*				<h5>Advanced Search Query : </h5>*}
+				<code id="advanced-search-display-query">{$lookfor|escape:"html"}</code>
+				<br>
+				<div class="help-block">
+				<a href="/Search/Advanced">{translate text='Edit This Advanced Search'}</a>
+				</div>
+			</div>
+    {/if}
+
+
 	{* Recommendations *}
 	{if $topRecommendations}
 		{foreach from=$topRecommendations item="recommendations"}
@@ -33,26 +46,8 @@
 			</div>
 		{/if}
 
-		{if $solrSearchDebug}
-			<div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">Show Search Options</div>
-			<div id="solrSearchOptions" style="display:none">
-				<pre>Search options: {$solrSearchDebug}</pre>
-			</div>
-		{/if}
-
-		{if $solrLinkDebug}
-			<div id='solrLinkToggle' onclick='$("#solrLink").toggle()'>Show Solr Link</div>
-			<div id='solrLink' style='display:none'>
-				<pre>{$solrLinkDebug}</pre>
-			</div>
-		{/if}
-
-		{if $debugTiming}
-			<div id='solrTimingToggle' onclick='$("#solrTiming").toggle()'>Show Solr Timing</div>
-			<div id='solrTiming' style='display:none'>
-				<pre>{$debugTiming}</pre>
-			</div>
-		{/if}
+		{* Search Debugging *}
+		{include file="Search/search-debug.tpl"}
 
 		{* User's viewing mode toggle switch *}
 		{include file="Search/results-displayMode-toggle.tpl"}
@@ -83,7 +78,7 @@
 
 	{if $showProspectorLink}
 		{* Prospector Results *}
-		<div id='prospectorSearchResultsPlaceholder'></div>
+		<div id="prospectorSearchResultsPlaceholder"></div>
 		{* javascript call for content at bottom of page*}
 	{elseif !empty($interLibraryLoanName) && !empty($interLibraryLoanUrl)}
 		{include file="Search/interLibraryLoanSearch.tpl"}
@@ -91,15 +86,11 @@
 
 	{if $showDplaLink}
 		{* DPLA Results *}
-		<div id='dplaSearchResultsPlaceholder'></div>
+		<div id="dplaSearchResultsPlaceholder"></div>
 	{/if}
 
-	{if $enableMaterialsRequest}
-		<h2>Didn't find it?</h2>
-		<p>Can't find what you are looking for? <a href="/MaterialsRequest/NewRequest?lookfor={$lookfor}&basicType={$searchIndex}" onclick="return Pika.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase'}</a>.</p>
-	{elseif $externalMaterialsRequestUrl}
-		<h2>Didn't find it?</h2>
-		<p>Can't find what you are looking for? <a href="{$externalMaterialsRequestUrl}">{translate text='Suggest a purchase'}</a>.</p>
+	{if $enableMaterialsRequest || $externalMaterialsRequestUrl}
+		{include file="MaterialsRequest/solicit-new-materials-request.tpl"}
 	{/if}
 
 	{include file="Search/searchTools.tpl" showAdminTools=true}

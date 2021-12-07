@@ -26,6 +26,7 @@
 require_once ROOT_DIR . '/AJAXHandler.php';
 //require_once ROOT_DIR . '/services/AJAX/Captcha_AJAX.php';
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
+require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 
 class GroupedWork_AJAX extends AJAXHandler {
@@ -52,7 +53,9 @@ class GroupedWork_AJAX extends AJAXHandler {
 		'getEmailForm',
 		'sendEmail',
 		'saveToList',
+		'saveSeriesToList',
 		'getSaveToListForm',
+		'getSaveSeriesToListForm',
 		'sendSMS',
 		'markNotInterested',
 		'clearNotInterested',
@@ -63,6 +66,14 @@ class GroupedWork_AJAX extends AJAXHandler {
 		'getNovelistData',
 		'reloadCover',
 		'reloadIslandora',
+		'getSeriesEmailForm',
+		'sendSeriesEmail',
+		'getCreateSeriesForm',
+		'createSeriesList',
+	);
+
+	protected array $methodsThatRespondThemselves = array(
+		'exportSeriesToExcel',
 	);
 
 
@@ -201,21 +212,31 @@ class GroupedWork_AJAX extends AJAXHandler {
 		}
 		$memoryWatcher->logMemory('Loaded Similar series from Novelist');
 
+		if (!empty($enrichmentData['novelist']->primaryISBN)){
+			// Populate primary novelist isbn in grouped work staff view (This enrichment call may be the first time it is fetched)
+			$enrichmentResult['novelistPrimaryISBN'] = $enrichmentData['novelist']->primaryISBN;
+		}
+
 		//Load Similar titles (from Solr)
 		$class = $configArray['Index']['engine'];
 		$url   = $configArray['Index']['url'];
 		/** @var Solr $db */
-		$db = new $class($url);
-		$db->disableScoping();
+		$db      = new $class($url);
 		$similar = $db->getMoreLikeThis2($id);
 		$memoryWatcher->logMemory('Loaded More Like This data from Solr');
-		// Send the similar items to the template; if there is only one, we need
-		// to force it to be an array or things will not display correctly.
-		if (!empty($similar['response']['docs'])){
+		if (is_array($similar) && !empty($similar['response']['docs'])){
 			$similarTitles = [];
 			foreach ($similar['response']['docs'] as $key => $similarTitle){
 				$similarTitleDriver = new GroupedWorkDriver($similarTitle);
-				$similarTitles[]    = $similarTitleDriver->getScrollerTitle($key, 'MoreLikeThis');
+				$record = [
+					'id'             => $similarTitleDriver->getPermanentId(),
+					'mediumCover'    => $similarTitleDriver->getBookcoverUrl('medium'),
+					'title'          => $similarTitleDriver->getTitle(),
+					'author'         => $similarTitleDriver->getPrimaryAuthor(),
+					'fullRecordLink' => $similarTitleDriver->getLinkUrl()
+				];
+
+				$similarTitles[]    = $this->getScrollerTitle($record, $key, 'MoreLikeThis');
 			}
 			$similarTitlesInfo                 = ['titles' => $similarTitles, 'currentIndex' => 0];
 			$enrichmentResult['similarTitles'] = $similarTitlesInfo;
@@ -244,10 +265,15 @@ class GroupedWork_AJAX extends AJAXHandler {
 		return $enrichmentResult;
 	}
 
-	function getScrollerTitle($record, $index, $scrollerName){
-		$cover = $record['mediumCover'];
+	/**
+	 * @param $record array
+	 * @param $titleIndexNumber
+	 * @param $scrollerName string
+	 * @return array
+	 */
+	function getScrollerTitle($record, $titleIndexNumber, $scrollerName){
 		$title = preg_replace("/\\s*(\\/|:)\\s*$/", "", $record['title']);
-		if (isset($record['series']) && $record['series'] != null){
+		if (!empty($record['series'])){
 			if (is_array($record['series'])){
 				foreach ($record['series'] as $series){
 					if (strcasecmp($series, 'none') !== 0){
@@ -259,58 +285,30 @@ class GroupedWork_AJAX extends AJAXHandler {
 			}else{
 				$series = $record['series'];
 			}
-			if (isset($series)){
-				$title .= ' (' . $series;
-				if (isset($record['volume'])){
-					$title .= ' Volume ' . $record['volume'];
-				}
-				$title .= ')';
+			if (!empty($series)){
+				$title .= ' (' . $series . (isset($record['volume']) ? ' Volume ' . $record['volume'] : '') . ')';
 			}
 		}
-
-		if (isset($record['id'])){
-			global $interface;
-			$interface->assign('index', $index);
-			$interface->assign('scrollerName', $scrollerName);
-			$interface->assign('id', $record['id']);
-			$interface->assign('title', $title);
-			$interface->assign('linkUrl', $record['fullRecordLink']);
-			$interface->assign('bookCoverUrl', $record['mediumCover']);
-			$interface->assign('bookCoverUrlMedium', $record['mediumCover']);
-			$formattedTitle = $interface->fetch('RecordDrivers/GroupedWork/scroller-title.tpl');
-		}else{
-			$originalId     = $_REQUEST['id'];
-			$formattedTitle = "<div id=\"scrollerTitle{$scrollerName}{$index}\" class=\"scrollerTitle\" onclick=\"return Pika.showElementInPopup('$title', '#noResults{$index}')\">" .
-				"<img src=\"{$cover}\" class=\"scrollerTitleCover\" alt=\"{$title} Cover\"/>" .
-				"</div>";
-			$formattedTitle .= "<div id=\"noResults{$index}\" style=\"display:none\">
-					<div class=\"row\">
-						<div class=\"result-label col-md-3\">Author: </div>
-						<div class=\"col-md-9 result-value notranslate\">
-							<a href='/Author/Home?author=\"{$record['author']}\"'>{$record['author']}</a>
-						</div>
-					</div>
-					<div class=\"series row\">
-						<div class=\"result-label col-md-3\">Series: </div>
-						<div class=\"col-md-9 result-value\">
-							<a href=\"/GroupedWork/{$originalId}/Series\">{$series}</a>
-						</div>
-					</div>
-					<div class=\"row related-manifestation\">
-						<div class=\"col-sm-12\">
-							The library does not own any copies of this title.
-						</div>
-					</div>
-				</div>";
+		global $interface;
+		if (!isset($record['id'])){
+			$interface->assign('noResultOriginalId',  $_REQUEST['id']);
+			$interface->assign('series',  $series);
 		}
+		$interface->assign('index', $titleIndexNumber);
+		$interface->assign('scrollerName', $scrollerName);
+		$interface->assign('id', $record['id'] ?? null);
+		$interface->assign('title', $title);
+		$interface->assign('author', $record['author']);
+		$interface->assign('linkUrl', $record['fullRecordLink'] ?? null);
+		$interface->assign('bookCoverUrlMedium', $record['mediumCover']);
 
-		return array(
-			'id'             => isset($record['id']) ? $record['id'] : '',
-			'image'          => $cover,
+		return [
+			'id'             => $record['id'] ?? '',
+			'image'          => $record['mediumCover'],
 			'title'          => $title,
-			'author'         => isset($record['author']) ? $record['author'] : '',
-			'formattedTitle' => $formattedTitle,
-		);
+			'author'         => $record['author'] ?? '',
+			'formattedTitle' => $interface->fetch('RecordDrivers/GroupedWork/scroller-title.tpl')
+		];
 	}
 
 	function getGoDeeperData(){
@@ -660,6 +658,27 @@ class GroupedWork_AJAX extends AJAXHandler {
 		];
 	}
 
+	function getSeriesEmailForm(){
+		$id     =$_REQUEST['id'];
+		$recordDriver = new GroupedWorkDriver($id);
+		global $interface;
+		$interface->assign('id', $id);
+		if(UserAccount::isLoggedIn()){
+			$user = UserAccount::getActiveUserObj();
+			if (!empty($user->email)){
+				$interface->assign('from', $user->email);
+			}
+		}else{
+			$captchaCode = recaptchaGetQuestion();
+			$interface->assign('captcha', $captchaCode);
+		}
+		return [
+			'title'         => 'Share via E-mail',
+			'modalBody'     => $interface->fetch("GroupedWork/email-series.tpl"),
+			'modalButtons'  => "<button class='tool btn btn-primary' onclick='$(\"#emailForm\").submit()'>Send E-mail</button>"
+		];
+	}
+
 	function sendEmail(){
 		global $interface;
 		global $configArray;
@@ -692,6 +711,69 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 				$subject = translate('Library Catalog Record') . ': ' . $recordDriver->getTitle();
 				$body    = $interface->fetch('Emails/grouped-work-email.tpl');
+
+				require_once ROOT_DIR . '/sys/Mailer.php';
+				$mail        = new VuFindMailer();
+				$emailResult = $mail->send($to, $configArray['Site']['email'], $subject, $body, $from);
+
+				if ($emailResult === true){
+					$result = [
+						'result'  => true,
+						'message' => 'Your e-mail was sent successfully.',
+					];
+				}elseif (PEAR_Singleton::isError($emailResult)){
+					$result = [
+						'result'  => false,
+						'message' => "Your e-mail message could not be sent: {$emailResult}.",
+					];
+				}else{
+					$result = [
+						'result'  => false,
+						'message' => 'Your e-mail message could not be sent due to an unknown error.',
+					];
+					global $logger;
+					$logger->log("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body", PEAR_LOG_ERR);
+				}
+			}else{
+				$result = [
+					'result'  => false,
+					'message' => 'Sorry, we can&apos;t send e-mails with html or other data in it.',
+				];
+			}
+		}else{ // logged in check, or captcha check
+			$result = [
+				'result'  => false,
+				'message' => 'Not logged in or invalid captcha response',
+			];
+		}
+		return $result;
+	}
+
+	function sendSeriesEmail(){
+		global $interface;
+		global $configArray;
+		$recaptchaValid = recaptchaCheckAnswer();
+		if (UserAccount::isLoggedIn() || $recaptchaValid){
+			$message = $_REQUEST['message'];
+			if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
+				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+				$id           = $_REQUEST['id'];
+				$recordDriver = new GroupedWorkDriver($id);
+				$to           = strip_tags($_REQUEST['to']);
+				$from         = strip_tags($_REQUEST['from']);
+				$interface->assign('from', $from);
+				$interface->assign('message', $message);
+				$interface->assign('recordDriver', $recordDriver);
+				$interface->assign('url', $recordDriver->getAbsoluteUrl());
+				require_once ROOT_DIR . '/sys/Novelist/Novelist3.php';
+				$novelist   = NovelistFactory::getNovelist();
+				$seriesInfo = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
+				$seriesData = $seriesInfo ->seriesTitles ?? [];
+				$seriesTitle = $seriesInfo->seriesTitle ?? null;
+				$interface->assign('seriesTitle', $seriesTitle);
+				$interface->assign('seriesData', $seriesData);
+				$subject = translate('Library Catalog Series') . ': ' . $seriesTitle;
+				$body    = $interface->fetch('Emails/series-email.tpl');
 
 				require_once ROOT_DIR . '/sys/Mailer.php';
 				$mail        = new VuFindMailer();
@@ -794,6 +876,84 @@ class GroupedWork_AJAX extends AJAXHandler {
 		return $result;
 	}
 
+	function saveSeriesToList(){
+		$result = array();
+
+		if (!UserAccount::isLoggedIn()){
+			$result['success'] = false;
+			$result['message'] = 'Please log in before adding a title to list.';
+		}else{
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+			require_once ROOT_DIR . '/sys/Novelist/Novelist3.php';
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$result['success'] = true;
+			$id                = $_REQUEST['id'];
+			$listId            = $_REQUEST['listId'];
+			$notes             = null;
+
+			//Check to see if we need to create a list
+			$userList = new UserList();
+			$listOk   = true;
+			if (empty($listId)){
+				$userList->title       = "My Favorites";
+				$userList->user_id     = UserAccount::getActiveUserId();
+				$userList->public      = 0;
+				$userList->description = '';
+				$userList->insert();
+				$listId = $userList->id;
+			}else{
+				$userList->id = $listId;
+				if (!$userList->find(true)){
+					$result['success'] = false;
+					$result['message'] = 'Sorry, we could not find that list in the system.';
+					$listOk            = false;
+				}
+			}
+
+			if ($listOk){
+				$recordDriver = new GroupedWorkDriver($id);
+				$novelist = NovelistFactory::getNovelist();
+				$seriesInfo = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
+				$seriesTitle = $seriesInfo->seriesTitle;
+				$seriesTitles = $seriesInfo->seriesTitles;
+				$i = 0;
+				foreach($seriesTitles as $title){
+					$userListEntry         = new UserListEntry();
+					$userListEntry->listId = $userList->id;
+					$itemId = $title['id'];
+					require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+					if (!GroupedWork::validGroupedWorkId($itemId)){
+						$result['success'] = false;
+						$result['message'] = 'Sorry, that is not a valid entry for the list.';
+					}else{
+						$userListEntry->groupedWorkPermanentId = $itemId;
+
+						$existingEntry = false;
+						if ($userListEntry->find(true)){
+							$existingEntry = true;
+						}
+						$notes = $seriesTitle . " volume " . $title['volume'];
+						$userListEntry->notes     = strip_tags($notes);
+						$userListEntry->dateAdded = time();
+						if ($existingEntry){
+							$userListEntry->update();
+						}else{
+							$userListEntry->insert();
+						}
+						$i++;
+					}
+				}
+				$result['success'] = true;
+				$result['message'] = 'Added ' . $i . ' titles to your list successfully.';
+				$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/MyList/' . $userList->id . '" role="button">View My list</a>';
+			}
+
+		}
+
+		return $result;
+	}
+
 	function getSaveToListForm(){
 		global $interface;
 
@@ -855,6 +1015,193 @@ class GroupedWork_AJAX extends AJAXHandler {
 		];
 		return $results;
 	}
+function getCreateSeriesForm(){
+	global $interface;
+	require_once ROOT_DIR . '/sys/Novelist/Novelist3.php';
+	require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+
+	if (isset($_REQUEST['id'])){
+		$id = $_REQUEST['id'];
+		$interface->assign('groupedWorkId', $id);
+	}else{
+		$id = '';
+	}
+	$recordDriver = new GroupedWorkDriver($id);
+	$interface->assign('id', $id);
+	$novelist = NovelistFactory::getNovelist();
+	$seriesInfo = $novelist->getSeriesTitles($id, $recordDriver->getPrimaryIsbn());
+	$seriesTitle = $seriesInfo->seriesTitle??null;
+	if($seriesTitle !=null ){
+		$interface->assign('listTitle', $seriesTitle);
+	}
+
+	return array(
+		'title'        => 'Create new List',
+		'modalBody'    => $interface->fetch("GroupedWork/series-list-form.tpl"),
+		'modalButtons' => "<span class='tool btn btn-primary' onclick='return Pika.GroupedWork.createSeriesList(\"{$id}\");'>Create List</span>",
+	);
+}
+
+function createSeriesList(){
+	global $interface;
+	$id = $_REQUEST['groupedWorkId'];
+
+
+	$recordsToAdd = array();
+	$return      = array();
+	if (UserAccount::isLoggedIn()){
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+		require_once ROOT_DIR . '/sys/Novelist/Novelist3.php';
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$recordDriver = new GroupedWorkDriver($id);
+		$interface->assign('id', $id);
+		$novelist = NovelistFactory::getNovelist();
+		$seriesInfo = $novelist->getSeriesTitles($id, $recordDriver->getPrimaryIsbn());
+		$seriesTitles = $seriesInfo->seriesTitles ?? [];
+		$seriesTitle = $seriesInfo->seriesTitle?? null;
+		$user = UserAccount::getLoggedInUser();
+		$title = (isset($_REQUEST['title']) && !is_array($_REQUEST['title'])) ? urldecode($_REQUEST['title']) : '';
+		if (strlen(trim($title)) == 0){
+			$return['success'] = "false";
+			$return['message'] = "You must provide a title for the list";
+		}else{
+			//If the record is not valid, skip the whole thing since the title could be bad too
+			$e = 0;
+			foreach($seriesTitles as $seriesItem){
+				if (!empty($seriesItem['id'])){
+					$recordToAdd = urldecode($seriesItem['id']);
+					require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+					if (!GroupedWork::validGroupedWorkId($recordToAdd)){
+						$return['success'] = false;
+						$e++;
+						$return['message'] = $e . ' item(s) were not valid and could not be added to list';
+					}else{
+						$recordsToAdd[] = $recordToAdd;
+					}
+				}
+			}
+			$list          = new UserList();
+			$list->title   = strip_tags($title);
+			$list->user_id = $user->id;
+			//Check to see if there is already a list with this id
+			$existingList = false;
+			if ($list->find(true)){
+				$existingList = true;
+			}
+			$description = $_REQUEST['desc'] ?? '';
+			if (is_array($description)){
+				$description = reset($description);
+			}
+
+
+			$list->description = strip_tags(urldecode($description));
+			$list->public      = isset($_REQUEST['public']) && $_REQUEST['public'] == 'true';
+			if ($existingList){
+				$list->update();
+			}else{
+				$list->insert();
+			}
+
+			if (count($recordsToAdd) > 0){
+				//Check to see if the user has already added the title to the list.
+				foreach($recordsToAdd as $recordToAdd){
+					$userListEntry                         = new UserListEntry();
+					$userListEntry->listId                 = $list->id;
+					$userListEntry->groupedWorkPermanentId = $recordToAdd;
+					if (!$userListEntry->find(true)){
+						$userListEntry->dateAdded = time();
+						$userListEntry->insert();
+					}
+				}
+			}
+
+			$return['success'] = 'true';
+			$return['newId']   = $list->id;
+			if ($existingList){
+				$return['message'] = "Updated list <em>{$title}</em> successfully";
+			}else{
+				$return['message'] = "Created list <em>{$title}</em> successfully";
+				if($e > 0){$return['message'] .= $e . " records could not be added";}
+			}
+			if (!empty($list->id)){
+				$return['modalButtons'] = '<a class="btn btn-primary" href="/MyAccount/MyList/'. $list->id .'" role="button">View My List</a>';
+			}
+		}
+	}else{
+		$return['success'] = "false";
+		$return['message'] = "You must be logged in to create a list";
+	}
+
+	return $return;
+
+}
+
+function getSaveSeriesToListForm(){
+	global $interface;
+	$id = $_REQUEST['id'];
+	require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+	require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+	require_once ROOT_DIR . '/sys/Novelist/Novelist3.php';
+	require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+	$recordDriver = new GroupedWorkDriver($id);
+	$interface->assign('id', $id);
+
+	$novelist   = NovelistFactory::getNovelist();
+	$seriesInfo = $novelist->getSeriesTitles($id, $recordDriver->getPrimaryIsbn());
+	$seriesTitles = $seriesInfo->seriesTitles ?? [];
+	$seriesTitle = $seriesInfo->seriesTitle ?? null;
+
+
+	//Get a list of all lists for the user
+
+	$nonContainingLists = [];
+	$listsTooLarge      = [];
+
+	$userLists          = new UserList();
+	$userLists->user_id = UserAccount::getActiveUserId();
+	$userLists->deleted = 0;
+	$userLists->orderBy('dateUpdated > unix_timestamp()-300 desc, if(dateUpdated > unix_timestamp()-300 , dateUpdated, 0) desc, title');
+	// Sort lists first by any that have been recently updated (within the last 5 mins)  eg a user is currently build a specific list
+	// second sort factor for multiple lists updated within the last five minutes is the last updated time; other lists come next
+	// finally alphabetical order for lists that haven't been updated recently
+	//This complex sorting allows for a list that has had an entry added to it recently,
+	// to show as the default selected list in the dropdown list of which user lists to add a title to
+	$userLists->find();
+
+	while ($userLists->fetch()){
+		//Check to see if the user has already added the title to the list.
+		if ($userLists->numValidListItems() >= 2000){
+			$listsTooLarge[] = [
+				'id'    => $userLists->id,
+				'title' => $userLists->title,
+			];
+		}
+		$userListEntry                         = new UserListEntry();
+		$userListEntry->listId                 = $userLists->id;
+		$userListEntry->groupedWorkPermanentId = $id;
+		if ($userLists->numValidListItems() < 2000){
+			$nonContainingLists[] = [
+				'id'    => $userLists->id,
+				'title' => $userLists->title,
+			];
+		}
+
+	}
+
+	$interface->assign('nonContainingLists', $nonContainingLists);
+	$interface->assign('largeLists', $listsTooLarge);
+	$interface->assign('seriesTitles', $seriesTitles);
+	$interface->assign('seriesTitle', $seriesTitle);
+
+		$results = [
+			'title'         => 'Add Series to List',
+			'modalBody'     => $interface->fetch("GroupedWork/save-series.tpl"),
+			'modalButtons'  => "<button class='tool btn btn-primary' onclick='Pika.GroupedWork.saveSeriesToList(\"{$id}\");'>Save To List</button>",
+		];
+		return $results;
+}
+
 
 	function sendSMS(){
 		global $configArray;
@@ -1132,5 +1479,86 @@ class GroupedWork_AJAX extends AJAXHandler {
 			'success' => $samePikaCleared,
 			'message' => $cacheMessage,
 		);
+	}
+
+	/**
+	 * @throws Exception
+	 */
+	function exportSeriesToExcel(){
+
+		$id = $_REQUEST['id'];
+		require_once ROOT_DIR . "/sys/Novelist/Novelist3.php";
+		require_once ROOT_DIR . "/RecordDrivers/GroupedWorkDriver.php";
+		$recordDriver = new GroupedWorkDriver($id);
+		$novelist   = NovelistFactory::getNovelist();
+		$seriesInfo = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
+		$seriesTitle = $seriesInfo->seriesTitle;
+		$seriesTitles = $seriesInfo->seriesTitles;
+		$seriesEntries = [];
+		foreach($seriesTitles as $seriesEntry)
+		{
+			$seriesEntries[$seriesEntry['id']] = [
+																							'title' => $seriesEntry['title'],
+																							'author' => $seriesEntry['author'],
+																							'volume' => $seriesEntry['volume'],
+																							'primaryISBN' => $seriesEntry['isbn'],
+																							'groupedWorkId' => $seriesEntry['id']
+																					 ];
+		}
+		$objPHPExcel = new PHPExcel();
+		$objPHPExcel->getProperties()->setCreator("DCL")
+			->setLastModifiedBy("DCL")
+			->setTitle("Office 2007 XLSX Document")
+			->setSubject("Office 2007 XLSX Document")
+			->setDescription("Office 2007 XLSX, generated using PHP.")
+			->setKeywords("office 2007 openxml php")
+			->setCategory("List Items");
+
+		$objPHPExcel->setActiveSheetIndex(0)
+			->setCellValue('A1', $seriesTitle)
+			->setCellValue('A3', 'Title')
+			->setCellValue('B3', 'Author')
+			->setCellValue('C3', 'Volume')
+			->setCellValue('D3', 'ISBN')
+			->setCellValue('E3', 'Grouped Work ID');
+
+
+		$a = 4;
+		foreach ($seriesEntries as $entry) {
+			$objPHPExcel->getActiveSheet()->getStyle('D' . $a)->getNumberFormat()->setFormatCode(PHPExcel_Style_numberFormat::FORMAT_NUMBER);
+			$objPHPExcel->setActiveSheetIndex(0)
+				->setCellValue('A' . $a, $entry['title'])
+				->setCellValue('B' . $a, $entry['author'])
+				->setCellValue('C' . $a, $entry['volume'])
+				->setCellValue('D' . $a, $entry['primaryISBN'])
+				->setCellValue('E' . $a, $entry['groupedWorkId']);
+			$a++;
+
+		}
+
+		$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setAutoSize(true);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setAutoSize(true);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
+
+		// Rename sheet
+		$strip = array("~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "=", "+", "[", "{", "]",
+		               "}", "\\", "|", ";", ":", "\"", "'", "&#8216;", "&#8217;", "&#8220;", "&#8221;", "&#8211;", "&#8212;",
+		               "â€”", "â€“", ",", "<", ".", ">", "/", "?");
+		$excelTitle = trim(str_replace($strip, "", strip_tags($seriesTitle)));
+		$excelTitle = str_replace(" ", "_", $excelTitle );
+		$objPHPExcel->getActiveSheet()->setTitle(substr($excelTitle,0,30));
+
+		// Redirect output to a client's web browser (Excel5)
+		header('Content-Type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment;filename="' . substr($excelTitle,0,27) . '.xls"');
+		header('Cache-Control: max-age=0');
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+
+
+			$objWriter->save('php://output');
+			exit;
+
 	}
 }

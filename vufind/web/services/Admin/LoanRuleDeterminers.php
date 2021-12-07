@@ -18,7 +18,7 @@
  */
 
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/LoanRuleDeterminer.php';
+require_once ROOT_DIR . '/sys/Pika/CirculationSystemDrivers/LoanRuleDeterminer.php';
 
 class LoanRuleDeterminers extends ObjectEditor {
 	function launch(){

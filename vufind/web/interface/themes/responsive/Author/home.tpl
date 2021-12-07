@@ -39,7 +39,10 @@
 		</div>
 		{/if}
 
-		{* User's viewing mode toggle switch *}
+      {* Search Debugging *}
+      {include file="Search/search-debug.tpl"}
+
+      {* User's viewing mode toggle switch *}
 		{include file="Search/results-displayMode-toggle.tpl"}
 
 		<div class="clearer"></div>

@@ -73,8 +73,8 @@ class Search_Results extends Union_Results {
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init($searchSource);
 		$searchObject->setPrimarySearch(true);
-		$timer->logTime("Init Search Object");
-		$memoryWatcher->logMemory("Init Search Object");
+		$timer->logTime('Init Search Object');
+		$memoryWatcher->logMemory('Init Search Object');
 //		$searchObject->viewOptions = $this->viewOptions; // set valid view options for the search object
 
 		// Build RSS Feed for Results (if requested)
@@ -93,12 +93,6 @@ class Search_Results extends Union_Results {
 		// Hide Covers when the user has set that setting on the Search Results Page
 		$this->setShowCovers();
 
-		$displayQuery = $searchObject->displayQuery();
-		$pageTitle = $displayQuery;
-		if (strlen($pageTitle) > 20){
-			$pageTitle = substr($pageTitle, 0, 20) . '...';
-		}
-		$pageTitle .= ' | Search Results';
 		$interface->assign('sortList',   $searchObject->getSortList());
 		$interface->assign('rssLink',    $searchObject->getRSSUrl());
 		$interface->assign('excelLink',  $searchObject->getExcelUrl());
@@ -116,12 +110,14 @@ class Search_Results extends Union_Results {
 		// Some more variables
 		//   Those we can construct AFTER the search is executed, but we need
 		//   no matter whether there were any results
+		$displayQuery = $searchObject->displayQuery();
 		$interface->assign('qtime',               round($searchObject->getQuerySpeed(), 2));
 		$interface->assign('debugTiming',         $searchObject->getDebugTiming());
 		$interface->assign('lookfor',             $displayQuery);
 		$interface->assign('searchType',          $searchObject->getSearchType());
 		// Will assign null for an advanced search
-		$interface->assign('searchIndex',         $searchObject->getSearchIndex());
+		$searchIndex = $searchObject->getSearchIndex();
+		$interface->assign('searchIndex', $searchIndex);
 
 		// We'll need recommendations no matter how many results we found:
 		$interface->assign('topRecommendations',
@@ -138,7 +134,7 @@ class Search_Results extends Union_Results {
 		$interface->assign('showSaved',   true);
 		$interface->assign('savedSearch', $searchObject->isSavedSearch());
 		$interface->assign('searchId',    $searchObject->getSearchId());
-		$currentPage = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+		$currentPage = $_REQUEST['page'] ?? 1;
 		$interface->assign('page', $currentPage);
 
 		//Enable and disable functionality based on library settings
@@ -167,10 +163,10 @@ class Search_Results extends Union_Results {
 
 		// No Results Actions //
 		if ($searchObject->getResultTotal() < 1) {
-			require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
+			require_once ROOT_DIR . '/sys/Search/SearchSuggestions.php';
 			$searchSuggestions = new SearchSuggestions();
-			$commonSearches    = $searchSuggestions->getSpellingSearches($searchObject->displayQuery(), $searchObject->getSearchIndex());
-			$suggestions       = array();
+			$commonSearches    = $searchSuggestions->getSpellingSearches($displayQuery);
+			$suggestions       = [];
 			foreach ($commonSearches as $commonSearch){
 				$suggestions[$commonSearch['phrase']] = '/Search/Results?lookfor=' . urlencode($commonSearch['phrase']);
 			}
@@ -182,16 +178,15 @@ class Search_Results extends Union_Results {
 			$disallowReplacements = isset($_REQUEST['disallowReplacements']) || isset($_REQUEST['replacementTerm']);
 			if (!$disallowReplacements && (!isset($facetSet) || count($facetSet) == 0)){
 				//We can try to find a suggestion, but only if we are not doing a phrase search.
-				if (strpos($searchObject->displayQuery(), '"') === false){
-					require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
+				if (strpos($displayQuery, '"') === false){
 					$searchSuggestions = new SearchSuggestions();
-					$commonSearches    = $searchSuggestions->getCommonSearchesMySql($searchObject->displayQuery(), $searchObject->getSearchIndex());
+					$commonSearches    = $searchSuggestions->getCommonSearchesMySql($displayQuery, $searchIndex);
 
 					//assign here before we start popping stuff off
 					$interface->assign('searchSuggestions', $commonSearches);
 
 					//If the first search in the list is used 10 times more than the next, just show results for that
-					$allSuggestions = $searchSuggestions->getAllSuggestions($searchObject->displayQuery(), $searchObject->getSearchIndex());
+					$allSuggestions = $searchSuggestions->getAllSuggestions($displayQuery, $searchIndex);
 					$numSuggestions = count($allSuggestions);
 					if ($numSuggestions == 1){
 						$firstSearch      = array_pop($allSuggestions);
@@ -228,38 +223,14 @@ class Search_Results extends Union_Results {
 			// Was the empty result set due to an error?
 			$error = $searchObject->getIndexError();
 			if ($error !== false) {
-				// If it's a parse error or the user specified an invalid field, we
-				// should display an appropriate message:
-				if (stristr($error['msg'], 'org.apache.lucene.queryParser.ParseException') || preg_match('/^undefined field/', $error['msg'])) {
-					$interface->assign('parseError', $error['msg']);
-
-					if (preg_match('/^undefined field/', $error['msg'])) {
-						// Setup to try as a possible subtitle search
-						$fieldName = trim(str_replace('undefined field', '', $error['msg'], $replaced)); // strip out the phrase 'undefined field' to get just the fieldname
-						$original = urlencode("$fieldName:");
-						if ($replaced === 1 && !empty($fieldName) && strpos($_SERVER['REQUEST_URI'], $original)) {
-						// ensure only 1 replacement was done, that the fieldname isn't an empty string, and the label is in fact in the Search URL
-							$new = urlencode("$fieldName :"); // include space in between the field name & colon to avoid the parse error
-							$thisUrl = str_replace($original, $new, $_SERVER['REQUEST_URI'], $replaced);
-							if ($replaced === 1) { // ensure only one modification was made
-								header("Location: " . $thisUrl);
-								exit();
-							}
-						}
-					}
-
-					// Unexpected error -- let's treat this as a fatal condition.
-				} else {
-					PEAR_Singleton::raiseError(new PEAR_Error('Unable to process query<br>' .
-                        'Solr Returned: ' . print_r($error, true)));
-				}
+				$this->displaySolrError($error);
 			}
 
 			$timer->logTime('no hits processing');
 
 		}
 		// Exactly One Result for an id search //
-		elseif ($searchObject->getResultTotal() == 1 && (strpos($searchObject->displayQuery(), 'id:') === 0 || $searchObject->getSearchType() == 'id')){
+		elseif ($searchObject->getResultTotal() == 1 && (strpos($displayQuery, 'id:') === 0 || $searchObject->getSearchType() == 'id')){
 			//Redirect to the home page for the record
 			$recordSet = $searchObject->getResultRecordSet();
 			$record = reset($recordSet);
@@ -332,17 +303,14 @@ class Search_Results extends Union_Results {
 		$interface->assign('displayMode', $displayMode); // For user toggle switches
 
 		// Big one - our results //
-		$recordSet = $searchObject->getResultRecordHTML($displayMode);
+		$recordSet = $searchObject->getResultRecordHTML();
 		$interface->assign('recordSet', $recordSet);
 		$timer->logTime('load result records');
 		$memoryWatcher->logMemory('load result records');
 
 		//Setup explore more
-		$showExploreMoreBar = true;
-		if (isset($_REQUEST['page']) && $_REQUEST['page'] > 1){
-			$showExploreMoreBar = false;
-		}
-		$exploreMore = new ExploreMore();
+		$showExploreMoreBar = $currentPage > 1 ? false : true;
+		$exploreMore        = new ExploreMore();
 		$exploreMoreSearchTerm = $exploreMore->getExploreMoreQuery();
 		$interface->assign('exploreMoreSection', 'catalog');
 		$interface->assign('showExploreMoreBar', $showExploreMoreBar);
@@ -351,12 +319,12 @@ class Search_Results extends Union_Results {
 		if ($configArray['Statistics']['enabled'] && isset( $_GET['lookfor']) && !is_array($_GET['lookfor'])) {
 			require_once ROOT_DIR . '/sys/Search/SearchStatNew.php';
 			$searchStat = new SearchStatNew();
-			$searchStat->saveSearch( strip_tags($_GET['lookfor']),  strip_tags($_GET['type'] ?? (isset($_GET['basicType']) ? (is_array($_GET['basicType']) ? reset($_GET['basicType']) : $_GET['basicType']) : 'Keyword')), $searchObject->getResultTotal());
+			$searchStat->saveSearch(strip_tags($_GET['lookfor']), $searchObject->getResultTotal());
 		}
 
 		$interface->assign('sectionLabel', 'Library Catalog');
 		// Done, display the page
-		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $pageTitle, 'Search/results-sidebar.tpl');
+		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $this->setPageTitle($displayQuery), 'Search/results-sidebar.tpl');
 	} // End launch()
 
 }

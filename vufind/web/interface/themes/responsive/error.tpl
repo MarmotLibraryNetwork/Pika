@@ -7,7 +7,24 @@
 	<h4><a href="mailto:{$supportEmail}">{$supportEmail}</a></h4>
 	{/if}
 </div>
-<div id ="debug">
+
+{* Return to Advanced Search Link *}
+{if $searchType == 'advanced'}
+	<h5>
+		<a href="/Search/Advanced">Edit This Advanced Search</a>
+	</h5>
+{/if}
+
+{* Search Debugging *}
+{include file="Search/search-debug.tpl"}
+
+    {if $parseError}
+			<div class="alert alert-danger">
+          {$parseError}
+			</div>
+    {/if}
+
+<div id="debug">
 	{if $debug}
 		<h4>{translate text="Debug Information"}</h4>
 		<p class="errorStmt">{$error->getDebugInfo()}</p>

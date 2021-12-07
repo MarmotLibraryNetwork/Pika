@@ -123,10 +123,10 @@ Pika.OverDrive = (function(){
 			return false;
 		},
 
-		followOverDriveDownloadLink: function(patronId, overDriveId, formatType){
-			var ajaxUrl = "/OverDrive/AJAX?method=getDownloadLink&patronId=" + patronId + "&overDriveId=" + overDriveId + "&formatType=" + formatType;
+		followOverDriveDownloadLink: function(patronId, overDriveId){
+			var ajaxUrl = "/OverDrive/AJAX?method=getDownloadLink&patronId=" + patronId + "&overDriveId=" + overDriveId;
 			$.getJSON(ajaxUrl, function(data){
-					if (data.success){
+				 if (data.success){
 						//Reload the page
 						var win = window.open(data.downloadUrl, '_blank');
 						win.focus();

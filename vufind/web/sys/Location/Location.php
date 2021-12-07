@@ -40,7 +40,6 @@ class Location extends DB_DataObject {
 	public $locationId;        //int(11)
 	public $code;          //varchar(5)
 	public $catalogUrl;
-	public $subLocation;
 	public $displayName;      //varchar(40)
 	public $showDisplayNameInHeader;
 	public $headerText;
@@ -193,7 +192,6 @@ class Location extends DB_DataObject {
 			'locationId'                      => ['property' => 'locationId', 'type' => 'label', 'label' => 'Location Id', 'description' => 'The unique id of the location within the database'],
 			'code'                            => ['property' => 'code', 'type' => 'text', 'label' => 'Code', 'description' => 'The code for use when communicating with the ILS', 'required' => true, 'isIndexingSetting' => true],
 			'catalogUrl'                      => ['property' => 'catalogUrl', 'type' => 'label', 'label' => 'Catalog URL', 'description' => 'The catalog url used for this location'],
-			'subLocation'                     => ['property' => 'subLocation', 'type' => 'text', 'label' => 'Sub Location Code (Koha ILS Only)', 'description' => 'The sub location or collection used to identify this location', 'hideInLists' => true, 'isIndexingSetting' => true],
 			'displayName'                     => ['property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'The full name of the location for display to the user', 'size' => '40'],
 			'showDisplayNameInHeader'         => ['property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false],
 			'libraryId'                       => ['property' => 'libraryId', 'type' => 'enum', 'label' => 'Library', 'values' => $libraryList, 'description' => 'A link to the library which the location belongs to'],
@@ -528,7 +526,6 @@ class Location extends DB_DataObject {
 		if (UserAccount::userHasRoleFromList(['locationManager', 'libraryManager']) && !UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin'])){
 			// restrict permissions for location and library managers, unless they also have higher permissions of library or opac admin
 			unset($structure['code']);
-			unset($structure['subLocation']);
 			$structure['displayName']['type'] = 'label';
 			unset($structure['showDisplayNameInHeader']);
 			unset($structure['displaySection']);
@@ -578,10 +575,7 @@ class Location extends DB_DataObject {
 		$alternateLibraryInList = false;
 
 		//Get the library for the patron's home branch.
-		/** @var Library $librarySingleton */
-		global $librarySingleton;
 		if ($patronProfile){
-//			$homeLibrary = $librarySingleton->getLibraryForLocation($patronProfile->homeLocationId);
 			$homeLibrary = $patronProfile->getHomeLibrary();
 		}
 
@@ -726,9 +720,9 @@ class Location extends DB_DataObject {
 			//Check to see if a branch location has been specified.
 			$locationCode = $this->getBranchLocationCode();
 			if (!empty($locationCode) && $locationCode != 'all'){
-				//Check to see if we can get the active location based off the sublocation
-				$activeLocation              = new Location();
-				$activeLocation->subLocation = $locationCode;
+				//Check to see if we can get the active location based off the location's code
+				$activeLocation       = new Location();
+				$activeLocation->code = $locationCode;
 				if ($activeLocation->find(true)){
 					//Only use the location if we are in the subdomain for the parent library
 					if ($library->libraryId == $activeLocation->libraryId){
@@ -736,19 +730,6 @@ class Location extends DB_DataObject {
 					}else{
 						// If the active location doesn't belong to the library we are browsing at, turn off the active location
 						Location::$activeLocation = null;
-					}
-				}else{
-					//Check to see if we can get the active location based off the location's code
-					$activeLocation       = new Location();
-					$activeLocation->code = $locationCode;
-					if ($activeLocation->find(true)){
-						//Only use the location if we are in the subdomain for the parent library
-						if ($library->libraryId == $activeLocation->libraryId){
-							Location::$activeLocation = clone $activeLocation;
-						}else{
-							// If the active location doesn't belong to the library we are browsing at, turn off the active location
-							Location::$activeLocation = null;
-						}
 					}
 				}
 			}else{
@@ -983,15 +964,6 @@ class Location extends DB_DataObject {
 			return Location::$mainBranchLocation;
 		}
 	*/
-
-	private $sublocationCode = 'unset';
-
-	function getSublocationCode(){
-		if ($this->sublocationCode == 'unset'){
-			$this->sublocationCode = $_GET['sublocation'] ?? $_COOKIE['sublocation'] ?? '';
-		}
-		return $this->sublocationCode;
-	}
 
 	function getLocationsFacetsForLibrary($libraryId){
 		$facets              = [];

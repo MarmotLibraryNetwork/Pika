@@ -80,6 +80,15 @@
 						Please add a getEditLink method to this object
 					{/if}
 				{/if}
+				{if $property.directLink}
+					{if method_exists($subObject, 'getDirectLink')}
+						&nbsp;<a href='{$subObject->getDirectLink()}' title='Direct Link'>
+							<span class="glyphicon glyphicon-link" >&nbsp;</span>
+						</a>
+					{else}
+						Please add a getDirectLink method to this object
+					{/if}
+				{/if}
 				</td>
 			</tr>
 		{foreachelse}

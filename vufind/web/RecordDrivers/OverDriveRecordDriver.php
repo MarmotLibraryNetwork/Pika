@@ -411,6 +411,13 @@ class OverDriveRecordDriver extends RecordInterface {
 		return $this->id;
 	}
 
+	/**
+	 * Generally, the indexing profile source name associated with this Record
+	 * However, OverDrive is the exception in that it has no indexing profile
+	 * and the sourceName is assumed to be overdrive.
+	 *
+	 * @return string
+	 */
 	function getRecordType(){
 		return 'overdrive';
 	}
@@ -1205,14 +1212,14 @@ class OverDriveRecordDriver extends RecordInterface {
 			'creator'             => $this->getAuthor(),
 			'bookEdition'         => $this->getEdition(),
 			'isAccessibleForFree' => true,
-			'image'               => $this->getBookcoverUrl('medium', true),
+			'image'               => $this->getBookcoverUrl('large', true),
 			"offers"              => $linkedDataRecord->getOffers()
 		];
 
 		global $interface;
 		$interface->assign('og_title', $this->getTitle());
 		$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
-		$interface->assign('og_image', $this->getBookcoverUrl('medium', true));
+		$interface->assign('og_image', $this->getBookcoverUrl('large', true));
 		$interface->assign('og_url', $this->getAbsoluteUrl());
 		return $semanticData;
 	}

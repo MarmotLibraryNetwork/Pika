@@ -1053,15 +1053,15 @@ class Archive_AJAX extends AJAXHandler {
 		}
 		$searchObject->addFacet('dateCreated', 'Date Created');
 
-		$searchObject->addFacetOptions(array(
-			'facet.range'                       => array('dateCreated'),
+		$searchObject->addFacetOptions([
+			'facet.range'                       => ['dateCreated'],
 			'f.dateCreated.facet.missing'       => 'true',
 			'f.dateCreated.facet.range.start'   => '1880-01-01T00:00:00Z',
 			'f.dateCreated.facet.range.end'     => 'NOW/YEAR',
 			'f.dateCreated.facet.range.hardend' => 'true',
 			'f.dateCreated.facet.range.gap'     => '+10YEAR',
 			'f.dateCreated.facet.range.other'   => 'all',
-		));
+		]);
 	}
 
 	/**

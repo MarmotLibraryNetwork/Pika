@@ -15,12 +15,14 @@
 		<div class="result-label col-tn-3">Author: </div>
 		<div class="col-tn-9 result-value notranslate">
 			{foreach from=$seriesAuthors item=author}
-				<span class="sidebarValue">{$author} </span>
+				<span class="sidebarValue">{$author} </span><br>
 			{/foreach}
 		</div>
 	</div>
 	{/if}
-
+	<div class="row">
+      {include file='GroupedWork/series-tools.tpl' seriesList=$resourceList}
+	</div>
 	<div class="clearer">&nbsp;</div>
 
 	<div class="result-head">

@@ -63,13 +63,13 @@ class GroupedWorkDriver extends RecordInterface {
 	 * @var    array
 	 * @access protected
 	 */
-	protected $forbiddenSnippetFields = array(
-		'author', /*'author-letter',*/ 'auth_author2', 'title', 'title_short', 'title_full',
+	protected $forbiddenSnippetFields = [
+		'author', 'auth_author2', 'title', 'title_short', 'title_full',
 		'title_auth', 'title_sub', 'title_display', 'spelling', 'id',
 		'fulltext_unstemmed', //TODO: fulltext_unstemmed probably obsolete
 		'spellingShingle', 'collection', 'title_proper',
 		'display_description'
-	);
+	];
 
 	/**
 	 * GroupedWorkDriver constructor.
@@ -439,27 +439,6 @@ class GroupedWorkDriver extends RecordInterface {
 		return 'RecordDrivers/GroupedWork/suggestionEntry.tpl';
 	}
 
-	public function getScrollerTitle($index, $scrollerName){
-		global $interface;
-		$interface->assign('index', $index);
-		$interface->assign('scrollerName', $scrollerName);
-		$interface->assign('id', $this->getPermanentId());
-		$interface->assign('title', $this->getTitle());
-		$interface->assign('linkUrl', $this->getLinkUrl());
-		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
-		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-
-		$interface->assign('recordDriver', $this);
-
-		return array(
-			'id'             => $this->getPermanentId(),
-			'image'          => $this->getBookcoverUrl('medium'),
-			'title'          => $this->getTitle(),
-			'author'         => $this->getPrimaryAuthor(),
-			'formattedTitle' => $interface->fetch('RecordDrivers/GroupedWork/scroller-title.tpl')
-		);
-	}
-
 	/**
 	 * Get an XML RDF representation of the data in this record.
 	 *
@@ -561,6 +540,8 @@ class GroupedWorkDriver extends RecordInterface {
 				$summEdition      = $relatedRecord['edition'];
 				$summLanguage     = $relatedRecord['language'];
 			}else{
+				// Only display these details if it is the same for every related record, otherwise don't populate
+				// (or show the Varies by edition statement)
 				if ($summPublisher != $relatedRecord['publisher']){
 					$summPublisher = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
 				}
@@ -695,6 +676,8 @@ class GroupedWorkDriver extends RecordInterface {
 				$summEdition      = $relatedRecord['edition'];
 				$summLanguage     = $relatedRecord['language'];
 			}else{
+				// Only display these details if it is the same for every related record, otherwise don't populate
+				// (or show the Varies by edition statement)
 				if ($summPublisher != $relatedRecord['publisher']){
 					$summPublisher = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
 				}
@@ -1077,7 +1060,7 @@ class GroupedWorkDriver extends RecordInterface {
 		return $this->archiveLink;
 	}
 
-	static $archiveLinksForWorkIds = array();
+	static $archiveLinksForWorkIds = [];
 
 	/**
 	 * @param string[] $groupedWorkIds
@@ -1088,7 +1071,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$archiveLink = null;
 		if ($library->enableArchive && count($groupedWorkIds) > 0){
 			require_once ROOT_DIR . '/sys/Islandora/IslandoraSamePikaCache.php';
-			$groupedWorkIdsToSearch = array();
+			$groupedWorkIdsToSearch = [];
 			foreach ($groupedWorkIds as $groupedWorkId){
 				//Check for cached links
 				$samePikaCache                         = new IslandoraSamePikaCache();
@@ -1117,7 +1100,7 @@ class GroupedWorkDriver extends RecordInterface {
 				//Clear existing filters so search filters don't apply to this query
 				$searchObject->clearFilters();
 				$searchObject->clearFacets();
-				$searchObject->addFieldsToReturn(array('mods_extension_marmotLocal_externalLink_samePika_link_s'));
+				$searchObject->addFieldsToReturn(['mods_extension_marmotLocal_externalLink_samePika_link_s']);
 
 				$searchObject->setLimit(count($groupedWorkIdsToSearch));
 
@@ -1140,7 +1123,7 @@ class GroupedWorkDriver extends RecordInterface {
 										$numUpdates                 = $samePikaCache->update();
 										if ($numUpdates == 0){
 											global $logger;
-											$logger->log("Did not update same pika cache " . print_r($samePikaCache->_lastError, true), PEAR_LOG_ERR);
+											$logger->log('Did not update same pika cache ' . print_r($samePikaCache->_lastError, true), PEAR_LOG_ERR);
 										}
 									}
 									GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $archiveLink;
@@ -1151,7 +1134,7 @@ class GroupedWorkDriver extends RecordInterface {
 					}
 				}
 			}
-			$timer->logTime("Loaded archive links for work " . count($groupedWorkIds) . " works");
+			$timer->logTime('Loaded archive links for work ' . count($groupedWorkIds) . ' works');
 
 			$searchObject = null;
 			unset($searchObject);
@@ -1387,17 +1370,17 @@ class GroupedWorkDriver extends RecordInterface {
 				$activePTypes[$library->defaultPType] = $library->defaultPType;
 			}
 			[$scopingInfo, $validRecordIds, $validItemIds] = $this->loadScopingDetails($solrScope);
-			$timer->logTime("Loaded Scoping Details from the index");
-			$memoryWatcher->logMemory("Loaded scoping details from the index");
+			$timer->logTime('Loaded Scoping Details from the index');
+			$memoryWatcher->logMemory('Loaded scoping details from the index');
 
 			$recordsFromIndex = $this->loadRecordDetailsFromIndex($validRecordIds);
-			$timer->logTime("Loaded Record Details from the index");
-			$memoryWatcher->logMemory("Loaded Record Details from the index");
+			$timer->logTime('Loaded Record Details from the index');
+			$memoryWatcher->logMemory('Loaded Record Details from the index');
 
 			//Get a list of related items filtered according to scoping
 			$this->loadItemDetailsFromIndex($validItemIds);
-			$timer->logTime("Loaded Item Details from the index");
-			$memoryWatcher->logMemory("Loaded Item Details from the index");
+			$timer->logTime('Loaded Item Details from the index');
+			$memoryWatcher->logMemory('Loaded Item Details from the index');
 
 			//Load the work from the database so we can use it in each record diver
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
@@ -1407,10 +1390,11 @@ class GroupedWorkDriver extends RecordInterface {
 			//This will be false if the record is old
 			if ($groupedWork->find(true)){
 				//Generate record information based on the information we have in the index
+				/** @var \Pika\BibliographicDrivers\GroupedWork\RecordDetails $recordDetails */
 				foreach ($recordsFromIndex as $recordDetails){
 					$relatedRecord                        = $this->setupRelatedRecordDetails($recordDetails, $groupedWork, $timer, $scopingInfo, $activePTypes, $searchLocation, $library, $forCovers);
 					$relatedRecords[$relatedRecord['id']] = $relatedRecord;
-					$memoryWatcher->logMemory("Setup related record details for " . $relatedRecord['id']);
+					$memoryWatcher->logMemory('Setup related record details for ' . $relatedRecord['id']);
 				}
 			}
 
@@ -1431,10 +1415,10 @@ class GroupedWorkDriver extends RecordInterface {
 	public function getRelatedManifestations(){
 		global $timer;
 		global $memoryWatcher;
-		$timer->logTime("Starting to load related records in getRelatedManifestations");
+		$timer->logTime('Starting to load related records in getRelatedManifestations');
 		$relatedRecords = $this->getRelatedRecords();
-		$timer->logTime("Finished loading related records in getRelatedManifestations");
-		$memoryWatcher->logMemory("Finished loading related records");
+		$timer->logTime('Finished loading related records in getRelatedManifestations');
+		$memoryWatcher->logMemory('Finished loading related records');
 
 		// alter the status ranking array to use for comparison here
 		$statusRankings = [];
@@ -1522,8 +1506,8 @@ class GroupedWorkDriver extends RecordInterface {
 
 
 			if ($curRecord['hasLocalItem']){
-				$relatedManifestations[$curRecord['format']]['localCopies']          += (isset($curRecord['localCopies']) ? $curRecord['localCopies'] : 0);
-				$relatedManifestations[$curRecord['format']]['localAvailableCopies'] += (isset($curRecord['localAvailableCopies']) ? $curRecord['localAvailableCopies'] : 0);
+				$relatedManifestations[$curRecord['format']]['localCopies']          += ($curRecord['localCopies'] ?? 0);
+				$relatedManifestations[$curRecord['format']]['localAvailableCopies'] += ($curRecord['localAvailableCopies'] ?? 0);
 			}
 			if (isset($curRecord['itemSummary'])){
 				$relatedManifestations[$curRecord['format']]['itemSummary'] = $this->mergeItemSummary($relatedManifestations[$curRecord['format']]['itemSummary'], $curRecord['itemSummary']);
@@ -1563,11 +1547,11 @@ class GroupedWorkDriver extends RecordInterface {
 				}
 			}
 		}
-		$timer->logTime("Finished initial processing of related records");
-		$memoryWatcher->logMemory("Finished initial processing of related records");
+		$timer->logTime('Finished initial processing of related records');
+		$memoryWatcher->logMemory('Finished initial processing of related records');
 
 		//Check to see if we have applied a format or format category facet
-		$selectedFormat               = null;
+		$selectedFormats              = null;
 		$selectedFormatCategory       = null;
 		$selectedAvailability         = null;
 		$selectedDetailedAvailability = null;
@@ -1577,7 +1561,7 @@ class GroupedWorkDriver extends RecordInterface {
 				if (preg_match('/^format_category(?:\w*):"?(.+?)"?$/', $filter, $matches)){
 					$selectedFormatCategory = urldecode($matches[1]);
 				}elseif (preg_match('/^format(?:\w*):"?(.+?)"?$/', $filter, $matches)){
-					$selectedFormat = urldecode($matches[1]);
+					$selectedFormats[] = urldecode($matches[1]);
 				}elseif (preg_match('/^econtent_source(?:\w*):"?(.+?)"?$/', $filter, $matches)){
 					$selectedEcontentSource[] = urldecode($matches[1]);
 				}elseif (preg_match('/^availability_toggle(?:\w*):"?(.+?)"?$/', $filter, $matches)){
@@ -1683,27 +1667,80 @@ class GroupedWorkDriver extends RecordInterface {
 			}
 
 			// Set Up Manifestation Display when a format facet is set
-			if ($selectedFormat && stripos($manifestation['format'], $selectedFormat) === false){
-				//Do a secondary check to see if we have a more detailed format in the facet
-				$detailedFormat = mapValue('format_by_detailed_format', $selectedFormat);
-				//Also check the reverse
-				$detailedFormat2 = mapValue('format_by_detailed_format', $manifestation['format']);
-				if ($manifestation['format'] != $detailedFormat && $detailedFormat2 != $selectedFormat){
-					$manifestation['hideByDefault'] = true;
+			$hasSelectedFormatMatches = false;
+			if (!empty($selectedFormats)){
+				foreach ($selectedFormats as $selectedFormat){
+					if (strcasecmp($selectedFormat, $manifestation['format']) == 0){
+						$hasSelectedFormatMatches = true;
+						if (!$manifestation['isEContent']){
+							$manifestation['isSelectedNonEcontentFormat'] = true;
+						}
+						break;
+					} elseif ($selectedFormat != 'Book' && $manifestation['format'] != 'Book') {
+						// Only do this logic when not working with books; to avoid false match on book with ebook
+						if (stripos($manifestation['format'], $selectedFormat) !== false){
+							// For example: when selectedFormat = ebook, will match against "overdrive ebook"
+
+							//TODO: this will cause the following additional matching
+							// when selectedFormat = cd, will match against "audio cd" and "music cd" also
+							// when selectedFormat = audio, will match against "audio cd" and "eaudiobook" also
+							// when selectedFormat = kit, will match against "book club kit" also
+							// when selectedFormat = video, will match against "evideo" also
+							// when selectedFormat = playaway, will match against "playaway view" also
+
+							$hasSelectedFormatMatches = true;
+							if (!$manifestation['isEContent']){
+								//(Should always be econtent, so this is probably unneeded; but just in case
+								$manifestation['isSelectedNonEcontentFormat'] = true;
+							}
+							break;
+						} else{
+							//TODO: I strongly suspect this check is no longer needed for econtent;
+							//It was used at one point to match Audio CD with CD, see PK-1729
+
+							$currentManifestationFormatDetailedFormat = strtolower(mapValue('format_by_detailed_format', $manifestation['format']));
+							if (strcasecmp($selectedFormat, $currentManifestationFormatDetailedFormat) == 0){
+								$hasSelectedFormatMatches = true;
+								if (!$manifestation['isEContent']){
+									$manifestation['isSelectedNonEcontentFormat'] = true;
+								}
+								break;
+							}
+						}
+					}
 				}
-			}
-			if ($selectedFormat && $selectedFormat == "Book" && $manifestation['format'] != "Book"){
-				//Do a secondary check to see if we have a more detailed format in the facet
-				$detailedFormat = mapValue('format_by_detailed_format', $selectedFormat);
-				//Also check the reverse
-				$detailedFormat2 = mapValue('format_by_detailed_format', $manifestation['format']);
-				if ($manifestation['format'] != $detailedFormat && $detailedFormat2 != $selectedFormat){
+				if (!$hasSelectedFormatMatches){
 					$manifestation['hideByDefault'] = true;
 				}
 			}
 
+			// Previous logic just in case I am missing something essential in the above. pascal 10/28/21
+//			if ($selectedFormat && stripos($manifestation['format'], $selectedFormat) === false){
+//				//Do a secondary check to see if we have a more detailed format in the facet
+//				// Map is at sites/default/translation_maps/format_by_detailed_format_map.properties
+//				// This is for situations where the reported format is specific like EPUB_eBook when we care that it is an ebook instead
+//				$selectedFormatDetailedFormat             = mapValue('format_by_detailed_format', $selectedFormat);
+//				$currentManifestationFormatDetailedFormat = mapValue('format_by_detailed_format', $manifestation['format']);
+//				if ($manifestation['format'] != $selectedFormatDetailedFormat && $currentManifestationFormatDetailedFormat != $selectedFormat){
+//					$manifestation['hideByDefault'] = true;
+//				}
+//			}
+//			if ($selectedFormat && $selectedFormat == "Book" && $manifestation['format'] != "Book"){
+//				//Do a secondary check to see if we have a more detailed format in the facet
+//				$selectedFormatDetailedFormat             = mapValue('format_by_detailed_format', $selectedFormat);
+//				$currentManifestationFormatDetailedFormat = mapValue('format_by_detailed_format', $manifestation['format']);
+//				if ($manifestation['format'] != $selectedFormatDetailedFormat && $currentManifestationFormatDetailedFormat != $selectedFormat){
+//					$manifestation['hideByDefault'] = true;
+//				}
+//			}
+
 			// Set Up Manifestation Display when a eContent source facet is set
-			if ($selectedEcontentSource && (!$manifestation['isEContent'] || (!empty($manifestation['eContentSource']) && !in_array($manifestation['eContentSource'], $selectedEcontentSource)))){
+			if ($selectedEcontentSource && (
+				(!$manifestation['isEContent'] && empty($manifestation['isSelectedNonEcontentFormat']))
+				// Hide non-econtent unless it is also a chosen format facet
+					|| (!empty($manifestation['eContentSource']) && !in_array($manifestation['eContentSource'], $selectedEcontentSource))
+				)
+			){
 				$manifestation['hideByDefault'] = true;
 			}
 
@@ -1772,8 +1809,8 @@ class GroupedWorkDriver extends RecordInterface {
 
 			$relatedManifestations[$key] = $manifestation;
 		}
-		$timer->logTime("Finished loading related manifestations");
-		$memoryWatcher->logMemory("Finished loading related manifestations");
+		$timer->logTime('Finished loading related manifestations');
+		$memoryWatcher->logMemory('Finished loading related manifestations');
 
 		return $relatedManifestations;
 	}
@@ -2038,7 +2075,7 @@ class GroupedWorkDriver extends RecordInterface {
 		if (isset($this->fields['series_with_volume'])){
 			$rawSeries = $this->fields['series_with_volume'];
 			if (is_string($rawSeries)){
-				$rawSeries[] = $rawSeries;
+				$rawSeries = [$rawSeries];
 			}
 			foreach ($rawSeries as $seriesInfo){
 				if (strpos($seriesInfo, '|') > 0){
@@ -2150,7 +2187,7 @@ class GroupedWorkDriver extends RecordInterface {
 			// Set the display Name for the review
 			if (!$userReview->displayName){
 				if (strlen(trim($userReview->firstname)) >= 1){
-					$userReview->displayName = substr($userReview->firstname, 0, 1) . '. ' . $userReview->lastname;
+					$userReview->displayName = mb_substr($userReview->firstname, 0, 1) . '. ' . $userReview->lastname;
 				}else{
 					$userReview->displayName = $userReview->lastname;
 				}
@@ -2664,7 +2701,7 @@ class GroupedWorkDriver extends RecordInterface {
 		global $interface;
 		$interface->assign('og_title', $this->getTitle());
 		$interface->assign('og_type', $this->getOGType());
-		$interface->assign('og_image', $this->getBookcoverUrl('medium', true));
+		$interface->assign('og_image', $this->getBookcoverUrl('large', true));
 		$interface->assign('og_url', $this->getAbsoluteUrl());
 
 		//TODO: add audience, award, content
@@ -2689,10 +2726,11 @@ class GroupedWorkDriver extends RecordInterface {
 				$scopingInfoRaw = [$scopingInfoRaw];
 			}
 			foreach ($scopingInfoRaw as $tmpItem){
-				$scopingDetails         = explode('|', $tmpItem);
-				$scopeKey               = $scopingDetails[0] . ':' . ($scopingDetails[1] == 'null' ? '' : $scopingDetails[1]);
-				$scopingInfo[$scopeKey] = $scopingDetails;
-				$validRecordIds[]       = $scopingDetails[0];
+				$scopingDetailsArray         = explode('|', $tmpItem);
+				$scopeDetails = new \Pika\BibliographicDrivers\GroupedWork\ScopeDetails($scopingDetailsArray);
+				$scopeKey               = $scopeDetails->recordFullIdentifier . ':' . $scopeDetails->itemIdentifier;
+				$scopingInfo[$scopeKey] = $scopeDetails;
+				$validRecordIds[]       = $scopeDetails->recordFullIdentifier;
 				$validItemIds[]         = $scopeKey;
 			}
 		}
@@ -2706,7 +2744,7 @@ class GroupedWorkDriver extends RecordInterface {
 	 * @return array
 	 */
 	protected function loadRecordDetailsFromIndex($validRecordIds){
-		$relatedRecordFieldName = "record_details";
+		$relatedRecordFieldName = 'record_details';
 		$recordsFromIndex       = [];
 		if (isset($this->fields[$relatedRecordFieldName])){
 			$relatedRecordIdsRaw = $this->fields[$relatedRecordFieldName];
@@ -2714,10 +2752,11 @@ class GroupedWorkDriver extends RecordInterface {
 				$relatedRecordIdsRaw = [$relatedRecordIdsRaw];
 			}
 			foreach ($relatedRecordIdsRaw as $tmpItem){
-				$recordDetails = explode('|', $tmpItem);
+				$recordDetailsArray = explode('|', $tmpItem);
+				$recordDetails = new \Pika\BibliographicDrivers\GroupedWork\RecordDetails($recordDetailsArray);
 				//Check to see if the record is valid
-				if (in_array($recordDetails[0], $validRecordIds)){
-					$recordsFromIndex[$recordDetails[0]] = $recordDetails;
+				if (in_array($recordDetails->recordFullIdentifier, $validRecordIds)){
+					$recordsFromIndex[$recordDetails->recordFullIdentifier] = $recordDetails;
 				}
 			}
 		}
@@ -2726,39 +2765,35 @@ class GroupedWorkDriver extends RecordInterface {
 
 	/**
 	 * @param array $validItemIdsForScope Array of items filtered by scope
-	 * @return array
+	 * @return void
 	 */
 	protected function loadItemDetailsFromIndex($validItemIdsForScope){
 		$relatedItemsFieldName = 'item_details';
-		$itemsFromIndex        = [];
 		if (isset($this->fields[$relatedItemsFieldName])){
 			$itemsFromIndexRaw = $this->fields[$relatedItemsFieldName];
 			if (!is_array($itemsFromIndexRaw)){
 				$itemsFromIndexRaw = [$itemsFromIndexRaw];
 			}
-			$onOrderItems = []; // We will consolidate on order items if they are all for the same location (for display)
 
 			foreach ($itemsFromIndexRaw as $tmpItem){
-				$itemDetails    = explode('|', $tmpItem);
-				$itemIdentifier = $itemDetails[0] . ':' . $itemDetails[1];
+				$itemDetailsArray = explode('|', $tmpItem);
+				$recordIdForItem  = $itemDetailsArray[0];
+				$itemIdentifier   = $recordIdForItem . ':' . $itemDetailsArray[1];
 				if (in_array($itemIdentifier, $validItemIdsForScope)){
-					$itemsFromIndex[] = $itemDetails;
-					if (!array_key_exists($itemDetails[0], $this->relatedItemsByRecordId)){
-						$this->relatedItemsByRecordId[$itemDetails[0]] = [];
+					$itemDetails = new \Pika\BibliographicDrivers\GroupedWork\ItemDetails($itemDetailsArray);
+					if (!array_key_exists($recordIdForItem, $this->relatedItemsByRecordId)){
+						$this->relatedItemsByRecordId[$recordIdForItem] = [];
 					}
-					$this->relatedItemsByRecordId[$itemDetails[0]][] = $itemDetails;
+					$this->relatedItemsByRecordId[$recordIdForItem][] = $itemDetails;
 				}
 			}
 		}
-		return $itemsFromIndex;
 	}
 
-	const SIERRA_PTYPE_WILDCARDS = array('999', '9999');
-	static $SIERRA_PTYPE_WILDCARDS = array('999', '9999');
-	//TODO: switch to const when php version is >= 5.6
+	const SIERRA_PTYPE_WILDCARDS = ['999', '9999'];
 
 	/**
-	 * @param array $recordDetails
+	 * @param \Pika\BibliographicDrivers\GroupedWork\RecordDetails $recordDetails
 	 * @param GroupedWork $groupedWork
 	 * @param Timer $timer
 	 * @param array $scopingInfo
@@ -2773,28 +2808,28 @@ class GroupedWorkDriver extends RecordInterface {
 		//Check to see if we have any volume data for the record
 		global $memoryWatcher;
 
-		//		list($source) = explode(':', $recordDetails[0], 1); // this does not work for 'overdrive:27770ba9-9e68-410c-902b-de2de8e2b7fe', returns 'overdrive:27770ba9-9e68-410c-902b-de2de8e2b7fe'
+		//		list($source) = explode(':', $recordDetails->recordFullIdentifier, 1); // this does not work for 'overdrive:27770ba9-9e68-410c-902b-de2de8e2b7fe', returns 'overdrive:27770ba9-9e68-410c-902b-de2de8e2b7fe'
 		// when loading book covers.
-		[$source] = explode(':', $recordDetails[0], 2);
+		[$source] = explode(':', $recordDetails->recordFullIdentifier, 2);
 		require_once ROOT_DIR . '/RecordDrivers/Factory.php';
-		$recordDriver = RecordDriverFactory::initRecordDriverById($recordDetails[0], $groupedWork);
-		$timer->logTime("Loaded Record Driver for $recordDetails[0]");
-		$memoryWatcher->logMemory("Loaded Record Driver for $recordDetails[0]");
+		$recordDriver = RecordDriverFactory::initRecordDriverById($recordDetails->recordFullIdentifier, $groupedWork);
+		$timer->logTime("Loaded Record Driver for $recordDetails->recordFullIdentifier");
+		$memoryWatcher->logMemory("Loaded Record Driver for $recordDetails->recordFullIdentifier");
 
 //		$volumeData = $recordDriver->getVolumeInfoForRecord();
 
 		//Setup the base record
 		$relatedRecord = [
-			'id'                     => $recordDetails[0],
+			'id'                     => $recordDetails->recordFullIdentifier,
 			'driver'                 => $recordDriver,
 			'url'                    => $recordDriver != null ? $recordDriver->getRecordUrl() : '',
-			'format'                 => $recordDetails[1],
-			'formatCategory'         => $recordDetails[2],
-			'edition'                => $recordDetails[3],
-			'language'               => $recordDetails[4],
-			'publisher'              => $recordDetails[5],
-			'publicationDate'        => $recordDetails[6],
-			'physical'               => $recordDetails[7],
+			'format'                 => $recordDetails->primaryFormat,
+			'formatCategory'         => $recordDetails->primaryFormatCategory,
+			'edition'                => $recordDetails->edition,
+			'language'               => $recordDetails->primaryLanguage,//TODO :might be obsolete now
+			'publisher'              => $recordDetails->publisher,
+			'publicationDate'        => $recordDetails->publicationDate,
+			'physical'               => $recordDetails->physicalDescription,
 			'callNumber'             => '',
 			'available'              => false,
 			'availableOnline'        => false,
@@ -2820,12 +2855,12 @@ class GroupedWorkDriver extends RecordInterface {
 			'groupedStatus'          => 'Currently Unavailable',
 			'source'                 => $source,
 			'actions'                => [],
-			'schemaDotOrgType'       => $this->getSchemaOrgType($recordDetails[1]),
-			'schemaDotOrgBookFormat' => $this->getSchemaOrgBookFormat($recordDetails[1]),
-			'abridged'               => !empty($recordDetails[8]),
+			'schemaDotOrgType'       => $this->getSchemaOrgType($recordDetails->primaryFormat),
+			'schemaDotOrgBookFormat' => $this->getSchemaOrgBookFormat($recordDetails->primaryFormat),
+			'abridged'               => $recordDetails->abridged,
 		];
-		$timer->logTime("Setup base related record");
-		$memoryWatcher->logMemory("Setup base related record");
+		$timer->logTime('Setup base related record');
+		$memoryWatcher->logMemory('Setup base related record');
 
 		//Process the items for the record and add additional information as needed
 		$localShelfLocation   = null;
@@ -2839,9 +2874,10 @@ class GroupedWorkDriver extends RecordInterface {
 
 		$i                 = 0;
 		$allLibraryUseOnly = true;
-		foreach ($this->relatedItemsByRecordId[$recordDetails[0]] as $curItem){
-			$itemId        = $curItem[1] == 'null' ? '' : $curItem[1];
-			$shelfLocation = $curItem[2];
+		/** @var \Pika\BibliographicDrivers\GroupedWork\ItemDetails $curItem */
+		foreach ($this->relatedItemsByRecordId[$recordDetails->recordFullIdentifier] as $curItem){
+			$itemId        = $curItem->itemIdentifier;
+			$shelfLocation = $curItem->shelfLocation;
 
 			if (!$forCovers){
 				if (!empty($itemId) && $recordDriver != null && $recordDriver->hasOpacFieldMessage()){
@@ -2855,26 +2891,26 @@ class GroupedWorkDriver extends RecordInterface {
 				}
 			}
 
-			$scopeKey     = $curItem[0] . ':' . $itemId;
-			$callNumber   = $curItem[3];
-			$numCopies    = (int)$curItem[6];
-			$isOrderItem  = $curItem[7] == 'true';
-			$isEcontent   = $curItem[8] == 'true';
-			$locationCode = isset($curItem[15]) ? $curItem[15] : '';
-			$subLocation  = isset($curItem[16]) ? $curItem[16] : '';
+			$scopeKey     = $curItem->recordIdentifier . ':' . $itemId;
+			$callNumber   = $curItem->callNumber;
+			$numCopies    = $curItem->numCopies;
+			$isOrderItem  = $curItem->isOrderItem;
+			$isEcontent   = $curItem->isEContent;
+			$locationCode = $curItem->locationCode;
 
+			/** @var \Pika\BibliographicDrivers\GroupedWork\ScopeDetails $scopingDetails */
 			$scopingDetails = $scopingInfo[$scopeKey];
 			//Get Scoping information for this record
-			$groupedStatus    = $scopingDetails[2];
-			$locallyOwned     = $scopingDetails[4] == 'true';
-			$available        = $scopingDetails[5] == 'true';
-			$holdable         = $scopingDetails[6] == 'true';
-			$bookable         = $scopingDetails[7] == 'true';
-			$inLibraryUseOnly = $scopingDetails[8] == 'true';
-			$libraryOwned     = $scopingDetails[9] == 'true';
-			$holdablePTypes   = $scopingDetails[10] ?? '';
-			$bookablePTypes   = $scopingDetails[11] ?? '';
-			$status           = $curItem[13];
+			$groupedStatus    = $scopingDetails->groupedStatus;
+			$locallyOwned     = $scopingDetails->locallyOwned;
+			$available        = $scopingDetails->available;
+			$holdable         = $scopingDetails->holdable;
+			$bookable         = $scopingDetails->bookable;
+			$inLibraryUseOnly = $scopingDetails->inLibraryUseOnly;
+			$libraryOwned     = $scopingDetails->libraryOwned;
+			$holdablePTypes   = $scopingDetails->holdablePTypes;
+			$bookablePTypes   = $scopingDetails->bookablePTypes;
+			$status           = $curItem->detailedStatus;
 
 			if (!$available && strtolower($status) == 'library use only'){
 				$status = 'Checked Out (library use only)';
@@ -2913,29 +2949,27 @@ class GroupedWorkDriver extends RecordInterface {
 			//Update the record with information from the item and from scoping.
 			if ($isEcontent){
 				// the scope local url should override the item url if it is set
-				if (strlen($scopingDetails[12]) > 0){
+				if (!empty($scopingDetails->localUrl)){
 					$relatedUrls[] = [
-						'source' => $curItem[9],
-						'file'   => $curItem[10],
-						'url'    => $scopingDetails[12]
+						'source' => $curItem->eContentSource,
+						'url'    => $scopingDetails->localUrl
 					];
 				}else{
 					$relatedUrls[] = [
-						'source' => $curItem[9],
-						'file'   => $curItem[10],
-						'url'    => $curItem[11]
+						'source' => $curItem->eContentSource,
+						'url'    => $curItem->eContentUrl
 					];
 				}
 
-				$relatedRecord['eContentSource'] = $curItem[9];
+				$relatedRecord['eContentSource'] = $curItem->eContentSource;
 				$relatedRecord['isEContent']     = true;
 				if (!$forCovers){
-					$relatedRecord['format'] = $relatedRecord['eContentSource'] . ' ' . $recordDetails[1]; // Break out eContent manifestations by the source of the eContent
+					$relatedRecord['format'] = $relatedRecord['eContentSource'] . ' ' . $recordDetails->primaryFormat; // Break out eContent manifestations by the source of the eContent
 				}
-			}elseif (!empty($curItem[11])){
+			}elseif (!empty($curItem->eContentUrl)){
 				// Special Physical Records, like KitKeeper
 				$relatedUrls[] = [
-					'url' => $curItem[11]
+					'url' => $curItem->eContentUrl
 				];
 			}
 
@@ -2976,7 +3010,7 @@ class GroupedWorkDriver extends RecordInterface {
 //			if (count($volumeData)){
 //				/** @var IlsVolumeInfo $volumeDataPoint */
 //				foreach ($volumeData as $volumeDataPoint){
-//					if ((strlen($volumeDataPoint->relatedItems) == 0) || (strpos($volumeDataPoint->relatedItems, $curItem[1]) !== false)){
+//					if ((strlen($volumeDataPoint->relatedItems) == 0) || (strpos($volumeDataPoint->relatedItems, $curItem->itemIdentifier) !== false)){
 //						if ($holdable){
 //							$volumeDataPoint->holdable = true;
 //						}
@@ -3063,12 +3097,11 @@ class GroupedWorkDriver extends RecordInterface {
 				'sectionId'          => $sectionId,
 				'section'            => $section,
 				'relatedUrls'        => $relatedUrls,
-				'lastCheckinDate'    => isset($curItem[14]) ? $curItem[14] : '',
+				'lastCheckinDate'    => $curItem->lastCheckinDate,
 //				'volume'             => $volumeRecordLabel,
 //				'volumeId'           => $volumeId,
 				'isEContent'         => $isEcontent,
 				'locationCode'       => $locationCode,
-				'subLocation'        => $subLocation,
 				'itemId'             => $itemId
 			];
 			if (!$forCovers){
@@ -3105,15 +3138,15 @@ class GroupedWorkDriver extends RecordInterface {
 			$relatedRecord['callNumber'] = $libraryCallNumber;
 		}
 
-		ksort($relatedRecord['itemDetails']); // ItemDetails is used in the MarcRecord driver to set up displaying the copies section. See MarcReocrd->loadCopies()
+		ksort($relatedRecord['itemDetails']); // ItemDetails is used in the MarcRecord driver to set up displaying the copies section. See MarcRecord->loadCopies()
 		ksort($relatedRecord['itemSummary']);
-		$timer->logTime("Setup record items");
-		$memoryWatcher->logMemory("Setup record items");
+		$timer->logTime('Setup record items');
+		$memoryWatcher->logMemory('Setup record items');
 
 		if (!$forCovers){
-			$relatedRecord['actions'] = $recordDriver != null ? $recordDriver->getRecordActions($relatedRecord['availableLocally'] || $relatedRecord['availableOnline'], $recordHoldable, $recordBookable, $relatedUrls/*, $volumeData*/) : array();
-			$timer->logTime("Loaded actions");
-			$memoryWatcher->logMemory("Loaded actions");
+			$relatedRecord['actions'] = $recordDriver != null ? $recordDriver->getRecordActions($relatedRecord['availableLocally'] || $relatedRecord['availableOnline'], $recordHoldable, $recordBookable, $relatedUrls/*, $volumeData*/) : [];
+			$timer->logTime('Loaded actions');
+			$memoryWatcher->logMemory('Loaded actions');
 		}
 
 		$recordDriver = null;
@@ -3163,6 +3196,7 @@ class GroupedWorkDriver extends RecordInterface {
 				$summEdition      = $relatedRecord['edition'];
 				$summLanguage     = $relatedRecord['language'];
 			}else{
+				// Only display these details if it is the same for every related record, otherwise don't populate
 				if ($summPublisher != $relatedRecord['publisher']){
 					$summPublisher = null;
 				}

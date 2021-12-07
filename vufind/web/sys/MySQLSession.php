@@ -19,7 +19,7 @@
 
 // TODO: Delete me
 require_once 'SessionInterface.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/Session.php';
+require_once ROOT_DIR . '/sys/Session.php';
 
 class MySQLSession extends SessionInterface {
 

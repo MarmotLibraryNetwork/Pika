@@ -82,42 +82,29 @@ class AnodeAPI extends AJAXHandler {
 	 *
 	 * @param string $id             - The initial grouped work
 	 * @return  array
-	 * @var    array $originalResult - The original record we are getting similar titles for.
 	 */
-	function getAnodeRelatedGroupedWorks($id = null, $originalResult = null){
-		global $configArray;
-		if (!isset($id)){
-			$id = $_REQUEST['id'];
-		}
-		if (isset($_GET['branch']) && in_array($_GET['branch'], array("bl", "se"))){
-			$branch = $_GET['branch'];
-		}else{
-			$branch = "catalog";
-		}
+	function getAnodeRelatedGroupedWorks($id = null){
 		//Load Similar titles (from Solr)
-		$class = $configArray['Index']['engine'];
-		$url   = $configArray['Index']['url'];
+		global $configArray;
+		$id     ??= $_REQUEST['id'];
+		$branch = isset($_GET['branch']) && in_array($_GET['branch'], ['bl', 'se']) ? $_GET['branch'] : 'catalog';
+		$class  = $configArray['Index']['engine'];
+		$url    = $configArray['Index']['url'];
 		/** @var Solr $db */
-		$db = new $class($url);
-//		$db->disableScoping();
+		$db      = new $class($url);
 		$similar = $db->getMoreLikeThis2($id);
-		if (isset($similar) && count($similar['response']['docs']) > 0){
-			$similarTitles = array();
-//			$similarTitles['titles'] = array();
-
-			foreach ($similar['response']['docs'] as $key => $similarTitle){
+		if (!empty($similar['response']['docs'])){
+			$similarTitles = [];
+			foreach ($similar['response']['docs'] as $similarTitle){
 				$similarTitles['titles'][] = $similarTitle;
 			}
 		}
-		$result = $this->getAnodeGroupedWorks($similarTitles, $branch);
-//var_dump($similarTitles);
-//var_dump($result);
-		return $result;
+		return $this->getAnodeGroupedWorks($similarTitles, $branch);
 	}
 
 	function getAnodeGroupedWorks($result, $branch){
 		if (!isset($result['titles'])){
-			$result['titles'] = array();
+			$result['titles'] = [];
 		}else{
 			foreach ($result['titles'] as &$groupedWork){
 				$itemAPI           = new ItemAPI();
@@ -183,32 +170,32 @@ class AnodeAPI extends AJAXHandler {
 						$item['availableHere']        = true;
 						$groupedWork['availableHere'] = true;
 					}
-					$groupedWork['items'][] = array(
+					$groupedWork['items'][] = [
 						'01_bibIdentifier'  => $item[0],
 						'02_itemIdentifier' => $item[1],
 						'05_statusGrouped'  => $item[2],
 						'06_status'         => $item[3],
 						'07_availableHere'  => $item['availableHere'],
 						'11_available'      => $item[5],
-					);
+					];
 					foreach ($groupedWorkRecord['item_details'] as $itemDetail){
 						if (strpos($itemDetail, $item[0] . '|' . $item[1]) === 0){
 							$itemDetail                                             = explode('|', $itemDetail);
-							$groupedWork['items'][count($groupedWork['items']) - 1] += array(
+							$groupedWork['items'][count($groupedWork['items']) - 1] += [
 								'08_itemShelfLocation' => $itemDetail[2],
-								'09_itemLocationCode'  => $itemDetail[15],
+								'09_itemLocationCode'  => $itemDetail[14],
 								'10_itemCallNumber'    => $itemDetail[3],
-							);
+							];
 							break;
 						}
 					}
 					foreach ($groupedWorkRecord['record_details'] as $bibRecord){
 						if (strpos($bibRecord, $item[0]) === 0){
 							$bibRecord                                              = explode('|', $bibRecord);
-							$groupedWork['items'][count($groupedWork['items']) - 1] += array(
+							$groupedWork['items'][count($groupedWork['items']) - 1] += [
 								'03_bibFormat'         => $bibRecord[1],
 								'04_bibFormatCategory' => $bibRecord[2],
-							);
+							];
 							break;
 						}
 					}

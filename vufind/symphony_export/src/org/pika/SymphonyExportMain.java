@@ -78,7 +78,7 @@ public class SymphonyExportMain {
 		// The time the last export started
 		long lastExportTime = getLastExtractTime();
 
-		String profileToLoad = "ils";
+		String profileToLoad = "ils"; //TODO look up default account profile instead
 		if (args.length > 1) {
 			profileToLoad = args[1];
 		}

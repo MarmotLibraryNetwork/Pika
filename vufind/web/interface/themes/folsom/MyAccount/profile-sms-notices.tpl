@@ -16,7 +16,7 @@
 					<div class="form-group">
 						<div class="col-xs-4"><label for="smsNotices">{translate text='Receive SMS/Text Messages'}:</label></div>
 						<div class="col-xs-8">
-							{if $edit == true && $canUpdateContactInfo == true}
+							{if !$offline && $canUpdateContactInfo == true}
 								<input type="checkbox" name="smsNotices" id="smsNotices" {if $profile->mobileNumber}checked='checked'{/if} data-switch="">
 								<p class="help-block alert alert-warning">
 									SMS/Text Messages are sent <strong>in addition</strong> to postal mail/e-mail/phone alerts. <strong>Message and data rates may apply.</strong>
@@ -36,7 +36,7 @@
 					<div class="form-group">
 						<div class="col-xs-4"><label for="mobileNumber">{translate text='Mobile Number'}:</label></div>
 						<div class="col-xs-8">
-							{if $edit == true && $canUpdateContactInfo == true}
+							{if !$offlinee && $canUpdateContactInfo == true}
 								<input type="tel" name="mobileNumber" id="mobileNumber" value="{$profile->mobileNumber}" class="form-control">
 							{else}
 								{$profile->mobileNumber}
@@ -44,7 +44,7 @@
 						</div>
 					</div>
 
-					{if !$offline && $edit == true}
+					{if !$offline}
 						<div class="form-group">
 							<div class="col-xs-8 col-xs-offset-4">
 								<input type="submit" value="Update SMS Settings" name="updateContactInfo" class="btn btn-sm btn-primary">

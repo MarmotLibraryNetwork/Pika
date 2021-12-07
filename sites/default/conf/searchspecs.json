@@ -1,7 +1,7 @@
 /*
 # Munge types are string manipulation rules, and consist of:
 #
-# onephrase: eliminate all quotes and do it as a single phrase.
+# onephrase: eliminate all quotes and reformat as a single phrase within quotes.
 #   testing "one two"
 #    ...becomes ("testing one two")
 #
@@ -21,7 +21,11 @@
 # where each alternate phrase has one token missing; (phrases with four or less tokens is the same as onephrase)
 #  single word removal search phrase
 #   ...becomes ("word removal search phrase" OR "single removal search phrase" OR "single word search phrase" OR "single word removal phrase" OR "single word removal search")
-
+#
+# localized_callnumber : the search phrase will be quoted. The following characters " (double quote marks), : (colon),
+# and / (slash) will be replaced with spaces.  The wildcard character (asterisk) will be removed any where
+# it occurs in the phrase
+#
 
 
 # Additional Munge types can be defined in the CustomMunge section.  Each array
@@ -69,6 +73,7 @@
     }
   },
 
+  /* Created for ticket ARL-91 */
   "AuthorProper": {
     "QueryFields": {
       "author_exact": [
@@ -361,7 +366,8 @@
         "author_exact": [
           ["localized_callnumber", 2000]
         ],
-        "author_left": [["localized_callnumber", 1000]
+        "author_left": [
+          ["localized_callnumber", 1000]
         ],
         "author": [
           ["onephrase", 800],
@@ -379,7 +385,7 @@
       "2": {
         "0": ["OR", 300],
         "id": [
-          ["onephrase", null]
+          ["onephrase", 1000]/* Maximize boost for exact id matches so that it is the top result */
         ],
         "alternate_ids": [
           ["onephrase", null]
@@ -545,7 +551,7 @@
     }
   },
 
-  "id": {
+  "id": {/*TODO: searchSpec name conflict with search field id. Does it come into play? */
     "QueryFields": {
       "id": [
         ["onephrase", null],
@@ -558,7 +564,7 @@
     }
   },
 
-  "ids": {
+  "ids": { /*TODO: does this get used? Potentially a conflict with the special Solr field ids */
     "QueryFields": {
       "id": [
         ["or", null]

@@ -45,26 +45,19 @@ abstract class BaseEContentDriver extends MarcRecord {
 	}
 
 	private function createActionsFromUrls($relatedUrls){
-		$actions = array();
+		$actions = [];
 		foreach ($relatedUrls as $urlInfo){
 			//Revert to access online per Karen at CCU.  If people want to switch it back, we can add a per library switch
 			//$title = 'Online ' . $urlInfo['source'];
 			$title     = translate('externalEcontent_url_action');
 			$alt       = 'Available online from ' . $urlInfo['source'];
-			$fileOrUrl = isset($urlInfo['url']) ? $urlInfo['url'] : $urlInfo['file'];
-			if (strlen($fileOrUrl) > 0){
-				if (strlen($fileOrUrl) >= 3){
-					$extension = strtolower(substr($fileOrUrl, strlen($fileOrUrl), 3));
-					if ($extension == 'pdf'){
-						$title = 'Access PDF';
-					}
-				}
-				$actions[] = array(
-					'url'          => $fileOrUrl,
+			if (!empty($urlInfo['url'])){
+				$actions[] = [
+					'url'          => $urlInfo['url'],
 					'title'        => $title,
 					'requireLogin' => false,
 					'alt'          => $alt,
-				);
+				];
 			}
 		}
 

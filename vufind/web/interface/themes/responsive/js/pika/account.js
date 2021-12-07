@@ -658,10 +658,10 @@ Pika.Account = (function(){
 			return false;
 		},
 
-		showCreateListForm: function(id){
+		showCreateListForm: function(id, defaultTitle){
 			Pika.Account.ajaxLogin(function (){
 				var url = "/MyAccount/AJAX",
-						params = {method:"getCreateListForm"};
+						params = {method:"getCreateListForm", defaultTitle:defaultTitle};
 				if (id !== undefined){
 					params.groupedWorkId = id;
 				}

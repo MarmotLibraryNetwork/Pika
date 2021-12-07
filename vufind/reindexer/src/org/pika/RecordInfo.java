@@ -49,8 +49,6 @@ public class RecordInfo {
 	private String          primaryLanguage;
 	private HashSet<String> languages            = new HashSet<>();
 	private HashSet<String> translations         = new HashSet<>();
-	private Long            languageBoost        = 1L;
-	private Long            languageBoostSpanish = 1L;
 
 	private HashSet<ItemInfo> relatedItems = new HashSet<>();
 
@@ -88,7 +86,9 @@ public class RecordInfo {
 	}
 
 	void setEdition(String edition) {
-		this.edition = edition;
+		if (edition != null && !edition.isEmpty()) {
+			this.edition = edition.replaceAll("[\\s.,;]$", "");
+		}
 	}
 
 	void setPrimaryLanguage(String primaryLanguage) {
@@ -96,11 +96,15 @@ public class RecordInfo {
 	}
 
 	void setPublisher(String publisher) {
-		this.publisher = publisher;
+		if (publisher != null && !publisher.isEmpty()) {
+			this.publisher = publisher.replaceAll("[\\s.,;]$", "");
+		}
 	}
 
 	void setPublicationDate(String publicationDate) {
-		this.publicationDate = publicationDate;
+		if (publicationDate != null && !publicationDate.isEmpty()) {
+			this.publicationDate = publicationDate.replaceAll("[\\s.,;]$", "");
+		}
 	}
 
 	void setPhysicalDescription(String physicalDescription) {
@@ -142,11 +146,7 @@ public class RecordInfo {
 			}
 			for (ItemInfo curItem : relatedItems) {
 				if (curItem.getFormat() != null) {
-					if (relatedFormats.containsKey(curItem.getFormat())) {
-						relatedFormats.put(curItem.getFormat(), relatedFormats.get(curItem.getFormat()));
-					} else {
-						relatedFormats.put(curItem.getFormat(), 1);
-					}
+					relatedFormats.put(curItem.getFormat(), relatedFormats.getOrDefault(curItem.getFormat(), 1));
 				}
 			}
 			int    timesUsed      = 0;
@@ -174,11 +174,7 @@ public class RecordInfo {
 		}
 		for (ItemInfo curItem : relatedItems) {
 			if (curItem.getFormatCategory() != null) {
-				if (relatedFormats.containsKey(curItem.getFormatCategory())) {
-					relatedFormats.put(curItem.getFormatCategory(), relatedFormats.get(curItem.getFormatCategory()));
-				} else {
-					relatedFormats.put(curItem.getFormatCategory(), 1);
-				}
+				relatedFormats.put(curItem.getFormatCategory(), relatedFormats.getOrDefault(curItem.getFormatCategory(), 1));
 			}
 		}
 		int    timesUsed      = 0;
@@ -200,8 +196,8 @@ public class RecordInfo {
 		itemInfo.setRecordInfo(this);
 	}
 
-	private HashSet<String> allFormats     = null;
-	private Pattern         nonWordPattern = Pattern.compile("\\W");
+	private       HashSet<String> allFormats     = null;
+	private final Pattern         nonWordPattern = Pattern.compile("\\W");
 
 	HashSet<String> getAllSolrFieldEscapedFormats() {
 		if (allFormats == null) {
@@ -378,26 +374,6 @@ public class RecordInfo {
 
 	public HashSet<String> getTranslations() {
 		return translations;
-	}
-
-	public Long getLanguageBoost() {
-		return languageBoost;
-	}
-
-	public Long getLanguageBoostSpanish() {
-		return languageBoostSpanish;
-	}
-
-	void setLanguageBoost(Long languageBoost) {
-		if (languageBoost > this.languageBoost){
-			this.languageBoost = languageBoost;
-		}
-	}
-
-	void setLanguageBoostSpanish(Long languageBoostSpanish) {
-		if (languageBoostSpanish > this.languageBoostSpanish){
-			this.languageBoostSpanish = languageBoostSpanish;
-		}
 	}
 
 	void setLanguages(HashSet<String> languages) {

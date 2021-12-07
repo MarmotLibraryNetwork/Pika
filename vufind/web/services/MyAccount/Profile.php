@@ -89,9 +89,11 @@ class MyAccount_Profile extends MyAccount
 				$numericOnlyPins      = $configArray['Catalog']['numericOnlyPins'];
 				$alphaNumericOnlyPins = $configArray['Catalog']['alphaNumericOnlyPins'];
 				$pinMinimumLength     = $configArray['Catalog']['pinMinimumLength'];
+				$pinMaximumLength     = $configArray['Catalog']['pinMaximumLength'];
 				$interface->assign('numericOnlyPins', $numericOnlyPins);
 				$interface->assign('alphaNumericOnlyPins', $alphaNumericOnlyPins);
 				$interface->assign('pinMinimumLength', $pinMinimumLength);
+				$interface->assign('pinMaximumLength', $pinMaximumLength);
 			}
 
 			$interface->assign('showUsernameField', $patron->getShowUsernameField());
@@ -148,10 +150,6 @@ class MyAccount_Profile extends MyAccount
 				$actionUrl = $configArray['Site']['path'] . '/MyAccount/Profile' . ( $patronId == $user->id ? '' : '?patronId='.$patronId ); // redirect after form submit completion
 				header("Location: " . $actionUrl);
 				exit();
-			} elseif (!$offlineMode) {
-				$interface->assign('edit', true);
-			} else {
-				$interface->assign('edit', false);
 			}
 
 			$cache             = new Pika\Cache();

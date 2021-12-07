@@ -67,11 +67,59 @@
 		<fieldType name="long" class="solr.LongPointField" positionIncrementGap="0" docValues="true"/>
 		<fieldType name="date" class="solr.DatePointField" docValues="true"/>
 		<fieldType name="text" class="solr.TextField" positionIncrementGap="100">
-			<analyzer>
+			<analyzer type="index">
 				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
 				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
 				-->
 				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
+				<!--
+				This filter discards, or stops analysis of, tokens that are on the given stop words list.
+				A standard stop words list is included in the Solr conf directory, named stopwords.txt,
+				which is appropriate for typical English language text.
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#stop-filter
+				-->
+				<filter class="solr.ICUFoldingFilterFactory"/>
+				<!--
+				This filter is a custom Unicode normalization form that applies the foldings specified in Unicode TR #30: Character Foldings
+				in addition to the NFKC_Casefold normalization form as described in ICU Normalizer 2 Filter.
+				This filter is a better substitute for the combined behavior of the ASCII Folding Filter, Lower Case Filter,
+				and ICU Normalizer 2 Filter.
+
+				To use this filter, you must add additional .jars to Solr’s classpath
+				See solr/contrib/analysis-extras/README.txt for instructions on which jars you need to add.
+
+				From the README.txt: ICU relies upon lucene-libs/lucene-analyzers-icu-X.Y.jar and lib/icu4j-X.Y.jar
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
+				-->
+				<!--<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>-->
+				<!--The CommonGrams Filter is  prevented from going into effect here by the StopFiler above -->
+				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
+				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+			<analyzer type="query">
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+				<!-- Important: Only apply synonym filter to query analyzers; not to index analyzers-->
+				<!-- Do our synonym filtering before word delimiter filters so that we don't create unwanted synonyms
+				 	eg. 'wi-fi' => 'wi', 'fi' => 'wi', 'wisconsin', 'fi'
+				 	See D-4066
+				 -->
+				<!-- https://solr.apache.org/guide/8_7/filter-descriptions.html#synonym-graph-filter
+					If you use this filter during indexing, you must follow it with a Flatten Graph Filter to squash
+					 tokens on top of one another like the Synonym Filter, because the indexer can’t directly consume
+					 a graph. To get fully correct positional queries when your synonym replacements are multiple
+					 tokens, you should instead apply synonyms using this filter at query time.
+
+					Although this filter produces correct token graphs, it cannot consume an input token graph correctly.
+				-->
+				<filter class="solr.FlattenGraphFilterFactory"/> <!-- WordDelimiterGraphFilterFactory cannot consume SynonymGraphFilterFactory graphs -->
 				<filter class="solr.WordDelimiterGraphFilterFactory"
 						generateWordParts="1"
 						generateNumberParts="1"
@@ -130,7 +178,7 @@
 					stemEnglishPossessive
 						(integer, default 1) If 1, strips the possessive 's from each subword.
 				-->
-				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+				<filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
 				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
 				<!--
 				This filter discards, or stops analysis of, tokens that are on the given stop words list.
@@ -140,10 +188,21 @@
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#stop-filter
 				-->
 				<filter class="solr.ICUFoldingFilterFactory"/>
-				<!-- ICU Tokenizer requires additional library to be added in the core's /lib folder to work.
-				  https://lucene.apache.org/solr/guide/7_7/tokenizers.html#tokenizers
-				  -->
-				<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+				<!--
+				This filter is a custom Unicode normalization form that applies the foldings specified in Unicode TR #30: Character Foldings
+				in addition to the NFKC_Casefold normalization form as described in ICU Normalizer 2 Filter.
+				This filter is a better substitute for the combined behavior of the ASCII Folding Filter, Lower Case Filter,
+				and ICU Normalizer 2 Filter.
+
+				To use this filter, you must add additional .jars to Solr’s classpath
+				See solr/contrib/analysis-extras/README.txt for instructions on which jars you need to add.
+
+				From the README.txt: ICU relies upon lucene-libs/lucene-analyzers-icu-X.Y.jar and lib/icu4j-X.Y.jar
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
+				-->
+				<!--<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>-->
+				<!--The CommonGrams Filter is  prevented from going into effect here by the StopFiler above -->
 				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
 				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
@@ -151,11 +210,99 @@
 		</fieldType>
 		<!-- Text Field without Stemming, Synonyms, and stop Word removal -->
 		<fieldType name="textProper" class="solr.TextField" positionIncrementGap="100">
-			<analyzer>
+			<analyzer type="index">
 				<tokenizer class="solr.ICUTokenizerFactory"/>
-				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" splitOnNumerics="0" stemEnglishPossessive="1"/>
+				<!--
+				This tokenizer processes multilingual text and tokenizes it appropriately based on its script attribute.
+				Requires additional jar files
+
+				The default configuration for solr.ICUTokenizerFactory provides UAX#29 word break rules tokenization
+				(like solr.StandardTokenizer), but also includes custom tailorings for Hebrew (specializing handling
+				of double and single quotation marks), for syllable tokenization for Khmer, Lao, and Myanmar, and
+				dictionary-based word segmentation for CJK characters.
+
+				https://solr.apache.org/guide/8_8/tokenizers.html#icu-tokenizer
+				-->
 				<filter class="solr.ICUFoldingFilterFactory"/>
-				<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+				<!--
+				This filter is a custom Unicode normalization form that applies the foldings specified in Unicode TR #30: Character Foldings
+				in addition to the NFKC_Casefold normalization form as described in ICU Normalizer 2 Filter.
+				This filter is a better substitute for the combined behavior of the ASCII Folding Filter, Lower Case Filter,
+				and ICU Normalizer 2 Filter.
+
+				To use this filter, you must add additional .jars to Solr’s classpath
+				See solr/contrib/analysis-extras/README.txt for instructions on which jars you need to add.
+
+				From the README.txt: ICU relies upon lucene-libs/lucene-analyzers-icu-X.Y.jar and lib/icu4j-X.Y.jar
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
+				-->
+				<!--<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>-->
+				<!-- CommonGrams filtering does not seem to work with quoted search phrase,
+				which appears to be the reason we switch over to searching against textProper fields
+				See D-4122 -->
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+			<analyzer type="query">
+				<tokenizer class="solr.ICUTokenizerFactory"/>
+				<!--
+				This tokenizer processes multilingual text and tokenizes it appropriately based on its script attribute.
+				Requires additional jar files
+
+				The default configuration for solr.ICUTokenizerFactory provides UAX#29 word break rules tokenization
+				(like solr.StandardTokenizer), but also includes custom tailorings for Hebrew (specializing handling
+				of double and single quotation marks), for syllable tokenization for Khmer, Lao, and Myanmar, and
+				dictionary-based word segmentation for CJK characters.
+
+				https://solr.apache.org/guide/8_8/tokenizers.html#icu-tokenizer
+				-->
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" splitOnNumerics="0" stemEnglishPossessive="1"/>
+				<!-- Important: Only apply word delimiter graph filter to query analyzers; not to index analyzers-->
+				<!--
+				// Turn off splitOnNumerics Pascal 7/19/21 tokenizes Ids like ".b1234x" into "b","1234,"x"   See D-3984
+
+				From documentation : https://solr.apache.org/guide/8_8/filter-descriptions.html#word-delimiter-graph-filter
+
+									generateWordParts
+						(integer, default 1) If non-zero, splits words at delimiters. For example:"CamelCase", "hot-spot" -> "Camel", "Case", "hot", "spot"
+					generateNumberParts
+						(integer, default 1) If non-zero, splits numeric strings at delimiters:"1947-32" ->*"1947", "32"
+					splitOnCaseChange
+						(integer, default 1) If 0, words are not split on camel-case changes:"BugBlaster-XL" -> "BugBlaster", "XL". Example 1 below illustrates the default (non-zero) splitting behavior.
+					splitOnNumerics
+						(integer, default 1) If 0, don’t split words on transitions from alpha to numeric:"FemBot3000" -> "Fem", "Bot3000"
+					catenateWords
+						(integer, default 0) If non-zero, maximal runs of word parts will be joined: "hot-spot-sensor’s" -> "hotspotsensor"
+					catenateNumbers
+						(integer, default 0) If non-zero, maximal runs of number parts will be joined: 1947-32" -> "194732"
+					catenateAll
+						(0/1, default 0) If non-zero, runs of word and number parts will be joined: "Zap-Master-9000" -> "ZapMaster9000"
+					preserveOriginal
+						(integer, default 0) If non-zero, the original token is preserved: "Zap-Master-9000" -> "Zap-Master-9000", "Zap", "Master", "9000"
+					protected
+						(optional) The pathname of a file that contains a list of protected words that should be passed through without splitting.
+					stemEnglishPossessive
+						(integer, default 1) If 1, strips the possessive 's from each subword.
+				-->
+				<filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
+				<filter class="solr.ICUFoldingFilterFactory"/>
+				<!--
+				This filter is a custom Unicode normalization form that applies the foldings specified in Unicode TR #30: Character Foldings
+				in addition to the NFKC_Casefold normalization form as described in ICU Normalizer 2 Filter.
+				This filter is a better substitute for the combined behavior of the ASCII Folding Filter, Lower Case Filter,
+				and ICU Normalizer 2 Filter.
+
+				To use this filter, you must add additional .jars to Solr’s classpath
+				See solr/contrib/analysis-extras/README.txt for instructions on which jars you need to add.
+
+				From the README.txt: ICU relies upon lucene-libs/lucene-analyzers-icu-X.Y.jar and lib/icu4j-X.Y.jar
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
+				-->
+				<!--<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>-->
+				<!-- CommonGrams filtering does not seem to work with quoted search phrase,
+				which appears to be the reason we switch over to searching against textProper fields
+				See D-4122 -->
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 		</fieldType>
@@ -192,7 +339,22 @@
 			</analyzer>
 		</fieldType>
 		<fieldType name="callnumber-search" class="solr.TextField" sortMissingLast="true" omitNorms="true">
-			<analyzer>
+			<analyzer type="index">
+				<!-- KeywordTokenizer does no actual tokenizing, so the entire
+					 input string is preserved as a single token
+				-->
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
+				<filter class="solr.LengthFilterFactory" min="2" max="100"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<!--
+				Converts any uppercase letters in a token to the equivalent lowercase token. All other characters are left unchanged.
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#lower-case-filter
+				-->
+				<!-- The TrimFilter removes any leading or trailing whitespace -->
+				<filter class="solr.TrimFilterFactory"/>
+			</analyzer>
+			<analyzer type="query">
 				<!-- KeywordTokenizer does no actual tokenizing, so the entire
 					 input string is preserved as a single token
 				-->
@@ -209,6 +371,7 @@
 						generateNumberParts="0"
 
 				/>
+				<!-- Important: Only apply word delimiter graph filter to query analyzers; not to index analyzers-->
 				<!--
 				// Turn off splitOnNumerics and generateNumberParts Pascal 7/19/21   Keep call number parts together
 
@@ -235,6 +398,7 @@
 					stemEnglishPossessive
 						(integer, default 1) If 1, strips the possessive 's from each subword.
 				-->
+				<filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
 				<filter class="solr.LengthFilterFactory" min="2" max="100"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
 				<!--
@@ -247,8 +411,15 @@
 			</analyzer>
 		</fieldType>
 		<fieldType name="text-exact" class="solr.TextField" sortMissingLast="true" omitNorms="true">
+			<!--TODO: explain why this special handling is needed for these fields instead of just using a regular solr string field;
+			 OR TODO: replace with solr string field
+			  unquoted search phrases of these fields with multiple words bring in totally unwanted results. pascal 10/25/2021
+			-->
 			<analyzer>
-				<!-- KeywordTokenizer does no actual tokenizing, so the entire input string is preserved as a single token -->
+				<!-- KeywordTokenizer does no actual tokenizing, so the entire input string is preserved as a single token
+
+				 https://solr.apache.org/guide/8_8/tokenizers.html#keyword-tokenizer
+				 -->
 				<tokenizer class="solr.KeywordTokenizerFactory"/>
 				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1 zzzz"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
@@ -257,8 +428,7 @@
 
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#lower-case-filter
 				-->
-				<!-- The TrimFilter removes any leading or trailing whitespace -->
-				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/><!--TODO: Shouldn't this always be redundant??  -->
 			</analyzer>
 		</fieldType>
 		<fieldType name="text-left" class="solr.TextField" sortMissingLast="true" omitNorms="true">
@@ -333,6 +503,85 @@
 <!--		<field name="title_fullStr" type="string" indexed="true" stored="true" multiValued="true"/>-->
 		<!--TODO: How is title_full & title_fullStr different? Can one be removed? -->
 		<field name="title_alt" type="text" indexed="true" stored="true" multiValued="true"/>
+		<!-- Alternate Titles
+		130adfgklnpst:240a:246abnp:700tnr:730adfgklnpst:740a
+
+		MARC 130 Tag    Uniform Title
+
+		https://www.loc.gov/marc/bibliographic/bd130.html
+
+		Uniform title used as a main entry in a bibliographic record. Main entry under a uniform title is used
+		when a work is entered directly under title and the work has appeared under varying titles, necessitating that
+		a particular title be chosen to represent the work. Cataloging rules also prescribe the use of this field when
+		the work is entered directly under title and additions or deletions to the title proper must be accommodated.
+		In this latter case, the title may not actually vary from iteration to iteration.
+
+		The title that appears on the work being cataloged is contained in field 245.
+		There will be no 100, 110, or 111 field in records with field 130.
+
+		Subfields that are included to be indexed are :
+		$a - Uniform title (NR)
+		$d - Date of treaty signing (R)
+		$f - Date of a work (NR)
+		$g - Miscellaneous information (R)
+		$k - Form subheading (R)
+		$l - Language of a work (NR)
+		$n - Number of part/section of a work (R)
+		$p - Name of part/section of a work (R)
+		$s - Version (R)
+		$t - Title of a work (NR)
+
+
+
+		MARC 240 Tag     Uniform Title
+
+		https://www.loc.gov/marc/bibliographic/bd240.html
+
+		Uniform title for an item when the bibliographic description is entered under a main entry field that contains
+		a personal (field 100), corporate (110), or meeting (111) name.
+
+		Used when a work has appeared under varying titles, necessitating that a particular title be chosen to
+		represent the work. Cataloging rules also prescribe the use of this field when additions or deletions to the
+		title must be accommodated. In the latter case, the title may not actually vary from iteration to iteration.
+
+		The title that appears on the work being cataloged is contained in field 245 (Title Statement). Field 240 is
+		not used when field 130 (Main Entry-Uniform Title) is present.
+
+		Subfields that are included to be indexed are :
+		$a - Uniform title (NR)
+
+
+
+		MARC 246 Tag     Varying Form of Title (R)
+
+		https://www.loc.gov/marc/bibliographic/bd246.html
+
+
+		Varying forms of the title appearing on different parts of an item or a portion of the title proper, or an
+		alternative form of the title when the form differs substantially from the title statement in field 245 and
+		if they contribute to the further identification of the item.
+
+		For items including several works but lacking a collective title, field 246 is used only for titles related to
+		the title selected as the title proper, usually the first work named in the chief source of information.
+		Titles related to other works are recorded in field 740 (Added Entry-Uncontrolled Related/Analytical Title)
+		or one of the other 7XX (Added Entry) fields.
+
+		When displayed/printed as a note, varying forms of titles are usually preceded by an introductory term or
+		phrase that is generated as a display constant based on the second indicator value.
+
+		Subfields that are included to be indexed are :
+		$a - Title proper/short title (NR)
+		$b - Remainder of title (NR)
+		$n - Number of part/section of a work (R)
+		$p - Name of part/section of a work (R)
+
+		700tnr
+
+		730adfgklnpst
+
+		740a
+		-->
+
 		<!--Removing title_old and title_new for now, until we create a use. Pascal 7/20/2021 -->
 <!--		<field name="title_old" type="text" indexed="true" stored="true" multiValued="true"/>-->
 		<!--MARC 780 tag Preceding Entry
@@ -353,23 +602,38 @@
 		<!-- Author variations -->
 		<field name="author" type="text" indexed="true" stored="true" />
 		<!-- First MARC tag 100abcdq or 110ab -->
-		<field name="author_exact" type="text-exact" indexed="true" stored="true" />
-		<field name="author_left" type="text-left" indexed="true" stored="true" />
-		<field name="author_display" type="string" indexed="true" stored="true" multiValued="false"/> <!-- The title to display to the user -->
-<!--		<field name="author-letter" type="string" indexed="true" stored="true"/>-->
-		<!--TODO: remove author-letter from index. Can't determine what its use would be -->
 		<field name="authorStr" type="string" indexed="true" stored="true" docValues="true"/>
+		<!-- authorStr is used an author facet.  It is copy field that uses author above as its source. -->
+		<!-- TODO: ? reverse the pattern here. populate the simple string field (authorStr) and make author field
+		above the  copy field? -->
+		<field name="author_exact" type="text-exact" indexed="true" stored="true" />
+		<!-- copy field with author as source -->
+		<!-- Note: in order to match against this field, the search query must include punctuation for the surname style
+		eg To match "Last, First" the search query must-"last, first".  "last first" will not match -->
+
+		<field name="author_left" type="text-left" indexed="true" stored="true" />
+		<!-- copy field with author as source -->
+
+		<field name="author_display" type="string" indexed="true" stored="true" multiValued="false"/>
+		<!-- The title to display to the user -->
+		<!--trimmed 100a or 110ab -->
 		<field name="auth_author" type="textProper" indexed="true" stored="false"/>
-		<!-- First MARC tag 100abcd -->
-		<field name="auth_authorStr" type="string" indexed="true" stored="false"/>
+		<!-- First MARC 100 - Main Entry-Personal Name
+			$a - Personal name (NR)
+			$b - Numeration (NR)
+			$c - Titles and words associated with a name (R)
+			$d - Dates associated with a name (NR)
+		-->
+<!--		<field name="auth_authorStr" type="string" indexed="true" stored="false"/>-->
 		<field name="author2" type="text" indexed="true" stored="true" multiValued="true"/>
 		<!-- All MARC tags 110ab, 111ab, 700abcd, 710ab, 711ab, and 800a -->
-		<field name="author2Str" type="string" indexed="true" stored="true" multiValued="true"/>
-		<field name="author2-role" type="string" indexed="true" stored="true" multiValued="true"/> <!-- The contributor with role and title appended -->
+<!--		<field name="author2Str" type="string" indexed="true" stored="true" multiValued="true"/>-->
+		<field name="author2-role" type="string" indexed="true" stored="true" multiValued="true"/>
+		<!-- The contributor with role and title appended -->
 		<!-- All MARC tags 700abcdetmnr and 710abcdetmnr with translation of relator code (subfield 4) appended after pipe character "|" -->
 		<field name="auth_author2" type="textProper" indexed="true" stored="true" multiValued="true"/>
 		<!-- All MARC tags 700abcd -->
-		<field name="auth_author2Str" type="string" indexed="true" stored="false" multiValued="true"/>
+<!--		<field name="auth_author2Str" type="string" indexed="true" stored="false" multiValued="true"/>-->
 		<field name="author_additional" type="text" indexed="true" stored="true" multiValued="true"/>
 		<!-- All MARC tags 505r and 245c -->
 <!--		<field name="author_additionalStr" type="string" indexed="true" stored="false" multiValued="true"/> Pretty sure this is redundant pascal. 7/19/21 -->
@@ -386,11 +650,20 @@
 		<field name="publishDate" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="publishDateSort" type="string" indexed="true" stored="true"/>
 		<field name="edition" type="string" indexed="true" stored="true" multiValued="true"/>
-		<field name="dateSpan" type="string" indexed="true" stored="true" multiValued="true"/>
-			<!--field for MARC 362a Dates of Publication and/or Sequential Designation  -->
+		<!--		<field name="dateSpan" type="string" indexed="true" stored="true" multiValued="true"/>-->
+		<!--field for MARC 362a Dates of Publication and/or Sequential Designation  -->
+		<!--The MARC 361a data doesn't seem to have a format that would be easily parsable.
+		  There is nothing in the front end that uses it from solr or directly from the MARC.
+		  Nothing searches against the field, and I can't think of how it would be useful for a search
+		  -->
+
+		<!-- Physical Descriptions -->
+		<field name="physical" type="string" indexed="false" stored="true" multiValued="true"/>
+		<!-- 300abcefg:530abcd -->
+		<!-- Stored but not indexed.  There is no searching against this field, but the grouped work driver does
+		use the solr field to populate the Main Details entry Physical Description (summPhysicalDesc) -->
 
 		<!-- Things for faceting and refined searching -->
-		<field name="physical" type="string" indexed="true" stored="true" multiValued="true"/>
 
 		<!-- series -->
 		<field name="series" type="text" indexed="true" stored="true" multiValued="true"/>
@@ -509,8 +782,7 @@
 		<!-- Language Related Fields -->
 		<dynamicField name="language_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
 		<dynamicField name="translation_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
-		<dynamicField name="language_boost_*" type="integer" indexed="true" stored="true" multiValued="false" omitNorms="true"/>
-		<dynamicField name="language_boost_es_*" type="integer" indexed="true" stored="true" multiValued="false" omitNorms="true"/>
+
 		<!-- Fields for boosting branch holdings -->
 		<dynamicField name="lib_boost_*" type="integer" indexed="true" stored="true" multiValued="false" omitNorms="true"/>
 		<!-- relevance determiners -->
@@ -534,6 +806,9 @@
 
 	</fields>
 	<uniqueKey>id</uniqueKey>
+	<!-- Field to use to determine and enforce document uniqueness.
+		 Unless this field is marked with required="false", it will be a required field
+	  -->
 	<!-- uniqueKey is required for MoreLikeThis handlers-->
 
 	<!--	<defaultSearchField>keywords</defaultSearchField>
@@ -546,9 +821,9 @@ TODO: need to set df parameter?
 	<copyField source="author" dest="authorStr"/>
 	<copyField source="author" dest="author_exact"/>
 	<copyField source="author" dest="author_left"/>
-	<copyField source="auth_author" dest="auth_authorStr"/>
-	<copyField source="author2" dest="author2Str"/>
-	<copyField source="auth_author2" dest="auth_author2Str"/>
+<!--	<copyField source="auth_author" dest="auth_authorStr"/>-->
+<!--	<copyField source="author2" dest="author2Str"/>-->
+<!--	<copyField source="auth_author2" dest="auth_author2Str"/>-->
 <!--	<copyField source="author_additional" dest="author_additionalStr"/> Pretty sure this is redundant pascal. 7/19/21 -->
 	<!-- CopyFields for Proper (Unstemmed) searching -->
 	<copyField source="title" dest="title_proper"/>

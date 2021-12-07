@@ -178,9 +178,10 @@ abstract class RecordInterface {
 	 * search results.
 	 *
 	 * @access  public
+	 * @param string $view The view style for this search entry.
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public abstract function getSearchResult();
+	public abstract function getSearchResult(string $view = 'list');
 
 	/**
 	 * Assign necessary Smarty variables and return a template name to

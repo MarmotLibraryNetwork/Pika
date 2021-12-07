@@ -43,7 +43,6 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashSet<String>          alternateIds             = new HashSet<>();
 	private String                   authAuthor;
 	private HashMap<String, Long>    primaryAuthors           = new HashMap<>();
-//	private String                   authorLetter;
 	private HashSet<String>          authorAdditional         = new HashSet<>();
 	private String                   authorDisplay;
 	private HashSet<String>          author2                  = new HashSet<>();
@@ -56,7 +55,6 @@ public class GroupedWorkSolr implements Cloneable {
 	private String                   callNumberFirst;
 	private String                   callNumberSubject;
 	private HashSet<String>          contents                 = new HashSet<>();
-	private HashSet<String>          dateSpans                = new HashSet<>();
 	private HashSet<String>          description              = new HashSet<>();
 	private String                   displayDescription       = "";
 	private String                   displayDescriptionFormat = "";
@@ -147,8 +145,6 @@ public class GroupedWorkSolr implements Cloneable {
 		clonedWork.barcodes = (HashSet<String>) barcodes.clone();
 		// noinspection unchecked
 		clonedWork.contents = (HashSet<String>) contents.clone();
-		// noinspection unchecked
-		clonedWork.dateSpans = (HashSet<String>) dateSpans.clone();
 		// noinspection unchecked
 		clonedWork.description = (HashSet<String>) description.clone();
 		// noinspection unchecked
@@ -253,7 +249,6 @@ public class GroupedWorkSolr implements Cloneable {
 		//author and variations
 		doc.addField("auth_author", authAuthor);
 		doc.addField("author", getPrimaryAuthor());
-//		doc.addField("author-letter", authorLetter);
 		doc.addField("auth_author2", authAuthor2);
 		doc.addField("author2", author2);
 		doc.addField("author2-role", author2Role);
@@ -272,7 +267,6 @@ public class GroupedWorkSolr implements Cloneable {
 		//faceting and refined searching
 		doc.addField("physical", physicals);
 		doc.addField("edition", editions);
-		doc.addField("dateSpan", dateSpans);
 		doc.addField("series", series.values());
 		doc.addField("series2", series2.values());
 		doc.addField("series_with_volume", seriesWithVolume.values());
@@ -501,8 +495,6 @@ public class GroupedWorkSolr implements Cloneable {
 					// Add_languages
 					addUniqueFieldValues(doc, "language_" + curScopeName, curRecord.getLanguages());
 					addUniqueFieldValues(doc, "translation_" + curScopeName, curRecord.getTranslations());
-					updateMaxValueField(doc, "language_boost_" + curScopeName, curRecord.getLanguageBoost());
-					updateMaxValueField(doc, "language_boost_es_" + curScopeName, curRecord.getLanguageBoostSpanish());
 
 					//Setup ownership & availability toggle values
 					setupAvailabilityToggleAndOwnershipForItemWithinScope(doc, curRecord, curItem, curScopeName, curScope);
@@ -538,6 +530,10 @@ public class GroupedWorkSolr implements Cloneable {
 					}
 
 					if (curScope.isLocallyOwned() || curScope.isLibraryOwned()) {
+						// usual default values :
+						// availableAtLocationBoostValue = 50
+						// ownedByLocationBoostValue = 10
+
 						if (curScope.isAvailable()) {
 							updateMaxValueField(doc, "lib_boost_" + curScopeName, availableAtBoostValue);
 						}else {
@@ -611,10 +607,6 @@ public class GroupedWorkSolr implements Cloneable {
 
 			//We do different ownership display depending on if this is eContent or not
 			String owningLocationValue = curScopeDetails.getFacetLabel();
-			if (curItem.getSubLocation() != null && curItem.getSubLocation().length() > 0){
-				//owningLocationValue += " - " + curItem.getSubLocation();
-				owningLocationValue = curItem.getSubLocation();
-			}
 			if (curItem.isEContent()){
 				owningLocationValue = curItem.getShelfLocation();
 			}else if (curItem.isOrderItem() && groupedWorkIndexer.isGiveOnOrderItemsTheirOwnShelfLocation()){
@@ -1109,6 +1101,7 @@ public class GroupedWorkSolr implements Cloneable {
 //	}
 
 	public void setAuthor(String author) {
+		author = Util.trimTrailingPunctuation(author);
 		if (primaryAuthors.containsKey(author)){
 			primaryAuthors.put(author, primaryAuthors.get(author) + 1);
 		}else{
@@ -1135,6 +1128,23 @@ public class GroupedWorkSolr implements Cloneable {
 		this.authAuthor = author;
 		keywords.add(author);
 	}
+
+	void addAuthAuthor2(Set<String> fieldList) {
+		this.authAuthor2.addAll(Util.trimTrailingPunctuation(fieldList));
+	}
+
+	void addAuthor2(Set<String> fieldList) {
+		this.author2.addAll(Util.trimTrailingPunctuation(fieldList));
+	}
+
+	void addAuthor2Role(Set<String> fieldList) {
+		this.author2Role.addAll(Util.trimTrailingPunctuation(fieldList));
+	}
+
+	void addAuthorAdditional(Set<String> fieldList) {
+		this.authorAdditional.addAll(Util.trimTrailingPunctuation(fieldList));
+	}
+
 
 	void addOclcNumbers(Set<String> oclcs) {
 		this.oclcs.addAll(oclcs);
@@ -1214,26 +1224,6 @@ public class GroupedWorkSolr implements Cloneable {
 		this.groupingCategory = groupingCategory;
 	}
 
-//	void setAuthorLetter(String authorLetter) {
-//		this.authorLetter = authorLetter;
-//	}
-
-	void addAuthAuthor2(Set<String> fieldList) {
-		this.authAuthor2.addAll(fieldList);
-	}
-
-	void addAuthor2(Set<String> fieldList) {
-		this.author2.addAll(fieldList);
-	}
-
-	void addAuthor2Role(Set<String> fieldList) {
-		this.author2Role.addAll(fieldList);
-	}
-
-	void addAuthorAdditional(Set<String> fieldList) {
-		this.authorAdditional.addAll(fieldList);
-	}
-
 	void addHoldings(int recordHoldings) {
 		this.numHoldings += recordHoldings;
 	}
@@ -1243,8 +1233,8 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	double getPopularity(){
-        return  popularity;
-    }
+		return  popularity;
+	}
 
 	void addTopic(Set<String> fieldList) {
 		this.topics.addAll(Util.trimTrailingPunctuation(fieldList));
@@ -1434,10 +1424,6 @@ public class GroupedWorkSolr implements Cloneable {
 
 	void addPhysical(Set<String> fieldList) {
 		this.physicals.addAll(fieldList);
-	}
-
-	void addDateSpan(Set<String> fieldList) {
-		this.dateSpans.addAll(fieldList);
 	}
 
 	void addEditions(Set<String> fieldList) {

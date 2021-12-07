@@ -145,6 +145,37 @@ class Flatirons extends Sierra
 			 'required' => false
 			);
 		}
+		// Username and PIN
+		// allow usernames?
+		if($this->hasUsernameField()) {
+			$fields[] = ['property'   => 'username',
+			             'type'       => 'text',
+			             'label'      => 'Username',
+			             'description'=> 'Set an optional username.',
+			             'maxLength'  => 20,
+			             'required'   => false];
+		}
+		// if library uses pins
+		if($this->accountProfile->loginConfiguration == "barcode_pin") {
+			$fields[] = [
+				'property'    => 'pin',
+				'type'        => 'pin',
+				'label'       => 'PIN',
+				'description' => 'Please set a PIN (personal identification number).',
+				'maxLength'   => 10,
+				'required'    => true
+			];
+
+			$fields[] = [
+				'property'    => 'pinconfirm',
+				'type'        => 'pin',
+				'label'       => 'Confirm PIN',
+				'description' => 'Please reenter your PIN.',
+				'maxLength'   => 10,
+				'required'    => true
+			];
+		}
+
 		return $fields;
 	}
 

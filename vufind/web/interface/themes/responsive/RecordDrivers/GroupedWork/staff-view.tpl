@@ -34,7 +34,11 @@
 	<tr>
 		<th>{$field|escape}</th>
 		<td>
-			{$value}
+				{if $field=='Novelist Primary ISBN'}
+						<span id="novelistPrimaryISBN">{$value}</span>
+				{else}
+            {$value}
+				{/if}
 		</td>
 	</tr>
 	{/foreach}
@@ -47,7 +51,7 @@
 			{if strpos($field, "scoping_details") !== false}
 				<td colspan="2">
 					<strong>{$field|escape}</strong>
-				<table id="scoping_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-x: scroll; font-size: smaller">{*TODO: style rule should go in css *}
+				<table id="scoping_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: anywhere; font-size: smaller">
 					<tr>
 						<th>Bib Id</th><th>Item Id</th><th>Grouped Status</th><th>Status</th><th>Locally Owned</th><th>Available</th><th>Holdable</th><th>Bookable</th><th>In Library Use Only</th><th>Library Owned</th><th>Holdable PTypes</th><th>Bookable PTypes</th><th>Local Url</th>
 					</tr>
@@ -55,9 +59,8 @@
 					<tr>
 						{*{assign var="item" value=$item|rtrim:"|"}*}
 						{assign var="details" value="|"|explode:$item}
-						{foreach from=$details item='detail'}
-						{*{foreach from=explode($values, "|") item='detail'}*}
-						<td>{$detail|replace:',':', '}</td>
+						{foreach from=$details item='detail' key="k"}
+						<td{if in_array($k, array(0,1))} style="overflow-wrap: anywhere; min-width: 50px" {/if}>{if in_array($k, array(4,5,6,7,8,9))}{if $detail}true{else}false{/if}{else}{$detail|replace:',':', '}{/if}</td>
 					{/foreach}
 					</tr>
 					{/foreach}
@@ -66,17 +69,16 @@
 			{elseif strpos($field, "item_details") !== false}
 				<td colspan="2">
 					<strong>{$field|escape}</strong>
-				<table id="item_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-x: scroll; font-size: x-small">{*TODO: style rule should go in css *}
+				<table id="item_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: break-word; font-size: x-small">
 					<tr>
-						<th>Bib Id</th><th>Item Id</th><th>Shelf Loc</th><th>Call Num</th><th>Format</th><th>Format Category</th><th>Num Copies</th><th>Is Order Item</th><th>Is eContent</th><th>eContent Source</th><th>eContent File</th><th>eContent URL</th><th>subformat</th><th>Detailed Status</th><th>Last Checkin</th><th>Location</th><th>Sub-location</th>
+						<th>Bib Id</th><th>Item Id</th><th>Shelf Loc</th><th>Call Num</th><th>Format</th><th>Format Category</th><th>Num Copies</th><th>Is Order Item</th><th>Is eContent</th><th>eContent Source</th>{*<th>eContent File</th>*}<th>eContent URL</th><th>subformat</th><th>Detailed Status</th><th>Last Checkin</th><th>Location</th>{*<th>Sub-location</th>*}
 					</tr>
 					{foreach from=$values item="item"}
 					<tr>
-						{*{assign var="item" value=$item|rtrim:"|"}*}
-						{assign var="details" value="|"|explode:$item}
-						{foreach from=$details item='detail'}
+					{assign var="details" value="|"|explode:$item}
+						{foreach from=$details item='detail' key="k"}
 						{*{foreach from=explode($values, "|") item='detail'}*}
-						<td>{$detail|replace:',':', '}</td>
+						<td{if in_array($k, array(0,1,10))} style="overflow-wrap: anywhere; min-width: 50px" {/if}>{if in_array($k, array(7,8))}{if $detail}true{else}false{/if}{else}{$detail|replace:',':', '}{/if}</td>
 					{/foreach}
 					</tr>
 					{/foreach}
@@ -85,7 +87,7 @@
 			{elseif strpos($field, "record_details") !== false}
 				<td colspan="2">
 					<strong>{$field|escape}</strong>
-				<table id="record_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-x: scroll; font-size: smaller">{*TODO: style rule should go in css *}
+				<table id="record_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: break-word; font-size: smaller">
 					<tr>
 						<th>Bib Id</th><th>Format</th><th>Format Category</th><th>Edition</th><th>Language</th><th>Publisher</th><th>Publication Date</th><th>Physical Description</th><th>Abridged</th>
 					</tr>
@@ -93,9 +95,9 @@
 					<tr>
 						{*{assign var="item" value=$item|rtrim:"|"}*}
 						{assign var="details" value="|"|explode:$item}
-						{foreach from=$details item='detail'}
+						{foreach from=$details item='detail' key="k"}
 						{*{foreach from=explode($values, "|") item='detail'}*}
-						<td>{$detail|replace:',':', '}</td>
+						<td{if $k==0} style="overflow-wrap: anywhere; min-width: 50px" {/if}>{$detail|replace:',':', '}</td>
 					{/foreach}
 					</tr>
 					{/foreach}

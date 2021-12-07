@@ -52,8 +52,8 @@ class SearchObject_Solr extends SearchObject_Base {
 	private $indexEngine = null;
 	// Facets information
 	private $allFacetSettings = array();    // loaded from facets.ini
-	// Optional, used on author screen for example
-	private $searchSubType  = '';
+	// Search types of author have two subtypes: home and search
+	private $authorSearchType  = '';
 
 	// Spelling
 	private $spellingLimit = 3;
@@ -88,7 +88,7 @@ class SearchObject_Solr extends SearchObject_Base {
 
 		// Get default facet settings
 		$this->allFacetSettings = getExtraConfigArray('facets');
-		$this->facetConfig      = array();
+		$this->facetConfig      = [];
 		$facetLimit             = $this->getFacetSetting('Results_Settings', 'facet_limit');
 		if (is_numeric($facetLimit)){
 			$this->facetLimit = $facetLimit;
@@ -153,8 +153,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		$this->spellcheck       = $configArray['Spelling']['enabled'];
 		$this->spellingLimit    = $configArray['Spelling']['limit'];
 		$this->spellSimple      = $configArray['Spelling']['simple'];
-		$this->spellSkipNumeric = isset($configArray['Spelling']['skip_numeric']) ?
-			$configArray['Spelling']['skip_numeric'] : true;
+		$this->spellSkipNumeric = $configArray['Spelling']['skip_numeric'] ?? true;
 
 		$this->indexEngine->debug          = $this->debug;
 		$this->indexEngine->debugSolrQuery = $this->debugSolrQuery;
@@ -178,22 +177,20 @@ class SearchObject_Solr extends SearchObject_Base {
 		$this->spellcheck = true;
 	}
 
-	/**
-	 * Add filters to the object based on values found in the $_REQUEST superglobal.
-	 *
-	 * @access  protected
-	 */
-	protected function initFilters(){
-		// Use the default behavior of the parent class, but add support for the
-		// special illustrations filter.
-		parent::initFilters();
-		if (isset($_REQUEST['illustration'])){
-			if ($_REQUEST['illustration'] == 1){
-				$this->addFilter('illustrated:Illustrated');
-			}elseif ($_REQUEST['illustration'] == 0){
-				$this->addFilter('illustrated:"Not Illustrated"');
+	public function getBasicTypes(){
+		$basicSearchTypes = $this->basicTypes;
+		if ($this->searchType != $this->advancedSearchType){
+			$searchIndex  = $this->getSearchIndex();
+			$searchSource = $_REQUEST['searchSource'] ?? 'local';
+			if ($this->searchType != 'genealogy' && $searchSource != 'genealogy' &&
+				$this->searchType != 'islandora' && $searchSource != 'islandora'
+			){
+				if (!array_key_exists($searchIndex, $basicSearchTypes)){
+					$basicSearchTypes[$searchIndex] = $searchIndex;
+				}
 			}
 		}
+		return $basicSearchTypes;
 	}
 
 	/**
@@ -332,10 +329,10 @@ class SearchObject_Solr extends SearchObject_Base {
 			// Tags, just treat them as normal searches for now.
 			// The search processor knows what to do with them.
 			if (!empty($_REQUEST['tag'])) {
-				$this->searchTerms[] = array(
-					'index' => 'tag',
+				$this->searchTerms[] = [
+					'index'   => 'tag',
 					'lookfor' => strip_tags($_REQUEST['tag'])
-				);
+				];
 			}
 		} else {
 			$this->initAdvancedSearch();
@@ -355,27 +352,27 @@ class SearchObject_Solr extends SearchObject_Base {
 
 			// *** Author/Home
 			if ($action == 'Home' || $author_ajax_call) {
-				$this->searchSubType = 'home';
+				$this->authorSearchType = 'home';
 				// Remove our empty basic search (default)
-				$this->searchTerms = array();
+				$this->searchTerms = [];
 				// Prepare the search as a normal author search
 				$author = $_REQUEST['author'];
 				if (is_array($author)){
 					$author = array_pop($author);
 				}
 				$this->searchTerms[] = [
-                    'index'   => 'Author',
-                    'lookfor' => trim(strip_tags($author))
+					'index'   => 'Author',
+					'lookfor' => trim(strip_tags($author))
 				];
 			}
 
 			// *** Author/Search
 			if ($action == 'Search') {
-				$this->searchSubType = 'search';
+				$this->authorSearchType = 'search';
 				// We already have the 'lookfor', just set the index
 				$this->searchTerms[0]['index'] = 'Author';
 				// We really want author facet data
-				$this->facetConfig = array();
+				$this->facetConfig = [];
 				$this->addFacet('authorStr');
 				// Offset the facet list by the current page of results, and
 				// allow up to ten total pages of results -- since we can't
@@ -394,7 +391,7 @@ class SearchObject_Solr extends SearchObject_Base {
 					$this->setFacetSortOrder('count');
 				}
 			}
-		} else if ($module == 'Search' && ($action == 'NewItem' || $action == 'Reserves')) {
+		} else if ($module == 'Search' && $action == 'Reserves') {
 			// We don't need spell checking
 			$this->spellcheck = false;
 			$this->searchType = strtolower($action);
@@ -576,14 +573,13 @@ class SearchObject_Solr extends SearchObject_Base {
 	 *
 	 * @access  private
 	 */
-	protected function purge()
-	{
+	protected function purge(){
 		// Call standard purge:
 		parent::purge();
 
 		// Make some Solr-specific adjustments:
-		$this->query        = null;
-		$this->publicQuery  = null;
+		$this->query       = null;
+		$this->publicQuery = null;
 	}
 
 	/**
@@ -604,12 +600,11 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @access  public
 	 * @return  string   The searched index
 	 */
-	public function getSearchIndex()
-	{
+	public function getSearchIndex(){
 		// Use normal parent method for non-advanced searches.
-		if ($this->searchType == $this->basicSearchType || $this->searchType == 'author') {
+		if ($this->searchType == $this->basicSearchType || $this->searchType == 'author'){
 			return parent::getSearchIndex();
-		} else {
+		}else{
 			return null;
 		}
 	}
@@ -721,12 +716,11 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @access  public
 	 * @return  array   Array of HTML chunks for individual records.
 	 */
-	public function getBrowseRecordHTML()
-	{
+	public function getBrowseRecordHTML(){
 		global $interface;
-		$html = array();
-		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-			$current = & $this->indexResult['response']['docs'][$x];
+		$html = [];
+		for ($x = 0;$x < count($this->indexResult['response']['docs']);$x++){
+			$current = &$this->indexResult['response']['docs'][$x];
 			$interface->assign('recordIndex', $x + 1);
 			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 			$record = RecordDriverFactory::initRecordDriver($current);
@@ -738,7 +732,7 @@ class SearchObject_Solr extends SearchObject_Base {
 				}
 
 			}else{
-				$html[] = "Unable to find record";
+				$html[] = 'Unable to find record';
 			}
 		}
 		return $html;
@@ -1012,22 +1006,23 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @access  public
 	 * @return  array    Sort value => description array.
 	 */
-	protected function getSortOptions()
-	{
+	protected function getSortOptions(){
 		// Author/Search screen
-		if ($this->searchType == 'author' && $this->searchSubType == 'search') {
+		if ($this->searchType == 'author' && $this->authorSearchType == 'search'){
 			// It's important to remember here we are talking about on-screen
 			//   sort values, not what is sent to Solr, since this screen
 			//   is really using facet sorting.
-			return array('relevance' => 'sort_author_relevance',
-                'author' => 'sort_author_author');
+			return [
+				'relevance' => 'sort_author_relevance',
+				'author'    => 'sort_author_author'
+			];
 		}
 
 		// Everywhere else -- use normal default behavior
-		$sortOptions = parent::getSortOptions();
+		$sortOptions   = parent::getSortOptions();
 		$searchLibrary = Library::getSearchLibrary($this->searchSource);
 		if ($searchLibrary == null){
-			unset($sortOptions['callnumber_sort'] );
+			unset($sortOptions['callnumber_sort']);
 		}
 		return $sortOptions;
 	}
@@ -1084,8 +1079,6 @@ class SearchObject_Solr extends SearchObject_Base {
 	protected function getBaseUrl(){
 		//todo: some of these cases are obsolete
 		switch ($this->searchType){
-			case 'newitem' :
-				return $this->serverUrl . '/Search/NewItem?';
 			case 'reserves' :
 				return $this->serverUrl . '/Search/Reserves?';
 			case 'favorites' :
@@ -1094,13 +1087,13 @@ class SearchObject_Solr extends SearchObject_Base {
 				return $this->serverUrl . '/MyAccount/MyList/' . urlencode($_GET['id']) . '?';
 			case 'author' :
 				// Base URL is different for author searches:
-				if ($this->searchSubType == 'home'){
+				if ($this->authorSearchType == 'home'){
 					return $this->serverUrl . '/Author/Home?';
 				}
-				if ($this->searchSubType == 'search'){
+				if ($this->authorSearchType == 'search'){
 					return $this->serverUrl . "/Author/Search?";
 				}
-			// Restored saved author searches will not have a searchSubType set so need to fall back to the default Base URL (so no break statement)
+			// Restored saved author searches will not have a authorSearchType set so need to fall back to the default Base URL (so no break statement)
 			default :
 				// If none of the special cases were met, use the default from the parent:
 				return parent::getBaseUrl();
@@ -1120,19 +1113,16 @@ class SearchObject_Solr extends SearchObject_Base {
 			$params = [];
 			switch ($this->searchType){
 				// Author Home screen
-				case "author":
+				case 'author':
 					//restored saved author searches
-					$params[] = ($this->searchSubType == 'home' ? 'author=' : 'lookfor=') . urlencode($this->searchTerms[0]['lookfor']);
-					$params[] = "basicSearchType=Author";
+					$params[] = ($this->authorSearchType == 'home' ? 'author=' : 'lookfor=') . urlencode($this->searchTerms[0]['lookfor']);
+					$params[] = 'basicSearchType=Author';
 					break;
-				// New Items or Reserves modules may have a few extra parameters to preserve:
-				case "newitem":
-				case "reserves":
-				case "favorites":
-				case "list":
+				// Reserves modules may have a few extra parameters to preserve:
+				case 'reserves':
+				case 'favorites':
+				case 'list':
 					$preserveParams = [
-						// for newitem:
-						'range', 'department',
 						// for reserves:
 						'course', 'inst', 'dept',
 						// for favorites/list:
@@ -1183,19 +1173,18 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @return  boolean   A revised searchTerms array to get matching Solr records
 	 *                  (empty if no tag matches found).
 	 */
-	private function processTagSearch($lookfor)
-	{
+	private function processTagSearch($lookfor){
 		// Include the app database objects
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 
 		// Find our tag in the database
-		$tag = new UserTag();
+		$tag      = new UserTag();
 		$tag->tag = $lookfor;
 		$tag->selectAdd(null);
 		$tag->selectAdd('DISTINCT(groupedWorkPermanentId) as groupedWorkPermanentId');
 		if ($tag->find()){
-			$groupedWorkIds = array();
+			$groupedWorkIds = [];
 			while ($tag->fetch()){
 				// Grab the list of records tagged with this tag
 				$groupedWorkIds[] = $tag->groupedWorkPermanentId;
@@ -1397,7 +1386,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		if (!empty($this->facetOptions)){
 			$facetSet['additionalOptions'] = $this->facetOptions;
 		}
-		$timer->logTime("create facets");
+		$timer->logTime('create facets');
 
 		// Build our spellcheck query
 		if ($this->spellcheck) {
@@ -1431,7 +1420,7 @@ class SearchObject_Solr extends SearchObject_Base {
 
 		$this->indexResult = $this->indexEngine->search(
 			$this->query,      // Query string
-			$this->index,      // DisMax Handler
+			$this->index,      // The search Specification to Use
 			$filterQuery,      // Filter query
 			$recordStart,      // Starting record
 			$this->limit,      // Records per page
@@ -1443,7 +1432,7 @@ class SearchObject_Solr extends SearchObject_Base {
 			$this->method,     // HTTP Request method
 			$returnIndexErrors // Include errors in response?
 		);
-		$timer->logTime("run solr search");
+		$timer->logTime('run solr search');
 
 		// Get time after the query
 		$this->stopQueryTimer();
@@ -1478,14 +1467,18 @@ class SearchObject_Solr extends SearchObject_Base {
 		}
 
 		//Add debug information to the results if available
-		if ($this->debug && isset($this->indexResult['debug'])){
-			$explainInfo = $this->indexResult['debug']['explain'];
-			foreach ($this->indexResult['response']['docs'] as $key => $result){
-				if (array_key_exists($result['id'], $explainInfo)){
-					$result['explain'] = $explainInfo[$result['id']];
-					$this->indexResult['response']['docs'][$key] = $result;
+		if ($this->debug){
+			if (!empty($this->indexResult['debug']['explain'])){
+				$explainInfo = $this->indexResult['debug']['explain'];
+				foreach ($this->indexResult['response']['docs'] as &$result){
+					if (array_key_exists($result['id'], $explainInfo)){
+						$result['explain'] = $explainInfo[$result['id']];
+					}
 				}
 			}
+
+			global $interface;
+			$interface->assign('debugSolrOutput', $this->debugOutput());
 		}
 
 		// Return the result set
@@ -1498,24 +1491,23 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @access  private
 	 * @return  string    Spelling query
 	 */
-	private function buildSpellingQuery()
-	{
-		$this->spellQuery = array();
+	private function buildSpellingQuery(){
+		$this->spellQuery = [];
 		// Basic search
-		if ($this->searchType == $this->basicSearchType) {
+		if ($this->searchType == $this->basicSearchType){
 			// Just the search query is fine
 			return $this->query;
 
 			// Advanced search
-		} else {
-			foreach ($this->searchTerms as $search) {
-				foreach ($search['group'] as $field) {
+		}else{
+			foreach ($this->searchTerms as $search){
+				foreach ($search['group'] as $field){
 					// Add just the search terms to the list
 					$this->spellQuery[] = $field['lookfor'];
 				}
 			}
 			// Return the list put together as a string
-			return join(" ", $this->spellQuery);
+			return implode(' ', $this->spellQuery);
 		}
 	}
 
@@ -1524,29 +1516,27 @@ class SearchObject_Solr extends SearchObject_Base {
 	 *
 	 * @access  private
 	 */
-	private function processSpelling()
-	{
+	private function processSpelling(){
 		global $configArray;
 
 		// Do nothing if spelling is disabled
-		if (!$configArray['Spelling']['enabled']) {
+		if (!$configArray['Spelling']['enabled']){
 			return;
 		}
 
 		// Do nothing if there are no suggestions
-		$suggestions = isset($this->indexResult['spellcheck']['suggestions']) ?
-		$this->indexResult['spellcheck']['suggestions'] : array();
-		if (count($suggestions) == 0) {
+		$suggestions = $this->indexResult['spellcheck']['suggestions'] ?? [];
+		if (count($suggestions) == 0){
 			return;
 		}
 
 		// Loop through the array of search terms we have suggestions for
-		$suggestionList = array();
-		foreach ($suggestions as $suggestion) {
+		$suggestionList = [];
+		foreach ($suggestions as $suggestion){
 			$ourTerm = $suggestion[0];
 
 			// Skip numeric terms if numeric suggestions are disabled
-			if ($this->spellSkipNumeric && is_numeric($ourTerm)) {
+			if ($this->spellSkipNumeric && is_numeric($ourTerm)){
 				continue;
 			}
 
@@ -1559,29 +1549,29 @@ class SearchObject_Solr extends SearchObject_Base {
 			// Make sure the suggestion is for a valid search term.
 			// Sometimes shingling will have bridged two search fields (in
 			// an advanced search) or skipped over a stopword.
-			if (!$this->findSearchTerm($ourTerm)) {
+			if (!$this->findSearchTerm($ourTerm)){
 				$validTerm = false;
 			}
 
 			// Unless this term had no hits
-			if ($ourHit != 0) {
+			if ($ourHit != 0){
 				// Filter out suggestions we are already using
 				$newList = $this->filterSpellingTerms($newList);
 			}
 
 			// Make sure it has suggestions and is valid
-			if (count($newList) > 0 && $validTerm) {
+			if (count($newList) > 0 && $validTerm){
 				// Did we get more suggestions then our limit?
-				if ($count > $this->spellingLimit) {
+				if ($count > $this->spellingLimit){
 					// Cut the list at the limit
 					array_splice($newList, $this->spellingLimit);
 				}
 				$suggestionList[$ourTerm]['freq'] = $ourHit;
 				// Format the list nicely
-				foreach ($newList as $item) {
-					if (is_array($item)) {
+				foreach ($newList as $item){
+					if (is_array($item)){
 						$suggestionList[$ourTerm]['suggestions'][$item['word']] = $item['freq'];
-					} else {
+					}else{
 						$suggestionList[$ourTerm]['suggestions'][$item] = 0;
 					}
 				}
@@ -1598,12 +1588,14 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @param   array    $termList List of suggestions
 	 * @return  array    Filtered list
 	 */
-	private function filterSpellingTerms($termList) {
-		$newList = array();
-		if (count($termList) == 0) return $newList;
+	private function filterSpellingTerms($termList){
+		if (empty($termList)){
+			return [];
+		}
 
-		foreach ($termList as $term) {
-			if (!$this->findSearchTerm($term['word'])) {
+		$newList = [];
+		foreach ($termList as $term){
+			if (!$this->findSearchTerm($term['word'])){
 				$newList[] = $term;
 			}
 		}
@@ -1619,8 +1611,7 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @access  private
 	 * @return  array     Suggestions array
 	 */
-	private function basicSpelling()
-	{
+	private function basicSpelling(){
 		// TODO: There might be a way to run the
 		//   search against both dictionaries from
 		//   inside solr. Investigate. Currently
@@ -1989,9 +1980,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		global $interface;
 
 		// On-screen display value for our search
-		if ($this->searchType == 'newitem') {
-			$lookFor = translate('New Items');
-		} elseif ($this->searchType == 'reserves') {
+		if ($this->searchType == 'reserves') {
 			$lookFor = translate('Course Reserves');
 		} else {
 			$lookFor = $this->displayQuery();

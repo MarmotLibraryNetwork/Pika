@@ -30,9 +30,8 @@ import java.util.regex.Pattern;
  * Time: 11:31 AM
  */
 class InclusionRule {
-	private String recordType;
+	private String  indexingProfileSourceName;
 	private Pattern locationCodePattern;
-	private Pattern subLocationCodePattern;
 	private Pattern iTypePattern;
 	private boolean matchAllAudiences = false;
 	private Pattern audiencePattern;
@@ -46,21 +45,16 @@ class InclusionRule {
 	private String urlToMatch;
 	private String urlReplacement;
 
-	InclusionRule(String recordType, String locationCode, String subLocationCode, String iType, String audience, String format, boolean includeHoldableOnly, boolean includeItemsOnOrder, boolean includeEContent, String marcTagToMatch, String marcValueToMatch, boolean includeExcludeMatches, String urlToMatch, String urlReplacement){
-		this.recordType = recordType;
-		this.includeHoldableOnly = includeHoldableOnly;
-		this.includeItemsOnOrder = includeItemsOnOrder;
-		this.includeEContent = includeEContent;
+	InclusionRule(String indexingProfileSourceName, String locationCode, String iType, String audience, String format, boolean includeHoldableOnly, boolean includeItemsOnOrder, boolean includeEContent, String marcTagToMatch, String marcValueToMatch, boolean includeExcludeMatches, String urlToMatch, String urlReplacement){
+		this.indexingProfileSourceName = indexingProfileSourceName;
+		this.includeHoldableOnly       = includeHoldableOnly;
+		this.includeItemsOnOrder       = includeItemsOnOrder;
+		this.includeEContent           = includeEContent;
 
 		if (locationCode.length() == 0){
 			locationCode = ".*";
 		}
 		this.locationCodePattern = Pattern.compile(locationCode, Pattern.CASE_INSENSITIVE);
-
-		if (subLocationCode.length() == 0){
-			subLocationCode = ".*";
-		}
-		this.subLocationCodePattern = Pattern.compile(subLocationCode, Pattern.CASE_INSENSITIVE);
 
 		if (iType == null || iType.length() == 0){
 			iType = ".*";
@@ -96,8 +90,8 @@ class InclusionRule {
 		this.urlReplacement = urlReplacement;
 	}
 
-	private HashMap<String, HashMap<String, HashMap<String, HashMap<String, HashMap<String, Boolean>>>>> locationCodeCache = new HashMap<>();
-	boolean isItemIncluded(String recordType, String locationCode, String subLocationCode, String iType, TreeSet<String> audiences, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord){
+	private HashMap<String, HashMap<String, HashMap<String, HashMap<String, Boolean>>>> locationCodeCache = new HashMap<>();
+	boolean isItemIncluded(String recordType, String locationCode, String iType, TreeSet<String> audiences, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord){
 		//Do the quick checks first
 		if (!isEContent && (includeHoldableOnly && !isHoldable)){
 			return false;
@@ -105,23 +99,17 @@ class InclusionRule {
 			return  false;
 		}else if (!includeEContent && isEContent){
 			return  false;
-		}else if (!this.recordType.equals(recordType)){
+		}else if (!this.indexingProfileSourceName.equals(recordType)){
 			return  false;
 		}
 
 		//Determine if we have already determined this already
 		boolean hasCachedValue = true;
-		HashMap<String, HashMap<String, HashMap<String, HashMap<String, Boolean>>>> subLocationCodeIncludeCache = locationCodeCache.get(locationCode);
-		if (subLocationCodeIncludeCache == null){
-			hasCachedValue = false;
-			subLocationCodeIncludeCache = new HashMap<>();
-			locationCodeCache.put(locationCode, subLocationCodeIncludeCache);
-		}
-		HashMap<String, HashMap<String, HashMap<String, Boolean>>> iTypeCache = subLocationCodeIncludeCache.get(subLocationCode);
+		HashMap<String, HashMap<String, HashMap<String, Boolean>>> iTypeCache = locationCodeCache.get(locationCode);
 		if (iTypeCache == null){
 			hasCachedValue = false;
 			iTypeCache = new HashMap<>();
-			subLocationCodeIncludeCache.put(subLocationCode, iTypeCache);
+			locationCodeCache.put(locationCode, iTypeCache);
 		}
 		HashMap<String, HashMap<String, Boolean>> audiencesCache = iTypeCache.get(iType);
 		if (audiencesCache == null){
@@ -145,7 +133,6 @@ class InclusionRule {
 
 		if (!hasCachedValue){
 			if ((locationCode == null || locationCodePattern.matcher(locationCode).lookingAt()) &&
-					(subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).lookingAt()) &&
 					(format == null || formatPattern.matcher(format).lookingAt())
 					){
 

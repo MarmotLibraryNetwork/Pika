@@ -56,7 +56,7 @@ class Admin_BrowseCategories extends ObjectEditor {
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'libraryManager', 'locationManager', 'contentEditor');
+		return ['opacAdmin', 'libraryAdmin', 'libraryManager', 'locationManager', 'contentEditor'];
 	}
 
 	function getInstructions(){

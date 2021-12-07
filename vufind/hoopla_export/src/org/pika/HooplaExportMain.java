@@ -71,7 +71,7 @@ public class HooplaExportMain {
 						System.out.print("Enter the Hoopla record Id to process (MWT is optional, not required) : ");
 						singleRecordToProcess = br.readLine().replaceAll("MWT", "").trim();
 					} catch (IOException e) {
-						System.out.println("Error while reading input from user." + e.toString());
+						System.out.println("Error while reading input from user." + e);
 						System.exit(1);
 					}
 				}
@@ -86,13 +86,15 @@ public class HooplaExportMain {
 			if (log4jFile.exists()) {
 				PropertyConfigurator.configure(log4jFile.getAbsolutePath());
 			} else {
-				System.out.println("Could not find log4j configuration " + log4jFile.toString());
+				System.out.println("Could not find log4j configuration " + log4jFile);
 			}
 		}
 
 		Date startTime = new Date();
-		logger.info(startTime.toString() + ": Starting Hoopla Export");
 		startTimeStamp = startTime.getTime() / 1000;
+		if (logger.isInfoEnabled()) {
+			logger.info(startTime + ": Starting Hoopla Export");
+		}
 
 		// Read the base INI file to get information about the server (current directory/conf/config.ini)
 		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
@@ -108,7 +110,7 @@ public class HooplaExportMain {
 				System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 			}
 		} catch (Exception e) {
-			logger.error("Error connecting to Pika database " + e.toString());
+			logger.error("Error connecting to Pika database ", e);
 			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 		}
 
@@ -124,7 +126,7 @@ public class HooplaExportMain {
 
 		//Start a hoopla export log entry
 		try {
-			logger.info("Creating log entry for index");
+			logger.info("Creating log entry for hoopla extracting");
 			ResultSet generatedKeys;
 			try (PreparedStatement createLogEntryStatement = pikaConn.prepareStatement("INSERT INTO hoopla_export_log (startTime, lastUpdate, notes) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS)) {
 				createLogEntryStatement.setLong(1, startTimeStamp);
@@ -153,11 +155,12 @@ public class HooplaExportMain {
 			systemVariables.setVariable("lastHooplaExport", startTimeStamp);
 		}
 
-		addNoteToHooplaExportLog("Finished exporting hoopla data " + new Date().toString());
-		logger.info("Finished exporting hoopla data " + new Date().toString());
+		addNoteToHooplaExportLog("Finished exporting hoopla data " + new Date());
 		long endTime     = new Date().getTime();
-		long elapsedTime = endTime - startTime.getTime();
-		logger.info("Elapsed Minutes " + (elapsedTime / 60000));
+		if (logger.isInfoEnabled()) {
+			long elapsedTime = endTime - startTime.getTime();
+			logger.info("Elapsed Minutes " + (elapsedTime / 60000));
+		}
 
 		try (PreparedStatement finishedStatement = pikaConn.prepareStatement("UPDATE hoopla_export_log SET endTime = ? WHERE id = ?")) {
 			finishedStatement.setLong(1, endTime / 1000);
@@ -307,7 +310,7 @@ public class HooplaExportMain {
 			}
 		} catch (Exception e) {
 			logger.error("Error exporting hoopla data", e);
-			addNoteToHooplaExportLog("Error exporting hoopla data " + e.toString());
+			addNoteToHooplaExportLog("Error exporting hoopla data " + e);
 			return false;
 		}
 		// UpdateTitlesInDB can also have errors. If it does it sets updateTitlesInDBHadErrors to true;
@@ -373,7 +376,7 @@ public class HooplaExportMain {
 		} catch (Exception e) {
 			final String message = "Error updating hoopla data in Pika database for title " + titleId;
 			logger.error(message, e);
-			addNoteToHooplaExportLog(message + " " + e.toString());
+			addNoteToHooplaExportLog(message + " " + e);
 			updateTitlesInDBHadErrors = true;
 		}
 		return numUpdates;
@@ -445,7 +448,9 @@ public class HooplaExportMain {
 				rd.close();
 				retVal = new URLPostResponse(true, 200, response.toString());
 			} else {
-				logger.info("Received error " + conn.getResponseCode() + " posting to " + url);
+				if (logger.isInfoEnabled()) {
+					logger.info("Received error " + conn.getResponseCode() + " posting to " + url);
+				}
 				// Get any errors
 				BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
 				String         line;
@@ -476,7 +481,7 @@ public class HooplaExportMain {
 			retVal = new URLPostResponse(false, -1, "URL to post (" + url + ") is malformed");
 		} catch (IOException e) {
 			logger.error("Error posting to url \r\n" + url, e);
-			retVal = new URLPostResponse(false, -1, "Error posting to url \r\n" + url + "\r\n" + e.toString());
+			retVal = new URLPostResponse(false, -1, "Error posting to url \r\n" + url + "\r\n" + e);
 		} finally {
 			if (conn != null) conn.disconnect();
 		}
@@ -515,7 +520,9 @@ public class HooplaExportMain {
 				}
 				retVal = new URLPostResponse(true, 200, response.toString());
 			} else {
-				logger.info("Received error " + conn.getResponseCode() + " posting to " + url);
+				if (logger.isInfoEnabled()) {
+					logger.info("Received error " + conn.getResponseCode() + " posting to " + url);
+				}
 				try {
 					// Get any errors
 					String line;
@@ -539,7 +546,7 @@ public class HooplaExportMain {
 					retVal = new URLPostResponse(false, conn.getResponseCode(), response.toString());
 				} catch (IOException e) {
 					logger.error("Error reading error or input stream", e);
-					retVal = new URLPostResponse(false, -1, "Error reading error or input stream for \r\n" + url + "\r\n" + e.toString());
+					retVal = new URLPostResponse(false, -1, "Error reading error or input stream for \r\n" + url + "\r\n" + e);
 				}
 			}
 
@@ -551,7 +558,7 @@ public class HooplaExportMain {
 			retVal = new URLPostResponse(false, -1, "URL to get (" + url + ") is malformed");
 		} catch (IOException e) {
 			logger.error("Error getting url \r\n" + url, e);
-			retVal = new URLPostResponse(false, -1, "Error getting url \r\n" + url + "\r\n" + e.toString());
+			retVal = new URLPostResponse(false, -1, "Error getting url \r\n" + url + "\r\n" + e);
 		} finally {
 			if (conn != null) conn.disconnect();
 		}
@@ -572,8 +579,8 @@ public class HooplaExportMain {
 	}
 
 
-	private static StringBuffer     notes      = new StringBuffer();
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private static       StringBuffer     notes      = new StringBuffer();
+	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private static void addNoteToHooplaExportLog(String note) {
 		try {

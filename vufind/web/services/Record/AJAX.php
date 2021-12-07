@@ -280,11 +280,11 @@ class Record_AJAX extends AJAXHandler {
 					}
 				}
 				if ($patron == null){
-					$results = array(
+					$results = [
 						'success' => false,
 						'message' => 'You must select a valid user to place the hold for.',
 						'title'   => 'Select valid user',
-					);
+					];
 				}else{
 					$homeLibrary = $patron->getHomeLibrary();
 
@@ -321,13 +321,13 @@ class Record_AJAX extends AJAXHandler {
 						$interface->assign('treatPrintNoticesAsPhoneNotices', $homeLibrary->treatPrintNoticesAsPhoneNotices);
 
 						// Need to place item level holds.
-						$results = array(
+						$results = [
 							'success'            => true,
 							'needsItemLevelHold' => true,
 							'message'            => $interface->fetch('Record/item-hold-popup.tpl'),
-							'title'              => isset($return['title']) ? $return['title'] : '',
-						);
-					}else{ // Completed Hold Attempt
+							'title'              => $return['title'] ?? '',
+						];
+					}else{                                                                                       // Completed Hold Attempt
 						$interface->assign('message', $return['message']);
 						$interface->assign('success', $return['success']);
 
@@ -344,7 +344,7 @@ class Record_AJAX extends AJAXHandler {
 						$results = [
 							'success' => $return['success'],
 							'message' => $interface->fetch('Record/hold-success-popup.tpl'),
-//							'title'   => isset($return['title']) ? $return['title'] : '',
+							//							'title'   => isset($return['title']) ? $return['title'] : '',
 							'buttons' => '', // This removes the submit button
 						];
 						if (isset($_REQUEST['autologout'])){
@@ -357,17 +357,17 @@ class Record_AJAX extends AJAXHandler {
 							}
 							$results['autologout'] = true;
 							unset($_REQUEST['autologout']); // Prevent entering the second auto log out code-block below.
-						} else {
+						}else{
 							// Only show View My Holds button if the user did not select the auto log out option.
 							$results['buttons'] = '<a class="btn btn-primary" href="/MyAccount/Holds" role="button">View My Holds</a>';
 						}
 					}
 				}
 			}else{
-				$results = array(
+				$results = [
 					'success' => false,
 					'message' => 'No pick-up location is set.  Please choose a Location for the title to be picked up at.',
-				);
+				];
 			}
 
 			if (isset($_REQUEST['autologout']) && !(isset($results['needsItemLevelHold']) && $results['needsItemLevelHold'])){
@@ -382,11 +382,11 @@ class Record_AJAX extends AJAXHandler {
 				$results['autologout'] = true;
 			}
 		}else{
-			$results = array(
+			$results = [
 				'success' => false,
 				'message' => 'You must be logged in to place a hold.  Please close this dialog and login.',
 				'title'   => 'Please log in',
-			);
+			];
 		}
 		return $results;
 	}

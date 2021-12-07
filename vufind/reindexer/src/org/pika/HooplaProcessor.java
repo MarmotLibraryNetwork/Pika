@@ -270,6 +270,9 @@ class HooplaProcessor extends MarcRecordProcessor {
 		//Instead, each record has essentially unlimited items that can be used at one time.
 		//There are also not multiple formats within a record that we would need to split out.
 
+		//Setup the per Record information
+		RecordInfo recordInfo = groupedWork.addRelatedRecord(source, identifier.getIdentifier());
+
 		String formatCategory = indexer.translateSystemValue("format_category_hoopla", format, identifier.getIdentifier());
 		long   formatBoost    = 8L; // Reasonable default value
 		String formatBoostStr = indexer.translateSystemValue("format_boost_hoopla", format, identifier.getIdentifier());
@@ -284,45 +287,39 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 		//Load editions
 		Set<String> editions       = MarcUtil.getFieldList(record, "250a");
-		String      primaryEdition = null;
 		if (editions.size() > 0) {
-			primaryEdition = editions.iterator().next();
+			groupedWork.addEditions(editions);
+			String primaryEdition = editions.iterator().next();
+			recordInfo.setEdition(primaryEdition);
 		}
-		groupedWork.addEditions(editions);
 
 		//Load publication details
 		//Load publishers
 		Set<String> publishers = this.getPublishers(record);
-		groupedWork.addPublishers(publishers);
-		String publisher = null;
 		if (publishers.size() > 0) {
-			publisher = publishers.iterator().next();
+			groupedWork.addPublishers(publishers);
+			String publisher = publishers.iterator().next();
+			recordInfo.setPublisher(publisher);
 		}
 
 		//Load publication dates
 		Set<String> publicationDates = this.getPublicationDates(record);
-		groupedWork.addPublicationDates(publicationDates);
-		String publicationDate = null;
 		if (publicationDates.size() > 0) {
-			publicationDate = publicationDates.iterator().next();
+			groupedWork.addPublicationDates(publicationDates);
+			String publicationDate = publicationDates.iterator().next();
+			recordInfo.setPublicationDate(publicationDate);
 		}
 
 		//Load physical description
 		Set<String> physicalDescriptions = MarcUtil.getFieldList(record, "300abcefg:530abcd");
-		String      physicalDescription  = null;
 		if (physicalDescriptions.size() > 0) {
-			physicalDescription = physicalDescriptions.iterator().next();
+			groupedWork.addPhysical(physicalDescriptions);
+			String physicalDescription = physicalDescriptions.iterator().next();
+			recordInfo.setPhysicalDescription(physicalDescription);
 		}
-		groupedWork.addPhysical(physicalDescriptions);
 
-		//Setup the per Record information
-		RecordInfo recordInfo = groupedWork.addRelatedRecord(source, identifier.getIdentifier());
 
 		recordInfo.setFormatBoost(formatBoost);
-		recordInfo.setEdition(primaryEdition);
-		recordInfo.setPhysicalDescription(physicalDescription);
-		recordInfo.setPublicationDate(publicationDate);
-		recordInfo.setPublisher(publisher);
 
 		if (hooplaExtractInfo.abridged){
 			recordInfo.setAbridged(true);
@@ -369,13 +366,15 @@ class HooplaProcessor extends MarcRecordProcessor {
 		//From Pika to Hoopla, but that wouldn't count plays directly within the app
 		//(which may be ok).
 		groupedWork.addPopularity(1);
+
+//		groupedWork.addHoldings(1);
 	}
 
 	private void loadScopeInfoForEContentItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, ItemInfo itemInfo, Record record) {
 		//Figure out ownership information
 		for (Scope curScope : indexer.getScopes()) {
 			String                originalUrl = itemInfo.geteContentUrl();
-			Scope.InclusionResult result      = curScope.isItemPartOfScope(source, "", "", null, groupedWork.getTargetAudiences(), recordInfo.getPrimaryFormat(), false, false, true, record, originalUrl);
+			Scope.InclusionResult result      = curScope.isItemPartOfScope(source, "", null, groupedWork.getTargetAudiences(), recordInfo.getPrimaryFormat(), false, false, true, record, originalUrl);
 			if (result.isIncluded) {
 
 				boolean isHooplaIncluded = true;
@@ -421,13 +420,13 @@ class HooplaProcessor extends MarcRecordProcessor {
 		scopingInfo.setGroupedStatus("Available Online");
 		scopingInfo.setHoldable(false);
 		if (curScope.isLocationScope()) {
-			scopingInfo.setLocallyOwned(curScope.isItemOwnedByScope(source, "", ""));
+			scopingInfo.setLocallyOwned(curScope.isItemOwnedByScope(source, ""));
 			if (curScope.getLibraryScope() != null) {
-				scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope(source, "", ""));
+				scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope(source, ""));
 			}
 		}
 		if (curScope.isLibraryScope()) {
-			scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope(source, "", ""));
+			scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope(source, ""));
 		}
 		//Check to see if we need to do url rewriting
 		if (originalUrl != null && !originalUrl.equals(result.localUrl)) {
@@ -437,9 +436,11 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 	protected void loadTitles(GroupedWorkSolr groupedWork, Record record, String format, String identifier) {
 		//title (full title done by index process by concatenating short and subtitle
-		Set<String> titleTags = MarcUtil.getFieldList(record, "245a");
-		if (titleTags.size() > 1) {
-			logger.info("More than 1 245a title tag for Hoopla record : " + identifier);
+		if (logger.isInfoEnabled()) {
+			Set<String> titleTags = MarcUtil.getFieldList(record, "245a");
+			if (titleTags.size() > 1) {
+				logger.info("More than 1 245a title tag for Hoopla record : " + identifier);
+			}
 		}
 		super.loadTitles(groupedWork, record, format, identifier);
 	}

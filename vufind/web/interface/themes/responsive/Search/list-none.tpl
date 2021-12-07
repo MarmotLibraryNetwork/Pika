@@ -15,7 +15,7 @@
 		</div>
 	{/if}
 
-	<p class="alert alert-info">{translate text='nohit_prefix'} - <b>{if $lookfor}{$lookfor|escape:"html"}{else}&lt;empty&gt;{/if}</b> - {translate text='nohit_suffix'}</p>
+	<p class="alert alert-info">{translate text='nohit_prefix'} <b>{if $lookfor}{$lookfor|escape:"html"}{else}&lt;empty&gt;{/if}</b> {translate text='nohit_suffix'}</p>
 
 {* Return to Advanced Search Link *}
 {if $searchType == 'advanced'}
@@ -24,21 +24,10 @@
 	</h5>
 {/if}
 
-{if $solrSearchDebug}
-	<div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">Show Search Options</div>
-	<div id="solrSearchOptions" style="display:none">
-		<pre>Search options: {$solrSearchDebug}</pre>
-	</div>
-{/if}
+    {* Search Debugging *}
+    {include file="Search/search-debug.tpl"}
 
-{if $solrLinkDebug}
-	<div id='solrLinkToggle' onclick='$("#solrLink").toggle()'>Show Solr Link</div>
-	<div id='solrLink' style='display:none'>
-		<pre>{$solrLinkDebug}</pre>
-	</div>
-{/if}
-
-<div>
+	<div>
 	{if $parseError}
 		<div class="alert alert-danger">
 			{$parseError}
@@ -110,12 +99,8 @@
 		</div>
 	{/if}
 
-	{if $enableMaterialsRequest}
-		<h2>Didn't find it?</h2>
-		<p>Can't find what you are looking for? <a href="/MaterialsRequest/NewRequest?lookfor={$lookfor}&basicType={$searchIndex}" onclick="return Pika.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase'}</a>.</p>
-	{elseif $externalMaterialsRequestUrl}
-		<h2>Didn't find it?</h2>
-		<p>Can't find what you are looking for? <a href="{$externalMaterialsRequestUrl}">{translate text='Suggest a purchase'}</a>.</p>
+	{if $enableMaterialsRequest || $externalMaterialsRequestUrl}
+		{include file="MaterialsRequest/solicit-new-materials-request.tpl"}
 	{/if}
 
     {include file="Search/searchTools.tpl" showAdminTools=false}

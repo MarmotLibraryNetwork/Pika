@@ -25,8 +25,7 @@
  * Date: 3/4/14
  * Time: 9:25 PM
  */
-
-class LibraryBrowseCategory extends DB_DataObject{
+class LibraryBrowseCategory extends DB_DataObject {
 	public $__table = 'browse_category_library';
 	public $id;
 	public $weight;
@@ -41,11 +40,11 @@ class LibraryBrowseCategory extends DB_DataObject{
 //		May need above to replace below.
 		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('libraryAdmin')){
-			$homeLibrary = UserAccount::getUserHomeLibrary();
+			$homeLibrary        = UserAccount::getUserHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}
 		$library->find();
-		$libraryList = array();
+		$libraryList = [];
 		while ($library->fetch()){
 			$libraryList[$library->libraryId] = $library->displayName;
 		}
@@ -53,20 +52,26 @@ class LibraryBrowseCategory extends DB_DataObject{
 		$browseCategories = new BrowseCategory();
 		$browseCategories->orderBy('label');
 		$browseCategories->find();
-		$browseCategoryList = array(
-			'system_recommended_for_you' =>  translate('Recommended for you'). ' (system_recommended_for_you) [Only displayed when user is logged in]'
-		);
-		while($browseCategories->fetch()){
+		$browseCategoryList = [
+			'system_recommended_for_you' => translate('Recommended for you') . ' (system_recommended_for_you) [Only displayed when user is logged in]'
+		];
+		while ($browseCategories->fetch()){
 			$browseCategoryList[$browseCategories->textId] = $browseCategories->label . " ({$browseCategories->textId})";
 		}
-		$structure = array(
-				'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the hours within the database'),
-				'libraryId' => array('property'=>'libraryId', 'type'=>'enum', 'values'=>$libraryList, 'label'=>'Library', 'description'=>'A link to the library which the location belongs to'),
-				'browseCategoryTextId' => array('property'=>'browseCategoryTextId', 'type'=>'enum', 'values'=>$browseCategoryList, 'label'=>'Browse Category', 'description'=>'The browse category to display '),
-//				'weight' => array('property' => 'weight', 'type' => 'integer', 'label' => 'Weight', 'weight' => 'Defines how lists are sorted within the widget.  Lower weights are displayed to the left of the screen.', 'required'=> true),
-				// Weight isn't needed in the object structure for display of oneToMany sections
+		$structure = [
+			'id'                   => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the hours within the database'],
+			'libraryId'            => ['property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'A link to the library which the location belongs to'],
+			'browseCategoryTextId' => ['property' => 'browseCategoryTextId', 'type' => 'enum', 'values' => $browseCategoryList, 'label' => 'Browse Category', 'description' => 'The browse category to display '],
+			//'weight'               => ['property' => 'weight', 'type' => 'integer', 'label' => 'Weight', 'weight' => 'Defines how lists are sorted within the widget.  Lower weights are displayed to the left of the screen.', 'required' => true],
+			// Weight isn't needed in the object structure for display of oneToMany sections
 
-		);
+		];
 		return $structure;
+	}
+
+	function getDirectLink(){
+		$library = new Library();
+		$library->get($this->libraryId);
+		return $_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl . '?browseCategory=' . $this->browseCategoryTextId;
 	}
 }

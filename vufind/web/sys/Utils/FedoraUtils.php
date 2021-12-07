@@ -39,20 +39,21 @@ class FedoraUtils {
 
 	private function __construct(){
 		global $configArray;
-		$this->logger = new Pika\Logger("FedoraUtils");
+		$this->logger = new Pika\Logger(__CLASS__);
 		$this->cache  = new Pika\Cache();
 		try {
-			$serializer             = new FedoraApiSerializer();
-			$cache                  = new SimpleCache();
-			$fedoraUrl              = $configArray['Islandora']['fedoraUrl'];
-			$fedoraPassword         = $configArray['Islandora']['fedoraPassword'];
-			$fedoraUser             = $configArray['Islandora']['fedoraUsername'];
-			$connection             = new RepositoryConnection($fedoraUrl, $fedoraUser, $fedoraPassword);
-			$connection->verifyPeer = false;
-			$this->api              = new FedoraApi($connection, $serializer);
-			$this->repository       = new FedoraRepository($this->api, $cache);
+			$serializer                 = new FedoraApiSerializer();
+			$cache                      = new SimpleCache();
+			$fedoraUrl                  = $configArray['Islandora']['fedoraUrl'];
+			$fedoraPassword             = $configArray['Islandora']['fedoraPassword'];
+			$fedoraUser                 = $configArray['Islandora']['fedoraUsername'];
+			$connection                 = new RepositoryConnection($fedoraUrl, $fedoraUser, $fedoraPassword);
+			$connection->verifyPeer     = false;
+			//$connection->connectTimeout = 5; // We may need to adjust the connection timeout for when Marmot primaryDNS fails see D-3158
+			$this->api                  = new FedoraApi($connection, $serializer);
+			$this->repository           = new FedoraRepository($this->api, $cache);
 		} catch (Exception $e){
-			$this->logger->error("Error connecting to repository", ['stack_trace' => $e->getTraceAsString()]);
+			$this->logger->error('Error connecting to repository', ['stack_trace' => $e->getTraceAsString()]);
 		}
 	}
 

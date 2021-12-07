@@ -33,7 +33,7 @@ class IndexingProfile extends DB_DataObject{
 	const COVER_SOURCES = [
 		'SideLoad General'                    => 'SideLoad General',
 		'ILS MARC'                            => 'ILS MARC',
-		'Zinio'                               => 'Zinio',
+//		'Zinio'                               => 'Zinio',
 		'Colorado State Government Documents' => 'Colorado State Government Documents',
 		'Classroom Video on Demand'           => 'Classroom Video on Demand',
 		'Films on Demand'                     => 'Films on Demand',
@@ -79,7 +79,6 @@ class IndexingProfile extends DB_DataObject{
 	public $location;
 	public $nonHoldableLocations;
 	public $locationsToSuppress;
-	public $subLocation;
 	public $shelvingLocation;
 	public $collection;
 	public $collectionsToSuppress;
@@ -247,7 +246,6 @@ class IndexingProfile extends DB_DataObject{
 						]],
 
 					'location'            => ['property' => 'location', 'type' => 'text', 'label' => 'Location', 'maxLength' => 1, 'description' => 'Subfield for location'],
-					'subLocation'         => ['property' => 'subLocation', 'type' => 'text', 'label' => 'Sub Location', 'maxLength' => 1, 'description' => 'A secondary subfield to divide locations'],
 					'shelvingLocation'    => ['property' => 'shelvingLocation', 'type' => 'text', 'label' => 'Shelving Location', 'maxLength' => 1, 'description' => 'A subfield for shelving location information'],
 					'collection'          => ['property' => 'collection', 'type' => 'text', 'label' => 'Collection', 'maxLength' => 1, 'description' => 'A subfield for collection information'],
 					'barcode'             => ['property' => 'barcode', 'type' => 'text', 'label' => 'Barcode', 'maxLength' => 1, 'description' => 'Subfield for barcode'],

@@ -19,11 +19,11 @@
 require_once ROOT_DIR . '/sys/Language/SpellingWord.php';
 require_once ROOT_DIR . '/sys/Search/SearchStatNew.php';
 
-class SearchSuggestions{
+class SearchSuggestions {
 	function getCommonSearchesMySql($searchTerm, $searchType){
-		$searchStat = new SearchStatNew();
-		$suggestions = $searchStat->getSearchSuggestions( $searchTerm, $searchType);
-		if (count ($suggestions) > 12){
+		$searchStat  = new SearchStatNew();
+		$suggestions = $searchStat->getSearchSuggestions($searchTerm, $searchType);
+		if (count($suggestions) > 12){
 			$suggestions = array_slice($suggestions, 0, 12);
 		}
 		return $suggestions;
@@ -32,25 +32,24 @@ class SearchSuggestions{
 	function getSpellingSearches($searchTerm){
 		//First check for things we don't want to load spelling suggestions for
 		if (is_numeric($searchTerm)){
-			return array();
+			return [];
 		}
-		if (strpos($searchTerm, '(') !== FALSE || strpos($searchTerm, ')') !== FALSE){
-			return array();
+		if (strpos($searchTerm, '(') !== false || strpos($searchTerm, ')') !== false){
+			return [];
 		}
 		if (preg_match('/http:|mailto:|https:/i', $searchTerm)){
-			return array();
+			return [];
 		}
 		if (strlen($searchTerm) >= 256){
-			return array();
+			return [];
 		}
 
-		require_once ROOT_DIR . '/sys/Language/SpellingWord.php';
 		$spellingWord = new SpellingWord();
-		$words = explode(" ", $searchTerm);
-		$suggestions = array();
+		$words        = explode(" ", $searchTerm);
+		$suggestions  = [];
 		foreach ($words as $word){
 			//First check to see if the word is spelled properly
-			$wordCheck = new SpellingWord();
+			$wordCheck       = new SpellingWord();
 			$wordCheck->word = $word;
 			if (!$wordCheck->find()){
 				//This word is not spelled properly, get suggestions for how it should be spelled
@@ -58,25 +57,25 @@ class SearchSuggestions{
 
 				$wordSuggestions = $spellingWord->getSpellingSuggestions($word);
 				foreach ($wordSuggestions as $suggestedWord){
-					$newSearch = str_replace($word, $suggestedWord, $searchTerm);
-					$searchInfo = new SearchStatNew();
+					$newSearch          = str_replace($word, $suggestedWord, $searchTerm);
+					$searchInfo         = new SearchStatNew();
 					$searchInfo->phrase = $newSearch;
-					$numSearches = 0;
+					$numSearches        = 0;
 					if ($searchInfo->find(true)){
 						$numSearches = $searchInfo->numSearches;
 					}
-					$suggestions[str_pad($numSearches, 10, '0', STR_PAD_LEFT) . $newSearch] = array('phrase'=>$newSearch, 'numSearches'=>$numSearches, 'numResults'=>1);
+					$suggestions[str_pad($numSearches, 10, '0', STR_PAD_LEFT) . $newSearch] = ['phrase' => $newSearch, 'numSearches' => $numSearches, 'numResults' => 1];
 
 					//Also try replacements on any suggestions we have so far
 					foreach ($suggestionsSoFar as $tmpSearch){
-						$newSearch = str_replace($word, $suggestedWord, $tmpSearch['phrase']);
-						$searchInfo = new SearchStatNew();
+						$newSearch          = str_replace($word, $suggestedWord, $tmpSearch['phrase']);
+						$searchInfo         = new SearchStatNew();
 						$searchInfo->phrase = $newSearch;
-						$numSearches = 0;
+						$numSearches        = 0;
 						if ($searchInfo->find(true)){
 							$numSearches = $searchInfo->numSearches;
 						}
-						$suggestions[str_pad($numSearches, 10, '0', STR_PAD_LEFT) . $newSearch] = array('phrase'=>$newSearch, 'numSearches'=>$numSearches, 'numResults'=>1);
+						$suggestions[str_pad($numSearches, 10, '0', STR_PAD_LEFT) . $newSearch] = ['phrase' => $newSearch, 'numSearches' => $numSearches, 'numResults' => 1];
 					}
 				}
 			}
@@ -85,7 +84,7 @@ class SearchSuggestions{
 		krsort($suggestions);
 
 		//Return up to 10 results max
-		if (count ($suggestions) > 12){
+		if (count($suggestions) > 12){
 			$suggestions = array_slice($suggestions, 0, 12);
 		}
 		return $suggestions;
@@ -101,7 +100,7 @@ class SearchSuggestions{
 			$spellingSearches = $this->getSpellingSearches($searchTerm);
 			$timer->logTime('Loaded spelling suggestions');
 			//Merge the two arrays together
-			foreach($spellingSearches as $key => $term){
+			foreach ($spellingSearches as $key => $term){
 				if (!in_array($term, $searchSuggestions)){
 					$searchSuggestions[$key] = $term;
 				}

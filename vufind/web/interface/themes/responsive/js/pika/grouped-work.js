@@ -150,8 +150,7 @@ Pika.GroupedWork = (function(){
 						var similarTitlesNovelist = data.similarTitlesNovelist;
 						if (similarTitlesNovelist && similarTitlesNovelist.length > 0){
 							$("#novelisttitlesPlaceholder").html(similarTitlesNovelist);
-							$("#novelisttab_label,#similarTitlesPanel").show()
-									;
+							$("#novelisttab_label,#similarTitlesPanel").show();
 						}
 
 						var similarAuthorsNovelist = data.similarAuthorsNovelist;
@@ -171,6 +170,10 @@ Pika.GroupedWork = (function(){
 								.prev('.sectionHeader').show();
 						// Initiate Any Explore More JCarousels
 						Pika.initCarousels('.ajax-carousel');
+
+						if (data.novelistPrimaryISBN){
+							$('#novelistPrimaryISBN').html(data.novelistPrimaryISBN);
+						}
 
 					} catch (e) {
 						alert("error loading enrichment: " + e);
@@ -312,6 +315,55 @@ Pika.GroupedWork = (function(){
 			});
 			return false;
 		},
+	createSeriesList: function(id)
+	{
+		var form = $("#addListForm"),
+				isPublic = form.find("#public").prop("checked"),
+				groupedWorkId = id,
+				title = form.find("input[name=title]").val(),
+				desc = $("#listDesc").val(),
+				url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+				params = {
+					'method': 'createSeriesList',
+					title: title,
+					public: isPublic,
+					desc: desc,
+					groupedWorkId: groupedWorkId
+				};
+		$.getJSON(url, params,function (data) {
+			if (data.success) {
+				if (typeof data.modalButtons !== "undefined"){
+					Pika.showMessageWithButtons("Added Successfully", data.message, data.modalButtons);
+				} else{
+					Pika.showMessage("Added Successfully", data.message, true, true);
+				}
+			} else {
+				Pika.showMessage("Error", data.message);
+			}
+		}).fail(Pika.ajaxFail);
+		return false;
+	},
+	saveSeriesToList: function(id)
+		{
+			Pika.Account.ajaxLogin(function (){
+				var listId = $('#addToList-list').val(),
+						url   = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+						params = {
+							'method': 'saveSeriesToList'
+							, listId: listId
+						};
+				$.getJSON(url, params,
+						function(data){
+								if(data.success){
+									Pika.showMessageWithButtons("Added Successfully", data.message, data.buttons);
+								}	else{
+									Pika.showMessage("Error", data.message);
+								}
+						}
+				)
+			});
+				return false;
+		},
 
 		sendEmail: function (id){
 			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
@@ -331,6 +383,28 @@ Pika.GroupedWork = (function(){
 							Pika.showMessage("Error", data.message);
 						}
 					}
+			).fail(Pika.ajaxFail);
+			return false;
+		},
+
+		sendSeriesEmail: function(id){
+
+			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+					params = {
+						'method': 'sendSeriesEmail'
+						, from: $('#from').val()
+						, to: $('#to').val()
+						, message: $('#message').val()
+						, 'g-recaptcha-response': (typeof grecaptcha !== 'undefined') ? grecaptcha.getResponse() : false
+					};
+			$.getJSON(url, params,
+					function (data){
+				if (data.result){
+					Pika.showMessage("Success", data.message);
+				}else{
+					Pika.showMessage("Error", data.message);
+				}
+			}
 			).fail(Pika.ajaxFail);
 			return false;
 		},
@@ -401,12 +475,21 @@ Pika.GroupedWork = (function(){
 			// return this.basicAjaxHandler('getEmailForm', id, trigger);
 		},
 
+		seriesEmailForm: function(trigger, id){
+			return Pika.Account.ajaxLightbox("/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getSeriesEmailForm", false, trigger);
+		},
+
 		showReviewForm: function(trigger, id){
 			return this.basicAjaxHandler('getReviewForm', id, trigger);
 		},
-
+		showCreateSeriesListForm: function(trigger, id){
+			return this.basicAjaxHandler('getCreateSeriesForm', id, trigger);
+		},
 		showSaveToListForm: function (trigger, id){
 			return this.basicAjaxHandler('getSaveToListForm', id, trigger);
+		},
+		showSaveSeriesToListForm: function (trigger, id){
+			return this.basicAjaxHandler('getSaveSeriesToListForm', id, trigger);
 		},
 
 		showSmsForm: function(trigger, id){

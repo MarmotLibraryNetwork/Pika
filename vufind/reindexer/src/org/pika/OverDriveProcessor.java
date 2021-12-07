@@ -57,12 +57,12 @@ public class OverDriveProcessor {
 		}
 
 		try {
-			getProductInfoStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_products WHERE overdriveId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getProductInfoStmt = econtentConn.prepareStatement("SELECT overdrive_api_products.*, fileAs FROM overdrive_api_products LEFT JOIN overdrive_api_product_creators ON (overdrive_api_product_creators.productId = overdrive_api_products.id AND primaryCreatorName = name) WHERE overdriveId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getNumCopiesStmt = econtentConn.prepareStatement("SELECT sum(copiesOwned) AS totalOwned FROM overdrive_api_product_availability WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			//TODO filter by libraries belonging to an overdrive account??
 			getProductMetadataStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_metadata WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getProductAvailabilityStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_availability WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			//getProductCreatorsStmt = econtentConn.prepareStatement("SELECT * from overdrive_api_product_creators where productId = ?");
+			//getProductCreatorsStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_creators where productId = ?");
 			getProductFormatsStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_formats WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getProductLanguagesStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_languages INNER JOIN overdrive_api_product_languages_ref ON overdrive_api_product_languages.id = languageId WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getProductSubjectsStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_subjects INNER JOIN overdrive_api_product_subjects_ref ON overdrive_api_product_subjects.id = subjectId WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -196,9 +196,10 @@ public class OverDriveProcessor {
 									groupedWork.addSeries(series, "");
 									//TODO: add volume info?, from either subtitle or sort title with phrase "book X"
 								}
-								groupedWork.setAuthor(productRS.getString("primaryCreatorName")); //TODO: use fileAs name??, look at grouper; use a isEcontent flag for counting
-								groupedWork.setAuthAuthor(productRS.getString("primaryCreatorName"));
-								groupedWork.setAuthorDisplay(productRS.getString("primaryCreatorName"));
+								final String author = productRS.getString("fileAs");
+								groupedWork.setAuthor(author);
+								groupedWork.setAuthAuthor(author);
+								groupedWork.setAuthorDisplay(author);
 
 								Date dateAdded = null;
 								try {
@@ -499,17 +500,6 @@ public class OverDriveProcessor {
 				if (primaryLanguage == null) {
 					primaryLanguage = language;
 				}
-				//The boost maps contain entries for en and es
-				String languageBoost = indexer.translateSystemValue("language_boost", overdriveLanguageCode, identifier);
-				if (languageBoost != null) {
-					Long languageBoostVal = Long.parseLong(languageBoost);
-					overDriveRecord.setLanguageBoost(languageBoostVal);
-				}
-				String languageBoostEs = indexer.translateSystemValue("language_boost_es", overdriveLanguageCode, identifier);
-				if (languageBoostEs != null) {
-					Long languageBoostVal = Long.parseLong(languageBoostEs);
-					overDriveRecord.setLanguageBoostSpanish(languageBoostVal);
-				}
 			}
 			overDriveRecord.setLanguages(languages);
 		}
@@ -576,7 +566,8 @@ public class OverDriveProcessor {
 				returnMetadata.put("publicationDate", publicationDate);
 				//Need to divide this because it seems to be all time checkouts for all libraries, not just our libraries
 				//Hopefully OverDrive will give us better stats in the near future that we can use.
-				groupedWork.addPopularity(metadataRS.getFloat("popularity") / 500f);
+				float popularity = metadataRS.getFloat("popularity");
+				groupedWork.addPopularity(popularity > 500F ? popularity / 500f : 1);
 				String shortDescription = metadataRS.getString("shortDescription");
 				groupedWork.addDescription(shortDescription, format);
 				String fullDescription = metadataRS.getString("fullDescription");

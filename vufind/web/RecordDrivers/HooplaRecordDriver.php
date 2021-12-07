@@ -81,7 +81,7 @@ class HooplaRecordDriver extends SideLoadedRecord {
 	}
 
 	public function getItemActions($itemInfo){
-		return array();
+		return [];
 	}
 
 	/**
@@ -149,24 +149,24 @@ class HooplaRecordDriver extends SideLoadedRecord {
 			$interface->assign('notes', $notes);
 		}
 
-		$moreDetailsOptions['moreDetails'] = array(
+		$moreDetailsOptions['moreDetails'] = [
 			'label' => 'More Details',
 			'body'  => $interface->fetch('Hoopla/view-more-details.tpl'),
-		);
+		];
 		$this->loadSubjects();
-		$moreDetailsOptions['subjects']  = array(
+		$moreDetailsOptions['subjects']  = [
 			'label' => 'Subjects',
 			'body'  => $interface->fetch('Record/view-subjects.tpl'),
-		);
-		$moreDetailsOptions['citations'] = array(
+		];
+		$moreDetailsOptions['citations'] = [
 			'label' => 'Citations',
 			'body'  => $interface->fetch('Record/cite.tpl'),
-		);
+		];
 		if ($interface->getVariable('showStaffView')){
-			$moreDetailsOptions['staff'] = array(
+			$moreDetailsOptions['staff'] = [
 				'label' => 'Staff View',
 				'body'  => $interface->fetch($this->getStaffView()),
-			);
+			];
 		}
 
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
@@ -197,31 +197,6 @@ class HooplaRecordDriver extends SideLoadedRecord {
 	function getRecordUrl(){
 		$recordId = $this->getUniqueID();
 		return '/Hoopla/' . $recordId;
-	}
-
-	/**
-	 * Return the unique identifier of this record within the Solr index;
-	 * useful for retrieving additional information (like tags and user
-	 * comments) from the external MySQL database.
-	 *
-	 * @access  public
-	 * @return  string              Unique identifier.
-	 */
-	public function getShortId(){
-		return $this->id;
-	}
-
-	function getRecordType(){
-		return 'hoopla';
-	}
-
-
-	function getNumHolds(){
-		return 0;
-	}
-
-	function getFormats(){
-		return $this->getFormat();
 	}
 
 }

@@ -49,6 +49,7 @@ public class GroupedWorkIndexer {
 	private       HashMap<String, MarcRecordProcessor>     indexingRecordProcessors              = new HashMap<>();
 	private       OverDriveProcessor                       overDriveProcessor;
 	private       HashMap<String, HashMap<String, String>> translationMaps                       = new HashMap<>();
+	// The file based translation Maps
 	private       HashMap<String, LexileTitle>             lexileInformation                     = new HashMap<>();
 	private       HashMap<String, ARTitle>                 arInformation                         = new HashMap<>();
 	private       String                                   solrPort                              = PikaConfigIni.getIniValue("Reindex", "solrPort");
@@ -67,7 +68,6 @@ public class GroupedWorkIndexer {
 	private Long    indexStartTime;
 	private boolean fullReindex;
 	private long    lastReindexTime;
-	private boolean partialReindexRunning;
 	private boolean okToIndex = true;
 
 	private HashSet<String> worksWithInvalidLiteraryForms = new HashSet<>();
@@ -79,6 +79,7 @@ public class GroupedWorkIndexer {
 	private TreeMap<String, ScopedIndexingStats> indexingStats     = new TreeMap<>();
 	TreeSet<String> overDriveRecordsIndexed = new TreeSet<>();
 	TreeSet<String> overDriveRecordsSkipped = new TreeSet<>();
+	private int orphanedGroupedWorkPrimaryIdentifiersProcessed = 0;
 
 
 
@@ -100,10 +101,13 @@ public class GroupedWorkIndexer {
 
 		systemVariables = new PikaSystemVariables(this.logger, this.pikaConn);
 		//Load the last Index time
-		lastReindexTime = systemVariables.getLongValuedVariable("last_reindex_time");
-
-		//Check to see if a partial reindex is running
-		partialReindexRunning = systemVariables.getBooleanValuedVariable("partial_reindex_running");
+		final Long longValuedVariable = systemVariables.getLongValuedVariable("last_reindex_time");
+		if (longValuedVariable == null){
+			// Set Variable for the first time
+			systemVariables.setVariable("last_reindex_time", 0L);
+		} else {
+			lastReindexTime = longValuedVariable;
+		}
 
 		//Load a few statements we will need later
 		try{
@@ -160,6 +164,25 @@ public class GroupedWorkIndexer {
 			//TODO: Bypass this if called from an export process?
 			//TODO: Bypass when process user lists only
 
+			//Check to see if a partial reindex is running
+			boolean       partialReindexRunning;
+			final Boolean aBoolean = systemVariables.getBooleanValuedVariable("partial_reindex_running");
+			if (aBoolean == null) {
+				// Set Variable for the first time
+				logger.warn("System Variable 'partial_reindex_running' was not set");
+				partialReindexRunning = false;
+			} else {
+				partialReindexRunning = aBoolean;
+			}
+			if (partialReindexRunning) {
+				//Oops, a reindex is already running.
+				String note = "A partial reindex is already running, check to make sure that reindexes don't overlap since that can cause poor performance";
+				logger.warn(note);
+				GroupedReindexMain.addNoteToReindexLog(note);
+			} else {
+				updatePartialReindexRunning(true);
+			}
+
 			//Check to make sure that at least a couple of minutes have elapsed since the last index
 			//Periodically in the middle of the night we get indexes every minute or multiple times a minute
 			//which is annoying especially since it generally means nothing is changing.
@@ -167,7 +190,7 @@ public class GroupedWorkIndexer {
 			long minIndexingInterval = 2 * 60;
 			if (elapsedTime < minIndexingInterval && !singleWorkIndex) {
 				try {
-					GroupedReindexMain.addNoteToReindexLog("Pausing between indexes, last index ran " + Math.ceil(elapsedTime / 60) + " minutes ago");
+					GroupedReindexMain.addNoteToReindexLog("Pausing between indexes, last index ran " + Math.ceil(elapsedTime / 60f) + " minutes ago");
 					GroupedReindexMain.addNoteToReindexLog("Pausing for " + (minIndexingInterval - elapsedTime) + " seconds");
 					Thread.sleep((minIndexingInterval - elapsedTime) * 1000);
 				} catch (InterruptedException e) {
@@ -177,14 +200,6 @@ public class GroupedWorkIndexer {
 				GroupedReindexMain.addNoteToReindexLog("Index last ran " + (elapsedTime) + " seconds ago");
 			}
 
-			if (partialReindexRunning){
-				//Oops, a reindex is already running.
-				//No longer really care about this since it doesn't happen and there are other ways of finding a stuck process
-				logger.warn("A partial reindex is already running, check to make sure that reindexes don't overlap since that can cause poor performance");
-				GroupedReindexMain.addNoteToReindexLog("A partial reindex is already running, check to make sure that reindexes don't overlap since that can cause poor performance");
-			}else{
-				updatePartialReindexRunning(true);
-			}
 			updateServer = new ConcurrentUpdateSolrClient.Builder(baseSolrUrl).withQueueSize(500).withThreadCount(8).build();
 			updateServer.setRequestWriter(new BinaryRequestWriter());
 			solrServer   = new HttpSolrClient.Builder(baseSolrUrl).build();
@@ -271,7 +286,7 @@ public class GroupedWorkIndexer {
 			logger.error("Error loading record processors for ILS records", e);
 		}
 		//Load translation maps
-		loadSystemTranslationMaps();
+		loadSystemTranslationMaps(); // This loads the file-based mmaps
 
 		//Setup prepared statements to load local enrichment
 		try {
@@ -324,7 +339,7 @@ public class GroupedWorkIndexer {
 	}
 
 	private void loadLocationScopes() throws SQLException {
-		PreparedStatement locationInformationStmt = pikaConn.prepareStatement("SELECT library.libraryId, locationId, code, subLocation, " +
+		PreparedStatement locationInformationStmt = pikaConn.prepareStatement("SELECT library.libraryId, locationId, code, " +
 				"library.subdomain, location.facetLabel, location.displayName, library.pTypes, library.restrictOwningBranchesAndSystems, location.publicListsToInclude, " +
 				"library.enableOverdriveCollection AS enableOverdriveCollectionLibrary, " +
 				"location.enableOverdriveCollection AS enableOverdriveCollectionLocation, " +
@@ -345,7 +360,6 @@ public class GroupedWorkIndexer {
 		ResultSet locationInformationRS = locationInformationStmt.executeQuery();
 		while (locationInformationRS.next()){
 			String code        = locationInformationRS.getString("code").toLowerCase();
-			String subLocation = locationInformationRS.getString("subLocation");
 			String facetLabel  = locationInformationRS.getString("facetLabel");
 			String displayName = locationInformationRS.getString("displayName");
 			if (facetLabel.length() == 0){
@@ -363,11 +377,7 @@ public class GroupedWorkIndexer {
 			Scope locationScopeInfo = new Scope();
 			locationScopeInfo.setIsLibraryScope(false);
 			locationScopeInfo.setIsLocationScope(true);
-			String scopeName = code;
-			if (subLocation != null && subLocation.length() > 0){
-				scopeName = subLocation.toLowerCase();
-			}
-			locationScopeInfo.setScopeName(scopeName);
+			locationScopeInfo.setScopeName(code);
 			locationScopeInfo.setLibraryId(libraryId);
 			locationScopeInfo.setLocationId(locationId);
 			locationScopeInfo.setRelatedPTypes(pTypes.split(","));
@@ -394,7 +404,7 @@ public class GroupedWorkIndexer {
 			locationOwnedRecordRulesStmt.setLong(1, locationId);
 			ResultSet locationOwnedRecordRulesRS = locationOwnedRecordRulesStmt.executeQuery();
 			while (locationOwnedRecordRulesRS.next()){
-				locationScopeInfo.addOwnershipRule(new OwnershipRule(locationOwnedRecordRulesRS.getString("sourceName"), locationOwnedRecordRulesRS.getString("location"), locationOwnedRecordRulesRS.getString("subLocation")));
+				locationScopeInfo.addOwnershipRule(new OwnershipRule(locationOwnedRecordRulesRS.getString("sourceName"), locationOwnedRecordRulesRS.getString("location")));
 			}
 
 			locationRecordInclusionRulesStmt.setLong(1, locationId);
@@ -402,7 +412,6 @@ public class GroupedWorkIndexer {
 			while (locationRecordInclusionRulesRS.next()){
 				locationScopeInfo.addInclusionRule(new InclusionRule(locationRecordInclusionRulesRS.getString("sourceName"),
 						locationRecordInclusionRulesRS.getString("location"),
-						locationRecordInclusionRulesRS.getString("subLocation"),
 						locationRecordInclusionRulesRS.getString("iType"),
 						locationRecordInclusionRulesRS.getString("audience"),
 						locationRecordInclusionRulesRS.getString("format"),
@@ -424,7 +433,6 @@ public class GroupedWorkIndexer {
 				while (libraryRecordInclusionRulesRS.next()){
 					locationScopeInfo.addInclusionRule(new InclusionRule(libraryRecordInclusionRulesRS.getString("sourceName"),
 							libraryRecordInclusionRulesRS.getString("location"),
-							libraryRecordInclusionRulesRS.getString("subLocation"),
 							libraryRecordInclusionRulesRS.getString("iType"),
 							libraryRecordInclusionRulesRS.getString("audience"),
 							libraryRecordInclusionRulesRS.getString("format"),
@@ -520,7 +528,7 @@ public class GroupedWorkIndexer {
 			libraryOwnedRecordRulesStmt.setLong(1, libraryId);
 			ResultSet libraryOwnedRecordRulesRS = libraryOwnedRecordRulesStmt.executeQuery();
 			while (libraryOwnedRecordRulesRS.next()){
-				newScope.addOwnershipRule(new OwnershipRule(libraryOwnedRecordRulesRS.getString("sourceName"), libraryOwnedRecordRulesRS.getString("location"), libraryOwnedRecordRulesRS.getString("subLocation")));
+				newScope.addOwnershipRule(new OwnershipRule(libraryOwnedRecordRulesRS.getString("sourceName"), libraryOwnedRecordRulesRS.getString("location")));
 			}
 
 			libraryRecordInclusionRulesStmt.setLong(1, libraryId);
@@ -528,7 +536,6 @@ public class GroupedWorkIndexer {
 			while (libraryRecordInclusionRulesRS.next()){
 				newScope.addInclusionRule(new InclusionRule(libraryRecordInclusionRulesRS.getString("sourceName"),
 						libraryRecordInclusionRulesRS.getString("location"),
-						libraryRecordInclusionRulesRS.getString("subLocation"),
 						libraryRecordInclusionRulesRS.getString("iType"),
 						libraryRecordInclusionRulesRS.getString("audience"),
 						libraryRecordInclusionRulesRS.getString("format"),
@@ -773,22 +780,7 @@ public class GroupedWorkIndexer {
 			if (logger.isInfoEnabled()){
 				logger.info("Replication Enable command response :" + startReplicationResponse.getMessage());
 			}
-
-			// Start replication polling by the searcher
-			url = PikaConfigIni.getIniValue("Index", "url");
-			if (url != null && !url.isEmpty()) {
-				url += "/grouped/replication?command=enablepoll";
-				URLPostResponse startSearcherReplicationPollingResponse = Util.getURL(url, logger);
-				if (!startSearcherReplicationPollingResponse.isSuccess()) {
-					logger.error("Error disabling polling of solr searcher for replication.");
-				}
-				if (logger.isInfoEnabled()){
-					logger.info("Searcher Replication Polling Enable command response : " + startSearcherReplicationPollingResponse.getMessage());
-				}
-			} else {
-				logger.error("Unable to get solr search index url. Could not re-enable replication polling.");
-			}
-
+			enableSearcherSolrPolling();
 		}else {
 			try {
 				GroupedReindexMain.addNoteToReindexLog("Doing a soft commit to make sure changes are saved");
@@ -802,6 +794,7 @@ public class GroupedWorkIndexer {
 		}
 
 		if (!processingIndividualWork && !processingUserListsOnly) {
+//			enableSearcherSolrPolling();
 			updateLastReindexTime();
 		}
 
@@ -813,6 +806,41 @@ public class GroupedWorkIndexer {
 			updateFullReindexRunning(false);
 		}else{
 			updatePartialReindexRunning(false);
+		}
+	}
+
+	private void enableSearcherSolrPolling() {
+		int     tries   = 0;
+		boolean success = false;
+		String url = PikaConfigIni.getIniValue("Index", "url");
+		if (url != null && !url.isEmpty()) {
+			url += "/grouped/replication?command=enablepoll";
+			do {
+				URLPostResponse startSearcherReplicationPollingResponse = null;
+				try {
+					startSearcherReplicationPollingResponse = Util.getURL(url, logger);
+					success = startSearcherReplicationPollingResponse.isSuccess();
+				} catch (Exception e) {
+					if (tries == 2){
+						logger.error("Failed to get response to enable polling for 3 tries");
+					}
+				}
+				if (!success) {
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						logger.error("Error during thread sleep", e);
+					}
+					if (tries == 2) {
+						logger.error("Error enabling polling of solr searcher for replication after 3 tries.");
+					}
+				}
+				if (logger.isInfoEnabled()) {
+					logger.info("Searcher Replication Polling Enable command response : " + startSearcherReplicationPollingResponse.getMessage());
+				}
+			} while (!success && ++tries < 3);
+		} else {
+			logger.error("Unable to get solr search index url. Could not re-enable replication polling.");
 		}
 	}
 
@@ -939,6 +967,13 @@ public class GroupedWorkIndexer {
 		}
 	}
 
+	/**
+	 * Runs either the regular partial indexing or the regular full reindex
+	 *
+	 * @param siteMapsByScope
+	 * @param uniqueGroupedWorks
+	 * @return the number of works that were processed
+	 */
 	Long processGroupedWorks(HashMap<Scope, ArrayList<SiteMapEntry>> siteMapsByScope, HashSet<Long> uniqueGroupedWorks) {
 		long numWorksProcessed = 0L;
 		try {
@@ -976,7 +1011,7 @@ public class GroupedWorkIndexer {
 				numWorksProcessed++;
 				if (numWorksProcessed % 500 == 0){
 					GroupedReindexMain.updateNumWorksProcessed(numWorksProcessed);
-					if (fullReindex && (numWorksProcessed % 10000 == 0)){
+					if (fullReindex && (numWorksProcessed % 25000 == 0)){
 						//Testing shows that regular commits do seem to improve performance.
 						//However, we can't do it too often or we get errors with too many searchers warming.
 						//This is happening now with the auto commit settings in solrconfig.xml
@@ -986,7 +1021,7 @@ public class GroupedWorkIndexer {
 					}catch (Exception e){
 						logger.warn("Error committing changes", e);
 					}*/
-						GroupedReindexMain.addNoteToReindexLog(" " + numWorksProcessed + " grouped works processed.");
+						GroupedReindexMain.addNoteToReindexLog(numWorksProcessed + " grouped works processed.");
 					}
 				}
 				if (maxWorksToProcess != -1 && numWorksProcessed >= maxWorksToProcess){
@@ -1005,14 +1040,17 @@ public class GroupedWorkIndexer {
 		if (logger.isInfoEnabled()) {
 			logger.info("Finished processing grouped works.  Processed a total of " + numWorksProcessed + " grouped works");
 		}
+		if (orphanedGroupedWorkPrimaryIdentifiersProcessed > 0){
+			GroupedReindexMain.addNoteToReindexLog(orphanedGroupedWorkPrimaryIdentifiersProcessed + " orphaned Grouped Work Primary Identifiers were processed. (indexing profile no longer exists for the ids)");
+		}
 		return numWorksProcessed;
 	}
 
 	/**
 	 * Index a specific indexing profile
 	 * 
-	 * @param indexingProfileToProcess
-	 * @return
+	 * @param indexingProfileToProcess The indexing profile that will be indexed
+	 * @return the number of works that were processed
 	 */
 	Long processGroupedWorks(String indexingProfileToProcess) {
 		long numWorksProcessed = 0L;
@@ -1056,7 +1094,7 @@ public class GroupedWorkIndexer {
 					}catch (Exception e){
 						logger.warn("Error committing changes", e);
 					}*/
-						GroupedReindexMain.addNoteToReindexLog(" " + numWorksProcessed + " grouped works processed.");
+						GroupedReindexMain.addNoteToReindexLog(numWorksProcessed + " grouped works processed.");
 					}
 				}
 				if (lastUpdated == null){
@@ -1075,10 +1113,11 @@ public class GroupedWorkIndexer {
 	}
 
 	/**
-	 *  Process a work during the full Reindexing process
-	 * @param id
-	 * @param permanentId
-	 * @param grouping_category
+	 *  Process a work during the regular full or partial Reindexing process or a single work
+	 *
+	 * @param id grouped work database id number
+	 * @param permanentId  the hash-number used as the grouped work permanentId
+	 * @param grouping_category the work's grouping category
 	 * @param siteMapsByScope
 	 * @param uniqueGroupedWorks
 	 * @throws SQLException
@@ -1114,20 +1153,20 @@ public class GroupedWorkIndexer {
 				}
 
 				//This does the bulk of the work building fields for the solr document
-				updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier, loadedNovelistSeries);
-
-				//If we didn't add any records to the work (because they are all suppressed) revert to the original
-				if (groupedWork.getNumRecords() == numRecords) {
-					//No change in the number of records, revert to the previous
-					if (logger.isDebugEnabled()) {
-						logger.debug("Record " + identifier + " did not contribute any records to the work, reverting to previous state " + groupedWork.getNumRecords());
+				if (updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier, loadedNovelistSeries)) {
+					//If we didn't add any records to the work (because they are all suppressed) revert to the original
+					if (groupedWork.getNumRecords() == numRecords) {
+						//No change in the number of records, revert to the previous
+						if (logger.isDebugEnabled()) {
+							logger.debug("Record " + identifier + " did not contribute any records to the work, reverting to previous state " + groupedWork.getNumRecords());
+						}
+						groupedWork = originalWork;
+					} else {
+						if (logger.isDebugEnabled()) {
+							logger.debug("Record " + identifier + " added to work " + permanentId);
+						}
+						numPrimaryIdentifiers++;
 					}
-					groupedWork = originalWork;
-				} else {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Record " + identifier + " added to work " + permanentId);
-					}
-					numPrimaryIdentifiers++;
 				}
 			}
 		}
@@ -1136,16 +1175,6 @@ public class GroupedWorkIndexer {
 			//Add a grouped work to any scopes that are relevant
 			groupedWork.updateIndexingStats(indexingStats);
 
-			//Update the grouped record based on data for each work
-			//getGroupedWorkIdentifiers.setLong(1, id);
-			/*ResultSet groupedWorkIdentifiers = getGroupedWorkIdentifiers.executeQuery();
-			//This just adds isbns, issns, upcs, and oclc numbers to the index
-			while (groupedWorkIdentifiers.next()) {
-				String type = groupedWorkIdentifiers.getString("type");
-				String identifier = groupedWorkIdentifiers.getString("identifier");
-				updateGroupedWorkForSecondaryIdentifier(groupedWork, type, identifier);
-			}
-			groupedWorkIdentifiers.close();*/
 
 			//Load local (Pika) enrichment for the work
 			loadLocalEnrichment(groupedWork);
@@ -1175,7 +1204,7 @@ public class GroupedWorkIndexer {
 				try {
 					updateServer.deleteById(permanentId);
 				}catch (Exception e){
-					logger.error("Error deleting suppressed record", e);
+					logger.error("Error deleting suppressed work " + permanentId, e);
 				}
 			}
 
@@ -1236,20 +1265,20 @@ public class GroupedWorkIndexer {
 				}
 
 				//This does the bulk of the work building fields for the solr document
-				updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier, loadedNovelistSeries);
-
-				//If we didn't add any records to the work (because they are all suppressed) revert to the original
-				if (groupedWork.getNumRecords() == numRecords) {
-					//No change in the number of records, revert to the previous
-					if (logger.isDebugEnabled()) {
-						logger.debug("Record " + identifier + " did not contribute any records to the work, reverting to previous state " + groupedWork.getNumRecords());
+				if (updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier, loadedNovelistSeries)) {
+					//If we didn't add any records to the work (because they are all suppressed) revert to the original
+					if (groupedWork.getNumRecords() == numRecords) {
+						//No change in the number of records, revert to the previous
+						if (logger.isDebugEnabled()) {
+							logger.debug("Record " + identifier + " did not contribute any records to the work, reverting to previous state " + groupedWork.getNumRecords());
+						}
+						groupedWork = originalWork;
+					} else {
+						if (logger.isDebugEnabled()) {
+							logger.debug("Record " + identifier + " added to work " + permanentId);
+						}
+						numPrimaryIdentifiers++;
 					}
-					groupedWork = originalWork;
-				} else {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Record " + identifier + " added to work " + permanentId);
-					}
-					numPrimaryIdentifiers++;
 				}
 			}
 		}
@@ -1257,17 +1286,6 @@ public class GroupedWorkIndexer {
 		if (numPrimaryIdentifiers > 0) {
 			//Add a grouped work to any scopes that are relevant
 			groupedWork.updateIndexingStats(indexingStats);
-
-			//Update the grouped record based on data for each work
-			//getGroupedWorkIdentifiers.setLong(1, id);
-			/*ResultSet groupedWorkIdentifiers = getGroupedWorkIdentifiers.executeQuery();
-			//This just adds isbns, issns, upcs, and oclc numbers to the index
-			while (groupedWorkIdentifiers.next()) {
-				String type = groupedWorkIdentifiers.getString("type");
-				String identifier = groupedWorkIdentifiers.getString("identifier");
-				updateGroupedWorkForSecondaryIdentifier(groupedWork, type, identifier);
-			}
-			groupedWorkIdentifiers.close();*/
 
 			//Load local (Pika) enrichment for the work
 			loadLocalEnrichment(groupedWork);
@@ -1297,7 +1315,7 @@ public class GroupedWorkIndexer {
 				try {
 					updateServer.deleteById(permanentId);
 				}catch (Exception e){
-					logger.error("Error deleting suppressed record", e);
+					logger.error("Error deleting suppressed work " + permanentId, e);
 				}
 			}
 
@@ -1329,9 +1347,9 @@ public class GroupedWorkIndexer {
 				lexileDataMatches++;
 				if (logger.isDebugEnabled() && fullReindex) {
 					FuzzyScore   score                = new FuzzyScore(Locale.ENGLISH);
-					String groupTitle           = groupedWork.getTitle();
+					String       groupTitle           = groupedWork.getTitle();
 					final String groupWorkPermanentId = groupedWork.getId();
-					String lexTitle              = lexileTitle.getTitle();
+					String       lexTitle             = lexileTitle.getTitle();
 					if (groupTitle.length() > 10) {
 						// Only check titles with more than 10 characters, bcs the mismatch testing is probably not useful with less
 						groupTitle = groupTitle.toLowerCase();
@@ -1464,36 +1482,28 @@ public class GroupedWorkIndexer {
 		return loadedNovelistSeries;
 	}
 
-	private void updateGroupedWorkForPrimaryIdentifier(GroupedWorkSolr groupedWork, RecordIdentifier identifier, boolean loadedNovelistSeries)  {
-		groupedWork.addAlternateId(identifier.getIdentifier());
+	/**
+	 * @param groupedWork Solr document object
+	 * @param identifier  record id for the primary identifier
+	 * @param loadedNovelistSeries whether the Novelist Series info was loaded
+	 * @return  whether a primary identifier had a processor and was processed
+	 */
+	private boolean updateGroupedWorkForPrimaryIdentifier(GroupedWorkSolr groupedWork, RecordIdentifier identifier, boolean loadedNovelistSeries) {
 		final String indexingSource = identifier.getSource().toLowerCase();
-		switch (indexingSource) {
-			case "overdrive":
-				overDriveProcessor.processRecord(groupedWork, identifier.getIdentifier(), loadedNovelistSeries);
-				break;
-			default:
-				if (indexingRecordProcessors.containsKey(indexingSource)) {
-					indexingRecordProcessors.get(indexingSource).processRecord(groupedWork, identifier, loadedNovelistSeries);
-				}else if (logger.isDebugEnabled()){
-					logger.debug("Could not find a record processor for " + identifier);
-				}
-				break;
+		if ("overdrive".equals(indexingSource)) {
+			overDriveProcessor.processRecord(groupedWork, identifier.getIdentifier(), loadedNovelistSeries);
+		} else if (indexingRecordProcessors.containsKey(indexingSource)) {
+			indexingRecordProcessors.get(indexingSource).processRecord(groupedWork, identifier, loadedNovelistSeries);
+		} else {
+			orphanedGroupedWorkPrimaryIdentifiersProcessed++;
+			if (logger.isDebugEnabled()) {
+				logger.debug("Orphaned primary identifier, no processor for " + identifier);
+			}
+			return false;
 		}
+		groupedWork.addAlternateId(identifier.getIdentifier());
+		return true;
 	}
-
-	/*private void updateGroupedWorkForSecondaryIdentifier(GroupedWorkSolr groupedWork, String type, String identifier) {
-		type = type.toLowerCase();
-		if (type.equals("isbn")){
-			groupedWork.addIsbn(identifier);
-		}else if (type.equals("upc")){
-			groupedWork.addUpc(identifier);
-		}else if (type.equals("order")){
-			//Add as an alternate id
-			groupedWork.addAlternateId(identifier);
-		}else if (!type.equals("issn") && !type.equals("oclc")){
-			logger.warn("Unknown identifier type " + type);
-		}
-	}*/
 
 	/**
 	 * System translation maps are used for things that are not customizable (or that shouldn't be customized)

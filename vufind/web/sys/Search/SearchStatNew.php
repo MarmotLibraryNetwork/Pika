@@ -27,41 +27,40 @@ class SearchStatNew extends DB_DataObject {
 	public $numSearches;      //int(16)
 
 	function keys(){
-		return array('id', 'phrase');
+		return ['id', 'phrase'];
 	}
 
+	private function isSearchPhraseToIgnore(string $phrase){
+		//Ignore numeric, spammy, complex or long searches
+		return is_numeric($phrase)
+			|| strlen($phrase) >= 256
+			|| strpos($phrase, '(') !== false || strpos($phrase, ')') !== false
+			|| preg_match('/http:|mailto:|https:/i', $phrase);
+}
+
 	function getSearchSuggestions($phrase, $type){
-		$searchStat = new SearchStatNew();
 		$phrase     = trim($phrase);
 		//Don't bother getting suggestions for numeric, spammy, or long searches
-		if (is_numeric($phrase)){
-			return array();
+		if ($this->isSearchPhraseToIgnore($phrase)){
+			return [];
 		}
-		if (strpos($phrase, '(') !== false || strpos($phrase, ')') !== false){
-			return array();
-		}
-		if (preg_match('/http:|mailto:|https:/i', $phrase)){
-			return array();
-		}
-		if (strlen($phrase) >= 256){
-			return array();
-		}
+
 		//Don't suggest things to users that will result in them not getting any results
+		$results    = [];
+		$searchStat = new SearchStatNew();
 		$searchStat->whereAdd("MATCH(phrase) AGAINST ('" . $searchStat->escape($phrase) . "')");
 		//$searchStat->orderBy("numSearches DESC");
 		$searchStat->limit(0, 20);
-		$searchStat->find();
-		$results = array();
-		if ($searchStat->N > 0){
+		if ($searchStat->find()){
 			while ($searchStat->fetch()){
 				$searchStat->phrase = trim(str_replace('"', '', $searchStat->phrase));
 				if ($searchStat->phrase != $phrase && !array_key_exists($searchStat->phrase, $results)){
 					$results[str_pad($searchStat->numSearches, 10, '0', STR_PAD_LEFT) . $searchStat->phrase] =
-						array(
+						[
 							'phrase'      => $searchStat->phrase,
 							'numSearches' => $searchStat->numSearches,
 							'numResults'  => 1
-						);
+						];
 				}
 			}
 		}else{
@@ -71,9 +70,7 @@ class SearchStatNew extends DB_DataObject {
 			$searchStat->whereAdd("phrase LIKE '" . $searchStat->escape($phrase, true) . "%'");
 			$searchStat->orderBy("numSearches DESC");
 			$searchStat->limit(0, 11);
-			$searchStat->find();
-			$results = array();
-			if ($searchStat->N > 0){
+			if ($searchStat->find()){
 				while ($searchStat->fetch()){
 					$searchStat->phrase = trim(str_replace('"', '', $searchStat->phrase));
 					if ($this->phrase != $phrase && !array_key_exists($searchStat->phrase, $results)){
@@ -88,38 +85,21 @@ class SearchStatNew extends DB_DataObject {
 		return $results;
 	}
 
-	function saveSearch($phrase, $type = false, $numResults){
+	function saveSearch($phrase, $numResults){
 		//Don't bother to count things that didn't return results.
-		if (!isset($numResults) || $numResults == 0){
+		if (empty($numResults)){
 			return;
 		}
 
-		//Only save basic searches
-		if (strpos($phrase, '(') !== false || strpos($phrase, ')') !== false){
-			return;
-		}
-
-		//Don't save searches that are numeric (if someone has a number they won't need suggestions).
-		if (is_numeric($phrase)){
-			return;
-		}
-
-		//Don't save searches that look like spam
-		if (preg_match('/http:|mailto:|https:/i', $phrase)){
-			return;
-		}
-
-		//Don't save really long searches
-		if (strlen($phrase) >= 256){
+		if ($this->isSearchPhraseToIgnore($phrase)){
 			return;
 		}
 
 		$phrase             = str_replace("\t", '', $phrase);
 		$searchStat         = new SearchStatNew();
 		$searchStat->phrase = trim(strtolower($phrase));
-		$searchStat->find();
 		$isNew = true;
-		if ($searchStat->N > 0){
+		if ($searchStat->find()){
 			$searchStat->fetch();
 			$searchStat->numSearches++;
 			$isNew = false;

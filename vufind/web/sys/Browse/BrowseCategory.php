@@ -189,7 +189,7 @@ class BrowseCategory extends DB_DataObject{
 		$userLists->public = 1;
 		$userLists->orderBy('title asc');
 		$userLists->find();
-		$sourceLists     = array();
+		$sourceLists     = [];
 		$sourceLists[-1] = 'Generate from search term and filters';
 		while ($userLists->fetch()){
 
@@ -204,18 +204,18 @@ class BrowseCategory extends DB_DataObject{
 		unset($browseSubCategoryStructure['weight']);
 		unset($browseSubCategoryStructure['browseCategoryId']);
 
-		$sortOptions     = array('relevance' => 'Best Match', 'popularity' => 'Total Checkouts', 'newest_to_oldest' => 'Date Added', 'author' => 'Author', 'title' => 'Title', 'user_rating' => 'User Rating');
+		$sortOptions     = ['relevance' => 'Best Match', 'popularity' => 'Total Checkouts', 'newest_to_oldest' => 'Date Added', 'author' => 'Author', 'title' => 'Title', 'user_rating' => 'User Rating'];
 
-		$structure = array(
-			'id'          => array('property' => 'id',     'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of this association'),
-			'label'       => array('property' => 'label',  'type' => 'text', 'label' => 'Label', 'description' => 'The label to show to the user', 'maxLength' => 50, 'required' => true),
-			'textId'      => array('property' => 'textId', 'type' => 'text', 'label' => 'textId', 'description' => 'A textual id to identify the category', 'serverValidation' => 'validateTextId', 'maxLength' => 50, 'required' => true),
-			'userId'      => array('property' => 'userId', 'type' => 'label', 'label' => 'userId', 'description' => 'The User Id who created this category', 'default' => UserAccount::getActiveUserId()),
+		$structure = [
+			'id'          => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of this association'],
+			'label'       => ['property' => 'label', 'type' => 'text', 'label' => 'Label', 'description' => 'The label to show to the user', 'maxLength' => 50, 'required' => true],
+			'textId'      => ['property' => 'textId', 'type' => 'text', 'label' => 'textId', 'description' => 'A textual id to identify the category', 'serverValidation' => 'validateTextId', 'maxLength' => 50, 'required' => true],
+			'userId'      => ['property' => 'userId', 'type' => 'label', 'label' => 'userId', 'description' => 'The User Id who created this category', 'default' => UserAccount::getActiveUserId()],
 			//			'sharing' => array('property'=>'sharing', 'type'=>'enum', 'values' => array('private' => 'Just Me', 'location' => 'My Home Branch', 'library' => 'My Home Library', 'everyone' => 'Everyone'), 'label'=>'Share With', 'description'=>'Who the category should be shared with', 'default' =>'everyone'),
-			'description' => array('property' => 'description', 'type' => 'html', 'label' => 'Description', 'description' => 'A description of the category.', 'hideInLists' => true),
+			'description' => ['property' => 'description', 'type' => 'html', 'label' => 'Description', 'description' => 'A description of the category.', 'hideInLists' => true],
 
 			// Define oneToMany interface for choosing and arranging sub-categories
-			'subBrowseCategories' => array(
+			'subBrowseCategories' => [
 				'property'      => 'subBrowseCategories',
 				'type'          => 'oneToMany',
 				'label'         => 'Browse Sub-Categories',
@@ -228,27 +228,27 @@ class BrowseCategory extends DB_DataObject{
 				'storeDb'       => true,
 				'allowEdit'     => false,
 				'canEdit'       => false,
-			),
+			],
 
 			//			'catalogScoping' => array('property'=>'catalogScoping', 'type'=>'enum', 'label'=>'Catalog Scoping', 'values' => array('unscoped' => 'Unscoped', 'library' => 'Current Library', 'location' => 'Current Location'), 'description'=>'What scoping should be used for this search scope?.', 'default'=>'unscoped'),
 			// Disabled setting this option since it is not an implemented feature.
-			'searchTerm'         => array('property' => 'searchTerm', 'type' => 'text', 'label' => 'Search Term', 'description' => 'A default search term to apply to the category', 'default' => '', 'hideInLists' => true, 'maxLength' => 500),
-			'defaultFilter'      => array('property' => 'defaultFilter', 'type' => 'textarea', 'label' => 'Default Filter(s)', 'description' => 'Filters to apply to the search by default.', 'hideInLists' => true, 'rows' => 3, 'cols' => 80),
-			'sourceListId'       => array('property' => 'sourceListId', 'type' => 'enum', 'values' => $sourceLists, 'label' => 'Source List', 'description' => 'A public list to display titles from'),
-			'defaultSort'        => array('property' => 'defaultSort', 'type' => 'enum', 'label' => 'Default Sort', 'values' => $sortOptions, 'description' => 'The default sort for the search if none is specified', 'default' => 'relevance', 'hideInLists' => true),
-			'numTimesShown'      => array('property' => 'numTimesShown', 'type' => 'label', 'label' => 'Times Shown', 'description' => 'The number of times this category has been shown to users'),
-			'numTitlesClickedOn' => array('property' => 'numTitlesClickedOn', 'type' => 'label', 'label' => 'Titles Clicked', 'description' => 'The number of times users have clicked on titles within this category'),
-		);
+			'searchTerm'         => ['property' => 'searchTerm', 'type' => 'text', 'label' => 'Search Term', 'description' => 'A default search term to apply to the category', 'default' => '', 'hideInLists' => true, 'maxLength' => 500],
+			'defaultFilter'      => ['property' => 'defaultFilter', 'type' => 'textarea', 'label' => 'Default Filter(s)', 'description' => 'Filters to apply to the search by default.', 'hideInLists' => true, 'rows' => 3, 'cols' => 80],
+			'sourceListId'       => ['property' => 'sourceListId', 'type' => 'enum', 'values' => $sourceLists, 'label' => 'Source List', 'description' => 'A public list to display titles from'],
+			'defaultSort'        => ['property' => 'defaultSort', 'type' => 'enum', 'label' => 'Default Sort', 'values' => $sortOptions, 'description' => 'The default sort for the search if none is specified', 'default' => 'relevance', 'hideInLists' => true],
+			//'numTimesShown'      => ['property' => 'numTimesShown', 'type' => 'label', 'label' => 'Times Shown', 'description' => 'The number of times this category has been shown to users'],
+			//'numTitlesClickedOn' => ['property' => 'numTitlesClickedOn', 'type' => 'label', 'label' => 'Titles Clicked', 'description' => 'The number of times users have clicked on titles within this category'],
+		];
 
 		return $structure;
 	}
 
 	function validateTextId(){
 		//Setup validation return array
-		$validationResults = array(
+		$validationResults = [
 			'validatedOk' => true,
-			'errors'      => array(),
-		);
+			'errors'      => [],
+		];
 
 		if (empty($this->textId)){
 			$this->textId = $this->label . ' ' . $this->sharing;

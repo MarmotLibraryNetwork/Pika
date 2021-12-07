@@ -1,3 +1,6 @@
+# Standard english stop words taken from Lucene's StopAnalyzer
+a
+# a was missing from this file previously
 an
 and
 are
@@ -11,13 +14,19 @@ if
 in
 into
 is
+it
+# it was missing from this file previously
+no
+# no was missing from this file previously
 not
 of
 on
 or
 s
+# s is not from the standard list
 such
 t
+# t is not from the standard list
 that
 the
 their
@@ -28,5 +37,6 @@ they
 this
 to
 was
-will
+#will
+# Removing will from stop list to help searches for the common name Will
 with

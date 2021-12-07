@@ -3,6 +3,7 @@ Disallow: /cgi-bin/
 Disallow: /Search/
 Disallow: /Admin/
 Disallow: /Author/
+Disallow: /MaterialsRequest/
 Disallow: /MyAccount/
 Disallow: /images/fiveStar/
 Disallow: /vufind/

@@ -207,7 +207,7 @@ class MaterialsRequest_AJAX extends AJAXHandler {
 									// Get Barcode Column
 									$barCodeColumn = null;
 									if ($accountProfile = $user->getAccountProfile()){
-										$barCodeColumn = $accountProfile->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
+										$barCodeColumn = 'barcode'; //$accountProfile->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
 									}
 									$interface->assign('barCodeColumn', $barCodeColumn);
 
@@ -305,7 +305,7 @@ class MaterialsRequest_AJAX extends AJAXHandler {
 								// Get Barcode Column
 								$barCodeColumn = null;
 								if ($accountProfile = $requestUser->getAccountProfile()){
-									$barCodeColumn = $accountProfile->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
+									$barCodeColumn = 'barcode'; //$accountProfile->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
 								}
 								$interface->assign('barCodeColumn', $barCodeColumn);
 							}

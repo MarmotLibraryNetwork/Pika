@@ -28,53 +28,53 @@ class ListWidgetListsLinks extends DB_DataObject {
 
 
 	function keys(){
-		return array('id');
+		return ['id'];
 	}
 
 	static function getObjectStructure(){
-		return array(
-			'id'           => array(
+		return [
+			'id'           => [
 				'property'    => 'id',
 				'type'        => 'hidden',
 				'label'       => 'Id',
 				'description' => 'The unique id of the list widget file.',
 				'primaryKey'  => true,
 				'storeDb'     => true
-			),
-			'weight'       => array(
+			],
+			'weight'       => [
 				'property'    => 'weight',
 				'type'        => 'text',
 				'label'       => 'Weight',
 				'description' => '',
 				'required'    => true,
 				'storeDb'     => true
-			),
-			'listWidgetId' => array(
+			],
+			'listWidgetId' => [
 				'property'    => 'listWidgetListsId',
 				'type'        => 'text',
 				'label'       => 'List Widget List Id',
 				'description' => 'The widget this list is associated with.',
 				'required'    => true,
 				'storeDb'     => true
-			),
-			'name'         => array(
+			],
+			'name'         => [
 				'property'    => 'name',
 				'type'        => 'text',
 				'label'       => 'Name',
 				'description' => 'The name of the list to display in the tab.',
 				'required'    => true,
 				'storeDb'     => true
-			),
-			'link'         => array(
+			],
+			'link'         => [
 				'property'    => 'link',
 				'type'        => 'text',
 				'label'       => 'Link',
 				'description' => 'The link of the list to display in the tab.',
 				'required'    => true,
 				'storeDb'     => true
-			)
+			]
 
-		);
+		];
 	}
 
 }

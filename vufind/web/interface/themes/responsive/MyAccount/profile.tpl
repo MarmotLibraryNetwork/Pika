@@ -67,7 +67,7 @@
 									{* Only Display Barcode when the barcode is used as a username and not a password *}
 									<div class="form-group">
 										<div class="col-xs-4"><strong>{translate text='Library Card Number'}:</strong></div>
-										<div class="col-xs-8">{$profile->cat_username|escape}</div>
+										<div class="col-xs-8">{$profile->barcode|escape}</div>
 									</div>
 									{/if}
 									<div class="form-group">
@@ -85,9 +85,9 @@
 											<label for="address1">{translate text='Address'}:</label>
 										</div>
 										<div class="col-xs-8">
-											{if $edit && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
+											{if !$offline && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
 												<input name="address1" id="address1" value='{$profile->address1|escape}' size="50" maxlength="75" class="form-control required">
-											{elseif $edit && $millenniumNoAddress}
+											{elseif !$offline && $millenniumNoAddress}
 												<input name="address1" id="address1" value='{$profile->address1|escape}' type="hidden">
 												{if $profile->careOf}{$profile->careOf|escape}<br>{/if}
 												{$profile->address1|escape}
@@ -99,8 +99,8 @@
 									<div class="form-group">
 										<div class="col-xs-4"><label for="city">{translate text='City'}:</label></div>
 										<div class="col-xs-8">
-											{if $edit && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}<input name="city" id="city" value="{$profile->city|escape}" size="50" maxlength="75" class="form-control required">
-											{elseif $edit && $millenniumNoAddress}
+											{if !$offline && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}<input name="city" id="city" value="{$profile->city|escape}" size="50" maxlength="75" class="form-control required">
+											{elseif !$offline && $millenniumNoAddress}
 												<input name="city" id="city" value="{$profile->city|escape}" type="hidden">
 												{$profile->city|escape}
 											{else}{$profile->city|escape}{/if}
@@ -109,8 +109,8 @@
 									<div class="form-group">
 										<div class="col-xs-4"><label for="state">{translate text='State'}:</label></div>
 										<div class="col-xs-8">
-											{if $edit && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}<input name='state' id="state" value="{$profile->state|escape}" size="50" maxlength="75" class="form-control required">
-											{elseif $edit && $millenniumNoAddress}
+											{if !$offline && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}<input name='state' id="state" value="{$profile->state|escape}" size="50" maxlength="75" class="form-control required">
+											{elseif !$offline && $millenniumNoAddress}
 												<input name="state" id="state" value="{$profile->state|escape}" type="hidden">
 												{$profile->state|escape}
 											{else}{$profile->state|escape}{/if}
@@ -119,9 +119,9 @@
 									<div class="form-group">
 										<div class="col-xs-4"><label for="zip">{translate text='Zip'}:</label></div>
 										<div class="col-xs-8">
-											{if $edit && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
+											{if !$offline && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
 												<input name="zip" id="zip" value="{$profile->zip|escape}" size="50" maxlength="75" class="form-control required">
-											{elseif $edit && $millenniumNoAddress}
+											{elseif !$offline && $millenniumNoAddress}
 												<input name="zip" id="zip" value="{$profile->zip|escape}" type="hidden">
 												{$profile->zip|escape}
 											{else}{$profile->zip|escape}{/if}
@@ -130,7 +130,7 @@
 									<div class="form-group">
 										<div class="col-xs-4"><label for="phone">{translate text='Primary Phone Number'}:</label></div>
 										<div class="col-xs-8">
-											{if $edit && $canUpdateContactInfo && ($ils != 'Horizon')}
+											{if !$offline && $canUpdateContactInfo && ($ils != 'Horizon')}
 												<input type="tel" name="phone" id="phone" value="{$profile->phone|escape}" size="50" maxlength="75" class="form-control">
 											{else}
 												{$profile->phone|escape}
@@ -140,14 +140,14 @@
 									{if $showWorkPhoneInProfile}
 										<div class="form-group">
 											<div class="col-xs-4"><label for="workPhone">{translate text='Work Phone Number'}:</label></div>
-											<div class="col-xs-8">{if $edit && $canUpdateContactInfo && $ils != 'Horizon'}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control">{else}{$profile->workPhone|escape}{/if}</div>
+											<div class="col-xs-8">{if !$offline && $canUpdateContactInfo && $ils != 'Horizon'}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control">{else}{$profile->workPhone|escape}{/if}</div>
 										</div>
 									{/if}
 								{/if}
 								<div class="form-group">
 									<div class="col-xs-4"><label for="email">{translate text='E-mail'}:</label></div>
 									<div class="col-xs-8">
-										{if $edit == true && $canUpdateContactInfo == true}<input type="text" name="email" id="email" value="{$profile->email|escape}" size="50" maxlength="75" class="form-control multiemail">{else}{$profile->email|escape}{/if}
+										{if !$offline && $canUpdateContactInfo == true}<input type="text" name="email" id="email" value="{$profile->email|escape}" size="50" maxlength="75" class="form-control multiemail">{else}{$profile->email|escape}{/if}
 										{* Multiemail class is for form validation; type has to be text for multiemail validation to work correctly *}
 									</div>
 								</div>
@@ -155,7 +155,7 @@
 									<div class="form-group">
 										<div class="col-xs-4"><label for="pickupLocation" class="">{translate text='Pickup Location'}:</label></div>
 										<div class="col-xs-8">
-											{if $edit == true && $canUpdateContactInfo == true}
+											{if !$offline && $canUpdateContactInfo == true}
 												<select name="pickupLocation" id="pickupLocation" class="form-control">
 													{if count($pickupLocations) > 0}
 														{foreach from=$pickupLocations item=location}
@@ -185,13 +185,14 @@
 
 								{/if}
 
-								{if !$offline && $edit == true && $canUpdateContactInfo}
+								{if !$offline && $canUpdateContactInfo}
 									<div class="form-group">
 										<div class="col-xs-8 col-xs-offset-4">
 											<input type="submit" value="Update Contact Information" name="updateContactInfo" class="btn btn-sm btn-primary">
 										</div>
 									</div>
 								{/if}
+
 
 							</form>
 						</div>
@@ -221,19 +222,19 @@
 									<div class="form-group">
 										<div class="col-xs-4"><label for="pin" class="control-label">{translate text='Old PIN'}:</label></div>
 										<div class="col-xs-8">
-											<input type="password" name="pin" id="pin" value="" size="4" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{else}{if $alphaNumericOnlyPins} alphaNumeric{/if}{/if}">
+											<input type="password" name="pin" id="pin" value="" size="4" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
 										</div>
 									</div>
 									<div class="form-group">
 										<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New PIN'}:</label></div>
 										<div class="col-xs-8">
-											<input type="password" name="pin1" id="pin1" value="" size="4" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{else}{if $alphaNumericOnlyPins} alphaNumeric{/if}{/if}">
+											<input type="password" name="pin1" id="pin1" value="" size="4" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
 										</div>
 									</div>
 									<div class="form-group">
 										<div class="col-xs-4"><label for="pin2" class="control-label">{translate text='Re-enter New PIN'}:</label></div>
 										<div class="col-xs-8">
-												<input type="password" name="pin2" id="pin2" value="" size="4" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{else}{if $alphaNumericOnlyPins} alphaNumeric{/if}{/if}">
+												<input type="password" name="pin2" id="pin2" value="" size="4" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
 										</div>
 									</div>
 									<div class="form-group">
@@ -298,14 +299,14 @@
 								<div class="form-group">
 									<div class="col-xs-4"><label for="hooplaCheckOutConfirmation" class="control-label">{translate text='Ask for confirmation before checking out from Hoopla'}:</label></div>
 									<div class="col-xs-8">
-										{if $edit == true}
+										{if !$offline}
 											<input type="checkbox" name="hooplaCheckOutConfirmation" id="hooplaCheckOutConfirmation" {if $profile->hooplaCheckOutConfirmation==1}checked='checked'{/if} data-switch="">
 										{else}
 											{if $profile->hooplaCheckOutConfirmation==0}No{else}Yes{/if}
 										{/if}
 									</div>
 								</div>
-								{if !$offline && $edit == true}
+								{if !$offline}
 									<div class="form-group">
 										<div class="col-xs-8 col-xs-offset-4">
 											<input type="submit" value="Update Hoopla Options" name="updateHoopla" class="btn btn-sm btn-primary">
@@ -338,7 +339,7 @@
 									<div class="form-group">
 										<div class="col-xs-4"><label for="myLocation1" class="control-label">{translate text='My First Alternate Library'}:</label></div>
 										<div class="col-xs-8">
-											{if $edit == true}
+											{if !$offline}
 												{html_options name="myLocation1" id="myLocation1" class="form-control" options=$locationList selected=$profile->myLocation1Id}
 											{else}
 												{$profile->myLocation1|escape}
@@ -347,7 +348,7 @@
 									</div>
 									<div class="form-group">
 										<div class="col-xs-4"><label for="myLocation2" class="control-label">{translate text='My Second Alternate Library'}:</label></div>
-										<div class="col-xs-8">{if $edit == true}{html_options name="myLocation2" id="myLocation2" class="form-control" options=$locationList selected=$profile->myLocation2Id}{else}{$profile->myLocation2|escape}{/if}</div>
+										<div class="col-xs-8">{if !$offline}{html_options name="myLocation2" id="myLocation2" class="form-control" options=$locationList selected=$profile->myLocation2Id}{else}{$profile->myLocation2|escape}{/if}</div>
 									</div>
 								{/if}
 
@@ -355,7 +356,7 @@
 									<div class="form-group">
 										<div class="col-xs-4"><label for="noPromptForUserReviews" class="control-label">{translate text='Do not prompt me for reviews after rating titles'}:</label></div>
 										<div class="col-xs-8">
-											{if $edit == true}
+											{if !$offline}
 												<input type="checkbox" name="noPromptForUserReviews" id="noPromptForUserReviews" {if $profile->noPromptForUserReviews==1}checked='checked'{/if} data-switch="">
 											{else}
 												{if $profile->noPromptForUserReviews==0}No{else}Yes{/if}
@@ -365,7 +366,7 @@
 									</div>
 								{/if}
 
-								{if !$offline && $edit == true}
+								{if !$offline}
 									<div class="form-group">
 										<div class="col-xs-8 col-xs-offset-4">
 											<input type="submit" value="Update My Preferences" name="updateMyPreferences" class="btn btn-sm btn-primary">
@@ -468,7 +469,7 @@
 									<div class="form-group row">
 										<div class="col-xs-4"><label for="bypassAutoLogout" class="control-label">{translate text='Bypass Automatic Logout'}:</label></div>
 										<div class="col-xs-8">
-											{if $edit == true}
+											{if !$offline}
 												<input type="checkbox" name="bypassAutoLogout" id="bypassAutoLogout" {if $profile->bypassAutoLogout==1}checked='checked'{/if} data-switch="">
 											{else}
 												{if $profile->bypassAutoLogout==0}No{else}Yes{/if}
@@ -486,7 +487,7 @@
 											<label for="materialsRequestReplyToAddress" class="control-label">Reply-To Email Address:</label>
 										</div>
 										<div class="col-xs-8">
-											{if $edit == true}
+											{if !$offline}
 											<input type="text" id="materialsRequestReplyToAddress" name="materialsRequestReplyToAddress" class="form-control multiemail" value="{$user->materialsRequestReplyToAddress}">
 											{else}
 												{$user->materialsRequestReplyToAddress}
@@ -498,7 +499,7 @@
 											<label for="materialsRequestEmailSignature" class="control-label">Email Signature:</label>
 										</div>
 										<div class="col-xs-8">
-											{if $edit == true}
+											{if !$offline}
 												<textarea id="materialsRequestEmailSignature" name="materialsRequestEmailSignature" class="form-control">{$user->materialsRequestEmailSignature}</textarea>
 											{else}
 												{$user->materialsRequestEmailSignature}
@@ -508,7 +509,7 @@
 								{/if}
 
 
-									{if !$offline && $edit == true}
+									{if !$offline}
 										<div class="form-group">
 											<div class="col-xs-8 col-xs-offset-4">
 												<input type="submit" value="Update My Staff Settings" name="updateStaffSettings" class="btn btn-sm btn-primary">

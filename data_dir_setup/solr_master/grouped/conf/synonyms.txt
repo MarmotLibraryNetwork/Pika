@@ -1,3 +1,23 @@
+#
+#     Blank lines and lines starting with '#' are comments.
+#     Explicit mappings match any token sequence on the LHS of "=>" and replace with all alternatives on the RHS. These types of mappings ignore the expand parameter in the constructor. Example:
+#
+#         i-pod, i pod => ipod
+#
+#     Equivalent synonyms may be separated with commas and give no explicit mapping. In this case the mapping behavior will be taken from the expand parameter in the constructor. This allows the same synonym file to be used in different synonym handling strategies. Example:
+#
+#         ipod, i-pod, i pod
+#
+#     Multiple synonym mapping entries are merged. Example:
+#
+#         foo => foo bar
+#         foo => baz
+#
+#         is equivalent to
+#
+#        foo => foo bar, baz
+#
+illegal alien, illegal immigrant => undocumented immigrant
 I,i,1,one,One
 II,ii,2,two,Two
 III,iii,3,three,Three

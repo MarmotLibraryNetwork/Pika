@@ -118,9 +118,9 @@
 					<button class="btn btn-default" onclick="addGroup();return false;"><span class="glyphicon glyphicon-plus"></span>&nbsp;{translate text="add_search_group"}</button>
 					<button class="btn btn-default" onclick="resetSearch();return false;"><span class="glyphicon glyphicon-remove-circle"></span>&nbsp;{translate text="Clear Search"}</button>
 					{* addGroup() returns the variable nextGroupNumber so the return false is necessary *}
-					<input type="submit" name="submit" value="{translate text="Find"}" class="btn btn-primary pull-right">
+					<button type="submit" class="btn btn-primary pull-right">{translate text="Find"}</button>
 					<br><br>
-					{if $facetList || $illustratedLimit || $showPublicationDate}
+					{if $facetList || $showPublicationDate}
 						<div class="accordion">
 							<div {*id="facet-accordion"*} class="panel panel-default">
 									<div class="panel-heading">
@@ -159,11 +159,11 @@
 											</div>
 										{/if}
 
-										<table id="facetTable" class="table table-bordered" summary="{translate text='Limit To'}">
+										<table id="facetTable" class="table table-bordered" {*summary="{translate text='Limit To'}"*}>
 											{if $facetList}
 												{foreach from=$facetList item="facetInfo" key="label"}
 													<tr>
-														<th align="right">{translate text=$label}:</th>
+														<th><label for="{$facetInfo.facetName}">{translate text=$label}:</label></th>
 														<td>
 															{if $facetInfo.facetName == "publishDate"}
 															<div class="form-inline">
@@ -211,10 +211,10 @@
 																	</div>
 																</div>
 															{else}
-																<select name="filter[]" class="form-control">
+																<select id="{$facetInfo.facetName}" name="filter[]" class="form-control">
 																	{foreach from=$facetInfo.values item="value" key="display"}
 																		{if strlen($display) > 0}
-																			<option value="{$value.filter|escape}"{if $value.selected} selected="selected"{/if}>{$display|escape|truncate:80}</option>
+																			<option value="{$value.filter|escape}"{if $value.selected && !empty($value.filter)} selected="selected"{/if}>{$display|escape|truncate:80}</option>
 																		{/if}
 																	{/foreach}
 																</select>
@@ -223,25 +223,9 @@
 													</tr>
 												{/foreach}
 											{/if}
-											{if $illustratedLimit}
-												<tr>
-													<th align="right">{translate text="Illustrated"}:</th>
-													<td>
-														{foreach from=$illustratedLimit item="current"}
-														<div class="radio">
-														<label>
-															<input type="radio" name="illustration"
-															       value="{$current.value|escape}"{if $current.selected} checked="checked"{/if}>
-															{translate text=$current.text}
-															</label>
-														</div>
-														{/foreach}
-													</td>
-												</tr>
-											{/if}
 
 										</table>
-										<input type="submit" name="submit" value="{translate text="Find"}" class="btn btn-primary pull-right">
+										<button type="submit" class="btn btn-primary pull-right">{translate text="Find"}</button>
 									</div>
 								</div>
 							</div>
@@ -297,8 +281,17 @@
 		{* Highlight Selected Facet Filters *}
 		{literal}
 		$('#facetTable select').change(function(){
-			$(this).parents('tr').css('background-color', ($(this).val() == '') ? '#FFF' : '#EFEFEF')
+			$(this).parents('tr').css('background-color', ($(this).val() === '') ? '#FFF' : '#EFEFEF')
 		}).change();
+      {/literal}
+      {* On form submission, remove any form variables that are empty from the url (in order to have cleaner urls) *}
+      {literal}
+		$('#advSearchForm').on("submit", function(event){
+			/*event.preventDefault();*/
+			var fields = $( this ).serializeArray().filter(function(value){	return value.value !== ''	});
+			window.location.href = $( this ).attr('action') + '?' + $.param(fields);
+			return false;
+		});
 		{/literal}
 	{rdelim});
 </script>

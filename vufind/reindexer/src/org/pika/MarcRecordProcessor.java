@@ -299,7 +299,6 @@ abstract class MarcRecordProcessor {
 		loadAuthors(groupedWork, record, identifier);
 		loadSubjects(groupedWork, record);
 		loadSeries(groupedWork, record, loadedNovelistSeries);
-		groupedWork.addDateSpan(MarcUtil.getFieldList(record, "362a"));
 		groupedWork.addContents(MarcUtil.getFieldList(record, "505a:505t"));
 		groupedWork.addIssns(MarcUtil.getFieldList(record, "022a"));
 		groupedWork.addOclcNumbers(MarcUtil.getFieldList(record, "035a"));
@@ -791,8 +790,6 @@ abstract class MarcRecordProcessor {
 		HashSet<String> languageNames        = new HashSet<>();
 		HashSet<String> translationsNames    = new HashSet<>();
 		String          primaryLanguage      = null;
-		long            languageBoost        = 1L;
-		long            languageBoostSpanish = 1L;
 
 		String languageCode = MarcUtil.getFirstFieldVal(record, "008[35-37]");
 		if (languageCode != null && !languageCode.equals("   ") && !languageCode.equals("|||")) {
@@ -802,21 +799,6 @@ abstract class MarcRecordProcessor {
 				// The trim() is for some bad language codes that will have spaces on the ends
 				languageNames.add(languageName);
 				primaryLanguage = languageName;
-
-				String languageBoostStr = indexer.translateSystemValue("language_boost", languageCode, identifier.getSourceAndId());
-				if (languageBoostStr != null) {
-					long languageBoostVal = Long.parseLong(languageBoostStr);
-					if (languageBoostVal > languageBoost) {
-						languageBoost = languageBoostVal;
-					}
-				}
-				String languageBoostEs = indexer.translateSystemValue("language_boost_es", languageCode, identifier.getSourceAndId());
-				if (languageBoostEs != null) {
-					long languageBoostVal = Long.parseLong(languageBoostEs);
-					if (languageBoostVal > languageBoostSpanish) {
-						languageBoostSpanish = languageBoostVal;
-					}
-				}
 			}
 		} else if (languageCode == null) {
 			ControlField ohOhEightField = (ControlField) record.getVariableField("008");
@@ -862,21 +844,6 @@ abstract class MarcRecordProcessor {
 										// Set primary Language and language boosts if we haven't found a good value yet
 										// Only use the first 041a language code for the primary language and boosts
 										primaryLanguage = languageName;
-
-										String languageBoostStr = indexer.translateSystemValue("language_boost", code, identifier.getSourceAndId());
-										if (languageBoostStr != null) {
-											long languageBoostVal = Long.parseLong(languageBoostStr);
-											if (languageBoostVal > languageBoost) {
-												languageBoost = languageBoostVal;
-											}
-										}
-										String languageBoostEs = indexer.translateSystemValue("language_boost_es", code, identifier.getSourceAndId());
-										if (languageBoostEs != null) {
-											long languageBoostVal = Long.parseLong(languageBoostEs);
-											if (languageBoostVal > languageBoostSpanish) {
-												languageBoostSpanish = languageBoostVal;
-											}
-										}
 									}
 								}
 								if (length >= 3) {
@@ -930,8 +897,6 @@ abstract class MarcRecordProcessor {
 				ilsRecord.setPrimaryLanguage(primaryLanguage);
 			}
 			ilsRecord.setLanguages(languageNames);
-			ilsRecord.setLanguageBoost(languageBoost);
-			ilsRecord.setLanguageBoostSpanish(languageBoostSpanish);
 			ilsRecord.setTranslations(translationsNames);
 		}
 	}
@@ -939,6 +904,7 @@ abstract class MarcRecordProcessor {
 	private void loadAuthors(GroupedWorkSolr groupedWork, Record record, String identifier) {
 		//auth_author = 100abcd, first
 		groupedWork.setAuthAuthor(MarcUtil.getFirstFieldVal(record, "100abcd"));
+
 		//author = a, first
 		//MDN 2/6/2016 - Do not use 710 because it is not truly the author.  This has the potential
 		//of showing some disconnects with how records are grouped, but improves the display of the author
@@ -946,12 +912,9 @@ abstract class MarcRecordProcessor {
 		//groupedWork.setAuthor(this.getFirstFieldVal(record, "100abcdq:110ab:710a"));
 		groupedWork.setAuthor(MarcUtil.getFirstFieldVal(record, "100abcdq:110ab"));
 
-		//author-letter = 100a, first
-//		groupedWork.setAuthorLetter(MarcUtil.getFirstFieldVal(record, "100a"));
-		// TODO: remove author-letter from index. Can't determine what its use would be.
-
 		//auth_author2 = 700abcd
 		groupedWork.addAuthAuthor2(MarcUtil.getFieldList(record, "700abcd"));
+
 		//author2 = 110ab:111ab:700abcd:710ab:711ab:800a
 		groupedWork.addAuthor2(MarcUtil.getFieldList(record, "110ab:111ab:700abcd:710ab:711ab:800a"));
 		//author_additional = 505r:245c

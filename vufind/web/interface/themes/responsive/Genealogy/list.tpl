@@ -7,7 +7,7 @@
 	{/if}
 
 	{* Listing Options *}
-	<div class="resulthead">
+	<div class="result-head">
 		{if $recordCount}
 			{translate text="Showing"}
 			<b>{$recordStart}</b> - <b>{$recordEnd}</b>
@@ -18,26 +18,9 @@
 			,&nbsp;{translate text='query time'}: {$qtime}s
 		</span>
 
-		{if $solrSearchDebug}
-			<div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">Show Search Options</div>
-			<div id="solrSearchOptions" style="display:none">
-				<pre>Search options: {$solrSearchDebug}</pre>
-			</div>
-		{/if}
+		{* Search Debugging *}
+		{include file="Search/search-debug.tpl"}
 
-		{if $solrLinkDebug}
-			<div id='solrLinkToggle' onclick='$("#solrLink").toggle()'>Show Solr Link</div>
-			<div id='solrLink' style='display:none'>
-				<pre>{$solrLinkDebug}</pre>
-			</div>
-		{/if}
-
-		{if $debugTiming}
-			<div id='solrTimingToggle' onclick='$("#solrTiming").toggle()'>Show Solr Timing</div>
-			<div id='solrTiming' style='display:none'>
-				<pre>{$debugTiming}</pre>
-			</div>
-		{/if}
 
 		{if $spellingSuggestions}
 			<br><br><div class="correction"><strong>{translate text='spell_suggest'}</strong>:<br>
@@ -57,5 +40,5 @@
 
 	{if $pageLinks.all}<div class="pagination">{$pageLinks.all}</div>{/if}
 
-    {include file="Search/searchTools.tpl" showAdminTools=false}
+	{include file="Search/searchTools.tpl" showAdminTools=false}
 </div>

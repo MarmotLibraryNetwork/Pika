@@ -62,9 +62,7 @@
 						{if !isset($property.hideInLists) || $property.hideInLists == false}
 							<td>
 							{if $property.type == 'label'}
-								{if $dataItem->class != 'objectDeleted'}
 									<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>&nbsp;{$propValue}</a>
-								{/if}
 							{elseif $property.type == 'text' || $property.type == 'textarea' || $property.type == 'hidden'
 							|| $property.type == 'file' || $property.type == 'integer' || $property.type == 'email'}
 									{$propValue}
@@ -103,7 +101,7 @@
 								{/if}
 							{elseif $property.type == 'checkbox'}
 								{if ($propValue == 1)}Yes{else}No{/if}
-							{elseif $property.type == 'image'}
+							{elseif $property.type == 'image' || $property.type == 'readOnly'}
 								{$propValue}
 							{else}
 								Unknown type to display {$property.type}
@@ -111,7 +109,6 @@
 							</td>
 						{/if}
 					{/foreach}
-					{if $dataItem->class != 'objectDeleted'}
 						<td>
 							<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>Edit</a>
 							{if $additionalActions}
@@ -120,7 +117,6 @@
 								{/foreach}
 							{/if}
 						</td>
-					{/if}
 				</tr>
 				{/foreach}
 		{/if}

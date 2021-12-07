@@ -37,10 +37,6 @@ class Genealogy_Results extends Union_Results {
 
 //		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 
-		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/Search/' . $configArray['Genealogy']['engine'] . '.php';
-		$timer->logTime('Include search engine');
-
 		// Initialise from the current search globals
 		/** @var SearchObject_Genealogy $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject($configArray['Genealogy']['searchObject']);
@@ -53,17 +49,11 @@ class Genealogy_Results extends Union_Results {
 
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed
-		$interface->setPageTitle('Search Results');
+//		$interface->setPageTitle('Search Results');  //TODO: may be for setting the title if there was error raised or exception thrown??
 		$interface->assign('sortList', $searchObject->getSortList());
 		$interface->assign('rssLink', $searchObject->getRSSUrl());
 		$interface->assign('excelLink', $searchObject->getExcelUrl());
 
-		$displayQuery = $searchObject->displayQuery();
-		$pageTitle    = $displayQuery;
-		if (strlen($pageTitle) > 20){
-			$pageTitle = substr($pageTitle, 0, 20) . '...';
-		}
-		$pageTitle .= ' | Search Results';
 
 		$timer->logTime('Setup Search');
 
@@ -77,9 +67,10 @@ class Genealogy_Results extends Union_Results {
 		// Some more variables
 		//   Those we can construct AFTER the search is executed, but we need
 		//   no matter whether there were any results
+		$displayQuery = $searchObject->displayQuery();
 		$interface->assign('qtime', round($searchObject->getQuerySpeed(), 2));
 		$interface->assign('spellingSuggestions', $searchObject->getSpellingSuggestions());
-		$interface->assign('lookfor', $searchObject->displayQuery());
+		$interface->assign('lookfor', $displayQuery);
 		$interface->assign('searchType', $searchObject->getSearchType());
 		// Will assign null for an advanced search
 		$interface->assign('searchIndex', $searchObject->getSearchIndex());
@@ -97,7 +88,7 @@ class Genealogy_Results extends Union_Results {
 		$interface->assign('showSaved', true);
 		$interface->assign('savedSearch', $searchObject->isSavedSearch());
 		$interface->assign('searchId', $searchObject->getSearchId());
-		$currentPage = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+		$currentPage = $_REQUEST['page'] ?? 1;
 		$interface->assign('page', $currentPage);
 
 		if ($searchObject->getResultTotal() < 1){
@@ -109,18 +100,7 @@ class Genealogy_Results extends Union_Results {
 			// Was the empty result set due to an error?
 			$error = $searchObject->getIndexError();
 			if ($error !== false){
-				// If it's a parse error or the user specified an invalid field, we
-				// should display an appropriate message:
-				if (stristr($error['msg'], 'org.apache.lucene.queryParser.ParseException')
-					|| preg_match('/^undefined field/', $error['msg'])
-					|| stristr($error['msg'], 'org.apache.solr.search.SyntaxError')
-				){
-					$interface->assign('parseError', $error['msg']);
-
-					// Unexpected error -- let's treat this as a fatal condition.
-				}else{
-					PEAR_Singleton::raiseError(new PEAR_Error('Unable to process query<br>' . 'Solr Returned: ' . $error['msg']));
-				}
+				$this->displaySolrError($error);
 			}
 
 			$timer->logTime('no hits processing');
@@ -136,52 +116,12 @@ class Genealogy_Results extends Union_Results {
 
 			// Was the empty result set due to an error?
 			$error = $searchObject->getIndexError();
-			if ($error !== false){
-				// If it's a parse error or the user specified an invalid field, we
-				// should display an appropriate message:
-				if (stristr($error['msg'], 'org.apache.lucene.queryParser.ParseException') || preg_match('/^undefined field/', $error['msg'])){
-					$interface->assign('parseError', $error['msg']);
-
-					if (preg_match('/^undefined field/', $error['msg'])){
-						// Setup to try as a possible subtitle search
-						$fieldName = trim(str_replace('undefined field', '', $error['msg'], $replaced)); // strip out the phrase 'undefined field' to get just the fieldname
-						$original  = urlencode("$fieldName:");
-						if ($replaced === 1 && !empty($fieldName) && strpos($_SERVER['REQUEST_URI'], $original)){
-							// ensure only 1 replacement was done, that the fieldname isn't an empty string, and the label is in fact in the Search URL
-							$new     = urlencode("$fieldName :"); // include space in between the field name & colon to avoid the parse error
-							$thisUrl = str_replace($original, $new, $_SERVER['REQUEST_URI'], $replaced);
-							if ($replaced === 1){ // ensure only one modification was made
-								header("Location: " . $thisUrl);
-								exit();
-							}
-						}
-					}
-
-					// Unexpected error -- let's treat this as a fatal condition.
-				}else{
-					PEAR_Singleton::raiseError(new PEAR_Error('Unable to process query<br>' .
-						'Solr Returned: ' . print_r($error, true)));
-				}
+			if ($error !== false) {
+				$this->displaySolrError($error);
 			}
 
 			$facetSet = $searchObject->getFacetList();
 			$interface->assign('facetSet', $facetSet);
-
-//			//Check to see if a format category is already set
-//			$categorySelected = false;
-//			if (isset($facetSet['top'])){
-//				foreach ($facetSet['top'] as $title => $cluster){
-//					if ($cluster['label'] == 'Category'){
-//						foreach ($cluster['list'] as $thisFacet){
-//							if ($thisFacet['isApplied']){
-//								$categorySelected = true;
-//							}
-//						}
-//					}
-//				}
-//			}
-//			$interface->assign('categorySelected', $categorySelected);
-//			$timer->logTime('load selected category');
 
 			// Big one - our results
 			$recordSet = $searchObject->getResultRecordHTML();
@@ -212,6 +152,6 @@ class Genealogy_Results extends Union_Results {
 
 		// Done, display the page
 		$interface->assign('sectionLabel', 'Genealogy Database');
-		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $pageTitle, 'Search/results-sidebar.tpl');
+		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $this->setPageTitle($displayQuery), 'Search/results-sidebar.tpl');
 	} // End launch()
 }

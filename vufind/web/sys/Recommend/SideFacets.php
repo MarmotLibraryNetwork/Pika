@@ -223,7 +223,7 @@ class SideFacets implements RecommendationInterface
 
 					$filters = $this->searchObject->getFilterList();
 					//print_r($filters);
-					$appliedAvailability = array();
+					$appliedAvailability = [];
 					foreach ($filters as $appliedFilters) {
 						foreach ($appliedFilters as $filter) {
 							if ($filter['field'] == 'available_at') {
@@ -232,7 +232,7 @@ class SideFacets implements RecommendationInterface
 						}
 					}
 
-					$availableAtFacets = array();
+					$availableAtFacets = [];
 					foreach ($oldFacetValues as $facetKey2 => $facetInfo) {
 						if (strlen($facetKey2) > 1) {
 							$sortIndicator = substr($facetKey2, 0, 1);
@@ -251,14 +251,14 @@ class SideFacets implements RecommendationInterface
 					if ($includeAnyLocationFacet) {
 						$anyLocationLabel = $this->searchObject->getFacetSetting("Availability", "anyLocationLabel");
 						//print_r ("anyLocationLabel = $anyLocationLabel");
-						$availableAtFacets['*'] = array(
+						$availableAtFacets['*'] = [
 							'value'      => '*',
 							'display'    => $anyLocationLabel == '' ? "Any Marmot Location" : $anyLocationLabel,
-							'count'      => $this->searchObject->getResultTotal() - (isset($oldFacetValues['']['count']) ? $oldFacetValues['']['count'] : 0),
+							'count'      => $this->searchObject->getResultTotal() - ($oldFacetValues['']['count'] ?? 0),
 							'url'        => $this->searchObject->renderLinkWithFilter('available_at:*'),
 							'isApplied'  => array_key_exists('*', $appliedAvailability),
 							'removalUrl' => array_key_exists('*', $appliedAvailability) ? $appliedAvailability['*'] : null
-						);
+						];
 					}
 
 					$sideFacets['available_at']['list'] = $availableAtFacets;
@@ -332,7 +332,7 @@ class SideFacets implements RecommendationInterface
 	private function updateUserRatingsFacet($userRatingFacet){
 		global $interface;
 		$ratingApplied = false;
-		$ratingLabels  = array();
+		$ratingLabels  = [];
 		foreach ($userRatingFacet['list'] as $facetValue){
 			if ($facetValue['isApplied']){
 				$ratingApplied  = true;
@@ -340,7 +340,7 @@ class SideFacets implements RecommendationInterface
 			}
 		}
 		if (!$ratingApplied){
-			$ratingLabels = array('fiveStar', 'fourStar', 'threeStar', 'twoStar', 'oneStar', 'Unrated');
+			$ratingLabels = ['fiveStar', 'fourStar', 'threeStar', 'twoStar', 'oneStar', 'Unrated'];
 		}
 		$interface->assign('ratingLabels', $ratingLabels);
 		return $userRatingFacet;

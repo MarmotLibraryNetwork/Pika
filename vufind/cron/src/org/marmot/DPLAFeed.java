@@ -81,6 +81,7 @@ public class DPLAFeed implements IProcessHandler {
 					tries++;
 				} else if (tryAgain && tries == 3) {
 					processLog.incErrors();
+					processLog.addNote("dpla feed call failed after three atempts");
 					tryAgain = false;
 					continue;
 				} else {
@@ -155,6 +156,7 @@ public class DPLAFeed implements IProcessHandler {
 		}
 		if (fatal) {
 			processLog.incErrors();
+			processLog.addNote("Fatal error occurred");
 			//TODO: rework file to be valid JSON even with an error
 		}
 

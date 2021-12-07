@@ -90,4 +90,6 @@ class GroupedWork_Series extends Action {
 		$this->display('view-series.tpl', $seriesTitle);
 	}
 
+
+
 }

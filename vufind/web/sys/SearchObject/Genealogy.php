@@ -680,7 +680,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 				}
 			}
 			// Return the list put together as a string
-			return join(' ', $this->spellQuery);
+			return implode(' ', $this->spellQuery);
 		}
 	}
 

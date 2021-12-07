@@ -28,8 +28,6 @@ import java.util.HashMap;
 public class ItemInfo {
 	private String itemIdentifier;
 	private String locationCode;
-	private String subLocation;
-	private String subLocationCode;
 	private String format;
 	private String subFormat;
 	private String formatCategory;
@@ -43,7 +41,6 @@ public class ItemInfo {
 	private String IType;
 	private String ITypeCode;
 	private String eContentSource;
-	private String eContentFilename;
 	private String eContentUrl;
 	private String statusCode;
 	private String detailedStatus;
@@ -99,10 +96,6 @@ public class ItemInfo {
 		this.eContentUrl = eContentUrl;
 	}
 
-	void seteContentFilename(String eContentFilename) {
-		this.eContentFilename = eContentFilename;
-	}
-
 	String getItemIdentifier() {
 		return itemIdentifier;
 	}
@@ -147,6 +140,9 @@ public class ItemInfo {
 	}
 
 	int getNumCopies() {
+		//TODO: yeah, rethink this for OverDrive. It should indicate number of available copies;
+		// currently indicates total copies, if not set to 1 below.
+
 		//Deal with OverDrive always available
 		if (numCopies > 1000){
 			return 1;
@@ -177,30 +173,28 @@ public class ItemInfo {
 
 	private SimpleDateFormat lastCheckinDateFormatter = new SimpleDateFormat("MMM dd, yyyy");
 	private String baseDetails = null;
-	String getDetails(){
-		if (baseDetails == null){
+	String getDetails() {
+		if (baseDetails == null) {
 			String formattedLastCheckinDate = "";
-			if (lastCheckinDate != null){
+			if (lastCheckinDate != null) {
 				formattedLastCheckinDate = lastCheckinDateFormatter.format(lastCheckinDate);
 			}
 			//Cache the part that doesn't change depending on the scope
 			baseDetails = recordInfo.getFullIdentifier() + "|" +
-					Util.getCleanDetailValue(itemIdentifier) + "|" +
-					Util.getCleanDetailValue(shelfLocation) + "|" +
-					Util.getCleanDetailValue(callNumber) + "|" +
-					Util.getCleanDetailValue(format) + "|" +
-					Util.getCleanDetailValue(formatCategory) + "|" +
-					numCopies + "|" +
-					isOrderItem + "|" +
-					isEContent + "|" +
-					Util.getCleanDetailValue(eContentSource) + "|" +
-					Util.getCleanDetailValue(eContentFilename) + "|" +
-					Util.getCleanDetailValue(eContentUrl) + "|" +
-					Util.getCleanDetailValue(subFormat) + "|" +
-					Util.getCleanDetailValue(detailedStatus) + "|" +
-					Util.getCleanDetailValue(formattedLastCheckinDate) + "|" +
-					Util.getCleanDetailValue(locationCode) + "|" +
-					Util.getCleanDetailValue(subLocation) + "|";
+							Util.getCleanDetailValue(itemIdentifier) + "|" +
+							Util.getCleanDetailValue(shelfLocation) + "|" +
+							Util.getCleanDetailValue(callNumber) + "|" +
+							Util.getCleanDetailValue(format) + "|" +
+							Util.getCleanDetailValue(formatCategory) + "|" +
+							numCopies + "|" +
+							(isOrderItem ? "1" : "0") + "|" +
+							(isEContent ? "1" : "0") + "|" +
+							Util.getCleanDetailValue(eContentSource) + "|" +
+							Util.getCleanDetailValue(eContentUrl) + "|" +
+							Util.getCleanDetailValue(subFormat) + "|" +
+							Util.getCleanDetailValue(detailedStatus) + "|" +
+							Util.getCleanDetailValue(formattedLastCheckinDate) + "|" +
+							Util.getCleanDetailValue(locationCode);
 		}
 		return baseDetails;
 	}
@@ -332,22 +326,6 @@ public class ItemInfo {
 
 	String getFullRecordIdentifier() {
 		return recordInfo.getFullIdentifier();
-	}
-
-	String getSubLocation() {
-		return subLocation;
-	}
-
-	void setSubLocation(String subLocation) {
-		this.subLocation = subLocation;
-	}
-
-	String getSubLocationCode() {
-		return subLocationCode;
-	}
-
-	void setSubLocationCode(String subLocationCode) {
-		this.subLocationCode = subLocationCode;
 	}
 
 	Date getLastCheckinDate() {

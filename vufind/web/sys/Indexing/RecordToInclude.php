@@ -32,7 +32,6 @@ class RecordToInclude extends DB_DataObject {
 	public $id;
 	public $indexingProfileId;
 	public $location;
-	public $subLocation;
 	public $iType;
 	public $audience;
 	public $format;
@@ -57,7 +56,6 @@ class RecordToInclude extends DB_DataObject {
 			'weight'                => ['property' => 'weight', 'type' => 'integer', 'label' => 'Weight', 'description' => 'The sort order of rule', 'default' => 0],
 			'indexingProfileId'     => ['property' => 'indexingProfileId', 'type' => 'enum', 'values' => $indexingProfiles, 'label' => 'Indexing Profile Id', 'description' => 'The Indexing Profile this map is associated with'],
 			'location'              => ['property' => 'location', 'type' => 'text', 'label' => 'Location', 'description' => 'A regular expression for location codes to include', 'maxLength' => '100', 'default' => '.*', 'required' => true],
-			'subLocation'           => ['property' => 'subLocation', 'type' => 'text', 'label' => 'Sub Location', 'description' => 'A regular expression for sublocation codes to include', 'maxLength' => '100', 'required' => false],
 			'iType'                 => ['property' => 'iType', 'type' => 'text', 'label' => 'iType', 'description' => 'A regular expression for item types to include', 'maxLength' => '100', 'required' => false],
 			'audience'              => ['property' => 'audience', 'type' => 'text', 'label' => 'Audience', 'description' => 'A regular expression for audiences to include', 'maxLength' => '100', 'required' => false],
 			'format'                => ['property' => 'format', 'type' => 'text', 'label' => 'Format', 'description' => 'A regular expression for formats to include', 'maxLength' => '100', 'required' => false],

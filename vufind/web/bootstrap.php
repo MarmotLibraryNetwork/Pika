@@ -139,7 +139,7 @@ function initDatabase(){
 }
 
 function requireSystemLibraries(){
-	global $timer;
+//	global $timer;
 	// Require System Libraries
 	require_once ROOT_DIR . '/sys/Interface.php';
 	require_once ROOT_DIR . '/sys/Account/UserAccount.php';
@@ -209,38 +209,30 @@ function handlePEARError($error, $method = null){
 	$interface->setTemplate('../error.tpl');
 	$interface->display('layout.tpl');
 
-	// Exceptions we don't want to log
-	$doLog = true;
-	// Microsoft Web Discussions Toolbar polls the server for these two files
-	//    it's not script kiddie hacking, just annoying in logs, ignore them.
-	if (strpos($_SERVER['REQUEST_URI'], "cltreq.asp") !== false) $doLog = false;
-	if (strpos($_SERVER['REQUEST_URI'], "owssvr.dll") !== false) $doLog = false;
-	// If we found any exceptions, finish here
-	if (!$doLog) exit();
-
 	// Log the error for administrative purposes -- we need to build a variety
 	// of pieces so we can supply information at five different verbosity levels:
-	$baseError = $error->toString();
-	$basicServer = " (Server: IP = {$_SERVER['REMOTE_ADDR']}, " .
-        "Referer = " . (isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '') . ", " .
-        "User Agent = " . (isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '') . ", " .
-        "Request URI = {$_SERVER['REQUEST_URI']})";
+	$baseError      = $error->toString();
+	$basicServer    = " (Server: IP = {$_SERVER['REMOTE_ADDR']}, " .
+		', Referer = ' . ($_SERVER['HTTP_REFERER'] ?? '') .
+		', User Agent = ' . ($_SERVER['HTTP_USER_AGENT'] ?? '') .
+		", Request URI = {$_SERVER['REQUEST_URI']})";
 	$detailedServer = "\nServer Context:\n" . print_r($_SERVER, true);
 	$basicBacktrace = "\nBacktrace:\n";
-	if (is_array($error->backtrace)) {
-		foreach($error->backtrace as $line) {
-			$basicBacktrace .= (isset($line['file']) ? $line['file'] : 'none') . "  line " . (isset($line['line']) ? $line['line'] : 'none') . " - " .
-                "class = " . (isset($line['class']) ? $line['class'] : 'none') . ", function = " . (isset($line['function']) ? $line['function'] : 'none') . "\n";
+	if (is_array($error->backtrace)){
+		foreach ($error->backtrace as $line){
+			$basicBacktrace .= ($line['file'] ?? 'none') . '  line ' . ($line['line'] ?? 'none')
+				. ' - class = ' . ($line['class'] ?? 'none') . ', function = ' . ($line['function'] ?? 'none') . "\n";
 		}
 	}
 	$detailedBacktrace = "\nBacktrace:\n" . print_r($error->backtrace, true);
-	$errorDetails = array(
-	1 => $baseError,
-	2 => $baseError . $basicServer,
-	3 => $baseError . $basicServer . $basicBacktrace,
-	4 => $baseError . $detailedServer . $basicBacktrace,
-	5 => $baseError . $detailedServer . $detailedBacktrace
-	);
+	$errorDetails      = [
+		1 => $baseError,
+		2 => $baseError . $basicServer,
+		3 => $baseError . $basicServer . $basicBacktrace,
+		4 => $baseError . $detailedServer . $basicBacktrace,
+		5 => $baseError . $detailedServer . $detailedBacktrace
+	];
+
 
 	global $logger;
 	$logger->log($errorDetails, PEAR_LOG_ERR);
@@ -250,21 +242,13 @@ function handlePEARError($error, $method = null){
 
 function loadLibraryAndLocation(){
 	global $timer;
-	global $librarySingleton;
 	global $locationSingleton;
-	//Create global singleton instances for Library and Location
-	$librarySingleton = new Library();
-	$timer->logTime('Created library singleton');
 	$locationSingleton = new Location();
 	$timer->logTime('Created Location singleton');
 
 	$branch = $locationSingleton->getBranchLocationCode();
 	handleCookie('branch', $branch);
 	$timer->logTime('Got branch');
-
-	$sublocation = $locationSingleton->getSublocationCode();
-	handleCookie('sublocation', $sublocation);
-	$timer->logTime('Got sublocation');
 
 	getLibraryObject();
 }
@@ -402,9 +386,6 @@ function loadSearchInformation(){
 	}
 	if ($searchLocation){
 		$solrScope = strtolower($searchLocation->code);
-		if (!empty($searchLocation->subLocation)){
-			$solrScope = strtolower($searchLocation->subLocation);
-		}
 		$scopeType = 'Location';
 	}
 
@@ -477,9 +458,6 @@ function vufind_autoloader($class) {
 			require_once $className;
 		}elseif (file_exists('Drivers/' . $class . '.php')){
 			$className = ROOT_DIR . '/Drivers/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('Drivers/marmot_inc/' . $class . '.php')){
-			$className = ROOT_DIR . '/Drivers/marmot_inc/' . $class . '.php';
 			require_once $className;
 		}elseif (file_exists('sys/Library/' . $class . '.php')){
 			$className = ROOT_DIR . '/sys/Library/' . $class . '.php';
