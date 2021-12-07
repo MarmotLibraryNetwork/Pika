@@ -86,7 +86,7 @@ class ResetPin extends Action{
 						];
 					}elseif ($newPin !== $confirmNewPin){
 						$resetPinResult = [
-							'error' => 'The new PIN numbers you entered did not match. Please try again.'
+							'error' => 'The new PIN you entered did not match. Please try again.'
 						];
 					}elseif (empty($resetToken) || empty($userID)){
 						// These checks is for Horizon Driver, this may need to be moved into resetPin function if used for another ILS

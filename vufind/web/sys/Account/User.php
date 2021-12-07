@@ -349,7 +349,7 @@ class User extends DB_DataObject {
 	}
 
 	/**
-	 * Patron barcode lookup based on login config.
+	 * Patron barcode.
 	 * @return string|void
 	 */
 	public function getBarcode(){

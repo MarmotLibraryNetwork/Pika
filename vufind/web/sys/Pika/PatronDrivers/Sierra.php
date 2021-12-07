@@ -225,11 +225,15 @@ class Sierra {
 			$checkout['dueDate']        = strtotime($entry->dueDate);
 			$checkout['checkoutDate']   = strtotime($entry->outDate);
 			$checkout['renewCount']     = $entry->numberOfRenewals;
-			$checkout['barcode']        = $entry->barcode;
+			$checkout['barcode']        = $entry->barcode ?? '';
 			$checkout['itemid']         = $itemId;
 			$checkout['canrenew']       = true;
 			$checkout['renewIndicator'] = $checkoutId;
 			$checkout['renewMessage']   = '';
+			if (!isset($entry->barcode)){
+				// On occasion we see a checkout missing the item barcode when we can see that the item does in fact have a barcode
+				$this->logger->error('Sierra Checkout missing barcode for user id '. $patronId . ' item Id '. $itemId, [$entry]);
+			}
 			if (!empty($entry->callNumber)){
 				// Add call number value for internal ILL processing for Northern Waters
 				$checkout['_callNumber'] = $entry->callNumber;
@@ -813,11 +817,7 @@ class Sierra {
 	public function getPatronId($patronOrBarcode, $searchSacramentoStudentIdField = false) {
 		// if a patron object was passed
 		if (is_object($patronOrBarcode)){
-			if ($this->accountProfile->loginConfiguration == "barcode_pin"){
-				$barcode = $patronOrBarcode->cat_username;
-			} else {
 				$barcode = $patronOrBarcode->barcode;
-			}
 		} elseif (is_string($patronOrBarcode) || is_int($patronOrBarcode)) {
 			// the api expects barcode in form of string. Just in case cast to string.
 			$barcode = (string)$patronOrBarcode;

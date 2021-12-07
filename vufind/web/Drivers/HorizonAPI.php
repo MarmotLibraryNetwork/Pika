@@ -100,7 +100,7 @@ abstract class HorizonAPI extends Horizon{
 					$user->displayName = '';
 				}
 				$user->fullname     = isset($fullName) ? $fullName : '';
-				$user->cat_username = $username;
+				$user->barcode      = $username;
 				$user->cat_password = $password;
 				$user->email        = $email;
 
@@ -220,7 +220,7 @@ abstract class HorizonAPI extends Horizon{
 			$sessionToken = HorizonAPI::$sessionIdsForUsers[$userID];
 			return array(true, $sessionToken, $userID);
 		}else{
-			$username = $patron->cat_username;
+			$username = $patron->barcode;
 			$password = $patron->cat_password;
 			return $this->initialLoginViaWebService($username, $password);
 		}

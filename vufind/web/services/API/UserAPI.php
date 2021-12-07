@@ -599,9 +599,9 @@ class UserAPI extends AJAXHandler {
 			if (!empty($_REQUEST['token'])){
 				$user = $this->validateUserApiToken();
 			}else{
-			[$username, $password] = $this->loadUsernameAndPassword();
-			/** @var User $user */
-			$user = UserAccount::validateAccount($username, $password);
+				[$username, $password] = $this->loadUsernameAndPassword();
+				/** @var User $user */
+				$user = UserAccount::validateAccount($username, $password);
 			}
 			if (!empty($user) && !PEAR_Singleton::isError($user)){
 				$allCheckedOut = $user->getMyCheckouts(false);
@@ -659,7 +659,7 @@ class UserAPI extends AJAXHandler {
 		$itemBarcode = $_REQUEST['itemBarcode'];
 		$user        = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			$renewalMessage = $this->getCatalogConnection()->renewItem($user, $itemBarcode);
+			$renewalMessage = $this->getCatalogConnection()->renewItem($user, null, $itemBarcode, null);
 			return ['success' => true, 'renewalMessage' => $renewalMessage];
 		}else{
 			return ['success' => false, 'message' => 'Login unsuccessful'];
@@ -695,7 +695,7 @@ class UserAPI extends AJAXHandler {
 		[$username, $password] = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			$renewalMessage = $this->getCatalogConnection()->renewAll($user->cat_username);
+			$renewalMessage = $this->getCatalogConnection()->renewAll($user);
 			return ['success' => $renewalMessage['success'], 'renewalMessage' => $renewalMessage['message']];
 		}else{
 			return ['success' => false, 'message' => 'Login unsuccessful'];
@@ -954,8 +954,13 @@ class UserAPI extends AJAXHandler {
 		[$username, $password] = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			$holdMessage = $this->getCatalogConnection()->updateHoldDetailed('', $user->cat_username, 'update', '', null, null, 'on');
-			return ['success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']];
+			$itemId = trim($_REQUEST['holdId']);
+			if (!empty($itemId && ctype_alnum($itemId))){
+				$reactivateDate = trim($_REQUEST['suspendDate']);
+				$holdMessage = $this->getCatalogConnection()->freezeHold($user, null, $itemId, $reactivateDate);
+				return ['success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']];
+			}
+			return ['success' => false, 'message' => 'Invalid hold Id'];
 		}else{
 			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
@@ -998,8 +1003,12 @@ class UserAPI extends AJAXHandler {
 		[$username, $password] = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			$holdMessage = $this->getCatalogConnection()->updateHoldDetailed('', $user->cat_username, 'update', '', null, null, 'off');
-			return ['success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']];
+			$itemId = trim($_REQUEST['holdId']);
+			if (!empty($itemId && ctype_alnum($itemId))){
+				$holdMessage = $this->getCatalogConnection()->thawHold($user, null, $itemId);
+				return ['success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']];
+			}
+			return ['success' => false, 'message' => 'Invalid hold Id'];
 		}else{
 			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
