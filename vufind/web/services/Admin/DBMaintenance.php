@@ -184,7 +184,7 @@ class DBMaintenance extends Admin_Admin {
 			$islandora_updates,
 			$hoopla_updates,
 			$sierra_api_updates,
-			$account_profile_updates,
+			//$account_profile_updates,
 			array(
 				'new_search_stats' => array(
 					'title'       => 'Create new search stats table with better performance',
