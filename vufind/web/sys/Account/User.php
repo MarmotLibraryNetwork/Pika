@@ -403,10 +403,8 @@ class User extends DB_DataObject {
 								$userData = $memCache->get($cacheKey);
 								if (empty($userData) || isset($_REQUEST['reload'])){
 									//Load full information from the catalog
-									if(!isset($this->accountProfile)) {
-										$this->accountProfile = $this->getAccountProfile();
-									}
-									if($this->accountProfile->loginConfiguration == "barcode_pin") {
+									$linkedAccountProfile = $linkedUser->getAccountProfile();
+									if($linkedAccountProfile->loginConfiguration == "barcode_pin") {
 										$userName = $linkedUser->barcode;
 										$password = $linkedUser->cat_password;
 									} else {
