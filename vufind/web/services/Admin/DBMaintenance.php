@@ -172,8 +172,8 @@ class DBMaintenance extends Admin_Admin {
 		$hoopla_updates = getHooplaUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/sierra_api_updates.php';
 		$sierra_api_updates = getSierraAPIUpdates();
-		require_once ROOT_DIR . '/sys/DBMaintenance/account_profile_updates.php';
-		$account_profile_updates = getAccountProfileUpdates();
+//		require_once ROOT_DIR . '/sys/DBMaintenance/account_profile_updates.php';
+//		$account_profile_updates = getAccountProfileUpdates();
 
 		return array_merge(
 			$library_location_updates,
@@ -184,7 +184,7 @@ class DBMaintenance extends Admin_Admin {
 			$islandora_updates,
 			$hoopla_updates,
 			$sierra_api_updates,
-			$account_profile_updates,
+			//$account_profile_updates,
 			array(
 				'new_search_stats' => array(
 					'title'       => 'Create new search stats table with better performance',

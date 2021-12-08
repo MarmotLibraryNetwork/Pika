@@ -192,8 +192,8 @@ class CatalogConnection
 					$userValid = $this->areNamesSimilar($username, $user->cat_username);
 				}
 				if (!$userValid){
-					$timer->logTime("offline patron login failed due to invalid name");
-					$this->logger->info("offline patron login failed due to invalid name", PEAR_LOG_INFO);
+					$timer->logTime('offline patron login failed due to invalid name');
+					$this->logger->info('offline patron login failed due to invalid name');
 					return null;
 				}
 			} else {

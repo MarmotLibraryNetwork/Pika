@@ -399,11 +399,19 @@ class User extends DB_DataObject {
 							$linkedUser     = new User();
 							$linkedUser->id = $userLink->linkedAccountId;
 							if ($linkedUser->find(true)){
-								$cacheKey = $_SERVER['SERVER_NAME'] . "-patron-" . $linkedUser->id;
+								$cacheKey = $_SERVER['SERVER_NAME'] . "-patron-" . $linkedUser->id; /* todo: update to new caching */
 								$userData = $memCache->get($cacheKey);
 								if (empty($userData) || isset($_REQUEST['reload'])){
 									//Load full information from the catalog
-									$linkedUser = UserAccount::validateAccount($linkedUser->cat_username, $linkedUser->cat_password, $linkedUser->source, $this);
+									$linkedAccountProfile = $linkedUser->getAccountProfile();
+									if($linkedAccountProfile->loginConfiguration == "barcode_pin") {
+										$userName = $linkedUser->barcode;
+										$password = $linkedUser->cat_password;
+									} else {
+										$userName = $linkedUser->cat_username;
+										$password = $linkedUser->cat_password;
+									}
+									$linkedUser = UserAccount::validateAccount($userName, $password, $linkedUser->source, $this);
 								}else{
 									$linkedUser = $userData;
 								}
