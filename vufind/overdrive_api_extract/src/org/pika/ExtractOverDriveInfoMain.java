@@ -73,6 +73,7 @@ public class ExtractOverDriveInfoMain {
 		// Initialize the logger
 		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j2.overdrive_extract.xml");
 		if (log4jFile.exists()) {
+			System.setProperty("log4j.pikaSiteName", serverName);
 			System.setProperty("log4j.configurationFile", log4jFile.getAbsolutePath());
 			logger = LogManager.getLogger();
 		} else {
