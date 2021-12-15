@@ -42,7 +42,7 @@ import java.util.Date;
  */
 public class GroupedWorkIndexer {
 	private       String                                   serverName;
-	private       org.apache.log4j.Logger                  logger;
+	private       org.apache.logging.log4j.Logger          logger;
 	private final PikaSystemVariables                      systemVariables;
 	private       HttpSolrClient                           solrServer;
 	private       ConcurrentUpdateSolrClient               updateServer;
@@ -83,7 +83,7 @@ public class GroupedWorkIndexer {
 
 
 
-	public GroupedWorkIndexer(String serverName, Connection pikaConn, Connection econtentConn, boolean fullReindex, boolean singleWorkIndex, org.apache.log4j.Logger logger) {
+	public GroupedWorkIndexer(String serverName, Connection pikaConn, Connection econtentConn, boolean fullReindex, boolean singleWorkIndex, org.apache.logging.log4j.Logger logger) {
 		indexStartTime                        = new Date().getTime() / 1000;
 		this.serverName                       = serverName;
 		this.logger                           = logger;

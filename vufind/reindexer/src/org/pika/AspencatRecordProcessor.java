@@ -15,7 +15,7 @@
 package org.pika;
 
 import au.com.bytecode.opencsv.CSVReader;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
 
