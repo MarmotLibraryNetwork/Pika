@@ -12,12 +12,33 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.marmot;
+package org.pika;
 
-/**
- * Created by mnoble on 11/20/2017.
- */
-public class SharedStats {
-	public Integer copiesOwnedByShared = 0;
-	public Integer copiesAvailableInShared = 0;
+public class OverDriveDBMetaData {
+	private long id = -1;
+	private long checksum;
+	private boolean hasRawData;
+
+	public boolean hasRawData() {
+		return hasRawData;
+	}
+
+	public void setHasRawData(boolean hasRawData) {
+		this.hasRawData = hasRawData;
+	}
+
+	public long getId() {
+		return id;
+	}
+	public void setId(long id) {
+		this.id = id;
+	}
+	public long getChecksum() {
+		return checksum;
+	}
+	public void setChecksum(long checksum) {
+		this.checksum = checksum;
+	}
+
+
 }

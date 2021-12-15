@@ -12,7 +12,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.marmot;
+package org.pika;
 
 import java.io.*;
 import java.sql.Connection;
@@ -21,10 +21,10 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Date;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+// Import log4j classes.
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
-import org.pika.*;
 
 public class ExtractOverDriveInfoMain {
 	private static Logger              logger;
@@ -70,15 +70,18 @@ public class ExtractOverDriveInfoMain {
 		}
 
 
-		Date currentTime = new Date();
-		File log4jFile   = new File("../../sites/" + serverName + "/conf/log4j.overdrive_extract.properties");
+		// Initialize the logger
+		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j2.overdrive_extract.xml");
 		if (log4jFile.exists()) {
-			PropertyConfigurator.configure(log4jFile.getAbsolutePath());
+			System.setProperty("log4j.configurationFile", log4jFile.getAbsolutePath());
+			logger = LogManager.getLogger();
 		} else {
-			System.out.println("Could not find log4j configuration " + log4jFile.toString());
+			System.out.println("Could not find log4j configuration " + log4jFile);
+			System.exit(1);
 		}
-		logger = Logger.getLogger(ExtractOverDriveInfoMain.class);
-		logger.info(currentTime.toString() + ": Starting OverDrive Extract");
+
+		Date currentTime = new Date();
+		logger.info(currentTime + ": Starting OverDrive Extract");
 
 //		// Setup the MySQL driver
 //		try {

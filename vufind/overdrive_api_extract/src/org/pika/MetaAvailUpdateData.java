@@ -12,33 +12,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.marmot;
+package org.pika;
 
-public class OverDriveDBMetaData {
-	private long id = -1;
-	private long checksum;
-	private boolean hasRawData;
+/**
+ * Stores information about a record that needs to be updated
+ *
+ * Created by mnoble on 10/31/2017.
+ */
+class MetaAvailUpdateData {
+	public long databaseId;
+	public long crossRefId;
+	public long lastMetadataCheck;
+	public long lastMetadataChange;
+	public long lastAvailabilityChange;
+	public String overDriveId;
 
-	public boolean hasRawData() {
-		return hasRawData;
-	}
+	public boolean metadataUpdated = false;
 
-	public void setHasRawData(boolean hasRawData) {
-		this.hasRawData = hasRawData;
-	}
-
-	public long getId() {
-		return id;
-	}
-	public void setId(long id) {
-		this.id = id;
-	}
-	public long getChecksum() {
-		return checksum;
-	}
-	public void setChecksum(long checksum) {
-		this.checksum = checksum;
-	}
-
+	public boolean hadAvailabilityErrors = false;
+	public boolean hadMetadataErrors = false;
 
 }

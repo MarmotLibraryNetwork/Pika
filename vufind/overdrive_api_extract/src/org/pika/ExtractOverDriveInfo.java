@@ -12,7 +12,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.marmot;
+package org.pika;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -29,15 +29,14 @@ import java.util.zip.CRC32;
 import javax.net.ssl.HttpsURLConnection;
 
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.pika.PikaConfigIni;
-import org.pika.PikaSystemVariables;
 
 class ExtractOverDriveInfo {
-	private static Logger                   logger = Logger.getLogger(ExtractOverDriveInfo.class);
+	private static Logger                   logger = LogManager.getLogger();
 	private        Connection               pikaConn;
 	private        Connection               econtentConn;
 	private        PikaSystemVariables      systemVariables;

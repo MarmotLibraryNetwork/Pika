@@ -12,24 +12,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.marmot;
+package org.pika;
 
 /**
- * Stores information about a record that needs to be updated
- *
- * Created by mnoble on 10/31/2017.
+ * Created by mnoble on 11/20/2017.
  */
-class MetaAvailUpdateData {
-	public long databaseId;
-	public long crossRefId;
-	public long lastMetadataCheck;
-	public long lastMetadataChange;
-	public long lastAvailabilityChange;
-	public String overDriveId;
-
-	public boolean metadataUpdated = false;
-
-	public boolean hadAvailabilityErrors = false;
-	public boolean hadMetadataErrors = false;
-
+public class SharedStats {
+	public Integer copiesOwnedByShared = 0;
+	public Integer copiesAvailableInShared = 0;
 }
