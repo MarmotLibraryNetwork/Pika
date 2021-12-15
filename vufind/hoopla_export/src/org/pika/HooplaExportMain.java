@@ -15,15 +15,17 @@
 package org.pika;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+// Import log4j classes.
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.net.ssl.HostnameVerifier;
+//import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSession;
+//import javax.net.ssl.SSLSession;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -31,11 +33,11 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
+//import java.util.Arrays;
 import java.util.Date;
 
 public class HooplaExportMain {
-	private static Logger  logger                    = Logger.getLogger(HooplaExportMain.class);
+	private static Logger  logger;
 	private static String  serverName;
 	private static String  hooplaAPIBaseURL;
 	private static Long    lastExportTime;
@@ -78,16 +80,14 @@ public class HooplaExportMain {
 			}
 		}
 
-		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j.hoopla_export.properties");
+		// Initialize the logger
+		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j2.hoopla_export.xml");
 		if (log4jFile.exists()) {
-			PropertyConfigurator.configure(log4jFile.getAbsolutePath());
+			System.setProperty("log4j.configurationFile", log4jFile.getAbsolutePath());
+			logger = LogManager.getLogger();
 		} else {
-			log4jFile = new File("../../sites/default/conf/log4j.hoopla_export.properties");
-			if (log4jFile.exists()) {
-				PropertyConfigurator.configure(log4jFile.getAbsolutePath());
-			} else {
-				System.out.println("Could not find log4j configuration " + log4jFile);
-			}
+			System.out.println("Could not find log4j configuration " + log4jFile);
+			System.exit(1);
 		}
 
 		Date startTime = new Date();
@@ -273,7 +273,7 @@ public class HooplaExportMain {
 						addNoteToHooplaExportLog("Hoopla gave no information for a full Reload");
 						logger.error("Hoopla gave no information for a full Reload. " + url);
 					}
-					// If working on a short time frame, it is possible there are no updates. But we expect to do this no more that once a day at this point
+					// If working on a short time frame, it is possible there are no updates. But we expect to do this no more that once a day at this point,
 					// so we expect there to be changes.
 					// Having this warning will give us a hint if there is something wrong with the data in the calls
 				}
