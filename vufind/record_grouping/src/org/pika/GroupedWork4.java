@@ -14,7 +14,8 @@
 
 package org.pika;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.text.Normalizer;
 import java.util.regex.Matcher;
@@ -39,7 +40,7 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 	private static Pattern consecutiveSpaceStrip = Pattern.compile("\\s{2,}");
 	private static Pattern bracketedCharacterStrip = Pattern.compile("\\[(.*?)\\]");
 
-	static Logger logger = Logger.getLogger(GroupedWork4.class);
+	private static Logger logger = LogManager.getLogger();
 
 	GroupedWork4() {
 		version = 4;

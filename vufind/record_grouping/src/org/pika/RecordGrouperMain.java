@@ -14,11 +14,13 @@
 
 package org.pika;
 
+// Import log4j classes.
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 //import au.com.bytecode.opencsv.CSVReader;
 
 import au.com.bytecode.opencsv.CSVWriter;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 import org.json.JSONObject;
 import org.marc4j.MarcException;
 import org.marc4j.MarcPermissiveStreamReader;
@@ -43,7 +45,7 @@ import java.util.zip.CRC32;
  * Grouping happens at 3 different levels:
  */
 public class RecordGrouperMain {
-	private static Logger              logger             = Logger.getLogger(RecordGrouperMain.class);
+	private static Logger              logger;
 	private static String              serverName;
 	private static PikaSystemVariables systemVariables;
 	private static Connection          pikaConn           = null;
@@ -98,9 +100,10 @@ public class RecordGrouperMain {
 		serverName = args[0];
 
 		// Initialize the logger
-		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j.grouping.properties");
+		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j2.grouping.xml");
 		if (log4jFile.exists()) {
-			PropertyConfigurator.configure(log4jFile.getAbsolutePath());
+			System.setProperty("log4j.configurationFile", log4jFile.getAbsolutePath());
+			logger = LogManager.getLogger();
 		} else {
 			System.out.println("Could not find log4j configuration " + log4jFile.getAbsolutePath());
 			System.exit(1);
@@ -513,7 +516,10 @@ public class RecordGrouperMain {
 
 				indexingProfiles.add(profile);
 			}
-
+			if (indexingProfileToRun != null && !indexingProfileToRun.isEmpty() && indexingProfiles.size() == 0) {
+				logger.error("Did not find "+ indexingProfileToRun + " in database.");
+				System.exit(1);
+			}
 		} catch (Exception e) {
 			logger.error("Error loading indexing profiles", e);
 			System.exit(1);

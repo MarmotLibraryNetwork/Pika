@@ -14,7 +14,8 @@
 
 package org.pika;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
@@ -38,7 +39,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 
 	String groupingLanguage = "";
 
-	static Logger logger = Logger.getLogger(GroupedWork5.class);
+	private static Logger logger = LogManager.getLogger();
 
 	private static final Pattern validCategories = Pattern.compile("^(book|music|movie|comic)$");
 
