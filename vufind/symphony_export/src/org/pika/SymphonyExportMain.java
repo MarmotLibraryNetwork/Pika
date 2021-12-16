@@ -14,8 +14,9 @@
 
 package org.pika;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+// Import log4j classes.
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.marc4j.*;
 import org.marc4j.marc.*;
 import org.pika.MarcRecordGrouper;
@@ -33,7 +34,7 @@ import java.util.zip.CRC32;
  * Created by mnoble on 7/25/2017.
  */
 public class SymphonyExportMain {
-	private static Logger              logger    = Logger.getLogger(SymphonyExportMain.class);
+	private static Logger              logger;
 	private static String              serverName;
 	private static IndexingProfile     indexingProfile;
 	private static PikaSystemVariables systemVariables;
@@ -45,17 +46,20 @@ public class SymphonyExportMain {
 	public static void main(String[] args) {
 		serverName = args[0];
 
-		// Set-up Logging //
-		Date startTime = new Date();
-		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j.symphony_extract.properties");
+		// Initialize the logger
+		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j2.symphony_extract.xml");
 		if (log4jFile.exists()) {
-			PropertyConfigurator.configure(log4jFile.getAbsolutePath());
+			System.setProperty("log4j.pikaSiteName", serverName);
+			System.setProperty("log4j.configurationFile", log4jFile.getAbsolutePath());
+			logger = LogManager.getLogger();
 		} else {
-			System.out.println("Could not find log4j configuration " + log4jFile.toString());
+			System.out.println("Could not find log4j configuration " + log4jFile);
+			System.exit(1);
 		}
 
+		Date startTime = new Date();
 		if (logger.isInfoEnabled()) {
-			logger.info(startTime.toString() + ": Starting Symphony Extract");
+			logger.info(startTime + ": Starting Symphony Extract");
 		}
 
 		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
@@ -66,7 +70,8 @@ public class SymphonyExportMain {
 			String databaseConnectionInfo = PikaConfigIni.getIniValue("Database", "database_vufind_jdbc");
 			pikaConn = DriverManager.getConnection(databaseConnectionInfo);
 		} catch (Exception e) {
-			System.out.println("Error connecting to pika database " + e.toString());
+			System.out.println("Error connecting to pika database " + e);
+			logger.fatal("Error connecting to pika database " + e);
 			System.exit(1);
 		}
 
