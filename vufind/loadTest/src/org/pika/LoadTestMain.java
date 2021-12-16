@@ -21,8 +21,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Timer;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+// Import log4j classes.
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
 import org.ini4j.Profile.Section;
@@ -30,7 +32,7 @@ import org.ini4j.Profile.Section;
 import au.com.bytecode.opencsv.CSVReader;
 
 public class LoadTestMain {
-	private static Logger logger = Logger.getLogger(LoadTestMain.class);
+	private static Logger logger = LogManager.getLogger();
 	
 	private static String baseUrlToLoad = "";
 	private static ArrayList<TestTask> testTasks = new ArrayList<TestTask>();
@@ -54,13 +56,17 @@ public class LoadTestMain {
 	}
 
 	private static void setupLogging() {
-		File log4jFile = new File("./log4j.properties");
-		if (log4jFile.exists()){
-			PropertyConfigurator.configure(log4jFile.getAbsolutePath());
-		}else{
-			System.out.println("Could not find log4j configuration " + log4jFile.toString());
-		}
-		logger.info("Starting Cron");
+		// Initialize the logger
+//		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j2.loadTest.xml");
+//		if (log4jFile.exists()) {
+//			System.setProperty("log4j.pikaSiteName", serverName);
+//			System.setProperty("log4j.configurationFile", log4jFile.getAbsolutePath());
+//			logger = LogManager.getLogger();
+//		} else {
+//			System.out.println("Could not find log4j configuration " + log4jFile);
+//			System.exit(1);
+//		}
+		logger.info("Starting Load Test");
 	}
 
 	private static void startLoadTest() {
