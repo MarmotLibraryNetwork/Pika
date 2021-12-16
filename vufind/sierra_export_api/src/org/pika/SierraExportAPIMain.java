@@ -26,10 +26,12 @@ import java.time.Instant;
 import java.util.*;
 import java.util.Date;
 
+// Import log4j classes.
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 
 import org.json.JSONArray;
@@ -50,7 +52,7 @@ import org.marc4j.marc.impl.SortedMarcFactoryImpl;
  * Date: 1/15/18
  */
 public class SierraExportAPIMain {
-	private static Logger              logger  = Logger.getLogger(SierraExportAPIMain.class);
+	private static Logger              logger;
 	private static String              serverName;
 	private static PikaSystemVariables systemVariables;
 	private static Long                lastSierraExtractTime;
@@ -89,13 +91,18 @@ public class SierraExportAPIMain {
 	public static void main(String[] args) {
 		serverName = args[0];
 
-		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j.sierra_extract.properties");
+		// Initialize the logger
+		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j2.sierra_extract.xml");
 		if (log4jFile.exists()) {
-			PropertyConfigurator.configure(log4jFile.getAbsolutePath());
+			System.setProperty("log4j.pikaSiteName", serverName);
+			System.setProperty("log4j.configurationFile", log4jFile.getAbsolutePath());
+			logger = LogManager.getLogger();
 		} else {
-			logger.error("Could not find log4j configuration " + log4jFile.toString());
+			System.out.println("Could not find log4j configuration " + log4jFile);
+			System.exit(1);
 		}
-		logger.info(startTime.toString() + " : Starting Sierra Extract");
+
+		logger.info(startTime + " : Starting Sierra Extract");
 
 		// Read the base INI file to get information about the server (current directory/cron/config.ini)
 		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
