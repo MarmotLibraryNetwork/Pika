@@ -25,7 +25,7 @@ import javax.mail.*;
 import javax.mail.event.*;
 import javax.mail.internet.*;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 
 public class Emailer implements TransportListener, ConnectionListener{

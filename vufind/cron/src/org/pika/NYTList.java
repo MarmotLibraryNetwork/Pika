@@ -1,6 +1,6 @@
 package org.pika;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.ini4j.Profile.Section;
 
 import java.net.MalformedURLException;

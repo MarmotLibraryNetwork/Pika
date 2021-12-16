@@ -23,15 +23,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
 import org.ini4j.Profile.Section;
 
+// Import log4j classes.
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 public class Cron {
 
-	private static Logger logger = Logger.getLogger(Cron.class);
+	private static Logger logger;
 	private static String serverName;
 
 	private static Connection          pikaConn;
@@ -49,14 +51,21 @@ public class Cron {
 		serverName = args[0];
 		args       = Arrays.copyOfRange(args, 1, args.length);
 
-		Date currentTime = new Date();
-		File log4jFile   = new File("../../sites/" + serverName + "/conf/log4j.cron.properties");
+
+		// Initialize the logger
+		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j2.cron.xml");
 		if (log4jFile.exists()) {
-			PropertyConfigurator.configure(log4jFile.getAbsolutePath());
+			System.setProperty("log4j.pikaSiteName", serverName);
+			System.setProperty("log4j.configurationFile", log4jFile.getAbsolutePath());
+			logger = LogManager.getLogger();
 		} else {
-			System.out.println("Could not find log4j configuration " + log4jFile.toString());
+			System.out.println("Could not find log4j configuration " + log4jFile);
+			System.exit(1);
 		}
-		logger.info(currentTime.toString() + ": Starting Cron");
+
+		Date currentTime = new Date();
+		logger.info(currentTime + ": Starting Cron");
+
 		// Setup the MySQL driver
 		try {
 			// The newInstance() call is a work around for some

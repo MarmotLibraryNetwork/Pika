@@ -34,7 +34,7 @@ import java.security.MessageDigest;
 import java.util.HashSet;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.pika.CopyNoOverwriteResult.CopyResult;
 
 import javax.net.ssl.HostnameVerifier;

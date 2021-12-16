@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020  Marmot Library Network
+ * Copyright (C) 2021  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -12,7 +12,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.marmot;
+package org.pika;
 
 import java.io.FileReader;
 import java.net.URL;
@@ -24,16 +24,10 @@ import java.sql.Types;
 import java.util.Date;
 import java.util.List;
 
-import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
-import org.pika.CronLogEntry;
-import org.pika.CronProcessLogEntry;
-import org.pika.IProcessHandler;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import au.com.bytecode.opencsv.CSVReader;
-import org.pika.PikaConfigIni;
-import org.pika.PikaSystemVariables;
 
 public class ImportSteamboatGenealogy implements IProcessHandler{
 	private CronProcessLogEntry processLog;
