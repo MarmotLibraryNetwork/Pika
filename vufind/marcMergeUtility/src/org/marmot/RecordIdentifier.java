@@ -12,15 +12,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.peakc.marmot;
+package org.marmot;
 
-/**
- * Description goes here
- * Rampart Marc Conversion
- * User: Mark Noble
- * Date: 10/18/13
- * Time: 10:27 AM
- */
 public class RecordIdentifier {
 	private String type;
 	private String identifier;

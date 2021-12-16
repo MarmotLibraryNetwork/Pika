@@ -12,7 +12,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.peakc.marmot;
+package org.marmot;
+
+import org.marmot.CopyNoOverwriteResult;
 
 import java.io.*;
 import java.nio.channels.FileChannel;

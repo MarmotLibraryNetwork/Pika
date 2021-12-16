@@ -12,10 +12,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.peakc.marmot;
+package org.marmot;
 
 import au.com.bytecode.opencsv.CSVReader;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcReader;
@@ -30,7 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
- * Merge a main marc export file with records from a delete and updates file
+ * Merge a main marc export file with records from deletes and updates file
  * Pika
  * User: Mark Noble
  * Date: 12/31/2014
@@ -44,7 +44,7 @@ class MergeMarcUpdatesAndDeletes {
 	private String recordNumberSubfield = "";
 	private Logger logger;
 
-	boolean startProcess(Ini configIni, Logger logger) throws Exception {
+	boolean startProcess(Ini configIni, Logger logger) {
 		this.logger = logger;
 
 		String mainFilePath   = configIni.get("MergeUpdate", "marcPath");

@@ -12,10 +12,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.peakc.marmot;
+package org.marmot;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+// Import log4j classes.
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
 
@@ -27,8 +29,7 @@ import java.util.Date;
 
 
 public class MergeUpdate {
-	private static Logger logger = Logger.getLogger(MergeUpdate.class);
-	  /*Logger logger = LogManager.getRootLogger();*/
+	private static Logger logger = LogManager.getLogger();
 
 	public static void main(String[] args) {
 
@@ -46,13 +47,6 @@ public class MergeUpdate {
 
 		Ini configIni = loadConfigFile(args[0]);
 		Date currentTime = new Date();
-		File log4jFile = new File("log4j.properties");
-		if (log4jFile.exists()) {
-			PropertyConfigurator.configure(log4jFile.getAbsolutePath());
-		} else {
-			logger.error("Could not find log4j configuration " + log4jFile);
-			System.exit(1);
-		}
 
 		logger.info(currentTime + ": Starting Merge");
 		MergeMarcUpdatesAndDeletes merge = new MergeMarcUpdatesAndDeletes();
