@@ -14,8 +14,9 @@
 
 package org.pika;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+// Import log4j classes.
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.marc4j.MarcException;
 import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcReader;
@@ -37,7 +38,7 @@ import java.util.Date;
  * Time: 10:18 PM
  */
 public class HorizonExportMain {
-	private static Logger            logger = Logger.getLogger(HorizonExportMain.class);
+	private static Logger            logger;
 	private static String            serverName; //Pika instance name
 	private static IndexingProfile   indexingProfile;
 	private static Connection        pikaConn;
@@ -49,13 +50,17 @@ public class HorizonExportMain {
 		serverName = args[0];
 
 		Date startTime = new Date();
-		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j.horizon_export.properties");
+		// Initialize the logger
+		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j2.horizon_export.xml");
 		if (log4jFile.exists()) {
-			PropertyConfigurator.configure(log4jFile.getAbsolutePath());
+			System.setProperty("log4j.pikaSiteName", serverName);
+			System.setProperty("log4j.configurationFile", log4jFile.getAbsolutePath());
+			logger = LogManager.getLogger();
 		} else {
-			System.out.println("Could not find log4j configuration " + log4jFile.toString());
+			System.out.println("Could not find log4j configuration " + log4jFile);
+			System.exit(1);
 		}
-		logger.info(startTime.toString() + ": Starting Horizon Export");
+		logger.info(startTime + ": Starting Horizon Export");
 
 		// Read the base INI file to get information about the server (current directory/conf/config.ini)
 		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
