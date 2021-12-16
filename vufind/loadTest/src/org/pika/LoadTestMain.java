@@ -32,7 +32,7 @@ import org.ini4j.Profile.Section;
 import au.com.bytecode.opencsv.CSVReader;
 
 public class LoadTestMain {
-	private static Logger logger = LogManager.getLogger();
+	private static Logger logger = LogManager.getLogger(LoadTestMain.class);
 	
 	private static String baseUrlToLoad = "";
 	private static ArrayList<TestTask> testTasks = new ArrayList<TestTask>();
@@ -61,7 +61,7 @@ public class LoadTestMain {
 //		if (log4jFile.exists()) {
 //			System.setProperty("log4j.pikaSiteName", serverName);
 //			System.setProperty("log4j.configurationFile", log4jFile.getAbsolutePath());
-//			logger = LogManager.getLogger();
+//			logger = LogManager.getLogger(LoadTestMain.class);
 //		} else {
 //			System.out.println("Could not find log4j configuration " + log4jFile);
 //			System.exit(1);

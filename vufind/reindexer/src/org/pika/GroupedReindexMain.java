@@ -345,7 +345,7 @@ public class GroupedReindexMain {
 		if (log4jFile.exists()) {
 			System.setProperty("log4j.pikaSiteName", serverName);
 			System.setProperty("log4j.configurationFile", log4jFile.getAbsolutePath());
-			logger = LogManager.getLogger();
+			logger = LogManager.getLogger(GroupedReindexMain.class);
 		} else {
 			System.out.println("Could not find log4j configuration " + log4jFile.getAbsolutePath());
 			System.exit(1);

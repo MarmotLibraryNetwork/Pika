@@ -29,7 +29,7 @@ import java.util.Date;
 
 
 public class MergeUpdate {
-	private static Logger logger = LogManager.getLogger();
+	private static Logger logger = LogManager.getLogger(MergeUpdate.class);
 
 	public static void main(String[] args) {
 

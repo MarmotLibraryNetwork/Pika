@@ -44,7 +44,7 @@ import java.util.HashSet;
  */
 public class VIAF {
 	public static HashMap<String, String> loadedAuthorities = new HashMap<String, String>();
-	private static Logger logger = LogManager.getLogger();
+	private static Logger logger = LogManager.getLogger(VIAF.class);
 	private static Connection authoritiesConn = null;
 
 	private static boolean connectToDatabase(){

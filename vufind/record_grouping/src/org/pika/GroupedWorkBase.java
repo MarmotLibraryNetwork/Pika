@@ -40,7 +40,7 @@ import java.util.HashSet;
  * Time: 8:57 AM
  */
 public abstract class GroupedWorkBase {
-	private static Logger logger = LogManager.getLogger();
+	private static Logger logger = LogManager.getLogger(GroupedWorkBase.class);
 
 	//The id of the work within the database.
 	String permanentId;

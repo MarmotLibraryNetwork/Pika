@@ -36,7 +36,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 class ExtractOverDriveInfo {
-	private static Logger                   logger = LogManager.getLogger();
+	private static Logger                   logger = LogManager.getLogger(ExtractOverDriveInfo.class);
 	private        Connection               pikaConn;
 	private        Connection               econtentConn;
 	private        PikaSystemVariables      systemVariables;

@@ -40,7 +40,7 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 	private static Pattern consecutiveSpaceStrip = Pattern.compile("\\s{2,}");
 	private static Pattern bracketedCharacterStrip = Pattern.compile("\\[(.*?)\\]");
 
-	private static Logger logger = LogManager.getLogger();
+	private static Logger logger = LogManager.getLogger(GroupedWork4.class);
 
 	GroupedWork4() {
 		version = 4;

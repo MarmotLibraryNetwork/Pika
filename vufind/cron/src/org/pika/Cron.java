@@ -57,7 +57,7 @@ public class Cron {
 		if (log4jFile.exists()) {
 			System.setProperty("log4j.pikaSiteName", serverName);
 			System.setProperty("log4j.configurationFile", log4jFile.getAbsolutePath());
-			logger = LogManager.getLogger();
+			logger = LogManager.getLogger(Cron.class);
 		} else {
 			System.out.println("Could not find log4j configuration " + log4jFile);
 			System.exit(1);

@@ -47,7 +47,7 @@ public class GroupedWork3 extends GroupedWorkBase implements Cloneable {
 	static Pattern commonAuthorSuffixPattern = Pattern.compile("^(.+?)\\s(?:general editor|editor|editor in chief|etc|inc|inc\\setc|co|corporation|llc|partners|company|home entertainment|musical group)$");
 	static Pattern commonAuthorPrefixPattern = Pattern.compile("^(?:edited by|by the editors of|by|chosen by|translated by|prepared by|translated and edited by|completely rev by|pictures by|selected and adapted by|with a foreword by|with a new foreword by|introd by|introduction by|intro by|retold by)\\s(.+)$");
 
-	private static Logger logger = LogManager.getLogger();
+	private static Logger logger = LogManager.getLogger(GroupedWork3.class);
 
 	GroupedWork3() {
 		version = 3;

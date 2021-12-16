@@ -39,7 +39,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 
 	String groupingLanguage = "";
 
-	private static Logger logger = LogManager.getLogger();
+	private static Logger logger = LogManager.getLogger(GroupedWork5.class);
 
 	private static final Pattern validCategories = Pattern.compile("^(book|music|movie|comic)$");
 
