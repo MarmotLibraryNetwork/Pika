@@ -64,21 +64,17 @@ class Browse_AJAX extends AJAXHandler {
 		if (UserAccount::isLoggedIn()){
 			if (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager', 'contentEditor', 'locationManager', 'opacAdmin'])){
 
-				// If the search location is defined, user that location for creating the browse category
-				global $locationSingleton;
-				$searchLocation = $locationSingleton->getSearchLocation();
-				if (empty($searchLocation)){
-					if (UserAccount::userHasRole('locationManager')){
-						// Use home branch for location managers
-						$searchLocation = Location::getUserHomeLocation();
-					}elseif (UserAccount::userHasRole('opacAdmin')){
-						// Use the interface library for opac admins (can be different from the user home library)
-						global $library;
-					}elseif (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager', 'contentEditor'])){
-						// Otherwise, use User's home library
-						$library = $user->getHomeLibrary();
-					}
+				if (UserAccount::userHasRole('locationManager')){
+					// Only use home branch for location managers
+					$searchLocation = Location::getUserHomeLocation();
+				}elseif (UserAccount::userHasRole('opacAdmin')){
+					// Use the interface library for opac admins (can be different from the user home library)
+					global $library;
+				}elseif (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager', 'contentEditor'])){
+					// Otherwise, use User's home library
+					$library = $user->getHomeLibrary();
 				}
+
 				$categoryName       = $_REQUEST['categoryName'] ?? '';
 				$addAsSubCategoryOf = !empty($_REQUEST['addAsSubCategoryOf']) ? $_REQUEST['addAsSubCategoryOf'] : null;// value of zero means nothing was selected.
 				$textId             = str_replace(' ', '_', strtolower(trim($categoryName)));
