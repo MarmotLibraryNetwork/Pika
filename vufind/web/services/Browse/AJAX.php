@@ -85,9 +85,9 @@ class Browse_AJAX extends AJAXHandler {
 						'message' => 'Please enter a category name',
 					];
 				}
-				if ($searchLocation){
+				if (isset($searchLocation)){
 					$textId = $searchLocation->code . '_' . $textId;
-				}elseif ($library){
+				}elseif (isset($library)){
 					$textId = $library->subdomain . '_' . $textId;
 				}
 
@@ -148,7 +148,7 @@ class Browse_AJAX extends AJAXHandler {
 
 					//Now add to the library/location
 					if (!$addAsSubCategoryOf){
-						if ($library){
+						if (isset($library)){
 							// Only add main browse categories to the library carousel
 							require_once ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php';
 							$libraryBrowseCategory                       = new LibraryBrowseCategory();
