@@ -360,7 +360,7 @@ class ItemAPI extends AJAXHandler {
 					'status'             => $copy['status'],
 					'dueDate'            => '',
 					'statusFull'         => $copy['status'],
-					'statusfull'         => $copy['status'],
+					'statusfull'         => $copy['status'], // EBSCO EDS uses this field for availability See PK-1421
 					'id'                 => $fullId,
 					'number'             => $i++,
 					'type'               => 'holding',
