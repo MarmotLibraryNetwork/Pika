@@ -120,6 +120,7 @@ class Browse_AJAX extends AJAXHandler {
 						$browseCategory->sourceListId = $listId;
 					}
 
+					$categoryName                   = htmlspecialchars($categoryName, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5);
 					$browseCategory->label          = $categoryName;
 					$browseCategory->userId         = UserAccount::getActiveUserId();
 					$browseCategory->sharing        = 'everyone';
