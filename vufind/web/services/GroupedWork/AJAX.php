@@ -1084,6 +1084,7 @@ function createSeriesList(){
 			$list          = new UserList();
 			$list->title   = strip_tags($title);
 			$list->user_id = $user->id;
+			$list->defaultSort = "custom";
 			//Check to see if there is already a list with this id
 			$existingList = false;
 			if ($list->find(true)){
