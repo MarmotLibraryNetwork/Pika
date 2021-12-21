@@ -65,6 +65,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		'getProspectorInfo',
 		'getNovelistData',
 		'reloadCover',
+		'reloadNovelistData',
 		'reloadIslandora',
 		'getSeriesEmailForm',
 		'sendSeriesEmail',
@@ -1454,6 +1455,20 @@ function getSaveSeriesToListForm(){
 		$ret           = file_get_contents($largeCoverUrl);
 
 		return ['success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'];
+	}
+
+	function reloadNovelistData(){
+
+		require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
+
+		global $configArray;
+		$id = $_REQUEST['id'];
+
+		$novelist = new NovelistData();
+		$novelist->groupedWorkPermanentId = $id;
+		$novelist->delete();
+
+		return['success' => true, 'message'=> 'NoveList data cleared. You may need to refresh the page to clear your local cache'];
 	}
 
 	function reloadIslandora(){
