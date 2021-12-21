@@ -2,6 +2,7 @@
 <button onclick="return Pika.GroupedWork.reloadCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Reload Cover</button>
 <button onclick="return Pika.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Reload Enrichment</button>
 		{if $loggedIn && $userIsStaff}
+			<button onclick="return Pika.GroupedWork.reloadNovelistData('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Reload NoveList Data</button>
 			<button onclick="return Pika.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Force Reindex</button>
 			<button onclick="return Pika.GroupedWork.forceRegrouping('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Force Regrouping</button>
 
