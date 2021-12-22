@@ -191,9 +191,18 @@ class Novelist3{
 							$novelistData->primaryISBN     = $data->TitleInfo->primary_isbn ?? null;
 							//Series Information
 							if (isset($data->FeatureContent->SeriesInfo)){
-								$this->loadSeriesInfoFast($data->FeatureContent->SeriesInfo, $novelistData);
-								$timer->logTime("loaded series data");
+								if(in_array($novelistData->primaryISBN, $ISBNs))
+								{
+									$this->loadSeriesInfoFast($data->FeatureContent->SeriesInfo, $novelistData);
+									$timer->logTime("loaded series data");
+								}else{
+									require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+									$groupedWorkDriver = new GroupedWorkDriver($groupedRecordId);
 
+									$novelistData->primaryISBN = $groupedWorkDriver->getPrimaryIsbn();
+									$this->logger->debug("Wrong NoveList ISBN");
+									$this->loadSeriesInfo($groupedRecordId, $data->FeatureContent->SeriesInfo,$novelistData);
+								}
 								if (!empty($data->FeatureContent->SeriesInfo->series_titles)) {
 									//We got good data, quit looking at ISBNs
 									break;
@@ -300,11 +309,12 @@ class Novelist3{
 								//log the incorrect ISBN
 								$this->logger->warning("Novelist ISBN for record " . $groupedRecordId . " does not match local holdings");
 								//$this->loadSeriesInfoMissingISBN($groupedRecordId, $data->FeatureContent->SeriesInfo, $novelistData);
-								$this->loadSeriesInfo($groupedRecordId, $data->FeatureContent->SeriesInfo, $novelistData);
 								require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 								$groupedWorkDriver = new GroupedWorkDriver($groupedRecordId);
 
 								$novelistData->primaryISBN = $groupedWorkDriver->getPrimaryIsbn();
+								$this->loadSeriesInfo($groupedRecordId, $data->FeatureContent->SeriesInfo, $novelistData);
+
 							}
 						}
 
