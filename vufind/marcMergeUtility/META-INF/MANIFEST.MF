@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
-Class-Path: lib/ini4j-0.5.2.jar lib/log4j-api-2.16.jar lib/marc4j-pika.jar lib/opencsv-2.2.jar lib/normalizer.jar
+Class-Path: lib/ini4j-0.5.2.jar lib/log4j-core-2.17.0.jar lib/log4j-api-2.17.0.jar lib/marc4j-pika.jar lib/opencsv-2.2.jar lib/normalizer.jar
 Main-Class: org.marmot.MergeUpdate
 

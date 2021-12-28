@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Class-Path: lib/postgresql-9.2-1003.jdbc4.jar lib/ini4j-0.5.2.jar lib/log4j-api-2.16.jar lib/log4j-core-2.16.0.jar lib/opencsv-2.2.jar lib/codec-1.6.jar lib/mysql-5.1.15-bin.jar
+Class-Path: lib/postgresql-9.2-1003.jdbc4.jar lib/ini4j-0.5.2.jar ../java_libraries/log4j2/log4j-core-2.17.0.jar ../java_libraries/log4j2/log4j-api-2.17.0.jar lib/opencsv-2.2.jar lib/codec-1.6.jar lib/mysql-5.1.15-bin.jar
   lib/marc4j-pika.jar ../reindexer/reindexer.jar ../record_grouping/record_grouping.jar
   ../reindexer/lib/solr-solrj-8.7.0.jar
 Main-Class: org.pika.SierraExportAPIMain

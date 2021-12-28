@@ -80,7 +80,7 @@ public class CarlXExportMain {
 		if (log4jFile.exists()) {
 			System.setProperty("log4j.pikaSiteName", serverName);
 			System.setProperty("log4j.configurationFile", log4jFile.getAbsolutePath());
-			logger = LogManager.getLogger(CarlXExportMain.class);
+			logger = LogManager.getLogger();
 		} else {
 			System.out.println("Could not find log4j configuration " + log4jFile);
 			System.exit(1);
