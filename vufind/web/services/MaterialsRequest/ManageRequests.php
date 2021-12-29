@@ -367,9 +367,10 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Age Level');
 		}
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ISBN');
-		$activeSheet->getActiveSheet()->getStyle($curCol, $curRow)->getNumberFormat()->setFormatCode(PHPExcel_Style_numberFormat::FORMAT_NUMBER);
+		$objPHPExcel->getActiveSheet()->getStyle($curCol . $curRow)->getNumberFormat()->setFormatCode(PHPExcel_Style_numberFormat::FORMAT_NUMBER);
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'UPC');
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ISSN');
+		$objPHPExcel->getActiveSheet()->getStyle($curCol . $curRow)->getNumberFormat()->setFormatCode(PHPExcel_Style_numberFormat::FORMAT_NUMBER);
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'OCLC Number');
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Publisher');
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Publication Year');
