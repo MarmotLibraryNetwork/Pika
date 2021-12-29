@@ -199,7 +199,7 @@
 								{elseif $record.freezeable}
 									<button onclick="return Pika.Account.freezeHold('{$record.userId}', '{$record.id}', '{$record.cancelId}', {if $suspendRequiresReactivationDate}true{else}false{/if}, this);" class="btn btn-sm btn-default">{translate text="Freeze Hold"}</button>
 								{else}
-									<div onclick="Pika.showMessage('Freeze Hold','The current hold cannot be frozen.', true, true);"><button  disabled="disabled" class="btn btn-sm disabled" >{translate text="Freeze Hold"}</button></div>
+									<div onclick="Pika.showMessage('Freeze Hold','The current hold cannot be frozen.', true, false);"><button  disabled="disabled" class="btn btn-sm disabled" >{translate text="Freeze Hold"}</button></div>
 								{/if}
 
 							{/if}
