@@ -64,21 +64,17 @@ class Browse_AJAX extends AJAXHandler {
 		if (UserAccount::isLoggedIn()){
 			if (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager', 'contentEditor', 'locationManager', 'opacAdmin'])){
 
-				// If the search location is defined, user that location for creating the browse category
-				global $locationSingleton;
-				$searchLocation = $locationSingleton->getSearchLocation();
-				if (empty($searchLocation)){
-					if (UserAccount::userHasRole('locationManager')){
-						// Use home branch for location managers
-						$searchLocation = Location::getUserHomeLocation();
-					}elseif (UserAccount::userHasRole('opacAdmin')){
-						// Use the interface library for opac admins (can be different from the user home library)
-						global $library;
-					}elseif (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager', 'contentEditor'])){
-						// Otherwise, use User's home library
-						$library = $user->getHomeLibrary();
-					}
+				if (UserAccount::userHasRole('locationManager')){
+					// Only use home branch for location managers
+					$searchLocation = Location::getUserHomeLocation();
+				}elseif (UserAccount::userHasRole('opacAdmin')){
+					// Use the interface library for opac admins (can be different from the user home library)
+					global $library;
+				}elseif (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager', 'contentEditor'])){
+					// Otherwise, use User's home library
+					$library = $user->getHomeLibrary();
 				}
+
 				$categoryName       = $_REQUEST['categoryName'] ?? '';
 				$addAsSubCategoryOf = !empty($_REQUEST['addAsSubCategoryOf']) ? $_REQUEST['addAsSubCategoryOf'] : null;// value of zero means nothing was selected.
 				$textId             = str_replace(' ', '_', strtolower(trim($categoryName)));
@@ -89,9 +85,9 @@ class Browse_AJAX extends AJAXHandler {
 						'message' => 'Please enter a category name',
 					];
 				}
-				if ($searchLocation){
+				if (isset($searchLocation)){
 					$textId = $searchLocation->code . '_' . $textId;
-				}elseif ($library){
+				}elseif (isset($library)){
 					$textId = $library->subdomain . '_' . $textId;
 				}
 
@@ -124,6 +120,7 @@ class Browse_AJAX extends AJAXHandler {
 						$browseCategory->sourceListId = $listId;
 					}
 
+					$categoryName                   = htmlspecialchars($categoryName, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5);
 					$browseCategory->label          = $categoryName;
 					$browseCategory->userId         = UserAccount::getActiveUserId();
 					$browseCategory->sharing        = 'everyone';
@@ -152,7 +149,7 @@ class Browse_AJAX extends AJAXHandler {
 
 					//Now add to the library/location
 					if (!$addAsSubCategoryOf){
-						if ($library){
+						if (isset($library)){
 							// Only add main browse categories to the library carousel
 							require_once ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php';
 							$libraryBrowseCategory                       = new LibraryBrowseCategory();
