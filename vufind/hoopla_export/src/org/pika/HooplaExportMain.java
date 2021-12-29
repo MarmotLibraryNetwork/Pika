@@ -351,7 +351,7 @@ public class HooplaExportMain {
 				updateHooplaTitleInDB.setLong(1, titleId);
 				final boolean isActive = curTitle.getBoolean("active");
 				updateHooplaTitleInDB.setBoolean(2, isActive);
-				updateHooplaTitleInDB.setString(3, curTitle.getString("title"));
+				updateHooplaTitleInDB.setString(3, removeBadChars(curTitle.getString("title")));
 				updateHooplaTitleInDB.setString(4, curTitle.getString("kind"));
 				updateHooplaTitleInDB.setBoolean(5, curTitle.getBoolean("pa"));
 				updateHooplaTitleInDB.setBoolean(6, curTitle.getBoolean("demo"));
@@ -384,6 +384,22 @@ public class HooplaExportMain {
 		return numUpdates;
 	}
 
+	/**
+	 * Remove UTF8mb4 (4bytes) characters from string.
+	 * eg. emojis
+	 *
+	 * @param s String potentially with UTF8mb4 characters
+	 * @return String without UTF8mb4 characters
+	 */
+	public static String removeBadChars(String s) {
+		if (s == null) return null;
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0 ; i < s.length() ; i++){
+			if (Character.isHighSurrogate(s.charAt(i))) continue;
+			sb.append(s.charAt(i));
+		}
+		return sb.toString();
+	}
 	private static String getAccessToken() {
 		String hooplaUsername = PikaConfigIni.getIniValue("Hoopla", "HooplaAPIUser");
 		String hooplaPassword = PikaConfigIni.getIniValue("Hoopla", "HooplaAPIpassword");
