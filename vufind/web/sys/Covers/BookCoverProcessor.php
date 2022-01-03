@@ -947,6 +947,9 @@ class BookCoverProcessor {
 			// Sort so that we try Books first for cover data
 			// Try to move Audio books to the bottom
 			usort($recordDetails, function ($a, $b){
+				// Note: Keying off the string '|Book|' avoids sorting up BookClub Kits.
+				// Also note that keying off of '|Audio' allows us to sort down by formats like 'Audio CD' but also
+				// the format category determination of 'Audio Books'
 				if (strpos($a, '|Book|')){
 					return -1;
 				}elseif (strpos($b, '|Book|')){
