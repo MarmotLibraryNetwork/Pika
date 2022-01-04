@@ -433,6 +433,9 @@ class MyAccount_AJAX extends AJAXHandler {
 	}
 
 	function cancelHolds(){ // for cancelling multiple holds
+		$success = array();
+		$failed = array();
+		$result = array();
 		//TODO: likely obsolete or needs refactoring to be used
 		try {
 			global $configArray;
@@ -440,13 +443,38 @@ class MyAccount_AJAX extends AJAXHandler {
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
 
 			$cancelId = array();
+
 			if (!empty($_REQUEST['holdselected'])){
 				$cancelId = $_REQUEST['holdselected'];
 			}
 //			$locationId = isset($_REQUEST['location']) ? $_REQUEST['location'] : null; //not passed via ajax. don't think it's needed
-			$result = $catalog->driver->updateHoldDetailed($user, 'cancel', $cancelId, null);
-			//TODO: need to obsolete updateHoldDetailed()
+			foreach($cancelId as $cancel)
+				{
+					if(!strstr($cancel, "~overdrive~")){
+						$result = $catalog->driver->cancelHold($user, null, $cancel);
+						if($result['success'] == true)
+						{
+							$success[] = $result;
+							$result['titles'] = $cancel;
+						}else{
+							$failed[] = $cancel;
+						}
+					}else{
+					$overdriveCancel = explode("~",$cancel);
+					$overdriveId = $overdriveCancel[2];
 
+					$overdrive = \Pika\PatronDrivers\EcontentSystem\OverDriveDriverFactory::getDriver();
+					$result = $overdrive->cancelOverDriveHold($overdriveId, $user);
+						if($result['success'] == true)
+						{
+							$result['titles'] = $cancel;
+							$success[] = $result;
+						}else{
+							$failed[] = $cancel;
+						}
+
+					}
+				}
 		} catch (PDOException $e){
 			// What should we do with this error?
 			if ($configArray['System']['debug']){
@@ -459,15 +487,15 @@ class MyAccount_AJAX extends AJAXHandler {
 				'message' => 'We could not connect to the circulation system, please try again later.',
 			);
 		}
-		if (is_array($result['title'])){ // avoid some naming confusion
-			$result['titles'] = $result['title'];
-			unset($result['title']);
-		}
+
 		global $interface;
-		$result['success'] = $result['success']; // makes template easier to understand
-		$failed            = (is_array($result['message']) && !empty($result['message'])) ? array_keys($result['message']) : null; //returns failed id for javascript function
-		if (isset($result['titles'])){
-			$result['numCancelled'] = count($result['titles']) - count($failed);
+
+		$result['numCancelled'] = count($success) - count($failed);
+		if($result['numCancelled'] > 0)
+		{
+			$result['success'] = true;
+		}else{
+			$result['success'] = false;
 		}
 		$interface->assign('cancelResults', $result);
 

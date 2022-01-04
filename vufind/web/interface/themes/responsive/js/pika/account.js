@@ -366,9 +366,6 @@ Pika.Account = (function(){
 			return false
 		},
 
-/* TODO This functionality is currently not employed, but it could be restored now. plb 11-23-15
-        If that happens, implement the confirmation process for single cancels above to give the user clear
-         choices when asked to confirm.
 
 		cancelSelectedHolds: function() {
 			if (Globals.loggedIn) {
@@ -379,7 +376,7 @@ Pika.Account = (function(){
 				if (numHolds > 0 && confirm('Cancel ' + numHolds + ' selected hold' + (numHolds > 1 ? 's' : '') + '?')) {
 					Pika.loadingMessage();
 					$.getJSON("/MyAccount/AJAX?method=cancelHolds&"+selectedTitles, function(data){
-						Pika.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
+						Pika.showMessage(data.title, data.modalBody, data.success,true); // autoclose when successful
 						if (data.success) {
 							// remove canceled items from page
 							$("input.titleSelect:checked").closest('div.result').remove();
@@ -404,7 +401,6 @@ Pika.Account = (function(){
 		}
 		return false;
 	},
-*/
 
 		cancelBooking: function(patronId, cancelId){
 			Pika.confirm("Are you sure you want to cancel this scheduled item?", function(){
@@ -591,8 +587,7 @@ Pika.Account = (function(){
 			}).fail(Pika.ajaxFail);
 		},
 
-		/* Hide this code for now. I should be to re-enable when re-enable selections for Holds
-		plb 9-14-2015
+
 
 		freezeSelectedHolds: function (){
 			var selectedTitles = Pika.Account.getSelectedTitles();
@@ -622,7 +617,7 @@ Pika.Account = (function(){
 			window.location = url;
 			return false;
 		},
-		*/
+
 
 
 		getSelectedTitles: function(promptForSelectAll){

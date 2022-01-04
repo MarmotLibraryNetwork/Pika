@@ -4,8 +4,8 @@
 		{* Cover column *}
 		{if $showCovers}
 		<div class="col-xs-4 col-sm-3">
-			{*<div class="row">*}
-				{*
+			<div class="row">
+
 				<div class="selectTitle col-xs-2">
 					{if $record.cancelable}
 						{if $section == 'available'}
@@ -15,8 +15,8 @@
 						{/if}
 					{/if}
 				</div>
-				*}
-				<div class="{*col-xs-10 *}text-center">
+
+				<div class="col-xs-10 text-center">
 					{if $record.coverUrl}
 						{if $record.recordId && $record.linkUrl}
 							<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}">
@@ -28,7 +28,7 @@
 					{/if}
 
 				</div>
-			{*</div>*}
+			</div>
 		</div>
 
 		{/if}
