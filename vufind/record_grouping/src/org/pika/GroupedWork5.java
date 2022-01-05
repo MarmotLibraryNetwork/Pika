@@ -41,7 +41,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 
 	private static Logger logger = LogManager.getLogger(GroupedWork5.class);
 
-	private static final Pattern validCategories = Pattern.compile("^(book|music|movie|comic)$");
+	private static final Pattern validCategories = Pattern.compile("^(book|music|movie|comic|young)$");
 
 	GroupedWork5() {
 		version = 5;

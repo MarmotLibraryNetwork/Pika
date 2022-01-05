@@ -353,7 +353,22 @@ function getIndexingUpdates(){
 				,
 			]
 		],
-
+		'2022.01.0_add_young_readers_format_grouping' => [
+			'title'       => 'Add new Young Reader format and Grouping Category',
+			'description' => 'Add Young Reader format and Grouping Category to translation maps',
+			'sql'         => [
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+						((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
+						'Young Reader', 'young')
+						,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+						'Young Reader', 'Young Readers Edition')
+						,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+						'Young Reader', 'Books')
+						,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+						'Young Reader', '10')"
+				,
+			]
+		],
 			'add_opac_message_2021.02' => [
 			'title'       => 'Add opac message subfield setting to indexing profile',
 			'description' => 'Include opac message subfield in order for Sierra Extract to get the field for items.',

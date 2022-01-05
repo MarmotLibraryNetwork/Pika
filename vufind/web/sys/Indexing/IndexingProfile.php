@@ -214,7 +214,7 @@ class IndexingProfile extends DB_DataObject{
 							'specifiedGroupingCategory' => ['property'    => 'specifiedGroupingCategory',
 							                                'type'        => 'enum',
 							                                'label'       => 'Specified Grouping Category',
-							                                'values'      => ['', 'book' => 'Book', 'movie' => 'Movie', 'music' => 'Music', 'comic' => 'Comic'/*,'other' => 'other'*/],
+							                                'values'      => ['', 'book' => 'Book', 'movie' => 'Movie', 'music' => 'Music', 'comic' => 'Comic', 'young' => 'Young Reader'],
 							                                'description' => 'The grouping category to set when using a defined format'],
 						]],
 				]],

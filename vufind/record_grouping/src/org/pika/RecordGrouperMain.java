@@ -176,7 +176,7 @@ public class RecordGrouperMain {
 				} catch (Exception e) {
 					logger.error("Error generating response", e);
 				}
-				System.out.print(result.toString());
+				System.out.print(result);
 				break;
 			case "singleRecord":
 				String fullRecordId;
@@ -185,8 +185,15 @@ public class RecordGrouperMain {
 				} else {
 					fullRecordId = getInputFromCommandLine("Enter the full record Id (source:sourceId)");
 				}
-				String source = fullRecordId.substring(0, fullRecordId.indexOf(':'));
-				String sourceId = fullRecordId.substring(fullRecordId.indexOf(':') + 1);
+				String source = null;
+				String sourceId = null;
+				try {
+					source   = fullRecordId.substring(0, fullRecordId.indexOf(':'));
+					sourceId = fullRecordId.substring(fullRecordId.indexOf(':') + 1);
+				} catch (Exception e) {
+					System.out.print("Please include source and source Id separated by a colon. (:)");
+					System.exit(1);
+				}
 				RecordIdentifier recordIdentifier = new RecordIdentifier(source, sourceId);
 				processSingleRecord(recordIdentifier);
 
