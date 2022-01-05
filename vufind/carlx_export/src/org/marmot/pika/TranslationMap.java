@@ -14,7 +14,7 @@
 
 package org.marmot.pika;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.HashSet;

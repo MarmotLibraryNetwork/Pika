@@ -10,7 +10,7 @@
 			</tr>
 			{foreach from=$PikaStatusMessages item=message}
 				<tr>
-					<td>{$message}</td>
+					<td>{$message}{if strpos($message, "above the minimum")} <a href="/Admin/Variables"> Change minimum level</a>{/if}</td>
 				</tr>
 			{/foreach}
 		</table>

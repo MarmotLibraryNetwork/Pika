@@ -14,7 +14,7 @@
 
 package org.pika;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcReader;
 import org.marc4j.marc.*;

@@ -15,8 +15,9 @@
 package org.pika;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+// Import log4j classes.
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
 import org.ini4j.Profile;
@@ -29,20 +30,24 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class LibrarySolutionExportMain {
-	private static Logger logger = Logger.getLogger(LibrarySolutionExportMain.class);
+	private static Logger logger;
 	private static String serverName; //Pika instance name
 
 	public static void main(String[] args) {
 		serverName = args[0];
 
 		Date startTime = new Date();
-		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j.library_solution_export.properties");
+		// Initialize the logger
+		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j2.library_solution_export.xml");
 		if (log4jFile.exists()) {
-			PropertyConfigurator.configure(log4jFile.getAbsolutePath());
+			System.setProperty("log4j.pikaSiteName", serverName);
+			System.setProperty("log4j.configurationFile", log4jFile.getAbsolutePath());
+			logger = LogManager.getLogger();
 		} else {
-			System.out.println("Could not find log4j configuration " + log4jFile.toString());
+			System.out.println("Could not find log4j configuration " + log4jFile);
+			System.exit(1);
 		}
-		logger.info(startTime.toString() + ": Starting Library.Solution Extract");
+		logger.info(startTime + ": Starting Library.Solution Extract");
 
 		// Read the base INI file to get information about the server (current directory/conf/config.ini)
 		Ini ini = loadConfigFile("config.ini");

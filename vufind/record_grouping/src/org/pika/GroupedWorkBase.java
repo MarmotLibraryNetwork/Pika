@@ -15,7 +15,8 @@
 package org.pika;
 
 import au.com.bytecode.opencsv.CSVReader;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.File;
 import java.io.FileReader;
@@ -39,7 +40,7 @@ import java.util.HashSet;
  * Time: 8:57 AM
  */
 public abstract class GroupedWorkBase {
-	private static Logger logger = Logger.getLogger(GroupedWorkBase.class);
+	private static Logger logger = LogManager.getLogger(GroupedWorkBase.class);
 
 	//The id of the work within the database.
 	String permanentId;

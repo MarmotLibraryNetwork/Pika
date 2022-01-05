@@ -14,8 +14,9 @@
 
 package org.pika;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+// Import log4j classes.
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.*;
 import java.sql.*;
@@ -32,7 +33,7 @@ import java.util.Date;
  */
 public class GroupedReindexMain {
 
-	private static Logger logger = Logger.getLogger(GroupedReindexMain.class);
+	private static Logger logger;
 
 	//General configuration
 	private static String serverName;
@@ -71,6 +72,7 @@ public class GroupedReindexMain {
 		}
 		serverName = args[0];
 		System.setProperty("reindex.process.serverName", serverName);
+		//TODO: explain why this is done. Is it needed?
 		
 		if (args.length >= 2) {
 			switch (args[1].toLowerCase()){
@@ -339,9 +341,11 @@ public class GroupedReindexMain {
 
 	private static void initializeReindex() {
 		// Initialize the logger
-		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j.grouped_reindex.properties");
+		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j2.reindexer.xml");
 		if (log4jFile.exists()) {
-			PropertyConfigurator.configure(log4jFile.getAbsolutePath());
+			System.setProperty("log4j.pikaSiteName", serverName);
+			System.setProperty("log4j.configurationFile", log4jFile.getAbsolutePath());
+			logger = LogManager.getLogger(GroupedReindexMain.class);
 		} else {
 			System.out.println("Could not find log4j configuration " + log4jFile.getAbsolutePath());
 			System.exit(1);
@@ -406,9 +410,8 @@ public class GroupedReindexMain {
 			logger.error("Unable to create log entry for reindex process", e);
 			System.exit(0);
 		}
-		
 	}
-	
+
 	private static void sendCompletionMessage(Long numWorksProcessed, Long numListsProcessed){
 		if (logger.isInfoEnabled()) {
 			long  elapsedTime    = endTime - startTime;

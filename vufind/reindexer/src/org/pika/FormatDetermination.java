@@ -14,7 +14,7 @@
 
 package org.pika;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
@@ -574,19 +574,24 @@ public class FormatDetermination {
 	}
 
 	private void filterPrintFormats(Set<String> printFormats) {
-		if (printFormats.size() == 1){
+		if (printFormats.size() == 1) {
 			return;
 		}
-		if (printFormats.contains("Archival Materials")){
+		if (printFormats.contains("Young Reader")) {
+			printFormats.clear();
+			printFormats.add("Young Reader");
+			return;
+		}
+		if (printFormats.contains("Archival Materials")) {
 			printFormats.clear();
 			printFormats.add("Archival Materials");
 			return;
 		}
-		if (printFormats.contains("Thesis")){
+		if (printFormats.contains("Thesis")) {
 			printFormats.clear();
 			printFormats.add("Thesis");
 		}
-		if (printFormats.contains("Braille")){
+		if (printFormats.contains("Braille")) {
 			printFormats.clear();
 			printFormats.add("Braille");
 			return;
@@ -882,11 +887,13 @@ public class FormatDetermination {
 					String editionData = edition.getSubfield('a').getData().toLowerCase();
 					if (editionData.contains("large type") || editionData.contains("large print")) {
 						result.add("LargePrint");
+					} else if (editionData.contains("young reader")) {
+						result.add("Young Reader");
 					} else if (editionData.contains("go reader")) {
 						result.add("GoReader");
 					} else if (editionData.contains("wonderbook")) {
 						result.add("WonderBook");
-					} else if (editionData.contains("board book")){
+					} else if (editionData.contains("board book")) {
 						result.add("BoardBook");
 //			  } else if (find4KUltraBluRayPhrases(editionData)) {
 //					result.add("4KUltraBlu-Ray");

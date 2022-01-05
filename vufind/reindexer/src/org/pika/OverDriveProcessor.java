@@ -14,7 +14,7 @@
 
 package org.pika;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -110,7 +110,6 @@ public class OverDriveProcessor {
 								String                  series    = null;
 
 								Object[] theReturn      = loadOverDriveSubjects(groupedWork, productId);
-								String   targetAudience = (String) theReturn[0];
 								// Load the subjects first, so we can determine when an eBook is actually eComic
 
 								String mediaType = productRS.getString("mediaType");
@@ -124,7 +123,7 @@ public class OverDriveProcessor {
 										primaryFormat = "eVideo";
 										break;
 									case "eBook":
-										boolean  isComic        = (boolean) theReturn[1];
+										boolean  isComic        = (boolean) theReturn[3];
 										if (isComic){
 											primaryFormat = "eComic";
 											formatCategory = "eBook";
@@ -227,7 +226,6 @@ public class OverDriveProcessor {
 								productRS.close();
 
 								String primaryLanguage = loadOverDriveLanguages(groupedWork, overDriveRecord, productId, identifier);
-//								String targetAudience  = loadOverDriveSubjects(groupedWork, productId);
 
 								//Load the formats for the record.  For OverDrive, we will create a separate item for each format.
 								HashSet<String> validFormats    = loadOverDriveFormats(groupedWork, overDriveRecord, productId, identifier);
@@ -256,6 +254,10 @@ public class OverDriveProcessor {
 									overDriveRecord.setPublisher(metadata.get("publisher"));
 									overDriveRecord.setPublicationDate(primaryFormat.equals("eMagazine") ? metadata.get("publishDateMagazine") : metadata.get("publicationDate"));
 //									overDriveRecord.setPhysicalDescription("");
+
+									boolean isKids  = (boolean) theReturn[0];
+									boolean isTeen  = (boolean) theReturn[1];
+									boolean isAdult = (boolean) theReturn[2];
 
 									totalCopiesOwned = 0; //Since totalCopiedOwned only contributes to the grouped work's holdings count,
 									// this doesn't need to have special handling for multiple overdrive accounts.
@@ -291,25 +293,17 @@ public class OverDriveProcessor {
 											itemInfo.setDetailedStatus("Checked Out");
 										}
 
-										boolean isAdult = targetAudience.equals("Adult");
-										boolean isTeen  = targetAudience.equals("Young Adult");
-										boolean isKids  = targetAudience.equals("Juvenile");
 										if (libraryId < 0) {
-											for (Scope scope : indexer.getScopes()) {
-												if (scope.isIncludeOverDriveCollection() && scope.getSharedOverdriveCollectionId() == libraryId) {
+											for (Scope curScope : indexer.getScopes()) {
+												if (curScope.isIncludeOverDriveCollection() && curScope.getSharedOverdriveCollectionId() == libraryId) {
 													//Check based on the audience as well
-													boolean okToInclude = false;
-													if (isAdult && scope.isIncludeOverDriveAdultCollection()) {
-														okToInclude = true;
-													}
-													if (isTeen && scope.isIncludeOverDriveTeenCollection()) {
-														okToInclude = true;
-													}
-													if (isKids && scope.isIncludeOverDriveKidsCollection()) {
-														okToInclude = true;
-													}
+													boolean okToInclude = (
+																	(isAdult && curScope.isIncludeOverDriveAdultCollection()) ||
+																	(isKids && curScope.isIncludeOverDriveKidsCollection()) ||
+																	(isTeen && curScope.isIncludeOverDriveTeenCollection())
+													);
 													if (okToInclude) {
-														ScopingInfo scopingInfo = itemInfo.addScope(scope);
+														ScopingInfo scopingInfo = itemInfo.addScope(curScope);
 														scopingInfo.setAvailable(available);
 														scopingInfo.setHoldable(true);
 
@@ -328,16 +322,11 @@ public class OverDriveProcessor {
 											for (Scope curScope : indexer.getScopes()) {
 												if (curScope.isIncludeOverDriveCollection() && (hasSharedAdvantageAccount || curScope.getLibraryId().equals(libraryId))) {
 													//TODO: would need more complicated logic when there are multiple shared accounts plus sharedAdvantageAccount
-													boolean okToInclude = false;
-													if (isAdult && curScope.isIncludeOverDriveAdultCollection()) {
-														okToInclude = true;
-													}
-													if (isTeen && curScope.isIncludeOverDriveTeenCollection()) {
-														okToInclude = true;
-													}
-													if (isKids && curScope.isIncludeOverDriveKidsCollection()) {
-														okToInclude = true;
-													}
+													boolean okToInclude = (
+																	(isAdult && curScope.isIncludeOverDriveAdultCollection()) ||
+																	(isKids && curScope.isIncludeOverDriveKidsCollection()) ||
+																	(isTeen && curScope.isIncludeOverDriveTeenCollection())
+													);
 													if (okToInclude) {
 														ScopingInfo scopingInfo = itemInfo.addScope(curScope);
 														scopingInfo.setAvailable(available);
@@ -392,12 +381,14 @@ public class OverDriveProcessor {
 	 *
 	 * @param groupedWork Solr Document to update
 	 * @param productId   The id of the OverDrive record
-	 * @return The target audience for use later in scoping
-	 * and isComic, which indicates whether or not this record is an eComic
+	 * @return isKids, isTeen, isAdult for use later in scoping
+	 * and isComic, which indicates whether this record is an eComic
 	 */
 	private Object[] loadOverDriveSubjects(GroupedWorkSolr groupedWork, Long productId) {
 		//Load subject data
-		String targetAudience = "";
+		boolean isKids  = false;
+		boolean isTeen  = false;
+		boolean isAdult = false;
 		boolean isComic = false;
 		try {
 			getProductSubjectsStmt.setLong(1, productId);
@@ -406,8 +397,6 @@ public class OverDriveProcessor {
 				HashSet<String>          genres             = new HashSet<>();
 				HashMap<String, Integer> literaryForm       = new HashMap<>();
 				HashMap<String, Integer> literaryFormFull   = new HashMap<>();
-				String                   targetAudienceFull = "Adult";
-				targetAudience = "Adult";
 				while (subjectsRS.next()) {
 					String curSubject = subjectsRS.getString("name");
 					if (curSubject.contains("Nonfiction")) {
@@ -431,24 +420,40 @@ public class OverDriveProcessor {
 						addToMapWithCount(literaryFormFull, curSubject);
 					}
 
-					if (curSubject.contains("Juvenile")) {
-						targetAudience     = "Juvenile";
-						targetAudienceFull = "Juvenile";
+					if (curSubject.contains("Juvenile") || curSubject.equals("Children's Video") || curSubject.equals("Children's Music")) {
+						isKids = true;
+						groupedWork.addTargetAudience("Juvenile");
+						groupedWork.addTargetAudienceFull("Juvenile");
 					} else if (curSubject.contains("Young Adult")) {
-						targetAudience     = "Young Adult";
-						targetAudienceFull = "Adolescent (14-17)";
+						isTeen = true;
+						groupedWork.addTargetAudience("Young Adult");
+						groupedWork.addTargetAudienceFull("Adolescent (14-17)");
 					} else if (curSubject.contains("Picture Book")) {
-						targetAudience     = "Juvenile";
-						targetAudienceFull = "Preschool (0-5)";
+						isKids = true;
+						groupedWork.addTargetAudience("Juvenile");
+						groupedWork.addTargetAudienceFull("Preschool (0-5)");
 					} else if (curSubject.contains("Beginning Reader")) {
-						targetAudience     = "Juvenile";
-						targetAudienceFull = "Primary (6-8)";
+						isKids = true;
+						groupedWork.addTargetAudience("Juvenile");
+						groupedWork.addTargetAudienceFull("Primary (6-8)");
+					} else if (curSubject.contains("Kids & Teens")) {
+						isKids = true;
+						isTeen = true;
+						groupedWork.addTargetAudience("Juvenile");
+						groupedWork.addTargetAudienceFull("Primary (6-8)");
+						groupedWork.addTargetAudience("Young Adult");
+						groupedWork.addTargetAudienceFull("Adolescent (14-17)");
 					}
 
 					if (!isComic && curSubject.equalsIgnoreCase("Comic and Graphic Books")) {
 						isComic = true;
 					}
 					topics.add(curSubject);
+				}
+				if (!isKids && !isTeen){
+					isAdult = true;
+					groupedWork.addTargetAudience("Adult");
+					groupedWork.addTargetAudienceFull("Adult");
 				}
 				groupedWork.addTopic(topics);
 				groupedWork.addTopicFacet(topics);
@@ -460,14 +465,12 @@ public class OverDriveProcessor {
 				if (literaryFormFull.size() > 0) {
 					groupedWork.addLiteraryFormsFull(literaryFormFull);
 				}
-				groupedWork.addTargetAudience(targetAudience);
-				groupedWork.addTargetAudienceFull(targetAudienceFull);
 			}
 		} catch (Exception e) {
 			logger.error("Error fetching Overdrive Subjects for product " + productId, e);
 		}
 
-		return new Object[] { targetAudience, isComic };
+		return new Object[] { isKids, isTeen, isAdult, isComic };
 	}
 
 	private void addToMapWithCount(HashMap<String, Integer> map, String elementToAdd){

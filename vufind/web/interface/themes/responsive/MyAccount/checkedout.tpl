@@ -36,7 +36,13 @@
 						<a href="/MyAccount/CheckedOut?exportToExcel{if isset($defaultSortOption)}&accountSort={$defaultSortOption}{/if}" class="btn btn-sm btn-default" id="exportToExcelTop">Export to Excel</a>
 					</div>
 
-					<br><br>
+					{if !$hasOnlyEContentCheckOuts}
+						<div class="row result">
+							<div class="col-sm-1">
+								<input id="selectAll" type="checkbox" onclick="Pika.toggleCheckboxes('.titleSelect', '#selectAll');" title="Select All/Deselect All">
+							</div>
+						</div>
+					{/if}
 
 					<div class="striped">
 						{foreach from=$transList item=checkedOutTitle name=checkedOutTitleLoop key=checkedOutKey}

@@ -18,7 +18,7 @@ import java.io.File;
 import java.sql.Connection;
 import java.util.Date;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
 

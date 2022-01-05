@@ -4,8 +4,8 @@
 		{* Cover column *}
 		{if $showCovers}
 		<div class="col-xs-4 col-sm-3">
-			{*<div class="row">*}
-				{*
+			<div class="row">
+
 				<div class="selectTitle col-xs-2">
 					{if $record.cancelable}
 						{if $section == 'available'}
@@ -15,8 +15,8 @@
 						{/if}
 					{/if}
 				</div>
-				*}
-				<div class="{*col-xs-10 *}text-center">
+
+				<div class="col-xs-10 text-center">
 					{if $record.coverUrl}
 						{if $record.recordId && $record.linkUrl}
 							<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}">
@@ -28,7 +28,7 @@
 					{/if}
 
 				</div>
-			{*</div>*}
+			</div>
 		</div>
 
 		{/if}
@@ -198,7 +198,10 @@
 									<button onclick="return Pika.Account.thawHold('{$record.userId}', '{$record.id}', '{$record.cancelId}', this);" class="btn btn-sm btn-default">{translate text="Thaw Hold"}</button>
 								{elseif $record.freezeable}
 									<button onclick="return Pika.Account.freezeHold('{$record.userId}', '{$record.id}', '{$record.cancelId}', {if $suspendRequiresReactivationDate}true{else}false{/if}, this);" class="btn btn-sm btn-default">{translate text="Freeze Hold"}</button>
+								{else}
+									<div onclick="Pika.showMessage('Freeze Hold','The current hold cannot be frozen.', true, false);"><button  disabled="disabled" style="width:100%;" class="btn btn-sm disabled" >{translate text="Freeze Hold"}</button></div>
 								{/if}
+
 							{/if}
 							{if $record.locationUpdateable}
 								<button onclick="return Pika.Account.changeHoldPickupLocation('{$record.userId}', '{$record.id}', '{$record.cancelId}');" class="btn btn-sm btn-default">Change Pickup Loc.</button>

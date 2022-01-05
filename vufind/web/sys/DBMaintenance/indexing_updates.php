@@ -353,7 +353,22 @@ function getIndexingUpdates(){
 				,
 			]
 		],
-
+		'2022.01.0_add_young_readers_format_grouping' => [
+			'title'       => 'Add new Young Reader format and Grouping Category',
+			'description' => 'Add Young Reader format and Grouping Category to translation maps',
+			'sql'         => [
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+						((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
+						'Young Reader', 'young')
+						,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+						'Young Reader', 'Young Readers Edition')
+						,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+						'Young Reader', 'Books')
+						,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+						'Young Reader', '10')"
+				,
+			]
+		],
 			'add_opac_message_2021.02' => [
 			'title'       => 'Add opac message subfield setting to indexing profile',
 			'description' => 'Include opac message subfield in order for Sierra Extract to get the field for items.',
@@ -391,6 +406,15 @@ function getIndexingUpdates(){
 				'ALTER TABLE `library_records_to_include` DROP COLUMN `subLocation`;',
 				'ALTER TABLE `location_records_owned` DROP COLUMN `subLocation`; ',
 				'ALTER TABLE `location_records_to_include` DROP COLUMN `subLocation`; '
+			],
+		],
+
+		'2021.04.0_add_grouping_time_for_sideloads' => [
+			'title'           => 'Add a last grouped time to each indexing profile',
+			'description'     => 'Enable grouping time tracking for sideloads.',
+			'continueOnError' => true,
+			'sql'             => [
+				'ALTER TABLE `indexing_profiles` ADD `lastGroupedTime` INT UNSIGNED NULL; ',
 			],
 		],
 

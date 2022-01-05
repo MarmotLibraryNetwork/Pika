@@ -21,6 +21,7 @@ require_once ROOT_DIR . '/AJAXHandler.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
+require_once ROOT_DIR . '/services/AJAX/MARC_AJAX_Basic.php';
 
 class ItemAPI extends AJAXHandler {
 
@@ -359,7 +360,7 @@ class ItemAPI extends AJAXHandler {
 					'status'             => $copy['status'],
 					'dueDate'            => '',
 					'statusFull'         => $copy['status'],
-					'statusfull'         => $copy['status'],
+					'statusfull'         => $copy['status'], // EBSCO EDS uses this field for availability See PK-1421
 					'id'                 => $fullId,
 					'number'             => $i++,
 					'type'               => 'holding',

@@ -100,6 +100,18 @@ Pika.GroupedWork = (function(){
 			Pika.GroupedWork.loadEnrichmentInfo(id, true);
 		},
 
+		reloadNovelistData: function(id){
+			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+					params = {'method': 'reloadNovelistData'};
+			$.getJSON(url, params, function(data){
+				if(data.success){
+					Pika.showMessage("Reloaded NoveList Data", data.message, true, true);
+				}else{
+					Pika.showMessage("Reloaded NoveList Data", "Could not reload NoveList data", true, true);
+				}
+			});
+		},
+
 		loadEnrichmentInfo: function (id, forceReload) {
 			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
 					params = {'method':'getEnrichmentInfo'};

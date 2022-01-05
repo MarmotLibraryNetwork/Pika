@@ -14,8 +14,9 @@
 
 package org.pika;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+// Import log4j classes.
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
 import org.ini4j.Profile;
@@ -44,7 +45,7 @@ import au.com.bytecode.opencsv.CSVWriter;
  * Time: 9:23 PM
  */
 public class KohaExportMain {
-	private static Logger              logger = Logger.getLogger(KohaExportMain.class);
+	private static Logger              logger;
 	private static String              serverName; //Pika instance name
 	private static PikaSystemVariables systemVariables;
 	private static IndexingProfile     indexingProfile;
@@ -72,11 +73,15 @@ public class KohaExportMain {
 		serverName = args[0];
 
 		Date startTime = new Date();
-		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j.koha_export.properties");
+		// Initialize the logger
+		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j2.koha_export.xml");
 		if (log4jFile.exists()) {
-			PropertyConfigurator.configure(log4jFile.getAbsolutePath());
+			System.setProperty("log4j.pikaSiteName", serverName);
+			System.setProperty("log4j.configurationFile", log4jFile.getAbsolutePath());
+			logger = LogManager.getLogger();
 		} else {
-			System.out.println("Could not find log4j configuration " + log4jFile.toString());
+			System.out.println("Could not find log4j configuration " + log4jFile);
+			System.exit(1);
 		}
 
 		logger.info(startTime.toString() + ": Starting Koha Extract");

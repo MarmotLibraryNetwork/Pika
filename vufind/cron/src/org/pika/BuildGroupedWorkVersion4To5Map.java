@@ -15,7 +15,7 @@
 package org.pika;
 
 import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.ini4j.Profile;
 
 import java.sql.*;

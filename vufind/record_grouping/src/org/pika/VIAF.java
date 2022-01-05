@@ -14,7 +14,8 @@
 
 package org.pika;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -43,7 +44,7 @@ import java.util.HashSet;
  */
 public class VIAF {
 	public static HashMap<String, String> loadedAuthorities = new HashMap<String, String>();
-	private static Logger logger = Logger.getLogger(VIAF.class);
+	private static Logger logger = LogManager.getLogger();
 	private static Connection authoritiesConn = null;
 
 	private static boolean connectToDatabase(){

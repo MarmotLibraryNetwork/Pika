@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
-Main-Class: org.marmot.ExtractOverDriveInfoMain
+Main-Class: org.pika.ExtractOverDriveInfoMain
 Class-Path: overdrive_extract.jar
 

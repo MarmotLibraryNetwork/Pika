@@ -23,7 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A copy of indexing profile information from the database

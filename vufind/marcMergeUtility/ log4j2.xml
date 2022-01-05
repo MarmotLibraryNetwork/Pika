@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (C) 2021  Marmot Library Network
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<Configuration status="WARN">
+
+	<!--	Define the Appenders -->
+	<Appenders>
+		<Console name="STDOUT">
+			<PatternLayout pattern="%d [%t] %-5p %c{1} - %m%n"/>
+			<ThresholdFilter level="WARN"/>
+		</Console>
+
+		<RollingFile name="LOGFILE" bufferedIO="true" immediateFlush="true">
+			<FileName>/var/log/vufind-plus/mergeutility.log</FileName>
+			<FilePattern>/var/log/vufind-plus/mergeutility.log.%i</FilePattern>
+			<SizeBasedTriggeringPolicy size="10 MB"/>
+			<DefaultRolloverStrategy max="5"/>
+			<PatternLayout pattern="%d{yyMMdd HH:mm:ss:SSS} %-5p %c{1} >> %m%n"/>
+			<ThresholdFilter level="INFO"/>
+		</RollingFile>
+	</Appenders>
+
+	<!--	Define the Loggers -->
+	<Loggers>
+		<Logger name="org.marmot">
+			<AppenderRef ref="LOGFILE"/>
+		</Logger>
+
+		<Root level="INFO">
+			<AppenderRef ref="STDOUT"/>
+		</Root>
+	</Loggers>
+
+</Configuration>

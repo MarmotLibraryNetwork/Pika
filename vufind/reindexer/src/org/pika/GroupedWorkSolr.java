@@ -15,7 +15,7 @@
 package org.pika;
 
 import com.sun.istack.internal.NotNull;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
 

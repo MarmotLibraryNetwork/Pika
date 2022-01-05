@@ -930,15 +930,36 @@ class BookCoverProcessor {
 				return true;
 			}
 
-			if ($primaryIsbn = $this->groupedWork->getCleanISBN()) {
-				//This will be the novelist isbn if present, the primary isbn field in the index, or the first isbn from the isbns field in the index
-				$this->isn = $primaryIsbn;
-				if ($this->getCoverFromProvider()) {
-					return true;
-				}
-			}
+			// When we go directly to ISBNs, we circumvent checking for bad formats (playaways, audiobooks); and also prevent
+			// custom covers.
+
+//			if ($primaryIsbn = $this->groupedWork->getCleanISBN()) {
+//				//This will be the novelist isbn if present, the primary isbn field in the index, or the first isbn from the isbns field in the index
+//				$this->isn = $primaryIsbn;
+//				if ($this->getCoverFromProvider()) {
+//					return true;
+//				}
+//			}
 
 			$recordDetails = $this->groupedWork->getSolrField('record_details');
+			$before = $recordDetails;
+
+			// Sort so that we try Books first for cover data
+			// Try to move Audio books to the bottom
+			usort($recordDetails, function ($a, $b){
+				// Note: Keying off the string '|Book|' avoids sorting up BookClub Kits.
+				// Also note that keying off of '|Audio' allows us to sort down by formats like 'Audio CD' but also
+				// the format category determination of 'Audio Books'
+				if (strpos($a, '|Book|')){
+					return -1;
+				}elseif (strpos($b, '|Book|')){
+					return 1;
+				}elseif (strpos($a, '|Audio')){
+					return 1;
+				}else {
+					return 0;
+				}
+			});
 			foreach ($recordDetails as $recordDetail){
 				// don't use playaway covers for grouped work 'cause they yuck.
 				if(stristr($recordDetail, 'playaway')) {
