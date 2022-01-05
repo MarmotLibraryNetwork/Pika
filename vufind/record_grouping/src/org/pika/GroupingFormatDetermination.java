@@ -199,6 +199,9 @@ public class GroupingFormatDetermination {
 						case "videodisc":
 							groupingCategories.add("movie");
 							break;
+						case "young reader":
+							groupingCategories.add("young");
+							break;
 						default:
 							groupingCategories.add("book");
 							logger.warn("Could not find appropriate grouping category for " + format + " while side loading eContent " + identifier);
