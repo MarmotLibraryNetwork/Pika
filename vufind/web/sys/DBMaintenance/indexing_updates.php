@@ -359,14 +359,7 @@ function getIndexingUpdates(){
 			'sql'         => [
 				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
 						((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
-						'Young Reader', 'young')
-						,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
-						'Young Reader', 'Young Readers Edition')
-						,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
-						'Young Reader', 'Books')
-						,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
-						'Young Reader', '10')"
-				,
+						'Young Reader', 'young')",
 			]
 		],
 			'add_opac_message_2021.02' => [
