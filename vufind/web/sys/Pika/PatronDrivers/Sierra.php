@@ -2890,9 +2890,7 @@ EOT;
 				$this->patronBarcode = $barcode;
 				// this call also returns the sierra id; keep it so we can skip an extra call after pin validation
 			}
-			// todo: [pins] this creates issues when sites other than sacramento return bad patron data;
-			// ie for flatirons patron id 1444284 nothing is returned except for an id. This causes strange things with
-			// linked accounts.
+
 			if (!empty($r->id)){
 				// The call above can return an Id even if it doesn't return a barcode, eg for sacramento students
 				$provisionSierraUserId = $r->id;
@@ -2904,8 +2902,9 @@ EOT;
 			"pin"             => $pin,
 		];
 
-		//This setting is required for Sacramento student Ids to get a good pin validation response.  I suspect that there is an ILS setting that overrides this any way (pascal 2/6/2020)
-		if ($this->configArray['Catalog']['pinCaseSensitive']) {
+		//This setting is required for Sacramento student Ids to get a good pin validation response.
+		//  I suspect that there is an ILS setting that overrides this any way (pascal 2/6/2020)
+		if ($this->configArray['Catalog']['barcodeCaseSensitive']) {
 			$params["caseSensitivity"] = true;
 		} else {
 			$params["caseSensitivity"] = false;
