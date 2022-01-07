@@ -1936,7 +1936,7 @@ class MarcRecord extends IndexRecord {
 			}
 		}
 
-		$timer->logTime("Loaded number of holds");
+		$timer->logTime('Loaded number of holds');
 		return $this->numHolds;
 	}
 

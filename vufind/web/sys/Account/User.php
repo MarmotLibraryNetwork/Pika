@@ -70,7 +70,7 @@ class User extends DB_DataObject {
 	//Data that we load, but don't store in the User table
 	public $fullname; //TODO: remove, I think this only get set by the catalog drivers, and is never used anywhere else
 	public $address1;
-	public $address2;
+	public $address2; //TODO: obsolete; only used in hold success pop-up and is populated by $city, $state
 	public $city;
 	public $state;
 	public $zip;

@@ -26,13 +26,12 @@
  *
  */
 
-require_once 'DriverInterface.php';
+namespace Pika\PatronDrivers;
 
-class WCPL2 extends HorizonROA
-{
-	public function canRenew($itemType = null)
-	{
-		if (in_array($itemType, array('BKLCK', 'PBLCK'))) {
+class WCPL extends HorizonROA {
+
+	public function canRenew($itemType = null){
+		if (in_array($itemType, ['BKLCK', 'PBLCK'])){
 			return false;
 		}
 		return true;

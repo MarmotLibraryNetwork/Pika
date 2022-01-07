@@ -219,7 +219,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 	/**
 	 *  Handles API calls to the newer Horizon APIs.
 	 *
-	 * @param $url         URL to call
+	 * @param string $url  URL to call
 	 * @param array $post  POST variables get encoded as JSON
 	 * @return bool|mixed  return false or the response
 	 */
