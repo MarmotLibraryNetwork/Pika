@@ -75,7 +75,7 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 		//primary creator in overdrive is always first name, last name.
 
 		String groupingFormat;
-		if (edition.contains("Young Readers")){
+		if (edition != null && edition.contains("Young Readers")){
 			// Young Readers editions will have their own grouping category regardless of specific format
 			groupingFormat = "young";
 		} else if (mediaType.equalsIgnoreCase("ebook")) {
