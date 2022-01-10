@@ -369,7 +369,7 @@ Pika.Account = (function(){
 
 		cancelSelectedHolds: function() {
 			if (Globals.loggedIn) {
-				var selectedTitles = Pika.Account.getSelectedTitles()
+				var selectedTitles = Pika.Account.getSelectedTitles(false)
 								.replace(/waiting|available/g, ''),// strip out of name for now.
 						numHolds = $("input.titleSelect:checked").length;
 				// if numHolds equals 0, quit because user has canceled in getSelectedTitles()
@@ -586,16 +586,29 @@ Pika.Account = (function(){
 				}
 			}).fail(Pika.ajaxFail);
 		},
+		getFreezeHoldsForm: function(){
+			this.ajaxLogin(function(){
+				var selectedTitles = Pika.Account.getSelectedTitles(false).replace(/waiting|available/g, '');
+				if (selectedTitles.length == 0){
+					return false;
+				}
+				var params = {
+					'method' : 'getFreezeHoldsForm'
+				}
+				$.getJSON('/MyAccount/AJAX?' + selectedTitles, params, function(data){
+					if (data.success){
+						Pika.showMessageWithButtons(data.title, data.body, data.buttons);
+					}else{
+						Pika.showMessage("error", data.message);
+					}
+				}).fail(Pika.ajaxFail);
+			});
+			return false;
+		},
+		freezeSelectedHolds: function (selectedTitles){
 
-
-
-		freezeSelectedHolds: function (){
-			var selectedTitles = Pika.Account.getSelectedTitles();
-			if (selectedTitles.length == 0){
-				return false;
-			}
 			var suspendDate = '',
-					suspendDateTop = $('#suspendDateTop'),
+					suspendDateTop = $('#suspendDate'),
 					url = '',
 					queryParams = '';
 			if (suspendDateTop.length) { //Check to see whether or not we are using a suspend date.
@@ -609,17 +622,17 @@ Pika.Account = (function(){
 					return false;
 				}
 			}
-			url = '/MyAccount/Holds?multiAction=freezeSelected&patronId=' + patronId + '&recordId=' + recordId + '&' + selectedTitles + '&suspendDate=' + suspendDate;
-			queryParams = Pika.getQuerystringParameters();
-			if ($.inArray('section', queryParams)){
-				url += '&section=' + queryParams['section'];
+
+			var params = {
+				'method': 'freezeHolds',
+				'suspendDate': suspendDate,
+				'selectedTitles': selectedTitles
 			}
-			window.location = url;
+			$.getJSON('/MyAccount/AJAX', params, function(data){
+				Pika.showMessage(data.title, data.modalBody, data.success, true);
+			}).fail(Pika.ajaxFail);
 			return false;
 		},
-
-
-
 		getSelectedTitles: function(promptForSelectAll){
 			if (promptForSelectAll == undefined){
 				promptForSelectAll = true;
