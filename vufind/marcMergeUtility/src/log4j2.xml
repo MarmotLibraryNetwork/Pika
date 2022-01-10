@@ -38,7 +38,7 @@
 			<AppenderRef ref="LOGFILE"/>
 		</Logger>
 
-		<Root level="INFO">
+		<Root level="trace">
 			<AppenderRef ref="STDOUT"/>
 		</Root>
 	</Loggers>

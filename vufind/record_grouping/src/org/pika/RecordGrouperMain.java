@@ -121,7 +121,7 @@ public class RecordGrouperMain {
 			econtentConnection = DriverManager.getConnection(econtentDBConnectionInfo);
 
 		} catch (Exception e) {
-			System.out.println("Error connecting to database " + e.toString());
+			System.out.println("Error connecting to database " + e);
 			System.exit(1);
 		}
 
@@ -1158,7 +1158,10 @@ public class RecordGrouperMain {
 			//LEFT joins needed to fetch titles without language information
 			PreparedStatement overDriveRecordsStmt;
 			if (lastGroupingTime != null && !fullRegroupingClearGroupingTables && !fullRegroupingNoClear) {
+				//TODO: I suspect we only need to update grouping for things that have been modified since last grouping
+				// when in the fullRegroupingNoClear mode. pascal 9/22/21
 				overDriveRecordsStmt = econtentConnection.prepareStatement(OverdriveRecordSQL + " AND (dateUpdated >= ? OR lastMetadataChange >= ? OR lastAvailabilityChange >= ?)", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				//TODO: which availability changes effect grouping?
 				overDriveRecordsStmt.setLong(1, lastGroupingTime);
 				overDriveRecordsStmt.setLong(2, lastGroupingTime);
 				overDriveRecordsStmt.setLong(3, lastGroupingTime);

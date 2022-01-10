@@ -31,7 +31,7 @@ TitleScroller.prototype.loadTitlesFrom = function(jsonUrl) {
 	$(".scrollerLoadingContainer").show();
 	$.getJSON(jsonUrl, function(data) {
 		scroller.loadTitlesFromJsonData(data);
-	}).error(function(){
+	}).fail(function(){
 		scrollerBody.html("Unable to load titles. Please try again later.").show();
 		$(".scrollerLoadingContainer").hide();
 	});
