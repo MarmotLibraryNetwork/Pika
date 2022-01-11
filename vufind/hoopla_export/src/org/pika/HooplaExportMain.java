@@ -44,6 +44,7 @@ public class HooplaExportMain {
 	private static Long    lastExportTime;
 	private static Long    startTimeStamp;
 	private static boolean updateTitlesInDBHadErrors = false;
+	private static int     numMarkedInactive         = 0;
 
 	//Reporting information
 	private static long              hooplaExportLogId;
@@ -108,20 +109,24 @@ public class HooplaExportMain {
 			if (databaseConnectionInfo != null) {
 				pikaConn = DriverManager.getConnection(databaseConnectionInfo);
 			} else {
-				logger.error("No Pika database connection info");
+				logger.fatal("No Pika database connection info");
 				System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 			}
 		} catch (Exception e) {
-			logger.error("Error connecting to Pika database ", e);
+			logger.fatal("Error connecting to Pika database ", e);
 			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 		}
 
 		// Extract a single Record
 		if (singleRecordToProcess != null && !singleRecordToProcess.isEmpty()) {
 			if (exportSingleHooplaRecord(pikaConn, singleRecordToProcess)) {
-				System.out.println("Record " + singleRecordToProcess + " was successfully extracted.");
+				String msg = "Record " + singleRecordToProcess + " was successfully extracted.";
+				logger.info(msg);
+				System.out.println(msg);
 			} else {
-				System.out.println("Record " + singleRecordToProcess + " failed to get extracted.");
+				String msg = "Record " + singleRecordToProcess + " failed to get extracted.";
+				logger.info(msg);
+				System.out.println(msg);
 			}
 			System.exit(0);
 		}
@@ -163,6 +168,8 @@ public class HooplaExportMain {
 			long elapsedTime = endTime - startTime.getTime();
 			logger.info("Elapsed Minutes " + (elapsedTime / 60000));
 		}
+
+		addNoteToHooplaExportLog(numMarkedInactive + " titles were marked as inactive in this round.");
 
 		try (PreparedStatement finishedStatement = pikaConn.prepareStatement("UPDATE hoopla_export_log SET endTime = ? WHERE id = ?")) {
 			finishedStatement.setLong(1, endTime / 1000);
@@ -366,6 +373,7 @@ public class HooplaExportMain {
 					// Only warn about missing price for active hoopla titles
 					logger.warn("Active Hoopla title " + titleId + " has no price set.");
 				}
+				if (!isActive) numMarkedInactive++;
 				updateHooplaTitleInDB.setDouble(11, price);
 
 				int updated = updateHooplaTitleInDB.executeUpdate();
