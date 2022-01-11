@@ -1343,9 +1343,13 @@ class ExtractOverDriveInfo {
 					for (String curIdentifier : uniqueIdentifiers) {
 						addIdentifierStmt.setLong(1, updateData.databaseId);
 						String[] identifierInfo = curIdentifier.split(":");
-						addIdentifierStmt.setString(2, identifierInfo[0]);
-						addIdentifierStmt.setString(3, identifierInfo[1]);
-						addIdentifierStmt.executeUpdate();
+						if (identifierInfo.length >= 2) {
+							addIdentifierStmt.setString(2, identifierInfo[0]);
+							addIdentifierStmt.setString(3, identifierInfo[1]);
+							addIdentifierStmt.executeUpdate();
+						} else if (logger.isInfoEnabled()) {
+							logger.info("A format identifier for " + updateData.overDriveId + " missing a value : " + curIdentifier);
+						}
 					}
 				}
 				//TODO: group an individual production?
