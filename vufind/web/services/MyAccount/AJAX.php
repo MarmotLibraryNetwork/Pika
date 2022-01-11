@@ -498,7 +498,7 @@ class MyAccount_AJAX extends AJAXHandler {
 			$result['success'] = false;
 		}
 		$interface->assign('cancelResults', $result);
-
+		$interface->assign('totalCanceled', count($cancelId));
 		return array(
 			'title'     => 'Cancel Hold',
 			'modalBody' => $interface->fetch('MyAccount/cancelhold.tpl'),
