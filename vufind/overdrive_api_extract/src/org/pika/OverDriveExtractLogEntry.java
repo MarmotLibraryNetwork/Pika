@@ -66,11 +66,11 @@ public class OverDriveExtractLogEntry {
 			cleanedNote = cleanedNote.replaceAll("<title>.*?</title>", "");
 			notesText.append("<li>").append(cleanedNote).append("</li>");
 		}
-		notesText.append("</ol>");
 		String returnText = notesText.toString();
 		if (returnText.length() > 25000) {
-			returnText = returnText.substring(0, 25000) + " more data was truncated";
+			returnText = returnText.substring(0, 25000) + "<li>Additional notes were truncated</li>";
 		}
+		returnText += "</ol>";
 		return returnText;
 	}
 
