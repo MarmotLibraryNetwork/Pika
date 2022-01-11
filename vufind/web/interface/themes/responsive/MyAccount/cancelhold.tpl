@@ -4,8 +4,6 @@
 		<p><strong>{$cancelResults.title|removeTrailingPunctuation}</strong></p>
 	{/if}
 	<div class="contents">
-			{$cancelResults.numCancelled}
-			{$totalCanceled}
 		{if $cancelResults.success}
         {if $cancelResults.numCancelled == $totalCanceled}
 					<div class="alert alert-success"><strong>The hold{if $cancelResults.numCancelled >1}s were{else} was{/if} {translate text="canceled"} successfully.</div>
