@@ -20,6 +20,7 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Locale;
 
 /**
  * Pika
@@ -75,7 +76,10 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 		//primary creator in overdrive is always first name, last name.
 
 		String groupingFormat;
-		if (edition != null && edition.contains("Young Readers")){
+		if ((edition != null && edition.contains("Young Readers"))
+						|| subtitle.replace("'", "").toLowerCase(Locale.ROOT).contains("young readers edition")
+						|| title.replace("'", "").toLowerCase(Locale.ROOT).contains("young readers edition")
+		){
 			// Young Readers editions will have their own grouping category regardless of specific format
 			groupingFormat = "young";
 		} else if (mediaType.equalsIgnoreCase("ebook")) {
