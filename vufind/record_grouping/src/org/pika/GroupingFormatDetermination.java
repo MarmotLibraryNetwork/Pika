@@ -750,6 +750,17 @@ public class GroupingFormatDetermination {
 			if (title.contains("book club kit") || title.contains("bookclub kit")){
 				printFormats.add("BookClubKit");
 			}
+
+			if (title.contains("young reader")) {
+				printFormats.add("Young Reader");
+			}
+		}
+		// Note: that checking for young reader's editions is not done in the format determination class.b54047699
+		String subTitle = MarcUtil.getFirstFieldVal(record, "245b");
+		if (subTitle != null){
+			if (subTitle.contains("young reader")) {
+				printFormats.add("Young Reader");
+			}
 		}
 	}
 
