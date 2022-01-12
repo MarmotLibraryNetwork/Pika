@@ -1505,21 +1505,20 @@ function getSaveSeriesToListForm(){
 		$id = $_REQUEST['id'];
 		require_once ROOT_DIR . "/sys/Novelist/Novelist3.php";
 		require_once ROOT_DIR . "/RecordDrivers/GroupedWorkDriver.php";
-		$recordDriver = new GroupedWorkDriver($id);
-		$novelist   = NovelistFactory::getNovelist();
-		$seriesInfo = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
-		$seriesTitle = $seriesInfo->seriesTitle;
-		$seriesTitles = $seriesInfo->seriesTitles;
+		$recordDriver  = new GroupedWorkDriver($id);
+		$novelist      = NovelistFactory::getNovelist();
+		$seriesInfo    = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
+		$seriesTitle   = $seriesInfo->seriesTitle;
+		$seriesTitles  = $seriesInfo->seriesTitles;
 		$seriesEntries = [];
-		foreach($seriesTitles as $seriesEntry)
-		{
-			$seriesEntries[$seriesEntry['id']] = [
-																							'title' => $seriesEntry['title'],
-																							'author' => $seriesEntry['author'],
-																							'volume' => $seriesEntry['volume'],
-																							'primaryISBN' => $seriesEntry['isbn'],
-																							'groupedWorkId' => $seriesEntry['id']
-																					 ];
+		foreach ($seriesTitles as $seriesEntry){
+			$seriesEntries[$seriesEntry['volume']] = [
+				'title'         => $seriesEntry['title'],
+				'author'        => $seriesEntry['author'],
+				'volume'        => $seriesEntry['volume'],
+				'primaryISBN'   => $seriesEntry['isbn'],
+				'groupedWorkId' => $seriesEntry['id'] ?? null,
+			];
 		}
 		$objPHPExcel = new PHPExcel();
 		$objPHPExcel->getProperties()->setCreator("DCL")
