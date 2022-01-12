@@ -510,6 +510,9 @@ class MyAccount_AJAX extends AJAXHandler {
 	function getFreezeHoldsForm(){
 
 		$cancelId = array();
+		global $configArray;
+		$ils                       = $configArray['Catalog']['ils'];
+		$reinstateDate = ($ils == 'Symphony');
 		if (!empty($_REQUEST['holdselected'])){
 			$cancelId = $_REQUEST['holdselected'];
 		}
@@ -518,6 +521,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		$reinstate = strtotime(date('dMY', strtotime('+1 month', (strtotime(date("Y/m/d"))))));
 		$interface->assign('reinstate', $reinstate);
 		$interface->assign('holdSelected', $cancelId);
+		$interface->assign('reinstateDate', $reinstateDate);
 		$result = array(
 			'title' => translate("Freeze") . ' Holds',
 			'body' => $interface->fetch('MyAccount/freezeHoldForm.tpl'),

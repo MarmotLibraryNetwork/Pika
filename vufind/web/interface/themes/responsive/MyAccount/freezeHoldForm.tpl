@@ -1,5 +1,6 @@
 {strip}
 	<h3>{translate text= "Freezing"} {$holdSelected|@count} Hold{if count($holdSelected) > 1}s{/if}</h3>
+	{if $reinstateDate}
 		<form name="freezeHolds">
 			<div class="row">
 				<div class="col-sm-3">
@@ -10,4 +11,5 @@
 				</div>
 			</div>
 		</form>
+		{/if}
 {/strip}
