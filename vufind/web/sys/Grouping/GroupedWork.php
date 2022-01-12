@@ -84,12 +84,14 @@ class GroupedWork extends DB_DataObject {
 
 			// Get site name from covers directory
 			global $configArray;
+			global $pikaLogger;
 
 			$siteName           = getSiteName();
 			$localPath          = $configArray['Site']['local'];
 			$recordGroupingPath = realpath("$localPath/../record_grouping/");
 			$commandToRun       = "java -jar $recordGroupingPath/record_grouping.jar $siteName singleWork {$this->permanent_id}";
 			$result             = shell_exec($commandToRun);
+			$pikaLogger->info("Forcing regrouping for $this->permanent_id", ['output' => $result]);
 			$result             = json_decode($result);
 			if (!empty($result->success)){
 				return true;
