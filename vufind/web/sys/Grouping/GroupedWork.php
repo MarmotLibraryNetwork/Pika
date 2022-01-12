@@ -91,7 +91,7 @@ class GroupedWork extends DB_DataObject {
 			$recordGroupingPath = realpath("$localPath/../record_grouping/");
 			$commandToRun       = "java -jar $recordGroupingPath/record_grouping.jar $siteName singleWork {$this->permanent_id}";
 			$result             = shell_exec($commandToRun);
-			$pikaLogger->info("Forcing regrouping for $this->permanent_id", ['output' => $result]);
+			$pikaLogger->notice("Forcing regrouping for $this->permanent_id", ['command' => $commandToRun, 'output' => $result]);
 			$result             = json_decode($result);
 			if (!empty($result->success)){
 				return true;

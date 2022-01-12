@@ -138,11 +138,13 @@ class WorkAPI extends AJAXHandler {
 
 		// Get site name from covers directory
 		global $configArray;
+		global $pikaLogger;
 		$siteName           = getSiteName();
 		$localPath          = $configArray['Site']['local'];
 		$recordGroupingPath = realpath("$localPath/../record_grouping/");
 		$commandToRun       = "java -jar $recordGroupingPath/record_grouping.jar $siteName generateWorkId $title $author $format $languageCode $subtitle";
 		$result             = shell_exec($commandToRun);
+		$pikaLogger->notice("Generating Work Id via Work API ", ['command' => $commandToRun, 'output' => $result]);
 		return json_decode($result);
 	}
 
