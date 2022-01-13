@@ -80,6 +80,38 @@ class HooplaRecordGrouper extends MarcRecordGrouper {
 			case "eaudiobook hoopla":
 			case "ebook hoopla":
 				groupingCategory = "book";
+
+				// Determine if this should be the young reader grouping category instead
+					// Hoopla doesn't appear to have much edition information in the MARC, except "Unabridged." when applicable
+//				List<DataField> editions = marcRecord.getDataFields("250");
+//				for (DataField edition : editions) {
+//					if (edition != null) {
+//						if (edition.getSubfield('a') != null) {
+//							String editionData = edition.getSubfield('a').getData().toLowerCase();
+//							if (editionData.contains("young reader")) {
+//								groupingCategory = "young";
+//								break;
+//							}
+//						}
+//					}
+//				}
+				String subTitle = MarcUtil.getFirstFieldVal(marcRecord, "245b");
+				// Check subTitle first as that is where we will more likely find a match
+				if (subTitle != null){
+					subTitle = subTitle.toLowerCase();
+					if (subTitle.contains("young reader")) {
+						groupingCategory = "young";
+						break;
+					}
+				}
+				String title = MarcUtil.getFirstFieldVal(marcRecord, "245a");
+				if (title != null){
+					title = title.toLowerCase();
+					if (title.contains("young reader")) {
+						groupingCategory = "young";
+						break;
+					}
+				}
 		}
 
 		workForTitle.setGroupingCategory(groupingCategory, identifier);
