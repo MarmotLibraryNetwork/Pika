@@ -77,8 +77,8 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 
 		String groupingFormat;
 		if ((edition != null && edition.contains("Young Readers"))
-						|| subtitle.replace("'", "").toLowerCase(Locale.ROOT).contains("young readers edition")
-						|| title.replace("'", "").toLowerCase(Locale.ROOT).contains("young readers edition")
+						|| subtitle.replace("'", "").toLowerCase().contains("young readers edition")
+						|| title.replace("'", "").toLowerCase().contains("young readers edition")
 		){
 			// Young Readers editions will have their own grouping category regardless of specific format
 			groupingFormat = "young";

@@ -758,6 +758,7 @@ public class GroupingFormatDetermination {
 		// Note: that checking for young reader's editions is not done in the format determination class.b54047699
 		String subTitle = MarcUtil.getFirstFieldVal(record, "245b");
 		if (subTitle != null){
+			subTitle = subTitle.toLowerCase();
 			if (subTitle.contains("young reader")) {
 				printFormats.add("Young Reader");
 			}
