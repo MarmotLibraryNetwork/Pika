@@ -49,7 +49,6 @@ abstract class HorizonROA implements \DriverInterface {
 		global $configArray;
 		$this->clientId       = $configArray['Catalog']['clientId'];
 		$this->accountProfile = $accountProfile;
-		$this->webServiceURL  = $this->getWebServiceURL();
 		$cache                = initCache();
 		$this->cache          = new Cache($cache);
 	}
@@ -94,6 +93,7 @@ abstract class HorizonROA implements \DriverInterface {
 				$webServiceURL = trim($this->accountProfile->patronApiUrl);
 			}elseif (!empty($configArray['Catalog']['webServiceUrl'])){
 				$webServiceURL = $configArray['Catalog']['webServiceUrl'];
+				$this->getLogger()->warning('Using ini setting webServiceUrl. Account Profile should have the web service url instead');
 			}else{
 				$this->getLogger()->critical('No Web Service URL defined in Horizon ROA API Driver');
 			}
@@ -1323,6 +1323,7 @@ abstract class HorizonROA implements \DriverInterface {
 				$userID = $patron->id;
 			}else{
 				//TODO: Look up user in Horizon
+				$this->getLogger()->warning('For Pin Reset did not find user in Pika Database for barcode : '. $barcode);
 			}
 
 //				// If possible, check if Horizon has an email address for the patron
@@ -1350,13 +1351,13 @@ abstract class HorizonROA implements \DriverInterface {
 				//TODO: looks like user ID will still be required
 				// email the pin to the user
 				$pikaUrl        = $patron->getHomeLibrary()->catalogUrl;
-				$resetPinAPIUrl = $this->getWebServiceURL() . '/v1/user/patron/resetMyPin';
+				$resetPinAPICall = '/v1/user/patron/resetMyPin';
 				$jsonPOST       = [
 					'barcode'     => $barcode,
 					'resetPinUrl' => $pikaUrl . '/MyAccount/ResetPin?resetToken=<RESET_PIN_TOKEN>' . (empty($userID) ? '' : '&uid=' . $userID)
 				];
 
-				$resetPinResponse = $this->getWebServiceResponse($resetPinAPIUrl, $jsonPOST, null, 'POST');
+				$resetPinResponse = $this->getWebServiceResponse($resetPinAPICall, $jsonPOST, null, 'POST');
 				// Reset Pin Response is empty JSON on success.
 
 				if (!empty($resetPinResponse) && is_object($resetPinResponse) && !isset($resetPinResponse->messageList)){
@@ -1373,7 +1374,7 @@ abstract class HorizonROA implements \DriverInterface {
 						foreach ($resetPinResponse['messageList'] as $errorMessage){
 							$errors .= $errorMessage['message'] . ';';
 						}
-						$this->getLogger()->error('WCPL Driver error updating user\'s Pin :' . $errors);
+						$this->getLogger()->error('Horizon ROA Driver error updating user\'s Pin :' . $errors);
 					}
 					return $result;
 				}
