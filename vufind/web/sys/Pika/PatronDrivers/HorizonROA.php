@@ -67,22 +67,17 @@ abstract class HorizonROA implements \DriverInterface {
 
 
 	/**
-	 * Split a name into firstName, lastName, middleName.
+	 * Split a name into lastName, firstName.
 	 *
 	 * Assumes the name is entered as LastName, FirstName MiddleName
 	 * @param $fullName
 	 * @return array
 	 */
-	public function splitFullName($fullName) {
-		$fullName   = str_replace(",", ' ', $fullName);
-		$fullName   = str_replace(";", ' ', $fullName);
-		$fullName   = preg_replace("/\\s{2,}/", ' ', $fullName);
-		$nameParts  = explode(' ', $fullName);
-		$lastName   = strtolower($nameParts[0]);
-		$middleName = isset($nameParts[2]) ? strtolower($nameParts[2]) : '';
-		$firstName  = isset($nameParts[1]) ? strtolower($nameParts[1]) : $middleName;
-		$firstName  = trim($firstName, '()');
-		return array($fullName, $lastName, $firstName);
+	public function splitFullName($fullName){
+		$nameParts = explode(',', $fullName);
+		$lastName  = strtolower($nameParts[0]);
+		$firstName = isset($nameParts[1]) ? strtolower(trim($nameParts[1])) : '';
+		return [$lastName, $firstName];
 	}
 
 
@@ -278,7 +273,7 @@ abstract class HorizonROA implements \DriverInterface {
 			if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)) {
 				$fullName = $lookupMyAccountInfoResponse->fields->displayName;
 				if (strpos($fullName, ',')) {
-					[, $lastName, $firstName] = $this->splitFullName($fullName);
+					[$lastName, $firstName] = $this->splitFullName($fullName);
 				}
 
 				$forceDisplayNameUpdate = false;

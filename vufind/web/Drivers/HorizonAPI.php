@@ -68,7 +68,7 @@ abstract class HorizonAPI extends Horizon{
 			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeAddressInfo=true&includeHoldInfo=true&includeBlockInfo=true&includeItemsOutInfo=true');
 			if ($lookupMyAccountInfoResponse){
 				$fullName = (string)$lookupMyAccountInfoResponse->name;
-				[$fullName, $lastName, $firstName] = $this->splitFullName($fullName);
+				[$lastName, $firstName] = $this->splitFullName($fullName);
 
 				$email = '';
 				if (isset($lookupMyAccountInfoResponse->AddressInfo)){
@@ -86,20 +86,20 @@ abstract class HorizonAPI extends Horizon{
 				}
 
 				$forceDisplayNameUpdate = false;
-				$firstName = isset($firstName) ? $firstName : '';
+				$firstName = $firstName ?? '';
 				if ($user->firstname != $firstName) {
 					$user->firstname = $firstName;
 					$forceDisplayNameUpdate = true;
 				}
-				$lastName = isset($lastName) ? $lastName : '';
+				$lastName = $lastName ?? '';
 				if ($user->lastname != $lastName){
-					$user->lastname = isset($lastName) ? $lastName : '';
+					$user->lastname = $lastName ?? '';
 					$forceDisplayNameUpdate = true;
 				}
 				if ($forceDisplayNameUpdate){
 					$user->displayName = '';
 				}
-				$user->fullname     = isset($fullName) ? $fullName : '';
+				$user->fullname     = $fullName ?? '';
 				$user->barcode      = $username;
 				$user->cat_password = $password;
 				$user->email        = $email;
@@ -908,22 +908,17 @@ abstract class HorizonAPI extends Horizon{
 	}*/
 
 	/**
-	 * Split a name into firstName, lastName, middleName.
-	 *a
+	 * Split a name into lastName, firstName.
+	 *
 	 * Assumes the name is entered as LastName, FirstName MiddleName
 	 * @param $fullName
 	 * @return array
 	 */
-	public function splitFullName($fullName) {
-		$fullName   = str_replace(",", " ", $fullName);
-		$fullName   = str_replace(";", " ", $fullName);
-		$fullName   = str_replace(";", "'", $fullName);
-		$fullName   = preg_replace("/\\s{2,}/", " ", $fullName);
-		$nameParts  = explode(' ', $fullName);
-		$lastName   = strtolower($nameParts[0]);
-		$middleName = isset($nameParts[2]) ? strtolower($nameParts[2]) : '';
-		$firstName  = isset($nameParts[1]) ? strtolower($nameParts[1]) : $middleName;
-		return [$fullName, $lastName, $firstName];
+	public function splitFullName($fullName){
+		$nameParts = explode(',', $fullName);
+		$lastName  = strtolower($nameParts[0]);
+		$firstName = isset($nameParts[1]) ? strtolower(trim($nameParts[1])) : '';
+		return [$lastName, $firstName];
 	}
 
 	public function getWebServiceResponse($url){
