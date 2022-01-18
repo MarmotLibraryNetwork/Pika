@@ -114,10 +114,8 @@ class BlockPatronAccountLink extends DB_DataObject {
 		}
 	}
 
-	private function getBarcodeColumn(){
-		if (UserAccount::isLoggedIn()){
-			return UserAccount::getActiveUserObj()->getAccountProfile()->loginConfiguration  == 'name_barcode' ? 'cat_password' : 'cat_username';
-		}
+	private function getBarcodeColumn(): string{
+		return 'barcode';
 	}
 
 	static function getObjectStructure()

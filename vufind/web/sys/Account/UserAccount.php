@@ -612,8 +612,7 @@ class UserAccount {
 				$accountProfile->name                 = 'ils';
 				$accountProfile->authenticationMethod = 'ils';
 				$accountProfile->driver               = $configArray['Catalog']['driver'];
-				// todo: [pins] not sure what to do with this code; won't work as is
-				$accountProfile->loginConfiguration   = 'name_barcode'; //($configArray['Catalog']['barcodeProperty'] == 'cat_password') ? 'name_barcode' : 'barcode_pin';
+				$accountProfile->loginConfiguration   = 'name_barcode';
 				if (isset($configArray['Catalog']['url'])){
 					$accountProfile->vendorOpacUrl = $configArray['Catalog']['url'];
 				}

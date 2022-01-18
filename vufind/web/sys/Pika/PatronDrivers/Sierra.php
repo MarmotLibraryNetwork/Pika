@@ -1073,7 +1073,7 @@ class Sierra {
 			$message = $this->_getPrettyError();
 			return 'Could not update PIN: '. $message;
 		}
-		$patron->cat_password = $newPin;
+		$patron->password = $newPin;
 		$patron->update();
 
 		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
@@ -1124,7 +1124,7 @@ class Sierra {
 			return ['error' => 'Could not update PIN: '. $message];
 		}
 		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
-		$patron->cat_password = $newPin;
+		$patron->password = $newPin;
 		if(!$patron->update()) {
 			// this shouldn't matter since we hit the api first when logging in a patron, but ....
 			$this->cache->delete($patronCacheKey);
@@ -1149,13 +1149,7 @@ class Sierra {
 	 */
 	public function emailResetPin($barcode) {
 		$patron = new User();
-
-		$loginMethod = $this->accountProfile->loginConfiguration;
-		if ($loginMethod == "barcode_pin"){
-			$patron->barcode = $barcode;
-		} elseif ($loginMethod == "name_barcode") {
-			$patron->cat_password = $barcode;
-		}
+		$patron->barcode = $barcode;
 
 		$patron->find(true);
 		if(! $patron->N || $patron->N == 0) {
@@ -2933,8 +2927,8 @@ EOT;
 		}
 
 		// Update the stored pin if it has changed
-		if($patron->cat_password != $pin) {
-			$patron->cat_password = $pin;
+		if($patron->password != $pin) {
+			$patron->password = $pin;
 			$patron->update();
 		}
 
@@ -3186,7 +3180,7 @@ EOT;
 		if($this->accountProfile->loginConfiguration == "barcode_pin") {
 			$postData = [
 				'code' => $patron->barcode,
-				'pin'  => $patron->cat_password
+				'pin'  => $patron->password
 			];
 		} else {
 			$postData = [

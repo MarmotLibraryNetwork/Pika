@@ -207,7 +207,7 @@ class MaterialsRequest_AJAX extends AJAXHandler {
 									// Get Barcode Column
 									$barCodeColumn = null;
 									if ($accountProfile = $user->getAccountProfile()){
-										$barCodeColumn = 'barcode'; //$accountProfile->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
+										$barCodeColumn = 'barcode';
 									}
 									$interface->assign('barCodeColumn', $barCodeColumn);
 

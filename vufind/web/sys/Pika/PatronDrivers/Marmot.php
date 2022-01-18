@@ -530,10 +530,9 @@ class Marmot extends Sierra {
 				'code' => $patron->barcode
 			];
 		}else{
-			//TODO: when marmot switches to this mode, the follow-up to this will need to be verified
 			$postData = [
 				'code' => $patron->barcode,
-				'pin'  => $patron->cat_password
+				'pin'  => $patron->getPassword()
 			];
 		}
 

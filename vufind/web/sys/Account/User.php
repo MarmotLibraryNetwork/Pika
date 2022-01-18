@@ -204,6 +204,15 @@ class User extends DB_DataObject {
 		return $this->accountProfile;
 	}
 
+	public function getPassword() {
+		return $this->password;
+	}
+
+	public function setPassword($password) {
+		$this->password = $password;
+		$this->update();
+}
+
 	function __get($name){
 		if ($name == 'roles'){
 			return $this->getRoles();
@@ -221,12 +230,17 @@ class User extends DB_DataObject {
 			return $this->materialsRequestEmailSignature;
 		}
 
-		// handle barcodes, cat_password and cat_username
-		if ($name == 'barcode'){
-			return $this->getBarcode();
-		} elseif($name == 'cat_password' || $name == 'cat_username') {
+		// return password
+		if($name == "password") {
 			$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
-			$this->logger->warn($name . " accessed by " . $calledBy['function'], array("trace" => $calledBy));
+			$this->logger->debug("Please use getPassword() when getting password from user object.", array("trace" => $calledBy));
+			return $this->getPassword();
+		}
+
+		// handle deprecated cat_password and cat_username
+		if($name == 'cat_password' || $name == 'cat_username') {
+			$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
+			$this->logger->debug($name . " accessed by " . $calledBy['function'], array("trace" => $calledBy));
 			if ($accountProfile = $this->getAccountProfile()){
 				if ($accountProfile->loginConfiguration == 'barcode_pin' && $name == 'cat_username'){
 					return $this->barcode;
@@ -244,15 +258,21 @@ class User extends DB_DataObject {
 	}
 
 	function __set($name, $value){
-		// Handle cat_* properties being set
+		if($name == "password") {
+			$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
+			$this->logger->debug($name . " being set by " . $calledBy['function'], array("trace" => $calledBy));
+			$this->setPassword($value);
+			$this->update();
+		}
+
+		// Handle deprecated cat_* properties
 		// If needed update barcode or password field
 		if($name == 'cat_password' || $name == 'cat_username') {
 			$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
-			$this->logger->warn($name . " being set by " . $calledBy['function'], array("trace" => $calledBy));
+			$this->logger->debug($name . " being set by " . $calledBy['function'], array("trace" => $calledBy));
 			if ($accountProfile = $this->getAccountProfile()){
 				if ($accountProfile->loginConfiguration == 'barcode_pin' && $name == 'cat_username'){
 					$this->barcode = $value;
-					return $this->update();
 				}elseif ($accountProfile->loginConfiguration == 'name_barcode' && $name == 'cat_password'){
 					$this->barcode = $value;
 				} else {
@@ -406,10 +426,10 @@ class User extends DB_DataObject {
 									$linkedAccountProfile = $linkedUser->getAccountProfile();
 									if($linkedAccountProfile->loginConfiguration == "barcode_pin") {
 										$userName = $linkedUser->barcode;
-										$password = $linkedUser->cat_password;
+										$password = $linkedUser->getPassword();
 									} else {
 										$userName = $linkedUser->cat_username;
-										$password = $linkedUser->cat_password;
+										$password = $linkedUser->barcode;
 									}
 									$linkedUser = UserAccount::validateAccount($userName, $password, $linkedUser->source, $this);
 								}else{
@@ -497,12 +517,12 @@ class User extends DB_DataObject {
 	function getRelatedOverDriveUsers(){
 		$overDriveUsers = [];
 		if ($this->isValidForOverDrive()){
-			$overDriveUsers[$this->cat_username . ':' . $this->cat_password] = $this;
+			$overDriveUsers[$this->cat_username . ':' . $this->getPassword()] = $this;
 		}
 		foreach ($this->getLinkedUsers() as $linkedUser){
 			if ($linkedUser->isValidForOverDrive()){
-				if (!array_key_exists($linkedUser->cat_username . ':' . $linkedUser->cat_password, $overDriveUsers)){
-					$overDriveUsers[$linkedUser->cat_username . ':' . $linkedUser->cat_password] = $linkedUser;
+				if (!array_key_exists($linkedUser->cat_username . ':' . $linkedUser->getPassword(), $overDriveUsers)){
+					$overDriveUsers[$linkedUser->cat_username . ':' . $linkedUser->getPassword()] = $linkedUser;
 				}
 			}
 		}
@@ -533,12 +553,12 @@ class User extends DB_DataObject {
 	function getRelatedHooplaUsers(){
 		$hooplaUsers = [];
 		if ($this->isValidForHoopla()){
-			$hooplaUsers[$this->cat_username . ':' . $this->cat_password] = $this;
+			$hooplaUsers[$this->cat_username . ':' . $this->getPassword()] = $this;
 		}
 		foreach ($this->getLinkedUsers() as $linkedUser){
 			if ($linkedUser->isValidForHoopla()){
-				if (!array_key_exists($linkedUser->cat_username . ':' . $linkedUser->cat_password, $hooplaUsers)){
-					$hooplaUsers[$linkedUser->cat_username . ':' . $linkedUser->cat_password] = $linkedUser;
+				if (!array_key_exists($linkedUser->cat_username . ':' . $linkedUser->getPassword(), $hooplaUsers)){
+					$hooplaUsers[$linkedUser->cat_username . ':' . $linkedUser->getPassword()] = $linkedUser;
 				}
 			}
 		}
@@ -1810,7 +1830,7 @@ private $staffPtypes = null;
 		}else{
 			return "Please enter your current pin number";
 		}
-		if ($this->cat_password != $oldPin){
+		if ($this->getPassword() != $oldPin){
 			return "The old pin number is incorrect";
 		}
 		if (!empty($_REQUEST['pin1'])){
