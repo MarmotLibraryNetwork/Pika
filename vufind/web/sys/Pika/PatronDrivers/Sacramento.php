@@ -93,7 +93,7 @@ class Sacramento extends Sierra {
 		}else{
 			$postData = [
 				'code' => $patron->barcode,
-				'pin'  => $patron->cat_password
+				'pin'  => $patron->getPassword()
 			];
 		}
 
@@ -191,7 +191,7 @@ class Sacramento extends Sierra {
 		if($this->accountProfile->loginConfiguration == "barcode_pin") {
 			$postData = [
 			 'code' => $patron->barcode,
-			 'pin'  => $patron->cat_password
+			 'pin'  => $patron->password
 			];
 		} else {
 			$postData = [
