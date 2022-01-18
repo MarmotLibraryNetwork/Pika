@@ -106,20 +106,23 @@ abstract class HorizonAPI extends Horizon{
 
 				if (isset($lookupMyAccountInfoResponse->AddressInfo)){
 					$Address1 = (string)$lookupMyAccountInfoResponse->AddressInfo->line1;
+					if (!empty($lookupMyAccountInfoResponse->AddressInfo->line2)){
+						$Address1 .= ' ' . $lookupMyAccountInfoResponse->AddressInfo->line2;
+					}
 					if (isset($lookupMyAccountInfoResponse->AddressInfo->cityState)){
 						$cityState = (string)$lookupMyAccountInfoResponse->AddressInfo->cityState;
 						@list($City, $State) = explode(', ', $cityState);
 					}else{
-						$City = "";
-						$State = "";
+						$City  = '';
+						$State = '';
 					}
 					$Zip = (string)$lookupMyAccountInfoResponse->AddressInfo->postalCode;
 
 				}else{
-					$Address1 = "";
-					$City = "";
-					$State = "";
-					$Zip = "";
+					$Address1 = '';
+					$City     = '';
+					$State    = '';
+					$Zip      = '';
 				}
 
 				//Get additional information about the patron's home branch for display.
