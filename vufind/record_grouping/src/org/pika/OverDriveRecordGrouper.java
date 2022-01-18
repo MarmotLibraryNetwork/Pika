@@ -20,6 +20,7 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Locale;
 
 /**
  * Pika
@@ -71,10 +72,17 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 		String subtitle            = overDriveRecordRS.getString("subtitle");
 		String author              = overDriveRecordRS.getString("primaryCreatorName");
 		String productLanguageCode = overDriveRecordRS.getString("code");
+		String edition             = overDriveRecordRS.getString("edition");
 		//primary creator in overdrive is always first name, last name.
 
 		String groupingFormat;
-		if (mediaType.equalsIgnoreCase("ebook")) {
+		if ((edition != null && edition.contains("Young Readers"))
+						|| subtitle.replace("'", "").toLowerCase().contains("young readers edition")
+						|| title.replace("'", "").toLowerCase().contains("young readers edition")
+		){
+			// Young Readers editions will have their own grouping category regardless of specific format
+			groupingFormat = "young";
+		} else if (mediaType.equalsIgnoreCase("ebook")) {
 			groupingFormat = "book";
 			//Overdrive Graphic Novels can be derived from having a specific subject in the metadata
 			overDriveSubjectsStmt.setLong(1, id);
@@ -122,6 +130,9 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 				break;
 			case "comic":
 				groupedWork.setGroupingCategory("comic", primaryIdentifier);
+				break;
+			case "young":
+				groupedWork.setGroupingCategory("young", primaryIdentifier);
 				break;
 			default:
 				logger.warn("Unrecognized OverDrive mediaType (using book at grouping category) for " + primaryIdentifier + " : " + groupingFormat);

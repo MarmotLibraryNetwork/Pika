@@ -253,21 +253,22 @@ class Cache implements CacheInterface
 	 * @param $patronUid Pika database User ID
 	 * @return string
 	 */
-	public function makePatronKey($type, $patronUid)
-	{
-		if(!in_array($type, $this->keyTypes)) {
-			$types = implode(', ', $this->keyTypes);
+	public function makePatronKey($type, $patronUid){
+		if (!in_array($type, $this->keyTypes)){
+			$types   = implode(', ', $this->keyTypes);
 			$message = sprintf('type %s is not a valid key type. Valid key types are %s', $type, $types);
 			throw new CacheException($message);
 		}
-		if(!$hostname = gethostname()){
+		if (!$hostname = gethostname()){
 			$hostname = $_SERVER['SERVER_NAME'];
 		}
-		$key = $hostname.'-'.$type.'-'.$patronUid;
+		global $serverName;
+		// The siteName has to be included for the cases where a single server is hosting multiple sites (eg. local WAMP)
+		$key = $hostname . '-' . $serverName . '-' . $type . '-' . $patronUid;
 		$this->checkReservedCharacters($key);
 
 		return $key;
-		}
+	}
 
 	/**
 	 * @param  $key

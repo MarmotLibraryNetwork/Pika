@@ -169,7 +169,7 @@ class MergeMarcUpdatesAndDeletes {
 
 					for (File updateFile : updateFiles) {
 						try {
-							processMarcFile(marcEncoding, recordsToUpdate, updateFile);
+							processMarcFile(recordsToUpdate, updateFile);
 							if (logger.isInfoEnabled()) {
 								for (Map.Entry<String, Record> entry : recordsToUpdate.entrySet()) {
 									logger.info(entry.getKey());
@@ -190,7 +190,7 @@ class MergeMarcUpdatesAndDeletes {
 					for (File deleteFile : deleteFiles) {
 						try {
 							if (isValidMarcFile(deleteFile)) {
-								processMarcFile(marcEncoding, recordsToDelete, deleteFile);
+								processMarcFile(recordsToDelete, deleteFile);
 							} else if (deleteFile.getName().endsWith("csv")) {
 								processCsvFile(recordsToDelete, deleteFile);
 							}
@@ -217,11 +217,11 @@ class MergeMarcUpdatesAndDeletes {
 					String lastRecordId = "";
 					try {
 						try (FileInputStream marcFileStream = new FileInputStream(mainFile)) {
-							MarcReader       mainReader = new MarcPermissiveStreamReader(marcFileStream, true, true, marcEncoding);
+							MarcReader       mainReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
 							Record           curBib;
 							MarcStreamWriter mainWriter;
 							try (FileOutputStream marcOutputStream = new FileOutputStream(mergedFile)) {
-								mainWriter = new MarcStreamWriter(marcOutputStream);
+								mainWriter = new MarcStreamWriter(marcOutputStream, marcEncoding);
 
 								while (mainReader.hasNext()) {
 
@@ -413,10 +413,10 @@ class MergeMarcUpdatesAndDeletes {
 		}
 	}
 
-	private void processMarcFile(String marcEncoding, HashSet<String> recordsToDelete, File deleteFile) throws Exception {
+	private void processMarcFile(HashSet<String> recordsToDelete, File deleteFile) throws Exception {
 		FileInputStream marcFileStream = new FileInputStream(deleteFile);
 
-		MarcReader deletesReader = new MarcPermissiveStreamReader(marcFileStream, true, true, marcEncoding);
+		MarcReader deletesReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
 		while (deletesReader.hasNext()) {
 			Record curBib = deletesReader.next();
 			String recordId = getRecordIdFromMarcRecord(curBib);
@@ -429,9 +429,9 @@ class MergeMarcUpdatesAndDeletes {
 
 	}
 
-	private void processMarcFile(String marcEncoding, HashMap<String, Record> recordsToUpdate, File updateFile) throws Exception {
+	private void processMarcFile(HashMap<String, Record> recordsToUpdate, File updateFile) throws Exception {
 		FileInputStream marcFileStream = new FileInputStream(updateFile);
-		MarcReader updatesReader = new MarcPermissiveStreamReader(marcFileStream, true, true, marcEncoding);
+		MarcReader updatesReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
 
 		//Read a list of records in the updates file
 		while (updatesReader.hasNext()) {

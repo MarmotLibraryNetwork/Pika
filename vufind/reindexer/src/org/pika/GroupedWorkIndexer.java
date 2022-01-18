@@ -229,6 +229,9 @@ public class GroupedWorkIndexer {
 								case "SideLoadedEContent":
 									indexingRecordProcessors.put(sourceName, new SideLoadedEContentProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
+								case "OverDriveSideLoad":
+									indexingRecordProcessors.put(sourceName, new OverDriveSideLoadProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+									break;
 								case "Hoopla":
 									indexingRecordProcessors.put(sourceName, new HooplaProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;

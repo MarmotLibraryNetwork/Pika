@@ -1,17 +1,37 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h3>Indexing Statistics ({$indexingStatsDate})</h3>
+		<h3>Indexing Statistics : {$indexingStatsDate}
+			{if !empty($compareTo)} vs {$compareTo}{/if}
+		</h3>
+
+		<div class="row">
 
 		<form id="indexingDateSelection" name="indexingDateSelection" method="get" class="form form-inline">
+			<div class="col-sm-6">
 			<div class="form-group">
 				<label for="availableDates">Available Dates</label>
-				<select id="availableDates" name="day" class="form-control">
+				<select id="availableDates" name="day" class="form-control" onchange="$('#indexingDateSelection').submit()">
 					{foreach from=$availableDates item=date}
-						<option value="{$date}">{$date}</option>
+						<option value="{$date}"{if $date == $indexingStatsDate} selected="selected"{/if}>{$date}</option>
 					{/foreach}
 				</select>
 			</div>
-			<button type="submit" class="btn btn-default btn-sm">Set Date</button>
+{*			<button type="submit" class="btn btn-default btn-sm">Set Date</button>*}
+			</div>
+			<div class="col-sm-6">
+			<div class="form-group">
+				<label for="compareTo">Compare To</label>
+				<select id="compareTo" name="compareTo" class="form-control" onchange="$('#indexingDateSelection').submit()">
+					<option></option>
+					{foreach from=$availableDates item=date}
+						<option value="{$date}"{if $date == $indexingStatsDate} disabled="disabled"}{elseif $date == $compareTo} selected="selected"{/if}>{$date}</option>
+					{/foreach}
+				</select>
+			</div>
+{*			<button type="submit" class="btn btn-default btn-sm">Compare</button>*}
+			</div>
+		</form>
+		</div>
 
 			<h4>Toggle columns:</h4>
 
@@ -42,7 +62,7 @@
 					{foreach from=$indexingStats item=statsRow}
 						<tr>
 							{foreach from=$statsRow item=statCell name=statsLoop}
-								<td>{$statCell}</td>
+								<td{if !empty($compareTo)}{if $statCell > 0} class="success"{elseif $statCell < 0} class="danger"{/if}{/if}>{$statCell}</td>
 							{/foreach}
 						</tr>
 					{/foreach}
@@ -54,7 +74,7 @@
 {/strip}
 <script type="text/javascript">
 	{literal}
-	$(document).ready(function(){
+	$(function(){
 /* Close side bar menu
 		$('.menu-bar-option:nth-child(2)>a', '#vertical-menu-bar').filter(':visible').click();
 */
@@ -76,8 +96,30 @@
 			// Toggle button class
 			$(this).toggleClass("btn-primary");
 		} )
-						// Hide all but the first two columns initially
-						.slice(2).click();
+		{/literal}
+			{if !empty($showTheseColumns)}
+
+		.filter(
+						function(index){ldelim}
+{*
+							return ![
+								{foreach from=$showTheseColumns name=displayColumns item=showColumn}{if $showColumn}{$smarty.foreach.displayColumns.index - 2}, {/if}{/foreach}
+							].includes(index);
+*}
+
+							return ![
+								{foreach from=$showTheseColumns item=showColumn}{$showColumn}, {/foreach}
+							].includes(index);
+
+						{rdelim}).click();
+			{else}
+/*
+							// Hide all but the first two columns initially
+*/
+							.slice(2).click();
+
+		{/if}
+		{literal}
 
 		$('#reindexingStats tbody').on( 'click', 'tr', function () {
 			$(this).toggleClass('selected');

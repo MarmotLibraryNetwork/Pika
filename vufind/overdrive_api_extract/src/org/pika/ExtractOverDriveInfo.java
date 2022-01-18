@@ -141,8 +141,8 @@ class ExtractOverDriveInfo {
 			deleteProductStmt                   = econtentConn.prepareStatement("UPDATE overdrive_api_products SET deleted = 1, dateDeleted = ? WHERE id = ?");
 			updateProductMetadataStmt           = econtentConn.prepareStatement("UPDATE overdrive_api_products SET lastMetadataCheck = ?, lastMetadataChange = ? WHERE id = ?");
 			loadMetaDataStmt                    = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_metadata WHERE productId = ?");
-			updateMetaDataStmt                  = econtentConn.prepareStatement("UPDATE overdrive_api_product_metadata SET productId = ?, checksum = ?, sortTitle = ?, publisher = ?, publishDate = ?, isPublicDomain = ?, isPublicPerformanceAllowed = ?, shortDescription = ?, fullDescription = ?, starRating = ?, popularity =?, thumbnail=?, cover=?, isOwnedByCollections=?, rawData=? WHERE id = ?");
-			addMetaDataStmt                     = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_metadata SET productId = ?, checksum = ?, sortTitle = ?, publisher = ?, publishDate = ?, isPublicDomain = ?, isPublicPerformanceAllowed = ?, shortDescription = ?, fullDescription = ?, starRating = ?, popularity =?, thumbnail=?, cover=?, isOwnedByCollections=?, rawData=?");
+			updateMetaDataStmt                  = econtentConn.prepareStatement("UPDATE overdrive_api_product_metadata SET productId = ?, checksum = ?, sortTitle = ?, publisher = ?, publishDate = ?, edition = ?, isPublicDomain = ?, isPublicPerformanceAllowed = ?, shortDescription = ?, fullDescription = ?, starRating = ?, popularity =?, thumbnail=?, cover=?, isOwnedByCollections=?, rawData=? WHERE id = ?");
+			addMetaDataStmt                     = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_metadata SET productId = ?, checksum = ?, sortTitle = ?, publisher = ?, publishDate = ?, edition = ?, isPublicDomain = ?, isPublicPerformanceAllowed = ?, shortDescription = ?, fullDescription = ?, starRating = ?, popularity =?, thumbnail=?, cover=?, isOwnedByCollections=?, rawData=?");
 			clearCreatorsStmt                   = econtentConn.prepareStatement("DELETE FROM overdrive_api_product_creators WHERE productId = ?");
 			addCreatorStmt                      = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_creators SET productId = ?, role = ?, name = ?, fileAs = ?");
 			addLanguageStmt                     = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_languages SET code =?, name = ?", PreparedStatement.RETURN_GENERATED_KEYS);
@@ -1189,6 +1189,7 @@ class ExtractOverDriveInfo {
 					metaDataStatement.setNull(++curCol, Types.INTEGER);
 				}
 
+				metaDataStatement.setString(++curCol, metaData.has("edition") ? metaData.getString("edition") : "");
 				metaDataStatement.setBoolean(++curCol, metaData.has("isPublicDomain") && metaData.getBoolean("isPublicDomain"));
 				metaDataStatement.setBoolean(++curCol, metaData.has("isPublicPerformanceAllowed") && metaData.getBoolean("isPublicPerformanceAllowed"));
 				metaDataStatement.setString(++curCol, metaData.has("shortDescription") ? metaData.getString("shortDescription") : "");
@@ -1342,9 +1343,13 @@ class ExtractOverDriveInfo {
 					for (String curIdentifier : uniqueIdentifiers) {
 						addIdentifierStmt.setLong(1, updateData.databaseId);
 						String[] identifierInfo = curIdentifier.split(":");
-						addIdentifierStmt.setString(2, identifierInfo[0]);
-						addIdentifierStmt.setString(3, identifierInfo[1]);
-						addIdentifierStmt.executeUpdate();
+						if (identifierInfo.length >= 2) {
+							addIdentifierStmt.setString(2, identifierInfo[0]);
+							addIdentifierStmt.setString(3, identifierInfo[1]);
+							addIdentifierStmt.executeUpdate();
+						} else if (logger.isInfoEnabled()) {
+							logger.info("A format identifier for " + updateData.overDriveId + " missing a value : " + curIdentifier);
+						}
 					}
 				}
 				//TODO: group an individual production?

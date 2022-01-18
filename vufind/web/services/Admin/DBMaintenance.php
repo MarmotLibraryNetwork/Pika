@@ -1365,7 +1365,7 @@ class DBMaintenance extends Admin_Admin {
                   'description' => 'Get rid of the template option',
                   'continueOnError' => false,
                   'sql' => array(
-                      "ALTER TABLE `library` DELETE COLUMN 'selfRegistrationTemplate';",
+                      "ALTER TABLE `library` DROP COLUMN 'selfRegistrationTemplate';",
                   )
                 ),
 				'update_eContentSupportAddress_default_value' => array(
@@ -1435,6 +1435,13 @@ class DBMaintenance extends Admin_Admin {
 					'sql'             => [
 						'ALTER TABLE `econtent`.`overdrive_api_product_formats` DROP COLUMN `numericId`, DROP INDEX `numericId` ;',
 					]
+				],
+				'2022.01.0-add_edition_column_to_overdrive_metadata' => [
+					'title'       => 'Add edition column to OverDrive Metadata table',
+					'description' => 'Add edition column to OverDrive Metadata table. [THIS NEEDS the econtent db to named econtent]',
+					'sql'         => [
+						"ALTER TABLE `econtent`.`overdrive_api_product_metadata` ADD COLUMN `edition` VARCHAR(128) NULL AFTER `publishDate`;",
+					],
 				],
 
 				'remove-econtent-protection-facet-2020.07' => [

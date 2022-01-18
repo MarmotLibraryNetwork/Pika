@@ -199,6 +199,9 @@ public class GroupingFormatDetermination {
 						case "videodisc":
 							groupingCategories.add("movie");
 							break;
+						case "young reader":
+							groupingCategories.add("young");
+							break;
 						default:
 							groupingCategories.add("book");
 							logger.warn("Could not find appropriate grouping category for " + format + " while side loading eContent " + identifier);
@@ -746,6 +749,18 @@ public class GroupingFormatDetermination {
 			title = title.toLowerCase();
 			if (title.contains("book club kit") || title.contains("bookclub kit")){
 				printFormats.add("BookClubKit");
+			}
+
+			if (title.contains("young reader")) {
+				printFormats.add("Young Reader");
+			}
+		}
+		// Note: that checking for young reader's editions is not done in the format determination class.b54047699
+		String subTitle = MarcUtil.getFirstFieldVal(record, "245b");
+		if (subTitle != null){
+			subTitle = subTitle.toLowerCase();
+			if (subTitle.contains("young reader")) {
+				printFormats.add("Young Reader");
 			}
 		}
 	}

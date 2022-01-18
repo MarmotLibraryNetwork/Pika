@@ -44,7 +44,11 @@
 						{assign var="hideCoversFormDisplayed" value=true}
 					{/if}
 				</div>
-
+				<div class="row result">
+					<div class="col-sm-1">
+						<input id="selectAll" type="checkbox" onclick="Pika.toggleCheckboxes('.titleSelect{$sectionKey}', '#selectAll');" title="Select All/Deselect All">
+					</div>
+				</div>
 				<div class="striped">
 					{foreach from=$recordList.$sectionKey item=record name="recordLoop"}
 						{if strtolower($record.holdSource) == 'ils'}
@@ -59,6 +63,7 @@
 					{/foreach}
 				</div>
 
+
 				{* Code to handle updating multiple holds at one time *}
 				<br>
 				<div class="holdsWithSelected{$sectionKey}">
@@ -66,10 +71,11 @@
 						<div>
 							<input type="hidden" name="withSelectedAction" value="">
 							<div id="holdsUpdateSelected{$sectionKey}Bottom" class="holdsUpdateSelected{$sectionKey}">
-
-								<input type="submit" class="btn btn-sm btn-warning" name="cancelSelected" value="Cancel Selected" onclick="return Pika.Account.cancelSelectedHolds()">
-
+								<div class="btn-group">
+								<input type="submit" class="btn btn-sm btn-warning" name="cancelSelected" value="Cancel Selected" onclick="return Pika.Account.cancelSelectedHolds();">
+								{if $sectionKey=='unavailable'}<input type="submit" class="btn btn-sm btn-default" name="freezeSelected" value="{translate text="Freeze"} Selected" onclick="return Pika.Account.getFreezeHoldsForm();" />{/if}
 								<input type="submit" class="btn btn-sm btn-default" id="exportToExcel{if $sectionKey=='available'}Available{else}Unavailable{/if}Bottom" name="exportToExcel{if $sectionKey=='available'}Available{else}Unavailable{/if}" value="Export to Excel" >
+								</div>
 							</div>
 						</div>
 					</form>

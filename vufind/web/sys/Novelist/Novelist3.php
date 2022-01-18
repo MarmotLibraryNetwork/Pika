@@ -813,7 +813,7 @@ class Novelist3{
 				$isInCatalog             = false;
 				$currentTitleFromCatalog = null;
 				foreach ($titlesFromCatalog as $titleIndex => $currentTitleFromCatalog){
-					if (in_array($item->primary_isbn, $currentTitleFromCatalog['allIsbns'])){
+					if (!empty($item->primary_isbn) && in_array($item->primary_isbn, $currentTitleFromCatalog['allIsbns'])){
 						$isInCatalog = true;
 						break;
 					}

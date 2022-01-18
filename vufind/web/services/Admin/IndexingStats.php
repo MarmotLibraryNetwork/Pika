@@ -60,56 +60,42 @@ class IndexingStats extends Admin_Admin {
 				$dateToRetrieve = $matches[1];
 			}
 
-			$indexingStats      = $ilsColumns = [];
-			$indexingStatFhnd   = fopen($fileToLoad, 'r');
-			$allIndexingHeaders = fgetcsv($indexingStatFhnd);
-			$j                  = 0;
-			foreach ($allIndexingHeaders as $i => $value){
-				// Majority of the columns are unneeded noise so we will filter them out for display
-				if (strpos($value, ' ils ') !== false){
-					// Keep any columns related to the ils indexing (for physical material)
-					$indexingStatHeader[] = $value;
-					$ilsColumns[]         = $i;
-				}elseif ($i < 3){
-					// Keep the first 3 columns: scope name, works owned, total works
-					$indexingStatHeader[] = $value;
-				}else{
-					// There are a total of 8 columns per indexing profile, creating a column counting cycle
-					$j++;
-					if ($j == 5){
-						// only retain the total records column for sideloads (econtent)
-						$indexingStatHeader[] = $value;
-					}elseif ($j == 8){
-						$j = 0;
-					}
-				}
-			}
+			[$indexingStats, $indexingStatHeader] = $this->ReadIndexingStatsFile($fileToLoad);
+			$interface->assign('indexingStatHeader', $indexingStatHeader);
+			$interface->assign('indexingStatsDate', $dateToRetrieve);
 
-			// Now process data rows for each scope
-			while ($temp = fgetcsv($indexingStatFhnd)){
-				$j      = 0;
-				$curRow = [];
-				foreach ($temp as $i => $value){
-					if ($i < 3){
-						$curRow[] = $value;
-					}elseif (in_array($i, $ilsColumns)){
-						$curRow[] = $value;
-					}else{
-						$j++;
-						if ($j == 5){
-							$curRow[] = $value;
-						}elseif ($j == 8){
-							$j = 0;
+			if (!empty($_REQUEST['compareTo'])){
+				// When set we will compare differences between two days of stats
+				$dateToRetrieve = $_REQUEST['compareTo'];
+				if (isset($indexingStatFiles[$dateToRetrieve])){
+					$fileToLoad = $indexingStatFiles[$dateToRetrieve];
+					[$otherDayIndexingStats,] = $this->ReadIndexingStatsFile($fileToLoad);
+					$columnHadChanges = $arrayOfDifferences = [];
+					foreach ($indexingStats as $curRowNumber => $curRow){
+						foreach ($curRow as $columnNumber => $curStat){
+							if ($columnNumber == 0){
+								//The scope Name for the first column of each row
+								$arrayOfDifferences[$curRowNumber][$columnNumber] = $curStat;
+							}else{
+								$difference                                       = $curStat - $otherDayIndexingStats[$curRowNumber][$columnNumber];
+								$arrayOfDifferences[$curRowNumber][$columnNumber] = $difference;
+								if ($difference != 0){
+									$buttonShowColumnIndex = $columnNumber - 1;
+									if (!in_array($buttonShowColumnIndex, $columnHadChanges)){
+										$columnHadChanges[] = $buttonShowColumnIndex;
+									}
+								}
+							}
 						}
 					}
-				}
-				$indexingStats[] = $curRow;
-			}
-			fclose($indexingStatFhnd);
 
-			$interface->assign('indexingStatHeader', $indexingStatHeader);
+					$indexingStats = $arrayOfDifferences;
+					$interface->assign('compareTo', $dateToRetrieve);
+					$interface->assign('showTheseColumns', $columnHadChanges);
+				}
+			}
+
 			$interface->assign('indexingStats', $indexingStats);
-			$interface->assign('indexingStatsDate', $dateToRetrieve);
 		}else{
 			$interface->assign('noStatsFound', true);
 		}
@@ -119,5 +105,59 @@ class IndexingStats extends Admin_Admin {
 
 	function getAllowableRoles(){
 		return ['opacAdmin', 'libraryAdmin', 'cataloging'];
+	}
+
+	/**
+ * @param $fileToLoad
+ * @return array
+ */
+	private function ReadIndexingStatsFile($fileToLoad): array{
+		$indexingStats      = $ilsColumns = [];
+		$indexingStatFhnd   = fopen($fileToLoad, 'r');
+		$allIndexingHeaders = fgetcsv($indexingStatFhnd);
+		$j                  = 0;
+		foreach ($allIndexingHeaders as $i => $value){
+			// Majority of the columns are unneeded noise so we will filter them out for display
+			if (strpos($value, ' ils ') !== false){
+				// Keep any columns related to the ils indexing (for physical material)
+				$indexingStatHeader[] = $value;
+				$ilsColumns[]         = $i;
+			}elseif ($i < 3){
+				// Keep the first 3 columns: scope name, works owned, total works
+				$indexingStatHeader[] = $value;
+			}else{
+				// There are a total of 8 columns per indexing profile, creating a column counting cycle
+				$j++;
+				if ($j == 5){
+					// only retain the total records column for sideloads (econtent)
+					$indexingStatHeader[] = $value;
+				}elseif ($j == 8){
+					$j = 0;
+				}
+			}
+		}
+
+		// Now process data rows for each scope
+		while ($temp = fgetcsv($indexingStatFhnd)){
+			$j      = 0;
+			$curRow = [];
+			foreach ($temp as $i => $value){
+				if ($i < 3){
+					$curRow[] = $value;
+				}elseif (in_array($i, $ilsColumns)){
+					$curRow[] = $value;
+				}else{
+					$j++;
+					if ($j == 5){
+						$curRow[] = $value;
+					}elseif ($j == 8){
+						$j = 0;
+					}
+				}
+			}
+			$indexingStats[] = $curRow;
+		}
+		fclose($indexingStatFhnd);
+		return [$indexingStats, $indexingStatHeader];
 	}
 } 

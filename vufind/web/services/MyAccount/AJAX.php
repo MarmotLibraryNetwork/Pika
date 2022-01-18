@@ -47,8 +47,8 @@ class MyAccount_AJAX extends AJAXHandler {
 		'getAddAccountLinkForm', 'addAccountLink', 'removeAccountLink',
 		'cancelBooking', 'getCitationFormatsForm', 'getAddBrowseCategoryFromListForm',
 		'getMasqueradeAsForm', 'initiateMasquerade', 'endMasquerade', 'getMenuData',
-        'transferList', 'isStaffUser', 'transferListToUser',
-        'copyListPrompt','copyList',
+		'transferList', 'isStaffUser', 'transferListToUser','copyListPrompt',
+		'copyList', 'getFreezeHoldsForm','freezeHolds', 'thawHolds',
 	);
 
 	protected $methodsThatRespondWithHTML = array(
@@ -436,13 +436,13 @@ class MyAccount_AJAX extends AJAXHandler {
 		$success = array();
 		$failed = array();
 		$result = array();
+		$cancelId = array();
 		//TODO: likely obsolete or needs refactoring to be used
 		try {
 			global $configArray;
 			$user    = UserAccount::getLoggedInUser();
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
 
-			$cancelId = array();
 
 			if (!empty($_REQUEST['holdselected'])){
 				$cancelId = $_REQUEST['holdselected'];
@@ -490,7 +490,7 @@ class MyAccount_AJAX extends AJAXHandler {
 
 		global $interface;
 
-		$result['numCancelled'] = count($success) - count($failed);
+		$result['numCancelled'] = count($cancelId) - count($failed);
 		if($result['numCancelled'] > 0)
 		{
 			$result['success'] = true;
@@ -498,14 +498,97 @@ class MyAccount_AJAX extends AJAXHandler {
 			$result['success'] = false;
 		}
 		$interface->assign('cancelResults', $result);
-
-		$cancelResult = array(
+		$interface->assign('totalCanceled', count($cancelId));
+		return array(
 			'title'     => 'Cancel Hold',
 			'modalBody' => $interface->fetch('MyAccount/cancelhold.tpl'),
 			'success'   => $result['success'],
 			'failed'    => $failed,
 		);
-		return $cancelResult;
+	}
+
+	function getFreezeHoldsForm(){
+
+		$cancelId = array();
+		global $configArray;
+		$ils                       = $configArray['Catalog']['ils'];
+		$reinstateDate = ($ils == 'Symphony');
+		if (!empty($_REQUEST['holdselected'])){
+			$cancelId = $_REQUEST['holdselected'];
+		}
+		$freezeIds = "'" . implode(",",$cancelId) . "'";
+		global $interface;
+		$reinstate = strtotime(date('dMY', strtotime('+1 month', (strtotime(date("Y/m/d"))))));
+		$interface->assign('reinstate', $reinstate);
+		$interface->assign('holdSelected', $cancelId);
+		$interface->assign('reinstateDate', $reinstateDate);
+		$result = array(
+			'title' => translate("Freeze") . ' Holds',
+			'body' => $interface->fetch('MyAccount/freezeHoldForm.tpl'),
+			'buttons' => '<button class="btn btn-default" name="submitFreeze" onclick="Pika.Account.freezeSelectedHolds(' .  $freezeIds . ')">' . translate("Freeze") . ' Hold'. (count($cancelId)>1 ? "s":"") . '</button>',
+			'success' => true,
+		);
+
+		return $result;
+	}
+
+	function freezeHolds(){
+		$failed = array();
+		$suspendDate = new DateTime();
+		$user = UserAccount::getLoggedInUser();
+		if(!empty($_REQUEST['suspendDate']))
+		{
+			$suspendDate = $_REQUEST['suspendDate'];
+		}
+		$freezeIds = "";
+
+		if (!empty($_REQUEST['selectedTitles'])){
+			$freezeIds = $_REQUEST['selectedTitles'];
+		}
+		$freezeId = explode(",",$freezeIds);
+		$result = array(
+			'success' => false,
+			'message' => 'Error ' . translate('freezing') . ' holds.',
+		);
+		if(!$user){
+			$result['message'] = 'You must be logged in to ' . translate('freeze') . ' a hold. Please close this dialog and login again.';
+		}else{
+			$patronId = $user->id;
+			$patronOwningHold = $user->getUserReferredTo($patronId);
+			if($patronOwningHold == false){
+				$result['message'] = 'Sorry, you do not have access to ' . translate('freeze') . ' holds for the supplied user.';
+			}else{
+				foreach($freezeId as $freeze){
+					if(!strstr($freeze, "~overdrive~")){
+						$catalog = CatalogFactory::getCatalogConnectionInstance();
+						$result = $catalog->freezeHold($user, $freeze, $freeze, $suspendDate);
+						if(!$result['success']){$failed[] = $result;}
+					}else{
+						$catalog = \Pika\PatronDrivers\EcontentSystem\OverDriveDriverFactory::getDriver();
+						$overdriveFreeze = explode("~",$freeze);
+						$overdriveId = $overdriveFreeze[2];
+						$result = $catalog->freezeOverDriveHold($overdriveId, $user);
+						if(!$result['success']){$failed[] = $result;}
+					}
+					}
+				}
+
+			}
+		$result['numFrozen'] = count($freezeId) - count($failed);
+		global $interface;
+		$interface->assign('freezeResults', $result);
+		$interface->assign('totalFrozen', count($freezeId));
+		$interface->assign('numFrozen', $result['numFrozen']);
+		return array(
+			'title' => translate('Freeze') . ' Holds',
+			'modalBody' => $interface->fetch('MyAccount/freezeHolds.tpl'),
+			'success' => $result['success'],
+			'failed' => $failed
+		);
+	}
+
+	function thawHolds(){
+
 	}
 
 	function freezeHold(){

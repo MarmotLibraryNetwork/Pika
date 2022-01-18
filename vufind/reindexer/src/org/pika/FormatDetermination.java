@@ -577,11 +577,11 @@ public class FormatDetermination {
 		if (printFormats.size() == 1) {
 			return;
 		}
-		if (printFormats.contains("Young Reader")) {
-			printFormats.clear();
-			printFormats.add("Young Reader");
-			return;
-		}
+//		if (printFormats.contains("Young Reader")) {
+//			printFormats.clear();
+//			printFormats.add("Young Reader");
+//			return;
+//		}
 		if (printFormats.contains("Archival Materials")) {
 			printFormats.clear();
 			printFormats.add("Archival Materials");
@@ -887,8 +887,8 @@ public class FormatDetermination {
 					String editionData = edition.getSubfield('a').getData().toLowerCase();
 					if (editionData.contains("large type") || editionData.contains("large print")) {
 						result.add("LargePrint");
-					} else if (editionData.contains("young reader")) {
-						result.add("Young Reader");
+//					} else if (editionData.contains("young reader")) {
+//						result.add("Young Reader");
 					} else if (editionData.contains("go reader")) {
 						result.add("GoReader");
 					} else if (editionData.contains("wonderbook")) {

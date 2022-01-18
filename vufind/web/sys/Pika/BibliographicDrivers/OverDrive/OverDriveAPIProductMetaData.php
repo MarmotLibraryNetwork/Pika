@@ -33,6 +33,7 @@ class OverDriveAPIProductMetaData extends \DB_DataObject {
 	public $sortTitle;
 	public $publisher;
 	public $publishDate;
+	public $edition;
 	public $isPublicDomain;
 	public $isPublicPerformanceAllowed;
 	public $shortDescription;

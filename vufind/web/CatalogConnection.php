@@ -70,7 +70,7 @@ class CatalogConnection
 	 */
 	public function __construct($driver, $accountProfile){
 		$this->cache  = new Pika\Cache();
-		$this->logger = new Pika\Logger("CatalogConnection");
+		$this->logger = new Pika\Logger(__CLASS__);
 		if ($driver != 'DriverInterface'){
 			$path = ROOT_DIR . "/Drivers/{$driver}.php";
 			if (file_exists($path)){
