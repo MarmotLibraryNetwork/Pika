@@ -1297,18 +1297,14 @@ abstract class HorizonROA implements \DriverInterface {
 			}
 
 		}else{
-			$sessionToken = null;
-
-			$profile        = $configArray['Catalog']['webServiceSelfRegProfile'];
-			$xtraHeaders    = ['sd-working-libraryid' => $profile];
+			// Apparently pin resetting does not require a version number in the operation url
+			$updatePinUrl   = '/user/patron/changeMyPin';
+			$sessionToken   = null;
 			$jsonParameters = [
 				'newPin'        => $newPin,
 				'resetPinToken' => $resetToken
 			];
 		}
-
-		$updatePinUrl  =  '/v1/user/patron/changeMyPin';
-
 		$updatePinResponse = $this->getWebServiceResponse($updatePinUrl, $jsonParameters, empty($sessionToken) ? null : $sessionToken, 'POST', empty($xtraHeaders) ? null : $xtraHeaders);
 		return $updatePinResponse;
 	}
@@ -1326,35 +1322,13 @@ abstract class HorizonROA implements \DriverInterface {
 				$this->getLogger()->warning('For Pin Reset did not find user in Pika Database for barcode : '. $barcode);
 			}
 
-//				// If possible, check if Horizon has an email address for the patron
-//				if (!empty($patron->cat_password)) {
-//					list($userValid, $sessionToken, $ilsUserID) = $this->loginViaWebService($barcode, $patron->cat_password);
-//					if ($userValid) {
-//						// Yay! We were able to login with the pin Pika has!
-//
-//						//Now check for an email address
-//						$lookupMyAccountInfoResponse = $this->getWebServiceResponse($configArray['Catalog']['webServiceUrl'] . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeAddressInfo=true');
-//						if ($lookupMyAccountInfoResponse) {
-//							if (isset($lookupMyAccountInfoResponse->AddressInfo)) {
-//								if (empty($lookupMyAccountInfoResponse->AddressInfo->email)) {
-//									// return an error message because horizon doesn't have an email.
-//									return array(
-//										'error' => 'The circulation system does not have an email associated with this card number. Please contact your library to reset your pin.'
-//									);
-//								}
-//							}
-//						}
-//					}
-//				}
-
-			if ($userID){
-				//TODO: looks like user ID will still be required
-				// email the pin to the user
-				$pikaUrl        = $patron->getHomeLibrary()->catalogUrl;
-				$resetPinAPICall = '/v1/user/patron/resetMyPin';
-				$jsonPOST       = [
+			if (!empty($userID)){
+				// Apparently pin resetting does not require a version number in the operation url
+				$resetPinAPICall = '/user/patron/resetMyPin';
+				$pikaUrl         = $patron->getHomeLibrary()->catalogUrl;
+				$jsonPOST        = [
 					'barcode'     => $barcode,
-					'resetPinUrl' => $pikaUrl . '/MyAccount/ResetPin?resetToken=<RESET_PIN_TOKEN>' . (empty($userID) ? '' : '&uid=' . $userID)
+					'resetPinUrl' => $pikaUrl . '/MyAccount/ResetPin?resetToken=<RESET_PIN_TOKEN>&uid=' . $userID
 				];
 
 				$resetPinResponse = $this->getWebServiceResponse($resetPinAPICall, $jsonPOST, null, 'POST');
@@ -1395,7 +1369,6 @@ abstract class HorizonROA implements \DriverInterface {
 	 * @return array
 	 */
 	public function resetPin(User $patron, $newPin, $resetToken){
-		//TODO: the reset PIN call looks to need a staff priviledged account to complete
 		if (empty($resetToken)){
 			$this->getLogger()->error('No Reset Token passed to resetPin function');
 			return [
@@ -1415,7 +1388,6 @@ abstract class HorizonROA implements \DriverInterface {
 			];
 		}elseif (!empty($changeMyPinResponse->sessionToken)){
 			if ($patron->ilsUserId == $changeMyPinResponse->patronKey){ // Check that the ILS user matches the Pika user
-				//TODO: check that this still applies
 				$patron->cat_password = $newPin;
 				$patron->update();
 			}
@@ -1512,7 +1484,7 @@ abstract class HorizonROA implements \DriverInterface {
 
 
 	public function selfRegister() {
-
+		return ['success' => false, 'barcode' => ''];
 
 //		global $configArray;
 //		// global $interface;
@@ -1559,41 +1531,41 @@ abstract class HorizonROA implements \DriverInterface {
 	 *
 	 * @return array|bool An array of form fields or false if user registration isn't enabled (or something goes wrong)
 	 */
-	public function getSelfRegistrationFields(){
-		global $configArray;
-
-		// SelfRegistrationEnabled?
-		$wsProfile = $configArray['Catalog']['webServiceSelfRegProfile'];
-		$r         = $this->getWebServiceResponse($this->webServiceURL . '/rest/standard/isPatronSelfRegistrationEnabled?profile=' . $wsProfile);
-		// get sef reg fields
-		$res = $this->getWebServiceResponse($this->webServiceURL . '/rest/standard/lookupSelfRegistrationFields');
-		if (!$res){
-			return false;
-		}
-		// build form fields
-		foreach ($res->registrationField as $field){
-			$f = [
-				'property'  => $field->column,
-				'label'     => $field->label,
-				'maxLength' => $field->length,
-				'required'  => $field->required,
-			];
-			if (isset($field->values)){
-				// select list
-				$f['type'] = 'enum';
-				$values    = [];
-				foreach ($field->values->value as $value){
-					$key          = $value->code;
-					$values[$key] = $value->description;
-				}
-				$f['values'] = $values;
-			}else{
-				$f['type'] = 'text';
-			}
-			$fields[] = $f;
-		}
-		return $fields;
-	}
+//	public function getSelfRegistrationFields(){
+//		global $configArray;
+//
+//		// SelfRegistrationEnabled?
+//		$wsProfile = $configArray['Catalog']['webServiceSelfRegProfile'];
+//		$r         = $this->getWebServiceResponse($this->webServiceURL . '/rest/standard/isPatronSelfRegistrationEnabled?profile=' . $wsProfile);
+//		// get sef reg fields
+//		$res = $this->getWebServiceResponse($this->webServiceURL . '/rest/standard/lookupSelfRegistrationFields');
+//		if (!$res){
+//			return false;
+//		}
+//		// build form fields
+//		foreach ($res->registrationField as $field){
+//			$f = [
+//				'property'  => $field->column,
+//				'label'     => $field->label,
+//				'maxLength' => $field->length,
+//				'required'  => $field->required,
+//			];
+//			if (isset($field->values)){
+//				// select list
+//				$f['type'] = 'enum';
+//				$values    = [];
+//				foreach ($field->values->value as $value){
+//					$key          = $value->code;
+//					$values[$key] = $value->description;
+//				}
+//				$f['values'] = $values;
+//			}else{
+//				$f['type'] = 'text';
+//			}
+//			$fields[] = $f;
+//		}
+//		return $fields;
+//	}
 
 	/**
 	 * A place holder method to override with site specific logic
