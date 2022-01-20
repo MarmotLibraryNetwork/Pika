@@ -638,13 +638,16 @@ public class RecordGrouperMain {
 				validateChecksumsFromDisk = aBoolean;
 			}
 
-			ArrayList<IndexingProfile> indexingProfiles = loadIndexingProfiles(pikaConn, indexingProfileToRun);
-
 			// Main Record Grouping Processing
 			if (indexingProfileToRun == null || indexingProfileToRun.equalsIgnoreCase("overdrive")) {
 				groupOverDriveRecords(pikaConn, econtentConnection, explodeMarcsOnly);
 			}
-			if (indexingProfiles.size() > 0) {
+
+			ArrayList<IndexingProfile> indexingProfiles = null;
+			if (indexingProfileToRun == null || !indexingProfileToRun.equalsIgnoreCase("overdrive")){
+				indexingProfiles = loadIndexingProfiles(pikaConn, indexingProfileToRun);
+			}
+			if (indexingProfiles != null && indexingProfiles.size() > 0) {
 				groupIlsRecords(pikaConn, indexingProfiles, explodeMarcsOnly);
 			}
 
@@ -798,6 +801,7 @@ public class RecordGrouperMain {
 		try {
 			Long finishTime = new Date().getTime() / 1000;
 			systemVariables.setVariable("last_grouping_time", finishTime);
+			addNoteToGroupingLog("Updated last_grouping_time to " + finishTime);
 		} catch (Exception e) {
 			logger.error("Error setting last grouping time", e);
 		}
@@ -825,9 +829,8 @@ public class RecordGrouperMain {
 						pikaConn.commit();
 					}
 				}
-				if (logger.isInfoEnabled()) {
-					logger.info("Removed " + numWorksNotLinkedToPrimaryIdentifier + " grouped works that were not linked to primary identifiers");
-				}
+				addNoteToGroupingLog("Removed " + numWorksNotLinkedToPrimaryIdentifier + " grouped works that were not linked to primary identifiers");
+
 			}
 			pikaConn.commit();
 			pikaConn.setAutoCommit(autoCommit);
