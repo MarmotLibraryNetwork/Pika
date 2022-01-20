@@ -653,15 +653,22 @@ public class RecordGrouperMain {
 
 		}
 
+		// Cleanup the grouping data
 		if (!explodeMarcsOnly) {
 			try {
-				if (logger.isInfoEnabled()) {
-					logger.info("Doing post processing of record grouping");
+				if (onlyDoCleanup){
+					addNoteToGroupingLog("Do grouping data clean up only");
+				} else  {
+					addNoteToGroupingLog("Doing post processing of record grouping");
 				}
 
-				//Cleanup the data
+				if (fullRegroupingNoClear || onlyDoCleanup){
+					removePrimaryIdentifiersForDeletedProfiles(pikaConn);
+					// Remove primary identifiers first so that the parent work entry may be removed below
+				}
+
 				removeGroupedWorksWithoutPrimaryIdentifiers(pikaConn);
-				if (indexingProfileToRun == null) {
+				if (!onlyDoCleanup && indexingProfileToRun == null) {
 					// Do not update grouping time when processing a specific indexing profile
 					if (!finishingGroupingEarly) {
 						// Only update last grouping time when grouping got through all indexing profiles
@@ -746,9 +753,8 @@ public class RecordGrouperMain {
 		}
 
 		if (primaryIdentifiersInDatabase.size() > 0) {
-			if (logger.isInfoEnabled()) {
-				logger.info("Deleting " + primaryIdentifiersInDatabase.size() + " primary identifiers for profile " + source + " from the database since they are no longer in the export.");
-			}
+			addNoteToGroupingLog("Deleting " + primaryIdentifiersInDatabase.size() + " primary identifiers for profile " + source + " from the database since they are no longer in the export.");
+
 			for (String recordNumber : primaryIdentifiersInDatabase.keySet()) {
 				//Remove the record from the grouped_work_primary_identifiers table
 				try {
@@ -804,6 +810,40 @@ public class RecordGrouperMain {
 			addNoteToGroupingLog("Updated last_grouping_time to " + finishTime);
 		} catch (Exception e) {
 			logger.error("Error setting last grouping time", e);
+		}
+	}
+
+
+	private static void removePrimaryIdentifiersForDeletedProfiles(Connection pikaConn) {
+		//Remove any primary identifier that links to an indexing profile that no longer exists
+		Long primaryIdentifierId = null;
+		try {
+			boolean autoCommit = pikaConn.getAutoCommit();
+			pikaConn.setAutoCommit(false);
+			try (
+							PreparedStatement deletePrimaryIdentifierStmt = pikaConn.prepareStatement("DELETE FROM grouped_work_primary_identifiers WHERE id = ?");
+							PreparedStatement primaryIdentifiersWithoutIndexingProfileStmt = pikaConn.prepareStatement(
+											"SELECT id FROM grouped_work_primary_identifiers WHERE type != 'overdrive' AND type NOT IN (SELECT sourceName FROM indexing_profiles)", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+							ResultSet primaryIdentifiersWithoutIndexingProfileRS = primaryIdentifiersWithoutIndexingProfileStmt.executeQuery()
+			) {
+				int orphanedPrimaryIdentifiers = 0;
+				while (primaryIdentifiersWithoutIndexingProfileRS.next()) {
+					primaryIdentifierId = primaryIdentifiersWithoutIndexingProfileRS.getLong(1);
+					deletePrimaryIdentifierStmt.setLong(1, primaryIdentifierId);
+					deletePrimaryIdentifierStmt.executeUpdate();
+
+					orphanedPrimaryIdentifiers++;
+					if (orphanedPrimaryIdentifiers % 500 == 0) {
+						pikaConn.commit();
+					}
+				}
+				addNoteToGroupingLog("Removed " + orphanedPrimaryIdentifiers + " primary identifiers linked to indexing profile that no longer exists");
+
+			}
+			pikaConn.commit();
+			pikaConn.setAutoCommit(autoCommit);
+		} catch (Exception e) {
+			logger.error("Unable to remove grouped works that no longer have a primary identifier, grouped table id : " + primaryIdentifierId, e);
 		}
 	}
 
