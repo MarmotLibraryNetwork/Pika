@@ -97,20 +97,14 @@ class HooplaRecordGrouper extends MarcRecordGrouper {
 //				}
 				String subTitle = MarcUtil.getFirstFieldVal(marcRecord, "245b");
 				// Check subTitle first as that is where we will more likely find a match
-				if (subTitle != null){
-					subTitle = subTitle.toLowerCase();
-					if (subTitle.contains("young reader")) {
-						groupingCategory = "young";
-						break;
-					}
+				if (subTitle != null && subTitle.replace("'", "").toLowerCase().contains("young readers edition")) {
+					groupingCategory = "young";
+					break;
 				}
 				String title = MarcUtil.getFirstFieldVal(marcRecord, "245a");
-				if (title != null){
-					title = title.toLowerCase();
-					if (title.contains("young reader")) {
-						groupingCategory = "young";
-						break;
-					}
+				if (title != null && title.replace("'", "").toLowerCase().contains("young readers edition")) {
+					groupingCategory = "young";
+					break;
 				}
 		}
 
