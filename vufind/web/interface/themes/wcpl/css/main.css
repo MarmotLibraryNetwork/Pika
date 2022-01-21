@@ -9693,12 +9693,6 @@ a.browse-thumbnail-sorted.active {
     padding-left: 0;
     padding-right: 0;
   }
-  #availabilityControl button {
-    padding: 5px 10px;
-    font-size: 12px;
-    line-height: 1.5;
-    border-radius: 3px;
-  }
 }
 .search-results-navigation {
   display: flex;
@@ -9749,6 +9743,119 @@ a.browse-thumbnail-sorted.active {
   margin-top: 4px;
   background-color: #00a4e3;
   border-color: #00a4e3;
+}
+.bookbag-container {
+  right: 0px;
+  position: fixed;
+  height: 4em;
+  z-index: 3;
+}
+@media (max-width: 992px) {
+  .bookbag-container {
+    top: 50px;
+  }
+}
+.bookbag {
+  height: 2em;
+  background: #00a4e3;
+  color: white;
+  width: 2em;
+  line-height: 2em;
+  border-radius: 10px;
+  -webkit-animation-name: none;
+          animation-name: none;
+  cursor: pointer;
+  position: absolute;
+  right: 0;
+  z-index: 4;
+  transition: 0.75s ease-out;
+}
+.bookbag::before {
+  content: "‹";
+  font-size: 60px;
+  font-weight: lighter;
+  float: left;
+  line-height: 15px;
+}
+.bookbag .itemCheckCount {
+  float: left;
+}
+.bookbag.bounce {
+  -webkit-animation: bounce 0.7s 3;
+          animation: bounce 0.7s 3;
+  transition-timing-function: ease-out;
+}
+.bookbag.open {
+  left: 0;
+}
+.bookbag.open::before {
+  content: "›";
+  font-size: 60px;
+  font-weight: lighter;
+  float: left;
+  line-height: 15px;
+}
+.bookbag.open .itemCheckCount {
+  display: none;
+}
+@-webkit-keyframes bounce {
+  0% {
+    right: -2px;
+  }
+  25%,
+  75% {
+    right: -5px;
+  }
+  50% {
+    right: -10px;
+  }
+  100% {
+    right: 0;
+  }
+}
+@keyframes bounce {
+  0% {
+    right: -2px;
+  }
+  25%,
+  75% {
+    right: -5px;
+  }
+  50% {
+    right: -10px;
+  }
+  100% {
+    right: 0;
+  }
+}
+.cart-container {
+  background: #00a4e3;
+  padding: 10px;
+  color: white;
+  transition: 0.75s ease-out;
+  width: 350px;
+}
+.cart-container.cartIn {
+  position: absolute;
+  right: -340px;
+}
+.cart {
+  background: white;
+  padding: 5px 10px 5px 10px;
+  color: #6B6B6B;
+  height: 300px;
+}
+.remove {
+  background: red;
+  width: 1em;
+  line-height: 0.9em;
+  height: 1em;
+  border-radius: 10px;
+  color: white;
+  display: block;
+  text-align: center;
+  font-size: medium;
+  cursor: pointer;
 }
 .graph-bar {
   background-color: #088ec6;

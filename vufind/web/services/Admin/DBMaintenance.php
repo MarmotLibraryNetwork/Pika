@@ -1520,6 +1520,13 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER TABLE `econtent`.`overdrive_api_magazine_issues` ADD INDEX `parentId` (`parentId` ASC);"
 					]
 				],
+				'add_Bookbag_function_option_to_Library_settings' =>[
+					'title'       =>'Add Bookbag Functions To Library Settings',
+					'description' =>'Add setting to enable checkboxes on searches and add to bookbag function on search results',
+					'sql'         =>[
+						"ALTER TABLE `library` ADD COLUMN `showBookbag` TINYINT NOT NULL DEFAULT 0 AFTER `showRatings`"
+					]
+				],
 
 			)); // End of main array
 	}

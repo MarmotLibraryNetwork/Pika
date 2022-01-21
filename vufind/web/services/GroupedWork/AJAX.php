@@ -42,6 +42,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		'getScrollerTitle',
 		'getGoDeeperData',
 		'getWorkInfo',
+		'getTitles',
 		'RateTitle',
 		'clearMySuggestionsBrowseCategoryCache',
 		'getReviewInfo',
@@ -53,8 +54,10 @@ class GroupedWork_AJAX extends AJAXHandler {
 		'getEmailForm',
 		'sendEmail',
 		'saveToList',
+		'saveSelectedToList',
 		'saveSeriesToList',
 		'getSaveToListForm',
+		'getSaveMultipleToListForm',
 		'getSaveSeriesToListForm',
 		'sendSMS',
 		'markNotInterested',
@@ -71,6 +74,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		'sendSeriesEmail',
 		'getCreateSeriesForm',
 		'createSeriesList',
+
 	);
 
 	protected array $methodsThatRespondThemselves = array(
@@ -329,6 +333,21 @@ class GroupedWork_AJAX extends AJAXHandler {
 		);
 		return $return;
 
+	}
+
+	function getTitles(){
+		require_once ROOT_DIR. '/RecordDrivers/GroupedWorkDriver.php';
+		$ids = $_REQUEST["ids"];
+		$titles = array();
+		foreach ($ids as $id){
+			$recordDriver = new GroupedWorkDriver($id);
+			$titles[] = array(
+				'title' => $recordDriver->getTitleShort(),
+				'id'  => $id
+			);
+		}
+		return array( 'success' => true,
+									'titles' => $titles);
 	}
 
 	function getWorkInfo(){
@@ -877,6 +896,71 @@ class GroupedWork_AJAX extends AJAXHandler {
 		return $result;
 	}
 
+	function saveSelectedToList(){
+		$result = array();
+		if(!UserAccount::isLoggedIn()){
+			$result['success'] = false;
+			$result['message'] = 'Please log in before adding a title to list.';
+		}else{
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+			$result['success'] = true;
+			$ids                = explode("%2C", $_REQUEST['ids']);
+			$listId            = $_REQUEST['listId'];
+			$userList = new UserList();
+			$listOk   = true;
+			if (empty($listId)){
+				$userList->title       = "My Favorites";
+				$userList->user_id     = UserAccount::getActiveUserId();
+				$userList->public      = 0;
+				$userList->description = '';
+				$userList->insert();
+			}else{
+				$userList->id = $listId;
+				if (!$userList->find(true)){
+					$result['success'] = false;
+					$result['message'] = 'Sorry, we could not find that list in the system.';
+					$listOk            = false;
+				}
+			}
+			if($listOk){
+				$userListEntry         = new UserListEntry();
+				$userListEntry->listId = $userList->id;
+				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+				$attemptedRecords = count($ids);
+				$errors           = 0;
+				foreach ($ids as $id){
+					if (!GroupedWork::validGroupedWorkId($id)){
+						$errors++;
+					}else{
+						$userListEntry->groupedWorkPermanentId = $id;
+						$existingEntry                         = false;
+						if ($userListEntry->find(true)){
+							$existingEntry = true;
+						}
+						$userListEntry->dateAdded = time();
+						if ($existingEntry){
+							$userListEntry->update();
+						}else{
+							$userListEntry->insert();
+						}
+					}
+				}
+				if ($errors > 0)
+				{
+					$successful = $attemptedRecords - $errors;
+					$result['success'] = false;
+					$result['message'] = $successful . " of " . $attemptedRecords . " records were added successfully. There were " . $errors . " errors.";
+				}else{
+					$result['success'] = true;
+					$result['message'] = 'The titles were saved to your list successfully.';
+					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/MyList/'. $userList->id . '" role="button">View My list</a>';
+				}
+			}
+		}
+		return $result;
+	}
+
 	function saveSeriesToList(){
 		$result = array();
 
@@ -1138,6 +1222,75 @@ function createSeriesList(){
 	return $return;
 
 }
+
+function getSaveMultipleToListForm(){
+		global $interface;
+		$ids = explode("%2C", $_REQUEST['id']);
+		$n = count($ids);
+		$containingLists    = [];
+		$nonContainingLists = [];
+		$listsTooLarge      = [];
+		$titles             = [];
+
+	require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+
+		foreach($ids as $id){
+			$groupedWork = new GroupedWorkDriver($id);
+			$titles[] = array(
+				'title' => $groupedWork->getTitleShort(),
+				'id'    => $id
+			);
+		}
+
+		$userLists  = new UserList();
+		$userLists->user_id = UserAccount::getActiveUserId();
+		$userLists->deleted = 0;
+		$userLists->orderBy('dateUpdated > unix_timestamp()-300 desc, if(dateUpdated > unix_timestamp()-300 , dateUpdated, 0) desc, title');
+		$userLists->find();
+		while ($userLists->fetch()){
+			if (($userLists->numValidListItems() + $n) >= 2001){
+				$listsTooLarge[] = [
+					'id'    => $userLists->id,
+					'title' => $userLists->title,
+				];
+			}
+			$userListEntry = new UserListEntry();
+			$userListEntry->listId = $userLists->id;
+			$inCurrentList = false;
+			foreach($ids as $id)
+			{
+				$userListEntry->groupedWorkPermanentId = $id;
+				if ($userListEntry->find(true)){
+					$inCurrentList = true;
+				}
+			}
+			if($inCurrentList){
+				$containingLists[] = [
+					'id'    => $userLists->id,
+					'title' => $userLists->title,
+				];
+			}elseif (!$inCurrentList && ($userLists->numValidListItems() + $n) < 2001){
+				$nonContainingLists[] = [
+					'id'    => $userLists->id,
+					'title' => $userLists->title,
+				];
+			}
+		}
+	$interface->assign('containingLists', $containingLists);
+	$interface->assign('nonContainingLists', $nonContainingLists);
+	$interface->assign('largeLists', $listsTooLarge);
+	$interface->assign('ids', $ids);
+	$interface->assign('titles', $titles);
+
+	$results = [
+		'title'        => 'Add To List',
+		'modalBody'    => $interface->fetch("GroupedWork/saveMultiple.tpl"),
+		'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.GroupedWork.saveSelectedToList(\"{$_REQUEST['id']}\");'>Save Items To List</button>",
+	];
+	return $results;
+	}
 
 function getSaveSeriesToListForm(){
 	global $interface;

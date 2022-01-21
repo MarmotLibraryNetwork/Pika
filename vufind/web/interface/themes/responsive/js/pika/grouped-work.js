@@ -500,6 +500,9 @@ Pika.GroupedWork = (function(){
 		showSaveToListForm: function (trigger, id){
 			return this.basicAjaxHandler('getSaveToListForm', id, trigger);
 		},
+		showSaveMultipleToListForm: function (trigger, ids){
+			return this.basicAjaxHandler('getSaveMultipleToListForm', ids, trigger)
+		},
 		showSaveSeriesToListForm: function (trigger, id){
 			return this.basicAjaxHandler('getSaveSeriesToListForm', id, trigger);
 		},
@@ -512,6 +515,44 @@ Pika.GroupedWork = (function(){
 			return this.basicAjaxHandler('getAddTagForm', id, trigger);
 		},
 
+		addSelectedToList: function(){
+			Pika.Account.ajaxLogin(function(){
+				if ($(".checkbox-results").is(":checked")){
+					var gwIds = [];
+					$(".checkbox-results:checked").each(function (){
+						gwIds.push(this.id.replace(/select_/g, ''));
+					});
+						return Pika.GroupedWork.showSaveMultipleToListForm(this, gwIds);
+				}else{
+
+				}
+			});
+			return false;
+		},
+		saveSelectedToList: function(ids){
+			Pika.Account.ajaxLogin(function (){
+				var listId = $('#addToList-list').val(),
+						notes  = $('#addToList-notes').val(),
+						url    = "/GroupedWork/AJAX",
+						params = {
+							'method':'saveSelectedToList'
+							,notes:notes
+							,listId:listId
+							,ids: ids
+						};
+				$.getJSON(url, params,
+						function(data) {
+							if (data.success) {
+								Pika.showMessageWithButtons("Added Successfully", data.message, data.buttons);
+							} else {
+								Pika.showMessage("Error", data.message);
+							}
+						}
+				)
+			});
+			return false;
+		},
+
 		basicAjaxHandler: function(method, id, trigger){
 			Pika.Account.ajaxLogin(function (){
 				Pika.loadingMessage();
@@ -520,6 +561,49 @@ Pika.GroupedWork = (function(){
 				}).fail(Pika.ajaxFail);
 			}, $(trigger));
 			return false;
-		}
+		},
+		showBookbag: function(trigger){
+
+			if($(".checkbox-results").is(":checked")){
+
+				var checked = $('.checkbox-results:checked').length;
+				$(".bookbag-container").show();
+				if(!$(".bookbag").hasClass("bounce")){
+					$(".bookbag").addClass("bounce");
+				}
+
+				$(".bookbag").html("<span class='itemCheckCount'>" + checked +"</span>");
+
+				var gwIds = [];
+				$(".checkbox-results:checked").each(function(){
+					 gwIds.push(this.id.replace(/select_/g, ''));
+				});
+						params = {
+							'method': 'getTitles',
+							'ids' : gwIds
+						};
+					$.getJSON("/GroupedWork/AJAX", params, function(data){
+						$("#cartList").empty();
+						jQuery.each(data.titles,function(){
+							var removeId = "remove_" + this.id;
+							var append = '<li><div class="row"><div class="col-xs-1"><span class="remove" id="'+ removeId +'">x</span></div><div class="col-xs-10">' + this.title + '</div></div></li>';
+						$("#cartList").append(append);
+						});
+					}).fail(Pika.ajaxFail);
+			}else{
+				$(".cart-container").addClass("cartIn");
+				$(".bookbag-container").fadeOut();
+				$(".bookbag").removeClass("open");
+				$("#cartList").empty();
+				$(".bookbag").removeClass("bounce");
+			}
+		},
+		openBookbag: function(trigger){
+
+			$(".cart-container").toggleClass("cartIn");
+			$(".bookbag").toggleClass("open");
+			
+		},
+
 	};
 }(Pika.GroupedWork || {}));

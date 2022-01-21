@@ -1,4 +1,5 @@
 {strip}
+
 {if $topFacetSet}
 <div class="topFacets">
 	<br>
