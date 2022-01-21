@@ -3,7 +3,7 @@
 
 		{if !empty($containingLists)}
 		  <p>
-		  {translate text='This item is already part of the following list/lists'}:<br>
+		  {translate text='One or more of these items is already part of the following list/lists'}:<br>
 		  {foreach from=$containingLists item="list"}
 		    <a href="/MyAccount/MyList/{$list.id}">{$list.title|escape:"html"}</a><br>
 		  {/foreach}
