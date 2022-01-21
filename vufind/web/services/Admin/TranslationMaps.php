@@ -85,7 +85,7 @@ class Admin_TranslationMaps extends ObjectEditor {
 					$translationMap->translationMapValues = $newValues;
 					$translationMap->update();
 				}else{
-					$interface->assign('error', "Sorry we could not find a translation map with that id");
+					$interface->assign('error', 'Sorry we could not find a translation map with that id');
 				}
 
 
@@ -104,7 +104,7 @@ class Admin_TranslationMaps extends ObjectEditor {
 					$this->display('../Admin/viewTranslationMapAsIni.tpl', 'View Translation Map Data');
 					exit();
 				}else{
-					$interface->assign('error', "Sorry we could not find a translation map with that id");
+					$interface->assign('error', 'Sorry we could not find a translation map with that id');
 				}
 
 				break;
@@ -133,7 +133,7 @@ class Admin_TranslationMaps extends ObjectEditor {
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin');
+		return ['opacAdmin'];
 	}
 
 	function getPrimaryKeyColumn(){
@@ -155,16 +155,16 @@ class Admin_TranslationMaps extends ObjectEditor {
 	}
 
 	function getAdditionalObjectActions($existingObject){
-		$actions = array();
+		$actions = [];
 		if ($existingObject && $existingObject->id != ''){
-			$actions[] = array(
+			$actions[] = [
 				'text' => 'Load From CSV/INI',
-				'url' => '/Admin/TranslationMaps?objectAction=loadFromFile&id=' . $existingObject->id,
-			);
-			$actions[] = array(
+				'url'  => '/Admin/TranslationMaps?objectAction=loadFromFile&id=' . $existingObject->id,
+			];
+			$actions[] = [
 				'text' => 'View as INI',
-				'url' => '/Admin/TranslationMaps?objectAction=viewAsINI&id=' . $existingObject->id,
-			);
+				'url'  => '/Admin/TranslationMaps?objectAction=viewAsINI&id=' . $existingObject->id,
+			];
 		}
 
 		return $actions;
