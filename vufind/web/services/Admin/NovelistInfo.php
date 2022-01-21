@@ -27,7 +27,7 @@
  */
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
-class Admin_NovelistInfo extends Admin_Admin{
+class Admin_NovelistInfo extends Admin_Admin {
 
 	function launch(){
 		global $interface;
@@ -35,26 +35,25 @@ class Admin_NovelistInfo extends Admin_Admin{
 
 		require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
 		$checkRecord = false;
-		if(isset($_REQUEST['submit'])){
+		if (isset($_REQUEST['submit']) && UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin', 'cataloging'])){
 
 			if (isset($_REQUEST['checkISBN'])){
 				$checkRecord = true;
-				$checkISBN     = $_REQUEST['checkISBN'];
+				$checkISBN   = $_REQUEST['checkISBN'];
 				$interface->assign('checkISBN', $checkISBN);
 
 				require_once ROOT_DIR . '/sys/Novelist/Novelist3.php';
-				$novelist = new Novelist3();
-				$json = $novelist->getRawNovelistJSON($checkISBN);
+				$novelist     = new Novelist3();
+				$json         = $novelist->getRawNovelistJSON($checkISBN);
 				$novelistData = json_encode($json);
 				$interface->assign('novelistData', $novelistData);
 			}
 		}
-		if(isset($_REQUEST['truncateData']))
-			{
-				$novelist = New NovelistData;
-				$novelist->query('TRUNCATE `novelist_data`');
-				$memCache->flush();
-			}
+		if (isset($_REQUEST['truncateData']) && UserAccount::userHasRole('opacAdmin')){
+			$novelist = new NovelistData;
+			$novelist->query('TRUNCATE `novelist_data`');
+			$memCache->flush();
+		}
 
 
 		$cache            = new NovelistData();
@@ -68,6 +67,6 @@ class Admin_NovelistInfo extends Admin_Admin{
 	}
 
 	function getAllowableRoles(){
-		return ['opacAdmin', 'libraryAdmin'];
+		return ['opacAdmin', 'libraryAdmin', 'cataloging'];
 	}
 }
