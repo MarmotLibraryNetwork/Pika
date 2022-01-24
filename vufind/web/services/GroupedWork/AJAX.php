@@ -1282,6 +1282,7 @@ function getSaveMultipleToListForm(){
 	$interface->assign('nonContainingLists', $nonContainingLists);
 	$interface->assign('largeLists', $listsTooLarge);
 	$interface->assign('ids', $ids);
+	$interface->assign('textIds', $_REQUEST['id']);
 	$interface->assign('titles', $titles);
 
 	$results = [

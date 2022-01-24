@@ -36,7 +36,8 @@ class MyAccount_AJAX extends AJAXHandler {
 		'GetListTitles', // only used by MyAccount/ImportListsFromClassic.php && ajax.js //not checked
 //		'GetPreferredBranches', //not checked
 		'requestPinReset', //not checked
-		'getCreateListForm', 'getBulkAddToListForm', 'AddList',
+		'getCreateListForm', 'getBulkAddToListForm', 'AddList', 'getCreateListMultipleForm',
+		'addListMultiple',
 		'getEmailMyListForm', 'sendMyListEmail', 'setListEntryPositions',
 		'removeTag',
 		'saveSearch', 'deleteSavedSearch',
@@ -48,7 +49,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		'cancelBooking', 'getCitationFormatsForm', 'getAddBrowseCategoryFromListForm',
 		'getMasqueradeAsForm', 'initiateMasquerade', 'endMasquerade', 'getMenuData',
 		'transferList', 'isStaffUser', 'transferListToUser','copyListPrompt',
-		'copyList', 'getFreezeHoldsForm','freezeHolds', 'thawHolds',
+		'copyList', 'getFreezeHoldsForm','freezeHolds', 'thawHolds', ''
 	);
 
 	protected $methodsThatRespondWithHTML = array(
@@ -772,6 +773,91 @@ class MyAccount_AJAX extends AJAXHandler {
 			'modalBody'    => $interface->fetch("MyAccount/list-form.tpl"),
 			'modalButtons' => "<span class='tool btn btn-primary' onclick='return Pika.Account.addList(\"{$id}\");'>Create List</span>",
 		);
+	}
+
+	function getCreateListMultipleForm(){
+		global $interface;
+		$list['title'] = "";
+		if(isset($_REQUEST['ids'])){
+			$ids =$_REQUEST['ids'];
+			$interface->assign('ids',$ids);
+		}else{
+			$ids = '';
+		}
+		$interface->assign('list', $list);
+		return array(
+			'title'       => 'Create new List',
+			'modalBody'   => $interface->fetch("MyAccount/list-form-multiple.tpl"),
+			'modalButtons' => "<span class = 'tool btn btn-primary' onclick='return Pika.Account.addListMultiple(\"{$ids}\");'>Create List</span>",
+		);
+	}
+	function addListMultiple(){
+		$recordsToAdd = false;
+		$return = array();
+		if (!UserAccount::isLoggedIn()){
+			$return['success'] = false;
+			$return['message'] = "You must be logged in to create a list";
+			return $return;
+		}else{
+			$userId = UserAccount::getActiveUserId();
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			$title = (isset($_REQUEST['title']) && !is_array($_REQUEST['title'])) ? urldecode($_REQUEST['title']) : '';
+			if (strlen(trim($title)) == 0){
+				$return['success'] = false;
+				$return['message'] = 'The item to add to the list is not valid';
+				return $return;
+			}
+			$list         = new UserList();
+			$list->title  = strip_tags($title);
+			$list->user_id = $userId;
+			$existingList = false;
+			if ($list->find(true)){
+				$existingList = true;
+			}
+			$description = $_REQUEST['desc'] ?? '';
+			if (is_array($description)){
+				$description = reset($description);
+			}
+			$list->description = strip_tags(urldecode($description));
+			$list->public = isset($_REQUEST['public']) && $_REQUEST['public'] == 'true';
+			if($existingList){
+				$list->update();
+			}else{
+				$list->insert();
+			}
+
+			$recordsToAdd = explode("%2C", $_REQUEST['ids']);
+			$errors = array();
+			if(count($recordsToAdd) > 0){
+				require_once ROOT_DIR . "/sys/LocalEnrichment/UserListEntry.php";
+
+				foreach($recordsToAdd as $recordToAdd)
+				{
+					$userListEntry                          = new UserListEntry;
+					$userListEntry->listId                  = $list->id;
+					$userListEntry->groupedWorkPermanentId  = $recordToAdd;
+					if(!$userListEntry->find(true)){
+						$userListEntry->dateAdded = time();
+						$userListEntry->insert();
+					}else{
+						$errors = $recordToAdd;
+					}
+				}
+			}
+			if(count($errors)<1){
+				$return['success'] = 'true';
+				$return['newId']   = $list->id;
+				if ($existingList){
+					$return['message'] = "Updated list <em>{$title}</em> successfully";
+				}else{
+					$return['message'] = "Created list <em>{$title}</em> successfully";
+				}
+				if (!empty($list->id)){
+					$return['modalButtons'] = '<a class="btn btn-primary" href="/MyAccount/MyList/'. $list->id .'" role="button">View My List</a>';
+				}
+			}
+		}
+		return $return;
 	}
 
 	function GetSuggestions(){

@@ -47,6 +47,33 @@ Pika.Account = (function(){
 			return false;
 		},
 
+		addListMultiple: function(ids){
+			var form = $("#addListForm"),
+					isPublic = form.find("#public").prop("checked"),
+					title = form.find("input[name=title]").val(),
+					desc = $("#listDesc").val(),
+					url = "/MyAccount/AJAX",
+					params = {
+						'method': "addListMultiple",
+						title: title,
+						public: isPublic,
+						desc: desc,
+						ids: ids
+					};
+			$.getJSON(url, params, function(data){
+				if (data.success) {
+					if (typeof data.modalButtons !== "undefined"){
+						Pika.showMessageWithButtons("Added Successfully", data.message, data.modalButtons);
+					} else{
+						Pika.showMessage("Added Successfully", data.message, true, true);
+					}
+				} else {
+					Pika.showMessage("Error", data.message);
+				}
+			}).fail(Pika.ajaxFail);
+			return false;
+		},
+
 		/**
 		 * Do an ajax process, but only if the user is logged in.
 		 * If the user is not logged in, force them to login and then do the process.
@@ -675,6 +702,18 @@ Pika.Account = (function(){
 				}
 				$.getJSON(url, params, function(data){
 					Pika.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}).fail(Pika.ajaxFail);
+			});
+			return false;
+		},
+
+		showCreateListMultipleForm: function(ids){
+			Pika.Account.ajaxLogin(function(){
+				var url="/MyAccount/AJAX",
+						params = {method:"getCreateListMultipleForm", ids:ids};
+				$.getJSON(url, params, function(data){
+					Pika.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+
 				}).fail(Pika.ajaxFail);
 			});
 			return false;
