@@ -201,9 +201,8 @@
 							<div class="adminMenuLink{if $action == "IndexingStats"} active{/if}"><a href="/Admin/IndexingStats">Indexing Statistics</a></div>
                 {if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles))}
 							<div class="adminMenuLink{if $action == "IndexingProfiles"} active{/if}"><a href="/Admin/IndexingProfiles">Indexing Profiles</a></div>
-                {/if}
 							<div class="adminMenuLink{if $action == "TranslationMaps"} active{/if}"><a href="/Admin/TranslationMaps">Translation Maps</a></div>
-
+                {/if}
 						</div>
 					</div>
 				</div>

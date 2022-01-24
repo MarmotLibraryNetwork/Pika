@@ -782,7 +782,7 @@ class RecordGroupingProcessor {
 		groupedWork.overridePermanentId(targetGroupedWorkPermanentId);
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("Overriding grouped work " + sourceGroupedWorkPermanentId + " with " + targetGroupedWorkPermanentId);
+			logger.debug("Work Merging: Overriding grouped work " + sourceGroupedWorkPermanentId + " with " + targetGroupedWorkPermanentId);
 		}
 
 		//Mark that the original was updated

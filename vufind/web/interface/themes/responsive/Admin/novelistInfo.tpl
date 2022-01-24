@@ -9,7 +9,7 @@
 				<label for="checkId">Lookup Novelist Data: </label>
 		</div>
 		<div class="col-sm-4">
-				<input type="text" id="checkId" placeholder="ISBN"  name="checkISBN" />
+				<input type="text" id="checkId" placeholder="ISBN"  name="checkISBN">
 		</div>
 		<div class="col-sm-4">
 					<button type="submit" name="submit" class="btn btn-info">Lookup Novelist Data by ISBN</button>
@@ -26,11 +26,13 @@
 			        {/literal}
 		        </script>
         {/if}
-<hr />
+<hr>
 			<div class="alert alert-info">There are currently <span class="badge">{$numCachedObjects}</span> objects in the cache.</div>
+    {if in_array('opacAdmin', $userRoles)}
 			<div class="form-group">
 				<button type="submit" name="truncateData" class="btn btn-default">Clear Cache</button>
 			</div>
+    {/if}
 		</form>
 	</div>
 {/strip}

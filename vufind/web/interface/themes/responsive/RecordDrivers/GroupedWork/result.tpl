@@ -7,8 +7,12 @@
 
 		<div class="row">
 			{if $showCovers}
+				{if $showBookbag}
+					<div class="col-xs-1 col-sm-1"><input type="checkbox" id="select_{$summId|escape}" class="checkbox checkbox-results" /></div>
+					{/if}
 				<div class="coversColumn col-xs-3 col-sm-3{if !$viewingCombinedResults} col-md-3 col-lg-2{/if} text-center">
-					{if $disableCoverArt != 1}
+
+						{if $disableCoverArt != 1}
 						<a href="{$summUrl}">
 							<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image'}">
 						</a>
@@ -20,7 +24,11 @@
 				</div>
 			{/if}
 
+			{if $showBookbag}
+			<div class="{if !$showCovers}col-xs-11{else}col-xs-8 col-sm-8{if !$viewingCombinedResults} col-md-8 col-lg-9{/if}{/if}">{* May turn out to be more than one situation to consider here *}
+				{else}
 			<div class="{if !$showCovers}col-xs-12{else}col-xs-9 col-sm-9{if !$viewingCombinedResults} col-md-9 col-lg-10{/if}{/if}">{* May turn out to be more than one situation to consider here *}
+					{/if}
 				{* Title Row *}
 				<div class="row">
 					<div class="col-xs-12">

@@ -560,6 +560,8 @@ class GroupedWorkDriver extends RecordInterface {
 			}
 			$isFirst = false;
 		}
+		$showBookbag = $library ? $library->showFavorites: false;
+		$interface->assign('showBookbag', $showBookbag);
 		$interface->assign('summPublisher', rtrim($summPublisher, ','));
 		$interface->assign('summPubDate', $summPubDate);
 		$interface->assign('summPhysicalDesc', $summPhysicalDesc);

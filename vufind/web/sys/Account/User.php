@@ -704,9 +704,7 @@ class User extends DB_DataObject {
 	static function getObjectStructure(){
 		require_once ROOT_DIR . '/sys/Administration/Role.php';
 		$user                   = UserAccount::getActiveUserObj();
-		$barcodeProperty        = 'barcode';
-		// todo: [pins] not sure about the following line of code
-		$displayBarcode         = $barcodeProperty == 'barcode';
+		$displayBarcode         = $user->getAccountProfile()->loginConfiguration != 'name_barcode'; // Do not show barcodes in list of admins when using name_barcode login scheme
 		$thisIsNotAListOfAdmins = isset($_REQUEST['objectAction']) && $_REQUEST['objectAction'] != 'list';
 		$roleList               = Role::fetchAllRoles($thisIsNotAListOfAdmins);  // Lookup available roles in the system, don't show the role description is lists of admins
 		$structure              = [
@@ -719,7 +717,7 @@ class User extends DB_DataObject {
 
 		if ($displayBarcode || $thisIsNotAListOfAdmins){
 			//When not displaying barcode, show it for the individual admin
-			$structure['barcode'] = ['property' => $barcodeProperty, 'type' => 'label', 'label' => 'Barcode', 'description' => 'The barcode for the user.'];
+			$structure['barcode'] = ['property' => 'barcode', 'type' => 'label', 'label' => 'Barcode', 'description' => 'The barcode for the user.'];
 		}
 
 		$structure['roles'] = ['property' => 'roles', 'type' => 'multiSelect', 'listStyle' => 'checkbox', 'values' => $roleList, 'label' => 'Roles', 'description' => 'A list of roles that the user has.'];
