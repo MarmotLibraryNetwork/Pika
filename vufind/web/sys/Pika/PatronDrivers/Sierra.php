@@ -2862,7 +2862,7 @@ EOT;
 	 * @return string|false Returns patron id on success false on fail.
 	 * @throws ErrorException
 	 */
-	protected function _authBarcodePin($barcode, $pin) {
+	protected function _authBarcodePin(string $barcode, string $pin) {
 		// if using username field check if username exists
 		// username replaces barcode
 		if($this->hasUsernameField()) {
@@ -3044,6 +3044,7 @@ EOT;
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_HEADER         => false,
 		];
+
 		// instantiate the Curl object and set the base url
 		if($operation == 'about'){
 			$operationUrl = $this->aboutUrl;
