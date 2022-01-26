@@ -3119,7 +3119,7 @@ EOT;
 				}
 			} else {
 				$message = 'HTTP Error: '.$c->getErrorCode().': '.$c->getErrorMessage();
-				$this->logger->warning($message);
+				$this->logger->warning($message, ["backtrace" => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)]);
 			}
 			$this->apiLastError = $message;
 			if (!empty($c->response->details->itemsAsVolumes)){
