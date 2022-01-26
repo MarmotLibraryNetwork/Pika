@@ -3104,7 +3104,7 @@ EOT;
 			// This will probably never be triggered since we have the try/catch above.
 			$message = 'curl Error: '.$c->getCurlErrorCode().': '.$c->getCurlErrorMessage();
 			$this->apiLastError = $message;
-			$this->logger->warning($message);
+			$this->logger->warning($message, ["backtrace" => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)]);
 			return false;
 		} elseif ($c->isHttpError()) {
 			// this will be a 4xx response
