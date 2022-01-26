@@ -35,7 +35,6 @@ class MyAccount_AJAX extends AJAXHandler {
 		'GetSuggestions', // not checked
 		'GetListTitles', // only used by MyAccount/ImportListsFromClassic.php && ajax.js //not checked
 //		'GetPreferredBranches', //not checked
-		'requestPinReset', //not checked
 		'getCreateListForm', 'getBulkAddToListForm', 'AddList', 'getCreateListMultipleForm',
 		'addListMultiple',
 		'getEmailMyListForm', 'sendMyListEmail', 'setListEntryPositions',
@@ -1190,29 +1189,6 @@ class MyAccount_AJAX extends AJAXHandler {
 			'result'  => false,
 			'message' => 'We could not connect to the circulation system, please try again later.',
 		];
-	}
-
-	function requestPinReset(){
-		global $configArray;
-
-		try {
-			/** @var DriverInterface|SirsiDynixROA|Sierra|Horizon $catalog */
-			$catalog = CatalogFactory::getCatalogConnectionInstance();
-
-			$barcode = $_REQUEST['barcode'];
-
-			//Get the list of pickup branch locations for display in the user interface.
-			$result = $catalog->requestPinReset($barcode);
-			return $result;
-
-		} catch (PDOException $e){
-			// What should we do with this error?
-			if ($configArray['System']['debug']){
-				echo '<pre>';
-				echo 'DEBUG: ' . $e->getMessage();
-				echo '</pre>';
-			}
-		}
 	}
 
 	function getCitationFormatsForm(){

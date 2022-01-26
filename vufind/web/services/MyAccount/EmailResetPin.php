@@ -32,15 +32,13 @@
 require_once ROOT_DIR . "/Action.php";
 require_once ROOT_DIR . '/CatalogConnection.php';
 
-class EmailResetPin extends Action{
+class EmailResetPin extends Action {
 	protected $catalog;
 
-	function __construct()
-	{
+	function __construct(){
 	}
 
-	function launch($msg = null)
-	{
+	function launch($msg = null){
 		global $interface;
 
 		if (isset($_REQUEST['submit'])){
@@ -51,9 +49,9 @@ class EmailResetPin extends Action{
 				$barcode     = strip_tags($_REQUEST['barcode']);
 				$emailResult = $driver->emailResetPin($barcode);
 			}else{
-				$emailResult = array(
+				$emailResult = [
 					'error' => 'This functionality is not available in the circulation system.',
-				);
+				];
 			}
 			$interface->assign('emailResult', $emailResult);
 			$this->display('emailResetPinResults.tpl', 'Email to Reset Pin');
