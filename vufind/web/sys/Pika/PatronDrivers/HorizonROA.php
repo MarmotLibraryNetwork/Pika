@@ -1206,27 +1206,29 @@ abstract class HorizonROA implements \DriverInterface {
 				if (isset($lookupBlockResponse->fields)){
 					$fine = $lookupBlockResponse->fields;
 
-					// Lookup book title associated with the block
-					$title = '';
-					if (isset($fine->item->key)){
-						$itemId = $fine->item->key;
-						[$bibId] = $this->getItemInfo($itemId, $patron);
-						$recordDriver = \RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
-						if ($recordDriver->isValid()){
-							$title = $recordDriver->getTitle();
-						}else{
-							[$title] = $this->getTitleAuthorForBib($bibId, $patron);
-						}
-					}
+//					if ((int) $fine->amount->amount > 0){ // Is there a fine amount
 
-					$reason  = $this->getBlockPolicy($fine->block->key, $patron);
-					$fines[] = [
-						'reason'            => $reason,
-						'amount'            => $fine->amount->amount,
-						'message'           => $title,
-						'amountOutstanding' => $fine->owed->amount,
-						'date'              => date('M j, Y', strtotime($fine->createDate))
-					];
+						// Lookup book title associated with the block
+						$title = '';
+						if (isset($fine->item->key)){
+							$itemId = $fine->item->key;
+							[$bibId] = $this->getItemInfo($itemId, $patron);
+							$recordDriver = \RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bibId);
+							if ($recordDriver->isValid()){
+								$title = $recordDriver->getTitle();
+							}else{
+								[$title] = $this->getTitleAuthorForBib($bibId, $patron);
+							}
+						}
+						$reason  = $this->getBlockPolicy($fine->block->key, $patron);
+						$fines[] = [
+							'reason'            => $reason,
+							'amount'            => $fine->amount->amount,
+							'message'           => $title,
+							'amountOutstanding' => $fine->owed->amount,
+							'date'              => date('M j, Y', strtotime($fine->createDate))
+						];
+//					}
 
 				}
 			}
