@@ -360,10 +360,15 @@ abstract class HorizonROA implements \DriverInterface {
 
 				//Get additional information about fines, etc
 				$finesVal = 0;
-				if (isset($lookupMyAccountInfoResponse->fields->estimatedOverdueAmount)){
-					//TODO: confirm this is populated for user with fees.
-					$finesVal = $lookupMyAccountInfoResponse->fields->estimatedOverdueAmount->amount;
-				}elseif (isset($lookupMyAccountInfoResponse->fields->blockList)) {
+//				if (isset($lookupMyAccountInfoResponse->fields->estimatedOverdueAmount)){
+//					//TODO: confirm this is populated for user with fees.
+//					$finesVal = $lookupMyAccountInfoResponse->fields->estimatedOverdueAmount->amount;
+//				}else
+				// Not all fines are added to the estimatedOverdueAmount unfortunately;
+				// Long Overdue fines do not get added to the estimatedOverdueAmount it seems with a current test case.
+				// pascal 1/26/22
+
+					if (isset($lookupMyAccountInfoResponse->fields->blockList)) {
 					foreach ($lookupMyAccountInfoResponse->fields->blockList as $blockEntry) {
 						$block = $this->getWebServiceResponse( '/v1/circulation/block/key/' . $blockEntry->key . '?includeFields=owed', null, $sessionToken);
 						if (isset($block->fields)){
