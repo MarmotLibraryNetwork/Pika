@@ -1434,8 +1434,10 @@ public class FormatDetermination {
 					result.add("Electronic");
 					break;
 				case 'O':
-				case 'P':
 					result.add("Kit");
+					break;
+				case 'P':
+					result.add("MixedMaterials");
 					break;
 				case 'R':
 					result.add("PhysicalObject");
