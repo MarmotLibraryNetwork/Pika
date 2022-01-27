@@ -263,7 +263,7 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && $userRoles && (in_array('cataloging', $userRoles) || in_array('opacAdmin', $userRoles))}
+			{if $loggedIn && $userRoles && (in_array('cataloging', $userRoles) || in_array('opacAdmin', $userRoles)) || in_array('libraryAdmin', $userRoles)|| in_array('libraryManager', $userRoles)}
 				{if in_array($action, array('HooplaInfo', 'OverDriveAPIData'))}
 					{assign var="curSection" value=true}
 				{else}
@@ -282,7 +282,7 @@
 							{if in_array('cataloging', $userRoles) || in_array('opacAdmin', $userRoles)}
 								<div class="adminMenuLink{if $action == "OverDriveAPIData"} active{/if}"><a href="/Admin/OverDriveAPIData">OverDrive API Information</a></div>
 							{/if}
-							{if in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles)|| in_array('libraryManager', $userRoles)}
+							{if in_array('opacAdmin', $userRoles) || in_array('cataloging', $userRoles) || in_array('libraryAdmin', $userRoles)|| in_array('libraryManager', $userRoles)}
 								<div class="adminMenuLink{if $action == "HooplaInfo"} active{/if}"><a href="/Admin/HooplaInfo">Hoopla API Information</a></div>
 							{/if}
 						</div>
