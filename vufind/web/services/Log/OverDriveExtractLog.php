@@ -47,4 +47,8 @@ class OverDriveExtractLog extends Log_Admin {
 		parent::launch();
 	}
 
+	function getAllowableRoles(){
+		return ['opacAdmin', 'libraryAdmin', 'cataloging'];
+	}
+
 }

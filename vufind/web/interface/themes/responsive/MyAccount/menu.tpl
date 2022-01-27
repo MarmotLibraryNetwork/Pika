@@ -290,7 +290,7 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles))}
+			{if $loggedIn && $userRoles && (in_array('libraryAdmin', $userRoles) || in_array('opacAdmin', $userRoles) || in_array('cataloging', $userRoles))}
 				{if in_array($action, array('RecordGroupingLog', 'ReindexLog', 'SierraExportLog', 'OverDriveExtractLog', 'HooplaExportLog', 'CronLog'))}
 					{assign var="curSection" value=true}
 				{else}
@@ -306,7 +306,9 @@
 					</a>
 					<div id="LogMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
-							<div class="adminMenuLink{if $action == "CronLog"} active{/if}"><a href="/Log/CronLog">Cron Log</a></div>
+							{if in_array('opacAdmin', $userRoles)}
+									<div class="adminMenuLink{if $action == "CronLog"} active{/if}"><a href="/Log/CronLog">Cron Log</a></div>
+							{/if}
 							<div class="adminMenuLink{if $action == "RecordGroupingLog"} active{/if}"><a href="/Log/RecordGroupingLog">Record Grouping Log</a></div>
 							<div class="adminMenuLink{if $action == "ReindexLog"} active{/if}"><a href="/Log/ReindexLog">Reindex Log</a></div>
 								{if ($ils == 'Sierra')}

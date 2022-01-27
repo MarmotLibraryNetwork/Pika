@@ -25,6 +25,6 @@ class RecordGroupingLog extends Log_Admin {
 	public $filterLabel = null;
 
 	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging');
+		return ['opacAdmin', 'libraryAdmin', 'cataloging'];
 	}
 }
