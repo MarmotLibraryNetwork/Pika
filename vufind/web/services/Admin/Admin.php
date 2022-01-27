@@ -22,6 +22,7 @@ require_once ROOT_DIR . '/Action.php';
 abstract class Admin_Admin extends Action {
 
 	function __construct(){
+		parent::__construct();
 		//If the user isn't logged in, take them to the login page
 		if (!UserAccount::isLoggedIn()) {
 			require_once ROOT_DIR . '/services/MyAccount/Login.php';

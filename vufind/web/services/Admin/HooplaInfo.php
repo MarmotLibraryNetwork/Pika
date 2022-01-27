@@ -36,48 +36,57 @@ class Admin_HooplaInfo extends Admin_Admin {
 		require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
 		$driver          = new HooplaDriver();
 		$isHooplaEnabled = $driver->isHooplaEnabled();
+		$hooplaLibraryId = null;
 		if ($isHooplaEnabled){
-			if (isset($_REQUEST['startDate'])){
-				$startDate = new DateTime($_REQUEST['startDate']);
-			}else{
-				$startDate = new DateTime();
-				date_sub($startDate, new DateInterval('P1M')); // 1 day ago
-			}
-			if (isset($_REQUEST['endDate'])){
-				$endDate = new DateTime($_REQUEST['endDate']);
-			}else{
-				$endDate = new DateTime();
-			}
-			$endDate->setTime(23, 59, 59);                                                                                                                                                                                                                                               //second before midnight
-			$startTime       = $startDate->getTimestamp();
-			$endTime         = $endDate->getTimestamp();
-			$libraries       = new Admin_Libraries();
-			$libraryList     = $libraries->getAllObjectsByPermission();                                                                                                                                                                                                                    // accounts for permissions
-			$hooplaLibraries = [];
-			$hooplaLibraryId = null;
-			/** @var Library[] $libraryList */
-			foreach ($libraryList as $library){
-				if (!empty($library->hooplaLibraryID)){
-					$checkOutsResponse = $driver->getLibraryHooplaTotalCheckOuts($library->hooplaLibraryID, $startTime, $endTime);
-					if (isset($checkOutsResponse->checkouts)){
-						$hooplaLibraries[] = [
-							'hooplaLibraryId' => $library->hooplaLibraryID,
-							'libraryName'     => $library->displayName,
-							'checkouts'       => $checkOutsResponse->checkouts,
-						];
-						if (!empty($_REQUEST['hooplaId']) && is_null($hooplaLibraryId)){
-							$hooplaLibraryId = $library->hooplaLibraryID;
+			global $interface;
+			$interface->assign('isHooplaEnabled', $isHooplaEnabled);
+			if (UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin', 'libraryManager'])){
+				// Admin_Libraries->getAllObjectsByPermission() is only accessable to roles above, so others roles
+				// can not get this list
+
+				if (isset($_REQUEST['startDate'])){
+					$startDate = new DateTime($_REQUEST['startDate']);
+				}else{
+					$startDate = new DateTime();
+					date_sub($startDate, new DateInterval('P1M')); // 1 day ago
+				}
+				if (isset($_REQUEST['endDate'])){
+					$endDate = new DateTime($_REQUEST['endDate']);
+				}else{
+					$endDate = new DateTime();
+				}
+				$endDate->setTime(23, 59, 59);                                                                                                                                                                                                                                         //second before midnight
+				$startTime       = $startDate->getTimestamp();
+				$endTime         = $endDate->getTimestamp();
+				$libraries       = new Admin_Libraries();
+				$libraryList     = $libraries->getAllObjectsByPermission();                                                                                                                                                                                                                // accounts for permissions
+				$hooplaLibraries = [];
+				/** @var Library[] $libraryList */
+				foreach ($libraryList as $library){
+					if (!empty($library->hooplaLibraryID)){
+						$checkOutsResponse = $driver->getLibraryHooplaTotalCheckOuts($library->hooplaLibraryID, $startTime, $endTime);
+						if (isset($checkOutsResponse->checkouts)){
+							$hooplaLibraries[] = [
+								'hooplaLibraryId' => $library->hooplaLibraryID,
+								'libraryName'     => $library->displayName,
+								'checkouts'       => $checkOutsResponse->checkouts,
+							];
+							if (!empty($_REQUEST['hooplaId']) && is_null($hooplaLibraryId)){
+								$hooplaLibraryId = $library->hooplaLibraryID;
+							}
 						}
 					}
-
+				}
+				$interface->assign('hooplaLibraryCheckouts', $hooplaLibraries);
+				$interface->assign('startDate', $startDate->getTimestamp());
+				$interface->assign('endDate', $endDate->getTimestamp());
+			}elseif (!empty($_REQUEST['hooplaId']) && UserAccount::userHasRole('cataloging')){
+				if (is_null($hooplaLibraryId)){
+					$library         = UserAccount::getLoggedInUser()->getHomeLibrary();
+					$hooplaLibraryId = $library->hooplaLibraryID;
 				}
 			}
 
-			global $interface;
-			$interface->assign('isHooplaEnabled', $isHooplaEnabled);
-			$interface->assign('hooplaLibraryCheckouts', $hooplaLibraries);
-			$interface->assign('startDate', $startDate->getTimestamp());
-			$interface->assign('endDate', $endDate->getTimestamp());
 
 			if (!empty($_REQUEST['hooplaId'])){
 				$_REQUEST['hooplaId'] = trim(str_replace(['MWT', 'mwt'], '', $_REQUEST['hooplaId']));
@@ -92,6 +101,6 @@ class Admin_HooplaInfo extends Admin_Admin {
 	}
 
 	function getAllowableRoles(){
-		return ['opacAdmin', 'cataloging'/*, 'libraryAdmin', 'libraryManager'*/];
+		return ['opacAdmin', 'cataloging', 'libraryAdmin', 'libraryManager'];
 	}
 }
