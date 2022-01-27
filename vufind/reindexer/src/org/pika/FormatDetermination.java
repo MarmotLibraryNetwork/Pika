@@ -891,7 +891,7 @@ public class FormatDetermination {
 //						result.add("Young Reader");
 					} else if (editionData.contains("go reader")) {
 						result.add("GoReader");
-					} else if (editionData.contains("wonderbook")) {
+					}	 else if (editionData.contains("wonderbook")) {
 						result.add("WonderBook");
 					} else if (editionData.contains("board book")) {
 						result.add("BoardBook");
@@ -939,6 +939,8 @@ public class FormatDetermination {
 							result.add("SoundDisc");
 						} else if (physicalDescriptionData.contains("wonderbook")) {
 							result.add("WonderBook");
+						}else if (physicalDescriptionData.contains("vox book")){
+							result.add("VoxBook")	;
 						}
 						//Since this is fairly generic, only use it if we have no other formats yet
 						if (result.size() == 0 && subfield.getCode() == 'f' && physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")) {
@@ -987,7 +989,7 @@ public class FormatDetermination {
 			if (noteField != null) {
 				if (noteField.getSubfield('a') != null) {
 					String noteValue = noteField.getSubfield('a').getData().toLowerCase();
-					if (noteValue.contains("vox book")) {
+					if (noteValue.contains("vox book") || noteValue.contains("vox audio")) {
 						result.add("VoxBooks");
 					} else if (noteValue.contains("wonderbook")) {
 						result.add("WonderBook");
