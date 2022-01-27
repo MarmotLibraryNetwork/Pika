@@ -360,10 +360,15 @@ abstract class HorizonROA implements \DriverInterface {
 
 				//Get additional information about fines, etc
 				$finesVal = 0;
-				if (isset($lookupMyAccountInfoResponse->fields->estimatedOverdueAmount)){
-					//TODO: confirm this is populated for user with fees.
-					$finesVal = $lookupMyAccountInfoResponse->fields->estimatedOverdueAmount->amount;
-				}elseif (isset($lookupMyAccountInfoResponse->fields->blockList)) {
+//				if (isset($lookupMyAccountInfoResponse->fields->estimatedOverdueAmount)){
+//					//TODO: confirm this is populated for user with fees.
+//					$finesVal = $lookupMyAccountInfoResponse->fields->estimatedOverdueAmount->amount;
+//				}else
+				// Not all fines are added to the estimatedOverdueAmount unfortunately;
+				// Long Overdue fines do not get added to the estimatedOverdueAmount it seems with a current test case.
+				// pascal 1/26/22
+
+					if (isset($lookupMyAccountInfoResponse->fields->blockList)) {
 					foreach ($lookupMyAccountInfoResponse->fields->blockList as $blockEntry) {
 						$block = $this->getWebServiceResponse( '/v1/circulation/block/key/' . $blockEntry->key . '?includeFields=owed', null, $sessionToken);
 						if (isset($block->fields)){
@@ -1206,27 +1211,29 @@ abstract class HorizonROA implements \DriverInterface {
 				if (isset($lookupBlockResponse->fields)){
 					$fine = $lookupBlockResponse->fields;
 
-					// Lookup book title associated with the block
-					$title = '';
-					if (isset($fine->item->key)){
-						$itemId = $fine->item->key;
-						[$bibId] = $this->getItemInfo($itemId, $patron);
-						$recordDriver = \RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
-						if ($recordDriver->isValid()){
-							$title = $recordDriver->getTitle();
-						}else{
-							[$title] = $this->getTitleAuthorForBib($bibId, $patron);
-						}
-					}
+//					if ((int) $fine->amount->amount > 0){ // Is there a fine amount
 
-					$reason  = $this->getBlockPolicy($fine->block->key, $patron);
-					$fines[] = [
-						'reason'            => $reason,
-						'amount'            => $fine->amount->amount,
-						'message'           => $title,
-						'amountOutstanding' => $fine->owed->amount,
-						'date'              => date('M j, Y', strtotime($fine->createDate))
-					];
+						// Lookup book title associated with the block
+						$title = '';
+						if (isset($fine->item->key)){
+							$itemId = $fine->item->key;
+							[$bibId] = $this->getItemInfo($itemId, $patron);
+							$recordDriver = \RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bibId);
+							if ($recordDriver->isValid()){
+								$title = $recordDriver->getTitle();
+							}else{
+								[$title] = $this->getTitleAuthorForBib($bibId, $patron);
+							}
+						}
+						$reason  = $this->getBlockPolicy($fine->block->key, $patron);
+						$fines[] = [
+							'reason'            => $reason,
+							'amount'            => $fine->amount->amount,
+							'message'           => $title,
+							'amountOutstanding' => $fine->owed->amount,
+							'date'              => date('M j, Y', strtotime($fine->createDate))
+						];
+//					}
 
 				}
 			}

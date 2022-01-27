@@ -14,36 +14,35 @@
 
 package org.pika;
 
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import javax.net.ssl.HttpsURLConnection;
-import java.nio.charset.StandardCharsets;
-import java.sql.*;
-import java.text.SimpleDateFormat;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.*;
-import java.util.Date;
-
-// Import log4j classes.
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
+import org.apache.commons.codec.binary.Base64;
+// Import log4j classes.
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import org.apache.commons.codec.binary.Base64;
 import org.marc4j.*;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
 import org.marc4j.marc.impl.SortedMarcFactoryImpl;
+
+import javax.net.ssl.HttpsURLConnection;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
+import java.util.*;
+
+
 
 /**
  * Export data from the Sierra ILS to Pika
@@ -1077,7 +1076,12 @@ public class SierraExportAPIMain {
 
 		do {
 			hasMoreRecords = false;
-			String     url          = apiBaseUrl + "/items/?createdDate=[" + lastExtractDateFormatted + ",]&deleted=false&fields=id,bibIds&limit=" + bufferSize + "&id=[" + itemIdToStartWith + ",]";
+			String     url;
+			if(itemIdToStartWith == 1){
+				url = apiBaseUrl + "/items/?createdDate=[" + lastExtractDateFormatted + ",]&deleted=false&fields=id,bibIds&limit=" + bufferSize;
+			}else {
+				url = apiBaseUrl + "/items/?createdDate=[" + lastExtractDateFormatted + ",]&deleted=false&fields=id,bibIds&limit=" + bufferSize + "&id=[" + itemIdToStartWith + ",]";
+			}
 			JSONObject createdItems = callSierraApiURL(url, debug);
 			if (createdItems != null) {
 				try {
@@ -1113,7 +1117,7 @@ public class SierraExportAPIMain {
 	private static void measureDelayInItemsAPIupdates() {
 		Instant timeLimitUsedInRequest    = Instant.now();
 		String  startofTestDateTimeString = getSierraAPIDateTimeString(timeLimitUsedInRequest);
-		String  url                       = apiBaseUrl + "/items/?updatedDate=[" + startofTestDateTimeString + ",]&deleted=false&fields=id,updatedDate,bibIds&limit=1"; //&id=[1,]";
+		String url                        = apiBaseUrl + "/items/?updatedDate=[" + startofTestDateTimeString + ",]&deleted=false&fields=id,updatedDate,bibIds&limit=1"; //&id=[1,]";
 		int     items                     = 0;
 		do {
 			Instant    timeOfRequest = Instant.now();
@@ -1165,7 +1169,13 @@ public class SierraExportAPIMain {
 
 		do {
 			hasMoreItems = false;
-			String     url              = apiBaseUrl + "/items/?updatedDate=[" + lastExtractDateFormatted + ",]&deleted=false&fields=id,bibIds&limit=" + bufferSize + "&id=[" + itemIdToStartWith + ",]";
+			String     url;
+			if(itemIdToStartWith == 1) {
+				url = apiBaseUrl + "/items/?updatedDate=[" + lastExtractDateFormatted + ",]&deleted=false&fields=id,bibIds&limit=" + bufferSize;
+			}else
+			{
+				url = apiBaseUrl + "/items/?updatedDate=[" + lastExtractDateFormatted + ",]&deleted=false&fields=id,bibIds&limit=" + bufferSize + "&id=[" + itemIdToStartWith + ",]";
+			}
 			JSONObject changedItemsJSON = callSierraApiURL(url, debug);
 			if (changedItemsJSON != null) {
 				try {
@@ -1214,7 +1224,12 @@ public class SierraExportAPIMain {
 
 		do {
 			hasMoreItems = false;
-			String url = apiBaseUrl + "/items/?deletedDate=[" + lastExtractDateFormatted + ",]&deleted=true&fields=id,bibIds&limit=" + bufferSize + "&id=[" + itemIdToStartWith + ",]";
+			String url;
+			if(itemIdToStartWith == 1) {
+				url = apiBaseUrl + "/items/?deletedDate=[" + lastExtractDateFormatted + ",]&deleted=true&fields=id,bibIds&limit=" + bufferSize;
+			}else{
+				url = apiBaseUrl + "/items/?deletedDate=[" + lastExtractDateFormatted + ",]&deleted=true&fields=id,bibIds&limit=" + bufferSize + "&id=[" + itemIdToStartWith + ",]";
+			}
 			//TODO: BibIds aren't being returned
 			//From documentation (https://techdocs.iii.com/sierraapi/Content/zReference/queryParameters.htm)
 			// Deleted records return only their id, deletedDate, and deleted properties.
@@ -1446,7 +1461,12 @@ public class SierraExportAPIMain {
 		do {
 			hasMoreItems = false;
 			//This will return a 404 error if all items are suppressed or if the record has no items
-			JSONObject itemIds = callSierraApiURL(apiBaseUrl + "/items?limit=" + bufferSize + "&id=[" + itemIdToStartWith + ",]&deleted=false&suppressed=false&fields=id,updatedDate,createdDate,location,status,barcode,callNumber,itemType,fixedFields,varFields&bibIds=" + id, debug);
+			JSONObject itemIds;
+			if(itemIdToStartWith == 1){
+				itemIds = callSierraApiURL(apiBaseUrl + "/items/?limit=" + bufferSize + "&deleted=false&suppressed=false&fields=updatedDate,createdDate,location,status,barcode,callNumber,itemType,fixedFields,varFields&bibIds=" + id, debug);
+			}else{
+				itemIds = callSierraApiURL(apiBaseUrl + "/items/?limit=" + bufferSize + "&id=[" + itemIdToStartWith + ",]&deleted=false&suppressed=false&fields=updatedDate,createdDate,location,status,barcode,callNumber,itemType,fixedFields,varFields&bibIds=" + id, debug);
+			}
 			if (itemIds != null) {
 				try {
 					if (itemIds.has("code")) {

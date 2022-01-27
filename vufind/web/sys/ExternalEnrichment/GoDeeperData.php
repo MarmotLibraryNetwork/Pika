@@ -266,8 +266,9 @@ class GoDeeperData {
 							// (to fix html entities. eg. &amp;#160; to &#160;)
 							$summary->Annotation = str_replace('&amp;', '&', $summary->Annotation);
 						}
-
-						$temp[strlen($summary->Annotation)] = $summary->Annotation;
+						$description                        = html_entity_decode($summary->Annotation);
+						$temp[strlen($summary->Annotation)] = $description;
+						// Content Cafe now encodes the html tags into html entities
 
 					}
 					$summaryData['summary'] = end($temp); // Grab the Longest Summary
