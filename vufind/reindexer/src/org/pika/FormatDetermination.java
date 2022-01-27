@@ -1016,12 +1016,14 @@ public class FormatDetermination {
 		}
 
 		// Check for formats in the 590 tag
-		DataField localNoteField = record.getDataField("590");
-		if (localNoteField != null) {
-			if (localNoteField.getSubfield('a') != null) {
-				String noteValue = localNoteField.getSubfield('a').getData().toLowerCase();
-				if (noteValue.contains("archival materials")) {
-					result.add("Archival Materials");
+		List<DataField> noteField = record.getDataFields("590");
+		for(DataField localNoteField : noteField) {
+			if (localNoteField != null) {
+				if (localNoteField.getSubfield('a') != null) {
+					String noteValue = localNoteField.getSubfield('a').getData().toLowerCase();
+					if (noteValue.contains("archival materials")) {
+						result.add("Archival Materials");
+					}
 				}
 			}
 		}
