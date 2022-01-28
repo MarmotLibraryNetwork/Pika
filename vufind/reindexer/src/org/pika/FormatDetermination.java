@@ -489,6 +489,7 @@ public class FormatDetermination {
 		getFormatFromTitle(record, printFormats);
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
 		getGameFormatFrom753(record, printFormats);
+		getFormatFrom008(record, printFormats);
 		if (printFormats.size() == 0) {
 			//Only get from fixed field information if we don't have anything yet since the cataloging of
 			//fixed fields is not kept up to date reliably.  #D-87
@@ -1210,6 +1211,22 @@ public class FormatDetermination {
 		}
 	}
 
+	private void getFormatFrom008(Record record, Set<String> result){
+		ControlField formatField = MarcUtil.getControlField(record, "008");
+		if(formatField != null){
+			if (formatField.getData() == null || formatField.getData().length() < 23)
+			{
+				return;
+			}
+			char formatCode = formatField.getData().toUpperCase().charAt(23);
+			switch(formatCode) {
+				case 'D':
+					result.add("LargePrint");
+					break;
+			}
+		}
+
+	}
 	private void getFormatFrom007(Record record, Set<String> result) {
 		ControlField formatField = MarcUtil.getControlField(record, "007");
 		if (formatField != null){
