@@ -419,6 +419,22 @@ function getIndexingUpdates(){
 				'ALTER TABLE `indexing_profiles` ADD `lastGroupedTime` INT UNSIGNED NULL; ',
 			],
 		],
+		'2022.01.0_add_mixedMaterials_format'    => [
+			'title'           => 'Add Mixed Materials format',
+			'description'     => 'Add Mixed Materials to translation maps',
+			'continueOnError' => true,
+			'sql'             =>[
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
+					'MixedMaterials', 'book')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'MixedMaterials', 'Mixed Media')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'MixedMaterials', '')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'MixedMaterials', '1')"
+			],
+		],
 
 	);
 }
