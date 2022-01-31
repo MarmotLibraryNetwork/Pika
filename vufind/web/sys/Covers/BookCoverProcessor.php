@@ -70,7 +70,7 @@ class BookCoverProcessor {
 		$this->logger         = $logger;
 		$this->doCoverLogging = $this->configArray['Logging']['coverLogging'];
 
-		$this->log("Starting to load cover", PEAR_LOG_INFO);
+		$this->log('Starting to load cover', PEAR_LOG_INFO);
 		$this->bookCoverPath = $configArray['Site']['coverPath'];
 		if (!$this->loadParameters()){
 			return;
@@ -903,16 +903,18 @@ class BookCoverProcessor {
 					}elseif (is_readable("interface/themes/default/images/$this->category.png")){
 						$noCoverUrl = "interface/themes/default/images/$this->category.png";
 					}
-				}else{
-					if(isset($this->listId)){
-						$noCoverUrl = "interface/themes/default/images/lists.png";
-					}else{
-						$noCoverUrl = "interface/themes/default/images/noCover2.png";
-					}
+				}elseif (isset($this->listId)){
+					$noCoverUrl = 'interface/themes/default/images/lists.png';
 				}
 			}
 
-			$this->log("Found fallback cover: $noCoverUrl", PEAR_LOG_INFO);
+			if (!isset($noCoverUrl)){
+				$noCoverUrl = 'interface/themes/default/images/noCover2.png';
+				$this->logger->log('Resorted to noCover image for : '. $_SERVER['REQUEST_URI'], PEAR_LOG_ERR);
+				// Log when this happens regardless of doCoverLogging setting
+			}
+
+				$this->log("Found fallback cover: $noCoverUrl", PEAR_LOG_INFO);
 			return $this->processImageURL($noCoverUrl);
 		}
 	}
