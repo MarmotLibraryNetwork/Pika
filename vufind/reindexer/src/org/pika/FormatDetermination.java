@@ -932,11 +932,11 @@ public class FormatDetermination {
 							result.add("Blu-ray");
 						} else if (physicalDescriptionData.contains("cd-rom") || physicalDescriptionData.contains("cdrom")) {
 							result.add("CDROM");
-						} else if (physicalDescriptionData.contains("computer optical disc")) {
+						}else if (physicalDescriptionData.contains("computer optical disc")) {
 							result.add("Software");
 						} else if (physicalDescriptionData.contains("sound cassettes")) {
 							result.add("SoundCassette");
-						} else if (physicalDescriptionData.contains("sound discs") || physicalDescriptionData.contains("audio discs") || physicalDescriptionData.contains("compact disc")) {
+						} else if (physicalDescriptionData.contains("sound disc") || physicalDescriptionData.contains("audio disc") || physicalDescriptionData.contains("compact disc")) {
 							result.add("SoundDisc");
 						} else if (physicalDescriptionData.contains("wonderbook")) {
 							result.add("WonderBook");
