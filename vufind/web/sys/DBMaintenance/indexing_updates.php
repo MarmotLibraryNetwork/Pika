@@ -428,7 +428,7 @@ function getIndexingUpdates(){
 					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
 					'MixedMaterials', 'book')
 					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
-					'MixedMaterials', 'Mixed Media')
+					'MixedMaterials', 'Mixed Materials')
 					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
 					'MixedMaterials', '')
 					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
