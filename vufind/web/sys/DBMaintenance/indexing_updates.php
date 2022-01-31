@@ -446,7 +446,7 @@ function getIndexingUpdates(){
 					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
 					'SoundDiscWithCDROM', 'Audio CD with CD-ROM')
 					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
-					'SoundDiscWithCDROM', '')
+					'SoundDiscWithCDROM', 'Audio Books')
 					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
 					'SoundDiscWithCDROM', '3')"
 			],
