@@ -429,10 +429,26 @@ function getIndexingUpdates(){
 					'MixedMaterials', 'book')
 					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
 					'MixedMaterials', 'Mixed Materials')
-					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_categories'),
 					'MixedMaterials', '')
 					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
 					'MixedMaterials', '1')"
+			],
+		],
+		'2022.01.0_add_audioWithCDROM_format'    => [
+			'title'           => 'Add Audio CD with CD Rom format',
+			'description'     => 'Add Audio CD with CD Rom to translation maps',
+			'continueOnError' => true,
+			'sql'             =>[
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
+					'SoundDiscWithCDROM', 'book')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'SoundDiscWithCDROM', 'Audio CD with CD-ROM')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_categories'),
+					'SoundDiscWithCDROM', '')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'SoundDiscWithCDROM', '3')"
 			],
 		],
 
