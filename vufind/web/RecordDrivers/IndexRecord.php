@@ -435,19 +435,22 @@ class IndexRecord extends RecordInterface {
 
 	function getBookcoverUrl($size = 'small'){
 		$id             = $this->getIdWithSource();
-		$formatCategory = $this->getFormatCategory();
-		if (is_array($formatCategory)){
-			$formatCategory = reset($formatCategory);
-		}
-		$formats = $this->getFormat();
-		$format  = reset($formats);
-		$parameters = [
-			'id'       => $id,
-			'size'     => $size,
-			'category' => $formatCategory,
-			'format'   => $format,
+		$formats        = $this->getFormat();
+		$format         = reset($formats);
+		$parameters     = [
+			'id'     => $id,
+			'size'   => $size,
+			'format' => $format,
 		];
-		$isbn       = $this->getCleanISBN();
+		$formatCategory = $this->getFormatCategory();
+		if (!empty($formatCategory)){
+			if (is_array($formatCategory)){
+				$formatCategory = reset($formatCategory);
+			}
+			$parameters['category'] = $formatCategory;
+		}
+
+		$isbn = $this->getCleanISBN();
 		if ($isbn){
 			$parameters['isn'] = $isbn;
 		}
@@ -717,6 +720,7 @@ class IndexRecord extends RecordInterface {
 	public function getFormatCategory(){
 		global $solrScope;
 		return $this->fields['format_category_'.$solrScope] ?? [];
+		//TODO: compare with GroupedWorkDriver getFormatCategory()
 	}
 
 	/**
