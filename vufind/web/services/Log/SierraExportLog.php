@@ -40,6 +40,6 @@ class SierraExportLog extends Log_Admin {
 
 
 	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging');
+		return ['opacAdmin', 'libraryAdmin', 'cataloging'];
 	}
 }

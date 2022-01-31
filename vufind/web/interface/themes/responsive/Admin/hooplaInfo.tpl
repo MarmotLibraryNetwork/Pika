@@ -7,6 +7,7 @@
 		<div class="navbar row">
 			<form id="HooplaInfoFilter">
 				<div class="form-horizontal">
+					{if $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles)|| in_array('libraryManager', $userRoles))}
 					<div class="form-group">
 						<label for="startDate" class="control-label col-sm-2">Start Date</label>
 						<div class="input-group input-append date controls col-sm-3" id="startDatePicker">
@@ -35,6 +36,7 @@
 							</span>
 						</div>
 					</div>
+          {/if}
 					<div class="form-group">
 						<label for="hooplaId" class="control-label col-sm-2">Hoopla Record Id</label>
 						<div class="col-sm-3">
@@ -43,6 +45,7 @@
 					</div>
 
 					<button class="btn btn-primary" type="submit">Go</button>
+				</div>
 			</form>
 		</div>
 
@@ -56,40 +59,42 @@
 				</div>
 			</div>
 			{/if}
-			<div class="row">
-				<div class="col-tn-12">
-					<table class="table stripe" id="hooplaCheckoutsReport">
-						<thead>
-						<tr>
-							<th>Hoopla Library Id</th>
-							<th>Library</th>
-							<th>Check Outs</th>
-						</tr>
-						</thead>
-						<tbody>
-            {foreach from=$hooplaLibraryCheckouts item=checkout}
-							<tr>
-								<td>{$checkout.hooplaLibraryId}</td>
-								<td>{$checkout.libraryName}</td>
-								<td>{$checkout.checkouts}</td>
-							</tr>
-            {/foreach}
-						</tbody>
-					</table>
-				</div>
-			</div>
-		</div>
-	<script type="text/javascript">
-		{literal}
-		$(document).ready(function(){
-			$('#hooplaCheckoutsReport').DataTable({
-				"order": [[1, "asc"]],
-				pageLength: 100
-			});
-		})
+			{if $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles)|| in_array('libraryManager', $userRoles))}
+					<div class="row">
+						<div class="col-tn-12">
+							<table class="table stripe" id="hooplaCheckoutsReport">
+								<thead>
+								<tr>
+									<th>Hoopla Library Id</th>
+									<th>Library</th>
+									<th>Check Outs</th>
+								</tr>
+								</thead>
+								<tbody>
+								{foreach from=$hooplaLibraryCheckouts item=checkout}
+									<tr>
+										<td>{$checkout.hooplaLibraryId}</td>
+										<td>{$checkout.libraryName}</td>
+										<td>{$checkout.checkouts}</td>
+									</tr>
+								{/foreach}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				<script type="text/javascript">
+						{literal}
+						$(function(){
+							$('#hooplaCheckoutsReport').DataTable({
+								"order": [[1, "asc"]],
+								pageLength: 100
+							});
+						})
+						{/literal}
+				</script>
+			{/if}
 
-		{/literal}
-	</script>
+		</div>
 		{else}
 		<div class="alert alert-warning">Hoopla API is not enabled.</div>
 	{/if}

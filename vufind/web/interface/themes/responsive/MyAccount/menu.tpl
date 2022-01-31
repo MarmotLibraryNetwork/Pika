@@ -199,10 +199,10 @@
 					<div id="indexingMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
 							<div class="adminMenuLink{if $action == "IndexingStats"} active{/if}"><a href="/Admin/IndexingStats">Indexing Statistics</a></div>
-                {if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles))}
+								{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles))}
 							<div class="adminMenuLink{if $action == "IndexingProfiles"} active{/if}"><a href="/Admin/IndexingProfiles">Indexing Profiles</a></div>
 							<div class="adminMenuLink{if $action == "TranslationMaps"} active{/if}"><a href="/Admin/TranslationMaps">Translation Maps</a></div>
-                {/if}
+								{/if}
 						</div>
 					</div>
 				</div>
@@ -263,7 +263,7 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && $userRoles && (in_array('cataloging', $userRoles) || in_array('opacAdmin', $userRoles))}
+			{if $loggedIn && $userRoles && (in_array('cataloging', $userRoles) || in_array('opacAdmin', $userRoles)) || in_array('libraryAdmin', $userRoles)|| in_array('libraryManager', $userRoles)}
 				{if in_array($action, array('HooplaInfo', 'OverDriveAPIData'))}
 					{assign var="curSection" value=true}
 				{else}
@@ -279,14 +279,18 @@
 					</a>
 					<div id="eContentInfoMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
-							<div class="adminMenuLink{if $action == "OverDriveAPIData"} active{/if}"><a href="/Admin/OverDriveAPIData">OverDrive API Information</a></div>
-							<div class="adminMenuLink{if $action == "HooplaInfo"} active{/if}"><a href="/Admin/HooplaInfo">Hoopla API Information</a></div>
+							{if in_array('cataloging', $userRoles) || in_array('opacAdmin', $userRoles)}
+								<div class="adminMenuLink{if $action == "OverDriveAPIData"} active{/if}"><a href="/Admin/OverDriveAPIData">OverDrive API Information</a></div>
+							{/if}
+							{if in_array('opacAdmin', $userRoles) || in_array('cataloging', $userRoles) || in_array('libraryAdmin', $userRoles)|| in_array('libraryManager', $userRoles)}
+								<div class="adminMenuLink{if $action == "HooplaInfo"} active{/if}"><a href="/Admin/HooplaInfo">Hoopla API Information</a></div>
+							{/if}
 						</div>
 					</div>
 				</div>
 			{/if}
 
-			{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles))}
+			{if $loggedIn && $userRoles && (in_array('libraryAdmin', $userRoles) || in_array('opacAdmin', $userRoles) || in_array('cataloging', $userRoles))}
 				{if in_array($action, array('RecordGroupingLog', 'ReindexLog', 'SierraExportLog', 'OverDriveExtractLog', 'HooplaExportLog', 'CronLog'))}
 					{assign var="curSection" value=true}
 				{else}
@@ -302,12 +306,14 @@
 					</a>
 					<div id="LogMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
-							<div class="adminMenuLink{if $action == "CronLog"} active{/if}"><a href="/Log/CronLog">Cron Log</a></div>
+							{if in_array('opacAdmin', $userRoles)}
+									<div class="adminMenuLink{if $action == "CronLog"} active{/if}"><a href="/Log/CronLog">Cron Log</a></div>
+							{/if}
 							<div class="adminMenuLink{if $action == "RecordGroupingLog"} active{/if}"><a href="/Log/RecordGroupingLog">Record Grouping Log</a></div>
 							<div class="adminMenuLink{if $action == "ReindexLog"} active{/if}"><a href="/Log/ReindexLog">Reindex Log</a></div>
-                {if ($ils == 'Sierra')}
+								{if ($ils == 'Sierra')}
 									<div class="adminMenuLink{if $action == "SierraExportLog"} active{/if}"><a href="/Log/SierraExportLog">Sierra Export Log</a></div>
-                {/if}
+								{/if}
 							<div class="adminMenuLink{if $action == "OverDriveExtractLog"} active{/if}"><a href="/Log/OverDriveExtractLog">OverDrive Extract Log</a></div>
 							<div class="adminMenuLink{if $action == "HooplaExportLog"} active{/if}"><a href="/Log/HooplaExportLog">Hoopla Export Log</a></div>
 						</div>
