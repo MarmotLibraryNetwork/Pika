@@ -300,7 +300,7 @@ class UserAccount {
 				$userData->find(true);
 				if ($userData->N != 0 && $userData->N != false){
 					//$logger->debug("Loading user {$userData->cat_username}, {$userData->cat_password} because we didn't have data in memcache");
-					$userData = UserAccount::validateAccount($userData->cat_username, $userData->cat_password, $userData->source);
+					$userData = UserAccount::validateAccount($userData->cat_username, $userData->getPassword(), $userData->source);
 					self::updateSession($userData);
 				}
 			}

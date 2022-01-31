@@ -206,7 +206,7 @@ abstract class HorizonROA implements \DriverInterface {
 		if (isset(self::$sessionIdsForUsers[$horizonRoaUserId])){
 			return self::$sessionIdsForUsers[$horizonRoaUserId];
 		}else{
-			[, $sessionToken] = $this->loginViaWebService($patron->barcode, $patron->cat_password);
+			[, $sessionToken] = $this->loginViaWebService($patron->barcode, $patron->getPassword());
 			return $sessionToken;
 		}
 	}
@@ -292,7 +292,7 @@ abstract class HorizonROA implements \DriverInterface {
 				}
 				$user->fullname     = $fullName ?? '';
 				$user->barcode      = $barcode;
-				$user->cat_password = $password;
+				$user->setPassword($password);
 
 
 				$Address1    = "";
@@ -1274,8 +1274,7 @@ abstract class HorizonROA implements \DriverInterface {
 			$this->getLogger()->error('Horizon ROA Driver error updating user\'s Pin :'.$errors);
 			return 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.';
 		} elseif (!empty($updatePinResponse->sessionToken)){
-			$patron->cat_password = $newPin;
-			$patron->update();
+			$patron->updatePassword($newPin);
 			return 'Your pin number was updated successfully.';
 		}else{
 			return 'Sorry, we could not update your pin number. Please try again later.';
@@ -1390,8 +1389,7 @@ abstract class HorizonROA implements \DriverInterface {
 			];
 		}elseif (!empty($changeMyPinResponse->sessionToken)){
 			if ($patron->ilsUserId == $changeMyPinResponse->patronKey){ // Check that the ILS user matches the Pika user
-				$patron->cat_password = $newPin;
-				$patron->update();
+				$patron->updatePassword($newPin);
 			}
 			return [
 				'success' => true,

@@ -39,7 +39,7 @@ class User extends DB_DataObject {
 	protected $cat_username;                    // string(50)
 	protected $cat_password;
 	public $barcode;                        // string(50) Replaces $cat_username for sites using barcode/pin auth
-	public $password;                       // string(128) password hash Replaces $cat_password
+	private $password;                       // string(128) password - Replaces $cat_password
 	public $patronType;
 	public $created;                         // datetime(19)  not_null binary
 	public $homeLocationId;                  // int(11)
@@ -204,14 +204,55 @@ class User extends DB_DataObject {
 		return $this->accountProfile;
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getPassword() {
-		return $this->password;
+		$password = $this->_decryptPassword($this->password);
+		return $password;
 	}
 
+
+	/**
+	 * setPassword
+	 * Use when setting a password on a newly instantiated object or when the object will call update() later in the code.
+	 * This will not update the password in the database.
+	 * @param $password
+	 * @return void
+	 */
 	public function setPassword($password) {
-		$this->password = $password;
-		$this->update();
-}
+		$encryptedPassword = $this->_encryptPassword($password);
+		$this->password = $encryptedPassword;
+	}
+
+	/**
+	 * updatePassword
+	 * Update an existing password in the database. Use this method when updating a password or setting a new
+	 * password for the user.
+	 * @param $password
+	 * @return int|false Number of rows affected or false on failure.
+	 */
+	public function updatePassword($password) {
+		$encryptedPassword = $this->_encryptPassword($password);
+		$this->password = $encryptedPassword;
+		return $this->update();
+	}
+
+	/**
+	 * @param string  $password
+	 * @return string Encrypted password
+	 */
+	private function _encryptPassword($password) {
+		return $password;
+	}
+
+	/**
+	 * @param  string $encryptedPassword
+	 * @return string Decrypted password
+	 */
+	private function _decryptPassword($encryptedPassword) {
+		return $encryptedPassword;
+	}
 
 	function __get($name){
 		if ($name == 'roles'){
@@ -230,11 +271,11 @@ class User extends DB_DataObject {
 			return $this->materialsRequestEmailSignature;
 		}
 
-		// return password
+		// accessing the password attribute directly will return the encrupted password.
 		if($name == "password") {
 			$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
 			$this->logger->debug("Please use getPassword() when getting password from user object.", array("trace" => $calledBy));
-			return $this->getPassword();
+			return $this->password;
 		}
 
 		// handle deprecated cat_password and cat_username
@@ -258,11 +299,11 @@ class User extends DB_DataObject {
 	}
 
 	function __set($name, $value){
+		// for passwords, allows new object to set password for methods like $user->find
 		if($name == "password") {
 			$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
 			$this->logger->debug($name . " being set by " . $calledBy['function'], array("trace" => $calledBy));
 			$this->setPassword($value);
-			$this->update();
 		}
 
 		// Handle deprecated cat_* properties

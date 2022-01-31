@@ -66,8 +66,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 			return 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.';
 		} elseif (!empty($updatePinResponse['sessionToken'])){
 			// Success response isn't particularly clear, but returning the session Token seems to indicate the pin updated. plb 8-15-2016
-			$patron->cat_password = $newPin;
-			$patron->update();
+			$patron->updatePassword($newPin);
 			return "Your pin number was updated successfully.";
 		}else{
 			return "Sorry, we could not update your pin number. Please try again later.";
@@ -108,8 +107,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 			);
 		} elseif (!empty($changeMyPinResponse['sessionToken'])){
 			if ($patron->ilsUserId == $changeMyPinResponse['patronKey']) { // Check that the ILS user matches the Pika user
-				$patron->cat_password = $newPin;
-				$patron->update();
+				$patron->updatePassword($newPin);
 			}
 			return array(
 				'success' => true,
@@ -137,7 +135,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 			$userID = $patron->id;
 
 			// If possible, check if Horizon has an email address for the patron
-			if (!empty($patron->cat_password)){
+			if (!empty($patron->password)){
 				[$userValid, $sessionToken, $ilsUserID] = $this->loginViaWebService($patron);
 				if ($userValid){
 					// Yay! We were able to login with the pin Pika has!

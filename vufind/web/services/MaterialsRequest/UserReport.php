@@ -64,7 +64,7 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		$materialsRequest->joinAdd(new MaterialsRequestStatus());
 		$materialsRequest->selectAdd();
 		$materialsRequest->selectAdd('COUNT(materials_request.id) as numRequests');
-		$materialsRequest->selectAdd('user.id as userId, status, description, user.firstName, user.lastName, user.cat_username, user.cat_password');
+		$materialsRequest->selectAdd('user.id as userId, status, description, user.firstName, user.lastName, user.cat_username, user.password');
 		if (UserAccount::userHasRole('library_material_requests')){
 			//Need to limit to only requests submitted for the user's home location
 			$userHomeLibrary      = UserAccount::getUserHomeLibrary();
@@ -81,13 +81,12 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		$materialsRequest->find();
 
 		$userData        = array();
-		$barcodeProperty = 'barcode';
 		while ($materialsRequest->fetch()){
 			if (!array_key_exists($materialsRequest->userId, $userData)){
 				$userData[$materialsRequest->userId]                     = array();
 				$userData[$materialsRequest->userId]['firstName']        = $materialsRequest->firstName;
 				$userData[$materialsRequest->userId]['lastName']         = $materialsRequest->lastName;
-				$userData[$materialsRequest->userId]['barcode']          = $materialsRequest->$barcodeProperty;
+				$userData[$materialsRequest->userId]['barcode']          = $materialsRequest->barcode;
 				$userData[$materialsRequest->userId]['totalRequests']    = 0;
 				$userData[$materialsRequest->userId]['requestsByStatus'] = array();
 			}
