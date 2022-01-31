@@ -39,13 +39,13 @@ class MaterialsRequest_NewRequest extends Action {
 			// Hold Pick-up Locations
 			$locations = $locationSingleton->getPickupBranches(UserAccount::getActiveUserObj(), UserAccount::getUserHomeLocationId());
 
-			$pickupLocations = array();
+			$pickupLocations = [];
 			foreach ($locations as $curLocation){
-				$pickupLocations[] = array(
+				$pickupLocations[] = [
 					'id'          => $curLocation->locationId,
 					'displayName' => $curLocation->displayName,
 					'selected'    => $curLocation->selected,
-				);
+				];
 			}
 			$interface->assign('pickupLocations', $pickupLocations);
 
@@ -75,7 +75,7 @@ class MaterialsRequest_NewRequest extends Action {
 
 			$user = UserAccount::getActiveUserObj();
 			if ($user){
-				$request->phone = $user->phone;
+				$request->phone = trim(strip_tags(str_ireplace(['### TEXT ONLY', 'TEXT ONLY'], '', $user->phone)));
 				if ($user->email != 'notice@salidalibrary.org'){
 					$request->email = $user->email;
 				}

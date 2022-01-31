@@ -112,7 +112,7 @@ class MaterialsRequest_Submit extends MyAccount {
 							$interface->assign('success', false);
 							$interface->assign('error', 'No format was specified.');
 						}else{
-							$materialsRequest->phone                  = isset($_REQUEST['phone']) ? strip_tags($_REQUEST['phone']) : '';
+							$materialsRequest->phone                  = isset($_REQUEST['phone']) ? trim(strip_tags(str_ireplace(['### TEXT ONLY', 'TEXT ONLY'], '', $_REQUEST['phone']))) : '';
 							$materialsRequest->email                  = isset($_REQUEST['email']) ? strip_tags($_REQUEST['email']) : '';
 							$materialsRequest->title                  = isset($_REQUEST['title']) ? strip_tags($_REQUEST['title']) : '';
 							$materialsRequest->season                 = isset($_REQUEST['season']) ? strip_tags($_REQUEST['season']) : '';
