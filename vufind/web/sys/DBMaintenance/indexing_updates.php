@@ -451,6 +451,22 @@ function getIndexingUpdates(){
 					'SoundDiscWithCDROM', '3')"
 			],
 		],
+		'2022.01.0_add_DVDWithCDROM_format'    => [
+			'title'           => 'Add Video DVD with CD-Rom',
+			'description'     => 'Add Video DVD with CD-Rom special features to translation maps',
+			'continueOnError' => true,
+			'sql'             =>[
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
+					'DVDWithCDROM', 'movie')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'DVDWithCDROM', 'Audio CD with CD-ROM')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'DVDWithCDROM', 'Movies')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'DVDWithCDROM', '3')"
+			],
+		],
 
 	);
 }
