@@ -660,7 +660,7 @@ public class FormatDetermination {
 				printFormats.remove("VideoDisc");
 			}
 		}
-		if (printFormats.contains("DVD")){
+		if (printFormats.contains("DVD") || printFormats.contains("VideoDisc")){
 			if(printFormats.contains("CDROM")){
 				printFormats.remove("CDROM");
 				printFormats.add("DVDWithCDROM");
