@@ -1045,7 +1045,7 @@ public class FormatDetermination {
 			if (localNoteField != null) {
 				if (localNoteField.getSubfield('a') != null) {
 					String noteValue = localNoteField.getSubfield('a').getData().toLowerCase();
-					if (noteValue.contains("archival materials")) {
+					if (noteValue.contains("archival material")) {
 						result.add("Archival Materials");
 					}
 				}
