@@ -652,18 +652,18 @@ public class FormatDetermination {
 				printFormats.remove("Video");
 			}
 		}
+		if ((printFormats.contains("CDROM") && printFormats.contains("DVD")) || (printFormats.contains("CDROM") &&printFormats.contains("VideoDisc"))){
+			if(printFormats.contains("CDROM")){
+				printFormats.remove("CDROM");
+				printFormats.add("DVDWithCDROM");
+			}
+		}
 		if (printFormats.contains("VideoDisc")){
 			if (printFormats.contains("Blu-ray")
 					|| printFormats.contains("DVD")
 					|| printFormats.contains("4KUltraBlu-Ray")
 			) {
 				printFormats.remove("VideoDisc");
-			}
-		}
-		if (printFormats.contains("DVD") || printFormats.contains("VideoDisc")){
-			if(printFormats.contains("CDROM")){
-				printFormats.remove("CDROM");
-				printFormats.add("DVDWithCDROM");
 			}
 		}
 		if (printFormats.contains("VideoCassette") && printFormats.contains("DVD")){
