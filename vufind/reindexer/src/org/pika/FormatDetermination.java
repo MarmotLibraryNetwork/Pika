@@ -553,25 +553,31 @@ public class FormatDetermination {
 		}
 	}
 
-	private void accompanyingMaterialCheck(char recordTypefromLeader, LinkedHashSet<String> printFormats){
-		switch (recordTypefromLeader){
-			case 'a' :
-				// Language material  (text/books generally)
-				if (printFormats.contains("CDROM")){
-					printFormats.clear();
-					printFormats.add("BookWithCDROM");
-					break;
-				}
-				if (printFormats.contains("DVD")){
-					printFormats.clear();
-					printFormats.add("BookWithDVD");
-					break;
-				}
-				if (printFormats.contains("VideoDisc")){
-					printFormats.clear();
-					printFormats.add("BookWithVideoDisc");
-				}
+	private void accompanyingMaterialCheck(Record record, LinkedHashSet<String> printFormats){
+		String leader = record.getLeader().toString();
+		char leaderRecordType;
+		if(leader.length() >= 6){
+			leaderRecordType = leader.charAt(6);
+			switch (leaderRecordType){
+				case 'a' :
+					// Language material  (text/books generally)
+					if (printFormats.contains("CDROM")){
+						printFormats.clear();
+						printFormats.add("BookWithCDROM");
+						break;
+					}
+					if (printFormats.contains("DVD")){
+						printFormats.clear();
+						printFormats.add("BookWithDVD");
+						break;
+					}
+					if (printFormats.contains("VideoDisc")){
+						printFormats.clear();
+						printFormats.add("BookWithVideoDisc");
+					}
+			}
 		}
+
 	}
 
 	private void filterPrintFormats(Set<String> printFormats) {
@@ -637,7 +643,6 @@ public class FormatDetermination {
 			printFormats.add("GoReader");
 			return;
 		}
-
 		// Video Things
 		if (printFormats.contains("Video")){
 			if (printFormats.contains("DVD")
@@ -645,6 +650,11 @@ public class FormatDetermination {
 					|| printFormats.contains("VideoCassette")
 			) {
 				printFormats.remove("Video");
+			}
+		}
+		if ((printFormats.contains("CDROM") && printFormats.contains("DVD")) || (printFormats.contains("CDROM") &&printFormats.contains("VideoDisc"))){
+			if(printFormats.contains("CDROM")){
+				printFormats.remove("CDROM");
 			}
 		}
 		if (printFormats.contains("VideoDisc")){
@@ -685,6 +695,12 @@ public class FormatDetermination {
 					|| printFormats.contains("SoundCassette")
 			) {
 				printFormats.remove("SoundRecording");
+			}
+		}
+		if(printFormats.contains("SoundDisc")) {
+			if(printFormats.contains("CDROM")){
+				printFormats.remove("CDROM");
+				printFormats.add("SoundDiscWithCDROM");
 			}
 		}
 		if (printFormats.contains("CompactDisc")) {
@@ -930,7 +946,9 @@ public class FormatDetermination {
 							result.add("4KUltraBlu-Ray");
 						} else if (physicalDescriptionData.contains("bluray") || physicalDescriptionData.contains("blu-ray")) {
 							result.add("Blu-ray");
-						} else if (physicalDescriptionData.contains("cd-rom") || physicalDescriptionData.contains("cdrom")) {
+						} else if (physicalDescriptionData.contains("videodisc")){
+							result.add("VideoDisc");
+						}	else if (physicalDescriptionData.contains("cd-rom") || physicalDescriptionData.contains("cdrom")) {
 							result.add("CDROM");
 						}else if (physicalDescriptionData.contains("computer optical disc")) {
 							result.add("Software");
@@ -1000,6 +1018,8 @@ public class FormatDetermination {
 						result.add("Playaway");
 					} else if (noteValue.contains("vertical file")) {
 						result.add("VerticalFile");
+					}else if (noteValue.contains("go reader")){
+						result.add("GoReader");
 					} else if (noteValue.contains("board pages")){
 						result.add("BoardBook");
 					}
@@ -1024,7 +1044,7 @@ public class FormatDetermination {
 			if (localNoteField != null) {
 				if (localNoteField.getSubfield('a') != null) {
 					String noteValue = localNoteField.getSubfield('a').getData().toLowerCase();
-					if (noteValue.contains("archival materials")) {
+					if (noteValue.contains("archival material")) {
 						result.add("Archival Materials");
 					}
 				}
