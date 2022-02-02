@@ -944,7 +944,7 @@ class Solr implements IndexEngine {
 			//TODO: move single_word_removal to a custom munge
 
 			// The single_word_removal munge is only used in the Keyword search spec against the title_proper and title_full fields.  pascal 10/15/2021
-			if ($numTokens <= 4) {
+			if ($numTokens < 5) {
 				$mungedValues['single_word_removal'] = $mungedValues['onephrase'];
 			} else {
 				$singleWordRemoval            = [];

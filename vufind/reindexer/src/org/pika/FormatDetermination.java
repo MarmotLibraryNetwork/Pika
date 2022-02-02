@@ -652,6 +652,11 @@ public class FormatDetermination {
 				printFormats.remove("Video");
 			}
 		}
+		if ((printFormats.contains("CDROM") && printFormats.contains("DVD")) || (printFormats.contains("CDROM") &&printFormats.contains("VideoDisc"))){
+			if(printFormats.contains("CDROM")){
+				printFormats.remove("CDROM");
+			}
+		}
 		if (printFormats.contains("VideoDisc")){
 			if (printFormats.contains("Blu-ray")
 					|| printFormats.contains("DVD")
@@ -1039,7 +1044,7 @@ public class FormatDetermination {
 			if (localNoteField != null) {
 				if (localNoteField.getSubfield('a') != null) {
 					String noteValue = localNoteField.getSubfield('a').getData().toLowerCase();
-					if (noteValue.contains("archival materials")) {
+					if (noteValue.contains("archival material")) {
 						result.add("Archival Materials");
 					}
 				}

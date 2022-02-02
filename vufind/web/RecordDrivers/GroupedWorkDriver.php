@@ -1041,8 +1041,9 @@ class GroupedWorkDriver extends RecordInterface {
 		}
 		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=grouped_work";
 
-		if (isset($this->fields['format_category'])){
-			$bookCoverUrl = $bookCoverUrl . '&category=' . is_array($this->fields['format_category']) ? reset($this->fields['format_category']) : $this->fields['format_category'];
+		$formatCategory = $this->getFormatCategory();
+		if (!empty($formatCategory)){
+			$bookCoverUrl .= '&category=' . $formatCategory;
 		}
 
 		return $bookCoverUrl;
