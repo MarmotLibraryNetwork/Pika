@@ -655,7 +655,6 @@ public class FormatDetermination {
 		if ((printFormats.contains("CDROM") && printFormats.contains("DVD")) || (printFormats.contains("CDROM") &&printFormats.contains("VideoDisc"))){
 			if(printFormats.contains("CDROM")){
 				printFormats.remove("CDROM");
-				printFormats.add("DVDWithCDROM");
 			}
 		}
 		if (printFormats.contains("VideoDisc")){
