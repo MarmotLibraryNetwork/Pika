@@ -215,10 +215,12 @@ public class FormatDetermination {
 							break;
 						case "soundrecording":
 						case "sounddisc":
+						case "sounddiscwithcdrom":
 						case "playaway":
 						case "cdrom":
 						case "soundcassette":
 						case "compactdisc":
+						case "chipcartridge":
 						case "eaudio":
 							econtentItem.setFormat("eAudiobook");
 							econtentItem.setFormatCategory("Audio Books");
@@ -245,6 +247,7 @@ public class FormatDetermination {
 							break;
 						case "electronic":
 						case "software":
+						case "mixedMaterials":
 							econtentItem.setFormat("Online Materials");
 							econtentItem.setFormatCategory("Other");
 							econtentRecord.setFormatBoost(2);
