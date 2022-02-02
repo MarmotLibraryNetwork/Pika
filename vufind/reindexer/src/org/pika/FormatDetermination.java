@@ -247,7 +247,7 @@ public class FormatDetermination {
 							break;
 						case "electronic":
 						case "software":
-						case "mixedMaterials":
+						case "mixedmaterials":
 							econtentItem.setFormat("Online Materials");
 							econtentItem.setFormatCategory("Other");
 							econtentRecord.setFormatBoost(2);
