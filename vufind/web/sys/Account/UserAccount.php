@@ -299,8 +299,15 @@ class UserAccount {
 				$userData->id = $activeUserId;
 				$userData->find(true);
 				if ($userData->N != 0 && $userData->N != false){
+					$cat_username   = $userData->cat_username;
+					$accountProfile = $userData->getAccountProfile();
+					if ($accountProfile->loginConfiguration = "barcode_pin") {
+						$barcode_or_pin = $userData->getPassword();
+					} else {
+						$barcode_or_pin = $userData->barcode;
+					}
 					//$logger->debug("Loading user {$userData->cat_username}, {$userData->cat_password} because we didn't have data in memcache");
-					$userData = UserAccount::validateAccount($userData->cat_username, $userData->getPassword(), $userData->source);
+					$userData = UserAccount::validateAccount($cat_username, $barcode_or_pin, $userData->source);
 					self::updateSession($userData);
 				}
 			}

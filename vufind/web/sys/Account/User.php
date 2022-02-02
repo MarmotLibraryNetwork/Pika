@@ -35,7 +35,7 @@ class User extends DB_DataObject {
 	public $email;                           // string(250)  not_null
 	public $phone;                           // string(30)
 	public $alt_username;                    // An alternate username used by patrons to login.
-	// cat_username and cat_password are protected for logging purposes
+// cat_password are protected for logging purposes
 	protected $cat_username;                    // string(50)
 	protected $cat_password;
 	public $barcode;                        // string(50) Replaces $cat_username for sites using barcode/pin auth
@@ -280,12 +280,12 @@ class User extends DB_DataObject {
 
 		// handle deprecated cat_password and cat_username
 		if($name == 'cat_password' || $name == 'cat_username') {
-			$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
-			$this->logger->debug($name . " accessed by " . $calledBy['function'], array("trace" => $calledBy));
 			if ($accountProfile = $this->getAccountProfile()){
 				if ($accountProfile->loginConfiguration == 'barcode_pin' && $name == 'cat_username'){
 					return $this->barcode;
 				}elseif ($accountProfile->loginConfiguration == 'name_barcode' && $name == 'cat_password'){
+					$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
+					$this->logger->debug($name . " accessed by " . $calledBy['function'], array("trace" => $calledBy));
 					return $this->barcode;
 				} else {
 					return $this->{$name};
