@@ -146,7 +146,7 @@ class IndexingProfile extends DB_DataObject{
 
 					'marcPath'                          => ['property' => 'marcPath', 'type' => 'text', 'label' => 'MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where MARC records can be found', 'required' => true],
 					'filenamesToInclude'                => ['property' => 'filenamesToInclude', 'type' => 'text', 'label' => 'Filenames to Include', 'maxLength' => 250, 'description' => 'A regular expression to determine which files should be grouped and indexed', 'required' => true, 'default' => '.*\.ma?rc'],
-					'marcEncoding'                      => ['property' => 'marcEncoding', 'type' => 'enum', 'label' => 'MARC Encoding', 'values' => ['MARC8' => 'MARC8', 'UTF8' => 'UTF8', 'UNIMARC' => 'UNIMARC', 'ISO8859_1' => 'ISO8859_1', 'BESTGUESS' => 'BESTGUESS'], 'default' => 'MARC8'],
+					'marcEncoding'                      => ['property' => 'marcEncoding', 'type' => 'enum', 'label' => 'MARC Encoding', 'values' => ['MARC8' => 'MARC8', 'UTF8' => 'UTF8', 'UNIMARC' => 'UNIMARC', 'ISO8859_1' => 'ISO8859_1', 'BESTGUESS' => 'BESTGUESS'], 'default' => 'UTF8'],
 					'individualMARCFileSettingsSection' => [
 				'property' => 'individualMARCFileSettingsSection', 'type' => 'section', 'label' => 'Individual Record Files', 'hideInLists' => true, 'open' => true,
 				'helpLink' => '', 'properties' => [
