@@ -1,6 +1,10 @@
 {strip}
 <div id="record{$summId|escape}" class="resultsList row">
-	{if $showCovers}
+    {if isset($summExplain)}
+			<div class="hidden" id="scoreExplanationValue{$summId|escape}">{$summExplain}</div>
+    {/if}
+
+    {if $showCovers}
 		<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
 			{if $disableCoverArt != 1}
 				<a href="/MyAccount/MyList/{$summShortId}" class="alignleft listResultImage">
