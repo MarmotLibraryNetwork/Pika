@@ -37,5 +37,10 @@ class WCPL extends HorizonROA {
 		return true;
 	}
 
+	public function getSelfRegistrationFields() {
+		//TODO: set to url for
+		header('Location: https://libraryweb.wakegov.com/registration');
+		die;
+	}
 
 }
