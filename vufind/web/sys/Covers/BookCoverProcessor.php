@@ -909,12 +909,13 @@ class BookCoverProcessor {
 			}
 
 			if (!isset($noCoverUrl)){
-				$noCoverUrl = 'interface/themes/default/images/noCover2.png';
 				$this->logger->log('Resorted to noCover image for : '. $_SERVER['REQUEST_URI'], PEAR_LOG_ERR);
 				// Log when this happens regardless of doCoverLogging setting
+				return $this->processImageURL('interface/themes/default/images/noCover2.png', false);
+				// We don't want to cache this image since this is a last resort cover image.
 			}
 
-				$this->log("Found fallback cover: $noCoverUrl", PEAR_LOG_INFO);
+			$this->log("Found fallback cover: $noCoverUrl", PEAR_LOG_INFO);
 			return $this->processImageURL($noCoverUrl);
 		}
 	}
