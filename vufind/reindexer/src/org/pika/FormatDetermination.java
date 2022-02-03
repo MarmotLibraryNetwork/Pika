@@ -1237,7 +1237,7 @@ public class FormatDetermination {
 	private void getFormatFrom008(Record record, Set<String> result){
 		ControlField formatField = MarcUtil.getControlField(record, "008");
 		if(formatField != null){
-			if (formatField.getData() == null || formatField.getData().length() < 23)
+			if (formatField.getData() == null || formatField.getData().length() < 24)
 			{
 				return;
 			}
