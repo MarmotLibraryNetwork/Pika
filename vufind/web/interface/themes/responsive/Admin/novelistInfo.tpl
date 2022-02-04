@@ -2,7 +2,7 @@
 
 <div id="main-content" class="col-md-12">
 		<form name="cleanupNovelistCache" method="post">
-			<h3>Novelist Information</h3>
+			<h3>NoveList Information</h3>
 <div class="form-group">
 	<div class="row">
 		<div class="col-sm-4">
