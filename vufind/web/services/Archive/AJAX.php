@@ -967,6 +967,7 @@ class Archive_AJAX extends AJAXHandler {
 			$result['success'] = true;
 			$id                = urldecode($_REQUEST['id']);
 			if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $id)){
+				// Is not a valid grouped work Id or archive PID
 				$result['success'] = false;
 				$result['message'] = 'That is not a valid title to add to the list.';
 			}else{

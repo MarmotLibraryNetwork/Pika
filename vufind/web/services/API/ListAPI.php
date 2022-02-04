@@ -773,11 +773,11 @@ class ListAPI extends AJAXHandler {
 		$username = $_REQUEST['username'];
 		$password = $_REQUEST['password'];
 		if (!isset($_REQUEST['listId'])){
-			return array('success' => false, 'message' => 'You must provide the listId to add titles to.');
+			return ['success' => false, 'message' => 'You must provide the listId to add titles to.'];
 		}
-		$recordIds = array();
+		$recordIds = [];
 		if (!isset($_REQUEST['recordIds'])){
-			return array('success' => false, 'message' => 'You must provide one or more records to add to the list.');
+			return ['success' => false, 'message' => 'You must provide one or more records to add to the list.'];
 		}else{
 			if (!is_array($_REQUEST['recordIds'])){
 				$recordIds[] = $_REQUEST['recordIds'];
@@ -791,7 +791,7 @@ class ListAPI extends AJAXHandler {
 			$list->id      = $_REQUEST['listId'];
 			$list->user_id = $user->id;
 			if (!$list->find(true)){
-				return array('success' => false, 'message' => 'Unable to find the list to add titles to.');
+				return ['success' => false, 'message' => 'Unable to find the list to add titles to.'];
 			}else{
 				$numAdded = 0;
 				foreach ($recordIds as $id){
@@ -799,6 +799,7 @@ class ListAPI extends AJAXHandler {
 					$userListEntry         = new UserListEntry();
 					$userListEntry->listId = $list->id;
 					if (preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $id)){
+						// Is not a valid grouped work Id or archive PID
 						$userListEntry->groupedWorkPermanentId = $id;
 
 						$existingEntry = false;
@@ -821,12 +822,12 @@ class ListAPI extends AJAXHandler {
 						$numAdded++;
 					}
 				}
-				return array('success' => true, 'listId' => $list->id, 'numAdded' => $numAdded);
+				return ['success' => true, 'listId' => $list->id, 'numAdded' => $numAdded];
 			}
 
 
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 

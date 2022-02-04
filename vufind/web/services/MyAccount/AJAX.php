@@ -681,20 +681,20 @@ class MyAccount_AJAX extends AJAXHandler {
 	 * */
 	function AddList(){
 		$recordToAdd = false;
-		$return      = array();
+		$return      = [];
 		if (UserAccount::isLoggedIn()){
 			$user = UserAccount::getLoggedInUser();
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 			$title = (isset($_REQUEST['title']) && !is_array($_REQUEST['title'])) ? urldecode($_REQUEST['title']) : '';
 			if (strlen(trim($title)) == 0){
-				$return['success'] = "false";
-				$return['message'] = "You must provide a title for the list";
+				$return['success'] = false;
+				$return['message'] = 'You must provide a title for the list';
 			}else{
 				//If the record is not valid, skip the whole thing since the title could be bad too
 				if (!empty($_REQUEST['groupedWorkId']) && !is_array($_REQUEST['groupedWorkId'])){
 					$recordToAdd = urldecode($_REQUEST['groupedWorkId']);
-					require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-					if (!GroupedWork::validGroupedWorkId($recordToAdd)){
+					if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $recordToAdd)){
+						// Is not a valid grouped work Id or a valid archive PID
 						$return['success'] = false;
 						$return['message'] = 'The item to add to the list is not valid';
 						return $return;
@@ -743,12 +743,12 @@ class MyAccount_AJAX extends AJAXHandler {
 					$return['message'] = "Created list <em>{$title}</em> successfully";
 				}
 				if (!empty($list->id)){
-					$return['modalButtons'] = '<a class="btn btn-primary" href="/MyAccount/MyList/'. $list->id .'" role="button">View My List</a>';
+					$return['modalButtons'] = '<a class="btn btn-primary" href="/MyAccount/MyList/' . $list->id . '" role="button">View My List</a>';
 				}
 			}
 		}else{
-			$return['success'] = "false";
-			$return['message'] = "You must be logged in to create a list";
+			$return['success'] = false;
+			$return['message'] = 'You must be logged in to create a list';
 		}
 
 		return $return;
@@ -761,7 +761,7 @@ class MyAccount_AJAX extends AJAXHandler {
 			$list['title'] = $_REQUEST['defaultTitle'];
 		}
 		if (isset($_REQUEST['groupedWorkId'])){
-			$id = $_REQUEST['groupedWorkId'];
+			$id = urldecode($_REQUEST['groupedWorkId']); // could also be an archive PID, so url decode it.
 			$interface->assign('groupedWorkId', $id);
 		}else{
 			$id = '';
@@ -1495,6 +1495,7 @@ class MyAccount_AJAX extends AJAXHandler {
 					$userListEntry         = new UserListEntry();
 					$userListEntry->listId = $listId;
 					if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $update['id'])){
+						// Is not a valid grouped work Id or archive PID
 						$success = false;
 					}else{
 						$userListEntry->groupedWorkPermanentId = $update['id'];
