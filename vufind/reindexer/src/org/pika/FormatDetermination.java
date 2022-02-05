@@ -710,9 +710,14 @@ public class FormatDetermination {
 			}
 		}
 		if(printFormats.contains("SoundDisc")) {
-			if(printFormats.contains("CDROM")){
-				printFormats.remove("CDROM");
-				printFormats.add("SoundDiscWithCDROM");
+			if(printFormats.contains("CDROM")||printFormats.contains("WindowsGame")){
+				if (printFormats.contains("CDROM")) {
+					printFormats.remove("CDROM");
+				}
+				if(printFormats.contains("WindowsGame")) {
+					printFormats.remove("WindowsGame");
+				}
+					printFormats.add("SoundDiscWithCDROM");
 			}
 		}
 		if (printFormats.contains("CompactDisc")) {
