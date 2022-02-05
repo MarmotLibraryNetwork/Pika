@@ -684,8 +684,17 @@ public class FormatDetermination {
 				|| printFormats.contains("SoundDisc")
 				|| printFormats.contains("DVD") || printFormats.contains("Blu-ray") /* likely accompanying material */
 		)){
-			printFormats.clear();
-			printFormats.add("MusicCD");
+			if(printFormats.contains("DVD"))
+			{
+			  printFormats.clear();
+				printFormats.add("MusicCDWithDVD");
+			}else if(printFormats.contains("Blu-ray")){
+				printFormats.clear();
+				printFormats.add("MusicCDWithBluRay");
+			}else {
+				printFormats.clear();
+				printFormats.add("MusicCD");
+			}
 			return;
 		}
 		if (printFormats.contains("SoundRecording") && printFormats.contains("CDROM")){
