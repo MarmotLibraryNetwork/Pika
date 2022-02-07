@@ -1073,7 +1073,7 @@ class Sierra {
 			$message = $this->_getPrettyError();
 			return 'Could not update PIN: '. $message;
 		}
-		$patron->updatePassword($newPin);
+		$result = $patron->updatePassword($newPin);
 
 		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 		$this->cache->delete($patronCacheKey);

@@ -41,6 +41,7 @@ class DatabaseAuthentication implements Authentication {
 
 	private function login($username, $password){
 		global $configArray;
+		// todo: implement pin/password
 		if (empty($username) || empty($password)) {
 			$user = new PEAR_Error('authentication_error_blank');
 		} else {
