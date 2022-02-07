@@ -93,6 +93,7 @@
 				From the README.txt: ICU relies upon lucene-libs/lucene-analyzers-icu-X.Y.jar and lib/icu4j-X.Y.jar
 
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
+
 				-->
 				<!--<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>-->
 				<!--The CommonGrams Filter is  prevented from going into effect here by the StopFiler above -->
@@ -131,6 +132,7 @@
 						catenateNumbers="1"
 						splitOnNumerics="0"
 				/>
+				<!-- Important: Only apply word delimiter graph filter to query analyzers; not to index analyzers-->
 				<!--
 				This filter splits tokens at word delimiters.
 				If you use this filter during indexing, you must follow it with a Flatten Graph Filter to squash tokens on top of one another like the Word Delimiter Filter, because the indexer can’t directly consume a graph. To get fully correct positional queries when tokens are split, you should instead use this filter at query time.
@@ -179,6 +181,7 @@
 						(integer, default 1) If 1, strips the possessive 's from each subword.
 				-->
 				<filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
+				<!--  TODO: Solr's managed schema examples do not have the flatten graph filter in its query analyzers -->
 				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
 				<!--
 				This filter discards, or stops analysis of, tokens that are on the given stop words list.
@@ -200,6 +203,7 @@
 				From the README.txt: ICU relies upon lucene-libs/lucene-analyzers-icu-X.Y.jar and lib/icu4j-X.Y.jar
 
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
+
 				-->
 				<!--<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>-->
 				<!--The CommonGrams Filter is  prevented from going into effect here by the StopFiler above -->
@@ -208,7 +212,7 @@
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 		</fieldType>
-		<!-- Text Field without Stemming, Synonyms, and stop Word removal -->
+		<!-- Text Field without Stemming, without Synonyms, and without stop Word removal -->
 		<fieldType name="textProper" class="solr.TextField" positionIncrementGap="100">
 			<analyzer type="index">
 				<tokenizer class="solr.ICUTokenizerFactory"/>
@@ -223,6 +227,17 @@
 
 				https://solr.apache.org/guide/8_8/tokenizers.html#icu-tokenizer
 				-->
+
+				<filter class="solr.WordDelimiterGraphFilterFactory"
+						generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0"
+						splitOnCaseChange="1" splitOnNumerics="0" stemEnglishPossessive="1"
+						protected="protected_en_contractions.txt"
+				/>
+				<!-- protect contractions for matching in text_proper See D-4189 -->
+
+				<filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
+
+
 				<filter class="solr.ICUFoldingFilterFactory"/>
 				<!--
 				This filter is a custom Unicode normalization form that applies the foldings specified in Unicode TR #30: Character Foldings
@@ -256,8 +271,15 @@
 
 				https://solr.apache.org/guide/8_8/tokenizers.html#icu-tokenizer
 				-->
-				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" splitOnNumerics="0" stemEnglishPossessive="1"/>
-				<!-- Important: Only apply word delimiter graph filter to query analyzers; not to index analyzers-->
+				<filter class="solr.WordDelimiterGraphFilterFactory"
+						generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0"
+						splitOnCaseChange="1" splitOnNumerics="0" stemEnglishPossessive="1"
+						protected="protected_en_contractions.txt"
+				/>
+				<!-- protect contractions for matching in textProper fields  -->
+				<!-- Important: It appears word delimiter graph filter should be applied to both index and query analyzers,
+					at list for the textProper field. This is in contradiction to what the documentation says about
+					this filter.  See D-4189 -->
 				<!--
 				// Turn off splitOnNumerics Pascal 7/19/21 tokenizes Ids like ".b1234x" into "b","1234,"x"   See D-3984
 
@@ -325,16 +347,16 @@
 				<!-- The TrimFilter removes any leading or trailing whitespace -->
 				<filter class="solr.TrimFilterFactory"/>
 				<!-- The PatternReplaceFilter gives you the flexibility to use
-			 Java Regular expression to replace any sequence of characters
-			 matching a pattern with an arbitrary replacement string,
-			 which may include back references to portions of the original
-			 string matched by the pattern.
+				 Java Regular expression to replace any sequence of characters
+				 matching a pattern with an arbitrary replacement string,
+				 which may include back references to portions of the original
+				 string matched by the pattern.
 
-			 See the Java Regular Expression documentation for more
-			 information on pattern and replacement string syntax.
+				 See the Java Regular Expression documentation for more
+				 information on pattern and replacement string syntax.
 
-			 http://java.sun.com/j2se/1.5.0/docs/api/java/util/regex/package-summary.html
-		  -->
+				 http://java.sun.com/j2se/1.5.0/docs/api/java/util/regex/package-summary.html
+				-->
 				<filter class="solr.PatternReplaceFilterFactory" pattern="([^a-z1-9\s])" replacement="" replace="all"/>
 			</analyzer>
 		</fieldType>
@@ -363,7 +385,7 @@
 						generateWordParts="1"
 						splitOnCaseChange="1"
 						catenateAll="0"
-						stemEnglishPossessive="1"
+						stemEnglishPossessive="0"
 
 						catenateWords="1"
 						catenateNumbers="1"
@@ -371,13 +393,14 @@
 						generateNumberParts="0"
 
 				/>
+				<!--TODO: should we apply any word delimiting to a call number search ? -->
 				<!-- Important: Only apply word delimiter graph filter to query analyzers; not to index analyzers-->
 				<!--
 				// Turn off splitOnNumerics and generateNumberParts Pascal 7/19/21   Keep call number parts together
 
 				From documentation : https://solr.apache.org/guide/8_8/filter-descriptions.html#word-delimiter-graph-filter
 
-									generateWordParts
+					generateWordParts
 						(integer, default 1) If non-zero, splits words at delimiters. For example:"CamelCase", "hot-spot" -> "Camel", "Case", "hot", "spot"
 					generateNumberParts
 						(integer, default 1) If non-zero, splits numeric strings at delimiters:"1947-32" ->*"1947", "32"
@@ -401,6 +424,7 @@
 				<filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
 				<filter class="solr.LengthFilterFactory" min="2" max="100"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
+				<!--TODO: shouldn't we apply this immediately after the tokenizer ? -->
 				<!--
 				Converts any uppercase letters in a token to the equivalent lowercase token. All other characters are left unchanged.
 
@@ -660,18 +684,18 @@
 		<!-- Physical Descriptions -->
 		<field name="physical" type="string" indexed="false" stored="true" multiValued="true"/>
 		<!-- 300abcefg:530abcd -->
-		<!-- Stored but not indexed.  There is no searching against this field, but the grouped work driver does
+		<!-- Stored but not indexed. There is no searching against this field, but the grouped work driver does
 		use the solr field to populate the Main Details entry Physical Description (summPhysicalDesc) -->
 
 		<!-- Things for faceting and refined searching -->
 
 		<!-- series -->
 		<field name="series" type="text" indexed="true" stored="true" multiValued="true"/>
-		<field name="series_with_volume" type="textProper" indexed="false" stored="true" multiValued="true"/>
+		<field name="series_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+		<field name="series_with_volume" type="string" indexed="false" stored="true" multiValued="true"/>
 		<!--Not indexed used for display only. Takes any entry in series and appends series volume number after a pipe | character -->
 		<field name="series2" type="text" indexed="true" stored="true" multiValued="true"/>
 		<!--TODO: is series2 really needed?? -->
-		<field name="series_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
 
 		<!-- subject facets-->
 		<field name="subject_facet" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
@@ -690,6 +714,7 @@
 		<field name="geographic_facet" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="era" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="era_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+
 		<field name="literary_form_full" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<!-- Detailed version of the literary form. Typically consists of values: Non Fiction, Fiction, Dramas,
 			Essays, Novels, Humor, Satires, etc., Letters, Short Stories, Mixed Forms, Poetry, Speeches, Unknown,
@@ -731,6 +756,7 @@
 		<!-- Broad Search Terms -->
 		<field name="table_of_contents" type="text" indexed="true" stored="true" multiValued="true"/>
 		<field name="table_of_contents_proper" type="textProper" indexed="true" stored="true" multiValued="true"/>
+		<!-- Only used in searchspec KeywordProper TODO: keep?; turn off stored? -->
 		<field name="keywords" type="text" indexed="true" stored="false"/>
 		<field name="keywords_proper" type="textProper" indexed="true" stored="false"/>
 		<field name="description" type="text" indexed="true" stored="false"/>
@@ -811,11 +837,6 @@
 	  -->
 	<!-- uniqueKey is required for MoreLikeThis handlers-->
 
-	<!--	<defaultSearchField>keywords</defaultSearchField>
-TODO: need to set df parameter?
-* Setting <defaultSearchField> in schema is no longer allowed and will cause an exception.
-  Please use "df" parameter on the request instead. For more details, see SOLR-10585.
--->
 	<!-- CopyFields for Faceting on Text -->
 <!--	<copyField source="title_full" dest="title_fullStr"/>-->
 	<copyField source="author" dest="authorStr"/>
@@ -824,7 +845,7 @@ TODO: need to set df parameter?
 <!--	<copyField source="auth_author" dest="auth_authorStr"/>-->
 <!--	<copyField source="author2" dest="author2Str"/>-->
 <!--	<copyField source="auth_author2" dest="auth_author2Str"/>-->
-<!--	<copyField source="author_additional" dest="author_additionalStr"/> Pretty sure this is redundant pascal. 7/19/21 -->
+
 	<!-- CopyFields for Proper (Unstemmed) searching -->
 	<copyField source="title" dest="title_proper"/>
 	<copyField source="title" dest="title_exact"/>
@@ -840,5 +861,4 @@ TODO: need to set df parameter?
 	<copyField source="genre" dest="genre_proper"/>
 	<copyField source="local_callnumber_*" dest="local_callnumber_exact_*"/>
 	<copyField source="local_callnumber_*" dest="local_callnumber_left_*"/>
-
 </schema>
