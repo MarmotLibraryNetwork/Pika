@@ -1,0 +1,108 @@
+# List of english contractions with apostrophes. They don't match for searching in text_proper fields when
+# the WordDelimiterGraph filter is used in the analyzers.
+#
+# Consulted : https://en.wikipedia.org/wiki/Wikipedia:List_of_English_contractions
+#
+# This list isn't complete. leading contractions (eg 'cause) aren't needed.
+# I didn't include any compound contractions (eg couldn't've).
+# Others on the page above weren't included because I didn't find examples of it in our current catalog
+# and thought we might never (eg ne'er, e'er [those two surprised me though]).
+
+# 'd contractions
+he'd
+how'd
+i'd
+it'd
+she'd
+that'd
+there'd
+they'd
+we'd
+what'd
+when'd
+where'd
+which'd
+who'd
+why'd
+you'd
+
+# 'll contractions
+he'll
+how'll
+i'll
+it'll
+she'll
+there'll
+they'll
+we'll
+what'll
+where'll
+which'll
+you'll
+
+# 've contractions
+could've
+i've
+may've
+might've
+must've
+should've
+they've
+we've
+what've
+where've
+you've
+
+# n't contractions
+ain't
+aren't
+can't
+couldn't
+didn't
+doesn't
+don't
+hadn't
+hasn't
+haven't
+isn't
+mustn't
+needn't
+oughtn't
+shan't
+shouldn't
+wasn't
+weren't
+won't
+wouldn't
+
+# 're contractions
+that're
+they're
+we're
+how're
+what're
+who're
+why're
+you're
+
+# contractions ending with 's should be okay, because they get treated as possessives
+#he's
+#how's
+#it's
+#let's
+#she's
+#who's
+#why's
+#where's
+
+
+# other contractions
+a'ight
+cap'n
+c'mon
+g'day
+i'm
+ma'am
+o'clock
+o'er
+y'all
