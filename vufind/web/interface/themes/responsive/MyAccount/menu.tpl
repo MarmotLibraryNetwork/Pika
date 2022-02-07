@@ -257,7 +257,7 @@
 							<hr class="menu">
 							<div class="adminMenuLink{if $action == "AuthorEnrichment"} active{/if}"><a href="/Admin/AuthorEnrichment">Author Enrichment</a></div>
 							<div class="adminMenuLink{if $action == "Covers"} active{/if}"><a href="/Admin/Covers">Upload Custom Cover</a></div>
-							<div class="adminMenuLink{if $action == "NovelistInfo"} active{/if}"><a href="/Admin/NovelistInfo">Novelist Information</a></div>
+							<div class="adminMenuLink{if $action == "NovelistInfo"} active{/if}"><a href="/Admin/NovelistInfo">NoveList Information</a></div>
 						</div>
 					</div>
 				</div>

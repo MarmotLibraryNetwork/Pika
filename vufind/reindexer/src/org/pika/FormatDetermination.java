@@ -215,10 +215,12 @@ public class FormatDetermination {
 							break;
 						case "soundrecording":
 						case "sounddisc":
+						case "sounddiscwithcdrom":
 						case "playaway":
 						case "cdrom":
 						case "soundcassette":
 						case "compactdisc":
+						case "chipcartridge":
 						case "eaudio":
 							econtentItem.setFormat("eAudiobook");
 							econtentItem.setFormatCategory("Audio Books");
@@ -245,6 +247,7 @@ public class FormatDetermination {
 							break;
 						case "electronic":
 						case "software":
+						case "mixedmaterials":
 							econtentItem.setFormat("Online Materials");
 							econtentItem.setFormatCategory("Other");
 							econtentRecord.setFormatBoost(2);
@@ -681,8 +684,17 @@ public class FormatDetermination {
 				|| printFormats.contains("SoundDisc")
 				|| printFormats.contains("DVD") || printFormats.contains("Blu-ray") /* likely accompanying material */
 		)){
-			printFormats.clear();
-			printFormats.add("MusicCD");
+			if(printFormats.contains("DVD"))
+			{
+			  printFormats.clear();
+				printFormats.add("MusicCDWithDVD");
+			}else if(printFormats.contains("Blu-ray")){
+				printFormats.clear();
+				printFormats.add("MusicCDWithBluRay");
+			}else {
+				printFormats.clear();
+				printFormats.add("MusicCD");
+			}
 			return;
 		}
 		if (printFormats.contains("SoundRecording") && printFormats.contains("CDROM")){
@@ -698,9 +710,18 @@ public class FormatDetermination {
 			}
 		}
 		if(printFormats.contains("SoundDisc")) {
-			if(printFormats.contains("CDROM")){
-				printFormats.remove("CDROM");
-				printFormats.add("SoundDiscWithCDROM");
+			if(printFormats.contains("MP3")){
+				printFormats.clear();
+				printFormats.add("MP3Disc");
+			}
+			if(printFormats.contains("CDROM")||printFormats.contains("WindowsGame")){
+				if (printFormats.contains("CDROM")) {
+					printFormats.remove("CDROM");
+				}
+				if(printFormats.contains("WindowsGame")) {
+					printFormats.remove("WindowsGame");
+				}
+					printFormats.add("SoundDiscWithCDROM");
 			}
 		}
 		if (printFormats.contains("CompactDisc")) {
@@ -960,6 +981,8 @@ public class FormatDetermination {
 							result.add("WonderBook");
 						}else if (physicalDescriptionData.contains("vox book")){
 							result.add("VoxBook")	;
+						}else if (physicalDescriptionData.contains("hotspot device") || physicalDescriptionData.contains("mobile hotspot") || physicalDescriptionData.contains("hot spot")){
+							result.add("PhysicalObject");
 						}
 						//Since this is fairly generic, only use it if we have no other formats yet
 						if (result.size() == 0 && subfield.getCode() == 'f' && physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")) {
@@ -1022,7 +1045,10 @@ public class FormatDetermination {
 						result.add("GoReader");
 					} else if (noteValue.contains("board pages")){
 						result.add("BoardBook");
+					} else if (noteValue.contains("mp3")){
+						result.add("MP3");
 					}
+
 				}
 			}
 		}
@@ -1078,13 +1104,13 @@ public class FormatDetermination {
 			return "Xbox360";
 		} else if (value.contains("playstation vita") /*&& !value.contains("compatible")*/) {
 			return "PlayStationVita";
-		} else if (value.contains("playstation 5") && !value.contains("compatible")) {
+		} else if (value.contains("playstation 5") && !value.contains("compatible") && !value.contains("blu-ray disc player")) {
 			return "PlayStation5";
-		} else if (value.contains("playstation 4") && !value.contains("compatible")) {
+		} else if (value.contains("playstation 4") && !value.contains("compatible") && !value.contains("blu-ray disc player")) {
 			return "PlayStation4";
-		} else if (value.contains("playstation 3") && !value.contains("compatible")) {
+		} else if (value.contains("playstation 3") && !value.contains("compatible") && !value.contains("blu-ray disc player")) {
 			return "PlayStation3";
-		} else if (value.contains("playstation") && !value.contains("compatible")) {
+		} else if (value.contains("playstation") && !value.contains("compatible") && !value.contains("blu-ray disc player")) {
 			return "PlayStation";
 		} else if (value.contains("wii u")) {
 			return "WiiU";
@@ -1234,7 +1260,7 @@ public class FormatDetermination {
 	private void getFormatFrom008(Record record, Set<String> result){
 		ControlField formatField = MarcUtil.getControlField(record, "008");
 		if(formatField != null){
-			if (formatField.getData() == null || formatField.getData().length() < 23)
+			if (formatField.getData() == null || formatField.getData().length() < 24)
 			{
 				return;
 			}

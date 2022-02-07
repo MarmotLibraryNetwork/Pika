@@ -62,7 +62,7 @@ class Admin_NovelistInfo extends Admin_Admin {
 		$interface->assign('numCachedObjects', $numCachedObjects);
 		$interface->assign('checkRecord', $checkRecord);
 
-		$this->display('novelistInfo.tpl', 'Novelist Information');
+		$this->display('novelistInfo.tpl', 'NoveList Information');
 
 	}
 

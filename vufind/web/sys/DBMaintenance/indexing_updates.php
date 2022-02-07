@@ -451,20 +451,44 @@ function getIndexingUpdates(){
 					'SoundDiscWithCDROM', '3')"
 			],
 		],
-		'2022.01.0_add_DVDWithCDROM_format'    => [
-			'title'           => 'Add Video DVD with CD-Rom',
-			'description'     => 'Add Video DVD with CD-Rom special features to translation maps',
+		'2022.01.0_add_AudioWithVideoExtra_formats'    => [
+			'title'           => 'Add Audio CD with DVD/Blu-Ray',
+			'description'     => 'Add Audio CD with DVD/Blu-Ray extras',
 			'continueOnError' => true,
 			'sql'             =>[
 				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
 					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
-					'DVDWithCDROM', 'movie')
+					'MusicCDWithDVD', 'music')
+        	,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
+					'MusicCDWithBluRay', 'music')                                                                              
 					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
-					'DVDWithCDROM', 'DVD with DVD-ROM')
+					'MusicCDWithDVD', 'Music CD With DVD')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'MusicCDWithBluRay', 'Music CD With Blu-Ray')
 					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
-					'DVDWithCDROM', 'Movies')
+					'MusicCDWithDVD', 'Music')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'MusicCDWithBluRay', 'Music')
 					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
-					'DVDWithCDROM', '3')"
+					'MusicCDWithDVD', '6')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'MusicCDWithBluRay', '6')"
+			],
+		],
+		'2022.01.0_add_mp3Disc_format'    => [
+			'title'           => 'Add MP3 Audio CD format',
+			'description'     => 'Add MP3 Audio CD to translation maps',
+			'continueOnError' => true,
+			'sql'             =>[
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
+					'MP3Disc', 'book')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'MP3Disc', 'MP3 Audio Disc')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'MP3Disc', 'Audio Books')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'MP3Disc', '8')"
 			],
 		],
 

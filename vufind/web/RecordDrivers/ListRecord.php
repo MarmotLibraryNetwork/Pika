@@ -63,6 +63,12 @@ class ListRecord extends IndexRecord{
 			$interface->assign('summNumTitles', 0);
 		}
 
+		global $configArray;
+		if ($configArray['System']['debugSolr']){
+			$interface->assign('summScore', $this->getScore());
+			$interface->assign('summExplain', $this->getExplain());
+		}
+
 		// Obtain and assign snippet (highlighting) information:
 		$snippets = $this->getHighlightedSnippets();
 		$interface->assign('summSnippets', $snippets);
