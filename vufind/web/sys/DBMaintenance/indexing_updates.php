@@ -475,6 +475,22 @@ function getIndexingUpdates(){
 					'MusicCDWithBluRay', '6')"
 			],
 		],
+		'2022.01.0_add_mp3Disc_format'    => [
+			'title'           => 'Add MP3 Audio CD format',
+			'description'     => 'Add MP3 Audio CD to translation maps',
+			'continueOnError' => true,
+			'sql'             =>[
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
+					'MP3Disc', 'book')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'MP3Disc', 'MP3 Audio Disc')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'MP3Disc', 'Audio Books')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'MP3Disc', '6')"
+			],
+		],
 
 	);
 }
