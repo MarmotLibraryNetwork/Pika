@@ -1034,7 +1034,7 @@ class Sierra {
 		$r = $this->_doRequest($operation, $params, 'PUT');
 
 		if(!$r){
-			$this->logger->warn("Unable to update patron", ["message"=>$this->apiLastError]);
+			$this->logger->debug("Unable to update patron", ["message"=>$this->apiLastError]);
 			$errors[] = "An error occurred. Please try in again later.";
 		}
 
@@ -1051,7 +1051,7 @@ class Sierra {
 	 * @param string $oldPin
 	 * @param string $newPin
 	 * @param string $confirmNewPin
-	 * @return Array Error or success message.
+	 * @return string Error or success message.
 	 * @throws ErrorException
 	 */
 	public function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
@@ -1073,7 +1073,7 @@ class Sierra {
 			$message = $this->_getPrettyError();
 			return 'Could not update PIN: '. $message;
 		}
-		$patron->setPassword($newPin);
+		$patron->updatePassword($newPin);
 
 		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 		$this->cache->delete($patronCacheKey);
@@ -2890,8 +2890,8 @@ EOT;
 		}
 
 		$params = [
-			"barcode"         => $barcode,
-			"pin"             => $pin,
+			"barcode" => $barcode,
+			"pin"     => $pin,
 		];
 
 		//This setting is required for Sacramento student Ids to get a good pin validation response.
