@@ -710,6 +710,10 @@ public class FormatDetermination {
 			}
 		}
 		if(printFormats.contains("SoundDisc")) {
+			if(printFormats.contains("MP3")){
+				printFormats.clear();
+				printFormats.add("MP3Disc");
+			}
 			if(printFormats.contains("CDROM")||printFormats.contains("WindowsGame")){
 				if (printFormats.contains("CDROM")) {
 					printFormats.remove("CDROM");
@@ -1039,7 +1043,10 @@ public class FormatDetermination {
 						result.add("GoReader");
 					} else if (noteValue.contains("board pages")){
 						result.add("BoardBook");
+					} else if (noteValue.contains("mp3")){
+						result.add("MP3");
 					}
+
 				}
 			}
 		}
