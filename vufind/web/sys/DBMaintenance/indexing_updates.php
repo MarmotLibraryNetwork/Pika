@@ -488,7 +488,7 @@ function getIndexingUpdates(){
 					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
 					'MP3Disc', 'Audio Books')
 					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
-					'MP3Disc', '6')"
+					'MP3Disc', '8')"
 			],
 		],
 
