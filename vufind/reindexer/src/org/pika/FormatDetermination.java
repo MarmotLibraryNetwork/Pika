@@ -981,6 +981,8 @@ public class FormatDetermination {
 							result.add("WonderBook");
 						}else if (physicalDescriptionData.contains("vox book")){
 							result.add("VoxBook")	;
+						}else if (physicalDescriptionData.contains("hotspot device") || physicalDescription.contains("mobile hotspot") || physicalDescription.contains("hot spot")){
+							result.add("PhysicalObject");
 						}
 						//Since this is fairly generic, only use it if we have no other formats yet
 						if (result.size() == 0 && subfield.getCode() == 'f' && physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")) {
