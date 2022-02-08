@@ -39,7 +39,7 @@ class User extends DB_DataObject {
 	protected $cat_username;                    // string(50)
 	protected $cat_password;
 	public $barcode;                        // string(50) Replaces $cat_username for sites using barcode/pin auth
-	private $password;                       // string(128) password - Replaces $cat_password
+	protected $password;                       // string(128) password - Replaces $cat_password
 	public $patronType;
 	public $created;                         // datetime(19)  not_null binary
 	public $homeLocationId;                  // int(11)
@@ -230,27 +230,43 @@ class User extends DB_DataObject {
 	 * Update an existing password in the database. Use this method when updating a password or setting a new
 	 * password for the user.
 	 * @param $password
-	 * @return int|false Number of rows affected or false on failure.
+	 * @return boolean True on success or false on failure.
 	 */
 	public function updatePassword($password) {
 		$encryptedPassword = $this->_encryptPassword($password);
-		$this->password = $encryptedPassword;
-		return $this->update();
+		$sql = "UPDATE user SET password = '" . $encryptedPassword . "' WHERE id = " . $this->id;
+
+		$result = $this->query($sql);
+		if($result >= 1) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
+	 * decrypt password
 	 * @param string  $password
 	 * @return string Encrypted password
 	 */
 	private function _encryptPassword($password) {
+//		global $configArray;
+//		$key = base64_decode($configArray["Site"]["passwordEncryptionKey"]);
+//		$v   = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
+//		$e   = openssl_encrypt($password, 'aes-256-cbc', $key, 0, $v);
+//		$p   = base64_encode($e . '::' . $v);
 		return $password;
 	}
 
 	/**
+	 * encypt password
 	 * @param  string $encryptedPassword
 	 * @return string Decrypted password
 	 */
 	private function _decryptPassword($encryptedPassword) {
+		// global $configArray;
+		// $key = base64_decode($configArray["Site"]["passwordEncryptionKey"]);
+		// [$encryptedPW, $v] = explode('::', base64_decode($this->password), 2);
+		// $password = openssl_decrypt($encryptedPW, 'aes-256-cbc', $key, 0, $v);
 		return $encryptedPassword;
 	}
 
@@ -304,6 +320,7 @@ class User extends DB_DataObject {
 			$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
 			$this->logger->debug($name . " being set by " . $calledBy['function'], array("trace" => $calledBy));
 			$this->setPassword($value);
+			return;
 		}
 
 		// Handle deprecated cat_* properties
