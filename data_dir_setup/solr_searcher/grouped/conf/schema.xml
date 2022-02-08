@@ -765,7 +765,11 @@
 		<field name="keywords" type="text" indexed="true" stored="false"/>
 		<field name="keywords_proper" type="textProper" indexed="true" stored="false"/>
 		<field name="description" type="text" indexed="true" stored="false"/>
-		<field name="display_description" type="text" indexed="true" stored="true"/>
+		<!-- all MARC 520a tags from all related records and OverDrive metadata shortDescription & fullDescription -->
+		<field name="display_description" type="string" indexed="false" stored="true"/>
+		<!--The "best" description to present to users. This is intended to be the description shown in search results.
+		 Indexing prefers description based on format: book over ebook, then ebook over other formats.
+		 Within the preferred format, the longest description is used.-->
 
 		<!-- Identifiers -->
 <!--		<field name="lccn" type="string" indexed="true" stored="true" multiValued="true"/>-->
