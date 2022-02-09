@@ -865,6 +865,10 @@ public class FormatDetermination {
 			}else if (titleMedium.contains("dvd")){
 				printFormats.add("DVD");
 			}
+			else if (titleMedium.contains("mp3"))
+			{
+				printFormats.add("MP3");
+			}
 
 		}
 		String titleForm = MarcUtil.getFirstFieldVal(record, "245k");
