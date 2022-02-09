@@ -301,7 +301,7 @@ class UserAccount {
 				if ($userData->N != 0 && $userData->N != false){
 					$cat_username   = $userData->cat_username;
 					$accountProfile = $userData->getAccountProfile();
-					if ($accountProfile->loginConfiguration = "barcode_pin") {
+					if ($accountProfile->loginConfiguration == "barcode_pin") {
 						$barcode_or_pin = $userData->getPassword();
 					} else {
 						$barcode_or_pin = $userData->barcode;
