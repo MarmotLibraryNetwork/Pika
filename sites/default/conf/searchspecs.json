@@ -272,14 +272,21 @@
       ],
       "series2": [
         ["and", 30]
+      ],
+      "table_of_contents": [
+        ["and", 50]
       ]
     }
   },
   "TitleProper": {
     "DismaxFields": [
       "title_proper^850",
-      "series_proper^100"
+      "series_proper^100",
+      "table_of_contents_proper^10"
     ],
+    /*TODO: likely should add title_exact and title_left to DismaxFields above since they are the specifications
+    used to do the "proper" searching
+    */
     "QueryFields": {
       "title_exact": [
         ["localized_callnumber", 2400]

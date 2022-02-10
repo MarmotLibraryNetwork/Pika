@@ -73,7 +73,7 @@ public class UserListProcessor {
 		long numListsSkipped = 0L;
 		try {
 			PreparedStatement listsStmt;
-			final String      sql = "SELECT user_list.id AS id, deleted, public, title, description, user_list.created, dateUpdated, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user ON user_id = user.id ";
+			final String      sql = "SELECT user_list.id AS id, deleted, public, title, description, user_list.created, dateUpdated, firstname, lastname, displayName, homeLocationId, user_id FROM user_list INNER JOIN user ON user_id = user.id ";
 			if (fullReindex || userListsOnly) {
 				if (userListsOnly) {
 					// Delete all lists from the index
@@ -121,7 +121,7 @@ public class UserListProcessor {
 			ResultSet         allPublicListsRS     = listsStmt.executeQuery()
 			) {
 				while (allPublicListsRS.next()) {
-					if (updateSolrForList(updateServer, solrServer, getTitlesForListStmt, allPublicListsRS)) {
+					if (updateSolrForList(updateServer, solrServer, getTitlesForListStmt, allPublicListsRS, userListsOnly)) {
 						numListsProcessed++;
 					} else {
 						numListsSkipped++;
@@ -151,12 +151,12 @@ public class UserListProcessor {
 	 * @throws SolrServerException
 	 * @throws IOException
 	 */
-	private boolean updateSolrForList(ConcurrentUpdateSolrClient updateServer, HttpSolrClient solrServer, PreparedStatement getTitlesForListStmt, ResultSet allPublicListsRS) throws SQLException, SolrServerException, IOException {
+	private boolean updateSolrForList(ConcurrentUpdateSolrClient updateServer, HttpSolrClient solrServer, PreparedStatement getTitlesForListStmt, ResultSet allPublicListsRS, boolean userListsOnly) throws SQLException, SolrServerException, IOException {
 		UserListSolr userListSolr = new UserListSolr(indexer);
 		long         listId       = allPublicListsRS.getLong("id");
 
 		long userId   = allPublicListsRS.getLong("user_id");
-		if (!fullReindex /* && !userListsOnly*/) {
+		if (!fullReindex  && !userListsOnly) {
 			int deleted  = allPublicListsRS.getInt("deleted");
 			int isPublic = allPublicListsRS.getInt("public");
 			if (deleted == 1 || isPublic == 0) {

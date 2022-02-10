@@ -51,17 +51,9 @@ class ListRecord extends IndexRecord{
 		$interface->assign('summId', $id);
 		$interface->assign('summShortId', substr($id, 4)); //Trim the list prefix for the short id
 		$interface->assign('summTitle', $this->getTitle(true));
-		$interface->assign('summAuthor', $this->getPrimaryAuthor(true));
-		if (isset($this->fields['description'])){
-			$interface->assign('summDescription', $this->getDescription(true));
-		}else{
-			$interface->assign('summDescription', '');
-		}
-		if (isset($this->fields['num_titles'])){
-			$interface->assign('summNumTitles', $this->fields['num_titles']);
-		}else{
-			$interface->assign('summNumTitles', 0);
-		}
+		$interface->assign('summAuthor', $this->getPrimaryAuthor());
+		$interface->assign('summDescription', $this->getDescription());
+		$interface->assign('summNumTitles', $this->fields['num_titles'] ?? 0);
 
 		global $configArray;
 		if ($configArray['System']['debugSolr']){

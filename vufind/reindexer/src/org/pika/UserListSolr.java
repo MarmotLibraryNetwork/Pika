@@ -62,6 +62,7 @@ public class UserListSolr {
 
 		doc.addField("table_of_contents", contents);
 		doc.addField("description", description);
+		doc.addField("display_description", description);
 		doc.addField("keywords", description);
 
 		//TODO: Should we count number of views to determine popularity?

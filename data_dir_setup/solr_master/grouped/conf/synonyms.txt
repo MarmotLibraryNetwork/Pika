@@ -37,7 +37,8 @@ GA,Georgia
 HI,Hawaii
 ID,Idaho
 IL,Illinois
-IN,Indiana
+#IN,Indiana
+# Do not use "in" as synonym since it is a stop word also.  See D-4166
 IA,Iowa
 KS,Kansas
 KY,Kentucky
@@ -59,7 +60,8 @@ NC,North Carolina
 ND,North Dakota
 OH,Ohio
 OK,Oklahoma
-OR,Oregon
+#OR,Oregon
+# Do not use "or" as synonym since it is a stop word also.  See D-4166
 PA,Pennsylvania
 RI,Rhode Island
 SC,South Carolina
