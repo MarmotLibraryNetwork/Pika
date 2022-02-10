@@ -1,5 +1,11 @@
 {strip}
 <div id="record{$summId|escape}" class="resultsList row">
+    {if isset($summExplain)}
+			<div class="hidden" id="scoreExplanationValue{$summId|escape}">
+				<samp  style="overflow-wrap: break-word">{$summExplain}</samp>
+			</div>
+    {/if}
+
 	<div class="imageColumn col-md-3">
 		<div class="selectTitle col-md-4">
 			<label for="selected{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}" class="resultIndex checkbox"><strong>{$resultIndex}</strong>
@@ -20,13 +26,15 @@
 
 	<div class="col-md-9">
 		<div class="row">
-			{if $summScore}({$summScore}) {/if}
 			<strong>
 				<a href="{$recordDriver->getLinkUrl()}" class="title">{if !$summTitle}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}</a>
 				{if $summTitleStatement}
 					<div class="searchResultSectionInfo">
 					{$summTitleStatement|removeTrailingPunctuation|truncate:180:"..."|highlight}
 					</div>
+				{/if}
+				{if isset($summScore)}
+					&nbsp;(<a href="#" onclick="return Pika.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)
 				{/if}
 			</strong>
 		</div>

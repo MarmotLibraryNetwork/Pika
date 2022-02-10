@@ -1,5 +1,11 @@
 {strip}
 <div id="record{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}" class="resultsList row">
+    {if isset($summExplain)}
+			<div class="hidden" id="scoreExplanationValue{$jquerySafeId|escape}">
+				<samp  style="overflow-wrap: break-word">{$summExplain}</samp>
+			</div>
+    {/if}
+
 	{if $showCovers}
 
 	<div class="col-xs-12 col-sm-3{if !$viewingCombinedResults} col-md-3 col-lg-2{/if} text-center">
@@ -25,7 +31,7 @@
 					&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|highlight|truncate:180:"..."}
 				{/if}
 				{if isset($summScore)}
-					&nbsp;(<a href="#" onclick="return Pika.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)
+					&nbsp;(<a href="#" onclick="return Pika.showElementInPopup('Score Explanation', '#scoreExplanationValue{$jquerySafeId|escape}');">{$summScore}</a>)
 				{/if}
 			</div>
 		</div>

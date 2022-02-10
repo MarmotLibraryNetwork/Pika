@@ -31,6 +31,9 @@ abstract class IslandoraDriver extends RecordInterface {
 	protected $pid = null;
 	protected $title = null;
 
+	protected $solrScore = null;
+	protected $solrExplanation = null;
+
 	/** @var AbstractFedoraObject|null */
 	protected $archiveObject = null;
 
@@ -52,8 +55,11 @@ abstract class IslandoraDriver extends RecordInterface {
 			$this->pid = $this->archiveObject->id;
 			$this->title = $this->archiveObject->label;
 		}elseif (is_array($recordData)){
-			$this->pid = $recordData['PID'];
-			$this->title = isset($recordData['fgs_label_s']) ? $recordData['fgs_label_s'] : (isset($recordData['dc.title']) ? $recordData['dc.title'] : "");
+			// Solr Document Array
+			$this->pid             = $recordData['PID'];
+			$this->title           = $recordData['fgs_label_s'] ?? $recordData['dc.title'] ?? '';
+			$this->solrScore       = $recordData['score'] ?? '';
+			$this->solrExplanation = $recordData['explain'] ?? null;
 		}else{
 			$this->pid = $recordData;
 		}
@@ -315,9 +321,6 @@ abstract class IslandoraDriver extends RecordInterface {
 		$interface->assign('$summSnippets', null);
 
 
-		//Determine the cover to use
-//		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
-		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
 
 		//Get information from list entry
@@ -342,6 +345,24 @@ abstract class IslandoraDriver extends RecordInterface {
 		$interface->assign('recordDriver', $this);
 
 		return 'RecordDrivers/Islandora/listentry.tpl';
+	}
+
+	public function getScore(){
+		return $this->solrScore ?? null;
+	}
+
+	public function getExplain(){
+		if (isset($this->solrExplanation)){
+			$explain = explode(', result of:', $this->solrExplanation, 2);
+			// Break query from score explanation
+			$explain[1] = preg_replace('/weight\((.*):(.*)( in \d+\))/i', 'weight(<code>$1</code>:<strong>$2</strong>$3)', $explain[1]);
+			// highlight the solr fields and the search term of interest
+			$explain[1] = preg_replace('/computed as (.*) from:/i', 'computed as <var>$1</var> from:', $explain[1]);
+			// italicize the formula fragments
+			return $explain[0] . '<br> result of : <p>' . nl2br(str_replace(' ', '&nbsp;', $explain[1])) . '</p>';
+			// Put text back together, replace spaces with non-breaking space character, so the indentation of explaination lines display
+		}
+		return '';
 	}
 
 
@@ -394,6 +415,12 @@ abstract class IslandoraDriver extends RecordInterface {
 		//Determine the cover to use
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+
+		global $configArray;
+		if ($configArray['System']['debugSolr']){
+			$interface->assign('summScore', $this->getScore());
+			$interface->assign('summExplain', $this->getExplain());
+		}
 
 		return 'RecordDrivers/Islandora/result.tpl';
 	}

@@ -1479,6 +1479,7 @@ class SearchObject_Solr extends SearchObject_Base {
 
 			global $interface;
 			$interface->assign('debugSolrOutput', $this->debugOutput());
+			$interface->assign('debugTiming', $this->getDebugTiming());
 		}
 
 		// Return the result set
