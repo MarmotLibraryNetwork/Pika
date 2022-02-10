@@ -911,7 +911,7 @@ public class FormatDetermination {
 					result.add("PlayawayView");
 				}else if (sysDetailsValue.contains("playaway")) {
 					result.add("Playaway");
-				}else if (sysDetailsValue.contains("go reader")) {
+				}else if (sysDetailsValue.matches(".*[^a-z]go reader.*")) {
 					result.add("GoReader");
 				}
 			}
@@ -931,7 +931,7 @@ public class FormatDetermination {
 						result.add("LargePrint");
 //					} else if (editionData.contains("young reader")) {
 //						result.add("Young Reader");
-					} else if (editionData.contains("go reader")) {
+					} else if (editionData.matches(".*[^a-z]go reader.*")) {
 						result.add("GoReader");
 					}	 else if (editionData.contains("wonderbook")) {
 						result.add("WonderBook");
@@ -1045,7 +1045,7 @@ public class FormatDetermination {
 						result.add("Playaway");
 					} else if (noteValue.contains("vertical file")) {
 						result.add("VerticalFile");
-					}else if (noteValue.contains("go reader")){
+					}else if (noteValue.matches(".*[^a-z]go reader.*")){
 						result.add("GoReader");
 					} else if (noteValue.contains("board pages")){
 						result.add("BoardBook");
