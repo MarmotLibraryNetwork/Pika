@@ -95,8 +95,72 @@
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
 
 				-->
+
+				<filter class="solr.WordDelimiterGraphFilterFactory"
+						generateWordParts="0"
+						generateNumberParts="0"
+						splitOnCaseChange="0"
+						catenateAll="0"
+						stemEnglishPossessive="1"
+
+						catenateWords="0"
+						catenateNumbers="0"
+						splitOnNumerics="0"
+				/>
+				<!--TODO: turning off every option but stemEnglishPossessive for index analyzer for now. -->
+				<!-- Important: Only apply word delimiter graph filter to query analyzers; not to index analyzers-->
+				<!--
+				This filter splits tokens at word delimiters.
+				If you use this filter during indexing, you must follow it with a Flatten Graph Filter to squash tokens on top of one another like the Word Delimiter Filter, because the indexer can’t directly consume a graph. To get fully correct positional queries when tokens are split, you should instead use this filter at query time.
+
+				Note: although this filter produces correct token graphs, it cannot consume an input token graph correctly.
+
+				The rules for determining delimiters are determined as follows:
+
+					A change in case within a word: "CamelCase" -> "Camel", "Case". This can be disabled by setting splitOnCaseChange="0".
+
+					A transition from alpha to numeric characters or vice versa: "Gonzo5000" -> "Gonzo", "5000" "4500XL" -> "4500", "XL". This can be disabled by setting splitOnNumerics="0".
+
+					Non-alphanumeric characters (discarded): "hot-spot" -> "hot", "spot"
+
+					A trailing "'s" is removed: "O’Reilly’s" -> "O", "Reilly"
+
+					Any leading or trailing delimiters are discarded: "-hot-spot-" -> "hot", "spot" (original example uses double dashes not allowed in xml comments)
+
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#word-delimiter-graph-filter
+				-->
+				<!--
+				// Turn off splitOnNumerics Pascal 7/19/21 tokenizes Ids like ".b1234x" into "b","1234,"x"   See D-3984
+
+				From documentation : https://solr.apache.org/guide/8_8/filter-descriptions.html#word-delimiter-graph-filter
+
+									generateWordParts
+						(integer, default 1) If non-zero, splits words at delimiters. For example:"CamelCase", "hot-spot" -> "Camel", "Case", "hot", "spot"
+					generateNumberParts
+						(integer, default 1) If non-zero, splits numeric strings at delimiters:"1947-32" ->*"1947", "32"
+					splitOnCaseChange
+						(integer, default 1) If 0, words are not split on camel-case changes:"BugBlaster-XL" -> "BugBlaster", "XL". Example 1 below illustrates the default (non-zero) splitting behavior.
+					splitOnNumerics
+						(integer, default 1) If 0, don’t split words on transitions from alpha to numeric:"FemBot3000" -> "Fem", "Bot3000"
+					catenateWords
+						(integer, default 0) If non-zero, maximal runs of word parts will be joined: "hot-spot-sensor’s" -> "hotspotsensor"
+					catenateNumbers
+						(integer, default 0) If non-zero, maximal runs of number parts will be joined: 1947-32" -> "194732"
+					catenateAll
+						(0/1, default 0) If non-zero, runs of word and number parts will be joined: "Zap-Master-9000" -> "ZapMaster9000"
+					preserveOriginal
+						(integer, default 0) If non-zero, the original token is preserved: "Zap-Master-9000" -> "Zap-Master-9000", "Zap", "Master", "9000"
+					protected
+						(optional) The pathname of a file that contains a list of protected words that should be passed through without splitting.
+					stemEnglishPossessive
+						(integer, default 1) If 1, strips the possessive 's from each subword.
+				-->
+				<filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
 				<!--<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>-->
-				<!--The CommonGrams Filter is  prevented from going into effect here by the StopFiler above -->
+				<!--The CommonGrams Filter is  prevented from going into effect here by the StopFilter above
+				 TODO: in other words, I think the CommonGrams has to precede the StopFilter to have an effect
+				 -->
 				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
 				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
@@ -254,6 +318,68 @@
 
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
 				-->
+
+				<filter class="solr.WordDelimiterGraphFilterFactory"
+						generateWordParts="0"
+						generateNumberParts="0"
+						splitOnCaseChange="0"
+						catenateAll="0"
+						stemEnglishPossessive="1"
+
+						catenateWords="0"
+						catenateNumbers="0"
+						splitOnNumerics="0"
+				/>
+				<!-- Turning off every option but stemEnglishPossessive for index analyzer for now.
+				 Word Delimiter is needed to remove punctuation from tokens See D-4171 and D-4172 -->
+				<!--
+				This filter splits tokens at word delimiters.
+				If you use this filter during indexing, you must follow it with a Flatten Graph Filter to squash tokens on top of one another like the Word Delimiter Filter, because the indexer can’t directly consume a graph. To get fully correct positional queries when tokens are split, you should instead use this filter at query time.
+
+				Note: although this filter produces correct token graphs, it cannot consume an input token graph correctly.
+
+				The rules for determining delimiters are determined as follows:
+
+					A change in case within a word: "CamelCase" -> "Camel", "Case". This can be disabled by setting splitOnCaseChange="0".
+
+					A transition from alpha to numeric characters or vice versa: "Gonzo5000" -> "Gonzo", "5000" "4500XL" -> "4500", "XL". This can be disabled by setting splitOnNumerics="0".
+
+					Non-alphanumeric characters (discarded): "hot-spot" -> "hot", "spot"
+
+					A trailing "'s" is removed: "O’Reilly’s" -> "O", "Reilly"
+
+					Any leading or trailing delimiters are discarded: "-hot-spot-" -> "hot", "spot" (original example uses double dashes not allowed in xml comments)
+
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#word-delimiter-graph-filter
+				-->
+				<!--
+				// Turn off splitOnNumerics Pascal 7/19/21 tokenizes Ids like ".b1234x" into "b","1234,"x"   See D-3984
+
+				From documentation : https://solr.apache.org/guide/8_8/filter-descriptions.html#word-delimiter-graph-filter
+
+									generateWordParts
+						(integer, default 1) If non-zero, splits words at delimiters. For example:"CamelCase", "hot-spot" -> "Camel", "Case", "hot", "spot"
+					generateNumberParts
+						(integer, default 1) If non-zero, splits numeric strings at delimiters:"1947-32" ->*"1947", "32"
+					splitOnCaseChange
+						(integer, default 1) If 0, words are not split on camel-case changes:"BugBlaster-XL" -> "BugBlaster", "XL". Example 1 below illustrates the default (non-zero) splitting behavior.
+					splitOnNumerics
+						(integer, default 1) If 0, don’t split words on transitions from alpha to numeric:"FemBot3000" -> "Fem", "Bot3000"
+					catenateWords
+						(integer, default 0) If non-zero, maximal runs of word parts will be joined: "hot-spot-sensor’s" -> "hotspotsensor"
+					catenateNumbers
+						(integer, default 0) If non-zero, maximal runs of number parts will be joined: 1947-32" -> "194732"
+					catenateAll
+						(0/1, default 0) If non-zero, runs of word and number parts will be joined: "Zap-Master-9000" -> "ZapMaster9000"
+					preserveOriginal
+						(integer, default 0) If non-zero, the original token is preserved: "Zap-Master-9000" -> "Zap-Master-9000", "Zap", "Master", "9000"
+					protected
+						(optional) The pathname of a file that contains a list of protected words that should be passed through without splitting.
+					stemEnglishPossessive
+						(integer, default 1) If 1, strips the possessive 's from each subword.
+				-->
+				<filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
 				<!--<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>-->
 				<!-- CommonGrams filtering does not seem to work with quoted search phrase,
 				which appears to be the reason we switch over to searching against textProper fields
@@ -529,8 +655,11 @@
 		<field name="title_sub" type="text" indexed="true" stored="true"/>
 		<field name="title_short" type="text" indexed="true" stored="true"/>
 		<field name="title_full" type="text" indexed="true" stored="true" multiValued="true"/> <!-- Title full includes the author -->
-<!--		<field name="title_fullStr" type="string" indexed="true" stored="true" multiValued="true"/>-->
-		<!--TODO: How is title_full & title_fullStr different? Can one be removed? -->
+		<!--All 245 subfields separated by a space.  If a 245c (author in title) isn't present, the author found
+		  in the 100abcdq or 110ab is added to the end of the title fields.
+		  Note: This is important for search strategies the combine a title phrase with an author phrase, especially
+		  sparsely populated marc. (like order records with may only have 245 & 100 tags populated.
+		  -->
 		<field name="title_alt" type="text" indexed="true" stored="true" multiValued="true"/>
 		<!-- Alternate Titles
 		130adfgklnpst:240a:246abnp:700tnr:730adfgklnpst:740a
