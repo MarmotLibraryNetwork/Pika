@@ -229,6 +229,13 @@ class SearchObject_Genealogy extends SearchObject_Base {
 			$this->allFacetSettings[$section][$setting] : '';
 	}
 
+	public function getDebugTiming() {
+		if ($this->debug && isset($this->indexResult['debug'])){
+			return json_encode($this->indexResult['debug']['timing'], JSON_PRETTY_PRINT);
+		}
+		return null;
+	}
+
 	/**
 	 * Used during repeated deminification (such as search history).
 	 *   To scrub fields populated above.
@@ -644,14 +651,19 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		}
 
 		//Add debug information to the results if available
-		if ($this->debug && isset($this->indexResult['debug'])){
-			$explainInfo = $this->indexResult['debug']['explain'];
-			foreach ($this->indexResult['response']['docs'] as $key => $result){
-				if (array_key_exists($result['id'], $explainInfo)){
-					$result['explain']                           = $explainInfo[$result['id']];
-					$this->indexResult['response']['docs'][$key] = $result;
+		if ($this->debug){
+			if (!empty($this->indexResult['debug']['explain'])){
+				$explainInfo = $this->indexResult['debug']['explain'];
+				foreach ($this->indexResult['response']['docs'] as &$result){
+					if (array_key_exists($result['id'], $explainInfo)){
+						$result['explain'] = $explainInfo[$result['id']];
+					}
 				}
 			}
+
+			global $interface;
+			$interface->assign('debugSolrOutput', $this->debugOutput());
+			$interface->assign('debugTiming', $this->getDebugTiming());
 		}
 
 		// Return the result set

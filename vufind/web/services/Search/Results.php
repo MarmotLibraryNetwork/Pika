@@ -112,7 +112,6 @@ class Search_Results extends Union_Results {
 		//   no matter whether there were any results
 		$displayQuery = $searchObject->displayQuery();
 		$interface->assign('qtime',               round($searchObject->getQuerySpeed(), 2));
-		$interface->assign('debugTiming',         $searchObject->getDebugTiming());
 		$interface->assign('lookfor',             $displayQuery);
 		$interface->assign('searchType',          $searchObject->getSearchType());
 		// Will assign null for an advanced search

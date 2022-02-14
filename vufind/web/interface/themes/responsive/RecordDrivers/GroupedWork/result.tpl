@@ -2,7 +2,9 @@
 	<div id="groupedRecord{$summId|escape}" class="resultsList">
 		<a id="record{$summId|escape}"></a>
 		{if isset($summExplain)}
-			<div class="hidden" id="scoreExplanationValue{$summId|escape}">{$summExplain}</div>
+			<div class="hidden" id="scoreExplanationValue{$summId|escape}">
+					<samp  style="overflow-wrap: break-word">{$summExplain}</samp>
+			</div>
 		{/if}
 
 		<div class="row">

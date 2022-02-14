@@ -248,6 +248,13 @@ class SearchObject_Islandora extends SearchObject_Base {
 		return $this->allFacetSettings[$section][$setting] ?? '';
 	}
 
+	public function getDebugTiming() {
+		if ($this->debug && isset($this->indexResult['debug'])){
+			return json_encode($this->indexResult['debug']['timing'], JSON_PRETTY_PRINT);
+		}
+		return null;
+	}
+
 	public function getFullSearchUrl(){
 		return $this->indexEngine->fullSearchUrl ?? 'Unknown';
 	}
@@ -815,6 +822,22 @@ class SearchObject_Islandora extends SearchObject_Base {
 					$current->process();
 				}
 			}
+		}
+
+		//Add debug information to the results if available
+		if ($this->debug){
+			if (!empty($this->indexResult['debug']['explain'])){
+				$explainInfo = $this->indexResult['debug']['explain'];
+				foreach ($this->indexResult['response']['docs'] as &$result){
+					if (array_key_exists($result['PID'], $explainInfo)){
+						$result['explain'] = $explainInfo[$result['PID']];
+					}
+				}
+			}
+
+			global $interface;
+			$interface->assign('debugSolrOutput', $this->debugOutput());
+			$interface->assign('debugTiming', $this->getDebugTiming());
 		}
 
 		// Return the result set

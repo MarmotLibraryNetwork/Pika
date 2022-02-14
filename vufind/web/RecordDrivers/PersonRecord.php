@@ -78,6 +78,13 @@ class PersonRecord extends IndexRecord {
 		$name = trim($this->getName());
 		$interface->assign('summTitle', $name);
 
+		global $configArray;
+		if ($configArray['System']['debugSolr']){
+			$interface->assign('summScore', $this->getScore());
+			$interface->assign('summExplain', $this->getExplain());
+		}
+
+
 		return 'RecordDrivers/Person/result.tpl';
 	}
 
