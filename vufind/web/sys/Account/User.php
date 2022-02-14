@@ -575,12 +575,12 @@ class User extends DB_DataObject {
 	function getRelatedOverDriveUsers(){
 		$overDriveUsers = [];
 		if ($this->isValidForOverDrive()){
-			$overDriveUsers[$this->cat_username . ':' . $this->getPassword()] = $this;
+			$overDriveUsers[$this->cat_username] = $this;
 		}
 		foreach ($this->getLinkedUsers() as $linkedUser){
 			if ($linkedUser->isValidForOverDrive()){
-				if (!array_key_exists($linkedUser->cat_username . ':' . $linkedUser->getPassword(), $overDriveUsers)){
-					$overDriveUsers[$linkedUser->cat_username . ':' . $linkedUser->getPassword()] = $linkedUser;
+				if (!array_key_exists($linkedUser->cat_username, $overDriveUsers)){
+					$overDriveUsers[$linkedUser->cat_username] = $linkedUser;
 				}
 			}
 		}
@@ -611,16 +611,15 @@ class User extends DB_DataObject {
 	function getRelatedHooplaUsers(){
 		$hooplaUsers = [];
 		if ($this->isValidForHoopla()){
-			$hooplaUsers[$this->cat_username . ':' . $this->getPassword()] = $this;
+			$hooplaUsers[$this->cat_username] = $this;
 		}
 		foreach ($this->getLinkedUsers() as $linkedUser){
 			if ($linkedUser->isValidForHoopla()){
-				if (!array_key_exists($linkedUser->cat_username . ':' . $linkedUser->getPassword(), $hooplaUsers)){
-					$hooplaUsers[$linkedUser->cat_username . ':' . $linkedUser->getPassword()] = $linkedUser;
+				if (!array_key_exists($linkedUser->cat_username, $hooplaUsers)){
+					$hooplaUsers[$linkedUser->cat_username] = $linkedUser;
 				}
 			}
 		}
-
 		return $hooplaUsers;
 	}
 
