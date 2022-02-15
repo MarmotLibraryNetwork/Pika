@@ -1618,6 +1618,7 @@ EOT;
 						$title = 'Unknown Title';
 					}
 				}
+
 				if(!$title) {
 					$title = 'Unknown title';
 				}
@@ -1636,6 +1637,7 @@ EOT;
 			$owed = $fine->itemCharge;
 			$owed = $owed + $fine->processingFee;
 			$owed = $owed + $fine->billingFee;
+			$owed = $owed - $fine->paidAmount;
 			$amount = number_format($owed, 2);
 
 			if(isset($fine->assessedDate) && !empty($fine->assessedDate)) {
