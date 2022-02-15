@@ -122,7 +122,7 @@ abstract class Horizon extends ScreenScrapingDriver{
       'profile' => $configArray['Catalog']['hipProfile'],
       'ri' => '',
       'sec1' => $patron->barcode,
-      'sec2' => $patron->cat_password,
+      'sec2' => $patron->getPassword(),
       'session' => $sessionId,
 		);
 		$post_string = http_build_query($post_data);
@@ -284,7 +284,7 @@ abstract class Horizon extends ScreenScrapingDriver{
 				'profile' => $configArray['Catalog']['hipProfile'],
 				'ri' => '',
 				'sec1' => $user->barcode,
-				'sec2' => $user->cat_password,
+				'sec2' => $user->getPassword(),
 				'session' => $sessionId,
 				//'spp' => '20'
 			);
@@ -334,8 +334,8 @@ abstract class Horizon extends ScreenScrapingDriver{
 				if (preg_match('/<td.*?class="boldRedFont1".*?>(.*?)(?:<br>)*<\/td>/', $sResult, $matches)) {
 					$updateErrors[] = $matches[1];
 				} else {
-					//Update the users cat_password in the Pika database
-					$user->cat_password = $_REQUEST['newPin'];
+					//Update the users password in the Pika database
+					$user->setPassword($_REQUEST['newPin']);
 				}
 			}
 			if (isset($_REQUEST['phone'])) {

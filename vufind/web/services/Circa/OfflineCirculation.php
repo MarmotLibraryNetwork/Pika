@@ -72,7 +72,7 @@ class Circa_OfflineCirculation extends Action{
 				if (strlen(trim($barcodesToCheckOut)) > 0 && strlen($patronBarcode) > 0){
 					$patronId              = null;
 					$userObj               = new User();
-					$userObj->cat_password = $patronBarcode;
+					$userObj->barcode      = $patronBarcode;
 					if ($userObj->find(true)){
 						$patronId = $userObj->id;
 					}

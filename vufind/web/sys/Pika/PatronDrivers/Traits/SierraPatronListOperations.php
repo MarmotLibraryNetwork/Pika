@@ -196,12 +196,12 @@ trait SierraPatronListOperations {
 		if ($this->accountProfile->loginConfiguration == 'name_barcode'){
 			$postData = [
 				'name' => $patron->cat_username,
-				'code' => $patron->cat_password
+				'code' => $patron->barcode
 			];
 		}else{
 			$postData = [
-				'code' => $patron->cat_username,
-				'pin'  => $patron->cat_password
+				'code' => $patron->barcode,
+				'pin'  => $patron->getPassword()
 			];
 
 		}

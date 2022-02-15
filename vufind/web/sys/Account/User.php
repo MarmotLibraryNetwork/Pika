@@ -35,11 +35,11 @@ class User extends DB_DataObject {
 	public $email;                           // string(250)  not_null
 	public $phone;                           // string(30)
 	public $alt_username;                    // An alternate username used by patrons to login.
-	// cat_username and cat_password are protected for logging purposes
+// cat_password are protected for logging purposes
 	protected $cat_username;                    // string(50)
 	protected $cat_password;
 	public $barcode;                        // string(50) Replaces $cat_username for sites using barcode/pin auth
-	public $password;                       // string(128) password hash Replaces $cat_password
+	protected $password;                       // string(128) password - Replaces $cat_password
 	public $patronType;
 	public $created;                         // datetime(19)  not_null binary
 	public $homeLocationId;                  // int(11)
@@ -204,6 +204,72 @@ class User extends DB_DataObject {
 		return $this->accountProfile;
 	}
 
+	/**
+	 * @return string
+	 */
+	public function getPassword() {
+		$password = $this->_decryptPassword($this->password);
+		return $password;
+	}
+
+
+	/**
+	 * setPassword
+	 * Use when setting a password on a newly instantiated object or when the object will call update() later in the code.
+	 * This will not update the password in the database.
+	 * @param $password
+	 * @return void
+	 */
+	public function setPassword($password) {
+		$encryptedPassword = $this->_encryptPassword($password);
+		$this->password = $encryptedPassword;
+	}
+
+	/**
+	 * updatePassword
+	 * Update an existing password in the database. Use this method when updating a password or setting a new
+	 * password for the user.
+	 * @param $password
+	 * @return boolean True on success or false on failure.
+	 */
+	public function updatePassword($password) {
+		$encryptedPassword = $this->_encryptPassword($password);
+		$sql = "UPDATE user SET password = '" . $encryptedPassword . "' WHERE id = " . $this->id;
+
+		$result = $this->query($sql);
+		if($result >= 1) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * decrypt password
+	 * @param string  $password
+	 * @return string Encrypted password
+	 */
+	private function _encryptPassword($password) {
+//		global $configArray;
+//		$key = base64_decode($configArray["Site"]["passwordEncryptionKey"]);
+//		$v   = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
+//		$e   = openssl_encrypt($password, 'aes-256-cbc', $key, 0, $v);
+//		$p   = base64_encode($e . '::' . $v);
+		return $password;
+	}
+
+	/**
+	 * encypt password
+	 * @param  string $encryptedPassword
+	 * @return string Decrypted password
+	 */
+	private function _decryptPassword($encryptedPassword) {
+		// global $configArray;
+		// $key = base64_decode($configArray["Site"]["passwordEncryptionKey"]);
+		// [$encryptedPW, $v] = explode('::', base64_decode($this->password), 2);
+		// $password = openssl_decrypt($encryptedPW, 'aes-256-cbc', $key, 0, $v);
+		return $encryptedPassword;
+	}
+
 	function __get($name){
 		if ($name == 'roles'){
 			return $this->getRoles();
@@ -221,16 +287,21 @@ class User extends DB_DataObject {
 			return $this->materialsRequestEmailSignature;
 		}
 
-		// handle barcodes, cat_password and cat_username
-		if ($name == 'barcode'){
-			return $this->getBarcode();
-		} elseif($name == 'cat_password' || $name == 'cat_username') {
+		// accessing the password attribute directly will return the encrupted password.
+		if($name == "password") {
 			$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
-			$this->logger->warn($name . " accessed by " . $calledBy['function'], array("trace" => $calledBy));
+			$this->logger->debug("Please use getPassword() when getting password from user object.", array("trace" => $calledBy));
+			return $this->password;
+		}
+
+		// handle deprecated cat_password and cat_username
+		if($name == 'cat_password' || $name == 'cat_username') {
 			if ($accountProfile = $this->getAccountProfile()){
 				if ($accountProfile->loginConfiguration == 'barcode_pin' && $name == 'cat_username'){
 					return $this->barcode;
 				}elseif ($accountProfile->loginConfiguration == 'name_barcode' && $name == 'cat_password'){
+					$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
+					$this->logger->debug($name . " accessed by " . $calledBy['function'], array("trace" => $calledBy));
 					return $this->barcode;
 				} else {
 					return $this->{$name};
@@ -244,15 +315,22 @@ class User extends DB_DataObject {
 	}
 
 	function __set($name, $value){
-		// Handle cat_* properties being set
+		// for passwords, allows new object to set password for methods like $user->find
+		if($name == "password") {
+			$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
+			$this->logger->debug($name . " being set by " . $calledBy['function'], array("trace" => $calledBy));
+			$this->setPassword($value);
+			return;
+		}
+
+		// Handle deprecated cat_* properties
 		// If needed update barcode or password field
 		if($name == 'cat_password' || $name == 'cat_username') {
 			$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
-			$this->logger->warn($name . " being set by " . $calledBy['function'], array("trace" => $calledBy));
+			$this->logger->debug($name . " being set by " . $calledBy['function'], array("trace" => $calledBy));
 			if ($accountProfile = $this->getAccountProfile()){
 				if ($accountProfile->loginConfiguration == 'barcode_pin' && $name == 'cat_username'){
 					$this->barcode = $value;
-					return $this->update();
 				}elseif ($accountProfile->loginConfiguration == 'name_barcode' && $name == 'cat_password'){
 					$this->barcode = $value;
 				} else {
@@ -406,10 +484,10 @@ class User extends DB_DataObject {
 									$linkedAccountProfile = $linkedUser->getAccountProfile();
 									if($linkedAccountProfile->loginConfiguration == "barcode_pin") {
 										$userName = $linkedUser->barcode;
-										$password = $linkedUser->cat_password;
+										$password = $linkedUser->getPassword();
 									} else {
 										$userName = $linkedUser->cat_username;
-										$password = $linkedUser->cat_password;
+										$password = $linkedUser->barcode;
 									}
 									$linkedUser = UserAccount::validateAccount($userName, $password, $linkedUser->source, $this);
 								}else{
@@ -497,12 +575,12 @@ class User extends DB_DataObject {
 	function getRelatedOverDriveUsers(){
 		$overDriveUsers = [];
 		if ($this->isValidForOverDrive()){
-			$overDriveUsers[$this->cat_username . ':' . $this->cat_password] = $this;
+			$overDriveUsers[$this->cat_username] = $this;
 		}
 		foreach ($this->getLinkedUsers() as $linkedUser){
 			if ($linkedUser->isValidForOverDrive()){
-				if (!array_key_exists($linkedUser->cat_username . ':' . $linkedUser->cat_password, $overDriveUsers)){
-					$overDriveUsers[$linkedUser->cat_username . ':' . $linkedUser->cat_password] = $linkedUser;
+				if (!array_key_exists($linkedUser->cat_username, $overDriveUsers)){
+					$overDriveUsers[$linkedUser->cat_username] = $linkedUser;
 				}
 			}
 		}
@@ -533,16 +611,15 @@ class User extends DB_DataObject {
 	function getRelatedHooplaUsers(){
 		$hooplaUsers = [];
 		if ($this->isValidForHoopla()){
-			$hooplaUsers[$this->cat_username . ':' . $this->cat_password] = $this;
+			$hooplaUsers[$this->cat_username] = $this;
 		}
 		foreach ($this->getLinkedUsers() as $linkedUser){
 			if ($linkedUser->isValidForHoopla()){
-				if (!array_key_exists($linkedUser->cat_username . ':' . $linkedUser->cat_password, $hooplaUsers)){
-					$hooplaUsers[$linkedUser->cat_username . ':' . $linkedUser->cat_password] = $linkedUser;
+				if (!array_key_exists($linkedUser->cat_username, $hooplaUsers)){
+					$hooplaUsers[$linkedUser->cat_username] = $linkedUser;
 				}
 			}
 		}
-
 		return $hooplaUsers;
 	}
 
@@ -1808,7 +1885,7 @@ private $staffPtypes = null;
 		}else{
 			return "Please enter your current pin number";
 		}
-		if ($this->cat_password != $oldPin){
+		if ($this->getPassword() != $oldPin){
 			return "The old pin number is incorrect";
 		}
 		if (!empty($_REQUEST['pin1'])){

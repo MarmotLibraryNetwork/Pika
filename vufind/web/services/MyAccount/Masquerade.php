@@ -59,12 +59,7 @@ class MyAccount_Masquerade extends MyAccount {
 					$user = UserAccount::getLoggedInUser();
 					if ($user && $user->canMasquerade()){
 						$masqueradedUser = new User();
-						//TODO: below, when $masquerade User account is in another ILS and the other ILS has a different $authenticationMethod (ie barcode/pin)
-						if ($user->getAccountProfile()->loginConfiguration == 'barcode_pin'){
-							$masqueradedUser->cat_username = $libraryCard;
-						}else{
-							$masqueradedUser->cat_password = $libraryCard;
-						}
+						$masqueradedUser->barcode = $libraryCard;
 						if ($masqueradedUser->find(true)){
 							if ($masqueradedUser->id == $user->id){
 								return [
@@ -82,11 +77,7 @@ class MyAccount_Masquerade extends MyAccount {
 							if ($numConfigurations > 1){
 								// Now that we know there is more than loginConfiguration type, check the opposite column
 								$masqueradedUser = new User();
-								if ($user->getAccountProfile()->loginConfiguration == 'barcode_pin'){
-									$masqueradedUser->cat_password = $libraryCard;
-								}else{
-									$masqueradedUser->cat_username = $libraryCard;
-								}
+								$masqueradedUser->barcode = $libraryCard;
 								$masqueradedUser->find(true);
 							}
 
@@ -162,7 +153,7 @@ class MyAccount_Masquerade extends MyAccount {
 							// NOW login in as masquerade user
 							//$logger->log("Masqueraded User " . (empty($masqueradedUser) ? 'none' : $masqueradedUser->id), PEAR_LOG_ERR);
 							$_REQUEST['username'] = $masqueradedUser->cat_username;
-							$_REQUEST['password'] = $masqueradedUser->cat_password;
+							$_REQUEST['password'] = $masqueradedUser->password;
 							//$logger->log("Masquerade Login " . $_REQUEST['username'] . " " . $_REQUEST['password'], PEAR_LOG_ERR);
 							$user = UserAccount::login();
 							//$logger->log("New User " . (empty($user) ? 'none' : $user->id), PEAR_LOG_ERR);
@@ -217,7 +208,7 @@ class MyAccount_Masquerade extends MyAccount {
 			$masqueradeMode = false;
 			if ($guidingUser){
 				$_REQUEST['username'] = $guidingUser->cat_username;
-				$_REQUEST['password'] = $guidingUser->cat_password;
+				$_REQUEST['password'] = $guidingUser->getPassword();
 				$user                 = UserAccount::login();
 				if ($user && !PEAR_Singleton::isError($user)){
 					return ['success' => true];

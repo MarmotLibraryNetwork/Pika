@@ -101,7 +101,7 @@ abstract class HorizonAPI extends Horizon{
 				}
 				$user->fullname     = $fullName ?? '';
 				$user->barcode      = $username;
-				$user->cat_password = $password;
+				$user->setPassword($password);
 				$user->email        = $email;
 
 				if (isset($lookupMyAccountInfoResponse->AddressInfo)){
@@ -225,7 +225,7 @@ abstract class HorizonAPI extends Horizon{
 			return [true, $sessionToken, $userID];
 		}else{
 			$username = $patron->barcode;
-			$password = $patron->cat_password;
+			$password = $patron->getPassword();
 			return $this->initialLoginViaWebService($username, $password);
 		}
 	}
@@ -818,8 +818,7 @@ abstract class HorizonAPI extends Horizon{
 		$updatePinResponse = $this->getWebServiceResponse($updatePinUrl);
 
 		if ($updatePinResponse){
-			$patron->cat_password = $newPin;
-			$patron->update();
+			$patron->updatePassword($newPin);
 			return "Your pin number was updated successfully.";
 		}else{
 			return "Sorry, we could not update your pin number. Please try again later.";
