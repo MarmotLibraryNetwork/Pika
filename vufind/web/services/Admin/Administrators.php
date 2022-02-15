@@ -34,7 +34,7 @@ class Admin_Administrators extends ObjectEditor {
 
 	function getAllObjects($orderBy = null){
 		$admin = new User();
-		$admin->query('SELECT DISTINCT user.* FROM user INNER JOIN user_roles ON user.id = user_roles.userId ORDER BY ' . ( $orderBy ?? 'cat_password' ));
+		$admin->query('SELECT DISTINCT user.* FROM user INNER JOIN user_roles ON user.id = user_roles.userId ORDER BY ' . ( $orderBy ?? 'cat_username' ));
 		$adminList = array();
 		while ($admin->fetch()){
 			$homeLibrary            = Library::getLibraryForLocation($admin->homeLocationId);

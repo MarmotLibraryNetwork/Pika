@@ -44,12 +44,20 @@ class MergeMarcUpdatesAndDeletes {
 	private String recordNumberSubfield = "";
 	private Logger logger;
 
+
+	// The marc encoding used to be a setting to determine what encoding to read a marc file with.
+	// It appears that the MarcReader best guess encoding is a better setting though, and can handle mixed encoding cases.
+	//
+	// The trouble is we need to write to that same encoding for the merge file and the encoding for writing is handled
+	// differently.
+	//
+	// So now we write with UTF8 encoding always
+
 	boolean startProcess(Ini configIni, Logger logger) {
 		this.logger = logger;
 
 		String mainFilePath   = configIni.get("MergeUpdate", "marcPath");
 		String backupPath     = configIni.get("MergeUpdate", "backupPath");
-		String marcEncoding   = configIni.get("MergeUpdate", "marcEncoding");
 		recordNumberTag       = configIni.get("MergeUpdate", "recordNumberTag");
 		recordNumberSubfield  = configIni.get("MergeUpdate", "recordNumberSubfield");
 		String changesPath    = configIni.get("MergeUpdate", "changesPath");
@@ -221,7 +229,8 @@ class MergeMarcUpdatesAndDeletes {
 							Record           curBib;
 							MarcStreamWriter mainWriter;
 							try (FileOutputStream marcOutputStream = new FileOutputStream(mergedFile)) {
-								mainWriter = new MarcStreamWriter(marcOutputStream, marcEncoding);
+								mainWriter = new MarcStreamWriter(marcOutputStream, "UTF-8");
+								// Always write to UTF8
 
 								while (mainReader.hasNext()) {
 

@@ -1034,7 +1034,7 @@ class Sierra {
 		$r = $this->_doRequest($operation, $params, 'PUT');
 
 		if(!$r){
-			$this->logger->warn("Unable to update patron", ["message"=>$this->apiLastError]);
+			$this->logger->debug("Unable to update patron", ["message"=>$this->apiLastError]);
 			$errors[] = "An error occurred. Please try in again later.";
 		}
 
@@ -1051,7 +1051,7 @@ class Sierra {
 	 * @param string $oldPin
 	 * @param string $newPin
 	 * @param string $confirmNewPin
-	 * @return Array Error or success message.
+	 * @return string Error or success message.
 	 * @throws ErrorException
 	 */
 	public function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
@@ -1073,8 +1073,7 @@ class Sierra {
 			$message = $this->_getPrettyError();
 			return 'Could not update PIN: '. $message;
 		}
-		$patron->cat_password = $newPin;
-		$patron->update();
+		$result = $patron->updatePassword($newPin);
 
 		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 		$this->cache->delete($patronCacheKey);
@@ -1124,14 +1123,13 @@ class Sierra {
 			return ['error' => 'Could not update PIN: '. $message];
 		}
 		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
-		$patron->cat_password = $newPin;
-		if(!$patron->update()) {
+		$r = $patron->setPassword($newPin);
+		if(!$r) {
 			// this shouldn't matter since we hit the api first when logging in a patron, but ....
 			$this->cache->delete($patronCacheKey);
 			return ['error' => 'Please try logging in with you new PIN. If you are unable to login please contact your library.'];
 		}
 		$pinReset->delete();
-
 		$this->cache->delete($patronCacheKey);
 
 		return true;
@@ -1149,13 +1147,7 @@ class Sierra {
 	 */
 	public function emailResetPin($barcode) {
 		$patron = new User();
-
-		$loginMethod = $this->accountProfile->loginConfiguration;
-		if ($loginMethod == "barcode_pin"){
-			$patron->barcode = $barcode;
-		} elseif ($loginMethod == "name_barcode") {
-			$patron->cat_password = $barcode;
-		}
+		$patron->barcode = $barcode;
 
 		$patron->find(true);
 		if(! $patron->N || $patron->N == 0) {
@@ -2872,7 +2864,7 @@ EOT;
 	 * @return string|false Returns patron id on success false on fail.
 	 * @throws ErrorException
 	 */
-	protected function _authBarcodePin($barcode, $pin) {
+	protected function _authBarcodePin(string $barcode, string $pin) {
 		// if using username field check if username exists
 		// username replaces barcode
 		if($this->hasUsernameField()) {
@@ -2892,9 +2884,7 @@ EOT;
 				$this->patronBarcode = $barcode;
 				// this call also returns the sierra id; keep it so we can skip an extra call after pin validation
 			}
-			// todo: [pins] this creates issues when sites other than sacramento return bad patron data;
-			// ie for flatirons patron id 1444284 nothing is returned except for an id. This causes strange things with
-			// linked accounts.
+
 			if (!empty($r->id)){
 				// The call above can return an Id even if it doesn't return a barcode, eg for sacramento students
 				$provisionSierraUserId = $r->id;
@@ -2902,12 +2892,13 @@ EOT;
 		}
 
 		$params = [
-			"barcode"         => $barcode,
-			"pin"             => $pin,
+			"barcode" => $barcode,
+			"pin"     => $pin,
 		];
 
-		//This setting is required for Sacramento student Ids to get a good pin validation response.  I suspect that there is an ILS setting that overrides this any way (pascal 2/6/2020)
-		if ($this->configArray['Catalog']['pinCaseSensitive']) {
+		//This setting is required for Sacramento student Ids to get a good pin validation response.
+		//  I suspect that there is an ILS setting that overrides this any way (pascal 2/6/2020)
+		if ($this->configArray['Catalog']['barcodeCaseSensitive']) {
 			$params["caseSensitivity"] = true;
 		} else {
 			$params["caseSensitivity"] = false;
@@ -2936,9 +2927,8 @@ EOT;
 		}
 
 		// Update the stored pin if it has changed
-		if($patron->cat_password != $pin) {
-			$patron->cat_password = $pin;
-			$patron->update();
+		if($patron->getPassword() != $pin) {
+			$patron->setPassword($pin);
 		}
 
 		return $patronId;
@@ -3056,6 +3046,7 @@ EOT;
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_HEADER         => false,
 		];
+
 		// instantiate the Curl object and set the base url
 		if($operation == 'about'){
 			$operationUrl = $this->aboutUrl;
@@ -3189,7 +3180,7 @@ EOT;
 		if($this->accountProfile->loginConfiguration == "barcode_pin") {
 			$postData = [
 				'code' => $patron->barcode,
-				'pin'  => $patron->cat_password
+				'pin'  => $patron->getPassword()
 			];
 		} else {
 			$postData = [

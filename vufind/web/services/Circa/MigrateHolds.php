@@ -51,7 +51,7 @@ class Circa_MigrateHolds extends Action {
 
 		foreach (array_unique($barCodes) as $barCode){
 			$user = new User();
-			$user->cat_password = $barCode;
+			$user->barcode = $barCode;
 			if (!$user->find()){
 				$user = $sierra->findNewUser($barCode);
 				if (!is_a($user, 'User')){

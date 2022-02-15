@@ -175,18 +175,11 @@ class CatalogConnection
 			//The catalog is offline, check the database to see if the user is valid
 			$user = new User();
 			$user->barcode = $barcode;
-//			if ($this->driver->accountProfile->loginConfiguration == 'barcode_pin') {
-//				//$user->cat_username = $barcode; // todo: [pins] remove reference to cat_username as barcode
-//				$user->barcode      = $barcode;
-//			}else{
-//				//$user->cat_password = $barcode; // todo: [pins] remove reference to cat_password as barcode
-//				$user->barcode      = $barcode;
-//			}
 
 			if ($user->find(true)){
 				if ($this->driver->accountProfile->loginConfiguration == 'barcode_pin') {
 					//We load the account based on the barcode make sure the pin matches
-					$userValid = /*$user->password == $password  todo: [pins] <- change when move passwords to new colum  ||*/ ($user->cat_password == $password);
+					$userValid = $user->getPassword() == $password;
 				}else{
 					//We still load based on barcode, make sure the username is similar
 					$userValid = $this->areNamesSimilar($username, $user->cat_username);
