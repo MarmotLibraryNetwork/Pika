@@ -2926,7 +2926,7 @@ EOT;
 
 		// Update the stored pin if it has changed
 		if($patron->getPassword() != $pin) {
-			$patron->setPassword($pin);
+			$patron->updatePassword($pin);
 		}
 
 		return $patronId;
