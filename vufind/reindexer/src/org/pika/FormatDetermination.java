@@ -221,6 +221,8 @@ public class FormatDetermination {
 						case "soundcassette":
 						case "compactdisc":
 						case "chipcartridge":
+						case "mp3disc":
+						case "mp3":
 						case "eaudio":
 							econtentItem.setFormat("eAudiobook");
 							econtentItem.setFormatCategory("Audio Books");
