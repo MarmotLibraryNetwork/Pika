@@ -88,6 +88,11 @@
       "auth_author2": [
         ["onephrase", 100]
       ]
+      /*This will allow for quoted search matches like "jd robb" for J.D. Robb (when populated as such in 245c)
+      but would break situation "Lee, Harper" vs "Harper, Lee"
+      ,"author_additional": [
+        ["onephrase", 100]
+      ] */
     }
   },
 
@@ -583,6 +588,7 @@
     }
   },
 
+/*
   "TopicBrowse": {
     "QueryFields": {
       "topic_browse": [
@@ -598,6 +604,7 @@
       ]
     }
   },
+*/
 
   "TitleBrowse": {
     "QueryFields": {
@@ -607,6 +614,7 @@
     }
   },
 
+/*
   "DeweyBrowse": {
     "QueryFields": {
       "dewey-raw": [
@@ -614,7 +622,9 @@
       ]
     }
   },
+*/
 
+/*
   "LccBrowse": {
     "QueryFields": {
       "callnumber-a": [
@@ -622,6 +632,7 @@
       ]
     }
   },
+*/
 
   "LocalCallNumber": {
     "QueryFields": {
@@ -637,6 +648,7 @@
     }
   },
 
+/*
   "callnumber_browse": {
     "QueryFields": {
       "callnumber_browse": [
@@ -644,6 +656,7 @@
       ]
     }
   },
+*/
 
   "publisher": {
     "QueryFields": {
