@@ -1348,7 +1348,7 @@ public class GroupedWorkIndexer {
 					}
 				}
 				lexileDataMatches++;
-				if (logger.isDebugEnabled() && fullReindex) {
+				if (fullReindex && logger.isDebugEnabled()) {
 					FuzzyScore   score                = new FuzzyScore(Locale.ENGLISH);
 					String       groupTitle           = groupedWork.getTitle();
 					final String groupWorkPermanentId = groupedWork.getId();

@@ -861,7 +861,6 @@
 		<field name="primary_upc" type="string" indexed="false" stored="true" multiValued="false"/>
 
 		<!-- Call Numbers -->
-		<field name="callnumber-a" type="string" indexed="true" stored="true"/>
 		<field name="callnumber-first" type="string" indexed="true" stored="true" docValues="true"/>
 		<!-- callnumber-first is populated by translations of the first letter of a Library of Congress style call number.
 		099a for a locally assigned free text call number, or then a 090a for locally assigned LC style call numbers,

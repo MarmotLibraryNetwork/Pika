@@ -51,7 +51,6 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashSet<String>          awards                   = new HashSet<>();
 	private HashSet<String>          barcodes                 = new HashSet<>();
 	private HashSet<String>          bisacSubjects            = new HashSet<>();
-	private String                   callNumberA;
 	private String                   callNumberFirst;
 	private String                   callNumberSubject;
 	private HashSet<String>          contents                 = new HashSet<>();
@@ -382,7 +381,6 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("primary_upc", getPrimaryUpc());
 		doc.addField("upc", upcs.keySet());
 		//call numbers
-		doc.addField("callnumber-a", callNumberA);
 		doc.addField("callnumber-first", callNumberFirst);
 		doc.addField("callnumber-subject", callNumberSubject);
 		//relevance determiners
@@ -1651,11 +1649,6 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 	}
 
-	void setCallNumberA(String callNumber) {
-		if (callNumber != null && callNumberA == null){
-			this.callNumberA = callNumber;
-		}
-	}
 	void setCallNumberFirst(String callNumber) {
 		if (callNumber != null && callNumberFirst == null){
 			this.callNumberFirst = callNumber;

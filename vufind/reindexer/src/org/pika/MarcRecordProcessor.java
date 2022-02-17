@@ -1017,7 +1017,6 @@ abstract class MarcRecordProcessor {
 	}
 
 	private void loadBibCallNumbers(GroupedWorkSolr groupedWork, Record record, String identifier) {
-		groupedWork.setCallNumberA(MarcUtil.getFirstFieldVal(record, "099a:090a:050a"));
 		String firstCallNumber = MarcUtil.getFirstFieldVal(record, "099a[0]:090a[0]:050a[0]");
 		if (firstCallNumber != null){
 			groupedWork.setCallNumberFirst(indexer.translateSystemValue("callnumber", firstCallNumber, identifier));
