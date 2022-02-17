@@ -19,13 +19,19 @@
 
 require_once 'bootstrap.php';
 use chillerlan\QRCode\{QRCode, QROptions};
-//Create the QR Code if it doesn't exit
+//Create the QR Code if it doesn't exit or we have a reload url parameter
 // todo: the $_REQUEST['id'] is always the grouped work id. If this changes use type to point to item record.
 //$type     = $_REQUEST['type'];
 $type     = 'GroupedWork';
 $id       = $_REQUEST['id'];
-$filename = $configArray['Site']['qrcodePath'] . "/{$type}_{$id}.png";
-if (!file_exists($filename)){
+//$filename = $configArray['Site']['qrcodePath'] . "/{$type}_{$id}.png";
+$filename = $configArray['Site']['qrcodePath'] . '/'
+	. str_replace(['.', 'http://', 'https://', '/'], '', $configArray['Site']['url'])
+	."_$id.png";
+// Store images by site urls because they should be different qrcodes depending on which url the
+// generated qrcode is from.
+// Note: $configArray['Site']['url'] is set to  $_SERVER['SERVER_NAME'] in readConfig()
+if (isset($_REQUEST['reload']) || !file_exists($filename)){
 	$options = new QROptions([
 	 'version'          => 5,
 	 'outputType'       => QRCode::OUTPUT_IMAGE_PNG,
