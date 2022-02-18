@@ -60,15 +60,14 @@ class SearchObjectFactory {
 	 * @param   object  $minSO      The MinSO object to use as the base.
 	 * @return  mixed               The search object on success, false otherwise
 	 */
-	static function deminify($minSO)
-	{
+	static function deminify($minSO){
 		// To avoid excessive constructor calls, we'll keep a static cache of
 		// objects to use for the deminification process:
 		/** @var SearchObject_Base[] $objectCache */
 		static $objectCache = [];
 
 		// Figure out the engine type for the object we're about to construct:
-		switch($minSO->ty) {
+		switch ($minSO->ty){
 			case 'islandora' :
 				$type = 'Islandora';
 				break;
@@ -81,7 +80,7 @@ class SearchObjectFactory {
 		}
 
 		// Construct a new object if we don't already have one:
-		if (!isset($objectCache[$type])) {
+		if (!isset($objectCache[$type])){
 			$objectCache[$type] = self::initSearchObject($type);
 		}
 

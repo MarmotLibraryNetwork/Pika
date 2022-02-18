@@ -409,6 +409,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		return true;
 	} // End init()
 
+	// This sets up Brawse Categories based on search phrases
 	public function setSearchTerm($searchTerm){
 		$this->initBasicSearch($searchTerm);
 	}

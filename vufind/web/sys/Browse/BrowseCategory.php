@@ -309,7 +309,7 @@ class BrowseCategory extends DB_DataObject{
 			}else{
 				if (!isset($searchTerms[0]['index'])){
 					$this->searchTerm = $searchObj->displayQuery();
-				}else if ($searchTerms[0]['index'] == 'Keyword'){
+				}elseif ($searchTerms[0]['index'] == 'Keyword'){
 					$this->searchTerm = $searchTerms[0]['lookfor'];
 				}else{
 					$this->searchTerm = $searchTerms[0]['index'] . ':' . $searchTerms[0]['lookfor'];

@@ -507,10 +507,31 @@ abstract class SearchObject_Base {
 			$type = $this->defaultIndex;
 		}
 
-		if (strpos($searchTerm, ':') > 0 && $this->isAdvancedSearchFormDisplayQuery($searchTerm)){
-			$this->isAdvanced = true;
-			$this->searchTerms = $this->buildAdvancedSearchTermsFromAdvancedDisplayQuery($searchTerm);
+		if (strpos($searchTerm, ':') > 0){
+			if (substr_count($searchTerm, ':') == 1){
+				// Browse Category Search Term of the for SearchType:search phrase
 
+				[$type, $searchTerm] = explode(':', $searchTerm, 2);
+				if (in_array($type, $this->basicTypes)){
+					$this->searchTerms[] = [
+						'index'   => $type,
+						'lookfor' => $searchTerm
+					];
+				} else {
+					return false;
+				}
+			}elseif ($this->isAdvancedSearchFormDisplayQuery($searchTerm)){
+				//TODO: this may be obsolete or unneeded now that Advanced Search queries are kept out of basic search box
+				//TODO: just return false?
+				$this->isAdvanced  = true;
+				$this->searchTerms = $this->buildAdvancedSearchTermsFromAdvancedDisplayQuery($searchTerm);
+
+			}else{
+				$this->searchTerms[] = [
+					'index'   => $type,
+					'lookfor' => $searchTerm
+				];
+			}
 		}else{
 			$this->searchTerms[] = [
 				'index'   => $type,
@@ -1400,7 +1421,7 @@ abstract class SearchObject_Base {
 				if ($forceReload || $search->session_id == session_id() || (UserAccount::isLoggedIn() && $search->user_id == UserAccount::getActiveUserId())){
 					// They do, deminify it to a new object.
 					$minSO       = unserialize($search->search_object);
-					$savedSearch = SearchObjectFactory::deminify($minSO);
+					$restoredSearch = SearchObjectFactory::deminify($minSO);
 
 					// Now redirect to the URL associated with the saved search;
 					// this simplifies problems caused by mixing different classes
@@ -1409,10 +1430,10 @@ abstract class SearchObject_Base {
 					// the current session.  (We want all searches to be
 					// persistent and bookmarkable).
 					if ($redirect){
-						header('Location: ' . $savedSearch->renderSearchUrl());
+						header('Location: ' . $restoredSearch->renderSearchUrl());
 						die();
 					}else{
-						return $savedSearch;
+						return $restoredSearch;
 					}
 				}else{
 					// They don't
