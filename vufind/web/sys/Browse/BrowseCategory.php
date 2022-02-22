@@ -306,14 +306,20 @@ class BrowseCategory extends DB_DataObject{
 		if (is_array($searchTerms)){
 			if (count($searchTerms) > 1){
 				return false;
-			}else{
-				if (!isset($searchTerms[0]['index'])){
-					$this->searchTerm = $searchObj->displayQuery();
-				}elseif ($searchTerms[0]['index'] == 'Keyword'){
-					$this->searchTerm = $searchTerms[0]['lookfor'];
+			}elseif (!empty($searchTerms[0]['group'])){
+				if (count($searchTerms[0]['group']) == 1
+					&& in_array($searchTerms[0]['group'][0]['field'], $searchObj->getBasicTypes())
+				){
+					// Simplest form of an advanced search can be converted to a browse category search
+					$this->searchTerm = $searchTerms[0]['group'][0]['field'] . ':' . $searchTerms[0]['group'][0]['lookfor'];
 				}else{
-					$this->searchTerm = $searchTerms[0]['index'] . ':' . $searchTerms[0]['lookfor'];
+					// Advanced search is too complex to convert to browse category
+					return false;
 				}
+			}elseif ($searchTerms[0]['index'] == 'Keyword'){
+				$this->searchTerm = $searchTerms[0]['lookfor'];
+			}else{
+				$this->searchTerm = $searchTerms[0]['index'] . ':' . $searchTerms[0]['lookfor'];
 			}
 		}else{
 			$this->searchTerm = $searchTerms;

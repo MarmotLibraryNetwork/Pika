@@ -309,6 +309,11 @@ class Browse_AJAX extends AJAXHandler {
 					//Set Sorting, this is actually slightly mangled from the category to Solr
 					$this->searchObject->setSort($browseCategory->getSolrSort());
 					if ($browseCategory->searchTerm != ''){
+						if ($browseCategory->searchTerm[0] == '(' && $browseCategory->searchTerm[strlen($browseCategory->searchTerm) -1] == ')'){
+							// Some simple Advanced Searches have been saved as browse categories of the form "(SearchType:searchPhrase)"
+							// so strip the parentheses so it can be treated as a basic search term.
+							$browseCategory->searchTerm = substr($browseCategory->searchTerm, 1, -1);
+						}
 						$this->searchObject->setSearchTerm($browseCategory->searchTerm);
 					}
 
