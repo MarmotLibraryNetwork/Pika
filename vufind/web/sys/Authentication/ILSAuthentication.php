@@ -101,7 +101,7 @@ class ILSAuthentication implements Authentication {
 			if ($catalog->status) {
 				$patron = $catalog->patronLogin($this->username, $this->password, $parentAccount, $validatedViaSSO);
 				if ($patron && !PEAR_Singleton::isError($patron)) {
-					$this->logger->info("validated account for user '{$patron->id}");
+					$this->logger->info("validated account for user {$patron->id}");
 					$validUser = $patron;
 				} elseif (PEAR_Singleton::isError($patron)){
 					$validUser = $patron;

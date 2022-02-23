@@ -97,34 +97,34 @@ class MyAccount_AJAX extends AJAXHandler {
 				'message' => 'Sorry, you must be logged in to manage accounts.',
 			];
 		}else{
-			$username = $_REQUEST['username'];
-			$password = $_REQUEST['password'];
+			$username      = $_REQUEST['username'];
+			$password      = $_REQUEST['password'];
 			$accountToLink = UserAccount::validateAccount($username, $password);
 			if ($accountToLink){
 				$user      = UserAccount::getLoggedInUser();
 				$addResult = $user->addLinkedUser($accountToLink);
 				if ($addResult === true){
-					$result = array(
+					$result = [
 						'result'  => true,
 						'message' => 'Successfully linked accounts.',
-					);
+					];
 					// todo: since this doesn't call a patron driver have to remove cache here for Pika/PatronDrivers/Sierra
 
 					$patronCacheKey = $this->cache->makePatronKey('patron', $user->id);
-					if($this->cache->has($patronCacheKey)) {
+					if ($this->cache->has($patronCacheKey)){
 						$this->cache->delete($patronCacheKey);
 					}
 				}else{ // insert failure or user is blocked from linking account or account & account to link are the same account
-					$result = array(
+					$result = [
 						'result'  => false,
 						'message' => 'Sorry, we could not link to that account.  Accounts cannot be linked if all libraries do not allow account linking.  Please contact your local library if you have questions.',
-					);
+					];
 				}
 			}else{
-				$result = array(
+				$result = [
 					'result'  => false,
 					'message' => 'Sorry, we could not find a user with that information to link to.',
-				);
+				];
 			}
 		}
 		return $result;
