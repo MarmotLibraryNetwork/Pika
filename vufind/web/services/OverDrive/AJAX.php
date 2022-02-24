@@ -143,6 +143,8 @@ class OverDrive_AJAX extends AJAXHandler {
 								$result['buttons'] = '<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink(\'' . $patronId . "', '" . $overDriveId . "', '" . $result['formatType'] . '\')" class="btn btn-warning">Watch Online Now</a>';
 								break;
 						}
+					} else {
+						$result['buttons'] = '<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink(\'' . $patronId . "', '" . $overDriveId . '\', )" class="btn btn-warning">Get Online Content Now</a>';
 					}
 					$result['buttons'] .= '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">View My Check Outs</a>';
 				}
