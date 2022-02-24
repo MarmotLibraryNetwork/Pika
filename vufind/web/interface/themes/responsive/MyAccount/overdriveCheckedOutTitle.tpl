@@ -112,7 +112,10 @@
 				<div class="btn-group btn-group-vertical btn-block">
 					{if $record.overdriveMagazine}
 						<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.issueId}', 'magazine-overdrive')" class="btn btn-sm btn-primary">Get Magazine</a>
-					{/if}
+							{else}
+						<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}')" class="btn btn-sm btn-primary">Get eContent</a>
+          {/if}
+{*
 					{if $record.overdriveRead}
 						<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'ebook-overdrive')" class="btn btn-sm btn-primary">Get eBook</a>
 					{/if}
@@ -128,6 +131,7 @@
 					{if $record.isFormatSelected && !$record.overdriveVideo && !$record.overdriveMagazine}
 						<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', '{$record.selectedFormat.formatType}')" class="btn btn-sm btn-primary">Download&nbsp;Again</a>
 					{/if}
+*}
 					{if $record.earlyReturn}
 						<a href="#" onclick="return Pika.OverDrive.returnOverDriveTitle('{$record.userId}', '{if $record.overdriveMagazine}{$record.issueId}{else}{$record.overDriveId}{/if}');" class="btn btn-sm btn-warning">Return&nbsp;Now</a>
 					{/if}
