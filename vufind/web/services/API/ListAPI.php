@@ -519,7 +519,7 @@ class ListAPI extends AJAXHandler {
 	 */
 	function getCacheInfoForList(){
 		if (!isset($_REQUEST['id'])){
-			return array('success' => false, 'message' => 'The id of the list to load must be provided as the id parameter.');
+			return ['success' => false, 'message' => 'The id of the list to load must be provided as the id parameter.'];
 		}
 
 		$listId = $_REQUEST['id'];
@@ -529,86 +529,87 @@ class ListAPI extends AJAXHandler {
 	function getCacheInfoForListId($listId){
 		global $configArray;
 
-		if (isset($_REQUEST['username']) && isset($_REQUEST['password'])){
-			$username = $_REQUEST['username'];
-			$password = $_REQUEST['password'];
-			$user     = UserAccount::validateAccount($username, $password);
-		}else{
-			$user = UserAccount::getLoggedInUser();
-		}
-
 		if (is_numeric($listId) || preg_match('/list[-:](.*)/', $listId, $listInfo)){
 			if (isset($listInfo)){
 				$listId = $listInfo[1];
 			}
-			return array(
+			return [
 				'cacheType'    => 'general',
 				'cacheName'    => 'list_general_list:' . $listId,
 				'cacheLength'  => $configArray['Caching']['list_general'],
 				'fullListLink' => '/MyAccount/MyList/' . $listId,
-			);
+			];
 
 		}elseif (preg_match('/review:(.*)/', $listId, $reviewInfo)){
-			return array(
+			return [
 				'cacheType'    => 'general',
 				'cacheName'    => 'list_general_' . $listId,
 				'cacheLength'  => $configArray['Caching']['list_general'],
 				'fullListLink' => '',
-			);
+			];
 		}elseif ($listId == 'highestRated'){
-			return array(
+			return [
 				'cacheType'    => 'general',
 				'cacheName'    => 'list_highest_rated_' . $listId,
 				'cacheLength'  => $configArray['Caching']['list_highest_rated'],
 				'fullListLink' => '',
-			);
+			];
 		}elseif ($listId == 'recentlyReviewed'){
-			return array(
+			return [
 				'cacheType'    => 'general',
 				'cacheName'    => 'list_recently_reviewed_' . $listId,
 				'cacheLength'  => $configArray['Caching']['list_recently_reviewed'],
 				'fullListLink' => '',
-			);
+			];
 		}elseif ($listId == 'mostPopular'){
-			return array(
+			return [
 				'cacheType'    => 'general',
 				'cacheName'    => 'list_most_popular_' . $listId,
 				'cacheLength'  => $configArray['Caching']['list_most_popular'],
 				'fullListLink' => '',
-			);
+			];
 		}elseif ($listId == 'recommendations'){
-			return array(
+
+			if (isset($_REQUEST['username']) && isset($_REQUEST['password'])){
+				$username = $_REQUEST['username'];
+				$password = $_REQUEST['password'];
+				$user     = UserAccount::validateAccount($username, $password);
+			}else{
+				$user = UserAccount::getLoggedInUser();
+			}
+
+			return [
 				'cacheType'    => 'user',
 				'cacheName'    => 'list_recommendations_' . $listId . '_' . $user->id,
 				'cacheLength'  => $configArray['Caching']['list_recommendations'],
 				'fullListLink' => '',
-			);
+			];
 		}elseif (preg_match('/^search:(.*)/', $listId, $searchInfo)){
 			if (is_numeric($searchInfo[1])){
 				$searchId = $searchInfo[1];
-				return array(
+				return [
 					'cacheType'    => 'general',
 					'cacheName'    => 'list_general_search_' . $searchId,
 					'cacheLength'  => $configArray['Caching']['list_general'],
 					'fullListLink' => '/Search/Results?saved=' . $searchId,
-				);
+				];
 			}else{
 				$requestUri = $_SERVER['REQUEST_URI'];
 				$requestUri = str_replace("&reload", "", $requestUri);
-				return array(
+				return [
 					'cacheType'    => 'general',
 					'cacheName'    => 'list_general_search_' . md5($requestUri),
 					'cacheLength'  => $configArray['Caching']['list_general'],
 					'fullListLink' => '',
-				);
+				];
 			}
 		}else{
-			return array(
+			return [
 				'cacheType'    => 'general',
 				'cacheName'    => 'list_general_' . $listId,
 				'cacheLength'  => $configArray['Caching']['list_general'],
 				'fullListLink' => '',
-			);
+			];
 		}
 	}
 
