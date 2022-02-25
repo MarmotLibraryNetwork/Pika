@@ -34,7 +34,7 @@
         {* Actions for Title *}
 			<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 				<div class="btn-group btn-group-vertical btn-block">
-					<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}')" class="btn btn-sm btn-primary">Get {if $record.mediaType}{$record.mediaType}{else}eContent{/if}</a>
+					<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}')" class="btn btn-sm btn-primary">Get {if $supplementalTitle.mediaType}{$supplementalTitle.mediaType}{else}eContent{/if}</a>
 {*  The API reports an early return action but it doesn't actually work
             {if $supplementalTitle.earlyReturn}
 							<a href="#" onclick="return Pika.OverDrive.returnOverDriveTitle('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', '{$supplementalTitle.transactionId}');" class="btn btn-sm btn-warning">Return&nbsp;Now</a>
