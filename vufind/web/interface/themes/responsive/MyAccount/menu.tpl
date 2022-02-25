@@ -263,32 +263,49 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && $userRoles && (in_array('cataloging', $userRoles) || in_array('opacAdmin', $userRoles)) || in_array('libraryAdmin', $userRoles)|| in_array('libraryManager', $userRoles)}
-				{if in_array($action, array('HooplaInfo', 'OverDriveAPIData'))}
-					{assign var="curSection" value=true}
-				{else}
-					{assign var="curSection" value=false}
-				{/if}
-				<div class="panel{if $curSection} active{/if}">
-					<a href="#eContentInfoMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
-						<div class="panel-heading">
-							<div class="panel-title">
-								eContent Info
+
+
+				{if $loggedIn && $userRoles}
+						{if in_array('opacAdmin', $userRoles) ||
+						($user->isValidForHoopla() && (in_array('cataloging', $userRoles) || in_array('libraryAdmin', $userRoles)|| in_array('libraryManager', $userRoles)) )}
+								{assign var="showHooplaAPIlink" value=true}
+						{else}
+								{assign var="showHooplaAPIlink" value=false}
+						{/if}
+						{if in_array('cataloging', $userRoles) || in_array('opacAdmin', $userRoles)}
+								{assign var="showOverDriveAPIlink" value=true}
+						{else}
+								{assign var="showOverDriveAPIlink" value=false}
+						{/if}
+
+						{if $showOverDriveAPIlink || $showHooplaAPIlink}
+								{if in_array($action, array('HooplaInfo', 'OverDriveAPIData'))}
+										{assign var="curSection" value=true}
+								{else}
+										{assign var="curSection" value=false}
+								{/if}
+							<div class="panel{if $curSection} active{/if}">
+								<a href="#eContentInfoMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+									<div class="panel-heading">
+										<div class="panel-title">
+											eContent Info
+										</div>
+									</div>
+								</a>
+								<div id="eContentInfoMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+									<div class="panel-body">
+											{if $showOverDriveAPIlink}
+												<div class="adminMenuLink{if $action == "OverDriveAPIData"} active{/if}"><a href="/Admin/OverDriveAPIData">OverDrive API Information</a></div>
+											{/if}
+											{if $showHooplaAPIlink}
+												<div class="adminMenuLink{if $action == "HooplaInfo"} active{/if}"><a href="/Admin/HooplaInfo">Hoopla
+														API Information</a></div>
+											{/if}
+									</div>
+								</div>
 							</div>
-						</div>
-					</a>
-					<div id="eContentInfoMenu" class="panel-collapse collapse {if $curSection}in{/if}">
-						<div class="panel-body">
-							{if in_array('cataloging', $userRoles) || in_array('opacAdmin', $userRoles)}
-								<div class="adminMenuLink{if $action == "OverDriveAPIData"} active{/if}"><a href="/Admin/OverDriveAPIData">OverDrive API Information</a></div>
-							{/if}
-							{if in_array('opacAdmin', $userRoles) || in_array('cataloging', $userRoles) || in_array('libraryAdmin', $userRoles)|| in_array('libraryManager', $userRoles)}
-								<div class="adminMenuLink{if $action == "HooplaInfo"} active{/if}"><a href="/Admin/HooplaInfo">Hoopla API Information</a></div>
-							{/if}
-						</div>
-					</div>
-				</div>
-			{/if}
+						{/if}
+				{/if}
 
 			{if $loggedIn && $userRoles && (in_array('libraryAdmin', $userRoles) || in_array('opacAdmin', $userRoles) || in_array('cataloging', $userRoles))}
 				{if in_array($action, array('RecordGroupingLog', 'ReindexLog', 'SierraExportLog', 'OverDriveExtractLog', 'HooplaExportLog', 'CronLog'))}
