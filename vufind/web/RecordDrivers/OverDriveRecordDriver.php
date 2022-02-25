@@ -778,12 +778,21 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @return  bool
 	 */
 	public function isMagazine(){
-		if (in_array("OverDrive Magazine",$this->getFormats())){
-			return true;
-		}
-		return false;
+		return $this->overDriveProduct->mediaType == 'Magazine';
+//		if (in_array("OverDrive Magazine",$this->getFormats())){
+//			return true;
+//		}
+//		return false;
 	}
 
+	/**
+	 * Return the media type for this product.
+	 * Potential Options are :  Audiobook, eBook, Video, Magazine
+	 * @return string|null
+	 */
+	public function getOverDriveMediaType(){
+		return $this->overDriveProduct->mediaType;
+	}
 	/**
 	 * Get an array of all the formats associated with the record.
 	 *

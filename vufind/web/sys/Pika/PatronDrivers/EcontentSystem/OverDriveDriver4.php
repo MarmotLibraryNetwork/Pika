@@ -495,17 +495,18 @@ class OverDriveDriver4 {
 					//Load data from api
 					$bookshelfItem                   = [];
 					$bookshelfItem['checkoutSource'] = 'OverDrive';
-					$bookshelfItem['overDriveId']    = $curTitle->reserveId;
-					$bookshelfItem['user']           = $user->getNameAndLibraryLabel();
-					$bookshelfItem['userId']         = $user->id;
+					$bookshelfItem['overDriveId']    = strtolower($curTitle->reserveId);
 					if (!empty($curTitle->links->bundledChildren)){
 						foreach ($curTitle->links->bundledChildren as $supplementalTitle){
-							$supplementalTitleId                                      = ltrim(strrchr($supplementalTitle->href, '/'), '/'); // The Overdrive ID of a supplemental title is at the end of the url
+//							$bundle = $this->_callPatronUrl($user, $supplementalTitle->href);
+							$supplementalTitleId                                      = strtolower(ltrim(strrchr($supplementalTitle->href, '/'), '/')); // The Overdrive ID of a supplemental title is at the end of the url
 							$bookshelfItem['supplementalTitle'][$supplementalTitleId] = [];
 							$supplementalTitles[]                                     = $supplementalTitleId;
 						}
 					}
 					if (!$forGetOverDriveCounts){
+						$bookshelfItem['user']             = $user->getNameAndLibraryLabel();
+						$bookshelfItem['userId']           = $user->id;
 						$bookshelfItem['expiresOn']        = $curTitle->expires;
 						$expirationDate                    = new \DateTime($curTitle->expires);
 						$bookshelfItem['dueDate']          = $expirationDate->getTimestamp();
@@ -514,6 +515,27 @@ class OverDriveDriver4 {
 						$bookshelfItem['overdriveRead']    = false;
 						$bookshelfItem['isFormatSelected'] = isset($curTitle->isFormatLockedIn) && $curTitle->isFormatLockedIn == 1;
 						$bookshelfItem['formats']          = []; //TODO: refactor as downloadableFormats
+						$overDriveRecord                   = new OverDriveRecordDriver($bookshelfItem['overDriveId']);
+						if (!$overDriveRecord->isValid()){
+							// If the checkout is a magazine, we won't have it an OverDrive Record
+							// so see if it is a magazine issue
+							$magIssues              = new OverDriveAPIMagazineIssues();
+							$magIssues->overdriveId = $bookshelfItem['overDriveId'];
+							if ($magIssues->find(true)){
+								$bookshelfItem['overdriveMagazine'] = true;
+								$bookshelfItem['issueId']           = $bookshelfItem['overDriveId'];
+								$bookshelfItem['overDriveId']       = $magIssues->parentId;
+								$bookshelfItem['edition']           = $magIssues->edition;
+								$bookshelfItem['coverUrl']          = $magIssues->coverUrl;
+								$overDriveRecord                    = new OverDriveRecordDriver($magIssues->parentId);
+
+//								$bookshelfItem['selectedFormat']    = $curFormat;
+//								$bookshelfItem['isFormatSelected']  = true;  // so that the format gets displayed (had to add an exception to the download section to skip magazines and videos)
+							} else {
+								//TODO: Now make call to the API for additional information
+							}
+						}
+
 
 						// Download options for when a format isn't locked in
 						if (!$bookshelfItem['isFormatSelected'] && isset($curTitle->actions->format)){
@@ -524,81 +546,80 @@ class OverDriveDriver4 {
 						}
 
 						// Get Online Options and the locked-in formation option
-						if (isset($curTitle->formats)){
-							foreach ($curTitle->formats as $format){
-								$curFormatType = $format->formatType;
-								$curFormat     = [
-									'formatType' => $curFormatType,
-									'name'       => self::FORMAT_MAP[$curFormatType],
-								];
-
-								switch ($curFormatType){
-									//The cases other than the default are always available to read/listen/watch online regardless of download formats
-									case 'ebook-overdrive':
-										$bookshelfItem['overdriveRead'] = true;
-										break;
-									case 'ebook-mediado':
-										$bookshelfItem['mediadoRead'] = true;
-										break;
-									case 'audiobook-overdrive':
-										$bookshelfItem['overdriveListen'] = true;
-										break;
-									case 'video-streaming':
-										$bookshelfItem['overdriveVideo']   = true;
-										$bookshelfItem['selectedFormat']   = $curFormat;
-										//Strangely, Video has to be locked in in order to stream
-										break;
-									case 'magazine-overdrive':
-										$bookshelfItem['issueId']           = $bookshelfItem['overDriveId'];
-										$bookshelfItem['overDriveId']       = null;  // Need to get the parent Magazine Issue Id below
-										$bookshelfItem['overdriveMagazine'] = true;
-										$bookshelfItem['selectedFormat']    = $curFormat;
-										$bookshelfItem['isFormatSelected']  = true;  // so that the format gets displayed (had to add an exception to the download section to skip magazines and videos)
-
-									// Get Parent Magazine Record
-										$magIssues              = new OverDriveAPIMagazineIssues();
-										$magIssues->overdriveId = $bookshelfItem['issueId'];
-										if ($magIssues->find(true)){
-											$bookshelfItem['overDriveId'] = $magIssues->parentId;
-											$bookshelfItem['edition']     = $magIssues->edition;
-											$bookshelfItem['coverUrl']    = $magIssues->coverUrl;
-										}else{
-											$this->logger->error('Failed to find OverDrive magazine issue ' . $bookshelfItem['issueId']);
-
-											// Still fetch magazine information from API (This helps prevent errors for updating Reading History)
-											$metaDataResponse = $this->getProductMetadata($curTitle->reserveId, $this->getProductsKey($user));
-											if (!empty($metaDataResponse)){
-												$bookshelfItem['coverUrl'] = $metaDataResponse->images->cover->href ?? null;
-
-												$parentIssueMetaData             = new OverDriveAPIProduct();
-												$parentIssueMetaData->crossRefId = $metaDataResponse->parentMagazineTitleId;
-												if ($parentIssueMetaData->find(true)){
-													$bookshelfItem['overDriveId'] = $parentIssueMetaData->overdriveId;
-													$bookshelfItem['edition']     = $metaDataResponse->edition;
-												}
-											}
-										}
-
-										break;
-									default:
-										// Download option for locked in formats (It won't be any of the above)
-										//This is how we set the download options
-										$bookshelfItem['selectedFormat'] = $curFormat;
-//										if (!isset($format->links->self)){
-//											// What is the point of this??
-//											//TODO: this seems redundant
-//											$bookshelfItem['formats'][] = $curFormat;
+//						if (isset($curTitle->formats)){
+//							foreach ($curTitle->formats as $format){
+//								$curFormatType = $format->formatType;
+//								$curFormat     = [
+//									'formatType' => $curFormatType,
+//									'name'       => self::FORMAT_MAP[$curFormatType],
+//								];
+//
+//								switch ($curFormatType){
+//									//The cases other than the default are always available to read/listen/watch online regardless of download formats
+//									case 'ebook-overdrive':
+//										$bookshelfItem['overdriveRead'] = true;
+//										break;
+//									case 'ebook-mediado':
+//										$bookshelfItem['mediadoRead'] = true;
+//										break;
+//									case 'audiobook-overdrive':
+//										$bookshelfItem['overdriveListen'] = true;
+//										break;
+//									case 'video-streaming':
+//										$bookshelfItem['overdriveVideo']   = true;
+//										$bookshelfItem['selectedFormat']   = $curFormat;
+//										//Strangely, Video has to be locked in in order to stream
+//										break;
+//									case 'magazine-overdrive':
+//										$bookshelfItem['issueId']           = $bookshelfItem['overDriveId'];
+//										$bookshelfItem['overDriveId']       = null;  // Need to get the parent Magazine Issue Id below
+//										$bookshelfItem['overdriveMagazine'] = true;
+//										$bookshelfItem['selectedFormat']    = $curFormat;
+//										$bookshelfItem['isFormatSelected']  = true;  // so that the format gets displayed (had to add an exception to the download section to skip magazines and videos)
+//
+//									// Get Parent Magazine Record
+//										$magIssues              = new OverDriveAPIMagazineIssues();
+//										$magIssues->overdriveId = $bookshelfItem['issueId'];
+//										if ($magIssues->find(true)){
+//											$bookshelfItem['overDriveId'] = $magIssues->parentId;
+//											$bookshelfItem['edition']     = $magIssues->edition;
+//											$bookshelfItem['coverUrl']    = $magIssues->coverUrl;
+//										}else{
+//											$this->logger->error('Failed to find OverDrive magazine issue ' . $bookshelfItem['issueId']);
+//
+//											// Still fetch magazine information from API (This helps prevent errors for updating Reading History)
+//											$metaDataResponse = $this->getProductMetadata($curTitle->reserveId, $this->getProductsKey($user));
+//											if (!empty($metaDataResponse)){
+//												$bookshelfItem['coverUrl'] = $metaDataResponse->images->cover->href ?? null;
+//
+//												$parentIssueMetaData             = new OverDriveAPIProduct();
+//												$parentIssueMetaData->crossRefId = $metaDataResponse->parentMagazineTitleId;
+//												if ($parentIssueMetaData->find(true)){
+//													$bookshelfItem['overDriveId'] = $parentIssueMetaData->overdriveId;
+//													$bookshelfItem['edition']     = $metaDataResponse->edition;
+//												}
+//											}
 //										}
-										break;
-								}
-							}
-						}
+//
+//										break;
+//									default:
+//										// Download option for locked in formats (It won't be any of the above)
+//										//This is how we set the download options
+//										$bookshelfItem['selectedFormat'] = $curFormat;
+////										if (!isset($format->links->self)){
+////											// What is the point of this??
+////											//TODO: this seems redundant
+////											$bookshelfItem['formats'][] = $curFormat;
+////										}
+//										break;
+//								}
+//							}
+//						}
 
 						if (isset($curTitle->actions->earlyReturn)){
 							$bookshelfItem['earlyReturn'] = true;
 						}
 
-						$overDriveRecord = new OverDriveRecordDriver($bookshelfItem['overDriveId']);
 						if ($overDriveRecord->isValid()){
 							$bookshelfItem['recordId'] = $overDriveRecord->getUniqueID();
 							$groupedWorkId             = $overDriveRecord->getGroupedWorkId();
@@ -606,15 +627,16 @@ class OverDriveDriver4 {
 								$bookshelfItem['groupedWorkId'] = $groupedWorkId;
 							}
 							// The $bookshelfItem['format'] is used by reading history cron process
-							if ($bookshelfItem['isFormatSelected']){
-								$bookshelfItem['format'] = $bookshelfItem['selectedFormat']['name'];
-							} else{
-								$formats                 = $overDriveRecord->getFormats();
-								$bookshelfItem['format'] = reset($formats);
-							}
+//							if ($bookshelfItem['isFormatSelected']){
+//								$bookshelfItem['format'] = $bookshelfItem['selectedFormat']['name'];
+//							} else{
+//								$formats                 = $overDriveRecord->getFormats();
+//								$bookshelfItem['format'] = reset($formats);
+//							}
 							if (empty($bookshelfItem['coverUrl'])){
 								$bookshelfItem['coverUrl'] = $overDriveRecord->getCoverUrl('medium');
 							}
+							$bookshelfItem['mediaType']  = $overDriveRecord->getOverDriveMediaType();
 							$bookshelfItem['recordUrl']  = $overDriveRecord->getRecordUrl();
 							$bookshelfItem['title']      = $overDriveRecord->getTitle();
 							$bookshelfItem['author']     = $overDriveRecord->getAuthor();
