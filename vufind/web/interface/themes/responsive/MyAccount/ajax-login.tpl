@@ -22,7 +22,12 @@
 		<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal" role="form" onsubmit="return Pika.Account.processAjaxLogin()">
 			<div id="missingLoginPrompt" style="display: none">Please enter both {$usernameLabel} and {$passwordLabel}.</div>
 			<div id="loginUsernameRow" class="form-group">
+				{if $offline && $allowUsername}
+					<div class="alert alert-warning">Due to the system being offline you must use your <strong>barcode</strong> to login.</div>
+					<label for="username" class="control-label col-xs-12 col-sm-4">Barcode:</label>
+        {else}
 				<label for="username" class="control-label col-xs-12 col-sm-4">{$usernameLabel}:</label>
+				{/if}
 				<div class="col-xs-12 col-sm-8">
 					<input type="text" name="username" id="username" value="{$username|escape}" size="28" class="form-control">
 				</div>

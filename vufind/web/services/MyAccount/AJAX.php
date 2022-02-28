@@ -1001,6 +1001,12 @@ class MyAccount_AJAX extends AJAXHandler {
 		if (isset($_REQUEST['multistep'])){
 			$interface->assign('multistep', true);
 		}
+		// when in offline mode, need a check because users will need to login with barcode.
+		if($configArray['OPAC']['allowUsername']) {
+			$interface->assign('allowUsername', true);
+		} else {
+			$interface->assign('allowUsername', false);
+		}
 		return $interface->fetch('MyAccount/ajax-login.tpl');
 	}
 
