@@ -487,14 +487,16 @@ class OverDriveDriver4 {
 		}
 		$checkedOutTitles = [];
 		if ($this->isUserValidForOverDrive($user)){
-			$url      = $this->patronApi . '/v1/patrons/me/checkouts';
-			$response = $this->_callPatronUrl($user, $url);
+			$nameAndLibraryLabel = $user->getNameAndLibraryLabel();
+			$url                 = $this->patronApi . '/v1/patrons/me/checkouts';
+			$response            = $this->_callPatronUrl($user, $url);
 			if (isset($response->checkouts)){
 				$supplementalTitles = [];
 				foreach ($response->checkouts as $curTitle){
 					//Load data from api
 					$bookshelfItem                   = [];
 					$bookshelfItem['checkoutSource'] = 'OverDrive';
+					$bookshelfItem['user']           = $nameAndLibraryLabel;
 					$bookshelfItem['overDriveId']    = strtolower($curTitle->reserveId);
 					if (!empty($curTitle->links->bundledChildren)){
 						foreach ($curTitle->links->bundledChildren as $supplementalTitle){
@@ -505,7 +507,6 @@ class OverDriveDriver4 {
 						}
 					}
 					if (!$forGetOverDriveCounts){
-						$bookshelfItem['user']             = $user->getNameAndLibraryLabel();
 						$bookshelfItem['userId']           = $user->id;
 						$bookshelfItem['expiresOn']        = $curTitle->expires;
 						$expirationDate                    = new \DateTime($curTitle->expires);
