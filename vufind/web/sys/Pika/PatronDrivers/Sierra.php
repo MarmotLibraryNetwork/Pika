@@ -2575,13 +2575,16 @@ EOT;
 	 * @throws ErrorException
 	 */
 	public function loadReadingHistoryFromIls($patron, $loadAdditional = null){
-		set_time_limit(300);
 		$patronId       = $this->getPatronId($patron->barcode);
-		$operation      = "patrons/" . $patronId . "/checkouts/history";
-		$limitPerCall   = 2000; // Sierra api max results as of 9-12-2019
-		$params         = ['limit'     => $limitPerCall,
-		                   'sortField' => 'outDate',
-		                   'sortOrder' => 'desc'];
+		if ($patronId  == false){
+			return false;
+		}
+		set_time_limit(300);
+		$operation    = "patrons/" . $patronId . "/checkouts/history";
+		$limitPerCall = 2000; // Sierra api max results as of 9-12-2019
+		$params       = ['limit'     => $limitPerCall,
+		                 'sortField' => 'outDate',
+		                 'sortOrder' => 'desc'];
 		$loadAdditional = empty($loadAdditional) ? 0 : $loadAdditional;
 		$startAt        = $loadAdditional * $limitPerCall;
 

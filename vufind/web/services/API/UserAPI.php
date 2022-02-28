@@ -1318,16 +1318,19 @@ class UserAPI extends AJAXHandler {
 							$tokenToMatch = md5($barcode . $configArray['System']['userApiToken']);
 							if ($tokenToMatch == $_REQUEST['token']){
 								return $user;
+							} else {
+								global $pikaLogger;
+								$pikaLogger->warning('User API call had a invalid token paremeter');
 							}
 						}else{
 							global $pikaLogger;
-							$pikaLogger->error("Received User API call with token parameter but no token in config");
+							$pikaLogger->error('Received User API call with token parameter but no token in config');
 						}
 					}
 				}
 			}else{
 				global $pikaLogger;
-				$pikaLogger->error("Received User API call with token parameter but no userId", [$_REQUEST]);
+				$pikaLogger->error('Received User API call with token parameter but no userId', [$_REQUEST]);
 				//TODO: request url
 			}
 		}
