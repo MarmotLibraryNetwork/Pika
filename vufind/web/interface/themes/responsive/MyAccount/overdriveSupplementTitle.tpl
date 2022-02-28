@@ -34,27 +34,12 @@
         {* Actions for Title *}
 			<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 				<div class="btn-group btn-group-vertical btn-block">
-            {if $supplementalTitle.overdriveMagazine}
-							<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', 'magazine-overdrive')" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
-            {/if}
-            {if $supplementalTitle.overdriveRead}
-							<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', 'ebook-overdrive')" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
-            {/if}
-            {if $supplementalTitle.mediadoRead}
-							<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', 'ebook-mediado')" class="btn btn-sm btn-primary">Read&nbsp;Online&nbsp;MediaDo</a>
-            {/if}
-            {if $supplementalTitle.overdriveListen}
-							<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', 'audiobook-overdrive')" class="btn btn-sm btn-primary">Listen&nbsp;Online</a>
-            {/if}
-            {if $supplementalTitle.overdriveVideo}
-							<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', 'video-streaming')" class="btn btn-sm btn-primary">Watch&nbsp;Online</a>
-            {/if}
-            {if $supplementalTitle.isFormatSelected && !$supplementalTitle.overdriveVideo}
-							<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', '{$supplementalTitle.selectedFormat.formatType}')" class="btn btn-sm btn-primary">Download</a>
-            {/if}
+					<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}')" class="btn btn-sm btn-primary">Get {if $supplementalTitle.mediaType}{$supplementalTitle.mediaType}{else}eContent{/if}</a>
+{*  The API reports an early return action but it doesn't actually work
             {if $supplementalTitle.earlyReturn}
 							<a href="#" onclick="return Pika.OverDrive.returnOverDriveTitle('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', '{$supplementalTitle.transactionId}');" class="btn btn-sm btn-warning">Return&nbsp;Now</a>
             {/if}
+*}
 				</div>
 
 

@@ -6,7 +6,7 @@
 			<div class="result-label col-sm-4">Uniform Title: </div>
 			<div class="col-sm-8 result-value">
 				{foreach from=$recordDriver->getUniformTitle() item=uniformTitle}
-					<a href="/Search/Results?lookfor={$uniformTitle|escape:"url"}">{$uniformTitle|highlight}</a><br>
+					<a href="/Search/Results?basicType=Title&lookfor={$uniformTitle|escape:"url"}">{$uniformTitle|highlight}</a><br>
 				{/foreach}
 			</div>
 		</div>

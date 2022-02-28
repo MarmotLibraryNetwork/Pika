@@ -877,7 +877,7 @@ class MarcRecord extends IndexRecord {
 	 * @return  array
 	 */
 	public function getUniformTitle(){
-		return $this->getFieldArray('240', ['a', 'd', 'f', 'g', 'h', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's']);
+		return $this->getFieldArray('240', ['a', 'f','n', 'o', 'p']);
 	}
 
 	private $shortTitle;

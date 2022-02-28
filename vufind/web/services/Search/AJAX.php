@@ -176,7 +176,7 @@ class AJAX extends AJAXHandler {
 		$listName = strip_tags($_GET['scrollerName'] ?? 'List' . $_GET['id']);
 
 		//Determine the caching parameters
-		require_once(ROOT_DIR . '/services/API/ListAPI.php');
+		require_once ROOT_DIR . '/services/API/ListAPI.php';
 		$listAPI   = new ListAPI();
 		$cacheInfo = $listAPI->getCacheInfoForList();
 
@@ -184,6 +184,8 @@ class AJAX extends AJAXHandler {
 		if (isset($_REQUEST['coverSize']) && $_REQUEST['coverSize'] == 'medium'){
 			$cacheName .= '_medium';
 		}
+		global $library;
+		$cacheName .= '_' . $library->subdomain;
 
 		$listData = $memCache->get($cacheName);
 		if (!$listData || isset($_REQUEST['reload']) || empty($listData['titles'])){
@@ -239,7 +241,7 @@ class AJAX extends AJAXHandler {
 
 				$listData = ['titles' => $titles, 'currentIndex' => $currentIndex];
 
-				$memCache->set($cacheInfo['cacheName'], $listData, 0, $cacheInfo['cacheLength']);
+				$memCache->set($cacheName, $listData, 0, $cacheInfo['cacheLength']);
 			}else{
 				$listData = ['titles' => [], 'currentIndex' => 0];
 				if ($titles['message']){
