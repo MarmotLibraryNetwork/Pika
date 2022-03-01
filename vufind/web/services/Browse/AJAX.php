@@ -314,7 +314,7 @@ class Browse_AJAX extends AJAXHandler {
 							// so strip the parentheses so it can be treated as a basic search term.
 							$browseCategory->searchTerm = substr($browseCategory->searchTerm, 1, -1);
 						}
-						$this->searchObject->setSearchTerm($browseCategory->searchTerm);
+						$this->searchObject->setSearchTermForBrowseCategory($browseCategory->searchTerm);
 					}
 
 					//Get titles for the list

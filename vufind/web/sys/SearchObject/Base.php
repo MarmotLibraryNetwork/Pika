@@ -507,31 +507,10 @@ abstract class SearchObject_Base {
 			$type = $this->defaultIndex;
 		}
 
-		if (strpos($searchTerm, ':') > 0){
-			if (substr_count($searchTerm, ':') == 1){
-				// Browse Category Search Term of the for SearchType:search phrase
+		if (strpos($searchTerm, ':') > 0 && $this->isAdvancedSearchFormDisplayQuery($searchTerm)){
+			$this->isAdvanced = true;
+			$this->searchTerms = $this->buildAdvancedSearchTermsFromAdvancedDisplayQuery($searchTerm);
 
-				[$type, $searchTerm] = explode(':', $searchTerm, 2);
-				if (in_array($type, $this->basicTypes)){
-					$this->searchTerms[] = [
-						'index'   => $type,
-						'lookfor' => $searchTerm
-					];
-				} else {
-					return false;
-				}
-			}elseif ($this->isAdvancedSearchFormDisplayQuery($searchTerm)){
-				//TODO: this may be obsolete or unneeded now that Advanced Search queries are kept out of basic search box
-				//TODO: just return false?
-				$this->isAdvanced  = true;
-				$this->searchTerms = $this->buildAdvancedSearchTermsFromAdvancedDisplayQuery($searchTerm);
-
-			}else{
-				$this->searchTerms[] = [
-					'index'   => $type,
-					'lookfor' => $searchTerm
-				];
-			}
 		}else{
 			$this->searchTerms[] = [
 				'index'   => $type,

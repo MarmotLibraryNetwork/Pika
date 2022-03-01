@@ -409,9 +409,23 @@ class SearchObject_Solr extends SearchObject_Base {
 		return true;
 	} // End init()
 
-	// This sets up Brawse Categories based on search phrases
-	public function setSearchTerm($searchTerm){
-		$this->initBasicSearch($searchTerm);
+	// This sets up Browse Categories based on search phrases
+	public function setSearchTermForBrowseCategory($searchTerm){
+		if (strpos($searchTerm, ':') > 0 && substr_count($searchTerm, ':') == 1){
+			// Browse Category Search Term of the for SearchType:search phrase
+			[$tmpType, $tempSearchTerm] = explode(':', $searchTerm, 2);
+			if (in_array($tmpType, $this->basicTypes)){
+				$this->searchTerms[] = [
+					'index'   => $tmpType,
+					'lookfor' => $tempSearchTerm
+				];
+			}
+		}else{
+			$this->searchTerms[] = [
+				'index'   => $this->defaultIndex,
+				'lookfor' => $searchTerm
+			];
+		}
 	}
 
 	/**
