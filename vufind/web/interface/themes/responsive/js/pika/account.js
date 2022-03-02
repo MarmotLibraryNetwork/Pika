@@ -145,7 +145,7 @@ Pika.Account = (function(){
 				$(".readingHistory-placeholder").html(data.readingHistory);
 				$(".materialsRequests-placeholder").html(data.materialsRequests);
 				$(".bookings-placeholder").html(data.bookings);
-				$("#availableHoldsNotice-placeHolder").html(data.availableHoldsNotice);
+				$(".availableHoldsNoticePlaceHolder").html(data.availableHoldsNotice);
 				$(".expirationFinesNotice-placeholder").html(data.expirationFinesNotice);
 				$(".fineBadge-placeholder").html(data.fines);
 				$("#tagsMenu-placeholder").html(data.tagsMenu);
