@@ -16,12 +16,17 @@
 		<img src="{img filename='/interface/themes/responsive/images/Menu.png'}" alt="Menu">
 	</a>
 
+    {if !$horizontalSearchBar}
+	    {*Only display this icon when we are using the sidebar searchbox, and not the horizontal search box
+	     since collapsing the horizontal search box has several complications *}
 	<a href="#{*horizontal-menu-bar-wrapper*}" id="mobile-menu-search-icon" onclick="Pika.Menu.Mobile.showSearch(this)" class="menu-icon menu-left" title="Search">
 		{* mobile-menu-search-icon id used by Refine Search button to set the menu to search (in case another menu option has been selected) *}
 		<img src="{img filename='/interface/themes/responsive/images/Search.png'}" alt="Search">
 	</a>
+    {/if}
 
-	{if $showExploreMore}
+
+    {if $showExploreMore}
 		{* TODO: set explore more anchor tag so exploremore is moved into view on mobile *}
 		<a href="#" id="mobile-menu-explore-more-icon" onclick="Pika.Menu.Mobile.showExploreMore(this)" class="menu-icon menu-left" title="{translate text='Explore More'}">
 			<img src="{img filename='/interface/themes/responsive/images/ExploreMore.png'}" alt="{translate text='Explore More'}">
