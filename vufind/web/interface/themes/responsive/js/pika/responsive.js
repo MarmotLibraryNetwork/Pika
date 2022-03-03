@@ -30,12 +30,13 @@ Pika.Responsive = (function(){
 
 		// auto adjust the height of the search box
 		// (Only side bar search box for now)
-		$('#lookfor', '#home-page-search').on( 'keyup', function (event ){
+		$('#lookfor').on( 'keyup', function (event ){
 			$(this).height( 0 );
 			if (this.scrollHeight < 32){
 				$(this).height( 18 );
 			}else{
 				$(this).height( this.scrollHeight );
+				console.log(this)
 			}
 		}).keyup(); //This keyup triggers the resize
 

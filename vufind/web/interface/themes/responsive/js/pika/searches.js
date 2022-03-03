@@ -129,6 +129,7 @@ Pika.Searches = (function(){
 
 		initAutoComplete: function(){
 			try{
+				var usingHorizontalSearchBox = $('#horizontal-search-box').is(':visible');
 				$("#lookfor").autocomplete({
 					source:function(request,response){
 						var url    = Globals.path+"/Search/AJAX",
@@ -141,8 +142,8 @@ Pika.Searches = (function(){
 						});
 					},
 					position:{
-						my:"left top",
-						at:"left bottom",
+						my: usingHorizontalSearchBox ? "left bottom" : "left top",
+						at:usingHorizontalSearchBox ? "left top" : "left bottom",
 						of:"#lookfor",
 						collision:"none"
 					},
