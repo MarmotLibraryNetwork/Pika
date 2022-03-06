@@ -59,7 +59,9 @@ public class OverDriveRecordInfo {
 		if (curProduct.has("subtitle")) {
 			this.setSubtitle(curProduct.getString("subtitle"));
 		}
-		this.setMediaType(curProduct.getString("mediaType"));
+		if (curProduct.has("mediaType")) {
+			this.setMediaType(curProduct.getString("mediaType"));
+		}
 		if (curProduct.has("series")) {
 			String series = curProduct.getString("series");
 			if (series.length() > 215) {
