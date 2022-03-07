@@ -198,7 +198,7 @@ public class OverDriveProcessor {
 								final String author = productRS.getString("fileAs");
 								groupedWork.setAuthor(author);
 								groupedWork.setAuthAuthor(author);
-								groupedWork.setAuthorDisplay(author);
+								groupedWork.setAuthorDisplay(author, primaryFormat);
 
 								Date dateAdded = null;
 								try {

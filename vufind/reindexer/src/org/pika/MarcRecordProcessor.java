@@ -296,7 +296,7 @@ abstract class MarcRecordProcessor {
 
 	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier, String format, boolean loadedNovelistSeries) {
 		loadTitles(groupedWork, record, format, identifier);
-		loadAuthors(groupedWork, record, identifier);
+		loadAuthors(groupedWork, record, format, identifier);
 		loadSubjects(groupedWork, record);
 		loadSeries(groupedWork, record, loadedNovelistSeries);
 		groupedWork.addContents(MarcUtil.getFieldList(record, "505a:505t"));
@@ -901,7 +901,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	private void loadAuthors(GroupedWorkSolr groupedWork, Record record, String identifier) {
+	private void loadAuthors(GroupedWorkSolr groupedWork, Record record, String recordFormat, String identifier) {
 		//auth_author = 100abcd, first
 		groupedWork.setAuthAuthor(MarcUtil.getFirstFieldVal(record, "100abcd"));
 
@@ -939,7 +939,7 @@ abstract class MarcRecordProcessor {
 		if (displayAuthor != null && displayAuthor.indexOf(';') > 0){
 			displayAuthor = displayAuthor.substring(0, displayAuthor.indexOf(';') -1);
 		}
-		groupedWork.setAuthorDisplay(displayAuthor);
+		groupedWork.setAuthorDisplay(displayAuthor, recordFormat);
 	}
 
 	protected void loadTitles(GroupedWorkSolr groupedWork, Record record, String format, String identifier) {

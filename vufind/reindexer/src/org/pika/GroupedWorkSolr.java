@@ -20,6 +20,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
 
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.time.Year.now;
@@ -45,6 +46,8 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashMap<String, Long>    primaryAuthors           = new HashMap<>();
 	private HashSet<String>          authorAdditional         = new HashSet<>();
 	private String                   authorDisplay;
+	private String                   authorDisplayFormat      = "";
+	private HashMap<String, Long>    displayAuthors           = new HashMap<>();
 	private HashSet<String>          author2                  = new HashSet<>();
 	private HashSet<String>          authAuthor2              = new HashSet<>();
 	private HashSet<String>          author2Role              = new HashSet<>();
@@ -246,13 +249,20 @@ public class GroupedWorkSolr implements Cloneable {
 //		doc.addField("title_new", titleNew);
 
 		//author and variations
+		String primaryAuthor = getPrimaryAuthor();
+		if (!primaryAuthor.isEmpty()) {
+			doc.addField("author", primaryAuthor);
+		}
 		doc.addField("auth_author", authAuthor);
-		doc.addField("author", getPrimaryAuthor());
 		doc.addField("auth_author2", authAuthor2);
 		doc.addField("author2", author2);
 		doc.addField("author2-role", author2Role);
 		doc.addField("author_additional", authorAdditional);
-		doc.addField("author_display", authorDisplay);
+		String displayAuthor = getDisplayAuthor();
+		if (!displayAuthor.isEmpty()) {
+			doc.addField("author_display", authorDisplay);
+		}
+
 		//format
 		doc.addField("grouping_category", groupingCategory);
 		doc.addField("format_boost", getTotalFormatBoost());
@@ -1099,7 +1109,7 @@ public class GroupedWorkSolr implements Cloneable {
 //	}
 
 	public void setAuthor(String author) {
-		author = Util.trimTrailingPunctuation(author);
+		author = trimAuthorTrailingPunctuation(author);
 		if (primaryAuthors.containsKey(author)){
 			primaryAuthors.put(author, primaryAuthors.get(author) + 1);
 		}else{
@@ -1118,8 +1128,79 @@ public class GroupedWorkSolr implements Cloneable {
 		return mostUsedAuthor;
 	}
 
-	void setAuthorDisplay(String newAuthor) {
-		this.authorDisplay = Util.trimTrailingPunctuation(newAuthor);
+	private String getDisplayAuthor(){
+		String mostUsedAuthor = null;
+		long numUses = -1;
+		for (String curAuthor : displayAuthors.keySet()){
+			if (displayAuthors.get(curAuthor) > numUses){
+				mostUsedAuthor = curAuthor;
+			}
+		}
+		return mostUsedAuthor;
+	}
+
+	void setAuthorDisplay(String newAuthor, String recordFormat) {
+		if (newAuthor != null && !newAuthor.isEmpty()){
+			boolean updateDisplayAuthor = false;
+			String displayAuthor = trimAuthorTrailingPunctuation(newAuthor);
+			if (this.authorDisplay == null){
+				displayAuthors.put(displayAuthor, 1L);
+				authorDisplayFormat = recordFormat;
+			} else if (recordFormat.equals("Book")){
+				// Prefer display authors from books over all other formats
+				if (!authorDisplayFormat.equals("Book")){
+					displayAuthors.clear();
+					displayAuthors.put(displayAuthor, 1L);
+					authorDisplayFormat = recordFormat;
+				}else if (displayAuthors.containsKey(displayAuthor)){
+					displayAuthors.put(displayAuthor, displayAuthors.get(displayAuthor) + 1);
+				} else {
+					displayAuthors.put(displayAuthor, 1L);
+				}
+			} else if (!authorDisplayFormat.equals("Book") && recordFormat.equals("eBook")){
+				// If we haven't found a book, but this is from an ebook, try preferring eBook display authors
+				// over other formats
+				if (!authorDisplayFormat.equals("eBook")){
+					displayAuthors.clear();
+					displayAuthors.put(displayAuthor, 1L);
+					authorDisplayFormat = recordFormat;
+				}else if (displayAuthors.containsKey(displayAuthor)){
+					displayAuthors.put(displayAuthor, displayAuthors.get(displayAuthor) + 1);
+				} else {
+					displayAuthors.put(displayAuthor, 1L);
+				}
+
+			}
+
+//			if (this.authorDisplay == null){
+//				updateDisplayAuthor = true;
+//			} else {
+//				// Prefer display author string from book over other formats;
+//				// if no books, prefer display author string from ebook over other formats.
+//				// Use longest author string found within the format type
+//				if (recordFormat.equals("Book")){
+//					if (!authorDisplayFormat.equals(titleFormat) || displayAuthor.length() > authorDisplay.length()){
+//						updateDisplayAuthor = true;
+//					}
+//				} else if (recordFormat.equals("eBook")){
+//					//Update if the format we had before is not a book
+//					if (!titleFormat.equals("Book")){
+//						if (!authorDisplayFormat.equals(titleFormat) || displayAuthor.length() > authorDisplay.length()){
+//							updateDisplayAuthor = true;
+//						}
+//					}
+//
+//				} else if (!titleFormat.equals("Book") && !titleFormat.equals("eBook")){
+//					if (displayAuthor.length() > authorDisplay.length()){
+//						updateDisplayAuthor = true;
+//					}
+//				}
+//			}
+//			if (updateDisplayAuthor){
+//				authorDisplay = displayAuthor;
+//				authorDisplayFormat = recordFormat;
+//			}
+		}
 	}
 
 	void setAuthAuthor(String author) {
@@ -1128,11 +1209,11 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void addAuthAuthor2(Set<String> fieldList) {
-		this.authAuthor2.addAll(Util.trimTrailingPunctuation(fieldList));
+		this.authAuthor2.addAll(trimAuthorTrailingPunctuation(fieldList));
 	}
 
 	void addAuthor2(Set<String> fieldList) {
-		this.author2.addAll(Util.trimTrailingPunctuation(fieldList));
+		this.author2.addAll(trimAuthorTrailingPunctuation(fieldList));
 	}
 
 	void addAuthor2Role(Set<String> fieldList) {
@@ -1140,9 +1221,33 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void addAuthorAdditional(Set<String> fieldList) {
-		this.authorAdditional.addAll(Util.trimTrailingPunctuation(fieldList));
+		this.authorAdditional.addAll(trimAuthorTrailingPunctuation(fieldList));
 	}
 
+	private static final Pattern trimAuthorPunctuationPattern = Pattern.compile("^(.*?)[\\s/,;|]+$");
+	// trailing punctuation except the period (.) character, because that could be part of an initial
+	static String trimAuthorTrailingPunctuation(String author) {
+		if (author == null){
+			return "";
+		}
+		Matcher trimPunctuationMatcher = trimAuthorPunctuationPattern.matcher(author);
+		if (trimPunctuationMatcher.matches()){
+			author = trimPunctuationMatcher.group(1);
+		}
+		// Remove training periods, unless it is preceded by a letter
+		if (author.endsWith(".") && !Character.isLetter(author.charAt(author.length() - 2))){
+			author = author.substring(0, author.length() - 1);
+		}
+		return author;
+	}
+
+	static Collection<String> trimAuthorTrailingPunctuation(Set<String> fieldList) {
+		HashSet<String> trimmedCollection = new HashSet<>();
+		for (String field : fieldList){
+			trimmedCollection.add(trimAuthorTrailingPunctuation(field));
+		}
+		return trimmedCollection;
+	}
 
 	void addOclcNumbers(Set<String> oclcs) {
 		this.oclcs.addAll(oclcs);
