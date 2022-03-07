@@ -725,25 +725,31 @@ class BookCoverProcessor {
 			$coverBuilder->getCover($title, $author, $this->format, $this->category, $this->cacheFile, $vertical_cutoff_px);
 			return $this->processImageURL($this->cacheFile);
 		}else{
+			// Resort to a generic cover image.
+			// Do not cache image as we hope a future load will have more information to provide a better cover
+
 			$themes = array_unique(explode(',', $this->configArray['Site']['theme']));
-			//TODO: the responsive theme images aren't meant for book cover art, just the format category facet icons
 			foreach ($themes as $themeName){
-				if (!empty($this->format)){
-					if (is_readable("interface/themes/{$themeName}/images/{$this->format}_{$this->size}.png")){
-						$noCoverUrl = "interface/themes/{$themeName}/images/{$this->format}_{$this->size}.png";
-						break;
-					}elseif (is_readable("interface/themes/{$themeName}/images/{$this->format}.png")){
-						$noCoverUrl = "interface/themes/{$themeName}/images/{$this->format}.png";
-						break;
+				if ($themeName != 'responsive'){
+					// Do not use images in the responsive/images folder, as those are meant for the format category icons
+					// rather than cover images.
+					if (!empty($this->format)){
+						if (is_readable("interface/themes/{$themeName}/images/{$this->format}_{$this->size}.png")){
+							$noCoverUrl = "interface/themes/{$themeName}/images/{$this->format}_{$this->size}.png";
+							break;
+						}elseif (is_readable("interface/themes/{$themeName}/images/{$this->format}.png")){
+							$noCoverUrl = "interface/themes/{$themeName}/images/{$this->format}.png";
+							break;
+						}
 					}
-				}
-				if (!empty($this->category)){
-					if (is_readable("interface/themes/{$themeName}/images/{$this->category}_{$this->size}.png")){
-						$noCoverUrl = "interface/themes/{$themeName}/images/{$this->category}_{$this->size}.png";
-						break;
-					}elseif (is_readable("interface/themes/{$themeName}/images/{$this->category}.png")){
-						$noCoverUrl = "interface/themes/{$themeName}/images/{$this->category}.png";
-						break;
+					if (!empty($this->category)){
+						if (is_readable("interface/themes/{$themeName}/images/{$this->category}_{$this->size}.png")){
+							$noCoverUrl = "interface/themes/{$themeName}/images/{$this->category}_{$this->size}.png";
+							break;
+						}elseif (is_readable("interface/themes/{$themeName}/images/{$this->category}.png")){
+							$noCoverUrl = "interface/themes/{$themeName}/images/{$this->category}.png";
+							break;
+						}
 					}
 				}
 			}
@@ -766,14 +772,14 @@ class BookCoverProcessor {
 			}
 
 			if (!isset($noCoverUrl)){
+				// Last resort cover image
 				$this->logger->log('Resorted to noCover image for : '. $_SERVER['REQUEST_URI'], PEAR_LOG_ERR);
 				// Log when this happens regardless of doCoverLogging setting
-				return $this->processImageURL('interface/themes/default/images/noCover2.png', false);
-				// We don't want to cache this image since this is a last resort cover image.
+				$noCoverUrl = 'interface/themes/default/images/noCover2.png';
 			}
 
 			$this->log("Found fallback cover: $noCoverUrl", PEAR_LOG_INFO);
-			return $this->processImageURL($noCoverUrl);
+			return $this->processImageURL($noCoverUrl, false);
 		}
 	}
 
