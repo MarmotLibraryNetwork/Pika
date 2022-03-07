@@ -1110,10 +1110,12 @@ public class GroupedWorkSolr implements Cloneable {
 
 	public void setAuthor(String author) {
 		author = trimAuthorTrailingPunctuation(author);
-		if (primaryAuthors.containsKey(author)){
-			primaryAuthors.put(author, primaryAuthors.get(author) + 1);
-		}else{
-			primaryAuthors.put(author, 1L);
+		if (!author.isEmpty()) {
+			if (primaryAuthors.containsKey(author)){
+				primaryAuthors.put(author, primaryAuthors.get(author) + 1);
+			}else{
+				primaryAuthors.put(author, 1L);
+			}
 		}
 	}
 
@@ -1141,36 +1143,36 @@ public class GroupedWorkSolr implements Cloneable {
 
 	void setAuthorDisplay(String newAuthor, String recordFormat) {
 		if (newAuthor != null && !newAuthor.isEmpty()){
-			boolean updateDisplayAuthor = false;
+//			boolean updateDisplayAuthor = false;
 			String displayAuthor = trimAuthorTrailingPunctuation(newAuthor);
-			if (this.authorDisplay == null){
-				displayAuthors.put(displayAuthor, 1L);
-				authorDisplayFormat = recordFormat;
-			} else if (recordFormat.equals("Book")){
-				// Prefer display authors from books over all other formats
-				if (!authorDisplayFormat.equals("Book")){
-					displayAuthors.clear();
+			if (!displayAuthor.isEmpty()) {
+				if (this.authorDisplay == null){
 					displayAuthors.put(displayAuthor, 1L);
 					authorDisplayFormat = recordFormat;
-				}else if (displayAuthors.containsKey(displayAuthor)){
-					displayAuthors.put(displayAuthor, displayAuthors.get(displayAuthor) + 1);
-				} else {
-					displayAuthors.put(displayAuthor, 1L);
+				} else if (recordFormat.equals("Book")){
+					// Prefer display authors from books over all other formats
+					if (!authorDisplayFormat.equals("Book")){
+						displayAuthors.clear();
+						displayAuthors.put(displayAuthor, 1L);
+						authorDisplayFormat = recordFormat;
+					}else if (displayAuthors.containsKey(displayAuthor)){
+						displayAuthors.put(displayAuthor, displayAuthors.get(displayAuthor) + 1);
+					} else {
+						displayAuthors.put(displayAuthor, 1L);
+					}
+				} else if (!authorDisplayFormat.equals("Book") && recordFormat.equals("eBook")){
+					// If we haven't found a book, but this is from an ebook, try preferring eBook display authors
+					// over other formats
+					if (!authorDisplayFormat.equals("eBook")){
+						displayAuthors.clear();
+						displayAuthors.put(displayAuthor, 1L);
+						authorDisplayFormat = recordFormat;
+					}else if (displayAuthors.containsKey(displayAuthor)){
+						displayAuthors.put(displayAuthor, displayAuthors.get(displayAuthor) + 1);
+					} else {
+						displayAuthors.put(displayAuthor, 1L);
+					}
 				}
-			} else if (!authorDisplayFormat.equals("Book") && recordFormat.equals("eBook")){
-				// If we haven't found a book, but this is from an ebook, try preferring eBook display authors
-				// over other formats
-				if (!authorDisplayFormat.equals("eBook")){
-					displayAuthors.clear();
-					displayAuthors.put(displayAuthor, 1L);
-					authorDisplayFormat = recordFormat;
-				}else if (displayAuthors.containsKey(displayAuthor)){
-					displayAuthors.put(displayAuthor, displayAuthors.get(displayAuthor) + 1);
-				} else {
-					displayAuthors.put(displayAuthor, 1L);
-				}
-
-			}
 
 //			if (this.authorDisplay == null){
 //				updateDisplayAuthor = true;
@@ -1200,6 +1202,7 @@ public class GroupedWorkSolr implements Cloneable {
 //				authorDisplay = displayAuthor;
 //				authorDisplayFormat = recordFormat;
 //			}
+			}
 		}
 	}
 
