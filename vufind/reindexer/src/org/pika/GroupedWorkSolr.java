@@ -250,7 +250,7 @@ public class GroupedWorkSolr implements Cloneable {
 
 		//author and variations
 		String primaryAuthor = getPrimaryAuthor();
-		if (!primaryAuthor.isEmpty()) {
+		if (primaryAuthor != null) {
 			doc.addField("author", primaryAuthor);
 		}
 		doc.addField("auth_author", authAuthor);
@@ -259,7 +259,7 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("author2-role", author2Role);
 		doc.addField("author_additional", authorAdditional);
 		String displayAuthor = getDisplayAuthor();
-		if (!displayAuthor.isEmpty()) {
+		if (displayAuthor != null) {
 			doc.addField("author_display", authorDisplay);
 		}
 
