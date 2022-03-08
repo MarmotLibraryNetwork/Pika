@@ -34,6 +34,16 @@ Pika.ResultsList = (function(){
 			return contentHolder[0].innerHTML;
 		},
 
+		staticPosition: function(sticky, divId){
+			var resultsNav = document.getElementById(divId);
+			if (window.pageYOffset > sticky){
+				resultsNav.classList.add("sticky");
+			}else{
+				resultsNav.classList.remove("sticky");
+			}
+
+		},
+
 		moreFacetPopup: function(title, name){
 			Pika.showMessage(title, $("#moreFacetPopup_" + name).html());
 		},

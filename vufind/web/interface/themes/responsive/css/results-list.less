@@ -348,18 +348,31 @@
 
 
 .bookbag-container{
-  right: 0px;
-  position: fixed;
+  right: -367px;
+  position: absolute;
   height: 4em;
   z-index:3;
+}
+.bookbag-container.sticky{
+  position: fixed;
+  right: 0;
+  top:5px;
 }
 
 @media (max-width: @screen-md-min) {
 
   .bookbag-container{
+    position: fixed;
+    right: 0;
     top: 50px;
   }
+  .bookbag-container.sticky{
+    position: fixed;
+    right: 0;
+    top:50px;
+  }
 }
+
 
 .bookbag{
   height: 2em;
@@ -422,6 +435,7 @@
     right: 0;
   }
 }
+
 
 .cart-container{
   background: @menu-bar-background-color;

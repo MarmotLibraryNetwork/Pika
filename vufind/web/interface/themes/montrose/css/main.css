@@ -9744,13 +9744,25 @@ a.browse-thumbnail-sorted.active {
   border-color: #754b6f;
 }
 .bookbag-container {
-  right: 0px;
-  position: fixed;
+  right: -367px;
+  position: absolute;
   height: 4em;
   z-index: 3;
 }
+.bookbag-container.sticky {
+  position: fixed;
+  right: 0;
+  top: 5px;
+}
 @media (max-width: 992px) {
   .bookbag-container {
+    position: fixed;
+    right: 0;
+    top: 50px;
+  }
+  .bookbag-container.sticky {
+    position: fixed;
+    right: 0;
     top: 50px;
   }
 }

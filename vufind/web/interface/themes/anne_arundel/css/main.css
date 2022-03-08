@@ -9745,13 +9745,25 @@ a.browse-thumbnail-sorted.active {
   border-color: #042D3A;
 }
 .bookbag-container {
-  right: 0px;
-  position: fixed;
+  right: -367px;
+  position: absolute;
   height: 4em;
   z-index: 3;
 }
+.bookbag-container.sticky {
+  position: fixed;
+  right: 0;
+  top: 5px;
+}
 @media (max-width: 992px) {
   .bookbag-container {
+    position: fixed;
+    right: 0;
+    top: 50px;
+  }
+  .bookbag-container.sticky {
+    position: fixed;
+    right: 0;
     top: 50px;
   }
 }
@@ -10548,7 +10560,7 @@ fieldset[disabled] .btn-masquerade.active {
   font-family: 'Montserrat';
   font-style: normal;
   font-weight: 400;
-  src: url(https://fonts.gstatic.com/s/montserrat/v21/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aX8.ttf) format('truetype');
+  src: url(https://fonts.gstatic.com/s/montserrat/v23/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aX8.ttf) format('truetype');
 }
 .header-button {
   border: 0;
