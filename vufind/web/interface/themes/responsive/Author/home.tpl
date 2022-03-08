@@ -1,4 +1,5 @@
 {strip}
+    {include file="Search/bookbag.tpl"}
 <div>
 	<h2>{$authorName}</h2>
 	<div class="row">
@@ -13,6 +14,7 @@
 	{/if}
 
 	{* Information about the search *}
+
 	<div class="result-head">
 
 		{if $recordCount}
@@ -91,4 +93,19 @@
 			$('#'+Pika.Searches.displayMode).parent('label').addClass('active'); {* show user which one is selected *}
 
 			{rdelim});
+
+			$('.checkbox-results').change(function(){ldelim}
+			Pika.GroupedWork.showBookbag(this);
+        {rdelim});
+			$('.bookbag').click(function(){ldelim}
+			Pika.GroupedWork.openBookbag(this);
+        {rdelim});
+			$('body').on('click', 'span.remove', function(){ldelim}
+			var checkedId = this.id.replace(/remove_/g, 'select_');
+			if($("#"  + checkedId +":checked")){ldelim}
+			$("#"+ checkedId).prop("checked", false);
+			Pika.GroupedWork.showBookbag(this);
+        {rdelim};
+        {rdelim});
+
 	</script>
