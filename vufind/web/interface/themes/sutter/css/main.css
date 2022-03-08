@@ -9747,6 +9747,7 @@ a.browse-thumbnail-sorted.active {
   position: fixed;
   height: 4em;
   z-index: 3;
+  right: 0;
 }
 .bookbag-container.sticky {
   position: fixed;
