@@ -1,5 +1,5 @@
 {strip}
-<div class="bookbag-container" style="display:none;">
+<div class="bookbag-container" id="bookbag-container" style="display:none;">
 	<div class="bookbag"></div>
 	<div class="cart-container cartIn">
 		<h3>Bookbag</h3>
@@ -10,5 +10,11 @@
 		<button class="btn btn-sm btn-info" onclick="Pika.GroupedWork.addSelectedToList()" id="bookbagHoldBtn">Add To List</button>
 	</div>
 </div>
+
+	<script>
+		window.onscroll = function () {ldelim}
+			Pika.ResultsList.staticPosition(413,"bookbag-container");
+		{rdelim};
+	</script>
 
 {/strip}

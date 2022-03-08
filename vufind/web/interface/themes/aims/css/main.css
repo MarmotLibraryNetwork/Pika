@@ -9746,13 +9746,25 @@ a.browse-thumbnail-sorted.active {
   border-color: #221f1f;
 }
 .bookbag-container {
-  right: 0px;
-  position: fixed;
+  right: -367px;
+  position: absolute;
   height: 4em;
   z-index: 3;
 }
+.bookbag-container.sticky {
+  position: fixed;
+  right: 0;
+  top: 5px;
+}
 @media (max-width: 992px) {
   .bookbag-container {
+    position: fixed;
+    right: 0;
+    top: 50px;
+  }
+  .bookbag-container.sticky {
+    position: fixed;
+    right: 0;
     top: 50px;
   }
 }
@@ -10597,7 +10609,7 @@ a#logoutLink {
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/s/robotoslab/v16/BngbUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjojISWaA.ttf) format('truetype');
+  src: url(https://fonts.gstatic.com/s/robotoslab/v22/BngbUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjojISWaA.ttf) format('truetype');
 }
 .nielsenlibrarytxt {
   font-family: 'Roboto Slab', sans-serif;
