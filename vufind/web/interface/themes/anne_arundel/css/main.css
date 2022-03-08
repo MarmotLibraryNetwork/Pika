@@ -9745,8 +9745,7 @@ a.browse-thumbnail-sorted.active {
   border-color: #042D3A;
 }
 .bookbag-container {
-  right: -367px;
-  position: absolute;
+  position: fixed;
   height: 4em;
   z-index: 3;
 }
