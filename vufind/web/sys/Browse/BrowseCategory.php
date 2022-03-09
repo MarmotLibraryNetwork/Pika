@@ -51,7 +51,7 @@ class BrowseCategory extends DB_DataObject{
 
 	public function getSubCategories(){
 		if (!isset($this->subBrowseCategories) && $this->id) {
-			$this->subBrowseCategories     = array();
+			$this->subBrowseCategories     = [];
 			$subCategory                   = new SubBrowseCategories();
 			$subCategory->browseCategoryId = $this->id;
 			$subCategory->orderBy('weight');
@@ -63,7 +63,7 @@ class BrowseCategory extends DB_DataObject{
 		return $this->subBrowseCategories;
 	}
 
-	private $data = array();
+	private $data = [];
 	public function __get($name){
 		if ($name == 'subBrowseCategories') {
 			$this->getSubCategories();
@@ -204,7 +204,14 @@ class BrowseCategory extends DB_DataObject{
 		unset($browseSubCategoryStructure['weight']);
 		unset($browseSubCategoryStructure['browseCategoryId']);
 
-		$sortOptions     = ['relevance' => 'Best Match', 'popularity' => 'Total Checkouts', 'newest_to_oldest' => 'Date Added', 'author' => 'Author', 'title' => 'Title', 'user_rating' => 'User Rating'];
+		$sortOptions = [
+			'relevance'        => 'Best Match',
+			'popularity'       => 'Total Checkouts',
+			'newest_to_oldest' => 'Date Added',
+			'author'           => 'Author',
+			'title'            => 'Title',
+			'user_rating'      => 'User Rating'
+		];
 
 		$structure = [
 			'id'          => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of this association'],
@@ -243,6 +250,10 @@ class BrowseCategory extends DB_DataObject{
 		return $structure;
 	}
 
+	/**
+	 * The Object Editor uses this method to check the text Id of browse categories
+	 * @return array
+	 */
 	function validateTextId(){
 		//Setup validation return array
 		$validationResults = [
@@ -277,6 +288,11 @@ class BrowseCategory extends DB_DataObject{
 		return $validationResults;
 	}
 
+	/**
+	 *  Convert the BrowseCategory sort options into equivalent Solr sort values for building a search
+	 *
+	 * @return string
+	 */
 	public function getSolrSort() {
 		if ($this->defaultSort == 'relevance'){
 			return 'relevance';
@@ -338,23 +354,32 @@ class BrowseCategory extends DB_DataObject{
 
 		//Default sort
 		$solrSort = $searchObj->getSort();
-		if ($solrSort == 'relevance'){
-			$this->defaultSort = 'relevance';
-		}elseif ($solrSort == 'popularity desc'){
-			$this->defaultSort = 'popularity';
-		}elseif ($solrSort == 'days_since_added asc'){
-			$this->defaultSort = 'newest_to_oldest';
-			// this option is not given to select
-//		}elseif ($solrSort == 'days_since_added desc'){
-//			$this->defaultSort = 'oldest_to_newest';
-		}elseif ($solrSort == 'author,title'){
-			$this->defaultSort = 'author';
-		}elseif ($solrSort == 'title,author'){
-			$this->defaultSort = 'title';
-		}elseif ($solrSort == 'rating desc,title'){
-			$this->defaultSort = 'user_rating';
-		}else{
-			$this->defaultSort = 'relevance';
+		switch ($solrSort){
+			case 'popularity desc':
+				$this->defaultSort = 'popularity';
+				break;
+			case 'days_since_added asc':
+				$this->defaultSort = 'newest_to_oldest';
+				// this option is not given to select
+				break;
+			case 'days_since_added desc':
+				$this->defaultSort = 'oldest_to_newest';
+				break;
+			case 'author':
+			case 'author,title':
+				$this->defaultSort = 'author';
+				break;
+			case 'title':
+			case 'title,author':
+				$this->defaultSort = 'title';
+				break;
+			case 'rating desc,title':
+				$this->defaultSort = 'user_rating';
+				break;
+			case 'relevance':
+			default:
+				$this->defaultSort = 'relevance';
+				break;
 		}
 		return true;
 	}
