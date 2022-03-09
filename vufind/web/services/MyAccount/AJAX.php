@@ -1240,7 +1240,7 @@ class MyAccount_AJAX extends AJAXHandler {
 					if ($list->public == true || (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $list->user_id)){
 						//The user can access the list
 						require_once ROOT_DIR . '/sys/LocalEnrichment/FavoriteHandler.php';
-						$favoriteHandler = new FavoriteHandler($list, UserAccount::getActiveUserObj(), false);
+						$favoriteHandler = new FavoriteHandler($list, false);
 						$titleDetails    = $favoriteHandler->getTitles(count($listEntries));
 						// get all titles for email list, not just a page's worth
 						$interface->assign('titles', $titleDetails);
@@ -1666,7 +1666,7 @@ class MyAccount_AJAX extends AJAXHandler {
                         $title = $listFrom->title;
                     }
                     require_once ROOT_DIR . '/sys/LocalEnrichment/FavoriteHandler.php';
-                    $favList = new FavoriteHandler($listFrom, $user, false);
+                    $favList = new FavoriteHandler($listFrom, false);
                     $recordsToAdd = $favList->getTitles($listFrom->id);
                     require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
                     $description = $listFrom->description . " copied from /MyAccount/MyList/" . $listFrom->id . " - List: " . $listFrom->title ;

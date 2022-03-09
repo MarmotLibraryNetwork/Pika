@@ -152,20 +152,7 @@ class MyAccount_MyLists extends MyAccount{
         global $interface;
         $interface->assign('favList', $list);
         $interface->assign('listSelected', $list->id);
-        $userCanEdit = false;
-        if (UserAccount::isLoggedIn() && (UserAccount::getActiveUserId() == $list->user_id)) {
-            $listUser = UserAccount::getActiveUserObj();
-            $userCanEdit = $listUser->canEditList($list);
-        } elseif ($list->user_id != 0) {
-            $listUser = new User();
-            $listUser->id = $list->user_id;
-            if (!$listUser->find(true)) {
-                $listUser = false;
-            }
-        } else {
-            $listUser = false;
-        }
-        $favList = new FavoriteHandler($list, $listUser, $userCanEdit);
+        $favList = new FavoriteHandler($list, false);
         $favorites = $favList->getTitles($list->id);
 
 

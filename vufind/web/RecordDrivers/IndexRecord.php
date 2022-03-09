@@ -232,49 +232,13 @@ class IndexRecord extends RecordInterface {
 	 * user's favorites list.
 	 *
 	 * @access  public
-	 * @param   User  $user       User object owning tag/note metadata.
 	 * @param   int     $listId     ID of list containing desired tags/notes (or
 	 *                              null to show tags/notes from all user's lists).
 	 * @param   bool    $allowEdit  Should we display edit controls?
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getListEntry($user, $listId = null, $allowEdit = true){
-		global $interface;
-
-		// Extract bibliographic metadata from the record:
-		$id = $this->getUniqueID();
-		$interface->assign('listId', $id);
-		$shortId = trim($id, '.');
-		$interface->assign('listShortId', $shortId);
-		$interface->assign('listFormats', $this->getFormats());
-		$interface->assign('listTitle', $this->getTitle());
-		$interface->assign('listAuthor', $this->getPrimaryAuthor());
-		$interface->assign('listISBN', $this->getCleanISBN());
-		$interface->assign('listISSN', $this->getCleanISSN());
-		$interface->assign('listUPC', $this->getUPC());
-		$interface->assign('listFormatCategory', $this->getFormatCategory());
-		$interface->assign('listFormats', $this->getFormats());
-		$interface->assign('listDate', $this->getPublicationDates());
-
-		// Extract user metadata from the database:
-		if ($user != false){
-			$data = $user->getSavedData($id, $listId);
-			$notes = array();
-			foreach($data as $current) {
-				if (!empty($current->notes)) {
-					$notes[] = $current->notes;
-				}
-			}
-			$interface->assign('listNotes', $notes);
-		}
-
-		// Pass some parameters along to the template to influence edit controls:
-		$interface->assign('listSelected', $listId);
-		$interface->assign('listEditAllowed', $allowEdit);
-
-		//Get Rating
-		$interface->assign('ratingData', $this->getRatingData());
-
+	public function getListEntry($listId = null, $allowEdit = true){
+	// Obsolete method
 		return 'RecordDrivers/Index/listentry.tpl';
 	}
 

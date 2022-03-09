@@ -59,12 +59,10 @@ class FavoriteHandler
 	 *
 	 * @access  public
 	 * @param   UserList   $list        User List Object.
-	 * @param   User       $user        User object owning tag/note metadata.
 	 * @param   bool       $allowEdit   Should we display edit controls?
 	 */
-	public function __construct($list, $user, $allowEdit = true){
+	public function __construct($list, $allowEdit = true){
 		$this->list                = $list;
-		$this->user                = $user;
 		$this->listId              = $list->id;
 		$this->allowEdit           = $allowEdit;
 		$this->userListSortOptions = $list->getUserListSortOptions(); // Keep the UserList Sort options in the UserList class since it used there as well.
@@ -212,13 +210,13 @@ class FavoriteHandler
 					$catalogSearchObject->setQueryIDs($this->catalogIds); // do solr search by Ids
 					$catalogResult = $catalogSearchObject->processSearch();
 					$catalogSearchObject->setPage($page); // Set back to the actual page of the list now that search was processed
-					$catalogResourceList = $catalogSearchObject->getResultListHTML($this->user, $this->listId, $this->allowEdit, $this->favorites);
+					$catalogResourceList = $catalogSearchObject->getResultListHTML($this->listId, $this->allowEdit, $this->favorites);
 				} // Solr Sorted Catalog Only Search //
 				else {
 					$catalogSearchObject->setQueryIDs($this->catalogIds); // do solr search by Ids
 					$catalogSearchObject->setPage($page); // restore the actual sort page //TODO: Page needs set before processSearch() call?
 					$catalogResult       = $catalogSearchObject->processSearch();
-					$catalogResourceList = $catalogSearchObject->getResultListHTML($this->user, $this->listId, $this->allowEdit);
+					$catalogResourceList = $catalogSearchObject->getResultListHTML($this->listId, $this->allowEdit);
 				}
 			}
 
@@ -238,7 +236,7 @@ class FavoriteHandler
 					$catalogSearchObject->setQueryIDs($this->catalogIds); // do solr search by Ids
 					$catalogSearchObject->setPage(1); // set to the first page for the search only
 					$catalogResult       = $catalogSearchObject->processSearch();
-					$catalogResourceList = $catalogSearchObject->getResultListHTML($this->user, $this->listId, $this->allowEdit, $this->favorites, $this->isMixedUserList);
+					$catalogResourceList = $catalogSearchObject->getResultListHTML($this->listId, $this->allowEdit, $this->favorites, $this->isMixedUserList);
 				}
 			}
 		}
@@ -293,7 +291,7 @@ class FavoriteHandler
 					$archiveSearchObject->setQueryIDs($this->archiveIds); // do solr search by Ids
 					$archiveResult = $archiveSearchObject->processSearch();
 					$archiveSearchObject->setPage($page); // Set back to the actual page of the list now that search was processed
-					$archiveResourceList = $archiveSearchObject->getResultListHTML($this->user, $this->listId, $this->allowEdit, $this->favorites);
+					$archiveResourceList = $archiveSearchObject->getResultListHTML($this->listId, $this->allowEdit, $this->favorites);
 				}
 
 				// Islandora Sorted Archive Only Searches
@@ -301,7 +299,7 @@ class FavoriteHandler
 					$archiveSearchObject->setQueryIDs($this->archiveIds); // do Islandora search by Ids
 					$archiveSearchObject->setPage($page); // set to the first page for the search only
 					$archiveResult       = $archiveSearchObject->processSearch();
-					$archiveResourceList = $archiveSearchObject->getResultListHTML($this->user, $this->listId, $this->allowEdit/*, $this->favorites*/);
+					$archiveResourceList = $archiveSearchObject->getResultListHTML($this->listId, $this->allowEdit/*, $this->favorites*/);
 				}
 			}
 
@@ -322,7 +320,7 @@ class FavoriteHandler
 
 					$archiveSearchObject->setQueryIDs($this->archiveIds); // do solr search by Ids
 					$archiveResult = $archiveSearchObject->processSearch();
-					$archiveResourceList = $archiveSearchObject->getResultListHTML($this->user, $this->listId, $this->allowEdit, $this->favorites, $this->isMixedUserList);
+					$archiveResourceList = $archiveSearchObject->getResultListHTML($this->listId, $this->allowEdit, $this->favorites, $this->isMixedUserList);
 				}
 			}
 

@@ -298,13 +298,12 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * user's favorites list.
 	 *
 	 * @access  public
-	 * @param object $user User object owning tag/note metadata.
 	 * @param int $listId ID of list containing desired tags/notes (or
 	 *                              null to show tags/notes from all user's lists).
 	 * @param bool $allowEdit Should we display edit controls?
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getListEntry($user, $listId = null, $allowEdit = true){
+	public function getListEntry($listId = null, $allowEdit = true){
 		// TODO: Implement getListEntry() method.
 	}
 

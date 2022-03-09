@@ -280,28 +280,6 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	}
 
 	/**
-	 * Use the record driver to build an array of HTML displays from the search
-	 * results suitable for use on a user's "favorites" page.
-	 *
-	 * @access  public
-	 * @param object $user User object owning tag/note metadata.
-	 * @param int $listId ID of list containing desired tags/notes (or
-	 *                              null to show tags/notes from all user's lists).
-	 * @param bool $allowEdit Should we display edit controls?
-	 * @return  array   Array of HTML chunks for individual records.
-	 */
-	public function getResultListHTML($user, $listId = null, $allowEdit = true){
-		global $interface;
-
-		$html = [];
-		foreach ($this->indexResult['response']['docs'] as $current){
-			$record = RecordDriverFactory::initRecordDriver($current);
-			$html[] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
-		}
-		return $html;
-	}
-
-	/**
 	 * Return the record set from the search results.
 	 *
 	 * @access  public

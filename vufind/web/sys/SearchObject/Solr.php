@@ -629,7 +629,6 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * results suitable for use while displaying lists
 	 *
 	 * @access  public
-	 * @param   object $user User object owning tag/note metadata.
 	 * @param   int $listId ID of list containing desired tags/notes (or
 	 *                              null to show tags/notes from all user's lists).
 	 * @param   bool $allowEdit Should we display edit controls?
@@ -637,10 +636,9 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @param    bool $isMixedUserList Used to correctly number items in a list of mixed content (eg catalog & archive content)
 	 * @return array Array of HTML chunks for individual records.
 	 */
-	public function getResultListHTML($user, $listId = null, $allowEdit = true, $IDList = null, $isMixedUserList = false)
-	{
+	public function getResultListHTML($listId = null, $allowEdit = true, $IDList = null, $isMixedUserList = false){
 		global $interface;
-		$html = array();
+		$html = [];
 		if ($IDList){
 			//Reorder the documents based on the list of id's
 			$x = 0;
@@ -672,9 +670,9 @@ class SearchObject_Solr extends SearchObject_Base {
 					/** @var GroupedWorkDriver $record */
 					$record = RecordDriverFactory::initRecordDriver($current);
 					if ($isMixedUserList) {
-						$html[$listPosition] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
+						$html[$listPosition] = $interface->fetch($record->getListEntry($listId, $allowEdit));
 					} else {
-						$html[] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
+						$html[] = $interface->fetch($record->getListEntry($listId, $allowEdit));
 						$x++;
 					}
 				}
@@ -693,7 +691,7 @@ class SearchObject_Solr extends SearchObject_Base {
 				$interface->assign('recordIndex', $x + 1);
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 				$record = RecordDriverFactory::initRecordDriver($current);
-				$html[] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
+				$html[] = $interface->fetch($record->getListEntry($listId, $allowEdit));
 			}
 		}
 		return $html;
