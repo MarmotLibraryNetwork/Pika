@@ -1281,7 +1281,9 @@ public class SierraExportAPIMain {
 						if (isDeletedInAPI(id)) {
 							if (deleteRecord(new Date().getTime() / 1000, id)) {
 								markRecordDeletedInExtractInfo(id);
-								logger.debug("id " + id + " was deleted");
+								if (logger.isDebugEnabled()) {
+									logger.debug("id " + id + " was deleted");
+								}
 								return true;
 							}
 						}
@@ -1430,9 +1432,13 @@ public class SierraExportAPIMain {
 			}
 		}
 		if (identifier != null && !identifier.isEmpty()) {
-			logger.debug("Writing marc record for " + identifier);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Writing marc record for " + identifier);
+			}
 			writeMarcRecord(marcRecord, identifier);
-			logger.debug("Wrote marc record for " + identifier);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Wrote marc record for " + identifier);
+			}
 		} else {
 			logger.warn("Failed to set record identifier in record grouper getPrimaryIdentifierFromMarcRecord(); possible error or automatic econtent suppression trigger.");
 		}
@@ -1476,7 +1482,9 @@ public class SierraExportAPIMain {
 					} else {
 						String    itemId  = "0"; // Initialize just to avoid having to check later
 						JSONArray entries = itemIds.getJSONArray("entries");
-						logger.debug("fetching items for " + id + " elapsed time " + (new Date().getTime() - startTime) + "ms found " + entries.length());
+						if (logger.isDebugEnabled()) {
+							logger.debug("fetching items for " + id + " elapsed time " + (new Date().getTime() - startTime) + "ms found " + entries.length());
+						}
 						for (int i = 0; i < entries.length(); i++) {
 							JSONObject curItem     = entries.getJSONObject(i);
 							JSONObject fixedFields = curItem.getJSONObject("fixedFields");
@@ -1649,7 +1657,9 @@ public class SierraExportAPIMain {
 			JSONObject marcResults = null;
 			if (allowFastExportMethod) {
 				//Don't log errors since we get regular errors if we exceed the export rate.
-				logger.debug("Loading marc records with fast method " + apiBaseUrl + "/bibs/marc?id=" + ids);
+				if (logger.isDebugEnabled()) {
+					logger.debug("Loading marc records with fast method " + apiBaseUrl + "/bibs/marc?id=" + ids);
+				}
 				marcResults = callSierraApiURL(apiBaseUrl + "/bibs/marc?id=" + ids, debug);
 			}
 			if (marcResults != null && marcResults.has("file")) {
@@ -1676,7 +1686,9 @@ public class SierraExportAPIMain {
 
 								Long shortId = Long.parseLong(identifier.substring(2, identifier.length() - 1));
 								processedIds.add(shortId);
-								logger.debug("Processed " + identifier);
+								if (logger.isDebugEnabled()) {
+									logger.debug("Processed " + identifier);
+								}
 							} catch (MarcException e) {
 								logger.info("Error loading marc record from file, will load manually. While processing ids: " +ids, e);
 								//This might be where the flatirons warnings come from.
@@ -1685,14 +1697,18 @@ public class SierraExportAPIMain {
 						// For any records that failed in the fast method,
 						for (Long id : idArray) {
 							if (!processedIds.contains(id)) {
-								logger.debug("starting to process " + id + " with the not-fast method");
+								if (logger.isDebugEnabled()) {
+									logger.debug("starting to process " + id + " with the not-fast method");
+								}
 								if (!updateMarcAndRegroupRecordId(id)) {
 									//Don't fail the entire process.  We will just reprocess next time the export runs
-									logger.debug("Processing " + id + " failed");
+									if (logger.isDebugEnabled()) {
+										logger.debug("Processing " + id + " failed");
+									}
 //									addNoteToExportLog("Processing " + id + " failed"); //Fails in singleRecord mode
 									bibsWithErrors.add(id);
 									//allPass = false;
-								} else {
+								} else if (logger.isDebugEnabled()) {
 									logger.debug("Processed " + id);
 								}
 							}
@@ -1706,16 +1722,22 @@ public class SierraExportAPIMain {
 				//Don't need this message since it will happen regularly.
 				//logger.info("Error exporting marc records for " + ids + " marc results did not have a file");
 				for (Long id : idArray) {
-					logger.debug("starting to process " + id);
+					if (logger.isDebugEnabled()) {
+						logger.debug("starting to process " + id);
+					}
 					if (!updateMarcAndRegroupRecordId(id)) {
 						//Don't fail the entire process.  We will just reprocess next time the export runs
-						logger.debug("Processing " + id + " failed");
+						if (logger.isDebugEnabled()) {
+							logger.debug("Processing " + id + " failed");
+						}
 //						addNoteToExportLog("Processing " + id + " failed"); //Fails in singleRecord mode
 						bibsWithErrors.add(id);
 						//allPass = false;
 					}
 				}
-				logger.debug("finished processing " + idArray.size() + " records with the slow method");
+				if (logger.isDebugEnabled()) {
+					logger.debug("finished processing " + idArray.size() + " records with the slow method");
+				}
 			}
 		} catch (Exception e) {
 			logger.error("Error processing newly created bibs", e);
