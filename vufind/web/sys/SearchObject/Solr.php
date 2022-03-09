@@ -414,7 +414,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		if (strpos($searchTerm, ':') > 0 && substr_count($searchTerm, ':') == 1){
 			// Browse Category Search Term of the for SearchType:search phrase
 			[$tmpType, $tempSearchTerm] = explode(':', $searchTerm, 2);
-			if (in_array($tmpType, $this->basicTypes)){
+			if (in_array($tmpType, array_keys($this->basicTypes))){
 				$this->searchTerms[] = [
 					'index'   => $tmpType,
 					'lookfor' => $tempSearchTerm
