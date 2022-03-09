@@ -775,12 +775,15 @@ abstract class MarcRecordProcessor {
 				if (curField.getIndicator2() == '1'){
 					Subfield subFieldB = curField.getSubfield('b');
 					if (subFieldB != null){
-						publisher.add(subFieldB.getData());
+						String data = Util.trimTrailingPunctuation(subFieldB.getData());
+						if (data != null && !data.isEmpty()) {
+							publisher.add(data);
+						}
 					}
 				}
 			}
 		}
-		publisher.addAll(MarcUtil.getFieldList(record, "260b"));
+		publisher.addAll(Util.trimTrailingPunctuation(MarcUtil.getFieldList(record, "260b")));
 		return publisher;
 	}
 

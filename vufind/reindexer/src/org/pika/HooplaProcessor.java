@@ -129,7 +129,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 					}
 				}
 			} catch (Exception e) {
-				logger.error("Error updating solr based on hoopla marc record", e);
+				logger.error("Error updating solr based on hoopla marc record " + identifier, e);
 			}
 		}
 	}

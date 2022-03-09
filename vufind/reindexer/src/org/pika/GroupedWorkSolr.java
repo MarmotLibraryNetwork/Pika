@@ -1109,12 +1109,14 @@ public class GroupedWorkSolr implements Cloneable {
 //	}
 
 	public void setAuthor(String author) {
-		author = trimAuthorTrailingPunctuation(author);
-		if (!author.isEmpty()) {
-			if (primaryAuthors.containsKey(author)){
-				primaryAuthors.put(author, primaryAuthors.get(author) + 1);
-			}else{
-				primaryAuthors.put(author, 1L);
+		if (author != null) {
+			author = trimAuthorTrailingPunctuation(author);
+			if (!author.isEmpty()) {
+				if (primaryAuthors.containsKey(author)){
+					primaryAuthors.put(author, primaryAuthors.get(author) + 1);
+				}else{
+					primaryAuthors.put(author, 1L);
+				}
 			}
 		}
 	}
@@ -1238,8 +1240,21 @@ public class GroupedWorkSolr implements Cloneable {
 			author = trimPunctuationMatcher.group(1);
 		}
 		// Remove training periods, unless it is preceded by a letter
-		if (author.endsWith(".") && !Character.isLetter(author.charAt(author.length() - 2))){
-			author = author.substring(0, author.length() - 1);
+		if (author.endsWith(".")) {
+			if (author.equals(".")) return ""; // Some 245c fields will be just "."
+
+			int length = author.length();
+			if (length > 2) {
+				char charBeforePossibleInitial = author.charAt(length - 3);
+				if (!Character.isLetter(author.charAt(length - 2)) || (charBeforePossibleInitial != '.' && !Character.isSpaceChar(charBeforePossibleInitial))) {
+					// Trim a trailing period unless the period is part of trail initial
+					// Trim if second to last char isn't a letter character; or
+					// trim if char before initial isn't a period, like "Robb, J.D."
+					// trim if char before initial isn't a space, like "Robb, J. D."
+
+					author = author.substring(0, length - 1);
+				}
+			}
 		}
 		return author;
 	}
@@ -1247,7 +1262,10 @@ public class GroupedWorkSolr implements Cloneable {
 	static Collection<String> trimAuthorTrailingPunctuation(Set<String> fieldList) {
 		HashSet<String> trimmedCollection = new HashSet<>();
 		for (String field : fieldList){
-			trimmedCollection.add(trimAuthorTrailingPunctuation(field));
+			String trimmedAuthor = trimAuthorTrailingPunctuation(field);
+			if (!trimmedAuthor.isEmpty()) {
+				trimmedCollection.add(trimmedAuthor);
+			}
 		}
 		return trimmedCollection;
 	}
