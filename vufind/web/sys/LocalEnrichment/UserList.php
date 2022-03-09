@@ -37,13 +37,13 @@ class UserList extends DB_DataObject
 	public $defaultSort; // string(20) null
 
 	// Used by FavoriteHandler as well//
-	protected $userListSortOptions = array(
+	protected $userListSortOptions = [
 		// URL_value => SQL code for Order BY clause
-		'dateAdded' => 'dateAdded ASC',
+		'dateAdded'     => 'dateAdded ASC',
 		'recentlyAdded' => 'dateAdded DESC',
-		'custom' => 'weight ASC',  // this puts items with no set weight towards the end of the list
-		//								'custom' => 'weight IS NULL, weight ASC',  // this puts items with no set weight towards the end of the list
-	);
+		'custom'        => 'weight ASC',  // this puts items with no set weight towards the end of the list
+		//'custom'        => 'weight IS NULL, weight ASC',  // this puts items with no set weight towards the end of the list
+	];
 
 
 	function getObjectStructure(){
@@ -313,19 +313,21 @@ class UserList extends DB_DataObject
 	 * @param int $numItems  Number of items to fetch for this result
 	 * @return array     Array of HTML to display to the user
 	 */
-	public function getBrowseRecords($start, $numItems) {
+	public function getBrowseRecords($start, $numItems, $browseCategorySort) {
 		global $interface;
-		$browseRecords = array();
-		$sort               = in_array($this->defaultSort, array_keys($this->userListSortOptions)) ? $this->userListSortOptions[$this->defaultSort] : null;
-		[$listEntries]  = $this->getListEntries($sort);
-		$listEntries        = array_slice($listEntries, $start, $numItems);
-		$groupedWorkIds = array();
-		$archiveIds = array();
-		foreach ($listEntries as $listItemId) {
-			if (strpos($listItemId, ':') === false) {
+		$browseRecords = [];
+		$databaseSort  = in_array($this->defaultSort, array_keys($this->userListSortOptions)) ? $this->userListSortOptions[$this->defaultSort] : null;
+		[$listEntries] = $this->getListEntries($databaseSort);
+		$groupedWorkIds = [];
+		$archiveIds     = [];
+		if ($databaseSort){
+			$listEntries = array_slice($listEntries, $start, $numItems);
+		}
+		foreach ($listEntries as $listItemId){
+			if (strpos($listItemId, ':') === false){
 				// Catalog Items
 				$groupedWorkIds[] = $listItemId;
-			} else {
+			}else{
 				$archiveIds[] = $listItemId;
 			}
 		}
