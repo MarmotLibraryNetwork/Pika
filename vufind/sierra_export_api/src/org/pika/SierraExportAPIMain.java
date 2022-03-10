@@ -101,7 +101,9 @@ public class SierraExportAPIMain {
 			System.exit(1);
 		}
 
-		logger.info(startTime + " : Starting Sierra Extract");
+		if (logger.isInfoEnabled()) {
+			logger.info(startTime + " : Starting Sierra Extract");
+		}
 
 		// Read the base INI file to get information about the server (current directory/cron/config.ini)
 		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
@@ -325,7 +327,9 @@ public class SierraExportAPIMain {
 
 		closeDBConnections(pikaConn);
 		Date currentTime = new Date();
-		logger.info(currentTime + " : Finished Sierra Extract");
+		if (logger.isInfoEnabled()) {
+			logger.info(currentTime + " : Finished Sierra Extract");
+		}
 	}
 
 	private static void initializeExportLogEntry(Connection pikaConn) {
@@ -548,17 +552,21 @@ public class SierraExportAPIMain {
 		}
 
 		String lastExtractDateTimeFormatted = getSierraAPIDateTimeString(lastExtractDate);
-		String lastExtractDateFormatted     = getSierraAPIDateString(lastExtractDate); // date component only, is needed for fetching deleted things
+//		String deletionDateFormatted       = getSierraAPIDateString(new Date(lastExtractDate.getTime() - 24 * 60 * 60 * 1000)); // date component only, is needed for fetching deleted things
+		String deletionDateFormatted        = getSierraAPIDateString(yesterday); // date component only, is needed for fetching deleted things
+																						// Use yesterday to ensure we don't have any timezone issues
 		long   updateTime                   = new Date().getTime() / 1000;
-		logger.info("Loading records changed since " + lastExtractDateTimeFormatted);
+		if (logger.isInfoEnabled()) {
+			logger.info("Loading records changed since " + lastExtractDateTimeFormatted);
+		}
 
 		setUpSqlStatements(pikaConn);
-		processDeletedBibs(lastExtractDateFormatted, updateTime);
+		processDeletedBibs(deletionDateFormatted, updateTime);
 		getNewRecordsFromAPI(lastExtractDateTimeFormatted, updateTime);
 		getChangedRecordsFromAPI(lastExtractDateTimeFormatted, updateTime);
 		getNewItemsFromAPI(lastExtractDateTimeFormatted);
 		getChangedItemsFromAPI(lastExtractDateTimeFormatted);
-		getDeletedItemsFromAPI(lastExtractDateFormatted);
+		getDeletedItemsFromAPI(deletionDateFormatted);
 	}
 
 	private static void setUpSqlStatements(Connection pikaConn) {
@@ -568,6 +576,7 @@ public class SierraExportAPIMain {
 			getAdditionalPrimaryIdentifierForWorkStmt = pikaConn.prepareStatement("SELECT * FROM grouped_work_primary_identifiers WHERE grouped_work_id = ?");
 			markGroupedWorkAsChangedStmt              = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? WHERE id = ?");
 			getPermanentIdByWorkIdStmt                = pikaConn.prepareStatement("SELECT permanent_id FROM grouped_work WHERE id = ?");
+			isAlreadyDeletedExtractInfoStatement      = pikaConn.prepareStatement("SELECT 1 FROM ils_extract_info WHERE deleted IS NOT NULL AND indexingProfileId = ? AND ilsId = ?");
 			updateExtractInfoStatement                = pikaConn.prepareStatement("INSERT INTO ils_extract_info (indexingProfileId, ilsId, lastExtracted) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted)"); // unique key is indexingProfileId and ilsId combined
 			markDeletedExtractInfoStatement           = pikaConn.prepareStatement("INSERT INTO ils_extract_info (indexingProfileId, ilsId, lastExtracted, deleted) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted), deleted=VALUES(deleted)"); // unique key is indexingProfileId and ilsId combined
 			//TODO: note Starting in MariaDB 10.3.3 function VALUES() becomes VALUE(). But documentation notes "The VALUES() function can still be used even from MariaDB 10.3.3, but only in INSERT ... ON DUPLICATE KEY UPDATE statements; it's a syntax error otherwise."
@@ -802,6 +811,7 @@ public class SierraExportAPIMain {
 		int     bufferSize          = 1000;
 		long    recordIdToStartWith = 1;
 		int     numDeletions        = 0;
+		int     numAlreadyDeleted   = 0;
 
 		do {
 			hasMoreRecords = false;
@@ -822,7 +832,7 @@ public class SierraExportAPIMain {
 					//If nothing has been deleted, iii provides entries, but not a total
 					if ((deletedRecords.has("total") && deletedRecords.getLong("total") >= bufferSize) || entries.length() >= bufferSize) {
 						hasMoreRecords      = true;
-						recordIdToStartWith = allDeletedIds.last() + 1; // Get largest current value to use as starting point in next round
+						recordIdToStartWith = allDeletedIds.last() + 1; // Get the largest current value to use as starting point in next round
 					}
 				} catch (Exception e) {
 					logger.error("Error processing deleted bibs", e);
@@ -833,13 +843,17 @@ public class SierraExportAPIMain {
 
 		if (allDeletedIds.size() > 0) {
 			for (Long id : allDeletedIds) {
-				if (deleteRecord(updateTime, id) && markRecordDeletedInExtractInfo(id)) {
-					numDeletions++;
+				if (!isAlreadyMarkedDeleted(id)) {
+					if (deleteRecord(updateTime, id) && markRecordDeletedInExtractInfo(id)) {
+						numDeletions++;
+					} else if (logger.isInfoEnabled()){
+						logger.info("Failed to delete from index bib Id : " + id);
+					}
 				} else {
-					logger.info("Failed to delete from index bib Id : " + id);
+					numAlreadyDeleted++;
 				}
 			}
-			addNoteToExportLog("Finished processing deleted records, of " + allDeletedIds.size() + " records reported by the API, " + numDeletions + " were deleted.");
+			addNoteToExportLog("Finished processing deleted records, of " + allDeletedIds.size() + " records reported by the API, " + numDeletions + " were deleted, " + numAlreadyDeleted + " were already deleted.");
 		} else {
 			addNoteToExportLog("No deleted records found");
 		}
@@ -897,7 +911,9 @@ public class SierraExportAPIMain {
 								//Delete the work from solr index
 								deleteGroupedWorkFromSolr(permanentId);
 
-								logger.info("Sierra API extract deleted Group Work " + permanentId + " from index. Investigate if it is an anomalous deletion by the Sierra API extract");
+								if (logger.isInfoEnabled()) {
+									logger.info("Sierra API extract deleted Group Work " + permanentId + " from index. Investigate if it is an anomalous deletion by the Sierra API extract");
+								}
 
 								// See https://marmot.myjetbrains.com/youtrack/issue/D-2364
 								return true;
@@ -905,7 +921,9 @@ public class SierraExportAPIMain {
 						}
 					}
 				} else {
-					logger.info("Found no grouped work primary identifiers for bib id : " + bibId);
+					if (logger.isInfoEnabled()) {
+						logger.info("Found no grouped work primary identifiers for bib id : " + bibId);
+					}
 					if (isDeletedInAPI(idFromAPI)) {
 						return true;
 					}
@@ -991,7 +1009,7 @@ public class SierraExportAPIMain {
 							allDeletedIds.add(bibId);
 							if (deleteRecord(updateTime, bibId) && markRecordDeletedInExtractInfo(bibId)) {
 								numSuppressedRecords++;
-							} else {
+							} else if (logger.isInfoEnabled()) {
 								logger.info("Failed to delete from index bib Id : " + bibId);
 							}
 
@@ -1044,7 +1062,7 @@ public class SierraExportAPIMain {
 							allDeletedIds.add(bibId);
 							if (deleteRecord(updateTime, bibId) && markRecordDeletedInExtractInfo(bibId)) {
 								numSuppressedRecords++;
-							} else {
+							} else if (logger.isInfoEnabled()) {
 								logger.info("Failed to delete from index newly created but suppressed bib Id : " + bibId);
 							}
 						} else {
@@ -1690,8 +1708,10 @@ public class SierraExportAPIMain {
 									logger.debug("Processed " + identifier);
 								}
 							} catch (MarcException e) {
-								logger.info("Error loading marc record from file, will load manually. While processing ids: " +ids, e);
-								//This might be where the flatirons warnings come from.
+								if (logger.isInfoEnabled()) {
+									logger.info("Error loading marc record from file, will load manually. While processing ids: " +ids, e);
+									//This might be where the flatirons warnings come from.
+								}
 							}
 						}
 						// For any records that failed in the fast method,
@@ -1811,6 +1831,27 @@ public class SierraExportAPIMain {
 		}
 		return false;
 	}
+
+	private static PreparedStatement isAlreadyDeletedExtractInfoStatement;
+
+	private static boolean isAlreadyMarkedDeleted(Long idFromAPI) {
+		String bibId = getfullSierraBibId(idFromAPI);
+		try {
+			isAlreadyDeletedExtractInfoStatement.setLong(1, indexingProfile.id);
+			isAlreadyDeletedExtractInfoStatement.setString(2, bibId);
+			try (ResultSet isAlreadyDeletedRS = isAlreadyDeletedExtractInfoStatement.executeQuery()) {
+				if (isAlreadyDeletedRS.next()) {
+					return true;
+				}
+			} catch (SQLException e) {
+				logger.error("Failed to get result for deleted record in ils_extract_info table for " + bibId, e);
+			}
+		} catch (SQLException e) {
+			logger.error("Failed to look up deleted record in ils_extract_info table for " + bibId, e);
+		}
+		return false;
+	}
+
 
 //	private static void exportDueDates(String exportPath, Connection conn) throws SQLException, IOException {
 //		addNoteToExportLog("Starting export of due dates");
@@ -2108,25 +2149,27 @@ public class SierraExportAPIMain {
 				} else if (responseCode == 500 || responseCode == 404) {
 					// 404 is record not found
 					if (logErrors) {
-						logger.info("Received response code " + responseCode + " calling sierra API " + sierraUrl);
 						// Get any errors
-						response = getTheResponse(conn.getErrorStream());
-						logger.info("Finished reading response : " + response.toString());
+						if (logger.isInfoEnabled()) {
+							logger.info("Received response code " + responseCode + " calling sierra API " + sierraUrl);
+							response = getTheResponse(conn.getErrorStream());
+							logger.info("Finished reading response : " + response);
+						}
 					}
 				} else {
 					if (logErrors) {
 						logger.error("Received error " + responseCode + " calling sierra API " + sierraUrl);
 						// Get any errors
 						response = getTheResponse(conn.getErrorStream());
-						logger.error("Finished reading response : " + response.toString());
+						logger.error("Finished reading response : " + response);
 					}
 				}
 
 			} catch (java.net.SocketTimeoutException e) {
-				logger.error("Socket timeout talking to to sierra API (callSierraApiURL) " + sierraUrl + " - " + e.toString());
+				logger.error("Socket timeout talking to to sierra API (callSierraApiURL) " + sierraUrl + " - " + e);
 				lastCallTimedOut = true;
 			} catch (java.net.ConnectException e) {
-				logger.error("Timeout connecting to sierra API (callSierraApiURL) " + sierraUrl + " - " + e.toString());
+				logger.error("Timeout connecting to sierra API (callSierraApiURL) " + sierraUrl + " - " + e);
 				lastCallTimedOut = true;
 			} catch (Exception e) {
 				logger.error("Error loading data from sierra API (callSierraApiURL) " + sierraUrl + " - ", e);
@@ -2160,10 +2203,12 @@ public class SierraExportAPIMain {
 				} else if (responseCode == 404) {
 					// 404 is record not found
 					if (logErrors) {
-						logger.info("Received response code " + responseCode + " calling sierra API " + sierraUrl);
 						// Get any errors
-						response = getTheResponse(conn.getErrorStream());
-						logger.info("Finished reading response : " + response.toString());
+						if (logger.isInfoEnabled()) {
+							logger.info("Received response code " + responseCode + " calling sierra API " + sierraUrl);
+							response = getTheResponse(conn.getErrorStream());
+							logger.info("Finished reading response : " + response);
+						}
 					}
 				} else {
 					if (logErrors) {
