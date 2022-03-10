@@ -91,20 +91,20 @@
 
 			{* Admin Functionality if Available *}
 			{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('contentEditor', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
-				{if in_array($action, array('Libraries', 'Locations', 'IPAddresses', 'ListWidgets', 'BrowseCategories', 'PTypes', 'LoanRules', 'LoanRuleDeterminers', 'AccountProfiles', 'NYTLists', 'BlockPatronAccountLinks'))}
+				{if in_array($action, array('Libraries', 'Locations', 'IPAddresses', 'ListWidgets', 'BrowseCategories', 'PTypes', 'LoanRules', 'LoanRuleDeterminers', 'AccountProfiles', 'NYTLists', 'BlockPatronAccountLinks', 'UserAdmin'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
 				{/if}
 				<div class="panel{if $curSection} active{/if}">
-					<a href="#vufindMenuGroup" data-toggle="collapse" data-parent="#adminMenuAccordion">
+					<a href="#pikaMenuGroup" data-toggle="collapse" data-parent="#adminMenuAccordion">
 						<div class="panel-heading">
 							<div class="panel-title">
 								Pika Configuration
 							</div>
 						</div>
 					</a>
-					<div id="vufindMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
+					<div id="pikaMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
 							{* Library Admin Actions *}
 							{if (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles))}
@@ -115,6 +115,10 @@
 							{/if}
 							{if (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
 								<div class="adminMenuLink{if $action == "BlockPatronAccountLinks"} active{/if}"><a href="/Admin/BlockPatronAccountLinks">Block Patron Account Linking</a></div>
+							{/if}
+
+							{if (in_array('userAdmin', $userRoles) || in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
+								<div class="adminMenuLink{if $action == "UserAdmin"} active{/if}"><a href="/Admin/UserAdmin">User Administration</a></div>
 							{/if}
 
 							{* OPAC Admin Actions*}

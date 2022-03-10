@@ -139,7 +139,7 @@ class UserAccount {
 
 				if ($canUseTestRoles){
 					//Test roles if we are doing overrides
-					$testRole = isset($_REQUEST['test_role']) ? $_REQUEST['test_role'] : (isset($_COOKIE['test_role']) ? $_COOKIE['test_role'] : '');
+					$testRole = $_REQUEST['test_role'] ?? $_COOKIE['test_role'] ?? '';
 					if ($testRole != ''){
 						//Ignore the standard roles for the user
 						UserAccount::$userRoles = [];

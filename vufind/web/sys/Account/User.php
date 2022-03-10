@@ -847,6 +847,23 @@ class User extends DB_DataObject {
 		$this->update();
 	}
 
+	function setUserDisplayName(){
+		if ($this->firstname == ''){
+			$this->displayName = $this->lastname;
+		}else{
+			// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
+			/** @var Library $homeLibrary */
+			$homeLibrary = $this->getHomeLibrary();
+			if ($homeLibrary == null || ($homeLibrary->patronNameDisplayStyle == 'firstinitial_lastname')){
+				// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
+				$this->displayName = substr($this->firstname, 0, 1) . '. ' . $this->lastname;
+			}elseif ($homeLibrary->patronNameDisplayStyle == 'lastinitial_firstname'){
+				$this->displayName = $this->firstname . ' ' . substr($this->lastname, 0, 1) . '.';
+			}
+		}
+		return $this->update();
+	}
+
 	function updateUserPreferences(){
 		// Validate that the input data is correct
 		if (isset($_POST['myLocation1']) && !is_array($_POST['myLocation1']) && preg_match('/^\d{1,3}$/', $_POST['myLocation1']) == 0){
