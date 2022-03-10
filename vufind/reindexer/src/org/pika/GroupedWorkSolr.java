@@ -44,10 +44,10 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashSet<String>          alternateIds             = new HashSet<>();
 	private String                   authAuthor;
 	private HashMap<String, Long>    primaryAuthors           = new HashMap<>();
-	private HashSet<String>          authorAdditional         = new HashSet<>();
-	private String                   authorDisplay;
-	private String                   authorDisplayFormat      = "";
 	private HashMap<String, Long>    displayAuthors           = new HashMap<>();
+	private HashSet<String>          authorAdditional         = new HashSet<>();
+	private String                   primaryAuthorFormat      = "";
+	private String                   authorDisplayFormat      = "";
 	private HashSet<String>          author2                  = new HashSet<>();
 	private HashSet<String>          authAuthor2              = new HashSet<>();
 	private HashSet<String>          author2Role              = new HashSet<>();
@@ -133,6 +133,8 @@ public class GroupedWorkSolr implements Cloneable {
 		clonedWork.alternateIds = (HashSet<String>) alternateIds.clone();
 		// noinspection unchecked
 		clonedWork.primaryAuthors = (HashMap<String, Long>) primaryAuthors.clone();
+		// noinspection unchecked
+		clonedWork.displayAuthors = (HashMap<String, Long>) displayAuthors.clone();
 		// noinspection unchecked
 		clonedWork.authorAdditional = (HashSet<String>) authorAdditional.clone();
 		// noinspection unchecked
@@ -260,7 +262,7 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("author_additional", authorAdditional);
 		String displayAuthor = getDisplayAuthor();
 		if (displayAuthor != null) {
-			doc.addField("author_display", authorDisplay);
+			doc.addField("author_display", displayAuthor);
 		}
 
 		//format
@@ -1108,14 +1110,49 @@ public class GroupedWorkSolr implements Cloneable {
 //		this.titleNew.addAll(newTitles);
 //	}
 
-	public void setAuthor(String author) {
-		if (author != null) {
-			author = trimAuthorTrailingPunctuation(author);
-			if (!author.isEmpty()) {
-				if (primaryAuthors.containsKey(author)){
-					primaryAuthors.put(author, primaryAuthors.get(author) + 1);
-				}else{
-					primaryAuthors.put(author, 1L);
+//	public void setAuthor(String author) {
+//		if (author != null) {
+//			author = trimAuthorTrailingPunctuation(author);
+//			if (!author.isEmpty()) {
+//				if (primaryAuthors.containsKey(author)){
+//					primaryAuthors.put(author, primaryAuthors.get(author) + 1);
+//				}else{
+//					primaryAuthors.put(author, 1L);
+//				}
+//			}
+//		}
+//	}
+
+	void setAuthor(String newAuthor, String recordFormat) {
+		if (newAuthor != null){
+			String primaryAuthor = trimAuthorTrailingPunctuation(newAuthor);
+			if (!primaryAuthor.isEmpty()) {
+				if (primaryAuthors.isEmpty()){
+					primaryAuthors.put(primaryAuthor, 1L);
+					primaryAuthorFormat = recordFormat;
+				} else if (recordFormat.equals("Book")){
+					// Prefer display authors from books over all other formats
+					if (!primaryAuthorFormat.equals("Book")){
+						primaryAuthors.clear();
+						primaryAuthors.put(primaryAuthor, 1L);
+						primaryAuthorFormat = recordFormat;
+					}else if (primaryAuthors.containsKey(primaryAuthor)){
+						primaryAuthors.put(primaryAuthor, primaryAuthors.get(primaryAuthor) + 1);
+					} else {
+						primaryAuthors.put(primaryAuthor, 1L);
+					}
+				} else if (!primaryAuthorFormat.equals("Book") && recordFormat.equals("eBook")){
+					// If we haven't found a book, but this is from an ebook, try preferring eBook display authors
+					// over other formats
+					if (!primaryAuthorFormat.equals("eBook")){
+						primaryAuthors.clear();
+						primaryAuthors.put(primaryAuthor, 1L);
+						primaryAuthorFormat = recordFormat;
+					}else if (primaryAuthors.containsKey(primaryAuthor)){
+						primaryAuthors.put(primaryAuthor, primaryAuthors.get(primaryAuthor) + 1);
+					} else {
+						primaryAuthors.put(primaryAuthor, 1L);
+					}
 				}
 			}
 		}
@@ -1125,7 +1162,13 @@ public class GroupedWorkSolr implements Cloneable {
 		String mostUsedAuthor = null;
 		long numUses = -1;
 		for (String curAuthor : primaryAuthors.keySet()){
-			if (primaryAuthors.get(curAuthor) > numUses){
+			Long curNumUses = primaryAuthors.get(curAuthor);
+			if (curNumUses > numUses){
+				mostUsedAuthor = curAuthor;
+				numUses = curNumUses;
+			} else if (curNumUses == numUses && curAuthor.length() > mostUsedAuthor.length()){
+				// On ties, use longer string
+				//TODO: probably should just check if one string just has the birth year - death year or birth year suffixes
 				mostUsedAuthor = curAuthor;
 			}
 		}
@@ -1136,7 +1179,13 @@ public class GroupedWorkSolr implements Cloneable {
 		String mostUsedAuthor = null;
 		long numUses = -1;
 		for (String curAuthor : displayAuthors.keySet()){
-			if (displayAuthors.get(curAuthor) > numUses){
+			Long curNumUses = displayAuthors.get(curAuthor);
+			if (curNumUses > numUses){
+				mostUsedAuthor = curAuthor;
+				numUses = curNumUses;
+			} else if (curNumUses == numUses && curAuthor.length() > mostUsedAuthor.length()){
+				// On ties, use longer string
+				//TODO: probably should just check if one string just has the birth year - death year or birth year suffixes
 				mostUsedAuthor = curAuthor;
 			}
 		}
@@ -1144,11 +1193,11 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void setAuthorDisplay(String newAuthor, String recordFormat) {
-		if (newAuthor != null && !newAuthor.isEmpty()){
+		if (newAuthor != null){
 //			boolean updateDisplayAuthor = false;
 			String displayAuthor = trimAuthorTrailingPunctuation(newAuthor);
 			if (!displayAuthor.isEmpty()) {
-				if (this.authorDisplay == null){
+				if (displayAuthors.isEmpty()){
 					displayAuthors.put(displayAuthor, 1L);
 					authorDisplayFormat = recordFormat;
 				} else if (recordFormat.equals("Book")){

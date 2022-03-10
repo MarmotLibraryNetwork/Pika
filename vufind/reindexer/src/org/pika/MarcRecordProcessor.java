@@ -913,7 +913,7 @@ abstract class MarcRecordProcessor {
 		//of showing some disconnects with how records are grouped, but improves the display of the author
 		//710 is still indexed as part of author 2 #ARL-146
 		//groupedWork.setAuthor(this.getFirstFieldVal(record, "100abcdq:110ab:710a"));
-		groupedWork.setAuthor(MarcUtil.getFirstFieldVal(record, "100abcdq:110ab"));
+		groupedWork.setAuthor(MarcUtil.getFirstFieldVal(record, "100abcdq:110ab"), recordFormat);
 
 		//auth_author2 = 700abcd
 		groupedWork.addAuthAuthor2(MarcUtil.getFieldList(record, "700abcd"));
