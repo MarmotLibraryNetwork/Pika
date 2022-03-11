@@ -649,6 +649,11 @@ public class FormatDetermination {
 			return;
 		}
 		// Video Things
+		if(printFormats.contains("DVD") && printFormats.contains("Blu-ray"))
+		{
+			printFormats.clear();
+			printFormats.add("DVDBlu-rayCombo");
+		}
 		if (printFormats.contains("Video")){
 			if (printFormats.contains("DVD")
 					|| printFormats.contains("VideoDisc")
