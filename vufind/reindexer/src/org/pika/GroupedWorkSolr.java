@@ -1258,8 +1258,11 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void setAuthAuthor(String author) {
-		this.authAuthor = author;
-		keywords.add(author);
+		author = trimAuthorTrailingPunctuation(author);
+		if (!author.isEmpty()) {
+			this.authAuthor = author;
+			keywords.add(author);
+		}
 	}
 
 	void addAuthAuthor2(Set<String> fieldList) {
