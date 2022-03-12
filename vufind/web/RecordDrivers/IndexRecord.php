@@ -955,9 +955,15 @@ class IndexRecord extends RecordInterface {
 		while (isset($places[$i]) || isset($names[$i]) || isset($dates[$i])){
 			// Put all the pieces together, and do a little processing to clean up
 			// unwanted whitespace.
-			$publicationInfo = (isset($places[$i]) ? $places[$i] . ' ' : '') .
-				(isset($names[$i]) ? $names[$i] . ' ' : '') .
-				(isset($dates[$i]) ? (', ' . $dates[$i] . '.') : '');
+			$publicationInfo = (!empty($places[$i]) ? $places[$i] . ' ' : '') .
+				(!empty($names[$i]) ? $names[$i] . ' ' : '');
+			if (!empty($dates[$i])){
+				if (!empty($publicationInfo)){
+					$publicationInfo .= ', ' . $dates[$i] . '.';
+				}else{
+					$publicationInfo = $dates[$i] . '.';
+				}
+			}
 			$publicationInfo = trim(str_replace('  ', ' ', $publicationInfo));
 			$publicationInfo = str_replace(' ,', ',', $publicationInfo);
 			$publicationInfo = htmlentities($publicationInfo);
