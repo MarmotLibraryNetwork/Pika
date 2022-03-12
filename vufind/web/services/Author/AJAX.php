@@ -32,6 +32,7 @@ class Author_AJAX extends AJAXHandler {
 
 	protected $methodsThatRespondWithJSONUnstructured = [
 		'getWikipediaData',
+		'nameVariations'
 	];
 
 	function getWikipediaData(){
@@ -114,4 +115,52 @@ class Author_AJAX extends AJAXHandler {
 		}
 		return $returnVal;
 	}
+
+	function nameVariations(){
+		global $interface;
+		global $configArray;
+
+		/** @var Solr $db */
+		$class = $configArray['Index']['engine'];
+		$url   = $configArray['Index']['url'];
+		$db    = new $class($url);
+
+		$authorOriginal = strip_tags($_REQUEST['author']);
+		if (is_array($authorOriginal)){
+			$authorOriginal = array_pop($authorOriginal);
+		}
+		$author = trim(str_replace('"', '', $authorOriginal));
+		if (substr($author, strlen($author) - 1, 1) == ','){
+			$author = substr($author, 0, strlen($author) - 1);
+		}
+		$author = explode(',', $author);
+
+		// Create First Name
+		$firstName = '';
+		if (isset($author[1])){
+			$firstName = $author[1];
+		}
+
+		// Remove dates & initials explainer
+		$firstName                  = preg_replace('/[0-9]+-[0-9]*/', '', $firstName); // birth year - death year phrases
+		$firstName                  = preg_replace('/\(.*\)$/i', '', $firstName); // full names for initials in parenthesis eg.  W. E. B. (William Edward Burghardt)
+		$authorLeftSearch           = $author[0] . ', ' . $firstName;
+		$authorVariationSuggestions = $db->search("auth_author:\"$authorLeftSearch\"", null, null, 0, 0,
+			[
+				'field'             => 'authorStr',
+				'additionalOptions' => [
+					'facet.query' => "author_left:$author[0]",
+				]
+			], null, null, null, 'authorStr');
+
+		if (!empty($authorVariationSuggestions['facet_counts']['facet_fields']['authorStr'])){
+			$interface->assign('authorVariations', $authorVariationSuggestions['facet_counts']['facet_fields']['authorStr']);
+			return [
+				'success' => true,
+				'body'    => $interface->fetch('Author/nameVariations.tpl')
+			];
+		}
+		return ['success' => false,];
+	}
+
 }

@@ -7,6 +7,8 @@
 		</div>
 	</div>
 
+	<div id="name-variations-placeholder"></div>
+
 	{if $topRecommendations}
 		{foreach from=$topRecommendations item="recommendations"}
 			{include file=$recommendations}
@@ -44,6 +46,7 @@
       {* Search Debugging *}
       {include file="Search/search-debug.tpl"}
 
+
       {* User's viewing mode toggle switch *}
 		{include file="Search/results-displayMode-toggle.tpl"}
 
@@ -75,6 +78,10 @@
 		{if $showWikipedia}
 			Pika.Wikipedia.getWikipediaArticle('{$wikipediaAuthorName}');
 		{/if}
+			var url = '/Author/AJAX?method=nameVariations&author="' + {$lookfor} + '"';
+			$.getJSON(url, function(data){ldelim}
+							if (data.success) $("#name-variations-placeholder").html(data.body).fadeIn();
+			{rdelim});
 
 			{*{include file="Search/results-displayMode-js.tpl"}*}
 			{if !$onInternalIP}

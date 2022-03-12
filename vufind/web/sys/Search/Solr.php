@@ -1589,7 +1589,6 @@ class Solr implements IndexEngine {
 			$options['facet.mincount'] = 1;
 			$options['facet.method']   = 'fcs';
 			$options['facet.threads']  = 25;
-			$options['facet.limit']    =  $facet['limit'] ?? null;
 
 			//Determine which fields should be treated as enums
 			global $solrScope;
@@ -1610,7 +1609,6 @@ class Solr implements IndexEngine {
 				$options["f.owning_location_{$solrScope}.rating_facet"]        = 'enum';
 			}
 
-			unset($facet['limit']);
 			if (isset($facet['field']) && is_array($facet['field']) && in_array('date_added', $facet['field'])) {
 				$options['facet.date']       = 'date_added';
 				$options['facet.date.end']   = 'NOW';
