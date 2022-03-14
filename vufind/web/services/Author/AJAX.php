@@ -135,17 +135,20 @@ class Author_AJAX extends AJAXHandler {
 		}
 		$author = explode(',', $author);
 
-		// Create First Name
-		$firstName = '';
+		$authAuthorSearch = $author[0];
 		if (isset($author[1])){
-			$firstName = $author[1];
+			// Create First Name
+			// Note: Sometimes we don't actually have a first name but just the dates eg "Muddy Waters, 1915-1983"
+			$firstName        = $author[1];
+			// Remove dates & initials explainer
+			$firstName        = preg_replace('/[0-9]+-[0-9]*/', '', $firstName); // birth year - death year phrases
+			$firstName        = trim(preg_replace('/\(.*\)$/i', '', $firstName));      // full names for initials in parentheses eg.  W. E. B. (William Edward Burghardt)
+			if (strlen($firstName)){
+				$authAuthorSearch .= ', ' . $firstName;
+			}
 		}
 
-		// Remove dates & initials explainer
-		$firstName                  = preg_replace('/[0-9]+-[0-9]*/', '', $firstName); // birth year - death year phrases
-		$firstName                  = preg_replace('/\(.*\)$/i', '', $firstName); // full names for initials in parenthesis eg.  W. E. B. (William Edward Burghardt)
-		$authorLeftSearch           = $author[0] . ', ' . $firstName;
-		$authorVariationSuggestions = $db->search("auth_author:\"$authorLeftSearch\"", null, null, 0, 0,
+		$authorVariationSuggestions = $db->search("auth_author:\"$authAuthorSearch\"", null, null, 0, 0,
 			[
 				'field'             => 'authorStr',
 				'additionalOptions' => [
@@ -154,11 +157,18 @@ class Author_AJAX extends AJAXHandler {
 			], null, null, null, 'authorStr');
 
 		if (!empty($authorVariationSuggestions['facet_counts']['facet_fields']['authorStr'])){
-			$interface->assign('authorVariations', $authorVariationSuggestions['facet_counts']['facet_fields']['authorStr']);
-			return [
-				'success' => true,
-				'body'    => $interface->fetch('Author/nameVariations.tpl')
-			];
+			if (count($authorVariationSuggestions['facet_counts']['facet_fields']['authorStr']) > 1){
+				// Don't return suggestions if there is only one
+				if (count($authorVariationSuggestions['facet_counts']['facet_fields']['authorStr']) > 10){
+					// Only use the first 10 suggestions
+					$authorVariationSuggestions['facet_counts']['facet_fields']['authorStr'] = array_slice($authorVariationSuggestions['facet_counts']['facet_fields']['authorStr'], 0, 10, true);
+				}
+				$interface->assign('authorVariations', $authorVariationSuggestions['facet_counts']['facet_fields']['authorStr']);
+				return [
+					'success' => true,
+					'body'    => $interface->fetch('Author/nameVariations.tpl')
+				];
+			}
 		}
 		return ['success' => false,];
 	}
