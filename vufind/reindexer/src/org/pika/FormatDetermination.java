@@ -242,6 +242,7 @@ public class FormatDetermination {
 						case "video":
 						case "dvd":
 						case "videodisc":
+						case "dvdblu-raycombo":
 						case "playawayview":
 							econtentItem.setFormat("eVideo");
 							econtentItem.setFormatCategory("Movies");
@@ -527,7 +528,7 @@ public class FormatDetermination {
 			logger.debug("Pre-filtering found formats " + String.join(",", printFormats));
 		}
 
-		filterPrintFormats(printFormats);
+		filterPrintFormats(printFormats, record);
 
 		if (printFormats.size() > 1){
 			String formatsString = String.join(",", printFormats);
@@ -585,7 +586,7 @@ public class FormatDetermination {
 
 	}
 
-	private void filterPrintFormats(Set<String> printFormats) {
+	private void filterPrintFormats(Set<String> printFormats, Record record) {
 		if (printFormats.size() == 1) {
 			return;
 		}
@@ -651,8 +652,10 @@ public class FormatDetermination {
 		// Video Things
 		if(printFormats.contains("DVD") && printFormats.contains("Blu-ray"))
 		{
-			printFormats.clear();
-			printFormats.add("DVDBlu-rayCombo");
+			if(isComboPack(record)) {
+				printFormats.clear();
+				printFormats.add("DVDBlu-rayCombo");
+			}
 		}
 		if (printFormats.contains("Video")){
 			if (printFormats.contains("DVD")
@@ -833,6 +836,22 @@ public class FormatDetermination {
 			printFormats.remove("Blu-ray");
 			printFormats.remove("4KUltraBlu-Ray");
 		}
+	}
+
+	private boolean isComboPack(Record record) {
+
+		List<DataField> marc250 = MarcUtil.getDataFields(record, "250");
+		for(DataField field : marc250) {
+			if (field != null) {
+				if (field.getSubfield('a') != null) {
+					String fieldData = field.getSubfield('a').getData().toLowerCase();
+					if(fieldData.contains("combo")){
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 
 	private void getFormatFromTitle(Record record, Set<String> printFormats) {
