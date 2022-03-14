@@ -28,9 +28,16 @@ class Admin_UserAdmin extends Admin_Admin {
 					$patron          = new User();
 					$patron->barcode = $barcode;
 					if ($patron->find(true)){
+						$previousDisplayName = $patron->displayName;
 						if ($patron->setUserDisplayName()){
 							global $interface;
 							$interface->assign('success', 'Display Name was reset to '. $patron->displayName);
+						} elseif ($patron->displayName == $previousDisplayName){
+							global $interface;
+							$interface->assign('success', 'Display Name already set to '. $patron->displayName);
+						} else {
+							global $interface;
+							$interface->assign('error', 'Failed to reset user Display Name.');
 						}
 					}else{
 						global $interface;
