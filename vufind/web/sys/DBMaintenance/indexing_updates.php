@@ -491,9 +491,9 @@ function getIndexingUpdates(){
 					'MP3Disc', '8')"
 			],
 		],
-		'2022.02.0_add_comboPack_format' =>[
+		'2022.02.0_add_comboPack_format' => [
 			'title'           => 'Add DVD Blu-Ray Combo Pack Format',
-			'description'     =>'Add DVD Blu-Ray Combo to translation maps',
+			'description'     => 'Add DVD Blu-Ray Combo to translation maps',
 			'continueOnError' => true,
 			'sql'             =>[
 				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
@@ -506,9 +506,7 @@ function getIndexingUpdates(){
 					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
 					'DVDBlu-rayCombo', '12')"
 			],
-
 		],
-
 	);
 }
 
