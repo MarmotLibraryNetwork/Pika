@@ -625,6 +625,17 @@ class SearchObject_Solr extends SearchObject_Base {
 	}
 
 	/**
+	 * Any search types that use a field of type text-left will have an upper limit for search phrases that will return matching results.
+	 *  Any search phrases longer than the upper limit will always have no results.
+	 *
+	 * @return array  Array of search types/search indexes that text-left fields
+	 */
+	public function getTextLeftSearchIndexes(){
+		return ['StartOfTitle'];
+	}
+
+
+	/**
 	 * Use the record driver to build an array of HTML displays from the search
 	 * results suitable for use while displaying lists
 	 *

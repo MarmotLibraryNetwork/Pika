@@ -152,7 +152,7 @@ class Author_AJAX extends AJAXHandler {
 			[
 				'field'             => 'authorStr',
 				'additionalOptions' => [
-					'facet.query' => "author_left:$author[0]",
+					'facet.query' => 'author_left:'. substr($author[0], 0, 35), // text-left fields only match up to 35 characters
 				]
 			], null, null, null, 'authorStr');
 

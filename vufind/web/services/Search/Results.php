@@ -162,70 +162,70 @@ class Search_Results extends Union_Results {
 
 		// No Results Actions //
 		if ($searchObject->getResultTotal() < 1) {
-			require_once ROOT_DIR . '/sys/Search/SearchSuggestions.php';
-			$searchSuggestions = new SearchSuggestions();
-			$commonSearches    = $searchSuggestions->getSpellingSearches($displayQuery);
-			$suggestions       = [];
-			foreach ($commonSearches as $commonSearch){
-				$suggestions[$commonSearch['phrase']] = '/Search/Results?lookfor=' . urlencode($commonSearch['phrase']);
-			}
-			$interface->assign('spellingSuggestions', $suggestions);
 
-			//We didn't find anything.  Look for search Suggestions
-			//Don't try to find suggestions if facets were applied
-			$autoSwitchSearch     = false;
-			$disallowReplacements = isset($_REQUEST['disallowReplacements']) || isset($_REQUEST['replacementTerm']);
-			if (!$disallowReplacements && (!isset($facetSet) || count($facetSet) == 0)){
-				//We can try to find a suggestion, but only if we are not doing a phrase search.
-				if (strpos($displayQuery, '"') === false){
-					$searchSuggestions = new SearchSuggestions();
-					$commonSearches    = $searchSuggestions->getCommonSearchesMySql($displayQuery, $searchIndex);
+			if (in_array($searchIndex, $searchObject->getTextLeftSearchIndexes()) && strlen($displayQuery) > 35){
+				// Searches using solr fields of type text-left will only return matches for search phrases less than 37 characters long
+				$searchTypeLabel = $searchObject->getBasicTypes()[$searchIndex];
+				$interface->assign('leftTextSearchWarning' , $searchTypeLabel . ' search phrases can only be a maximum of 35 characters long.  Please shorten the search phrase.');
+			}else {
+				require_once ROOT_DIR . '/sys/Search/SearchSuggestions.php';
+				$searchSuggestions = new SearchSuggestions();
+				$commonSearches    = $searchSuggestions->getSpellingSearches($displayQuery);
+				$suggestions       = [];
+				foreach ($commonSearches as $commonSearch){
+					$suggestions[$commonSearch['phrase']] = '/Search/Results?lookfor=' . urlencode($commonSearch['phrase']);
+				}
+				$interface->assign('spellingSuggestions', $suggestions);//We didn't find anything.  Look for search Suggestions
+				//Don't try to find suggestions if facets were applied
+				$autoSwitchSearch     = false;
+				$disallowReplacements = isset($_REQUEST['disallowReplacements']) || isset($_REQUEST['replacementTerm']);
+				if (!$disallowReplacements && (!isset($facetSet) || count($facetSet) == 0)){
+					//We can try to find a suggestion, but only if we are not doing a phrase search.
+					if (strpos($displayQuery, '"') === false){
+						$searchSuggestions = new SearchSuggestions();
+						$commonSearches    = $searchSuggestions->getCommonSearchesMySql($displayQuery, $searchIndex);
 
-					//assign here before we start popping stuff off
-					$interface->assign('searchSuggestions', $commonSearches);
+						//assign here before we start popping stuff off
+						$interface->assign('searchSuggestions', $commonSearches);
 
-					//If the first search in the list is used 10 times more than the next, just show results for that
-					$allSuggestions = $searchSuggestions->getAllSuggestions($displayQuery, $searchIndex);
-					$numSuggestions = count($allSuggestions);
-					if ($numSuggestions == 1){
-						$firstSearch      = array_pop($allSuggestions);
-						$autoSwitchSearch = true;
-					}elseif ($numSuggestions >= 2){
-						$firstSearch         = array_shift($allSuggestions);
-						$secondSearch        = array_shift($allSuggestions);
-						$firstTimesSearched  = $firstSearch['numSearches'];
-						$secondTimesSearched = $secondSearch['numSearches'];
-						if ($secondTimesSearched > 0 && $firstTimesSearched / $secondTimesSearched > 10){ // avoids division by zero
+						//If the first search in the list is used 10 times more than the next, just show results for that
+						$allSuggestions = $searchSuggestions->getAllSuggestions($displayQuery, $searchIndex);
+						$numSuggestions = count($allSuggestions);
+						if ($numSuggestions == 1){
+							$firstSearch      = array_pop($allSuggestions);
 							$autoSwitchSearch = true;
+						}elseif ($numSuggestions >= 2){
+							$firstSearch         = array_shift($allSuggestions);
+							$secondSearch        = array_shift($allSuggestions);
+							$firstTimesSearched  = $firstSearch['numSearches'];
+							$secondTimesSearched = $secondSearch['numSearches'];
+							if ($secondTimesSearched > 0 && $firstTimesSearched / $secondTimesSearched > 10){ // avoids division by zero
+								$autoSwitchSearch = true;
+							}
+						}
+
+						//Check to see if the library does not want automatic search replacements
+						if (!$library->allowAutomaticSearchReplacements){
+							$autoSwitchSearch = false;
+						}
+
+						// Switch to search with a better search term //
+						if ($autoSwitchSearch){
+							//Get search results for the new search
+							// The above assignments probably do nothing when there is a redirect below
+							$thisUrl = $_SERVER['REQUEST_URI'] . "&replacementTerm=" . urlencode($firstSearch['phrase']);
+							header("Location: " . $thisUrl);
+							exit();
 						}
 					}
-
-					//Check to see if the library does not want automatic search replacements
-					if (!$library->allowAutomaticSearchReplacements){
-						$autoSwitchSearch = false;
-					}
-
-					// Switch to search with a better search term //
-					if ($autoSwitchSearch){
-						//Get search results for the new search
-						// The above assignments probably do nothing when there is a redirect below
-						$thisUrl = $_SERVER['REQUEST_URI'] . "&replacementTerm=" . urlencode($firstSearch['phrase']);
-						header("Location: " . $thisUrl);
-						exit();
-					}
+				}                                      // No record found
+				$interface->assign('recordCount', 0);  // Was the empty result set due to an error?
+				$error = $searchObject->getIndexError();
+				if ($error !== false){
+					$this->displaySolrError($error);
 				}
+				$timer->logTime('no hits processing');
 			}
-
-			// No record found
-			$interface->assign('recordCount', 0);
-
-			// Was the empty result set due to an error?
-			$error = $searchObject->getIndexError();
-			if ($error !== false) {
-				$this->displaySolrError($error);
-			}
-
-			$timer->logTime('no hits processing');
 
 		}
 		// Exactly One Result for an id search //

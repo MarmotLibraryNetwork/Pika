@@ -509,12 +509,12 @@
 			  unquoted search phrases of these fields with multiple words bring in totally unwanted results. pascal 10/25/2021
 			-->
 			<analyzer>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1 zzzz"/>
 				<!-- KeywordTokenizer does no actual tokenizing, so the entire input string is preserved as a single token
 
 				 https://solr.apache.org/guide/8_8/tokenizers.html#keyword-tokenizer
 				 -->
 				<tokenizer class="solr.KeywordTokenizerFactory"/>
-				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1 zzzz"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
 				<!--
 				Converts any uppercase letters in a token to the equivalent lowercase token. All other characters are left unchanged.
@@ -526,8 +526,8 @@
 		</fieldType>
 		<fieldType name="text-left" class="solr.TextField" sortMissingLast="true" omitNorms="true">
 			<analyzer type="index">
-				<tokenizer class="solr.KeywordTokenizerFactory"/>
 				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1"/>
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
 				<!--
 				Converts any uppercase letters in a token to the equivalent lowercase token. All other characters are left unchanged.
@@ -537,11 +537,17 @@
 				<!-- The TrimFilter removes any leading or trailing whitespace -->
 				<filter class="solr.TrimFilterFactory"/>
 				<filter class="solr.EdgeNGramFilterFactory" minGramSize="5" maxGramSize="40"/>
+				<!-- This filter generates edge n-gram tokens of sizes within the given range.
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#edge-n-gram-filter
+
+				Note: phrases can only be up to 35 characters long to have a match against the n-grams here.
+				(5 characters from "aaaa " + max of 35 = maxGramSize (40))
+				-->
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 			<analyzer type="query">
-				<tokenizer class="solr.KeywordTokenizerFactory"/>
 				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1"/>
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
 				<!--
 				Converts any uppercase letters in a token to the equivalent lowercase token. All other characters are left unchanged.

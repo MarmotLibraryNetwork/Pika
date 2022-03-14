@@ -15,6 +15,18 @@
 		</div>
 	{/if}
 
+		{if $leftTextSearchWarning}
+			<div class="alert alert-warning">
+					{$leftTextSearchWarning}
+					{if $lookfor}
+						<p>
+							<br>
+							<a href="/Search/Results?lookfor={$lookfor|truncate:35:''|escape:url}&basicType={$searchIndex|escape:url}" title="{$lookfor|truncate:35:''}">{$lookfor|truncate:35:''}</a>
+						</p>
+					{/if}
+			</div>
+		{/if}
+
 	<p class="alert alert-info">{translate text='nohit_prefix'} <b>{if $lookfor}{$lookfor|escape:"html"}{else}&lt;empty&gt;{/if}</b> {translate text='nohit_suffix'}</p>
 
 {* Return to Advanced Search Link *}

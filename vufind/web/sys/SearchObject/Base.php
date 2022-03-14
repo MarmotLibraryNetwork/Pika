@@ -1566,6 +1566,16 @@ abstract class SearchObject_Base {
 	}
 
 	/**
+	 * Any search types that use a field of type text-left will have an upper limit for search phrases that will return matching results.
+	 *  Any search phrases longer than the upper limit will always have no results.
+	 *
+	 * @return array  Array of search types/search indexes that text-left fields
+	 */
+	public function getTextLeftSearchIndexes(){
+		return [];
+	}
+
+	/**
 	 * Find a word amongst the current search terms
 	 *
 	 * @access  protected
