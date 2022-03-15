@@ -166,10 +166,33 @@
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 			<analyzer type="query">
+				<!--This filter uses regular expressions to replace or change character patterns.
+				https://solr.apache.org/guide/8_8/charfilterfactories.html#solr-patternreplacecharfilterfactory
+				-->
+				<charFilter class="solr.PatternReplaceCharFilterFactory"
+							pattern="(\w)\.(\w)\.(\w)\.?(?:\s|$)" replacement="$1 $2 $3 "/>
+				<!--Replace 2 letter initials with out spaces between them with spaced initials
+				w.e.b. du bois to w e b du bois
+				w.e.b du bois to w e b du bois
+				du bois, w.e.b to du bois, w e b
+				du bois, w.e.b. to du bois, w e b
+				   -->
+				<charFilter class="solr.PatternReplaceCharFilterFactory"
+							pattern="(\w)\.(\w)\.?(?:\s|$)" replacement="$1 $2 "/>
+				<!--Replace 2 letter initials with out spaces between them with spaced initials
+				 eg.  j.d robb to  j d robb
+				  j.d. robb to j d robb
+				  robb, j.d to robb, j d
+				  robb, j.d. to robb, j d
+				   -->
+				<!--This filter uses regular expressions to replace or change character patterns.
+				https://solr.apache.org/guide/8_8/charfilterfactories.html#solr-patternreplacecharfilterfactory
+
+				-->
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
 				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
 				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
 				-->
-				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
 				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
 				<!-- Important: Only apply synonym filter to query analyzers; not to index analyzers-->
 				<!-- Do our synonym filtering before word delimiter filters so that we don't create unwanted synonyms
@@ -426,7 +449,14 @@
 
 				 http://java.sun.com/j2se/1.5.0/docs/api/java/util/regex/package-summary.html
 				-->
-				<filter class="solr.PatternReplaceFilterFactory" pattern="([^a-z1-9\s])" replacement="" replace="all"/>
+				<filter class="solr.PatternReplaceFilterFactory" pattern="([^a-z0-9\s])" replacement="" replace="all"/>
+				<!--This filter applies a regular expression to each token and, for those that match, substitutes the
+				given replacement string in place of the matched pattern. Tokens which do not match are passed though unchanged.
+
+				Note: This is different from the CharFilter solr.PatternReplaceCharFilterFactory
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#pattern-replace-filter
+				-->
 			</analyzer>
 		</fieldType>
 		<fieldType name="callnumber-search" class="solr.TextField" sortMissingLast="true" omitNorms="true">
