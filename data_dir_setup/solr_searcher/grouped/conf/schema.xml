@@ -112,6 +112,8 @@
 						catenateWords="0"
 						catenateNumbers="0"
 						splitOnNumerics="0"
+
+						protected="protwords.txt"
 				/>
 				<!-- Turning off every option but stemEnglishPossessive for index analyzer for now.
 				 Word Delimiter is needed to remove punctuation from tokens See D-4171 and D-4172 -->
@@ -230,6 +232,8 @@
 						catenateWords="1"
 						catenateNumbers="1"
 						splitOnNumerics="0"
+
+						protected="protwords.txt"
 				/>
 				<!-- Important: Only apply word delimiter graph filter to query analyzers; not to index analyzers-->
 				<!--

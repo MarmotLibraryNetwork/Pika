@@ -80,22 +80,7 @@
 
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#stop-filter
 				-->
-				<filter class="solr.ICUFoldingFilterFactory"/>
-				<!--
-				This filter is a custom Unicode normalization form that applies the foldings specified in Unicode TR #30: Character Foldings
-				in addition to the NFKC_Casefold normalization form as described in ICU Normalizer 2 Filter.
-				This filter is a better substitute for the combined behavior of the ASCII Folding Filter, Lower Case Filter,
-				and ICU Normalizer 2 Filter.
-
-				To use this filter, you must add additional .jars to Solr’s classpath
-				See solr/contrib/analysis-extras/README.txt for instructions on which jars you need to add.
-
-				From the README.txt: ICU relies upon lucene-libs/lucene-analyzers-icu-X.Y.jar and lib/icu4j-X.Y.jar
-
-				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
-
-				-->
-
+				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
 				<filter class="solr.WordDelimiterGraphFilterFactory"
 						generateWordParts="0"
 						generateNumberParts="0"
@@ -106,6 +91,8 @@
 						catenateWords="0"
 						catenateNumbers="0"
 						splitOnNumerics="0"
+
+						protected="protwords.txt"
 				/>
 				<!-- Turning off every option but stemEnglishPossessive for index analyzer for now.
 				 Word Delimiter is needed to remove punctuation from tokens See D-4171 and D-4172 -->
@@ -157,11 +144,27 @@
 						(integer, default 1) If 1, strips the possessive 's from each subword.
 				-->
 				<filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
+				<filter class="solr.ICUFoldingFilterFactory"/>
+				<!-- Had to move after word graph delimiter so that protected words would get through that filter -->
+				<!--
+				This filter is a custom Unicode normalization form that applies the foldings specified in Unicode TR #30: Character Foldings
+				in addition to the NFKC_Casefold normalization form as described in ICU Normalizer 2 Filter.
+				This filter is a better substitute for the combined behavior of the ASCII Folding Filter, Lower Case Filter,
+				and ICU Normalizer 2 Filter.
+
+				To use this filter, you must add additional .jars to Solr’s classpath
+				See solr/contrib/analysis-extras/README.txt for instructions on which jars you need to add.
+
+				From the README.txt: ICU relies upon lucene-libs/lucene-analyzers-icu-X.Y.jar and lib/icu4j-X.Y.jar
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
+
+				-->
+
 				<!--<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>-->
 				<!--The CommonGrams Filter is  prevented from going into effect here by the StopFilter above
 				 TODO: in other words, I think the CommonGrams has to precede the StopFilter to have an effect
 				 -->
-				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
 				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
@@ -218,6 +221,8 @@
 						catenateWords="1"
 						catenateNumbers="1"
 						splitOnNumerics="0"
+
+						protected="protwords.txt"
 				/>
 				<!-- Important: Only apply word delimiter graph filter to query analyzers; not to index analyzers-->
 				<!--
@@ -294,7 +299,6 @@
 				-->
 				<!--<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>-->
 				<!--The CommonGrams Filter is  prevented from going into effect here by the StopFiler above -->
-				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
 				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
