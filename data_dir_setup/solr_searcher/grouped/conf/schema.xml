@@ -104,7 +104,7 @@
 
 				<filter class="solr.WordDelimiterGraphFilterFactory"
 						generateWordParts="0"
-						generateNumberParts="0"
+						generateNumberParts="1"
 						splitOnCaseChange="0"
 						catenateAll="0"
 						stemEnglishPossessive="1"
@@ -116,7 +116,12 @@
 						protected="protwords.txt"
 				/>
 				<!-- Turning off every option but stemEnglishPossessive for index analyzer for now.
-				 Word Delimiter is needed to remove punctuation from tokens See D-4171 and D-4172 -->
+				 Word Delimiter is needed to remove punctuation from tokens See D-4171 and D-4172
+
+				  Turned on generateNumberParts, so that year phrases will get indexed like
+				  uniform title: Pièces de clavecin (1729-1730)
+				  author:  Jacquet de La Guerre, Elisabeth-Claude, 1665-1729
+				  See D-4198  -->
 				<!--
 				This filter splits tokens at word delimiters.
 				If you use this filter during indexing, you must follow it with a Flatten Graph Filter to squash tokens on top of one another like the Word Delimiter Filter, because the indexer can’t directly consume a graph. To get fully correct positional queries when tokens are split, you should instead use this filter at query time.
