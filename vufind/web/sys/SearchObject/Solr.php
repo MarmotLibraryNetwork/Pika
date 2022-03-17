@@ -51,7 +51,7 @@ class SearchObject_Solr extends SearchObject_Base {
 	/** @var Solr $indexEngine */
 	private $indexEngine = null;
 	// Facets information
-	private $allFacetSettings = array();    // loaded from facets.ini
+	private $allFacetSettings;    // loaded from facets.ini
 	// Search types of author have two subtypes: home and search
 	private $authorSearchType  = '';
 
