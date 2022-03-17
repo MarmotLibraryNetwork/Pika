@@ -143,7 +143,7 @@ abstract class Union_Results extends Action {
 		global $interface;
 		// If it's a parse error or the user specified an invalid field, we
 		// should display an appropriate message:
-		if (stristr($error['msg'], 'org.apache.lucene.queryParser.ParseException') || preg_match('/^undefined field/', $error['msg'])) {
+		if (stristr($error['msg'], 'org.apache.lucene.queryParser.ParseException') || preg_match('/^undefined field/', $error['msg'])){
 //								|| stristr($error['msg'], 'org.apache.solr.search.SyntaxError')
 			// Genealogy_Results treated the syntax error the same as these. Including in case we want to use that.
 
@@ -166,8 +166,8 @@ abstract class Union_Results extends Action {
 //				}
 //			}
 
-			// Unexpected error -- let's treat this as a fatal condition.
 		} else {
+			// Unexpected error -- let's treat this as a fatal condition.
 			global $pikaLogger;
 			$pikaLogger->error('Error processing search. Solr Returned: ' . print_r($error, true));
 			PEAR_Singleton::raiseError(new PEAR_Error('Error processing search.'));
