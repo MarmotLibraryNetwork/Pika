@@ -170,12 +170,12 @@
 																<div class="form-group">
 																<label for="publishDateyearfrom" class="yearboxlabel">From: </label>
 																<input type="text" size="4" maxlength="4" class="yearbox form-control" name="publishDateyearfrom" id="publishDateyearfrom"
-																       value="">
+																       value="{$facetInfo.from}">
 																</div>
 																<div class="form-group">
 																<label for="publishDateyearto" class="yearboxlabel">To: </label>
 																<input type="text" size="4" maxlength="4" class="yearbox form-control" name="publishDateyearto" id="publishDateyearto"
-																       value="">
+																       value="{$facetInfo.to}">
 																</div>
 															</div>
 																<div id="yearDefaultLinks">
@@ -191,23 +191,23 @@
 																	<div class="form-group">
 																		<label for="lexile_scorefrom" class="yearboxlabel">From: </label>
 																		<input type="text" size="4" maxlength="4" class="yearbox form-control" name="lexile_scorefrom"
-																		       id="lexile_scorefrom" value="">
+																		       id="lexile_scorefrom" value="{$facetInfo.from}">
 																	</div>
 																	<div class="form-group">
 																		<label for="lexile_scoreto" class="yearboxlabel">To: </label>
 																		<input type="text" size="4" maxlength="4" class="yearbox form-control" name="lexile_scoreto"
-																		       id="lexile_scoreto" value="">
+																		       id="lexile_scoreto" value="{$facetInfo.to}">
 																	</div>
 																</div>
 															{elseif $facetInfo.facetName == "accelerated_reader_reading_level"}
 																<div class="form-inline">
 																	<div class="form-group">
 																	<label for="accelerated_reader_reading_levelfrom" class="yearboxlabel">From: </label>
-																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="accelerated_reader_reading_levelfrom" id="accelerated_reader_reading_levelfrom" value="">
+																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="accelerated_reader_reading_levelfrom" id="accelerated_reader_reading_levelfrom" value="{$facetInfo.from}">
 																	</div>
 																	<div class="form-group">
 																	<label for="accelerated_reader_reading_levelto" class="yearboxlabel">To: </label>
-																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="accelerated_reader_reading_levelto" id="accelerated_reader_reading_levelto" value="">
+																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="accelerated_reader_reading_levelto" id="accelerated_reader_reading_levelto" value="{$facetInfo.to}">
 																	</div>
 																</div>
 															{else}
@@ -281,6 +281,13 @@
 		{* Highlight Selected Facet Filters *}
 		{literal}
 		$('#facetTable select').change(function(){
+			$(this).parents('tr').css('background-color', ($(this).val() === '') ? '#FFF' : '#EFEFEF')
+		}).change();
+      {/literal}
+			{* Highlight range inputs that have values
+			  TODO: technically only one of the boxes has to have a value, but testing value of either input is difficult *}
+      {literal}
+		$('#facetTable input.yearbox').change(function(){
 			$(this).parents('tr').css('background-color', ($(this).val() === '') ? '#FFF' : '#EFEFEF')
 		}).change();
       {/literal}
