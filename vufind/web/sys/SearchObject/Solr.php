@@ -391,10 +391,6 @@ class SearchObject_Solr extends SearchObject_Base {
 					$this->setFacetSortOrder('count');
 				}
 			}
-		} else if ($module == 'Search' && $action == 'Reserves') {
-			// We don't need spell checking
-			$this->spellcheck = false;
-			$this->searchType = strtolower($action);
 		} else if ($module == 'MyAccount') {
 			// Users Lists
 			$this->spellcheck = false;
@@ -1103,8 +1099,6 @@ class SearchObject_Solr extends SearchObject_Base {
 	protected function getBaseUrl(){
 		//todo: some of these cases are obsolete
 		switch ($this->searchType){
-			case 'reserves' :
-				return $this->serverUrl . '/Search/Reserves?';
 			case 'favorites' :
 				return $this->serverUrl . '/MyAccount/Home?';
 			case 'list' :
@@ -1142,13 +1136,9 @@ class SearchObject_Solr extends SearchObject_Base {
 					$params[] = ($this->authorSearchType == 'home' ? 'author=' : 'lookfor=') . urlencode($this->searchTerms[0]['lookfor']);
 					$params[] = 'basicSearchType=Author';
 					break;
-				// Reserves modules may have a few extra parameters to preserve:
-				case 'reserves':
 				case 'favorites':
 				case 'list':
 					$preserveParams = [
-						// for reserves:
-						'course', 'inst', 'dept',
 						// for favorites/list:
 						'tag', 'pagesize'
 					];
@@ -1286,7 +1276,6 @@ class SearchObject_Solr extends SearchObject_Base {
 				return $query;
 			}
 		}
-
 		// Only use the query we just built if there isn't an override in place.
 		if ($this->query == null) {
 			$this->query = $query;
@@ -1432,7 +1421,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		// Get time before the query
 		$this->startQueryTimer();
 
-		// The "relevance" sort option is a VuFind reserved word; we need to make
+		// The "relevance" sort option is a Pika reserved word; we need to make
 		// this null in order to achieve the desired effect with Solr:
 		$finalSort = ($this->sort == 'relevance') ? null : $this->sort;
 
@@ -2003,13 +1992,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		}
 
 		global $interface;
-
-		// On-screen display value for our search
-		if ($this->searchType == 'reserves') {
-			$lookFor = translate('Course Reserves');
-		} else {
-			$lookFor = $this->displayQuery();
-		}
+		$lookFor = $this->displayQuery();
 		if (count($this->filterList) > 0) {
 			// TODO : better display of filters
 			$interface->assign('lookfor', $lookFor . " (" . translate('with filters') . ")");

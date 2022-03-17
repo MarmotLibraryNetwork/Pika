@@ -1391,12 +1391,11 @@ class SearchObject_Islandora extends SearchObject_Base {
 					}
 					break;
 				case 'list' :
-				case "favorites":
-				case "list":
-					$preserveParams = array(
+				case 'favorites':
+					$preserveParams = [
 						// for favorites/list:
 						'tag', 'pagesize'
-					);
+					];
 					foreach ($preserveParams as $current) {
 						if (isset($_GET[$current])) {
 							if (is_array($_GET[$current])) {
