@@ -156,7 +156,7 @@ public class SymphonyExportMain {
 			}
 			//Always process since we only received one export and we are gradually removing records as they appear in the full export.
 			try (BufferedReader ordersReader = new BufferedReader(new InputStreamReader(new FileInputStream(ordersFile)))) {
-				MarcWriter writer                 = new MarcStreamWriter(new FileOutputStream(ordersFileMarc, false));
+				MarcWriter writer                 = new MarcStreamWriter(new FileOutputStream(ordersFileMarc, false), "UTF8");
 				String     line                   = ordersReader.readLine();
 				int        numOrderRecordsWritten = 0;
 				int        numOrderRecordsSkipped = 0;
