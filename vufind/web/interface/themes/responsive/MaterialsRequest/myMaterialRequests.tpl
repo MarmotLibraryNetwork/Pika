@@ -70,10 +70,17 @@
 	{literal}
 	$(document).ready(function(){
 		$('#requestedMaterials').DataTable({
+			"columns":[
+				null,
+				null,
+				null,
+				null,
+				{"orderDataType": "dom-date"},
+				{"orderable": false}
+			],
 			"order": [[0, "asc"]],
 			pageLength: 100
 		});
 	})
-
 	{/literal}
 </script>
