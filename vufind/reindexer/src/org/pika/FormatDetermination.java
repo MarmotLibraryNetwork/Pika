@@ -527,7 +527,7 @@ public class FormatDetermination {
 		}else if (logger.isDebugEnabled()){
 			logger.debug("Pre-filtering found formats " + String.join(",", printFormats));
 		}
-
+		accompanyingMaterialCheck(record, printFormats);
 		filterPrintFormats(printFormats, record);
 
 		if (printFormats.size() > 1){
@@ -725,6 +725,7 @@ public class FormatDetermination {
 				printFormats.add("MP3Disc");
 			}
 			if(printFormats.contains("CDROM")||printFormats.contains("WindowsGame")){
+
 				if (printFormats.contains("CDROM")) {
 					printFormats.remove("CDROM");
 				}
