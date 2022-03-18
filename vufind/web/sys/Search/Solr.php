@@ -84,6 +84,8 @@ class Solr implements IndexEngine {
 	 */
 	private $_searchSpecs = false;
 
+	private $_protectedWordsFile = '../../data_dir_setup/solr_master/grouped/conf/protwords.txt';
+	private $_protectedWords = false;
 	/**
 	 * Should boolean operators in the search string be treated as
 	 * case-insensitive (false), or must they be ALL UPPERCASE (true)?
@@ -910,11 +912,10 @@ class Solr implements IndexEngine {
 	 *
 	 * @access  private
 	 * @param string $lookfor              The string to search for in the field
-	 * @param array  $customMunges         Custom munge settings from YAML search specs
 	 * @param bool   $isBasicSearchQuery   Is $lookfor a basic (true) or advanced (false) query?
 	 * @return  array                      Array for use as _applySearchSpecs() values param
 	 */
-	private function _buildMungeValues($lookfor, $customMunges = null, $isBasicSearchQuery = true){
+	private function _buildMungeValues($lookfor, $isBasicSearchQuery = true){
 		if ($isBasicSearchQuery) {
 			$cleanedQuery = str_replace(':', ' ', $lookfor);
 
@@ -927,25 +928,25 @@ class Solr implements IndexEngine {
 
 			// Build possible inputs for searching:
 			$mungedValues              = [];
-			$mungedValues['onephrase'] = '"' . str_replace('"', '', implode(' ', $tokenized)) . '"';
+			$mungedValues['onePhrase'] = '"' . str_replace('"', '', implode(' ', $tokenized)) . '"';
 			$numTokens                 = count($tokenized);
 			if ($numTokens > 1){
-				$mungedValues['proximal'] = $mungedValues['onephrase'] . '~10';
+				$mungedValues['proximal'] = $mungedValues['onePhrase'] . '~10';
 			}elseif ($numTokens == 1){
 				$mungedValues['proximal'] = $tokenized[0];
 			}else{
 				$mungedValues['proximal'] = '';
 			}
 
-			$mungedValues['exact']        = str_replace(':', '\\:', $lookfor);
-			$mungedValues['exact_quoted'] = '"' . $lookfor . '"';
-			$mungedValues['and']          = $andQuery;
-			$mungedValues['or']           = $orQuery;
-			//TODO: move single_word_removal to a custom munge
+			$mungedValues['exact']       = str_replace(':', '\\:', $lookfor);
+			$mungedValues['exactQuoted'] = '"' . $lookfor . '"';
+			$mungedValues['and']         = $andQuery;
+			$mungedValues['or']          = $orQuery;
+			//TODO: move singleWordRemoval to a custom munge
 
-			// The single_word_removal munge is only used in the Keyword search spec against the title_proper and title_full fields.  pascal 10/15/2021
+			// The singleWordRemoval munge is only used in the Keyword search spec against the title_proper and title_full fields.  pascal 10/15/2021
 			if ($numTokens < 5) {
-				$mungedValues['single_word_removal'] = $mungedValues['onephrase'];
+				$mungedValues['singleWordRemoval'] = $mungedValues['onePhrase'];
 			} else {
 				$singleWordRemoval            = [];
 				for ($i = 0;$i < $numTokens;$i++) {
@@ -957,36 +958,7 @@ class Solr implements IndexEngine {
 					}
 					$singleWordRemoval[] =  '"' . implode(' ', $newTerm) .  '"';
 				}
-				$mungedValues['single_word_removal'] = implode(' OR ', $singleWordRemoval);
-			}
-
-			// Apply custom munge operations if necessary
-			// (This is currently not used with our current searchspecs) Pascal 8/11/2021
-			if (is_array($customMunges)) {
-				foreach ($customMunges as $mungeName => $mungeOps) {
-					$mungedValues[$mungeName] = $lookfor;
-
-					// Skip munging if tokenization is disabled.
-					foreach ($mungeOps as $operation) {
-						switch ($operation[0]) {
-							case 'exact':
-								$mungedValues[$mungeName] = '"' . $mungedValues[$mungeName] . '"';
-								break;
-							case 'append':
-								$mungedValues[$mungeName] .= $operation[1];
-								break;
-							case 'lowercase':
-								$mungedValues[$mungeName] = strtolower($mungedValues[$mungeName]);
-								break;
-							case 'preg_replace':
-								$mungedValues[$mungeName] = preg_replace($operation[1], $operation[2], $mungedValues[$mungeName]);
-								break;
-							case 'uppercase':
-								$mungedValues[$mungeName] = strtoupper($mungedValues[$mungeName]);
-								break;
-						}
-					}
-				}
+				$mungedValues['singleWordRemoval'] = implode(' OR ', $singleWordRemoval);
 			}
 
 		} else {
@@ -996,23 +968,22 @@ class Solr implements IndexEngine {
 			// unmodified (it's probably an advanced search that won't benefit from
 			// tokenization).	We'll just set all possible values to the same thing,
 			// except that we'll try to do the "one phrase" in quotes if possible.
-			$onephrase = strstr($lookfor, '"') ? $lookfor : '"' . $lookfor . '"';
-			$mungedValues    = [
-				'exact'               => $onephrase,
-				'onephrase'           => $onephrase,
-				'and'                 => $lookfor,
-				'or'                  => $lookfor,
-				'proximal'            => $lookfor,
-				'single_word_removal' => $onephrase,
-				'exact_quoted'        => '"' . $lookfor . '"',
+			$onePhrase    = strstr($lookfor, '"') ? $lookfor : '"' . $lookfor . '"';
+			$mungedValues = [
+				'exact'             => $onePhrase,
+				'onePhrase'         => $onePhrase,
+				'and'               => $lookfor,
+				'or'                => $lookfor,
+				'proximal'          => $lookfor,
+				'singleWordRemoval' => $onePhrase,
+				'exactQuoted'       => '"' . $lookfor . '"',
 			];
 		}
 
-		//Create localized call number
-		// TODO: determine how this munge is useful (over the others) and document it here and the searchSpecs
-		$noWildCardLookFor                    = str_replace('*', '', $lookfor);  // Remove wild card characters
-		$mungedValues['localized_callnumber'] = '"' . str_replace(['"', ':', '/'], ' ', $noWildCardLookFor) . '"'; // Replace some special characters with spaces
-//		$mungedValues['localized_callnumber'] = '"' . str_replace(['*', '"', ':', '/'], ' ', $lookfor) . '"'; // same as above but replaces wildcard character with space as well
+		// This sets up search phrases to be used against the text-exact and text-left types of solr fields
+		//Remove special characters and then replace any doubled space chacters with a single one
+		// (also convert other space characters to a the literal space character.)
+		$mungedValues['anchoredSearchFieldMunge'] = '"' .preg_replace('/\s+/', ' ', str_replace(['*', '"', ':', '/'], '', $lookfor)) . '"'; // same as above but replaces wildcard character with space as well
 
 		return $mungedValues;
 	}
@@ -1054,9 +1025,7 @@ class Solr implements IndexEngine {
 			return '"' . $searchSpecToUse . ':' . $lookfor . '"';
 		}
 
-		// Munge the user query in a few different ways:
-		$customMunge  = $ss['CustomMunge'] ?? null;
-		$mungedValues = $this->_buildMungeValues($lookfor, $customMunge, $tokenize);
+		$mungedValues = $this->_buildMungeValues($lookfor, $tokenize);
 
 		// Apply the $searchSpecs property to the data:
 		$baseQuery = $this->_applySearchSpecs($ss['QueryFields'], $mungedValues, $searchSpecToUse == 'Keyword');

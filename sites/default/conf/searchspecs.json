@@ -1,7 +1,7 @@
 /*
 # Munge types are string manipulation rules, and consist of:
 #
-# onephrase: eliminate all quotes and reformat as a single phrase within quotes.
+# onePhrase: eliminate all quotes and reformat as a single phrase within quotes.
 #   testing "one two"
 #    ...becomes ("testing one two")
 #
@@ -13,61 +13,40 @@
 #  testing "one two"
 #   ...becomes (testing OR "one two")
 #
-# proximal: Include a proximal search term of the onephrase value if there are more than one tokens in the search phrase.eg
+# proximal: Include a proximal search term of the onePhrase value if there are more than one tokens in the search phrase.eg
 #   testing "one two"
 #    ...becomes ("testing one two"~10)
 #
-# single_word_removal: for search phrases with more than 4 tokens, parse into search phrases OR-ed together
-# where each alternate phrase has one token missing; (phrases with four or less tokens is the same as onephrase)
+# singleWordRemoval: for search phrases with more than 4 tokens, parse into search phrases OR-ed together
+# where each alternate phrase has one token missing; (phrases with four or less tokens is the same as onePhrase)
 #  single word removal search phrase
 #   ...becomes ("word removal search phrase" OR "single removal search phrase" OR "single word search phrase" OR "single word removal phrase" OR "single word removal search")
 #
-# localized_callnumber : the search phrase will be quoted. The following characters " (double quote marks), : (colon),
-# and / (slash) will be replaced with spaces.  The wildcard character (asterisk) will be removed any where
+# anchoredSearchFieldMunge : the search phrase will be quoted. The following characters " (double quote marks), : (colon),
+# (asterisks [dont include charcter here as it breaks parsing), and / (slash) will be removed.  The wildcard character (asterisk) will be removed any where
 # it occurs in the phrase
 #
-
-
-# Additional Munge types can be defined in the CustomMunge section.  Each array
-# entry under CustomMunge defines a new named munge type.  Each array entry under
-# the name of the munge type specifies a string manipulation operation.  Operations
-# will be applied in the order listed, and different operations take different
-# numbers of parameters.
-#
-# Munge operations:
-#
-# [append, text] - Append text to the end of the user's search string
-# [lowercase] - Convert string to lowercase
-# [preg_replace, pattern, replacement] - Perform a regular expression replace
-#     using the preg_replace() PHP function.  If you use backreferences in your
-#     replacement phrase, be sure to escape dollar signs (i.e. \$1, not $1).
-# [ucfirst] - Uppercase the first letter of each word in the string
-# [uppercase] - Convert string to uppercase
-#
-#
-
-
 */
 
 {
   "Author": {
     "QueryFields": {
       "author_exact": [
-        ["localized_callnumber", 2200]
+        ["anchoredSearchFieldMunge", 2200]
       ],
       "author_left": [
-        ["localized_callnumber", 1400]
+        ["anchoredSearchFieldMunge", 1400]
       ],
       "author": [
-        ["onephrase", 350],
+        ["onePhrase", 350],
         ["proximal", 200]
       ],
       "author2": [
-        ["onephrase", 100],
+        ["onePhrase", 100],
         ["proximal", 50]
       ],
       "author_additional": [
-        ["onephrase", 100],
+        ["onePhrase", 100],
         ["proximal", 50]
       ]
     }
@@ -83,15 +62,15 @@
         ["exact", 1400]
       ],
       "auth_author": [
-        ["onephrase", 350]
+        ["onePhrase", 350]
       ],
       "auth_author2": [
-        ["onephrase", 100]
+        ["onePhrase", 100]
       ]
       /*This will allow for quoted search matches like "jd robb" for J.D. Robb (when populated as such in 245c)
       but would break situation "Lee, Harper" vs "Harper, Lee"
       ,"author_additional": [
-        ["onephrase", 100]
+        ["onePhrase", 100]
       ] */
     }
   },
@@ -134,27 +113,27 @@
     ],
     "QueryFields": {
       "subject": [
-        ["onephrase", 300],
+        ["onePhrase", 300],
         ["and", 100],
         ["or", null]
       ],
       "topic": [
-        ["onephrase", 300],
+        ["onePhrase", 300],
         ["and", 100],
         ["or", null]
       ],
       "topic_proper": [
-        ["onephrase", 300],
+        ["onePhrase", 300],
         ["and", 100],
         ["or", null]
       ],
       "geographic": [
-        ["onephrase", 300],
+        ["onePhrase", 300],
         ["and", 100],
         ["or", null]
       ],
       "genre": [
-        ["onephrase", 300],
+        ["onePhrase", 300],
         ["and", 100],
         ["or", null]
       ],
@@ -175,22 +154,22 @@
     ],
     "QueryFields": {
       "subject_proper": [
-        ["onephrase", 300],
+        ["onePhrase", 300],
         ["and", 100],
         ["or", null]
       ],
       "topic_proper": [
-        ["onephrase", 300],
+        ["onePhrase", 300],
         ["and", 100],
         ["or", null]
       ],
       "geographic_proper": [
-        ["onephrase", 300],
+        ["onePhrase", 300],
         ["and", 100],
         ["or", null]
       ],
       "genre_proper": [
-        ["onephrase", 300],
+        ["onePhrase", 300],
         ["and", 100],
         ["or", null]
       ],
@@ -212,24 +191,24 @@
     ],
     "QueryFields": {
       "title_short": [
-        ["onephrase", 500]
+        ["onePhrase", 500]
       ],
       "title_full": [
-        ["onephrase", 400]
+        ["onePhrase", 400]
       ],
       "title": [
-        ["onephrase", 300],
+        ["onePhrase", 300],
         ["and", 250]
       ],
       "title_alt": [
         ["and", 200]
       ],
       "series": [
-        ["onephrase", 100],
+        ["onePhrase", 100],
         ["and", 50]
       ],
       "series2": [
-        ["onephrase", 50],
+        ["onePhrase", 50],
         ["and", null]
       ]
     },
@@ -241,13 +220,13 @@
       "0": {
         "0": ["OR", 50],
         "title_exact": [
-          ["localized_callnumber", 2400]
+          ["anchoredSearchFieldMunge", 2400]
         ],
         "title_left": [
-          ["localized_callnumber", 1600]
+          ["anchoredSearchFieldMunge", 1600]
         ],
         "title": [
-          ["onephrase", 200],
+          ["onePhrase", 200],
           ["and", 125]
         ],
         "title_alt": [
@@ -255,24 +234,24 @@
         ]
       },
       "title_exact": [
-        ["localized_callnumber", 2400]
+        ["anchoredSearchFieldMunge", 2400]
       ],
       "title_left": [
-        ["localized_callnumber", 1600]
+        ["anchoredSearchFieldMunge", 1600]
       ],
       "title_proper": [
         ["exact", 800],
-        ["onephrase", 500],
+        ["onePhrase", 500],
         ["and", 200]
       ],
       "series_proper": [
         ["exact", 800],
-        ["onephrase", 300],
+        ["onePhrase", 300],
         ["and", 50]
       ],
       "series": [
         ["exact", 600],
-        ["onephrase", 200],
+        ["onePhrase", 200],
         ["and", 50]
       ],
       "series2": [
@@ -294,16 +273,16 @@
     */
     "QueryFields": {
       "title_exact": [
-        ["localized_callnumber", 2400]
+        ["anchoredSearchFieldMunge", 2400]
       ],
       "title_left": [
-        ["localized_callnumber", 1600]
+        ["anchoredSearchFieldMunge", 1600]
       ],
       "title_proper": [
-        ["onephrase", 850]
+        ["onePhrase", 850]
       ],
       "series_proper": [
-        ["onephrase", 100],
+        ["onePhrase", 100],
         ["and", 50]
       ]
     }
@@ -311,7 +290,7 @@
   "StartOfTitle": {
     "QueryFields": {
       "title_left": [
-        ["localized_callnumber", 1600]
+        ["anchoredSearchFieldMunge", 1600]
       ]
     }
   },
@@ -323,12 +302,12 @@
     "QueryFields": {
       "series": [
         ["exact", 600],
-        ["onephrase", 500],
+        ["onePhrase", 500],
         ["and", 200],
         ["or", 100]
       ],
       "series2": [
-        ["onephrase", 50],
+        ["onePhrase", 50],
         ["and", 50],
         ["or", null]
       ]
@@ -340,7 +319,7 @@
     ],
     "QueryFields": {
       "series_proper": [
-        ["onephrase", 500],
+        ["onePhrase", 500],
         ["and", 200],
         ["or", 100]
       ]
@@ -352,15 +331,15 @@
       "0": {
         "0": ["OR", 500],
         "title_exact": [
-          ["localized_callnumber", 7000]
+          ["anchoredSearchFieldMunge", 7000]
         ],
         "title_left": [
-          ["localized_callnumber", 3000]
+          ["anchoredSearchFieldMunge", 3000]
         ],
         "title_proper": [
-          ["onephrase", 800],
+          ["onePhrase", 800],
           ["and", 500],
-          ["single_word_removal", 50]
+          ["singleWordRemoval", 50]
         ],
         "title": [
           ["and", 125]
@@ -370,40 +349,40 @@
         ],
         "title_full": [
           ["and", 200],
-          ["single_word_removal", 50]
+          ["singleWordRemoval", 50]
         ]
       },
       "1": {
         "0": ["OR", 400],
         "author_exact": [
-          ["localized_callnumber", 2000]
+          ["anchoredSearchFieldMunge", 2000]
         ],
         "author_left": [
-          ["localized_callnumber", 1000]
+          ["anchoredSearchFieldMunge", 1000]
         ],
         "author": [
-          ["onephrase", 800],
+          ["onePhrase", 800],
           ["proximal", 200]
         ],
         "author2": [
-          ["onephrase", 100],
+          ["onePhrase", 100],
           ["proximal", 50]
         ],
         "author_additional": [
-          ["onephrase", 100],
+          ["onePhrase", 100],
           ["proximal", 50]
         ]
       },
       "2": {
         "0": ["OR", 300],
         "id": [
-          ["onephrase", 1000]/* Maximize boost for exact id matches so that it is the top result */
+          ["onePhrase", 1000]/* Maximize boost for exact id matches so that it is the top result */
         ],
         "alternate_ids": [
-          ["onephrase", null]
+          ["onePhrase", null]
         ],
         "barcode": [
-          ["onephrase", null]
+          ["onePhrase", null]
         ],
         "issn": [
           ["and", 100],
@@ -421,19 +400,19 @@
       "3": {
         "0": ["OR", null],
         "local_callnumber_exact": [
-          ["localized_callnumber", 400]
+          ["anchoredSearchFieldMunge", 400]
         ],
         "local_callnumber_left": [
-          ["localized_callnumber", 300]
+          ["anchoredSearchFieldMunge", 300]
         ],
         "local_callnumber": [
-          ["onephrase", null]
+          ["onePhrase", null]
         ]
       },
       "4": {
         "0": ["OR", null],
         "series": [
-          ["onephrase", 600],
+          ["onePhrase", 600],
           ["and", 50]
         ],
         "series2": [
@@ -444,13 +423,13 @@
         ["and", 50]
       ],
       "topic": [
-        ["onephrase", 125]
+        ["onePhrase", 125]
       ],
       "geographic": [
-        ["onephrase", 75]
+        ["onePhrase", 75]
       ],
       "genre": [
-        ["onephrase", 75]
+        ["onePhrase", 75]
       ],
       "keywords": [
         ["and", 10]
@@ -459,10 +438,10 @@
         ["and", 60]
       ],
       "target_audience": [
-        ["onephrase", 75]
+        ["onePhrase", 75]
       ],
       "literary_form_full": [
-        ["onephrase", 75]
+        ["onePhrase", 75]
       ]
     }
   },
@@ -488,40 +467,40 @@
     ],
     "QueryFields": {
       "title_exact": [
-        ["localized_callnumber", 2400]
+        ["anchoredSearchFieldMunge", 2400]
       ],
       "title_left": [
-        ["localized_callnumber", 1600]
+        ["anchoredSearchFieldMunge", 1600]
       ],
       "author_exact": [
-        ["localized_callnumber", 2200]
+        ["anchoredSearchFieldMunge", 2200]
       ],
       "author_left": [
-        ["localized_callnumber", 1000]
+        ["anchoredSearchFieldMunge", 1000]
       ],
       "title_proper": [
-        ["onephrase", 850]
+        ["onePhrase", 850]
       ],
       "series_proper": [
         ["and", 50]
       ],
       "auth_author": [
-        ["onephrase", 300]
+        ["onePhrase", 300]
       ],
       "auth_author2": [
-        ["onephrase", 300]
+        ["onePhrase", 300]
       ],
       "table_of_contents_proper": [
         ["and", 10]
       ],
       "topic_proper": [
-        ["onephrase", 500]
+        ["onePhrase", 500]
       ],
       "geographic_proper": [
-        ["onephrase", 300]
+        ["onePhrase", 300]
       ],
       "genre_proper": [
-        ["onephrase", 300]
+        ["onePhrase", 300]
       ],
       "keywords_proper": [
         ["and", null]
@@ -543,22 +522,22 @@
         ["or", null]
       ],
       "callnumber-subject": [
-        ["onephrase", null]
+        ["onePhrase", null]
       ],
       "id": [
-        ["onephrase", null]
+        ["onePhrase", null]
       ],
       "alternate_ids": [
-        ["onephrase", null]
+        ["onePhrase", null]
       ],
       "local_callnumber_exact": [
-        ["localized_callnumber", 800]
+        ["anchoredSearchFieldMunge", 800]
       ],
       "local_callnumber_left": [
-        ["localized_callnumber", 300]
+        ["anchoredSearchFieldMunge", 300]
       ],
       "barcode": [
-        ["onephrase", null]
+        ["onePhrase", null]
       ]
     }
   },
@@ -566,11 +545,11 @@
   "id": {/*TODO: searchSpec name conflict with search field id. Does it come into play? */
     "QueryFields": {
       "id": [
-        ["onephrase", null],
+        ["onePhrase", null],
         ["or", null]
       ],
       "alternate_ids": [
-        ["onephrase", null],
+        ["onePhrase", null],
         ["or", null]
       ]
     }
@@ -582,7 +561,7 @@
         ["or", null]
       ],
       "-alternate_ids": [
-        ["onephrase", null],
+        ["onePhrase", null],
         ["or", null]
       ]
     }
@@ -592,7 +571,7 @@
   "TopicBrowse": {
     "QueryFields": {
       "topic_browse": [
-        ["onephrase", null]
+        ["onePhrase", null]
       ]
     }
   },
@@ -600,7 +579,7 @@
   "AuthorBrowse": {
     "QueryFields": {
       "author_browse": [
-        ["onephrase", null]
+        ["onePhrase", null]
       ]
     }
   },
@@ -609,7 +588,7 @@
   "TitleBrowse": {
     "QueryFields": {
       "title_full": [
-        ["onephrase", null]
+        ["onePhrase", null]
       ]
     }
   },
@@ -618,7 +597,7 @@
   "DeweyBrowse": {
     "QueryFields": {
       "dewey-raw": [
-        ["onephrase", null]
+        ["onePhrase", null]
       ]
     }
   },
@@ -628,7 +607,7 @@
   "LccBrowse": {
     "QueryFields": {
       "callnumber-a": [
-        ["onephrase", null]
+        ["onePhrase", null]
       ]
     }
   },
@@ -637,10 +616,10 @@
   "LocalCallNumber": {
     "QueryFields": {
       "local_callnumber_exact": [
-        ["localized_callnumber", 800]
+        ["anchoredSearchFieldMunge", 800]
       ],
       "local_callnumber_left": [
-        ["localized_callnumber", 300]
+        ["anchoredSearchFieldMunge", 300]
       ],
       "local_callnumber": [
         ["exact", null]
@@ -652,7 +631,7 @@
   "callnumber_browse": {
     "QueryFields": {
       "callnumber_browse": [
-        ["onephrase", null]
+        ["onePhrase", null]
       ]
     }
   },
@@ -736,7 +715,7 @@
     ],
     "QueryFields": {
       "keywords": [
-        ["onephrase", 100]
+        ["onePhrase", 100]
       ]
     }
   },
@@ -768,7 +747,7 @@
         ]
       },
       "title": [
-        ["onephrase", 350],
+        ["onePhrase", 350],
         ["and", 200]
       ]
     }
@@ -777,12 +756,12 @@
   "IslandoraTitle": {
     "QueryFields": {
       "mods_titleInfo_title_t": [
-        ["onephrase", 1200],
+        ["onePhrase", 1200],
         ["proximal", 800],
         ["and", 500]
       ],
       "fgs_label_t": [
-        ["onephrase", 1200]
+        ["onePhrase", 1200]
       ],
       "PID": [
         ["exact", 1000]
@@ -793,15 +772,15 @@
   "IslandoraKeyword": {
     "QueryFields": {
       "mods_titleInfo_title_t": [
-        ["onephrase", 1200],
+        ["onePhrase", 1200],
         ["and", 700]
       ],
       "mods_titleInfo_subTitle_t": [
-        ["onephrase", 1200],
+        ["onePhrase", 1200],
         ["and", 700]
       ],
       "fgs_label_t": [
-        ["onephrase", 1200],
+        ["onePhrase", 1200],
         ["and", 700]
       ],
       "mods_abstract_t": [
@@ -866,13 +845,13 @@
         ["and", 10]
       ],
       "mods_identifier_identifier_mt": [
-        ["onephrase", 4000]
+        ["onePhrase", 4000]
       ],
       "mods_extension_marmotLocal_migratedIdentifier_mt": [
-        ["onephrase", 4000]
+        ["onePhrase", 4000]
       ],
       "mods_extension_marmotLocal_migratedFileName_mt": [
-        ["onephrase", 4000]
+        ["onePhrase", 4000]
       ],
       "mods_extension_marmotLocal_hasCreator_entityPid_ms": [
         ["exact", 10]
@@ -938,7 +917,7 @@
         ["exact", 10]
       ],
       "RELS_EXT_isMemberOfCollection_uri_t": [
-        ["onephrase", null]
+        ["onePhrase", null]
       ],
       "mods_extension_marmotLocal_art_material_aatID_ms": [
         ["exact", 10]
@@ -961,15 +940,15 @@
   "IslandoraKeywordProper": {
     "QueryFields": {
       "mods_titleInfo_title_t": [
-        ["onephrase", 1200],
+        ["onePhrase", 1200],
         ["exact", 700]
       ],
       "mods_titleInfo_subTitle_t": [
-        ["onephrase", 1200],
+        ["onePhrase", 1200],
         ["exact", 700]
       ],
       "fgs_label_t": [
-        ["onephrase", 1200],
+        ["onePhrase", 1200],
         ["exact", 700]
       ],
       "mods_abstract_t": [
@@ -1036,13 +1015,13 @@
         ["exact", 10]
       ],
       "mods_identifier_identifier_mt": [
-        ["onephrase", 4000]
+        ["onePhrase", 4000]
       ],
       "mods_extension_marmotLocal_migratedIdentifier_ms": [
         ["exact", 4000]
       ],
       "mods_extension_marmotLocal_migratedFileName_ms": [
-        ["onephrase", 4000]
+        ["onePhrase", 4000]
       ],
       "mods_extension_marmotLocal_hasCreator_entityPid_ms": [
         ["exact", 10]
@@ -1102,7 +1081,7 @@
         ["exact", 10]
       ],
       "RELS_EXT_isMemberOfCollection_uri_t": [
-        ["onephrase", 10]
+        ["onePhrase", 10]
       ],
       "mods_extension_marmotLocal_art_material_aatID_ms": [
         ["exact", 10]
@@ -1213,7 +1192,7 @@
         ["exact", null]
       ],
       "RELS_EXT_isMemberOfCollection_uri_t": [
-        ["onephrase", null]
+        ["onePhrase", null]
       ]
     }
   }
