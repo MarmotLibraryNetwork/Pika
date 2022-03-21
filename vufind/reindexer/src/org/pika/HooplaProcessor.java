@@ -445,5 +445,16 @@ class HooplaProcessor extends MarcRecordProcessor {
 		super.loadTitles(groupedWork, record, format, identifier);
 	}
 
-
+	@Override
+	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+		if (hooplaExtractInfo.isChildren()) {
+			groupedWork.addTargetAudience("Juvenile");
+			groupedWork.addTargetAudienceFull("Juvenile");
+		} else if (hooplaExtractInfo.isParentalAdvisory()){
+			groupedWork.addTargetAudience("Adult");
+			groupedWork.addTargetAudienceFull("Adult");
+		} else {
+			super.loadTargetAudiences(groupedWork, record, printItems, identifier);
+		}
+	}
 }
