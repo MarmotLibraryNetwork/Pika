@@ -45,20 +45,33 @@
 	{/foreach}
 </table>
 
-<h4>Solr Details</h4>
-<table class="table-striped table table-condensed notranslate">
+<h4>Solr Fields</h4>
 	{foreach from=$details key='field' item='values'}
-		<tr>
+			<div class="row" style="border: solid #ddd; border-width: 1px 0 0 0">
+			{if strpos($field, "scoping_details") === false
+			&& strpos($field, "item_details") === false
+			&& strpos($field, "record_details") === false}
+				<div class="col-xs-6 col-sm-3"><strong>{$field|escape}</strong></div>
+				<div class="col-xs-6 col-sm-9">
+				{implode subject=$values glue='<br>' sort=true}
+				</div>
+				<div class="clearfix visible-sm-block"></div>
+      {/if}
+			</div>
+	{/foreach}
+	{* Display Details tables last *}
+	<h4>Solr Details Tables</h4>
+		{foreach from=$details key='field' item='values'}
+			<div class="row" style="border: solid #ddd; border-width: 1px 0 0 0">
 			{if strpos($field, "scoping_details") !== false}
-				<td colspan="2">
-					<strong>{$field|escape}</strong>
-				<table id="scoping_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: anywhere; font-size: smaller">
+				<div class="col-tn-12">
+				<h4>{$field|escape}</h4>
+				<table id="scoping_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: anywhere; font-size: smaller;table-layout: fixed">
 					<tr>
 						<th>Bib Id</th><th>Item Id</th><th>Grouped Status</th><th>Status</th><th>Locally Owned</th><th>Available</th><th>Holdable</th><th>Bookable</th><th>In Library Use Only</th><th>Library Owned</th><th>Holdable PTypes</th><th>Bookable PTypes</th><th>Local Url</th>
 					</tr>
 					{foreach from=$values item="item"}
 					<tr>
-						{*{assign var="item" value=$item|rtrim:"|"}*}
 						{assign var="details" value="|"|explode:$item}
 						{foreach from=$details item='detail' key="k"}
 						<td{if in_array($k, array(0,1))} style="overflow-wrap: anywhere; min-width: 50px" {/if}>{if in_array($k, array(4,5,6,7,8,9))}{if $detail}true{else}false{/if}{else}{$detail|replace:',':', '}{/if}</td>
@@ -66,52 +79,42 @@
 					</tr>
 					{/foreach}
 				</table>
-				</td>
+				</div>
 			{elseif strpos($field, "item_details") !== false}
-				<td colspan="2">
-					<strong>{$field|escape}</strong>
-				<table id="item_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: break-word; font-size: x-small">
-					<tr>
-						<th>Bib Id</th><th>Item Id</th><th>Shelf Loc</th><th>Call Num</th><th>Format</th><th>Format Category</th><th>Num Copies</th><th>Is Order Item</th><th>Is eContent</th><th>eContent Source</th>{*<th>eContent File</th>*}<th>eContent URL</th><th>subformat</th><th>Detailed Status</th><th>Last Checkin</th><th>Location</th>{*<th>Sub-location</th>*}
-					</tr>
-					{foreach from=$values item="item"}
-					<tr>
-					{assign var="details" value="|"|explode:$item}
-						{foreach from=$details item='detail' key="k"}
-						{*{foreach from=explode($values, "|") item='detail'}*}
-						<td{if in_array($k, array(0,1,10))} style="overflow-wrap: anywhere; min-width: 50px" {/if}>{if in_array($k, array(7,8))}{if $detail}true{else}false{/if}{else}{$detail|replace:',':', '}{/if}</td>
-					{/foreach}
-					</tr>
-					{/foreach}
-				</table>
-				</td>
+				<div class="col-tn-12">
+				<h4>{$field|escape}</h4>
+					<table id="item_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: break-word; font-size: x-small;table-layout: fixed">
+						<tr>
+							<th>Bib Id</th><th>Item Id</th><th>Shelf Loc</th><th>Call Num</th><th>Format</th><th>Format Category</th><th>Num Copies</th><th>Is Order Item</th><th>Is eContent</th><th>eContent Source</th>{*<th>eContent File</th>*}<th>eContent URL</th><th>subformat</th><th>Detailed Status</th><th>Last Checkin</th><th>Location</th>{*<th>Sub-location</th>*}
+						</tr>
+              {foreach from=$values item="item"}
+								<tr>
+                    {assign var="details" value="|"|explode:$item}
+                    {foreach from=$details item='detail' key="k"}
+											<td{if in_array($k, array(0,1,10))} style="overflow-wrap: anywhere; min-width: 50px" {/if}>{if in_array($k, array(7,8))}{if $detail}true{else}false{/if}{else}{$detail|replace:',':', '}{/if}</td>
+                    {/foreach}
+								</tr>
+              {/foreach}
+					</table>
+				</div>
 			{elseif strpos($field, "record_details") !== false}
-				<td colspan="2">
-					<strong>{$field|escape}</strong>
-				<table id="record_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: break-word; font-size: smaller">
-					<tr>
-						<th>Bib Id</th><th>Format</th><th>Format Category</th><th>Edition</th><th>Language</th><th>Publisher</th><th>Publication Date</th><th>Physical Description</th><th>Abridged</th>
-					</tr>
-					{foreach from=$values item="item"}
-					<tr>
-						{*{assign var="item" value=$item|rtrim:"|"}*}
-						{assign var="details" value="|"|explode:$item}
-						{foreach from=$details item='detail' key="k"}
-						{*{foreach from=explode($values, "|") item='detail'}*}
-						<td{if $k==0} style="overflow-wrap: anywhere; min-width: 50px" {/if}>{$detail|replace:',':', '}</td>
-					{/foreach}
-					</tr>
-					{/foreach}
-				</table>
-				</td>
-			{else}
-			<th>{$field|escape}</th>
-			<td>
-				{implode subject=$values glue='<br>' sort=true}
-{*				{implode subject=$values glue=', ' sort=true}*}
-			</td>
-			{/if}
-		</tr>
+				<div class="col-tn-12">
+				<h4>{$field|escape}</h4>
+					<table id="record_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: break-word; font-size: smaller;table-layout: fixed">
+						<tr>
+							<th>Bib Id</th><th>Format</th><th>Format Category</th><th>Edition</th><th>Language</th><th>Publisher</th><th>Publication Date</th><th>Physical Description</th><th>Abridged</th>
+						</tr>
+              {foreach from=$values item="item"}
+								<tr>
+                    {assign var="details" value="|"|explode:$item}
+                    {foreach from=$details item='detail' key="k"}
+											<td{if $k==0} style="overflow-wrap: anywhere; min-width: 50px" {/if}>{$detail|replace:',':', '}</td>
+                    {/foreach}
+								</tr>
+              {/foreach}
+					</table>
+				</div>
+      {/if}
+			</div>
 	{/foreach}
-</table>
 {/strip}
