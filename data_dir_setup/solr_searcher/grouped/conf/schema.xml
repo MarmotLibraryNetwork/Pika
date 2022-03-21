@@ -323,31 +323,18 @@
 		<!-- Text Field without Stemming, without Synonyms, and without stop Word removal -->
 		<fieldType name="textProper" class="solr.TextField" positionIncrementGap="100">
 			<analyzer type="index">
-				<tokenizer class="solr.ICUTokenizerFactory"/>
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
 				<!--
-				This tokenizer processes multilingual text and tokenizes it appropriately based on its script attribute.
-				Requires additional jar files
+				Simple tokenizer that splits the text stream on whitespace and returns sequences of
+				non-whitespace characters as tokens. Note that any punctuation will be included in the tokens.
 
-				The default configuration for solr.ICUTokenizerFactory provides UAX#29 word break rules tokenization
-				(like solr.StandardTokenizer), but also includes custom tailorings for Hebrew (specializing handling
-				of double and single quotation marks), for syllable tokenization for Khmer, Lao, and Myanmar, and
-				dictionary-based word segmentation for CJK characters.
-
-				https://solr.apache.org/guide/8_8/tokenizers.html#icu-tokenizer
+				https://solr.apache.org/guide/8_8/tokenizers.html#white-space-tokenizer
 				-->
-<!--  Disabling using word delimiter graph on textProper till we prove it is needed. See D-4189
 
-				<filter class="solr.WordDelimiterGraphFilterFactory"
-						generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0"
-						splitOnCaseChange="1" splitOnNumerics="0" stemEnglishPossessive="1"
-						protected="protected_en_contractions.txt"
-				/>
-				&lt;!&ndash; protect contractions for matching in text_proper See D-4189 &ndash;&gt;
+				<!-- Need to keep symbol characters in protwords.txt. ICUTokenizerFactory tokenizer removed them.  See D-75 -->
+				<!--  Don't use word delimiter graph on textProper till we prove it is needed. See D-4189 -->
 
-				<filter class="solr.FlattenGraphFilterFactory"/> &lt;!&ndash; required on index analyzers after graph filters &ndash;&gt;
-
-
--->
+				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
 				<filter class="solr.ICUFoldingFilterFactory"/>
 				<!--
 				This filter is a custom Unicode normalization form that applies the foldings specified in Unicode TR #30: Character Foldings
@@ -362,64 +349,20 @@
 
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
 				-->
-				<!--<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>-->
-				<!-- CommonGrams filtering does not seem to work with quoted search phrase,
-				which appears to be the reason we switch over to searching against textProper fields
-				See D-4122 -->
-				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 			<analyzer type="query">
-				<tokenizer class="solr.ICUTokenizerFactory"/>
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
 				<!--
-				This tokenizer processes multilingual text and tokenizes it appropriately based on its script attribute.
-				Requires additional jar files
+				Simple tokenizer that splits the text stream on whitespace and returns sequences of
+				non-whitespace characters as tokens. Note that any punctuation will be included in the tokens.
 
-				The default configuration for solr.ICUTokenizerFactory provides UAX#29 word break rules tokenization
-				(like solr.StandardTokenizer), but also includes custom tailorings for Hebrew (specializing handling
-				of double and single quotation marks), for syllable tokenization for Khmer, Lao, and Myanmar, and
-				dictionary-based word segmentation for CJK characters.
-
-				https://solr.apache.org/guide/8_8/tokenizers.html#icu-tokenizer
+				https://solr.apache.org/guide/8_8/tokenizers.html#white-space-tokenizer
 				-->
-<!--  Disabling using word delimiter graph on textProper till we prove it is needed. See D-4189
 
-								<filter class="solr.WordDelimiterGraphFilterFactory"
-										generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0"
-										splitOnCaseChange="1" splitOnNumerics="0" stemEnglishPossessive="1"
-										protected="protected_en_contractions.txt"
-								/>
-								&lt;!&ndash; protect contractions for matching in textProper fields  &ndash;&gt;
-								&lt;!&ndash; Important: It appears word delimiter graph filter should be applied to both index and query analyzers,
-									at list for the textProper field. This is in contradiction to what the documentation says about
-									this filter.  See D-4189 &ndash;&gt;
-								&lt;!&ndash;
-								// Turn off splitOnNumerics Pascal 7/19/21 tokenizes Ids like ".b1234x" into "b","1234,"x"   See D-3984
+				<!-- Need to keep symbol characters in protwords.txt. ICUTokenizerFactory tokenizer removed them.  See D-75 -->
+				<!--  Don't use word delimiter graph on textProper till we prove it is needed. See D-4189 -->
 
-								From documentation : https://solr.apache.org/guide/8_8/filter-descriptions.html#word-delimiter-graph-filter
-
-													generateWordParts
-										(integer, default 1) If non-zero, splits words at delimiters. For example:"CamelCase", "hot-spot" -> "Camel", "Case", "hot", "spot"
-									generateNumberParts
-										(integer, default 1) If non-zero, splits numeric strings at delimiters:"1947-32" ->*"1947", "32"
-									splitOnCaseChange
-										(integer, default 1) If 0, words are not split on camel-case changes:"BugBlaster-XL" -> "BugBlaster", "XL". Example 1 below illustrates the default (non-zero) splitting behavior.
-									splitOnNumerics
-										(integer, default 1) If 0, don’t split words on transitions from alpha to numeric:"FemBot3000" -> "Fem", "Bot3000"
-									catenateWords
-										(integer, default 0) If non-zero, maximal runs of word parts will be joined: "hot-spot-sensor’s" -> "hotspotsensor"
-									catenateNumbers
-										(integer, default 0) If non-zero, maximal runs of number parts will be joined: 1947-32" -> "194732"
-									catenateAll
-										(0/1, default 0) If non-zero, runs of word and number parts will be joined: "Zap-Master-9000" -> "ZapMaster9000"
-									preserveOriginal
-										(integer, default 0) If non-zero, the original token is preserved: "Zap-Master-9000" -> "Zap-Master-9000", "Zap", "Master", "9000"
-									protected
-										(optional) The pathname of a file that contains a list of protected words that should be passed through without splitting.
-									stemEnglishPossessive
-										(integer, default 1) If 1, strips the possessive 's from each subword.
-								&ndash;&gt;
-								<filter class="solr.FlattenGraphFilterFactory"/> &lt;!&ndash; required on index analyzers after graph filters &ndash;&gt;
-				-->
+				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
 				<filter class="solr.ICUFoldingFilterFactory"/>
 				<!--
 				This filter is a custom Unicode normalization form that applies the foldings specified in Unicode TR #30: Character Foldings
@@ -434,11 +377,6 @@
 
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
 				-->
-				<!--<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>-->
-				<!-- CommonGrams filtering does not seem to work with quoted search phrase,
-				which appears to be the reason we switch over to searching against textProper fields
-				See D-4122 -->
-				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 		</fieldType>
 		<!-- This is an example of using the KeywordTokenizer along
@@ -572,7 +510,6 @@
 
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#lower-case-filter
 				-->
-				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/><!--TODO: Shouldn't this always be redundant??  -->
 			</analyzer>
 		</fieldType>
 		<fieldType name="text-left" class="solr.TextField" sortMissingLast="true" omitNorms="true">

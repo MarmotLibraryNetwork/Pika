@@ -84,8 +84,15 @@ class Solr implements IndexEngine {
 	 */
 	private $_searchSpecs = false;
 
-	private $_protectedWordsFile = '../../data_dir_setup/solr_master/grouped/conf/protwords.txt';
+	/**
+	 *  An array of protected word phrases that don not get altered by solr and should not be mundged in this driver
+	 * for search queries
+	 *
+	 * @var bool|array
+	 */
 	private $_protectedWords = false;
+	private $_protectedWordsFile = '../../data_dir_setup/solr_master/grouped/conf/protwords.txt';
+
 	/**
 	 * Should boolean operators in the search string be treated as
 	 * case-insensitive (false), or must they be ALL UPPERCASE (true)?
@@ -290,6 +297,27 @@ class Solr implements IndexEngine {
 			$this->cache->set('searchSpecs', $results, $configArray['Caching']['searchSpecs']);
 		}
 		$this->_searchSpecs = $results;
+
+		// Populate the protectedWords array as we load the searchSpecs since both will be used to build solr queries
+		if ($this->_protectedWords === false){
+			$protectedWords = $this->cache->get('searchProtectedWords');
+			if (empty($protectedWords) && file_exists($this->_protectedWordsFile)){
+				$protectedWords = [];
+				$temp         = file_get_contents($this->_protectedWordsFile);
+				if ($temp){
+					foreach (explode("\n", $temp) as $line){
+						if (strpos($line, '#') !== 0){ // ignore commments
+							$line = trim($line);
+							if (!empty($line)){
+								$protectedWords[] = $line;
+							}
+						}
+					}
+					$this->cache->set('searchProtectedWords', $protectedWords, $configArray['Caching']['searchSpecs']);
+				}
+			}
+			$this->_protectedWords = $protectedWords;
+		}
 	}
 
 	/**
@@ -906,6 +934,7 @@ class Solr implements IndexEngine {
 		return $boostFactors;
 	}
 
+	private $_munges = [];
 	/**
 	 * Given a field name and search string, return an array containing munged
 	 * versions of the search string for use in _applySearchSpecs().
@@ -916,76 +945,79 @@ class Solr implements IndexEngine {
 	 * @return  array                      Array for use as _applySearchSpecs() values param
 	 */
 	private function _buildMungeValues($lookfor, $isBasicSearchQuery = true){
-		if ($isBasicSearchQuery) {
-			$cleanedQuery = str_replace(':', ' ', $lookfor);
+		$key = $lookfor . ($isBasicSearchQuery ? '1' : '0');
+		if (!isset($this->_munges[$key])){
+			if ($isBasicSearchQuery){
+				$cleanedQuery = str_replace(':', ' ', $lookfor);
 
-			// Tokenize Input
-			$tokenized = $this->tokenizeInput($cleanedQuery);
+				// Tokenize Input
+				$tokenized = $this->tokenizeInput($cleanedQuery);
 
-			// Create AND'd and OR'd queries
-			$andQuery = implode(' AND ', $tokenized);
-			$orQuery  = implode(' OR ', $tokenized);
+				// Create AND'd and OR'd queries
+				$andQuery = implode(' AND ', $tokenized);
+				$orQuery  = implode(' OR ', $tokenized);
 
-			// Build possible inputs for searching:
-			$mungedValues              = [];
-			$mungedValues['onePhrase'] = '"' . str_replace('"', '', implode(' ', $tokenized)) . '"';
-			$numTokens                 = count($tokenized);
-			if ($numTokens > 1){
-				$mungedValues['proximal'] = $mungedValues['onePhrase'] . '~10';
-			}elseif ($numTokens == 1){
-				$mungedValues['proximal'] = $tokenized[0];
-			}else{
-				$mungedValues['proximal'] = '';
-			}
-
-			$mungedValues['exact']       = str_replace(':', '\\:', $lookfor);
-			$mungedValues['exactQuoted'] = '"' . $lookfor . '"';
-			$mungedValues['and']         = $andQuery;
-			$mungedValues['or']          = $orQuery;
-			//TODO: move singleWordRemoval to a custom munge
-
-			// The singleWordRemoval munge is only used in the Keyword search spec against the title_proper and title_full fields.  pascal 10/15/2021
-			if ($numTokens < 5) {
-				$mungedValues['singleWordRemoval'] = $mungedValues['onePhrase'];
-			} else {
-				$singleWordRemoval            = [];
-				for ($i = 0;$i < $numTokens;$i++) {
-					$newTerm = [];
-					for ($j = 0;$j < $numTokens;$j++) {
-						if ($j != $i) {
-							$newTerm[] = $tokenized[$j];
-						}
-					}
-					$singleWordRemoval[] =  '"' . implode(' ', $newTerm) .  '"';
+				// Build possible inputs for searching:
+				$mungedValues              = [];
+				$mungedValues['onePhrase'] = '"' . str_replace('"', '', implode(' ', $tokenized)) . '"';
+				$numTokens                 = count($tokenized);
+				if ($numTokens > 1){
+					$mungedValues['proximal'] = $mungedValues['onePhrase'] . '~10';
+				}elseif ($numTokens == 1){
+					$mungedValues['proximal'] = $tokenized[0];
+				}else{
+					$mungedValues['proximal'] = '';
 				}
-				$mungedValues['singleWordRemoval'] = implode(' OR ', $singleWordRemoval);
+
+				$mungedValues['exact']       = str_replace(':', '\\:', $lookfor);
+				$mungedValues['exactQuoted'] = '"' . $lookfor . '"';
+				$mungedValues['and']         = $andQuery;
+				$mungedValues['or']          = $orQuery;
+
+				// The singleWordRemoval munge is only used in the Keyword search spec against the title_proper and title_full fields.  pascal 10/15/2021
+				if ($numTokens < 5){
+					$mungedValues['singleWordRemoval'] = $mungedValues['onePhrase'];
+				}else{
+					$singleWordRemoval = [];
+					for ($i = 0;$i < $numTokens;$i++){
+						$newTerm = [];
+						for ($j = 0;$j < $numTokens;$j++){
+							if ($j != $i){
+								$newTerm[] = $tokenized[$j];
+							}
+						}
+						$singleWordRemoval[] = '"' . implode(' ', $newTerm) . '"';
+					}
+					$mungedValues['singleWordRemoval'] = implode(' OR ', $singleWordRemoval);
+				}
+
+			}else{
+				//TODO: this block is never used or called  Should it?  Did it?
+
+				// If we're skipping tokenization, we just want to pass $lookfor through
+				// unmodified (it's probably an advanced search that won't benefit from
+				// tokenization).	We'll just set all possible values to the same thing,
+				// except that we'll try to do the "one phrase" in quotes if possible.
+				$onePhrase    = strstr($lookfor, '"') ? $lookfor : '"' . $lookfor . '"';
+				$mungedValues = [
+					'exact'             => $onePhrase,
+					'onePhrase'         => $onePhrase,
+					'and'               => $lookfor,
+					'or'                => $lookfor,
+					'proximal'          => $lookfor,
+					'singleWordRemoval' => $onePhrase,
+					'exactQuoted'       => '"' . $lookfor . '"',
+				];
 			}
 
-		} else {
-			//TODO: this block is never used or called  Should it?  Did it?
+			// This sets up search phrases to be used against the text-exact and text-left types of solr fields.
+			// Remove special characters and then replace any doubled space characters with a single one
+			// (also convert other space characters to the literal space character.)
+			$mungedValues['anchoredSearchFieldMunge'] = '"' . preg_replace('/\s+/', ' ', str_replace(['*', '"', ':', '/'], '', $lookfor)) . '"'; // same as above but replaces wildcard character with space as well
 
-			// If we're skipping tokenization, we just want to pass $lookfor through
-			// unmodified (it's probably an advanced search that won't benefit from
-			// tokenization).	We'll just set all possible values to the same thing,
-			// except that we'll try to do the "one phrase" in quotes if possible.
-			$onePhrase    = strstr($lookfor, '"') ? $lookfor : '"' . $lookfor . '"';
-			$mungedValues = [
-				'exact'             => $onePhrase,
-				'onePhrase'         => $onePhrase,
-				'and'               => $lookfor,
-				'or'                => $lookfor,
-				'proximal'          => $lookfor,
-				'singleWordRemoval' => $onePhrase,
-				'exactQuoted'       => '"' . $lookfor . '"',
-			];
+			$this->_munges[$key] = $mungedValues;
 		}
-
-		// This sets up search phrases to be used against the text-exact and text-left types of solr fields
-		//Remove special characters and then replace any doubled space chacters with a single one
-		// (also convert other space characters to a the literal space character.)
-		$mungedValues['anchoredSearchFieldMunge'] = '"' .preg_replace('/\s+/', ' ', str_replace(['*', '"', ':', '/'], '', $lookfor)) . '"'; // same as above but replaces wildcard character with space as well
-
-		return $mungedValues;
+		return $this->_munges[$key];
 	}
 
 	/**
@@ -2167,7 +2199,7 @@ class Solr implements IndexEngine {
 					$newWords[count($newWords) - 1] .= ' ' . trim($words[$i]) . ' ' . trim($words[$i + 1]);
 					$i++;
 				}
-			} else {
+			} elseif (!in_array($words[$i], $this->_protectedWords)) {
 				//If we are tokenizing, remove any punctuation
 				$tmpWord = trim(preg_replace('/[^\s\-\w.\'&]/u', '', $words[$i]));
 				// Removes any character that is NOT : whitespace, word characters, a period, a dash -, an apostrophe ', or an ampersand &
@@ -2178,6 +2210,8 @@ class Solr implements IndexEngine {
 				if (strlen($tmpWord) > 0) {
 					$newWords[] = $tmpWord;
 				}
+			} else {
+				$newWords[] = $words[$i];
 			}
 		}
 
