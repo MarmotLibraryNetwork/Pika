@@ -572,7 +572,7 @@ public class FormatDetermination {
 						printFormats.add("BookWithCDROM");
 						break;
 					}
-					if (printFormats.contains("DVD")){
+					/*if (printFormats.contains("DVD")){
 						printFormats.clear();
 						printFormats.add("BookWithDVD");
 						break;
@@ -580,7 +580,7 @@ public class FormatDetermination {
 					if (printFormats.contains("VideoDisc")){
 						printFormats.clear();
 						printFormats.add("BookWithVideoDisc");
-					}
+					}*/
 			}
 		}
 
@@ -650,7 +650,7 @@ public class FormatDetermination {
 			return;
 		}
 		// Video Things
-		if(printFormats.contains("DVD") && printFormats.contains("Blu-ray"))
+		if(printFormats.contains("DVD") || printFormats.contains("Blu-ray"))
 		{
 			if(isComboPack(record)) {
 				printFormats.clear();
@@ -846,6 +846,17 @@ public class FormatDetermination {
 			if (field != null) {
 				if (field.getSubfield('a') != null) {
 					String fieldData = field.getSubfield('a').getData().toLowerCase();
+					if(fieldData.contains("combo")){
+						return true;
+					}
+				}
+			}
+		}
+		List<DataField> marc300 = MarcUtil.getDataFields(record, "300");
+		for(DataField field300 : marc300){
+			if(field300 !=null){
+				if (field300.getSubfield('a') != null){
+					String fieldData = field300.getSubfield('a').getData().toLowerCase();
 					if(fieldData.contains("combo")){
 						return true;
 					}
