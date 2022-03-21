@@ -228,6 +228,7 @@ public class FormatDetermination {
 							econtentItem.setFormatCategory("Audio Books");
 							econtentRecord.setFormatBoost(8);
 							break;
+						case "musiccd":
 						case "musicrecording":
 							econtentItem.setFormat("eMusic");
 							econtentItem.setFormatCategory("Music");
