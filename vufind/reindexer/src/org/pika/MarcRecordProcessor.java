@@ -945,6 +945,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.setAuthorDisplay(displayAuthor, recordFormat);
 	}
 
+
 	protected void loadTitles(GroupedWorkSolr groupedWork, Record record, String format, String identifier) {
 		//title (full title done by index process by concatenating short and subtitle
 
@@ -990,6 +991,12 @@ abstract class MarcRecordProcessor {
 				int nonFilingInt = getInd2AsInt(titleField);
 				if (nonFilingInt > 0 && titleValue.length() > nonFilingInt)  {
 					sortableTitle = titleValue.substring(nonFilingInt);
+					if (fullReindex && logger.isDebugEnabled()) {
+						final String sortTitleRemoval = titleValue.substring(0, nonFilingInt);
+						if (!GroupedReindexMain.sortTitleRemovalsList.contains(sortTitleRemoval)) {
+							GroupedReindexMain.sortTitleRemovalsList.add(sortTitleRemoval);
+						}
+					}
 				}
 			}
 			if (subTitleValue != null && !subTitleValue.isEmpty()) {

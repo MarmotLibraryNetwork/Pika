@@ -57,6 +57,8 @@ public class GroupedReindexMain {
 	public static ArrayList<String> hooplaRecordWithOutExtractInfo = new ArrayList<>();
 	public static ArrayList<String> hooplaRecordUsingUrlIdExtractInfo = new ArrayList<>();
 
+	//Temporary: For determining the variety of trimmed sort title starting phrases.  See D-781
+	public static ArrayList<String> sortTitleRemovalsList = new ArrayList<>();
 
 	/**
 	 * Starts the re-indexing process
@@ -161,14 +163,20 @@ public class GroupedReindexMain {
 					if (hooplaRecordWithOutExtractInfo.size() > 200){
 						logger.warn(hooplaRecordWithOutExtractInfo.size() + " Hoopla records found with out extract info (from the Hoopla API)");
 					}
-					if (logger.isInfoEnabled() && hooplaRecordWithOutExtractInfo.size() > 0) {
-						logger.info("Hoopla Records without  : " + String.join(", ", hooplaRecordWithOutExtractInfo));
-					}
 					if (hooplaRecordUsingUrlIdExtractInfo.size() > 200){
 						logger.warn(hooplaRecordUsingUrlIdExtractInfo.size() + " Hoopla records required using id parsed from record url for extract info (from the Hoopla API)");
 					}
-					if (logger.isInfoEnabled() && hooplaRecordUsingUrlIdExtractInfo.size() > 0) {
-						logger.info("Hoopla Records using Id from Url  : " + String.join(", ", hooplaRecordWithOutExtractInfo));
+					if (logger.isInfoEnabled()) {
+						if (hooplaRecordWithOutExtractInfo.size() > 0) {
+							logger.info("Hoopla Records without  : " + String.join(", ", hooplaRecordWithOutExtractInfo));
+						}
+						if (hooplaRecordUsingUrlIdExtractInfo.size() > 0) {
+							logger.info("Hoopla Records using Id from Url  : " + String.join(", ", hooplaRecordWithOutExtractInfo));
+						}
+
+						if (sortTitleRemovalsList.size() > 0) {
+							logger.info("Removed Beginning Sort Title phrases:\n" + String.join("\n", sortTitleRemovalsList));
+						}
 					}
 				}
 
