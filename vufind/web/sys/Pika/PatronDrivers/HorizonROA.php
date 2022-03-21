@@ -292,9 +292,13 @@ abstract class HorizonROA implements \DriverInterface {
 				}
 				$user->fullname     = $fullName ?? '';
 				$user->barcode      = $barcode;
-				$user->setPassword($password);
-
-
+				// update password if not a match
+				if($password != $user->getPassword()) {
+					$user->updatePassword($password);
+				} else{
+					$user->setPassword($password);
+				}
+				
 				$Address1    = "";
 				$City        = "";
 				$State       = "";
