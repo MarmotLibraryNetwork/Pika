@@ -541,8 +541,8 @@
       ]
     }
   },
-
-  "id": {/*TODO: searchSpec name conflict with search field id. Does it come into play? */
+  /* For this search type, it is labeled Record Number when enabled */
+  "id": { /*TODO: searchSpec name conflict with search field id.  */
     "QueryFields": {
       "id": [
         ["onePhrase", null],
@@ -554,8 +554,9 @@
       ]
     }
   },
-
-  "ids": { /*TODO: does this get used? Potentially a conflict with the special Solr field ids */
+/* Not configured in any searches.ini
+ This spec would search exclusively against the id field (just grouped work ids or listids)
+  "ids": {
     "QueryFields": {
       "id": [
         ["or", null]
@@ -566,7 +567,7 @@
       ]
     }
   },
-
+ */
 /*
   "TopicBrowse": {
     "QueryFields": {
