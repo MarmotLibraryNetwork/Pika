@@ -556,6 +556,7 @@
 		<field name="recordtype" type="string" indexed="true" stored="true" multiValued="false" omitNorms="false"/>
 		<field name="alternate_ids" type="string" indexed="true" stored="false" multiValued="true" omitNorms="true"/>
 		<field name="last_indexed" type="date" indexed="false" stored="true" multiValued="false"/>
+		<!-- Now automatically set by solr_master core. (So the schema definition is slightly different -->
 
 		<!-- Related Record information -->
 		<field name="scope_has_related_records" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
@@ -895,8 +896,11 @@
 		<field name="tag" type="string" indexed="true" stored="true" multiValued="true"/>
 		<!--TODO: nothing is indexed into this field "tag"-->
 		<field name="rating" type="float" indexed="true" stored="true" multiValued="false" default="2.5"/>
+		<!---->
 		<field name="rating_facet" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="system_list" type="string" indexed="true" stored="true" multiValued="true"/>
+		<!-- Wake County's (Horizon's?) unique feature system list populated from MARC 449a
+		 to create a System List facet. -->
 
 		<!-- Special fields for Lists -->
 		<field name="num_titles" type="integer" indexed="true" stored="true" multiValued="false"/>

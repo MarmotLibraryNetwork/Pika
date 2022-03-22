@@ -231,7 +231,7 @@ public class GroupedWorkSolr implements Cloneable {
 		SolrInputDocument doc = new SolrInputDocument();
 		//Main identification
 		doc.addField("id", id);
-		doc.addField("last_indexed", new Date());
+//		doc.addField("last_indexed", new Date()); // Let Solr set this automatically
 		doc.addField("alternate_ids", alternateIds);
 		doc.addField("recordtype", "grouped_work");
 
@@ -319,7 +319,7 @@ public class GroupedWorkSolr implements Cloneable {
 				int thisYear             = now().getValue();
 				if (thisYear == earliestPublicationDate) {
 					publicationDate.set(earliestPublicationDate.intValue(), Calendar.JANUARY, 1);
-				} else  if (thisYear < earliestPublicationDate) {
+				} else if (thisYear < earliestPublicationDate) {
 					publicationDate.set(earliestPublicationDate.intValue(), Calendar.DECEMBER, 31);
 				}
 
@@ -1409,7 +1409,7 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	double getPopularity(){
-		return  popularity;
+		return popularity;
 	}
 
 	void addTopic(Set<String> fieldList) {
