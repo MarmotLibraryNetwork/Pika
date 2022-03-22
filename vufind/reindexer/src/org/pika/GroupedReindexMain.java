@@ -175,7 +175,7 @@ public class GroupedReindexMain {
 						}
 
 						if (sortTitleRemovalsList.size() > 0) {
-							logger.info("Removed Beginning Sort Title phrases:\n" + String.join("\n", sortTitleRemovalsList));
+							logger.info("Removed Beginning Sort Title phrases:" + String.join(", ", sortTitleRemovalsList));
 						}
 					}
 				}
@@ -192,10 +192,10 @@ public class GroupedReindexMain {
 			}
 		} catch (Error e) {
 			logger.error("Error processing reindex ", e);
-			addNoteToReindexLog("Error processing reindex " + e.toString());
+			addNoteToReindexLog("Error processing reindex " + e);
 		} catch (Exception e) {
 			logger.error("Exception processing reindex ", e);
-			addNoteToReindexLog("Exception processing reindex " + e.toString());
+			addNoteToReindexLog("Exception processing reindex " + e);
 		}
 
 		// Send completion information
