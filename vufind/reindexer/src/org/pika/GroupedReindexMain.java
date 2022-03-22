@@ -168,7 +168,7 @@ public class GroupedReindexMain {
 					}
 					if (logger.isInfoEnabled()) {
 						if (hooplaRecordWithOutExtractInfo.size() > 0) {
-							logger.info("Hoopla Records without  : " + String.join(", ", hooplaRecordWithOutExtractInfo));
+							logger.info("Hoopla Records without Extract Info  : " + String.join(", ", hooplaRecordWithOutExtractInfo));
 						}
 						if (hooplaRecordUsingUrlIdExtractInfo.size() > 0) {
 							logger.info("Hoopla Records using Id from Url  : " + String.join(", ", hooplaRecordWithOutExtractInfo));

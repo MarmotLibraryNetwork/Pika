@@ -123,8 +123,8 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 							updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier, loadedNovelistSeries);
 
-						} else  if (logger.isInfoEnabled()){
-							logger.info("Excluding due to title inactive for everyone hoopla id# " + hooplaExtractInfo.getTitleId() + " :" + hooplaExtractInfo.getTitle());
+						} else if (logger.isDebugEnabled()){
+							logger.debug("Excluding due to title inactive for everyone hoopla id# " + hooplaExtractInfo.getTitleId() + " :" + hooplaExtractInfo.getTitle());
 						}
 					}
 				}
@@ -151,15 +151,19 @@ class HooplaProcessor extends MarcRecordProcessor {
 				Matcher idInUrl = hooplaIdInAccessUrl.matcher(url);
 				if (idInUrl.find()){
 					String newId = idInUrl.group(1);
-					if (fullReindex && logger.isInfoEnabled()) {
-						logger.info("For " + identifier + ", trying Hoopla Id from Url : " + newId);
-					}
-					if (getHooplaExtractInfo(newId)){
-						GroupedReindexMain.hooplaRecordWithOutExtractInfo.remove(identifier);
-						if (!GroupedReindexMain.hooplaRecordUsingUrlIdExtractInfo.contains(identifier)) {
-							GroupedReindexMain.hooplaRecordUsingUrlIdExtractInfo.add(identifier);
+					final String originalIdNumber = identifier.replaceAll("^MWT", "");
+					if (!newId.equals(originalIdNumber)) {
+						// Only do second fetch attempt if the url id is different from the marc record number id
+						if (fullReindex && logger.isInfoEnabled()) {
+							logger.info("For " + identifier + ", trying Hoopla Id from Url : " + newId);
 						}
-						return true;
+						if (getHooplaExtractInfo(newId)){
+							GroupedReindexMain.hooplaRecordWithOutExtractInfo.remove(identifier);
+							if (!GroupedReindexMain.hooplaRecordUsingUrlIdExtractInfo.contains(identifier)) {
+								GroupedReindexMain.hooplaRecordUsingUrlIdExtractInfo.add(identifier);
+							}
+							return true;
+						}
 					}
 				}
 			}
@@ -201,6 +205,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 					return true;
 				} else if (fullReindex) {
 //					logger.info("Did not find Hoopla Extract information for " + identifier);
+					//TODO: mark hoopla api info extract table for re-extraction
 					if (!GroupedReindexMain.hooplaRecordWithOutExtractInfo.contains(identifier)) {
 						GroupedReindexMain.hooplaRecordWithOutExtractInfo.add(identifier);
 					}
