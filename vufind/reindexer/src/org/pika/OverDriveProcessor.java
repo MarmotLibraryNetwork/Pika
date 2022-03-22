@@ -352,7 +352,7 @@ public class OverDriveProcessor {
 										}//End processing availability
 									}
 								}
-								groupedWork.addHoldings(totalCopiesOwned);
+//								groupedWork.addHoldings(totalCopiesOwned);
 							}
 						}
 					}

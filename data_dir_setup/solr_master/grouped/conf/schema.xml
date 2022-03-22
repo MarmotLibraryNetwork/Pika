@@ -877,10 +877,16 @@
 		<dynamicField name="translation_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
 
 		<!-- Fields for boosting branch holdings -->
-		<dynamicField name="lib_boost_*" type="integer" indexed="true" stored="true" multiValued="false" omitNorms="true"/>
+		<dynamicField name="lib_boost_*" type="integer" indexed="false" stored="true" multiValued="false" omitNorms="true"/>
+		<!-- If the scope as an item available, the scope will get the availableAtLocationBoostValue.
+			If the scope owns an item but none are available, the scope will get the ownedByLocationBoostValue.
+		usual default values set in searches.ini :
+				availableAtLocationBoostValue = 50
+				ownedByLocationBoostValue = 10
+		-->
 		<!-- relevance determiners -->
 		<field name="popularity" type="integer" indexed="true" stored="true" multiValued="false" default="0"/>
-		<field name="num_holdings" type="integer" omitNorms="true" indexed="true" stored="true" multiValued="false"/>
+<!--		<field name="num_holdings" type="integer" omitNorms="true" indexed="true" stored="true" multiValued="false"/>-->
 
 		<!-- Fields from Pika Enrichment -->
 		<field name="tag" type="string" indexed="true" stored="true" multiValued="true"/>

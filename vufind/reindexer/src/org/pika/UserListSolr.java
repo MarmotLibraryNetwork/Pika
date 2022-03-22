@@ -67,7 +67,7 @@ public class UserListSolr {
 
 		//TODO: Should we count number of views to determine popularity?
 		doc.addField("popularity", Long.toString(numTitles));
-		doc.addField("num_holdings", numTitles);
+//		doc.addField("num_holdings", numTitles);
 		doc.addField("num_titles", numTitles);
 
 		Long                  daysSinceAdded = null;

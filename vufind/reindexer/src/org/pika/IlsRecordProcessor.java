@@ -451,7 +451,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			int numPrintItems = recordInfo.getNumPrintCopies();
 
 			numPrintItems = checkForNonSuppressedItemlessBib(numPrintItems);
-			groupedWork.addHoldings(numPrintItems + recordInfo.getNumCopiesOnOrder());
+//			groupedWork.addHoldings(numPrintItems + recordInfo.getNumCopiesOnOrder());
 
 			for (ItemInfo curItem : recordInfo.getRelatedItems()){
 				String itemIdentifier = curItem.getItemIdentifier();
