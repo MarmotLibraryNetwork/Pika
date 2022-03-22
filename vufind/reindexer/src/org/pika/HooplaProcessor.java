@@ -269,18 +269,19 @@ class HooplaProcessor extends MarcRecordProcessor {
 		}
 
 		//Do updates based on the overall bib (shared regardless of scoping)
-		updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, null, identifier.getIdentifier(), format, loadedNovelistSeries);
+		String recordIdStr = identifier.getIdentifier();
+		updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, null, recordIdStr, format, loadedNovelistSeries);
 
 		//Do special processing for Hoopla which does not have individual items within the record
 		//Instead, each record has essentially unlimited items that can be used at one time.
 		//There are also not multiple formats within a record that we would need to split out.
 
 		//Setup the per Record information
-		RecordInfo recordInfo = groupedWork.addRelatedRecord(source, identifier.getIdentifier());
+		RecordInfo recordInfo = groupedWork.addRelatedRecord(source, recordIdStr);
 
-		String formatCategory = indexer.translateSystemValue("format_category_hoopla", format, identifier.getIdentifier());
+		String formatCategory = indexer.translateSystemValue("format_category_hoopla", format, recordIdStr);
 		long   formatBoost    = 8L; // Reasonable default value
-		String formatBoostStr = indexer.translateSystemValue("format_boost_hoopla", format, identifier.getIdentifier());
+		String formatBoostStr = indexer.translateSystemValue("format_boost_hoopla", format, recordIdStr);
 		if (formatBoostStr != null && !formatBoostStr.isEmpty()) {
 			formatBoost = Long.parseLong(formatBoostStr);
 		} else {
@@ -291,7 +292,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		groupedWork.addDescription(fullDescription, format);
 
 		//Load editions
-		Set<String> editions       = MarcUtil.getFieldList(record, "250a");
+		Set<String> editions = MarcUtil.getFieldList(record, "250a");
 		if (editions.size() > 0) {
 			groupedWork.addEditions(editions);
 			String primaryEdition = editions.iterator().next();
@@ -326,6 +327,11 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 		recordInfo.setFormatBoost(formatBoost);
 
+		// When the hoopla extract id comes from the url instead of the MARC record number tag, add that id to the alternate ids
+		if (!hooplaExtractInfo.getTitleId().toString().equals(recordIdStr.replaceAll("^MWT", ""))){
+			groupedWork.addAlternateId(hooplaExtractInfo.getTitleId().toString());
+		}
+
 		if (hooplaExtractInfo.abridged){
 			recordInfo.setAbridged(true);
 		}
@@ -358,7 +364,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		itemInfo.setSortableCallNumber("Online Hoopla");
 		itemInfo.setDetailedStatus("Available Online");
 		loadEContentUrl(record, itemInfo, identifier);
-		Date dateAdded = indexer.getDateFirstDetected(source, identifier.getIdentifier());
+		Date dateAdded = indexer.getDateFirstDetected(source, recordIdStr);
 		itemInfo.setDateAdded(dateAdded);
 
 		recordInfo.addItem(itemInfo);
