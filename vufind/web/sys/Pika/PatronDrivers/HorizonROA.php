@@ -292,12 +292,6 @@ abstract class HorizonROA implements \DriverInterface {
 				}
 				$user->fullname     = $fullName ?? '';
 				$user->barcode      = $barcode;
-				// update password if not a match
-				if($password != $user->getPassword()) {
-					$user->updatePassword($password);
-				} else{
-					$user->setPassword($password);
-				}
 				
 				$Address1    = "";
 				$City        = "";
@@ -422,9 +416,15 @@ abstract class HorizonROA implements \DriverInterface {
 
 				if ($userExistsInDB) {
 					$user->update();
+					// update password if needed
+					if($password != $user->getPassword()) {
+						$user->updatePassword($password);
+					}
 				} else {
 					$user->created = date('Y-m-d');
 					$user->insert();
+					// update password after user is created
+					$user->updatePassword($password);
 				}
 
 				if(isset($user->id)) {
