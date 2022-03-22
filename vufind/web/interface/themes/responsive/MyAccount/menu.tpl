@@ -302,8 +302,7 @@
 												<div class="adminMenuLink{if $action == "OverDriveAPIData"} active{/if}"><a href="/Admin/OverDriveAPIData">OverDrive API Information</a></div>
 											{/if}
 											{if $showHooplaAPIlink}
-												<div class="adminMenuLink{if $action == "HooplaInfo"} active{/if}"><a href="/Admin/HooplaInfo">Hoopla
-														API Information</a></div>
+												<div class="adminMenuLink{if $action == "HooplaInfo"} active{/if}"><a href="/Admin/HooplaInfo">Hoopla API Information</a></div>
 											{/if}
 									</div>
 								</div>
