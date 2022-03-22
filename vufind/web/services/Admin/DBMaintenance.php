@@ -1520,6 +1520,12 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER TABLE `econtent`.`overdrive_api_magazine_issues` ADD INDEX `parentId` (`parentId` ASC);"
 					]
 				],
+				'encryptUserPasswords' => [
+					'title'             =>  'Encrypt patron passwords',
+					'description'       =>  'Encrypt patron passwords',
+					'continueOnError'   => false,
+					'sql'               => ['encryptUserPasswords']
+				],
 
 			)); // End of main array
 	}
@@ -1749,4 +1755,13 @@ class DBMaintenance extends Admin_Admin {
 		}
 	}
 
+	function encryptUserPasswords() {
+		$user = new User();
+		$user->find();
+
+		while ($user->fetch()) {
+			$password = $user->password;
+			$user->updatePassword($password);
+		}
+	}
 }
