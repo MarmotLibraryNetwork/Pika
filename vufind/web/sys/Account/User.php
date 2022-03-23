@@ -239,7 +239,7 @@ class User extends DB_DataObject {
 	 */
 	public function updatePassword($password) {
 		$encryptedPassword = $this->_encryptPassword($password);
-		$sql = "UPDATE user SET password = '" . $encryptedPassword . "' WHERE i = " . $this->id . " LIMIT 1";
+		$sql = "UPDATE user SET password = '" . $encryptedPassword . "' WHERE id = " . $this->id . " LIMIT 1";
 
 		$result = $this->query($sql);
 		if(PEAR_Singleton::isError($result)) {
