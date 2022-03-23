@@ -239,10 +239,12 @@ class User extends DB_DataObject {
 	 */
 	public function updatePassword($password) {
 		$encryptedPassword = $this->_encryptPassword($password);
-		$sql = "UPDATE user SET password = '" . $encryptedPassword . "' WHERE id = " . $this->id;
+		$sql = "UPDATE user SET password = '" . $encryptedPassword . "' WHERE i = " . $this->id . " LIMIT 1";
 
 		$result = $this->query($sql);
-		if($result >= 1) {
+		if(PEAR_Singleton::isError($result)) {
+			$this->logger->warn("Error updating password.", ["message"=>$result->getMessage(), "info"=>$result->userinfo]);
+		}elseif($result >= 1) {
 			return true;
 		}
 		return false;

@@ -2927,10 +2927,18 @@ EOT;
 			$patron->ilsUserId = $patronId;
 			$patron->barcode   = $barcode;
 			$patron->insert();
+			// insert pin
+			$patron = new User();
+			$patron->ilsUserId = $patronId;
+			$patron->find(true);
+			if ($patron->N >= 1) {
+				$patron->updatePassword($pin);
+			}
 		}
 
 		// Update the stored pin if it has changed
-		if($patron->getPassword() != $pin) {
+		$password = $patron->getPassword();
+		if($password != $pin) {
 			$patron->updatePassword($pin);
 		}
 
