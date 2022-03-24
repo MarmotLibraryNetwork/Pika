@@ -899,7 +899,7 @@ class Solr implements IndexEngine {
 
 		// For Sideloads and Hoopla, the popularity is the number of bibs
 
-		// Add rating as part of the ranking, normalize so ratings of less that 2.5 are below unrated entries.
+		// Add rating as part of the ranking
 		$boostFactors[] = 'sum(rating,1)';
 
 		// Library Holdings Boost factors:
