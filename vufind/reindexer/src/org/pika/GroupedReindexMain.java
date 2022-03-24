@@ -175,7 +175,8 @@ public class GroupedReindexMain {
 						}
 
 						if (sortTitleRemovalsList.size() > 0) {
-							logger.info("Removed Beginning Sort Title phrases:" + String.join(", ", sortTitleRemovalsList));
+							logger.info("Removed Beginning Sort Title phrases:" + String.join("|", sortTitleRemovalsList));
+							// Use pipe character as removed phrase may also have comma or space characters
 						}
 					}
 				}
