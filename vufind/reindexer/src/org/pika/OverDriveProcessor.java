@@ -170,12 +170,14 @@ public class OverDriveProcessor {
 
 											if (series == null || series.isEmpty()) {
 												sortTitle = title; // The sort title will likely just contain the series statement as well
+												//TODO: Remove beginning The, A, An
 												if (fullReindex) {
 													logger.warn("OverDrive title had series styled subtitle but is missing series info, subtitle '" + subTitle + "' for " + identifier);
 												}
 											} else {
 												// Remove Series statement from sort title
-												String seriesNameInSortTitle = series.replaceAll("&", "and");
+												String seriesNameInSortTitle = series.replaceAll("&", "and").replaceAll("'", "");
+												//TODO: probably need a remove all punctuation regex
 												if (sortTitle.contains(seriesNameInSortTitle)) {
 													sortTitle = sortTitle.replaceAll(seriesNameInSortTitle + " Series Book (?:.*)$", "");
 													// The Series Number at the end of the series statement is usually digits but not always
@@ -183,6 +185,9 @@ public class OverDriveProcessor {
 													if (fullReindex && sortTitle.contains("Series Book")) {
 														logger.warn(identifier + " : Failed to remove series info from Overdrive sort title '" + sortTitle + "'");
 													}
+												} else {
+													sortTitle = title; // The sort title will likely just contain the series statement as well
+													//TODO: Remove beginning The, A, An
 												}
 											}
 										}

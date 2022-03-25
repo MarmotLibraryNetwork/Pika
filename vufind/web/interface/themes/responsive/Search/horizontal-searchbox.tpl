@@ -3,10 +3,12 @@
 	<form method="get" action="/Union/Search" id="searchForm" class="form-inline" onsubmit="Pika.Searches.processSearchForm();">
 
 		{* Hidden Inputs *}
+
+{* TODO: Can't tell why this is needed and it creates messier URLs for users
 		{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword'}
 			<input type="hidden" name="basicType" id="basicType" value="">
 			<input type="hidden" name="genealogyType" id="genealogyType" value="">
-		{/if}
+		{/if}*}
 		<input type="hidden" name="view" id="view" value="{$displayMode}">
 
 		{if isset($showCovers)}
