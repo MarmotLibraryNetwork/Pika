@@ -584,7 +584,23 @@ public class FormatDetermination {
 					}*/
 			}
 		}
-
+		List<DataField> physicalDescriptions = record.getDataFields("300");
+		for(DataField physicalDescription : physicalDescriptions){
+			if (physicalDescription != null) {
+				if (physicalDescription.getSubfield('e') != null) {
+					String accompanying = physicalDescription.getSubfield('e').getData().toLowerCase();
+					if(accompanying.contains("dvd"))
+					{
+						printFormats.add("DVD");
+					}else if(accompanying.contains("book")){
+						if(printFormats.contains("SoundDisc")){
+								printFormats.clear();
+								printFormats.add("BookWithAudioCD");
+						}
+					}
+				}
+			}
+		}
 	}
 
 	private void filterPrintFormats(Set<String> printFormats, Record record) {
