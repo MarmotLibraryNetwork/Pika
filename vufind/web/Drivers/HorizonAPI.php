@@ -101,7 +101,6 @@ abstract class HorizonAPI extends Horizon{
 				}
 				$user->fullname     = $fullName ?? '';
 				$user->barcode      = $username;
-				$user->setPassword($password);
 				$user->email        = $email;
 
 				if (isset($lookupMyAccountInfoResponse->AddressInfo)){
@@ -179,6 +178,18 @@ abstract class HorizonAPI extends Horizon{
 					$user->created = date('Y-m-d');
 					$user->insert();
 				}
+				// Password update
+				// use a temp user to check if password update is needed
+				$tmpUser = new User();
+				$tmpUser->ilsUserId = $userID;
+				if($user->find(true)) {
+					$checkPassword = $tmpUser->getPassword();
+					if($checkPassword != $password) {
+						$tmpUser->updatePassword($password);
+					}
+				}
+				// cleanup
+				unset($tmpUser);
 
 				$timer->logTime("patron logged in successfully");
 				return $user;
