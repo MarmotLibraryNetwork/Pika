@@ -592,7 +592,7 @@ public class FormatDetermination {
 					if(accompanying.contains("dvd"))
 					{
 						printFormats.add("DVD");
-					}else if(accompanying.contains("book") && !accompanying.contains("booklet") && !accompanying.contains("ebook")){
+					}else if(accompanying.contains("book") && !accompanying.contains("booklet") && !accompanying.contains("ebook") && !accompanying.contains("e-book")){
 						if(printFormats.contains("SoundDisc")){
 								printFormats.clear();
 								printFormats.add("BookWithAudioCD");
