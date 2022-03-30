@@ -59,11 +59,14 @@ public class UserListSolr {
 		doc.addField("title_sort", Util.makeValueSortable(title));
 
 		doc.addField("author", author);
+		doc.addField("author_display", author);
 
 		doc.addField("table_of_contents", contents);
-		doc.addField("description", description);
-		doc.addField("display_description", description);
-		doc.addField("keywords", description);
+		if (!description.isEmpty()) {
+			doc.addField("description", description);
+			doc.addField("display_description", description);
+			doc.addField("keywords", description);
+		}
 
 		//TODO: Should we count number of views to determine popularity?
 		doc.addField("popularity", Long.toString(numTitles));
@@ -76,6 +79,7 @@ public class UserListSolr {
 			Date dateAdded = new Date(created * 1000);
 			daysSinceAdded = Util.getDaysSinceAddedForDate(dateAdded);
 			timeSinceAdded = Util.getTimeSinceAddedForDate(dateAdded);
+			doc.addField("date_added", dateAdded);
 			doc.addField("days_since_added", daysSinceAdded);
 		}
 
