@@ -597,6 +597,11 @@ public class FormatDetermination {
 								printFormats.clear();
 								printFormats.add("BookWithAudioCD");
 						}
+					}else if(accompanying.contains("audio disc")){
+						if(printFormats.contains("Book")){
+							printFormats.clear();
+							printFormats.add("BookWithAudioCD");
+						}
 					}
 				}
 			}
