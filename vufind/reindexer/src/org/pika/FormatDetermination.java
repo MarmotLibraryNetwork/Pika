@@ -1044,7 +1044,7 @@ public class FormatDetermination {
 						} else if (physicalDescriptionData.contains("wonderbook")) {
 							result.add("WonderBook");
 						}else if (physicalDescriptionData.contains("vox book")){
-							result.add("VoxBook")	;
+							result.add("VoxBooks");
 						}else if (physicalDescriptionData.contains("hotspot device") || physicalDescriptionData.contains("mobile hotspot") || physicalDescriptionData.contains("hot spot") || physicalDescriptionData.contains("hotspot")){
 							result.add("PhysicalObject");
 						}
