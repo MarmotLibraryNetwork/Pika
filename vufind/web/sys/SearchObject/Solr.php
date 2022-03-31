@@ -1961,7 +1961,8 @@ class SearchObject_Solr extends SearchObject_Base {
 
 		global $library;
 		global $configArray;
-		$baseUrl = $library->catalogUrl ?? $configArray['Site']['url'];
+		$baseUrl  = empty($library->catalogUrl) ? $configArray['Site']['url'] : $_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl;
+
 
 		foreach ($result['response']['docs'] as &$currentDoc){
 			//Since the base URL can be different depending on the record type, add the url to the response

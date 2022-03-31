@@ -1529,7 +1529,7 @@ EOT;
 		$emailAddress = $patron->email;
 		$patronName   = $patron->firstname . ' ' . $patron->lastname;
 		$libraryName  = $lib->displayName;
-		$catalogUrl   = $lib->catalogUrl;
+		$catalogUrl   = $_SERVER['REQUEST_SCHEME'] . '://' . $lib->catalogUrl;
 		//$catalogUrl   = $this->configArray['Site']['url'];
 
 		$interface->assign('emailAddress', $emailAddress);

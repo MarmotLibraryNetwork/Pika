@@ -957,10 +957,11 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 */
 	public function buildRSS(){
 		global $configArray;
+		global $library;
 		// XML HTTP header
 		header('Content-type: text/xml', true);
 
-		$baseUrl     = $configArray['Site']['url'];
+		$baseUrl    = empty($library->catalogUrl) ? $configArray['Site']['url'] : $_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl;
 		$this->limit = 50;
 		$result      = $this->processSearch(false, false);
 		foreach ($result['response']['docs'] as &$currentDoc){

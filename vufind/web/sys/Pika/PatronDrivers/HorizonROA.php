@@ -1330,7 +1330,7 @@ abstract class HorizonROA implements \DriverInterface {
 			if (!empty($userID)){
 				// Apparently pin resetting does not require a version number in the operation url
 				$resetPinAPICall = '/user/patron/resetMyPin';
-				$pikaUrl         = $patron->getHomeLibrary()->catalogUrl;
+				$pikaUrl         = $_SERVER['REQUEST_SCHEME'] . '://' . $patron->getHomeLibrary()->catalogUrl;
 				$jsonPOST        = [
 					'barcode'     => $barcode,
 					'resetPinUrl' => $pikaUrl . '/MyAccount/ResetPin?resetToken=<RESET_PIN_TOKEN>&uid=' . $userID

@@ -921,7 +921,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		global $configArray;
 		global $library;
 		$recordId = $this->getUniqueID();
-		$baseUrl      = $library->catalogUrl ?? $configArray['Site']['url'];
+		$baseUrl  = empty($library->catalogUrl) ? $configArray['Site']['url'] : $_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl;
 		return $baseUrl . '/Archive/' . urlencode($recordId) . '/' . $this->getViewAction();
 	}
 
@@ -3114,7 +3114,7 @@ abstract class IslandoraDriver extends RecordInterface {
 					'sortIndex'   => 9,
 					'pid'         => $contributingLibraryPid,
 					'libraryName' => $libraryTitle,
-					'baseUrl'     => 'https://' . $contributingLibrary->catalogUrl,
+					'baseUrl'     => $_SERVER['REQUEST_SCHEME'] . '://' . $contributingLibrary->catalogUrl,
 				];
 			}else{
 				$this->contributingLibrary = null;
