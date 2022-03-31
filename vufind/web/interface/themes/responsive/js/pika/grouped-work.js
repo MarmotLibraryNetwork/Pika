@@ -600,6 +600,7 @@ Pika.GroupedWork = (function(){
 				$(".bookbag").removeClass("open");
 				$("#cartList").empty();
 				$(".bookbag").removeClass("bounce");
+				$(".bbLabel").removeClass("open");
 			}
 		},
 		openBookbag: function(trigger){
