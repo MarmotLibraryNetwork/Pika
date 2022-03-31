@@ -406,10 +406,12 @@
   transition-timing-function:ease-out;
 }
 .bookbag.open{
-  left:0;
+  left:3px;
+  width:15px;
+  top: 6px;
 }
 .bookbag.open::before{
-  content:"›";
+  content: "›";
   font-size: 60px;
   font-weight: lighter;
   float:left;
@@ -417,6 +419,22 @@
 }
 .bookbag.open .itemCheckCount{
   display:none;
+}
+
+.bbLabel{
+  float: left;
+  position: absolute;
+  left: 18px;
+  top: 60px;
+  display: inline-block;
+  white-space: nowrap;
+  -webkit-transform: rotate(90deg) translateY(-20%);
+  transform: rotate(90deg) translateY(-20%);
+  -webkit-transform-origin: 0 0;
+  transform-origin: 0 0;
+}
+.bbLabel.open{
+  display: none;
 }
 
 @keyframes bounce {
@@ -439,16 +457,18 @@
   background: @menu-bar-background-color;
   padding: 10px;
   color: white;
-  -webkit-transition: .75s ease-out;
-  -moz-transition: .75s ease-out;
-  -o-transition: .75s ease-out;
-  -ms-transition: .75s ease-out;
-  transition: .75s ease-out;
+  -webkit-transition: .15s ease-out;
+  -moz-transition: .15s ease-out;
+  -o-transition: .15s ease-out;
+  -ms-transition: .15s ease-out;
+  transition: .15s ease-out;
   width:350px;
 }
 .cart-container.cartIn{
   position:absolute;
-  right: -340px;
+  right: -325px;
+  padding: 1px 10px 10px 25px;
+
 }
 .cart{
   background:white;
