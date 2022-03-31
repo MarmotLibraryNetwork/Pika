@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0">
+{strip}
 	<channel>
 		<title>Results For {$lookfor|escape}</title>
-		{if $result.response.params.rows > $result.response.numFound}
-			<description>Displaying the top {$result.response.numFound} search results of {$result.response.params.rows} found.</description>
+		{if $result.responseHeader.params.rows}
+			<description>Displaying the first {$result.responseHeader.params.rows} search results of {$result.response.numFound} found.</description>
 		{else}
-			<description>Displaying {$result.response.numFound} search results.</description>
+			<description>Displaying {$result.response.docs|count} search results.</description>
 		{/if}
 		<link>{$searchUrl|escape}</link>
 
@@ -17,11 +18,14 @@
 					<author>{$doc.author_display|escape}</author>
 				{/if}
 				<guid isPermaLink="true">{$doc.recordUrl|escape}</guid>
-				{if $doc.publishDate}
-					<pubDate>01 Jan {$doc.publishDate.0} 00:00:00 GMT</pubDate>
+				{if $doc.rss_date}
+					<pubDate>{$doc.rss_date}</pubDate>
 				{/if}
+				{if $doc.rss_description}
 				<description>{$doc.rss_description|escape}</description>
+				{/if}
 			</item>
 		{/foreach}
 	</channel>
 </rss>
+{/strip}
