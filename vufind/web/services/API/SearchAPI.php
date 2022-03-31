@@ -64,6 +64,7 @@ class SearchAPI extends AJAXHandler {
 
 
 	function getIndexStatus(){
+		global $configArray;
 		$notes  = [];
 		$status = [];
 
@@ -201,7 +202,6 @@ class SearchAPI extends AJAXHandler {
 				}
 
 				// Sierra Extract //
-				global $configArray;
 				if ($configArray['Catalog']['ils'] == 'Sierra'){
 					$lastSierraExtractVariable = new Variable('last_sierra_extract_time');
 					if (!empty($lastSierraExtractVariable->N)){
