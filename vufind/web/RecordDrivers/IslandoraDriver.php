@@ -919,8 +919,10 @@ abstract class IslandoraDriver extends RecordInterface {
 
 	function getAbsoluteUrl(){
 		global $configArray;
+		global $library;
 		$recordId = $this->getUniqueID();
-		return $configArray['Site']['url'] . '/Archive/' . urlencode($recordId) . '/' . $this->getViewAction();
+		$baseUrl      = $library->catalogUrl ?? $configArray['Site']['url'];
+		return $baseUrl . '/Archive/' . urlencode($recordId) . '/' . $this->getViewAction();
 	}
 
 	public abstract function getViewAction();

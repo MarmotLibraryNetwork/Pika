@@ -83,7 +83,7 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 			//Do updates based on items
 			groupedWork.addPopularity(1);
 
-			groupedWork.addHoldings(1);
+//			groupedWork.addHoldings(1);
 
 			scopeItems(recordInfo, groupedWork, record);
 		}catch (Exception e){

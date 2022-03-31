@@ -825,9 +825,10 @@ class GroupedWorkDriver extends RecordInterface {
 			if (array_key_exists('last_indexed', $fields)){
 				$groupedWorkDetails['Last Indexed'] = date('Y-m-d H:i:sA', strtotime($fields['last_indexed']));
 			}
-			$novelistPrimaryISBN                         = $this->getNovelistPrimaryISBN();
-			$groupedWorkDetails['Novelist Primary ISBN'] = empty($novelistPrimaryISBN) ? 'none' : $novelistPrimaryISBN;
 			$interface->assign('groupedWorkDetails', $groupedWorkDetails);
+
+			$novelistPrimaryISBN = $this->getNovelistPrimaryISBN();
+			$interface->assign('novelistPrimaryISBN', empty($novelistPrimaryISBN) ? 'none' : $novelistPrimaryISBN);
 		}
 
 		return 'RecordDrivers/GroupedWork/staff-view.tpl';

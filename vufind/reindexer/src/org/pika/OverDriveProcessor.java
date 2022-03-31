@@ -163,19 +163,31 @@ public class OverDriveProcessor {
 											}
 											title = title.substring(0, titleLowerCase.lastIndexOf(subTitleLowerCase));
 											title = title.replaceAll("[\\s:]+$", ""); // remove ending white space and any ending colon characters. //TODO: remove trailing "--"
-										} else if (series != null && !series.isEmpty() && subTitleLowerCase.startsWith(series.toLowerCase() + " series, book")){
+										} else if (subTitleLowerCase.contains(" series, book")){
 											// If the overdrive subtitle is just a series statement, do not add to the index as the subtitle
-											// In these cases, the subtitle takes the form "{series title} Series, Book {Book Number}
+											// In these cases, the subtitle takes the form "{series title} Series, Book {Series Number}
 											subTitle = "";
 
-											// Remove Series statement from sort title
-											String seriesNameInSortTitle = series.replaceAll("&", "and");
-											if (sortTitle.contains(seriesNameInSortTitle)) {
-												sortTitle = sortTitle.replaceAll("\\d+$", "").replace( seriesNameInSortTitle + " Series Book", "");
-												if (sortTitle.contains("Series Book")) {
-													if (fullReindex) {
+											if (series == null || series.isEmpty()) {
+												sortTitle = title; // The sort title will likely just contain the series statement as well
+												//TODO: Remove beginning The, A, An
+												if (fullReindex) {
+													logger.warn("OverDrive title had series styled subtitle but is missing series info, subtitle '" + subTitle + "' for " + identifier);
+												}
+											} else {
+												// Remove Series statement from sort title
+												String seriesNameInSortTitle = series.replaceAll("&", "and").replaceAll("'", "");
+												//TODO: probably need a remove all punctuation regex
+												if (sortTitle.contains(seriesNameInSortTitle)) {
+													sortTitle = sortTitle.replaceAll(seriesNameInSortTitle + " Series Book (?:.*)$", "");
+													// The Series Number at the end of the series statement is usually digits but not always
+													// eg. Book One, Book 14.5, Book I
+													if (fullReindex && sortTitle.contains("Series Book")) {
 														logger.warn(identifier + " : Failed to remove series info from Overdrive sort title '" + sortTitle + "'");
 													}
+												} else {
+													sortTitle = title; // The sort title will likely just contain the series statement as well
+													//TODO: Remove beginning The, A, An
 												}
 											}
 										}
@@ -352,7 +364,7 @@ public class OverDriveProcessor {
 										}//End processing availability
 									}
 								}
-								groupedWork.addHoldings(totalCopiesOwned);
+//								groupedWork.addHoldings(totalCopiesOwned);
 							}
 						}
 					}

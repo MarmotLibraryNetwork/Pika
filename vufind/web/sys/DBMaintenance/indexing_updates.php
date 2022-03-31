@@ -539,6 +539,22 @@ function getIndexingUpdates(){
 					'BookWithVideoDisc', '10')"
 			],
 		],
+		'2022.02.0_add_book_with_accompanying_Audio_CD'     => [
+			'title'             => 'Add Books with Accompanying Audio CD',
+			'description'       => 'Add Books with Accompanying Audio CD',
+			'continueOnError'   => true,
+			'sql'               =>[
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
+					'BookWithAudioCD', 'book')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'BookWithAudioCD', 'Book with Audio CD')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'BookWithAudioCD', 'Books')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'BookWithAudioCD', '10')"
+			],
+		],
 	);
 }
 

@@ -122,15 +122,15 @@
 					<br><br>
 					{if $facetList || $showPublicationDate}
 						<div class="accordion">
-							<div {*id="facet-accordion"*} class="panel panel-default">
+							<div {*id="facet-accordion"*} class="panel panel-default{if !empty($searchFilters)} active{/if}">
 									<div class="panel-heading">
-										<div class="panel-title {if 1}collapsed{else}expanded{/if}">
+										<div class="panel-title">
 											<a href="#facetPanel" data-toggle="collapse" role="button">
 											{translate text='Optional Filters'}
 											</a>
 										</div>
 									</div>
-								<div id="facetPanel" class="panel-collapse collapse">
+								<div id="facetPanel" class="panel-collapse collapse{if !empty($searchFilters)} in{/if}">
 									<div class="panel-body">
 
 									<div class="alert alert-info">

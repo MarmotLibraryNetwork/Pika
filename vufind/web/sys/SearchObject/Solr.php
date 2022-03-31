@@ -1949,22 +1949,19 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * Turn our results into an RSS feed
 	 *
 	 * @access  public
-	 * @param array|null $result Existing result set (null to do new search)
 	 * @return  string           XML document
 	 */
-	public function buildRSS($result = null){
-		global $configArray;
+	public function buildRSS(){
 		// XML HTTP header
 		header('Content-type: text/xml', true);
 
-		// First, get the search results if none were provided
-		// (we'll go for 50 at a time)
-		if (is_null($result)){
-			$this->limit = 50;
-			$result      = $this->processSearch(false, false);
-		}
+		$this->limit  = 50;
+		self::$fields = 'id,recordtype,title_display,author_display,display_description,date_added';  // format_category_' . $solrScope is added automatically
+		$result       = $this->processSearch(false, false);
 
-		$baseUrl = $configArray['Site']['url'];
+		global $library;
+		global $configArray;
+		$baseUrl = $library->catalogUrl ?? $configArray['Site']['url'];
 
 		foreach ($result['response']['docs'] as &$currentDoc){
 			//Since the base URL can be different depending on the record type, add the url to the response
@@ -1976,15 +1973,16 @@ class SearchObject_Solr extends SearchObject_Base {
 					break;
 				case 'grouped_work' :
 				default :
-					$id                      = $currentDoc['id'];
+					$id = $currentDoc['id'];
 					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 					$groupedWorkDriver = new GroupedWorkDriver($currentDoc);
 					if ($groupedWorkDriver->isValid){
-						$image                         = $groupedWorkDriver->getBookcoverUrl('medium');
+						$image                         = $groupedWorkDriver->getBookcoverUrl('medium', true);
 						$description                   = "<img src='$image'/> " . $groupedWorkDriver->getDescriptionFast();
 						$currentDoc['rss_description'] = $description;
+						$currentDoc['rss_date']        = date('r', strtotime($currentDoc['date_added']));
 						$currentDoc['recordUrl']       = $groupedWorkDriver->getAbsoluteUrl();
-					} else{
+					}else{
 						$currentDoc['recordUrl'] = $baseUrl . '/GroupedWork/' . $id;
 					}
 			}
@@ -1993,10 +1991,10 @@ class SearchObject_Solr extends SearchObject_Base {
 
 		global $interface;
 		$lookFor = $this->displayQuery();
-		if (count($this->filterList) > 0) {
+		if (count($this->filterList) > 0){
 			// TODO : better display of filters
 			$interface->assign('lookfor', $lookFor . " (" . translate('with filters') . ")");
-		} else {
+		}else{
 			$interface->assign('lookfor', $lookFor);
 		}
 		// The full url to recreate this search

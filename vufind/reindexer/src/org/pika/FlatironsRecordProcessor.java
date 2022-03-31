@@ -179,24 +179,6 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 		return "eContent";
 	}
 
-//	protected boolean isBibSuppressed(Record record) {
-//		if (super.isBibSuppressed(record)) {
-//			return true;
-//		}
-//		//TODO: this should already be in effect at the grouping level. Better handled for overdrive. Only the hoopla record gets suppressed here.
-//		else if (doAutomaticEcontentSuppression) {
-//			IsRecordEContent theBib     = new IsRecordEContent(record);
-//			boolean          isEContent = theBib.isEContent();
-//			if (isEContent) {
-//				String url = theBib.getUrl();
-//				//Suppress if the url is an overdrive or hoopla url
-//				if (url != null)
-//					return url.contains("lib.overdrive") || url.contains("hoopla");
-//			}
-//		}
-//		return false;
-//	}
-
 	protected void loadEContentFormatInformation(Record record, RecordInfo econtentRecord, ItemInfo econtentItem) {
 		String format    = "online_resource";
 		String bibFormat = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);

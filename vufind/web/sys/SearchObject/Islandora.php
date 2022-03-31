@@ -1240,49 +1240,43 @@ class SearchObject_Islandora extends SearchObject_Base {
 	 * Turn our results into an RSS feed
 	 *
 	 * @access  public
-	 * @public  array      $result      Existing result set (null to do new search)
 	 * @return  string                  XML document
 	 */
-	public function buildRSS($result = null)
-	{
-		global $configArray;
+	public function buildRSS(){
 		// XML HTTP header
 		header('Content-type: text/xml', true);
 
-		// First, get the search results if none were provided
-		// (we'll go for 50 at a time)
-		if (is_null($result)) {
-			$this->limit = 50;
-			$result      = $this->processSearch(false, false);
-		}
-
-		for ($i = 0; $i < count($result['response']['docs']); $i++) {
-			$current = & $this->indexResult['response']['docs'][$i];
-
-			$record = RecordDriverFactory::initRecordDriver($current);
-			if (!PEAR_Singleton::isError($record)) {
-				$result['response']['docs'][$i]['recordUrl']       = $record->getLinkUrl();
-				$result['response']['docs'][$i]['title_display']   = $record->getTitle();
-				$image                                             = $record->getBookcoverUrl('medium');
-				$description                                       = "<img src='$image'/> " . $record->getDescription();
-				$result['response']['docs'][$i]['rss_description'] = $description;
-			} else {
-				$html[] = "Unable to find record";
+		$this->limit = 50;
+		$result      = $this->processSearch(false, false);
+		foreach ($result['response']['docs'] as &$currentDoc){
+			$record = RecordDriverFactory::initRecordDriver($currentDoc);
+			if (!PEAR_Singleton::isError($record)){
+				$currentDoc['recordUrl']       = $record->getAbsoluteUrl();
+				$currentDoc['title_display']   = $record->getTitle();
+				$image                         = $record->getBookcoverUrl('medium');
+				$description                   = "<img src='$image'/> " . $record->getDescription();
+				$currentDoc['rss_description'] = $description;
+				$currentDoc['rss_date']        = date('r', strtotime($currentDoc['fgs_createdDate_dt']));
+			}else{
+				unset($currentDoc);
 			}
 		}
 
 		global $interface;
+		global $library;
+		global $configArray;
+		$baseUrl = $library->catalogUrl ?? $configArray['Site']['url'];
 
 		// On-screen display value for our search
 		$lookfor = $this->displayQuery();
-		if (count($this->filterList) > 0) {
+		if (count($this->filterList) > 0){
 			// TODO : better display of filters
 			$interface->assign('lookfor', $lookfor . " (" . translate('with filters') . ")");
-		} else {
+		}else{
 			$interface->assign('lookfor', $lookfor);
 		}
 		// The full url to recreate this search
-		$interface->assign('searchUrl', $configArray['Site']['url']. $this->renderSearchUrl());
+		$interface->assign('searchUrl', $baseUrl . $this->renderSearchUrl());
 
 		$interface->assign('result', $result);
 		return $interface->fetch('Search/rss.tpl');

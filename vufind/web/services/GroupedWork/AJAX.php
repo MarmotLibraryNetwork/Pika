@@ -143,129 +143,131 @@ class GroupedWork_AJAX extends AJAXHandler {
 			$groupedWork->permanent_id = $id;
 			if ($groupedWork->find(true)){
 				if ($groupedWork->date_updated == null){
-					return array('success' => true, 'message' => 'This title was already marked to be indexed again next time the index is run.');
+					return ['success' => true, 'message' => 'This title was already marked to be indexed again next time the index is run.'];
 				}
 				$numRows = $groupedWork->forceReindex();
 				if ($numRows == 1){
-					return array('success' => true, 'message' => 'This title will be indexed again next time the index is run.');
+					return ['success' => true, 'message' => 'This title will be indexed again next time the index is run.'];
 				}else{
-					return array('success' => false, 'message' => 'Unable to mark the title for indexing. Could not update the title.');
+					return ['success' => false, 'message' => 'Unable to mark the title for indexing. Could not update the title.'];
 				}
 			}else{
-				return array('success' => false, 'message' => 'Unable to mark the title for indexing. Could not find the title.');
+				return ['success' => false, 'message' => 'Unable to mark the title for indexing. Could not find the title.'];
 			}
 		}else{
-			return array('success' => false, 'message' => 'Invalid Grouped Work Id');
+			return ['success' => false, 'message' => 'Invalid Grouped Work Id'];
 		}
 	}
 
 	function getEnrichmentInfo(){
-		global $configArray;
-		global $interface;
-		global $memoryWatcher;
-
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$id           = $_REQUEST['id'];
-		$recordDriver = new GroupedWorkDriver($id);
-
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		$id               = $_REQUEST['id'];
 		$enrichmentResult = [];
-		$enrichmentData   = $recordDriver->loadEnrichment();
-		$memoryWatcher->logMemory('Loaded Enrichment information from Novelist');
+		if (GroupedWork::validGroupedWorkId($id)){
+			global $configArray;
+			global $interface;
+			global $memoryWatcher;
 
-		//Process series data
-		$titles = [];
-		if (empty($enrichmentData['novelist']->seriesTitles)){
-			$enrichmentResult['seriesInfo'] = ['titles' => $titles, 'currentIndex' => 0];
-		}else{
-			foreach ($enrichmentData['novelist']->seriesTitles as $key => $record){
-				$titles[] = $this->getScrollerTitle($record, $key, 'Series');
-			}
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$recordDriver   = new GroupedWorkDriver($id);
+			$enrichmentData = $recordDriver->loadEnrichment();
+			$memoryWatcher->logMemory('Loaded Enrichment information from Novelist');
 
-			$seriesInfo                     = ['titles' => $titles, 'currentIndex' => $enrichmentData['novelist']->seriesDefaultIndex];
-			$enrichmentResult['seriesInfo'] = $seriesInfo;
-		}
-		$memoryWatcher->logMemory('Loaded Series information');
-
-		//Process other data from novelist
-		if (!empty($enrichmentData['novelist']->similarTitles)){
-			$interface->assign('similarTitles', $enrichmentData['novelist']->similarTitles);
-			if ($configArray['Catalog']['showExploreMoreForFullRecords']){
-				$enrichmentResult['similarTitlesNovelist'] = $interface->fetch('GroupedWork/similarTitlesNovelistSidebar.tpl');
+			//Process series data
+			$titles = [];
+			if (empty($enrichmentData['novelist']->seriesTitles)){
+				$enrichmentResult['seriesInfo'] = ['titles' => $titles, 'currentIndex' => 0];
 			}else{
-				$enrichmentResult['similarTitlesNovelist'] = $interface->fetch('GroupedWork/similarTitlesNovelist.tpl');
+				foreach ($enrichmentData['novelist']->seriesTitles as $key => $record){
+					$titles[] = $this->getScrollerTitle($record, $key, 'Series');
+				}
+
+				$seriesInfo                     = ['titles' => $titles, 'currentIndex' => $enrichmentData['novelist']->seriesDefaultIndex];
+				$enrichmentResult['seriesInfo'] = $seriesInfo;
 			}
-		}
-		$memoryWatcher->logMemory('Loaded Similar titles from Novelist');
+			$memoryWatcher->logMemory('Loaded Series information');
 
-		if (!empty($enrichmentData['novelist']->authors)){
-			$interface->assign('similarAuthors', $enrichmentData['novelist']->authors);
-			if ($configArray['Catalog']['showExploreMoreForFullRecords']){
-				$enrichmentResult['similarAuthorsNovelist'] = $interface->fetch('GroupedWork/similarAuthorsNovelistSidebar.tpl');
-			}else{
-				$enrichmentResult['similarAuthorsNovelist'] = $interface->fetch('GroupedWork/similarAuthorsNovelist.tpl');
+			//Process other data from novelist
+			if (!empty($enrichmentData['novelist']->similarTitles)){
+				$interface->assign('similarTitles', $enrichmentData['novelist']->similarTitles);
+				if ($configArray['Catalog']['showExploreMoreForFullRecords']){
+					$enrichmentResult['similarTitlesNovelist'] = $interface->fetch('GroupedWork/similarTitlesNovelistSidebar.tpl');
+				}else{
+					$enrichmentResult['similarTitlesNovelist'] = $interface->fetch('GroupedWork/similarTitlesNovelist.tpl');
+				}
 			}
-		}
-		$memoryWatcher->logMemory('Loaded Similar authors from Novelist');
+			$memoryWatcher->logMemory('Loaded Similar titles from Novelist');
 
-		if (isset($enrichmentData['novelist']) && isset($enrichmentData['novelist']->similarSeries)){
-			$interface->assign('similarSeries', $enrichmentData['novelist']->similarSeries);
-			if ($configArray['Catalog']['showExploreMoreForFullRecords']){
-				$enrichmentResult['similarSeriesNovelist'] = $interface->fetch('GroupedWork/similarSeriesNovelistSidebar.tpl');
-			}else{
-				$enrichmentResult['similarSeriesNovelist'] = $interface->fetch('GroupedWork/similarSeriesNovelist.tpl');
+			if (!empty($enrichmentData['novelist']->authors)){
+				$interface->assign('similarAuthors', $enrichmentData['novelist']->authors);
+				if ($configArray['Catalog']['showExploreMoreForFullRecords']){
+					$enrichmentResult['similarAuthorsNovelist'] = $interface->fetch('GroupedWork/similarAuthorsNovelistSidebar.tpl');
+				}else{
+					$enrichmentResult['similarAuthorsNovelist'] = $interface->fetch('GroupedWork/similarAuthorsNovelist.tpl');
+				}
 			}
-		}
-		$memoryWatcher->logMemory('Loaded Similar series from Novelist');
+			$memoryWatcher->logMemory('Loaded Similar authors from Novelist');
 
-		if (!empty($enrichmentData['novelist']->primaryISBN)){
-			// Populate primary novelist isbn in grouped work staff view (This enrichment call may be the first time it is fetched)
-			$enrichmentResult['novelistPrimaryISBN'] = $enrichmentData['novelist']->primaryISBN;
-		}
-
-		//Load Similar titles (from Solr)
-		$class = $configArray['Index']['engine'];
-		$url   = $configArray['Index']['url'];
-		/** @var Solr $db */
-		$db      = new $class($url);
-		$similar = $db->getMoreLikeThis2($id);
-		$memoryWatcher->logMemory('Loaded More Like This data from Solr');
-		if (is_array($similar) && !empty($similar['response']['docs'])){
-			$similarTitles = [];
-			foreach ($similar['response']['docs'] as $key => $similarTitle){
-				$similarTitleDriver = new GroupedWorkDriver($similarTitle);
-				$record = [
-					'id'             => $similarTitleDriver->getPermanentId(),
-					'mediumCover'    => $similarTitleDriver->getBookcoverUrl('medium'),
-					'title'          => $similarTitleDriver->getTitle(),
-					'author'         => $similarTitleDriver->getPrimaryAuthor(),
-					'fullRecordLink' => $similarTitleDriver->getLinkUrl()
-				];
-
-				$similarTitles[]    = $this->getScrollerTitle($record, $key, 'MoreLikeThis');
+			if (isset($enrichmentData['novelist']) && isset($enrichmentData['novelist']->similarSeries)){
+				$interface->assign('similarSeries', $enrichmentData['novelist']->similarSeries);
+				if ($configArray['Catalog']['showExploreMoreForFullRecords']){
+					$enrichmentResult['similarSeriesNovelist'] = $interface->fetch('GroupedWork/similarSeriesNovelistSidebar.tpl');
+				}else{
+					$enrichmentResult['similarSeriesNovelist'] = $interface->fetch('GroupedWork/similarSeriesNovelist.tpl');
+				}
 			}
-			$similarTitlesInfo                 = ['titles' => $similarTitles, 'currentIndex' => 0];
-			$enrichmentResult['similarTitles'] = $similarTitlesInfo;
-		}
-		$memoryWatcher->logMemory('Loaded More Like This scroller data');
+			$memoryWatcher->logMemory('Loaded Similar series from Novelist');
 
-		//Load go deeper options
-		//TODO: Additional go deeper options
-		if (isset($library) && $library->showGoDeeper == 0){
-			$enrichmentResult['showGoDeeper'] = false;
-		}else{
-			require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
-			$goDeeperOptions = GoDeeperData::getGoDeeperOptions($recordDriver->getCleanISBN(), $recordDriver->getCleanUPC());
-			if (count($goDeeperOptions['options']) == 0){
+			if (!empty($enrichmentData['novelist']->primaryISBN)){
+				// Populate primary novelist isbn in grouped work staff view (This enrichment call may be the first time it is fetched)
+				$enrichmentResult['novelistPrimaryISBN'] = $enrichmentData['novelist']->primaryISBN;
+			}
+
+			//Load Similar titles (from Solr)
+			$class = $configArray['Index']['engine'];
+			$url   = $configArray['Index']['url'];
+			/** @var Solr $db */
+			$db      = new $class($url);
+			$similar = $db->getMoreLikeThis2($id);
+			$memoryWatcher->logMemory('Loaded More Like This data from Solr');
+			if (is_array($similar) && !empty($similar['response']['docs'])){
+				$similarTitles = [];
+				foreach ($similar['response']['docs'] as $key => $similarTitle){
+					$similarTitleDriver = new GroupedWorkDriver($similarTitle);
+					$record             = [
+						'id'             => $similarTitleDriver->getPermanentId(),
+						'mediumCover'    => $similarTitleDriver->getBookcoverUrl('medium'),
+						'title'          => $similarTitleDriver->getTitle(),
+						'author'         => $similarTitleDriver->getPrimaryAuthor(),
+						'fullRecordLink' => $similarTitleDriver->getLinkUrl()
+					];
+
+					$similarTitles[] = $this->getScrollerTitle($record, $key, 'MoreLikeThis');
+				}
+				$similarTitlesInfo                 = ['titles' => $similarTitles, 'currentIndex' => 0];
+				$enrichmentResult['similarTitles'] = $similarTitlesInfo;
+			}
+			$memoryWatcher->logMemory('Loaded More Like This scroller data');
+
+			//Load go deeper options
+			//TODO: Additional go deeper options
+			if (isset($library) && $library->showGoDeeper == 0){
 				$enrichmentResult['showGoDeeper'] = false;
 			}else{
-				$enrichmentResult['showGoDeeper']    = true;
-				$enrichmentResult['goDeeperOptions'] = $goDeeperOptions['options'];
+				require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
+				$goDeeperOptions = GoDeeperData::getGoDeeperOptions($recordDriver->getCleanISBN(), $recordDriver->getCleanUPC());
+				if (count($goDeeperOptions['options']) == 0){
+					$enrichmentResult['showGoDeeper'] = false;
+				}else{
+					$enrichmentResult['showGoDeeper']    = true;
+					$enrichmentResult['goDeeperOptions'] = $goDeeperOptions['options'];
+				}
 			}
-		}
-		$memoryWatcher->logMemory('Loaded additional go deeper data');
+			$memoryWatcher->logMemory('Loaded additional go deeper data');
 
-		//Related data
-		$enrichmentResult['relatedContent'] = $interface->fetch('Record/relatedContent.tpl');
+			//Related data
+			$enrichmentResult['relatedContent'] = $interface->fetch('Record/relatedContent.tpl');
+		}
 
 		return $enrichmentResult;
 	}
@@ -341,13 +343,15 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$titles = array();
 		foreach ($ids as $id){
 			$recordDriver = new GroupedWorkDriver($id);
-			$titles[] = array(
+			$titles[] = [
 				'title' => $recordDriver->getTitleShort(),
 				'id'  => $id
-			);
+			];
 		}
-		return array( 'success' => true,
-									'titles' => $titles);
+		return [
+			'success' => true,
+			'titles'  => $titles
+		];
 	}
 
 	function getWorkInfo(){
@@ -438,9 +442,9 @@ class GroupedWork_AJAX extends AJAXHandler {
 			// Reset any cached suggestion browse category for the user
 			$this->clearMySuggestionsBrowseCategoryCache();
 
-			return array('rating' => $rating);
+			return ['rating' => $rating];
 		}else{
-			return array('error' => 'Unable to save your rating.');
+			return ['error' => 'Unable to save your rating.'];
 		}
 	}
 
@@ -448,7 +452,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		// Reset any cached suggestion browse category for the user
 		/** @var Memcache $memCache */
 		global $memCache, $solrScope;
-		foreach (array('covers', 'grid') as $browseMode){ // (Browse modes are set in class Browse_AJAX)
+		foreach (['covers', 'grid'] as $browseMode){ // (Browse modes are set in class Browse_AJAX)
 			$key = 'browse_category_system_recommended_for_you_' . UserAccount::getActiveUserId() . '_' . $solrScope . '_' . $browseMode;
 			$memCache->delete($key);
 		}
@@ -456,45 +460,64 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function getReviewInfo(){
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$id           = $_REQUEST['id'];
-		$recordDriver = new GroupedWorkDriver($id);
-		$isbn         = $recordDriver->getCleanISBN();
+		$results = [];
+		$id      = $_REQUEST['id'];
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		if (GroupedWork::validGroupedWorkId($id)){
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$id           = $_REQUEST['id'];
+			$recordDriver = new GroupedWorkDriver($id);
 
-		//Load external (syndicated reviews)
-		require_once ROOT_DIR . '/sys/ExternalEnrichment/Reviews.php';
-		$externalReviews = new ExternalReviews($isbn);
-		$reviews         = $externalReviews->fetch();
-		global $interface;
-		$interface->assign('id', $id);
-		$numSyndicatedReviews = 0;
-		foreach ($reviews as $providerReviews){
-			$numSyndicatedReviews += count($providerReviews);
+			global $interface;
+			$interface->assign('id', $id);
+
+			//Load external (syndicated reviews)
+			require_once ROOT_DIR . '/sys/ExternalEnrichment/Reviews.php';
+
+			// Try the Novelist Primary ISBN first
+			$isbn         = $recordDriver->getNovelistPrimaryISBN();
+			if (!empty($isbn)){
+				$externalReviews = new ExternalReviews($isbn);
+				$reviews         = $externalReviews->fetch();
+			}
+			if (empty($reviews)){
+				// Now Try the primary ISBN
+				$isbn            = $recordDriver->getPrimaryIsbn();
+				$externalReviews = new ExternalReviews($isbn);
+				$reviews         = $externalReviews->fetch();
+			}
+			$numSyndicatedReviews = 0;
+			foreach ($reviews as $providerReviews){
+				$numSyndicatedReviews += count($providerReviews);
+			}
+			$interface->assign('syndicatedReviews', $reviews);
+
+			//Load librarian reviews
+			require_once ROOT_DIR . '/sys/LocalEnrichment/LibrarianReview.php';
+			$allLibrarianReviews                      = [];
+			$librarianReviews                         = new LibrarianReview();
+			$librarianReviews->groupedWorkPermanentId = $id;
+			if ($librarianReviews->find()){
+				while ($librarianReviews->fetch()){
+					$allLibrarianReviews[] = clone($librarianReviews);
+				}
+				$interface->assign('librarianReviews', $allLibrarianReviews);
+			}
+
+			$userReviews = $recordDriver->getUserReviews();
+			$interface->assign('userReviews', $userReviews);
+
+			$customerReviewsHtml = $interface->fetch('GroupedWork/view-user-reviews.tpl');
+			$results             = [
+				'isbnForReviews'        => $isbn,
+				'numSyndicatedReviews'  => $numSyndicatedReviews,
+				'syndicatedReviewsHtml' => $interface->fetch('GroupedWork/view-syndicated-reviews.tpl'),
+				'numLibrarianReviews'   => count($allLibrarianReviews),
+				'librarianReviewsHtml'  => $interface->fetch('GroupedWork/view-librarian-reviews.tpl'),
+				'numCustomerReviews'    => strpos($customerReviewsHtml, 'No borrower reviews currently exist') ? 0 : count($userReviews),  //sometimes there are ratings but no reviews to actually display
+				'customerReviewsHtml'   => $customerReviewsHtml,
+			];
 		}
-		$interface->assign('syndicatedReviews', $reviews);
-
-		//Load librarian reviews
-		require_once ROOT_DIR . '/sys/LocalEnrichment/LibrarianReview.php';
-		$librarianReviews           = new LibrarianReview();
-		$librarianReviews->groupedWorkPermanentId = $id;
-		$librarianReviews->find();
-		$allLibrarianReviews = array();
-		while ($librarianReviews->fetch()){
-			$allLibrarianReviews[] = clone($librarianReviews);
-		}
-		$interface->assign('librarianReviews', $allLibrarianReviews);
-
-		$userReviews = $recordDriver->getUserReviews();
-		$interface->assign('userReviews', $userReviews);
-
-		$results = array(
-			'numSyndicatedReviews'  => $numSyndicatedReviews,
-			'syndicatedReviewsHtml' => $interface->fetch('GroupedWork/view-syndicated-reviews.tpl'),
-			'numLibrarianReviews'   => count($allLibrarianReviews),
-			'librarianReviewsHtml'  => $interface->fetch('GroupedWork/view-librarian-reviews.tpl'),
-			'numCustomerReviews'    => count($userReviews),
-			'customerReviewsHtml'   => $interface->fetch('GroupedWork/view-user-reviews.tpl'),
-		);
 		return $results;
 	}
 
@@ -505,29 +528,29 @@ class GroupedWork_AJAX extends AJAXHandler {
 				global $interface;
 				$id = $_REQUEST['id'];
 				if (!empty($id)){
-					$results = array(
+					$results = [
 						'prompt'       => true,
 						'title'        => 'Add a Review',
 						'modalBody'    => $interface->fetch("GroupedWork/prompt-for-review-form.tpl"),
 						'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.GroupedWork.showReviewForm(this, \"{$id}\");'>Submit A Review</button>",
-					);
+					];
 				}else{
-					$results = array(
+					$results = [
 						'error'   => true,
 						'message' => 'Invalid ID.',
-					);
+					];
 				}
 			}else{
 				// Option already set to don't prompt, so let's don't prompt already.
-				$results = array(
+				$results = [
 					'prompt' => false,
-				);
+				];
 			}
 		}else{
-			$results = array(
+			$results = [
 				'error'   => true,
 				'message' => 'You are not logged in.',
-			);
+			];
 		}
 		return $results;
 	}

@@ -227,24 +227,7 @@ class Search_Results extends Union_Results {
 				$timer->logTime('no hits processing');
 			}
 
-		}
-		// Exactly One Result for an id search //
-		elseif ($searchObject->getResultTotal() == 1 && (strpos($displayQuery, 'id:') === 0 || $searchObject->getSearchType() == 'id')){
-			//Redirect to the home page for the record
-			$recordSet = $searchObject->getResultRecordSet();
-			$record = reset($recordSet);
-			$_SESSION['searchId'] = $searchObject->getSearchId();
-			if ($record['recordtype'] == 'list'){
-				$listId = substr($record['id'], 4);
-				header("Location: /MyAccount/MyList/{$listId}");
-				exit();
-			}else{
-				header("Location: /GroupedWork/{$record['id']}/Home");
-				exit();
-			}
-
-		}
-		else {
+		}	else {
 			$timer->logTime('save search');
 
 			// Assign interface variables

@@ -92,6 +92,11 @@ class PersonRecord extends IndexRecord {
 		return $this->getName();
 	}
 
+	function getDateAdded(){
+		$person = $this->getPerson();
+		return $person->dateAdded;
+	}
+
 	function getName(){
 		$name = '';
 		if (isset($this->fields['firstName'])){

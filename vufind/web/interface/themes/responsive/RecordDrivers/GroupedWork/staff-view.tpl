@@ -34,17 +34,21 @@
 	{foreach from=$groupedWorkDetails key='field' item='value'}
 	<tr>
 		<th>{$field|escape}</th>
-		<td>
-				{if $field=='Novelist Primary ISBN'}
-						<span id="novelistPrimaryISBN">{$value}</span>
-				{else}
-            {$value}
-				{/if}
-		</td>
+		<td>{$value}</td>
 	</tr>
 	{/foreach}
 </table>
-
+<div class="enrichmentInfo"{if $novelistPrimaryISBN} style="display: none"{/if}>
+	<h4>Enrichment Information</h4>
+	<div class="row">
+		<div class="col-xs-6 col-sm-3"><strong>Novelist Primary ISBN</strong></div>
+		<div id="novelistPrimaryISBN" class="col-xs-6 col-sm-9">{$novelistPrimaryISBN}</div>
+	</div>
+	<div class="row">
+		<div class="col-xs-6 col-sm-3"><strong>Review ISBN</strong></div>
+		<div id="isbnForReviews" class="col-xs-6 col-sm-9"></div>
+	</div>
+</div>
 <h4>Solr Fields</h4>
 	{foreach from=$details key='field' item='values'}
 			<div class="row" style="border: solid #ddd; border-width: 1px 0 0 0">
