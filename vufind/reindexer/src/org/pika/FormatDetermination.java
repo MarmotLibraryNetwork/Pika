@@ -596,9 +596,19 @@ public class FormatDetermination {
 						}
 					}else if(accompanying.contains("dvd"))
 					{
+						String mainPhysical = null;
+						if(physicalDescription.getSubfield('a')!=null){
+							mainPhysical = physicalDescription.getSubfield('a').getData().toLowerCase();
+						}
 						if(printFormats.contains("Book")){
 							printFormats.clear();
 							printFormats.add("BookWithDVD");
+						}else if(mainPhysical!=null){
+							if (mainPhysical.contains("pages")){
+								printFormats.clear();
+								printFormats.add("BookWithDVD");
+								break;
+							}
 						}
 						printFormats.add("DVD");
 					}else if(accompanying.contains("book") && !accompanying.contains("booklet") && !accompanying.contains("ebook") && !accompanying.contains("e-book")){
