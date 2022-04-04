@@ -2,6 +2,7 @@
 <div class="bookbag-container" id="bookbag-container" style="display:none;">
 	<div class="bookbag"></div>
 	<div class="cart-container cartIn">
+		<h4 class="bbLabel">Bookbag</h4>
 		<h3>Bookbag</h3>
 		<div class="cart">
 			<ul class="list-striped list-unstyled" id="cartList"></ul>

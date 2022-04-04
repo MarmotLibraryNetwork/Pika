@@ -602,6 +602,7 @@ Pika.GroupedWork = (function(){
 
 			$(".cart-container").toggleClass("cartIn");
 			$(".bookbag").toggleClass("open");
+			$(".bbLabel").toggleClass("open");
 			
 		},
 

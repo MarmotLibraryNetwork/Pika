@@ -9799,7 +9799,9 @@ a.browse-thumbnail-sorted.active {
   transition-timing-function: ease-out;
 }
 .bookbag.open {
-  left: 0;
+  left: 3px;
+  width: 15px;
+  top: 6px;
 }
 .bookbag.open::before {
   content: "›";
@@ -9809,6 +9811,19 @@ a.browse-thumbnail-sorted.active {
   line-height: 15px;
 }
 .bookbag.open .itemCheckCount {
+  display: none;
+}
+.bbLabel {
+  float: left;
+  position: absolute;
+  left: 18px;
+  top: 60px;
+  display: inline-block;
+  white-space: nowrap;
+  transform: rotate(90deg) translateY(-20%);
+  transform-origin: 0 0;
+}
+.bbLabel.open {
   display: none;
 }
 @-webkit-keyframes bounce {
@@ -9845,12 +9860,13 @@ a.browse-thumbnail-sorted.active {
   background: #22702A;
   padding: 10px;
   color: white;
-  transition: 0.75s ease-out;
+  transition: 0.15s ease-out;
   width: 350px;
 }
 .cart-container.cartIn {
   position: absolute;
-  right: -340px;
+  right: -325px;
+  padding: 1px 10px 10px 25px;
 }
 .cart {
   background: white;
