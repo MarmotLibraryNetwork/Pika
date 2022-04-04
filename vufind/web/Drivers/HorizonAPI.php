@@ -182,7 +182,7 @@ abstract class HorizonAPI extends Horizon{
 				// use a temp user to check if password update is needed
 				$tmpUser = new User();
 				$tmpUser->ilsUserId = $userID;
-				if($user->find(true)) {
+				if($tmpUser->find(true)) {
 					$checkPassword = $tmpUser->getPassword();
 					if($checkPassword != $password) {
 						$tmpUser->updatePassword($password);
