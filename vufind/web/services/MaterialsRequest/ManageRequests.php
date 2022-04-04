@@ -26,8 +26,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 	/**
 	 *
 	 */
-	function launch()
-	{
+	function launch(){
 		global $configArray;
 		global $interface;
 
@@ -43,9 +42,9 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		}
 		$materialsRequestStatus->find();
 
-		$allStatuses           = array();
-		$availableStatuses     = array();
-		$defaultStatusesToShow = array();
+		$allStatuses           = [];
+		$availableStatuses     = [];
+		$defaultStatusesToShow = [];
 		while ($materialsRequestStatus->fetch()){
 			$availableStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
 			$allStatuses[$materialsRequestStatus->id]       = clone $materialsRequestStatus;
@@ -65,7 +64,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		}
 		$interface->assign('statusFilter', $statusesToShow);
 
-		$assigneesToShow = array();
+		$assigneesToShow = [];
 		if (isset($_REQUEST['assigneesFilter'])) {
 			$assigneesToShow = $_REQUEST['assigneesFilter'];
 //			$_SESSION['materialsRequestAssigneesFilter'] = $assigneesToShow;
@@ -242,8 +241,8 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			}
 
 			if (isset($_REQUEST['idsToShow']) && strlen($_REQUEST['idsToShow']) > 0){
-				$idsToShow = $_REQUEST['idsToShow'];
-				$ids = explode(',', $idsToShow);
+				$idsToShow    = $_REQUEST['idsToShow'];
+				$ids          = explode(',', $idsToShow);
 				$formattedIds = '';
 				foreach ($ids as $id){
 					if (strlen($formattedIds) > 0) $formattedIds .= ',';
@@ -253,8 +252,18 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$interface->assign('idsToShow', $idsToShow);
 			}
 
-			if ($materialsRequests->find()) {
-				$allRequests = $materialsRequests->fetchAll();
+			$numRequests = $materialsRequests->find();
+			if (!empty($numRequests)) {
+				if ($numRequests < 5000){
+					$allRequests = $materialsRequests->fetchAll();
+				}else {
+					// Some filter settings can cause use to retrieve too many material requests.
+					// So we've set the limit at 5,000 for now, though that seems like quite a large number also.
+					$interface->assign([
+						'error' => 'Sorry, the filter criteria return too many results. Please select additional filter options.'
+						,'filterError' => true
+					]);
+				}
 			}
 
 			// $assignees used for both set assignee dropdown and filter by assigned To checkboxes
@@ -272,7 +281,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 
 					$materialsRequestManagers->joinAdd($userRole);
 					$materialsRequestManagers->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
-					$assignees = array();
+					$assignees = [];
 					if ($materialsRequestManagers->find()) {
 						$assignees = $materialsRequestManagers->fetchAll('id', 'displayName');
 					}
@@ -280,7 +289,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				}
 			}
 		}else{
-			$interface->assign('error', "You must be logged in to manage requests.");
+			$interface->assign('error', 'You must be logged in to manage requests.');
 		}
 		$interface->assign('allRequests', $allRequests);
 
@@ -295,9 +304,9 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		$interface->assign('columnsToDisplay', $columnsToDisplay);
 
 		// Find Date Columns for Javascript Table sorter
-		$dateColumns = array();
+		$dateColumns = [];
 		foreach (array_keys($columnsToDisplay) as $index => $column) {
-			if (in_array($column, array('dateCreated', 'dateUpdated'))) {
+			if (in_array($column, ['dateCreated', 'dateUpdated'])) {
 				$dateColumns[] = $index;
 			}
 		}
@@ -311,19 +320,19 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 	}
 
 	function defaultColumnsToShow() {
-		return array(
-			'id'           => 'Id',
-			'title'        => 'Title',
-			'author'       => 'Author',
-			'format'       => 'Format',
-			'createdBy'    => 'Patron',
+		return [
+			'id'                     => 'Id',
+			'title'                  => 'Title',
+			'author'                 => 'Author',
+			'format'                 => 'Format',
+			'createdBy'              => 'Patron',
 			'placeHoldWhenAvailable' => 'Place a Hold',
-			'illItem'      => 'Inter-Library Loan',
-			'assignedTo'   => 'Assigned To',
-			'status'       => 'Status',
-			'dateCreated'  => 'Created On',
-			'dateUpdated'  => 'Updated On',
-		);
+			'illItem'                => 'Inter-Library Loan',
+			'assignedTo'             => 'Assigned To',
+			'status'                 => 'Status',
+			'dateCreated'            => 'Created On',
+			'dateUpdated'            => 'Updated On',
+		];
 	}
 
 	function exportToExcel($selectedRequestIds, $allRequests){

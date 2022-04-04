@@ -280,7 +280,9 @@ var Pika = (function(){
 					collapsible.toggleClass('fieldset-collapsed')
 				});
 				// Init.
-				collapsible.addClass('fieldset-collapsed');
+				if (!collapsible.hasClass('fieldset-init-open')){
+					collapsible.addClass('fieldset-collapsed');
+				}
 			});
 		},
 

@@ -8,17 +8,17 @@
 		<div id="materialsRequestFilters" class="accordion">
 			<div class="panel panel-default">
 			<div class="panel-heading">
-				<div class="panel-title collapsed">
+				<div class="panel-title {if !$filterError}collapsed{else}active{/if}">
 					<a href="#filterPanel" data-toggle="collapse" role="button">
 						Filters
 					</a>
 				</div>
 			</div>
-			<div id="filterPanel" class="panel-collapse collapse">
+			<div id="filterPanel" class="panel-collapse collapse{if $filterError} in{/if}">
 				<div class="panel-body">
 
 					<form action="/MaterialsRequest/ManageRequests" method="get">
-						<fieldset class="fieldset-collapsible">
+						<fieldset class="fieldset-collapsible{if !empty($statusFilter)} fieldset-init-open{/if}">
 							<legend>Statuses to Show:</legend>
 							<div class="form-group checkbox">
 								<label for="selectAllStatusFilter">
@@ -26,7 +26,7 @@
 									<strong>Select All</strong>
 								</label>
 							</div>
-							<div class="form-group">
+							<div class="form-group in">
 								{foreach from=$availableStatuses item=statusLabel key=status}
 									<div class="checkbox">
 										<label>
@@ -36,7 +36,7 @@
 								{/foreach}
 							</div>
 						</fieldset>
-						<fieldset class="form-group fieldset-collapsible">
+						<fieldset class="form-group fieldset-collapsible{if ($startDate || $endDate)} fieldset-init-open{/if}">
 							<legend>Date:</legend>
 {*
 								<label for="startDate">From</label> <input type="text" id="startDate" name="startDate" value="{$startDate}" size="8">
@@ -46,12 +46,12 @@
 									<label for="startDate" class="control-label col-sm-2">Start Date</label>
 									<div class="input-group input-append date controls col-sm-3" id="startDatePicker">
 										<input type="text" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%m/%d/%Y'}"
-										       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
-										       class="form-control" >
+													 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
+													 class="form-control" >
 										<span class="input-group-addon">
 								<span class="glyphicon glyphicon-calendar"
-								      onclick="$('#startDate').focus().datepicker('show')"
-								      aria-hidden="true">
+											onclick="$('#startDate').focus().datepicker('show')"
+											aria-hidden="true">
 								</span>
 							</span>
 									</div>
@@ -60,24 +60,24 @@
 									<label for="endDate" class="control-label col-sm-2">End Date</label>
 									<div class="input-group input-append date controls col-sm-3" id="endDatePicker">
 										<input type="text" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%m/%d/%Y'}"
-										       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
-										       class="form-control">
+													 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
+													 class="form-control">
 										<span class="input-group-addon">
 							<span class="glyphicon glyphicon-calendar"
-							      onclick="$('#endDate').focus().datepicker('show')"
-							      aria-hidden="true">
+										onclick="$('#endDate').focus().datepicker('show')"
+										aria-hidden="true">
 								</span>
 							</span>
 									</div>
 								</div>
 						</fieldset>
-						<fieldset class="form-group fieldset-collapsible">
+						<fieldset class="form-group fieldset-collapsible{if $idsToShow} fieldset-init-open{/if}">
 							<legend>Request IDs to Show (separated by commas):</legend>
 							<div class="form-group">
 								<label for="idsToShow">Request IDs</label> <input type="text" id="idsToShow" name="idsToShow" value="{$idsToShow}" size="60" class="form-control">
 							</div>
 						</fieldset>
-						<fieldset class="form-group fieldset-collapsible">
+						<fieldset class="form-group fieldset-collapsible {if !empty($formatFilter)} fieldset-init-open{/if}">
 							<legend>Format:</legend>
 							<div class="form-group checkbox">
 								<label for="selectAllFormatFilter">
@@ -93,7 +93,7 @@
 								{/foreach}
 							</div>
 						</fieldset>
-						<fieldset class="fieldset-collapsible">
+						<fieldset class="fieldset-collapsible {if $showUnassigned || !empty($assigneesFilter)} fieldset-init-open{/if}">
 							<legend>Assigned To:</legend>
 							<div class="form-group checkbox">
 								<label for="showUnassigned">
@@ -293,7 +293,9 @@
 				{/if}
 			</form>
 		{else}
+			{if !$filterError}
 			<div class="alert alert-info">There are no materials requests that meet your criteria.</div>
+			{/if}
 		{/if}
 	{/if}
 </div>
