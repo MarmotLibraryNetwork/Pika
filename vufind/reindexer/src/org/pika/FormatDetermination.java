@@ -589,8 +589,27 @@ public class FormatDetermination {
 			if (physicalDescription != null) {
 				if (physicalDescription.getSubfield('e') != null) {
 					String accompanying = physicalDescription.getSubfield('e').getData().toLowerCase();
-					if(accompanying.contains("dvd"))
+					if(accompanying.contains("dvd-rom")) {
+						if (printFormats.contains("Book") || printFormats.contains("BookWithCDROM")){
+							printFormats.clear();
+							printFormats.add("BookWithDVDROM");
+						}
+					}else if(accompanying.contains("dvd"))
 					{
+						String mainPhysical = null;
+						if(physicalDescription.getSubfield('a')!=null){
+							mainPhysical = physicalDescription.getSubfield('a').getData().toLowerCase();
+						}
+						if(printFormats.contains("Book")){
+							printFormats.clear();
+							printFormats.add("BookWithDVD");
+						}else if(mainPhysical!=null){
+							if (mainPhysical.contains("pages")){
+								printFormats.clear();
+								printFormats.add("BookWithDVD");
+								break;
+							}
+						}
 						printFormats.add("DVD");
 					}else if(accompanying.contains("book") && !accompanying.contains("booklet") && !accompanying.contains("ebook") && !accompanying.contains("e-book")){
 						if(printFormats.contains("SoundDisc")){
@@ -1044,7 +1063,7 @@ public class FormatDetermination {
 						} else if (physicalDescriptionData.contains("wonderbook")) {
 							result.add("WonderBook");
 						}else if (physicalDescriptionData.contains("vox book")){
-							result.add("VoxBook")	;
+							result.add("VoxBooks");
 						}else if (physicalDescriptionData.contains("hotspot device") || physicalDescriptionData.contains("mobile hotspot") || physicalDescriptionData.contains("hot spot") || physicalDescriptionData.contains("hotspot")){
 							result.add("PhysicalObject");
 						}

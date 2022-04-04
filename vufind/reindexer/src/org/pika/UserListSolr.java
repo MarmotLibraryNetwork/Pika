@@ -51,23 +51,21 @@ public class UserListSolr {
 		doc.addField("id", "list" + id);
 		doc.addField("recordtype", "list");
 
-		doc.addField("record_details", relatedRecordIds);
-
 		doc.addField("title", title);
 		doc.addField("title_display", title);
-		
 		doc.addField("title_sort", Util.makeValueSortable(title));
 
 		doc.addField("author", author);
 		doc.addField("author_display", author);
 
-		doc.addField("table_of_contents", contents);
-		if (!description.isEmpty()) {
+		if (description != null && !description.isEmpty()) {
 			doc.addField("description", description);
 			doc.addField("display_description", description);
 			doc.addField("keywords", description);
 		}
 
+		doc.addField("record_details", relatedRecordIds);
+		doc.addField("table_of_contents", contents);
 		//TODO: Should we count number of views to determine popularity?
 		doc.addField("popularity", Long.toString(numTitles));
 //		doc.addField("num_holdings", numTitles);

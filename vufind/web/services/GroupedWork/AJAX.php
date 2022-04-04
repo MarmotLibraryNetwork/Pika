@@ -482,9 +482,12 @@ class GroupedWork_AJAX extends AJAXHandler {
 			}
 			if (empty($reviews)){
 				// Now Try the primary ISBN
-				$isbn            = $recordDriver->getPrimaryIsbn();
-				$externalReviews = new ExternalReviews($isbn);
-				$reviews         = $externalReviews->fetch();
+				$primaryISBN     = $recordDriver->getPrimaryIsbn();
+				if (!empty($primaryISBN) && (empty($isbn) || $primaryISBN != $isbn)){
+					$externalReviews = new ExternalReviews($primaryISBN);
+					$reviews         = $externalReviews->fetch();
+					$isbn            = $primaryISBN;
+				}
 			}
 			$numSyndicatedReviews = 0;
 			foreach ($reviews as $providerReviews){

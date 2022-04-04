@@ -1265,7 +1265,8 @@ class SearchObject_Islandora extends SearchObject_Base {
 		global $interface;
 		global $library;
 		global $configArray;
-		$baseUrl = $library->catalogUrl ?? $configArray['Site']['url'];
+		$baseUrl  = empty($library->catalogUrl) ? $configArray['Site']['url'] : $_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl;
+
 
 		// On-screen display value for our search
 		$lookfor = $this->displayQuery();
