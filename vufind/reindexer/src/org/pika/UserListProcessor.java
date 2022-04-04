@@ -189,8 +189,6 @@ public class UserListProcessor {
 				}
 				userListSolr.setOwningLocation("");
 			}
-			userListSolr.setCreated(allPublicListsRS.getLong("created"));
-
 
 			// If the list does not appear in any scope, skip further processing
 			int numberOfScopes = userListSolr.getScopes().size();
@@ -282,7 +280,12 @@ public class UserListProcessor {
 //			}
 
 				// Index in the solr catalog
-				updateServer.add(userListSolr.getSolrDocument());
+				try {
+					updateServer.add(userListSolr.getSolrDocument());
+				} catch (Exception e) {
+					logger.error("User List indexing error: ", e);
+					return false;
+				}
 				return true;
 			} else {
 				if (logger.isDebugEnabled()){
