@@ -169,8 +169,16 @@ class TranslationMap extends DB_DataObject{
 	 * @return string|null
 	 */
 	function label(){
+		$label = '';
+		if (!empty($this->indexingProfileId)){
+			$indexingProfileNames = IndexingProfile::getAllIndexingProfileNames();
+			if (!empty($indexingProfileNames[$this->indexingProfileId])){
+				$label = $indexingProfileNames[$this->indexingProfileId] .' - ';
+			}
+		}
 		if (!empty($this->name)){
-			return $this->name;
+			$label .= $this->name;
+			return $label;
 		}
 	}
 
