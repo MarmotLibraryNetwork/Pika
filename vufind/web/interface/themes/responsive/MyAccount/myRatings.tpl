@@ -58,16 +58,13 @@
 			{if count($ratings) > 5}
 				<script type="text/javascript">
 					{literal}
-					$.fn.dataTable.ext.order['dom-rating'] = function  ( settings, col )
-					{
-						return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
-
+					$.fn.dataTable.ext.order['dom-rating'] = function (settings, col){
+						return this.api().column(col, {order: 'index'}).nodes().map(function (td, i){
 							return $('.title-rating', td).attr("data-user_rating") * 1;
-						} );
+						});
 					}
 					$.fn.dataTable.ext.order['dom-date'] = function (settings, col){
-						return this.api().column(col, {order:'index'}).nodes().map(function (td, i){
-
+						return this.api().column(col, {order: 'index'}).nodes().map(function (td, i){
 							return $('span', td).attr("data-date");
 						});
 					}
@@ -79,11 +76,9 @@
 											null,
 											{"orderDataType": "dom-rating"},
 											{"orderable": false}
-
 							],
 							pageLength: 10,
 							"order": [[0, "desc"]]
-
 						});
 					})
 					{/literal}
