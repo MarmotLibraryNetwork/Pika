@@ -231,7 +231,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			if (isset($_REQUEST['startDate'])){
 				$startDateString       = strip_tags($_REQUEST['startDate']);
 				$startDate             = strtotime($startDateString);
-				if (!empty($startDate)){
+				if (!empty($startDate) || empty($startDateString)){
 					$_SESSION['startDate'] = $startDateString;
 				}
 			}elseif (!empty($_SESSION['startDate'])){
@@ -246,7 +246,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			if (isset($_REQUEST['endDate'])){
 				$endDateString       = strip_tags($_REQUEST['endDate']);
 				$endDate             = strtotime($endDateString);
-				if (!empty($endDate)){
+				if (!empty($endDate) || empty($endDateString)){
 					$_SESSION['endDate'] = $endDateString;
 				}
 			}elseif (!empty($_SESSION['endDate'])){
@@ -258,9 +258,9 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$interface->assign('endDate', $endDateString);
 			}
 
-			if (!empty($_REQUEST['idsToShow'])){
+			if (isset($_REQUEST['idsToShow'])){
 				$idsToShow             = trim(strip_tags($_REQUEST['idsToShow']));
-				if (!empty($idsToShow)){
+				if (!empty($idsToShow) || empty($_REQUEST['idsToShow'])){
 					$_SESSION['idsToShow'] = $idsToShow;
 				}
 			}elseif (!empty($_SESSION['idsToShow'])){
