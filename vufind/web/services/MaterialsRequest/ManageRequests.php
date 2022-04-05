@@ -66,10 +66,10 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 
 		$assigneesToShow = [];
 		if (isset($_REQUEST['assigneesFilter'])) {
-			$assigneesToShow = $_REQUEST['assigneesFilter'];
-//			$_SESSION['materialsRequestAssigneesFilter'] = $assigneesToShow;
-//		} elseif (!empty($_SESSION['materialsRequestAssigneesFilter'])) {
-//			$assigneesToShow = $_SESSION['materialsRequestAssigneesFilter'];
+			$assigneesToShow                             = $_REQUEST['assigneesFilter'];
+			$_SESSION['materialsRequestAssigneesFilter'] = $assigneesToShow;
+		} elseif (!empty($_SESSION['materialsRequestAssigneesFilter'])) {
+			$assigneesToShow = $_SESSION['materialsRequestAssigneesFilter'];
 		}
 		$interface->assign('assigneesFilter', $assigneesToShow);
 		$showUnassigned = !empty($_REQUEST['showUnassigned']) && $_REQUEST['showUnassigned'] == 'on';
@@ -158,8 +158,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			}
 		}
 
-		$availableFormats     = MaterialsRequest::getFormats();
-		$defaultFormatsToShow = array_keys($availableFormats);
+		$availableFormats = MaterialsRequest::getFormats();
 		$interface->assign('availableFormats', $availableFormats);
 		if (isset($_REQUEST['formatFilter'])){
 			$formatsToShow                            = $_REQUEST['formatFilter'];
@@ -167,17 +166,18 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		}elseif (isset($_SESSION['materialsRequestFormatFilter'])){
 			$formatsToShow = $_SESSION['materialsRequestFormatFilter'];
 		}else{
-			$formatsToShow = $defaultFormatsToShow;
+			$defaultFormatsToShow = array_keys($availableFormats);
+			$formatsToShow        = $defaultFormatsToShow;
 		}
 		$interface->assign('formatFilter', $formatsToShow);
 
 		//Get a list of all materials requests for the user
-		$allRequests = array();
+		$allRequests = [];
 		if ($user){
 			$barCodeProperty = 'barcode';
 
 			$materialsRequests = new MaterialsRequest();
-			$materialsRequests->joinAdd(new Location(), "LEFT");
+			$materialsRequests->joinAdd(new Location(), 'LEFT');
 			$materialsRequests->joinAdd(new MaterialsRequestStatus());
 			$materialsRequests->joinAdd(new User(), 'INNER', 'user', 'createdBy');
 			$materialsRequests->joinAdd(new User(), 'LEFT', 'assignee', 'assignedTo');
@@ -191,9 +191,9 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			}
 
 			if (count($availableStatuses) > count($statusesToShow)){
-				$statusSql = "";
+				$statusSql = '';
 				foreach ($statusesToShow as $status){
-					if (strlen($statusSql) > 0) $statusSql .= ",";
+					if (strlen($statusSql) > 0) $statusSql .= ',';
 					$statusSql .= "'" . $materialsRequests->escape($status) . "'";
 				}
 				$materialsRequests->whereAdd("status in ($statusSql)");
@@ -201,9 +201,9 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 
 			if (count($availableFormats) > count($formatsToShow)){
 				//At least one format is disabled
-				$formatSql = "";
+				$formatSql = '';
 				foreach ($formatsToShow as $format){
-					if (strlen($formatSql) > 0) $formatSql .= ",";
+					if (strlen($formatSql) > 0) $formatSql .= ',';
 					$formatSql .= "'" . $materialsRequests->escape($format) . "'";
 				}
 				$materialsRequests->whereAdd("format in ($formatSql)");
@@ -228,25 +228,50 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$materialsRequests->whereAdd($condition);
 			}
 
-			//Add filtering by date as needed
-			if (isset($_REQUEST['startDate']) && strlen($_REQUEST['startDate']) > 0){
-				$startDate = strtotime($_REQUEST['startDate']);
-				$materialsRequests->whereAdd("dateCreated >= $startDate");
-				$interface->assign('startDate', $_REQUEST['startDate']);
+			if (isset($_REQUEST['startDate'])){
+				$startDateString       = strip_tags($_REQUEST['startDate']);
+				$startDate             = strtotime($startDateString);
+				if (!empty($startDate)){
+					$_SESSION['startDate'] = $startDateString;
+				}
+			}elseif (!empty($_SESSION['startDate'])){
+				$startDateString = $_SESSION['startDate'];
+				$startDate       = strtotime($startDateString);
 			}
-			if (isset($_REQUEST['endDate']) && strlen($_REQUEST['endDate']) > 0){
-				$endDate = strtotime($_REQUEST['endDate']);
-				$materialsRequests->whereAdd("dateCreated <= $endDate");
-				$interface->assign('endDate', $_REQUEST['endDate']);
+			if (!empty($startDate)){
+				$materialsRequests->whereAdd("dateCreated >= $startDate");
+				$interface->assign('startDate', $startDateString);
 			}
 
-			if (isset($_REQUEST['idsToShow']) && strlen($_REQUEST['idsToShow']) > 0){
-				$idsToShow    = $_REQUEST['idsToShow'];
+			if (isset($_REQUEST['endDate'])){
+				$endDateString       = strip_tags($_REQUEST['endDate']);
+				$endDate             = strtotime($endDateString);
+				if (!empty($endDate)){
+					$_SESSION['endDate'] = $endDateString;
+				}
+			}elseif (!empty($_SESSION['endDate'])){
+				$endDateString = $_SESSION['endDate'];
+				$endDate       = strtotime($endDateString);
+			}
+			if (!empty($endDate)){
+				$materialsRequests->whereAdd("dateCreated <= $endDate");
+				$interface->assign('endDate', $endDateString);
+			}
+
+			if (!empty($_REQUEST['idsToShow'])){
+				$idsToShow             = trim(strip_tags($_REQUEST['idsToShow']));
+				if (!empty($idsToShow)){
+					$_SESSION['idsToShow'] = $idsToShow;
+				}
+			}elseif (!empty($_SESSION['idsToShow'])){
+				$idsToShow = $_SESSION['idsToShow'];
+			}
+			if (isset($idsToShow)){
 				$ids          = explode(',', $idsToShow);
 				$formattedIds = '';
 				foreach ($ids as $id){
 					if (strlen($formattedIds) > 0) $formattedIds .= ',';
-					$formattedIds .= "'" . trim($id) . "'";
+					$formattedIds .= "'" . $materialsRequests->escape(trim($id)) . "'";
 				}
 				$materialsRequests->whereAdd("materials_request.id IN ($formattedIds)");
 				$interface->assign('idsToShow', $idsToShow);
@@ -350,7 +375,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		->setSubject("Office 2007 XLSX Document")
 		->setDescription("Office 2007 XLSX, generated using PHP.")
 		->setKeywords("office 2007 openxml php")
-		->setCategory("Itemless eContent Report");
+		->setCategory("Materials Requests Report");
 
 		// Add some data
 		$activeSheet = $objPHPExcel->setActiveSheetIndex(0);
@@ -496,6 +521,6 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 	}
 
 	function getAllowableRoles(){
-		return array('library_material_requests');
+		return ['library_material_requests'];
 	}
 }
