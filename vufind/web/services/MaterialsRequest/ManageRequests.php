@@ -266,7 +266,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			}elseif (!empty($_SESSION['idsToShow'])){
 				$idsToShow = $_SESSION['idsToShow'];
 			}
-			if (isset($idsToShow)){
+			if (!empty($idsToShow)){
 				$ids          = explode(',', $idsToShow);
 				$formattedIds = '';
 				foreach ($ids as $id){
