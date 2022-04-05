@@ -55,8 +55,8 @@
 			{if strpos($field, "scoping_details") === false
 			&& strpos($field, "item_details") === false
 			&& strpos($field, "record_details") === false}
-				<div class="col-xs-6 col-sm-3"><strong>{$field|escape}</strong></div>
-				<div class="col-xs-6 col-sm-9">
+				<div class="col-xs-6 col-sm-4"><strong>{$field|escape}</strong></div>
+				<div class="col-xs-6 col-sm-8">
 				{implode subject=$values glue='<br>' sort=true}
 				</div>
 				<div class="clearfix visible-sm-block"></div>
