@@ -295,10 +295,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 			}
 		}
 		global $interface;
-		if (!isset($record['id'])){
-			$interface->assign('noResultOriginalId',  $_REQUEST['id']);
-			$interface->assign('series',  $series);
-		}
 		$interface->assign('index', $titleIndexNumber);
 		$interface->assign('scrollerName', $scrollerName);
 		$interface->assign('id', $record['id'] ?? null);
@@ -306,6 +302,10 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$interface->assign('author', $record['author']);
 		$interface->assign('linkUrl', $record['fullRecordLink'] ?? null);
 		$interface->assign('bookCoverUrlMedium', $record['mediumCover']);
+
+		// Have to empty these template variables when we do have the Id so that the right thing is displayed
+		$interface->assign('noResultOriginalId',  isset($record['id']) ? '' : $_REQUEST['id']);
+		$interface->assign('series',  $series ?? null);
 
 		return [
 			'id'             => $record['id'] ?? '',
@@ -1580,6 +1580,7 @@ function getSaveSeriesToListForm(){
 		return $result;
 	}
 
+	//TODO: obsolete
 	function getNovelistData(){
 		$url             = $_REQUEST['novelistUrl'];
 		$rawNovelistData = file_get_contents($url);
