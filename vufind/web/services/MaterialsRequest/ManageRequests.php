@@ -369,13 +369,15 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		$objPHPExcel = new PHPExcel();
 
 		// Set properties
-		$objPHPExcel->getProperties()->setCreator("VuFind")
-		->setLastModifiedBy("VuFind")
-		->setTitle("Office 2007 XLSX Document")
-		->setSubject("Office 2007 XLSX Document")
-		->setDescription("Office 2007 XLSX, generated using PHP.")
-		->setKeywords("office 2007 openxml php")
-		->setCategory("Materials Requests Report");
+		global $interface;
+		$gitBranch = $interface->getVariable('gitBranch');
+		$objPHPExcel->getProperties()->setCreator('Pika ' . $gitBranch)
+			->setLastModifiedBy('Pika ' . $gitBranch)
+			->setTitle("Office 2007 XLSX Document")
+			->setSubject("Office 2007 XLSX Document")
+			->setDescription("Office 2007 XLSX, generated using PHP.")
+			->setKeywords("office 2007 openxml php")
+			->setCategory("Materials Requests Report");
 
 		// Add some data
 		$activeSheet = $objPHPExcel->setActiveSheetIndex(0);

@@ -1700,9 +1700,12 @@ function getSaveSeriesToListForm(){
 				'groupedWorkId' => $seriesEntry['id'] ?? null,
 			];
 		}
+		global $interface;
 		$objPHPExcel = new PHPExcel();
-		$objPHPExcel->getProperties()->setCreator("DCL")
-			->setLastModifiedBy("DCL")
+		$gitBranch   = $interface->getVariable('gitBranch');
+		$objPHPExcel->getProperties()->setCreator('Pika ' . $gitBranch)
+			->setLastModifiedBy('Pika ' . $gitBranch)
+			->setTitle("Office 2007 XLSX Document")
 			->setTitle("Office 2007 XLSX Document")
 			->setSubject("Office 2007 XLSX Document")
 			->setDescription("Office 2007 XLSX, generated using PHP.")
