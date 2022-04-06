@@ -87,6 +87,10 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$materialRequest     = new MaterialsRequest();
 				$materialRequest->id = $requestId;
 				if ($materialRequest->find(true)){
+					if (empty($materialRequest->assignedTo)){
+						$materialRequest->assignedTo = $user->id;
+						//updateRequestStatus() below will save this to the db for us automatically
+					}
 					$error = $materialRequest->updateRequestStatus($statusToSet);
 					if (is_string($error)){
 						$errors[] = $error;
