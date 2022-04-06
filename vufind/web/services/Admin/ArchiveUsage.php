@@ -27,9 +27,10 @@
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Archive/ArchiveSubject.php';
 require_once ROOT_DIR . '/services/API/ArchiveAPI.php';
-class Admin_ArchiveUsage extends Admin_Admin{
 
-	function launch() {
+class Admin_ArchiveUsage extends Admin_Admin {
+
+	function launch(){
 		global $interface;
 
 		$archiveLibraries = new Library();
@@ -39,13 +40,13 @@ class Admin_ArchiveUsage extends Admin_Admin{
 
 		//Get the number of records contributed to DPLA
 		$archiveAPI = new API_ArchiveAPI();
-		$dplaUsage = $archiveAPI->getDPLACounts();
+		$dplaUsage  = $archiveAPI->getDPLACounts();
 
 		$totalDriveSpace = 0;
-		$totalObjects = 0;
-		$totalDpla = 0;
+		$totalObjects    = 0;
+		$totalDpla       = 0;
 
-		$usageByNamespace = array();
+		$usageByNamespace = [];
 		while ($archiveLibraries->fetch()){
 			/** @var SearchObject_Islandora $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
@@ -56,28 +57,29 @@ class Admin_ArchiveUsage extends Admin_Admin{
 			$searchObject->clearHiddenFilters();
 
 			$searchObject->setBasicQuery($archiveLibraries->archiveNamespace, 'namespace_s');
-			$searchObject->addFieldsToReturn(array('fedora_datastream_latest_OBJ_SIZE_ms'));
+			$searchObject->addFieldsToReturn(['fedora_datastream_latest_OBJ_SIZE_ms']);
 			$searchObject->setApplyStandardFilters(false);
 
-			$usageByNamespace[$archiveLibraries->ilsCode] = [
+			$usageByNamespace[$archiveLibraries->archiveNamespace] = [
 				'displayName' => $archiveLibraries->displayName,
+				'nameSpace'   => $archiveLibraries->archiveNamespace,
 				'numObjects'  => 0,
 				'numDpla'     => 0,
 				'driveSpace'  => 0
 			];
 
 			if (isset($dplaUsage[$archiveLibraries->archiveNamespace])){
-				$usageByNamespace[$archiveLibraries->ilsCode]['numDpla'] = $dplaUsage[$archiveLibraries->archiveNamespace];
+				$usageByNamespace[$archiveLibraries->archiveNamespace]['numDpla'] = $dplaUsage[$archiveLibraries->archiveNamespace];
 			}
 
 			$response = $searchObject->processSearch(true, false);
-			if ($response && $response['response']['numFound'] > 0) {
-				$numProcessed = 0;
-				$usageByNamespace[$archiveLibraries->ilsCode]['numObjects'] = $response['response']['numFound'];
+			if ($response && $response['response']['numFound'] > 0){
+				$numProcessed                                               = 0;
+				$usageByNamespace[$archiveLibraries->archiveNamespace]['numObjects'] = $response['response']['numFound'];
 				while ($numProcessed < $response['response']['numFound']){
 					foreach ($response['response']['docs'] as $doc){
 						if (isset ($doc['fedora_datastream_latest_OBJ_SIZE_ms'])){
-							$usageByNamespace[$archiveLibraries->ilsCode]['driveSpace'] += $doc['fedora_datastream_latest_OBJ_SIZE_ms'][0];
+							$usageByNamespace[$archiveLibraries->archiveNamespace]['driveSpace'] += $doc['fedora_datastream_latest_OBJ_SIZE_ms'][0];
 						}
 						$numProcessed++;
 					}
@@ -89,12 +91,12 @@ class Admin_ArchiveUsage extends Admin_Admin{
 			}
 		}
 
-		foreach ($usageByNamespace as $ilsCode => $namespaceStats){
-			$totalObjects += $namespaceStats['numObjects'];
-			$totalDpla += $namespaceStats['numDpla'];
-			$diskSpace = ceil($namespaceStats['driveSpace'] * 0.000000001);
-			$totalDriveSpace += $diskSpace;
-			$usageByNamespace[$ilsCode]['driveSpace'] = $diskSpace . ' GB';
+		foreach ($usageByNamespace as &$namespaceStats){
+			$totalObjects                        += $namespaceStats['numObjects'];
+			$totalDpla                           += $namespaceStats['numDpla'];
+			$diskSpace                           = ceil($namespaceStats['driveSpace'] * 0.000000001);
+			$totalDriveSpace                     += $diskSpace;
+			$namespaceStats['driveSpaceDisplay'] = $diskSpace . ' GB';
 		}
 
 
@@ -107,7 +109,7 @@ class Admin_ArchiveUsage extends Admin_Admin{
 		$this->display('archiveUsage.tpl', 'Archive Usage By Library');
 	}
 
-	function getAllowableRoles() {
-		return array('archives');
+	function getAllowableRoles(){
+		return ['archives'];
 	}
 }
