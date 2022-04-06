@@ -1,6 +1,12 @@
 {strip}
 <div id="main-content" class="col-md-12">
 	<h2>Manage Materials Requests</h2>
+	{if $materialRequestStaffSettingsWarning}
+		<div class="alert alert-warning">
+			Please set the "Reply-To Email Address" and "Email Signature" in the Materials Request Management section in Staff Settings on the <a href="/MyAccount/Profile">Account Settings</a> page.
+			&nbsp; These settings are used in the email notifications sent to patrons about their requests.
+		</div>
+	{/if}
 	{if $error}
 		<div class="alert alert-danger">
 			{if is_array($error)}

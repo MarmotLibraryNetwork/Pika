@@ -265,6 +265,10 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			if (!empty($errors)){
 				$interface->assign('error', $errors);
 			}
+			$staffEmail     = $user->materialsRequestReplyToAddress; // fetched via __get()
+			if (empty($staffEmail)){
+				$interface->assign('materialRequestStaffSettingsWarning', true);
+			}
 			$this->display('manageRequests.tpl', 'Manage Materials Requests');
 		}
 	}
