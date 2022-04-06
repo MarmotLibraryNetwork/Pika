@@ -66,7 +66,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		'saveTag',
 		'removeTag',
 		'getProspectorInfo',
-		'getNovelistData',
+//		'getNovelistData',
 		'reloadCover',
 		'reloadNovelistData',
 		'reloadIslandora',
@@ -265,8 +265,8 @@ class GroupedWork_AJAX extends AJAXHandler {
 			}
 			$memoryWatcher->logMemory('Loaded additional go deeper data');
 
-			//Related data
-			$enrichmentResult['relatedContent'] = $interface->fetch('Record/relatedContent.tpl');
+//			//Related data
+//			$enrichmentResult['relatedContent'] = $interface->fetch('Record/relatedContent.tpl');
 		}
 
 		return $enrichmentResult;
@@ -1606,16 +1606,15 @@ function getSaveSeriesToListForm(){
 		return $result;
 	}
 
-	//TODO: obsolete
-	function getNovelistData(){
-		$url             = $_REQUEST['novelistUrl'];
-		$rawNovelistData = file_get_contents($url);
-		//Trim off the wrapping data ();
-		$rawNovelistData = substr($rawNovelistData, 1, -2);
-		$jsonData        = json_decode($rawNovelistData);
-		$novelistData    = $jsonData->body;
-		echo($novelistData);
-	}
+//	function getNovelistData(){
+//		$url             = $_REQUEST['novelistUrl'];
+//		$rawNovelistData = file_get_contents($url);
+//		//Trim off the wrapping data ();
+//		$rawNovelistData = substr($rawNovelistData, 1, -2);
+//		$jsonData        = json_decode($rawNovelistData);
+//		$novelistData    = $jsonData->body;
+//		echo($novelistData);
+//	}
 
 	function reloadCover(){
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';

@@ -1,3 +1,4 @@
+{*  Apparently obsolete. pascal 4/6/22
 {strip}
 {foreach from=$enrichment.novelist.relatedContent item=contentSection}
 	<dt>{$contentSection.title}</dt>
@@ -9,4 +10,4 @@
 		</ul>
 	</dd>
 {/foreach}
-{/strip}
+{/strip}*}
