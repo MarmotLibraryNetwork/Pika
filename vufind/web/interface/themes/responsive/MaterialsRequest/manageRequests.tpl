@@ -2,7 +2,15 @@
 <div id="main-content" class="col-md-12">
 	<h2>Manage Materials Requests</h2>
 	{if $error}
-		<div class="alert alert-danger">{$error}</div>
+		<div class="alert alert-danger">
+			{if is_array($error)}
+				{foreach from=$error item=err}
+					{$err}<br>
+				{/foreach}
+			{else}
+				{$error}
+			{/if}
+		</div>
 	{/if}
 	{if $loggedIn}
 		<div id="materialsRequestFilters" class="accordion">
@@ -166,7 +174,7 @@
 										<td>{$request->statusLabel|translate}</td>
 									{elseif $column == 'dateCreated' || $column == 'dateUpdated'}
 										{* Date Columns*}
-										<td>{$request->$column|date_format}</td>
+										<td><span data-date="{$request->$column}">{$request->$column|date_format}</span></td>
 									{elseif $column == 'createdBy'}
 										<td>{$request->lastname}, {$request->firstname}<br>{$request->barcode}</td>
 
@@ -303,8 +311,20 @@
 	<script type="text/javascript">
 		{literal}
 		$(document).ready(function(){
+			$.fn.dataTable.ext.order['dom-date'] = function (settings, col){
+				return this.api().column(col, {order: 'index'}).nodes().map(function (td, i){
+					return $('span', td).attr("data-date");
+				});
+			}
 			$('#requestedMaterials').DataTable({
-				"order": [[0, "asc"]],
+				"columns":[
+					{"orderable": false},{/literal}
+{foreach from=$columnsToDisplay key=columnName item=ignored}
+					{if in_array($columnName, array('dateCreated', 'dateUpdated'))}{ldelim}"orderDataType": "dom-date"{rdelim}{else}null{/if},
+{/foreach}
+					{literal} {"orderable": false}
+				],
+				"order": [[1, "asc"]],
 				pageLength: 25
 			});
 		})

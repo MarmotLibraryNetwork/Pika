@@ -124,6 +124,15 @@ class MaterialsRequest_Update extends Action {
 				if ($materialsRequest->update()){
 					$interface->assign('success', true);
 					$interface->assign('materialsRequest', $materialsRequest);
+
+
+					if (isset($_REQUEST['status']) && ctype_digit($_REQUEST['status'])){
+						$error = $materialsRequest->updateRequestStatus($_REQUEST['status']);
+						if (is_string($error)){
+							$interface->assign('error', $error);
+						}
+					}
+
 				}else{
 					$interface->assign('success', false);
 					$interface->assign('error', 'There was an error updating the materials request.');
