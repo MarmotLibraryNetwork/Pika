@@ -305,6 +305,16 @@ class MaterialsRequest extends DB_DataObject {
 		return false;
 	}
 
+	/**
+	 * Remove any non-number character (except X) because ISBNs have an X check digit
+	 *
+	 * @param $string
+	 * @return array|string|string[]|null
+	 */
+	function removeNonNumbers($string){
+		return preg_replace('/[^\dX]/i', '', $string);
+	}
+
 
 	/**
 	 *  Take an array of strings and build a quoted and escape list of them for use in an SQL query.

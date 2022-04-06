@@ -27,16 +27,6 @@ require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestStatus.php';
  */
 class MaterialsRequest_Submit extends MyAccount {
 
-	/**
-	 * Remove any non-number character (except X) because ISBNs have an X check digit
-	 *
-	 * @param $string
-	 * @return array|string|string[]|null
-	 */
-	private function removeNonNumbers($string){
-		return preg_replace('/[^\dX]/i', '', $string);
-	}
-
 	function launch(){
 		global $configArray;
 		global $interface;
@@ -124,9 +114,9 @@ class MaterialsRequest_Submit extends MyAccount {
 							$materialsRequest->author                 = empty($_REQUEST['author']) ? '' : strip_tags($_REQUEST['author']);
 							$materialsRequest->ageLevel               = isset($_REQUEST['ageLevel']) ? strip_tags($_REQUEST['ageLevel']) : '';
 							$materialsRequest->bookType               = isset($_REQUEST['bookType']) ? strip_tags($_REQUEST['bookType']) : '';
-							$materialsRequest->isbn                   = isset($_REQUEST['isbn']) ? $this->removeNonNumbers(strip_tags($_REQUEST['isbn'])) : '';
-							$materialsRequest->upc                    = isset($_REQUEST['upc']) ? $this->removeNonNumbers(strip_tags($_REQUEST['upc'])): '';
-							$materialsRequest->issn                   = isset($_REQUEST['issn']) ? $this->removeNonNumbers(strip_tags($_REQUEST['issn'])) : '';
+							$materialsRequest->isbn                   = isset($_REQUEST['isbn']) ? $materialsRequest->removeNonNumbers(strip_tags($_REQUEST['isbn'])) : '';
+							$materialsRequest->upc                    = isset($_REQUEST['upc']) ? $materialsRequest->removeNonNumbers(strip_tags($_REQUEST['upc'])) : '';
+							$materialsRequest->issn                   = isset($_REQUEST['issn']) ? $materialsRequest->removeNonNumbers(strip_tags($_REQUEST['issn'])) : '';
 							$materialsRequest->oclcNumber             = isset($_REQUEST['oclcNumber']) ? strip_tags($_REQUEST['oclcNumber']) : '';
 							$materialsRequest->publisher              = empty($_REQUEST['publisher']) ? '' : strip_tags($_REQUEST['publisher']);
 							$materialsRequest->publicationYear        = empty($_REQUEST['publicationYear']) ? '' : strip_tags($_REQUEST['publicationYear']);
@@ -169,6 +159,8 @@ class MaterialsRequest_Submit extends MyAccount {
 							if (!$defaultStatus->find(true)){
 								$interface->assign('success', false);
 								$interface->assign('error', 'There was an error submitting your ' . translate('materials request') . ', could not determine the default status.');
+								global $pikaLogger;
+								$pikaLogger->error('Failed to find default Material Request status for library ' . $homeLibrary->label());
 							}else{
 								$materialsRequest->status      = $defaultStatus->id;
 								$materialsRequest->dateCreated = time();
@@ -184,6 +176,8 @@ class MaterialsRequest_Submit extends MyAccount {
 								}else{
 									$interface->assign('success', false);
 									$interface->assign('error', 'There was an error submitting your ' . translate('materials request') . '.');
+									global $pikaLogger;
+									$pikaLogger->error('Failed to save new Material Request for user ' . $user->id . ' for library ' . $homeLibrary->label());
 								}
 							}
 						}
