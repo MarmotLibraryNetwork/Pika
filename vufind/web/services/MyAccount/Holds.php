@@ -219,8 +219,10 @@ class MyAccount_Holds extends MyAccount{
 		$objPHPExcel = new PHPExcel();
 
 		// Set properties
-		$objPHPExcel->getProperties()->setCreator("DCL")
-		->setLastModifiedBy("DCL")
+		global $interface;
+		$gitBranch = $interface->getVariable('gitBranch');
+		$objPHPExcel->getProperties()->setCreator('Pika ' . $gitBranch)
+			->setLastModifiedBy('Pika ' . $gitBranch)
 		->setTitle("Office 2007 XLSX Document")
 		->setSubject("Office 2007 XLSX Document")
 		->setDescription("Office 2007 XLSX, generated using PHP.")

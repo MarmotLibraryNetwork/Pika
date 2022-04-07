@@ -271,7 +271,9 @@ class MyAccount_MyList extends MyAccount {
 		$objPHPExcel = new PHPExcel();
 
 		// Set properties
-		$objPHPExcel->getProperties()->setCreator("DCL")
+		$gitBranch = $interface->getVariable('gitBranch');
+		$objPHPExcel->getProperties()->setCreator('Pika ' . $gitBranch)
+			->setLastModifiedBy('Pika ' . $gitBranch)
 			->setLastModifiedBy("DCL")
 			->setTitle("Office 2007 XLSX Document")
 			->setSubject("Office 2007 XLSX Document")

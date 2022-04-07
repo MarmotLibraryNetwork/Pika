@@ -26,37 +26,34 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 	/**
 	 *
 	 */
-	function launch()
-	{
-		global $configArray;
+	function launch(){
 		global $interface;
 
 		//Load status information
-		$materialsRequestStatus = new MaterialsRequestStatus();
+		$errors                            = [];
+		$availableStatuses                 = [];
+		$defaultStatusesToShow             = [];
+		$materialsRequestStatus            = new MaterialsRequestStatus();
+		$user                              = UserAccount::getLoggedInUser();
+		$homeLibrary                       = $user->getHomeLibrary();
+		$materialsRequestStatus->libraryId = $homeLibrary->libraryId;
 		$materialsRequestStatus->orderBy('isDefault DESC, isOpen DESC, description ASC');
-		$user        = UserAccount::getLoggedInUser();
-		$homeLibrary = $user->getHomeLibrary();
-		if (UserAccount::userHasRole('library_material_requests')){
-			$materialsRequestStatus->libraryId = $homeLibrary->libraryId;
-		}else{
-			$libraryList[-1] = 'Default';
-		}
-		$materialsRequestStatus->find();
-
-		$allStatuses           = array();
-		$availableStatuses     = array();
-		$defaultStatusesToShow = array();
-		while ($materialsRequestStatus->fetch()){
-			$availableStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
-			$allStatuses[$materialsRequestStatus->id]       = clone $materialsRequestStatus;
-			if ($materialsRequestStatus->isOpen == 1 || $materialsRequestStatus->isDefault == 1){
-				$defaultStatusesToShow[] = $materialsRequestStatus->id;
+		if ($materialsRequestStatus->find()){
+			while ($materialsRequestStatus->fetch()){
+				$availableStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
+				if ($materialsRequestStatus->isOpen == 1 || $materialsRequestStatus->isDefault == 1){
+					$defaultStatusesToShow[] = $materialsRequestStatus->id;
+				}
 			}
+			$interface->assign('availableStatuses', $availableStatuses);
+		}else{
+			$errors[] = 'No Materials Requests statuses found.';
 		}
-		$interface->assign('availableStatuses', $availableStatuses);
 
-		if (isset($_REQUEST['statusFilter'])){
-			$statusesToShow = $_REQUEST['statusFilter'];
+		$updatingFilters = !empty($_REQUEST['submit']) && $_REQUEST['submit'] == "Update Filters";
+
+		if (isset($_REQUEST['statusFilter']) || $updatingFilters){
+			$statusesToShow                           = $_REQUEST['statusFilter'] ?? [];
 			$_SESSION['materialsRequestStatusFilter'] = $statusesToShow;
 		}elseif (isset($_SESSION['materialsRequestStatusFilter'])){
 			$statusesToShow = $_SESSION['materialsRequestStatusFilter'];
@@ -65,15 +62,20 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		}
 		$interface->assign('statusFilter', $statusesToShow);
 
-		$assigneesToShow = array();
-		if (isset($_REQUEST['assigneesFilter'])) {
-			$assigneesToShow = $_REQUEST['assigneesFilter'];
-//			$_SESSION['materialsRequestAssigneesFilter'] = $assigneesToShow;
-//		} elseif (!empty($_SESSION['materialsRequestAssigneesFilter'])) {
-//			$assigneesToShow = $_SESSION['materialsRequestAssigneesFilter'];
+		$assigneesToShow = [];
+		if (isset($_REQUEST['assigneesFilter']) || $updatingFilters){
+			$assigneesToShow                             = $_REQUEST['assigneesFilter'] ?? [];
+			$_SESSION['materialsRequestAssigneesFilter'] = $assigneesToShow;
+		}elseif (!empty($_SESSION['materialsRequestAssigneesFilter'])){
+			$assigneesToShow = $_SESSION['materialsRequestAssigneesFilter'];
 		}
 		$interface->assign('assigneesFilter', $assigneesToShow);
-		$showUnassigned = !empty($_REQUEST['showUnassigned']) && $_REQUEST['showUnassigned'] == 'on';
+		if ($updatingFilters){
+			$showUnassigned                             = !empty($_REQUEST['showUnassigned']) && $_REQUEST['showUnassigned'] == 'on';
+			$_SESSION['materialsRequestShowUnassigned'] = $showUnassigned;
+		}else{
+			$showUnassigned = !empty($_SESSION['materialsRequestShowUnassigned']);
+		}
 		$interface->assign('showUnassigned', $showUnassigned);
 
 		//Process status change if needed
@@ -81,67 +83,28 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			//Look for which titles should be modified
 			$selectedRequests = $_REQUEST['select'];
 			$statusToSet      = $_REQUEST['newStatus'];
-			require_once ROOT_DIR . '/sys/Mailer.php';
-			$mail = new VuFindMailer();
 			foreach ($selectedRequests as $requestId => $selected){
 				$materialRequest     = new MaterialsRequest();
 				$materialRequest->id = $requestId;
 				if ($materialRequest->find(true)){
-					$materialRequest->status      = $statusToSet;
-					$materialRequest->dateUpdated = time();
-					$materialRequest->update();
-
-					if ($allStatuses[$statusToSet]->sendEmailToPatron == 1 && $materialRequest->email){
-						$replyToAddress = $emailSignature = '';
-						if (!empty($materialRequest->assignedTo)) {
-							require_once ROOT_DIR . '/sys/Account/UserStaffSettings.php';
-							$staffSettings = new UserStaffSettings();
-							$staffSettings->get('userId', $materialRequest->assignedTo);
-							if (!empty($staffSettings->materialsRequestReplyToAddress)) {
-								$replyToAddress = $staffSettings->materialsRequestReplyToAddress;
-							}
-							if (!empty($staffSettings->materialsRequestEmailSignature)) {
-								$emailSignature = $staffSettings->materialsRequestEmailSignature;
-							}
-						}
-
-						$body = '*****This is an auto-generated email response. Please do not reply.*****';
-						$body .= "\r\n\r\n" . $allStatuses[$statusToSet]->emailTemplate;
-
-						if (!empty($emailSignature)) {
-							$body .= "\r\n\r\n" .$emailSignature;
-						}
-
-						//Replace tags with appropriate values
-						$materialsRequestUser     = new User();
-						$materialsRequestUser->id = $materialRequest->createdBy;
-						$materialsRequestUser->find(true);
-						foreach ($materialsRequestUser as $fieldName => $fieldValue){
-							if (!is_array($fieldValue)){
-								$body = str_replace('{' . $fieldName . '}', $fieldValue, $body);
-							}
-						}
-						foreach ($materialRequest as $fieldName => $fieldValue){
-							if (!is_array($fieldValue)){
-								$body = str_replace('{' . $fieldName . '}', $fieldValue, $body);
-							}
-						}
-						$error = $mail->send($materialRequest->email, $configArray['Site']['email'], "Your Materials Request Update", $body, $replyToAddress);
-						if (PEAR_Singleton::isError($error)) {
-							$interface->assign('error', $error->message);
-						}
+					if (empty($materialRequest->assignedTo)){
+						$materialRequest->assignedTo = $user->id;
+						//updateRequestStatus() below will save this to the db for us automatically
+					}
+					$error = $materialRequest->updateRequestStatus($statusToSet);
+					if (is_string($error)){
+						$errors[] = $error;
 					}
 				}
 			}
 		}
-
 
 		// Assign Requests
 		if (isset($_REQUEST['newAssignee']) && isset($_REQUEST['select']) && $_REQUEST['newAssignee'] != 'unselected'){
 			//Look for which material requests should be modified
 			$selectedRequests = $_REQUEST['select'];
 			$assignee         = $_REQUEST['newAssignee'];
-			if (ctype_digit($assignee) || $assignee == 'unassign') {
+			if (ctype_digit($assignee) || $assignee == 'unassign'){
 				foreach ($selectedRequests as $requestId => $selected){
 					$materialRequest     = new MaterialsRequest();
 					$materialRequest->id = $requestId;
@@ -154,176 +117,180 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 
 					}
 				}
-			} else {
-				$interface->assign('error', 'User to assign the request to was not valid.');
+			}else{
+				$errors[] = 'User to assign the request to was not valid.';
 			}
 		}
 
-		$availableFormats     = MaterialsRequest::getFormats();
-		$defaultFormatsToShow = array_keys($availableFormats);
+		$availableFormats = MaterialsRequest::getFormats();
 		$interface->assign('availableFormats', $availableFormats);
-		if (isset($_REQUEST['formatFilter'])){
-			$formatsToShow                            = $_REQUEST['formatFilter'];
+		if (isset($_REQUEST['formatFilter']) || $updatingFilters){
+			$formatsToShow                            = $_REQUEST['formatFilter'] ?? [];
 			$_SESSION['materialsRequestFormatFilter'] = $formatsToShow;
 		}elseif (isset($_SESSION['materialsRequestFormatFilter'])){
 			$formatsToShow = $_SESSION['materialsRequestFormatFilter'];
 		}else{
-			$formatsToShow = $defaultFormatsToShow;
+			$defaultFormatsToShow = array_keys($availableFormats);
+			$formatsToShow        = $defaultFormatsToShow;
 		}
 		$interface->assign('formatFilter', $formatsToShow);
 
 		//Get a list of all materials requests for the user
-		$allRequests = array();
-		if ($user){
-			$barCodeProperty = 'barcode';
+		$allRequests       = [];
+		$materialsRequests = new MaterialsRequest();
+		$materialsRequests->joinAdd(new Location(), 'LEFT');
+		$materialsRequests->joinAdd(new MaterialsRequestStatus());
+		$materialsRequests->joinAdd(new User(), 'INNER', 'user', 'createdBy');
+		$materialsRequests->joinAdd(new User(), 'LEFT', 'assignee', 'assignedTo');
+		$materialsRequests->selectAdd();
+		$materialsRequests->selectAdd('materials_request.*, description as statusLabel, location.displayName as location, user.firstname, user.lastname, user.barcode, assignee.displayName as assignedTo');
+		$locationsForLibrary = $homeLibrary->getLocationIdsForLibrary();
+		$materialsRequests->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
+		//TODO: can be likely be simplified to user.homeLibraryId now
 
-			$materialsRequests = new MaterialsRequest();
-			$materialsRequests->joinAdd(new Location(), "LEFT");
-			$materialsRequests->joinAdd(new MaterialsRequestStatus());
-			$materialsRequests->joinAdd(new User(), 'INNER', 'user', 'createdBy');
-			$materialsRequests->joinAdd(new User(), 'LEFT', 'assignee', 'assignedTo');
-			$materialsRequests->selectAdd();
-			$materialsRequests->selectAdd('materials_request.*, description as statusLabel, location.displayName as location, user.firstname, user.lastname, user.' . $barCodeProperty . ' as barcode, assignee.displayName as assignedTo');
-			if (UserAccount::userHasRole('library_material_requests')){
-				//Need to limit to only requests submitted for the user's home location
-				$userHomeLibrary     = UserAccount::getUserHomeLibrary();
-				$locationsForLibrary = $userHomeLibrary->getLocationIdsForLibrary();
-				$materialsRequests->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
-			}
+		if (!empty($statusesToShow) && count($availableStatuses) > count($statusesToShow)){
+			$statusSql = $materialsRequests->buildListOfQuotedAndSQLEscapedItems($statusesToShow);
+			$materialsRequests->whereAdd("status in ($statusSql)");
+		}
 
-			if (count($availableStatuses) > count($statusesToShow)){
-				$statusSql = "";
-				foreach ($statusesToShow as $status){
-					if (strlen($statusSql) > 0) $statusSql .= ",";
-					$statusSql .= "'" . $materialsRequests->escape($status) . "'";
-				}
-				$materialsRequests->whereAdd("status in ($statusSql)");
-			}
+		if (!empty($formatsToShow) && count($availableFormats) > count($formatsToShow)){
+			//At least one format is disabled
+			$formatSql = $materialsRequests->buildListOfQuotedAndSQLEscapedItems($formatsToShow);
+			$materialsRequests->whereAdd("format in ($formatSql)");
+		}
 
-			if (count($availableFormats) > count($formatsToShow)){
-				//At least one format is disabled
-				$formatSql = "";
-				foreach ($formatsToShow as $format){
-					if (strlen($formatSql) > 0) $formatSql .= ",";
-					$formatSql .= "'" . $materialsRequests->escape($format) . "'";
-				}
-				$materialsRequests->whereAdd("format in ($formatSql)");
+		if (!empty($assigneesToShow) || $showUnassigned){
+			$condition = $assigneesSql = '';
+			if (!empty($assigneesToShow)){
+				$assigneesSql = $materialsRequests->buildListOfQuotedAndSQLEscapedItems($assigneesToShow);
+				$assigneesSql = "assignedTo IN ($assigneesSql)";
 			}
+			if ($assigneesSql && $showUnassigned){
+				$condition = "($assigneesSql OR assignedTo IS NULL OR assignedTo = 0)";
+			}elseif ($assigneesSql){
+				$condition = $assigneesSql;
+			}elseif ($showUnassigned){
+				$condition = '(assignedTo IS NULL OR assignedTo = 0)';
+			}
+			$materialsRequests->whereAdd($condition);
+		}
 
-			if (!empty($assigneesToShow) || $showUnassigned) {
-				$condition = $assigneesSql = '';
-				if (!empty($assigneesToShow)) {
-					foreach ($assigneesToShow as $assignee) {
-						if (strlen($assigneesSql) > 0) $assigneesSql .= ',';
-						$assigneesSql .= "'{$materialsRequests->escape($assignee)}'";
-					}
-					$assigneesSql = "assignedTo IN ($assigneesSql)";
-				}
-				if ($assigneesSql && $showUnassigned) {
-					$condition = "($assigneesSql OR assignedTo IS NULL OR assignedTo = 0)";
-				} elseif ($assigneesSql) {
-					$condition = $assigneesSql;
-				} elseif ($showUnassigned) {
-					$condition = '(assignedTo IS NULL OR assignedTo = 0)';
-				}
-				$materialsRequests->whereAdd($condition);
+		if (isset($_REQUEST['startDate'])){
+			$startDateString = strip_tags($_REQUEST['startDate']);
+			$startDate       = strtotime($startDateString);
+			if (!empty($startDate) || empty($startDateString)){
+				$_SESSION['MaterialsRequestStartDate'] = $startDateString;
 			}
+		}elseif (!empty($_SESSION['MaterialsRequestStartDate'])){
+			$startDateString = $_SESSION['MaterialsRequestStartDate'];
+			$startDate       = strtotime($startDateString);
+		}
+		if (!empty($startDate)){
+			$materialsRequests->whereAdd("dateCreated >= $startDate");
+			$interface->assign('startDate', $startDateString);
+		}
 
-			//Add filtering by date as needed
-			if (isset($_REQUEST['startDate']) && strlen($_REQUEST['startDate']) > 0){
-				$startDate = strtotime($_REQUEST['startDate']);
-				$materialsRequests->whereAdd("dateCreated >= $startDate");
-				$interface->assign('startDate', $_REQUEST['startDate']);
+		if (isset($_REQUEST['endDate'])){
+			$endDateString = strip_tags($_REQUEST['endDate']);
+			$endDate       = strtotime($endDateString);
+			if (!empty($endDate) || empty($endDateString)){
+				$_SESSION['MaterialsRequestEndDate'] = $endDateString;
 			}
-			if (isset($_REQUEST['endDate']) && strlen($_REQUEST['endDate']) > 0){
-				$endDate = strtotime($_REQUEST['endDate']);
-				$materialsRequests->whereAdd("dateCreated <= $endDate");
-				$interface->assign('endDate', $_REQUEST['endDate']);
-			}
+		}elseif (!empty($_SESSION['MaterialsRequestEndDate'])){
+			$endDateString = $_SESSION['MaterialsRequestEndDate'];
+			$endDate       = strtotime($endDateString);
+		}
+		if (!empty($endDate)){
+			$materialsRequests->whereAdd("dateCreated <= $endDate");
+			$interface->assign('endDate', $endDateString);
+		}
 
-			if (isset($_REQUEST['idsToShow']) && strlen($_REQUEST['idsToShow']) > 0){
-				$idsToShow = $_REQUEST['idsToShow'];
-				$ids = explode(',', $idsToShow);
-				$formattedIds = '';
-				foreach ($ids as $id){
-					if (strlen($formattedIds) > 0) $formattedIds .= ',';
-					$formattedIds .= "'" . trim($id) . "'";
-				}
-				$materialsRequests->whereAdd("materials_request.id IN ($formattedIds)");
-				$interface->assign('idsToShow', $idsToShow);
+		if (isset($_REQUEST['idsToShow'])){
+			$idsToShow = trim(strip_tags($_REQUEST['idsToShow']));
+			if (!empty($idsToShow) || $updatingFilters){
+				$_SESSION['MaterialsRequestIdsToShow'] = $idsToShow;
 			}
+		}elseif (!empty($_SESSION['MaterialsRequestIdsToShow'])){
+			$idsToShow = $_SESSION['MaterialsRequestIdsToShow'];
+		}
+		if (!empty($idsToShow)){
+			$ids          = explode(',', $idsToShow);
+			$formattedIds = $materialsRequests->buildListOfQuotedAndSQLEscapedItems($ids);
+			$materialsRequests->whereAdd("materials_request.id IN ($formattedIds)");
+			$interface->assign('idsToShow', $idsToShow);
+		}
 
-			if ($materialsRequests->find()) {
+		$numRequests = $materialsRequests->find();
+		if (!empty($numRequests)){
+			if ($numRequests < 5000){
 				$allRequests = $materialsRequests->fetchAll();
+			}else{
+				// Some filter settings can cause use to retrieve too many material requests.
+				// So we've set the limit at 5,000 for now, though that seems like quite a large number also.
+				$interface->assign([
+					'error'         => 'Sorry, the filter criteria return too many results. Please select additional filter options.'
+					, 'filterError' => true
+				]);
 			}
-
-			// $assignees used for both set assignee dropdown and filter by assigned To checkboxes
-			// TODO: determine if There is a case where an non-materials request manager can filter.
-			// opac_admins w/o materials_request role would expect to filter by assignee
-			if (UserAccount::userHasRole('library_material_requests')) {
-				$role = new Role();
-				if ($role->get('name', 'library_material_requests')) {
-					// Get Available Assignees
-					$materialsRequestManagers = new User();
-
-					require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
-					$userRole         = new UserRoles();
-					$userRole->roleId = $role->roleId;
-
-					$materialsRequestManagers->joinAdd($userRole);
-					$materialsRequestManagers->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
-					$assignees = array();
-					if ($materialsRequestManagers->find()) {
-						$assignees = $materialsRequestManagers->fetchAll('id', 'displayName');
-					}
-					$interface->assign('assignees', $assignees);
-				}
-			}
-		}else{
-			$interface->assign('error', "You must be logged in to manage requests.");
 		}
 		$interface->assign('allRequests', $allRequests);
 
-		$materialsRequestFieldsToDisplay = new MaterialsRequestFieldsToDisplay();
+		// $assignees used for both set assignee dropdown and filter by assigned To checkboxes
+		$role = new Role();
+		if ($role->get('name', 'library_material_requests')){
+			// Get Available Assignees
+			require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
+			$assignees                = [];
+			$materialsRequestManagers = new User();
+			$userRole                 = new UserRoles();
+			$userRole->roleId         = $role->roleId;
+			$materialsRequestManagers->joinAdd($userRole);
+			$materialsRequestManagers->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
+			//TODO: can be likely be simplified to user.homeLibraryId now
+			if ($materialsRequestManagers->find()){
+				$assignees = $materialsRequestManagers->fetchAll('id', 'displayName');
+			}
+			$interface->assign('assignees', $assignees);
+		}
+
+		$materialsRequestFieldsToDisplay            = new MaterialsRequestFieldsToDisplay();
 		$materialsRequestFieldsToDisplay->libraryId = $homeLibrary->libraryId;
 		$materialsRequestFieldsToDisplay->orderBy('weight');
-		if ($materialsRequestFieldsToDisplay->find() && $materialsRequestFieldsToDisplay->N > 0) {
+		if ($materialsRequestFieldsToDisplay->find()){
 			$columnsToDisplay = $materialsRequestFieldsToDisplay->fetchAll('columnNameToDisplay', 'labelForColumnToDisplay');
-		} else {
+		}else{
 			$columnsToDisplay = $this->defaultColumnsToShow();
 		}
 		$interface->assign('columnsToDisplay', $columnsToDisplay);
 
-		// Find Date Columns for Javascript Table sorter
-		$dateColumns = array();
-		foreach (array_keys($columnsToDisplay) as $index => $column) {
-			if (in_array($column, array('dateCreated', 'dateUpdated'))) {
-				$dateColumns[] = $index;
-			}
-		}
-		$interface->assign('dateColumns', $dateColumns); //data gets added within template
-
 		if (isset($_REQUEST['exportSelected'])){
 			$this->exportToExcel($_REQUEST['select'], $allRequests);
 		}else{
+			if (!empty($errors)){
+				$interface->assign('error', $errors);
+			}
+			$staffEmail     = $user->materialsRequestReplyToAddress; // fetched via __get()
+			if (empty($staffEmail)){
+				$interface->assign('materialRequestStaffSettingsWarning', true);
+			}
 			$this->display('manageRequests.tpl', 'Manage Materials Requests');
 		}
 	}
 
-	function defaultColumnsToShow() {
-		return array(
-			'id'           => 'Id',
-			'title'        => 'Title',
-			'author'       => 'Author',
-			'format'       => 'Format',
-			'createdBy'    => 'Patron',
+	function defaultColumnsToShow(){
+		return [
+			'id'                     => 'Id',
+			'title'                  => 'Title',
+			'author'                 => 'Author',
+			'format'                 => 'Format',
+			'createdBy'              => 'Patron',
 			'placeHoldWhenAvailable' => 'Place a Hold',
-			'illItem'      => 'Inter-Library Loan',
-			'assignedTo'   => 'Assigned To',
-			'status'       => 'Status',
-			'dateCreated'  => 'Created On',
-			'dateUpdated'  => 'Updated On',
-		);
+			'illItem'                => 'Inter-Library Loan',
+			'assignedTo'             => 'Assigned To',
+			'status'                 => 'Status',
+			'dateCreated'            => 'Created On',
+			'dateUpdated'            => 'Updated On',
+		];
 	}
 
 	function exportToExcel($selectedRequestIds, $allRequests){
@@ -335,13 +302,15 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		$objPHPExcel = new PHPExcel();
 
 		// Set properties
-		$objPHPExcel->getProperties()->setCreator("VuFind")
-		->setLastModifiedBy("VuFind")
-		->setTitle("Office 2007 XLSX Document")
-		->setSubject("Office 2007 XLSX Document")
-		->setDescription("Office 2007 XLSX, generated using PHP.")
-		->setKeywords("office 2007 openxml php")
-		->setCategory("Itemless eContent Report");
+		global $interface;
+		$gitBranch = $interface->getVariable('gitBranch');
+		$objPHPExcel->getProperties()->setCreator('Pika ' . $gitBranch)
+			->setLastModifiedBy('Pika ' . $gitBranch)
+			->setTitle("Office 2007 XLSX Document")
+			->setSubject("Office 2007 XLSX Document")
+			->setDescription("Office 2007 XLSX, generated using PHP.")
+			->setKeywords("office 2007 openxml php")
+			->setCategory("Materials Requests Report");
 
 		// Add some data
 		$activeSheet = $objPHPExcel->setActiveSheetIndex(0);
@@ -394,7 +363,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		$numCols = $curCol;
 		//Loop Through The Report Data
 		/** @var MaterialsRequest $request */
-		foreach ($allRequests as $request) {
+		foreach ($allRequests as $request){
 			if (array_key_exists($request->id, $selectedRequestIds)){
 				$curRow++;
 				$curCol = 0;
@@ -469,7 +438,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			}
 		}
 
-		for ($i = 0; $i < $numCols; $i++){
+		for ($i = 0;$i < $numCols;$i++){
 			$activeSheet->getColumnDimensionByColumn($i)->setAutoSize(true);
 		}
 
@@ -487,6 +456,6 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 	}
 
 	function getAllowableRoles(){
-		return array('library_material_requests');
+		return ['library_material_requests'];
 	}
 }

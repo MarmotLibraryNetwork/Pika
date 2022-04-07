@@ -66,7 +66,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		'saveTag',
 		'removeTag',
 		'getProspectorInfo',
-		'getNovelistData',
+//		'getNovelistData',
 		'reloadCover',
 		'reloadNovelistData',
 		'reloadIslandora',
@@ -265,8 +265,8 @@ class GroupedWork_AJAX extends AJAXHandler {
 			}
 			$memoryWatcher->logMemory('Loaded additional go deeper data');
 
-			//Related data
-			$enrichmentResult['relatedContent'] = $interface->fetch('Record/relatedContent.tpl');
+//			//Related data
+//			$enrichmentResult['relatedContent'] = $interface->fetch('Record/relatedContent.tpl');
 		}
 
 		return $enrichmentResult;
@@ -297,10 +297,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 			}
 		}
 		global $interface;
-		if (!isset($record['id'])){
-			$interface->assign('noResultOriginalId',  $_REQUEST['id']);
-			$interface->assign('series',  $series);
-		}
 		$interface->assign('index', $titleIndexNumber);
 		$interface->assign('scrollerName', $scrollerName);
 		$interface->assign('id', $record['id'] ?? null);
@@ -308,6 +304,10 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$interface->assign('author', $record['author']);
 		$interface->assign('linkUrl', $record['fullRecordLink'] ?? null);
 		$interface->assign('bookCoverUrlMedium', $record['mediumCover']);
+
+		// Have to empty these template variables when we do have the Id so that the right thing is displayed
+		$interface->assign('noResultOriginalId',  isset($record['id']) ? '' : $_REQUEST['id']);
+		$interface->assign('series',  $series ?? null);
 
 		return [
 			'id'             => $record['id'] ?? '',
@@ -1606,15 +1606,15 @@ function getSaveSeriesToListForm(){
 		return $result;
 	}
 
-	function getNovelistData(){
-		$url             = $_REQUEST['novelistUrl'];
-		$rawNovelistData = file_get_contents($url);
-		//Trim off the wrapping data ();
-		$rawNovelistData = substr($rawNovelistData, 1, -2);
-		$jsonData        = json_decode($rawNovelistData);
-		$novelistData    = $jsonData->body;
-		echo($novelistData);
-	}
+//	function getNovelistData(){
+//		$url             = $_REQUEST['novelistUrl'];
+//		$rawNovelistData = file_get_contents($url);
+//		//Trim off the wrapping data ();
+//		$rawNovelistData = substr($rawNovelistData, 1, -2);
+//		$jsonData        = json_decode($rawNovelistData);
+//		$novelistData    = $jsonData->body;
+//		echo($novelistData);
+//	}
 
 	function reloadCover(){
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
@@ -1700,9 +1700,12 @@ function getSaveSeriesToListForm(){
 				'groupedWorkId' => $seriesEntry['id'] ?? null,
 			];
 		}
+		global $interface;
 		$objPHPExcel = new PHPExcel();
-		$objPHPExcel->getProperties()->setCreator("DCL")
-			->setLastModifiedBy("DCL")
+		$gitBranch   = $interface->getVariable('gitBranch');
+		$objPHPExcel->getProperties()->setCreator('Pika ' . $gitBranch)
+			->setLastModifiedBy('Pika ' . $gitBranch)
+			->setTitle("Office 2007 XLSX Document")
 			->setTitle("Office 2007 XLSX Document")
 			->setSubject("Office 2007 XLSX Document")
 			->setDescription("Office 2007 XLSX, generated using PHP.")

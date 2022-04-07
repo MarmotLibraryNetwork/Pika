@@ -49,7 +49,7 @@
 							<td>{$request->author}</td>
 							<td>{$request->format}</td>
 							<td>{$request->statusLabel|translate}</td>
-							<td>{$request->dateCreated|date_format}</td>
+							<td><span data-date="{$request->dateCreated}">{$request->dateCreated|date_format}</span></td>
 							<td>
 								<a role="button" onclick='Pika.MaterialsRequest.showMaterialsRequestDetails("{$request->id}", false)' class="btn btn-info btn-sm">Details</a>
 								{if $request->status == $defaultStatus}
@@ -69,6 +69,11 @@
 <script type="text/javascript">
 	{literal}
 	$(document).ready(function(){
+		$.fn.dataTable.ext.order['dom-date'] = function (settings, col){
+			return this.api().column(col, {order: 'index'}).nodes().map(function (td, i){
+				return $('span', td).attr("data-date");
+			});
+		}
 		$('#requestedMaterials').DataTable({
 			"columns":[
 				null,

@@ -155,10 +155,10 @@ Pika.GroupedWork = (function(){
 						if (Pika.GroupedWork.hasTableOfContentsInRecord){
 							$("#tableofcontentstab_label,#tableOfContentsPlaceholder,#tableOfContentsPanel").show();
 						}
-						var relatedContentData = data.relatedContent;
-						if (relatedContentData && relatedContentData.length > 0) {
-							$("#relatedContentPlaceholder").html(relatedContentData);
-						}
+						// var relatedContentData = data.relatedContent;
+						// if (relatedContentData && relatedContentData.length > 0) {
+						// 	$("#relatedContentPlaceholder").html(relatedContentData);
+						// }
 						var similarTitlesNovelist = data.similarTitlesNovelist;
 						if (similarTitlesNovelist && similarTitlesNovelist.length > 0){
 							$("#novelisttitlesPlaceholder").html(similarTitlesNovelist);

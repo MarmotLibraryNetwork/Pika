@@ -4,25 +4,28 @@
 		<table class="adminTable table table-striped order-column table-condensed" id="adminTable">
 			<thead>
 			<tr>
-				<th><label title='Library'>Library</label></th>
-				<th><label title='Num Objects'>Num Objects</label></th>
-				<th><label title='Num in DPLA'>Num in DPLA</label></th>
-				<th><label title='Disk Space'>Disk Space Used</label></th>
+				<th><label title="Library">Library</label></th>
+				<th><label title="Archive Name Space">Archive Name Space</label></th>
+				<th><label title="Num Objects">Num Objects</label></th>
+				<th><label title="Num in DPLA">Num in DPLA</label></th>
+				<th><label title="Disk Space">Disk Space Used</label></th>
 			</tr>
 			</thead>
 			<tbody>
 				{foreach from=$usageByNamespace item=libraryData}
-					<tr class='{cycle values="odd,even"}'>
+					<tr>
 						<td>{$libraryData.displayName}</td>
+						<td>{$libraryData.nameSpace}</td>
 						<td>{$libraryData.numObjects}</td>
 						<td>{$libraryData.numDpla}</td>
-						<td>{$libraryData.driveSpace}</td>
+						<td>{$libraryData.driveSpaceDisplay}</td>
 					</tr>
 				{/foreach}
 			</tbody>
 			<tfoot>
 				<tr>
-					<td><strong></strong></td>
+					<td></td>
+					<td></td>
 					<td><strong>{$totalObjects}</strong></td>
 					<td><strong>{$totalDpla}</strong></td>
 					<td><strong>{$totalDriveSpace} GB</strong></td>

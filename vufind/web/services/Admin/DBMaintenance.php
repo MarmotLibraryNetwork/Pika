@@ -1756,12 +1756,15 @@ class DBMaintenance extends Admin_Admin {
 	}
 
 	function encryptUserPasswords() {
+		set_time_limit(6000);
 		$user = new User();
 		$user->find();
 
 		while ($user->fetch()) {
-			$password = $user->password;
-			$user->updatePassword($password);
+			if (strlen($user->password) != 56){
+				$password = $user->password;
+				$user->updatePassword($password);
+			}
 		}
 	}
 }
