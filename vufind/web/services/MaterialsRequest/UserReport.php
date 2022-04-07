@@ -30,8 +30,8 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 	function launch(){
 		global $configArray;
 		global $interface;
-		$user = UserAccount::getLoggedInUser();
-		$homeLibrary                       = UserAccount::getUserHomeLibrary();
+		$user        = UserAccount::getLoggedInUser();
+		$homeLibrary = UserAccount::getUserHomeLibrary();
 
 		//Load status information
 		$availableStatuses                 = [];
