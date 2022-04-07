@@ -33,6 +33,9 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		$errors                            = [];
 		$availableStatuses                 = [];
 		$defaultStatusesToShow             = [];
+		$defaultStatuses                   = [];
+		$openStatuses                      = [];
+		$closedStatuses                    = [];
 		$materialsRequestStatus            = new MaterialsRequestStatus();
 		$user                              = UserAccount::getLoggedInUser();
 		$homeLibrary                       = $user->getHomeLibrary();
@@ -41,11 +44,22 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		if ($materialsRequestStatus->find()){
 			while ($materialsRequestStatus->fetch()){
 				$availableStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
-				if ($materialsRequestStatus->isOpen == 1 || $materialsRequestStatus->isDefault == 1){
-					$defaultStatusesToShow[] = $materialsRequestStatus->id;
+				if ($materialsRequestStatus->isDefault == 1){
+					$defaultStatusesToShow[]                      = $materialsRequestStatus->id;
+					$defaultStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
+				}elseif ($materialsRequestStatus->isOpen == 1){
+					$openStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
+					$defaultStatusesToShow[]                   = $materialsRequestStatus->id;
+				}else{
+					$closedStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
 				}
 			}
-			$interface->assign('availableStatuses', $availableStatuses);
+			$interface->assign([
+				'availableStatuses' => $availableStatuses,
+				'defaultStatuses'   => $defaultStatuses,
+				'openStatuses'      => $openStatuses,
+				'closedStatuses'    => $closedStatuses,
+			]);
 		}else{
 			$errors[] = 'No Materials Requests statuses found.';
 		}
@@ -273,6 +287,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			if (empty($staffEmail)){
 				$interface->assign('materialRequestStaffSettingsWarning', true);
 			}
+			$interface->assign('instructions', $this->getInstructions());
 			$this->display('manageRequests.tpl', 'Manage Materials Requests');
 		}
 	}
@@ -458,4 +473,9 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 	function getAllowableRoles(){
 		return ['library_material_requests'];
 	}
+
+	function getInstructions(){
+		return 'For more information about Manage Requests configuration, see the <a href="https://marmot-support.atlassian.net/l/c/tmgM8ypn">online documentation</a>.';
+	}
+
 }
