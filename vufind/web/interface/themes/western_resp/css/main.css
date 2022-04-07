@@ -3262,6 +3262,10 @@ input[type="button"].btn-block {
     left: auto;
   }
 }
+#searchType.dropdown-menu {
+  left: auto;
+  right: 0;
+}
 .btn-group,
 .btn-group-vertical {
   position: relative;
