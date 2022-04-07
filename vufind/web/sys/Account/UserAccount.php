@@ -371,8 +371,8 @@ class UserAccount {
 		if(!is_object($user)) {
 			$logger = new Logger(__CLASS__);
 			$st = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5);
-			$logger->debug("Can't update session. User not set.", ["stack_trace"=>$st]);
-			return;
+			$logger->warn("Can't update session. User not set.", ["stack_trace"=>$st]);
+			return false;
 		}
 
 		$_SESSION['activeUserId'] = $user->id;
