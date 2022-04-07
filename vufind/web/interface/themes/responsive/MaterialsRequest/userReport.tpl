@@ -50,12 +50,12 @@
 							<label for="startDate" class="control-label col-sm-2">Start Date</label>
 							<div class="input-group input-append date controls col-sm-3" id="startDatePicker">
 								<input type="text" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%m/%d/%Y'}"
-								       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
-								       class="form-control" >
+											 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
+											 class="form-control" >
 								<span class="input-group-addon">
 											<span class="glyphicon glyphicon-calendar"
-											      onclick="$('#startDate').focus().datepicker('show')"
-											      aria-hidden="true">
+														onclick="$('#startDate').focus().datepicker('show')"
+														aria-hidden="true">
 											</span>
 										</span>
 							</div>
@@ -64,12 +64,12 @@
 							<label for="endDate" class="control-label col-sm-2">End Date</label>
 							<div class="input-group input-append date controls col-sm-3" id="endDatePicker">
 								<input type="text" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%m/%d/%Y'}"
-								       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
-								       class="form-control">
+											 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
+											 class="form-control">
 								<span class="input-group-addon">
 											<span class="glyphicon glyphicon-calendar"
-											      onclick="$('#endDate').focus().datepicker('show')"
-											      aria-hidden="true">
+														onclick="$('#endDate').focus().datepicker('show')"
+														aria-hidden="true">
 											</span>
 										</span>
 							</div>
@@ -108,17 +108,15 @@
 				</tbody>
 			</table>
 
-      {* Export to Excel option *}
+			{* Export to Excel option *}
 		<form action="{$fullPath}" method="get">
 			<input type="submit" id="exportToExcel" name="exportToExcel" value="Export to Excel" class="btn btn-default">
-			{foreach from=$availableStatuses item=statusLabel key=status}
-				{if in_array($status, $statusFilter)}
+				{foreach from=$statusFilter item=status}
 					<input type="hidden" name="statusFilter[]" value="{$status}">
-				{/if}
-			{/foreach}
+				{/foreach}
 		</form>
 
-    {/if}
+		{/if}
 
 	</div>
 
