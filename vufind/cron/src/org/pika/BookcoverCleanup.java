@@ -40,9 +40,9 @@ public class BookcoverCleanup implements IProcessHandler {
 				coverAge = Integer.parseInt(coverAgeInDaysToDelete);
 			}
 			// command line setting should override config ini setting
-			if (processSettings.containsKey("coverAgeInDaysToDelete")){
+			if (processSettings.containsKey("coverAgeInDaysToDelete")) {
 				coverAgeInDaysToDelete = processSettings.get("coverAgeInDaysToDelete");
-				if (coverAgeInDaysToDelete != null && !coverAgeInDaysToDelete.isEmpty()){
+				if (coverAgeInDaysToDelete != null && !coverAgeInDaysToDelete.isEmpty()) {
 					coverAge = Integer.parseInt(coverAgeInDaysToDelete);
 				}
 			}
@@ -55,11 +55,12 @@ public class BookcoverCleanup implements IProcessHandler {
 			}
 			final String note = "Deleting covers older than " + coverAge + " days";
 			processLog.addNote(note);
-			if (logger.isInfoEnabled()){
+			if (logger.isInfoEnabled()) {
 				logger.info(note);
 			}
 		}
 
+		// Delete Cover Images
 		try {
 			for (String path : coverPaths) {
 				int    numFilesDeleted    = 0;
@@ -75,7 +76,7 @@ public class BookcoverCleanup implements IProcessHandler {
 					File[] filesToCheck = coverDirectoryFile.listFiles((dir, name) -> name.toLowerCase().endsWith("png") || name.toLowerCase().endsWith("jpg"));
 					if (filesToCheck != null) {
 						for (File curFile : filesToCheck) {
-							//Remove any files created more than 2 weeks ago.
+							//Remove any files created more than coverAge days ago.
 							if (curFile.lastModified() < (currentTime - (long) coverAge * 24 * 3600 * 1000)) {
 								if (curFile.delete()) {
 									numFilesDeleted++;
@@ -90,7 +91,7 @@ public class BookcoverCleanup implements IProcessHandler {
 					if (numFilesDeleted > 0) {
 						final String note = "Removed " + numFilesDeleted + " files from " + fullPath + ".";
 						processLog.addNote("\t" + note);
-						if (logger.isInfoEnabled()){
+						if (logger.isInfoEnabled()) {
 							logger.info(note);
 						}
 					}
@@ -99,7 +100,9 @@ public class BookcoverCleanup implements IProcessHandler {
 		} catch (Exception e) {
 			logger.error("Unknown Error while cleaning covers.", e);
 		}
-			String   qrCodePath              = PikaConfigIni.getIniValue("Site", "qrcodePath");
+
+		// Delete QR Code Images
+		String qrCodePath = PikaConfigIni.getIniValue("Site", "qrcodePath");
 		if (qrCodePath != null && !qrCodePath.isEmpty()) {
 			try {
 				final String note = "Deleting qrcode images older than " + coverAge + " days";
@@ -107,8 +110,8 @@ public class BookcoverCleanup implements IProcessHandler {
 				if (logger.isInfoEnabled()) {
 					logger.info(note);
 				}
-				int    numFilesDeleted    = 0;
-				File   coverDirectoryFile = new File(qrCodePath);
+				int  numFilesDeleted    = 0;
+				File coverDirectoryFile = new File(qrCodePath);
 				if (!coverDirectoryFile.exists()) {
 					processLog.incErrors();
 					processLog.addNote("Directory " + coverDirectoryFile.getAbsolutePath() + " does not exist.  Please check configuration file.");
@@ -119,7 +122,7 @@ public class BookcoverCleanup implements IProcessHandler {
 					File[] filesToCheck = coverDirectoryFile.listFiles((dir, name) -> name.toLowerCase().endsWith("png") || name.toLowerCase().endsWith("jpg"));
 					if (filesToCheck != null) {
 						for (File curFile : filesToCheck) {
-							//Remove any files created more than 2 weeks ago.
+							//Remove any files created more than coverAge days ago.
 							if (curFile.lastModified() < (currentTime - (long) coverAge * 24 * 3600 * 1000)) {
 								if (curFile.delete()) {
 									numFilesDeleted++;
@@ -141,7 +144,52 @@ public class BookcoverCleanup implements IProcessHandler {
 				}
 
 			} catch (Exception e) {
-				logger.error("Unknown Error while cleaning covers.", e);
+				logger.error("Unknown Error while cleaning qrcode images.", e);
+			}
+		}
+
+		// Delete Materials Request Summary Chart Images
+		String materialsRequestSummaryCharts = PikaConfigIni.getIniValue("Site", "local");
+		if (materialsRequestSummaryCharts != null && !materialsRequestSummaryCharts.isEmpty()) {
+			materialsRequestSummaryCharts += "/images/charts/";
+			try {
+				final String note = "Deleting Materials Request Summary Chart images";
+				processLog.addNote(note);
+				if (logger.isInfoEnabled()) {
+					logger.info(note);
+				}
+				int  numFilesDeleted    = 0;
+				File coverDirectoryFile = new File(materialsRequestSummaryCharts);
+				if (!coverDirectoryFile.exists()) {
+					processLog.incErrors();
+					processLog.addNote("Directory " + coverDirectoryFile.getAbsolutePath() + " does not exist.  Please check configuration file.");
+					processLog.saveToDatabase(pikaConn, logger);
+				} else {
+					processLog.addNote("Cleaning up qrcode images in " + coverDirectoryFile.getAbsolutePath());
+					processLog.saveToDatabase(pikaConn, logger);
+					File[] filesToCheck = coverDirectoryFile.listFiles((dir, name) -> name.toLowerCase().endsWith("png") || name.toLowerCase().endsWith("jpg"));
+					if (filesToCheck != null) {
+						for (File curFile : filesToCheck) {
+								if (curFile.delete()) {
+									numFilesDeleted++;
+									processLog.incUpdated();
+								} else {
+									processLog.incErrors();
+									processLog.addNote("Unable to delete file " + curFile);
+								}
+						}
+					}
+					if (numFilesDeleted > 0) {
+						final String aNote = "Removed " + numFilesDeleted + " files from " + materialsRequestSummaryCharts + ".";
+						processLog.addNote("\t" + aNote);
+						if (logger.isInfoEnabled()) {
+							logger.info(aNote);
+						}
+					}
+				}
+
+			} catch (Exception e) {
+				logger.error("Unknown Error while cleaning materials request summary chart images.", e);
 			}
 		}
 		processLog.setFinished();
