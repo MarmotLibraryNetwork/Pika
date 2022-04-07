@@ -302,6 +302,7 @@ class UserAccount {
 					$cat_username   = $userData->cat_username;
 					$accountProfile = $userData->getAccountProfile();
 					if ($accountProfile->loginConfiguration == "barcode_pin") {
+						$cat_username   = $userData->barcode;
 						$barcode_or_pin = $userData->getPassword();
 					} else {
 						$barcode_or_pin = $userData->barcode;
@@ -361,7 +362,7 @@ class UserAccount {
 	}
 
 	/**
-	 * Updates the user information in the session and in memcache
+	 * Updates the user information in the session
 	 *
 	 * @param User $user
 	 */
