@@ -91,7 +91,7 @@ class UserAccount {
 							//Set the active user id for the user
 							$user = new User();
 							//TODO this may need to change if anyone but Fort Lewis ever does CAS authentication
-							$user->cat_password = $casUsername;
+							$user->barcode = $casUsername;
 							if ($user->find(true)){
 								$_SESSION['activeUserId']             = $user->id;
 								UserAccount::$primaryUserObjectFromDB = $user;
@@ -368,11 +368,12 @@ class UserAccount {
 	 */
 	public static function updateSession($user){
 
-		// it's possible $user is empty-- skip session update if so.
-		// todo: need error checking here
-//		if(empty($user)) {
-//			return;
-//		}
+		if(!is_object($user)) {
+			$logger = new Logger(__CLASS__);
+			$st = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5);
+			$logger->debug("Can't update session. User not set.", ["stack_trace"=>$st]);
+			return;
+		}
 
 		$_SESSION['activeUserId'] = $user->id;
 
