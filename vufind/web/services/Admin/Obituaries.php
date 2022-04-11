@@ -42,7 +42,7 @@ class Obituaries extends ObjectEditor {
 	}
 
 	function getPrimaryKeyColumn(){
-		return array('personId', 'source', 'date');
+		return ['personId', 'source', 'date'];
 	}
 
 	function getIdKeyColumn(){
@@ -50,11 +50,20 @@ class Obituaries extends ObjectEditor {
 	}
 
 	function getAllowableRoles(){
-		return array('genealogyContributor');
+		return ['genealogyContributor'];
 	}
 
-	function getRedirectLocation($objectAction, $curObject){
+	function getRedirectLocation($curObject, $objectAction = null){
 		return '/Person/' . $curObject->personId;
+	}
+
+	function getAdditionalObjectActions($existingObject){
+		return [
+			[
+				'text' => 'Return to Person',
+				'url' => '/Person/' . $existingObject->personId
+			]
+		];
 	}
 
 	function showReturnToList(){

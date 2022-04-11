@@ -42,7 +42,7 @@ class Marriages extends ObjectEditor {
 	}
 
 	function getPrimaryKeyColumn(){
-		return array('personId', 'spouseName', 'date');
+		return ['personId', 'spouseName', 'date'];
 	}
 
 	function getIdKeyColumn(){
@@ -50,11 +50,20 @@ class Marriages extends ObjectEditor {
 	}
 
 	function getAllowableRoles(){
-		return array('genealogyContributor');
+		return ['genealogyContributor'];
 	}
 
-	function getRedirectLocation($objectAction, $curObject){
+	function getRedirectLocation($curObject, $objectAction = null){
 		return '/Person/' . $curObject->personId;
+	}
+
+	function getAdditionalObjectActions($existingObject){
+		return [
+			[
+				'text' => 'Return to Person',
+				'url' => '/Person/' . $existingObject->personId
+			]
+		];
 	}
 
 	function showReturnToList(){
