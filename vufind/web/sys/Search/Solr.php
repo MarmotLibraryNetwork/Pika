@@ -800,6 +800,12 @@ class Solr implements IndexEngine {
 
 							}
 							break;
+						case 'shortId':
+							// Genealogy Id number field
+							if (!ctype_digit($fieldValue)){
+								// If the search phrase is'nt all numbers, don't add this clause to the query
+								continue 2;
+							}
 					}
 
 					if ($isKeyWordSearchSpec){
