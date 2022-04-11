@@ -13,14 +13,12 @@
 				</div>
 			{/if}
 		</p>
-      {if $obituary->contents && $obituary->picture}
-				<p class="obituaryText">{if $obituary->picture|escape}<a href="{$obituary->getImageUrl('large')}"><img class="obitPicture" src="{$obituary->getImageUrl('medium')}" alt="Image of Obituary Text"></a>{/if}{$obituary->contents|escape}</p>
-				<div class="clearer"></div>
-      {elseif $obituary->contents}
-				<p class="obituaryText">{$obituary->contents|escape|replace:"\r":"<br>"}</p>
-				<div class="clearer"></div>
-      {elseif $obituary->picture}
+      {if $obituary->picture}
 				<p class="obituaryPicture">{if $obituary->picture|escape}<a href="{$obituary->getImageUrl('large')}"><img class="obitPicture" src="{$obituary->getImageUrl('medium')}" alt="Image of Obituary Text"></a>{/if}</p>
+				<div class="clearer"></div>
+      {/if}
+      {if $obituary->contents}
+				<p class="obituaryText">{$obituary->contents|escape|replace:"\r":"<br>"}</p>
 				<div class="clearer"></div>
       {/if}
 	{/foreach}
