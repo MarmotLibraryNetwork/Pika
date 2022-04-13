@@ -1,13 +1,33 @@
 {strip}
-	{* Display more information about the title*}
-	{if $recordDriver->getAuthor()}
-		<div class="row">
-			<div class="result-label col-md-3">Author: </div>
-			<div class="col-md-9 result-value">
-				<a href='/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a>
+
+			<div class="row">
+				{foreach from=$recordDriver->getDetailedContributors() item=contributor name=loop}
+          {if $smarty.foreach.loop.index == 5}
+				<div id="showAdditionalContributorsLink">
+					<a onclick="Pika.Record.moreContributors(); return false;" href="#">{translate text='more'} ...</a>
+				</div>
+          {*create hidden div*}
+				<div id="additionalContributors" style="display:none">
+					{/if}
+					{if $contributor.role != "Other"}
+					<div class="result-label col-md-3">{translate text=$contributor.role}:</div>
+						<div class="result-value col-md-9">
+							{if $contributor.role == "Author"}
+							<a href='/Author/Home?author="{$contributor.name|trim|escape:"url"}"'>{$contributor.name|escape}</a>
+							{else}
+                  {$contributor.name|escape}
+							{/if}
+						</div>
+					{/if}
+				{/foreach}
+            {if $smarty.foreach.loop.index >= 5}
+					<div>
+						<a href="#" onclick="Pika.Record.lessContributors(); return false;">{translate text='less'} ...</a>
+					</div>
+				</div>{* closes hidden div *}
+          {/if}
 			</div>
-		</div>
-	{/if}
+
 
 	{if $recordDriver->getSeries()}
 		<div class="series row">
