@@ -193,12 +193,9 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @return  array               Strings representing citation formats.
 	 */
 	public function getDetailedContributors(){
-		$overDriveAPIProduct              = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
-		$overDriveAPIProduct->overdriveId = strtolower($this->id);
 
-		if ($overDriveAPIProduct->find(true)){
 			$overDriveAPIProductCreators     = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductCreators();
-			$overDriveAPIProductCreators->productId = $overDriveAPIProduct->id;
+			$overDriveAPIProductCreators->productId = $this->overDriveProduct->id;
 			$overDriveAPIProductCreators->orderBy("role");
 			if ($overDriveAPIProductCreators->find()){
 				while($overDriveAPIProductCreators->fetch()){
@@ -209,7 +206,7 @@ class OverDriveRecordDriver extends RecordInterface {
 					$this->detailedContributors[] = $curContributor;
 				}
 			}
-		}
+
 
 		return $this->detailedContributors;
 	}
