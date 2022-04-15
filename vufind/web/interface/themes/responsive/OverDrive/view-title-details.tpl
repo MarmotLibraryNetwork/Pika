@@ -12,7 +12,11 @@
 					{if $contributor.role != "Other"}
 					<div class="result-label col-md-3">{translate text=$contributor.role}:</div>
 						<div class="result-value col-md-9">
+							{if $contributor.role == "Author"}
 							<a href='/Author/Home?author="{$contributor.name|trim|escape:"url"}"'>{$contributor.name|escape}</a>
+							{else}
+								<a href='/Search/Results?basicType=Author&lookfor="{$contributor.name|trim|escape:"url"}"'>{$contributor.name|escape}</a>
+							{/if}
 						</div>
 					{/if}
 				{/foreach}
