@@ -300,7 +300,7 @@ class Solr implements IndexEngine {
 
 		// Populate the protectedWords array as we load the searchSpecs since both will be used to build solr queries
 		if ($this->_protectedWords === false){
-			$protectedWords = $this->cache->get('searchProtectedWords');
+			$protectedWords = $this->debugSolrQuery ? null : $this->cache->get('searchProtectedWords');
 			if (empty($protectedWords) && file_exists($this->_protectedWordsFile)){
 				$protectedWords = [];
 				$temp         = file_get_contents($this->_protectedWordsFile);
@@ -2233,13 +2233,12 @@ class Solr implements IndexEngine {
 	 * @return  bool                Fixed input
 	 * @access  public
 	 */
-	public function validateInput($input)
-	{
+	public function validateInput($input){
 		//Get rid of any spaces at the end
 		$input = trim($input);
 
 		// Normalize fancy quotes:
-		$quotes = array(
+		$quotes = [
 			"\xC2\xAB" => '"', // Â« (U+00AB) in UTF-8
 			"\xC2\xBB" => '"', // Â» (U+00BB) in UTF-8
 			"\xE2\x80\x98" => "'", // â€˜ (U+2018) in UTF-8
@@ -2252,7 +2251,7 @@ class Solr implements IndexEngine {
 			"\xE2\x80\x9F" => '"', // â€Ÿ (U+201F) in UTF-8
 			"\xE2\x80\xB9" => "'", // â€¹ (U+2039) in UTF-8
 			"\xE2\x80\xBA" => "'", // â€º (U+203A) in UTF-8
-		);
+		];
 		$input  = strtr($input, $quotes);
 
 		// If the user has entered a lone BOOLEAN operator, convert it to lowercase
@@ -2268,7 +2267,7 @@ class Solr implements IndexEngine {
 
 		// If the string consists only of control characters and/or BOOLEANs with no
 		// other input, wipe it out entirely to prevent weird errors:
-		$operators = array('AND', 'OR', 'NOT', '+', '-', '"', '&', '|');
+		$operators = ['AND', 'OR', 'NOT', '+', '-', '"', '&', '|'];
 		if (trim(str_replace($operators, '', $input)) == '') {
 			return '';
 		}
@@ -2288,7 +2287,7 @@ class Solr implements IndexEngine {
 		$start = preg_match_all('/\(/', $input, $tmp);
 		$end   = preg_match_all('/\)/', $input, $tmp);
 		if ($start != $end) {
-			$input = str_replace(array('(', ')'), '', $input);
+			$input = str_replace(['(', ')'], '', $input);
 		}
 
 		// Check to make sure we have an even number of quotes
@@ -2313,7 +2312,7 @@ class Solr implements IndexEngine {
 		// invalid brackets/braces, and transform our tokens back into valid ones.
 		// Obviously, the order of the patterns/merges array is critically
 		// important to get this right!!
-		$patterns = array(
+		$patterns = [
 			// STEP 1 -- escape valid brackets/braces
 			'/\[([^\[\]\s]+\s+TO\s+[^\[\]\s]+)\]/',
 			'/\{([^\{\}\s]+\s+TO\s+[^\{\}\s]+)\}/',
@@ -2324,8 +2323,8 @@ class Solr implements IndexEngine {
 			'/\^\^rbrack\^\^/',
 			'/\^\^lbrace\^\^/',
 			'/\^\^rbrace\^\^/'
-		);
-		$matches  = array(
+		];
+		$matches  = [
 			// STEP 1 -- escape valid brackets/braces
 			'^^lbrack^^$1^^rbrack^^',
 			'^^lbrace^^$1^^rbrace^^',
@@ -2336,22 +2335,32 @@ class Solr implements IndexEngine {
 			']',
 			'{',
 			'}'
-		);
-		$input    = preg_replace($patterns, $matches, $input);
+		];
+		$input = preg_replace($patterns, $matches, $input);
 
-		//Remove any exclamation marks that Solr will handle incorrectly.
-		$input = str_replace('!', ' ', $input);
+		//Remove any semi-colons or  any slashes that Solr will handle incorrectly.
+		$input = str_replace([';', '\\', '/',],' ', $input);
 
-		//Remove any semi-colons that Solr will handle incorrectly.
-		$input = str_replace(';', ' ', $input);
+		// Ensure $this->_protectedWords has already been loaded
+		if ($this->_searchSpecs === false){
+			$this->_loadSearchSpecs();
+		}
 
-		//Remove any slashes that Solr will handle incorrectly.
-		$input = str_replace('\\', ' ', $input);
-		$input = str_replace('/', ' ', $input);
-		//$input = preg_replace('/\\\\(?![&:])/', ' ', $input);
-
-		//Look for any colons that are not identifying fields
-
+		if (strpos($input, '!') !== false){
+			//Remove any exclamation marks that Solr will handle incorrectly.
+			// But not for any of our protected words. eg P!nk
+			if ($this->_protectedWords){
+				$tokens = explode(' ', $input);
+				foreach ($tokens as &$token){
+					if (!in_array($token, $this->_protectedWords)){
+						$token = str_replace('!', ' ', $token);
+					}
+				}
+				$input = implode(' ', $tokens);
+			}else{
+				$input = str_replace('!', ' ', $input);
+			}
+		}
 
 		return $input;
 	}

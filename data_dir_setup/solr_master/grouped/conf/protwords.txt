@@ -1,6 +1,9 @@
 # List of words to protect from processing in Solr index and query analyzers
 # Especially solr field type text
 
+P!nk
+p!nk
+
 A+
 c--
 C--
