@@ -105,8 +105,6 @@ class AJAX extends AJAXHandler {
 
 	function GetAutoSuggestList(){
 		require_once ROOT_DIR . '/sys/Search/SearchSuggestions.php';
-		global $timer;
-		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
 		$searchTerm        = $_REQUEST['searchTerm'] ?? $_REQUEST['q'];
@@ -118,14 +116,12 @@ class AJAX extends AJAXHandler {
 			$commonSearches    = $suggestions->getAllSuggestions($searchTerm, $searchType);
 			$commonSearchTerms = [];
 			foreach ($commonSearches as $searchTerm){
-				if (is_array($searchTerm)){
-					$commonSearchTerms[] = $searchTerm['phrase'];
-				}else{
-					$commonSearchTerms[] = $searchTerm;
-				}
+				$commonSearchTerms[] = $searchTerm['phrase'];
 			}
 			$searchSuggestions = json_encode($commonSearchTerms);
+			global $configArray;
 			$memCache->set($cacheKey, $searchSuggestions, 0, $configArray['Caching']['search_suggestions']);
+			global $timer;
 			$timer->logTime("Loaded search suggestions $cacheKey");
 		}
 		return $searchSuggestions;

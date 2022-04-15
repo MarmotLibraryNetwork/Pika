@@ -1614,7 +1614,7 @@ abstract class SearchObject_Base {
 	protected function replaceSearchTerm($from, $to) {
 		// Escape $from so it is regular expression safe (just in case it
 		// includes any weird punctuation -- unlikely but possible):
-		$from = addcslashes($from, '\^$.[]|()?*+{}/');
+		$from = preg_quote($from, '/');
 
 		// If we are looking for a quoted phrase
 		// we can't use word boundaries

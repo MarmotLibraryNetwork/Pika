@@ -1,7 +1,7 @@
 
 <div id="searchInfo">
 
-    {if $searchType == 'advanced'}
+		{if $searchType == 'advanced'}
 			<div id="advanced-search" class="well well-sm">
 {*				<h5>Advanced Search Query : </h5>*}
 				<code id="advanced-search-display-query">{$lookfor|escape:"html"}</code>
@@ -10,7 +10,7 @@
 				<a href="/Search/Advanced">{translate text='Edit This Advanced Search'}</a>
 				</div>
 			</div>
-    {/if}
+		{/if}
 
 
 	{* Recommendations *}
@@ -20,7 +20,11 @@
 		{/foreach}
 	{/if}
 {include file="Search/bookbag.tpl"}
-	{* Information about the search *}
+
+		{* Search Replacement Term notice *}
+		{include file="Search/search-replacementTerm-notice.tpl"}
+
+    {* Information about the search *}
 	<div class="result-head">
 
 		<div>
@@ -39,13 +43,6 @@
 			 {translate text='query time'}: {$qtime}s
 			</span>
 		</div>
-
-		{if $replacementTerm}
-			<div id="replacement-search-info-block">
-				<div id="replacement-search-info"><span class="replacement-search-info-text">Showing Results for</span> {$replacementTerm}</div>
-				<div id="original-search-info"><span class="replacement-search-info-text">Search instead for </span><a href="{$oldSearchUrl}">{$oldTerm}</a></div>
-			</div>
-		{/if}
 
 		{* Search Debugging *}
 		{include file="Search/search-debug.tpl"}
@@ -101,7 +98,7 @@
 <script type="text/javascript">
 	$('.checkbox-results').change(function(){ldelim}
 				Pika.GroupedWork.showBookbag(this);
-      {rdelim});
+			{rdelim});
 	$('.bookbag').click(function(){ldelim}
 			Pika.GroupedWork.openBookbag(this);
 	{rdelim});
@@ -118,7 +115,7 @@
 		{rdelim}
 
 		{if $showProspectorLink}
-      {* Include slight delay to give time for the search to be saved into the database for retrieval here. See D-3592 *}
+			{* Include slight delay to give time for the search to be saved into the database for retrieval here. See D-3592 *}
 			setTimeout(function(){ldelim} Pika.Prospector.getProspectorResults(5, {$prospectorSavedSearchId}); {rdelim}, 237);
 		{/if}
 
