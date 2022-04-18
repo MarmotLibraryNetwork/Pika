@@ -36,7 +36,7 @@ Pika.Responsive = (function(){
 				$(this).height( 18 );
 			}else{
 				$(this).height( this.scrollHeight );
-				console.log(this)
+				// console.log(this)
 			}
 		}).keyup(); //This keyup triggers the resize
 
