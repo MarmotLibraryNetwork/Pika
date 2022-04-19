@@ -72,6 +72,17 @@ abstract class IslandoraDriver extends RecordInterface {
 		$this->snippetCaptions = empty($searchSettings['Snippet_Captions']) ? [] : $searchSettings['Snippet_Captions'];
 	}
 
+	/**
+	 * Convert line ending characters to <br> tags for pretty html display
+	 *
+	 * @param string $modaValueString
+	 * @return array|string|string[]
+	 */
+	public static function modsValuesLineEndings2br(string $modaValueString){
+		$modaValueString = str_replace(["\r\n", '&#xD;'], '<br>', $modaValueString);
+		return $modaValueString;
+	}
+
 	public function getSemanticData(){
 		// TODO: Implement getSemanticData() method.
 	}
@@ -569,8 +580,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		$moreDetailsOptions = [];
 
 		$description = html_entity_decode($this->getDescription());
-		$description = str_replace("\r\n", '<br>', $description);
-		$description = str_replace("&#xD;", '<br>', $description);
+		$description = self::modsValuesLineEndings2br($description);
 		if (strlen($description)) {
 			$interface->assignAppendToExisting('description', $description);
 			if ($this instanceof PersonDriver){
@@ -1953,8 +1963,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			$transcriptionInfo = [];
 			foreach ($this->transcriptions as $transcription){
 				$transcriptionText = $this->getModsValue('transcriptionText', 'marmot', $transcription);
-				$transcriptionText = str_replace("\r\n", '<br>', $transcriptionText);
-				$transcriptionText = str_replace("&#xD;", '<br>', $transcriptionText);
+				$transcriptionText = self::modsValuesLineEndings2br($transcriptionText);
 
 				//Add links to timestamps
 				$transcriptionTextWithLinks = $transcriptionText;
@@ -2693,6 +2702,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			if (preg_match('~xmlns:mods="http://www.loc.gov/mods/v3"~', $tmpNote)) {
 				$noteValue = $this->getModsValue('note', 'mods', $tmpNote);
 				if (strlen($noteValue) > 0) {
+					$noteValue = self::modsValuesLineEndings2br($noteValue);
 					$notes[] = [
 						'label' => 'General Notes',
 						'body'  => $noteValue
@@ -2703,6 +2713,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 		$personNotes = $this->getModsValue('personNotes', 'marmot');
 		if (strlen($personNotes) > 0){
+			$personNotes = self::modsValuesLineEndings2br($personNotes);
 			$notes[] = [
 				'label' => 'Notes',
 				'body'  => $personNotes
@@ -2710,6 +2721,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 		$placeNotes = $this->getModsValue('placeNotes', 'marmot');
 		if (strlen($placeNotes) > 0){
+			$placeNotes = self::modsValuesLineEndings2br($placeNotes);
 			$notes[] = [
 				'label' => 'Notes',
 				'body'  => $placeNotes
@@ -2717,6 +2729,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 		$citationNotes = $this->getModsValue('citationNotes', 'marmot');
 		if (strlen($citationNotes) > 0){
+			$citationNotes = self::modsValuesLineEndings2br($citationNotes);
 			$notes[] = [
 				'label' => 'Citation Notes',
 				'body'  => $citationNotes
@@ -2724,6 +2737,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 		$organizationNotes = $this->getModsValue('organizationNotes', 'marmot');
 		if (strlen($organizationNotes) > 0){
+			$organizationNotes = self::modsValuesLineEndings2br($organizationNotes);
 			$notes[] = [
 				'label' => 'Notes',
 				'body'  => $organizationNotes
@@ -2885,8 +2899,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 		$rightsStatements = $this->getModsValues('rightsStatement', 'marmot');
 		foreach ($rightsStatements as $id => $rightsStatement){
-			$rightsStatement = str_replace("\r\n", '<br>', $rightsStatement);
-			$rightsStatement = str_replace("&#xD;", '<br>', $rightsStatement);
+			$rightsStatement       = self::modsValuesLineEndings2br($rightsStatement);
 			$rightsStatements[$id] = $rightsStatement;
 		}
 
