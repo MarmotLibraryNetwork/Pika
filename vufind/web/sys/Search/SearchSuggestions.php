@@ -48,7 +48,7 @@ class SearchSuggestions {
 		$suggestions = [];
 		$searchStat  = new SearchStatNew();
 		$searchStat->whereAdd("MATCH(phrase) AGAINST ('" . $searchStat->escape($phrase) . "')");
-		//$searchStat->orderBy("numSearches DESC");
+		$searchStat->orderBy("numSearches DESC");
 		$searchStat->limit(0, 20);
 		if ($searchStat->find()){
 			self::getResults($searchStat, $phrase, $suggestions, $sortByNumSearches);
