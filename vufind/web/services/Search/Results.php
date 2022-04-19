@@ -196,6 +196,7 @@ class Search_Results extends Union_Results {
 						if (!$disallowReplacements){
 							if ($hasSpellingSuggestions){
 								//Add spelling suggestions to the search suggestions array
+								// (Both arrays should have cleaned search terms as the array index)
 								foreach ($spellingSuggestions as $key => $suggestion){
 									if (!array_key_exists($key, $commonSearches)){
 										$commonSearches[$key] = $suggestion;
@@ -219,10 +220,11 @@ class Search_Results extends Union_Results {
 											$array[$suggestion['sortKey']] = $suggestion;
 										}
 										krsort($array);
+										$commonSearches = $array;
 									}
 
-									$firstSearch         = reset($array);
-									$secondSearch        = next($array);
+									$firstSearch         = reset($commonSearches);
+									$secondSearch        = next($commonSearches);
 									$firstTimesSearched  = $firstSearch['numSearches'];
 									$secondTimesSearched = $secondSearch['numSearches'];
 									if ($secondTimesSearched > 0 && $firstTimesSearched / $secondTimesSearched > 10){ // avoids division by zero

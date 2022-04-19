@@ -31,14 +31,23 @@ class SearchSuggestions {
 
 
 	static function getCommonSearchesMySql($searchTerm, bool $sortByNumSearches = true){
-		$suggestions = self::getSearchSuggestions($searchTerm, $sortByNumSearches);
-		if (count($suggestions) > SUGGESTION_LIMIT){
-			$suggestions = array_slice($suggestions, 0, SUGGESTION_LIMIT);
+		$suggestions = self::getSearchSuggestions($searchTerm);
+		if ($sortByNumSearches){
+			$array = [];
+			foreach ($suggestions as $suggestion){
+				$array[$suggestion['sortKey']] = $suggestion;
+			}
+			krsort($array);
+			$suggestions = $array;
+
+			if (count($suggestions) > SUGGESTION_LIMIT){
+				$suggestions = array_slice($suggestions, 0, SUGGESTION_LIMIT);
+			}
 		}
 		return $suggestions;
 	}
 
-	static function getSearchSuggestions($phrase, bool $sortByNumSearches){
+	static function getSearchSuggestions($phrase){
 		$phrase = trim($phrase);
 		//Don't bother getting suggestions for numeric, spammy, or long searches
 		if (SearchStatNew::isSearchPhraseToIgnore($phrase)){
@@ -48,10 +57,14 @@ class SearchSuggestions {
 		$suggestions = [];
 		$searchStat  = new SearchStatNew();
 		$searchStat->whereAdd("MATCH(phrase) AGAINST ('" . $searchStat->escape($phrase) . "')");
-		$searchStat->orderBy("numSearches DESC");
+		//$searchStat->orderBy("numSearches DESC");
+		// this matching works better when not sorted by num searches for phrases like "wired for love";
+		// with numSearches ordering the top results: are : love, love stories; popular searches but unrelated to
+		//TODO: might be an improvement to set a level for the match against. eg match against > 7 and then combine with the sort by numSearches
+		// See D-1697
 		$searchStat->limit(0, 20);
 		if ($searchStat->find()){
-			self::getResults($searchStat, $phrase, $suggestions, $sortByNumSearches);
+			self::getResults($searchStat, $phrase, $suggestions);
 		}else{
 			//Try another search using like
 			$searchStat = new SearchStatNew();
@@ -59,9 +72,10 @@ class SearchSuggestions {
 			$searchStat->orderBy("numSearches DESC");
 			$searchStat->limit(0, SUGGESTION_LIMIT);
 			if ($searchStat->find()){
-				self::getResults($searchStat, $phrase, $suggestions, $sortByNumSearches);
+				self::getResults($searchStat, $phrase, $suggestions);
 			}
 		}
+
 		return $suggestions;
 	}
 
@@ -69,14 +83,13 @@ class SearchSuggestions {
 	 * @param SearchStatNew $searchStat
 	 * @param string $phrase
 	 * @param array $results
-	 * @param bool $sortByNumSearches
 	 */
-	private static function getResults(SearchStatNew $searchStat, string $phrase, array &$results, bool $sortByNumSearches): void{
+	private static function getResults(SearchStatNew $searchStat, string $phrase, array &$results): void{
 		while ($searchStat->fetch()){
 			$cleanedPhrase = trim(str_replace('"', '', $searchStat->phrase));
 			if ($cleanedPhrase != $phrase && !array_key_exists($cleanedPhrase, $results)){
-				$sortKey                                                 = str_pad($searchStat->numSearches, 10, '0', STR_PAD_LEFT) . $cleanedPhrase;
-				$results[$sortByNumSearches ? $sortKey : $cleanedPhrase] = [
+				$sortKey                 = str_pad($searchStat->numSearches, 10, '0', STR_PAD_LEFT) . $cleanedPhrase;
+				$results[$cleanedPhrase] = [
 					'phrase'      => $cleanedPhrase,
 					'numSearches' => $searchStat->numSearches,
 					'sortKey'     => $sortKey,
@@ -112,12 +125,12 @@ class SearchSuggestions {
 				$wordSuggestions = $spellingWord->getSpellingSuggestions($word); // (Use a separate object from $wordCheck so queries don't get mixed up)
 				foreach ($wordSuggestions as $suggestedWord){
 					$newSearchTerm = str_replace($word, $suggestedWord, $searchTerm);
-					self::fetchSearchStatForSpellingSuggestion($newSearchTerm, $suggestions, $sortByNumSearches);
+					self::fetchSearchStatForSpellingSuggestion($newSearchTerm, $suggestions);
 
 					//Also try replacements on any suggestions we have so far
 					foreach ($suggestionsSoFar as $tmpSearch){
 						$newSearchTerm = str_replace($word, $suggestedWord, $tmpSearch['phrase']);
-						self::fetchSearchStatForSpellingSuggestion($newSearchTerm, $suggestions, $sortByNumSearches);
+						self::fetchSearchStatForSpellingSuggestion($newSearchTerm, $suggestions);
 					}
 				}
 			}
@@ -125,23 +138,31 @@ class SearchSuggestions {
 
 		if (!empty($suggestions)){
 			if ($sortByNumSearches){
-				krsort($suggestions);
-//				$array = [];
-//				foreach ($suggestions as $suggestion){
-//					$array[$suggestion['sortKey']] = $suggestion;
-//				}
-//				krsort($array);
-//				$suggestions = $array;
+				$array = [];
+				foreach ($suggestions as $suggestion){
+					$array[$suggestion['sortKey']] = $suggestion;
+				}
+				krsort($array);
+				$suggestions = $array;
+
+				//Return up to 12 results max
+				if (count($suggestions) > SUGGESTION_LIMIT){
+					$suggestions = array_slice($suggestions, 0, SUGGESTION_LIMIT);
+				}
 			}
 
-			//Return up to 12 results max
-			if (count($suggestions) > SUGGESTION_LIMIT){
-				$suggestions = array_slice($suggestions, 0, SUGGESTION_LIMIT);
-			}
 		}
+
 		return $suggestions;
 	}
 
+	/**
+	 * Get Search suggestions and spelling suggestions for the searchbox search term autocomplete
+	 *
+	 * @param $searchTerm
+	 * @param $searchType
+	 * @return array
+	 */
 	static function getAllSuggestions($searchTerm, $searchType){
 		global $timer;
 
@@ -172,9 +193,8 @@ class SearchSuggestions {
 	/**
 	 * @param string $newSearchTerm
 	 * @param array $suggestions
-	 * @param bool $sortByNumSearches
 	 */
-	private static function fetchSearchStatForSpellingSuggestion(string $newSearchTerm, array &$suggestions, bool $sortByNumSearches): void{
+	private static function fetchSearchStatForSpellingSuggestion(string $newSearchTerm, array &$suggestions): void{
 		$searchInfo         = new SearchStatNew();
 		$searchInfo->phrase = $newSearchTerm;
 		$numSearches        = 0;
@@ -182,7 +202,7 @@ class SearchSuggestions {
 			$numSearches = $searchInfo->numSearches;
 		}
 		$sortKey = str_pad($numSearches, 10, '0', STR_PAD_LEFT) . $newSearchTerm;
-		$suggestions[$sortByNumSearches ? $sortKey : $newSearchTerm] = [
+		$suggestions[$newSearchTerm] = [
 			'phrase'      => $newSearchTerm,
 			'numSearches' => $numSearches,
 			'sortKey'     => $sortKey,

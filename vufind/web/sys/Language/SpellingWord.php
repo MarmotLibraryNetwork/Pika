@@ -46,14 +46,14 @@ class SpellingWord extends DB_DataObject {
 					if ($stringPosition !== false || $levenshteinDistance == self::LEVENSHTEIN_DISTANCE_LIMIT || $percent >= self::SIMILAR_TEXT_LIMIT){
 						$suggestions[] = $this->word;
 					}
-					global $pikaLogger;
-					$logger = $pikaLogger->withName(__CLASS__);
-					$logger->debug("Spell-Checking word $word against $this->word", [
-							"Levenshtein Distance is $levenshteinDistance",
-							"Similarity is $percent",
-							'Suggestion contains phrase at position ' . (($stringPosition) ? $stringPosition : 'false'),
-						]
-					);
+//					global $pikaLogger;
+//					$logger = $pikaLogger->withName(__CLASS__);
+//					$logger->debug("Spell-Checking word $word against $this->word", [
+//							"Levenshtein Distance is $levenshteinDistance",
+//							"Similarity is $percent",
+//							'Suggestion contains phrase at position ' . (($stringPosition !== false) ? $stringPosition : 'false'),
+//						]
+//					);
 				}
 			}
 		}
