@@ -27,6 +27,7 @@
  */
 require_once ROOT_DIR . '/RecordDrivers/Interface.php';
 require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+
 abstract class IslandoraDriver extends RecordInterface {
 	protected $pid = null;
 	protected $title = null;
@@ -70,17 +71,6 @@ abstract class IslandoraDriver extends RecordInterface {
 		$this->highlight       = $configArray['Index']['enableHighlighting'];
 		$this->snippet         = $configArray['Index']['enableSnippets'];
 		$this->snippetCaptions = empty($searchSettings['Snippet_Captions']) ? [] : $searchSettings['Snippet_Captions'];
-	}
-
-	/**
-	 * Convert line ending characters to <br> tags for pretty html display
-	 *
-	 * @param string $modaValueString
-	 * @return array|string|string[]
-	 */
-	public static function modsValuesLineEndings2br(string $modaValueString){
-		$modaValueString = str_replace(["\r\n", '&#xD;'], '<br>', $modaValueString);
-		return $modaValueString;
 	}
 
 	public function getSemanticData(){
@@ -580,8 +570,8 @@ abstract class IslandoraDriver extends RecordInterface {
 		$moreDetailsOptions = [];
 
 		$description = html_entity_decode($this->getDescription());
-		$description = self::modsValuesLineEndings2br($description);
 		if (strlen($description)) {
+			$description = FedoraUtils::modsValuesLineEndings2br($description);
 			$interface->assignAppendToExisting('description', $description);
 			if ($this instanceof PersonDriver){
 				$moreDetailsOptions['bio'] = [
@@ -1913,7 +1903,7 @@ abstract class IslandoraDriver extends RecordInterface {
 	 * @return null|FedoraObject
 	 */
 	public function getParentObject(){
-		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
 
 		$parentIdArray = $this->getArchiveObject()->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOf');
@@ -1963,7 +1953,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			$transcriptionInfo = [];
 			foreach ($this->transcriptions as $transcription){
 				$transcriptionText = $this->getModsValue('transcriptionText', 'marmot', $transcription);
-				$transcriptionText = self::modsValuesLineEndings2br($transcriptionText);
+				$transcriptionText = FedoraUtils::modsValuesLineEndings2br($transcriptionText);
 
 				//Add links to timestamps
 				$transcriptionTextWithLinks = $transcriptionText;
@@ -2018,7 +2008,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 	private function loadCorrespondenceInfo() {
 		global $interface;
-		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
 
 		$correspondence = $this->getModsValue('correspondence', 'marmot');
@@ -2117,7 +2107,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 	private function loadAcademicResearchData() {
 		global $interface;
-		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
 
 		$academicResearchSection = $this->getModsValue('academicResearch', 'marmot');
@@ -2429,7 +2419,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 	private function loadDemographicInfo(){
 		global $interface;
-		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$hasDemographicInfo = false;
 		$demographicsDetails = $this->getModsValue('demographicInfo', 'marmot');
 		if (strlen($demographicsDetails) > 0) {
@@ -2450,7 +2440,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 	private function loadEducationInfo() {
 		global $interface;
-		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
 
 		$interface->assign('hasEducationInfo', false);
@@ -2629,7 +2619,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 	private function loadMilitaryServiceData() {
 		global $interface;
-		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
 
 		$hasMilitaryService = false;
@@ -2702,7 +2692,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			if (preg_match('~xmlns:mods="http://www.loc.gov/mods/v3"~', $tmpNote)) {
 				$noteValue = $this->getModsValue('note', 'mods', $tmpNote);
 				if (strlen($noteValue) > 0) {
-					$noteValue = self::modsValuesLineEndings2br($noteValue);
+					$noteValue = FedoraUtils::modsValuesLineEndings2br($noteValue);
 					$notes[] = [
 						'label' => 'General Notes',
 						'body'  => $noteValue
@@ -2713,7 +2703,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 		$personNotes = $this->getModsValue('personNotes', 'marmot');
 		if (strlen($personNotes) > 0){
-			$personNotes = self::modsValuesLineEndings2br($personNotes);
+			$personNotes = FedoraUtils::modsValuesLineEndings2br($personNotes);
 			$notes[] = [
 				'label' => 'Notes',
 				'body'  => $personNotes
@@ -2721,7 +2711,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 		$placeNotes = $this->getModsValue('placeNotes', 'marmot');
 		if (strlen($placeNotes) > 0){
-			$placeNotes = self::modsValuesLineEndings2br($placeNotes);
+			$placeNotes = FedoraUtils::modsValuesLineEndings2br($placeNotes);
 			$notes[] = [
 				'label' => 'Notes',
 				'body'  => $placeNotes
@@ -2729,7 +2719,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 		$citationNotes = $this->getModsValue('citationNotes', 'marmot');
 		if (strlen($citationNotes) > 0){
-			$citationNotes = self::modsValuesLineEndings2br($citationNotes);
+			$citationNotes = FedoraUtils::modsValuesLineEndings2br($citationNotes);
 			$notes[] = [
 				'label' => 'Citation Notes',
 				'body'  => $citationNotes
@@ -2737,7 +2727,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 		$organizationNotes = $this->getModsValue('organizationNotes', 'marmot');
 		if (strlen($organizationNotes) > 0){
-			$organizationNotes = self::modsValuesLineEndings2br($organizationNotes);
+			$organizationNotes = FedoraUtils::modsValuesLineEndings2br($organizationNotes);
 			$notes[] = [
 				'label' => 'Notes',
 				'body'  => $organizationNotes
@@ -2894,12 +2884,12 @@ abstract class IslandoraDriver extends RecordInterface {
 
 	private function loadRightsStatements() {
 		global $interface;
-		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
 
 		$rightsStatements = $this->getModsValues('rightsStatement', 'marmot');
 		foreach ($rightsStatements as $id => $rightsStatement){
-			$rightsStatement       = self::modsValuesLineEndings2br($rightsStatement);
+			$rightsStatement       = FedoraUtils::modsValuesLineEndings2br($rightsStatement);
 			$rightsStatements[$id] = $rightsStatement;
 		}
 
@@ -2991,7 +2981,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 			$grandKids = [];
 			foreach ($this->pidsOfChildContainers as $childPid){
-				require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//				require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 				$fedoraUtils = FedoraUtils::getInstance();
 				$exhibitObject = $fedoraUtils->getObject($childPid);
 				/** @var IslandoraDriver $exhibitDriver */
@@ -3106,7 +3096,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			}
 
 			if ($contributingLibrary){
-				require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//				require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 				$fedoraUtils = FedoraUtils::getInstance();
 
 				$contributingLibraryPid = $contributingLibrary->archivePid;
@@ -3210,12 +3200,11 @@ abstract class IslandoraDriver extends RecordInterface {
 
 	private function loadMusicInformation() {
 		global $interface;
-		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
 		$hasMusicInformation = false;
 		$musicSection = $this->getModsValue('music', 'marmot');
 		if ($musicSection){
-			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 			$musicGenreSections = $this->getModsValues('musicGenre', 'marmot', $musicSection);
 			$genres = [];
 			foreach ($musicGenreSections as $musicGenreSection){
@@ -3305,7 +3294,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		$hasArtInformation = false;
 		$artSection = $this->getModsValue('art', 'marmot');
 		if ($artSection){
-			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 			$fedoraUtils = FedoraUtils::getInstance();
 
 			$materialDescription = $this->getModsValue('materialDescription', 'marmot', $artSection);
