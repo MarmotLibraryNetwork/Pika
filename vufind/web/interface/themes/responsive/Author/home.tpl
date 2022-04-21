@@ -74,7 +74,7 @@
 	<script type="text/javascript">
 		$(document).ready(function (){ldelim}
 		{if $showWikipedia}
-			Pika.Wikipedia.getWikipediaArticle('{$wikipediaAuthorName}');
+			Pika.Wikipedia.getWikipediaArticle('{$wikipediaAuthorName|escape:'javascript'}');
 		{/if}
 			var url = '/Author/AJAX?method=nameVariations&author="' + {$lookfor} + '"';
 			$.getJSON(url, function(data){ldelim}
