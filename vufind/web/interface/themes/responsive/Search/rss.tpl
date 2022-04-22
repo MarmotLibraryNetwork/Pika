@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>{strip}{*The <?xml has to be the very first characters for valid xml; AND also to avoid php/smarty seeing a php short tag <? *}
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-	<atom:link href="{$url|escape:'html':'UTF-8'}{$smarty.server.REQUEST_URI|escape:'html':'UTF-8'}" rel="self" type="application/rss+xml" title="This RSS Feed's URL" />
+<rss version="2.0">
 	<channel>
 		<title>Results For {$lookfor|escape:'html':'UTF-8'}</title>
 		{if $result.responseHeader.params.rows}
