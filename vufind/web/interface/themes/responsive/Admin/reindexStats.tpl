@@ -50,6 +50,16 @@
 			{if $noStatsFound}
 				<div class="alert-warning">Sorry, we couldn't find any stats.</div>
 			{else}
+				{if !empty($compareTo)}
+					<br>
+					<table class="table">
+						<tr>
+							<th class="success">Increased since {$pastDate}</th>
+							<th class="danger">Decreased since {$pastDate}</th>
+						</tr>
+					</table>
+					<br>
+				{/if}
 				<table class="table table-condensed stripe order-column table-hover" id="reindexingStats">
 					<thead>
 					<tr>
