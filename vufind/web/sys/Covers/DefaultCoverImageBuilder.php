@@ -56,8 +56,8 @@ private function setForegroundAndBackgroundColors($title, $author){
 		{
 			return;
 		}
-		$base_saturation = 100;
-		$base_brightness = 90;
+		$base_saturation = 150;
+		$base_brightness = 75;
 		$color_distance = 100;
 
 		$counts = strlen($title) + strlen($author);
