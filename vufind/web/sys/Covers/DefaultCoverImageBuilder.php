@@ -114,7 +114,7 @@ private function setForegroundAndBackgroundColors($title, $author){
 			$white           = imagecolorallocate($imageCanvas, 255, 255, 255);
 			$backgroundColor = imagecolorallocate($imageCanvas, $this->backgroundColor['r'], $this->backgroundColor['g'], $this->backgroundColor['b']);
 			$foregroundColor = imagecolorallocate($imageCanvas, $this->foregroundColor['r'], $this->foregroundColor['g'], $this->foregroundColor['b']);
-			imagefilledrectangle($imageCanvas, 0, 0, $this->imageWidth, $this->imageHeight, white);
+			imagefilledrectangle($imageCanvas, 0, 0, $this->imageWidth, $this->imageHeight, $white);
 			imagefilledrectangle($imageCanvas, 0, 0, $this->imageWidth, $this->topMargin, $backgroundColor);
 
 			$artworkHeight = $this->drawArtwork($imageCanvas, $backgroundColor, $foregroundColor, $title);
