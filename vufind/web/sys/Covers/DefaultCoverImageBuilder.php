@@ -99,10 +99,8 @@ private function setForegroundAndBackgroundColors($title, $author){
 			$this->imageWidth  = imagesx($blankCover);
 			$this->imageHeight = imagesy($blankCover);
 
-			$colorText = imagecolorallocate($blankCover, $this->colorText['red'], $this->colorText['green'], $this->colorText['blue']);
-
 			//Add the title to the background image
-			$this->drawText($blankCover, $title, $author, $this->imageHeight);
+			$this->drawText($blankCover, $title, $author, 200);
 			imagepng($blankCover, $filename);
 			imagedestroy($blankCover);
 		}else{
