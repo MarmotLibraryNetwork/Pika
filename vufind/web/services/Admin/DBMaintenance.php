@@ -59,10 +59,10 @@ class DBMaintenance extends Admin_Admin {
 					$updateOk      = true;
 					foreach ($sqlStatements as $sql){
 						if (method_exists($this, $sql)){
-							$updateOk = false;
+							//$updateOk = false;
 							$updateOk = $this->$sql($update);
-							if($updateOk !== true)
-								break;
+							//if($updateOk !== true)
+								//continue;
 						}else{
 							if (!$this->runSQLStatement($update, $sql)){
 								break;
@@ -1769,7 +1769,7 @@ class DBMaintenance extends Admin_Admin {
 				$password = $user->password;
 				$user->updatePassword($password);
 		}
-		return true;
+		//return true;
 	}
 	// end class
 }
