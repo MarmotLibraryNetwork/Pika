@@ -711,6 +711,9 @@ public class FormatDetermination {
 				printFormats.remove("CDROM");
 			}
 		}
+		if(printFormats.contains("WindowsGame") && printFormats.contains("VideoDisc")){
+			printFormats.remove("WindowsGame");
+		}
 		if (printFormats.contains("VideoDisc")){
 			if (printFormats.contains("Blu-ray")
 					|| printFormats.contains("DVD")
@@ -801,6 +804,7 @@ public class FormatDetermination {
 		if (printFormats.contains("WindowsGame") && printFormats.contains("SoundDisc")){
 			printFormats.remove("WindowsGame");
 		}
+
 
 		// Book Things
 		if (printFormats.contains("Book")){
@@ -1163,6 +1167,7 @@ public class FormatDetermination {
 
 	private void getGameFormatFrom753(Record record, Set<String> result) {
 		// Check for formats in the 753 field "System Details Access to Computer Files"
+		// 753|a is Make and model of machine
 		DataField sysDetailsTag = record.getDataField("753");
 		if (sysDetailsTag != null) {
 			if (sysDetailsTag.getSubfield('a') != null) {

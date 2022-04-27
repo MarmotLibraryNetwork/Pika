@@ -105,9 +105,12 @@
 					<div class="row">
 						<div class="result-label col-sm-4">Address: </div>
 						<div class="result-value col-sm-8">
-							{$addressInfo.addressStreetNumber} {$addressInfo.addressStreet}
+								<address>
+							{if $addressInfo.addressStreetNumber || $addressInfo.addressStreet}
+								{$addressInfo.addressStreetNumber} {$addressInfo.addressStreet}<br>
+							{/if}
 							{if $addressInfo.address2}
-								<br>{$addressInfo.address2}
+								{$addressInfo.address2}<br>
 							{/if}
 							{if $addressInfo.addressCity || $addressInfo.addressState || $addressInfo.addressZipCode}
 								{$addressInfo.addressCity}
@@ -125,6 +128,7 @@
 							{if $addressInfo.addressOtherRegion}
 								<br>{implode subject=$addressInfo.addressOtherRegion}
 							{/if}
+								</address>
 						</div>
 					</div>
 				{/if}

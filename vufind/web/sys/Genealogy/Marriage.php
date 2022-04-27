@@ -36,7 +36,7 @@ class Marriage extends DB_DataObject {
 	public $comments;
 
 	function keys(){
-		return array('marriageId');
+		return ['marriageId'];
 	}
 
 	function id(){
@@ -48,14 +48,13 @@ class Marriage extends DB_DataObject {
 	}
 
 	function getObjectStructure(){
-		$structure = array(
-			array('property' => 'marriageId', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the marriage in the database', 'storeDb' => true),
-			array('property' => 'personId', 'type' => 'hidden', 'label' => 'Person Id', 'description' => 'The id of the person this marriage is for', 'storeDb' => true),
-			//array('property'=>'person', 'type'=>'method', 'label'=>'Person', 'description'=>'The person this obituary is for', 'storeDb' => false),
-			array('property' => 'spouseName', 'type' => 'text', 'maxLength' => 100, 'label' => 'Spouse', 'description' => 'The spouse&apos;s name.', 'storeDb' => true),
-			array('property' => 'marriageDate', 'type' => 'partialDate', 'label' => 'Date', 'description' => 'The date of the marriage.', 'storeDb' => true, 'propNameMonth' => 'marriageDateMonth', 'propNameDay' => 'marriageDateDay', 'propNameYear' => 'marriageDateYear'),
-			array('property' => 'comments', 'type' => 'textarea', 'rows' => 10, 'cols' => 80, 'label' => 'Comments', 'description' => 'Information about the marriage.', 'storeDb' => true, 'hideInLists' => true),
-		);
+		$structure = [
+			['property' => 'marriageId', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the marriage in the database', 'storeDb' => true],
+			['property' => 'personId', 'type' => 'hidden', 'label' => 'Person Id', 'description' => 'The id of the person this marriage is for', 'storeDb' => true],
+			['property' => 'spouseName', 'type' => 'text', 'maxLength' => 100, 'label' => 'Spouse', 'description' => 'The spouse&apos;s name.', 'storeDb' => true],
+			['property' => 'marriageDate', 'type' => 'partialDate', 'label' => 'Date', 'description' => 'The date of the marriage.', 'storeDb' => true, 'propNameMonth' => 'marriageDateMonth', 'propNameDay' => 'marriageDateDay', 'propNameYear' => 'marriageDateYear'],
+			['property' => 'comments', 'type' => 'textarea', 'rows' => 10, 'cols' => 80, 'label' => 'Comments', 'description' => 'Information about the marriage.', 'storeDb' => true, 'hideInLists' => true],
+		];
 		return $structure;
 	}
 

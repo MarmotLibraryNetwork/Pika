@@ -15,34 +15,34 @@
 		{$person->firstName|escape} {$person->middleName|escape}{if $person->nickName} "{$person->nickName|escape}"{/if}{if $person->maidenName} ({$person->maidenName}){/if} {$person->lastName|escape}
 	</h2>
 	{if $userIsAdmin}
-		<div class="btn-toolbar">
+		<p class="btn-toolbar">
 			<div class="btn-group">
-				<a href='/Admin/People?objectAction=edit&amp;id={$id}' title='Edit this person' class='btn btn-xs btn-default'>
+				<a href='/Admin/People?objectAction=edit&amp;id={$id}' title='Edit this person' class='btn btn-primary'>
 					Edit
 				</a>
-				<a href='/Admin/Marriages?objectAction=add&amp;personId={$id}' title='Add a Marriage' class='btn btn-xs btn-default'>
+				<a href='/Admin/Marriages?objectAction=add&amp;personId={$id}' title='Add a Marriage' class='btn btn-default'>
 					Add Marriage
 				</a>
-				<a href='/Admin/Obituaries?objectAction=add&amp;personId={$id}' title='Add an Obituary' class='btn btn-xs btn-default'>
+				<a href='/Admin/Obituaries?objectAction=add&amp;personId={$id}' title='Add an Obituary' class='btn btn-default'>
 					Add Obituary
 				</a>
 			</div>
-			<a href='/Admin/People?objectAction=delete&amp;id={$id}' title='Delete this person' class='btn btn-xs btn-danger' onclick='return confirm("Removing this person will permanently remove them from the system.	Are you sure?")'>
+			<a href='/Admin/People?objectAction=delete&amp;id={$id}' title='Delete this person' class='btn btn-danger' onclick='return confirm("Removing this person will permanently remove them from the system.	Are you sure?")'>
 				Delete
 			</a>
-		</div>
+		</p>
 	{/if}
 	{* Display Person Image *}
 	<div class="row">
 		<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
+				<p>
 			{if $disableCoverArt != 1}
 				<div id="recordcover" class="text-center">
 					{*<a href="/Person/{$id}">*}
 						{if $person->picture}
-							<a target='_blank' href='{$person->getImageUrl('large')}'><img src="{$person->getImageUrl('medium')}" class="alignleft listResultImage" alt="{translate text='Picture'}"></a><br>
-{*							<a target='_blank' href='/files/original/{$person->picture|escape}'><img src="/files/medium/{$person->picture|escape}" class="alignleft listResultImage" alt="{translate text='Picture'}"></a><br>*}
+							<a target='_blank' href='{$person->getImageUrl('large')}'><img src="{$person->getImageUrl('medium')}" class="listResultImage" alt="Image of {$person->displayName()}"></a><br>
 						{else}
-							<img src="/interface/themes/default/images/person.png" class="alignleft listResultImage" alt="{translate text='No Cover Image'}"><br>
+							<img src="/interface/themes/default/images/person.png" class="listResultImage" alt="{translate text='No Cover Image'}"><br>
 						{/if}
 					{*</a>*}
 				</div>
@@ -75,25 +75,26 @@
 				<div class='personDetail'><span class='result-label'>Cause of Death: </span><span class='personDetailValue'>{$person->causeOfDeath|escape}</span></div>
 			{/if}
 		</div>
+		</p>
 	</div>
 	{if count($marriages) > 0 || $userIsAdmin}
 		<h3 class="blockhead">Marriages</h3>
 		{foreach from=$marriages item=marriage}
-			<div class="marriageTitle">
+			<p class="marriageTitle">
 				 {$marriage.spouseName}{if $marriage.formattedMarriageDate} - {$marriage.formattedMarriageDate}{/if}
 				 {if $userIsAdmin}
 						<div class="btn-toolbar">
-							<a href='/Admin/Marriages?objectAction=edit&amp;id={$marriage.marriageId}' title='Edit this Marriage' class='btn btn-xs btn-default'>
+							<a href='/Admin/Marriages?objectAction=edit&amp;id={$marriage.marriageId}' title='Edit this Marriage' class='btn btn-primary'>
 								Edit
 							</a>
-							<a href='/Admin/Marriages?objectAction=delete&amp;id={$marriage.marriageId}' title='Delete this Marriage' onclick='return confirm("Removing this marriage will permanently remove it from the system.	Are you sure?")' class='btn btn-xs btn-danger'>
+							<a href='/Admin/Marriages?objectAction=delete&amp;id={$marriage.marriageId}' title='Delete this Marriage' onclick='return confirm("Removing this marriage will permanently remove it from the system.	Are you sure?")' class='btn btn-danger'>
 								Delete
 							</a>
 						</div>
 				 {/if}
-			</div>
+			</p>
 			{if $marriage.comments}
-				<div class="marriageComments">{$marriage.comments|escape}</div>
+				<p class="marriageComments">{$marriage.comments|escape}</p>
 			{/if}
 		{/foreach}
 

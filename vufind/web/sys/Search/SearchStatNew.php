@@ -30,7 +30,7 @@ class SearchStatNew extends DB_DataObject {
 		return ['id', 'phrase'];
 	}
 
-	private function isSearchPhraseToIgnore(string $phrase){
+	public static function isSearchPhraseToIgnore(string $phrase){
 		//Ignore numeric, spammy, complex or long searches
 		return is_numeric($phrase)
 			|| strlen($phrase) >= 256
@@ -38,79 +38,22 @@ class SearchStatNew extends DB_DataObject {
 			|| preg_match('/http:|mailto:|https:/i', $phrase);
 }
 
-	function getSearchSuggestions($phrase, $type){
-		$phrase     = trim($phrase);
-		//Don't bother getting suggestions for numeric, spammy, or long searches
-		if ($this->isSearchPhraseToIgnore($phrase)){
-			return [];
-		}
-
-		//Don't suggest things to users that will result in them not getting any results
-		$results    = [];
-		$searchStat = new SearchStatNew();
-		$searchStat->whereAdd("MATCH(phrase) AGAINST ('" . $searchStat->escape($phrase) . "')");
-		//$searchStat->orderBy("numSearches DESC");
-		$searchStat->limit(0, 20);
-		if ($searchStat->find()){
-			while ($searchStat->fetch()){
-				$searchStat->phrase = trim(str_replace('"', '', $searchStat->phrase));
-				if ($searchStat->phrase != $phrase && !array_key_exists($searchStat->phrase, $results)){
-					$results[str_pad($searchStat->numSearches, 10, '0', STR_PAD_LEFT) . $searchStat->phrase] =
-						[
-							'phrase'      => $searchStat->phrase,
-							'numSearches' => $searchStat->numSearches,
-							'numResults'  => 1
-						];
-				}
-			}
-		}else{
-			//Try another search using like
-			$searchStat = new SearchStatNew();
-			//Don't suggest things to users that will result in them not getting any results
-			$searchStat->whereAdd("phrase LIKE '" . $searchStat->escape($phrase, true) . "%'");
-			$searchStat->orderBy("numSearches DESC");
-			$searchStat->limit(0, 11);
-			if ($searchStat->find()){
-				while ($searchStat->fetch()){
-					$searchStat->phrase = trim(str_replace('"', '', $searchStat->phrase));
-					if ($this->phrase != $phrase && !array_key_exists($searchStat->phrase, $results)){
-						$results[str_pad($searchStat->numSearches, 10, '0', STR_PAD_LEFT) . $searchStat->phrase] = array('phrase' => $searchStat->phrase, 'numSearches' => $searchStat->numSearches, 'numResults' => 1);
-					}
-				}
-			}else{
-				//Try another search using like
-
-			}
-		}
-		return $results;
-	}
-
 	function saveSearch($phrase, $numResults){
 		//Don't bother to count things that didn't return results.
-		if (empty($numResults)){
+		if (empty($numResults) || SearchStatNew::isSearchPhraseToIgnore($phrase)){
 			return;
 		}
 
-		if ($this->isSearchPhraseToIgnore($phrase)){
-			return;
-		}
-
-		$phrase             = str_replace("\t", '', $phrase);
 		$searchStat         = new SearchStatNew();
-		$searchStat->phrase = trim(strtolower($phrase));
-		$isNew = true;
-		if ($searchStat->find()){
-			$searchStat->fetch();
+		$searchStat->phrase = strtolower(trim(str_replace("\t", '', $phrase)));
+		if ($searchStat->find(true)){
 			$searchStat->numSearches++;
-			$isNew = false;
+			$searchStat->lastSearch = time();
+			$searchStat->update();
 		}else{
 			$searchStat->numSearches = 1;
-		}
-		$searchStat->lastSearch = time();
-		if ($isNew){
+			$searchStat->lastSearch  = time();
 			$searchStat->insert();
-		}else{
-			$searchStat->update();
 		}
 	}
 

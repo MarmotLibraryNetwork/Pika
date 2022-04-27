@@ -26,23 +26,23 @@ class AJAX extends AJAXHandler {
 
 	//use Captcha_AJAX;
 
-	protected $methodsThatRespondWithHTML = array(
-		'GetAutoSuggestList',
+	protected $methodsThatRespondWithHTML = [
 		'getProspectorResults',
-	);
+	];
 
-	protected $methodsThatRespondWithJSONUnstructured = array(
+	protected $methodsThatRespondWithJSONUnstructured = [
 		'sendEmail',
 		'getMoreSearchResults',
 		'GetListTitles',
 		'loadExploreMoreBar',
 		'getDplaResults',
 		'getEmailForm',
-	);
+		'GetAutoSuggestList',
+	];
 
-	protected $methodsThatRespondWithXML = array(
+	protected $methodsThatRespondWithXML = [
 		'IsLoggedIn',
-	);
+	];
 
 	function IsLoggedIn(){
 		echo "<result>" . (UserAccount::isLoggedIn() ? "True" : "False") . "</result>";
@@ -103,30 +103,30 @@ class AJAX extends AJAXHandler {
 		return $result;
 	}
 
-	function GetAutoSuggestList(){
+	/**
+	 * Data source for the jQuery autocomplete plugin
+	 *
+	 * @return array
+	 */
+	function GetAutoSuggestList(): array{
 		require_once ROOT_DIR . '/sys/Search/SearchSuggestions.php';
-		global $timer;
-		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
+		global $solrScope;
 		$searchTerm        = $_REQUEST['searchTerm'] ?? $_REQUEST['q'];
 		$searchType        = $_REQUEST['type'] ?? '';
-		$cacheKey          = 'auto_suggest_list_' . urlencode($searchType) . '_' . urlencode($searchTerm);
+		$cacheKey          = 'auto_suggest_list_' .$solrScope. '_' . urlencode($searchType) . '_' . urlencode($searchTerm);
 		$searchSuggestions = $memCache->get($cacheKey);
-		if ($searchSuggestions == false || isset($_REQUEST['reload'])){
-			$suggestions       = new SearchSuggestions();
-			$commonSearches    = $suggestions->getAllSuggestions($searchTerm, $searchType);
-			$commonSearchTerms = [];
+		if ($searchSuggestions == false || isset($_REQUEST['reload']) || !is_array($searchSuggestions)){
+			$searchSuggestions = [];
+			$commonSearches    = SearchSuggestions::getAllSuggestions($searchTerm, $searchType);
 			foreach ($commonSearches as $searchTerm){
-				if (is_array($searchTerm)){
-					$commonSearchTerms[] = $searchTerm['phrase'];
-				}else{
-					$commonSearchTerms[] = $searchTerm;
-				}
+				$searchSuggestions[] = $searchTerm['phrase'];
 			}
-			$searchSuggestions = json_encode($commonSearchTerms);
+			global $configArray;
 			$memCache->set($cacheKey, $searchSuggestions, 0, $configArray['Caching']['search_suggestions']);
-			$timer->logTime("Loaded search suggestions $cacheKey");
+//			global $timer;
+//			$timer->logTime("Loaded search suggestions $cacheKey");
 		}
 		return $searchSuggestions;
 	}

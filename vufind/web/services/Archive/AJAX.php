@@ -850,10 +850,10 @@ class Archive_AJAX extends AJAXHandler {
 		$transcriptIdentifier = urldecode($_REQUEST['transcriptId']);
 		if (strlen($transcriptIdentifier) == 0){
 			//Check to see if we can get it based on the
-			return array(
+			return [
 				'success'    => true,
-				'transcript' => "There is no transcription available for this page.",
-			);
+				'transcript' => 'There is no transcription available for this page.',
+			];
 		}elseif (strpos($transcriptIdentifier, 'mods:') === 0){
 			$objectPid = str_replace('mods:', '', $transcriptIdentifier);
 			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
@@ -861,28 +861,27 @@ class Archive_AJAX extends AJAXHandler {
 			$pageObject  = $fedoraUtils->getObject($objectPid);
 			$mods        = $fedoraUtils->getModsData($pageObject);
 			$transcript  = $fedoraUtils->getModsValue('transcriptionText', 'marmot', $mods);
-			$transcript  = str_replace("\r\n", '<br>', $transcript);
-			$transcript  = str_replace("&#xD;", '<br>', $transcript);
+			$transcript  = FedoraUtils::modsValuesLineEndings2br($transcript);
 			if (strlen($transcript) > 0){
-				return array(
+				return [
 					'success'    => true,
 					'transcript' => $transcript,
-				);
+				];
 			}
 		}else{
 			$transcriptUrl = $objectUrl . '/' . $transcriptIdentifier;
 			$transcript    = file_get_contents($transcriptUrl);
 
 			if ($transcript){
-				return array(
+				return [
 					'success'    => true,
 					'transcript' => $transcript,
-				);
+				];
 			}
 		}
-		return array(
+		return [
 			'success' => false,
-		);
+		];
 	}
 
 	public function getAdditionalRelatedObjects(){

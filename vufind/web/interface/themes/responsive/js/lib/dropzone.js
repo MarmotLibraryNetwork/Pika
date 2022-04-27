@@ -244,7 +244,7 @@ function (_Emitter) {
          * the event `maxfilesexceeded` will be called. The dropzone element gets the
          * class `dz-max-files-reached` accordingly so you can provide visual feedback.
          */
-        maxFilesize: 256,
+        maxFilesize: 2,
 
         /**
          * The name of the file param that gets transferred.
@@ -261,7 +261,7 @@ function (_Emitter) {
         /**
          * In MB. When the filename exceeds this limit, the thumbnail will not be generated.
          */
-        maxThumbnailFilesize: 10,
+        maxThumbnailFilesize: 2,
 
         /**
          * If `null`, the ratio of the image will be used to calculate it.

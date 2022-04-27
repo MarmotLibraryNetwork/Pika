@@ -638,7 +638,7 @@
   },
 */
 
-  "publisher": {
+  "publisher": { /*TODO: searchSpec name conflict with search field publisher.  */
     "QueryFields": {
       "publisher": [
         ["and", 100]
@@ -654,13 +654,6 @@
     }
   },
 
-  "language": {
-    "QueryFields": {
-      "language": [
-      ]
-    }
-  },
-
   "toc": {
     "QueryFields": {
       "table_of_contents": [
@@ -669,7 +662,7 @@
     }
   },
 
-  "topic": {
+  "topic": {  /*TODO: searchSpec name conflict with search field topic.  */
     "QueryFields": {
       "topic": [
         ["and", 50]
@@ -712,11 +705,30 @@
 
   "GenealogyKeyword": {
     "DismaxFields": [
+      "shortId",
+      "title^200",
+      "spouseName^100",
+      "obituaryText^50",
       "keywords"
     ],
     "QueryFields": {
-      "keywords": [
+      /*This is used when Solr function isAdvanced($query) decides the search query is an advanced search query. eg. has parentheses  */
+      "title": [
+        ["onePhrase", 350],
+        ["and", 200]
+      ],
+      "spouseName":[
         ["onePhrase", 100]
+      ],
+      "obituaryText": [
+        ["onePhrase", 100],
+        ["and", null]
+      ],
+      "keywords": [
+        ["onePhrase", null]
+      ],
+      "shortId": [
+        ["onePhrase", null]
       ]
     }
   },

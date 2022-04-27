@@ -316,7 +316,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		die();
 	}
 
-	function getRedirectLocation($objectAction, $curObject){
+	function getRedirectLocation($curObject, $objectAction = null){
 		return null;
 	}
 
@@ -337,11 +337,11 @@ abstract class ObjectEditor extends Admin_Admin {
 	}
 
 	public function customListActions(){
-		return array();
+		return [];
 	}
 
 	function getAdditionalObjectActions($existingObject){
-		return array();
+		return [];
 	}
 
 	/** An instruction blurb displayed at the top of object view page.

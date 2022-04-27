@@ -195,8 +195,16 @@ abstract class SolrDataObject extends DB_DataObject{
 					$methodName = $property['methodName'] ?? $property['property'];
 					$results    = $this->$methodName();
 					if (is_array($results)){
-						array_walk($results, 'trim');
-						$doc[$propertyName] = $results;
+						$array = [];
+						foreach ($results as $value){
+							$value = trim($value);
+							if (strlen($value)){
+								$array[] = $value;
+							}
+						}
+						if (count($array)){
+							$doc[$propertyName] = $array;
+						}
 					} else{
 						$value = trim($results);
 						if (strlen($value)) $doc[$propertyName] = $value;
@@ -213,6 +221,11 @@ abstract class SolrDataObject extends DB_DataObject{
 							}
 						}
 						$doc[$propertyName] = $values;
+					}
+					break;
+				case 'dateReadOnly':
+					if (!empty($this->$propertyName)){
+						$doc[$propertyName] = gmdate('Y-m-d\TG:i:s\Z', $this->$propertyName);
 					}
 					break;
 				case 'date':

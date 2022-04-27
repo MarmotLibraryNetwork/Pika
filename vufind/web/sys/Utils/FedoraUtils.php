@@ -346,6 +346,18 @@ class FedoraUtils {
 	}
 
 	/**
+	 * Convert line ending characters to <br> tags for pretty html display
+	 *
+	 * @param string $modaValueString
+	 * @return array|string|string[]
+	 */
+	public static function modsValuesLineEndings2br(string $modaValueString){
+		$modaValueString = str_replace(["\r\n", '&#xD;'], '<br>', $modaValueString);
+		return $modaValueString;
+	}
+
+
+	/**
 	 * Return an array of pids that are part of a compound object.
 	 */
 	function getCompoundObjectParts($pid, $ret_title = FALSE) {

@@ -27,29 +27,45 @@ require_once ROOT_DIR . "/PHPExcel.php";
 
 class MaterialsRequest_UserReport extends Admin_Admin {
 
-	function launch()
-	{
+	function launch(){
 		global $configArray;
 		global $interface;
-		$user = UserAccount::getLoggedInUser();
+		$user        = UserAccount::getLoggedInUser();
+		$homeLibrary = UserAccount::getUserHomeLibrary();
 
 		//Load status information
-		$materialsRequestStatus = new MaterialsRequestStatus();
+		$availableStatuses                 = [];
+		$defaultStatusesToShow             = [];
+		$defaultStatuses                   = [];
+		$openStatuses                      = [];
+		$closedStatuses                    = [];
+		$materialsRequestStatus            = new MaterialsRequestStatus();
+		$user                              = UserAccount::getLoggedInUser();
+		$homeLibrary                       = $user->getHomeLibrary();
+		$materialsRequestStatus->libraryId = $homeLibrary->libraryId;
 		$materialsRequestStatus->orderBy('isDefault DESC, isOpen DESC, description ASC');
-		if (UserAccount::userHasRole('library_material_requests')){
-			$homeLibrary                       = UserAccount::getUserHomeLibrary();
-			$materialsRequestStatus->libraryId = $homeLibrary->libraryId;
-		}
-		$materialsRequestStatus->find();
-		$availableStatuses     = array();
-		$defaultStatusesToShow = array();
-		while ($materialsRequestStatus->fetch()){
-			$availableStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
-			if ($materialsRequestStatus->isOpen == 1 || $materialsRequestStatus->isDefault == 1){
-				$defaultStatusesToShow[] = $materialsRequestStatus->id;
+		if ($materialsRequestStatus->find()){
+			while ($materialsRequestStatus->fetch()){
+				$availableStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
+				if ($materialsRequestStatus->isDefault == 1){
+					$defaultStatusesToShow[]                      = $materialsRequestStatus->id;
+					$defaultStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
+				}elseif ($materialsRequestStatus->isOpen == 1){
+					$openStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
+					$defaultStatusesToShow[]                   = $materialsRequestStatus->id;
+				}else{
+					$closedStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
+				}
 			}
+			$interface->assign([
+				'availableStatuses' => $availableStatuses,
+				'defaultStatuses'   => $defaultStatuses,
+				'openStatuses'      => $openStatuses,
+				'closedStatuses'    => $closedStatuses,
+			]);
+		}else{
+			$interface->assign('error', 'No Materials Requests statuses found.');
 		}
-		$interface->assign('availableStatuses', $availableStatuses);
 
 		if (isset($_REQUEST['statusFilter'])){
 			$statusesToShow = $_REQUEST['statusFilter'];
@@ -60,54 +76,70 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 
 		//Get a list of users that have requests open
 		$materialsRequest = new MaterialsRequest();
-		$materialsRequest->joinAdd(array('createdBy', new User(), 'id'));
+		$materialsRequest->joinAdd(['createdBy', new User(), 'id']);
 		$materialsRequest->joinAdd(new MaterialsRequestStatus());
 		$materialsRequest->selectAdd();
 		$materialsRequest->selectAdd('COUNT(materials_request.id) as numRequests');
-		$materialsRequest->selectAdd('user.id as userId, status, description, user.firstName, user.lastName, user.cat_username, user.password');
-		if (UserAccount::userHasRole('library_material_requests')){
-			//Need to limit to only requests submitted for the user's home location
-			$userHomeLibrary      = UserAccount::getUserHomeLibrary();
-			$locationsForLibrary = $userHomeLibrary->getLocationIdsForLibrary();
-			$materialsRequest->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
+		$materialsRequest->selectAdd('user.id as userId, status, description, user.firstName, user.lastName, user.barcode');
+		$locationsForLibrary = $homeLibrary->getLocationIdsForLibrary();
+		$materialsRequest->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
+
+		if (!empty($statusesToShow) && count($availableStatuses) > count($statusesToShow)){
+			$statusSql = $materialsRequest->buildListOfQuotedAndSQLEscapedItems($statusesToShow);
+			$materialsRequest->whereAdd("status in ($statusSql)");
 		}
-		$statusSql = "";
-		foreach ($statusesToShow as $status){
-			if (strlen($statusSql) > 0) $statusSql .= ",";
-			$statusSql .= "'" . $materialsRequest->escape($status) . "'";
+		if (isset($_REQUEST['startDate'])){
+			$startDateString = strip_tags($_REQUEST['startDate']);
+			$startDate       = strtotime($startDateString);
+			if (!empty($startDate)){
+				$materialsRequest->whereAdd("dateCreated >= $startDate");
+				$interface->assign('startDate', $startDateString);
+			}
 		}
-		$materialsRequest->whereAdd("status in ($statusSql)");
+
+		if (isset($_REQUEST['endDate'])){
+			$endDateString = strip_tags($_REQUEST['endDate']);
+			$endDate       = strtotime($endDateString);
+			if (!empty($endDate)){
+				$materialsRequest->whereAdd("dateCreated <= $endDate");
+				$interface->assign('endDate', $endDateString);
+			}
+		}
+
 		$materialsRequest->groupBy('userId, status');
-		$materialsRequest->find();
+		if ($materialsRequest->find()){
 
-		$userData        = array();
-		while ($materialsRequest->fetch()){
-			if (!array_key_exists($materialsRequest->userId, $userData)){
-				$userData[$materialsRequest->userId]                     = array();
-				$userData[$materialsRequest->userId]['firstName']        = $materialsRequest->firstName;
-				$userData[$materialsRequest->userId]['lastName']         = $materialsRequest->lastName;
-				$userData[$materialsRequest->userId]['barcode']          = $materialsRequest->barcode;
-				$userData[$materialsRequest->userId]['totalRequests']    = 0;
-				$userData[$materialsRequest->userId]['requestsByStatus'] = array();
+			$userData = [];
+			while ($materialsRequest->fetch()){
+				if (!array_key_exists($materialsRequest->userId, $userData)){
+					$userData[$materialsRequest->userId]                     = [];
+					$userData[$materialsRequest->userId]['firstName']        = $materialsRequest->firstName;
+					$userData[$materialsRequest->userId]['lastName']         = $materialsRequest->lastName;
+					$userData[$materialsRequest->userId]['barcode']          = $materialsRequest->barcode;
+					$userData[$materialsRequest->userId]['totalRequests']    = 0;
+					$userData[$materialsRequest->userId]['requestsByStatus'] = [];
+				}
+				$userData[$materialsRequest->userId]['requestsByStatus'][$materialsRequest->description] = $materialsRequest->numRequests;
+				$userData[$materialsRequest->userId]['totalRequests']                                    += $materialsRequest->numRequests;
 			}
-			$userData[$materialsRequest->userId]['requestsByStatus'][$materialsRequest->description] = $materialsRequest->numRequests;
-			$userData[$materialsRequest->userId]['totalRequests'] += $materialsRequest->numRequests;
-		}
-		$interface->assign('userData', $userData);
+			$interface->assign('userData', $userData);
 
-		//Get a list of all of the statuses that will be shown
-		$statuses = array();
-		foreach ($userData as $userInfo){
-			foreach ($userInfo['requestsByStatus'] as $status => $numRequests){
-				$statuses[$status] = translate($status);
+			//Get a list of all the statuses that will be shown
+			$statuses = [];
+			foreach ($userData as $userInfo){
+				foreach ($userInfo['requestsByStatus'] as $status => $numRequests){
+					$statuses[$status] = $status;
+				}
 			}
-		}
-		$interface->assign('statuses', $statuses);
+			$interface->assign('statuses', $statuses);
 
-		//Check to see if we are exporting to Excel
-		if (isset($_REQUEST['exportToExcel'])){
-			$libraryName = !empty($userHomeLibrary->displayName) ? $userHomeLibrary->displayName : $configArray['Site']['libraryName'];
-			$this->exportToExcel($userData, $statuses, $libraryName);
+			//Check to see if we are exporting to Excel
+			if (isset($_REQUEST['exportToExcel'])){
+				$libraryName = !empty($userHomeLibrary->displayName) ? $userHomeLibrary->displayName : $configArray['Site']['libraryName'];
+				$this->exportToExcel($userData, $statuses, $libraryName);
+			}
+		}else{
+			$interface->assign('error', 'No Requests found matching the filters.');
 		}
 
 		$this->display('userReport.tpl', 'Materials Request User Report');
@@ -121,11 +153,11 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		// Set properties
 		$objPHPExcel->getProperties()->setCreator($creator)
 			->setLastModifiedBy($creator)
-		->setTitle("Office 2007 XLSX Document")
-		->setSubject("Office 2007 XLSX Document")
-		->setDescription("Office 2007 XLSX, generated using PHP.")
-		->setKeywords("office 2007 openxml php")
-		->setCategory("Materials Request User Report");
+			->setTitle("Office 2007 XLSX Document")
+			->setSubject("Office 2007 XLSX Document")
+			->setDescription("Office 2007 XLSX, generated using PHP.")
+			->setKeywords("office 2007 openxml php")
+			->setCategory("Materials Request User Report");
 
 		// Add some data
 		$objPHPExcel->setActiveSheetIndex(0);
@@ -140,21 +172,21 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		}
 		$activeSheet->setCellValueByColumnAndRow($column, 3, 'Total');
 
-		$row = 4;
+		$row    = 4;
 		$column = 0;
 		//Loop Through The Report Data
-		foreach ($userData as $userInfo) {
+		foreach ($userData as $userInfo){
 			$activeSheet->setCellValueByColumnAndRow($column++, $row, $userInfo['lastName']);
 			$activeSheet->setCellValueByColumnAndRow($column++, $row, $userInfo['firstName']);
 			$activeSheet->setCellValueByColumnAndRow($column++, $row, $userInfo['barcode']);
 			foreach ($statuses as $status => $statusLabel){
-				$activeSheet->setCellValueByColumnAndRow($column++, $row, isset($userInfo['requestsByStatus'][$status]) ? $userInfo['requestsByStatus'][$status] : 0);
+				$activeSheet->setCellValueByColumnAndRow($column++, $row, $userInfo['requestsByStatus'][$status] ?? 0);
 			}
 			$activeSheet->setCellValueByColumnAndRow($column, $row, $userInfo['totalRequests']);
 			$row++;
 			$column = 0;
 		}
-		for ($i = 0; $i < count($statuses) + 3; $i++){
+		for ($i = 0;$i < count($statuses) + 3;$i++){
 			$activeSheet->getColumnDimensionByColumn($i)->setAutoSize(true);
 		}
 
@@ -173,6 +205,6 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 	}
 
 	function getAllowableRoles(){
-		return array('library_material_requests');
+		return ['library_material_requests'];
 	}
 }

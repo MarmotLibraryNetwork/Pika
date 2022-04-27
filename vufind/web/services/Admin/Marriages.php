@@ -17,10 +17,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/Genealogy/Marriage.php';
+require_once ROOT_DIR . '/services/Admin/GenealogyObjectEditor.php';
 
-class Marriages extends ObjectEditor {
+class Marriages extends GenealogyObjectEditor {
 	function getObjectType(){
 		return 'Marriage';
 	}
@@ -42,22 +41,11 @@ class Marriages extends ObjectEditor {
 	}
 
 	function getPrimaryKeyColumn(){
-		return array('personId', 'spouseName', 'date');
+		return ['personId', 'spouseName', 'date'];
 	}
 
 	function getIdKeyColumn(){
 		return 'marriageId';
 	}
 
-	function getAllowableRoles(){
-		return array('genealogyContributor');
-	}
-
-	function getRedirectLocation($objectAction, $curObject){
-		return '/Person/' . $curObject->personId;
-	}
-
-	function showReturnToList(){
-		return false;
-	}
 }

@@ -33,6 +33,9 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		$errors                            = [];
 		$availableStatuses                 = [];
 		$defaultStatusesToShow             = [];
+		$defaultStatuses                   = [];
+		$openStatuses                      = [];
+		$closedStatuses                    = [];
 		$materialsRequestStatus            = new MaterialsRequestStatus();
 		$user                              = UserAccount::getLoggedInUser();
 		$homeLibrary                       = $user->getHomeLibrary();
@@ -41,11 +44,22 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		if ($materialsRequestStatus->find()){
 			while ($materialsRequestStatus->fetch()){
 				$availableStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
-				if ($materialsRequestStatus->isOpen == 1 || $materialsRequestStatus->isDefault == 1){
-					$defaultStatusesToShow[] = $materialsRequestStatus->id;
+				if ($materialsRequestStatus->isDefault == 1){
+					$defaultStatusesToShow[]                      = $materialsRequestStatus->id;
+					$defaultStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
+				}elseif ($materialsRequestStatus->isOpen == 1){
+					$openStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
+					$defaultStatusesToShow[]                   = $materialsRequestStatus->id;
+				}else{
+					$closedStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
 				}
 			}
-			$interface->assign('availableStatuses', $availableStatuses);
+			$interface->assign([
+				'availableStatuses' => $availableStatuses,
+				'defaultStatuses'   => $defaultStatuses,
+				'openStatuses'      => $openStatuses,
+				'closedStatuses'    => $closedStatuses,
+			]);
 		}else{
 			$errors[] = 'No Materials Requests statuses found.';
 		}
@@ -225,10 +239,10 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			if ($numRequests < 5000){
 				$allRequests = $materialsRequests->fetchAll();
 			}else{
-				// Some filter settings can cause use to retrieve too many material requests.
+				// Some filter settings can cause us to retrieve too many material requests.
 				// So we've set the limit at 5,000 for now, though that seems like quite a large number also.
 				$interface->assign([
-					'error'         => 'Sorry, the filter criteria return too many results. Please select additional filter options.'
+					'error'         => 'Sorry, the filter criteria return too many results. Please review your filters to reduce the number of results."'
 					, 'filterError' => true
 				]);
 			}
@@ -273,6 +287,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			if (empty($staffEmail)){
 				$interface->assign('materialRequestStaffSettingsWarning', true);
 			}
+			$interface->assign('instructions', $this->getInstructions());
 			$this->display('manageRequests.tpl', 'Manage Materials Requests');
 		}
 	}
@@ -458,4 +473,9 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 	function getAllowableRoles(){
 		return ['library_material_requests'];
 	}
+
+	function getInstructions(){
+		return 'For more information about Manage Requests configuration, see the <a href="https://marmot-support.atlassian.net/l/c/tmgM8ypn">online documentation</a>.';
+	}
+
 }

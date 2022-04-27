@@ -27,13 +27,12 @@ require_once ROOT_DIR . "/PHPExcel.php";
 
 class MaterialsRequest_SummaryReport extends Admin_Admin {
 
-	function launch()
-	{
+	function launch(){
 		global $interface;
 
-		$period = isset($_REQUEST['period']) ? $_REQUEST['period'] : 'week';
+		$period = $_REQUEST['period'] ?? 'week';
 		if ($period == 'week'){
-			$periodLength  = new DateInterval("P1W");
+			$periodLength = new DateInterval("P1W");
 		}elseif ($period == 'day'){
 			$periodLength = new DateInterval("P1D");
 		}elseif ($period == 'month'){
@@ -43,12 +42,12 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		}
 		$interface->assign('period', $period);
 
-		$endDate = (isset($_REQUEST['endDate']) && strlen($_REQUEST['endDate']) > 0) ? DateTime::createFromFormat('m/d/Y', $_REQUEST['endDate']) : new DateTime();
+		$endDate = (!empty($_REQUEST['endDate'])) ? DateTime::createFromFormat('m/d/Y', $_REQUEST['endDate']) : new DateTime();
 		$interface->assign('endDate', $endDate->format('m/d/Y'));
 
-		if (isset($_REQUEST['startDate']) && strlen($_REQUEST['startDate']) > 0){
+		if (!empty($_REQUEST['startDate'])){
 			$startDate = DateTime::createFromFormat('m/d/Y', $_REQUEST['startDate']);
-		} else{
+		}else{
 			if ($period == 'day'){
 				$startDate = new DateTime($endDate->format('m/d/Y') . " - 7 days");
 			}elseif ($period == 'week'){
@@ -78,7 +77,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		$startDate->setTime(0, 0, 0);
 
 		//Create the periods that are being represented
-		$periods = array();
+		$periods   = [];
 		$periodEnd = clone $endDate;
 		while ($periodEnd >= $startDate){
 			array_unshift($periods, clone $periodEnd);
@@ -87,74 +86,103 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		//print_r($periods);
 
 		//Load data for each period
-		//this will be a two dimensional array
+		//this will be a two-dimensional array
 		//         Period 1, Period 2, Period 3
 		//Status 1
 		//Status 2
 		//Status 3
-		$periodData = array();
+		$periodData = [];
 
-		$locationsToRestrictTo = '';
-		$user = UserAccount::getLoggedInUser();
-		if (UserAccount::userHasRole('library_material_requests')){
-			//Need to limit to only requests submitted for the user's home location
-			$userHomeLibrary       = UserAccount::getUserHomeLibrary();
-			$locationsForLibrary   = $userHomeLibrary->getLocationIdsForLibrary();
-			$locationsToRestrictTo = implode(', ', $locationsForLibrary);
+		$user                  = UserAccount::getLoggedInUser();
+		$userHomeLibrary       = UserAccount::getUserHomeLibrary();
+		$locationsForLibrary   = $userHomeLibrary->getLocationIdsForLibrary();
+		$locationsToRestrictTo = implode(', ', $locationsForLibrary);
+
+		//Load status information
+		$availableStatuses                 = [];
+		$defaultStatusesToShow             = [];
+		$defaultStatuses                   = [];
+		$openStatuses                      = [];
+		$closedStatuses                    = [];
+		$materialsRequestStatus            = new MaterialsRequestStatus();
+		$user                              = UserAccount::getLoggedInUser();
+		$homeLibrary                       = $user->getHomeLibrary();
+		$materialsRequestStatus->libraryId = $homeLibrary->libraryId;
+		$materialsRequestStatus->orderBy('isDefault DESC, isOpen DESC, description ASC');
+		if ($materialsRequestStatus->find()){
+			while ($materialsRequestStatus->fetch()){
+				$availableStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
+				if ($materialsRequestStatus->isDefault == 1){
+					$defaultStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
+				}elseif ($materialsRequestStatus->isOpen == 1){
+					$openStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
+				}else{
+					$defaultStatusesToShow[]                     = $materialsRequestStatus->id;
+					$closedStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
+				}
+			}
+			$interface->assign([
+				'availableStatuses' => $availableStatuses,
+				'defaultStatuses'   => $defaultStatuses,
+				'openStatuses'      => $openStatuses,
+				'closedStatuses'    => $closedStatuses,
+			]);
+		}else{
+			$interface->assign('error', 'No Materials Requests statuses found.');
 		}
 
-		for ($i = 0; $i < count($periods) - 1; $i++){
-			/** @var DateTime $periodStart */
-			$periodStart = clone $periods[$i];
-			/** @var DateTime $periodEnd */
-			$periodEnd = clone $periods[$i+1];
+		if (isset($_REQUEST['statusFilter'])){
+			$statusesToShow = $_REQUEST['statusFilter'];
+		}else{
+			$statusesToShow = $defaultStatusesToShow;
+		}
+		$interface->assign('statusFilter', $statusesToShow);
 
-			$periodData[$periodStart->getTimestamp()] = array();
+
+		$statuses = ['Created' => 'Created'];
+		for ($i = 0;$i < count($periods) - 1;$i++){
+			/** @var DateTime $periodStart */
+			/** @var DateTime $periodEnd */
+			$periodStart                  = clone $periods[$i];
+			$periodEnd                    = clone $periods[$i + 1];
+			$periodTimestamp              = $periodStart->getTimestamp();
+			$periodData[$periodTimestamp] = [];
+
 			//Determine how many requests were created
 			$materialsRequest = new MaterialsRequest();
 			$materialsRequest->joinAdd(new User(), 'INNER', 'user', 'createdBy');
 			$materialsRequest->selectAdd();
 			$materialsRequest->selectAdd('COUNT(materials_request.id) as numRequests');
-			$materialsRequest->whereAdd('dateCreated >= ' . $periodStart->getTimestamp() . ' AND dateCreated < ' . $periodEnd->getTimestamp());
+			$materialsRequest->whereAdd('dateCreated >= ' . $periodTimestamp . ' AND dateCreated < ' . $periodEnd->getTimestamp());
 			if ($locationsToRestrictTo != ''){
 				$materialsRequest->whereAdd('user.homeLocationId IN (' . $locationsToRestrictTo . ')');
 			}
 
-			$materialsRequest->find();
-			while ($materialsRequest->fetch()){
-				$periodData[$periodStart->getTimestamp()]['Created'] = $materialsRequest->numRequests;
-			}
+			$periodData[$periodTimestamp]['Created'] = $materialsRequest->find(true) ? $materialsRequest->numRequests : 0;
 
 			//Get a list of all requests by the status of the request
 			$materialsRequest = new MaterialsRequest();
 			$materialsRequest->joinAdd(new MaterialsRequestStatus());
 			$materialsRequest->joinAdd(new User(), 'INNER', 'user', 'createdBy');
 			$materialsRequest->selectAdd();
-			$materialsRequest->selectAdd('COUNT(materials_request.id) as numRequests,description');
-			$materialsRequest->whereAdd('dateUpdated >= ' . $periodStart->getTimestamp() . ' AND dateUpdated < ' . $periodEnd->getTimestamp());
-			if (UserAccount::userHasRole('library_material_requests')){
-				//Need to limit to only requests submitted for the user's home location
-				$userHomeLibrary      = UserAccount::getUserHomeLibrary();
-				$locationsForLibrary  = $userHomeLibrary->getLocationIdsForLibrary();
-				$materialsRequest->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
+			$materialsRequest->selectAdd('COUNT(materials_request.id) AS numRequests,description');
+			$materialsRequest->whereAdd('dateUpdated >= ' . $periodTimestamp . ' AND dateUpdated < ' . $periodEnd->getTimestamp());
+			$materialsRequest->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
+			if (!empty($statusesToShow) && count($availableStatuses) > count($statusesToShow)){
+				$statusSql = $materialsRequest->buildListOfQuotedAndSQLEscapedItems($statusesToShow);
+				$materialsRequest->whereAdd("status IN ($statusSql)");
 			}
+
 			$materialsRequest->groupBy('status');
 			$materialsRequest->orderBy('status');
 			$materialsRequest->find();
 			while ($materialsRequest->fetch()){
-				$periodData[$periodStart->getTimestamp()][$materialsRequest->description] = $materialsRequest->numRequests;
+				$periodData[$periodTimestamp][$materialsRequest->description] = $materialsRequest->numRequests;
+				$statuses[$materialsRequest->description] = $materialsRequest->description;
 			}
 		}
 
-		$interface->assign('periodData', $periodData, $periods);
-
-		//Get a list of all of the statuses that will be shown
-		$statuses = array();
-		foreach ($periodData as $periodInfo){
-			foreach ($periodInfo as $status => $numRequests){
-				$statuses[$status] = translate($status);
-			}
-		}
+		$interface->assign('periodData', $periodData);
 		$interface->assign('statuses', $statuses);
 
 		//Check to see if we are exporting to Excel
@@ -167,7 +195,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 			$this->generateGraph($periodData, $statuses);
 		}
 
-		$this->display('summaryReport.tpl','Materials Request Summary Report');
+		$this->display('summaryReport.tpl', 'Materials Request Summary Report');
 	}
 
 	function exportToExcel($periodData, $statuses, $creator){
@@ -176,10 +204,10 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 
 		// Set properties
 		$objPHPExcel->getProperties()->setCreator($creator)
-				->setLastModifiedBy($creator)
-				->setTitle("Materials Request Summary Report")
-				->setSubject("Materials Request")
-				->setCategory("Materials Request Summary Report");
+			->setLastModifiedBy($creator)
+			->setTitle("Materials Request Summary Report")
+			->setSubject("Materials Request")
+			->setCategory("Materials Request Summary Report");
 
 		// Add some data
 		$objPHPExcel->setActiveSheetIndex(0);
@@ -191,18 +219,18 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 			$activeSheet->setCellValueByColumnAndRow($column++, 3, $statusLabel);
 		}
 
-		$row = 4;
+		$row    = 4;
 		$column = 0;
 		//Loop Through The Report Data
-		foreach ($periodData as $date => $periodInfo) {
+		foreach ($periodData as $date => $periodInfo){
 			$activeSheet->setCellValueByColumnAndRow($column++, $row, date('M-d-Y', $date));
 			foreach ($statuses as $status => $statusLabel){
-				$activeSheet->setCellValueByColumnAndRow($column++, $row, isset($periodInfo[$status]) ? $periodInfo[$status] : 0);
+				$activeSheet->setCellValueByColumnAndRow($column++, $row, $periodInfo[$status] ?? 0);
 			}
 			$row++;
 			$column = 0;
 		}
-		for ($i = 0; $i < count($statuses) + 1; $i++){
+		for ($i = 0;$i < count($statuses) + 1;$i++){
 			$activeSheet->getColumnDimensionByColumn($i)->setAutoSize(true);
 		}
 
@@ -221,54 +249,52 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 	}
 
 	function generateGraph($periodData, $statuses){
-		global $configArray;
-		global $interface;
 		$reportData = new pData();
 
 		//Add points for each status
-		$periodsFormatted = array();
+		$periodsFormatted = [];
 		foreach ($statuses as $status => $statusLabel){
-			$statusData = array();
+			$statusData = [];
 			foreach ($periodData as $date => $periodInfo){
-				$periodsFormatted[$date] = date('M-d-Y', $date);
-				$statusData[$date] = isset($periodInfo[$status]) ? $periodInfo[$status] : 0;
+				$periodsFormatted[$date] = date('M-d-y', $date);
+				$statusData[$date]       = $periodInfo[$status] ?? 0;
 			}
 			$reportData->addPoints($statusData, $status);
 		}
 
-		$reportData->setAxisName(0,"Requests");
+		$reportData->setAxisName(0, 'Requests');
+		$reportData->addPoints($periodsFormatted, 'Dates');
+		$reportData->setAbscissa('Dates');
 
-		$reportData->addPoints($periodsFormatted, "Dates");
-		$reportData->setAbscissa("Dates");
+		// Create the pChart object
+		$imageWidth     = 880;
+		$imageHeight    = 600;
+		$legendWidth    = 150;
+		$fontProperties = ['FontName' => ROOT_DIR . '/sys/pChart/Fonts/verdana.ttf', 'FontSize' => 9];
+		$gridGray       = ['GridR' => 225, 'GridG' => 225, 'GridB' => 225];
+		$myPicture      = new pImage($imageWidth, $imageWidth, $reportData);
 
-		/* Create the pChart object */
-		$myPicture = new pImage(700,290,$reportData);
+		// Add a border to the picture
+		$myPicture->drawRectangle(0, 0, $imageWidth-1, $imageHeight-1, ['R' => 0, 'G' => 0, 'B' => 0]);
 
-		/* Draw the background */
-		$Settings = array("R"=>225, "G"=>225, "B"=>225);
-		$myPicture->drawFilledRectangle(0,0,700,290,$Settings);
+		$myPicture->setFontProperties($fontProperties);
+		$myPicture->setGraphArea(50, 20, $imageWidth-($legendWidth+10), $imageHeight-100);
+		$myPicture->drawScale(array_merge(['DrawSubTicks' => true, 'LabelRotation' => 90], $gridGray));
+		$myPicture->drawLineChart(['DisplayValues' => true, 'DisplayColor' => DISPLAY_AUTO]);
 
-		/* Add a border to the picture */
-		$myPicture->drawRectangle(0,0,699,289,array("R"=>0,"G"=>0,"B"=>0));
+		// Write the chart legend
+		$myPicture->drawLegend($imageWidth-$legendWidth, 20, ["Style" => LEGEND_NOBORDER]);
 
-		$myPicture->setFontProperties(array("FontName"=> "sys/pChart/Fonts/verdana.ttf","FontSize"=>9));
-		$myPicture->setGraphArea(50,30,670,190);
-		//$myPicture->drawFilledRectangle(30,30,670,150,array("R"=>255,"G"=>255,"B"=>255,"Surrounding"=>-200,"Alpha"=>10));
-		$myPicture->drawScale(array("DrawSubTicks"=>TRUE, "LabelRotation"=>90));
-		$myPicture->setFontProperties(array("FontName"=> "sys/pChart/Fonts/verdana.ttf","FontSize"=>9));
-		$myPicture->drawLineChart(array("DisplayValues"=>TRUE,"DisplayColor"=>DISPLAY_AUTO));
-
-		/* Write the chart legend */
-		$myPicture->drawLegend(80,20,array("Style"=>LEGEND_NOBORDER,"Mode"=>LEGEND_HORIZONTAL));
-
-		/* Render the picture (choose the best way) */
-		$chartHref = "/images/charts/materialsRequestSummary". time() . ".png";
+		// Render the picture (choose the best way)
+		global $configArray;
+		global $interface;
+		$chartHref = '/images/charts/materialsRequestSummary' . time() . '.png';
 		$chartPath = $configArray['Site']['local'] . $chartHref;
 		$myPicture->render($chartPath);
 		$interface->assign('chartPath', $chartHref);
 	}
 
 	function getAllowableRoles(){
-		return array('library_material_requests');
+		return ['library_material_requests'];
 	}
 }

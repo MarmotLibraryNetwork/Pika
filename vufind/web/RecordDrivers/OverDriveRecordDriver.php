@@ -184,6 +184,33 @@ class OverDriveRecordDriver extends RecordInterface {
 		return '';
 	}
 
+	private array $detailedContributors = array();
+
+	/**
+	 * Get an array of creators and roles
+	 *
+	 * @access  public
+	 * @return  array               Strings representing citation formats.
+	 */
+	public function getDetailedContributors(){
+
+			$overDriveAPIProductCreators     = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductCreators();
+			$overDriveAPIProductCreators->productId = $this->overDriveProduct->id;
+			$overDriveAPIProductCreators->orderBy("role");
+			if ($overDriveAPIProductCreators->find()){
+				while($overDriveAPIProductCreators->fetch()){
+					$curContributor               = [
+						'name' => $overDriveAPIProductCreators->fileAs,
+						'role' => $overDriveAPIProductCreators->role
+					];
+					$this->detailedContributors[] = $curContributor;
+				}
+			}
+
+
+		return $this->detailedContributors;
+	}
+
 	/**
 	 * Get an array of strings representing citation formats supported
 	 * by this record's data (empty if none).  Legal values: "APA", "MLA".

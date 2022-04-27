@@ -39,29 +39,29 @@ class Obituary extends DB_DataObject {
 	public $contents;
 	public $picture;
 
-	function keys() {
-		return array('obituaryId');
+	function keys(){
+		return ['obituaryId'];
 	}
 
-	function id() {
+	function id(){
 		return $this->obituaryId;
 	}
 
-	function label() {
+	function label(){
 		return $this->source . ' ' . $this->sourcePage . ' ' . $this->date;
 	}
 
 	function getObjectStructure(){
 		global $configArray;
 		$storagePath = $configArray['Genealogy']['imagePath'];
-		$structure = array(
-			array('property' => 'obituaryId', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the obituary in the database', 'storeDb' => true),
-			array('property' => 'personId', 'type' => 'hidden', 'label' => 'Person Id', 'description' => 'The id of the person this obituary is for', 'storeDb' => true),
-			array('property' => 'source', 'type' => 'text', 'maxLength' => 100, 'label' => 'Source', 'description' => 'The source of the obituary', 'storeDb' => true),
-			array('property' => 'sourcePage', 'type' => 'text', 'maxLength' => 100, 'label' => 'Source Page', 'description' => 'The page where the obituary was found', 'storeDb' => true),
-			array('property' => 'date', 'type' => 'partialDate', 'label' => 'Date', 'description' => 'The date of the obituary.', 'storeDb' => true, 'propNameMonth' => 'dateMonth', 'propNameDay' => 'dateDay', 'propNameYear' => 'dateYear'),
-			array('property' => 'contents', 'type' => 'textarea', 'rows' => 10, 'cols' => 80, 'label' => 'Full Text of the Obituary', 'description' => 'The full text of the obituary.', 'storeDb' => true, 'hideInLists' => true),
-			array(
+		$structure   = [
+			['property' => 'obituaryId', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the obituary in the database', 'storeDb' => true],
+			['property' => 'personId', 'type' => 'hidden', 'label' => 'Person Id', 'description' => 'The id of the person this obituary is for', 'storeDb' => true],
+			['property' => 'source', 'type' => 'text', 'maxLength' => 100, 'label' => 'Source', 'description' => 'The source of the obituary', 'storeDb' => true],
+			['property' => 'sourcePage', 'type' => 'text', 'maxLength' => 100, 'label' => 'Source Page', 'description' => 'The page where the obituary was found', 'storeDb' => true],
+			['property' => 'date', 'type' => 'partialDate', 'label' => 'Date', 'description' => 'The date of the obituary.', 'storeDb' => true, 'propNameMonth' => 'dateMonth', 'propNameDay' => 'dateDay', 'propNameYear' => 'dateYear'],
+			['property' => 'contents', 'type' => 'textarea', 'rows' => 10, 'cols' => 80, 'label' => 'Full Text of the Obituary', 'description' => 'The full text of the obituary.', 'storeDb' => true, 'hideInLists' => true],
+			[
 				'property'    => 'picture',
 				'type'        => 'image',
 				'storagePath' => $storagePath,
@@ -72,8 +72,8 @@ class Obituary extends DB_DataObject {
 				'storeDb'     => true,
 				'storeSolr'   => false,
 				'hideInLists' => true
-			),
-		);
+			],
+		];
 		return $structure;
 	}
 

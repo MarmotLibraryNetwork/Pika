@@ -251,8 +251,12 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
 
 		String econtentSource = MarcUtil.getFirstFieldVal(record, "092a");
-		if (fullReindex && (econtentSource == null || econtentSource.isEmpty())) {
-			logger.warn("Did not find an econtent source for " + identifier);
+		if (econtentSource == null || econtentSource.isEmpty()) {
+			if (fullReindex) {
+				logger.warn("Did not find an econtent source for " + identifier);
+			}
+		} else {
+			econtentSource = econtentSource.replaceAll("\\s{2,}", " "); //get rid of duplicate spaces
 		}
 //		itemInfo.setShelfLocation(econtentSource);
 		itemInfo.setShelfLocation("Online");

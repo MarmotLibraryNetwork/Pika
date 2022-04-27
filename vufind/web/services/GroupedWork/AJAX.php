@@ -465,7 +465,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		if (GroupedWork::validGroupedWorkId($id)){
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			$id           = $_REQUEST['id'];
 			$recordDriver = new GroupedWorkDriver($id);
 
 			global $interface;
@@ -475,7 +474,8 @@ class GroupedWork_AJAX extends AJAXHandler {
 			require_once ROOT_DIR . '/sys/ExternalEnrichment/Reviews.php';
 
 			// Try the Novelist Primary ISBN first
-			$isbn         = $recordDriver->getNovelistPrimaryISBN();
+			$reviews = [];
+			$isbn    = $recordDriver->getNovelistPrimaryISBN();
 			if (!empty($isbn)){
 				$externalReviews = new ExternalReviews($isbn);
 				$reviews         = $externalReviews->fetch();

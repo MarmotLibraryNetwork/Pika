@@ -25,7 +25,7 @@ class Search_Results extends Union_Results {
 	protected $viewOptions = ['list', 'covers'];
 	// define the valid view modes checked in Base.php
 
-	function launch() {
+	function launch(){
 		global $interface;
 		global $configArray;
 		global $timer;
@@ -56,9 +56,8 @@ class Search_Results extends Union_Results {
 
 		// Set Show in Search Results Main Details Section options for template
 		// (needs to be set before moreDetailsOptions)
-		global $library;
-		foreach ($library->showInSearchResultsMainDetails as $detailoption) {
-			$interface->assign($detailoption, true);
+		foreach ($library->showInSearchResultsMainDetails as $detailOption){
+			$interface->assign($detailOption, true);
 		}
 
 
@@ -81,7 +80,7 @@ class Search_Results extends Union_Results {
 		$this->processAlternateOutputs($searchObject);
 
 		$displayMode = $searchObject->getView();
-		if ($displayMode == 'covers') {
+		if ($displayMode == 'covers'){
 			$searchObject->setLimit(24); // a set of 24 covers looks better in display
 		}
 
@@ -101,7 +100,7 @@ class Search_Results extends Union_Results {
 
 		// Process Search
 		$result = $searchObject->processSearch(true, true);
-		if (PEAR_Singleton::isError($result)) {
+		if (PEAR_Singleton::isError($result)){
 			PEAR_Singleton::raiseError($result->getMessage());
 		}
 		$timer->logTime('Process Search');
@@ -119,10 +118,8 @@ class Search_Results extends Union_Results {
 		$interface->assign('searchIndex', $searchIndex);
 
 		// We'll need recommendations no matter how many results we found:
-		$interface->assign('topRecommendations',
-		$searchObject->getRecommendationsTemplates('top'));
-		$interface->assign('sideRecommendations',
-		$searchObject->getRecommendationsTemplates('side'));
+		$interface->assign('topRecommendations', $searchObject->getRecommendationsTemplates('top'));
+		$interface->assign('sideRecommendations', $searchObject->getRecommendationsTemplates('side'));
 
 		// 'Finish' the search... complete timers and log search history.
 		$searchObject->close();
@@ -130,9 +127,9 @@ class Search_Results extends Union_Results {
 		// Show the save/unsave code on screen
 		// The ID won't exist until after the search has been put in the search history
 		//    so this needs to occur after the close() on the searchObject
-		$interface->assign('showSaved',   true);
+		$interface->assign('showSaved', true);
 		$interface->assign('savedSearch', $searchObject->isSavedSearch());
-		$interface->assign('searchId',    $searchObject->getSearchId());
+		$interface->assign('searchId', $searchObject->getSearchId());
 		$currentPage = $_REQUEST['page'] ?? 1;
 		$interface->assign('page', $currentPage);
 
@@ -140,12 +137,8 @@ class Search_Results extends Union_Results {
 		//This must be done before we process each result
 		$interface->assign('showNotInterested', false);
 
-		$showRatings = 1;
-		$enableProspectorIntegration = $configArray['Content']['Prospector'] ?? false;
-		if (isset($library)){
-			$enableProspectorIntegration = ($library->enableProspectorIntegration == 1);
-			$showRatings                 = $library->showRatings;
-		}
+		$showRatings                 = $library->showRatings ?? 1;
+		$enableProspectorIntegration = $library->enableProspectorIntegration ?? $configArray['Content']['Prospector'] ?? false;
 		if ($enableProspectorIntegration){
 			$interface->assign('showProspectorLink', true);
 			$interface->assign('prospectorSavedSearchId', $searchObject->getSearchId());
@@ -157,68 +150,102 @@ class Search_Results extends Union_Results {
 		// Save the ID of this search to the session so we can return to it easily:
 		$_SESSION['lastSearchId'] = $searchObject->getSearchId();
 
-		// Save the URL of this search to the session so we can return to it easily:
+		// Save the URL of this search to the session, so we can return to it easily:
 		$_SESSION['lastSearchURL'] = $searchObject->renderSearchUrl();
 
 		// No Results Actions //
-		if ($searchObject->getResultTotal() < 1) {
+		if ($searchObject->getResultTotal() < 1){
 
 			if (in_array($searchIndex, $searchObject->getTextLeftSearchIndexes()) && strlen($displayQuery) > 35){
 				// Searches using solr fields of type text-left will only return matches for search phrases less than 37 characters long
 				$searchTypeLabel = $searchObject->getBasicTypes()[$searchIndex];
-				$interface->assign('leftTextSearchWarning' , $searchTypeLabel . ' search phrases can only be a maximum of 35 characters long.  Please shorten the search phrase.');
-			}else {
-				require_once ROOT_DIR . '/sys/Search/SearchSuggestions.php';
-				$searchSuggestions = new SearchSuggestions();
-				$commonSearches    = $searchSuggestions->getSpellingSearches($displayQuery);
-				$suggestions       = [];
-				foreach ($commonSearches as $commonSearch){
-					$suggestions[$commonSearch['phrase']] = '/Search/Results?lookfor=' . urlencode($commonSearch['phrase']);
+				$interface->assign('leftTextSearchWarning', $searchTypeLabel . ' search phrases can only be a maximum of 35 characters long.  Please shorten the search phrase.');
+			}else{
+
+				if (isset($_REQUEST['replacementTerm'])){
+					// The automatic search phrase had no results, so was a bad suggestion, go right back to the original.
+					global $pikaLogger;
+					$pikaLogger->notice("Replacement search term also had no results.", ['original' => $oldTerm, 'replacement' => $replacementTerm]);
+
+					header("Location: " . $oldSearchUrl);
+					exit();
 				}
-				$interface->assign('spellingSuggestions', $suggestions);//We didn't find anything.  Look for search Suggestions
-				//Don't try to find suggestions if facets were applied
-				$autoSwitchSearch     = false;
-				$disallowReplacements = isset($_REQUEST['disallowReplacements']) || isset($_REQUEST['replacementTerm']);
-				if (!$disallowReplacements && (!isset($facetSet) || count($facetSet) == 0)){
-					//We can try to find a suggestion, but only if we are not doing a phrase search.
-					if (strpos($displayQuery, '"') === false){
-						$searchSuggestions = new SearchSuggestions();
-						$commonSearches    = $searchSuggestions->getCommonSearchesMySql($displayQuery, $searchIndex);
 
-						//assign here before we start popping stuff off
-						$interface->assign('searchSuggestions', $commonSearches);
+				if (empty($_REQUEST['filter']) && strpos($displayQuery, '"') === false){
+				// Only show search and spelling suggestions if no facets have been applied to a search and there isn't a quoted phrase search.
 
-						//If the first search in the list is used 10 times more than the next, just show results for that
-						$allSuggestions = $searchSuggestions->getAllSuggestions($displayQuery, $searchIndex);
-						$numSuggestions = count($allSuggestions);
-						if ($numSuggestions == 1){
-							$firstSearch      = array_pop($allSuggestions);
-							$autoSwitchSearch = true;
-						}elseif ($numSuggestions >= 2){
-							$firstSearch         = array_shift($allSuggestions);
-							$secondSearch        = array_shift($allSuggestions);
-							$firstTimesSearched  = $firstSearch['numSearches'];
-							$secondTimesSearched = $secondSearch['numSearches'];
-							if ($secondTimesSearched > 0 && $firstTimesSearched / $secondTimesSearched > 10){ // avoids division by zero
-								$autoSwitchSearch = true;
+					require_once ROOT_DIR . '/sys/Search/SearchSuggestions.php';
+					$spellingSuggestions    = SearchSuggestions::getSpellingSearches($displayQuery, false);
+					$hasSpellingSuggestions = !empty($spellingSuggestions);
+					if ($hasSpellingSuggestions){
+						$spellingWordSearchURLs = [];
+						foreach ($spellingSuggestions as $spellingSuggestion){
+							$spellingWordSearchURLs[$spellingSuggestion['phrase']] = $searchObject->renderLinkWithReplacedTerm($_REQUEST['lookfor'], $spellingSuggestion['phrase']);
+//							$spellingWordSearchURLs[$spellingSuggestion['phrase']] = '/Search/Results?lookfor=' . urlencode($spellingSuggestion['phrase']);
+						}
+						$interface->assign('spellingSuggestions', $spellingWordSearchURLs);
+					}
+
+					$commonSearches = SearchSuggestions::getCommonSearchesMySql($displayQuery, !$hasSpellingSuggestions);
+					// don't use sort key when there are spelling suggestions
+					$interface->assign('searchSuggestions', $commonSearches);
+					//assign here for the template before doing the automatic term replacement determination
+
+					if ($library->allowAutomaticSearchReplacements && !in_array($searchIndex, SearchSuggestions::$disallowedSearchTypesForTermReplacement)){
+						$disallowReplacements = isset($_REQUEST['disallowReplacements']) || isset($_REQUEST['replacementTerm']);
+						if (!$disallowReplacements){
+							if ($hasSpellingSuggestions){
+								//Add spelling suggestions to the search suggestions array
+								// (Both arrays should have cleaned search terms as the array index)
+								foreach ($spellingSuggestions as $key => $suggestion){
+									if (!array_key_exists($key, $commonSearches)){
+										$commonSearches[$key] = $suggestion;
+									}
+								}
+							}
+
+							$numSuggestions = count($commonSearches);
+							if ($numSuggestions){
+								$autoSwitchSearch = false;
+								if ($numSuggestions == 1){
+									$firstSearch      = reset($commonSearches);
+									$autoSwitchSearch = true;
+								}elseif ($numSuggestions >= 2){
+									// If the first search in the list is used 10 times more than the second term, just show results for the first term
+
+									if ($hasSpellingSuggestions){
+										// Now that we are here, sort by the array by the number of searches (which is sortKey)
+										$array = [];
+										foreach ($commonSearches as $suggestion){
+											$array[$suggestion['sortKey']] = $suggestion;
+										}
+										krsort($array);
+										$commonSearches = $array;
+									}
+
+									$firstSearch         = reset($commonSearches);
+									$secondSearch        = next($commonSearches);
+									$firstTimesSearched  = $firstSearch['numSearches'];
+									$secondTimesSearched = $secondSearch['numSearches'];
+									if ($secondTimesSearched > 0 && $firstTimesSearched / $secondTimesSearched > 10){ // avoids division by zero
+										$autoSwitchSearch = true;
+									}
+								}
+
+								// Switch to search with a better search term //
+								if ($autoSwitchSearch){
+									//Get search results for the new search
+									// The above assignments probably do nothing when there is a redirect below
+									$thisUrl = $_SERVER['REQUEST_URI'] . '&replacementTerm=' . urlencode($firstSearch['phrase']);
+									header('Location: ' . $thisUrl);
+									exit();
+								}
 							}
 						}
-
-						//Check to see if the library does not want automatic search replacements
-						if (!$library->allowAutomaticSearchReplacements){
-							$autoSwitchSearch = false;
-						}
-
-						// Switch to search with a better search term //
-						if ($autoSwitchSearch){
-							//Get search results for the new search
-							// The above assignments probably do nothing when there is a redirect below
-							$thisUrl = $_SERVER['REQUEST_URI'] . "&replacementTerm=" . urlencode($firstSearch['phrase']);
-							header("Location: " . $thisUrl);
-							exit();
-						}
 					}
-				}                                      // No record found
+				}
+
+				// No record found
 				$interface->assign('recordCount', 0);  // Was the empty result set due to an error?
 				$error = $searchObject->getIndexError();
 				if ($error !== false){
@@ -227,14 +254,14 @@ class Search_Results extends Union_Results {
 				$timer->logTime('no hits processing');
 			}
 
-		}	else {
+		}else{
 			$timer->logTime('save search');
 
 			// Assign interface variables
 			$summary = $searchObject->getResultSummary();
 			$interface->assign('recordCount', $summary['resultTotal']);
 			$interface->assign('recordStart', $summary['startRecord']);
-			$interface->assign('recordEnd',   $summary['endRecord']);
+			$interface->assign('recordEnd', $summary['endRecord']);
 			$memoryWatcher->logMemory('Get Result Summary');
 
 			$facetSet = $searchObject->getFacetList();
@@ -253,7 +280,9 @@ class Search_Results extends Union_Results {
 							}
 						}
 					}
-					if ($categorySelected) break;
+					if ($categorySelected){
+						break;
+					}
 				}
 			}
 			$interface->assign('categorySelected', $categorySelected);
@@ -263,9 +292,9 @@ class Search_Results extends Union_Results {
 		// What Mode will search results be Displayed In //
 		if ($displayMode == 'covers'){
 			$displayTemplate = 'Search/covers-list.tpl'; // structure for bookcover tiles
-		} else{ // default
+		}else{                                       // default
 			$displayTemplate = 'Search/list-list.tpl'; // structure for regular results
-			$displayMode     = 'list'; // In case the view is not explicitly set, do so now for display & clients-side functions
+			$displayMode     = 'list';                 // In case the view is not explicitly set, do so now for display & clients-side functions
 
 			// Process Paging (only in list mode)
 			if ($searchObject->getResultTotal() > 1){
@@ -291,14 +320,14 @@ class Search_Results extends Union_Results {
 		$memoryWatcher->logMemory('load result records');
 
 		//Setup explore more
-		$showExploreMoreBar = $currentPage > 1 ? false : true;
-		$exploreMore        = new ExploreMore();
+		$showExploreMoreBar    = ($currentPage == 1);
+		$exploreMore           = new ExploreMore();
 		$exploreMoreSearchTerm = $exploreMore->getExploreMoreQuery();
 		$interface->assign('exploreMoreSection', 'catalog');
 		$interface->assign('showExploreMoreBar', $showExploreMoreBar);
 		$interface->assign('exploreMoreSearchTerm', $exploreMoreSearchTerm);
 
-		if ($configArray['Statistics']['enabled'] && isset( $_GET['lookfor']) && !is_array($_GET['lookfor'])) {
+		if ($configArray['Statistics']['enabled'] && isset($_GET['lookfor']) && !is_array($_GET['lookfor'])){
 			require_once ROOT_DIR . '/sys/Search/SearchStatNew.php';
 			$searchStat = new SearchStatNew();
 			$searchStat->saveSearch(strip_tags($_GET['lookfor']), $searchObject->getResultTotal());

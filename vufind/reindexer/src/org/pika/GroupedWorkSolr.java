@@ -619,8 +619,13 @@ public class GroupedWorkSolr implements Cloneable {
 			String owningLocationValue = curScopeDetails.getFacetLabel();
 			if (curItem.isEContent()){
 				owningLocationValue = curItem.getShelfLocation();
+				//TODO: probably should do this any time there is no value for curScopeDetails.getFacetLabel();
 			}else if (curItem.isOrderItem() && groupedWorkIndexer.isGiveOnOrderItemsTheirOwnShelfLocation()){
-				owningLocationValue = curScopeDetails.getFacetLabel() + " On Order";
+				owningLocationValue += " On Order";
+			}
+
+			if (groupedWorkIndexer.fullReindex && owningLocationValue.isEmpty()){
+				logger.warn("Did not get facet label for item "+ curItem.getItemIdentifier() + " on record " + curRecord.getFullIdentifier());
 			}
 
 			//Save values for this scope

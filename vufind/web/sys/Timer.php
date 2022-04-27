@@ -25,15 +25,14 @@ class Timer{
 	private $minTimeToLog = 0;
 
 	public function __construct($startTime = null){
-		$this->Timer($startTime = null);
-
+		$this->Timer($startTime);
 	}
 
 	public function Timer($startTime = null){
 		global $configArray;
 		if ($configArray){
 			if (isset($configArray['System']['timings'])) {
-				$this->timingsEnabled = $configArray['System']['timings'];
+				$this->timingsEnabled = (bool) $configArray['System']['timings'];
 			}
 			if (isset($configArray['System']['minTimeToLog'])){
 				$this->minTimeToLog = $configArray['System']['minTimeToLog'];
@@ -48,7 +47,7 @@ class Timer{
 
 		$this->lastTime  = $startTime;
 		$this->firstTime = $startTime;
-		$this->timingMessages = array();
+		$this->timingMessages = [];
 	}
 
 	public function logTime($message){

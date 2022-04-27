@@ -18,6 +18,11 @@
 			{/if}
 		</div>
 	{/if}
+		{if $instructions}
+			<div class="alert alert-info">
+					{$instructions}
+			</div>
+		{/if}
 	{if $loggedIn}
 		<div id="materialsRequestFilters" class="accordion">
 			<div class="panel panel-default">
@@ -40,8 +45,26 @@
 									<strong>Select All</strong>
 								</label>
 							</div>
-							<div class="form-group in">
-								{foreach from=$availableStatuses item=statusLabel key=status}
+							<div class="form-group"><strong>Default Status</strong>
+								{foreach from=$defaultStatuses item=statusLabel key=status}
+									<div class="checkbox">
+										<label>
+											<input type="checkbox" name="statusFilter[]" value="{$status}" {if in_array($status, $statusFilter)}checked="checked"{/if} class="statusFilter">{$statusLabel}
+										</label>
+									</div>
+								{/foreach}
+							</div>
+							<div class="form-group"><strong>Open Statuses</strong>
+								{foreach from=$openStatuses item=statusLabel key=status}
+									<div class="checkbox">
+										<label>
+											<input type="checkbox" name="statusFilter[]" value="{$status}" {if in_array($status, $statusFilter)}checked="checked"{/if} class="statusFilter">{$statusLabel}
+										</label>
+									</div>
+								{/foreach}
+							</div>
+							<div class="form-group"><strong>Closed Statuses</strong>
+								{foreach from=$closedStatuses item=statusLabel key=status}
 									<div class="checkbox">
 										<label>
 											<input type="checkbox" name="statusFilter[]" value="{$status}" {if in_array($status, $statusFilter)}checked="checked"{/if} class="statusFilter">{$statusLabel}
@@ -63,11 +86,11 @@
 													 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 													 class="form-control" >
 										<span class="input-group-addon">
-								<span class="glyphicon glyphicon-calendar"
-											onclick="$('#startDate').focus().datepicker('show')"
-											aria-hidden="true">
-								</span>
-							</span>
+											<span class="glyphicon glyphicon-calendar"
+														onclick="$('#startDate').focus().datepicker('show')"
+														aria-hidden="true">
+											</span>
+										</span>
 									</div>
 								</div>
 								<div class="form-group">
@@ -77,11 +100,11 @@
 													 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 													 class="form-control">
 										<span class="input-group-addon">
-							<span class="glyphicon glyphicon-calendar"
-										onclick="$('#endDate').focus().datepicker('show')"
-										aria-hidden="true">
-								</span>
-							</span>
+											<span class="glyphicon glyphicon-calendar"
+													onclick="$('#endDate').focus().datepicker('show')"
+													aria-hidden="true">
+											</span>
+										</span>
 									</div>
 								</div>
 						</fieldset>

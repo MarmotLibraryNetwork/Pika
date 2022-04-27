@@ -37,7 +37,8 @@ class Admin_GenealogyIndexing extends Admin_Admin {
 			die;
 		}
 
-		set_time_limit(6000);
+		$timeLimit = 6000;
+		set_time_limit($timeLimit);
 
 		global $configArray,
 		$solrScope;
@@ -56,7 +57,7 @@ class Admin_GenealogyIndexing extends Admin_Admin {
 		}
 		if ($person->find()){
 			$objectStructure = $person->getObjectStructure();
-			$i = $j = $k = 0;
+			$docsSinceObFlush = $docsInThisBatch = $batchesSinceCommit = 0;
 			$docs = $ids = [];
 
 			while ($person->fetch()){
@@ -67,18 +68,19 @@ class Admin_GenealogyIndexing extends Admin_Admin {
 								echo "Solr Error\n";
 							}
 						} else {
-							$this->populateBatchAndAddToSolr($objectStructure, $person, $docs, $j, $solr, $k);
+							$this->populateBatchAndAddToSolr($objectStructure, $person, $docs, $docsInThisBatch, $solr, $batchesSinceCommit);
 						}
 
 
-				if ($i++ >= 2000){
+				if ($docsSinceObFlush++ >= 2000){
 					ob_flush();
-					$i = 0;
+					$docsSinceObFlush = 0;
 				}
 			}
-			$this->populateBatchAndAddToSolr($objectStructure, $person, $docs, $j, $solr, $k, true);
+			$this->populateBatchAndAddToSolr($objectStructure, $person, $docs, $docsInThisBatch, $solr, $batchesSinceCommit, true);
 
 		}
+		echo "Last entry indexed : {$person->personId}\n";
 		echo "Completed.\n";
 		echo '<pre>';
 		ob_flush();
@@ -108,23 +110,23 @@ class Admin_GenealogyIndexing extends Admin_Admin {
 	 * @param array $objectStructure
 	 * @param Person $person
 	 * @param array $docs
-	 * @param int $j
+	 * @param int $docsInThisBatch
 	 * @param Solr $solr
-	 * @param int $k
+	 * @param int $batchesSinceCommit
 	 */
-	private function populateBatchAndAddToSolr(array &$objectStructure, Person &$person, array &$docs, int &$j, Solr &$solr, int &$k, $lastRound = false){
+	private function populateBatchAndAddToSolr(array &$objectStructure, Person &$person, array &$docs, int &$docsInThisBatch, Solr &$solr, int &$batchesSinceCommit, $lastRound = false){
 		$docs[] = $this->populateSolrDoc($objectStructure, $person);
-		if (++$j == 100 || $lastRound){
+		if (++$docsInThisBatch == 100 || $lastRound){
 			$json  = $person->jsonUTF8EncodeResponse($docs);
 			$added = $solr->saveRecord($json);
 			if (!$added){
 				echo "Failed to index batch with person id {$person->solrId()}\n";
 			}
-			$j    = 0;
-			$docs = [];
-			if (++$k == 10 || $lastRound){
+			$docsInThisBatch = 0;
+			$docs            = [];
+			if (++$batchesSinceCommit == 10 || $lastRound){
 				$solr->commit();
-				$k = 0;
+				$batchesSinceCommit = 0;
 			}
 		}
 	}
