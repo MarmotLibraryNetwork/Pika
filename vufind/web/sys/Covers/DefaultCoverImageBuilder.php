@@ -84,22 +84,42 @@ private function setForegroundAndBackgroundColors($title, $author){
 	 * @param string $filename
 	 */
 	public function getCover($title, $author, $format, $format_category, $filename, $vertical_cutoff_px = 0){
-		$this->setForegroundAndBackgroundColors($title, $author);
-		$imageCanvas = imagecreate($this->imageWidth, $this->imageHeight);
-		imagesx($imageCanvas);
-		imagesy($imageCanvas);
 
-		$white = imagecolorallocate($imageCanvas, 255, 255,255);
-		$backgroundColor = imagecolorallocate($imageCanvas, $this->backgroundColor['r'], $this->backgroundColor['g'], $this->backgroundColor['b']);
-		$foregroundColor = imagecolorallocate($imageCanvas, $this->foregroundColor['r'], $this->foregroundColor['g'], $this->foregroundColor['b']);
-		imagefilledrectangle($imageCanvas, 0, 0, $this->imageWidth, $this->imageHeight, white);
-		imagefilledrectangle($imageCanvas, 0,0, $this->imageWidth, $this->topMargin, $backgroundColor);
+		$coverName = strtolower(preg_replace('/\W/', '', $format));
+		if (!file_exists(ROOT_DIR . '/images/blankCovers/' . $coverName . '.jpg')){
+			$coverName = strtolower(preg_replace('/\W/', '', $format_category));
 
-		$artworkHeight = $this->drawArtwork($imageCanvas, $backgroundColor, $foregroundColor, $title);
-		$this->drawText($imageCanvas, $title, $author, $artworkHeight);
-		imagepng($imageCanvas, $filename);
-		imagedestroy($imageCanvas);
+			if (!file_exists(ROOT_DIR . '/images/blankCovers/' . $coverName . '.jpg')){
+				$coverName = 'books';
+			}
+		}
+		if ($coverName != 'blank'){
+			//Create the background image
+			$blankCover        = imagecreatefromjpeg(ROOT_DIR . '/images/blankCovers/' . $coverName . '.jpg');
+			$this->imageWidth  = imagesx($blankCover);
+			$this->imageHeight = imagesy($blankCover);
 
+			//Add the title to the background image
+			$this->drawText($blankCover, $title, $author, 200);
+			imagepng($blankCover, $filename);
+			imagedestroy($blankCover);
+		}else{
+			$this->setForegroundAndBackgroundColors($title, $author);
+			$imageCanvas = imagecreate($this->imageWidth, $this->imageHeight);
+			imagesx($imageCanvas);
+			imagesy($imageCanvas);
+
+			$white           = imagecolorallocate($imageCanvas, 255, 255, 255);
+			$backgroundColor = imagecolorallocate($imageCanvas, $this->backgroundColor['r'], $this->backgroundColor['g'], $this->backgroundColor['b']);
+			$foregroundColor = imagecolorallocate($imageCanvas, $this->foregroundColor['r'], $this->foregroundColor['g'], $this->foregroundColor['b']);
+			imagefilledrectangle($imageCanvas, 0, 0, $this->imageWidth, $this->imageHeight, $white);
+			imagefilledrectangle($imageCanvas, 0, 0, $this->imageWidth, $this->topMargin, $backgroundColor);
+
+			$artworkHeight = $this->drawArtwork($imageCanvas, $backgroundColor, $foregroundColor, $title);
+			$this->drawText($imageCanvas, $title, $author, $artworkHeight);
+			imagepng($imageCanvas, $filename);
+			imagedestroy($imageCanvas);
+		}
 
 	}
 
@@ -116,14 +136,14 @@ private function setForegroundAndBackgroundColors($title, $author){
 
 		$title = StringUtils::trimStringToLengthAtWordBoundary($title, 60, true);
 		/** @noinspection PhpUnusedLocalVariableInspection */
-		list($totalHeight, $lines) = wrapTextForDisplay($this->titleFont, $title, $title_font_size, $title_font_size * .1, $width);
+		[$totalHeight, $lines] = wrapTextForDisplay($this->titleFont, $title, $title_font_size, $title_font_size * .1, $width);
 		addWrappedTextToImage($imageCanvas, $this->titleFont, $lines, $title_font_size, $title_font_size * .1, $x, $y, $textColor);
 
 		$author_font_size = $this->imageWidth * 0.055;
 
 		$width = $this->imageWidth - (2 * $this->imageHeight * $this->topMargin / 100);
 		$author = StringUtils::trimStringToLengthAtWordBoundary($author, 40, true);
-		list($totalHeight, $lines) = wrapTextForDisplay($this->authorFont, $author, $author_font_size, $author_font_size * .1, $width);
+		[$totalHeight, $lines] = wrapTextForDisplay($this->authorFont, $author, $author_font_size, $author_font_size * .1, $width);
 		$y = $this->imageHeight - $artworkHeight - $totalHeight - 5;
 		addWrappedTextToImage($imageCanvas, $this->authorFont, $lines, $author_font_size, $author_font_size * .1, $x, $y, $textColor);
 	}
@@ -133,7 +153,7 @@ private function setForegroundAndBackgroundColors($title, $author){
 		$artworkStartX = 0;
 		$artworkStartY = $this->imageHeight - $this->imageWidth;
 
-		list($gridCount, $gridTotal, $gridSize) = $this->breakGrid($title);
+		[$gridCount, $gridTotal, $gridSize] = $this->breakGrid($title);
 		$c64_title = $this->c64Convert($title);
 		$c64_title = str_pad($c64_title, $gridTotal, ' ');
 
