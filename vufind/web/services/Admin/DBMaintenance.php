@@ -1757,14 +1757,20 @@ class DBMaintenance extends Admin_Admin {
 
 	function encryptUserPasswords() {
 		set_time_limit(6000);
+		$logger = new Logger(__CLASS__);
 		#$sql = "SELECT id, password FROM user WHERE char_length(password) < 56";
 		$user = new User();
 		$user->whereAdd("char_length(password) < 56");
 		$user->find();
 
 		while ($user->fetch()) {
+			try {
 				$password = $user->password;
 				$user->updatePassword($password);
+			} catch (Exception $e) {
+				$logger->error($user->_lastError);
+				continue;
+			}
 		}
 		//return true;
 	}
