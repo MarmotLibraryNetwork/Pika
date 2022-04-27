@@ -59,10 +59,7 @@ class DBMaintenance extends Admin_Admin {
 					$updateOk      = true;
 					foreach ($sqlStatements as $sql){
 						if (method_exists($this, $sql)){
-							//$updateOk = false;
-							$updateOk = $this->$sql($update);
-							//if($updateOk !== true)
-								//continue;
+							$this->$sql($update);
 						}else{
 							if (!$this->runSQLStatement($update, $sql)){
 								break;
