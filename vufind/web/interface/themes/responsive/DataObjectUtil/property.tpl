@@ -7,7 +7,8 @@
 	<div class="form-group" id="propertyRow{$propName}">
 		{* Output the label *}
 		{if $property.type == 'enum'}
-			<label for='{$propName}Select'{if $property.description} title="{$property.description}"{/if}>{$property.label}{if $property.required}<span class="required-input">*</span>{/if}
+			<label for='{$propName}Select'{if $property.description} title="{$property.description}"{/if}>{$property.label}
+				{if $property.required}<span class="required-input">*</span>{/if}
 				{if $property.isIndexingSetting}
 					&nbsp;<span class="glyphicon glyphicon-time" aria-hidden="true" title="This setting is a change to indexing"></span>
 				{/if}
