@@ -59,7 +59,10 @@ class DBMaintenance extends Admin_Admin {
 					$updateOk      = true;
 					foreach ($sqlStatements as $sql){
 						if (method_exists($this, $sql)){
-							$this->$sql($update);
+							$updateOk = false;
+							$updateOk = $this->$sql($update);
+							if($updateOk !== true)
+								break;
 						}else{
 							if (!$this->runSQLStatement($update, $sql)){
 								break;
@@ -1520,7 +1523,7 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER TABLE `econtent`.`overdrive_api_magazine_issues` ADD INDEX `parentId` (`parentId` ASC);"
 					]
 				],
-				'encryptUserPasswords' => [
+				'2022.02.0_encryptUserPasswords' => [
 					'title'             =>  'Encrypt patron passwords',
 					'description'       =>  'Encrypt patron passwords',
 					'continueOnError'   => false,
@@ -1757,7 +1760,9 @@ class DBMaintenance extends Admin_Admin {
 
 	function encryptUserPasswords() {
 		set_time_limit(6000);
+		#$sql = "SELECT id, password FROM user WHERE char_length(password) < 56";
 		$user = new User();
+		$user->whereAdd("char_length(password) < 56");
 		$user->find();
 
 		while ($user->fetch()) {
@@ -1766,5 +1771,7 @@ class DBMaintenance extends Admin_Admin {
 				$user->updatePassword($password);
 			}
 		}
+		return true;
 	}
+	// end class
 }
