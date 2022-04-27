@@ -1766,10 +1766,8 @@ class DBMaintenance extends Admin_Admin {
 		$user->find();
 
 		while ($user->fetch()) {
-			if (strlen($user->password) != 56){
 				$password = $user->password;
 				$user->updatePassword($password);
-			}
 		}
 		return true;
 	}
