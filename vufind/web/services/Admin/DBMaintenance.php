@@ -1766,7 +1766,9 @@ class DBMaintenance extends Admin_Admin {
 		while ($user->fetch()) {
 			try {
 				$password = $user->password;
-				$user->updatePassword($password);
+				$result = $user->updatePassword($password);
+				if(!$result)
+					continue;
 			} catch (Exception $e) {
 				$logger->error($user->_lastError);
 				continue;
