@@ -66,7 +66,7 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getDateFirstDetectedStmt;
 
 	private Long    indexStartTime;
-	private boolean fullReindex;
+	public  boolean fullReindex;
 	private long    lastReindexTime;
 	private boolean okToIndex = true;
 

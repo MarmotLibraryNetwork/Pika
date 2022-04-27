@@ -1335,30 +1335,28 @@ class SearchObject_Solr extends SearchObject_Base {
 			}
 		}
 
-		//Check to see if we have both a format and availability facet applied.
-		$availabilityByFormatFieldName = null;
-		if ($availabilityToggleValue != null && ($formatCategoryValue != null || $formatValue != null)){
+		//Check to see if we have format facets applied.
+		$availabilityByFormatFieldName = $availableAtByFormatFieldName= null;
+		if ($formatCategoryValue != null || $formatValue != null){
+			// When a format or format category facet is applied, switch to using the availability plus format facets.
+			// Both for filtering and importantly, for facet fetching (so that incompatible eContent availability isn't displayed in facets)
 			global $solrScope;
 			//Make sure to process the more specific format first
 			if ($formatValue != null){
-				$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatValue));
+				$escapedFormatValue            = strtolower(preg_replace('/\W/', '_', $formatValue));
+				$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . $escapedFormatValue;
+				$availableAtByFormatFieldName  = 'available_at_by_format_' . $solrScope . '_' . $escapedFormatValue;
 			}else{
-				$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatCategoryValue));
+				$escapedFormatCategoryValue     = strtolower(preg_replace('/\W/', '_', $formatCategoryValue));
+				$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . $escapedFormatCategoryValue;
+				$availableAtByFormatFieldName  = 'available_at_by_format_' . $solrScope . '_' . $escapedFormatCategoryValue;
 			}
-			$filterQuery['availability_toggle'] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
-		}
-
-		//Check to see if we have both a format and available at facet applied
-		$availableAtByFormatFieldName = null;
-		if ($availabilityAtValue != null && ($formatCategoryValue != null || $formatValue != null)){
-			global $solrScope;
-			//Make sure to process the more specific format first
-			if ($formatValue != null){
-				$availableAtByFormatFieldName = 'available_at_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatValue));
-			}else{
-				$availableAtByFormatFieldName = 'available_at_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatCategoryValue));
+			if (!empty($availabilityToggleValue)){
+				$filterQuery['availability_toggle'] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
 			}
-			$filterQuery['available_at'] = $availableAtByFormatFieldName . ':"' . $availabilityAtValue . '"';
+			if (!empty($availabilityAtValue)){
+				$filterQuery['available_at'] = $availableAtByFormatFieldName . ':"' . $availabilityAtValue . '"';
+			}
 		}
 
 
@@ -1376,6 +1374,12 @@ class SearchObject_Solr extends SearchObject_Base {
 				if (strpos($facetField, 'availability_toggle') === 0){
 					if ($availabilityByFormatFieldName){
 						$facetSet['field'][] = $availabilityByFormatFieldName;
+					}else{
+						$facetSet['field'][] = $facetField;
+					}
+				}elseif (strpos($facetField, 'available_at') === 0){
+					if ($availableAtByFormatFieldName){
+						$facetSet['field'][] = $availableAtByFormatFieldName;
 					}else{
 						$facetSet['field'][] = $facetField;
 					}
@@ -1743,6 +1747,15 @@ class SearchObject_Solr extends SearchObject_Base {
 				if (strpos($field, 'availability_by_format') === 0){
 					foreach ($validFields as $validFieldName){
 						if (strpos($validFieldName, 'availability_toggle') === 0){
+							$field = $validFieldName;
+							$isValid  = true;
+							break;
+						}
+					}
+				}
+				elseif (strpos($field, 'available_at_by_format') === 0){
+					foreach ($validFields as $validFieldName){
+						if (strpos($validFieldName, 'available_at') === 0){
 							$field = $validFieldName;
 							$isValid  = true;
 							break;
