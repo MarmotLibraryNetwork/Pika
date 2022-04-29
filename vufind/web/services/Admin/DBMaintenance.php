@@ -1524,7 +1524,9 @@ class DBMaintenance extends Admin_Admin {
 					'title'             =>  'Encrypt patron passwords',
 					'description'       =>  'Encrypt patron passwords',
 					'continueOnError'   => false,
-					'sql'               => ['encryptUserPasswords']
+					'sql'               => [
+						"ALTER TABLE user CHANGE COLUMN password password VARCHAR(255) NULL DEFAULT NULL;",
+						'encryptUserPasswords']
 				],
 
 			)); // End of main array
@@ -1767,8 +1769,10 @@ class DBMaintenance extends Admin_Admin {
 			try {
 				$password = $user->password;
 				$result = $user->updatePassword($password);
-				if(!$result)
+				if(!$result){
+					$logger->error($user->_lastError);
 					continue;
+				}
 			} catch (Exception $e) {
 				$logger->error($user->_lastError);
 				continue;

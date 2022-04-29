@@ -70,7 +70,7 @@ class Cache implements CacheInterface
 			}
 			$this->handler = $memCached;
 		}
-		if((bool)$configArray['System']['debug']) {
+		if((bool)$configArray['System']['debugMemCache']) {
 			$this->logger = new Logger("Pika\Cache");
 		}
 	}
@@ -291,13 +291,17 @@ class Cache implements CacheInterface
 	}
 
 	private function _log($action, $key, $result) {
+		global $configArray;
+
 		if($this->logger) {
 			if($result != false) {
 				$result = 'true';
 			} else {
 				$result = 'false';
 			}
-			$this->logger->debug($action . ':' . $key . ':' . strval($result));
+			if((bool)$configArray['System']['debugMemCache']) {
+				$this->logger->debug($action . ':' . $key . ':' . strval($result));
+			}
 		}
 	}
 }
