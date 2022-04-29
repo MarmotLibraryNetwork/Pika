@@ -143,7 +143,6 @@
 						</div>
 					{/if}
 					{if $addressInfo.addressOtherRegion}
-						{debug}
 						<div class="row">
 							<div class="result-label col-sm-4">Other Region: </div>
 							<div class="result-value col-sm-8">
