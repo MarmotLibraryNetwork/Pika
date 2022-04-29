@@ -160,6 +160,7 @@
 
 				<div class="col-md-2"><label for="fileName" class="label-left">File Name</label></div>
 				<div class="col-md-7"><input type="text" name="fileName" value="{$propValue}" class="form-control"></div>
+
 			</div>
 			{/if}
 			<script>
@@ -174,6 +175,13 @@
 					var file = e.target.files[0].name;
 					var extension = file.substr((file.lastIndexOf('.') +1));
 
+					if(this.files[0].size > 1900000){
+						$(':input[type="submit"]').prop('disabled', true);
+						$(".custom-file").append("<div class='alert alert-danger' id='sizeWarning'>The image is too large and upload will fail. Please resize and try again. Images must be under 1.8MB</div>");
+					}else{
+						$(':input[type="submit"]').prop('disabled', false);
+						$("#sizeWarning").remove();
+					}
 
 					if($("#fileName").length > 0)
 						{
