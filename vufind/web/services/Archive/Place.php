@@ -39,9 +39,9 @@ class Archive_Place extends Archive_Entity{
 
 		/** @var PlaceDriver $placeDriver */
 		$placeDriver = $this->recordDriver;
-		$geoData = $placeDriver->getGeoData();
+		$geoData     = $placeDriver->getGeoData();
 		$addressInfo = $interface->getVariable('addressInfo');
-		if ($addressInfo == null || count($addressInfo) == 0 && $geoData != null){
+		if (empty($addressInfo == null) && $geoData != null){
 
 			$addressInfo['latitude'] = $geoData['latitude'];
 			$addressInfo['longitude'] = $geoData['longitude'];

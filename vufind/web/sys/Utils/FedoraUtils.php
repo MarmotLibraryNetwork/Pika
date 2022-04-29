@@ -331,7 +331,7 @@ class FedoraUtils {
 	}
 
 	public static function cleanValues($values){
-		$newValues = array();
+		$newValues = [];
 		foreach ($values as $value){
 			$newValue = FedoraUtils::cleanValue($value);
 			if (strlen($newValue) > 0){
