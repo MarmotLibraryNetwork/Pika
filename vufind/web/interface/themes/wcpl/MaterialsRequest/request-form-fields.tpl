@@ -166,8 +166,12 @@
 										<label class="control-label col-sm-3" for="{$materialRequestTableColumnName}">{$formField->fieldLabel}: </label>
 										<div class="request_detail_field_value col-sm-9">
 											<input name="{$materialRequestTableColumnName}" id="{$materialRequestTableColumnName}"
-											       size="40" maxlength="255" class="form-control"
-											       value="{$materialsRequest->$materialRequestTableColumnName}">
+															{if $formField->fieldType == 'publicationYear'}
+																size="4" maxlength="4"  data-rule-minlength="4" data-rule-maxlength="4"
+															{else}
+																size="40" maxlength="255"
+															{/if}
+														 class="form-control" value="{$materialsRequest->$materialRequestTableColumnName}">
 										</div>
 									</div>
 

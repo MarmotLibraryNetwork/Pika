@@ -116,6 +116,8 @@ private function setForegroundAndBackgroundColors($title, $author){
 			imagefilledrectangle($imageCanvas, 0, 0, $this->imageWidth, $this->topMargin, $backgroundColor);
 
 			$artworkHeight = $this->drawArtwork($imageCanvas, $backgroundColor, $foregroundColor, $title);
+			$authorPreg = "/(\d+-)(\d|)+/";
+			$author = preg_replace($authorPreg,'', $author);
 			$this->drawText($imageCanvas, $title, $author, $artworkHeight);
 			imagepng($imageCanvas, $filename);
 			imagedestroy($imageCanvas);
