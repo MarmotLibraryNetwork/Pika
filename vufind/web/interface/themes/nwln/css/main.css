@@ -10199,7 +10199,8 @@ a.browse-thumbnail-sorted.active {
 }
 .book-pdf {
   width: 100%;
-  height: 600px;
+  min-height: 600px;
+  height: inherit;
 }
 #view-transcription {
   width: 100%;
