@@ -1095,13 +1095,13 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$userLists->find();
 
 		while ($userLists->fetch()){
-			//Check to see if the user has already added the title to the list.
 			if ($userLists->numValidListItems() >= 2000){
 				$listsTooLarge[] = [
 					'id'    => $userLists->id,
 					'title' => $userLists->title,
 				];
 			}
+			//Check to see if the user has already added the title to the list.
 			$userListEntry                         = new UserListEntry();
 			$userListEntry->listId                 = $userLists->id;
 			$userListEntry->groupedWorkPermanentId = $id;
@@ -1125,7 +1125,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 		$results = [
 			'title'        => 'Add To List',
-			'modalBody'    => $interface->fetch("GroupedWork/save.tpl"),
+			'modalBody'    => $interface->fetch('GroupedWork/save.tpl'),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.GroupedWork.saveToList(\"{$id}\");'>Save To List</button>",
 		];
 		return $results;

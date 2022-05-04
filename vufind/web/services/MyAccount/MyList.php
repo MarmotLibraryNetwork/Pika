@@ -109,7 +109,7 @@ class MyAccount_MyList extends MyAccount {
 						case 'deleteMarked':
 							//get a list of all titles that were selected
 							if (isset($_REQUEST['myListActionData'])){
-								$itemsToRemove = explode(",", $_REQUEST['myListActionData']);
+								$itemsToRemove = explode(',', $_REQUEST['myListActionData']);
 								foreach ($itemsToRemove as $id){
 									//add back the leading . to get the full bib record
 									$list->removeListEntry($id);

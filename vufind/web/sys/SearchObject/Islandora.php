@@ -319,7 +319,6 @@ class SearchObject_Islandora extends SearchObject_Base {
 
 		if ($IDList){
 			//Reorder the documents based on the list of id's
-			//TODO: taken from Solr.php (May need to adjust for Islandora
 			$x = 0;
 			foreach ($IDList as $listPosition => $currentId){
 				// use $IDList as the order guide for the html
