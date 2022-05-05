@@ -716,8 +716,8 @@ class Sierra {
 		// notices
 		$patron->notices = $pInfo->fixedFields->{'268'}->value;
 		switch($pInfo->fixedFields->{'268'}->value) {
-			case '-':
-				$patron->noticePreferenceLabel = 'none';
+			case 't':
+				$patron->noticePreferenceLabel = 'Text';
 				break;
 			case 'a':
 				$patron->noticePreferenceLabel = 'Mail';
@@ -728,6 +728,7 @@ class Sierra {
 			case 'z':
 				$patron->noticePreferenceLabel = 'E-mail';
 				break;
+			case '-':
 			default:
 				$patron->noticePreferenceLabel = 'none';
 		}
