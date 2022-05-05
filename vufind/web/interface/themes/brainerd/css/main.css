@@ -10199,7 +10199,7 @@ a.browse-thumbnail-sorted.active {
 .book-pdf {
   width: 100%;
   min-height: 600px;
-  height: inherit;
+  height: 100%;
 }
 #view-transcription {
   width: 100%;
