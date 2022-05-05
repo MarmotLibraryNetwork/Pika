@@ -10196,7 +10196,8 @@ a.browse-thumbnail-sorted.active {
 }
 .book-pdf {
   width: 100%;
-  height: 600px;
+  min-height: 600px;
+  height: 100%;
 }
 #view-transcription {
   width: 100%;
@@ -10387,6 +10388,10 @@ a.browse-thumbnail-sorted.active {
   .lead {
     font-size: 18px;
   }
+}
+#player {
+  display: block;
+  width: 100%;
 }
 .editor .panel-group .panel-body > .form-group > .controls {
   overflow-x: auto;

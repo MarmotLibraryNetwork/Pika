@@ -226,11 +226,11 @@ class GroupedWork_AJAX extends AJAXHandler {
 			//Load Similar titles (from Solr)
 			$class = $configArray['Index']['engine'];
 			$url   = $configArray['Index']['url'];
-			/** @var Solr $db */
-			$db      = new $class($url);
-			$similar = $db->getMoreLikeThis2($id);
+			/** @var Solr $solr */
+			$solr      = new $class($url);
+			$similar = $solr->getMoreLikeThis2($id);
 			$memoryWatcher->logMemory('Loaded More Like This data from Solr');
-			if (is_array($similar) && !empty($similar['response']['docs'])){
+			if (!empty($similar['response']['docs'])){
 				$similarTitles = [];
 				foreach ($similar['response']['docs'] as $key => $similarTitle){
 					$similarTitleDriver = new GroupedWorkDriver($similarTitle);
@@ -246,6 +246,10 @@ class GroupedWork_AJAX extends AJAXHandler {
 				}
 				$similarTitlesInfo                 = ['titles' => $similarTitles, 'currentIndex' => 0];
 				$enrichmentResult['similarTitles'] = $similarTitlesInfo;
+			} else {
+				global $pikaLogger;
+				global $solrScope;
+				$pikaLogger->notice("More Like This had no results for $id in scope $solrScope");
 			}
 			$memoryWatcher->logMemory('Loaded More Like This scroller data');
 
@@ -1091,13 +1095,13 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$userLists->find();
 
 		while ($userLists->fetch()){
-			//Check to see if the user has already added the title to the list.
 			if ($userLists->numValidListItems() >= 2000){
 				$listsTooLarge[] = [
 					'id'    => $userLists->id,
 					'title' => $userLists->title,
 				];
 			}
+			//Check to see if the user has already added the title to the list.
 			$userListEntry                         = new UserListEntry();
 			$userListEntry->listId                 = $userLists->id;
 			$userListEntry->groupedWorkPermanentId = $id;
@@ -1121,7 +1125,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 		$results = [
 			'title'        => 'Add To List',
-			'modalBody'    => $interface->fetch("GroupedWork/save.tpl"),
+			'modalBody'    => $interface->fetch('GroupedWork/save.tpl'),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.GroupedWork.saveToList(\"{$id}\");'>Save To List</button>",
 		];
 		return $results;

@@ -531,6 +531,7 @@ class Solr implements IndexEngine {
 			'q'  => "id:$id",
 			'fl' => SearchObject_Solr::$fields
 		];
+		$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
 		$result = $this->client->get($this->host . '/morelikethis', $options);
 		if ($this->client->isError()) {
 			PEAR_Singleton::raiseError($this->client->getErrorMessage());
@@ -607,13 +608,22 @@ class Solr implements IndexEngine {
 		}
 		if ($configArray['Index']['enableBoosting']){
 			$boostFactors  = $this->getBoostFactors($searchLibrary, $searchLocation);
-			$options['bf'] = $boostFactors;
+			$options['bf'] = 'sum(' . implode(',', $boostFactors) . ')';
 		}
 
-		$result = $this->client->get($this->host . '/morelikethis2', $options);
-//		if (is_object($result)){
-//			$this->logger->error("More Like this response : " . $this->client->getRawResponse());
-//		}
+		$url    = $this->host . '/morelikethis2';
+		if (!empty($options['fq'])){
+			// Since http_build_query() builds url parameters as array eg. fq[0]=foo&fq[1]=bla
+			// Solr does not seem to be able to handle this; and so our filter queries don't get applied.
+			// The below builds repeating url parameters that solr accepts eg. fq=foo&fq=bla  See also  _select()
+			$url .= '?fq=' . urlencode(array_shift($options['fq']));
+			foreach ($options['fq'] as $option){
+				$url .= '&fq=' . urlencode($option);
+			}
+			unset($options['fq']);
+		}
+		$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
+		$result = $this->client->get($url, $options);
 		if ($this->client->isError()) {
 			$errorMessage = $this->client->getErrorMessage();
 			$this->logger->error('MoreLikeThis2 error : ' . $errorMessage);
@@ -638,13 +648,15 @@ class Solr implements IndexEngine {
 		$idString = implode(' OR ', $ids);
 		$options  = [
 			'q'                    => "id:($idString)",
-			'qt'                   => 'morelikethese',
-			'mlt.interestingTerms' => 'details',
-			'rows'                 => 25
+//			'qt'                   => 'morelikethese',
+//			'mlt.interestingTerms' => 'details',
+			'rows'                 => 30
 		];
 
-		$notInterestedString = implode(' OR ', $notInterestedIds);
-		$options['fq'][]     = "-id:($notInterestedString)";
+		if (!empty($notInterestedIds)){
+			$notInterestedString = implode(' OR ', $notInterestedIds);
+			$options['fq'][]     = "-id:($notInterestedString)";
+		}
 
 		$searchLibrary  = Library::getSearchLibrary();
 		$searchLocation = Location::getSearchLocation();
@@ -654,10 +666,9 @@ class Solr implements IndexEngine {
 		}
 		if ($configArray['Index']['enableBoosting']){
 			$boostFactors  = $this->getBoostFactors($searchLibrary, $searchLocation);
-			$options['bf'] = $boostFactors;
+			$options['bf'] = 'sum(' . implode(',', $boostFactors) . ')';
 		}
 
-		$options['rows'] = 30;
 
 		// TODO: Limit Fields
 //		if ($this->debug && isset($fields)) {
@@ -665,8 +676,21 @@ class Solr implements IndexEngine {
 //		} else {
 		// This should be an explicit list
 		$options['fl'] = '*,score';
+//		$options['fl'] = 'id,rating,title,author';
 //		}
-		$result = $this->client->get($this->host . '/morelikethese', $options);
+		$url    = $this->host . '/morelikethese';
+		if (!empty($options['fq'])){
+			// Since http_build_query() builds url parameters as array eg. fq[0]=foo&fq[1]=bla
+			// Solr does not seem to be able to handle this; and so our filter queries don't get applied.
+			// The below builds repeating url parameters that solr accepts eg. fq=foo&fq=bla  See also  _select()
+			$url .= '?fq=' . urlencode(array_shift($options['fq']));
+			foreach ($options['fq'] as $option){
+				$url .= '&fq=' . urlencode($option);
+			}
+			unset($options['fq']);
+		}
+		$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
+		$result = $this->client->get($url, $options);
 		if ($this->client->isError()) {
 			PEAR_Singleton::raiseError($this->client->getErrorMessage());
 		}
@@ -693,7 +717,7 @@ class Solr implements IndexEngine {
 
 		// Process Search
 		$query  = "$field:($phrase*)";
-		$result = $this->search($query, null, null, 0, $limit, array('field' => $field, 'limit' => $limit));
+		$result = $this->search($query, null, null, 0, $limit, ['field' => $field, 'limit' => $limit]);
 		return $result['facet_counts']['facet_fields'][$field];
 	}
 
@@ -2017,7 +2041,7 @@ class Solr implements IndexEngine {
 					}
 					if (is_array($value)){
 						foreach ($value as $additional){
-							//Islandora Solr takes repeated url parameters with out the typical array style. eg. &fq=firstOne&fq=secondOne
+							//Islandora Solr takes repeated url parameters without the typical array style. eg. &fq=firstOne&fq=secondOne
 							$additional = urlencode($additional);
 							$query[]    = "$function=$additional";
 						}
