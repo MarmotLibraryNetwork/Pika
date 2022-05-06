@@ -45,11 +45,7 @@
 									<strong>Forgot PIN?</strong> <a href="/MyAccount/EmailPin">E-mail PIN</a>
 								</p>
 							{/if}
-							{if $enableSelfRegistration == 1}
-								<p class="help-block">
-									Don't have a library card?  <a href="/MyAccount/SelfReg">Register for a new Library Card</a>.
-								</p>
-							{/if}
+							{include file="MyAccount/selfReglink.tpl"}
 						</div>
 					</div>
 					<div id="loginPasswordRow2" class="form-group">

@@ -1197,6 +1197,15 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			],
 		],
 
+		'2022.02.0_add_self_reg_url' => [
+			'title'           => 'Library external Self Reg URL',
+			'description'     => 'Add Library setting for external Self Registration URL',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE `library` ADD COLUMN `externalSelfRegistrationUrl` VARCHAR(45) NULL AFTER `enableSelfRegistration`",
+			],
+		],
+
 		'2021.02.0_obsolete_location_subdomain' => [
 			'title'           => 'Remove Location subdomain',
 			'description'     => 'run AFTER CONFIRMING catalog URLs update succeeded.',

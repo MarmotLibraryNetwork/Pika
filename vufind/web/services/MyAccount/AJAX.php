@@ -972,12 +972,14 @@ class MyAccount_AJAX extends AJAXHandler {
 	}
 
 	function LoginForm(){
+		/** @var Library $library */
 		global $interface;
 		global $library;
 		global $configArray;
 
 		if (isset($library)){
-			$interface->assign('enableSelfRegistration', $library->enableSelfRegistration);
+			$interface->assign('enableSelfRegistration', $library->enableSelfRegistration || $library->externalSelfRegistrationUrl);
+			$interface->assign('selfRegLink', empty($library->externalSelfRegistrationUrl) ? '/MyAccount/SelfReg' : $library->externalSelfRegistrationUrl);
 			$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
 			$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
 		}else{
