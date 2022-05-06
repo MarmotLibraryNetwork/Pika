@@ -108,19 +108,19 @@ class DataObjectUtil {
 				$monthField = $property['propNameMonth'];
 				$yearField  = $property['propNameYear'];
 				if (!empty($object->$dayField) && $object->$dayField > 31){
-					$validationResults['errors'][] = $property['label'] . ' - Invalid day of month.';
+					$validationResults['errors'][] = $property['label'] . ' - Invalid day of month : ' . $object->$dayField;
 				}
 				if (!empty($object->$monthField) && $object->$monthField > 12){
-					$validationResults['errors'][] = $property['label'] . ' - Invalid month.';
+					$validationResults['errors'][] = $property['label'] . ' - Invalid month : ' .$object->$monthField;
 				}
 				if (!empty($object->$yearField)){
 					if (strlen($object->$yearField) != 4){
-						$validationResults['errors'][] = $property['label'] . ' - Please provide a four-digit year.';
+						$validationResults['errors'][] = $property['label'] . ' - Please provide a four-digit year : ' . $object->$yearField;
 					}elseif ($object->$yearField > date("Y")){
-							$validationResults['errors'][] = $property['label'] . ' - Invalid year (in future).';
+							$validationResults['errors'][] = $property['label'] . ' - Invalid year (in future) : '. $object->$yearField;
 					}elseif (!empty($object->$dayField) && !empty($object->$monthField)
 						&& !checkdate($object->$monthField, $object->$dayField, $object->$yearField)){
-						$validationResults['errors'][] = $property['label'] . ' - Not a valid date.';
+						$validationResults['errors'][] = $property['label'] . " - Not a valid date: {$object->$monthField}-{$object->$dayField}-{$object->$yearField}";
 					}
 				}
 
@@ -156,7 +156,8 @@ class DataObjectUtil {
 			case 'email':
 			case 'multiemail':
 				if (isset($_REQUEST[$propertyName])){
-					$object->$propertyName = strip_tags(trim($_REQUEST[$propertyName]));
+					$str             = strip_tags(trim($_REQUEST[$propertyName]));
+					$object->$propertyName = $str;
 				}
 				break;
 			case 'textarea':

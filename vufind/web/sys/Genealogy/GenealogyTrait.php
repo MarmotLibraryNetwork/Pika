@@ -13,6 +13,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+require_once ROOT_DIR . '/sys/Genealogy/Person.php';
+
 /**
  *
  *
@@ -60,6 +62,19 @@ trait GenealogyTrait {
 
 	function getImageUrl($size = 'small'){
 		return $this->picture ? '/genealogyImage.php?image=' . $this->picture . '&size=' . $size : '/interface/themes/default/images/person.png';
+	}
+
+	/** @var Person $person */
+	private $person;
+
+	private function getPerson(){
+		if (!isset($this->person)){
+			$person = new Person();
+			if ($person->get($this->personId)){  //shortId for Person class; personId for other Genealogy classes
+				$this->person = $person;
+			}
+		}
+		return $this->person;
 	}
 
 }
