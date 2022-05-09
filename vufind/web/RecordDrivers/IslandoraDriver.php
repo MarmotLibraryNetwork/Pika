@@ -1008,7 +1008,7 @@ abstract class IslandoraDriver extends RecordInterface {
 				$subjectPart = trim($subjectPart);
 				$subjectLink = '/Archive/Results?lookfor=';
 				if (!empty($subjectPart)){
-					$subjectLink               .= '&filter[]=mods_subject_topic_ms%3A' . urlencode('"' . (string)$subjectPart . '"');
+					$subjectLink               .= '&filter[]=mods_subject_topic_ms%3A' . urlencode('"' . str_replace('"', '\"', (string)$subjectPart) . '"');
 					$this->subjectsWithLinks[] = [
 						'link'  => $subjectLink,
 						'label' => (string)$subjectPart,
