@@ -1940,7 +1940,7 @@ public class GroupedWorkSolr implements Cloneable {
 			if (relatedRecordsForScope.size() > 0){
 				ScopedIndexingStats stats = indexingStats.get(scope.getScopeName());
 				stats.numTotalWorks++;
-				if (isLocallyOwned(relatedItems, scope) || isLibraryOwned(relatedItems, scope)){
+				if ((scope.isLocationScope() && isLocallyOwned(relatedItems, scope)) || (scope.isLibraryScope() && isLibraryOwned(relatedItems, scope))){
 					stats.numLocalWorks++;
 				}
 			}
