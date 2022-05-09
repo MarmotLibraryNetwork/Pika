@@ -17,16 +17,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
-require_once ROOT_DIR . "/Action.php";
+require_once ROOT_DIR . '/Action.php';
+
 use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 
 class SelfReg extends Action {
 	protected $catalog;
 
-	function __construct() {
-		global /** @var Library $library */
-		$library;
-		if (!$library->enableSelfRegistration){
+	function __construct(){
+		/** @var Library $library */
+		global $library;
+//		if (!empty($library->externalSelfRegistrationUrl)){
+//			header('Location: ' . $library->externalSelfRegistrationUrl);
+//			die;
+//		}else
+		// Code block above is disabled because Sacramento would like use the Pika self-reg for patrons with out email addresses
+		// as a fallback from their default external service.
+			if (!$library->enableSelfRegistration){
 			// Do not display self-registration page or allow form-submission when the library hasn't enabled self-registration.
 			global $interface;
 			$pageTitle = 'Access Error';
@@ -38,7 +45,7 @@ class SelfReg extends Action {
 		$this->catalog = CatalogFactory::getCatalogConnectionInstance();
 	}
 
-	function launch($msg = null) {
+	function launch($msg = null){
 		global $interface;
 		global $library;
 		global $configArray;
@@ -48,15 +55,15 @@ class SelfReg extends Action {
 		$selfRegFields = $this->catalog->getSelfRegistrationFields();
 		// For Arlington, this function call causes a page redirect to an external web page. plb 1-15-2016
 
-		$pinMinimumLength     = $configArray['Catalog']['pinMinimumLength'];
-		$pinMaximumLength     = $configArray['Catalog']['pinMaximumLength'];
+		$pinMinimumLength = $configArray['Catalog']['pinMinimumLength'];
+		$pinMaximumLength = $configArray['Catalog']['pinMaximumLength'];
 
-		if (isset($_REQUEST['submit'])) {
+		if (isset($_REQUEST['submit'])){
 
 			if (isset($configArray['ReCaptcha']['privateKey'])){
 				try {
 					$recaptchaValid = recaptchaCheckAnswer();
-				} catch (Exception $e) {
+				} catch (Exception $e){
 					$recaptchaValid = false;
 				}
 			}else{
@@ -72,9 +79,9 @@ class SelfReg extends Action {
 					}
 				}
 			}
-			if (!$recaptchaValid) {
+			if (!$recaptchaValid){
 				$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');
-			} else {
+			}else{
 
 				//Submit the form to ILS
 				$result = $this->catalog->selfRegister();
@@ -82,8 +89,8 @@ class SelfReg extends Action {
 			}
 
 			// Pre-fill form with user supplied data
-			foreach ($selfRegFields as &$property) {
-				$userValue = $_REQUEST[$property['property']];
+			foreach ($selfRegFields as &$property){
+				$userValue           = $_REQUEST[$property['property']];
 				$property['default'] = $userValue;
 			}
 
@@ -94,8 +101,8 @@ class SelfReg extends Action {
 		$interface->assign('saveButtonText', 'Register');
 
 		// Set up captcha to limit spam self registrations
-		if (isset($configArray['ReCaptcha']['publicKey'])) {
-			$captchaCode        = recaptchaGetQuestion();
+		if (isset($configArray['ReCaptcha']['publicKey'])){
+			$captchaCode = recaptchaGetQuestion();
 			$interface->assign('captcha', $captchaCode);
 		}
 

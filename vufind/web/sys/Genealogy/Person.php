@@ -153,14 +153,29 @@ class Person extends SolrDataObject {
 		return implode(' ', $keywords);
 	}
 
+	/**
+	 * Method called by updateSolrDocumentForProperty()
+	 *
+	 * @return mixed
+	 */
 	function birthYear(){
 		return $this->birthDateYear;
 	}
 
+	/**
+	 * Method called by updateSolrDocumentForProperty()
+	 *
+	 * @return mixed
+	 */
 	function deathYear(){
 		return $this->deathDateYear;
 	}
 
+	/**
+	 * Method called by updateSolrDocumentForProperty()
+	 *
+	 * @return mixed
+	 */
 	function spouseName(){
 		$return = [];
 		//Make sure that marriages are loaded
@@ -171,20 +186,29 @@ class Person extends SolrDataObject {
 		return $return;
 	}
 
+	/**
+	 * Method called by updateSolrDocumentForProperty()
+	 *
+	 * @return mixed
+	 */
 	function marriageDate(){
 		$return = [];
 		//Make sure that marriages are loaded
 		$marriages = $this->__get('marriages');
 		foreach ($marriages as $marriage){
-			$dateParts = date_parse($marriage->marriageDate);
-			if ($dateParts['year'] != false && $dateParts['month'] != false && $dateParts['day'] != false){
-				$time     = $dateParts['year'] . '-' . $dateParts['month'] . '-' . $dateParts['day'] . 'T00:00:00Z';
+			$time = $this->formatDatePartsForSolr($marriage->marriageDate);
+			if ($time){
 				$return[] = $time;
 			}
 		}
 		return $return;
 	}
 
+	/**
+	 * Method called by updateSolrDocumentForProperty()
+	 *
+	 * @return mixed
+	 */
 	function marriageComments(){
 		$return = [];
 		//Make sure that marriages are loaded
@@ -195,20 +219,30 @@ class Person extends SolrDataObject {
 		return $return;
 	}
 
+	/**
+	 * Method called by updateSolrDocumentForProperty()
+	 *
+	 * @return mixed
+	 */
 	function obituaryDate(){
 		$return = [];
 		//Make sure that obituaries are loaded
+		/** @var Obituary[] $obituaries */
 		$obituaries = $this->__get('obituaries');
 		foreach ($obituaries as $obit){
-			$dateParts = date_parse($obit->date);
-			if ($dateParts['year'] != false && $dateParts['month'] != false && $dateParts['day'] != false){
-				$time     = $dateParts['year'] . '-' . $dateParts['month'] . '-' . $dateParts['day'] . 'T00:00:00Z';
+			$time = $this->formatDatePartsForSolr($obit->date);
+			if ($time){
 				$return[] = $time;
 			}
 		}
 		return $return;
 	}
 
+	/**
+	 * Method called by updateSolrDocumentForProperty()
+	 *
+	 * @return mixed
+	 */
 	function obituarySource(){
 		$return = [];
 		//Make sure that obituaries are loaded
@@ -219,6 +253,11 @@ class Person extends SolrDataObject {
 		return $return;
 	}
 
+	/**
+	 * Method called by updateSolrDocumentForProperty()
+	 *
+	 * @return mixed
+	 */
 	function obituaryText(){
 		$return = [];
 		//Make sure that obituaries are loaded
@@ -227,6 +266,15 @@ class Person extends SolrDataObject {
 			$return[] = $obit->contents;
 		}
 		return $return;
+	}
+
+	private function formatDatePartsForSolr($dateString){
+		$dateParts = date_parse($dateString);
+		if ($dateParts['year'] != false && $dateParts['month'] != false && $dateParts['day'] != false){
+			$time     = $dateParts['year'] . '-' . $dateParts['month'] . '-' . $dateParts['day'] . 'T00:00:00Z';
+			return $time;
+		}
+		return false;
 	}
 
 	function getObjectStructure(){
@@ -246,7 +294,7 @@ class Person extends SolrDataObject {
 			['property' => 'birthDate', 'type' => 'partialDate', 'label' => 'Birth Date', 'description' => 'The date the person was born.', 'storeDb' => true, 'storeSolr' => true, 'propNameMonth' => 'birthDateMonth', 'propNameDay' => 'birthDateDay', 'propNameYear' => 'birthDateYear'],
 			['property' => 'deathDate', 'type' => 'partialDate', 'label' => 'Death Date', 'description' => 'The date the person died.', 'storeDb' => true, 'storeSolr' => true, 'propNameMonth' => 'deathDateMonth', 'propNameDay' => 'deathDateDay', 'propNameYear' => 'deathDateYear'],
 			['property' => 'ageAtDeath', 'type' => 'text', 'maxLength' => 100, 'label' => 'Age At Death', 'description' => 'The age (can be approximate) the person was when they died if exact birth or death dates are not known.', 'storeDb' => true, 'storeSolr' => true],
-			['property' => 'sex', 'type' => 'text', 'maxLength' => 20, 'size' => 20, 'label' => 'Sex', 'description' => 'The sex of the person.', 'storeDb' => true, 'storeSolr' => true],
+			['property' => 'sex', 'type' => 'text', 'maxLength' => 20, 'size' => 20, 'label' => 'Sex', 'description' => 'The sex of the person.', 'storeDb' => true, 'storeSolr' => true, 'serverValidation' => 'standardValuesForSex'],
 			['property' => 'race', 'type' => 'text', 'maxLength' => 20, 'size' => 20, 'label' => 'Race', 'description' => 'The race of the person.', 'storeDb' => true, 'storeSolr' => true],
 			['property' => 'residence', 'type' => 'text', 'maxLength' => 255, 'size' => 40, 'label' => 'Residence', 'description' => 'The race of the person.', 'storeDb' => true, 'storeSolr' => false],
 			['property' => 'causeOfDeath', 'type' => 'text', 'maxLength' => 255, 'size' => 40, 'label' => 'Cause of Death', 'description' => 'The cause of death.', 'storeDb' => true, 'storeSolr' => true],
@@ -284,15 +332,15 @@ class Person extends SolrDataObject {
 			/* Properties related to data entry of the person */
 			['property' => 'addedBy', 'type' => 'hidden', 'label' => 'Added By', 'description' => 'The id of the user who added the person', 'storeDb' => true, 'storeSolr' => false],
 			['property' => 'modifiedBy', 'type' => 'hidden', 'label' => 'Modified By', 'description' => 'The id of the user who modified the person', 'storeDb' => true, 'storeSolr' => false],
-			['property' => 'dateAdded', 'type' => 'hidden', 'label' => 'Date Added', 'description' => 'The Date the person was added.', 'required' => false, 'storeDb' => true, 'storeSolr' => false],
-			['property' => 'dateAdded', 'type' => 'hidden', 'label' => 'Date Modified', 'description' => 'The Date the person was last modified.', 'required' => false, 'storeDb' => true, 'storeSolr' => false],
+			['property' => 'dateAdded', 'type' => 'dateReadOnly', 'label' => 'Date Added', 'description' => 'The Date the person was added.', 'required' => false, 'storeDb' => true, 'storeSolr' => true],
+			['property' => 'lastModified', 'type' => 'dateReadOnly', 'label' => 'Date Modified', 'description' => 'The Date the person was last modified.', 'required' => false, 'storeDb' => true, 'storeSolr' => false],
 
 			/* properties to store in solr */
 			['property' => 'shortId', 'type' => 'method', 'storeDb'  => false, 'storeSolr' => true, 'hideInLists' => true],
 			['property' => 'title', 'type' => 'method', 'description' => 'The full name for the person for Solr', 'storeDb' => false, 'storeSolr' => true, 'hideInLists' => true],
 			['property' => 'keywords', 'type' => 'method', 'description' => 'Keywords for searching within Solr', 'storeDb' => false, 'storeSolr' => true, 'hideInLists' => true],
 			['property' => 'birthYear', 'type' => 'method', 'description' => 'The year the person was born for faceting within Solr', 'storeDb' => false, 'storeSolr' => true, 'hideInLists' => true],
-			['property' => 'deathYear', 'type' => 'method', 'description' => 'The year the person was died for faceting within Solr', 'storeDb' => false, 'storeSolr' => true, 'hideInLists' => true],
+			['property' => 'deathYear', 'type' => 'method', 'description' => 'The year the person was died for faceting within Solr', 'storeDb' => false, 'storeSolr' => true, 'hideInLists' => true, 'serverValidation' => 'validateYears'],
 			['property' => 'spouseName', 'type' => 'method', 'description' => 'Spouse Name for searching within Solr', 'storeDb' => false, 'storeSolr' => true, 'hideInLists' => true],
 			['property' => 'marriageDate', 'type' => 'method', 'description' => 'Marriage Date for searching within Solr', 'storeDb' => false, 'storeSolr' => true, 'hideInLists' => true],
 			['property' => 'marriageComments', 'type' => 'method', 'description' => 'Marriage Comments for searching within Solr', 'storeDb' => false, 'storeSolr' => true, 'hideInLists' => true],
@@ -321,7 +369,7 @@ class Person extends SolrDataObject {
 							$this->marriages[$marriage->marriageId] = clone($marriage);
 						}
 					}
-					$timer->logTime("Loaded marriages");
+					$timer->logTime('Loaded marriages');
 					return $this->marriages;
 				}else{
 					return $this->marriages;
@@ -362,6 +410,48 @@ class Person extends SolrDataObject {
 				$this->data[$name] = $value;
 				break;
 		}
+	}
+
+	/**
+	 * Use the serverValidation process of the DataObjectUtil
+	 * to set the common variations to standardized values
+	 * in order to improve the utility of the sex field as a search facet
+	 *
+	 * @return bool[]
+	 */
+	function standardValuesForSex(){
+		$this->sex = trim($this->sex);
+		switch (strtolower($this->sex)){
+			case 'm':
+			case 'male':
+				$this->sex = 'Male';
+				break;
+			case 'f':
+			case 'female':
+				$this->sex = 'Female';
+				break;
+		}
+		return ['validatedOk' => true];
+	}
+
+	/**
+	 * serverValidation function for DataObjectUtil to
+	 * check that death year is not before birth year.
+	 *
+	 * @return array
+	 */
+	public function validateYears(){
+		$validationResults = [
+			'validatedOk' => true,
+			'errors'      => [],
+		];
+		if (!empty($this->deathDateYear) && !empty($this->birthDateYear)){
+			if ($this->deathDateYear < $this->birthDateYear){
+				$validationResults['validatedOk'] = false;
+				$validationResults['errors'][]    = "Death year $this->deathDateYear is before birth year $this->birthDateYear";
+			}
+		}
+		return $validationResults;
 	}
 
 	function deleteMarriages(){

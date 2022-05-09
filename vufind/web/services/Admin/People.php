@@ -52,8 +52,10 @@ class People extends GenealogyObjectEditor {
 	function getRedirectLocation($curObject, $objectAction = null){
 		if ($objectAction == 'delete'){
 			return '/Union/Search?searchSource=genealogy&lookfor=&genealogyType=GenealogyName';
-		}else{
+		}elseif (!empty( $curObject->personId)){
 			return '/Person/' . $curObject->personId;
+		} else {
+			return null;
 		}
 	}
 

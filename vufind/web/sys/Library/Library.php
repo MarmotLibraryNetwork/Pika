@@ -90,6 +90,7 @@ class Library extends DB_DataObject {
 	public $selfRegistrationSuccessMessage;
 
 	public $enableSelfRegistration;
+	public $externalSelfRegistrationUrl;
 	public $promptForBirthDateInSelfReg;
 	public $selfRegistrationDefaultpType;
 	public $selfRegistrationBarcodeLength;
@@ -524,7 +525,8 @@ class Library extends DB_DataObject {
 						]],
 					'selfRegistrationSection' => ['property' => 'selfRegistrationSection', 'type' => 'section', 'label' => 'Self Registration', 'hideInLists' => true,
 					                              'helpLink' => 'https://marmot-support.atlassian.net/l/c/80ovqAL5', 'properties' => [
-							'enableSelfRegistration'         => ['property' =>'enableSelfRegistration', 'type' =>'checkbox', 'label' =>'Enable Self Registration', 'description' =>'Whether or not patrons can self register on the site', 'hideInLists' => true],
+							'externalSelfRegistrationUrl'    => ['property' =>'externalSelfRegistrationUrl', 'type' =>'text', 'label' =>'URL for External Self Registration Page', 'description' =>'Enter the site url when using an external self-registration system', 'hideInLists' => true],
+							'enableSelfRegistration'         => ['property' =>'enableSelfRegistration', 'type' =>'checkbox', 'label' =>'Enable Self Registration', 'description' => 'Whether or not patrons can self register on the site', 'hideInLists' => true],
 							/* sierra patron api self reg */
 							'selfRegistrationAgencyCode'     => ['property' =>'selfRegistrationAgencyCode', 'type' =>'text', 'label' =>'Agency Code (Sierra Only)', 'description' =>'Sierra library agency code.', 'hideInLists' => true, 'default' => '', 'maxLength' => '3'],
 							'selfRegistrationDefaultpType'   => ['property' =>'selfRegistrationDefaultpType', 'type' =>'text', 'label' =>'Self Registration Patron Type (Sierra Only)', 'description' =>'The default patron type for self registered patrons.', 'hideInLists' => true, 'default' => ''],

@@ -21,9 +21,12 @@
  * Table Definition for marriage
  */
 require_once 'DB/DataObject.php';
-//require_once 'DB/DataObject/Cast.php';
+require_once ROOT_DIR . '/sys/Genealogy/GenealogyTrait.php';
 
 class Marriage extends DB_DataObject {
+
+	use GenealogyTrait;
+
 	public $__table = 'marriage';    // table name
 	public $marriageId;
 	public $personId;
@@ -52,7 +55,7 @@ class Marriage extends DB_DataObject {
 			['property' => 'marriageId', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the marriage in the database', 'storeDb' => true],
 			['property' => 'personId', 'type' => 'hidden', 'label' => 'Person Id', 'description' => 'The id of the person this marriage is for', 'storeDb' => true],
 			['property' => 'spouseName', 'type' => 'text', 'maxLength' => 100, 'label' => 'Spouse', 'description' => 'The spouse&apos;s name.', 'storeDb' => true],
-			['property' => 'marriageDate', 'type' => 'partialDate', 'label' => 'Date', 'description' => 'The date of the marriage.', 'storeDb' => true, 'propNameMonth' => 'marriageDateMonth', 'propNameDay' => 'marriageDateDay', 'propNameYear' => 'marriageDateYear'],
+			['property' => 'marriageDate', 'type' => 'partialDate', 'label' => 'Marriage Date', 'description' => 'The date of the marriage.', 'storeDb' => true, 'propNameMonth' => 'marriageDateMonth', 'propNameDay' => 'marriageDateDay', 'propNameYear' => 'marriageDateYear', 'serverValidation' => 'validateMarriageDate'],
 			['property' => 'comments', 'type' => 'textarea', 'rows' => 10, 'cols' => 80, 'label' => 'Comments', 'description' => 'Information about the marriage.', 'storeDb' => true, 'hideInLists' => true],
 		];
 		return $structure;
@@ -61,11 +64,8 @@ class Marriage extends DB_DataObject {
 	function insert(){
 		$ret = parent::insert();
 		//Load the person this is for, and update solr
-		if ($this->personId){
-			require_once ROOT_DIR . '/sys/Genealogy/Person.php';
-			$person           = new Person();
-			$person->personId = $this->personId;
-			$person->find(true);
+		$person = $this->getPerson();
+		if (!empty($person)){
 			$person->saveToSolr();
 		}
 		return $ret;
@@ -74,27 +74,72 @@ class Marriage extends DB_DataObject {
 	function update($dataObject = false){
 		$ret = parent::update();
 		//Load the person this is for, and update solr
-		if ($this->personId){
-			require_once ROOT_DIR . '/sys/Genealogy/Person.php';
-			$person           = new Person();
-			$person->personId = $this->personId;
-			$person->find(true);
+		$person = $this->getPerson();
+		if (!empty($person)){
 			$person->saveToSolr();
 		}
 		return $ret;
 	}
 
 	function delete($useWhere = false){
-		$personId = $this->personId;
-		$ret      = parent::delete();
+		$ret    = parent::delete();
 		//Load the person this is for, and update solr
-		if ($personId){
-			require_once ROOT_DIR . '/sys/Genealogy/Person.php';
-			$person           = new Person();
-			$person->personId = $this->personId;
-			$person->find(true);
+		$person = $this->getPerson();
+		if (!empty($person)){
 			$person->saveToSolr();
 		}
 		return $ret;
 	}
+
+	/**
+	 * Server Validation method for DataObjectUtil
+	 *
+	 * Tests the validity of the marriage year compared to birth or death year
+	 *
+	 * @return array
+	 */
+	function validateMarriageDate(){
+		//Setup validation return array
+		$validationResults = [
+			'validatedOk' => true,
+			'errors'      => [],
+		];
+
+		$person = $this->getPerson();
+		if (!empty($person)){
+			if (!empty($this->marriageDate)){
+				$marriageTimeStamp = strtotime($this->marriageDate);
+				if ($marriageTimeStamp){
+					if (!empty($person->birthDate)){
+						$birthTimeStamp = strtotime($person->birthDate);
+						if ($birthTimeStamp){
+							if ($marriageTimeStamp < $birthTimeStamp){
+								$validationResults['validatedOk'] = false;
+								$validationResults['errors'][]    = "Obituary date $this->marriageDate is before birth date $person->birthDate";
+							}
+						}
+					}
+					if (!empty($person->deathDate)){
+						$deathTimeStamp = strtotime($person->deathDate);
+						if ($deathTimeStamp){
+							if ($marriageTimeStamp < $deathTimeStamp){
+								$validationResults['validatedOk'] = false;
+								$validationResults['errors'][]    = "Obituary date $this->marriageDate is before death date $person->deathDate";
+							}
+						}
+					}
+				}
+			} elseif (!empty($this->marriageDateYear)){
+				if (!empty($person->birthDateYear) && $this->marriageDateYear < $person->birthDateYear){
+					$validationResults['validatedOk'] = false;
+					$validationResults['errors'][]    = "Marriage year $this->marriageDateYear is before birth year $person->birthDateYear";
+				} elseif (!empty($person->deathDateYear) && $this->marriageDateYear > $person->deathDateYear){
+					$validationResults['validatedOk'] = false;
+					$validationResults['errors'][]    = "Marriage year $this->marriageDateYear is after death year $person->deathDateYear";
+				}
+			}
+		}
+		return $validationResults;
+	}
+
 }
