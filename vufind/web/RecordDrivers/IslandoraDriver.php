@@ -1524,24 +1524,26 @@ abstract class IslandoraDriver extends RecordInterface {
 				}
 			}
 
-			/** @var SearchObject_Solr $searchObject */
-			$searchObject = SearchObjectFactory::initSearchObject();
-			$searchObject->init();
-			$linkedWorkData = $searchObject->getRecords($relatedWorkIds);
-			foreach ($linkedWorkData as $workData) {
-				$workDriver = new GroupedWorkDriver($workData);
-				if ($workDriver->isValid) {
-					$this->relatedPikaRecords[] = [
-						'link'  => $workDriver->getLinkUrl(),
-						'label' => $workDriver->getTitle(),
-						'image' => $workDriver->getBookcoverUrl('medium'),
-						'id'    => $workId
-					];
-					//$this->links[$id]['hidden'] = true;
+			if (!empty($relatedWorkIds)){
+				/** @var SearchObject_Solr $searchObject */
+				$searchObject = SearchObjectFactory::initSearchObject();
+				$searchObject->init();
+				$linkedWorkData = $searchObject->getRecords($relatedWorkIds);
+				foreach ($linkedWorkData as $workData){
+					$workDriver = new GroupedWorkDriver($workData);
+					if ($workDriver->isValid){
+						$this->relatedPikaRecords[] = [
+							'link'  => $workDriver->getLinkUrl(),
+							'label' => $workDriver->getTitle(),
+							'image' => $workDriver->getBookcoverUrl('medium'),
+							'id'    => $workId
+						];
+						//$this->links[$id]['hidden'] = true;
+					}
 				}
+				$searchObject = null;
+				unset ($searchObject);
 			}
-			$searchObject = null;
-			unset ($searchObject);
 
 			//Look for links related to the collection(s) this object is linked to
 			$collections = $this->getRelatedCollections();
