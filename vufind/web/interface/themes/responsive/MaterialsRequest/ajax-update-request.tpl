@@ -11,7 +11,7 @@
 Pika.MaterialsRequest.authorLabels = {$formatAuthorLabelsJSON};
 Pika.MaterialsRequest.specialFields = {$specialFieldFormatsJSON};
 Pika.MaterialsRequest.setFieldVisibility();
-$("#materialsRequestForm").validate();
+$("#materialsRequestUpdateForm").validate();
 </script>
 
 {/if}
