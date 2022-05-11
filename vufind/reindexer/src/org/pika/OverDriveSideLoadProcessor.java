@@ -61,7 +61,6 @@ public class OverDriveSideLoadProcessor extends SideLoadedEContentProcessor {
 					// In these cases, the subtitle takes the form "{series title} Series, Book {Book Number}
 					subTitleValue = "";
 				} else {
-					groupedWork.setSubTitle(subTitleValue); //TODO: return the cleaned up value for the subtitle?
 					if (titleLowerCase.endsWith(subTitleLowerCase)) {
 						// Remove subtitle from title in order to avoid repeats of sub-title in display & title fields in index
 						if (fullReindex && logger.isInfoEnabled()) {
@@ -92,7 +91,7 @@ public class OverDriveSideLoadProcessor extends SideLoadedEContentProcessor {
 			}
 		}
 
-		groupedWork.setTitle(titleValue, displayTitle, sortableTitle, format);
+		groupedWork.setTitle(titleValue, subTitleValue, displayTitle, sortableTitle, format);
 		//title full
 		String authorInTitleField = MarcUtil.getFirstFieldVal(record, "245c");
 		String standardAuthorData = MarcUtil.getFirstFieldVal(record, "100abcdq:110ab");

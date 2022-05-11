@@ -183,21 +183,23 @@ public class GroupedWorkIndexer {
 				updatePartialReindexRunning(true);
 			}
 
-			//Check to make sure that at least a couple of minutes have elapsed since the last index
-			//Periodically in the middle of the night we get indexes every minute or multiple times a minute
-			//which is annoying especially since it generally means nothing is changing.
-			long elapsedTime         = indexStartTime - lastReindexTime;
-			long minIndexingInterval = 2 * 60;
-			if (elapsedTime < minIndexingInterval && !singleWorkIndex) {
-				try {
-					GroupedReindexMain.addNoteToReindexLog("Pausing between indexes, last index ran " + Math.ceil(elapsedTime / 60f) + " minutes ago");
-					GroupedReindexMain.addNoteToReindexLog("Pausing for " + (minIndexingInterval - elapsedTime) + " seconds");
-					Thread.sleep((minIndexingInterval - elapsedTime) * 1000);
-				} catch (InterruptedException e) {
-					logger.warn("Pause was interrupted while pausing between indexes");
+			if (!singleWorkIndex) {
+				//Check to make sure that at least a couple of minutes have elapsed since the last index
+				//Periodically in the middle of the night we get indexes every minute or multiple times a minute
+				//which is annoying especially since it generally means nothing is changing.
+				long elapsedTime         = indexStartTime - lastReindexTime;
+				long minIndexingInterval = 2 * 60;
+				if (elapsedTime < minIndexingInterval) {
+					try {
+						GroupedReindexMain.addNoteToReindexLog("Pausing between indexes, last index ran " + Math.ceil(elapsedTime / 60f) + " minutes ago");
+						GroupedReindexMain.addNoteToReindexLog("Pausing for " + (minIndexingInterval - elapsedTime) + " seconds");
+						Thread.sleep((minIndexingInterval - elapsedTime) * 1000);
+					} catch (InterruptedException e) {
+						logger.warn("Pause was interrupted while pausing between indexes");
+					}
+				} else {
+					GroupedReindexMain.addNoteToReindexLog("Index last ran " + (elapsedTime) + " seconds ago");
 				}
-			}else{
-				GroupedReindexMain.addNoteToReindexLog("Index last ran " + (elapsedTime) + " seconds ago");
 			}
 
 			updateServer = new ConcurrentUpdateSolrClient.Builder(baseSolrUrl).withQueueSize(500).withThreadCount(8).build();
