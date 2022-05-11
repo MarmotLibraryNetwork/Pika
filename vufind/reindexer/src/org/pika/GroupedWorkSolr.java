@@ -598,16 +598,15 @@ public class GroupedWorkSolr implements Cloneable {
 		if (curItem.isEContent()){
 			//If the item is eContent, we will count it as part of the collection since it will be available.
 			availabilityToggleValues.add("Entire Collection");
-		}
-
-		if (!curItem.isEContent() && curScope.isLocallyOwned() && curScope.isAvailable()) {
-			availabilityToggleValues.add("Available Now");
-		}
-		if (curItem.isEContent() && curScope.isAvailable()){
-			if (curScopeDetails.isIncludeOnlineMaterialsInAvailableToggle()) {
-				availabilityToggleValues.add("Available Now");
-			}
 			availabilityToggleValues.add("Available Online");
+
+			if (curScope.isAvailable()){
+				if (curScopeDetails.isIncludeOnlineMaterialsInAvailableToggle()) {
+					availabilityToggleValues.add("Available Now");
+				}
+			}
+		} else if (curScope.isLocallyOwned() && curScope.isAvailable()) {
+			availabilityToggleValues.add("Available Now");
 		}
 
 		HashMap<String, ScopingInfo> curScopingInfo = curItem.getScopingInfo();
@@ -616,32 +615,32 @@ public class GroupedWorkSolr implements Cloneable {
 		if (addLocationOwnership) {
 
 			//We do different ownership display depending on if this is eContent or not
-			String owningLocationValue = curScopeDetails.getFacetLabel();
+			String owningLocationFacetLabel = curScopeDetails.getFacetLabel();
 			if (curItem.isEContent()){
-				owningLocationValue = curItem.getShelfLocation();
+				owningLocationFacetLabel = curItem.getShelfLocation();
 				//TODO: probably should do this any time there is no value for curScopeDetails.getFacetLabel();
 			}else if (curItem.isOrderItem() && groupedWorkIndexer.isGiveOnOrderItemsTheirOwnShelfLocation()){
-				owningLocationValue += " On Order";
+				owningLocationFacetLabel += " On Order";
 			}
 
-			if (groupedWorkIndexer.fullReindex && owningLocationValue.isEmpty()){
+			if (groupedWorkIndexer.fullReindex && owningLocationFacetLabel.isEmpty()){
 				logger.warn("Did not get facet label for item "+ curItem.getItemIdentifier() + " on record " + curRecord.getFullIdentifier());
 			}
 
 			//Save values for this scope
-			addUniqueFieldValue(doc, "owning_location_" + curScopeName, owningLocationValue);
+			addUniqueFieldValue(doc, "owning_location_" + curScopeName, owningLocationFacetLabel);
 
 			if (curScope.isAvailable()) {
-				addAvailableAtValues(doc, curRecord, curScopeName, owningLocationValue);
+				addAvailableAtValues(doc, curRecord, curScopeName, owningLocationFacetLabel);
 			}
 
 			if (curScopeDetails.isLocationScope()) {
 				//Also add the location to the system
 				if (curScopeDetails.getLibraryScope() != null && !curScopeDetails.getLibraryScope().getScopeName().equals(curScopeName)) {
-					addUniqueFieldValue(doc, "owning_location_" + curScopeDetails.getLibraryScope().getScopeName(), owningLocationValue);
+					addUniqueFieldValue(doc, "owning_location_" + curScopeDetails.getLibraryScope().getScopeName(), owningLocationFacetLabel);
 					addAvailabilityToggleValues(doc, curRecord, curScopeDetails.getLibraryScope().getScopeName(), availabilityToggleValues);
 					if (curScope.isAvailable()) {
-						addAvailableAtValues(doc, curRecord, curScopeDetails.getLibraryScope().getScopeName(), owningLocationValue);
+						addAvailableAtValues(doc, curRecord, curScopeDetails.getLibraryScope().getScopeName(), owningLocationFacetLabel);
 					}
 				}
 
@@ -657,9 +656,9 @@ public class GroupedWorkSolr implements Cloneable {
 									if (!otherScopeDetails.isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
 										addAvailabilityToggleValues(doc, curRecord, otherScopeName, availabilityToggleValues);
 									}
-									addUniqueFieldValue(doc, "owning_location_" + otherScopeName, owningLocationValue);
+									addUniqueFieldValue(doc, "owning_location_" + otherScopeName, owningLocationFacetLabel);
 									if (curScope.isAvailable()) {
-										addAvailableAtValues(doc, curRecord, otherScopeName, owningLocationValue);
+										addAvailableAtValues(doc, curRecord, otherScopeName, owningLocationFacetLabel);
 									}
 								}
 							}
@@ -675,9 +674,9 @@ public class GroupedWorkSolr implements Cloneable {
 						if (otherScopeDetails.getAdditionalLocationsToShowAvailabilityFor().length() > 0){
 							if (otherScopeDetails.getAdditionalLocationsToShowAvailabilityForPattern().matcher(curScopeName).matches()){
 								addAvailabilityToggleValues(doc, curRecord, otherScopeName, availabilityToggleValues);
-								addUniqueFieldValue(doc, "owning_location_" + otherScopeName, owningLocationValue);
+								addUniqueFieldValue(doc, "owning_location_" + otherScopeName, owningLocationFacetLabel);
 								if (curScope.isAvailable()) {
-									addAvailableAtValues(doc, curRecord, otherScopeName, owningLocationValue);
+									addAvailableAtValues(doc, curRecord, otherScopeName, owningLocationFacetLabel);
 								}
 							}
 						}
@@ -693,9 +692,9 @@ public class GroupedWorkSolr implements Cloneable {
 					if (!scopeToShowAll.getScope().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
 						addAvailabilityToggleValues(doc, curRecord, scopeToShowAll.getScope().getScopeName(), availabilityToggleValues);
 					}
-					addUniqueFieldValue(doc, "owning_location_" + scopeToShowAll.getScope().getScopeName(), owningLocationValue);
+					addUniqueFieldValue(doc, "owning_location_" + scopeToShowAll.getScope().getScopeName(), owningLocationFacetLabel);
 					if (curScope.isAvailable()) {
-						addAvailableAtValues(doc, curRecord, scopeToShowAll.getScope().getScopeName(), owningLocationValue);
+						addAvailableAtValues(doc, curRecord, scopeToShowAll.getScope().getScopeName(), owningLocationFacetLabel);
 					}
 				}
 			}
@@ -704,9 +703,9 @@ public class GroupedWorkSolr implements Cloneable {
 			//We do different ownership display depending on if this is eContent or not
 			String owningLibraryValue = curScopeDetails.getFacetLabel();
 			if (curItem.isEContent()){
-				owningLibraryValue = curScopeDetails.getFacetLabel() + " Online";
+				owningLibraryValue += " Online";
 			}else if (curItem.isOrderItem() && groupedWorkIndexer.isGiveOnOrderItemsTheirOwnShelfLocation()) {
-				owningLibraryValue = curScopeDetails.getFacetLabel() + " On Order";
+				owningLibraryValue += " On Order";
 			}
 			addUniqueFieldValue(doc, "owning_library_" + curScopeName, owningLibraryValue);
 			for (Scope locationScope : curScopeDetails.getLocationScopes() ){
