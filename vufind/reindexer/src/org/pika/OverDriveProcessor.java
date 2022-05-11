@@ -193,12 +193,11 @@ public class OverDriveProcessor {
 										}
 										if (!subTitle.isEmpty()){
 											fullTitle = title + " " + subTitle;
-											groupedWork.setSubTitle(subTitle);
 										}
 									}
 
 									fullTitle = fullTitle.trim();
-									groupedWork.setTitle(title, fullTitle, sortTitle, primaryFormat);
+									groupedWork.setTitle(title, subTitle, fullTitle, sortTitle, primaryFormat);
 								} catch (Exception e) {
 									logger.error("Error processing Overdrive title info for " + identifier, e);
 								}

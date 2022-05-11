@@ -171,7 +171,7 @@
 															{else}
 																size="40" maxlength="255"
 															{/if}
-														 class="form-control" value="{$materialsRequest->$materialRequestTableColumnName}">
+														 class="form-control{if $formField->fieldType == 'publicationYear'} digits{/if}" value="{$materialsRequest->$materialRequestTableColumnName}">
 										</div>
 									</div>
 

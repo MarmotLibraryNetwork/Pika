@@ -44,7 +44,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		'getReactivationDateForm', //not checked
 		'renewItem', 'renewAll', 'renewSelectedItems',
 		//			'getPinResetForm',
-		'getAddAccountLinkForm', 'addAccountLink', 'removeAccountLink',
+		'getAddAccountLinkForm', 'addAccountLink', 'removeAccountLink', 'removeViewingAccount',
 		'cancelBooking', 'getCitationFormatsForm', 'getAddBrowseCategoryFromListForm',
 		'getMasqueradeAsForm', 'initiateMasquerade', 'endMasquerade', 'getMenuData',
 		'transferList', 'isStaffUser', 'transferListToUser','copyListPrompt',
@@ -155,6 +155,33 @@ class MyAccount_AJAX extends AJAXHandler {
 					'result'  => false,
 					'message' => 'Sorry, we could remove that account.',
 				);
+			}
+		}
+		return $result;
+	}
+
+	function removeViewingAccount(){
+		if (!UserAccount::isLoggedIn()){
+			$result = array(
+				'result'  => false,
+				'message' => 'Sorry, you must be logged in to manage accounts.',
+			);
+		}else{
+			$viewingAccountId = $_REQUEST['idToRemove'];
+			$viewingAccount =  new User();
+			$viewingAccount->id = $viewingAccountId;
+			$viewingAccount->find(true);
+			$user           = UserAccount::getLoggedInUser();
+			if ($viewingAccount->removeLinkedUser($user->id)){
+				$result = array(
+					'result'  => true,
+					'message' => 'Successfully removed linked account.',
+				);
+			}else{
+			$result = array(
+				'result'  => false,
+				'message' => 'Sorry, we could not remove that account.',
+			);
 			}
 		}
 		return $result;

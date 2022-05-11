@@ -158,7 +158,7 @@ Pika.Record = (function(){
 						$('.modal-body').html(data.message);
 					}else{
 						if(autoLogOut === true){
-						 Pika.showMessage('Hold Placed Successfully', data.message, false, false);
+						 Pika.showMessage('Hold Placed Successfully', data.message, false, true);
 						 location.reload();
 						}else{
 							Pika.showMessageWithButtons('Hold Placed Successfully', data.message, data.buttons);

@@ -270,6 +270,19 @@ Pika.Account = (function(){
 			});
 			return false;
 		},
+		removeViewer: function(idToRemove){
+			Pika.confirm("Are you sure you want to remove the viewing account?", function () {
+				var url = "/MyAccount/AJAX?method=removeViewingAccount&idToRemove=" + idToRemove;
+				$.getJSON(url, function(data){
+					if (data.result == true){
+						Pika.showMessage('Linked Account Removed', data.message, true, true);
+					}else{
+						Pika.showMessage('Unable to Remove Account Link', data.message);
+					}
+				});
+			});
+			return false;
+		},
 
 		removeTag: function(tag){
 			Pika.confirm("Are you sure you want to remove the tag \"" + tag + "\" from all titles?",function () {

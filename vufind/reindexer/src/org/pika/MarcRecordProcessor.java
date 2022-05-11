@@ -967,7 +967,6 @@ abstract class MarcRecordProcessor {
 					}
 					subTitleValue = null; // null out so that it doesn't get added to sort or display titles
 				} else {
-					groupedWork.setSubTitle(subTitleValue); //TODO: return the cleaned up value for the subtitle?
 					if (titleLowerCase.endsWith(subTitleLowerCase)) {
 						// Remove subtitle from title in order to avoid repeats of sub-title in display & title fields in index
 						if (fullReindex && logger.isInfoEnabled()) {
@@ -1004,7 +1003,7 @@ abstract class MarcRecordProcessor {
 			}
 		}
 
-		groupedWork.setTitle(titleValue, displayTitle, sortableTitle, format);
+		groupedWork.setTitle(titleValue, subTitleValue, displayTitle, sortableTitle, format);
 		//title full
 		String authorInTitleField = MarcUtil.getFirstFieldVal(record, "245c");
 		String standardAuthorData = MarcUtil.getFirstFieldVal(record, "100abcdq:110ab");
