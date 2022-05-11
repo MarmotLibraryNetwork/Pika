@@ -147,7 +147,7 @@
 								<div class="form-group">
 									<div class="col-xs-4"><label for="email">{translate text='E-mail'}:</label></div>
 									<div class="col-xs-8">
-										{if !$offline && $canUpdateContactInfo == true}<input type="text" name="email" id="email" value="{$profile->email|escape}" size="50" maxlength="75" class="form-control multiemail">{else}{$profile->email|escape}{/if}
+										{if !$offline && $canUpdateContactInfo == true}<input {if !empty($linkedUsers) && count($linkedUsers) > 1 && $selectedUser != $activeUserId}disabled="disabled"{/if} type="text" name="email" id="email" value="{$profile->email|escape}" size="50" maxlength="75" class="form-control multiemail">{else}{$profile->email|escape}{/if}
 										{* Multiemail class is for form validation; type has to be text for multiemail validation to work correctly *}
 									</div>
 								</div>
