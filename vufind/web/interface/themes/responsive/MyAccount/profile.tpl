@@ -50,7 +50,12 @@
 								{if $showUsernameField}
 									<div class="form-group">
 										<div class="col-xs-4"><label for="alternate_username">Username:</label></div>
-										<div class="col-xs-8"><input type="text" name="alternate_username" id="alternate_username" value="{if !is_numeric(trim($profile->alt_username))}{$profile->alt_username|escape}{/if}" size="25" maxlength="25" class="form-control">
+										<div class="col-xs-8">
+                    {if !empty($linkedUsers) && count($linkedUsers) > 1 && $selectedUser != $activeUserId}
+                        {if !is_numeric(trim($profile->alt_username))}{$profile->alt_username|escape}{/if}
+	                    {else}
+	                       <input type="text" name="alternate_username" id="alternate_username" value="{if !is_numeric(trim($profile->alt_username))}{$profile->alt_username|escape}{/if}" size="25" maxlength="25" class="form-control">
+	                    {/if}
 											<a href="#" onclick="$('#usernameHelp').toggle()">What is this?</a>
 											<div id="usernameHelp" style="display:none">
 												A username is an optional feature. If you set one, your username will be your alias on hold slips and can also be used to log into your account in place of your card number.  A username can be set, reset or removed from the “Account Settings” section of your online account. Usernames must be between 6 and 25 characters (letters and number only, no special characters).
@@ -147,7 +152,11 @@
 								<div class="form-group">
 									<div class="col-xs-4"><label for="email">{translate text='E-mail'}:</label></div>
 									<div class="col-xs-8">
-										{if !$offline && $canUpdateContactInfo == true}<input {if !empty($linkedUsers) && count($linkedUsers) > 1 && $selectedUser != $activeUserId}disabled="disabled"{/if} type="text" name="email" id="email" value="{$profile->email|escape}" size="50" maxlength="75" class="form-control multiemail">{else}{$profile->email|escape}{/if}
+              {if !empty($linkedUsers) && count($linkedUsers) > 1 && $selectedUser != $activeUserId}
+                  {$profile->email|escape}
+              {else}
+		          {if !$offline && $canUpdateContactInfo == true}<input type="text" name="email" id="email" value="{$profile->email|escape}" size="50" maxlength="75" class="form-control multiemail">{else}{$profile->email|escape}{/if}
+		        {/if}
 										{* Multiemail class is for form validation; type has to be text for multiemail validation to work correctly *}
 									</div>
 								</div>
@@ -203,7 +212,9 @@
 				{if $showSMSNoticesInProfile}
 					{include file="MyAccount/profile-sms-notices.tpl"}
 				{/if}
-
+        {if !empty($linkedUsers) && count($linkedUsers) > 1 && $selectedUser != $activeUserId}
+		        {$allowPinReset = false}
+        {/if}
 				{if $allowPinReset && !$offline}
 					<div class="panel active">
 						<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#pinPanel">
