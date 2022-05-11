@@ -975,17 +975,17 @@ public class GroupedWorkSolr implements Cloneable {
 	private static Pattern punctuationPattern    = Pattern.compile("[.\\\\/()\\[\\]:;]");
 	private static Pattern multipleSpacesPattern = Pattern.compile("\\s{2,}");
 
-	void setTitle(String shortTitle, String displayTitle, String sortableTitle, String recordFormat) {
-		if (shortTitle != null){
+	void setTitle(String shortTitle, String subTitle, String displayTitle, String sortableTitle, String recordFormat) {
+		if (shortTitle != null) {
 			shortTitle = Util.trimTrailingPunctuation(shortTitle);
 
 			//Figure out if we want to use this title or if the one we have is better.
 			boolean updateTitle = false;
-			if (this.title == null){
+			if (this.title == null) {
 				updateTitle = true;
 			} else {
 				//Only overwrite if we get a better format
-				if (recordFormat.equals("Book")){
+				if (recordFormat.equals("Book")) {
 					//We have a book, update if we didn't have a book before
 					if (!recordFormat.equals(titleFormat)){
 						updateTitle = true;
@@ -1023,8 +1023,9 @@ public class GroupedWorkSolr implements Cloneable {
 				if (tmpTitle.length() > 0){
 					shortTitle = tmpTitle;
 				}
-				this.title = shortTitle;
+				this.title       = shortTitle;
 				this.titleFormat = recordFormat;
+				setSubTitle(subTitle);
 				if (sortableTitle != null) {
 					//TODO: strip trailing punctuation
 					//Strip out anything in brackets unless that would cause us to show nothing
@@ -1074,7 +1075,6 @@ public class GroupedWorkSolr implements Cloneable {
 	void setSubTitle(String subTitle) {
 		if (subTitle != null && !subTitle.isEmpty()){
 			subTitle = Util.trimTrailingPunctuation(subTitle);
-			//TODO: determine if the subtitle should be changed?
 			//Strip out anything in brackets unless that would cause us to show nothing
 			String tmpTitle = removeBracketsPattern.matcher(subTitle).replaceAll("").trim();
 			if (tmpTitle.length() > 0){
@@ -1088,6 +1088,7 @@ public class GroupedWorkSolr implements Cloneable {
 			this.subTitle = subTitle;
 			keywords.add(subTitle);
 		}
+		//TODO: add every subTitle to keywords?
 	}
 
 	public String getSubTitle() {
