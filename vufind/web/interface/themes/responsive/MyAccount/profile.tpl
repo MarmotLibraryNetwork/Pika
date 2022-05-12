@@ -213,8 +213,8 @@
 					{include file="MyAccount/profile-sms-notices.tpl"}
 				{/if}
         {if !empty($linkedUsers) && count($linkedUsers) > 1 && $selectedUser != $activeUserId}
-		        {$allowPinReset = false}
-        {/if}
+
+        {else}
 				{if $allowPinReset && !$offline}
 					<div class="panel active">
 						<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#pinPanel">
@@ -272,6 +272,7 @@
 							</div>
 						</div>
 					</div>
+				{/if}
 				{/if}
 
 				{*OverDrive Options*}
