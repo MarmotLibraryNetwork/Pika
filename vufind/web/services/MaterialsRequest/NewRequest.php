@@ -40,12 +40,14 @@ class MaterialsRequest_NewRequest extends Action {
 			$locations = $locationSingleton->getPickupBranches(UserAccount::getActiveUserObj(), UserAccount::getUserHomeLocationId());
 
 			$pickupLocations = [];
-			foreach ($locations as $curLocation){
-				$pickupLocations[] = [
-					'id'          => $curLocation->locationId,
-					'displayName' => $curLocation->displayName,
-					'selected'    => $curLocation->selected,
-				];
+			foreach ($locations as $key => $curLocation){
+				if ($key != '0default'){
+					$pickupLocations[] = [
+						'id'          => $curLocation->locationId,
+						'displayName' => $curLocation->displayName,
+						'selected'    => $curLocation->selected,
+					];
+				}
 			}
 			$interface->assign('pickupLocations', $pickupLocations);
 
@@ -58,11 +60,6 @@ class MaterialsRequest_NewRequest extends Action {
 			$request                         = new MaterialsRequest();
 			$request->placeHoldWhenAvailable = true; // set the place hold option on by default
 			$request->illItem                = true; // set the place hold option on by default
-
-			// Nashville special request
-			if ($library->displayName == "Nashville Public Library"){
-				$request->illItem = false;
-			}
 
 			if (!empty($_REQUEST['lookfor'])){
 				$searchType = $_REQUEST['basicType'] ?? $_REQUEST['type'] ?? 'Keyword';
