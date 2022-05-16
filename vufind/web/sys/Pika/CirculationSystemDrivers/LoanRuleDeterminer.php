@@ -50,7 +50,10 @@ class LoanRuleDeterminer extends DB_DataObject {
 	}
 
 	function insert(){
-		parent::insert();
+		if (parent::insert()){
+			$this->setFullReindexMarker();
+		}
+
 //		/** @var Memcache $memCache */
 //		global 	$memCache;
 //		global $instanceName;
@@ -58,7 +61,10 @@ class LoanRuleDeterminer extends DB_DataObject {
 	}
 
 	function update($dataObject = false){
-		parent::update($dataObject);
+		if (parent::update($dataObject)){
+			$this->setFullReindexMarker();
+		}
+
 //		/** @var Memcache $memCache */
 //		global $memCache;
 //		global $instanceName;
@@ -124,4 +130,9 @@ class LoanRuleDeterminer extends DB_DataObject {
 //			}
 //		}
 //	}
+
+	private function setFullReindexMarker(): void{
+		$variable = new Variable('fullReindexMarker_loanRuleChanged');
+		$variable->setWithTimeStampValue();
+	}
 }

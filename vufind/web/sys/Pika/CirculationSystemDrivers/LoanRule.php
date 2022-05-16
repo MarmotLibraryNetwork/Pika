@@ -52,7 +52,10 @@ class LoanRule extends DB_DataObject {
 	}
 
 	function insert(){
-		parent::insert();
+		if (parent::insert()){
+			$this->setFullReindexMarker();
+		}
+
 //		/** @var Memcache $memCache */
 //		global $memCache;
 //		global $instanceName;
@@ -60,11 +63,20 @@ class LoanRule extends DB_DataObject {
 	}
 
 	function update($dataObject = false){
-		parent::update($dataObject);
+		if (parent::update($dataObject)){
+			$this->setFullReindexMarker();
+		}
+
 //		/** @var Memcache $memCache */
 //		global $memCache;
 //		global $instanceName;
 //		$memCache->delete($instanceName . '_loan_rules');
+	}
+
+
+	private function setFullReindexMarker(): void{
+		$variable = new Variable('fullReindexMarker_loanRuleChanged');
+		$variable->setWithTimeStampValue();
 	}
 
 	/**
