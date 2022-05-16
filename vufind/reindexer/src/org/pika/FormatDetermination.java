@@ -197,6 +197,7 @@ public class FormatDetermination {
 						case "bookwithdvd":
 						case "bookwithvideodisc":
 						case "largeprint":
+						case "illustratededition":
 						case "manuscript":
 						case "thesis":
 						case "print":

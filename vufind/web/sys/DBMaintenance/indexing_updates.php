@@ -571,6 +571,22 @@ function getIndexingUpdates(){
 					'BookWithDVDROM', '10')"
 			],
 		],
+		'2022.02.0_add_illustrated_edition'     => [
+			'title'             => 'Add Illustrated Edition Format',
+			'description'       => 'Add Illustrated Edition Formats to translation maps',
+			'continueOnError'   => true,
+			'sql'               =>[
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
+					'IllustratedEdition', 'book')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'IllustratedEdition', 'Illustrated Edition')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'IllustratedEdition', 'Books')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'IllustratedEdition', '10')"
+			],
+		],
 	);
 }
 

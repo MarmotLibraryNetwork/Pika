@@ -264,13 +264,13 @@ abstract class ObjectEditor extends Admin_Admin {
 								}else{
 									$errorDescription = 'Unknown error';
 								}
-								session_start();
+								@session_start();
 								$_SESSION['lastError'] = "An error occurred updating {$this->getObjectType()} with id of $id <br><br><blockquote class=\"alert-warning\">{$errorDescription}</blockquote>";
 								$errorOccurred         = true;
 							}
 						}else{
 							$errorDescription = '<blockquote class="alert-warning">' . implode('</blockquote><blockquote class="alert-warning">', $validationResults['errors']) . '</blockquote>';
-							session_start();
+							@session_start();
 							$_SESSION['lastError'] = "An error occurred validating {$this->getObjectType()} with id of $id <br><br>{$errorDescription}";
 							$errorOccurred         = true;
 						}

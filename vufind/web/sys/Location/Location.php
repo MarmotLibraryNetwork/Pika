@@ -688,7 +688,7 @@ class Location extends DB_DataObject {
 		}
 
 		if (!$homeLibraryInList && !$alternateLibraryInList && !$isLinkedUser){
-			$locationList['0default'] = "Please Select a Location";
+			$locationList['0default'] = 'Please Select a Location';
 		}
 
 		return $locationList;
