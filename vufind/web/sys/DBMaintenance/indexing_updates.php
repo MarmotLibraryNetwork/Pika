@@ -639,11 +639,11 @@ function setupIndexingProfiles($update){
 	$ilsIndexingProfile->useICode2Suppression    = $configArray['Reindex']['useICode2Suppression'];
 	$ilsIndexingProfile->format                  = isset($configArray['Reindex']['formatSubfield']) ? $configArray['Reindex']['formatSubfield'] : '';
 	$ilsIndexingProfile->eContentDescriptor      = $configArray['Reindex']['eContentSubfield'];
-	$ilsIndexingProfile->orderTag                = isset($configArray['Reindex']['orderTag']) ? $configArray['Reindex']['orderTag'] : '';
-	$ilsIndexingProfile->orderStatus             = isset($configArray['Reindex']['orderStatusSubfield']) ? $configArray['Reindex']['orderStatusSubfield'] : '';
-	$ilsIndexingProfile->orderLocation           = isset($configArray['Reindex']['orderLocationsSubfield']) ? $configArray['Reindex']['orderLocationsSubfield'] : '';
-	$ilsIndexingProfile->orderCopies             = isset($configArray['Reindex']['orderCopiesSubfield']) ? $configArray['Reindex']['orderCopiesSubfield'] : '';
-	$ilsIndexingProfile->orderCode3              = isset($configArray['Reindex']['orderCode3Subfield']) ? $configArray['Reindex']['orderCode3Subfield'] : '';
+//	$ilsIndexingProfile->orderTag                = isset($configArray['Reindex']['orderTag']) ? $configArray['Reindex']['orderTag'] : '';
+//	$ilsIndexingProfile->orderStatus             = isset($configArray['Reindex']['orderStatusSubfield']) ? $configArray['Reindex']['orderStatusSubfield'] : '';
+//	$ilsIndexingProfile->orderLocation           = isset($configArray['Reindex']['orderLocationsSubfield']) ? $configArray['Reindex']['orderLocationsSubfield'] : '';
+//	$ilsIndexingProfile->orderCopies             = isset($configArray['Reindex']['orderCopiesSubfield']) ? $configArray['Reindex']['orderCopiesSubfield'] : '';
+//	$ilsIndexingProfile->orderCode3              = isset($configArray['Reindex']['orderCode3Subfield']) ? $configArray['Reindex']['orderCode3Subfield'] : '';
 
 	if ($profileExists){
 		$ilsIndexingProfile->update();

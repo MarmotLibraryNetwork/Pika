@@ -113,12 +113,12 @@ class IndexingProfile extends DB_DataObject{
 	public $bCode3sToSuppress;
 	public $format;
 	public $eContentDescriptor;
-	public $orderTag;
-	public $orderStatus;
-	public $orderLocation;
-	public $orderLocationSingle;
-	public $orderCopies;
-	public $orderCode3;
+//	public $orderTag;
+//	public $orderStatus;
+//	public $orderLocation;
+//	public $orderLocationSingle;
+//	public $orderCopies;
+//	public $orderCode3;
 	public $doAutomaticEcontentSuppression;
 	public $materialTypeField;
 	public $sierraLanguageFixedField;
@@ -319,7 +319,7 @@ class IndexingProfile extends DB_DataObject{
 
 						]],
 				]],
-
+/*  Hide this section, since it is unused at this time
 			'orderRecordSection' => ['property' =>'orderRecordSection', 'type' => 'section', 'label' =>'Order Tag Settings (ils profile only)', 'hideInLists' => true,
 			                         'helpLink' => '', 'properties' => [
 					'orderTag'            => ['property' => 'orderTag', 'type' => 'text', 'label' => 'Order Tag', 'maxLength' => 3, 'description' => 'The MARC tag where order records can be found'],
@@ -329,7 +329,7 @@ class IndexingProfile extends DB_DataObject{
 					'orderCopies'         => ['property' => 'orderCopies', 'type' => 'text', 'label' => 'Order Copies Subfield', 'maxLength' => 1, 'description' => 'The number of copies if not shown within location'],
 					'orderCode3'          => ['property' => 'orderCode3', 'type' => 'text', 'label' => 'Order Code3 Subfield', 'maxLength' => 1, 'description' => 'Code 3 for the order record'],
 				]],
-
+*/
 			'translationMaps' => [
 				'property'      => 'translationMaps',
 				'type'          => 'oneToMany',
