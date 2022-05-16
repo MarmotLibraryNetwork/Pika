@@ -1206,6 +1206,17 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			],
 		],
 
+		'2022.02.0_add_changeRequiresReindexing_to_libraries_locations' => [
+			'title'           => 'Add changeRequiresReindexing to Library and Location',
+			'description'     => 'Timestamp for when a setting has changed which requires indexing',
+			'continueOnError' => true,
+			'sql'             => [
+				'ALTER TABLE `library` ADD `changeRequiresReindexing` INT UNSIGNED NULL; ',
+				'ALTER TABLE `location` ADD `changeRequiresReindexing` INT UNSIGNED NULL; ',
+			],
+		],
+
+
 		'2021.02.0_obsolete_location_subdomain' => [
 			'title'           => 'Remove Location subdomain',
 			'description'     => 'run AFTER CONFIRMING catalog URLs update succeeded.',
