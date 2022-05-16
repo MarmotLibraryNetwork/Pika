@@ -445,6 +445,7 @@ class Location extends DB_DataObject {
 						'allowEdit'                  => true,
 						'canEdit'                    => false,
 						'isIndexingSetting'          => true,
+						'changeRequiresReindexing'   => true,
 						'additionalOneToManyActions' => [
 							[
 								'text'    => 'Copy Hoopla Settings From Parent Library',
@@ -485,20 +486,21 @@ class Location extends DB_DataObject {
 			],
 
 			'recordsOwned' => [
-				'property'          => 'recordsOwned',
-				'type'              => 'oneToMany',
-				'label'             => 'Records Owned',
-				'description'       => 'Information about what records are owned by the location',
-				'helpLink'          => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
-				'keyThis'           => 'locationId',
-				'keyOther'          => 'locationId',
-				'subObjectType'     => 'LocationRecordOwned',
-				'structure'         => $locationRecordOwnedStructure,
-				'sortable'          => true,
-				'storeDb'           => true,
-				'allowEdit'         => false,
-				'canEdit'           => false,
-				'isIndexingSetting' => true,
+				'property'                 => 'recordsOwned',
+				'type'                     => 'oneToMany',
+				'label'                    => 'Records Owned',
+				'description'              => 'Information about what records are owned by the location',
+				'helpLink'                 => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
+				'keyThis'                  => 'locationId',
+				'keyOther'                 => 'locationId',
+				'subObjectType'            => 'LocationRecordOwned',
+				'structure'                => $locationRecordOwnedStructure,
+				'sortable'                 => true,
+				'storeDb'                  => true,
+				'allowEdit'                => false,
+				'canEdit'                  => false,
+				'isIndexingSetting'        => true,
+				'changeRequiresReindexing' => true
 			],
 
 			'recordsToInclude'               => [
@@ -516,6 +518,7 @@ class Location extends DB_DataObject {
 				'allowEdit'                  => false,
 				'canEdit'                    => false,
 				'isIndexingSetting'          => true,
+				'changeRequiresReindexing'   => true,
 				'additionalOneToManyActions' => [
 					[
 						'text'    => 'Copy Included Records from Location',

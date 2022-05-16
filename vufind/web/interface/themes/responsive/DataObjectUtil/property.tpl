@@ -17,6 +17,9 @@
 			<div class="row">
 			<div class="col-xs-11">
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label}</label>
+					{if $property.isIndexingSetting}
+						&nbsp;<span class="glyphicon glyphicon-time" aria-hidden="true" title="This setting is a change to indexing"></span>
+					{/if}
 			</div>
 			<div class="col-xs-1">
 				<a href="{$property.helpLink}" target="_blank"><span class="glyphicon glyphicon-question-sign" title="Help" aria-hidden="true" style="color: blue;"></span></a>

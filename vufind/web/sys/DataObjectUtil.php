@@ -143,7 +143,7 @@ class DataObjectUtil {
 	static function processProperty($object, $property){
 		global $logger;
 		$propertyName = $property['property'];
-		if (isset($property['changeRequiresReindexing'])){
+		if (isset($property['changeRequiresReindexing']) && $property['type'] != 'oneToMany'){
 			$valueBefore = $object->$propertyName;
 		}
 		switch ($property['type']){
@@ -382,14 +382,20 @@ class DataObjectUtil {
 						$deleted = $deletions[$id] ?? false;
 						if ($deleted == 'true'){
 							$subObject->deleteOnSave = true;
+							if (isset($property['changeRequiresReindexing'])){
+								$object->changeRequiresReindexing = time();
+							}
 						}else{
 							//Update properties of each associated object
 							foreach ($subStructure as $subProperty){
 								$requestKey      = $propertyName . '_' . $subProperty['property'];
 								$subPropertyName = $subProperty['property'];
-								if (in_array($subProperty['type'], array('text', 'enum', 'integer', 'numeric', 'number', 'textarea', 'html', 'multiSelect'))){
+								if (isset($property['changeRequiresReindexing'])){
+									$valueBefore = $existingValues[$id]->$subPropertyName;
+								}
+								if (in_array($subProperty['type'], ['text', 'enum', 'integer', 'numeric', 'number', 'textarea', 'html', 'multiSelect'])){
 									$subObject->$subPropertyName = $_REQUEST[$requestKey][$id];
-								}elseif (in_array($subProperty['type'], array('checkbox'))){
+								}elseif (in_array($subProperty['type'], ['checkbox'])){
 									$subObject->$subPropertyName = isset($_REQUEST[$requestKey][$id]) ? 1 : 0;
 								}elseif ($subProperty['type'] == 'date'){
 									if (strlen($_REQUEST[$requestKey][$id]) == 0 || $_REQUEST[$requestKey][$id] == '0000-00-00'){
@@ -401,6 +407,9 @@ class DataObjectUtil {
 									}
 								}elseif (!in_array($subProperty['type'], ['label', 'foreignKey', 'oneToMany'])){
 									//echo("Invalid Property Type " . $subProperty['type']);
+								}
+								if (isset($property['changeRequiresReindexing']) && $subObject->$subPropertyName != $valueBefore){
+									$object->changeRequiresReindexing = time();
 								}
 							}
 						}
@@ -416,7 +425,7 @@ class DataObjectUtil {
 				$object->$propertyName = $values;
 				break;
 		}
-		if (isset($property['changeRequiresReindexing']) && $object->$propertyName != $valueBefore){
+		if ((isset($property['changeRequiresReindexing']) && $property['type'] != 'oneToMany') && $object->$propertyName != $valueBefore){
 			$object->changeRequiresReindexing = time();
 		}
 

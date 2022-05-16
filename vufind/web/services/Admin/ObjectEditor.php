@@ -120,8 +120,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		/** @var DB_DataObject $dataObject */
 		$dataObject                    = new $objectType();
 		$dataObject->$primaryKeyColumn = $value;
-		$dataObject->find();
-		if ($dataObject->N == 1){
+		if ($dataObject->find(true)){
 			$dataObject->fetch();
 			return $dataObject;
 		}else{
@@ -135,9 +134,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		/** @var DB_DataObject $dataObject */
 		$dataObject            = new $objectType;
 		$dataObject->$idColumn = $id;
-		$dataObject->find();
-		if ($dataObject->N == 1){
-			$dataObject->fetch();
+		if ($dataObject->find(true)){
 			return $dataObject;
 		}else{
 			return null;
