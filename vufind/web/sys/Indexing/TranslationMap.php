@@ -99,6 +99,7 @@ class TranslationMap extends DB_DataObject{
 			return $ret;
 		}else{
 			$this->saveMapValues();
+			$this->setFullReindexMarker();
 		}
 		return true;
 	}
@@ -114,6 +115,7 @@ class TranslationMap extends DB_DataObject{
 			return $ret;
 		}else{
 			$this->saveMapValues();
+			$this->setFullReindexMarker();
 		}
 		return true;
 	}
@@ -179,6 +181,14 @@ class TranslationMap extends DB_DataObject{
 		if (!empty($this->name)){
 			$label .= $this->name;
 			return $label;
+		}
+	}
+
+	private function setFullReindexMarker(): void{
+		if ($this->name != 'grouping_categories'){
+			// Every Translation Map change requires full reindexing to take complete effect, except the grouping map
+			$variable = new Variable('fullReindexMarker_translationMapChanged');
+			$variable->setWithTimeStampValue();
 		}
 	}
 
