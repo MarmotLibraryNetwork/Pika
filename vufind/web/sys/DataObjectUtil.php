@@ -143,6 +143,9 @@ class DataObjectUtil {
 	static function processProperty($object, $property){
 		global $logger;
 		$propertyName = $property['property'];
+		if (isset($property['changeRequiresReindexing'])){
+			$valueBefore = $object->$propertyName;
+		}
 		switch ($property['type']){
 			case 'section':
 				foreach ($property['properties'] as $subProperty){
@@ -413,6 +416,10 @@ class DataObjectUtil {
 				$object->$propertyName = $values;
 				break;
 		}
+		if (isset($property['changeRequiresReindexing']) && $object->$propertyName != $valueBefore){
+			$object->changeRequiresReindexing = time();
+		}
+
 	}
 
 }

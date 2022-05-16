@@ -125,6 +125,7 @@ class IndexingProfile extends DB_DataObject{
 	public $formatDeterminationMethod;
 	public $materialTypesToIgnore;
 	public $coverSource;
+	public $changeRequiresReindexing;
 
 	static function getObjectStructure(){
 		global $configArray;
@@ -134,12 +135,13 @@ class IndexingProfile extends DB_DataObject{
 		//Sections that are set open by default allow the javascript form validator to check that required fields are in fact filled in.
 		$structure = [
 			'id'                  => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'],
-			'name'                => ['property' => 'name', 'type' => 'text', 'label' => 'Display Name', 'maxLength' => 50, 'description' => 'The display name for this indexing profile', 'required' => true],
+			'name'                => ['property' => 'name', 'type' => 'text', 'label' => 'Display Name', 'maxLength' => 50, 'description' => 'The display name for this indexing profile', 'required' => true, 'changeRequiresReindexing' => true],
 			'sourceName'          => ['property'           => 'sourceName', 'type' => 'text', 'label' => 'Source Name', 'maxLength' => 50, 'description' => 'The source name of this indexing profile to use internally. eg. for specifying the record source', 'required' => true
-			                          , 'serverValidation' => 'validateSourceName'],
+			                          , 'serverValidation' => 'validateSourceName', 'changeRequiresReindexing' => true],
 			'recordUrlComponent'  => ['property' => 'recordUrlComponent', 'type' => 'text', 'label' => 'Record URL Component', 'maxLength' => 50, 'description' => 'The Module to use within the URL', 'required' => true, 'default' => 'Record', 'serverValidation' => 'validateRecordUrlComponent'],
 			'groupUnchangedFiles' => ['property' => 'groupUnchangedFiles', 'type' => 'checkbox', 'label' => 'Group Unchanged Files', 'description' => 'Whether or not files that have not changed since the last time grouping has run will be regrouped.', 'default' => true],
 			'lastGroupedTime'     => ['property' => 'lastGroupedTime', 'type' => 'dateReadOnly', 'label' => 'Last Grouped Time', 'description' => 'Date Time for when this indexing profile was last grouped.'],
+			'changeRequiresReindexing'  => ['property' => 'changeRequiresReindexing', 'type' => 'dateReadOnly', 'label' => 'Change Requires Reindexing', 'description' => 'Date Time for when this indexing profile changed settings needing re-indexing'],
 
 			'serverFileSection'   => ['property' =>'serverFileSection', 'type' => 'section', 'label' =>'MARC File Settings ', 'hideInLists' => true, 'open' => true,
 			                        'helpLink' => '', 'properties' => [
@@ -150,7 +152,7 @@ class IndexingProfile extends DB_DataObject{
 					'individualMARCFileSettingsSection' => [
 				'property' => 'individualMARCFileSettingsSection', 'type' => 'section', 'label' => 'Individual Record Files', 'hideInLists' => true, 'open' => true,
 				'helpLink' => '', 'properties' => [
-							'individualMarcPath'                => ['property' => 'individualMarcPath', 'type' => 'text', 'label' => 'Individual MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where individual MARC records can be found', 'required' => true],
+							'individualMarcPath'                => ['property' => 'individualMarcPath', 'type' => 'text', 'label' => 'Individual MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where individual MARC records can be found', 'required' => true, 'changeRequiresReindexing' => true],
 							'numCharsToCreateFolderFrom'        => ['property' => 'numCharsToCreateFolderFrom', 'type' => 'integer', 'label' => 'Number of characters to create folder from', 'maxLength' => 50, 'description' => 'The number of characters to use when building a sub folder for individual marc records', 'required' => false, 'default' => '4'],
 							'createFolderFromLeadingCharacters' => ['property' =>'createFolderFromLeadingCharacters', 'type' =>'checkbox', 'label' =>'Create Folder From Leading Characters', 'description' =>'Whether we should look at the start or end of the folder when .', 'hideInLists' => true, 'default' => 0],
 						]],
@@ -159,7 +161,7 @@ class IndexingProfile extends DB_DataObject{
 			'DriverSection' => ['property' => 'DriverSection', 'type' => 'section', 'label' => 'Pika Driver Settings', 'hideInLists' => true, 'open' => true,
 			                    'helpLink' => '', 'properties' => [
 					'groupingClass' => ['property' => 'groupingClass', 'type' => 'text', 'label' => 'Grouping Class', 'maxLength' => 50, 'description' => 'The class to use while grouping the records', 'required' => true, 'default' => 'MarcRecordGrouper'],
-					'indexingClass' => ['property' => 'indexingClass', 'type' => 'text', 'label' => 'Indexing Class', 'maxLength' => 50, 'description' => 'The class to use while indexing the records', 'required' => true, 'default' => 'IlsRecord'],
+					'indexingClass' => ['property' => 'indexingClass', 'type' => 'text', 'label' => 'Indexing Class', 'maxLength' => 50, 'description' => 'The class to use while indexing the records', 'required' => true, 'default' => 'IlsRecord', 'changeRequiresReindexing' => true],
 					'recordDriver'  => ['property' => 'recordDriver', 'type' => 'text', 'label' => 'Record Driver', 'maxLength' => 50, 'description' => 'The record driver to use while displaying information in Pika', 'required' => true, 'default' => 'MarcRecord'],
 					'coverSource'   => ['property' => 'coverSource', 'type' => 'enum', 'label' => 'Cover Source',  'description' => 'Method to use to fetch cover images', 'required' => true, 'values' => self::COVER_SOURCES, 'default' => 'SideLoad General'],
 					'patronDriver'  => ['property' => 'patronDriver', 'type' => 'text', 'label' => 'Patron Driver', 'maxLength' => 50, 'description' => 'The patron driver to use for ILS or eContent integration', /*'required' => true,*/
@@ -171,20 +173,23 @@ class IndexingProfile extends DB_DataObject{
 			'formatDeterminationSection' => ['property' => 'formatDeterminationSection', 'type' => 'section', 'label' => 'Format Determination Settings', 'hideInLists' => true,
 			                                 'helpLink' => '', 'properties' => [
 
-					'formatSource'     => ['property' => 'formatSource', 'type' => 'enum', 'label' => 'Determine Format based on', 'values' => ['bib' => 'Bib Record', 'item' => 'Item Record', 'specified' => 'Specified Value'], 'default' => 'bib', 'hideInLists' => false],
+					'formatSource'     => ['property' => 'formatSource', 'type' => 'enum', 'label' => 'Determine Format based on', 'values' => ['bib' => 'Bib Record', 'item' => 'Item Record', 'specified' => 'Specified Value'], 'default' => 'bib', 'hideInLists' => false, 'changeRequiresReindexing' => true],
 					'bibFormatSection' => ['property' => 'bibFormatSection', 'type' => 'section', 'label' => 'Bib Format Determination Settings', 'hideInLists' => true,
 					                       'helpLink' => '', 'properties' => [
 							'formatDeterminationMethod' => ['property' => 'formatDeterminationMethod',
 							                                'type'     => 'enum',
 							                                'label'    => 'Format Determination Method',
 							                                'values'   => ['bib' => 'Bib Record', 'matType' => 'Material Type'],
-							                                'default'  => 'bib'],
+							                                'default'  => 'bib'
+							                                , 'changeRequiresReindexing' => true
+							],
 							'materialTypesToIgnore'     => ['property'    => 'materialTypesToIgnore',
 							                                'type'        => 'text',
 							                                'label'       => 'Material Type Values to Ignore (ils profile only)',
 							                                'maxLength'   => 50,
 							                                'description' => 'MatType values to ignore when using the MatType format determination. The bib format determination will be used instead. " " & "-" are always ignored.',
-							                                'hideInLists' => true],
+							                                'hideInLists' => true
+							                                , 'changeRequiresReindexing' => true],
 						]],
 
 					'specifiedFormatSection' => ['property' => 'specifiedFormatSection', 'type' => 'section', 'label' => 'Specified Format Settings', 'hideInLists' => true,
@@ -196,21 +201,24 @@ class IndexingProfile extends DB_DataObject{
 							                                'maxLength'   => 50,
 							                                'description' => 'The format to set when using a defined format',
 							                                'required'    => false,
-							                                'default'     => ''],
+							                                'default'     => ''
+							                                , 'changeRequiresReindexing' => true],
 							'specifiedFormatCategory'   => ['property'    => 'specifiedFormatCategory',
 							                                'type'        => 'enum',
 							                                'label'       => 'Specified Format Category',
 							                                'values'      => ['', 'Books' => 'Books', 'eBook' => 'eBook', 'Audio Books' => 'Audio Books', 'Movies' => 'Movies', 'Music' => 'Music', 'Other' => 'Other'],
 							                                'description' => 'The format category to set when using a defined format',
 							                                'required'    => false,
-							                                'default'     => ''],
+							                                'default'     => ''
+							                                , 'changeRequiresReindexing' => true],
 							'specifiedFormatBoost'      => ['property'    => 'specifiedFormatBoost',
 							                                'type'        => 'integer',
 							                                'label'       => 'Specified Format Boost',
 							                                'maxLength'   => 50,
 							                                'description' => 'The format boost to set when using a defined format',
 							                                'required'    => false,
-							                                'default'     => '8'],
+							                                'default'     => '8'
+							                                , 'changeRequiresReindexing' => true],
 							'specifiedGroupingCategory' => ['property'    => 'specifiedGroupingCategory',
 							                                'type'        => 'enum',
 							                                'label'       => 'Specified Grouping Category',
@@ -222,50 +230,50 @@ class IndexingProfile extends DB_DataObject{
 
 			'bibRecordSection' => ['property' =>'bibRecordSection', 'type' => 'section', 'label' =>'Record Settings', 'hideInLists' => true, 'open' => true,
 			                       'helpLink' => '', 'properties' => [
-					'recordNumberTag'            => ['property' => 'recordNumberTag', 'type' => 'text', 'label' => 'Record Number Tag', 'maxLength' => 3, 'description' => 'The MARC tag where the record number can be found', 'required' => true],
-					'recordNumberField'          => ['property' => 'recordNumberField', 'type' => 'text', 'label' => 'Record Number Field', 'maxLength' => 1, 'description' => 'The subfield of the record number tag where the record number can be found', 'required' => true, 'default' => 'a'],
-					'recordNumberPrefix'         => ['property' => 'recordNumberPrefix', 'type' => 'text', 'label' => 'Record Number Prefix', 'maxLength' => 10, 'description' => 'A prefix to identify the bib record number if multiple MARC tags exist'],
-					'sierraRecordFixedFieldsTag' => ['property' => 'sierraRecordFixedFieldsTag', 'type' => 'text', 'label' => 'Sierra Record/Bib level Fixed Fields Tag (ils profile only)', 'maxLength' => 3, 'description' => 'The MARC tag where the Sierra fixed fields can be found, specifically the bcode3'],
-					'materialTypeField'          => ['property' => 'materialTypeField', 'type' => 'text', 'label' => 'Material Type Sub Field (ils profile only)', 'maxLength' => 1, 'description' => 'Bib level Subfield for Material Type (depends on setting the Sierra Record/Bib level Fixed Fields Tag)', 'hideInLists' => true],
-					'sierraLanguageFixedField'   => ['property' => 'sierraLanguageFixedField', 'type' => 'text', 'label' => 'Sierra Language Fixed Field (ils profile only)', 'maxLength' => 1, 'description' => 'Bib level Subfield for Language (depends on setting the Sierra Record/Bib level Fixed Fields Tag)', 'hideInLists' => true],
+					'recordNumberTag'            => ['property' => 'recordNumberTag', 'type' => 'text', 'label' => 'Record Number Tag', 'maxLength' => 3, 'description' => 'The MARC tag where the record number can be found', 'required' => true, 'changeRequiresReindexing' => true],
+					'recordNumberField'          => ['property' => 'recordNumberField', 'type' => 'text', 'label' => 'Record Number Field', 'maxLength' => 1, 'description' => 'The subfield of the record number tag where the record number can be found', 'required' => true, 'default' => 'a', 'changeRequiresReindexing' => true],
+					'recordNumberPrefix'         => ['property' => 'recordNumberPrefix', 'type' => 'text', 'label' => 'Record Number Prefix', 'maxLength' => 10, 'description' => 'A prefix to identify the bib record number if multiple MARC tags exist', 'changeRequiresReindexing' => true],
+					'sierraRecordFixedFieldsTag' => ['property' => 'sierraRecordFixedFieldsTag', 'type' => 'text', 'label' => 'Sierra Record/Bib level Fixed Fields Tag (ils profile only)', 'maxLength' => 3, 'description' => 'The MARC tag where the Sierra fixed fields can be found, specifically the bcode3', 'changeRequiresReindexing' => true],
+					'materialTypeField'          => ['property' => 'materialTypeField', 'type' => 'text', 'label' => 'Material Type Sub Field (ils profile only)', 'maxLength' => 1, 'description' => 'Bib level Subfield for Material Type (depends on setting the Sierra Record/Bib level Fixed Fields Tag)', 'hideInLists' => true, 'changeRequiresReindexing' => true],
+					'sierraLanguageFixedField'   => ['property' => 'sierraLanguageFixedField', 'type' => 'text', 'label' => 'Sierra Language Fixed Field (ils profile only)', 'maxLength' => 1, 'description' => 'Bib level Subfield for Language (depends on setting the Sierra Record/Bib level Fixed Fields Tag)', 'hideInLists' => true, 'changeRequiresReindexing' => true],
 				]],
 
 			'itemRecordSection' => ['property' => 'itemRecordSection', 'type' => 'section', 'label' => 'Item Tag Settings (ils profile only)', 'hideInLists' => true,
 			                        'helpLink' => '', 'properties' => [
-					'itemTag'          => ['property' => 'itemTag', 'type' => 'text', 'label' => 'Item Tag', 'maxLength' => 3, 'description' => 'The MARC tag where items can be found'],
-					'itemRecordNumber' => ['property' => 'itemRecordNumber', 'type' => 'text', 'label' => 'Item Record Number', 'maxLength' => 1, 'description' => 'Subfield for the record number for the item'],
+					'itemTag'          => ['property' => 'itemTag', 'type' => 'text', 'label' => 'Item Tag', 'maxLength' => 3, 'description' => 'The MARC tag where items can be found', 'changeRequiresReindexing' => true],
+					'itemRecordNumber' => ['property' => 'itemRecordNumber', 'type' => 'text', 'label' => 'Item Record Number', 'maxLength' => 1, 'description' => 'Subfield for the record number for the item', 'changeRequiresReindexing' => true],
 
 					'callNumberSection' => ['property' => 'callNumberSection', 'type' => 'section', 'label' => 'Call Number Settings', 'hideInLists' => true,
 					                        'helpLink' => '', 'properties' => [
-							'useItemBasedCallNumbers' => ['property' => 'useItemBasedCallNumbers', 'type' => 'checkbox', 'label' => 'Use Item Based Call Numbers', 'description' => 'Whether or not we should use call number information from the bib or from the item records'],
-							'callNumberPrestamp'      => ['property' => 'callNumberPrestamp', 'type' => 'text', 'label' => 'Call Number Prestamp', 'maxLength' => 1, 'description' => 'Subfield for call number pre-stamp'],
-							'callNumber'              => ['property' => 'callNumber', 'type' => 'text', 'label' => 'Call Number', 'maxLength' => 1, 'description' => 'Subfield for call number'],
-							'callNumberCutter'        => ['property' => 'callNumberCutter', 'type' => 'text', 'label' => 'Call Number Cutter', 'maxLength' => 1, 'description' => 'Subfield for call number cutter'],
-							'callNumberPoststamp'     => ['property' => 'callNumberPoststamp', 'type' => 'text', 'label' => 'Call Number Poststamp', 'maxLength' => 1, 'description' => 'Subfield for call number pre-stamp'],
-							'volume'                  => ['property' => 'volume', 'type' => 'text', 'label' => 'Volume', 'maxLength' => 1, 'description' => 'A subfield for volume information. Added to the end of item call numbers.'],
+							'useItemBasedCallNumbers' => ['property' => 'useItemBasedCallNumbers', 'type' => 'checkbox', 'label' => 'Use Item Based Call Numbers', 'description' => 'Whether or not we should use call number information from the bib or from the item records', 'changeRequiresReindexing' => true],
+							'callNumberPrestamp'      => ['property' => 'callNumberPrestamp', 'type' => 'text', 'label' => 'Call Number Prestamp', 'maxLength' => 1, 'description' => 'Subfield for call number pre-stamp', 'changeRequiresReindexing' => true],
+							'callNumber'              => ['property' => 'callNumber', 'type' => 'text', 'label' => 'Call Number', 'maxLength' => 1, 'description' => 'Subfield for call number', 'changeRequiresReindexing' => true],
+							'callNumberCutter'        => ['property' => 'callNumberCutter', 'type' => 'text', 'label' => 'Call Number Cutter', 'maxLength' => 1, 'description' => 'Subfield for call number cutter', 'changeRequiresReindexing' => true],
+							'callNumberPoststamp'     => ['property' => 'callNumberPoststamp', 'type' => 'text', 'label' => 'Call Number Poststamp', 'maxLength' => 1, 'description' => 'Subfield for call number pre-stamp', 'changeRequiresReindexing' => true],
+							'volume'                  => ['property' => 'volume', 'type' => 'text', 'label' => 'Volume', 'maxLength' => 1, 'description' => 'A subfield for volume information. Added to the end of item call numbers.', 'changeRequiresReindexing' => true],
 						]],
 
-					'location'            => ['property' => 'location', 'type' => 'text', 'label' => 'Location', 'maxLength' => 1, 'description' => 'Subfield for location'],
-					'shelvingLocation'    => ['property' => 'shelvingLocation', 'type' => 'text', 'label' => 'Shelving Location', 'maxLength' => 1, 'description' => 'A subfield for shelving location information'],
-					'collection'          => ['property' => 'collection', 'type' => 'text', 'label' => 'Collection', 'maxLength' => 1, 'description' => 'A subfield for collection information'],
-					'barcode'             => ['property' => 'barcode', 'type' => 'text', 'label' => 'Barcode', 'maxLength' => 1, 'description' => 'Subfield for barcode'],
-					'status'              => ['property' => 'status', 'type' => 'text', 'label' => 'Status', 'maxLength' => 1, 'description' => 'Subfield for status'],
-					'totalCheckouts'      => ['property' => 'totalCheckouts', 'type' => 'text', 'label' => 'Total Checkouts', 'maxLength' => 1, 'description' => 'Subfield for total checkouts'],
-					'lastYearCheckouts'   => ['property' => 'lastYearCheckouts', 'type' => 'text', 'label' => 'Last Year Checkouts', 'maxLength' => 1, 'description' => 'Subfield for checkouts done last year'],
-					'yearToDateCheckouts' => ['property' => 'yearToDateCheckouts', 'type' => 'text', 'label' => 'Year To Date Checkouts', 'maxLength' => 1, 'description' => 'Subfield for checkouts so far this year'],
-//					'totalRenewals'       => ['property' => 'totalRenewals', 'type' => 'text', 'label' => 'Total Renewals', 'maxLength' => 1, 'description' => 'Subfield for number of times this record has been renewed'],
-					'dueDate'             => ['property' => 'dueDate', 'type' => 'text', 'label' => 'Due Date', 'maxLength' => 1, 'description' => 'Subfield for when the item is due'],
-					'dueDateFormat'       => ['property' => 'dueDateFormat', 'type' => 'text', 'label' => 'Due Date Format', 'maxLength' => 20, 'description' => 'Subfield for when the item is due'],
-					'dateCreated'         => ['property' => 'dateCreated', 'type' => 'text', 'label' => 'Date Created', 'maxLength' => 1, 'description' => 'The format of the due date.  I.e. yyMMdd see SimpleDateFormat for Java'],
-					'dateCreatedFormat'   => ['property' => 'dateCreatedFormat', 'type' => 'text', 'label' => 'Date Created Format', 'maxLength' => 20, 'description' => 'The format of the date created.  I.e. yyMMdd see SimpleDateFormat for Java'],
-					'lastCheckinDate'     => ['property' => 'lastCheckinDate', 'type' => 'text', 'label' => 'Last Check in Date', 'maxLength' => 1, 'description' => 'Subfield for when the item was last checked in'],
-					'lastCheckinFormat'   => ['property' => 'lastCheckinFormat', 'type' => 'text', 'label' => 'Last Check In Format', 'maxLength' => 20, 'description' => 'The format of the date the item was last checked in.  I.e. yyMMdd see SimpleDateFormat for Java'],
-					'iCode2'              => ['property' => 'iCode2', 'type' => 'text', 'label' => 'Item Suppression Field', 'maxLength' => 1, 'description' => 'Subfield for the item Suppression Field'],
+					'location'            => ['property' => 'location', 'type' => 'text', 'label' => 'Location', 'maxLength' => 1, 'description' => 'Subfield for location', 'changeRequiresReindexing' => true],
+					'shelvingLocation'    => ['property' => 'shelvingLocation', 'type' => 'text', 'label' => 'Shelving Location', 'maxLength' => 1, 'description' => 'A subfield for shelving location information', 'changeRequiresReindexing' => true],
+					'collection'          => ['property' => 'collection', 'type' => 'text', 'label' => 'Collection', 'maxLength' => 1, 'description' => 'A subfield for collection information', 'changeRequiresReindexing' => true],
+					'barcode'             => ['property' => 'barcode', 'type' => 'text', 'label' => 'Barcode', 'maxLength' => 1, 'description' => 'Subfield for barcode', 'changeRequiresReindexing' => true],
+					'status'              => ['property' => 'status', 'type' => 'text', 'label' => 'Status', 'maxLength' => 1, 'description' => 'Subfield for status', 'changeRequiresReindexing' => true],
+					'totalCheckouts'      => ['property' => 'totalCheckouts', 'type' => 'text', 'label' => 'Total Checkouts', 'maxLength' => 1, 'description' => 'Subfield for total checkouts', 'changeRequiresReindexing' => true],
+					'lastYearCheckouts'   => ['property' => 'lastYearCheckouts', 'type' => 'text', 'label' => 'Last Year Checkouts', 'maxLength' => 1, 'description' => 'Subfield for checkouts done last year', 'changeRequiresReindexing' => true],
+					'yearToDateCheckouts' => ['property' => 'yearToDateCheckouts', 'type' => 'text', 'label' => 'Year To Date Checkouts', 'maxLength' => 1, 'description' => 'Subfield for checkouts so far this year', 'changeRequiresReindexing' => true],
+//					'totalRenewals'       => ['property' => 'totalRenewals', 'type' => 'text', 'label' => 'Total Renewals', 'maxLength' => 1, 'description' => 'Subfield for number of times this record has been renewed', 'changeRequiresReindexing' => true],
+					'dueDate'             => ['property' => 'dueDate', 'type' => 'text', 'label' => 'Due Date', 'maxLength' => 1, 'description' => 'Subfield for when the item is due', 'changeRequiresReindexing' => true],
+					'dueDateFormat'       => ['property' => 'dueDateFormat', 'type' => 'text', 'label' => 'Due Date Format', 'maxLength' => 20, 'description' => 'Subfield for when the item is due', 'changeRequiresReindexing' => true],
+					'dateCreated'         => ['property' => 'dateCreated', 'type' => 'text', 'label' => 'Date Created', 'maxLength' => 1, 'description' => 'The format of the due date.  I.e. yyMMdd see SimpleDateFormat for Java', 'changeRequiresReindexing' => true],
+					'dateCreatedFormat'   => ['property' => 'dateCreatedFormat', 'type' => 'text', 'label' => 'Date Created Format', 'maxLength' => 20, 'description' => 'The format of the date created.  I.e. yyMMdd see SimpleDateFormat for Java', 'changeRequiresReindexing' => true],
+					'lastCheckinDate'     => ['property' => 'lastCheckinDate', 'type' => 'text', 'label' => 'Last Check in Date', 'maxLength' => 1, 'description' => 'Subfield for when the item was last checked in', 'changeRequiresReindexing' => true],
+					'lastCheckinFormat'   => ['property' => 'lastCheckinFormat', 'type' => 'text', 'label' => 'Last Check In Format', 'maxLength' => 20, 'description' => 'The format of the date the item was last checked in.  I.e. yyMMdd see SimpleDateFormat for Java', 'changeRequiresReindexing' => true],
+					'iCode2'              => ['property' => 'iCode2', 'type' => 'text', 'label' => 'Item Suppression Field', 'maxLength' => 1, 'description' => 'Subfield for the item Suppression Field', 'changeRequiresReindexing' => true],
 					'opacMessage'         => ['property' => 'opacMessage', 'type' => 'text', 'label' => 'Opac Message Field (Sierra Only)', 'maxLength' => 1, 'description' => 'Subfield for Sierra Opac Message field'],
-					'format'              => ['property' => 'format', 'type' => 'text', 'label' => 'Format subfield', 'maxLength' => 1, 'description' => 'The subfield to use when determining format based on item information'],
-					'iType'               => ['property' => 'iType', 'type' => 'text', 'label' => 'iType', 'maxLength' => 1, 'description' => 'Subfield for iType'],
-					'eContentDescriptor'  => ['property' => 'eContentDescriptor', 'type' => 'text', 'label' => 'eContent Descriptor', 'maxLength' => 1, 'description' => 'Subfield that indicates the item should be treated as eContent (For Libraries using the Marmot ILS eContent Standard)'],
-					'itemUrl'             => ['property' => 'itemUrl', 'type' => 'text', 'label' => 'Item URL', 'maxLength' => 1, 'description' => 'Subfield for a URL specific to the item (For Libraries using the Marmot ILS eContent Standard)'],
+					'format'              => ['property' => 'format', 'type' => 'text', 'label' => 'Format subfield', 'maxLength' => 1, 'description' => 'The subfield to use when determining format based on item information', 'changeRequiresReindexing' => true],
+					'iType'               => ['property' => 'iType', 'type' => 'text', 'label' => 'iType', 'maxLength' => 1, 'description' => 'Subfield for iType', 'changeRequiresReindexing' => true],
+					'eContentDescriptor'  => ['property' => 'eContentDescriptor', 'type' => 'text', 'label' => 'eContent Descriptor', 'maxLength' => 1, 'description' => 'Subfield that indicates the item should be treated as eContent (For Libraries using the Marmot ILS eContent Standard)', 'changeRequiresReindexing' => true],
+					'itemUrl'             => ['property' => 'itemUrl', 'type' => 'text', 'label' => 'Item URL', 'maxLength' => 1, 'description' => 'Subfield for a URL specific to the item (For Libraries using the Marmot ILS eContent Standard)', 'changeRequiresReindexing' => true],
 				]],
 
 
@@ -276,47 +284,48 @@ class IndexingProfile extends DB_DataObject{
 					                             'label'       => 'Available Statuses',
 					                             'maxLength'   => 255,
 //					                             'default'     => "-",
-					                             'description' => 'A list of characters that are valid available item statues.'],
+					                             'description' => 'A list of characters that are valid available item statues.'
+					                             , 'changeRequiresReindexing' => true],
 					'checkedOutStatuses'     => ['property'    => 'checkedOutStatuses',
 					                             'type'        => 'text',
 					                             'label'       => 'Checked Out Statuses',
 					                             'maxLength'   => 255,
 //					                             'default'     => "-",
-					                             'description' => 'A list of characters that are valid checked out item statuses.'],
+					                             'description' => 'A list of characters that are valid checked out item statuses.'
+					                             , 'changeRequiresReindexing' => true],
 					'libraryUseOnlyStatuses' => ['property'    => 'libraryUseOnlyStatuses',
 					                             'type'        => 'text',
 					                             'label'       => 'Library Use Only Statuses',
 					                             'maxLength'   => 255,
 //					                             'default'     => "o",
-					                             'description' => 'A list of characters that are valid checked out item statuses.'],
+					                             'description' => 'A list of characters that are valid checked out item statuses.'
+					                             , 'changeRequiresReindexing' => true],
 				]],
 
 			'nonholdableSection' => ['property' =>'nonholdableSection', 'type' => 'section', 'label' =>'Non-holdable Settings (ils profile only)', 'hideInLists' => true,
 			                         'helpLink' => '', 'properties' => [
-					'nonHoldableStatuses'  => ['property' => 'nonHoldableStatuses', 'type' => 'text', 'label' => 'Non Holdable Statuses', 'maxLength' => 255, 'description' => 'A regular expression for any statuses that should not allow holds'],
-					'nonHoldableLocations' => ['property' => 'nonHoldableLocations', 'type' => 'text', 'label' => 'Non Holdable Locations', 'maxLength' => 255, 'description' => 'A regular expression for any locations that should not allow holds'],
-					'nonHoldableITypes'    => ['property' => 'nonHoldableITypes', 'type' => 'text', 'label' => 'Non Holdable ITypes', 'maxLength' => 255, 'description' => 'A regular expression for any ITypes that should not allow holds'],
+					'nonHoldableStatuses'  => ['property' => 'nonHoldableStatuses', 'type' => 'text', 'label' => 'Non Holdable Statuses', 'maxLength' => 255, 'description' => 'A regular expression for any statuses that should not allow holds', 'changeRequiresReindexing' => true],
+					'nonHoldableLocations' => ['property' => 'nonHoldableLocations', 'type' => 'text', 'label' => 'Non Holdable Locations', 'maxLength' => 255, 'description' => 'A regular expression for any locations that should not allow holds', 'changeRequiresReindexing' => true],
+					'nonHoldableITypes'    => ['property' => 'nonHoldableITypes', 'type' => 'text', 'label' => 'Non Holdable ITypes', 'maxLength' => 255, 'description' => 'A regular expression for any ITypes that should not allow holds', 'changeRequiresReindexing' => true],
 				]],
 
 			'suppressionSection' => ['property' =>'suppressionSection', 'type' => 'section', 'label' =>'Suppression Settings (ils profile only)', 'hideInLists' => true,
 			                         'helpLink' => '', 'properties' => [
 					'itemSuppressionSection' => ['property' =>'itemSuppressionSection', 'type' => 'section', 'label' =>'Item Level Suppression Settings', 'hideInLists' => true,
 					                             'helpLink' => '', 'properties' => [
-							'statusesToSuppress'    => ['property' => 'statusesToSuppress', 'type' => 'text', 'label' => 'Statuses To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any statuses that should be suppressed'],
-							'iTypesToSuppress'      => ['property' => 'iTypesToSuppress', 'type' => 'text', 'label' => 'Itypes To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any Itypes that should be suppressed'],
-							'locationsToSuppress'   => ['property' => 'locationsToSuppress', 'type' => 'text', 'label' => 'Locations To Suppress (use regex)', 'maxLength' => 255, 'description' => 'A regular expression for any locations that should be suppressed'],
-							'collectionsToSuppress' => ['property' => 'collectionsToSuppress', 'type' => 'text', 'label' => 'Collections To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any collections that should be suppressed'],
-							'useICode2Suppression'  => ['property' => 'useICode2Suppression', 'type' => 'checkbox', 'label' => 'Use Item Suppression Field suppression for items', 'description' => 'Whether or not we should suppress items based on Item Suppression Field'],
-							'iCode2sToSuppress'     => ['property' => 'iCode2sToSuppress', 'type' => 'text', 'label' => 'Item Suppression Field Values To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any Item Suppression Field that should be suppressed'],
-
+							'statusesToSuppress'    => ['property' => 'statusesToSuppress', 'type' => 'text', 'label' => 'Statuses To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any statuses that should be suppressed', 'changeRequiresReindexing' => true],
+							'iTypesToSuppress'      => ['property' => 'iTypesToSuppress', 'type' => 'text', 'label' => 'Itypes To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any Itypes that should be suppressed', 'changeRequiresReindexing' => true],
+							'locationsToSuppress'   => ['property' => 'locationsToSuppress', 'type' => 'text', 'label' => 'Locations To Suppress (use regex)', 'maxLength' => 255, 'description' => 'A regular expression for any locations that should be suppressed', 'changeRequiresReindexing' => true],
+							'collectionsToSuppress' => ['property' => 'collectionsToSuppress', 'type' => 'text', 'label' => 'Collections To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any collections that should be suppressed', 'changeRequiresReindexing' => true],
+							'useICode2Suppression'  => ['property' => 'useICode2Suppression', 'type' => 'checkbox', 'label' => 'Use Item Suppression Field suppression for items', 'description' => 'Whether or not we should suppress items based on Item Suppression Field', 'changeRequiresReindexing' => true],
+							'iCode2sToSuppress'     => ['property' => 'iCode2sToSuppress', 'type' => 'text', 'label' => 'Item Suppression Field Values To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any Item Suppression Field that should be suppressed', 'changeRequiresReindexing' => true],
 						]],
 					'bibSuppressionSection' => ['property' =>'bibSuppressionSection', 'type' => 'section', 'label' =>'Bib Level Suppression Settings', 'hideInLists' => true,
 					                            'helpLink' => '', 'properties' => [
-							'suppressItemlessBibs'           => ['property' => 'suppressItemlessBibs', 'type' => 'checkbox', 'label' => 'Suppress Itemless Bibs', 'description' => 'Whether or not Itemless Bibs can be suppressed'],
+							'suppressItemlessBibs'           => ['property' => 'suppressItemlessBibs', 'type' => 'checkbox', 'label' => 'Suppress Itemless Bibs', 'description' => 'Whether or not Itemless Bibs can be suppressed', 'changeRequiresReindexing' => true],
 							'doAutomaticEcontentSuppression' => ['property' => 'doAutomaticEcontentSuppression', 'type' => 'checkbox', 'label' => 'Do Automatic eContent Suppression', 'description' => 'Whether or not eContent suppression for overdrive and hoopla records is done automatically', 'default' =>false],
-							'bCode3'                         => ['property' => 'bCode3', 'type' => 'text', 'label' => 'BCode3 Subfield', 'maxLength' => 1, 'description' => 'Subfield for BCode3'],
-							'bCode3sToSuppress'              => ['property' => 'bCode3sToSuppress', 'type' => 'text', 'label' => 'BCode3s To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any BCode3s that should be suppressed'],
-
+							'bCode3'                         => ['property' => 'bCode3', 'type' => 'text', 'label' => 'BCode3 Subfield', 'maxLength' => 1, 'description' => 'Subfield for BCode3', 'changeRequiresReindexing' => true],
+							'bCode3sToSuppress'              => ['property' => 'bCode3sToSuppress', 'type' => 'text', 'label' => 'BCode3s To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any BCode3s that should be suppressed', 'changeRequiresReindexing' => true],
 						]],
 				]],
 /*  Hide this section, since it is unused at this time
@@ -504,10 +513,10 @@ class IndexingProfile extends DB_DataObject{
 					$translationMap->delete();
 				}else{
 					if (isset($translationMap->id) && is_numeric($translationMap->id)){
-						$translationMap->update();
+						$translationMap->update(false);
 					}else{
 						$translationMap->indexingProfileId = $this->id;
-						$translationMap->insert();
+						$translationMap->insert(false);
 					}
 				}
 			}

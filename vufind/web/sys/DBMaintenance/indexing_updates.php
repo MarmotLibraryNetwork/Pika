@@ -411,6 +411,15 @@ function getIndexingUpdates(){
 			],
 		],
 
+		'2022.02.0_add_changeRequiresReindexing_to_profiles' => [
+			'title'           => 'Add changeRequiresReindexing to indexing profile',
+			'description'     => 'Timestamp for when a setting has changed which requires indexing',
+			'continueOnError' => true,
+			'sql'             => [
+				'ALTER TABLE `indexing_profiles` ADD `changeRequiresReindexing` INT UNSIGNED NULL; ',
+			],
+		],
+
 		'2021.04.0_add_grouping_time_for_sideloads' => [
 			'title'           => 'Add a last grouped time to each indexing profile',
 			'description'     => 'Enable grouping time tracking for sideloads.',

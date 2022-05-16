@@ -93,13 +93,15 @@ class TranslationMap extends DB_DataObject{
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update($dataObject = false){
+	public function update($setFullReindexMarker = true){
 		$ret = parent::update();
 		if ($ret === FALSE ){
 			return $ret;
 		}else{
 			$this->saveMapValues();
-			$this->setFullReindexMarker();
+			if ($setFullReindexMarker){
+				$this->setFullReindexMarker();
+			}
 		}
 		return true;
 	}
@@ -109,13 +111,15 @@ class TranslationMap extends DB_DataObject{
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert(){
+	public function insert($setFullReindexMarker = true){
 		$ret = parent::insert();
 		if ($ret === FALSE ){
 			return $ret;
 		}else{
 			$this->saveMapValues();
-			$this->setFullReindexMarker();
+			if ($setFullReindexMarker){
+				$this->setFullReindexMarker();
+			}
 		}
 		return true;
 	}
