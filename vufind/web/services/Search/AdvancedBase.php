@@ -128,14 +128,16 @@ abstract class Search_AdvancedBase extends Action {
 					$processedFacets[$list['label']]['values'][$key] = $listOfValuesForCurrentFacet[$key];
 				}
 			} else {
-				$filters = $searchObject->getFilters();
-				if (array_key_exists($facetName, $filters)){
-					[$from, $to] = explode(' TO ', trim($filters[$facetName][0], "[]"));
-					if (!empty($from)){
-						$processedFacets[$list['label']]['from'] = $from;
-					}
-					if (!empty($to)){
-						$processedFacets[$list['label']]['to'] = $to;
+				if ($searchObject){
+					$filters = $searchObject->getFilters();
+					if (array_key_exists($facetName, $filters)){
+						[$from, $to] = explode(' TO ', trim($filters[$facetName][0], "[]"));
+						if (!empty($from)){
+							$processedFacets[$list['label']]['from'] = $from;
+						}
+						if (!empty($to)){
+							$processedFacets[$list['label']]['to'] = $to;
+						}
 					}
 				}
 			}
