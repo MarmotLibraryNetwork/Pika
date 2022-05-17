@@ -1028,6 +1028,7 @@ public class GroupedWorkSolr implements Cloneable {
 				setSubTitle(subTitle);
 				if (sortableTitle != null) {
 					//TODO: strip trailing punctuation
+					sortableTitle = Util.trimTrailingPunctuation(sortableTitle);
 					//Strip out anything in brackets unless that would cause us to show nothing
 					tmpTitle = removeBracketsPattern.matcher(sortableTitle).replaceAll("").trim();
 					if (tmpTitle.length() > 0) {
@@ -1047,7 +1048,9 @@ public class GroupedWorkSolr implements Cloneable {
 				displayTitle = Util.trimTrailingPunctuation(displayTitle);
 				//Strip out anything in brackets unless that would cause us to show nothing
 				tmpTitle = removeBracketsPattern.matcher(displayTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0){
+				if (tmpTitle.length() > 0 && !punctuationPattern.matcher(tmpTitle).replaceAll("").isEmpty()){
+					// prevent empty display title
+					// also prevent display title of only punctuation
 					displayTitle = tmpTitle;
 				}
 				//Remove common formats
