@@ -970,10 +970,10 @@ public class GroupedWorkSolr implements Cloneable {
 		this.id = id;
 	}
 
-	private static Pattern removeBracketsPattern = Pattern.compile("\\[.*?\\]");
-	private static Pattern commonSubtitlePattern = Pattern.compile("(?i)((?:[(])?(?:a |the )?graphic novel|audio cd|book club kit|large print(?:[)])?)$");
-	private static Pattern punctuationPattern    = Pattern.compile("[.\\\\/()\\[\\]:;]");
-	private static Pattern multipleSpacesPattern = Pattern.compile("\\s{2,}");
+	private static final Pattern removeBracketsPattern = Pattern.compile("\\[.*?\\]");
+	private static final Pattern commonSubtitlePattern = Pattern.compile("(?i)((?:[(])?(?:a |the )?graphic novel|audio cd|book club kit|large print(?:[)])?)$");
+	private static final Pattern punctuationPattern    = Pattern.compile("[.,;:=!?\\\\/()\\[\\]-]");
+	private static final Pattern multipleSpacesPattern = Pattern.compile("\\s{2,}");
 
 	void setTitle(String shortTitle, String subTitle, String displayTitle, String sortableTitle, String recordFormat) {
 		if (shortTitle != null) {
@@ -1015,7 +1015,8 @@ public class GroupedWorkSolr implements Cloneable {
 			if (updateTitle){
 				//Strip out anything in brackets unless that would cause us to show nothing
 				String tmpTitle = removeBracketsPattern.matcher(shortTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0){
+				if (tmpTitle.length() > 0 && !punctuationPattern.matcher(tmpTitle).replaceAll("").trim().isEmpty()){
+					// Also avoid trimming titles like: [Alpha], [beta], [gamma]-- [zeta]
 					shortTitle = tmpTitle;
 				}
 				//Remove common formats
@@ -1027,11 +1028,10 @@ public class GroupedWorkSolr implements Cloneable {
 				this.titleFormat = recordFormat;
 				setSubTitle(subTitle);
 				if (sortableTitle != null) {
-					//TODO: strip trailing punctuation
 					sortableTitle = Util.trimTrailingPunctuation(sortableTitle);
 					//Strip out anything in brackets unless that would cause us to show nothing
 					tmpTitle = removeBracketsPattern.matcher(sortableTitle).replaceAll("").trim();
-					if (tmpTitle.length() > 0) {
+					if (tmpTitle.length() > 0 && !punctuationPattern.matcher(tmpTitle).replaceAll("").trim().isEmpty()) {
 						sortableTitle = tmpTitle;
 					}
 					//Remove common formats
@@ -1040,7 +1040,7 @@ public class GroupedWorkSolr implements Cloneable {
 						sortableTitle = tmpTitle;
 					}
 					//remove punctuation from the sortable title
-					sortableTitle  = punctuationPattern.matcher(sortableTitle).replaceAll("").trim(); //TODO: remove "!" or "?" or " -- "
+					sortableTitle  = punctuationPattern.matcher(sortableTitle).replaceAll("").trim();
 					//TODO: replace & with and? Overdrive does this with their provided sort title
 					sortableTitle = multipleSpacesPattern.matcher(sortableTitle).replaceAll(" ");
 					this.titleSort = sortableTitle.toLowerCase();
@@ -1048,7 +1048,7 @@ public class GroupedWorkSolr implements Cloneable {
 				displayTitle = Util.trimTrailingPunctuation(displayTitle);
 				//Strip out anything in brackets unless that would cause us to show nothing
 				tmpTitle = removeBracketsPattern.matcher(displayTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0 && !punctuationPattern.matcher(tmpTitle).replaceAll("").isEmpty()){
+				if (tmpTitle.length() > 0 && !punctuationPattern.matcher(tmpTitle).replaceAll("").trim().isEmpty()){
 					// prevent empty display title
 					// also prevent display title of only punctuation
 					displayTitle = tmpTitle;
