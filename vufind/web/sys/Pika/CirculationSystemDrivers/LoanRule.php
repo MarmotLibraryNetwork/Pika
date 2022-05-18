@@ -75,8 +75,15 @@ class LoanRule extends DB_DataObject {
 
 
 	private function setFullReindexMarker(): void{
-		$variable = new Variable('fullReindexMarker_loanRuleChanged');
-		$variable->setWithTimeStampValue();
+		/** @var User $user */
+		$user = UserAccount::getLoggedInUser();
+		$indexingProfile = new IndexingProfile();
+		if ($indexingProfile->get('sourceName', $user->source)){
+			//For now, using the logged-in user's account source for getting to the indexing profile connected to
+			// the Sierra loan rules. This will possibly be a bad assumption when multiple ILSes are connected.
+			$indexingProfile->changeRequiresReindexing = time();
+			$indexingProfile->update();
+		}
 	}
 
 	/**
