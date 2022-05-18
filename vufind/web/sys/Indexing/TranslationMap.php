@@ -191,8 +191,11 @@ class TranslationMap extends DB_DataObject{
 	private function setFullReindexMarker(): void{
 		if ($this->name != 'grouping_categories'){
 			// Every Translation Map change requires full reindexing to take complete effect, except the grouping map
-			$variable = new Variable('fullReindexMarker_translationMapChanged');
-			$variable->setWithTimeStampValue();
+			$indexingProfile  = new IndexingProfile();
+			if ($indexingProfile->get($this->indexingProfileId) == 1){
+				$indexingProfile->changeRequiresReindexing = time();
+				$indexingProfile->update();
+			}
 		}
 	}
 
