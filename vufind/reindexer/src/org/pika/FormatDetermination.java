@@ -1195,13 +1195,13 @@ public class FormatDetermination {
 			return "Xbox360";
 		} else if (value.contains("playstation vita") /*&& !value.contains("compatible")*/) {
 			return "PlayStationVita";
-		} else if (value.contains("playstation 5") || value.contains("ps5") && !value.contains("compatible") && !value.contains("blu-ray disc player")) {
+		} else if (value.contains("playstation 5") || value.contains("ps5") && !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player")) {
 			return "PlayStation5";
-		} else if (value.contains("playstation 4") || value.contains("ps4") && !value.contains("compatible") && !value.contains("blu-ray disc player")) {
+		} else if (value.contains("playstation 4") || value.contains("ps4") && !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player")) {
 			return "PlayStation4";
-		} else if (value.contains("playstation 3") || value.contains("ps3") && !value.contains("compatible") && !value.contains("blu-ray disc player")) {
+		} else if (value.contains("playstation 3") || value.contains("ps3") && !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player")) {
 			return "PlayStation3";
-		} else if (value.contains("playstation") && !value.contains("compatible") && !value.contains("blu-ray disc player")) {
+		} else if (value.contains("playstation") && !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player")) {
 			return "PlayStation";
 		} else if (value.contains("wii u")) {
 			return "WiiU";
