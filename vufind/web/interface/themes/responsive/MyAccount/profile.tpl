@@ -460,7 +460,38 @@
 									<div class="col-tn-12">
 										<ul>
 											{foreach from=$profile->roles item=role}
-												<li>{$role}</li>
+												<li>
+														{if $role == "archives"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#Archives-Role" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "cataloging"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#Cataloging" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "circulationReports"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#Circulation-Reports" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "contentEditor"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#Content-Editor" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "genealogyContributor"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#Genealogy-Contributor" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "libraryAdmin"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#Library-Admin" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "libraryManager"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#Library-Manager" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "library_material_requests"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#Library-Material-Requests" title="Pika {$role} documentation" target="_blank">{$role}</a>
+                            {elseif $role == "listPublisher"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#List-Publisher" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "locationManager"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#Location-Manager" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "locationReports"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#Location-Reports" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "opacAdmin"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#OPAC-Admin" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "userAdmin"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#User-Admin" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{else}
+																{$role}
+														{/if}
+
+												</li>
 											{/foreach}
 										</ul>
 									</div>
