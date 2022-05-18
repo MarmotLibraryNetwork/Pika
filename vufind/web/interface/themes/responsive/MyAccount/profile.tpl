@@ -490,7 +490,6 @@
 														{else}
 																{$role}
 														{/if}
-
 												</li>
 											{/foreach}
 										</ul>
