@@ -2310,7 +2310,7 @@ class SearchObject_Solr extends SearchObject_Base {
 									$interface->assign('nextType', 'GroupedWork');
 									$interface->assign('nextId', $nextRecord['id']);
 								}
-							}elseif ($previousRecord['recordtype'] == 'list'){
+							}elseif ($nextRecord['recordtype'] == 'list'){
 								$interface->assign('nextType', 'MyAccount/MyList');
 								$interface->assign('nextId', str_replace('list', '', $nextRecord['id']));
 							}
