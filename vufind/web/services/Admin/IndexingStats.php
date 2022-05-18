@@ -86,7 +86,8 @@ class IndexingStats extends Admin_Admin {
 									if ( $indexingStatHeader[$columnNumber] == $otherDayIndexingStatHeader[$columnNumber]){
 										// Double check that column labels are the same. (Columns will change as sideLoads are added or removed)
 
-										$difference                                       = ($isPrimaryDateOlderThanCompareDate ? $curStat - $otherDayIndexingStats[$curRowNumber][$columnNumber] : $otherDayIndexingStats[$curRowNumber][$columnNumber] - $curStat);
+//										$difference                                       = ($isPrimaryDateOlderThanCompareDate ? $curStat - $otherDayIndexingStats[$curRowNumber][$columnNumber] : $otherDayIndexingStats[$curRowNumber][$columnNumber] - $curStat);
+										$difference                                       = ($isPrimaryDateOlderThanCompareDate ? $otherDayIndexingStats[$curRowNumber][$columnNumber] - $curStat : $curStat - $otherDayIndexingStats[$curRowNumber][$columnNumber]);
 										$arrayOfDifferences[$curRowNumber][$columnNumber] = $difference;
 										if ($difference != 0){
 											$buttonShowColumnIndex = $columnNumber - 1;
