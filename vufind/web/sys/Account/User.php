@@ -35,8 +35,11 @@ class User extends DB_DataObject {
 	public $email;                           // string(250)  not_null
 	public $phone;                           // string(30)
 	public $alt_username;                    // An alternate username used by patrons to login.
-// cat_password are protected for logging purposes
-	protected $cat_username;                    // string(50)
+	public $cat_username;                    // string(50)
+	// cat_password are protected for logging purposes
+	/**
+	 * @deprecated No longer used. Use getPassword()
+	 */
 	protected $cat_password;
 	public $barcode;                        // string(50) Replaces $cat_username for sites using barcode/pin auth
 	protected $password;                       // string(128) password - Replaces $cat_password
@@ -205,6 +208,8 @@ class User extends DB_DataObject {
 	}
 
 	/**
+	 * Get unencrypted password
+	 *
 	 * @return string
 	 */
 	public function getPassword() {
@@ -234,40 +239,42 @@ class User extends DB_DataObject {
 	 */
 	public function updatePassword($password) {
 		$encryptedPassword = $this->_encryptPassword($password);
-		$sql = "UPDATE user SET password = '" . $encryptedPassword . "' WHERE id = " . $this->id;
+		$sql = "UPDATE user SET password = '" . $encryptedPassword . "' WHERE id = " . $this->id . " LIMIT 1";
 
 		$result = $this->query($sql);
-		if($result >= 1) {
+		if(PEAR_Singleton::isError($result)) {
+			$this->logger->warn("Error updating password.", ["message"=>$result->getMessage(), "info"=>$result->userinfo]);
+		}elseif($result >= 1) {
 			return true;
 		}
 		return false;
 	}
 
 	/**
-	 * decrypt password
+	 * encrypt password
 	 * @param string  $password
 	 * @return string Encrypted password
 	 */
 	private function _encryptPassword($password) {
-//		global $configArray;
-//		$key = base64_decode($configArray["Site"]["passwordEncryptionKey"]);
-//		$v   = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
-//		$e   = openssl_encrypt($password, 'aes-256-cbc', $key, 0, $v);
-//		$p   = base64_encode($e . '::' . $v);
-		return $password;
+		global $configArray;
+		$key = base64_decode($configArray["Site"]["passwordEncryptionKey"]);
+		$v   = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
+		$e   = openssl_encrypt($password, 'aes-256-cbc', $key, 0, $v);
+		$p   = base64_encode($e . '::' . $v);
+		return $p;
 	}
 
 	/**
-	 * encypt password
+	 * decypt password
 	 * @param  string $encryptedPassword
 	 * @return string Decrypted password
 	 */
 	private function _decryptPassword($encryptedPassword) {
-		// global $configArray;
-		// $key = base64_decode($configArray["Site"]["passwordEncryptionKey"]);
-		// [$encryptedPW, $v] = explode('::', base64_decode($this->password), 2);
-		// $password = openssl_decrypt($encryptedPW, 'aes-256-cbc', $key, 0, $v);
-		return $encryptedPassword;
+		global $configArray;
+		$key = base64_decode($configArray["Site"]["passwordEncryptionKey"]);
+		[$encryptedPW, $v] = explode('::', base64_decode($this->password), 2);
+		$password = openssl_decrypt($encryptedPW, 'aes-256-cbc', $key, 0, $v);
+		return $password;
 	}
 
 	function __get($name){
@@ -289,13 +296,13 @@ class User extends DB_DataObject {
 
 		// accessing the password attribute directly will return the encrupted password.
 		if($name == "password") {
-			$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
-			$this->logger->debug("Please use getPassword() when getting password from user object.", array("trace" => $calledBy));
+			//$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
+			//$this->logger->debug("Please use getPassword() when getting password from user object.", array("trace" => $calledBy));
 			return $this->password;
 		}
 
 		// handle deprecated cat_password and cat_username
-		if($name == 'cat_password' || $name == 'cat_username') {
+		if($name == 'cat_password') {
 			if ($accountProfile = $this->getAccountProfile()){
 				if ($accountProfile->loginConfiguration == 'barcode_pin' && $name == 'cat_username'){
 					return $this->barcode;
