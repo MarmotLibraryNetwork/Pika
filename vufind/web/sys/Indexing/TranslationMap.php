@@ -38,13 +38,13 @@ class TranslationMap extends DB_DataObject{
 	static function getObjectStructure(){
 		require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
 		$indexingProfiles = IndexingProfile::getAllIndexingProfileNames();
-		$structure = array(
-			'id'                     => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
-			'indexingProfileId'      => array('property' => 'indexingProfileId', 'type' => 'enum', 'values' => $indexingProfiles, 'label' => 'Indexing Profile Id', 'description' => 'The Indexing Profile this map is associated with'),
-			'name'                   => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'The name of the translation map', 'maxLength' => '50', 'required' => true),
-			'usesRegularExpressions' => array('property' => 'usesRegularExpressions', 'type' => 'checkbox', 'label' => 'Use Regular Expressions', 'description' => 'When on, values will be treated as regular expressions', 'hideInLists' => false, 'default' => false),
+		$structure = [
+			'id'                     => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'],
+			'indexingProfileId'      => ['property' => 'indexingProfileId', 'type' => 'enum', 'values' => $indexingProfiles, 'label' => 'Indexing Profile Id', 'description' => 'The Indexing Profile this map is associated with'],
+			'name'                   => ['property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'The name of the translation map', 'maxLength' => '50', 'required' => true],
+			'usesRegularExpressions' => ['property' => 'usesRegularExpressions', 'type' => 'checkbox', 'label' => 'Use Regular Expressions', 'description' => 'When on, values will be treated as regular expressions', 'hideInLists' => false, 'default' => false],
 
-			'translationMapValues' => array(
+			'translationMapValues' => [
 				'property'      => 'translationMapValues',
 				'type'          => 'oneToMany',
 				'label'         => 'Values',
@@ -57,13 +57,13 @@ class TranslationMap extends DB_DataObject{
 				'storeDb'       => true,
 				'allowEdit'     => false,
 				'canEdit'       => false,
-			),
-		);
+			],
+		];
 		return $structure;
 	}
 
 	public function __get($name){
-		if ($name == "translationMapValues") {
+		if ($name == 'translationMapValues') {
 			if (!isset($this->translationMapValues)){
 				//Get the list of translation maps
 				if ($this->id){
@@ -83,7 +83,7 @@ class TranslationMap extends DB_DataObject{
 	}
 
 	public function __set($name, $value){
-		if ($name == "translationMapValues") {
+		if ($name == 'translationMapValues') {
 			$this->translationMapValues = $value;
 		}
 	}
@@ -122,6 +122,16 @@ class TranslationMap extends DB_DataObject{
 			}
 		}
 		return true;
+	}
+
+	function delete($useWhere = false){
+		$ret = parent::delete($useWhere);
+		if ($ret){
+			$value                   = new TranslationMapValue();
+			$value->translationMapId = $this->id;
+			$value->delete();
+			$this->setFullReindexMarker();
+		}
 	}
 
 	public function saveMapValues(){
