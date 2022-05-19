@@ -1216,7 +1216,7 @@ public class GroupedWorkIndexer {
 
 
 
-	/*	loop thru each of the scopes
+	/*	loop through each of the scopes
 				if library owned add to appropriate list*/
 
 		if (fullReindex) {

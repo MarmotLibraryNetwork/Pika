@@ -617,14 +617,19 @@ public class GroupedWorkSolr implements Cloneable {
 			//We do different ownership display depending on if this is eContent or not
 			String owningLocationFacetLabel = curScopeDetails.getFacetLabel();
 			if (curItem.isEContent()){
-				owningLocationFacetLabel = curItem.getShelfLocation();
 				//TODO: probably should do this any time there is no value for curScopeDetails.getFacetLabel();
+				String shelfLocation = curItem.getShelfLocation();
+				if (shelfLocation != null && !shelfLocation.isEmpty()) {
+					owningLocationFacetLabel = shelfLocation;
+				}
 			}else if (curItem.isOrderItem() && groupedWorkIndexer.isGiveOnOrderItemsTheirOwnShelfLocation()){
 				owningLocationFacetLabel += " On Order";
 			}
 
 			if (groupedWorkIndexer.fullReindex && owningLocationFacetLabel.isEmpty()){
-				logger.warn("Did not get facet label for item "+ curItem.getItemIdentifier() + " on record " + curRecord.getFullIdentifier());
+				String itemIdentifier = curItem.getItemIdentifier();
+				logger.warn("Did not get facet label " + ((itemIdentifier != null && !itemIdentifier.isEmpty()) ? "for item " + itemIdentifier + " on " : "") + "record " + curRecord.getFullIdentifier());
+				// itemless ils eContent records can get here as well
 			}
 
 			//Save values for this scope
