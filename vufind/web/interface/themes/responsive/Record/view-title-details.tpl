@@ -33,7 +33,9 @@
 						{*create hidden div*}
 						<div id="additionalContributors" style="display:none">
 					{/if}
-					<a href='/Author/Home?author="{$contributor.name|trim|escape:"url"}"'>{$contributor.name|escape}</a>
+					<a href='/Search/Results?basicType=Author&lookfor={$contributor.name|trim|escape:"url"}'>{$contributor.name|escape}</a>
+								{*Do not link to an author page for contributors as that page is meant for titles authored by the
+								person, instead do an author search to see other titles they are contributors of as well as authors of*}
 					{if $contributor.role}
 						&nbsp;{$contributor.role}
 					{/if}
