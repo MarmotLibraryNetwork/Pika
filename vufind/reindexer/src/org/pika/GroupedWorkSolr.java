@@ -1031,7 +1031,7 @@ public class GroupedWorkSolr implements Cloneable {
 				}
 				this.title       = shortTitle;
 				this.titleFormat = recordFormat;
-				setSubTitle(subTitle);
+				setSubTitle(subTitle);  		//TODO: add every subTitle to keywords?
 				if (sortableTitle != null) {
 					sortableTitle = Util.trimTrailingPunctuation(sortableTitle);
 					//Strip out anything in brackets unless that would cause us to show nothing
@@ -1095,8 +1095,9 @@ public class GroupedWorkSolr implements Cloneable {
 			}
 			this.subTitle = subTitle;
 			keywords.add(subTitle);
+		} else if (this.subTitle != null){
+			this.subTitle = null;
 		}
-		//TODO: add every subTitle to keywords?
 	}
 
 	public String getSubTitle() {
