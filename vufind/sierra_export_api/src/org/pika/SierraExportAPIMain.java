@@ -520,6 +520,34 @@ public class SierraExportAPIMain {
 		}
 	}
 
+	/**
+	 * When extract need is low, do a cleanup process of re-fetching bibs that haven't been extracted for the longest
+	 * time, (up-to two weeks ago) to ensure that the extracted data is current.  The point is to attempt to capture
+	 * any changes that may have been missed previously.
+	 *
+	 * @param pikaConn MariaDB connection
+	 */
+	private static void loadOldestLastExtractedBibs(Connection pikaConn) {
+		final long fourteenDaysAgo  = (startTime.getTime() / 1000) - 1209600;
+		int        oldBibsToProcess = 0;
+
+		try (
+				PreparedStatement bibsToProcessStatement = pikaConn.prepareStatement("SELECT ilsId FROM ils_extract_info WHERE lastExtracted <  " + fourteenDaysAgo + " AND indexingProfileId = " + indexingProfile.id + " ORDER BY lastExtracted ASC LIMIT 200", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				ResultSet bibsToProcessResults = bibsToProcessStatement.executeQuery()
+		) {
+			while (bibsToProcessResults.next()) {
+				String fullSierraBibId = bibsToProcessResults.getString("ilsId");
+				Long   bibId           = Long.parseLong(fullSierraBibId.substring(2, fullSierraBibId.length() - 1));
+				// Strip off .b at start and ending check digit to get a number to use with API calls
+				allBibsToUpdate.add(bibId);
+				oldBibsToProcess++;
+			}
+			addNoteToExportLog("Since the number of bibs to process in below 50, another " + oldBibsToProcess + " bibs with the oldest last extracted time will be processed.");
+		} catch (SQLException e) {
+			logger.error("Error loading bibs with oldest last extract time to process", e);
+		}
+	}
+
 	private static void getBibsAndItemUpdatesFromSierra(Connection pikaConn) {
 //	private static void getBibsAndItemUpdatesFromSierra(Connection pikaConn, File changedBibsFile) {
 		//Load unprocessed transactions
@@ -622,6 +650,9 @@ public class SierraExportAPIMain {
 		addNoteToExportLog("Found " + allBibsToUpdate.size() + " bib records that need to be updated with data from Sierra.");
 		int numProcessed = 0;
 		if (allBibsToUpdate.size() > 0) {
+			if (allBibsToUpdate.size() < 50){
+				loadOldestLastExtractedBibs(pikaConn);
+			}
 			boolean hasMoreIdsToProcess;
 			int     batchSize       = 25;
 			Long    exportStartTime = new Date().getTime() / 1000;
@@ -936,7 +967,9 @@ public class SierraExportAPIMain {
 	}
 
 	private static void deleteGroupedWorkFromSolr(String id) {
-		logger.info("Clearing existing work from index");
+		if (logger.isInfoEnabled()) {
+			logger.info("Clearing existing work from index " + id);
+		}
 		try {
 			updateServer.deleteById(id);
 			//With this commit, we get errors in the log "Previous SolrRequestInfo was not closed!"
