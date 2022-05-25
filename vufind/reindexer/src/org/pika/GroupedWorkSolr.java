@@ -859,12 +859,12 @@ public class GroupedWorkSolr implements Cloneable {
 					groupedWorkIndexer.addWorkWithInvalidLiteraryForms(id);
 				}else if (numFictionIndicators.compareTo(numNonFictionIndicators) > 0){
 					if (logger.isDebugEnabled()) {
-						logger.debug("Popularity dictates that Fiction is the correct literary form for grouped work " + id);
+						logger.debug("Number of related records with literary form of Fiction dictates that Fiction is the correct literary form for grouped work " + id);
 					}
 					literaryForm.remove("Non Fiction");
 				}else if (numNonFictionIndicators.compareTo(numFictionIndicators) > 0){
 					if (logger.isDebugEnabled()) {
-						logger.debug("Popularity dictates that Non Fiction is the correct literary form for grouped work " + id);
+						logger.debug("Number of related records with literary form of Non Fiction dictates that Non Fiction is the correct literary form for grouped work " + id);
 					}
 					literaryForm.remove("Fiction");
 				}
