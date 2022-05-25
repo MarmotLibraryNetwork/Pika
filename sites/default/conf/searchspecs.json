@@ -104,38 +104,51 @@
 
   "Subject": {
     "DismaxFields": [
+      "subject_proper^250",
       "subject^100",
+      "topic_proper^200",
       "topic^100",
-      "topic_proper^100",
+      "geographic_proper^100",
       "geographic^50",
       "genre^50",
+      "era_proper^50",
       "era"
     ],
     "QueryFields": {
+      "subject_proper": [
+        ["onePhrase", 500]
+      ],
       "subject": [
         ["onePhrase", 300],
         ["and", 100],
         ["or", null]
+      ],
+      "topic_proper": [
+        ["onePhrase", 500]
       ],
       "topic": [
         ["onePhrase", 300],
         ["and", 100],
         ["or", null]
       ],
-      "topic_proper": [
-        ["onePhrase", 300],
-        ["and", 100],
-        ["or", null]
+      "geographic_proper": [
+        ["onePhrase", 500]
       ],
       "geographic": [
         ["onePhrase", 300],
         ["and", 100],
         ["or", null]
       ],
+      "genre_proper": [
+        ["onePhrase", 500]
+      ],
       "genre": [
         ["onePhrase", 300],
         ["and", 100],
         ["or", null]
+      ],
+      "era_proper": [
+        ["onePhrase", 200]
       ],
       "era": [
         ["and", 100],
