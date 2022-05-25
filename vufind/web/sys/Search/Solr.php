@@ -294,7 +294,12 @@ class Solr implements IndexEngine {
 			$searchSpecs = file_get_contents($this->searchSpecsFile);
 			$searchSpecs = preg_replace('/\s*(?!<\")\/\*[^\*]+\*\/(?!\")\s*/', '', $searchSpecs); // Remove any text within /**/ as comments to ignore
 			$results     = json_decode($searchSpecs, true);
-			$this->cache->set('searchSpecs', $results, $configArray['Caching']['searchSpecs']);
+			if (is_array($results)){
+				$this->cache->set('searchSpecs', $results, $configArray['Caching']['searchSpecs']);
+			} else {
+				$this->logger->error('Failed to parse search specification json file.', [json_last_error_msg()]);
+				$results = false;
+			}
 		}
 		$this->_searchSpecs = $results;
 
