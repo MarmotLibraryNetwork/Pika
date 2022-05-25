@@ -528,23 +528,29 @@ public class SierraExportAPIMain {
 	 * @param pikaConn MariaDB connection
 	 */
 	private static void loadOldestLastExtractedBibs(Connection pikaConn) {
-		final long fourteenDaysAgo  = (startTime.getTime() / 1000) - 1209600;
-		int        oldBibsToProcess = 0;
+		final long    fourteenDaysAgo          = (startTime.getTime() / 1000) - 1209600;
+		int           oldBibsToProcess         = 0;
+		final boolean loadingNightlyFullExport = indexingProfile.lastGroupedTime != null && indexingProfile.lastGroupedTime > fourteenDaysAgo;
+		// Using the last grouping time as an indicator for whether this site is delivering a full marc export.
+		// If it does, the file should get regrouped every night. Which makes it unnecessary for us to fetch
+		// long-ago extracted bibs.
 
-		try (
-				PreparedStatement bibsToProcessStatement = pikaConn.prepareStatement("SELECT ilsId FROM ils_extract_info WHERE lastExtracted <  " + fourteenDaysAgo + " AND indexingProfileId = " + indexingProfile.id + " ORDER BY lastExtracted ASC LIMIT 200", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-				ResultSet bibsToProcessResults = bibsToProcessStatement.executeQuery()
-		) {
-			while (bibsToProcessResults.next()) {
-				String fullSierraBibId = bibsToProcessResults.getString("ilsId");
-				Long   bibId           = Long.parseLong(fullSierraBibId.substring(2, fullSierraBibId.length() - 1));
-				// Strip off .b at start and ending check digit to get a number to use with API calls
-				allBibsToUpdate.add(bibId);
-				oldBibsToProcess++;
+		if (!loadingNightlyFullExport) {
+			try (
+							PreparedStatement bibsToProcessStatement = pikaConn.prepareStatement("SELECT ilsId FROM ils_extract_info WHERE lastExtracted <  " + fourteenDaysAgo + " AND indexingProfileId = " + indexingProfile.id + " ORDER BY lastExtracted ASC LIMIT 200", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+							ResultSet bibsToProcessResults = bibsToProcessStatement.executeQuery()
+			) {
+				while (bibsToProcessResults.next()) {
+					String fullSierraBibId = bibsToProcessResults.getString("ilsId");
+					Long   bibId           = Long.parseLong(fullSierraBibId.substring(2, fullSierraBibId.length() - 1));
+					// Strip off .b at start and ending check digit to get a number to use with API calls
+					allBibsToUpdate.add(bibId);
+					oldBibsToProcess++;
+				}
+				addNoteToExportLog("Since the number of bibs to process in below 50, another " + oldBibsToProcess + " bibs with the oldest last extracted time will be processed.");
+			} catch (SQLException e) {
+				logger.error("Error loading bibs with oldest last extract time to process", e);
 			}
-			addNoteToExportLog("Since the number of bibs to process in below 50, another " + oldBibsToProcess + " bibs with the oldest last extracted time will be processed.");
-		} catch (SQLException e) {
-			logger.error("Error loading bibs with oldest last extract time to process", e);
 		}
 	}
 
@@ -648,11 +654,13 @@ public class SierraExportAPIMain {
 		//This section uses the batch method which doesn't work in Sierra because we are limited to 100 exports per hour
 
 		addNoteToExportLog("Found " + allBibsToUpdate.size() + " bib records that need to be updated with data from Sierra.");
+
+		if (allBibsToUpdate.size() < 50) {
+			loadOldestLastExtractedBibs(pikaConn);
+		}
+
 		int numProcessed = 0;
 		if (allBibsToUpdate.size() > 0) {
-			if (allBibsToUpdate.size() < 50){
-				loadOldestLastExtractedBibs(pikaConn);
-			}
 			boolean hasMoreIdsToProcess;
 			int     batchSize       = 25;
 			Long    exportStartTime = new Date().getTime() / 1000;

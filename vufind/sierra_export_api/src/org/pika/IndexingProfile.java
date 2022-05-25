@@ -94,13 +94,15 @@ public class IndexingProfile {
 	boolean          usingSierraAPIExtract        = true;
 //	String           specifiedFormat;
 	String           specifiedGroupingCategory;
-//	int              specifiedFormatBoost;
+	//	int              specifiedFormatBoost;
 	char             collectionSubfield;
 	Pattern          statusesToSuppressPattern    = null;
 	Pattern          locationsToSuppressPattern   = null;
 	Pattern          collectionsToSuppressPattern = null;
 	Pattern          iTypesToSuppressPattern      = null;
 	Pattern          iCode2sToSuppressPattern     = null;
+
+	Long lastGroupedTime;
 
 	// Sierra API Field Mapping
 	String APIItemCallNumberFieldTag;
@@ -291,6 +293,7 @@ public class IndexingProfile {
 		indexingProfile.specifiedFormatCategory           = indexingProfileRS.getString("specifiedFormatCategory");
 		indexingProfile.sierraRecordFixedFieldsTag        = indexingProfileRS.getString("sierraRecordFixedFieldsTag");
 		indexingProfile.marcEncoding                      = indexingProfileRS.getString("marcEncoding");
+		indexingProfile.lastGroupedTime                   = indexingProfileRS.getLong("lastGroupedTime");
 
 
 		// Fields for grouping
