@@ -23,7 +23,40 @@
 		</div>
 	{/if}
 
-	{if $showPublicationDetails && $recordDriver->getPublicationDetails()}
+		{if $recordDriver->getDetailedContributors()}
+			<div class="row">
+				<div class="result-label col-sm-4">{translate text='Contributors'}:</div>
+				<div class="col-sm-8 result-value">
+						{foreach from=$recordDriver->getDetailedContributors() item=contributor name=loop}
+						{if $smarty.foreach.loop.index == 5}
+					<div id="showAdditionalContributorsLink">
+						<a onclick="Pika.Record.moreContributors(); return false;" href="#">{translate text='more'} ...</a>
+					</div>
+						{*create hidden div*}
+					<div id="additionalContributors" style="display:none">
+							{/if}
+						<a href='/Search/Results?basicType=Author&lookfor={$contributor.name|trim|escape:"url"}'>{$contributor.name|escape}</a>
+							{*Do not link to an author page for contributors as that page is meant for titles authored by the
+							person, instead do an author search to see other titles they are contributors of as well as authors of*}
+							{if $contributor.role}
+								&nbsp;{$contributor.role}
+							{/if}
+							{if $contributor.title}
+								&nbsp;<a href="/Search/Results?lookfor={$contributor.title}&amp;basicType=Title">{$contributor.title}</a>
+							{/if}
+						<br>
+							{/foreach}
+							{if $smarty.foreach.loop.index >= 5}
+						<div>
+							<a href="#" onclick="Pika.Record.lessContributors(); return false;">{translate text='less'} ...</a>
+						</div>
+					</div>{* closes hidden div *}
+						{/if}
+				</div>
+			</div>
+		{/if}
+
+		{if $showPublicationDetails && $recordDriver->getPublicationDetails()}
 		<div class="row">
 			<div class="result-label col-sm-4">{translate text='Published'}:</div>
 			<div class="col-sm-8 result-value">
