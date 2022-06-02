@@ -537,7 +537,7 @@ public class SierraExportAPIMain {
 
 		if (!loadingNightlyFullExport) {
 			try (
-							PreparedStatement bibsToProcessStatement = pikaConn.prepareStatement("SELECT ilsId FROM ils_extract_info WHERE lastExtracted <  " + fourteenDaysAgo + " AND indexingProfileId = " + indexingProfile.id + " ORDER BY lastExtracted ASC LIMIT 200", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+							PreparedStatement bibsToProcessStatement = pikaConn.prepareStatement("SELECT ilsId FROM ils_extract_info WHERE deleted IS NULL AND lastExtracted <  " + fourteenDaysAgo + " AND indexingProfileId = " + indexingProfile.id + " ORDER BY lastExtracted ASC LIMIT 200", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 							ResultSet bibsToProcessResults = bibsToProcessStatement.executeQuery()
 			) {
 				while (bibsToProcessResults.next()) {
