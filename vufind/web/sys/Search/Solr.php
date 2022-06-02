@@ -1691,11 +1691,6 @@ class Solr implements IndexEngine {
 				$options['facet.limit'] = $facet['limit'];
 				unset($facet['limit']);
 			}
-			if ($isPikaGroupedWorkIndex) {
-				if (isset($searchLibrary) && $searchLibrary->showAvailableAtAnyLocation) {
-					$options['f.available_at.facet.missing'] = 'true';
-				}
-			}
 
 			if (isset($facet['additionalOptions'])) {
 				//Currently this is only used by the Archive Mapped Timeline Exhibits (Collections)

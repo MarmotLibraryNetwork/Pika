@@ -72,7 +72,6 @@ class Library extends DB_DataObject {
 	public $pTypes;
 	public $defaultPType;
 	public $facetLabel;
-	public $showAvailableAtAnyLocation;
 	public $showEcommerceLink;
 	public $payFinesLink;
 	public $payFinesLinkText;
@@ -589,7 +588,6 @@ class Library extends DB_DataObject {
 						'includeOnlineMaterialsInAvailableToggle'     => ['property' => 'includeOnlineMaterialsInAvailableToggle', 'type' => 'checkbox', 'label' => 'Include Online Materials in Available Toggle', 'description' =>'Turn on to include online materials in both the Available Now and Available Online Toggles.', 'hideInLists' => true, 'default' => false, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
 						'facetLabel'                                  => ['property' => 'facetLabel', 'type' => 'text', 'label' => 'Library System Facet Label', 'description' => 'The label for the library system in the Library System Facet.', 'size' =>'40', 'hideInLists' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
 						'restrictOwningBranchesAndSystems'            => ['property' => 'restrictOwningBranchesAndSystems', 'type' => 'checkbox', 'label' => 'Restrict Owning Branch and System Facets to this library', 'description' => 'Whether or not the Owning Branch and Owning System Facets will only display values relevant to this library. (local_callnumber & availability facets)', 'hideInLists' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
-						'showAvailableAtAnyLocation'                  => ['property' => 'showAvailableAtAnyLocation', 'type' => 'checkbox', 'label' => 'Show Available At Any Location?', 'description' => 'Whether or not to show any Marmot Location within the Available At facet', 'hideInLists' => true],
 						'additionalLocationsToShowAvailabilityFor'    => ['property' => 'additionalLocationsToShowAvailabilityFor', 'type' => 'text', 'label' => 'Additional Locations to Include in Available At Facet', 'description' => 'A list of library codes that you would like included in the available at facet separated by pipes |.', 'size' =>'20', 'hideInLists' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
 						'includeAllRecordsInShelvingFacets'           => ['property' => 'includeAllRecordsInShelvingFacets', 'type' => 'checkbox', 'label' => 'Include All Records In Shelving Facets', 'description' => 'Turn on to include all records (owned and included) in shelving related facets (detailed location, collection).', 'hideInLists' => true, 'default' =>false, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
 						'includeAllRecordsInDateAddedFacets'          => ['property' => 'includeAllRecordsInDateAddedFacets', 'type' => 'checkbox', 'label' => 'Include All Records In Date Added Facets', 'description' => 'Turn on to include all records (owned and included) in date added facets.', 'hideInLists' => true, 'default' => false, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
