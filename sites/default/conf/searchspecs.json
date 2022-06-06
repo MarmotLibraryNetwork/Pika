@@ -23,7 +23,7 @@
 #   ...becomes ("word removal search phrase" OR "single removal search phrase" OR "single word search phrase" OR "single word removal phrase" OR "single word removal search")
 #
 # anchoredSearchFieldMunge : the search phrase will be quoted. The following characters " (double quote marks), : (colon),
-# (asterisks [dont include charcter here as it breaks parsing), and / (slash) will be removed.  The wildcard character (asterisk) will be removed any where
+# (asterisks [dont include character here as it breaks parsing), and / (slash) will be removed.  The wildcard character (asterisk) will be removed any where
 # it occurs in the phrase
 #
 */

@@ -85,7 +85,7 @@ class Solr implements IndexEngine {
 	private $_searchSpecs = false;
 
 	/**
-	 *  An array of protected word phrases that don not get altered by solr and should not be mundged in this driver
+	 *  An array of protected word phrases that do not get altered by solr and should not be mundged in this driver
 	 * for search queries
 	 *
 	 * @var bool|array
@@ -102,8 +102,8 @@ class Solr implements IndexEngine {
 	/**
 	 * Should range operators (i.e. [a TO b]) in the search string be treated as
 	 * case-insensitive (false), or must they be ALL UPPERCASE (true)?  Note that
-	 * making this setting case insensitive not only changes the word "TO" to
-	 * uppercase but also inserts OR clauses to check for case insensitive matches
+	 * making this setting case-insensitive not only changes the word "TO" to
+	 * uppercase but also inserts OR clauses to check for case-insensitive matches
 	 * against the edges of the range...  i.e. ([a TO b] OR [A TO B]).
 	 */
 	private $_caseSensitiveRanges = true;
@@ -2376,7 +2376,13 @@ class Solr implements IndexEngine {
 			if ($this->_protectedWords){
 				$tokens = explode(' ', $input);
 				foreach ($tokens as &$token){
-					if (!in_array($token, $this->_protectedWords)){
+					if ($numQuotes > 0){
+						$tmpToken = str_replace('"', '', $token);
+						if (!in_array($tmpToken, $this->_protectedWords)){
+							// Check unquoted words against protected word list
+							$token = str_replace('!', ' ', $token);
+						}
+					} elseif (!in_array($token, $this->_protectedWords)){
 						$token = str_replace('!', ' ', $token);
 					}
 				}
