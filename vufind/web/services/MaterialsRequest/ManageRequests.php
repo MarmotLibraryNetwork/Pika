@@ -242,7 +242,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				// Some filter settings can cause us to retrieve too many material requests.
 				// So we've set the limit at 5,000 for now, though that seems like quite a large number also.
 				$interface->assign([
-					'error'         => 'Sorry, the filter criteria return too many results. Please review your filters to reduce the number of results."'
+					'error'         => 'Sorry, the filter criteria return too many results. Please review your filters to reduce the number of results.'
 					, 'filterError' => true
 				]);
 			}
