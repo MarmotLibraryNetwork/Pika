@@ -1244,6 +1244,8 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	function sendMyListEmail(){
 		global $interface;
+		global $configArray;
+
 
 		// Get data from AJAX request
 		if (isset($_REQUEST['listId']) && ctype_digit($_REQUEST['listId'])){ // validly formatted List Id
@@ -1253,7 +1255,7 @@ class MyAccount_AJAX extends AJAXHandler {
 				$listId = $_REQUEST['listId'];
 
 				$to      = $_REQUEST['to'];
-				$from    = $_REQUEST['from'];
+				$from    = $configArray['Site']['email'];
 				$message = $_REQUEST['message'];
 
 				//Load the list
