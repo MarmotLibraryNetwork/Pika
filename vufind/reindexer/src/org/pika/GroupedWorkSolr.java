@@ -20,6 +20,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
 
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.time.Year.now;
@@ -43,8 +44,10 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashSet<String>          alternateIds             = new HashSet<>();
 	private String                   authAuthor;
 	private HashMap<String, Long>    primaryAuthors           = new HashMap<>();
+	private HashMap<String, Long>    displayAuthors           = new HashMap<>();
 	private HashSet<String>          authorAdditional         = new HashSet<>();
-	private String                   authorDisplay;
+	private String                   primaryAuthorFormat      = "";
+	private String                   authorDisplayFormat      = "";
 	private HashSet<String>          author2                  = new HashSet<>();
 	private HashSet<String>          authAuthor2              = new HashSet<>();
 	private HashSet<String>          author2Role              = new HashSet<>();
@@ -130,6 +133,8 @@ public class GroupedWorkSolr implements Cloneable {
 		clonedWork.alternateIds = (HashSet<String>) alternateIds.clone();
 		// noinspection unchecked
 		clonedWork.primaryAuthors = (HashMap<String, Long>) primaryAuthors.clone();
+		// noinspection unchecked
+		clonedWork.displayAuthors = (HashMap<String, Long>) displayAuthors.clone();
 		// noinspection unchecked
 		clonedWork.authorAdditional = (HashSet<String>) authorAdditional.clone();
 		// noinspection unchecked
@@ -226,7 +231,7 @@ public class GroupedWorkSolr implements Cloneable {
 		SolrInputDocument doc = new SolrInputDocument();
 		//Main identification
 		doc.addField("id", id);
-		doc.addField("last_indexed", new Date());
+//		doc.addField("last_indexed", new Date()); // Let Solr set this automatically
 		doc.addField("alternate_ids", alternateIds);
 		doc.addField("recordtype", "grouped_work");
 
@@ -246,13 +251,20 @@ public class GroupedWorkSolr implements Cloneable {
 //		doc.addField("title_new", titleNew);
 
 		//author and variations
+		String primaryAuthor = getPrimaryAuthor();
+		if (primaryAuthor != null) {
+			doc.addField("author", primaryAuthor);
+		}
 		doc.addField("auth_author", authAuthor);
-		doc.addField("author", getPrimaryAuthor());
 		doc.addField("auth_author2", authAuthor2);
 		doc.addField("author2", author2);
 		doc.addField("author2-role", author2Role);
 		doc.addField("author_additional", authorAdditional);
-		doc.addField("author_display", authorDisplay);
+		String displayAuthor = getDisplayAuthor();
+		if (displayAuthor != null) {
+			doc.addField("author_display", displayAuthor);
+		}
+
 		//format
 		doc.addField("grouping_category", groupingCategory);
 		doc.addField("format_boost", getTotalFormatBoost());
@@ -307,7 +319,7 @@ public class GroupedWorkSolr implements Cloneable {
 				int thisYear             = now().getValue();
 				if (thisYear == earliestPublicationDate) {
 					publicationDate.set(earliestPublicationDate.intValue(), Calendar.JANUARY, 1);
-				} else  if (thisYear < earliestPublicationDate) {
+				} else if (thisYear < earliestPublicationDate) {
 					publicationDate.set(earliestPublicationDate.intValue(), Calendar.DECEMBER, 31);
 				}
 
@@ -385,7 +397,7 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("callnumber-subject", callNumberSubject);
 		//relevance determiners
 		doc.addField("popularity", Long.toString((long)popularity));
-		doc.addField("num_holdings", numHoldings);
+//		doc.addField("num_holdings", numHoldings);
 		//pika enrichment
 		doc.addField("rating", userRating == 0.0f ? 2.5f : userRating); // Since the user rating is used in boost factor and sorting, when there has been no ratings, use a "neutral" value of 2.5
 		doc.addField("rating_facet", getUserRatingFacetValues(userRating));
@@ -586,16 +598,15 @@ public class GroupedWorkSolr implements Cloneable {
 		if (curItem.isEContent()){
 			//If the item is eContent, we will count it as part of the collection since it will be available.
 			availabilityToggleValues.add("Entire Collection");
-		}
-
-		if (!curItem.isEContent() && curScope.isLocallyOwned() && curScope.isAvailable()) {
-			availabilityToggleValues.add("Available Now");
-		}
-		if (curItem.isEContent() && curScope.isAvailable()){
-			if (curScopeDetails.isIncludeOnlineMaterialsInAvailableToggle()) {
-				availabilityToggleValues.add("Available Now");
-			}
 			availabilityToggleValues.add("Available Online");
+
+			if (curScope.isAvailable()){
+				if (curScopeDetails.isIncludeOnlineMaterialsInAvailableToggle()) {
+					availabilityToggleValues.add("Available Now");
+				}
+			}
+		} else if (curScope.isLocallyOwned() && curScope.isAvailable()) {
+			availabilityToggleValues.add("Available Now");
 		}
 
 		HashMap<String, ScopingInfo> curScopingInfo = curItem.getScopingInfo();
@@ -604,27 +615,37 @@ public class GroupedWorkSolr implements Cloneable {
 		if (addLocationOwnership) {
 
 			//We do different ownership display depending on if this is eContent or not
-			String owningLocationValue = curScopeDetails.getFacetLabel();
+			String owningLocationFacetLabel = curScopeDetails.getFacetLabel();
 			if (curItem.isEContent()){
-				owningLocationValue = curItem.getShelfLocation();
+				//TODO: probably should do this any time there is no value for curScopeDetails.getFacetLabel();
+				String shelfLocation = curItem.getShelfLocation();
+				if (shelfLocation != null && !shelfLocation.isEmpty()) {
+					owningLocationFacetLabel = shelfLocation;
+				}
 			}else if (curItem.isOrderItem() && groupedWorkIndexer.isGiveOnOrderItemsTheirOwnShelfLocation()){
-				owningLocationValue = curScopeDetails.getFacetLabel() + " On Order";
+				owningLocationFacetLabel += " On Order";
+			}
+
+			if (groupedWorkIndexer.fullReindex && owningLocationFacetLabel.isEmpty()){
+				String itemIdentifier = curItem.getItemIdentifier();
+				logger.warn("Did not get facet label " + ((itemIdentifier != null && !itemIdentifier.isEmpty()) ? "for item " + itemIdentifier + " on " : "") + "record " + curRecord.getFullIdentifier());
+				// itemless ils eContent records can get here as well
 			}
 
 			//Save values for this scope
-			addUniqueFieldValue(doc, "owning_location_" + curScopeName, owningLocationValue);
+			addUniqueFieldValue(doc, "owning_location_" + curScopeName, owningLocationFacetLabel);
 
 			if (curScope.isAvailable()) {
-				addAvailableAtValues(doc, curRecord, curScopeName, owningLocationValue);
+				addAvailableAtValues(doc, curRecord, curScopeName, owningLocationFacetLabel);
 			}
 
 			if (curScopeDetails.isLocationScope()) {
 				//Also add the location to the system
 				if (curScopeDetails.getLibraryScope() != null && !curScopeDetails.getLibraryScope().getScopeName().equals(curScopeName)) {
-					addUniqueFieldValue(doc, "owning_location_" + curScopeDetails.getLibraryScope().getScopeName(), owningLocationValue);
+					addUniqueFieldValue(doc, "owning_location_" + curScopeDetails.getLibraryScope().getScopeName(), owningLocationFacetLabel);
 					addAvailabilityToggleValues(doc, curRecord, curScopeDetails.getLibraryScope().getScopeName(), availabilityToggleValues);
 					if (curScope.isAvailable()) {
-						addAvailableAtValues(doc, curRecord, curScopeDetails.getLibraryScope().getScopeName(), owningLocationValue);
+						addAvailableAtValues(doc, curRecord, curScopeDetails.getLibraryScope().getScopeName(), owningLocationFacetLabel);
 					}
 				}
 
@@ -640,9 +661,9 @@ public class GroupedWorkSolr implements Cloneable {
 									if (!otherScopeDetails.isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
 										addAvailabilityToggleValues(doc, curRecord, otherScopeName, availabilityToggleValues);
 									}
-									addUniqueFieldValue(doc, "owning_location_" + otherScopeName, owningLocationValue);
+									addUniqueFieldValue(doc, "owning_location_" + otherScopeName, owningLocationFacetLabel);
 									if (curScope.isAvailable()) {
-										addAvailableAtValues(doc, curRecord, otherScopeName, owningLocationValue);
+										addAvailableAtValues(doc, curRecord, otherScopeName, owningLocationFacetLabel);
 									}
 								}
 							}
@@ -658,9 +679,9 @@ public class GroupedWorkSolr implements Cloneable {
 						if (otherScopeDetails.getAdditionalLocationsToShowAvailabilityFor().length() > 0){
 							if (otherScopeDetails.getAdditionalLocationsToShowAvailabilityForPattern().matcher(curScopeName).matches()){
 								addAvailabilityToggleValues(doc, curRecord, otherScopeName, availabilityToggleValues);
-								addUniqueFieldValue(doc, "owning_location_" + otherScopeName, owningLocationValue);
+								addUniqueFieldValue(doc, "owning_location_" + otherScopeName, owningLocationFacetLabel);
 								if (curScope.isAvailable()) {
-									addAvailableAtValues(doc, curRecord, otherScopeName, owningLocationValue);
+									addAvailableAtValues(doc, curRecord, otherScopeName, owningLocationFacetLabel);
 								}
 							}
 						}
@@ -676,9 +697,9 @@ public class GroupedWorkSolr implements Cloneable {
 					if (!scopeToShowAll.getScope().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
 						addAvailabilityToggleValues(doc, curRecord, scopeToShowAll.getScope().getScopeName(), availabilityToggleValues);
 					}
-					addUniqueFieldValue(doc, "owning_location_" + scopeToShowAll.getScope().getScopeName(), owningLocationValue);
+					addUniqueFieldValue(doc, "owning_location_" + scopeToShowAll.getScope().getScopeName(), owningLocationFacetLabel);
 					if (curScope.isAvailable()) {
-						addAvailableAtValues(doc, curRecord, scopeToShowAll.getScope().getScopeName(), owningLocationValue);
+						addAvailableAtValues(doc, curRecord, scopeToShowAll.getScope().getScopeName(), owningLocationFacetLabel);
 					}
 				}
 			}
@@ -687,9 +708,9 @@ public class GroupedWorkSolr implements Cloneable {
 			//We do different ownership display depending on if this is eContent or not
 			String owningLibraryValue = curScopeDetails.getFacetLabel();
 			if (curItem.isEContent()){
-				owningLibraryValue = curScopeDetails.getFacetLabel() + " Online";
+				owningLibraryValue += " Online";
 			}else if (curItem.isOrderItem() && groupedWorkIndexer.isGiveOnOrderItemsTheirOwnShelfLocation()) {
-				owningLibraryValue = curScopeDetails.getFacetLabel() + " On Order";
+				owningLibraryValue += " On Order";
 			}
 			addUniqueFieldValue(doc, "owning_library_" + curScopeName, owningLibraryValue);
 			for (Scope locationScope : curScopeDetails.getLocationScopes() ){
@@ -838,12 +859,12 @@ public class GroupedWorkSolr implements Cloneable {
 					groupedWorkIndexer.addWorkWithInvalidLiteraryForms(id);
 				}else if (numFictionIndicators.compareTo(numNonFictionIndicators) > 0){
 					if (logger.isDebugEnabled()) {
-						logger.debug("Popularity dictates that Fiction is the correct literary form for grouped work " + id);
+						logger.debug("Number of related records with literary form of Fiction dictates that Fiction is the correct literary form for grouped work " + id);
 					}
 					literaryForm.remove("Non Fiction");
 				}else if (numNonFictionIndicators.compareTo(numFictionIndicators) > 0){
 					if (logger.isDebugEnabled()) {
-						logger.debug("Popularity dictates that Non Fiction is the correct literary form for grouped work " + id);
+						logger.debug("Number of related records with literary form of Non Fiction dictates that Non Fiction is the correct literary form for grouped work " + id);
 					}
 					literaryForm.remove("Fiction");
 				}
@@ -954,22 +975,22 @@ public class GroupedWorkSolr implements Cloneable {
 		this.id = id;
 	}
 
-	private static Pattern removeBracketsPattern = Pattern.compile("\\[.*?\\]");
-	private static Pattern commonSubtitlePattern = Pattern.compile("(?i)((?:[(])?(?:a |the )?graphic novel|audio cd|book club kit|large print(?:[)])?)$");
-	private static Pattern punctuationPattern    = Pattern.compile("[.\\\\/()\\[\\]:;]");
-	private static Pattern multipleSpacesPattern = Pattern.compile("\\s{2,}");
+	private static final Pattern removeBracketsPattern = Pattern.compile("\\[.*?\\]");
+	private static final Pattern commonSubtitlePattern = Pattern.compile("(?i)((?:[(])?(?:a |the )?graphic novel|audio cd|book club kit|large print(?:[)])?)$");
+	private static final Pattern punctuationPattern    = Pattern.compile("[.,;:=!?\\\\/()\\[\\]-]");
+	private static final Pattern multipleSpacesPattern = Pattern.compile("\\s{2,}");
 
-	void setTitle(String shortTitle, String displayTitle, String sortableTitle, String recordFormat) {
-		if (shortTitle != null){
+	void setTitle(String shortTitle, String subTitle, String displayTitle, String sortableTitle, String recordFormat) {
+		if (shortTitle != null) {
 			shortTitle = Util.trimTrailingPunctuation(shortTitle);
 
 			//Figure out if we want to use this title or if the one we have is better.
 			boolean updateTitle = false;
-			if (this.title == null){
+			if (this.title == null) {
 				updateTitle = true;
 			} else {
 				//Only overwrite if we get a better format
-				if (recordFormat.equals("Book")){
+				if (recordFormat.equals("Book")) {
 					//We have a book, update if we didn't have a book before
 					if (!recordFormat.equals(titleFormat)){
 						updateTitle = true;
@@ -999,7 +1020,8 @@ public class GroupedWorkSolr implements Cloneable {
 			if (updateTitle){
 				//Strip out anything in brackets unless that would cause us to show nothing
 				String tmpTitle = removeBracketsPattern.matcher(shortTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0){
+				if (tmpTitle.length() > 0 && !punctuationPattern.matcher(tmpTitle).replaceAll("").trim().isEmpty()){
+					// Also avoid trimming titles like: [Alpha], [beta], [gamma]-- [zeta]
 					shortTitle = tmpTitle;
 				}
 				//Remove common formats
@@ -1007,13 +1029,14 @@ public class GroupedWorkSolr implements Cloneable {
 				if (tmpTitle.length() > 0){
 					shortTitle = tmpTitle;
 				}
-				this.title = shortTitle;
+				this.title       = shortTitle;
 				this.titleFormat = recordFormat;
+				setSubTitle(subTitle);  		//TODO: add every subTitle to keywords?
 				if (sortableTitle != null) {
-					//TODO: strip trailing punctuation
+					sortableTitle = Util.trimTrailingPunctuation(sortableTitle);
 					//Strip out anything in brackets unless that would cause us to show nothing
 					tmpTitle = removeBracketsPattern.matcher(sortableTitle).replaceAll("").trim();
-					if (tmpTitle.length() > 0) {
+					if (tmpTitle.length() > 0 && !punctuationPattern.matcher(tmpTitle).replaceAll("").trim().isEmpty()) {
 						sortableTitle = tmpTitle;
 					}
 					//Remove common formats
@@ -1022,7 +1045,7 @@ public class GroupedWorkSolr implements Cloneable {
 						sortableTitle = tmpTitle;
 					}
 					//remove punctuation from the sortable title
-					sortableTitle  = punctuationPattern.matcher(sortableTitle).replaceAll("").trim(); //TODO: remove "!" or "?" or " -- "
+					sortableTitle  = punctuationPattern.matcher(sortableTitle).replaceAll("").trim();
 					//TODO: replace & with and? Overdrive does this with their provided sort title
 					sortableTitle = multipleSpacesPattern.matcher(sortableTitle).replaceAll(" ");
 					this.titleSort = sortableTitle.toLowerCase();
@@ -1030,7 +1053,9 @@ public class GroupedWorkSolr implements Cloneable {
 				displayTitle = Util.trimTrailingPunctuation(displayTitle);
 				//Strip out anything in brackets unless that would cause us to show nothing
 				tmpTitle = removeBracketsPattern.matcher(displayTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0){
+				if (tmpTitle.length() > 0 && !punctuationPattern.matcher(tmpTitle).replaceAll("").trim().isEmpty()){
+					// prevent empty display title
+					// also prevent display title of only punctuation
 					displayTitle = tmpTitle;
 				}
 				//Remove common formats
@@ -1058,7 +1083,6 @@ public class GroupedWorkSolr implements Cloneable {
 	void setSubTitle(String subTitle) {
 		if (subTitle != null && !subTitle.isEmpty()){
 			subTitle = Util.trimTrailingPunctuation(subTitle);
-			//TODO: determine if the subtitle should be changed?
 			//Strip out anything in brackets unless that would cause us to show nothing
 			String tmpTitle = removeBracketsPattern.matcher(subTitle).replaceAll("").trim();
 			if (tmpTitle.length() > 0){
@@ -1071,6 +1095,8 @@ public class GroupedWorkSolr implements Cloneable {
 			}
 			this.subTitle = subTitle;
 			keywords.add(subTitle);
+		} else if (this.subTitle != null){
+			this.subTitle = null;
 		}
 	}
 
@@ -1098,12 +1124,51 @@ public class GroupedWorkSolr implements Cloneable {
 //		this.titleNew.addAll(newTitles);
 //	}
 
-	public void setAuthor(String author) {
-		author = Util.trimTrailingPunctuation(author);
-		if (primaryAuthors.containsKey(author)){
-			primaryAuthors.put(author, primaryAuthors.get(author) + 1);
-		}else{
-			primaryAuthors.put(author, 1L);
+//	public void setAuthor(String author) {
+//		if (author != null) {
+//			author = trimAuthorTrailingPunctuation(author);
+//			if (!author.isEmpty()) {
+//				if (primaryAuthors.containsKey(author)){
+//					primaryAuthors.put(author, primaryAuthors.get(author) + 1);
+//				}else{
+//					primaryAuthors.put(author, 1L);
+//				}
+//			}
+//		}
+//	}
+
+	void setAuthor(String newAuthor, String recordFormat) {
+		if (newAuthor != null){
+			String primaryAuthor = trimAuthorTrailingPunctuation(newAuthor);
+			if (!primaryAuthor.isEmpty()) {
+				if (primaryAuthors.isEmpty()){
+					primaryAuthors.put(primaryAuthor, 1L);
+					primaryAuthorFormat = recordFormat;
+				} else if (recordFormat.equals("Book")){
+					// Prefer display authors from books over all other formats
+					if (!primaryAuthorFormat.equals("Book")){
+						primaryAuthors.clear();
+						primaryAuthors.put(primaryAuthor, 1L);
+						primaryAuthorFormat = recordFormat;
+					}else if (primaryAuthors.containsKey(primaryAuthor)){
+						primaryAuthors.put(primaryAuthor, primaryAuthors.get(primaryAuthor) + 1);
+					} else {
+						primaryAuthors.put(primaryAuthor, 1L);
+					}
+				} else if (!primaryAuthorFormat.equals("Book") && recordFormat.equals("eBook")){
+					// If we haven't found a book, but this is from an ebook, try preferring eBook display authors
+					// over other formats
+					if (!primaryAuthorFormat.equals("eBook")){
+						primaryAuthors.clear();
+						primaryAuthors.put(primaryAuthor, 1L);
+						primaryAuthorFormat = recordFormat;
+					}else if (primaryAuthors.containsKey(primaryAuthor)){
+						primaryAuthors.put(primaryAuthor, primaryAuthors.get(primaryAuthor) + 1);
+					} else {
+						primaryAuthors.put(primaryAuthor, 1L);
+					}
+				}
+			}
 		}
 	}
 
@@ -1111,28 +1176,115 @@ public class GroupedWorkSolr implements Cloneable {
 		String mostUsedAuthor = null;
 		long numUses = -1;
 		for (String curAuthor : primaryAuthors.keySet()){
-			if (primaryAuthors.get(curAuthor) > numUses){
+			Long curNumUses = primaryAuthors.get(curAuthor);
+			if (curNumUses > numUses){
+				mostUsedAuthor = curAuthor;
+				numUses = curNumUses;
+			} else if (curNumUses == numUses && curAuthor.length() > mostUsedAuthor.length()){
+				// On ties, use longer string
+				//TODO: probably should just check if one string just has the birth year - death year or birth year suffixes
 				mostUsedAuthor = curAuthor;
 			}
 		}
 		return mostUsedAuthor;
 	}
 
-	void setAuthorDisplay(String newAuthor) {
-		this.authorDisplay = Util.trimTrailingPunctuation(newAuthor);
+	private String getDisplayAuthor(){
+		String mostUsedAuthor = null;
+		long numUses = -1;
+		for (String curAuthor : displayAuthors.keySet()){
+			Long curNumUses = displayAuthors.get(curAuthor);
+			if (curNumUses > numUses){
+				mostUsedAuthor = curAuthor;
+				numUses = curNumUses;
+			} else if (curNumUses == numUses && curAuthor.length() > mostUsedAuthor.length()){
+				// On ties, use longer string
+				//TODO: probably should just check if one string just has the birth year - death year or birth year suffixes
+				mostUsedAuthor = curAuthor;
+			}
+		}
+		return mostUsedAuthor;
+	}
+
+	void setAuthorDisplay(String newAuthor, String recordFormat) {
+		if (newAuthor != null){
+//			boolean updateDisplayAuthor = false;
+			String displayAuthor = trimAuthorTrailingPunctuation(newAuthor);
+			if (!displayAuthor.isEmpty()) {
+				if (displayAuthors.isEmpty()){
+					displayAuthors.put(displayAuthor, 1L);
+					authorDisplayFormat = recordFormat;
+				} else if (recordFormat.equals("Book")){
+					// Prefer display authors from books over all other formats
+					if (!authorDisplayFormat.equals("Book")){
+						displayAuthors.clear();
+						displayAuthors.put(displayAuthor, 1L);
+						authorDisplayFormat = recordFormat;
+					}else if (displayAuthors.containsKey(displayAuthor)){
+						displayAuthors.put(displayAuthor, displayAuthors.get(displayAuthor) + 1);
+					} else {
+						displayAuthors.put(displayAuthor, 1L);
+					}
+				} else if (!authorDisplayFormat.equals("Book") && recordFormat.equals("eBook")){
+					// If we haven't found a book, but this is from an ebook, try preferring eBook display authors
+					// over other formats
+					if (!authorDisplayFormat.equals("eBook")){
+						displayAuthors.clear();
+						displayAuthors.put(displayAuthor, 1L);
+						authorDisplayFormat = recordFormat;
+					}else if (displayAuthors.containsKey(displayAuthor)){
+						displayAuthors.put(displayAuthor, displayAuthors.get(displayAuthor) + 1);
+					} else {
+						displayAuthors.put(displayAuthor, 1L);
+					}
+				}
+
+//			if (this.authorDisplay == null){
+//				updateDisplayAuthor = true;
+//			} else {
+//				// Prefer display author string from book over other formats;
+//				// if no books, prefer display author string from ebook over other formats.
+//				// Use longest author string found within the format type
+//				if (recordFormat.equals("Book")){
+//					if (!authorDisplayFormat.equals(titleFormat) || displayAuthor.length() > authorDisplay.length()){
+//						updateDisplayAuthor = true;
+//					}
+//				} else if (recordFormat.equals("eBook")){
+//					//Update if the format we had before is not a book
+//					if (!titleFormat.equals("Book")){
+//						if (!authorDisplayFormat.equals(titleFormat) || displayAuthor.length() > authorDisplay.length()){
+//							updateDisplayAuthor = true;
+//						}
+//					}
+//
+//				} else if (!titleFormat.equals("Book") && !titleFormat.equals("eBook")){
+//					if (displayAuthor.length() > authorDisplay.length()){
+//						updateDisplayAuthor = true;
+//					}
+//				}
+//			}
+//			if (updateDisplayAuthor){
+//				authorDisplay = displayAuthor;
+//				authorDisplayFormat = recordFormat;
+//			}
+			}
+		}
 	}
 
 	void setAuthAuthor(String author) {
-		this.authAuthor = author;
-		keywords.add(author);
+		author = trimAuthorTrailingPunctuation(author);
+		if (!author.isEmpty()) {
+			this.authAuthor = author;
+			keywords.add(author);
+		}
 	}
 
 	void addAuthAuthor2(Set<String> fieldList) {
-		this.authAuthor2.addAll(Util.trimTrailingPunctuation(fieldList));
+		this.authAuthor2.addAll(trimAuthorTrailingPunctuation(fieldList));
 	}
 
 	void addAuthor2(Set<String> fieldList) {
-		this.author2.addAll(Util.trimTrailingPunctuation(fieldList));
+		this.author2.addAll(trimAuthorTrailingPunctuation(fieldList));
 	}
 
 	void addAuthor2Role(Set<String> fieldList) {
@@ -1140,9 +1292,49 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void addAuthorAdditional(Set<String> fieldList) {
-		this.authorAdditional.addAll(Util.trimTrailingPunctuation(fieldList));
+		this.authorAdditional.addAll(trimAuthorTrailingPunctuation(fieldList));
 	}
 
+	private static final Pattern trimAuthorPunctuationPattern = Pattern.compile("^(.*?)[\\s/,;|]+$");
+	// trailing punctuation except the period (.) character, because that could be part of an initial
+	static String trimAuthorTrailingPunctuation(String author) {
+		if (author == null){
+			return "";
+		}
+		Matcher trimPunctuationMatcher = trimAuthorPunctuationPattern.matcher(author);
+		if (trimPunctuationMatcher.matches()){
+			author = trimPunctuationMatcher.group(1);
+		}
+		// Remove training periods, unless it is preceded by a letter
+		if (author.endsWith(".")) {
+			if (author.equals(".")) return ""; // Some 245c fields will be just "."
+
+			int length = author.length();
+			if (length > 2) {
+				char charBeforePossibleInitial = author.charAt(length - 3);
+				if (!Character.isLetter(author.charAt(length - 2)) || (charBeforePossibleInitial != '.' && !Character.isSpaceChar(charBeforePossibleInitial))) {
+					// Trim a trailing period unless the period is part of trail initial
+					// Trim if second to last char isn't a letter character; or
+					// trim if char before initial isn't a period, like "Robb, J.D."
+					// trim if char before initial isn't a space, like "Robb, J. D."
+
+					author = author.substring(0, length - 1);
+				}
+			}
+		}
+		return author;
+	}
+
+	static Collection<String> trimAuthorTrailingPunctuation(Set<String> fieldList) {
+		HashSet<String> trimmedCollection = new HashSet<>();
+		for (String field : fieldList){
+			String trimmedAuthor = trimAuthorTrailingPunctuation(field);
+			if (!trimmedAuthor.isEmpty()) {
+				trimmedCollection.add(trimmedAuthor);
+			}
+		}
+		return trimmedCollection;
+	}
 
 	void addOclcNumbers(Set<String> oclcs) {
 		this.oclcs.addAll(oclcs);
@@ -1222,16 +1414,16 @@ public class GroupedWorkSolr implements Cloneable {
 		this.groupingCategory = groupingCategory;
 	}
 
-	void addHoldings(int recordHoldings) {
-		this.numHoldings += recordHoldings;
-	}
+//	void addHoldings(int recordHoldings) {
+//		this.numHoldings += recordHoldings;
+//	}
 
 	void addPopularity(double itemPopularity) {
 		this.popularity += itemPopularity;
 	}
 
 	double getPopularity(){
-		return  popularity;
+		return popularity;
 	}
 
 	void addTopic(Set<String> fieldList) {
@@ -1757,7 +1949,7 @@ public class GroupedWorkSolr implements Cloneable {
 			if (relatedRecordsForScope.size() > 0){
 				ScopedIndexingStats stats = indexingStats.get(scope.getScopeName());
 				stats.numTotalWorks++;
-				if (isLocallyOwned(relatedItems, scope) || isLibraryOwned(relatedItems, scope)){
+				if ((scope.isLocationScope() && isLocallyOwned(relatedItems, scope)) || (scope.isLibraryScope() && isLibraryOwned(relatedItems, scope))){
 					stats.numLocalWorks++;
 				}
 			}

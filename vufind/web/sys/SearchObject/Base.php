@@ -318,7 +318,7 @@ abstract class SearchObject_Base {
 					if ($field == 'veteranOf' && $value == '[* TO *]'){
 						$display = 'Any War';
 					}elseif ($field == 'available_at' && $value == '*'){
-						$anyLocationLabel = $this->getFacetSetting("Availability", "anyLocationLabel");
+						$anyLocationLabel = $this->getFacetSetting('Availability', 'anyLocationLabel');
 						$display          = empty($anyLocationLabel) ? "Any Location" : $anyLocationLabel;
 					}else{
 						$display = $translate ? translate($value) : $value;
@@ -344,8 +344,7 @@ abstract class SearchObject_Base {
 	 * @param   string   $newFilter   A filter to add to the search url
 	 * @return  string   URL of a new search
 	 */
-	public function renderLinkWithFilter($newFilter)
-	{
+	public function renderLinkWithFilter($newFilter){
 		// Stash our old data for a minute
 		$oldFilterList = $this->filterList;
 		$oldPage       = $this->page;
@@ -1566,6 +1565,16 @@ abstract class SearchObject_Base {
 	}
 
 	/**
+	 * Any search types that use a field of type text-left will have an upper limit for search phrases that will return matching results.
+	 *  Any search phrases longer than the upper limit will always have no results.
+	 *
+	 * @return array  Array of search types/search indexes that text-left fields
+	 */
+	public function getTextLeftSearchIndexes(){
+		return [];
+	}
+
+	/**
 	 * Find a word amongst the current search terms
 	 *
 	 * @access  protected
@@ -1604,7 +1613,7 @@ abstract class SearchObject_Base {
 	protected function replaceSearchTerm($from, $to) {
 		// Escape $from so it is regular expression safe (just in case it
 		// includes any weird punctuation -- unlikely but possible):
-		$from = addcslashes($from, '\^$.[]|()?*+{}/');
+		$from = preg_quote($from, '/');
 
 		// If we are looking for a quoted phrase
 		// we can't use word boundaries

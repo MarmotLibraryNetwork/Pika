@@ -184,6 +184,33 @@ class OverDriveRecordDriver extends RecordInterface {
 		return '';
 	}
 
+	private array $detailedContributors = array();
+
+	/**
+	 * Get an array of creators and roles
+	 *
+	 * @access  public
+	 * @return  array               Strings representing citation formats.
+	 */
+	public function getDetailedContributors(){
+
+			$overDriveAPIProductCreators     = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductCreators();
+			$overDriveAPIProductCreators->productId = $this->overDriveProduct->id;
+			$overDriveAPIProductCreators->orderBy("role");
+			if ($overDriveAPIProductCreators->find()){
+				while($overDriveAPIProductCreators->fetch()){
+					$curContributor               = [
+						'name' => $overDriveAPIProductCreators->fileAs,
+						'role' => $overDriveAPIProductCreators->role
+					];
+					$this->detailedContributors[] = $curContributor;
+				}
+			}
+
+
+		return $this->detailedContributors;
+	}
+
 	/**
 	 * Get an array of strings representing citation formats supported
 	 * by this record's data (empty if none).  Legal values: "APA", "MLA".
@@ -298,13 +325,12 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * user's favorites list.
 	 *
 	 * @access  public
-	 * @param object $user User object owning tag/note metadata.
 	 * @param int $listId ID of list containing desired tags/notes (or
 	 *                              null to show tags/notes from all user's lists).
 	 * @param bool $allowEdit Should we display edit controls?
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getListEntry($user, $listId = null, $allowEdit = true){
+	public function getListEntry($listId = null, $allowEdit = true){
 		// TODO: Implement getListEntry() method.
 	}
 

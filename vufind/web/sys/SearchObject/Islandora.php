@@ -306,7 +306,6 @@ class SearchObject_Islandora extends SearchObject_Base {
 	 * results suitable for use on a user's "favorites" page.
 	 *
 	 * @access  public
-	 * @param   object $user User object owning tag/note metadata.
 	 * @param   int $listId ID of list containing desired tags/notes (or
 	 *                              null to show tags/notes from all user's lists).
 	 * @param   bool $allowEdit Should we display edit controls?
@@ -314,19 +313,18 @@ class SearchObject_Islandora extends SearchObject_Base {
 	 * @param   bool $isMixedUserList Used to correctly number items in a list of mixed content (eg catalog & archive content)
 	 * @return array Array of HTML chunks for individual records.
 	 */
-	public function getResultListHTML($user, $listId = null, $allowEdit = true, $IDList = null, $isMixedUserList = false){
+	public function getResultListHTML($listId = null, $allowEdit = true, $IDList = null, $isMixedUserList = false){
 		global $interface;
-		$html = array();
+		$html = [];
 
 		if ($IDList){
 			//Reorder the documents based on the list of id's
-			//TODO: taken from Solr.php (May need to adjust for Islandora
 			$x = 0;
 			foreach ($IDList as $listPosition => $currentId){
 				// use $IDList as the order guide for the html
 				$current = null; // empty out in case we don't find the matching record
 				foreach ($this->indexResult['response']['docs'] as $index => $doc) {
-					if (!is_null($doc['PID']) && $doc['PID'] == $currentId) {
+					if (!empty($doc['PID']) && $doc['PID'] == $currentId) {
 						$current = & $this->indexResult['response']['docs'][$index];
 						break;
 					}
@@ -348,9 +346,9 @@ class SearchObject_Islandora extends SearchObject_Base {
 					/** @var IslandoraDriver $record */
 					$record = RecordDriverFactory::initRecordDriver($current);
 					if ($isMixedUserList){
-						$html[$listPosition] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
+						$html[$listPosition] = $interface->fetch($record->getListEntry($listId, $allowEdit));
 					}else{
-						$html[] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
+						$html[] = $interface->fetch($record->getListEntry($listId, $allowEdit));
 						$x++;
 					}
 				}
@@ -361,7 +359,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 				$current = &$this->indexResult['response']['docs'][$x];
 				$record  = RecordDriverFactory::initRecordDriver($current);
-				$html[]  = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
+				$html[]  = $interface->fetch($record->getListEntry($listId, $allowEdit));
 			}
 		}
 		return $html;
@@ -1241,49 +1239,44 @@ class SearchObject_Islandora extends SearchObject_Base {
 	 * Turn our results into an RSS feed
 	 *
 	 * @access  public
-	 * @public  array      $result      Existing result set (null to do new search)
 	 * @return  string                  XML document
 	 */
-	public function buildRSS($result = null)
-	{
-		global $configArray;
+	public function buildRSS(){
 		// XML HTTP header
 		header('Content-type: text/xml', true);
 
-		// First, get the search results if none were provided
-		// (we'll go for 50 at a time)
-		if (is_null($result)) {
-			$this->limit = 50;
-			$result      = $this->processSearch(false, false);
-		}
-
-		for ($i = 0; $i < count($result['response']['docs']); $i++) {
-			$current = & $this->indexResult['response']['docs'][$i];
-
-			$record = RecordDriverFactory::initRecordDriver($current);
-			if (!PEAR_Singleton::isError($record)) {
-				$result['response']['docs'][$i]['recordUrl']       = $record->getLinkUrl();
-				$result['response']['docs'][$i]['title_display']   = $record->getTitle();
-				$image                                             = $record->getBookcoverUrl('medium');
-				$description                                       = "<img src='$image'/> " . $record->getDescription();
-				$result['response']['docs'][$i]['rss_description'] = $description;
-			} else {
-				$html[] = "Unable to find record";
+		$this->limit = 50;
+		$result      = $this->processSearch(false, false);
+		foreach ($result['response']['docs'] as &$currentDoc){
+			$record = RecordDriverFactory::initRecordDriver($currentDoc);
+			if (!PEAR_Singleton::isError($record)){
+				$currentDoc['recordUrl']       = $record->getAbsoluteUrl();
+				$currentDoc['title_display']   = $record->getTitle();
+				$image                         = $record->getBookcoverUrl('medium');
+				$description                   = "<img src='$image'/> " . $record->getDescription();
+				$currentDoc['rss_description'] = $description;
+				$currentDoc['rss_date']        = date('r', strtotime($currentDoc['fgs_createdDate_dt']));
+			}else{
+				unset($currentDoc);
 			}
 		}
 
 		global $interface;
+		global $library;
+		global $configArray;
+		$baseUrl  = empty($library->catalogUrl) ? $configArray['Site']['url'] : $_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl;
+
 
 		// On-screen display value for our search
 		$lookfor = $this->displayQuery();
-		if (count($this->filterList) > 0) {
+		if (count($this->filterList) > 0){
 			// TODO : better display of filters
 			$interface->assign('lookfor', $lookfor . " (" . translate('with filters') . ")");
-		} else {
+		}else{
 			$interface->assign('lookfor', $lookfor);
 		}
 		// The full url to recreate this search
-		$interface->assign('searchUrl', $configArray['Site']['url']. $this->renderSearchUrl());
+		$interface->assign('searchUrl', $baseUrl . $this->renderSearchUrl());
 
 		$interface->assign('result', $result);
 		return $interface->fetch('Search/rss.tpl');
@@ -1392,12 +1385,11 @@ class SearchObject_Islandora extends SearchObject_Base {
 					}
 					break;
 				case 'list' :
-				case "favorites":
-				case "list":
-					$preserveParams = array(
+				case 'favorites':
+					$preserveParams = [
 						// for favorites/list:
 						'tag', 'pagesize'
-					);
+					];
 					foreach ($preserveParams as $current) {
 						if (isset($_GET[$current])) {
 							if (is_array($_GET[$current])) {

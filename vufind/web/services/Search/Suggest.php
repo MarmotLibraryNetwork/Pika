@@ -21,18 +21,17 @@ require_once ROOT_DIR . '/Action.php';
 
 class Suggest extends Action {
 
-	function launch()
-	{
+	function launch(){
 		global $configArray;
 
 		//header('Content-type: application/x-suggestions+json');
 		header('Content-type: application/json');
 
 		// Setup Search Engine Connection
-		$class = $configArray['Index']['engine'];
-		$db = new $class($configArray['Index']['url']);
-
-		$results = $db->getSuggestion(strtolower(strip_tags($_GET['lookfor'])), 'title_sort', 10);
+		/** @var Solr $solr */
+		$class   = $configArray['Index']['engine'];
+		$solr    = new $class($configArray['Index']['url']);
+		$results = $solr->getSuggestion(strtolower(strip_tags($_GET['lookfor'] ?? '')), 'title_sort', 10);
 		echo json_encode($results);
 	}
 }

@@ -1197,6 +1197,26 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			],
 		],
 
+		'2022.02.0_add_self_reg_url' => [
+			'title'           => 'Library external Self Reg URL',
+			'description'     => 'Add Library setting for external Self Registration URL',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE `library` ADD COLUMN `externalSelfRegistrationUrl` VARCHAR(45) NULL AFTER `enableSelfRegistration`",
+			],
+		],
+
+		'2022.02.0_add_changeRequiresReindexing_to_libraries_locations' => [
+			'title'           => 'Add changeRequiresReindexing to Library and Location',
+			'description'     => 'Timestamp for when a setting has changed which requires indexing',
+			'continueOnError' => true,
+			'sql'             => [
+				'ALTER TABLE `library` ADD `changeRequiresReindexing` INT UNSIGNED NULL; ',
+				'ALTER TABLE `location` ADD `changeRequiresReindexing` INT UNSIGNED NULL; ',
+			],
+		],
+
+
 		'2021.02.0_obsolete_location_subdomain' => [
 			'title'           => 'Remove Location subdomain',
 			'description'     => 'run AFTER CONFIRMING catalog URLs update succeeded.',
@@ -1235,16 +1255,6 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 					ADD UNIQUE INDEX `code` (`code` ASC); ",
 			],
 		],
-/* todo: [pins] This will be needed if we use per library settings
-		'2021.04_add_login_config' => [
-			'title'           => 'Add Login Configuration',
-			'description'     => 'Allow per library login configuration.',
-			'continueOnError' => true,
-			'sql'             => [
-				"ALTER TABLE library ".
-				"ADD COLUMN loginConfiguration ENUM('barcode_pin', 'name_barcode', 'account_profile_based') NOT NULL DEFAULT 'account_profile_based';"
-			],
-		],*/
 
 	);
 }

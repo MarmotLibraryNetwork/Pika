@@ -135,6 +135,7 @@
 
 	<script>
 	var storagePath = "{$structure.cover.storagePath}";
+	var processing = true;
 	{literal}
 	$("#adminTableRegion").addClass("drop").prepend("<h4>Drag covers here to upload</h4>");
 	var coverDrop = new Dropzone("#adminTableRegion", {
@@ -145,9 +146,17 @@
 		autoProcessQueue: false,
 		addRemoveLinks: true,
 		maxFiles: 50,
-		parallelUploads: 50
+		parallelUploads: 50,
+		maxFilesize: 1.8
 	});
 
+	coverDrop.on("error", function(e){
+		if(e.accepted == false) {
+			$(e.previewElement).css({"border":"solid red 2px", "background-color":"#FFC5C6", "text-align":"center"}).append("<strong style='color:darkred;'>file too large</strong>");
+		}
+		processing = false;
+
+	});
 	coverDrop.on("drop", function(e){
 		$("#adminTable").hide();
 		$(".btn-primary").hide();
@@ -173,9 +182,7 @@
 							$(file.previewElement).css({"border":"solid red 2px", "background-color":"#FFC5C6", "text-align":"center"}).append("<strong style='color:darkred;'>file already exists</strong>");
 						}
 					})
-			return false;
-
-
+		return false;
 	});
 	coverDrop.on("sending", function(file, xhr, formData){
 		formData.append("objectAction", "save");
@@ -183,7 +190,9 @@
 
 	});
 	coverDrop.on("queuecomplete", function(){
-		location.reload();
+		if(processing == true) {
+			location.reload();
+		}
 	});
 	coverDrop.on("reset", function(){
 		$("#adminTable").show();

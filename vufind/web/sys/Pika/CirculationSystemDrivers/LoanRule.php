@@ -52,7 +52,10 @@ class LoanRule extends DB_DataObject {
 	}
 
 	function insert(){
-		parent::insert();
+		if (parent::insert()){
+			$this->setFullReindexMarker();
+		}
+
 //		/** @var Memcache $memCache */
 //		global $memCache;
 //		global $instanceName;
@@ -60,11 +63,27 @@ class LoanRule extends DB_DataObject {
 	}
 
 	function update($dataObject = false){
-		parent::update($dataObject);
+		if (parent::update($dataObject)){
+			$this->setFullReindexMarker();
+		}
+
 //		/** @var Memcache $memCache */
 //		global $memCache;
 //		global $instanceName;
 //		$memCache->delete($instanceName . '_loan_rules');
+	}
+
+
+	private function setFullReindexMarker(): void{
+		/** @var User $user */
+		$user = UserAccount::getLoggedInUser();
+		$indexingProfile = new IndexingProfile();
+		if ($indexingProfile->get('sourceName', $user->source)){
+			//For now, using the logged-in user's account source for getting to the indexing profile connected to
+			// the Sierra loan rules. This will possibly be a bad assumption when multiple ILSes are connected.
+			$indexingProfile->changeRequiresReindexing = time();
+			$indexingProfile->update();
+		}
 	}
 
 	/**

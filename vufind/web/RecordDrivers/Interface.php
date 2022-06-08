@@ -97,13 +97,12 @@ abstract class RecordInterface {
 	 * user's favorites list.
 	 *
 	 * @access  public
-	 * @param object $user          User object owning tag/note metadata.
 	 * @param int    $listId        ID of list containing desired tags/notes (or
 	 *                              null to show tags/notes from all user's lists).
 	 * @param bool   $allowEdit     Should we display edit controls?
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public abstract function getListEntry($user, $listId = null, $allowEdit = true);
+	public abstract function getListEntry($listId = null, $allowEdit = true);
 
 	/**
 	 * A relative URL that is a link to the Full Record View AND additional search parameters

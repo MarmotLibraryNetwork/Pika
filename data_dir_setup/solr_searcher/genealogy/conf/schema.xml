@@ -372,6 +372,12 @@
 		<field name="comments" type="text" indexed="true" stored="true"/>
 		<field name="keywords" type="text" indexed="true" stored="false"/>
 
+		<field name="dateAdded" type="date" indexed="true" stored="true" multiValued="false"/>
+		<!--Date added to database -->
+		<field name="last_indexed" type="date" indexed="false" stored="true" multiValued="false" default="NOW"/>
+		<!-- Let Solr set the last_indexed dateTime automatically. Keep the setting here is the master schema only
+		 (and not searcher) so that the value is strictly when the document was last indexed. -->
+
 		<!-- Fields Specific to People -->
 		<field name="firstName" type="text" indexed="true" stored="true"/>
 		<field name="lastName" type="text" indexed="true" stored="true"/>
@@ -379,7 +385,9 @@
 		<field name="maidenName" type="text" indexed="true" stored="true"/>
 		<field name="otherName" type="text" indexed="true" stored="true"/>
 		<field name="nickName" type="text" indexed="true" stored="true"/>
+<!--TODO: not used, remove
 		<field name="fullName" type="text" indexed="true" stored="true"/>
+-->
 		<field name="veteranOf" type="textFacet" indexed="true" stored="true" multiValued="true"/>
 		<field name="birthDate" type="date" indexed="true" stored="true" multiValued="false"/>
 		<field name="deathDate" type="date" indexed="true" stored="trues" multiValued="false"/>
@@ -399,25 +407,9 @@
 		<field name="obituaryText" type="text" indexed="true" stored="true" multiValued="true"/>
 
 		<!-- Fields Specific to Marriages -->
-		<field name="spouseName" type="string" indexed="true" stored="true" multiValued="true"/>
+		<field name="spouseName" type="text" indexed="true" stored="true" multiValued="true"/>
 		<field name="marriageDate" type="date" indexed="true" stored="true" multiValued="true"/>
 		<field name="marriageComments" type="text" indexed="true" stored="true" multiValued="true"/>
-
-		<!-- Fields Specific to Artifacts -->
-<!-- TODO: all of these fields are obsolete
-		<field name="catalogId" type="string" indexed="true" stored="true"/>
-		<field name="objectName" type="string" indexed="true" stored="true"/>
-		<field name="catalogType" type="string" indexed="true" stored="true"/>
-		<field name="dateOfCreation" type="date" indexed="true" stored="true" multiValued="false"/>
-		<field name="dateOfAcquisition" type="date" indexed="true" stored="true" multiValued="false"/>
-		<field name="physicalDescription" type="string" indexed="true" stored="true"/>
-		<field name="place" type="string" indexed="true" stored="true"/>
-		<field name="copyright" type="string" indexed="true" stored="true"/>
-		<field name="collection" type="string" indexed="true" stored="true"/>
-		<field name="lexiconCategory" type="string" indexed="true" stored="true"/>
-		<field name="lexiconSubCategory" type="string" indexed="true" stored="true"/>
-		<field name="subjects" type="string" indexed="true" stored="true" multiValued="false"/>
--->
 
 		<!-- Spelling -->
 		<field name="spelling" type="textSpell" indexed="true" stored="true"/>
@@ -428,12 +420,6 @@
 	<!-- Field to use to determine and enforce document uniqueness.
 	 Unless this field is marked with required="false", it will be a required field
   -->
-
-	<!--	<defaultSearchField>keywords</defaultSearchField>
-	TODO: need to set df parameter?
-	* Setting <defaultSearchField> in schema is no longer allowed and will cause an exception.
-	  Please use "df" parameter on the request instead. For more details, see SOLR-10585.
-	-->
 
 	<!-- CopyFields for Spelling -->
 	<!-- ** Basic, single word spelling -->

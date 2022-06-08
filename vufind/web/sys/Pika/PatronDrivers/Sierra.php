@@ -716,8 +716,8 @@ class Sierra {
 		// notices
 		$patron->notices = $pInfo->fixedFields->{'268'}->value;
 		switch($pInfo->fixedFields->{'268'}->value) {
-			case '-':
-				$patron->noticePreferenceLabel = 'none';
+			case 't':
+				$patron->noticePreferenceLabel = 'Text';
 				break;
 			case 'a':
 				$patron->noticePreferenceLabel = 'Mail';
@@ -728,6 +728,7 @@ class Sierra {
 			case 'z':
 				$patron->noticePreferenceLabel = 'E-mail';
 				break;
+			case '-':
 			default:
 				$patron->noticePreferenceLabel = 'none';
 		}
@@ -1529,7 +1530,7 @@ EOT;
 		$emailAddress = $patron->email;
 		$patronName   = $patron->firstname . ' ' . $patron->lastname;
 		$libraryName  = $lib->displayName;
-		$catalogUrl   = $lib->catalogUrl;
+		$catalogUrl   = $_SERVER['REQUEST_SCHEME'] . '://' . $lib->catalogUrl;
 		//$catalogUrl   = $this->configArray['Site']['url'];
 
 		$interface->assign('emailAddress', $emailAddress);
@@ -2927,10 +2928,18 @@ EOT;
 			$patron->ilsUserId = $patronId;
 			$patron->barcode   = $barcode;
 			$patron->insert();
+			// insert pin
+			$patron = new User();
+			$patron->ilsUserId = $patronId;
+			$patron->find(true);
+			if ($patron->N >= 1) {
+				$patron->updatePassword($pin);
+			}
 		}
 
 		// Update the stored pin if it has changed
-		if($patron->getPassword() != $pin) {
+		$password = $patron->getPassword();
+		if($password != $pin) {
 			$patron->updatePassword($pin);
 		}
 

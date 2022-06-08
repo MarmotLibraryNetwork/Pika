@@ -850,10 +850,10 @@ class Archive_AJAX extends AJAXHandler {
 		$transcriptIdentifier = urldecode($_REQUEST['transcriptId']);
 		if (strlen($transcriptIdentifier) == 0){
 			//Check to see if we can get it based on the
-			return array(
+			return [
 				'success'    => true,
-				'transcript' => "There is no transcription available for this page.",
-			);
+				'transcript' => 'There is no transcription available for this page.',
+			];
 		}elseif (strpos($transcriptIdentifier, 'mods:') === 0){
 			$objectPid = str_replace('mods:', '', $transcriptIdentifier);
 			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
@@ -861,28 +861,27 @@ class Archive_AJAX extends AJAXHandler {
 			$pageObject  = $fedoraUtils->getObject($objectPid);
 			$mods        = $fedoraUtils->getModsData($pageObject);
 			$transcript  = $fedoraUtils->getModsValue('transcriptionText', 'marmot', $mods);
-			$transcript  = str_replace("\r\n", '<br>', $transcript);
-			$transcript  = str_replace("&#xD;", '<br>', $transcript);
+			$transcript  = FedoraUtils::modsValuesLineEndings2br($transcript);
 			if (strlen($transcript) > 0){
-				return array(
+				return [
 					'success'    => true,
 					'transcript' => $transcript,
-				);
+				];
 			}
 		}else{
 			$transcriptUrl = $objectUrl . '/' . $transcriptIdentifier;
 			$transcript    = file_get_contents($transcriptUrl);
 
 			if ($transcript){
-				return array(
+				return [
 					'success'    => true,
 					'transcript' => $transcript,
-				);
+				];
 			}
 		}
-		return array(
+		return [
 			'success' => false,
-		);
+		];
 	}
 
 	public function getAdditionalRelatedObjects(){
@@ -918,40 +917,53 @@ class Archive_AJAX extends AJAXHandler {
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 
 		//Get a list of all lists for the user
-		$containingLists    = array();
-		$nonContainingLists = array();
+		$containingLists    = [];
+		$nonContainingLists = [];
+		$listsTooLarge      = [];
 
 		$userLists          = new UserList();
 		$userLists->user_id = UserAccount::getActiveUserId();
 		$userLists->deleted = 0;
-		$userLists->orderBy('title');
+		$userLists->orderBy('dateUpdated > unix_timestamp()-300 desc, if(dateUpdated > unix_timestamp()-300 , dateUpdated, 0) desc, title');
+		// Sort lists first by any that have been recently updated (within the last 5 mins)  eg a user is currently build a specific list
+		// second sort factor for multiple lists updated within the last five minutes is the last updated time; other lists come next
+		// finally alphabetical order for lists that haven't been updated recently
+		//This complex sorting allows for a list that has had an entry added to it recently,
+		// to show as the default selected list in the dropdown list of which user lists to add a title to
 		$userLists->find();
 		while ($userLists->fetch()){
+			if ($userLists->numValidListItems() >= 2000){
+				$listsTooLarge[] = [
+					'id'    => $userLists->id,
+					'title' => $userLists->title,
+				];
+			}
 			//Check to see if the user has already added the title to the list.
 			$userListEntry                         = new UserListEntry();
 			$userListEntry->listId                 = $userLists->id;
 			$userListEntry->groupedWorkPermanentId = $id;
 			if ($userListEntry->find(true)){
-				$containingLists[] = array(
+				$containingLists[] = [
 					'id'    => $userLists->id,
 					'title' => $userLists->title,
-				);
+				];
 			}else{
-				$nonContainingLists[] = array(
+				$nonContainingLists[] = [
 					'id'    => $userLists->id,
 					'title' => $userLists->title,
-				);
+				];
 			}
 		}
 
 		$interface->assign('containingLists', $containingLists);
 		$interface->assign('nonContainingLists', $nonContainingLists);
+		$interface->assign('largeLists', $listsTooLarge);
 
-		$results = array(
+		$results = [
 			'title'        => 'Add To List',
-			'modalBody'    => $interface->fetch("GroupedWork/save.tpl"),
+			'modalBody'    => $interface->fetch('GroupedWork/save.tpl'),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.Archive.saveToList(\"{$id}\"); return false;'>Save To List</button>",
-		);
+		];
 		return $results;
 	}
 

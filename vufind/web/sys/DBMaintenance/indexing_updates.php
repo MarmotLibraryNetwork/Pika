@@ -411,6 +411,15 @@ function getIndexingUpdates(){
 			],
 		],
 
+		'2022.02.0_add_changeRequiresReindexing_to_profiles' => [
+			'title'           => 'Add changeRequiresReindexing to indexing profile',
+			'description'     => 'Timestamp for when a setting has changed which requires indexing',
+			'continueOnError' => true,
+			'sql'             => [
+				'ALTER TABLE `indexing_profiles` ADD `changeRequiresReindexing` INT UNSIGNED NULL; ',
+			],
+		],
+
 		'2021.04.0_add_grouping_time_for_sideloads' => [
 			'title'           => 'Add a last grouped time to each indexing profile',
 			'description'     => 'Enable grouping time tracking for sideloads.',
@@ -491,7 +500,102 @@ function getIndexingUpdates(){
 					'MP3Disc', '8')"
 			],
 		],
-
+		'2022.02.0_add_comboPack_format' => [
+			'title'           => 'Add DVD Blu-Ray Combo Pack Format',
+			'description'     => 'Add DVD Blu-Ray Combo to translation maps',
+			'continueOnError' => true,
+			'sql'             =>[
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
+					'DVDBlu-rayCombo', 'movie')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'DVDBlu-rayCombo', 'DVD Blu-ray Combo Pack')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'DVDBlu-rayCombo', 'Movies')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'DVDBlu-rayCombo', '12')"
+			],
+		],
+		'2022.02.0_add_book_with_accompanying_formats'    => [
+			'title'           => 'Add Books with Accompanying formats',
+			'description'     => 'Add Books with Accompanying formats to translation maps',
+			'continueOnError' => true,
+			'sql'             =>[
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
+					'BookWithCDROM', 'book')
+        	,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
+					'BookWithDVD', 'book')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
+					'BookWithVideoDisc', 'book')                                                                              
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'BookWithCDROM', 'Book with CD-ROM')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'BookWithDVD', 'Book with DVD')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'BookWithVideoDisc', 'Book with Video')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'BookWithCDROM', 'Books')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'BookWithDVD', 'Books')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'BookWithVideoDisc', 'Books')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'BookWithCDROM', '10')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'BookWithDVD', '10')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'BookWithVideoDisc', '10')"
+			],
+		],
+		'2022.02.0_add_book_with_accompanying_Audio_CD'     => [
+			'title'             => 'Add Books with Accompanying Audio CD',
+			'description'       => 'Add Books with Accompanying Audio CD',
+			'continueOnError'   => true,
+			'sql'               =>[
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
+					'BookWithAudioCD', 'book')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'BookWithAudioCD', 'Book with Audio CD')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'BookWithAudioCD', 'Books')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'BookWithAudioCD', '10')"
+			],
+		],
+		'2022.02.0_add_book_with_accompanying_DVD_ROM'     => [
+			'title'             => 'Add Books with Accompanying DVD',
+			'description'       => 'Add Books with Accompanying DVD',
+			'continueOnError'   => true,
+			'sql'               =>[
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
+					'BookWithDVDROM', 'book')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'BookWithDVDROM', 'Book with DVD-ROM')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'BookWithDVDROM', 'Books')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'BookWithDVDROM', '10')"
+			],
+		],
+		'2022.02.0_add_illustrated_edition'     => [
+			'title'             => 'Add Illustrated Edition Format',
+			'description'       => 'Add Illustrated Edition Formats to translation maps',
+			'continueOnError'   => true,
+			'sql'               =>[
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
+					'IllustratedEdition', 'book')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'IllustratedEdition', 'Illustrated Edition')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'IllustratedEdition', 'Books')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'IllustratedEdition', '10')"
+			],
+		],
 	);
 }
 
@@ -544,11 +648,11 @@ function setupIndexingProfiles($update){
 	$ilsIndexingProfile->useICode2Suppression    = $configArray['Reindex']['useICode2Suppression'];
 	$ilsIndexingProfile->format                  = isset($configArray['Reindex']['formatSubfield']) ? $configArray['Reindex']['formatSubfield'] : '';
 	$ilsIndexingProfile->eContentDescriptor      = $configArray['Reindex']['eContentSubfield'];
-	$ilsIndexingProfile->orderTag                = isset($configArray['Reindex']['orderTag']) ? $configArray['Reindex']['orderTag'] : '';
-	$ilsIndexingProfile->orderStatus             = isset($configArray['Reindex']['orderStatusSubfield']) ? $configArray['Reindex']['orderStatusSubfield'] : '';
-	$ilsIndexingProfile->orderLocation           = isset($configArray['Reindex']['orderLocationsSubfield']) ? $configArray['Reindex']['orderLocationsSubfield'] : '';
-	$ilsIndexingProfile->orderCopies             = isset($configArray['Reindex']['orderCopiesSubfield']) ? $configArray['Reindex']['orderCopiesSubfield'] : '';
-	$ilsIndexingProfile->orderCode3              = isset($configArray['Reindex']['orderCode3Subfield']) ? $configArray['Reindex']['orderCode3Subfield'] : '';
+//	$ilsIndexingProfile->orderTag                = isset($configArray['Reindex']['orderTag']) ? $configArray['Reindex']['orderTag'] : '';
+//	$ilsIndexingProfile->orderStatus             = isset($configArray['Reindex']['orderStatusSubfield']) ? $configArray['Reindex']['orderStatusSubfield'] : '';
+//	$ilsIndexingProfile->orderLocation           = isset($configArray['Reindex']['orderLocationsSubfield']) ? $configArray['Reindex']['orderLocationsSubfield'] : '';
+//	$ilsIndexingProfile->orderCopies             = isset($configArray['Reindex']['orderCopiesSubfield']) ? $configArray['Reindex']['orderCopiesSubfield'] : '';
+//	$ilsIndexingProfile->orderCode3              = isset($configArray['Reindex']['orderCode3Subfield']) ? $configArray['Reindex']['orderCode3Subfield'] : '';
 
 	if ($profileExists){
 		$ilsIndexingProfile->update();

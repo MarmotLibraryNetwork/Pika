@@ -96,7 +96,8 @@ class MyAccount_Login extends Action
 			$interface->assign('username', $_REQUEST['username']);
 		}
 		if (isset($library)){
-			$interface->assign('enableSelfRegistration', $library->enableSelfRegistration);
+			$interface->assign('enableSelfRegistration', $library->enableSelfRegistration || $library->externalSelfRegistrationUrl);
+			$interface->assign('selfRegLink', empty($library->externalSelfRegistrationUrl) ? '/MyAccount/SelfReg' : $library->externalSelfRegistrationUrl);
 			$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
 			$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
 		}else{

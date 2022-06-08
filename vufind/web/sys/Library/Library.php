@@ -72,7 +72,6 @@ class Library extends DB_DataObject {
 	public $pTypes;
 	public $defaultPType;
 	public $facetLabel;
-	public $showAvailableAtAnyLocation;
 	public $showEcommerceLink;
 	public $payFinesLink;
 	public $payFinesLinkText;
@@ -90,6 +89,7 @@ class Library extends DB_DataObject {
 	public $selfRegistrationSuccessMessage;
 
 	public $enableSelfRegistration;
+	public $externalSelfRegistrationUrl;
 	public $promptForBirthDateInSelfReg;
 	public $selfRegistrationDefaultpType;
 	public $selfRegistrationBarcodeLength;
@@ -267,6 +267,8 @@ class Library extends DB_DataObject {
 
 	public $archiveMoreDetailsRelatedObjectsOrEntitiesDisplayMode;
 
+	public $changeRequiresReindexing;
+
 
 
 	// Use this to set which details will be shown in the the Main Details section of the record view.
@@ -417,15 +419,16 @@ class Library extends DB_DataObject {
 		//$Instructions = 'For more information on ???, see the <a href="">online documentation</a>.';
 
 		$structure = [
-			'isDefault'               => ['property' => 'isDefault', 'type' => 'checkbox', 'label' => 'Default Library (one per install!)', 'description' => 'The default library instance for loading scoping information etc', 'hideInLists' => true],
-			'libraryId'               => ['property' => 'libraryId', 'type' => 'label', 'label' => 'Library Id', 'description' => 'The unique id of the library within the database'],
-			'subdomain'               => ['property' => 'subdomain', 'type' => 'text', 'label' => 'Subdomain', 'description' => 'The unique subdomain of the catalog url for this library', 'isIndexingSetting' => true],
-			'catalogUrl'              => ['property' => 'catalogUrl', 'type' => 'label', 'label' => 'Catalog URL', 'description' => 'The catalog url used for this library'],
-			'displayName'             => ['property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'A name to identify the library within the system', 'size' => '40'],
-			'showDisplayNameInHeader' => ['property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false],
-			'abbreviatedDisplayName'  => ['property' => 'abbreviatedDisplayName', 'type' => 'text', 'label' => 'Abbreviated Display Name', 'description' => 'A short name to identify the library when space is low', 'size' => '40'],
-			'systemMessage'           => ['property' => 'systemMessage', 'type' => 'html', 'label' => 'System Message', 'description' => 'A message to be displayed at the top of the screen', 'size' => '80', 'hideInLists' => true,
-			                              'allowableTags' => '<p><div><span><a><strong><b><em><i><ul><ol><li><br><hr><h1><h2><h3><h4><h5><h6><sub><sup><img><script>'],
+			'isDefault'                => ['property' => 'isDefault', 'type' => 'checkbox', 'label' => 'Default Library (one per install!)', 'description' => 'The default library instance for loading scoping information etc', 'hideInLists' => true],
+			'libraryId'                => ['property' => 'libraryId', 'type' => 'label', 'label' => 'Library Id', 'description' => 'The unique id of the library within the database'],
+			'subdomain'                => ['property' => 'subdomain', 'type' => 'text', 'label' => 'Subdomain', 'description' => 'The unique subdomain of the catalog url for this library', 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
+			'catalogUrl'               => ['property' => 'catalogUrl', 'type' => 'label', 'label' => 'Catalog URL', 'description' => 'The catalog url used for this library'],
+			'displayName'              => ['property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'A name to identify the library within the system', 'size' => '40'],
+			'showDisplayNameInHeader'  => ['property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false],
+			'abbreviatedDisplayName'   => ['property' => 'abbreviatedDisplayName', 'type' => 'text', 'label' => 'Abbreviated Display Name', 'description' => 'A short name to identify the library when space is low', 'size' => '40'],
+			'changeRequiresReindexing' => ['property' => 'changeRequiresReindexing', 'type' => 'dateReadOnly', 'label' => 'Change Requires Reindexing', 'description' => 'Date Time for when this library changed settings needing re-indexing'],
+			'systemMessage'            => ['property'      => 'systemMessage', 'type' => 'html', 'label' => 'System Message', 'description' => 'A message to be displayed at the top of the screen', 'size' => '80', 'hideInLists' => true,
+			                               'allowableTags' => '<p><div><span><a><strong><b><em><i><ul><ol><li><br><hr><h1><h2><h3><h4><h5><h6><sub><sup><img><script>'],
 
 			// Basic Display //
 			'displaySection' => [
@@ -476,7 +479,7 @@ class Library extends DB_DataObject {
 					'showLibraryHoursNoticeOnAccountPages' => ['property' =>'showLibraryHoursNoticeOnAccountPages', 'type' =>'checkbox', 'label' =>'Show Library Holidays and Hours Notice on Account Pages', 'description' =>'Whether or not the Library Hours notice should be shown at the top of My Account\'s Checked Out, Holds and Bookings pages.', 'hideInLists' => true, 'default' =>true],
 					'pTypesSection'                        => ['property' => 'pTypesSectionSection', 'type' => 'section', 'label' => 'P-Types (Sierra Only)', 'hideInLists' => true,
 					                                           'helpLink' =>'https://marmot-support.atlassian.net/l/c/SaLWEWH7', 'properties' => [
-						'pTypes'       => ['property' =>'pTypes', 'type' =>'text', 'label' =>'P-Types', 'description' =>'A list of pTypes that are valid for the library.  Separate multiple pTypes with commas. -1 to disable pType calculations for this library.', 'isIndexingSetting' => true],
+						'pTypes'       => ['property' =>'pTypes', 'type' =>'text', 'label' =>'P-Types', 'description' =>'A list of pTypes that are valid for the library.  Separate multiple pTypes with commas. -1 to disable pType calculations for this library.', 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
 						'defaultPType' => ['property' =>'defaultPType', 'type' =>'text', 'label' =>'Default P-Type', 'description' =>'The P-Type to use when accessing a subdomain if the patron is not logged in.'],
 						]],
 					'barcodeSection' => ['property' => 'barcodeSection', 'type' => 'section', 'label' => 'Barcode', 'hideInLists' => true,
@@ -524,7 +527,8 @@ class Library extends DB_DataObject {
 						]],
 					'selfRegistrationSection' => ['property' => 'selfRegistrationSection', 'type' => 'section', 'label' => 'Self Registration', 'hideInLists' => true,
 					                              'helpLink' => 'https://marmot-support.atlassian.net/l/c/80ovqAL5', 'properties' => [
-							'enableSelfRegistration'         => ['property' =>'enableSelfRegistration', 'type' =>'checkbox', 'label' =>'Enable Self Registration', 'description' =>'Whether or not patrons can self register on the site', 'hideInLists' => true],
+							'externalSelfRegistrationUrl'    => ['property' =>'externalSelfRegistrationUrl', 'type' =>'text', 'label' =>'URL for External Self Registration Page', 'description' =>'Enter the site url when using an external self-registration system', 'hideInLists' => true],
+							'enableSelfRegistration'         => ['property' =>'enableSelfRegistration', 'type' =>'checkbox', 'label' =>'Enable Self Registration', 'description' => 'Whether or not patrons can self register on the site', 'hideInLists' => true],
 							/* sierra patron api self reg */
 							'selfRegistrationAgencyCode'     => ['property' =>'selfRegistrationAgencyCode', 'type' =>'text', 'label' =>'Agency Code (Sierra Only)', 'description' =>'Sierra library agency code.', 'hideInLists' => true, 'default' => '', 'maxLength' => '3'],
 							'selfRegistrationDefaultpType'   => ['property' =>'selfRegistrationDefaultpType', 'type' =>'text', 'label' =>'Self Registration Patron Type (Sierra Only)', 'description' =>'The default patron type for self registered patrons.', 'hideInLists' => true, 'default' => ''],
@@ -558,7 +562,7 @@ class Library extends DB_DataObject {
 			'searchingSection' => ['property' =>'searchingSection', 'type' => 'section', 'label' =>'Searching', 'hideInLists' => true,
 			                       'helpLink' =>'https://marmot-support.atlassian.net/l/c/2L9neHjr', 'properties' => [
 					'restrictSearchByLibrary'                  => ['property' => 'restrictSearchByLibrary', 'type' =>'checkbox', 'label' =>'Restrict Search By Library', 'description' =>'Whether or not search results should only include titles from this library', 'hideInLists' => true],
-					'publicListsToInclude'                     => ['property' => 'publicListsToInclude', 'type' =>'enum', 'values' => [0 => 'No Lists', '1' => 'Lists from this library', '3' =>'Lists from library list publishers Only', '4' =>'Lists from all list publishers', '2' => 'All Lists'], 'label' =>'Public Lists To Include', 'description' =>'Which lists should be included in this scope', 'isIndexingSetting' => true],
+					'publicListsToInclude'                     => ['property' => 'publicListsToInclude', 'type' =>'enum', 'values' => [0 => 'No Lists', '1' => 'Lists from this library', '3' =>'Lists from library list publishers Only', '4' =>'Lists from all list publishers', '2' => 'All Lists'], 'label' =>'Public Lists To Include', 'description' =>'Which lists should be included in this scope', 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
 					'boostByLibrary'                           => ['property' => 'boostByLibrary', 'type' =>'checkbox', 'label' =>'Boost By Library', 'description' =>'Whether or not boosting of titles owned by this library should be applied', 'hideInLists' => true],
 					'additionalLocalBoostFactor'               => ['property' => 'additionalLocalBoostFactor', 'type' =>'integer', 'label' =>'Additional Local Boost Factor', 'description' =>'An additional numeric boost to apply to any locally owned and locally available titles', 'hideInLists' => true],
 					'allowAutomaticSearchReplacements'         => ['property' => 'allowAutomaticSearchReplacements', 'type' =>'checkbox', 'label' =>'Allow Automatic Search Corrections', 'description' =>'Turn on to allow Pika to replace search terms that have no results if the current search term looks like a misspelling.', 'hideInLists' => true, 'default' =>true],
@@ -581,14 +585,13 @@ class Library extends DB_DataObject {
 						'availabilityToggleLabelLocal'                => ['property' => 'availabilityToggleLabelLocal', 'type' => 'text', 'label' => 'Local Collection Toggle Label', 'description' => 'The label to show when viewing the local collection i.e. Library Name / Local Collection.  Leave blank to hide the button.', 'default' => ''],
 						'availabilityToggleLabelAvailable'            => ['property' => 'availabilityToggleLabelAvailable', 'type' => 'text', 'label' => 'Available Toggle Label', 'description' => 'The label to show when viewing available items i.e. Available Now / Available Locally / Available Here.', 'default' => 'Available Now'],
 						'availabilityToggleLabelAvailableOnline'      => ['property' => 'availabilityToggleLabelAvailableOnline', 'type' => 'text', 'label' => 'Available Online Toggle Label', 'description' => 'The label to show when viewing available items i.e. Available Online.', 'default' => 'Available Online'],
-						'includeOnlineMaterialsInAvailableToggle'     => ['property' => 'includeOnlineMaterialsInAvailableToggle', 'type' => 'checkbox', 'label' => 'Include Online Materials in Available Toggle', 'description' =>'Turn on to include online materials in both the Available Now and Available Online Toggles.', 'hideInLists' => true, 'default' =>false, 'isIndexingSetting' => true],
-						'facetLabel'                                  => ['property' => 'facetLabel', 'type' => 'text', 'label' => 'Library System Facet Label', 'description' => 'The label for the library system in the Library System Facet.', 'size' =>'40', 'hideInLists' => true, 'isIndexingSetting' => true],
-						'restrictOwningBranchesAndSystems'            => ['property' => 'restrictOwningBranchesAndSystems', 'type' => 'checkbox', 'label' => 'Restrict Owning Branch and System Facets to this library', 'description' => 'Whether or not the Owning Branch and Owning System Facets will only display values relevant to this library.', 'hideInLists' => true, 'isIndexingSetting' => true],
-						'showAvailableAtAnyLocation'                  => ['property' => 'showAvailableAtAnyLocation', 'type' => 'checkbox', 'label' => 'Show Available At Any Location?', 'description' => 'Whether or not to show any Marmot Location within the Available At facet', 'hideInLists' => true],
-						'additionalLocationsToShowAvailabilityFor'    => ['property' => 'additionalLocationsToShowAvailabilityFor', 'type' => 'text', 'label' => 'Additional Locations to Include in Available At Facet', 'description' => 'A list of library codes that you would like included in the available at facet separated by pipes |.', 'size' =>'20', 'hideInLists' => true, 'isIndexingSetting' => true],
-						'includeAllRecordsInShelvingFacets'           => ['property' => 'includeAllRecordsInShelvingFacets', 'type' => 'checkbox', 'label' => 'Include All Records In Shelving Facets', 'description' => 'Turn on to include all records (owned and included) in shelving related facets (detailed location, collection).', 'hideInLists' => true, 'default' =>false, 'isIndexingSetting' => true],
-						'includeAllRecordsInDateAddedFacets'          => ['property' => 'includeAllRecordsInDateAddedFacets', 'type' => 'checkbox', 'label' => 'Include All Records In Date Added Facets', 'description' => 'Turn on to include all records (owned and included) in date added facets.', 'hideInLists' => true, 'default' =>false, 'isIndexingSetting' => true],
-						'includeOnOrderRecordsInDateAddedFacetValues' => ['property' => 'includeOnOrderRecordsInDateAddedFacetValues', 'type' => 'checkbox', 'label' => 'Include On Order Records In All Date Added Facet Values', 'description' => 'Use On Order records (date added value (tomorrow)) in calculations for all date added facet values. (eg. Added in the last day, week, etc.)', 'hideInLists' => true, 'default' =>true, 'isIndexingSetting' => true],
+						'includeOnlineMaterialsInAvailableToggle'     => ['property' => 'includeOnlineMaterialsInAvailableToggle', 'type' => 'checkbox', 'label' => 'Include Online Materials in Available Toggle', 'description' =>'Turn on to include online materials in both the Available Now and Available Online Toggles.', 'hideInLists' => true, 'default' => false, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
+						'facetLabel'                                  => ['property' => 'facetLabel', 'type' => 'text', 'label' => 'Library System Facet Label', 'description' => 'The label for the library system in the Library System Facet.', 'size' =>'40', 'hideInLists' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
+						'restrictOwningBranchesAndSystems'            => ['property' => 'restrictOwningBranchesAndSystems', 'type' => 'checkbox', 'label' => 'Restrict Owning Branch and System Facets to this library', 'description' => 'Whether or not the Owning Branch and Owning System Facets will only display values relevant to this library. (local_callnumber & availability facets)', 'hideInLists' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
+						'additionalLocationsToShowAvailabilityFor'    => ['property' => 'additionalLocationsToShowAvailabilityFor', 'type' => 'text', 'label' => 'Additional Locations to Include in Available At Facet', 'description' => 'A list of library codes that you would like included in the available at facet separated by pipes |.', 'size' =>'20', 'hideInLists' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
+						'includeAllRecordsInShelvingFacets'           => ['property' => 'includeAllRecordsInShelvingFacets', 'type' => 'checkbox', 'label' => 'Include All Records In Shelving Facets', 'description' => 'Turn on to include all records (owned and included) in shelving related facets (detailed location, collection).', 'hideInLists' => true, 'default' =>false, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
+						'includeAllRecordsInDateAddedFacets'          => ['property' => 'includeAllRecordsInDateAddedFacets', 'type' => 'checkbox', 'label' => 'Include All Records In Date Added Facets', 'description' => 'Turn on to include all records (owned and included) in date added facets.', 'hideInLists' => true, 'default' => false, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
+						'includeOnOrderRecordsInDateAddedFacetValues' => ['property' => 'includeOnOrderRecordsInDateAddedFacetValues', 'type' => 'checkbox', 'label' => 'Include On Order Records In All Date Added Facet Values', 'description' => 'Use On Order records (date added value (tomorrow)) in calculations for all date added facet values. (eg. Added in the last day, week, etc.)', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
 
 						'facets' => [
 						'property'                   => 'facets',
@@ -855,16 +858,16 @@ class Library extends DB_DataObject {
 
 			'overdriveSection' => ['property' =>'overdriveSection', 'type' => 'section', 'label' =>'OverDrive', 'hideInLists' => true,
 			                       'helpLink' =>'https://marmot-support.atlassian.net/l/c/hA8f0gKg', 'properties' => [
-					'enableOverdriveCollection'      => ['property' =>'enableOverdriveCollection', 'type' =>'checkbox', 'label' =>'Enable Overdrive Collection', 'description' =>'Whether or not titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'isIndexingSetting' => true],
-					'sharedOverdriveCollection'      => ['property' =>'sharedOverdriveCollection', 'type' =>'enum', 'label' =>'Shared Overdrive Collection', 'description' =>'Which shared Overdrive collection should be included in searches', 'hideInLists' => true, 'values' => $sharedOverdriveCollectionChoices, 'default' => -1, 'isIndexingSetting' => true],
-					'includeOverDriveAdult'          => ['property' =>'includeOverDriveAdult', 'type' =>'checkbox', 'label' =>'Include Adult Titles', 'description' =>'Whether or not adult titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true],
-					'includeOverDriveTeen'           => ['property' =>'includeOverDriveTeen', 'type' =>'checkbox', 'label' =>'Include Teen Titles', 'description' =>'Whether or not teen titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true],
-					'includeOverDriveKids'           => ['property' =>'includeOverDriveKids', 'type' =>'checkbox', 'label' =>'Include Kids Titles', 'description' =>'Whether or not kids titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true],
+					'enableOverdriveCollection'      => ['property' =>'enableOverdriveCollection', 'type' =>'checkbox', 'label' =>'Enable Overdrive Collection', 'description' =>'Whether or not titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
+					'sharedOverdriveCollection'      => ['property' =>'sharedOverdriveCollection', 'type' =>'enum', 'label' =>'Shared Overdrive Collection', 'description' =>'Which shared Overdrive collection should be included in searches', 'hideInLists' => true, 'values' => $sharedOverdriveCollectionChoices, 'default' => -1, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
+					'includeOverDriveAdult'          => ['property' =>'includeOverDriveAdult', 'type' =>'checkbox', 'label' =>'Include Adult Titles', 'description' =>'Whether or not adult titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
+					'includeOverDriveTeen'           => ['property' =>'includeOverDriveTeen', 'type' =>'checkbox', 'label' =>'Include Teen Titles', 'description' =>'Whether or not teen titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
+					'includeOverDriveKids'           => ['property' =>'includeOverDriveKids', 'type' =>'checkbox', 'label' =>'Include Kids Titles', 'description' =>'Whether or not kids titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
 					'repeatInOverdrive'              => ['property' =>'repeatInOverdrive', 'type' =>'checkbox', 'label' =>'Repeat In Overdrive', 'description' =>'Turn on to allow repeat search in Overdrive functionality.', 'hideInLists' => true, 'default' => 0],
 					'overdriveAuthenticationILSName' => ['property' =>'overdriveAuthenticationILSName', 'type' =>'text', 'label' =>'The ILS Name Overdrive uses for user Authentication', 'description' =>'The name of the ILS that OverDrive uses to authenticate users logging into the Overdrive website.', 'size' =>'20', 'hideInLists' => true],
 					'overdriveRequirePin'            => ['property' =>'overdriveRequirePin', 'type' =>'checkbox', 'label' =>'Is a Pin Required to log into Overdrive website?', 'description' =>'Turn on if users need a PIN to log into the Overdrive website.', 'hideInLists' => true, 'default' => 0],
 					'overdriveAdvantageName'         => ['property' =>'overdriveAdvantageName', 'type' =>'text', 'label' =>'Overdrive Advantage Name', 'description' =>'The name of the OverDrive Advantage account if any.', 'size' =>'80', 'hideInLists' => true,],
-					'overdriveAdvantageProductsKey'  => ['property' =>'overdriveAdvantageProductsKey', 'type' =>'text', 'label' =>'Overdrive Advantage Products Key', 'description' =>'The products key for use when building urls to the API from the advantageAccounts call.', 'size' =>'80', 'hideInLists' => false, 'isIndexingSetting' => true],
+					'overdriveAdvantageProductsKey'  => ['property' =>'overdriveAdvantageProductsKey', 'type' =>'text', 'label' =>'Overdrive Advantage Products Key', 'description' =>'The products key for use when building urls to the API from the advantageAccounts call.', 'size' =>'80', 'hideInLists' => false, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
 					'eContentSupportAddress'         => ['property' => 'eContentSupportAddress', 'type' => 'multiemail', 'label' => 'Overdrive Support Address', 'description' => 'An e-mail address to receive support requests for patrons with eContent problems.', 'size' => '80', 'hideInLists' => true, 'default' => 'pika@marmot.org'],
 				]],
 
@@ -887,6 +890,7 @@ class Library extends DB_DataObject {
 						'allowEdit'                  => true,
 						'canEdit'                    => false,
 						'isIndexingSetting'          => true,
+						'changeRequiresReindexing'   => true,
 						'additionalOneToManyActions' => [
 							[
 								'text'    => 'Clear Hoopla Settings',
@@ -1099,35 +1103,39 @@ class Library extends DB_DataObject {
 			],
 
 			'recordsOwned' => [
-				'property'      => 'recordsOwned',
-				'type'          => 'oneToMany',
-				'label'         => 'Records Owned',
-				'description'   => 'Information about what records are owned by the library',
-				'helpLink'      => 'https://marmot-support.atlassian.net/l/c/nTxVC8zb',
-				'keyThis'       => 'libraryId',
-				'keyOther'      => 'libraryId',
-				'subObjectType' => 'LibraryRecordOwned',
-				'structure'     => $libraryRecordOwnedStructure,
-				'sortable'      => true,
-				'storeDb'       => true,
-				'allowEdit'     => false,
-				'canEdit'       => false,
+				'property'                 => 'recordsOwned',
+				'type'                     => 'oneToMany',
+				'label'                    => 'Records Owned',
+				'description'              => 'Information about what records are owned by the library',
+				'helpLink'                 => 'https://marmot-support.atlassian.net/l/c/nTxVC8zb',
+				'keyThis'                  => 'libraryId',
+				'keyOther'                 => 'libraryId',
+				'subObjectType'            => 'LibraryRecordOwned',
+				'structure'                => $libraryRecordOwnedStructure,
+				'sortable'                 => true,
+				'storeDb'                  => true,
+				'allowEdit'                => false,
+				'canEdit'                  => false,
+				'isIndexingSetting'        => true,
+				'changeRequiresReindexing' => true,
 			],
 
 			'recordsToInclude' => [
-				'property'      => 'recordsToInclude',
-				'type'          => 'oneToMany',
-				'label'         => 'Records To Include',
-				'description'   => 'Information about what records to include in this scope',
-				'helpLink'      => 'https://marmot-support.atlassian.net/l/c/nTxVC8zb',
-				'keyThis'       => 'libraryId',
-				'keyOther'      => 'libraryId',
-				'subObjectType' => 'LibraryRecordToInclude',
-				'structure'     => $libraryRecordToIncludeStructure,
-				'sortable'      => true,
-				'storeDb'       => true,
-				'allowEdit'     => false,
-				'canEdit'       => false,
+				'property'                 => 'recordsToInclude',
+				'type'                     => 'oneToMany',
+				'label'                    => 'Records To Include',
+				'description'              => 'Information about what records to include in this scope',
+				'helpLink'                 => 'https://marmot-support.atlassian.net/l/c/nTxVC8zb',
+				'keyThis'                  => 'libraryId',
+				'keyOther'                 => 'libraryId',
+				'subObjectType'            => 'LibraryRecordToInclude',
+				'structure'                => $libraryRecordToIncludeStructure,
+				'sortable'                 => true,
+				'storeDb'                  => true,
+				'allowEdit'                => false,
+				'canEdit'                  => false,
+				'isIndexingSetting'        => true,
+				'changeRequiresReindexing' => true,
 			],
 		];
 

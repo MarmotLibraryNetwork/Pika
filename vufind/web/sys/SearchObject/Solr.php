@@ -51,7 +51,7 @@ class SearchObject_Solr extends SearchObject_Base {
 	/** @var Solr $indexEngine */
 	private $indexEngine = null;
 	// Facets information
-	private $allFacetSettings = array();    // loaded from facets.ini
+	private $allFacetSettings;    // loaded from facets.ini
 	// Search types of author have two subtypes: home and search
 	private $authorSearchType  = '';
 
@@ -391,10 +391,6 @@ class SearchObject_Solr extends SearchObject_Base {
 					$this->setFacetSortOrder('count');
 				}
 			}
-		} else if ($module == 'Search' && $action == 'Reserves') {
-			// We don't need spell checking
-			$this->spellcheck = false;
-			$this->searchType = strtolower($action);
 		} else if ($module == 'MyAccount') {
 			// Users Lists
 			$this->spellcheck = false;
@@ -625,11 +621,21 @@ class SearchObject_Solr extends SearchObject_Base {
 	}
 
 	/**
+	 * Any search types that use a field of type text-left will have an upper limit for search phrases that will return matching results.
+	 *  Any search phrases longer than the upper limit will always have no results.
+	 *
+	 * @return array  Array of search types/search indexes that text-left fields
+	 */
+	public function getTextLeftSearchIndexes(){
+		return ['StartOfTitle'];
+	}
+
+
+	/**
 	 * Use the record driver to build an array of HTML displays from the search
 	 * results suitable for use while displaying lists
 	 *
 	 * @access  public
-	 * @param   object $user User object owning tag/note metadata.
 	 * @param   int $listId ID of list containing desired tags/notes (or
 	 *                              null to show tags/notes from all user's lists).
 	 * @param   bool $allowEdit Should we display edit controls?
@@ -637,10 +643,9 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @param    bool $isMixedUserList Used to correctly number items in a list of mixed content (eg catalog & archive content)
 	 * @return array Array of HTML chunks for individual records.
 	 */
-	public function getResultListHTML($user, $listId = null, $allowEdit = true, $IDList = null, $isMixedUserList = false)
-	{
+	public function getResultListHTML($listId = null, $allowEdit = true, $IDList = null, $isMixedUserList = false){
 		global $interface;
-		$html = array();
+		$html = [];
 		if ($IDList){
 			//Reorder the documents based on the list of id's
 			$x = 0;
@@ -672,9 +677,9 @@ class SearchObject_Solr extends SearchObject_Base {
 					/** @var GroupedWorkDriver $record */
 					$record = RecordDriverFactory::initRecordDriver($current);
 					if ($isMixedUserList) {
-						$html[$listPosition] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
+						$html[$listPosition] = $interface->fetch($record->getListEntry($listId, $allowEdit));
 					} else {
-						$html[] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
+						$html[] = $interface->fetch($record->getListEntry($listId, $allowEdit));
 						$x++;
 					}
 				}
@@ -693,7 +698,7 @@ class SearchObject_Solr extends SearchObject_Base {
 				$interface->assign('recordIndex', $x + 1);
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 				$record = RecordDriverFactory::initRecordDriver($current);
-				$html[] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
+				$html[] = $interface->fetch($record->getListEntry($listId, $allowEdit));
 			}
 		}
 		return $html;
@@ -1094,8 +1099,6 @@ class SearchObject_Solr extends SearchObject_Base {
 	protected function getBaseUrl(){
 		//todo: some of these cases are obsolete
 		switch ($this->searchType){
-			case 'reserves' :
-				return $this->serverUrl . '/Search/Reserves?';
 			case 'favorites' :
 				return $this->serverUrl . '/MyAccount/Home?';
 			case 'list' :
@@ -1133,13 +1136,9 @@ class SearchObject_Solr extends SearchObject_Base {
 					$params[] = ($this->authorSearchType == 'home' ? 'author=' : 'lookfor=') . urlencode($this->searchTerms[0]['lookfor']);
 					$params[] = 'basicSearchType=Author';
 					break;
-				// Reserves modules may have a few extra parameters to preserve:
-				case 'reserves':
 				case 'favorites':
 				case 'list':
 					$preserveParams = [
-						// for reserves:
-						'course', 'inst', 'dept',
 						// for favorites/list:
 						'tag', 'pagesize'
 					];
@@ -1277,7 +1276,6 @@ class SearchObject_Solr extends SearchObject_Base {
 				return $query;
 			}
 		}
-
 		// Only use the query we just built if there isn't an override in place.
 		if ($this->query == null) {
 			$this->query = $query;
@@ -1337,30 +1335,28 @@ class SearchObject_Solr extends SearchObject_Base {
 			}
 		}
 
-		//Check to see if we have both a format and availability facet applied.
-		$availabilityByFormatFieldName = null;
-		if ($availabilityToggleValue != null && ($formatCategoryValue != null || $formatValue != null)){
+		//Check to see if we have format facets applied.
+		$availabilityByFormatFieldName = $availableAtByFormatFieldName= null;
+		if ($formatCategoryValue != null || $formatValue != null){
+			// When a format or format category facet is applied, switch to using the availability plus format facets.
+			// Both for filtering and importantly, for facet fetching (so that incompatible eContent availability isn't displayed in facets)
 			global $solrScope;
 			//Make sure to process the more specific format first
 			if ($formatValue != null){
-				$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatValue));
+				$escapedFormatValue            = strtolower(preg_replace('/\W/', '_', $formatValue));
+				$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . $escapedFormatValue;
+				$availableAtByFormatFieldName  = 'available_at_by_format_' . $solrScope . '_' . $escapedFormatValue;
 			}else{
-				$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatCategoryValue));
+				$escapedFormatCategoryValue     = strtolower(preg_replace('/\W/', '_', $formatCategoryValue));
+				$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . $escapedFormatCategoryValue;
+				$availableAtByFormatFieldName  = 'available_at_by_format_' . $solrScope . '_' . $escapedFormatCategoryValue;
 			}
-			$filterQuery['availability_toggle'] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
-		}
-
-		//Check to see if we have both a format and available at facet applied
-		$availableAtByFormatFieldName = null;
-		if ($availabilityAtValue != null && ($formatCategoryValue != null || $formatValue != null)){
-			global $solrScope;
-			//Make sure to process the more specific format first
-			if ($formatValue != null){
-				$availableAtByFormatFieldName = 'available_at_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatValue));
-			}else{
-				$availableAtByFormatFieldName = 'available_at_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatCategoryValue));
+			if (!empty($availabilityToggleValue)){
+				$filterQuery['availability_toggle'] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
 			}
-			$filterQuery['available_at'] = $availableAtByFormatFieldName . ':"' . $availabilityAtValue . '"';
+			if (!empty($availabilityAtValue)){
+				$filterQuery['available_at'] = $availableAtByFormatFieldName . ':"' . $availabilityAtValue . '"';
+			}
 		}
 
 
@@ -1378,6 +1374,12 @@ class SearchObject_Solr extends SearchObject_Base {
 				if (strpos($facetField, 'availability_toggle') === 0){
 					if ($availabilityByFormatFieldName){
 						$facetSet['field'][] = $availabilityByFormatFieldName;
+					}else{
+						$facetSet['field'][] = $facetField;
+					}
+				}elseif (strpos($facetField, 'available_at') === 0){
+					if ($availableAtByFormatFieldName){
+						$facetSet['field'][] = $availableAtByFormatFieldName;
 					}else{
 						$facetSet['field'][] = $facetField;
 					}
@@ -1423,7 +1425,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		// Get time before the query
 		$this->startQueryTimer();
 
-		// The "relevance" sort option is a VuFind reserved word; we need to make
+		// The "relevance" sort option is a Pika reserved word; we need to make
 		// this null in order to achieve the desired effect with Solr:
 		$finalSort = ($this->sort == 'relevance') ? null : $this->sort;
 
@@ -1751,6 +1753,15 @@ class SearchObject_Solr extends SearchObject_Base {
 						}
 					}
 				}
+				elseif (strpos($field, 'available_at_by_format') === 0){
+					foreach ($validFields as $validFieldName){
+						if (strpos($validFieldName, 'available_at') === 0){
+							$field = $validFieldName;
+							$isValid  = true;
+							break;
+						}
+					}
+				}
 				if (!$isValid){
 					continue;
 				}
@@ -1951,22 +1962,20 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * Turn our results into an RSS feed
 	 *
 	 * @access  public
-	 * @param array|null $result Existing result set (null to do new search)
 	 * @return  string           XML document
 	 */
-	public function buildRSS($result = null){
-		global $configArray;
+	public function buildRSS(){
 		// XML HTTP header
 		header('Content-type: text/xml', true);
 
-		// First, get the search results if none were provided
-		// (we'll go for 50 at a time)
-		if (is_null($result)){
-			$this->limit = 50;
-			$result      = $this->processSearch(false, false);
-		}
+		$this->limit  = 50;
+		self::$fields = 'id,recordtype,title_display,author_display,display_description,date_added';  // format_category_' . $solrScope is added automatically
+		$result       = $this->processSearch(false, false);
 
-		$baseUrl = $configArray['Site']['url'];
+		global $library;
+		global $configArray;
+		$baseUrl  = empty($library->catalogUrl) ? $configArray['Site']['url'] : $_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl;
+
 
 		foreach ($result['response']['docs'] as &$currentDoc){
 			//Since the base URL can be different depending on the record type, add the url to the response
@@ -1978,15 +1987,16 @@ class SearchObject_Solr extends SearchObject_Base {
 					break;
 				case 'grouped_work' :
 				default :
-					$id                      = $currentDoc['id'];
+					$id = $currentDoc['id'];
 					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 					$groupedWorkDriver = new GroupedWorkDriver($currentDoc);
 					if ($groupedWorkDriver->isValid){
-						$image                         = $groupedWorkDriver->getBookcoverUrl('medium');
+						$image                         = $groupedWorkDriver->getBookcoverUrl('medium', true);
 						$description                   = "<img src='$image'/> " . $groupedWorkDriver->getDescriptionFast();
 						$currentDoc['rss_description'] = $description;
+						$currentDoc['rss_date']        = date('r', strtotime($currentDoc['date_added']));
 						$currentDoc['recordUrl']       = $groupedWorkDriver->getAbsoluteUrl();
-					} else{
+					}else{
 						$currentDoc['recordUrl'] = $baseUrl . '/GroupedWork/' . $id;
 					}
 			}
@@ -1994,17 +2004,11 @@ class SearchObject_Solr extends SearchObject_Base {
 		}
 
 		global $interface;
-
-		// On-screen display value for our search
-		if ($this->searchType == 'reserves') {
-			$lookFor = translate('Course Reserves');
-		} else {
-			$lookFor = $this->displayQuery();
-		}
-		if (count($this->filterList) > 0) {
+		$lookFor = $this->displayQuery();
+		if (count($this->filterList) > 0){
 			// TODO : better display of filters
 			$interface->assign('lookfor', $lookFor . " (" . translate('with filters') . ")");
-		} else {
+		}else{
 			$interface->assign('lookfor', $lookFor);
 		}
 		// The full url to recreate this search
@@ -2306,7 +2310,7 @@ class SearchObject_Solr extends SearchObject_Base {
 									$interface->assign('nextType', 'GroupedWork');
 									$interface->assign('nextId', $nextRecord['id']);
 								}
-							}elseif ($previousRecord['recordtype'] == 'list'){
+							}elseif ($nextRecord['recordtype'] == 'list'){
 								$interface->assign('nextType', 'MyAccount/MyList');
 								$interface->assign('nextId', str_replace('list', '', $nextRecord['id']));
 							}

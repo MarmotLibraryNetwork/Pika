@@ -28,9 +28,9 @@ import java.util.regex.Pattern;
  * Time: 12:05 AM
  */
 public class RecordInfo {
-	private String source;
-	private String subSource;
-	private String recordIdentifier;
+	private final String source;           // indexing profile sourceName
+	private final String recordIdentifier; // record number for this record
+	private       String subSource;        // eContent source when this record is an ILS eContent record
 
 	//Formats exist at both the item and record level because
 	//Various systems define them in both ways.
@@ -65,7 +65,7 @@ public class RecordInfo {
 	}
 
 	/**
-	 * When dealing with the econtent in the ils, the source is set to
+	 * When dealing with the eContent in the ils, the source is set to
 	 * external_econtent; and then the subSource will be set as the sourceName
 	 * from the indexing profile.
 	 *

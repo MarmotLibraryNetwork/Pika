@@ -206,7 +206,7 @@ abstract class Archive_Object extends Action {
 
 		$this->recordDriver->loadRelatedEntities();
 
-		$addressInfo         = array();
+		$addressInfo         = [];
 		$latitude            = $this->recordDriver->getModsValue('latitude', 'marmot');
 		$longitude           = $this->recordDriver->getModsValue('longitude', 'marmot');
 		$addressStreetNumber = $this->recordDriver->getModsValue('addressStreetNumber', 'marmot');
@@ -218,6 +218,7 @@ abstract class Archive_Object extends Action {
 		$addressZipCode      = $this->recordDriver->getModsValue('addressZipCode', 'marmot');
 		$addressCountry      = $this->recordDriver->getModsValue('addressCountry', 'marmot');
 		$addressOtherRegion  = $this->recordDriver->getModsValue('addressOtherRegion', 'marmot');
+		$addressOtherRegion  = FedoraUtils::cleanValues(is_array($addressOtherRegion) ? $addressOtherRegion : [$addressOtherRegion]);
 		if (strlen($latitude) ||
 				strlen($longitude) ||
 				strlen($addressStreetNumber) ||
@@ -227,7 +228,7 @@ abstract class Archive_Object extends Action {
 				strlen($addressCounty) ||
 				strlen($addressState) ||
 				strlen($addressZipCode) ||
-				strlen($addressOtherRegion)
+				!empty($addressOtherRegion)
 		) {
 
 			if (strlen($latitude) > 0) {
@@ -268,7 +269,7 @@ abstract class Archive_Object extends Action {
 			if (strlen($addressCountry) > 0) {
 				$addressInfo['addressCountry'] = $addressCountry;
 			}
-			if (strlen($addressOtherRegion) > 0) {
+			if (!empty($addressOtherRegion)) {
 				$addressInfo['addressOtherRegion'] = $addressOtherRegion;
 			}
 			$interface->assign('addressInfo', $addressInfo);

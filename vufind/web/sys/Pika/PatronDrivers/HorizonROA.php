@@ -80,7 +80,6 @@ abstract class HorizonROA implements \DriverInterface {
 		return [$lastName, $firstName];
 	}
 
-
 	public function getWebServiceURL(){
 		if (empty($this->webServiceURL)){
 			$webServiceURL = null;
@@ -175,7 +174,7 @@ abstract class HorizonROA implements \DriverInterface {
 			$session           = [false, false, false];
 			$loginUserUrl      =  '/user/patron/login';
 			$params            = [
-				'barcode'    => $barcode,
+				'barcode'  => $barcode,
 				'password' => $password,
 			];
 			$loginUserResponse = $this->getWebServiceResponse($loginUserUrl, $params);
@@ -210,7 +209,6 @@ abstract class HorizonROA implements \DriverInterface {
 			return $sessionToken;
 		}
 	}
-
 
 	/**
 	 * @param $barcode
@@ -262,9 +260,9 @@ abstract class HorizonROA implements \DriverInterface {
 			$acountInfoLookupURL =  '/v1/user/patron/key/' . $horizonRoaUserID
 			. '?includeFields=displayName,privilegeExpiresDate,primaryAddress,primaryPhone,library,patronType'
 			. ',holdRecordList,circRecordList,blockList'
-			. ",estimatedOverdueAmount"
+			. ",estimatedOverdueAmount";
 			// Note that {*} notation doesn't work for Horizon ROA yet
-		;
+
 			//TODO: see what default fields is now
 
 			// phoneList is for texting notification preferences
@@ -292,7 +290,13 @@ abstract class HorizonROA implements \DriverInterface {
 				}
 				$user->fullname     = $fullName ?? '';
 				$user->barcode      = $barcode;
-				
+				// update password if not a match
+				if($password != $user->getPassword()) {
+					$user->updatePassword($password);
+				} else{
+					$user->setPassword($password);
+				}
+
 				$Address1    = "";
 				$City        = "";
 				$State       = "";
@@ -1330,7 +1334,7 @@ abstract class HorizonROA implements \DriverInterface {
 			if (!empty($userID)){
 				// Apparently pin resetting does not require a version number in the operation url
 				$resetPinAPICall = '/user/patron/resetMyPin';
-				$pikaUrl         = $patron->getHomeLibrary()->catalogUrl;
+				$pikaUrl         = $_SERVER['REQUEST_SCHEME'] . '://' . $patron->getHomeLibrary()->catalogUrl;
 				$jsonPOST        = [
 					'barcode'     => $barcode,
 					'resetPinUrl' => $pikaUrl . '/MyAccount/ResetPin?resetToken=<RESET_PIN_TOKEN>&uid=' . $userID

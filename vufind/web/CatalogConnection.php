@@ -205,20 +205,7 @@ class CatalogConnection
 
 		if ($user && !PEAR_Singleton::isError($user)){
 			if ($user->displayName == '') {
-				if ($user->firstname == ''){
-					$user->displayName = $user->lastname;
-				}else{
-					// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
-					/** @var Library $homeLibrary */
-					$homeLibrary = $user->getHomeLibrary();
-					if ($homeLibrary == null || ($homeLibrary->patronNameDisplayStyle == 'firstinitial_lastname')){
-						// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
-						$user->displayName = substr($user->firstname, 0, 1) . '. ' . $user->lastname;
-					}elseif ($homeLibrary->patronNameDisplayStyle == 'lastinitial_firstname'){
-						$user->displayName = $user->firstname . ' ' . substr($user->lastname, 0, 1) . '.';
-					}
-				}
-				$user->update();
+				$user->setUserDisplayName();
 			}
 			if ($parentAccount) $user->setParentUser($parentAccount); // only set when the parent account is passed.
 		}

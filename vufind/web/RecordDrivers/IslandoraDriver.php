@@ -27,6 +27,7 @@
  */
 require_once ROOT_DIR . '/RecordDrivers/Interface.php';
 require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+
 abstract class IslandoraDriver extends RecordInterface {
 	protected $pid = null;
 	protected $title = null;
@@ -293,13 +294,12 @@ abstract class IslandoraDriver extends RecordInterface {
 	 * user's favorites list.
 	 *
 	 * @access  public
-	 * @param   object $user User object owning tag/note metadata.
 	 * @param   int $listId ID of list containing desired tags/notes (or
 	 *                              null to show tags/notes from all user's lists).
 	 * @param   bool $allowEdit Should we display edit controls?
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getListEntry($user, $listId = null, $allowEdit = true) {
+	public function getListEntry($listId = null, $allowEdit = true) {
 		global $interface;
 
 		$id = $this->getUniqueID();
@@ -355,12 +355,13 @@ abstract class IslandoraDriver extends RecordInterface {
 		if (isset($this->solrExplanation)){
 			$explain = explode(', result of:', $this->solrExplanation, 2);
 			// Break query from score explanation
-			$explain[1] = preg_replace('/weight\((.*):(.*)( in \d+\))/i', 'weight(<code>$1</code>:<strong>$2</strong>$3)', $explain[1]);
-			// highlight the solr fields and the search term of interest
-			$explain[1] = preg_replace('/computed as (.*) from:/i', 'computed as <var>$1</var> from:', $explain[1]);
-			// italicize the formula fragments
-			return $explain[0] . '<br> result of : <p>' . nl2br(str_replace(' ', '&nbsp;', $explain[1])) . '</p>';
-			// Put text back together, replace spaces with non-breaking space character, so the indentation of explaination lines display
+			if (isset($explain[1])){
+				$explain[1] = preg_replace('/weight\((.*):(.*)( in \d+\))/i', 'weight(<code>$1</code>:<strong>$2</strong>$3)', $explain[1]);// highlight the solr fields and the search term of interest
+				$explain[1] = preg_replace('/computed as (.*) from:/i', 'computed as <var>$1</var> from:', $explain[1]);                    // italicize the formula fragments
+				return $explain[0] . '<br> result of : <p>' . nl2br(str_replace(' ', '&nbsp;', $explain[1])) . '</p>';                      // Put text back together, replace spaces with non-breaking space character, so the indentation of explaination lines display
+			}else{
+				return $this->solrExplanation;
+			}
 		}
 		return '';
 	}
@@ -569,9 +570,8 @@ abstract class IslandoraDriver extends RecordInterface {
 		$moreDetailsOptions = [];
 
 		$description = html_entity_decode($this->getDescription());
-		$description = str_replace("\r\n", '<br>', $description);
-		$description = str_replace("&#xD;", '<br>', $description);
 		if (strlen($description)) {
+			$description = FedoraUtils::modsValuesLineEndings2br($description);
 			$interface->assignAppendToExisting('description', $description);
 			if ($this instanceof PersonDriver){
 				$moreDetailsOptions['bio'] = [
@@ -919,8 +919,10 @@ abstract class IslandoraDriver extends RecordInterface {
 
 	function getAbsoluteUrl(){
 		global $configArray;
+		global $library;
 		$recordId = $this->getUniqueID();
-		return $configArray['Site']['url'] . '/Archive/' . urlencode($recordId) . '/' . $this->getViewAction();
+		$baseUrl  = empty($library->catalogUrl) ? $configArray['Site']['url'] : $_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl;
+		return $baseUrl . '/Archive/' . urlencode($recordId) . '/' . $this->getViewAction();
 	}
 
 	public abstract function getViewAction();
@@ -1006,7 +1008,7 @@ abstract class IslandoraDriver extends RecordInterface {
 				$subjectPart = trim($subjectPart);
 				$subjectLink = '/Archive/Results?lookfor=';
 				if (!empty($subjectPart)){
-					$subjectLink               .= '&filter[]=mods_subject_topic_ms%3A' . urlencode('"' . (string)$subjectPart . '"');
+					$subjectLink               .= '&filter[]=mods_subject_topic_ms%3A' . urlencode('"' . str_replace('"', '\"', (string)$subjectPart) . '"');
 					$this->subjectsWithLinks[] = [
 						'link'  => $subjectLink,
 						'label' => (string)$subjectPart,
@@ -1522,24 +1524,26 @@ abstract class IslandoraDriver extends RecordInterface {
 				}
 			}
 
-			/** @var SearchObject_Solr $searchObject */
-			$searchObject = SearchObjectFactory::initSearchObject();
-			$searchObject->init();
-			$linkedWorkData = $searchObject->getRecords($relatedWorkIds);
-			foreach ($linkedWorkData as $workData) {
-				$workDriver = new GroupedWorkDriver($workData);
-				if ($workDriver->isValid) {
-					$this->relatedPikaRecords[] = [
-						'link'  => $workDriver->getLinkUrl(),
-						'label' => $workDriver->getTitle(),
-						'image' => $workDriver->getBookcoverUrl('medium'),
-						'id'    => $workId
-					];
-					//$this->links[$id]['hidden'] = true;
+			if (!empty($relatedWorkIds)){
+				/** @var SearchObject_Solr $searchObject */
+				$searchObject = SearchObjectFactory::initSearchObject();
+				$searchObject->init();
+				$linkedWorkData = $searchObject->getRecords($relatedWorkIds);
+				foreach ($linkedWorkData as $workData){
+					$workDriver = new GroupedWorkDriver($workData);
+					if ($workDriver->isValid){
+						$this->relatedPikaRecords[] = [
+							'link'  => $workDriver->getLinkUrl(),
+							'label' => $workDriver->getTitle(),
+							'image' => $workDriver->getBookcoverUrl('medium'),
+							'id'    => $workId
+						];
+						//$this->links[$id]['hidden'] = true;
+					}
 				}
+				$searchObject = null;
+				unset ($searchObject);
 			}
-			$searchObject = null;
-			unset ($searchObject);
 
 			//Look for links related to the collection(s) this object is linked to
 			$collections = $this->getRelatedCollections();
@@ -1901,7 +1905,7 @@ abstract class IslandoraDriver extends RecordInterface {
 	 * @return null|FedoraObject
 	 */
 	public function getParentObject(){
-		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
 
 		$parentIdArray = $this->getArchiveObject()->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOf');
@@ -1951,8 +1955,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			$transcriptionInfo = [];
 			foreach ($this->transcriptions as $transcription){
 				$transcriptionText = $this->getModsValue('transcriptionText', 'marmot', $transcription);
-				$transcriptionText = str_replace("\r\n", '<br>', $transcriptionText);
-				$transcriptionText = str_replace("&#xD;", '<br>', $transcriptionText);
+				$transcriptionText = FedoraUtils::modsValuesLineEndings2br($transcriptionText);
 
 				//Add links to timestamps
 				$transcriptionTextWithLinks = $transcriptionText;
@@ -2007,7 +2010,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 	private function loadCorrespondenceInfo() {
 		global $interface;
-		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
 
 		$correspondence = $this->getModsValue('correspondence', 'marmot');
@@ -2106,7 +2109,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 	private function loadAcademicResearchData() {
 		global $interface;
-		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
 
 		$academicResearchSection = $this->getModsValue('academicResearch', 'marmot');
@@ -2418,7 +2421,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 	private function loadDemographicInfo(){
 		global $interface;
-		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$hasDemographicInfo = false;
 		$demographicsDetails = $this->getModsValue('demographicInfo', 'marmot');
 		if (strlen($demographicsDetails) > 0) {
@@ -2439,7 +2442,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 	private function loadEducationInfo() {
 		global $interface;
-		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
 
 		$interface->assign('hasEducationInfo', false);
@@ -2618,7 +2621,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 	private function loadMilitaryServiceData() {
 		global $interface;
-		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
 
 		$hasMilitaryService = false;
@@ -2691,6 +2694,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			if (preg_match('~xmlns:mods="http://www.loc.gov/mods/v3"~', $tmpNote)) {
 				$noteValue = $this->getModsValue('note', 'mods', $tmpNote);
 				if (strlen($noteValue) > 0) {
+					$noteValue = FedoraUtils::modsValuesLineEndings2br($noteValue);
 					$notes[] = [
 						'label' => 'General Notes',
 						'body'  => $noteValue
@@ -2701,6 +2705,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 		$personNotes = $this->getModsValue('personNotes', 'marmot');
 		if (strlen($personNotes) > 0){
+			$personNotes = FedoraUtils::modsValuesLineEndings2br($personNotes);
 			$notes[] = [
 				'label' => 'Notes',
 				'body'  => $personNotes
@@ -2708,6 +2713,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 		$placeNotes = $this->getModsValue('placeNotes', 'marmot');
 		if (strlen($placeNotes) > 0){
+			$placeNotes = FedoraUtils::modsValuesLineEndings2br($placeNotes);
 			$notes[] = [
 				'label' => 'Notes',
 				'body'  => $placeNotes
@@ -2715,6 +2721,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 		$citationNotes = $this->getModsValue('citationNotes', 'marmot');
 		if (strlen($citationNotes) > 0){
+			$citationNotes = FedoraUtils::modsValuesLineEndings2br($citationNotes);
 			$notes[] = [
 				'label' => 'Citation Notes',
 				'body'  => $citationNotes
@@ -2722,6 +2729,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 		$organizationNotes = $this->getModsValue('organizationNotes', 'marmot');
 		if (strlen($organizationNotes) > 0){
+			$organizationNotes = FedoraUtils::modsValuesLineEndings2br($organizationNotes);
 			$notes[] = [
 				'label' => 'Notes',
 				'body'  => $organizationNotes
@@ -2878,13 +2886,12 @@ abstract class IslandoraDriver extends RecordInterface {
 
 	private function loadRightsStatements() {
 		global $interface;
-		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
 
 		$rightsStatements = $this->getModsValues('rightsStatement', 'marmot');
 		foreach ($rightsStatements as $id => $rightsStatement){
-			$rightsStatement = str_replace("\r\n", '<br>', $rightsStatement);
-			$rightsStatement = str_replace("&#xD;", '<br>', $rightsStatement);
+			$rightsStatement       = FedoraUtils::modsValuesLineEndings2br($rightsStatement);
 			$rightsStatements[$id] = $rightsStatement;
 		}
 
@@ -2976,7 +2983,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 			$grandKids = [];
 			foreach ($this->pidsOfChildContainers as $childPid){
-				require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//				require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 				$fedoraUtils = FedoraUtils::getInstance();
 				$exhibitObject = $fedoraUtils->getObject($childPid);
 				/** @var IslandoraDriver $exhibitDriver */
@@ -3091,7 +3098,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			}
 
 			if ($contributingLibrary){
-				require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//				require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 				$fedoraUtils = FedoraUtils::getInstance();
 
 				$contributingLibraryPid = $contributingLibrary->archivePid;
@@ -3112,7 +3119,7 @@ abstract class IslandoraDriver extends RecordInterface {
 					'sortIndex'   => 9,
 					'pid'         => $contributingLibraryPid,
 					'libraryName' => $libraryTitle,
-					'baseUrl'     => 'https://' . $contributingLibrary->catalogUrl,
+					'baseUrl'     => $_SERVER['REQUEST_SCHEME'] . '://' . $contributingLibrary->catalogUrl,
 				];
 			}else{
 				$this->contributingLibrary = null;
@@ -3195,12 +3202,11 @@ abstract class IslandoraDriver extends RecordInterface {
 
 	private function loadMusicInformation() {
 		global $interface;
-		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
 		$hasMusicInformation = false;
 		$musicSection = $this->getModsValue('music', 'marmot');
 		if ($musicSection){
-			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 			$musicGenreSections = $this->getModsValues('musicGenre', 'marmot', $musicSection);
 			$genres = [];
 			foreach ($musicGenreSections as $musicGenreSection){
@@ -3290,7 +3296,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		$hasArtInformation = false;
 		$artSection = $this->getModsValue('art', 'marmot');
 		if ($artSection){
-			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 			$fedoraUtils = FedoraUtils::getInstance();
 
 			$materialDescription = $this->getModsValue('materialDescription', 'marmot', $artSection);

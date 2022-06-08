@@ -331,7 +331,7 @@ class FedoraUtils {
 	}
 
 	public static function cleanValues($values){
-		$newValues = array();
+		$newValues = [];
 		foreach ($values as $value){
 			$newValue = FedoraUtils::cleanValue($value);
 			if (strlen($newValue) > 0){
@@ -344,6 +344,18 @@ class FedoraUtils {
 	public static function cleanValue($value){
 		return trim(strip_tags($value));
 	}
+
+	/**
+	 * Convert line ending characters to <br> tags for pretty html display
+	 *
+	 * @param string $modaValueString
+	 * @return array|string|string[]
+	 */
+	public static function modsValuesLineEndings2br(string $modaValueString){
+		$modaValueString = str_replace(["\r\n", '&#xD;'], '<br>', $modaValueString);
+		return $modaValueString;
+	}
+
 
 	/**
 	 * Return an array of pids that are part of a compound object.

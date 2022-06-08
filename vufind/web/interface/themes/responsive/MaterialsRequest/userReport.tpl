@@ -1,13 +1,14 @@
 	<div id="main-content" class="col-md-12">
 		<h3>Materials Request Requests by User Report</h3>
 		{if $error}
-			<div class="error">{$error}</div>
-		{else}
+			<div class="alert alert-danger">{$error}</div>
+		{/if}
 			<div id="materialsRequestFilters">
 				<legend>Filters</legend>
 
 				<form action="/MaterialsRequest/UserReport" method="get">
 					<fieldset class="fieldset-collapsible">
+{*					<fieldset class="fieldset-collapsible{if !empty($statusFilter)} fieldset-init-open{/if}">*}
 						<legend>Statuses to Show:</legend>
 						<div class="form-group checkbox">
 							<label for="selectAllStatusFilter">
@@ -15,19 +16,70 @@
 								<strong>Select All</strong>
 							</label>
 						</div>
-						{foreach from=$availableStatuses item=statusLabel key=status}
-							<div class="checkbox">
-								<label>
-									<input type="checkbox" name="statusFilter[]" value="{$status}" {if in_array($status, $statusFilter)}checked="checked"{/if} class="statusFilter">{$statusLabel}
-								</label>
-							</div>
-						{/foreach}
-						<div><input type="submit" name="submit" value="Update Filters" class="btn btn-default"></div>
+						<div class="form-group"><strong>Default Status</strong>
+								{foreach from=$defaultStatuses item=statusLabel key=status}
+									<div class="checkbox">
+										<label>
+											<input type="checkbox" name="statusFilter[]" value="{$status}" {if in_array($status, $statusFilter)}checked="checked"{/if} class="statusFilter">{$statusLabel}
+										</label>
+									</div>
+								{/foreach}
+						</div>
+						<div class="form-group"><strong>Open Statuses</strong>
+								{foreach from=$openStatuses item=statusLabel key=status}
+									<div class="checkbox">
+										<label>
+											<input type="checkbox" name="statusFilter[]" value="{$status}" {if in_array($status, $statusFilter)}checked="checked"{/if} class="statusFilter">{$statusLabel}
+										</label>
+									</div>
+								{/foreach}
+						</div>
+						<div class="form-group"><strong>Closed Statuses</strong>
+								{foreach from=$closedStatuses item=statusLabel key=status}
+									<div class="checkbox">
+										<label>
+											<input type="checkbox" name="statusFilter[]" value="{$status}" {if in_array($status, $statusFilter)}checked="checked"{/if} class="statusFilter">{$statusLabel}
+										</label>
+									</div>
+								{/foreach}
+						</div>
 					</fieldset>
+					<fieldset class="form-group fieldset-collapsible{if ($startDate || $endDate)} fieldset-init-open{/if}">
+						<legend>Date:</legend>
+						<div class="form-group">
+							<label for="startDate" class="control-label col-sm-2">Start Date</label>
+							<div class="input-group input-append date controls col-sm-3" id="startDatePicker">
+								<input type="text" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%m/%d/%Y'}"
+											 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
+											 class="form-control" >
+								<span class="input-group-addon">
+											<span class="glyphicon glyphicon-calendar"
+														onclick="$('#startDate').focus().datepicker('show')"
+														aria-hidden="true">
+											</span>
+										</span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="endDate" class="control-label col-sm-2">End Date</label>
+							<div class="input-group input-append date controls col-sm-3" id="endDatePicker">
+								<input type="text" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%m/%d/%Y'}"
+											 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
+											 class="form-control">
+								<span class="input-group-addon">
+											<span class="glyphicon glyphicon-calendar"
+														onclick="$('#endDate').focus().datepicker('show')"
+														aria-hidden="true">
+											</span>
+										</span>
+							</div>
+						</div>
+					</fieldset>
+					<div><input type="submit" name="submit" value="Update Filters" class="btn btn-default"></div>
 				</form>
 			</div>
 
-
+		{if !empty($statuses)}
 			<legend>Table</legend>
 
 			{* Display results in table*}
@@ -55,18 +107,17 @@
 					{/foreach}
 				</tbody>
 			</table>
-		{/if}
 
+			{* Export to Excel option *}
 		<form action="{$fullPath}" method="get">
 			<input type="submit" id="exportToExcel" name="exportToExcel" value="Export to Excel" class="btn btn-default">
-			{foreach from=$availableStatuses item=statusLabel key=status}
-				{if in_array($status, $statusFilter)}
+				{foreach from=$statusFilter item=status}
 					<input type="hidden" name="statusFilter[]" value="{$status}">
-				{/if}
-			{/foreach}
+				{/foreach}
 		</form>
 
-		{* Export to Excel option *}
+		{/if}
+
 	</div>
 
 <script type="text/javascript">
@@ -74,10 +125,6 @@
 	$("#startDate").datepicker();
 	$("#endDate").datepicker();
 
-{/literal}
-</script>
-<script type="text/javascript">
-	{literal}
 	$(document).ready(function(){
 		$('#summaryTable').DataTable({
 			"order": [[0, "asc"]],

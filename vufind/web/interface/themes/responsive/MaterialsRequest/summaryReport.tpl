@@ -7,24 +7,67 @@
 
 <legend>Filters</legend>
 
-						<form action="/MaterialsRequest/SummaryReport" method="get" class="form-inline">
-							<div class="form-group">
-								<label for="period" class="control-label">Period</label>
-								<select name="period" id="period" onchange="$('#startDate').val('');$('#endDate').val('');">
-									<option value="day" {if $period == 'day'}selected="selected"{/if}>Day</option>
-									<option value="week" {if $period == 'week'}selected="selected"{/if}>Week</option>
-									<option value="month" {if $period == 'month'}selected="selected"{/if}>Month</option>
-									<option value="year" {if $period == 'year'}selected="selected"{/if}>Year</option>
-								</select>
+						<form action="/MaterialsRequest/SummaryReport" method="get">
+							<fieldset class="fieldset-collapsible form-horizontal">
+{*					<fieldset class="fieldset-collapsible{if !empty($statusFilter)} fieldset-init-open{/if}">*}
+								<legend>Statuses to Show:</legend>
+								<div class="form-group checkbox">
+									<label for="selectAllStatusFilter">
+										<input type="checkbox" name="selectAllStatusFilter" id="selectAllStatusFilter" onclick="Pika.toggleCheckboxes('.statusFilter', '#selectAllStatusFilter');">
+										<strong>Select All</strong>
+									</label>
+								</div>
+								<div class="form-group"><strong>Default Status</strong>
+                    {foreach from=$defaultStatuses item=statusLabel key=status}
+											<div class="checkbox">
+												<label>
+													<input type="checkbox" name="statusFilter[]" value="{$status}" {if in_array($status, $statusFilter)}checked="checked"{/if} class="statusFilter">{$statusLabel}
+												</label>
+											</div>
+                    {/foreach}
+								</div>
+								<div class="form-group"><strong>Open Statuses</strong>
+                    {foreach from=$openStatuses item=statusLabel key=status}
+											<div class="checkbox">
+												<label>
+													<input type="checkbox" name="statusFilter[]" value="{$status}" {if in_array($status, $statusFilter)}checked="checked"{/if} class="statusFilter">{$statusLabel}
+												</label>
+											</div>
+                    {/foreach}
+								</div>
+								<div class="form-group"><strong>Closed Statuses</strong>
+                    {foreach from=$closedStatuses item=statusLabel key=status}
+											<div class="checkbox">
+												<label>
+													<input type="checkbox" name="statusFilter[]" value="{$status}" {if in_array($status, $statusFilter)}checked="checked"{/if} class="statusFilter">{$statusLabel}
+												</label>
+											</div>
+                    {/foreach}
+								</div>
+							</fieldset>
+							<fieldset>
+							<legend>Reporting Range</legend>
+								<div class="form-group">
+									<label for="period" class="control-label">Period</label>
+									<select name="period" id="period"{* onchange="$('#startDate').val('');$('#endDate').val('');"*} class="form-control">
+										<option value="day" {if $period == 'day'}selected="selected"{/if}>Day</option>
+										<option value="week" {if $period == 'week'}selected="selected"{/if}>Week</option>
+										<option value="month" {if $period == 'month'}selected="selected"{/if}>Month</option>
+										<option value="year" {if $period == 'year'}selected="selected"{/if}>Year</option>
+									</select>
+								</div>
+								<div class="form-group">
+									<label for="startDate" class="control-label"> From</label>
+									<input type="text" id="startDate" name="startDate" value="{$startDate}" size="8" class="form-control">
+								</div>
+								<div class="form-group">
+									<label for="endDate" class="control-label">To</label>
+									<input type="text" id="endDate" name="endDate" value="{$endDate}" size="8" class="form-control">
 							</div>
-							<div class="form-group">
-								Date:
-									<label for="startDate"> From</label> <input type="text" id="startDate" name="startDate" value="{$startDate}" size="8">
-									<label for="endDate">To</label> <input type="text" id="endDate" name="endDate" value="{$endDate}" size="8">
-							</div>
-							<div class="form-group">
-								<input type="submit" name="submit" value="Update Filters" class="btn btn-default">
-							</div>
+							</fieldset>
+						<div class="form-group">
+							<input type="submit" name="submit" value="Update Filters" class="btn btn-primary">
+						</div>
 						</form>
 
 <br>
@@ -36,7 +79,7 @@
 				<legend>Chart</legend>
 
 				<div id="chart">
-				<img src="{$chartPath}">
+				<img src="{$chartPath}" alt="Summary Report Chart">
 				</div>
 
 				<br>
@@ -81,6 +124,9 @@
 			<input type="hidden" name="period" value="{$period}">
 			<input type="hidden" name="startDate" value="{$startDate}">
 			<input type="hidden" name="endDate" value="{$endDate}">
+			{foreach from=$statusFilter item=status}
+				<input type="hidden" name="statusFilter[]" value="{$status}">
+			{/foreach}
 			<input type="submit" id="exportToExcel" name="exportToExcel" value="Export to Excel"  class="btn btn-default">
 		</form>
 

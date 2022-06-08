@@ -1,11 +1,13 @@
 {strip}
-    {include file="Search/bookbag.tpl"}
+		{include file="Search/bookbag.tpl"}
 <div>
 	<h2>{$authorName}</h2>
 	<div class="row">
 		<div id="wikipedia_placeholder" class="col-xs-12">
 		</div>
 	</div>
+
+	<div id="name-variations-placeholder"></div>
 
 	{if $topRecommendations}
 		{foreach from=$topRecommendations item="recommendations"}
@@ -27,11 +29,9 @@
 		<span>
 			 &nbsp;{translate text='query time'}: {$qtime}s
 		</span>
-		{if $replacementTerm}
-			<div id="replacement-search-info">
-				<span class="replacement-search-info-text">Showing Results for </span>{$replacementTerm}<span class="replacement-search-info-text">.  Search instead for <span class="replacement-search-info-text"><a href="{$oldSearchUrl}">{$oldTerm}</a>
-			</div>
-		{/if}
+
+		{* Search Replacement Term notice *}
+		{include file="Search/search-replacementTerm-notice.tpl"}
 
 		{if $spellingSuggestions}
 			<br><br><div class="correction"><strong>{translate text='spell_suggest'}</strong>:<br>
@@ -41,10 +41,11 @@
 		</div>
 		{/if}
 
-      {* Search Debugging *}
-      {include file="Search/search-debug.tpl"}
+		{* Search Debugging *}
+		{include file="Search/search-debug.tpl"}
 
-      {* User's viewing mode toggle switch *}
+
+		{* User's viewing mode toggle switch *}
 		{include file="Search/results-displayMode-toggle.tpl"}
 
 		<div class="clearer"></div>
@@ -65,7 +66,7 @@
 		{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
 	{/if}
 
-    {include file="Search/searchTools.tpl" showAdminTools=true}
+		{include file="Search/searchTools.tpl" showAdminTools=true}
 </div>
 {/strip}
 
@@ -73,8 +74,12 @@
 	<script type="text/javascript">
 		$(document).ready(function (){ldelim}
 		{if $showWikipedia}
-			Pika.Wikipedia.getWikipediaArticle('{$wikipediaAuthorName}');
+			Pika.Wikipedia.getWikipediaArticle('{$wikipediaAuthorName|escape:'javascript'}');
 		{/if}
+			var url = '/Author/AJAX?method=nameVariations&author="' + {$lookfor} + '"';
+			$.getJSON(url, function(data){ldelim}
+							if (data.success) $("#name-variations-placeholder").html(data.body).fadeIn();
+			{rdelim});
 
 			{*{include file="Search/results-displayMode-js.tpl"}*}
 			{if !$onInternalIP}
@@ -96,16 +101,16 @@
 
 			$('.checkbox-results').change(function(){ldelim}
 			Pika.GroupedWork.showBookbag(this);
-        {rdelim});
+				{rdelim});
 			$('.bookbag').click(function(){ldelim}
 			Pika.GroupedWork.openBookbag(this);
-        {rdelim});
+				{rdelim});
 			$('body').on('click', 'span.remove', function(){ldelim}
 			var checkedId = this.id.replace(/remove_/g, 'select_');
 			if($("#"  + checkedId +":checked")){ldelim}
 			$("#"+ checkedId).prop("checked", false);
 			Pika.GroupedWork.showBookbag(this);
-        {rdelim};
-        {rdelim});
+				{rdelim};
+				{rdelim});
 
 	</script>

@@ -89,8 +89,8 @@ class DataObjectUtil {
 
 		//Do the validation
 		foreach ($structure as $property){
-			$value = $_REQUEST[$property['property']] ?? null;
 			if (isset($property['required']) && $property['required'] == true){
+				$value = $_REQUEST[$property['property']] ?? null;
 				if ($value == null || strlen($value) == 0){
 					$validationResults['errors'][] = $property['property'] . ' is required.';
 				}
@@ -102,6 +102,28 @@ class DataObjectUtil {
 				if ($propValidation['validatedOk'] == false){
 					$validationResults['errors'] = array_merge($validationResults['errors'], $propValidation['errors']);
 				}
+			}
+			if ($property['type'] == 'partialDate'){
+				$dayField   = $property['propNameDay'];
+				$monthField = $property['propNameMonth'];
+				$yearField  = $property['propNameYear'];
+				if (!empty($object->$dayField) && $object->$dayField > 31){
+					$validationResults['errors'][] = $property['label'] . ' - Invalid day of month : ' . $object->$dayField;
+				}
+				if (!empty($object->$monthField) && $object->$monthField > 12){
+					$validationResults['errors'][] = $property['label'] . ' - Invalid month : ' .$object->$monthField;
+				}
+				if (!empty($object->$yearField)){
+					if (strlen($object->$yearField) != 4){
+						$validationResults['errors'][] = $property['label'] . ' - Please provide a four-digit year : ' . $object->$yearField;
+					}elseif ($object->$yearField > date("Y")){
+							$validationResults['errors'][] = $property['label'] . ' - Invalid year (in future) : '. $object->$yearField;
+					}elseif (!empty($object->$dayField) && !empty($object->$monthField)
+						&& !checkdate($object->$monthField, $object->$dayField, $object->$yearField)){
+						$validationResults['errors'][] = $property['label'] . " - Not a valid date: {$object->$monthField}-{$object->$dayField}-{$object->$yearField}";
+					}
+				}
+
 			}
 		}
 
@@ -121,6 +143,9 @@ class DataObjectUtil {
 	static function processProperty($object, $property){
 		global $logger;
 		$propertyName = $property['property'];
+		if (isset($property['changeRequiresReindexing']) && $property['type'] != 'oneToMany'){
+			$valueBefore = $object->$propertyName;
+		}
 		switch ($property['type']){
 			case 'section':
 				foreach ($property['properties'] as $subProperty){
@@ -134,7 +159,8 @@ class DataObjectUtil {
 			case 'email':
 			case 'multiemail':
 				if (isset($_REQUEST[$propertyName])){
-					$object->$propertyName = strip_tags(trim($_REQUEST[$propertyName]));
+					$str             = strip_tags(trim($_REQUEST[$propertyName]));
+					$object->$propertyName = $str;
 				}
 				break;
 			case 'textarea':
@@ -178,7 +204,7 @@ class DataObjectUtil {
 				$object->$propertyName = (isset($_REQUEST[$propertyName]) && is_array($_REQUEST[$propertyName])) ? $_REQUEST[$propertyName] : [];
 				break;
 			case 'date':
-				if (strlen($_REQUEST[$propertyName]) == 0 || $_REQUEST[$propertyName] == '0000-00-00'){
+				if (empty($_REQUEST[$propertyName]) || $_REQUEST[$propertyName] == '0000-00-00'){
 					$object->$propertyName = null;
 				}else{
 					$dateParts             = date_parse($_REQUEST[$propertyName]);
@@ -188,12 +214,27 @@ class DataObjectUtil {
 
 				break;
 			case 'partialDate':
-				$dayField            = $property['propNameDay'];
-				$object->$dayField   = $_REQUEST[$dayField];
-				$monthField          = $property['propNameMonth'];
-				$object->$monthField = $_REQUEST[$monthField];
-				$yearField           = $property['propNameYear'];
-				$object->$yearField  = $_REQUEST[$yearField];
+				$dayField   = $property['propNameDay'];
+				$monthField = $property['propNameMonth'];
+				$yearField  = $property['propNameYear'];
+				if (!empty($_REQUEST[$dayField])){
+					$object->$dayField = $_REQUEST[$dayField];
+				}
+				if (!empty($_REQUEST[$monthField])){
+					$object->$monthField = $_REQUEST[$monthField];
+				}
+				if (!empty($_REQUEST[$yearField])){
+					$object->$yearField = $_REQUEST[$yearField];
+				}
+
+				// Set the actual corresponding dateField when the date is complete
+				if (!empty($object->$yearField) && !empty($object->$monthField) && !empty($object->$dayField)){
+					$object->$propertyName = $object->$yearField . '-' . $object->$monthField. '-' . $object->$dayField;
+				} else {
+					// Ensure it is empty when the date Parts are incomplete
+					// (for the case when all the date parts were present previously, but a part was removed. eg. it was incorrect)
+					$object->$propertyName = null;
+				}
 
 				break;
 			case 'image':
@@ -214,20 +255,18 @@ class DataObjectUtil {
 						//Filename is the name of the object + the original filename
 						global $configArray;
 						$destFileName = $propertyName . $_FILES[$propertyName]['name'];
-						if($property['customName'])
-                        {
-                            $destFileName = $_FILES[$propertyName]['name'];
-                            $extension = pathinfo($destFileName, PATHINFO_EXTENSION);
-                            if(isset($_REQUEST['fileName']) && $_REQUEST['fileName'] != ""){
-                                $customFileName = $_REQUEST['fileName'];
-                                if(strpos($customFileName, $extension) !== false)
-                                {
-                                    $destFileName = $customFileName;
-                                }else {
-                                    $destFileName = $customFileName . "." . $extension;
-                                }
-                            }
-                        }
+						if($property['customName']){
+							$destFileName = $_FILES[$propertyName]['name'];
+							$extension    = pathinfo($destFileName, PATHINFO_EXTENSION);
+							if (isset($_REQUEST['fileName']) && $_REQUEST['fileName'] != ""){
+								$customFileName = $_REQUEST['fileName'];
+								if (strpos($customFileName, $extension) !== false){
+									$destFileName = $customFileName;
+								}else{
+									$destFileName = $customFileName . '.' . $extension;
+								}
+							}
+						}
 						$destFolder   = $property['storagePath'] ?? $configArray['Site']['local'] . '/files';
 						$destFullPath = $destFolder . '/original/' . $destFileName;
 						$pathToThumbs = $destFolder . '/thumbnail';
@@ -343,14 +382,20 @@ class DataObjectUtil {
 						$deleted = $deletions[$id] ?? false;
 						if ($deleted == 'true'){
 							$subObject->deleteOnSave = true;
+							if (isset($property['changeRequiresReindexing'])){
+								$object->changeRequiresReindexing = time();
+							}
 						}else{
 							//Update properties of each associated object
 							foreach ($subStructure as $subProperty){
 								$requestKey      = $propertyName . '_' . $subProperty['property'];
 								$subPropertyName = $subProperty['property'];
-								if (in_array($subProperty['type'], array('text', 'enum', 'integer', 'numeric', 'number', 'textarea', 'html', 'multiSelect'))){
+								if (isset($property['changeRequiresReindexing'])){
+									$valueBefore = $existingValues[$id]->$subPropertyName;
+								}
+								if (in_array($subProperty['type'], ['text', 'enum', 'integer', 'numeric', 'number', 'textarea', 'html', 'multiSelect'])){
 									$subObject->$subPropertyName = $_REQUEST[$requestKey][$id];
-								}elseif (in_array($subProperty['type'], array('checkbox'))){
+								}elseif (in_array($subProperty['type'], ['checkbox'])){
 									$subObject->$subPropertyName = isset($_REQUEST[$requestKey][$id]) ? 1 : 0;
 								}elseif ($subProperty['type'] == 'date'){
 									if (strlen($_REQUEST[$requestKey][$id]) == 0 || $_REQUEST[$requestKey][$id] == '0000-00-00'){
@@ -360,8 +405,11 @@ class DataObjectUtil {
 										$time                        = $dateParts['year'] . '-' . $dateParts['month'] . '-' . $dateParts['day'];
 										$subObject->$subPropertyName = $time;
 									}
-								}elseif (!in_array($subProperty['type'], array('label', 'foreignKey', 'oneToMany'))){
+								}elseif (!in_array($subProperty['type'], ['label', 'foreignKey', 'oneToMany'])){
 									//echo("Invalid Property Type " . $subProperty['type']);
+								}
+								if (isset($property['changeRequiresReindexing']) && $subObject->$subPropertyName != $valueBefore){
+									$object->changeRequiresReindexing = time();
 								}
 							}
 						}
@@ -377,6 +425,10 @@ class DataObjectUtil {
 				$object->$propertyName = $values;
 				break;
 		}
+		if ((isset($property['changeRequiresReindexing']) && $property['type'] != 'oneToMany') && $object->$propertyName != $valueBefore){
+			$object->changeRequiresReindexing = time();
+		}
+
 	}
 
 }

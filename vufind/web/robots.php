@@ -31,7 +31,7 @@ global $configArray;
 global $library;
 if ($configArray['Site']['isProduction']){
 	echo @file_get_contents('robots.txt');
-	$url = !empty($library->catalogUrl) ? $library->catalogUrl : $configArray['Site']['ur'];
+	$url  = empty($library->catalogUrl) ? $configArray['Site']['url'] : $_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl;
 
 	if (!empty($library->subdomain)){
 		$subdomain = $library->subdomain;

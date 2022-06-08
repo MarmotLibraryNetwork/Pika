@@ -125,7 +125,7 @@ public class HooplaInclusionRule {
 				logger.debug("Excluding due to parental advisory for library " + this.libraryId + " or location " + this.locationId + " hoolpa id# " + hooplaExtractInfo.getTitleId() + " - " + hooplaExtractInfo.getTitle());
 			}
 		} else if (logger.isDebugEnabled()) {
-			logger.debug("Excluding due to price  for library " + this.libraryId + " or location " + this.locationId + " hoolpa id# " + hooplaExtractInfo.getTitleId() + " - " + hooplaExtractInfo.getTitle());
+			logger.debug("Excluding due to price for library " + this.libraryId + " or location " + this.locationId + " hoolpa id# " + hooplaExtractInfo.getTitleId() + " - " + hooplaExtractInfo.getTitle());
 		}
 		return true; // Otherwise, exclude the title.
 	}

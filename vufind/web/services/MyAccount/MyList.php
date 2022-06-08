@@ -76,15 +76,6 @@ class MyAccount_MyList extends MyAccount {
 			if (UserAccount::isLoggedIn()){
 				$listUser    = UserAccount::getActiveUserObj();
 				$userCanEdit = $listUser->canEditList($list);
-
-			}elseif ($list->user_id != 0){
-				$listUser     = new User();
-				$listUser->id = $list->user_id;
-				if (!$listUser->find(true)){
-					$listUser = false;
-				}
-			}else{
-				$listUser = false;
 			}
 
 
@@ -118,7 +109,7 @@ class MyAccount_MyList extends MyAccount {
 						case 'deleteMarked':
 							//get a list of all titles that were selected
 							if (isset($_REQUEST['myListActionData'])){
-								$itemsToRemove = explode(",", $_REQUEST['myListActionData']);
+								$itemsToRemove = explode(',', $_REQUEST['myListActionData']);
 								foreach ($itemsToRemove as $id){
 									//add back the leading . to get the full bib record
 									$list->removeListEntry($id);
@@ -182,7 +173,7 @@ class MyAccount_MyList extends MyAccount {
 			// Create a handler for displaying favorites and use it to assign
 			// appropriate template variables:
 			$interface->assign('allowEdit', $userCanEdit);
-			$favList = new FavoriteHandler($list, $listUser, $userCanEdit);
+			$favList = new FavoriteHandler($list, $userCanEdit);
 			$favList->buildListForDisplay();
 		}
 		$this->display('../MyAccount/list.tpl', $list->title ?? 'My List');
@@ -270,16 +261,8 @@ class MyAccount_MyList extends MyAccount {
 		if (UserAccount::isLoggedIn() && (UserAccount::getActiveUserId() == $list->user_id)){
 			$listUser    = UserAccount::getActiveUserObj();
 			$userCanEdit = $listUser->canEditList($list);
-		}elseif ($list->user_id != 0){
-			$listUser     = new User();
-			$listUser->id = $list->user_id;
-			if (!$listUser->find(true)){
-				$listUser = false;
-			}
-		}else{
-			$listUser = false;
 		}
-		$favList   = new FavoriteHandler($list, $listUser, $userCanEdit);
+		$favList   = new FavoriteHandler($list, $userCanEdit);
 		$favorites = $favList->getTitles($list->id);
 
 
@@ -288,7 +271,9 @@ class MyAccount_MyList extends MyAccount {
 		$objPHPExcel = new PHPExcel();
 
 		// Set properties
-		$objPHPExcel->getProperties()->setCreator("DCL")
+		$gitBranch = $interface->getVariable('gitBranch');
+		$objPHPExcel->getProperties()->setCreator('Pika ' . $gitBranch)
+			->setLastModifiedBy('Pika ' . $gitBranch)
 			->setLastModifiedBy("DCL")
 			->setTitle("Office 2007 XLSX Document")
 			->setSubject("Office 2007 XLSX Document")

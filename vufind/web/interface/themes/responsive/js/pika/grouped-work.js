@@ -155,10 +155,10 @@ Pika.GroupedWork = (function(){
 						if (Pika.GroupedWork.hasTableOfContentsInRecord){
 							$("#tableofcontentstab_label,#tableOfContentsPlaceholder,#tableOfContentsPanel").show();
 						}
-						var relatedContentData = data.relatedContent;
-						if (relatedContentData && relatedContentData.length > 0) {
-							$("#relatedContentPlaceholder").html(relatedContentData);
-						}
+						// var relatedContentData = data.relatedContent;
+						// if (relatedContentData && relatedContentData.length > 0) {
+						// 	$("#relatedContentPlaceholder").html(relatedContentData);
+						// }
 						var similarTitlesNovelist = data.similarTitlesNovelist;
 						if (similarTitlesNovelist && similarTitlesNovelist.length > 0){
 							$("#novelisttitlesPlaceholder").html(similarTitlesNovelist);
@@ -185,6 +185,7 @@ Pika.GroupedWork = (function(){
 
 						if (data.novelistPrimaryISBN){
 							$('#novelistPrimaryISBN').html(data.novelistPrimaryISBN);
+							$('.enrichmentInfo').show();
 						}
 
 					} catch (e) {
@@ -213,7 +214,6 @@ Pika.GroupedWork = (function(){
 						$("#librarianReviewPlaceholder").html(librarianReviewsData);
 					}
 				}
-
 				if (data.numCustomerReviews == 0){
 					$("#borrowerReviewsPanel").hide();
 				}else{
@@ -221,6 +221,10 @@ Pika.GroupedWork = (function(){
 					if (customerReviewsData && customerReviewsData.length > 0) {
 						$("#customerReviewPlaceholder").html(customerReviewsData);
 					}
+				}
+				if (data.isbnForReviews){
+					$('#isbnForReviews').html(data.isbnForReviews);
+					$('.enrichmentInfo').show();
 				}
 			});
 		},

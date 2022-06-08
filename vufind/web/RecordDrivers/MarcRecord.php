@@ -586,16 +586,14 @@ class MarcRecord extends IndexRecord {
 	 *
 	 * @access  public
 	 * @param   boolean $returnFirst whether or not only the first value is desired
-	 * @return  string
+	 * @return  string|string[]
 	 */
-	public function getEdition($returnFirst = false)
-	{
-		if ($returnFirst) {
+	public function getEdition($returnFirst = false){
+		if ($returnFirst){
 			return $this->getFirstFieldValue('250');
-		} else {
+		}else{
 			return $this->getFieldArray('250');
 		}
-
 	}
 
 	/**
@@ -629,8 +627,7 @@ class MarcRecord extends IndexRecord {
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getGeneralNotes()
-	{
+	protected function getGeneralNotes(){
 		return $this->getFieldArray('500');
 	}
 
@@ -640,10 +637,9 @@ class MarcRecord extends IndexRecord {
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getPlacesOfPublication()
-	{
-		$placesOfPublication = $this->getFieldArray('260', array('a'));
-		$placesOfPublication2 = $this->getFieldArray('264', array('a'));
+	protected function getPlacesOfPublication(){
+		$placesOfPublication  = $this->getFieldArray('260', ['a']);
+		$placesOfPublication2 = $this->getFieldArray('264', ['a']);
 		return array_merge($placesOfPublication, $placesOfPublication2);
 	}
 

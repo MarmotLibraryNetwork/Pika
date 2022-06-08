@@ -66,16 +66,18 @@ class LDRecordOffer {
 	function getOfferLinkUrl() {
 		global $configArray;
 		global $library;
-		return ($library->catalogUrl ?? $configArray['Site']['url']) . $this->relatedRecord['url'];
+		$baseUrl  = empty($library->catalogUrl) ? $configArray['Site']['url'] : $_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl;
+		return $baseUrl . $this->relatedRecord['url'];
 	}
 
 	function getLibraryUrl(){
 		$offerBy = [];
 		global $configArray;
 		global $library;
+		$baseUrl  = empty($library->catalogUrl) ? $configArray['Site']['url'] : $_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl;
 		$offerBy[] = [
 			'@type' => 'Library',
-			'@id'   => ($library->catalogUrl ?? $configArray['Site']['url']) . "/Library/{$library->libraryId}/System",
+			'@id'   => $baseUrl . "/Library/{$library->libraryId}/System",
 			'name'  => $library->displayName
 		];
 		return $offerBy;
@@ -123,7 +125,7 @@ class LDRecordOffer {
 				$branches[] = [
 					'@type' => 'Place',
 					'name'  => $locations->displayName,
-					'@id'   => ($library->catalogUrl ?? $configArray['Site']['url']) . "/Library/{$locations->locationId}/Branch"
+					'@id'   => (empty($library->catalogUrl) ? $configArray['Site']['url'] : $_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl) . "/Library/{$locations->locationId}/Branch"
 				];
 			}
 		}

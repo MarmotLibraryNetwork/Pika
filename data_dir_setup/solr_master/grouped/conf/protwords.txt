@@ -1,0 +1,90 @@
+# List of words to protect from processing in Solr index and query analyzers
+# Especially solr field type text
+
+P!nk
+p!nk
+
+A+
+c--
+C--
+c++
+C++
+j++
+J++
+r++
+R++
+x++
+X++
+z++
+Z++
+
+# hash character
+c#
+C#
+
+# Sharp character
+c♯.net
+C♯.net
+C♯
+c♯
+
+# hash character
+f#
+F#
+
+# Sharp character
+F♯
+f♯
+
+# hash character
+j#
+J#
+
+# Sharp character
+J♯
+j♯
+
+# hash character
+m#
+M#
+
+# Sharp character
+m♯
+M♯
+
+# hash character
+q#
+Q#
+
+# Sharp character
+q♯
+Q♯
+
+# hash character
+x#
+X#
+
+# Sharp character
+x♯
+X♯
+
+F*
+C*
+
+
+P"
+
+.NET
+.net
+
+ASP.NET
+asp.net
+
+Node.js
+node.js
+
+Vue.js
+vue.js
+
+# For diagnosing solr issues
+test!it

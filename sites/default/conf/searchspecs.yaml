@@ -55,7 +55,7 @@
 # test:
 #   QueryFields:
 #     - A:
-#       - [onephrase, 500]
+#       - [onePhrase, 500]
 #       - [and, 200]
 #     - B:
 #       - [and, 100]   
@@ -65,9 +65,9 @@
 #     -
 #       - [AND, 50]                 
 #       - C:
-#         - [onephrase, 200]
+#         - [onePhrase, 200]
 #       - D:
-#         - [onephrase, 300]
+#         - [onePhrase, 300]
 #       # Note the "not" attached to the field name as a minus, and the use of ~ 
 #       #     to mean null ("no special weight")
 #       - -E:
@@ -97,7 +97,7 @@
 #
 # Munge types are based on the original Solr.php code, and consist of:
 #
-# onephrase: eliminate all quotes and do it as a single phrase. 
+# onePhrase: eliminate all quotes and do it as a single phrase.
 #   testing "one two"
 #    ...becomes ("testing one two")
 #
@@ -130,17 +130,17 @@
 Author:
   QueryFields:
     - author_exact:
-      - [localized_callnumber, 2200]
+      - [anchoredSearchFieldMunge, 2200]
     - author_left:
-      - [localized_callnumber, 1400]
+      - [anchoredSearchFieldMunge, 1400]
     - author:
-      - [onephrase, 350]
+      - [onePhrase, 350]
       - [proximal, 200]
     - author2:
-      - [onephrase, 100]
+      - [onePhrase, 100]
       - [proximal, 50]
     - author_additional:
-      - [onephrase, 100]
+      - [onePhrase, 100]
       - [proximal, 50]
 
 AuthorProper:
@@ -150,9 +150,9 @@ AuthorProper:
     - author_left:
       - [exact, 1400]
     - auth_author:
-      - [onephrase, 350]
+      - [onePhrase, 350]
     - auth_author2:
-      - [onephrase, 100]
+      - [onePhrase, 100]
 
 ISN:
   DismaxFields:
@@ -180,23 +180,23 @@ Subject:
     - era
   QueryFields:
     - subject:
-      - [onephrase, 300]
+      - [onePhrase, 300]
       - [and, 100]
       - [or, ~]
     - topic:
-      - [onephrase, 300]
+      - [onePhrase, 300]
       - [and, 100]
       - [or, ~]
     - topic_proper:
-      - [onephrase, 300]
+      - [onePhrase, 300]
       - [and, 100]
       - [or, ~]
     - geographic:
-      - [onephrase, 300]
+      - [onePhrase, 300]
       - [and, 100]
       - [or, ~]
     - genre:
-      - [onephrase, 300]
+      - [onePhrase, 300]
       - [and, 100]
       - [or, ~]
     - era:
@@ -212,19 +212,19 @@ SubjectProper:
     - era_proper
   QueryFields:
     - subject_proper:
-      - [onephrase, 300]
+      - [onePhrase, 300]
       - [and, 100]
       - [or, ~]
     - topic_proper:
-      - [onephrase, 300]
+      - [onePhrase, 300]
       - [and, 100]
       - [or, ~]
     - geographic_proper:
-      - [onephrase, 300]
+      - [onePhrase, 300]
       - [and, 100]
       - [or, ~]
     - genre_proper:
-      - [onephrase, 300]
+      - [onePhrase, 300]
       - [and, 100]
       - [or, ~]
     - era_proper:
@@ -243,11 +243,11 @@ JournalTitle:
     - series2
   QueryFields:
     - title_short:
-      - [onephrase, 500]
+      - [onePhrase, 500]
     - title_full:
-      - [onephrase, 400]
+      - [onePhrase, 400]
     - title:
-      - [onephrase, 300]
+      - [onePhrase, 300]
       - [and, 250]
     - title_alt:
       - [and, 200]
@@ -256,31 +256,31 @@ JournalTitle:
     - title_old:
       - [and, ~]
     - series:
-      - [onephrase, 100]
+      - [onePhrase, 100]
       - [and, 50]
     - series2:
-      - [onephrase, 50]
+      - [onePhrase, 50]
       - [and , ~]
   FilterQuery: "format:Journal"
 
 Title:
   QueryFields:
     - title_exact:
-      - [localized_callnumber, 2400]
+      - [anchoredSearchFieldMunge, 2400]
     - title_left:
-      - [localized_callnumber, 1600]
+      - [anchoredSearchFieldMunge, 1600]
     -
       - [OR, 50]
       - title_exact:
-        - [localized_callnumber, 2400]
+        - [anchoredSearchFieldMunge, 2400]
       - title_left:
-        - [localized_callnumber, 1600]
+        - [anchoredSearchFieldMunge, 1600]
       - title_proper:
         - [exact, 800]
-        - [onephrase, 500]
+        - [onePhrase, 500]
         - [and, 200]
       - title:
-        - [onephrase, 200]
+        - [onePhrase, 200]
         - [and, 125]
       - title_alt:
         - [and, 100]
@@ -288,11 +288,11 @@ Title:
         - [and, 50]
     series_proper:
       - [exact, 800]
-      - [onephrase, 300]
+      - [onePhrase, 300]
       - [and, 50]
     series:
       - [exact, 600]
-      - [onephrase, 200]
+      - [onePhrase, 200]
       - [and, 50]
     series2:
       - [and, 30]
@@ -303,19 +303,19 @@ TitleProper:
     - series_proper^100
   QueryFields:
     - title_exact:
-      - [localized_callnumber, 2400]
+      - [anchoredSearchFieldMunge, 2400]
     - title_left:
-      - [localized_callnumber, 1600]
+      - [anchoredSearchFieldMunge, 1600]
     - title_proper:
-      - [onephrase, 850]
+      - [onePhrase, 850]
     - series_proper:
-      - [onephrase, 100]
+      - [onePhrase, 100]
       - [and, 50]
 
 StartOfTitle:
   QueryFields:
     - title_left:
-      - [localized_callnumber, 1600]
+      - [anchoredSearchFieldMunge, 1600]
 
 Series:
   DismaxFields:
@@ -323,11 +323,11 @@ Series:
     - series2
   QueryFields:
     - series:
-      - [onephrase, 500]
+      - [onePhrase, 500]
       - [and, 200]
       - [or, 100]
     - series2:
-      - [onephrase, 50]
+      - [onePhrase, 50]
       - [and, 50]
       - [or, ~]
 
@@ -336,7 +336,7 @@ SeriesProper:
     - series_proper^100
   QueryFields:
     - series_proper:
-      - [onephrase, 500]
+      - [onePhrase, 500]
       - [and, 200]
       - [or, 100]
 
@@ -348,13 +348,13 @@ Keyword:
     -
       - [OR, 500]
       - title_exact:
-        - [localized_callnumber, 7000]
+        - [anchoredSearchFieldMunge, 7000]
       - title_left:
-        - [localized_callnumber, 3000]
+        - [anchoredSearchFieldMunge, 3000]
       - title_proper:
-        - [onephrase, 800]
+        - [onePhrase, 800]
         - [and, 500]
-        - [single_word_removal, 50]
+        - [singleWordRemoval, 50]
       - title:
         - [and, 125]
       - title_alt:
@@ -363,32 +363,32 @@ Keyword:
         - [and, 50]
       - title_full:
         - [and, 200]
-        - [single_word_removal, 50]
+        - [singleWordRemoval, 50]
 #Authors
     -
       - [OR, 400]
       - author_exact:
-        - [localized_callnumber, 2000]
+        - [anchoredSearchFieldMunge, 2000]
       - author_left:
-        - [localized_callnumber, 1000]
+        - [anchoredSearchFieldMunge, 1000]
       - author:
-        - [onephrase, 800]
+        - [onePhrase, 800]
         - [proximal, 200]
       - author2:
-        - [onephrase, 100]
+        - [onePhrase, 100]
         - [proximal, 50]
       - author_additional:
-        - [onephrase, 100]
+        - [onePhrase, 100]
         - [proximal, 50]
 #IDs within the records
     -
       - [OR, 300]
       - id:
-        - [onephrase, ~]
+        - [onePhrase, ~]
       - alternate_ids:
-        - [onephrase, ~]
+        - [onePhrase, ~]
       - barcode:
-        - [onephrase, ~]
+        - [onePhrase, ~]
       - issn:
         - [and, 100]
         - [or, ~]
@@ -402,16 +402,16 @@ Keyword:
     -
       - [OR, ~]
       - local_callnumber_exact:
-        - [localized_callnumber, 400]
+        - [anchoredSearchFieldMunge, 400]
       - local_callnumber_left:
-        - [localized_callnumber, 300]
+        - [anchoredSearchFieldMunge, 300]
       - local_callnumber:
-        - [onephrase, ~]
+        - [onePhrase, ~]
 # Series
     -
       - [OR, ~]
       - series:
-        - [onephrase, 600]
+        - [onePhrase, 600]
         - [and, 50]
       - series2:
         - [and, 30]
@@ -419,19 +419,19 @@ Keyword:
     - table_of_contents:
       - [and, 50]
     - topic:
-      - [onephrase, 125]
+      - [onePhrase, 125]
     - geographic:
-      - [onephrase, 75]
+      - [onePhrase, 75]
     - genre:
-      - [onephrase, 75]
+      - [onePhrase, 75]
     - keywords:
       - [and, 10]
     - description:
       - [and, 60]
     - target_audience:
-      - [onephrase, 75]
+      - [onePhrase, 75]
     - literary_form_full:
-      - [onephrase, 75]
+      - [onePhrase, 75]
 
 KeywordProper:
   DismaxFields:
@@ -454,29 +454,29 @@ KeywordProper:
 
   QueryFields:
     - title_exact:
-      - [localized_callnumber, 2400]
+      - [anchoredSearchFieldMunge, 2400]
     - title_left:
-      - [localized_callnumber, 1600]
+      - [anchoredSearchFieldMunge, 1600]
     - author_exact:
-      - [localized_callnumber, 2200]
+      - [anchoredSearchFieldMunge, 2200]
     - author_left:
-      - [localized_callnumber, 1000]
+      - [anchoredSearchFieldMunge, 1000]
     title_proper:
-      - [onephrase, 850]
+      - [onePhrase, 850]
     series_proper:
       - [and, 50]
     auth_author:
-      - [onephrase, 300]
+      - [onePhrase, 300]
     auth_author2:
-      - [onephrase, 300]
+      - [onePhrase, 300]
     table_of_contents_proper:
       - [and, 10]
     topic_proper:
-      - [onephrase, 500]
+      - [onePhrase, 500]
     geographic_proper:
-      - [onephrase, 300]
+      - [onePhrase, 300]
     genre_proper:
-      - [onephrase, 300]
+      - [onePhrase, 300]
     keywords_proper:
       - [and, ~]
     issn:
@@ -492,26 +492,26 @@ KeywordProper:
       - [and, 100]
       - [or, ~]
     callnumber-subject:
-      - [onephrase, ~]
+      - [onePhrase, ~]
     id:
-      - [onephrase, ~]
+      - [onePhrase, ~]
     alternate_ids:
-      - [onephrase, ~]
+      - [onePhrase, ~]
     local_callnumber_exact:
-      - [localized_callnumber, 800]
+      - [anchoredSearchFieldMunge, 800]
     local_callnumber_left:
-      - [localized_callnumber, 300]
+      - [anchoredSearchFieldMunge, 300]
     barcode:
-      - [onephrase, ~]
+      - [onePhrase, ~]
 
 # These are advanced searches that never use Dismax:
 id:
   QueryFields:
     - id:
-      - [onephrase, ~]
+      - [onePhrase, ~]
       - [or, ~]
     - alternate_ids:
-      - [onephrase, ~]
+      - [onePhrase, ~]
       - [or, ~]
 
 # Fields for exact matches originating from alphabetic browse
@@ -520,47 +520,47 @@ ids:
     - id:
       - [or, ~]
     -alternate_ids:
-      - [onephrase, ~]
+      - [onePhrase, ~]
       - [or, ~]
 
 TopicBrowse:
   QueryFields:
     - topic_browse:
-      - [onephrase, ~]
+      - [onePhrase, ~]
 
 AuthorBrowse:
   QueryFields:
     - author_browse:
-      - [onephrase, ~]
+      - [onePhrase, ~]
 
 TitleBrowse:
   QueryFields:
     - title_full:
-      - [onephrase, ~]
+      - [onePhrase, ~]
 
 DeweyBrowse:
   QueryFields:
     - dewey-raw:
-      - [onephrase, ~]
+      - [onePhrase, ~]
 
 LccBrowse:
   QueryFields:
     - callnumber-a:
-      - [onephrase, ~]
+      - [onePhrase, ~]
 
 LocalCallNumber:
   QueryFields:
     - local_callnumber_exact:
-      - [localized_callnumber, 800]
+      - [anchoredSearchFieldMunge, 800]
     - local_callnumber_left:
-      - [localized_callnumber, 300]
+      - [anchoredSearchFieldMunge, 300]
     - local_callnumber:
       - [exact, ~]
 
 callnumber_browse:
   QueryFields:
     - callnumber_browse:
-      - [onephrase, ~]
+      - [onePhrase, ~]
 
 publisher:
   QueryFields:
@@ -613,7 +613,7 @@ GenealogyKeyword:
     - keywords
   QueryFields:
     - keywords:
-      - [onephrase, 100]
+      - [onePhrase, 100]
 
 GenealogyName:
   QueryFields:
@@ -632,30 +632,30 @@ GenealogyName:
       - otherName:
         - [and, ~]
     - title: 
-      - [onephrase, 350]
+      - [onePhrase, 350]
       - [and, 200]
 
 IslandoraTitle:
   QueryFields:
     - mods_titleInfo_title_t:
-      - [onephrase, 1200]
+      - [onePhrase, 1200]
       - [proximal, 800]
       - [and, 500]
     - fgs_label_t:
-      - [onephrase, 1200]
+      - [onePhrase, 1200]
     - PID:
       - [exact, 1000]
 
 IslandoraKeyword:
   QueryFields:
     - mods_titleInfo_title_t:
-      - [onephrase, 1200]
+      - [onePhrase, 1200]
       - [and, 700]
     - mods_titleInfo_subTitle_t:
-      - [onephrase, 1200]
+      - [onePhrase, 1200]
       - [and, 700]
     - fgs_label_t:
-      - [onephrase, 1200]
+      - [onePhrase, 1200]
       - [and, 700]
     - mods_abstract_t:
       - [and, 200]
@@ -700,11 +700,11 @@ IslandoraKeyword:
     - mods_extension_marmotLocal_hasTranscription_transcriber_entityTitle_mt:
       - [and, 10]
     - mods_identifier_identifier_mt:
-      - [onephrase, 4000]
+      - [onePhrase, 4000]
     - mods_extension_marmotLocal_migratedIdentifier_mt:
-      - [onephrase, 4000]
+      - [onePhrase, 4000]
     - mods_extension_marmotLocal_migratedFileName_mt:
-      - [onephrase, 4000]
+      - [onePhrase, 4000]
     - mods_extension_marmotLocal_hasCreator_entityPid_ms:
       - [exact, 10]
     - mods_extension_marmotLocal_describedEntity_entityPid_ms:
@@ -750,7 +750,7 @@ IslandoraKeyword:
     - mods_extension_marmotLocal_academicResearch_relatedPersonOrg_entityPid_ms:
       - [exact, 10]
     - RELS_EXT_isMemberOfCollection_uri_t:
-      - [onephrase, ~]
+      - [onePhrase, ~]
     - mods_extension_marmotLocal_art_material_aatID_ms:
       - [exact, 10]
     - mods_extension_marmotLocal_art_stylePeriodSet_aatID_ms:
@@ -765,13 +765,13 @@ IslandoraKeyword:
 IslandoraKeywordProper:
   QueryFields:
     - mods_titleInfo_title_t:
-      - [onephrase, 1200]
+      - [onePhrase, 1200]
       - [exact, 700]
     - mods_titleInfo_subTitle_t:
-      - [onephrase, 1200]
+      - [onePhrase, 1200]
       - [exact, 700]
     - fgs_label_t:
-      - [onephrase, 1200]
+      - [onePhrase, 1200]
       - [exact, 700]
     - mods_abstract_t:
       - [exact, 200]
@@ -818,11 +818,11 @@ IslandoraKeywordProper:
     - mods_extension_marmotLocal_hasTranscription_transcriber_entityTitle_ms:
       - [exact, 10]
     - mods_identifier_identifier_mt:
-      - [onephrase, 4000]
+      - [onePhrase, 4000]
     - mods_extension_marmotLocal_migratedIdentifier_ms:
       - [exact, 4000]
     - mods_extension_marmotLocal_migratedFileName_ms:
-      - [onephrase, 4000]
+      - [onePhrase, 4000]
     - mods_extension_marmotLocal_hasCreator_entityPid_ms:
       - [exact, 10]
     - mods_extension_marmotLocal_describedEntity_entityPid_ms:
@@ -868,7 +868,7 @@ IslandoraKeywordProper:
     - mods_extension_marmotLocal_academicResearch_relatedPersonOrg_entityPid_ms:
       - [exact, 10]
     - RELS_EXT_isMemberOfCollection_uri_t:
-      - [onephrase, 10]
+      - [onePhrase, 10]
     - mods_extension_marmotLocal_art_material_aatID_ms:
       - [exact, 10]
     - mods_extension_marmotLocal_art_stylePeriodSet_aatID_ms:
@@ -943,5 +943,5 @@ IslandoraRelationshipsById:
     - mods_extension_marmotLocal_academicResearch_relatedPersonOrg_entityPid_ms:
       - [exact, ~]
     - RELS_EXT_isMemberOfCollection_uri_t:
-      - [onephrase, ~]
+      - [onePhrase, ~]
 

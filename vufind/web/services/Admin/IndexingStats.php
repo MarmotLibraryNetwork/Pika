@@ -51,7 +51,6 @@ class IndexingStats extends Admin_Admin {
 			if (!empty($_REQUEST['day'])){
 				$dateToRetrieve = $_REQUEST['day'];
 			}
-			$fileToLoad = null;
 			if (isset($indexingStatFiles[$dateToRetrieve])){
 				$fileToLoad = $indexingStatFiles[$dateToRetrieve];
 			}else{
@@ -60,38 +59,59 @@ class IndexingStats extends Admin_Admin {
 				$dateToRetrieve = $matches[1];
 			}
 
-			[$indexingStats, $indexingStatHeader] = $this->ReadIndexingStatsFile($fileToLoad);
+			[$indexingStats, $indexingStatHeader] = $this->readIndexingStatsFile($fileToLoad);
 			$interface->assign('indexingStatHeader', $indexingStatHeader);
 			$interface->assign('indexingStatsDate', $dateToRetrieve);
 
 			if (!empty($_REQUEST['compareTo'])){
 				// When set we will compare differences between two days of stats
-				$dateToRetrieve = $_REQUEST['compareTo'];
-				if (isset($indexingStatFiles[$dateToRetrieve])){
-					$fileToLoad = $indexingStatFiles[$dateToRetrieve];
-					[$otherDayIndexingStats,] = $this->ReadIndexingStatsFile($fileToLoad);
-					$columnHadChanges = $arrayOfDifferences = [];
-					foreach ($indexingStats as $curRowNumber => $curRow){
-						foreach ($curRow as $columnNumber => $curStat){
-							if ($columnNumber == 0){
-								//The scope Name for the first column of each row
-								$arrayOfDifferences[$curRowNumber][$columnNumber] = $curStat;
-							}else{
-								$difference                                       = $curStat - $otherDayIndexingStats[$curRowNumber][$columnNumber];
-								$arrayOfDifferences[$curRowNumber][$columnNumber] = $difference;
-								if ($difference != 0){
-									$buttonShowColumnIndex = $columnNumber - 1;
-									if (!in_array($buttonShowColumnIndex, $columnHadChanges)){
-										$columnHadChanges[] = $buttonShowColumnIndex;
+				$dateToCompare = new DateTime($_REQUEST['compareTo']);
+				if ($dateToCompare){
+					$isPrimaryDateOlderThanCompareDate = new DateTime($dateToRetrieve) < $dateToCompare;
+					$interface->assign('pastDate', $isPrimaryDateOlderThanCompareDate ? $dateToRetrieve : $_REQUEST['compareTo']);
+					$dateToRetrieve = $_REQUEST['compareTo'];
+					if (isset($indexingStatFiles[$dateToRetrieve])){
+						$fileToLoad = $indexingStatFiles[$dateToRetrieve];
+						[$otherDayIndexingStats, $otherDayIndexingStatHeader] = $this->readIndexingStatsFile($fileToLoad);
+						$columnHadChanges = $arrayOfDifferences = [];
+						foreach ($indexingStats as $curRowNumber => $curRow){
+							foreach ($curRow as $columnNumber => $curStat){
+								if ($columnNumber == 0){
+									$isSameSearchScope = $indexingStats[0][$columnNumber] == $otherDayIndexingStats[0][$columnNumber];
+									// Double check that the search scopes are the same. (Search scopes can be added, deleted, or renamed)
+
+									//The scope Name for the first column of each row
+									$arrayOfDifferences[$curRowNumber][$columnNumber] = $curStat;
+								}elseif ($isSameSearchScope){
+									if ( $indexingStatHeader[$columnNumber] == $otherDayIndexingStatHeader[$columnNumber]){
+										// Double check that column labels are the same. (Columns will change as sideLoads are added or removed)
+
+//										$difference                                       = ($isPrimaryDateOlderThanCompareDate ? $curStat - $otherDayIndexingStats[$curRowNumber][$columnNumber] : $otherDayIndexingStats[$curRowNumber][$columnNumber] - $curStat);
+										$difference                                       = ($isPrimaryDateOlderThanCompareDate ? $otherDayIndexingStats[$curRowNumber][$columnNumber] - $curStat : $curStat - $otherDayIndexingStats[$curRowNumber][$columnNumber]);
+										$arrayOfDifferences[$curRowNumber][$columnNumber] = $difference;
+										if ($difference != 0){
+											$buttonShowColumnIndex = $columnNumber - 1;
+											if (!in_array($buttonShowColumnIndex, $columnHadChanges)){
+												$columnHadChanges[] = $buttonShowColumnIndex;
+											}
+										}
+									}else{
+										$arrayOfDifferences[$curRowNumber][$columnNumber] = 'Column Changes';
+										$buttonShowColumnIndex                            = $columnNumber - 1;
+										if (!in_array($buttonShowColumnIndex, $columnHadChanges)){
+											$columnHadChanges[] = $buttonShowColumnIndex;
+										}
 									}
+								} else {
+									$arrayOfDifferences[$curRowNumber][$columnNumber] = 'Scope Changes';
 								}
 							}
+
+							$indexingStats = $arrayOfDifferences;
+							$interface->assign('compareTo', $dateToRetrieve);
+							$interface->assign('showTheseColumns', $columnHadChanges);
 						}
 					}
-
-					$indexingStats = $arrayOfDifferences;
-					$interface->assign('compareTo', $dateToRetrieve);
-					$interface->assign('showTheseColumns', $columnHadChanges);
 				}
 			}
 
@@ -111,7 +131,7 @@ class IndexingStats extends Admin_Admin {
  * @param $fileToLoad
  * @return array
  */
-	private function ReadIndexingStatsFile($fileToLoad): array{
+	private function readIndexingStatsFile($fileToLoad): array{
 		$indexingStats      = $ilsColumns = [];
 		$indexingStatFhnd   = fopen($fileToLoad, 'r');
 		$allIndexingHeaders = fgetcsv($indexingStatFhnd);

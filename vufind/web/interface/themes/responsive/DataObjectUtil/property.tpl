@@ -7,7 +7,8 @@
 	<div class="form-group" id="propertyRow{$propName}">
 		{* Output the label *}
 		{if $property.type == 'enum'}
-			<label for='{$propName}Select'{if $property.description} title="{$property.description}"{/if}>{$property.label}{if $property.required}<span class="required-input">*</span>{/if}
+			<label for='{$propName}Select'{if $property.description} title="{$property.description}"{/if}>{$property.label}
+				{if $property.required}<span class="required-input">*</span>{/if}
 				{if $property.isIndexingSetting}
 					&nbsp;<span class="glyphicon glyphicon-time" aria-hidden="true" title="This setting is a change to indexing"></span>
 				{/if}
@@ -16,6 +17,9 @@
 			<div class="row">
 			<div class="col-xs-11">
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label}</label>
+					{if $property.isIndexingSetting}
+						&nbsp;<span class="glyphicon glyphicon-time" aria-hidden="true" title="This setting is a change to indexing"></span>
+					{/if}
 			</div>
 			<div class="col-xs-1">
 				<a href="{$property.helpLink}" target="_blank"><span class="glyphicon glyphicon-question-sign" title="Help" aria-hidden="true" style="color: blue;"></span></a>
@@ -159,6 +163,7 @@
 
 				<div class="col-md-2"><label for="fileName" class="label-left">File Name</label></div>
 				<div class="col-md-7"><input type="text" name="fileName" value="{$propValue}" class="form-control"></div>
+
 			</div>
 			{/if}
 			<script>
@@ -173,6 +178,13 @@
 					var file = e.target.files[0].name;
 					var extension = file.substr((file.lastIndexOf('.') +1));
 
+					if(this.files[0].size > 1900000){
+						$(':input[type="submit"]').prop('disabled', true);
+						$(".custom-file").append("<div class='alert alert-danger' id='sizeWarning'>The image is too large and upload will fail. Please resize and try again. Images must be under 1.8MB</div>");
+					}else{
+						$(':input[type="submit"]').prop('disabled', false);
+						$("#sizeWarning").remove();
+					}
 
 					if($("#fileName").length > 0)
 						{

@@ -8,10 +8,18 @@
 
 	<h2>{translate text='nohit_heading'}</h2>
 
-	{if $replacementTerm}
-		<div id="replacement-search-info-block">
-			<div id="replacement-search-info"><span class="replacement-search-info-text">Showing Results for</span> {$replacementTerm}</div>
-			<div id="original-search-info"><span class="replacement-search-info-text">Search instead for </span><a href="{$oldSearchUrl}">{$oldTerm}</a></div>
+	{* Search Replacement Term notice *}
+	{include file="Search/search-replacementTerm-notice.tpl"}
+
+	{if $leftTextSearchWarning}
+		<div class="alert alert-warning">
+				{$leftTextSearchWarning}
+				{if $lookfor}
+					<p>
+						<br>
+						<a href="/Search/Results?lookfor={$lookfor|truncate:35:''|escape:url}&basicType={$searchIndex|escape:url}" title="{$lookfor|truncate:35:''}">{$lookfor|truncate:35:''}</a>
+					</p>
+				{/if}
 		</div>
 	{/if}
 

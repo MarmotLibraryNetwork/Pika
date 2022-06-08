@@ -180,8 +180,8 @@ class MyAccount_CheckedOut extends MyAccount{
 
 		// Set properties
 		$gitBranch = $interface->getVariable('gitBranch');
-		$objPHPExcel->getProperties()->setCreator("Pika " . $gitBranch)
-		->setLastModifiedBy("Pika " . $gitBranch)
+		$objPHPExcel->getProperties()->setCreator('Pika ' . $gitBranch)
+		->setLastModifiedBy('Pika ' . $gitBranch)
 		->setTitle("Office 2007 XLSX Document")
 		->setSubject("Office 2007 XLSX Document")
 		->setDescription("Office 2007 XLSX, generated using PHP.")

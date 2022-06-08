@@ -22,7 +22,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 /**
- * Information to determine if a particular record/item should be included within a given scope
+ * Information to determine if a particular record/item should be included within a given search scope
  *
  * Pika
  * User: Mark Noble
@@ -90,20 +90,21 @@ class InclusionRule {
 		this.urlReplacement = urlReplacement;
 	}
 
+
 	private HashMap<String, HashMap<String, HashMap<String, HashMap<String, Boolean>>>> locationCodeCache = new HashMap<>();
-	boolean isItemIncluded(String recordType, String locationCode, String iType, TreeSet<String> audiences, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord){
+	boolean isItemIncluded(String indexingProfileSourceName, String locationCode, String iType, TreeSet<String> audiences, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord){
 		//Do the quick checks first
 		if (!isEContent && (includeHoldableOnly && !isHoldable)){
 			return false;
 		}else if (!includeItemsOnOrder && isOnOrder){
-			return  false;
+			return false;
 		}else if (!includeEContent && isEContent){
-			return  false;
-		}else if (!this.indexingProfileSourceName.equals(recordType)){
-			return  false;
+			return false;
+		}else if (!this.indexingProfileSourceName.equals(indexingProfileSourceName)){
+			return false;
 		}
 
-		//Determine if we have already determined this already
+		//Determine if we have already determined this rule
 		boolean hasCachedValue = true;
 		HashMap<String, HashMap<String, HashMap<String, Boolean>>> iTypeCache = locationCodeCache.get(locationCode);
 		if (iTypeCache == null){
@@ -131,12 +132,14 @@ class InclusionRule {
 
 		boolean isIncluded;
 
-		if (!hasCachedValue){
+		if (hasCachedValue) {
+			isIncluded = cachedInclusion;
+		} else {
 			if ((locationCode == null || locationCodePattern.matcher(locationCode).lookingAt()) &&
 					(format == null || formatPattern.matcher(format).lookingAt())
 					){
 
-				//We got a match based on location check formats iTypes etc
+				//We got a match based on location and format, now check iTypes and audiences
 				if (iType != null && !iTypePattern.matcher(iType).lookingAt()){
 					isIncluded =  false;
 				}else{
@@ -158,8 +161,6 @@ class InclusionRule {
 			}
 			//Make sure not to cache marc tag determination
 			formatCache.put(format, isIncluded);
-		}else{
-			isIncluded = cachedInclusion;
 		}
 		//Make sure not to cache marc tag determination
 		if (isIncluded && marcTagToMatch.length() > 0) {

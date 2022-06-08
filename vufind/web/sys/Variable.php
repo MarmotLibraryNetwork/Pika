@@ -42,6 +42,15 @@ class Variable extends DB_DataObject {
 		}
 	}
 
+	function setWithTimeStampValue(){
+		$this->value = time();
+		if ($this->N) {
+			$this->update();
+		} else{
+			$this->insert();
+		}
+	}
+
 	static function getObjectStructure(){
 		$structure = array(
 			'id'          => array(

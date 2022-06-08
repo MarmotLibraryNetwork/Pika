@@ -56,7 +56,7 @@ class WikipediaParser {
 		// Get the latest revision
 		$body = array_shift($body['revisions']);
 		// Check for redirection
-		$as_lines = explode("\n", $body['*']);
+		$as_lines = explode("\n",  ltrim($body['*'], "\n"));
 		if (stristr($as_lines[0], '#REDIRECT')){
 			preg_match('/\[\[(.*)\]\]/', $as_lines[0], $matches);
 			return $this->getWikipediaPage($baseURL, $matches[1]);
@@ -75,7 +75,7 @@ class WikipediaParser {
 		$firstInfoBox = null;
 		foreach ($matches[1] as $m){
 			// If this is the Infobox
-			if (substr($m, 0, 8) == "{Infobox"){
+			if (substr($m, 0, 8) == '{Infobox'){
 				// Keep the string for later, we need the body block that follows it
 				$infoboxStr = "{" . $m . "}";
 				if ($firstInfoBox == null){
@@ -85,9 +85,9 @@ class WikipediaParser {
 				$infobox = explode("\n|", substr($m, 1, -1));
 				// Look through every row of the infobox
 				foreach ($infobox as $row){
-					$data  = explode("=", $row);
+					$data  = explode('=', $row);
 					$key   = trim(array_shift($data));
-					$value = trim(join("=", $data));
+					$value = trim(join('=', $data));
 
 					// At the moment we only want stuff related to the image.
 					switch (strtolower($key)){
@@ -152,7 +152,7 @@ class WikipediaParser {
 			$body = $body['*'];
 		}
 		// Find the first heading
-		$end = strpos($body, "==");
+		$end = strpos($body, '==');
 		// Now cull our content back to everything before the first heading
 		$body = trim(substr($body, 0, $end));
 
@@ -175,7 +175,7 @@ class WikipediaParser {
 						// If it's a file link get rid of it
 						if (strtolower(substr($n, 0, 7)) == "[[file:" ||
 							strtolower(substr($n, 0, 8)) == "[[image:"){
-							$body = str_replace($n, "", $body);
+							$body = str_replace($n, '', $body);
 						}
 					}
 					// Or just a normal array
@@ -184,7 +184,7 @@ class WikipediaParser {
 					if (isset($n)){
 						if (strtolower(substr($n, 0, 7)) == "[[file:" ||
 							strtolower(substr($n, 0, 8)) == "[[image:"){
-							$body = str_replace($nm, "", $body);
+							$body = str_replace($nm, '', $body);
 						}
 					}
 				}
@@ -197,11 +197,11 @@ class WikipediaParser {
 
 		//Strip out taxobox
 		$pattern[]     = '/{{Taxobox.*}}\n\n/Us';
-		$replacement[] = "";
+		$replacement[] = '';
 
 		//Strip out anything like {{!}}
 		$pattern[]     = '/{{!}}/Us';
-		$replacement[] = "";
+		$replacement[] = '';
 
 		// Convert wikipedia links
 		$pattern[]     = '/(\x5b\x5b)([^\x5d|]*)(\x5d\x5d)/Us';
@@ -215,13 +215,13 @@ class WikipediaParser {
 
 		// Removes citations
 		$pattern[]     = '/({{)[^}]*(}})/Us';
-		$replacement[] = "";
+		$replacement[] = '';
 		//  <ref ... > ... </ref> OR <ref> ... </ref>
 		$pattern[]     = '/<ref[^\/]*>.*<\/ref>/Us';
-		$replacement[] = "";
+		$replacement[] = '';
 		//    <ref ... />
 		$pattern[]     = '/<ref.*\/>/Us';
-		$replacement[] = "";
+		$replacement[] = '';
 
 		// Removes comments followed by carriage returns to avoid excess whitespace
 		$pattern[]     = '/<!--.*-->\n*/Us';
@@ -238,7 +238,7 @@ class WikipediaParser {
 
 		// Convert multiple newlines into two breaks
 		// We DO want this to be greedy
-		$pattern[]     = "/\n{2,}/s";
+		$pattern[]     = '/\n{2,}/s';
 		$replacement[] = '<br><br>';
 
 		$body = preg_replace($pattern, $replacement, $body);

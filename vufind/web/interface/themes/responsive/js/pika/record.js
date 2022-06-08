@@ -157,8 +157,12 @@ Pika.Record = (function(){
 					if (data.needsItemLevelHold){
 						$('.modal-body').html(data.message);
 					}else{
-						// Pika.showMessage('Hold Placed Successfully', data.message, false, autoLogOut);
-						Pika.showMessageWithButtons('Hold Placed Successfully', data.message, data.buttons);
+						if(autoLogOut === true){
+						 Pika.showMessage('Hold Placed Successfully', data.message, false, true);
+						 location.reload();
+						}else{
+							Pika.showMessageWithButtons('Hold Placed Successfully', data.message, data.buttons);
+						}
 					}
 				}else{
 					Pika.showMessage('Hold Failed', data.message, false, autoLogOut);

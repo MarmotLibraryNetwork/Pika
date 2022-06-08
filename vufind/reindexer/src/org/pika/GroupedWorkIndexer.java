@@ -66,7 +66,7 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getDateFirstDetectedStmt;
 
 	private Long    indexStartTime;
-	private boolean fullReindex;
+	public  boolean fullReindex;
 	private long    lastReindexTime;
 	private boolean okToIndex = true;
 
@@ -183,21 +183,23 @@ public class GroupedWorkIndexer {
 				updatePartialReindexRunning(true);
 			}
 
-			//Check to make sure that at least a couple of minutes have elapsed since the last index
-			//Periodically in the middle of the night we get indexes every minute or multiple times a minute
-			//which is annoying especially since it generally means nothing is changing.
-			long elapsedTime         = indexStartTime - lastReindexTime;
-			long minIndexingInterval = 2 * 60;
-			if (elapsedTime < minIndexingInterval && !singleWorkIndex) {
-				try {
-					GroupedReindexMain.addNoteToReindexLog("Pausing between indexes, last index ran " + Math.ceil(elapsedTime / 60f) + " minutes ago");
-					GroupedReindexMain.addNoteToReindexLog("Pausing for " + (minIndexingInterval - elapsedTime) + " seconds");
-					Thread.sleep((minIndexingInterval - elapsedTime) * 1000);
-				} catch (InterruptedException e) {
-					logger.warn("Pause was interrupted while pausing between indexes");
+			if (!singleWorkIndex) {
+				//Check to make sure that at least a couple of minutes have elapsed since the last index
+				//Periodically in the middle of the night we get indexes every minute or multiple times a minute
+				//which is annoying especially since it generally means nothing is changing.
+				long elapsedTime         = indexStartTime - lastReindexTime;
+				long minIndexingInterval = 2 * 60;
+				if (elapsedTime < minIndexingInterval) {
+					try {
+						GroupedReindexMain.addNoteToReindexLog("Pausing between indexes, last index ran " + Math.ceil(elapsedTime / 60f) + " minutes ago");
+						GroupedReindexMain.addNoteToReindexLog("Pausing for " + (minIndexingInterval - elapsedTime) + " seconds");
+						Thread.sleep((minIndexingInterval - elapsedTime) * 1000);
+					} catch (InterruptedException e) {
+						logger.warn("Pause was interrupted while pausing between indexes");
+					}
+				} else {
+					GroupedReindexMain.addNoteToReindexLog("Index last ran " + (elapsedTime) + " seconds ago");
 				}
-			}else{
-				GroupedReindexMain.addNoteToReindexLog("Index last ran " + (elapsedTime) + " seconds ago");
 			}
 
 			updateServer = new ConcurrentUpdateSolrClient.Builder(baseSolrUrl).withQueueSize(500).withThreadCount(8).build();
@@ -1057,53 +1059,52 @@ public class GroupedWorkIndexer {
 	 */
 	Long processGroupedWorks(String indexingProfileToProcess) {
 		long numWorksProcessed = 0L;
-		try {
-			PreparedStatement getGroupedWorksForProfile;
-			PreparedStatement getNumWorksToIndex;
-			PreparedStatement setLastUpdatedTime = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? WHERE id = ?");
-
-			//Load all grouped works that have records tied to indexing profile
-
-			getGroupedWorksForProfile = pikaConn.prepareStatement("SELECT * FROM grouped_work WHERE id IN (SELECT grouped_work_id FROM grouped_work_primary_identifiers WHERE type = \"" + indexingProfileToProcess.toLowerCase() + "\")", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			getNumWorksToIndex = pikaConn.prepareStatement("SELECT COUNT(*) FROM grouped_work WHERE id IN (SELECT grouped_work_id FROM grouped_work_primary_identifiers WHERE type = \"" + indexingProfileToProcess.toLowerCase() + "\")", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		try (
+			PreparedStatement getGroupedWorksForProfile = pikaConn.prepareStatement("SELECT * FROM grouped_work WHERE id IN (SELECT grouped_work_id FROM grouped_work_primary_identifiers WHERE type = \"" + indexingProfileToProcess.toLowerCase() + "\")", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getNumWorksToIndex        = pikaConn.prepareStatement("SELECT COUNT(*) FROM grouped_work WHERE id IN (SELECT grouped_work_id FROM grouped_work_primary_identifiers WHERE type = \"" + indexingProfileToProcess.toLowerCase() + "\")", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement setLastUpdatedTime        = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? WHERE id = ?")
+		){
 
 			//Get the number of works we will be processing
-			ResultSet numWorksToIndexRS = getNumWorksToIndex.executeQuery();
-			numWorksToIndexRS.next();
-			long numWorksToIndex = numWorksToIndexRS.getLong(1);
-			GroupedReindexMain.addNoteToReindexLog("Starting to process " + numWorksToIndex + " grouped works for profile " + indexingProfileToProcess);
+			try (ResultSet numWorksToIndexRS = getNumWorksToIndex.executeQuery()){
+				numWorksToIndexRS.next();
+				long numWorksToIndex = numWorksToIndexRS.getLong(1);
+				GroupedReindexMain.addNoteToReindexLog("Starting to process " + numWorksToIndex + " grouped works for profile " + indexingProfileToProcess);
+			}
 
-			ResultSet groupedWorks = getGroupedWorksForProfile.executeQuery();
-			while (groupedWorks.next()) {
-				long   id                = groupedWorks.getLong("id");
-				String permanentId       = groupedWorks.getString("permanent_id");
-				String grouping_category = groupedWorks.getString("grouping_category");
-				Long   lastUpdated       = groupedWorks.getLong("date_updated");
-				if (groupedWorks.wasNull()){
-					lastUpdated = null;
-				}
-				processGroupedWork(id, permanentId, grouping_category);
+			//Load all grouped works that have records tied to indexing profile
+			try(ResultSet groupedWorks = getGroupedWorksForProfile.executeQuery()) {
+				while (groupedWorks.next()) {
+					long   primaryIdentifierId = groupedWorks.getLong("id");
+					String permanentId         = groupedWorks.getString("permanent_id");
+					String grouping_category   = groupedWorks.getString("grouping_category");
+					Long   lastUpdated         = groupedWorks.getLong("date_updated");
+					if (groupedWorks.wasNull()) {
+						lastUpdated = null;
+					}
+					processGroupedWork(primaryIdentifierId, permanentId, grouping_category);
 
-				numWorksProcessed++;
-				if (numWorksProcessed % 500 == 0) {
-					GroupedReindexMain.updateNumWorksProcessed(numWorksProcessed);
-					if (numWorksProcessed % 10000 == 0) {
-						//Testing shows that regular commits do seem to improve performance.
-						//However, we can't do it too often or we get errors with too many searchers warming.
-						//This is happening now with the auto commit settings in solrconfig.xml
+					numWorksProcessed++;
+					if (numWorksProcessed % 500 == 0) {
+						GroupedReindexMain.updateNumWorksProcessed(numWorksProcessed);
+						if (numWorksProcessed % 10000 == 0) {
+							//Testing shows that regular commits do seem to improve performance.
+							//However, we can't do it too often or we get errors with too many searchers warming.
+							//This is happening now with the auto commit settings in solrconfig.xml
 					/*try {
 						logger.info("Doing a regular commit during full indexing");
 						updateServer.commit(false, false, true);
 					}catch (Exception e){
 						logger.warn("Error committing changes", e);
 					}*/
-						GroupedReindexMain.addNoteToReindexLog(numWorksProcessed + " grouped works processed.");
+							GroupedReindexMain.addNoteToReindexLog(numWorksProcessed + " grouped works processed.");
+						}
 					}
-				}
-				if (lastUpdated == null){
-					setLastUpdatedTime.setLong(1, indexStartTime - 1); //Set just before the index started so we don't index multiple times
-					setLastUpdatedTime.setLong(2, id);
-					setLastUpdatedTime.executeUpdate();
+					if (lastUpdated == null) {
+						setLastUpdatedTime.setLong(1, indexStartTime - 1); //Set just before the index started so we don't index multiple times
+						setLastUpdatedTime.setLong(2, primaryIdentifierId);
+						setLastUpdatedTime.executeUpdate();
+					}
 				}
 			}
 		} catch (SQLException e) {
@@ -1215,7 +1216,7 @@ public class GroupedWorkIndexer {
 
 
 
-	/*	loop thru each of the scopes
+	/*	loop through each of the scopes
 				if library owned add to appropriate list*/
 
 		if (fullReindex) {
@@ -1237,7 +1238,15 @@ public class GroupedWorkIndexer {
 
 	}
 
-	void processGroupedWork(Long id, String permanentId, String grouping_category) throws SQLException {
+	/**
+	 * Index a specific grouped work that has related records for the specified indexing profile to be indexed
+	 *
+	 * @param primaryIdentifierId database row id for this primary Identify
+	 * @param permanentId  grouped work Id
+	 * @param grouping_category grouping category of the work
+	 * @throws SQLException
+	 */
+	void processGroupedWork(Long primaryIdentifierId, String permanentId, String grouping_category) throws SQLException {
 		//Create a solr record for the grouped work
 		GroupedWorkSolr groupedWork = new GroupedWorkSolr(this, logger);
 		groupedWork.setId(permanentId);
@@ -1246,7 +1255,7 @@ public class GroupedWorkIndexer {
 		//Load Novelist data for the work
 		boolean loadedNovelistSeries = loadNovelistInfo(groupedWork);
 
-		getGroupedWorkPrimaryIdentifiers.setLong(1, id);
+		getGroupedWorkPrimaryIdentifiers.setLong(1, primaryIdentifierId);
 		int numPrimaryIdentifiers;
 		try (ResultSet groupedWorkPrimaryIdentifiers = getGroupedWorkPrimaryIdentifiers.executeQuery()) {
 			numPrimaryIdentifiers = 0;

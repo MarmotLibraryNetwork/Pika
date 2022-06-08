@@ -296,7 +296,7 @@ abstract class MarcRecordProcessor {
 
 	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier, String format, boolean loadedNovelistSeries) {
 		loadTitles(groupedWork, record, format, identifier);
-		loadAuthors(groupedWork, record, identifier);
+		loadAuthors(groupedWork, record, format, identifier);
 		loadSubjects(groupedWork, record);
 		loadSeries(groupedWork, record, loadedNovelistSeries);
 		groupedWork.addContents(MarcUtil.getFieldList(record, "505a:505t"));
@@ -775,12 +775,15 @@ abstract class MarcRecordProcessor {
 				if (curField.getIndicator2() == '1'){
 					Subfield subFieldB = curField.getSubfield('b');
 					if (subFieldB != null){
-						publisher.add(subFieldB.getData());
+						String data = Util.trimTrailingPunctuation(subFieldB.getData());
+						if (data != null && !data.isEmpty()) {
+							publisher.add(data);
+						}
 					}
 				}
 			}
 		}
-		publisher.addAll(MarcUtil.getFieldList(record, "260b"));
+		publisher.addAll(Util.trimTrailingPunctuation(MarcUtil.getFieldList(record, "260b")));
 		return publisher;
 	}
 
@@ -901,7 +904,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	private void loadAuthors(GroupedWorkSolr groupedWork, Record record, String identifier) {
+	private void loadAuthors(GroupedWorkSolr groupedWork, Record record, String recordFormat, String identifier) {
 		//auth_author = 100abcd, first
 		groupedWork.setAuthAuthor(MarcUtil.getFirstFieldVal(record, "100abcd"));
 
@@ -910,7 +913,7 @@ abstract class MarcRecordProcessor {
 		//of showing some disconnects with how records are grouped, but improves the display of the author
 		//710 is still indexed as part of author 2 #ARL-146
 		//groupedWork.setAuthor(this.getFirstFieldVal(record, "100abcdq:110ab:710a"));
-		groupedWork.setAuthor(MarcUtil.getFirstFieldVal(record, "100abcdq:110ab"));
+		groupedWork.setAuthor(MarcUtil.getFirstFieldVal(record, "100abcdq:110ab"), recordFormat);
 
 		//auth_author2 = 700abcd
 		groupedWork.addAuthAuthor2(MarcUtil.getFieldList(record, "700abcd"));
@@ -939,8 +942,9 @@ abstract class MarcRecordProcessor {
 		if (displayAuthor != null && displayAuthor.indexOf(';') > 0){
 			displayAuthor = displayAuthor.substring(0, displayAuthor.indexOf(';') -1);
 		}
-		groupedWork.setAuthorDisplay(displayAuthor);
+		groupedWork.setAuthorDisplay(displayAuthor, recordFormat);
 	}
+
 
 	protected void loadTitles(GroupedWorkSolr groupedWork, Record record, String format, String identifier) {
 		//title (full title done by index process by concatenating short and subtitle
@@ -963,7 +967,6 @@ abstract class MarcRecordProcessor {
 					}
 					subTitleValue = null; // null out so that it doesn't get added to sort or display titles
 				} else {
-					groupedWork.setSubTitle(subTitleValue); //TODO: return the cleaned up value for the subtitle?
 					if (titleLowerCase.endsWith(subTitleLowerCase)) {
 						// Remove subtitle from title in order to avoid repeats of sub-title in display & title fields in index
 						if (fullReindex && logger.isInfoEnabled()) {
@@ -987,6 +990,12 @@ abstract class MarcRecordProcessor {
 				int nonFilingInt = getInd2AsInt(titleField);
 				if (nonFilingInt > 0 && titleValue.length() > nonFilingInt)  {
 					sortableTitle = titleValue.substring(nonFilingInt);
+					if (fullReindex && logger.isDebugEnabled()) {
+						final String sortTitleRemoval = titleValue.substring(0, nonFilingInt);
+						if (!GroupedReindexMain.sortTitleRemovalsList.contains(sortTitleRemoval)) {
+							GroupedReindexMain.sortTitleRemovalsList.add(sortTitleRemoval);
+						}
+					}
 				}
 			}
 			if (subTitleValue != null && !subTitleValue.isEmpty()) {
@@ -994,7 +1003,7 @@ abstract class MarcRecordProcessor {
 			}
 		}
 
-		groupedWork.setTitle(titleValue, displayTitle, sortableTitle, format);
+		groupedWork.setTitle(titleValue, subTitleValue, displayTitle, sortableTitle, format);
 		//title full
 		String authorInTitleField = MarcUtil.getFirstFieldVal(record, "245c");
 		String standardAuthorData = MarcUtil.getFirstFieldVal(record, "100abcdq:110ab");

@@ -129,20 +129,26 @@ Pika.Searches = (function(){
 
 		initAutoComplete: function(){
 			try{
+				var usingHorizontalSearchBox = $('#horizontal-search-box').is(':visible');
 				$("#lookfor").autocomplete({
 					source:function(request,response){
 						var url    = Globals.path+"/Search/AJAX",
 								params = {
 									'method'   :'GetAutoSuggestList',
-									searchTerm :$("#lookfor").val()
+									searchTerm :$("#lookfor").val(),
+									searchType :$('#basicSearchTypes').val()
 								};
 						$.getJSON(url, params, function(data){
-							response(data);
+							if (usingHorizontalSearchBox && data.length > 10) data = data.slice(0,10);
+							var suggestions = usingHorizontalSearchBox ? data.reverse() : data;
+							// Reverse the suggestions for the horizontal search bar since they are now displayed above the search box
+							// console.log(suggestions)
+							response(suggestions);
 						});
 					},
 					position:{
-						my:"left top",
-						at:"left bottom",
+						my:usingHorizontalSearchBox ? "left bottom" : "left top",
+						at:usingHorizontalSearchBox ? "left top" : "left bottom",
 						of:"#lookfor",
 						collision:"none"
 					},
@@ -228,6 +234,7 @@ Pika.Searches = (function(){
 			}
 		},
 
+/* Not Called anywhere. pascal 4/18/2022
 		lastSpellingTimer: undefined,
 		getSpellingSuggestion: function(query, process, isAdvanced){
 			if (Pika.Searches.lastSpellingTimer != undefined){
@@ -251,35 +258,7 @@ Pika.Searches = (function(){
 					},
 					500
 			);
-		},
-
-		/* Advanced Popup has been turned off. plb 10-22-2015
-		loadSearchGroups: function(){
-			var searchGroups = Pika.Searches.searchGroups;
-			for (var i = 0; i < searchGroups.length; i++){
-				if (i > 0){
-					Pika.Searches.addAdvancedGroup();
-				}
-				var searchGroup = searchGroups[i];
-				var groupIndex = i+1;
-				var searchGroupElement = $("#group" + groupIndex);
-				searchGroupElement.find(".groupStartInput").val(searchGroup.groupStart);
-				if (searchGroup.groupStart == 1){
-					searchGroupElement.find(".groupStartButton").addClass("active");
-				}
-				searchGroupElement.find(".searchType").val(searchGroup.searchType);
-				searchGroupElement.find(".lookfor").val(searchGroup.lookfor);
-				searchGroupElement.find(".groupEndInput").val(searchGroup.groupEnd);
-				if (searchGroup.groupEnd == 1){
-					searchGroupElement.find(".groupEndButton").addClass("active");
-				}
-				searchGroupElement.find(".joinOption").val(searchGroup.join);
-			}
-			if (searchGroups.length == 0){
-				Pika.Searches.resetAdvancedRowIds();
-			}
-		},
-*/
+		},*/
 
 		processSearchForm: function(){
 		// Check for Set Display Mode
@@ -294,52 +273,6 @@ Pika.Searches = (function(){
 			}
 		},
 
-		/* Advanced Popup has been turned off. plb 10-22-2015
-		resetAdvancedRowIds: function(){
-			var searchRows = $(".advancedRow");
-			searchRows.each(function(index, element){
-				var indexVal = index + 1;
-				var curRow = $(element);
-				curRow.attr("id", "group" + indexVal);
-				curRow.find(".groupStartInput")
-						.prop("name", "groupStart[" + indexVal + "]")
-						.attr("id", "groupStart" + indexVal + "Input");
-
-				curRow.find(".groupStartButton")
-						.data("hidden_element", "groupStart" + indexVal + "Input")
-						.attr("id", "groupStart" + indexVal);
-
-				curRow.find(".searchType")
-						.attr("name", "searchType[" + indexVal + "]");
-
-				curRow.find(".lookfor")
-						.attr("name", "lookfor[" + indexVal + "]");
-
-				curRow.find(".groupEndInput")
-						.prop("name", "groupEnd[" + indexVal + "]")
-						.attr("id", "groupEnd" + indexVal + "Input");
-
-				curRow.find(".groupEndButton")
-						.data("hidden_element", "groupEnd" + indexVal + "Input")
-						.attr("id", "groupEnd" + indexVal);
-
-				curRow.find(".joinOption")
-						.attr("name", "join[" + indexVal + "]");
-			});
-			if (searchRows.length == 1){
-				$(".deleteCriteria").hide();
-				$(".groupStartButton").hide();
-				$(".groupEndButton").hide();
-			}else{
-				$(".deleteCriteria").show();
-				$(".groupStartButton").show();
-				$(".groupEndButton").show();
-			}
-			var joinOptions = $(".joinOption");
-			joinOptions.show();
-			joinOptions.last().hide();
-		},
-*/
 		resetSearchType: function(){
 			if ($("#lookfor").val() == ""){
 				$("#searchSource").val($("#default_search_type").val());

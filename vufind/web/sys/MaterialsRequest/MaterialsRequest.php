@@ -67,44 +67,44 @@ class MaterialsRequest extends DB_DataObject {
 	public $firstName;
 	public $lastName;
 
-	function keys() {
-		return array('id');
+	function keys(){
+		return ['id'];
 	}
 
 	static function getFormats(){
 		require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestFormats.php';
-		$availableFormats = array();
-		$customFormats = new MaterialsRequestFormats();
+		$availableFormats = [];
+		$customFormats    = new MaterialsRequestFormats();
 		global $library;
 		$requestLibrary = $library;
-		if (UserAccount::isLoggedIn()) {
-			$user = UserAccount::getLoggedInUser();
+		if (UserAccount::isLoggedIn()){
+			$user        = UserAccount::getLoggedInUser();
 			$homeLibrary = $user->getHomeLibrary();
-			if (isset($homeLibrary)) {
+			if (isset($homeLibrary)){
 				$requestLibrary = $homeLibrary;
 			}
 		}
 
 		$customFormats->libraryId = $requestLibrary->libraryId;
 
-		if ($customFormats->count() == 0 ) {
+		if ($customFormats->count() == 0){
 			// Default Formats to use when no custom formats are created.
 
 			/** @var MaterialsRequestFormats[] $defaultFormats */
-			$defaultFormats = MaterialsRequestFormats::getDefaultMaterialRequestFormats($requestLibrary->libraryId);
-			$availableFormats = array();
+			$defaultFormats   = MaterialsRequestFormats::getDefaultMaterialRequestFormats($requestLibrary->libraryId);
+			$availableFormats = [];
 
 			global $configArray;
 			foreach ($defaultFormats as $index => $materialRequestFormat){
 				$format = $materialRequestFormat->format;
 				if (isset($configArray['MaterialsRequestFormats'][$format]) && $configArray['MaterialsRequestFormats'][$format] == false){
 					// dont add this format
-				} else {
+				}else{
 					$availableFormats[$format] = $materialRequestFormat->formatLabel;
 				}
 			}
 
-		} else {
+		}else{
 			$customFormats->orderBy('weight');
 			$availableFormats = $customFormats->fetchAll('format', 'formatLabel');
 		}
@@ -112,17 +112,17 @@ class MaterialsRequest extends DB_DataObject {
 		return $availableFormats;
 	}
 
-	public function getFormatObject() {
-		if (!empty($this->libraryId) && !empty($this->format)) {
+	public function getFormatObject(){
+		if (!empty($this->libraryId) && !empty($this->format)){
 			require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestFormats.php';
-			$format = new MaterialsRequestFormats();
-			$format->format = $this->format;
+			$format            = new MaterialsRequestFormats();
+			$format->format    = $this->format;
 			$format->libraryId = $this->libraryId;
-			if ($format->find(1)) {
+			if ($format->find(1)){
 				return $format;
-			} else {
-				foreach (MaterialsRequestFormats::getDefaultMaterialRequestFormats($this->libraryId) as $defaultFormat) {
-					if ($this->format == $defaultFormat->format) {
+			}else{
+				foreach (MaterialsRequestFormats::getDefaultMaterialRequestFormats($this->libraryId) as $defaultFormat){
+					if ($this->format == $defaultFormat->format){
 						return $defaultFormat;
 					}
 
@@ -133,6 +133,7 @@ class MaterialsRequest extends DB_DataObject {
 	}
 
 	static $materialsRequestEnabled = null;
+
 	static function enableMaterialsRequest($forceReload = false){
 		if (MaterialsRequest::$materialsRequestEnabled != null && $forceReload == false){
 			return MaterialsRequest::$materialsRequestEnabled;
@@ -159,9 +160,9 @@ class MaterialsRequest extends DB_DataObject {
 					}elseif (!empty($configArray['MaterialsRequest']['allowablePatronTypes'])){
 						//Check to see if we need to do additional restrictions by patron type
 						$allowablePatronTypes = $configArray['MaterialsRequest']['allowablePatronTypes'];
-							if (!preg_match("/^$allowablePatronTypes$/i", UserAccount::getUserPType())){
-								$enableMaterialsRequest = false;
-							}
+						if (!preg_match("/^$allowablePatronTypes$/i", UserAccount::getUserPType())){
+							$enableMaterialsRequest = false;
+						}
 					}
 				}
 			}
@@ -172,16 +173,16 @@ class MaterialsRequest extends DB_DataObject {
 		return $enableMaterialsRequest;
 	}
 
-	function getHoldLocationName($locationId) {
+	function getHoldLocationName($locationId){
 		require_once ROOT_DIR . '/sys/Location/Location.php';
 		$holdLocation = new Location();
-		if ($holdLocation->get($locationId)) {
+		if ($holdLocation->get($locationId)){
 			return $holdLocation->displayName;
 		}
 		return false;
 	}
 
-	function getRequestFormFields($libraryId, $isStaffRequest = false) {
+	function getRequestFormFields($libraryId, $isStaffRequest = false){
 		require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestFormFields.php';
 		$formFields            = new MaterialsRequestFormFields();
 		$formFields->libraryId = $libraryId;
@@ -190,24 +191,24 @@ class MaterialsRequest extends DB_DataObject {
 		$fieldsToSortByCategory = $formFields->fetchAll();
 
 		// If no values set get the defaults.
-		if (empty($fieldsToSortByCategory)) {
+		if (empty($fieldsToSortByCategory)){
 			$fieldsToSortByCategory = $formFields::getDefaultFormFields($libraryId);
 		}
 
 		if (!$isStaffRequest){
 			foreach ($fieldsToSortByCategory as $fieldKey => $fieldDetails){
-				if (in_array($fieldDetails->fieldType, array('assignedTo','createdBy','libraryCardNumber','id','status'))){
+				if (in_array($fieldDetails->fieldType, ['assignedTo', 'createdBy', 'libraryCardNumber', 'id', 'status'])){
 					unset($fieldsToSortByCategory[$fieldKey]);
 				}
 			}
 		}
 
 		// If we use another interface variable that is sorted by category, this should be a method in the Interface class
-		$requestFormFields = array();
-		if ($fieldsToSortByCategory) {
-			foreach ($fieldsToSortByCategory as $formField) {
-				if (!array_key_exists($formField->formCategory, $requestFormFields)) {
-					$requestFormFields[$formField->formCategory] = array();
+		$requestFormFields = [];
+		if ($fieldsToSortByCategory){
+			foreach ($fieldsToSortByCategory as $formField){
+				if (!array_key_exists($formField->formCategory, $requestFormFields)){
+					$requestFormFields[$formField->formCategory] = [];
 				}
 				$requestFormFields[$formField->formCategory][] = $formField;
 			}
@@ -215,8 +216,121 @@ class MaterialsRequest extends DB_DataObject {
 		return $requestFormFields;
 	}
 
-	function getAuthorLabelsAndSpecialFields($libraryId) {
+	function getAuthorLabelsAndSpecialFields($libraryId){
 		require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestFormats.php';
 		return MaterialsRequestFormats::getAuthorLabelsAndSpecialFields($libraryId);
 	}
+
+
+	/**
+	 * Update a Request's status and send any emails doing so would cause.
+	 *
+	 * @param int $newStatus  status Id number
+	 */
+	function updateRequestStatus($newStatus){
+		require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestStatus.php';
+		$materialsRequestStatus     = new MaterialsRequestStatus();
+		$materialsRequestStatus->id = $newStatus;
+		if ($materialsRequestStatus->find(true)){
+			$this->status      = $newStatus;
+			$this->dateUpdated = time();
+			if ($this->update()){
+				if ($materialsRequestStatus->sendEmailToPatron && $this->email){
+					// Generate Email to Patron
+					$replyToAddress = $emailSignature = '';
+					if (!empty($this->assignedTo)){
+						require_once ROOT_DIR . '/sys/Account/UserStaffSettings.php';
+						$staffSettings = new UserStaffSettings();
+						if ($staffSettings->get('userId', $this->assignedTo)){
+							if (!empty($staffSettings->materialsRequestReplyToAddress)){
+								$replyToAddress = $staffSettings->materialsRequestReplyToAddress;
+							}
+							if (empty($replyToAddress)){
+								global $pikaLogger;
+								$pikaLogger->error('Materials Request Staff User does not have a populated replyTo email address. User Id: ' . $this->assignedTo);
+							}
+							if (!empty($staffSettings->materialsRequestEmailSignature)){
+								$emailSignature = $staffSettings->materialsRequestEmailSignature;
+							}
+						} else {
+							global $pikaLogger;
+							$pikaLogger->error('Did not find Materials Request Staff user. User Id: ' .$this->assignedTo);
+						}
+					} else {
+						//TODO: Use current user info and assign to them?
+					}
+
+					$body = '*****This is an auto-generated email response. Please do not reply.*****';
+					$body .= "\r\n\r\n" . $materialsRequestStatus->emailTemplate;
+
+					if (!empty($emailSignature)){
+						$body .= "\r\n\r\n" . $emailSignature;
+					}
+
+					//Replace tags with appropriate values
+//					$materialsRequestUser     = new User();
+//					$materialsRequestUser->id = $this->createdBy;
+//					if ($materialsRequestUser->find(true)){
+//						foreach ($materialsRequestUser as $fieldName => $fieldValue){
+//							if (!is_array($fieldValue)){
+//								$body = str_replace('{' . $fieldName . '}', $fieldValue, $body);
+//							}
+//						}
+//					} else {
+//						global $pikaLogger;
+//						$pikaLogger->error('Failed to fetch Material Request Creator. ID: ' . $this->createdBy);
+//					}
+					foreach ($this as $fieldName => $fieldValue){
+						if (!is_array($fieldValue)){
+							$body = str_replace('{' . $fieldName . '}', $fieldValue, $body);
+						}
+					}
+
+					global $configArray;
+					require_once ROOT_DIR . '/sys/Mailer.php';
+					$mail  = new VuFindMailer();
+					$error = $mail->send($this->email, $configArray['Site']['email'], "Your Materials Request Update", $body, $replyToAddress);
+					if (PEAR_Singleton::isError($error)){
+						global $pikaLogger;
+						$pikaLogger->error("Error sending Materials Request email: " . $error->message);
+						return $error->message;
+					} else {
+						return true;
+					}
+				} else {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Remove any non-number character (except X) because ISBNs have an X check digit
+	 *
+	 * @param $string
+	 * @return array|string|string[]|null
+	 */
+	function removeNonNumbers($string){
+		return preg_replace('/[^\dX]/i', '', $string);
+	}
+
+
+	/**
+	 *  Take an array of strings and build a quoted and escape list of them for use in an SQL query.
+	 *
+	 * @param string[] $stringArray
+	 * @return string
+	 */
+	function buildListOfQuotedAndSQLEscapedItems(array $stringArray): string{
+		$commaSeparatedList = '';
+		foreach ($stringArray as $item){
+			if (strlen($commaSeparatedList) > 0){
+				$commaSeparatedList .= ',';
+			}
+			$commaSeparatedList .= "'" . $this->escape($item) . "'";
+		}
+		return $commaSeparatedList;
+	}
+
 }

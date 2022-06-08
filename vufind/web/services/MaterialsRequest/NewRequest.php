@@ -40,12 +40,14 @@ class MaterialsRequest_NewRequest extends Action {
 			$locations = $locationSingleton->getPickupBranches(UserAccount::getActiveUserObj(), UserAccount::getUserHomeLocationId());
 
 			$pickupLocations = [];
-			foreach ($locations as $curLocation){
-				$pickupLocations[] = [
-					'id'          => $curLocation->locationId,
-					'displayName' => $curLocation->displayName,
-					'selected'    => $curLocation->selected,
-				];
+			foreach ($locations as $key => $curLocation){
+				if ($key != '0default'){
+					$pickupLocations[] = [
+						'id'          => $curLocation->locationId,
+						'displayName' => $curLocation->displayName,
+						'selected'    => $curLocation->selected,
+					];
+				}
 			}
 			$interface->assign('pickupLocations', $pickupLocations);
 
@@ -58,11 +60,6 @@ class MaterialsRequest_NewRequest extends Action {
 			$request                         = new MaterialsRequest();
 			$request->placeHoldWhenAvailable = true; // set the place hold option on by default
 			$request->illItem                = true; // set the place hold option on by default
-
-			// Nashville special request
-			if ($library->displayName == "Nashville Public Library"){
-				$request->illItem = false;
-			}
 
 			if (!empty($_REQUEST['lookfor'])){
 				$searchType = $_REQUEST['basicType'] ?? $_REQUEST['type'] ?? 'Keyword';
@@ -123,7 +120,8 @@ class MaterialsRequest_NewRequest extends Action {
 			if (isset($library)){
 				$interface->assign('newMaterialsRequestSummary', $library->newMaterialsRequestSummary);
 
-				$interface->assign('enableSelfRegistration', $library->enableSelfRegistration);
+				$interface->assign('enableSelfRegistration', $library->enableSelfRegistration || $library->externalSelfRegistrationUrl);
+				$interface->assign('selfRegLink', empty($library->externalSelfRegistrationUrl) ? '/MyAccount/SelfReg' : $library->externalSelfRegistrationUrl);
 				$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
 				$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
 			}else{

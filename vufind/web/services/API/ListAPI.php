@@ -374,7 +374,7 @@ class ListAPI extends AJAXHandler {
 
 			require_once ROOT_DIR . '/sys/LocalEnrichment/FavoriteHandler.php';
 			$user               = UserAccount::getLoggedInUser();
-			$favoriteHandler    = new FavoriteHandler($list, $user, false);
+			$favoriteHandler    = new FavoriteHandler($list, false);
 			$isMixedContentList = $favoriteHandler->isMixedUserList();
 			$orderedListOfIds   = $isMixedContentList ? $favoriteHandler->getFavorites() : array();
 			// Use this array to combined Mixed Lists Back into their list-defined order

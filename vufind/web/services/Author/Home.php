@@ -64,40 +64,40 @@ class Author_Home extends Union_Results {
 		// or with multiple session variables, but for now this seems okay.
 		$interface->assign('lastsearch', (isset($_SESSION['lastSearchURL']) && !strstr($_SESSION['lastSearchURL'], 'Author/Home')) ? $_SESSION['lastSearchURL'] : false);
 
-		$interface->assign('lookfor', $_GET['author']);
 		$interface->assign('basicSearchIndex', 'Author');
 		$interface->assign('searchIndex', 'Author');
 
 		// Clean up author string
-		$author = strip_tags($_GET['author']);
-		if (is_array($author)){
-			$author = array_pop($author);
+		$authorOriginal = strip_tags($_GET['author']);
+		if (is_array($authorOriginal)){
+			$authorOriginal = array_pop($authorOriginal);
 		}
+		$interface->assign('lookfor', $authorOriginal);
 
-		$author = trim(str_replace('"', '', $author));
+		$author = trim(str_replace('"', '', $authorOriginal));
 		if (substr($author, strlen($author) - 1, 1) == ','){
 			$author = substr($author, 0, strlen($author) - 1);
 		}
 		$authorRaw           = $author;
 		$wikipediaAuthorName = $author;
 		$author              = explode(',', $author);
-		$interface->assign('author', $author);
 
 		// Create First Name
 		$firstName = '';
 		if (isset($author[1])){
 			$firstName = $author[1];
 
-			if (isset($author[2])){
-				// Remove punctuation
-				if ((strlen($author[2]) > 2) && (substr($author[2], -1) == '.')){
-					$author[2] = substr($author[2], 0, -1);
-				}
-			}
+//			if (isset($author[2])){
+//				// Remove punctuation
+//				if ((strlen($author[2]) > 2) && (substr($author[2], -1) == '.')){
+//					$author[2] = substr($author[2], 0, -1);
+//				}
+//			}
 		}
 
-		// Remove dates
-		$firstName = preg_replace('/[0-9]+-[0-9]*/', '', $firstName);
+		// Remove dates & initials explainer
+		$firstName                  = preg_replace('/[0-9]+-[0-9]*/', '', $firstName); // birth year - death year phrases
+		$firstName                  = preg_replace('/\(.*\)$/i', '', $firstName); // full names for initials in parenthesis eg.  W. E. B. (William Edward Burghardt)
 
 		// Build Author name to display.
 		if (substr($firstName, -3, 1) == ' '){

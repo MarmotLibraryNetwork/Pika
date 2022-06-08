@@ -44,7 +44,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		'getReactivationDateForm', //not checked
 		'renewItem', 'renewAll', 'renewSelectedItems',
 		//			'getPinResetForm',
-		'getAddAccountLinkForm', 'addAccountLink', 'removeAccountLink',
+		'getAddAccountLinkForm', 'addAccountLink', 'removeAccountLink', 'removeViewingAccount',
 		'cancelBooking', 'getCitationFormatsForm', 'getAddBrowseCategoryFromListForm',
 		'getMasqueradeAsForm', 'initiateMasquerade', 'endMasquerade', 'getMenuData',
 		'transferList', 'isStaffUser', 'transferListToUser','copyListPrompt',
@@ -155,6 +155,33 @@ class MyAccount_AJAX extends AJAXHandler {
 					'result'  => false,
 					'message' => 'Sorry, we could remove that account.',
 				);
+			}
+		}
+		return $result;
+	}
+
+	function removeViewingAccount(){
+		if (!UserAccount::isLoggedIn()){
+			$result = array(
+				'result'  => false,
+				'message' => 'Sorry, you must be logged in to manage accounts.',
+			);
+		}else{
+			$viewingAccountId = $_REQUEST['idToRemove'];
+			$viewingAccount =  new User();
+			$viewingAccount->id = $viewingAccountId;
+			$viewingAccount->find(true);
+			$user           = UserAccount::getLoggedInUser();
+			if ($viewingAccount->removeLinkedUser($user->id)){
+				$result = array(
+					'result'  => true,
+					'message' => 'Successfully removed linked account.',
+				);
+			}else{
+			$result = array(
+				'result'  => false,
+				'message' => 'Sorry, we could not remove that account.',
+			);
 			}
 		}
 		return $result;
@@ -972,12 +999,14 @@ class MyAccount_AJAX extends AJAXHandler {
 	}
 
 	function LoginForm(){
+		/** @var Library $library */
 		global $interface;
 		global $library;
 		global $configArray;
 
 		if (isset($library)){
-			$interface->assign('enableSelfRegistration', $library->enableSelfRegistration);
+			$interface->assign('enableSelfRegistration', $library->enableSelfRegistration || $library->externalSelfRegistrationUrl);
+			$interface->assign('selfRegLink', empty($library->externalSelfRegistrationUrl) ? '/MyAccount/SelfReg' : $library->externalSelfRegistrationUrl);
 			$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
 			$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
 		}else{
@@ -1240,7 +1269,7 @@ class MyAccount_AJAX extends AJAXHandler {
 					if ($list->public == true || (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $list->user_id)){
 						//The user can access the list
 						require_once ROOT_DIR . '/sys/LocalEnrichment/FavoriteHandler.php';
-						$favoriteHandler = new FavoriteHandler($list, UserAccount::getActiveUserObj(), false);
+						$favoriteHandler = new FavoriteHandler($list, false);
 						$titleDetails    = $favoriteHandler->getTitles(count($listEntries));
 						// get all titles for email list, not just a page's worth
 						$interface->assign('titles', $titleDetails);
@@ -1666,7 +1695,7 @@ class MyAccount_AJAX extends AJAXHandler {
                         $title = $listFrom->title;
                     }
                     require_once ROOT_DIR . '/sys/LocalEnrichment/FavoriteHandler.php';
-                    $favList = new FavoriteHandler($listFrom, $user, false);
+                    $favList = new FavoriteHandler($listFrom, false);
                     $recordsToAdd = $favList->getTitles($listFrom->id);
                     require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
                     $description = $listFrom->description . " copied from /MyAccount/MyList/" . $listFrom->id . " - List: " . $listFrom->title ;

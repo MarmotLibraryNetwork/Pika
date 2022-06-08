@@ -105,28 +105,53 @@
 					<div class="row">
 						<div class="result-label col-sm-4">Address: </div>
 						<div class="result-value col-sm-8">
-							{$addressInfo.addressStreetNumber} {$addressInfo.addressStreet}
-							{if $addressInfo.address2}
-								<br>{$addressInfo.address2}
-							{/if}
-							{if $addressInfo.addressCity || $addressInfo.addressState || $addressInfo.addressZipCode}
-								{$addressInfo.addressCity}
-								{if $addressInfo.addressCity || $addressInfo.addressState}
-									,&nbsp;
+							<address>
+								{if $addressInfo.addressStreetNumber || $addressInfo.addressStreet}
+									{$addressInfo.addressStreetNumber} {$addressInfo.addressStreet}<br>
 								{/if}
-								{$addressInfo.addressState} {$addressInfo.addressZipCode}
-							{/if}
-							{if $addressInfo.addressCounty}
-								<br>{$addressInfo.addressCounty}
-							{/if}
-							{if $addressInfo.addressCountry}
-								<br>{$addressInfo.addressCountry}
-							{/if}
-							{if $addressInfo.addressOtherRegion}
-								<br>{implode subject=$addressInfo.addressOtherRegion}
-							{/if}
+								{if $addressInfo.address2}
+									{$addressInfo.address2}<br>
+								{/if}
+								{if $addressInfo.addressCity || $addressInfo.addressState || $addressInfo.addressZipCode}
+									{$addressInfo.addressCity}
+									{if $addressInfo.addressCity && $addressInfo.addressState}
+										,&nbsp;
+									{/if}
+									{$addressInfo.addressState} {$addressInfo.addressZipCode}
+								{/if}
+							</address>
 						</div>
 					</div>
+					{if $addressInfo.addressCounty}
+						<div class="row">
+							<div class="result-label col-sm-4">County: </div>
+							<div class="result-value col-sm-8">
+									{if $addressInfo.addressCounty}
+										{$addressInfo.addressCounty}
+									{/if}
+							</div>
+						</div>
+					{/if}
+					{if $addressInfo.addressCountry}
+						<div class="row">
+							<div class="result-label col-sm-4">Country: </div>
+							<div class="result-value col-sm-8">
+									{if $addressInfo.addressCountry}
+										{$addressInfo.addressCountry}
+									{/if}
+							</div>
+						</div>
+					{/if}
+					{if $addressInfo.addressOtherRegion}
+						<div class="row">
+							<div class="result-label col-sm-4">Other Region: </div>
+							<div class="result-value col-sm-8">
+									{if $addressInfo.addressOtherRegion}
+										{implode subject=$addressInfo.addressOtherRegion}
+									{/if}
+							</div>
+						</div>
+					{/if}
 				{/if}
 
 				{* Display map if it exists *}

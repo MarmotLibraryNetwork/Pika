@@ -29,7 +29,7 @@ function getExtraConfigArrayFile($name){
 
 	// Load the filename from config.ini, and use the key name as a default
 	//     filename if no stored value is found.
-	$filename = isset($configArray['Extra_Config'][$name]) ? $configArray['Extra_Config'][$name] : $name . '.ini';
+	$filename = $configArray['Extra_Config'][$name] ?? $name . '.ini';
 
 	//Check to see if there is a domain name based subfolder for he configuration
 	global $serverName;
@@ -123,7 +123,7 @@ function mapValue($mapName, $value){
  * @return  array       The retrieved configuration settings.
  */
 function getExtraConfigArray($name){
-	static $extraConfigs = array();
+	static $extraConfigs = [];
 
 	// If the requested settings aren't loaded yet, pull them in:
 	if (!isset($extraConfigs[$name])){
@@ -131,7 +131,7 @@ function getExtraConfigArray($name){
 		// exist, so we can treat it as an empty array.
 		$extraConfigs[$name] = @parse_ini_file(getExtraConfigArrayFile($name), true);
 		if ($extraConfigs[$name] === false){
-			$extraConfigs[$name] = array();
+			$extraConfigs[$name] = [];
 		}
 	}
 

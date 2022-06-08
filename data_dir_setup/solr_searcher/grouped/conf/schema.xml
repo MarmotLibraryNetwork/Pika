@@ -72,6 +72,12 @@
 				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
 				-->
 				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<!--
+				Simple tokenizer that splits the text stream on whitespace and returns sequences of
+				non-whitespace characters as tokens. Note that any punctuation will be included in the tokens.
+
+				https://solr.apache.org/guide/8_8/tokenizers.html#white-space-tokenizer
+				-->
 				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
 				<!--
 				This filter discards, or stops analysis of, tokens that are on the given stop words list.
@@ -98,7 +104,7 @@
 
 				<filter class="solr.WordDelimiterGraphFilterFactory"
 						generateWordParts="0"
-						generateNumberParts="0"
+						generateNumberParts="1"
 						splitOnCaseChange="0"
 						catenateAll="0"
 						stemEnglishPossessive="1"
@@ -106,9 +112,16 @@
 						catenateWords="0"
 						catenateNumbers="0"
 						splitOnNumerics="0"
+
+						protected="protwords.txt"
 				/>
 				<!-- Turning off every option but stemEnglishPossessive for index analyzer for now.
-				 Word Delimiter is needed to remove punctuation from tokens See D-4171 and D-4172 -->
+				 Word Delimiter is needed to remove punctuation from tokens See D-4171 and D-4172
+
+				  Turned on generateNumberParts, so that year phrases will get indexed like
+				  uniform title: Pièces de clavecin (1729-1730)
+				  author:  Jacquet de La Guerre, Elisabeth-Claude, 1665-1729
+				  See D-4198  -->
 				<!--
 				This filter splits tokens at word delimiters.
 				If you use this filter during indexing, you must follow it with a Flatten Graph Filter to squash tokens on top of one another like the Word Delimiter Filter, because the indexer can’t directly consume a graph. To get fully correct positional queries when tokens are split, you should instead use this filter at query time.
@@ -166,10 +179,39 @@
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 			<analyzer type="query">
+				<!--This filter uses regular expressions to replace or change character patterns.
+				https://solr.apache.org/guide/8_8/charfilterfactories.html#solr-patternreplacecharfilterfactory
+				-->
+				<charFilter class="solr.PatternReplaceCharFilterFactory"
+							pattern="(\w)\.(\w)\.(\w)\.?(?:\s|$)" replacement="$1 $2 $3 "/>
+				<!--Replace 2 letter initials with out spaces between them with spaced initials
+				w.e.b. du bois to w e b du bois
+				w.e.b du bois to w e b du bois
+				du bois, w.e.b to du bois, w e b
+				du bois, w.e.b. to du bois, w e b
+				   -->
+				<charFilter class="solr.PatternReplaceCharFilterFactory"
+							pattern="(\w)\.(\w)\.?(?:\s|$)" replacement="$1 $2 "/>
+				<!--Replace 2 letter initials with out spaces between them with spaced initials
+				 eg.  j.d robb to  j d robb
+				  j.d. robb to j d robb
+				  robb, j.d to robb, j d
+				  robb, j.d. to robb, j d
+				   -->
+				<!--This filter uses regular expressions to replace or change character patterns.
+				https://solr.apache.org/guide/8_8/charfilterfactories.html#solr-patternreplacecharfilterfactory
+
+				-->
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
 				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
 				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
 				-->
-				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<!--
+				Simple tokenizer that splits the text stream on whitespace and returns sequences of
+				non-whitespace characters as tokens. Note that any punctuation will be included in the tokens.
+
+				https://solr.apache.org/guide/8_8/tokenizers.html#white-space-tokenizer
+				-->
 				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
 				<!-- Important: Only apply synonym filter to query analyzers; not to index analyzers-->
 				<!-- Do our synonym filtering before word delimiter filters so that we don't create unwanted synonyms
@@ -195,6 +237,8 @@
 						catenateWords="1"
 						catenateNumbers="1"
 						splitOnNumerics="0"
+
+						protected="protwords.txt"
 				/>
 				<!-- Important: Only apply word delimiter graph filter to query analyzers; not to index analyzers-->
 				<!--
@@ -279,31 +323,18 @@
 		<!-- Text Field without Stemming, without Synonyms, and without stop Word removal -->
 		<fieldType name="textProper" class="solr.TextField" positionIncrementGap="100">
 			<analyzer type="index">
-				<tokenizer class="solr.ICUTokenizerFactory"/>
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
 				<!--
-				This tokenizer processes multilingual text and tokenizes it appropriately based on its script attribute.
-				Requires additional jar files
+				Simple tokenizer that splits the text stream on whitespace and returns sequences of
+				non-whitespace characters as tokens. Note that any punctuation will be included in the tokens.
 
-				The default configuration for solr.ICUTokenizerFactory provides UAX#29 word break rules tokenization
-				(like solr.StandardTokenizer), but also includes custom tailorings for Hebrew (specializing handling
-				of double and single quotation marks), for syllable tokenization for Khmer, Lao, and Myanmar, and
-				dictionary-based word segmentation for CJK characters.
-
-				https://solr.apache.org/guide/8_8/tokenizers.html#icu-tokenizer
+				https://solr.apache.org/guide/8_8/tokenizers.html#white-space-tokenizer
 				-->
-<!--  Disabling using word delimiter graph on textProper till we prove it is needed. See D-4189
 
-				<filter class="solr.WordDelimiterGraphFilterFactory"
-						generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0"
-						splitOnCaseChange="1" splitOnNumerics="0" stemEnglishPossessive="1"
-						protected="protected_en_contractions.txt"
-				/>
-				&lt;!&ndash; protect contractions for matching in text_proper See D-4189 &ndash;&gt;
+				<!-- Need to keep symbol characters in protwords.txt. ICUTokenizerFactory tokenizer removed them.  See D-75 -->
+				<!--  Don't use word delimiter graph on textProper till we prove it is needed. See D-4189 -->
 
-				<filter class="solr.FlattenGraphFilterFactory"/> &lt;!&ndash; required on index analyzers after graph filters &ndash;&gt;
-
-
--->
+				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
 				<filter class="solr.ICUFoldingFilterFactory"/>
 				<!--
 				This filter is a custom Unicode normalization form that applies the foldings specified in Unicode TR #30: Character Foldings
@@ -318,64 +349,20 @@
 
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
 				-->
-				<!--<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>-->
-				<!-- CommonGrams filtering does not seem to work with quoted search phrase,
-				which appears to be the reason we switch over to searching against textProper fields
-				See D-4122 -->
-				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 			<analyzer type="query">
-				<tokenizer class="solr.ICUTokenizerFactory"/>
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
 				<!--
-				This tokenizer processes multilingual text and tokenizes it appropriately based on its script attribute.
-				Requires additional jar files
+				Simple tokenizer that splits the text stream on whitespace and returns sequences of
+				non-whitespace characters as tokens. Note that any punctuation will be included in the tokens.
 
-				The default configuration for solr.ICUTokenizerFactory provides UAX#29 word break rules tokenization
-				(like solr.StandardTokenizer), but also includes custom tailorings for Hebrew (specializing handling
-				of double and single quotation marks), for syllable tokenization for Khmer, Lao, and Myanmar, and
-				dictionary-based word segmentation for CJK characters.
-
-				https://solr.apache.org/guide/8_8/tokenizers.html#icu-tokenizer
+				https://solr.apache.org/guide/8_8/tokenizers.html#white-space-tokenizer
 				-->
-<!--  Disabling using word delimiter graph on textProper till we prove it is needed. See D-4189
 
-								<filter class="solr.WordDelimiterGraphFilterFactory"
-										generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0"
-										splitOnCaseChange="1" splitOnNumerics="0" stemEnglishPossessive="1"
-										protected="protected_en_contractions.txt"
-								/>
-								&lt;!&ndash; protect contractions for matching in textProper fields  &ndash;&gt;
-								&lt;!&ndash; Important: It appears word delimiter graph filter should be applied to both index and query analyzers,
-									at list for the textProper field. This is in contradiction to what the documentation says about
-									this filter.  See D-4189 &ndash;&gt;
-								&lt;!&ndash;
-								// Turn off splitOnNumerics Pascal 7/19/21 tokenizes Ids like ".b1234x" into "b","1234,"x"   See D-3984
+				<!-- Need to keep symbol characters in protwords.txt. ICUTokenizerFactory tokenizer removed them.  See D-75 -->
+				<!--  Don't use word delimiter graph on textProper till we prove it is needed. See D-4189 -->
 
-								From documentation : https://solr.apache.org/guide/8_8/filter-descriptions.html#word-delimiter-graph-filter
-
-													generateWordParts
-										(integer, default 1) If non-zero, splits words at delimiters. For example:"CamelCase", "hot-spot" -> "Camel", "Case", "hot", "spot"
-									generateNumberParts
-										(integer, default 1) If non-zero, splits numeric strings at delimiters:"1947-32" ->*"1947", "32"
-									splitOnCaseChange
-										(integer, default 1) If 0, words are not split on camel-case changes:"BugBlaster-XL" -> "BugBlaster", "XL". Example 1 below illustrates the default (non-zero) splitting behavior.
-									splitOnNumerics
-										(integer, default 1) If 0, don’t split words on transitions from alpha to numeric:"FemBot3000" -> "Fem", "Bot3000"
-									catenateWords
-										(integer, default 0) If non-zero, maximal runs of word parts will be joined: "hot-spot-sensor’s" -> "hotspotsensor"
-									catenateNumbers
-										(integer, default 0) If non-zero, maximal runs of number parts will be joined: 1947-32" -> "194732"
-									catenateAll
-										(0/1, default 0) If non-zero, runs of word and number parts will be joined: "Zap-Master-9000" -> "ZapMaster9000"
-									preserveOriginal
-										(integer, default 0) If non-zero, the original token is preserved: "Zap-Master-9000" -> "Zap-Master-9000", "Zap", "Master", "9000"
-									protected
-										(optional) The pathname of a file that contains a list of protected words that should be passed through without splitting.
-									stemEnglishPossessive
-										(integer, default 1) If 1, strips the possessive 's from each subword.
-								&ndash;&gt;
-								<filter class="solr.FlattenGraphFilterFactory"/> &lt;!&ndash; required on index analyzers after graph filters &ndash;&gt;
-				-->
+				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
 				<filter class="solr.ICUFoldingFilterFactory"/>
 				<!--
 				This filter is a custom Unicode normalization form that applies the foldings specified in Unicode TR #30: Character Foldings
@@ -390,11 +377,6 @@
 
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
 				-->
-				<!--<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>-->
-				<!-- CommonGrams filtering does not seem to work with quoted search phrase,
-				which appears to be the reason we switch over to searching against textProper fields
-				See D-4122 -->
-				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 		</fieldType>
 		<!-- This is an example of using the KeywordTokenizer along
@@ -426,7 +408,14 @@
 
 				 http://java.sun.com/j2se/1.5.0/docs/api/java/util/regex/package-summary.html
 				-->
-				<filter class="solr.PatternReplaceFilterFactory" pattern="([^a-z1-9\s])" replacement="" replace="all"/>
+				<filter class="solr.PatternReplaceFilterFactory" pattern="([^a-z0-9\s])" replacement="" replace="all"/>
+				<!--This filter applies a regular expression to each token and, for those that match, substitutes the
+				given replacement string in place of the matched pattern. Tokens which do not match are passed though unchanged.
+
+				Note: This is different from the CharFilter solr.PatternReplaceCharFilterFactory
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#pattern-replace-filter
+				-->
 			</analyzer>
 		</fieldType>
 		<fieldType name="callnumber-search" class="solr.TextField" sortMissingLast="true" omitNorms="true">
@@ -509,25 +498,24 @@
 			  unquoted search phrases of these fields with multiple words bring in totally unwanted results. pascal 10/25/2021
 			-->
 			<analyzer>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1 zzzz"/>
 				<!-- KeywordTokenizer does no actual tokenizing, so the entire input string is preserved as a single token
 
 				 https://solr.apache.org/guide/8_8/tokenizers.html#keyword-tokenizer
 				 -->
 				<tokenizer class="solr.KeywordTokenizerFactory"/>
-				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1 zzzz"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
 				<!--
 				Converts any uppercase letters in a token to the equivalent lowercase token. All other characters are left unchanged.
 
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#lower-case-filter
 				-->
-				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/><!--TODO: Shouldn't this always be redundant??  -->
 			</analyzer>
 		</fieldType>
 		<fieldType name="text-left" class="solr.TextField" sortMissingLast="true" omitNorms="true">
 			<analyzer type="index">
-				<tokenizer class="solr.KeywordTokenizerFactory"/>
 				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1"/>
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
 				<!--
 				Converts any uppercase letters in a token to the equivalent lowercase token. All other characters are left unchanged.
@@ -537,11 +525,17 @@
 				<!-- The TrimFilter removes any leading or trailing whitespace -->
 				<filter class="solr.TrimFilterFactory"/>
 				<filter class="solr.EdgeNGramFilterFactory" minGramSize="5" maxGramSize="40"/>
+				<!-- This filter generates edge n-gram tokens of sizes within the given range.
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#edge-n-gram-filter
+
+				Note: phrases can only be up to 35 characters long to have a match against the n-grams here.
+				(5 characters from "aaaa " + max of 35 = maxGramSize (40))
+				-->
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 			<analyzer type="query">
-				<tokenizer class="solr.KeywordTokenizerFactory"/>
 				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1"/>
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
 				<!--
 				Converts any uppercase letters in a token to the equivalent lowercase token. All other characters are left unchanged.
@@ -562,6 +556,7 @@
 		<field name="recordtype" type="string" indexed="true" stored="true" multiValued="false" omitNorms="false"/>
 		<field name="alternate_ids" type="string" indexed="true" stored="false" multiValued="true" omitNorms="true"/>
 		<field name="last_indexed" type="date" indexed="false" stored="true" multiValued="false"/>
+		<!-- Now automatically set by solr_master core. (So the schema definition is slightly different -->
 
 		<!-- Related Record information -->
 		<field name="scope_has_related_records" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
@@ -697,7 +692,14 @@
 		 -->
 		<!-- Author variations -->
 		<field name="author" type="text" indexed="true" stored="true" />
-		<!-- First MARC tag 100abcdq or 110ab -->
+		<!-- MARC tag 100abcdq or 110ab
+		Most common value from related records with format Book is used; if there is no related record with format Book,
+		the most common value from related records with format eBook is used; if there neither Book nor eBook, the most common
+		value is used.
+
+		In cases of equally common values, the longer value is used.
+		(under presumption that longer version will likely contain birth year - death year phrase)
+		 -->
 		<field name="authorStr" type="string" indexed="true" stored="true" docValues="true"/>
 		<!-- authorStr is used an author facet.  It is copy field that uses author above as its source. -->
 		<!-- TODO: ? reverse the pattern here. populate the simple string field (authorStr) and make author field
@@ -885,17 +887,25 @@
 		<dynamicField name="translation_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
 
 		<!-- Fields for boosting branch holdings -->
-		<dynamicField name="lib_boost_*" type="integer" indexed="true" stored="true" multiValued="false" omitNorms="true"/>
-		<!-- relevance determiners -->
+		<dynamicField name="lib_boost_*" type="integer" indexed="false" stored="true" multiValued="false" omitNorms="true"/>
+		<!-- If the scope as an item available, the scope will get the availableAtLocationBoostValue.
+			If the scope owns an item but none are available, the scope will get the ownedByLocationBoostValue.
+		usual default values set in searches.ini :
+				availableAtLocationBoostValue = 50
+				ownedByLocationBoostValue = 10
+		-->		<!-- relevance determiners -->
 		<field name="popularity" type="integer" indexed="true" stored="true" multiValued="false" default="0"/>
-		<field name="num_holdings" type="integer" omitNorms="true" indexed="true" stored="true" multiValued="false"/>
+<!--		<field name="num_holdings" type="integer" omitNorms="true" indexed="true" stored="true" multiValued="false"/>-->
 
 		<!-- Fields from Pika Enrichment -->
 		<field name="tag" type="string" indexed="true" stored="true" multiValued="true"/>
 		<!--TODO: nothing is indexed into this field "tag"-->
 		<field name="rating" type="float" indexed="true" stored="true" multiValued="false" default="2.5"/>
+		<!---->
 		<field name="rating_facet" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="system_list" type="string" indexed="true" stored="true" multiValued="true"/>
+		<!-- Wake County's (Horizon's?) unique feature system list populated from MARC 449a
+		 to create a System List facet. -->
 
 		<!-- Special fields for Lists -->
 		<field name="num_titles" type="integer" indexed="true" stored="true" multiValued="false"/>

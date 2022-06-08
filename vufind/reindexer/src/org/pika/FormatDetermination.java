@@ -197,6 +197,7 @@ public class FormatDetermination {
 						case "bookwithdvd":
 						case "bookwithvideodisc":
 						case "largeprint":
+						case "illustratededition":
 						case "manuscript":
 						case "thesis":
 						case "print":
@@ -228,6 +229,7 @@ public class FormatDetermination {
 							econtentItem.setFormatCategory("Audio Books");
 							econtentRecord.setFormatBoost(8);
 							break;
+						case "musiccd":
 						case "musicrecording":
 							econtentItem.setFormat("eMusic");
 							econtentItem.setFormatCategory("Music");
@@ -242,6 +244,7 @@ public class FormatDetermination {
 						case "video":
 						case "dvd":
 						case "videodisc":
+						case "dvdblu-raycombo":
 						case "playawayview":
 							econtentItem.setFormat("eVideo");
 							econtentItem.setFormatCategory("Movies");
@@ -526,8 +529,8 @@ public class FormatDetermination {
 		}else if (logger.isDebugEnabled()){
 			logger.debug("Pre-filtering found formats " + String.join(",", printFormats));
 		}
-
-		filterPrintFormats(printFormats);
+		accompanyingMaterialCheck(record, printFormats);
+		filterPrintFormats(printFormats, record);
 
 		if (printFormats.size() > 1){
 			String formatsString = String.join(",", printFormats);
@@ -571,7 +574,7 @@ public class FormatDetermination {
 						printFormats.add("BookWithCDROM");
 						break;
 					}
-					if (printFormats.contains("DVD")){
+					/*if (printFormats.contains("DVD")){
 						printFormats.clear();
 						printFormats.add("BookWithDVD");
 						break;
@@ -579,13 +582,53 @@ public class FormatDetermination {
 					if (printFormats.contains("VideoDisc")){
 						printFormats.clear();
 						printFormats.add("BookWithVideoDisc");
-					}
+					}*/
 			}
 		}
-
+		List<DataField> physicalDescriptions = record.getDataFields("300");
+		for(DataField physicalDescription : physicalDescriptions){
+			if (physicalDescription != null) {
+				if (physicalDescription.getSubfield('e') != null) {
+					String accompanying = physicalDescription.getSubfield('e').getData().toLowerCase();
+					if(accompanying.contains("dvd-rom")) {
+						if (printFormats.contains("Book") || printFormats.contains("BookWithCDROM")){
+							printFormats.clear();
+							printFormats.add("BookWithDVDROM");
+						}
+					}else if(accompanying.contains("dvd"))
+					{
+						String mainPhysical = null;
+						if(physicalDescription.getSubfield('a')!=null){
+							mainPhysical = physicalDescription.getSubfield('a').getData().toLowerCase();
+						}
+						if(printFormats.contains("Book")){
+							printFormats.clear();
+							printFormats.add("BookWithDVD");
+						}else if(mainPhysical!=null){
+							if (mainPhysical.contains("pages")){
+								printFormats.clear();
+								printFormats.add("BookWithDVD");
+								break;
+							}
+						}
+						printFormats.add("DVD");
+					}else if(accompanying.contains("book") && !accompanying.contains("booklet") && !accompanying.contains("ebook") && !accompanying.contains("e-book")){
+						if(printFormats.contains("SoundDisc")){
+								printFormats.clear();
+								printFormats.add("BookWithAudioCD");
+						}
+					}else if(accompanying.contains("audio disc")){
+						if(printFormats.contains("Book")){
+							printFormats.clear();
+							printFormats.add("BookWithAudioCD");
+						}
+					}
+				}
+			}
+		}
 	}
 
-	private void filterPrintFormats(Set<String> printFormats) {
+	private void filterPrintFormats(Set<String> printFormats, Record record) {
 		if (printFormats.size() == 1) {
 			return;
 		}
@@ -649,6 +692,13 @@ public class FormatDetermination {
 			return;
 		}
 		// Video Things
+		if(printFormats.contains("DVD") || printFormats.contains("Blu-ray"))
+		{
+			if(isComboPack(record)) {
+				printFormats.clear();
+				printFormats.add("DVDBlu-rayCombo");
+			}
+		}
 		if (printFormats.contains("Video")){
 			if (printFormats.contains("DVD")
 					|| printFormats.contains("VideoDisc")
@@ -661,6 +711,9 @@ public class FormatDetermination {
 			if(printFormats.contains("CDROM")){
 				printFormats.remove("CDROM");
 			}
+		}
+		if(printFormats.contains("WindowsGame") && printFormats.contains("VideoDisc")){
+			printFormats.remove("WindowsGame");
 		}
 		if (printFormats.contains("VideoDisc")){
 			if (printFormats.contains("Blu-ray")
@@ -717,6 +770,7 @@ public class FormatDetermination {
 				printFormats.add("MP3Disc");
 			}
 			if(printFormats.contains("CDROM")||printFormats.contains("WindowsGame")){
+
 				if (printFormats.contains("CDROM")) {
 					printFormats.remove("CDROM");
 				}
@@ -751,6 +805,7 @@ public class FormatDetermination {
 		if (printFormats.contains("WindowsGame") && printFormats.contains("SoundDisc")){
 			printFormats.remove("WindowsGame");
 		}
+
 
 		// Book Things
 		if (printFormats.contains("Book")){
@@ -828,6 +883,33 @@ public class FormatDetermination {
 			printFormats.remove("Blu-ray");
 			printFormats.remove("4KUltraBlu-Ray");
 		}
+	}
+
+	private boolean isComboPack(Record record) {
+
+		List<DataField> marc250 = MarcUtil.getDataFields(record, "250");
+		for(DataField field : marc250) {
+			if (field != null) {
+				if (field.getSubfield('a') != null) {
+					String fieldData = field.getSubfield('a').getData().toLowerCase();
+					if(fieldData.contains("combo")){
+						return true;
+					}
+				}
+			}
+		}
+		List<DataField> marc300 = MarcUtil.getDataFields(record, "300");
+		for(DataField field300 : marc300){
+			if(field300 !=null){
+				if (field300.getSubfield('a') != null){
+					String fieldData = field300.getSubfield('a').getData().toLowerCase();
+					if(fieldData.contains("combo")){
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 
 	private void getFormatFromTitle(Record record, Set<String> printFormats) {
@@ -939,6 +1021,8 @@ public class FormatDetermination {
 						result.add("WonderBook");
 					} else if (editionData.contains("board book")) {
 						result.add("BoardBook");
+					} else if  (editionData.contains("illustrated ed")){
+						result.add("IllustratedEdition");
 //			  } else if (find4KUltraBluRayPhrases(editionData)) {
 //					result.add("4KUltraBlu-Ray");
 						// not sure this is a good idea yet. see D-2432
@@ -986,7 +1070,7 @@ public class FormatDetermination {
 						} else if (physicalDescriptionData.contains("wonderbook")) {
 							result.add("WonderBook");
 						}else if (physicalDescriptionData.contains("vox book")){
-							result.add("VoxBook")	;
+							result.add("VoxBooks");
 						}else if (physicalDescriptionData.contains("hotspot device") || physicalDescriptionData.contains("mobile hotspot") || physicalDescriptionData.contains("hot spot") || physicalDescriptionData.contains("hotspot")){
 							result.add("PhysicalObject");
 						}
@@ -1086,6 +1170,7 @@ public class FormatDetermination {
 
 	private void getGameFormatFrom753(Record record, Set<String> result) {
 		// Check for formats in the 753 field "System Details Access to Computer Files"
+		// 753|a is Make and model of machine
 		DataField sysDetailsTag = record.getDataField("753");
 		if (sysDetailsTag != null) {
 			if (sysDetailsTag.getSubfield('a') != null) {
@@ -1110,13 +1195,13 @@ public class FormatDetermination {
 			return "Xbox360";
 		} else if (value.contains("playstation vita") /*&& !value.contains("compatible")*/) {
 			return "PlayStationVita";
-		} else if (value.contains("playstation 5") && !value.contains("compatible") && !value.contains("blu-ray disc player")) {
+		} else if (value.contains("playstation 5") || value.matches(".*[^a-z]ps5.*") && !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player")) {
 			return "PlayStation5";
-		} else if (value.contains("playstation 4") && !value.contains("compatible") && !value.contains("blu-ray disc player")) {
+		} else if (value.contains("playstation 4") || value.matches(".*[^a-z]ps4.*") && !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player")) {
 			return "PlayStation4";
-		} else if (value.contains("playstation 3") && !value.contains("compatible") && !value.contains("blu-ray disc player")) {
+		} else if (value.contains("playstation 3") || value.matches(".*[^a-z]ps3.*") && !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player")) {
 			return "PlayStation3";
-		} else if (value.contains("playstation") && !value.contains("compatible") && !value.contains("blu-ray disc player")) {
+		} else if (value.contains("playstation") && !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player")) {
 			return "PlayStation";
 		} else if (value.contains("wii u")) {
 			return "WiiU";

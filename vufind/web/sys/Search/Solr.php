@@ -85,6 +85,15 @@ class Solr implements IndexEngine {
 	private $_searchSpecs = false;
 
 	/**
+	 *  An array of protected word phrases that do not get altered by solr and should not be mundged in this driver
+	 * for search queries
+	 *
+	 * @var bool|array
+	 */
+	private $_protectedWords = false;
+	private $_protectedWordsFile = '../../data_dir_setup/solr_master/grouped/conf/protwords.txt';
+
+	/**
 	 * Should boolean operators in the search string be treated as
 	 * case-insensitive (false), or must they be ALL UPPERCASE (true)?
 	 */
@@ -93,8 +102,8 @@ class Solr implements IndexEngine {
 	/**
 	 * Should range operators (i.e. [a TO b]) in the search string be treated as
 	 * case-insensitive (false), or must they be ALL UPPERCASE (true)?  Note that
-	 * making this setting case insensitive not only changes the word "TO" to
-	 * uppercase but also inserts OR clauses to check for case insensitive matches
+	 * making this setting case-insensitive not only changes the word "TO" to
+	 * uppercase but also inserts OR clauses to check for case-insensitive matches
 	 * against the edges of the range...  i.e. ([a TO b] OR [A TO B]).
 	 */
 	private $_caseSensitiveRanges = true;
@@ -285,9 +294,35 @@ class Solr implements IndexEngine {
 			$searchSpecs = file_get_contents($this->searchSpecsFile);
 			$searchSpecs = preg_replace('/\s*(?!<\")\/\*[^\*]+\*\/(?!\")\s*/', '', $searchSpecs); // Remove any text within /**/ as comments to ignore
 			$results     = json_decode($searchSpecs, true);
-			$this->cache->set('searchSpecs', $results, $configArray['Caching']['searchSpecs']);
+			if (is_array($results)){
+				$this->cache->set('searchSpecs', $results, $configArray['Caching']['searchSpecs']);
+			} else {
+				$this->logger->error('Failed to parse search specification json file.', [json_last_error_msg()]);
+				$results = false;
+			}
 		}
 		$this->_searchSpecs = $results;
+
+		// Populate the protectedWords array as we load the searchSpecs since both will be used to build solr queries
+		if ($this->_protectedWords === false){
+			$protectedWords = $this->debugSolrQuery ? null : $this->cache->get('searchProtectedWords');
+			if (empty($protectedWords) && file_exists($this->_protectedWordsFile)){
+				$protectedWords = [];
+				$temp         = file_get_contents($this->_protectedWordsFile);
+				if ($temp){
+					foreach (explode("\n", $temp) as $line){
+						if (strpos($line, '#') !== 0){ // ignore commments
+							$line = trim($line);
+							if (!empty($line)){
+								$protectedWords[] = $line;
+							}
+						}
+					}
+					$this->cache->set('searchProtectedWords', $protectedWords, $configArray['Caching']['searchSpecs']);
+				}
+			}
+			$this->_protectedWords = $protectedWords;
+		}
 	}
 
 	/**
@@ -501,6 +536,7 @@ class Solr implements IndexEngine {
 			'q'  => "id:$id",
 			'fl' => SearchObject_Solr::$fields
 		];
+		$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
 		$result = $this->client->get($this->host . '/morelikethis', $options);
 		if ($this->client->isError()) {
 			PEAR_Singleton::raiseError($this->client->getErrorMessage());
@@ -577,13 +613,22 @@ class Solr implements IndexEngine {
 		}
 		if ($configArray['Index']['enableBoosting']){
 			$boostFactors  = $this->getBoostFactors($searchLibrary, $searchLocation);
-			$options['bf'] = $boostFactors;
+			$options['bf'] = 'sum(' . implode(',', $boostFactors) . ')';
 		}
 
-		$result = $this->client->get($this->host . '/morelikethis2', $options);
-//		if (is_object($result)){
-//			$this->logger->error("More Like this response : " . $this->client->getRawResponse());
-//		}
+		$url    = $this->host . '/morelikethis2';
+		if (!empty($options['fq'])){
+			// Since http_build_query() builds url parameters as array eg. fq[0]=foo&fq[1]=bla
+			// Solr does not seem to be able to handle this; and so our filter queries don't get applied.
+			// The below builds repeating url parameters that solr accepts eg. fq=foo&fq=bla  See also  _select()
+			$url .= '?fq=' . urlencode(array_shift($options['fq']));
+			foreach ($options['fq'] as $option){
+				$url .= '&fq=' . urlencode($option);
+			}
+			unset($options['fq']);
+		}
+		$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
+		$result = $this->client->get($url, $options);
 		if ($this->client->isError()) {
 			$errorMessage = $this->client->getErrorMessage();
 			$this->logger->error('MoreLikeThis2 error : ' . $errorMessage);
@@ -608,13 +653,15 @@ class Solr implements IndexEngine {
 		$idString = implode(' OR ', $ids);
 		$options  = [
 			'q'                    => "id:($idString)",
-			'qt'                   => 'morelikethese',
-			'mlt.interestingTerms' => 'details',
-			'rows'                 => 25
+//			'qt'                   => 'morelikethese',
+//			'mlt.interestingTerms' => 'details',
+			'rows'                 => 30
 		];
 
-		$notInterestedString = implode(' OR ', $notInterestedIds);
-		$options['fq'][]     = "-id:($notInterestedString)";
+		if (!empty($notInterestedIds)){
+			$notInterestedString = implode(' OR ', $notInterestedIds);
+			$options['fq'][]     = "-id:($notInterestedString)";
+		}
 
 		$searchLibrary  = Library::getSearchLibrary();
 		$searchLocation = Location::getSearchLocation();
@@ -624,10 +671,9 @@ class Solr implements IndexEngine {
 		}
 		if ($configArray['Index']['enableBoosting']){
 			$boostFactors  = $this->getBoostFactors($searchLibrary, $searchLocation);
-			$options['bf'] = $boostFactors;
+			$options['bf'] = 'sum(' . implode(',', $boostFactors) . ')';
 		}
 
-		$options['rows'] = 30;
 
 		// TODO: Limit Fields
 //		if ($this->debug && isset($fields)) {
@@ -635,8 +681,21 @@ class Solr implements IndexEngine {
 //		} else {
 		// This should be an explicit list
 		$options['fl'] = '*,score';
+//		$options['fl'] = 'id,rating,title,author';
 //		}
-		$result = $this->client->get($this->host . '/morelikethese', $options);
+		$url    = $this->host . '/morelikethese';
+		if (!empty($options['fq'])){
+			// Since http_build_query() builds url parameters as array eg. fq[0]=foo&fq[1]=bla
+			// Solr does not seem to be able to handle this; and so our filter queries don't get applied.
+			// The below builds repeating url parameters that solr accepts eg. fq=foo&fq=bla  See also  _select()
+			$url .= '?fq=' . urlencode(array_shift($options['fq']));
+			foreach ($options['fq'] as $option){
+				$url .= '&fq=' . urlencode($option);
+			}
+			unset($options['fq']);
+		}
+		$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
+		$result = $this->client->get($url, $options);
 		if ($this->client->isError()) {
 			PEAR_Singleton::raiseError($this->client->getErrorMessage());
 		}
@@ -663,7 +722,7 @@ class Solr implements IndexEngine {
 
 		// Process Search
 		$query  = "$field:($phrase*)";
-		$result = $this->search($query, null, null, 0, $limit, array('field' => $field, 'limit' => $limit));
+		$result = $this->search($query, null, null, 0, $limit, ['field' => $field, 'limit' => $limit]);
 		return $result['facet_counts']['facet_fields'][$field];
 	}
 
@@ -770,6 +829,12 @@ class Solr implements IndexEngine {
 
 							}
 							break;
+						case 'shortId':
+							// Genealogy Id number field
+							if (!ctype_digit($fieldValue)){
+								// If the search phrase is'nt all numbers, don't add this clause to the query
+								continue 2;
+							}
 					}
 
 					if ($isKeyWordSearchSpec){
@@ -869,7 +934,7 @@ class Solr implements IndexEngine {
 
 		// For Sideloads and Hoopla, the popularity is the number of bibs
 
-		// Add rating as part of the ranking, normalize so ratings of less that 2.5 are below unrated entries.
+		// Add rating as part of the ranking
 		$boostFactors[] = 'sum(rating,1)';
 
 		// Library Holdings Boost factors:
@@ -904,117 +969,90 @@ class Solr implements IndexEngine {
 		return $boostFactors;
 	}
 
+	private $_munges = [];
 	/**
 	 * Given a field name and search string, return an array containing munged
 	 * versions of the search string for use in _applySearchSpecs().
 	 *
 	 * @access  private
 	 * @param string $lookfor              The string to search for in the field
-	 * @param array  $customMunges         Custom munge settings from YAML search specs
 	 * @param bool   $isBasicSearchQuery   Is $lookfor a basic (true) or advanced (false) query?
 	 * @return  array                      Array for use as _applySearchSpecs() values param
 	 */
-	private function _buildMungeValues($lookfor, $customMunges = null, $isBasicSearchQuery = true){
-		if ($isBasicSearchQuery) {
-			$cleanedQuery = str_replace(':', ' ', $lookfor);
+	private function _buildMungeValues($lookfor, $isBasicSearchQuery = true){
+		$key = $lookfor . ($isBasicSearchQuery ? '1' : '0');
+		if (!isset($this->_munges[$key])){
+			if ($isBasicSearchQuery){
+				$cleanedQuery = str_replace(':', ' ', $lookfor);
 
-			// Tokenize Input
-			$tokenized = $this->tokenizeInput($cleanedQuery);
+				// Tokenize Input
+				$tokenized = $this->tokenizeInput($cleanedQuery);
 
-			// Create AND'd and OR'd queries
-			$andQuery = implode(' AND ', $tokenized);
-			$orQuery  = implode(' OR ', $tokenized);
+				// Create AND'd and OR'd queries
+				$andQuery = implode(' AND ', $tokenized);
+				$orQuery  = implode(' OR ', $tokenized);
 
-			// Build possible inputs for searching:
-			$mungedValues              = [];
-			$mungedValues['onephrase'] = '"' . str_replace('"', '', implode(' ', $tokenized)) . '"';
-			$numTokens                 = count($tokenized);
-			if ($numTokens > 1){
-				$mungedValues['proximal'] = $mungedValues['onephrase'] . '~10';
-			}elseif ($numTokens == 1){
-				$mungedValues['proximal'] = $tokenized[0];
+				// Build possible inputs for searching:
+				$mungedValues              = [];
+				$mungedValues['onePhrase'] = '"' . str_replace('"', '', implode(' ', $tokenized)) . '"';
+				$numTokens                 = count($tokenized);
+				if ($numTokens > 1){
+					$mungedValues['proximal'] = $mungedValues['onePhrase'] . '~10';
+				}elseif ($numTokens == 1){
+					$mungedValues['proximal'] = $tokenized[0];
+				}else{
+					$mungedValues['proximal'] = '';
+				}
+
+				$mungedValues['exact']       = str_replace(':', '\\:', $lookfor);
+				$mungedValues['exactQuoted'] = '"' . $lookfor . '"';
+				$mungedValues['and']         = $andQuery;
+				$mungedValues['or']          = $orQuery;
+
+				// The singleWordRemoval munge is only used in the Keyword search spec against the title_proper and title_full fields.  pascal 10/15/2021
+				if ($numTokens < 5){
+					$mungedValues['singleWordRemoval'] = $mungedValues['onePhrase'];
+				}else{
+					$singleWordRemoval = [];
+					for ($i = 0;$i < $numTokens;$i++){
+						$newTerm = [];
+						for ($j = 0;$j < $numTokens;$j++){
+							if ($j != $i){
+								$newTerm[] = $tokenized[$j];
+							}
+						}
+						$singleWordRemoval[] = '"' . implode(' ', $newTerm) . '"';
+					}
+					$mungedValues['singleWordRemoval'] = implode(' OR ', $singleWordRemoval);
+				}
+
 			}else{
-				$mungedValues['proximal'] = '';
+				//TODO: this block is never used or called  Should it?  Did it?
+
+				// If we're skipping tokenization, we just want to pass $lookfor through
+				// unmodified (it's probably an advanced search that won't benefit from
+				// tokenization).	We'll just set all possible values to the same thing,
+				// except that we'll try to do the "one phrase" in quotes if possible.
+				$onePhrase    = strstr($lookfor, '"') ? $lookfor : '"' . $lookfor . '"';
+				$mungedValues = [
+					'exact'             => $onePhrase,
+					'onePhrase'         => $onePhrase,
+					'and'               => $lookfor,
+					'or'                => $lookfor,
+					'proximal'          => $lookfor,
+					'singleWordRemoval' => $onePhrase,
+					'exactQuoted'       => '"' . $lookfor . '"',
+				];
 			}
 
-			$mungedValues['exact']        = str_replace(':', '\\:', $lookfor);
-			$mungedValues['exact_quoted'] = '"' . $lookfor . '"';
-			$mungedValues['and']          = $andQuery;
-			$mungedValues['or']           = $orQuery;
-			//TODO: move single_word_removal to a custom munge
+			// This sets up search phrases to be used against the text-exact and text-left types of solr fields.
+			// Remove special characters and then replace any doubled space characters with a single one
+			// (also convert other space characters to the literal space character.)
+			$mungedValues['anchoredSearchFieldMunge'] = '"' . preg_replace('/\s+/', ' ', str_replace(['*', '"', ':', '/'], '', $lookfor)) . '"'; // same as above but replaces wildcard character with space as well
 
-			// The single_word_removal munge is only used in the Keyword search spec against the title_proper and title_full fields.  pascal 10/15/2021
-			if ($numTokens < 5) {
-				$mungedValues['single_word_removal'] = $mungedValues['onephrase'];
-			} else {
-				$singleWordRemoval            = [];
-				for ($i = 0;$i < $numTokens;$i++) {
-					$newTerm = [];
-					for ($j = 0;$j < $numTokens;$j++) {
-						if ($j != $i) {
-							$newTerm[] = $tokenized[$j];
-						}
-					}
-					$singleWordRemoval[] =  '"' . implode(' ', $newTerm) .  '"';
-				}
-				$mungedValues['single_word_removal'] = implode(' OR ', $singleWordRemoval);
-			}
-
-			// Apply custom munge operations if necessary
-			// (This is currently not used with our current searchspecs) Pascal 8/11/2021
-			if (is_array($customMunges)) {
-				foreach ($customMunges as $mungeName => $mungeOps) {
-					$mungedValues[$mungeName] = $lookfor;
-
-					// Skip munging if tokenization is disabled.
-					foreach ($mungeOps as $operation) {
-						switch ($operation[0]) {
-							case 'exact':
-								$mungedValues[$mungeName] = '"' . $mungedValues[$mungeName] . '"';
-								break;
-							case 'append':
-								$mungedValues[$mungeName] .= $operation[1];
-								break;
-							case 'lowercase':
-								$mungedValues[$mungeName] = strtolower($mungedValues[$mungeName]);
-								break;
-							case 'preg_replace':
-								$mungedValues[$mungeName] = preg_replace($operation[1], $operation[2], $mungedValues[$mungeName]);
-								break;
-							case 'uppercase':
-								$mungedValues[$mungeName] = strtoupper($mungedValues[$mungeName]);
-								break;
-						}
-					}
-				}
-			}
-
-		} else {
-			//TODO: this block is never used or called  Should it?  Did it?
-
-			// If we're skipping tokenization, we just want to pass $lookfor through
-			// unmodified (it's probably an advanced search that won't benefit from
-			// tokenization).	We'll just set all possible values to the same thing,
-			// except that we'll try to do the "one phrase" in quotes if possible.
-			$onephrase = strstr($lookfor, '"') ? $lookfor : '"' . $lookfor . '"';
-			$mungedValues    = [
-				'exact'               => $onephrase,
-				'onephrase'           => $onephrase,
-				'and'                 => $lookfor,
-				'or'                  => $lookfor,
-				'proximal'            => $lookfor,
-				'single_word_removal' => $onephrase,
-				'exact_quoted'        => '"' . $lookfor . '"',
-			];
+			$this->_munges[$key] = $mungedValues;
 		}
-
-		//Create localized call number
-		// TODO: determine how this munge is useful (over the others) and document it here and the searchSpecs
-		$noWildCardLookFor                    = str_replace('*', '', $lookfor);  // Remove wild card characters
-		$mungedValues['localized_callnumber'] = '"' . str_replace(['"', ':', '/'], ' ', $noWildCardLookFor) . '"'; // Replace some special characters with spaces
-//		$mungedValues['localized_callnumber'] = '"' . str_replace(['*', '"', ':', '/'], ' ', $lookfor) . '"'; // same as above but replaces wildcard character with space as well
-
-		return $mungedValues;
+		return $this->_munges[$key];
 	}
 
 	/**
@@ -1054,9 +1092,7 @@ class Solr implements IndexEngine {
 			return '"' . $searchSpecToUse . ':' . $lookfor . '"';
 		}
 
-		// Munge the user query in a few different ways:
-		$customMunge  = $ss['CustomMunge'] ?? null;
-		$mungedValues = $this->_buildMungeValues($lookfor, $customMunge, $tokenize);
+		$mungedValues = $this->_buildMungeValues($lookfor, $tokenize);
 
 		// Apply the $searchSpecs property to the data:
 		$baseQuery = $this->_applySearchSpecs($ss['QueryFields'], $mungedValues, $searchSpecToUse == 'Keyword');
@@ -1589,7 +1625,6 @@ class Solr implements IndexEngine {
 			$options['facet.mincount'] = 1;
 			$options['facet.method']   = 'fcs';
 			$options['facet.threads']  = 25;
-			$options['facet.limit']    =  $facet['limit'] ?? null;
 
 			//Determine which fields should be treated as enums
 			global $solrScope;
@@ -1610,7 +1645,6 @@ class Solr implements IndexEngine {
 				$options["f.owning_location_{$solrScope}.rating_facet"]        = 'enum';
 			}
 
-			unset($facet['limit']);
 			if (isset($facet['field']) && is_array($facet['field']) && in_array('date_added', $facet['field'])) {
 				$options['facet.date']       = 'date_added';
 				$options['facet.date.end']   = 'NOW';
@@ -1656,11 +1690,6 @@ class Solr implements IndexEngine {
 			if (isset($facet['limit'])) {
 				$options['facet.limit'] = $facet['limit'];
 				unset($facet['limit']);
-			}
-			if ($isPikaGroupedWorkIndex) {
-				if (isset($searchLibrary) && $searchLibrary->showAvailableAtAnyLocation) {
-					$options['f.available_at.facet.missing'] = 'true';
-				}
 			}
 
 			if (isset($facet['additionalOptions'])) {
@@ -2012,7 +2041,7 @@ class Solr implements IndexEngine {
 					}
 					if (is_array($value)){
 						foreach ($value as $additional){
-							//Islandora Solr takes repeated url parameters with out the typical array style. eg. &fq=firstOne&fq=secondOne
+							//Islandora Solr takes repeated url parameters without the typical array style. eg. &fq=firstOne&fq=secondOne
 							$additional = urlencode($additional);
 							$query[]    = "$function=$additional";
 						}
@@ -2200,7 +2229,7 @@ class Solr implements IndexEngine {
 					$newWords[count($newWords) - 1] .= ' ' . trim($words[$i]) . ' ' . trim($words[$i + 1]);
 					$i++;
 				}
-			} else {
+			} elseif (!in_array($words[$i], $this->_protectedWords)) {
 				//If we are tokenizing, remove any punctuation
 				$tmpWord = trim(preg_replace('/[^\s\-\w.\'&]/u', '', $words[$i]));
 				// Removes any character that is NOT : whitespace, word characters, a period, a dash -, an apostrophe ', or an ampersand &
@@ -2211,6 +2240,8 @@ class Solr implements IndexEngine {
 				if (strlen($tmpWord) > 0) {
 					$newWords[] = $tmpWord;
 				}
+			} else {
+				$newWords[] = $words[$i];
 			}
 		}
 
@@ -2226,13 +2257,12 @@ class Solr implements IndexEngine {
 	 * @return  bool                Fixed input
 	 * @access  public
 	 */
-	public function validateInput($input)
-	{
+	public function validateInput($input){
 		//Get rid of any spaces at the end
 		$input = trim($input);
 
 		// Normalize fancy quotes:
-		$quotes = array(
+		$quotes = [
 			"\xC2\xAB" => '"', // Â« (U+00AB) in UTF-8
 			"\xC2\xBB" => '"', // Â» (U+00BB) in UTF-8
 			"\xE2\x80\x98" => "'", // â€˜ (U+2018) in UTF-8
@@ -2245,7 +2275,7 @@ class Solr implements IndexEngine {
 			"\xE2\x80\x9F" => '"', // â€Ÿ (U+201F) in UTF-8
 			"\xE2\x80\xB9" => "'", // â€¹ (U+2039) in UTF-8
 			"\xE2\x80\xBA" => "'", // â€º (U+203A) in UTF-8
-		);
+		];
 		$input  = strtr($input, $quotes);
 
 		// If the user has entered a lone BOOLEAN operator, convert it to lowercase
@@ -2261,7 +2291,7 @@ class Solr implements IndexEngine {
 
 		// If the string consists only of control characters and/or BOOLEANs with no
 		// other input, wipe it out entirely to prevent weird errors:
-		$operators = array('AND', 'OR', 'NOT', '+', '-', '"', '&', '|');
+		$operators = ['AND', 'OR', 'NOT', '+', '-', '"', '&', '|'];
 		if (trim(str_replace($operators, '', $input)) == '') {
 			return '';
 		}
@@ -2281,7 +2311,7 @@ class Solr implements IndexEngine {
 		$start = preg_match_all('/\(/', $input, $tmp);
 		$end   = preg_match_all('/\)/', $input, $tmp);
 		if ($start != $end) {
-			$input = str_replace(array('(', ')'), '', $input);
+			$input = str_replace(['(', ')'], '', $input);
 		}
 
 		// Check to make sure we have an even number of quotes
@@ -2306,7 +2336,7 @@ class Solr implements IndexEngine {
 		// invalid brackets/braces, and transform our tokens back into valid ones.
 		// Obviously, the order of the patterns/merges array is critically
 		// important to get this right!!
-		$patterns = array(
+		$patterns = [
 			// STEP 1 -- escape valid brackets/braces
 			'/\[([^\[\]\s]+\s+TO\s+[^\[\]\s]+)\]/',
 			'/\{([^\{\}\s]+\s+TO\s+[^\{\}\s]+)\}/',
@@ -2317,8 +2347,8 @@ class Solr implements IndexEngine {
 			'/\^\^rbrack\^\^/',
 			'/\^\^lbrace\^\^/',
 			'/\^\^rbrace\^\^/'
-		);
-		$matches  = array(
+		];
+		$matches  = [
 			// STEP 1 -- escape valid brackets/braces
 			'^^lbrack^^$1^^rbrack^^',
 			'^^lbrace^^$1^^rbrace^^',
@@ -2329,22 +2359,38 @@ class Solr implements IndexEngine {
 			']',
 			'{',
 			'}'
-		);
-		$input    = preg_replace($patterns, $matches, $input);
+		];
+		$input = preg_replace($patterns, $matches, $input);
 
-		//Remove any exclamation marks that Solr will handle incorrectly.
-		$input = str_replace('!', ' ', $input);
+		//Remove any semi-colons or  any slashes that Solr will handle incorrectly.
+		$input = str_replace([';', '\\', '/',],' ', $input);
 
-		//Remove any semi-colons that Solr will handle incorrectly.
-		$input = str_replace(';', ' ', $input);
+		// Ensure $this->_protectedWords has already been loaded
+		if ($this->_searchSpecs === false){
+			$this->_loadSearchSpecs();
+		}
 
-		//Remove any slashes that Solr will handle incorrectly.
-		$input = str_replace('\\', ' ', $input);
-		$input = str_replace('/', ' ', $input);
-		//$input = preg_replace('/\\\\(?![&:])/', ' ', $input);
-
-		//Look for any colons that are not identifying fields
-
+		if (strpos($input, '!') !== false){
+			//Remove any exclamation marks that Solr will handle incorrectly.
+			// But not for any of our protected words. eg P!nk
+			if ($this->_protectedWords){
+				$tokens = explode(' ', $input);
+				foreach ($tokens as &$token){
+					if ($numQuotes > 0){
+						$tmpToken = str_replace('"', '', $token);
+						if (!in_array($tmpToken, $this->_protectedWords)){
+							// Check unquoted words against protected word list
+							$token = str_replace('!', ' ', $token);
+						}
+					} elseif (!in_array($token, $this->_protectedWords)){
+						$token = str_replace('!', ' ', $token);
+					}
+				}
+				$input = implode(' ', $tokens);
+			}else{
+				$input = str_replace('!', ' ', $input);
+			}
+		}
 
 		return $input;
 	}

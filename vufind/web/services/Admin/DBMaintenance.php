@@ -1520,6 +1520,14 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER TABLE `econtent`.`overdrive_api_magazine_issues` ADD INDEX `parentId` (`parentId` ASC);"
 					]
 				],
+				'2022.02.0_encryptUserPasswords' => [
+					'title'             =>  'Encrypt patron passwords',
+					'description'       =>  'Encrypt patron passwords',
+					'continueOnError'   => false,
+					'sql'               => [
+						"ALTER TABLE user CHANGE COLUMN password password VARCHAR(255) NULL DEFAULT NULL;",
+						'encryptUserPasswords']
+				],
 
 			)); // End of main array
 	}
@@ -1749,4 +1757,30 @@ class DBMaintenance extends Admin_Admin {
 		}
 	}
 
+	function encryptUserPasswords() {
+		set_time_limit(6000);
+		$logger = new Logger(__CLASS__);
+		#$sql = "SELECT id, password FROM user WHERE char_length(password) < 56";
+		$user = new User();
+		$user->whereAdd("char_length(password) < 56");
+		$user->find();
+
+		while ($user->fetch()) {
+			try {
+
+					$password = $user->password;
+					$result   = $user->updatePassword($password);
+					if (!$result){
+						$logger->error($user->_lastError);
+						continue;
+					}
+				
+			} catch (Exception $e) {
+				$logger->error($user->_lastError);
+				continue;
+			}
+		}
+		//return true;
+	}
+	// end class
 }

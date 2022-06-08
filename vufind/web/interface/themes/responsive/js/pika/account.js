@@ -145,7 +145,7 @@ Pika.Account = (function(){
 				$(".readingHistory-placeholder").html(data.readingHistory);
 				$(".materialsRequests-placeholder").html(data.materialsRequests);
 				$(".bookings-placeholder").html(data.bookings);
-				$("#availableHoldsNotice-placeHolder").html(data.availableHoldsNotice);
+				$(".availableHoldsNoticePlaceHolder").html(data.availableHoldsNotice);
 				$(".expirationFinesNotice-placeholder").html(data.expirationFinesNotice);
 				$(".fineBadge-placeholder").html(data.fines);
 				$("#tagsMenu-placeholder").html(data.tagsMenu);
@@ -260,6 +260,19 @@ Pika.Account = (function(){
 		removeLinkedUser: function(idToRemove){
 			Pika.confirm("Are you sure you want to stop managing this account?", function () {
 				var url = "/MyAccount/AJAX?method=removeAccountLink&idToRemove=" + idToRemove;
+				$.getJSON(url, function(data){
+					if (data.result == true){
+						Pika.showMessage('Linked Account Removed', data.message, true, true);
+					}else{
+						Pika.showMessage('Unable to Remove Account Link', data.message);
+					}
+				});
+			});
+			return false;
+		},
+		removeViewer: function(idToRemove){
+			Pika.confirm("Are you sure you want to remove the viewing account?", function () {
+				var url = "/MyAccount/AJAX?method=removeViewingAccount&idToRemove=" + idToRemove;
 				$.getJSON(url, function(data){
 					if (data.result == true){
 						Pika.showMessage('Linked Account Removed', data.message, true, true);

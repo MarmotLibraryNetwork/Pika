@@ -292,7 +292,9 @@
 
 .book-pdf{
   width: 100%;
-  height: 600px;
+  min-height: 600px;
+  //height: inherit;
+  height: 100%;
 }
 
 #view-transcription{
@@ -530,4 +532,9 @@
   @media (max-width: @screen-xs-max) {
     font-size: 18px;
   }
+}
+
+#player {
+  display: block;
+  width: 100%;
 }

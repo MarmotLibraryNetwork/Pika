@@ -33,7 +33,7 @@ class ManageStatuses extends ObjectEditor
 	function getPageTitle(){
 		return 'Materials Request Statuses';
 	}
-	function getAllObjects(){
+	function getAllObjects($orderBy = null){
 		$user = UserAccount::getLoggedInUser();
 
 		$status = new MaterialsRequestStatus();

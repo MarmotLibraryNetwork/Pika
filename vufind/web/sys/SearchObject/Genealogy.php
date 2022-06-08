@@ -280,28 +280,6 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	}
 
 	/**
-	 * Use the record driver to build an array of HTML displays from the search
-	 * results suitable for use on a user's "favorites" page.
-	 *
-	 * @access  public
-	 * @param object $user User object owning tag/note metadata.
-	 * @param int $listId ID of list containing desired tags/notes (or
-	 *                              null to show tags/notes from all user's lists).
-	 * @param bool $allowEdit Should we display edit controls?
-	 * @return  array   Array of HTML chunks for individual records.
-	 */
-	public function getResultListHTML($user, $listId = null, $allowEdit = true){
-		global $interface;
-
-		$html = [];
-		foreach ($this->indexResult['response']['docs'] as $current){
-			$record = RecordDriverFactory::initRecordDriver($current);
-			$html[] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
-		}
-		return $html;
-	}
-
-	/**
 	 * Return the record set from the search results.
 	 *
 	 * @access  public
@@ -975,32 +953,31 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 * Turn our results into an RSS feed
 	 *
 	 * @access  public
-	 * @param null|array $result Existing result set (null to do new search)
 	 * @return  string                XML document
 	 */
-	public function buildRSS($result = null){
+	public function buildRSS(){
 		global $configArray;
+		global $library;
 		// XML HTTP header
 		header('Content-type: text/xml', true);
 
-		// First, get the search results if none were provided
-		// (we'll go for 50 at a time)
-		if (is_null($result)){
-			$this->limit = 50;
-			$result      = $this->processSearch(false, false);
-		}
-
-		foreach ($result['response']['docs'] as $i => &$currentDoc){
-			$current = &$this->indexResult['response']['docs'][$i];
+		$baseUrl    = empty($library->catalogUrl) ? $configArray['Site']['url'] : $_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl;
+		$this->limit = 50;
+		$result      = $this->processSearch(false, false);
+		foreach ($result['response']['docs'] as &$currentDoc){
 
 			/** @var PersonRecord $record */
-			$record = RecordDriverFactory::initRecordDriver($current);
+			$record = RecordDriverFactory::initRecordDriver($currentDoc);
 			if (!PEAR_Singleton::isError($record)){
 				$currentDoc['recordUrl']       = $record->getAbsoluteUrl();
 				$currentDoc['title_display']   = $record->getName();
-				$image                         = $record->getBookcoverUrl('medium');
+				$image                         = $baseUrl . $record->getBookcoverUrl('medium');
 				$description                   = "<img src='$image'/> ";
 				$currentDoc['rss_description'] = $description;
+				$dateAdded                     = $record->getDateAdded();
+				if (!empty($dateAdded)){
+					$currentDoc['rss_date'] = date('r', $dateAdded);
+				}
 			}
 		}
 
@@ -1016,7 +993,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 			$interface->assign('lookfor', $lookfor);
 		}
 		// The full url to recreate this search
-		$interface->assign('searchUrl', $configArray['Site']['url'] . $this->renderSearchUrl());
+		$interface->assign('searchUrl', $baseUrl . $this->renderSearchUrl());
 
 		$interface->assign('result', $result);
 		return $interface->fetch('Search/rss.tpl');

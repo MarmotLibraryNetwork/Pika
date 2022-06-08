@@ -123,13 +123,13 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 							updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier, loadedNovelistSeries);
 
-						} else  if (logger.isInfoEnabled()){
-							logger.info("Excluding due to title inactive for everyone hoopla id# " + hooplaExtractInfo.getTitleId() + " :" + hooplaExtractInfo.getTitle());
+						} else if (logger.isDebugEnabled()){
+							logger.debug("Excluding due to title inactive for everyone hoopla id# " + hooplaExtractInfo.getTitleId() + " :" + hooplaExtractInfo.getTitle());
 						}
 					}
 				}
 			} catch (Exception e) {
-				logger.error("Error updating solr based on hoopla marc record", e);
+				logger.error("Error updating solr based on hoopla marc record " + identifier, e);
 			}
 		}
 	}
@@ -151,15 +151,19 @@ class HooplaProcessor extends MarcRecordProcessor {
 				Matcher idInUrl = hooplaIdInAccessUrl.matcher(url);
 				if (idInUrl.find()){
 					String newId = idInUrl.group(1);
-					if (fullReindex && logger.isInfoEnabled()) {
-						logger.info("For " + identifier + ", trying Hoopla Id from Url : " + newId);
-					}
-					if (getHooplaExtractInfo(newId)){
-						GroupedReindexMain.hooplaRecordWithOutExtractInfo.remove(identifier);
-						if (!GroupedReindexMain.hooplaRecordUsingUrlIdExtractInfo.contains(identifier)) {
-							GroupedReindexMain.hooplaRecordUsingUrlIdExtractInfo.add(identifier);
+					final String originalIdNumber = identifier.replaceAll("^MWT", "");
+					if (!newId.equals(originalIdNumber)) {
+						// Only do second fetch attempt if the url id is different from the marc record number id
+						if (fullReindex && logger.isInfoEnabled()) {
+							logger.info("For " + identifier + ", trying Hoopla Id from Url : " + newId);
 						}
-						return true;
+						if (getHooplaExtractInfo(newId)){
+							GroupedReindexMain.hooplaRecordWithOutExtractInfo.remove(identifier);
+							if (!GroupedReindexMain.hooplaRecordUsingUrlIdExtractInfo.contains(identifier)) {
+								GroupedReindexMain.hooplaRecordUsingUrlIdExtractInfo.add(identifier);
+							}
+							return true;
+						}
 					}
 				}
 			}
@@ -201,6 +205,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 					return true;
 				} else if (fullReindex) {
 //					logger.info("Did not find Hoopla Extract information for " + identifier);
+					//TODO: mark hoopla api info extract table for re-extraction
 					if (!GroupedReindexMain.hooplaRecordWithOutExtractInfo.contains(identifier)) {
 						GroupedReindexMain.hooplaRecordWithOutExtractInfo.add(identifier);
 					}
@@ -264,18 +269,19 @@ class HooplaProcessor extends MarcRecordProcessor {
 		}
 
 		//Do updates based on the overall bib (shared regardless of scoping)
-		updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, null, identifier.getIdentifier(), format, loadedNovelistSeries);
+		String recordIdStr = identifier.getIdentifier();
+		updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, null, recordIdStr, format, loadedNovelistSeries);
 
 		//Do special processing for Hoopla which does not have individual items within the record
 		//Instead, each record has essentially unlimited items that can be used at one time.
 		//There are also not multiple formats within a record that we would need to split out.
 
 		//Setup the per Record information
-		RecordInfo recordInfo = groupedWork.addRelatedRecord(source, identifier.getIdentifier());
+		RecordInfo recordInfo = groupedWork.addRelatedRecord(source, recordIdStr);
 
-		String formatCategory = indexer.translateSystemValue("format_category_hoopla", format, identifier.getIdentifier());
+		String formatCategory = indexer.translateSystemValue("format_category_hoopla", format, recordIdStr);
 		long   formatBoost    = 8L; // Reasonable default value
-		String formatBoostStr = indexer.translateSystemValue("format_boost_hoopla", format, identifier.getIdentifier());
+		String formatBoostStr = indexer.translateSystemValue("format_boost_hoopla", format, recordIdStr);
 		if (formatBoostStr != null && !formatBoostStr.isEmpty()) {
 			formatBoost = Long.parseLong(formatBoostStr);
 		} else {
@@ -286,7 +292,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		groupedWork.addDescription(fullDescription, format);
 
 		//Load editions
-		Set<String> editions       = MarcUtil.getFieldList(record, "250a");
+		Set<String> editions = MarcUtil.getFieldList(record, "250a");
 		if (editions.size() > 0) {
 			groupedWork.addEditions(editions);
 			String primaryEdition = editions.iterator().next();
@@ -321,6 +327,11 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 		recordInfo.setFormatBoost(formatBoost);
 
+		// When the hoopla extract id comes from the url instead of the MARC record number tag, add that id to the alternate ids
+		if (!hooplaExtractInfo.getTitleId().toString().equals(recordIdStr.replaceAll("^MWT", ""))){
+			groupedWork.addAlternateId(hooplaExtractInfo.getTitleId().toString());
+		}
+
 		if (hooplaExtractInfo.abridged){
 			recordInfo.setAbridged(true);
 		}
@@ -353,7 +364,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		itemInfo.setSortableCallNumber("Online Hoopla");
 		itemInfo.setDetailedStatus("Available Online");
 		loadEContentUrl(record, itemInfo, identifier);
-		Date dateAdded = indexer.getDateFirstDetected(source, identifier.getIdentifier());
+		Date dateAdded = indexer.getDateFirstDetected(source, recordIdStr);
 		itemInfo.setDateAdded(dateAdded);
 
 		recordInfo.addItem(itemInfo);
@@ -445,5 +456,16 @@ class HooplaProcessor extends MarcRecordProcessor {
 		super.loadTitles(groupedWork, record, format, identifier);
 	}
 
-
+	@Override
+	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+		if (hooplaExtractInfo.isChildren()) {
+			groupedWork.addTargetAudience("Juvenile");
+			groupedWork.addTargetAudienceFull("Juvenile");
+		} else if (hooplaExtractInfo.isParentalAdvisory()){
+			groupedWork.addTargetAudience("Adult");
+			groupedWork.addTargetAudienceFull("Adult");
+		} else {
+			super.loadTargetAudiences(groupedWork, record, printItems, identifier);
+		}
+	}
 }

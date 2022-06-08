@@ -75,6 +75,7 @@ class SearchObjectFactory {
 				$type = 'Genealogy';
 				break;
 			default:
+				// When Solr, ty can be either 'basic' or 'advanced'
 				$type = 'Solr';
 				break;
 		}

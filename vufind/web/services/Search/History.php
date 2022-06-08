@@ -70,7 +70,7 @@ class History extends Action {
 					// descriptions in the filter box.
 					$searchObject->activateAllFacets();
 
-					$newItem = [
+					$historyEntry = [
 						'id'          => $search->id,
 						'time'        => date("g:ia, jS M Y", $searchObject->getStartTime()),
 						'url'         => $searchObject->renderSearchUrl(),
@@ -87,10 +87,10 @@ class History extends Action {
 
 					if ($search->saved == 1){
 						// Saved searches
-						$saved[] = $newItem;
+						$saved[] = $historyEntry;
 					}else{
 						// All the others
-						$links[] = $newItem;
+						$links[] = $historyEntry;
 					}
 				}
 			}

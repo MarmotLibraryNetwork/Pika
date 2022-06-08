@@ -297,14 +297,14 @@ Pika.Menu = (function(){
 				//// If using the horizontal SearchBox, ensure Search menu is selected
 				//if ($('#horizontal-search-box').is(':visible') && !$('#mobile-menu-search-icon').is('.menu-icon-selected')) {
 				if (!$('#mobile-menu-search-icon').is('.menu-icon-selected')) {
-					if ($('#horizontal-search-box').is(':visible')) {
-						// always shows, so refine button can be clicked while other menus are open
-						this.showSearch('#mobile-menu-search-icon');
-					}
-					else {
+					// if ($('#horizontal-search-box').is(':visible')) {
+					// 	// always shows, so refine button can be clicked while other menus are open
+					// 	this.showSearch('#mobile-menu-search-icon');
+					// }
+					// else {
 						// make selected so that sidebar mode will open correctly on resize
 						$('#mobile-menu-search-icon').addClass('menu-icon-selected')
-					}
+					// }
 				}
 				var btn = $('#refineSearchButton'),
 						text = btn.text();

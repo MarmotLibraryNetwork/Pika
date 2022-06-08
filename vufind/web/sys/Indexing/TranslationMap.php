@@ -38,13 +38,13 @@ class TranslationMap extends DB_DataObject{
 	static function getObjectStructure(){
 		require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
 		$indexingProfiles = IndexingProfile::getAllIndexingProfileNames();
-		$structure = array(
-			'id'                     => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
-			'indexingProfileId'      => array('property' => 'indexingProfileId', 'type' => 'enum', 'values' => $indexingProfiles, 'label' => 'Indexing Profile Id', 'description' => 'The Indexing Profile this map is associated with'),
-			'name'                   => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'The name of the translation map', 'maxLength' => '50', 'required' => true),
-			'usesRegularExpressions' => array('property' => 'usesRegularExpressions', 'type' => 'checkbox', 'label' => 'Use Regular Expressions', 'description' => 'When on, values will be treated as regular expressions', 'hideInLists' => false, 'default' => false),
+		$structure = [
+			'id'                     => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'],
+			'indexingProfileId'      => ['property' => 'indexingProfileId', 'type' => 'enum', 'values' => $indexingProfiles, 'label' => 'Indexing Profile Id', 'description' => 'The Indexing Profile this map is associated with'],
+			'name'                   => ['property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'The name of the translation map', 'maxLength' => '50', 'required' => true],
+			'usesRegularExpressions' => ['property' => 'usesRegularExpressions', 'type' => 'checkbox', 'label' => 'Use Regular Expressions', 'description' => 'When on, values will be treated as regular expressions', 'hideInLists' => false, 'default' => false],
 
-			'translationMapValues' => array(
+			'translationMapValues' => [
 				'property'      => 'translationMapValues',
 				'type'          => 'oneToMany',
 				'label'         => 'Values',
@@ -57,13 +57,13 @@ class TranslationMap extends DB_DataObject{
 				'storeDb'       => true,
 				'allowEdit'     => false,
 				'canEdit'       => false,
-			),
-		);
+			],
+		];
 		return $structure;
 	}
 
 	public function __get($name){
-		if ($name == "translationMapValues") {
+		if ($name == 'translationMapValues') {
 			if (!isset($this->translationMapValues)){
 				//Get the list of translation maps
 				if ($this->id){
@@ -83,7 +83,7 @@ class TranslationMap extends DB_DataObject{
 	}
 
 	public function __set($name, $value){
-		if ($name == "translationMapValues") {
+		if ($name == 'translationMapValues') {
 			$this->translationMapValues = $value;
 		}
 	}
@@ -93,12 +93,15 @@ class TranslationMap extends DB_DataObject{
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update($dataObject = false){
+	public function update($setFullReindexMarker = true){
 		$ret = parent::update();
 		if ($ret === FALSE ){
 			return $ret;
 		}else{
 			$this->saveMapValues();
+			if ($setFullReindexMarker){
+				$this->setFullReindexMarker();
+			}
 		}
 		return true;
 	}
@@ -108,14 +111,27 @@ class TranslationMap extends DB_DataObject{
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert(){
+	public function insert($setFullReindexMarker = true){
 		$ret = parent::insert();
 		if ($ret === FALSE ){
 			return $ret;
 		}else{
 			$this->saveMapValues();
+			if ($setFullReindexMarker){
+				$this->setFullReindexMarker();
+			}
 		}
 		return true;
+	}
+
+	function delete($useWhere = false){
+		$ret = parent::delete($useWhere);
+		if ($ret){
+			$value                   = new TranslationMapValue();
+			$value->translationMapId = $this->id;
+			$value->delete();
+			$this->setFullReindexMarker();
+		}
 	}
 
 	public function saveMapValues(){
@@ -169,8 +185,27 @@ class TranslationMap extends DB_DataObject{
 	 * @return string|null
 	 */
 	function label(){
+		$label = '';
+		if (!empty($this->indexingProfileId)){
+			$indexingProfileNames = IndexingProfile::getAllIndexingProfileNames();
+			if (!empty($indexingProfileNames[$this->indexingProfileId])){
+				$label = $indexingProfileNames[$this->indexingProfileId] .' - ';
+			}
+		}
 		if (!empty($this->name)){
-			return $this->name;
+			$label .= $this->name;
+			return $label;
+		}
+	}
+
+	private function setFullReindexMarker(): void{
+		if ($this->name != 'grouping_categories'){
+			// Every Translation Map change requires full reindexing to take complete effect, except the grouping map
+			$indexingProfile  = new IndexingProfile();
+			if ($indexingProfile->get($this->indexingProfileId) == 1){
+				$indexingProfile->changeRequiresReindexing = time();
+				$indexingProfile->update();
+			}
 		}
 	}
 

@@ -24,8 +24,7 @@ require_once ROOT_DIR . '/sys/Recommend/Interface.php';
  *
  * This class provides recommendations displaying facets beside search results
  */
-class SideFacets implements RecommendationInterface
-{
+class SideFacets implements RecommendationInterface {
 	/** @var  SearchObject_Solr|SearchObject_Genealogy $searchObject */
 	private $searchObject;
 	private $facetSettings;
@@ -47,12 +46,12 @@ class SideFacets implements RecommendationInterface
 		// Parse the additional settings:
 		$params          = explode(':', $params);
 		$mainSection     = empty($params[0]) ? 'Results' : $params[0];
-		$checkboxSection = isset($params[1]) ? $params[1] : false;
-		$iniName         = isset($params[2]) ? $params[2] : 'facets';
+		$checkboxSection = $params[1] ?? false;
+		$iniName         = $params[2] ?? 'facets';
 
 		if ($searchObject->getSearchType() == 'genealogy'){
 			$config           = getExtraConfigArray($iniName);
-			$this->mainFacets = isset($config[$mainSection]) ? $config[$mainSection] : array();
+			$this->mainFacets = $config[$mainSection] ?? [];
 		}elseif ($searchObject->getSearchType() == 'islandora'){
 			$searchLibrary                 = Library::getActiveLibrary();
 			$hasArchiveSearchLibraryFacets = ($searchLibrary != null && (count($searchLibrary->archiveSearchFacets) > 0));
@@ -62,8 +61,8 @@ class SideFacets implements RecommendationInterface
 				$facets = Library::getDefaultArchiveSearchFacets();
 			}
 
-			$this->facetSettings = array();
-			$this->mainFacets    = array();
+			$this->facetSettings = [];
+			$this->mainFacets    = [];
 
 			foreach ($facets as $facet){
 				$facetName = $facet->facetName;
@@ -93,8 +92,8 @@ class SideFacets implements RecommendationInterface
 			}else{
 				$facets = Library::getDefaultFacets();
 			}
-			$this->facetSettings = array();
-			$this->mainFacets    = array();
+			$this->facetSettings = [];
+			$this->mainFacets    = [];
 
 			// The below block of code is common with SearchObject_Solr method initAdvancedFacets()
 			global $solrScope;
@@ -155,7 +154,7 @@ class SideFacets implements RecommendationInterface
 			}
 		}
 
-		$this->checkboxFacets = ($checkboxSection && isset($config[$checkboxSection])) ? $config[$checkboxSection] : array();
+		$this->checkboxFacets = ($checkboxSection && isset($config[$checkboxSection])) ? $config[$checkboxSection] : [];
 	}
 
 	/* init
@@ -166,12 +165,12 @@ class SideFacets implements RecommendationInterface
 	 *
 	 * @access  public
 	 */
-	public function init() {
+	public function init(){
 		// Turn on side facets in the search results:
-		foreach($this->mainFacets as $name => $desc) {
+		foreach ($this->mainFacets as $name => $desc){
 			$this->searchObject->addFacet($name, $desc);
 		}
-		foreach($this->checkboxFacets as $name => $desc) {
+		foreach ($this->checkboxFacets as $name => $desc){
 			$this->searchObject->addCheckboxFacet($name, $desc);
 		}
 	}
@@ -184,7 +183,7 @@ class SideFacets implements RecommendationInterface
 	 *
 	 * @access  public
 	 */
-	public function process() {
+	public function process(){
 		global $interface;
 
 		//Get Facet settings for processing display
@@ -200,85 +199,39 @@ class SideFacets implements RecommendationInterface
 		$interface->assign('filterList', $filterList);
 		//Process the side facet set to handle the Added In Last facet which we only want to be
 		//visible if there is not a value selected for the facet (makes it single select
-		$sideFacets = $this->searchObject->getFacetList($this->mainFacets);
+		$sideFacets    = $this->searchObject->getFacetList($this->mainFacets);
 		$searchLibrary = Library::getSearchLibrary();
 
 		//Do additional processing of facets for non-genealogy searches
-		if ($this->searchObject->getSearchType() != 'genealogy'/* && $this->searchObject->getSearchType() != 'islandora'*/) {
-			foreach ($sideFacets as $facetKey => $facet) {
+		if ($this->searchObject->getSearchType() != 'genealogy'/* && $this->searchObject->getSearchType() != 'islandora'*/){
+			foreach ($sideFacets as $facetKey => $facet){
 
 				$facetSetting = $this->facetSettings[$facetKey];
 
 				//Do special processing of facets
-				if (preg_match('/time_since_added/i', $facetKey)) {
+				if (preg_match('/time_since_added/i', $facetKey)){
 					$timeSinceAddedFacet   = $this->updateTimeSinceAddedFacet($facet);
 					$sideFacets[$facetKey] = $timeSinceAddedFacet;
-				} elseif ($facetKey == 'rating_facet') {
+				}elseif ($facetKey == 'rating_facet'){
 					$userRatingFacet       = $this->updateUserRatingsFacet($facet);
 					$sideFacets[$facetKey] = $userRatingFacet;
-				} elseif ($facetKey == 'available_at') {
-					//Mangle the availability facets
-					$oldFacetValues = $sideFacets['available_at']['list'];
-					ksort($oldFacetValues);
-
-					$filters = $this->searchObject->getFilterList();
-					//print_r($filters);
-					$appliedAvailability = [];
-					foreach ($filters as $appliedFilters) {
-						foreach ($appliedFilters as $filter) {
-							if ($filter['field'] == 'available_at') {
-								$appliedAvailability[$filter['value']] = $filter['removalUrl'];
-							}
-						}
-					}
-
-					$availableAtFacets = [];
-					foreach ($oldFacetValues as $facetKey2 => $facetInfo) {
-						if (strlen($facetKey2) > 1) {
-							$sortIndicator = substr($facetKey2, 0, 1);
-							if ($sortIndicator >= '1' && $sortIndicator <= '4') {
-								$availableAtFacets[$facetKey2] = $facetInfo;
-							}
-						}
-					}
-
-					$includeAnyLocationFacet = $this->searchObject->getFacetSetting("Availability", "includeAnyLocationFacet");
-					$includeAnyLocationFacet = ($includeAnyLocationFacet == '' || $includeAnyLocationFacet == 'true');
-					if ($searchLibrary) {
-						$includeAnyLocationFacet = $searchLibrary->showAvailableAtAnyLocation;
-					}
-					//print_r ("includeAnyLocationFacet = $includeAnyLocationFacet");
-					if ($includeAnyLocationFacet) {
-						$anyLocationLabel = $this->searchObject->getFacetSetting("Availability", "anyLocationLabel");
-						//print_r ("anyLocationLabel = $anyLocationLabel");
-						$availableAtFacets['*'] = [
-							'value'      => '*',
-							'display'    => $anyLocationLabel == '' ? "Any Marmot Location" : $anyLocationLabel,
-							'count'      => $this->searchObject->getResultTotal() - ($oldFacetValues['']['count'] ?? 0),
-							'url'        => $this->searchObject->renderLinkWithFilter('available_at:*'),
-							'isApplied'  => array_key_exists('*', $appliedAvailability),
-							'removalUrl' => array_key_exists('*', $appliedAvailability) ? $appliedAvailability['*'] : null
-						];
-					}
-
-					$sideFacets['available_at']['list'] = $availableAtFacets;
-				} else {
+				}else{
 					//Do other handling of the display
-					if ($facetSetting->sortMode == 'alphabetically') {
+					if ($facetSetting->sortMode == 'alphabetically'){
 						asort($sideFacets[$facetKey]['list']);
 					}
-					if ($facetSetting->numEntriesToShowByDefault > 0) {
+					if ($facetSetting->numEntriesToShowByDefault > 0){
 						$sideFacets[$facetKey]['valuesToShow'] = $facetSetting->numEntriesToShowByDefault;
 					}
-					if ($facetSetting->showAsDropDown) {
+					if ($facetSetting->showAsDropDown){
 						$sideFacets[$facetKey]['showAsDropDown'] = $facetSetting->showAsDropDown;
 					}
-					if ($facetSetting->useMoreFacetPopup && count($sideFacets[$facetKey]['list']) > 12) {
+					if ($facetSetting->useMoreFacetPopup && count($sideFacets[$facetKey]['list']) > 12){
 						$sideFacets[$facetKey]['showMoreFacetPopup'] = true;
 						$sideFacets[$facetKey]['sortedList']         = $sideFacets[$facetKey]['list'];
 						$sideFacets[$facetKey]['list']               = array_slice($sideFacets[$facetKey]['list'], 0, 5); // shorten main list to the first 5 entries
-						ksort($sideFacets[$facetKey]['sortedList'], SORT_NATURAL|SORT_FLAG_CASE); // use case-insensitive natural ordering to sort the full list of options
-					} else {
+						ksort($sideFacets[$facetKey]['sortedList'], SORT_NATURAL | SORT_FLAG_CASE);                       // use case-insensitive natural ordering to sort the full list of options
+					}else{
 						$sideFacets[$facetKey]['showMoreFacetPopup'] = false;
 					}
 				}
@@ -295,7 +248,7 @@ class SideFacets implements RecommendationInterface
 					foreach ($facetsList as $key => $value){
 						$sortedList[$value['display']] = $value;
 					}
-					ksort($sortedList, SORT_NATURAL|SORT_FLAG_CASE); // use case-insensitive natural ordering
+					ksort($sortedList, SORT_NATURAL | SORT_FLAG_CASE); // use case-insensitive natural ordering
 					$sideFacets[$facetKey]['sortedList'] = $sortedList;
 				}
 			}
@@ -355,7 +308,7 @@ class SideFacets implements RecommendationInterface
 	 * @access  public
 	 * @return  string      The template to use to display the recommendations.
 	 */
-	public function getTemplate() {
+	public function getTemplate(){
 		return 'Search/Recommend/SideFacets.tpl';
 	}
 }

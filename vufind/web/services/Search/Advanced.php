@@ -20,6 +20,7 @@
 require_once ROOT_DIR . '/services/Search/AdvancedBase.php';
 
 class Search_Advanced extends Search_AdvancedBase {
+		public $rangeFilters = ['publishDate', 'lexile_score', 'accelerated_reader_reading_level', 'accelerated_reader_point_value'];
 
 	function launch(){
 		global $interface;

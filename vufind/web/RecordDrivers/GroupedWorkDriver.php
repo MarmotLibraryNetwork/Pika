@@ -303,13 +303,12 @@ class GroupedWorkDriver extends RecordInterface {
 	 * user's favorites list.
 	 *
 	 * @access  public
-	 * @param User $user User object owning tag/note metadata.
 	 * @param int $listId ID of list containing desired tags/notes (or
 	 *                              null to show tags/notes from all user's lists).
 	 * @param bool $allowEdit Should we display edit controls?
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getListEntry($user, $listId = null, $allowEdit = true){
+	public function getListEntry($listId = null, $allowEdit = true){
 		global $configArray;
 		global $interface;
 		global $timer;
@@ -826,9 +825,10 @@ class GroupedWorkDriver extends RecordInterface {
 			if (array_key_exists('last_indexed', $fields)){
 				$groupedWorkDetails['Last Indexed'] = date('Y-m-d H:i:sA', strtotime($fields['last_indexed']));
 			}
-			$novelistPrimaryISBN                         = $this->getNovelistPrimaryISBN();
-			$groupedWorkDetails['Novelist Primary ISBN'] = empty($novelistPrimaryISBN) ? 'none' : $novelistPrimaryISBN;
 			$interface->assign('groupedWorkDetails', $groupedWorkDetails);
+
+			$novelistPrimaryISBN = $this->getNovelistPrimaryISBN();
+			$interface->assign('novelistPrimaryISBN', empty($novelistPrimaryISBN) ? 'none' : $novelistPrimaryISBN);
 		}
 
 		return 'RecordDrivers/GroupedWork/staff-view.tpl';

@@ -334,9 +334,9 @@ class Novelist3{
 						}
 
 						//Related Content
-						if (isset($data->FeatureContent->RelatedContent)){
-							$this->loadRelatedContent($data->FeatureContent->RelatedContent, $novelistData);
-						}
+//						if (isset($data->FeatureContent->RelatedContent)){
+//							$this->loadRelatedContent($data->FeatureContent->RelatedContent, $novelistData);
+//						}
 
 						//GoodReads Ratings
 						if (isset($data->FeatureContent->GoodReads)){
@@ -874,26 +874,26 @@ class Novelist3{
 		}
 	}
 
-	private function loadRelatedContent($relatedContent, &$enrichment){
-		$relatedContentReturn = array();
-		foreach ($relatedContent->doc_types as $contentSection){
-			$section = array(
-				'title'   => $contentSection->doc_type,
-				'content' => array(),
-			);
-			foreach ($contentSection->content as $content){
-				//print_r($content);
-				$contentUrl           = $content->links[0]->url;
-				$section['content'][] = array(
-					'author'     => $content->feature_author,
-					'title'      => $content->title,
-					'contentUrl' => $contentUrl,
-				);
-			}
-			$relatedContentReturn[] = $section;
-		}
-		$enrichment->relatedContent = $relatedContentReturn;
-	}
+//	private function loadRelatedContent($relatedContent, &$enrichment){
+//		$relatedContentReturn = array();
+//		foreach ($relatedContent->doc_types as $contentSection){
+//			$section = array(
+//				'title'   => $contentSection->doc_type,
+//				'content' => array(),
+//			);
+//			foreach ($contentSection->content as $content){
+//				//print_r($content);
+//				$contentUrl           = $content->links[0]->url;
+//				$section['content'][] = array(
+//					'author'     => $content->feature_author,
+//					'title'      => $content->title,
+//					'contentUrl' => $contentUrl,
+//				);
+//			}
+//			$relatedContentReturn[] = $section;
+//		}
+//		$enrichment->relatedContent = $relatedContentReturn;
+//	}
 
 	private function loadGoodReads($goodReads, &$enrichment){
 		$goodReadsInfo         = array(

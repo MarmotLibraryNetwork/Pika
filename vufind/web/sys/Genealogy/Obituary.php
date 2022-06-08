@@ -39,29 +39,29 @@ class Obituary extends DB_DataObject {
 	public $contents;
 	public $picture;
 
-	function keys() {
-		return array('obituaryId');
+	function keys(){
+		return ['obituaryId'];
 	}
 
-	function id() {
+	function id(){
 		return $this->obituaryId;
 	}
 
-	function label() {
+	function label(){
 		return $this->source . ' ' . $this->sourcePage . ' ' . $this->date;
 	}
 
 	function getObjectStructure(){
 		global $configArray;
 		$storagePath = $configArray['Genealogy']['imagePath'];
-		$structure = array(
-			array('property' => 'obituaryId', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the obituary in the database', 'storeDb' => true),
-			array('property' => 'personId', 'type' => 'hidden', 'label' => 'Person Id', 'description' => 'The id of the person this obituary is for', 'storeDb' => true),
-			array('property' => 'source', 'type' => 'text', 'maxLength' => 100, 'label' => 'Source', 'description' => 'The source of the obituary', 'storeDb' => true),
-			array('property' => 'sourcePage', 'type' => 'text', 'maxLength' => 100, 'label' => 'Source Page', 'description' => 'The page where the obituary was found', 'storeDb' => true),
-			array('property' => 'date', 'type' => 'partialDate', 'label' => 'Date', 'description' => 'The date of the obituary.', 'storeDb' => true, 'propNameMonth' => 'dateMonth', 'propNameDay' => 'dateDay', 'propNameYear' => 'dateYear'),
-			array('property' => 'contents', 'type' => 'textarea', 'rows' => 10, 'cols' => 80, 'label' => 'Full Text of the Obituary', 'description' => 'The full text of the obituary.', 'storeDb' => true, 'hideInLists' => true),
-			array(
+		$structure   = [
+			['property' => 'obituaryId', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the obituary in the database', 'storeDb' => true],
+			['property' => 'personId', 'type' => 'hidden', 'label' => 'Person Id', 'description' => 'The id of the person this obituary is for', 'storeDb' => true],
+			['property' => 'source', 'type' => 'text', 'maxLength' => 100, 'label' => 'Source', 'description' => 'The source of the obituary', 'storeDb' => true],
+			['property' => 'sourcePage', 'type' => 'text', 'maxLength' => 100, 'label' => 'Source Page', 'description' => 'The page where the obituary was found', 'storeDb' => true],
+			['property' => 'date', 'type' => 'partialDate', 'label' => 'Obituary Date', 'description' => 'The date of the obituary.', 'storeDb' => true, 'propNameMonth' => 'dateMonth', 'propNameDay' => 'dateDay', 'propNameYear' => 'dateYear', 'serverValidation' => 'validateObituaryDate'],
+			['property' => 'contents', 'type' => 'textarea', 'rows' => 10, 'cols' => 80, 'label' => 'Full Text of the Obituary', 'description' => 'The full text of the obituary.', 'storeDb' => true, 'hideInLists' => true],
+			[
 				'property'    => 'picture',
 				'type'        => 'image',
 				'storagePath' => $storagePath,
@@ -72,19 +72,16 @@ class Obituary extends DB_DataObject {
 				'storeDb'     => true,
 				'storeSolr'   => false,
 				'hideInLists' => true
-			),
-		);
+			],
+		];
 		return $structure;
 	}
 
 	function insert(){
 		$ret = parent::insert();
 		//Load the person this is for, and update solr
-		if ($this->personId){
-			require_once ROOT_DIR . '/sys/Genealogy/Person.php';
-			$person           = new Person();
-			$person->personId = $this->personId;
-			$person->find(true);
+		$person = $this->getPerson();
+		if (!empty($person)){
 			$person->saveToSolr();
 		}
 		return $ret;
@@ -93,28 +90,73 @@ class Obituary extends DB_DataObject {
 	function update($dataObject = false){
 		$ret = parent::update();
 		//Load the person this is for, and update solr
-		if ($this->personId){
-			require_once ROOT_DIR . '/sys/Genealogy/Person.php';
-			$person           = new Person();
-			$person->personId = $this->personId;
-			$person->find(true);
+		$person = $this->getPerson();
+		if (!empty($person)){
 			$person->saveToSolr();
 		}
 		return $ret;
 	}
 
 	function delete($useWhere = false){
-		$personId = $this->personId;
-		$ret      = parent::delete();
+		$ret    = parent::delete();
 		//Load the person this is for, and update solr
-		if ($personId){
-			require_once ROOT_DIR . '/sys/Genealogy/Person.php';
-			$person           = new Person();
-			$person->personId = $this->personId;
-			$person->find(true);
+		$person = $this->getPerson();
+		if (!empty($person)){
 			$person->saveToSolr();
 		}
 		return $ret;
+	}
+
+
+	/**
+	 * Server Validation method for DataObjectUtil
+	 *
+	 * Tests the validity of the obituary year compared to birth or death year
+	 *
+	 * @return array
+	 */
+	function validateObituaryDate(){
+		//Setup validation return array
+		$validationResults = [
+			'validatedOk' => true,
+			'errors'      => [],
+		];
+
+		$person = $this->getPerson();
+		if (!empty($person)){
+			if (!empty($this->date)){
+				$obitTimeStamp = strtotime($this->date);
+				if ($obitTimeStamp){
+					if (!empty($person->birthDate)){
+						$birthTimeStamp = strtotime($person->birthDate);
+						if ($birthTimeStamp){
+							if ($obitTimeStamp < $birthTimeStamp){
+								$validationResults['validatedOk'] = false;
+								$validationResults['errors'][]    = "Obituary date $this->date is before birth date $person->birthDate";
+							}
+						}
+					}
+					if (!empty($person->deathDate)){
+						$deathTimeStamp = strtotime($person->deathDate);
+						if ($deathTimeStamp){
+							if ($obitTimeStamp < $deathTimeStamp){
+								$validationResults['validatedOk'] = false;
+								$validationResults['errors'][]    = "Obituary date $this->date is before death date $person->deathDate";
+							}
+						}
+					}
+				}
+			} elseif (!empty($this->dateYear)){
+				if (!empty($person->birthDateYear) && $this->dateYear < $person->birthDateYear){
+					$validationResults['validatedOk'] = false;
+					$validationResults['errors'][]    = "Obituary year $this->dateYear is before birth year $person->birthDateYear";
+				} elseif (!empty($person->deathDateYear) && $this->dateYear < $person->deathDateYear){
+					$validationResults['validatedOk'] = false;
+					$validationResults['errors'][]    = "Obituary year $this->dateYear is before death year $person->deathDateYear";
+				}
+			}
+		}
+		return $validationResults;
 	}
 
 	function formattedObitDate(){

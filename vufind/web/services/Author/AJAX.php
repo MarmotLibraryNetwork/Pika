@@ -32,6 +32,7 @@ class Author_AJAX extends AJAXHandler {
 
 	protected $methodsThatRespondWithJSONUnstructured = [
 		'getWikipediaData',
+		'nameVariations'
 	];
 
 	function getWikipediaData(){
@@ -114,4 +115,62 @@ class Author_AJAX extends AJAXHandler {
 		}
 		return $returnVal;
 	}
+
+	function nameVariations(){
+		global $interface;
+		global $configArray;
+
+		/** @var Solr $db */
+		$class = $configArray['Index']['engine'];
+		$url   = $configArray['Index']['url'];
+		$db    = new $class($url);
+
+		$authorOriginal = strip_tags($_REQUEST['author']);
+		if (is_array($authorOriginal)){
+			$authorOriginal = array_pop($authorOriginal);
+		}
+		$author = trim(str_replace('"', '', $authorOriginal));
+		if (substr($author, strlen($author) - 1, 1) == ','){
+			$author = substr($author, 0, strlen($author) - 1);
+		}
+		$author = explode(',', $author);
+
+		$authAuthorSearch = $author[0];
+		if (isset($author[1])){
+			// Create First Name
+			// Note: Sometimes we don't actually have a first name but just the dates eg "Muddy Waters, 1915-1983"
+			$firstName        = $author[1];
+			// Remove dates & initials explainer
+			$firstName        = preg_replace('/[0-9]+-[0-9]*/', '', $firstName); // birth year - death year phrases
+			$firstName        = trim(preg_replace('/\(.*\)$/i', '', $firstName));      // full names for initials in parentheses eg.  W. E. B. (William Edward Burghardt)
+			if (strlen($firstName)){
+				$authAuthorSearch .= ', ' . $firstName;
+			}
+		}
+
+		$authorVariationSuggestions = $db->search("auth_author:\"$authAuthorSearch\"", null, null, 0, 0,
+			[
+				'field'             => 'authorStr',
+				'additionalOptions' => [
+					'facet.query' => 'author_left:'. substr($author[0], 0, 35), // text-left fields only match up to 35 characters
+				]
+			], null, null, null, 'authorStr');
+
+		if (!empty($authorVariationSuggestions['facet_counts']['facet_fields']['authorStr'])){
+			if (count($authorVariationSuggestions['facet_counts']['facet_fields']['authorStr']) > 1){
+				// Don't return suggestions if there is only one
+				if (count($authorVariationSuggestions['facet_counts']['facet_fields']['authorStr']) > 10){
+					// Only use the first 10 suggestions
+					$authorVariationSuggestions['facet_counts']['facet_fields']['authorStr'] = array_slice($authorVariationSuggestions['facet_counts']['facet_fields']['authorStr'], 0, 10, true);
+				}
+				$interface->assign('authorVariations', $authorVariationSuggestions['facet_counts']['facet_fields']['authorStr']);
+				return [
+					'success' => true,
+					'body'    => $interface->fetch('Author/nameVariations.tpl')
+				];
+			}
+		}
+		return ['success' => false,];
+	}
+
 }

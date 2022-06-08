@@ -318,9 +318,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}catch (Exception e) {
 				logger.error("Error updating solr based on marc record", e);
 			}
-		//No need to warn here, we already have a warning when getting it
-		//}else{
-			//logger.info("Could not load marc record from disk for " + identifier);
 		}
 	}
 
@@ -451,7 +448,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			int numPrintItems = recordInfo.getNumPrintCopies();
 
 			numPrintItems = checkForNonSuppressedItemlessBib(numPrintItems);
-			groupedWork.addHoldings(numPrintItems + recordInfo.getNumCopiesOnOrder());
+//			groupedWork.addHoldings(numPrintItems + recordInfo.getNumCopiesOnOrder());
 
 			for (ItemInfo curItem : recordInfo.getRelatedItems()){
 				String itemIdentifier = curItem.getItemIdentifier();

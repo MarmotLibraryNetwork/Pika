@@ -17,10 +17,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/Genealogy/Person.php';
+require_once ROOT_DIR . '/services/Admin/GenealogyObjectEditor.php';
 
-class Obituaries extends ObjectEditor {
+class Obituaries extends GenealogyObjectEditor {
 	function getObjectType(){
 		return 'Obituary';
 	}
@@ -42,22 +41,11 @@ class Obituaries extends ObjectEditor {
 	}
 
 	function getPrimaryKeyColumn(){
-		return array('personId', 'source', 'date');
+		return ['personId', 'source', 'date'];
 	}
 
 	function getIdKeyColumn(){
 		return 'obituaryId';
 	}
 
-	function getAllowableRoles(){
-		return array('genealogyContributor');
-	}
-
-	function getRedirectLocation($objectAction, $curObject){
-		return '/Person/' . $curObject->personId;
-	}
-
-	function showReturnToList(){
-		return false;
-	}
 }
