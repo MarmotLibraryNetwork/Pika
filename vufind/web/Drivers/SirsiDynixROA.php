@@ -338,6 +338,16 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 					$userExistsInDB = true;
 				}
 
+				// does password need updating?
+				if ($userExistsInDB) {
+					$_password = $user->getPassword();
+					if($password != $_password) {
+						$user->updatePassword($password);
+					}
+				} else {
+					$user->setPassword($password);
+				}
+
 				$forceDisplayNameUpdate = false;
 				$firstName              = isset($firstName) ? $firstName : '';
 				if ($user->firstname != $firstName){
@@ -355,7 +365,6 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 				$user->fullname     = isset($fullName) ? $fullName : '';
 				//$user->cat_username = $username;
 				$user->barcode = $username;
-				$user->cat_password = $password;
 
 				$Address1 = "";
 				$City     = "";
@@ -483,6 +492,13 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 				}else{
 					$user->created = date('Y-m-d');
 					$user->insert();
+					// Password needs set on a new object after insert... for some reason.
+					$tmpUser = new User();
+					$tmpUser->ilsUserId = $sirsiRoaUserID;
+					if($tmpUser->find(true)){
+						$user->updatePassword($password);
+					}
+					unset($tmpUser);
 				}
 
 				$timer->logTime("patron logged in successfully");
