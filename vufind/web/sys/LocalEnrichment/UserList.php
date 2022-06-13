@@ -313,67 +313,14 @@ class UserList extends DB_DataObject
 	 * @param int $numItems  Number of items to fetch for this result
 	 * @return array     Array of HTML to display to the user
 	 */
-	public function getBrowseRecords($start, $numItems, $browseCategorySort) {
-		global $interface;
+	public function getBrowseRecords($start, $numItems){
+
 		$browseRecords = [];
-		$databaseSort  = in_array($this->defaultSort, array_keys($this->userListSortOptions)) ? $this->userListSortOptions[$this->defaultSort] : null;
-		[$listEntries] = $this->getListEntries($databaseSort);
-		$groupedWorkIds = [];
-		$archiveIds     = [];
-		if ($databaseSort){
-			$listEntries = array_slice($listEntries, $start, $numItems);
-		}
-		foreach ($listEntries as $listItemId){
-			if (strpos($listItemId, ':') === false){
-				// Catalog Items
-				$groupedWorkIds[] = $listItemId;
-			}else{
-				$archiveIds[] = $listItemId;
-			}
-		}
+		$listId = $this->id;
+		require_once ROOT_DIR . '/sys/LocalEnrichment/FavoriteHandler.php';
 
-		//Load catalog items
-		if (count($groupedWorkIds) > 0){
-			/** @var SearchObject_Solr $searchObject */
-			$searchObject = SearchObjectFactory::initSearchObject();
-			$catalogRecords = $searchObject->getRecords($groupedWorkIds);
-			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			foreach ($catalogRecords as $catalogRecord){
-				$groupedWork = new GroupedWorkDriver($catalogRecord);
-				if ($groupedWork->isValid) {
-					if (method_exists($groupedWork, 'getBrowseResult')) {
-						$browseRecords[$catalogRecord['id']] = $interface->fetch($groupedWork->getBrowseResult());
-					} else {
-						$browseRecords[$catalogRecord['id']] = 'Browse Result not available';
-					}
-				}
-			}
-		}
-
-		//Load archive items
-		if (count($archiveIds) > 0){
-			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
-			foreach ($archiveIds as $archiveId){
-				$fedoraUtils = FedoraUtils::getInstance();
-				$archiveObject = $fedoraUtils->getObject($archiveId);
-				$recordDriver = RecordDriverFactory::initRecordDriver($archiveObject);
-				if (method_exists($recordDriver, 'getBrowseResult')) {
-					$browseRecords[$archiveId] = $interface->fetch($recordDriver->getBrowseResult());
-				} else {
-					$browseRecords[$archiveId] = 'Browse Result not available';
-				}
-			}
-		}
-
-		//Properly sort items
-		$browseRecordsSorted = array();
-		foreach ($listEntries as $listItemId) {
-			if (array_key_exists($listItemId, $browseRecords)){
-				$browseRecordsSorted[] = $browseRecords[$listItemId];
-			}
-		}
-
-		return $browseRecordsSorted;
+		$favoriteHandler = new FavoriteHandler($this);
+		return $favoriteHandler->buildListForBrowseCategory($start, $numItems);
 	}
 
 	/**

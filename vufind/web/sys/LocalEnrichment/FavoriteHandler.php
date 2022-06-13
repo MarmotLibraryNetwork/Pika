@@ -131,16 +131,122 @@ class FavoriteHandler
 
 	}
 
+	public function buildListForBrowseCategory($start, $numItems){
+		global $interface;
+
+		$browseRecords = array();
+		$sortOptions = $defaultSortOptions = array();
+		$ids = [];
+
+		/*			Use Cases:
+					Only Catalog items, user sort
+					Only Catalog items, solr sort
+					Only Archive items, user sort
+					Only Archive items, islandora sort
+					Mixed Items, user sort
+				*/
+		$catalogResourceList = [];
+		if (count($this->catalogIds) > 0){
+			$catalogSearchObject = SearchObjectFactory::initSearchObject();
+			$catalogSearchObject->init();
+			$catalogSearchObject->setLimit($numItems);
+			if(!$this->isUserListSort && !$this->isMixedUserList){
+				$catalogSearchObject->setSort($this->sort);
+			}
+			if(!$this->isMixedUserList()){
+				$solrSortList = $catalogSearchObject->getSortList();
+				foreach($this->solrSortOptions as $option){
+					if (isset($solrSortList[$option])){
+						$sortOptions[$option]         = $solrSortList[$option];
+						$defaultSortOptions[$option]  = $solrSortList[$option]['desc'];
+					}
+				}
+			}
+			foreach ($this->userListSortOptions as $option => $value_ignored){
+				$sortOptions[$option] = [
+					'sortUrl' => $catalogSearchObject->renderLinkWithSort($option),
+					'desc'    => "sort_{$option}_userlist",
+					'selected' => ($option == $this->sort)
+				];
+				$defaultSortOptions[$option] = "sort_{option}_userlist";
+			}
+			if(!$this->isMixedUserList){
+				if ($this->isUserListSort) {
+					$this->ids = array_slice($this->ids, $start - 1, $numItems);
+					$catalogSearchObject->setPage(1); // set to the first page for the search only
+
+					$catalogSearchObject->setQueryIDs($this->catalogIds); // do solr search by Ids
+					$catalogResults = $catalogSearchObject->processSearch();
+					foreach($catalogResults['response']['docs'] as $catalogResult)
+					{
+							require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+							$groupedWork = new GroupedWorkDriver($catalogResult);
+							if ($groupedWork->isValid){
+								if(method_exists($groupedWork, 'getBrowseResult')){
+									$browseRecords[$catalogResult['id']] = $interface->fetch($groupedWork->getBrowseResult());
+								}
+							}
+						}
+				} // Solr Sorted Catalog Only Search //
+				else {
+					$catalogSearchObject->setQueryIDs($this->catalogIds); // do solr search by Ids
+					$catalogSearchObject->setPage($start);
+					$catalogResults       = $catalogSearchObject->processSearch();
+					foreach($catalogResults['response']['docs'] as $catalogResult)
+					{
+						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+						$groupedWork = new GroupedWorkDriver($catalogResult);
+						if ($groupedWork->isValid){
+							if(method_exists($groupedWork, 'getBrowseResult')){
+								$browseRecords[$catalogResult['id']] = $interface->fetch($groupedWork->getBrowseResult());
+							}
+						}
+					}
+				}
+			}
+			else {
+				// Removed all catalog items from previous page searches
+				$totalItemsFromPreviousPages = $numItems * ($start - 1);
+				for ($i = 0; $i < $totalItemsFromPreviousPages; $i++ ) {
+					$IdToTest = $this->favorites[$i];
+					$key      = array_search($IdToTest, $this->catalogIds);
+					if ($key !== false) {
+						unset($this->catalogIds[$key]);
+					}
+				}
+				$this->catalogIds = array_slice($this->catalogIds, 0, $numItems);
+				if (!empty($this->catalogIds)) {
+					$catalogSearchObject->setQueryIDs($this->catalogIds); // do solr search by Ids
+					$catalogSearchObject->setPage(1); // set to the first page for the search only
+					$catalogResults       = $catalogSearchObject->processSearch();
+					foreach($catalogResults['response']['docs'] as $catalogResult)
+					{
+						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+						$groupedWork = new GroupedWorkDriver($catalogResult);
+						if ($groupedWork->isValid){
+							if(method_exists($groupedWork, 'getBrowseResult')){
+								$browseRecords[$catalogResult['id']] = $interface->fetch($groupedWork->getBrowseResult());
+							}
+						}
+					}
+
+				}
+			}
+
+		}
+		return $browseRecords;
+	}
+
 	/**
 	 * Assign all necessary values to the interface.
 	 *
 	 * @access  public
 	 */
-	public function buildListForDisplay(){
+	public function buildListForDisplay($recordsPerPage = 20, $page =1){
 		global $interface;
 
-		$recordsPerPage = isset($_REQUEST['pagesize']) && (is_numeric($_REQUEST['pagesize'])) ? $_REQUEST['pagesize'] : 20;
-		$page           = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+		$recordsPerPage = isset($_REQUEST['pagesize']) && (is_numeric($_REQUEST['pagesize'])) ? $_REQUEST['pagesize']: $recordsPerPage;
+		$page           = isset($_REQUEST['page']) ? $_REQUEST['page'] : $page;
 		$startRecord    = ($page - 1) * $recordsPerPage + 1;
 		if ($startRecord < 0){
 			$startRecord = 0;
