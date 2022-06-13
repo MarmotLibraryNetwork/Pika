@@ -167,6 +167,7 @@ Pika.Lists = (function(){
 				{ // form inputs passed as data
 					listId   : $('#emailListForm input[name="listId"]').val()
 					,to      : $('#emailListForm input[name="to"]').val()
+					,from    : $('#emailListForm input[name="from"]').val()
 					,message : $('#emailListForm textarea[name="message"]').val()
 					,method  : 'sendMyListEmail' // server-side method
 					,'g-recaptcha-response' : (typeof grecaptcha !== 'undefined') ? grecaptcha.getResponse() : false

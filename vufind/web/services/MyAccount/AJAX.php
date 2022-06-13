@@ -1257,6 +1257,7 @@ class MyAccount_AJAX extends AJAXHandler {
 				$to      = $_REQUEST['to'];
 				$from    = $configArray['Site']['email'];
 				$message = $_REQUEST['message'];
+				$replyTo = $_REQUEST['from'];
 
 				//Load the list
 				require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
@@ -1284,7 +1285,7 @@ class MyAccount_AJAX extends AJAXHandler {
 							require_once ROOT_DIR . '/sys/Mailer.php';
 							$mail        = new VuFindMailer();
 							$subject     = $list->title;
-							$emailResult = $mail->send($to, $from, $subject, $body);
+							$emailResult = $mail->send($to, $from, $subject, $body, $replyTo);
 
 							if ($emailResult === true){
 								$result = [
