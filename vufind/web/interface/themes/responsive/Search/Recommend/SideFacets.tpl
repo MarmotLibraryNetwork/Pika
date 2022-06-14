@@ -20,7 +20,7 @@
 
 		{* Available filters *}
 		{if $sideFacetSet && $recordCount > 0}
-			<div id="narrow-search-label" class="sidebar-label"{if $displaySidebarMenu} style="display: none"{/if}>{translate text='Narrow Search'}</div>
+			<div id="narrow-search-label" class="sidebar-label"{if $displaySidebarMenu} style="display: none"{/if}>{if $action != 'MyList'}{translate text='Narrow Search'}{else}{translate text='Narrow List By'}{/if}</div>
 			<div id="facet-accordion" class="accordion"{if $displaySidebarMenu} style="display: none"{/if}>
 				{foreach from=$sideFacetSet item=cluster key=title name=facetSet}
 					{if count($cluster.list) > 0}

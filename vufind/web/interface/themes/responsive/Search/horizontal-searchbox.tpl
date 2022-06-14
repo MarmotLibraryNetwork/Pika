@@ -102,7 +102,7 @@
 
 				<div id="horizontal-search-additional" class="col-tn-5 col-xs-5 col-sm-12 col-md-8">
 					{* Keep Applied Filters Checkbox *}
-					{if $filterList}
+					{if $filterList && $action != 'MyList'}
 						<label for="keepFiltersSwitch" id="keepFiltersSwitchLabel">
 							<input id="keepFiltersSwitch" type="checkbox" onclick="Pika.Searches.filterAll(this);"> Keep Applied Filters</label>
 					{/if}

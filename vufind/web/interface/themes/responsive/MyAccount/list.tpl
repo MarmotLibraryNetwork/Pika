@@ -8,11 +8,12 @@
 {if isset($favList)}
 	<form action="/MyAccount/MyList/{$favList->id}" id="myListFormHead">
 		<div>
-			<input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
-			<input type="hidden" name="myListActionData" id="myListActionData" class="form">
-			<input type="hidden" name="myListPage" id="myListPage" class="form">
-			<input type="hidden" name="myListPageSize" id="myListPageSize" class="form">
-			<input type="hidden" name="myListSort" id="myListSort" class="form">
+			{foreach from=$smarty.get.filter item="filter"}<input type="hidden" name="filter[]" value="{$filter|escape}">{/foreach}
+			<input type="hidden" name="myListActionHead" id="myListActionHead">
+			<input type="hidden" name="myListActionData" id="myListActionData">
+			<input type="hidden" name="myListPage" id="myListPage">
+			<input type="hidden" name="myListPageSize" id="myListPageSize">
+			<input type="hidden" name="myListSort" id="myListSort">
 			<h3 id="listTitle">{$favList->title|escape:"html"}</h3>
 			{if $notes}
 				<div id="listNotes" class="alert alert-info">
@@ -177,6 +178,13 @@
 				</select>
 				<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 			</form>
+
+
+			{if $topRecommendations}
+					{foreach from=$topRecommendations item="recommendations"}
+							{include file=$recommendations}
+					{/foreach}
+			{/if}
 
 			{if $recordCount}
 				<div class="resulthead row">

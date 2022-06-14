@@ -132,22 +132,22 @@ class MyAccount_MyList extends MyAccount {
 					$list->update();
 				}
 				//Redirect back to avoid having the parameters stay in the URL (keeping both pagesize and current page).
-				$queryString = '';
+				$params = [];
 				if (!empty($_REQUEST['myListPageSize'])){
-					$queryString = "?pagesize=" . $_REQUEST['myListPageSize'];
+					$params['pagesize'] = $_REQUEST['myListPageSize'];
 				}
 				if (!empty($_REQUEST['myListPage'])){
-					if (!empty($_REQUEST['myListPageSize'])){
-						$queryString = "?pagesize=" . $_REQUEST['myListPageSize'] . "&page=" . $_REQUEST['myListPage'];
-					}else{
-						$queryString = "?page=" . $_REQUEST['myListPage'];
-					}
+					$params['page'] = $_REQUEST['myListPage'];
 				}
 				if (!empty($_REQUEST['myListSort'])){
-					$queryString = $queryString . "&sort=" . $_REQUEST['myListSort'];
+					$params['sort'] = $_REQUEST['myListSort'];
 				}
+				if (!empty($_REQUEST['filter'])){
+					$params['filter'] = $_REQUEST['filter'];
+				}
+				$queryString = empty($params) ? '' : '?' . http_build_query($params);
 				header("Location: /MyAccount/MyList/{$list->id}" . $queryString);
-				die();
+				die;
 			}elseif ($list->public && !empty($_REQUEST['myListActionHead'])){
 				//if list is public the export to excel still needs to function
 				$actionToPerform = $_REQUEST['myListActionHead'];
@@ -176,7 +176,7 @@ class MyAccount_MyList extends MyAccount {
 			$favList = new FavoriteHandler($list, $userCanEdit);
 			$favList->buildListForDisplay();
 		}
-		$this->display('../MyAccount/list.tpl', $list->title ?? 'My List');
+		$this->display('../MyAccount/list.tpl', isset($list->title) ? $list->title : 'My List', 'Search/results-sidebar.tpl');
 		// this relative template path is used when an Archive object is in the list;
 	}
 
@@ -263,7 +263,7 @@ class MyAccount_MyList extends MyAccount {
 			$userCanEdit = $listUser->canEditList($list);
 		}
 		$favList   = new FavoriteHandler($list, $userCanEdit);
-		$favorites = $favList->getTitles($list->id);
+		$favorites = $favList->getTitles($list->id, true);
 
 
 		//PHPEXCEL
@@ -294,15 +294,15 @@ class MyAccount_MyList extends MyAccount {
 		$itemArray  = [];
 		foreach ($favorites as $listItem){
 			$title = "";
-			if (!is_null($listItem['title_display'])){
+			if (!empty($listItem['title_display'])){
 				$title = $listItem['title_display'];
 			}
 			$author = "";
-			if (!is_null($listItem['author_display'])){
+			if (!empty($listItem['author_display'])){
 				$author = $listItem['author_display'];
 			}
 			$recordType = "";
-			if (!is_null($listItem['recordtype'])){
+			if (!empty($listItem['recordtype'])){
 				$recordType = $listItem['recordtype'];
 			}
 			$type = "";
