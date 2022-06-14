@@ -277,25 +277,25 @@ class IndexingProfile extends DB_DataObject{
 				]],
 
 
-			'itemStatusSection' => ['property' =>'itemStatusSection', 'type' => 'section', 'label' =>'Item Statuses Settings (Sierra ils profiles only)', 'hideInLists' => true,
+			'itemStatusSection' => ['property' =>'itemStatusSection', 'type' => 'section', 'label' =>'Item Statuses Settings (ils profiles only)', 'hideInLists' => true,
 			                         'helpLink' => '', 'properties' => [
 					'availableStatuses'      => ['property'    => 'availableStatuses',
 					                             'type'        => 'text',
-					                             'label'       => 'Available Statuses',
+					                             'label'       => 'Available Statuses (lists of characters for Sierra ils profiles, regex for Horizon ils profiles)',
 					                             'maxLength'   => 255,
 //					                             'default'     => "-",
 					                             'description' => 'A list of characters that are valid available item statues.'
 					                             , 'changeRequiresReindexing' => true],
 					'checkedOutStatuses'     => ['property'    => 'checkedOutStatuses',
 					                             'type'        => 'text',
-					                             'label'       => 'Checked Out Statuses',
+					                             'label'       => 'Checked Out Statuses (Sierra ils profiles only)',
 					                             'maxLength'   => 255,
 //					                             'default'     => "-",
 					                             'description' => 'A list of characters that are valid checked out item statuses.'
 					                             , 'changeRequiresReindexing' => true],
 					'libraryUseOnlyStatuses' => ['property'    => 'libraryUseOnlyStatuses',
 					                             'type'        => 'text',
-					                             'label'       => 'Library Use Only Statuses',
+					                             'label'       => 'Library Use Only Statuses (Sierra ils profiles only)',
 					                             'maxLength'   => 255,
 //					                             'default'     => "o",
 					                             'description' => 'A list of characters that are valid checked out item statuses.'
