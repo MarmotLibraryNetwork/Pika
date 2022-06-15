@@ -313,14 +313,14 @@ class UserList extends DB_DataObject
 	 * @param int $numItems  Number of items to fetch for this result
 	 * @return array     Array of HTML to display to the user
 	 */
-	public function getBrowseRecords($start, $numItems){
+	public function getBrowseRecords($start, $numItems, $defaultSort){
 
 		$browseRecords = [];
 		$listId = $this->id;
 		require_once ROOT_DIR . '/sys/LocalEnrichment/FavoriteHandler.php';
 
 		$favoriteHandler = new FavoriteHandler($this);
-		return $favoriteHandler->buildListForBrowseCategory($start, $numItems);
+		return $favoriteHandler->buildListForBrowseCategory($start, $numItems, $defaultSort);
 	}
 
 	/**

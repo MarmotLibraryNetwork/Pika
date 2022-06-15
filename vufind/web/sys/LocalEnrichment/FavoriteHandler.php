@@ -110,7 +110,7 @@ class FavoriteHandler {
 
 	}
 
-	public function buildListForBrowseCategory($start, $numItems){
+	public function buildListForBrowseCategory($start, $numItems, $defaultSort){
 		global $interface;
 
 		$browseRecords = array();
@@ -130,6 +130,10 @@ class FavoriteHandler {
 			$catalogSearchObject->init();
 			$catalogSearchObject->setLimit($numItems);
 			if(!$this->isUserListSort && !$this->isMixedUserList){
+				if($defaultSort == "title" || $defaultSort =="author")
+				{
+					$this->sort = $defaultSort;
+				}
 				$catalogSearchObject->setSort($this->sort);
 			}
 			if(!$this->isMixedUserList()){
