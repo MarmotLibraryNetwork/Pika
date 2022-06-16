@@ -40,12 +40,12 @@ public class HorizonRecordProcessor extends IlsRecordProcessor{
 
 	}
 
-	private Pattern availableStatusesPattern;
+	private Pattern availableStatusesPattern = null;
 
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
 		String status = itemInfo.getStatusCode();
-		if (status != null && !status.isEmpty()) {
+		if (availableStatusesPattern != null && status != null && !status.isEmpty()) {
 			return availableStatusesPattern.matcher(status.toLowerCase()).matches();
 		}
 		return false;
