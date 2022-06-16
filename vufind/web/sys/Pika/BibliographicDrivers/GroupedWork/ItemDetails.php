@@ -60,9 +60,8 @@ class ItemDetails {
 		$this->isEContent       = $itemDetailsArray[8] == '1' || $itemDetailsArray[8] == 'true';
 		$this->eContentSource   = $itemDetailsArray[9];
 		$this->eContentUrl      = $itemDetailsArray[10];
-		$this->subFormat        = $itemDetailsArray[11];
-		$this->detailedStatus   = $itemDetailsArray[12];
-		$this->lastCheckinDate  = $itemDetailsArray[13] ?? '';
-		$this->locationCode     = $itemDetailsArray[14] ?? '';
+		$this->detailedStatus   = $itemDetailsArray[11];
+		$this->lastCheckinDate  = $itemDetailsArray[12] ?? '';
+		$this->locationCode     = $itemDetailsArray[13] ?? '';
 	}
 }

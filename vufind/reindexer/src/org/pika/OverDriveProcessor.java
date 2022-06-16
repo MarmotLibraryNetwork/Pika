@@ -240,7 +240,6 @@ public class OverDriveProcessor {
 
 								//Load the formats for the record.  For OverDrive, we will create a separate item for each format.
 								HashSet<String> validFormats    = loadOverDriveFormats(groupedWork, overDriveRecord, productId, identifier);
-								String          detailedFormats = String.join(",", validFormats);
 								//overDriveRecord.addFormats(validFormats);
 
 								loadOverDriveIdentifiers(groupedWork, productId, primaryFormat);
@@ -282,7 +281,6 @@ public class OverDriveProcessor {
 										itemInfo.setSortableCallNumber("Online OverDrive");
 										itemInfo.setDateAdded(dateAdded);
 										itemInfo.setFormat(primaryFormat);
-										itemInfo.setSubFormats(detailedFormats);
 										itemInfo.setFormatCategory(formatCategory);
 
 										overDriveRecord.addItem(itemInfo);

@@ -183,7 +183,7 @@ class AnodeAPI extends AJAXHandler {
 							$itemDetail                                             = explode('|', $itemDetail);
 							$groupedWork['items'][count($groupedWork['items']) - 1] += [
 								'08_itemShelfLocation' => $itemDetail[2],
-								'09_itemLocationCode'  => $itemDetail[14],
+								'09_itemLocationCode'  => $itemDetail[13],
 								'10_itemCallNumber'    => $itemDetail[3],
 							];
 							break;

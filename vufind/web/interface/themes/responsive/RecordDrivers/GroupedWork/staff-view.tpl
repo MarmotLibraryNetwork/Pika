@@ -89,7 +89,7 @@
 				<h4>{$field|escape}</h4>
 					<table id="item_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: break-word; font-size: x-small;table-layout: fixed">
 						<tr>
-							<th>Bib Id</th><th>Item Id</th><th>Shelf Loc</th><th>Call Num</th><th>Format</th><th>Format Category</th><th>Num Copies</th><th>Is Order Item</th><th>Is eContent</th><th>eContent Source</th>{*<th>eContent File</th>*}<th>eContent URL</th><th>subformat</th><th>Detailed Status</th><th>Last Checkin</th><th>Location</th>{*<th>Sub-location</th>*}
+							<th>Bib Id</th><th>Item Id</th><th>Shelf Loc</th><th>Call Num</th><th>Format</th><th>Format Category</th><th>Num Copies</th><th>Is Order Item</th><th>Is eContent</th><th>eContent Source</th>{*<th>eContent File</th>*}<th>eContent URL</th>{*<th>subformat</th>*}<th>Detailed Status</th><th>Last Checkin</th><th>Location</th>{*<th>Sub-location</th>*}
 						</tr>
               {foreach from=$values item="item"}
 								<tr>

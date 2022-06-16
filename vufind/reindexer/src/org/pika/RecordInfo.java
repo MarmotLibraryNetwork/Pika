@@ -350,15 +350,6 @@ public class RecordInfo {
 		}
 	}
 
-	boolean hasItemFormats() {
-		for (ItemInfo curItem : relatedItems) {
-			if (curItem.getFormat() != null) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	// These pertain to Sierra Volume records (eg with ids starting with .j)
 	void setHasVolumes(boolean hasVolumes) {
 		this.hasVolumes = hasVolumes;
