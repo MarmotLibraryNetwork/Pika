@@ -26,29 +26,31 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * Description goes here
+ * Indexing Handler for Wake County Public Library
+ *
  * Pika
- * User: Mark Noble
+ *
+ *  User: Mark Noble
  * Date: 4/25/14
  * Time: 11:02 AM
  */
-class WCPLRecordProcessor extends IlsRecordProcessor {
+class WCPLRecordProcessor extends HorizonRecordProcessor {
 
 	WCPLRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 	}
 
-	private Pattern availableStati = Pattern.compile("^(csa|dc|fd|i|int|os|s|ref|rs|rw|st)$");
-
-	@Override
-	protected boolean isItemAvailable(ItemInfo itemInfo) {
-		boolean available = false;
-		String  status    = itemInfo.getStatusCode();
-		if (availableStati.matcher(status).matches()) {
-			available = true;
-		}
-		return available;
-	}
+//	private Pattern availableStati = Pattern.compile("^(csa|dc|fd|i|int|os|s|ref|rs|rw|st)$");
+//
+//	@Override
+//	protected boolean isItemAvailable(ItemInfo itemInfo) {
+//		boolean available = false;
+//		String  status    = itemInfo.getStatusCode();
+//		if (availableStati.matcher(status).matches()) {
+//			available = true;
+//		}
+//		return available;
+//	}
 
 	@Override
 	public void loadPrintFormatInformation(RecordInfo ilsRecord, Record record) {
