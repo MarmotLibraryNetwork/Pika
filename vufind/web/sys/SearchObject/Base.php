@@ -319,7 +319,7 @@ abstract class SearchObject_Base {
 						$display = 'Any War';
 					}elseif ($field == 'available_at' && $value == '*'){
 						$anyLocationLabel = $this->getFacetSetting('Availability', 'anyLocationLabel');
-						$display          = empty($anyLocationLabel) ? "Any Location" : $anyLocationLabel;
+						$display          = empty($anyLocationLabel) ? 'Any Location' : $anyLocationLabel;
 					}else{
 						$display = $translate ? translate($value) : $value;
 					}

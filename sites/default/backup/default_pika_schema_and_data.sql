@@ -846,7 +846,6 @@ CREATE TABLE `library` (
   `restrictSearchByLibrary` tinyint(1) DEFAULT 0,
   `enableOverdriveCollection` tinyint(1) DEFAULT 1,
   `restrictOwningBranchesAndSystems` tinyint(1) DEFAULT 1,
-  `showAvailableAtAnyLocation` tinyint(1) DEFAULT 1,
   `accountingUnit` int(11) DEFAULT 10,
   `allowPatronAddressUpdates` tinyint(1) DEFAULT 1,
   `showWorkPhoneInProfile` tinyint(1) DEFAULT 0,
