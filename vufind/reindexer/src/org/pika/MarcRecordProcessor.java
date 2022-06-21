@@ -1040,31 +1040,33 @@ abstract class MarcRecordProcessor {
 		List<DataField> urlFields = MarcUtil.getDataFields(record, "856");
 		for (DataField urlField : urlFields) {
 			//load url into the item
+			if (urlField.getIndicator2() == '0') {
+				// 2nd indicator of 0 is meant to be the resource
+				if (urlField.getSubfield('u') != null) {
+					itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
+					return;
+				}
+			} else if (urlField.getIndicator2() == ' ' && isLikelyEContentUrl(urlField)) {
+				// empty 2nd indicator might be the resource
+				if (urlField.getSubfield('u') != null) {
+					itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
+					return;
+				}
+			}
+		}
+
+		// Now try the circuitous way to get the resource url
+		for (DataField urlField : urlFields) {
+			//load url into the item
 			if (urlField.getSubfield('u') != null) {
 				//Try to determine if this is a resource or not.
-				if (urlField.getIndicator1() == '4' || urlField.getIndicator1() == ' ' || urlField.getIndicator1() == '0' || urlField.getIndicator1() == '7') {
+				if (isLikelyEContentUrl(urlField)){
 					if (logger.isInfoEnabled() && urlField.getIndicator2() == '1'){
-						logger.info("Related link found for " + identifier);
+						logger.info("Related link used for access link for " + identifier);
 						// Log some examples so we can verify the exclusion below
 					}
-					if (urlField.getIndicator2() != '2' || urlField.getIndicator2() == '1') {
-						// Avoid Cover Image Links
-						// (some image links do not have a 2nd indicator of 2)
-						// (a subfield 3 or z will often contain the text 'Image' or 'Cover Image' if the link is for an image)
-						// 2nd indicator of 1 is designate related resource link rather than the access link
-						String subFieldZ = "";
-						String subField3 = "";
-						if (urlField.getSubfield('z') != null) {
-							subFieldZ = urlField.getSubfield('z').getData().toLowerCase();
-						}
-						if (urlField.getSubfield('3') != null) {
-							subField3 = urlField.getSubfield('3').getData().toLowerCase();
-						}
-						if (!subFieldZ.contains("image") && !subField3.contains("image")) {
-							itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
-							return;
-						}
-					}
+					itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
+					return;
 				}
 			}
 		}
@@ -1072,6 +1074,29 @@ abstract class MarcRecordProcessor {
 //			logger.warn("Item for " + identifier + " had no eContent URL set");
 //		}
 		//will turn back on after initial problem records have been cleaned up. pascal 8/30/2019
+	}
+
+	private boolean isLikelyEContentUrl(DataField urlField){
+		if (urlField.getIndicator2() != '2') {
+			if (urlField.getIndicator1() == '4' || urlField.getIndicator1() == ' ' || urlField.getIndicator1() == '0' || urlField.getIndicator1() == '7') {
+				// Avoid Cover Image Links
+				// (some image links do not have a 2nd indicator of 2)
+				// (a subfield 3 or z will often contain the text 'Image' or 'Cover Image' if the link is for an image)
+
+				// 2nd indicator of 1 is designate related resource link rather than the access link but some
+				// eContent does this anyway for the resource link
+				String subFieldZ = "";
+				String subField3 = "";
+				if (urlField.getSubfield('z') != null) {
+					subFieldZ = urlField.getSubfield('z').getData().toLowerCase();
+				}
+				if (urlField.getSubfield('3') != null) {
+					subField3 = urlField.getSubfield('3').getData().toLowerCase();
+				}
+				return !subFieldZ.contains("image") && !subField3.contains("image");
+			}
+		}
+		return false;
 	}
 
 	/**
