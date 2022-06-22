@@ -46,4 +46,41 @@ abstract class GenealogyObjectEditor extends ObjectEditor {
 		return false;
 	}
 
+	function insertObject($structure){
+		$objectType = $this->getObjectType();
+		/** @var DB_DataObject $newObject */
+		$newObject = new $objectType;
+		//Check to see if we are getting default values from the
+		$validationResults = $this->updateFromUI($newObject, $structure);
+		if ($validationResults['validatedOk']){
+			$ret = $newObject->insert();
+			if (!$ret){
+				global $logger;
+				if ($newObject->_lastError){
+					$errorDescription = $newObject->_lastError->getUserInfo();
+				}else{
+					$errorDescription = 'Unknown error';
+				}
+				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, PEAR_LOG_DEBUG);
+				@session_start();
+				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br>{$errorDescription}";
+
+				return false;
+			}
+		}else{
+			global $pikaLogger;
+			$pikaLogger->debug('Could not validate new object ' . $objectType, $validationResults['errors']);
+
+			// Redisplay the form with the User's input prepopulated
+			global $interface;
+			$interface->assign('lastError', 'The information entered was not valid. <br>' . implode('<br>', $validationResults['errors']));
+			$interface->assign('object', $newObject);
+			$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($newObject));
+			$interface->setTemplate('../Admin/objectEditor.tpl');
+			$this->display();
+			die;
+		}
+		return $newObject;
+	}
+
 }
