@@ -58,9 +58,11 @@ Pika.MaterialsRequest = (function(){
 
 		exportSelectedRequests: function(){
 			var selectedRequests = this.getSelectedRequests(true);
+			console.log("returned selected requests", selectedRequests);
 			if (selectedRequests.length == 0){
 				return false;
 			}
+			console.log('Submitting request');
 			$("#updateRequests").submit();
 			return true;
 		},
@@ -92,21 +94,19 @@ Pika.MaterialsRequest = (function(){
 		},
 
 		getSelectedRequests: function(promptToSelectAll){
-			var selectedRequests = $("input.select:checked").map(function() {
-				return $(this).attr('name') + "=" + $(this).val();
-			}).get().join("&");
-			if (selectedRequests.length == 0){
+			if ( $("input.select:checked").length == 0){
 				if (promptToSelectAll){
-					if (confirm('You have not selected any requests, process all requests?')) {
-						selectedRequests = $("input.select").map(function() {
-							return $(this).attr('name') + "=on";
-						}).get().join("&");
-						$('.select').attr('checked', 'checked');
+					if (confirm('You have not selected any requests, select all requests?')) {
+						$("input.select").attr('checked', 'checked');
 					}
 				}else{
 					alert("Please select one or more requests to update");
 				}
 			}
+			var selectedRequests = $("input.select:checked").map(function(){
+				return $(this).attr('name') + "=" + $(this).val();
+			}).get().join("&");
+
 			return selectedRequests;
 		},
 
