@@ -299,7 +299,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		}elseif (isset($_REQUEST['submitAddAnother'])){
 			header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=addNew");
 		}else{
-			$redirectLocation = $this->getRedirectLocation($objectAction, $curObject);
+			$redirectLocation = $this->getRedirectLocation($curObject, $objectAction);
 			if (is_null($redirectLocation)){
 				if (isset($_SESSION['redirect_location']) && $objectAction != 'delete'){
 					header("Location: " . $_SESSION['redirect_location']);
