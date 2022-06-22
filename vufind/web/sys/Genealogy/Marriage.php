@@ -115,16 +115,16 @@ class Marriage extends DB_DataObject {
 						if ($birthTimeStamp){
 							if ($marriageTimeStamp < $birthTimeStamp){
 								$validationResults['validatedOk'] = false;
-								$validationResults['errors'][]    = "Obituary date $this->marriageDate is before birth date $person->birthDate";
+								$validationResults['errors'][]    = "Marriage date $this->marriageDate is before birth date $person->birthDate";
 							}
 						}
 					}
 					if (!empty($person->deathDate)){
 						$deathTimeStamp = strtotime($person->deathDate);
 						if ($deathTimeStamp){
-							if ($marriageTimeStamp < $deathTimeStamp){
+							if ($marriageTimeStamp > $deathTimeStamp){
 								$validationResults['validatedOk'] = false;
-								$validationResults['errors'][]    = "Obituary date $this->marriageDate is before death date $person->deathDate";
+								$validationResults['errors'][]    = "Marriage date $this->marriageDate is after death date $person->deathDate";
 							}
 						}
 					}
