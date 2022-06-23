@@ -58,11 +58,9 @@ Pika.MaterialsRequest = (function(){
 
 		exportSelectedRequests: function(){
 			var selectedRequests = this.getSelectedRequests(true);
-			console.log("returned selected requests", selectedRequests);
 			if (selectedRequests.length == 0){
 				return false;
 			}
-			console.log('Submitting request');
 			$("#updateRequests").submit();
 			return true;
 		},
@@ -97,7 +95,8 @@ Pika.MaterialsRequest = (function(){
 			if ( $("input.select:checked").length == 0){
 				if (promptToSelectAll){
 					if (confirm('You have not selected any requests, select all requests?')) {
-						$("input.select").attr('checked', 'checked');
+						// $("input.select").attr('checked', 'checked');
+						$("input.select").prop('checked', 'checked');
 					}
 				}else{
 					alert("Please select one or more requests to update");
