@@ -1330,7 +1330,7 @@ public class SierraExportAPIMain {
 	private static boolean updateMarcAndRegroupRecordId(Long id) {
 		try {
 			String     sierraUrl   = apiBaseUrl + "/bibs/" + id + "/marc";
-			JSONObject marcResults = getMarcJSONFromSierraApiURL(sierraUrl);
+			JSONObject marcResults = getMarcJSONFromSierraApiURL(sierraUrl, id);
 			if (marcResults != null) {
 				if (marcResults.has("httpStatus")) {
 					final int code = marcResults.getInt("code");
@@ -1403,7 +1403,7 @@ public class SierraExportAPIMain {
 				DataField recordNumberField = marcFactory.newDataField(indexingProfile.recordNumberTag, ' ', ' ', "" + indexingProfile.recordNumberField /*convert to string*/, getfullSierraBibId(id));
 
 				//Load Sierra Fixed Field / Bib Level Tag
-				JSONObject fixedFieldResults = getMarcJSONFromSierraApiURL(apiBaseUrl + "/bibs/" + id + "?fields=fixedFields,locations");
+				JSONObject fixedFieldResults = getMarcJSONFromSierraApiURL(apiBaseUrl + "/bibs/" + id + "?fields=fixedFields,locations", id);
 				if (fixedFieldResults != null && !fixedFieldResults.has("code")) {
 					DataField        sierraFixedField = marcFactory.newDataField(indexingProfile.sierraRecordFixedFieldsTag, ' ', ' ');
 					final JSONObject fixedFields      = fixedFieldResults.getJSONObject("fixedFields");
@@ -2277,7 +2277,7 @@ public class SierraExportAPIMain {
 		systemVariables.setVariable("sierra_extract_running", running);
 	}
 
-	private static JSONObject getMarcJSONFromSierraApiURL(String sierraUrl) {
+	private static JSONObject getMarcJSONFromSierraApiURL(String sierraUrl, Long id) {
 		lastCallTimedOut = false;
 		if (connectToSierraAPI()) {
 			//Connect to the API to get our token
@@ -2300,7 +2300,7 @@ public class SierraExportAPIMain {
 					try {
 						return new JSONObject(response.toString());
 					} catch (JSONException e) {
-						logger.error("JSON error parsing response from MARC JSON call : " + response.toString(), e);
+						logger.error("JSON error parsing response from MARC JSON call for " + id + " : " + response, e);
 					}
 				} else {
 					// Get any errors
@@ -2315,13 +2315,13 @@ public class SierraExportAPIMain {
 				}
 
 			} catch (java.net.SocketTimeoutException e) {
-				logger.error("Socket timeout talking to to sierra API (getMarcJSONFromSierraApiURL) " + e.toString());
+				logger.error("Socket timeout talking to sierra API (getMarcJSONFromSierraApiURL) " + e);
 				lastCallTimedOut = true;
 			} catch (java.net.ConnectException e) {
-				logger.error("Timeout connecting to sierra API (getMarcJSONFromSierraApiURL) " + e.toString());
+				logger.error("Timeout connecting to sierra API (getMarcJSONFromSierraApiURL) " + e);
 				lastCallTimedOut = true;
 			} catch (Exception e) {
-				logger.error("Error loading data from sierra API (getMarcJSONFromSierraApiURL) ", e);
+				logger.error("Error loading data from sierra API (getMarcJSONFromSierraApiURL) for " + id, e);
 			}
 		}
 		return null;
