@@ -2300,7 +2300,7 @@ public class SierraExportAPIMain {
 					try {
 						return new JSONObject(response.toString());
 					} catch (JSONException e) {
-						logger.error("JSON error parsing response from MARC JSON call for " + id + " : " + response, e);
+						logger.error("JSON error parsing response from MARC JSON call for " + getfullSierraBibId(id) + " : " + response, e);
 					}
 				} else {
 					// Get any errors
@@ -2321,7 +2321,7 @@ public class SierraExportAPIMain {
 				logger.error("Timeout connecting to sierra API (getMarcJSONFromSierraApiURL) " + e);
 				lastCallTimedOut = true;
 			} catch (Exception e) {
-				logger.error("Error loading data from sierra API (getMarcJSONFromSierraApiURL) for " + id, e);
+				logger.error("Error loading data from sierra API (getMarcJSONFromSierraApiURL) for " + getfullSierraBibId(id), e);
 			}
 		}
 		return null;
