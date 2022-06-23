@@ -277,7 +277,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		//There are also not multiple formats within a record that we would need to split out.
 
 		//Setup the per Record information
-		RecordInfo recordInfo = groupedWork.addRelatedRecord(source, recordIdStr);
+		RecordInfo recordInfo = groupedWork.addRelatedRecord(identifier);
 
 		String formatCategory = indexer.translateSystemValue("format_category_hoopla", format, recordIdStr);
 		long   formatBoost    = 8L; // Reasonable default value
