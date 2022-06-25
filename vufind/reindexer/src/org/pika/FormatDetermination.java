@@ -605,7 +605,7 @@ public class FormatDetermination {
 							printFormats.clear();
 							printFormats.add("BookWithDVD");
 						}else if(mainPhysical!=null){
-							if (mainPhysical.contains("pages")){
+							if (mainPhysical.contains("pages") || mainPhysical.contains("p.") || mainPhysical.contains("pgs")){
 								printFormats.clear();
 								printFormats.add("BookWithDVD");
 								break;
