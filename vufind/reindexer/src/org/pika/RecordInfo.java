@@ -52,6 +52,8 @@ public class RecordInfo {
 
 	private HashSet<ItemInfo> relatedItems = new HashSet<>();
 
+	private final HashSet<String> recordScopes         = new HashSet<>();
+
 	private boolean abridged = false;
 
 	public RecordInfo(RecordIdentifier sourceAndId){
@@ -377,5 +379,13 @@ public class RecordInfo {
 
 	public void setAbridged(boolean abridged) {
 		this.abridged = abridged;
+	}
+
+	void addScope(String scopeName) {
+		recordScopes.add(scopeName);
+	}
+
+	boolean hasScope(String scopeName){
+		return recordScopes.contains(scopeName);
 	}
 }

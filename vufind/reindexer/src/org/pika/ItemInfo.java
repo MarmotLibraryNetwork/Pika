@@ -249,11 +249,15 @@ public class ItemInfo {
 
 	ScopingInfo addScope(Scope scope) {
 		ScopingInfo scopeInfo;
-		if (scopingInfo.containsKey(scope.getScopeName())){
-			scopeInfo = scopingInfo.get(scope.getScopeName());
+		String      scopeName = scope.getScopeName();
+		if (scopingInfo.containsKey(scopeName)){
+			scopeInfo = scopingInfo.get(scopeName);
 		}else{
 			scopeInfo = new ScopingInfo(scope, this);
-			scopingInfo.put(scope.getScopeName(), scopeInfo);
+			scopingInfo.put(scopeName, scopeInfo);
+			if (!recordInfo.hasScope(scopeName)){
+				recordInfo.addScope(scopeName);
+			}
 		}
 		return scopeInfo;
 	}
