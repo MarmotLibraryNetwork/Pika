@@ -1043,15 +1043,10 @@ abstract class MarcRecordProcessor {
 			if (urlField.getSubfield('u') != null) {
 				//Try to determine if this is a resource or not.
 				if (urlField.getIndicator1() == '4' || urlField.getIndicator1() == ' ' || urlField.getIndicator1() == '0' || urlField.getIndicator1() == '7') {
-					if (logger.isInfoEnabled() && urlField.getIndicator2() == '1'){
-						logger.info("Related link found for " + identifier);
-						// Log some examples so we can verify the exclusion below
-					}
-					if (urlField.getIndicator2() != '2' || urlField.getIndicator2() == '1') {
+					if (urlField.getIndicator2() != '2') {
 						// Avoid Cover Image Links
 						// (some image links do not have a 2nd indicator of 2)
 						// (a subfield 3 or z will often contain the text 'Image' or 'Cover Image' if the link is for an image)
-						// 2nd indicator of 1 is designate related resource link rather than the access link
 						String subFieldZ = "";
 						String subField3 = "";
 						if (urlField.getSubfield('z') != null) {
