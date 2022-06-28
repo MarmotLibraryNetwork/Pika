@@ -519,7 +519,7 @@ class CitationBuilder {
 		$authorStr = '';
 		if (isset($this->details['authors']) && is_array($this->details['authors'])){
 			$i = 0;
-			if (count($this->details['authors']) > 4){
+			if (count($this->details['authors']) > 2){
 				$author    = $this->details['authors'][0];
 				$authorStr = $this->cleanNameDates($author) . ', et al';
 			}else{
@@ -560,7 +560,7 @@ class CitationBuilder {
 		if (empty($parts)){
 			return false;
 		}
-		return $this->stripPunctuation(implode(': ', $parts));
+		return $this->stripPunctuation(implode('/ ', $parts));
 	}
 
 	/**
