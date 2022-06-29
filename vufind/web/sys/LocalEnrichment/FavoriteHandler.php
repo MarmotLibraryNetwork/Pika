@@ -216,6 +216,103 @@ class FavoriteHandler {
 				}
 			}
 
+			// Archive Search
+			$archiveResourceList = [];
+			if (count($this->archiveIds) > 0){
+				require_once ROOT_DIR . '/RecordDrivers/IslandoraDriver.php';
+				// Initialise from the current search globals
+				/** @var SearchObject_Islandora $archiveSearchObject */
+				$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');
+				$archiveSearchObject->init();
+				$archiveSearchObject->setPrimarySearch(true);
+				$archiveSearchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
+				$archiveSearchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', "no");
+				$archiveSearchObject->setLimit($numItems); //MDN 3/30 this was set to 200, but should be based off the page size
+
+				if (!$this->isUserListSort && !$this->isMixedUserList){ // is a solr sort
+					$archiveSearchObject->setSort($this->sort);           // set solr sort. (have to set before retrieving solr sort options below)
+				}
+				if (!$this->isMixedUserList){
+					$IslandoraSortList = $archiveSearchObject->getSortList(); // get all the search sort options (retrieve after setting solr sort option)
+					foreach ($this->islandoraSortOptions as $option){ // extract just the ones we want
+						if (isset ($IslandoraSortList[$option])){
+							$sortOptions[$option]        = $IslandoraSortList[$option];
+							$defaultSortOptions[$option] = $IslandoraSortList[$option]['desc'];
+						}
+					}
+				}
+				foreach ($this->userListSortOptions as $option => $value_ignored){ // Non-Solr options
+					if (!isset($sortOptions[$option])){ // Skip if already done by the catalog searches above
+						$sortOptions[$option]        = [
+							'sortUrl'  => $archiveSearchObject->renderLinkWithSort($option),
+							'desc'     => "sort_{$option}_userlist", // description in translation dictionary
+							'selected' => ($option == $this->sort)
+						];
+						$defaultSortOptions[$option] = "sort_{$option}_userlist";
+					}
+				}
+
+
+				// Archive Only Searches //
+				if (!$this->isMixedUserList){
+					// User Sorted Archive Only Searches
+					if ($this->isUserListSort){
+						$this->archiveIds = array_slice($this->archiveIds, $start - 1, $numItems);
+						$archiveSearchObject->setPage(1); // set to the first page for the search only
+
+						$archiveSearchObject->setQueryIDs($this->archiveIds); // do solr search by Ids
+						$archiveResult = $archiveSearchObject->processSearch(false, true);
+						foreach($archiveResult['response']['docs'] as $result){
+
+							$archiveWork = RecordDriverFactory::initRecordDriver($result);
+							if (method_exists($archiveWork, 'getBrowseResult')){
+									$browseRecords[$result['id']] = $interface->fetch($archiveWork->getBrowseResult());
+							   }
+						}
+
+
+					}// Islandora Sorted Archive Only Searches
+					else{
+						$archiveSearchObject->setQueryIDs($this->archiveIds); // do Islandora search by Ids
+						$archiveSearchObject->setPage(1);                 // set to the first page for the search only
+						$archiveResult       = $archiveSearchObject->processSearch(false, true);
+						foreach($archiveResult['response']['docs'] as $result){
+							$archiveWork = RecordDriverFactory::initRecordDriver($result);
+							if (method_exists($archiveWork, 'getBrowseResult')){
+								$browseRecords[$result['id']] = $interface->fetch($archiveWork->getBrowseResult());
+							}
+						}
+					}
+
+				}// Mixed Items Searches (All User Sorted) //
+				else{
+					// Remove all archive items from previous page searches
+					$totalItemsFromPreviousPages = $numItems * ($start - 1);
+					for ($i = 0;$i < $totalItemsFromPreviousPages;$i++){
+						$IdToTest = $this->favorites[$i];
+						$key      = array_search($IdToTest, $this->archiveIds);
+						if ($key !== false){
+							unset($this->archiveIds[$key]);
+						}
+					}
+					$this->archiveIds = array_slice($this->archiveIds, 0, $numItems);
+					if (!empty($this->archiveIds)){
+						$archiveSearchObject->setPage(1); // set to the first page for the search only
+
+						$archiveSearchObject->setQueryIDs($this->archiveIds); // do solr search by Ids
+						$archiveResult       = $archiveSearchObject->processSearch();
+						foreach($archiveResult['response']['docs'] as $result){
+
+							$archiveWork = RecordDriverFactory::initRecordDriver($result);
+							if (method_exists($archiveWork, 'getBrowseResult')){
+								$browseRecords[$result['id']] = $interface->fetch($archiveWork->getBrowseResult());
+							}
+						}
+					}
+				}
+
+			}
+
 		}
 		return $browseRecords;
 	}
