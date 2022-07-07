@@ -111,7 +111,7 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 		// Set Grouping Language (use ISO 639-2 Bibliographic code)
 		String groupingLanguage = "";
 			if (productLanguageCode != null) {
-				groupingLanguage = translationMaps.get("iso639-1TOiso639-2B").translateValue(productLanguageCode, primaryIdentifier.toString());
+				groupingLanguage = translationMaps.get("iso639-1TOiso639-2B").translateValue(productLanguageCode, primaryIdentifier);
 			}
 
 			//Replace & with and for better matching

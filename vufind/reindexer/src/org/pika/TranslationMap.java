@@ -40,6 +40,15 @@ public class TranslationMap {
 	private HashMap<String, String> translationValues = new HashMap<>();
 	private HashMap<Pattern, String> translationValuePatterns = new HashMap<>();
 
+	/**
+	 *  Use for setting a translation map from an associated Indexing Profile
+	 *
+	 * @param profileName
+	 * @param mapName
+	 * @param fullReindex
+	 * @param usesRegularExpressions
+	 * @param logger
+	 */
 	public TranslationMap(String profileName, String mapName, boolean fullReindex, boolean usesRegularExpressions, Logger logger){
 		this.profileName = profileName;
 		this.mapName = mapName;
@@ -138,4 +147,5 @@ public class TranslationMap {
 			translationValues.put(value.toLowerCase(), translation);
 		}
 	}
+
 }

@@ -152,7 +152,7 @@ public class GroupingFormatDetermination {
 		} else {
 			LinkedHashSet<String> printFormats = getFormatsFromBib(record, identifier);
 			if (translationMaps.size() > 0 && translationMaps.containsKey("grouping_categories")){
-				groupingCategories.addAll(translateCollection("grouping_categories", printFormats, identifier.toString()));
+				groupingCategories.addAll(translateCollection("grouping_categories", printFormats, identifier));
 			} else {
 				//Set grouping category from default bib determinations.
 				for (String format : printFormats) {
@@ -215,9 +215,9 @@ public class GroupingFormatDetermination {
 	private void loadPrintFormatFromBib(RecordIdentifier identifier, Record record) {
 		LinkedHashSet<String> printFormats = getFormatsFromBib(record, identifier);
 		if (printFormats.size() == 0){
-			logger.warn("Did not find a format for " + identifier + " using standard format method " + printFormats.toString());
+			logger.warn("Did not find a format for " + identifier + " using standard format method " + printFormats);
 		}
-		groupingCategories.addAll(translateCollection("grouping_categories", printFormats, identifier.toString()));
+		groupingCategories.addAll(translateCollection("grouping_categories", printFormats, identifier));
 	}
 
 	private void loadPrintFormatFromMatType(RecordIdentifier identifier, Record record) {
@@ -226,9 +226,9 @@ public class GroupingFormatDetermination {
 				String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
 				if (matType != null) {
 					if (!isMatTypeToIgnore(matType)) {
-						String translatedFormat = translateValue("format", matType, identifier.toString());
+						String translatedFormat = translateValue("format", matType, identifier);
 						if (translatedFormat != null && !translatedFormat.equals(matType)) {
-							groupingCategories.add(translateValue("grouping_categories", matType, identifier.toString()));
+							groupingCategories.add(translateValue("grouping_categories", matType, identifier));
 							return;
 						} else if (logger.isInfoEnabled()) {
 							logger.info("Material Type " + matType + " had no translation, falling back to default format determination.");
@@ -259,7 +259,6 @@ public class GroupingFormatDetermination {
 		HashMap<String, String>  itemTypeToFormat  = new HashMap<>();
 		int                      mostUsedCount     = 0;
 		String                   mostPopularIType  = "";  //Get a list of all the formats based on the items
-		String                   recordIdentifier  = identifier.toString();
 		List<DataField> items = MarcUtil.getDataFields(record, itemTag);
 		for(DataField item : items){
 			if (!isItemSuppressed(item)) {
@@ -272,7 +271,7 @@ public class GroupingFormatDetermination {
 						itemCountsByItype.put(iType, 1);
 						//Translate the iType to see what formats we get.  Some item types do not have a format by default and use the default translation
 						//We still will want to record those counts.
-						String translatedFormat = translateValue("format", iType, recordIdentifier);
+						String translatedFormat = translateValue("format", iType, identifier);
 						//If the format is book, ignore it for now.  We will use the default method later.
 						if (translatedFormat == null || translatedFormat.equalsIgnoreCase("book")) {
 							translatedFormat = "";
@@ -294,7 +293,7 @@ public class GroupingFormatDetermination {
 			loadPrintFormatFromBib(identifier, record);
 		} else{
 			//logger.debug("Using default method of loading formats from iType");
-			groupingCategories.add(translateValue("grouping_categories", itemTypeToFormat.get(mostPopularIType), recordIdentifier));
+			groupingCategories.add(translateValue("grouping_categories", itemTypeToFormat.get(mostPopularIType), identifier));
 		}
 	}
 
@@ -1389,7 +1388,7 @@ public class GroupingFormatDetermination {
 				;
 	}
 
-	private HashSet<String> translateCollection(String mapName, Set<String> values, String identifier) {
+	private HashSet<String> translateCollection(String mapName, Set<String> values, RecordIdentifier identifier) {
 		TranslationMap translationMap = translationMaps.get(mapName);
 		HashSet<String> translatedValues;
 		if (translationMap == null){
@@ -1405,11 +1404,11 @@ public class GroupingFormatDetermination {
 		return translatedValues;
 	}
 
-	private String translateValue(String mapName, String value, String identifier){
+	private String translateValue(String mapName, String value, RecordIdentifier identifier){
 		return translateValue(mapName, value, identifier, true);
 	}
 
-	private String translateValue(String mapName, String value, String identifier, boolean reportErrors){
+	private String translateValue(String mapName, String value, RecordIdentifier identifier, boolean reportErrors){
 		if (value == null){
 			return null;
 		}
