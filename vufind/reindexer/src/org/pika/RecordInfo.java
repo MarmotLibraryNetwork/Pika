@@ -28,8 +28,7 @@ import java.util.regex.Pattern;
  * Time: 12:05 AM
  */
 public class RecordInfo {
-	private final String source;           // indexing profile sourceName
-	private final String recordIdentifier; // record number for this record
+	private final RecordIdentifier recordIdentifier; // record number for this record
 	private       String subSource;        // eContent source when this record is an ILS eContent record
 
 	//Formats exist at both the item and record level because
@@ -57,13 +56,7 @@ public class RecordInfo {
 	private boolean abridged = false;
 
 	public RecordInfo(RecordIdentifier sourceAndId){
-		this.source = sourceAndId.getSource();
-		this.recordIdentifier = sourceAndId.getIdentifier();
-	}
-
-	public RecordInfo(String source, String recordIdentifier) {
-		this.source           = source;
-		this.recordIdentifier = recordIdentifier;
+		this.recordIdentifier = sourceAndId;
 	}
 
 	/**
@@ -117,7 +110,7 @@ public class RecordInfo {
 		return relatedItems;
 	}
 
-	public String getRecordIdentifier() {
+	public RecordIdentifier getRecordIdentifier() {
 		return recordIdentifier;
 	}
 
@@ -262,9 +255,9 @@ public class RecordInfo {
 	String getFullIdentifier() {
 		String fullIdentifier;
 		if (subSource != null && subSource.length() > 0) {
-			fullIdentifier = source + ":" + subSource + ":" + recordIdentifier;
+			fullIdentifier = recordIdentifier.getSource() + ":" + subSource + ":" + recordIdentifier.getIdentifier();
 		} else {
-			fullIdentifier = source + ":" + recordIdentifier;
+			fullIdentifier = recordIdentifier.getSourceAndId();
 		}
 		return fullIdentifier;
 	}
@@ -313,7 +306,7 @@ public class RecordInfo {
 
 	void updateIndexingStats(TreeMap<String, ScopedIndexingStats> indexingStats) {
 		for (ScopedIndexingStats scopedStats : indexingStats.values()) {
-			String                       sourceName = this.subSource == null ? this.source : this.subSource;
+			String                       sourceName = this.subSource == null ? this.recordIdentifier.getSource() : this.subSource;
 			indexingRecordProcessorStats stats      = scopedStats.indexingRecordProcessorStats.get(sourceName.toLowerCase());
 			if (stats != null) {
 				HashSet<ItemInfo> itemsForScope = getRelatedItemsForScope(scopedStats.getScopeName());

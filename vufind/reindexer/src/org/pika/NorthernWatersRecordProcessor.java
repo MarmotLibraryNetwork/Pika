@@ -17,13 +17,11 @@ package org.pika;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
-import org.marc4j.marc.Subfield;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Pika
@@ -58,7 +56,7 @@ public class NorthernWatersRecordProcessor extends IIIRecordProcessor {
 				String url = MarcUtil.getFirstFieldVal(record, "856u");
 				if (url != null && !url.isEmpty()) {
 					for (DataField itemField : items) {
-						if (!isItemSuppressed(itemField)) {
+						if (!isItemSuppressed(itemField, identifier)) {
 							RecordInfo eContentRecord = getEContentIlsRecord(groupedWork, record, identifier, itemField);
 							unsuppressedEcontentRecords.add(eContentRecord);
 						}
@@ -93,9 +91,9 @@ public class NorthernWatersRecordProcessor extends IIIRecordProcessor {
 			if (sierraRecordFixedFieldsTag != null && !sierraRecordFixedFieldsTag.isEmpty()) {
 				if (materialTypeSubField != null && !materialTypeSubField.isEmpty()) {
 					String matType        = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
-					String formatBoostStr = translateValue("format_boost", matType, econtentRecord.getFullIdentifier());
-					econtentItem.setFormat(translateValue("format", matType, econtentRecord.getFullIdentifier()));
-					econtentItem.setFormatCategory(translateValue("format_category", matType, econtentRecord.getFullIdentifier()));
+					String formatBoostStr = translateValue("format_boost", matType, econtentRecord.getRecordIdentifier());
+					econtentItem.setFormat(translateValue("format", matType, econtentRecord.getRecordIdentifier()));
+					econtentItem.setFormatCategory(translateValue("format_category", matType, econtentRecord.getRecordIdentifier()));
 					try {
 						long formatBoost = Long.parseLong(formatBoostStr);
 						econtentRecord.setFormatBoost(formatBoost);

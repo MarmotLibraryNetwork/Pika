@@ -35,7 +35,7 @@ class LionRecordProcessor extends IIIRecordProcessor {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 	}
 
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {
 		//For LION, Anythink, load audiences based on collection code rather than based on the 008 and 006 fields
 		HashSet<String> targetAudiences = new HashSet<>();
 		for (ItemInfo printItem : printItems) {

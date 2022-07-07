@@ -294,7 +294,7 @@ abstract class MarcRecordProcessor {
 
 	}
 
-	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier, String format, boolean loadedNovelistSeries) {
+	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier, String format, boolean loadedNovelistSeries) {
 		loadTitles(groupedWork, record, format, identifier);
 		loadAuthors(groupedWork, record, format, identifier);
 		loadSubjects(groupedWork, record);
@@ -351,7 +351,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	private void loadFountasPinnell(GroupedWorkSolr groupedWork, Record record, String identifier) {
+	private void loadFountasPinnell(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier) {
 		Set<String> targetAudiences = MarcUtil.getFieldList(record, "521a");
 		for (String targetAudience : targetAudiences){
 			if (targetAudience.startsWith("Guided reading level: ")){
@@ -477,7 +477,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {
 		Set<String> targetAudiences = new LinkedHashSet<>();
 		try {
 			String leader = record.getLeader().toString();
@@ -530,7 +530,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.addTargetAudiencesFull(indexer.translateSystemCollection("target_audience_full", targetAudiences, identifier));
 	}
 
-	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {
 		//First get the literary Forms from the 008.  These need translation
 		LinkedHashSet<String> literaryForms = new LinkedHashSet<>();
 		try {
@@ -904,7 +904,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	private void loadAuthors(GroupedWorkSolr groupedWork, Record record, String recordFormat, String identifier) {
+	private void loadAuthors(GroupedWorkSolr groupedWork, Record record, String recordFormat, RecordIdentifier identifier) {
 		//auth_author = 100abcd, first
 		groupedWork.setAuthAuthor(MarcUtil.getFirstFieldVal(record, "100abcd"));
 
@@ -946,7 +946,7 @@ abstract class MarcRecordProcessor {
 	}
 
 
-	protected void loadTitles(GroupedWorkSolr groupedWork, Record record, String format, String identifier) {
+	protected void loadTitles(GroupedWorkSolr groupedWork, Record record, String format, RecordIdentifier identifier) {
 		//title (full title done by index process by concatenating short and subtitle
 
 		//title short
@@ -1025,7 +1025,7 @@ abstract class MarcRecordProcessor {
 //		groupedWork.addNewTitles(MarcUtil.getFieldList(record, "785ast"));
 	}
 
-	private void loadBibCallNumbers(GroupedWorkSolr groupedWork, Record record, String identifier) {
+	private void loadBibCallNumbers(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier) {
 		String firstCallNumber = MarcUtil.getFirstFieldVal(record, "099a[0]:090a[0]:050a[0]");
 		if (firstCallNumber != null){
 			groupedWork.setCallNumberFirst(indexer.translateSystemValue("callnumber", firstCallNumber, identifier));

@@ -33,7 +33,7 @@ public class OverDriveSideLoadProcessor extends SideLoadedEContentProcessor {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 	}
 
-	protected void loadTitles(GroupedWorkSolr groupedWork, Record record, String format, String identifier) {
+	protected void loadTitles(GroupedWorkSolr groupedWork, Record record, String format, RecordIdentifier identifier) {
 		// This override should be the same as the super method, except for the suppression of subtitles that are
 		// the overdrive series statements.
 

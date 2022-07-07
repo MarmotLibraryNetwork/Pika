@@ -112,7 +112,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 	@Override
 	public void processRecord(GroupedWorkSolr groupedWork, RecordIdentifier identifier, boolean loadedNovelistSeries) {
-		Record record = loadMarcRecordFromDisk(identifier.getIdentifier());
+		Record record = loadMarcRecordFromDisk(identifier);
 
 		if (record != null) {
 			try {
@@ -219,10 +219,10 @@ class HooplaProcessor extends MarcRecordProcessor {
 		return false;
 	}
 
-	private Record loadMarcRecordFromDisk(String identifier) {
+	private Record loadMarcRecordFromDisk(RecordIdentifier identifier) {
 		Record record = null;
 		//Load the marc record from disc
-		String individualFilename = getFileForIlsRecord(identifier);
+		String individualFilename = getFileForIlsRecord(identifier.getIdentifier());
 		try {
 			byte[]      fileContents = Util.readFileBytes(individualFilename);
 			InputStream inputStream  = new ByteArrayInputStream(fileContents);
@@ -269,19 +269,17 @@ class HooplaProcessor extends MarcRecordProcessor {
 		}
 
 		//Do updates based on the overall bib (shared regardless of scoping)
-		String recordIdStr = identifier.getIdentifier();
-		updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, null, recordIdStr, format, loadedNovelistSeries);
+		updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, null, identifier, format, loadedNovelistSeries);
 
 		//Do special processing for Hoopla which does not have individual items within the record
 		//Instead, each record has essentially unlimited items that can be used at one time.
 		//There are also not multiple formats within a record that we would need to split out.
 
 		//Setup the per Record information
-		RecordInfo recordInfo = groupedWork.addRelatedRecord(identifier);
-
-		String formatCategory = indexer.translateSystemValue("format_category_hoopla", format, recordIdStr);
-		long   formatBoost    = 8L; // Reasonable default value
-		String formatBoostStr = indexer.translateSystemValue("format_boost_hoopla", format, recordIdStr);
+		RecordInfo recordInfo     = groupedWork.addRelatedRecord(identifier);
+		String     formatCategory = indexer.translateSystemValue("format_category_hoopla", format, identifier);
+		long       formatBoost    = 8L; // Reasonable default value
+		String     formatBoostStr = indexer.translateSystemValue("format_boost_hoopla", format, identifier);
 		if (formatBoostStr != null && !formatBoostStr.isEmpty()) {
 			formatBoost = Long.parseLong(formatBoostStr);
 		} else {
@@ -328,7 +326,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		recordInfo.setFormatBoost(formatBoost);
 
 		// When the hoopla extract id comes from the url instead of the MARC record number tag, add that id to the alternate ids
-		if (!hooplaExtractInfo.getTitleId().toString().equals(recordIdStr.replaceAll("^MWT", ""))){
+		if (!hooplaExtractInfo.getTitleId().toString().equals(identifier.getIdentifier().replaceAll("^MWT", ""))){
 			groupedWork.addAlternateId(hooplaExtractInfo.getTitleId().toString());
 		}
 
@@ -364,7 +362,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		itemInfo.setSortableCallNumber("Online Hoopla");
 		itemInfo.setDetailedStatus("Available Online");
 		loadEContentUrl(record, itemInfo, identifier);
-		Date dateAdded = indexer.getDateFirstDetected(source, recordIdStr);
+		Date dateAdded = indexer.getDateFirstDetected(identifier);
 		itemInfo.setDateAdded(dateAdded);
 
 		recordInfo.addItem(itemInfo);
@@ -445,7 +443,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected void loadTitles(GroupedWorkSolr groupedWork, Record record, String format, String identifier) {
+	protected void loadTitles(GroupedWorkSolr groupedWork, Record record, String format, RecordIdentifier identifier) {
 		//title (full title done by index process by concatenating short and subtitle
 		if (logger.isInfoEnabled()) {
 			Set<String> titleTags = MarcUtil.getFieldList(record, "245a");
@@ -457,7 +455,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 	}
 
 	@Override
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {
 		if (hooplaExtractInfo.isChildren()) {
 			groupedWork.addTargetAudience("Juvenile");
 			groupedWork.addTargetAudienceFull("Juvenile");

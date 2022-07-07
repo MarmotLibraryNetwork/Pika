@@ -1959,7 +1959,7 @@ public class GroupedWorkSolr implements Cloneable {
 		if (relatedRecords.containsKey(recordIdentifierWithType)){
 			return relatedRecords.get(recordIdentifierWithType);
 		}else {
-			RecordInfo newRecord = new RecordInfo(source, recordIdentifier);
+			RecordInfo newRecord = new RecordInfo(new RecordIdentifier(source, recordIdentifier));
 			relatedRecords.put(recordIdentifierWithType, newRecord);
 			return newRecord;
 		}

@@ -81,7 +81,7 @@ class NashvilleSchoolsRecordProcessor extends IlsRecordProcessor {
 	}
 
 	@Override
-	protected String getItemStatus(DataField itemField, String recordIdentifier){
+	protected String getItemStatus(DataField itemField, RecordIdentifier recordIdentifier){
 		//Get the barcode
 		String itemBarcode = getItemSubfieldData(barcodeSubfield, itemField);
 		LSSItemInformation itemInformation = allItemInformation.get(itemBarcode);
@@ -115,9 +115,9 @@ class NashvilleSchoolsRecordProcessor extends IlsRecordProcessor {
 		return itemLocation != null;
 	}
 
-	protected boolean isItemSuppressed(DataField curItem) {
+	protected boolean isItemSuppressed(DataField curItem, RecordIdentifier identifier) {
 		//Suppress if the barcode is null or blank
 		String barcode = getItemSubfieldData(barcodeSubfield, curItem);
-		return barcode == null || barcode.length() == 0 || super.isItemSuppressed(curItem);
+		return barcode == null || barcode.length() == 0 || super.isItemSuppressed(curItem, identifier);
 	}
 }

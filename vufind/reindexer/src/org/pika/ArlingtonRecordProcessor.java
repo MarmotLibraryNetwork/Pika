@@ -20,9 +20,7 @@ import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -41,7 +39,7 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 
 
 	@Override
-	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {
 		//For Arlington we can load the literary forms based off of the location code:
 		// ??f?? = Fiction
 		// ??n?? = Non-Fiction
@@ -87,7 +85,7 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 	}
 
 	@Override
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {
 		//For Arlington we can load the target audience based off of the location code:
 		// ?a??? = Adult
 		// ?j??? = Kids

@@ -50,11 +50,11 @@ public class TranslationMap {
 
 	HashSet<String> unableToTranslateWarnings = new HashSet<>();
 	public HashMap<String, String> cachedTranslations = new HashMap<>();
-	public String translateValue(String value, String identifier){
+	public String translateValue(String value, RecordIdentifier identifier){
 		return translateValue(value, identifier, true);
 	}
 
-	public String translateValue(String value, String identifier, boolean reportErrors){
+	public String translateValue(String value, RecordIdentifier identifier, boolean reportErrors){
 		String translatedValue = null;
 		String lowerCaseValue = value.toLowerCase();
 		if (cachedTranslations.containsKey(value)){
@@ -114,7 +114,7 @@ public class TranslationMap {
 		return translatedValue;
 	}
 
-	public LinkedHashSet<String> translateCollection(Set<String> values, String identifier) {
+	public LinkedHashSet<String> translateCollection(Set<String> values, RecordIdentifier identifier) {
 		LinkedHashSet<String> translatedCollection = new LinkedHashSet<>();
 		for (String value : values){
 			String translatedValue = translateValue(value, identifier);
