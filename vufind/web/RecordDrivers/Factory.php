@@ -64,9 +64,9 @@ class RecordDriverFactory {
 				}
 				$recordType = $record['RELS_EXT_hasModel_uri_s'];
 				//Get rid of islandora namespace information
-				$recordType = str_replace(array(
+				$recordType = str_replace([
 					'info:fedora/islandora:', 'sp_', 'sp-', '_cmodel', 'CModel',
-				), '', $recordType);
+				], '', $recordType);
 
 				$driverNameParts      = explode('_', $recordType);
 				$normalizedRecordType = '';

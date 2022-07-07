@@ -3086,7 +3086,7 @@ abstract class IslandoraDriver extends RecordInterface {
 	public function getContributingLibrary() {
 		if ($this->contributingLibrary === false){
 			//Get the contributing institution
-			[$namespace]                       = explode(':', $this->getUniqueID());
+			[$namespace]                           = explode(':', $this->getUniqueID());
 			$contributingLibrary                   = new Library();
 			$contributingLibrary->archiveNamespace = $namespace;
 			if (!$contributingLibrary->find(true)){
