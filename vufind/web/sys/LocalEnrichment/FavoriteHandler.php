@@ -359,7 +359,6 @@ class FavoriteHandler {
 			/** @var SearchObject_Solr $catalogSearchObject */
 			$catalogSearchObject = SearchObjectFactory::initSearchObject();
 			$catalogSearchObject->init();
-			$catalogSearchObject->disableScoping();
 			$catalogSearchObject->setLimit($recordsPerPage); //MDN 3/30 this was set to 200, but should be based off the page size
 
 			if (!$this->isUserListSort && !$this->isMixedUserList){ // is a solr sort
@@ -573,7 +572,6 @@ class FavoriteHandler {
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init();
 			// these are added for emailing list  plb 10-8-2014
-			$searchObject->disableScoping();          // get title data regardless of scope
 			$searchObject->setLimit($numListEntries); // only get results for each item
 
 			$searchObject->setQueryIDs($this->catalogIds);

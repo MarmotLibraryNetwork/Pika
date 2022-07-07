@@ -161,14 +161,6 @@ class SearchObject_Solr extends SearchObject_Base {
 		$timer->logTime('Setup Solr Search Object');
 	}
 
-	public function disableScoping(){
-		$this->indexEngine->disableScoping();
-	}
-
-	public function enableScoping(){
-		$this->indexEngine->enableScoping();
-	}
-
 	public function disableSpelling(){
 		$this->spellcheck = false;
 	}
@@ -1835,7 +1827,7 @@ class SearchObject_Solr extends SearchObject_Base {
 						$valueKey         = '2' . $valueKey;
 						$foundInstitution = true;
 						$numValidLibraries++;
-					}else if (!is_null($currentLibrary) && $currentLibrary->restrictOwningBranchesAndSystems == 1){
+					}elseif (!is_null($currentLibrary) && $currentLibrary->restrictOwningBranchesAndSystems == 1){
 						//$okToAdd = false;
 					}
 				}elseif ($doBranchProcessing){

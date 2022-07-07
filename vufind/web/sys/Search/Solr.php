@@ -109,12 +109,6 @@ class Solr implements IndexEngine {
 	private $_caseSensitiveRanges = true;
 
 	/**
-	 * Selected shard settings.
-	 */
-	private $_solrShards = [];
-	private $_solrShardsFieldsToStrip = [];
-
-	/**
 	 * Should we collect highlighting data?
 	 */
 	private $_highlight = false;
@@ -174,15 +168,6 @@ class Solr implements IndexEngine {
 		$snippet   = $configArray['Index']['enableSnippets'];
 		if ($highlight || $snippet){
 			$this->_highlight = true;
-		}
-
-		// Deal with field-stripping shard settings:
-		if (!empty($searchSettings['StripFields'])){
-			$this->_solrShardsFieldsToStrip = $searchSettings['StripFields'];
-		}
-
-		if (isset($_SESSION['shards'])){
-			$this->_loadShards($_SESSION['shards']);
 		}
 
 		$timer->logTime('Finish Solr Initialization');
@@ -247,18 +232,6 @@ class Solr implements IndexEngine {
 	public function setDebugging($enableDebug, $enableSolrQueryDebugging){
 		$this->debug          = $enableDebug;
 		$this->debugSolrQuery = $enableDebug && $enableSolrQueryDebugging;
-	}
-
-	private function _loadShards($newShards){
-		// Deal with session-based shard settings:
-		$shards = [];
-		global $configArray;
-		foreach ($newShards as $current) {
-			if (isset($configArray['IndexShards'][$current])) {
-				$shards[$current] = $configArray['IndexShards'][$current];
-			}
-		}
-		$this->setShards($shards);
 	}
 
 	/**
@@ -1332,39 +1305,6 @@ class Solr implements IndexEngine {
 		return $sortField . ' ' . $sortDirection;
 	}
 
-	function disableScoping(){
-		$this->scopingDisabled = true;
-		global $configArray;
-		if (!empty($configArray['ShardPreferences']['defaultChecked'])){
-			$checkedShards = $configArray['ShardPreferences']['defaultChecked'];
-			$shards        = is_array($checkedShards) ? $checkedShards : [$checkedShards];
-		}elseif (!empty($configArray['IndexShards'])){
-			// If no default is configured, use all shards...
-			$shards = array_keys($configArray['IndexShards']);
-		}
-		if (isset($shards)){
-			$this->_loadShards($shards);
-		}
-	}
-
-	function enableScoping()
-	{
-		$this->scopingDisabled = false;
-		global $configArray;
-		if (isset($configArray['ShardPreferences']['defaultChecked']) && !empty($configArray['ShardPreferences']['defaultChecked'])) {
-			$checkedShards = $configArray['ShardPreferences']['defaultChecked'];
-			$shards        = is_array($checkedShards) ? $checkedShards : array($checkedShards);
-		} else {
-			// If no default is configured, use all shards...
-			if (isset($configArray['IndexShards'])) {
-				$shards = array_keys($configArray['IndexShards']);
-			}
-		}
-		if (isset($shards)) {
-			$this->_loadShards($shards);
-		}
-	}
-
 	/**
 	 * Execute a search.
 	 *
@@ -1930,18 +1870,6 @@ class Solr implements IndexEngine {
 	}
 
 	/**
-	 * Set the shards for distributed search
-	 *
-	 * @param array $shards Name => URL array of shards
-	 *
-	 * @return void
-	 * @access public
-	 */
-	public function setShards($shards){
-		$this->_solrShards = $shards;
-	}
-
-	/**
 	 * Submit REST Request to write data (protected wrapper to allow child classes
 	 * to use this mechanism -- we should eventually phase out private _update).
 	 *
@@ -1953,51 +1881,6 @@ class Solr implements IndexEngine {
 //	protected function update($xml){
 //		return $this->_update($xml);
 //	}
-
-	/**
-	 * Strip facet settings that are illegal due to shard settings.
-	 *
-	 * @param array $value Current facet.field setting
-	 * @return array       Filtered facet.field setting
-	 * @access private
-	 */
-	private function _stripUnwantedFacets($value){
-		if (!empty($this->_solrShards) && is_array($this->_solrShards)){
-			// Load the configuration of facets to strip and build a list of the ones that currently apply
-			$facetConfig = getExtraConfigArray('facets');
-			if (isset($facetConfig['StripFacets']) && is_array($facetConfig['StripFacets'])){
-				$shardNames = array_keys($this->_solrShards);
-				$badFacets  = [];
-				foreach ($facetConfig['StripFacets'] as $indexName => $facets){
-					if (in_array($indexName, $shardNames) === true){
-						$badFacets = array_merge($badFacets, explode(',', $facets));
-					}
-				}
-
-				// No bad facets means no filtering necessary:
-				if (empty($badFacets)){
-					return $value;
-				}
-
-				// Ensure that $value is an array:
-				if (!is_array($value)){
-					$value = [$value];
-				}
-
-				// Rebuild the $value array, excluding all unwanted facets:
-				$newValue = [];
-				foreach ($value as $current){
-					if (!in_array($current, $badFacets)){
-						$newValue[] = $current;
-					}
-				}
-
-				return $newValue;
-			}
-		}else{
-			return $value;
-		}
-	}
 
 	/**
 	 * Submit REST Request to read data
@@ -2030,15 +1913,6 @@ class Solr implements IndexEngine {
 		if ($params){
 			foreach ($params as $function => $value){
 				if ($function != ''){
-					// Strip custom FacetFields when sharding makes it necessary:
-					if ($function === 'facet.field'){
-						$value = $this->_stripUnwantedFacets($value);
-
-						// If we stripped all values, skip the parameter:
-						if (empty($value)){
-							continue;
-						}
-					}
 					if (is_array($value)){
 						foreach ($value as $additional){
 							//Islandora Solr takes repeated url parameters without the typical array style. eg. &fq=firstOne&fq=secondOne
@@ -2053,10 +1927,6 @@ class Solr implements IndexEngine {
 			}
 		}
 
-		// pass the shard parameter along to Solr if necessary:
-		if (!empty($this->_solrShards) && is_array($this->_solrShards)){
-			$query[] = 'shards=' . urlencode(implode(',', $this->_solrShards));
-		}
 		$queryString = implode('&', $query);
 
 		if (strlen($queryString) > 8000){

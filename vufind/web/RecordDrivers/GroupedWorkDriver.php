@@ -84,7 +84,6 @@ class GroupedWorkDriver extends RecordInterface {
 			// Setup Search Engine Connection
 			/** @var SearchObject_Solr $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
-			$searchObject->disableScoping();
 			if (function_exists('disableErrorHandler')){
 				disableErrorHandler();
 			}
@@ -95,7 +94,6 @@ class GroupedWorkDriver extends RecordInterface {
 			}else{
 				$this->fields = $record;
 			}
-			$searchObject->enableScoping();
 			if (function_exists('enableErrorHandler')){
 				enableErrorHandler();
 			}
