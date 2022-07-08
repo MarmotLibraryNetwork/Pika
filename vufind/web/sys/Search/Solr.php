@@ -448,7 +448,7 @@ class Solr implements IndexEngine {
 
 			//TODO: this comment doesn't appear to accurate any longer
 			//Solr does not seem to be able to return more than 50 records at a time,
-			//If we have more than 50 ids, we will ned to make multiple calls and
+			//If we have more than 50 ids, we will need to make multiple calls and
 			//concatenate the results.
 			$startIndex = 0;
 			$batchSize  ??= $numIds;
@@ -1721,6 +1721,10 @@ class Solr implements IndexEngine {
 	}
 
 
+	function disableScoping(){
+		$this->scopingDisabled = true;
+	}
+
 	/**
 	 * Get filters based on scoping for the search
 	 * @param Library  $searchLibrary
@@ -1733,14 +1737,16 @@ class Solr implements IndexEngine {
 		$filter = [];
 
 		//Simplify detecting which works are relevant to our scope
-		if ($solrScope){
-			$filter[] = "scope_has_related_records:$solrScope";
-		}elseif (isset($searchLocation)){
-			// A solr scope should be defined usually. It is probably an anomalous situation to fall back to this, and should be fixed; (or noted here explicitly.)
-			$this->logger->notice('Global solr scope not set when setting scoping filters');
-			$filter[] = "scope_has_related_records:{$searchLocation->code}";
-		}elseif (isset($searchLibrary)){
-			$filter[] = "scope_has_related_records:{$searchLibrary->subdomain}";
+		if (!$this->scopingDisabled){
+			if ($solrScope){
+				$filter[] = "scope_has_related_records:$solrScope";
+			}elseif (isset($searchLocation)){
+				// A solr scope should be defined usually. It is probably an anomalous situation to fall back to this, and should be fixed; (or noted here explicitly.)
+				$this->logger->notice('Global solr scope not set when setting scoping filters');
+				$filter[] = "scope_has_related_records:{$searchLocation->code}";
+			}elseif (isset($searchLibrary)){
+				$filter[] = "scope_has_related_records:{$searchLibrary->subdomain}";
+			}
 		}
 
 		$blacklistRecords = '';

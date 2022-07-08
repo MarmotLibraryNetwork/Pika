@@ -47,7 +47,7 @@ class FavoriteHandler {
 									'custom' => 'weight ASC',  // this puts items with no set weight towards the end of the list
 	//								'custom' => 'weight IS NULL, weight ASC',  // this puts items with no set weight towards the end of the list
 								);*/
-	protected $solrSortOptions = ['title', 'author'], // user list sorting options handled by Solr engine.
+	protected $solrSortOptions = ['title', 'author asc,title asc'], // user list sorting options handled by Solr engine.
 		$islandoraSortOptions = ['fgs_label_s']; // user list sorting options handled by the Islandora Solr engine.
 
 	/**
@@ -81,7 +81,8 @@ class FavoriteHandler {
 
 		// Get the Favorites //
 		$userListSort = $this->isUserListSort ? $this->userListSortOptions[$this->sort] : null;
-		[$this->favorites, $this->catalogIds, $this->archiveIds] = $list->getListEntries($userListSort); // when using a user list sorting, rather than solr sorting, get results in order
+		[$this->favorites, $this->catalogIds, $this->archiveIds] = $list->getListEntries($userListSort);
+		// when using a user list sorting, rather than solr sorting, get results in user list sorted order
 		// we start with a default userlist sorting until we determine whether the userlist is Mixed items or not.
 
 		$hasCatalogItems = !empty($this->catalogIds);
@@ -359,18 +360,19 @@ class FavoriteHandler {
 			/** @var SearchObject_Solr $catalogSearchObject */
 			$catalogSearchObject = SearchObjectFactory::initSearchObject();
 			$catalogSearchObject->init();
-			$catalogSearchObject->setLimit($recordsPerPage); //MDN 3/30 this was set to 200, but should be based off the page size
+			$catalogSearchObject->setLimit($recordsPerPage);
+			$catalogSearchObject->disableScoping(); // Return all works in list, even if outside current scope
 
 			if (!$this->isUserListSort && !$this->isMixedUserList){ // is a solr sort
 				$catalogSearchObject->setSort($this->sort);           // set solr sort. (have to set before retrieving solr sort options below)
 			}
 			if (!$this->isMixedUserList){
-				$SolrSortList = $catalogSearchObject->getSortList(); // get all the search sort options (retrieve after setting solr sort option)
+				$solrSortList = $catalogSearchObject->getSortList(); // get all the search sort options (retrieve after setting solr sort option)
 				//TODO: There is no longer an author sort option
 				foreach ($this->solrSortOptions as $option){ // extract just the ones we want
-					if (isset ($SolrSortList[$option])){
-						$sortOptions[$option]        = $SolrSortList[$option];
-						$defaultSortOptions[$option] = $SolrSortList[$option]['desc'];
+					if (isset($solrSortList[$option])){
+						$sortOptions[$option]        = $solrSortList[$option];
+						$defaultSortOptions[$option] = $solrSortList[$option]['desc'];
 					}
 				}
 			}
@@ -388,20 +390,34 @@ class FavoriteHandler {
 			if (!$this->isMixedUserList){
 				// User Sorted Catalog Only Search
 				if ($this->isUserListSort){
-					$this->catalogIds = array_slice($this->catalogIds, $startRecord - 1, $recordsPerPage);
-					$catalogSearchObject->setPage(1); // set to the first page for the search only
+					$catalogSearchObject->setLimit(count($this->catalogIds)); // Fetch all list items so that the filters can be applied
+					$catalogSearchObject->setPage(1);  // override value set automatically in $catalogSearchObject->init();
 
 					$catalogSearchObject->setQueryIDs($this->catalogIds); // do solr search by Ids
-					$catalogResult = $catalogSearchObject->processSearch(false, true);
-					$catalogSearchObject->setPage($page); // Set back to the actual page of the list now that search was processed
-					$catalogResourceList = $catalogSearchObject->getResultListHTML($this->listId, $this->allowEdit, $this->favorites);
+					$catalogResult           = $catalogSearchObject->processSearch(false, true, true);
+					$pageInfo['resultTotal'] = $catalogResult['response']['numFound'];
+					$catalogSearchObject->setPage($page);            // Set back to the actual page of the list now that search was processed
+					$catalogSearchObject->setLimit($recordsPerPage); // Set the actual limit per page
+
+					// Get ids for list after search filters have been applied
+					$searchFilteredIds         = array_column($catalogResult['response']['docs'], 'id');
+					$remainingIdsInSortedOrder = array_intersect($this->catalogIds, $searchFilteredIds);
+					$idsToDisplayForThisPage   = array_slice($remainingIdsInSortedOrder, $startRecord - 1, $recordsPerPage);
+
+					$catalogResourceList = $catalogSearchObject->getResultListHTML($this->listId, $this->allowEdit, $idsToDisplayForThisPage);
 				} // Solr Sorted Catalog Only Search //
 				else{
 					$catalogSearchObject->setQueryIDs($this->catalogIds); // do solr search by Ids
-					$catalogSearchObject->setPage($page);                 // restore the actual sort page
-					$catalogResult       = $catalogSearchObject->processSearch(false, true);
-					$catalogResourceList = $catalogSearchObject->getResultListHTML($this->listId, $this->allowEdit);
+					$catalogResult           = $catalogSearchObject->processSearch(false, true);
+					$catalogResourceList     = $catalogSearchObject->getResultListHTML($this->listId, $this->allowEdit);
+					$pageInfo['resultTotal'] = $catalogResult['response']['numFound'];
 				}
+
+				//Only show search filter options when not mixed user list
+				$interface->assign('topRecommendations', $catalogSearchObject->getRecommendationsTemplates('top'));
+				$interface->assign('sideRecommendations', $catalogSearchObject->getRecommendationsTemplates('side'));
+				// Display search facets on a user list. Has to happen after processSearch() where recommendations are initialized.
+
 			}// Mixed Items Searches (All User Sorted) //
 			else{
 				// Removed all catalog items from previous page searches
@@ -422,10 +438,6 @@ class FavoriteHandler {
 					$catalogResourceList = $catalogSearchObject->getResultListHTML($this->listId, $this->allowEdit, $this->favorites, $this->isMixedUserList);
 				}
 			}
-
-			$interface->assign('topRecommendations', $catalogSearchObject->getRecommendationsTemplates('top'));
-			$interface->assign('sideRecommendations', $catalogSearchObject->getRecommendationsTemplates('side'));
-			// Display search facets on a user list. Has to happen after processSearch() where recommendations are initialized.
 		}
 
 
@@ -438,8 +450,8 @@ class FavoriteHandler {
 			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$archiveSearchObject->init();
 			$archiveSearchObject->setPrimarySearch(true);
-			$archiveSearchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
-			$archiveSearchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', "no");
+			$archiveSearchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', 'administrator');
+			$archiveSearchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', 'no');
 			$archiveSearchObject->setLimit($recordsPerPage); //MDN 3/30 this was set to 200, but should be based off the page size
 
 			if (!$this->isUserListSort && !$this->isMixedUserList){ // is a solr sort
@@ -470,20 +482,31 @@ class FavoriteHandler {
 			if (!$this->isMixedUserList){
 				// User Sorted Archive Only Searches
 				if ($this->isUserListSort){
-					$this->archiveIds = array_slice($this->archiveIds, $startRecord - 1, $recordsPerPage);
+					$archiveSearchObject->setLimit(count($this->archiveIds)); // fetch all archive items so that search filters can be applied
 					$archiveSearchObject->setPage(1); // set to the first page for the search only
 
 					$archiveSearchObject->setQueryIDs($this->archiveIds); // do solr search by Ids
-					$archiveResult = $archiveSearchObject->processSearch(false, true);
+					$archiveResult           = $archiveSearchObject->processSearch(false, true, true);
+					$pageInfo['resultTotal'] = $archiveResult['response']['numFound'];
 					$archiveSearchObject->setPage($page); // Set back to the actual page of the list now that search was processed
-					$archiveResourceList = $archiveSearchObject->getResultListHTML($this->listId, $this->allowEdit, $this->favorites);
+					$catalogSearchObject->setLimit($recordsPerPage); // Set the actual limit per page
+
+					// Get ids for list after search filters have been applied
+					$searchFilteredIds         = array_column($archiveResult['response']['docs'], 'id');
+					$remainingIdsInSortedOrder = array_intersect($this->archiveIds, $searchFilteredIds);
+					$idsToDisplayForThisPage   = array_slice($remainingIdsInSortedOrder, $startRecord - 1, $recordsPerPage);
+
+					$archiveResourceList = $archiveSearchObject->getResultListHTML($this->listId, $this->allowEdit, $idsToDisplayForThisPage);
 				}// Islandora Sorted Archive Only Searches
 				else{
 					$archiveSearchObject->setQueryIDs($this->archiveIds); // do Islandora search by Ids
 					$archiveSearchObject->setPage($page);                 // set to the first page for the search only
 					$archiveResult       = $archiveSearchObject->processSearch(false, true);
-					$archiveResourceList = $archiveSearchObject->getResultListHTML($this->listId, $this->allowEdit/*, $this->favorites*/);
+					$archiveResourceList = $archiveSearchObject->getResultListHTML($this->listId, $this->allowEdit);
+					$pageInfo['resultTotal'] = $archiveResult['response']['numFound'];
 				}
+
+				//Only show search filter options when not mixed user list
 				$interface->assign('topRecommendations', $archiveSearchObject->getRecommendationsTemplates('top'));
 				$interface->assign('sideRecommendations', $archiveSearchObject->getRecommendationsTemplates('side'));
 				// Display search facets on a user list. Has to happen after processSearch() where recommendations are initialized.
@@ -500,6 +523,8 @@ class FavoriteHandler {
 					}
 				}
 				$this->archiveIds = array_slice($this->archiveIds, 0, $recordsPerPage);
+				//TODO: can not sort till after search filtering occurs now
+
 				if (!empty($this->archiveIds)){
 					$archiveSearchObject->setPage(1); // set to the first page for the search only
 
@@ -562,7 +587,7 @@ class FavoriteHandler {
 	}
 
 	function getTitles($numListEntries, $applyFiltering = false){
-		// Currently only used by AJAX call for emailing lists
+		// Currently, only used by AJAX call for emailing lists
 
 		$catalogRecordSet = $archiveRecordSet = [];
 		// Retrieve records from index (currently, only Solr IDs supported):

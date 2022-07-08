@@ -161,6 +161,17 @@ class SearchObject_Solr extends SearchObject_Base {
 		$timer->logTime('Setup Solr Search Object');
 	}
 
+	/**
+	 * Turn off filter search of field to scope_has_related records
+	 * so that results will be returned even if grouped work is outside
+	 * the current search scope.
+	 *
+	 * @return void
+	 */
+	public function disableScoping(){
+		$this->indexEngine->disableScoping();
+	}
+
 	public function disableSpelling(){
 		$this->spellcheck = false;
 	}
