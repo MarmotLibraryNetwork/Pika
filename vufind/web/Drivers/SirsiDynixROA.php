@@ -355,7 +355,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 				$user->fullname     = isset($fullName) ? $fullName : '';
 				//$user->cat_username = $username;
 				$user->barcode = $username;
-				$user->cat_password = $password;
+				$user->setPassword($password);
 
 				$Address1 = "";
 				$City     = "";
@@ -1162,7 +1162,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 		if (isset(SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId])){
 			return SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId];
 		}else{
-			[, $sessionToken] = $this->loginViaWebService($patron->barcode, $patron->cat_password);
+			$patron_password = $patron->getPassword();
+			[, $sessionToken] = $this->loginViaWebService($patron->barcode, $patron_password);
 			return $sessionToken;
 		}
 	}
@@ -1502,8 +1503,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 
 		$updatePinResponse = $this->getWebServiceResponse($webServiceURL . "/v1/user/patron/changeMyPin", $params, $sessionToken, 'POST');
 		if (!empty($updatePinResponse->patronKey) && $updatePinResponse->patronKey == $patron->ilsUserId){
-			$patron->cat_password = $newPin;
-			$patron->update();
+			$patron->updatePassword($newPin);
 			return "Your pin number was updated successfully.";
 
 		}else{
@@ -1556,8 +1556,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 			];
 		}elseif (!empty($changeMyPinResponse->sessionToken)){
 			if ($patron->ilsUserId == $changeMyPinResponse->patronKey){ // Check that the ILS user matches the Pika user
-				$patron->cat_password = $newPin;
-				$patron->update();
+				$patron->updatePassword($newPin);
 			}
 			return [
 				'success' => true,
@@ -1582,8 +1581,9 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 			$pikaUserID = $patron->id;
 
 			// If possible, check if ILS has an email address for the patron
-			if (!empty($patron->cat_password)){
-				[$userValid, $sessionToken, $userID] = $this->loginViaWebService($barcode, $patron->cat_password);
+			$patron_password = $patron->getPassword();
+			if (!empty($patron_password)){
+				[$userValid, $sessionToken, $userID] = $this->loginViaWebService($barcode, $patron_password);
 				if ($userValid){
 					// Yay! We were able to login with the pin Pika has!
 
