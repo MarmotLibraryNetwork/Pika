@@ -22,47 +22,32 @@ require_once ROOT_DIR . '/Drivers/SirsiDynixROA.php';
 class AACPL extends SirsiDynixROA {
 
 	function translateFineMessageType($code){
-		switch ($code){
-
-			default:
-				return $code;
-		}
+		return $code;
 	}
 
 	public function translateLocation($locationCode){
 		$locationCode = strtoupper($locationCode);
-		$locationMap = array(
-
-		);
-		return isset($locationMap[$locationCode]) ? $locationMap[$locationCode] : "Unknown" ;
+		$locationMap = [];
+		return $locationMap[$locationCode] ?? 'Unknown';
 	}
 	public function translateCollection($collectionCode){
 		$collectionCode = strtoupper($collectionCode);
-		$collectionMap = array(
-
-		);
-		return isset($collectionMap[$collectionCode]) ? $collectionMap[$collectionCode] : "Unknown $collectionCode";
+		$collectionMap = [];
+		return $collectionMap[$collectionCode] ?? "Unknown $collectionCode";
 	}
 	public function translateStatus($statusCode){
 		$statusCode = strtolower($statusCode);
-		$statusMap = array(
-
-		);
-		return isset($statusMap[$statusCode]) ? $statusMap[$statusCode] : 'Unknown (' . $statusCode . ')';
+		$statusMap = [];
+		return $statusMap[$statusCode] ?? 'Unknown (' . $statusCode . ')';
 	}
 	public function getLocationMapLink($locationCode){
 		$locationCode = strtolower($locationCode);
-		$locationMap = array();
-		return isset($locationMap[$locationCode]) ? $locationMap[$locationCode] : '' ;
+		$locationMap = [];
+		return $locationMap[$locationCode] ?? '';
 	}
 
 	public function getLibraryHours($locationId, $timeToCheck){
 		return null;
-	}
-
-	public function getSelfRegistrationFields() {
-		header('Location: https://www.aacpl.net/card');
-		die;
 	}
 
 	//	public function getSelfRegistrationFields(){
