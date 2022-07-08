@@ -161,12 +161,15 @@ class SearchObject_Solr extends SearchObject_Base {
 		$timer->logTime('Setup Solr Search Object');
 	}
 
+	/**
+	 * Turn off filter search of field to scope_has_related records
+	 * so that results will be returned even if grouped work is outside
+	 * the current search scope.
+	 *
+	 * @return void
+	 */
 	public function disableScoping(){
 		$this->indexEngine->disableScoping();
-	}
-
-	public function enableScoping(){
-		$this->indexEngine->enableScoping();
 	}
 
 	public function disableSpelling(){
@@ -1835,7 +1838,7 @@ class SearchObject_Solr extends SearchObject_Base {
 						$valueKey         = '2' . $valueKey;
 						$foundInstitution = true;
 						$numValidLibraries++;
-					}else if (!is_null($currentLibrary) && $currentLibrary->restrictOwningBranchesAndSystems == 1){
+					}elseif (!is_null($currentLibrary) && $currentLibrary->restrictOwningBranchesAndSystems == 1){
 						//$okToAdd = false;
 					}
 				}elseif ($doBranchProcessing){

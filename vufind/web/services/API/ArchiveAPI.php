@@ -28,16 +28,16 @@ require_once ROOT_DIR . '/AJAXHandler.php';
 
 class API_ArchiveAPI extends AJAXHandler {
 
-	protected $methodsThatRespondWithJSONResultWrapper = array(
+	protected $methodsThatRespondWithJSONResultWrapper = [
 		'getDPLAFeed',
 		'getDPLACounts',
-	);
+	];
 
-	private $organizationRolesToIncludeInDPLA = array(
+	private $organizationRolesToIncludeInDPLA = [
 		'owner',
 		'donor',
 		'acknowledgement',
-	);
+	];
 
 	/**
 	 * Returns a feed of content to be sent by DPLA after being processed by the state library.  May not return
@@ -46,25 +46,30 @@ class API_ArchiveAPI extends AJAXHandler {
 	 * Future libraries may require different information.
 	 */
 	function getDPLAFeed(){
-		$curPage      = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-		$pageSize     = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : 100;
-		$changesSince = isset($_REQUEST['changesSince']) ? $_REQUEST['changesSince'] : null;
-		$namespace    = isset($_REQUEST['namespace']) ? $_REQUEST['namespace'] : null;
+		$curPage      = $_REQUEST['page'] ?? 1;
+		$pageSize     = $_REQUEST['pageSize'] ?? 100;
+		$changesSince = $_REQUEST['changesSince'] ?? null;
+		$namespace    = $_REQUEST['namespace'] ?? null;
 		list($searchObject, $collectionsToInclude, $searchResult) = $this->getDPLASearchResults($namespace, $changesSince, $curPage, $pageSize);
 
-		$dplaDocs = array();
+		$dplaDocs = [];
 
 		foreach ($searchResult['response']['docs'] as $doc){
-			$dplaDoc = array();
+			$dplaDoc = [];
 			/** @var IslandoraDriver $record */
 			$record                   = RecordDriverFactory::initRecordDriver($doc);
+			if (null == $record->getArchiveObject()){
+				// Quick hack to skip islandora object with Unauthorized access
+				$this->logger->error('DPLA Feed: Failed to fetch archive object via Fedora for pid '. $doc['PID']);
+				continue;
+			}
 			$dplaDoc['identifier']    = $record->getUniqueID();
 			$dplaDoc['title']         = $record->getTitle();
 			$dplaDoc['description']   = $record->getDescription();
 			$dplaDoc['type']          = $record->getFormat();
 			$dplaDoc['format']        = $this->mapFormat($record->getFormat());
 			$dplaDoc['preview']       = $record->getBookcoverUrl('small');
-			$dplaDoc['includeInDPLA'] = isset($doc['mods_extension_marmotLocal_pikaOptions_dpla_s']) ? $doc['mods_extension_marmotLocal_pikaOptions_dpla_s'] : 'default';
+			$dplaDoc['includeInDPLA'] = $doc['mods_extension_marmotLocal_pikaOptions_dpla_s'] ?? 'default';
 
 			$dateCreated = $record->getDateCreated('Y-m-d'); // Reformat back to YYYY-MM-DD
 			if ($dateCreated == 'Date Unknown'){
@@ -95,7 +100,7 @@ class API_ArchiveAPI extends AJAXHandler {
 			// Marmot Contributor
 			$contributingLibrary = $record->getContributingLibrary();
 			if ($contributingLibrary == null){
-				list($namespace) = explode(':', $record->getUniqueID());
+				[$namespace] = explode(':', $record->getUniqueID());
 				global $configArray;
 				$dplaDoc['dataProvider'] = $namespace;
 				$dplaDoc['isShownAt']    = $configArray['Catalog']['url'] . $record->getLinkUrl();
@@ -107,7 +112,7 @@ class API_ArchiveAPI extends AJAXHandler {
 
 			// Partner Contributors
 			$additionalContributors    = $record->getBrandingInformation();
-			$institutionalContributors = array();
+			$institutionalContributors = [];
 			foreach ($additionalContributors as $pid => $contributor){
 				if ($pid != $contributingLibrary['pid'] && strpos($pid, 'organization') === 0 && (!empty($contributor['role']) && in_array($contributor['role'], $this->organizationRolesToIncludeInDPLA))){
 					// Include only organizations with specific roles that aren't the library itself
@@ -132,7 +137,7 @@ class API_ArchiveAPI extends AJAXHandler {
 
 			// Related Collections
 			$relatedCollections = $record->getRelatedCollections();
-			$dplaRelations      = array();
+			$dplaRelations      = [];
 			foreach ($relatedCollections as $relatedCollection){
 				$dplaRelations[] = $relatedCollection['label'];
 			}
@@ -188,7 +193,7 @@ class API_ArchiveAPI extends AJAXHandler {
 
 			// Places
 			$relatedPlaces     = $record->getRelatedPlaces();
-			$dplaRelatedPlaces = array();
+			$dplaRelatedPlaces = [];
 			foreach ($relatedPlaces as $relatedPlace){
 				$dplaRelatedPlaces[] = $relatedPlace['label'];
 			}
@@ -207,7 +212,7 @@ class API_ArchiveAPI extends AJAXHandler {
 			}
 
 			// Add Persons that are Publishers & Related People as DPLA Subjects
-			$publishers    = array();
+			$publishers    = [];
 			$relatedPeople = $record->getRelatedPeople();
 			foreach ($relatedPeople as $relatedPerson){
 				if ($relatedPerson['role'] == 'publisher'){
@@ -243,7 +248,7 @@ class API_ArchiveAPI extends AJAXHandler {
 			$dplaDocs[] = $dplaDoc;
 		}
 
-		$recordsByLibrary = array();
+		$recordsByLibrary = [];
 		if (isset($searchResult['facet_counts'])){
 			$namespaceFacet = $searchResult['facet_counts']['facet_fields']['namespace_ms'];
 			foreach ($namespaceFacet as $facetInfo){
@@ -252,18 +257,18 @@ class API_ArchiveAPI extends AJAXHandler {
 		}
 
 		$summary = $searchObject->getResultSummary();
-		$results = array(
+		$results = [
 			'numResults'          => $summary['resultTotal'],
 			'numPages'            => ceil($summary['resultTotal'] / $pageSize),
 			'recordsByLibrary'    => $recordsByLibrary,
 			'includedCollections' => $collectionsToInclude,
 			'docs'                => $dplaDocs,
-		);
+		];
 
 		return $results;
 	}
 
-	private $formatMap = array(
+	private $formatMap = [
 		"Academic Paper"  => "Text",
 		"Art"             => "Image",
 		"Article"         => "Text",
@@ -277,7 +282,7 @@ class API_ArchiveAPI extends AJAXHandler {
 		"Postcard"        => "Still Image",
 		"Video"           => "Moving Image",
 		"Voice Recording" => "Sound",
-	);
+	];
 
 	private function mapFormat($format){
 		if (array_key_exists($format, $this->formatMap)){
@@ -307,8 +312,8 @@ class API_ArchiveAPI extends AJAXHandler {
 		$searchObject->setPage(1);
 		$searchObject->setLimit(100);
 		$searchCollectionsResult = $searchObject->processSearch(true, false);
-		$collectionsToInclude    = array();
-		$ancestors               = "";
+		$collectionsToInclude    = [];
+		$ancestors               = '';
 
 		foreach ($searchCollectionsResult['response']['docs'] as $doc){
 			$collectionsToInclude[] = $doc['PID'];
@@ -346,14 +351,14 @@ class API_ArchiveAPI extends AJAXHandler {
 		if ($changesSince != null){
 			$searchObject->addHiddenFilter('fgs_lastModifiedDate_dt', "[$changesSince TO *]");
 		}
-		$searchObject->addFieldsToReturn(array(
+		$searchObject->addFieldsToReturn([
 			'mods_accessCondition_marmot_rightsStatementOrg_t',
 			'mods_accessCondition_rightsHolder_entityTitle_ms',
 			'mods_extension_marmotLocal_hasCreator_entityTitle_ms',
 			'mods_physicalDescription_extent_s',
 			'mods_extension_marmotLocal_pikaOptions_dpla_s',
 			'RELS_EXT_isMemberOfCollection_uri_mt',
-		));
+		]);
 		$searchObject->setPage($curPage);
 		$searchObject->setLimit($pageSize);
 		$searchObject->clearFacets();
@@ -361,17 +366,17 @@ class API_ArchiveAPI extends AJAXHandler {
 		$searchObject->setSort("fgs_lastModifiedDate_dt asc");
 
 		$searchResult = $searchObject->processSearch(true, false);
-		return array($searchObject, $collectionsToInclude, $searchResult);
+		return [$searchObject, $collectionsToInclude, $searchResult];
 	}
 
 	public function getDPLACounts(){
-		$curPage      = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-		$pageSize     = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : 100;
-		$changesSince = isset($_REQUEST['changesSince']) ? $_REQUEST['changesSince'] : null;
-		$namespace    = isset($_REQUEST['namespace']) ? $_REQUEST['namespace'] : null;
+		$curPage      = $_REQUEST['page'] ?? 1;
+		$pageSize     = $_REQUEST['pageSize'] ?? 100;
+		$changesSince = $_REQUEST['changesSince'] ?? null;
+		$namespace    = $_REQUEST['namespace'] ?? null;
 		list($searchObject, $collectionsToInclude, $searchResult) = $this->getDPLASearchResults($namespace, $changesSince, $curPage, $pageSize);
 
-		$recordsByLibrary = array();
+		$recordsByLibrary = [];
 		if (isset($searchResult['facet_counts'])){
 			$namespaceFacet = $searchResult['facet_counts']['facet_fields']['namespace_ms'];
 			foreach ($namespaceFacet as $facetInfo){

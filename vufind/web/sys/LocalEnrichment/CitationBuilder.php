@@ -98,7 +98,7 @@ class CitationBuilder {
 	 */
 	public function getMLA(){
 		global $interface;
-		$mla = array(
+		$mla[] = array(
 			'title'     => $this->getMLATitle(),
 			'authors'   => $this->getMLAAuthors(),
 			'publisher' => $this->getPublisher(),
@@ -560,7 +560,7 @@ class CitationBuilder {
 		if (empty($parts)){
 			return false;
 		}
-		return $this->stripPunctuation(implode('/ ', $parts));
+		return $this->stripPunctuation(implode(', ', $parts));
 	}
 
 	/**

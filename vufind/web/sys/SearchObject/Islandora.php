@@ -82,9 +82,6 @@ class SearchObject_Islandora extends SearchObject_Base {
 		$this->indexEngine     = new Solr($configArray['Islandora']['solrUrl'], $configArray['Islandora']['solrCore'] ?? 'islandora');
 		$timer->logTime('Created Index Engine for Islandora');
 
-		//Make sure to turn off sharding for islandora
-		$this->indexEngine->setShards([]);
-
 		// Get default facet settings
 		$this->allFacetSettings = getExtraConfigArray('islandoraFacets');
 		$this->facetConfig      = [];

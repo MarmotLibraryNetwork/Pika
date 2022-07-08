@@ -41,12 +41,12 @@ abstract class AJAXHandler extends Action {
 	protected $methodsThatRespondThemselves;*/
 
 	//private $cache;
-	private $logger;
+	protected $logger;
 
 	public function __construct($error_class = null){
 		parent::__construct($error_class);
 
-		$this->logger = new Logger('AjaxHandler');
+		$this->logger = new Logger(get_class($this));
 		//$this->cache  = new Cache();
 
 	}

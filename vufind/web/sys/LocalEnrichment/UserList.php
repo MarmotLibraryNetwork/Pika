@@ -46,40 +46,40 @@ class UserList extends DB_DataObject
 	];
 
 
-	function getObjectStructure(){
-		$structure = array(
-			'id' => array(
-				'property'=>'id',
-				'type'=>'hidden',
-				'label'=>'Id',
-				'primaryKey'=>true,
-				'description'=>'The unique id of the e-pub file.',
-				'storeDb' => true,
-				'storeSolr' => false,
-			),
-			'title' => array(
-				'property' => 'title',
-				'type' => 'text',
-				'size' => 100,
-				'maxLength'=>255,
-				'label' => 'Title',
+	static function getObjectStructure(){
+		$structure = [
+			'id'          => [
+				'property'    => 'id',
+				'type'        => 'hidden',
+				'label'       => 'Id',
+				'primaryKey'  => true,
+				'description' => 'The unique id of the e-pub file.',
+				'storeDb'     => true,
+				'storeSolr'   => false,
+			],
+			'title'       => [
+				'property'    => 'title',
+				'type'        => 'text',
+				'size'        => 100,
+				'maxLength'   => 255,
+				'label'       => 'Title',
 				'description' => 'The title of the item.',
-				'required'=> true,
-				'storeDb' => true,
-				'storeSolr' => true,
-			),
-			'description' => array(
-				'property' => 'description',
-				'type' => 'textarea',
-				'label' => 'Description',
-				'rows'=>3,
-				'cols'=>80,
+				'required'    => true,
+				'storeDb'     => true,
+				'storeSolr'   => true,
+			],
+			'description' => [
+				'property'    => 'description',
+				'type'        => 'textarea',
+				'label'       => 'Description',
+				'rows'        => 3,
+				'cols'        => 80,
 				'description' => 'A brief description of the file for indexing and display if there is not an existing record within the catalog.',
-				'required'=> false,
-				'storeDb' => true,
-				'storeSolr' => true,
-			),
-		);
+				'required'    => false,
+				'storeDb'     => true,
+				'storeSolr'   => true,
+			],
+		];
 		return $structure;
 	}
 
@@ -181,7 +181,8 @@ class UserList extends DB_DataObject
 				'(' .
 				'(user_list_entry.groupedWorkPermanentId NOT LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work) )' .
 				' OR ' .
-				'(user_list_entry.groupedWorkPermanentId LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT pid FROM islandora_object_cache) )' .
+				'(user_list_entry.groupedWorkPermanentId LIKE "%:%")' .
+//				'(user_list_entry.groupedWorkPermanentId LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT pid FROM islandora_object_cache) )' .
 				')'
 			//TODO: checking the islandora cache does not really check that pid is valid. Probably should remove
 			);
@@ -326,10 +327,10 @@ class UserList extends DB_DataObject
 	/**
 	 * @return array
 	 */
-	public function getUserListSortOptions()
-	{
+	public function getUserListSortOptions(){
 		return $this->userListSortOptions;
 	}
+
 	private function flushUserListBrowseCategory(){
 		// Check if the list is a part of a browse category and clear the cache.
 		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
