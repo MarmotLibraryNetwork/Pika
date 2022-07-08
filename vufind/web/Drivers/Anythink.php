@@ -271,17 +271,6 @@ class Anythink extends HorizonAPI {
 		return mapValue('item_status', $statusCode);
 	}
 
-	public function getLocationMapLink($locationCode){
-		$locationCode = strtolower($locationCode);
-		$locationMap = array(
-        );
-		return isset($locationMap[$locationCode]) ? $locationMap[$locationCode] : '' ;
-	}
-
-	public function getLibraryHours($locationId, $timeToCheck){
-		return null;
-	}
-
 	function selfRegister(){
 		global $configArray;
 		global $logger;

@@ -40,15 +40,6 @@ class AACPL extends SirsiDynixROA {
 		$statusMap = [];
 		return $statusMap[$statusCode] ?? 'Unknown (' . $statusCode . ')';
 	}
-	public function getLocationMapLink($locationCode){
-		$locationCode = strtolower($locationCode);
-		$locationMap = [];
-		return $locationMap[$locationCode] ?? '';
-	}
-
-	public function getLibraryHours($locationId, $timeToCheck){
-		return null;
-	}
 
 	//	public function getSelfRegistrationFields(){
 //		global $library;
