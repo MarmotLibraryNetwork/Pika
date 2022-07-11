@@ -54,7 +54,7 @@
 						{* Select none of the menu options *}
 						$(function () {ldelim} Pika.Menu.collapseSideBar(); {rdelim});
 					{elseif ($module == "Search" && $action != 'History') || $module == "Series" || $module == "Author" || $module == "Genealogy" || $module == "Library"
-							|| ($module == 'MyAccount' && $action == 'MyList' && !$listEditAllowed)
+							|| ($module == 'MyAccount' && $action == 'MyList' && ($userListHasSearchFilters || !$listEditAllowed))
 							|| ($module == 'EBSCO' && $action == 'Results')
 							|| ($module == 'Union' && $action == 'CombinedResults')
 							|| ($module == 'Archive' && ($action == 'Results' || $action == 'RelatedEntities'))

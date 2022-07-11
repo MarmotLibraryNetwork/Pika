@@ -414,6 +414,7 @@ class FavoriteHandler {
 				}
 
 				//Only show search filter options when not mixed user list
+				$interface->assign('userListHasSearchFilters', true);
 				$interface->assign('topRecommendations', $catalogSearchObject->getRecommendationsTemplates('top'));
 				$interface->assign('sideRecommendations', $catalogSearchObject->getRecommendationsTemplates('side'));
 				// Display search facets on a user list. Has to happen after processSearch() where recommendations are initialized.
@@ -507,6 +508,7 @@ class FavoriteHandler {
 				}
 
 				//Only show search filter options when not mixed user list
+				$interface->assign('userListHasSearchFilters', true);
 				$interface->assign('topRecommendations', $archiveSearchObject->getRecommendationsTemplates('top'));
 				$interface->assign('sideRecommendations', $archiveSearchObject->getRecommendationsTemplates('side'));
 				// Display search facets on a user list. Has to happen after processSearch() where recommendations are initialized.
