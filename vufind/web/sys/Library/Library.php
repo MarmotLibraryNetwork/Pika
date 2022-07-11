@@ -274,7 +274,7 @@ class Library extends DB_DataObject {
 	// Use this to set which details will be shown in the the Main Details section of the record view.
 	// You should be able to add options here without needing to change the database.
 	// set the key to the desired SMARTY template variable name, set the value to the label to show in the library configuration page
-	static $showInMainDetailsOptions = array(
+	static $showInMainDetailsOptions = [
 		'showSeries'               => 'Series',
 		'showPublicationDetails'   => 'Published',
 		'showFormats'              => 'Formats',
@@ -284,12 +284,12 @@ class Library extends DB_DataObject {
 		'showArInfo'               => 'Show Accelerated Reader Information',
 		'showLexileInfo'           => 'Show Lexile Information',
 		'showFountasPinnell'       => 'Show Fountas &amp; Pinnell Information  (This data must be present in MARC records)',
-	);
+	];
 
 	// Use this to set which details will be shown in the the Main Details section of the record in the search results.
 	// You should be able to add options here without needing to change the database.
 	// set the key to the desired SMARTY template variable name, set the value to the label to show in the library configuration page
-	static $searchResultsMainDetailsOptions = array(
+	static $searchResultsMainDetailsOptions = [
 		'showSeries'               => 'Show Series',
 		'showPublisher'            => 'Publisher',
 		'showPublicationDate'      => 'Publisher Date',
@@ -299,14 +299,14 @@ class Library extends DB_DataObject {
 		'showArInfo'               => 'Show Accelerated Reader Information',
 		'showLexileInfo'           => 'Show Lexile Information',
 		'showFountasPinnell'       => 'Show Fountas &amp; Pinnell Information  (This data must be present in MARC records)',
-	);
+	];
 
-	static $archiveRequestFormFieldOptions = array('Hidden', 'Optional', 'Required');
+	static $archiveRequestFormFieldOptions = ['Hidden', 'Optional', 'Required'];
 
-	static $archiveMoreDetailsDisplayModeOptions = array(
+	static $archiveMoreDetailsDisplayModeOptions = [
 		'tiled' => 'Tiled',
 		'list'  => 'List',
-	);
+	];
 
 	/**
 	 * Needed override for OneToManyDataObjectOperations
@@ -1169,7 +1169,7 @@ class Library extends DB_DataObject {
 		return $structure;
 	}
 
-	static $searchLibrary  = array();
+	static $searchLibrary  = [];
 
 	/**
 	 * @param null $searchSource
@@ -1277,7 +1277,7 @@ class Library extends DB_DataObject {
 		return null;
 	}
 
-	private $data = array();
+	private $data = [];
 
 	public function __get($name){
 		switch ($name){
@@ -1430,7 +1430,7 @@ class Library extends DB_DataObject {
 				try {
 					$this->showInMainDetails = unserialize($this->showInMainDetails);
 					if (!$this->showInMainDetails){
-						$this->showInMainDetails = array();
+						$this->showInMainDetails = [];
 					}
 				} catch (Exception $e){
 					global $logger;
@@ -1449,7 +1449,7 @@ class Library extends DB_DataObject {
 				// convert to array retrieving from database
 				$this->showInSearchResultsMainDetails = unserialize($this->showInSearchResultsMainDetails);
 				if (!$this->showInSearchResultsMainDetails){
-					$this->showInSearchResultsMainDetails = array();
+					$this->showInSearchResultsMainDetails = [];
 				}
 			}
 		}
@@ -1568,7 +1568,7 @@ class Library extends DB_DataObject {
 
 	public function clearBrowseCategories(){
 		$this->clearOneToManyOptions('LibraryBrowseCategory');
-		$this->browseCategories = array();
+		$this->browseCategories = [];
 	}
 
 	public function saveLibraryLinks(){
@@ -1580,7 +1580,7 @@ class Library extends DB_DataObject {
 
 	public function clearLibraryLinks(){
 		$this->clearOneToManyOptions('LibraryLink');
-		$this->libraryLinks = array();
+		$this->libraryLinks = [];
 	}
 
 	public function saveLibraryTopLinks(){
@@ -1592,7 +1592,7 @@ class Library extends DB_DataObject {
 
 	public function clearLibraryTopLinks(){
 		$this->clearOneToManyOptions('LibraryTopLinks');
-		$this->libraryTopLinks = array();
+		$this->libraryTopLinks = [];
 	}
 
 	public function saveRecordsOwned(){
@@ -1604,7 +1604,7 @@ class Library extends DB_DataObject {
 
 	public function clearRecordsOwned(){
 		$this->clearOneToManyOptions('LibraryRecordOwned');
-		$this->recordsOwned = array();
+		$this->recordsOwned = [];
 	}
 
 	public function saveRecordsToInclude(){
@@ -1619,7 +1619,7 @@ class Library extends DB_DataObject {
 //		$object = new LibraryRecordToInclude();
 //		$object->libraryId = $this->libraryId;
 //		$object->delete();
-		$this->recordsToInclude = array();
+		$this->recordsToInclude = [];
 	}
 
 	public function saveManagematerialsRequestFieldsToDisplay(){
@@ -1670,7 +1670,7 @@ class Library extends DB_DataObject {
 
 	public function clearExploreMoreBar(){
 		$this->clearOneToManyOptions('ArchiveExploreMoreBar');
-		$this->exploreMoreBar = array();
+		$this->exploreMoreBar = [];
 	}
 
 	public function saveMoreDetailsOptions(){
@@ -1689,22 +1689,22 @@ class Library extends DB_DataObject {
 
 	public function clearMoreDetailsOptions(){
 		$this->clearOneToManyOptions('LibraryMoreDetails');
-		$this->moreDetailsOptions = array();
+		$this->moreDetailsOptions = [];
 	}
 
 	public function clearArchiveMoreDetailsOptions(){
 		$this->clearOneToManyOptions('LibraryArchiveMoreDetails');
-		$this->archiveMoreDetailsOptions = array();
+		$this->archiveMoreDetailsOptions = [];
 	}
 
 	public function clearMaterialsRequestFormFields(){
 		$this->clearOneToManyOptions('MaterialsRequestFormFields');
-		$this->materialsRequestFormFields = array();
+		$this->materialsRequestFormFields = [];
 	}
 
 	public function clearMaterialsRequestFormats(){
 		$this->clearOneToManyOptions('MaterialsRequestFormats');
-		$this->materialsRequestFormats = array();
+		$this->materialsRequestFormats = [];
 	}
 
 	public function saveFacets(){
@@ -1723,12 +1723,12 @@ class Library extends DB_DataObject {
 
 	public function clearFacets(){
 		$this->clearOneToManyOptions('LibraryFacetSetting');
-		$this->facets = array();
+		$this->facets = [];
 	}
 
 	public function clearArchiveSearchFacets(){
 		$this->clearOneToManyOptions('LibraryArchiveSearchFacetSetting');
-		$this->archiveSearchfacets = array();
+		$this->archiveSearchfacets = [];
 	}
 
 	public function saveCombinedResultSections(){
@@ -1740,7 +1740,7 @@ class Library extends DB_DataObject {
 
 	public function clearCombinedResultSections(){
 		$this->clearOneToManyOptions('LibraryCombinedResultSection');
-		$this->combinedResultSections = array();
+		$this->combinedResultSections = [];
 	}
 
 	public function saveHooplaSettings(){
@@ -1756,7 +1756,7 @@ class Library extends DB_DataObject {
 	 */
 	public function clearHooplaSettings(){
 		$success = $this->clearOneToManyOptions('LibraryHooplaSettings');
-		$this->hooplaSettings = array();
+		$this->hooplaSettings = [];
 		return $success >= 1;
 	}
 
@@ -1769,7 +1769,7 @@ class Library extends DB_DataObject {
 
 	static function getDefaultFacets($libraryId = -1){
 		global $configArray;
-		$defaultFacets = array();
+		$defaultFacets = [];
 
 		$facet = new LibraryFacetSetting();
 		$facet->setupTopFacet('format_category', 'Format Category');
@@ -1926,7 +1926,7 @@ class Library extends DB_DataObject {
 	}
 
 	static function getDefaultArchiveSearchFacets($libraryId = -1){
-		$defaultFacets     = array();
+		$defaultFacets     = [];
 		$defaultFacetsList = LibraryArchiveSearchFacetSetting::$defaultFacetList;
 		foreach ($defaultFacetsList as $facetName => $facetDisplayName){
 			$facet = new LibraryArchiveSearchFacetSetting();

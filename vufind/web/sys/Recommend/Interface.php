@@ -23,8 +23,7 @@
  * This interface class is the definition of the required methods for
  * generating search recommendations.
  */
-interface RecommendationInterface
-{
+interface RecommendationInterface {
     /* Constructor
      *
      * Establishes base settings for making recommendations.

@@ -19,8 +19,6 @@
 
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
-//require_once 'XML/Unserializer.php';
-
 class Admin_Libraries extends ObjectEditor {
 
 	function getObjectType(){
@@ -244,7 +242,6 @@ class Admin_Libraries extends ObjectEditor {
 
 			$_REQUEST['objectAction'] = 'edit';
 		}
-		$structure = $this->getObjectStructure();
 		$this->navigateToLibraryPage($libraryId);
 	}
 
@@ -262,7 +259,6 @@ class Admin_Libraries extends ObjectEditor {
 
 			$_REQUEST['objectAction'] = 'edit';
 		}
-		$structure = $this->getObjectStructure(); //TODO: Needed?
 		$this->navigateToLibraryPage($libraryId);
 	}
 
@@ -292,7 +288,6 @@ class Admin_Libraries extends ObjectEditor {
 
 			$_REQUEST['objectAction'] = 'edit';
 		}
-		$structure = $this->getObjectStructure();
 		$this->navigateToLibraryPage($libraryId);
 	}
 
@@ -311,7 +306,6 @@ class Admin_Libraries extends ObjectEditor {
 
 			$_REQUEST['objectAction'] = 'edit';
 		}
-		$structure = $this->getObjectStructure();
 		$this->navigateToLibraryPage($libraryId);
 	}
 
@@ -366,7 +360,7 @@ class Admin_Libraries extends ObjectEditor {
 	 * @param $libraryId  ID of the library to navigate to.
 	 */
 	private function navigateToLibraryPage($libraryId): void{
-		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
+		header('Location: /Admin/Libraries?objectAction=edit&id=' . $libraryId);
 		die();
 	}
 

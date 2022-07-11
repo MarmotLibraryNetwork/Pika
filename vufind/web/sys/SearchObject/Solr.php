@@ -57,13 +57,13 @@ class SearchObject_Solr extends SearchObject_Base {
 
 	// Spelling
 	private $spellingLimit = 3;
-	private $spellQuery    = array();
+	private $spellQuery    = [];
 	private $dictionary    = 'default';
 	private $spellSimple   = false;
 	private $spellSkipNumeric = true;
 
 	// Display Modes //
-	public $viewOptions = array('list', 'covers');
+	public $viewOptions = ['list', 'covers'];
 
 	/**
 	 * Flag to disable default scoping to show ILL book titles, etc.

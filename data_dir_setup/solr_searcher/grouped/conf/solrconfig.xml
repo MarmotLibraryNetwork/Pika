@@ -1187,7 +1187,7 @@
 
 	<!-- Terms Component
 
-		 http://wiki.apache.org/solr/TermsComponent
+		https://solr.apache.org/guide/8_10/the-terms-component.html
 
 		 A component to return terms and document frequency of those
 		 terms

@@ -1216,17 +1216,16 @@ class SearchObject_Islandora extends SearchObject_Base {
 	 *                                              section's description will be
 	 *                                              favored.
 	 */
-	public function activateAllFacets($preferredSection = false)
-	{
-		foreach($this->allFacetSettings as $section => $values) {
-			foreach($values as $key => $value) {
+	public function activateAllFacets($preferredSection = false){
+		foreach ($this->allFacetSettings as $section => $values){
+			foreach ($values as $key => $value){
 				$this->addFacet($key, $value);
 			}
 		}
 
 		if ($preferredSection &&
-		is_array($this->allFacetSettings[$preferredSection])) {
-			foreach($this->allFacetSettings[$preferredSection] as $key => $value) {
+			is_array($this->allFacetSettings[$preferredSection])){
+			foreach ($this->allFacetSettings[$preferredSection] as $key => $value){
 				$this->addFacet($key, $value);
 			}
 		}

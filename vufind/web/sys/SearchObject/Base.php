@@ -158,7 +158,7 @@ abstract class SearchObject_Base {
 
 		$temp  = explode(':', $filter); // Split the string
 		$field = array_shift($temp); // $field is the first value
-		$value = join(':', $temp); // join them in case the value contained colons as well.
+		$value = implode(':', $temp); // join them in case the value contained colons as well.
 		$value = trim($value, '"'); // Remove quotes from the value if there are any
 		$value = trim($value); // One last little clean on whitespace
 
@@ -263,7 +263,8 @@ abstract class SearchObject_Base {
 	 * Add a hidden (i.e. not visible in facet controls) filter query to the object.
 	 *
 	 * @access  public
-	 * @param   string $fq                 Filter query for Solr.
+	 * @param $field
+	 * @param $value
 	 */
 	public function addHiddenFilter($field, $value){
 		$this->hiddenFilters[] = $field . ':' . $value;
@@ -277,15 +278,14 @@ abstract class SearchObject_Base {
 	 * @return  string                          Human-readable description of field.
 	 */
 	protected function getFacetLabel($field){
-		return isset($this->facetConfig[$field]) ?
-			$this->facetConfig[$field] : ucwords(str_replace("_", " ", translate($field)));
+		return $this->facetConfig[$field] ?? ucwords(str_replace('_', ' ', translate($field)));
 	}
 
 	/**
 	 * Clear all facets which will speed up searching if we won't be using the facets.
 	 */
 	public function clearFacets(){
-		$this->facetConfig = array();
+		$this->facetConfig = [];
 	}
 
 	public function hasAppliedFacets(){
@@ -376,9 +376,8 @@ abstract class SearchObject_Base {
 	 * @param   string   $oldFilter   A filter to remove from the search url
 	 * @return  string   URL of a new search
 	 */
-	public function renderLinkWithoutFilter($oldFilter)
-	{
-		return $this->renderLinkWithoutFilters(array($oldFilter));
+	public function renderLinkWithoutFilter($oldFilter){
+		return $this->renderLinkWithoutFilters([$oldFilter]);
 	}
 
 	/**
@@ -388,8 +387,7 @@ abstract class SearchObject_Base {
 	 * @param   array    $filters      The filters to remove from the search url
 	 * @return  string   URL of a new search
 	 */
-	public function renderLinkWithoutFilters($filters)
-	{
+	public function renderLinkWithoutFilters($filters){
 		// Stash our old data for a minute
 		$oldFilterList = $this->filterList;
 		$oldPage       = $this->page;
@@ -1144,8 +1142,7 @@ abstract class SearchObject_Base {
 	 * @param   string      $value      The facet value to limit with
 	 * @return  string                  The URL to the desired search
 	 */
-	protected function getExpandingFacetLink($field, $value)
-	{
+	protected function getExpandingFacetLink($field, $value){
 		// Stash our old search
 		$temp_data = $this->searchTerms;
 		$temp_type = $this->searchType;
@@ -1218,8 +1215,7 @@ abstract class SearchObject_Base {
 	 * @access  protected
 	 * @return  object     A SearchObject instance
 	 */
-	protected function minify()
-	{
+	protected function minify(){
 		// Clone ourself as a minified object
 		$newObject = new minSO($this);
 		// Return the new object
@@ -1542,7 +1538,7 @@ abstract class SearchObject_Base {
 	 * @access protected
 	 */
 	protected function stopQueryTimer(){
-		$time               = explode(" ", microtime());
+		$time               = explode(' ', microtime());
 		$this->queryEndTime = $time[1] + $time[0];
 		$this->queryTime    = $this->queryEndTime - $this->queryStartTime;
 	}
@@ -1651,8 +1647,7 @@ abstract class SearchObject_Base {
 	 * @param   string   $newTerm   The new term to search
 	 * @return  string   query string
 	 */
-	public function getDisplayQueryWithReplacedTerm($oldTerm, $newTerm)
-	{
+	public function getDisplayQueryWithReplacedTerm($oldTerm, $newTerm){
 		// Stash our old data for a minute
 		$oldTerms = $this->searchTerms;
 		// Replace the search term
@@ -1677,15 +1672,14 @@ abstract class SearchObject_Base {
 	 * @return  array               Tokenized array
 	 * @access  public
 	 */
-	public function spellingTokens($input)
-	{
-		$joins = array("AND", "OR", "NOT");
-		$paren = array("(" => "", ")" => "");
+	public function spellingTokens($input){
+		$joins = ["AND", "OR", "NOT"];
+		$paren = ["(" => "", ")" => ""];
 
 		// Base of this algorithm comes straight from
 		// PHP doco examples & benighted at gmail dot com
 		// http://php.net/manual/en/function.strtok.php
-		$tokens = array();
+		$tokens = [];
 		$token = strtok($input,' ');
 		while ($token) {
 			// find bracketed tokens
@@ -1699,7 +1693,7 @@ abstract class SearchObject_Base {
 		}
 		// Some cleaning of tokens that are just boolean joins
 		//  and removal of brackets
-		$return = array();
+		$return = [];
 		foreach ($tokens as $token) {
 			// Ignore join
 			if (!in_array($token, $joins)) {
@@ -1855,26 +1849,6 @@ abstract class SearchObject_Base {
 		// See the Solr Search Object for details of how this works if you need to
 		// implement context-sensitive facet settings in another module.
 	}
-
-	/**
-	 * Translate a field name to a displayable string for rendering a query in
-	 * human-readable format:
-	 *
-	 * @access  protected
-	 * @param   string      $field          Field name to display.
-	 * @return  string                      Human-readable version of field name.
-	 */
-//	protected function getHumanReadableFieldName($field){
-//		if (isset($this->basicTypes[$field])){
-//			return translate($this->basicTypes[$field]);
-//		}elseif (isset($this->advancedSearchTypes[$field])){
-//			return translate($this->advancedSearchTypes[$field]);
-//		}elseif (isset($this->browseTypes[$field])){
-//			return translate($this->browseTypes[$field]);
-//		}else{
-//			return $field;
-//		}
-//	}
 
 	/**
 	 * Get a human-readable presentation version of the advanced search query
