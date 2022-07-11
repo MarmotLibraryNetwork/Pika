@@ -106,7 +106,7 @@ class Solr implements IndexEngine {
 	 * uppercase but also inserts OR clauses to check for case-insensitive matches
 	 * against the edges of the range...  i.e. ([a TO b] OR [A TO B]).
 	 */
-	private $_caseSensitiveRanges = true;
+//	private $_caseSensitiveRanges = true;
 
 	/**
 	 * Should we collect highlighting data?
@@ -158,9 +158,9 @@ class Solr implements IndexEngine {
 		if (isset($searchSettings['General']['case_sensitive_bools'])){
 			$this->caseSensitiveBooleans = $searchSettings['General']['case_sensitive_bools'];
 		}
-		if (isset($searchSettings['General']['case_sensitive_ranges'])){
-			$this->_caseSensitiveRanges = $searchSettings['General']['case_sensitive_ranges'];
-		}
+//		if (isset($searchSettings['General']['case_sensitive_ranges'])){
+//			$this->_caseSensitiveRanges = $searchSettings['General']['case_sensitive_ranges'];
+//		}
 
 		// Turn on highlighting if the user has requested highlighting or snippet
 		// functionality:
@@ -250,9 +250,9 @@ class Solr implements IndexEngine {
 	 * @return boolean
 	 * @access public
 	 */
-	public function hasCaseSensitiveRanges(){
-		return $this->_caseSensitiveRanges;
-	}
+//	public function hasCaseSensitiveRanges(){
+//		return $this->_caseSensitiveRanges;
+//	}
 
 	/**
 	 * Support method for _getSearchSpecs() -- load the specs from cache or disk.
@@ -2125,7 +2125,7 @@ class Solr implements IndexEngine {
 				$fields[] = (string)$field['name'];
 			}
 			if ($this->index == 'grouped' && !empty($solrScope)) {
-				// Only process for grouped work index where dymanic fields have the wildcard at the end
+				// Only process for grouped work index where dynamic fields have the wildcard at the end
 				// islandora dynamic fields start with the wildcard eg *_s
 				foreach ($schema->fields->dynamicField as $field) {
 					$fields[] = substr((string)$field['name'], 0, -1) . $solrScope;
