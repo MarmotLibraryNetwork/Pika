@@ -19,6 +19,10 @@
 
 require_once ROOT_DIR . '/Action.php';
 
+/*
+ * This is listed for suggestions in the Open Search Description
+ */
+
 class Suggest extends Action {
 
 	function launch(){

@@ -224,11 +224,9 @@ class GroupedWork_AJAX extends AJAXHandler {
 			}
 
 			//Load Similar titles (from Solr)
-			$class = $configArray['Index']['engine'];
-			$url   = $configArray['Index']['url'];
-			/** @var Solr $solr */
-			$solr      = new $class($url);
-			$similar = $solr->getMoreLikeThis2($id);
+			/** @var SearchObject_Solr $catalogSearchObject */
+			$catalogSearchObject = SearchObjectFactory::initSearchObject();
+			$similar             = $catalogSearchObject->getMoreLikeThis2($id);
 			$memoryWatcher->logMemory('Loaded More Like This data from Solr');
 			if (!empty($similar['response']['docs'])){
 				$similarTitles = [];
@@ -244,8 +242,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 					$similarTitles[] = $this->getScrollerTitle($record, $key, 'MoreLikeThis');
 				}
-				$similarTitlesInfo                 = ['titles' => $similarTitles, 'currentIndex' => 0];
-				$enrichmentResult['similarTitles'] = $similarTitlesInfo;
+				$enrichmentResult['similarTitles'] = ['titles' => $similarTitles, 'currentIndex' => 0];
 			} else {
 				global $pikaLogger;
 				global $solrScope;

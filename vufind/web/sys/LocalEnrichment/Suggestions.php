@@ -23,7 +23,6 @@ class Suggestions {
 	 * and related titles from Novelist.
 	 */
 	static function getSuggestions($userId = -1, $numberOfSuggestionsToGet = null){
-		global $configArray;
 		global $timer;
 
 		//Configuration for suggestions
@@ -40,7 +39,7 @@ class Suggestions {
 		$notInterested         = new NotInterested();
 		$notInterested->userId = $userId;
 		$notInterestedTitles   = $notInterested->fetchAll('groupedWorkPermanentId');
-		$timer->logTime("Loaded titles the patron is not interested in");
+		$timer->logTime('Loaded titles the patron is not interested in');
 
 		//Load all titles the user has rated.  Need to load all so we don't recommend things they already rated
 		$allRatedTitles      = [];
@@ -65,10 +64,9 @@ class Suggestions {
 		$readHistoryWorkIds = array_unique($readingHistoryDB->fetchAll('groupedWorkPermanentId'));
 
 		// Setup Search Engine Connection
-		$class = $configArray['Index']['engine'];
-		$url   = $configArray['Index']['url'];
-		/** @var Solr $db */
-		$db    = new $class($url);
+		/** @var SearchObject_Solr $catalogSearchObject */
+		$catalogSearchObject = SearchObjectFactory::initSearchObject();
+
 
 		$suggestions = [];
 		if ($doNovelistRecommendations){
@@ -86,7 +84,7 @@ class Suggestions {
 					$timer->logTime("Cloned Rating data");
 
 					disableErrorHandler();
-					$record = $db->getRecord($groupedWorkId, 'isbn,title_display');
+					$record = $catalogSearchObject->getRecord($groupedWorkId, 'isbn,title_display');
 					enableErrorHandler();
 					if (!empty($record['isbn'])){
 						$timer->logTime("Loaded ISBNs for work");
@@ -97,7 +95,7 @@ class Suggestions {
 					}
 				}
 			}
-			$timer->logTime("Loaded novelist recommendations");
+			$timer->logTime('Loaded novelist recommendations');
 		}
 
 		if (count($suggestions) < $maxRecommendations){
@@ -114,17 +112,17 @@ class Suggestions {
 				//echo("User has rated {$ratings->N} titles<br>");
 				if ($ratings->N > 0){
 					while ($ratings->fetch()){
-						Suggestions::getSimilarlyRatedTitles($db, $ratings, $userId, $allRatedTitles, $suggestions, $notInterestedTitles, $readHistoryWorkIds);
+						Suggestions::getSimilarlyRatedTitles($catalogSearchObject, $ratings, $userId, $allRatedTitles, $suggestions, $notInterestedTitles, $readHistoryWorkIds);
 					}
 				}
-				$timer->logTime("Loaded recommendations based on similarly rated titles");
+				$timer->logTime('Loaded recommendations based on similarly rated titles');
 			}
 
 
 		//Get metadata recommendations if enabled, we have ratings, and we don't have enough suggestions yet
 			if ($doMetadataRecommendations && count($allLikedRatedTitles) > 0){
 				//Get recommendations based on everything I've rated using more like this functionality
-				$moreLikeTheseSuggestions = $db->getMoreLikeThese($allLikedRatedTitles, $notInterestedTitles);
+				$moreLikeTheseSuggestions = $catalogSearchObject->getMoreLikeThese($allLikedRatedTitles, $notInterestedTitles);
 				if (isset($moreLikeTheseSuggestions['response']['docs'])){
 					foreach ($moreLikeTheseSuggestions['response']['docs'] as $suggestion){
 						if (!array_key_exists($suggestion['id'], $allRatedTitles) && !in_array($suggestion['id'], $readHistoryWorkIds)){
@@ -144,7 +142,7 @@ class Suggestions {
 						$logger->log('Error looking for Suggested Titles : ' . $moreLikeTheseSuggestions['error']['msg'], PEAR_LOG_ERR);
 					}
 				}
-				$timer->logTime("Loaded recommendations based on ratings");
+				$timer->logTime('Loaded recommendations based on ratings');
 			}
 		}
 
@@ -162,7 +160,7 @@ class Suggestions {
 	/**
 	 * Load titles that have been rated by other users which are similar to this.
 	 *
-	 * @param Solr $db
+	 * @param SearchObject_Solr $searchObject
 	 * @param UserWorkReview $ratedTitle
 	 * @param integer $userId
 	 * @param array $ratedTitles
@@ -170,7 +168,7 @@ class Suggestions {
 	 * @param integer[] $notInterestedTitles
 	 * @return int The number of suggestions for this title
 	 */
-	private static function getSimilarlyRatedTitles($db, $ratedTitle, $userId, $ratedTitles, &$suggestions, $notInterestedTitles, $readHistoryWorkIds){
+	private static function getSimilarlyRatedTitles($searchObject, $ratedTitle, $userId, $ratedTitles, &$suggestions, $notInterestedTitles, $readHistoryWorkIds){
 		$numRecommendations = 0;
 		//If there is no ISBN, can we come up with an alternative algorithm?
 		//Possibly using common ratings with other patrons?
@@ -194,7 +192,7 @@ class Suggestions {
 				//Process the title
 				disableErrorHandler();
 
-				if (!($ownedRecord = $db->getRecord($otherRaters->groupedWorkPermanentId))){
+				if (!($ownedRecord = $searchObject->getRecord($otherRaters->groupedWorkPermanentId))){
 					//Old record which has been removed? Ignore for purposes of suggestions.
 					continue;
 				}
@@ -221,10 +219,10 @@ class Suggestions {
 				}else{
 					$series = '';
 				}
-				$similarTitle = array(
+				$similarTitle = [
 					'title'           => $ownedRecord['title'],
 					'title_short'     => $ownedRecord['title_short'],
-					'author'          => isset($ownedRecord['author']) ? $ownedRecord['author'] : '',
+					'author'          => $ownedRecord['author'] ?? '',
 					'publicationDate' => $ownedRecord['publishDate'],
 					'isbn'            => $isbn13,
 					'isbn10'          => $isbn10,
@@ -234,11 +232,11 @@ class Suggestions {
 					'libraryOwned'    => true,
 					'isCurrent'       => false,
 					'shortId'         => substr($ownedRecord['id'], 1),
-					'format_category' => isset($ownedRecord['format_category']) ? $ownedRecord['format_category'] : '',
-					'format'          => $ownedRecord['format'],
-					'recordtype'      => $ownedRecord['recordtype'],
+					'format_category' => $ownedRecord['format_category'] ?? '',  //TODO: This field is scoped now. Is it used here?
+					'format'          => $ownedRecord['format'],  //TODO: This field is scoped now. Is it used here?
+					'recordtype'      => $ownedRecord['recordtype'], //TODO: This should always be "grouped_work" Is it needed?
 					'series'          => $series,
-				);
+				];
 				$numRecommendations++;
 				Suggestions::addTitleToSuggestions($ratedTitle, $similarTitle['title'], $similarTitle['recordId'], $similarTitle, $ratedTitles, $suggestions, $notInterestedTitles, $readHistoryWorkIds);
 			}
