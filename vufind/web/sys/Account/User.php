@@ -153,24 +153,24 @@ class User extends DB_DataObject {
 		return $tagList;
 	}
 
-	function getLists(){
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-
-		$lists = [];
-
-		$escapedId = $this->escape($this->id, false);
-		$sql       = "SELECT user_list.* FROM user_list " .
-			"WHERE user_list.user_id = '$escapedId' " .
-			"ORDER BY user_list.title";
-		$list      = new UserList();
-		$list->query($sql);
-		if ($list->N){
-			while ($list->fetch()){
-				$lists[] = clone($list);
-			}
-		}
-		return $lists;
-	}
+//	function getLists(){
+//		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+//
+//		$lists = [];
+//
+//		$escapedId = $this->escape($this->id, false);
+//		$sql       = "SELECT user_list.* FROM user_list " .
+//			"WHERE user_list.user_id = '$escapedId' " .
+//			"ORDER BY user_list.title";
+//		$list      = new UserList();
+//		$list->query($sql);
+//		if ($list->N){
+//			while ($list->fetch()){
+//				$lists[] = clone($list);
+//			}
+//		}
+//		return $lists;
+//	}
 
 	/**
 	 * Get a connection to the catalog for the user
