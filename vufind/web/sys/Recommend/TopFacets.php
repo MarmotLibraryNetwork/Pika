@@ -24,8 +24,7 @@ require_once ROOT_DIR . '/sys/Recommend/Interface.php';
  *
  * This class provides recommendations displaying facets above search results
  */
-class TopFacets implements RecommendationInterface
-{
+class TopFacets implements RecommendationInterface {
 	/** @var SearchObject_Solr|SearchObject_Base searchObject */
 	private $searchObject;
 	private $facetSettings = [];
@@ -244,23 +243,22 @@ class TopFacets implements RecommendationInterface
 	 * @access  public
 	 * @return  string      The template to use to display the recommendations.
 	 */
-	public function getTemplate()
-	{
+	public function getTemplate(){
 		return 'Search/Recommend/TopFacets.tpl';
 	}
 }
 
 function format_category_comparator($a, $b){
-	$formatCategorySortOrder = array(
-		'Books' => 1,
-		'eBook' => 2,
+	$formatCategorySortOrder = [
+		'Books'       => 1,
+		'eBook'       => 2,
 		'Audio Books' => 3,
-		'eAudio' => 4,
-		'Music' => 5,
-		'Movies' => 6,
-	);
+		'eAudio'      => 4,
+		'Music'       => 5,
+		'Movies'      => 6,
+	];
 
 	$a = $formatCategorySortOrder[$a];
 	$b = $formatCategorySortOrder[$b];
-	if ($a==$b){return 0;}else{return ($a > $b ? 1 : -1);}
+	return $a <=> $b;
 };
