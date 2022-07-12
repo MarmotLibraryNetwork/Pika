@@ -1431,9 +1431,7 @@ class Location extends DB_DataObject {
 			$facet->locationId = $locationId;
 			$facet->weight     = count($defaultFacets) + 1;
 			$defaultFacets[]   = $facet;
-		}
 
-		if ($configArray['Index']['enableDetailedAvailability']){
 			$facet = new LocationFacetSetting();
 			$facet->setupSideFacet('available_at', 'Available Now At', true);
 			$facet->locationId = $locationId;

@@ -1784,10 +1784,7 @@ class Library extends DB_DataObject {
 			$facet->libraryId = $libraryId;
 			$facet->weight    = count($defaultFacets) + 1;
 			$defaultFacets[]  = $facet;
-		}
 
-
-		if (!$configArray['Index']['enableDetailedAvailability']){
 			$facet = new LibraryFacetSetting();
 			$facet->setupSideFacet('available_at', 'Available Now At', true);
 			$facet->libraryId = $libraryId;
