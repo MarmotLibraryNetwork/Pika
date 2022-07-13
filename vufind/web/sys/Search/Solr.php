@@ -496,6 +496,72 @@ class Solr implements IndexEngine {
 	}
 
 	/**
+	 * Retrieves Solr Documents for an array of grouped Work Ids
+	 * @param string[] $ids The groupedWork Id of the Solr document to retrieve
+	 * @param string[] $filters  Any search filters to apply to query
+	 * @param int $batchSize
+	 * @return array The Solr document of the grouped Work
+	 */
+	function getFilteredIds($ids, $filters = null, $batchSize = 100){
+		$solrDocArray = [];
+		$numIds       = count($ids);
+		if ($numIds) {
+
+			$this->pingServer();
+			$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
+
+			//TODO: this comment doesn't appear to accurate any longer
+			//Solr does not seem to be able to return more than 50 records at a time,
+			//If we have more than 50 ids, we will need to make multiple calls and
+			//concatenate the results.
+			$startIndex = 0;
+			$batchSize  ??= $numIds;
+			$lastBatch  = false;
+			do {
+				$endIndex = $startIndex + $batchSize;
+				if ($endIndex >= $numIds) {
+					$lastBatch = true;
+					$endIndex  = $numIds;
+					$batchSize = $numIds - $startIndex;
+				}
+				$tmpIds = array_slice($ids, $startIndex, $batchSize);
+				$idString = implode(',', $tmpIds);
+				$options  = [
+					'ids' => $idString,
+					'fl'  => 'id',
+				];
+
+				if (!empty($filters)){
+					$options['fq'] = $filters;
+				}
+				// Build query string for use with GET or POST, with special handling for repeated parameters
+				$queryString = $this->buildSolrQueryString($options);
+
+				// Send Request
+				if (strlen($queryString) > 8000){
+					// For extremely long queries, like lists we will get an error: "URI Too Long"
+					$result = $this->client->post($this->host . '/get', $queryString);
+				}else{
+					$result = $this->client->get($this->host . '/get', $queryString);
+				}
+
+				if ($this->client->isError()) {
+					PEAR_Singleton::raiseError($this->client->getErrorMessage());
+				} else {
+					$result       = $this->_process($result);
+					$tempArray    = array_column($result['response']['docs'], 'id');
+					$solrDocArray = array_merge($solrDocArray, $tempArray);
+				}
+
+				if (!$lastBatch) {
+					$startIndex = $endIndex;
+				}
+			} while (!$lastBatch);
+		}
+		return $solrDocArray;
+	}
+
+	/**
 	 * Get record data based on the provided field and phrase.
 	 * Used for AJAX suggestions.
 	 *
@@ -1542,26 +1608,7 @@ class Solr implements IndexEngine {
 		$params['wt']      = 'json';   // this is the default for modern Solr; We have to keep till Islandora is upgraded.
 		$params['json.nl'] = 'arrarr'; // Needed to process faceting; arrarr breaks ordered pairs into a series of arrays
 
-		// Build query string for use with GET or POST, with special handling for repeated parameters
-		$query = [];
-		if ($params){
-			foreach ($params as $function => $value){
-				if ($function != ''){
-					if (is_array($value)){
-						foreach ($value as $additional){
-							//Islandora Solr takes repeated url parameters without the typical array style. eg. &fq=firstOne&fq=secondOne
-							$additional = urlencode($additional);
-							$query[]    = "$function=$additional";
-						}
-					}else{
-						$value   = urlencode($value);
-						$query[] = "$function=$value";
-					}
-				}
-			}
-		}
-
-		$queryString = implode('&', $query);
+		$queryString = $this->buildSolrQueryString($params);
 
 		if (strlen($queryString) > 8000){
 			// For extremely long queries, like lists we will get an error: "URI Too Long"
@@ -2159,6 +2206,36 @@ class Solr implements IndexEngine {
 			"/\\(NOT\\s+{$lookAhead}/i"];
 		$replace   = [' AND ', ' OR ', ' NOT ', '(NOT '];
 		return trim(preg_replace($regs, $replace, $query));
+	}
+
+	/**
+	 * 	 Build query string for use with GET or POST, with special handling
+	 * for repeated parameters
+	 * Solr takes repeated url parameters without the typical array style.
+	 * eg. &fq=firstOne&fq=secondOne
+	 * and NOT &fq[0]=firstOne&fq[1]=secondOne
+	 * @param array $parameters
+	 * @return string
+	 */
+	private function buildSolrQueryString(array $parameters): string{
+		$query = [];
+		if ($parameters){
+			foreach ($parameters as $function => $value){
+				if ($function != ''){
+					if (is_array($value)){
+						foreach ($value as $additional){
+							$additional = urlencode($additional);
+							$query[]    = "$function=$additional";
+						}
+					}else{
+						$value   = urlencode($value);
+						$query[] = "$function=$value";
+					}
+				}
+			}
+		}
+
+		return implode('&', $query);
 	}
 
 }

@@ -760,9 +760,6 @@ class SearchObject_Islandora extends SearchObject_Base {
 			$spellcheck = '';
 		}
 
-		// Get time before the query
-		$this->startQueryTimer();
-
 		// The "relevance" sort option is a VuFind reserved word; we need to make
 		// this null in order to achieve the desired effect with Solr:
 		$finalSort = ($this->sort == 'relevance') ? null : $this->sort;
@@ -774,6 +771,10 @@ class SearchObject_Islandora extends SearchObject_Base {
 		if (!$pingResult){
 			PEAR_Singleton::raiseError('The archive server is currently unavailable.  Please try your search again in a few minutes.');
 		}
+
+		// Get time before the query
+		$this->startQueryTimer();
+
 		$this->indexResult = $this->indexEngine->search(
 		$this->query,      // Query string
 		$this->index,      // DisMax Handler

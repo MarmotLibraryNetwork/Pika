@@ -390,34 +390,45 @@ class FavoriteHandler {
 			if (!$this->isMixedUserList){
 				// User Sorted Catalog Only Search
 				if ($this->isUserListSort){
-					$catalogSearchObject->setLimit(count($this->catalogIds)); // Fetch all list items so that the filters can be applied
-					$catalogSearchObject->setPage(1);  // override value set automatically in $catalogSearchObject->init();
-
+					// Just get facets first
+					$catalogSearchObject->setLimit(0);
 					$catalogSearchObject->setQueryIDs($this->catalogIds); // do solr search by Ids
 					$catalogResult           = $catalogSearchObject->processSearch(false, true, true);
-					$pageInfo['resultTotal'] = $catalogResult['response']['numFound'];
-					$catalogSearchObject->setPage($page);            // Set back to the actual page of the list now that search was processed
-					$catalogSearchObject->setLimit($recordsPerPage); // Set the actual limit per page
+					$interface->assign('userListHasSearchFilters', true);
+					$interface->assign('topRecommendations', $catalogSearchObject->getRecommendationsTemplates('top'));
+					$interface->assign('sideRecommendations', $catalogSearchObject->getRecommendationsTemplates('side'));
 
-					// Get ids for list after search filters have been applied
-					$searchFilteredIds         = array_column($catalogResult['response']['docs'], 'id');
-					$remainingIdsInSortedOrder = array_intersect($this->catalogIds, $searchFilteredIds);
-					$idsToDisplayForThisPage   = array_slice($remainingIdsInSortedOrder, $startRecord - 1, $recordsPerPage);
+					if (!empty($_REQUEST['filter'])){
+						$searchFilteredIds       = $catalogSearchObject->getFilteredIds($this->catalogIds);
+						$pageInfo['resultTotal'] = count($searchFilteredIds);
 
-					$catalogResourceList = $catalogSearchObject->getResultListHTML($this->listId, $this->allowEdit, $idsToDisplayForThisPage);
+						$catalogSearchObject->setPage($page);              // Set back to the actual page of the list now that search was processed
+						$catalogSearchObject->setLimit($recordsPerPage);   // Set the actual limit per page
+						$remainingIdsInSortedOrder = array_intersect($this->catalogIds, $searchFilteredIds);
+					} else {
+						$remainingIdsInSortedOrder = $this->catalogIds;
+					}
+
+					// Get ids for a page of the list after search filters have been applied
+					$idsToDisplayForThisPage = array_slice($remainingIdsInSortedOrder, $startRecord - 1, $recordsPerPage);
+					$catalogSearchObject->setQueryIDs($idsToDisplayForThisPage); // do solr search by Ids
+					$catalogSearchObject->setLimit($recordsPerPage);
+					$catalogResult           = $catalogSearchObject->processSearch(false, false, true);
+					$catalogResourceList     = $catalogSearchObject->getResultListHTML($this->listId, $this->allowEdit, $idsToDisplayForThisPage);
+
 				} // Solr Sorted Catalog Only Search //
 				else{
 					$catalogSearchObject->setQueryIDs($this->catalogIds); // do solr search by Ids
 					$catalogResult           = $catalogSearchObject->processSearch(false, true);
 					$catalogResourceList     = $catalogSearchObject->getResultListHTML($this->listId, $this->allowEdit);
 					$pageInfo['resultTotal'] = $catalogResult['response']['numFound'];
-				}
 
-				//Only show search filter options when not mixed user list
-				$interface->assign('userListHasSearchFilters', true);
-				$interface->assign('topRecommendations', $catalogSearchObject->getRecommendationsTemplates('top'));
-				$interface->assign('sideRecommendations', $catalogSearchObject->getRecommendationsTemplates('side'));
-				// Display search facets on a user list. Has to happen after processSearch() where recommendations are initialized.
+					//Only show search filter options when not mixed user list
+					$interface->assign('userListHasSearchFilters', true);
+					$interface->assign('topRecommendations', $catalogSearchObject->getRecommendationsTemplates('top'));
+					$interface->assign('sideRecommendations', $catalogSearchObject->getRecommendationsTemplates('side'));
+					// Display search facets on a user list. Has to happen after processSearch() where recommendations are initialized.
+				}
 
 			}// Mixed Items Searches (All User Sorted) //
 			else{
@@ -434,8 +445,7 @@ class FavoriteHandler {
 				if (!empty($this->catalogIds)){
 					$catalogSearchObject->setQueryIDs($this->catalogIds); // do solr search by Ids
 					$catalogSearchObject->setPage(1);                     // set to the first page for the search only
-					$catalogResult = $catalogSearchObject->processSearch();
-//					$catalogResult       = $catalogSearchObject->processSearch(false, true);  // Don't do search facets for a mixed items user list
+					$catalogResult       = $catalogSearchObject->processSearch();
 					$catalogResourceList = $catalogSearchObject->getResultListHTML($this->listId, $this->allowEdit, $this->favorites, $this->isMixedUserList);
 				}
 			}

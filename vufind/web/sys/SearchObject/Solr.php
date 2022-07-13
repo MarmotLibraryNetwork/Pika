@@ -38,7 +38,7 @@ class SearchObject_Solr extends SearchObject_Base {
 	// Index
 	private $index = null;
 	// Field List
-	public static $fields = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,title_sub,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisher,publishDate,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed';
+	private static $fields = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,title_sub,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisher,publishDate,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed';
 	private $fieldsFull = '*,score';
 	// HTTP Method
 	private $method = 'GET';
@@ -273,6 +273,7 @@ class SearchObject_Solr extends SearchObject_Base {
 					}
 				}
 
+				// TODO: Explain why this should override the solr scope above.
 				if (isset($userLocation)){
 					if (strcmp($field, 'availability_toggle') == 0){
 						$field = 'availability_toggle_' . $userLocation->code;
@@ -1290,6 +1291,161 @@ class SearchObject_Solr extends SearchObject_Base {
 		}
 
 		// Define Filter Query
+		[$filterQuery, $availabilityByFormatFieldName, $availableAtByFormatFieldName] = $this->setFinalFilterQuery();
+
+		// If we are only searching one field use the DisMax handler
+		//    for that field. If left at null let solr take care of it
+		if (count($search) == 1 && isset($search[0]['index'])) {
+			$this->index = $search[0]['index'];
+		}
+
+		// Build a list of facets we want from the index
+		$facetSet = [];
+		if (!empty($this->facetConfig)) {
+			$facetSet['limit'] = $this->facetLimit;
+			foreach ($this->facetConfig as $facetField => $facetName) {
+				if (strpos($facetField, 'availability_toggle') === 0){
+					if ($availabilityByFormatFieldName){
+						$facetSet['field'][] = $availabilityByFormatFieldName;
+					}else{
+						$facetSet['field'][] = $facetField;
+					}
+				}elseif (strpos($facetField, 'available_at') === 0){
+					if ($availableAtByFormatFieldName){
+						$facetSet['field'][] = $availableAtByFormatFieldName;
+					}else{
+						$facetSet['field'][] = $facetField;
+					}
+				}else{
+					$facetSet['field'][] = $facetField;
+				}
+			}
+			if ($this->facetOffset != null) {
+				$facetSet['offset'] = $this->facetOffset;
+			}
+			if ($this->facetLimit != null) {
+				$facetSet['limit'] = $this->facetLimit;
+			}
+			if ($this->facetPrefix != null) {
+				$facetSet['prefix'] = $this->facetPrefix;
+			}
+			if ($this->facetSort != null) {
+				$facetSet['sort'] = $this->facetSort;
+			}
+		}
+		if (!empty($this->facetOptions)){
+			$facetSet['additionalOptions'] = $this->facetOptions;
+		}
+		$timer->logTime('create facets');
+
+		// Build our spellcheck query
+		if ($this->spellcheck) {
+			if ($this->spellSimple) {
+				$this->useBasicDictionary();
+			}
+			$spellcheck = $this->buildSpellingQuery();
+
+			// If the spellcheck query is purely numeric, skip it if
+			// the appropriate setting is turned on.
+			if ($this->spellSkipNumeric && is_numeric($spellcheck)) {
+				$spellcheck = '';
+			}
+			$timer->logTime('create spell check');
+		} else {
+			$spellcheck = '';
+		}
+
+		// The "relevance" sort option is a Pika reserved word; we need to make
+		// this null in order to achieve the desired effect with Solr:
+		$finalSort = ($this->sort == 'relevance') ? null : $this->sort;
+
+		// The first record to retrieve:
+		//  (page - 1) * limit = start
+		$recordStart = ($this->page - 1) * $this->limit;
+		//Remove irrelevant fields based on scoping
+		$fieldsToReturn = $this->getFieldsToReturn();
+
+		$boost = null;
+		if (!empty($configArray['Index']['enableBoosting'])){
+			$boost = $this->getBoostingFormula();
+			$timer->logTime('apply boosting');
+		}
+
+		// Get time before the query
+		$this->startQueryTimer();
+
+		$this->indexResult = $this->indexEngine->search(
+			$this->query,      // Query string
+			$this->index,      // The search Specification to Use
+			$filterQuery,      // Filter query
+			$recordStart,      // Starting record
+			$this->limit,      // Records per page
+			$facetSet,         // Fields to facet on
+			$spellcheck,       // Spellcheck query
+			$this->dictionary, // Spellcheck dictionary
+			$finalSort,        // Field to sort on
+			$fieldsToReturn,   // Fields to return
+			$this->method,     // HTTP Request method
+			$returnIndexErrors,// Include errors in response?
+			$boost             // Results boosting formula
+		);
+		$timer->logTime('run solr search');
+
+		// Get time after the query
+		$this->stopQueryTimer();
+
+		// How many results were there?
+		if (!isset($this->indexResult['response']['numFound'])){
+			//An error occurred
+			$this->resultsTotal = 0;
+		}else{
+			$this->resultsTotal = $this->indexResult['response']['numFound'];
+		}
+
+		// Process spelling suggestions if no index error resulted from the query
+		if ($this->spellcheck && !isset($this->indexResult['error'])) {
+			// Shingle dictionary
+			$this->processSpelling();
+			// Make sure we don't endlessly loop
+			if ($this->dictionary == 'default') {
+				// Expand against the basic dictionary
+				$this->basicSpelling();
+			}
+		}
+
+		// If extra processing is needed for recommendations, do it now:
+		if ($recommendations && is_array($this->recommend)) {
+			foreach($this->recommend as $currentSet) {
+				foreach($currentSet as $current) {
+					/** @var SideFacets|TopFacets $current */
+					$current->process();
+				}
+			}
+		}
+
+		//Add debug information to the results if available
+		if ($this->debug){
+			if (!empty($this->indexResult['debug']['explain'])){
+				$explainInfo = $this->indexResult['debug']['explain'];
+				foreach ($this->indexResult['response']['docs'] as &$result){
+					if (array_key_exists($result['id'], $explainInfo)){
+						$result['explain'] = $explainInfo[$result['id']];
+					}
+				}
+			}
+
+			global $interface;
+			$interface->assign('debugSolrOutput', $this->debugOutput());
+			$interface->assign('debugTiming', $this->getDebugTiming());
+		}
+
+		// Return the result set
+		return $this->indexResult;
+	}
+
+	private function setFinalFilterQuery(){
+		global $solrScope;
+
 		$filterQuery             = $this->hiddenFilters;
 		$availabilityToggleValue = null;
 		$availabilityAtValue     = null;
@@ -1395,173 +1551,23 @@ class SearchObject_Solr extends SearchObject_Base {
 			}
 		}
 
-		$searchLibrary  = Library::getSearchLibrary();
-		$searchLocation = Location::getSearchLocation();
-		$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
+		$scopingFilters = $this->getScopingFilters();
 		$filterQuery    = array_merge($filterQuery, $scopingFilters);
-		$timer->logTime('apply scoping filters');
 
-
-		// If we are only searching one field use the DisMax handler
-		//    for that field. If left at null let solr take care of it
-		if (count($search) == 1 && isset($search[0]['index'])) {
-			$this->index = $search[0]['index'];
-		}
-
-		// Build a list of facets we want from the index
-		$facetSet = [];
-		if (!empty($this->facetConfig)) {
-			$facetSet['limit'] = $this->facetLimit;
-			foreach ($this->facetConfig as $facetField => $facetName) {
-				if (strpos($facetField, 'availability_toggle') === 0){
-					if ($availabilityByFormatFieldName){
-						$facetSet['field'][] = $availabilityByFormatFieldName;
-					}else{
-						$facetSet['field'][] = $facetField;
-					}
-				}elseif (strpos($facetField, 'available_at') === 0){
-					if ($availableAtByFormatFieldName){
-						$facetSet['field'][] = $availableAtByFormatFieldName;
-					}else{
-						$facetSet['field'][] = $facetField;
-					}
-				}else{
-					$facetSet['field'][] = $facetField;
-				}
-			}
-			if ($this->facetOffset != null) {
-				$facetSet['offset'] = $this->facetOffset;
-			}
-			if ($this->facetLimit != null) {
-				$facetSet['limit'] = $this->facetLimit;
-			}
-			if ($this->facetPrefix != null) {
-				$facetSet['prefix'] = $this->facetPrefix;
-			}
-			if ($this->facetSort != null) {
-				$facetSet['sort'] = $this->facetSort;
-			}
-		}
-		if (!empty($this->facetOptions)){
-			$facetSet['additionalOptions'] = $this->facetOptions;
-		}
-		$timer->logTime('create facets');
-
-		// Build our spellcheck query
-		if ($this->spellcheck) {
-			if ($this->spellSimple) {
-				$this->useBasicDictionary();
-			}
-			$spellcheck = $this->buildSpellingQuery();
-
-			// If the spellcheck query is purely numeric, skip it if
-			// the appropriate setting is turned on.
-			if ($this->spellSkipNumeric && is_numeric($spellcheck)) {
-				$spellcheck = '';
-			}
-		} else {
-			$spellcheck = '';
-		}
-		$timer->logTime('create spell check');
-
-		// Get time before the query
-		$this->startQueryTimer();
-
-		// The "relevance" sort option is a Pika reserved word; we need to make
-		// this null in order to achieve the desired effect with Solr:
-		$finalSort = ($this->sort == 'relevance') ? null : $this->sort;
-
-		// The first record to retrieve:
-		//  (page - 1) * limit = start
-		$recordStart = ($this->page - 1) * $this->limit;
-		//Remove irrelevant fields based on scoping
-		$fieldsToReturn = $this->getFieldsToReturn();
-
-		$boost = null;
-		if (!empty($configArray['Index']['enableBoosting'])){
-			$boost = $this->getBoostingFormula($searchLibrary, $searchLocation);
-			$timer->logTime('apply boosting');
-		}
-
-		$this->indexResult = $this->indexEngine->search(
-			$this->query,      // Query string
-			$this->index,      // The search Specification to Use
-			$filterQuery,      // Filter query
-			$recordStart,      // Starting record
-			$this->limit,      // Records per page
-			$facetSet,         // Fields to facet on
-			$spellcheck,       // Spellcheck query
-			$this->dictionary, // Spellcheck dictionary
-			$finalSort,        // Field to sort on
-			$fieldsToReturn,   // Fields to return
-			$this->method,     // HTTP Request method
-			$returnIndexErrors,// Include errors in response?
-			$boost             // Results boosting formula
-		);
-		$timer->logTime('run solr search');
-
-		// Get time after the query
-		$this->stopQueryTimer();
-
-		// How many results were there?
-		if (!isset($this->indexResult['response']['numFound'])){
-			//An error occurred
-			$this->resultsTotal = 0;
-		}else{
-			$this->resultsTotal = $this->indexResult['response']['numFound'];
-		}
-
-		// Process spelling suggestions if no index error resulted from the query
-		if ($this->spellcheck && !isset($this->indexResult['error'])) {
-			// Shingle dictionary
-			$this->processSpelling();
-			// Make sure we don't endlessly loop
-			if ($this->dictionary == 'default') {
-				// Expand against the basic dictionary
-				$this->basicSpelling();
-			}
-		}
-
-		// If extra processing is needed for recommendations, do it now:
-		if ($recommendations && is_array($this->recommend)) {
-			foreach($this->recommend as $currentSet) {
-				foreach($currentSet as $current) {
-					/** @var SideFacets|TopFacets $current */
-					$current->process();
-				}
-			}
-		}
-
-		//Add debug information to the results if available
-		if ($this->debug){
-			if (!empty($this->indexResult['debug']['explain'])){
-				$explainInfo = $this->indexResult['debug']['explain'];
-				foreach ($this->indexResult['response']['docs'] as &$result){
-					if (array_key_exists($result['id'], $explainInfo)){
-						$result['explain'] = $explainInfo[$result['id']];
-					}
-				}
-			}
-
-			global $interface;
-			$interface->assign('debugSolrOutput', $this->debugOutput());
-			$interface->assign('debugTiming', $this->getDebugTiming());
-		}
-
-		// Return the result set
-		return $this->indexResult;
+		//		$timer->logTime('apply scoping filters');
+		return [$filterQuery, $availabilityByFormatFieldName, $availableAtByFormatFieldName];
 	}
 
 	/**
 	 * Get filters based on scoping for the search
-	 * @param Library  $searchLibrary
-	 * @param Location $searchLocation
 	 * @return array
 	 */
-	public function getScopingFilters($searchLibrary, $searchLocation){
+	public function getScopingFilters(){
 		global $solrScope;
 
-		$filter = [];
+		$filter         = [];
+		$searchLibrary  = Library::getSearchLibrary();
+		$searchLocation = Location::getSearchLocation();
 
 		//Simplify detecting which works are relevant to our scope
 		if (!$this->scopingDisabled){
@@ -1569,9 +1575,15 @@ class SearchObject_Solr extends SearchObject_Base {
 				$filter[] = "scope_has_related_records:$solrScope";
 			}elseif (isset($searchLocation)){
 				// A solr scope should be defined usually. It is probably an anomalous situation to fall back to this, and should be fixed; (or noted here explicitly.)
-				$this->logger->notice('Global solr scope not set when setting scoping filters');
+				// kids/juvenille opac interfaces??
+				global $pikaLogger;
+				$pikaLogger->notice('Global solr scope not set when setting scoping filters');
 				$filter[] = "scope_has_related_records:{$searchLocation->code}";
 			}elseif (isset($searchLibrary)){
+				// A solr scope should be defined usually. It is probably an anomalous situation to fall back to this, and should be fixed; (or noted here explicitly.)
+				// kids/juvenille opac interfaces??
+				global $pikaLogger;
+				$pikaLogger->notice('Global solr scope not set when setting scoping filters');
 				$filter[] = "scope_has_related_records:{$searchLibrary->subdomain}";
 			}
 		}
@@ -1595,11 +1607,9 @@ class SearchObject_Solr extends SearchObject_Base {
 	/**
 	 * Load Boost factors for a search query and return the boosting formula
 	 *
-	 * @param Library  $searchLibrary
-	 * @param Location $searchLocation
 	 * @return string
 	 */
-	public function getBoostingFormula($searchLibrary, $searchLocation){
+	public function getBoostingFormula(){
 		$boostFactors = [];
 		$boostFormula = null;
 
@@ -1607,6 +1617,8 @@ class SearchObject_Solr extends SearchObject_Base {
 
 //		$boostFactors[] = (!empty($searchLibrary->applyNumberOfHoldingsBoost)) ? 'product(sum(popularity,1),format_boost)' : 'format_boost';
 
+		$searchLibrary  = Library::getSearchLibrary();
+		$searchLocation = Location::getSearchLocation();
 		if ((!empty($searchLibrary->applyNumberOfHoldingsBoost))){
 			$boostFactors[] = 'sum(popularity,1)';
 		}
@@ -2291,7 +2303,6 @@ class SearchObject_Solr extends SearchObject_Base {
 			'fl'                   => 'id,title_display,title_full,author,author_display', // These appear to be the only fields used for displaying
 			'fq'                   => [],
 //			'mlt.interestingTerms' => 'details', // This returns the interesting terms for this 'more like this' search but isn't used any where
-//			'fl'                   => SearchObject_Solr::$fields
 		];
 		if ($originalResult){
 			if (!empty($originalResult['target_audience_full'])){
@@ -2329,14 +2340,12 @@ class SearchObject_Solr extends SearchObject_Base {
 			}
 		}
 
-		$searchLibrary  = Library::getSearchLibrary();
-		$searchLocation = Location::getSearchLocation();
-		$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
+		$scopingFilters = $this->getScopingFilters();
 		foreach ($scopingFilters as $filter){
 			$options['fq'][] = $filter;
 		}
 		if ($configArray['Index']['enableBoosting']){
-			$options['bf'] = $this->getBoostingFormula($searchLibrary, $searchLocation);
+			$options['bf'] = $this->getBoostingFormula();
 		}
 
 		return $this->indexEngine->callRequestHandler('morelikethis2', $options);
@@ -2368,14 +2377,12 @@ class SearchObject_Solr extends SearchObject_Base {
 			$options['fq'][]     = "-id:($notInterestedString)";
 		}
 
-		$searchLibrary  = Library::getSearchLibrary();
-		$searchLocation = Location::getSearchLocation();
-		$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
+		$scopingFilters = $this->getScopingFilters();
 		foreach ($scopingFilters as $filter){
 			$options['fq'][] = $filter;
 		}
 		if ($configArray['Index']['enableBoosting']){
-			$options['bf'] = $this->getBoostingFormula($searchLibrary, $searchLocation);
+			$options['bf'] = $this->getBoostingFormula();
 		}
 
 
@@ -2411,6 +2418,16 @@ class SearchObject_Solr extends SearchObject_Base {
 	}
 
 	/**
+	 * Retrieves Solr Documents for an array of grouped Work Ids
+	 * @param string[] $ids  The groupedWork Id of the Solr document to retrieve
+	 * @return array The Solr document of the grouped Work
+	 */
+	function getFilteredIds($ids){
+		[$filterQuery] = $this->setFinalFilterQuery();
+		return $this->indexEngine->getFilteredIds($ids, $filterQuery);
+	}
+
+	/**
 	 * Retrieves a document specified by the item barcode.
 	 *
 	 * @param   string  $barcode    A barcode of an item in the document to retrieve from Solr
@@ -2434,7 +2451,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		return $this->indexEngine->getRecordByIsbn($isbn, $this->getFieldsToReturn());
 	}
 
-	private function getFieldsToReturn() {
+	private function getFieldsToReturn(){
 		if (isset($_REQUEST['allFields'])){
 			$fieldsToReturn = $this->fieldsFull;
 		}else{
@@ -2453,10 +2470,11 @@ class SearchObject_Solr extends SearchObject_Base {
 				$fieldsToReturn .= ',available_at_' . $solrScope;
 				$fieldsToReturn .= ',itype_' . $solrScope;
 
-			}
-			else{
+			}else{
 				//TODO: this block is obsolete, since all these facets are scoped.  Likely would cause empty document returns
 				// if no scope is set
+				global $pikaLogger;
+				$pikaLogger->warning('Solr scope not set when fetching scoped fields.', $_REQUEST);
 				$fieldsToReturn .= ',format';
 				$fieldsToReturn .= ',format_category';
 				$fieldsToReturn .= ',days_since_added';
