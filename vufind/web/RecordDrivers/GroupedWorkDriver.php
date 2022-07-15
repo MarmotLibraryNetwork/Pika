@@ -989,13 +989,13 @@ class GroupedWorkDriver extends RecordInterface {
 	public function getExplain(){
 		if (isset($this->fields['explain'])){
 			$explain = explode(', result of:', $this->fields['explain'], 2);
-			// Break query from score explanation
-			$explain[1] = preg_replace('/weight\((.*):(.*)( in \d+\))/i', 'weight(<code>$1</code>:<strong>$2</strong>$3)', $explain[1]);
-			// highlight the solr fields and the search term of interest
-			$explain[1] = preg_replace('/computed as (.*) from:/i', 'computed as <var>$1</var> from:', $explain[1]);
-			// italicize the formula fragments
-			return $explain[0] . '<br> result of : <p>' . nl2br(str_replace(' ', '&nbsp;', $explain[1])) . '</p>';
-			// Put text back together, replace spaces with non-breaking space character, so the indentation of explaination lines display
+			if (count($explain) == 2){                                                                                                                        // Break query from score explanation
+				$explain[1] = preg_replace('/weight\((.*):(.*)( in \d+\))/i', 'weight(<code>$1</code>:<strong>$2</strong>$3)', $explain[1]);// highlight the solr fields and the search term of interest
+				$explain[1] = preg_replace('/computed as (.*) from:/i', 'computed as <var>$1</var> from:', $explain[1]);                    // italicize the formula fragments
+				return $explain[0] . '<br> result of : <p>' . nl2br(str_replace(' ', '&nbsp;', $explain[1])) . '</p>';                      // Put text back together, replace spaces with non-breaking space character, so the indentation of explaination lines display
+			}else{
+				return $this->fields['explain'];
+			}
 		}
 		return '';
 	}
