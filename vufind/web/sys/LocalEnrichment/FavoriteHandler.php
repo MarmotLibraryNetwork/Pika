@@ -326,6 +326,7 @@ class FavoriteHandler {
 	public function buildListForDisplay($recordsPerPage = 20, $page = 1){
 		global $interface;
 
+//		unset($_REQUEST['type']); // Remove variable so that search filter links don't include type parameter
 		$recordsPerPage = isset($_REQUEST['pagesize']) && (is_numeric($_REQUEST['pagesize'])) ? $_REQUEST['pagesize'] : $recordsPerPage;
 		$page           = $_REQUEST['page'] ?? $page;
 		$startRecord    = ($page - 1) * $recordsPerPage + 1;
@@ -357,8 +358,9 @@ class FavoriteHandler {
 		$catalogResourceList = [];
 		if (count($this->catalogIds) > 0){
 			// Initialise from the current search globals
-			/** @var SearchObject_Solr $catalogSearchObject */
-			$catalogSearchObject = SearchObjectFactory::initSearchObject();
+			/** @var SearchObject_UserListSolr $catalogSearchObject */
+			$catalogSearchObject = SearchObjectFactory::initSearchObject('UserListSolr');
+			$catalogSearchObject->userListSort = $this->sort;
 			$catalogSearchObject->init();
 			$catalogSearchObject->setLimit($recordsPerPage);
 			$catalogSearchObject->disableScoping(); // Return all works in list, even if outside current scope
@@ -368,7 +370,6 @@ class FavoriteHandler {
 			}
 			if (!$this->isMixedUserList){
 				$solrSortList = $catalogSearchObject->getSortList(); // get all the search sort options (retrieve after setting solr sort option)
-				//TODO: There is no longer an author sort option
 				foreach ($this->solrSortOptions as $option){ // extract just the ones we want
 					if (isset($solrSortList[$option])){
 						$sortOptions[$option]        = $solrSortList[$option];
@@ -388,23 +389,25 @@ class FavoriteHandler {
 
 			// Catalog Only Searches //
 			if (!$this->isMixedUserList){
+
 				// User Sorted Catalog Only Search
 				if ($this->isUserListSort){
 					// Just get facets first
+					$catalogSearchObject->setPrimarySearch(true);
 					$catalogSearchObject->setLimit(0);
 					$catalogSearchObject->setQueryIDs($this->catalogIds); // do solr search by Ids
-					$catalogResult           = $catalogSearchObject->processSearch(false, true, true);
+					$catalogResult = $catalogSearchObject->processSearch(false, true, true);
 					$interface->assign('userListHasSearchFilters', true);
 					$interface->assign('topRecommendations', $catalogSearchObject->getRecommendationsTemplates('top'));
 					$interface->assign('sideRecommendations', $catalogSearchObject->getRecommendationsTemplates('side'));
 
 					if (!empty($_REQUEST['filter'])){
-						$searchFilteredIds       = $catalogSearchObject->getFilteredIds($this->catalogIds);
-						$pageInfo['resultTotal'] = count($searchFilteredIds);
+						$searchFilteredIds         = $catalogSearchObject->getFilteredIds($this->catalogIds);
+						$pageInfo['resultTotal']   = count($searchFilteredIds);
+						$remainingIdsInSortedOrder = array_intersect($this->catalogIds, $searchFilteredIds);
 
 						$catalogSearchObject->setPage($page);              // Set back to the actual page of the list now that search was processed
 						$catalogSearchObject->setLimit($recordsPerPage);   // Set the actual limit per page
-						$remainingIdsInSortedOrder = array_intersect($this->catalogIds, $searchFilteredIds);
 					} else {
 						$remainingIdsInSortedOrder = $this->catalogIds;
 					}
@@ -413,6 +416,7 @@ class FavoriteHandler {
 					$idsToDisplayForThisPage = array_slice($remainingIdsInSortedOrder, $startRecord - 1, $recordsPerPage);
 					$catalogSearchObject->setQueryIDs($idsToDisplayForThisPage); // do solr search by Ids
 					$catalogSearchObject->setLimit($recordsPerPage);
+					$catalogSearchObject->setPrimarySearch(false);
 					$catalogResult           = $catalogSearchObject->processSearch(false, false, true);
 					$catalogResourceList     = $catalogSearchObject->getResultListHTML($this->listId, $this->allowEdit, $idsToDisplayForThisPage);
 
@@ -463,7 +467,7 @@ class FavoriteHandler {
 			$archiveSearchObject->setPrimarySearch(true);
 			$archiveSearchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', 'administrator');
 			$archiveSearchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', 'no');
-			$archiveSearchObject->setLimit($recordsPerPage); //MDN 3/30 this was set to 200, but should be based off the page size
+			$archiveSearchObject->setLimit($recordsPerPage);
 
 			if (!$this->isUserListSort && !$this->isMixedUserList){ // is a solr sort
 				$archiveSearchObject->setSort($this->sort);           // set solr sort. (have to set before retrieving solr sort options below)

@@ -194,6 +194,10 @@
 								&nbsp;There are a total of {$favList->numValidListItems()} valid entries on the list.
 							{/if}
 					</div>
+
+        {* Search Debugging *}
+        {include file="Search/search-debug.tpl"}
+
 				</div>
 			{/if}
 
