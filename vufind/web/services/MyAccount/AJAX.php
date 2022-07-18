@@ -1376,10 +1376,10 @@ class MyAccount_AJAX extends AJAXHandler {
 			}
 
 			if (!UserAccount::isLoggedIn()){
-				$renewResults = array(
+				$renewResults = [
 					'success' => false,
 					'message' => 'Not Logged in.',
-				);
+				];
 			}else{
 				$user     = UserAccount::getLoggedInUser();
 				$patronId = $_REQUEST['patronId'];
@@ -1388,36 +1388,36 @@ class MyAccount_AJAX extends AJAXHandler {
 				if ($patron){
 					$renewResults = $patron->renewItem($recordId, $itemId, $itemIndex);
 				}else{
-					$renewResults = array(
+					$renewResults = [
 						'success' => false,
 						'message' => 'Sorry, it looks like you don\'t have access to that patron.',
-					);
+					];
 				}
 
 			}
 		}else{
 			//error message
-			$renewResults = array(
+			$renewResults = [
 				'success' => false,
 				'message' => 'Item to renew not specified',
-			);
+			];
 		}
 		global $interface;
 		$interface->assign('renewResults', $renewResults);
-		$result = array(
+		$result = [
 			'title'     => translate('Renew') . ' Item',
 			'modalBody' => $interface->fetch('MyAccount/renew-item-results.tpl'),
 			'success'   => $renewResults['success'],
-		);
+		];
 		return $result;
 	}
 
 	function renewSelectedItems(){
 		if (!UserAccount::isLoggedIn()){
-			$renewResults = array(
+			$renewResults = [
 				'success' => false,
 				'message' => 'Not Logged in.',
-			);
+			];
 		}else{
 			if (isset($_REQUEST['selected'])){
 
@@ -1436,8 +1436,8 @@ class MyAccount_AJAX extends AJAXHandler {
 				$user = UserAccount::getLoggedInUser();
 				if (method_exists($user, 'renewItem')){
 
-					$failure_messages = array();
-					$renewResults     = array();
+					$failure_messages = [];
+					$renewResults     = [];
 					foreach ($_REQUEST['selected'] as $selected => $ignore){
 						//Suppress errors because sometimes we don't get an item index
 						@list($patronId, $recordId, $itemId, $itemIndex) = explode('|', $selected);
@@ -1445,10 +1445,10 @@ class MyAccount_AJAX extends AJAXHandler {
 						if ($patron){
 							$tmpResult = $patron->renewItem($recordId, $itemId, $itemIndex);
 						}else{
-							$tmpResult = array(
+							$tmpResult = [
 								'success' => false,
 								'message' => 'Sorry, it looks like you don\'t have access to that patron.',
-							);
+							];
 						}
 
 						if (!$tmpResult['success']){
@@ -1467,19 +1467,19 @@ class MyAccount_AJAX extends AJAXHandler {
 					$renewResults['Renewed']   = $renewResults['Total'] - $renewResults['Unrenewed'];
 				}else{
 					PEAR_Singleton::raiseError(new PEAR_Error('Cannot Renew Item - ILS Not Supported'));
-					$renewResults = array(
+					$renewResults = [
 						'success' => false,
 						'message' => 'Cannot Renew Items - ILS Not Supported.',
-					);
+					];
 				}
 
 
 			}else{
 				//error message
-				$renewResults = array(
+				$renewResults = [
 					'success' => false,
 					'message' => 'Items to renew not specified.',
-				);
+				];
 			}
 		}
 		global $interface;
@@ -1494,25 +1494,25 @@ class MyAccount_AJAX extends AJAXHandler {
 	}
 
 	function renewAll(){
-		$renewResults = array(
+		$renewResults = [
 			'success' => false,
-			'message' => array('Unable to renew all titles'),
-		);
+			'message' => ['Unable to renew all titles'],
+		];
 		$user         = UserAccount::getLoggedInUser();
 		if ($user){
 			$renewResults = $user->renewAll(true);
 		}else{
-			$renewResults['message'] = array('You must be logged in to renew titles');
+			$renewResults['message'] = ['You must be logged in to renew titles'];
 		}
 
 		global $interface;
 		$interface->assign('renew_message_data', $renewResults);
-		$result = array(
+		$result = [
 			'title'     => translate('Renew') . ' All',
 			'modalBody' => $interface->fetch('Record/renew-results.tpl'),
 			'success'   => $renewResults['success'],
 			'renewed'   => $renewResults['Renewed'],
-		);
+		];
 		return $result;
 	}
 
@@ -1550,7 +1550,7 @@ class MyAccount_AJAX extends AJAXHandler {
 				}
 			}
 		}
-		return array('success' => $success);
+		return ['success' => $success];
 	}
 
 	function getMenuData(){
@@ -1558,7 +1558,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		global /** @var UInterface $interface */
 		$interface;
 		global $configArray;
-		$result = array();
+		$result = [];
 		if (UserAccount::isLoggedIn()){
 			$user = UserAccount::getLoggedInUser();
 			$interface->assign('user', $user);
@@ -1659,89 +1659,83 @@ class MyAccount_AJAX extends AJAXHandler {
 		return $result;
 	}
 
-	function copyListPrompt()
-    {
-        global $interface;
+	function copyListPrompt(){
+		global $interface;
 
-        if (isset($_REQUEST['id'])){
-            $id = $_REQUEST['id'];
-            $interface->assign('copyFromId', $id);
-        }else{
-            $id = '';
-        }
+		if (isset($_REQUEST['id'])){
+			$id = $_REQUEST['id'];
+			$interface->assign('copyFromId', $id);
+		}else{
+			$id = '';
+		}
 
-        return array(
-            'title'        => 'Create new List',
-            'body'    => '<form><label for="title">Title</label><input id="title" text ="title" name="title">',
-            'buttons' => "<button class='tool btn btn-primary' onclick='return Pika.Lists.copyList({$id});'>Copy List</button></form>",
-        );
-    }
-    function copyList()
-    {
-        $copyFromId = false;
-        $return      = array();
+		return [
+			'title'   => 'Create new List',
+			'body'    => '<form><label for="title">Title</label><input id="title" text ="title" name="title">',
+			'buttons' => "<button class='tool btn btn-primary' onclick='return Pika.Lists.copyList({$id});'>Copy List</button></form>",
+		];
+	}
 
-        if (UserAccount::isLoggedIn()){
-            $user = UserAccount::getLoggedInUser();
-            require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-            $title = (isset($_REQUEST['title']) && !is_array($_REQUEST['title'])) ? urldecode($_REQUEST['title']) : '';
+	function copyList(){
+		$copyFromId = false;
+		$return     = [];
 
-            $description = "";
-                //If the record is not valid, skip the whole thing since the title could be bad too
-                if (!empty($_REQUEST['copyFromId']) && !is_array($_REQUEST['copyFromId'])){
-                    $copyFromId = urldecode($_REQUEST['copyFromId']);
+		if (UserAccount::isLoggedIn()){
+			$user = UserAccount::getLoggedInUser();
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			$title = (isset($_REQUEST['title']) && !is_array($_REQUEST['title'])) ? urldecode($_REQUEST['title']) : '';
 
-                    $listFrom = new UserList();
-                    $listFrom->id= $copyFromId;
-                    $listFrom->find(true);
-                    if(strlen($title)==0){
-                        $title = $listFrom->title;
-                    }
-                    require_once ROOT_DIR . '/sys/LocalEnrichment/FavoriteHandler.php';
-                    $favList = new FavoriteHandler($listFrom, false);
-                    $recordsToAdd = $favList->getTitles($listFrom->id);
-                    require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-                    $description = $listFrom->description . " copied from /MyAccount/MyList/" . $listFrom->id . " - List: " . $listFrom->title ;
-                }
+			$description = '';
+			//If the record is not valid, skip the whole thing since the title could be bad too
+			if (!empty($_REQUEST['copyFromId']) && !is_array($_REQUEST['copyFromId'])){
+				$copyFromId = urldecode($_REQUEST['copyFromId']);
 
-                $list          = new UserList();
-                $list->title   = strip_tags($title) . " (copy)";
-                $list->user_id = $user->id;
+				$listFrom     = new UserList();
+				$listFrom->id = $copyFromId;
+				$listFrom->find(true);
+				if (strlen($title) == 0){
+					$title = $listFrom->title;
+				}
+				require_once ROOT_DIR . '/sys/LocalEnrichment/FavoriteHandler.php';
+				$favList      = new FavoriteHandler($listFrom, false);
+				$recordsToAdd = $favList->getTitles($listFrom->id);
+				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+				$description = $listFrom->description . ' copied from /MyAccount/MyList/' . $listFrom->id . ' - List: ' . $listFrom->title;
+			}
 
-                //Check to see if there is already a list with this id
+			$list          = new UserList();
+			$list->title   = strip_tags($title) . " (copy)";
+			$list->user_id = $user->id;
 
-                $list->description = strip_tags(urldecode($description));
-                $list->public      = isset($_REQUEST['public']) && $_REQUEST['public'] == 'true';
-                $list->insert();
+			//Check to see if there is already a list with this id
 
+			$list->description = strip_tags(urldecode($description));
+			$list->public      = isset($_REQUEST['public']) && $_REQUEST['public'] == 'true';
+			$list->insert();
 
-                if (isset($recordsToAdd)){
-                    require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-                    //Check to see if the user has already added the title to the list.
-                    foreach($recordsToAdd as $item)
-                    {
-                        $userListEntry                         = new UserListEntry();
-                        $userListEntry->listId                 = $list->id;
-                        $userListEntry->groupedWorkPermanentId = $item['id'];
-                        $newUserListEntry = clone $userListEntry;
-                        if (!$newUserListEntry->find(true)){
-                            $newUserListEntry->dateAdded = time();
-                            $newUserListEntry->insert();
-                        }
-                    }
-                }
+			if (isset($recordsToAdd)){
+				require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+				//Check to see if the user has already added the title to the list.
+				foreach ($recordsToAdd as $item){
+					$userListEntry                         = new UserListEntry();
+					$userListEntry->listId                 = $list->id;
+					$userListEntry->groupedWorkPermanentId = $item['id'] ?? $item['PID'];
+					$newUserListEntry                      = clone $userListEntry;
+					if (!$newUserListEntry->find(true)){
+						$newUserListEntry->dateAdded = time();
+						$newUserListEntry->insert();
+					}
+				}
+			}
 
-                $newList = $list->id;
+			$newList         = $list->id;
+			$return['title'] = 'Copy List';
+			$return['body']  = '<h4>The list has been successfully copied</h4>' . '<a class="btn btn-primary" href="/MyAccount/MyList/' . $newList . '" role="button">View My List</a>';
+		}else{
+			$return['Title']   = "false";
+			$return['message'] = "You must be logged in to create a list";
+		}
 
-                $return['title'] = 'Copy List';
-                $return['body']   = '<h4>The list has been successfully copied</h4>' . '<a class="btn btn-primary" href="/MyAccount/MyList/'. $newList .'" role="button">View My List</a>';
-
-
-        }else{
-            $return['Title'] = "false";
-            $return['message'] = "You must be logged in to create a list";
-        }
-
-        return $return;
-    }
+		return $return;
+	}
 }
