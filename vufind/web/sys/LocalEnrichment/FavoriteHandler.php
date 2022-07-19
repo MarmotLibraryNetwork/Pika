@@ -114,9 +114,9 @@ class FavoriteHandler {
 	public function buildListForBrowseCategory($start, $numItems, $defaultSort){
 		global $interface;
 
-		$browseRecords = array();
-		$sortOptions = $defaultSortOptions = array();
-		$ids = [];
+		$browseRecords = [];
+		$sortOptions   = $defaultSortOptions = [];
+		$ids           = [];
 
 		/*			Use Cases:
 					Only Catalog items, user sort
@@ -152,7 +152,7 @@ class FavoriteHandler {
 					'desc'    => "sort_{$option}_userlist",
 					'selected' => ($option == $this->sort)
 				];
-				$defaultSortOptions[$option] = "sort_{option}_userlist";
+				$defaultSortOptions[$option] = "sort_{$option}_userlist";
 			}
 			if(!$this->isMixedUserList){
 				if ($this->isUserListSort) {
@@ -327,9 +327,10 @@ class FavoriteHandler {
 		global $interface;
 
 //		unset($_REQUEST['type']); // Remove variable so that search filter links don't include type parameter
-		$recordsPerPage = isset($_REQUEST['pagesize']) && (is_numeric($_REQUEST['pagesize'])) ? $_REQUEST['pagesize'] : $recordsPerPage;
-		$page           = $_REQUEST['page'] ?? $page;
-		$startRecord    = ($page - 1) * $recordsPerPage + 1;
+		$isPageSizeParamSet = isset($_REQUEST['pagesize']) && is_numeric($_REQUEST['pagesize']);
+		$recordsPerPage     = $isPageSizeParamSet ? $_REQUEST['pagesize'] : $recordsPerPage;
+		$page               = $_REQUEST['page'] ?? $page;
+		$startRecord        = ($page - 1) * $recordsPerPage + 1;
 		if ($startRecord < 0){
 			$startRecord = 0;
 		}
@@ -361,6 +362,9 @@ class FavoriteHandler {
 			/** @var SearchObject_UserListSolr $catalogSearchObject */
 			$catalogSearchObject = SearchObjectFactory::initSearchObject('UserListSolr');
 			$catalogSearchObject->userListSort = $this->sort;
+			if ($isPageSizeParamSet){
+				$catalogSearchObject->userListPageSize = $recordsPerPage;
+			}
 			$catalogSearchObject->init();
 			$catalogSearchObject->setLimit($recordsPerPage);
 			$catalogSearchObject->disableScoping(); // Return all works in list, even if outside current scope
@@ -422,6 +426,7 @@ class FavoriteHandler {
 
 				} // Solr Sorted Catalog Only Search //
 				else{
+					$catalogSearchObject->setPrimarySearch(true);
 					$catalogSearchObject->setQueryIDs($this->catalogIds); // do solr search by Ids
 					$catalogResult           = $catalogSearchObject->processSearch(false, true);
 					$catalogResourceList     = $catalogSearchObject->getResultListHTML($this->listId, $this->allowEdit);
@@ -464,6 +469,9 @@ class FavoriteHandler {
 			/** @var SearchObject_UserListIslandora $archiveSearchObject */
 			$archiveSearchObject = SearchObjectFactory::initSearchObject('UserListIslandora');
 			$archiveSearchObject->userListSort = $this->sort;
+			if ($isPageSizeParamSet){
+				$archiveSearchObject->userListPageSize = $recordsPerPage;
+			}
 			$archiveSearchObject->init();
 			$archiveSearchObject->setPrimarySearch(true);
 			$archiveSearchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', 'administrator'); //TODO: move to construct()/init() for user list
@@ -523,7 +531,7 @@ class FavoriteHandler {
 					$archiveSearchObject->setLimit($recordsPerPage);
 					$archiveSearchObject->setPrimarySearch(false);
 
-					$archiveResult        = $archiveSearchObject->processSearch(false, false, true);
+					$archiveResult       = $archiveSearchObject->processSearch(false, false, true);
 					$archiveResourceList = $archiveSearchObject->getResultListHTML($this->listId, $this->allowEdit, $idsToDisplayForThisPage);
 				}// Islandora Sorted Archive Only Searches
 				else{
@@ -591,7 +599,7 @@ class FavoriteHandler {
 		// Set up paging of list contents:
 		$interface->assign('recordCount', $pageInfo['resultTotal']);
 		$interface->assign('recordStart', $pageInfo['startRecord']);
-		$interface->assign('recordEnd', $pageInfo['endRecord']);
+		$interface->assign('recordEnd', min($pageInfo['endRecord'], $pageInfo['resultTotal']));  //search filtering may reduce the number of entries being displayed
 		$interface->assign('recordsPerPage', $pageInfo['perPage']);
 
 		$link = $_SERVER['REQUEST_URI'];
@@ -615,8 +623,6 @@ class FavoriteHandler {
 	}
 
 	function getTitles($numListEntries, $applyFiltering = false){
-		// Currently, only used by AJAX call for emailing lists
-
 		$catalogRecordSet = $archiveRecordSet = [];
 		// Retrieve records from index (currently, only Solr IDs supported):
 		if (count($this->catalogIds) > 0){

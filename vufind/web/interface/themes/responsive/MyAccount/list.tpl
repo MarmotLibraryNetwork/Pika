@@ -190,9 +190,7 @@
 				<div class="resulthead row">
 					<div class="col-xs-12">
 							{translate text="Showing"} <b>{$recordStart}</b> - <b>{$recordEnd}</b> {translate text='of'} <b>{$recordCount}</b>
-							{if $debug}
-								&nbsp;There are a total of {$favList->numValidListItems()} valid entries on the list.
-							{/if}
+								&nbsp;There are a total of <span class="badge">{$favList->numValidListItems()}</span> valid entries on the list.
 					</div>
 
         {* Search Debugging *}

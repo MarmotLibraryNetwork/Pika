@@ -26,65 +26,10 @@
  */
 
 
+require_once ROOT_DIR . '/sys/SearchObject/UserListSearchObjectTrait.php';
+
 class SearchObject_UserListSolr extends SearchObject_Solr {
 
-	public $userListSort;
-
-	/**
-	 * Build a url for the current search
-	 *
-	 * @access  public
-	 * @return  string   URL of a search
-	 */
-	public function renderSearchUrl(){
-		// Get the base URL and initialize the parameters attached to it:
-		$url    = $this->getBaseUrl();
-		$params = [];
-
-		// Add any filters
-		if (count($this->filterList) > 0){
-			foreach ($this->filterList as $field => $filter){
-				foreach ($filter as $value){
-					if (preg_match('/\\[.*?\\sTO\\s.*?\\]/', $value)){
-						$params[] = "filter[]=$field:$value";
-					}elseif (preg_match('/^\\(.*?\\)$/', $value)){
-						$params[] = "filter[]=$field:$value";
-					}else{
-						if (is_numeric($field)){
-							$params[] = 'filter[]=' . urlencode($value);
-						}else{
-							$params[] = 'filter[]=' . urlencode("$field:\"$value\"");
-						}
-					}
-				}
-			}
-		}
-
-		// Sorting
-		if ($this->userListSort != null){
-			$params[] = 'sort=' . urlencode($this->userListSort);
-		}
-
-		// Join all parameters with an escaped ampersand,
-		//   add to the base url and return
-		return $url . implode('&', $params);
-	}
-
-
-	/**
-	 * Return a url for the current search with a new sort
-	 *
-	 * @access  public
-	 * @param   string   $newSort   A field to sort by
-	 * @return  string   URL of a new search
-	 */
-	public function renderLinkWithSort($newSort){
-		$oldSort            = $this->userListSort;              // Stash our old data for a minute
-		$this->userListSort = $newSort;                         // Add the new sort
-		$url                = $this->renderSearchUrl();         // Get the new url
-		$this->userListSort = $oldSort;                         // Restore the old data
-		return $url;                                            // Return the URL
-	}
-
+	use UserListSearchObjectTrait;
 
 }
