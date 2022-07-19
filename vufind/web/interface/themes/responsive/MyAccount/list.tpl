@@ -108,7 +108,7 @@
 										<a href="#" onclick="return Pika.Lists.emailListAction({$favList->id})" title="share via e-mail">
 											<img src="{img filename='email-icon.png'}" alt="E-mail this" style="cursor:pointer;">
 										</a>
-										<a href="#" id="FavExcel" onclick="return Pika.Lists.exportListFromLists('{$myList.id}');" title="Export List to Excel">
+										<a href="#" id="FavExcel" onclick="return Pika.Lists.exportListFromLists({$favList->id});" title="Export List to Excel">
 											<img src="{img filename='excel.png'}" alt="Export to Excel">
 										</a>
 										<a href="https://twitter.com/compose/tweet?text={$favList->title|escape:"html"}+{$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on Twitter">
