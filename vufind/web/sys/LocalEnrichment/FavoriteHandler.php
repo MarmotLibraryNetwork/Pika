@@ -394,7 +394,7 @@ class FavoriteHandler {
 				if ($this->isUserListSort){
 					// Just get facets first
 					$catalogSearchObject->setPrimarySearch(true);
-					$catalogSearchObject->setLimit(0);
+					$catalogSearchObject->setLimit(0); // Return no results, we only want faceting
 					$catalogSearchObject->setQueryIDs($this->catalogIds); // do solr search by Ids
 					$catalogResult = $catalogSearchObject->processSearch(false, true, true);
 					$interface->assign('userListHasSearchFilters', true);
@@ -461,12 +461,13 @@ class FavoriteHandler {
 		if (count($this->archiveIds) > 0){
 
 			// Initialise from the current search globals
-			/** @var SearchObject_Islandora $archiveSearchObject */
-			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');
+			/** @var SearchObject_UserListIslandora $archiveSearchObject */
+			$archiveSearchObject = SearchObjectFactory::initSearchObject('UserListIslandora');
+			$archiveSearchObject->userListSort = $this->sort;
 			$archiveSearchObject->init();
 			$archiveSearchObject->setPrimarySearch(true);
-			$archiveSearchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', 'administrator');
-			$archiveSearchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', 'no');
+			$archiveSearchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', 'administrator'); //TODO: move to construct()/init() for user list
+			$archiveSearchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', 'no'); //TODO: move to construct()/init() for user list
 			$archiveSearchObject->setLimit($recordsPerPage);
 
 			if (!$this->isUserListSort && !$this->isMixedUserList){ // is a solr sort
@@ -497,35 +498,46 @@ class FavoriteHandler {
 			if (!$this->isMixedUserList){
 				// User Sorted Archive Only Searches
 				if ($this->isUserListSort){
-					$archiveSearchObject->setLimit(count($this->archiveIds)); // fetch all archive items so that search filters can be applied
-					$archiveSearchObject->setPage(1); // set to the first page for the search only
-
+					$archiveSearchObject->setLimit(0); // Return no results, we only want faceting
 					$archiveSearchObject->setQueryIDs($this->archiveIds); // do solr search by Ids
-					$archiveResult           = $archiveSearchObject->processSearch(false, true, true);
-					$pageInfo['resultTotal'] = $archiveResult['response']['numFound'];
-					$archiveSearchObject->setPage($page); // Set back to the actual page of the list now that search was processed
-					$catalogSearchObject->setLimit($recordsPerPage); // Set the actual limit per page
+					$archiveResult = $archiveSearchObject->processSearch(false, true, true);
+					//Only show search filter options when not mixed user list
+					$interface->assign('userListHasSearchFilters', true);
+					$interface->assign('sideRecommendations', $archiveSearchObject->getRecommendationsTemplates('side')); // only side facet needed for archive searches
 
-					// Get ids for list after search filters have been applied
-					$searchFilteredIds         = array_column($archiveResult['response']['docs'], 'id');
-					$remainingIdsInSortedOrder = array_intersect($this->archiveIds, $searchFilteredIds);
-					$idsToDisplayForThisPage   = array_slice($remainingIdsInSortedOrder, $startRecord - 1, $recordsPerPage);
+					if (!empty($_REQUEST['filter'])){
+						$searchFilteredIds         = $archiveSearchObject->getFilteredPIDs($this->archiveIds);
+						$pageInfo['resultTotal']   = count($searchFilteredIds);
+						$remainingIdsInSortedOrder = array_intersect($this->archiveIds, $searchFilteredIds);
 
+						$archiveSearchObject->setPage($page);            // Set back to the actual page of the list now that search was processed
+						$archiveSearchObject->setLimit($recordsPerPage); // Set the actual limit per page
+
+					} else {
+						$remainingIdsInSortedOrder = $this->archiveIds;
+					}
+
+					// Get ids for a page of the list after search filters have been applied
+					$idsToDisplayForThisPage = array_slice($remainingIdsInSortedOrder, $startRecord - 1, $recordsPerPage);
+					$archiveSearchObject->setQueryIDs($idsToDisplayForThisPage); // do solr search by Ids
+					$archiveSearchObject->setLimit($recordsPerPage);
+					$archiveSearchObject->setPrimarySearch(false);
+
+					$archiveResult        = $archiveSearchObject->processSearch(false, false, true);
 					$archiveResourceList = $archiveSearchObject->getResultListHTML($this->listId, $this->allowEdit, $idsToDisplayForThisPage);
 				}// Islandora Sorted Archive Only Searches
 				else{
 					$archiveSearchObject->setQueryIDs($this->archiveIds); // do Islandora search by Ids
 					$archiveSearchObject->setPage($page);                 // set to the first page for the search only
-					$archiveResult       = $archiveSearchObject->processSearch(false, true);
-					$archiveResourceList = $archiveSearchObject->getResultListHTML($this->listId, $this->allowEdit);
+					$archiveResult           = $archiveSearchObject->processSearch(false, true, true);
+					$archiveResourceList     = $archiveSearchObject->getResultListHTML($this->listId, $this->allowEdit);
 					$pageInfo['resultTotal'] = $archiveResult['response']['numFound'];
-				}
 
-				//Only show search filter options when not mixed user list
-				$interface->assign('userListHasSearchFilters', true);
-				$interface->assign('topRecommendations', $archiveSearchObject->getRecommendationsTemplates('top'));
-				$interface->assign('sideRecommendations', $archiveSearchObject->getRecommendationsTemplates('side'));
-				// Display search facets on a user list. Has to happen after processSearch() where recommendations are initialized.
+					//Only show search filter options when not mixed user list
+					$interface->assign('userListHasSearchFilters', true);
+					$interface->assign('sideRecommendations', $archiveSearchObject->getRecommendationsTemplates('side'));  // only side facet needed for archive searches
+					// Display search facets on a user list. Has to happen after processSearch() where recommendations are initialized.
+				}
 
 			}// Mixed Items Searches (All User Sorted) //
 			else{

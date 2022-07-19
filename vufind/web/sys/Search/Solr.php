@@ -498,11 +498,12 @@ class Solr implements IndexEngine {
 	/**
 	 * Retrieves Solr Documents for an array of grouped Work Ids
 	 * @param string[] $ids The groupedWork Id of the Solr document to retrieve
-	 * @param string[] $filters  Any search filters to apply to query
+	 * @param string[]|null $filters Any search filters to apply to query
 	 * @param int $batchSize
-	 * @return array The Solr document of the grouped Work
+	 * @param string $idFieldToReturn
+	 * @return array of the filtered ids
 	 */
-	function getFilteredIds($ids, $filters = null, $batchSize = 100){
+	function getFilteredIds(array $ids, array $filters = null, int $batchSize = 100, string $idFieldToReturn = 'id'){
 		$solrDocArray = [];
 		$numIds       = count($ids);
 		if ($numIds) {
@@ -528,7 +529,8 @@ class Solr implements IndexEngine {
 				$idString = implode(',', $tmpIds);
 				$options  = [
 					'ids' => $idString,
-					'fl'  => 'id',
+					'fl'  => $idFieldToReturn,
+					'wt'  => 'json',
 				];
 
 				if (!empty($filters)){
@@ -549,7 +551,82 @@ class Solr implements IndexEngine {
 					PEAR_Singleton::raiseError($this->client->getErrorMessage());
 				} else {
 					$result       = $this->_process($result);
-					$tempArray    = array_column($result['response']['docs'], 'id');
+					$tempArray    = array_column($result['response']['docs'], $idFieldToReturn);
+					$solrDocArray = array_merge($solrDocArray, $tempArray);
+				}
+
+				if (!$lastBatch) {
+					$startIndex = $endIndex;
+				}
+			} while (!$lastBatch);
+		}
+		return $solrDocArray;
+	}
+
+	/**
+	 * Retrieves Solr Documents for an array of Islandora PIDs
+	 *
+	 * The getFilteredIds() doesn't filter with the special /get request and ids field for
+	 * the current version of Islandora so we have to do a regular /select request with a query against
+	 * PID field
+	 *
+	 * @param string[] $ids The Id of the Solr document to retrieve
+	 * @param null $filters Any search filters to apply to query
+	 * @param int $batchSize
+	 * @param string $idFieldToReturn
+	 * @return array of the filtered PIDs
+	 */
+	function getFilteredPIDs(array $ids, array $filters = null, int $batchSize = 100, string $idFieldToReturn = 'PID'){
+		$solrDocArray = [];
+		$numIds       = count($ids);
+		if ($numIds) {
+
+			$this->pingServer();
+			$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
+
+			//TODO: this comment doesn't appear to accurate any longer
+			//Solr does not seem to be able to return more than 50 records at a time,
+			//If we have more than 50 ids, we will need to make multiple calls and
+			//concatenate the results.
+			$startIndex = 0;
+			$batchSize  ??= $numIds;
+			$lastBatch  = false;
+			do {
+				$endIndex = $startIndex + $batchSize;
+				if ($endIndex >= $numIds) {
+					$lastBatch = true;
+					$endIndex  = $numIds;
+					$batchSize = $numIds - $startIndex;
+				}
+				$tmpIds = array_slice($ids, $startIndex, $batchSize);
+				$idString = implode(' ', $tmpIds);
+				$idString = str_replace(':', '\:', $idString); // escape colon characters in PIDs
+				$options = [
+					'q'    => "$idFieldToReturn:($idString)",
+					'q.op' => 'OR',
+					'fl'   => $idFieldToReturn,
+					'wt'   => 'json'
+				];
+
+				if (!empty($filters)){
+					$options['fq'] = $filters;
+				}
+				// Build query string for use with GET or POST, with special handling for repeated parameters
+				$queryString = $this->buildSolrQueryString($options);
+
+				// Send Request
+				if (strlen($queryString) > 8000){
+					// For extremely long queries, like lists we will get an error: "URI Too Long"
+					$result = $this->client->post($this->host . '/select', $queryString);
+				}else{
+					$result = $this->client->get($this->host . '/select', $queryString);
+				}
+
+				if ($this->client->isError()) {
+					PEAR_Singleton::raiseError($this->client->getErrorMessage());
+				} else {
+					$result       = $this->_process($result);
+					$tempArray    = array_column($result['response']['docs'], $idFieldToReturn);
 					$solrDocArray = array_merge($solrDocArray, $tempArray);
 				}
 
