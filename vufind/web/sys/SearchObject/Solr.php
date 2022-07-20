@@ -1365,6 +1365,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		//Remove irrelevant fields based on scoping
 		$fieldsToReturn = $this->getFieldsToReturn();
 
+		global $configArray;
 		$boost = null;
 		if (!empty($configArray['Index']['enableBoosting'])){
 			$boost = $this->getBoostingFormula();
