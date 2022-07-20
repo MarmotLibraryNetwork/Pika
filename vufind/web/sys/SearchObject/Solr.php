@@ -2488,8 +2488,7 @@ class SearchObject_Solr extends SearchObject_Base {
 				$fieldsToReturn .= ',available_at';
 				$fieldsToReturn .= ',itype';
 			}
-			global $configArray;
-			if ($configArray['System']['debugSolr']){
+			if ($this->debug){
 				$fieldsToReturn .= ',score';
 			}
 		}
