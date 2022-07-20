@@ -1565,6 +1565,10 @@ public class GroupedWorkIndexer {
 
 	private HashSet<String> unableToTranslateWarnings = new HashSet<>();
 	private HashSet<String> missingTranslationMaps = new HashSet<>();
+	String translateSystemValue(String mapName, String value, RecordIdentifier identifier){
+		return translateSystemValue(mapName, value, identifier.getSourceAndId());
+	}
+
 	String translateSystemValue(String mapName, String value, String identifier){
 		if (value == null){
 				return null;
@@ -1605,7 +1609,7 @@ public class GroupedWorkIndexer {
 		return translatedValue;
 	}
 
-	LinkedHashSet<String> translateSystemCollection(String mapName, Set<String> values, String identifier) {
+	LinkedHashSet<String> translateSystemCollection(String mapName, Set<String> values, RecordIdentifier identifier) {
 		LinkedHashSet<String> translatedCollection = new LinkedHashSet<>();
 		for (String value : values){
 				String translatedValue = translateSystemValue(mapName, value, identifier);
@@ -1617,7 +1621,6 @@ public class GroupedWorkIndexer {
 	}
 
 
-
 	void addWorkWithInvalidLiteraryForms(String id) {
 		this.worksWithInvalidLiteraryForms.add(id);
 	}
@@ -1626,17 +1629,17 @@ public class GroupedWorkIndexer {
 		return this.scopes;
 	}
 
-	Date getDateFirstDetected(String source, String recordId){
+	Date getDateFirstDetected(RecordIdentifier identifier){
 		Long dateFirstDetected = null;
 		try {
-			getDateFirstDetectedStmt.setString(1, source);
-			getDateFirstDetectedStmt.setString(2, recordId);
+			getDateFirstDetectedStmt.setString(1, identifier.getSource());
+			getDateFirstDetectedStmt.setString(2, identifier.getIdentifier());
 			ResultSet dateFirstDetectedRS = getDateFirstDetectedStmt.executeQuery();
 			if (dateFirstDetectedRS.next()) {
 				dateFirstDetected = dateFirstDetectedRS.getLong("dateFirstDetected");
 			}
 		}catch (Exception e){
-			logger.error("Error loading date first detected for " + recordId);
+			logger.error("Error loading date first detected for " + identifier);
 		}
 		if (dateFirstDetected != null){
 			return new Date(dateFirstDetected * 1000);

@@ -268,6 +268,7 @@ public class GroupedWorkSolr implements Cloneable {
 		//format
 		doc.addField("grouping_category", groupingCategory);
 		doc.addField("format_boost", getTotalFormatBoost());
+		//TODO: Remove after the dynamic field handling on the php side is set up
 
 		//Publication related fields
 		doc.addField("publisher", publishers);
@@ -423,6 +424,7 @@ public class GroupedWorkSolr implements Cloneable {
 		return primaryUpc;
 	}
 
+//TODO: Remove after the dynamic field handling on the php side is set up
 	private Long getTotalFormatBoost() {
 		long formatBoost = 0;
 		for (RecordInfo curRecord : relatedRecords.values()){
@@ -430,6 +432,20 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 		if (formatBoost == 0){
 			formatBoost = 1;
+		}
+		return formatBoost;
+	}
+
+	/**
+	 * @param scopeName label for scope
+	 * @return format boost value for each related record within this scope
+	 */
+	private long getScopedFormatBoost(String scopeName) {
+		long            formatBoost = 0;
+		for (RecordInfo curRecord : relatedRecords.values()) {
+			if (curRecord.hasScope(scopeName)) {
+				formatBoost += curRecord.getFormatBoost();
+			}
 		}
 		return formatBoost;
 	}
@@ -480,6 +496,7 @@ public class GroupedWorkSolr implements Cloneable {
 					addUniqueFieldValue(doc, "scope_has_related_records", curScopeName);
 					HashSet<String> formats = new HashSet<>();
 					if (curItem.getFormat() != null) {
+						// Only econtent and on order items ??
 						formats.add(curItem.getFormat());
 					}else {
 						formats = curRecord.getFormats();
@@ -487,8 +504,8 @@ public class GroupedWorkSolr implements Cloneable {
 					addUniqueFieldValues(doc, "format_" + curScopeName, formats);
 					HashSet<String> formatCategories = new HashSet<>();
 					if (curItem.getFormatCategory() != null) {
+						// Only eContent and on order items ??
 						formatCategories.add(curItem.getFormatCategory());
-
 					}else {
 						formatCategories = curRecord.getFormatCategories();
 					}
@@ -564,12 +581,20 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 
 		//Now that we know the latest number of days added for each scope, we can set the time since added facet
+		// Scope the format boost factor
 		for (Scope scope : groupedWorkIndexer.getScopes()){
-			SolrInputField field = doc.getField("local_days_since_added_" + scope.getScopeName());
+			String curScopeName = scope.getScopeName();
+			long scopedFormatBoost = getScopedFormatBoost(curScopeName);
+			if (scopedFormatBoost != 0L) {
+				doc.addField("format_boost_" + curScopeName, scopedFormatBoost);
+			}
+
+
+			SolrInputField field = doc.getField("local_days_since_added_" + curScopeName);
 			if (field != null){
 				Integer daysSinceAdded = (Integer)field.getFirstValue();
 				//TODO: only populate if there are values to add
-				doc.addField("local_time_since_added_" + scope.getScopeName(), Util.getTimeSinceAdded(daysSinceAdded, scope.isIncludeOnOrderRecordsInDateAddedFacetValues()));
+				doc.addField("local_time_since_added_" + curScopeName, Util.getTimeSinceAdded(daysSinceAdded, scope.isIncludeOnOrderRecordsInDateAddedFacetValues()));
 			}
 		}
 	}
@@ -762,6 +787,13 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 	}
 
+	private void setSingleValuedFieldValue(SolrInputDocument doc, String fieldName, long value) {
+		Object curValue = doc.getFieldValue(fieldName);
+		if (curValue == null){
+			doc.addField(fieldName, value);
+		}
+	}
+
 	private void updateMaxValueField(SolrInputDocument doc, String fieldName, int value) {
 		Object curValue = doc.getFieldValue(fieldName);
 		if (curValue == null){
@@ -781,6 +813,15 @@ public class GroupedWorkSolr implements Cloneable {
 			if ((Long)curValue < value){
 				doc.setField(fieldName, value);
 			}
+		}
+	}
+
+	private void addToValueField(SolrInputDocument doc, String fieldName, long value) {
+		Object curValue = doc.getFieldValue(fieldName);
+		if (curValue == null) {
+			doc.addField(fieldName, value);
+		} else {
+			doc.setField(fieldName, (Long) curValue + value);
 		}
 	}
 
@@ -1918,7 +1959,7 @@ public class GroupedWorkSolr implements Cloneable {
 		if (relatedRecords.containsKey(recordIdentifierWithType)){
 			return relatedRecords.get(recordIdentifierWithType);
 		}else {
-			RecordInfo newRecord = new RecordInfo(source, recordIdentifier);
+			RecordInfo newRecord = new RecordInfo(new RecordIdentifier(source, recordIdentifier));
 			relatedRecords.put(recordIdentifierWithType, newRecord);
 			return newRecord;
 		}

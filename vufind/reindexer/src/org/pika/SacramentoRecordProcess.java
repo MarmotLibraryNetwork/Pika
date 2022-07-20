@@ -68,7 +68,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 		return super.isItemHoldable(itemInfo, curScope, isHoldableUnscoped);
 	}
 
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {
 		//For Sacramento, LION, load audiences based on collection code rather than based on the 008 and 006 fields
 		HashSet<String> targetAudiences = new HashSet<>();
 		for (ItemInfo printItem : printItems) {

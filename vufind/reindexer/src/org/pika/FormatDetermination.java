@@ -171,9 +171,9 @@ public class FormatDetermination {
 			LinkedHashSet<String> printFormats = getFormatsFromBib(record, econtentRecord);
 			if (this.translationMaps.size() > 0){
 				String firstFormat    = printFormats.iterator().next();
-				String formatBoostStr = translateValue("format_boost", firstFormat, econtentRecord.getFullIdentifier());
-				econtentItem.setFormat(translateValue("format", firstFormat, econtentRecord.getFullIdentifier()));
-				econtentItem.setFormatCategory(translateValue("format_category", firstFormat, econtentRecord.getFullIdentifier()));
+				String formatBoostStr = translateValue("format_boost", firstFormat, econtentRecord.getRecordIdentifier());
+				econtentItem.setFormat(translateValue("format", firstFormat, econtentRecord.getRecordIdentifier()));
+				econtentItem.setFormatCategory(translateValue("format_category", firstFormat, econtentRecord.getRecordIdentifier()));
 				try {
 					long formatBoost = Long.parseLong(formatBoostStr);
 					econtentRecord.setFormatBoost(formatBoost);
@@ -357,7 +357,7 @@ public class FormatDetermination {
 		HashMap<String, String>  itemTypeToFormat  = new HashMap<>();
 		int                      mostUsedCount     = 0;
 		String                   mostPopularIType  = "";  //Get a list of all the formats based on the items
-		String                   recordIdentifier  = recordInfo.getRecordIdentifier();
+		RecordIdentifier         recordIdentifier  = recordInfo.getRecordIdentifier();
 		List<DataField> items = MarcUtil.getDataFields(record, itemTag);
 		for(DataField item : items){
 			if (!isItemSuppressed(item)) {
@@ -1651,7 +1651,7 @@ public class FormatDetermination {
 				;
 	}
 
-	HashSet<String> translateCollection(String mapName, Set<String> values, String identifier) {
+	HashSet<String> translateCollection(String mapName, Set<String> values, RecordIdentifier identifier) {
 		TranslationMap translationMap = translationMaps.get(mapName);
 		HashSet<String> translatedValues;
 		if (translationMap == null){
@@ -1666,10 +1666,10 @@ public class FormatDetermination {
 		}
 		return translatedValues;
 	}
-	public String translateValue(String mapName, String value, String identifier){
+	public String translateValue(String mapName, String value, RecordIdentifier identifier){
 		return translateValue(mapName, value, identifier, true);
 	}
-	public String translateValue(String mapName, String value, String identifier, boolean reportErrors){
+	public String translateValue(String mapName, String value, RecordIdentifier identifier, boolean reportErrors){
 		if (value == null){
 			return null;
 		}

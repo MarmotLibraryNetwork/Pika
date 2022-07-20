@@ -95,7 +95,7 @@ public class OverDriveProcessor {
 							numCopiesRS.next();
 							if (numCopiesRS.getInt("totalOwned") == 0) {
 								if (logger.isDebugEnabled()) {
-									logger.debug("Not processing overdrive product with no copies owned" + title + " - " + identifier);
+									logger.debug("Not processing overdrive product with no copies owned " + title + " - " + identifier);
 								}
 								indexer.overDriveRecordsSkipped.add(identifier);
 							} else {
@@ -236,10 +236,10 @@ public class OverDriveProcessor {
 
 								productRS.close();
 
-								String primaryLanguage = loadOverDriveLanguages(groupedWork, overDriveRecord, productId, identifier);
+								String primaryLanguage = loadOverDriveLanguages(groupedWork, overDriveRecord, productId);
 
 								//Load the formats for the record.  For OverDrive, we will create a separate item for each format.
-								HashSet<String> validFormats    = loadOverDriveFormats(groupedWork, overDriveRecord, productId, identifier);
+								HashSet<String> validFormats    = loadOverDriveFormats(groupedWork, overDriveRecord, productId);
 								//overDriveRecord.addFormats(validFormats);
 
 								loadOverDriveIdentifiers(groupedWork, productId, primaryFormat);
@@ -490,7 +490,7 @@ public class OverDriveProcessor {
 		}
 	}
 
-	private String loadOverDriveLanguages(GroupedWorkSolr groupedWork, RecordInfo overDriveRecord, Long productId, String identifier) throws SQLException {
+	private String loadOverDriveLanguages(GroupedWorkSolr groupedWork, RecordInfo overDriveRecord, Long productId) throws SQLException {
 		String primaryLanguage = null;
 		//Load languages
 		getProductLanguagesStmt.setLong(1, productId);
@@ -502,8 +502,8 @@ public class OverDriveProcessor {
 				String language;
 				try {
 					// Use language labels from translation map if possible
-					iso3LanguageCode = indexer.translateSystemValue("iso639-1TOiso639-2B", overdriveLanguageCode, identifier);
-					language         = indexer.translateSystemValue("language", iso3LanguageCode, identifier);
+					iso3LanguageCode = indexer.translateSystemValue("iso639-1TOiso639-2B", overdriveLanguageCode, overDriveRecord.getRecordIdentifier());
+					language         = indexer.translateSystemValue("language", iso3LanguageCode, overDriveRecord.getRecordIdentifier());
 				} catch (MissingResourceException e) {
 					logger.warn("Can not convert Overdrive language code :" + overdriveLanguageCode);
 					language = languagesRS.getString("name");
@@ -517,14 +517,14 @@ public class OverDriveProcessor {
 		}
 		if (primaryLanguage == null) {
 			if  (logger.isInfoEnabled()){
-				logger.info("Using English, because no language found for overdrive record "+ identifier);
+				logger.info("Using English, because no language found for overdrive record "+ overDriveRecord.getRecordIdentifier());
 			}
 			primaryLanguage = "English";
 		}
 		return primaryLanguage;
 	}
 
-	private HashSet<String> loadOverDriveFormats(GroupedWorkSolr groupedWork, RecordInfo overDriveRecord, Long productId, String identifier) throws SQLException {
+	private HashSet<String> loadOverDriveFormats(GroupedWorkSolr groupedWork, RecordInfo overDriveRecord, Long productId) throws SQLException {
 		//Load formats
 		getProductFormatsStmt.setLong(1, productId);
 		HashSet<String> formats;
@@ -535,16 +535,16 @@ public class OverDriveProcessor {
 			while (formatsRS.next()) {
 				String format = formatsRS.getString("name");
 				formats.add(format);
-				String   deviceString = indexer.translateSystemValue("device_compatibility", format.replace(' ', '_'), identifier);
+				String   deviceString = indexer.translateSystemValue("device_compatibility", format.replace(' ', '_'), overDriveRecord.getRecordIdentifier());
 				String[] devices      = deviceString.split("\\|");
 				for (String device : devices) {
 					eContentDevices.add(device.trim());
 				}
 				long formatBoost = 1;
 				try {
-					formatBoost = Long.parseLong(indexer.translateSystemValue("format_boost_overdrive", format.replace(' ', '_'), identifier));
+					formatBoost = Long.parseLong(indexer.translateSystemValue("format_boost_overdrive", format.replace(' ', '_'), overDriveRecord.getRecordIdentifier()));
 				} catch (Exception e) {
-					logger.warn("Could not translate format boost for " + identifier);
+					logger.warn("Could not translate format boost for " + overDriveRecord.getFullIdentifier());
 				}
 				if (formatBoost > maxFormatBoost) {
 					maxFormatBoost = formatBoost;

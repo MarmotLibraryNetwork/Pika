@@ -23,19 +23,19 @@ package org.pika;
  * Time: 9:51 PM
  */
 class ScopingInfo {
-	private ItemInfo item;
-	private Scope scope;
-	private String status;
-	private String groupedStatus;
-	private boolean available;
-	private boolean holdable;
-	private boolean locallyOwned;
-	private boolean bookable;
-	private boolean inLibraryUseOnly;
-	private boolean libraryOwned;
-	private String holdablePTypes;
-	private String bookablePTypes;
-	private String localUrl;
+	private final ItemInfo item;
+	private final Scope    scope;
+	private       String   status;
+	private       String   groupedStatus;
+	private       boolean  available;
+	private       boolean  holdable;
+	private       boolean  locallyOwned;
+	private       boolean  bookable;
+	private       boolean  inLibraryUseOnly;
+	private       boolean  libraryOwned;
+	private       String   holdablePTypes;
+	private       String   bookablePTypes;
+	private       String   localUrl;
 
 	ScopingInfo(Scope scope, ItemInfo item){
 		this.item = item;

@@ -298,7 +298,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		return bookabilityCache.get(key);
 	}
 
-	protected String getDisplayGroupedStatus(ItemInfo itemInfo, String identifier) {
+	protected String getDisplayGroupedStatus(ItemInfo itemInfo, RecordIdentifier identifier) {
 		String overriddenStatus = getOverriddenStatus(itemInfo, true);
 		if (overriddenStatus != null) {
 			return overriddenStatus;
@@ -317,7 +317,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		}
 	}
 
-	protected String getDisplayStatus(ItemInfo itemInfo, String identifier) {
+	protected String getDisplayStatus(ItemInfo itemInfo, RecordIdentifier identifier) {
 		String overriddenStatus = getOverriddenStatus(itemInfo, false);
 		if (overriddenStatus != null) {
 			return overriddenStatus;

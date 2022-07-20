@@ -16,7 +16,6 @@ package org.pika;
 
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
-import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
 
 import java.sql.Connection;
@@ -35,7 +34,7 @@ class SantaFeRecordProcessor extends IIIRecordProcessor {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 	}
 
-	protected boolean isItemSuppressed(DataField curItem) {
+	protected boolean isItemSuppressed(DataField curItem, RecordIdentifier identifier) {
 		Subfield icode2Subfield = curItem.getSubfield(iCode2Subfield);
 		if (icode2Subfield != null) {
 			String icode2 = icode2Subfield.getData().toLowerCase().trim();
@@ -51,7 +50,7 @@ class SantaFeRecordProcessor extends IIIRecordProcessor {
 			}
 
 		}
-		return super.isItemSuppressed(curItem);
+		return super.isItemSuppressed(curItem, identifier);
 	}
 
 }

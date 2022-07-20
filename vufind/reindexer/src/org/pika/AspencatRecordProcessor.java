@@ -175,7 +175,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 //	}
 
 	private HashSet<String> additionalStatuses = new HashSet<>();
-	protected String getItemStatus(DataField itemField, String recordIdentifier){
+	protected String getItemStatus(DataField itemField, RecordIdentifier recordIdentifier){
 		ItemStatus status;
 		String     itemIdentifier = getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField);
 
@@ -213,7 +213,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 		return ItemStatus.ONSHELF.toString();
 	}
 
-	private ItemStatus getStatusFromNotForLoanSubfield(DataField itemField, String recordIdentifier, String itemIdentifier) {
+	private ItemStatus getStatusFromNotForLoanSubfield(DataField itemField, RecordIdentifier recordIdentifier, String itemIdentifier) {
 		if (itemField.getSubfield(notforloanSubfield) != null){
 			String fieldData = itemField.getSubfield(notforloanSubfield).getData();
 
@@ -282,7 +282,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, RecordIdentifier identifier, Record record){
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
 		for (DataField itemField : itemRecords){
-			if (!isItemSuppressed(itemField, identifier.getIdentifier()) && !isEContent(itemField)) {
+			if (!isItemSuppressed(itemField, identifier) && !isEContent(itemField)) {
 				getPrintIlsItem(groupedWork, recordInfo, record, itemField, identifier);
 			}
 		}
@@ -300,7 +300,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 		List<DataField>  itemRecords                 = MarcUtil.getDataFields(record, itemTag);
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		for (DataField itemField : itemRecords){
-			if (!isItemSuppressed(itemField)){
+			if (!isItemSuppressed(itemField, identifier)){
 				//Check to see if the item has an eContent indicator
 				boolean isEContent  = isEContent(itemField);
 				if (isEContent) {
@@ -395,12 +395,12 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 
 // Moved Withdrawn & Lost subfield checking to the indexing profile item status suppression since withdrawn and lost are calculated statuses
 // but status is uniquely calculated for Aspencat, so status suppression needs slight customization. (probably should go in a Koha Record Processor
-	protected boolean isItemSuppressed(DataField curItem, String identifier) {
+	protected boolean isItemSuppressed(DataField curItem, RecordIdentifier identifier) {
 		String status = getItemStatus(curItem, identifier);
 		if (statusesToSuppressPattern != null && statusesToSuppressPattern.matcher(status).matches()) {
 			return true;
 		}
-		return  super.isItemSuppressed(curItem);
+		return  super.isItemSuppressed(curItem, identifier);
 	}
 
 //	protected boolean isItemSuppressed(DataField curItem) {

@@ -310,7 +310,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	@Override
 	public void processRecord(GroupedWorkSolr groupedWork, RecordIdentifier identifier, boolean loadedNovelistSeries){
-		Record record = loadMarcRecordFromDisk(identifier.getIdentifier());
+		Record record = loadMarcRecordFromDisk(identifier);
 
 		if (record != null){
 			try{
@@ -321,9 +321,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	private Record loadMarcRecordFromDisk(String identifier) {
+	private Record loadMarcRecordFromDisk(RecordIdentifier identifier) {
 		Record record = null;
-		String individualFilename = getFileForIlsRecord(identifier);
+		String individualFilename = getFileForIlsRecord(identifier.getIdentifier());
 		try {
 			byte[] fileContents = Util.readFileBytes(individualFilename);
 			//FileInputStream inputStream = new FileInputStream(individualFile);
@@ -418,7 +418,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				primaryFormat = "Unknown";
 				//logger.info("No primary format for " + identifier + " found setting to unknown to load standard marc data");
 			}
-			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier.getIdentifier(), primaryFormat, loadedNovelistSeries);
+			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier, primaryFormat, loadedNovelistSeries);
 
 			//Special processing for ILS Records
 			String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(record, "520a"));
@@ -691,7 +691,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			logger.debug("Found " + itemRecords.size() + " items for record " + identifier);
 		}
 		for (DataField itemField : itemRecords){
-			if (!isItemSuppressed(itemField)){
+			if (!isItemSuppressed(itemField, identifier)){
 				getPrintIlsItem(groupedWork, recordInfo, record, itemField, identifier);
 				//Can return null if the record does not have status and location
 				//This happens with secondary call numbers sometimes.
@@ -794,7 +794,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		//Load base information from the Marc Record
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
 
-		String itemStatus   = getItemStatus(itemField, identifier.getSourceAndId());
+		String itemStatus   = getItemStatus(itemField, identifier);
 		String itemLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		itemInfo.setLocationCode(itemLocation);
 
@@ -1011,7 +1011,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return overriddenStatus;
 	}
 
-	protected String getDisplayGroupedStatus(ItemInfo itemInfo, String identifier) {
+	protected String getDisplayGroupedStatus(ItemInfo itemInfo, RecordIdentifier identifier) {
 		String overriddenStatus = getOverriddenStatus(itemInfo, true);
 		if (overriddenStatus != null) {
 			return overriddenStatus;
@@ -1020,7 +1020,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected String getDisplayStatus(ItemInfo itemInfo, String identifier) {
+	protected String getDisplayStatus(ItemInfo itemInfo, RecordIdentifier identifier) {
 		String overriddenStatus = getOverriddenStatus(itemInfo, false);
 		if (overriddenStatus != null) {
 			return overriddenStatus;
@@ -1233,7 +1233,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected String getItemStatus(DataField itemField, String recordIdentifier){
+	protected String getItemStatus(DataField itemField, RecordIdentifier recordIdentifier){
 		return getItemSubfieldData(statusSubfieldIndicator, itemField);
 	}
 
@@ -1319,9 +1319,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return numberOfHoldsByIdentifier.getOrDefault(identifier.getIdentifier(), 0);
 	}
 
-	protected boolean isItemSuppressed(DataField curItem) {
+	protected boolean isItemSuppressed(DataField curItem, RecordIdentifier identifier) {
 		if (statusesToSuppressPattern != null && statusSubfieldIndicator != ' ') {
-			String status = getItemStatus(curItem, "");
+			String status = getItemStatus(curItem, identifier);
 			if (status == null) { // suppress if subfield is missing
 				return true;
 			} else if (statusesToSuppressPattern.matcher(status).matches()) {
@@ -1403,12 +1403,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	public String translateValue(String mapName, String value, RecordIdentifier identifier){
-		return translateValue(mapName, value, identifier.getIdentifier(), true);
-	}
-	public String translateValue(String mapName, String value, String identifier){
 		return translateValue(mapName, value, identifier, true);
 	}
-	public String translateValue(String mapName, String value, String identifier, boolean reportErrors){
+	public String translateValue(String mapName, String value, RecordIdentifier identifier, boolean reportErrors){
 		if (value == null){
 			return null;
 		}
@@ -1423,7 +1420,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return translatedValue;
 	}
 
-	HashSet<String> translateCollection(String mapName, Set<String> values, String identifier) {
+	HashSet<String> translateCollection(String mapName, Set<String> values, RecordIdentifier identifier) {
 		TranslationMap translationMap = translationMaps.get(mapName);
 		HashSet<String> translatedValues;
 		if (translationMap == null){
