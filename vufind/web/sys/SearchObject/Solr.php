@@ -1622,7 +1622,9 @@ class SearchObject_Solr extends SearchObject_Base {
 		if ((!empty($searchLibrary->applyNumberOfHoldingsBoost))){
 			$boostFactors[] = 'sum(popularity,1)';
 		}
-		$boostFactors[] = 'format_boost';
+//		$boostFactors[] = 'format_boost_' . $solrScope;  //TODO: use this after tranisition to scoped format boost
+		$boostFactors[] = 'if(exists(format_boost_' . $solrScope . '),format_boost_' . $solrScope .',format_boost)';
+		// This is needed for the time before the format_boost has been indexed as a scoped field
 
 		// popularity is indexed as zero or greater, but to apply to boosting we want it to be a value of 1 or greater
 		// hence sum(popularity,1)
