@@ -239,7 +239,7 @@ class HooplaDriver
 						return $hooplaPatronStatusResponse;
 					} else {
 						$hooplaErrorMessage = empty($hooplaPatronStatusResponse->message) ? '' : ' Hoopla Message :' . $hooplaPatronStatusResponse->message;
-						$this->logger->warn('Error retrieving patron status from Hoopla. User ID : ' . $user->id, ['hoopla_error_message' => $hooplaErrorMessage]);
+						$this->logger->notice('Error retrieving patron status from Hoopla. User ID : ' . $user->id, ['hoopla_error_message' => $hooplaErrorMessage]);
 						$this->hooplaPatronStatuses[$user->id] = false; // Don't do status call again for this user
 					}
 				}
