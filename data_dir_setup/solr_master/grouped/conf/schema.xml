@@ -82,12 +82,13 @@
 				-->
 				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
 				<filter class="solr.WordDelimiterGraphFilterFactory"
-						generateWordParts="0"
+						generateWordParts="1"
 						generateNumberParts="1"
 						splitOnCaseChange="0"
 						catenateAll="0"
 						stemEnglishPossessive="1"
 
+						preserveOriginal="1"
 						catenateWords="0"
 						catenateNumbers="0"
 						splitOnNumerics="0"
@@ -100,7 +101,14 @@
 				  Turned on generateNumberParts, so that year phrases will get indexed like
 				  uniform title: Pièces de clavecin (1729-1730)
 				  author:  Jacquet de La Guerre, Elisabeth-Claude, 1665-1729
-				  See D-4198  -->
+				  See D-4198
+
+ 				// Turn off splitOnNumerics Pascal 7/19/21 tokenizes Ids like ".b1234x" into "b","1234,"x"   See D-3984
+
+				// Turn on generateWordParts & preserveOriginal for index analyzer
+				//so that phrases like trauma-informed can be matched with or without the dash
+				// See IN-2955  Pascal 7/25/22
+				-->
 				<!--
 				This filter splits tokens at word delimiters.
 				If you use this filter during indexing, you must follow it with a Flatten Graph Filter to squash tokens on top of one another like the Word Delimiter Filter, because the indexer can’t directly consume a graph. To get fully correct positional queries when tokens are split, you should instead use this filter at query time.
@@ -123,8 +131,6 @@
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#word-delimiter-graph-filter
 				-->
 				<!--
-				// Turn off splitOnNumerics Pascal 7/19/21 tokenizes Ids like ".b1234x" into "b","1234,"x"   See D-3984
-
 				From documentation : https://solr.apache.org/guide/8_8/filter-descriptions.html#word-delimiter-graph-filter
 
 									generateWordParts
@@ -223,6 +229,7 @@
 						catenateAll="0"
 						stemEnglishPossessive="1"
 
+						preserveOriginal="1"
 						catenateWords="1"
 						catenateNumbers="1"
 						splitOnNumerics="0"
@@ -253,6 +260,10 @@
 				-->
 				<!--
 				// Turn off splitOnNumerics Pascal 7/19/21 tokenizes Ids like ".b1234x" into "b","1234,"x"   See D-3984
+
+				// Turn preserveOriginal for query analyzer
+				//so that phrases like trauma-informed can be matched with or without the dash
+				// See IN-2955  Pascal 7/25/22
 
 				From documentation : https://solr.apache.org/guide/8_8/filter-descriptions.html#word-delimiter-graph-filter
 
