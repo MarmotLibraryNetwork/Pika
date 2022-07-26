@@ -2165,6 +2165,7 @@ class MarcRecord extends IndexRecord {
 	 * @return array|null
 	 */
 	public function loadPeriodicalInformation(){
+		/** @var \Pika\PatronDrivers\Marmot|\Pika\PatronDrivers\Sierra $catalogDriver */
 		$issueSummaries = null;
 		$catalogDriver  = $this->getCatalogDriver();
 		if ($catalogDriver->checkFunction('getIssueSummaries')){
