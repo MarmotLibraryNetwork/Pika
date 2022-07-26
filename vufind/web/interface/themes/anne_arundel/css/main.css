@@ -9363,7 +9363,8 @@ a.browse-thumbnail-sorted.active {
   padding-bottom: 6px;
 }
 #wikipedia_placeholder,
-#name-variations-placeholder {
+#name-variations-placeholder,
+#listEditControls {
   border-bottom: 3px solid #d5d6da;
   padding-bottom: 6px;
   margin-bottom: 10px;
@@ -10478,7 +10479,7 @@ fieldset[disabled] .btn-masquerade.active {
   font-family: 'Montserrat';
   font-style: normal;
   font-weight: 400;
-  src: url(https://fonts.gstatic.com/s/montserrat/v24/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aX8.ttf) format('truetype');
+  src: url(https://fonts.gstatic.com/s/montserrat/v25/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aX8.ttf) format('truetype');
 }
 .header-button {
   border: 0;

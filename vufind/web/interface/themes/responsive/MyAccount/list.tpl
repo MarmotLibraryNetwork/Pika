@@ -49,6 +49,10 @@
 							</select>
 
 						</div>
+						<div class="btn-group">
+							<button value="saveList" id="FavSave" class="btn btn-sm btn-primary" style="display:none" onclick='return Pika.Lists.updateListAction({$pageNum}, {$pageSize},"{$listSort}")'>Save Changes</button>
+						</div>
+
 					</div>
 				{/if}
 				<div class="clearer"></div>
@@ -67,9 +71,6 @@
 								{if $favList->public}<li>{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|escape:"html"|cat:"/MyAccount/MyList/"|cat:$favList->id description="See My List '"|cat:$favList->title|cat:"' at $homeLibrary" linkText="Pin on Pinterest" imgClass="pull-right"}</li>{/if}
 
 							</ul>
-						</div>
-						<div class="btn-group">
-							<button value="saveList" id="FavSave" class="btn btn-sm btn-primary" style="display:none" onclick='return Pika.Lists.updateListAction({$pageNum}, {$pageSize},"{$listSort}")'>Save Changes</button>
 						</div>
 						<div class="btn-group">
 							<button value="batchAdd" id="FavBatchAdd" class="btn btn-sm btn-default" onclick='return Pika.Lists.batchAddToListAction({$favList->id})'>Add Multiple Titles</button>
