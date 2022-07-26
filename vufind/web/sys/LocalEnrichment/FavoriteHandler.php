@@ -48,7 +48,9 @@ class FavoriteHandler {
 	//								'custom' => 'weight IS NULL, weight ASC',  // this puts items with no set weight towards the end of the list
 								);*/
 	protected $solrSortOptions = ['title', 'author asc,title asc'], // user list sorting options handled by Solr engine.
+			// Note these values need to match options found in searches.ini Sorting section
 		$islandoraSortOptions = ['fgs_label_s']; // user list sorting options handled by the Islandora Solr engine.
+			// Note these values need to match options found in islandoraSearches.ini Sorting section
 
 	/**
 	 * Constructor.

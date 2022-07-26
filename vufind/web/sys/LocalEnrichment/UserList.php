@@ -162,18 +162,18 @@ class UserList extends DB_DataObject
 	private $listTitles = [];
 
 	/**
-	 * @param null $sort  optional SQL for the query's ORDER BY clause
+	 * @param null $userListSortOption  optional SQL for the query's ORDER BY clause
 	 * @return array      of list entries
 	 */
-	function getListEntries($sort = null){
+	function getListEntries($userListSortOption = null){
 		$listEntries = $archiveIDs = $catalogIDs = [];
 		if (!empty($this->id)){
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 			$listEntry         = new UserListEntry();
 			$listEntry->listId = $this->id;
-			if (!empty($sort) && $sort != 'author' && $sort != 'title'){
+			if (!empty($userListSortOption) && in_array($userListSortOption, $this->userListSortOptions)){
 				// Only do database sorting for options that are for the database; The others will be sorted by search later on
-				$listEntry->orderBy($sort);
+				$listEntry->orderBy($userListSortOption);
 			}
 			// These conditions retrieve list items with a valid groupedWork ID or archive ID.
 			// (This prevents list strangeness when our searches don't find the ID in the search indexes)

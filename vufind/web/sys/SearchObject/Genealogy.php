@@ -116,9 +116,12 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		if (isset($searchSettings['Sorting'])){
 			$this->sortOptions = $searchSettings['Sorting'];
 		}else{
-			$this->sortOptions = ['relevance' => 'sort_relevance',
-			                      'year'      => 'sort_year', 'year asc' => 'sort_year asc',
-			                      'title'     => 'sort_title'];
+			$this->sortOptions = [
+				'relevance' => 'sort_relevance',
+				'year'      => 'sort_year',
+				'year asc'  => 'sort_year asc',
+				'title'     => 'sort_title'
+			];
 		}
 
 		// Load Spelling preferences
