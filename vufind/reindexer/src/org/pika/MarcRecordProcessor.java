@@ -81,7 +81,9 @@ abstract class MarcRecordProcessor {
 							}
 						}
 					}
-					subjects.add(curSubject.toString());
+					if (curSubject.length() > 0) {
+						subjects.add(curSubject.toString());
+					}
 					break;
 				}
 				case "610": {
@@ -105,7 +107,9 @@ abstract class MarcRecordProcessor {
 							}
 						}
 					}
-					subjects.add(curSubject.toString());
+					if (curSubject.length() > 0) {
+						subjects.add(curSubject.toString());
+					}
 					break;
 				}
 				case "611": {
@@ -129,7 +133,9 @@ abstract class MarcRecordProcessor {
 							}
 						}
 					}
-					subjects.add(curSubject.toString());
+					if (curSubject.length() > 0) {
+						subjects.add(curSubject.toString());
+					}
 					break;
 				}
 				case "630": {
@@ -153,7 +159,9 @@ abstract class MarcRecordProcessor {
 							}
 						}
 					}
-					subjects.add(curSubject.toString());
+					if (curSubject.length() > 0) {
+						subjects.add(curSubject.toString());
+					}
 					break;
 				}
 				case "648": {
@@ -171,7 +179,9 @@ abstract class MarcRecordProcessor {
 							groupedWork.addEra(curSubfieldData);
 						}
 					}
-					subjects.add(curSubject);
+					if (curSubject.length() > 0) {
+						subjects.add(curSubject.toString());
+					}
 					break;
 				}
 				case "650": {
@@ -213,7 +223,9 @@ abstract class MarcRecordProcessor {
 							}
 						}
 					}
-					subjects.add(curSubject.toString());
+					if (curSubject.length() > 0) {
+						subjects.add(curSubject.toString());
+					}
 					break;
 				}
 				case "651": {
@@ -241,7 +253,9 @@ abstract class MarcRecordProcessor {
 							}
 						}
 					}
-					subjects.add(curSubject.toString());
+					if (curSubject.length() > 0) {
+						subjects.add(curSubject.toString());
+					}
 					break;
 				}
 				case "655": {
@@ -270,7 +284,9 @@ abstract class MarcRecordProcessor {
 							}
 						}
 					}
-					subjects.add(curSubject.toString());
+					if (curSubject.length() > 0) {
+						subjects.add(curSubject.toString());
+					}
 					break;
 				}
 				case "690": {
@@ -285,7 +301,9 @@ abstract class MarcRecordProcessor {
 							groupedWork.addTopic(curSubfieldData);
 						}
 					}
-					subjects.add(curSubject.toString());
+					if (curSubject.length() > 0) {
+						subjects.add(curSubject.toString());
+					}
 					break;
 				}
 			}
