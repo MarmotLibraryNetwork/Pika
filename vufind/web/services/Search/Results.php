@@ -84,7 +84,8 @@ class Search_Results extends Union_Results {
 			$searchObject->setLimit(24); // a set of 24 covers looks better in display
 		}
 
-		$this->processAllRangeFilters($searchObject);
+		// Range filters need special processing in order to be used
+		$searchObject->processAllRangeFilters();
 
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed

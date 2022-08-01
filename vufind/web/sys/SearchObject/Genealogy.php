@@ -60,6 +60,10 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	private $spellSimple = false;
 	private $spellSkipNumeric = true;
 
+	// In each class, set the specific range filters based on the Search Object
+	protected $rangeFilters = [];
+	protected $dateFilters = ['birthYear', 'deathYear'];
+
 	/**
 	 * Constructor. Initialise some details about the server
 	 *

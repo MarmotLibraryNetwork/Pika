@@ -71,6 +71,11 @@ class SearchObject_Solr extends SearchObject_Base {
 	private $scopingDisabled = false;
 
 
+	// In each class, set the specific range filters based on the Search Object
+	protected $rangeFilters = ['lexile_score', 'accelerated_reader_reading_level', 'accelerated_reader_point_value'];
+	protected $dateFilters = ['publishDate'];
+
+
 	/**
 	 * Constructor. Initialise some details about the server
 	 *

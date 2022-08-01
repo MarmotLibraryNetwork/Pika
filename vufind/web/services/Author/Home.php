@@ -37,7 +37,8 @@ class Author_Home extends Union_Results {
 
 		$this->processAlternateOutputs($searchObject);
 
-		$this->processAllRangeFilters($searchObject);
+		// Range filters need special processing in order to be used
+		$searchObject->processAllRangeFilters();
 
 		$displayMode = $searchObject->getView();
 		if ($displayMode == 'covers') {

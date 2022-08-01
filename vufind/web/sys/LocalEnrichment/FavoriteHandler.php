@@ -368,6 +368,10 @@ class FavoriteHandler {
 			if (!$this->isUserListSort && !$this->isMixedUserList){ // is a solr sort
 				$catalogSearchObject->setSort($this->sort);           // set solr sort. (have to set before retrieving solr sort options below)
 			}
+
+			// Range filters need special processing in order to be used
+			$catalogSearchObject->processAllRangeFilters();
+
 			if (!$this->isMixedUserList){
 				$solrSortList = $catalogSearchObject->getSortList(); // get all the search sort options (retrieve after setting solr sort option)
 				foreach ($this->solrSortOptions as $option){ // extract just the ones we want

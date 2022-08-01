@@ -45,7 +45,8 @@ class Genealogy_Results extends Union_Results {
 
 		$this->processAlternateOutputs($searchObject);
 
-		$this->processAllRangeFilters($searchObject, ['birthYear', 'deathYear'], []);
+		// Range filters need special processing in order to be used
+		$searchObject->processAllRangeFilters();
 
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed

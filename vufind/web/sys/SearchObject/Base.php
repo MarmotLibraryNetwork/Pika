@@ -270,6 +270,99 @@ abstract class SearchObject_Base {
 		$this->hiddenFilters[] = $field . ':' . $value;
 	}
 
+	// In each class, set the specific range filters based on the Search Object
+	protected $rangeFilters = [];
+	protected $dateFilters = [];
+
+	/**
+	 * Range filters are small input forms that must be processed differently that other facets.
+	 * And must be converted to usable filter url parameter.
+	 *
+	 */
+	public function processAllRangeFilters(){
+		$yearFilters  = $this->processYearFilters();
+		$rangeFilters = $this->processRangeFilters();
+		$filters      = array_merge($yearFilters, $rangeFilters);
+		if (!empty($filters)){
+			foreach ($filters as $filter){
+				$this->addFilter($filter);
+			}
+			$searchUrl = $this->renderSearchUrl();
+			header("Location: $searchUrl");
+			exit();
+		}
+	}
+
+	/**
+	 * Process general numeric range filters
+	 *
+	 * @return array
+	 */
+	private function processRangeFilters(){
+		//Check to see if the year has been set and if so, convert to a filter and resend.
+		$filters = [];
+		foreach ($this->rangeFilters as $rangeFilter){
+			if (!empty($_REQUEST[$rangeFilter . 'from']) || !empty($_REQUEST[$rangeFilter . 'to'])){
+				$from = preg_match('/^\d+(\.\d*)?$/', $_REQUEST[$rangeFilter . 'from']) ? $_REQUEST[$rangeFilter . 'from'] : '*';
+				$to   = preg_match('/^\d+(\.\d*)?$/', $_REQUEST[$rangeFilter . 'to']) ? $_REQUEST[$rangeFilter . 'to'] : '*';
+				if ($from != '*' || $to != '*'){
+					$filterStr  = "$rangeFilter:[$from TO $to]";
+					$filterList = $this->getFilterList();
+					foreach ($filterList as $facets){
+						foreach ($facets as $facet){
+							if ($facet['field'] == $rangeFilter){
+								$this->removeFilter($facet['field'] . ':' . $facet['value']);
+								break;
+							}
+						}
+					}
+					$filters[] = $filterStr;
+				}
+			}
+		}
+		return $filters;
+	}
+
+
+	/**
+	 * Process range filters that are specifically year ranges
+	 */
+	private function processYearFilters(){
+		//Check to see if the year has been set and if so, convert to a filter and resend.
+		$filters = [];
+		foreach ($this->dateFilters as $dateFilter){
+			if (!empty($_REQUEST[$dateFilter . 'yearfrom']) || !empty($_REQUEST[$dateFilter . 'yearto'])){
+				$yearFrom = $this->processYearField($dateFilter . 'yearfrom');
+				$yearTo   = $this->processYearField($dateFilter . 'yearto');
+				if ($yearFrom != '*' || $yearTo != '*'){
+					$filterStr  = "$dateFilter:[$yearFrom TO $yearTo]";
+					$filterList = $this->getFilterList();
+					foreach ($filterList as $facets){
+						foreach ($facets as $facet){
+							if ($facet['field'] == $dateFilter){
+								$this->removeFilter($facet['field'] . ':' . $facet['value']);
+								break;
+							}
+						}
+					}
+					$filters[] = $filterStr;
+				}
+			}
+		}
+		return $filters;
+	}
+
+	private function processYearField($yearField){
+		$year = preg_match('/^\d{2,4}$/', $_REQUEST[$yearField]) ? $_REQUEST[$yearField] : '*';
+		if (strlen($year) == 2){
+			$year = '19' . $year;
+		}elseif (strlen($year) == 3){
+			$year = '0' . $year;
+		}
+		return $year;
+	}
+
+
 	/**
 	 * Get a user-friendly string to describe the provided facet field.
 	 *
