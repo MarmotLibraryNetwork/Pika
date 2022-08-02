@@ -1164,34 +1164,27 @@ class Solr implements IndexEngine {
 		// (note : error suppression with @to prevent notice when direction is left blank)
 		// this notice suppression doesn't work when replacing list() with []
 
-		// Default sort order (may be overridden by switch below):
-		$defaultSortDirection = 'asc';
+		$sortDirection = strtolower(trim($sortDirection));
+		// Normalize sort direction to either "asc" or "desc":
+		if ($sortDirection != 'asc' && $sortDirection != 'desc'){
+			$sortDirection = 'asc';
+		}
 
 		// Translate special sort values into appropriate Solr fields:
 		switch ($sortField){
 			case 'year':
 			case 'publishDate':
-				$sortField            = 'publishDateSort';
-				$defaultSortDirection = 'desc';
-				break;
+				return "publishDateSort $sortDirection,title_sort asc,authorStr asc";
 			case 'author':
-				$sortField = 'authorStr asc, title_sort';
-				break;
+				return "authorStr $sortDirection,title_sort asc";
 			case 'title':
-				$sortField = 'title_sort asc, authorStr';
-				break;
+				return "title_sort $sortDirection,authorStr asc";
 			case 'callnumber_sort':
 				$searchLibrary = Library::getSearchLibrary($this->searchSource);
 				if ($searchLibrary != null){
 					$sortField = 'callnumber_sort_' . $searchLibrary->subdomain;
 				}
 				break;
-		}
-
-		// Normalize sort direction to either "asc" or "desc":
-		$sortDirection = strtolower(trim($sortDirection));
-		if ($sortDirection != 'asc' && $sortDirection != 'desc'){
-			$sortDirection = $defaultSortDirection;
 		}
 
 		return $sortField . ' ' . $sortDirection;

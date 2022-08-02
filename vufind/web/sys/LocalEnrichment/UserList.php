@@ -18,23 +18,22 @@
  */
 
 /**
- * Table Definition for user_list
+ * Database object for User Lists
  */
 require_once 'DB/DataObject.php';
 
-class UserList extends DB_DataObject
-{
+class UserList extends DB_DataObject {
 
-	public $__table = 'user_list';												// table name
-	public $id;															// int(11)	not_null primary_key auto_increment
+	public $__table = 'user_list';						// table name
+	public $id;																// int(11)	not_null primary_key auto_increment
 	public $user_id;													// int(11)	not_null multiple_key
 	public $title;														// string(200)	not_null
 	public $description;											// string(500)
 	public $created;													// datetime(19)	not_null binary
-	public $public;													// int(11)	not_null
+	public $public;														// int(11)	not_null
 	public $deleted;
 	public $dateUpdated;
-	public $defaultSort; // string(20) null
+	public $defaultSort;											// string(20) null
 
 	// Used by FavoriteHandler as well//
 	protected $userListSortOptions = [
@@ -309,19 +308,11 @@ class UserList extends DB_DataObject
 		}
 	}
 
-	/**
-	 * @param int $start     position of first list item to fetch
-	 * @param int $numItems  Number of items to fetch for this result
-	 * @return array     Array of HTML to display to the user
-	 */
-	public function getBrowseRecords($start, $numItems, $defaultSort){
 
-		$browseRecords = [];
-		$listId = $this->id;
+	public function getBrowseRecords($page = 1, $recordsPerPage = 24){
 		require_once ROOT_DIR . '/sys/LocalEnrichment/FavoriteHandler.php';
-
 		$favoriteHandler = new FavoriteHandler($this);
-		return $favoriteHandler->buildListForBrowseCategory($start, $numItems, $defaultSort);
+		return $favoriteHandler->buildListForBrowseCategory($page, $recordsPerPage);
 	}
 
 	/**

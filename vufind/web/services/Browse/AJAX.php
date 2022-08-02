@@ -292,9 +292,7 @@ class Browse_AJAX extends AJAXHandler {
 					$sourceList     = new UserList();
 					$sourceList->id = $browseCategory->sourceListId;
 					if ($sourceList->find(true)){
-
-						$records = $sourceList->getBrowseRecords(($pageToLoad - 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE, $browseCategory->defaultSort);
-
+						$records = $sourceList->getBrowseRecords($pageToLoad);
 					}else{
 						$records = [];
 					}
