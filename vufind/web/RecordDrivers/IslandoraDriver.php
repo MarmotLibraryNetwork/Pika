@@ -306,7 +306,6 @@ abstract class IslandoraDriver extends RecordInterface {
 		$interface->assign('summId', $id);
 		$interface->assign('jquerySafeId', str_replace(':', '_', $id)); // make id safe for jquery & css calls
 		$interface->assign('summTitle', $this->getTitle());
-		$interface->assign('module', $this->getModule());
 		$interface->assign('summUrl', $this->getLinkUrl());
 		$interface->assign('summDescription', $this->getDescription());
 		$interface->assign('summFormat', $this->getFormat());
@@ -398,7 +397,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		$id = $this->getUniqueID();
 		$interface->assign('summId', $id);
 		$interface->assign('summTitle', $this->getTitle());
-		$interface->assign('module', $this->getModule());
+		//$interface->assign('module', $this->getModule());
 
 		$linkUrl = $this->getLinkUrl();
 		if (strpos($linkUrl, '?') === false){
@@ -409,7 +408,6 @@ abstract class IslandoraDriver extends RecordInterface {
 		$linkUrl .= 'searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page='  . $interface->get_template_vars('page');
 
 		$interface->assign('summUrl', $linkUrl);
-//		$interface->assign('summUrl', $this->getLinkUrl());
 		$interface->assign('summDescription', $this->getDescription());
 		$interface->assign('summFormat', $this->getFormat());
 
@@ -439,12 +437,10 @@ abstract class IslandoraDriver extends RecordInterface {
 		$id = $this->getUniqueID();
 		$interface->assign('summId', $id);
 		$interface->assign('summTitle', $this->getTitle());
-		$interface->assign('module', $this->getModule());
 
 		$linkUrl = $this->getLinkUrl();
 
 		$interface->assign('summUrl', $linkUrl);
-//		$interface->assign('summUrl', $this->getLinkUrl());
 		$interface->assign('summDescription', $this->getDescription());
 		$interface->assign('summFormat', $this->getFormat());
 
