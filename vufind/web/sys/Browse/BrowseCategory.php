@@ -204,14 +204,12 @@ class BrowseCategory extends DB_DataObject{
 		unset($browseSubCategoryStructure['weight']);
 		unset($browseSubCategoryStructure['browseCategoryId']);
 
-		$sortOptions = [
-			'relevance'        => 'Best Match',
-			'popularity'       => 'Total Checkouts',
-			'newest_to_oldest' => 'Date Added',
-			'author'           => 'Author',
-			'title'            => 'Title',
-			'user_rating'      => 'User Rating'
-		];
+		/** @var SearchObject_Solr|SearchObject_Base $searchObject */
+		$searchObject = SearchObjectFactory::initSearchObject();
+		$sortOptions = $searchObject->getSortOptions();
+		foreach ($sortOptions as $key => &$value){
+			$value = translate($value);
+		}
 
 		$structure = [
 			'id'          => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of this association'],
@@ -241,10 +239,8 @@ class BrowseCategory extends DB_DataObject{
 			// Disabled setting this option since it is not an implemented feature.
 			'searchTerm'         => ['property' => 'searchTerm', 'type' => 'text', 'label' => 'Search Term', 'description' => 'A default search term to apply to the category', 'default' => '', 'hideInLists' => true, 'maxLength' => 500],
 			'defaultFilter'      => ['property' => 'defaultFilter', 'type' => 'textarea', 'label' => 'Default Filter(s)', 'description' => 'Filters to apply to the search by default.', 'hideInLists' => true, 'rows' => 3, 'cols' => 80],
+			'defaultSort'        => ['property' => 'defaultSort', 'type' => 'enum', 'label' => 'Default Search Sort (does not apply to Source Lists) ', 'values' => $sortOptions, 'description' => 'The default sort for the search if none is specified', 'default' => 'relevance', 'hideInLists' => true],
 			'sourceListId'       => ['property' => 'sourceListId', 'type' => 'enum', 'values' => $sourceLists, 'label' => 'Source List', 'description' => 'A public list to display titles from'],
-			'defaultSort'        => ['property' => 'defaultSort', 'type' => 'enum', 'label' => 'Default Sort', 'values' => $sortOptions, 'description' => 'The default sort for the search if none is specified', 'default' => 'relevance', 'hideInLists' => true],
-			//'numTimesShown'      => ['property' => 'numTimesShown', 'type' => 'label', 'label' => 'Times Shown', 'description' => 'The number of times this category has been shown to users'],
-			//'numTitlesClickedOn' => ['property' => 'numTitlesClickedOn', 'type' => 'label', 'label' => 'Titles Clicked', 'description' => 'The number of times users have clicked on titles within this category'],
 		];
 
 		return $structure;
@@ -290,41 +286,32 @@ class BrowseCategory extends DB_DataObject{
 
 	/**
 	 *  Convert the BrowseCategory sort options into equivalent Solr sort values for building a search
+	 * @param SearchObject_Solr $searchObject
 	 *
 	 * @return string
 	 */
-	public function getSolrSort() {
-		if ($this->defaultSort == 'relevance'){
-			return 'relevance';
-		}elseif ($this->defaultSort == 'popularity'){
-			return 'popularity desc';
-		}elseif ($this->defaultSort == 'newest_to_oldest'){
-			return 'days_since_added asc';
-		}elseif ($this->defaultSort == 'author'){
-			return 'author,title';
-		}elseif ($this->defaultSort == 'title'){
-			return 'title,author';
-		}elseif ($this->defaultSort == 'user_rating'){
-			return 'rating desc,title';
-		}else{
-			return 'relevance';
+	public function getSolrSort($searchObject){
+		$searchOptions = $searchObject->getSortOptions();
+		if (array_key_exists($this->defaultSort, $searchOptions)){
+			return $this->defaultSort;
 		}
+		return 'relevance';
 	}
 
 	/**
-	 * @param SearchObject_Solr $searchObj
+	 * @param SearchObject_Solr $searchObject
 	 *
 	 * @return boolean
 	 */
-	public function updateFromSearch($searchObj) {
+	public function updateFromSearch($searchObject) {
 		//Search terms
-		$searchTerms = $searchObj->getSearchTerms();
+		$searchTerms = $searchObject->getSearchTerms();
 		if (is_array($searchTerms)){
 			if (count($searchTerms) > 1){
 				return false;
 			}elseif (!empty($searchTerms[0]['group'])){
 				if (count($searchTerms[0]['group']) == 1
-					&& in_array($searchTerms[0]['group'][0]['field'], $searchObj->getBasicTypes())
+					&& in_array($searchTerms[0]['group'][0]['field'], $searchObject->getBasicTypes())
 				){
 					// Simplest form of an advanced search can be converted to a browse category search
 					$this->searchTerm = $searchTerms[0]['group'][0]['field'] . ':' . $searchTerms[0]['group'][0]['lookfor'];
@@ -342,7 +329,7 @@ class BrowseCategory extends DB_DataObject{
 		}
 
 		//Default Filter
-		$filters          = $searchObj->getFilterList();
+		$filters          = $searchObject->getFilterList();
 		$formattedFilters = '';
 		foreach ($filters as $filter){
 			if (strlen($formattedFilters) > 0){
@@ -353,34 +340,7 @@ class BrowseCategory extends DB_DataObject{
 		$this->defaultFilter = $formattedFilters;
 
 		//Default sort
-		$solrSort = $searchObj->getSort();
-		switch ($solrSort){
-			case 'popularity desc':
-				$this->defaultSort = 'popularity';
-				break;
-			case 'days_since_added asc':
-				$this->defaultSort = 'newest_to_oldest';
-				// this option is not given to select
-				break;
-			case 'days_since_added desc':
-				$this->defaultSort = 'oldest_to_newest';
-				break;
-			case 'author':
-			case 'author,title':
-				$this->defaultSort = 'author';
-				break;
-			case 'title':
-			case 'title,author':
-				$this->defaultSort = 'title';
-				break;
-			case 'rating desc,title':
-				$this->defaultSort = 'user_rating';
-				break;
-			case 'relevance':
-			default:
-				$this->defaultSort = 'relevance';
-				break;
-		}
+		$this->defaultSort = $searchObject->getSort();
 		return true;
 	}
 

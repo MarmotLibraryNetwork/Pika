@@ -104,12 +104,12 @@ class Browse_AJAX extends AJAXHandler {
 					if (!empty($_REQUEST['searchId'])){
 						$searchId = $_REQUEST['searchId'];
 
-						/** @var SearchObject_Solr|SearchObject_Base $searchObj */
-						$searchObj = SearchObjectFactory::initSearchObject();
-						$searchObj->init();
-						$searchObj = $searchObj->restoreSavedSearch($searchId, false, true);
+						/** @var SearchObject_Solr|SearchObject_Base $searchObject */
+						$searchObject = SearchObjectFactory::initSearchObject();
+						$searchObject->init();
+						$searchObject = $searchObject->restoreSavedSearch($searchId, false, true);
 
-						if (!$browseCategory->updateFromSearch($searchObj)){
+						if (!$browseCategory->updateFromSearch($searchObject)){
 							return [
 								'success' => false,
 								'message' => "Sorry, this search is too complex to create a category from.",
@@ -306,8 +306,7 @@ class Browse_AJAX extends AJAXHandler {
 					foreach ($defaultFilters as $filter){
 						$this->searchObject->addFilter(trim($filter));
 					}
-					//Set Sorting, this is actually slightly mangled from the category to Solr
-					$this->searchObject->setSort($browseCategory->getSolrSort());
+					$this->searchObject->setSort($browseCategory->defaultSort);
 					if ($browseCategory->searchTerm != ''){
 						if ($browseCategory->searchTerm[0] == '(' && $browseCategory->searchTerm[strlen($browseCategory->searchTerm) -1] == ')'){
 							// Some simple Advanced Searches have been saved as browse categories of the form "(SearchType:searchPhrase)"
@@ -416,7 +415,7 @@ class Browse_AJAX extends AJAXHandler {
 		if ($textId){
 			$this->textId = $textId;
 		}elseif ($this->textId == null){ // set Id only once
-			$this->textId = isset($_REQUEST['textId']) ? $_REQUEST['textId'] : null;
+			$this->textId = $_REQUEST['textId'] ?? null;
 		}
 		return $this->textId;
 	}

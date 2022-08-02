@@ -1147,6 +1147,18 @@ class DBMaintenance extends Admin_Admin {
 					),
 				),
 
+
+				'2022.03.0_BrowseCategorySortOption' => [
+					'title'       => 'Match Browse Category default Sort Options to the Solr Sort Options',
+					'description' => 'Match Browse Category Search Sort Options to any valid Solr Sort Options',
+					'sql'         => [
+						'ALTER TABLE `browse_category` CHANGE COLUMN `defaultSort` `defaultSort` VARCHAR(50) NULL DEFAULT NULL;',
+						"UPDATE `browse_category` SET `defaultSort`='popularity desc' WHERE `defaultSort`='popularity';",
+						"UPDATE `browse_category` SET `defaultSort`='days_since_added' WHERE `defaultSort`='newest_to_oldest'",
+						"UPDATE `browse_category` SET `defaultSort`='user_rating' WHERE `defaultSort`='rating desc,title'",
+					],
+				],
+
 				'remove_old_resource_tables' => array(
 					'title'       => 'Remove old Resource Tables',
 					'description' => 'Remove old tables that were used for storing information based on resource',

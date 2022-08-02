@@ -1079,7 +1079,7 @@ abstract class SearchObject_Base {
 	 * @access  protected
 	 * @return  mixed    various internal variables
 	 */
-	protected function getSortOptions() { return $this->sortOptions; }
+	public function getSortOptions() { return $this->sortOptions; }
 
 	/**
 	 * Get an array of view options; protected since this should not be used
