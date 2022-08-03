@@ -144,7 +144,7 @@ class BrowseCategory extends DB_DataObject{
 
 		if (!empty($solrScopes)) { // don't bother if we didn't get any solr scopes
 			// Valid Browse Modes (taken from class Browse_AJAX)
-			$browseModes = array('covers', 'grid');
+			$browseModes = ['covers', 'grid'];
 
 			/* @var MemCache $memCache */
 			global $memCache;
@@ -192,7 +192,6 @@ class BrowseCategory extends DB_DataObject{
 		$sourceLists     = [];
 		$sourceLists[-1] = 'Generate from search term and filters';
 		while ($userLists->fetch()){
-
 			$numItems = $userLists->numValidListItems();
 			if ($numItems > 0){
 				$sourceLists[$userLists->id] = "($userLists->id) $userLists->title - $numItems entries";
@@ -232,14 +231,14 @@ class BrowseCategory extends DB_DataObject{
 				'sortable'      => true,
 				'storeDb'       => true,
 				'allowEdit'     => false,
-				'canEdit'       => false,
+				'canEdit'       => true,
 			],
 
 			//			'catalogScoping' => array('property'=>'catalogScoping', 'type'=>'enum', 'label'=>'Catalog Scoping', 'values' => array('unscoped' => 'Unscoped', 'library' => 'Current Library', 'location' => 'Current Location'), 'description'=>'What scoping should be used for this search scope?.', 'default'=>'unscoped'),
 			// Disabled setting this option since it is not an implemented feature.
 			'searchTerm'         => ['property' => 'searchTerm', 'type' => 'text', 'label' => 'Search Term', 'description' => 'A default search term to apply to the category', 'default' => '', 'hideInLists' => true, 'maxLength' => 500],
-			'defaultFilter'      => ['property' => 'defaultFilter', 'type' => 'textarea', 'label' => 'Default Filter(s)', 'description' => 'Filters to apply to the search by default.', 'hideInLists' => true, 'rows' => 3, 'cols' => 80],
-			'defaultSort'        => ['property' => 'defaultSort', 'type' => 'enum', 'label' => 'Default Search Sort (does not apply to Source Lists) ', 'values' => $sortOptions, 'description' => 'The default sort for the search if none is specified', 'default' => 'relevance', 'hideInLists' => true],
+			'defaultFilter'      => ['property' => 'defaultFilter', 'type' => 'textarea', 'label' => 'Search Filter(s)', 'description' => 'Filters to apply to the search by default.', 'hideInLists' => true, 'rows' => 3, 'cols' => 80],
+			'defaultSort'        => ['property' => 'defaultSort', 'type' => 'enum', 'label' => 'Search Sort (does not apply to Source Lists) ', 'values' => $sortOptions, 'description' => 'The sort to apply to the search results', 'default' => 'relevance', 'hideInLists' => true],
 			'sourceListId'       => ['property' => 'sourceListId', 'type' => 'enum', 'values' => $sourceLists, 'label' => 'Source List', 'description' => 'A public list to display titles from'],
 		];
 
