@@ -391,20 +391,23 @@ class FavoriteHandler {
 						$searchFilteredIds         = $catalogSearchObject->getFilteredIds($this->catalogIds);
 						$pageInfo['resultTotal']   = count($searchFilteredIds);
 						$remainingIdsInSortedOrder = array_intersect($this->catalogIds, $searchFilteredIds);
-
-						$catalogSearchObject->setPage($page);              // Set back to the actual page of the list now that search was processed
-						$catalogSearchObject->setLimit($recordsPerPage);   // Set the actual limit per page
 					} else {
 						$remainingIdsInSortedOrder = $this->catalogIds;
 					}
 
 					// Get ids for a page of the list after search filters have been applied
 					$idsToDisplayForThisPage = array_slice($remainingIdsInSortedOrder, $startRecord - 1, $recordsPerPage);
-					$catalogSearchObject->setQueryIDs($idsToDisplayForThisPage); // do solr search by Ids
-					$catalogSearchObject->setLimit($recordsPerPage);
-					$catalogSearchObject->setPrimarySearch(false);
-					$catalogResult           = $catalogSearchObject->processSearch(false, false, true);
-					$catalogResourceList     = $catalogSearchObject->getResultListHTML($this->listId, $this->allowEdit, $idsToDisplayForThisPage);
+					if (count($idsToDisplayForThisPage)){
+						$catalogSearchObject->setQueryIDs($idsToDisplayForThisPage);// do solr search by Ids
+						$catalogSearchObject->setPage(1);
+						$catalogSearchObject->setLimit($recordsPerPage);
+						$catalogSearchObject->setPrimarySearch(false);
+						$catalogResult       = $catalogSearchObject->processSearch(false, false, true);
+						$catalogSearchObject->setPage($page);
+						// Set back to the actual page of the list now that search was processed
+						// (This ensures the position numbering is correct when not on page 1)
+						$catalogResourceList = $catalogSearchObject->getResultListHTML($this->listId, $this->allowEdit, $idsToDisplayForThisPage);
+					}
 
 				} // Solr Sorted Catalog Only Search //
 				else{
@@ -499,26 +502,26 @@ class FavoriteHandler {
 						$searchFilteredIds         = $archiveSearchObject->getFilteredPIDs($this->archiveIds);
 						$pageInfo['resultTotal']   = count($searchFilteredIds);
 						$remainingIdsInSortedOrder = array_intersect($this->archiveIds, $searchFilteredIds);
-
-						$archiveSearchObject->setPage($page);            // Set back to the actual page of the list now that search was processed
-						$archiveSearchObject->setLimit($recordsPerPage); // Set the actual limit per page
-
 					} else {
 						$remainingIdsInSortedOrder = $this->archiveIds;
 					}
 
 					// Get ids for a page of the list after search filters have been applied
 					$idsToDisplayForThisPage = array_slice($remainingIdsInSortedOrder, $startRecord - 1, $recordsPerPage);
-					$archiveSearchObject->setQueryIDs($idsToDisplayForThisPage); // do solr search by Ids
-					$archiveSearchObject->setLimit($recordsPerPage);
-					$archiveSearchObject->setPrimarySearch(false);
-
-					$archiveResult       = $archiveSearchObject->processSearch(false, false, true);
-					$archiveResourceList = $archiveSearchObject->getResultListHTML($this->listId, $this->allowEdit, $idsToDisplayForThisPage);
+					if (count($idsToDisplayForThisPage)){
+						$archiveSearchObject->setQueryIDs($idsToDisplayForThisPage);// do solr search by Ids
+						$archiveSearchObject->setLimit($recordsPerPage);
+						$archiveSearchObject->setPage(1);
+						$archiveSearchObject->setPrimarySearch(false);
+						$archiveResult       = $archiveSearchObject->processSearch(false, false, true);
+						$archiveSearchObject->setPage($page);
+						// Set back to the actual page of the list now that search was processed
+						// (This ensures the position numbering is correct when not on page 1)
+						$archiveResourceList = $archiveSearchObject->getResultListHTML($this->listId, $this->allowEdit, $idsToDisplayForThisPage);
+					}
 				}// Islandora Sorted Archive Only Searches
 				else{
 					$archiveSearchObject->setQueryIDs($this->archiveIds); // do Islandora search by Ids
-					$archiveSearchObject->setPage($page);                 // set to the first page for the search only
 					$archiveResult           = $archiveSearchObject->processSearch(false, true, true);
 					$archiveResourceList     = $archiveSearchObject->getResultListHTML($this->listId, $this->allowEdit);
 					$pageInfo['resultTotal'] = $archiveResult['response']['numFound'];
