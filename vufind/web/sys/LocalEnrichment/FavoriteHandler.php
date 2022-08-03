@@ -136,20 +136,21 @@ class FavoriteHandler {
 			if (!$this->isMixedUserList){
 				if ($this->isUserListSort){
 					$idsToFetch = array_slice($this->catalogIds, $startRecord, $recordsPerPage);
-					$catalogSearchObject->setPage(1); // set to the first page for the search only
-
-					$catalogSearchObject->setQueryIDs($idsToFetch); // do solr search by Ids
-					$catalogResults = $catalogSearchObject->processSearch();
-					foreach ($catalogResults['response']['docs'] as $catalogResult){
-						$groupedWork = new GroupedWorkDriver($catalogResult);
-						if ($groupedWork->isValid){
-							$key = array_search($catalogResult['id'], $idsToFetch);
-							if ($key !== false){
-								$catalogResourceList[$key] = $interface->fetch($groupedWork->getBrowseResult());
+					if (count($idsToFetch)){
+						$catalogSearchObject->setPage(1);              // set to the first page for the search only
+						$catalogSearchObject->setQueryIDs($idsToFetch);// do solr search by Ids
+						$catalogResults = $catalogSearchObject->processSearch();
+						foreach ($catalogResults['response']['docs'] as $catalogResult){
+							$groupedWork = new GroupedWorkDriver($catalogResult);
+							if ($groupedWork->isValid){
+								$key = array_search($catalogResult['id'], $idsToFetch);
+								if ($key !== false){
+									$catalogResourceList[$key] = $interface->fetch($groupedWork->getBrowseResult());
+								}
 							}
 						}
+						ksort($catalogResourceList, SORT_NUMERIC);// Requires re-ordering to display in the correct order
 					}
-					ksort($catalogResourceList, SORT_NUMERIC); // Requires re-ordering to display in the correct order
 				} // Solr Sorted Catalog Only Search //
 				else{
 					$catalogSearchObject->setQueryIDs($this->catalogIds); // do solr search by Ids
@@ -215,20 +216,20 @@ class FavoriteHandler {
 				// User Sorted Archive Only Searches
 				if ($this->isUserListSort){
 					$idsToFetch = array_slice($this->archiveIds, $page, $recordsPerPage);
-					$archiveSearchObject->setPage(1); // set to the first page for the search only
-
-					$archiveSearchObject->setQueryIDs($idsToFetch); // do solr search by Ids
-					$archiveResult = $archiveSearchObject->processSearch(false, false, false);
-					foreach ($archiveResult['response']['docs'] as $result){
-						/** @var IslandoraDriver $archiveWork */
-						$archiveWork = RecordDriverFactory::initRecordDriver($result);
-						$key         = array_search($result['PID'], $idsToFetch);
-						if ($key !== false){
-							$archiveResourceList[] = $interface->fetch($archiveWork->getBrowseResult());
+					if (count($idsToFetch)){
+						$archiveSearchObject->setPage(1);              // set to the first page for the search only
+						$archiveSearchObject->setQueryIDs($idsToFetch);// do solr search by Ids
+						$archiveResult = $archiveSearchObject->processSearch(false, false, false);
+						foreach ($archiveResult['response']['docs'] as $result){
+							/** @var IslandoraDriver $archiveWork */
+							$archiveWork = RecordDriverFactory::initRecordDriver($result);
+							$key         = array_search($result['PID'], $idsToFetch);
+							if ($key !== false){
+								$archiveResourceList[] = $interface->fetch($archiveWork->getBrowseResult());
+							}
 						}
+						ksort($archiveResourceList, SORT_NUMERIC);// Requires re-ordering to display in the correct order
 					}
-					ksort($archiveResourceList, SORT_NUMERIC); // Requires re-ordering to display in the correct order
-
 				}// Islandora Sorted Archive Only Searches
 				else{
 					//TODO: set sort
