@@ -69,7 +69,11 @@ class Browse_AJAX extends AJAXHandler {
 					$searchLocation = Location::getUserHomeLocation();
 				}elseif (UserAccount::userHasRole('opacAdmin')){
 					// Use the interface library for opac admins (can be different from the user home library)
-					global $library;
+					if (Location::getSearchLocation()){
+						$searchLocation = Location::getSearchLocation();
+					} else {
+						global $library;
+					}
 				}elseif (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager', 'contentEditor'])){
 					// Otherwise, use User's home library
 					$library = $user->getHomeLibrary();
