@@ -753,7 +753,7 @@ class Library extends DB_DataObject {
 					'sortable'      => true,
 					'storeDb'       => true,
 					'allowEdit'     => false,
-					'canEdit'       => false,
+					'canEdit'       => true,
 					'directLink'    => true,
 					],
 				]],

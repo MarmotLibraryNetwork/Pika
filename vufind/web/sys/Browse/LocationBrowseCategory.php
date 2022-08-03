@@ -64,4 +64,11 @@ class LocationBrowseCategory extends DB_DataObject{
 		];
 		return $structure;
 	}
+
+	public function getEditLink(){
+		$browseCategory = new BrowseCategory();
+		$browseCategory->get('textId', $this->browseCategoryTextId);
+		return '/Admin/BrowseCategories?objectAction=edit&id=' . $browseCategory->id;
+	}
+
 }

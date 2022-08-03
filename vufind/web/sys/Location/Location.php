@@ -403,7 +403,7 @@ class Location extends DB_DataObject {
 						'sortable'      => true,
 						'storeDb'       => true,
 						'allowEdit'     => false,
-						'canEdit'       => false,
+						'canEdit'       => true,
 						'additionalOneToManyActions' => [
 							[
 								'text'    => 'Copy Browse Categories from Location',

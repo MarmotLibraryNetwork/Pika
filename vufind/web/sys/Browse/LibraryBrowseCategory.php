@@ -71,4 +71,11 @@ class LibraryBrowseCategory extends DB_DataObject {
 		$library->get($this->libraryId);
 		return $_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl . '?browseCategory=' . $this->browseCategoryTextId;
 	}
+
+	public function getEditLink(){
+		$browseCategory = new BrowseCategory();
+		$browseCategory->get('textId', $this->browseCategoryTextId);
+		return '/Admin/BrowseCategories?objectAction=edit&id=' . $browseCategory->id;
+	}
+
 }
