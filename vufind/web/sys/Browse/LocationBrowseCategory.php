@@ -64,6 +64,15 @@ class LocationBrowseCategory extends DB_DataObject{
 		];
 		return $structure;
 	}
+	function getDirectLink(){
+		$location = new Location();
+		$location->get($this->locationId);
+		if (!empty($location->catalogUrl)){
+			return $_SERVER['REQUEST_SCHEME'] . '://' . $location->catalogUrl . '?browseCategory=' . $this->browseCategoryTextId;
+		}
+		return null;
+	}
+
 
 	public function getEditLink(){
 		$browseCategory = new BrowseCategory();

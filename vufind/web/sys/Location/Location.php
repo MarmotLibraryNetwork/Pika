@@ -404,6 +404,7 @@ class Location extends DB_DataObject {
 						'storeDb'       => true,
 						'allowEdit'     => false,
 						'canEdit'       => true,
+						'directLink'    => true,
 						'additionalOneToManyActions' => [
 							[
 								'text'    => 'Copy Browse Categories from Location',
