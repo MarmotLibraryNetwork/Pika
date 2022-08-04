@@ -59,10 +59,9 @@ Pika.Browse = (function(){
 		},
 
 		toggleBrowseMode : function(selectedMode){
-			var mode = this.browseModeClasses.hasOwnProperty(selectedMode) ? selectedMode : this.browseMode, // check that selected mode is a valid option
-					categoryTextId = this.curCategory || $('#browse-category-carousel .selected').data('category-id'),
+			var categoryTextId = this.curCategory || $('#browse-category-carousel .selected').data('category-id'),
 					subCategoryTextId = this.curSubCategory || $('#browse-sub-category-menu .selected').data('sub-category-id');
-			this.browseMode = mode; // set the mode officially
+			this.browseMode = this.browseModeClasses.hasOwnProperty(selectedMode) ? selectedMode : this.browseMode; // check that selected mode is a valid option
 			if (!Globals.opac && Pika.hasLocalStorage() ) { // store setting in browser if not an opac computer
 				window.localStorage.setItem('browseMode', this.browseMode);
 			}
@@ -96,6 +95,10 @@ Pika.Browse = (function(){
 					newLabel = $('#browse-category-'+categoryTextId+' div').first().text(), // get label from corresponding li div
 			// the carousel clones these divs sometimes, so grab only the text from the first one.
 					loadingID = categoryTextId || initial;
+
+			if (Pika.Browse.curSubCategory !== '') params.subCategoryTextId = Pika.Browse.curSubCategory;
+			//This is triggered when a sub category has been set by url.
+			// This allows us to fetch the chosen sub category instead of default sub category
 
 			// Set selected Carousel
 			$('.browse-category').removeClass('selected');
@@ -157,7 +160,6 @@ Pika.Browse = (function(){
 		},
 
 		changeBrowseSubCategory: function (subCategoryTextId) {
-			//console.log('change Browse Sub Category');
 			var url = '/Browse/AJAX',
 					params = {
 						method : 'getBrowseSubCategoryInfo'
