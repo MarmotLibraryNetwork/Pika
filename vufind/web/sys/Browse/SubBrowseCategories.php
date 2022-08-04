@@ -65,7 +65,7 @@ class SubBrowseCategories extends DB_DataObject {
 	}
 
 	public function getEditLink(){
-		return '/Admin/BrowseCategories?objectAction=edit&id=' . $this->browseCategoryId;
+		return '/Admin/BrowseCategories?objectAction=edit&id=' . $this->subCategoryId;
 	}
 
 
