@@ -351,13 +351,18 @@ class Browse_AJAX extends AJAXHandler {
 
 					$result['searchUrl'] = $this->searchObject->renderSearchUrl();
 
-					//TODO: Check if last page
+					// let front end know if we have reached the end of the result set
+					if ($this->searchObject->getPage() * $this->searchObject->getLimit() >= $this->searchObject->getResultTotal()){
+						$result['lastPage'] = true;
+					}
+
 
 					// Shutdown the search object
 					$this->searchObject->close();
 				}
 				if (count($records) == 0){
-					$records[] = $interface->fetch('Browse/noResults.tpl');
+					$records[]          = $interface->fetch('Browse/noResults.tpl');
+					$result['lastPage'] = true;
 				}
 
 				$result['records']    = implode('', $records);
