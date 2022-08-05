@@ -328,7 +328,8 @@
   },
   "SeriesProper": {
     "DismaxFields": [
-      "series_proper^100"
+      "series_proper^100",
+      "series2"
     ],
     "QueryFields": {
       "series_proper": [
