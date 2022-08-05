@@ -232,12 +232,13 @@
 							update: function (e, ui){
 								var updates = [],
 										firstItemOnPage = {/literal}{$recordStart}{literal};
-								$('#UserList>div>div>div>div').each(function(currentOrder){
+								$('#UserList .resultsList').each(function(currentOrder){
 									var id = this.id.replace('groupedRecord','') /* Grouped IDs for catalog items */
 																	.replace('archive',''),      /*modified Islandora PIDs for archive items*/
 													originalOrder = $(this).data('order'),
 													change = currentOrder+firstItemOnPage-originalOrder,
 													newOrder = originalOrder+change;
+													//console.log(id, originalOrder, change, newOrder);
 									if (change != 0) updates.push({'id':id, 'newOrder':newOrder});
 								});
 								$.getJSON('/MyAccount/AJAX',

@@ -1,6 +1,7 @@
 {strip}
 	<div id="archive{$jquerySafeId|escape}" class="resultsList" data-order="{$resultIndex}">
 		{* Because colons give css & jquery trouble the Ids from Islandora have : replaced with _ *}
+		{* the data-order attribute is used for user-defined ordering in user lists  *}
 		<a name="record{$summId|escape:"url"}"></a>{* TODO: remove colons from these Ids as well *}
 		<div class="row">
 			<div class="col-md-1"><input type="checkbox" name="marked" id="favorite_{$summId|escape}" class="form-control-static" value="{$summId|escape}"></div>
