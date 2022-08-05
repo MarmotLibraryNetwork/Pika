@@ -72,6 +72,12 @@
 				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
 				-->
 				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<!--
+				Simple tokenizer that splits the text stream on whitespace and returns sequences of
+				non-whitespace characters as tokens. Note that any punctuation will be included in the tokens.
+
+				https://solr.apache.org/guide/8_8/tokenizers.html#white-space-tokenizer
+				-->
 				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
 				<!--
 				This filter discards, or stops analysis of, tokens that are on the given stop words list.
@@ -80,7 +86,22 @@
 
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#stop-filter
 				-->
-				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
+				<filter class="solr.ICUFoldingFilterFactory"/>
+				<!--
+				This filter is a custom Unicode normalization form that applies the foldings specified in Unicode TR #30: Character Foldings
+				in addition to the NFKC_Casefold normalization form as described in ICU Normalizer 2 Filter.
+				This filter is a better substitute for the combined behavior of the ASCII Folding Filter, Lower Case Filter,
+				and ICU Normalizer 2 Filter.
+
+				To use this filter, you must add additional .jars to Solr’s classpath
+				See solr/contrib/analysis-extras/README.txt for instructions on which jars you need to add.
+
+				From the README.txt: ICU relies upon lucene-libs/lucene-analyzers-icu-X.Y.jar and lib/icu4j-X.Y.jar
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
+
+				-->
+
 				<filter class="solr.WordDelimiterGraphFilterFactory"
 						generateWordParts="1"
 						generateNumberParts="1"
@@ -128,9 +149,6 @@
 					Any leading or trailing delimiters are discarded: "-hot-spot-" -> "hot", "spot" (original example uses double dashes not allowed in xml comments)
 
 
-				https://solr.apache.org/guide/8_8/filter-descriptions.html#word-delimiter-graph-filter
-				-->
-				<!--
 				From documentation : https://solr.apache.org/guide/8_8/filter-descriptions.html#word-delimiter-graph-filter
 
 									generateWordParts
@@ -155,27 +173,18 @@
 						(integer, default 1) If 1, strips the possessive 's from each subword.
 				-->
 				<filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
-				<filter class="solr.ICUFoldingFilterFactory"/>
-				<!-- Had to move after word graph delimiter so that protected words would get through that filter -->
-				<!--
-				This filter is a custom Unicode normalization form that applies the foldings specified in Unicode TR #30: Character Foldings
-				in addition to the NFKC_Casefold normalization form as described in ICU Normalizer 2 Filter.
-				This filter is a better substitute for the combined behavior of the ASCII Folding Filter, Lower Case Filter,
-				and ICU Normalizer 2 Filter.
-
-				To use this filter, you must add additional .jars to Solr’s classpath
-				See solr/contrib/analysis-extras/README.txt for instructions on which jars you need to add.
-
-				From the README.txt: ICU relies upon lucene-libs/lucene-analyzers-icu-X.Y.jar and lib/icu4j-X.Y.jar
-
-				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
-
-				-->
-
 				<!--<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>-->
 				<!--The CommonGrams Filter is  prevented from going into effect here by the StopFilter above
 				 TODO: in other words, I think the CommonGrams has to precede the StopFilter to have an effect
 				 -->
+				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
+				<!--
+				Protects words from being modified by stemmers. A customized protected word list may be specified with
+				the "protected" attribute in the schema. Any words in the protected word list will not be modified
+				by any stemmer in Solr.
+
+				https://solr.apache.org/guide/8_8/language-analysis.html#keywordmarkerfilterfactory
+				-->
 				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
@@ -206,6 +215,12 @@
 				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
 				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
 				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<!--
+				Simple tokenizer that splits the text stream on whitespace and returns sequences of
+				non-whitespace characters as tokens. Note that any punctuation will be included in the tokens.
+
+				https://solr.apache.org/guide/8_8/tokenizers.html#white-space-tokenizer
 				-->
 				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
 				<!-- Important: Only apply synonym filter to query analyzers; not to index analyzers-->
@@ -315,65 +330,49 @@
 				-->
 				<!--<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>-->
 				<!--The CommonGrams Filter is  prevented from going into effect here by the StopFiler above -->
+				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
+				<!--
+				Protects words from being modified by stemmers. A customized protected word list may be specified with
+				the "protected" attribute in the schema. Any words in the protected word list will not be modified
+				by any stemmer in Solr.
+
+				https://solr.apache.org/guide/8_8/language-analysis.html#keywordmarkerfilterfactory
+				-->
 				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 		</fieldType>
 		<!-- Text Field without Stemming, without Synonyms, and without stop Word removal -->
-		<fieldType name="textProper" class="solr.TextField" positionIncrementGap="100">
-			<analyzer type="index">
-				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+		<fieldType name="text-proper" class="solr.TextField" positionIncrementGap="100">
+			<analyzer>
+				<tokenizer class="solr.ICUTokenizerFactory"/>
 				<!--
-				Simple tokenizer that splits the text stream on whitespace and returns sequences of
-				non-whitespace characters as tokens. Note that any punctuation will be included in the tokens.
-
-				https://solr.apache.org/guide/8_8/tokenizers.html#white-space-tokenizer
+				This tokenizer processes multilingual text and tokenizes it appropriately based on its script attribute.
+				Requires additional jar files
+				The default configuration for solr.ICUTokenizerFactory provides UAX#29 word break rules tokenization
+				(like solr.StandardTokenizer), but also includes custom tailorings for Hebrew (specializing handling
+				of double and single quotation marks), for syllable tokenization for Khmer, Lao, and Myanmar, and
+				dictionary-based word segmentation for CJK characters.
+				https://solr.apache.org/guide/8_8/tokenizers.html#icu-tokenizer
 				-->
-
-				<!-- Need to keep symbol characters in protwords.txt. ICUTokenizerFactory tokenizer removed them.  See D-75 -->
-				<!--  Don't use word delimiter graph on textProper till we prove it is needed. See D-4189 -->
-
-				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
+				<!--  Disabling using word delimiter graph on textProper till we prove it is needed. See D-4189
+								<filter class="solr.WordDelimiterGraphFilterFactory"
+										generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0"
+										splitOnCaseChange="1" splitOnNumerics="0" stemEnglishPossessive="1"
+										protected="protected_en_contractions.txt"
+								/>
+								&lt;!&ndash; protect contractions for matching in text_proper See D-4189 &ndash;&gt;
+								<filter class="solr.FlattenGraphFilterFactory"/> &lt;!&ndash; required on index analyzers after graph filters &ndash;&gt;
+				-->
 				<filter class="solr.ICUFoldingFilterFactory"/>
 				<!--
 				This filter is a custom Unicode normalization form that applies the foldings specified in Unicode TR #30: Character Foldings
 				in addition to the NFKC_Casefold normalization form as described in ICU Normalizer 2 Filter.
 				This filter is a better substitute for the combined behavior of the ASCII Folding Filter, Lower Case Filter,
 				and ICU Normalizer 2 Filter.
-
 				To use this filter, you must add additional .jars to Solr’s classpath
 				See solr/contrib/analysis-extras/README.txt for instructions on which jars you need to add.
-
 				From the README.txt: ICU relies upon lucene-libs/lucene-analyzers-icu-X.Y.jar and lib/icu4j-X.Y.jar
-
-				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
-				-->
-			</analyzer>
-			<analyzer type="query">
-				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
-				<!--
-				Simple tokenizer that splits the text stream on whitespace and returns sequences of
-				non-whitespace characters as tokens. Note that any punctuation will be included in the tokens.
-
-				https://solr.apache.org/guide/8_8/tokenizers.html#white-space-tokenizer
-				-->
-
-				<!-- Need to keep symbol characters in protwords.txt. ICUTokenizerFactory tokenizer removed them.  See D-75 -->
-				<!--  Don't use word delimiter graph on textProper till we prove it is needed. See D-4189 -->
-
-				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
-				<filter class="solr.ICUFoldingFilterFactory"/>
-				<!--
-				This filter is a custom Unicode normalization form that applies the foldings specified in Unicode TR #30: Character Foldings
-				in addition to the NFKC_Casefold normalization form as described in ICU Normalizer 2 Filter.
-				This filter is a better substitute for the combined behavior of the ASCII Folding Filter, Lower Case Filter,
-				and ICU Normalizer 2 Filter.
-
-				To use this filter, you must add additional .jars to Solr’s classpath
-				See solr/contrib/analysis-extras/README.txt for instructions on which jars you need to add.
-
-				From the README.txt: ICU relies upon lucene-libs/lucene-analyzers-icu-X.Y.jar and lib/icu4j-X.Y.jar
-
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#icu-folding-filter
 				-->
 			</analyzer>
@@ -424,6 +423,11 @@
 				-->
 				<tokenizer class="solr.KeywordTokenizerFactory"/>
 				<filter class="solr.LengthFilterFactory" min="2" max="100"/>
+				<!-- This filter passes tokens whose length falls within the min/max limit specified.
+				All other tokens are discarded.
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#length-filter
+				-->
 				<filter class="solr.LowerCaseFilterFactory"/>
 				<!--
 				Converts any uppercase letters in a token to the equivalent lowercase token. All other characters are left unchanged.
@@ -480,6 +484,11 @@
 				-->
 				<filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
 				<filter class="solr.LengthFilterFactory" min="2" max="100"/>
+				<!-- This filter passes tokens whose length falls within the min/max limit specified.
+				All other tokens are discarded.
+
+				https://solr.apache.org/guide/8_8/filter-descriptions.html#length-filter
+				-->
 				<filter class="solr.LowerCaseFilterFactory"/>
 				<!--TODO: shouldn't we apply this immediately after the tokenizer ? -->
 				<!--
@@ -509,7 +518,6 @@
 
 				https://solr.apache.org/guide/8_8/filter-descriptions.html#lower-case-filter
 				-->
-				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/><!--TODO: Shouldn't this always be redundant??  -->
 			</analyzer>
 		</fieldType>
 		<fieldType name="text-left" class="solr.TextField" sortMissingLast="true" omitNorms="true">
@@ -583,7 +591,7 @@
 		<field name="title" type="text" indexed="true" stored="true"/>  <!-- basic title -->
 		<field name="title_exact" type="text-exact" indexed="true" stored="true"/>  <!-- basic title -->
 		<field name="title_left" type="text-left" indexed="true" stored="true"/>  <!-- basic title -->
-		<field name="title_proper" type="textProper" indexed="true" stored="false"/>  <!-- basic title -->
+		<field name="title_proper" type="text-proper" indexed="true" stored="false"/>  <!-- basic title -->
 		<field name="title_display" type="text" indexed="true" stored="true" multiValued="false"/> <!-- The title to display to the user -->
 		<field name="title_sort" type="alphaOnlySort" indexed="true" stored="true"/> <!-- title for sorting -->
 		<field name="title_sub" type="text" indexed="true" stored="true"/>
@@ -716,7 +724,7 @@
 		<field name="author_display" type="string" indexed="true" stored="true" multiValued="false"/>
 		<!-- The title to display to the user -->
 		<!--trimmed 100a or 110ab -->
-		<field name="auth_author" type="textProper" indexed="true" stored="false"/>
+		<field name="auth_author" type="text-proper" indexed="true" stored="false"/>
 		<!-- First MARC 100 - Main Entry-Personal Name
 			$a - Personal name (NR)
 			$b - Numeration (NR)
@@ -730,7 +738,8 @@
 		<field name="author2-role" type="string" indexed="true" stored="true" multiValued="true"/>
 		<!-- The contributor with role and title appended -->
 		<!-- All MARC tags 700abcdetmnr and 710abcdetmnr with translation of relator code (subfield 4) appended after pipe character "|" -->
-		<field name="auth_author2" type="textProper" indexed="true" stored="true" multiValued="true"/>
+		<field name="auth_author2" type="text-proper" indexed="true" stored="true" multiValued="true"/>
+		<!--TODO: stored needed for auth_author2 -->
 		<!-- All MARC tags 700abcd -->
 <!--		<field name="auth_author2Str" type="string" indexed="true" stored="false" multiValued="true"/>-->
 		<field name="author_additional" type="text" indexed="true" stored="true" multiValued="true"/>
@@ -740,6 +749,7 @@
 		<!-- format -->
 		<field name="grouping_category" type="string" indexed="true" stored="true" multiValued="false" omitNorms="true"/>
 		<!--TODO: Is there a reason to index the grouping_category ? -->
+		<!--TODO: Is there a reason to have this stored -->
 		<dynamicField name="format_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
 		<field name="format_boost" type="integer" indexed="true" stored="true" multiValued="false" omitNorms="true" default="1"/>
 		<!--TODO: leaving the original field till the php side can switched over to using the dynamic field-->
@@ -747,9 +757,11 @@
 		<dynamicField name="format_category_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
 
 		<!-- Publication information -->
-		<field name="publisher" type="textProper" indexed="true" stored="true" multiValued="true"/>
+		<field name="publisher" type="text-proper" indexed="true" stored="true" multiValued="true"/>
 		<field name="publishDate" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="publishDateSort" type="string" indexed="true" stored="true"/>
+		<!--The earliest publication date on the grouped work -->
+		<!--TODO: Is there a reason to have this stored -->
 		<field name="edition" type="string" indexed="true" stored="true" multiValued="true"/>
 <!--		<field name="dateSpan" type="string" indexed="true" stored="true" multiValued="true"/>-->
 			<!--field for MARC 362a Dates of Publication and/or Sequential Designation  -->
@@ -768,7 +780,7 @@
 
 		<!-- series -->
 		<field name="series" type="text" indexed="true" stored="true" multiValued="true"/>
-		<field name="series_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+		<field name="series_proper" type="text-proper" indexed="true" stored="false" multiValued="true"/>
 		<field name="series_with_volume" type="string" indexed="false" stored="true" multiValued="true"/>
 		<!--Not indexed used for display only. Takes any entry in series and appends series volume number after a pipe | character -->
 		<field name="series2" type="text" indexed="true" stored="true" multiValued="true"/>
@@ -777,20 +789,20 @@
 		<!-- subject facets-->
 		<field name="subject_facet" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="subject" type="text" indexed="true" stored="true" multiValued="true"/>
-		<field name="subject_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+		<field name="subject_proper" type="text-proper" indexed="true" stored="false" multiValued="true"/>
 		<field name="topic" type="text" indexed="true" stored="true" multiValued="true"/>
-		<field name="topic_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+		<field name="topic_proper" type="text-proper" indexed="true" stored="false" multiValued="true"/>
 		<field name="topic_facet" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="lc_subject" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="bisac_subject" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="genre" type="text" indexed="true" stored="true" multiValued="true"/>
-		<field name="genre_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+		<field name="genre_proper" type="text-proper" indexed="true" stored="false" multiValued="true"/>
 		<field name="genre_facet" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="geographic" type="text" indexed="true" stored="true" multiValued="true"/>
-		<field name="geographic_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+		<field name="geographic_proper" type="text-proper" indexed="true" stored="false" multiValued="true"/>
 		<field name="geographic_facet" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="era" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
-		<field name="era_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+		<field name="era_proper" type="text-proper" indexed="true" stored="false" multiValued="true"/>
 
 		<field name="literary_form_full" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<!-- Detailed version of the literary form. Typically consists of values: Non Fiction, Fiction, Dramas,
@@ -832,10 +844,10 @@
 
 		<!-- Broad Search Terms -->
 		<field name="table_of_contents" type="text" indexed="true" stored="true" multiValued="true"/>
-		<field name="table_of_contents_proper" type="textProper" indexed="true" stored="true" multiValued="true"/>
+		<field name="table_of_contents_proper" type="text-proper" indexed="true" stored="true" multiValued="true"/>
 		<!-- Only used in searchspec KeywordProper TODO: keep?; turn off stored? -->
 		<field name="keywords" type="text" indexed="true" stored="false"/>
-		<field name="keywords_proper" type="textProper" indexed="true" stored="false"/>
+		<field name="keywords_proper" type="text-proper" indexed="true" stored="false"/>
 		<field name="description" type="text" indexed="true" stored="false"/>
 		<!-- all MARC 520a tags from all related records and OverDrive metadata shortDescription & fullDescription -->
 		<field name="display_description" type="string" indexed="false" stored="true"/>
@@ -851,7 +863,7 @@
 		 -->
 
 		<!--
-		primary_isbn, isbn, issn, primary_upc, & upc were all type="textProper".
+		primary_isbn, isbn, issn, primary_upc, & upc were all type="text-proper".
 		Switch to regular "string". I don't think any of these fields need any special analyzer or index handling
 		pascal 7/27/2021
 		-->
