@@ -192,10 +192,14 @@
   margin-top: 5px;
 }
 
+.row.home-page-browse-grid:before, .row.home-page-browse-thumbnails:before{
+  display:none;
+}
+
 .home-page-browse-thumbnails, .home-page-browse-grid, .browse-thumbnails-few {
-  -webkit-column-gap: 15px;
-  -moz-column-gap: 15px;
-  column-gap: 15px;
+  display:grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px 20px;
 }
 .home-page-browse-thumbnails {
   @media(min-width: 0){
