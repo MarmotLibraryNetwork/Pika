@@ -98,7 +98,7 @@ class CitationBuilder {
 	 */
 	public function getMLA(){
 		global $interface;
-		$mla[] = array(
+		$mla= array(
 			'title'     => $this->getMLATitle(),
 			'authors'   => $this->getMLAAuthors(),
 			'publisher' => $this->getPublisher(),
