@@ -239,7 +239,7 @@
 													change = currentOrder+firstItemOnPage-originalOrder,
 													newOrder = originalOrder+change;
 													//console.log(id, originalOrder, change, newOrder);
-									if (change != 0) updates.push({'id':id, 'newOrder':newOrder});
+									/*if (change != 0)*/ updates.push({'id':id, 'newOrder':newOrder});
 								});
 								$.getJSON('/MyAccount/AJAX',
 												{

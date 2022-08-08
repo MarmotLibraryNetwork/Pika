@@ -94,6 +94,10 @@ class MyAccount_MyList extends MyAccount {
 						case 'saveList':
 							$list->title       = $_REQUEST['newTitle'];
 							$list->description = strip_tags($_REQUEST['newDescription']);
+							if ($list->defaultSort != $_REQUEST['defaultSort'] && $_REQUEST['defaultSort'] == 'custom' ){
+								// When the sort is user defined, ensure every entry in the list has a weight
+								$list->initializeUserDefinedSort($list->defaultSort);
+							}
 							$list->defaultSort = $_REQUEST['defaultSort'];
 							$list->update();
 							break;
@@ -274,7 +278,6 @@ class MyAccount_MyList extends MyAccount {
 		$gitBranch = $interface->getVariable('gitBranch');
 		$objPHPExcel->getProperties()->setCreator('Pika ' . $gitBranch)
 			->setLastModifiedBy('Pika ' . $gitBranch)
-			->setLastModifiedBy("DCL")
 			->setTitle("Office 2007 XLSX Document")
 			->setSubject("Office 2007 XLSX Document")
 			->setDescription("Office 2007 XLSX, generated using PHP.")

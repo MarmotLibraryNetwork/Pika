@@ -860,7 +860,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function saveToList(){
-		$result = array();
+		$result = [];
 
 		if (!UserAccount::isLoggedIn()){
 			$result['success'] = false;
@@ -877,7 +877,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 			$userList = new UserList();
 			$listOk   = true;
 			if (empty($listId)){
-				$userList->title       = "My Favorites";
+				$userList->title       = 'My Favorites';
 				$userList->user_id     = UserAccount::getActiveUserId();
 				$userList->public      = 0;
 				$userList->description = '';
@@ -900,13 +900,15 @@ class GroupedWork_AJAX extends AJAXHandler {
 					$result['message'] = 'Sorry, that is not a valid entry for the list.';
 				}else{
 					$userListEntry->groupedWorkPermanentId = $id;
-
-					$existingEntry = false;
-					if ($userListEntry->find(true)){
-						$existingEntry = true;
+					$existingEntry                         = $userListEntry->find(true);
+					$userListEntry->notes                  = strip_tags($notes);
+					$userListEntry->dateAdded              = time();
+					if ($userList->defaultSort == 'custom'){
+						$weight = $userList->getNextWeightForUserDefinedSort();
+						if ($weight){
+							$userListEntry->weight = $weight;
+						}
 					}
-					$userListEntry->notes     = strip_tags($notes);
-					$userListEntry->dateAdded = time();
 					if ($existingEntry){
 						$userListEntry->update();
 					}else{
@@ -917,14 +919,12 @@ class GroupedWork_AJAX extends AJAXHandler {
 					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/MyList/'. $userList->id . '" role="button">View My list</a>';
 				}
 			}
-
 		}
-
 		return $result;
 	}
 
 	function saveSelectedToList(){
-		$result = array();
+		$result = [];
 		if(!UserAccount::isLoggedIn()){
 			$result['success'] = false;
 			$result['message'] = 'Please log in before adding a title to list.';
@@ -932,12 +932,12 @@ class GroupedWork_AJAX extends AJAXHandler {
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 			$result['success'] = true;
-			$ids                = explode("%2C", $_REQUEST['ids']);
+			$ids               = explode("%2C", $_REQUEST['ids']);
 			$listId            = $_REQUEST['listId'];
-			$userList = new UserList();
-			$listOk   = true;
+			$userList          = new UserList();
+			$listOk            = true;
 			if (empty($listId)){
-				$userList->title       = "My Favorites";
+				$userList->title       = 'My Favorites';
 				$userList->user_id     = UserAccount::getActiveUserId();
 				$userList->public      = 0;
 				$userList->description = '';
@@ -950,7 +950,11 @@ class GroupedWork_AJAX extends AJAXHandler {
 					$listOk            = false;
 				}
 			}
-			if($listOk){
+			if ($listOk){
+				$weight = false;
+				if ($userList->defaultSort == 'custom'){
+					$weight = $userList->getNextWeightForUserDefinedSort();
+				}
 				$userListEntry         = new UserListEntry();
 				$userListEntry->listId = $userList->id;
 				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
@@ -961,11 +965,12 @@ class GroupedWork_AJAX extends AJAXHandler {
 						$errors++;
 					}else{
 						$userListEntry->groupedWorkPermanentId = $id;
-						$existingEntry                         = false;
-						if ($userListEntry->find(true)){
-							$existingEntry = true;
+						$existingEntry                         = $userListEntry->find(true);
+						$userListEntry->dateAdded              = time();
+						if ($weight !== false){
+							// Set the weight for each newly added entry if the sort is custom
+							$userListEntry->weight = $weight++;
 						}
-						$userListEntry->dateAdded = time();
 						if ($existingEntry){
 							$userListEntry->update();
 						}else{
@@ -973,15 +978,14 @@ class GroupedWork_AJAX extends AJAXHandler {
 						}
 					}
 				}
-				if ($errors > 0)
-				{
-					$successful = $attemptedRecords - $errors;
+				if ($errors > 0){
+					$successful        = $attemptedRecords - $errors;
 					$result['success'] = false;
 					$result['message'] = $successful . " of " . $attemptedRecords . " records were added successfully. There were " . $errors . " errors.";
 				}else{
 					$result['success'] = true;
 					$result['message'] = 'The titles were saved to your list successfully.';
-					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/MyList/'. $userList->id . '" role="button">View My list</a>';
+					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/MyList/' . $userList->id . '" role="button">View My list</a>';
 				}
 			}
 		}
@@ -989,7 +993,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function saveSeriesToList(){
-		$result = array();
+		$result = [];
 
 		if (!UserAccount::isLoggedIn()){
 			$result['success'] = false;
@@ -1008,7 +1012,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 			$userList = new UserList();
 			$listOk   = true;
 			if (empty($listId)){
-				$userList->title       = "My Favorites";
+				$userList->title       = 'My Favorites';
 				$userList->user_id     = UserAccount::getActiveUserId();
 				$userList->public      = 0;
 				$userList->description = '';
@@ -1025,29 +1029,26 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 			if ($listOk){
 				$recordDriver = new GroupedWorkDriver($id);
-				$novelist = NovelistFactory::getNovelist();
-				$seriesInfo = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
-				$seriesTitle = $seriesInfo->seriesTitle;
+				$novelist     = NovelistFactory::getNovelist();
+				$seriesInfo   = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
+				$seriesTitle  = $seriesInfo->seriesTitle;
 				$seriesTitles = $seriesInfo->seriesTitles;
-				$i = 0;
+				$i            = 0;
 				foreach($seriesTitles as $title){
 					$userListEntry         = new UserListEntry();
 					$userListEntry->listId = $userList->id;
-					$itemId = $title['id'];
+					$itemId                = $title['id'];
 					require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 					if (!GroupedWork::validGroupedWorkId($itemId)){
 						$result['success'] = false;
 						$result['message'] = 'Sorry, that is not a valid entry for the list.';
+						//TODO this gets overwritten below
 					}else{
 						$userListEntry->groupedWorkPermanentId = $itemId;
-
-						$existingEntry = false;
-						if ($userListEntry->find(true)){
-							$existingEntry = true;
-						}
-						$notes = $seriesTitle . " volume " . $title['volume'];
-						$userListEntry->notes     = strip_tags($notes);
-						$userListEntry->dateAdded = time();
+						$existingEntry                         = $userListEntry->find(true);
+						$notes                                 = $seriesTitle . ' volume ' . $title['volume'];
+						$userListEntry->notes                  = strip_tags($notes);
+						$userListEntry->dateAdded              = time();
 						if ($existingEntry){
 							$userListEntry->update();
 						}else{
@@ -1168,12 +1169,12 @@ function createSeriesList(){
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$recordDriver = new GroupedWorkDriver($id);
 		$interface->assign('id', $id);
-		$novelist = NovelistFactory::getNovelist();
-		$seriesInfo = $novelist->getSeriesTitles($id, $recordDriver->getPrimaryIsbn());
+		$novelist     = NovelistFactory::getNovelist();
+		$seriesInfo   = $novelist->getSeriesTitles($id, $recordDriver->getPrimaryIsbn());
 		$seriesTitles = $seriesInfo->seriesTitles ?? [];
-		$seriesTitle = $seriesInfo->seriesTitle?? null;
-		$user = UserAccount::getLoggedInUser();
-		$title = (isset($_REQUEST['title']) && !is_array($_REQUEST['title'])) ? urldecode($_REQUEST['title']) : '';
+		$seriesTitle  = $seriesInfo->seriesTitle ?? null;
+		$user         = UserAccount::getLoggedInUser();
+		$title        = (isset($_REQUEST['title']) && !is_array($_REQUEST['title'])) ? urldecode($_REQUEST['title']) : '';
 		if (strlen(trim($title)) == 0){
 			$return['success'] = "false";
 			$return['message'] = "You must provide a title for the list";

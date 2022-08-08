@@ -334,4 +334,50 @@ class UserList extends DB_DataObject {
 		}
 	}
 
+	/**
+	 * User defined sorting depends on the weight column of the table.
+	 * Since this is left null for entries when the list sort isn't set to 'custom',
+	 * preset weight values for the list using the previous sort value when it is
+	 * a user list sort option, or the default date added user list sort option otherwise. (eg. solr sort options.)
+	 *
+	 * @param string|null $previousDefaultSort  The sort option used before being changed to 'custom'
+	 * @return void
+	 */
+	public function initializeUserDefinedSort($previousDefaultSort){
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+		$weight = $this->getNextWeightForUserDefinedSort();
+
+		// Set weighted order by previous user sort order
+		$userListSortOptions = $this->getUserListSortOptions();
+		$currentSorting      = is_null($previousDefaultSort) ? reset($userListSortOptions) : $userListSortOptions[$previousDefaultSort];
+		$listEntry           = new UserListEntry();
+		$listEntry->listId   = $this->id;
+		if ($weight > 0){
+			// If weights have been set previously, just set the one's with out weights.
+			$listEntry->whereAdd('weight IS NULL');
+		}
+		$listEntry->orderBy($currentSorting);
+		if ($listEntry->find()){
+			while ($listEntry->fetch()){
+				$listEntry->weight = $weight++;
+				$listEntry->update();
+			}
+		}
+	}
+
+	/**
+	 * Get the next weight value to use for a list entry when the user list default sort is set to 'custom'
+	 * @return false|int
+	 */
+	public function getNextWeightForUserDefinedSort(){
+		$lastPlacedEntry         = new UserListEntry();
+		$lastPlacedEntry->listId = $this->id;
+		$lastPlacedEntry->orderBy('weight desc');
+		if ($lastPlacedEntry->find(true)){
+			$weight = is_null($lastPlacedEntry->weight) ? 0 : ++$lastPlacedEntry->weight;
+			return $weight;
+		}
+		return false;
+	}
+
 }

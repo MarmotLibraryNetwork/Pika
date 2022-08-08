@@ -1484,12 +1484,12 @@ class MyAccount_AJAX extends AJAXHandler {
 		}
 		global $interface;
 		$interface->assign('renew_message_data', $renewResults);
-		$result = array(
+		$result = [
 			'title'     => translate('Renew') . ' Selected Items',
 			'modalBody' => $interface->fetch('Record/renew-results.tpl'),
 			'success'   => $renewResults['success'],
 			'renewed'   => $renewResults['Renewed'],
-		);
+		];
 		return $result;
 	}
 
@@ -1516,13 +1516,18 @@ class MyAccount_AJAX extends AJAXHandler {
 		return $result;
 	}
 
+	/**
+	 * Set user defined sorting for User Lists
+	 *
+	 * @return bool[]
+	 */
 	function setListEntryPositions(){
 		$success = false; // assume failure
 		$listId  = $_REQUEST['listID'];
 		$updates = $_REQUEST['updates'];
 		if (ctype_digit($listId) && !empty($updates)){
-			$user = UserAccount::getLoggedInUser();
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			$user     = UserAccount::getLoggedInUser();
 			$list     = new UserList();
 			$list->id = $listId;
 			if ($list->find(true) && $user->canEditList($list)){ // list exists & user can edit
@@ -1538,10 +1543,12 @@ class MyAccount_AJAX extends AJAXHandler {
 					}else{
 						$userListEntry->groupedWorkPermanentId = $update['id'];
 						if ($userListEntry->find(true) && ctype_digit($update['newOrder'])){
-							// check entry exists already and the new weight is a number
-							$userListEntry->weight = $update['newOrder'];
-							if (!$userListEntry->update()){
-								$success = false;
+							if ($userListEntry->weight != $update['newOrder']){
+								// check entry exists already and the new weight is a number
+								$userListEntry->weight = $update['newOrder'];
+								if (!$userListEntry->update()){
+									$success = false;
+								}
 							}
 						}else{
 							$success = false;
