@@ -44,6 +44,11 @@ require_once ROOT_DIR . '/sys/MemoryWatcher.php';
 global $memoryWatcher;
 $memoryWatcher = new MemoryWatcher();
 
+// instantiate global logger
+$pikaLogger = new Pika\Logger('Pika', true);
+$timer->logTime("Initialized Pika\Logger");
+
+// deprecated logger
 global $logger;
 $logger = new Logger();
 $timer->logTime("Read Config");

@@ -36,10 +36,6 @@ register_shutdown_function('session_write_close');
 @session_start();
 $timer->logTime('Initialized Pika\Session');
 
-// instantiate global logger
-$pikaLogger = new Pika\Logger('Pika', true);
-$timer->logTime("Initialized Pika\Logger");
-
 if (isset($_REQUEST['test_role'])){
 	handleCookie('test_role', $_REQUEST['test_role'] );
 }
