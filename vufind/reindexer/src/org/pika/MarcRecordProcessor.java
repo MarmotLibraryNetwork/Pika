@@ -576,8 +576,9 @@ abstract class MarcRecordProcessor {
 						literaryForms.add(Character.toString(literaryFormChar));
 					}
 				}
-				//TODO: explain with comment why we would add empty value; or remove. Is it removed already?
 				if (literaryForms.size() == 0) {
+					// Adding space character string will get translated below
+					// by the catchall translation: * = Not Coded
 					literaryForms.add(" ");
 				}
 			} else {
@@ -588,7 +589,7 @@ abstract class MarcRecordProcessor {
 		}
 		if (literaryForms.size() > 1){
 			//Uh oh, we have a problem
-			logger.warn("Received multiple literary forms for a single marc record");
+			logger.warn("Received multiple literary forms for a single marc record " + identifier);
 		}
 		groupedWork.addLiteraryForms(indexer.translateSystemCollection("literary_form", literaryForms, identifier));
 		groupedWork.addLiteraryFormsFull(indexer.translateSystemCollection("literary_form_full", literaryForms, identifier));
@@ -598,6 +599,18 @@ abstract class MarcRecordProcessor {
 		HashMap<String, Integer> literaryFormsFull = new HashMap<>();
 		//Check the subjects
 		Set<String> subjectFormData = MarcUtil.getFieldList(record, "650v:651v");
+		// MARC 650v
+		// 650 - Subject Added Entry - Topical Term | v - Form subdivision
+		//
+		// Form subdivision that designates a specific kind or genre of material as defined by the
+		// thesaurus being used. Subfield $v is appropriate only when a form subject subdivision
+		// is added to a main term.
+		//MARC 651v
+		//651 - Subject Added Entry - Geographic Name | v - Form subdivision
+		// Form subdivision that designates a specific kind or genre of material as defined by the
+		// thesaurus being used. Subfield $v is appropriate only when a form subject subdivision
+		// is added to a geographic name.
+
 		for(String subjectForm : subjectFormData){
 			subjectForm = Util.trimTrailingPunctuation(subjectForm);
 			if (subjectForm.equalsIgnoreCase("Fiction")
