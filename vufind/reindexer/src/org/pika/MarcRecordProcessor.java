@@ -601,18 +601,18 @@ abstract class MarcRecordProcessor {
 		for(String subjectForm : subjectFormData){
 			subjectForm = Util.trimTrailingPunctuation(subjectForm);
 			if (subjectForm.equalsIgnoreCase("Fiction")
-					|| subjectForm.equalsIgnoreCase("Young adult fiction" )
-					|| subjectForm.equalsIgnoreCase("Juvenile fiction" )
-					|| subjectForm.equalsIgnoreCase("Junior fiction" )
+					|| subjectForm.equalsIgnoreCase("Young adult fiction")
+					|| subjectForm.equalsIgnoreCase("Juvenile fiction")
+					|| subjectForm.equalsIgnoreCase("Junior fiction")
 					|| subjectForm.equalsIgnoreCase("Comic books, strips, etc")
 					|| subjectForm.equalsIgnoreCase("Comic books,strips, etc")
-					|| subjectForm.equalsIgnoreCase("Children's fiction" )
-					|| subjectForm.equalsIgnoreCase("Fictional Works" )
-					|| subjectForm.equalsIgnoreCase("Cartoons and comics" )
-					|| subjectForm.equalsIgnoreCase("Folklore" )
-					|| subjectForm.equalsIgnoreCase("Legends" )
-					|| subjectForm.equalsIgnoreCase("Stories" )
-					|| subjectForm.equalsIgnoreCase("Fantasy" )
+					|| subjectForm.equalsIgnoreCase("Children's fiction")
+					|| subjectForm.equalsIgnoreCase("Fictional Works")
+					|| subjectForm.equalsIgnoreCase("Cartoons and comics")
+					|| subjectForm.equalsIgnoreCase("Folklore")
+					|| subjectForm.equalsIgnoreCase("Legends")
+					|| subjectForm.equalsIgnoreCase("Stories")
+					|| subjectForm.equalsIgnoreCase("Fantasy")
 					|| subjectForm.equalsIgnoreCase("Mystery fiction")
 					|| subjectForm.equalsIgnoreCase("Romances")
 					){
@@ -988,7 +988,7 @@ abstract class MarcRecordProcessor {
 					if (titleLowerCase.endsWith(subTitleLowerCase)) {
 						// Remove subtitle from title in order to avoid repeats of sub-title in display & title fields in index
 						if (fullReindex && logger.isInfoEnabled()) {
-							logger.info(identifier + " title (245a) '" + titleValue + "' ends with the subtitle (245bnp) : " + subTitleValue );
+							logger.info(identifier + " title (245a) '" + titleValue + "' ends with the subtitle (245bnp) : " + subTitleValue);
 						}
 						titleValue = titleValue.substring(0, titleLowerCase.lastIndexOf(subTitleLowerCase));
 					}
