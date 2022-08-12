@@ -8825,8 +8825,35 @@ hr.menu {
 .home-page-browse-grid,
 .browse-thumbnails-few {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(1, 1fr);
   gap: 20px 20px;
+}
+@media (min-width: 767px) {
+  .home-page-browse-thumbnails,
+  .home-page-browse-grid,
+  .browse-thumbnails-few {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px 20px;
+  }
+}
+@media (min-width: 991px) {
+  .home-page-browse-thumbnails,
+  .home-page-browse-grid,
+  .browse-thumbnails-few {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px 20px;
+  }
+}
+@media (min-width: 1199px) {
+  .home-page-browse-thumbnails,
+  .home-page-browse-grid,
+  .browse-thumbnails-few {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px 20px;
+  }
 }
 @media (min-width: 0) {
   .home-page-browse-thumbnails {
