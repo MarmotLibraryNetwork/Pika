@@ -111,7 +111,7 @@ class Search_Home extends Action {
 						|| (!$specifiedCategory && $index == $first) // Or default to selecting the first browse category
 					){
 						$selectedBrowseCategory = clone $browseCategory; //TODO needed?
-						$interface->assign('selectedBrowseCategory', $selectedBrowseCategory);
+						$interface->assign(['selectedBrowseCategory' => $selectedBrowseCategory, 'isDefaultCategory' => ($index == $first)]);
 						if ($specifiedSubCategory){
 							$selectedBrowseCategory->getSubCategories();
 
