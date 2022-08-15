@@ -1144,6 +1144,7 @@ public class FormatDetermination {
 		}
 
 		// Check for formats in the 502 tag
+		// 502a Dissertation Note -- Designation of an academic dissertation or thesis and the institution to which it was presented.
 		DataField dissertationNoteField = record.getDataField("502");
 		if (dissertationNoteField != null) {
 			if (dissertationNoteField.getSubfield('a') != null) {
