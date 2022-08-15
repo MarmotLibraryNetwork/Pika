@@ -14,7 +14,7 @@
 			<div class="btn-group btn-group-sm">
 					<div class="share-tools">
 						<span class="share-tools-label hidden-inline-xs">SHARE LIST</span>
-						<a herf="#" onclick="return Pika.Lists.emailListAction({$summShortId})" title="share via e-mail">
+						<a href="#" onclick="return Pika.Lists.emailListAction({$summShortId})" title="share via e-mail">
 							<img src="{img filename='email-icon.png'}" alt="E-mail this" style="cursor:pointer;">
 						</a>
 						<a href="https://twitter.com/compose/tweet?text={$recordDriver->getTitle()|urlencode}+{$url|escape:"html"}/MyAccount/MyList/{$summShortId}" target="_blank" title="Share on Twitter">
