@@ -829,11 +829,40 @@
 
 		<!-- series -->
 		<field name="series" type="text" indexed="true" stored="true" multiValued="true"/>
+		<!--
+			Novelist Series Information
+
+			if no novelist, then MARC data :
+
+			MARC tag 830 - Series Added Entry-Uniform Title
+			a - Uniform title
+			p - Name of part/section of a work
+
+			 https://www.loc.gov/marc/bibliographic/bd830.html
+
+			MARC tag 800 - Series Added Entry-Personal Name
+			p - Name of part/section of a work
+			q - Fuller form of name
+			t - Title of a work
+
+			https://www.loc.gov/marc/bibliographic/bd800.html
+		-->
 		<field name="series_proper" type="text-proper" indexed="true" stored="false" multiValued="true"/>
 		<field name="series_with_volume" type="string" indexed="false" stored="true" multiValued="true"/>
-		<!--Not indexed used for display only. Takes any entry in series and appends series volume number after a pipe | character -->
+		<!-- Not indexed, used for display only. Takes any entry in series and appends series volume number after a pipe | character
+
+		 Novelist Series Information
+		 or if no novelist, then MARC data as from series above; combined with subfield
+		 v - Volume/sequential designation
+		 -->
 		<field name="series2" type="text" indexed="true" stored="true" multiValued="true"/>
 		<!--TODO: is series2 really needed?? -->
+		<!--
+			MARC tag490 - Series Statement
+			a - Personal name
+
+			https://www.loc.gov/marc/bibliographic/bd490.html
+		-->
 
 		<!-- subject facets-->
 		<field name="subject_facet" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>

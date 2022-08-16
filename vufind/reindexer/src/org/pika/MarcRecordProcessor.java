@@ -347,6 +347,11 @@ abstract class MarcRecordProcessor {
 		// all the MARC series info anyway
 		if (!loadedNovelistSeries) {
 			List<DataField> seriesFields = MarcUtil.getDataFields(record, "830");
+			// 830 - Series Added Entry-Uniform Title
+			// a - Uniform title
+			// p - Name of part/section of a work
+			//
+			// https://www.loc.gov/marc/bibliographic/bd830.html
 			for (DataField seriesField : seriesFields){
 				String series = MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "ap","").toString();
 				String volume = "";
@@ -356,6 +361,12 @@ abstract class MarcRecordProcessor {
 				groupedWork.addSeries(series, volume);
 			}
 			seriesFields = MarcUtil.getDataFields(record, "800");
+			// 800 - Series Added Entry-Personal Name
+			// p - Name of part/section of a work
+			// q - Fuller form of name
+			// t - Title of a work
+
+			// https://www.loc.gov/marc/bibliographic/bd800.html
 			for (DataField seriesField : seriesFields){
 				String series = MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "pqt","").toString();
 				String volume = "";
@@ -366,6 +377,10 @@ abstract class MarcRecordProcessor {
 			}
 
 			groupedWork.addSeries2(MarcUtil.getFieldList(record, "490a"));
+			// 490 - Series Statement
+			// a - Series statement
+
+			// https://www.loc.gov/marc/bibliographic/bd490.html
 		}
 	}
 
