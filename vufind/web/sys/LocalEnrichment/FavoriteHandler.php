@@ -345,7 +345,9 @@ class FavoriteHandler {
 			}
 			$catalogSearchObject->init();
 			$catalogSearchObject->setLimit($recordsPerPage);
-			$catalogSearchObject->disableScoping(); // Return all works in list, even if outside current scope
+			//$catalogSearchObject->disableScoping(); // Return all works in list, even if outside current scope
+			// After implementing facets for user lists, disabling scoping is no longer a good idea, since out of scope list entries
+			// will not contribute to any scoped search facets displayed on the user list. See D-3851
 
 			if (!$this->isUserListSort && !$this->isMixedUserList){ // is a solr sort
 				$catalogSearchObject->setSort($this->sort);           // set solr sort. (have to set before retrieving solr sort options below)
