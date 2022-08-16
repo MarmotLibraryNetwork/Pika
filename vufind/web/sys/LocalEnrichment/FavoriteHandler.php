@@ -354,24 +354,7 @@ class FavoriteHandler {
 			// Range filters need special processing in order to be used
 			$catalogSearchObject->processAllRangeFilters();
 
-			if (!$this->isMixedUserList){
-				$solrSortList = $catalogSearchObject->getSortList(); // get all the search sort options (retrieve after setting solr sort option)
-				foreach ($this->solrSortOptions as $userListValue_ignored => $actualSolrSort){ // extract just the ones we want
-					if (isset($solrSortList[$actualSolrSort])){
-						$sortOptions[$actualSolrSort]        = $solrSortList[$actualSolrSort];
-						$defaultSortOptions[$actualSolrSort] = $solrSortList[$actualSolrSort]['desc'];
-					}
-				}
-			}
-			foreach ($this->userListSortOptions as $option => $value_ignored){ // Non-Solr options
-				$sortOptions[$option]        = [
-					'sortUrl'  => $catalogSearchObject->renderLinkWithSort($option),
-					'desc'     => "sort_{$option}_userlist", // description in translation dictionary
-					'selected' => ($option == $this->sort)
-				];
-				$defaultSortOptions[$option] = "sort_{$option}_userlist";
-			}
-
+			$this->populateSortOptionsForList($catalogSearchObject, $this->solrSortOptions, $sortOptions, $defaultSortOptions);
 
 			// Catalog Only Searches //
 			if (!$this->isMixedUserList){
@@ -466,26 +449,8 @@ class FavoriteHandler {
 			if (!$this->isUserListSort && !$this->isMixedUserList){ // is a solr sort
 				$archiveSearchObject->setSort($this->sort);           // set solr sort. (have to set before retrieving solr sort options below)
 			}
-			if (!$this->isMixedUserList){
-				$IslandoraSortList = $archiveSearchObject->getSortList(); // get all the search sort options (retrieve after setting solr sort option)
-				foreach ($this->islandoraSortOptions as $option){ // extract just the ones we want
-					if (isset ($IslandoraSortList[$option])){
-						$sortOptions[$option]        = $IslandoraSortList[$option];
-						$defaultSortOptions[$option] = $IslandoraSortList[$option]['desc'];
-					}
-				}
-			}
-			foreach ($this->userListSortOptions as $option => $value_ignored){ // Non-Solr options
-				if (!isset($sortOptions[$option])){ // Skip if already done by the catalog searches above
-					$sortOptions[$option]        = [
-						'sortUrl'  => $archiveSearchObject->renderLinkWithSort($option),
-						'desc'     => "sort_{$option}_userlist", // description in translation dictionary
-						'selected' => ($option == $this->sort)
-					];
-					$defaultSortOptions[$option] = "sort_{$option}_userlist";
-				}
-			}
 
+			$this->populateSortOptionsForList($archiveSearchObject, $this->islandoraSortOptions, $sortOptions, $defaultSortOptions);
 
 			// Archive Only Searches //
 			if (!$this->isMixedUserList){
@@ -604,7 +569,26 @@ class FavoriteHandler {
 		require_once ROOT_DIR . '/sys/Pager.php';
 		$pager = new VuFindPager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
+	}
 
+	private function populateSortOptionsForList(SearchOBject_Base &$searchObject, $searchOptions, array &$sortOptions, array &$defaultSortOptions){
+		if (!$this->isMixedUserList){
+			$solrSortList = $searchObject->getSortList(); // get all the search sort options (retrieve after setting solr sort option)
+			foreach ($searchOptions as $option){ // extract just the ones we want
+				if (isset($solrSortList[$option])){
+					$sortOptions[$option]        = $solrSortList[$option];
+					$defaultSortOptions[$option] = $solrSortList[$option]['desc'];
+				}
+			}
+		}
+		foreach ($this->userListSortOptions as $option => $value_ignored){ // Non-Solr options
+			$sortOptions[$option]        = [
+				'sortUrl'  => $searchObject->renderLinkWithSort($option),
+				'desc'     => "sort_{$option}_userlist", // description in translation dictionary
+				'selected' => ($option == $this->sort)
+			];
+			$defaultSortOptions[$option] = "sort_{$option}_userlist";
+		}
 	}
 
 	function getTitles($numListEntries, $applyFiltering = false){
@@ -641,7 +625,7 @@ class FavoriteHandler {
 
 
 		}
-		return array_merge($catalogRecordSet, $archiveRecordSet);
+		return [...$catalogRecordSet, ...$archiveRecordSet];
 	}
 
 	function getCitations($citationFormat){
