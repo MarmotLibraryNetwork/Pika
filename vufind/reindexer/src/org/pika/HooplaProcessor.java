@@ -447,6 +447,11 @@ class HooplaProcessor extends MarcRecordProcessor {
 		//title (full title done by index process by concatenating short and subtitle
 		if (logger.isInfoEnabled()) {
 			Set<String> titleTags = MarcUtil.getFieldList(record, "245a");
+			if (titleTags.size() == 0){
+				if (!hooplaExtractInfo.title.isEmpty()){
+					logger.warn("Missing 245a has extract title of " + hooplaExtractInfo.title);
+				}
+			}else
 			if (titleTags.size() > 1) {
 				logger.info("More than 1 245a title tag for Hoopla record : " + identifier);
 			}
