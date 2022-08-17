@@ -16,7 +16,7 @@
 		{/if}
 
 		<div class="row">
-			<div class="col-tn-12 helpTextUnsized well">
+			<div class="col-tn-12 well">
 				<p>This will load circs into the Pika Offline Circ tables to be processed as check outs.</p>
 			<p>Circs can be loaded from either an INI formatted text
 				or from a CSV formatted text.

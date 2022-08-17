@@ -11,7 +11,7 @@
 		<a class="btn btn-sm btn-default" href='/Admin/TranslationMaps?objectAction=list'>Return to List</a>
 	</div>
 	<h2>{$mapName}</h2>
-	<div class="helpTextUnsized well">
+	<div class="well">
 		<p>Translation map values can be loaded from either an INI formatted record
 			or from a CSV formatted record.
 		</p>
