@@ -946,22 +946,23 @@ public class GroupedWorkIndexer {
 	private void writeWorksWithInvalidLiteraryForms() {
 		if (logger.isInfoEnabled()) {
 			logger.info("Writing works with invalid literary forms");
-		}
-		File worksWithInvalidLiteraryFormsFile = new File (baseLogPath + "/" + serverName + "/worksWithInvalidLiteraryForms.txt");
-		try {
-			if (worksWithInvalidLiteraryForms.size() > 0) {
-				try (FileWriter writer = new FileWriter(worksWithInvalidLiteraryFormsFile, false)) {
-					final String message = "Found " + worksWithInvalidLiteraryForms.size() + " grouped works with invalid literary forms\r\n";
-					logger.debug(message);
-					writer.write(message);
-					writer.write("Works with inconsistent literary forms\r\n");
-					for (String curId : worksWithInvalidLiteraryForms) {
-						writer.write(curId + "\r\n");
+			File worksWithInvalidLiteraryFormsFile = new File(baseLogPath + "/" + serverName + "/worksWithInvalidLiteraryForms.txt");
+			try {
+				if (worksWithInvalidLiteraryForms.size() > 0) {
+					try (FileWriter writer = new FileWriter(worksWithInvalidLiteraryFormsFile, false)) {
+						final String message = "Found " + worksWithInvalidLiteraryForms.size() + " grouped works with invalid literary forms (fic vs nonfic)\r\n";
+						logger.info(message);
+						GroupedReindexMain.addNoteToReindexLog(message);
+						writer.write(message);
+						writer.write("Works with inconsistent literary forms\r\n");
+						for (String curId : worksWithInvalidLiteraryForms) {
+							writer.write(curId + "\r\n");
+						}
 					}
 				}
+			} catch (Exception e) {
+				logger.error("Error writing works with invalid literary forms", e);
 			}
-		}catch(Exception e){
-			logger.error("Error writing works with invalid literary forms", e);
 		}
 	}
 

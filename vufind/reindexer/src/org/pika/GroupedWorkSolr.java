@@ -897,7 +897,9 @@ public class GroupedWorkSolr implements Cloneable {
 					//logger.warn("Found inconsistent literary forms for grouped work " + id + " both fiction and non fiction had the same amount of usage.  Defaulting to neither.");
 					literaryForm.clear();
 					literaryForm.put("Unknown", 1);
-					groupedWorkIndexer.addWorkWithInvalidLiteraryForms(id);
+					if (logger.isInfoEnabled()) {
+						groupedWorkIndexer.addWorkWithInvalidLiteraryForms(id);
+					}
 				}else if (numFictionIndicators.compareTo(numNonFictionIndicators) > 0){
 					if (logger.isDebugEnabled()) {
 						logger.debug("Number of related records with literary form of Fiction dictates that Fiction is the correct literary form for grouped work " + id);
@@ -940,7 +942,9 @@ public class GroupedWorkSolr implements Cloneable {
 						//Ugh, we have inconsistent literary forms and can't make an educated guess as to which is correct.
 						literaryFormFull.clear();
 						literaryFormFull.put("Unknown", 1);
-						groupedWorkIndexer.addWorkWithInvalidLiteraryForms(id);
+						if (logger.isInfoEnabled()) {
+							groupedWorkIndexer.addWorkWithInvalidLiteraryForms(id);
+						}
 					}
 				}else{
 					removeInconsistentFullLiteraryForms(literaryFormFull, highestUsageLiteraryForms);
