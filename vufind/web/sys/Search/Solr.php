@@ -605,6 +605,7 @@ class Solr implements IndexEngine {
 					'q'    => "$idFieldToReturn:($idString)",
 					'q.op' => 'OR',
 					'fl'   => $idFieldToReturn,
+					'rows' => $batchSize, // overrides the default value of 10 (for islandora solr) 20 (for catalog solr)
 					'wt'   => 'json'
 				];
 

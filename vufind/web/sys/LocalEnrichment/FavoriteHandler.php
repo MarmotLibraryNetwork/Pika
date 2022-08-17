@@ -338,7 +338,7 @@ class FavoriteHandler {
 		if (count($this->catalogIds) > 0){
 			// Initialise from the current search globals
 			/** @var SearchObject_UserListSolr $catalogSearchObject */
-			$catalogSearchObject = SearchObjectFactory::initSearchObject('UserListSolr');
+			$catalogSearchObject               = SearchObjectFactory::initSearchObject('UserListSolr');
 			$catalogSearchObject->userListSort = $this->sort;
 			if ($isPageSizeParamSet){
 				$catalogSearchObject->userListPageSize = $recordsPerPage;
