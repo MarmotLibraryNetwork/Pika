@@ -307,7 +307,9 @@ public class GroupedWorkSolr implements Cloneable {
 		checkDefaultValue(targetAudience, "Unknown");
 		checkDefaultValue(targetAudience, "Other");
 		doc.addField("target_audience", targetAudience);
-		doc.addField("system_list", systemLists);
+		if (systemLists.size() > 0) {
+			doc.addField("system_list", systemLists);
+		}
 		//Date added to catalog
 		Date dateAdded = getDateAdded();
 		doc.addField("date_added", dateAdded);
