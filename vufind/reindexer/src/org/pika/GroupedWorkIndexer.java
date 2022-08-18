@@ -1484,7 +1484,7 @@ public class GroupedWorkIndexer {
 					if (!novelistRS.wasNull()) {
 						groupedWork.clearSeriesData();
 						String volume = novelistRS.getString("volume");
-						groupedWork.addSeries(series, volume);
+						groupedWork.addSeries(series, volume, true);
 						loadedNovelistSeries = true;
 					}
 				}
