@@ -1511,7 +1511,7 @@ public class GroupedWorkSolr implements Cloneable {
 		 * @param series Series Statement
 		 * @param volume Volume within the series or empty if there is none
 		 */
-	void addSeries(String series, String volume,  boolean novelistSeries){
+	void addSeries(String series, String volume, boolean novelistSeries){
 		if (series != null && !series.isEmpty()) {
 			volume = (volume == null || volume.isEmpty()) ? "" : getNormalizedSeriesVolume(volume);
 			String seriesInfo                = getNormalizedSeries(series, novelistSeries);
@@ -1624,6 +1624,7 @@ public class GroupedWorkSolr implements Cloneable {
 		if (!volume.matches("^\\d+$")) {
 			volume = volume.replaceAll("(bk\\.?|book)", "");
 			volume = volume.replaceAll("(volume|vol\\.|v\\.)", "").trim();
+			volume = volume.replaceAll("^0+", ""); // Remove leading zeroes
 			if (!volume.matches("^\\d+$")) {
 				volume = volume.replaceAll("libro", "");
 				volume = volume.replaceAll("one", "1");
