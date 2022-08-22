@@ -161,7 +161,7 @@ class UserList extends DB_DataObject {
 	private $listTitles = [];
 
 	/**
-	 * @param null $userListSortOption  optional SQL for the query's ORDER BY clause
+	 * @param string|null $userListSortOption  optional SQL for the query's ORDER BY clause
 	 * @return array      of list entries
 	 */
 	function getListEntries($userListSortOption = null){
@@ -353,14 +353,14 @@ class UserList extends DB_DataObject {
 		$listEntry           = new UserListEntry();
 		$listEntry->listId   = $this->id;
 		if ($weight > 0){
-			// If weights have been set previously, just set the one's with out weights.
+			// If weights have been set previously, just set the one's without weights.
 			$listEntry->whereAdd('weight IS NULL');
 		}
 		$listEntry->orderBy($currentSorting);
 		if ($listEntry->find()){
 			while ($listEntry->fetch()){
 				$listEntry->weight = $weight++;
-				$listEntry->update();
+				$listEntry->update(false, false);  // Prevent unneeded (& repeated) parent list updating
 			}
 		}
 	}

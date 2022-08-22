@@ -1500,18 +1500,21 @@ public class GroupedWorkSolr implements Cloneable {
 		this.series.clear();
 		this.seriesWithVolume.clear();
 	}
-
-	/**
-	 * This will normalize/clean any series statement as well as series volume statement and
-	 * populate both the series & series_with_volumes Solr fields
-	 *
-	 * @param series Series Statement
-	 * @param volume Volume within the series or empty if there is none
-	 */
 	void addSeries(String series, String volume){
+		addSeries(series, volume, false);
+	}
+
+		/**
+		 * This will normalize/clean any series statement as well as series volume statement and
+		 * populate both the series & series_with_volumes Solr fields
+		 *
+		 * @param series Series Statement
+		 * @param volume Volume within the series or empty if there is none
+		 */
+	void addSeries(String series, String volume,  boolean novelistSeries){
 		if (series != null && !series.isEmpty()) {
 			volume = (volume == null || volume.isEmpty()) ? "" : getNormalizedSeriesVolume(volume);
-			String seriesInfo                = getNormalizedSeries(series, true);
+			String seriesInfo                = getNormalizedSeries(series, novelistSeries);
 			String seriesInfoWithVolume      = seriesInfo + "|" + volume;
 			String seriesInfoLower           = seriesInfo.toLowerCase();
 			String volumeLower               = volume.toLowerCase();
@@ -1589,7 +1592,7 @@ public class GroupedWorkSolr implements Cloneable {
 
 	private void addSeriesInfoToField(String seriesInfo, HashMap<String, String> seriesField) {
 		if (seriesInfo != null && !seriesInfo.equalsIgnoreCase("none")) {
-			seriesInfo = getNormalizedSeries(seriesInfo, true);
+			seriesInfo = getNormalizedSeries(seriesInfo, false);
 			String normalizedSeries = seriesInfo.toLowerCase();
 			if (!seriesField.containsKey(normalizedSeries)) {
 				boolean okToAdd = true;
@@ -1639,14 +1642,14 @@ public class GroupedWorkSolr implements Cloneable {
 		return volume;
 	}
 
-	String getNormalizedSeries(String series, boolean removeVolume) {
+	String getNormalizedSeries(String series, boolean novelistSeries) {
 		series = Util.trimTrailingPunctuation(series);
 		//TODO: removeVolume codeblock likely obsolete
-		if (removeVolume) {
 			series = series.replaceAll("[#|]\\s*\\d+$", "");
+		if (!novelistSeries) {
+			//Remove anything in parens since it's normally just the format
+			series = series.replaceAll("\\s+\\(.*\\)", "");
 		}
-		//Remove anything in parens since it's normally just the format
-		series = series.replaceAll("\\s+\\(.*\\)", "");
 		// the parentheses regex "\\s+\\(.*?\\)" fails for string "Andy Carpenter mystery (Macmillan Audio (Firm))"
 		series = series.replaceAll(" & ", " and ");
 		series = series.replaceAll("--", " ");
