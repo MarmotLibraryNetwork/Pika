@@ -272,7 +272,8 @@ abstract class IslandoraDriver extends RecordInterface {
 		$details = array(
 		'title' => $this->getFullTitle(),
 		'authors' => '',
-		'publisher' => $publisher,
+		'pubName'  => count($publisher) > 0 ? $publisher['pubName'] : null,
+		'pubPlace'  => count($publisher) > 1? $publisher['pubPlace']: null,
 		'format' => $this->getFormat(),
 		'pubDate' => $date,
 		'edition' => $description,
