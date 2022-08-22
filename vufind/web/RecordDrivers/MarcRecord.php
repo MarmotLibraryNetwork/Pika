@@ -693,6 +693,13 @@ class MarcRecord extends IndexRecord {
 	}
 
 	/**
+	 * @return array|null
+	 */
+	public function getNoveListSeries(){
+		return $this->getGroupedWorkDriver()->getSeries();
+	}
+
+	/**
 	 * Get an array of all series names containing the record.  Array entries may
 	 * be either the name string, or an associative array with 'name' and 'number'
 	 * keys.
@@ -701,13 +708,13 @@ class MarcRecord extends IndexRecord {
 	 * @return  array
 	 */
 	public function getSeries(){
-		$seriesInfo = $this->getGroupedWorkDriver()->getSeries();
-		if (empty($seriesInfo)) {
 			// First check the 440, 800 and 830 fields for series information:
 			$primaryFields = [
-				'440' => ['a', 'p'],
-				'800' => ['a', 'b', 'c', 'd', 'f', 'p', 'q', 't'],
-				'830' => ['a', 'p']];
+//				'440' => ['a', 'p'],  // 440 should be obsolete by now
+//				'800' => ['a', 'b', 'c', 'd', 'f', 'p', 'q', 't'], // only p q t gets indexed
+				'800' => ['p', 'q', 't'],
+				'830' => ['a', 'p']
+			];
 			$matches       = $this->getSeriesFromMARC($primaryFields);
 			if (!empty($matches)){
 				return $matches;
@@ -719,8 +726,7 @@ class MarcRecord extends IndexRecord {
 			if (!empty($matches)){
 				return $matches;
 			}
-		}
-		return $seriesInfo;
+		return null;
 	}
 
 	/**
@@ -1766,17 +1772,18 @@ class MarcRecord extends IndexRecord {
 									if ($type == 'bisac' && $subFieldCode == 'a'){
 										$subFieldData = ucwords(strtolower($subFieldData));
 									}
-									$search .= " " . str_replace('/', '', $subFieldData);
+									$search .= ' ' . str_replace('/', '', $subFieldData);
 									if (strlen($title) > 0){
 										$title .= ' -- ';
 									}
 									$title .= $subFieldData;
 								}
 							}
-							$subject[$title] = array(
-								'search' => trim($search),
+							$subject[$title] = [
+//								'search' => trim($search),
+								'search' => trim($title),
 								'title'  => $title,
-							);
+							];
 							switch ($type){
 								case 'fast' :
 									// Suppress fast subjects by default

@@ -75,7 +75,7 @@
 					{assign var=indexedSeries value=$recordDriver->getIndexedSeries()}
             {if $summSeries}
 							<div class="novelistSeries{$summISBN} row">
-								<div class="result-label col-tn-3">NoveList Series: </div>
+								<div class="result-label col-tn-3">{translate text='NoveList Series'}:</div>
 								<div class="result-value col-tn-8">
 									<a href="/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}<br>
 								</div>
