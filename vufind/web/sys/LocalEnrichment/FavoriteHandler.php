@@ -633,15 +633,34 @@ class FavoriteHandler {
 	function getCitations($citationFormat){
 		// Initialise from the current search globals
 		/** @var SearchObject_Solr $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject();
-		$searchObject->init();
+		$citations = array();
+
+			if(!empty($this->catalogIds)){
+				$searchObject = SearchObjectFactory::initSearchObject();
+				$searchObject->init();
+				$searchObject->setQueryIDs($this->catalogIds);
+				$searchObject->processSearch();
+				foreach($searchObject->getCitations($citationFormat) as $citation){
+					array_push($citations, $citation);
+				}
+
+			}
+			if(!empty($this->archiveIds)){
+				$archiveObject = SearchObjectFactory::initSearchObject('Islandora');
+				$archiveObject->init();
+				$archiveObject->setQueryIds($this->archiveIds);
+				$archiveObject->processSearch();
+				foreach($archiveObject->getCitations($citationFormat) as $citation){
+					array_push($citations, $citation);
+				}
+
+			}
+		if(count($citations) > 0){
+
 
 		// Retrieve records from index (currently, only Solr IDs supported):
-		if (count($this->favorites) > 0){
-			$searchObject->setQueryIDs($this->favorites);
 
-			$searchObject->processSearch();
-			return $searchObject->getCitations($citationFormat);
+			return $citations;
 		}else{
 			return [];
 		}

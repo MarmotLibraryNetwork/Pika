@@ -355,6 +355,21 @@ class SearchObject_Islandora extends SearchObject_Base {
 		}
 		return $html;
 	}
+	/*
+	 * Get an array of citations for the records within the search results
+	 */
+	public function getCitations($citationFormat){
+	global $interface;
+	$html = array();
+	for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
+		$current = & $this->indexResult['response']['docs'][$x];
+		$interface->assign('recordIndex', $x + 1);
+		$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+		$record = RecordDriverFactory::initRecordDriver($current);
+		$html[] = $interface->fetch($record->getCitation($citationFormat));
+	}
+	return $html;
+}
 
 	/**
 	 * Return the record set from the search results.
