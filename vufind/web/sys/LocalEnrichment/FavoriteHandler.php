@@ -64,7 +64,11 @@ class FavoriteHandler {
 		if (isset($list->defaultSort)){
 			$this->defaultSort = $list->defaultSort; // when list as a sort setting use that
 		}
-		if (isset($_REQUEST['sort']) && (in_array($_REQUEST['sort'], $this->solrSortOptions) || in_array($_REQUEST['sort'], array_keys($this->userListSortOptions)))){
+		if (isset($_REQUEST['sort']) && (
+			in_array($_REQUEST['sort'], $this->solrSortOptions) ||
+			in_array($_REQUEST['sort'], array_keys($this->userListSortOptions)) ||
+			in_array($_REQUEST['sort'], $this->islandoraSortOptions))
+		){
 			// if URL variable is a valid sort option, set the list's sort setting
 			$this->sort           = $_REQUEST['sort'];
 			$userSpecifiedTheSort = true;
