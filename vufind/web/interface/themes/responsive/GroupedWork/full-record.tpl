@@ -42,9 +42,10 @@
 					</div>
 				{/if}
 
-				{assign var=indexedSeries value=$recordDriver->getIndexedSeries()}
-				{assign var=series value=$recordDriver->getSeries()}
-					{if $showSeries && ($series)}
+				{if $showSeries}
+
+					{assign var=series value=$recordDriver->getSeries()}
+					{if ($series)}
 						<div class="novelistSeries row">
 							<div class="result-label col-tn-3">{translate text='NoveList Series'}:</div>
 							<div class="col-tn-9 result-value">
@@ -52,32 +53,34 @@
 							</div>
 						</div>
 					{/if}
-				{if $showSeries && ($indexedSeries)}
-					<div class="series row">
-						<div class="result-label col-tn-3">{translate text='Series'}:</div>
-						<div class="col-tn-9 result-value">
 
-						{if count($indexedSeries) >= 5}
-								{assign var=showMoreSeries value="true"}
-						{/if}
-						{foreach from=$indexedSeries item=seriesItem name=loop}
+					{assign var=indexedSeries value=$recordDriver->getIndexedSeries()}
+					{if ($indexedSeries)}
+						<div class="series row">
+							<div class="result-label col-tn-3">{translate text='Series'}:</div>
+							<div class="col-tn-9 result-value">
 
-							<a href="/Search/Results?basicType=Series&lookfor=%22{$seriesItem.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$seriesItem.seriesTitle|removeTrailingPunctuation|escape}</a>{if $seriesItem.volume} volume {$seriesItem.volume}{/if}<br>
-							{if $showMoreSeries && $smarty.foreach.loop.iteration == 3}
-								<a onclick="$('#moreSeries_{$recordDriver->getPermanentId()}').show();$('#moreSeriesLink_{$recordDriver->getPermanentId()}').hide();" id="moreSeriesLink_{$summId}">More Series...</a>
-								<div id="moreSeries_{$recordDriver->getPermanentId()}" style="display:none">
+							{if count($indexedSeries) >= 5}
+									{assign var=showMoreSeries value="true"}
+							{/if}
+							{foreach from=$indexedSeries item=seriesItem name=loop}
+
+								<a href="/Search/Results?basicType=Series&lookfor=%22{$seriesItem.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$seriesItem.seriesTitle|removeTrailingPunctuation|escape}</a>{if $seriesItem.volume} volume {$seriesItem.volume}{/if}<br>
+								{if $showMoreSeries && $smarty.foreach.loop.iteration == 3}
+									<a onclick="$('#moreSeries_{$recordDriver->getPermanentId()}').show();$('#moreSeriesLink_{$recordDriver->getPermanentId()}').hide();" id="moreSeriesLink_{$summId}">More Series...</a>
+									<div id="moreSeries_{$recordDriver->getPermanentId()}" style="display:none">
+								{/if}
+
+							{/foreach}
+							{if $showMoreSeries}
+								</div>
 							{/if}
 
-						{/foreach}
-						{if $showMoreSeries}
 							</div>
-						{/if}
-
 						</div>
-					</div>
+					{/if}
 
 				{/if}
-
 
 				{if $showPublicationDetails}
 					<div class="row">
