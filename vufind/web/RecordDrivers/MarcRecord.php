@@ -146,12 +146,11 @@ class MarcRecord extends IndexRecord {
 	 * @access  public
 	 * @return  string              Unique identifier.
 	 */
-	public function getShortId()
-	{
+	public function getShortId(){
 		$shortId = '';
-		if (!empty($this->sourceAndId->getRecordId())) {
+		if (!empty($this->sourceAndId->getRecordId())){
 			$shortId = $this->sourceAndId->getRecordId();
-			if (strpos($shortId, '.b') === 0) {
+			if (strpos($shortId, '.b') === 0){
 				$shortId = str_replace('.b', 'b', $shortId);
 				$shortId = substr($shortId, 0, strlen($shortId) - 1);
 			}
@@ -223,8 +222,7 @@ class MarcRecord extends IndexRecord {
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getExport($format)
-	{
+	public function getExport($format){
 		global $interface;
 
 		switch (strtolower($format)) {
@@ -269,27 +267,26 @@ class MarcRecord extends IndexRecord {
 	 * @access  public
 	 * @return  array               Strings representing export formats.
 	 */
-	public function getExportFormats()
-	{
+	public function getExportFormats(){
 		//TODO: fix EndNote and RefWorks integration
-		return array();
+		return [];
 
 		// Get an array of legal export formats (from config array, or use defaults
 		// if nothing in config array).
 		global $configArray;
 		global $library;
 		$active = isset($configArray['Export']) ?
-			$configArray['Export'] : array('RefWorks' => true, 'EndNote' => true);
+			$configArray['Export'] : ['RefWorks' => true, 'EndNote' => true];
 
 		// These are the formats we can possibly support if they are turned on in
 		// config.ini:
-		$possible = array('RefWorks', 'EndNote', 'MARC', 'RDF');
+		$possible = ['RefWorks', 'EndNote', 'MARC', 'RDF'];
 
 		// Check which formats are currently active:
-		$formats = array();
-		foreach ($possible as $current) {
-			if ($active[$current]) {
-				if (!isset($library) || (strlen($library->exportOptions) > 0 && preg_match('/' . $library->exportOptions . '/i', $current))) {
+		$formats = [];
+		foreach ($possible as $current){
+			if ($active[$current]){
+				if (!isset($library) || (strlen($library->exportOptions) > 0 && preg_match('/' . $library->exportOptions . '/i', $current))){
 					//the library didn't filter out the export method
 					$formats[] = $current;
 				}
@@ -459,42 +456,41 @@ class MarcRecord extends IndexRecord {
 	 * @access  protected
 	 * @return array
 	 */
-	public function getAllSubjectHeadings()
-	{
+	public function getAllSubjectHeadings(){
 		// These are the fields that may contain subject headings:
-		$fields = array('600', '610', '630', '650', '651', '655');
+		$fields = ['600', '610', '630', '650', '651', '655'];
 
 		// This is all the collected data:
-		$retval = array();
+		$retval = [];
 
 		// Try each MARC field one at a time:
-		foreach ($fields as $field) {
+		foreach ($fields as $field){
 			// Do we have any results for the current field?  If not, try the next.
 			/** @var File_MARC_Data_Field[] $results */
 			$results = $this->getMarcRecord()->getFields($field);
-			if (!$results) {
+			if (!$results){
 				continue;
 			}
 
 			// If we got here, we found results -- let's loop through them.
-			foreach ($results as $result) {
+			foreach ($results as $result){
 				// Start an array for holding the chunks of the current heading:
-				$current = array();
+				$current = [];
 
 				// Get all the chunks and collect them together:
 				/** @var File_MARC_Subfield[] $subfields */
 				$subfields = $result->getSubfields();
-				if ($subfields) {
-					foreach ($subfields as $subfield) {
+				if ($subfields){
+					foreach ($subfields as $subfield){
 						//Add unless this is 655 subfield 2
-						if ($subfield->getCode() == 2) {
+						if ($subfield->getCode() == 2){
 							//Suppress this code
-						} else {
+						}else{
 							$current[] = $subfield->getData();
 						}
 					}
 					// If we found at least one chunk, add a heading to our $result:
-					if (!empty($current)) {
+					if (!empty($current)){
 						$retval[] = $current;
 					}
 				}
@@ -511,8 +507,7 @@ class MarcRecord extends IndexRecord {
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getAwards()
-	{
+	protected function getAwards(){
 		return $this->getFieldArray('586');
 	}
 
@@ -522,8 +517,7 @@ class MarcRecord extends IndexRecord {
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getBibliographyNotes()
-	{
+	protected function getBibliographyNotes(){
 		return $this->getFieldArray('504');
 	}
 
@@ -551,28 +545,27 @@ class MarcRecord extends IndexRecord {
 	 * @access  private
 	 * @return  array
 	 */
-	private function getFieldArray($field, $subfields = null, $concat = true)
-	{
+	private function getFieldArray($field, $subfields = null, $concat = true){
 		// Default to subfield a if nothing is specified.
-		if (!is_array($subfields)) {
-			$subfields = array('a');
+		if (!is_array($subfields)){
+			$subfields = ['a'];
 		}
 
 		// Initialize return array
-		$matches = array();
+		$matches = [];
 
-		if ($this->isValid()) {
+		if ($this->isValid()){
 			$marcRecord = $this->getMarcRecord();
-			if ($marcRecord != false) {
+			if ($marcRecord != false){
 				// Try to look up the specified field, return empty array if it doesn't exist.
 				$fields = $marcRecord->getFields($field);
-				if (!is_array($fields)) {
+				if (!is_array($fields)){
 					return $matches;
 				}
 
 				// Extract all the requested subfields, if applicable.
-				foreach ($fields as $currentField) {
-					$next = $this->getSubfieldArray($currentField, $subfields, $concat);
+				foreach ($fields as $currentField){
+					$next    = $this->getSubfieldArray($currentField, $subfields, $concat);
 					$matches = array_merge($matches, $next);
 				}
 			}
