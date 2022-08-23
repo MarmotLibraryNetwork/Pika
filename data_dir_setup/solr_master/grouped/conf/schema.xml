@@ -467,10 +467,12 @@
 		</fieldType>
 		<fieldType name="callnumber-search" class="solr.TextField" sortMissingLast="true" omitNorms="true">
 			<analyzer type="index">
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
 				<!-- KeywordTokenizer does no actual tokenizing, so the entire
 					 input string is preserved as a single token
-				-->
-				<tokenizer class="solr.KeywordTokenizerFactory"/>
+
+				 https://solr.apache.org/guide/8_8/tokenizers.html#keyword-tokenizer
+				 -->
 				<filter class="solr.LengthFilterFactory" min="2" max="100"/>
 				<!-- This filter passes tokens whose length falls within the min/max limit specified.
 				All other tokens are discarded.
@@ -487,10 +489,12 @@
 				<filter class="solr.TrimFilterFactory"/>
 			</analyzer>
 			<analyzer type="query">
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
 				<!-- KeywordTokenizer does no actual tokenizing, so the entire
 					 input string is preserved as a single token
-				-->
-				<tokenizer class="solr.KeywordTokenizerFactory"/>
+
+				 https://solr.apache.org/guide/8_8/tokenizers.html#keyword-tokenizer
+				 -->
 				<filter class="solr.WordDelimiterGraphFilterFactory"
 						generateWordParts="1"
 						splitOnCaseChange="1"
@@ -556,11 +560,15 @@
 			-->
 			<analyzer>
 				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1 zzzz"/>
-				<!-- KeywordTokenizer does no actual tokenizing, so the entire input string is preserved as a single token
+				<!--This filter uses regular expressions to replace or change character patterns.
+				https://solr.apache.org/guide/8_8/charfilterfactories.html#solr-patternreplacecharfilterfactory
+				-->
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
+				<!-- KeywordTokenizer does no actual tokenizing, so the entire
+					 input string is preserved as a single token
 
 				 https://solr.apache.org/guide/8_8/tokenizers.html#keyword-tokenizer
 				 -->
-				<tokenizer class="solr.KeywordTokenizerFactory"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
 				<!--
 				Converts any uppercase letters in a token to the equivalent lowercase token. All other characters are left unchanged.
@@ -572,7 +580,15 @@
 		<fieldType name="text-left" class="solr.TextField" sortMissingLast="true" omitNorms="true">
 			<analyzer type="index">
 				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1"/>
+				<!--This filter uses regular expressions to replace or change character patterns.
+				https://solr.apache.org/guide/8_8/charfilterfactories.html#solr-patternreplacecharfilterfactory
+				-->
 				<tokenizer class="solr.KeywordTokenizerFactory"/>
+				<!-- KeywordTokenizer does no actual tokenizing, so the entire
+					 input string is preserved as a single token
+
+				 https://solr.apache.org/guide/8_8/tokenizers.html#keyword-tokenizer
+				 -->
 				<filter class="solr.LowerCaseFilterFactory"/>
 				<!--
 				Converts any uppercase letters in a token to the equivalent lowercase token. All other characters are left unchanged.
@@ -593,6 +609,11 @@
 			<analyzer type="query">
 				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1"/>
 				<tokenizer class="solr.KeywordTokenizerFactory"/>
+				<!-- KeywordTokenizer does no actual tokenizing, so the entire
+					 input string is preserved as a single token
+
+				 https://solr.apache.org/guide/8_8/tokenizers.html#keyword-tokenizer
+				 -->
 				<filter class="solr.LowerCaseFilterFactory"/>
 				<!--
 				Converts any uppercase letters in a token to the equivalent lowercase token. All other characters are left unchanged.
