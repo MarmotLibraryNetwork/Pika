@@ -29,6 +29,7 @@
 {/strip}
 <script type="text/javascript">
 	{literal}
+	$('#categoryName').focus();
 	$("#createBrowseCategory").validate({
 		submitHandler: function(){
 			Pika.Browse.createBrowseCategory()

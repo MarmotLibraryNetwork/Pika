@@ -224,7 +224,7 @@ Pika.Browse = (function(){
 					if (data.success == false) {
 						Pika.showMessage("Unable to create category", data.message);
 					} else {
-						Pika.showMessage("Successfully added", "This search was added to the homepage successfully.", true);
+						Pika.showMessageWithButtons("Successfully added", data.message, data.buttons, true);
 					}
 				}).fail(Pika.ajaxFail);
 			return false;

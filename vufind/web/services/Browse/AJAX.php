@@ -171,6 +171,10 @@ class Browse_AJAX extends AJAXHandler {
 
 					return [
 						'success' => true,
+						'message' => 'This search was added to the homepage successfully.',
+						'buttons' => '<a class="btn btn-primary" href="/Admin/BrowseCategories?objectAction=edit&id='
+							. $browseCategory->id . '" role="button">Edit Browse Category</a>'
+							. '<a class="btn btn-primary" href="/" role="button">View Homepage</a>'
 					];
 				}
 			}else{
