@@ -526,7 +526,7 @@ class CitationBuilder {
 				foreach ($this->details['authors'] as $author){
 					if (($i + 1 == count($this->details['authors'])) && ($i > 0)){
 						// Last
-						$authorStr .= ', and ' .
+						$authorStr .= ' and ' .
 							$this->reverseName($this->stripPunctuation($author));
 					}elseif ($i > 0){
 						$authorStr .= ', ' .
