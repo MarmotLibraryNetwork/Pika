@@ -171,6 +171,8 @@ class Author_Home extends Union_Results {
 		$interface->assign('recordSet', $authorTitles);
 		$template = $searchObject->getDisplayTemplate();
 		$interface->assign('resultsTemplate', $template);
+		//TODO: looks like this is the same as template variable subPage; and the original issue was that subpage
+		// wasn't referenced in Author/home.tpl
 
 		// 'Finish' the search... complete timers and log search history.
 		$searchObject->close();
@@ -225,7 +227,7 @@ class Author_Home extends Union_Results {
 		$_SESSION['lastSearchURL'] = $searchObject->renderSearchUrl();
 		//Get view & load template
 		$interface->assign('displayMode', $displayMode);
-		$interface->assign('subpage', 'Search/list-' . $displayMode . '.tpl');
+//		$interface->assign('subpage', 'Search/list-' . $displayMode . '.tpl');
 
 		$this->display('home.tpl', 'Author ' . $authorRaw, 'Author/sidebar.tpl');
 	}
