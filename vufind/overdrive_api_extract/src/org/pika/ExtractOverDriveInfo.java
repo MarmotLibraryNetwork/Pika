@@ -1188,12 +1188,11 @@ class ExtractOverDriveInfo {
 				} else {
 					metaDataStatement.setNull(++curCol, Types.INTEGER);
 				}
-
 				metaDataStatement.setString(++curCol, metaData.has("edition") ? metaData.getString("edition") : "");
 				metaDataStatement.setBoolean(++curCol, metaData.has("isPublicDomain") && metaData.getBoolean("isPublicDomain"));
 				metaDataStatement.setBoolean(++curCol, metaData.has("isPublicPerformanceAllowed") && metaData.getBoolean("isPublicPerformanceAllowed"));
 				metaDataStatement.setString(++curCol, metaData.has("shortDescription") ? metaData.getString("shortDescription") : "");
-				metaDataStatement.setString(++curCol, metaData.has("fullDescription") ? metaData.getString("fullDescription") : "");
+				metaDataStatement.setString(++curCol, metaData.has("fullDescription") ? scrubEmojis(metaData.getString("fullDescription")) : "");
 				metaDataStatement.setDouble(++curCol, metaData.has("starRating") ? metaData.getDouble("starRating") : 0);
 				metaDataStatement.setInt(++curCol, metaData.has("popularity") ? metaData.getInt("popularity") : 0);
 				String thumbnail = "";
@@ -1210,8 +1209,7 @@ class ExtractOverDriveInfo {
 				metaDataStatement.setString(++curCol, thumbnail);
 				metaDataStatement.setString(++curCol, cover);
 				metaDataStatement.setBoolean(++curCol, metaData.has("isOwnedByCollections") && metaData.getBoolean("isOwnedByCollections"));
-				metaDataStatement.setString(++curCol, metaData.toString(2).replaceAll("\uD83D\uDE03", "").replaceAll("\uD83D\uDE0A", ""));
-				// quick fix to remove troublesome emojis from the rawdata
+				metaDataStatement.setString(++curCol, scrubEmojis(metaData.toString(2)));
 
 				if (isUpdateStatement) {
 					metaDataStatement.setLong(++curCol, databaseMetaData.getId());
@@ -1376,6 +1374,11 @@ class ExtractOverDriveInfo {
 			results.addNote(message + " " + e.toString());
 			updateData.hadMetadataErrors = true;
 		}
+	}
+
+	 private String scrubEmojis(String str){
+		return str.replaceAll("[\ud83c\udf00-\ud83d\ude4f]", "");
+//		return str.replaceAll("\uD83D\uDE03", "").replaceAll("\uD83D\uDE0A", "");
 	}
 
 	private OverDriveDBMetaData loadMetadataFromDatabase(long databaseId) {
