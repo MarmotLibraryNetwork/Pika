@@ -725,7 +725,7 @@ class Library extends DB_DataObject {
 			// Browse Category Section //
 			'browseCategorySection' => [
 				'property'   => 'browseCategorySection', 'type' => 'section', 'label' => 'Browse Categories', 'hideInLists' => true,
-				'helpLink'   => 'https://marmot-support.atlassian.net/l/c/98rtRQZ2',
+				'helpLink'   => 'https://marmot-support.atlassian.net/l/cp/H65SSr01',
 				'properties' => [
 					'defaultBrowseMode'         => [
 						'property' => 'defaultBrowseMode', 'type' => 'enum', 'label' => 'Default Viewing Mode for Browse Categories', 'description' => 'Sets how browse categories will be displayed when users haven\'t chosen themselves.', 'hideInLists' => true,

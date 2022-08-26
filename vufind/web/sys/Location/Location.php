@@ -370,7 +370,7 @@ class Location extends DB_DataObject {
 			// Browse Category Section //
 			'browseCategorySection' => [
 				'property'   => 'browseCategorySection', 'type' => 'section', 'label' => 'Browse Categories', 'hideInLists' => true,
-				'instructions' => 'For more information on how to setup browse categories, see the <a href="https://marmot-support.atlassian.net/l/c/98rtRQZ2">online documentation</a>.',
+				'instructions' => 'For more information on how to set up browse categories, see the <a href="https://marmot-support.atlassian.net/l/c/98rtRQZ2">online documentation</a>.',
 				'helpLink' => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
 				'properties' => [
 					'defaultBrowseMode'         => [
