@@ -1010,7 +1010,6 @@
 		-->
 		<!-- relevance determiners -->
 		<field name="popularity" type="integer" indexed="true" stored="true" multiValued="false" default="0"/>
-<!--		<field name="num_holdings" type="integer" omitNorms="true" indexed="true" stored="true" multiValued="false"/>-->
 
 		<!-- Fields from Pika Enrichment -->
 		<field name="tag" type="string" indexed="true" stored="true" multiValued="true"/>
@@ -1023,11 +1022,8 @@
 
 		<!-- Special fields for Lists -->
 		<field name="num_titles" type="integer" indexed="true" stored="true" multiValued="false"/>
-		<!--TODO: this field can be removed likely. It is only used by lists and will have the same value as num_holdings.
+		<!--It is only used by lists and will have the same value as num_holdings.
 		 (Also currently it has the same values as popularity)-->
-		<!-- Field to get random titles -->
-		<dynamicField name="random*" type="random" indexed="true" stored="true"/>
-		<!--TODO: nothing is generating a random field to the extent that I can tell -->
 
 	</fields>
 	<uniqueKey>id</uniqueKey>
