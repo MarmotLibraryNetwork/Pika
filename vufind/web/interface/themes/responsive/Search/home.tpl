@@ -74,7 +74,7 @@
 	$(function(){ldelim}
 		{if $selectedBrowseCategory}
 			Pika.Browse.curCategory = '{$selectedBrowseCategory->textId}';
-			{if $subCategoryTextId}Pika.Browse.curSubCategory = '{$subCategoryTextId}';{/if}
+			{if $subCategoryTextId}Pika.Browse.initialSubCategory = '{$subCategoryTextId}';{/if}
 		{/if}
 		{if !$onInternalIP}
 		if (!Globals.opac && Pika.hasLocalStorage()){ldelim}

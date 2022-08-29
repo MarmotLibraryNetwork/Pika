@@ -48,7 +48,7 @@ Pika.Browse = (function(){
 					}
 				});
 
-				// implements functions for libraries not using the carousel functionality
+				// Implement functions for libraries not using the carousel functionality
 			} else {
 				// bypass jcarousel navigation on a category click
 				browseCategoryCarousel.find('li').click(function(){
@@ -96,9 +96,12 @@ Pika.Browse = (function(){
 			// the carousel clones these divs sometimes, so grab only the text from the first one.
 					loadingID = categoryTextId || initial;
 
-			if (Pika.Browse.curSubCategory !== '') params.subCategoryTextId = Pika.Browse.curSubCategory;
-			//This is triggered when a sub category has been set by url.
-			// This allows us to fetch the chosen sub category instead of default sub category
+			if (Pika.Browse.initialSubCategory !== ''){
+				//This is triggered when a sub category has been set by url.
+				// This allows us to fetch the chosen sub category instead of default sub category
+				params.subCategoryTextId = Pika.Browse.initialSubCategory;
+				delete Pika.Browse.initialSubCategory; // unset specified category
+			}
 
 			// Set selected Carousel
 			$('.browse-category').removeClass('selected');
