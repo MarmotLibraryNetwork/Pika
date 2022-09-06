@@ -111,13 +111,12 @@ class Admin_Administrators extends ObjectEditor {
 		global $interface;
 		$user = UserAccount::getActiveUserObj();
 
-		$barcodeProperty = 'barcode';
 		$barcode         = trim($_REQUEST['barcode']);
 		$interface->assign('barcode', $barcode);
 
 		if (!empty($_REQUEST['roles'])){
 			$newAdmin = new User();
-			$newAdmin->get($barcodeProperty, $barcode);
+			$newAdmin->get('barcode', $barcode);
 			$success = ($newAdmin->N == 1); // Call success if we found exactly one user (multiple users is an error also)
 			if ($newAdmin->N == 0){
 				//Try searching ILS for user if no user was found
