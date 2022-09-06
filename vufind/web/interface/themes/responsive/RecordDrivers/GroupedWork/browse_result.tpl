@@ -24,6 +24,7 @@
 					data-average_rating="{$ratingData.average}" data-id="{$summId}"
 					data-show_review="{$showComments}"
 				{/if}
+				>{* finishes this div tag above *}
 
 				<span class="ui-rater-starsOff" style="width:90px">
 {* Don't show a user's ratings in browse results because the results get cached so shouldn't be particular to a single user.*}
