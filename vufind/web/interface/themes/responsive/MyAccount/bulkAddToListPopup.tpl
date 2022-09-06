@@ -3,7 +3,7 @@
 		<ul>
 			<li>Enter one or more <strong>titles, ISBNs, barcodes, Archive PIDs, Grouped Work Ids, or Bib Ids</strong>.</li>
 			<li>Each entry should be on its own line.</li>
-			<li>We will search the catalog or archive for each entry and add the first match for each line to your list.</li>
+			<li>We will search the catalog or archive for each entry and add <strong>the first match for each line</strong> to your list.</li>
 			{if $itemCount > 1800}<li>Please note, there is a limit of 2000 items per list. Any items added that will exceed this limit will not be added.</li>{/if}
 		</ul>
 	</div>
