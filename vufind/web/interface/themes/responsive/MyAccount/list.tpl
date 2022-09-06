@@ -8,11 +8,12 @@
 {if isset($favList)}
 	<form action="/MyAccount/MyList/{$favList->id}" id="myListFormHead">
 		<div>
-			<input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
-			<input type="hidden" name="myListActionData" id="myListActionData" class="form">
-			<input type="hidden" name="myListPage" id="myListPage" class="form">
-			<input type="hidden" name="myListPageSize" id="myListPageSize" class="form">
-			<input type="hidden" name="myListSort" id="myListSort" class="form">
+			{foreach from=$smarty.get.filter item="filter"}<input type="hidden" name="filter[]" value="{$filter|escape}">{/foreach}
+			<input type="hidden" name="myListActionHead" id="myListActionHead">
+			<input type="hidden" name="myListActionData" id="myListActionData">
+			<input type="hidden" name="myListPage" id="myListPage">
+			<input type="hidden" name="myListPageSize" id="myListPageSize">
+			<input type="hidden" name="myListSort" id="myListSort">
 			<h3 id="listTitle">{$favList->title|escape:"html"}</h3>
 			{if $notes}
 				<div id="listNotes" class="alert alert-info">
@@ -48,6 +49,10 @@
 							</select>
 
 						</div>
+						<div class="btn-group">
+							<button value="saveList" id="FavSave" class="btn btn-sm btn-primary" style="display:none" onclick='return Pika.Lists.updateListAction({$pageNum}, {$pageSize},"{$listSort}")'>Save Changes</button>
+						</div>
+
 					</div>
 				{/if}
 				<div class="clearer"></div>
@@ -59,16 +64,13 @@
 							<ul class=" dropdown-menu dropdown-menu-right" role="menu">
 								{if $favList->public}<li><a href="#" value="emailList" id="FavEmail"  onclick='return Pika.Lists.emailListAction("{$favList->id}")'>Email List</a></li>{/if}
 								<li><a href="#" value="printList" id="FavPrint"  onclick='return Pika.Lists.printListAction()'>Print List</a></li>
-								{if $favList->public}<li><a href="#" id="copyList" onclick="return Pika.Lists.copyList({$favlist->id})">Copy List</a></li>{/if}
+								{if $favList->public}<li><a href="#" id="copyList" onclick="return Pika.Lists.copyList({$favList->id})">Copy List</a></li>{/if}
 								<li><a href="#" value="exportToExcel" id="FavExcel" onclick='return Pika.Lists.exportListAction("{$favList->id}", {$pageNum}, {$pageSize},"{$listSort}");'>Export to Excel</a></li>
 								{if $favList->public}<li><a href="https://twitter.com/compose/tweet?text={$favList->title|escape:"html"}+{$url|escape:"html"}/MyAccount/MyList/{$favList->id}" id="Twitter Share">Share on Twitter <img class="pull-right" src="{img filename='twitter-icon.png'}" alt="Share on Twitter"></a></li>{/if}
 								{if $favList->public}<li><a href="http://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" id="">Share on Facebook <img src="{img filename='facebook-icon.png'}" alt="Share on Facebook"></a></li>{/if}
 								{if $favList->public}<li>{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|escape:"html"|cat:"/MyAccount/MyList/"|cat:$favList->id description="See My List '"|cat:$favList->title|cat:"' at $homeLibrary" linkText="Pin on Pinterest" imgClass="pull-right"}</li>{/if}
 
 							</ul>
-						</div>
-						<div class="btn-group">
-							<button value="saveList" id="FavSave" class="btn btn-sm btn-primary" style="display:none" onclick='return Pika.Lists.updateListAction({$pageNum}, {$pageSize},"{$listSort}")'>Save Changes</button>
 						</div>
 						<div class="btn-group">
 							<button value="batchAdd" id="FavBatchAdd" class="btn btn-sm btn-default" onclick='return Pika.Lists.batchAddToListAction({$favList->id})'>Add Multiple Titles</button>
@@ -107,7 +109,7 @@
 										<a href="#" onclick="return Pika.Lists.emailListAction({$favList->id})" title="share via e-mail">
 											<img src="{img filename='email-icon.png'}" alt="E-mail this" style="cursor:pointer;">
 										</a>
-										<a href="#" id="FavExcel" onclick="return Pika.Lists.exportListFromLists('{$myList.id}');" title="Export List to Excel">
+										<a href="#" id="FavExcel" onclick="return Pika.Lists.exportListFromLists({$favList->id});" title="Export List to Excel">
 											<img src="{img filename='excel.png'}" alt="Export to Excel">
 										</a>
 										<a href="https://twitter.com/compose/tweet?text={$favList->title|escape:"html"}+{$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on Twitter">
@@ -178,14 +180,23 @@
 				<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 			</form>
 
+
+			{if $topRecommendations}
+					{foreach from=$topRecommendations item="recommendations"}
+							{include file=$recommendations}
+					{/foreach}
+			{/if}
+
 			{if $recordCount}
 				<div class="resulthead row">
 					<div class="col-xs-12">
 							{translate text="Showing"} <b>{$recordStart}</b> - <b>{$recordEnd}</b> {translate text='of'} <b>{$recordCount}</b>
-							{if $debug}
-								&nbsp;There are {$favList->numValidListItems()} valid Items.
-							{/if}
+								&nbsp;There are a total of <span class="badge">{$favList->numValidListItems()}</span> valid entries on the list.
 					</div>
+
+        {* Search Debugging *}
+        {include file="Search/search-debug.tpl"}
+
 				</div>
 			{/if}
 
@@ -221,13 +232,14 @@
 							update: function (e, ui){
 								var updates = [],
 										firstItemOnPage = {/literal}{$recordStart}{literal};
-								$('#UserList>div>div>div>div').each(function(currentOrder){
+								$('#UserList .resultsList').each(function(currentOrder){
 									var id = this.id.replace('groupedRecord','') /* Grouped IDs for catalog items */
 																	.replace('archive',''),      /*modified Islandora PIDs for archive items*/
 													originalOrder = $(this).data('order'),
 													change = currentOrder+firstItemOnPage-originalOrder,
 													newOrder = originalOrder+change;
-									if (change != 0) updates.push({'id':id, 'newOrder':newOrder});
+													//console.log(id, originalOrder, change, newOrder);
+									/*if (change != 0)*/ updates.push({'id':id, 'newOrder':newOrder});
 								});
 								$.getJSON('/MyAccount/AJAX',
 												{

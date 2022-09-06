@@ -19,7 +19,6 @@ import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Date;
@@ -82,7 +81,7 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 				itemInfo.setLocationCode(bibLocation);
 				itemInfo.seteContentSource(specifiedEcontentSource);
 
-				Date dateAdded = indexer.getDateFirstDetected(identifier.getSource(), identifier.getIdentifier());
+				Date dateAdded = indexer.getDateFirstDetected(identifier);
 				itemInfo.setDateAdded(dateAdded);
 
 //                itemInfo.seteContentSource(specifiedEcontentSource == null ? "Econtent" : specifiedEcontentSource);

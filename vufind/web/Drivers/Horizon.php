@@ -378,23 +378,6 @@ abstract class Horizon extends ScreenScrapingDriver{
 		return $updateErrors;
 	}
 
-	public function getRecordTitle($recordId){
-		//Get the title of the book.
-		$searchObject = SearchObjectFactory::initSearchObject();
-
-		// Retrieve Full Marc Record
-		if (!($record = $searchObject->getRecord($recordId))) {
-			$title = null;
-		}else{
-			if (isset($record['title_full'][0])){
-				$title = $record['title_full'][0];
-			}else{
-				$title = $record['title'];
-			}
-		}
-		return $title;
-	}
-
 	function addDays($givendate,$day) {
 		$cd = strtotime($givendate);
 		$newdate = date('Y-m-d H:i:s', mktime(date('H',$cd),

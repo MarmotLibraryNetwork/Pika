@@ -46,7 +46,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 			//The record is print
 			List<DataField>  itemRecords      = MarcUtil.getDataFields(record, itemTag);
 			for (DataField itemField : itemRecords) {
-				if (!isItemSuppressed(itemField)) {
+				if (!isItemSuppressed(itemField, identifier)) {
 					getPrintIlsItem(groupedWork, recordInfo, record, itemField, identifier);
 				}
 			}
@@ -133,7 +133,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 			} else {
 				// Item-record eContent
 				for (DataField itemField : itemRecords) {
-					if (!isItemSuppressed(itemField)) {
+					if (!isItemSuppressed(itemField, identifier)) {
 						//Check to see if the item has an eContent indicator
 						RecordInfo eContentRecord = getEContentIlsRecord(groupedWork, record, identifier, itemField);
 						if (eContentRecord != null) {
@@ -260,7 +260,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 			}
 		}
 
-		final HashSet<String> target_audiences = translateCollection("target_audience", targetAudiences, identifier.getSourceAndId());
+		final HashSet<String> target_audiences = translateCollection("target_audience", targetAudiences, identifier);
 		groupedWork.addTargetAudiences(target_audiences);
 		groupedWork.addTargetAudiencesFull(target_audiences);
 	}

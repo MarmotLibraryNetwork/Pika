@@ -73,18 +73,24 @@
 					</a>
 				{elseif $property.canEdit}
 					{if method_exists($subObject, 'getEditLink')}
-						&nbsp;<a href='{$subObject->getEditLink()}' alt='Edit' title='Edit'>
-							<span class="glyphicon glyphicon-edit" title="edit">&nbsp;</span>
-						</a>
+						{assign var="editLink" value=$subObject->getEditLink()}
+							{if $editLink}
+								&nbsp;<a href='{$editLink}' title='Edit'>
+									<span class="glyphicon glyphicon-edit" title="edit">&nbsp;</span>
+								</a>
+						{/if}
 					{else}
 						Please add a getEditLink method to this object
 					{/if}
 				{/if}
 				{if $property.directLink}
 					{if method_exists($subObject, 'getDirectLink')}
+						{assign var="directLink" value=$subObject->getDirectLink()}
+						{if $directLink}
 						&nbsp;<a href='{$subObject->getDirectLink()}' title='Direct Link'>
 							<span class="glyphicon glyphicon-link" >&nbsp;</span>
 						</a>
+						{/if}
 					{else}
 						Please add a getDirectLink method to this object
 					{/if}

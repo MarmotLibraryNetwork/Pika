@@ -22,8 +22,7 @@ require_once ROOT_DIR . '/sys/Pager.php';
 
 class Archive_Results extends Union_Results {
 
-	function launch()
-	{
+	function launch(){
 		global $interface;
 		global $configArray;
 		global $timer;

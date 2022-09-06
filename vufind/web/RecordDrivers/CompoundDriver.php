@@ -65,7 +65,8 @@ EOQ;
 		$queryResults = $fedoraUtils->doSparqlQuery($query);
 		global $logger;
 		$logger->log("query for Book contents", PEAR_LOG_DEBUG);
-		$logger->log($queryResults, PEAR_LOG_DEBUG);
+		//$logger->log($queryResults, PEAR_LOG_DEBUG);
+		// since $queryResults is an array comment out to prevent php notice
 
 		if (count($queryResults) == 0){
 			$sectionDetails = [

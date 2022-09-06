@@ -29,7 +29,6 @@ public class ItemInfo {
 	private String itemIdentifier;
 	private String locationCode;
 	private String format;
-	private String subFormat;
 	private String formatCategory;
 	private int numCopies = 1;
 	private boolean isOrderItem;
@@ -135,10 +134,6 @@ public class ItemInfo {
 		this.format = format;
 	}
 
-	void setSubFormats(String subFormats){
-		this.subFormat = subFormats;
-	}
-
 	int getNumCopies() {
 		//TODO: yeah, rethink this for OverDrive. It should indicate number of available copies;
 		// currently indicates total copies, if not set to 1 below.
@@ -180,21 +175,20 @@ public class ItemInfo {
 				formattedLastCheckinDate = lastCheckinDateFormatter.format(lastCheckinDate);
 			}
 			//Cache the part that doesn't change depending on the scope
-			baseDetails = recordInfo.getFullIdentifier() + "|" +
-							Util.getCleanDetailValue(itemIdentifier) + "|" +
-							Util.getCleanDetailValue(shelfLocation) + "|" +
-							Util.getCleanDetailValue(callNumber) + "|" +
-							Util.getCleanDetailValue(format) + "|" +
-							Util.getCleanDetailValue(formatCategory) + "|" +
-							numCopies + "|" +
-							(isOrderItem ? "1" : "0") + "|" +
-							(isEContent ? "1" : "0") + "|" +
-							Util.getCleanDetailValue(eContentSource) + "|" +
-							Util.getCleanDetailValue(eContentUrl) + "|" +
-							Util.getCleanDetailValue(subFormat) + "|" +
-							Util.getCleanDetailValue(detailedStatus) + "|" +
-							Util.getCleanDetailValue(formattedLastCheckinDate) + "|" +
-							Util.getCleanDetailValue(locationCode);
+			baseDetails = recordInfo.getFullIdentifier() + "|" +               // 0
+							Util.getCleanDetailValue(itemIdentifier) + "|" +           // 1
+							Util.getCleanDetailValue(shelfLocation) + "|" +            // 2
+							Util.getCleanDetailValue(callNumber) + "|" +               // 3
+							Util.getCleanDetailValue(format) + "|" +                   // 4
+							Util.getCleanDetailValue(formatCategory) + "|" +           // 5
+							numCopies + "|" +                                          // 6
+							(isOrderItem ? "1" : "0") + "|" +                          // 7
+							(isEContent ? "1" : "0") + "|" +                           // 8
+							Util.getCleanDetailValue(eContentSource) + "|" +           // 9
+							Util.getCleanDetailValue(eContentUrl) + "|" +              // 10
+							Util.getCleanDetailValue(detailedStatus) + "|" +           // 11
+							Util.getCleanDetailValue(formattedLastCheckinDate) + "|" + // 12
+							Util.getCleanDetailValue(locationCode);                    // 13
 		}
 		return baseDetails;
 	}
@@ -255,11 +249,15 @@ public class ItemInfo {
 
 	ScopingInfo addScope(Scope scope) {
 		ScopingInfo scopeInfo;
-		if (scopingInfo.containsKey(scope.getScopeName())){
-			scopeInfo = scopingInfo.get(scope.getScopeName());
+		String      scopeName = scope.getScopeName();
+		if (scopingInfo.containsKey(scopeName)){
+			scopeInfo = scopingInfo.get(scopeName);
 		}else{
 			scopeInfo = new ScopingInfo(scope, this);
-			scopingInfo.put(scope.getScopeName(), scopeInfo);
+			scopingInfo.put(scopeName, scopeInfo);
+			if (!recordInfo.hasScope(scopeName)){
+				recordInfo.addScope(scopeName);
+			}
 		}
 		return scopeInfo;
 	}

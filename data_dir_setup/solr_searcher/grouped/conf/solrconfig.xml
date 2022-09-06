@@ -995,13 +995,12 @@
 	pascal 1/13/2021 -->
 	<requestHandler name="/morelikethis2" class="solr.MoreLikeThisHandler">
 		<lst name="defaults">
-			<str name="mlt.fl">subject_facet,topic_facet,awards_facet,genre_facet,geographic_facet,callnumber-label,era,author</str>
+			<str name="mlt.fl">subject_facet,topic_facet,awards_facet,genre_facet,geographic_facet,era,author</str>
 			<str name="mlt.qf">
 				<!-- Query fields and their boosts using the same format used by the DisMax Query Parser.
 				These fields must also be specified in mlt.fl. -->
 				subject_facet^800
 				topic_facet^600
-				callnumber-label^200
 				awards_facet^100
 				author^75
 				era^50
@@ -1016,13 +1015,12 @@
 
 	<requestHandler name="/morelikethese" class="solr.MoreLikeThisHandler">
 		<lst name="defaults">
-			<str name="mlt.fl">subject_facet,topic_facet,awards_facet,genre_facet,geographic_facet,callnumber-label,era,author,target_audience_full,literary_form_full</str>
+			<str name="mlt.fl">subject_facet,topic_facet,awards_facet,genre_facet,geographic_facet,era,author,target_audience_full,literary_form_full</str>
 			<str name="mlt.qf">
 				<!-- Query fields and their boosts using the same format used by the DisMax Query Parser.
 				These fields must also be specified in mlt.fl. -->
 				subject_facet^800
 				topic_facet^600
-				callnumber-label^200
 				awards_facet^100
 				author^75
 				era^50
@@ -1187,7 +1185,7 @@
 
 	<!-- Terms Component
 
-		 http://wiki.apache.org/solr/TermsComponent
+		https://solr.apache.org/guide/8_10/the-terms-component.html
 
 		 A component to return terms and document frequency of those
 		 terms

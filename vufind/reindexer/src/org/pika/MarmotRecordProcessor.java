@@ -40,7 +40,7 @@ class MarmotRecordProcessor extends IIIRecordProcessor {
 	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, RecordIdentifier identifier, Record record) {
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
 		for (DataField itemField : itemRecords) {
-			if (!isItemSuppressed(itemField)) {
+			if (!isItemSuppressed(itemField, identifier)) {
 				//Check to see if the item has an eContent indicator
 				boolean isEContent  = false;
 				boolean isOverDrive = false;
@@ -71,7 +71,7 @@ class MarmotRecordProcessor extends IIIRecordProcessor {
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		List<DataField>  itemRecords                 = MarcUtil.getDataFields(record, itemTag);
 		for (DataField itemField : itemRecords) {
-			if (!isItemSuppressed(itemField)) {
+			if (!isItemSuppressed(itemField, identifier)) {
 				//Check to see if the item has an eContent indicator
 				if (useEContentSubfield) {
 					if (itemField.getSubfield(eContentSubfieldIndicator) != null) {

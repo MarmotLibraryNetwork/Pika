@@ -40,6 +40,15 @@ public class TranslationMap {
 	private HashMap<String, String> translationValues = new HashMap<>();
 	private HashMap<Pattern, String> translationValuePatterns = new HashMap<>();
 
+	/**
+	 *  Use for setting a translation map from an associated Indexing Profile
+	 *
+	 * @param profileName
+	 * @param mapName
+	 * @param fullReindex
+	 * @param usesRegularExpressions
+	 * @param logger
+	 */
 	public TranslationMap(String profileName, String mapName, boolean fullReindex, boolean usesRegularExpressions, Logger logger){
 		this.profileName = profileName;
 		this.mapName = mapName;
@@ -50,11 +59,11 @@ public class TranslationMap {
 
 	HashSet<String> unableToTranslateWarnings = new HashSet<>();
 	public HashMap<String, String> cachedTranslations = new HashMap<>();
-	public String translateValue(String value, String identifier){
+	public String translateValue(String value, RecordIdentifier identifier){
 		return translateValue(value, identifier, true);
 	}
 
-	public String translateValue(String value, String identifier, boolean reportErrors){
+	public String translateValue(String value, RecordIdentifier identifier, boolean reportErrors){
 		String translatedValue = null;
 		String lowerCaseValue = value.toLowerCase();
 		if (cachedTranslations.containsKey(value)){
@@ -114,7 +123,7 @@ public class TranslationMap {
 		return translatedValue;
 	}
 
-	public LinkedHashSet<String> translateCollection(Set<String> values, String identifier) {
+	public LinkedHashSet<String> translateCollection(Set<String> values, RecordIdentifier identifier) {
 		LinkedHashSet<String> translatedCollection = new LinkedHashSet<>();
 		for (String value : values){
 			String translatedValue = translateValue(value, identifier);
@@ -138,4 +147,5 @@ public class TranslationMap {
 			translationValues.put(value.toLowerCase(), translation);
 		}
 	}
+
 }

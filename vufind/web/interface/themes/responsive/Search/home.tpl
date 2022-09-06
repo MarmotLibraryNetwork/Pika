@@ -74,7 +74,7 @@
 	$(function(){ldelim}
 		{if $selectedBrowseCategory}
 			Pika.Browse.curCategory = '{$selectedBrowseCategory->textId}';
-			{if $subCategoryTextId}Pika.Browse.curSubCategory = '{$subCategoryTextId}';{/if}
+			{if $subCategoryTextId}Pika.Browse.initialSubCategory = '{$subCategoryTextId}';{/if}
 		{/if}
 		{if !$onInternalIP}
 		if (!Globals.opac && Pika.hasLocalStorage()){ldelim}
@@ -87,6 +87,11 @@
 		Pika.Browse.browseMode = '{$browseMode}';
 		{/if}
 		$('#'+Pika.Browse.browseMode).parent('label').addClass('active'); {* show user which one is selected *}
-		Pika.Browse.toggleBrowseMode();
+			{if $selectedBrowseCategory && !$isDefaultCategory} {* This triggers the carousel to display the correct category (and subcategory) when these have been set with url parameters. *}
+				let carousel = $("#browse-category-carousel");
+				carousel.jcarousel('scroll', carousel.find("li#browse-category-" + Pika.Browse.curCategory));
+			{else}
+				Pika.Browse.toggleBrowseMode();
+			{/if}
 	{rdelim});
 </script>

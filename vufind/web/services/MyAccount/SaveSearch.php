@@ -19,40 +19,37 @@
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
-class SaveSearch extends MyAccount
-{
-	function launch()
-	{
-		global $configArray;
+class SaveSearch extends MyAccount {
 
+	function launch(){
 		$searchId = null;
-		$todo = 'addSearch';
-		if (isset($_REQUEST['delete']) && $_REQUEST['delete']) {
-			$todo = 'deleteSearch';
+		$todo     = 'addSearch';
+		if (isset($_REQUEST['delete']) && $_REQUEST['delete']){
+			$todo     = 'deleteSearch';
 			$searchId = $_REQUEST['delete'];
 		}
 		// If for some strange reason the user tries
 		//    to do both, just focus on the save.
-		if (isset($_REQUEST['save']) && $_REQUEST['save']) {
-			$todo = 'addSearch';
+		if (isset($_REQUEST['save']) && $_REQUEST['save']){
+			$todo     = 'addSearch';
 			$searchId = $_REQUEST['save'];
 		}
 
 		require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
-		$search = new SearchEntry();
+		$search     = new SearchEntry();
 		$search->id = $searchId;
-		if ($search->find(true)) {
+		if ($search->find(true)){
 			// Found, make sure this is a search from this user
-			if ($search->session_id == session_id() || $search->user_id == UserAccount::getActiveUserId()) {
+			if ($search->session_id == session_id() || $search->user_id == UserAccount::getActiveUserId()){
 				// Call whichever function is required below
 				$this->$todo($search);
 			}
 		}
 
 		// If we are in "edit history" mode, stay in Search History:
-		if (isset($_REQUEST['mode']) && $_REQUEST['mode'] == 'history') {
+		if (isset($_REQUEST['mode']) && $_REQUEST['mode'] == 'history'){
 			header("Location: /Search/History");
-		} else {
+		}else{
 			// If the ID wasn't found, or some other error occurred, nothing will
 			//   have processed be now, let the error handling on the display
 			//   screen take care of it.
@@ -66,11 +63,10 @@ class SaveSearch extends MyAccount
 	 *
 	 * @param SearchEntry $search
 	 */
-	private function addSearch($search)
-	{
-		if ($search->saved != 1) {
+	private function addSearch($search){
+		if ($search->saved != 1){
 			$search->user_id = UserAccount::getActiveUserId();
-			$search->saved = 1;
+			$search->saved   = 1;
 			$search->update();
 		}
 	}
@@ -80,9 +76,8 @@ class SaveSearch extends MyAccount
 	 *
 	 * @param SearchEntry $search
 	 */
-	private function deleteSearch($search)
-	{
-		if ($search->saved != 0) {
+	private function deleteSearch($search){
+		if ($search->saved != 0){
 			$search->saved = 0;
 			$search->update();
 		}

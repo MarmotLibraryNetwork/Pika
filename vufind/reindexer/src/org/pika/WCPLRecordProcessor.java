@@ -17,13 +17,10 @@ package org.pika;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
-import org.marc4j.marc.Subfield;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * Indexing Handler for Wake County Public Library
@@ -91,7 +88,7 @@ class WCPLRecordProcessor extends HorizonRecordProcessor {
 
 	@Override
 	protected void loadDateAdded(RecordIdentifier identifier, DataField itemField, ItemInfo itemInfo) {
-		Date dateAdded = indexer.getDateFirstDetected(identifier.getSource(), identifier.getIdentifier());
+		Date dateAdded = indexer.getDateFirstDetected(identifier);
 		itemInfo.setDateAdded(dateAdded);
 	}
 
@@ -109,7 +106,7 @@ class WCPLRecordProcessor extends HorizonRecordProcessor {
 		return location;
 	}
 
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {
 		//For Wake County, load audiences based on collection code rather than based on the 008 and 006 fields
 		HashSet<String> targetAudiences = new HashSet<>();
 		for (ItemInfo printItem : printItems) {

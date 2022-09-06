@@ -682,7 +682,7 @@ class Marmot extends Sierra {
 		];
 		$c->setHeaders($headers);
 
-		$cookie   = tempnam("/tmp", "CURLCOOKIE");
+		$cookie   = @tempnam("/tmp", "CURLCOOKIE");
 		$curlOpts = [
 			CURLOPT_CONNECTTIMEOUT    => 20,
 			CURLOPT_TIMEOUT           => 60,

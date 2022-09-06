@@ -42,9 +42,9 @@ class Admin_GenealogyIndexing extends Admin_Admin {
 
 		global $configArray,
 		$solrScope;
-		/** @var \SearchObject_Genealogy $searchObject */
 		$solrScope    = 'genealogy';  // A hack to fetch correct fields with getRecord()
-		$searchObject = \SearchObjectFactory::initSearchObject($configArray['Genealogy']['searchObject']);
+		/** @var SearchObject_Genealogy $searchObject */
+		$searchObject = SearchObjectFactory::initSearchObject($configArray['Genealogy']['searchObject']);
 		$solr         = $searchObject->getIndexEngine();
 		$latestDoc    = $solr->search('*:*', null, null, 0, 1, null, null, null, 'shortId desc', 'id');
 		$lastPersonId = $latestDoc['response']['docs'][0]['id'] ?? null;

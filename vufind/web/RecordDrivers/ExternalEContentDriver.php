@@ -27,33 +27,8 @@
  */
 
 require_once ROOT_DIR . '/RecordDrivers/BaseEContentDriver.php';
-class ExternalEContentDriver extends BaseEContentDriver{
-//	function getValidProtectionTypes(){
-//		return array('external');
-//	}
 
-//	function isItemAvailable($itemId, $totalCopies){
-//		return true;
-//	}
-//	function isEContentHoldable($locationCode, $eContentFieldData){
-//		return false;
-//	}
-
-//	function getSharing($locationCode, $eContentFieldData){
-//		if (strpos($locationCode, 'mdl') === 0){
-//			return 'shared';
-//		}else{
-//			$sharing = 'library';
-//			if (count($eContentFieldData) >= 3){
-//				$sharing = trim(strtolower($eContentFieldData[2]));
-//			}
-//			return $sharing;
-//		}
-//	}
-
-//	protected function isValidProtectionType($protectionType) {
-//		return in_array(strtolower($protectionType), $this->getValidProtectionTypes());
-//	}
+class ExternalEContentDriver extends BaseEContentDriver {
 
 	public function getMoreDetailsOptions(){
 		global $interface;
@@ -72,36 +47,36 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		//Load more details options
 		$moreDetailsOptions = $this->getBaseMoreDetailsOptions($isbn);
 
-		$moreDetailsOptions['copies'] = array(
+		$moreDetailsOptions['copies'] = [
 			'label'         => 'Copies',
 			'body'          => $interface->fetch('ExternalEContent/view-items.tpl'),
 			'openByDefault' => true,
-		);
+		];
 
 		$notes = $this->getNotes();
 		if (count($notes) > 0){
 			$interface->assign('notes', $notes);
 		}
 
-		$moreDetailsOptions['moreDetails'] = array(
+		$moreDetailsOptions['moreDetails'] = [
 			'label' => 'More Details',
 			'body'  => $interface->fetch('ExternalEContent/view-more-details.tpl'),
-		);
+		];
 
 		$this->loadSubjects();
-		$moreDetailsOptions['subjects']  = array(
+		$moreDetailsOptions['subjects']  = [
 			'label' => 'Subjects',
 			'body'  => $interface->fetch('Record/view-subjects.tpl'),
-		);
-		$moreDetailsOptions['citations'] = array(
+		];
+		$moreDetailsOptions['citations'] = [
 			'label' => 'Citations',
 			'body'  => $interface->fetch('Record/cite.tpl'),
-		);
+		];
 		if ($interface->getVariable('showStaffView')){
-			$moreDetailsOptions['staff'] = array(
+			$moreDetailsOptions['staff'] = [
 				'label' => 'Staff View',
 				'body'  => $interface->fetch($this->getStaffView()),
-			);
+			];
 		}
 
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
@@ -133,6 +108,7 @@ class ExternalEContentDriver extends BaseEContentDriver{
 	}
 
 	private $format;
+
 	/**
 	 * Load the format for the record based off of information stored within the grouped work.
 	 * Which was calculated at index time.
@@ -148,7 +124,7 @@ class ExternalEContentDriver extends BaseEContentDriver{
 					$recordDetails = [$recordDetails];
 				}
 				foreach ($recordDetails as $recordDetailRaw){
-					$recordDetail = explode('|', $recordDetailRaw);
+					$recordDetail    = explode('|', $recordDetailRaw);
 					$idWithOutPrefix = str_replace('external_econtent:', '', $recordDetail[0]);
 					if ($idWithOutPrefix == $this->getIdWithSource()){
 						$this->format = [$recordDetail[1]];
@@ -161,32 +137,5 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		}
 		return $this->format;
 	}
-
-//	/**
-//	 * @param string $itemId
-//	 * @param string $fileOrUrl
-//	 * @param string|null $acsId
-//	 * @return array
-//	 */
-//	function getActionsForItem($itemId, $fileOrUrl, $acsId){
-//		$actions = array();
-//		$title   = translate('externalEcontent_url_action');
-//		if (!empty($fileOrUrl)){
-//			if (strlen($fileOrUrl) >= 3){
-//				$extension = strtolower(substr($fileOrUrl, strlen($fileOrUrl), 3));
-//				if ($extension == 'pdf'){
-//					$title = 'Access PDF';
-//				}
-//			}
-//			$actions[] = array(
-//				'url'          => $fileOrUrl,
-//				'title'        => $title,
-//				'requireLogin' => false,
-//			);
-//		}
-//
-//		return $actions;
-//	}
-
 
 }

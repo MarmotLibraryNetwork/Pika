@@ -152,7 +152,7 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 				String oo8languageCode = oo8Data.substring(35, 38).toLowerCase().trim(); // (trim because some bad values will have spaces)
 				if (hasSierraLanguageFixedField) {
 					// Use the sierra language fixed field if the 008 isn't a valid language value
-					String languageName = translationMaps.get("language").translateValue(oo8languageCode, identifier.toString());
+					String languageName = translationMaps.get("language").translateValue(oo8languageCode, identifier);
 					if (languageName != null && !languageName.equals("Unknown") && !languageName.equals(oo8languageCode)) {
 						languageCode = oo8languageCode;
 					}

@@ -1,0 +1,11 @@
+# Text file containing a list of protected words, one per line.
+# Protected words will not be stemmed.
+# Blank lines and lines that begin with "#" are ignored.
+#
+# Please list alphabetically and add a comment explaining the stemming problem
+
+animal
+# animal gets stemmed to anim, causing irrelevant matching. eg animation
+
+wellness
+# wellness gets stemmed to well, causing irrelevant matching. eg Wells

@@ -60,6 +60,10 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	private $spellSimple = false;
 	private $spellSkipNumeric = true;
 
+	// In each class, set the specific range filters based on the Search Object
+	protected $rangeFilters = [];
+	protected $dateFilters = ['birthYear', 'deathYear'];
+
 	/**
 	 * Constructor. Initialise some details about the server
 	 *
@@ -82,9 +86,6 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		require_once ROOT_DIR . "/sys/Search/$class.php";
 		$this->indexEngine = new $class($configArray['Genealogy']['url'], $configArray['Genealogy']['default_core']);
 		$timer->logTime('Created Index Engine for Genealogy');
-
-		//Make sure to turn off sharding for genealogy
-		$this->indexEngine->setShards([]);
 
 		// Get default facet settings
 		$this->allFacetSettings = getExtraConfigArray('genealogyFacets');
@@ -119,9 +120,12 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		if (isset($searchSettings['Sorting'])){
 			$this->sortOptions = $searchSettings['Sorting'];
 		}else{
-			$this->sortOptions = ['relevance' => 'sort_relevance',
-			                      'year'      => 'sort_year', 'year asc' => 'sort_year asc',
-			                      'title'     => 'sort_title'];
+			$this->sortOptions = [
+				'relevance' => 'sort_relevance',
+				'year'      => 'sort_year',
+				'year asc'  => 'sort_year asc',
+				'title'     => 'sort_title'
+			];
 		}
 
 		// Load Spelling preferences

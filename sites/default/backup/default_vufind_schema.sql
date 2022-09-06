@@ -544,22 +544,6 @@ CREATE TABLE IF NOT EXISTS `user` (
   UNIQUE KEY `username` (`username`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=30518 ;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `user_epub_history`
---
-
-CREATE TABLE IF NOT EXISTS `user_epub_history` (
-  `userHistoryId` int(11) NOT NULL AUTO_INCREMENT,
-  `userId` int(11) NOT NULL COMMENT 'The id of the user who checked out the item',
-  `resourceId` int(11) NOT NULL COMMENT 'The record id of the item that was checked out',
-  `openDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date the record was opened',
-  `action` varchar(30) NOT NULL DEFAULT 'Read Online',
-  `accessType` tinyint(4) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`userHistoryId`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT='The epub reading history for patrons' AUTO_INCREMENT=674 ;
-
 --
 -- Table structure for table `user_list`
 --

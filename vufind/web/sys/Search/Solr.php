@@ -106,13 +106,7 @@ class Solr implements IndexEngine {
 	 * uppercase but also inserts OR clauses to check for case-insensitive matches
 	 * against the edges of the range...  i.e. ([a TO b] OR [A TO B]).
 	 */
-	private $_caseSensitiveRanges = true;
-
-	/**
-	 * Selected shard settings.
-	 */
-	private $_solrShards = [];
-	private $_solrShardsFieldsToStrip = [];
+//	private $_caseSensitiveRanges = true;
 
 	/**
 	 * Should we collect highlighting data?
@@ -164,9 +158,9 @@ class Solr implements IndexEngine {
 		if (isset($searchSettings['General']['case_sensitive_bools'])){
 			$this->caseSensitiveBooleans = $searchSettings['General']['case_sensitive_bools'];
 		}
-		if (isset($searchSettings['General']['case_sensitive_ranges'])){
-			$this->_caseSensitiveRanges = $searchSettings['General']['case_sensitive_ranges'];
-		}
+//		if (isset($searchSettings['General']['case_sensitive_ranges'])){
+//			$this->_caseSensitiveRanges = $searchSettings['General']['case_sensitive_ranges'];
+//		}
 
 		// Turn on highlighting if the user has requested highlighting or snippet
 		// functionality:
@@ -174,15 +168,6 @@ class Solr implements IndexEngine {
 		$snippet   = $configArray['Index']['enableSnippets'];
 		if ($highlight || $snippet){
 			$this->_highlight = true;
-		}
-
-		// Deal with field-stripping shard settings:
-		if (!empty($searchSettings['StripFields'])){
-			$this->_solrShardsFieldsToStrip = $searchSettings['StripFields'];
-		}
-
-		if (isset($_SESSION['shards'])){
-			$this->_loadShards($_SESSION['shards']);
 		}
 
 		$timer->logTime('Finish Solr Initialization');
@@ -249,18 +234,6 @@ class Solr implements IndexEngine {
 		$this->debugSolrQuery = $enableDebug && $enableSolrQueryDebugging;
 	}
 
-	private function _loadShards($newShards){
-		// Deal with session-based shard settings:
-		$shards = [];
-		global $configArray;
-		foreach ($newShards as $current) {
-			if (isset($configArray['IndexShards'][$current])) {
-				$shards[$current] = $configArray['IndexShards'][$current];
-			}
-		}
-		$this->setShards($shards);
-	}
-
 	/**
 	 * Is this object configured with case-sensitive boolean operators?
 	 *
@@ -277,9 +250,9 @@ class Solr implements IndexEngine {
 	 * @return boolean
 	 * @access public
 	 */
-	public function hasCaseSensitiveRanges(){
-		return $this->_caseSensitiveRanges;
-	}
+//	public function hasCaseSensitiveRanges(){
+//		return $this->_caseSensitiveRanges;
+//	}
 
 	/**
 	 * Support method for _getSearchSpecs() -- load the specs from cache or disk.
@@ -443,6 +416,7 @@ class Solr implements IndexEngine {
 		}
 		$options        = [
 			'q'  => 'isbn:' . implode(' OR ', $ISBNs),
+				//TODO: because the default solr operator is OR now, the separator here can be a simple space character
 			'fl' => $fieldsToReturn
 		];
 		$result         = $this->_select('GET', $options);
@@ -475,7 +449,7 @@ class Solr implements IndexEngine {
 
 			//TODO: this comment doesn't appear to accurate any longer
 			//Solr does not seem to be able to return more than 50 records at a time,
-			//If we have more than 50 ids, we will ned to make multiple calls and
+			//If we have more than 50 ids, we will need to make multiple calls and
 			//concatenate the results.
 			$startIndex = 0;
 			$batchSize  ??= $numIds;
@@ -522,184 +496,147 @@ class Solr implements IndexEngine {
 	}
 
 	/**
-	 * Get records similar to one record
-	 * Uses default SOLR MoreLikeThis Request Handler
-	 *
-	 * @access  public
-	 * @return  array              An array of query results
-	 *
-	 * @throws  object            PEAR Error
-	 * @var     string $id The id to retrieve similar titles for
+	 * Retrieves Solr Documents for an array of grouped Work Ids
+	 * @param string[] $ids The groupedWork Id of the Solr document to retrieve
+	 * @param string[]|null $filters Any search filters to apply to query
+	 * @param int $batchSize
+	 * @param string $idFieldToReturn
+	 * @return array of the filtered ids
 	 */
-	function getMoreLikeThis($id){
-		$options = [
-			'q'  => "id:$id",
-			'fl' => SearchObject_Solr::$fields
-		];
-		$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
-		$result = $this->client->get($this->host . '/morelikethis', $options);
-		if ($this->client->isError()) {
-			PEAR_Singleton::raiseError($this->client->getErrorMessage());
+	function getFilteredIds(array $ids, array $filters = null, int $batchSize = 100, string $idFieldToReturn = 'id'){
+		$solrDocArray = [];
+		$numIds       = count($ids);
+		if ($numIds) {
+
+			$this->pingServer();
+			$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
+
+			//TODO: this comment doesn't appear to accurate any longer
+			//Solr does not seem to be able to return more than 50 records at a time,
+			//If we have more than 50 ids, we will need to make multiple calls and
+			//concatenate the results.
+			$startIndex = 0;
+			$batchSize  ??= $numIds;
+			$lastBatch  = false;
+			do {
+				$endIndex = $startIndex + $batchSize;
+				if ($endIndex >= $numIds) {
+					$lastBatch = true;
+					$endIndex  = $numIds;
+					$batchSize = $numIds - $startIndex;
+				}
+				$tmpIds = array_slice($ids, $startIndex, $batchSize);
+				$idString = implode(',', $tmpIds);
+				$options  = [
+					'ids' => $idString,
+					'fl'  => $idFieldToReturn,
+					'wt'  => 'json',
+				];
+
+				if (!empty($filters)){
+					$options['fq'] = $filters;
+				}
+				// Build query string for use with GET or POST, with special handling for repeated parameters
+				$queryString = $this->buildSolrQueryString($options);
+
+				// Send Request
+				if (strlen($queryString) > 8000){
+					// For extremely long queries, like lists we will get an error: "URI Too Long"
+					$result = $this->client->post($this->host . '/get', $queryString);
+				}else{
+					$result = $this->client->get($this->host . '/get', $queryString);
+				}
+
+				if ($this->client->isError()) {
+					PEAR_Singleton::raiseError($this->client->getErrorMessage());
+				} else {
+					$result       = $this->_process($result);
+					$tempArray    = array_column($result['response']['docs'], $idFieldToReturn);
+					$solrDocArray = array_merge($solrDocArray, $tempArray);
+				}
+
+				if (!$lastBatch) {
+					$startIndex = $endIndex;
+				}
+			} while (!$lastBatch);
 		}
-		return $result;
+		return $solrDocArray;
 	}
 
 	/**
-	 * Get records similar to one record
-	 * Uses Custom Solr MoreLikeThis2 Request Handler
+	 * Retrieves Solr Documents for an array of Islandora PIDs
 	 *
-	 * @access  public
-	 * @return  array              An array of query results
+	 * The getFilteredIds() doesn't filter with the special /get request and ids field for
+	 * the current version of Islandora so we have to do a regular /select request with a query against
+	 * PID field
 	 *
-	 * @throws  object            PEAR Error
-	 * @var     string $id The id to retrieve similar titles for
+	 * @param string[] $ids The Id of the Solr document to retrieve
+	 * @param null $filters Any search filters to apply to query
+	 * @param int $batchSize
+	 * @param string $idFieldToReturn
+	 * @return array of the filtered PIDs
 	 */
-	function getMoreLikeThis2($id){
-		global $configArray;
-		global $solrScope;
-		$originalResult = $this->getRecord($id,
-			'target_audience_full,target_audience_full,literary_form,language_' . $solrScope);
+	function getFilteredPIDs(array $ids, array $filters = null, int $batchSize = 100, string $idFieldToReturn = 'PID'){
+		$solrDocArray = [];
+		$numIds       = count($ids);
+		if ($numIds) {
 
-		// Query String Parameters
-		$options = [
-			'q'                    => "id:$id",
-			'rows'                 => 25,
-			'fl'                   => 'id,title_display,title_full,author,author_display', // These appear to be the only fields used for displaying
-			'fq'                   => [],
-//			'mlt.interestingTerms' => 'details', // This returns the interesting terms for this 'more like this' search but isn't used any where
-//			'fl'                   => SearchObject_Solr::$fields
-		];
-		if ($originalResult){
-			if (!empty($originalResult['target_audience_full'])){
-				if (is_array($originalResult['target_audience_full'])){
-					$filter = [];
-					foreach ($originalResult['target_audience_full'] as $targetAudience){
-						if ($targetAudience != 'Unknown'){
-							$filter[] = 'target_audience_full:"' . $targetAudience . '"';
-						}
-					}
-					if (count($filter) > 0){
-						$options['fq'][] = '(' . implode(' OR ', $filter) . ')';
-					}
-				}else{
-					$options['fq'][] = 'target_audience_full:"' . $originalResult['target_audience_full'] . '"';
+			$this->pingServer();
+			$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
+
+			//TODO: this comment doesn't appear to accurate any longer
+			//Solr does not seem to be able to return more than 50 records at a time,
+			//If we have more than 50 ids, we will need to make multiple calls and
+			//concatenate the results.
+			$startIndex = 0;
+			$batchSize  ??= $numIds;
+			$lastBatch  = false;
+			do {
+				$endIndex = $startIndex + $batchSize;
+				if ($endIndex >= $numIds) {
+					$lastBatch = true;
+					$endIndex  = $numIds;
+					$batchSize = $numIds - $startIndex;
 				}
-			}
-			if (!empty($originalResult['literary_form'])){
-				if (is_array($originalResult['literary_form'])){
-					$filter = [];
-					foreach ($originalResult['literary_form'] as $literaryForm){
-						if ($literaryForm != 'Not Coded'){
-							$filter[] = 'literary_form:"' . $literaryForm . '"';
-						}
-					}
-					if (count($filter) > 0){
-						$options['fq'][] = '(' . implode(' OR ', $filter) . ')';
-					}
-				}else{
-					$options['fq'][] = 'literary_form:"' . $originalResult['literary_form'] . '"';
+				$tmpIds = array_slice($ids, $startIndex, $batchSize);
+				$idString = implode(' ', $tmpIds);
+				$idString = str_replace(':', '\:', $idString); // escape colon characters in PIDs
+				$options = [
+					'q'    => "$idFieldToReturn:($idString)",
+					'q.op' => 'OR',
+					'fl'   => $idFieldToReturn,
+					'rows' => $batchSize, // overrides the default value of 10 (for islandora solr) 20 (for catalog solr)
+					'wt'   => 'json'
+				];
+
+				if (!empty($filters)){
+					$options['fq'] = $filters;
 				}
-			}
-			if (!empty($originalResult['language_' . $solrScope])){
-				$options['fq'][] = "language_$solrScope:\"" . $originalResult["language_$solrScope"][0] . '"';
-			}
-		}
+				// Build query string for use with GET or POST, with special handling for repeated parameters
+				$queryString = $this->buildSolrQueryString($options);
 
-		$searchLibrary  = Library::getSearchLibrary();
-		$searchLocation = Location::getSearchLocation();
-		$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
-		foreach ($scopingFilters as $filter){
-			$options['fq'][] = $filter;
-		}
-		if ($configArray['Index']['enableBoosting']){
-			$boostFactors  = $this->getBoostFactors($searchLibrary, $searchLocation);
-			$options['bf'] = 'sum(' . implode(',', $boostFactors) . ')';
-		}
+				// Send Request
+				if (strlen($queryString) > 8000){
+					// For extremely long queries, like lists we will get an error: "URI Too Long"
+					$result = $this->client->post($this->host . '/select', $queryString);
+				}else{
+					$result = $this->client->get($this->host . '/select', $queryString);
+				}
 
-		$url    = $this->host . '/morelikethis2';
-		if (!empty($options['fq'])){
-			// Since http_build_query() builds url parameters as array eg. fq[0]=foo&fq[1]=bla
-			// Solr does not seem to be able to handle this; and so our filter queries don't get applied.
-			// The below builds repeating url parameters that solr accepts eg. fq=foo&fq=bla  See also  _select()
-			$url .= '?fq=' . urlencode(array_shift($options['fq']));
-			foreach ($options['fq'] as $option){
-				$url .= '&fq=' . urlencode($option);
-			}
-			unset($options['fq']);
-		}
-		$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
-		$result = $this->client->get($url, $options);
-		if ($this->client->isError()) {
-			$errorMessage = $this->client->getErrorMessage();
-			$this->logger->error('MoreLikeThis2 error : ' . $errorMessage);
-			PEAR_Singleton::raiseError($errorMessage);
-		}
-		return $result;
-	}
+				if ($this->client->isError()) {
+					PEAR_Singleton::raiseError($this->client->getErrorMessage());
+				} else {
+					$result       = $this->_process($result);
+					$tempArray    = array_column($result['response']['docs'], $idFieldToReturn);
+					$solrDocArray = array_merge($solrDocArray, $tempArray);
+				}
 
-	/**
-	 * Get records similar to an array of records
-	 * Uses Custom Solr MoreLikeThese Request Handler
-	 *
-	 * @access  public
-	 * @return  array                      An array of query results
-	 * @throws  object                     PEAR Error
-	 * @var     string[] $ids              A list of ids to return data for
-	 * @var     string[] $notInterestedIds A list of ids the user is not interested in
-	 */
-	function getMoreLikeThese($ids, $notInterestedIds){
-		global $configArray;
-		// Query String Parameters
-		$idString = implode(' OR ', $ids);
-		$options  = [
-			'q'                    => "id:($idString)",
-//			'qt'                   => 'morelikethese',
-//			'mlt.interestingTerms' => 'details',
-			'rows'                 => 30
-		];
-
-		if (!empty($notInterestedIds)){
-			$notInterestedString = implode(' OR ', $notInterestedIds);
-			$options['fq'][]     = "-id:($notInterestedString)";
+				if (!$lastBatch) {
+					$startIndex = $endIndex;
+				}
+			} while (!$lastBatch);
 		}
-
-		$searchLibrary  = Library::getSearchLibrary();
-		$searchLocation = Location::getSearchLocation();
-		$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
-		foreach ($scopingFilters as $filter){
-			$options['fq'][] = $filter;
-		}
-		if ($configArray['Index']['enableBoosting']){
-			$boostFactors  = $this->getBoostFactors($searchLibrary, $searchLocation);
-			$options['bf'] = 'sum(' . implode(',', $boostFactors) . ')';
-		}
-
-
-		// TODO: Limit Fields
-//		if ($this->debug && isset($fields)) {
-//			$options['fl'] = $fields;
-//		} else {
-		// This should be an explicit list
-		$options['fl'] = '*,score';
-//		$options['fl'] = 'id,rating,title,author';
-//		}
-		$url    = $this->host . '/morelikethese';
-		if (!empty($options['fq'])){
-			// Since http_build_query() builds url parameters as array eg. fq[0]=foo&fq[1]=bla
-			// Solr does not seem to be able to handle this; and so our filter queries don't get applied.
-			// The below builds repeating url parameters that solr accepts eg. fq=foo&fq=bla  See also  _select()
-			$url .= '?fq=' . urlencode(array_shift($options['fq']));
-			foreach ($options['fq'] as $option){
-				$url .= '&fq=' . urlencode($option);
-			}
-			unset($options['fq']);
-		}
-		$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
-		$result = $this->client->get($url, $options);
-		if ($this->client->isError()) {
-			PEAR_Singleton::raiseError($this->client->getErrorMessage());
-		}
-		return $result;
+		return $solrDocArray;
 	}
 
 	/**
@@ -896,77 +833,6 @@ class Solr implements IndexEngine {
 
 		// Join it all together
 		return implode(' ' . $joiner . ' ', $clauses);
-	}
-
-	/**
-	 * Load Boost factors for a query
-	 *
-	 * @param Library  $searchLibrary
-	 * @param Location $searchLocation
-	 * @return array
-	 */
-	public function getBoostFactors($searchLibrary, $searchLocation){
-		$boostFactors = [];
-
-		global $solrScope;
-
-//		$boostFactors[] = (!empty($searchLibrary->applyNumberOfHoldingsBoost)) ? 'product(sum(popularity,1),format_boost)' : 'format_boost';
-
-		if ((!empty($searchLibrary->applyNumberOfHoldingsBoost))){
-			$boostFactors[] = 'sum(popularity,1)';
-		}
-		$boostFactors[] = 'format_boost';
-
-		// popularity is indexed as zero or greater, but to apply to boosting we want it to be a value of 1 or greater
-		// hence sum(popularity,1)
-
-		//For physical records, popularity is determined by the checkouts for each item with this formula :
-		//  year-to-date checkouts
-		//  plus half of last year's checkouts
-		//  plus a tenth of total checkouts minus last year's checkouts and minus the year-to-date checkouts
-		// Or a value of one, if the calculation above is zero
-		// So a record's popularity is the sum of this calculation for every item
-		//  plus twice the number of holds there are on the record
-
-		// For order records, the popularity is based on the number of copies for each order record
-
-		// For Overdrive, the popularity is the overdrive metadata measure popularity divided by 500; or 1 if it is less than 500
-
-		// For Sideloads and Hoopla, the popularity is the number of bibs
-
-		// Add rating as part of the ranking
-		$boostFactors[] = 'sum(rating,1)';
-
-		// Library Holdings Boost factors:
-		// when the usual default values from config.ini are :
-		// availableAtLocationBoostValue = 50
-		// ownedByLocationBoostValue = 10
-		// the lib_boost_[scope] field will be 50 when any item is available at the library,
-		// or it will be 10 when an item is owned,
-		// or it will be missing (effectively zero) when it is neither "available at" nor owned by the library
-
-		if (!empty($searchLibrary->boostByLibrary)) {
-			$boostFactors[] = ($searchLibrary->additionalLocalBoostFactor > 1) ? "sum(product(lib_boost_{$solrScope},{$searchLibrary->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
-		} else {
-			// Handle boosting even if we are in a global scope
-			global $library;
-			if (!empty($library->boostByLibrary)) {
-				$boostFactors[] = ($library->additionalLocalBoostFactor > 1) ? "sum(product(lib_boost_{$solrScope},{$library->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
-			}
-		}
-
-		if (!empty($searchLocation->boostByLocation)) {
-			$boostFactors[] = ($searchLocation->boostByLocation > 1) ? "sum(product(lib_boost_{$solrScope},{$searchLocation->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
-
-		} else {
-			// Handle boosting even if we are in a global scope
-			global $locationSingleton;
-			$physicalLocation = $locationSingleton->getActiveLocation();
-			if (!empty($physicalLocation->boostByLocation)) {
-				$boostFactors[] = ($physicalLocation->additionalLocalBoostFactor > 1) ? "sum(product(lib_boost_{$solrScope},{$physicalLocation->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
-			}
-		}
-		return $boostFactors;
 	}
 
 	private $_munges = [];
@@ -1299,22 +1165,21 @@ class Solr implements IndexEngine {
 		// (note : error suppression with @to prevent notice when direction is left blank)
 		// this notice suppression doesn't work when replacing list() with []
 
-		// Default sort order (may be overridden by switch below):
-		$defaultSortDirection = 'asc';
+		$sortDirection = strtolower(trim($sortDirection));
+		// Normalize sort direction to either "asc" or "desc":
+		if ($sortDirection != 'asc' && $sortDirection != 'desc'){
+			$sortDirection = 'asc';
+		}
 
 		// Translate special sort values into appropriate Solr fields:
 		switch ($sortField){
 			case 'year':
 			case 'publishDate':
-				$sortField            = 'publishDateSort';
-				$defaultSortDirection = 'desc';
-				break;
+				return "publishDateSort $sortDirection,title_sort asc,authorStr asc";
 			case 'author':
-				$sortField = 'authorStr asc, title_sort';
-				break;
+				return "authorStr $sortDirection,title_sort asc";
 			case 'title':
-				$sortField = 'title_sort asc, authorStr';
-				break;
+				return "title_sort $sortDirection,authorStr asc";
 			case 'callnumber_sort':
 				$searchLibrary = Library::getSearchLibrary($this->searchSource);
 				if ($searchLibrary != null){
@@ -1323,46 +1188,7 @@ class Solr implements IndexEngine {
 				break;
 		}
 
-		// Normalize sort direction to either "asc" or "desc":
-		$sortDirection = strtolower(trim($sortDirection));
-		if ($sortDirection != 'asc' && $sortDirection != 'desc'){
-			$sortDirection = $defaultSortDirection;
-		}
-
 		return $sortField . ' ' . $sortDirection;
-	}
-
-	function disableScoping(){
-		$this->scopingDisabled = true;
-		global $configArray;
-		if (!empty($configArray['ShardPreferences']['defaultChecked'])){
-			$checkedShards = $configArray['ShardPreferences']['defaultChecked'];
-			$shards        = is_array($checkedShards) ? $checkedShards : [$checkedShards];
-		}elseif (!empty($configArray['IndexShards'])){
-			// If no default is configured, use all shards...
-			$shards = array_keys($configArray['IndexShards']);
-		}
-		if (isset($shards)){
-			$this->_loadShards($shards);
-		}
-	}
-
-	function enableScoping()
-	{
-		$this->scopingDisabled = false;
-		global $configArray;
-		if (isset($configArray['ShardPreferences']['defaultChecked']) && !empty($configArray['ShardPreferences']['defaultChecked'])) {
-			$checkedShards = $configArray['ShardPreferences']['defaultChecked'];
-			$shards        = is_array($checkedShards) ? $checkedShards : array($checkedShards);
-		} else {
-			// If no default is configured, use all shards...
-			if (isset($configArray['IndexShards'])) {
-				$shards = array_keys($configArray['IndexShards']);
-			}
-		}
-		if (isset($shards)) {
-			$this->_loadShards($shards);
-		}
 	}
 
 	/**
@@ -1399,7 +1225,8 @@ class Solr implements IndexEngine {
 		$sort = null,
 		$fields = null,
 		$method = 'GET',
-		$returnSolrError = false
+		$returnSolrError = false,
+		$boost = null
 	) {
 		global $timer;
 		global $configArray;
@@ -1510,35 +1337,11 @@ class Solr implements IndexEngine {
 		}
 		$timer->logTime('build query');
 
-		// Moved below to include boosting factors
-//		// Limit Fields
-//		if ($fields) {
-//			$options['fl'] = $fields;
-//		} else {
-//			// This should be an explicit list
-//			$options['fl'] = '*,score';
-//		}
-//		if ($this->debug) {
-//			$options['fl'] .= ',explain';
-//		}
-
-		if (is_object($this->searchSource)) {
-			$defaultFilters = preg_split('/\r\n/', $this->searchSource->defaultFilter);
-			foreach ($defaultFilters as $tmpFilter) {
-				$filter[] = $tmpFilter;
-			}
-		}
 
 		//Apply automatic boosting (only to biblio and econtent queries)
 		$isPikaGroupedWorkIndex = preg_match('/.*(grouped).*/i', $this->host);
 		if ($isPikaGroupedWorkIndex) {
-			$searchLibrary  = Library::getSearchLibrary($this->searchSource);
-			$searchLocation = Location::getSearchLocation($this->searchSource);
-
-			if (!empty($configArray['Index']['enableBoosting'])){
-				$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation);
-				if (!empty($boostFactors)){
-					$boost = 'sum(' . implode(',', $boostFactors) . ')';
+			if (!empty($boost)){
 					if (!empty($options['defType']) && $options['defType'] == 'dismax'){
 						$options['bf'] = $boost;
 					} else{
@@ -1547,62 +1350,17 @@ class Solr implements IndexEngine {
 
 						$options['q'] = "{!boost b=$boost} " . $options['q'];
 					}
-				}
 				$timer->logTime('apply boosting');
 			}
-
-			$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
-
-			$timer->logTime('apply filters based on location');
-		} else {
-			//Non book search (genealogy)
-			$scopingFilters = [];
 		}
-		if ($filter != null && $scopingFilters != null) {
+
+		// Build Filter Query
+		if (!empty($filter)) {
 			if (!is_array($filter)) {
+				//TODO: does this happen? how so?
 				$filter = [$filter];
 			}
-			//Check the filters to make sure they are for the correct scope
-			global $solrScope;
-			$validFields  = $this->_loadValidFields();
-			$validFilters = [];
-			foreach ($filter as $id => $filterTerm) {
-				[$fieldName, $term] = explode(':', $filterTerm, 2);
-				if (!in_array($fieldName, $validFields)) {
-					//Special handling for availability_by_format
-					if (preg_match("/^availability_by_format_([^_]+)_[\\w_]+$/", $fieldName)) {
-						//This is a valid field
-						$validFilters[$id] = $filterTerm;
-					} elseif (preg_match("/^available_at_by_format_([^_]+)_[\\w_]+$/", $fieldName)) {
-						//This is a valid field
-						$validFilters[$id] = $filterTerm;
-					} else {
-						//Field doesn't exist, check to see if it is a dynamic field
-						//Where we can replace the scope with the current scope
-						if (!isset($dynamicField)) {
-							$dynamicFields = $this->_loadDynamicFields();
-						}
-						foreach ($dynamicFields as $dynamicField) {
-							if (preg_match("/^{$dynamicField}[^_]+$/", $fieldName)) {
-								//This is a dynamic field with the wrong scope
-								$validFilters[$id] = $dynamicField . $solrScope . ':' . $term;
-								break;
-							} elseif ($fieldName == rtrim($dynamicField, '_')) {
-								//This is a regular field that is now a dynamic field so needs the scope applied
-								$validFilters[$id] = $dynamicField . $solrScope . ':' . $term;
-								break;
-							}
-						}
-					}
-				} else {
-					$validFilters[$id] = $filterTerm;
-				}
-			}
-			$filters = array_merge($validFilters, $scopingFilters);
-		} elseif ($filter == null) {
-			$filters = $scopingFilters;
-		} else {
-			$filters = $filter;
+			$options['fq'] = $filter;
 		}
 
 		// Limit Fields
@@ -1613,9 +1371,6 @@ class Solr implements IndexEngine {
 			$options['fl'] = '*,score';
 		}
 		if ($this->debug) {
-			if (!empty($boostFactors)){
-				$options['fl'] .= ','.  implode(',', $boostFactors);
-			}
 			$options['fl'] .= ',explain';
 		}
 
@@ -1715,11 +1470,6 @@ class Solr implements IndexEngine {
 			}
 		}
 
-		// Build Filter Query
-		if (is_array($filters) && count($filters)) {
-			$options['fq'] = $filters;
-		}
-
 		// Enable Spell Checking
 		if ($spell != '') {
 			$options['spellcheck']   = 'true';
@@ -1732,7 +1482,7 @@ class Solr implements IndexEngine {
 		// Enable highlighting
 		if ($this->_highlight) {
 			global $solrScope;
-			$highlightFields = $fields . ",table_of_contents";
+			$highlightFields = $fields . ',table_of_contents';
 
 			// Exclude format & format category from highlighting
 			$highlightFields = str_replace(",format_$solrScope", '', $highlightFields);
@@ -1750,9 +1500,9 @@ class Solr implements IndexEngine {
 		if ($this->debugSolrQuery && $this->isPrimarySearch){
 			$solrSearchDebug = 'Search Query: ' . $options['q'] . "\n";
 
-			if ($filters){
+			if ($filter){
 				$solrSearchDebug .= "\nFilterQuery: ";
-				foreach ($filters as $filterItem){
+				foreach ($filter as $filterItem){
 					$solrSearchDebug .= " $filterItem";
 				}
 			}
@@ -1778,45 +1528,6 @@ class Solr implements IndexEngine {
 		}
 
 		return $result;
-	}
-
-
-	/**
-	 * Get filters based on scoping for the search
-	 * @param Library  $searchLibrary
-	 * @param Location $searchLocation
-	 * @return array
-	 */
-	public function getScopingFilters($searchLibrary, $searchLocation){
-		global $solrScope;
-
-		$filter = [];
-
-		//Simplify detecting which works are relevant to our scope
-		if ($solrScope){
-			$filter[] = "scope_has_related_records:$solrScope";
-		}elseif (isset($searchLocation)){
-			// A solr scope should be defined usually. It is probably an anomalous situation to fall back to this, and should be fixed; (or noted here explicitly.)
-			$this->logger->notice('Global solr scope not set when setting scoping filters');
-			$filter[] = "scope_has_related_records:{$searchLocation->code}";
-		}elseif (isset($searchLibrary)){
-			$filter[] = "scope_has_related_records:{$searchLibrary->subdomain}";
-		}
-
-		$blacklistRecords = '';
-		if (!empty($searchLocation->recordsToBlackList)) {
-			$blacklistRecords = $searchLocation->recordsToBlackList;
-		}
-		if (!empty($searchLibrary->recordsToBlackList)) {
-			$blacklistRecords .= "\n" . $searchLibrary->recordsToBlackList;
-		}
-		if (!empty($blacklistRecords)){
-			$recordsToBlacklist = preg_split('/\s|\r\n|\r|\n/', $blacklistRecords, -1, PREG_SPLIT_NO_EMPTY);
-			$blacklist          = '-id:(' . implode(' OR ', $recordsToBlacklist) . ')';
-			$filter[]           = $blacklist;
-		}
-
-		return $filter;
 	}
 
 	/**
@@ -1930,18 +1641,6 @@ class Solr implements IndexEngine {
 	}
 
 	/**
-	 * Set the shards for distributed search
-	 *
-	 * @param array $shards Name => URL array of shards
-	 *
-	 * @return void
-	 * @access public
-	 */
-	public function setShards($shards){
-		$this->_solrShards = $shards;
-	}
-
-	/**
 	 * Submit REST Request to write data (protected wrapper to allow child classes
 	 * to use this mechanism -- we should eventually phase out private _update).
 	 *
@@ -1953,51 +1652,6 @@ class Solr implements IndexEngine {
 //	protected function update($xml){
 //		return $this->_update($xml);
 //	}
-
-	/**
-	 * Strip facet settings that are illegal due to shard settings.
-	 *
-	 * @param array $value Current facet.field setting
-	 * @return array       Filtered facet.field setting
-	 * @access private
-	 */
-	private function _stripUnwantedFacets($value){
-		if (!empty($this->_solrShards) && is_array($this->_solrShards)){
-			// Load the configuration of facets to strip and build a list of the ones that currently apply
-			$facetConfig = getExtraConfigArray('facets');
-			if (isset($facetConfig['StripFacets']) && is_array($facetConfig['StripFacets'])){
-				$shardNames = array_keys($this->_solrShards);
-				$badFacets  = [];
-				foreach ($facetConfig['StripFacets'] as $indexName => $facets){
-					if (in_array($indexName, $shardNames) === true){
-						$badFacets = array_merge($badFacets, explode(',', $facets));
-					}
-				}
-
-				// No bad facets means no filtering necessary:
-				if (empty($badFacets)){
-					return $value;
-				}
-
-				// Ensure that $value is an array:
-				if (!is_array($value)){
-					$value = [$value];
-				}
-
-				// Rebuild the $value array, excluding all unwanted facets:
-				$newValue = [];
-				foreach ($value as $current){
-					if (!in_array($current, $badFacets)){
-						$newValue[] = $current;
-					}
-				}
-
-				return $newValue;
-			}
-		}else{
-			return $value;
-		}
-	}
 
 	/**
 	 * Submit REST Request to read data
@@ -2025,39 +1679,7 @@ class Solr implements IndexEngine {
 		$params['wt']      = 'json';   // this is the default for modern Solr; We have to keep till Islandora is upgraded.
 		$params['json.nl'] = 'arrarr'; // Needed to process faceting; arrarr breaks ordered pairs into a series of arrays
 
-		// Build query string for use with GET or POST, with special handling for repeated parameters
-		$query = [];
-		if ($params){
-			foreach ($params as $function => $value){
-				if ($function != ''){
-					// Strip custom FacetFields when sharding makes it necessary:
-					if ($function === 'facet.field'){
-						$value = $this->_stripUnwantedFacets($value);
-
-						// If we stripped all values, skip the parameter:
-						if (empty($value)){
-							continue;
-						}
-					}
-					if (is_array($value)){
-						foreach ($value as $additional){
-							//Islandora Solr takes repeated url parameters without the typical array style. eg. &fq=firstOne&fq=secondOne
-							$additional = urlencode($additional);
-							$query[]    = "$function=$additional";
-						}
-					}else{
-						$value   = urlencode($value);
-						$query[] = "$function=$value";
-					}
-				}
-			}
-		}
-
-		// pass the shard parameter along to Solr if necessary:
-		if (!empty($this->_solrShards) && is_array($this->_solrShards)){
-			$query[] = 'shards=' . urlencode(implode(',', $this->_solrShards));
-		}
-		$queryString = implode('&', $query);
+		$queryString = $this->buildSolrQueryString($params);
 
 		if (strlen($queryString) > 8000){
 			// For extremely long queries, like lists we will get an error: "URI Too Long"
@@ -2150,6 +1772,27 @@ class Solr implements IndexEngine {
 		}
 	}
 
+	public function callRequestHandler(string $requestHandler, $options = []){
+		$url    = $this->host . '/' . $requestHandler;
+		if (!empty($options['fq'])){
+			// Since http_build_query() builds url parameters as array eg. fq[0]=foo&fq[1]=bla
+			// Solr does not seem to be able to handle this; and so our filter queries don't get applied.
+			// The below builds repeating url parameters that solr accepts eg. fq=foo&fq=bla  See also  _select()
+			$url .= '?fq=' . urlencode(array_shift($options['fq']));
+			foreach ($options['fq'] as $option){
+				$url .= '&fq=' . urlencode($option);
+			}
+			unset($options['fq']);
+		}
+		$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
+		$result = $this->client->get($url, $options);
+		if ($this->client->isError()) {
+			PEAR_Singleton::raiseError($this->client->getErrorMessage());
+		}
+		return $result;
+	}
+
+
 	/**
 	 * Perform normalization and analysis of Solr return value.
 	 *
@@ -2162,8 +1805,7 @@ class Solr implements IndexEngine {
 	 * @return  array                           The processed response from Solr
 	 * @access  private
 	 */
-	private function _process($result, $returnSolrError = false, $queryString = null)
-	{
+	private function _process($result, $returnSolrError = false, $queryString = null){
 		//TODO: below parsing for error probably obsolete
 		if (is_string($result)) {
 			// Catch errors from SOLR
@@ -2565,8 +2207,7 @@ class Solr implements IndexEngine {
 		global $solrScope;
 		$fields = $this->cache->get("schema_dynamic_fields_$solrScope");
 		if (empty($fields) || isset($_REQUEST['reload'])){
-			global $configArray;
-			$schemaUrl = $configArray['Index']['url'] . '/grouped/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
+			$schemaUrl = $this->host . '/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
 			$schema    = simplexml_load_file($schemaUrl);
 			$fields    = [];
 			/** @var SimpleXMLElement $field */
@@ -2576,6 +2217,10 @@ class Solr implements IndexEngine {
 			$this->cache->set("schema_dynamic_fields_$solrScope", $fields, 86400);
 		}
 		return $fields;
+	}
+
+	function getDynamicFields(){
+		return $this->_loadDynamicFields();
 	}
 
 	protected function _loadValidFields(){
@@ -2589,7 +2234,6 @@ class Solr implements IndexEngine {
 		}
 		$fields = $this->cache->get($schemaCacheKey);
 		if (!$fields || isset($_REQUEST['reload'])) {
-			global $configArray;
 			$schemaUrl =  $this->host . '/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
 			$schema    = simplexml_load_file($schemaUrl);
 			$fields    = [];
@@ -2599,7 +2243,7 @@ class Solr implements IndexEngine {
 				$fields[] = (string)$field['name'];
 			}
 			if ($this->index == 'grouped' && !empty($solrScope)) {
-				// Only process for grouped work index where dymanic fields have the wildcard at the end
+				// Only process for grouped work index where dynamic fields have the wildcard at the end
 				// islandora dynamic fields start with the wildcard eg *_s
 				foreach ($schema->fields->dynamicField as $field) {
 					$fields[] = substr((string)$field['name'], 0, -1) . $solrScope;
@@ -2610,6 +2254,9 @@ class Solr implements IndexEngine {
 		return $fields;
 	}
 
+	function getValidFields(){
+		return $this->_loadValidFields();
+	}
 	/**
 	 * Capitalize boolean operators in a query string to allow case-insensitivity.
 	 *
@@ -2630,6 +2277,36 @@ class Solr implements IndexEngine {
 			"/\\(NOT\\s+{$lookAhead}/i"];
 		$replace   = [' AND ', ' OR ', ' NOT ', '(NOT '];
 		return trim(preg_replace($regs, $replace, $query));
+	}
+
+	/**
+	 * 	 Build query string for use with GET or POST, with special handling
+	 * for repeated parameters
+	 * Solr takes repeated url parameters without the typical array style.
+	 * eg. &fq=firstOne&fq=secondOne
+	 * and NOT &fq[0]=firstOne&fq[1]=secondOne
+	 * @param array $parameters
+	 * @return string
+	 */
+	private function buildSolrQueryString(array $parameters): string{
+		$query = [];
+		if ($parameters){
+			foreach ($parameters as $function => $value){
+				if ($function != ''){
+					if (is_array($value)){
+						foreach ($value as $additional){
+							$additional = urlencode($additional);
+							$query[]    = "$function=$additional";
+						}
+					}else{
+						$value   = urlencode($value);
+						$query[] = "$function=$value";
+					}
+				}
+			}
+		}
+
+		return implode('&', $query);
 	}
 
 }

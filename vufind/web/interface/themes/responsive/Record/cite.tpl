@@ -19,7 +19,7 @@
 		{/if}
 
 		{if $apa}
-			<b>{translate text="APA Citation"}</b> <span class="styleGuide"><a href="http://owl.english.purdue.edu/owl/resource/560/01/">(style guide)</a></span>
+			<b>{translate text="APA Citation"}</b> <span class="styleGuide"><a href="https://owl.purdue.edu/owl/research_and_citation/apa_style/apa_formatting_and_style_guide/general_format.html">(style guide)</a></span>
 			<p style="width: 95%; padding-left: 25px; text-indent: -25px;">
 				{include file=$apa}
 			</p>
@@ -40,7 +40,7 @@
 		{/if}
 
 		{if $mla}
-			<b>{translate text="MLA Citation"}</b> <span class="styleGuide"><a href="http://owl.english.purdue.edu/owl/resource/747/01/">(style guide)</a></span>
+			<b>{translate text="MLA Citation"}</b> <span class="styleGuide"><a href="https://owl.purdue.edu/owl/research_and_citation/mla_style/mla_formatting_and_style_guide/mla_formatting_and_style_guide.html">(style guide)</a></span>
 			<p style="width: 95%; padding-left: 25px; text-indent: -25px;">
 				{include file=$mla}
 			</p>
@@ -49,7 +49,7 @@
 	</div>
 	<div class="alert alert-warning">
 		<strong>Note! </strong>
-		Citation formats are based on standards as of July 2010.  Citations contain only title, author, edition, publisher, and year published. Citations should be used as a guideline and should be double checked for accuracy.
+		Citation formats are based on standards as of July 2022.  Citations contain only title, author, edition, publisher, and year published. Citations should be used as a guideline and should be double checked for accuracy.
 	</div>
 {/if}
 {*{if $lightbox}

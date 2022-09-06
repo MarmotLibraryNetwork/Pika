@@ -311,7 +311,6 @@ class RecordDriverFactory {
 	public static function initAndReturnDriver($record, $driver, $path){
 		global $timer;
 		global $memoryWatcher;
-		$logger = new Logger(__CLASS__);
 		// Build the object:
 		if ($path){
 			require_once $path;
@@ -322,6 +321,7 @@ class RecordDriverFactory {
 				$obj = new $driver($record);
 				$timer->logTime('Initialized Driver');
 				if (PEAR_Singleton::isError($obj)){
+					$logger = new Logger(__CLASS__);
 					$logger->warn("Error loading record driver");
 				}
 				enableErrorHandler();

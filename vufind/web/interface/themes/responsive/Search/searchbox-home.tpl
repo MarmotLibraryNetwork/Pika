@@ -144,7 +144,7 @@
 						{* In Col-sm and above, display each of these as it's own row; In col-xs & below display all items within a single row *}
 
 						{* Keep Filters Switch *}
-						{if $filterList}
+						{if $filterList && $action != 'MyList'}
 							<div class="row">
 								<label for="keepFiltersSwitch" id="keepFiltersSwitchLabel"><input id="keepFiltersSwitch" type="checkbox" onclick="Pika.Searches.filterAll(this);"> Keep Applied Filters</label>
 							</div>

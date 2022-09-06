@@ -82,9 +82,6 @@ class SearchObject_Islandora extends SearchObject_Base {
 		$this->indexEngine     = new Solr($configArray['Islandora']['solrUrl'], $configArray['Islandora']['solrCore'] ?? 'islandora');
 		$timer->logTime('Created Index Engine for Islandora');
 
-		//Make sure to turn off sharding for islandora
-		$this->indexEngine->setShards([]);
-
 		// Get default facet settings
 		$this->allFacetSettings = getExtraConfigArray('islandoraFacets');
 		$this->facetConfig      = [];
@@ -122,9 +119,12 @@ class SearchObject_Islandora extends SearchObject_Base {
 		if (isset($searchSettings['Sorting'])){
 			$this->sortOptions = $searchSettings['Sorting'];
 		}else{
-			$this->sortOptions = array('relevance' => 'sort_relevance',
-			                           'year'      => 'sort_year', 'year asc' => 'sort_year asc',
-			                           'title'     => 'sort_title');
+			$this->sortOptions = [
+				'relevance' => 'sort_relevance',
+				'year'      => 'sort_year',
+				'year asc'  => 'sort_year asc',
+				'title'     => 'sort_title'
+			];
 		}
 
 		// Load Spelling preferences
@@ -191,15 +191,6 @@ class SearchObject_Islandora extends SearchObject_Base {
 		if (isset($_REQUEST['q'])){
 			$this->query = $_REQUEST['q'];
 		}
-
-		global $module, $action;
-		if ($module == 'MyAccount'){
-			// Users Lists
-//			$this->spellcheck = false;
-			$this->searchType = ($action == 'Home') ? 'favorites' : 'list';
-			// This is to set the sorting URLs for a User List of Archive Items. pascal 8-25-2016
-		}
-
 
 		return true;
 	} // End init()
@@ -364,6 +355,21 @@ class SearchObject_Islandora extends SearchObject_Base {
 		}
 		return $html;
 	}
+	/*
+	 * Get an array of citations for the records within the search results
+	 */
+	public function getCitations($citationFormat){
+	global $interface;
+	$html = array();
+	for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
+		$current = & $this->indexResult['response']['docs'][$x];
+		$interface->assign('recordIndex', $x + 1);
+		$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+		$record = RecordDriverFactory::initRecordDriver($current);
+		$html[] = $interface->fetch($record->getCitation($citationFormat));
+	}
+	return $html;
+}
 
 	/**
 	 * Return the record set from the search results.
@@ -629,9 +635,6 @@ class SearchObject_Islandora extends SearchObject_Base {
 	 * @return  string   Base URL
 	 */
 	protected function getBaseUrl(){
-		if ($this->searchType == 'list'){
-			return $this->serverUrl . '/MyAccount/MyList/' . urlencode($_GET['id']) . '?';
-		}
 		return $this->serverUrl . '/Archive/Results?';
 	}
 
@@ -685,39 +688,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 		if ($this->query == null) {
 			$this->query = $query;
 		}
-
-		// Define Filter Query
-		$filterQuery = $this->hiddenFilters;
-
-		if ($this->applyStandardFilters){
-			$filterQuery = array_merge($filterQuery, $this->getStandardFilters());
-		}
-
-		//Remove any empty filters if we get them
-		//(typically happens when a subdomain has a function disabled that is enabled in the main scope)
-		foreach ($this->filterList as $field => $filter) {
-			if (empty ($field)){
-				unset($this->filterList[$field]);
-			}
-		}
-		foreach ($this->filterList as $field => $filter) {
-			if (is_numeric($field)){
-				//This is a complex filter with ANDs and/or ORs
-				$filterQuery[] = $filter[0];
-			}else{
-				foreach ($filter as $value) {
-					// Special case -- allow trailing wildcards:
-					if (substr($value, -1) == '*') {
-						$filterQuery[] = "$field:$value";
-					} elseif (preg_match('/\\A\\[.*?\\sTO\\s.*?]\\z/', $value)){
-						$filterQuery[] = "$field:$value";
-					} elseif (!empty($value)){
-							$filterQuery[] = "$field:\"$value\"";
-						}
-
-				}
-			}
-		}
+		$filterQuery = $this->setFinalFilterQuery();
 
 		// If we are only searching one field use the DisMax handler
 		//    for that field. If left at null let solr take care of it
@@ -726,7 +697,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 		}
 
 		// Build a list of facets we want from the index
-		$facetSet = array();
+		$facetSet = [];
 		if (!empty($this->facetConfig)) {
 			$facetSet['limit'] = $this->facetLimit;
 			foreach ($this->facetConfig as $facetField => $facetName) {
@@ -763,9 +734,6 @@ class SearchObject_Islandora extends SearchObject_Base {
 			$spellcheck = '';
 		}
 
-		// Get time before the query
-		$this->startQueryTimer();
-
 		// The "relevance" sort option is a VuFind reserved word; we need to make
 		// this null in order to achieve the desired effect with Solr:
 		$finalSort = ($this->sort == 'relevance') ? null : $this->sort;
@@ -777,6 +745,10 @@ class SearchObject_Islandora extends SearchObject_Base {
 		if (!$pingResult){
 			PEAR_Singleton::raiseError('The archive server is currently unavailable.  Please try your search again in a few minutes.');
 		}
+
+		// Get time before the query
+		$this->startQueryTimer();
+
 		$this->indexResult = $this->indexEngine->search(
 		$this->query,      // Query string
 		$this->index,      // DisMax Handler
@@ -1024,8 +996,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 	 *                                          complement to getCheckboxFacets()).
 	 * @return  array    Field, values and removal urls
 	 */
-	public function getFilterList($excludeCheckboxFilters = false)
-	{
+	public function getFilterList($excludeCheckboxFilters = false){
 		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		global $library;
 		$fedoraUtils = FedoraUtils::getInstance();
@@ -1071,12 +1042,12 @@ class SearchObject_Islandora extends SearchObject_Base {
 						$display = $value;
 					}
 
-					$list[$facetLabel][] = array(
+					$list[$facetLabel][] = [
 							'value'      => $value,     // raw value for use with Solr
 							'display'    => $display,   // version to display to user
 							'field'      => $field,
 							'removalUrl' => $this->renderLinkWithoutFilter("$field:$value")
-					);
+					];
 				}
 			}
 		}
@@ -1096,8 +1067,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 	 *                                  the return array.
 	 * @return  array   Facets data arrays
 	 */
-	public function getFacetList($filter = null, $expandingLinks = false)
-	{
+	public function getFacetList($filter = null, $expandingLinks = false){
 		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
 		// If there is no filter, we'll use all facets as the filter:
@@ -1106,7 +1076,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 		}
 
 		// Start building the facet list:
-		$list = array();
+		$list = [];
 
 		// If we have no facets to process, give up now
 		if (!isset($this->indexResult['facet_counts']) || (!is_array($this->indexResult['facet_counts']['facet_fields']) && !is_array($this->indexResult['facet_counts']['facet_dates']))) {
@@ -1124,11 +1094,11 @@ class SearchObject_Islandora extends SearchObject_Base {
 			}
 
 			// Initialize the settings for the current field
-			$list[$field] = array();
+			$list[$field] = [];
 			// Add the on-screen label
 			$list[$field]['label'] = $filter[$field];
 			// Build our array of values for this field
-			$list[$field]['list']  = array();
+			$list[$field]['list']  = [];
 
 			// Should we translate values for the current facet?
 			$translate = in_array($field, $this->translatedFacets);
@@ -1138,7 +1108,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 			// Loop through values:
 			foreach ($data as $facet) {
 				// Initialize the array of data about the current facet:
-				$currentSettings = array();
+				$currentSettings = [];
 				$currentSettings['value'] = $facet[0];
 				if ($namespaceLookup){
 					$tmpLibrary = new Library();
@@ -1168,9 +1138,9 @@ class SearchObject_Islandora extends SearchObject_Base {
 				}else{
 					$currentSettings['display'] = $facet[0];
 				}
-				$currentSettings['count'] = $facet[1];
+				$currentSettings['count']     = $facet[1];
 				$currentSettings['isApplied'] = false;
-				$currentSettings['url'] = $this->renderLinkWithFilter("$field:".$facet[0]);
+				$currentSettings['url']       = $this->renderLinkWithFilter("$field:" . $facet[0]);
 				// If we want to have expanding links (all values matching the facet)
 				// in addition to limiting links (filter current search with facet),
 				// do some extra work:
@@ -1219,17 +1189,16 @@ class SearchObject_Islandora extends SearchObject_Base {
 	 *                                              section's description will be
 	 *                                              favored.
 	 */
-	public function activateAllFacets($preferredSection = false)
-	{
-		foreach($this->allFacetSettings as $section => $values) {
-			foreach($values as $key => $value) {
+	public function activateAllFacets($preferredSection = false){
+		foreach ($this->allFacetSettings as $section => $values){
+			foreach ($values as $key => $value){
 				$this->addFacet($key, $value);
 			}
 		}
 
 		if ($preferredSection &&
-		is_array($this->allFacetSettings[$preferredSection])) {
-			foreach($this->allFacetSettings[$preferredSection] as $key => $value) {
+			is_array($this->allFacetSettings[$preferredSection])){
+			foreach ($this->allFacetSettings[$preferredSection] as $key => $value){
 				$this->addFacet($key, $value);
 			}
 		}
@@ -1355,11 +1324,20 @@ class SearchObject_Islandora extends SearchObject_Base {
 	 * @param   string  $id         The document to retrieve from Solr
 	 * @access  public
 	 * @throws  object              PEAR Error
-	 * @return  string              The requested resource
+	 * @return  array              The requested resource
 	 */
-	function getRecord($id)
-	{
+	function getRecord($id){
 		return $this->indexEngine->getRecord($id);
+	}
+
+	/**
+	 * Retrieves Solr Documents for an array of PIDs
+	 * @param string[] $ids  The PIDs of the Solr document to retrieve
+	 * @return array of filtered PIDs
+	 */
+	function getFilteredPIDs($ids){
+		$filterQuery = $this->setFinalFilterQuery();
+		return $this->indexEngine->getFilteredPIDs($ids, $filterQuery);
 	}
 
 	protected $params;
@@ -1370,10 +1348,9 @@ class SearchObject_Islandora extends SearchObject_Base {
 	 * @access  protected
 	 * @return  array    Array of URL parameters (key=url_encoded_value format)
 	 */
-	protected function getSearchParams()
-	{
+	protected function getSearchParams(){
 		if (is_null($this->params)) {
-			$params = array();
+			$params = [];
 			switch ($this->searchType) {
 				case 'islandora' :
 				default :
@@ -1414,7 +1391,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 	 * @return array
 	 */
 	private function getStandardFilters() {
-		$filters = array();
+		$filters = [];
 		global $library;
 		//Make sure we have MODS data
 		$filters[] = "fedora_datastreams_ms:MODS";
@@ -1798,5 +1775,45 @@ class SearchObject_Islandora extends SearchObject_Base {
 
 	public function pingServer($failOnError = true){
 		return $this->indexEngine->pingServer($failOnError);
+	}
+
+	/**
+	 *  Define Filter Query that will be sent to Islandora Solr search engine
+	 *
+	 * @return array
+	 */
+	private function setFinalFilterQuery(): array{
+		$filterQuery = $this->hiddenFilters;
+
+		if ($this->applyStandardFilters){
+			$filterQuery = array_merge($filterQuery, $this->getStandardFilters());
+		}
+
+		//Remove any empty filters if we get them
+		//(typically happens when a subdomain has a function disabled that is enabled in the main scope)
+		foreach ($this->filterList as $field => $filter){
+			if (empty ($field)){
+				unset($this->filterList[$field]);
+			}
+		}
+		foreach ($this->filterList as $field => $filter){
+			if (is_numeric($field)){
+				//This is a complex filter with ANDs and/or ORs
+				$filterQuery[] = $filter[0];
+			}else{
+				foreach ($filter as $value){
+					// Special case -- allow trailing wildcards:
+					if (substr($value, -1) == '*'){
+						$filterQuery[] = "$field:$value";
+					}elseif (preg_match('/\\A\\[.*?\\sTO\\s.*?]\\z/', $value)){
+						$filterQuery[] = "$field:$value";
+					}elseif (!empty($value)){
+						$filterQuery[] = "$field:\"$value\"";
+					}
+
+				}
+			}
+		}
+		return $filterQuery;
 	}
 }

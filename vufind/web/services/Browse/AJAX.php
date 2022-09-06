@@ -69,7 +69,11 @@ class Browse_AJAX extends AJAXHandler {
 					$searchLocation = Location::getUserHomeLocation();
 				}elseif (UserAccount::userHasRole('opacAdmin')){
 					// Use the interface library for opac admins (can be different from the user home library)
-					global $library;
+					if (Location::getSearchLocation()){
+						$searchLocation = Location::getSearchLocation();
+					} else {
+						global $library;
+					}
 				}elseif (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager', 'contentEditor'])){
 					// Otherwise, use User's home library
 					$library = $user->getHomeLibrary();
@@ -104,12 +108,12 @@ class Browse_AJAX extends AJAXHandler {
 					if (!empty($_REQUEST['searchId'])){
 						$searchId = $_REQUEST['searchId'];
 
-						/** @var SearchObject_Solr|SearchObject_Base $searchObj */
-						$searchObj = SearchObjectFactory::initSearchObject();
-						$searchObj->init();
-						$searchObj = $searchObj->restoreSavedSearch($searchId, false, true);
+						/** @var SearchObject_Solr|SearchObject_Base $searchObject */
+						$searchObject = SearchObjectFactory::initSearchObject();
+						$searchObject->init();
+						$searchObject = $searchObject->restoreSavedSearch($searchId, false, true);
 
-						if (!$browseCategory->updateFromSearch($searchObj)){
+						if (!$browseCategory->updateFromSearch($searchObject)){
 							return [
 								'success' => false,
 								'message' => "Sorry, this search is too complex to create a category from.",
@@ -167,6 +171,10 @@ class Browse_AJAX extends AJAXHandler {
 
 					return [
 						'success' => true,
+						'message' => 'This search was added to the homepage successfully.',
+						'buttons' => '<a class="btn btn-primary" href="/Admin/BrowseCategories?objectAction=edit&id='
+							. $browseCategory->id . '" role="button">Edit Browse Category</a>'
+							. '<a class="btn btn-primary" href="/" role="button">View Homepage</a>'
 					];
 				}
 			}else{
@@ -292,7 +300,7 @@ class Browse_AJAX extends AJAXHandler {
 					$sourceList     = new UserList();
 					$sourceList->id = $browseCategory->sourceListId;
 					if ($sourceList->find(true)){
-						$records = $sourceList->getBrowseRecords(($pageToLoad - 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE, $browseCategory->defaultSort);
+						$records = $sourceList->getBrowseRecords($pageToLoad);
 					}else{
 						$records = [];
 					}
@@ -306,8 +314,7 @@ class Browse_AJAX extends AJAXHandler {
 					foreach ($defaultFilters as $filter){
 						$this->searchObject->addFilter(trim($filter));
 					}
-					//Set Sorting, this is actually slightly mangled from the category to Solr
-					$this->searchObject->setSort($browseCategory->getSolrSort());
+					$this->searchObject->setSort($browseCategory->defaultSort);
 					if ($browseCategory->searchTerm != ''){
 						if ($browseCategory->searchTerm[0] == '(' && $browseCategory->searchTerm[strlen($browseCategory->searchTerm) -1] == ')'){
 							// Some simple Advanced Searches have been saved as browse categories of the form "(SearchType:searchPhrase)"
@@ -348,13 +355,18 @@ class Browse_AJAX extends AJAXHandler {
 
 					$result['searchUrl'] = $this->searchObject->renderSearchUrl();
 
-					//TODO: Check if last page
+					// let front end know if we have reached the end of the result set
+					if ($this->searchObject->getPage() * $this->searchObject->getLimit() >= $this->searchObject->getResultTotal()){
+						$result['lastPage'] = true;
+					}
+
 
 					// Shutdown the search object
 					$this->searchObject->close();
 				}
 				if (count($records) == 0){
-					$records[] = $interface->fetch('Browse/noResults.tpl');
+					$records[]          = $interface->fetch('Browse/noResults.tpl');
+					$result['lastPage'] = true;
 				}
 
 				$result['records']    = implode('', $records);
@@ -416,7 +428,7 @@ class Browse_AJAX extends AJAXHandler {
 		if ($textId){
 			$this->textId = $textId;
 		}elseif ($this->textId == null){ // set Id only once
-			$this->textId = isset($_REQUEST['textId']) ? $_REQUEST['textId'] : null;
+			$this->textId = $_REQUEST['textId'] ?? null;
 		}
 		return $this->textId;
 	}

@@ -57,12 +57,12 @@ public class DPLAFeed implements IProcessHandler {
 			return;
 		}
 		boolean fatal            = false;
+		int     currentPage      = 1;
 		String  DPLAFeedFilePath = PikaConfigIni.getIniValue("Site", "local");
 		try (FileWriter fileWriter = new FileWriter(DPLAFeedFilePath + "/dplaFeed.json");
 			 BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
 			String DLPAFeedUrlString = pikaUrl + "/API/ArchiveAPI?method=getDPLAFeed";
 			int    numPages          = 0;
-			int    currentPage       = 1;
 			int    pageSize          = 100;
 			if (processSettings.get("pageSize") != null) {
 				pageSize = Integer.parseInt(processSettings.get("pageSize"));
@@ -81,7 +81,7 @@ public class DPLAFeed implements IProcessHandler {
 					tries++;
 				} else if (tryAgain && tries == 3) {
 					processLog.incErrors();
-					processLog.addNote("dpla feed call failed after three atempts");
+					processLog.addNote("dpla feed call failed after three attempts");
 					tryAgain = false;
 					continue;
 				} else {
@@ -101,6 +101,9 @@ public class DPLAFeed implements IProcessHandler {
 								JSONObject result       = dplaFeedData.getJSONObject("result");
 								if (numPages == 0 && result.has("numPages")) {
 									numPages = result.getInt("numPages");
+									String note = numPages + " to fetch from Archive API for the DPLA feed.";
+									processLog.addNote(note);
+									logger.info(note);
 								}
 								if (result.has("docs")) {
 									String docs = null;
@@ -158,10 +161,20 @@ public class DPLAFeed implements IProcessHandler {
 			processLog.incErrors();
 			processLog.addNote("Fatal error occurred");
 			//TODO: rework file to be valid JSON even with an error
+
+			String note = currentPage + " pages fetched from Archive API for the DPLA feed.";
+			processLog.addNote(note);
+			logger.info(note);
 		}
 
-		logger.info("Finished building DPLA Feed File");
-		processLog.addNote("Finished building DPLA Feed File");
+		String note = "Finished building DPLA Feed File";
+		logger.info(note);
+		processLog.addNote(note);
+
+		note = currentPage + " pages fetched from Archive API for the DPLA feed.";
+		processLog.addNote(note);
+		logger.info(note);
+
 		processLog.setFinished();
 		processLog.saveToDatabase(pikaConn, logger);
 	}

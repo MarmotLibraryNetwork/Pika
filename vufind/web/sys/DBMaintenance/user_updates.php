@@ -226,5 +226,13 @@ function getUserUpdates(){
 				'ALTER TABLE user ADD COLUMN barcode VARCHAR(64) NULL AFTER  ilsUserId, ADD COLUMN password VARCHAR(128) NULL AFTER barcode;',
 			],
 		],
+		'remove_cat_password_2022.02' => [
+			'title'           => 'Remove cat_password column',
+			'description'     => 'Remove cat_password column',
+			'continueOnError' => true,
+			'sql'             => [
+				'ALTER TABLE user DROP COLUMN cat_password',
+			],
+		],
 	);
 }

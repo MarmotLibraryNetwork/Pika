@@ -1,0 +1,14 @@
+# Map used StemmerOverrideFilterFactory filter, which Overrides stemming algorithms by applying a custom mapping,
+# then protecting these terms from being modified by stemmers.
+#
+# A customized mapping of words to stems, in a tab-separated file, can be specified to the dictionary attribute in the schema.
+# Words in this mapping will be stemmed to the stems from the file, and will not be further changed by any stemmer
+#
+#
+# Note: Entries must be tab-separated. (actual tab character)  Please list alphabetically and include a note explaining the stemming problem
+
+animals	animal
+# animals gets stemmed to anim, causing irrelevant matching. eg animation
+
+musicals	musical
+# musicals gets stemmed to music, causing irrelevant matches

@@ -298,7 +298,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		return bookabilityCache.get(key);
 	}
 
-	protected String getDisplayGroupedStatus(ItemInfo itemInfo, String identifier) {
+	protected String getDisplayGroupedStatus(ItemInfo itemInfo, RecordIdentifier identifier) {
 		String overriddenStatus = getOverriddenStatus(itemInfo, true);
 		if (overriddenStatus != null) {
 			return overriddenStatus;
@@ -317,7 +317,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		}
 	}
 
-	protected String getDisplayStatus(ItemInfo itemInfo, String identifier) {
+	protected String getDisplayStatus(ItemInfo itemInfo, RecordIdentifier identifier) {
 		String overriddenStatus = getOverriddenStatus(itemInfo, false);
 		if (overriddenStatus != null) {
 			return overriddenStatus;
@@ -462,7 +462,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 
 	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems){
 		if (orderInfoFromExport.size() > 0){
-			ArrayList<OrderInfo> orderItems = orderInfoFromExport.get(recordInfo.getRecordIdentifier());
+			ArrayList<OrderInfo> orderItems = orderInfoFromExport.get(recordInfo.getRecordIdentifier().getIdentifier());
 			if (orderItems != null) {
 				for (OrderInfo orderItem : orderItems) {
 					createAndAddOrderItem(groupedWork, recordInfo, orderItem, record);

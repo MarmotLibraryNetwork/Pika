@@ -123,7 +123,7 @@ class Location extends DB_DataObject {
 	}
 
 	function keys(){
-		return array('locationId', 'code');
+		return ['locationId', 'code'];
 	}
 
 	/**
@@ -370,7 +370,7 @@ class Location extends DB_DataObject {
 			// Browse Category Section //
 			'browseCategorySection' => [
 				'property'   => 'browseCategorySection', 'type' => 'section', 'label' => 'Browse Categories', 'hideInLists' => true,
-				'instructions' => 'For more information on how to setup browse categories, see the <a href="https://marmot-support.atlassian.net/l/c/98rtRQZ2">online documentation</a>.',
+				'instructions' => 'For more information on how to set up browse categories, see the <a href="https://marmot-support.atlassian.net/l/c/98rtRQZ2">online documentation</a>.',
 				'helpLink' => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
 				'properties' => [
 					'defaultBrowseMode'         => [
@@ -403,7 +403,8 @@ class Location extends DB_DataObject {
 						'sortable'      => true,
 						'storeDb'       => true,
 						'allowEdit'     => false,
-						'canEdit'       => false,
+						'canEdit'       => true,
+						'directLink'    => true,
 						'additionalOneToManyActions' => [
 							[
 								'text'    => 'Copy Browse Categories from Location',
@@ -589,7 +590,7 @@ class Location extends DB_DataObject {
 			/** The user can only pickup within their home system */
 			if (strlen($homeLibrary->validPickupSystems) > 0){
 				/** The system has additional related systems that you can pickup within */
-				$pickupIds          = array();
+				$pickupIds          = [];
 				$pickupIds[]        = $homeLibrary->libraryId;
 				$validPickupSystems = explode('|', $homeLibrary->validPickupSystems);
 				foreach ($validPickupSystems as $pickupSystem){
@@ -626,7 +627,7 @@ class Location extends DB_DataObject {
 
 		//Load the locations and sort them based on the user profile information as well as their physical location.
 		$physicalLocation = $this->getPhysicalLocation();
-		$locationList     = array();
+		$locationList     = [];
 		while ($this->fetch()){
 			if (($this->validHoldPickupBranch == 1) || ($this->validHoldPickupBranch == 0 && !empty($patronProfile) && $patronProfile->homeLocationId == $this->locationId)){
 				// Value 0 is valid for patrons of that branch only
@@ -822,7 +823,7 @@ class Location extends DB_DataObject {
 		return $this->physicalLocation;
 	}
 
-	static $searchLocation = array();
+	static $searchLocation = [];
 
 	/**
 	 * @param null $searchSource
@@ -1054,11 +1055,11 @@ class Location extends DB_DataObject {
 	}
 
 	public function __set($name, $value){
-		if ($name == "hours"){
+		if ($name == 'hours'){
 			$this->hours = $value;
-		}elseif ($name == "moreDetailsOptions"){
+		}elseif ($name == 'moreDetailsOptions'){
 			$this->moreDetailsOptions = $value;
-		}elseif ($name == "facets"){
+		}elseif ($name == 'facets'){
 			$this->facets = $value;
 		}elseif ($name == 'browseCategories'){
 			$this->browseCategories = $value;
@@ -1124,7 +1125,7 @@ class Location extends DB_DataObject {
 
 	public function clearBrowseCategories(){
 		$this->clearOneToManyOptions('LocationBrowseCategory');
-		$this->browseCategories = array();
+		$this->browseCategories = [];
 	}
 
 	public function saveMoreDetailsOptions(){
@@ -1136,7 +1137,7 @@ class Location extends DB_DataObject {
 
 	public function clearMoreDetailsOptions(){
 		$this->clearOneToManyOptions('LocationMoreDetails');
-		$this->moreDetailsOptions = array();
+		$this->moreDetailsOptions = [];
 	}
 
 	public function saveCombinedResultSections(){
@@ -1148,7 +1149,7 @@ class Location extends DB_DataObject {
 
 	public function clearCombinedResultSections(){
 		$this->clearOneToManyOptions('LocationCombinedResultSection');
-		$this->combinedResultSections = array();
+		$this->combinedResultSections = [];
 	}
 
 	public function saveFacets(){
@@ -1160,7 +1161,7 @@ class Location extends DB_DataObject {
 
 	public function clearFacets(){
 		$this->clearOneToManyOptions('LocationFacetSetting');
-		$this->facets = array();
+		$this->facets = [];
 	}
 
 
@@ -1185,7 +1186,7 @@ class Location extends DB_DataObject {
 	 */
 	public function clearHooplaSettings(){
 		$success = $this->clearOneToManyOptions('LocationHooplaSettings');
-		$this->hooplaSettings = array();
+		$this->hooplaSettings = [];
 		return $success >= 1;
 	}
 
@@ -1216,34 +1217,34 @@ class Location extends DB_DataObject {
 		return $success;
 	}
 
-    /**
-     * Copy the Hoopla settings from a specified location to the current location.
-     *
-     *
-     * @param $copyFromLocationId the location to be copied from
-     * @return bool  returns false if any insert failed.
-     */
+	/**
+	 * Copy the Hoopla settings from a specified location to the current location.
+	 *
+	 *
+	 * @param int $copyFromLocationId the location to be copied from
+	 * @return bool  returns false if any insert failed.
+	 */
 	public function copyLocationHooplaSettings($copyFromLocationId){
-        $success = true;
-        $copyFromHooplaSettings = new LocationHooplaSettings();
-        $copyFromHooplaSettings->locationId = $copyFromLocationId;
-        $hooplaSettings = $copyFromHooplaSettings->fetchAll();
-        foreach($hooplaSettings as $setting)
-        {
-            $copyToHooplaSetting                    = new LocationHooplaSettings();
-            $copyToHooplaSetting->locationId                = $this->locationId;
-            $copyToHooplaSetting->kind                      = $setting->kind;
-            $copyToHooplaSetting->maxPrice                  = $setting->maxPrice;
-            $copyToHooplaSetting->excludeParentalAdvisory   = $setting->excludeParentalAdvisory;
-            $copyToHooplaSetting->excludeProfanity          = $setting->excludeProfanity;
-            $copyToHooplaSetting->includeChildrenTitlesOnly = $setting->includeChildrenTitlesOnly;
+		$success                            = true;
+		$copyFromHooplaSettings             = new LocationHooplaSettings();
+		$copyFromHooplaSettings->locationId = $copyFromLocationId;
+		$hooplaSettings                     = $copyFromHooplaSettings->fetchAll();
+		foreach ($hooplaSettings as $setting){
+			$copyToHooplaSetting                            = new LocationHooplaSettings();
+			$copyToHooplaSetting->locationId                = $this->locationId;
+			$copyToHooplaSetting->kind                      = $setting->kind;
+			$copyToHooplaSetting->maxPrice                  = $setting->maxPrice;
+			$copyToHooplaSetting->excludeParentalAdvisory   = $setting->excludeParentalAdvisory;
+			$copyToHooplaSetting->excludeProfanity          = $setting->excludeProfanity;
+			$copyToHooplaSetting->includeChildrenTitlesOnly = $setting->includeChildrenTitlesOnly;
 
-            if(!$copyToHooplaSetting->insert()){
-                $success = false;
-            }
-        }
-        return $success;
-    }
+			if (!$copyToHooplaSetting->insert()){
+				$success = false;
+			}
+		}
+		return $success;
+	}
+
 	public static function getLibraryHours($locationId, $timeToCheck){
 		$location             = new Location();
 		$location->locationId = $locationId;
@@ -1257,10 +1258,10 @@ class Location extends DB_DataObject {
 			$holiday->date      = $todayFormatted;
 			$holiday->libraryId = $location->libraryId;
 			if ($holiday->find(true)){
-				return array(
+				return [
 					'closed'        => true,
 					'closureReason' => $holiday->name,
-				);
+				];
 			}
 
 			// get the day of the week (0=Sunday to 6=Saturday)
@@ -1273,13 +1274,13 @@ class Location extends DB_DataObject {
 			$hours->day        = $dayOfWeekToday;
 			if ($hours->find(true)){
 				$hours->fetch();
-				return array(
+				return [
 					'open'           => ltrim($hours->open, '0'),
 					'close'          => ltrim($hours->close, '0'),
 					'closed'         => $hours->closed ? true : false,
 					'openFormatted'  => ($hours->open == '12:00' ? 'Noon' : date("g:i A", strtotime($hours->open))),
 					'closeFormatted' => ($hours->close == '12:00' ? 'Noon' : date("g:i A", strtotime($hours->close))),
-				);
+				];
 			}
 		}
 
@@ -1380,7 +1381,7 @@ class Location extends DB_DataObject {
 		$object             = new LocationRecordOwned();
 		$object->locationId = $this->locationId;
 		$object->delete();
-		$this->recordsOwned = array();
+		$this->recordsOwned = [];
 	}
 
 	public function saveRecordsToInclude(){
@@ -1406,18 +1407,18 @@ class Location extends DB_DataObject {
 		$object             = new LibraryRecordToInclude();
 		$object->locationId = $this->locationId;
 		$object->delete();
-		$this->recordsToInclude = array();
+		$this->recordsToInclude = [];
 	}
-    public function clearLocationRecordsToInclude()
-    {
-        $success = $this->clearOneToManyOptions('LocationRecordToInclude');
 
-        $this->hours = array();
-        return $success;
-    }
+	public function clearLocationRecordsToInclude(){
+		$success     = $this->clearOneToManyOptions('LocationRecordToInclude');
+		$this->hours = [];
+		return $success;
+	}
+
 	static function getDefaultFacets($locationId = -1){
 		global $configArray;
-		$defaultFacets = array();
+		$defaultFacets = [];
 
 		$facet = new LocationFacetSetting();
 		$facet->setupTopFacet('format_category', 'Format Category');
@@ -1431,9 +1432,7 @@ class Location extends DB_DataObject {
 			$facet->locationId = $locationId;
 			$facet->weight     = count($defaultFacets) + 1;
 			$defaultFacets[]   = $facet;
-		}
 
-		if ($configArray['Index']['enableDetailedAvailability']){
 			$facet = new LocationFacetSetting();
 			$facet->setupSideFacet('available_at', 'Available Now At', true);
 			$facet->locationId = $locationId;
@@ -1583,10 +1582,10 @@ class Location extends DB_DataObject {
 	}
 
 	public function clearHours(){
-        $success = $this->clearOneToManyOptions('LocationHours');
-        $this->hours = array();
-	    return $success;
-    }
+		$success     = $this->clearOneToManyOptions('LocationHours');
+		$this->hours = [];
+		return $success;
+	}
 
 	public function getHoursFormatted(){
 		unset($this->hours); // clear out any previous hours data that has been set
@@ -1611,8 +1610,8 @@ class Location extends DB_DataObject {
 		$location = new Location();
 		$location->orderBy('displayName');
 		$location->find();
-		$locationList           = array();
-		$locationLookupList     = array();
+		$locationList           = [];
+		$locationLookupList     = [];
 		$locationLookupList[-1] = '<No Nearby Location>';
 		while ($location->fetch()){
 			$locationLookupList[$location->locationId] = $location->displayName;
@@ -1627,7 +1626,7 @@ class Location extends DB_DataObject {
 		$mapAddress   = urlencode(preg_replace('/\r\n|\r|\n/', '+', $this->address));
 		$mapLink      = $_SERVER['REQUEST_SCHEME'] . "://maps.google.com/maps?f=q&hl=en&geocode=&q=$mapAddress&ie=UTF8&z=15&iwloc=addr&om=1&t=m";
 		$mapImageLink = $_SERVER['REQUEST_SCHEME'] . "://maps.googleapis.com/maps/api/staticmap?center=$mapAddress&zoom=15&size=200x200&sensor=false&markers=color:red%7C$mapAddress&key=" . $configArray['Maps']['apiKey'];
-		$locationInfo = array(
+		$locationInfo = [
 			'id'        => $this->locationId,
 			'name'      => $this->displayName,
 			'address'   => preg_replace('/\r\n|\r|\n/', '<br>', $this->address),
@@ -1635,7 +1634,7 @@ class Location extends DB_DataObject {
 			'map_image' => $mapImageLink,
 			'map_link'  => $mapLink,
 			'hours'     => $hours,
-		);
+		];
 		return $locationInfo;
 	}
 

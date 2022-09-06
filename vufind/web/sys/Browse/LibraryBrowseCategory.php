@@ -62,16 +62,26 @@ class LibraryBrowseCategory extends DB_DataObject {
 			'id'                   => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the hours within the database'],
 			'libraryId'            => ['property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'A link to the library which the location belongs to'],
 			'browseCategoryTextId' => ['property' => 'browseCategoryTextId', 'type' => 'enum', 'values' => $browseCategoryList, 'label' => 'Browse Category', 'description' => 'The browse category to display '],
-			//'weight'               => ['property' => 'weight', 'type' => 'integer', 'label' => 'Weight', 'weight' => 'Defines how lists are sorted within the widget.  Lower weights are displayed to the left of the screen.', 'required' => true],
-			// Weight isn't needed in the object structure for display of oneToMany sections
-
 		];
 		return $structure;
 	}
 
 	function getDirectLink(){
-		$library = new Library();
-		$library->get($this->libraryId);
-		return $_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl . '?browseCategory=' . $this->browseCategoryTextId;
+		if ($this->browseCategoryTextId != 'system_recommended_for_you'){
+			$library = new Library();
+			$library->get($this->libraryId);
+			return $_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl . '?browseCategory=' . $this->browseCategoryTextId;
+		}
+		return null;
 	}
+
+	public function getEditLink(){
+		if ($this->browseCategoryTextId != 'system_recommended_for_you'){
+			$browseCategory = new BrowseCategory();
+			$browseCategory->get('textId', $this->browseCategoryTextId);
+			return '/Admin/BrowseCategories?objectAction=edit&id=' . $browseCategory->id;
+		}
+		return null;
+	}
+
 }

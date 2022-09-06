@@ -268,6 +268,7 @@ public class GroupedWorkSolr implements Cloneable {
 		//format
 		doc.addField("grouping_category", groupingCategory);
 		doc.addField("format_boost", getTotalFormatBoost());
+		//TODO: Remove after the dynamic field handling on the php side is set up
 
 		//Publication related fields
 		doc.addField("publisher", publishers);
@@ -306,7 +307,9 @@ public class GroupedWorkSolr implements Cloneable {
 		checkDefaultValue(targetAudience, "Unknown");
 		checkDefaultValue(targetAudience, "Other");
 		doc.addField("target_audience", targetAudience);
-		doc.addField("system_list", systemLists);
+		if (systemLists.size() > 0) {
+			doc.addField("system_list", systemLists);
+		}
 		//Date added to catalog
 		Date dateAdded = getDateAdded();
 		doc.addField("date_added", dateAdded);
@@ -423,6 +426,7 @@ public class GroupedWorkSolr implements Cloneable {
 		return primaryUpc;
 	}
 
+//TODO: Remove after the dynamic field handling on the php side is set up
 	private Long getTotalFormatBoost() {
 		long formatBoost = 0;
 		for (RecordInfo curRecord : relatedRecords.values()){
@@ -430,6 +434,20 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 		if (formatBoost == 0){
 			formatBoost = 1;
+		}
+		return formatBoost;
+	}
+
+	/**
+	 * @param scopeName label for scope
+	 * @return format boost value for each related record within this scope
+	 */
+	private long getScopedFormatBoost(String scopeName) {
+		long            formatBoost = 0;
+		for (RecordInfo curRecord : relatedRecords.values()) {
+			if (curRecord.hasScope(scopeName)) {
+				formatBoost += curRecord.getFormatBoost();
+			}
 		}
 		return formatBoost;
 	}
@@ -480,6 +498,7 @@ public class GroupedWorkSolr implements Cloneable {
 					addUniqueFieldValue(doc, "scope_has_related_records", curScopeName);
 					HashSet<String> formats = new HashSet<>();
 					if (curItem.getFormat() != null) {
+						// Only econtent and on order items ??
 						formats.add(curItem.getFormat());
 					}else {
 						formats = curRecord.getFormats();
@@ -487,8 +506,8 @@ public class GroupedWorkSolr implements Cloneable {
 					addUniqueFieldValues(doc, "format_" + curScopeName, formats);
 					HashSet<String> formatCategories = new HashSet<>();
 					if (curItem.getFormatCategory() != null) {
+						// Only eContent and on order items ??
 						formatCategories.add(curItem.getFormatCategory());
-
 					}else {
 						formatCategories = curRecord.getFormatCategories();
 					}
@@ -564,12 +583,20 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 
 		//Now that we know the latest number of days added for each scope, we can set the time since added facet
+		// Scope the format boost factor
 		for (Scope scope : groupedWorkIndexer.getScopes()){
-			SolrInputField field = doc.getField("local_days_since_added_" + scope.getScopeName());
+			String curScopeName = scope.getScopeName();
+			long scopedFormatBoost = getScopedFormatBoost(curScopeName);
+			if (scopedFormatBoost != 0L) {
+				doc.addField("format_boost_" + curScopeName, scopedFormatBoost);
+			}
+
+
+			SolrInputField field = doc.getField("local_days_since_added_" + curScopeName);
 			if (field != null){
 				Integer daysSinceAdded = (Integer)field.getFirstValue();
 				//TODO: only populate if there are values to add
-				doc.addField("local_time_since_added_" + scope.getScopeName(), Util.getTimeSinceAdded(daysSinceAdded, scope.isIncludeOnOrderRecordsInDateAddedFacetValues()));
+				doc.addField("local_time_since_added_" + curScopeName, Util.getTimeSinceAdded(daysSinceAdded, scope.isIncludeOnOrderRecordsInDateAddedFacetValues()));
 			}
 		}
 	}
@@ -762,6 +789,13 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 	}
 
+	private void setSingleValuedFieldValue(SolrInputDocument doc, String fieldName, long value) {
+		Object curValue = doc.getFieldValue(fieldName);
+		if (curValue == null){
+			doc.addField(fieldName, value);
+		}
+	}
+
 	private void updateMaxValueField(SolrInputDocument doc, String fieldName, int value) {
 		Object curValue = doc.getFieldValue(fieldName);
 		if (curValue == null){
@@ -781,6 +815,15 @@ public class GroupedWorkSolr implements Cloneable {
 			if ((Long)curValue < value){
 				doc.setField(fieldName, value);
 			}
+		}
+	}
+
+	private void addToValueField(SolrInputDocument doc, String fieldName, long value) {
+		Object curValue = doc.getFieldValue(fieldName);
+		if (curValue == null) {
+			doc.addField(fieldName, value);
+		} else {
+			doc.setField(fieldName, (Long) curValue + value);
 		}
 	}
 
@@ -856,7 +899,9 @@ public class GroupedWorkSolr implements Cloneable {
 					//logger.warn("Found inconsistent literary forms for grouped work " + id + " both fiction and non fiction had the same amount of usage.  Defaulting to neither.");
 					literaryForm.clear();
 					literaryForm.put("Unknown", 1);
-					groupedWorkIndexer.addWorkWithInvalidLiteraryForms(id);
+					if (logger.isInfoEnabled()) {
+						groupedWorkIndexer.addWorkWithInvalidLiteraryForms(id);
+					}
 				}else if (numFictionIndicators.compareTo(numNonFictionIndicators) > 0){
 					if (logger.isDebugEnabled()) {
 						logger.debug("Number of related records with literary form of Fiction dictates that Fiction is the correct literary form for grouped work " + id);
@@ -899,7 +944,9 @@ public class GroupedWorkSolr implements Cloneable {
 						//Ugh, we have inconsistent literary forms and can't make an educated guess as to which is correct.
 						literaryFormFull.clear();
 						literaryFormFull.put("Unknown", 1);
-						groupedWorkIndexer.addWorkWithInvalidLiteraryForms(id);
+						if (logger.isInfoEnabled()) {
+							groupedWorkIndexer.addWorkWithInvalidLiteraryForms(id);
+						}
 					}
 				}else{
 					removeInconsistentFullLiteraryForms(literaryFormFull, highestUsageLiteraryForms);
@@ -1453,18 +1500,21 @@ public class GroupedWorkSolr implements Cloneable {
 		this.series.clear();
 		this.seriesWithVolume.clear();
 	}
-
-	/**
-	 * This will normalize/clean any series statement as well as series volume statement and
-	 * populate both the series & series_with_volumes Solr fields
-	 *
-	 * @param series Series Statement
-	 * @param volume Volume within the series or empty if there is none
-	 */
 	void addSeries(String series, String volume){
+		addSeries(series, volume, false);
+	}
+
+		/**
+		 * This will normalize/clean any series statement as well as series volume statement and
+		 * populate both the series & series_with_volumes Solr fields
+		 *
+		 * @param series Series Statement
+		 * @param volume Volume within the series or empty if there is none
+		 */
+	void addSeries(String series, String volume, boolean novelistSeries){
 		if (series != null && !series.isEmpty()) {
 			volume = (volume == null || volume.isEmpty()) ? "" : getNormalizedSeriesVolume(volume);
-			String seriesInfo                = getNormalizedSeries(series, true);
+			String seriesInfo                = getNormalizedSeries(series, novelistSeries);
 			String seriesInfoWithVolume      = seriesInfo + "|" + volume;
 			String seriesInfoLower           = seriesInfo.toLowerCase();
 			String volumeLower               = volume.toLowerCase();
@@ -1542,7 +1592,7 @@ public class GroupedWorkSolr implements Cloneable {
 
 	private void addSeriesInfoToField(String seriesInfo, HashMap<String, String> seriesField) {
 		if (seriesInfo != null && !seriesInfo.equalsIgnoreCase("none")) {
-			seriesInfo = getNormalizedSeries(seriesInfo, true);
+			seriesInfo = getNormalizedSeries(seriesInfo, false);
 			String normalizedSeries = seriesInfo.toLowerCase();
 			if (!seriesField.containsKey(normalizedSeries)) {
 				boolean okToAdd = true;
@@ -1574,6 +1624,7 @@ public class GroupedWorkSolr implements Cloneable {
 		if (!volume.matches("^\\d+$")) {
 			volume = volume.replaceAll("(bk\\.?|book)", "");
 			volume = volume.replaceAll("(volume|vol\\.|v\\.)", "").trim();
+			volume = volume.replaceAll("^0+", ""); // Remove leading zeroes
 			if (!volume.matches("^\\d+$")) {
 				volume = volume.replaceAll("libro", "");
 				volume = volume.replaceAll("one", "1");
@@ -1592,14 +1643,14 @@ public class GroupedWorkSolr implements Cloneable {
 		return volume;
 	}
 
-	String getNormalizedSeries(String series, boolean removeVolume) {
+	String getNormalizedSeries(String series, boolean novelistSeries) {
 		series = Util.trimTrailingPunctuation(series);
 		//TODO: removeVolume codeblock likely obsolete
-		if (removeVolume) {
 			series = series.replaceAll("[#|]\\s*\\d+$", "");
+		if (!novelistSeries) {
+			//Remove anything in parens since it's normally just the format
+			series = series.replaceAll("\\s+\\(.*\\)", "");
 		}
-		//Remove anything in parens since it's normally just the format
-		series = series.replaceAll("\\s+\\(.*\\)", "");
 		// the parentheses regex "\\s+\\(.*?\\)" fails for string "Andy Carpenter mystery (Macmillan Audio (Firm))"
 		series = series.replaceAll(" & ", " and ");
 		series = series.replaceAll("--", " ");
@@ -1904,7 +1955,7 @@ public class GroupedWorkSolr implements Cloneable {
 
 	RecordInfo addRelatedRecord(RecordIdentifier recordIdentifier){
 		String sourceAndId = recordIdentifier.getSourceAndId();
-		if (relatedRecords.containsKey(recordIdentifier.getSourceAndId())){
+		if (relatedRecords.containsKey(sourceAndId)){
 			return relatedRecords.get(sourceAndId);
 		}else {
 			RecordInfo newRecord = new RecordInfo(recordIdentifier);
@@ -1918,7 +1969,7 @@ public class GroupedWorkSolr implements Cloneable {
 		if (relatedRecords.containsKey(recordIdentifierWithType)){
 			return relatedRecords.get(recordIdentifierWithType);
 		}else {
-			RecordInfo newRecord = new RecordInfo(source, recordIdentifier);
+			RecordInfo newRecord = new RecordInfo(new RecordIdentifier(source, recordIdentifier));
 			relatedRecords.put(recordIdentifierWithType, newRecord);
 			return newRecord;
 		}

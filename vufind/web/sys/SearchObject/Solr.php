@@ -38,7 +38,7 @@ class SearchObject_Solr extends SearchObject_Base {
 	// Index
 	private $index = null;
 	// Field List
-	public static $fields = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,title_sub,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisher,publishDate,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed';
+	private static $fields = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,title_sub,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisher,publishDate,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed';
 	private $fieldsFull = '*,score';
 	// HTTP Method
 	private $method = 'GET';
@@ -57,13 +57,24 @@ class SearchObject_Solr extends SearchObject_Base {
 
 	// Spelling
 	private $spellingLimit = 3;
-	private $spellQuery    = array();
+	private $spellQuery    = [];
 	private $dictionary    = 'default';
 	private $spellSimple   = false;
 	private $spellSkipNumeric = true;
 
 	// Display Modes //
-	public $viewOptions = array('list', 'covers');
+	public $viewOptions = ['list', 'covers'];
+
+	/**
+	 * Flag to disable default scoping to show ILL book titles, etc.
+	 */
+	private $scopingDisabled = false;
+
+
+	// In each class, set the specific range filters based on the Search Object
+	protected $rangeFilters = ['lexile_score', 'accelerated_reader_reading_level', 'accelerated_reader_point_value'];
+	protected $dateFilters = ['publishDate'];
+
 
 	/**
 	 * Constructor. Initialise some details about the server
@@ -161,12 +172,15 @@ class SearchObject_Solr extends SearchObject_Base {
 		$timer->logTime('Setup Solr Search Object');
 	}
 
+	/**
+	 * Turn off filter search of field to scope_has_related records
+	 * so that results will be returned even if grouped work is outside
+	 * the current search scope.
+	 *
+	 * @return void
+	 */
 	public function disableScoping(){
-		$this->indexEngine->disableScoping();
-	}
-
-	public function enableScoping(){
-		$this->indexEngine->enableScoping();
+		$this->scopingDisabled = true;
 	}
 
 	public function disableSpelling(){
@@ -264,6 +278,7 @@ class SearchObject_Solr extends SearchObject_Base {
 					}
 				}
 
+				// TODO: Explain why this should override the solr scope above.
 				if (isset($userLocation)){
 					if (strcmp($field, 'availability_toggle') == 0){
 						$field = 'availability_toggle_' . $userLocation->code;
@@ -1026,7 +1041,7 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @access  public
 	 * @return  array    Sort value => description array.
 	 */
-	protected function getSortOptions(){
+	public function getSortOptions(){
 		// Author/Search screen
 		if ($this->searchType == 'author' && $this->authorSearchType == 'search'){
 			// It's important to remember here we are talking about on-screen
@@ -1237,10 +1252,9 @@ class SearchObject_Solr extends SearchObject_Base {
 	 */
 	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false) {
 		global $timer;
-
+		global $solrScope;
 
 		if ($this->searchSource == 'econtent'){
-			global $solrScope;
 			$this->addHiddenFilter("econtent_source_$solrScope", '*');
 		}
 
@@ -1282,83 +1296,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		}
 
 		// Define Filter Query
-		$filterQuery = $this->hiddenFilters;
-		//Remove any empty filters if we get them
-		//(typically happens when a subdomain has a function disabled that is enabled in the main scope)
-		foreach ($this->filterList as $field => $filter) {
-			if ($field === ''){
-				unset($this->filterList[$field]);
-			}
-		}
-
-		$availabilityToggleValue = null;
-		$availabilityAtValue     = null;
-		$formatValue             = null;
-		$formatCategoryValue     = null;
-		foreach ($this->filterList as $field => $filter){
-			foreach ($filter as $value){
-				$isAvailabilityToggle = false;
-				$isAvailableAt        = false;
-				if (substr($field, 0, strlen('availability_toggle')) == 'availability_toggle'){
-					$availabilityToggleValue = $value;
-					$isAvailabilityToggle    = true;
-				}elseif (substr($field, 0, strlen('available_at')) == 'available_at'){
-					$availabilityAtValue = $value;
-					$isAvailableAt       = true;
-				}elseif (substr($field, 0, strlen('format_category')) == 'format_category'){
-					$formatCategoryValue = $value;
-				}elseif (substr($field, 0, strlen('format')) == 'format'){
-					$formatValue = $value;
-				}
-				// Special case -- allow trailing wildcards:
-				if (substr($value, -1) == '*'){
-					$filterQuery[] = "$field:$value";
-				}elseif (preg_match('/\\A\\[.*?\\sTO\\s.*?]\\z/', $value)){
-					$filterQuery[] = "$field:$value";
-				}elseif (preg_match('/^\\(.*?\\)$/', $value)){
-					$filterQuery[] = "$field:$value";
-				}else{
-					if (!empty($value)){
-						if ($isAvailabilityToggle){
-							$filterQuery['availability_toggle'] = "$field:\"$value\"";
-						}elseif ($isAvailableAt){
-							$filterQuery['available_at'] = "$field:\"$value\"";
-						}else{
-							if (is_numeric($field)){
-								$filterQuery[] = $value;
-							}else{
-								$filterQuery[] = "$field:\"$value\"";
-							}
-						}
-					}
-				}
-			}
-		}
-
-		//Check to see if we have format facets applied.
-		$availabilityByFormatFieldName = $availableAtByFormatFieldName= null;
-		if ($formatCategoryValue != null || $formatValue != null){
-			// When a format or format category facet is applied, switch to using the availability plus format facets.
-			// Both for filtering and importantly, for facet fetching (so that incompatible eContent availability isn't displayed in facets)
-			global $solrScope;
-			//Make sure to process the more specific format first
-			if ($formatValue != null){
-				$escapedFormatValue            = strtolower(preg_replace('/\W/', '_', $formatValue));
-				$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . $escapedFormatValue;
-				$availableAtByFormatFieldName  = 'available_at_by_format_' . $solrScope . '_' . $escapedFormatValue;
-			}else{
-				$escapedFormatCategoryValue     = strtolower(preg_replace('/\W/', '_', $formatCategoryValue));
-				$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . $escapedFormatCategoryValue;
-				$availableAtByFormatFieldName  = 'available_at_by_format_' . $solrScope . '_' . $escapedFormatCategoryValue;
-			}
-			if (!empty($availabilityToggleValue)){
-				$filterQuery['availability_toggle'] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
-			}
-			if (!empty($availabilityAtValue)){
-				$filterQuery['available_at'] = $availableAtByFormatFieldName . ':"' . $availabilityAtValue . '"';
-			}
-		}
-
+		[$filterQuery, $availabilityByFormatFieldName, $availableAtByFormatFieldName] = $this->setFinalFilterQuery();
 
 		// If we are only searching one field use the DisMax handler
 		//    for that field. If left at null let solr take care of it
@@ -1417,13 +1355,10 @@ class SearchObject_Solr extends SearchObject_Base {
 			if ($this->spellSkipNumeric && is_numeric($spellcheck)) {
 				$spellcheck = '';
 			}
+			$timer->logTime('create spell check');
 		} else {
 			$spellcheck = '';
 		}
-		$timer->logTime('create spell check');
-
-		// Get time before the query
-		$this->startQueryTimer();
 
 		// The "relevance" sort option is a Pika reserved word; we need to make
 		// this null in order to achieve the desired effect with Solr:
@@ -1434,6 +1369,16 @@ class SearchObject_Solr extends SearchObject_Base {
 		$recordStart = ($this->page - 1) * $this->limit;
 		//Remove irrelevant fields based on scoping
 		$fieldsToReturn = $this->getFieldsToReturn();
+
+		global $configArray;
+		$boost = null;
+		if (!empty($configArray['Index']['enableBoosting'])){
+			$boost = $this->getBoostingFormula();
+			$timer->logTime('apply boosting');
+		}
+
+		// Get time before the query
+		$this->startQueryTimer();
 
 		$this->indexResult = $this->indexEngine->search(
 			$this->query,      // Query string
@@ -1447,7 +1392,8 @@ class SearchObject_Solr extends SearchObject_Base {
 			$finalSort,        // Field to sort on
 			$fieldsToReturn,   // Fields to return
 			$this->method,     // HTTP Request method
-			$returnIndexErrors // Include errors in response?
+			$returnIndexErrors,// Include errors in response?
+			$boost             // Results boosting formula
 		);
 		$timer->logTime('run solr search');
 
@@ -1501,6 +1447,244 @@ class SearchObject_Solr extends SearchObject_Base {
 
 		// Return the result set
 		return $this->indexResult;
+	}
+
+	private function setFinalFilterQuery(){
+		global $solrScope;
+
+		$filterQuery             = $this->hiddenFilters;
+		$availabilityToggleValue = null;
+		$availabilityAtValue     = null;
+		$formatValue             = null;
+		$formatCategoryValue     = null;
+		$validFields             = $this->indexEngine->getValidFields();
+		foreach ($this->filterList as $field => $filter){
+			if ($field === ''){
+				// Remove any empty filters if we get them
+				// (typically happens when a subdomain has a function disabled that is enabled in the main scope)
+				unset($this->filterList[$field]);
+				continue;
+			}
+
+			//Check the filters to make sure they are for the correct scope
+			$isValidField = false;
+			if (in_array($field, $validFields)){
+				$isValidField = true;
+			}else{
+				//Field doesn't exist, check to see if it is a dynamic field
+				//Where we can replace the scope with the current scope
+				if (!isset($dynamicField)){
+					$dynamicFields = $this->indexEngine->getDynamicFields();
+				}
+				foreach ($dynamicFields as $dynamicField){
+					if (preg_match("/^{$dynamicField}[^_]+$/", $field)){
+						//This is a dynamic field with the wrong scope  eg. format_wrongScopeName
+						$field        = $dynamicField . $solrScope;
+						$isValidField = true;
+						break;
+					}elseif ($field == rtrim($dynamicField, '_')){
+						//This is a regular field that is now a dynamic field so needs the scope applied  eg. format
+						$field        = $dynamicField . $solrScope;
+						$isValidField = true;
+						break;
+					}
+				}
+			}
+
+			if ($isValidField){
+				foreach ($filter as $value){
+					$isAvailabilityToggle = false;
+					$isAvailableAt        = false;
+					if (strpos($field,'availability_toggle') === 0){
+						$availabilityToggleValue = $value;
+						$isAvailabilityToggle    = true;
+					}elseif (strpos($field,'available_at') === 0){
+						$availabilityAtValue = $value;
+						$isAvailableAt       = true;
+					}elseif (strpos($field,'format_category') === 0){
+						$formatCategoryValue = $value;
+					}elseif (strpos($field,'format') === 0){
+						$formatValue = $value;
+					}
+
+					// Special case -- allow trailing wildcards:
+					if (substr($value, -1) == '*'){
+						$filterQuery[] = "$field:$value";
+					}elseif (preg_match('/\\A\\[.*?\\sTO\\s.*?]\\z/', $value)){
+						$filterQuery[] = "$field:$value";
+					}elseif (preg_match('/^\\(.*?\\)$/', $value)){
+						$filterQuery[] = "$field:$value";
+					}else{
+						if (!empty($value)){
+							if ($isAvailabilityToggle){
+								$filterQuery['availability_toggle'] = "$field:\"$value\"";
+							}elseif ($isAvailableAt){
+								$filterQuery['available_at'] = "$field:\"$value\"";
+							}else{
+								if (is_numeric($field)){
+									$filterQuery[] = $value;
+								}else{
+									$filterQuery[] = "$field:\"$value\"";
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		//Check to see if we have format facets applied.
+		$availabilityByFormatFieldName = $availableAtByFormatFieldName= null;
+		if ($formatCategoryValue != null || $formatValue != null){
+			// When a format or format category facet is applied, switch to using the availability plus format facets.
+			// Both for filtering and importantly, for facet fetching (so that incompatible eContent availability isn't displayed in facets)
+
+			//Make sure to process the more specific format first
+			if ($formatValue != null){
+				$escapedFormatValue            = strtolower(preg_replace('/\W/', '_', $formatValue));
+				$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . $escapedFormatValue;
+				$availableAtByFormatFieldName  = 'available_at_by_format_' . $solrScope . '_' . $escapedFormatValue;
+			}else{
+				$escapedFormatCategoryValue     = strtolower(preg_replace('/\W/', '_', $formatCategoryValue));
+				$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . $escapedFormatCategoryValue;
+				$availableAtByFormatFieldName  = 'available_at_by_format_' . $solrScope . '_' . $escapedFormatCategoryValue;
+			}
+			if (!empty($availabilityToggleValue)){
+				$filterQuery['availability_toggle'] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
+			}
+			if (!empty($availabilityAtValue)){
+				$filterQuery['available_at'] = $availableAtByFormatFieldName . ':"' . $availabilityAtValue . '"';
+			}
+		}
+
+		$scopingFilters = $this->getScopingFilters();
+		$filterQuery    = array_merge($filterQuery, $scopingFilters);
+
+		//		$timer->logTime('apply scoping filters');
+		return [$filterQuery, $availabilityByFormatFieldName, $availableAtByFormatFieldName];
+	}
+
+	/**
+	 * Get filters based on scoping for the search
+	 * @return array
+	 */
+	public function getScopingFilters(){
+		global $solrScope;
+
+		$filter         = [];
+		$searchLibrary  = Library::getSearchLibrary();
+		$searchLocation = Location::getSearchLocation();
+
+		//Simplify detecting which works are relevant to our scope
+		if (!$this->scopingDisabled){
+			if ($solrScope){
+				$filter[] = "scope_has_related_records:$solrScope";
+			}elseif (isset($searchLocation)){
+				// A solr scope should be defined usually. It is probably an anomalous situation to fall back to this, and should be fixed; (or noted here explicitly.)
+				// kids/juvenille opac interfaces??
+				global $pikaLogger;
+				$pikaLogger->notice('Global solr scope not set when setting scoping filters');
+				$filter[] = "scope_has_related_records:{$searchLocation->code}";
+			}elseif (isset($searchLibrary)){
+				// A solr scope should be defined usually. It is probably an anomalous situation to fall back to this, and should be fixed; (or noted here explicitly.)
+				// kids/juvenille opac interfaces??
+				global $pikaLogger;
+				$pikaLogger->notice('Global solr scope not set when setting scoping filters');
+				$filter[] = "scope_has_related_records:{$searchLibrary->subdomain}";
+			}
+		}
+
+		$blacklistRecords = '';
+		if (!empty($searchLocation->recordsToBlackList)) {
+			$blacklistRecords = $searchLocation->recordsToBlackList;
+		}
+		if (!empty($searchLibrary->recordsToBlackList)) {
+			$blacklistRecords .= "\n" . $searchLibrary->recordsToBlackList;
+		}
+		if (!empty($blacklistRecords)){
+			$recordsToBlacklist = preg_split('/\s|\r\n|\r|\n/', $blacklistRecords, -1, PREG_SPLIT_NO_EMPTY);
+			$blacklist          = '-id:(' . implode(' OR ', $recordsToBlacklist) . ')';
+			$filter[]           = $blacklist;
+		}
+
+		return $filter;
+	}
+
+	/**
+	 * Load Boost factors for a search query and return the boosting formula
+	 *
+	 * @return string
+	 */
+	public function getBoostingFormula(){
+		$boostFactors = [];
+		$boostFormula = null;
+
+		global $solrScope;
+
+//		$boostFactors[] = (!empty($searchLibrary->applyNumberOfHoldingsBoost)) ? 'product(sum(popularity,1),format_boost)' : 'format_boost';
+
+		$searchLibrary  = Library::getSearchLibrary();
+		$searchLocation = Location::getSearchLocation();
+		if ((!empty($searchLibrary->applyNumberOfHoldingsBoost))){
+			$boostFactors[] = 'sum(popularity,1)';
+		}
+//		$boostFactors[] = 'format_boost_' . $solrScope;  //TODO: use this after tranisition to scoped format boost
+		$boostFactors[] = 'if(exists(format_boost_' . $solrScope . '),format_boost_' . $solrScope .',format_boost)';
+		// This is needed for the time before the format_boost has been indexed as a scoped field
+
+		// popularity is indexed as zero or greater, but to apply to boosting we want it to be a value of 1 or greater
+		// hence sum(popularity,1)
+
+		//For physical records, popularity is determined by the checkouts for each item with this formula :
+		//  year-to-date checkouts
+		//  plus half of last year's checkouts
+		//  plus a tenth of total checkouts minus last year's checkouts and minus the year-to-date checkouts
+		// Or a value of one, if the calculation above is zero
+		// So a record's popularity is the sum of this calculation for every item
+		//  plus twice the number of holds there are on the record
+
+		// For order records, the popularity is based on the number of copies for each order record
+
+		// For Overdrive, the popularity is the overdrive metadata measure popularity divided by 500; or 1 if it is less than 500
+
+		// For Sideloads and Hoopla, the popularity is the number of bibs
+
+		// Add rating as part of the ranking
+		$boostFactors[] = 'sum(rating,1)';
+
+		// Library Holdings Boost factors:
+		// when the usual default values from config.ini are :
+		// availableAtLocationBoostValue = 50
+		// ownedByLocationBoostValue = 10
+		// the lib_boost_[scope] field will be 50 when any item is available at the library,
+		// or it will be 10 when an item is owned,
+		// or it will be missing (effectively zero) when it is neither "available at" nor owned by the library
+
+		if (!empty($searchLibrary->boostByLibrary)) {
+			$boostFactors[] = ($searchLibrary->additionalLocalBoostFactor > 1) ? "sum(product(lib_boost_{$solrScope},{$searchLibrary->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
+		} else {
+			// Handle boosting even if we are in a global scope
+			global $library;
+			if (!empty($library->boostByLibrary)) {
+				$boostFactors[] = ($library->additionalLocalBoostFactor > 1) ? "sum(product(lib_boost_{$solrScope},{$library->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
+			}
+		}
+
+		if (!empty($searchLocation->boostByLocation)) {
+			$boostFactors[] = ($searchLocation->boostByLocation > 1) ? "sum(product(lib_boost_{$solrScope},{$searchLocation->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
+
+		} else {
+			// Handle boosting even if we are in a global scope
+			global $locationSingleton;
+			$physicalLocation = $locationSingleton->getActiveLocation();
+			if (!empty($physicalLocation->boostByLocation)) {
+				$boostFactors[] = ($physicalLocation->additionalLocalBoostFactor > 1) ? "sum(product(lib_boost_{$solrScope},{$physicalLocation->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
+			}
+		}
+		if (!empty($boostFactors)){
+			$boostFormula = 'sum(' . implode(',', $boostFactors) . ')';
+		}
+		return $boostFormula;
 	}
 
 	/**
@@ -1835,7 +2019,7 @@ class SearchObject_Solr extends SearchObject_Base {
 						$valueKey         = '2' . $valueKey;
 						$foundInstitution = true;
 						$numValidLibraries++;
-					}else if (!is_null($currentLibrary) && $currentLibrary->restrictOwningBranchesAndSystems == 1){
+					}elseif (!is_null($currentLibrary) && $currentLibrary->restrictOwningBranchesAndSystems == 1){
 						//$okToAdd = false;
 					}
 				}elseif ($doBranchProcessing){
@@ -2105,12 +2289,131 @@ class SearchObject_Solr extends SearchObject_Base {
 	}
 
 	/**
+	 * Get records similar to one record
+	 * Uses Custom Solr MoreLikeThis2 Request Handler
+	 *
+	 * @access  public
+	 * @return  array              An array of query results
+	 *
+	 * @throws  object            PEAR Error
+	 * @var     string $id The id to retrieve similar titles for
+	 */
+	function getMoreLikeThis2($id){
+		global $configArray;
+		global $solrScope;
+		$originalResult = $this->getRecord($id,
+			'target_audience_full,target_audience_full,literary_form,language_' . $solrScope);
+
+		// Query String Parameters
+		$options = [
+			'q'                    => "id:$id",
+			'rows'                 => 25,
+			'fl'                   => 'id,title_display,title_full,author,author_display', // These appear to be the only fields used for displaying
+			'fq'                   => [],
+//			'mlt.interestingTerms' => 'details', // This returns the interesting terms for this 'more like this' search but isn't used any where
+		];
+		if ($originalResult){
+			if (!empty($originalResult['target_audience_full'])){
+				if (is_array($originalResult['target_audience_full'])){
+					$filter = [];
+					foreach ($originalResult['target_audience_full'] as $targetAudience){
+						if ($targetAudience != 'Unknown'){
+							$filter[] = 'target_audience_full:"' . $targetAudience . '"';
+						}
+					}
+					if (count($filter) > 0){
+						$options['fq'][] = '(' . implode(' OR ', $filter) . ')';
+					}
+				}else{
+					$options['fq'][] = 'target_audience_full:"' . $originalResult['target_audience_full'] . '"';
+				}
+			}
+			if (!empty($originalResult['literary_form'])){
+				if (is_array($originalResult['literary_form'])){
+					$filter = [];
+					foreach ($originalResult['literary_form'] as $literaryForm){
+						if ($literaryForm != 'Not Coded'){
+							$filter[] = 'literary_form:"' . $literaryForm . '"';
+						}
+					}
+					if (count($filter) > 0){
+						$options['fq'][] = '(' . implode(' OR ', $filter) . ')';
+					}
+				}else{
+					$options['fq'][] = 'literary_form:"' . $originalResult['literary_form'] . '"';
+				}
+			}
+			if (!empty($originalResult['language_' . $solrScope])){
+				$options['fq'][] = "language_$solrScope:\"" . $originalResult["language_$solrScope"][0] . '"';
+			}
+		}
+
+		$scopingFilters = $this->getScopingFilters();
+		foreach ($scopingFilters as $filter){
+			$options['fq'][] = $filter;
+		}
+		if ($configArray['Index']['enableBoosting']){
+			$options['bf'] = $this->getBoostingFormula();
+		}
+
+		return $this->indexEngine->callRequestHandler('morelikethis2', $options);
+	}
+
+	/**
+	 * Get records similar to an array of records
+	 * Uses Custom Solr MoreLikeThese Request Handler
+	 *
+	 * @access  public
+	 * @return  array                      An array of query results
+	 * @throws  object                     PEAR Error
+	 * @var     string[] $ids              A list of ids to return data for
+	 * @var     string[] $notInterestedIds A list of ids the user is not interested in
+	 */
+	function getMoreLikeThese($ids, $notInterestedIds){
+		global $configArray;
+		// Query String Parameters
+		$idString = implode(' OR ', $ids);
+		$options  = [
+			'q'                    => "id:($idString)",
+//			'qt'                   => 'morelikethese',
+//			'mlt.interestingTerms' => 'details',
+			'rows'                 => 30
+		];
+
+		if (!empty($notInterestedIds)){
+			$notInterestedString = implode(' OR ', $notInterestedIds);
+			$options['fq'][]     = "-id:($notInterestedString)";
+		}
+
+		$scopingFilters = $this->getScopingFilters();
+		foreach ($scopingFilters as $filter){
+			$options['fq'][] = $filter;
+		}
+		if ($configArray['Index']['enableBoosting']){
+			$options['bf'] = $this->getBoostingFormula();
+		}
+
+
+		// TODO: Limit Fields
+//		if ($this->debug && isset($fields)) {
+//			$options['fl'] = $fields;
+//		} else {
+		// This should be an explicit list
+		$options['fl'] = '*,score';
+//		$options['fl'] = 'id,rating,title,author';
+//		}
+		return $this->indexEngine->callRequestHandler('morelikethese', $options);
+	}
+
+
+	/**
 	 * Retrieves Solr Document for grouped Work Id
-	 * @param string $id  The groupedWork Id of the Solr document to retrieve
+	 * @param string $id The groupedWork Id of the Solr document to retrieve
+	 * @param null $fieldsToReturn The fields of the Solr document to incude
 	 * @return array The Solr document of the grouped Work
 	 */
-	function getRecord($id){
-		return $this->indexEngine->getRecord($id, $this->getFieldsToReturn());
+	function getRecord($id, $fieldsToReturn = null){
+		return $this->indexEngine->getRecord($id, $fieldsToReturn ?? $this->getFieldsToReturn());
 	}
 
 	/**
@@ -2120,6 +2423,16 @@ class SearchObject_Solr extends SearchObject_Base {
 	 */
 	function getRecords($ids){
 		return $this->indexEngine->getRecords($ids, $this->getFieldsToReturn());
+	}
+
+	/**
+	 * Retrieves Solr Documents for an array of grouped Work Ids
+	 * @param string[] $ids  The groupedWork Id of the Solr document to retrieve
+	 * @return array The Solr document of the grouped Work
+	 */
+	function getFilteredIds($ids){
+		[$filterQuery] = $this->setFinalFilterQuery();
+		return $this->indexEngine->getFilteredIds($ids, $filterQuery);
 	}
 
 	/**
@@ -2146,7 +2459,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		return $this->indexEngine->getRecordByIsbn($isbn, $this->getFieldsToReturn());
 	}
 
-	private function getFieldsToReturn() {
+	private function getFieldsToReturn(){
 		if (isset($_REQUEST['allFields'])){
 			$fieldsToReturn = $this->fieldsFull;
 		}else{
@@ -2165,10 +2478,11 @@ class SearchObject_Solr extends SearchObject_Base {
 				$fieldsToReturn .= ',available_at_' . $solrScope;
 				$fieldsToReturn .= ',itype_' . $solrScope;
 
-			}
-			else{
+			}else{
 				//TODO: this block is obsolete, since all these facets are scoped.  Likely would cause empty document returns
 				// if no scope is set
+				global $pikaLogger;
+				$pikaLogger->warning('Solr scope not set when fetching scoped fields.', $_REQUEST);
 				$fieldsToReturn .= ',format';
 				$fieldsToReturn .= ',format_category';
 				$fieldsToReturn .= ',days_since_added';
@@ -2179,7 +2493,9 @@ class SearchObject_Solr extends SearchObject_Base {
 				$fieldsToReturn .= ',available_at';
 				$fieldsToReturn .= ',itype';
 			}
-			$fieldsToReturn .= ',score';
+			if ($this->debug){
+				$fieldsToReturn .= ',score';
+			}
 		}
 		return $fieldsToReturn;
 	}

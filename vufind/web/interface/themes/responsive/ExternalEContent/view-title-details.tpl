@@ -9,20 +9,32 @@
 		</div>
 	{/if}
 
-	{assign var=series value=$recordDriver->getSeries()}
-	{if $series}
-		<div class="series row">
-			<div class="result-label col-sm-4">Series: </div>
-			<div class="col-sm-8 result-value">
-				{if is_array($series) && !isset($series.seriesTitle)}
-					{foreach from=$series item=seriesItem name=loop}
-						<a href="/Search/Results?basicType=Series&lookfor=%22{$seriesItem.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$seriesItem.seriesTitle|removeTrailingPunctuation|escape}</a>{if $seriesItem.volume} volume {$seriesItem.volume}{/if}<br>
-					{/foreach}
-				{else}
-					<a href="/Search/Results?basicType=Series&lookfor=%22{$series.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$series.seriesTitle|removeTrailingPunctuation|escape}</a>{if $series.volume} volume {$series.volume}{/if}<br>
-				{/if}
+	{if $showSeries}
+		{assign var=series value=$recordDriver->getNoveListSeries()}
+		{if $series}
+			<div class="series row">
+				<div class="result-label col-sm-4">{translate text='NoveList Series'}:</div>
+				<div class="col-sm-8 result-value">
+					<a href="/GroupedWork/{$recordDriver->getPermanentId()}/Series">{$series.seriesTitle}</a>{if $series.volume} volume {$series.volume}{/if}<br>
+				</div>
 			</div>
-		</div>
+		{/if}
+
+		{assign var=series value=$recordDriver->getSeries()}
+		{if $series}
+			<div class="series row">
+				<div class="result-label col-sm-4">{translate text='Series'}:</div>
+				<div class="col-sm-8 result-value">
+						{if is_array($series) && !isset($series.seriesTitle)}
+								{foreach from=$series item=seriesItem name=loop}
+									<a href="/Search/Results?basicType=Series&lookfor=%22{$seriesItem.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$seriesItem.seriesTitle|removeTrailingPunctuation|escape}</a>{if $seriesItem.volume} {if is_numeric($seriesItem.volume|removeTrailingPunctuation|trim)}volume {/if}{$seriesItem.volume}{/if}<br>
+								{/foreach}
+						{else}
+							<a href="/Search/Results?basicType=Series&lookfor=%22{$series.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$series.seriesTitle|removeTrailingPunctuation|escape}</a>{if $series.volume} {if is_numeric($series.volume|removeTrailingPunctuation|trim)}volume {/if}{$series.volume}{/if}<br>
+						{/if}
+				</div>
+			</div>
+		{/if}
 	{/if}
 
 	{if $showPublicationDetails && $recordDriver->getPublicationDetails()}

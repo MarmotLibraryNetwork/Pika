@@ -968,7 +968,7 @@ class Archive_AJAX extends AJAXHandler {
 	}
 
 	function saveToList(){
-		$result = array();
+		$result = [];
 
 		if (!UserAccount::isLoggedIn()){
 			$result['success'] = false;
@@ -992,13 +992,13 @@ class Archive_AJAX extends AJAXHandler {
 				if (empty($listId)){
 					$existingList          = new UserList();
 					$existingList->user_id = UserAccount::getActiveUserId();
-					$existingList->title   = "My Favorites";
+					$existingList->title   = 'My Favorites';
 					$existingList->deleted = 0;
 					//Make sure we don't create duplicate My Favorites List
 					if ($existingList->find(true)){
 						$userList = $existingList;
 					}else{
-						$userList->title       = "My Favorites";
+						$userList->title       = 'My Favorites';
 						$userList->user_id     = UserAccount::getActiveUserId();
 						$userList->public      = 0;
 						$userList->description = '';
@@ -1025,15 +1025,21 @@ class Archive_AJAX extends AJAXHandler {
 					}
 					$userListEntry->notes     = strip_tags($notes);
 					$userListEntry->dateAdded = time();
+					if ($userList->defaultSort == 'custom'){
+						$weight = $userList->getNextWeightForUserDefinedSort();
+						if ($weight){
+							$userListEntry->weight = $weight;
+						}
+					}
 					if ($existingEntry){
 						$userListEntry->update();
 					}else{
 						$userListEntry->insert();
 					}
-				}
 
-				$result['success'] = true;
-				$result['message'] = 'This title was saved to your list successfully.';
+					$result['success'] = true;
+					$result['message'] = 'This title was saved to your list successfully.';
+				}
 			}
 		}
 

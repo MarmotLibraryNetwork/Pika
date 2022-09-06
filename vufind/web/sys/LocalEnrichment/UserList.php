@@ -18,23 +18,22 @@
  */
 
 /**
- * Table Definition for user_list
+ * Database object for User Lists
  */
 require_once 'DB/DataObject.php';
 
-class UserList extends DB_DataObject
-{
+class UserList extends DB_DataObject {
 
-	public $__table = 'user_list';												// table name
-	public $id;															// int(11)	not_null primary_key auto_increment
+	public $__table = 'user_list';						// table name
+	public $id;																// int(11)	not_null primary_key auto_increment
 	public $user_id;													// int(11)	not_null multiple_key
 	public $title;														// string(200)	not_null
 	public $description;											// string(500)
 	public $created;													// datetime(19)	not_null binary
-	public $public;													// int(11)	not_null
+	public $public;														// int(11)	not_null
 	public $deleted;
 	public $dateUpdated;
-	public $defaultSort; // string(20) null
+	public $defaultSort;											// string(20) null
 
 	// Used by FavoriteHandler as well//
 	protected $userListSortOptions = [
@@ -46,40 +45,40 @@ class UserList extends DB_DataObject
 	];
 
 
-	function getObjectStructure(){
-		$structure = array(
-			'id' => array(
-				'property'=>'id',
-				'type'=>'hidden',
-				'label'=>'Id',
-				'primaryKey'=>true,
-				'description'=>'The unique id of the e-pub file.',
-				'storeDb' => true,
-				'storeSolr' => false,
-			),
-			'title' => array(
-				'property' => 'title',
-				'type' => 'text',
-				'size' => 100,
-				'maxLength'=>255,
-				'label' => 'Title',
+	static function getObjectStructure(){
+		$structure = [
+			'id'          => [
+				'property'    => 'id',
+				'type'        => 'hidden',
+				'label'       => 'Id',
+				'primaryKey'  => true,
+				'description' => 'The unique id of the e-pub file.',
+				'storeDb'     => true,
+				'storeSolr'   => false,
+			],
+			'title'       => [
+				'property'    => 'title',
+				'type'        => 'text',
+				'size'        => 100,
+				'maxLength'   => 255,
+				'label'       => 'Title',
 				'description' => 'The title of the item.',
-				'required'=> true,
-				'storeDb' => true,
-				'storeSolr' => true,
-			),
-			'description' => array(
-				'property' => 'description',
-				'type' => 'textarea',
-				'label' => 'Description',
-				'rows'=>3,
-				'cols'=>80,
+				'required'    => true,
+				'storeDb'     => true,
+				'storeSolr'   => true,
+			],
+			'description' => [
+				'property'    => 'description',
+				'type'        => 'textarea',
+				'label'       => 'Description',
+				'rows'        => 3,
+				'cols'        => 80,
 				'description' => 'A brief description of the file for indexing and display if there is not an existing record within the catalog.',
-				'required'=> false,
-				'storeDb' => true,
-				'storeSolr' => true,
-			),
-		);
+				'required'    => false,
+				'storeDb'     => true,
+				'storeSolr'   => true,
+			],
+		];
 		return $structure;
 	}
 
@@ -162,18 +161,18 @@ class UserList extends DB_DataObject
 	private $listTitles = [];
 
 	/**
-	 * @param null $sort  optional SQL for the query's ORDER BY clause
+	 * @param string|null $userListSortOption  optional SQL for the query's ORDER BY clause
 	 * @return array      of list entries
 	 */
-	function getListEntries($sort = null){
+	function getListEntries($userListSortOption = null){
 		$listEntries = $archiveIDs = $catalogIDs = [];
 		if (!empty($this->id)){
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 			$listEntry         = new UserListEntry();
 			$listEntry->listId = $this->id;
-			if (!empty($sort) && $sort != 'author' && $sort != 'title'){
+			if (!empty($userListSortOption) && in_array($userListSortOption, $this->userListSortOptions)){
 				// Only do database sorting for options that are for the database; The others will be sorted by search later on
-				$listEntry->orderBy($sort);
+				$listEntry->orderBy($userListSortOption);
 			}
 			// These conditions retrieve list items with a valid groupedWork ID or archive ID.
 			// (This prevents list strangeness when our searches don't find the ID in the search indexes)
@@ -181,7 +180,8 @@ class UserList extends DB_DataObject
 				'(' .
 				'(user_list_entry.groupedWorkPermanentId NOT LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work) )' .
 				' OR ' .
-				'(user_list_entry.groupedWorkPermanentId LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT pid FROM islandora_object_cache) )' .
+				'(user_list_entry.groupedWorkPermanentId LIKE "%:%")' .
+//				'(user_list_entry.groupedWorkPermanentId LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT pid FROM islandora_object_cache) )' .
 				')'
 			//TODO: checking the islandora cache does not really check that pid is valid. Probably should remove
 			);
@@ -308,81 +308,20 @@ class UserList extends DB_DataObject
 		}
 	}
 
-	/**
-	 * @param int $start     position of first list item to fetch
-	 * @param int $numItems  Number of items to fetch for this result
-	 * @return array     Array of HTML to display to the user
-	 */
-	public function getBrowseRecords($start, $numItems, $browseCategorySort) {
-		global $interface;
-		$browseRecords = [];
-		$databaseSort  = in_array($this->defaultSort, array_keys($this->userListSortOptions)) ? $this->userListSortOptions[$this->defaultSort] : null;
-		[$listEntries] = $this->getListEntries($databaseSort);
-		$groupedWorkIds = [];
-		$archiveIds     = [];
-		if ($databaseSort){
-			$listEntries = array_slice($listEntries, $start, $numItems);
-		}
-		foreach ($listEntries as $listItemId){
-			if (strpos($listItemId, ':') === false){
-				// Catalog Items
-				$groupedWorkIds[] = $listItemId;
-			}else{
-				$archiveIds[] = $listItemId;
-			}
-		}
 
-		//Load catalog items
-		if (count($groupedWorkIds) > 0){
-			/** @var SearchObject_Solr $searchObject */
-			$searchObject = SearchObjectFactory::initSearchObject();
-			$catalogRecords = $searchObject->getRecords($groupedWorkIds);
-			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			foreach ($catalogRecords as $catalogRecord){
-				$groupedWork = new GroupedWorkDriver($catalogRecord);
-				if ($groupedWork->isValid) {
-					if (method_exists($groupedWork, 'getBrowseResult')) {
-						$browseRecords[$catalogRecord['id']] = $interface->fetch($groupedWork->getBrowseResult());
-					} else {
-						$browseRecords[$catalogRecord['id']] = 'Browse Result not available';
-					}
-				}
-			}
-		}
-
-		//Load archive items
-		if (count($archiveIds) > 0){
-			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
-			foreach ($archiveIds as $archiveId){
-				$fedoraUtils = FedoraUtils::getInstance();
-				$archiveObject = $fedoraUtils->getObject($archiveId);
-				$recordDriver = RecordDriverFactory::initRecordDriver($archiveObject);
-				if (method_exists($recordDriver, 'getBrowseResult')) {
-					$browseRecords[$archiveId] = $interface->fetch($recordDriver->getBrowseResult());
-				} else {
-					$browseRecords[$archiveId] = 'Browse Result not available';
-				}
-			}
-		}
-
-		//Properly sort items
-		$browseRecordsSorted = array();
-		foreach ($listEntries as $listItemId) {
-			if (array_key_exists($listItemId, $browseRecords)){
-				$browseRecordsSorted[] = $browseRecords[$listItemId];
-			}
-		}
-
-		return $browseRecordsSorted;
+	public function getBrowseRecords($page = 1, $recordsPerPage = 24){
+		require_once ROOT_DIR . '/sys/LocalEnrichment/FavoriteHandler.php';
+		$favoriteHandler = new FavoriteHandler($this);
+		return $favoriteHandler->buildListForBrowseCategory($page, $recordsPerPage);
 	}
 
 	/**
 	 * @return array
 	 */
-	public function getUserListSortOptions()
-	{
+	public function getUserListSortOptions(){
 		return $this->userListSortOptions;
 	}
+
 	private function flushUserListBrowseCategory(){
 		// Check if the list is a part of a browse category and clear the cache.
 		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
@@ -393,6 +332,52 @@ class UserList extends DB_DataObject
 				$userListBrowseCategory->deleteCachedBrowseCategoryResults();
 			}
 		}
+	}
+
+	/**
+	 * User defined sorting depends on the weight column of the table.
+	 * Since this is left null for entries when the list sort isn't set to 'custom',
+	 * preset weight values for the list using the previous sort value when it is
+	 * a user list sort option, or the default date added user list sort option otherwise. (eg. solr sort options.)
+	 *
+	 * @param string|null $previousDefaultSort  The sort option used before being changed to 'custom'
+	 * @return void
+	 */
+	public function initializeUserDefinedSort($previousDefaultSort){
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+		$weight = $this->getNextWeightForUserDefinedSort();
+
+		// Set weighted order by previous user sort order
+		$userListSortOptions = $this->getUserListSortOptions();
+		$currentSorting      = is_null($previousDefaultSort) ? reset($userListSortOptions) : $userListSortOptions[$previousDefaultSort];
+		$listEntry           = new UserListEntry();
+		$listEntry->listId   = $this->id;
+		if ($weight > 0){
+			// If weights have been set previously, just set the one's without weights.
+			$listEntry->whereAdd('weight IS NULL');
+		}
+		$listEntry->orderBy($currentSorting);
+		if ($listEntry->find()){
+			while ($listEntry->fetch()){
+				$listEntry->weight = $weight++;
+				$listEntry->update(false, false);  // Prevent unneeded (& repeated) parent list updating
+			}
+		}
+	}
+
+	/**
+	 * Get the next weight value to use for a list entry when the user list default sort is set to 'custom'
+	 * @return false|int
+	 */
+	public function getNextWeightForUserDefinedSort(){
+		$lastPlacedEntry         = new UserListEntry();
+		$lastPlacedEntry->listId = $this->id;
+		$lastPlacedEntry->orderBy('weight desc');
+		if ($lastPlacedEntry->find(true)){
+			$weight = is_null($lastPlacedEntry->weight) ? 0 : ++$lastPlacedEntry->weight;
+			return $weight;
+		}
+		return false;
 	}
 
 }

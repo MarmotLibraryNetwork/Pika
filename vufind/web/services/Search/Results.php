@@ -84,7 +84,8 @@ class Search_Results extends Union_Results {
 			$searchObject->setLimit(24); // a set of 24 covers looks better in display
 		}
 
-		$this->processAllRangeFilters($searchObject);
+		// Range filters need special processing in order to be used
+		$searchObject->processAllRangeFilters();
 
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed
@@ -289,13 +290,7 @@ class Search_Results extends Union_Results {
 			$timer->logTime('load selected category');
 		}
 
-		// What Mode will search results be Displayed In //
-		if ($displayMode == 'covers'){
-			$displayTemplate = 'Search/covers-list.tpl'; // structure for bookcover tiles
-		}else{                                       // default
-			$displayTemplate = 'Search/list-list.tpl'; // structure for regular results
-			$displayMode     = 'list';                 // In case the view is not explicitly set, do so now for display & clients-side functions
-
+		if ($displayMode != 'covers'){
 			// Process Paging (only in list mode)
 			if ($searchObject->getResultTotal() > 1){
 				$link    = $searchObject->renderLinkPageTemplate();
@@ -310,7 +305,7 @@ class Search_Results extends Union_Results {
 		}
 		$timer->logTime('finish hits processing');
 
-		$interface->assign('subpage', $displayTemplate);
+		$interface->assign('subpage', $searchObject->getDisplayTemplate());
 		$interface->assign('displayMode', $displayMode); // For user toggle switches
 
 		// Big one - our results //

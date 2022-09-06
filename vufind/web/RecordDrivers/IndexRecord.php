@@ -1249,7 +1249,7 @@ class IndexRecord extends RecordInterface {
 				$params['rft.genre']   = 'book';
 				$params['rft.btitle']  = $params['rft.title'];
 
-				$series = $this->getSeries(false);
+				$series = $this->getSeries();
 				if ($series != null){
 					// Handle both possible return formats of getSeries:
 					$params['rft.series'] = $series['seriesTitle'];

@@ -232,7 +232,70 @@ abstract class IslandoraDriver extends RecordInterface {
 	 * @return  string              Name of Smarty template file to display.
 	 */
 	public function getCitation($format) {
-		// TODO: Implement getCitation() method.
+		require_once ROOT_DIR . '/sys/LocalEnrichment/CitationBuilder.php';
+		$physicalLocations = $this->getModsValues('physicalLocation', 'mods');
+		$publisher = array();
+		foreach ($physicalLocations as $key => $physicalLocation){
+			if(strpos($physicalLocation, 'physicalLocation')!= false){
+					array_splice($physicalLocations, $key);
+			   }
+			else{
+				$pubParts = explode(", ", $physicalLocation);
+				$publisher = array(
+					'pubPlace' => $pubParts[1],
+					'pubName' =>  $pubParts[0]
+				);
+			}
+		}
+
+
+
+		$date = $this->getDateCreated();
+		$physicalDescriptions = $this->getModsValues('physicalDescription', 'mods');
+		$physicalExtents = [];
+		foreach ($physicalDescriptions as $physicalDescription){
+			$extent = $this->getModsValue('extent', 'mods', $physicalDescription);
+			$form   = $this->getModsValue('form', 'mods', $physicalDescription);
+			$note   = $this->getModsValue('note', 'mods', $physicalDescription);
+			if (empty($extent)){
+				$extent = $form;
+			}elseif (!empty($form) && !empty($note)){
+				$extent .= " ($form, $note)";
+			}elseif (!empty($form)){
+				$extent .= " ($form)";
+			}elseif (!empty($note)){
+				$extent .= " ($note)";
+			}
+			$physicalExtents[] = $extent;
+		}
+		$description = implode(", ", $physicalExtents);
+		$details = array(
+		'title' => $this->getFullTitle(),
+		'authors' => '',
+		'pubName'  => count($publisher) > 0 ? $publisher['pubName'] : null,
+		'pubPlace'  => count($publisher) > 1? $publisher['pubPlace']: null,
+		'format' => $this->getFormat(),
+		'pubDate' => $date,
+		'edition' => $description,
+		'url' => $this->getAbsoluteUrl(),
+		);
+
+		$citation = new CitationBuilder($details);
+
+		switch($format){
+			case 'APA':
+				return $citation->getAPA();
+			case 'AMA':
+				return $citation->getAMA();
+			case 'ChicagoAuthDate':
+				return $citation->getChicagoAuthDate();
+			case 'ChicagoHumanities':
+				return $citation->getChicagoHumanities();
+			case 'MLA':
+				return $citation->getMLA();
+		}
+		return '';
+
 	}
 
 	/**
@@ -243,8 +306,9 @@ abstract class IslandoraDriver extends RecordInterface {
 	 * @return  array               Strings representing citation formats.
 	 */
 	public function getCitationFormats() {
-		// TODO: Implement getCitationFormats() method.
+		return ['AMA', 'APA', 'ChicagoHumanities', 'ChicagoAuthDate', 'MLA'];
 	}
+
 
 	/**
 	 * Assign necessary Smarty variables and return a template name to
@@ -306,7 +370,6 @@ abstract class IslandoraDriver extends RecordInterface {
 		$interface->assign('summId', $id);
 		$interface->assign('jquerySafeId', str_replace(':', '_', $id)); // make id safe for jquery & css calls
 		$interface->assign('summTitle', $this->getTitle());
-		$interface->assign('module', $this->getModule());
 		$interface->assign('summUrl', $this->getLinkUrl());
 		$interface->assign('summDescription', $this->getDescription());
 		$interface->assign('summFormat', $this->getFormat());
@@ -398,7 +461,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		$id = $this->getUniqueID();
 		$interface->assign('summId', $id);
 		$interface->assign('summTitle', $this->getTitle());
-		$interface->assign('module', $this->getModule());
+		//$interface->assign('module', $this->getModule());
 
 		$linkUrl = $this->getLinkUrl();
 		if (strpos($linkUrl, '?') === false){
@@ -409,7 +472,6 @@ abstract class IslandoraDriver extends RecordInterface {
 		$linkUrl .= 'searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page='  . $interface->get_template_vars('page');
 
 		$interface->assign('summUrl', $linkUrl);
-//		$interface->assign('summUrl', $this->getLinkUrl());
 		$interface->assign('summDescription', $this->getDescription());
 		$interface->assign('summFormat', $this->getFormat());
 
@@ -439,12 +501,10 @@ abstract class IslandoraDriver extends RecordInterface {
 		$id = $this->getUniqueID();
 		$interface->assign('summId', $id);
 		$interface->assign('summTitle', $this->getTitle());
-		$interface->assign('module', $this->getModule());
 
 		$linkUrl = $this->getLinkUrl();
 
 		$interface->assign('summUrl', $linkUrl);
-//		$interface->assign('summUrl', $this->getLinkUrl());
 		$interface->assign('summDescription', $this->getDescription());
 		$interface->assign('summFormat', $this->getFormat());
 

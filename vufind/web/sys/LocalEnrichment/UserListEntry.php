@@ -39,20 +39,29 @@ class UserListEntry extends DB_DataObject {
 	/**
 	 * @return bool
 	 */
-	function insert(){
-		$listId = $this->listId;
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-		$list     = new UserList();
-		$list->id = $listId;
-		$list->find(true);
-		$listCount = $list->numValidListItems();
-		if ($listCount >= 2000){
-			return false;
+	function insert($checkListSize = true, $updateParentList = true){
+		if ($checkListSize || $updateParentList){
+			if (!empty($this->listId)){
+				require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+				$list = new UserList();
+				if (!$list->get($this->listId)){
+					return false;
+				}
+			}else{
+				return false;
+			}
+		}
+
+		if ($checkListSize){
+			$listCount = $list->numValidListItems();
+			if ($listCount >= 2000){
+				return false;
+			}
 		}
 		$result = parent::insert();
 		if ($result){
 			$this->flushUserListBrowseCategory();
-			if ($list->N){
+			if ($updateParentList && $list->N){
 				$list->update();// Update the parent List's dateUpdated
 			}
 		}
@@ -63,19 +72,16 @@ class UserListEntry extends DB_DataObject {
 	 * @param bool $dataObject
 	 * @return bool|int|mixed
 	 */
-	function update($dataObject = false){
-
+	function update($dataObject = false, $updateParentList = true){
 		$result = parent::update($dataObject);
-		if ($result){
+		if ($result && $updateParentList){
 			$this->flushUserListBrowseCategory();
-			$listId = $this->listId;
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 			$list     = new UserList();
-			$list->id = $listId;
+			$list->id = $this->listId;
 			if ($list->find(true)){
 				$list->update();// Update the parent List's dateUpdated
 			}
-
 		}
 		return $result;
 	}

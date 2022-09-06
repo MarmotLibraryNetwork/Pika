@@ -88,11 +88,9 @@ class AnodeAPI extends AJAXHandler {
 		global $configArray;
 		$id     ??= $_REQUEST['id'];
 		$branch = isset($_GET['branch']) && in_array($_GET['branch'], ['bl', 'se']) ? $_GET['branch'] : 'catalog';
-		$class  = $configArray['Index']['engine'];
-		$url    = $configArray['Index']['url'];
-		/** @var Solr $db */
-		$db      = new $class($url);
-		$similar = $db->getMoreLikeThis2($id);
+		/** @var SearchObject_Solr $catalogSearchObject */
+		$catalogSearchObject = SearchObjectFactory::initSearchObject();
+		$similar             = $catalogSearchObject->getMoreLikeThis2($id);
 		if (!empty($similar['response']['docs'])){
 			$similarTitles = [];
 			foreach ($similar['response']['docs'] as $similarTitle){
@@ -183,7 +181,7 @@ class AnodeAPI extends AJAXHandler {
 							$itemDetail                                             = explode('|', $itemDetail);
 							$groupedWork['items'][count($groupedWork['items']) - 1] += [
 								'08_itemShelfLocation' => $itemDetail[2],
-								'09_itemLocationCode'  => $itemDetail[14],
+								'09_itemLocationCode'  => $itemDetail[13],
 								'10_itemCallNumber'    => $itemDetail[3],
 							];
 							break;

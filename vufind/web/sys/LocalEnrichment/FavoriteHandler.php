@@ -27,39 +27,31 @@
  * @author      Demian Katz <demian.katz@villanova.edu>
  * @access      public
  */
-class FavoriteHandler
-{
- /** @var UserList */
+class FavoriteHandler {
+	/** @var UserList */
 	private $list;
-	/** @var User */
-	private $user;
 	private $listId;
 	private $allowEdit;
-	private $favorites = array(),
-					$ids = array(),  //TODO: replace all uses of $this->ids with $this->favorites
-					$catalogIds = array(),
-					$archiveIds = array();
+	private $favorites = [];
+	private $catalogIds = [];
+	private $archiveIds = [];
 	private $defaultSort = 'dateAdded'; // initial setting (Use a userlist sorting option initially)
 	private $sort;
-	private $isUserListSort; // true for sorting options not done by Solr
+	private $isUserListSort;          // true for sorting options not done by Solr
 	private $isMixedUserList = false; // Flag for user lists that have both catalog & archive items (and eventually other type of items)
 
-	protected $userListSortOptions = array();
-/*	protected $userListSortOptions = array(
-								// URL_value => SQL code for Order BY clause
-								'dateAdded' => 'dateAdded ASC',
-								'custom' => 'weight ASC',  // this puts items with no set weight towards the end of the list
-//								'custom' => 'weight IS NULL, weight ASC',  // this puts items with no set weight towards the end of the list
-							);*/
-	protected $solrSortOptions = array('title', 'author'), // user list sorting options handled by Solr engine.
-						$islandoraSortOptions = array('fgs_label_s'); // user list sorting options handled by the Islandora Solr engine.
+	protected $userListSortOptions = [];  // user list sort options handled by Pika SQL database
+	protected $solrSortOptions = ['title', 'author'], // user list sorting options handled by Solr engine.
+			// Note these values need to match options found in searches.ini Sorting section
+		$islandoraSortOptions = ['fgs_label_s']; // user list sorting options handled by the Islandora Solr engine.
+			// Note these values need to match options found in islandoraSearches.ini Sorting section
 
 	/**
 	 * Constructor.
 	 *
 	 * @access  public
-	 * @param   UserList   $list        User List Object.
-	 * @param   bool       $allowEdit   Should we display edit controls?
+	 * @param UserList $list User List Object.
+	 * @param bool $allowEdit Should we display edit controls?
 	 */
 	public function __construct($list, $allowEdit = true){
 		$this->list                = $list;
@@ -72,12 +64,16 @@ class FavoriteHandler
 		if (isset($list->defaultSort)){
 			$this->defaultSort = $list->defaultSort; // when list as a sort setting use that
 		}
-		if (isset($_REQUEST['sort']) && (in_array($_REQUEST['sort'], $this->solrSortOptions) || in_array($_REQUEST['sort'], array_keys($this->userListSortOptions))) ) {
+		if (isset($_REQUEST['sort']) && (
+			in_array($_REQUEST['sort'], $this->solrSortOptions) ||
+			in_array($_REQUEST['sort'], array_keys($this->userListSortOptions)) ||
+			in_array($_REQUEST['sort'], $this->islandoraSortOptions))
+		){
 			// if URL variable is a valid sort option, set the list's sort setting
-			$this->sort = $_REQUEST['sort'];
+			$this->sort           = $_REQUEST['sort'];
 			$userSpecifiedTheSort = true;
-		} else {
-			$this->sort = $this->defaultSort;
+		}else{
+			$this->sort           = $this->defaultSort;
 			$userSpecifiedTheSort = false;
 		}
 
@@ -85,43 +81,27 @@ class FavoriteHandler
 
 		// Get the Favorites //
 		$userListSort = $this->isUserListSort ? $this->userListSortOptions[$this->sort] : null;
-		[$this->favorites, $this->catalogIds, $this->archiveIds] = $list->getListEntries($userListSort); // when using a user list sorting, rather than solr sorting, get results in order
+		[$this->favorites, $this->catalogIds, $this->archiveIds] = $list->getListEntries($userListSort);
+		// when using a user list sorting, rather than solr sorting, get results in user list sorted order
 		// we start with a default userlist sorting until we determine whether the userlist is Mixed items or not.
 
-		$this->ids = $this->favorites; // TODO: Remove references to this->ids and use $this->favorites instead
 		$hasCatalogItems = !empty($this->catalogIds);
 		$hasArchiveItems = !empty($this->archiveIds);
-//		// Process the IDs found in the favorites
-//		$hasArchiveItems = $hasCatalogItems = false;
-//		foreach ($this->favorites as $favorite){
-//			$favoriteID = is_object($favorite) ? $favorite->groupedWorkPermanentId : $favorite;
-//			$this->ids[] = $favoriteID;
-//			if (strpos($favoriteID, ':') !== false) {
-//				//Is an archive Object
-//				// (This may be the point where a specified source is needed for UserList Items.)
-//				$this->archiveIds[] = $favoriteID;
-//				$hasArchiveItems = true;
-//			} else {
-//				// Assuming all other Ids are grouped work Ids.
-//				$this->catalogIds[] = $favoriteID;
-//				$hasCatalogItems = true;
-//			}
-//		}
 
 		// Determine if this UserList mixes catalog & archive Items
-		if ($hasArchiveItems && $hasCatalogItems) {
+		if ($hasArchiveItems && $hasCatalogItems){
 			$this->isMixedUserList = true;
-		} elseif ($hasArchiveItems && !$hasCatalogItems){
+		}elseif ($hasArchiveItems && !$hasCatalogItems){
 			// Archive Only Lists
-			if (!$userSpecifiedTheSort && !isset($list->defaultSort)) {
+			if (!$userSpecifiedTheSort && !isset($list->defaultSort)){
 				// If no actual sorting settings were set, reset default to an Islandora Sort
 				$this->defaultSort    = $this->islandoraSortOptions[0];
 				$this->sort           = $this->defaultSort;
 				$this->isUserListSort = false;
 			}
-		} elseif ($hasCatalogItems && !$hasArchiveItems) {
+		}elseif ($hasCatalogItems && !$hasArchiveItems){
 			// Catalog Only Lists
-			if (!$userSpecifiedTheSort && !isset($list->defaultSort)) {
+			if (!$userSpecifiedTheSort && !isset($list->defaultSort)){
 				// If no actual sorting settings were set, reset default to an Solr Sort
 				$this->defaultSort    = $this->solrSortOptions[0];
 				$this->sort           = $this->defaultSort;
@@ -131,21 +111,210 @@ class FavoriteHandler
 
 	}
 
+	public function buildListForBrowseCategory($page = 1, $recordsPerPage = 24){
+		global $interface;
+
+		/*			Use Cases:
+					Only Catalog items, user sort
+					Only Catalog items, solr sort
+					Only Archive items, user sort
+					Only Archive items, islandora sort
+					Mixed Items, user sort
+				*/
+		$catalogResourceList = [];
+		$startRecord         = ($page - 1) * $recordsPerPage;
+		if ($startRecord < 0){
+			$startRecord = 0;
+		}
+
+		if (count($this->catalogIds) > 0){
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+
+			$catalogSearchObject = SearchObjectFactory::initSearchObject();
+			$catalogSearchObject->init();
+			$catalogSearchObject->setLimit($recordsPerPage);
+			if (!$this->isUserListSort && !$this->isMixedUserList){
+				$catalogSearchObject->setSort($this->sort);
+			}
+
+			if (!$this->isMixedUserList){
+				if ($this->isUserListSort){
+					$idsToFetch = array_slice($this->catalogIds, $startRecord, $recordsPerPage);
+					if (count($idsToFetch)){
+						$catalogSearchObject->setPage(1);              // set to the first page for the search only
+						$catalogSearchObject->setQueryIDs($idsToFetch);// do solr search by Ids
+						$catalogResults = $catalogSearchObject->processSearch();
+						foreach ($catalogResults['response']['docs'] as $catalogResult){
+							$groupedWork = new GroupedWorkDriver($catalogResult);
+							if ($groupedWork->isValid){
+								$key = array_search($catalogResult['id'], $idsToFetch);
+								if ($key !== false){
+									$catalogResourceList[$key] = $interface->fetch($groupedWork->getBrowseResult());
+								}
+							}
+						}
+						ksort($catalogResourceList, SORT_NUMERIC);// Requires re-ordering to display in the correct order
+					}
+				} // Solr Sorted Catalog Only Search //
+				else{
+					$catalogSearchObject->setQueryIDs($this->catalogIds); // do solr search by Ids
+					$catalogSearchObject->setPage($page);
+					$catalogResults = $catalogSearchObject->processSearch();
+					foreach ($catalogResults['response']['docs'] as $catalogResult){
+						$groupedWork = new GroupedWorkDriver($catalogResult);
+						if ($groupedWork->isValid){
+							$catalogResourceList[] = $interface->fetch($groupedWork->getBrowseResult());
+						}
+					}
+				}
+			} else{
+				// Mixed User List - Process catalog items
+
+				// Removed all catalog items from previous page searches
+				$totalItemsFromPreviousPages = $recordsPerPage * ($page - 1);
+				for ($i = 0;$i < $totalItemsFromPreviousPages;$i++){
+					$IdToTest = $this->favorites[$i];
+					$key      = array_search($IdToTest, $this->catalogIds);
+					if ($key !== false){
+						unset($this->catalogIds[$key]);
+					}
+				}
+				$this->catalogIds = array_slice($this->catalogIds, 0, $recordsPerPage);
+				if (!empty($this->catalogIds)){
+					$catalogSearchObject->setQueryIDs($this->catalogIds); // do solr search by Ids
+					$catalogSearchObject->setPage(1);
+					$catalogResults = $catalogSearchObject->processSearch();
+					foreach ($catalogResults['response']['docs'] as $catalogResult){
+						$groupedWork = new GroupedWorkDriver($catalogResult);
+						if ($groupedWork->isValid){
+							$key = array_search($this->favorites, $catalogResult['id']);
+							if ($key !== false){
+								$catalogResourceList[$key] = $interface->fetch($groupedWork->getBrowseResult());
+							}
+						}
+					}
+
+				}
+			}
+		}
+
+		// Archive Search
+		$archiveResourceList = [];
+		if (count($this->archiveIds) > 0){
+			require_once ROOT_DIR . '/RecordDrivers/IslandoraDriver.php';
+			// Initialise from the current search globals
+			/** @var SearchObject_Islandora $archiveSearchObject */
+			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');
+			$archiveSearchObject->init();
+			$archiveSearchObject->setPrimarySearch(true);
+			$archiveSearchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
+			$archiveSearchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', "no");
+			$archiveSearchObject->setLimit($recordsPerPage); //MDN 3/30 this was set to 200, but should be based off the page size
+
+			if (!$this->isUserListSort && !$this->isMixedUserList){ // is a solr sort
+				$archiveSearchObject->setSort($this->sort);           // set solr sort. (have to set before retrieving solr sort options below)
+			}
+
+			// Archive Only Searches //
+			if (!$this->isMixedUserList){
+				// User Sorted Archive Only Searches
+				if ($this->isUserListSort){
+					$idsToFetch = array_slice($this->archiveIds, $page, $recordsPerPage);
+					if (count($idsToFetch)){
+						$archiveSearchObject->setPage(1);              // set to the first page for the search only
+						$archiveSearchObject->setQueryIDs($idsToFetch);// do solr search by Ids
+						$archiveResult = $archiveSearchObject->processSearch(false, false, false);
+						foreach ($archiveResult['response']['docs'] as $result){
+							/** @var IslandoraDriver $archiveWork */
+							$archiveWork = RecordDriverFactory::initRecordDriver($result);
+							$key         = array_search($result['PID'], $idsToFetch);
+							if ($key !== false){
+								$archiveResourceList[] = $interface->fetch($archiveWork->getBrowseResult());
+							}
+						}
+						ksort($archiveResourceList, SORT_NUMERIC);// Requires re-ordering to display in the correct order
+					}
+				}// Islandora Sorted Archive Only Searches
+				else{
+					//TODO: set sort
+					$archiveSearchObject->setQueryIDs($this->archiveIds); // do Islandora search by Ids
+					$archiveSearchObject->setPage(1);                     // set to the first page for the search only
+					$archiveResult = $archiveSearchObject->processSearch(false, false, false);
+					foreach ($archiveResult['response']['docs'] as $result){
+						$archiveWork = RecordDriverFactory::initRecordDriver($result);
+						if (method_exists($archiveWork, 'getBrowseResult')){
+							$archiveResourceList[] = $interface->fetch($archiveWork->getBrowseResult());
+						}
+					}
+				}
+
+			}// Mixed Items Searches (All User Sorted) //
+			else{
+				// Remove all archive items from previous page searches
+				$totalItemsFromPreviousPages = $recordsPerPage * ($page - 1);
+				for ($i = 0;$i < $totalItemsFromPreviousPages;$i++){
+					$IdToTest = $this->favorites[$i];
+					$key      = array_search($IdToTest, $this->archiveIds);
+					if ($key !== false){
+						unset($this->archiveIds[$key]);
+					}
+				}
+				$this->archiveIds = array_slice($this->archiveIds, 0, $recordsPerPage);
+				if (!empty($this->archiveIds)){
+					$archiveSearchObject->setPage(1); // set to the first page for the search only
+
+					$archiveSearchObject->setQueryIDs($this->archiveIds); // do solr search by Ids
+					$archiveResult = $archiveSearchObject->processSearch();
+					foreach ($archiveResult['response']['docs'] as $result){
+						/** @var IslandoraDriver $archiveWork */
+						$archiveWork = RecordDriverFactory::initRecordDriver($result);
+						$key         = array_search($result['PID'], $idsToFetch);
+						if ($key !== false){
+							$archiveResourceList[] = $interface->fetch($archiveWork->getBrowseResult());
+						}
+					}
+				}
+			}
+
+		}
+
+
+		$browseRecords = [];
+		if ($this->isMixedUserList){
+			$browseRecords = $catalogResourceList + $archiveResourceList;
+			// Depends on numbered indexing reflect each item's position in the list
+			//$browseRecordsAlt = array_replace($catalogResourceList, $archiveResourceList); // Equivalent of above
+			ksort($browseRecords, SORT_NUMERIC); // Requires re-ordering to display in the correct order
+			$browseRecords = array_slice($browseRecords, 0, $recordsPerPage); // reduce to the correct page size
+		}else{
+			if (count($this->catalogIds) > 0){
+				$browseRecords = $catalogResourceList;
+			}
+			if (count($this->archiveIds) > 0){
+				$browseRecords = $archiveResourceList;
+			}
+		}
+
+		return $browseRecords;
+	}
+
 	/**
 	 * Assign all necessary values to the interface.
 	 *
 	 * @access  public
 	 */
-	public function buildListForDisplay(){
+	public function buildListForDisplay($recordsPerPage = 20, $page = 1){
 		global $interface;
 
-		$recordsPerPage = isset($_REQUEST['pagesize']) && (is_numeric($_REQUEST['pagesize'])) ? $_REQUEST['pagesize'] : 20;
-		$page           = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-		$startRecord    = ($page - 1) * $recordsPerPage + 1;
+//		unset($_REQUEST['type']); // Remove variable so that search filter links don't include type parameter
+		$isPageSizeParamSet = isset($_REQUEST['pagesize']) && is_numeric($_REQUEST['pagesize']);
+		$recordsPerPage     = $isPageSizeParamSet ? $_REQUEST['pagesize'] : $recordsPerPage;
+		$page               = $_REQUEST['page'] ?? $page;
+		$startRecord        = ($page - 1) * $recordsPerPage + 1;
+		$endRecord          = $page * $recordsPerPage;
 		if ($startRecord < 0){
 			$startRecord = 0;
 		}
-		$endRecord = $page * $recordsPerPage;
 		if ($endRecord > count($this->favorites)){
 			$endRecord = count($this->favorites);
 		}
@@ -156,7 +325,9 @@ class FavoriteHandler
 			'perPage'     => $recordsPerPage
 		];
 
-		$sortOptions = $defaultSortOptions = array();
+		$sortOptions = $defaultSortOptions = [];
+		// $sortOptions populates dropdown for sorting the list for the current display
+		// $defaultSortOptions populates the dropdown for the edit list form (So list owner's can set the sort order for initial display)
 
 		/*			Use Cases:
 			Only Catalog items, user sort
@@ -168,73 +339,95 @@ class FavoriteHandler
 
 		// Catalog Search
 		$catalogResourceList = [];
-		if (count($this->catalogIds) > 0) {
+		if (count($this->catalogIds) > 0){
 			// Initialise from the current search globals
-			/** @var SearchObject_Solr $catalogSearchObject */
-			$catalogSearchObject = SearchObjectFactory::initSearchObject();
+			/** @var SearchObject_UserListSolr $catalogSearchObject */
+			$catalogSearchObject               = SearchObjectFactory::initSearchObject('UserListSolr');
+			$catalogSearchObject->userListSort = $this->sort;
+			if ($isPageSizeParamSet){
+				$catalogSearchObject->userListPageSize = $recordsPerPage;
+			}
 			$catalogSearchObject->init();
-			$catalogSearchObject->disableScoping();
-			$catalogSearchObject->setLimit($recordsPerPage); //MDN 3/30 this was set to 200, but should be based off the page size
+			$catalogSearchObject->setLimit($recordsPerPage);
+			//$catalogSearchObject->disableScoping(); // Return all works in list, even if outside current scope
+			// After implementing facets for user lists, disabling scoping is no longer a good idea, since out of scope list entries
+			// will not contribute to any scoped search facets displayed on the user list. See D-3851
 
-			if (!$this->isUserListSort && !$this->isMixedUserList) { // is a solr sort
-				$catalogSearchObject->setSort($this->sort); // set solr sort. (have to set before retrieving solr sort options below)
-			}
-			if (!$this->isMixedUserList) {
-				$SolrSortList = $catalogSearchObject->getSortList(); // get all the search sort options (retrieve after setting solr sort option)
-				//TODO: There is no longer an author sort option
-				foreach ($this->solrSortOptions as $option) { // extract just the ones we want
-					if (isset ($SolrSortList[$option])) {
-						$sortOptions[$option]        = $SolrSortList[$option];
-						$defaultSortOptions[$option] = $SolrSortList[$option]['desc'];
-					}
-				}
-			}
-			foreach ($this->userListSortOptions as $option => $value_ignored) { // Non-Solr options
-				$sortOptions[$option]        = [
-					'sortUrl'  => $catalogSearchObject->renderLinkWithSort($option),
-					'desc'     => "sort_{$option}_userlist", // description in translation dictionary
-					'selected' => ($option == $this->sort)
-				];
-				$defaultSortOptions[$option] = "sort_{$option}_userlist";
+			if (!$this->isUserListSort && !$this->isMixedUserList){ // is a solr sort
+				$catalogSearchObject->setSort($this->sort);           // set solr sort. (have to set before retrieving solr sort options below)
 			}
 
+			// Range filters need special processing in order to be used
+			$catalogSearchObject->processAllRangeFilters();
 
+			$this->populateSortOptionsForList($catalogSearchObject, $this->solrSortOptions, $sortOptions, $defaultSortOptions);
 
 			// Catalog Only Searches //
-			if (!$this->isMixedUserList) {
+			if (!$this->isMixedUserList){
+
 				// User Sorted Catalog Only Search
-				if ($this->isUserListSort) {
-					$this->catalogIds = array_slice($this->catalogIds, $startRecord - 1, $recordsPerPage);
-					$catalogSearchObject->setPage(1); // set to the first page for the search only
-
+				if ($this->isUserListSort){
+					// Just get facets first
+					$catalogSearchObject->setPrimarySearch(true);
+					$catalogSearchObject->setLimit(0); // Return no results, we only want faceting
 					$catalogSearchObject->setQueryIDs($this->catalogIds); // do solr search by Ids
-					$catalogResult = $catalogSearchObject->processSearch();
-					$catalogSearchObject->setPage($page); // Set back to the actual page of the list now that search was processed
-					$catalogResourceList = $catalogSearchObject->getResultListHTML($this->listId, $this->allowEdit, $this->favorites);
+					$catalogResult = $catalogSearchObject->processSearch(false, true, true);
+					$interface->assign('userListHasSearchFilters', true);
+					$interface->assign('topRecommendations', $catalogSearchObject->getRecommendationsTemplates('top'));
+					$interface->assign('sideRecommendations', $catalogSearchObject->getRecommendationsTemplates('side'));
+
+					if (!empty($_REQUEST['filter'])){
+						$searchFilteredIds         = $catalogSearchObject->getFilteredIds($this->catalogIds);
+						$pageInfo['resultTotal']   = count($searchFilteredIds);
+						$remainingIdsInSortedOrder = array_intersect($this->catalogIds, $searchFilteredIds);
+					} else {
+						$remainingIdsInSortedOrder = $this->catalogIds;
+					}
+
+					// Get ids for a page of the list after search filters have been applied
+					$idsToDisplayForThisPage = array_slice($remainingIdsInSortedOrder, $startRecord - 1, $recordsPerPage);
+					if (count($idsToDisplayForThisPage)){
+						$catalogSearchObject->setQueryIDs($idsToDisplayForThisPage);// do solr search by Ids
+						$catalogSearchObject->setPage(1);
+						$catalogSearchObject->setLimit($recordsPerPage);
+						$catalogSearchObject->setPrimarySearch(false);
+						$catalogResult       = $catalogSearchObject->processSearch(false, false, true);
+						$catalogSearchObject->setPage($page);
+						// Set back to the actual page of the list now that search was processed
+						// (This ensures the position numbering is correct when not on page 1)
+						$catalogResourceList = $catalogSearchObject->getResultListHTML($this->listId, $this->allowEdit, $idsToDisplayForThisPage);
+					}
+
 				} // Solr Sorted Catalog Only Search //
-				else {
+				else{
+					$catalogSearchObject->setPrimarySearch(true);
 					$catalogSearchObject->setQueryIDs($this->catalogIds); // do solr search by Ids
-					$catalogSearchObject->setPage($page); // restore the actual sort page //TODO: Page needs set before processSearch() call?
-					$catalogResult       = $catalogSearchObject->processSearch();
-					$catalogResourceList = $catalogSearchObject->getResultListHTML($this->listId, $this->allowEdit);
-				}
-			}
+					$catalogResult           = $catalogSearchObject->processSearch(false, true);
+					$catalogResourceList     = $catalogSearchObject->getResultListHTML($this->listId, $this->allowEdit);
+					$pageInfo['resultTotal'] = $catalogResult['response']['numFound'];
 
-			// Mixed Items Searches (All User Sorted) //
-			else {
+					//Only show search filter options when not mixed user list
+					$interface->assign('userListHasSearchFilters', true);
+					$interface->assign('topRecommendations', $catalogSearchObject->getRecommendationsTemplates('top'));
+					$interface->assign('sideRecommendations', $catalogSearchObject->getRecommendationsTemplates('side'));
+					// Display search facets on a user list. Has to happen after processSearch() where recommendations are initialized.
+				}
+
+			}// Mixed Items Searches (All User Sorted) //
+			else{
 				// Removed all catalog items from previous page searches
 				$totalItemsFromPreviousPages = $recordsPerPage * ($page - 1);
-				for ($i = 0; $i < $totalItemsFromPreviousPages; $i++ ) {
+				for ($i = 0;$i < $totalItemsFromPreviousPages;$i++){
 					$IdToTest = $this->favorites[$i];
 					$key      = array_search($IdToTest, $this->catalogIds);
-					if ($key !== false) {
+					if ($key !== false){
 						unset($this->catalogIds[$key]);
 					}
 				}
 				$this->catalogIds = array_slice($this->catalogIds, 0, $recordsPerPage);
-				if (!empty($this->catalogIds)) {
+				if (!empty($this->catalogIds)){
 					$catalogSearchObject->setQueryIDs($this->catalogIds); // do solr search by Ids
-					$catalogSearchObject->setPage(1); // set to the first page for the search only
+					$catalogSearchObject->setPage(1);                     // set to the first page for the search only
 					$catalogResult       = $catalogSearchObject->processSearch();
 					$catalogResourceList = $catalogSearchObject->getResultListHTML($this->listId, $this->allowEdit, $this->favorites, $this->isMixedUserList);
 				}
@@ -242,84 +435,93 @@ class FavoriteHandler
 		}
 
 
-
-
 		// Archive Search
 		$archiveResourceList = [];
-		if (count($this->archiveIds) > 0) {
+		if (count($this->archiveIds) > 0){
 
 			// Initialise from the current search globals
-			/** @var SearchObject_Islandora $archiveSearchObject */
-			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');
+			/** @var SearchObject_UserListIslandora $archiveSearchObject */
+			$archiveSearchObject = SearchObjectFactory::initSearchObject('UserListIslandora');
+			$archiveSearchObject->userListSort = $this->sort;
+			if ($isPageSizeParamSet){
+				$archiveSearchObject->userListPageSize = $recordsPerPage;
+			}
 			$archiveSearchObject->init();
 			$archiveSearchObject->setPrimarySearch(true);
-			$archiveSearchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
-			$archiveSearchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', "no");
-			$archiveSearchObject->setLimit($recordsPerPage); //MDN 3/30 this was set to 200, but should be based off the page size
+			$archiveSearchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', 'administrator'); //TODO: move to construct()/init() for user list
+			$archiveSearchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', 'no'); //TODO: move to construct()/init() for user list
+			$archiveSearchObject->setLimit($recordsPerPage);
 
-			if (!$this->isUserListSort && !$this->isMixedUserList) { // is a solr sort
-				$archiveSearchObject->setSort($this->sort); // set solr sort. (have to set before retrieving solr sort options below)
-			}
-			if (!$this->isMixedUserList) {
-				$IslandoraSortList = $archiveSearchObject->getSortList(); // get all the search sort options (retrieve after setting solr sort option)
-				foreach ($this->islandoraSortOptions as $option) { // extract just the ones we want
-					if (isset ($IslandoraSortList[$option])) {
-						$sortOptions[$option]        = $IslandoraSortList[$option];
-						$defaultSortOptions[$option] = $IslandoraSortList[$option]['desc'];
-					}
-				}
-			}
-			foreach ($this->userListSortOptions as $option => $value_ignored) { // Non-Solr options
-				if (!isset($sortOptions[$option])) { // Skip if already done by the catalog searches above
-					$sortOptions[$option]        = [
-						'sortUrl'  => $archiveSearchObject->renderLinkWithSort($option),
-						'desc'     => "sort_{$option}_userlist", // description in translation dictionary
-						'selected' => ($option == $this->sort)
-					];
-					$defaultSortOptions[$option] = "sort_{$option}_userlist";
-				}
+			if (!$this->isUserListSort && !$this->isMixedUserList){ // is a solr sort
+				$archiveSearchObject->setSort($this->sort);           // set solr sort. (have to set before retrieving solr sort options below)
 			}
 
+			$this->populateSortOptionsForList($archiveSearchObject, $this->islandoraSortOptions, $sortOptions, $defaultSortOptions);
 
 			// Archive Only Searches //
-			if (!$this->isMixedUserList) {
+			if (!$this->isMixedUserList){
 				// User Sorted Archive Only Searches
-				if ($this->isUserListSort) {
-					$this->archiveIds = array_slice($this->archiveIds, $startRecord - 1, $recordsPerPage);
-					$archiveSearchObject->setPage(1); // set to the first page for the search only
-
+				if ($this->isUserListSort){
+					$archiveSearchObject->setLimit(0); // Return no results, we only want faceting
 					$archiveSearchObject->setQueryIDs($this->archiveIds); // do solr search by Ids
-					$archiveResult = $archiveSearchObject->processSearch();
-					$archiveSearchObject->setPage($page); // Set back to the actual page of the list now that search was processed
-					$archiveResourceList = $archiveSearchObject->getResultListHTML($this->listId, $this->allowEdit, $this->favorites);
-				}
+					$archiveResult = $archiveSearchObject->processSearch(false, true, true);
+					//Only show search filter options when not mixed user list
+					$interface->assign('userListHasSearchFilters', true);
+					$interface->assign('sideRecommendations', $archiveSearchObject->getRecommendationsTemplates('side')); // only side facet needed for archive searches
 
-				// Islandora Sorted Archive Only Searches
-				else {
+					if (!empty($_REQUEST['filter'])){
+						$searchFilteredIds         = $archiveSearchObject->getFilteredPIDs($this->archiveIds);
+						$pageInfo['resultTotal']   = count($searchFilteredIds);
+						$remainingIdsInSortedOrder = array_intersect($this->archiveIds, $searchFilteredIds);
+					} else {
+						$remainingIdsInSortedOrder = $this->archiveIds;
+					}
+
+					// Get ids for a page of the list after search filters have been applied
+					$idsToDisplayForThisPage = array_slice($remainingIdsInSortedOrder, $startRecord - 1, $recordsPerPage);
+					if (count($idsToDisplayForThisPage)){
+						$archiveSearchObject->setQueryIDs($idsToDisplayForThisPage);// do solr search by Ids
+						$archiveSearchObject->setLimit($recordsPerPage);
+						$archiveSearchObject->setPage(1);
+						$archiveSearchObject->setPrimarySearch(false);
+						$archiveResult       = $archiveSearchObject->processSearch(false, false, true);
+						$archiveSearchObject->setPage($page);
+						// Set back to the actual page of the list now that search was processed
+						// (This ensures the position numbering is correct when not on page 1)
+						$archiveResourceList = $archiveSearchObject->getResultListHTML($this->listId, $this->allowEdit, $idsToDisplayForThisPage);
+					}
+				}// Islandora Sorted Archive Only Searches
+				else{
 					$archiveSearchObject->setQueryIDs($this->archiveIds); // do Islandora search by Ids
-					$archiveSearchObject->setPage($page); // set to the first page for the search only
-					$archiveResult       = $archiveSearchObject->processSearch();
-					$archiveResourceList = $archiveSearchObject->getResultListHTML($this->listId, $this->allowEdit/*, $this->favorites*/);
-				}
-			}
+					$archiveResult           = $archiveSearchObject->processSearch(false, true, true);
+					$archiveResourceList     = $archiveSearchObject->getResultListHTML($this->listId, $this->allowEdit);
+					$pageInfo['resultTotal'] = $archiveResult['response']['numFound'];
 
-		 // Mixed Items Searches (All User Sorted) //
-			else {
+					//Only show search filter options when not mixed user list
+					$interface->assign('userListHasSearchFilters', true);
+					$interface->assign('sideRecommendations', $archiveSearchObject->getRecommendationsTemplates('side'));  // only side facet needed for archive searches
+					// Display search facets on a user list. Has to happen after processSearch() where recommendations are initialized.
+				}
+
+			}// Mixed Items Searches (All User Sorted) //
+			else{
 				// Remove all archive items from previous page searches
 				$totalItemsFromPreviousPages = $recordsPerPage * ($page - 1);
-				for ($i = 0; $i < $totalItemsFromPreviousPages; $i++) {
+				for ($i = 0;$i < $totalItemsFromPreviousPages;$i++){
 					$IdToTest = $this->favorites[$i];
 					$key      = array_search($IdToTest, $this->archiveIds);
-					if ($key !== false) {
+					if ($key !== false){
 						unset($this->archiveIds[$key]);
 					}
 				}
 				$this->archiveIds = array_slice($this->archiveIds, 0, $recordsPerPage);
-				if (!empty($this->archiveIds)) {
+				//TODO: can not sort till after search filtering occurs now
+
+				if (!empty($this->archiveIds)){
 					$archiveSearchObject->setPage(1); // set to the first page for the search only
 
 					$archiveSearchObject->setQueryIDs($this->archiveIds); // do solr search by Ids
-					$archiveResult = $archiveSearchObject->processSearch();
+					$archiveResult       = $archiveSearchObject->processSearch();
 					$archiveResourceList = $archiveSearchObject->getResultListHTML($this->listId, $this->allowEdit, $this->favorites, $this->isMixedUserList);
 				}
 			}
@@ -332,18 +534,18 @@ class FavoriteHandler
 		$interface->assign('userSort', ($this->getSort() == 'custom')); // switch for when users can sort their list
 
 
-		$resourceList = array();
-		if ($this->isMixedUserList) {
+		$resourceList = [];
+		if ($this->isMixedUserList){
 			$resourceList = $catalogResourceList + $archiveResourceList;
 			// Depends on numbered indexing reflect each item's position in the list
 			//$resourceListAlt = array_replace($catalogResourceList, $archiveResourceList); // Equivalent of above
-			ksort($resourceList, SORT_NUMERIC); // Requires re-ordering to display in the correct order
+			ksort($resourceList, SORT_NUMERIC);                             // Requires re-ordering to display in the correct order
 			$resourceList = array_slice($resourceList, 0, $recordsPerPage); // reduce to the correct page size
-		} else {
-			if (count($this->catalogIds) > 0) {
+		}else{
+			if (count($this->catalogIds) > 0){
 				$resourceList = $catalogResourceList;
 			}
-			if (count($this->archiveIds) > 0) {
+			if (count($this->archiveIds) > 0){
 				$resourceList = $archiveResourceList;
 			}
 		}
@@ -353,49 +555,67 @@ class FavoriteHandler
 		// Set up paging of list contents:
 		$interface->assign('recordCount', $pageInfo['resultTotal']);
 		$interface->assign('recordStart', $pageInfo['startRecord']);
-		$interface->assign('recordEnd',   $pageInfo['endRecord']);
+		$interface->assign('recordEnd', min($pageInfo['endRecord'], $pageInfo['resultTotal']));  //search filtering may reduce the number of entries being displayed
 		$interface->assign('recordsPerPage', $pageInfo['perPage']);
 
 		$link = $_SERVER['REQUEST_URI'];
 		if (preg_match('/[&?]page=/', $link)){
-			$link = preg_replace("/page=\\d+/", "page=%d", $link);
-		}else if (strpos($link, "?") > 0){
-			$link .= "&page=%d";
+			$link = preg_replace("/page=\\d+/", 'page=%d', $link);
+		}elseif (strpos($link, '?') > 0){
+			$link .= '&page=%d';
 		}else{
-			$link .= "?page=%d";
+			$link .= '?page=%d';
 		}
-		$options = array('totalItems' => $pageInfo['resultTotal'],
-		                 'perPage'    => $pageInfo['perPage'],
-		                 'fileName'   => $link,
-		                 'append'     => false);
+		$options = [
+			'totalItems' => $pageInfo['resultTotal'],
+			'perPage'    => $pageInfo['perPage'],
+			'fileName'   => $link,
+			'append'     => false
+		];
 		require_once ROOT_DIR . '/sys/Pager.php';
 		$pager = new VuFindPager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
-
 	}
 
-	function getTitles($numListEntries){
-		// Currently only used by AJAX call for emailing lists
+	private function populateSortOptionsForList(SearchOBject_Base &$searchObject, $searchOptions, array &$sortOptions, array &$defaultSortOptions){
+		if (!$this->isMixedUserList){
+			$solrSortList = $searchObject->getSortList(); // get all the search sort options (retrieve after setting solr sort option)
+			foreach ($searchOptions as $option){ // extract just the ones we want
+				if (isset($solrSortList[$option])){
+					$sortOptions[$option]        = $solrSortList[$option];
+					$defaultSortOptions[$option] = $solrSortList[$option]['desc'];
+				}
+			}
+		}
+		foreach ($this->userListSortOptions as $option => $value_ignored){ // Non-Solr options
+			$sortOptions[$option]        = [
+				'sortUrl'  => $searchObject->renderLinkWithSort($option),
+				'desc'     => "sort_{$option}_userlist", // description in translation dictionary
+				'selected' => ($option == $this->sort)
+			];
+			$defaultSortOptions[$option] = "sort_{$option}_userlist";
+		}
+	}
 
-		$catalogRecordSet = $archiveRecordSet = array();
+	function getTitles($numListEntries, $applyFiltering = false){
+		$catalogRecordSet = $archiveRecordSet = [];
 		// Retrieve records from index (currently, only Solr IDs supported):
-		if (count($this->catalogIds) > 0) {
+		if (count($this->catalogIds) > 0){
 			// Initialise from the current search globals
 			/** @var SearchObject_Solr $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init();
 			// these are added for emailing list  plb 10-8-2014
-			$searchObject->disableScoping(); // get title data regardless of scope
 			$searchObject->setLimit($numListEntries); // only get results for each item
 
 			$searchObject->setQueryIDs($this->catalogIds);
 
-			$searchObject->processSearch();
+			$searchObject->processSearch(false, $applyFiltering);
 			$catalogRecordSet = $searchObject->getResultRecordSet();
 
 			//TODO: user list sorting here
 		}
-		if (count($this->archiveIds) > 0) {
+		if (count($this->archiveIds) > 0){
 			// Initialise from the current search globals
 			/** @var SearchObject_Islandora $archiveSearchObject */
 			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');
@@ -405,69 +625,83 @@ class FavoriteHandler
 			$archiveSearchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', "no");
 			$archiveSearchObject->setQueryIDs($this->archiveIds);
 
-			$archiveSearchObject->processSearch();
+			$archiveSearchObject->processSearch(false, $applyFiltering);
 
 			$archiveRecordSet = $archiveSearchObject->getResultRecordSet();
 
 
 		}
-		return array_merge($catalogRecordSet, $archiveRecordSet);
+		return [...$catalogRecordSet, ...$archiveRecordSet];
 	}
 
 	function getCitations($citationFormat){
 		// Initialise from the current search globals
 		/** @var SearchObject_Solr $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject();
-		$searchObject->init();
+		$citations = array();
+
+			if(!empty($this->catalogIds)){
+				$searchObject = SearchObjectFactory::initSearchObject();
+				$searchObject->init();
+				$searchObject->setQueryIDs($this->catalogIds);
+				$searchObject->processSearch();
+				foreach($searchObject->getCitations($citationFormat) as $citation){
+					array_push($citations, $citation);
+				}
+
+			}
+			if(!empty($this->archiveIds)){
+				$archiveObject = SearchObjectFactory::initSearchObject('Islandora');
+				$archiveObject->init();
+				$archiveObject->setQueryIds($this->archiveIds);
+				$archiveObject->processSearch();
+				foreach($archiveObject->getCitations($citationFormat) as $citation){
+					array_push($citations, $citation);
+				}
+
+			}
+		if(count($citations) > 0){
+
 
 		// Retrieve records from index (currently, only Solr IDs supported):
-		if (count($this->ids) > 0) {
-			$searchObject->setQueryIDs($this->ids);
 
-			$searchObject->processSearch();
-			return $searchObject->getCitations($citationFormat);
+			return $citations;
 		}else{
-			return array();
+			return [];
 		}
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getSort()
-	{
+	public function getSort(){
 		return $this->sort;
 	}
 
 	/**
 	 * @return array
 	 */
-	public function getCatalogIds()
-	{
+	public function getCatalogIds(){
 		return $this->catalogIds;
 	}
 
 	/**
 	 * @return array
 	 */
-	public function getArchiveIds()
-	{
+	public function getArchiveIds(){
 		return $this->archiveIds;
 	}
 
 	/**
 	 * @return boolean
 	 */
-	public function isMixedUserList()
-	{
+	public function isMixedUserList(){
 		return $this->isMixedUserList;
 	}
 
 	/**
 	 * @return UserListEntry[]
 	 */
-	public function getFavorites()
-	{
+	public function getFavorites(){
 		return $this->favorites;
 	}
 }

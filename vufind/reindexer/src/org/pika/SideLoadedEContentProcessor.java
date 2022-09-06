@@ -59,7 +59,7 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 				}
 			}
 			if (primaryFormat == null) primaryFormat = "Unknown";
-			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier.getIdentifier(), primaryFormat, loadedNovelistSeries);
+			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier, primaryFormat, loadedNovelistSeries);
 
 			//Special processing for ILS Records
 			String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(record, "520a"));
@@ -100,7 +100,7 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 		ItemInfo itemInfo = new ItemInfo();
 		itemInfo.setIsEContent(true);
 
-		Date dateAdded = indexer.getDateFirstDetected(identifier.getSource(), identifier.getIdentifier());
+		Date dateAdded = indexer.getDateFirstDetected(identifier);
 		itemInfo.setDateAdded(dateAdded);
 
 		itemInfo.setLocationCode(indexingProfileSourceDisplayName);

@@ -9,7 +9,8 @@
 	{if $recordCount || $sideRecommendations}
 		<div id="refineSearch">
 			{* Sort the results*}
-			{if $recordCount}
+			{if $recordCount && $action != 'MyList'}
+				{* Do not display search sort while displaying a list *}
 				<div id="results-sort-label" class="row sidebar-label"{if $displaySidebarMenu} style="display: none"{/if}>
 					<label for="results-sort">{translate text='Sort Results By'}</label>
 				</div>

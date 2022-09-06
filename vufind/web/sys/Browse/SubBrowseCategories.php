@@ -37,14 +37,11 @@ class SubBrowseCategories extends DB_DataObject {
 
 	static function getObjectStructure(){
 		$browseCategoryList = self::listBrowseCategories();
-		$structure = array(
-			'id'               => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the sub-category row within the database'),
-			'browseCategoryId' => array('property' => 'browseCategoryId', 'type' => 'label', 'label' => 'Browse Category', 'description' => 'The parent browse category'),
-			'subCategoryId'    => array('property' => 'subCategoryId', 'type' => 'enum', 'values' => $browseCategoryList, 'label' => 'Sub-Category', 'description' => 'The sub-category of the parent browse category'),
-//			'weight'           => array('property' => 'weight', 'type' => 'integer', 'label' => 'Weight', 'weight' => 'Defines the order of the sub-categories .  Lower weights are displayed to the left of the screen.', 'required' => true),
-			// Weight isn't needed in the object structure for display of oneToMany sections
-
-		);
+		$structure = [
+			'id'               => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the sub-category row within the database'],
+			'browseCategoryId' => ['property' => 'browseCategoryId', 'type' => 'label', 'label' => 'Browse Category', 'description' => 'The parent browse category'],
+			'subCategoryId'    => ['property' => 'subCategoryId', 'type' => 'enum', 'values' => $browseCategoryList, 'label' => 'Sub-Category', 'description' => 'The sub-category of the parent browse category'],
+		];
 		return $structure;
 	}
 
@@ -66,5 +63,10 @@ class SubBrowseCategories extends DB_DataObject {
 
 		return $browseCategoryList;
 	}
+
+	public function getEditLink(){
+		return '/Admin/BrowseCategories?objectAction=edit&id=' . $this->subCategoryId;
+	}
+
 
 }

@@ -345,15 +345,6 @@ class WCPL extends HorizonAPI3_23
 		);
 		return isset($statusMap[$statusCode]) ? $statusMap[$statusCode] : 'Unknown (' . $statusCode . ')';
 	}
-	public function getLocationMapLink($locationCode){
-		$locationCode = strtolower($locationCode);
-		$locationMap = array();
-		return isset($locationMap[$locationCode]) ? $locationMap[$locationCode] : '' ;
-	}
-
-	public function getLibraryHours($locationId, $timeToCheck){
-		return null;
-	}
 
 	function selfRegister(){
 		//Start at My Account Page

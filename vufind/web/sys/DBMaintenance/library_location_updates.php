@@ -76,7 +76,6 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE library ADD restrictSearchByLibrary TINYINT(1) DEFAULT '0'",
 				"ALTER TABLE library ADD includeDigitalCollection TINYINT(1) DEFAULT '1'",
 				"ALTER TABLE library ADD restrictOwningBranchesAndSystems TINYINT(1) DEFAULT '1'",
-				"ALTER TABLE library ADD showAvailableAtAnyLocation TINYINT(1) DEFAULT '1'",
 				"ALTER TABLE library ADD allowPatronAddressUpdates TINYINT(1) DEFAULT '1'",
 				"ALTER TABLE library ADD showWorkPhoneInProfile TINYINT(1) DEFAULT '0'",
 				"ALTER TABLE library ADD showNoticeTypeInProfile TINYINT(1) DEFAULT '0'",
@@ -1241,6 +1240,15 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			'continueOnError' => true,
 			'sql'             => [
 				"ALTER TABLE `library` DROP COLUMN `addSMSIndicatorToPhone`",
+			],
+		],
+
+		'2022.03.0_remove_showAvailableAtAnyLocation' => [
+			'title'           => 'Remove obsolete library setting Available At Any Location',
+			'description'     => '',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE `library` DROP COLUMN `showAvailableAtAnyLocation`",
 			],
 		],
 

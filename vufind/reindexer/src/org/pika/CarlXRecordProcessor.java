@@ -51,7 +51,7 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 	}
 
 	@Override
-	protected String getItemStatus(DataField itemField, String recordIdentifier){
+	protected String getItemStatus(DataField itemField, RecordIdentifier recordIdentifier){
 		String statusCode = getItemSubfieldData(statusSubfieldIndicator, itemField);
 		if (statusCode.length() > 2){
 			statusCode = translateValue("status_codes", statusCode, recordIdentifier);
@@ -207,7 +207,7 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 		ilsRecord.setFormatBoost(formatBoost);
 	}
 
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {
 		//For Nashville CARL.X, load audiences based on location code rather than based on the 008 and 006 fields
 		HashSet<String> targetAudiences = new HashSet<>();
 		for (ItemInfo printItem : printItems){

@@ -20,7 +20,6 @@
 require_once ROOT_DIR . '/RecordDrivers/ExternalEContentDriver.php';
 
 class ExternalEContent_Home extends Action{
-	/** @var  SearchObject_Solr $db */
 	private $id;
 
 	function launch(){
@@ -60,13 +59,13 @@ class ExternalEContent_Home extends Action{
 
 		if (!$recordDriver->isValid()){
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
-			die();
+			die;
 		}
 
 		$groupedWork = $recordDriver->getGroupedWorkDriver();
 		if (is_null($groupedWork) || !$groupedWork->isValid()){  // initRecordDriverById itself does a validity check and returns null if not.
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
-			die();
+			die;
 		}else{
 			$interface->assign('recordDriver', $recordDriver);
 
@@ -75,11 +74,10 @@ class ExternalEContent_Home extends Action{
 			$interface->assign('cleanDescription', strip_tags($recordDriver->getDescriptionFast(), '<p><br><b><i><em><strong>'));
 
 			// Retrieve User Search History
-			$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ?
-			$_SESSION['lastSearchURL'] : false);
+			$interface->assign('lastsearch', $_SESSION['lastSearchURL'] ?? false);
 
 			//Get Next/Previous Links
-			$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+			$searchSource = $_REQUEST['searchSource'] ?? 'local';
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init($searchSource);
 			$searchObject->getNextPrevLinks();
@@ -115,13 +113,12 @@ class ExternalEContent_Home extends Action{
 	/**
 	 * @param ExternalEContentDriver $recordDriver
 	 */
-	function loadCitations($recordDriver)
-	{
+	function loadCitations($recordDriver){
 		global $interface;
 
 		$citationCount = 0;
-		$formats = $recordDriver->getCitationFormats();
-		foreach($formats as $current) {
+		$formats       = $recordDriver->getCitationFormats();
+		foreach ($formats as $current){
 			$interface->assign(strtolower($current), $recordDriver->getCitation($current));
 			$citationCount++;
 		}

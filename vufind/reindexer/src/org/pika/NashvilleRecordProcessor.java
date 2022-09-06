@@ -82,14 +82,14 @@ class NashvilleRecordProcessor extends IIIRecordProcessor {
 		return available;
 	}
 
-	protected boolean isItemSuppressed(DataField curItem) {
+	protected boolean isItemSuppressed(DataField curItem, RecordIdentifier identifier) {
 		Subfield locationCodeSubfield = curItem.getSubfield(locationSubfieldIndicator);
 		if (locationCodeSubfield == null) {
 			return false;
 		}
 		String locationCode = locationCodeSubfield.getData().trim();
 
-		return locationCode.matches(".*sup") || super.isItemSuppressed(curItem);
+		return locationCode.matches(".*sup") || super.isItemSuppressed(curItem, identifier);
 	}
 
 	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, RecordIdentifier identifier, Record record){

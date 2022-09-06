@@ -81,7 +81,9 @@ abstract class MarcRecordProcessor {
 							}
 						}
 					}
-					subjects.add(curSubject.toString());
+					if (curSubject.length() > 0) {
+						subjects.add(curSubject.toString());
+					}
 					break;
 				}
 				case "610": {
@@ -105,7 +107,9 @@ abstract class MarcRecordProcessor {
 							}
 						}
 					}
-					subjects.add(curSubject.toString());
+					if (curSubject.length() > 0) {
+						subjects.add(curSubject.toString());
+					}
 					break;
 				}
 				case "611": {
@@ -129,7 +133,9 @@ abstract class MarcRecordProcessor {
 							}
 						}
 					}
-					subjects.add(curSubject.toString());
+					if (curSubject.length() > 0) {
+						subjects.add(curSubject.toString());
+					}
 					break;
 				}
 				case "630": {
@@ -153,7 +159,9 @@ abstract class MarcRecordProcessor {
 							}
 						}
 					}
-					subjects.add(curSubject.toString());
+					if (curSubject.length() > 0) {
+						subjects.add(curSubject.toString());
+					}
 					break;
 				}
 				case "648": {
@@ -171,7 +179,9 @@ abstract class MarcRecordProcessor {
 							groupedWork.addEra(curSubfieldData);
 						}
 					}
-					subjects.add(curSubject);
+					if (curSubject.length() > 0) {
+						subjects.add(curSubject.toString());
+					}
 					break;
 				}
 				case "650": {
@@ -213,7 +223,9 @@ abstract class MarcRecordProcessor {
 							}
 						}
 					}
-					subjects.add(curSubject.toString());
+					if (curSubject.length() > 0) {
+						subjects.add(curSubject.toString());
+					}
 					break;
 				}
 				case "651": {
@@ -241,7 +253,9 @@ abstract class MarcRecordProcessor {
 							}
 						}
 					}
-					subjects.add(curSubject.toString());
+					if (curSubject.length() > 0) {
+						subjects.add(curSubject.toString());
+					}
 					break;
 				}
 				case "655": {
@@ -270,7 +284,9 @@ abstract class MarcRecordProcessor {
 							}
 						}
 					}
-					subjects.add(curSubject.toString());
+					if (curSubject.length() > 0) {
+						subjects.add(curSubject.toString());
+					}
 					break;
 				}
 				case "690": {
@@ -285,7 +301,9 @@ abstract class MarcRecordProcessor {
 							groupedWork.addTopic(curSubfieldData);
 						}
 					}
-					subjects.add(curSubject.toString());
+					if (curSubject.length() > 0) {
+						subjects.add(curSubject.toString());
+					}
 					break;
 				}
 			}
@@ -294,7 +312,7 @@ abstract class MarcRecordProcessor {
 
 	}
 
-	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier, String format, boolean loadedNovelistSeries) {
+	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier, String format, boolean loadedNovelistSeries) {
 		loadTitles(groupedWork, record, format, identifier);
 		loadAuthors(groupedWork, record, format, identifier);
 		loadSubjects(groupedWork, record);
@@ -329,6 +347,11 @@ abstract class MarcRecordProcessor {
 		// all the MARC series info anyway
 		if (!loadedNovelistSeries) {
 			List<DataField> seriesFields = MarcUtil.getDataFields(record, "830");
+			// 830 - Series Added Entry-Uniform Title
+			// a - Uniform title
+			// p - Name of part/section of a work
+			//
+			// https://www.loc.gov/marc/bibliographic/bd830.html
 			for (DataField seriesField : seriesFields){
 				String series = MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "ap","").toString();
 				String volume = "";
@@ -338,6 +361,12 @@ abstract class MarcRecordProcessor {
 				groupedWork.addSeries(series, volume);
 			}
 			seriesFields = MarcUtil.getDataFields(record, "800");
+			// 800 - Series Added Entry-Personal Name
+			// p - Name of part/section of a work
+			// q - Fuller form of name
+			// t - Title of a work
+
+			// https://www.loc.gov/marc/bibliographic/bd800.html
 			for (DataField seriesField : seriesFields){
 				String series = MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "pqt","").toString();
 				String volume = "";
@@ -348,10 +377,14 @@ abstract class MarcRecordProcessor {
 			}
 
 			groupedWork.addSeries2(MarcUtil.getFieldList(record, "490a"));
+			// 490 - Series Statement
+			// a - Series statement
+
+			// https://www.loc.gov/marc/bibliographic/bd490.html
 		}
 	}
 
-	private void loadFountasPinnell(GroupedWorkSolr groupedWork, Record record, String identifier) {
+	private void loadFountasPinnell(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier) {
 		Set<String> targetAudiences = MarcUtil.getFieldList(record, "521a");
 		for (String targetAudience : targetAudiences){
 			if (targetAudience.startsWith("Guided reading level: ")){
@@ -477,7 +510,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {
 		Set<String> targetAudiences = new LinkedHashSet<>();
 		try {
 			String leader = record.getLeader().toString();
@@ -530,7 +563,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.addTargetAudiencesFull(indexer.translateSystemCollection("target_audience_full", targetAudiences, identifier));
 	}
 
-	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {
 		//First get the literary Forms from the 008.  These need translation
 		LinkedHashSet<String> literaryForms = new LinkedHashSet<>();
 		try {
@@ -558,8 +591,9 @@ abstract class MarcRecordProcessor {
 						literaryForms.add(Character.toString(literaryFormChar));
 					}
 				}
-				//TODO: explain with comment why we would add empty value; or remove. Is it removed already?
 				if (literaryForms.size() == 0) {
+					// Adding space character string will get translated below
+					// by the catchall translation: * = Not Coded
 					literaryForms.add(" ");
 				}
 			} else {
@@ -570,7 +604,7 @@ abstract class MarcRecordProcessor {
 		}
 		if (literaryForms.size() > 1){
 			//Uh oh, we have a problem
-			logger.warn("Received multiple literary forms for a single marc record");
+			logger.warn("Received multiple literary forms for a single marc record " + identifier);
 		}
 		groupedWork.addLiteraryForms(indexer.translateSystemCollection("literary_form", literaryForms, identifier));
 		groupedWork.addLiteraryFormsFull(indexer.translateSystemCollection("literary_form_full", literaryForms, identifier));
@@ -580,21 +614,33 @@ abstract class MarcRecordProcessor {
 		HashMap<String, Integer> literaryFormsFull = new HashMap<>();
 		//Check the subjects
 		Set<String> subjectFormData = MarcUtil.getFieldList(record, "650v:651v");
+		// MARC 650v
+		// 650 - Subject Added Entry - Topical Term | v - Form subdivision
+		//
+		// Form subdivision that designates a specific kind or genre of material as defined by the
+		// thesaurus being used. Subfield $v is appropriate only when a form subject subdivision
+		// is added to a main term.
+		//MARC 651v
+		//651 - Subject Added Entry - Geographic Name | v - Form subdivision
+		// Form subdivision that designates a specific kind or genre of material as defined by the
+		// thesaurus being used. Subfield $v is appropriate only when a form subject subdivision
+		// is added to a geographic name.
+
 		for(String subjectForm : subjectFormData){
 			subjectForm = Util.trimTrailingPunctuation(subjectForm);
 			if (subjectForm.equalsIgnoreCase("Fiction")
-					|| subjectForm.equalsIgnoreCase("Young adult fiction" )
-					|| subjectForm.equalsIgnoreCase("Juvenile fiction" )
-					|| subjectForm.equalsIgnoreCase("Junior fiction" )
+					|| subjectForm.equalsIgnoreCase("Young adult fiction")
+					|| subjectForm.equalsIgnoreCase("Juvenile fiction")
+					|| subjectForm.equalsIgnoreCase("Junior fiction")
 					|| subjectForm.equalsIgnoreCase("Comic books, strips, etc")
 					|| subjectForm.equalsIgnoreCase("Comic books,strips, etc")
-					|| subjectForm.equalsIgnoreCase("Children's fiction" )
-					|| subjectForm.equalsIgnoreCase("Fictional Works" )
-					|| subjectForm.equalsIgnoreCase("Cartoons and comics" )
-					|| subjectForm.equalsIgnoreCase("Folklore" )
-					|| subjectForm.equalsIgnoreCase("Legends" )
-					|| subjectForm.equalsIgnoreCase("Stories" )
-					|| subjectForm.equalsIgnoreCase("Fantasy" )
+					|| subjectForm.equalsIgnoreCase("Children's fiction")
+					|| subjectForm.equalsIgnoreCase("Fictional Works")
+					|| subjectForm.equalsIgnoreCase("Cartoons and comics")
+					|| subjectForm.equalsIgnoreCase("Folklore")
+					|| subjectForm.equalsIgnoreCase("Legends")
+					|| subjectForm.equalsIgnoreCase("Stories")
+					|| subjectForm.equalsIgnoreCase("Fantasy")
 					|| subjectForm.equalsIgnoreCase("Mystery fiction")
 					|| subjectForm.equalsIgnoreCase("Romances")
 					){
@@ -904,7 +950,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	private void loadAuthors(GroupedWorkSolr groupedWork, Record record, String recordFormat, String identifier) {
+	private void loadAuthors(GroupedWorkSolr groupedWork, Record record, String recordFormat, RecordIdentifier identifier) {
 		//auth_author = 100abcd, first
 		groupedWork.setAuthAuthor(MarcUtil.getFirstFieldVal(record, "100abcd"));
 
@@ -946,7 +992,7 @@ abstract class MarcRecordProcessor {
 	}
 
 
-	protected void loadTitles(GroupedWorkSolr groupedWork, Record record, String format, String identifier) {
+	protected void loadTitles(GroupedWorkSolr groupedWork, Record record, String format, RecordIdentifier identifier) {
 		//title (full title done by index process by concatenating short and subtitle
 
 		//title short
@@ -970,7 +1016,7 @@ abstract class MarcRecordProcessor {
 					if (titleLowerCase.endsWith(subTitleLowerCase)) {
 						// Remove subtitle from title in order to avoid repeats of sub-title in display & title fields in index
 						if (fullReindex && logger.isInfoEnabled()) {
-							logger.info(identifier + " title (245a) '" + titleValue + "' ends with the subtitle (245bnp) : " + subTitleValue );
+							logger.info(identifier + " title (245a) '" + titleValue + "' ends with the subtitle (245bnp) : " + subTitleValue);
 						}
 						titleValue = titleValue.substring(0, titleLowerCase.lastIndexOf(subTitleLowerCase));
 					}
@@ -1025,7 +1071,7 @@ abstract class MarcRecordProcessor {
 //		groupedWork.addNewTitles(MarcUtil.getFieldList(record, "785ast"));
 	}
 
-	private void loadBibCallNumbers(GroupedWorkSolr groupedWork, Record record, String identifier) {
+	private void loadBibCallNumbers(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier) {
 		String firstCallNumber = MarcUtil.getFirstFieldVal(record, "099a[0]:090a[0]:050a[0]");
 		if (firstCallNumber != null){
 			groupedWork.setCallNumberFirst(indexer.translateSystemValue("callnumber", firstCallNumber, identifier));
@@ -1040,26 +1086,33 @@ abstract class MarcRecordProcessor {
 		List<DataField> urlFields = MarcUtil.getDataFields(record, "856");
 		for (DataField urlField : urlFields) {
 			//load url into the item
+			if (urlField.getIndicator2() == '0') {
+				// 2nd indicator of 0 is meant to be the resource
+				if (urlField.getSubfield('u') != null) {
+					itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
+					return;
+				}
+			} else if (urlField.getIndicator2() == ' ' && isLikelyEContentUrl(urlField)) {
+				// empty 2nd indicator might be the resource
+				if (urlField.getSubfield('u') != null) {
+					itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
+					return;
+				}
+			}
+		}
+
+		// Now try the circuitous way to get the resource url
+		for (DataField urlField : urlFields) {
+			//load url into the item
 			if (urlField.getSubfield('u') != null) {
 				//Try to determine if this is a resource or not.
-				if (urlField.getIndicator1() == '4' || urlField.getIndicator1() == ' ' || urlField.getIndicator1() == '0' || urlField.getIndicator1() == '7') {
-					if (urlField.getIndicator2() != '2') {
-						// Avoid Cover Image Links
-						// (some image links do not have a 2nd indicator of 2)
-						// (a subfield 3 or z will often contain the text 'Image' or 'Cover Image' if the link is for an image)
-						String subFieldZ = "";
-						String subField3 = "";
-						if (urlField.getSubfield('z') != null) {
-							subFieldZ = urlField.getSubfield('z').getData().toLowerCase();
-						}
-						if (urlField.getSubfield('3') != null) {
-							subField3 = urlField.getSubfield('3').getData().toLowerCase();
-						}
-						if (!subFieldZ.contains("image") && !subField3.contains("image")) {
-							itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
-							return;
-						}
+				if (isLikelyEContentUrl(urlField)){
+					if (logger.isInfoEnabled() && urlField.getIndicator2() == '1'){
+						logger.info("Related link used for access link for " + identifier);
+						// Log some examples so we can verify the exclusion below
 					}
+					itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
+					return;
 				}
 			}
 		}
@@ -1067,6 +1120,29 @@ abstract class MarcRecordProcessor {
 //			logger.warn("Item for " + identifier + " had no eContent URL set");
 //		}
 		//will turn back on after initial problem records have been cleaned up. pascal 8/30/2019
+	}
+
+	private boolean isLikelyEContentUrl(DataField urlField){
+		if (urlField.getIndicator2() != '2') {
+			if (urlField.getIndicator1() == '4' || urlField.getIndicator1() == ' ' || urlField.getIndicator1() == '0' || urlField.getIndicator1() == '7') {
+				// Avoid Cover Image Links
+				// (some image links do not have a 2nd indicator of 2)
+				// (a subfield 3 or z will often contain the text 'Image' or 'Cover Image' if the link is for an image)
+
+				// 2nd indicator of 1 is designate related resource link rather than the access link but some
+				// eContent does this anyway for the resource link
+				String subFieldZ = "";
+				String subField3 = "";
+				if (urlField.getSubfield('z') != null) {
+					subFieldZ = urlField.getSubfield('z').getData().toLowerCase();
+				}
+				if (urlField.getSubfield('3') != null) {
+					subField3 = urlField.getSubfield('3').getData().toLowerCase();
+				}
+				return !subFieldZ.contains("image") && !subField3.contains("image");
+			}
+		}
+		return false;
 	}
 
 	/**

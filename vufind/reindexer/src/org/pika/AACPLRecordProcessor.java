@@ -79,7 +79,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		}
 	}
 
-	protected String getItemStatus(DataField itemField, String recordIdentifier) {
+	protected String getItemStatus(DataField itemField, RecordIdentifier recordIdentifier) {
 		String subfieldData      = getItemSubfieldData(statusSubfieldIndicator, itemField);
 		String shelfLocationData = getItemSubfieldData(shelvingLocationSubfield, itemField);
 		if (shelfLocationData.equalsIgnoreCase("Z-ON-ORDER") || shelfLocationData.equalsIgnoreCase("ON-ORDER")) {
@@ -116,7 +116,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		return location;
 	}
 
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {
 		//For Wake County, load audiences based on collection code rather than based on the 008 and 006 fields
 		HashSet<String> targetAudiences = new HashSet<>();
 		for (ItemInfo printItem : printItems) {
@@ -132,7 +132,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 	}
 
 	@Override
-	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {
 		//For AACPL we can load the literary forms based off of the shelf location code:
 		String literaryForm = null;
 		for (ItemInfo printItem : printItems) {
@@ -171,7 +171,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		boolean loadFromPermanentLocation = false;
 		if (subfieldData == null) {
 			loadFromPermanentLocation = true;
-		} else if (translateValue("item_status", subfieldData, recordIdentifier.getSourceAndId(), false) != null) {
+		} else if (translateValue("item_status", subfieldData, recordIdentifier, false) != null) {
 			loadFromPermanentLocation = true;
 		}
 		if (loadFromPermanentLocation) {
@@ -181,11 +181,11 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems) {
-		if (bibsWithOrders.contains(recordInfo.getRecordIdentifier())) {
+		if (bibsWithOrders.contains(recordInfo.getRecordIdentifier().getIdentifier())) {
 			if (recordInfo.getNumPrintCopies() == 0 && recordInfo.getNumCopiesOnOrder() == 0) {
 				ItemInfo itemInfo = new ItemInfo();
 				itemInfo.setLocationCode("aacpl");
-				itemInfo.setItemIdentifier(recordInfo.getRecordIdentifier());
+				itemInfo.setItemIdentifier(recordInfo.getRecordIdentifier().getIdentifier());
 				itemInfo.setNumCopies(1);
 				itemInfo.setIsEContent(false);
 				itemInfo.setIsOrderItem(true);

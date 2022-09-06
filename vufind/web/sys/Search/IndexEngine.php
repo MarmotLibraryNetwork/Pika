@@ -32,16 +32,6 @@ Interface IndexEngine {
 	function getRecord($id);
 
 	/**
-	 * Get records similar to one record
-	 *
-	 * @access  public
-	 * @param  string          The record id
-	 * @return  array       An array of query results
-	 * @throws  object      PEAR Error
-	 */
-	function getMoreLikeThis($id);
-
-	/**
 	 * Get record data based on the provided field and phrase.
 	 * Used for AJAX suggestions.
 	 *

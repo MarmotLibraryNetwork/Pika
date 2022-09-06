@@ -69,8 +69,13 @@
 		<fieldType name="textFacet" class="solr.TextField" sortMissingLast="true" omitNorms="true">
 			<analyzer>
 				<tokenizer class="solr.KeywordTokenizerFactory"/>
-				<!-- strip trailing punctuation from facets: -->
+				<!-- KeywordTokenizer does no actual tokenizing, so the entire
+					 input string is preserved as a single token
+
+				 https://solr.apache.org/guide/8_8/tokenizers.html#keyword-tokenizer
+				 -->
 				<filter class="solr.PatternReplaceFilterFactory" pattern="(?&lt;!\b[A-Z])[.\s]*$" replacement="" replace="first"/>
+				<!-- strip trailing punctuation from facets: -->
 			</analyzer>
 		</fieldType>
 		<fieldType name="text" class="solr.TextField" positionIncrementGap="100">
@@ -334,8 +339,10 @@
 		<fieldType name="alphaOnlySort" class="solr.TextField" sortMissingLast="true" omitNorms="true">
 			<analyzer>
 				<!-- KeywordTokenizer does no actual tokenizing, so the entire
-						 input string is preserved as a single token
-					-->
+					 input string is preserved as a single token
+
+				 https://solr.apache.org/guide/8_8/tokenizers.html#keyword-tokenizer
+				 -->
 				<tokenizer class="solr.KeywordTokenizerFactory"/>
 				<!-- The LowerCase TokenFilter does what you expect, which can be
 						 when you want your sorting to be case insensitive

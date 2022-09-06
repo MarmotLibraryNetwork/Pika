@@ -36,10 +36,6 @@ register_shutdown_function('session_write_close');
 @session_start();
 $timer->logTime('Initialized Pika\Session');
 
-// instantiate global logger
-$pikaLogger = new Pika\Logger('Pika', true);
-$timer->logTime("Initialized Pika\Logger");
-
 if (isset($_REQUEST['test_role'])){
 	handleCookie('test_role', $_REQUEST['test_role'] );
 }
@@ -218,10 +214,6 @@ $timer->logTime('Check whether or not to include auto logout code');
 //	$timer->logTime('Process followup');
 //}
 
-// Process Solr shard settings
-processShards();
-$timer->logTime('Process Shards');
-
 // Call Action
 // Note: ObjectEditor classes typically have the class name of DB_Object with an 's' added to the end.
 //       This distinction prevents the DB_Object from being mistakenly called as the Action class.
@@ -280,61 +272,6 @@ $memoryWatcher->writeMemory();
 //			break;
 //	}
 //}
-
-/**
- * Process Solr-shard-related parameters and settings.
- *
- * @return void
- */
-function processShards(){
-	global $configArray;
-	global $interface;
-
-	// If shards are not configured, give up now:
-	if (empty($configArray['IndexShards'])){
-		return;
-	}
-
-	// If a shard selection list is found as an incoming parameter, we should save
-	// it in the session for future reference:
-	$useDefaultShards = false;
-	if (array_key_exists('shard', $_REQUEST)){
-		if ($_REQUEST['shard'] == ''){
-			$useDefaultShards = true;
-		}else{
-			$_SESSION['shards'] = $_REQUEST['shard'];
-		}
-
-	}elseif (!array_key_exists('shards', $_SESSION)){
-		$useDefaultShards = true;
-	}
-	if ($useDefaultShards){
-		// If no selection list was passed in, use the default...
-
-		// If we have a default from the configuration, use that...
-		if (!empty($configArray['ShardPreferences']['defaultChecked'])){
-			$checkedShards      = $configArray['ShardPreferences']['defaultChecked'];
-			$_SESSION['shards'] = is_array($checkedShards) ? $checkedShards : [$checkedShards];
-		}else{
-			// If no default is configured, use all shards...
-			$_SESSION['shards'] = array_keys($configArray['IndexShards']);
-		}
-	}
-
-	// If we are configured to display shard checkboxes, send a list of shards
-	// to the interface, with keys being shard names and values being a boolean
-	// value indicating whether or not the shard is currently selected.
-	if (isset($configArray['ShardPreferences']['showCheckboxes'])
-		&& $configArray['ShardPreferences']['showCheckboxes'] == true
-	){
-		$shards = [];
-		foreach ($configArray['IndexShards'] as $shardName => $shardAddress){
-			$shards[$shardName] = in_array($shardName, $_SESSION['shards']);
-		}
-		$interface->assign('shards', $shards);
-	}
-}
-
 
 /**
  *  Check if the website is available for use and display Unavailable page if not.
