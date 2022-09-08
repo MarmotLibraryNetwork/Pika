@@ -403,7 +403,11 @@
 						<div id="linkedAccountPanel" class="panel-collapse collapse in">
 							<div class="panel-body">
 								<p class="alert alert-info">
-									Linked accounts allow you to easily maintain multiple accounts for the library so you can see all of your information in one place. Information from linked accounts will appear when you view your checkouts, holds, etc in the main account.
+								<p>
+									Linked accounts allow you to easily maintain multiple accounts for the library so you can see all of your information in one place. Information from linked accounts will appear when you view your checkouts, holds, etc in the main account.</p>
+								<p>
+									For more information about Linked Accounts, see the <a href="https://marmot-support.atlassian.net/l/cp/GiuLxH78">online documentation</a>.
+								</p>
 								</p>
 									<div class="lead">Additional accounts to manage</div>
 									<p>The following accounts can be managed from this account.</p>
