@@ -1166,29 +1166,41 @@ class Solr implements IndexEngine {
 		// this notice suppression doesn't work when replacing list() with []
 
 		$sortDirection = strtolower(trim($sortDirection));
-		// Normalize sort direction to either "asc" or "desc":
-		if ($sortDirection != 'asc' && $sortDirection != 'desc'){
-			$sortDirection = 'asc';
-		}
 
 		// Translate special sort values into appropriate Solr fields:
 		switch ($sortField){
 			case 'year':
 			case 'publishDate':
+				if ($sortDirection != 'asc' && $sortDirection != 'desc'){
+					// Default sort direction for catalog date should be descending rather than ascending for other options
+					$sortDirection = 'desc';
+				}
 				return "publishDateSort $sortDirection,title_sort asc,authorStr asc";
 			case 'author':
+				if ($sortDirection != 'asc' && $sortDirection != 'desc'){
+					$sortDirection = 'asc';
+				}
 				return "authorStr $sortDirection,title_sort asc";
 			case 'title':
+				if ($sortDirection != 'asc' && $sortDirection != 'desc'){
+					$sortDirection = 'asc';
+				}
 				return "title_sort $sortDirection,authorStr asc";
 			case 'callnumber_sort':
 				$searchLibrary = Library::getSearchLibrary($this->searchSource);
 				if ($searchLibrary != null){
 					$sortField = 'callnumber_sort_' . $searchLibrary->subdomain;
 				}
-				break;
+				if ($sortDirection != 'asc' && $sortDirection != 'desc'){
+					$sortDirection = 'asc';
+				}
+				return $sortField . ' ' . $sortDirection;
+			default:
+				if ($sortDirection != 'asc' && $sortDirection != 'desc'){
+					$sortDirection = 'asc';
+				}
+				return $sortField . ' ' . $sortDirection;
 		}
-
-		return $sortField . ' ' . $sortDirection;
 	}
 
 	/**
