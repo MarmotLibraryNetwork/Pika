@@ -946,17 +946,17 @@ class ExploreMore {
 	 *
 	 * @return array
 	 */
-	public function getRelatedWorks($relatedSubjects, $directlyRelatedRecords) {
+	public function getRelatedWorks($relatedSubjects, $directlyRelatedRecords){
 		//Load related catalog content
-		$searchTerm = implode(" OR ", $relatedSubjects);
+		$searchTerm = implode(' OR ', $relatedSubjects);
 
-		$similarTitles = array(
-				'numFound' => 0,
-				'link' => '',
-				'values' => array()
-		);
+		$similarTitles = [
+			'numFound' => 0,
+			'link'     => '',
+			'values'   => []
+		];
 
-		if (strlen($searchTerm) > 0) {
+		if (strlen($searchTerm) > 0){
 			//Blacklist any records that we have specific links to
 			$recordsToAvoid = '';
 			foreach ($directlyRelatedRecords as $record){
@@ -965,39 +965,39 @@ class ExploreMore {
 				}
 				$recordsToAvoid .= $record['id'];
 			}
-			/*if (strlen($recordsToAvoid) > 0){
-				$searchTerm .= " AND NOT id:($recordsToAvoid)";
-			}*/
 
 			/** @var SearchObject_Solr $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init('local', $searchTerm);
-			$searchObject->setSearchTerms(array(
-					'lookfor' => $searchTerm,
-					'index' => 'Keyword'
-			));
+			$searchObject->setSearchTerms([
+				'lookfor' => $searchTerm,
+				'index'   => 'Keyword'
+			]);
 			$searchObject->addFilter('literary_form_full:Non Fiction');
 			$searchObject->addFilter('target_audience:(Adult OR Unknown)');
-			$searchObject->addHiddenFilter('!id', $recordsToAvoid);
+
+			if (strlen($recordsToAvoid) > 0){
+				$searchObject->addHiddenFilter('!id', $recordsToAvoid);
+			}
 
 			$searchObject->setPage(1);
 			$searchObject->setLimit(5);
 			$results = $searchObject->processSearch(true, false);
 
-			if ($results && isset($results['response'])) {
-				$similarTitles = array(
-						'numFound' => $results['response']['numFound'],
-						'link' => $searchObject->renderSearchUrl(),
-						'topHits' => array()
-				);
-				foreach ($results['response']['docs'] as $doc) {
+			if ($results && isset($results['response'])){
+				$similarTitles = [
+					'numFound' => $results['response']['numFound'],
+					'link'     => $searchObject->renderSearchUrl(),
+					'topHits'  => []
+				];
+				foreach ($results['response']['docs'] as $doc){
 					/** @var GroupedWorkDriver $driver */
-					$driver = RecordDriverFactory::initRecordDriver($doc);
-					$similarTitle = array(
-							'label' => $driver->getTitle(),
-							'link' => $driver->getLinkUrl(),
-							'image' => $driver->getBookcoverUrl('medium')
-					);
+					$driver                    = RecordDriverFactory::initRecordDriver($doc);
+					$similarTitle              = [
+						'label' => $driver->getTitle(),
+						'link'  => $driver->getLinkUrl(),
+						'image' => $driver->getBookcoverUrl('medium')
+					];
 					$similarTitles['values'][] = $similarTitle;
 				}
 			}
