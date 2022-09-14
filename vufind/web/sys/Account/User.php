@@ -265,15 +265,20 @@ class User extends DB_DataObject {
 	}
 
 	/**
-	 * decypt password
-	 * @param  string $encryptedPassword
+	 * Decrypt password
+	 *
 	 * @return string Decrypted password
 	 */
-	private function _decryptPassword($encryptedPassword) {
-		global $configArray;
-		$key = base64_decode($configArray["Site"]["passwordEncryptionKey"]);
-		[$encryptedPW, $v] = explode('::', base64_decode($this->password), 2);
-		$password = openssl_decrypt($encryptedPW, 'aes-256-cbc', $key, 0, $v);
+	private function _decryptPassword() {
+		if (empty($this->password)){
+			$password = '';
+		}else{
+			global $configArray;
+			$key    = base64_decode($configArray['Site']['passwordEncryptionKey']);
+			$string = base64_decode($this->password);
+			[$encryptedPW, $v] = explode('::', $string, 2);
+			$password = openssl_decrypt($encryptedPW, 'aes-256-cbc', $key, 0, $v);
+		}
 		return $password;
 	}
 

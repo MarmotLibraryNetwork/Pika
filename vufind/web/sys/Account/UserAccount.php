@@ -35,6 +35,7 @@ class UserAccount {
 	private $cache;
 	private $logger;
 
+	//TODO: remove; All methods are called statically; construct is never called.
 	public function __construct(){
 		$this->cache  = new Cache();
 		$this->logger = new Logger(__CLASS__);
@@ -338,7 +339,7 @@ class UserAccount {
 				//Check CAS first
 				//require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 				$casAuthentication = new CASAuthentication(null);
-				$logger->debug("Checking CAS Authentication from UserAccount::getLoggedInUser");
+				$logger->debug('Checking CAS Authentication from UserAccount::getLoggedInUser');
 				$casUsername = $casAuthentication->validateAccount(null, null, null, false);
 				if ($casUsername == false || PEAR_Singleton::isError($casUsername)){
 					//The user could not be authenticated in CAS
@@ -377,7 +378,7 @@ class UserAccount {
 
 		$_SESSION['activeUserId'] = $user->id;
 
-		if (isset($_REQUEST['rememberMe']) && ($_REQUEST['rememberMe'] === "true" || $_REQUEST['rememberMe'] === "on")){
+		if (isset($_REQUEST['rememberMe']) && ($_REQUEST['rememberMe'] === 'true' || $_REQUEST['rememberMe'] === 'on')){
 			$_SESSION['rememberMe'] = true;
 		}else{
 			$_SESSION['rememberMe'] = false;
@@ -409,14 +410,14 @@ class UserAccount {
 
 		$validatedViaSSO = false;
 		if (isset($_REQUEST['casLogin'])){
-			$logger->info("Logging the user in via CAS");
+			$logger->info('Logging the user in via CAS');
 			//Check CAS first
 		//	require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 			$casAuthentication = new CASAuthentication();
 			$casUsername       = $casAuthentication->authenticate();
 			if ($casUsername == false || PEAR_Singleton::isError($casUsername)){
 				//The user could not be authenticated in CAS
-				$logger->info("The user could not be logged in");
+				$logger->info('The user could not be logged in via CAS');
 				return new PEAR_Error('Could not authenticate in sign on service');
 			}else{
 				$logger->info("User logged in OK CAS Username $casUsername");
@@ -465,7 +466,7 @@ class UserAccount {
 						$primaryUser->addLinkedUser($tempUser);
 					}
 				}else{
-					$username = isset($_REQUEST['username']) ? $_REQUEST['username'] : 'No username provided';
+					$username = $_REQUEST['username'] ?? 'No username provided';
 					$logger->error("Error authenticating patron $username for driver {$driverName}",
 						['last_error' => $tempUser->toString()]);
 				}
@@ -514,15 +515,15 @@ class UserAccount {
 			//Check CAS first
 			//require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 			$casAuthentication = new CASAuthentication(null);
-			$logger->debug("Checking CAS Authentication from UserAccount::validateAccount");
+			$logger->debug('Checking CAS Authentication from UserAccount::validateAccount');
 			$casUsername = $casAuthentication->validateAccount(null, null, $parentAccount, false);
 			if ($casUsername == false || PEAR_Singleton::isError($casUsername)){
 				//The user could not be authenticated in CAS
-				$logger->debug("User could not be authenticated in CAS");
+				$logger->debug('User could not be authenticated in CAS');
 				UserAccount::$validatedAccounts[$username . $password] = false;
 				return false;
 			}else{
-				$logger->debug("User was authenticated in CAS");
+				$logger->debug('User was authenticated in CAS');
 				//Set both username and password since authentication methods could use either.
 				//Each authentication method will need to deal with the possibility that it gets a barcode for both user and password
 				$username        = $casUsername;
