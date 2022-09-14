@@ -825,8 +825,6 @@
 		<!--TODO: Is there a reason to index the grouping_category ? -->
 		<!--TODO: Is there a reason to have this stored -->
 		<dynamicField name="format_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
-		<field name="format_boost" type="integer" indexed="true" stored="true" multiValued="false" omitNorms="true" default="1"/>
-		<!--TODO: leaving the original field till the php side can switched over to using the dynamic field-->
 		<dynamicField name="format_boost_*" type="integer" indexed="false" stored="true" multiValued="false" omitNorms="true"/>
 		<dynamicField name="format_category_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
 
