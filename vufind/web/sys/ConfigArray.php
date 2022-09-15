@@ -193,9 +193,9 @@ function readConfig(){
 
 	// Sanity checking to make sure we loaded a good file
 	if ($serverName == 'default'){
-		global $logger;
-		if ($logger){
-			$logger->log('Did not find servername for server ' . $_SERVER['SERVER_NAME'], PEAR_LOG_ERR);
+		global $pikaLogger;
+		if ($pikaLogger){
+			$pikaLogger->error('Did not find servername for server ' . $_SERVER['SERVER_NAME']);
 		}
 		PEAR_Singleton::raiseError("Invalid configuration, could not find site for " . $_SERVER['SERVER_NAME']);
 		die();

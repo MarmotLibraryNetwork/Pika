@@ -18,9 +18,10 @@
  */
 
 require_once ROOT_DIR . '/AJAXHandler.php';
+use \Pika\Logger;
 
 class Browse_AJAX extends AJAXHandler {
-
+	protected $logger;
 	const ITEMS_PER_PAGE = 24;
 
 	/** @var SearchObject_Solr|SearchObject_Base $searchObject */
@@ -35,6 +36,11 @@ class Browse_AJAX extends AJAXHandler {
 		'getActiveBrowseCategories',
 		'getSubCategories',
 	];
+
+	function __construct(){
+		$this->logger = new Logger(__CLASS__);
+	}
+
 
 	function getAddBrowseCategoryForm(){
 		global $interface;
@@ -559,8 +565,8 @@ class Browse_AJAX extends AJAXHandler {
 					$this->subCategories[] = $temp;
 					$subCategories[]       = ['label' => $temp->label, 'textId' => $temp->textId];
 				}else{
-					global $logger;
-					$logger->log("Did not find subcategory with id {$subCategory->subCategoryId}", PEAR_LOG_WARNING);
+
+					$this->logger->warning("Did not find subcategory with id {$subCategory->subCategoryId}");
 				}
 			}
 			if ($subCategories){

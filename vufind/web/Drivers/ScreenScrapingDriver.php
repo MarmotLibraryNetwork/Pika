@@ -25,7 +25,7 @@
  * Date: 7/23/2015
  * Time: 2:32 PM
  */
-
+use \Pika\Logger;
 abstract class ScreenScrapingDriver implements DriverInterface {
 	/** @var  AccountProfile $accountProfile */
 	public $accountProfile;
@@ -152,8 +152,8 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 		$return = curl_exec($this->curl_connection);
 //		$info = curl_getinfo($this->curl_connection);
 		if (!$return) { // log curl error
-			global $logger;
-			$logger->log('curl get error : '.curl_error($this->curl_connection), PEAR_LOG_ERR);
+
+			$this->logger->error('curl get error : '.curl_error($this->curl_connection));
 		}
 		return $return;
 	}
@@ -191,8 +191,8 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 //		}
 
 		if (!$return) { // log curl error
-			global $logger;
-			$logger->log('curl post error : '.curl_error($this->curl_connection), PEAR_LOG_ERR);
+
+			$this->logger->error('curl post error : '.curl_error($this->curl_connection));
 		}
 		return $return;
 	}

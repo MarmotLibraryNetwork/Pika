@@ -270,7 +270,6 @@ class Library extends DB_DataObject {
 	public $changeRequiresReindexing;
 
 
-
 	// Use this to set which details will be shown in the the Main Details section of the record view.
 	// You should be able to add options here without needing to change the database.
 	// set the key to the desired SMARTY template variable name, set the value to the label to show in the library configuration page
@@ -1433,8 +1432,8 @@ class Library extends DB_DataObject {
 						$this->showInMainDetails = [];
 					}
 				} catch (Exception $e){
-					global $logger;
-					$logger->log("Error loading $this->libraryId $e", PEAR_LOG_DEBUG);
+					global $pikaLogger;
+					$pikaLogger->debug("Error loading $this->libraryId $e");
 				}
 
 			}elseif (empty($this->showInMainDetails)){

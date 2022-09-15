@@ -126,8 +126,8 @@ class Hoopla_AJAX extends AJAXHandler {
 				}else{
 					// No Hoopla Account Found, give the user an error message
 					$invalidAccountMessage = translate('hoopla_invalid_account_or_library');
-					global $logger;
-					$logger->log('No valid Hoopla account was found to check out a Hoopla title.', PEAR_LOG_ERR);
+
+					$this->logger->error('No valid Hoopla account was found to check out a Hoopla title.');
 					return
 						[
 							'title'   => 'Invalid Hoopla Account',

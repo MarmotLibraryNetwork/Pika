@@ -478,7 +478,7 @@ class User extends DB_DataObject {
 			/** @var Memcache $memCache */
 			global $memCache;
 			global $serverName;
-			global $logger;
+
 			if ($this->id && $library->allowLinkedAccounts){
 				require_once ROOT_DIR . '/sys/Account/UserLink.php';
 				$userLink                   = new UserLink();
@@ -742,8 +742,8 @@ class User extends DB_DataObject {
 		//set default values as needed
 		if (!isset($this->homeLocationId)){
 			$this->homeLocationId = 0;
-			global $logger;
-			$logger->log('No Home Location ID was set for newly created user.', PEAR_LOG_WARNING);
+
+			$this->logger->warning('No Home Location ID was set for newly created user.');
 		}
 		if (!isset($this->myLocation1Id)){
 			$this->myLocation1Id = 0;
@@ -1620,25 +1620,25 @@ class User extends DB_DataObject {
 
 	function updateAltLocationForHold($pickupBranch){
 		if ($this->homeLocationCode != $pickupBranch){
-			global $logger;
-			$logger->log("The selected pickup branch is not the user's home location, checking to see if we need to set an alternate branch", PEAR_LOG_INFO);
+
+			$this->logger->info("The selected pickup branch is not the user's home location, checking to see if we need to set an alternate branch");
 			$location       = new Location();
 			$location->code = $pickupBranch;
 			if ($location->find(true)){
-				$logger->log("Found the location for the pickup branch $pickupBranch {$location->locationId}", PEAR_LOG_INFO);
+				$this->logger->info("Found the location for the pickup branch $pickupBranch {$location->locationId}");
 				if ($this->myLocation1Id == 0){
-					$logger->log("Alternate location 1 is blank updating that", PEAR_LOG_INFO);
+					$this->logger->info("Alternate location 1 is blank updating that");
 					$this->myLocation1Id = $location->locationId;
 					$this->update();
 				}else{
 					if ($this->myLocation2Id == 0 && $location->locationId != $this->myLocation1Id){
-						$logger->log("Alternate location 2 is blank updating that", PEAR_LOG_INFO);
+						$this->logger->info("Alternate location 2 is blank updating that");
 						$this->myLocation2Id = $location->locationId;
 						$this->update();
 					}
 				}
 			}else{
-				$logger->log("Could not find location for $pickupBranch", PEAR_LOG_ERR);
+				$this->logger->error("Could not find location for $pickupBranch");
 			}
 		}
 	}

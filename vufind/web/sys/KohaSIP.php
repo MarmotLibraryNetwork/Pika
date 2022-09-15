@@ -30,9 +30,10 @@ require_once ROOT_DIR . '/sys/SIP2.php';
 class KohaSIP extends sip2
 {
 
+
 	//TODO: this function should really replace the base method. Would need to build a version of doSipLogin for the parent class
 	function connect(){
-		global $logger;
+		global $pikaLogger;
 		/* Socket Communications  */
 		$this->_debugmsg( "SIP2: --- BEGIN SIP communication ---");
 
@@ -44,7 +45,7 @@ class KohaSIP extends sip2
 
 		/* check for actual truly false result using ===*/
 		if ($this->socket === false) {
-			$logger->log("Unable to create socket to SIP server at $this->hostname", PEAR_LOG_ERR);
+			$pikaLogger->error("Unable to create socket to SIP server at $this->hostname");
 			$this->_debugmsg( "SIP2: socket_create() failed: reason: " . socket_strerror($this->socket));
 			return false;
 		} else {
@@ -67,15 +68,15 @@ class KohaSIP extends sip2
 				if ((time() - $connectStart) >= $connectionTimeout)
 				{
 					$this->disconnect();
-					$logger->log("Connection to $address $this->port timed out", PEAR_LOG_ERR);
+					$pikaLogger->error("Connection to $address $this->port timed out");
 					return false;
 				}
-				$logger->log("Waiting for connection", PEAR_LOG_DEBUG);
+				$pikaLogger->debug("Waiting for connection");
 				sleep(1);
 				continue;
 			}else{
-				$logger->log("Unable to connect to $address $this->port", PEAR_LOG_ERR);
-				$logger->log("SIP2: socket_connect() failed.\nReason: ($error) " . socket_strerror($error), PEAR_LOG_ERR);
+				$pikaLogger->error("Unable to connect to $address $this->port");
+				$pikaLogger->error("SIP2: socket_connect() failed.\nReason: ($error) " . socket_strerror($error));
 				$this->_debugmsg("SIP2: socket_connect() failed.\nReason: ($error) " . socket_strerror($error));
 				return false;
 			}

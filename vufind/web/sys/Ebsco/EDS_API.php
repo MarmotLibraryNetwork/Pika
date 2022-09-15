@@ -199,8 +199,8 @@ BODY;;
 				return null;
 			}
 		} catch (Exception $e){
-			global $logger;
-			$logger->log("Error loading data from EBSCO $e", PEAR_LOG_ERR);
+
+			$this->logger->error("Error loading data from EBSCO $e");
 		}
 	}
 

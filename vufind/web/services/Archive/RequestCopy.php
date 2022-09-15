@@ -110,8 +110,8 @@ class Archive_RequestCopy extends Action{
 								$interface->assign('error', "Your request could not be sent: {$emailResult->message}.");
 							} else {
 								$interface->assign('error', "Your request could not be sent due to an unknown error.");
-								global $logger;
-								$logger->log("Mail List Failure (unknown reason), parameters: $owningLibrary->archiveRequestEmail, $newObject->email, $subject, $body", PEAR_LOG_ERR);
+								global $pikaLogger;
+								$pikaLogger->error("Mail List Failure (unknown reason), parameters: $owningLibrary->archiveRequestEmail, $newObject->email, $subject, $body");
 							}
 						} else {
 							$interface->assign('error', 'Please do not include html or links within your request');
@@ -158,21 +158,21 @@ class Archive_RequestCopy extends Action{
 		if ($validationResults['validatedOk']) {
 			$ret = $newObject->insert();
 			if (!$ret) {
-				global $logger;
+				global $pikaLogger;
 				if ($newObject->_lastError) {
 					$errorDescription = $newObject->_lastError->getUserInfo();
 				} else {
 					$errorDescription = 'Unknown error';
 				}
-				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, PEAR_LOG_DEBUG);
+				$pikaLogger->debug('Could not insert new object ' . $ret . ' ' . $errorDescription);
 				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br>{$errorDescription}";
 
 				return false;
 			}
 		} else {
-			global $logger;
+			global $pikaLogger;
 			$errorDescription = implode(', ', $validationResults['errors']);
-			$logger->log('Could not validate new object Archive Request ' . $errorDescription, PEAR_LOG_DEBUG);
+			$pikaLogger->debug('Could not validate new object Archive Request ' . $errorDescription);
 			$_SESSION['lastError'] = "The information entered was not valid. <br>" . implode('<br>', $validationResults['errors']);
 			return false;
 		}

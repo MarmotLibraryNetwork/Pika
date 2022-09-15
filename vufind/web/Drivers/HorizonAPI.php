@@ -19,11 +19,16 @@
 
 require_once 'DriverInterface.php';
 require_once ROOT_DIR . '/Drivers/Horizon.php';
+use \Pika\Logger;
 
 abstract class HorizonAPI extends Horizon{
 
 	private $webServiceURL = null;
+	private $logger;
 
+	public function __construct($accountProfile){
+		$this->logger = new Logger(__CLASS__);
+	}
 	public function getWebServiceURL(){
 		if (empty($this->webServiceURL)){
 			$webServiceURL = null;
@@ -32,8 +37,8 @@ abstract class HorizonAPI extends Horizon{
 			}elseif (!empty($configArray['Catalog']['webServiceUrl'])){
 				$webServiceURL = $configArray['Catalog']['webServiceUrl'];
 			}else{
-				global $logger;
-				$logger->log('No Web Service URL defined in Horizon ROA API Driver', PEAR_LOG_CRIT);
+
+				$this->logger->critical('No Web Service URL defined in Horizon ROA API Driver');
 			}
 			$this->webServiceURL = rtrim($webServiceURL, '/'); // remove any trailing slash because other functions will add it.
 		}
@@ -128,8 +133,8 @@ abstract class HorizonAPI extends Horizon{
 				if (isset($lookupMyAccountInfoResponse->locationID)){
 					$user->setUserHomeLocations(trim((string)$lookupMyAccountInfoResponse->locationID));
 				} else {
-					global $logger;
-					$logger->log('HorizonAPI Driver: No Home Library Location or Hold location found in account look-up. User : '.$user->id, PEAR_LOG_ERR);
+
+					$this->logger->error('HorizonAPI Driver: No Home Library Location or Hold location found in account look-up. User : '.$user->id);
 				}
 
 				$finesVal = 0;
@@ -195,8 +200,8 @@ abstract class HorizonAPI extends Horizon{
 				return $user;
 			} else {
 				$timer->logTime("lookupMyAccountInfo failed");
-				global $logger;
-				$logger->log('Horizon API call lookupMyAccountInfo failed.', PEAR_LOG_ERR);
+
+				$this->logger->error('Horizon API call lookupMyAccountInfo failed.');
 //				$logger->log($configArray['Catalog']['webServiceUrl'] . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeAddressInfo=true&includeHoldInfo=true&includeBlockInfo=true&includeItemsOutInfo=true', PEAR_LOG_ERR);
 				return null;
 			}
@@ -945,11 +950,11 @@ abstract class HorizonAPI extends Horizon{
 				$parsedXml = simplexml_load_string($xml);
 				if ($parsedXml === false){
 					//Failed to load xml
-					global $logger;
-					$logger->log("Error parsing xml", PEAR_LOG_ERR);
-					$logger->log($xml, PEAR_LOG_DEBUG);
+
+					$this->logger->error("Error parsing xml");
+					$this->logger->debug($xml);
 					foreach(libxml_get_errors() as $error) {
-						$logger->log("\t {$error->message}", PEAR_LOG_ERR);
+						$this->logger->error("\t {$error->message}");
 					}
 					return false;
 				}else{
@@ -959,8 +964,8 @@ abstract class HorizonAPI extends Horizon{
 				return $xml;
 			}
 		}else{
-			global $logger;
-			$logger->log('Curl problem in getWebServiceResponse', PEAR_LOG_WARNING);
+
+			$this->logger->warning('Curl problem in getWebServiceResponse');
 			return false;
 		}
 	}

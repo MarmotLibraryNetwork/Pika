@@ -76,24 +76,24 @@ class Timer{
 				$this->timingMessages[] = "Finished run: $curTime ($elapsedTime sec)";
 			}
 			$this->lastTime = $curTime;
-			global $logger;
+			global $pikaLogger;
 			$totalElapsedTime =round(microtime(true) - $this->firstTime, 4);
 			$timingInfo = "\r\nTiming for: " . $_SERVER['REQUEST_URI'] . "\r\n";
 			$timingInfo .= implode("\r\n", $this->timingMessages);
 			$timingInfo .= "\r\nTotal Elapsed time was: $totalElapsedTime seconds.\r\n";
-			$logger->log($timingInfo, PEAR_LOG_NOTICE);
+			$pikaLogger->notice($timingInfo);
 		}
 	}
 
 	function __destruct() {
 		if ($this->timingsEnabled){
-			global $logger;
-			if ($logger){
+			global $pikaLogger;
+			if ($pikaLogger){
 				$totalElapsedTime =round(microtime(true) - $this->firstTime, 4);
 				$timingInfo = "\r\nTiming for: " . $_SERVER['REQUEST_URI'] . "\r\n";
 				$timingInfo .= implode("\r\n", $this->timingMessages);
 				$timingInfo .= "\r\nTotal Elapsed time was: $totalElapsedTime seconds.\r\n";
-				$logger->log($timingInfo, PEAR_LOG_NOTICE);
+				$pikaLogger->notice($timingInfo);
 			}
 		}
 	}

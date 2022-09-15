@@ -435,8 +435,8 @@ class MyAccount_AJAX extends AJAXHandler {
 			}
 		} catch (PDOException $e){
 			/** @var Logger $logger */
-			global $logger;
-			$logger->log('Booking : ' . $e->getMessage(), PEAR_LOG_ERR);
+
+			$this->logger->error('Booking : ' . $e->getMessage());
 
 			$result = [
 				'success' => false,
@@ -635,8 +635,8 @@ class MyAccount_AJAX extends AJAXHandler {
 			}else{
 				if (empty($_REQUEST['recordId']) || empty($_REQUEST['holdId'])){
 					// We aren't getting all the expected data, so make a log entry & tell user.
-					global $logger;
-					$logger->log('Freeze Hold, no record or hold Id was passed in AJAX call.', PEAR_LOG_ERR);
+
+					$this->logger->error('Freeze Hold, no record or hold Id was passed in AJAX call.');
 					$result['message'] = 'Information about the hold to be ' . translate('frozen') . ' was not provided.';
 				}else{
 					$recordId         = $_REQUEST['recordId'];
@@ -661,8 +661,8 @@ class MyAccount_AJAX extends AJAXHandler {
 			}
 		}else{
 			// We aren't getting all the expected data, so make a log entry & tell user.
-			global $logger;
-			$logger->log('Freeze Hold, no patron Id was passed in AJAX call.', PEAR_LOG_ERR);
+
+			$this->logger->error('Freeze Hold, no patron Id was passed in AJAX call.');
 			$result['message'] = 'No Patron was specified.';
 		}
 
@@ -695,8 +695,8 @@ class MyAccount_AJAX extends AJAXHandler {
 			}
 		}else{
 			// We aren't getting all the expected data, so make a log entry & tell user.
-			global $logger;
-			$logger->log('Thaw Hold, no patron Id was passed in AJAX call.', PEAR_LOG_ERR);
+
+			$this->logger->error('Thaw Hold, no patron Id was passed in AJAX call.');
 			$result['message'] = 'No Patron was specified.';
 		}
 
@@ -1296,8 +1296,8 @@ class MyAccount_AJAX extends AJAXHandler {
 									'result'  => false,
 									'message' => 'Your e-mail message could not be sent due to an unknown error.',
 								];
-								global $logger;
-								$logger->log("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body", PEAR_LOG_ERR);
+
+								$this->logger->error("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body");
 							}
 						}else{ //spammy email message
 							$result = [

@@ -506,8 +506,8 @@ class OverDrive_AJAX extends AJAXHandler {
 			}
 		}else{
 			// No Overdrive Account Found, give the user an error message
-			global $logger;
-			$logger->log('No valid Overdrive account was found to check out an Overdrive title. UserID : ' . $user->id, PEAR_LOG_ERR);
+
+			$this->logger->error('No valid Overdrive account was found to check out an Overdrive title. UserID : ' . $user->id);
 			return [
 				'promptNeeded' => true,
 				'promptTitle'  => 'Error',

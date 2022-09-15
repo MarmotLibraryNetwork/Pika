@@ -19,9 +19,12 @@
 
 //require_once ROOT_DIR . '/sys/SIP2.php'; // not used at this time. plb 6-17-2016
 require_once ROOT_DIR . '/Drivers/ScreenScrapingDriver.php';
+
+use \Pika\Logger;
 abstract class Horizon extends ScreenScrapingDriver{
 
 	protected $db;
+	private $logger;
 	protected $useDb = false;
 	protected $hipUrl;
 	protected $hipProfile;
@@ -30,6 +33,7 @@ abstract class Horizon extends ScreenScrapingDriver{
 	public $accountProfile;
 
 	function __construct($accountProfile) {
+		$this->logger = new Logger(__CLASS__);
 		$this->accountProfile = $accountProfile;
 		// Load Configuration for this Module
 		global $configArray;
@@ -58,8 +62,7 @@ abstract class Horizon extends ScreenScrapingDriver{
 					}
 				$this->useDb = true;
 			}catch (Exception $e){
-					global $logger;
-				$logger->log("Could not load Horizon database", PEAR_LOG_ERR);
+				$this->logger->error("Could not load Horizon database");
 			}
 		}
 	}
@@ -74,7 +77,7 @@ abstract class Horizon extends ScreenScrapingDriver{
 
 	public function getMyFinesViaHIP($patron, $includeMessages){
 		global $configArray;
-		global $logger;
+
 
 		//Setup Curl
 		$header=array();
@@ -103,7 +106,7 @@ abstract class Horizon extends ScreenScrapingDriver{
 		curl_setopt($curl_connection, CURLOPT_HEADER, false);
 		curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
 		$sresult = curl_exec($curl_connection);
-		$logger->log("Loading fines $curl_url", PEAR_LOG_INFO);
+		$this->logger->info("Loading fines $curl_url");
 
 		//Extract the session id from the requestcopy javascript on the page
 		if (preg_match('/\\?session=(.*?)&/s', $sresult, $matches)) {
@@ -271,8 +274,8 @@ abstract class Horizon extends ScreenScrapingDriver{
 //			));
 
 			//Login by posting username and password
-			global $logger;
-			$logger->log("Logging into user account from updatePatronInfo $curl_url", PEAR_LOG_INFO);
+
+			$this->logger->info("Logging into user account from updatePatronInfo $curl_url");
 			$post_data   = array(
 				'aspect' => 'overview',
 				'button' => 'Log into Your Account',

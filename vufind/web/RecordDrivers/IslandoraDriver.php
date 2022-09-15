@@ -28,10 +28,12 @@
 require_once ROOT_DIR . '/RecordDrivers/Interface.php';
 require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 
+use \Pika\Logger;
+
 abstract class IslandoraDriver extends RecordInterface {
 	protected $pid = null;
 	protected $title = null;
-
+	private $logger;
 	protected $solrScore = null;
 	protected $solrExplanation = null;
 
@@ -51,6 +53,7 @@ abstract class IslandoraDriver extends RecordInterface {
 	 */
 	public function __construct($recordData) {
 
+		$this->logger = new Logger(__CLASS__);
 		if ($recordData instanceof AbstractFedoraObject){
 			$this->archiveObject = $recordData;
 			$this->pid = $this->archiveObject->id;
@@ -1210,8 +1213,8 @@ abstract class IslandoraDriver extends RecordInterface {
 									break;
 								}
 							}else{
-								global $logger;
-								$logger->log("Incorrect driver type for " . $collectionInfo['object']['value'], PEAR_LOG_DEBUG);
+
+								$this->logger->debug("Incorrect driver type for " . $collectionInfo['object']['value']);
 							}
 						}
 					}
@@ -2026,9 +2029,9 @@ abstract class IslandoraDriver extends RecordInterface {
 						$offset = str_replace(['(', ')'], '', $match);
 						[$minutes, $seconds] = explode(':', $offset);
 						/** @var Logger $logger */
-						global $logger;
+
 						if (!is_numeric($minutes) || !is_numeric($seconds)){
-							$logger->log("Failed to parse a transcript timestamp: " . $match, PEAR_LOG_WARNING);
+							$this->logger->warning("Failed to parse a transcript timestamp: " . $match);
 						}
 						$offset = $minutes * 60 + $seconds;
 						$replacement = '<a onclick="document.getElementById(\'player\').currentTime=\'' . $offset . '\';" style="cursor:pointer">' . $match . '</a>';
@@ -2041,9 +2044,9 @@ abstract class IslandoraDriver extends RecordInterface {
 						$offset = str_replace(['[', ']'], '', $match);
 						[$hours, $minutes, $seconds] = explode(':', $offset);
 						/** @var Logger $logger */
-						global $logger;
+
 						if (!is_numeric($hours) || !is_numeric($minutes) || !is_numeric($seconds)){
-							$logger->log("Failed to parse a transcript timestamp: " . $match, PEAR_LOG_WARNING);
+							$this->logger->warning("Failed to parse a transcript timestamp: " . $match);
 						}
 						$offset = $hours * 3600 + $minutes * 60 + $seconds;
 						$replacement = '<a onclick="document.getElementById(\'player\').currentTime=\'' . $offset . '\';" style="cursor:pointer">' . $match . '</a>';

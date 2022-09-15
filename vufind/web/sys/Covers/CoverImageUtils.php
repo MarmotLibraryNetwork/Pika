@@ -94,7 +94,7 @@ function _clip($value, $lower, $upper)
 
 function resizeImage($originalPath, $newPath, $maxWidth, $maxHeight)
 {
-	global $logger;
+	global $pikaLogger;
 	list($width, $height, $type) = @getimagesize($originalPath);
 	if ($image = @file_get_contents($originalPath, false)) {
 		if(!$imageResource = @imagecreatefromstring($image)){
@@ -112,18 +112,18 @@ function resizeImage($originalPath, $newPath, $maxWidth, $maxHeight)
 				$tmp_img = imagecreatetruecolor( $new_width, $new_height );
 
 				if (!imagecopyresampled( $tmp_img, $imageResource, 0, 0, 0, 0, $new_width, $new_height, $width, $height )){
-					$logger->log("Could not resize image $originalPath to $newPath", Logger::LOG_ERROR);
+					$pikaLogger->error("Could not resize image $originalPath to $newPath");
 					return false;
 				}
 
 				// save thumbnail into a file
 				if (file_exists($newPath)){
-					$logger->log("File $newPath already exists, deleting", Logger::LOG_DEBUG);
+					$pikaLogger->debug("File $newPath already exists, deleting");
 					unlink($newPath);
 				}
 
 				if (!@imagepng( $tmp_img, $newPath, 9)){
-					$logger->log("Could not save re-sized file $newPath", Logger::LOG_ERROR);
+					$pikaLogger->error("Could not save re-sized file $newPath");
 					return false;
 				}else{
 					return true;

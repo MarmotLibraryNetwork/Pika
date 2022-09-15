@@ -29,16 +29,20 @@
 //require_once ROOT_DIR . '/Drivers/SIP2Driver.php';
 ////  I can imagine a version that fully implements the Driver Interface with out using the SIP2Driver. Pascal 12/18/2018
 //abstract class KohaILSDI extends SIP2Driver {
-
+use \Pika\Logger;
 abstract class KohaILSDI extends ScreenScrapingDriver {
 	/**
 	 * @var $dbConnection null
 	 */
 	protected $dbConnection = null;
-
+	private $logger;
 	private $ilsdiscript = '/ilsdi.pl';
 
 	private $webServiceURL = null;
+
+	public function __construct($accountProfile){
+		parent::__construct($accountProfile);
+	}
 
 	public function getWebServiceURL(){
 		if (empty($this->webServiceURL)){
@@ -48,8 +52,8 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 			}elseif (!empty($configArray['Catalog']['webServiceUrl'])){
 				$webServiceURL = $configArray['Catalog']['webServiceUrl'];
 			}else{
-				global $logger;
-				$logger->log('No Web Service URL defined in Horizon ROA API Driver', PEAR_LOG_CRIT);
+
+				$this->logger->critical('No Web Service URL defined in Horizon ROA API Driver');
 			}
 			$this->webServiceURL = rtrim($webServiceURL, '/'); // remove any trailing slash because other functions will add it.
 		}
@@ -67,11 +71,11 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 				$parsedXml = simplexml_load_string($xml);
 				if ($parsedXml === false){
 					//Failed to load xml
-					global $logger;
-					$logger->log("Error parsing xml", PEAR_LOG_ERR);
-					$logger->log($xml, PEAR_LOG_DEBUG);
+
+					$this->logger->error("Error parsing xml");
+					$this->logger->debug($xml);
 					foreach (libxml_get_errors() as $error){
-						$logger->log("\t {$error->message}", PEAR_LOG_ERR);
+						$this->logger->error("\t {$error->message}");
 					}
 					return false;
 				}else{
@@ -81,8 +85,8 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 				return $xml;
 			}
 		}else{
-			global $logger;
-			$logger->log('Curl problem in getWebServiceResponse', PEAR_LOG_WARNING);
+
+			$this->logger->warning('Curl problem in getWebServiceResponse');
 			return false;
 		}
 	}
@@ -94,8 +98,8 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 			$this->dbConnection = mysqli_connect($configArray['Catalog']['db_host'], $configArray['Catalog']['db_user'], $configArray['Catalog']['db_pwd'], $configArray['Catalog']['db_name'], $configArray['Catalog']['db_port']);
 
 			if (!$this->dbConnection || mysqli_errno($this->dbConnection) != 0){
-				global $logger;
-				$logger->log("Error connecting to Koha database " . mysqli_error($this->dbConnection), PEAR_LOG_ERR);
+
+				$this->logger->error("Error connecting to Koha database " . mysqli_error($this->dbConnection));
 				$this->dbConnection = null;
 			}
 			global $timer;
@@ -371,9 +375,9 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 			}else{
 				//Standard access denied response is $authenticateResponse->code == "PatronNotFound"
 				if ($authenticateResponse->code != "PatronNotFound"){
-					global $logger;
-					$logger->log('Unexpected authentication denied code : ' . $authenticateResponse->code, LOG_DEBUG);
-					$logger->log('Unexpected authentication denied code : ' . $authenticateResponse->message, LOG_DEBUG);
+					global $pikaLogger;
+					$pikaLogger->debug('Unexpected authentication denied code : ' . $authenticateResponse->code);
+					$pikaLogger->debug('Unexpected authentication denied code : ' . $authenticateResponse->message);
 				}
 				return new PEAR_Error('authentication_error_denied');
 			}
@@ -451,7 +455,7 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 
 			$dateString     = (string)$patronInfoResponse->dateexpiry;
 			if (!empty($patron->expires)){
-				list ($yearExp, $monthExp, $dayExp) = explode('-', $patron->expires);
+				[$yearExp, $monthExp, $dayExp] = explode('-', $patron->expires);
 				$dateString = $monthExp . '/' . $dayExp . '/' . $yearExp;
 			}
 			$patron->setUserExpirationSettings($dateString);

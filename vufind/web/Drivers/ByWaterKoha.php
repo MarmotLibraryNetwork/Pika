@@ -28,7 +28,7 @@
 
 require_once ROOT_DIR . '/sys/KohaSIP.php';
 require_once ROOT_DIR . '/Drivers/KohaILSDI.php';
-
+use \Pika\Logger;
 abstract class ByWaterKoha extends KohaILSDI {
 
 	/** @var  AccountProfile $accountProfile */
@@ -38,7 +38,7 @@ abstract class ByWaterKoha extends KohaILSDI {
 	 * @var KohaSIP $sipConnection
 	 */
 	protected $sipConnection = null;
-
+	protected $logger;
 	/**
 	 * @param AccountProfile $accountProfile
 	 */
@@ -113,8 +113,8 @@ abstract class ByWaterKoha extends KohaILSDI {
 			$sql     = "SELECT count(*) from reserves where biblionumber = $id";
 			$results = mysqli_query($this->dbConnection, $sql);
 			if (!$results){
-				global $logger;
-				$logger->log("Unable to load hold count from Koha (" . mysqli_errno($this->dbConnection) . ") " . mysqli_error($this->dbConnection), PEAR_LOG_ERR);
+
+				$this->logger->error("Unable to load hold count from Koha (" . mysqli_errno($this->dbConnection) . ") " . mysqli_error($this->dbConnection));
 			}else{
 				$curRow   = $results->fetch_row();
 				$numHolds = $curRow[0];
@@ -739,8 +739,8 @@ EOD;
 					}
 				}
 			} else {
-				global $logger;
-				$logger->log("Error querying for holds in Bywater Koha database " . mysqli_error($this->dbConnection), PEAR_LOG_ERR);
+
+				$this->logger->error("Error querying for holds in Bywater Koha database " . mysqli_error($this->dbConnection));
 			}
 		}
 		return $holds;
@@ -771,12 +771,12 @@ EOD;
 		$return = curl_exec($c);
 
 		if($errno = curl_errno($c)) {
-			global $logger;
+
 			$error_message = curl_strerror($errno);
 			$curlError = "cURL error ({$errno}):\n {$error_message}";
-			$logger->log("\n\nBywater API URL: " . $url, PEAR_LOG_ERR);
-			$logger->log($curlError, PEAR_LOG_ERR);
-			$logger->log('Response from bywater api: ' . $return . "\n\n", PEAR_LOG_ERR);
+			$this->logger->error("\n\nBywater API URL: " . $url);
+			$this->logger->error($curlError);
+			$this->logger->error('Response from bywater api: ' . $return . "\n\n");
 		}
 
 		curl_close($c);

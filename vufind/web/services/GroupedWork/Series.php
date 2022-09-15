@@ -23,7 +23,7 @@ class GroupedWork_Series extends Action {
 	function launch(){
 		global $interface;
 		global $timer;
-		global $logger;
+		global $pikaLogger;
 
 		// Hide Covers when the user has set that setting on the Search Results Page
 		$this->setShowCovers();
@@ -34,7 +34,7 @@ class GroupedWork_Series extends Action {
 		$recordDriver = new GroupedWorkDriver($id);
 		if (!$recordDriver->isValid){
 			$interface->assign('id', $id);
-			$logger->log("Did not find a record for id {$id} in solr.", PEAR_LOG_DEBUG);
+			$pikaLogger->debug("Did not find a record for id {$id} in solr.");
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
 			die();
 		}

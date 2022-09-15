@@ -55,13 +55,13 @@ abstract class GenealogyObjectEditor extends ObjectEditor {
 		if ($validationResults['validatedOk']){
 			$ret = $newObject->insert();
 			if (!$ret){
-				global $logger;
+
 				if ($newObject->_lastError){
 					$errorDescription = $newObject->_lastError->getUserInfo();
 				}else{
 					$errorDescription = 'Unknown error';
 				}
-				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, PEAR_LOG_DEBUG);
+				$this->logger->debug('Could not insert new object ' . $ret . ' ' . $errorDescription);
 				@session_start();
 				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br>{$errorDescription}";
 

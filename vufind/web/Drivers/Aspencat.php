@@ -25,14 +25,16 @@
  * Date: 10/3/14
  * Time: 5:51 PM
  */
+use \Pika\Logger;
 class Aspencat implements DriverInterface{
 	/** @var string $cookieFile A temporary file to store cookies  */
 	private $cookieFile = null;
 	/** @var resource connection to AspenCat  */
 	private $curl_connection = null;
-
+	private $logger;
 	private $dbConnection = null;
 	public $accountProfile;
+
 
 	/**
 	 * @param User $patron                    The User Object to make updates to
@@ -57,7 +59,7 @@ class Aspencat implements DriverInterface{
 	}
 
 	public function getMyCheckoutsFromOpac($user) {
-		global $logger;
+
 		if (isset($this->transactions[$user->id])){
 			return $this->transactions[$user->id];
 		}
@@ -100,7 +102,7 @@ class Aspencat implements DriverInterface{
 							$transaction['title']   = $cellDetails[2];
 							$transaction['author']  = $cellDetails[3];
 						}else{
-							$logger->log("Could not parse title for checkout", PEAR_LOG_WARNING);
+							$this->logger->warning("Could not parse title for checkout");
 							$transaction['title'] = strip_tags($tableCell);
 						}
 					}elseif ($headerLabels[$col] == 'call no.'){
@@ -297,7 +299,7 @@ class Aspencat implements DriverInterface{
 	}
 
 	public function patronLogin($username, $password, $validatedViaSSO) {
-		global $logger;
+
 		//Remove any spaces from the barcode
 		$username = trim($username);
 		$password = trim($password);
@@ -438,13 +440,13 @@ class Aspencat implements DriverInterface{
 						}
 					}
 				}else{
-					$logger->log("MySQL did not return a result for getUserInfoStmt", PEAR_LOG_ERR);
+					$this->logger->error("MySQL did not return a result for getUserInfoStmt");
 					if ($i == count($barcodesToTest) -1){
 						return new PEAR_Error('authentication_error_technical');
 					}
 				}
 			}else{
-				$logger->log("Unable to execute getUserInfoStmt " .  mysqli_error($this->dbConnection), PEAR_LOG_ERR);
+				$this->logger->error("Unable to execute getUserInfoStmt " .  mysqli_error($this->dbConnection));
 				if ($i == count($barcodesToTest) -1) {
 					return new PEAR_Error('authentication_error_technical');
 				}
@@ -459,8 +461,8 @@ class Aspencat implements DriverInterface{
 			$this->dbConnection = mysqli_connect($configArray['Catalog']['db_host'], $configArray['Catalog']['db_user'], $configArray['Catalog']['db_pwd'], $configArray['Catalog']['db_name']);
 
 			if (!$this->dbConnection || mysqli_errno($this->dbConnection) != 0){
-				global $logger;
-				$logger->log("Error connecting to Koha database " . mysqli_error($this->dbConnection), PEAR_LOG_ERR);
+
+				$this->logger->error("Error connecting to Koha database " . mysqli_error($this->dbConnection));
 				$this->dbConnection = null;
 			}
 			global $timer;
@@ -475,6 +477,7 @@ class Aspencat implements DriverInterface{
 		$this->accountProfile = $accountProfile;
 		global $timer;
 		$timer->logTime("Created Aspencat Driver");
+		$this->logger = new Logger(__CLASS__);
 	}
 
 	function __destruct(){
@@ -945,7 +948,7 @@ class Aspencat implements DriverInterface{
 	 * @access public
 	 */
 	public function getMyHoldsFromOpac($patron){
-		global $logger;
+
 		$availableHolds   = array();
 		$unavailableHolds = array();
 		$holds = array(
@@ -993,7 +996,7 @@ class Aspencat implements DriverInterface{
 							$curHold['recordId'] = $cellDetails[1];
 							$curHold['title']    = $cellDetails[2];
 						}else{
-							$logger->log("Could not parse title for checkout", PEAR_LOG_WARNING);
+							$this->logger->warning("Could not parse title for checkout");
 							$curHold['title'] = strip_tags($tableCell);
 						}
 					}elseif ($headerLabels[$col] == 'placed on'){
@@ -1081,7 +1084,7 @@ class Aspencat implements DriverInterface{
 							$curHold['recordId'] = $cellDetails[1];
 							$curHold['title']    = $cellDetails[2];
 						}else{
-							$logger->log("Could not parse title for checkout", PEAR_LOG_WARNING);
+							$this->logger->warning("Could not parse title for checkout");
 							$curHold['title'] = strip_tags($tableCell);
 						}
 					}elseif ($headerLabels[$col] == 'placed on'){
@@ -1538,8 +1541,8 @@ class Aspencat implements DriverInterface{
 		$sql = "SELECT count(*) from reserves where biblionumber = $id";
 		$results = mysqli_query($this->dbConnection, $sql);
 		if (!$results){
-			global $logger;
-			$logger->log("Unable to load hold count from Koha (" . mysqli_errno($this->dbConnection) . ") " . mysqli_error($this->dbConnection), PEAR_LOG_ERR);
+
+			$this->logger->error("Unable to load hold count from Koha (" . mysqli_errno($this->dbConnection) . ") " . mysqli_error($this->dbConnection));
 		}else{
 			$curRow = $results->fetch_row();
 			$numHolds = $curRow[0];
@@ -1567,8 +1570,8 @@ class Aspencat implements DriverInterface{
 		$results = mysqli_query($this->dbConnection, $sql);
 
 		if (!$results){
-			global $logger;
-			$logger->log("Unable to load in transit hold count from Koha (" . mysqli_errno($this->dbConnection) . ") " . mysqli_error($this->dbConnection), PEAR_LOG_ERR);
+
+			$this->logger->error("Unable to load in transit hold count from Koha (" . mysqli_errno($this->dbConnection) . ") " . mysqli_error($this->dbConnection));
 		}else{
 			//Read the information
 			while ($curRow = $results->fetch_assoc()){

@@ -49,7 +49,7 @@ $pikaLogger = new Pika\Logger('Pika', true);
 $timer->logTime("Initialized Pika\Logger");
 
 // deprecated logger
-global $logger;
+
 $logger = new Logger();
 $timer->logTime("Read Config");
 
@@ -239,8 +239,8 @@ function handlePEARError($error, $method = null){
 	];
 
 
-	global $logger;
-	$logger->log($errorDetails, PEAR_LOG_ERR);
+	global $pikaLogger;
+	$pikaLogger->error($errorDetails);
 
 	exit();
 }
@@ -412,8 +412,8 @@ function loadSearchInformation(){
 //		global $logger;
 //		$logger->log("Updating memcache variable {$instanceName}_indexing_profiles", PEAR_LOG_DEBUG);
 		if (!$memCache->set($memCacheKey, $indexingProfiles, 0, $configArray['Caching']['indexing_profiles'])) {
-			global $logger;
-			$logger->log("Failed to update memcache variable $memCacheKey", PEAR_LOG_ERR);
+			global $pikaLogger;
+			$pikaLogger->error("Failed to update memcache variable $memCacheKey");
 		};
 	}
 }

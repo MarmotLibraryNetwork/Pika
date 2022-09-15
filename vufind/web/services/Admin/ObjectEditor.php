@@ -150,22 +150,22 @@ abstract class ObjectEditor extends Admin_Admin {
 		if ($validationResults['validatedOk']){
 			$ret = $newObject->insert();
 			if (!$ret){
-				global $logger;
+				global $pikaLogger;
 				if ($newObject->_lastError){
 					$errorDescription = $newObject->_lastError->getUserInfo();
 				}else{
 					$errorDescription = 'Unknown error';
 				}
-				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, PEAR_LOG_DEBUG);
+				$pikaLogger->debug('Could not insert new object ' . $ret . ' ' . $errorDescription);
 				@session_start();
 				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br>{$errorDescription}";
 
 				return false;
 			}
 		}else{
-			global $logger;
+			global $pikaLogger;
 			$errorDescription = implode(', ', $validationResults['errors']);
-			$logger->log('Could not validate new object ' . $objectType . ' ' . $errorDescription, PEAR_LOG_DEBUG);
+			$pikaLogger->debug('Could not validate new object ' . $objectType . ' ' . $errorDescription);
 			@session_start();
 			$_SESSION['lastError'] = "The information entered was not valid. <br>" . implode('<br>', $validationResults['errors']);
 

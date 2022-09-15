@@ -25,6 +25,7 @@ class Anythink extends HorizonAPI {
 	/**
 	 * @param AccountProfile $accountProfile
 	 */
+	protected $logger;
 	public function __construct($accountProfile){
 		parent::__construct($accountProfile);
 	}
@@ -273,7 +274,7 @@ class Anythink extends HorizonAPI {
 
 	function selfRegister(){
 		global $configArray;
-		global $logger;
+
 
 		//Setup Curl
 		$header=array();
@@ -302,7 +303,7 @@ class Anythink extends HorizonAPI {
 		curl_setopt($curl_connection, CURLOPT_HEADER, false);
 		curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
 		$sresult = curl_exec($curl_connection);
-		$logger->log("Loading Full Record $curl_url", PEAR_LOG_INFO);
+		$this->logger->info("Loading Full Record $curl_url");
 
 		//Extract the session id from the requestcopy javascript on the page
 		if (preg_match('/\\?session=(.*?)&/s', $sresult, $matches)) {
@@ -368,7 +369,7 @@ class Anythink extends HorizonAPI {
 			'ipp' => 20,
 			'lastname' => $lastName,
 			'language' => $language,
-			'location' => $location,
+			//'location' => $location,
 			'menu' => 'account',
 			'newuser_info' => 'true',
 			'npp' => 30,
