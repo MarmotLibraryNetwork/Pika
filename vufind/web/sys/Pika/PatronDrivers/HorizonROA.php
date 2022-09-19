@@ -190,6 +190,7 @@ abstract class HorizonROA implements \DriverInterface {
 			} elseif (isset($loginUserResponse->messageList)) {
 				$errorMessage = 'Horizon ROA Webservice Login Error: ';
 				foreach ($loginUserResponse->messageList as $error){
+					$this->getLogger()->error(print_r($error));
 					$errorMessage .= $error->message.'; ';
 				}
 				$this->getLogger()->error($errorMessage);
