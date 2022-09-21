@@ -32,7 +32,7 @@ class LibraryFacetSetting extends FacetSetting {
 		}
 
 		$structure              = parent::getObjectStructure();
-		$structure['libraryId'] = array('property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'The id of a library');
+		$structure['libraryId'] = ['property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'The id of a library'];
 
 		return $structure;
 	}

@@ -21,13 +21,13 @@
  * Date: 2/10/2017
  *
  */
-require_once ROOT_DIR . '/sys/Search/FacetSetting.php';
+require_once ROOT_DIR . '/sys/Library/LibraryFacetSetting.php';
 
-class LibraryArchiveSearchFacetSetting extends FacetSetting {
+class LibraryArchiveSearchFacetSetting extends LibraryFacetSetting {
 	public $__table = 'library_archive_search_facet_setting';    // table name
 	public $libraryId;
 
-	static $defaultFacetList = array(
+	static $defaultFacetList = [
 		'mods_subject_topic_ms'                                          => 'Subject',
 		'mods_genre_s'                                                   => 'Type',
 		'RELS_EXT_isMemberOfCollection_uri_ms'                           => 'Archive Collection',
@@ -38,36 +38,18 @@ class LibraryArchiveSearchFacetSetting extends FacetSetting {
 		'mods_extension_marmotLocal_picturedEntity_entityTitle_ms'       => 'Pictured Entity',
 		'namespace_s'                                                    => 'Contributing Library',
 //		'ancestors_ms'                                                   => "Included In"
-	);
-
-	static function getObjectStructure($availableFacets = NULL){
-		$library = new Library();
-		$library->orderBy('displayName');
-		if (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager'])){
-			$homeLibrary = UserAccount::getUserHomeLibrary();
-			$library->libraryId = $homeLibrary->libraryId;
-		}
-		$library->find();
-		while ($library->fetch()){
-			$libraryList[$library->libraryId] = $library->displayName;
-		}
-
-		$structure = parent::getObjectStructure(self::getAvailableFacets());
-		$structure['libraryId'] = array('property'=>'libraryId', 'type'=>'enum', 'values'=>$libraryList, 'label'=>'Library', 'description'=>'The id of a library');
-		//TODO: needed? for copy facets button?
-
-		return $structure;
-	}
+	];
 
 	function getEditLink(){
 		return '/Admin/LibraryArchiveSearchFacetSettings?objectAction=edit&id=' . $this->id;
 	}
 
-	public function getAvailableFacets(){
-		$config            = getExtraConfigArray('islandoraFacets');
-		$availableFacets = isset($config['Results']) ? $config['Results'] : self::$defaultFacetList;
-		return $availableFacets;
-
+	/**
+	 * @return string[]
+	 */
+	static function getAvailableFacets(){
+		$config = getExtraConfigArray('islandoraFacets');
+		return $config['Results'] ?? self::$defaultFacetList;
 	}
 }
 
