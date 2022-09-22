@@ -27,7 +27,7 @@
  */
 require_once ROOT_DIR . '/RecordDrivers/IslandoraDriver.php';
 class CompoundDriver extends IslandoraDriver {
-protected $logger;
+
 	public function getViewAction() {
 		$genre = $this->getModsValue('genre', 'mods');
 		if ($genre != null && strlen($genre) > 0){
@@ -63,8 +63,8 @@ WHERE {
 EOQ;
 
 		$queryResults = $fedoraUtils->doSparqlQuery($query);
-
-		$this->logger->debug("query for Book contents");
+		global $pikaLogger;
+		$pikaLogger->debug("query for Book contents");
 		//$logger->log($queryResults, PEAR_LOG_DEBUG);
 		// since $queryResults is an array comment out to prevent php notice
 
@@ -78,8 +78,8 @@ EOQ;
 			];
 			$sectionObject  = $fedoraUtils->getObject($this->getUniqueID());
 			$sectionDetails = $this->loadPagesForSection($sectionObject, $sectionDetails);
-			$this->logger->debug("no result section details for this object" . $this->getUniqueID());
-			$this->logger->debug($sectionDetails);
+			$pikaLogger->debug("no result section details for this object" . $this->getUniqueID());
+			$pikaLogger->debug($sectionDetails);
 
 			$sections[$this->getUniqueID()] = $sectionDetails;
 		}else{
@@ -101,8 +101,8 @@ EOQ;
 			uasort($queryResults, $sort);
 
 			foreach ($queryResults as $result){
-				$this->logger->debug("for loop");
-				$this->logger->debug($result);
+				$pikaLogger->debug("for loop");
+				$pikaLogger->debug($result);
 
 				$objectPid = $result['object']['value'];
 				//TODO: check access
@@ -171,9 +171,9 @@ ORDER BY ?page
 EOQ;
 
 		$results = $fedoraUtils->doSparqlQuery($query);
-
-		$this->logger->debug("Pages for section with object id : " .$sectionObject->id);
-		$this->logger->debug($results);
+		global $pikaLogger;
+		$pikaLogger->debug("Pages for section with object id : " .$sectionObject->id);
+		$pikaLogger->debug($results);
 
 		// Get rid of the "extra" info...
 		$map   = function ($o){
@@ -186,7 +186,7 @@ EOQ;
 			return $o;
 		};
 		$pages = array_map($map, $results);
-		$this->logger->debug($pages);
+		$pikaLogger->debug($pages);
 
 		// Sort the pages into their proper order.
 		$sort = function ($a, $b){
