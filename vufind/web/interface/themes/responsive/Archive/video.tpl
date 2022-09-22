@@ -8,7 +8,7 @@
 		</h2>
 
 		{if $canView}
-			<video width="100%" controls poster="{$medium_image}" id="player" oncontextmenu="return false;">
+			<video width="100%" controls poster="{$medium_image}" id="video-player" oncontextmenu="return false;">
 				<source src="{$videoLink}" type="video/mp4">
 			</video>
 		{else}
@@ -38,14 +38,12 @@
 	</div>
 {/strip}
 <script type="text/javascript">
-	$().ready(function(){ldelim}
+		{literal}
+	$(function(){ldelim}
 		Pika.Archive.loadExploreMore('{$pid|urlencode}');
-		{rdelim});
-	{literal}
-	$(document).ready(function() {
-		let video = document.getElementById("player");
-		video.addEventListener('play', function(ev){
 
+		let video = document.getElementById("video-player");
+		video.addEventListener('play', function(ev){
 			$.idleTimer('destroy');
 		});
 		video.addEventListener('pause', function(ev){
