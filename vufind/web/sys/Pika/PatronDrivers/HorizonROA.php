@@ -135,23 +135,25 @@ abstract class HorizonROA implements \DriverInterface {
 		curl_setopt($ch, CURLOPT_HEADER, false);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-		global $instanceName;
-		if (stripos($instanceName, 'localhost') !== false){
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // TODO: debugging only: comment out for production
-			curl_setopt($ch, CURLINFO_HEADER_OUT, true);     //TODO: For debugging
-		}
+		//global $instanceName;
+/*		if (stripos($instanceName, 'localhost') !== false){
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); //
+			curl_setopt($ch, CURLINFO_HEADER_OUT, true);     //
+		}*/
 		if ($params != null){
 			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
 		}
 		$json = curl_exec($ch);
 
-		// TODO: debugging only, comment out later.
-		if (stripos($instanceName, 'localhost') !== false){
+
+/*		if (stripos($instanceName, 'localhost') !== false){
 			$err           = curl_getinfo($ch);
 			$headerRequest = curl_getinfo($ch, CURLINFO_HEADER_OUT);
-		}
+		}*/
 
 		$this->getLogger()->debug("Web service response\r\n$json");
+		global $timer;
+
 		curl_close($ch);
 
 		if ($json !== false && $json !== 'false'){
