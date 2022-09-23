@@ -1234,6 +1234,16 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			],
 		],
 
+		'2022.04.0_location_search_scope_type' => [
+			'title'           => 'Add location search scope type',
+			'description'     => 'Add location search scope type',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE `location` ADD COLUMN `scopeType` VARCHAR(25) NULL DEFAULT 'regularBranchScope' AFTER `catalogUrl`",
+//				"ALTER TABLE `location` ADD COLUMN `scopeType` enum ('noScope', 'singleBranchScope', 'regularBranchScope') NULL DEFAULT 'regularBranchScope' AFTER `catalogUrl`",
+			],
+		],
+
 		'2021.03.0_remove_sms_indicator' => [
 			'title'           => 'Remove obsolete library setting SMS Indicator',
 			'description'     => '',

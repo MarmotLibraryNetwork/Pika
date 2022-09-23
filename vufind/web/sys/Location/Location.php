@@ -36,10 +36,17 @@ class Location extends DB_DataObject {
 	const DEFAULT_AUTOLOGOUT_TIME            = 90;
 	const DEFAULT_AUTOLOGOUT_TIME_LOGGED_OUT = 450;
 
+	const LOCATION_SEARCH_SCOPE_TYPES = [
+		'noScope'            => 'No search scope',
+		'singleBranchScope'  => 'Single branch scope',
+		'regularBranchScope' => 'Branch scope',
+	];
+
 	public $__table = 'location';   // table name
 	public $locationId;        //int(11)
 	public $code;          //varchar(5)
 	public $catalogUrl;
+	public $scopeType;
 	public $displayName;      //varchar(40)
 	public $showDisplayNameInHeader;
 	public $headerText;
@@ -193,6 +200,7 @@ class Location extends DB_DataObject {
 		$structure = [
 			'locationId'                      => ['property' => 'locationId', 'type' => 'label', 'label' => 'Location Id', 'description' => 'The unique id of the location within the database'],
 			'code'                            => ['property' => 'code', 'type' => 'text', 'label' => 'Code', 'description' => 'The code for use when communicating with the ILS', 'required' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
+			'scopeType'                       => ['property' => 'scopeType', 'type' => 'enum', 'label' => 'Location Search Scope Type', 'description' => 'The type of search scope to use for this location', 'required' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true, 'values' => self::LOCATION_SEARCH_SCOPE_TYPES],
 			'catalogUrl'                      => ['property' => 'catalogUrl', 'type' => 'label', 'label' => 'Catalog URL', 'description' => 'The catalog url used for this location'],
 			'displayName'                     => ['property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'The full name of the location for display to the user', 'size' => '40'],
 			'showDisplayNameInHeader'         => ['property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false],

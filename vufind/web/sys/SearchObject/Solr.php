@@ -265,7 +265,7 @@ class SearchObject_Solr extends SearchObject_Base {
 						$field = 'format_category_' . $solrScope;
 					}elseif (strcmp($field, 'econtent_source') == 0){
 						$field = 'econtent_source_' . $solrScope;
-					}elseif ((strcmp($field, 'collection') == 0) || (strcmp($field, 'collection_group') == 0)){
+					}elseif ((strcmp($field, 'collection') == 0)){
 						$field = 'collection_' . $solrScope;
 					}elseif ((strcmp($field, 'detailed_location') == 0)){
 						$field = 'detailed_location_' . $solrScope;
@@ -1451,6 +1451,13 @@ class SearchObject_Solr extends SearchObject_Base {
 
 	private function setFinalFilterQuery(){
 		global $solrScope;
+		global $locationSingleton;
+		$searchLibrary  = Library::getActiveLibrary();
+		$validScopes    = [$searchLibrary->subdomain];
+		$searchLocation = $locationSingleton->getActiveLocation();
+		if (!empty($searchLocation->code)){
+			$validScopes[] = $searchLocation->code;
+		}
 
 		$filterQuery             = $this->hiddenFilters;
 		$availabilityToggleValue = null;
@@ -1470,25 +1477,33 @@ class SearchObject_Solr extends SearchObject_Base {
 			$isValidField = false;
 			if (in_array($field, $validFields)){
 				$isValidField = true;
-			}else{
+			}elseif(strpos($field, '_')){
 				//Field doesn't exist, check to see if it is a dynamic field
 				//Where we can replace the scope with the current scope
-				if (!isset($dynamicField)){
-					$dynamicFields = $this->indexEngine->getDynamicFields();
-				}
-				foreach ($dynamicFields as $dynamicField){
-					if (preg_match("/^{$dynamicField}[^_]+$/", $field)){
-						//This is a dynamic field with the wrong scope  eg. format_wrongScopeName
-						$field        = $dynamicField . $solrScope;
-						$isValidField = true;
-						break;
-					}elseif ($field == rtrim($dynamicField, '_')){
-						//This is a regular field that is now a dynamic field so needs the scope applied  eg. format
-						$field        = $dynamicField . $solrScope;
-						$isValidField = true;
-						break;
+				$array      = explode('_', $field);
+				$fieldScope = end($array);
+				if (!in_array($fieldScope, $validScopes)){
+					if (!isset($dynamicField)){
+						$dynamicFields = $this->indexEngine->getDynamicFields();
 					}
+					foreach ($dynamicFields as $dynamicField){
+						if (preg_match("/^{$dynamicField}[^_]+$/", $field)){
+							//This is a dynamic field with the wrong scope  eg. format_wrongScopeName
+							$field        = $dynamicField . $solrScope;
+							$isValidField = true;
+							break;
+						}elseif ($field == rtrim($dynamicField, '_')){
+							//This is a regular field that is now a dynamic field so needs the scope applied  eg. format
+							$field        = $dynamicField . $solrScope;
+							$isValidField = true;
+							break;
+						}
+					}
+				} else {
+					$isValidField = true;
 				}
+			} else {
+				//TODO: log whatever $field this is
 			}
 
 			if ($isValidField){
@@ -1558,7 +1573,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		}
 
 		$scopingFilters = $this->getScopingFilters();
-		$filterQuery    = array_merge($filterQuery, $scopingFilters);
+		$filterQuery    = [...$filterQuery, ...$scopingFilters];
 
 		//		$timer->logTime('apply scoping filters');
 		return [$filterQuery, $availabilityByFormatFieldName, $availableAtByFormatFieldName];
@@ -1623,12 +1638,21 @@ class SearchObject_Solr extends SearchObject_Base {
 
 //		$boostFactors[] = (!empty($searchLibrary->applyNumberOfHoldingsBoost)) ? 'product(sum(popularity,1),format_boost)' : 'format_boost';
 
-		$searchLibrary  = Library::getSearchLibrary();
-		$searchLocation = Location::getSearchLocation();
+		$searchLibrary         = Library::getSearchLibrary();
+		$searchLocation        = Location::getSearchLocation();
+		$isSearchLocationScope = $searchLocation != null;
 		if ((!empty($searchLibrary->applyNumberOfHoldingsBoost))){
 			$boostFactors[] = 'sum(popularity,1)';
 		}
-		$boostFactors[] = 'format_boost_' . $solrScope;
+		if ($isSearchLocationScope){
+			if (in_array($searchLocation->scopeType, ['singleBranchScope', 'regularBranchScope'])){
+				$boostFactors[] = 'format_boost_' . $searchLibrary->subdomain;
+			} else {
+				$boostFactors[] = 'format_boost_' . $solrScope;  //$solrScope should be the same as $searchLocation->code;
+			}
+		}else{
+			$boostFactors[] = 'format_boost_' . $solrScope;
+		}
 		//$boostFactors[] = 'if(exists(format_boost_' . $solrScope . '),format_boost_' . $solrScope .',format_boost)';
 		// This is needed for the time before the format_boost has been indexed as a scoped field
 
@@ -1670,11 +1694,16 @@ class SearchObject_Solr extends SearchObject_Base {
 			}
 		}
 
-		if (!empty($searchLocation->boostByLocation)) {
-			$boostFactors[] = ($searchLocation->boostByLocation > 1) ? "sum(product(lib_boost_{$solrScope},{$searchLocation->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
-
-		} else {
+		if (!empty($searchLocation->boostByLocation)){
+			if (in_array($searchLocation->scopeType, ['singleBranchScope', 'regularBranchScope'])){
+				$boostFactors[] = ($searchLocation->boostByLocation > 1) ? "sum(product(lib_boost_{$searchLibrary->subdomain},{$searchLocation->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$searchLibrary->subdomain},1)";
+			}else{
+				$boostFactors[] = ($searchLocation->boostByLocation > 1) ? "sum(product(lib_boost_{$solrScope},{$searchLocation->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
+				// $solrScope should be the same as $searchLocation->code;
+			}
+		}else{
 			// Handle boosting even if we are in a global scope
+			//TODO: I don't think this is block that ever gets entered any more.  Note the scenarios when it does
 			global $locationSingleton;
 			$physicalLocation = $locationSingleton->getActiveLocation();
 			if (!empty($physicalLocation->boostByLocation)) {
@@ -2465,6 +2494,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		}else{
 			$fieldsToReturn = SearchObject_Solr::$fields;
 			global $solrScope;
+			// todo: change this after location scope facets are removed
 			if ($solrScope != false){
 				$fieldsToReturn .= ',format_' . $solrScope;
 				$fieldsToReturn .= ',format_category_' . $solrScope;

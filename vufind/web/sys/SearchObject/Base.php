@@ -1137,8 +1137,7 @@ abstract class SearchObject_Base {
 	 * @param   string  $newAlias   Optional on-screen display label
 	 */
 	public function addFacet($newField, $newAlias = null){
-		$newAlias                     = $newAlias ?? $newField;
-		$this->facetConfig[$newField] = $newAlias;
+		$this->facetConfig[$newField] = $newAlias ?? $newField;
 	}
 
 	public function addFacetOptions($options){

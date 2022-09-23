@@ -1396,6 +1396,7 @@ class Solr implements IndexEngine {
 			//Determine which fields should be treated as enums
 			global $solrScope;
 			if ($isPikaGroupedWorkIndex) {
+				//TODO: have to change after location scopes are removed
 				$options["f.target_audience_full.facet.method"]                = 'enum';
 				$options["f.target_audience.facet.method"]                     = 'enum';
 				$options["f.literary_form_full.facet.method"]                  = 'enum';

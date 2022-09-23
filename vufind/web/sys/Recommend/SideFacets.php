@@ -25,7 +25,7 @@ require_once ROOT_DIR . '/sys/Recommend/Interface.php';
  * This class provides recommendations displaying facets beside search results
  */
 class SideFacets implements RecommendationInterface {
-	/** @var  SearchObject_Solr|SearchObject_Genealogy $searchObject */
+	/** @var  SearchObject_Islandora|SearchObject_Solr|SearchObject_Genealogy $searchObject */
 	private $searchObject;
 	private $facetSettings;
 	private $mainFacets;
@@ -36,7 +36,7 @@ class SideFacets implements RecommendationInterface {
 	 * Establishes base settings for making recommendations.
 	 *
 	 * @access  public
-	 * @param   object  $searchObject   The SearchObject requesting recommendations.
+	 * @param   SearchObject_Islandora|SearchObject_Solr|SearchObject_Genealogy  $searchObject   The SearchObject requesting recommendations.
 	 * @param   string  $params         Additional settings from the searches.ini.
 	 */
 	public function __construct($searchObject, $params){
@@ -80,11 +80,15 @@ class SideFacets implements RecommendationInterface {
 
 
 		}else{
-			global $locationSingleton;
+			// Processing for the various types of catalog searches
+			/** @var Location $locationSingleton */
+			global 	$locationSingleton;
 			$searchLibrary           = Library::getActiveLibrary();
 			$searchLocation          = $locationSingleton->getActiveLocation();
+			$libraryScopeName        = $searchLibrary->subdomain;
+			$isSearchLocationScope   = $searchLocation != null;
 			$hasSearchLibraryFacets  = ($searchLibrary != null && (count($searchLibrary->facets) > 0));
-			$hasSearchLocationFacets = ($searchLocation != null && (count($searchLocation->facets) > 0));
+			$hasSearchLocationFacets = ($isSearchLocationScope && (count($searchLocation->facets) > 0));
 			if ($hasSearchLocationFacets){
 				$facets = $searchLocation->facets;
 			}elseif ($hasSearchLibraryFacets){
@@ -97,6 +101,9 @@ class SideFacets implements RecommendationInterface {
 
 			// The below block of code is common with SearchObject_Solr method initAdvancedFacets()
 			global $solrScope;
+			if ($isSearchLocationScope){
+				$locationScopeName = $searchLocation->code;
+			}
 			foreach ($facets as $facet){
 				$facetName = $facet->facetName;
 
@@ -104,36 +111,51 @@ class SideFacets implements RecommendationInterface {
 				if ($solrScope){
 					if (in_array($facetName, [
 						'availability_toggle',
-						'format',
-						'format_category',
-						'econtent_source',
-						'language',
-						'translation',
-						'detailed_location',
-						'owning_location',
-						'owning_library',
 						'available_at',
 						'collection',
+						'detailed_location',
+						'econtent_source',
+						'format',
+						'format_category',
+						'itype',
+						'language',
+						'owning_library',
+						'owning_location',
+						'translation',
 					])){
-						$facetName .= '_' . $solrScope;
-					}
-
-					// Handle obsolete facet name
-					if ($facet->facetName == 'collection_group'){
-						$facetName = 'collection_' . $solrScope;
+						if ($isSearchLocationScope){
+							switch ($searchLocation->scopeType){
+								case 'regularBranchScope' :
+									if (!in_array($facetName, [
+										// these should be the same for all branches, so for these we will skip location facet and use library scope
+										'collection',
+										'econtent_source',
+										'format',
+										'format_category',
+										'itype',
+										'language',
+										'translation',
+									])){
+										$facetName .= '_' . $locationScopeName;
+										break;
+									}
+								default :
+									$facetName .= '_' . $libraryScopeName;
+							}
+						} else{
+							$facetName .= '_' . $libraryScopeName;
+						}
 					}
 				}
 
-				if (isset($searchLibrary)){
-					if ($facet->facetName == 'time_since_added'){
-						$facetName = 'local_time_since_added_' . $searchLibrary->subdomain;
-					}elseif ($facet->facetName == 'itype'){
-						$facetName = 'itype_' . $searchLibrary->subdomain;
+				// Below logic is broken out to determine search scope for special locations (i.e. Juvenile collections)
+				// TODO: does it need seperated from location scoping above??
+				if ($facet->facetName == 'time_since_added'){
+					if (isset($searchLibrary)){
+						$facetName = 'local_time_since_added_' . $libraryScopeName;
 					}
-				}
-				if (isset($searchLocation)){
-					if ($facet->facetName == 'time_since_added' && $searchLocation->restrictSearchByLocation){
-						$facetName = 'local_time_since_added_' . $searchLocation->code;
+					if (isset($searchLocation) && $searchLocation->restrictSearchByLocation){
+						$facetName = 'local_time_since_added_' . $locationScopeName;
 					}
 				}
 
@@ -167,11 +189,11 @@ class SideFacets implements RecommendationInterface {
 	 */
 	public function init(){
 		// Turn on side facets in the search results:
-		foreach ($this->mainFacets as $name => $desc){
-			$this->searchObject->addFacet($name, $desc);
+		foreach ($this->mainFacets as $name => $displayName){
+			$this->searchObject->addFacet($name, $displayName);
 		}
-		foreach ($this->checkboxFacets as $name => $desc){
-			$this->searchObject->addCheckboxFacet($name, $desc);
+		foreach ($this->checkboxFacets as $name => $displayName){
+			$this->searchObject->addCheckboxFacet($name, $displayName);
 		}
 	}
 
