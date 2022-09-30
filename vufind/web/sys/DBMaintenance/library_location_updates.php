@@ -1234,6 +1234,15 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			],
 		],
 
+		'2022.03.1_expand_sidebar_links' => [
+			'title'           => 'Increase Sidebar link column',
+			'description'     => 'Increase Sidebar link column to 400 chars.',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE `library_links` CHANGE COLUMN `url` `url` VARCHAR(400) NOT NULL ;",
+			],
+		],
+
 		'2021.03.0_remove_sms_indicator' => [
 			'title'           => 'Remove obsolete library setting SMS Indicator',
 			'description'     => '',
