@@ -128,9 +128,9 @@ public class UserListProcessor {
 					}
 				}
 				if (numListsProcessed > 0 && (fullReindex || userListsOnly)) {
-					updateServer.commit(true, true);
 					GroupedReindexMain.addNoteToReindexLog("Committing changes for public lists, processed " + numListsProcessed);
 					GroupedReindexMain.addNoteToReindexLog("Number of public lists skipped (belonged to no scopes) : " + numListsSkipped);
+					updateServer.commit(true, true);
 				}
 			}
 
