@@ -328,7 +328,9 @@ public class GroupedWorkSolr implements Cloneable {
 				long publicationTime   = publicationDate.getTime().getTime();
 				long bibDaysSinceAdded = (indexTime - publicationTime) / (long)(1000 * 60 * 60 * 24);
 				if (bibDaysSinceAdded < 0) {
-					logger.warn("Using Publication date to calculate Days since added value " + bibDaysSinceAdded + " is negative for grouped work " + id);
+					if (groupedWorkIndexer.fullReindex) {
+						logger.warn("Using Publication date to calculate Days since added value " + bibDaysSinceAdded + " is negative for grouped work " + id);
+					}
 					bibDaysSinceAdded = 0;
 					doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
 					doc.addField("time_since_added", Util.getTimeSinceAddedForDate(Util.getIndexDate()));
