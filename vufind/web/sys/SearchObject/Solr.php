@@ -1667,6 +1667,9 @@ class SearchObject_Solr extends SearchObject_Base {
 			global $library;
 			if (!empty($library->boostByLibrary)) {
 				$boostFactors[] = ($library->additionalLocalBoostFactor > 1) ? "sum(product(lib_boost_{$solrScope},{$library->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
+				global $pikaLogger;
+				$pikaLogger->notice('Case of missing library search scope', [$_SERVER['SERVER_NAME'], $_SERVER['REQUEST_URI']]);
+				//TODO: document when this situation occurs.  It ought to be the case that there is always a search scope defined
 			}
 		}
 
@@ -1679,6 +1682,9 @@ class SearchObject_Solr extends SearchObject_Base {
 			$physicalLocation = $locationSingleton->getActiveLocation();
 			if (!empty($physicalLocation->boostByLocation)) {
 				$boostFactors[] = ($physicalLocation->additionalLocalBoostFactor > 1) ? "sum(product(lib_boost_{$solrScope},{$physicalLocation->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
+				global $pikaLogger;
+				$pikaLogger->notice('Case of missing location search scope (and using physical location)', [$_SERVER['SERVER_NAME'], $_SERVER['REQUEST_URI']]);
+				//TODO: document when this situation occurs.  It ought to be the case that there is always a search scope defined
 			}
 		}
 		if (!empty($boostFactors)){
