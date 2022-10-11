@@ -16,6 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+use Pika\Logger;
+
 require_once ROOT_DIR . '/sys/Recommend/RecommendationFactory.php';
 
 /**
@@ -142,6 +145,18 @@ abstract class SearchObject_Base {
 		$this->debug          = $enableDebug;
 		$this->debugSolrQuery = $enableDebug && $enableSolrQueryDebugging;
 		$this->getIndexEngine()->setDebugging($enableDebug, $enableSolrQueryDebugging);
+	}
+
+	protected Logger $logger;
+
+	/**
+	 * @return Logger
+	 */
+	function getLogger(){
+		if (!isset($this->logger)){
+			$this->logger = new Logger(__CLASS__);
+		}
+		return $this->logger;
 	}
 
 	/* Parse apart the field and value from a URL filter string.

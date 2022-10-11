@@ -1549,12 +1549,13 @@ class SearchObject_Solr extends SearchObject_Base {
 		}
 
 		//Check to see if we have format facets applied.
-		$availabilityByFormatFieldName = $availableAtByFormatFieldName= null;
+		$availabilityByFormatFieldName = $availableAtByFormatFieldName = null;
 		if ($formatCategoryValue != null || $formatValue != null){
 			// When a format or format category facet is applied, switch to using the availability plus format facets.
 			// Both for filtering and importantly, for facet fetching (so that incompatible eContent availability isn't displayed in facets)
 
 			//Make sure to process the more specific format first
+			//TODO: location scope handling here
 			if ($formatValue != null){
 				$escapedFormatValue            = strtolower(preg_replace('/\W/', '_', $formatValue));
 				$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . $escapedFormatValue;
@@ -1566,14 +1567,18 @@ class SearchObject_Solr extends SearchObject_Base {
 			}
 			if (!empty($availabilityToggleValue)){
 				$filterQuery['availability_toggle'] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
+//				$filterQuery[] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
+				//TODO: is string index needed?
 			}
 			if (!empty($availabilityAtValue)){
 				$filterQuery['available_at'] = $availableAtByFormatFieldName . ':"' . $availabilityAtValue . '"';
+//				$filterQuery[] = $availableAtByFormatFieldName . ':"' . $availabilityAtValue . '"';
+				//TODO: is string index needed?
 			}
 		}
 
 		$scopingFilters = $this->getScopingFilters();
-		$filterQuery    = [...$filterQuery, ...$scopingFilters];
+		$filterQuery    = array_merge($filterQuery, $scopingFilters);
 
 		//		$timer->logTime('apply scoping filters');
 		return [$filterQuery, $availabilityByFormatFieldName, $availableAtByFormatFieldName];
@@ -1597,14 +1602,12 @@ class SearchObject_Solr extends SearchObject_Base {
 			}elseif (isset($searchLocation)){
 				// A solr scope should be defined usually. It is probably an anomalous situation to fall back to this, and should be fixed; (or noted here explicitly.)
 				// kids/juvenille opac interfaces??
-				global $pikaLogger;
-				$pikaLogger->notice('Global solr scope not set when setting scoping filters');
+				$this->getLogger()->notice('Global solr scope not set when setting scoping filters');
 				$filter[] = "scope_has_related_records:{$searchLocation->code}";
 			}elseif (isset($searchLibrary)){
 				// A solr scope should be defined usually. It is probably an anomalous situation to fall back to this, and should be fixed; (or noted here explicitly.)
 				// kids/juvenille opac interfaces??
-				global $pikaLogger;
-				$pikaLogger->notice('Global solr scope not set when setting scoping filters');
+				$this->getLogger()->notice('Global solr scope not set when setting scoping filters');
 				$filter[] = "scope_has_related_records:{$searchLibrary->subdomain}";
 			}
 		}
@@ -1641,6 +1644,10 @@ class SearchObject_Solr extends SearchObject_Base {
 		$searchLibrary         = Library::getSearchLibrary();
 		$searchLocation        = Location::getSearchLocation();
 		$isSearchLocationScope = $searchLocation != null;
+		if (empty($searchLibrary) && empty($searchLocation)){
+			//TODO: Note these situations.  (At some point in the past this would be a global scope.
+			$this->getLogger()->notice('No search library/location found', [$_SERVER['SERVER_NAME'], $_SERVER['REQUEST_URI']]);
+		}
 		if ((!empty($searchLibrary->applyNumberOfHoldingsBoost))){
 			$boostFactors[] = 'sum(popularity,1)';
 		}
@@ -1684,32 +1691,27 @@ class SearchObject_Solr extends SearchObject_Base {
 		// or it will be 10 when an item is owned,
 		// or it will be missing (effectively zero) when it is neither "available at" nor owned by the library
 
-		if (!empty($searchLibrary->boostByLibrary)) {
+		if ($isSearchLocationScope){
+			if (!empty($searchLocation->boostByLocation)){
+				if (in_array($searchLocation->scopeType, ['singleBranchScope', 'regularBranchScope'])){
+					/// Use the library scope field for these type of locations
+					$boostFactors[] = ($searchLocation->boostByLocation > 1) ? "sum(product(lib_boost_{$searchLibrary->subdomain},{$searchLocation->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$searchLibrary->subdomain},1)";
+				}else{
+					$boostFactors[] = ($searchLocation->boostByLocation > 1) ? "sum(product(lib_boost_{$solrScope},{$searchLocation->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
+					// $solrScope should be the same as $searchLocation->code;
+				}
+			}
+		}	elseif (!empty($searchLibrary->boostByLibrary)) {
 			$boostFactors[] = ($searchLibrary->additionalLocalBoostFactor > 1) ? "sum(product(lib_boost_{$solrScope},{$searchLibrary->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
 		} else {
 			// Handle boosting even if we are in a global scope
 			global $library;
 			if (!empty($library->boostByLibrary)) {
 				$boostFactors[] = ($library->additionalLocalBoostFactor > 1) ? "sum(product(lib_boost_{$solrScope},{$library->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
+				$this->getLogger()->notice('Case of search library scope missing', [$_SERVER['SERVER_NAME'], $_SERVER['REQUEST_URI']]);
 			}
 		}
 
-		if (!empty($searchLocation->boostByLocation)){
-			if (in_array($searchLocation->scopeType, ['singleBranchScope', 'regularBranchScope'])){
-				$boostFactors[] = ($searchLocation->boostByLocation > 1) ? "sum(product(lib_boost_{$searchLibrary->subdomain},{$searchLocation->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$searchLibrary->subdomain},1)";
-			}else{
-				$boostFactors[] = ($searchLocation->boostByLocation > 1) ? "sum(product(lib_boost_{$solrScope},{$searchLocation->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
-				// $solrScope should be the same as $searchLocation->code;
-			}
-		}else{
-			// Handle boosting even if we are in a global scope
-			//TODO: I don't think this is block that ever gets entered any more.  Note the scenarios when it does
-			global $locationSingleton;
-			$physicalLocation = $locationSingleton->getActiveLocation();
-			if (!empty($physicalLocation->boostByLocation)) {
-				$boostFactors[] = ($physicalLocation->additionalLocalBoostFactor > 1) ? "sum(product(lib_boost_{$solrScope},{$physicalLocation->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
-			}
-		}
 		if (!empty($boostFactors)){
 			$boostFormula = 'sum(' . implode(',', $boostFactors) . ')';
 		}
@@ -2511,8 +2513,8 @@ class SearchObject_Solr extends SearchObject_Base {
 			}else{
 				//TODO: this block is obsolete, since all these facets are scoped.  Likely would cause empty document returns
 				// if no scope is set
-				global $pikaLogger;
-				$pikaLogger->warning('Solr scope not set when fetching scoped fields.', $_REQUEST);
+				// This occurs with calls to getExploreMoreContent; also to reccord views when a searchSource url paramater is included with a invalid option
+				$this->getLogger()->warning('Solr scope not set when fetching scoped fields.', $_REQUEST);
 				$fieldsToReturn .= ',format';
 				$fieldsToReturn .= ',format_category';
 				$fieldsToReturn .= ',days_since_added';
