@@ -453,6 +453,9 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 							orderInfoFromExport.put(recordId, orderRecordColl);
 						}
 					}
+					if (logger.isDebugEnabled()) {
+						logger.debug("Loaded " + orderInfoFromExport.size() + " records with order info loaded from export");
+					}
 				}
 			}catch(Exception e){
 				logger.error("Error loading order records from active orders", e);
@@ -508,6 +511,9 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 
 		if (isOrderItemValid(status, null)) {
 			recordInfo.addItem(itemInfo);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Add order " + orderNumber + " to " + recordInfo.getFullIdentifier());
+			}
 
 			//For On Order Items, increment popularity based on number of copies that are being purchased.
 			groupedWork.addPopularity(orderItem.getNumCopies());

@@ -1709,6 +1709,7 @@ class SearchObject_Solr extends SearchObject_Base {
 			if (!empty($library->boostByLibrary)) {
 				$boostFactors[] = ($library->additionalLocalBoostFactor > 1) ? "sum(product(lib_boost_{$solrScope},{$library->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
 				$this->getLogger()->notice('Case of search library scope missing', [$_SERVER['SERVER_NAME'], $_SERVER['REQUEST_URI']]);
+				//TODO: document when this situation occurs.  It ought to be the case that there is always a search scope defined
 			}
 		}
 

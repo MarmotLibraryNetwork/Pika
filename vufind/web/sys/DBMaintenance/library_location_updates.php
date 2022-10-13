@@ -1241,6 +1241,13 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			'sql'             => [
 				"ALTER TABLE `location` ADD COLUMN `scopeType` VARCHAR(25) NULL DEFAULT 'regularBranchScope' AFTER `catalogUrl`",
 //				"ALTER TABLE `location` ADD COLUMN `scopeType` enum ('noScope', 'singleBranchScope', 'regularBranchScope') NULL DEFAULT 'regularBranchScope' AFTER `catalogUrl`",
+
+		'2022.03.1_expand_sidebar_links' => [
+			'title'           => 'Increase Sidebar link column',
+			'description'     => 'Increase Sidebar link column to 400 chars.',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE `library_links` CHANGE COLUMN `url` `url` VARCHAR(400) NOT NULL ;",
 			],
 		],
 
