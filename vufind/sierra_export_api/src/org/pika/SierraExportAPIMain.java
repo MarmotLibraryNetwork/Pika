@@ -1486,7 +1486,7 @@ public class SierraExportAPIMain {
 					logger.warn("Failed to set record identifier in record grouper getPrimaryIdentifierFromMarcRecord(); possible error or automatic econtent suppression trigger.");
 				}
 			} catch (Exception e) {
-				logger.error("catch for id " + id + "or  record Identifier " + recordIdentifier, e);
+				logger.error("catch for id " + id + " or record Identifier " + recordIdentifier, e);
 				throw e;
 			}
 		}
@@ -1982,6 +1982,9 @@ public class SierraExportAPIMain {
 				PreparedStatement getActiveOrdersStmt = sierraConn.prepareStatement(activeOrderSQL, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				ResultSet activeOrdersRS = getActiveOrdersStmt.executeQuery()
 		) {
+			if (logger.isInfoEnabled() && !activeOrdersRS.first()){
+				logger.info("No applicable order records were found");
+			}
 			File tempWriteFile = new File(orderRecordFile + ".tmp");
 			writeToFileFromSQLResultFile(tempWriteFile, activeOrdersRS);
 			activeOrdersRS.close();
@@ -2013,6 +2016,9 @@ public class SierraExportAPIMain {
 					}
 					existingBibsWithOrders.remove(bibId);
 				}
+			}
+			if (logger.isDebugEnabled()){
+				logger.debug(updatedBibsWithOrders.size() + " order records were extracted for " + allBibsToUpdate.size() + " bibs");
 			}
 
 			//Now that all updated bibs are processed, look for any that we used to have that no longer exist
