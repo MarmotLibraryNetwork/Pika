@@ -1979,10 +1979,11 @@ public class SierraExportAPIMain {
 		int numBibsOrdersChanged = 0;
 		int numBibsOrdersRemoved = 0;
 		try (
-				PreparedStatement getActiveOrdersStmt = sierraConn.prepareStatement(activeOrderSQL, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				PreparedStatement getActiveOrdersStmt = sierraConn.prepareStatement(activeOrderSQL, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				ResultSet activeOrdersRS = getActiveOrdersStmt.executeQuery()
 		) {
 			if (logger.isInfoEnabled() && !activeOrdersRS.first()){
+				// Note: the first command can only work when the ResultSet is a scrollable type. (Default type is forward-only)
 				logger.info("No applicable order records were found");
 			}
 			File tempWriteFile = new File(orderRecordFile + ".tmp");
