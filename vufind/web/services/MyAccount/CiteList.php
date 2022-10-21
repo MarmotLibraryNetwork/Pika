@@ -43,9 +43,12 @@ class CiteList extends Action {
 		//TODO: test this
 		$favList         = new FavoriteHandler($list, false);
 		$citationFormat  = $_REQUEST['citationFormat'];
+		$page = $_REQUEST['myListPage'];
+		$pageSize = $_REQUEST['myListPageSize'];
+		$sort = $_REQUEST['myListSort'];
 		$citationFormats = CitationBuilder::getCitationFormats();
 		$interface->assign('citationFormat', $citationFormats[$citationFormat]);
-		$citations = $favList->getCitations($citationFormat);
+		$citations = $favList->getCitations($citationFormat,$page,$pageSize,$sort);
 
 		$interface->assign('citations', $citations);
 

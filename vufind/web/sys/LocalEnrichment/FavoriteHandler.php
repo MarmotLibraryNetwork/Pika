@@ -634,25 +634,64 @@ class FavoriteHandler {
 		return [...$catalogRecordSet, ...$archiveRecordSet];
 	}
 
-	function getCitations($citationFormat){
+	function getCitations($citationFormat, $page, $pageSize, $sort, $filter=array()){
 		// Initialise from the current search globals
 		/** @var SearchObject_Solr $searchObject */
 		$citations = array();
+		$userSort = false;
+		$listSort = false;
+		$ourSort = $this->sort;
+			if($this->sort != $sort){
+				$userSort = true;
+			}
+		if(in_array($sort, array_keys($this->userListSortOptions))){
+			$listSort = true;
+		}
+			if($userSort){
+				if($listSort){
+					$ourSort = $this->userListSortOptions[$sort];
+				}
+			}
 
 			if(!empty($this->catalogIds)){
-				$searchObject = SearchObjectFactory::initSearchObject();
+				/** @var SearchObject_UserListSolr searchObject */
+				$searchObject = SearchObjectFactory::initSearchObject('UserListSolr');
+				if($listSort){
+					$searchObject->userListSort = $ourSort;
+				}
+				if(isset($pageSize)&& $pageSize != 20){
+					$searchObject->userListPageSize = $pageSize;
+				}
 				$searchObject->init();
+				$searchObject->setLimit($pageSize);
+				if(!$listSort){
+					$searchObject->setSort($this->sort);
+				}
 				$searchObject->setQueryIDs($this->catalogIds);
-				$searchObject->processSearch();
+
+				$searchObject->setPage($page);
+				$searchObject->processSearch(true);
 				foreach($searchObject->getCitations($citationFormat) as $citation){
 					array_push($citations, $citation);
 				}
 
 			}
 			if(!empty($this->archiveIds)){
-				$archiveObject = SearchObjectFactory::initSearchObject('Islandora');
+				$archiveObject = SearchObjectFactory::initSearchObject('UserListIslandora');
+
+				if($listSort){
+					$searchObject->userListSort = $ourSort;
+				}
+				if(isset($pageSize)&& $pageSize != 20){
+					$searchObject->userListPageSize = $pageSize;
+				}
 				$archiveObject->init();
+				$searchObject->setLimit($pageSize);
+				if(!$listSort){
+					$searchObject->setSort($this->sort);
+				}
 				$archiveObject->setQueryIds($this->archiveIds);
+				$searchObject->setPage($page);
 				$archiveObject->processSearch();
 				foreach($archiveObject->getCitations($citationFormat) as $citation){
 					array_push($citations, $citation);
