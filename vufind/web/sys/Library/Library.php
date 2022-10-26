@@ -1636,7 +1636,8 @@ class Library extends DB_DataObject {
 					$deleteCheck = $object->delete();
 					if (!$deleteCheck){
 						$errorString = 'Materials Request(s) are present for the format "' . $object->format . '".';
-						$error       = $this->raiseError($errorString, PEAR_LOG_ERR);
+						/** @var PEAR_Error $error */
+						$error = $this->raiseError($errorString);
 						$error->addUserInfo($errorString);
 						return $error;
 					}

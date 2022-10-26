@@ -30,7 +30,6 @@ global $errorHandlingEnabled;
 $errorHandlingEnabled = true;
 
 $startTime = microtime(true);
-require_once ROOT_DIR . '/sys/Logger.php';
 require_once ROOT_DIR . '/sys/PEAR_Singleton.php';
 PEAR_Singleton::init();
 
@@ -48,9 +47,7 @@ $memoryWatcher = new MemoryWatcher();
 $pikaLogger = new Pika\Logger('Pika', true);
 $timer->logTime("Initialized Pika\Logger");
 
-// deprecated logger
 
-$logger = new Logger();
 $timer->logTime("Read Config");
 
 //global $app;

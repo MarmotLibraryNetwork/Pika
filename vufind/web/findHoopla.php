@@ -33,7 +33,7 @@ define('ROOT_DIR', __DIR__);
 set_include_path(get_include_path() . PATH_SEPARATOR . "/usr/share/composer");
 require_once "vendor/autoload.php";
 
-require_once ROOT_DIR . '/sys/Logger.php';
+# Removed require for legacy logger
 require_once ROOT_DIR . '/sys/PEAR_Singleton.php';
 PEAR_Singleton::init();
 // logger required for config

@@ -29,7 +29,6 @@ require_once ROOT_DIR . '/services/Archive/Object.php';
 class Archive_DownloadOriginal extends Archive_Object{
 	function launch(){
 		global $interface;
-		global $logger;
 		$this->loadArchiveObjectData();
 		$anonymousMasterDownload = $interface->getVariable('anonymousMasterDownload');
 		$verifiedMasterDownload = $interface->getVariable('verifiedMasterDownload');
