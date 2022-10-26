@@ -638,10 +638,12 @@ class FavoriteHandler {
 	function getCitations($citationFormat, $page, $pageSize, $filter=array()){
 		// Initialise from the current search globals
 		/** @var SearchObject_Solr $searchObject */
-		$citations = array();
-			$offset = ($page-1) * $pageSize;
-			global $interface;
+		$citations = [];
+		$offset    = ($page - 1) * $pageSize;
+		global $interface;
+		if ($this->isUserListSort){
 			$this->catalogIds = array_slice($this->catalogIds, $offset, $pageSize);
+		}
 			if(!empty($this->catalogIds)){
 				/** @var SearchObject_UserListSolr searchObject */
 				$searchObject = SearchObjectFactory::initSearchObject('UserListSolr');
@@ -649,6 +651,8 @@ class FavoriteHandler {
 				$searchObject->init();
 				if(!$this->isUserListSort){
 					$searchObject->setSort($this->sort);
+					$searchObject->setLimit($pageSize);
+					$searchObject->setPage($page);
 				}
 				$searchObject->setQueryIDs($this->catalogIds);
 				$catalogResults = $searchObject->processSearch();
@@ -689,6 +693,9 @@ class FavoriteHandler {
 
 
 		if(count($citations) > 0){
+			if(!$this->isUserListSort){
+				return $citations;
+			}
 			ksort($citations, SORT_NUMERIC); //combine and sort based on citation Key;
 			$citations = array_slice($citations, 0,$pageSize);
 		// Retrieve records from index (currently, only Solr IDs supported):
