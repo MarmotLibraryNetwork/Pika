@@ -962,6 +962,9 @@
 		<!-- All MARC tags 035a
 		 $a - System control number - MARC code (enclosed in parentheses) of the organization originating the system control number, followed immediately by the number.
 		 -->
+		<!-- oclc field is only searched directly with Pika Keyword Proper searchspec.
+		oclc numbers also get added to catch-all keyword field.
+		-->
 
 		<!--
 		primary_isbn, isbn, issn, primary_upc, & upc were all type="text-proper".
