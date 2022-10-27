@@ -2254,7 +2254,8 @@ EOT;
 			$operation = 'patrons/' . $patron->ilsUserId . '/checkouts/history/activationStatus';
 			$params = ["readingHistoryActivation" => true];
 			$r = $this->_doRequest($operation, $params, "POST");
-			if($r == "") {
+			if($r === "") {
+				// $r can be false and will wrongly match $r == ""
 				$success = true;
 			}
 		} else {
@@ -2262,11 +2263,10 @@ EOT;
 		}
 		if (!$success){
 			$this->logger->warning('Unable to opt in patron ' . $patron->barcode . ' from ILS reading history. Falling back to Pika.');
+			return false;
+		} else{
+			return true;
 		}
-		$patron->trackReadingHistory = true;
-		$patron->update();
-
-		return true;
 	}
 
 	/**
@@ -2328,6 +2328,9 @@ EOT;
 				if(count($indexParts) >= 2) {
 					$info['VersionMajor'] = (int)$indexParts[0];
 					$info['VersionMinor'] = (int)$indexParts[1];
+					if ($info['VersionMajor'] > $this->configArray['Catalog']['api_version']){
+						$this->logger->warn('Sierra API reporting higher API version number than set in config.ini ' . $info['VersionMajor'] . ' vs ' . $this->configArray['Catalog']['api_version']);
+					}
 				}
 			}
 			$info[$index] = trim($parts[1]);
@@ -3133,7 +3136,7 @@ EOT;
 				}
 			} else {
 				$message = 'HTTP Error: '.$c->getErrorCode().': '.$c->getErrorMessage();
-				$this->logger->warning($message);
+				$this->logger->warning($message, [$operationUrl, $params]);
 			}
 			$this->apiLastError = $message;
 			if (!empty($c->response->details->itemsAsVolumes)){
