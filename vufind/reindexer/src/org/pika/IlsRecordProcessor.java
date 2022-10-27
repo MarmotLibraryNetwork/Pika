@@ -253,18 +253,22 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	private void loadTimeToReshelve(Connection pikaConn, long id) throws SQLException{
-		PreparedStatement getTimesToReshelveStmt = pikaConn.prepareStatement("SELECT * FROM time_to_reshelve WHERE indexingProfileId = ? ORDER by weight");
-		getTimesToReshelveStmt.setLong(1, id);
-		ResultSet timesToReshelveRS = getTimesToReshelveStmt.executeQuery();
-		while (timesToReshelveRS.next()){
-			TimeToReshelve timeToReshelve = new TimeToReshelve();
-			timeToReshelve.setLocations(timesToReshelveRS.getString("locations"));
-			timeToReshelve.setNumHoursToOverride(timesToReshelveRS.getLong("numHoursToOverride"));
-			timeToReshelve.setStatusToOverride(timesToReshelveRS.getString("statusCodeToOverride"));
-			timeToReshelve.setStatus(timesToReshelveRS.getString("status"));
-			timeToReshelve.setGroupedStatus(timesToReshelveRS.getString("groupedStatus"));
-			timesToReshelve.add(timeToReshelve);
+	private void loadTimeToReshelve(Connection pikaConn, long indexingProfileId){
+		try (PreparedStatement getTimesToReshelveStmt = pikaConn.prepareStatement("SELECT * FROM time_to_reshelve WHERE indexingProfileId = ? ORDER by weight")) {
+			getTimesToReshelveStmt.setLong(1, indexingProfileId);
+			try (ResultSet timesToReshelveRS = getTimesToReshelveStmt.executeQuery()) {
+				while (timesToReshelveRS.next()) {
+					TimeToReshelve timeToReshelve = new TimeToReshelve();
+					timeToReshelve.setLocations(timesToReshelveRS.getString("locations"));
+					timeToReshelve.setNumHoursToOverride(timesToReshelveRS.getLong("numHoursToOverride"));
+					timeToReshelve.setStatusToOverride(timesToReshelveRS.getString("statusCodeToOverride"));
+					timeToReshelve.setStatus(timesToReshelveRS.getString("status"));
+					timeToReshelve.setGroupedStatus(timesToReshelveRS.getString("groupedStatus"));
+					timesToReshelve.add(timeToReshelve);
+				}
+			}
+		} catch (SQLException e){
+			logger.warn("Error loading time to reshelve rules", e);
 		}
 	}
 
