@@ -261,6 +261,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			TimeToReshelve timeToReshelve = new TimeToReshelve();
 			timeToReshelve.setLocations(timesToReshelveRS.getString("locations"));
 			timeToReshelve.setNumHoursToOverride(timesToReshelveRS.getLong("numHoursToOverride"));
+			timeToReshelve.setStatusToOverride(timesToReshelveRS.getString("statusCodeToOverride"));
 			timeToReshelve.setStatus(timesToReshelveRS.getString("status"));
 			timeToReshelve.setGroupedStatus(timesToReshelveRS.getString("groupedStatus"));
 			timesToReshelve.add(timeToReshelve);
@@ -993,17 +994,19 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	String getOverriddenStatus(ItemInfo itemInfo, boolean groupedStatus) {
 		String overriddenStatus = null;
-		if (itemInfo.getLastCheckinDate() != null) {
+		if (timesToReshelve.size() > 0 && itemInfo.getLastCheckinDate() != null) {
+			long now = new Date().getTime();
 			for (TimeToReshelve timeToReshelve : timesToReshelve) {
-				if (timeToReshelve.getLocationsPattern().matcher(itemInfo.getLocationCode()).matches()) {
-					long now = new Date().getTime();
-					if (now - itemInfo.getLastCheckinDate().getTime() <= timeToReshelve.getNumHoursToOverride() * 60 * 60 * 1000) {
-						if (groupedStatus){
-							overriddenStatus = timeToReshelve.getGroupedStatus();
-						} else{
-							overriddenStatus = timeToReshelve.getStatus();
+				if (itemInfo.getStatusCode().equalsIgnoreCase(timeToReshelve.getStatusToOverride())) {
+					if (timeToReshelve.getLocationsPattern().matcher(itemInfo.getLocationCode()).matches()) {
+						if (now - itemInfo.getLastCheckinDate().getTime() <= timeToReshelve.getNumHoursToOverride() * 60 * 60 * 1000) {
+							if (groupedStatus){
+								overriddenStatus = timeToReshelve.getGroupedStatus();
+							} else{
+								overriddenStatus = timeToReshelve.getStatus();
+							}
+							break;
 						}
-						break;
 					}
 				}
 			}

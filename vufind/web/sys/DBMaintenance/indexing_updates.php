@@ -216,10 +216,10 @@ function getIndexingUpdates(){
 			)
 		),
 
-		'last_check_in_status_adjustments' => array(
+		'last_check_in_status_adjustments' => [
 			'title'       => 'Last Check In Time Status Adjustments',
 			'description' => 'Add additional fields to adjust status based on last check-in time.',
-			'sql'         => array(
+			'sql'         => [
 				"CREATE TABLE IF NOT EXISTS `time_to_reshelve` (
 							  `id` int(11) NOT NULL AUTO_INCREMENT,
 							  `indexingProfileId` int(11) NOT NULL,
@@ -231,8 +231,17 @@ function getIndexingUpdates(){
 							  PRIMARY KEY (`id`),
 							  KEY (indexingProfileId)
 							) ENGINE=InnoDB DEFAULT CHARSET=utf8",
-			)
-		),
+			]
+		],
+
+		'2022.04.0_timeToReshelveStatusToOveride' => [
+			'title'           => 'Time To Reshelve status code to override',
+			'description'     => 'Add column for the status code to override on checkin',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE `time_to_reshelve` ADD COLUMN `statusCodeToOverride` CHAR(1) NOT NULL DEFAULT '-' AFTER `numHoursToOverride`; ",
+			],
+		],
 
 		'records_to_include_2017-06' => array(
 			'title'       => 'Records To Include Updates 2017.06',
@@ -309,7 +318,7 @@ function getIndexingUpdates(){
 			]
 		],
 
-			'indexing_profile_item_status_settings_2020.06' => [
+		'indexing_profile_item_status_settings_2020.06' => [
 			'title'       => 'Add standard item status settings to indexing profile',
 			'description' => 'Add standard item status settings availablie, checked out, and library use only to indexing profile',
 			'sql'         => [
@@ -320,7 +329,7 @@ function getIndexingUpdates(){
 			]
 		],
 
-			'indexing_profile_cover_source_settings_2020.07' => [
+		'indexing_profile_cover_source_settings_2020.07' => [
 			'title'       => 'Add cover source settings to indexing profile',
 			'description' => 'Set how the indexing profile should handle book cover images',
 			'sql'         => [
@@ -329,7 +338,7 @@ function getIndexingUpdates(){
 			]
 		],
 
-			'add_new_format_to_maps_2020.07' => [
+		'add_new_format_to_maps_2020.07' => [
 			'title'       => 'Add new formats to translation maps',
 			'description' => 'Add playstation 5 and xbox series x to translation maps',
 			'sql'         => [
@@ -362,7 +371,7 @@ function getIndexingUpdates(){
 						'Young Reader', 'young')",
 			]
 		],
-			'add_opac_message_2021.02' => [
+		'add_opac_message_2021.02' => [
 			'title'       => 'Add opac message subfield setting to indexing profile',
 			'description' => 'Include opac message subfield in order for Sierra Extract to get the field for items.',
 			'sql'         => [
@@ -370,7 +379,7 @@ function getIndexingUpdates(){
 			]
 		],
 
-			'create_table_indexing_profile_marc_validation_2021.03' => [
+		'create_table_indexing_profile_marc_validation_2021.03' => [
 			'title'       => 'Create the table indexing_profile_marc_validation',
 			'description' => 'For tracking Validated MARC export files',
 			'sql'         => [
