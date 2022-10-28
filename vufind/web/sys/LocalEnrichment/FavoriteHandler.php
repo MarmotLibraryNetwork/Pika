@@ -644,9 +644,11 @@ class FavoriteHandler {
 		if ($this->isUserListSort){
 			$this->catalogIds = array_slice($this->catalogIds, $offset, $pageSize);
 		}
+
 			if(!empty($this->catalogIds)){
 				/** @var SearchObject_UserListSolr searchObject */
 				$searchObject = SearchObjectFactory::initSearchObject('UserListSolr');
+				$searchObject->setLimit(2000);
 				$searchObject->userListSort =  $this->isUserListSort ? $this->userListSortOptions[$this->sort] : null;
 				$searchObject->init();
 				if(!$this->isUserListSort){
