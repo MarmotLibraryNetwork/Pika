@@ -67,6 +67,7 @@ class Location extends DB_DataObject {
 	public $repeatInProspector;
 	public $repeatInWorldCat;
 	public $repeatInOverdrive;
+	public $repeatInAlternateOverdriveLibrary;
 	public $systemsToRepeatIn;
 	public $homeLink;
 	public $defaultPType;
@@ -244,6 +245,7 @@ class Location extends DB_DataObject {
 						 ['property' => 'repeatInProspector', 'type' => 'checkbox', 'label' => 'Repeat In ' . $innReachEncoreName, 'description' => 'Turn on to allow repeat search in ' . $innReachEncoreName . ' functionality.', 'hideInLists' => true, 'default' => false],
 						 ['property' => 'repeatInWorldCat', 'type' => 'checkbox', 'label' => 'Repeat In WorldCat', 'description' => 'Turn on to allow repeat search in WorldCat functionality.', 'hideInLists' => true, 'default' => false],
 						 ['property' => 'repeatInOverdrive', 'type' => 'checkbox', 'label' => 'Repeat In Overdrive', 'description' => 'Turn on to allow repeat search in Overdrive functionality.', 'hideInLists' => true, 'default' => false],
+						 ['property' =>'repeatInAlternateOverdriveLibrary', 'type' =>'text', 'label' =>'Repeat In Alternate Overdrive Libraries', 'description' => 'A list of the alternate OverDrive library codes from the OverDrive URL that you would like to repeat search in separated by pipes |.', 'hideInLists' => true],
 					 ],
 					],
 					[

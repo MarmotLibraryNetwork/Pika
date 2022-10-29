@@ -24,15 +24,16 @@ class SearchSources {
 		//Check to see if marmot catalog is a valid option
 		global $library;
 		global $configArray;
-		$repeatSearchSetting  = '';
-		$repeatInWorldCat     = false;
-		$repeatInProspector   = true;
-		$repeatInOverdrive    = false;
-		$systemsToRepeatIn    = [];
-		$searchGenealogy      = true;
-		$repeatCourseReserves = false;
-		$searchArchive        = false;
-		$searchEbsco          = false;
+		$repeatSearchSetting               = '';
+		$repeatInWorldCat                  = false;
+		$repeatInProspector                = true;
+		$repeatInOverdrive                 = false;
+		$repeatInAlternateOverdriveLibrary = [];
+		$systemsToRepeatIn                 = [];
+		$searchGenealogy                   = true;
+		$repeatCourseReserves              = false;
+		$searchArchive                     = false;
+		$searchEbsco                       = false;
 
 		/** @var $locationSingleton Location */
 		global $locationSingleton;
@@ -42,6 +43,9 @@ class SearchSources {
 			$repeatInWorldCat    = $location->repeatInWorldCat == 1;
 			$repeatInProspector  = $location->repeatInProspector == 1;
 			$repeatInOverdrive   = $location->repeatInOverdrive == 1;
+			if (!empty($location->repeatInAlternateOverdriveLibrary)){
+				$repeatInAlternateOverdriveLibrary = explode('|', $location->repeatInAlternateOverdriveLibrary);
+			}
 			if (strlen($location->systemsToRepeatIn) > 0){
 				$systemsToRepeatIn = explode('|', $location->systemsToRepeatIn);
 			}else{
@@ -52,7 +56,11 @@ class SearchSources {
 			$repeatInWorldCat    = $library->repeatInWorldCat == 1;
 			$repeatInProspector  = $library->repeatInProspector == 1;
 			$repeatInOverdrive   = $library->repeatInOverdrive == 1;
-			$systemsToRepeatIn   = explode('|', $library->systemsToRepeatIn);
+			if (!empty($library->repeatInAlternateOverdriveLibrary)){
+				$repeatInAlternateOverdriveLibrary = explode('|', $library->repeatInAlternateOverdriveLibrary);
+			}
+
+			$systemsToRepeatIn     = explode('|', $library->systemsToRepeatIn);
 		}
 		if (isset($library)){
 			$searchGenealogy      = $library->enableGenealogy;
@@ -62,15 +70,15 @@ class SearchSources {
 			//$searchEbsco = $library->edsApiProfile != '';
 		}
 
-		list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = self::getCombinedSearchSetupParameters($location, $library);
+		[$enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName] = self::getCombinedSearchSetupParameters($location, $library);
 
 		$marmotAdded = false;
 		if ($enableCombinedResults && $showCombinedResultsFirst){
-			$searchOptions['combinedResults'] = array(
+			$searchOptions['combinedResults'] = [
 				'name'        => $combinedResultsName,
 				'description' => "Combined results from multiple sources.",
 				'catalogType' => 'combined'
-			);
+			];
 		}
 
 		//Local search
@@ -81,11 +89,11 @@ class SearchSources {
 				'catalogType' => 'catalog'
 			];
 		}elseif (isset($library)){
-			$searchOptions['local'] = array(
+			$searchOptions['local'] = [
 				'name'        => strlen($library->abbreviatedDisplayName) > 0 ? $library->abbreviatedDisplayName : $library->displayName,
 				'description' => "The {$library->displayName} catalog.",
 				'catalogType' => 'catalog'
-			);
+			];
 		}else{
 			$marmotAdded            = true;
 			$consortiumName         = $configArray['Site']['libraryName'];
@@ -206,6 +214,14 @@ class SearchSources {
 				'catalogType' => 'catalog'
 			];
 		}
+		foreach ($repeatInAlternateOverdriveLibrary as $alternateOverDriveLibrary){
+			$searchOptions["overdrive$alternateOverDriveLibrary"] = [
+				'name'        => 'OverDrive ' . ucfirst($alternateOverDriveLibrary) . ' Library',
+				'description' => 'Downloadable Books, Videos, Music, and eBooks with free use for library card holders.',
+				'external'    => true,
+				'catalogType' => 'catalog'
+			];
+		}
 
 		if ($repeatInProspector){
 			$innReachEncoreName          = $configArray['InterLibraryLoan']['innReachEncoreName'];
@@ -317,8 +333,10 @@ class SearchSources {
 				return $worldCatLink;
 			case 'overdrive':
 				$overDriveUrl = $configArray['OverDrive']['url'];
-//			return "$overDriveUrl/BangSearch.dll?Type=FullText&FullTextField=All&FullTextCriteria=" . urlencode($lookFor);
 				return "$overDriveUrl/search?query=" . urlencode($lookFor);
+//			case 'overdriveKids':
+//				$overDriveUrl = $configArray['OverDrive']['url'];
+//				return "$overDriveUrl/library/kids/search?query=" . urlencode($lookFor);
 			case 'prospector':
 				$prospectorSearchType = $this->getProspectorSearchType($type);
 				$lookFor              = str_replace('+', '%20', rawurlencode($lookFor));
@@ -339,7 +357,13 @@ class SearchSources {
 				$linkingUrl = $configArray['Catalog']['linking_url'];//TODO replace with account profile opacUrl
 				return "$linkingUrl/search~S{$library->scope}/p?SEARCH=" . urlencode($lookFor);
 			default:
-				return "";
+				if (strpos($searchSource, 'overdrive') === 0){
+					$overDriveUrl              = $configArray['OverDrive']['url'];
+					$alternateOverDriveLibrary = str_replace('overdrive', '', $searchSource);
+					return "$overDriveUrl/library/$alternateOverDriveLibrary/search?query=" . urlencode($lookFor);
+				} else{
+					return '';
+				}
 		}
 	}
 

@@ -1261,6 +1261,16 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			],
 		],
 
+		'2022.04.0_repeatInAlternateOverdriveLibrary' => [
+			'title'           => 'Repeat in Alternate OverDrive libraries',
+			'description'     => 'Add library & location setting for repeat search in alternate OverDrive libraries.',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE `library`  ADD COLUMN `repeatInAlternateOverdriveLibrary` VARCHAR(45) NULL AFTER `repeatInOverdrive`; ",
+				"ALTER TABLE `location` ADD COLUMN `repeatInAlternateOverdriveLibrary` VARCHAR(45) NULL AFTER `repeatInOverdrive`; ",
+			],
+		],
+
 		'2021.04.0_remove_sublocation' => [
 			'title'           => 'Remove unused Koha setting sublocation',
 			'description'     => '',
