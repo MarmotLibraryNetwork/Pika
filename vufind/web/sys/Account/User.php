@@ -313,7 +313,7 @@ class User extends DB_DataObject {
 					return $this->barcode;
 				}elseif ($accountProfile->loginConfiguration == 'name_barcode' && $name == 'cat_password'){
 					$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
-					$this->logger->debug($name . " accessed by " . $calledBy['function'], array("trace" => $calledBy));
+					$this->logger->debug($name . '" accessed by " '. $calledBy['function'], ['trace' => $calledBy]);
 					return $this->barcode;
 				} else {
 					return $this->{$name};
