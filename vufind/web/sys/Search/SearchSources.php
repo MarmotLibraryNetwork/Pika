@@ -38,14 +38,15 @@ class SearchSources {
 		/** @var $locationSingleton Location */
 		global $locationSingleton;
 		$location = $locationSingleton->getActiveLocation();
-		if ($location != null && $location->restrictSearchByLocation){
+		if (!empty($location->repeatInAlternateOverdriveLibrary)){
+			$repeatInAlternateOverdriveLibrary = explode('|', $location->repeatInAlternateOverdriveLibrary);
+		}
+
+		if (!empty($location->restrictSearchByLocation)){
 			$repeatSearchSetting = $location->repeatSearchOption;
 			$repeatInWorldCat    = $location->repeatInWorldCat == 1;
 			$repeatInProspector  = $location->repeatInProspector == 1;
 			$repeatInOverdrive   = $location->repeatInOverdrive == 1;
-			if (!empty($location->repeatInAlternateOverdriveLibrary)){
-				$repeatInAlternateOverdriveLibrary = explode('|', $location->repeatInAlternateOverdriveLibrary);
-			}
 			if (strlen($location->systemsToRepeatIn) > 0){
 				$systemsToRepeatIn = explode('|', $location->systemsToRepeatIn);
 			}else{
@@ -66,7 +67,7 @@ class SearchSources {
 			$searchGenealogy      = $library->enableGenealogy;
 			$repeatCourseReserves = $library->enableCourseReserves == 1;
 			$searchArchive        = $library->enableArchive == 1;
-			//TODO: Reenable once we do full EDS integration
+			//TODO: Re-enable once we do full EDS integration
 			//$searchEbsco = $library->edsApiProfile != '';
 		}
 
