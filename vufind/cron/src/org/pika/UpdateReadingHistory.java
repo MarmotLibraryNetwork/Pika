@@ -194,6 +194,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 		boolean hadError  = false;
 		boolean additionalRoundRequired;
 		String  nextRound = "";
+		int numInitialReadingHistoryEntries = 0;
 		if (barcode != null && !barcode.isEmpty()) {
 				try {
 					String token = md5(barcode);
@@ -239,11 +240,13 @@ public class UpdateReadingHistory implements IProcessHandler {
 												processReadingHistoryTitle(readingHistoryItem, userId);
 
 											}
+											numInitialReadingHistoryEntries += readingHistoryItems.length();
 										} else if (result.get("readingHistory").getClass() == JSONArray.class) {
 											JSONArray readingHistoryItems = result.getJSONArray("readingHistory");
 											for (int i = 0; i < readingHistoryItems.length(); i++) {
 												processReadingHistoryTitle(readingHistoryItems.getJSONObject(i), userId);
 											}
+											numInitialReadingHistoryEntries += readingHistoryItems.length();
 										} else {
 											processLog.incErrors();
 											processLog.addNote("Unexpected JSON for patron reading history " + result.get("readingHistory").getClass());
@@ -290,6 +293,9 @@ public class UpdateReadingHistory implements IProcessHandler {
 		} else {
 			hadError = true;
 			logger.error("A pika user's barcode was empty for user Id " + userId);
+		}
+		if (logger.isInfoEnabled()){
+			logger.info("Loaded " + numInitialReadingHistoryEntries + " initial reading history entries for user Id " + userId);
 		}
 		return !hadError;
 	}
