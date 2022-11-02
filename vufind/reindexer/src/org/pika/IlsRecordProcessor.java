@@ -794,6 +794,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 		if (lastCheckInFormatter == null && lastCheckInFormat != null && lastCheckInFormat.length() > 0){
 			lastCheckInFormatter = new SimpleDateFormat(lastCheckInFormat);
+			lastCheckInFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+			// Assume last check in dates are set in zulu time
 		}
 		ItemInfo itemInfo = new ItemInfo();
 		//Load base information from the Marc Record
