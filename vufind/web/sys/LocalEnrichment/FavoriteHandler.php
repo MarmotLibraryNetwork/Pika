@@ -674,10 +674,14 @@ class FavoriteHandler {
 
 			if(!empty($this->archiveIds)){
 				$archiveObject = SearchObjectFactory::initSearchObject('UserListIslandora');
+				$archiveObject->setLimit(2000);
+				$archiveObject->userListSort = $this->isUserListSort ? $this->userListSortOptions[$this->sort]: null;
 				$archiveObject->init();
 				$this->archiveIds = array_slice($this->archiveIds, $offset, $pageSize);
 				if(!$this->isUserListSort){
 					$archiveObject->setSort($this->sort);
+					$archiveObject->setLimit($pageSize);
+					$archiveObject->setPage($page);
 				}
 				$archiveObject->setQueryIds($this->archiveIds);
 				$archiveResults = $archiveObject->processSearch();
@@ -701,10 +705,9 @@ class FavoriteHandler {
 				return $citations;
 			}
 			ksort($citations, SORT_NUMERIC); //combine and sort based on citation Key;
-			$citations = array_slice($citations, 0,$pageSize);
+			return array_slice($citations, 0,$pageSize);
 		// Retrieve records from index (currently, only Solr IDs supported):
 
-			return $citations;
 		}else{
 			return [];
 		}
