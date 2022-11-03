@@ -645,49 +645,55 @@ class FavoriteHandler {
 			$this->catalogIds = array_slice($this->catalogIds, $offset, $pageSize);
 		}
 
-			if(!empty($this->catalogIds)){
-				/** @var SearchObject_UserListSolr searchObject */
-				$searchObject = SearchObjectFactory::initSearchObject('UserListSolr');
-				$searchObject->setLimit(2000);
-				$searchObject->userListSort =  $this->isUserListSort ? $this->userListSortOptions[$this->sort] : null;
-				$searchObject->init();
-				if(!$this->isUserListSort){
-					$searchObject->setSort($this->sort);
-					$searchObject->setLimit($pageSize);
-					$searchObject->setPage($page);
-				}
-				$searchObject->setQueryIDs($this->catalogIds);
-				$catalogResults = $searchObject->processSearch();
-				foreach($catalogResults['response']['docs'] as $catalogResult){
-					$groupedWork = new GroupedWorkDriver($catalogResult['id']);
-					if ($groupedWork->isValid){
-						// Need to re-sort in order to match list order
-						$key = array_search($catalogResult['id'], $this->favorites);
-						if ($key !== false){
-							$citations[$key] = $interface->fetch($groupedWork->getCitation($citationFormat));
-						}
+		if (!empty($this->catalogIds)){
+			/** @var SearchObject_UserListSolr searchObject */
+			$searchObject = SearchObjectFactory::initSearchObject('UserListSolr');
+			$searchObject->setLimit(2000);
+			$searchObject->userListSort = $this->isUserListSort ? $this->userListSortOptions[$this->sort] : null;
+			$searchObject->init();
+			if (!$this->isUserListSort){
+				$searchObject->setSort($this->sort);
+				$searchObject->setLimit($pageSize);
+				$searchObject->setPage($page);
+			}
+			$searchObject->setQueryIDs($this->catalogIds);
+			$catalogResults = $searchObject->processSearch();
+			if (!empty($catalogResults['response']['docs'])){
+			foreach ($catalogResults['response']['docs'] as $catalogResult){
+				$groupedWork = new GroupedWorkDriver($catalogResult['id']);
+				if ($groupedWork->isValid){
+					// Need to re-sort in order to match list order
+					$key = array_search($catalogResult['id'], $this->favorites);
+					if ($key !== false){
+						$citations[$key] = $interface->fetch($groupedWork->getCitation($citationFormat));
 					}
 				}
-
-
 			}
+		}
+	}
+
 			if(!empty($this->archiveIds)){
 				$archiveObject = SearchObjectFactory::initSearchObject('UserListIslandora');
+				$archiveObject->setLimit(2000);
+				$archiveObject->userListSort = $this->isUserListSort ? $this->userListSortOptions[$this->sort]: null;
 				$archiveObject->init();
 				$this->archiveIds = array_slice($this->archiveIds, $offset, $pageSize);
 				if(!$this->isUserListSort){
 					$archiveObject->setSort($this->sort);
+					$archiveObject->setLimit($pageSize);
+					$archiveObject->setPage($page);
 				}
 				$archiveObject->setQueryIds($this->archiveIds);
 				$archiveResults = $archiveObject->processSearch();
-				foreach($archiveResults['response']['docs'] as $archiveResult){
-					$archiveWork = RecordDriverFactory::initRecordDriver($archiveResult);
-					$key = array_search($archiveResult['PID'], $this->favorites);
-					if ($key !== false ){
-						$citations[$key] = $interface->fetch($archiveWork->getCitation($citationFormat));
+				if(!empty($archiveResults['response']['docs'])){
+					foreach ($archiveResults['response']['docs'] as $archiveResult){
+						$archiveWork = RecordDriverFactory::initRecordDriver($archiveResult);
+						$key         = array_search($archiveResult['PID'], $this->favorites);
+						if ($key !== false){
+							$citations[$key] = $interface->fetch($archiveWork->getCitation($citationFormat));
+						}
 					}
 				}
-
 			}
 
 
@@ -699,10 +705,9 @@ class FavoriteHandler {
 				return $citations;
 			}
 			ksort($citations, SORT_NUMERIC); //combine and sort based on citation Key;
-			$citations = array_slice($citations, 0,$pageSize);
+			return array_slice($citations, 0,$pageSize);
 		// Retrieve records from index (currently, only Solr IDs supported):
 
-			return $citations;
 		}else{
 			return [];
 		}
