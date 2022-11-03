@@ -795,7 +795,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (lastCheckInFormatter == null && lastCheckInFormat != null && lastCheckInFormat.length() > 0){
 			lastCheckInFormatter = new SimpleDateFormat(lastCheckInFormat);
 			lastCheckInFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-			// Assume last check in dates are set in zulu time
+			// Assume last check in dates are set in zulu time.
+			// This is needed for timeToReshelve intervals to be calculated correctly
 		}
 		ItemInfo itemInfo = new ItemInfo();
 		//Load base information from the Marc Record
@@ -1001,10 +1002,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	String getOverriddenStatus(ItemInfo itemInfo, boolean groupedStatus) {
 		String overriddenStatus = null;
 		if (timesToReshelve.size() > 0 && itemInfo.getLastCheckinDate() != null) {
-			long now = new Date().getTime();
 			for (TimeToReshelve timeToReshelve : timesToReshelve) {
 				if (itemInfo.getStatusCode().equalsIgnoreCase(timeToReshelve.getStatusToOverride())) {
+					// Compare statuses first since that is simpler than location code regexes
 					if (timeToReshelve.getLocationsPattern().matcher(itemInfo.getLocationCode()).matches()) {
+						long now = new Date().getTime();
+						// Only get the time if a timeToReshelve rule applies, since this will be exception rather than norm.
+						// Considered using the indexing start time, so that one value is used,
+						// but a full reindex may run over many hours so the current time is more appropriate.
 						if (now - itemInfo.getLastCheckinDate().getTime() <= timeToReshelve.getNumHoursToOverride() * 60 * 60 * 1000) {
 							if (groupedStatus){
 								overriddenStatus = timeToReshelve.getGroupedStatus();
