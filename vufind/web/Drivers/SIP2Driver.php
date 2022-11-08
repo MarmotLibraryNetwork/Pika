@@ -61,8 +61,8 @@ abstract class SIP2Driver implements DriverInterface{
 						//Looks like horizon is returning these backwards via SIP.
 						//AQ should be current, but is always returning the same code.
 						//AP should be permanent, but is returning the current location
-						//global $logger;
-						//$logger->log("Permanent location " . $result['variable']['AQ'][0] . " current location " . $result['variable']['AP'][0], PEAR_LOG_INFO);
+						//global $pikaLogger;
+						//$pikaLogger->info("Permanent location " . $result['variable']['AQ'][0] . " current location " . $result['variable']['AP'][0]);
 						$itemSip2Data['locationCode'] = $result['variable'][$currentLocationSIPField][0];
 						$itemSip2Data['location'] = mapValue('shelf_location', $itemSip2Data['locationCode']);
 					}

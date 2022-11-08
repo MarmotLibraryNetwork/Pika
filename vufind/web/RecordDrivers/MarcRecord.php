@@ -1914,7 +1914,7 @@ class MarcRecord extends IndexRecord {
 			$pikaLogger->debug('fetching num of Holds from MarcRecord');
 
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
-//			$logger->log('$catalog :'.var_export($catalog, true), PEAR_LOG_DEBUG);
+//			$pikaLogger->debug('$catalog :'.var_export($catalog, true));
 			if (isset($catalog->status) && $catalog->status){
 				$this->numHolds = $catalog->getNumHoldsFromRecord($this->getUniqueID());
 			}else{

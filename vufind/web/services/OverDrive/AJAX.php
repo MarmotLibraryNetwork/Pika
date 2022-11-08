@@ -166,7 +166,6 @@ class OverDrive_AJAX extends AJAXHandler {
 			if ($patron){
 				$driver = OverDriveDriverFactory::getDriver();
 				$result = $driver->returnOverDriveItem($overDriveId, $patron);
-				//$logger->log("Checkout result = $result", PEAR_LOG_INFO);
 				return $result;
 			}else{
 				return ['success' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to return titles for that user.'];
@@ -186,7 +185,7 @@ class OverDrive_AJAX extends AJAXHandler {
 				$overDriveId = $_REQUEST['overDriveId'];
 				$formatType  = $_REQUEST['formatType'];
 				$result      = $driver->selectOverDriveDownloadFormat($overDriveId, $formatType, $patron);
-				//$logger->log("Checkout result = $result", PEAR_LOG_INFO);
+
 				return $result;
 			}else{
 				return ['success' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.'];

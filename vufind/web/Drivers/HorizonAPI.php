@@ -202,7 +202,7 @@ abstract class HorizonAPI extends Horizon{
 				$timer->logTime("lookupMyAccountInfo failed");
 
 				$this->logger->error('Horizon API call lookupMyAccountInfo failed.');
-//				$logger->log($configArray['Catalog']['webServiceUrl'] . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeAddressInfo=true&includeHoldInfo=true&includeBlockInfo=true&includeItemsOutInfo=true', PEAR_LOG_ERR);
+//				$this->logger->error($configArray['Catalog']['webServiceUrl'] . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeAddressInfo=true&includeHoldInfo=true&includeBlockInfo=true&includeItemsOutInfo=true');
 				return null;
 			}
 		}
@@ -502,7 +502,7 @@ abstract class HorizonAPI extends Horizon{
 		$holds          = $this->getMyHolds($patron);
 		$combined_holds = array_merge($holds['unavailable'], $holds['available']);
 //		}
-//		$logger->log("Load titles = $loadTitles", PEAR_LOG_DEBUG); // move out of foreach loop
+//		$this->logger->debug("Load titles = $loadTitles"); // move out of foreach loop
 
 
 		$titles = [];

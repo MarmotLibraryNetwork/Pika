@@ -406,8 +406,8 @@ function loadSearchInformation(){
 	$indexingProfiles = $memCache->get($memCacheKey);
 	if ($indexingProfiles === false || isset($_REQUEST['reload'])){
 		$indexingProfiles = IndexingProfile::getAllIndexingProfiles();
-//		global $logger;
-//		$logger->log("Updating memcache variable {$instanceName}_indexing_profiles", PEAR_LOG_DEBUG);
+//		global $pikaLogger;
+//		$pikaLogger->debug("Updating memcache variable {$instanceName}_indexing_profiles");
 		if (!$memCache->set($memCacheKey, $indexingProfiles, 0, $configArray['Caching']['indexing_profiles'])) {
 			global $pikaLogger;
 			$pikaLogger->error("Failed to update memcache variable $memCacheKey");

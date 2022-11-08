@@ -65,7 +65,7 @@ EOQ;
 		$queryResults = $fedoraUtils->doSparqlQuery($query);
 		global $pikaLogger;
 		$pikaLogger->debug("query for Book contents");
-		//$logger->log($queryResults, PEAR_LOG_DEBUG);
+		//$pikaLogger->debug($queryResults);
 		// since $queryResults is an array comment out to prevent php notice
 
 		if (count($queryResults) == 0){

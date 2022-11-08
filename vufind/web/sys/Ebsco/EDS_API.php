@@ -320,8 +320,8 @@ BODY;;
 	{
 		global $interface;
 		$html = array();
-		//global $logger;
-		//$logger->log(print_r($this->lastSearchResults, true), PEAR_LOG_WARNING);
+		//global $pikaLogger;
+		//$pikaLogger->warn(print_r($this->lastSearchResults, true));
 		if (isset($this->lastSearchResults->Data->Records)) {
 			for ($x = 0; $x < count($this->lastSearchResults->Data->Records->Record); $x++) {
 				$current = &$this->lastSearchResults->Data->Records->Record[$x];
@@ -352,8 +352,8 @@ BODY;;
 	{
 		global $interface;
 		$html = array();
-		//global $logger;
-		//$logger->log(print_r($this->lastSearchResults, true), PEAR_LOG_WARNING);
+		//global $pikaLogger;
+		//pikaLogger->warn(print_r($this->lastSearchResults, true));
 		if (isset($this->lastSearchResults->Data->Records)) {
 			for ($x = 0; $x < count($this->lastSearchResults->Data->Records->Record); $x++) {
 				$current = &$this->lastSearchResults->Data->Records->Record[$x];

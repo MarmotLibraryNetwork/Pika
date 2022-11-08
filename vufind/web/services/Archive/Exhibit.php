@@ -583,7 +583,7 @@ class Archive_Exhibit extends Archive_Object {
 			$_SESSION['placePid'] = $_REQUEST['placePid'];
 			$pikaLogger->debug("Starting exhibit context " . $this->recordDriver->getUniqueID() . " place {$_SESSION['placePid']}");
 		}else{
-			$pikaLogger->log("Starting exhibit context " . $this->recordDriver->getUniqueID() . " no place", PEAR_LOG_DEBUG);
+			$pikaLogger->debug("Starting exhibit context " . $this->recordDriver->getUniqueID() . " no place");
 			$_SESSION['placePid']   = null;
 			$_SESSION['placeLabel'] = null;
 		}
