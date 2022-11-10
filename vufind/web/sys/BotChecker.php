@@ -69,7 +69,7 @@ class BotChecker{
 				}
 				BotChecker::$isBot = $isBot;
 			}else{
-				//$logger->log("Got bot info from memcache $isBot", PEAR_LOG_DEBUG);
+				//$pikaLogger->debug("Got bot info from memcache $isBot");
 				BotChecker::$isBot = ($isBot === 'TRUE');
 			}
 

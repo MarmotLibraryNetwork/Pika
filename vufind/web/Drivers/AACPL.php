@@ -81,7 +81,7 @@ class AACPL extends SirsiDynixROA {
 
 
 //	function selfRegister(){
-//		global $logger;
+//		global $pikaLogger;
 //
 //		//Setup Curl
 //		$header=array();
@@ -110,7 +110,7 @@ class AACPL extends SirsiDynixROA {
 //		curl_setopt($curl_connection, CURLOPT_HEADER, false);
 //		curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
 //		$sresult = curl_exec($curl_connection);
-//		$logger->log("Loading Full Record $curl_url", PEAR_LOG_INFO);
+//		$pikaLogger->info("Loading Full Record $curl_url");
 //
 //		//Extract the session id from the requestcopy javascript on the page
 //		if (preg_match('/\\?session=(.*?)&/s', $sresult, $matches)) {

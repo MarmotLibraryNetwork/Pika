@@ -571,8 +571,7 @@ class CarlX extends SIP2Driver{
 
 		//Search for the patron in the database
 		$result = $this->getPatronTransactions($user);
-		//global $logger;
-		//$logger->log("Patron Transactions\r\n" . print_r($result, true), PEAR_LOG_ERR );
+		//$this->logger->error("Patron Transactions\r\n" . print_r($result, true));
 
 		$itemsToLoad = array();
 		if (!$result){
@@ -985,8 +984,8 @@ class CarlX extends SIP2Driver{
 											if ($response) {
 												$success = stripos($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:ShortMessage'], 'Success') !== false;
 												if (!$success) {
-													global $logger;
-													$logger->log('Unable to set pin for Self-Registered user on update call after initial creation call.', PEAR_LOG_ERR);
+													global $pikaLogger;
+													$pikaLogger->log('Unable to set pin for Self-Registered user on update call after initial creation call.');
 													// The Pin will be an empty.
 													// Return Success Any way, because the account was created.
 													return array(
@@ -1065,8 +1064,8 @@ class CarlX extends SIP2Driver{
 					}
 				}
 //			} else {
-//				global $logger;
-//				$logger->log('CarlX Self Registration Form was passed bad data for a user\'s pin.', PEAR_LOG_WARNING);
+//				global $pikaLogger;
+//				$pikaLogger->warn('CarlX Self Registration Form was passed bad data for a user\'s pin.');
 //			}
 		} else {
 
@@ -1222,8 +1221,8 @@ class CarlX extends SIP2Driver{
 		// Fines
 		$request->TransactionType = 'Fine';
 		$result = $this->doSoapRequest('getPatronTransactions', $request);
-		//global $logger;
-		//$logger->log("Result of getPatronTransactions (Fine)\r\n" . print_r($result, true), PEAR_LOG_ERR);
+		//global $pikaLogger;
+		//$pikaLogger->error("Result of getPatronTransactions (Fine)\r\n" . print_r($result, true));
 		if ($result && !empty($result->FineItems->FineItem)) {
 			if (!is_array($result->FineItems->FineItem)) {
 				$result->FineItems->FineItem = array($result->FineItems->FineItem);
@@ -1257,8 +1256,6 @@ class CarlX extends SIP2Driver{
 		// TODO: Lost Items don't have the fine amount
 		$request->TransactionType = 'Lost';
 		$result = $this->doSoapRequest('getPatronTransactions', $request);
-		//$logger->log("Result of getPatronTransactions (Lost)\r\n" . print_r($result, true), PEAR_LOG_ERR);
-
 		if ($result && !empty($result->LostItems->LostItem)) {
 			if (!is_array($result->LostItems->LostItem)) {
 				$result->LostItems->LostItem = array($result->LostItems->LostItem);
@@ -1547,7 +1544,7 @@ class CarlX extends SIP2Driver{
 
 	public function placeHoldViaSIP($patron, $recordId, $pickupBranch = null, $cancelDate = null, $type = null){
 		global $configArray;
-		//global $logger;
+		//global $pikaLogger;
 		//Place the hold via SIP 2
 		require_once ROOT_DIR . '/sys/SIP2.php';
 		$mySip = new sip2();
@@ -1626,8 +1623,6 @@ class CarlX extends SIP2Driver{
 
 				$in = $mySip->msgHold($mode, $expirationTime, '2', '', $holdId, '', $pickupBranchNumber);
 				$msg_result = $mySip->get_message($in);
-				//$logger->log("\r\nHold request\r\n" . print_r($in, true), PEAR_LOG_DEBUG);
-				//$logger->log("\r\nHold response\r\n" . print_r($msg_result, true), PEAR_LOG_DEBUG);
 
 //				$title = $this->getRecordTitle($recordId); //TODO: method isn't defined
 

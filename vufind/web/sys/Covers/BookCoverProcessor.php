@@ -1313,12 +1313,12 @@ class BookCoverProcessor {
 // Not using this process
 //			//Have not found an image yet, check files uploaded by publisher
 //			if ($this->configArray['Content']['loadPublisherCovers'] && isset($this->isn)){
-//				$this->log("Looking for image from publisher isbn10: $this->isbn10 isbn13: $this->isbn13 in $this->bookCoverPath/original/.", PEAR_LOG_INFO);
+//				$this->logger->info("Looking for image from publisher isbn10: $this->isbn10 isbn13: $this->isbn13 in $this->bookCoverPath/original/.");
 //				$this->makeIsbn10And13();
 //				if ($this->getCoverFromPublisher($this->bookCoverPath . '/original/')){
 //					return true;
 //				}
-//				$this->log("Did not find a file in publisher folder.", PEAR_LOG_INFO);
+//				$this->logger->info("Did not find a file in publisher folder.");
 //			}
 
 		}
@@ -1490,24 +1490,24 @@ class BookCoverProcessor {
 // Not used at all. Keeping in case it becomes handy in the future
 //	function getCoverFromPublisher($folderToCheck){
 //		if (!file_exists($folderToCheck)){
-//			$this->log("No publisher directory, expected to find in $folderToCheck", PEAR_LOG_INFO);
+//			$this->logger->info("No publisher directory, expected to find in $folderToCheck");
 //			return false;
 //		}
-//		//$this->log("Looking in folder $folderToCheck for cover image supplied by publisher.", PEAR_LOG_INFO);
+//		//$this->logger->info("Looking in folder $folderToCheck for cover image supplied by publisher.");
 //		//Check to see if the file exists in the folder
 //
 //		$matchingFiles10 = glob($folderToCheck . $this->isbn10 . "*.jpg");
 //		$matchingFiles13 = glob($folderToCheck . $this->isbn13 . "*.jpg");
 //		if (count($matchingFiles10) > 0){
 //			//We found a match
-//			$this->log("Found a publisher file by 10 digit ISBN " . $matchingFiles10[0], PEAR_LOG_INFO);
+//			$this->logger->info("Found a publisher file by 10 digit ISBN " . $matchingFiles10[0]);
 //			return $this->processImageURL($matchingFiles10[0], true);
 //		}elseif (count($matchingFiles13) > 0){
 //			//We found a match
-//			$this->log("Found a publisher file by 13 digit ISBN " . $matchingFiles13[0], PEAR_LOG_INFO);
+//			$this->logger->info("Found a publisher file by 13 digit ISBN " . $matchingFiles13[0]);
 //			return $this->processImageURL($matchingFiles13[0], true);
 //		}else{
-//			//$this->log("Did not find match by isbn 10 or isbn 13, checking sub folders", PEAR_LOG_INFO);
+//			//$this->logger->info("Did not find match by isbn 10 or isbn 13, checking sub folders");
 //			//Check all subdirectories of the current folder
 //			$subDirectories = array();
 //			$dh             = opendir($folderToCheck);
@@ -1515,7 +1515,7 @@ class BookCoverProcessor {
 //				while (($file = readdir($dh)) !== false){
 //
 //					if (is_dir($folderToCheck . $file) && $file != '.' && $file != '..'){
-//						//$this->log("Found file $file", PEAR_LOG_INFO);
+//						//$this->logger->info("Found file $file");
 //						$subDirectories[] = $folderToCheck . $file . '/';
 //					}
 //				}
@@ -1535,15 +1535,15 @@ class BookCoverProcessor {
 //		if (!empty($this->isn) && strlen($this->isn) >= 10){
 //			require_once ROOT_DIR . '/sys/ISBN/ISBNConverter.php';
 //			if (strlen($this->isn) == 10){
-//				//$this->log("Provided ISBN is 10 digits.", PEAR_LOG_INFO);
+//				//$this->logger->info("Provided ISBN is 10 digits.");
 //				$this->isbn10 = $this->isn;
 //				$this->isbn13 = ISBNConverter::convertISBN10to13($this->isbn10);
 //			}elseif (strlen($this->isn) == 13){
-//				//$this->log("Provided ISBN is 13 digits.", PEAR_LOG_INFO);
+//				//$this->logger->info("Provided ISBN is 13 digits.");
 //				$this->isbn13 = $this->isn;
 //				$this->isbn10 = ISBNConverter::convertISBN13to10($this->isbn13);
 //			}
-//			$this->log("Loaded isbn10 $this->isbn10 and isbn13 $this->isbn13.", PEAR_LOG_INFO);
+//			$this->logger->info("Loaded isbn10 $this->isbn10 and isbn13 $this->isbn13.");
 //			$this->logTime("create isbn 10 and isbn 13");
 //		}
 //	}

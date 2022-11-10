@@ -128,7 +128,7 @@ class GoDeeperData {
 					global $pikaLogger;
 					$pikaLogger->error("Error fetching data from Syndetics $e");
 					if (isset($response)){
-						$pikaLogger->log($response, PEAR_LOG_INFO);
+						$pikaLogger->info($response);
 					}
 				}
 				$timer->logTime("Finished processing Syndetics options");
