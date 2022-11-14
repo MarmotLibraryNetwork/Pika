@@ -74,7 +74,7 @@ public class NYTList implements IProcessHandler {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("Cannot reach Solr server or server down");
+			logger.error("Cannot reach Solr server or server down", e);
 			processEntry.incErrors();
 		}
 		return false;
@@ -121,7 +121,7 @@ public class NYTList implements IProcessHandler {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("Cannot reach Solr server or server down");
+			logger.error("Cannot reach Pika server or server down", e);
 		}
 	}
 }
