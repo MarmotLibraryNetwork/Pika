@@ -48,6 +48,7 @@ class IndexingProfile extends DB_DataObject{
 	public $name;           // Name is for display to end users
 	public $sourceName;     // sourceName is used for storing in databases and ID references  (So a full record Id would be 'sourceName:recordId')
 	public $marcPath;
+	public $minMarcFileSize;
 	public $marcEncoding;
 	public $filenamesToInclude;
 	public $individualMarcPath;
@@ -151,6 +152,8 @@ class IndexingProfile extends DB_DataObject{
 					'marcPath'                          => ['property' => 'marcPath', 'type' => 'text', 'label' => 'MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where MARC records can be found', 'required' => true],
 					'filenamesToInclude'                => ['property' => 'filenamesToInclude', 'type' => 'text', 'label' => 'Filenames to Include', 'maxLength' => 250, 'description' => 'A regular expression to determine which files should be grouped and indexed', 'required' => true, 'default' => '.*\.ma?rc'],
 					'marcEncoding'                      => ['property' => 'marcEncoding', 'type' => 'enum', 'label' => 'MARC Encoding', 'values' => ['MARC8' => 'MARC8', 'UTF8' => 'UTF8', 'UNIMARC' => 'UNIMARC', 'ISO8859_1' => 'ISO8859_1', 'BESTGUESS' => 'BESTGUESS'], 'default' => 'UTF8'],
+					'minMarcFileSize'                   => ['property' => 'minMarcFileSize', 'type' => 'integer', 'label' => 'Minimum size of the MARC full export file to process', 'description' => 'This profile has to one main marc file. If that file is below this limit, grouping will be skipped', 'min' => 0],
+
 					'individualMARCFileSettingsSection' => [
 				'property' => 'individualMARCFileSettingsSection', 'type' => 'section', 'label' => 'Individual Record Files', 'hideInLists' => true, 'open' => true,
 				'helpLink' => '', 'properties' => [

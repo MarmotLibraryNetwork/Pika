@@ -243,6 +243,16 @@ function getIndexingUpdates(){
 			],
 		],
 
+
+		'2022.04.0_minMarcFileSize' => [
+			'title'           => 'Optional minMarcFileSize indexing profile setting',
+			'description'     => 'When set, the full export file must be larger than this level to be grouped. ',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE `indexing_profiles` ADD COLUMN `minMarcFileSize` INT UNSIGNED NULL AFTER `marcEncoding`; ",
+			],
+		],
+
 		'records_to_include_2017-06' => array(
 			'title'       => 'Records To Include Updates 2017.06',
 			'description' => 'Additional control over what is included, URL rewriting.',

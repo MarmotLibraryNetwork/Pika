@@ -627,7 +627,9 @@ public class RecordGrouperMain {
 			if (!explodeMarcsOnly) {
 				markRecordGroupingRunning(true);
 
-				clearDatabase(pikaConn, clearDatabasePriorToGrouping);
+				if (clearDatabasePriorToGrouping) {
+					clearDatabase();
+				}
 			}
 
 			//Determine if we want to validateChecksumsFromDisk
@@ -639,9 +641,10 @@ public class RecordGrouperMain {
 			}
 
 			// Main Record Grouping Processing
-			if (indexingProfileToRun == null || indexingProfileToRun.equalsIgnoreCase("overdrive")) {
-				groupOverDriveRecords(pikaConn, econtentConnection, explodeMarcsOnly);
-			}
+//			if (indexingProfileToRun == null || indexingProfileToRun.equalsIgnoreCase("overdrive")) {
+//				groupOverDriveRecords(pikaConn, econtentConnection, explodeMarcsOnly);
+//			}
+			//TODO: temp undo before committing!!
 
 			ArrayList<IndexingProfile> indexingProfiles = null;
 			if (indexingProfileToRun == null || !indexingProfileToRun.equalsIgnoreCase("overdrive")){
@@ -771,7 +774,9 @@ public class RecordGrouperMain {
 				}
 			}
 			TreeSet<String> theList = new TreeSet<>(primaryIdentifiersInDatabase.keySet());
-			writeExistingRecordsFile(theList, "remaining_primary_identifiers_to_be_deleted", dataDirPath);
+			if (theList.size() > 0) {
+				writeExistingRecordsFile(theList, "remaining_primary_identifiers_to_be_deleted", dataDirPath);
+			}
 			primaryIdentifiersInDatabase.clear();
 		}
 	}
@@ -798,7 +803,7 @@ public class RecordGrouperMain {
 				recordWriter.flush();
 			}
 		} catch (IOException e) {
-			logger.error("Unable to write existing records to " + filePrefix, e);
+			logger.error("Unable to write existing records to " + filePrefix + ' ' + e.getMessage());
 		}
 	}
 
@@ -956,17 +961,18 @@ public class RecordGrouperMain {
 		}
 	}
 
-	private static void clearDatabase(Connection pikaConn, boolean clearDatabasePriorToGrouping) {
-		if (clearDatabasePriorToGrouping) {
-			try {
-				addNoteToGroupingLog("Clearing out grouping related tables.");
-				pikaConn.prepareStatement("TRUNCATE ils_marc_checksums").executeUpdate();
-				pikaConn.prepareStatement("TRUNCATE grouped_work").executeUpdate();
-				pikaConn.prepareStatement("TRUNCATE grouped_work_primary_identifiers").executeUpdate();
-			} catch (Exception e) {
-				System.out.println("Error clearing database " + e.toString());
-				System.exit(1);
-			}
+	/**
+	 * Clear out Grouped Work tables
+	 */
+	private static void clearDatabase() {
+		try {
+			addNoteToGroupingLog("Clearing out grouping related tables.");
+			pikaConn.prepareStatement("TRUNCATE ils_marc_checksums").executeUpdate();
+			pikaConn.prepareStatement("TRUNCATE grouped_work").executeUpdate();
+			pikaConn.prepareStatement("TRUNCATE grouped_work_primary_identifiers").executeUpdate();
+		} catch (Exception e) {
+			System.out.println("Error clearing database " + e.toString());
+			System.exit(1);
 		}
 	}
 	private static boolean updateProfileLastGroupedTime(long profileId, long newLastGroupedTime){
@@ -993,44 +999,66 @@ public class RecordGrouperMain {
 				addNoteToGroupingLog("Processing profile " + curProfile.sourceName);
 
 				//Check to see if we should process the profile
-				long            profileStartGroupingTime      = new Date().getTime() / 1000;
-				String          marcPath                      = curProfile.marcPath;
-				boolean         processProfile                = curProfile.groupUnchangedFiles || fullRegroupingClearGroupingTables;
-				ArrayList<File> filesToProcess                = new ArrayList<>();
-				Pattern         filesToMatchPattern           = Pattern.compile(curProfile.filenamesToInclude, Pattern.CASE_INSENSITIVE);
-				File[]          catalogBibFiles               = new File(marcPath).listFiles();
+				long            profileStartGroupingTime = new Date().getTime() / 1000;
+				String          marcPath                 = curProfile.marcPath;
+				boolean         checkMinFileSize         = curProfile.minMarcFileSize != null && curProfile.minMarcFileSize > 0L;
+				boolean         processProfile           = curProfile.groupUnchangedFiles || fullRegroupingClearGroupingTables;
+				ArrayList<File> filesToProcess           = new ArrayList<>();
+				Pattern         filesToMatchPattern      = Pattern.compile(curProfile.filenamesToInclude, Pattern.CASE_INSENSITIVE);
+				FileFilter      marcFileFilter           = (file) -> filesToMatchPattern.matcher(file.getName()).matches();
+				File[]          marcFiles                = new File(marcPath).listFiles(marcFileFilter);
 				//Check to see if we have any new files, if so we will process all of them to be sure deletes and overlays process properly
-				if (catalogBibFiles != null) {
-					for (File curBibFile : catalogBibFiles) {
-						if (filesToMatchPattern.matcher(curBibFile.getName()).matches()) {
-							filesToProcess.add(curBibFile);
-							final long fileLastModifiedTime = curBibFile.lastModified();
+				if (marcFiles != null && marcFiles.length > 0) {
+					if (checkMinFileSize && marcFiles.length > 1) {
+						checkMinFileSize = false;
+						logger.error("Profile setting minMarcFileSize will only be used when there is only one marc file for the profile to group");
+					}
+					for (File marcFile : marcFiles) {
+						if (curProfile.groupUnchangedFiles) {
+							logger.warn("groupUnchangedFiles is on for profile " + curProfile.sourceName + ". This setting should be turned off once the profile has been correctly set up.");
+						}
+						if (checkMinFileSize && marcFile.length() < curProfile.minMarcFileSize) {
+							processProfile = false;
+							logger.error(curProfile.sourceName + " profile's marc file " + marcFile.getName() + " file size " + marcFile.length() + " is below min file size level " + curProfile.minMarcFileSize);
+						} else {
+							filesToProcess.add(marcFile);
 							if (!processProfile) {
+								final long fileLastModifiedTime = marcFile.lastModified();
 								if (curProfile.lastGroupedTime == 0) {
 									if (fileLastModifiedTime > lastGroupingTime * 1000) {
 										//If the file has changed since the last grouping time we should process it again
 										// (Normally we want to skip grouping if the records haven't changed, since the last time we have grouped them)
 										processProfile = true;
 									}
-								} else if (fileLastModifiedTime > curProfile.lastGroupedTime * 1000){
-									// Now we can tracking grouping time for specific sideloads so that they can also be processed outside of the regular full regrouping
+								} else if (fileLastModifiedTime > curProfile.lastGroupedTime * 1000) {
+									// Now we can track grouping time for specific sideloads so that they can also be processed outside the regular full regrouping
 									processProfile = true;
+								}
+							}
+							if (checkMinFileSize) {
+								long  fileSize     = marcFile.length();
+								float percentAbove = ((float) (fileSize - curProfile.minMarcFileSize)) / fileSize;
+								if (percentAbove > 0.05f) {
+									long newLevel = Math.round(fileSize * 0.97f);
+									logger.warn("Marc file is more than 5% larger the min size level. Please adjust the min size level to " + newLevel);
 								}
 							}
 						}
 					}
-				}
-				if (!processProfile) {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Checking if " + curProfile.sourceName + " has had any records marked for regrouping.");
+					if (!processProfile) {
+						if (logger.isDebugEnabled()) {
+							logger.debug("Checking if " + curProfile.sourceName + " has had any records marked for regrouping.");
+						}
+						if (!curProfile.usingSierraAPIExtract && checkForForcedRegrouping(pikaConn, curProfile.sourceName)) {
+							//TODO: Just regroup the records that have been marked for regrouping
+							processProfile = true;
+							addNoteToGroupingLog(curProfile.sourceName + " has no file changes but will be processed because records have been marked for forced regrouping.");
+						}
 					}
-					if (!curProfile.usingSierraAPIExtract && checkForForcedRegrouping(pikaConn, curProfile.sourceName)) {
-						//TODO: remove this check now.
-						processProfile = true;
-						addNoteToGroupingLog(curProfile.sourceName + " has no file changes but will be processed because records have been marked for forced regrouping.");
-					}
+				} else {
+					processProfile = false;
+					addNoteToGroupingLog("No marc files matching profile criteria found to group");
 				}
-
 				if (!processProfile) {
 					addNoteToGroupingLog("Skipping processing profile " + curProfile.sourceName + " because nothing has changed");
 				} else {
