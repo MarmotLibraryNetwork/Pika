@@ -158,7 +158,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 				processLog.saveToDatabase(pikaConn, logger);
 				try {
 					// Add a brief pause between users to allow Solr & MySQL a chance to rest during Reading History Update
-					Thread.sleep(400);
+					Thread.sleep(200);
 				} catch (Exception e) {
 					logger.warn("Sleep was interrupted while processing reading history for user.");
 				}
