@@ -144,7 +144,10 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 				}
 			}
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			//TODO: Saw error message "There was an error retrieving your search result. " which I think came here; and
+			// should be caught earlier, probably in getNewMagazineIssuesById.  (this catch i think mean processing is over)
+			logger.error(e.getMessage(), e);
+			processLog.incErrors();
 		}
 		processLog.addNote("Finished cron process.");
 		processLog.setFinished();
