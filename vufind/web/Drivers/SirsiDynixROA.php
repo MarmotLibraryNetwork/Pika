@@ -32,7 +32,8 @@ use \Pika\Logger;
 abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't need the Screen Scraping
 	//TODO: Additional caching of sessionIds by patron
 	private static $sessionIdsForUsers = [];
-	private $logger;
+
+	protected $logger;
 
 	public function __construct($accountProfile){
 		parent::__construct($accountProfile);

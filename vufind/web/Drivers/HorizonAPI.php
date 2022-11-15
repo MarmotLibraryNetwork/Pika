@@ -24,11 +24,13 @@ use \Pika\Logger;
 abstract class HorizonAPI extends Horizon{
 
 	private $webServiceURL = null;
-	private $logger;
+	protected $logger;
 
 	public function __construct($accountProfile){
-		$this->logger = new Logger(__CLASS__);
+		$this->logger         = new Logger(__CLASS__);
+		$this->accountProfile = $accountProfile;
 	}
+
 	public function getWebServiceURL(){
 		if (empty($this->webServiceURL)){
 			$webServiceURL = null;
