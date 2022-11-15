@@ -27,11 +27,14 @@
  */
 require_once ROOT_DIR . '/Drivers/HorizonAPI.php';
 use \Pika\Logger;
-abstract class HorizonAPI3_23 extends HorizonAPI
-{
-		private $logger;
+
+abstract class HorizonAPI3_23 extends HorizonAPI {
+
+		protected $logger;
+
 		public function __construct($accountProfile){
-			$this->logger = new Logger(__CLASS__);
+			$this->logger         = new Logger(__CLASS__);
+			$this->accountProfile = $accountProfile;
 		}
 
 	private function getBaseWebServiceUrl() {
@@ -51,7 +54,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 	 */
 	function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
 		//Log the user in
-		list($userValid, $sessionToken) = $this->loginViaWebService($patron);
+		[$userValid, $sessionToken] = $this->loginViaWebService($patron);
 		if (!$userValid){
 			return 'Sorry, it does not look like you are logged in currently.  Please log in and try again';
 		}
