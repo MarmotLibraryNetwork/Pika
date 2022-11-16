@@ -641,10 +641,9 @@ public class RecordGrouperMain {
 			}
 
 			// Main Record Grouping Processing
-//			if (indexingProfileToRun == null || indexingProfileToRun.equalsIgnoreCase("overdrive")) {
-//				groupOverDriveRecords(pikaConn, econtentConnection, explodeMarcsOnly);
-//			}
-			//TODO: temp undo before committing!!
+			if (indexingProfileToRun == null || indexingProfileToRun.equalsIgnoreCase("overdrive")) {
+				groupOverDriveRecords(pikaConn, econtentConnection, explodeMarcsOnly);
+			}
 
 			ArrayList<IndexingProfile> indexingProfiles = null;
 			if (indexingProfileToRun == null || !indexingProfileToRun.equalsIgnoreCase("overdrive")){
@@ -1019,6 +1018,7 @@ public class RecordGrouperMain {
 						}
 						if (checkMinFileSize && marcFile.length() < curProfile.minMarcFileSize) {
 							processProfile = false;
+							addNoteToGroupingLog(curProfile.sourceName + " will be skipped because the full marc file is below the the minimum file size.");
 							logger.error(curProfile.sourceName + " profile's marc file " + marcFile.getName() + " file size " + marcFile.length() + " is below min file size level " + curProfile.minMarcFileSize);
 						} else {
 							filesToProcess.add(marcFile);
@@ -1038,6 +1038,10 @@ public class RecordGrouperMain {
 							if (checkMinFileSize) {
 								long  fileSize     = marcFile.length();
 								float percentAbove = ((float) (fileSize - curProfile.minMarcFileSize)) / fileSize;
+								if (logger.isInfoEnabled()){
+									logger.info("Minimum full export file size checking is enabled.  The min level is : " + curProfile.minMarcFileSize);
+									logger.info("The full export file is " + percentAbove + " percent above min level.");
+								}
 								if (percentAbove > 0.05f) {
 									long newLevel = Math.round(fileSize * 0.97f);
 									logger.warn("Marc file is more than 5% larger the min size level. Please adjust the min size level to " + newLevel);
