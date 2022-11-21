@@ -271,7 +271,8 @@ public class UpdateReadingHistory implements IProcessHandler {
 								logger.error(message, e);
 								logger.error(patronDataRaw); // Display the raw response when we have a JSON exception
 								processLog.incErrors();
-								processLog.addNote(message + e);
+								processLog.addNote(message); // removed error message.
+								//TODO: I'm not sure adding this to the cron log entries is needed
 								hadError = true;
 							}
 						} else {
