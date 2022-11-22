@@ -102,8 +102,9 @@ EOQ;
 
 			foreach ($queryResults as $result){
 				$pikaLogger->debug("for loop");
-				$pikaLogger->debug($result);
-
+				if(!empty($result)){
+					$pikaLogger->debug(implode(",", $result['object']));
+				}
 				$objectPid = $result['object']['value'];
 				//TODO: check access
 				/** @var FedoraObject $sectionObject */
@@ -173,7 +174,7 @@ EOQ;
 		$results = $fedoraUtils->doSparqlQuery($query);
 		global $pikaLogger;
 		$pikaLogger->debug("Pages for section with object id : " .$sectionObject->id);
-		$pikaLogger->debug($results);
+		$pikaLogger->debug(implode(", ", $results));
 
 		// Get rid of the "extra" info...
 		$map   = function ($o){
@@ -186,8 +187,10 @@ EOQ;
 			return $o;
 		};
 		$pages = array_map($map, $results);
+		if(!empty($pages))
+		{
 		$pikaLogger->debug($pages);
-
+		}
 		// Sort the pages into their proper order.
 		$sort = function ($a, $b){
 			$a = (is_array($a) && isset($a['page'])) ? $a['page'] : 0;
