@@ -41,7 +41,7 @@
 <script type="text/javascript">
 		{literal}
 		$(function(){
-		Pika.Archive.loadExploreMore('{$pid|urlencode}');
+		Pika.Archive.loadExploreMore('{/literal}{$pid|urlencode}{literal}');
 
 		let audio = document.getElementById("audio-player");
 		audio.addEventListener('play', function(ev){
