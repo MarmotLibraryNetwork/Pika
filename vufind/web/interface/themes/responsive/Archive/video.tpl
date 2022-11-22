@@ -40,7 +40,7 @@
 <script type="text/javascript">
 		{literal}
 	$(function(){
-		Pika.Archive.loadExploreMore('{/literal}{$pid|urlencode}{literal}');
+		Pika.Archive.loadExploreMore('{/literal}{$pid}{literal}');
 if (document.getElementById("audio-player")){
 		let audio = document.getElementById("audio-player");
 		audio.addEventListener('play', function(ev){
