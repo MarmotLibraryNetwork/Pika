@@ -120,15 +120,12 @@ public class SymphonyExportMain {
 	private static void processOrdersFile() {
 		File ordersFile = new File(indexingProfile.marcPath + "/PIKA-onorderfile.txt"); // The input of convertOrdersFileToMarc
 		if (ordersFile.exists()) {
-			long now                    = new Date().getTime();
-			long ordersFileLastModified = ordersFile.lastModified();
-			if (now - ordersFileLastModified > 7 * 24 * 60 * 60 * 1000) {
+			long now                    = new Date().getTime() / 1000;      // switch to secs instead of milliseconds
+			long ordersFileLastModified = ordersFile.lastModified() / 1000; // switch to secs instead of milliseconds
+			if (now - ordersFileLastModified > 7 * 24 * 60 * 60) {
 				logger.warn("Orders File was last written more than 7 days ago");
 			}
 			Long storedOrdersFileLastModified = systemVariables.getLongValuedVariable("order_file_last_modified_time");
-			if (storedOrdersFileLastModified != null){
-				storedOrdersFileLastModified *= 1000; // Set in milliseconds for comparison
-			}
 			if (storedOrdersFileLastModified == null || ordersFileLastModified > storedOrdersFileLastModified) {
 
 				// Retrieve full export's record Ids
@@ -232,7 +229,7 @@ public class SymphonyExportMain {
 						logger.info("Wrote " + numOrderRecordsWritten + " order records.");
 						logger.info("Skipped " + numOrderRecordsSkipped + " order records because they are in the main export");
 					}
-					systemVariables.setVariable("order_file_last_modified_time", ordersFileLastModified / 1000);
+					systemVariables.setVariable("order_file_last_modified_time", ordersFileLastModified);
 					// Now that the file has been successfully processed, set the stored last modified time (in seconds)
 				} catch (Exception e) {
 					logger.error("Error reading orders file ", e);
