@@ -156,7 +156,7 @@ public class SymphonyExportMain {
 					}
 				}
 
-				File ordersFileMarc = new File(indexingProfile.marcPath + "/Pika_orders.mrc"); // The output of convertOrdersFileToMarc
+				File ordersFileMarc = new File(indexingProfile.marcPath + "/orderRecords/Pika_orders.mrc"); // The output of convertOrdersFileToMarc
 				try (BufferedReader ordersReader = new BufferedReader(new InputStreamReader(new FileInputStream(ordersFile)))) {
 					MarcWriter writer                 = new MarcStreamWriter(new FileOutputStream(ordersFileMarc, false), "UTF8");
 					String     line                   = ordersReader.readLine();
