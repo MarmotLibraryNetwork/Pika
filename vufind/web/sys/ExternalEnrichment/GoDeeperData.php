@@ -197,11 +197,8 @@ class GoDeeperData {
 			'features'               => SOAP_SINGLE_ELEMENT_ARRAYS, // sets how the soap responses will be handled
 			'soap_version'           => SOAP_1_2,
 //			'trace' => 1, // turns on debugging features
-			'default_socket_timeout' => 15,
+//			'default_socket_timeout' => 20,
 		];
-
-		$soapClient = new SoapClient($url, $SOAP_options);
-
 		$params = [
 			'userID'   => $key,
 			'password' => $pw,
@@ -210,7 +207,8 @@ class GoDeeperData {
 		];
 
 		try {
-			$response = $soapClient->Single($params);
+			$soapClient = new SoapClient($url, $SOAP_options);
+			$response   = $soapClient->Single($params);
 			if ($response){
 				if (!isset($response->ContentCafe->Error)){
 					return $response->ContentCafe->RequestItems->RequestItem;
