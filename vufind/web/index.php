@@ -256,8 +256,8 @@ if (!is_dir(ROOT_DIR . "/services/$module")){
 	}
 }
 $timer->logTime('Finished Index.php');
-$timer->writeTimings();
-$memoryWatcher->logMemory("Finished index.php");
+//$timer->writeTimings(); // The $timer destruct() will write out timing messages
+$memoryWatcher->logMemory('Finished index.php');
 $memoryWatcher->writeMemory();
 
 

@@ -39,9 +39,10 @@ if (isset($_REQUEST['reload']) || !file_exists($filename)){
 	 'imageBase64'      => true,
 	 'imageTransparent' => false
 	]);
+// Note: $configArray['Site']['url'] is set to  $_SERVER['SERVER_NAME'] in readConfig()
 	$data = $configArray['Site']['url'] . "/{$type}/{$id}/Home";
 	$im = (new QRCode($options))->render($data, $filename);
 }
 header('Content-type: image/png');
 readfile($filename);
-$timer->writeTimings();
+//$timer->writeTimings(); // The $timer destruct() will write out timing messages
