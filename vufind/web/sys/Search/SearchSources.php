@@ -19,6 +19,24 @@ class SearchSources {
 		return $searchSources;
 	}
 
+	/**
+	 * Handle breaking a string setting into an array of options where the options are delimited by a pipe.
+	 *
+	 * @param String $setting  String of option(s) separated by the pipe | character
+	 * @return String[]       Array of valid options from the string
+	 */
+	private static function getOptionsFromSetting($setting): array{
+		$options = [];
+		if (!empty($setting)){
+			foreach (explode('|', $setting) as $option){
+				if (!empty($option)){ // prevent adding empty options
+					$options[] = $option;
+				}
+			}
+		}
+		return $options;
+	}
+
 	private static function getSearchSourcesDefault(){
 		$searchOptions = [];
 		//Check to see if marmot catalog is a valid option
@@ -39,7 +57,7 @@ class SearchSources {
 		global $locationSingleton;
 		$location = $locationSingleton->getActiveLocation();
 		if (!empty($location->repeatInAlternateOverdriveLibrary)){
-			$repeatInAlternateOverdriveLibrary = explode('|', $location->repeatInAlternateOverdriveLibrary);
+			$repeatInAlternateOverdriveLibrary = self::getOptionsFromSetting($location->repeatInAlternateOverdriveLibrary);
 		}
 
 		if (!empty($location->restrictSearchByLocation)){
@@ -48,9 +66,9 @@ class SearchSources {
 			$repeatInProspector  = $location->repeatInProspector == 1;
 			$repeatInOverdrive   = $location->repeatInOverdrive == 1;
 			if (strlen($location->systemsToRepeatIn) > 0){
-				$systemsToRepeatIn = explode('|', $location->systemsToRepeatIn);
+				$systemsToRepeatIn = self::getOptionsFromSetting($location->systemsToRepeatIn);
 			}else{
-				$systemsToRepeatIn = explode('|', $library->systemsToRepeatIn);
+				$systemsToRepeatIn = self::getOptionsFromSetting($library->systemsToRepeatIn);
 			}
 		}elseif (isset($library)){
 			$repeatSearchSetting = $library->repeatSearchOption;
@@ -58,10 +76,10 @@ class SearchSources {
 			$repeatInProspector  = $library->repeatInProspector == 1;
 			$repeatInOverdrive   = $library->repeatInOverdrive == 1;
 			if (!empty($library->repeatInAlternateOverdriveLibrary)){
-				$repeatInAlternateOverdriveLibrary = explode('|', $library->repeatInAlternateOverdriveLibrary);
+				$repeatInAlternateOverdriveLibrary = self::getOptionsFromSetting($library->repeatInAlternateOverdriveLibrary);
 			}
 
-			$systemsToRepeatIn     = explode('|', $library->systemsToRepeatIn);
+			$systemsToRepeatIn = self::getOptionsFromSetting($library->systemsToRepeatIn);
 		}
 		if (isset($library)){
 			$searchGenealogy      = $library->enableGenealogy;
