@@ -41,7 +41,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 
 		//get a list of bibs that have order records on them
-		File ordersFile = new File(marcPath + "/orderRecords/Pika_orders.mrc");
+		File ordersFile = new File(marcPath + "/Pika_orders.mrc");
 		if (ordersFile.exists()) {
 			int     attempts = 0;
 			boolean success;
