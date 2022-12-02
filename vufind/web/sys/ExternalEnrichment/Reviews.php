@@ -281,8 +281,10 @@ class ExternalReviews {
 			$review     = [];
 			$soapClient = new SoapClient($url, $SOAP_options);
 			$response   = $soapClient->Single($params);
-//			$request    = $soapClient->__getLastRequest(); // for debugging
+//			$this->logger->debug($soapClient->__getLastRequest());  // for debugging
+
 			if ($response){
+				$this->logger->debug('Got response from Content cafe');
 				if (!isset($response->ContentCafe->Error)){
 					$i = 0;
 					if (isset($response->ContentCafe->RequestItems->RequestItem)){

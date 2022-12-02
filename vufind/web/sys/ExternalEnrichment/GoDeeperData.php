@@ -209,8 +209,13 @@ class GoDeeperData {
 		try {
 			$soapClient = new SoapClient($url, $SOAP_options);
 			$response   = $soapClient->Single($params);
+//			global $pikaLogger;
+//			$pikaLogger->debug($soapClient->__getLastRequest());
 			if ($response){
 				if (!isset($response->ContentCafe->Error)){
+//					global $pikaLogger;
+//					$pikaLogger->debug('Got response from Content cafe');
+
 					return $response->ContentCafe->RequestItems->RequestItem;
 				}else{
 					global $pikaLogger;
