@@ -49,6 +49,7 @@ class MyAccount_Masquerade extends MyAccount {
 	}
 
 	static function initiateMasquerade(){
+
 		global $library;
 		if (!empty($library) && $library->allowMasqueradeMode){
 			if (!empty($_REQUEST['cardNumber'])){
@@ -67,9 +68,7 @@ class MyAccount_Masquerade extends MyAccount {
 									'error'   => 'No need to masquerade as yourself.'
 								];
 							}
-
 						}else{
-
 							// Check for another ILS with a different login configuration
 							$accountProfile = new AccountProfile();
 							$accountProfile->groupBy('loginConfiguration');
@@ -147,8 +146,16 @@ class MyAccount_Masquerade extends MyAccount {
 							global $guidingUser;
 							$guidingUser = $user;
 							// NOW login in as masquerade user
-							$_REQUEST['username'] = $masqueradedUser->cat_username;
-							$_REQUEST['password'] = $masqueradedUser->password;
+							$accountProfile = $user->getAccountProfile();
+							$authMethod = $accountProfile->loginConfiguration;
+							if($authMethod == 'barcode_pin') {
+								$_REQUEST['username'] = $masqueradedUser->getBarcode();
+								$_REQUEST['password'] = $masqueradedUser->getPassword();
+							} else {
+								$_REQUEST['username'] = $masqueradedUser->cat_username;
+								$_REQUEST['password'] = $masqueradedUser->getBarcode();
+							}
+
 							$user = UserAccount::login();
 							if (!empty($user) && !PEAR_Singleton::isError($user)){
 								@session_start(); // (suppress notice if the session is already started)
@@ -163,8 +170,6 @@ class MyAccount_Masquerade extends MyAccount {
 									'error'   => 'Failed to initiate masquerade as specified user.'
 								];
 							}
-						}else{
-
 						}
 					}else{
 						return [

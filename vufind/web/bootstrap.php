@@ -235,9 +235,8 @@ function handlePEARError($error, $method = null){
 		5 => $baseError . $detailedServer . $detailedBacktrace
 	];
 
-
 	global $pikaLogger;
-	$pikaLogger->error($errorDetails);
+	$pikaLogger->error("Pear error", $errorDetails);
 
 	exit();
 }
