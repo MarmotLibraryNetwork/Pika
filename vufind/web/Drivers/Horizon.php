@@ -24,7 +24,7 @@ use \Pika\Logger;
 abstract class Horizon extends ScreenScrapingDriver{
 
 	protected $db;
-	private $logger;
+	protected $logger;
 	protected $useDb = false;
 	protected $hipUrl;
 	protected $hipProfile;

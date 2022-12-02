@@ -33,8 +33,11 @@ abstract class HorizonAPI3_23 extends HorizonAPI {
 		protected $logger;
 
 		public function __construct($accountProfile){
+			global $configArray;
 			$this->logger         = new Logger(__CLASS__);
 			$this->accountProfile = $accountProfile;
+			$this->hipUrl         = $configArray['Catalog']['hipUrl'];  // still used by getMyFinesViaHIP() which is used by getMyFines()
+			$this->hipProfile     = $configArray['Catalog']['hipProfile']; // still used by email pin reset
 		}
 
 	private function getBaseWebServiceUrl() {
