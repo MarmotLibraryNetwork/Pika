@@ -317,6 +317,8 @@
 
 		<!-- AutoCommit
 
+			Commits matter for the indexing core.  It shouldn't come into play for searcher core. -Pascal
+
 			 Perform a hard commit automatically under certain conditions.
 			 Instead of enabling autoCommit, consider using "commitWithin"
 			 when adding documents.
