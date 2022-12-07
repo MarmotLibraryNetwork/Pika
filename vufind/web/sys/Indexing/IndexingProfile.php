@@ -48,6 +48,7 @@ class IndexingProfile extends DB_DataObject{
 	public $name;           // Name is for display to end users
 	public $sourceName;     // sourceName is used for storing in databases and ID references  (So a full record Id would be 'sourceName:recordId')
 	public $marcPath;
+	public $minMarcFileSize;
 	public $marcEncoding;
 	public $filenamesToInclude;
 	public $individualMarcPath;
@@ -133,7 +134,9 @@ class IndexingProfile extends DB_DataObject{
 		unset($translationMapStructure['indexingProfileId']);
 
 		//Sections that are set open by default allow the javascript form validator to check that required fields are in fact filled in.
-		$structure = [
+		$timeToReshelveStructure = TimeToReshelve::getObjectStructure();
+		unset($timeToReshelveStructure['indexingProfileId']);
+		$structure       = [
 			'id'                  => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'],
 			'name'                => ['property' => 'name', 'type' => 'text', 'label' => 'Display Name', 'maxLength' => 50, 'description' => 'The display name for this indexing profile', 'required' => true, 'changeRequiresReindexing' => true],
 			'sourceName'          => ['property'           => 'sourceName', 'type' => 'text', 'label' => 'Source Name', 'maxLength' => 50, 'description' => 'The source name of this indexing profile to use internally. eg. for specifying the record source', 'required' => true
@@ -149,6 +152,8 @@ class IndexingProfile extends DB_DataObject{
 					'marcPath'                          => ['property' => 'marcPath', 'type' => 'text', 'label' => 'MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where MARC records can be found', 'required' => true],
 					'filenamesToInclude'                => ['property' => 'filenamesToInclude', 'type' => 'text', 'label' => 'Filenames to Include', 'maxLength' => 250, 'description' => 'A regular expression to determine which files should be grouped and indexed', 'required' => true, 'default' => '.*\.ma?rc'],
 					'marcEncoding'                      => ['property' => 'marcEncoding', 'type' => 'enum', 'label' => 'MARC Encoding', 'values' => ['MARC8' => 'MARC8', 'UTF8' => 'UTF8', 'UNIMARC' => 'UNIMARC', 'ISO8859_1' => 'ISO8859_1', 'BESTGUESS' => 'BESTGUESS'], 'default' => 'UTF8'],
+					'minMarcFileSize'                   => ['property' => 'minMarcFileSize', 'type' => 'integer', 'label' => 'Minimum size of the MARC full export file to process', 'description' => 'This profile has to one main marc file. If that file is below this limit, grouping will be skipped', 'min' => 0],
+
 					'individualMARCFileSettingsSection' => [
 				'property' => 'individualMARCFileSettingsSection', 'type' => 'section', 'label' => 'Individual Record Files', 'hideInLists' => true, 'open' => true,
 				'helpLink' => '', 'properties' => [
@@ -362,7 +367,7 @@ class IndexingProfile extends DB_DataObject{
 				'keyThis'                  => 'id',
 				'keyOther'                 => 'indexingProfileId',
 				'subObjectType'            => 'TimeToReshelve',
-				'structure'                => TimeToReshelve::getObjectStructure(),
+				'structure'                => $timeToReshelveStructure,
 				'sortable'                 => true,
 				'storeDb'                  => true,
 				'allowEdit'                => true,
@@ -396,7 +401,7 @@ class IndexingProfile extends DB_DataObject{
 	}
 
 	public function __get($name){
-		if ($name == "translationMaps") {
+		if ($name == 'translationMaps') {
 			if (!isset($this->translationMaps)){
 				//Get the list of translation maps
 				$this->translationMaps = array();
@@ -411,22 +416,22 @@ class IndexingProfile extends DB_DataObject{
 				}
 			}
 			return $this->translationMaps;
-		}else if ($name == "timeToReshelve") {
+		}else if ($name == 'timeToReshelve') {
 			if (!isset($this->timeToReshelve)) {
 				//Get the list of translation maps
-				$this->timeToReshelve = array();
+				$this->timeToReshelve = [];
 				if ($this->id) { // When this is a new Indexing Profile, there are no maps yet.
 					$timeToReshelve                    = new TimeToReshelve();
 					$timeToReshelve->indexingProfileId = $this->id;
 					$timeToReshelve->orderBy('weight ASC');
 					$timeToReshelve->find();
 					while ($timeToReshelve->fetch()) {
-						$this->timeToReshelve[$timeToReshelve->id] = clone($timeToReshelve);
+						$this->timeToReshelve[$timeToReshelve->id] = clone $timeToReshelve;
 					}
 				}
 			}
 			return $this->timeToReshelve;
-		}else if ($name == "sierraFieldMappings") {
+		}else if ($name == 'sierraFieldMappings') {
 			if (!isset($this->sierraFieldMappings)) {
 				//Get the list of translation maps
 				$this->sierraFieldMappings = array();
@@ -445,11 +450,11 @@ class IndexingProfile extends DB_DataObject{
 	}
 
 	public function __set($name, $value){
-		if ($name == "translationMaps") {
+		if ($name == 'translationMaps') {
 			$this->translationMaps = $value;
-		}else if ($name == "timeToReshelve") {
+		}else if ($name == 'timeToReshelve') {
 			$this->timeToReshelve = $value;
-		}else if ($name == "sierraFieldMappings") {
+		}else if ($name == 'sierraFieldMappings') {
 			$this->sierraFieldMappings = $value;
 		}
 	}

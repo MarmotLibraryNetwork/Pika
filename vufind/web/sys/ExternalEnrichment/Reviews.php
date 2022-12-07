@@ -266,24 +266,25 @@ class ExternalReviews {
 		$url .= '/ContentCafe/ContentCafe.asmx?WSDL';
 
 		$SOAP_options = [
-			//'trace'        => 1, // turns on debugging features
-			'features'     => SOAP_SINGLE_ELEMENT_ARRAYS, // sets how the soap responses will be handled
-			'soap_version' => SOAP_1_2
+			'features'               => SOAP_SINGLE_ELEMENT_ARRAYS, // sets how the soap responses will be handled
+			'soap_version'           => SOAP_1_2,
+//			'trace' => 1, // turns on debugging features
+//			'default_socket_timeout' => 20,
 		];
-		$soapClient   = new SoapClient($url, $SOAP_options);
 		$params       = [
 			'userID'   => $key,
 			'password' => $pw,
 			'key'      => $this->isbn,
 			'content'  => 'ReviewDetail',
 		];
-
 		try {
-			$response = $soapClient->Single($params);
-//			$request = $soapClient->__getLastRequest(); // for debugging
+			$review     = [];
+			$soapClient = new SoapClient($url, $SOAP_options);
+			$response   = $soapClient->Single($params);
+//			$this->logger->debug($soapClient->__getLastRequest());  // for debugging
 
-			$review = [];
 			if ($response){
+				$this->logger->debug('Got response from Content cafe');
 				if (!isset($response->ContentCafe->Error)){
 					$i = 0;
 					if (isset($response->ContentCafe->RequestItems->RequestItem)){

@@ -27,6 +27,7 @@
  */
 //require_once ROOT_DIR . '/Drivers/SIP2Driver.php';
 require_once ROOT_DIR . '/sys/SIP2.php';
+use \Pika\Logger;
 class CarlX extends SIP2Driver{
 	/** @var  AccountProfile $accountProfile */
 	public $accountProfile;
@@ -36,6 +37,8 @@ class CarlX extends SIP2Driver{
 	private $soapClient;
 
 	public function __construct($accountProfile) {
+
+		$this->logger = new Logger(__CLASS__);
 		$this->accountProfile = $accountProfile;
 		global $configArray;
 		$this->patronWsdl  = $configArray['Catalog']['patronApiWsdl'];
@@ -193,7 +196,7 @@ class CarlX extends SIP2Driver{
 	 */
 	public function renewAll($patron) {
 		global $configArray;
-		global $logger;
+
 
 		//renew the item via SIP 2
 		require_once ROOT_DIR . '/sys/SIP2.php';
@@ -238,7 +241,7 @@ class CarlX extends SIP2Driver{
 
 				if (preg_match("/^66/", $msg_result)) {
 					$result = $mysip->parseRenewAllResponse($msg_result);
-					$logger->log("Renew all response\r\n" . print_r($msg_result, true), PEAR_LOG_DEBUG);
+					$this->logger->debug("Renew all response\r\n" . print_r($msg_result, true));
 
 					$renew_result['success'] = ($result['fixed']['Ok'] == 1);
 					$renew_result['Renewed'] = ltrim($result['fixed']['Renewed'], '0');
@@ -258,15 +261,15 @@ class CarlX extends SIP2Driver{
 						$renew_result['message'] = array_merge($renew_result['message'], $result['variable']['BN']);
 					}
 				}else{
-					$logger->log("Invalid message returned from SIP server '$msg_result''", PEAR_LOG_ERR);
+					$this->logger->error("Invalid message returned from SIP server '$msg_result''");
 					$renew_result['message'] = array("Invalid message returned from SIP server");
 				}
 			}else{
-				$logger->log("Could not authenticate with the SIP server", PEAR_LOG_ERR);
+				$this->logger->error("Could not authenticate with the SIP server");
 				$renew_result['message'] = array("Could not authenticate with the SIP server");
 			}
 		}else{
-			$logger->log("Could not connect to the SIP server", PEAR_LOG_ERR);
+			$this->logger->error("Could not connect to the SIP server");
 			$renew_result['message'] = array("Could not connect to circulation server, please try again later.");
 		}
 
@@ -283,8 +286,8 @@ class CarlX extends SIP2Driver{
 			if (!empty($this->patronWsdl)) {
 				$WSDL = $this->patronWsdl;
 			} else {
-				global $logger;
-				$logger->log('No Default Patron WSDL defined for SOAP calls in CarlX Driver', PEAR_LOG_ERR);
+
+				$this->logger->error('No Default Patron WSDL defined for SOAP calls in CarlX Driver');
 				return false;
 			}
 		}
@@ -300,9 +303,9 @@ class CarlX extends SIP2Driver{
 				$result = $this->soapClient->$requestName($request);
 				$connectionPassed = true;
 			} catch (SoapFault $e) {
-				global $logger;
-				$logger->log("Soap Client error in CarlX: while calling $requestName ".$e->getMessage() . " try $numTries", PEAR_LOG_ERR);
-				$logger->log($request, PEAR_LOG_ERR);
+
+				$this->logger->error("Soap Client error in CarlX: while calling $requestName ".$e->getMessage() . " try $numTries");
+				$this->logger->error($request);
 			}
 			$numTries++;
 		}
@@ -568,13 +571,12 @@ class CarlX extends SIP2Driver{
 
 		//Search for the patron in the database
 		$result = $this->getPatronTransactions($user);
-		//global $logger;
-		//$logger->log("Patron Transactions\r\n" . print_r($result, true), PEAR_LOG_ERR );
+		//$this->logger->error("Patron Transactions\r\n" . print_r($result, true));
 
 		$itemsToLoad = array();
 		if (!$result){
-			global $logger;
-			$logger->log('Failed to retrieve user Check outs from CarlX API call.', PEAR_LOG_WARNING);
+
+			$this->logger->warning('Failed to retrieve user Check outs from CarlX API call.');
 		}else{
 			//TLC provides both ChargeItems and OverdueItems as separate elements, we can combine for loading
 			if (!empty($result->ChargeItems->ChargeItem)) {
@@ -663,14 +665,14 @@ class CarlX extends SIP2Driver{
 					}
 
 				} else {
-					global $logger;
-					$logger->log('Unable to read XML from CarlX response when attempting to update Patron PIN.', PEAR_LOG_ERR);
+
+					$this->logger->error('Unable to read XML from CarlX response when attempting to update Patron PIN.');
 					return 'Unable to update your pin.';
 				}
 
 			} else {
-				global $logger;
-				$logger->log('CarlX ILS gave no response when attempting to update Patron PIN.', PEAR_LOG_ERR);
+
+				$this->logger->error('CarlX ILS gave no response when attempting to update Patron PIN.');
 				return 'Unable to update your pin.';
 			}
 		} elseif (!$result) {
@@ -755,14 +757,14 @@ class CarlX extends SIP2Driver{
 
 					} else {
 						$updateErrors[] = 'Unable to update your information.';
-						global $logger;
-						$logger->log('Unable to read XML from CarlX response when attempting to update Patron Information.', PEAR_LOG_ERR);
+
+						$this->logger->error('Unable to read XML from CarlX response when attempting to update Patron Information.');
 					}
 
 				} else {
 					$updateErrors[] = 'Unable to update your information.';
-					global $logger;
-					$logger->log('CarlX ILS gave no response when attempting to update Patron Information.', PEAR_LOG_ERR);
+
+					$this->logger->error('CarlX ILS gave no response when attempting to update Patron Information.');
 				}
 			}
 
@@ -824,8 +826,8 @@ class CarlX extends SIP2Driver{
 
 				// DENY REGISTRATION TO KNOWN BAD IP 12.204.223.250
 				if ($active_ip == "12.204.223.250") {
-					global $logger;
-					$logger->log('Online Registration used forbidden IP ' . $active_ip, PEAR_LOG_ERR);
+
+					$this->logger->error('Online Registration used forbidden IP ' . $active_ip);
 					return array(
 						'success' => false,
 						'barcode' => $tempPatronID,
@@ -834,8 +836,8 @@ class CarlX extends SIP2Driver{
 				
 				// DENY REGISTRATION IF EMAIL MATCHES @LOAOA.COM
 				if (substr(strtolower($email),-10,10) == '@loaoa.com' || substr(strtolower($email),-9,9) == 'zamte.com') {
-					global $logger;
-					$logger->log('Online Registration used forbidden email: ' . $email . ' IP: ' . $active_ip, PEAR_LOG_ERR);
+
+					$this->logger->error('Online Registration used forbidden email: ' . $email . ' IP: ' . $active_ip);
 					return array(
 						'success' => false,
 						'barcode' => $tempPatronID,
@@ -861,8 +863,8 @@ class CarlX extends SIP2Driver{
 				if ($result) {
 					$noEmailMatch = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'No matching records found');
 					if ($noEmailMatch === false) {
-						global $logger;
-						$logger->log('Online Registration Email already exists in Carl. Email: ' . $email . ' IP: ' . $active_ip, PEAR_LOG_ERR);
+
+						$this->logger->error('Online Registration Email already exists in Carl. Email: ' . $email . ' IP: ' . $active_ip);
 						return array(
 							'success' => false,
 							'barcode' => $tempPatronID,
@@ -914,8 +916,7 @@ class CarlX extends SIP2Driver{
 				if ($date >= $birthDateMin && $date <= $birthDateMax){
 					$request->Patron->BirthDate = date('Y-m-d', $date);
 				}else{
-					global $logger;
-					$logger->log('Online Registrant is too young : birth date : ' . date('Y-m-d', $date), PEAR_LOG_WARNING);
+					$this->logger->warning('Online Registrant is too young : birth date : ' . date('Y-m-d', $date));
 					return array(
 						'success' => false,
 						'message' => 'You must be 13 years old to register.'
@@ -945,19 +946,19 @@ class CarlX extends SIP2Driver{
 									$errorMessage[] = $response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:LongMessage'];
 								}
 								if (in_array('A patron with that id already exists', $errorMessage)) {
-									global $logger;
-									$logger->log('While self-registering user for CarlX, temp id number was reported in use. Increasing internal counter', PEAR_LOG_ERR);
+
+									$this->logger->error('While self-registering user for CarlX, temp id number was reported in use. Increasing internal counter');
 									// Increment the temp patron id number.
 									$lastPatronID->value = $currentPatronIDNumber;
 									if (!$lastPatronID->update()) {
-										$logger->log('Failed to update Variables table with new value ' . $currentPatronIDNumber . ' for "last_selfreg_patron_id" in CarlX Driver', PEAR_LOG_ERR);
+										$this->logger->error('Failed to update Variables table with new value ' . $currentPatronIDNumber . ' for "last_selfreg_patron_id" in CarlX Driver');
 									}
 								}
 							} else {
 								$lastPatronID->value = $currentPatronIDNumber;
 								if (!$lastPatronID->update()) {
-									global $logger;
-									$logger->log('Failed to update Variables table with new value ' . $currentPatronIDNumber . ' for "last_selfreg_patron_id" in CarlX Driver', PEAR_LOG_ERR);
+
+									$this->logger->error('Failed to update Variables table with new value ' . $currentPatronIDNumber . ' for "last_selfreg_patron_id" in CarlX Driver');
 								}
 								// Get Patron
 								$request = new stdClass();
@@ -983,8 +984,8 @@ class CarlX extends SIP2Driver{
 											if ($response) {
 												$success = stripos($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:ShortMessage'], 'Success') !== false;
 												if (!$success) {
-													global $logger;
-													$logger->log('Unable to set pin for Self-Registered user on update call after initial creation call.', PEAR_LOG_ERR);
+													global $pikaLogger;
+													$pikaLogger->log('Unable to set pin for Self-Registered user on update call after initial creation call.');
 													// The Pin will be an empty.
 													// Return Success Any way, because the account was created.
 													return array(
@@ -1016,8 +1017,8 @@ class CarlX extends SIP2Driver{
 											if ($response) {
 											$success = stripos($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:ShortMessage'], 'Success') !== false;
 											if (!$success) {
-												global $logger;
-												$logger->log('Unable to write IP address in Patron Note.', PEAR_LOG_ERR);
+
+												$this->logger->error('Unable to write IP address in Patron Note.');
 												// Return Success Any way, because the account was created.
 												return array(
 													'success' => true,
@@ -1044,8 +1045,8 @@ class CarlX extends SIP2Driver{
 									$interface->assign('error', "Your request could not be sent: {$emailResult->message}.");
 								} else {
 									$interface->assign('error', "Your request could not be sent due to an unknown error.");
-									global $logger;
-									$logger->log("Mail List Failure (unknown reason), parameters: $email, $newObject->email, $subject, $body", PEAR_LOG_ERR);
+
+									$this->logger->error("Mail List Failure (unknown reason), parameters: $email, $newObject->email, $subject, $body");
 								}
 								return array(
 									'success' => $success,
@@ -1054,21 +1055,21 @@ class CarlX extends SIP2Driver{
 								);
 							}
 						} else {
-							global $logger;
-							$logger->log('Unable to read XML from CarlX response when attempting to create Patron.', PEAR_LOG_ERR);
+
+							$this->logger->error('Unable to read XML from CarlX response when attempting to create Patron.');
 						}
 					} else {
-						global $logger;
-						$logger->log('CarlX ILS gave no response when attempting to create Patron.', PEAR_LOG_ERR);
+
+						$this->logger->error('CarlX ILS gave no response when attempting to create Patron.');
 					}
 				}
 //			} else {
-//				global $logger;
-//				$logger->log('CarlX Self Registration Form was passed bad data for a user\'s pin.', PEAR_LOG_WARNING);
+//				global $pikaLogger;
+//				$pikaLogger->warn('CarlX Self Registration Form was passed bad data for a user\'s pin.');
 //			}
 		} else {
-			global $logger;
-			$logger->log('No value for "last_selfreg_patron_id" set in Variables table. Can not self-register patron in CarlX Driver.', PEAR_LOG_ERR);
+
+			$this->logger->error('No value for "last_selfreg_patron_id" set in Variables table. Can not self-register patron in CarlX Driver.');
 		}
 		return array(
 			'success' => $success
@@ -1161,8 +1162,8 @@ class CarlX extends SIP2Driver{
 				return array('historyActive'=>$historyActive, 'titles'=>$readingHistoryTitles, 'numTitles'=> $numTitles);
 
 			} else {
-				global $logger;
-				$logger->log('CarlX ILS gave no response when attempting to get Reading History.', PEAR_LOG_ERR);
+
+				$this->logger->error('CarlX ILS gave no response when attempting to get Reading History.');
 			}
 		}
 		return array('historyActive' => false, 'titles' => array(), 'numTitles' => 0);
@@ -1194,14 +1195,14 @@ class CarlX extends SIP2Driver{
 
 						} else {
 //							$updateErrors[] = 'Unable to update your information.';
-							global $logger;
-							$logger->log('Unable to read XML from CarlX response when attempting to update Patron Information.', PEAR_LOG_ERR);
+
+							$this->logger->error('Unable to read XML from CarlX response when attempting to update Patron Information.');
 						}
 
 					} else {
 //						$updateErrors[] = 'Unable to update your information.';
-						global $logger;
-						$logger->log('CarlX ILS gave no response when attempting to update Patron Information.', PEAR_LOG_ERR);
+
+						$this->logger->error('CarlX ILS gave no response when attempting to update Patron Information.');
 					}
 				}
 				return $success;
@@ -1220,8 +1221,8 @@ class CarlX extends SIP2Driver{
 		// Fines
 		$request->TransactionType = 'Fine';
 		$result = $this->doSoapRequest('getPatronTransactions', $request);
-		//global $logger;
-		//$logger->log("Result of getPatronTransactions (Fine)\r\n" . print_r($result, true), PEAR_LOG_ERR);
+		//global $pikaLogger;
+		//$pikaLogger->error("Result of getPatronTransactions (Fine)\r\n" . print_r($result, true));
 		if ($result && !empty($result->FineItems->FineItem)) {
 			if (!is_array($result->FineItems->FineItem)) {
 				$result->FineItems->FineItem = array($result->FineItems->FineItem);
@@ -1255,8 +1256,6 @@ class CarlX extends SIP2Driver{
 		// TODO: Lost Items don't have the fine amount
 		$request->TransactionType = 'Lost';
 		$result = $this->doSoapRequest('getPatronTransactions', $request);
-		//$logger->log("Result of getPatronTransactions (Lost)\r\n" . print_r($result, true), PEAR_LOG_ERR);
-
 		if ($result && !empty($result->LostItems->LostItem)) {
 			if (!is_array($result->LostItems->LostItem)) {
 				$result->LostItems->LostItem = array($result->LostItems->LostItem);
@@ -1545,7 +1544,7 @@ class CarlX extends SIP2Driver{
 
 	public function placeHoldViaSIP($patron, $recordId, $pickupBranch = null, $cancelDate = null, $type = null){
 		global $configArray;
-		//global $logger;
+		//global $pikaLogger;
 		//Place the hold via SIP 2
 		require_once ROOT_DIR . '/sys/SIP2.php';
 		$mySip = new sip2();
@@ -1624,8 +1623,6 @@ class CarlX extends SIP2Driver{
 
 				$in = $mySip->msgHold($mode, $expirationTime, '2', '', $holdId, '', $pickupBranchNumber);
 				$msg_result = $mySip->get_message($in);
-				//$logger->log("\r\nHold request\r\n" . print_r($in, true), PEAR_LOG_DEBUG);
-				//$logger->log("\r\nHold response\r\n" . print_r($msg_result, true), PEAR_LOG_DEBUG);
 
 //				$title = $this->getRecordTitle($recordId); //TODO: method isn't defined
 

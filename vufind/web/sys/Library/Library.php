@@ -103,6 +103,7 @@ class Library extends DB_DataObject {
 	public $includeOverDriveTeen;
 	public $includeOverDriveKids;
 	public $repeatInOverdrive;
+	public $repeatInAlternateOverdriveLibrary;
 	public $overdriveAuthenticationILSName;
 	public $overdriveRequirePin;
 	public $overdriveAdvantageName;
@@ -268,7 +269,6 @@ class Library extends DB_DataObject {
 	public $archiveMoreDetailsRelatedObjectsOrEntitiesDisplayMode;
 
 	public $changeRequiresReindexing;
-
 
 
 	// Use this to set which details will be shown in the the Main Details section of the record view.
@@ -864,6 +864,7 @@ class Library extends DB_DataObject {
 					'includeOverDriveTeen'           => ['property' =>'includeOverDriveTeen', 'type' =>'checkbox', 'label' =>'Include Teen Titles', 'description' =>'Whether or not teen titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
 					'includeOverDriveKids'           => ['property' =>'includeOverDriveKids', 'type' =>'checkbox', 'label' =>'Include Kids Titles', 'description' =>'Whether or not kids titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
 					'repeatInOverdrive'              => ['property' =>'repeatInOverdrive', 'type' =>'checkbox', 'label' =>'Repeat In Overdrive', 'description' =>'Turn on to allow repeat search in Overdrive functionality.', 'hideInLists' => true, 'default' => 0],
+					'repeatInAlternateOverdriveLibrary'          => ['property' =>'repeatInAlternateOverdriveLibrary', 'type' =>'text', 'label' =>'Repeat In Alternate Overdrive Libraries', 'description' => 'A list of the alternate OverDrive library codes from the OverDrive URL that you would like to repeat search in separated by pipes |.', 'hideInLists' => true],
 					'overdriveAuthenticationILSName' => ['property' =>'overdriveAuthenticationILSName', 'type' =>'text', 'label' =>'The ILS Name Overdrive uses for user Authentication', 'description' =>'The name of the ILS that OverDrive uses to authenticate users logging into the Overdrive website.', 'size' =>'20', 'hideInLists' => true],
 					'overdriveRequirePin'            => ['property' =>'overdriveRequirePin', 'type' =>'checkbox', 'label' =>'Is a Pin Required to log into Overdrive website?', 'description' =>'Turn on if users need a PIN to log into the Overdrive website.', 'hideInLists' => true, 'default' => 0],
 					'overdriveAdvantageName'         => ['property' =>'overdriveAdvantageName', 'type' =>'text', 'label' =>'Overdrive Advantage Name', 'description' =>'The name of the OverDrive Advantage account if any.', 'size' =>'80', 'hideInLists' => true,],
@@ -1433,8 +1434,8 @@ class Library extends DB_DataObject {
 						$this->showInMainDetails = [];
 					}
 				} catch (Exception $e){
-					global $logger;
-					$logger->log("Error loading $this->libraryId $e", PEAR_LOG_DEBUG);
+					global $pikaLogger;
+					$pikaLogger->debug("Error loading $this->libraryId $e");
 				}
 
 			}elseif (empty($this->showInMainDetails)){
@@ -1637,7 +1638,8 @@ class Library extends DB_DataObject {
 					$deleteCheck = $object->delete();
 					if (!$deleteCheck){
 						$errorString = 'Materials Request(s) are present for the format "' . $object->format . '".';
-						$error       = $this->raiseError($errorString, PEAR_LOG_ERR);
+						/** @var PEAR_Error $error */
+						$error = $this->raiseError($errorString);
 						$error->addUserInfo($errorString);
 						return $error;
 					}

@@ -25,10 +25,6 @@ class Timer{
 	private $minTimeToLog = 0;
 
 	public function __construct($startTime = null){
-		$this->Timer($startTime);
-	}
-
-	public function Timer($startTime = null){
 		global $configArray;
 		if ($configArray){
 			if (isset($configArray['System']['timings'])) {
@@ -52,10 +48,10 @@ class Timer{
 
 	public function logTime($message){
 		if ($this->timingsEnabled){
-			$curTime = microtime(true);
+			$curTime     = microtime(true);
 			$elapsedTime = round($curTime - $this->lastTime, 4);
 			if ($elapsedTime > $this->minTimeToLog){
-				$totalElapsedTime = round($curTime - $this->firstTime, 4);
+				$totalElapsedTime       = round($curTime - $this->firstTime, 4);
 				$this->timingMessages[] = "\"$message\",\"$elapsedTime\",\"$totalElapsedTime\"";
 			}
 			$this->lastTime = $curTime;
@@ -66,6 +62,7 @@ class Timer{
 		$this->timingsEnabled = $enable;
 	}
 
+	// Destruct method should generally do the write outs
 	public function writeTimings(){
 		if ($this->timingsEnabled){
 			$minTimeToLog = 0;
@@ -76,24 +73,25 @@ class Timer{
 				$this->timingMessages[] = "Finished run: $curTime ($elapsedTime sec)";
 			}
 			$this->lastTime = $curTime;
-			global $logger;
-			$totalElapsedTime =round(microtime(true) - $this->firstTime, 4);
-			$timingInfo = "\r\nTiming for: " . $_SERVER['REQUEST_URI'] . "\r\n";
-			$timingInfo .= implode("\r\n", $this->timingMessages);
-			$timingInfo .= "\r\nTotal Elapsed time was: $totalElapsedTime seconds.\r\n";
-			$logger->log($timingInfo, PEAR_LOG_NOTICE);
+			global $pikaLogger;
+			$totalElapsedTime = round(microtime(true) - $this->firstTime, 4);
+			$timingInfo       = "\r\nTiming for: " . $_SERVER['REQUEST_URI'] . "\r\n";
+			$timingInfo       .= implode("\r\n", $this->timingMessages);
+			$timingInfo       .= "\r\nTotal Elapsed time was: $totalElapsedTime seconds.\r\n";
+			$pikaLogger->notice($timingInfo);
 		}
 	}
 
 	function __destruct() {
 		if ($this->timingsEnabled){
-			global $logger;
-			if ($logger){
-				$totalElapsedTime =round(microtime(true) - $this->firstTime, 4);
-				$timingInfo = "\r\nTiming for: " . $_SERVER['REQUEST_URI'] . "\r\n";
-				$timingInfo .= implode("\r\n", $this->timingMessages);
-				$timingInfo .= "\r\nTotal Elapsed time was: $totalElapsedTime seconds.\r\n";
-				$logger->log($timingInfo, PEAR_LOG_NOTICE);
+			global $pikaLogger;
+			if ($pikaLogger){
+				$pikaLogger->notice('Timing for: ' . $_SERVER['REQUEST_URI']);
+				foreach ($this->timingMessages as $message){
+					$pikaLogger->notice($message);
+				}
+				$totalElapsedTime = round(microtime(true) - $this->firstTime, 4);
+				$pikaLogger->notice("Total Elapsed time was: $totalElapsedTime seconds.");
 			}
 		}
 	}

@@ -24,14 +24,13 @@ import java.util.regex.Pattern;
  * Time: 9:33 PM
  */
 public class TimeToReshelve {
-	private String locations;
 	private Pattern locationsPattern;
 	private long numHoursToOverride;
+	private String statusToOverride;
 	private String status;
 	private String groupedStatus;
 
 	public void setLocations(String locations) {
-		this.locations = locations;
 		locationsPattern = Pattern.compile(locations);
 	}
 
@@ -61,5 +60,13 @@ public class TimeToReshelve {
 
 	public void setGroupedStatus(String groupedStatus) {
 		this.groupedStatus = groupedStatus;
+	}
+
+	public String getStatusToOverride() {
+		return statusToOverride;
+	}
+
+	public void setStatusToOverride(String statusToOverride) {
+		this.statusToOverride = statusToOverride;
 	}
 }

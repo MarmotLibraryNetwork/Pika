@@ -32,7 +32,6 @@ global $errorHandlingEnabled;
 $errorHandlingEnabled = true;
 
 $startTime = microtime(true);
-require_once '../web/sys/Logger.php';
 require_once '../web/sys/PEAR_Singleton.php';
 PEAR_Singleton::init();
 

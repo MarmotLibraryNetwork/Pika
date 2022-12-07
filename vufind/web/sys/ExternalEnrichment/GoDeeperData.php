@@ -125,10 +125,10 @@ class GoDeeperData {
 						}
 					}
 				} catch (Exception $e){
-					global $logger;
-					$logger->log("Error fetching data from Syndetics $e", PEAR_LOG_ERR);
+					global $pikaLogger;
+					$pikaLogger->error("Error fetching data from Syndetics $e");
 					if (isset($response)){
-						$logger->log($response, PEAR_LOG_INFO);
+						$pikaLogger->info($response);
 					}
 				}
 				$timer->logTime("Finished processing Syndetics options");
@@ -197,11 +197,8 @@ class GoDeeperData {
 			'features'               => SOAP_SINGLE_ELEMENT_ARRAYS, // sets how the soap responses will be handled
 			'soap_version'           => SOAP_1_2,
 //			'trace' => 1, // turns on debugging features
-			'default_socket_timeout' => 15,
+//			'default_socket_timeout' => 20,
 		];
-
-		$soapClient = new SoapClient($url, $SOAP_options);
-
 		$params = [
 			'userID'   => $key,
 			'password' => $pw,
@@ -210,20 +207,26 @@ class GoDeeperData {
 		];
 
 		try {
-			$response = $soapClient->Single($params);
+			$soapClient = new SoapClient($url, $SOAP_options);
+			$response   = $soapClient->Single($params);
+//			global $pikaLogger;
+//			$pikaLogger->debug($soapClient->__getLastRequest());
 			if ($response){
 				if (!isset($response->ContentCafe->Error)){
+//					global $pikaLogger;
+//					$pikaLogger->debug('Got response from Content cafe');
+
 					return $response->ContentCafe->RequestItems->RequestItem;
 				}else{
-					global $logger;
-					$logger->log("Content Cafe Error Response for Content Type $field : " . $response->ContentCafe->Error, PEAR_LOG_ERR);
+					global $pikaLogger;
+					$pikaLogger->error("Content Cafe Error Response for Content Type $field : " . $response->ContentCafe->Error);
 				}
 			}
 		} catch (Exception $e){
-			global $logger;
-			$logger->log('Failed ContentCafe SOAP Request : ' . $e->getMessage(), PEAR_LOG_ERR);
-			$logger->log('ContentCafe SOAP Request url :  ' . $url, PEAR_LOG_ERR);
-			$logger->log('ContentCafe SOAP Request params :  ' . var_export($params, true), PEAR_LOG_ERR);
+			global $pikaLogger;
+			$pikaLogger->error('Failed ContentCafe SOAP Request : ' . $e->getMessage());
+			$pikaLogger->error('ContentCafe SOAP Request url :  ' . $url);
+			$pikaLogger->error('ContentCafe SOAP Request params :  ' . var_export($params, true));
 		}
 
 		return false;
@@ -329,9 +332,9 @@ class GoDeeperData {
 					}
 				}
 			} catch (Exception $e){
-				global $logger;
-				$logger->log("Error fetching data from Syndetics $e", PEAR_LOG_ERR);
-				$logger->log("Request URL was $requestUrl", PEAR_LOG_ERR);
+				global $pikaLogger;
+				$pikaLogger->error("Error fetching data from Syndetics $e");
+				$pikaLogger->error("Request URL was $requestUrl");
 				$summaryData = [];
 			}
 			if ($summaryData == false){
@@ -424,8 +427,8 @@ class GoDeeperData {
 				}
 
 			} catch (Exception $e){
-				global $logger;
-				$logger->log("Error fetching data from Syndetics $e", PEAR_LOG_ERR);
+				global $pikaLogger;
+				$pikaLogger->error("Error fetching data from Syndetics $e");
 				$tocData = [];
 			}
 			$memCache->set("syndetics_toc_{$isbn}_{$upc}", $tocData, 0, $configArray['Caching']['syndetics_toc']);
@@ -525,8 +528,8 @@ class GoDeeperData {
 					}
 				}
 			} catch (Exception $e){
-				global $logger;
-				$logger->log("Error fetching data from Syndetics $e", PEAR_LOG_ERR);
+				global $pikaLogger;
+				$pikaLogger->error("Error fetching data from Syndetics $e");
 				$fictionData = [];
 			}
 			$memCache->set("syndetics_fiction_profile_{$isbn}_{$upc}", $fictionData, 0, $configArray['Caching']['syndetics_fiction_profile']);
@@ -598,8 +601,8 @@ class GoDeeperData {
 
 				return $summaryData;
 			} catch (Exception $e){
-				global $logger;
-				$logger->log("Error fetching data from Syndetics $e", PEAR_LOG_ERR);
+				global $pikaLogger;
+				$pikaLogger->error("Error fetching data from Syndetics $e");
 				$summaryData = [];
 			}
 			$memCache->set("syndetics_author_notes_{$isbn}_{$upc}", $summaryData, 0, $configArray['Caching']['syndetics_author_notes']);
@@ -641,8 +644,8 @@ class GoDeeperData {
 
 				$memCache->set("syndetics_excerpt_{$isbn}_{$upc}", $excerptData, 0, $configArray['Caching']['syndetics_excerpt']);
 			} catch (Exception $e){
-				global $logger;
-				$logger->log("Error fetching data from Syndetics $e", PEAR_LOG_ERR);
+				global $pikaLogger;
+				$pikaLogger->error("Error fetching data from Syndetics $e");
 				$excerptData = [];
 			}
 		}
@@ -714,8 +717,8 @@ class GoDeeperData {
 				}
 
 			} catch (Exception $e){
-				global $logger;
-				$logger->log("Error fetching data from Syndetics $e", PEAR_LOG_ERR);
+				global $pikaLogger;
+				$pikaLogger->error("Error fetching data from Syndetics $e");
 				$summaryData = [];
 			}
 			$memCache->set("syndetics_video_clip_{$isbn}_{$upc}", $summaryData, 0, $configArray['Caching']['syndetics_video_clip']);
@@ -766,8 +769,8 @@ class GoDeeperData {
 
 				$memCache->set("syndetics_av_summary_{$isbn}_{$upc}", $avSummaryData, 0, $configArray['Caching']['syndetics_av_summary']);
 			} catch (Exception $e){
-				global $logger;
-				$logger->log("Error fetching data from Syndetics $e", PEAR_LOG_ERR);
+				global $pikaLogger;
+				$pikaLogger->error("Error fetching data from Syndetics $e");
 				$avSummaryData = [];
 			}
 		}

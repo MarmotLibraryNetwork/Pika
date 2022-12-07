@@ -18,7 +18,7 @@
  */
 require_once 'Mail.php';
 require_once 'Mail/RFC822.php';
-
+use \Pika\Logger;
 /**
  * VuFind Mailer Class
  *
@@ -30,6 +30,7 @@ require_once 'Mail/RFC822.php';
  * @access      public
  */
 class VuFindMailer {
+	private $logger;
 	protected $settings;      // settings for PEAR Mail object
 
 	/**
@@ -41,7 +42,7 @@ class VuFindMailer {
 	 */
 	public function __construct() {
 		global $configArray;
-
+		$this->logger = new Logger(__CLASS__);
 		// Load settings from the config file into the object; we'll do the
 		// actual creation of the mail object later since that will make error
 		// detection easier to control.
@@ -70,7 +71,7 @@ class VuFindMailer {
 	 * @return  mixed               PEAR error on error, boolean true otherwise
 	 */
 	public function send($to, $from, $subject, $body, $replyTo = null) {
-		global $logger;
+
 		// Validate sender and recipient
 		$validator = new Mail_RFC822();
 		//Allow the to address to be split
@@ -91,7 +92,7 @@ class VuFindMailer {
 		                 'Date' => date('D, d M Y H:i:s O'),
 		                 'Content-Type' => 'text/plain; charset="UTF-8"');
 		if (isset($this->settings['fromAddress'])){
-			$logger->log("Overriding From address, using " . $this->settings['fromAddress'], PEAR_LOG_INFO);
+			$this->logger->info("Overriding From address, using " . $this->settings['fromAddress']);
 			$headers['From'] = $this->settings['fromAddress'];
 			$headers['Reply-To'] = $from;
 		}else{
@@ -118,11 +119,11 @@ class VuFindMailer {
 				$formattedMail .= $key . ': ' . $header . '<br>';
 			}
 			$formattedMail .= $body;
-			$logger->log("Sending e-mail", PEAR_LOG_INFO);
-			$logger->log("From = $from", PEAR_LOG_INFO);
-			$logger->log("To = $to", PEAR_LOG_INFO);
-			$logger->log($subject, PEAR_LOG_INFO);
-			$logger->log($formattedMail, PEAR_LOG_INFO);
+			$this->logger->info("Sending e-mail");
+			$this->logger->info("From = $from");
+			$this->logger->info("To = $to");
+			$this->logger->info($subject);
+			$this->logger->info($formattedMail);
 			return true;
 		}
 

@@ -3,6 +3,8 @@
 	<div class="alert alert-warning">The circulation system is currently offline.  Holdings information is based on information from before the system went offline.</div>
 {/if}
 {* ils check & last checkin date *}
+ {* TODO: Shouldn't set showLastCheckIn as only for Sierra; should apply to any ILS that suplies last checkin date info.
+  Which is determined by $hasLastCheckinData*}
 {if ($ils == 'Sierra')}
 	{assign var=showLastCheckIn value=$hasLastCheckinData}
 	{assign var=showVolume value=$hasVolume}

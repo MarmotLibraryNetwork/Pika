@@ -187,6 +187,7 @@ class FavoriteHandler {
 					foreach ($catalogResults['response']['docs'] as $catalogResult){
 						$groupedWork = new GroupedWorkDriver($catalogResult);
 						if ($groupedWork->isValid){
+							// Need to re-sort in order to match list order
 							$key = array_search($this->favorites, $catalogResult['id']);
 							if ($key !== false){
 								$catalogResourceList[$key] = $interface->fetch($groupedWork->getBrowseResult());
@@ -634,37 +635,79 @@ class FavoriteHandler {
 		return [...$catalogRecordSet, ...$archiveRecordSet];
 	}
 
-	function getCitations($citationFormat){
+	function getCitations($citationFormat, $page, $pageSize, $filter=array()){
 		// Initialise from the current search globals
 		/** @var SearchObject_Solr $searchObject */
-		$citations = array();
+		$citations = [];
+		$offset    = ($page - 1) * $pageSize;
+		global $interface;
+		if ($this->isUserListSort){
+			$this->catalogIds = array_slice($this->catalogIds, $offset, $pageSize);
+		}
 
-			if(!empty($this->catalogIds)){
-				$searchObject = SearchObjectFactory::initSearchObject();
-				$searchObject->init();
-				$searchObject->setQueryIDs($this->catalogIds);
-				$searchObject->processSearch();
-				foreach($searchObject->getCitations($citationFormat) as $citation){
-					array_push($citations, $citation);
-				}
-
+		if (!empty($this->catalogIds)){
+			/** @var SearchObject_UserListSolr searchObject */
+			$searchObject = SearchObjectFactory::initSearchObject('UserListSolr');
+			$searchObject->setLimit(2000);
+			$searchObject->userListSort = $this->isUserListSort ? $this->userListSortOptions[$this->sort] : null;
+			$searchObject->init();
+			if (!$this->isUserListSort){
+				$searchObject->setSort($this->sort);
+				$searchObject->setLimit($pageSize);
+				$searchObject->setPage($page);
 			}
+			$searchObject->setQueryIDs($this->catalogIds);
+			$catalogResults = $searchObject->processSearch();
+			if (!empty($catalogResults['response']['docs'])){
+			foreach ($catalogResults['response']['docs'] as $catalogResult){
+				$groupedWork = new GroupedWorkDriver($catalogResult['id']);
+				if ($groupedWork->isValid){
+					// Need to re-sort in order to match list order
+					$key = array_search($catalogResult['id'], $this->favorites);
+					if ($key !== false){
+						$citations[$key] = $interface->fetch($groupedWork->getCitation($citationFormat));
+					}
+				}
+			}
+		}
+	}
+
 			if(!empty($this->archiveIds)){
-				$archiveObject = SearchObjectFactory::initSearchObject('Islandora');
+				$archiveObject = SearchObjectFactory::initSearchObject('UserListIslandora');
+				$archiveObject->setLimit(2000);
+				$archiveObject->userListSort = $this->isUserListSort ? $this->userListSortOptions[$this->sort]: null;
 				$archiveObject->init();
-				$archiveObject->setQueryIds($this->archiveIds);
-				$archiveObject->processSearch();
-				foreach($archiveObject->getCitations($citationFormat) as $citation){
-					array_push($citations, $citation);
+				$this->archiveIds = array_slice($this->archiveIds, $offset, $pageSize);
+				if(!$this->isUserListSort){
+					$archiveObject->setSort($this->sort);
+					$archiveObject->setLimit($pageSize);
+					$archiveObject->setPage($page);
 				}
-
+				$archiveObject->setQueryIds($this->archiveIds);
+				$archiveResults = $archiveObject->processSearch();
+				if(!empty($archiveResults['response']['docs'])){
+					foreach ($archiveResults['response']['docs'] as $archiveResult){
+						$archiveWork = RecordDriverFactory::initRecordDriver($archiveResult);
+						$key         = array_search($archiveResult['PID'], $this->favorites);
+						if ($key !== false){
+							$citations[$key] = $interface->fetch($archiveWork->getCitation($citationFormat));
+						}
+					}
+				}
 			}
+
+
+
+
+
 		if(count($citations) > 0){
-
-
+			if(!$this->isUserListSort){
+				return $citations;
+			}
+			ksort($citations, SORT_NUMERIC); //combine and sort based on citation Key;
+			return array_slice($citations, 0,$pageSize);
 		// Retrieve records from index (currently, only Solr IDs supported):
 
-			return $citations;
 		}else{
 			return [];
 		}

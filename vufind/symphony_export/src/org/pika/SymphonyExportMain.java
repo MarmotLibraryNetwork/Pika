@@ -98,8 +98,8 @@ public class SymphonyExportMain {
 		//Check for a new holds file
 		processNewHoldsFile(lastExportTime, pikaConn);
 
-		//Check for new orders file(lastExportTime, pikaConn);
-		processOrdersFile(lastExportTime, pikaConn);
+		//Check for new orders file
+		processOrdersFile();
 
 		//update the last export start time
 		if (!hadErrors) {
@@ -117,118 +117,123 @@ public class SymphonyExportMain {
 		}
 	}
 
-	private static void processOrdersFile(long lastExportTime, Connection pikaConn) {
-		File            mainFile      = new File(indexingProfile.marcPath + "/fullexport.mrc");
-		HashSet<String> idsInMainFile = new HashSet<>();
-		if (mainFile.exists()) {
-			try {
-				MarcReader reader         = new MarcPermissiveStreamReader(new FileInputStream(mainFile), true, true);
-				int        numRecordsRead = 0;
-				while (reader.hasNext()) {
-					try {
-						Record marcRecord = reader.next();
-						numRecordsRead++;
-						String id = getPrimaryIdentifierFromMarcRecord(marcRecord);
-						idsInMainFile.add(id);
-					} catch (MarcException me) {
-						logger.warn("Error processing individual record  on record " + numRecordsRead + " of " + mainFile.getAbsolutePath(), me);
-					}
-				}
-			} catch (Exception e) {
-				logger.error("Error loading existing marc ids", e);
-			}
-		}
-
-		//We have gotten 2 different exports a single export as CSV and a second daily version as XLSX.  If the XLSX exists, we will
-		//process that and ignore the CSV version.
-		File ordersFileMarc = new File(indexingProfile.marcPath + "/Pika_orders.mrc"); // The output of convertOrdersFileToMarc
-		File ordersFile     = new File(indexingProfile.marcPath + "/PIKA-onorderfile.txt"); // The input of convertOrdersFileToMarc
-		convertOrdersFileToMarc(ordersFile, ordersFileMarc, idsInMainFile);
-
-	}
-
-	private static void convertOrdersFileToMarc(File ordersFile, File ordersFileMarc, HashSet<String> idsInMainFile) {
+	private static void processOrdersFile() {
+		File ordersFile = new File(indexingProfile.marcPath + "/PIKA-onorderfile.txt"); // The input of convertOrdersFileToMarc
 		if (ordersFile.exists()) {
-			long now                    = new Date().getTime();
-			long ordersFileLastModified = ordersFile.lastModified();
-			if (now - ordersFileLastModified > 7 * 24 * 60 * 60 * 1000) {
+			long now                    = new Date().getTime() / 1000;      // switch to secs instead of milliseconds
+			long ordersFileLastModified = ordersFile.lastModified() / 1000; // switch to secs instead of milliseconds
+			if (now - ordersFileLastModified > 7 * 24 * 60 * 60) {
 				logger.warn("Orders File was last written more than 7 days ago");
 			}
-			//Always process since we only received one export and we are gradually removing records as they appear in the full export.
-			try (BufferedReader ordersReader = new BufferedReader(new InputStreamReader(new FileInputStream(ordersFile)))) {
-				MarcWriter writer                 = new MarcStreamWriter(new FileOutputStream(ordersFileMarc, false), "UTF8");
-				String     line                   = ordersReader.readLine();
-				int        numOrderRecordsWritten = 0;
-				int        numOrderRecordsSkipped = 0;
-				Pattern    isbnPattern            = Pattern.compile("(^\\d{13}|^\\d{10}).*$");
-				while (line != null) {
-					int firstPipePos = line.indexOf('|');
-					if (firstPipePos != -1) {
-						String recordNumber = line.substring(0, firstPipePos);
-						line = line.substring(firstPipePos + 1);
-						if (recordNumber.matches("^\\d+$")) {
-							if (!idsInMainFile.contains("a" + recordNumber)) { // Don't add order records for anything in the ILS's main export file (ie. the regular record for the order)
-								if (line.endsWith("|")) {
-									line = line.substring(0, line.length() - 1);
-								}
-								int     lastPipePosition = line.lastIndexOf('|');
-								String  isbn             = "";
-								String  isbnString       = line.substring(lastPipePosition + 1);
-								Matcher isbnMatcher      = isbnPattern.matcher(isbnString);
-								if (isbnMatcher.matches()) {
-									isbn = isbnMatcher.group(1);
-//									if (logger.isDebugEnabled()) {
-//										logger.debug("Got " + isbn + " from raw string " + isbnString);
-//									}
-								}
-								line             = line.substring(0, lastPipePosition);
-								lastPipePosition = line.lastIndexOf('|');
-								if (lastPipePosition != -1) {
-									String title = line.substring(lastPipePosition + 1);
+			Long storedOrdersFileLastModified = systemVariables.getLongValuedVariable("order_file_last_modified_time");
+			if (storedOrdersFileLastModified == null || ordersFileLastModified > storedOrdersFileLastModified) {
+
+				// Retrieve full export's record Ids
+				File            mainFile      = new File(indexingProfile.marcPath + "/fullexport.mrc");
+				HashSet<String> idsInMainFile = new HashSet<>();
+				if (mainFile.exists()) {
+					try {
+						MarcReader reader         = new MarcPermissiveStreamReader(new FileInputStream(mainFile), true, true);
+						int        numRecordsRead = 0;
+						while (reader.hasNext()) {
+							try {
+								Record marcRecord = reader.next();
+								numRecordsRead++;
+								String id = getPrimaryIdentifierFromMarcRecord(marcRecord);
+								idsInMainFile.add(id);
+							} catch (MarcException me) {
+								logger.warn("Error processing individual record  on record " + numRecordsRead + " of " + mainFile.getAbsolutePath(), me);
+							}
+						}
+					} catch (Exception e) {
+						logger.error("Error loading existing marc ids", e);
+					}
+					if (logger.isInfoEnabled()){
+						logger.info("Read " + idsInMainFile.size() + " record IDs in main export file");
+					}
+				}
+
+				File ordersFileMarc = new File(indexingProfile.marcPath + "/Pika_orders.mrc"); // The output of convertOrdersFileToMarc
+				try (BufferedReader ordersReader = new BufferedReader(new InputStreamReader(new FileInputStream(ordersFile)))) {
+					MarcWriter writer                 = new MarcStreamWriter(new FileOutputStream(ordersFileMarc, false), "UTF8");
+					String     line                   = ordersReader.readLine();
+					int        numOrderRecordsWritten = 0;
+					int        numOrderRecordsSkipped = 0;
+					Pattern    isbnPattern            = Pattern.compile("(^\\d{13}|^\\d{10}).*$");
+					while (line != null) {
+						int firstPipePos = line.indexOf('|');
+						if (firstPipePos != -1) {
+							String recordNumber = line.substring(0, firstPipePos);
+							line = line.substring(firstPipePos + 1);
+							if (recordNumber.matches("^\\d+$")) {
+								if (!idsInMainFile.contains("a" + recordNumber)) {
+									// Don't add order records for anything in the ILS's main export file (ie. the regular record for the order)
+									if (line.endsWith("|")) {
+										line = line.substring(0, line.length() - 1);
+									}
+									int     lastPipePosition = line.lastIndexOf('|');
+									String  isbn             = "";
+									String  isbnString       = line.substring(lastPipePosition + 1);
+									Matcher isbnMatcher      = isbnPattern.matcher(isbnString);
+									if (isbnMatcher.matches()) {
+										isbn = isbnMatcher.group(1);
+//										if (logger.isDebugEnabled()) {
+//											logger.debug("Got " + isbn + " from raw string " + isbnString);
+//										}
+									}
 									line             = line.substring(0, lastPipePosition);
 									lastPipePosition = line.lastIndexOf('|');
 									if (lastPipePosition != -1) {
-										String author = line.substring(lastPipePosition + 1);
-										line = line.substring(0, lastPipePosition);
-										String ohohseven = line.replace("|", " ");
-										//The marc record does not exist, create a temporary bib in the orders file which will get processed by record grouping
-										MarcFactory factory    = MarcFactory.newInstance();
-										Record      marcRecord = factory.newRecord();
-										marcRecord.addVariableField(factory.newControlField("001", "a" + recordNumber));
-										if (!ohohseven.equals("-")) {
-											marcRecord.addVariableField(factory.newControlField("007", ohohseven));
+										String title = line.substring(lastPipePosition + 1);
+										line             = line.substring(0, lastPipePosition);
+										lastPipePosition = line.lastIndexOf('|');
+										if (lastPipePosition != -1) {
+											String author = line.substring(lastPipePosition + 1);
+											line = line.substring(0, lastPipePosition);
+											String ohohseven = line.replace("|", " ");
+											//The marc record does not exist, create a temporary bib in the orders file which will get processed by record grouping
+											MarcFactory factory    = MarcFactory.newInstance();
+											Record      marcRecord = factory.newRecord();
+											marcRecord.addVariableField(factory.newControlField("001", "a" + recordNumber));
+											if (!ohohseven.equals("-")) {
+												marcRecord.addVariableField(factory.newControlField("007", ohohseven));
+											}
+											if (!author.equals("-")) {
+												marcRecord.addVariableField(factory.newDataField("100", '0', '0', "a", author));
+											}
+											marcRecord.addVariableField(factory.newDataField("245", '0', '0', "a", title));
+											if (!isbn.isEmpty()) {
+												marcRecord.addVariableField(factory.newDataField("020", '0', '0', "a", isbn));
+											}
+											writer.write(marcRecord);
+											numOrderRecordsWritten++;
+										} else {
+											logger.warn("Failed to parse author on order items file with line :" + line);
 										}
-										if (!author.equals("-")) {
-											marcRecord.addVariableField(factory.newDataField("100", '0', '0', "a", author));
-										}
-										marcRecord.addVariableField(factory.newDataField("245", '0', '0', "a", title));
-										if (!isbn.isEmpty()) {
-											marcRecord.addVariableField(factory.newDataField("020", '0', '0', "a", isbn));
-										}
-										writer.write(marcRecord);
-										numOrderRecordsWritten++;
 									} else {
-										logger.warn("Failed to parse author on order items file with line :" + line);
+										logger.warn("Failed to parse title on order items file with line :" + line);
 									}
 								} else {
-									logger.warn("Failed to parse title on order items file with line :" + line);
+									if (logger.isInfoEnabled()) {
+										logger.info("Marc record already exists for order record a" + recordNumber);
+									}
+									numOrderRecordsSkipped++;
 								}
-							} else {
-								logger.info("Marc record already exists for a" + recordNumber);
-								numOrderRecordsSkipped++;
 							}
 						}
+						line = ordersReader.readLine();
 					}
-					line = ordersReader.readLine();
+					writer.close();
+					if (logger.isInfoEnabled()) {
+						logger.info("Finished writing Orders to MARC record");
+						logger.info("Wrote " + numOrderRecordsWritten + " order records.");
+						logger.info("Skipped " + numOrderRecordsSkipped + " order records because they are in the main export");
+					}
+					systemVariables.setVariable("order_file_last_modified_time", ordersFileLastModified);
+					// Now that the file has been successfully processed, set the stored last modified time (in seconds)
+				} catch (Exception e) {
+					logger.error("Error reading orders file ", e);
 				}
-				writer.close();
-				if (logger.isInfoEnabled()) {
-					logger.info("Finished writing Orders to MARC record");
-					logger.info("Wrote " + numOrderRecordsWritten + " order records.");
-					logger.info("Skipped " + numOrderRecordsSkipped + " order records because they are in the main export");
-				}
-			} catch (Exception e) {
-				logger.error("Error reading orders file ", e);
 			}
 		} else {
 			logger.warn("Could not find orders file at " + ordersFile.getAbsolutePath());

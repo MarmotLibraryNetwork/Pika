@@ -435,8 +435,8 @@ class MyAccount_AJAX extends AJAXHandler {
 			}
 		} catch (PDOException $e){
 			/** @var Logger $logger */
-			global $logger;
-			$logger->log('Booking : ' . $e->getMessage(), PEAR_LOG_ERR);
+
+			$this->logger->error('Booking : ' . $e->getMessage());
 
 			$result = [
 				'success' => false,
@@ -635,8 +635,8 @@ class MyAccount_AJAX extends AJAXHandler {
 			}else{
 				if (empty($_REQUEST['recordId']) || empty($_REQUEST['holdId'])){
 					// We aren't getting all the expected data, so make a log entry & tell user.
-					global $logger;
-					$logger->log('Freeze Hold, no record or hold Id was passed in AJAX call.', PEAR_LOG_ERR);
+
+					$this->logger->error('Freeze Hold, no record or hold Id was passed in AJAX call.');
 					$result['message'] = 'Information about the hold to be ' . translate('frozen') . ' was not provided.';
 				}else{
 					$recordId         = $_REQUEST['recordId'];
@@ -661,8 +661,8 @@ class MyAccount_AJAX extends AJAXHandler {
 			}
 		}else{
 			// We aren't getting all the expected data, so make a log entry & tell user.
-			global $logger;
-			$logger->log('Freeze Hold, no patron Id was passed in AJAX call.', PEAR_LOG_ERR);
+
+			$this->logger->error('Freeze Hold, no patron Id was passed in AJAX call.');
 			$result['message'] = 'No Patron was specified.';
 		}
 
@@ -695,8 +695,8 @@ class MyAccount_AJAX extends AJAXHandler {
 			}
 		}else{
 			// We aren't getting all the expected data, so make a log entry & tell user.
-			global $logger;
-			$logger->log('Thaw Hold, no patron Id was passed in AJAX call.', PEAR_LOG_ERR);
+
+			$this->logger->error('Thaw Hold, no patron Id was passed in AJAX call.');
 			$result['message'] = 'No Patron was specified.';
 		}
 
@@ -1039,76 +1039,70 @@ class MyAccount_AJAX extends AJAXHandler {
 		return $interface->fetch('MyAccount/ajax-login.tpl');
 	}
 
-	function transferListToUser()
-    {
-       if(UserAccount::isLoggedIn()){
+	function transferListToUser(){
+		if (UserAccount::isLoggedIn()){
 
-                $user = UserAccount::getLoggedInUser();
-                if($user->isStaff())
-                {
-                    $listId = $_REQUEST['id'];
-                    return array('title' => 'Transfer List',
-                        'body'=>'<label for="barcode">Please enter recipient barcode</label> <input type="text" name="barcode" id="barcode" class="form-control">' .
-                                '<div class="validation" id="validation" style="display:none; color:darkred;">Invalid Barcode</div>'.
-                                '<script>$("#barcode").on("change keyup paste", function(data){Pika.Lists.checkUser($("#barcode").val())});</script>',
-                        'buttons'=>'<button value="transfer" disabled="disabled" id="transfer" class="btn btn-danger" onclick="Pika.Lists.transferList('. $listId . ', document.getElementById(\'barcode\').value);return false;">Transfer</button>');
-                }
+			$user = UserAccount::getLoggedInUser();
+			if ($user->isStaff()){
+				$listId = $_REQUEST['id'];
+				return ['title'   => 'Transfer List',
+				        'body'    => '<label for="barcode">Please enter recipient barcode</label> <input type="text" name="barcode" id="barcode" class="form-control">' .
+					        '<div class="validation" id="validation" style="display:none; color:darkred;">Invalid Barcode</div>' .
+					        '<script>$("#barcode").on("change keyup paste", function(data){Pika.Lists.checkUser($("#barcode").val())});</script>',
+				        'buttons' => '<button value="transfer" disabled="disabled" id="transfer" class="btn btn-danger" onclick="Pika.Lists.transferList(' . $listId . ', document.getElementById(\'barcode\').value);return false;">Transfer</button>'];
+			}
 
-        }
-        return array('error' => 'You do not have permission to transfer a list');
-    }
+		}
+		return ['error' => 'You do not have permission to transfer a list'];
+	}
 
-    function transferList()
-    {
+	function transferList(){
 
-            $barcodeTo = $_REQUEST['barcode'];
-            $userTo = new User();
-            $listId = $_REQUEST['id'];
-            $user = UserAccount::getLoggedInUser();
-            if($user->isStaff()) {
-                $barcodeProperty = 'barcode';
-                $userTo = new User;
-                $userTo->get($barcodeProperty, $barcodeTo);
-                if ($userTo && $userTo->isStaff()){
-                    $list = new UserList();
-                    $list->id = $listId;
-                    $list->get();
+		$barcodeTo = $_REQUEST['barcode'];
+		$userTo    = new User();
+		$listId    = $_REQUEST['id'];
+		$user      = UserAccount::getLoggedInUser();
+		if ($user->isStaff()){
+			$userTo = new User;
+			$userTo->get('barcode', $barcodeTo);
+			if ($userTo && $userTo->isStaff()){
+				$list     = new UserList();
+				$list->id = $listId;
+				$list->get();
 
-                    $list->user_id = $userTo->id;
-                    if ($list->update()) {
-                        return array('title' => 'Transfer List', 'body' => 'The list has been transferred');
-                    } else {
-                        return array('title' => 'Transfer List', 'body' => 'An Error Occurred');
-                    }
-                }else{
-                    return array('title' => 'Transfer List', 'body' => 'You do not have permission to transfer a list');
-                }
+				$list->user_id = $userTo->id;
+				if ($list->update()){
+					return ['title' => 'Transfer List', 'body' => 'The list has been transferred'];
+				}else{
+					return ['title' => 'Transfer List', 'body' => 'An Error Occurred'];
+				}
+			}else{
+				return ['title' => 'Transfer List', 'body' => 'You do not have permission to transfer a list'];
+			}
 
 
-            }else{
-                return array('title' => 'Transfer List', 'body' => 'You do not have permission to transfer a list');
-            }
+		}else{
+			return ['title' => 'Transfer List', 'body' => 'You do not have permission to transfer a list'];
+		}
 
-    }
+	}
 
-    function isStaffUser()
-    {
-        if(UserAccount::isLoggedIn())
-        {
-            $staffUser = UserAccount::getLoggedInUser();
-            if($staffUser->isStaff()) {
-                $barcodeProperty = 'barcode';
-                $barcode = $_REQUEST['barcode'];
-                $user = new User;
-                $user->get($barcodeProperty, $barcode);
-                if ($user->isStaff())
-                {
-                    return array('isStaff' => true);
-                }else{ return array('isStaff' => false);}
-            }
-        }
-        return array('error' => "Permission Denied");
-    }
+	function isStaffUser(){
+		if (UserAccount::isLoggedIn()){
+			$staffUser = UserAccount::getLoggedInUser();
+			if ($staffUser->isStaff()){
+				$barcode         = $_REQUEST['barcode'];
+				$user            = new User;
+				$user->get('barcode', $barcode);
+				if ($user->isStaff()){
+					return ['isStaff' => true];
+				}else{
+					return ['isStaff' => false];
+				}
+			}
+		}
+		return ['error' => "Permission Denied"];
+	}
 
 	function getMasqueradeAsForm(){
 		global $interface;
@@ -1302,8 +1296,8 @@ class MyAccount_AJAX extends AJAXHandler {
 									'result'  => false,
 									'message' => 'Your e-mail message could not be sent due to an unknown error.',
 								];
-								global $logger;
-								$logger->log("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body", PEAR_LOG_ERR);
+
+								$this->logger->error("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body");
 							}
 						}else{ //spammy email message
 							$result = [

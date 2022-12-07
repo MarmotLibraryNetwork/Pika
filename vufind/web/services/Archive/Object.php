@@ -42,6 +42,8 @@ abstract class Archive_Object extends Action {
 	protected $formattedSubjects;
 	protected $links;
 
+
+
 	/**
 	 * @param string $mainContentTemplate Name of the SMARTY template file for the main content of the full pages
 	 * @param string $pageTitle What to display is the html title tag
@@ -49,7 +51,7 @@ abstract class Archive_Object extends Action {
 	 */
 	function display($mainContentTemplate, $pageTitle = null, $sidebarTemplate = 'Search/home-sidebar.tpl'){
 		global $interface;
-		global $logger;
+		global $pikaLogger;
 
 		$pageTitle = $pageTitle == null ? $this->archiveObject->label : $pageTitle;
 		$interface->assign('breadcrumbText', $pageTitle);
@@ -65,13 +67,13 @@ abstract class Archive_Object extends Action {
 			$this->endExhibitContext();
 		}
 		if ($isExhibitContext){
-			$logger->log("In exhibit context, setting exhibit navigation", PEAR_LOG_DEBUG);
+			$pikaLogger->debug("In exhibit context, setting exhibit navigation");
 			$this->setExhibitNavigation();
 		}elseif (isset($_SESSION['lastSearchURL'])){
-			$logger->log("In search context, setting search navigation", PEAR_LOG_DEBUG);
+			$pikaLogger->debug("In search context, setting search navigation");
 			$this->setArchiveSearchNavigation();
 		}else{
-			$logger->log("Not in any context, not setting navigation", PEAR_LOG_DEBUG);
+			$pikaLogger->debug("Not in any context, not setting navigation");
 		}
 
 		//Check to see if usage is restricted or not.
@@ -404,8 +406,8 @@ abstract class Archive_Object extends Action {
 
 	protected function endExhibitContext()
 	{
-		global $logger;
-		$logger->log("Ending exhibit context", PEAR_LOG_DEBUG);
+		global $pikaLogger;
+		$pikaLogger->debug("Ending exhibit context");
 		$_SESSION['ExhibitContext']  = null;
 		$_SESSION['exhibitSearchId'] = null;
 		$_SESSION['placePid']        = null;
@@ -425,7 +427,7 @@ abstract class Archive_Object extends Action {
 	protected function setExhibitNavigation()
 	{
 		global $interface;
-		global $logger;
+		global $pikaLogger;
 
 		$interface->assign('isFromExhibit', true);
 
@@ -439,9 +441,9 @@ abstract class Archive_Object extends Action {
 			if (!empty($_SESSION['placeLabel'])) {
 				$exhibitName .= ' - ' . $_SESSION['placeLabel'];
 			}
-			$logger->log("Navigating from a map exhibit", PEAR_LOG_DEBUG);
+			$pikaLogger->debug("Navigating from a map exhibit");
 		}else{
-			$logger->log("Navigating from a NON map exhibit", PEAR_LOG_DEBUG);
+			$pikaLogger->debug("Navigating from a NON map exhibit");
 		}
 
 		//TODO: rename to template vars exhibitName and exhibitUrl;  does it affect other navigation contexts
@@ -484,16 +486,16 @@ abstract class Archive_Object extends Action {
 			$searchObject->init('islandora');
 			$searchObject->getNextPrevLinks($_SESSION['exhibitSearchId'], $recordIndex, $page, $isMapExhibit);
 			// pass page and record index info
-			$logger->log("Setting exhibit navigation for exhibit {$_SESSION['ExhibitContext']} from search id {$_SESSION['exhibitSearchId']}", PEAR_LOG_DEBUG);
+			$pikaLogger->debug("Setting exhibit navigation for exhibit {$_SESSION['ExhibitContext']} from search id {$_SESSION['exhibitSearchId']}");
 		}else{
-			$logger->log("Exhibit search id was not provided", PEAR_LOG_DEBUG);
+			$pikaLogger->debug("Exhibit search id was not provided");
 		}
 	}
 
 	private function setArchiveSearchNavigation()
 	{
 		global $interface;
-		global $logger;
+		global $pikaLogger;
 		$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false);
 		$searchSource = $_REQUEST['searchSource'] ?? 'islandora';
 		//TODO: What if it ain't islandora? (direct navigation to archive object page)
@@ -501,12 +503,12 @@ abstract class Archive_Object extends Action {
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 		$searchObject->init($searchSource);
 		$searchObject->getNextPrevLinks();
-		$logger->log("Setting search navigation for archive search", PEAR_LOG_DEBUG);
+		$pikaLogger->debug("Setting search navigation for archive search");
 	}
 
 	private function initializeExhibitContextDataFromCookie() {
-		global $logger;
-		$logger->log("Initializing exhibit context from Cookie Data", PEAR_LOG_DEBUG);
+		global $pikaLogger;
+		$pikaLogger->debug("Initializing exhibit context from Cookie Data");
 		$_SESSION['ExhibitContext']             = empty($_COOKIE['ExhibitContext'])             ? $_SESSION['ExhibitContext'] : $_COOKIE['ExhibitContext'];
 		$_SESSION['exhibitSearchId']            = empty($_COOKIE['exhibitSearchId'])            ? $_SESSION['exhibitSearchId'] : $_COOKIE['exhibitSearchId'];
 		$_SESSION['placePid']                   = empty($_COOKIE['placePid'])                   ? $_SESSION['placePid'] : $_COOKIE['placePid'];
@@ -523,8 +525,8 @@ abstract class Archive_Object extends Action {
 	}
 
 	private function updateCookieForExhibitContextData() {
-		global $logger;
-		$logger->log("Initializing exhibit context from Cookie Data", PEAR_LOG_DEBUG);
+		global $pikaLogger;
+		$pikaLogger->debug("Initializing exhibit context from Cookie Data");
 		$_COOKIE['ExhibitContext']             = empty($_SESSION['ExhibitContext'])             ? null : $_SESSION['ExhibitContext'];
 		$_COOKIE['exhibitSearchId']            = empty($_SESSION['exhibitSearchId'])            ? null : $_SESSION['exhibitSearchId'];
 		$_COOKIE['placePid']                   = empty($_SESSION['placePid'])                   ? null : $_SESSION['placePid'];

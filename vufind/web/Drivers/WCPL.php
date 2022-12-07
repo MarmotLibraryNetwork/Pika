@@ -20,8 +20,7 @@
 require_once 'DriverInterface.php';
 require_once ROOT_DIR . '/Drivers/HorizonAPI3_23.php';
 
-class WCPL extends HorizonAPI3_23
-{
+class WCPL extends HorizonAPI3_23 {
 
 	function translateFineMessageType($code){
 		switch ($code){
@@ -113,7 +112,7 @@ class WCPL extends HorizonAPI3_23
 
 	public function translateLocation($locationCode){
 		$locationCode = strtoupper($locationCode);
-		$locationMap = array(
+		$locationMap = [
 				"ADR" => "Athens Drive Community Library",
 				"BKM" => "Bookmobile",
 				"CAM" => "Cameron Village Regional Library",
@@ -136,12 +135,13 @@ class WCPL extends HorizonAPI3_23
 				"WEN" => "Wendell Community Library",
 				"WRL" => "West Regional Library",
 				"ZEB" => "Zebulon Community Library",
-		);
-		return isset($locationMap[$locationCode]) ? $locationMap[$locationCode] : "Unknown" ;
+		];
+		return $locationMap[$locationCode] ?? 'Unknown';
 	}
+
 	public function translateCollection($collectionCode){
 		$collectionCode = strtoupper($collectionCode);
-		$collectionMap = array(
+		$collectionMap = [
 				'AHS000'  => 'Adult Non-Fiction',
 				'AHS100'  => 'Adult Non-Fiction',
 				'AHS200'  => 'Adult Non-Fiction',
@@ -298,12 +298,13 @@ class WCPL extends HorizonAPI3_23
 				'SYSYGRA' => 'YA Graphic Novels',
 				'UNK'     => 'Unknown collection for item creation',
 				'ZEBGENE' => 'Genealogy',
-		);
-		return isset($collectionMap[$collectionCode]) ? $collectionMap[$collectionCode] : "Unknown $collectionCode";
+		];
+		return $collectionMap[$collectionCode] ?? "Unknown $collectionCode";
 	}
+
 	public function translateStatus($statusCode){
 		$statusCode = strtolower($statusCode);
-		$statusMap = array(
+		$statusMap = [
 			"a"      => "Archived",
 			"b"      => "Bindery",
 			"c"      => "Credited as Returned",
@@ -342,8 +343,8 @@ class WCPL extends HorizonAPI3_23
 			"trace"  => "No Longer Avail.",
 			"ufa"    => "user fast added item",
 			"weed"   => "Items for deletion",
-		);
-		return isset($statusMap[$statusCode]) ? $statusMap[$statusCode] : 'Unknown (' . $statusCode . ')';
+		];
+		return $statusMap[$statusCode] ?? 'Unknown (' . $statusCode . ')';
 	}
 
 	function selfRegister(){

@@ -64,21 +64,21 @@ class MemoryWatcher{
 			$memoryChange = $curMemoryUsage - $this->lastMemory;
 			$this->memoryMessages[] = "Finished run: $curMemoryUsage ($memoryChange bytes)";
 			$this->lastMemory = $curMemoryUsage;
-			global $logger;
+			global $pikaLogger;
 			$totalMemoryUsage = number_format($curMemoryUsage - $this->firstMemory);
 			$timingInfo = "\r\nMemory usage for: " . $_SERVER['REQUEST_URI'] . "\r\n";
 			$timingInfo .= implode("\r\n", $this->memoryMessages);
 			$timingInfo .= "\r\nFinal Memory usage was: $totalMemoryUsage bytes.";
 			$peakUsage = number_format(memory_get_peak_usage());
 			$timingInfo .= "\r\nPeak Memory usage was: $peakUsage bytes.\r\n";
-			$logger->log($timingInfo, PEAR_LOG_NOTICE);
+			$pikaLogger->notice($timingInfo);
 		}
 	}
 
 	function __destruct() {
 		if ($this->memoryLoggingEnabled){
-			global $logger;
-			if ($logger){
+			global $pikaLogger;
+			if ($pikaLogger){
 				$curMemoryUsage = memory_get_usage();
 				$totalMemoryUsage = number_format($curMemoryUsage - $this->firstMemory);
 				$timingInfo = "\r\nMemory usage for: " . $_SERVER['REQUEST_URI'] . "\r\n";
@@ -86,7 +86,7 @@ class MemoryWatcher{
 					$timingInfo .= implode("\r\n", $this->memoryMessages);
 				}
 				$timingInfo .= "\r\nFinal Memory usage in destructor was: $totalMemoryUsage bytes.\r\n";
-				$logger->log($timingInfo, PEAR_LOG_NOTICE);
+				$pikaLogger->notice($timingInfo);
 			}
 		}
 	}

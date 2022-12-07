@@ -41,15 +41,9 @@ abstract class AJAXHandler extends Action {
 	protected $methodsThatRespondThemselves;*/
 
 	//private $cache;
-	protected $logger;
 
-	public function __construct($error_class = null){
-		parent::__construct($error_class);
 
-		$this->logger = new Logger(get_class($this));
-		//$this->cache  = new Cache();
 
-	}
 
 	function launch(){
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
@@ -93,10 +87,12 @@ abstract class AJAXHandler extends Action {
 	 * @return false|string  UTF-8 encoded JSON string
 	 */
 	final function jsonUTF8EncodeResponse($response){
+		global $pikaLogger;
 		try {
 			require_once ROOT_DIR . '/sys/Utils/ArrayUtils.php';
 			$utf8EncodedValue = ArrayUtils::utf8EncodeArray($response);
 			$json             = json_encode($utf8EncodedValue);
+
 			$error            = json_last_error();
 			if ($error != JSON_ERROR_NONE || $json === false){
 				if (function_exists('json_last_error_msg')){
@@ -105,14 +101,15 @@ abstract class AJAXHandler extends Action {
 					$json = json_encode(['error' => 'error_encoding_data', 'message' => json_last_error()]);
 				}
 				global $configArray;
+
 				if ($configArray['System']['debug']){
-					$this->logger->error("Error while JSON encoding: ", $json);
+					$pikaLogger->error("Error while JSON encoding: ", $json);
 //					print_r($utf8EncodedValue);
 				}
 			}
 		} catch (Exception $e){
 			$json = json_encode(['error' => 'error_encoding_data', 'message' => $e]);
-			$this->logger->error("Error encoding json data", ['stack_trace' => $e->getTraceAsString()]);
+			$pikaLogger->error("Error encoding json data", ['stack_trace' => $e->getTraceAsString()]);
 		}
 		return $json;
 	}

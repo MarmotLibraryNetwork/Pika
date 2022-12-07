@@ -26,8 +26,20 @@
  *
  */
 require_once ROOT_DIR . '/Drivers/HorizonAPI.php';
-abstract class HorizonAPI3_23 extends HorizonAPI
-{
+use \Pika\Logger;
+
+abstract class HorizonAPI3_23 extends HorizonAPI {
+
+		protected $logger;
+
+		public function __construct($accountProfile){
+			global $configArray;
+			$this->logger         = new Logger(__CLASS__);
+			$this->accountProfile = $accountProfile;
+			$this->hipUrl         = $configArray['Catalog']['hipUrl'];  // still used by getMyFinesViaHIP() which is used by getMyFines()
+			$this->hipProfile     = $configArray['Catalog']['hipProfile']; // still used by email pin reset
+		}
+
 	private function getBaseWebServiceUrl() {
 		$webServiceURL     = $this->getWebServiceURL();
 		$urlParts          = parse_url($webServiceURL);
@@ -45,7 +57,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 	 */
 	function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
 		//Log the user in
-		list($userValid, $sessionToken) = $this->loginViaWebService($patron);
+		[$userValid, $sessionToken] = $this->loginViaWebService($patron);
 		if (!$userValid){
 			return 'Sorry, it does not look like you are logged in currently.  Please log in and try again';
 		}
@@ -61,8 +73,8 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 			foreach ($updatePinResponse['messageList'] as $errorMessage) {
 				$errors .= $errorMessage['message'] . ';';
 			}
-			global $logger;
-			$logger->log('Horizon API 3.23 Driver error updating user\'s Pin :'.$errors, PEAR_LOG_ERR);
+
+			$this->logger->error('Horizon API 3.23 Driver error updating user\'s Pin :'.$errors);
 			return 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.';
 		} elseif (!empty($updatePinResponse['sessionToken'])){
 			// Success response isn't particularly clear, but returning the session Token seems to indicate the pin updated. plb 8-15-2016
@@ -82,8 +94,8 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 	 */
 	function resetPin($patron, $newPin, $resetToken=null){
 		if (empty($resetToken)) {
-			global $logger;
-			$logger->log('No Reset Token passed to resetPin function', PEAR_LOG_ERR);
+
+			$this->logger->error('No Reset Token passed to resetPin function');
 			return array(
 				'error' => 'Sorry, we could not update your pin. The reset token is missing. Please try again later'
 			);
@@ -100,8 +112,8 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 			foreach ($changeMyPinResponse['messageList'] as $errorMessage) {
 				$errors .= $errorMessage['message'] . ';';
 			}
-			global $logger;
-			$logger->log('WCPL Driver error updating user\'s Pin :'.$errors, PEAR_LOG_ERR);
+
+			$this->logger->error('WCPL Driver error updating user\'s Pin :'.$errors);
 			return array(
 				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'
 			);
@@ -178,8 +190,8 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 					foreach ($resetPinResponse['messageList'] as $errorMessage){
 						$errors .= $errorMessage['message'] . ';';
 					}
-					global $logger;
-					$logger->log('WCPL Driver error updating user\'s Pin :' . $errors, PEAR_LOG_ERR);
+
+					$this->logger->error('WCPL Driver error updating user\'s Pin :' . $errors);
 				}
 				return $result;
 			}
@@ -235,13 +247,13 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 			if (json_last_error() == JSON_ERROR_NONE) {
 				return $response;
 			} else {
-				global $logger;
-				$logger->log('Error Parsing JSON response in Horizon 3.23 Driver: ' . json_last_error_msg(), PEAR_LOG_ERR);
+
+				$this->logger->error('Error Parsing JSON response in Horizon 3.23 Driver: ' . json_last_error_msg());
 				return false;
 			}
 		}else{
-			global $logger;
-			$logger->log('Curl problem in getWebServiceResponseUpdated', PEAR_LOG_WARNING);
+
+			$this->logger->warning('Curl problem in getWebServiceResponseUpdated');
 			return false;
 		}
 	}

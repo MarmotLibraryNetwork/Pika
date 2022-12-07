@@ -1004,6 +1004,8 @@ public class GroupedWorkIndexer {
 			GroupedReindexMain.addNoteToReindexLog("Starting to process " + numWorksToIndex + " grouped works");
 
 			ResultSet groupedWorks = getAllGroupedWorks.executeQuery();
+			GroupedReindexMain.addNoteToReindexLog("First work to be retrieved from DB");
+			long reportIntervalStart = new Date().getTime();
 			while (groupedWorks.next()) {
 				long   id                = groupedWorks.getLong("id");
 				String permanentId       = groupedWorks.getString("permanent_id");
@@ -1015,7 +1017,7 @@ public class GroupedWorkIndexer {
 				processGroupedWork(id, permanentId, grouping_category, siteMapsByScope, uniqueGroupedWorks);
 
 				numWorksProcessed++;
-				if (numWorksProcessed % 500 == 0){
+				if (numWorksProcessed % 1000 == 0){
 					GroupedReindexMain.updateNumWorksProcessed(numWorksProcessed);
 					if (fullReindex && (numWorksProcessed % 25000 == 0)){
 						//Testing shows that regular commits do seem to improve performance.
@@ -1027,7 +1029,10 @@ public class GroupedWorkIndexer {
 					}catch (Exception e){
 						logger.warn("Error committing changes", e);
 					}*/
-						GroupedReindexMain.addNoteToReindexLog(numWorksProcessed + " grouped works processed.");
+						long reportIntervalEnd = new Date().getTime();
+						long interval = ((reportIntervalEnd - reportIntervalStart)/1000)/60;
+						reportIntervalStart = reportIntervalEnd; // set up next interval
+						GroupedReindexMain.addNoteToReindexLog(numWorksProcessed + " grouped works processed. Interval for this batch (mins) : " + interval);
 					}
 				}
 				if (maxWorksToProcess != -1 && numWorksProcessed >= maxWorksToProcess){

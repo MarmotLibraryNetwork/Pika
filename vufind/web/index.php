@@ -109,8 +109,8 @@ if (!UserAccount::isLoggedIn() && ((isset($_POST['username']) && isset($_POST['p
 
 		// For Masquerade Follow up, start directly instead of a redirect
 		if ($_REQUEST['followupAction'] == 'Masquerade' && $_REQUEST['followupModule'] == 'MyAccount'){
-			global $logger;
-			$logger->log("Processing Masquerade after logging in", PEAR_LOG_ERR);
+
+			$this->logger->error("Processing Masquerade after logging in");
 			require_once ROOT_DIR . '/services/MyAccount/Masquerade.php';
 			$masquerade = new MyAccount_Masquerade();
 			$masquerade->launch();
@@ -256,8 +256,8 @@ if (!is_dir(ROOT_DIR . "/services/$module")){
 	}
 }
 $timer->logTime('Finished Index.php');
-$timer->writeTimings();
-$memoryWatcher->logMemory("Finished index.php");
+//$timer->writeTimings(); // The $timer destruct() will write out timing messages
+$memoryWatcher->logMemory('Finished index.php');
 $memoryWatcher->writeMemory();
 
 

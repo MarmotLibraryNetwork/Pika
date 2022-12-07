@@ -79,7 +79,8 @@
 		{elseif $property.type == 'text' || $property.type == 'folder'}
 			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}'>
 		{elseif $property.type == 'integer'}
-			<input type="number" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.max}max="{$property.max}"{/if} {if $property.min}min="{$property.min}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} {if $property.step}step='{$property.step}'{/if} class='form-control {if $property.required}required{/if}'>
+			<input type="number" name='{$propName}' id='{$propName}' value='{$propValue|escape}'{if isset($property.max)} max="{$property.max}"{/if}{if isset($property.min)} min="{$property.min}"{/if}{if $property.maxLength} maxlength='{$property.maxLength}'{/if}{if $property.size} size='{$property.size}'{/if}{if $property.step} step='{$property.step}'{/if} class='form-control{if $property.required} required{/if}{if isset($property.min)} minimum{/if}{if isset($property.max)} maximum{/if}'>
+				{*use isset() with property.min because it can be set to zero, which cause a false in if block*}
 		{elseif $property.type == 'url'}
 			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control url {if $property.required}required{/if}'>
 		{elseif $property.type == 'email'}

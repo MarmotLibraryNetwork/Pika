@@ -1910,11 +1910,11 @@ class MarcRecord extends IndexRecord {
 		global $timer;
 		if ($configArray['Catalog']['ils'] == 'Horizon'){
 			require_once ROOT_DIR . '/CatalogFactory.php';
-			global $logger;
-			$logger->log('fetching num of Holds from MarcRecord', PEAR_LOG_DEBUG);
+			global $pikaLogger;
+			$pikaLogger->debug('fetching num of Holds from MarcRecord');
 
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
-//			$logger->log('$catalog :'.var_export($catalog, true), PEAR_LOG_DEBUG);
+//			$pikaLogger->debug('$catalog :'.var_export($catalog, true));
 			if (isset($catalog->status) && $catalog->status){
 				$this->numHolds = $catalog->getNumHoldsFromRecord($this->getUniqueID());
 			}else{

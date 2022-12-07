@@ -778,8 +778,8 @@ class GroupedWork_AJAX extends AJAXHandler {
 						'result'  => false,
 						'message' => 'Your e-mail message could not be sent due to an unknown error.',
 					];
-					global $logger;
-					$logger->log("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body", PEAR_LOG_ERR);
+
+					$this->logger->error("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body");
 				}
 			}else{
 				$result = [
@@ -841,8 +841,8 @@ class GroupedWork_AJAX extends AJAXHandler {
 						'result'  => false,
 						'message' => 'Your e-mail message could not be sent due to an unknown error.',
 					];
-					global $logger;
-					$logger->log("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body", PEAR_LOG_ERR);
+
+					$this->logger->error("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body");
 				}
 			}else{
 				$result = [

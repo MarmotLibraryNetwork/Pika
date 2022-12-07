@@ -58,7 +58,7 @@
 	                    {/if}
 											<a href="#" onclick="$('#usernameHelp').toggle()">What is this?</a>
 											<div id="usernameHelp" style="display:none">
-												A username is an optional feature. If you set one, your username will be your alias on hold slips and can also be used to log into your account in place of your card number.  A username can be set, reset or removed from the “Account Settings” section of your online account. Usernames must be between 6 and 25 characters (letters and number only, no special characters).
+												A username is an optional feature. If you set one, your username can be used to log into your account instead of your library card number. A username can be set, reset or removed from the “Account Settings” section of your online account. Usernames must be between 6 and 25 characters (letters and number only, no special characters).
 											</div>
 										</div>
 									</div>

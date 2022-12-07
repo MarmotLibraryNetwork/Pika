@@ -1,4 +1,5 @@
 {strip}
+	<button class="btn btn-default btn-sm" onclick="$('table.logEntryDetails a.accordion-toggle.collapsed').click()">Open All Log Entries</button>
 <div class="table-responsive">
 	<table class="logEntryDetails table table-hover table-condensed">
 		<thead>

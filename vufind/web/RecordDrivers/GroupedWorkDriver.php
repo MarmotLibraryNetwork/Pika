@@ -27,14 +27,15 @@
  * Date: 11/26/13
  * Time: 1:51 PM
  */
-
+use \Pika\Logger;
 require_once ROOT_DIR . '/RecordDrivers/Interface.php';
+
 
 class GroupedWorkDriver extends RecordInterface {
 
 	protected $fields;
 	public $isValid = true;
-
+	private $logger;
 	/**
 	 * These are captions corresponding with Solr fields for use when displaying
 	 * snippets.
@@ -77,6 +78,9 @@ class GroupedWorkDriver extends RecordInterface {
 	 * @param array|string $indexFields  An array of the solr document fields, or grouped work Id as a string
 	 */
 	public function __construct($indexFields){
+
+		$this->logger = new Logger(__CLASS__);
+
 		if (is_string($indexFields)){
 			$id = $indexFields;
 			$id = str_replace('groupedWork:', '', $id);
@@ -1130,8 +1134,8 @@ class GroupedWorkDriver extends RecordInterface {
 										$samePikaCache->pid         = $firstObjectDriver->getUniqueID();
 										$numUpdates                 = $samePikaCache->update();
 										if ($numUpdates == 0){
-											global $logger;
-											$logger->log('Did not update same pika cache ' . print_r($samePikaCache->_lastError, true), PEAR_LOG_ERR);
+											global $pikaLogger;
+											$pikaLogger->error('Did not update same pika cache ' . print_r($samePikaCache->_lastError, true));
 										}
 									}
 									GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $archiveLink;
@@ -1202,8 +1206,8 @@ class GroupedWorkDriver extends RecordInterface {
 								$samePikaCache->pid         = $firstObjectDriver->getUniqueID();
 								$numUpdates                 = $samePikaCache->update();
 								if ($numUpdates == 0){
-									global $logger;
-									$logger->log("Did not update same pika cache " . print_r($samePikaCache->_lastError, true), PEAR_LOG_ERR);
+									global $pikaLogger;
+									$pikaLogger->error("Did not update same pika cache " . print_r($samePikaCache->_lastError, true));
 								}
 							}
 							GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $archiveLink;
@@ -1485,8 +1489,8 @@ class GroupedWorkDriver extends RecordInterface {
 				if (empty($relatedManifestations[$curRecord['format']]['eContentSource'])){
 					$relatedManifestations[$curRecord['format']]['eContentSource'] = $curRecord['eContentSource'];
 				}elseif ($curRecord['eContentSource'] != $relatedManifestations[$curRecord['format']]['eContentSource']){
-					global $logger;
-					$logger->log("Format Manifestation has multiple econtent sources containing record {$curRecord['id']}", PEAR_LOG_WARNING);
+
+					$this->logger->warning("Format Manifestation has multiple econtent sources containing record {$curRecord['id']}");
 				}
 			}
 			if (!$relatedManifestations[$curRecord['format']]['available'] && $curRecord['available']){

@@ -34,6 +34,7 @@ public class IndexingProfile {
 	String  marcPath;
 	String  filenamesToInclude;
 	String  marcEncoding;
+	Long minMarcFileSize = null;
 	String  individualMarcPath;
 	int     numCharsToCreateFolderFrom;
 	boolean createFolderFromLeadingCharacters;
@@ -130,6 +131,10 @@ public class IndexingProfile {
 		String iTypesToSuppress = indexingProfileRS.getString("iTypesToSuppress");
 		if (iTypesToSuppress != null && iTypesToSuppress.length() > 0) {
 			this.iTypesToSuppressPattern = Pattern.compile(iTypesToSuppress);
+		}
+		Long minMarcFileSize = (Long) indexingProfileRS.getObject("minMarcFileSize");
+		if (minMarcFileSize != null){
+			this.minMarcFileSize = minMarcFileSize;
 		}
 
 

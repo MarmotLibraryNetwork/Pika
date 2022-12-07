@@ -30,7 +30,6 @@ global $errorHandlingEnabled;
 $errorHandlingEnabled = true;
 
 $startTime = microtime(true);
-require_once ROOT_DIR . '/sys/Logger.php';
 require_once ROOT_DIR . '/sys/PEAR_Singleton.php';
 PEAR_Singleton::init();
 
@@ -48,9 +47,7 @@ $memoryWatcher = new MemoryWatcher();
 $pikaLogger = new Pika\Logger('Pika', true);
 $timer->logTime("Initialized Pika\Logger");
 
-// deprecated logger
-global $logger;
-$logger = new Logger();
+
 $timer->logTime("Read Config");
 
 //global $app;
@@ -238,9 +235,8 @@ function handlePEARError($error, $method = null){
 		5 => $baseError . $detailedServer . $detailedBacktrace
 	];
 
-
-	global $logger;
-	$logger->log($errorDetails, PEAR_LOG_ERR);
+	global $pikaLogger;
+	$pikaLogger->error("Pear error", $errorDetails);
 
 	exit();
 }
@@ -409,11 +405,11 @@ function loadSearchInformation(){
 	$indexingProfiles = $memCache->get($memCacheKey);
 	if ($indexingProfiles === false || isset($_REQUEST['reload'])){
 		$indexingProfiles = IndexingProfile::getAllIndexingProfiles();
-//		global $logger;
-//		$logger->log("Updating memcache variable {$instanceName}_indexing_profiles", PEAR_LOG_DEBUG);
+//		global $pikaLogger;
+//		$pikaLogger->debug("Updating memcache variable {$instanceName}_indexing_profiles");
 		if (!$memCache->set($memCacheKey, $indexingProfiles, 0, $configArray['Caching']['indexing_profiles'])) {
-			global $logger;
-			$logger->log("Failed to update memcache variable $memCacheKey", PEAR_LOG_ERR);
+			global $pikaLogger;
+			$pikaLogger->error("Failed to update memcache variable $memCacheKey");
 		};
 	}
 }

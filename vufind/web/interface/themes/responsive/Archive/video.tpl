@@ -8,7 +8,7 @@
 		</h2>
 
 		{if $canView}
-			<video width="100%" controls poster="{$medium_image}" id="player" oncontextmenu="return false;">
+			<video width="100%" controls poster="{$medium_image}" id="video-player" oncontextmenu="return false;">
 				<source src="{$videoLink}" type="video/mp4">
 			</video>
 		{else}
@@ -38,14 +38,36 @@
 	</div>
 {/strip}
 <script type="text/javascript">
-	$().ready(function(){ldelim}
-		Pika.Archive.loadExploreMore('{$pid|urlencode}');
-		{rdelim});
-	{literal}
-	$(document).ready(function() {
-		let video = document.getElementById("player");
+		{literal}
+	$(function(){
+		Pika.Archive.loadExploreMore('{/literal}{$pid}{literal}');
+if (document.getElementById("audio-player")){
+		let audio = document.getElementById("audio-player");
+		audio.addEventListener('play', function(ev){
+			$.idleTimer('destroy');
+		});
+		audio.addEventListener('pause', function(ev){
+			var timeout;
+			if (Globals.loggedIn){
+				timeout = Globals.automaticTimeoutLength * 1000;
+			}else{
+				timeout = Globals.automaticTimeoutLengthLoggedOut * 1000;
+			}
+			if (timeout > 0){
+				$.idleTimer(timeout); // start the Timer
+			}
+		});
+	$(document).on("idle.idleTimer", function() {
+		$.idleTimer('destroy'); // turn off Timer, so that when it is re-started in will work properly
+		if (Globals.loggedIn) {
+			showLogoutMessage();
+		} else {
+			showRedirectToHomeMessage();
+		}
+	});
+}
+		let video = document.getElementById("video-player");
 		video.addEventListener('play', function(ev){
-
 			$.idleTimer('destroy');
 		});
 		video.addEventListener('pause', function(ev){
@@ -68,6 +90,6 @@
 				}
 			});
 		});
-	});
+		});
 	{/literal}
 </script>

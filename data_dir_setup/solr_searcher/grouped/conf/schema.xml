@@ -825,8 +825,6 @@
 		<!--TODO: Is there a reason to index the grouping_category ? -->
 		<!--TODO: Is there a reason to have this stored -->
 		<dynamicField name="format_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
-		<field name="format_boost" type="integer" indexed="true" stored="true" multiValued="false" omitNorms="true" default="1"/>
-		<!--TODO: leaving the original field till the php side can switched over to using the dynamic field-->
 		<dynamicField name="format_boost_*" type="integer" indexed="false" stored="true" multiValued="false" omitNorms="true"/>
 		<dynamicField name="format_category_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
 
@@ -964,6 +962,9 @@
 		<!-- All MARC tags 035a
 		 $a - System control number - MARC code (enclosed in parentheses) of the organization originating the system control number, followed immediately by the number.
 		 -->
+		<!-- oclc field is only searched directly with Pika Keyword Proper searchspec.
+		oclc numbers also get added to catch-all keyword field.
+		-->
 
 		<!--
 		primary_isbn, isbn, issn, primary_upc, & upc were all type="text-proper".

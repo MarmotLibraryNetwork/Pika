@@ -30,10 +30,12 @@ require_once ROOT_DIR . '/services/Archive/Object.php';
 
 class Archive_Exhibit extends Archive_Object {
 
+
 	function launch(){
 		global $interface;
 		global $configArray;
 		global $timer;
+
 
 		$fedoraUtils = FedoraUtils::getInstance();
 
@@ -314,7 +316,7 @@ class Archive_Exhibit extends Archive_Object {
 	function loadRelatedObjects($displayType, $additionalCollections){
 		global $interface;
 		global $timer;
-		global $logger;
+		global $pikaLogger;
 		$fedoraUtils = FedoraUtils::getInstance();
 		/** @var SearchObject_Islandora $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
@@ -424,7 +426,7 @@ class Archive_Exhibit extends Archive_Object {
 										}
 										$timer->logTime('Loaded information about related place');
 									} else {
-										$logger->log('Failed to initialize driver for place entity' . $mappedPlace['pid'], PEAR_LOG_ERR);
+										$this->logger->error('Failed to initialize driver for place entity' . $mappedPlace['pid']);
 									}
 								}
 							}else{
@@ -513,7 +515,7 @@ class Archive_Exhibit extends Archive_Object {
 				$interface->assign('totalMappedLocations', $totalMappedLocations);
 			}else{
 				$_SESSION['exhibitSearchId'] = $lastExhibitObjectsSearch;
-				$logger->log("Setting exhibit search id to $lastExhibitObjectsSearch", PEAR_LOG_DEBUG);
+				$this->logger->debug("Setting exhibit search id to $lastExhibitObjectsSearch");
 
 				$displayMode = $this->archiveCollectionDisplayMode();
 				$this->setShowCovers();
@@ -572,16 +574,16 @@ class Archive_Exhibit extends Archive_Object {
 	}
 
 	private function startExhibitContext(){
-		global $logger;
+		global $pikaLogger;
 
 		$_SESSION['ExhibitContext']   = $this->recordDriver->getUniqueID(); // Set Exhibit object ID
 		$_COOKIE['exhibitNavigation'] = true; // Make sure exhibit context isn't cleared when loading the exhibit
 		if (!empty($_REQUEST['placePid'])){ // May never be actually set here.
 			// Add the place PID to the session if this is a Map Exhibit
 			$_SESSION['placePid'] = $_REQUEST['placePid'];
-			$logger->log("Starting exhibit context " . $this->recordDriver->getUniqueID() . " place {$_SESSION['placePid']}", PEAR_LOG_DEBUG);
+			$pikaLogger->debug("Starting exhibit context " . $this->recordDriver->getUniqueID() . " place {$_SESSION['placePid']}");
 		}else{
-			$logger->log("Starting exhibit context " . $this->recordDriver->getUniqueID() . " no place", PEAR_LOG_DEBUG);
+			$pikaLogger->debug("Starting exhibit context " . $this->recordDriver->getUniqueID() . " no place");
 			$_SESSION['placePid']   = null;
 			$_SESSION['placeLabel'] = null;
 		}

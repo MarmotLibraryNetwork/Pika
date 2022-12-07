@@ -9,7 +9,7 @@
 
 		{if $canView}
 			<img src="{$medium_image}" class="img-responsive">
-			<audio width="100%" controls id="player" class="copy-prevention" oncontextmenu="return false;">
+			<audio controls id="audio-player" oncontextmenu="return false;">
 				<source src="{$audioLink}" type="audio/mpeg">
 			</audio>
 
@@ -39,14 +39,12 @@
 	</div>
 {/strip}
 <script type="text/javascript">
-	$().ready(function(){ldelim}
-		Pika.Archive.loadExploreMore('{$pid|urlencode}');
-		{rdelim});
-	{literal}
-	$(document).ready(function() {
-		let audio = document.getElementById("player");
-		audio.addEventListener('play', function(ev){
+		{literal}
+		$(function(){
+		Pika.Archive.loadExploreMore('{/literal}{$pid}{literal}');
 
+		let audio = document.getElementById("audio-player");
+		audio.addEventListener('play', function(ev){
 			$.idleTimer('destroy');
 		});
 		audio.addEventListener('pause', function(ev){
@@ -69,6 +67,32 @@
 				}
 			});
 		});
+		if(document.getElementById("video-player")){
+			let video = document.getElementById("video-player");
+			video.addEventListener('play', function(ev){
+				$.idleTimer('destroy');
+			});
+			video.addEventListener('pause', function(ev){
+				var timeout;
+				if (Globals.loggedIn){
+					timeout = Globals.automaticTimeoutLength * 1000;
+				}else{
+					timeout = Globals.automaticTimeoutLengthLoggedOut * 1000;
+				}
+				if (timeout > 0){
+					$.idleTimer(timeout); // start the Timer
+				}
+
+				$(document).on("idle.idleTimer", function(){
+					$.idleTimer('destroy'); // turn off Timer, so that when it is re-started in will work properly
+					if (Globals.loggedIn){
+						showLogoutMessage();
+					}else{
+						showRedirectToHomeMessage();
+					}
+				});
+			});
+		}
 	});
 	{/literal}
 </script>

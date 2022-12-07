@@ -67,6 +67,7 @@ class Location extends DB_DataObject {
 	public $repeatInProspector;
 	public $repeatInWorldCat;
 	public $repeatInOverdrive;
+	public $repeatInAlternateOverdriveLibrary;
 	public $systemsToRepeatIn;
 	public $homeLink;
 	public $defaultPType;
@@ -243,7 +244,6 @@ class Location extends DB_DataObject {
 						 ['property' => 'repeatInOnlineCollection', 'type' => 'checkbox', 'label' => 'Repeat In Online Collection', 'description' => 'Turn on to allow repeat search in the Online Collection.', 'hideInLists' => true, 'default' => false],
 						 ['property' => 'repeatInProspector', 'type' => 'checkbox', 'label' => 'Repeat In ' . $innReachEncoreName, 'description' => 'Turn on to allow repeat search in ' . $innReachEncoreName . ' functionality.', 'hideInLists' => true, 'default' => false],
 						 ['property' => 'repeatInWorldCat', 'type' => 'checkbox', 'label' => 'Repeat In WorldCat', 'description' => 'Turn on to allow repeat search in WorldCat functionality.', 'hideInLists' => true, 'default' => false],
-						 ['property' => 'repeatInOverdrive', 'type' => 'checkbox', 'label' => 'Repeat In Overdrive', 'description' => 'Turn on to allow repeat search in Overdrive functionality.', 'hideInLists' => true, 'default' => false],
 					 ],
 					],
 					[
@@ -420,10 +420,12 @@ class Location extends DB_DataObject {
 				'property' => 'overdriveSection', 'type' => 'section', 'label' => 'OverDrive', 'hideInLists' => true,
 				'helpLink' => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
 				'properties' => [
-					'enableOverdriveCollection' => ['property' => 'enableOverdriveCollection', 'type' => 'checkbox', 'label' => 'Enable Overdrive Collection', 'description' => 'Whether or not titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
-					'includeOverDriveAdult'     => ['property' => 'includeOverDriveAdult', 'type' => 'checkbox', 'label' => 'Include Adult Titles', 'description' => 'Whether or not adult titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
-					'includeOverDriveTeen'      => ['property' => 'includeOverDriveTeen', 'type' => 'checkbox', 'label' => 'Include Teen Titles', 'description' => 'Whether or not teen titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
-					'includeOverDriveKids'      => ['property' => 'includeOverDriveKids', 'type' => 'checkbox', 'label' => 'Include Kids Titles', 'description' => 'Whether or not kids titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
+					'enableOverdriveCollection'         => ['property' => 'enableOverdriveCollection', 'type' => 'checkbox', 'label' => 'Enable Overdrive Collection', 'description' => 'Whether or not titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
+					'includeOverDriveAdult'             => ['property' => 'includeOverDriveAdult', 'type' => 'checkbox', 'label' => 'Include Adult Titles', 'description' => 'Whether or not adult titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
+					'includeOverDriveTeen'              => ['property' => 'includeOverDriveTeen', 'type' => 'checkbox', 'label' => 'Include Teen Titles', 'description' => 'Whether or not teen titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
+					'includeOverDriveKids'              => ['property' => 'includeOverDriveKids', 'type' => 'checkbox', 'label' => 'Include Kids Titles', 'description' => 'Whether or not kids titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
+					'repeatInOverdrive'                 => ['property' => 'repeatInOverdrive', 'type' => 'checkbox', 'label' => 'Repeat In Overdrive', 'description' => 'Turn on to allow repeat search in Overdrive functionality.', 'hideInLists' => true, 'default' => false],
+					'repeatInAlternateOverdriveLibrary' => ['property' => 'repeatInAlternateOverdriveLibrary', 'type' => 'text', 'label' => 'Repeat In Alternate Overdrive Libraries', 'description' => 'A list of the alternate OverDrive library codes from the OverDrive URL that you would like to repeat search in separated by pipes |.', 'hideInLists' => true],
 				],
 			],
 

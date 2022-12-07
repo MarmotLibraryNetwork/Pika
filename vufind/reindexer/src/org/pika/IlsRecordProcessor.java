@@ -253,17 +253,22 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	private void loadTimeToReshelve(Connection pikaConn, long id) throws SQLException{
-		PreparedStatement getTimesToReshelveStmt = pikaConn.prepareStatement("SELECT * FROM time_to_reshelve WHERE indexingProfileId = ? ORDER by weight");
-		getTimesToReshelveStmt.setLong(1, id);
-		ResultSet timesToReshelveRS = getTimesToReshelveStmt.executeQuery();
-		while (timesToReshelveRS.next()){
-			TimeToReshelve timeToReshelve = new TimeToReshelve();
-			timeToReshelve.setLocations(timesToReshelveRS.getString("locations"));
-			timeToReshelve.setNumHoursToOverride(timesToReshelveRS.getLong("numHoursToOverride"));
-			timeToReshelve.setStatus(timesToReshelveRS.getString("status"));
-			timeToReshelve.setGroupedStatus(timesToReshelveRS.getString("groupedStatus"));
-			timesToReshelve.add(timeToReshelve);
+	private void loadTimeToReshelve(Connection pikaConn, long indexingProfileId){
+		try (PreparedStatement getTimesToReshelveStmt = pikaConn.prepareStatement("SELECT * FROM time_to_reshelve WHERE indexingProfileId = ? ORDER by weight")) {
+			getTimesToReshelveStmt.setLong(1, indexingProfileId);
+			try (ResultSet timesToReshelveRS = getTimesToReshelveStmt.executeQuery()) {
+				while (timesToReshelveRS.next()) {
+					TimeToReshelve timeToReshelve = new TimeToReshelve();
+					timeToReshelve.setLocations(timesToReshelveRS.getString("locations"));
+					timeToReshelve.setNumHoursToOverride(timesToReshelveRS.getLong("numHoursToOverride"));
+					timeToReshelve.setStatusToOverride(timesToReshelveRS.getString("statusCodeToOverride"));
+					timeToReshelve.setStatus(timesToReshelveRS.getString("status"));
+					timeToReshelve.setGroupedStatus(timesToReshelveRS.getString("groupedStatus"));
+					timesToReshelve.add(timeToReshelve);
+				}
+			}
+		} catch (SQLException e){
+			logger.warn("Error loading time to reshelve rules", e);
 		}
 	}
 
@@ -789,6 +794,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 		if (lastCheckInFormatter == null && lastCheckInFormat != null && lastCheckInFormat.length() > 0){
 			lastCheckInFormatter = new SimpleDateFormat(lastCheckInFormat);
+			lastCheckInFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+			// Assume last check in dates are set in zulu time.
+			// This is needed for timeToReshelve intervals to be calculated correctly
 		}
 		ItemInfo itemInfo = new ItemInfo();
 		//Load base information from the Marc Record
@@ -993,17 +1001,23 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	String getOverriddenStatus(ItemInfo itemInfo, boolean groupedStatus) {
 		String overriddenStatus = null;
-		if (itemInfo.getLastCheckinDate() != null) {
+		if (timesToReshelve.size() > 0 && itemInfo.getLastCheckinDate() != null) {
 			for (TimeToReshelve timeToReshelve : timesToReshelve) {
-				if (timeToReshelve.getLocationsPattern().matcher(itemInfo.getLocationCode()).matches()) {
-					long now = new Date().getTime();
-					if (now - itemInfo.getLastCheckinDate().getTime() <= timeToReshelve.getNumHoursToOverride() * 60 * 60 * 1000) {
-						if (groupedStatus){
-							overriddenStatus = timeToReshelve.getGroupedStatus();
-						} else{
-							overriddenStatus = timeToReshelve.getStatus();
+				if (itemInfo.getStatusCode().equalsIgnoreCase(timeToReshelve.getStatusToOverride())) {
+					// Compare statuses first since that is simpler than location code regexes
+					if (timeToReshelve.getLocationsPattern().matcher(itemInfo.getLocationCode()).matches()) {
+						long now = new Date().getTime();
+						// Only get the time if a timeToReshelve rule applies, since this will be exception rather than norm.
+						// Considered using the indexing start time, so that one value is used,
+						// but a full reindex may run over many hours so the current time is more appropriate.
+						if (now - itemInfo.getLastCheckinDate().getTime() <= timeToReshelve.getNumHoursToOverride() * 60 * 60 * 1000) {
+							if (groupedStatus){
+								overriddenStatus = timeToReshelve.getGroupedStatus();
+							} else{
+								overriddenStatus = timeToReshelve.getStatus();
+							}
+							break;
 						}
-						break;
 					}
 				}
 			}

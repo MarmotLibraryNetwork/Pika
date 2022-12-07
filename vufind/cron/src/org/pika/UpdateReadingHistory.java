@@ -156,9 +156,13 @@ public class UpdateReadingHistory implements IProcessHandler {
 
 //				processLog.incUpdated(); // other calls to this seem to be counting reading history entries created
 				processLog.saveToDatabase(pikaConn, logger);
-				try {
+				if (logger.isInfoEnabled() && loadedHistoriesUpdated % 1000 == 0) {
+					logger.info(loadedHistoriesUpdated + " loaded histories processed");
+				}
+
+					try {
 					// Add a brief pause between users to allow Solr & MySQL a chance to rest during Reading History Update
-					Thread.sleep(400);
+					Thread.sleep(200);
 				} catch (Exception e) {
 					logger.warn("Sleep was interrupted while processing reading history for user.");
 				}
@@ -194,6 +198,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 		boolean hadError  = false;
 		boolean additionalRoundRequired;
 		String  nextRound = "";
+		int numInitialReadingHistoryEntries = 0;
 		if (barcode != null && !barcode.isEmpty()) {
 				try {
 					String token = md5(barcode);
@@ -239,11 +244,13 @@ public class UpdateReadingHistory implements IProcessHandler {
 												processReadingHistoryTitle(readingHistoryItem, userId);
 
 											}
+											numInitialReadingHistoryEntries += readingHistoryItems.length();
 										} else if (result.get("readingHistory").getClass() == JSONArray.class) {
 											JSONArray readingHistoryItems = result.getJSONArray("readingHistory");
 											for (int i = 0; i < readingHistoryItems.length(); i++) {
 												processReadingHistoryTitle(readingHistoryItems.getJSONObject(i), userId);
 											}
+											numInitialReadingHistoryEntries += readingHistoryItems.length();
 										} else {
 											processLog.incErrors();
 											processLog.addNote("Unexpected JSON for patron reading history " + result.get("readingHistory").getClass());
@@ -268,7 +275,8 @@ public class UpdateReadingHistory implements IProcessHandler {
 								logger.error(message, e);
 								logger.error(patronDataRaw); // Display the raw response when we have a JSON exception
 								processLog.incErrors();
-								processLog.addNote(message + e);
+//								processLog.addNote(message); // removed error message.
+								//TODO: I'm not sure adding this to the cron log entries is needed, especially on test where most errors are JSON errors
 								hadError = true;
 							}
 						} else {
@@ -290,6 +298,9 @@ public class UpdateReadingHistory implements IProcessHandler {
 		} else {
 			hadError = true;
 			logger.error("A pika user's barcode was empty for user Id " + userId);
+		}
+		if (logger.isInfoEnabled()){
+			logger.info("Loaded " + numInitialReadingHistoryEntries + " initial reading history entries for user Id " + userId);
 		}
 		return !hadError;
 	}
@@ -434,7 +445,8 @@ public class UpdateReadingHistory implements IProcessHandler {
 						logger.error(message, e);
 						logger.error(patronDataJson);
 						processLog.incErrors();
-						processLog.addNote(message + e);
+//						processLog.addNote(message + e);
+						//TODO: I'm not sure adding this to the cron log entries is needed, especially on test where most errors are JSON errors
 						loadeHistoriesFailedToUpdate++;
 					}
 				} else {

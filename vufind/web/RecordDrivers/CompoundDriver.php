@@ -63,9 +63,9 @@ WHERE {
 EOQ;
 
 		$queryResults = $fedoraUtils->doSparqlQuery($query);
-		global $logger;
-		$logger->log("query for Book contents", PEAR_LOG_DEBUG);
-		//$logger->log($queryResults, PEAR_LOG_DEBUG);
+		global $pikaLogger;
+		$pikaLogger->debug("query for Book contents");
+		//$pikaLogger->debug($queryResults);
 		// since $queryResults is an array comment out to prevent php notice
 
 		if (count($queryResults) == 0){
@@ -78,8 +78,8 @@ EOQ;
 			];
 			$sectionObject  = $fedoraUtils->getObject($this->getUniqueID());
 			$sectionDetails = $this->loadPagesForSection($sectionObject, $sectionDetails);
-			$logger->log("no result section details for this object" . $this->getUniqueID(), PEAR_LOG_DEBUG);
-			$logger->log($sectionDetails, PEAR_LOG_DEBUG);
+			$pikaLogger->debug("no result section details for this object" . $this->getUniqueID());
+			$pikaLogger->debug($sectionDetails);
 
 			$sections[$this->getUniqueID()] = $sectionDetails;
 		}else{
@@ -101,9 +101,10 @@ EOQ;
 			uasort($queryResults, $sort);
 
 			foreach ($queryResults as $result){
-				$logger->log("for loop", PEAR_LOG_DEBUG);
-				$logger->log($result, PEAR_LOG_DEBUG);
-
+				$pikaLogger->debug("for loop");
+				if(!empty($result)){
+					$pikaLogger->debug(implode(",", $result['object']));
+				}
 				$objectPid = $result['object']['value'];
 				//TODO: check access
 				/** @var FedoraObject $sectionObject */
@@ -171,9 +172,9 @@ ORDER BY ?page
 EOQ;
 
 		$results = $fedoraUtils->doSparqlQuery($query);
-		global $logger;
-		$logger->log("Pages for section with object id : " .$sectionObject->id, PEAR_LOG_DEBUG);
-		$logger->log($results, PEAR_LOG_DEBUG);
+		global $pikaLogger;
+		$pikaLogger->debug("Pages for section with object id : " .$sectionObject->id);
+		$pikaLogger->debug(implode(", ", $results));
 
 		// Get rid of the "extra" info...
 		$map   = function ($o){
@@ -186,8 +187,10 @@ EOQ;
 			return $o;
 		};
 		$pages = array_map($map, $results);
-		$logger->log($pages, PEAR_LOG_DEBUG);
-
+		if(!empty($pages))
+		{
+		$pikaLogger->debug($pages);
+		}
 		// Sort the pages into their proper order.
 		$sort = function ($a, $b){
 			$a = (is_array($a) && isset($a['page'])) ? $a['page'] : 0;

@@ -193,11 +193,14 @@ Pika.Lists = (function(){
 			$('#myListFormHead').submit();
 			return false;
 		},
-		citeListAction: function (id) {
-			return Pika.Account.ajaxLightbox('/MyAccount/AJAX?method=getCitationFormatsForm&listId=' + id, false);
+		citeListAction: function (id, page, pageSize, sort) {
+			return Pika.Account.ajaxLightbox('/MyAccount/AJAX?method=getCitationFormatsForm&listId=' + id + "&page=" + page + "&pagesize=" + pageSize + "&sort=" +sort, false);
 		},
 
-		processCiteListForm: function(){
+		processCiteListForm: function(page, pageSize, sort){
+			$('#myListpage').val(page);
+			$('#myListPageSize').val(pageSize);
+			$('#myListsort').val(sort);
 			$("#citeListForm").submit();
 		},
 

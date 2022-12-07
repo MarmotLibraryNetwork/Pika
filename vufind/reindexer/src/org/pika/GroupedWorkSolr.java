@@ -265,10 +265,8 @@ public class GroupedWorkSolr implements Cloneable {
 			doc.addField("author_display", displayAuthor);
 		}
 
-		//format
+		// grouping
 		doc.addField("grouping_category", groupingCategory);
-		doc.addField("format_boost", getTotalFormatBoost());
-		//TODO: Remove after the dynamic field handling on the php side is set up
 
 		//Publication related fields
 		doc.addField("publisher", publishers);
@@ -330,7 +328,9 @@ public class GroupedWorkSolr implements Cloneable {
 				long publicationTime   = publicationDate.getTime().getTime();
 				long bibDaysSinceAdded = (indexTime - publicationTime) / (long)(1000 * 60 * 60 * 24);
 				if (bibDaysSinceAdded < 0) {
-					logger.warn("Using Publication date to calculate Days since added value " + bibDaysSinceAdded + " is negative for grouped work " + id);
+					if (groupedWorkIndexer.fullReindex) {
+						logger.warn("Using Publication date to calculate Days since added value " + bibDaysSinceAdded + " is negative for grouped work " + id);
+					}
 					bibDaysSinceAdded = 0;
 					doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
 					doc.addField("time_since_added", Util.getTimeSinceAddedForDate(Util.getIndexDate()));
@@ -426,24 +426,12 @@ public class GroupedWorkSolr implements Cloneable {
 		return primaryUpc;
 	}
 
-//TODO: Remove after the dynamic field handling on the php side is set up
-	private Long getTotalFormatBoost() {
-		long formatBoost = 0;
-		for (RecordInfo curRecord : relatedRecords.values()){
-			formatBoost += curRecord.getFormatBoost();
-		}
-		if (formatBoost == 0){
-			formatBoost = 1;
-		}
-		return formatBoost;
-	}
-
 	/**
 	 * @param scopeName label for scope
 	 * @return format boost value for each related record within this scope
 	 */
 	private long getScopedFormatBoost(String scopeName) {
-		long            formatBoost = 0;
+		long formatBoost = 0;
 		for (RecordInfo curRecord : relatedRecords.values()) {
 			if (curRecord.hasScope(scopeName)) {
 				formatBoost += curRecord.getFormatBoost();

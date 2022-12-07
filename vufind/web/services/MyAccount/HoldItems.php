@@ -54,7 +54,7 @@
 //		global $interface;
 //		global $configArray;
 //		$user = UserAccount::getLoggedInUser();
-//		global $logger;
+//		global $pikaLogger;
 //
 //		$ids = array();
 //		foreach ($selectedTitles as $recordId => $itemNumber){
@@ -92,7 +92,6 @@
 //
 //		$_SESSION['hold_message'] = $hold_message_data;
 //		if (isset($_SESSION['hold_referrer'])){
-//			$logger->log('Hold Referrer is set, redirecting to there.  type = ' . $_REQUEST['type'], PEAR_LOG_INFO);
 //			//Redirect for hold cancellation or update
 //			header("Location: " . $_SESSION['hold_referrer']);
 //			unset($_SESSION['hold_referrer']);
@@ -107,7 +106,6 @@
 //				}
 //			}
 //		}else{
-//			$logger->log('No referrer set, but there is a message to show, go to the main holds page', PEAR_LOG_INFO);
 //			header("Location: " . '/MyResearch/Holds');
 //		}
 //	}

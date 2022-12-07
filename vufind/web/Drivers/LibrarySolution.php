@@ -27,15 +27,18 @@
  */
 
 require_once ROOT_DIR . '/Drivers/ScreenScrapingDriver.php';
+use \Pika\Logger;
 class LibrarySolution extends ScreenScrapingDriver {
 	/** @var  AccountProfile $accountProfile */
 	public $accountProfile;
+	public $logger;
 
 	/**
 	 * @param AccountProfile $accountProfile
 	 */
 	public function __construct($accountProfile){
 		$this->accountProfile = $accountProfile;
+		$this->logger = new Logger(__CLASS__);
 	}
 
 	/**
@@ -102,8 +105,8 @@ class LibrarySolution extends ScreenScrapingDriver {
 
 					$user->setUserHomeLocations($homeBranchCode);
 				} else {
-					global $logger;
-					$logger->log('Library Solution Driver: No Home Library Location or Hold location found in account look-up. User : ' . $user->id, PEAR_LOG_ERR);
+
+					$this->logger->error('Library Solution Driver: No Home Library Location or Hold location found in account look-up. User : ' . $user->id);
 					// The code below will attempt to find a location for the library anyway if the homeLocation is already set
 				}
 
@@ -135,8 +138,8 @@ class LibrarySolution extends ScreenScrapingDriver {
 				return $user;
 			}else{
 				// bad or empty response; or json decoding error
-				global $logger;
-				$logger->log('Bad or Empty response for Library Solution Account Summary call during login', PEAR_LOG_ERR);
+
+				$this->logger->error('Bad or Empty response for Library Solution Account Summary call during login');
 				$timer->logTime("patron login failed");
 				return null;
 			}
@@ -387,8 +390,8 @@ class LibrarySolution extends ScreenScrapingDriver {
 				$loginSucceeded = false;
 			}
 		}else{
-			global $logger;
-			$logger->log("Unable to connect to LSS.  Received $loginResponse", PEAR_LOG_WARNING);
+
+			$this->logger->warning("Unable to connect to LSS.  Received $loginResponse");
 			$loginSucceeded = false;
 		}
 
@@ -663,8 +666,8 @@ class LibrarySolution extends ScreenScrapingDriver {
 
 	function updatePin($user, $oldPin, $newPin, $confirmNewPin){
 		/* var Logger $logger */
-		global $logger;
-		$logger->log('Call to updatePin(), function not implemented.', PEAR_LOG_WARNING);
+
+		$this->logger->warning('Call to updatePin(), function not implemented.');
 
 		return 'Can not update Pins';
 	}

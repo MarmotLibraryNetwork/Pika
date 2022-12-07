@@ -60,7 +60,7 @@
 
 					<div id="view-audio" style="display: none">
 						<img src="" class="img-responsive">
-						<audio width="100%" controls id="audio-player" oncontextmenu="return false;">
+						<audio controls id="audio-player" oncontextmenu="return false;">
 							<source src="" type="audio/mpeg" id="audio-player-src">
 						</audio>
 					</div>

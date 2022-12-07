@@ -88,8 +88,8 @@ class FedoraUtils {
 		try{
 			$object = $this->repository->getObject($pid);
 		}catch (Exception $e){
-			//global $logger;
-			//$logger->log("Could not find object $pid due to exception $e", PEAR_LOG_WARNING);
+			//global $pikaLogger;
+			//$pikaLogger->warn("Could not find object $pid due to exception $e");
 			$object = null;
 		}
 

@@ -21,6 +21,7 @@ use Pika\Logger;
 
 require_once ROOT_DIR . '/CatalogConnection.php';
 
+
 class CASAuthentication implements Authentication {
 	static $clientInitialized = false;
 	private $logger;
@@ -33,8 +34,8 @@ class CASAuthentication implements Authentication {
 		$this->initializeCASClient();
 
 		try{
-			global $logger;
-			$logger->log("Forcing CAS authentication", PEAR_LOG_DEBUG);
+
+			$this->logger->debug("Forcing CAS authentication");
 			$isValidated = phpCAS::forceAuthentication();
 			if ($isValidated){
 				$userAttributes = phpCAS::getAttributes();
@@ -46,8 +47,8 @@ class CASAuthentication implements Authentication {
 				return false;
 			}
 		}catch (CAS_AuthenticationException $e){
-			global $logger;
-			$logger->log("Error authenticating in CAS $e", PEAR_LOG_ERR);
+
+			$this->logger->error("Error authenticating in CAS $e");
 			$isValidated = false;
 		}
 
@@ -66,13 +67,13 @@ class CASAuthentication implements Authentication {
 			$this->initializeCASClient();
 
 			try{
-				global $logger;
-				$logger->log("Checking CAS Authentication", PEAR_LOG_DEBUG);
+
+				$this->logger->debug("Checking CAS Authentication");
 				$isValidated = phpCAS::checkAuthentication();
-				$logger->log("isValidated = ". ($isValidated ? 'true' : 'false'), PEAR_LOG_DEBUG);
+				$this->logger->debug("isValidated = ". ($isValidated ? 'true' : 'false'));
 			}catch (CAS_AuthenticationException $e){
-				global $logger;
-				$logger->log("Error validating account in CAS $e", PEAR_LOG_ERR);
+
+				$this->logger->error("Error validating account in CAS $e");
 				$isValidated = false;
 			}
 
@@ -85,7 +86,7 @@ class CASAuthentication implements Authentication {
 					$userId = $userAttributes['flcid'];
 					return $userId;
 				}else{
-					$logger->log("Did not find flcid in user attributes " . print_r($userAttributes, true), PEAR_LOG_WARNING);
+					$this->logger->warning("Did not find flcid in user attributes " . print_r($userAttributes, true));
 				}
 			}else{
 				return false;
@@ -96,9 +97,9 @@ class CASAuthentication implements Authentication {
 	}
 
 	public function logout() {
-		//global $logger;
+		//global $pikaLogger;
 		$this->initializeCASClient();
-		//$logger->log('Logging the user out from CAS', PEAR_LOG_INFO);
+		//$pikaLogger->log('Logging the user out from CAS');
 		phpCAS::logout();
 	}
 
@@ -112,8 +113,8 @@ class CASAuthentication implements Authentication {
 				phpCAS::setVerbose(true);
 			}
 
-			global $logger;
-			$logger->log("Initializing CAS Client", PEAR_LOG_DEBUG);
+
+			$this->logger->debug("Initializing CAS Client");
 
 			phpCAS::client(CAS_VERSION_3_0, $library->casHost, (int)$library->casPort, $library->casContext);
 

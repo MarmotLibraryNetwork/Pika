@@ -860,7 +860,7 @@ class uagent_info
 	}
 
 	function DetectMac(){
-		global $logger;
+
 		if (stripos($this->useragent, $this->deviceMacOSX) > -1){
 			return $this->true;
 		}else{

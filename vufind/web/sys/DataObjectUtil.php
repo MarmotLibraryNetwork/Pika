@@ -30,7 +30,7 @@ class DataObjectUtil {
 	 * @return array
 	 */
 	static function saveObject($structure, $dataType){
-		global $logger;
+		global $pikaLogger;
 		//Check to see if we have a new object or an exiting object to update
 		/** @var DB_DataObject $object */
 		$object = new $dataType();
@@ -141,7 +141,7 @@ class DataObjectUtil {
 	}
 
 	static function processProperty($object, $property){
-		global $logger;
+		global $pikaLogger;
 		$propertyName = $property['property'];
 		if (isset($property['changeRequiresReindexing']) && $property['type'] != 'oneToMany'){
 			$valueBefore = $object->$propertyName;
@@ -243,14 +243,14 @@ class DataObjectUtil {
 
 				}elseif (isset($_FILES[$propertyName])){
 					if (isset($_FILES[$propertyName]['error']) && $_FILES[$propertyName]["error"] == 4){
-						$logger->log("No file was uploaded for $propertyName", PEAR_LOG_DEBUG);
+						$pikaLogger->debug("No file was uploaded for $propertyName");
 						//No image supplied, use the existing value
 					}elseif (isset($_FILES[$propertyName]['error']) && $_FILES[$propertyName]["error"] > 0){
 						//return an error to the browser
-						$logger->log("Error in file upload for $propertyName", PEAR_LOG_ERR);
+						$pikaLogger->error("Error in file upload for $propertyName");
 					}elseif (in_array($_FILES[$propertyName]['type'], ['image/gif', 'image/jpeg', 'image/png'])){
 						//Make sure that the type is correct (jpg, png, or gif)
-						$logger->log("Processing uploaded file for $propertyName", PEAR_LOG_DEBUG);
+						$pikaLogger->debug("Processing uploaded file for $propertyName");
 						//Copy the full image to the files directory
 						//Filename is the name of the object + the original filename
 						global $configArray;
@@ -272,7 +272,7 @@ class DataObjectUtil {
 						$pathToThumbs = $destFolder . '/thumbnail';
 						$pathToMedium = $destFolder . '/medium';
 						$copyResult   = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
-						$logger->log("Copied file to $destFullPath", PEAR_LOG_DEBUG);
+						$pikaLogger->debug("Copied file to $destFullPath");
 
 						if ($copyResult){
 							$img    = imagecreatefromstring(file_get_contents($destFullPath));
@@ -280,7 +280,7 @@ class DataObjectUtil {
 							$height = imagesy($img);
 
 							if (isset($property['thumbWidth'])){
-								$logger->log("Creating thumbnails for $propertyName", PEAR_LOG_DEBUG);
+								$pikaLogger->debug("Creating thumbnails for $propertyName");
 								//Create a thumbnail if needed
 								$thumbWidth = $property['thumbWidth'];
 								$new_width  = $thumbWidth;
@@ -296,7 +296,7 @@ class DataObjectUtil {
 								imagejpeg($tmp_img, "{$pathToThumbs}/{$destFileName}");
 							}
 							if (isset($property['mediumWidth'])){
-								$logger->log("Creating medium sized image for $propertyName", PEAR_LOG_DEBUG);
+								$pikaLogger->debug("Creating medium sized image for $propertyName");
 								//Create a medium size if needed
 								$thumbWidth = $property['mediumWidth'];
 								$new_width  = $thumbWidth;
@@ -315,7 +315,7 @@ class DataObjectUtil {
 
 						//store the actual filename
 						$object->$propertyName = $destFileName;
-						$logger->log("Set $propertyName to $destFileName", PEAR_LOG_DEBUG);
+						$pikaLogger->debug("Set $propertyName to $destFileName");
 					}
 				}
 
@@ -337,14 +337,14 @@ class DataObjectUtil {
 						$destFullPath = $destFolder . '/' . $destFileName;
 						$copyResult   = copy($_FILES[$propertyName]['tmp_name'], $destFullPath);
 						if ($copyResult){
-							$logger->log("Copied file from {$_FILES[$propertyName]['tmp_name']} to $destFullPath", PEAR_LOG_INFO);
+							$pikaLogger->info("Copied file from {$_FILES[$propertyName]['tmp_name']} to $destFullPath");
 						}else{
-							$logger->log("Could not copy file from {$_FILES[$propertyName]['tmp_name']} to $destFullPath", PEAR_LOG_ERR);
+							$pikaLogger->error("Could not copy file from {$_FILES[$propertyName]['tmp_name']} to $destFullPath");
 							if (!file_exists($_FILES[$propertyName]['tmp_name'])){
-								$logger->log('  Uploaded file did not exist', PEAR_LOG_ERR);
+								$pikaLogger->error('  Uploaded file did not exist');
 							}
 							if (!is_writable($destFullPath)){
-								$logger->log('  Destination is not writable', PEAR_LOG_ERR);
+								$pikaLogger->error('  Destination is not writable');
 							}
 						}
 						//store the actual filename

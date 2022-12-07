@@ -134,7 +134,6 @@ class MyAccount_CheckedOut extends MyAccount{
 						$curTitle['renewResult']  = $renewResult;
 						$allCheckedOut[$sortKey]  = $curTitle;
 						unset($_SESSION['renew_message'][$itemBarcode]);
-						//$logger->log("Found renewal message in session for $itemBarcode", PEAR_LOG_INFO);
 					} else if ($itemId != null && isset($_SESSION['renew_message'][$itemId])) {
 						$renewMessage             = $_SESSION['renew_message'][$itemId]['message'];
 						$renewResult              = $_SESSION['renew_message'][$itemId]['success'];
@@ -142,7 +141,6 @@ class MyAccount_CheckedOut extends MyAccount{
 						$curTitle['renewResult']  = $renewResult;
 						$allCheckedOut[$sortKey]  = $curTitle;
 						unset($_SESSION['renew_message'][$itemId]);
-						//$logger->log("Found renewal message in session for $itemBarcode", PEAR_LOG_INFO);
 					} else {
 						$allCheckedOut[$sortKey] = $curTitle;
 						$renewMessage            = null;

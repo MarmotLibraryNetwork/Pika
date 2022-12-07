@@ -26,7 +26,7 @@ class BotChecker{
 	 */
 	public static function isRequestFromBot(){
 		if (BotChecker::$isBot == null){
-			global $logger;
+			global $pikaLogger;
 			global $timer;
 			global $memCache;
 			global $configArray;
@@ -45,7 +45,7 @@ class BotChecker{
 				}elseif (file_exists('../../sites/default/conf/bots.ini')){
 					$fhnd = fopen('../../sites/default/conf/bots.ini', 'r');
 				}else{
-					$logger->log("Did not find bots.ini file, cannot detect bots", PEAR_LOG_ERR);
+					$pikaLogger->error("Did not find bots.ini file, cannot detect bots");
 					return false;
 				}
 
@@ -63,13 +63,13 @@ class BotChecker{
 
 				$memCache->set("bot_by_user_agent_" . $userAgent, ($isBot ? 'TRUE' : 'FALSE'), 0, $configArray['Caching']['bot_by_user_agent']);
 				if ($isBot){
-					$logger->log("$userAgent is a bot", PEAR_LOG_DEBUG);
+					$pikaLogger->debug("$userAgent is a bot");
 				}else{
-					$logger->log("$userAgent is not a bot", PEAR_LOG_DEBUG);
+					$pikaLogger->debug("$userAgent is not a bot");
 				}
 				BotChecker::$isBot = $isBot;
 			}else{
-				//$logger->log("Got bot info from memcache $isBot", PEAR_LOG_DEBUG);
+				//$pikaLogger->debug("Got bot info from memcache $isBot");
 				BotChecker::$isBot = ($isBot === 'TRUE');
 			}
 

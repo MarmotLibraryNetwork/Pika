@@ -132,7 +132,7 @@
 					</div>
 					<div class="btn-group">
 
-						<button value="citeList" id="FavCite" class="btn btn-sm btn-default" onclick='return Pika.Lists.citeListAction("{$favList->id}")'>Generate Citations</button>
+						<button value="citeList" id="FavCite" class="btn btn-sm btn-default" onclick='return Pika.Lists.citeListAction({$favList->id},{$pageNum},{$pageSize},"{$listSort}")'>Generate Citations</button>
 
 						<div class="btn-group" role="group">
 

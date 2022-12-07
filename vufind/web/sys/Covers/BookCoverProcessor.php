@@ -46,10 +46,10 @@ class BookCoverProcessor {
 
 	/** @var  \Monolog\Logger $logger */
 	private $logger;
-	private $doCoverLogging;
+	private bool $doCoverLogging;
 	/** @var  Timer $timer */
 	private $timer;
-	private $doTimings;
+	private bool $doTimings;
 
 	function logTime($message){
 		if ($this->doTimings){
@@ -60,12 +60,15 @@ class BookCoverProcessor {
 	public function loadCover($configArray, $timer, $logger){
 		$this->configArray    = $configArray;
 		$this->timer          = $timer;
-		$this->doTimings      = $this->configArray['System']['coverTimings'];
+		$this->doTimings      = $this->configArray['System']['coverTimings'] ?? false;
 		$this->logger         = $logger;
-		$this->doCoverLogging = $this->configArray['System']['coverLogging'];
+		$this->doCoverLogging = $this->configArray['System']['coverLogging'] ?? false;
 
 		if ($this->doCoverLogging){
 			$this->logger->info('Starting to load cover');
+		}
+		if ($this->doTimings){
+			$this->timer->enableTimings(true); // Have to turn on the timer's switch as well as this one.
 		}
 		$this->bookCoverPath = $configArray['Site']['coverPath'];
 		if (!$this->loadParameters()){
@@ -462,7 +465,9 @@ class BookCoverProcessor {
 			],
 		]);
 
+		$this->logTime('Fetch image from external url');
 		if ($image = @file_get_contents($url, false, $context)){
+			$this->logTime('Fetched image from external url');
 			// Figure out file paths -- $tempFile will be used to store the downloaded
 			// image for analysis.  $finalFile will be used for long-term storage if
 			// $cache is true or for temporary display purposes if $cache is false.
@@ -577,13 +582,13 @@ class BookCoverProcessor {
 
 			}else{
 				if ($this->doCoverLogging){
-					$this->logger->info("Image is the correct size, not resizing.");
+					$this->logger->info('Image is the correct size, not resizing.');
 				}
 
 				// Conversion needed -- do some normalization for non-PNG images:
 				if ($type != IMAGETYPE_PNG){
 					if ($this->doCoverLogging){
-						$this->logger->info("Image is not a png, converting to png.");
+						$this->logger->info('Image is not a png, converting to png.');
 					}
 
 					$conversionOk = true;
@@ -628,13 +633,14 @@ class BookCoverProcessor {
 			if (!$cache){
 				@unlink($finalFile);
 			}
-			$this->logTime("Finished processing image url");
+			$this->logTime('Finished processing image url');
 
 			return true;
 		}else{
 			if ($this->doCoverLogging){
 				$this->logger->info("Could not load the file as an image $url");
 			}
+			$this->logTime('Failed to fetch image from external url');
 			return false;
 		}
 	}
@@ -647,18 +653,18 @@ class BookCoverProcessor {
 	private function returnImage($localPath){
 		header('Content-type: image/png');
 		if ($this->addModificationHeaders($localPath)){
-			$this->logTime("Added modification headers");
+			$this->logTime('Added modification headers');
 			$this->addCachingHeader();
-			$this->logTime("Added caching headers");
+			$this->logTime('Added caching headers');
 			ob_clean();
 			flush();
 			readfile($localPath);
 			if ($this->doCoverLogging){
 				$this->logger->debug("Read file $localPath");
 			}
-			$this->logTime("echo file $localPath");
+			$this->logTime("read file $localPath");
 		}else{
-			$this->logTime("Added modification headers");
+			$this->logTime('Added modification headers');
 		}
 	}
 
@@ -668,7 +674,7 @@ class BookCoverProcessor {
 		header("Cache-Control: maxage=" . $expires);
 		header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $expires) . ' GMT');
 		if ($this->doCoverLogging){
-			$this->logger->info("Added caching header");
+			$this->logger->info('Added caching header');
 		}
 	}
 
@@ -690,7 +696,7 @@ class BookCoverProcessor {
 		$if_none_match     = isset($_SERVER['HTTP_IF_NONE_MATCH']) ? stripslashes($_SERVER['HTTP_IF_NONE_MATCH']) : false;
 		if (!$if_modified_since && !$if_none_match){
 			if ($this->doCoverLogging){
-				$this->logger->info("Caching headers not sent, return full image");
+				$this->logger->info('Caching headers not sent, return full image');
 			}
 			return true;
 		}
@@ -703,13 +709,13 @@ class BookCoverProcessor {
 		}
 		if ($if_modified_since && $if_modified_since != $last_modified){
 			if ($this->doCoverLogging){
-				$this->logger->info("Last modified changed");
+				$this->logger->info('Last modified changed');
 			}
 			return true; // if-modified-since is there but doesn't match
 		}
 		// Nothing has changed since their last request - serve a 304 and exit
 		if ($this->doCoverLogging){
-			$this->logger->info("File has not been modified");
+			$this->logger->info('File has not been modified');
 		}
 		header('HTTP/1.0 304 Not Modified');
 		return false;
@@ -1104,7 +1110,7 @@ class BookCoverProcessor {
 	 */
 	private function getCoverFromMarc($marcRecord = null){
 		if ($this->doCoverLogging){
-			$this->logger->info("Looking for picture as part of 856 tag.");
+			$this->logger->info('Looking for picture as part of 856 tag.');
 		}
 
 		if ($marcRecord === null){
@@ -1131,12 +1137,12 @@ class BookCoverProcessor {
 		$marcFields = $marcRecord->getFields('962');
 		if ($marcFields){
 			if ($this->doCoverLogging){
-				$this->logger->info("Found 962 field");
+				$this->logger->info('Found 962 field');
 			}
 			foreach ($marcFields as $marcField){
 				if ($marcField->getSubfield('u')){
 					if ($this->doCoverLogging){
-						$this->logger->info("Found 962u subfield");
+						$this->logger->info('Found 962u subfield');
 					}
 					$subfield_u = $marcField->getSubfield('u')->getData();
 					if ($this->processImageURL($subfield_u)){
@@ -1196,7 +1202,7 @@ class BookCoverProcessor {
 		$marcFields = $marcRecord->getFields('690');
 		if ($marcFields){
 			if ($this->doCoverLogging){
-				$this->logger->info("Found 690 field");
+				$this->logger->info('Found 690 field');
 			}
 			foreach ($marcFields as $marcField){
 				if ($marcField->getSubfield('a')){
@@ -1285,7 +1291,7 @@ class BookCoverProcessor {
 		// Update to allow retrieval of covers based on upc
 		if (!empty($this->isn) || !empty($this->upc) || !empty($this->issn)){
 			if ($this->doCoverLogging){
-				$this->logger->info("Looking for picture based on isbn and upc.");
+				$this->logger->info('Looking for picture based on isbn and upc.');
 			}
 
 			// Fetch from provider
@@ -1297,15 +1303,17 @@ class BookCoverProcessor {
 						$this->logger->info("Checking provider " . $provider[0]);
 					}
 					$func = $provider[0];
-					$key  = isset($provider[1]) ? $provider[1] : null;
-					if (method_exists($this, $func) && $this->$func($key)){
-						if ($this->doCoverLogging){
-							$this->logger->info("Found image from $provider[0]");
+					$key  = $provider[1] ?? null;
+					if (method_exists($this, $func)){
+						if ($this->$func($key)){
+							if ($this->doCoverLogging){
+								$this->logger->info("Found image from $provider[0]");
+							}
+							$this->logTime("Checked $func");
+							return true;
+						}else{
+							$this->logTime("Checked $func");
 						}
-						$this->logTime("Checked $func");
-						return true;
-					}else{
-						$this->logTime("Checked $func");
 					}
 				}
 			}
@@ -1313,12 +1321,12 @@ class BookCoverProcessor {
 // Not using this process
 //			//Have not found an image yet, check files uploaded by publisher
 //			if ($this->configArray['Content']['loadPublisherCovers'] && isset($this->isn)){
-//				$this->log("Looking for image from publisher isbn10: $this->isbn10 isbn13: $this->isbn13 in $this->bookCoverPath/original/.", PEAR_LOG_INFO);
+//				$this->logger->info("Looking for image from publisher isbn10: $this->isbn10 isbn13: $this->isbn13 in $this->bookCoverPath/original/.");
 //				$this->makeIsbn10And13();
 //				if ($this->getCoverFromPublisher($this->bookCoverPath . '/original/')){
 //					return true;
 //				}
-//				$this->log("Did not find a file in publisher folder.", PEAR_LOG_INFO);
+//				$this->logger->info("Did not find a file in publisher folder.");
 //			}
 
 		}
@@ -1490,24 +1498,24 @@ class BookCoverProcessor {
 // Not used at all. Keeping in case it becomes handy in the future
 //	function getCoverFromPublisher($folderToCheck){
 //		if (!file_exists($folderToCheck)){
-//			$this->log("No publisher directory, expected to find in $folderToCheck", PEAR_LOG_INFO);
+//			$this->logger->info("No publisher directory, expected to find in $folderToCheck");
 //			return false;
 //		}
-//		//$this->log("Looking in folder $folderToCheck for cover image supplied by publisher.", PEAR_LOG_INFO);
+//		//$this->logger->info("Looking in folder $folderToCheck for cover image supplied by publisher.");
 //		//Check to see if the file exists in the folder
 //
 //		$matchingFiles10 = glob($folderToCheck . $this->isbn10 . "*.jpg");
 //		$matchingFiles13 = glob($folderToCheck . $this->isbn13 . "*.jpg");
 //		if (count($matchingFiles10) > 0){
 //			//We found a match
-//			$this->log("Found a publisher file by 10 digit ISBN " . $matchingFiles10[0], PEAR_LOG_INFO);
+//			$this->logger->info("Found a publisher file by 10 digit ISBN " . $matchingFiles10[0]);
 //			return $this->processImageURL($matchingFiles10[0], true);
 //		}elseif (count($matchingFiles13) > 0){
 //			//We found a match
-//			$this->log("Found a publisher file by 13 digit ISBN " . $matchingFiles13[0], PEAR_LOG_INFO);
+//			$this->logger->info("Found a publisher file by 13 digit ISBN " . $matchingFiles13[0]);
 //			return $this->processImageURL($matchingFiles13[0], true);
 //		}else{
-//			//$this->log("Did not find match by isbn 10 or isbn 13, checking sub folders", PEAR_LOG_INFO);
+//			//$this->logger->info("Did not find match by isbn 10 or isbn 13, checking sub folders");
 //			//Check all subdirectories of the current folder
 //			$subDirectories = array();
 //			$dh             = opendir($folderToCheck);
@@ -1515,7 +1523,7 @@ class BookCoverProcessor {
 //				while (($file = readdir($dh)) !== false){
 //
 //					if (is_dir($folderToCheck . $file) && $file != '.' && $file != '..'){
-//						//$this->log("Found file $file", PEAR_LOG_INFO);
+//						//$this->logger->info("Found file $file");
 //						$subDirectories[] = $folderToCheck . $file . '/';
 //					}
 //				}
@@ -1535,15 +1543,15 @@ class BookCoverProcessor {
 //		if (!empty($this->isn) && strlen($this->isn) >= 10){
 //			require_once ROOT_DIR . '/sys/ISBN/ISBNConverter.php';
 //			if (strlen($this->isn) == 10){
-//				//$this->log("Provided ISBN is 10 digits.", PEAR_LOG_INFO);
+//				//$this->logger->info("Provided ISBN is 10 digits.");
 //				$this->isbn10 = $this->isn;
 //				$this->isbn13 = ISBNConverter::convertISBN10to13($this->isbn10);
 //			}elseif (strlen($this->isn) == 13){
-//				//$this->log("Provided ISBN is 13 digits.", PEAR_LOG_INFO);
+//				//$this->logger->info("Provided ISBN is 13 digits.");
 //				$this->isbn13 = $this->isn;
 //				$this->isbn10 = ISBNConverter::convertISBN13to10($this->isbn13);
 //			}
-//			$this->log("Loaded isbn10 $this->isbn10 and isbn13 $this->isbn13.", PEAR_LOG_INFO);
+//			$this->logger->info("Loaded isbn10 $this->isbn10 and isbn13 $this->isbn13.");
 //			$this->logTime("create isbn 10 and isbn 13");
 //		}
 //	}
