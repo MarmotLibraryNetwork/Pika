@@ -44,9 +44,12 @@ interface DriverInterface
 	public function hasNativeReadingHistory();
 
 	/**
-	 * Return the number of holds that are on a record
+	 * Return the number of holds that are on a record.
+	 * This is used on for My Holds page to display the hold queue length for circulation systems that don't provide
+	 * this information directly in the information about a specific hold.
+	 *
 	 * @param $id
-	 * @return int
+	 * @return int|false
 	 */
 	public function getNumHoldsOnRecord($id);
 

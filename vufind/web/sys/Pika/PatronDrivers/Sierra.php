@@ -67,7 +67,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
 require_once ROOT_DIR . '/sys/Account/PinReset.php';
 
-class Sierra {
+class Sierra  implements \DriverInterface {
 
 	// @var Pika/Memcache instance
 	public  $cache;
@@ -3334,4 +3334,7 @@ EOT;
 		}
 	}
 
+	public function getNumHoldsOnRecord($id){
+		return false;
+	}
 }
