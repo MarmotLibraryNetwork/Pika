@@ -21,7 +21,6 @@ require_once ROOT_DIR . '/AJAXHandler.php';
 use \Pika\Logger;
 
 class Browse_AJAX extends AJAXHandler {
-	protected $logger;
 	const ITEMS_PER_PAGE = 24;
 
 	/** @var SearchObject_Solr|SearchObject_Base $searchObject */
@@ -36,10 +35,6 @@ class Browse_AJAX extends AJAXHandler {
 		'getActiveBrowseCategories',
 		'getSubCategories',
 	];
-
-	function __construct(){
-		$this->logger = new Logger(__CLASS__);
-	}
 
 
 	function getAddBrowseCategoryForm(){
