@@ -42,8 +42,13 @@ abstract class AJAXHandler extends Action {
 
 	//private $cache;
 
+	protected $logger;
 
-
+	function __construct($error_class = null){
+		global $pikaLogger;
+		$this->logger = $pikaLogger->withName(get_class($this)); // note: get_class will return the class name for classes that extend this class
+		parent::__construct($error_class);
+	}
 
 	function launch(){
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
