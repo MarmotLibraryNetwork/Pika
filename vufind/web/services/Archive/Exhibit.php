@@ -426,7 +426,7 @@ class Archive_Exhibit extends Archive_Object {
 										}
 										$timer->logTime('Loaded information about related place');
 									} else {
-										$this->logger->error('Failed to initialize driver for place entity' . $mappedPlace['pid']);
+										$pikaLogger->error('Failed to initialize driver for place entity' . $mappedPlace['pid']);
 									}
 								}
 							}else{
@@ -515,7 +515,7 @@ class Archive_Exhibit extends Archive_Object {
 				$interface->assign('totalMappedLocations', $totalMappedLocations);
 			}else{
 				$_SESSION['exhibitSearchId'] = $lastExhibitObjectsSearch;
-				$this->logger->debug("Setting exhibit search id to $lastExhibitObjectsSearch");
+//				$pikaLogger->debug("Setting exhibit search id to $lastExhibitObjectsSearch");
 
 				$displayMode = $this->archiveCollectionDisplayMode();
 				$this->setShowCovers();
