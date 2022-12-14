@@ -370,11 +370,13 @@ class SearchSources {
 			case 'amazon':
 				return "http://www.amazon.com/s/ref=nb_sb_noss?url=search-alias%3Daps&field-keywords=" . urlencode($lookFor);
 			case 'course-reserves-course-name':
-				$linkingUrl = $configArray['Catalog']['linking_url']; //TODO replace with account profile opacUrl
-				return "$linkingUrl/search~S{$library->scope}/r?SEARCH=" . urlencode($lookFor);
+				$catalogConnection  = CatalogFactory::getCatalogConnectionInstance(); // TODO: this would need handling when there are multiple Account Profiles
+				$classicOpacBaseURL = $catalogConnection->accountProfile->vendorOpacUrl;
+				return "$classicOpacBaseURL/search~S{$library->scope}/r?SEARCH=" . urlencode($lookFor);
 			case 'course-reserves-instructor':
-				$linkingUrl = $configArray['Catalog']['linking_url'];//TODO replace with account profile opacUrl
-				return "$linkingUrl/search~S{$library->scope}/p?SEARCH=" . urlencode($lookFor);
+				$catalogConnection  = CatalogFactory::getCatalogConnectionInstance(); // TODO: this would need handling when there are multiple Account Profiles
+				$classicOpacBaseURL = $catalogConnection->accountProfile->vendorOpacUrl;
+				return "$classicOpacBaseURL/search~S{$library->scope}/p?SEARCH=" . urlencode($lookFor);
 			default:
 				if (strpos($searchSource, 'overdrive') === 0){
 					$overDriveUrl              = $configArray['OverDrive']['url'];
