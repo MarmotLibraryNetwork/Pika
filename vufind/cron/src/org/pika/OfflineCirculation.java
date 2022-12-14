@@ -212,19 +212,25 @@ public class OfflineCirculation implements IProcessHandler {
 	private void processOfflineCirculationEntries(Connection pikaConn) {
 		processLog.addNote("Processing offline checkouts and check-ins");
 		int numProcessed = 0;
-		try {
+		try (
 			PreparedStatement circulationEntryToProcessStmt = pikaConn.prepareStatement("SELECT offline_circulation.* FROM offline_circulation WHERE status='Not Processed' ORDER BY login ASC, initials ASC, patronBarcode ASC, timeEntered ASC");
 			PreparedStatement updateCirculationEntry        = pikaConn.prepareStatement("UPDATE offline_circulation SET timeProcessed = ?, status = ?, notes = ? WHERE id = ?");
-			String baseUrl                                  = PikaConfigIni.getIniValue("Catalog", "url") + "/iii/airwkst";
-			try (ResultSet circulationEntriesToProcessRS = circulationEntryToProcessStmt.executeQuery()) {
-				while (circulationEntriesToProcessRS.next()) {
-					processOfflineCirculationEntry(updateCirculationEntry, baseUrl, circulationEntriesToProcessRS);
-					numProcessed++;
+			PreparedStatement sierraVendorOpacUrlStmt       = pikaConn.prepareStatement("SELECT vendorOpacUrl FROM account_profiles WHERE name = 'ils'")
+		){
+			try (ResultSet sierraVendorOpacUrlRS = sierraVendorOpacUrlStmt.executeQuery()) {
+				if (sierraVendorOpacUrlRS.next()) {
+					String baseUrl = sierraVendorOpacUrlRS.getString("vendorOpacUrl");
+					try (ResultSet circulationEntriesToProcessRS = circulationEntryToProcessStmt.executeQuery()) {
+						while (circulationEntriesToProcessRS.next()) {
+							processOfflineCirculationEntry(updateCirculationEntry, baseUrl, circulationEntriesToProcessRS);
+							numProcessed++;
+						}
+					}
+					if (numProcessed > 0) {
+						//Logout of the system
+						Util.getURL(baseUrl + "/airwkstcore?action=AirWkstReturnToWelcomeAction", logger);
+					}
 				}
-			}
-			if (numProcessed > 0) {
-				//Logout of the system
-				Util.getURL(baseUrl + "/airwkstcore?action=AirWkstReturnToWelcomeAction", logger);
 			}
 		} catch (SQLException e) {
 			processLog.incErrors();
