@@ -10489,6 +10489,9 @@ fieldset[disabled] .btn-masquerade.active {
   border-radius: 10px 10px 0 0;
   height: inherit;
 }
+.browse-category:hover {
+  background: #f6f6f6;
+}
 .browse-category div {
   height: 55px;
 }
