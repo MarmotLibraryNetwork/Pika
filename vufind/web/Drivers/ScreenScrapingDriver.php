@@ -233,8 +233,8 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 		if ($this->accountProfile && $this->accountProfile->vendorOpacUrl ){
 			$host = $this->accountProfile->vendorOpacUrl;
 		}else{
-			global $configArray;
-			$host = $configArray['Catalog']['url'];
+			global $pikaLogger;
+			$pikaLogger->error('No account profile set for screen scraping driver.');
 		}
 
 		if (substr($host, -1) == '/') {

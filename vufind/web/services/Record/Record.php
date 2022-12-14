@@ -109,8 +109,10 @@ abstract class Record_Record extends Action {
 
 					break;
 				case 'Koha':
+					$catalogConnection  = CatalogFactory::getCatalogConnectionInstance(); // This will use the $activeRecordIndexingProfile to get the catalog connector
+					$classicOpacBaseURL = $catalogConnection->accountProfile->vendorOpacUrl;
 					$interface->assign('classicId', $recordId);
-					$interface->assign('classicUrl', $configArray['Catalog']['url'] . '/cgi-bin/koha/opac-detail.pl?biblionumber=' . $recordId);
+					$interface->assign('classicUrl', $classicOpacBaseURL . '/cgi-bin/koha/opac-detail.pl?biblionumber=' . $recordId);
 					$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/cgi-bin/koha/catalogue/detail.pl?biblionumber=' . $recordId);
 					break;
 				case 'CarlX':

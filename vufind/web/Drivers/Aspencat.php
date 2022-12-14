@@ -34,6 +34,19 @@ class Aspencat implements DriverInterface{
 	private $logger;
 	private $dbConnection = null;
 	public $accountProfile;
+	private $kohaUrl;
+
+	/**
+	 * @param AccountProfile $accountProfile
+	 */
+	public function __construct($accountProfile){
+		$this->accountProfile = $accountProfile;
+		$this->kohaUrl        = $accountProfile->patronApiUrl;
+		$this->logger         = new Logger(__CLASS__);
+		global $timer;
+		$timer->logTime('Created Aspencat Driver');
+	}
+
 
 
 	/**
@@ -42,7 +55,7 @@ class Aspencat implements DriverInterface{
 	 * @return array                  Array of error messages for errors that occurred
 	 */
 	function updatePatronInfo($patron, $canUpdateContactInfo){
-		$updateErrors = array();
+		$updateErrors = [];
 		if ($canUpdateContactInfo) {
 			$updateErrors[] = "Profile Information can not be updated.";
 		}
@@ -58,13 +71,13 @@ class Aspencat implements DriverInterface{
 		}
 	}
 
-	public function getMyCheckoutsFromOpac($user) {
+	public function getMyCheckoutsFromOpac($user){
 
 		if (isset($this->transactions[$user->id])){
 			return $this->transactions[$user->id];
 		}
 		//Get transactions by screen scraping
-		$transactions = array();
+		$transactions = [];
 		//Log into Koha classic interface
 		$result = $this->loginToKoha($user);
 		if (!$result['success']){
@@ -76,7 +89,7 @@ class Aspencat implements DriverInterface{
 		if (preg_match_all('/<table id="checkoutst">(.*?)<\/table>/si', $transactionPage, $transactionTableData, PREG_SET_ORDER)){
 			$transactionTable = $transactionTableData[0][0];
 			//Get the header row labels in case the columns are ever rearranged?
-			$headerLabels = array();
+			$headerLabels = [];
 			preg_match_all('/<th>([^<]*?)<\/th>/si', $transactionTable, $tableHeaders, PREG_PATTERN_ORDER);
 			foreach ($tableHeaders[1] as $col => $tableHeader){
 				$headerLabels[$col] = trim(strtolower($tableHeader));
@@ -88,7 +101,7 @@ class Aspencat implements DriverInterface{
 			preg_match_all('/<tr(?:.*?)>(.*?)<\/tr>/si', $tableBody, $tableData, PREG_PATTERN_ORDER);
 			foreach ($tableData[1] as $tableRow){
 				//Each row represents a transaction
-				$transaction = array();
+				$transaction                   = [];
 				$transaction['checkoutSource'] = $this->accountProfile->recordSource;
 				//Go through each cell in the row
 				preg_match_all('/<td[^>]*>(.*?)<\/td>/si', $tableRow, $tableCells, PREG_PATTERN_ORDER);
@@ -96,7 +109,7 @@ class Aspencat implements DriverInterface{
 					//Based off which column we are in, fill out the transaction
 					if ($headerLabels[$col] == 'title'){
 						//Title column contains title, author, and id link
-						if (preg_match('/biblionumber=(\\d+)">\\s*([^<]*)\\s*<\/a>.*?>\\s*(.*?)\\s*<\/span>/si', $tableCell, $cellDetails)) {
+						if (preg_match('/biblionumber=(\\d+)">\\s*([^<]*)\\s*<\/a>.*?>\\s*(.*?)\\s*<\/span>/si', $tableCell, $cellDetails)){
 							$transaction['id']      = $cellDetails[1];
 							$transaction['shortId'] = $cellDetails[1];
 							$transaction['title']   = $cellDetails[2];
@@ -122,18 +135,18 @@ class Aspencat implements DriverInterface{
 							$transaction['dueDate'] = $dueTime;
 						}
 					}elseif ($headerLabels[$col] == 'renew'){
-						if (preg_match('/item=(\\d+).*?\\((\\d+) of (\\d+) renewals/si', $tableCell, $renewalData)) {
-							$transaction['itemid'] = $renewalData[1];
+						if (preg_match('/item=(\\d+).*?\\((\\d+) of (\\d+) renewals/si', $tableCell, $renewalData)){
+							$transaction['itemid']         = $renewalData[1];
 							$transaction['renewIndicator'] = $renewalData[1];
-							$numRenewalsRemaining = $renewalData[2];
-							$numRenewalsAllowed = $renewalData[3];
+							$numRenewalsRemaining          = $renewalData[2];
+							$numRenewalsAllowed            = $renewalData[3];
+							$transaction['renewCount']     = $numRenewalsAllowed - $numRenewalsRemaining;
+						}elseif (preg_match('/not renewable.*?\\((\\d+) of (\\d+) renewals/si', $tableCell, $renewalData)){
+							$transaction['canrenew']   = false;
+							$numRenewalsRemaining      = $renewalData[1];
+							$numRenewalsAllowed        = $renewalData[2];
 							$transaction['renewCount'] = $numRenewalsAllowed - $numRenewalsRemaining;
-						}elseif(preg_match('/not renewable.*?\\((\\d+) of (\\d+) renewals/si', $tableCell, $renewalData)){
-							$transaction['canrenew'] = false;
-							$numRenewalsRemaining = $renewalData[1];
-							$numRenewalsAllowed = $renewalData[2];
-							$transaction['renewCount'] = $numRenewalsAllowed - $numRenewalsRemaining;
-						}elseif(preg_match('/not renewable/si', $tableCell, $renewalData)){
+						}elseif (preg_match('/not renewable/si', $tableCell, $renewalData)){
 							$transaction['canrenew'] = false;
 						}
 					}
@@ -154,9 +167,9 @@ class Aspencat implements DriverInterface{
 						$transaction['link']          = $recordDriver->getLinkUrl();
 
 					}else{
-						$transaction['coverUrl'] = "";
-						$transaction['groupedWorkId'] = "";
-						$transaction['format'] = "Unknown";
+						$transaction['coverUrl']      = '';
+						$transaction['groupedWorkId'] = '';
+						$transaction['format']        = 'Unknown';
 					}
 				}
 				$transactions[] = $transaction;
@@ -170,27 +183,27 @@ class Aspencat implements DriverInterface{
 	 * @param User $patron
 	 * @return array
 	 */
-	public function getMyCheckoutsFromDB($patron) {
+	public function getMyCheckoutsFromDB($patron){
 		if (isset($this->transactions[$patron->id])){
 			return $this->transactions[$patron->id];
 		}
 
 		//Get transactions by screen scraping
-		$transactions = array();
+		$transactions = [];
 
 		$this->initDatabaseConnection();
 
-		$sql = "SELECT issues.*, items.biblionumber, title, author from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->ilsUserId}";
+		$sql     = "SELECT issues.*, items.biblionumber, title, author from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->ilsUserId}";
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()){
-			$transaction = array();
+			$transaction                   = [];
 			$transaction['checkoutSource'] = $this->accountProfile->recordSource;
 
-			$transaction['id'] = $curRow['biblionumber'];
+			$transaction['id']       = $curRow['biblionumber'];
 			$transaction['recordId'] = $curRow['biblionumber'];
-			$transaction['shortId'] = $curRow['biblionumber'];
-			$transaction['title'] = $curRow['title'];
-			$transaction['author'] = $curRow['author'];
+			$transaction['shortId']  = $curRow['biblionumber'];
+			$transaction['title']    = $curRow['title'];
+			$transaction['author']   = $curRow['author'];
 
 			$dateDue = DateTime::createFromFormat('Y-m-d', $curRow['date_due']);
 			if ($dateDue){
@@ -198,10 +211,10 @@ class Aspencat implements DriverInterface{
 			}else{
 				$dueTime = null;
 			}
-			$transaction['dueDate'] = $dueTime;
-			$transaction['itemid'] = $curRow['id'];
+			$transaction['dueDate']        = $dueTime;
+			$transaction['itemid']         = $curRow['id'];
 			$transaction['renewIndicator'] = $curRow['id'];
-			$transaction['renewCount'] = $curRow['renewals'];
+			$transaction['renewCount']     = $curRow['renewals'];
 
 			if ($transaction['id'] && strlen($transaction['id']) > 0){
 				$transaction['recordId'] = $transaction['id'];
@@ -217,9 +230,9 @@ class Aspencat implements DriverInterface{
 					$curTitle['title_sort']       = $recordDriver->getSortableTitle();
 					$transaction['link']          = $recordDriver->getLinkUrl();
 				}else{
-					$transaction['coverUrl'] = "";
+					$transaction['coverUrl']      = "";
 					$transaction['groupedWorkId'] = "";
-					$transaction['format'] = "Unknown";
+					$transaction['format']        = "Unknown";
 				}
 			}
 
@@ -284,7 +297,7 @@ class Aspencat implements DriverInterface{
 			curl_setopt($this->curl_connection, CURLOPT_FOLLOWLOCATION, 1);
 			curl_setopt($this->curl_connection, CURLOPT_UNRESTRICTED_AUTH, true);
 			curl_setopt($this->curl_connection, CURLOPT_COOKIEJAR, $this->cookieFile);
-			curl_setopt($this->curl_connection, CURLOPT_COOKIESESSION, is_null($this->cookieFile) ? true : false);
+			curl_setopt($this->curl_connection, CURLOPT_COOKIESESSION, is_null($this->cookieFile));
 		}else{
 			curl_setopt($this->curl_connection, CURLOPT_URL, $kohaUrl);
 		}
@@ -298,7 +311,7 @@ class Aspencat implements DriverInterface{
 		return $sResult;
 	}
 
-	public function patronLogin($username, $password, $validatedViaSSO) {
+	public function patronLogin($username, $password, $validatedViaSSO){
 
 		//Remove any spaces from the barcode
 		$username = trim($username);
@@ -309,7 +322,7 @@ class Aspencat implements DriverInterface{
 		//Use MySQL connection to load data
 		$this->initDatabaseConnection();
 
-		$barcodesToTest = array();
+		$barcodesToTest   = [];
 		$barcodesToTest[] = $username;
 		//Special processing to allow users to login with short barcodes
 		global $library;
@@ -322,37 +335,37 @@ class Aspencat implements DriverInterface{
 			}
 		}
 
-		foreach ($barcodesToTest as $i=>$barcode) {
-			$sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode). "' OR userid = '" . mysqli_escape_string($this->dbConnection, $barcode). "'";
+		foreach ($barcodesToTest as $i => $barcode){
+			$sql             = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userid = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
 			$encodedPassword = rtrim(base64_encode(pack('H*', md5($password))), '=');
 
 			$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
-			if ($lookupUserResult) {
-				if ($userFromDbResultSet = $lookupUserResult) {
+			if ($lookupUserResult){
+				if ($userFromDbResultSet = $lookupUserResult){
 					$userFromDb = $userFromDbResultSet->fetch_assoc();
 					$userFromDbResultSet->close();
 					if ($userFromDb == null){
-						if ($i == count($barcodesToTest) -1){
+						if ($i == count($barcodesToTest) - 1){
 							return new PEAR_Error('authentication_error_invalid');
 						}
-					}elseif (($userFromDb['password'] == $encodedPassword) || $validatedViaSSO) {
-						$userExistsInDB = false;
-						$user = new User();
-						$user->source   = $this->accountProfile->name;
+					}elseif (($userFromDb['password'] == $encodedPassword) || $validatedViaSSO){
+						$userExistsInDB  = false;
+						$user            = new User();
+						$user->source    = $this->accountProfile->name;
 						$user->ilsUserId = $userFromDb['borrowernumber'];
 						if ($user->find(true)){
 							$userExistsInDB = true;
 						}
 
 						$forceDisplayNameUpdate = false;
-						$firstName = $userFromDb['firstname'];
-						if ($user->firstname != $firstName) {
-							$user->firstname = $firstName;
+						$firstName              = $userFromDb['firstname'];
+						if ($user->firstname != $firstName){
+							$user->firstname        = $firstName;
 							$forceDisplayNameUpdate = true;
 						}
 						$lastName = $userFromDb['surname'];
 						if ($user->lastname != $lastName){
-							$user->lastname = isset($lastName) ? $lastName : '';
+							$user->lastname         = isset($lastName) ? $lastName : '';
 							$forceDisplayNameUpdate = true;
 						}
 						if ($forceDisplayNameUpdate){
@@ -365,9 +378,9 @@ class Aspencat implements DriverInterface{
 						$user->patronType   = $userFromDb['categorycode'];
 						$user->web_note     = '';
 
-						$city = strtok($userFromDb['city'], ',');
+						$city  = strtok($userFromDb['city'], ',');
 						$state = strtok(',');
-						$city = trim($city);
+						$city  = trim($city);
 						$state = trim($state);
 
 						$user->address1 = trim($userFromDb['streetnumber'] . ' ' . $userFromDb['address'] . ' ' . $userFromDb['address2']);
@@ -379,45 +392,45 @@ class Aspencat implements DriverInterface{
 						//Get fines
 						//Load fines from database
 						$outstandingFines = $this->getOutstandingFineTotal($user);
-						$user->fines    = sprintf('$%0.2f', $outstandingFines);
-						$user->finesVal = floatval($outstandingFines);
+						$user->fines      = sprintf('$%0.2f', $outstandingFines);
+						$user->finesVal   = floatval($outstandingFines);
 
 						//Get number of items checked out
 						$checkedOutItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numCheckouts FROM issues WHERE borrowernumber = ' . $user->ilsUserId, MYSQLI_USE_RESULT);
-						$numCheckouts = 0;
+						$numCheckouts      = 0;
 						if ($checkedOutItemsRS){
 							$checkedOutItems = $checkedOutItemsRS->fetch_assoc();
-							$numCheckouts = $checkedOutItems['numCheckouts'];
+							$numCheckouts    = $checkedOutItems['numCheckouts'];
 							$checkedOutItemsRS->close();
 						}
 						$user->numCheckedOutIls = $numCheckouts;
 
 						//Get number of available holds
-						$availableHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE found = "W" and borrowernumber = ' . $user->ilsUserId, MYSQLI_USE_RESULT);
+						$availableHoldsRS  = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE found = "W" and borrowernumber = ' . $user->ilsUserId, MYSQLI_USE_RESULT);
 						$numAvailableHolds = 0;
 						if ($availableHoldsRS){
-							$availableHolds = $availableHoldsRS->fetch_assoc();
+							$availableHolds    = $availableHoldsRS->fetch_assoc();
 							$numAvailableHolds = $availableHolds['numHolds'];
 							$availableHoldsRS->close();
 						}
 						$user->numHoldsAvailableIls = $numAvailableHolds;
 
 						//Get number of unavailable
-						$waitingHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE (found <> "W" or found is null) and borrowernumber = ' . $user->ilsUserId, MYSQLI_USE_RESULT);
+						$waitingHoldsRS  = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE (found <> "W" or found is null) and borrowernumber = ' . $user->ilsUserId, MYSQLI_USE_RESULT);
 						$numWaitingHolds = 0;
 						if ($waitingHoldsRS){
-							$waitingHolds = $waitingHoldsRS->fetch_assoc();
+							$waitingHolds    = $waitingHoldsRS->fetch_assoc();
 							$numWaitingHolds = $waitingHolds['numHolds'];
 							$waitingHoldsRS->close();
 						}
 						$user->numHoldsRequestedIls = $numWaitingHolds;
-						$user->numHoldsIls = $user->numHoldsAvailableIls + $user->numHoldsRequestedIls;
+						$user->numHoldsIls          = $user->numHoldsAvailableIls + $user->numHoldsRequestedIls;
 
 						$user->setUserHomeLocations($userFromDb['branchcode']);
 
 						$dateString = $userFromDb['dateexpiry'];
-						if (!empty($dateString)) {
-							list ($yearExp, $monthExp, $dayExp) = explode('-', $dateString);
+						if (!empty($dateString)){
+							[$yearExp, $monthExp, $dayExp] = explode('-', $dateString);
 							$dateString = $monthExp . '/' . $dayExp . '/' . $yearExp;
 						}
 						$user->setUserExpirationSettings($dateString);
@@ -435,19 +448,19 @@ class Aspencat implements DriverInterface{
 
 						return $user;
 					}else{
-						if ($i == count($barcodesToTest) -1){
+						if ($i == count($barcodesToTest) - 1){
 							return new PEAR_Error('authentication_error_denied');
 						}
 					}
 				}else{
 					$this->logger->error("MySQL did not return a result for getUserInfoStmt");
-					if ($i == count($barcodesToTest) -1){
+					if ($i == count($barcodesToTest) - 1){
 						return new PEAR_Error('authentication_error_technical');
 					}
 				}
 			}else{
-				$this->logger->error("Unable to execute getUserInfoStmt " .  mysqli_error($this->dbConnection));
-				if ($i == count($barcodesToTest) -1) {
+				$this->logger->error("Unable to execute getUserInfoStmt " . mysqli_error($this->dbConnection));
+				if ($i == count($barcodesToTest) - 1){
 					return new PEAR_Error('authentication_error_technical');
 				}
 			}
@@ -468,16 +481,6 @@ class Aspencat implements DriverInterface{
 			global $timer;
 			$timer->logTime("Initialized connection to Koha");
 		}
-	}
-
-	/**
-	 * @param AccountProfile $accountProfile
-	 */
-	public function __construct($accountProfile){
-		$this->accountProfile = $accountProfile;
-		global $timer;
-		$timer->logTime("Created Aspencat Driver");
-		$this->logger = new Logger(__CLASS__);
 	}
 
 	function __destruct(){
@@ -609,32 +612,31 @@ class Aspencat implements DriverInterface{
 		return array('historyActive'=>false, 'titles'=>array(), 'numTitles'=> 0);
 	}
 
-	private function loginToKoha($user) {
-		global $configArray;
-		$catalogUrl = $configArray['Catalog']['url'];
+	private function loginToKoha($user){
+		$catalogUrl = $this->kohaUrl;
 
 		//Construct the login url
 		$loginUrl = "$catalogUrl/cgi-bin/koha/opac-user.pl";
 
 		//Setup post parameters to the login url
-		$postParams = array(
+		$postParams = [
 			'koha_login_context' => 'opac',
-			'password' => $user->cat_password,
-			'userid'=> $user->cat_username
-		);
-		$sResult = $this->postToKohaPage($loginUrl, $postParams);
+			'password'           => $user->cat_password,
+			'userid'             => $user->cat_username
+		];
+		$sResult    = $this->postToKohaPage($loginUrl, $postParams);
 
 		//Parse the response to make sure the login went ok
 		//If we can see the logout link, it means that we logged in successfully.
 		if (preg_match('/<a\\s+class="logout"\\s+id="logout"[^>]*?>/si', $sResult)){
-			$result =array(
-				'success' => true,
+			$result = [
+				'success'     => true,
 				'summaryPage' => $sResult
-			);
+			];
 		}else{
-			$result =array(
+			$result = [
 				'success' => false,
-			);
+			];
 		}
 		return $result;
 	}
@@ -652,7 +654,7 @@ class Aspencat implements DriverInterface{
 	 * @access  public
 	 */
 	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null){
-		$hold_result = array();
+		$hold_result            = [];
 		$hold_result['success'] = false;
 
 		//Set pickup location
@@ -666,37 +668,38 @@ class Aspencat implements DriverInterface{
 			$hold_result['message'] = 'Unable to find a valid record for this title.  Please try your search again.';
 			return $hold_result;
 		}
-		global $configArray;
 		$marcRecord = $recordDriver->getMarcRecord();
 
 		//Check to see if the title requires item level holds
 		/** @var File_MARC_Data_Field[] $holdTypeFields */
 		$itemLevelHoldAllowed = false;
-		$itemLevelHoldOnly = false;
-		$holdTypeFields = $marcRecord->getFields('942');
+		$itemLevelHoldOnly    = false;
+		$holdTypeFields       = $marcRecord->getFields('942');
 		foreach ($holdTypeFields as $holdTypeField){
 			if ($holdTypeField->getSubfield('r') != null){
 				if ($holdTypeField->getSubfield('r')->getData() == 'itemtitle'){
 					$itemLevelHoldAllowed = true;
-				}else if ($holdTypeField->getSubfield('r')->getData() == 'item'){
-					$itemLevelHoldAllowed = true;
-					$itemLevelHoldOnly = true;
+				}else{
+					if ($holdTypeField->getSubfield('r')->getData() == 'item'){
+						$itemLevelHoldAllowed = true;
+						$itemLevelHoldOnly    = true;
+					}
 				}
 			}
 		}
 
 		//Get the items the user can place a hold on
 		$this->loginToKoha($patron);
-		$placeHoldPage = $this->getKohaPage($configArray['Catalog']['url'] . '/cgi-bin/koha/opac-reserve.pl?biblionumber=' . $recordId);
+		$placeHoldPage = $this->getKohaPage($this->kohaUrl . '/cgi-bin/koha/opac-reserve.pl?biblionumber=' . $recordId);
 		preg_match_all('/<div class="dialog alert">(.*?)<\/div>/s', $placeHoldPage, $matches);
 		if (count($matches) > 0 && count($matches[1]) > 0){
-			$hold_result['title'] = $recordDriver->getTitle();
+			$hold_result['title']   = $recordDriver->getTitle();
 			$hold_result['success'] = false;
 			$hold_result['message'] = '';
 			foreach ($matches[1] as $errorMsg){
-				$errorMsg = trim($errorMsg);
-				$errorMsg = str_replace(array("\r","\n"), '', $errorMsg);
-				$errorMsg = translate($errorMsg);
+				$errorMsg               = trim($errorMsg);
+				$errorMsg               = str_replace(["\r", "\n"], '', $errorMsg);
+				$errorMsg               = translate($errorMsg);
 				$hold_result['message'] .= $errorMsg . '<br>';
 			}
 			return $hold_result;
@@ -704,22 +707,22 @@ class Aspencat implements DriverInterface{
 
 		if ($itemLevelHoldAllowed){
 			//Need to prompt for an item level hold
-			$items = array();
+			$items = [];
 			if (!$itemLevelHoldOnly){
 				//Add a first title returned
-				$items[-1] = array(
+				$items[-1] = [
 					'itemNumber' => -1,
-					'location' => 'Next available copy',
+					'location'   => 'Next available copy',
 					'callNumber' => '',
-					'status' => '',
-				);
+					'status'     => '',
+				];
 			}
 
 			//Get the item table from the page
-			if (preg_match('/<table>\\s+<caption>Select a specific copy:<\/caption>\\s+(.*?)<\/table>/s', $placeHoldPage, $matches)) {
+			if (preg_match('/<table>\\s+<caption>Select a specific copy:<\/caption>\\s+(.*?)<\/table>/s', $placeHoldPage, $matches)){
 				$itemTable = $matches[1];
 				//Get the header row labels
-				$headerLabels = array();
+				$headerLabels = [];
 				preg_match_all('/<th[^>]*>(.*?)<\/th>/si', $itemTable, $tableHeaders, PREG_PATTERN_ORDER);
 				foreach ($tableHeaders[1] as $col => $tableHeader){
 					$headerLabels[$col] = trim(strip_tags(strtolower($tableHeader)));
@@ -730,7 +733,7 @@ class Aspencat implements DriverInterface{
 				foreach ($tableData[1] as $tableRow){
 					//Each row in the table represents a hold
 
-					$curItem = array();
+					$curItem   = [];
 					$validItem = false;
 					//Go through each cell in the row
 					preg_match_all('/<td[^>]*>(.*?)<\/td>/si', $tableRow, $tableCells, PREG_PATTERN_ORDER);
@@ -742,18 +745,30 @@ class Aspencat implements DriverInterface{
 									$curItem['itemNumber'] = $valueMatches[1];
 								}
 							}
-						}else if ($headerLabels[$col] == 'item type'){
-							$curItem['itemType'] = trim($tableCell);
-						}else if ($headerLabels[$col] == 'barcode'){
-							$curItem['barcode'] = trim($tableCell);
-						}else if ($headerLabels[$col] == 'home library'){
-							$curItem['location'] = trim($tableCell);
-						}else if ($headerLabels[$col] == 'call number'){
-							$curItem['callNumber'] = trim($tableCell);
-						}else if ($headerLabels[$col] == 'vol info'){
-							$curItem['volInfo'] = trim($tableCell);
-						}else if ($headerLabels[$col] == 'information'){
-							$curItem['status'] = trim($tableCell);
+						}else{
+							if ($headerLabels[$col] == 'item type'){
+								$curItem['itemType'] = trim($tableCell);
+							}else{
+								if ($headerLabels[$col] == 'barcode'){
+									$curItem['barcode'] = trim($tableCell);
+								}else{
+									if ($headerLabels[$col] == 'home library'){
+										$curItem['location'] = trim($tableCell);
+									}else{
+										if ($headerLabels[$col] == 'call number'){
+											$curItem['callNumber'] = trim($tableCell);
+										}else{
+											if ($headerLabels[$col] == 'vol info'){
+												$curItem['volInfo'] = trim($tableCell);
+											}else{
+												if ($headerLabels[$col] == 'information'){
+													$curItem['status'] = trim($tableCell);
+												}
+											}
+										}
+									}
+								}
+							}
 						}
 					}
 					if ($validItem){
@@ -761,7 +776,7 @@ class Aspencat implements DriverInterface{
 					}
 				}
 			}elseif (preg_match('/<div class="dialog alert">(.*?)<\/div>/s', $placeHoldPage, $matches)){
-				$items = array();
+				$items   = [];
 				$message = trim($matches[1]);
 			}
 
@@ -782,24 +797,24 @@ class Aspencat implements DriverInterface{
 			$hold_result['title'] = $recordDriver->getTitle();
 
 			//Post the hold to koha
-			$placeHoldPage = $configArray['Catalog']['url'] . '/cgi-bin/koha/opac-reserve.pl';
-			$holdParams = array(
-				'biblionumbers' => $recordId . '/',
-				'branch' => $campus,
-				'place_reserve' => 1,
+			$placeHoldPage  = $this->kohaUrl . '/cgi-bin/koha/opac-reserve.pl';
+			$holdParams     = [
+				'biblionumbers'     => $recordId . '/',
+				'branch'            => $campus,
+				'place_reserve'     => 1,
 				"reqtype_$recordId" => 'Any',
-				'reserve_mode' => 'multi',
-				'selecteditems' => "$recordId//$campus/",
-				'single_bib' => $recordId,
-			);
+				'reserve_mode'      => 'multi',
+				'selecteditems'     => "$recordId//$campus/",
+				'single_bib'        => $recordId,
+			];
 			$kohaHoldResult = $this->postToKohaPage($placeHoldPage, $holdParams);
 
 			//If the hold is successful we go back to the account page and can see
 
 			$hold_result['id'] = $recordId;
-			if (preg_match('/<a href="#opac-user-holds">Holds<\/a>/si', $kohaHoldResult)) {
+			if (preg_match('/<a href="#opac-user-holds">Holds<\/a>/si', $kohaHoldResult)){
 				//We redirected to the holds page, everything seems to be good
-				$holds = $this->getMyHolds($patron, 1, -1, 'title', $kohaHoldResult);
+				$holds                  = $this->getMyHolds($patron, 1, -1, 'title', $kohaHoldResult);
 				$hold_result['success'] = true;
 				$hold_result['message'] = "Your hold was placed successfully.";
 				//Find the correct hold (will be unavailable)
@@ -815,9 +830,9 @@ class Aspencat implements DriverInterface{
 				$hold_result['success'] = false;
 				//Look for an alert message
 				if (preg_match('/<div class="dialog alert">(.*?)<\/div>/', $kohaHoldResult, $matches)){
-					$hold_result['message'] = 'Your hold could not be placed. ' . $matches[1] ;
+					$hold_result['message'] = 'Your hold could not be placed. ' . $matches[1];
 				}else{
-					$hold_result['message'] = 'Your hold could not be placed. ' ;
+					$hold_result['message'] = 'Your hold could not be placed. ';
 				}
 
 			}
@@ -838,10 +853,8 @@ class Aspencat implements DriverInterface{
 	 *                              If an error occurs, return a PEAR_Error
 	 * @access  public
 	 */
-	function placeItemHold($patron, $recordId, $itemId, $pickupBranch) {
-		global $configArray;
-
-		$hold_result = array();
+	function placeItemHold($patron, $recordId, $itemId, $pickupBranch){
+		$hold_result            = [];
 		$hold_result['success'] = false;
 
 		require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
@@ -854,11 +867,11 @@ class Aspencat implements DriverInterface{
 
 		//Set pickup location
 		if (isset($_REQUEST['campus'])){
-			$campus=trim($_REQUEST['campus']);
+			$campus = trim($_REQUEST['campus']);
 		}else{
 			$campus = $patron->homeLocationId;
 			//Get the code for the location
-			$locationLookup = new Location();
+			$locationLookup             = new Location();
 			$locationLookup->locationId = $campus;
 			$locationLookup->find();
 			if ($locationLookup->N > 0){
@@ -872,23 +885,23 @@ class Aspencat implements DriverInterface{
 		$this->loginToKoha($patron);
 
 		//Post the hold to koha
-		$placeHoldPage = $configArray['Catalog']['url'] . '/cgi-bin/koha/opac-reserve.pl';
-		$holdParams = array(
-			'biblionumbers' => $recordId . '/',
-			'branch' => $campus,
+		$placeHoldPage  = $this->kohaUrl . '/cgi-bin/koha/opac-reserve.pl';
+		$holdParams     = [
+			'biblionumbers'       => $recordId . '/',
+			'branch'              => $campus,
 			"checkitem_$recordId" => $itemId,
-			'place_reserve' => 1,
-			"reqtype_$recordId" => 'Specific',
-			'reserve_mode' => 'multi',
-			'selecteditems' => "$recordId/$itemId/$campus/",
-			'single_bib' => $recordId,
-		);
+			'place_reserve'       => 1,
+			"reqtype_$recordId"   => 'Specific',
+			'reserve_mode'        => 'multi',
+			'selecteditems'       => "$recordId/$itemId/$campus/",
+			'single_bib'          => $recordId,
+		];
 		$kohaHoldResult = $this->postToKohaPage($placeHoldPage, $holdParams);
 
 		$hold_result['id'] = $recordId;
-		if (preg_match('/<a href="#opac-user-holds">Holds<\/a>/si', $kohaHoldResult)) {
+		if (preg_match('/<a href="#opac-user-holds">Holds<\/a>/si', $kohaHoldResult)){
 			//We redirected to the holds page, everything seems to be good
-			$holds = $this->getMyHolds($patron, 1, -1, 'title', $kohaHoldResult);
+			$holds                  = $this->getMyHolds($patron, 1, -1, 'title', $kohaHoldResult);
 			$hold_result['success'] = true;
 			$hold_result['message'] = "Your hold was placed successfully.";
 			//Find the correct hold (will be unavailable)
@@ -904,9 +917,9 @@ class Aspencat implements DriverInterface{
 			$hold_result['success'] = false;
 			//Look for an alert message
 			if (preg_match('/<div class="dialog alert">(.*?)<\/div>/', $kohaHoldResult, $matches)){
-				$hold_result['message'] = 'Your hold could not be placed. ' . $matches[1] ;
+				$hold_result['message'] = 'Your hold could not be placed. ' . $matches[1];
 			}else{
-				$hold_result['message'] = 'Your hold could not be placed. ' ;
+				$hold_result['message'] = 'Your hold could not be placed. ';
 			}
 
 		}
@@ -1254,21 +1267,19 @@ class Aspencat implements DriverInterface{
 	 * Can cancel the hold or update pickup locations.
 	 */
 	public function updateHoldDetailed($patron, $type, /*$title,*/ $xNum, $cancelId, $locationId, $freezeValue='off'){
-		global $configArray;
-
 		// TODO: get actual titles for hold items
-		$titles = array();
+		$titles = [];
 
 		if (!isset($xNum) || empty($xNum)){
 			if (isset($_REQUEST['waitingholdselected']) || isset($_REQUEST['availableholdselected'])){
-				$waitingHolds = isset($_REQUEST['waitingholdselected']) ? $_REQUEST['waitingholdselected'] : array();
-				$availableHolds = isset($_REQUEST['availableholdselected']) ? $_REQUEST['availableholdselected'] : array();
-				$holdKeys = array_merge($waitingHolds, $availableHolds);
+				$waitingHolds   = $_REQUEST['waitingholdselected'] ?? [];
+				$availableHolds = $_REQUEST['availableholdselected'] ?? [];
+				$holdKeys       = array_merge($waitingHolds, $availableHolds);
 			}else{
 				if (is_array($cancelId)){
 					$holdKeys = $cancelId;
 				}else{
-					$holdKeys = array($cancelId);
+					$holdKeys = [$cancelId];
 				}
 			}
 		}else{
@@ -1279,7 +1290,7 @@ class Aspencat implements DriverInterface{
 		$result = $this->loginToKoha($patron);
 		if ($type == 'cancel'){
 			$allCancelsSucceed = true;
-			$originalHolds = $this->getMyHolds($patron, 1, -1, 'title', $result['summaryPage']);
+			$originalHolds     = $this->getMyHolds($patron, 1, -1, 'title', $result['summaryPage']);
 
 			//Post a request to koha
 			foreach ($holdKeys as $holdKey){
@@ -1290,13 +1301,13 @@ class Aspencat implements DriverInterface{
 					$recordId = "";
 				}
 
-				$postParams = array(
-					'biblionumber' => $recordId,
+				$postParams     = [
+					'biblionumber'  => $recordId,
 					'reservenumber' => $holdKey,
-					'submit' => 'Cancel'
-				);
-				$catalogUrl = $configArray['Catalog']['url'];
-				$cancelUrl = "$catalogUrl/cgi-bin/koha/opac-modrequest.pl";
+					'submit'        => 'Cancel'
+				];
+				$catalogUrl     = $this->kohaUrl;
+				$cancelUrl      = "$catalogUrl/cgi-bin/koha/opac-modrequest.pl";
 				$kohaHoldResult = $this->postToKohaPage($cancelUrl, $postParams);
 
 				//Parse the result
@@ -1308,22 +1319,22 @@ class Aspencat implements DriverInterface{
 				}
 			}
 			if ($allCancelsSucceed){
-				return array(
-					'title' => $titles,
+				return [
+					'title'   => $titles,
 					'success' => true,
-					'message' => count($holdKeys) == 1 ? 'Cancelled 1 hold successfully.' : 'Cancelled ' . count($holdKeys) . ' hold(s) successfully.');
+					'message' => count($holdKeys) == 1 ? 'Cancelled 1 hold successfully.' : 'Cancelled ' . count($holdKeys) . ' hold(s) successfully.'];
 			}else{
-				return array(
-					'title' => $titles,
+				return [
+					'title'   => $titles,
 					'success' => false,
-					'message' => 'Some holds could not be cancelled.  Please try again later or see your librarian.');
+					'message' => 'Some holds could not be cancelled.  Please try again later or see your librarian.'];
 			}
 		}else{
 			if ($locationId){
-				return array(
-					'title' => $titles,
+				return [
+					'title'   => $titles,
 					'success' => false,
-					'message' => 'Changing location for a hold is not supported.');
+					'message' => 'Changing location for a hold is not supported.'];
 			}else{
 				//Freeze/Thaw the hold
 				if ($freezeValue == 'on'){
@@ -1332,59 +1343,59 @@ class Aspencat implements DriverInterface{
 					$allLocationChangesSucceed = true;
 
 					foreach ($holdKeys as $holdKey){
-						$postParams = array(
-							'suspend' => 1,
+						$postParams = [
+							'suspend'       => 1,
 							'reservenumber' => $holdKey,
-							'submit' => 'Suspend'
-						);
+							'submit'        => 'Suspend'
+						];
 						if (isset($_REQUEST['reactivationDate'])){
-							$reactivationDate = strtotime($_REQUEST['reactivationDate']);
-							$reactivationDate = date('m-d-Y', $reactivationDate);
+							$reactivationDate                     = strtotime($_REQUEST['reactivationDate']);
+							$reactivationDate                     = date('m-d-Y', $reactivationDate);
 							$postParams['resumedate_' . $holdKey] = $reactivationDate;
 						}else{
 							$postParams['resumedate_' . $holdKey] = '';
 						}
-						$catalogUrl = $configArray['Catalog']['url'];
-						$updateUrl = "$catalogUrl/cgi-bin/koha/opac-modrequest.pl";
+						$catalogUrl        = $this->kohaUrl;
+						$updateUrl         = "$catalogUrl/cgi-bin/koha/opac-modrequest.pl";
 						$kohaUpdateResults = $this->postToKohaPage($updateUrl, $postParams);
 
 						//Check the result of the update
 					}
 					if ($allLocationChangesSucceed){
-						return array(
-							'title' => $titles,
+						return [
+							'title'   => $titles,
 							'success' => true,
-							'message' => 'Your hold(s) were frozen successfully.');
+							'message' => 'Your hold(s) were frozen successfully.'];
 					}else{
-						return array(
-							'title' => $titles,
+						return [
+							'title'   => $titles,
 							'success' => false,
-							'message' => 'Some holds could not be frozen.  Please try again later or see your librarian.');
+							'message' => 'Some holds could not be frozen.  Please try again later or see your librarian.'];
 					}
 				}else{
 					//Reactivate the hold
 					$allUnsuspendsSucceed = true;
 
 					foreach ($holdKeys as $holdKey){
-						$postParams = array(
-							'resume' => 1,
+						$postParams = [
+							'resume'        => 1,
 							'reservenumber' => $holdKey,
-							'submit' => 'Resume'
-						);
-						$catalogUrl = $configArray['Catalog']['url'];
-						$updateUrl = "$catalogUrl/cgi-bin/koha/opac-modrequest.pl";
+							'submit'        => 'Resume'
+						];
+						$catalogUrl = $this->kohaUrl;
+						$updateUrl  = "$catalogUrl/cgi-bin/koha/opac-modrequest.pl";
 						$this->postToKohaPage($updateUrl, $postParams);
 					}
 					if ($allUnsuspendsSucceed){
-						return array(
-							'title' => $titles,
+						return [
+							'title'   => $titles,
 							'success' => true,
-							'message' => 'Your hold(s) were thawed successfully.');
+							'message' => 'Your hold(s) were thawed successfully.'];
 					}else{
-						return array(
-							'title' => $titles,
+						return [
+							'title'   => $titles,
 							'success' => false,
-							'message' => 'Some holds could not be thawed.  Please try again later or see your librarian.');
+							'message' => 'Some holds could not be thawed.  Please try again later or see your librarian.'];
 					}
 				}
 			}
@@ -1403,8 +1414,6 @@ class Aspencat implements DriverInterface{
 	}
 
 	public function renewItem($patron, $recordId, $itemId, $itemIndex){
-		global $configArray;
-
 		//Get the session token for the user
 		$loginResult = $this->loginToKoha($patron);
 		if ($loginResult['success']){
@@ -1413,14 +1422,14 @@ class Aspencat implements DriverInterface{
 				'item'           => $itemId,
 				'borrowernumber' => $patron->ilsUserId,
 			];
-			$catalogUrl = $configArray['Catalog']['url'];
+			$catalogUrl = $this->kohaUrl;
 			$kohaUrl    = "$catalogUrl/cgi-bin/koha/opac-renew.pl";
 			$kohaUrl    .= "?" . http_build_query($postParams);
 
 			$kohaResponse = $this->getKohaPage($kohaUrl);
 
 			//TODO: Renewal Failure Messages needed
-			if (true) {
+			if (true){
 				$success = true;
 				$message = 'Your item was successfully renewed.';
 				//Clear the patron profile
@@ -1498,7 +1507,6 @@ class Aspencat implements DriverInterface{
 	 */
 	function doReadingHistoryAction($patron, $action, /** @noinspection PhpUnusedParameterInspection */
 	                                $selectedTitles){
-		global $configArray;
 		if (!$this->loginToKoha($patron)){
 			return;
 		}else{
@@ -1511,14 +1519,14 @@ class Aspencat implements DriverInterface{
 			}elseif ($action == 'exportList'){
 				//Leave this unimplemented for now.
 			}elseif ($action == 'optOut'){
-				$kohaUrl = $configArray['Catalog']['url'] . '/cgi-bin/koha/opac-update_reading_history.pl';
+				$kohaUrl = $this->kohaUrl . '/cgi-bin/koha/opac-update_reading_history.pl';
 				$postParams = array(
 					'disable_reading_history' => 1
 				);
 				$this->postToKohaPage($kohaUrl, $postParams);
 
 			}elseif ($action == 'optIn'){
-				$kohaUrl = $configArray['Catalog']['url'] . '/cgi-bin/koha/opac-update_reading_history.pl';
+				$kohaUrl = $this->kohaUrl . '/cgi-bin/koha/opac-update_reading_history.pl';
 				$postParams = array(
 					'disable_reading_history' => 0
 				);
@@ -1561,7 +1569,7 @@ class Aspencat implements DriverInterface{
 		$holdsForBib = array();
 
 		if (strpos($recordId, ':') > 0){
-			list($type, $recordId) = explode(':', $recordId);
+			[$type, $recordId] = explode(':', $recordId);
 		}
 
 		$this->initDatabaseConnection();

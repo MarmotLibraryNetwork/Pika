@@ -103,7 +103,7 @@ class API_ArchiveAPI extends AJAXHandler {
 				[$namespace] = explode(':', $record->getUniqueID());
 				global $configArray;
 				$dplaDoc['dataProvider'] = $namespace;
-				$dplaDoc['isShownAt']    = $configArray['Catalog']['url'] . $record->getLinkUrl();
+				$dplaDoc['isShownAt']    = $configArray['Site']['url'] . $record->getLinkUrl();
 				// When the contributing Library isn't provided we don't have an ideal base URL
 			}else{
 				$dplaDoc['dataProvider'] = $contributingLibrary['libraryName'];
