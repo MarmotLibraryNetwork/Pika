@@ -212,12 +212,8 @@ public class SierraExportAPIMain {
 		) {
 			if (accountProfileResult.next()) {
 				sierraUrl = PikaConfigIni.trimTrailingPunctuation(accountProfileResult.getString("vendorOpacUrl"));
-			} else {
-				//This should be depreciated
-				logger.warn("No accounting profile found for this indexing profile, falling back to config ini setting.");
-				sierraUrl = PikaConfigIni.trimTrailingPunctuation(PikaConfigIni.getIniValue("Catalog", "url"));
+				apiBaseUrl = sierraUrl + "/iii/sierra-api/v" + apiVersion;
 			}
-			apiBaseUrl = sierraUrl + "/iii/sierra-api/v" + apiVersion;
 		} catch (SQLException e) {
 			logger.error("Error retrieving account profile for " + indexingProfile.sourceName, e);
 		}
