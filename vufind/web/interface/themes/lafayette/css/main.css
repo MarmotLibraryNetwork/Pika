@@ -8322,8 +8322,8 @@ hr.menu {
   outline: none;
 }
 .sidebar-links .active .panel-heading {
-  background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #e6e6e6);
+  background-color: #3b3f43;
+  background: linear-gradient(to bottom, #3b3f43, #232628);
 }
 .sidebar-links .panel-body {
   font-size: 13px;
@@ -9833,8 +9833,8 @@ a.browse-thumbnail-sorted.active {
   text-shadow: 1px 1px #fff;
 }
 #more-details-accordion .active .panel-heading {
-  background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #e6e6e6);
+  background-color: #3b3f43;
+  background: linear-gradient(to bottom, #3b3f43, #232628);
 }
 #more-details-accordion .active .panel-title {
   color: #fff;
