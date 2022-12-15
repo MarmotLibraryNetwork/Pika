@@ -10467,6 +10467,9 @@ fieldset[disabled] .btn-masquerade.active {
   border-bottom: 0;
   box-shadow: 2px 2px 5px #fff;
 }
+#header-logo {
+  padding: 0;
+}
 #browse-label {
   background-color: #ffffff;
   border-bottom: 1px solid #080A11;
@@ -10528,7 +10531,7 @@ fieldset[disabled] .btn-masquerade.active {
   outline: none;
 }
 #selected-browse-label {
-  color: black;
+  color: #003149;
   background: none;
   padding: 20px 0;
   border-top: 1px solid #080A11;
@@ -10558,4 +10561,7 @@ fieldset[disabled] .btn-masquerade.active {
 .sidebar-button {
   background: #003149;
   padding: 5px 0;
+}
+.menu-bar {
+  background: #77A240;
 }

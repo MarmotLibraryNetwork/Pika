@@ -7,7 +7,9 @@
 
 .header-login-button-mixin(@header-buttons-background-color);
 
-
+#header-logo{
+  padding: 0;
+}
 
 // Browse Category customizations based on AnyThink
 
@@ -87,7 +89,7 @@
 }
 
 #selected-browse-label {
-  color: black; //TODO: set color
+  color: @loveland-dark-blue;
   background: none; //override line through label
   padding: 20px 0;
   border-top: 1px solid @browse-label-text-color;
@@ -124,4 +126,8 @@
 .sidebar-button{
   background:@loveland-dark-blue;
   padding: 5px 0;
+}
+
+.menu-bar{
+  background:@loveland-green;
 }
