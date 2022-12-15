@@ -10542,3 +10542,20 @@ fieldset[disabled] .btn-masquerade.active {
 #browse-sub-category-menu button.selected {
   background-color: #77A240;
 }
+.sidebar-links .panel-heading {
+  background: #e7e7e7;
+}
+.panel {
+  border: none;
+  border-radius: 0;
+}
+.panel-group .panel {
+  border-radius: 0;
+}
+.sidebar-links .active .panel-heading {
+  background: #003149;
+}
+.sidebar-button {
+  background: #003149;
+  padding: 5px 0;
+}
