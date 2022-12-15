@@ -10514,3 +10514,26 @@ fieldset[disabled] .btn-masquerade.active {
 #browse-sub-category-menu button {
   margin-bottom: 10px;
 }
+#horizontal-search-box #lookfor {
+  height: 34px!important;
+}
+.sidebar-links .panel-heading {
+  background: #e7e7e7;
+}
+.panel {
+  border: none;
+  border-radius: 0;
+}
+.panel-group .panel {
+  border-radius: 0;
+}
+.sidebar-links .active .panel-heading {
+  background: #3f0085;
+}
+.sidebar-button {
+  background: #3f0085;
+  padding: 7px 0;
+}
+.menu-bar {
+  background: #3f0085;
+}
