@@ -6,7 +6,7 @@
 @import "../../responsive/css/responsive_base.less";
 
 #searchSource {
-  color: @green-louisville-text;
+  color: white;
 }
 
 #browse-category-picker .jcarousel-control-prev, #browse-category-picker .jcarousel-control-next {
@@ -15,4 +15,64 @@
 
 #header-logo {
   padding-top: 20px;
+}
+
+.header-button:hover{
+  border-bottom: 2px solid @green-louisville;
+  background-color: @green-louisville;
+  color: white!important;
+  text-shadow: none;
+  font-weight: bold;
+  text-decoration: none;
+}
+.header-button{
+  border:none;
+  line-height:55px!important;
+  border-radius:35px;
+  margin-top:25px;
+  background-color: #f6f6f6;
+  color: @green-louisville!important;
+  text-shadow: none;
+  font-weight: bold;
+}
+#browse-label{
+  background:none;
+  height:inherit;
+  margin-top:0;
+  border-top:@purple-louisville 4px solid;
+}
+
+.browse-category{
+  text-shadow:none;
+  font-weight:bold;
+  border-radius: 10px 10px 0 0;
+  height:inherit;
+}
+.browse-category:hover{
+  background:#f6f6f6;
+}
+.browse-category div{
+  height:55px;
+}
+.browse-category.selected{
+  font-size:18px;
+  background:@green-louisville!important;
+
+}
+.browse-category.selected div{
+  color:white!important;
+}
+
+.jcarousel{
+  border-bottom:1px solid #ddd;
+}
+.jcarousel-control-next{
+  box-shadow:none;
+}
+.jcarousel-control-prev{
+  box-shadow:none;
+}
+
+#browse-sub-category-menu button {
+margin-bottom: 10px;
 }
