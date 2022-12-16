@@ -10480,14 +10480,9 @@ fieldset[disabled] .btn-masquerade.active {
 #browse-label .browse-label-text {
   font-weight: 600;
 }
-.browse-category {
-  padding-top: 20px;
-  height: 120px;
-}
 .browse-category div {
   text-shadow: none;
-  text-transform: uppercase;
-  font-size: large;
+  font-size: 18px;
   font-weight: 500;
 }
 .browse-category div:focus {
@@ -10564,4 +10559,7 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .menu-bar {
   background: #77A240;
+}
+#horizontal-search-box #lookfor {
+  height: 34px!important;
 }
