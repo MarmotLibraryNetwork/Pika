@@ -147,7 +147,7 @@ class MyAccount_Masquerade extends MyAccount {
 							$guidingUser = $user;
 							// NOW login in as masquerade user
 							$accountProfile = $user->getAccountProfile();
-							$authMethod = $accountProfile->loginConfiguration;
+							$authMethod     = $accountProfile->loginConfiguration;
 							if($authMethod == 'barcode_pin') {
 								$_REQUEST['username'] = $masqueradedUser->getBarcode();
 								$_REQUEST['password'] = $masqueradedUser->getPassword();
@@ -205,8 +205,15 @@ class MyAccount_Masquerade extends MyAccount {
 			unset($_SESSION['guidingUserId']);
 			$masqueradeMode = false;
 			if ($guidingUser){
-				$_REQUEST['username'] = $guidingUser->cat_username;
-				$_REQUEST['password'] = $guidingUser->getPassword();
+				$accountProfile = $guidingUser->getAccountProfile();
+				$authMethod     = $accountProfile->loginConfiguration;
+				if($authMethod == 'barcode_pin') {
+					$_REQUEST['username'] = $guidingUser->getBarcode();
+					$_REQUEST['password'] = $guidingUser->getPassword();
+				} else {
+					$_REQUEST['username'] = $guidingUser->cat_username;
+					$_REQUEST['password'] = $guidingUser->getBarcode();
+				}
 				$user                 = UserAccount::login();
 				if ($user && !PEAR_Singleton::isError($user)){
 					return ['success' => true];
