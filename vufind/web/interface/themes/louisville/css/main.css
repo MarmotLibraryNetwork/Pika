@@ -10501,9 +10501,6 @@ fieldset[disabled] .btn-masquerade.active {
 .browse-category.selected div {
   color: white!important;
 }
-.jcarousel {
-  border-bottom: 1px solid #ddd;
-}
 .jcarousel-control-next {
   box-shadow: none;
 }
