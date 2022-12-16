@@ -10544,3 +10544,6 @@ fieldset[disabled] .btn-masquerade.active {
 #browse-sub-category-menu button.selected {
   background-color: #3A500A;
 }
+#horizontal-search-box #lookfor {
+  height: 34px!important;
+}
