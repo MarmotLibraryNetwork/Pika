@@ -10486,14 +10486,13 @@ fieldset[disabled] .btn-masquerade.active {
 .browse-category {
   text-shadow: none;
   font-weight: bold;
-  border-radius: 10px 10px 0 0;
-  height: inherit;
+  border-radius: 10px;
 }
 .browse-category:hover {
   background: #f6f6f6;
 }
 .browse-category div {
-  height: 55px;
+  min-height: 55px;
 }
 .browse-category.selected {
   font-size: 18px;
