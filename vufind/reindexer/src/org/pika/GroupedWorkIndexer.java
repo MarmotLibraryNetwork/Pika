@@ -1034,10 +1034,12 @@ public class GroupedWorkIndexer {
 						reportIntervalStart = reportIntervalEnd; // set up next interval
 						GroupedReindexMain.addNoteToReindexLog(numWorksProcessed + " grouped works processed. Interval for this batch (mins) : " + interval);
 					}
-				}
-				if (maxWorksToProcess != -1 && numWorksProcessed >= maxWorksToProcess){
-					logger.warn("Stopping processing now because we've reached the max works to process.");
-					break;
+					if (!fullReindex && maxWorksToProcess != -1 && numWorksProcessed >= maxWorksToProcess){
+						String message = "Stopping processing now because we've reached the max works to process.";
+						GroupedReindexMain.addNoteToReindexLog(message);
+						logger.warn(message);
+						break;
+					}
 				}
 				if (lastUpdated == null){
 					setLastUpdatedTime.setLong(1, indexStartTime - 1); //Set just before the index started so we don't index multiple times
