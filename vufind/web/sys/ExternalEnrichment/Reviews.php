@@ -105,8 +105,7 @@ class ExternalReviews {
 	 * @access  public
 	 * @return  array                       Associative array of excerpts.
 	 */
-	public function fetch()
-	{
+	public function fetch(){
 		return $this->results;
 	}
 
@@ -133,65 +132,62 @@ class ExternalReviews {
 	 * @author  Joel Timothy Norman <joel.t.norman@wmich.edu>
 	 * @author  Andrew Nagy <andrew.nagy@villanova.edu>
 	 */
-	private function syndetics($id)
-	{
+	private function syndetics($id){
 		global $configArray;
 		global $timer;
 
 		//list of syndetic reviews
 		if (isset($configArray['SyndeticsReviews']['SyndeticsReviewsSources'])){
-			$sourceList = array();
+			$sourceList = [];
 			foreach ($configArray['SyndeticsReviews']['SyndeticsReviewsSources'] as $key => $label){
-				$sourceList[$key] = array('title' => $label, 'file' => "$key.XML");
+				$sourceList[$key] = ['title' => $label, 'file' => "$key.XML"];
 			}
 		}else{
-			$sourceList = array(
-				/*'CHREVIEW' => array('title' => 'Choice Review',
-			'file' => 'CHREVIEW.XML'),*/
-	                            'BLREVIEW' => array('title' => 'Booklist Review',
-	                                                'file' => 'BLREVIEW.XML'),
-	                            'PWREVIEW' => array('title' => "Publisher's Weekly Review",
-	                                                'file' => 'PWREVIEW.XML'),
-			/*'SLJREVIEW' => array('title' => 'School Library Journal Review',
-			 'file' => 'SLJREVIEW.XML'),*/
-	                            'LJREVIEW' => array('title' => 'Library Journal Review',
-	                                                'file' => 'LJREVIEW.XML'),
-			/*'HBREVIEW' => array('title' => 'Horn Book Review',
-			 'file' => 'HBREVIEW.XML'),
-			 'KIREVIEW' => array('title' => 'Kirkus Book Review',
-			 'file' => 'KIREVIEW.XML'),
-			 'CRITICASEREVIEW' => array('title' => 'Criti Case Review',
-			 'file' => 'CRITICASEREVIEW.XML')*/
-			);
+			$sourceList = [
+				'BLREVIEW'        => ['title' => 'Booklist Review',
+				                      'file'  => 'BLREVIEW.XML'],
+				'PWREVIEW'        => ['title' => "Publisher's Weekly Review",
+				                      'file'  => 'PWREVIEW.XML'],
+				'LJREVIEW'        => ['title' => 'Library Journal Review',
+				                      'file'  => 'LJREVIEW.XML'],
+				/*'CHREVIEW'        => ['title' => 'Choice Review',
+				                      'file'  => 'CHREVIEW.XML'],
+				'SLJREVIEW'       => ['title' => 'School Library Journal Review',
+				                      'file'  => 'SLJREVIEW.XML'],
+				'HBREVIEW'        => ['title' => 'Horn Book Review',
+				                      'file'  => 'HBREVIEW.XML'],
+				'KIREVIEW'        => ['title' => 'Kirkus Book Review',
+				                      'file'  => 'KIREVIEW.XML'],
+				'CRITICASEREVIEW' => ['title' => 'Criti Case Review',
+				                      'file'  => 'CRITICASEREVIEW.XML']*/
+			];
 		}
-		$timer->logTime("Got list of syndetic reviews to show");
+		$timer->logTime('Got list of syndetic reviews to show');
 
 		//first request url
-		$baseUrl = isset($configArray['Syndetics']['url']) ?
-		$configArray['Syndetics']['url'] : 'http://syndetics.com';
-		$url = $baseUrl . '/index.aspx?isbn=' . $this->isbn . '/' .
-               'index.xml&client=' . $id . '&type=rw12,hw7';
+		$baseUrl = $configArray['Syndetics']['url'] ?? 'http://syndetics.com';
+		$url     = $baseUrl . '/index.aspx?isbn=' . $this->isbn . '/' .
+			'index.xml&client=' . $id . '&type=rw12,hw7';
 
 		//find out if there are any reviews
 		try {
-			$curl     = new Curl();
+			$curl = new Curl();
 			$curl->setXmlDecoder('DOMDocument::loadXML');
 			/** @var DOMDocument $xmlDoc */
 			$xmlDoc = $curl->get($url);
 		} catch (Exception $e){
-			$this->logger->error($e->getMessage(), ['stacktrace'=>$e->getTraceAsString()]);
+			$this->logger->error($e->getMessage(), ['stacktrace' => $e->getTraceAsString()]);
 			return [];
 		}
-		if ($curl->isCurlError()) {
-			$message = 'curl Error: '.$curl->getCurlErrorCode().': '.$curl->getCurlErrorMessage();
+		if ($curl->isCurlError()){
+			$message = 'curl Error: ' . $curl->getCurlErrorCode() . ': ' . $curl->getCurlErrorMessage();
 			$this->logger->warning($message);
 			return [];
 		}
 
 
-
-		$review = array();
-		$i = 0;
+		$review = [];
+		$i      = 0;
 		foreach ($sourceList as $source => $sourceInfo){
 			$nodes = $xmlDoc->getElementsByTagName($source);
 			if ($nodes->length){
@@ -215,7 +211,7 @@ class ExternalReviews {
 				}
 
 				// Get the marc field for reviews (520)
-				$nodes = $xmlDoc2->GetElementsbyTagName("Fld520");
+				$nodes = $xmlDoc2->GetElementsbyTagName('Fld520');
 				if (!$nodes->length){
 					// Skip reviews with missing text
 					continue;
@@ -225,7 +221,7 @@ class ExternalReviews {
 				$review[$i]['Content'] = str_ireplace("</a>", "</p>", $review[$i]['Content']);
 
 				// Get the marc field for copyright (997)
-				$nodes = $xmlDoc2->GetElementsbyTagName("Fld997");
+				$nodes                   = $xmlDoc2->GetElementsbyTagName("Fld997");
 				$review[$i]['Copyright'] = ($nodes->length) ? null : html_entity_decode($xmlDoc2->saveXML($nodes->item(0)));
 
 				//Check to see if the copyright is contained in the main body of the review and if so, remove it.
@@ -238,7 +234,7 @@ class ExternalReviews {
 				}
 
 				$review[$i]['Source']   = $sourceInfo['title'];  //changes the xml to actual title
-				$review[$i]['ISBN']     = $this->isbn; //show more link
+				$review[$i]['ISBN']     = $this->isbn;           //show more link
 				$review[$i]['username'] = isset($configArray['BookReviews']) ? $configArray['BookReviews']['id'] : '';
 
 				$i++;
