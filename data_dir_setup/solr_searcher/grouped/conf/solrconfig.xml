@@ -1212,10 +1212,8 @@
 	<requestHandler name="/replication" class="solr.ReplicationHandler" >
 		<lst name="follower">
 			<str name="masterUrl">http://localhost:${solr.masterport:8180}/solr/grouped</str>
-			<str name="pollInterval">00:1:00</str>
-<!--			<str name="pollInterval">00:02:00</str>-->
-			<!-- Switching to two minutes for marmot production to see if this will prevent serach results zero-ing out on restart,
-			 which take a couple minutes to become responsive. D-4357-->
+			<str name="pollInterval">${solr.pollInterval:00:1:00}</str>
+			<!-- Changing this can prevent search results zero-ing out on restart if it takes a couple minutes to become responsive. See D-4357-->
 		</lst>
 		<int name="maxNumberOfBackups">3</int>
 		<!--Added this setting to see if it ends the old solr index directories problem. Pascal 1/13/2021 (of course upgrade may solve this on its own
