@@ -5,10 +5,45 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
-#searchSource {
-  color: @green-louisville-text;
-}
-
 #browse-category-picker .jcarousel-control-prev, #browse-category-picker .jcarousel-control-next {
   //background-color: @green-louisville-background;
 }
+
+#header-container{
+  background:@banner-longmont url("../images/banner_chevron.png") no-repeat left;
+}
+
+#header-logo{
+  padding :30px 10px 0 100px ;
+  max-width: 500px;
+}
+
+#browse-sub-category-menu button {
+  margin-bottom: 10px;
+}
+
+#horizontal-search-box #lookfor {
+  height: 34px!important;
+}
+
+.header-button{
+  background: @medium-gray-longmont!important;
+  border-radius:50px;
+  height: 65px;
+  border:none;
+  color: black!important;
+  text-shadow:none;
+  line-height:65px!important;
+}
+.header-button:hover{
+  border:none;
+  background: @medium-blue-longmont!important;
+  color:white!important;
+  font-weight:bold;
+}
+.header-primary{
+  border:none;
+  margin-top: 20px;
+}
+
+.system-message-header{background:@light-gray-longmont;}
