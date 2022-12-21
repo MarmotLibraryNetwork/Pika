@@ -8482,8 +8482,8 @@ hr.menu {
 }
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
-  background-color: #9e9fa3;
-  color: #d4d4d4;
+  background-color: white;
+  color: #326295;
   font-size: 50px;
 }
 #browse-category-picker .jcarousel-control-prev:focus,
@@ -8641,7 +8641,7 @@ hr.menu {
 }
 .selected-browse-label-search {
   font-size: 20px;
-  color: #0072bc;
+  color: black;
   vertical-align: top;
   margin-left: 20px;
   float: left;
@@ -8649,7 +8649,7 @@ hr.menu {
   padding: 0 8px;
 }
 .selected-browse-label-search a {
-  color: #0072bc;
+  color: black;
 }
 #selected-browse-search-link .icon-before {
   position: relative;
@@ -10487,4 +10487,30 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .system-message-header {
   background: #F7F7F7;
+}
+.sidebar-links .panel-heading {
+  background: #e7e7e7;
+}
+.panel {
+  border: none;
+  border-radius: 0;
+}
+.panel-group .panel {
+  border-radius: 0;
+}
+.sidebar-links .active .panel-heading {
+  background: #326295;
+}
+.sidebar-button {
+  background: #133155;
+  padding: 7px 0;
+}
+.menu-bar {
+  background: #F7F7F7;
+}
+.jcarousel-control-prev {
+  left: 18px;
+}
+.jcarousel-control-next {
+  right: 20px;
 }
