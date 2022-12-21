@@ -54,8 +54,7 @@ class MyAccount_SelectInterface extends Action {
 					$baseUrl .= '/' . $_REQUEST['gotoModule'];
 				}
 				if (!empty($_REQUEST['gotoAction'])){
-					$gotoAction = $_REQUEST['gotoAction'];
-					$baseUrl    .= '/' . $_REQUEST['gotoModule'];
+					$baseUrl .= '/' . $_REQUEST['gotoAction'];
 				}
 
 				if (isset($_REQUEST['rememberThis']) && isset($_REQUEST['submit'])){
