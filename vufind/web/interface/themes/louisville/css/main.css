@@ -10462,6 +10462,9 @@ fieldset[disabled] .btn-masquerade.active {
 @font-face {
   font-family: 'Roboto', sans-serif;
 }
+body {
+  font-family: 'Roboto', sans-serif;
+}
 #searchSource {
   color: white;
 }
