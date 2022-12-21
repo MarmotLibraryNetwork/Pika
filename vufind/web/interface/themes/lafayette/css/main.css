@@ -10575,3 +10575,9 @@ h3 {
 .system-message-header {
   background: #E8F4FA;
 }
+#vertical-menu-bar {
+  background: #3b3f43;
+}
+#vertical-menu-bar .menu-bar-option.menu-icon-selected {
+  background: #3276b1;
+}
