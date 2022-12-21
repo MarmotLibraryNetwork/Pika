@@ -8170,6 +8170,12 @@ hr.menu {
 .required-input {
   color: red;
 }
+.sidebar-button {
+  padding: 7px 0;
+}
+#horizontal-search-box #lookfor {
+  height: 34px!important;
+}
 #home-page-search {
   background-color: #3A500A;
   background: linear-gradient(to bottom, #3A500A, #3A500A);
@@ -10546,4 +10552,17 @@ fieldset[disabled] .btn-masquerade.active {
 }
 #horizontal-search-box #lookfor {
   height: 34px!important;
+}
+.sidebar-links .panel-heading {
+  background: #e7e7e7;
+}
+.panel {
+  border: none;
+  border-radius: 0;
+}
+.panel-group .panel {
+  border-radius: 0;
+}
+.sidebar-button {
+  padding: 7px 0;
 }

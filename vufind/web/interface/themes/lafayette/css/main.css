@@ -8170,6 +8170,12 @@ hr.menu {
 .required-input {
   color: red;
 }
+.sidebar-button {
+  padding: 7px 0;
+}
+#horizontal-search-box #lookfor {
+  height: 34px!important;
+}
 #home-page-search {
   background-color: #3b3f43;
   background: linear-gradient(to bottom, #3b3f43, #3b3f43);
