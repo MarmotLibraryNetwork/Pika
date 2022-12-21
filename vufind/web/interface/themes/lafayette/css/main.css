@@ -4579,13 +4579,13 @@ a.thumbnail.active {
 .alert-info {
   background-color: #e8f4fa;
   border-color: #cbedf4;
-  color: #285d77;
+  color: black;
 }
 .alert-info hr {
   border-top-color: #b6e6ef;
 }
 .alert-info .alert-link {
-  color: #1b3f51;
+  color: #000000;
 }
 .alert-warning {
   background-color: #fcf8e3;
@@ -6845,7 +6845,7 @@ a.btn-info {
   }
 }
 body {
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'Open Sans', verdana, sans-serif;
   background-color: #fff;
 }
 body > .container {
@@ -10459,6 +10459,9 @@ fieldset[disabled] .btn-masquerade.active {
   color: #ebccff;
   background-color: #fff;
 }
+@font-face {
+  font-family: "Open Sans", Arial, Helvetica, sans-serif;
+}
 #browse-sub-category-menu button {
   margin-bottom: 10px;
 }
@@ -10506,6 +10509,7 @@ fieldset[disabled] .btn-masquerade.active {
   background: none;
   height: inherit;
   margin-top: 0;
+  display: none;
 }
 .browse-category {
   text-shadow: none;
@@ -10564,4 +10568,7 @@ h3 {
 }
 .menu-bar {
   background: #3b3f43;
+}
+.system-message-header {
+  background: #E8F4FA;
 }

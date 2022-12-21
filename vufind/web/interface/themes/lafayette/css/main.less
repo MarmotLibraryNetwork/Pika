@@ -5,6 +5,9 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
+@font-face{
+  font-family: "Open Sans", Arial, Helvetica, sans-serif;
+}
 
 #browse-category-picker .jcarousel-control-prev, #browse-category-picker .jcarousel-control-next {
   //background-color: @green-louisville-background;
@@ -61,6 +64,7 @@
   height:inherit;
   margin-top:0;
   @border-top:4px solid @grey-lafayette;
+  display:none;
 }
 .browse-category{
   text-shadow:none;
@@ -125,4 +129,8 @@
 
 .menu-bar{
   background:@grey-lafayette;
+}
+
+.system-message-header{
+  background: #E8F4FA;
 }
