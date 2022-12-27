@@ -10569,3 +10569,12 @@ fieldset[disabled] .btn-masquerade.active {
 #horizontal-search-box #lookfor {
   height: 34px!important;
 }
+#browse-sub-category-menu button {
+  margin-bottom: 10px;
+}
+#vertical-menu-bar {
+  background: #77A240;
+}
+#vertical-menu-bar .menu-bar-option.menu-icon-selected {
+  background: #603A17;
+}
