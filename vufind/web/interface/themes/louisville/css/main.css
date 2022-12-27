@@ -10545,3 +10545,9 @@ body {
 .menu-bar {
   background: #3f0085;
 }
+#vertical-menu-bar {
+  background: #3f0085;
+}
+#vertical-menu-bar .menu-bar-option.menu-icon-selected {
+  background: #00853f;
+}
