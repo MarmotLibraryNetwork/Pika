@@ -10606,3 +10606,11 @@ fieldset[disabled] .btn-masquerade.active {
 #vertical-menu-bar .menu-bar-option.menu-icon-selected {
   background: #1A2B4B;
 }
+#library-name-header {
+  font-family: "Verdana", Arial, Helvetica, sans-serif;
+  color: #484848;
+  font-size: 27px;
+  white-space: nowrap;
+  /*padding-left: 175px;*/
+  padding-top: 40px;
+}
