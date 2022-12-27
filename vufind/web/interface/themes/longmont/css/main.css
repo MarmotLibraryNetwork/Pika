@@ -10462,9 +10462,20 @@ fieldset[disabled] .btn-masquerade.active {
 #header-container {
   background: #133155 url("../images/banner_chevron.png") no-repeat left;
 }
+@media (max-width: 767px) {
+  #header-container {
+    border-bottom: none;
+  }
+}
 #header-logo {
-  padding: 30px 10px 0 100px ;
+  padding: 30px 10px 0 100px;
   max-width: 500px;
+}
+@media (max-width: 767px) {
+  #header-logo {
+    max-width: 100%;
+    padding: 35px 0 0 60px;
+  }
 }
 #browse-sub-category-menu button {
   margin-bottom: 10px;
@@ -10512,11 +10523,17 @@ fieldset[disabled] .btn-masquerade.active {
   padding: 7px 0;
 }
 .menu-bar {
-  background: #F7F7F7;
+  background: #326295;
 }
 .jcarousel-control-prev {
   left: 18px;
 }
 .jcarousel-control-next {
   right: 20px;
+}
+#vertical-menu-bar {
+  background: #326295;
+}
+#vertical-menu-bar .menu-bar-option.menu-icon-selected {
+  background: #133155;
 }
