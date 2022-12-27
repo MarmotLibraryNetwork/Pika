@@ -10464,21 +10464,21 @@ fieldset[disabled] .btn-masquerade.active {
 }
 #header-container-header {
   font-family: "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
-  color: #484848;
+  color: #597635;
   white-space: nowrap;
   /*padding-left: 175px;*/
   padding-top: 40px;
 }
 #header-container {
   background: rgba(0, 0, 0, 0) linear-gradient(to bottom, #ffffff, #ffffff) repeat scroll 0 0;
-  border-bottom: 8px solid #4F823A;
+  border-bottom: 8px solid #597635;
   height: 90px;
   margin-bottom: 0;
   min-height: 110px;
   padding-top: 0;
 }
 #header-links {
-  background: #4F823A;
+  background: #597635;
 }
 .header-link-wrapper a {
   color: white;
@@ -10487,7 +10487,7 @@ fieldset[disabled] .btn-masquerade.active {
 #header-links .header-link-wrapper {
   border: none;
 }
-/*#header-links .header-link-wrapper:last-of-type {border-right: 1px solid #4F823A}*/
+/*#header-links .header-link-wrapper:last-of-type {border-right: 1px solid @green-boulder}*/
 .header-button {
   border-radius: .5em;
   border: 1px solid #ccc;
@@ -10503,14 +10503,14 @@ fieldset[disabled] .btn-masquerade.active {
   border-color: #adadad;
 }
 #home-page-search {
-  background-color: #4F823A;
+  background-color: #597635;
 }
 .searchTypeHome {
   background-color: #ffffff;
   color: #000000;
 }
 #horizontal-search-box {
-  background: rgba(0, 0, 0, 0) linear-gradient(to bottom, #4F823A, #4F823A) repeat scroll 0 0;
+  background: rgba(0, 0, 0, 0) linear-gradient(to bottom, #597635, #597635) repeat scroll 0 0;
   padding: 15px 0;
 }
 .sidebar-links .active .panel-heading {
@@ -10596,4 +10596,13 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .menu-bar {
   background: #597635;
+}
+#vertical-menu-bar {
+  background: #597635;
+}
+#horizontal-menu-bar-container .menu-icon.menu-icon-selected {
+  background: #1A2B4B;
+}
+#vertical-menu-bar .menu-bar-option.menu-icon-selected {
+  background: #1A2B4B;
 }
