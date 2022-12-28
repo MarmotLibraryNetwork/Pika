@@ -21,6 +21,7 @@
 					gtag('config', {/literal}{$googleAnalytics4Id}{literal});
 				}
 				<!-- End GA4 -->
+				}
 			</script>{/literal}
     {/if}
 	<!-- End Google Analytics for Archive-->
