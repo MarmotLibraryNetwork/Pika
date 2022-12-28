@@ -18,10 +18,10 @@
 					window.dataLayer = window.dataLayer || [];
 					function gtag(){dataLayer.push(arguments);}
 					gtag('js', new Date());
-					gtag('config', {/literal}{$googleAnalytics4Id}{literal});
+					gtag('config', '{/literal}{$googleAnalytics4Id}{literal}');
 				}
 				<!-- End GA4 -->
-				}
+				
 			</script>{/literal}
     {/if}
 	<!-- End Google Analytics for Archive-->
@@ -36,7 +36,7 @@
 				window.dataLayer = window.dataLayer || [];
 				function gtag(){dataLayer.push(arguments);}
 				gtag('js', new Date());
-				gtag('config', {/literal}{$googleAnalytics4Id}{literal});
+				gtag('config', '{/literal}{$googleAnalytics4Id}{literal}');
 				}
 			<!-- End GA4 -->
 </script>{/literal}
