@@ -293,72 +293,75 @@ class UInterface extends Smarty {
 			$this->assign('debugCss', true);
 		}
 
-		//Set System Message
-		$systemMessage = [];
-		if (!empty($configArray['System']['systemMessage'])){
-			if (is_array($configArray['System']['systemMessage'])){
-				$systemMessage = $configArray['System']['systemMessage'];
-			} else{
-				$systemMessage[] = $configArray['System']['systemMessage'];
-			}
-			// Note Maintenance Mode depends on this
-		}
-		if ($offlineMode){
-			$systemMessage[] = "<p class='alert alert-warning'><strong>The circulation system is currently offline.</strong>  Access to account information and availability is limited.</p>";
-		}
-		if (!empty($library->systemMessage)){
-			$systemMessage[] = $library->systemMessage;
-		}
-		$this->assign('systemMessage', $systemMessage);
+    //Set System Message
+    $systemMessage = [];
+    if (!empty($configArray['System']['systemMessage'])){
+      if (is_array($configArray['System']['systemMessage'])){
+        $systemMessage = $configArray['System']['systemMessage'];
+      } else{
+        $systemMessage[] = $configArray['System']['systemMessage'];
+      }
+      // Note Maintenance Mode depends on this
+    }
+    if ($offlineMode){
+      $systemMessage[] = "<p class='alert alert-warning'><strong>The circulation system is currently offline.</strong>  Access to account information and availability is limited.</p>";
+    }
+    if (!empty($library->systemMessage)){
+      $systemMessage[] = $library->systemMessage;
+    }
+    $this->assign('systemMessage', $systemMessage);
 
-			// Global Sidebar settings
-		$displaySidebarMenu = false;
-		if (isset($configArray['Site']['sidebarMenu'])){
-			// config.ini setting can disable for entire site, or the library setting can turn off for its view.
-			$displaySidebarMenu = ((bool)$configArray['Site']['sidebarMenu']) && $library->showSidebarMenu;
-		}
-		$this->assign('displaySidebarMenu', $displaySidebarMenu);
+    // Global Sidebar settings
+    $displaySidebarMenu = false;
+    if (isset($configArray['Site']['sidebarMenu'])){
+      // config.ini setting can disable for entire site, or the library setting can turn off for its view.
+      $displaySidebarMenu = ((bool)$configArray['Site']['sidebarMenu']) && $library->showSidebarMenu;
+    }
+    $this->assign('displaySidebarMenu', $displaySidebarMenu);
 
-		$this->assign('showFines', $configArray['Catalog']['showFines']);
-		$this->assign('showConvertListsFromClassic', $configArray['Catalog']['showConvertListsFromClassic']);
+    $this->assign('showFines', $configArray['Catalog']['showFines']);
+    $this->assign('showConvertListsFromClassic', $configArray['Catalog']['showConvertListsFromClassic']);
 
 
-		// Global google settings
-		//Figure out google translate id
-		if (!empty($configArray['Translation']['google_translate_key'])){
-			$this->assign('google_translate_key', $configArray['Translation']['google_translate_key']);
-			$this->assign('google_included_languages', $configArray['Translation']['includedLanguages']);
-		}
+    // Global google settings
+    //Figure out google translate id
+    if (!empty($configArray['Translation']['google_translate_key'])){
+      $this->assign('google_translate_key', $configArray['Translation']['google_translate_key']);
+      $this->assign('google_included_languages', $configArray['Translation']['includedLanguages']);
+    }
 
-		//Check to see if we have a google site verification key
-		if (!empty($configArray['Site']['google_verification_key'])){
-			$this->assign('google_verification_key', $configArray['Site']['google_verification_key']);
-		}
+    //Check to see if we have a google site verification key
+    if (!empty($configArray['Site']['google_verification_key'])){
+      $this->assign('google_verification_key', $configArray['Site']['google_verification_key']);
+    }
 
-		//Set up google maps integrations
-		if (!empty($configArray['Maps']['apiKey'])){
-			$mapsKey = $configArray['Maps']['apiKey'];
-			$this->assign('mapsKey', $mapsKey);
-		}
-		if (!empty($configArray['Maps']['browserKey'])){
-			$mapsKey = $configArray['Maps']['browserKey'];
-			$this->assign('mapsBrowserKey', $mapsKey);
-		}
-
-		// Google Analytics
-		$googleAnalyticsId        = !empty($configArray['Analytics']['googleAnalyticsId']) ? $configArray['Analytics']['googleAnalyticsId'] : false;
-		$googleAnalyticsLibraryId = !empty($library->gaTrackingId) ? $library->gaTrackingId : false;
-		$googleAnalyticsLinkingId = !empty($configArray['Analytics']['googleAnalyticsLinkingId']) ? $configArray['Analytics']['googleAnalyticsLinkingId'] : false;
-		$trackTranslation         = !empty($configArray['Analytics']['trackTranslation']) ? $configArray['Analytics']['trackTranslation'] : false;
-		$this->assign('googleAnalyticsId', $googleAnalyticsId);
-		$this->assign('googleAnalyticsLibraryId', $googleAnalyticsLibraryId);
-		$this->assign('trackTranslation', $trackTranslation);
-		$this->assign('googleAnalyticsLinkingId', $googleAnalyticsLinkingId);
+    //Set up google maps integrations
+    if (!empty($configArray['Maps']['apiKey'])){
+      $mapsKey = $configArray['Maps']['apiKey'];
+      $this->assign('mapsKey', $mapsKey);
+    }
+    if (!empty($configArray['Maps']['browserKey'])){
+      $mapsKey = $configArray['Maps']['browserKey'];
+      $this->assign('mapsBrowserKey', $mapsKey);
+    }
+		// todo: google analytics obsolete July 2023. only ga4 will work
+    // Google Analytics --
+    $googleAnalyticsId        = !empty($configArray['Analytics']['googleAnalyticsId']) ? $configArray['Analytics']['googleAnalyticsId'] : false;
+    $googleAnalyticsLibraryId = !empty($library->gaTrackingId) ? $library->gaTrackingId : false;
+    $googleAnalyticsLinkingId = !empty($configArray['Analytics']['googleAnalyticsLinkingId']) ? $configArray['Analytics']['googleAnalyticsLinkingId'] : false;
+    $trackTranslation         = !empty($configArray['Analytics']['trackTranslation']) ? $configArray['Analytics']['trackTranslation'] : false;
+    $this->assign('googleAnalyticsId', $googleAnalyticsId);
+    $this->assign('googleAnalyticsLibraryId', $googleAnalyticsLibraryId);
+    $this->assign('trackTranslation', $trackTranslation);
+    $this->assign('googleAnalyticsLinkingId', $googleAnalyticsLinkingId);
 		if ($googleAnalyticsId){
-			$googleAnalyticsDomainName = isset($configArray['Analytics']['domainName']) ? $configArray['Analytics']['domainName'] : strstr($_SERVER['SERVER_NAME'], '.');
-			// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
-			$this->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
-		}
+      $googleAnalyticsDomainName = isset($configArray['Analytics']['domainName']) ? $configArray['Analytics']['domainName'] : strstr($_SERVER['SERVER_NAME'], '.');
+      // check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
+      $this->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
+    }
+		// GA4
+		$googleAnalytics4Id        = !empty($configArray['Analytics']['googleAnalytics4Id']) ? $configArray['Analytics']['googleAnalytics4Id'] : false;
+		$this->assign('googleAnalytics4Id', $googleAnalytics4Id);
 
 		/** @var Location $location */
 		$location = $locationSingleton->getActiveLocation();
