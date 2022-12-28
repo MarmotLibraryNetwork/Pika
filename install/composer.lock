@@ -200,16 +200,16 @@
         },
         {
             "name": "jasig/phpcas",
-            "version": "1.5.0",
+            "version": "1.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/apereo/phpCAS.git",
-                "reference": "d6f5797fb568726f34c8e48741776d81e4a2646b"
+                "reference": "f817c72a961484afef95ac64a9257c8e31f063b9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/apereo/phpCAS/zipball/d6f5797fb568726f34c8e48741776d81e4a2646b",
-                "reference": "d6f5797fb568726f34c8e48741776d81e4a2646b",
+                "url": "https://api.github.com/repos/apereo/phpCAS/zipball/f817c72a961484afef95ac64a9257c8e31f063b9",
+                "reference": "f817c72a961484afef95ac64a9257c8e31f063b9",
                 "shasum": ""
             },
             "require": {
@@ -262,9 +262,9 @@
             ],
             "support": {
                 "issues": "https://github.com/apereo/phpCAS/issues",
-                "source": "https://github.com/apereo/phpCAS/tree/1.5.0"
+                "source": "https://github.com/apereo/phpCAS/tree/1.6.0"
             },
-            "time": "2022-05-03T21:12:54+00:00"
+            "time": "2022-10-31T20:39:27+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -580,16 +580,16 @@
         },
         {
             "name": "pear/mail",
-            "version": "v1.4.1",
+            "version": "v1.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pear/Mail.git",
-                "reference": "9609ed5e42ac5b221dfd9af85de005c59d418ee7"
+                "reference": "c31b7635899a630a8ce681e5ced18cededcc15f3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pear/Mail/zipball/9609ed5e42ac5b221dfd9af85de005c59d418ee7",
-                "reference": "9609ed5e42ac5b221dfd9af85de005c59d418ee7",
+                "url": "https://api.github.com/repos/pear/Mail/zipball/c31b7635899a630a8ce681e5ced18cededcc15f3",
+                "reference": "c31b7635899a630a8ce681e5ced18cededcc15f3",
                 "shasum": ""
             },
             "require": {
@@ -613,12 +613,17 @@
                 "./"
             ],
             "license": [
-                "BSD-2-Clause"
+                "BSD-3-Clause"
             ],
             "authors": [
                 {
                     "name": "Chuck Hagenbuch",
                     "email": "chuck@horde.org",
+                    "role": "Lead"
+                },
+                {
+                    "name": "Armin Graefe",
+                    "email": "schengawegga@gmail.com",
                     "role": "Lead"
                 },
                 {
@@ -638,20 +643,20 @@
                 "issues": "http://pear.php.net/bugs/search.php?cmd=display&package_name[]=Mail",
                 "source": "https://github.com/pear/Mail"
             },
-            "time": "2017-04-11T17:27:29+00:00"
+            "time": "2022-11-29T22:04:18+00:00"
         },
         {
             "name": "pear/net_smtp",
-            "version": "1.10.0",
+            "version": "1.10.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pear/Net_SMTP.git",
-                "reference": "51e5997b711fbd1e5a9a075634d4d682168537fa"
+                "reference": "cfd963dc5cc73b4d64c7769e47dfa0f439dec536"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pear/Net_SMTP/zipball/51e5997b711fbd1e5a9a075634d4d682168537fa",
-                "reference": "51e5997b711fbd1e5a9a075634d4d682168537fa",
+                "url": "https://api.github.com/repos/pear/Net_SMTP/zipball/cfd963dc5cc73b4d64c7769e47dfa0f439dec536",
+                "reference": "cfd963dc5cc73b4d64c7769e47dfa0f439dec536",
                 "shasum": ""
             },
             "require": {
@@ -689,6 +694,11 @@
                     "name": "Chuck Hagenbuch",
                     "email": "chuck@horde.org",
                     "role": "Lead"
+                },
+                {
+                    "name": "Armin Graefe",
+                    "email": "schengawegga@gmail.com",
+                    "role": "Lead"
                 }
             ],
             "description": "An implementation of the SMTP protocol",
@@ -702,7 +712,7 @@
                 "issues": "https://github.com/pear/Net_SMTP/issues",
                 "source": "https://github.com/pear/Net_SMTP"
             },
-            "time": "2021-03-19T18:39:42+00:00"
+            "time": "2022-09-23T21:48:50+00:00"
         },
         {
             "name": "pear/net_socket",
@@ -1350,16 +1360,16 @@
         },
         {
             "name": "phpmailer/phpmailer",
-            "version": "v6.6.2",
+            "version": "v6.6.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHPMailer/PHPMailer.git",
-                "reference": "b52ed06864fdda81b82ec8bf564cf15d45ed4f95"
+                "reference": "8b6386d7417526d1ea4da9edb70b8352f7543627"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/b52ed06864fdda81b82ec8bf564cf15d45ed4f95",
-                "reference": "b52ed06864fdda81b82ec8bf564cf15d45ed4f95",
+                "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/8b6386d7417526d1ea4da9edb70b8352f7543627",
+                "reference": "8b6386d7417526d1ea4da9edb70b8352f7543627",
                 "shasum": ""
             },
             "require": {
@@ -1383,8 +1393,8 @@
                 "hayageek/oauth2-yahoo": "Needed for Yahoo XOAUTH2 authentication",
                 "league/oauth2-google": "Needed for Google XOAUTH2 authentication",
                 "psr/log": "For optional PSR-3 debug logging",
-                "stevenmaguire/oauth2-microsoft": "Needed for Microsoft XOAUTH2 authentication",
-                "symfony/polyfill-mbstring": "To support UTF-8 if the Mbstring PHP extension is not enabled (^1.2)"
+                "symfony/polyfill-mbstring": "To support UTF-8 if the Mbstring PHP extension is not enabled (^1.2)",
+                "thenetworg/oauth2-azure": "Needed for Microsoft XOAUTH2 authentication"
             },
             "type": "library",
             "autoload": {
@@ -1416,7 +1426,7 @@
             "description": "PHPMailer is a full-featured email creation and transfer class for PHP",
             "support": {
                 "issues": "https://github.com/PHPMailer/PHPMailer/issues",
-                "source": "https://github.com/PHPMailer/PHPMailer/tree/v6.6.2"
+                "source": "https://github.com/PHPMailer/PHPMailer/tree/v6.6.5"
             },
             "funding": [
                 {
@@ -1424,7 +1434,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2022-06-14T09:27:21+00:00"
+            "time": "2022-10-07T12:23:10+00:00"
         },
         {
             "name": "psr/log",
