@@ -41,7 +41,6 @@
 				gtag('config', {/literal}{$googleAnalytics4Id}{literal});
 			</script>
 			<!-- End GA4 -->
-			{/if}{literal}
 			}
 </script>{/literal}
     {/if}
