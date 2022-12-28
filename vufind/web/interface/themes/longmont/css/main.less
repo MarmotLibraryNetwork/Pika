@@ -12,10 +12,22 @@
 #header-container{
   background:@banner-longmont url("../images/banner_chevron.png") no-repeat left;
 }
+@media(max-width:767px){
+  #header-container{
+    border-bottom:none;
+  }
+}
 
-#header-logo{
-  padding :30px 10px 0 100px ;
-  max-width: 500px;
+  #header-logo {
+    padding: 30px 10px 0 100px;
+    max-width: 500px;
+  }
+
+@media (max-width: 767px) {
+  #header-logo {
+    max-width: 100%;
+    padding: 35px 0 0 60px;
+  }
 }
 
 #browse-sub-category-menu button {
@@ -69,7 +81,7 @@
 }
 
 .menu-bar{
-  background:@light-gray-longmont;
+  background:@medium-blue-longmont;
 }
 
 .jcarousel-control-prev
@@ -78,4 +90,11 @@
 }
 .jcarousel-control-next{
   right:20px;
+}
+#vertical-menu-bar{
+  background:@medium-blue-longmont;
+}
+
+#vertical-menu-bar .menu-bar-option.menu-icon-selected{
+  background: @banner-longmont;
 }
