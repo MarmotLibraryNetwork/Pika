@@ -1502,7 +1502,8 @@ class User extends DB_DataObject {
 				if ($dateDiff->days <= 30){
 					$this->expireClose = 1;
 				}
-				if ($dateDiff->days <= 0){
+				if ($dateDiff->days == 0 || $dateDiff->invert){
+					// $dateDiff->invert will equal 1 when the interval is negative. ie the card expired.
 					$this->expired = 1;
 				}
 			} catch (\Exception $e){
