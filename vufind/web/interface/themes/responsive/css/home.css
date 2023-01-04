@@ -94,7 +94,7 @@
   color: #FFF;
 }
 #horizontal-search-box #lookfor {
-  height: 34px;
+  height: 34px!important;
 }
 #horizontal-search-box .searchSourceHorizontal,
 #horizontal-search-box .searchTypeHorizontal {

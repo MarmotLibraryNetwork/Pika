@@ -2,7 +2,7 @@
 	{if !$offline}
 		{* No need to calculate total fines if in offline mode*}
 		{assign var="totalFines" value=$user->getTotalFines()}
-		{if ($showFines && $totalFines > 0) || ($showExpirationWarnings && $user->expireClose)}
+		{if ($showFines && $totalFines > 0) || ($showExpirationWarnings && ($user->expireClose || $user->expired))}
 			<div id="myAccountFines">
 				{if $showFines && ($totalFines >= $fineAlertAmount) && ($totalFines > 0.00)}
 
@@ -21,7 +21,7 @@
 					{/if}
 				{/if}
 
-				{if $showExpirationWarnings && $user->expireClose}
+				{if $showExpirationWarnings && ($user->expireClose || $user->expired)}
 					<div class="myAccountLink">
 						<a class="alignright" title="Please contact your local library to have your library card renewed." style="color:red; font-weight:bold;" onclick="alert('Please Contact your local library to have your library card renewed.')" href="#">
 							{if $user->expired}
