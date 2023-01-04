@@ -8179,6 +8179,10 @@ hr.menu {
 #horizontal-search-box #lookfor {
   height: 34px!important;
 }
+.btn-danger {
+  background: #702C29;
+  background-image: none;
+}
 #home-page-search {
   background-color: #AC1939;
   background: linear-gradient(to bottom, #AC1939, #8B001F);
