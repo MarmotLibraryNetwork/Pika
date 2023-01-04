@@ -10464,25 +10464,25 @@ fieldset[disabled] .btn-masquerade.active {
   background-color: #fff;
 }
 #searchSource {
-  color: #597635;
+  color: #4F823A;
 }
 #header-container-header {
   font-family: "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
-  color: #597635;
+  color: #4F823A;
   white-space: nowrap;
   /*padding-left: 175px;*/
   padding-top: 40px;
 }
 #header-container {
   background: rgba(0, 0, 0, 0) linear-gradient(to bottom, #ffffff, #ffffff) repeat scroll 0 0;
-  border-bottom: 8px solid #597635;
+  border-bottom: 8px solid #4F823A;
   height: 90px;
   margin-bottom: 0;
   min-height: 110px;
   padding-top: 0;
 }
 #header-links {
-  background: #597635;
+  background: #4F823A;
 }
 .header-link-wrapper a {
   color: white;
@@ -10507,14 +10507,14 @@ fieldset[disabled] .btn-masquerade.active {
   border-color: #adadad;
 }
 #home-page-search {
-  background-color: #597635;
+  background-color: #4F823A;
 }
 .searchTypeHome {
   background-color: #ffffff;
   color: #000000;
 }
 #horizontal-search-box {
-  background: rgba(0, 0, 0, 0) linear-gradient(to bottom, #597635, #597635) repeat scroll 0 0;
+  background: rgba(0, 0, 0, 0) linear-gradient(to bottom, #4F823A, #4F823A) repeat scroll 0 0;
   padding: 15px 0;
 }
 .sidebar-links .active .panel-heading {
@@ -10599,10 +10599,10 @@ fieldset[disabled] .btn-masquerade.active {
   padding: 7px 0;
 }
 .menu-bar {
-  background: #597635;
+  background: #4F823A;
 }
 #vertical-menu-bar {
-  background: #597635;
+  background: #4F823A;
 }
 #horizontal-menu-bar-container .menu-icon.menu-icon-selected {
   background: #1A2B4B;
