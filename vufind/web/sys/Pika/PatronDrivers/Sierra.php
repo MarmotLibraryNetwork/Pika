@@ -342,7 +342,7 @@ class Sierra {
 		$loginMethod = $this->accountProfile->loginConfiguration;
 		// check patron credentials depending on login config.
 		// the returns from _auth methods should be either a sierra patron id or false.
-		$username = trim($username);
+		$username = str_replace("’", "'",trim($username));
 		$password = trim($password);
 
 		if($validatedViaSSO) {
