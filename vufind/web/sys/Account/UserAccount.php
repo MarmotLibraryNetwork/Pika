@@ -471,7 +471,7 @@ class UserAccount {
 						$primaryUser->addLinkedUser($tempUser);
 					}
 				}else{
-					$username = $_REQUEST['username'] ?? 'No username provided';
+					$username = str_replace("‘", "'",$_REQUEST['username']) ?? 'No username provided';
 					self::getLogger()->error("Error authenticating patron $username for driver {$driverName}",
 						['last_error' => $tempUser->toString()]);
 				}
@@ -506,7 +506,7 @@ class UserAccount {
 		global $library;
 		global $configArray;
 		$cache  = new Pika\Cache();
-
+		$username = str_replace("‘", "'",  $username);
 		if (array_key_exists($username . $password, UserAccount::$validatedAccounts)){
 			return UserAccount::$validatedAccounts[$username . $password];
 		}
