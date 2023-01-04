@@ -20,9 +20,8 @@
 					gtag('js', new Date());
 					gtag('config', '{/literal}{$googleAnalytics4Id}{literal}');
 				}
-				<!-- End GA4 -->
-				
-			</script>{/literal}
+			</script><!-- End GA4 -->{/literal}
+
     {/if}
 	<!-- End Google Analytics for Archive-->
 {else}
