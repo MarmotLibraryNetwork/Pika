@@ -36,8 +36,13 @@
 				function gtag(){dataLayer.push(arguments);}
 				gtag('js', new Date());
 				gtag('config', '{/literal}{$googleAnalytics4Id}{literal}');
+				gtag('set', {
+					'patron_type': {/literal}'{$homeLibrary}'{literal},
+					'patron_home_library': {/literal}'{$pType}'{literal},
+					'patron_location': {/literal}'{$physicalLocation}'{literal}
+				});
 				}
-			<!-- End GA4 -->
-</script>{/literal}
+
+</script><!-- End GA4 -->{/literal}
     {/if}
 {/if}
