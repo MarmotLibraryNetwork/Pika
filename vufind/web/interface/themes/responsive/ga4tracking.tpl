@@ -41,6 +41,7 @@
 					'patron_home_library': {/literal}'{$pType}'{literal},
 					'patron_location': {/literal}'{$physicalLocation}'{literal}
 				});
+				gtag('config', {/literal}'{$googleAnalytics4Id}'{literal},{ 'debug_mode':true });
 				}
 
 </script><!-- End GA4 -->{/literal}
