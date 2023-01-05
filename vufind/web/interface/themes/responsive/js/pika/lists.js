@@ -10,8 +10,7 @@ Pika.Lists = (function(){
 			return false;
 		},
 
-		submitToLists: function(action, data)
-		{
+		submitToLists: function (action, data){
 			$('#myListActionHead').val(action);
 			$('#myListFormHead').submit();
 			return false;
@@ -25,6 +24,7 @@ Pika.Lists = (function(){
 			$('#myListFormHead').submit();
 			return false;
 		},
+
 		submitListFormWithData: function(action, data,page, pageSize, sort){
 			$('#myListActionHead').val(action);
 			$('#myListActionData').val(data);
@@ -43,19 +43,26 @@ Pika.Lists = (function(){
 			return this.submitListForm('makePrivate', page, pageSize, sort);
 		},
 
-		deleteListAction: function (page, pageSize, sort){
-			if (confirm("Are you sure you want to delete this list?")){
-				this.submitListForm('deleteList', page, pageSize, sort);
-			}
+		deleteAllListItemsAction: function (page, pageSize, sort){
+			Pika.confirm("<p class='alert alert-warning'>Are you sure you want to <strong>delete all titles</strong> in this list?  <strong>This cannot be undone.</strong></p>", function (){
+				Pika.Lists.submitListForm('deleteAll', page, pageSize, sort);
+			});
 			return false;
 		},
+
+		deleteListAction: function (page, pageSize, sort){
+			Pika.confirm("<p class='alert alert-danger'>Are you sure you want to delete this list?  <strong>This cannot be undone.</strong></p>", function (){
+				Pika.Lists.submitListForm('deleteList', page, pageSize, sort);
+			});
+			return false;
+		},
+
 		buttonAjaxHandler: function(ajaxMethod, id, command) {
 			Pika.Account.ajaxLogin(function (){
 				Pika.loadingMessage();
 				var url = "/MyAccount/AJAX?method=" + ajaxMethod + "&id=" + id;
-				if (command !== undefined)
-				{
-					url = url + "&command=" + command;
+				if (command !== undefined){
+					url += "&command=" + command;
 				}
 				$.getJSON(url, function (data) {
 					Pika.showMessageWithButtons(data.title, data.body, data.buttons);
@@ -90,8 +97,8 @@ Pika.Lists = (function(){
 			console.log("page:" + page + ", pageSize:" + pageSize + ", sort:" + sort);
 			return this.submitListForm('saveList', page, pageSize, sort);
 		},
-		clearSelectedList: function()
-		{
+
+		clearSelectedList: function (){
 			var ids = Array();
 			var idStr = $('#myListActionData').val();
 			if(idStr.length > 2){
@@ -108,8 +115,8 @@ Pika.Lists = (function(){
 				alert("Please select a list to clear");
 			}
 		},
-		deleteSelectedList: function()
-		{
+
+		deleteSelectedList: function (){
 			var ids = Array();
 			var idStr = $('#myListActionData').val();
 			if(idStr.length > 2){
@@ -130,29 +137,20 @@ Pika.Lists = (function(){
 			}
 		},
 
-		deleteListItems: function(ids, page, pageSize, sort){
-			var markedTitles = new Array();
-			$.each(ids, function(key, val) {
-				markedTitles.push(val.value);
-			});
-
-			var stringReturn = markedTitles.join(",")
+		deleteListItems: function (ids, page, pageSize, sort){
 			var x = ids.length;
-			var title = " title";
-			if(x != 1){title = " titles";}
-			 if(confirm("Are you sure you want to delete " + x + title + " from this list? This cannot be undone.")){
-
-
-			 	this.submitListFormWithData('deleteMarked', stringReturn, page, pageSize, sort);
-
-			 }
-			 return false;
-
-		},
-
-		deleteAllListItemsAction: function (page, pageSize, sort){
-			if (confirm("Are you sure you want to delete all titles from this list?  This cannot be undone.")){
-				this.submitListForm('deleteAll', page, pageSize, sort);
+			if (x > 0){
+				var title = (x === 1) ? " title" : " titles";
+				if (confirm("Are you sure you want to delete " + x + title + " from this list? This cannot be undone.")){
+					var markedTitles = [];
+					$.each(ids, function (key, val){
+						markedTitles.push(val.value);
+					});
+					var stringReturn = markedTitles.join(",");
+					this.submitListFormWithData('deleteMarked', stringReturn, page, pageSize, sort);
+				}
+			}else{
+				Pika.showMessage('No titles selected', 'No titles have been selected.', true);
 			}
 			return false;
 		},
@@ -181,18 +179,19 @@ Pika.Lists = (function(){
 				}
 			);
 		},
+
 		//Exports list to Excel
 		exportListAction: function (id, page, pageSize, sort){
 			return this.submitListForm('exportToExcel', page, pageSize, sort);
 		},
 
-		exportListFromLists: function(id)
-		{
+		exportListFromLists: function (id){
 			$('#myListActionHead').val("exportToExcel");
 			$('#myListActionData').val(id);
 			$('#myListFormHead').submit();
 			return false;
 		},
+
 		citeListAction: function (id, page, pageSize, sort) {
 			return Pika.Account.ajaxLightbox('/MyAccount/AJAX?method=getCitationFormatsForm&listId=' + id + "&page=" + page + "&pagesize=" + pageSize + "&sort=" +sort, false);
 		},
@@ -209,13 +208,10 @@ Pika.Lists = (function(){
 		},
 
 		transferListToUser: function(id){
-
-				return this.buttonAjaxHandler('transferListToUser', id, 'transferList');
-
-
+			return this.buttonAjaxHandler('transferListToUser', id, 'transferList');
 		},
-		transferList: function(id, user)
-		{
+
+		transferList: function (id, user){
 			if (confirm("Are you sure you want to transfer this list. It will no longer be accessible from this account.")) {
 				Pika.Account.ajaxLogin(function () {
 					Pika.loadingMessage();
@@ -242,7 +238,6 @@ Pika.Lists = (function(){
 			return false;
 		},
 
-
 		copyList: function(id){
 			if (confirm("You are copying this list and all items to your lists. This could take a several moments depending on the size of the list. Are you sure you want to continue?"))
 			{
@@ -255,7 +250,6 @@ Pika.Lists = (function(){
 				});
 			}
 			return false;
-
 		},
 
 		importListsFromClassic: function (){

@@ -156,7 +156,7 @@
 					{if $allowEdit}
 						<div class="btn-group">
 							<button value="deleteMarked" id="markedDelete" class="btn btn-sm btn-default" onclick='return Pika.Lists.deleteListItems({literal}$("input[name=marked]:checked"){/literal},{$pageNum}, {$pageSize}, "{$listSort}");'>Delete Selected</button>
-							<button value="clearList" id="ClearLists" class="btn btn-sm btn-default" onclick='return Pika.Lists.deleteAllListItemsAction({$pageNum}, {$pageSize},"{$listSort}");'>Clear List</button>
+							<button value="clearList" id="ClearLists" class="btn btn-sm btn-warning" onclick='return Pika.Lists.deleteAllListItemsAction({$pageNum}, {$pageSize},"{$listSort}");'>Clear List</button>
 							<button value="deleteList" id="FavDelete" class="btn btn-sm btn-danger" onclick='return Pika.Lists.deleteListAction({$pageNum}, {$pageSize},"{$listSort}");'>Delete List</button>
 						</div>
 
