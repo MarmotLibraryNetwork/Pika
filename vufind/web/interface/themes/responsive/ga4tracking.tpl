@@ -36,7 +36,7 @@
 				function gtag(){dataLayer.push(arguments);}
 				gtag('js', new Date());
 				gtag('config', '{/literal}{$googleAnalytics4Id}{literal}');
-				gtag('set', {
+				gtag('event', 'page_view' {
 					'patron_type': {/literal}'{$homeLibrary}'{literal},
 					'patron_home_library': {/literal}'{$pType}'{literal},
 					'patron_location': {/literal}'{$physicalLocation}'{literal}
