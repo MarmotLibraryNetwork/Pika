@@ -104,12 +104,12 @@ class MyAccount_MyList extends MyAccount {
 						case 'deleteList':
 							$list->removeAllListEntries();
 							$list->delete();
-							header("Location: /MyAccount/MyLists");
-							die();
-							break;
+							header('Location: /MyAccount/MyLists');
+							die;
 						case 'deleteAll':
 							$list->removeAllListEntries();
-							break;
+							header("Location: /MyAccount/MyList/$list->id");
+							die;
 						case 'deleteMarked':
 							//get a list of all titles that were selected
 							if (isset($_REQUEST['myListActionData'])){
