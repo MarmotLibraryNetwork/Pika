@@ -8519,7 +8519,7 @@ hr.menu {
 }
 .browse-category {
   color: #3b3f43;
-  font-size: 18px;
+  font-size: 15px;
   padding: 10px;
   text-shadow: 1px 1px #555555;
   background-color: #5fb7db;
@@ -8544,7 +8544,7 @@ hr.menu {
 }
 .browse-category.selected {
   border: 2px solid #84bd00;
-  font-size: 21px;
+  font-size: 18px;
 }
 .browse-category.category0 {
   background-color: #fff;
@@ -10537,12 +10537,13 @@ h6 {
   font-weight: bold;
   border-radius: 10px;
   height: inherit;
+  max-height: 100px;
 }
 .browse-category:hover {
   background: #f6f6f6;
 }
 .browse-category.selected {
-  font-size: 18px;
+  font-size: 15px;
   background: #84bd00 !important;
 }
 .browse-category.selected div {
