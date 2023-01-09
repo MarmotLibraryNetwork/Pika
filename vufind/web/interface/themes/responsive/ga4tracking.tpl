@@ -37,9 +37,9 @@
 				gtag('js', new Date());
 				gtag('config', '{/literal}{$googleAnalytics4Id}{literal}');
 				gtag('event', 'page_view', {
-					'patron_type': {/literal}'{$homeLibrary}'{literal},
-					'patron_home_library': {/literal}'{$physicalLocation}'{literal},
-					'patron_location': {/literal}'{$pType}'{literal}
+					'patron_home_library': {/literal}'{$homeLibrary}'{literal},
+					'patron_location': {/literal}'{$physicalLocation}'{literal},
+					'patron_type': {/literal}'{$pType}'{literal}
 				});
 				gtag('config', {/literal}'{$googleAnalytics4Id}'{literal},{ 'debug_mode':true });
 				}
