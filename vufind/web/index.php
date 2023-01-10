@@ -189,14 +189,14 @@ $interface->assign('enableMaterialsRequest', MaterialsRequest::enableMaterialsRe
 //Override MyAccount Home as needed
 if ($isLoggedIn){
 	$user = UserAccount::getLoggedInUser();
-	if ($user->pinUpdateRequired){
+	if ($user->pinUpdateRequired && !UserAccount::isUserMasquerading()){
+		// don't force pin update when masquerading as user
 		if (!in_array($action, ['Logout', 'EmailResetPin'])){
 			// Force pin update when logged in, except for users that are clicking the log-out button or using pin reset
 			$module = 'MyAccount';
 			$action = 'UpdatePin';
 		}
-	}else
-		if ($module == 'MyAccount' && $action == 'Home'){
+	}elseif ($module == 'MyAccount' && $action == 'Home'){
 		if ($user->getNumCheckedOutTotal() > 0){
 			$action = 'CheckedOut';
 		}elseif ($user->getNumHoldsTotal() > 0){
