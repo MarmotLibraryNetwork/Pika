@@ -129,10 +129,11 @@ class AJAX_JSON extends AJAXHandler {
 		$interface->assign('pinMinimumLength', $pinMinimumLength);
 		$interface->assign('pinMaximumLength', $pinMaximumLength);
 
+		$title = translate('Update PIN');
 		return [
-			'title'        => 'Update PIN',
+			'title'        => $title,
 			'modalBody'    => $interface->fetch('MyAccount/updatePinPopUp.tpl'),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#pinForm\").submit();'>Update PIN</button>",
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#pinForm\").submit();'>$title</button>",
 		];
 	}
 

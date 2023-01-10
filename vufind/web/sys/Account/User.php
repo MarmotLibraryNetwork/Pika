@@ -1916,31 +1916,31 @@ class User extends DB_DataObject {
 		if (isset($_REQUEST['pin'])){
 			$oldPin = $_REQUEST['pin'];
 		}else{
-			return "Please enter your current pin number";
+			return 'Please enter your current ' . translate('pin');
 		}
 		if ($this->getPassword() != $oldPin){
-			return "The old pin number is incorrect";
+			return 'The old ' . translate('pin') . ' is incorrect';
 		}
 		if (!empty($_REQUEST['pin1'])){
 			$newPin = $_REQUEST['pin1'];
 		}else{
-			return "Please enter the new pin number";
+			return 'Please enter the new ' . translate('pin');
 		}
 		if (!empty($_REQUEST['pin2'])){
 			$confirmNewPin = $_REQUEST['pin2'];
 		}else{
-			return "Please enter the new pin number again";
+			return 'Please enter the new ' . translate('pin') . ' again';
 		}
 		if ($newPin != $confirmNewPin){
-			return "New PINs do not match. Please try again.";
+			return 'New ' . translate('pin') . 's do not match. Please try again.';
 		}
 		// pin min and max length check 
 		$pinLength = strlen($newPin);
 		if ($pinLength < $pinMinimumLength OR $pinLength > $pinMaximumLength) {
 			if ($pinMinimumLength == $pinMaximumLength){
-				return "New PIN must be exactly " . $pinMinimumLength . " characters.";
+				return 'New PIN must be exactly ' . $pinMinimumLength . ' characters.';
 			}else{
-				return "New PIN must be " . $pinMinimumLength . " to " . $pinMaximumLength . " characters.";
+				return 'New PIN must be ' . $pinMinimumLength . ' to ' . $pinMaximumLength . ' characters.';
 			}
 		}
 		$result = $this->getCatalogDriver()->updatePin($this, $oldPin, $newPin, $confirmNewPin);

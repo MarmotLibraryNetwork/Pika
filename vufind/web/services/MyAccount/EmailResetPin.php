@@ -54,9 +54,9 @@ class EmailResetPin extends Action {
 				];
 			}
 			$interface->assign('emailResult', $emailResult);
-			$this->display('emailResetPinResults.tpl', 'Email to Reset Pin');
+			$this->display('emailResetPinResults.tpl', translate('Email to Reset Pin'));
 		}else{
-			$this->display('emailResetPin.tpl', 'Email to Reset Pin');
+			$this->display('emailResetPin.tpl', translate('Email to Reset Pin'));
 		}
 	}
 }

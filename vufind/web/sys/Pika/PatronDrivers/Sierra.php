@@ -1119,7 +1119,7 @@ class Sierra  implements \DriverInterface {
 
 		if(!$r) {
 			$message = $this->_getPrettyError();
-			return 'Could not update PIN: '. $message;
+			return 'Could not update ' . translate('pin') . ': '. $message;
 		}
 		$result = $patron->updatePassword($newPin);
 		$patron->pinUpdateRequired = false;
@@ -1127,7 +1127,7 @@ class Sierra  implements \DriverInterface {
 		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 		$this->cache->delete($patronCacheKey);
 		// Important: A success message won't be displayed unless the words are EXACTLY as below.
-		return 'Your pin number was updated successfully.';
+		return 'Your ' . translate('pin') . ' was updated successfully.';
 	}
 
 	/**
@@ -1146,18 +1146,18 @@ class Sierra  implements \DriverInterface {
 		$pinReset->userId = $patron->id;
 		$pinReset->find(true);
 		if(!$pinReset->N) {
-			return ['error' => 'Unable to reset your PIN. Please try again later.'];
+			return ['error' => 'Unable to reset your ' . translate('pin') . '. Please try again later.'];
 		} elseif($pinReset->N == 0) {
-			return ['error' => 'Unable to reset your PIN. You have not requested a PIN reset.'];
+			return ['error' => 'Unable to reset your ' . translate('pin') . '. You have not requested a ' . translate('pin') . ' reset.'];
 		}
 		// expired?
 		if($pinReset->expires < time()) {
-			return ['error' => 'The reset token has expired. Please request a new PIN reset.'];
+			return ['error' => 'The reset token has expired. Please request a new ' . translate('pin') . ' reset.'];
 		}
 		$token = $pinReset->selector . $pinReset->token;
 		// make sure and type cast the two numbers
 		if ((int)$token != (int)$resetToken) {
-			return ['error' => 'Unable to reset your PIN. Invalid reset token.'];
+			return ['error' => 'Unable to reset your ' . translate('pin') . '. Invalid reset token.'];
 		}
 		// everything is good
 		$patronId  = $this->getPatronId($patron);
@@ -1176,14 +1176,14 @@ class Sierra  implements \DriverInterface {
 		$r = $this->_doRequest($operation, $params, 'PUT');
 		if(!$r) {
 			$message = $this->_getPrettyError();
-			return ['error' => 'Could not update PIN: '. $message];
+			return ['error' => 'Could not update ' . translate('pin') . ': '. $message];
 		}
 		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 		$r = $patron->setPassword($newPin);
 		if(!$r) {
 			// this shouldn't matter since we hit the api first when logging in a patron, but ....
 			$this->cache->delete($patronCacheKey);
-			return ['error' => 'Please try logging in with you new PIN. If you are unable to login please contact your library.'];
+			return ['error' => 'Please try logging in with your new ' . translate('pin') . '. If you are unable to login please contact your library.'];
 		}
 		$pinReset->delete();
 		$this->cache->delete($patronCacheKey);
@@ -1217,7 +1217,7 @@ class Sierra  implements \DriverInterface {
 			}
 		}
 		if(!isset($patron->email) || $patron->email == '') {
-			return ['error' => 'You do not have an email address on your account. Please visit your library to reset your pin.'];
+			return ['error' => 'You do not have an email address on your account. Please visit your library to reset your ' . translate('pin') . '.'];
 		}
 
 		// make sure there's no old token.

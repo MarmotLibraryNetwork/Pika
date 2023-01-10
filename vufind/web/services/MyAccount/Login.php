@@ -96,7 +96,7 @@ class MyAccount_Login extends Action {
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		$defaultUserNameLabel = $catalog->accountProfile->loginConfiguration == 'name_barcode' ? 'Your Name' : 'Library Card Number';
-		$defaultPasswordLabel = $catalog->accountProfile->loginConfiguration == 'name_barcode' ?  'Library Card Number' : 'PIN';
+		$defaultPasswordLabel = $catalog->accountProfile->loginConfiguration == 'name_barcode' ? 'Library Card Number' : translate('PIN');
 
 		if (isset($library)){
 			$interface->assign('enableSelfRegistration', $library->enableSelfRegistration || $library->externalSelfRegistrationUrl);

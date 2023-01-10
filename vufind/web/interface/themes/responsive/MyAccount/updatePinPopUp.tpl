@@ -1,13 +1,13 @@
 {strip}
 	<div class="alert alert-info">
-		<p>Please update your PIN. If you have any questions, please contact your library.</p>
+		<p>Please update your {translate text='pin'}. If you have any questions, please contact your library.</p>
 		<p class="alert alert-warning"> This action is required to access your account.</p>
 		<br>
 		<p><strong>&bull; {if $alphaNumericOnlyPins}Use numbers and letters.{elseif $numericOnlyPins}Use only numbers.{else}Use numbers and/or letters.{/if}</strong></p>
 			{if $pinMinimumLength == $pinMaximumLength}
-				<p><strong>&bull; Your new PIN must be {$pinMinimumLength} characters in length.</strong></p>
+				<p><strong>&bull; Your new {translate text='pin'} must be {$pinMinimumLength} characters in length.</strong></p>
 			{else}
-				<p><strong>&bull; Your new PIN must be {$pinMinimumLength} to {$pinMaximumLength} characters in length.</strong></p>
+				<p><strong>&bull; Your new {translate text='pin'} must be {$pinMinimumLength} to {$pinMaximumLength} characters in length.</strong></p>
 			{/if}
 	</div>
 
@@ -50,9 +50,9 @@
 		<div class="col-xs-8 col-xs-offset-4">
         {if $showForgotPinLink}
 					<p class="help-block">
-						<strong>Forgot PIN?</strong>&nbsp;
+						<strong>{translate text="Forgot PIN?"}</strong>&nbsp;
               {if $useEmailResetPin}
-								<a href="/MyAccount/EmailResetPin">Reset My PIN</a>
+								<a href="/MyAccount/EmailResetPin">{translate text='Reset My PIN'}</a>
                   {*
 						{else}
 							<a href="/MyAccount/EmailPin">E-mail my PIN</a>

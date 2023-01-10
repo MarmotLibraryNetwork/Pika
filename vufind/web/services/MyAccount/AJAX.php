@@ -192,7 +192,7 @@ class MyAccount_AJAX extends AJAXHandler {
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		$defaultUserNameLabel = $catalog->accountProfile->loginConfiguration == 'name_barcode' ? 'Name' : 'Library Card Number';
-		$defaultPasswordLabel = $catalog->accountProfile->loginConfiguration == 'name_barcode' ?  'Library Card Number' : 'PIN';
+		$defaultPasswordLabel = $catalog->accountProfile->loginConfiguration == 'name_barcode' ? 'Library Card Number' : translate('PIN');
 
 		$interface->assign('enableSelfRegistration', 0);
 		if (isset($library)){
@@ -1009,7 +1009,7 @@ class MyAccount_AJAX extends AJAXHandler {
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		$defaultUserNameLabel = $catalog->accountProfile->loginConfiguration == 'name_barcode' ? 'Your Name' : 'Library Card Number';
-		$defaultPasswordLabel = $catalog->accountProfile->loginConfiguration == 'name_barcode' ?  'Library Card Number' : 'PIN';
+		$defaultPasswordLabel = $catalog->accountProfile->loginConfiguration == 'name_barcode' ? 'Library Card Number' : translate('PIN');
 
 		if (isset($library)){
 			$interface->assign('enableSelfRegistration', $library->enableSelfRegistration || $library->externalSelfRegistrationUrl);

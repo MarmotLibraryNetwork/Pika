@@ -861,7 +861,7 @@ abstract class HorizonAPI extends Horizon{
 			];
 		}else{
 			$result = [
-				'error' => "Sorry, we could not e-mail your pin to you.  Please visit the library to reset your pin."
+				'error' => 'Sorry, we could not e-mail your ' . translate('pin') . ' to you.  Please visit the library to reset your ' . translate('pin') . '.'
 			];
 			if (isset($updatePinResponse->code)){
 				$result['error'] .= '  ' . $updatePinResponse->string;

@@ -182,6 +182,6 @@ class MyAccount_UpdatePin extends MyAccount {
 		$interface->assign('pinMinimumLength', $pinMinimumLength);
 		$interface->assign('pinMaximumLength', $pinMaximumLength);
 
-		$this->display('../MyAccount/updatePin.tpl', 'Update My Pin', '');
+		$this->display('../MyAccount/updatePin.tpl', translate('Update My Pin'), ''); // remove sidebar
 	}
 }
