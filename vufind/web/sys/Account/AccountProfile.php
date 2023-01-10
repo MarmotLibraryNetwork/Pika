@@ -89,35 +89,35 @@ class AccountProfile extends DB_DataObject {
 	 *
 	 * If login configuration is set to "library_based" the library setting will be returned.
 	 */
-	private function getLoginConfiguration(){
-		if($this->loginConfiguration != 'library_based') {
-			$loginConfig = $this->loginConfiguration;
-		}
-// todo: [pins] will need to do something like this if we go with per library settings
-//		global $library;
-//		if($library) {
-//			$loginConfig = $library->loginConfiguration;
+//	private function getLoginConfiguration(){
+//		if($this->loginConfiguration != 'library_based') {
+//			$loginConfig = $this->loginConfiguration;
 //		}
-		return $loginConfig;
-	}
-// todo: [pins]
-//	public function __get($name) {
-//		switch ($name) {
-//			case 'loginConfiguration':
-//				$loginConfig = $this->getLoginConfiguration();
-//				return $loginConfig;
-//				break;
-//		}
+//// todo: [pins] will need to do something like this if we go with per library settings
+////		global $library;
+////		if($library) {
+////			$loginConfig = $library->loginConfiguration;
+////		}
+//		return $loginConfig;
 //	}
-//
-//	public function __set($name, $value) {
-//		switch($name) {
-//			case 'loginConfiguration':
-//				if($value){
-//					$this->loginConfiguration = $value;
-//				}
-//				break;
-//		}
-//	}
+//// todo: [pins]
+////	public function __get($name) {
+////		switch ($name) {
+////			case 'loginConfiguration':
+////				$loginConfig = $this->getLoginConfiguration();
+////				return $loginConfig;
+////				break;
+////		}
+////	}
+////
+////	public function __set($name, $value) {
+////		switch($name) {
+////			case 'loginConfiguration':
+////				if($value){
+////					$this->loginConfiguration = $value;
+////				}
+////				break;
+////		}
+////	}
 
 } // end class

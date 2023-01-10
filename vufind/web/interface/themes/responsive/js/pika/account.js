@@ -203,28 +203,32 @@ Pika.Account = (function(){
 				//Pika.loadingMessage();
 				$.post(url, params, function(response){
 							loadingElem.hide();
-							if (response.result.success == true) {
-								// Hide "log in" options and show "log out" options:
-								$('.loginOptions, #loginOptions').hide();
-								$('.logoutOptions, #logoutOptions').show();
+							if (response.result.success === true){
+								if (response.result.forcePinUpdate === true){
+									Pika.showMessageWithButtons(response.result.title, response.result.modalBody, response.result.modalButtons)
+								}else{
+									// Hide "log in" options and show "log out" options:
+									$('.loginOptions, #loginOptions').hide();
+									$('.logoutOptions, #logoutOptions').show();
 
-								// Show user name on page in case page doesn't reload
-								var name = $.trim(response.result.name);
-								name = 'Logged In As ' + name + '.';
-								$('#side-bar #myAccountNameLink').html(name);
+									// Show username on page in case page doesn't reload
+									var name = $.trim(response.result.name);
+									name = 'Logged In As ' + name + '.';
+									$('#side-bar #myAccountNameLink').html(name);
 
-								if (Pika.Account.closeModalOnAjaxSuccess) {
-									Pika.closeLightbox();
+									if (Pika.Account.closeModalOnAjaxSuccess){
+										Pika.closeLightbox();
+									}
+
+									Globals.loggedIn = true;
+									if (ajaxCallback !== undefined && typeof (ajaxCallback) === "function"){
+										ajaxCallback();
+									}else if (Pika.Account.ajaxCallback !== undefined && typeof (Pika.Account.ajaxCallback) === "function"){
+										Pika.Account.ajaxCallback();
+										Pika.Account.ajaxCallback = null;
+									}
 								}
-
-								Globals.loggedIn = true;
-								if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
-									ajaxCallback();
-								} else if (Pika.Account.ajaxCallback !== undefined && typeof(Pika.Account.ajaxCallback) === "function") {
-									Pika.Account.ajaxCallback();
-									Pika.Account.ajaxCallback = null;
-								}
-							} else {
+							}else{
 								loginErrorElem.text(response.result.message).show();
 							}
 						}, 'json'
@@ -232,6 +236,26 @@ Pika.Account = (function(){
 					loginErrorElem.text("There was an error processing your login, please try again.").show();
 				})
 			}
+			return false;
+		},
+
+		updatePin: function(){
+			var oldPin = $('#pin').val(),
+					newPin = $('#pin1').val(),
+					confirmNewPin = $('#pin2').val(),
+					url = '/MyAccount/AJAX?method=updatePin';
+			$.post(url, {'pin': oldPin, 'pin1': newPin, 'pin2': confirmNewPin}, function (result){
+				if (result.success){
+					$('#errorMsg').hide();
+					$('#successMsg').text(result.message).show();
+					if (Pika.Account.ajaxCallback != null && typeof (Pika.Account.ajaxCallback) === "function"){
+						Pika.Account.ajaxCallback();
+						Pika.Account.ajaxCallback = null;
+					}
+				} else {
+					$('#errorMsg').text(result.message).show();
+				}
+			});
 			return false;
 		},
 
@@ -270,6 +294,7 @@ Pika.Account = (function(){
 			});
 			return false;
 		},
+
 		removeViewer: function(idToRemove){
 			Pika.confirm("Are you sure you want to remove the viewing account?", function () {
 				var url = "/MyAccount/AJAX?method=removeViewingAccount&idToRemove=" + idToRemove;

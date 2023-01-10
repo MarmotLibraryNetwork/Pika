@@ -25,8 +25,8 @@ global $memoryWatcher;
 
 //Do additional tasks that are only needed when running the full website
 loadModuleActionId();
-$timer->logTime("Loaded Module and Action Id");
-$memoryWatcher->logMemory("Loaded Module and Action Id");
+$timer->logTime('Loaded Module and Action Id');
+$memoryWatcher->logMemory('Loaded Module and Action Id');
 
 //  Start session
 $handler = new Pika\Session\FileSession();
@@ -72,6 +72,11 @@ $action = $_GET['action'] ?? null;
 $interface->assign('module', $module);
 $interface->assign('action', $action);
 
+//if ($action == 'LogOut' && $module == 'MyAccount'){
+//	UserAccount::logout();
+//	header('Location: /');
+//}
+
 killSpammySearchPhrases();
 
 
@@ -93,7 +98,12 @@ if (!UserAccount::isLoggedIn() && ((isset($_POST['username']) && isset($_POST['p
 	}elseif (!$user){
 		require_once ROOT_DIR . '/services/MyAccount/Login.php';
 		$launchAction = new MyAccount_Login();
-		$launchAction->launch("Unknown error logging in");
+		$launchAction->launch('Unknown error logging in');
+		exit();
+	} elseif ($user->pinUpdateRequired){
+		require_once ROOT_DIR . '/services/MyAccount/UpdatePin.php';
+		$launchAction = new MyAccount_UpdatePin();
+		$launchAction->launch();
 		exit();
 	}
 	// Successful login
@@ -101,7 +111,7 @@ if (!UserAccount::isLoggedIn() && ((isset($_POST['username']) && isset($_POST['p
 	//Check to see if there is a followup module and if so, use that module and action for the next page load
 	elseif (isset($_REQUEST['returnUrl'])){
 		$followupUrl = $_REQUEST['returnUrl'];
-		header("Location: " . $followupUrl);
+		header('Location: ' . $followupUrl);
 		exit();
 	}
 	// Follow up with both module and action
@@ -110,14 +120,14 @@ if (!UserAccount::isLoggedIn() && ((isset($_POST['username']) && isset($_POST['p
 		// For Masquerade Follow up, start directly instead of a redirect
 		if ($_REQUEST['followupAction'] == 'Masquerade' && $_REQUEST['followupModule'] == 'MyAccount'){
 
-			$this->logger->error("Processing Masquerade after logging in");
+			$this->logger->error('Processing Masquerade after logging in');
 			require_once ROOT_DIR . '/services/MyAccount/Masquerade.php';
 			$masquerade = new MyAccount_Masquerade();
 			$masquerade->launch();
 			die;
 		}
 
-		// Set the module & actions from the follow up settings
+		// Set the module & actions from the follow-up settings
 		$module             = $_REQUEST['followupModule'];
 		$action             = $_REQUEST['followupAction'];
 		$_REQUEST['module'] = $module;
@@ -157,8 +167,8 @@ if (!UserAccount::isLoggedIn() && ((isset($_POST['username']) && isset($_POST['p
 	}
 
 } //End of log in
-$timer->logTime('User authentication');
 
+$timer->logTime('User authentication');
 $isLoggedIn = UserAccount::isLoggedIn();
 $interface->assign('loggedIn', $isLoggedIn);
 //Load user data for the user as long as we aren't in the act of logging out.
@@ -177,18 +187,23 @@ require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequest.php';
 $interface->assign('enableMaterialsRequest', MaterialsRequest::enableMaterialsRequest());
 
 //Override MyAccount Home as needed
-if ($isLoggedIn && $module == 'MyAccount' && $action == 'Home'){
+if ($isLoggedIn){
 	$user = UserAccount::getLoggedInUser();
-	if ($user->getNumCheckedOutTotal() > 0){
-		$action ='CheckedOut';
-//		header('Location:/MyAccount/CheckedOut');
-//		exit();
-	}elseif ($user->getNumHoldsTotal() > 0){
-		$action = 'Holds';
-//		header('Location:/MyAccount/Holds');
-//		exit();
-	}elseif ($user->getNumBookingsTotal() > 0){
-		$action = 'Bookings';
+	if ($user->pinUpdateRequired){
+		if (!in_array($action, ['Logout', 'EmailResetPin'])){
+			// Force pin update when logged in, except for users that are clicking the log-out button or using pin reset
+			$module = 'MyAccount';
+			$action = 'UpdatePin';
+		}
+	}else
+		if ($module == 'MyAccount' && $action == 'Home'){
+		if ($user->getNumCheckedOutTotal() > 0){
+			$action = 'CheckedOut';
+		}elseif ($user->getNumHoldsTotal() > 0){
+			$action = 'Holds';
+		}elseif ($user->getNumBookingsTotal() > 0){
+			$action = 'Bookings';
+		}
 	}
 }
 

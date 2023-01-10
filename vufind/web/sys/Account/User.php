@@ -43,6 +43,7 @@ class User extends DB_DataObject {
 	protected $cat_password;
 	public $barcode;                        // string(50) Replaces $cat_username for sites using barcode/pin auth
 	protected $password;                       // string(128) password - Replaces $cat_password
+	public $lastPasswordSetTime;
 	public $patronType;
 	public $created;                         // datetime(19)  not_null binary
 	public $homeLocationId;                  // int(11)
@@ -213,7 +214,7 @@ class User extends DB_DataObject {
 	 * @return string
 	 */
 	public function getPassword() {
-		$password = $this->_decryptPassword($this->password);
+		$password = $this->_decryptPassword();
 		return $password;
 	}
 
@@ -227,7 +228,7 @@ class User extends DB_DataObject {
 	 */
 	public function setPassword($password) {
 		$encryptedPassword = $this->_encryptPassword($password);
-		$this->password = $encryptedPassword;
+		$this->password    = $encryptedPassword;
 	}
 
 	/**
@@ -238,12 +239,12 @@ class User extends DB_DataObject {
 	 * @return boolean True on success or false on failure.
 	 */
 	public function updatePassword($password) {
-		$encryptedPassword = $this->_encryptPassword($password);
-		$sql = "UPDATE user SET password = '" . $encryptedPassword . "' WHERE id = " . $this->id . " LIMIT 1";
-
-		$result = $this->query($sql);
+		$encryptedPassword         = $this->_encryptPassword($password);
+		$this->password            = $encryptedPassword;
+		$this->lastPasswordSetTime = date('Y-m-d h:i:s');
+		$result                    = $this->update();
 		if(PEAR_Singleton::isError($result)) {
-			$this->logger->warn("Error updating password.", ["message"=>$result->getMessage(), "info"=>$result->userinfo]);
+			$this->logger->error('Error updating password.', ['message' => $result->getMessage(), 'info' => $result->userinfo]);
 		}elseif($result >= 1) {
 			return true;
 		}
@@ -1877,7 +1878,7 @@ class User extends DB_DataObject {
 
 	}
 
-private $staffPtypes = null;
+	private $staffPtypes = null;
 	/**
 	 * Used by Account Profile, to show users any additional Admin roles they may have.
 	 * @return bool
@@ -1903,6 +1904,8 @@ private $staffPtypes = null;
 		$this->clearCache();
 		return $result;
 	}
+
+	public $pinUpdateRequired = false;
 
 	public function updatePin(){
 		global $configArray;

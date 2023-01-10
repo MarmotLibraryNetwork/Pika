@@ -83,6 +83,7 @@
 				</div>
 			</div>
 
+		{if !$isUpdatePinPage}
 			{if $horizontalSearchBar}
 				<div id="horizontal-search-wrapper" class="row">
 					<div id="horizontal-search-container" class="col-xs-12">
@@ -90,6 +91,7 @@
 					</div>
 				</div>
 			{/if}
+		{/if}
 
 			<div id="content-container">
 				<div class="row">

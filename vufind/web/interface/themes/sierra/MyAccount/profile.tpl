@@ -15,7 +15,7 @@
 
 			{if $profileUpdateErrors}
 				{foreach from=$profileUpdateErrors item=errorMsg}
-					{if $errorMsg == 'Your pin number was updated successfully.'}
+					{if strpos($errorMsg, 'success')}
 						<div class="alert alert-success">{$errorMsg}</div>
 					{else}
 						<div class="alert alert-danger">{$errorMsg}</div>

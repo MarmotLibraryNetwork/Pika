@@ -522,8 +522,8 @@ class Library extends DB_DataObject {
 							'showLoginButton'         => ['property' =>'showLoginButton', 'type' =>'checkbox', 'label' =>'Show Login Button', 'description' =>'Whether or not the login button is displayed so patrons can log into the site', 'hideInLists' => true, 'default' => 1],
 
 							'preventExpiredCardLogin' => ['property' =>'preventExpiredCardLogin', 'type' =>'checkbox', 'label' =>'Prevent Login for Expired Cards', 'description' =>'Users with expired cards will not be allowed to login. They will recieve an expired card notice instead.', 'hideInLists' => true, 'default' => 0],
-							'loginFormUsernameLabel'  => ['property' =>'loginFormUsernameLabel', 'type' =>'text', 'label' =>'Login Form Username Label', 'description' =>'The label to show for the username when logging in', 'size' =>'100', 'hideInLists' => true, 'default' =>'Your Name'],
-							'loginFormPasswordLabel'  => ['property' =>'loginFormPasswordLabel', 'type' =>'text', 'label' =>'Login Form Password Label', 'description' =>'The label to show for the password when logging in', 'size' =>'100', 'hideInLists' => true, 'default' =>'Library Card Number'],
+							'loginFormUsernameLabel'  => ['property' =>'loginFormUsernameLabel', 'type' =>'text', 'label' =>'Login Form Username Label', 'description' =>'The label to show for the username when logging in', 'size' =>'100', 'hideInLists' => true, /*'default' =>'Your Name'*/],
+							'loginFormPasswordLabel'  => ['property' =>'loginFormPasswordLabel', 'type' =>'text', 'label' =>'Login Form Password Label', 'description' =>'The label to show for the password when logging in', 'size' =>'100', 'hideInLists' => true, /*'default' =>'Library Card Number'*/],
 						]],
 					'selfRegistrationSection' => ['property' => 'selfRegistrationSection', 'type' => 'section', 'label' => 'Self Registration', 'hideInLists' => true,
 					                              'helpLink' => 'https://marmot-support.atlassian.net/l/c/80ovqAL5', 'properties' => [

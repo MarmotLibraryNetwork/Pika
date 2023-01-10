@@ -61,7 +61,7 @@ class AJAX_JSON extends AJAXHandler {
 		if (!$isLoggedIn){
 			$user = UserAccount::login();
 
-			$interface->assign('user', $user); // PLB Assignment Needed before error checking?
+//			$interface->assign('user', $user); // PLB Assignment Needed before error checking?
 			if (!$user || PEAR_Singleton::isError($user)){
 
 				// Expired Card Notice
@@ -85,9 +85,54 @@ class AJAX_JSON extends AJAXHandler {
 			$user = UserAccount::getLoggedInUser();
 		}
 
-		return [
+		$return = [
 			'success' => true,
 			'name'    => $user->displayName,
+		];
+		if ($user->pinUpdateRequired){
+			$return['forcePinUpdate'] = true;
+			$form                     = $this->getPinUpdateForm();
+			$return                   = array_merge($return, $form);
+		}
+		return $return;
+	}
+
+	function getPinUpdateForm(){
+		/** @var Library $library */
+		global $interface;
+		global $library;
+		global $configArray;
+
+		$interface->assign('enableSelfRegistration', 0);
+
+		if ($configArray['Catalog']['ils'] == 'Horizon' || $configArray['Catalog']['ils'] == 'Symphony'){
+			$interface->assign('showForgotPinLink', true);
+			$catalog          = CatalogFactory::getCatalogConnectionInstance();
+			$useEmailResetPin = method_exists($catalog->driver, 'emailResetPin');
+			$interface->assign('useEmailResetPin', $useEmailResetPin);
+		}elseif ($configArray['Catalog']['ils'] == 'Sierra'){
+			$catalog = CatalogFactory::getCatalogConnectionInstance();
+			if (!empty($catalog->accountProfile->loginConfiguration) && $catalog->accountProfile->loginConfiguration == 'barcode_pin'){
+				$interface->assign('showForgotPinLink', true);
+				$useEmailResetPin = method_exists($catalog->driver, 'emailResetPin');
+				$interface->assign('useEmailResetPin', $useEmailResetPin);
+			}
+		}
+
+		// Password Requirements
+		$numericOnlyPins      = $configArray['Catalog']['numericOnlyPins'];
+		$alphaNumericOnlyPins = $configArray['Catalog']['alphaNumericOnlyPins'];
+		$pinMinimumLength     = $configArray['Catalog']['pinMinimumLength'];
+		$pinMaximumLength     = $configArray['Catalog']['pinMaximumLength'];
+		$interface->assign('numericOnlyPins', $numericOnlyPins);
+		$interface->assign('alphaNumericOnlyPins', $alphaNumericOnlyPins);
+		$interface->assign('pinMinimumLength', $pinMinimumLength);
+		$interface->assign('pinMaximumLength', $pinMaximumLength);
+
+		return [
+			'title'        => 'Update PIN',
+			'modalBody'    => $interface->fetch('MyAccount/updatePinPopUp.tpl'),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#pinForm\").submit();'>Update PIN</button>",
 		];
 	}
 
