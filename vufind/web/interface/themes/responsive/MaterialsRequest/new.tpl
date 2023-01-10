@@ -5,7 +5,7 @@
 			<div class="materialsRequestExplanation alert alert-info">
 				{if empty($newMaterialsRequestSummary)}
 				If you cannot find a title in our catalog, you can request the title via this form.
-				Please enter as much information as possible so we can find the exact title you are looking for.
+				Please enter as much information as possible, so we can find the exact title you are looking for.
 				For example, if you are looking for a specific season of a TV show, please include that information.
 				{else}
 					{$newMaterialsRequestSummary}

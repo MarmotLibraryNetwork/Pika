@@ -1283,12 +1283,12 @@ abstract class HorizonROA implements \DriverInterface {
 				$errors .= $errorMessage->message . ';';
 			}
 			$this->getLogger()->error('Horizon ROA Driver error updating user\'s Pin :'.$errors);
-			return 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.';
+			return 'Sorry, we encountered an error while attempting to update your ' . translate('pin') . '. Please contact your local library.';
 		} elseif (!empty($updatePinResponse->sessionToken)){
 			$patron->updatePassword($newPin);
-			return 'Your pin number was updated successfully.';
+			return 'Your ' . translate('pin') . ' was updated successfully.';
 		}else{
-			return 'Sorry, we could not update your pin number. Please try again later.';
+			return 'Sorry, we could not update your ' . translate('pin') . '. Please try again later.';
 		}
 	}
 
@@ -1305,7 +1305,7 @@ abstract class HorizonROA implements \DriverInterface {
 					'newPin'     => $newPin,
 				];
 			}else{
-				return 'Sorry the current PIN or new PIN is blank';
+				return 'Sorry the current ' . translate('pin') . ' or new ' . translate('pin') . ' is blank';
 			}
 
 		}else{
@@ -1353,7 +1353,7 @@ abstract class HorizonROA implements \DriverInterface {
 					];
 				}else{
 					$result = [
-						'error' => 'Sorry, we could not e-mail your pin to you.  Please visit the library to reset your pin.'
+						'error' => 'Sorry, we could not e-mail your ' . translate('pin') . ' to you.  Please visit the library to reset your ' . translate('pin') . '.'
 					];
 					if (isset($resetPinResponse['messageList'])){
 						$errors = '';
@@ -1368,7 +1368,7 @@ abstract class HorizonROA implements \DriverInterface {
 
 			}else{
 				return [
-					'error' => 'Sorry, we did not find the card number you entered or you have not logged into the catalog previously.  Please contact your library to reset your pin.'
+					'error' => 'Sorry, we did not find the card number you entered or you have not logged into the catalog previously.  Please contact your library to reset your ' . translate('pin') . '.'
 				];
 			}
 		}
@@ -1384,7 +1384,7 @@ abstract class HorizonROA implements \DriverInterface {
 		if (empty($resetToken)){
 			$this->getLogger()->error('No Reset Token passed to resetPin function');
 			return [
-				'error' => 'Sorry, we could not update your pin. The reset token is missing. Please try again later'
+				'error' => 'Sorry, we could not update your ' . translate('pin') . '. The reset token is missing. Please try again later'
 			];
 		}
 
@@ -1396,7 +1396,7 @@ abstract class HorizonROA implements \DriverInterface {
 			}
 			$this->getLogger()->error('Horizon ROA Driver error updating user\'s Pin :' . $errors);
 			return [
-				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'
+				'error' => 'Sorry, we encountered an error while attempting to update your ' . translate('pin') . '. Please contact your local library.'
 			];
 		}elseif (!empty($changeMyPinResponse->sessionToken)){
 			if ($patron->ilsUserId == $changeMyPinResponse->patronKey){ // Check that the ILS user matches the Pika user
@@ -1407,7 +1407,7 @@ abstract class HorizonROA implements \DriverInterface {
 			];
 		}else{
 			return [
-				'error' => "Sorry, we could not update your pin number. Please try again later."
+				'error' => 'Sorry, we could not update your ' . translate('pin') . ' number. Please try again later.'
 			];
 		}
 	}

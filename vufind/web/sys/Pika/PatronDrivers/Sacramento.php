@@ -317,7 +317,7 @@ class Sacramento extends Sierra {
 		$birthDate           = date_create_from_format('m-d-Y', $birthDate);
 		$birthDay            = date_format($birthDate, 'd');
 		$birthMonth          = date_format($birthDate, 'm');
-		$ddepartment = $lastNameFourLetters . $firstNameOneLetter . $birthMonth . $birthDay; //var field d
+		$ddepartment         = $lastNameFourLetters . $firstNameOneLetter . $birthMonth . $birthDay; //var field d
 		$params['varFields'][] = ["fieldTag" => "d",
 		                          "content"  => $ddepartment];
 
@@ -502,67 +502,67 @@ class Sacramento extends Sierra {
 
 	public function getSelfRegistrationFields(){
 		global $library;
-		$fields = array();
+		$fields = [];
 		if ($library && $library->promptForBirthDateInSelfReg){
-			$fields[] = array(
+			$fields[] = [
 				'property'    => 'birthdate',
 				'type'        => 'date',
 				'label'       => 'Date of Birth (MM-DD-YYYY)',
 				'description' => 'Date of birth',
 				'maxLength'   => 10,
 				'required'    => true
-			);
+			];
 		}
-		$fields[] = array(
+		$fields[] = [
 			'property'    => 'firstname',
 			'type'        => 'text',
 			'label'       => 'First Name',
 			'description' => 'Your first name',
 			'maxLength'   => 40,
 			'required'    => true
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'middlename',
 			'type'        => 'text',
 			'label'       => 'Middle Initial',
 			'description' => 'Your middle initial',
 			'maxLength'   => 40,
 			'required'    => false
-		);
+		];
 
-		$fields[] = array(
+		$fields[] = [
 			'property'    => 'lastname',
 			'type'        => 'text',
 			'label'       => 'Last Name',
 			'description' => 'Your last name',
 			'maxLength'   => 40,
 			'required'    => true
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'address',
 			'type'        => 'text',
 			'label'       => 'Mailing Address',
 			'description' => 'Mailing Address',
 			'maxLength'   => 128,
 			'required'    => true
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'apartmentnumber',
 			'type'        => 'text',
 			'label'       => 'Apartment Number',
 			'description' => 'Apartment Number',
 			'maxLength'   => 10,
 			'required'    => false
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'city',
 			'type'        => 'text',
 			'label'       => 'City',
 			'description' => 'City',
 			'maxLength'   => 48,
 			'required'    => true
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'state',
 			'type'        => 'text',
 			'label'       => 'State',
@@ -570,17 +570,17 @@ class Sacramento extends Sierra {
 			'maxLength'   => 2,
 			'required'    => true,
 			'default'     => 'CA'
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'zip',
 			'type'        => 'text',
 			'label'       => 'Zip Code',
 			'description' => 'Zip Code',
 			'maxLength'   => 32,
 			'required'    => true
-		);
+		];
 		// require phone for folsom
-		if($library->subdomain == "folsom") {
+		if ($library->subdomain == "folsom"){
 			$fields[] = [
 				'property'    => 'primaryphone',
 				'type'        => 'text',
@@ -589,7 +589,7 @@ class Sacramento extends Sierra {
 				'maxLength'   => 128,
 				'required'    => true
 			];
-		} else{
+		}else{
 			$fields[] = [
 				'property'    => 'primaryphone',
 				'type'        => 'text',
@@ -600,7 +600,7 @@ class Sacramento extends Sierra {
 			];
 		}
 		// require email for folsom
-		if($library->subdomain == "folsom"){
+		if ($library->subdomain == "folsom"){
 			$fields[] = [
 				'property'    => 'email',
 				'type'        => 'email',
@@ -609,7 +609,7 @@ class Sacramento extends Sierra {
 				'maxLength'   => 128,
 				'required'    => true
 			];
-		} else {
+		}else{
 			$fields[] = [
 				'property'    => 'email',
 				'type'        => 'email',
@@ -619,40 +619,40 @@ class Sacramento extends Sierra {
 				'required'    => false
 			];
 		}
-		$fields[] = array(
+		$fields[] = [
 			'property'    => 'guardianFirstName',
 			'type'        => 'text',
 			'label'       => 'Parent/Guardian First Name',
 			'description' => 'Your parent\'s or guardian\'s first name',
 			'maxLength'   => 40,
 			'required'    => false
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'guardianLastName',
 			'type'        => 'text',
 			'label'       => 'Parent/Guardian Last Name',
 			'description' => 'Your parent\'s or guardian\'s last name',
 			'maxLength'   => 40,
 			'required'    => false
-		);
+		];
 		//These two fields will be made required by javascript in the template
 
-		$fields[] = array(
+		$fields[] = [
 			'property'    => 'pin',
 			'type'        => 'pin',
 			'label'       => 'Pin',
 			'description' => 'Your desired pin',
 			/*'maxLength' => 4, 'size' => 4,*/
 			'required'    => true
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'pinconfirm',
 			'type'        => 'pin',
 			'label'       => 'Confirm Pin',
 			'description' => 'Re-type your desired pin',
 			/*'maxLength' => 4, 'size' => 4,*/
 			'required'    => true
-		);
+		];
 
 		return $fields;
 	}

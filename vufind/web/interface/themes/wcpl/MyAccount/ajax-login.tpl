@@ -36,9 +36,9 @@
 					<input type="password" name="password" id="password" size="28" onkeypress="return Pika.submitOnEnter(event, '#loginForm');" class="form-control">
 					{if $showForgotPinLink}
 						<p class="text-muted help-block">
-							<strong>Forgot PIN?</strong>&nbsp;
+							<strong>{translate text="Forgot PIN?"}</strong>&nbsp;
 {*							{if $useEmailResetPin}*}
-								<a href="/MyAccount/EmailResetPin">Reset My PIN</a>
+								<a href="/MyAccount/EmailResetPin">{translate text='Reset My PIN'}</a>
 {*							{else}*}
 {*	This functionality should be exposed for wcpl							<a href="/MyAccount/EmailPin">E-mail my PIN</a>*}
 {*							{/if}*}

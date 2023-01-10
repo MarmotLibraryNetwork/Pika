@@ -159,7 +159,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI {
 							if (empty($lookupMyAccountInfoResponse->AddressInfo->email)){
 								// return an error message because horizon doesn't have an email.
 								return [
-									'error' => 'The circulation system does not have an email associated with this card number. Please contact your library to reset your pin.'
+									'error' => 'The circulation system does not have an email associated with this card number. Please contact your library to reset your ' . translate('pin') . '.'
 								];
 							}
 						}
@@ -183,7 +183,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI {
 				];
 			}else{
 				$result = [
-					'error' => "Sorry, we could not e-mail your pin to you.  Please visit the library to reset your pin."
+					'error' => 'Sorry, we could not e-mail your ' . translate('pin') . ' to you.  Please visit the library to reset your ' . translate('pin') . '.'
 				];
 				if (isset($resetPinResponse['messageList'])){
 					$errors = '';
@@ -199,7 +199,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI {
 
 		}else{
 			return [
-				'error' => 'Sorry, we did not find the card number you entered or you have not logged into the catalog previously.  Please contact your library to reset your pin.'
+				'error' => 'Sorry, we did not find the card number you entered or you have not logged into the catalog previously.  Please contact your library to reset your ' . translate('pin') . '.'
 			];
 		}
 	}

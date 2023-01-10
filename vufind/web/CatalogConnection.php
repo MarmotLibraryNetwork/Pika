@@ -391,8 +391,7 @@ class CatalogConnection
 	 * @return mixed        Array of the patron's fines on success, PEAR_Error otherwise.
 	 * @access public
 	 */
-	public function getMyFines($patron, $includeMessages = false, $linkedAccount = false)
-	{
+	public function getMyFines($patron, $includeMessages = false, $linkedAccount = false){
 		return $this->driver->getMyFines($patron, $includeMessages, $linkedAccount);
 	}
 
@@ -893,10 +892,9 @@ class CatalogConnection
 	 * @return mixed             Varies by method (false if undefined method)
 	 * @access public
 	 */
-	public function __call($methodName, $params)
-	{
-		$method = array($this->driver, $methodName);
-		if (is_callable($method)) {
+	public function __call($methodName, $params){
+		$method = [$this->driver, $methodName];
+		if (is_callable($method)){
 			return call_user_func_array($method, $params);
 		}
 		return false;
@@ -1119,12 +1117,12 @@ class CatalogConnection
 		}else{
 			//Get all list of all transactions
 			$currentTransactions = $this->driver->getMyCheckouts($patron);
-			$renewResult = array(
-				'success' => true,
-				'message' => array(),
-				'Renewed' => 0,
+			$renewResult = [
+				'success'   => true,
+				'message'   => [],
+				'Renewed'   => 0,
 				'Unrenewed' => 0
-			);
+			];
 			$renewResult['Total'] = count($currentTransactions);
 			$numRenewals = 0;
 			$failure_messages = array();
@@ -1154,17 +1152,18 @@ class CatalogConnection
 	}
 
 	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch, $cancelDate = null) {
-		if ($this->checkFunction('placeVolumeHold')){
+		if (method_exists($this->driver, 'placeVolumeHold')){
 			return $this->driver->placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch, $cancelDate);
 		}else{
-			return array(
+			return [
 					'success' => false,
-					'message' => 'Volume level holds have not been implemented for this ILS.');
+					'message' => 'Volume level holds have not been implemented for this ILS.'
+			];
 		}
 	}
 
 	public function importListsFromIls($patron){
-		if ($this->checkFunction('importListsFromIls')){
+		if (method_exists($this->driver, 'importListsFromIls')){
 			return $this->driver->importListsFromIls($patron);
 		}else{
 			return [
@@ -1175,7 +1174,7 @@ class CatalogConnection
 	}
 
 	public function getShowUsernameField() {
-		if ($this->checkFunction('hasUsernameField')) {
+		if (method_exists($this->driver, 'hasUsernameField')) {
 			return $this->driver->hasUsernameField();
 		}else{
 			return false;

@@ -43,6 +43,7 @@ class User extends DB_DataObject {
 	protected $cat_password;
 	public $barcode;                        // string(50) Replaces $cat_username for sites using barcode/pin auth
 	protected $password;                       // string(128) password - Replaces $cat_password
+	public $lastPasswordSetTime;
 	public $patronType;
 	public $created;                         // datetime(19)  not_null binary
 	public $homeLocationId;                  // int(11)
@@ -213,7 +214,7 @@ class User extends DB_DataObject {
 	 * @return string
 	 */
 	public function getPassword() {
-		$password = $this->_decryptPassword($this->password);
+		$password = $this->_decryptPassword();
 		return $password;
 	}
 
@@ -227,7 +228,7 @@ class User extends DB_DataObject {
 	 */
 	public function setPassword($password) {
 		$encryptedPassword = $this->_encryptPassword($password);
-		$this->password = $encryptedPassword;
+		$this->password    = $encryptedPassword;
 	}
 
 	/**
@@ -238,12 +239,12 @@ class User extends DB_DataObject {
 	 * @return boolean True on success or false on failure.
 	 */
 	public function updatePassword($password) {
-		$encryptedPassword = $this->_encryptPassword($password);
-		$sql = "UPDATE user SET password = '" . $encryptedPassword . "' WHERE id = " . $this->id . " LIMIT 1";
-
-		$result = $this->query($sql);
+		$encryptedPassword         = $this->_encryptPassword($password);
+		$this->password            = $encryptedPassword;
+		$this->lastPasswordSetTime = date('Y-m-d h:i:s');
+		$result                    = $this->update();
 		if(PEAR_Singleton::isError($result)) {
-			$this->logger->warn("Error updating password.", ["message"=>$result->getMessage(), "info"=>$result->userinfo]);
+			$this->logger->error('Error updating password.', ['message' => $result->getMessage(), 'info' => $result->userinfo]);
 		}elseif($result >= 1) {
 			return true;
 		}
@@ -1877,7 +1878,7 @@ class User extends DB_DataObject {
 
 	}
 
-private $staffPtypes = null;
+	private $staffPtypes = null;
 	/**
 	 * Used by Account Profile, to show users any additional Admin roles they may have.
 	 * @return bool
@@ -1904,6 +1905,8 @@ private $staffPtypes = null;
 		return $result;
 	}
 
+	public $pinUpdateRequired = false;
+
 	public function updatePin(){
 		global $configArray;
 
@@ -1913,31 +1916,31 @@ private $staffPtypes = null;
 		if (isset($_REQUEST['pin'])){
 			$oldPin = $_REQUEST['pin'];
 		}else{
-			return "Please enter your current pin number";
+			return 'Please enter your current ' . translate('pin');
 		}
 		if ($this->getPassword() != $oldPin){
-			return "The old pin number is incorrect";
+			return 'The old ' . translate('pin') . ' is incorrect';
 		}
 		if (!empty($_REQUEST['pin1'])){
 			$newPin = $_REQUEST['pin1'];
 		}else{
-			return "Please enter the new pin number";
+			return 'Please enter the new ' . translate('pin');
 		}
 		if (!empty($_REQUEST['pin2'])){
 			$confirmNewPin = $_REQUEST['pin2'];
 		}else{
-			return "Please enter the new pin number again";
+			return 'Please enter the new ' . translate('pin') . ' again';
 		}
 		if ($newPin != $confirmNewPin){
-			return "New PINs do not match. Please try again.";
+			return 'New ' . translate('pin') . 's do not match. Please try again.';
 		}
 		// pin min and max length check 
 		$pinLength = strlen($newPin);
 		if ($pinLength < $pinMinimumLength OR $pinLength > $pinMaximumLength) {
 			if ($pinMinimumLength == $pinMaximumLength){
-				return "New PIN must be exactly " . $pinMinimumLength . " characters.";
+				return 'New PIN must be exactly ' . $pinMinimumLength . ' characters.';
 			}else{
-				return "New PIN must be " . $pinMinimumLength . " to " . $pinMaximumLength . " characters.";
+				return 'New PIN must be ' . $pinMinimumLength . ' to ' . $pinMaximumLength . ' characters.';
 			}
 		}
 		$result = $this->getCatalogDriver()->updatePin($this, $oldPin, $newPin, $confirmNewPin);

@@ -11,7 +11,7 @@
 						</div>
 					{/if}
 				{else}
-					<p class="alert alert-success">Your PIN number has been reset.</p>
+					<p class="alert alert-success">Your {translate text='pin'} has been reset.</p>
 					<p>
 						<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Login'}</a>
 					</p>

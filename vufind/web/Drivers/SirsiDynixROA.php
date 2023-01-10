@@ -1542,7 +1542,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 				$this->logger->error('Symphony ILS encountered errors updating patron pin : ' . implode('; ', $messages));
 				return !empty($staffPinError) ? $staffPinError : 'The circulation system encountered errors attempt to update the pin.';
 			}
-			return 'Failed to update pin';
+			return 'Failed to update ' . translate('pin') . '.';
 		}
 	}
 
@@ -1629,7 +1629,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 								if (empty($email)){
 									// return an error message because Symphony doesn't have an email.
 									return [
-										'error' => 'The circulation system does not have an email associated with this card number. Please contact your library to reset your pin.'
+										'error' => 'The circulation system does not have an email associated with this card number. Please contact your library to reset your ' . translate('pin') . '.'
 									];
 								}
 							}
@@ -1653,7 +1653,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 				];
 			}else{
 				$result = [
-					'error' => "Sorry, we could not e-mail your pin to you.  Please visit the library to reset your pin."
+					'error' => 'Sorry, we could not e-mail your ' . translate('pin') . ' to you.  Please visit the library to reset your ' . translate('pin') . '.'
 				];
 				if (isset($resetPinResponse->messageList)){
 					$errors = [];
@@ -1668,7 +1668,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 
 		}else{
 			return [
-				'error' => 'Sorry, we did not find the card number you entered or you have not logged into the catalog previously.  Please contact your library to reset your pin.'
+				'error' => 'Sorry, we did not find the card number you entered or you have not logged into the catalog previously.  Please contact your library to reset your ' . translate('pin') . '.'
 			];
 		}
 	}

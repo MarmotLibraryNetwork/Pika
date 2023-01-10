@@ -15,8 +15,7 @@
 
 			{if $profileUpdateErrors}
 				{foreach from=$profileUpdateErrors item=errorMsg}
-					{* TODO: Needing an exact match to display a success message is problematic. Need a better way to indicate success  *}
-					{if $errorMsg == 'Your pin number was updated successfully.'}
+					{if strpos($errorMsg, 'success')}
 						<div class="alert alert-success">{$errorMsg}</div>
 					{else}
 						<div class="alert alert-danger">{$errorMsg}</div>
@@ -220,7 +219,7 @@
 						<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#pinPanel">
 							<div class="panel-heading">
 								<div class="panel-title">
-									Personal Identification Number (PIN)
+									{translate text='Update PIN'}
 								</div>
 							</div>
 						</a>
@@ -250,7 +249,7 @@
 									</div>
 									<div class="form-group">
 										<div class="col-xs-8 col-xs-offset-4">
-													<input type="submit" value="Update PIN" name="update" class="btn btn-primary">
+													<input type="submit" value="{translate text='Update PIN'}" name="update" class="btn btn-primary">
 										</div>
 									</div>
 									<script type="text/javascript">

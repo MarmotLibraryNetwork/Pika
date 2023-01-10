@@ -234,5 +234,14 @@ function getUserUpdates(){
 				'ALTER TABLE user DROP COLUMN cat_password',
 			],
 		],
+		'2023.01_lastPasswordSetTime' => [
+			'title'           => 'Add lass password set time column',
+			'description'     => '',
+			'continueOnError' => true,
+			'sql'             => [
+				'ALTER TABLE `user` ADD COLUMN `lastPasswordSetTime` DATETIME NULL AFTER `password`;',
+			],
+		],
+
 	);
 }
