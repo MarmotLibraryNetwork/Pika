@@ -129,7 +129,7 @@ class CarlX extends SIP2Driver{
 					}
 
 					$user->patronType  = $result->Patron->PatronType; // Example: "ADULT"
-					$user->web_note    = '';
+					$user->webNote     = '';
 					$user->phone       = $result->Patron->Phone1;
 
 					$user->setUserExpirationSettings($this->extractDateFromCarlXDateField($result->Patron->ExpirationDate));

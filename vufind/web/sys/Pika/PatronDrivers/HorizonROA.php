@@ -419,7 +419,7 @@ abstract class HorizonROA implements \DriverInterface {
 				$user->patronType            = $pType;
 				$user->notices               = '-';
 				$user->noticePreferenceLabel = 'E-mail';
-				$user->web_note              = '';
+				$user->webNote               = '';
 
 				if ($userExistsInDB) {
 					$user->update();

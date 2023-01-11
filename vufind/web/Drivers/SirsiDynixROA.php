@@ -273,7 +273,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 				$user->patronType            = 0; //TODO: not getting this info here?
 				$user->notices               = '-';
 				$user->noticePreferenceLabel = 'E-mail';
-				$user->web_note              = '';
+				$user->webNote               = '';
 
 				if ($userExistsInDB){
 					$user->update();
@@ -493,7 +493,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 				$user->patronType            = 0; //TODO: not getting this info here?
 				$user->notices               = '-';
 				$user->noticePreferenceLabel = 'E-mail';
-				$user->web_note              = '';
+				$user->webNote               = '';
 
 				if ($userExistsInDB){
 					$user->update();

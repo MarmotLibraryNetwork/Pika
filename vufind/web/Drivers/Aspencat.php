@@ -376,7 +376,7 @@ class Aspencat implements DriverInterface{
 						$user->cat_password = $password;
 						$user->email        = $userFromDb['email'];
 						$user->patronType   = $userFromDb['categorycode'];
-						$user->web_note     = '';
+						$user->webNote      = '';
 
 						$city  = strtok($userFromDb['city'], ',');
 						$state = strtok(',');

@@ -80,7 +80,7 @@ class User extends DB_DataObject {
 	public $zip;
 	public $workPhone;
 	public $mobileNumber; //TODO: obsolete
-	public $web_note;
+	public $webNote;
 	public $expires;
 	public $expired;
 	public $expireClose;

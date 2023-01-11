@@ -432,7 +432,7 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 			}
 			$patron->email      = (string)$patronInfoResponse->email;
 			$patron->patronType = (string)$patronInfoResponse->categorycode;
-			$patron->web_note   = (string)$patronInfoResponse->opacnote; //TODO: double check that the point of the opac note is the same as our webnote
+			$patron->webNote    = (string)$patronInfoResponse->opacnote; //TODO: double check that the point of the opac note is the same as our webnote
 			$patron->address1   = (string)$patronInfoResponse->address;
 			$patron->city       = (string)$patronInfoResponse->city;
 			$patron->state      = (string)$patronInfoResponse->state;

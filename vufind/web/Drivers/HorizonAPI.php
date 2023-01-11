@@ -177,7 +177,7 @@ abstract class HorizonAPI extends Horizon{
 				$user->patronType            = 0;
 				$user->notices               = '-';
 				$user->noticePreferenceLabel = 'E-mail';
-				$user->web_note              = '';
+				$user->webNote               = '';
 
 				if ($userExistsInDB){
 					$user->update();

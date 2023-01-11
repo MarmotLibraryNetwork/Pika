@@ -753,10 +753,13 @@ class Sierra  implements \DriverInterface {
 		if(isset($pInfo->varFields)){
 			if (!empty($this->configArray['Catalog']['sierraPatronWebNoteField'])){
 				$webNotesVarField = $this->configArray['Catalog']['sierraPatronWebNoteField'];
-				$webNote          = $this->_getVarField($webNotesVarField, $pInfo->varFields);
-				if (count($webNote) > 0){
-					$index            = array_key_first($webNote);
-					$patron->web_note = $webNote[$index]->content;
+				$webNotes         = $this->_getVarField($webNotesVarField, $pInfo->varFields);
+				if (count($webNotes) > 0){
+					foreach ($webNotes as $webNote){
+						if (!empty($webNote->content)){
+							$patron->webNote[] = $webNote->content;
+						}
+					}
 				}
 			}
 			if (!empty($this->configArray['Catalog']['patronPinSetTimeField'])){
