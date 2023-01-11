@@ -40,9 +40,18 @@ class EmailResetPin extends Action {
 
 	function launch($msg = null){
 		global $interface;
+		global $user;
+		if (!empty($user) && $user->pinUpdateRequired){
+			// Because we are forcing a Pin update we can not display the convince buttons at the top of page and side bars
+			$interface->assign('isUpdatePinPage', true);
+			$interface->assign('displaySidebarMenu', false);
+			$sidebarTemplate = '';
+		} else {
+			$sidebarTemplate = 'Search/home-sidebar.tpl';
+		}
+
 
 		if (isset($_REQUEST['submit'])){
-
 			$this->catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
 			$driver        = $this->catalog->driver;
 			if (method_exists($driver, 'emailResetPin')){
@@ -54,9 +63,9 @@ class EmailResetPin extends Action {
 				];
 			}
 			$interface->assign('emailResult', $emailResult);
-			$this->display('emailResetPinResults.tpl', translate('Email to Reset Pin'));
+			$this->display('emailResetPinResults.tpl', translate('Email to Reset Pin'), $sidebarTemplate);
 		}else{
-			$this->display('emailResetPin.tpl', translate('Email to Reset Pin'));
+			$this->display('emailResetPin.tpl', translate('Email to Reset Pin'), $sidebarTemplate);
 		}
 	}
 }
