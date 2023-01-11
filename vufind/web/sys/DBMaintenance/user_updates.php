@@ -235,7 +235,7 @@ function getUserUpdates(){
 			],
 		],
 		'2023.01_lastPasswordSetTime' => [
-			'title'           => 'Add lass password set time column',
+			'title'           => 'Add last password set time column',
 			'description'     => '',
 			'continueOnError' => true,
 			'sql'             => [
