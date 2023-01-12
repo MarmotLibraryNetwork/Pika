@@ -260,17 +260,17 @@ EOD;
 	 */
 	public function renewAll($patron) {
 		// TODO: Implement renewAll() method.
-		$renew_result = array(
-			'success' => false,
-			'message' => array(),
-			'Renewed' => 0,
+		$renew_result = [
+			'success'   => false,
+			'message'   => [],
+			'Renewed'   => 0,
 			'Unrenewed' => $patron->numCheckedOutIls,
-			'Total' => $patron->numCheckedOutIls
-		);
+			'Total'     => $patron->numCheckedOutIls
+		];
 
 		if ($this->initSipConnection()) {
 			$this->sipConnection->patron    = $patron->cat_username;
-			$this->sipConnection->patronpwd = $patron->cat_password;
+			$this->sipConnection->patronpwd = $patron->barcode;
 
 			$in         = $this->sipConnection->msgRenewAll();
 			$msg_result = $this->sipConnection->get_message($in);

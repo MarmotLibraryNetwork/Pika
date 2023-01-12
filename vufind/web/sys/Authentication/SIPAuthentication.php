@@ -86,8 +86,8 @@ class SIPAuthentication implements Authentication {
 								// Success!!!
 								$user = $this->processSIP2User($result, $username, $password, $patronInfoResponse);
 
-								// Set login cookie for 1 hour
-								$user->cat_password = $password; // Need this for Metalib
+
+								$user->setPassword($password);
 							}
 						}
 					}
@@ -178,9 +178,6 @@ class SIPAuthentication implements Authentication {
 								
 								// Success!!!
 								$user = $this->processSIP2User($result, $username, $password, $patronInfoResponse);
-
-								// Set login cookie for 1 hour
-								$user->cat_password = $password; // Need this for Metalib
 							} else {
 								$user = new PEAR_Error('authentication_error_invalid');
 							}
@@ -224,7 +221,7 @@ class SIPAuthentication implements Authentication {
 		global $timer;
 		$user            = new User();
 		$user->ilsUserId = $info['variable']['AA'][0];
-		$insert          = $user->find(true) ? false : true;
+		$insert          = !$user->find(true);
 		
 		// This could potentially be different depending on the ILS.  Name could be Bob Wicksall or Wicksall, Bob.
 		// This is currently assuming Wicksall, Bob
@@ -238,13 +235,11 @@ class SIPAuthentication implements Authentication {
 
 		// I'm inserting the sip username and password since the ILS is the source.
 		// Should revisit this.
+		$user->setPassword($password);
 		$user->cat_username = $username;
-		$user->cat_password = $password;
-		$user->email        = isset($patronInfoResponse['variable']['BE'][0]) ? $patronInfoResponse['variable']['BE'][0] : '';
-		$user->phone        = isset($patronInfoResponse['variable']['BF'][0]) ? $patronInfoResponse['variable']['BF'][0] : '';
-//		$user->major        = null;
-//		$user->college      = null;
-		$user->patronType  = empty($patronInfoResponse['variable']['PC'][0]) ? '' : $patronInfoResponse['variable']['PC'][0];
+		$user->email        = $patronInfoResponse['variable']['BE'][0] ?? '';
+		$user->phone        = $patronInfoResponse['variable']['BF'][0] ?? '';
+		$user->patronType   = empty($patronInfoResponse['variable']['PC'][0]) ? '' : $patronInfoResponse['variable']['PC'][0];
 		
 		//Get home location
 		//Check AO?
@@ -275,7 +270,7 @@ class SIPAuthentication implements Authentication {
 			$user->update();
 		}
 
-		$timer->logTime("Processed SIP2 User");
+		$timer->logTime('Processed SIP2 User');
 		return $user;
 	}
 }

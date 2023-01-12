@@ -91,11 +91,11 @@ class LibrarySolution extends ScreenScrapingDriver {
 				if ($forceDisplayNameUpdate) {
 					$user->displayName = '';
 				}
-				$user->fullname     = $accountSummary->patron->fullName;
-				$user->cat_username = $accountSummary->patron->patronId;
-				$user->cat_password = $accountSummary->patron->pin;
-				$user->phone        = $accountSummary->patron->phone;
-				$user->email        = $accountSummary->patron->email;
+				$user->fullname = $accountSummary->patron->fullName;
+				$user->barcode  = $accountSummary->patron->patronId;
+				$user->phone    = $accountSummary->patron->phone;
+				$user->email    = $accountSummary->patron->email;
+				$user->setPassword($accountSummary->patron->pin);
 
 				//Setup home location
 				$location = null;
@@ -110,7 +110,7 @@ class LibrarySolution extends ScreenScrapingDriver {
 					// The code below will attempt to find a location for the library anyway if the homeLocation is already set
 				}
 
-				list ($yearExp, $monthExp, $dayExp) = explode("-", $accountSummary->patron->cardExpirationDate);
+				[$yearExp, $monthExp, $dayExp] = explode("-", $accountSummary->patron->cardExpirationDate);
 				$timeExpire    = $monthExp . "/" . $dayExp . "/" . $yearExp;
 				$user->setUserExpirationSettings($timeExpire);
 
@@ -162,17 +162,17 @@ class LibrarySolution extends ScreenScrapingDriver {
 	 * @return array
 	 */
 	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut") {
-		$readingHistory = array();
-		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)){
+		$readingHistory = [];
+		if ($this->loginPatronToLSS($patron->barcode, $patron->getPassword())){
 			//Load transactions from LSS
 			//TODO: Verify that this will load more than 20 loans
-			$url = $this->getVendorOpacUrl() . '/loans/history/0/20/OutDate?_=' . time() * 1000;
+			$url         = $this->getVendorOpacUrl() . '/loans/history/0/20/OutDate?_=' . time() * 1000;
 			$loanInfoRaw = $this->_curlGetPage($url);
-			$loanInfo = json_decode($loanInfoRaw);
+			$loanInfo    = json_decode($loanInfoRaw);
 
 			foreach ($loanInfo->loanHistory as $loan){
 				$dueDate = $loan->dueDate;
-				$curTitle = array();
+				$curTitle = [];
 				$curTitle['itemId']       = $loan->itemId;
 				$curTitle['id']           = $loan->bibliographicId;
 				$curTitle['shortId']      = $loan->bibliographicId;
@@ -255,8 +255,8 @@ class LibrarySolution extends ScreenScrapingDriver {
 	 * @access public
 	 */
 	public function getMyCheckouts($user){
-		$transactions = array();
-		if ($this->loginPatronToLSS($user->cat_username, $user->cat_password)){
+		$transactions = [];
+		if ($this->loginPatronToLSS($user->barcode, $user->getPassword())){
 			//Load transactions from LSS
 			//TODO: Verify that this will load more than 20 loans
 			$url = $this->getVendorOpacUrl() . '/loans/0/20/Status?_=' . time() * 1000;
@@ -334,11 +334,12 @@ class LibrarySolution extends ScreenScrapingDriver {
 
 	public function renewItem($patron, $recordId, $itemId, $itemIndex){
 		$recordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
-		$result = array(
+		$result       = [
 			'success' => false,
-			'title' => $recordDriver->getTitle(),
-			'message' => "Sorry, we were unable to renew your checkout.");
-		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {
+			'title'   => $recordDriver->getTitle(),
+			'message' => 'Sorry, we were unable to renew your checkout.'
+		];
+		if ($this->loginPatronToLSS($patron->barcode, $patron->getPassword())) {
 			//$isAuthenticated = $this->isAuthenticated();
 			$url = $this->getVendorOpacUrl() . '/loans/renew?_=' . time() * 1000;
 			$postParams = '{"renewLoanInfos":"[{\"success\":false,\"itemId\":\"' . $itemId . '\",\"date\":' . (time() * 1000) . ',\"downloadable\":false}]"}';
@@ -367,35 +368,30 @@ class LibrarySolution extends ScreenScrapingDriver {
 	/**
 	 * @param $username
 	 * @param $password
-	 * @return array
+	 * @return boolean
 	 */
 	protected function loginPatronToLSS($username, $password) {
 		//Remove any spaces from the barcode
 		$username = trim($username);
 		$password = trim($password);
 
-		$url = $this->getVendorOpacUrl() . '/login?rememberMe=false&_=' . time() * 1000;
-		$postParams = array(
-			'password' => $password,
-			'pin' => $password,
+		$url        = $this->getVendorOpacUrl() . '/login?rememberMe=false&_=' . time() * 1000;
+		$postParams = [
+			'password'   => $password,
+			'pin'        => $password,
 			'rememberMe' => 'false',
-			'username' => $username,
-		);
+			'username'   => $username,
+		];
 		$loginResponse = $this->_curlPostBodyData($url, $postParams);
 		if (strlen($loginResponse) > 0){
 			$decodedResponse = json_decode($loginResponse);
 			if ($decodedResponse){
-				$loginSucceeded = $decodedResponse->success == 'true';
-			}else{
-				$loginSucceeded = false;
+				return $decodedResponse->success == 'true';
 			}
 		}else{
-
 			$this->logger->warning("Unable to connect to LSS.  Received $loginResponse");
-			$loginSucceeded = false;
 		}
-
-		return $loginSucceeded;
+		return false;
 	}
 
 	/**
@@ -409,42 +405,42 @@ class LibrarySolution extends ScreenScrapingDriver {
 	 * @access public
 	 */
 	public function getMyHolds($user){
-		$holds = array(
-			'available' => array(),
-			'unavailable' => array()
-		);
+		$holds = [
+			'available'   => [],
+			'unavailable' => []
+		];
 
-		if ($this->loginPatronToLSS($user->cat_username, $user->cat_password)) {
+		if ($this->loginPatronToLSS($user->barcode, $user->getPassword())) {
 			//Load transactions from LSS
 			//TODO: Verify that this will load more than 20 loans
-			$url = $this->getVendorOpacUrl() . '/requests/0/20/Status?_=' . time() * 1000;
+			$url         = $this->getVendorOpacUrl() . '/requests/0/20/Status?_=' . time() * 1000;
 			$holdInfoRaw = $this->_curlGetPage($url);
-			$holdInfo = json_decode($holdInfoRaw);
+			$holdInfo    = json_decode($holdInfoRaw);
 
-			$indexingProfile = new IndexingProfile();
+			$indexingProfile             = new IndexingProfile();
 			$indexingProfile->sourceName = $this->accountProfile->recordSource;
 			if (!$indexingProfile->find(true)){
 				$indexingProfile = null;
 			}
 			foreach ($holdInfo->holds as $hold){
-				$curHold= array();
-				$bibId = $hold->bibliographicId;
-				$curHold['id'] = $bibId;
+				$curHold               = [];
+				$bibId                 = $hold->bibliographicId;
+				$curHold['id']         = $bibId;
 				$curHold['holdSource'] = 'ILS';
-				$curHold['itemId'] = $hold->itemId;
-				$curHold['cancelId'] = $hold->holdNumber;
-				$curHold['position'] = $hold->holdQueueLength;
-				$curHold['recordId'] = $bibId;
-				$curHold['shortId'] = $bibId;
-				$curHold['title'] = $hold->title;
-				$curHold['author'] = $hold->author;
+				$curHold['itemId']     = $hold->itemId;
+				$curHold['cancelId']   = $hold->holdNumber;
+				$curHold['position']   = $hold->holdQueueLength;
+				$curHold['recordId']   = $bibId;
+				$curHold['shortId']    = $bibId;
+				$curHold['title']      = $hold->title;
+				$curHold['author']     = $hold->author;
 				$curHold['locationId'] = $hold->holdPickupBranchId;
-				$curPickupBranch = new Location();
+				$curPickupBranch       = new Location();
 				$curPickupBranch->code = $hold->holdPickupBranchId;
 				if ($curPickupBranch->find(true)) {
-					$curHold['currentPickupId'] = $curPickupBranch->locationId;
+					$curHold['currentPickupId']   = $curPickupBranch->locationId;
 					$curHold['currentPickupName'] = $curPickupBranch->displayName;
-					$curHold['location'] = $curPickupBranch->displayName;
+					$curHold['location']          = $curPickupBranch->displayName;
 				}
 				//$curHold['locationId'] = $matches[1];
 				$curHold['locationUpdateable'] = false;
@@ -463,7 +459,7 @@ class LibrarySolution extends ScreenScrapingDriver {
 				//MDN - it looks like holdCancelable is not accurate, setting to true always
 				//$curHold['cancelable'] = $hold->holdCancelable;
 				$curHold['cancelable'] = true;
-				$curHold['frozen'] = $hold->suspendUntilDate != null;
+				$curHold['frozen']     = $hold->suspendUntilDate != null;
 				if ($curHold['frozen']){
 					$curHold['reactivateTime'] = $hold->suspendUntilDate;
 				}
@@ -502,7 +498,7 @@ class LibrarySolution extends ScreenScrapingDriver {
 	/**
 	 * Place Hold
 	 *
-	 * This is responsible for both placing holds as well as placing recalls.
+	 * This is responsible for both placing holds and placing recalls.
 	 *
 	 * @param   User    $patron       The User to place a hold for
 	 * @param   string  $recordId     The id of the bib record
@@ -513,20 +509,21 @@ class LibrarySolution extends ScreenScrapingDriver {
 	 */
 	function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {
 		$recordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
-		$result = array(
+		$result       = [
 			'success' => false,
-			'title' => $recordDriver->getTitle(),
-			'message' => 'Sorry, your hold could not be placed.');
-		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {
+			'title'   => $recordDriver->getTitle(),
+			'message' => 'Sorry, your hold could not be placed.'
+		];
+		if ($this->loginPatronToLSS($patron->barcode, $patron->getPassword())) {
 			$url = $this->getVendorOpacUrl() . '/requests/true?_=' . time() * 1000;
 			//LSS allows multiple holds to be places at once, but we will only do one at a time for now.
-			$postParams[] = array(
+			$postParams[] = [
 				'bibliographicId' => $recordId,
-				'downloadable' => false,
-				'interfaceType' => 'PAC',
-				'pickupBranchId' => $pickupBranch,
-				'titleLevelHold' => 'true'
-			);
+				'downloadable'    => false,
+				'interfaceType'   => 'PAC',
+				'pickupBranchId'  => $pickupBranch,
+				'titleLevelHold'  => 'true'
+			];
 			$placeHoldResponseRaw = $this->_curlPostBodyData($url, $postParams);
 			$placeHoldResponse = json_decode($placeHoldResponseRaw);
 
@@ -558,7 +555,7 @@ class LibrarySolution extends ScreenScrapingDriver {
 	 * @access  public
 	 */
 	function placeItemHold($patron, $recordId, $itemId, $pickupBranch){
-		return array('success' => false, 'message' => 'Unable to place Item level holds in Library.Solution at this time');
+		return ['success' => false, 'message' => 'Unable to place Item level holds in Library.Solution at this time'];
 	}
 
 	/**
@@ -571,15 +568,16 @@ class LibrarySolution extends ScreenScrapingDriver {
 	 */
 	function cancelHold($patron, $recordId, $cancelId){
 		$recordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
-		$result = array(
+		$result       = [
 			'success' => false,
-			'title' => $recordDriver->getTitle(),
-			'message' => 'Sorry, your hold could not be cancelled.');
-		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {
+			'title'   => $recordDriver->getTitle(),
+			'message' => 'Sorry, your hold could not be cancelled.'
+		];
+		if ($this->loginPatronToLSS($patron->barcode, $patron->getPassword())) {
 			//for lss we need additional information about the hold
-			$url = $this->getVendorOpacUrl() . '/requests/0/20/Status?_=' . time() * 1000;
+			$url         = $this->getVendorOpacUrl() . '/requests/0/20/Status?_=' . time() * 1000;
 			$holdInfoRaw = $this->_curlGetPage($url);
-			$holdInfo = json_decode($holdInfoRaw);
+			$holdInfo    = json_decode($holdInfoRaw);
 
 			$selectedHold = null;
 			foreach ($holdInfo->holds as $hold) {
@@ -588,11 +586,11 @@ class LibrarySolution extends ScreenScrapingDriver {
 				}
 			}
 
-			$url = $this->getVendorOpacUrl() . '/requests/cancel?_=' . time() * 1000;
-			$postParams = '{"cancelHoldInfos":"[{\"desireNumber\":\"' . $cancelId. '\",\"success\":false,\"holdQueueLength\":\"' . $selectedHold->holdQueueLength . '\",\"bibliographicId\":\"' . $recordId. '\",\"whichBranch\":' . $selectedHold->holdPickupBranchId . ',\"status\":\"' . $selectedHold->status . '\",\"downloadable\":false}]"}';
+			$url        = $this->getVendorOpacUrl() . '/requests/cancel?_=' . time() * 1000;
+			$postParams = '{"cancelHoldInfos":"[{\"desireNumber\":\"' . $cancelId . '\",\"success\":false,\"holdQueueLength\":\"' . $selectedHold->holdQueueLength . '\",\"bibliographicId\":\"' . $recordId . '\",\"whichBranch\":' . $selectedHold->holdPickupBranchId . ',\"status\":\"' . $selectedHold->status . '\",\"downloadable\":false}]"}';
 
 			$responseRaw = $this->_curlPostBodyData($url, $postParams, false);
-			$response = json_decode($responseRaw);
+			$response    = json_decode($responseRaw);
 
 			foreach ($response->cancelHoldInfos as $itemResponse){
 				if ($itemResponse->success){
@@ -610,16 +608,17 @@ class LibrarySolution extends ScreenScrapingDriver {
 
 	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate){
 		$recordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
-		$result = array(
+		$result       = [
 			'success' => false,
-			'title' => $recordDriver->getTitle(),
-			'message' => 'Sorry, your hold could not be frozen.');
-		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {
-			$url = $this->getVendorOpacUrl() . '/requests/suspend?_=' . time() * 1000;
+			'title'   => $recordDriver->getTitle(),
+			'message' => 'Sorry, your hold could not be frozen.'
+		];
+		if ($this->loginPatronToLSS($patron->barcode, $patron->getPassword())) {
+			$url                       = $this->getVendorOpacUrl() . '/requests/suspend?_=' . time() * 1000;
 			$formattedReactivationDate = $dateToReactivate;
-			$postParams = '{"suspendHoldInfos":"[{\"desireNumber\":\"' . $itemToFreezeId . '\",\"success\":false,\"suspendDate\":\"' . $formattedReactivationDate . '\",\"queuePosition\":\"1\",\"bibliographicId\":\"' . $recordId . '\",\"pickupBranchId\":100,\"downloadable\":false}]"}';
-			$responseRaw = $this->_curlPostBodyData($url, $postParams, false);
-			$response = json_decode($responseRaw);
+			$postParams                = '{"suspendHoldInfos":"[{\"desireNumber\":\"' . $itemToFreezeId . '\",\"success\":false,\"suspendDate\":\"' . $formattedReactivationDate . '\",\"queuePosition\":\"1\",\"bibliographicId\":\"' . $recordId . '\",\"pickupBranchId\":100,\"downloadable\":false}]"}';
+			$responseRaw               = $this->_curlPostBodyData($url, $postParams, false);
+			$response                  = json_decode($responseRaw);
 
 			foreach ($response->suspendHoldInfos as $itemResponse){
 				if ($itemResponse->success){
@@ -637,11 +636,12 @@ class LibrarySolution extends ScreenScrapingDriver {
 
 	function thawHold($patron, $recordId, $itemToThawId){
 		$recordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
-		$result = array(
+		$result       = [
 			'success' => false,
-			'title' => $recordDriver->getTitle(),
-			'message' => 'Sorry, your hold could not be thawed.');
-		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {
+			'title'   => $recordDriver->getTitle(),
+			'message' => 'Sorry, your hold could not be thawed.'
+		];
+		if ($this->loginPatronToLSS($patron->barcode, $patron->getPassword())) {
 			$result['message'] = 'This functionality is currently unimplemented';
 		}else{
 			$result['message'] = 'Sorry, the user supplied was not valid in the catalog. Please try again.';
@@ -651,11 +651,12 @@ class LibrarySolution extends ScreenScrapingDriver {
 
 	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation){
 		$recordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
-		$result = array(
+		$result       = [
 			'success' => false,
-			'title' => $recordDriver->getTitle(),
-			'message' => 'Sorry, the pickup location for your hold could not be changed.');
-		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {
+			'title'   => $recordDriver->getTitle(),
+			'message' => 'Sorry, the pickup location for your hold could not be changed.'
+		];
+		if ($this->loginPatronToLSS($patron->barcode, $patron->getPassword())) {
 			//Not possible in LSS
 			$result['message'] = 'This functionality is currently unimplemented';
 		}else{
@@ -677,21 +678,21 @@ class LibrarySolution extends ScreenScrapingDriver {
 	 * @return array  Array of messages
 	 */
 	function getMyFines($patron, $includeMessages = false) {
-		$fines = array();
+		$fines = [];
 
-		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {
+		if ($this->loginPatronToLSS($patron->barcode, $patron->getPassword())) {
 			//Load transactions from LSS
 			//TODO: Verify that this will load more than 10000 fines
-			$url = $this->getVendorOpacUrl() . '/fees/0/10000/OutDate?_=' . time() * 1000;
+			$url        = $this->getVendorOpacUrl() . '/fees/0/10000/OutDate?_=' . time() * 1000;
 			$feeInfoRaw = $this->_curlGetPage($url);
-			$feeInfo = json_decode($feeInfoRaw);
+			$feeInfo    = json_decode($feeInfoRaw);
 
 			foreach ($feeInfo->fees as $fee){
-				$fines[] = array(
-					'reason' => $fee->title,
+				$fines[] = [
+					'reason'  => $fee->title,
 					'message' => $fee->feeComment,
-					'amount' => '$' . sprintf('%0.2f', $fee->fee / 100),
-				);
+					'amount'  => '$' . sprintf('%0.2f', $fee->fee / 100),
+				];
 			}
 		}
 

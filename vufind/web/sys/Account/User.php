@@ -284,54 +284,44 @@ class User extends DB_DataObject {
 	}
 
 	function __get($name){
-		if ($name == 'roles'){
-			return $this->getRoles();
-		}elseif ($name == 'linkedUsers'){
-			return $this->getLinkedUsers();
-		}elseif ($name == 'materialsRequestReplyToAddress'){
-			if (!isset($this->materialsRequestReplyToAddress)){
-				$this->getStaffSettings();
-			}
-			return $this->materialsRequestReplyToAddress;
-		}elseif ($name == 'materialsRequestEmailSignature'){
-			if (!isset($this->materialsRequestEmailSignature)){
-				$this->getStaffSettings();
-			}
-			return $this->materialsRequestEmailSignature;
-		}
-
-		// accessing the password attribute directly will return the encrupted password.
-		if($name == "password") {
-			//$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
-			//$this->logger->debug("Please use getPassword() when getting password from user object.", array("trace" => $calledBy));
-			return $this->password;
-		}
-
-		// handle deprecated cat_password and cat_username
-		if($name == 'cat_password') {
-			if ($accountProfile = $this->getAccountProfile()){
-				if ($accountProfile->loginConfiguration == 'barcode_pin' && $name == 'cat_username'){
-					return $this->barcode;
-				}elseif ($accountProfile->loginConfiguration == 'name_barcode' && $name == 'cat_password'){
-					$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
-					$this->logger->debug($name . '" accessed by " '. $calledBy['function'], ['trace' => $calledBy]);
-					return $this->barcode;
-				} else {
-					return $this->{$name};
+		switch ($name){
+			case 'roles':
+				return $this->getRoles();
+			case 'linkedUsers':
+				return $this->getLinkedUsers();
+			case 'materialsRequestReplyToAddress':
+				if (!isset($this->materialsRequestReplyToAddress)){
+					$this->getStaffSettings();
 				}
-			} else {
-				return $this->{$name};
-			}
-		}else{
-			return $this->data[$name];
+				return $this->materialsRequestReplyToAddress;
+			case 'materialsRequestEmailSignature':
+				if (!isset($this->materialsRequestEmailSignature)){
+					$this->getStaffSettings();
+				}
+				return $this->materialsRequestEmailSignature;
+			case 'password':
+				// accessing the password attribute directly will return the encrupted password.
+				//$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
+				//$this->logger->debug("Please use getPassword() when getting password from user object.", array("trace" => $calledBy));
+				return $this->password;
+			case 'cat_password':
+				// handle deprecated cat_password
+				$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
+				$this->logger->debug($name . '" accessed by " ' . $calledBy['function'], ['trace' => $calledBy]);
+				if ($accountProfile = $this->getAccountProfile()){
+					return $accountProfile->loginConfiguration == 'barcode_pin' ? $this->barcode : $this->getPassword();
+				}
+				break;
 		}
+
+		return $this->data[$name];
 	}
 
 	function __set($name, $value){
 		// for passwords, allows new object to set password for methods like $user->find
 		if($name == "password") {
 			$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
-			$this->logger->debug($name . " being set by " . $calledBy['function'], array("trace" => $calledBy));
+			$this->logger->debug($name . " being set by " . $calledBy['function'], ["trace" => $calledBy]);
 			$this->setPassword($value);
 			return;
 		}
@@ -340,7 +330,7 @@ class User extends DB_DataObject {
 		// If needed update barcode or password field
 		if($name == 'cat_password' || $name == 'cat_username') {
 			$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
-			$this->logger->debug($name . " being set by " . $calledBy['function'], array("trace" => $calledBy));
+			$this->logger->debug($name . " being set by " . $calledBy['function'], ["trace" => $calledBy]);
 			if ($accountProfile = $this->getAccountProfile()){
 				if ($accountProfile->loginConfiguration == 'barcode_pin' && $name == 'cat_username'){
 					$this->barcode = $value;

@@ -371,9 +371,8 @@ class Aspencat implements DriverInterface{
 						if ($forceDisplayNameUpdate){
 							$user->displayName = '';
 						}
+						$user->setPassword($password);
 						$user->fullname     = $userFromDb['firstname'] . ' ' . $userFromDb['surname'];
-						$user->cat_username = $barcode;
-						$user->cat_password = $password;
 						$user->email        = $userFromDb['email'];
 						$user->patronType   = $userFromDb['categorycode'];
 						$user->webNote      = '';
@@ -621,7 +620,7 @@ class Aspencat implements DriverInterface{
 		//Setup post parameters to the login url
 		$postParams = [
 			'koha_login_context' => 'opac',
-			'password'           => $user->cat_password,
+			'password'           => $user->barcode,
 			'userid'             => $user->cat_username
 		];
 		$sResult    = $this->postToKohaPage($loginUrl, $postParams);

@@ -132,16 +132,16 @@ class LDAPAuthentication implements Authentication {
 					$user->email = $data[$i][$data[$i][$j]][0];
 				}
 
-				if ($data[$i][$j] == $ldapConnectionParameter['cat_username'] &&
-					($ldapConnectionParameter['cat_username'] != "")
+				if ($data[$i][$j] == $ldapConnectionParameter['barcode'] &&
+					($ldapConnectionParameter['barcode'] != "")
 				){
-					$user->cat_username = $data[$i][$data[$i][$j]][0];
+					$user->barcode = $data[$i][$data[$i][$j]][0];
 				}
 
-				if ($data[$i][$j] == $ldapConnectionParameter['cat_password'] &&
-					($ldapConnectionParameter['cat_password'] != "")
+				if ($data[$i][$j] == $ldapConnectionParameter['password'] &&
+					($ldapConnectionParameter['password'] != "")
 				){
-					$user->cat_password = $data[$i][$data[$i][$j]][0];
+					$user->setPassword($data[$i][$data[$i][$j]][0]);
 				}
 
 			}
