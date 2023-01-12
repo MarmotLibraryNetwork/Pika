@@ -41,9 +41,9 @@ class MyAccount_CheckedOut extends MyAccount{
 			       $library;
 
 			//Determine which columns to show
-			$ils = $configArray['Catalog']['ils'];
-			$showOut = ($ils == 'Horizon');
-			$showRenewed = ($ils == 'Horizon' || $ils == 'Sierra' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX');
+			$ils          = $configArray['Catalog']['ils'];
+			$showOut      = ($ils == 'Horizon');
+			$showRenewed  = ($ils == 'Horizon' || $ils == 'Sierra' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX');
 			$showWaitList = $ils == 'Horizon';
 			//TODO: Add symphony?
 
@@ -52,11 +52,12 @@ class MyAccount_CheckedOut extends MyAccount{
 			$interface->assign('showWaitList', $showWaitList);
 
 			// Define sorting options
-			$sortOptions = array('title'   => 'Title',
+			$sortOptions = [
+				'title'   => 'Title',
 				'author'  => 'Author',
 				'dueDate' => 'Due Date',
 				'format'  => 'Format',
-			);
+			];
 			$user = UserAccount::getLoggedInUser();
 			if (count($user->getLinkedUsers()) > 0){
 				$sortOptions['libraryAccount'] = 'Library Account';
@@ -69,7 +70,7 @@ class MyAccount_CheckedOut extends MyAccount{
 			}
 
 			$interface->assign('sortOptions', $sortOptions);
-			$selectedSortOption = isset($_REQUEST['accountSort']) ? $_REQUEST['accountSort'] : 'dueDate';
+			$selectedSortOption = $_REQUEST['accountSort'] ?? 'dueDate';
 			$interface->assign('defaultSortOption', $selectedSortOption);
 
 			if ($library->showLibraryHoursNoticeOnAccountPages) {
