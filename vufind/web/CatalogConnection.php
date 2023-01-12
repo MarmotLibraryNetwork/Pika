@@ -166,7 +166,7 @@ class CatalogConnection
 		global $offlineMode;
 
 		//Get the barcode property
-		$barcode = $this->accountProfile->loginConfiguration == 'barcode_pin' ? $username : $password;
+		$barcode = $this->accountProfile->usingPins() ? $username : $password;
 		//TODO: some libraries may have barcodes that the space character is valid. So far Aspencat appears to be one. pascal 9/27/2018
 		$barcode = trim($barcode);
 
@@ -177,7 +177,7 @@ class CatalogConnection
 			$user->barcode = $barcode;
 
 			if ($user->find(true)){
-				if ($this->driver->accountProfile->loginConfiguration == 'barcode_pin') {
+				if ($this->driver->accountProfile->usingPins()) {
 					//We load the account based on the barcode make sure the pin matches
 					$userValid = $user->getPassword() == $password;
 					if (!$userValid){
@@ -200,7 +200,7 @@ class CatalogConnection
 				return null;
 			}
 		} else {
-			if ($this->driver->accountProfile->loginConfiguration == 'barcode_pin') {
+			if ($this->driver->accountProfile->usingPins()) {
 				$username = $barcode;
 			}else{
 				$password = $barcode;

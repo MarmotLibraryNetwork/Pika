@@ -309,7 +309,7 @@ class User extends DB_DataObject {
 				$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
 				$this->logger->debug($name . '" accessed by " ' . $calledBy['function'], ['trace' => $calledBy]);
 				if ($accountProfile = $this->getAccountProfile()){
-					return $accountProfile->loginConfiguration == 'barcode_pin' ? $this->barcode : $this->getPassword();
+					return $accountProfile->usingPins() ? $this->barcode : $this->getPassword();
 				}
 				break;
 		}
@@ -332,9 +332,9 @@ class User extends DB_DataObject {
 			$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
 			$this->logger->debug($name . " being set by " . $calledBy['function'], ["trace" => $calledBy]);
 			if ($accountProfile = $this->getAccountProfile()){
-				if ($accountProfile->loginConfiguration == 'barcode_pin' && $name == 'cat_username'){
+				if ($name == 'cat_username' && $accountProfile->usingPins()){
 					$this->barcode = $value;
-				}elseif ($accountProfile->loginConfiguration == 'name_barcode' && $name == 'cat_password'){
+				}elseif ($name == 'cat_password' && !$accountProfile->usingPins()){
 					$this->barcode = $value;
 				} else {
 					$this->{$name} = $value;
@@ -485,7 +485,7 @@ class User extends DB_DataObject {
 								if (empty($userData) || isset($_REQUEST['reload'])){
 									//Load full information from the catalog
 									$linkedAccountProfile = $linkedUser->getAccountProfile();
-									if($linkedAccountProfile->loginConfiguration == "barcode_pin") {
+									if($linkedAccountProfile->usingPins()) {
 										$userName = $linkedUser->barcode;
 										$password = $linkedUser->getPassword();
 									} else {
@@ -764,7 +764,7 @@ class User extends DB_DataObject {
 	static function getObjectStructure(){
 		require_once ROOT_DIR . '/sys/Administration/Role.php';
 		$user                   = UserAccount::getActiveUserObj();
-		$displayBarcode         = $user->getAccountProfile()->loginConfiguration != 'name_barcode'; // Do not show barcodes in list of admins when using name_barcode login scheme
+		$displayBarcode         = !$user->getAccountProfile()->usingPins(); // Do not show barcodes in list of admins when using name_barcode login scheme
 		$thisIsNotAListOfAdmins = isset($_REQUEST['objectAction']) && $_REQUEST['objectAction'] != 'list';
 		$roleList               = Role::fetchAllRoles($thisIsNotAListOfAdmins);  // Lookup available roles in the system, don't show the role description is lists of admins
 		$structure              = [

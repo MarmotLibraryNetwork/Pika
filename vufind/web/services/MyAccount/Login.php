@@ -94,9 +94,9 @@ class MyAccount_Login extends Action {
 			$interface->assign('username', $_REQUEST['username']);
 		}
 
-		$catalog = CatalogFactory::getCatalogConnectionInstance();
-		$defaultUserNameLabel = $catalog->accountProfile->loginConfiguration == 'name_barcode' ? 'Your Name' : 'Library Card Number';
-		$defaultPasswordLabel = $catalog->accountProfile->loginConfiguration == 'name_barcode' ? 'Library Card Number' : translate('PIN');
+		$catalog              = CatalogFactory::getCatalogConnectionInstance();
+		$defaultUserNameLabel = $catalog->accountProfile->usingPins() ? 'Library Card Number' : 'Name';
+		$defaultPasswordLabel = $catalog->accountProfile->usingPins() ? translate('PIN') : 'Library Card Number';
 
 		if (isset($library)){
 			$interface->assign('enableSelfRegistration', $library->enableSelfRegistration || $library->externalSelfRegistrationUrl);
@@ -113,7 +113,7 @@ class MyAccount_Login extends Action {
 			$useEmailResetPin = method_exists($catalog->driver, 'emailResetPin');
 			$interface->assign('useEmailResetPin', $useEmailResetPin);
 		} elseif ($configArray['Catalog']['ils'] == 'Sierra') {
-			if (!empty($catalog->accountProfile->loginConfiguration) && $catalog->accountProfile->loginConfiguration == 'barcode_pin') {
+			if (!empty($catalog->accountProfile) && $catalog->accountProfile->usingPins()) {
 				$interface->assign('showForgotPinLink', true);
 				$useEmailResetPin = method_exists($catalog->driver, 'emailResetPin');
 				$interface->assign('useEmailResetPin', $useEmailResetPin);

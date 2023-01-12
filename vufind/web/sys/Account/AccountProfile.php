@@ -32,7 +32,7 @@ class AccountProfile extends DB_DataObject {
 	public $id;
 	public $name;
 	public $driver;
-	public $loginConfiguration; // todo: [pins] if we go with per library settings will need to revisit
+	public $loginConfiguration;
 	public $authenticationMethod;
 	public $vendorOpacUrl;
 	public $patronApiUrl;
@@ -80,6 +80,15 @@ class AccountProfile extends DB_DataObject {
 		global $memCache;
 		global $instanceName;
 		$memCache->delete('account_profiles_' . $instanceName);
+	}
+
+	/**
+	 * Is the login configuration scheme set to barcode/pin
+	 *
+	 * @return bool
+	 */
+	function usingPins(): bool{
+		return $this->loginConfiguration == 'barcode_pin';
 	}
 
 	/**

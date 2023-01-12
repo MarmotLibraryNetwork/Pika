@@ -149,14 +149,9 @@ class OverDriveDriver4 {
 					return false;
 				}
 
-				$patronBarcode = $user->getBarcode();
+				$patronBarcode = $user->barcode;
 				if ($this->getRequirePin($user)){
-					$pinProperty = $user->getAccountProfile()->loginConfiguration == 'barcode_pin' ? 'password' : 'barcode';
-					if($pinProperty == 'password') {
-						$patronPin = $user->getPassword();
-					} else{
-						$patronPin = $user->getBarcode();
-					}
+					$patronPin  = $user->getAccountProfile()->usingPins() ? $user->getPassword() : $user->barcode;
 					$postFields = "grant_type=password&username={$patronBarcode}&password={$patronPin}&password_required=true&scope=websiteId:{$websiteId}+ilsname:{$ILSName}";
 				}else{
 					$postFields = "grant_type=password&username={$patronBarcode}&password=ignore&password_required=false&scope=websiteId:{$websiteId}+ilsname:{$ILSName}";

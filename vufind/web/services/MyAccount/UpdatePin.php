@@ -161,7 +161,7 @@ class MyAccount_UpdatePin extends MyAccount {
 			$interface->assign('useEmailResetPin', $useEmailResetPin);
 		}elseif ($configArray['Catalog']['ils'] == 'Sierra'){
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
-			if (!empty($catalog->accountProfile->loginConfiguration) && $catalog->accountProfile->loginConfiguration == 'barcode_pin'){
+			if (!empty($catalog->accountProfile) && $catalog->accountProfile->usingPins()){
 				$interface->assign('showForgotPinLink', true);
 				$useEmailResetPin = method_exists($catalog->driver, 'emailResetPin');
 				$interface->assign('useEmailResetPin', $useEmailResetPin);

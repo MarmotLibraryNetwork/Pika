@@ -189,7 +189,7 @@ class MyAccount_Profile extends MyAccount
 			$interface->assign('userIsStaff', $userIsStaff);
 
 			$interface->assign('profile', $patron); //
-			$interface->assign('barcodePin', $patron->getAccountProfile()->loginConfiguration == 'barcode_pin');
+			$interface->assign('barcodePin', $patron->getAccountProfile()->usingPins());
 				// Switch for displaying the barcode in the account profile
 		}
 

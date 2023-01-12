@@ -532,17 +532,13 @@ class Marmot extends Sierra {
 		$c->setOpts($curlOpts);
 
 		// first log patron in
-		if ($this->accountProfile->loginConfiguration == 'name_barcode'){
-			$postData = [
-				'name' => $patron->cat_username,
-				'code' => $patron->barcode
-			];
-		}else{
-			$postData = [
-				'code' => $patron->barcode,
-				'pin'  => $patron->getPassword()
-			];
-		}
+		$postData = $this->accountProfile->usingPins() ? [
+			'code' => $patron->barcode,
+			'pin'  => $patron->getPassword()
+		] : [
+			'name' => $patron->cat_username,
+			'code' => $patron->barcode
+		];
 
 		$loginUrl = $vendorOpacUrl . '/patroninfo/';
 		$r        = $c->post($loginUrl, $postData);

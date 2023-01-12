@@ -93,17 +93,13 @@ class Sacramento extends Sierra {
 		$c->setOpts($curlOpts);
 
 		// first log patron in
-		if ($this->accountProfile->loginConfiguration == 'name_barcode'){
-			$postData = [
-				'name' => $patron->cat_username,
-				'code' => $patron->barcode
-			];
-		}else{
-			$postData = [
-				'code' => $patron->barcode,
-				'pin'  => $patron->getPassword()
-			];
-		}
+		$postData = $this->accountProfile->usingPins() ? [
+			'code' => $patron->barcode,
+			'pin'  => $patron->getPassword()
+		] : [
+			'name' => $patron->cat_username,
+			'code' => $patron->barcode
+		];
 
 		$loginUrl = $vendorOpacUrl . '/patroninfo/';
 		$r        = $c->post($loginUrl, $postData);
@@ -196,26 +192,22 @@ class Sacramento extends Sierra {
 		$cc->setOpts($curlOpts);
 
 		// first log patron in
-		if($this->accountProfile->loginConfiguration == "barcode_pin") {
-			$postData = [
-			 'code' => $patron->barcode,
-			 'pin'  => $patron->password
-			];
-		} else {
-			$postData = [
-			 'name' => $patron->cat_username,
-			 'code' => $patron->barcode
-			];
-		}
+		$postData = $this->accountProfile->usingPins() ? [
+			'code' => $patron->barcode,
+			'pin'  => $patron->password
+		] : [
+			'name' => $patron->cat_username,
+			'code' => $patron->barcode
+		];
 		$loginUrl = $vendorOpacUrl . '/patroninfo/';
-		$r = $cc->post($loginUrl, $postData);
+		$r        = $cc->post($loginUrl, $postData);
 
-		if($cc->isError()) {
+		if ($cc->isError()){
 			$cc->close();
 			return false;
 		}
 
-		if(!stristr($r, $patron->cat_username)) {
+		if (!stristr($r, $patron->cat_username)){
 			// check for cas login. do cas login if possible
 			$casUrl = '/iii/cas/login';
 			if(stristr($r, $casUrl)) {
@@ -478,7 +470,7 @@ class Sacramento extends Sierra {
 		$params['addresses'][0]['type'] = 'a';
 
 		// if library uses pins
-		if($this->accountProfile->loginConfiguration == "barcode_pin") {
+		if($this->accountProfile->usingPins()) {
 			$pin = trim($_POST['pin']);
 			$pinConfirm = trim($_POST['pinconfirm']);
 

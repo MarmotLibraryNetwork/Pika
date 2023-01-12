@@ -156,7 +156,7 @@ class Flatirons extends Sierra
 			             'required'   => false];
 		}
 		// if library uses pins
-		if($this->accountProfile->loginConfiguration == "barcode_pin") {
+		if($this->accountProfile->usingPins()) {
 			$fields[] = [
 				'property'    => 'pin',
 				'type'        => 'pin',

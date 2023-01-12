@@ -94,6 +94,9 @@ class Sierra  implements \DriverInterface {
 	protected $urlIdRegExp = "/.*\/(\d*)$/";
 
 
+	/**
+	 * @param \AccountProfile $accountProfile
+	 */
 	public function __construct($accountProfile) {
 		global $configArray;
 
@@ -338,53 +341,48 @@ class Sierra  implements \DriverInterface {
 	 * @throws ErrorException
 	 */
 	public function patronLogin($username, $password, $validatedViaSSO = false){
-		// get the login configuration barcode_pin or name_barcode
-		$loginMethod = $this->accountProfile->loginConfiguration;
 		// check patron credentials depending on login config.
 		// the returns from _auth methods should be either a sierra patron id or false.
-		$username = str_replace("’", "'",trim($username));
+		$username = str_replace("’", "'", trim($username));
 		$password = trim($password);
 
-		if($validatedViaSSO) {
-			$this->patronBarcode = ($loginMethod == 'barcode_pin') ? $username : $password;
+		if ($validatedViaSSO){
+			$this->patronBarcode = $this->accountProfile->usingPins() ? $username : $password;
 			$patronId            = $this->getPatronId($this->patronBarcode);
-		} elseif ($loginMethod == 'barcode_pin') {
-			$barcode             = $username;
-			$this->patronBarcode = $barcode;
-			$patronId            = $this->_authBarcodePin($username, $password);
-		} elseif ($loginMethod == 'name_barcode') {
-			$barcode             = $password;
-			$this->patronBarcode = $barcode;
-			$patronId            = $this->_authNameBarcode($username, $password);
-			// check last api error for duplicate barcodes
-			if(stristr($this->apiLastError, 'Duplicate patrons found')) {
-				// use the /patron/query endpoint to get user ids with barcode.
-				$operation = 'patrons/query?offset=0&limit=3';
-				$payload   = '{"target": {' .
-											'"record": {"type": "patron"},' .
-											'"field": {"tag": "b"}},' .
-											'"expr": {' .
-											'"op": "equals",' .
-											'"operands": [ "' . $barcode . '" ]}}';
-				$r2 = $this->_doRequest($operation, $payload, 'POST');
-				if (!$r2) {
-					return false;
-				}
-				// get the sierra ids for the patron/query
-				foreach ($r2->entries as $entry) {
-					$sPID = preg_match($this->urlIdRegExp, $entry->link, $m);
-					if($this->_authPatronIdName($m[1], $username)) {
-						return $this->getPatron($m[1]);
+		}else{
+			if ($this->accountProfile->usingPins()){
+				$this->patronBarcode = $username;
+				$patronId            = $this->_authBarcodePin($username, $password);
+			}else{
+				$barcode             = $password;
+				$this->patronBarcode = $barcode;
+				$patronId            = $this->_authNameBarcode($username, $password);
+				// check last api error for duplicate barcodes
+				if (stristr($this->apiLastError, 'Duplicate patrons found')){
+					// use the /patron/query endpoint to get user ids with barcode.
+					$operation = 'patrons/query?offset=0&limit=3';
+					$payload   = '{"target": {' .
+						'"record": {"type": "patron"},' .
+						'"field": {"tag": "b"}},' .
+						'"expr": {' .
+						'"op": "equals",' .
+						'"operands": [ "' . $barcode . '" ]}}';
+					$r2        = $this->_doRequest($operation, $payload, 'POST');
+					if (!$r2){
+						return false;
+					}
+					// get the sierra ids for the patron/query
+					foreach ($r2->entries as $entry){
+						$sPID = preg_match($this->urlIdRegExp, $entry->link, $m);
+						if ($this->_authPatronIdName($m[1], $username)){
+							return $this->getPatron($m[1]);
+						}
 					}
 				}
 			}
-		} else {
-			$msg = "Invalid loginConfiguration setting. : '$loginMethod'";
-			$this->logger->error($msg);
-			throw new InvalidArgumentException($msg);
 		}
 		// can't find patron
-		if (!$patronId) {
+		if (!$patronId){
 			$msg = 'Failed to get patron id from Sierra API.';
 			$this->logger->debug($msg, ['barcode' => $this->patronBarcode]);
 			return null;
@@ -476,7 +474,6 @@ class Sierra  implements \DriverInterface {
 		}
 
 		// check all the places barcodes are stored and determine if they need updated.
-		$loginMethod    = $this->accountProfile->loginConfiguration;
 		$patron->source = $this->accountProfile->name;
 
 		if ($patron->barcode != $barcode){
@@ -499,7 +496,7 @@ class Sierra  implements \DriverInterface {
 		}
 
 		// check names
-		if ($loginMethod == 'name_barcode') {
+		if (!$this->accountProfile->usingPins()) {
 			if($patron->cat_username != $pInfo->names[0]) {
 				$updatePatron         = true;
 				$patron->cat_username = $pInfo->names[0];
@@ -1388,13 +1385,13 @@ EOT;
 		$params['addresses'][0]['lines'][1] = $cityStateZip;
 
 		// if library uses pins
-		if($this->accountProfile->loginConfiguration == "barcode_pin") {
-			$pin = trim($_POST['pin']);
+		if($this->accountProfile->usingPins()) {
+			$pin        = trim($_POST['pin']);
 			$pinConfirm = trim($_POST['pinconfirm']);
 
-			if(!($pin == $pinConfirm)) {
-				return ['success'=>false, 'barcode'=>''];
-			} else {
+			if (!($pin == $pinConfirm)){
+				return ['success' => false, 'barcode' => ''];
+			}else{
 				$params['pin'] = $pin;
 			}
 		}
@@ -1553,7 +1550,7 @@ EOT;
 		}
 		
 		// if library uses pins
-		if($this->accountProfile->loginConfiguration == "barcode_pin") {
+		if($this->accountProfile->usingPins()) {
 			$fields[] = [
 				'property'    => 'pin',
 				'type'        => 'pin',
@@ -1566,7 +1563,7 @@ EOT;
 			$fields[] = [
 				'property'    => 'pinconfirm',
 				'type'        => 'pin',
-				'label'       => 'Confirm PIN',
+				'label'       => 'Confirm ' . translate('PIN'),
 				'description' => 'Please reenter your PIN.',
 				'maxLength'   => 10,
 				'required'    => true
@@ -3302,26 +3299,22 @@ EOT;
 		$c->setOpts($curlOpts);
 
 		// first log patron in
-		if($this->accountProfile->loginConfiguration == "barcode_pin") {
-			$postData = [
-				'code' => $patron->barcode,
-				'pin'  => $patron->getPassword()
-			];
-		} else {
-			$postData = [
-				'name' => $patron->cat_username,
-				'code' => $patron->barcode
-			];
-		}
+		$postData = $this->accountProfile->usingPins() ? [
+			'code' => $patron->barcode,
+			'pin'  => $patron->getPassword()
+		] : [
+			'name' => $patron->cat_username,
+			'code' => $patron->barcode
+		];
 		$loginUrl = $vendorOpacUrl . '/patroninfo/';
-		$r = $c->post($loginUrl, $postData);
+		$r        = $c->post($loginUrl, $postData);
 
-		if($c->isError()) {
+		if ($c->isError()){
 			$c->close();
 			return false;
 		}
 
-		if(!stristr($r, $patron->cat_username)) {
+		if (!stristr($r, $patron->cat_username)){
 			// check for cas login. do cas login if possible
 			$casUrl = '/iii/cas/login';
 			if(stristr($r, $casUrl)) {
