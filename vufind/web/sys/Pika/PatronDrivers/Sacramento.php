@@ -53,6 +53,14 @@ class Sacramento extends Sierra {
 	}
 
 
+	/**
+	 * @param User $patron
+	 * @param string $pageToCall
+	 * @param string[] $postParams
+	 * @param bool $patronAction
+	 * @return Curl|false|mixed|null
+	 * @throws \ErrorException
+	 */
 	private function _curlLegacy($patron, $pageToCall, $postParams = array(), $patronAction = true){
 
 		$c = new Curl();
@@ -105,7 +113,7 @@ class Sacramento extends Sierra {
 			return false;
 		}
 
-		$sierraPatronId = $this->getPatronId($patron->barcode); //when logging in with pin, this is what we will find
+		$sierraPatronId = $this->getPatronId($patron); //when logging in with pin, this is what we will find
 
 		if(!strpos($r, (string) $sierraPatronId) && !stripos($r, (string) $patron->cat_username)) {
 			// check for cas login. do cas login if possible
@@ -156,7 +164,7 @@ class Sacramento extends Sierra {
 	}
 
 
-	public function updateSms($patron) {
+	public function updateSms(User $patron) {
 		$patronId = $this->getPatronId($patron);
 
 		$cc = new Curl();

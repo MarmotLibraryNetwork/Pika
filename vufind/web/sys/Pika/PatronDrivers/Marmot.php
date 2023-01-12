@@ -492,6 +492,14 @@ class Marmot extends Sierra {
 		}
 	}
 
+	/**
+	 * @param User $patron
+	 * @param string $pageToCall
+	 * @param string[] $postParams
+	 * @param bool $patronAction
+	 * @return Curl|false|mixed|null
+	 * @throws \ErrorException
+	 */
 	private function _curlLegacy($patron, $pageToCall, $postParams = [], $patronAction = true){
 
 		$c = new Curl();

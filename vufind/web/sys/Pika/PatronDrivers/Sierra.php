@@ -337,7 +337,7 @@ class Sierra  implements \DriverInterface {
 	 * @access  public
 	 * @throws ErrorException
 	 */
-	public function patronLogin($username, $password, $validatedViaSSO = FALSE){
+	public function patronLogin($username, $password, $validatedViaSSO = false){
 		// get the login configuration barcode_pin or name_barcode
 		$loginMethod = $this->accountProfile->loginConfiguration;
 		// check patron credentials depending on login config.
@@ -346,9 +346,8 @@ class Sierra  implements \DriverInterface {
 		$password = trim($password);
 
 		if($validatedViaSSO) {
-			//TODO: this likely will switch for Fort Lewis;
-			$patronId            = $this->getPatronId($password);
-			$this->patronBarcode = $password;
+			$this->patronBarcode = ($loginMethod == 'barcode_pin') ? $username : $password;
+			$patronId            = $this->getPatronId($this->patronBarcode);
 		} elseif ($loginMethod == 'barcode_pin') {
 			$barcode             = $username;
 			$this->patronBarcode = $barcode;
@@ -527,7 +526,7 @@ class Sierra  implements \DriverInterface {
 			}
 		}
 		if($firstName != $patron->firstname || $lastName != $patron->lastname) {
-			$updatePatron = true;
+			$updatePatron      = true;
 			$patron->firstname = $firstName;
 			$patron->lastname  = $lastName;
 			// empty display name so it will reset to new name
@@ -831,7 +830,10 @@ class Sierra  implements \DriverInterface {
 	public function getPatronId($patronOrBarcode, $searchSacramentoStudentIdField = false) {
 		// if a patron object was passed
 		if (is_object($patronOrBarcode)){
-				$barcode = $patronOrBarcode->barcode;
+			if (!empty($patronOrBarcode->ilsUserId)){
+				return $patronOrBarcode->ilsUserId;
+			}
+			$barcode = $patronOrBarcode->barcode;
 		} elseif (is_string($patronOrBarcode) || is_int($patronOrBarcode)) {
 			// the api expects barcode in form of string. Just in case cast to string.
 			$barcode = (string)$patronOrBarcode;
@@ -851,7 +853,7 @@ class Sierra  implements \DriverInterface {
 		$r = $this->_doRequest('patrons/find', $params);
 		// there was an error with the last call -- use $this->apiLastError for messages.
 		if(!$r) {
-			$this->logger->warn('Could not get patron ID.', ['barcode'=>$barcode, 'error'=>$this->apiLastError]);
+			$this->logger->warn('Could not get patron ID.', ['barcode' => $barcode, 'error' => $this->apiLastError]);
 			return false;
 		}
 
@@ -1205,26 +1207,24 @@ class Sierra  implements \DriverInterface {
 	 * @throws \PHPMailer\PHPMailer\Exception
 	 */
 	public function emailResetPin($barcode) {
-		$patron = new User();
+		$patron          = new User();
 		$patron->barcode = $barcode;
-
-		$patron->find(true);
-		if(! $patron->N || $patron->N == 0) {
+		if ($patron->find(true)){
 			// might be a new user
-			if($patronId = $this->getPatronId($barcode)) {
+			if ($patronId = $this->getPatronId($barcode)){
 				// load them in the database.
 				unset($patron);
 				$patron = $this->getPatron($patronId);
-			} else {
-				return ['error' => 'Unable to find an account associated with barcode: '.$barcode ];
+			}else{
+				return ['error' => 'Unable to find an account associated with barcode: ' . $barcode];
 			}
 		}
-		if(!isset($patron->email) || $patron->email == '') {
+		if (empty($patron->email)){
 			return ['error' => 'You do not have an email address on your account. Please visit your library to reset your ' . translate('pin') . '.'];
 		}
 
 		// make sure there's no old token.
-		$pinReset = new PinReset();
+		$pinReset         = new PinReset();
 		$pinReset->userId = $patron->id;
 		$pinReset->delete();
 		// to be safe after delete is called ...
@@ -1751,14 +1751,18 @@ EOT;
 			return false;
 		}
 
-		$operation = "patrons/".$patronId."/holds";
-		if((integer)$this->configArray['Catalog']['api_version'] > 4) {
-			$params=["fields" => "default,pickupByDate,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate",
-			         "limit"  => 1000,
-			         "expand" => "record"];
-		} else {
-			$params=["fields" => "default,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate",
-			         "limit"  => 1000];
+		$operation = "patrons/$patronId/holds";
+		if ((integer)$this->configArray['Catalog']['api_version'] > 4){
+			$params = [
+				'fields' => 'default,pickupByDate,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate',
+				'limit'  => 1000,
+				'expand' => 'record'
+			];
+		}else{
+			$params = [
+				'fields' => 'default,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate',
+				'limit'  => 1000
+			];
 		}
 		$holds = $this->_doRequest($operation, $params);
 
@@ -2415,7 +2419,7 @@ EOT;
 	 * @throws ErrorException
 	 */
 	public function deleteAllReadingHistory($patron) {
-		$patronId = $this->getPatronId($patron->barcode);
+		$patronId = $this->getPatronId($patron);
 
 		if(!$patronId) {
 			return false;
@@ -2446,15 +2450,15 @@ EOT;
 		$bibIds = [];
 		foreach($selectedTitles as $key => $val) {
 			$selectedId = trim($val, 'rsh');
-			$h = new ReadingHistoryEntry();
-			$h->id = $selectedId;
+			$h          = new ReadingHistoryEntry();
+			$h->id      = $selectedId;
 			$h->find(true);
-			if($h) {
+			if ($h){
 				$bibId = 0;
 			}
 		}
 
-		$patronId = $this->getPatronId($patron->barcode);
+		$patronId = $this->getPatronId($patron);
 		if(!$patronId) {
 			return false;
 		}
@@ -2506,7 +2510,7 @@ EOT;
 			return ['historyActive' => false, 'numTitles' => 0, 'titles' => []];
 		}
 
-		$patronSierraId = $this->getPatronId($patron->barcode);
+		$patronSierraId = $this->getPatronId($patron);
 
 		$patronReadingHistoryCacheKey = $this->cache->makePatronKey('history', $patron->id);
 		$patronCachedReadingHistory   = $this->cache->get($patronReadingHistoryCacheKey);
@@ -2647,8 +2651,8 @@ EOT;
 	 * @throws ErrorException
 	 */
 	public function loadReadingHistoryFromIls($patron, $loadAdditional = null){
-		$patronId       = $this->getPatronId($patron->barcode);
-		if ($patronId  == false){
+		$patronId = $this->getPatronId($patron);
+		if ($patronId == false){
 			return false;
 		}
 		set_time_limit(300);
@@ -2761,7 +2765,7 @@ EOT;
 			$apiVersion  = (int)$this->configArray['Catalog']['api_version'];
 			if ($apiVersion >= 6){
 				$recordNumber = substr($bibId, 2, -1); // remove the .x and the last check digit
-				$patronIlsId  = $this->getPatronId($patron->barcode);
+				$patronIlsId  = $this->getPatronId($patron);
 				$operation    = "patrons/$patronIlsId/holds/requests/form";
 				$params       = ['recordNumber' => $recordNumber];
 				$res          = $this->_doRequest($operation, $params);
@@ -3337,9 +3341,9 @@ EOT;
 		}
 
 		// now we can call the optin or optout url
-		$scope = isset($this->configArray['OPAC']['defaultScope']) ? $this->configArray['OPAC']['defaultScope'] : '93';
-		$patronId = $this->getPatronId($patron->barcode);
-		$optUrl = $vendorOpacUrl . "/patroninfo~S". $scope. "/" . $patronId . "/readinghistory/" . $optInOptOut;
+		$scope    = $this->configArray['OPAC']['defaultScope'] ?? '93';
+		$patronId = $this->getPatronId($patron);
+		$optUrl   = $vendorOpacUrl . "/patroninfo~S" . $scope . "/" . $patronId . "/readinghistory/" . $optInOptOut;
 
 		//$c->setUrl();
 		$r = $c->get($optUrl);
