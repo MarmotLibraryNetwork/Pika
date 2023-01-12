@@ -1497,7 +1497,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 	 * @param User $patron The user to update PIN for
 	 * @param string $oldPin The current PIN
 	 * @param string $newPin The PIN to update to
-	 * @param string $confirmNewPin A second entry to confirm the new PIN number (checked in User now)
+	 * @param string $confirmNewPin A second entry to confirm the new PIN (checked in User now)
 	 * @return string
 	 */
 	function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
@@ -1527,7 +1527,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 		$updatePinResponse = $this->getWebServiceResponse($webServiceURL . "/v1/user/patron/changeMyPin", $params, $sessionToken, 'POST');
 		if (!empty($updatePinResponse->patronKey) && $updatePinResponse->patronKey == $patron->ilsUserId){
 			$patron->updatePassword($newPin);
-			return "Your pin number was updated successfully.";
+			return 'Your ' . translate('pin') . ' was updated successfully.';
 
 		}else{
 			$messages = [];
@@ -1535,12 +1535,12 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 				foreach ($updatePinResponse->messageList as $message){
 					$messages[] = $message->message;
 					if ($message->message == 'Public access users may not change this user\'s PIN'){
-						$staffPinError = 'Staff can not change their PIN through the online catalog.';
+						$staffPinError = 'Staff can not change their ' . translate('pin') . ' through the online catalog.';
 					}
 				}
 
 				$this->logger->error('Symphony ILS encountered errors updating patron pin : ' . implode('; ', $messages));
-				return !empty($staffPinError) ? $staffPinError : 'The circulation system encountered errors attempt to update the pin.';
+				return !empty($staffPinError) ? $staffPinError : 'The circulation system encountered errors attempt to update the ' . translate('pin') . '.';
 			}
 			return 'Failed to update ' . translate('pin') . '.';
 		}
@@ -1557,7 +1557,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 
 			$this->logger->error('No Reset Token passed to resetPin function');
 			return [
-				'error' => 'Sorry, we could not update your pin. The reset token is missing. Please try again later'
+				'error' => 'Sorry, we could not update your ' . translate('pin') . '. The reset token is missing. Please try again later'
 			];
 		}
 
@@ -1575,7 +1575,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 
 			$this->logger->error('SirsiDynixROA Driver error updating user\'s Pin :' . implode(';', $errors));
 			return [
-				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'
+				'error' => 'Sorry, we encountered an error while attempting to update your ' . translate('pin') . '. Please contact your local library.'
 			];
 		}elseif (!empty($changeMyPinResponse->sessionToken)){
 			if ($patron->ilsUserId == $changeMyPinResponse->patronKey){ // Check that the ILS user matches the Pika user
@@ -1586,7 +1586,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 			];
 		}else{
 			return [
-				'error' => "Sorry, we could not update your pin number. Please try again later."
+				'error' => 'Sorry, we could not update your ' . translate('pin') . '. Please try again later.'
 			];
 		}
 	}
@@ -1597,7 +1597,6 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 		}
 
 		$patron = new User;
-		//$patron->get('cat_username', $barcode);
 		$patron->get('barcode', $barcode);
 		if (!empty($patron->id)){
 			global $configArray;

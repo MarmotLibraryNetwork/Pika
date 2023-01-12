@@ -173,25 +173,30 @@ class CatalogConnection
 		// Offline Mode
 		if ($offlineMode){
 			//The catalog is offline, check the database to see if the user is valid
-			$user = new User();
+			$user          = new User();
 			$user->barcode = $barcode;
 
 			if ($user->find(true)){
 				if ($this->driver->accountProfile->loginConfiguration == 'barcode_pin') {
 					//We load the account based on the barcode make sure the pin matches
 					$userValid = $user->getPassword() == $password;
+					if (!$userValid){
+						$timer->logTime('offline patron login failed due to invalid password');
+						$this->logger->info('offline patron login failed due to invalid password');
+						return null;
+					}
 				}else{
 					//We still load based on barcode, make sure the username is similar
 					$userValid = $this->areNamesSimilar($username, $user->cat_username);
-				}
-				if (!$userValid){
-					$timer->logTime('offline patron login failed due to invalid name');
-					$this->logger->info('offline patron login failed due to invalid name');
-					return null;
+					if (!$userValid){
+						$timer->logTime('offline patron login failed due to invalid name');
+						$this->logger->info('offline patron login failed due to invalid name');
+						return null;
+					}
 				}
 			} else {
-				$timer->logTime("offline patron login failed because we haven't seen this user before");
-				$this->logger->info("offline patron login failed because we haven't seen this user before");
+				$timer->logTime('offline patron login failed because we haven\'t seen this user before');
+				$this->logger->info('offline patron login failed because we haven\'t seen this user before');
 				return null;
 			}
 		} else {

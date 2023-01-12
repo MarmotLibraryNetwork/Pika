@@ -52,7 +52,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI {
 	 * @param User   $patron         The user to update PIN for
 	 * @param string $oldPin         The current PIN
 	 * @param string $newPin         The PIN to update to
-	 * @param string $confirmNewPin  A second entry to confirm the new PIN number (checked in User now)
+	 * @param string $confirmNewPin  A second entry to confirm the new PIN (checked in User now)
 	 * @return string
 	 */
 	function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
@@ -79,9 +79,9 @@ abstract class HorizonAPI3_23 extends HorizonAPI {
 		} elseif (!empty($updatePinResponse['sessionToken'])){
 			// Success response isn't particularly clear, but returning the session Token seems to indicate the pin updated. plb 8-15-2016
 			$patron->updatePassword($newPin);
-			return "Your pin number was updated successfully.";
+			return 'Your ' . translate('pin') . ' was updated successfully.';
 		}else{
-			return "Sorry, we could not update your pin number. Please try again later.";
+			return 'Sorry, we could not update your ' . translate('pin') . '. Please try again later.';
 		}
 	}
 
@@ -96,9 +96,9 @@ abstract class HorizonAPI3_23 extends HorizonAPI {
 		if (empty($resetToken)) {
 
 			$this->logger->error('No Reset Token passed to resetPin function');
-			return array(
-				'error' => 'Sorry, we could not update your pin. The reset token is missing. Please try again later'
-			);
+			return [
+				'error' => 'Sorry, we could not update your ' . translate('pin') . '. The reset token is missing. Please try again later'
+			];
 		}
 
 		$changeMyPinAPIUrl = $this->getBaseWebServiceUrl() . '/hzws/user/patron/changeMyPin';
@@ -113,22 +113,22 @@ abstract class HorizonAPI3_23 extends HorizonAPI {
 				$errors .= $errorMessage['message'] . ';';
 			}
 
-			$this->logger->error('WCPL Driver error updating user\'s Pin :'.$errors);
-			return array(
-				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'
-			);
+			$this->logger->error('HorizonAPI3_23 Driver error updating user\'s Pin :'.$errors);
+			return [
+				'error' => 'Sorry, we encountered an error while attempting to update your ' . translate('pin') . '. Please contact your local library.'
+			];
 		} elseif (!empty($changeMyPinResponse['sessionToken'])){
 			if ($patron->ilsUserId == $changeMyPinResponse['patronKey']) { // Check that the ILS user matches the Pika user
 				$patron->updatePassword($newPin);
 			}
-			return array(
+			return [
 				'success' => true,
-			);
-//			return "Your pin number was updated successfully.";
+			];
+//			return "Your pin was updated successfully.";
 		}else{
-			return array(
-				'error' => "Sorry, we could not update your pin number. Please try again later."
-			);
+			return [
+				'error' => 'Sorry, we could not update your ' . translate('pin') . '. Please try again later.'
+			];
 		}
 	}
 

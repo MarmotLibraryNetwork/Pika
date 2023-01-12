@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . "/Action.php";
+require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 
 class EmailPin extends Action{
@@ -27,20 +27,19 @@ class EmailPin extends Action{
 	{
 	}
 
-	function launch($msg = null)
-	{
+	function launch($msg = null){
 		global $interface;
 
 		if (isset($_REQUEST['submit'])){
 			$this->catalog = CatalogFactory::getCatalogConnectionInstance();
-			$driver = $this->catalog->driver;
-			if ($this->catalog->checkFunction('emailPin')){
-				$barcode = strip_tags($_REQUEST['barcode']);
+			$driver        = $this->catalog->driver;
+			if (method_exists($driver, 'emailPin')){
+				$barcode     = trim(strip_tags($_REQUEST['barcode']));
 				$emailResult = $driver->emailPin($barcode);
 			}else{
-				$emailResult = array(
+				$emailResult = [
 					'error' => 'This functionality is not available in the ILS.',
-				);
+				];
 			}
 			$interface->assign('emailResult', $emailResult);
 			$this->display('emailPinResults.tpl', 'Email Pin');

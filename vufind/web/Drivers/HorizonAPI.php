@@ -818,7 +818,7 @@ abstract class HorizonAPI extends Horizon{
 	 * @param User   $patron         The user to update PIN for
 	 * @param string $oldPin         The current PIN
 	 * @param string $newPin         The PIN to update to
-	 * @param string $confirmNewPin  A second entry to confirm the new PIN number (checked in User now)
+	 * @param string $confirmNewPin  A second entry to confirm the new PIN (checked in User now)
 	 * @return string
 	 */
 	function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
@@ -837,9 +837,9 @@ abstract class HorizonAPI extends Horizon{
 
 		if ($updatePinResponse){
 			$patron->updatePassword($newPin);
-			return "Your pin number was updated successfully.";
+			return 'Your ' . translate('pin') . ' was updated successfully.';
 		}else{
-			return "Sorry, we could not update your pin number. Please try again later.";
+			return "Sorry, we could not update your ' . translate('pin') . '. Please try again later.";
 		}
 	}
 
