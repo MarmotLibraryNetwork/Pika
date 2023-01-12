@@ -109,6 +109,6 @@ class ResetPin extends Action{
 			}
 			$interface->assign('resetPinResult', $resetPinResult);
 		}
-		$this->display('resetPin.tpl', translate('Reset My Pin'));
+		$this->display('resetPin.tpl', translate('Reset My PIN'));
 	}
 }

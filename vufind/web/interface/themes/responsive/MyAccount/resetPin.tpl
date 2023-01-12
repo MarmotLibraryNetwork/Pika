@@ -42,7 +42,7 @@
 				</div>
 				<div class="form-group">
 					<div class="col-xs-8 col-xs-offset-4">
-						<input id="resetPinSubmit" name="submit" class="btn btn-primary" type="submit" value="Reset My Pin">
+						<input id="resetPinSubmit" name="submit" class="btn btn-primary" type="submit" value="{translate text='Reset My PIN'}">
 					</div>
 				</div>
 			</form>
