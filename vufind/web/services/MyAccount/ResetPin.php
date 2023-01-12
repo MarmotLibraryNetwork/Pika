@@ -85,7 +85,7 @@ class ResetPin extends Action{
 						];
 					}elseif ($newPin !== $confirmNewPin){
 						$resetPinResult = [
-							'error' => 'The new ' . translate('pin') . ' you entered did not match. Please try again.'
+							'error' => 'The new ' . translate('pin') . 's do not match. Please try again.'
 						];
 					}elseif (empty($resetToken) || empty($userID)){
 						// These checks are for Horizon Driver, this may need to be moved into resetPin function if used for another ILS
@@ -94,14 +94,10 @@ class ResetPin extends Action{
 						];
 					}elseif ($newPinLength < $pinMinimumLength or $newPinLength > $pinMaximumLength){
 						if ($pinMinimumLength == $pinMaximumLength){
-							$errorMsg = 'New ' . translate('pin') . ' must be exactly ' . $pinMinimumLength . ' characters.';
+							$resetPinResult = ['error' => 'New ' . translate('pin') . ' must be exactly ' . $pinMinimumLength . ' characters.'];
 						}else{
-							$errorMsg = 'New ' . translate('pin') . ' must be ' . $pinMinimumLength . " to " . $pinMaximumLength . ' characters.';
+							$resetPinResult = ['error' => 'New ' . translate('pin') . ' must be ' . $pinMinimumLength . " to " . $pinMaximumLength . ' characters.'];
 						}
-
-						$resetPinResult = [
-							'error' => $errorMsg
-						];
 					}else{
 						$resetPinResult = $driver->resetPin($patron, $newPin, $resetToken);
 					}
@@ -112,9 +108,7 @@ class ResetPin extends Action{
 				];
 			}
 			$interface->assign('resetPinResult', $resetPinResult);
-			$this->display('resetPinResults.tpl', translate('Reset My Pin'));
-		}else{
-			$this->display('resetPin.tpl', translate('Reset My Pin'));
 		}
+		$this->display('resetPin.tpl', translate('Reset My Pin'));
 	}
 }
