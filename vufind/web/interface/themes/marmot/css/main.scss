@@ -1,27 +1,29 @@
 // Core variables and mixins
-@import (reference) "../../responsive/css/variables.less";
-@import (reference) "variables";
+@import "../../responsive/css/variables.scss";
+@import "variables";
 
-// Always include the base .less file
-@import "../../responsive/css/responsive_base.less";
+// Always include the base .scss file
+@import "../../responsive/css/responsive_base.scss";
 
-.header-login-button-mixin(@header-buttons-background-color);
+@mixin header-login-button-mixin($header-buttons-background-color){
+  @include rules();
+}
 
 
 
 // Browse Category customizations based on AnyThink
 
 // mixin to select all the typical states of <a> like tags
-allLinkStates(@rules) {
+@mixin allLinkStates($rules, $values) {
   &, &:hover, &:active, &:visited {
-    @rules();
+    $rules: $values;
   }
 }
 
 #browse-label {
   background-color: #ffffff;
-  //  background: linear-gradient(to bottom, #fff, #fff 98%, @browse-label-text-color 99%);
-  border-bottom: 1px solid @browse-label-text-color;
+  //  background: linear-gradient(to bottom, #fff, #fff 98%, $browse-label-text-color 99%);
+  border-bottom: 1px solid $browse-label-text-color;
   margin: 25px 0 15px;
   height: auto;
   padding-bottom: 20px;
@@ -37,7 +39,7 @@ allLinkStates(@rules) {
   height: 120px;
 
   div {
-    //color: @browse-label-text-color;
+    //color: $browse-label-text-color;
     text-shadow: none;
     text-transform: uppercase;
     font-size: large;
@@ -48,9 +50,9 @@ allLinkStates(@rules) {
   }
   &.selected {
     border: none;
-    background-color: @selectedCategoryColor;
-    background: @selectedCategoryColor;
-    background: linear-gradient(to bottom, @selectedCategoryColor 0%, @selectedCategoryColor 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
+    background-color: $selectedCategoryColor;
+    background: $selectedCategoryColor;
+    background: linear-gradient(to bottom, $selectedCategoryColor 0%, $selectedCategoryColor 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
     div {
       color: #fff;
     }
@@ -60,13 +62,13 @@ allLinkStates(@rules) {
 // Left/Right Arrows on browse category carousel
 #browse-category-picker {
   .jcarousel-control-prev, .jcarousel-control-next {
-    background-color: @content-bg;
-    color: @browseCarouselControlColor;
+    background-color: $content-bg;
+    color: $browseCarouselControlColor;
     &:active, &:hover {
-      color: @selectedCategoryColor;
+      color: $selectedCategoryColor;
       text-decoration: none;
     }
-    .box-shadow(none);
+    @include box-shadow(none);
     font-size: 20px;
   }
   a {
@@ -80,20 +82,18 @@ allLinkStates(@rules) {
   // indicator dots at bottom of browse category carousel
   .jcarousel-pagination a {
     &.active {
-      background: @browseCarouselControlColor;
+      background: $browseCarouselControlColor;
       // keep shadowing in place on active item
-      .box-shadow(0 0 2px #4E443C);
+      @include box-shadow(0 0 2px #4E443C);
     }
-    @detached-outline-ruleset: {outline: none};
-    .allLinkStates(@detached-outline-ruleset)
+     @include allLinkStates(outline,none);
   }
 }
-
 #selected-browse-label {
   color: black; //TODO: set color
   background: none; //override line through label
   padding: 20px 0;
-  border-top: 1px solid @browse-label-text-color;
+  border-top: 1px solid $browse-label-text-color;
 }
 
 .selected-browse-label-search {
@@ -106,7 +106,7 @@ allLinkStates(@rules) {
 
 #browse-sub-category-menu {
   button.selected {
-    background-color: @selectedCategoryColor;
+    background-color: $selectedCategoryColor;
   }
 }
 .sidebar-links .panel-heading{
