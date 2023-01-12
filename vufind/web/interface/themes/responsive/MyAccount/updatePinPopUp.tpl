@@ -4,11 +4,11 @@
 		<p class="alert alert-warning"> This action is required to access your account.</p>
 		<br>
 		<p><strong>&bull; {if $alphaNumericOnlyPins}Use numbers and letters.{elseif $numericOnlyPins}Use only numbers.{else}Use numbers and/or letters.{/if}</strong></p>
-			{if $pinMinimumLength == $pinMaximumLength}
-				<p><strong>&bull; Your new {translate text='pin'} must be {$pinMinimumLength} characters in length.</strong></p>
-			{else}
-				<p><strong>&bull; Your new {translate text='pin'} must be {$pinMinimumLength} to {$pinMaximumLength} characters in length.</strong></p>
-			{/if}
+		{if $pinMinimumLength == $pinMaximumLength}
+			<p><strong>&bull; Your new {translate text='pin'} must be {$pinMinimumLength} characters in length.</strong></p>
+		{else}
+			<p><strong>&bull; Your new {translate text='pin'} must be {$pinMinimumLength} to {$pinMaximumLength} characters in length.</strong></p>
+		{/if}
 	</div>
 
 	<div class="alert alert-danger" id="errorMsg" style="display: none"></div>
@@ -31,7 +31,8 @@
 	<div class="form-group">
 		<div class="col-xs-4"><label for="pin" class="control-label">{translate text='Old PIN'}:</label></div>
 		<div class="col-xs-8">
-			<input type="password" name="pin" id="pin" value="" size="4" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
+			<input type="password" name="pin" id="pin" value="" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
+				{* No size limits in case previously set password doesn't meet current restrictions *}
 		</div>
 	</div>
 	<div class="form-group">

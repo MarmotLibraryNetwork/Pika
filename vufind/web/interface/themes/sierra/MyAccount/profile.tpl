@@ -241,7 +241,8 @@
 									<div class="form-group">
 										<div class="col-xs-4"><label for="pin" class="control-label">{translate text='Old PIN'}:</label></div>
 										<div class="col-xs-8">
-											<input type="password" name="pin" id="pin" value="" size="4" maxlength="30" class="form-control required{if $numericOnlyPins} digits{else}{if $alphaNumericOnlyPins} alphaNumeric{/if}{/if}">
+											<input type="password" name="pin" id="pin" value="" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
+												{* No size limits in case previously set password doesn't meet current restrictions *}
 										</div>
 									</div>
 									<div class="form-group">
