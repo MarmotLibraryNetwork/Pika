@@ -1140,9 +1140,9 @@ class Sierra  implements \DriverInterface {
 	 *
 	 * Handles a pin reset when requested with emailResetPin().
 	 *
-	 * @param  $patron
-	 * @param  $newPin
-	 * @param  $resetToken
+	 * @param  User $patron
+	 * @param  string $newPin
+	 * @param  string $resetToken
 	 * @return array|bool
 	 * @throws ErrorException
 	 */
@@ -1165,6 +1165,7 @@ class Sierra  implements \DriverInterface {
 			return ['error' => 'Unable to reset your ' . translate('pin') . '. Invalid reset token.'];
 		}
 		// everything is good
+		global $configArray;
 		$patronId  = $this->getPatronId($patron);
 		$operation = 'patrons/' . $patronId;
 		$params    = ['pin' => (string)$newPin];
@@ -1179,14 +1180,16 @@ class Sierra  implements \DriverInterface {
 
 		// update sierra first
 		$r = $this->_doRequest($operation, $params, 'PUT');
-		if(!$r) {
+		if (!$r){
 			$message = $this->_getPrettyError();
-			return ['error' => 'Could not update ' . translate('pin') . ': '. $message];
+			$this->logger->error('Error updating pin in Sierra for user ' . $patron->id, [$message]);
+			return ['error' => 'Could not update ' . translate('pin') . ': ' . $message];
 		}
 		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
-		$r = $patron->setPassword($newPin);
-		if(!$r) {
+		$r              = $patron->updatePassword($newPin);
+		if (!$r){
 			// this shouldn't matter since we hit the api first when logging in a patron, but ....
+			$this->logger->error('Error updating pin in pika db for user ' . $patron->id);
 			$this->cache->delete($patronCacheKey);
 			return ['error' => 'Please try logging in with your new ' . translate('pin') . '. If you are unable to login please contact your library.'];
 		}
