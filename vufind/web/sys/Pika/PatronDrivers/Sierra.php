@@ -2100,7 +2100,7 @@ EOT;
 		// because the patron object has holds information we need to clear that cache too.
 		$patronObjectCacheKey = $this->cache->makePatronKey('holds', $patron->id);
 		if(!$this->cache->delete($patronObjectCacheKey)) {
-			$this->logger->warn("Failed to remove patron from memcache: ".$patronObjectCacheKey);
+			$this->logger->warn("Failed to remove patron from memcache: " . $patronObjectCacheKey);
 		}
 
 		$params = [
@@ -2117,7 +2117,7 @@ EOT;
 		$r = $this->_doRequest($operation, $params, "POST");
 
 		// check if error we need to do an item level hold
-		if($this->apiLastError && stristr($this->apiLastError,'Volume record selection is required to proceed')
+		if ($this->apiLastError && stristr($this->apiLastError, 'Volume record selection is required to proceed')
 		   || (stristr($this->apiLastError,"This record is not available") && (integer)$this->configArray['Catalog']['api_version'] == 4)) {
 
 			$itemsAsVolumes = $r->details->itemsAsVolumes ?? null; // Response when item level hold is required includes the list of items
@@ -2141,7 +2141,7 @@ EOT;
 		}
 
 		// oops! something went wrong.
-		if(!$r) {
+		if (!$r){
 			$return['success'] = false;
 			if ($this->apiLastError) {
 				$message = $this->_getPrettyError();
@@ -2157,8 +2157,8 @@ EOT;
 		$return['success'] = true;
 
 		// get title of record
-		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
-		$recordTitle  = $record->isValid() ? $record->getTitle() : null;
+		$record      = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
+		$recordTitle = $record->isValid() ? $record->getTitle() : null;
 
 		if($recordTitle) {
 			$recordTitle = trim($recordTitle, ' /');
@@ -3185,7 +3185,7 @@ EOT;
 		// These headers are common to all Sierra API except token requests.
 		$headers = [
 			'Host'           => parse_url($this->apiUrl, PHP_URL_HOST),
-			'Authorization'  => 'Bearer '.$this->oAuthToken,
+			'Authorization' => 'Bearer ' . $this->oAuthToken,
 			'User-Agent'     => 'Pika',
 			'X-Forwarded-For'=> $_SERVER['SERVER_ADDR']
 		];
@@ -3204,7 +3204,7 @@ EOT;
 		if($operation == 'about'){
 			$operationUrl = $this->aboutUrl;
 		}else{
-			$operationUrl = $this->apiUrl.$operation;
+			$operationUrl = $this->apiUrl . $operation;
 		}
 		try {
 			$c = new Curl();
@@ -3305,13 +3305,13 @@ EOT;
 		// base url for following calls
 		$vendorOpacUrl = $this->accountProfile->vendorOpacUrl;
 
-		$headers = [
-			"Accept"         => "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5",
-			"Cache-Control"  => "max-age=0",
-			"Connection"     => "keep-alive",
-			"Accept-Charset" => "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
-			"Accept-Language"=> "en-us,en;q=0.5",
-			"User-Agent"     => "Pika"
+		$headers       = [
+			'Accept'          => 'text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5',
+			'Cache-Control'   => 'max-age=0',
+			'Connection'      => 'keep-alive',
+			'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
+			'Accept-Language' => 'en-us,en;q=0.5',
+			'User-Agent'      => 'Pika'
 		];
 		$c->setHeaders($headers);
 

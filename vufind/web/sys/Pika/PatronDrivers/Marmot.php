@@ -518,15 +518,15 @@ class Marmot extends Sierra {
 
 		// base url for following calls
 		$vendorOpacUrl = $this->accountProfile->vendorOpacUrl;
-
-		$headers = [
-			"Accept"          => "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5",
-			"Cache-Control"   => "max-age=0",
-			"Connection"      => "keep-alive",
-			"Accept-Charset"  => "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
-			"Accept-Language" => "en-us,en;q=0.5",
-			"User-Agent"      => "Pika"
+		$headers       = [
+			'Accept'          => 'text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5',
+			'Cache-Control'   => 'max-age=0',
+			'Connection'      => 'keep-alive',
+			'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
+			'Accept-Language' => 'en-us,en;q=0.5',
+			'User-Agent'      => 'Pika'
 		];
+
 		$c->setHeaders($headers);
 
 		$cookie   = @tempnam("/tmp", "CURLCOOKIE");
@@ -689,12 +689,12 @@ class Marmot extends Sierra {
 		$url         = $host . "/search~S{$branchScope}/.b" . $id_ . "/.b" . $id_ . "/1,1,1,B/$checkInGridId&FF=1,0,";
 		$c           = new Curl();
 		$headers     = [
-			"Accept"          => "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5",
-			"Cache-Control"   => "max-age=0",
-			"Connection"      => "keep-alive",
-			"Accept-Charset"  => "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
-			"Accept-Language" => "en-us,en;q=0.5",
-			"User-Agent"      => "Pika"
+			'Accept'          => 'text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5',
+			'Cache-Control'   => 'max-age=0',
+			'Connection'      => 'keep-alive',
+			'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
+			'Accept-Language' => 'en-us,en;q=0.5',
+			'User-Agent'      => 'Pika'
 		];
 		$c->setHeaders($headers);
 
@@ -760,17 +760,17 @@ class Marmot extends Sierra {
 	 * @throws ErrorException
 	 */
 	public function getIssueSummaries($recordId){
-		$scope         = $this->getLibrarySierraScope(true); // Use library scope if searching is restricted to the library
-		$id_           = $this->getShortId($recordId);
-		$host          = $this->accountProfile->vendorOpacUrl;
-		$c             = new Curl();
-		$headers       = [
-			"Accept"          => "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5",
-			"Cache-Control"   => "max-age=0",
-			"Connection"      => "keep-alive",
-			"Accept-Charset"  => "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
-			"Accept-Language" => "en-us,en;q=0.5",
-			"User-Agent"      => "Pika"
+		$scope    = $this->getLibrarySierraScope(true); // Use library scope if searching is restricted to the library
+		$id_      = $this->getShortId($recordId);
+		$host     = $this->accountProfile->vendorOpacUrl;
+		$c        = new Curl();
+		$headers  = [
+			'Accept'          => 'text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5',
+			'Cache-Control'   => 'max-age=0',
+			'Connection'      => 'keep-alive',
+			'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
+			'Accept-Language' => 'en-us,en;q=0.5',
+			'User-Agent'      => 'Pika'
 		];
 		$cookie   = @tempnam("/tmp", "CURLCOOKIE");
 		$curlOpts = [
@@ -803,8 +803,8 @@ class Marmot extends Sierra {
 		if (preg_match('/class\\s*=\\s*\\"bibHoldings\\"/s', $issuesSummaryFrameSetInfo)){
 			//There are issue summaries available
 			//Extract the table with the holdings
-			$issueSummaries = array();
-			$matches        = array();
+			$issueSummaries = [];
+			$matches        = [];
 			if (preg_match('/<table\\s.*?class=\\"bibHoldings\\">(.*?)<\/table>/s', $issuesSummaryFrameSetInfo, $matches)){
 				$issueSummaryTable = trim($matches[1]);
 				//Each holdingSummary begins with a holdingsDivider statement
@@ -815,13 +815,13 @@ class Marmot extends Sierra {
 						$summaryData = trim($summaryData);
 						if (strlen($summaryData) > 0){
 							//Get each line within the summary
-							$issueSummary         = array();
+							$issueSummary         = [];
 							$issueSummary['type'] = 'issueSummary';
-							$summaryLines         = array();
+							$summaryLines         = [];
 							preg_match_all('/<tr\\s*>(.*?)<\/tr>/s', $summaryData, $summaryLines, PREG_SET_ORDER);
 							for ($matchi = 0;$matchi < count($summaryLines);$matchi++){
 								$summaryLine = trim(str_replace('&nbsp;', ' ', $summaryLines[$matchi][1]));
-								$summaryCols = array();
+								$summaryCols = [];
 								if (preg_match('/<td.*?>(.*?)<\/td>.*?<td.*?>(.*?)<\/td>/s', $summaryLine, $summaryCols)){
 									$labelOriginal = $label = trim($summaryCols[1]);
 									$value = trim(strip_tags($summaryCols[2]));
@@ -857,6 +857,7 @@ class Marmot extends Sierra {
 		}
 		return null;
 	}
+
 	/**
 	 * Classic OPAC scope for legacy screen scraping calls
 	 * @param bool $checkLibraryRestrictions  Whether or not to condition the use of Sierra OPAC scope by the library setting $restrictSearchByLibrary;

@@ -169,12 +169,12 @@ trait SierraPatronListOperations {
 		$vendorOpacUrl = $this->accountProfile->vendorOpacUrl;
 
 		$headers = [
-			"Accept"          => "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5",
-			"Cache-Control"   => "max-age=0",
-			"Connection"      => "keep-alive",
-			"Accept-Charset"  => "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
-			"Accept-Language" => "en-us,en;q=0.5",
-			"User-Agent"      => "Pika"
+			'Accept'          => 'text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5',
+			'Cache-Control'   => 'max-age=0',
+			'Connection'      => 'keep-alive',
+			'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
+			'Accept-Language' => 'en-us,en;q=0.5',
+			'User-Agent'      => 'Pika'
 		];
 		$c->setHeaders($headers);
 
