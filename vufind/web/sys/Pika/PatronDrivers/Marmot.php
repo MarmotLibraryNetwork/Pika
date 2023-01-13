@@ -37,15 +37,14 @@ use Pika\PatronDrivers\MyBooking;
 use Pika\Cache;
 use Pika\Logger;
 
-require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/PatronBookingsOperations.php";
-require_once ROOT_DIR . "/sys/Pika/PatronDrivers/MyBooking.php";
+require_once ROOT_DIR . '/sys/Pika/PatronDrivers/Traits/PatronBookingsOperations.php';
+require_once ROOT_DIR . '/sys/Pika/PatronDrivers/MyBooking.php';
 
 class Marmot extends Sierra {
 
 	use \PatronBookingsOperations;
 
-	public function __construct($accountProfile)
-	{
+	public function __construct($accountProfile){
 		parent::__construct($accountProfile);
 	}
 
@@ -79,12 +78,14 @@ class Marmot extends Sierra {
 
 		// vail fields
 		if ($libSubDomain == 'vail' || $libSubDomain == 'vail2'){
-			$fields[] = ['property'    => 'altaddress',
-			             'type'        => 'text',
-			             'label'       => 'Physical Address',
-			             'description' => 'Physical Address.',
-			             'maxLength'   => 40,
-			             'required'    => false];
+			$fields[] = [
+				'property'    => 'altaddress',
+				'type'        => 'text',
+				'label'       => 'Physical Address',
+				'description' => 'Physical Address.',
+				'maxLength'   => 40,
+				'required'    => false
+			];
 		}
 
 		return $fields;
@@ -95,32 +96,43 @@ class Marmot extends Sierra {
 	 * @return array
 	 * @throws \ErrorException
 	 */
-	public function selfRegister($extraSelfRegParams = false) {
-		
+	public function selfRegister($extraSelfRegParams = false){
 		global $library;
 		// include test and production
 		$libSubDomain = strtolower($library->subdomain);
-		if($libSubDomain == 'vail' || $libSubDomain == 'vail2') {
+		if ($libSubDomain == 'vail' || $libSubDomain == 'vail2'){
 			/* VAIL */
-			$extraSelfRegParams['varFields'][] = ["fieldTag" => "u",
-			                                      "content"  => "#"];
-			$extraSelfRegParams['varFields'][] = ["fieldTag" => "i",
-			                                      "content"  => "#"];
-			$extraSelfRegParams['varFields'][] = ["fieldTag" => "q",
-			                                      "content"  => "XXXLLFF"];
+			$extraSelfRegParams['varFields'][] = [
+				"fieldTag" => "u",
+				"content"  => "#"
+			];
+			$extraSelfRegParams['varFields'][] = [
+				"fieldTag" => "i",
+				"content"  => "#"
+			];
+			$extraSelfRegParams['varFields'][] = [
+				"fieldTag" => "q",
+				"content"  => "XXXLLFF"
+			];
 			$extraSelfRegParams['pMessage']    = 'f';
 
-		} elseif ($libSubDomain == 'mesa' || $libSubDomain == 'mesa2') {
+		}elseif ($libSubDomain == 'mesa' || $libSubDomain == 'mesa2'){
 			/* MESA */
 			$extraSelfRegParams['patronCodes']['pcode3'] = 84;
-			$extraSelfRegParams['varFields'][] = ["fieldTag" => "m",
-			                                      "content"  => "Temp Online Acct: Verify ALL information, add Telephone Number".
-			                                       " in the Unique ID field, verify notice preference, update barcode & exp. date, then change alias & p-type"];
-			$extraSelfRegParams['varFields'][] = ["fieldTag" => "q",
-			                                      "content"  => "dig access"];
-			if(!empty($_REQUEST['isCmuStudent'])) {
-				$extraSelfRegParams['varFields'][] = ["fieldTag" => "x",
-				                                      "content"  => "Mesa County college student"];
+			$extraSelfRegParams['varFields'][]           = [
+				"fieldTag" => "m",
+				"content"  => "Temp Online Acct: Verify ALL information, add Telephone Number" .
+					" in the Unique ID field, verify notice preference, update barcode & exp. date, then change alias & p-type"
+			];
+			$extraSelfRegParams['varFields'][]           = [
+				"fieldTag" => "q",
+				"content"  => "dig access"
+			];
+			if (!empty($_REQUEST['isCmuStudent'])){
+				$extraSelfRegParams['varFields'][] = [
+					"fieldTag" => "x",
+					"content"  => "Mesa County college student"
+				];
 			}
 		}
 		return parent::selfRegister($extraSelfRegParams);

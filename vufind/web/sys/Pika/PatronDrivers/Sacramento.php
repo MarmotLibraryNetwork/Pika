@@ -232,9 +232,9 @@ class Sacramento extends Sierra {
 		// first update mobile #
 		if(isset($_POST['smsNotices']) && $_POST['smsNotices'] == 'on') {
 			$mobileNumber = trim($_POST['mobileNumber']);
-			$phones[] = ['number'=>$mobileNumber, 'type'=>'o'];
-		} else {
-			$phones[] = ['number'=>' ', 'type'=>'o']; #todo: does api accept empty for updates?
+			$phones[]     = ['number' => $mobileNumber, 'type' => 'o'];
+		}else{
+			$phones[] = ['number' => ' ', 'type' => 'o']; #todo: does api accept empty for updates?
 		}
 		$apiParams = ['phones' => $phones];
 		// to note: calling _doRequest will create a new instance of Curl so we won't destroy the cookie jar
@@ -253,8 +253,8 @@ class Sacramento extends Sierra {
 		} else {
 			$params = ['optin' => 'off'];
 		}
-		$scope = isset($this->configArray['OPAC']['defaultScope']) ? $this->configArray['OPAC']['defaultScope'] : '93';
-		$optUrl = $vendorOpacUrl . "/patroninfo~S". $scope. "/" . $patronId . "/modpinfo";
+		$scope  = isset($this->configArray['OPAC']['defaultScope']) ? $this->configArray['OPAC']['defaultScope'] : '93';
+		$optUrl = $vendorOpacUrl . "/patroninfo~S" . $scope . "/" . $patronId . "/modpinfo";
 
 		$cc->setUrl($optUrl);
 		$r = $cc->post($params);
@@ -318,13 +318,15 @@ class Sacramento extends Sierra {
 		$birthDay            = date_format($birthDate, 'd');
 		$birthMonth          = date_format($birthDate, 'm');
 		$ddepartment         = $lastNameFourLetters . $firstNameOneLetter . $birthMonth . $birthDay; //var field d
-		$params['varFields'][] = ["fieldTag" => "d",
-		                          "content"  => $ddepartment];
+		$params['varFields'][] = [
+			"fieldTag" => "d",
+			"content"  => $ddepartment
+		];
 
 		foreach ($_POST as $key=>$val) {
 			switch ($key) {
 				case 'email':
-					$val = trim($val);
+					$val          = trim($val);
 					$successEmail = false;
 					if(!empty($val)) {
 						$successEmail = $val;
@@ -348,12 +350,12 @@ class Sacramento extends Sierra {
 						$todayDate = new DateTime();
 						$dateDiff  = $birthDate->diff($todayDate);
 						$days      = (integer)$dateDiff->days;
-						if($days < 30) {
-							return ['success'=>false, 'barcode'=>''];
+						if ($days < 30){
+							return ['success' => false, 'barcode' => ''];
 						}
 						$params['birthDate'] = $birthDate->format('Y-m-d');
-					} else {
-						return ['success'=>false, 'barcode'=>''];
+					}else{
+						return ['success' => false, 'barcode' => ''];
 					}
 					break;
 			}
@@ -411,13 +413,17 @@ class Sacramento extends Sierra {
 		$params['barcodes'][] = $barcode;
 
 		// agency code
-		$params['fixedFields']["158"] = ["label" => "PAT AGENCY",
-		                                 "value" => $library->selfRegistrationAgencyCode];
+		$params['fixedFields']["158"] = [
+			"label" => "PAT AGENCY",
+			"value" => $library->selfRegistrationAgencyCode
+		];
 		// notice preference -- default to z
-		$params['fixedFields']['268'] = ["label" => "Notice Preference",
-		                                 "value" => 'z'];
+		$params['fixedFields']['268'] = [
+			"label" => "Notice Preference",
+			"value" => 'z'
+		];
 		// expiration date
-		$interval = 'P'.$library->selfRegistrationDaysUntilExpire.'D';
+		$interval   = 'P' . $library->selfRegistrationDaysUntilExpire . 'D';
 		$expireDate = new DateTime();
 		$expireDate->add(new DateInterval($interval));
 		$params['expirationDate'] = $expireDate->format('Y-m-d');
@@ -481,7 +487,7 @@ class Sacramento extends Sierra {
 			}
 		}
 
-		$this->logger->debug('Self registering patron', ['params'=>$params]);
+		$this->logger->debug('Self registering patron', ['params' => $params]);
 		$operation = "patrons/";
 		$r = parent::_doRequest($operation, $params, "POST");
 
@@ -648,8 +654,8 @@ class Sacramento extends Sierra {
 		$fields[] = [
 			'property'    => 'pinconfirm',
 			'type'        => 'pin',
-			'label'       => 'Confirm Pin',
-			'description' => 'Re-type your desired pin',
+			'label'       => 'Confirm ' . translate('PIN'),
+			'description' => 'Please confirm your ' . translate('pin') . '.',
 			/*'maxLength' => 4, 'size' => 4,*/
 			'required'    => true
 		];

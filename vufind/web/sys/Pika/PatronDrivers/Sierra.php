@@ -1282,36 +1282,36 @@ EOT;
 
 		global $library;
 		// sanity checks
-		if(!property_exists($library, 'selfRegistrationDefaultpType') || empty($library->selfRegistrationDefaultpType)) {
+		if (!property_exists($library, 'selfRegistrationDefaultpType') || empty($library->selfRegistrationDefaultpType)){
 			$message = 'Missing configuration parameter selfRegistrationDefaultpType for ' . $library->displayName;
 			$this->logger->error($message);
 			throw new InvalidArgumentException($message);
 		}
-		if(!property_exists($library, 'selfRegistrationAgencyCode') || empty($library->selfRegistrationAgencyCode)) {
+		if (!property_exists($library, 'selfRegistrationAgencyCode') || empty($library->selfRegistrationAgencyCode)){
 			$message = 'Missing configuration parameter selfRegistrationAgencyCode for ' . $library->displayName;
 			$this->logger->error($message);
 			throw new InvalidArgumentException($message);
 		}
 
 		$params = [];
-		foreach ($_POST as $key=>$val) {
-			switch ($key) {
+		foreach ($_POST as $key => $val){
+			switch ($key){
 				case 'email':
-					$val = trim($val);
+					$val          = trim($val);
 					$successEmail = false;
-					if(!empty($val)){
-						$successEmail = $val;
+					if (!empty($val)){
+						$successEmail       = $val;
 						$params['emails'][] = $val;
 					}
 					break;
 				case 'address': // street part of address
-					$val = trim($val);
+					$val                                = trim($val);
 					$params['addresses'][0]['lines'][0] = $val;
-					$params['addresses'][0]['type'] = 'a';
+					$params['addresses'][0]['type']     = 'a';
 					break;
 				case 'altaddress':
 					$val = trim($val);
-					if(!empty($val)){
+					if (!empty($val)){
 						$params['addresses'][1]['lines'][0] = $val;
 					}else{
 						$params['addresses'][1]['lines'][0] = 'none';
@@ -1320,24 +1320,24 @@ EOT;
 					break;
 				case 'primaryphone':
 					$val = trim($val);
-					if(!empty($val)){
-						$params['phones'][] = ['number'=>$val, 'type'=>'t'];
+					if (!empty($val)){
+						$params['phones'][] = ['number' => $val, 'type' => 't'];
 					}
 					break;
 				case 'altphone':
 					$val = trim($val);
-					if(!empty($val)){
-						$params['phones'][] = ['number'=>$val, 'type'=>'p'];
+					if (!empty($val)){
+						$params['phones'][] = ['number' => $val, 'type' => 'p'];
 					}
 					break;
 				case 'birthdate':
-					if(!empty($val)) {
+					if (!empty($val)){
 						$date                = DateTime::createFromFormat('m-d-Y', $val);
 						$params['birthDate'] = $date->format('Y-m-d');
 					}
 					break;
 				case 'homelibrarycode':
-					if(!empty($val)){
+					if (!empty($val)){
 						$params['homeLibraryCode'] = $val;
 					}
 					break;
@@ -1353,39 +1353,39 @@ EOT;
 		// it's possible to register a patron with a barcode that is already in Sierra so make sure this doesn't happen
 		$barcodeTest = true;
 		do {
-			$barcode = (string)mt_rand((int)$min, (int)$max);
+			$barcode     = (string)mt_rand((int)$min, (int)$max);
 			$barcodeTest = $this->getPatronId($barcode);
 		} while ($barcodeTest === true);
 		$params['barcodes'][] = $barcode;
 
 		// agency code -- not all sierra libraries use the agency field
-		if($library->selfRegistrationAgencyCode >= 1) {
+		if ($library->selfRegistrationAgencyCode >= 1){
 			$params['fixedFields']["158"] = [
-			 "label" => "PAT AGENCY",
-			 "value" => $library->selfRegistrationAgencyCode
+				"label" => "PAT AGENCY",
+				"value" => $library->selfRegistrationAgencyCode
 			];
 		}
 		// expiration date
-		$interval = 'P'.$library->selfRegistrationDaysUntilExpire.'D';
+		$interval   = 'P' . $library->selfRegistrationDaysUntilExpire . 'D';
 		$expireDate = new DateTime();
 		$expireDate->add(new DateInterval($interval));
 		$params['expirationDate'] = $expireDate->format('Y-m-d');
 
 		// names -- standard is Last, First Middle
-		$name  = trim($_POST['lastname']) . ", ";
+		$name = trim($_POST['lastname']) . ", ";
 		$name .= trim($_POST['firstname']);
-		if(!empty($_POST['middlename'])) {
-			$name .= ' '.trim($_POST['middlename']);
+		if (!empty($_POST['middlename'])){
+			$name .= ' ' . trim($_POST['middlename']);
 		}
 		$params['names'][] = $name;
 
 		// city state and zip
-		$cityStateZip = trim($_POST['city']).', '.trim($_POST['state']).' '.trim($_POST['zip']);
+		$cityStateZip = trim($_POST['city']) . ', ' . trim($_POST['state']) . ' ' . trim($_POST['zip']);
 		// address line 2
 		$params['addresses'][0]['lines'][1] = $cityStateZip;
 
 		// if library uses pins
-		if($this->accountProfile->usingPins()) {
+		if ($this->accountProfile->usingPins()){
 			$pin        = trim($_POST['pin']);
 			$pinConfirm = trim($_POST['pinconfirm']);
 
@@ -1408,20 +1408,20 @@ EOT;
 
 		// EXTRA SELF REG PARAMETERS
 		// do this last in case there are any parameters set up that need to be overridden
-		if($extraSelfRegParams) {
+		if ($extraSelfRegParams){
 			$params = array_merge($params, $extraSelfRegParams);
 		}
 
-		$this->logger->debug('Self registering patron', ['params'=>$params]);
-		$operation = "patrons/";
-		$r = $this->_doRequest($operation, $params, "POST");
+		$this->logger->debug('Self registering patron', ['params' => $params]);
+		$operation = 'patrons/';
+		$r         = $this->_doRequest($operation, $params, 'POST');
 
-		if(!$r) {
+		if (!$r){
 			$this->logger->warning('Failed to self register patron');
-			return ['success'=>false, 'barcode'=>''];
+			return ['success' => false, 'barcode' => ''];
 		}
 
-		if($successEmail) {
+		if ($successEmail){
 			$emailSent = $this->sendSelfRegSuccessEmail($barcode);
 		}
 
@@ -1451,102 +1451,128 @@ EOT;
 		$l->orderBy('displayName');
 		$homeLocations = $l->fetchAll('code', 'displayName');
 
-		$fields[] = ['property'   => 'firstname',
-		             'type'       => 'text',
-		             'label'      => 'First name',
-		             'description'=> 'Your first name',
-		             'maxLength'  => 30,
-		             'required'   => true];
+		$fields[] = [
+			'property'    => 'firstname',
+			'type'        => 'text',
+			'label'       => 'First name',
+			'description' => 'Your first name',
+			'maxLength'   => 30,
+			'required'    => true
+		];
 
-		$fields[] = ['property'   => 'middlename',
-		             'type'       => 'text',
-		             'label'      => 'Middle name',
-		             'description'=> 'Your middle name or initial',
-		             'maxLength'  => 30,
-		             'required'   => false];
+		$fields[] = [
+			'property'    => 'middlename',
+			'type'        => 'text',
+			'label'       => 'Middle name',
+			'description' => 'Your middle name or initial',
+			'maxLength'   => 30,
+			'required'    => false
+		];
 
-		$fields[] = ['property'   => 'lastname',
-		             'type'       => 'text',
-		             'label'      => 'Last name',
-		             'description'=> 'Your last name (surname)',
-		             'maxLength'  => 30,
-		             'required'   => true];
+		$fields[] = [
+			'property'    => 'lastname',
+			'type'        => 'text',
+			'label'       => 'Last name',
+			'description' => 'Your last name (surname)',
+			'maxLength'   => 30,
+			'required'    => true
+		];
 
-		$fields[] = ['property'   => 'homelibrarycode',
-		             'type'       => 'enum',
-		             'label'      => 'Home Library/Preferred pickup location',
-		             'description'=> 'Your home library and preferred pickup location.',
-		             'values'     => $homeLocations,
-		             'required'   => true];
+		$fields[] = [
+			'property'    => 'homelibrarycode',
+			'type'        => 'enum',
+			'label'       => 'Home Library/Preferred pickup location',
+			'description' => 'Your home library and preferred pickup location.',
+			'values'      => $homeLocations,
+			'required'    => true
+		];
 
 		// allow usernames?
-		if($this->hasUsernameField()) {
-			$fields[] = ['property'   => 'username',
-			             'type'       => 'text',
-			             'label'      => 'Username',
-			             'description'=> 'Set an optional username.',
-			             'maxLength'  => 20,
-			             'required'   => false];
+		if ($this->hasUsernameField()){
+			$fields[] = [
+				'property'    => 'username',
+				'type'        => 'text',
+				'label'       => 'Username',
+				'description' => 'Set an optional username.',
+				'maxLength'   => 20,
+				'required'    => false
+			];
 		}
 		// if library would like a birthdate
 		if ($library && $library->promptForBirthDateInSelfReg){
-			$fields[] = ['property'   => 'birthdate',
-			             'type'       => 'date',
-			             'label'      => 'Date of Birth (MM-DD-YYYY)',
-			             'description'=> 'Date of birth',
-			             'maxLength'  => 10,
-			             'required'   => true];
+			$fields[] = [
+				'property'    => 'birthdate',
+				'type'        => 'date',
+				'label'       => 'Date of Birth (MM-DD-YYYY)',
+				'description' => 'Date of birth',
+				'maxLength'   => 10,
+				'required'    => true
+			];
 		}
 
-		$fields[] = ['property'   => 'address',
-		             'type'       => 'text',
-		             'label'      => 'Mailing Address',
-		             'description'=> 'Mailing Address.',
-		             'maxLength'  => 40,
-		             'required'   => true];
+		$fields[] = [
+			'property'    => 'address',
+			'type'        => 'text',
+			'label'       => 'Mailing Address',
+			'description' => 'Mailing Address.',
+			'maxLength'   => 40,
+			'required'    => true
+		];
 
-		$fields[] = ['property'   => 'city',
-		             'type'       => 'text',
-		             'label'      => 'City',
-		             'description'=> 'The city you receive mail in.',
-		             'maxLength'  => 20,
-		             'required'   => true];
+		$fields[] = [
+			'property'    => 'city',
+			'type'        => 'text',
+			'label'       => 'City',
+			'description' => 'The city you receive mail in.',
+			'maxLength'   => 20,
+			'required'    => true
+		];
 
-		$fields[] = ['property'   => 'state',
-		             'type'       => 'text',
-		             'label'      => 'State',
-		             'description'=> 'The state you receive mail in.',
-		             'maxLength'  => 20,
-		             'required'   => true];
+		$fields[] = [
+			'property'    => 'state',
+			'type'        => 'text',
+			'label'       => 'State',
+			'description' => 'The state you receive mail in.',
+			'maxLength'   => 20,
+			'required'    => true
+		];
 
-		$fields[] = ['property'   => 'zip',
-		             'type'       => 'text',
-		             'label'      => 'ZIP code',
-		             'description'=> 'The ZIP code for your mail.',
-		             'maxLength'  => 16,
-		             'required'   => true];
+		$fields[] = [
+			'property'    => 'zip',
+			'type'        => 'text',
+			'label'       => 'ZIP code',
+			'description' => 'The ZIP code for your mail.',
+			'maxLength'   => 16,
+			'required'    => true
+		];
 
-		$fields[] = ['property'   => 'email',
-		             'type'       => 'email',
-		             'label'      => 'Email',
-		             'description'=> 'Your email address',
-		             'maxLength'  => 50,
-		             'required'   => false];
+		$fields[] = [
+			'property'    => 'email',
+			'type'        => 'email',
+			'label'       => 'Email',
+			'description' => 'Your email address',
+			'maxLength'   => 50,
+			'required'    => false
+		];
 
-		$fields[] = ['property'   => 'primaryphone',
-		             'type'       => 'text',
-		             'label'      => 'Primary phone (XXX-XXX-XXXX)',
-		             'description'=> 'Your primary phone number.',
-		             'maxLength'  => 20,
-		             'required'   => false];
+		$fields[] = [
+			'property'    => 'primaryphone',
+			'type'        => 'text',
+			'label'       => 'Primary phone (XXX-XXX-XXXX)',
+			'description' => 'Your primary phone number.',
+			'maxLength'   => 20,
+			'required'    => false
+		];
 
 		if ($library && $library->showWorkPhoneInProfile){
-			$fields[] = ['property'   => 'altphone',
-			             'type'       => 'text',
-			             'label'      => 'Work phone (XXX-XXX-XXXX)',
-			             'description'=> 'Work Phone',
-			             'maxLength'  => 40,
-			             'required'   => true];
+			$fields[] = [
+				'property'    => 'altphone',
+				'type'        => 'text',
+				'label'       => 'Work phone (XXX-XXX-XXXX)',
+				'description' => 'Work Phone',
+				'maxLength'   => 40,
+				'required'    => true
+			];
 		}
 		
 		// if library uses pins
@@ -1554,9 +1580,9 @@ EOT;
 			$fields[] = [
 				'property'    => 'pin',
 				'type'        => 'pin',
-				'label'       => 'PIN',
-				'description' => 'Please set a PIN (personal identification number).',
-				'maxLength'   => 10,
+				'label'       => translate('PIN'),
+				'description' => 'Please set a ' . translate('pin') . '.',
+//				'maxLength'   => 10,
 				'required'    => true
 			];
 
@@ -1564,8 +1590,8 @@ EOT;
 				'property'    => 'pinconfirm',
 				'type'        => 'pin',
 				'label'       => 'Confirm ' . translate('PIN'),
-				'description' => 'Please reenter your PIN.',
-				'maxLength'   => 10,
+				'description' => 'Please confirm your ' . translate('pin') . '.',
+//				'maxLength'   => 10,
 				'required'    => true
 			];
 		}
