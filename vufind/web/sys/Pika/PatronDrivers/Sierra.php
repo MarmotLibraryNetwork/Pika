@@ -759,9 +759,14 @@ class Sierra  implements \DriverInterface {
 				}
 			}
 			if (!empty($this->configArray['Catalog']['patronPinSetTimeField'])){
-				$lastPinUpdateTimeInILS = $this->_getVarField($this->configArray['Catalog']['patronPinSetTimeField'], $pInfo->varFields);
-				if (empty($lastPinUpdateTimeInILS)){
+				$varField = $this->_getVarField($this->configArray['Catalog']['patronPinSetTimeField'], $pInfo->varFields);
+				if (empty($varField)){
 					$patron->pinUpdateRequired = true;
+				} else {
+					$lastPinUpdateTimeInILS = (reset($varField))->content;
+					if (empty($lastPinUpdateTimeInILS)){
+						$patron->pinUpdateRequired = true;
+					}
 				}
 			}
 		}
