@@ -154,18 +154,9 @@ class MyAccount_UpdatePin extends MyAccount {
 		}
 		$interface->assign('enableSelfRegistration', 0);
 
-		if ($configArray['Catalog']['ils'] == 'Horizon' || $configArray['Catalog']['ils'] == 'Symphony'){
+		$catalog = CatalogFactory::getCatalogConnectionInstance();
+		if (!empty($catalog->accountProfile) && $catalog->accountProfile->usingPins() && method_exists($catalog->driver, 'emailResetPin')){
 			$interface->assign('showForgotPinLink', true);
-			$catalog          = CatalogFactory::getCatalogConnectionInstance();
-			$useEmailResetPin = method_exists($catalog->driver, 'emailResetPin');
-			$interface->assign('useEmailResetPin', $useEmailResetPin);
-		}elseif ($configArray['Catalog']['ils'] == 'Sierra'){
-			$catalog = CatalogFactory::getCatalogConnectionInstance();
-			if (!empty($catalog->accountProfile) && $catalog->accountProfile->usingPins()){
-				$interface->assign('showForgotPinLink', true);
-				$useEmailResetPin = method_exists($catalog->driver, 'emailResetPin');
-				$interface->assign('useEmailResetPin', $useEmailResetPin);
-			}
 		}
 
 		// Because we are forcing a Pin update we can not display the convince buttons at the top of page and side bars

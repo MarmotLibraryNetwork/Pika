@@ -49,18 +49,12 @@
 	</div>
 	<div class="form-group">
 		<div class="col-xs-8 col-xs-offset-4">
-        {if $showForgotPinLink}
-					<p class="help-block">
-						<strong>{translate text="Forgot PIN?"}</strong>&nbsp;
-              {if $useEmailResetPin}
-								<a href="/MyAccount/EmailResetPin">{translate text='Reset My PIN'}</a>
-                  {*
-						{else}
-							<a href="/MyAccount/EmailPin">E-mail my PIN</a>
-									*}
-              {/if}
-					</p>
-        {/if}
+			{if $showForgotPinLink}
+				<p class="help-block">
+					<strong>{translate text="Forgot PIN?"}</strong>&nbsp;
+					<a href="/MyAccount/EmailResetPin">{translate text='Reset My PIN'}</a>
+				</p>
+			{/if}
 		</div>
 	</div>
 	</form>

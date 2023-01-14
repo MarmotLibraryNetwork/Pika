@@ -48,11 +48,7 @@
 							{if $showForgotPinLink}
 								<p class="help-block">
 									<strong>{translate text="Forgot PIN?"}</strong>&nbsp;
-									{if $useEmailResetPin}
-										<a href="/MyAccount/EmailResetPin">{translate text='Reset My PIN'}</a>
-									{else}
-										<a href="/MyAccount/EmailPin">E-mail my PIN</a>
-									{/if}
+									<a href="/MyAccount/EmailResetPin">{translate text='Reset My PIN'}</a>
 								</p>
 							{/if}
 

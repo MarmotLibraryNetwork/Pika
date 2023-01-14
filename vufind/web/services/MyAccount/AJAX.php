@@ -1021,16 +1021,9 @@ class MyAccount_AJAX extends AJAXHandler {
 			$interface->assign('usernameLabel', $defaultUserNameLabel);
 			$interface->assign('passwordLabel', $defaultPasswordLabel);
 		}
-		if ($configArray['Catalog']['ils'] == 'Horizon' || $configArray['Catalog']['ils'] == 'Symphony'){
+
+		if (!empty($catalog->accountProfile) && $catalog->accountProfile->usingPins() && method_exists($catalog->driver, 'emailResetPin')){
 			$interface->assign('showForgotPinLink', true);
-			$useEmailResetPin = method_exists($catalog->driver, 'emailResetPin');
-			$interface->assign('useEmailResetPin', $useEmailResetPin);
-		}elseif ($configArray['Catalog']['ils'] == 'Sierra'){
-			if (!empty($catalog->accountProfile) && $catalog->accountProfile->usingPins()){
-				$interface->assign('showForgotPinLink', true);
-				$useEmailResetPin = method_exists($catalog->driver, 'emailResetPin');
-				$interface->assign('useEmailResetPin', $useEmailResetPin);
-			}
 		}
 		if (isset($_REQUEST['multistep'])){
 			$interface->assign('multistep', true);

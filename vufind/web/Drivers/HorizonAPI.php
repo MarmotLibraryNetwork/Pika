@@ -843,32 +843,32 @@ abstract class HorizonAPI extends Horizon{
 		}
 	}
 
-	public function emailPin($barcode){
-		global $configArray;
-		if (empty($barcode)) {
-			$barcode = $_REQUEST['barcode'];
-		}
-
-		//email the pin to the user
-		$updatePinUrl      = $this->getWebServiceURL() . '/standard/emailMyPin?clientID=' . $configArray['Catalog']['clientId'] . '&secret=' . $configArray['Catalog']['clientSecret'] . '&login=' . $barcode . '&profile=' . $this->hipProfile;
-		$updatePinResponse = $this->getWebServiceResponse($updatePinUrl);
-		//$updatePinResponse is an XML object, at least when there is an error with the API call
-		// otherwise, it is true for the pin sent, or false for pin not sent.
-
-		if ($updatePinResponse && !isset($updatePinResponse->code)){
-			return [
-				'success' => true,
-			];
-		}else{
-			$result = [
-				'error' => 'Sorry, we could not e-mail your ' . translate('pin') . ' to you.  Please visit the library to reset your ' . translate('pin') . '.'
-			];
-			if (isset($updatePinResponse->code)){
-				$result['error'] .= '  ' . $updatePinResponse->string;
-			}
-			return $result;
-		}
-	}
+//	public function emailPin($barcode){
+//		global $configArray;
+//		if (empty($barcode)) {
+//			$barcode = $_REQUEST['barcode'];
+//		}
+//
+//		//email the pin to the user
+//		$updatePinUrl      = $this->getWebServiceURL() . '/standard/emailMyPin?clientID=' . $configArray['Catalog']['clientId'] . '&secret=' . $configArray['Catalog']['clientSecret'] . '&login=' . $barcode . '&profile=' . $this->hipProfile;
+//		$updatePinResponse = $this->getWebServiceResponse($updatePinUrl);
+//		//$updatePinResponse is an XML object, at least when there is an error with the API call
+//		// otherwise, it is true for the pin sent, or false for pin not sent.
+//
+//		if ($updatePinResponse && !isset($updatePinResponse->code)){
+//			return [
+//				'success' => true,
+//			];
+//		}else{
+//			$result = [
+//				'error' => 'Sorry, we could not e-mail your ' . translate('pin') . ' to you.  Please visit the library to reset your ' . translate('pin') . '.'
+//			];
+//			if (isset($updatePinResponse->code)){
+//				$result['error'] .= '  ' . $updatePinResponse->string;
+//			}
+//			return $result;
+//		}
+//	}
 
 	public function getSelfRegistrationFields() {
 		global $configArray;

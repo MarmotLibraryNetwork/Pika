@@ -37,11 +37,7 @@
 					{if $showForgotPinLink}
 						<p class="text-muted help-block">
 							<strong>{translate text="Forgot PIN?"}</strong>&nbsp;
-{*							{if $useEmailResetPin}*}
 								<a href="/MyAccount/EmailResetPin">{translate text='Reset My PIN'}</a>
-{*							{else}*}
-{*	This functionality should be exposed for wcpl							<a href="/MyAccount/EmailPin">E-mail my PIN</a>*}
-{*							{/if}*}
 						</p>
 					{/if}
 					{include file="MyAccount/selfReglink.tpl"}
