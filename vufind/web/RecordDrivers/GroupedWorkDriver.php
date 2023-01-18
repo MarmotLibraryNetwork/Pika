@@ -1867,7 +1867,7 @@ class GroupedWorkDriver extends RecordInterface {
 								$localItemComparisonResult = GroupedWorkDriver::compareLocalItemsForRecords($a, $b);
 								if ($localItemComparisonResult == 0){
 									//7) All else being equal, sort by hold ratio
-									$holdRatioComparison = $b['holdRatio'] <=> $a['holdRatio'];
+									$holdRatioComparison = self::compareHoldRatioForRecords($a, $b);
 									if ($holdRatioComparison == 0){
 										return $b['copies'] <=> $a['copies'];
 									}else{
@@ -2080,6 +2080,32 @@ class GroupedWorkDriver extends RecordInterface {
 	 */
 	static function compareLocalItemsForRecords($a, $b){
 		return $b['hasLocalItem'] <=> $a['hasLocalItem'];
+	}
+
+	static function compareHoldRatioForRecords($a, $b){
+		// First calculate hold ratio as needed
+		if (!isset($a['holdRatio'])){
+			$a['holdRatio'] = self::calculateHoldRationForRecord($a);
+		}
+		if (!isset($b['holdRatio'])){
+			$b['holdRatio'] = self::calculateHoldRationForRecord($b);
+		}
+		return $b['holdRatio'] <=> $a['holdRatio'];
+	}
+
+	static function calculateHoldRationForRecord($relatedRecord){
+		// Calculate Hold Ratio
+		$totalCopies     = $relatedRecord['copies'];
+		$availableCopies = $relatedRecord['availableCopies'];
+		$numHolds        = $relatedRecord['numHolds'];
+		$holdRatio       = $totalCopies > 0 ? ($availableCopies + ($totalCopies - $numHolds) / $totalCopies) : 0;
+		// Hold Ratio formula found in previous commit (1-28-2014)  c8ae17fd66c41d3f6ada747ceb65b05685e1b614
+		//TODO: revisit this formula. basic concept should be holds per copies, but lots of nuances to consider:
+		// * need to define a concept of holdable copies. eg checked out items count, but lost shouldn't  (this isn't the same as available copies)
+		// * holdable copies within the scope?
+		// * on order items included?
+		// Note: holdratio can be displayed in relatedRecords template for debugging
+		return $holdRatio;
 	}
 
 	public function getIndexedSeries(){
@@ -2858,7 +2884,7 @@ class GroupedWorkDriver extends RecordInterface {
 			'numHolds'               => !$forCovers && $recordDriver != null ? $recordDriver->getNumHolds() : 0,
 //			'volumeHolds'            => !$forCovers && $recordDriver != null ? $recordDriver->getVolumeHolds($volumeData) : null,
 			'hasLocalItem'           => false,
-			'holdRatio'              => 0,
+//			'holdRatio'              => 0, // Only calculate as needed for sorting
 			'locationLabel'          => '',
 			'shelfLocation'          => '',
 			'bookable'               => false,
