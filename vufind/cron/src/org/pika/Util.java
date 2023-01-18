@@ -324,13 +324,9 @@ public class Util {
 
 			if (conn instanceof HttpsURLConnection){
 				HttpsURLConnection sslConn = (HttpsURLConnection)conn;
-				sslConn.setHostnameVerifier(new HostnameVerifier() {
-
-					@Override
-					public boolean verify(String hostname, SSLSession session) {
-						//Do not verify host names
-						return true;
-					}
+				sslConn.setHostnameVerifier((hostname, session) -> {
+					//Do not verify host names
+					return true;
 				});
 			}
 			conn.setDoInput(true);
@@ -344,7 +340,7 @@ public class Util {
 				conn.setRequestProperty("Connection", "keep-alive");
 
 				conn.setDoOutput(true);
-				OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream(), "UTF8");
+				OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream(), StandardCharsets.UTF_8);
 				wr.write(postData);
 				wr.flush();
 				wr.close();
