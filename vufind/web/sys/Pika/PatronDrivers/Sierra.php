@@ -1077,7 +1077,6 @@ class Sierra  implements \DriverInterface {
 				$this->logger->error('Unable to set patron pin set time in Sierra for user ' . $patron->ilsUserId, ["message" => $this->apiLastError]);
 				$errors[] = 'An error occurred. Please try in again later.';
 				return false;
-				//TODO: probably a return false instead
 			}
 		}
 		return true;
@@ -1102,13 +1101,12 @@ class Sierra  implements \DriverInterface {
 			$patronId = $this->_authBarcodePin($patron->barcode, $oldPin);
 		}
 
-		//TODO: need to translate instances of PIN and pin for user facing messages
-		if(!$patronId) {
-			return "Your current PIN is incorrect. Please try again.";
-		}
+		// Note: pin testing & checking is done by the calling updatePin method CatalogConnection class
 
-		if(!($newPin == $confirmNewPin)) {
-			return "PIN and PIN confirmation do not match. Please try again.";
+		if (!$patronId){
+			// This really shouldn't occur
+			$this->logger->error('Failed to find Sierra patron id for pika user ' . $patron->id);
+			return 'Your current ' . translate('pin') . ' is incorrect. Please try again.';
 		}
 
 		global $configArray;

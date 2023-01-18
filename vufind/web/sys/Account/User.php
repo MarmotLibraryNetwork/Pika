@@ -238,15 +238,17 @@ class User extends DB_DataObject {
 	 * @param $password
 	 * @return boolean True on success or false on failure.
 	 */
-	public function updatePassword($password) {
+	public function updatePassword($password){
 		$encryptedPassword         = $this->_encryptPassword($password);
 		$this->password            = $encryptedPassword;
 		$this->lastPasswordSetTime = date('Y-m-d h:i:s');
 		$result                    = $this->update();
-		if(PEAR_Singleton::isError($result)) {
+		if (PEAR_Singleton::isError($result)){
 			$this->logger->error('Error updating password.', ['message' => $result->getMessage(), 'info' => $result->userinfo]);
-		}elseif($result >= 1) {
+		}elseif ($result == 1){
 			return true;
+		} elseif ($result > 1){
+			$this->logger->error('More than one user was updated for password', [$this]);
 		}
 		return false;
 	}
