@@ -188,16 +188,15 @@ $interface->assign('enableMaterialsRequest', MaterialsRequest::enableMaterialsRe
 
 //Override MyAccount Home as needed
 if ($isLoggedIn){
-	if ($action != 'AJAX' && $module != 'MyAccount' && (isset($_REQUEST['updatePin']) && $_REQUEST['updatePin'] != 'updatePin')){
-		// exception for upatePin popup  process
+	if (!($action == 'AJAX' && $module == 'MyAccount' && $_REQUEST['method'] == 'updatePin')){
+		// exception for updatePin popup process
 		$user = UserAccount::getLoggedInUser();
-		if ($user->pinUpdateRequired && !UserAccount::isUserMasquerading()){
-			// don't force pin update when masquerading as user
-			if (!in_array($action, ['Logout', 'EmailResetPin'])){
-				// Force pin update when logged in, except for users that are clicking the log-out button or using pin reset
-				$module = 'MyAccount';
-				$action = 'UpdatePin';
-			}
+		if ($user->pinUpdateRequired
+			&& !in_array($action, ['Logout', 'EmailResetPin']) // Force pin update when logged in, except for users that are clicking the log-out button or using pin reset
+			&& empty($_SESSION['guidingUserId']) // don't force pin update when masquerading as user
+		){
+			$module = 'MyAccount';
+			$action = 'UpdatePin';
 		}elseif ($module == 'MyAccount' && $action == 'Home'){
 			if ($user->getNumCheckedOutTotal() > 0){
 				$action = 'CheckedOut';
