@@ -31,3 +31,11 @@
 @if $enable-grid-classes {
   @include make-grid-columns();
 }
+
+
+//Visibility
+//
+// Make elements visible/invisible
+@if $enable-visible-classes{
+
+}

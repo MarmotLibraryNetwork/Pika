@@ -5601,7 +5601,6 @@ button.close {
   visibility: hidden;
 }
 .text-hide {
-  font: 0/0 a;
   color: transparent;
   text-shadow: none;
   background-color: transparent;
@@ -5613,9 +5612,6 @@ button.close {
 }
 .affix {
   position: fixed;
-}
-@-ms-viewport {
-  width: device-width;
 }
 .visible-xs,
 tr.visible-xs,

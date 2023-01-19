@@ -31,10 +31,12 @@
   @if $size {
     flex: 0 0 auto;
     width: percentage(divide($size, $columns));
+    float:left;
 
   } @else {
     flex: 1 1 0;
     max-width: 100%;
+    float:left;
   }
 }
 
@@ -48,6 +50,7 @@
   margin-left: if($num == 0, 0, percentage($num));
 }
 
+
 // Row columns
 //
 // Specify on a parent element(e.g., .row) to force immediate children into NN
@@ -57,6 +60,7 @@
   > * {
     flex: 0 0 auto;
     width: divide(100%, $count);
+    float:left;
   }
 }
 
@@ -97,7 +101,6 @@
             @include make-col($i, $columns);
           }
         }
-
         // `$columns - 1` because offsetting by the width of an entire row isn't possible
         @for $i from 0 through ($columns - 1) {
           @if not ($infix == "" and $i == 0) { // Avoid emitting useless .offset-0

@@ -148,3 +148,4 @@ main.tmpcss
 sites/*.vm-server.net
 
 /package-lock.json
+/vufind/web/interface/themes/responsive/css/main.tmpcss.map

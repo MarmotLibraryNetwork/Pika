@@ -343,13 +343,14 @@ $enable-reduced-motion:       true !default;
 $enable-smooth-scroll:        true !default;
 $enable-grid-classes:         true !default;
 $enable-container-classes:    true !default;
-$enable-cssgrid:              true !default;
+$enable-cssgrid:              false !default;
 $enable-button-pointers:      true !default;
 $enable-rfs:                  true !default;
 $enable-validation-icons:     true !default;
 $enable-negative-margins:     false !default;
 $enable-deprecation-messages: true !default;
 $enable-important-utilities:  true !default;
+$enable-visible-classes:      true !default;
 
 // Prefix for :root CSS variables
 
@@ -429,7 +430,8 @@ $paragraph-margin-bottom:   1rem !default;
 
 // scss-docs-start grid-breakpoints
 $grid-breakpoints: (
-  xs: 0,
+  tn: 0,
+  xs: 325px,
   sm: 576px,
   md: 768px,
   lg: 992px,
@@ -447,6 +449,7 @@ $grid-breakpoints: (
 
 // scss-docs-start container-max-widths
 $container-max-widths: (
+  xs: 290px,
   sm: 540px,
   md: 720px,
   lg: 960px,
