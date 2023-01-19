@@ -10881,3 +10881,6 @@ fieldset[disabled] .btn-masquerade.active {
   color: #ebccff;
   background-color: #fff;
 }
+#horizontal-search-box #lookfor {
+	height: 34px!important;
+}

@@ -164,9 +164,11 @@ p {
 }
 
 abbr[title] {
-  text-decoration: underline dotted;
+  -webkit-text-decoration: underline dotted;
+          text-decoration: underline dotted;
   cursor: help;
-  text-decoration-skip-ink: none;
+  -webkit-text-decoration-skip-ink: none;
+          text-decoration-skip-ink: none;
 }
 
 address {
@@ -695,31 +697,37 @@ progress {
 .row-cols-1 > * {
   flex: 0 0 auto;
   width: 100%;
+  float: left;
 }
 
 .row-cols-2 > * {
   flex: 0 0 auto;
   width: 50%;
+  float: left;
 }
 
 .row-cols-3 > * {
   flex: 0 0 auto;
   width: 33.3333333333%;
+  float: left;
 }
 
 .row-cols-4 > * {
   flex: 0 0 auto;
   width: 25%;
+  float: left;
 }
 
 .row-cols-5 > * {
   flex: 0 0 auto;
   width: 20%;
+  float: left;
 }
 
 .row-cols-6 > * {
   flex: 0 0 auto;
   width: 16.6666666667%;
+  float: left;
 }
 
 .col-auto {
@@ -730,61 +738,73 @@ progress {
 .col-1 {
   flex: 0 0 auto;
   width: 8.33333333%;
+  float: left;
 }
 
 .col-2 {
   flex: 0 0 auto;
   width: 16.66666667%;
+  float: left;
 }
 
 .col-3 {
   flex: 0 0 auto;
   width: 25%;
+  float: left;
 }
 
 .col-4 {
   flex: 0 0 auto;
   width: 33.33333333%;
+  float: left;
 }
 
 .col-5 {
   flex: 0 0 auto;
   width: 41.66666667%;
+  float: left;
 }
 
 .col-6 {
   flex: 0 0 auto;
   width: 50%;
+  float: left;
 }
 
 .col-7 {
   flex: 0 0 auto;
   width: 58.33333333%;
+  float: left;
 }
 
 .col-8 {
   flex: 0 0 auto;
   width: 66.66666667%;
+  float: left;
 }
 
 .col-9 {
   flex: 0 0 auto;
   width: 75%;
+  float: left;
 }
 
 .col-10 {
   flex: 0 0 auto;
   width: 83.33333333%;
+  float: left;
 }
 
 .col-11 {
   flex: 0 0 auto;
   width: 91.66666667%;
+  float: left;
 }
 
 .col-12 {
   flex: 0 0 auto;
   width: 100%;
+  float: left;
 }
 
 .offset-1 {
@@ -902,26 +922,32 @@ progress {
   .row-cols-xs-1 > * {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .row-cols-xs-2 > * {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .row-cols-xs-3 > * {
     flex: 0 0 auto;
     width: 33.3333333333%;
+    float: left;
   }
   .row-cols-xs-4 > * {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .row-cols-xs-5 > * {
     flex: 0 0 auto;
     width: 20%;
+    float: left;
   }
   .row-cols-xs-6 > * {
     flex: 0 0 auto;
     width: 16.6666666667%;
+    float: left;
   }
   .col-xs-auto {
     flex: 0 0 auto;
@@ -930,50 +956,62 @@ progress {
   .col-xs-1 {
     flex: 0 0 auto;
     width: 8.33333333%;
+    float: left;
   }
   .col-xs-2 {
     flex: 0 0 auto;
     width: 16.66666667%;
+    float: left;
   }
   .col-xs-3 {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .col-xs-4 {
     flex: 0 0 auto;
     width: 33.33333333%;
+    float: left;
   }
   .col-xs-5 {
     flex: 0 0 auto;
     width: 41.66666667%;
+    float: left;
   }
   .col-xs-6 {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .col-xs-7 {
     flex: 0 0 auto;
     width: 58.33333333%;
+    float: left;
   }
   .col-xs-8 {
     flex: 0 0 auto;
     width: 66.66666667%;
+    float: left;
   }
   .col-xs-9 {
     flex: 0 0 auto;
     width: 75%;
+    float: left;
   }
   .col-xs-10 {
     flex: 0 0 auto;
     width: 83.33333333%;
+    float: left;
   }
   .col-xs-11 {
     flex: 0 0 auto;
     width: 91.66666667%;
+    float: left;
   }
   .col-xs-12 {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .offset-xs-0 {
     margin-left: 0;
@@ -1071,26 +1109,32 @@ progress {
   .row-cols-sm-1 > * {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .row-cols-sm-2 > * {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .row-cols-sm-3 > * {
     flex: 0 0 auto;
     width: 33.3333333333%;
+    float: left;
   }
   .row-cols-sm-4 > * {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .row-cols-sm-5 > * {
     flex: 0 0 auto;
     width: 20%;
+    float: left;
   }
   .row-cols-sm-6 > * {
     flex: 0 0 auto;
     width: 16.6666666667%;
+    float: left;
   }
   .col-sm-auto {
     flex: 0 0 auto;
@@ -1099,50 +1143,62 @@ progress {
   .col-sm-1 {
     flex: 0 0 auto;
     width: 8.33333333%;
+    float: left;
   }
   .col-sm-2 {
     flex: 0 0 auto;
     width: 16.66666667%;
+    float: left;
   }
   .col-sm-3 {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .col-sm-4 {
     flex: 0 0 auto;
     width: 33.33333333%;
+    float: left;
   }
   .col-sm-5 {
     flex: 0 0 auto;
     width: 41.66666667%;
+    float: left;
   }
   .col-sm-6 {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .col-sm-7 {
     flex: 0 0 auto;
     width: 58.33333333%;
+    float: left;
   }
   .col-sm-8 {
     flex: 0 0 auto;
     width: 66.66666667%;
+    float: left;
   }
   .col-sm-9 {
     flex: 0 0 auto;
     width: 75%;
+    float: left;
   }
   .col-sm-10 {
     flex: 0 0 auto;
     width: 83.33333333%;
+    float: left;
   }
   .col-sm-11 {
     flex: 0 0 auto;
     width: 91.66666667%;
+    float: left;
   }
   .col-sm-12 {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .offset-sm-0 {
     margin-left: 0;
@@ -1240,26 +1296,32 @@ progress {
   .row-cols-md-1 > * {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .row-cols-md-2 > * {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .row-cols-md-3 > * {
     flex: 0 0 auto;
     width: 33.3333333333%;
+    float: left;
   }
   .row-cols-md-4 > * {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .row-cols-md-5 > * {
     flex: 0 0 auto;
     width: 20%;
+    float: left;
   }
   .row-cols-md-6 > * {
     flex: 0 0 auto;
     width: 16.6666666667%;
+    float: left;
   }
   .col-md-auto {
     flex: 0 0 auto;
@@ -1268,50 +1330,62 @@ progress {
   .col-md-1 {
     flex: 0 0 auto;
     width: 8.33333333%;
+    float: left;
   }
   .col-md-2 {
     flex: 0 0 auto;
     width: 16.66666667%;
+    float: left;
   }
   .col-md-3 {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .col-md-4 {
     flex: 0 0 auto;
     width: 33.33333333%;
+    float: left;
   }
   .col-md-5 {
     flex: 0 0 auto;
     width: 41.66666667%;
+    float: left;
   }
   .col-md-6 {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .col-md-7 {
     flex: 0 0 auto;
     width: 58.33333333%;
+    float: left;
   }
   .col-md-8 {
     flex: 0 0 auto;
     width: 66.66666667%;
+    float: left;
   }
   .col-md-9 {
     flex: 0 0 auto;
     width: 75%;
+    float: left;
   }
   .col-md-10 {
     flex: 0 0 auto;
     width: 83.33333333%;
+    float: left;
   }
   .col-md-11 {
     flex: 0 0 auto;
     width: 91.66666667%;
+    float: left;
   }
   .col-md-12 {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .offset-md-0 {
     margin-left: 0;
@@ -1409,26 +1483,32 @@ progress {
   .row-cols-lg-1 > * {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .row-cols-lg-2 > * {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .row-cols-lg-3 > * {
     flex: 0 0 auto;
     width: 33.3333333333%;
+    float: left;
   }
   .row-cols-lg-4 > * {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .row-cols-lg-5 > * {
     flex: 0 0 auto;
     width: 20%;
+    float: left;
   }
   .row-cols-lg-6 > * {
     flex: 0 0 auto;
     width: 16.6666666667%;
+    float: left;
   }
   .col-lg-auto {
     flex: 0 0 auto;
@@ -1437,50 +1517,62 @@ progress {
   .col-lg-1 {
     flex: 0 0 auto;
     width: 8.33333333%;
+    float: left;
   }
   .col-lg-2 {
     flex: 0 0 auto;
     width: 16.66666667%;
+    float: left;
   }
   .col-lg-3 {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .col-lg-4 {
     flex: 0 0 auto;
     width: 33.33333333%;
+    float: left;
   }
   .col-lg-5 {
     flex: 0 0 auto;
     width: 41.66666667%;
+    float: left;
   }
   .col-lg-6 {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .col-lg-7 {
     flex: 0 0 auto;
     width: 58.33333333%;
+    float: left;
   }
   .col-lg-8 {
     flex: 0 0 auto;
     width: 66.66666667%;
+    float: left;
   }
   .col-lg-9 {
     flex: 0 0 auto;
     width: 75%;
+    float: left;
   }
   .col-lg-10 {
     flex: 0 0 auto;
     width: 83.33333333%;
+    float: left;
   }
   .col-lg-11 {
     flex: 0 0 auto;
     width: 91.66666667%;
+    float: left;
   }
   .col-lg-12 {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .offset-lg-0 {
     margin-left: 0;
@@ -1578,26 +1670,32 @@ progress {
   .row-cols-xl-1 > * {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .row-cols-xl-2 > * {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .row-cols-xl-3 > * {
     flex: 0 0 auto;
     width: 33.3333333333%;
+    float: left;
   }
   .row-cols-xl-4 > * {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .row-cols-xl-5 > * {
     flex: 0 0 auto;
     width: 20%;
+    float: left;
   }
   .row-cols-xl-6 > * {
     flex: 0 0 auto;
     width: 16.6666666667%;
+    float: left;
   }
   .col-xl-auto {
     flex: 0 0 auto;
@@ -1606,50 +1704,62 @@ progress {
   .col-xl-1 {
     flex: 0 0 auto;
     width: 8.33333333%;
+    float: left;
   }
   .col-xl-2 {
     flex: 0 0 auto;
     width: 16.66666667%;
+    float: left;
   }
   .col-xl-3 {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .col-xl-4 {
     flex: 0 0 auto;
     width: 33.33333333%;
+    float: left;
   }
   .col-xl-5 {
     flex: 0 0 auto;
     width: 41.66666667%;
+    float: left;
   }
   .col-xl-6 {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .col-xl-7 {
     flex: 0 0 auto;
     width: 58.33333333%;
+    float: left;
   }
   .col-xl-8 {
     flex: 0 0 auto;
     width: 66.66666667%;
+    float: left;
   }
   .col-xl-9 {
     flex: 0 0 auto;
     width: 75%;
+    float: left;
   }
   .col-xl-10 {
     flex: 0 0 auto;
     width: 83.33333333%;
+    float: left;
   }
   .col-xl-11 {
     flex: 0 0 auto;
     width: 91.66666667%;
+    float: left;
   }
   .col-xl-12 {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .offset-xl-0 {
     margin-left: 0;
@@ -1747,26 +1857,32 @@ progress {
   .row-cols-xxl-1 > * {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .row-cols-xxl-2 > * {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .row-cols-xxl-3 > * {
     flex: 0 0 auto;
     width: 33.3333333333%;
+    float: left;
   }
   .row-cols-xxl-4 > * {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .row-cols-xxl-5 > * {
     flex: 0 0 auto;
     width: 20%;
+    float: left;
   }
   .row-cols-xxl-6 > * {
     flex: 0 0 auto;
     width: 16.6666666667%;
+    float: left;
   }
   .col-xxl-auto {
     flex: 0 0 auto;
@@ -1775,50 +1891,62 @@ progress {
   .col-xxl-1 {
     flex: 0 0 auto;
     width: 8.33333333%;
+    float: left;
   }
   .col-xxl-2 {
     flex: 0 0 auto;
     width: 16.66666667%;
+    float: left;
   }
   .col-xxl-3 {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .col-xxl-4 {
     flex: 0 0 auto;
     width: 33.33333333%;
+    float: left;
   }
   .col-xxl-5 {
     flex: 0 0 auto;
     width: 41.66666667%;
+    float: left;
   }
   .col-xxl-6 {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .col-xxl-7 {
     flex: 0 0 auto;
     width: 58.33333333%;
+    float: left;
   }
   .col-xxl-8 {
     flex: 0 0 auto;
     width: 66.66666667%;
+    float: left;
   }
   .col-xxl-9 {
     flex: 0 0 auto;
     width: 75%;
+    float: left;
   }
   .col-xxl-10 {
     flex: 0 0 auto;
     width: 83.33333333%;
+    float: left;
   }
   .col-xxl-11 {
     flex: 0 0 auto;
     width: 91.66666667%;
+    float: left;
   }
   .col-xxl-12 {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .offset-xxl-0 {
     margin-left: 0;
@@ -2175,7 +2303,9 @@ progress {
   background-color: #fff;
   background-clip: padding-box;
   border: 1px solid #ced4da;
-  appearance: none;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
   border-radius: 0.375rem;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
@@ -2200,6 +2330,10 @@ progress {
 .form-control::-webkit-date-and-time-value {
   height: 1.5em;
 }
+.form-control::-moz-placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
 .form-control::placeholder {
   color: #6c757d;
   opacity: 1;
@@ -2211,7 +2345,8 @@ progress {
 .form-control::file-selector-button {
   padding: 0.375rem 0.75rem;
   margin: -0.375rem -0.75rem;
-  margin-inline-end: 0.75rem;
+  -webkit-margin-end: 0.75rem;
+          margin-inline-end: 0.75rem;
   color: #212529;
   background-color: #e9ecef;
   pointer-events: none;
@@ -2259,7 +2394,8 @@ progress {
 .form-control-sm::file-selector-button {
   padding: 0.25rem 0.5rem;
   margin: -0.25rem -0.5rem;
-  margin-inline-end: 0.5rem;
+  -webkit-margin-end: 0.5rem;
+          margin-inline-end: 0.5rem;
 }
 
 .form-control-lg {
@@ -2271,7 +2407,8 @@ progress {
 .form-control-lg::file-selector-button {
   padding: 0.5rem 1rem;
   margin: -0.5rem -1rem;
-  margin-inline-end: 1rem;
+  -webkit-margin-end: 1rem;
+          margin-inline-end: 1rem;
 }
 
 textarea.form-control {
@@ -2323,7 +2460,9 @@ textarea.form-control-lg {
   border: 1px solid #ced4da;
   border-radius: 0.375rem;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  appearance: none;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .form-select {
@@ -2395,8 +2534,11 @@ textarea.form-control-lg {
   background-position: center;
   background-size: contain;
   border: 1px solid rgba(0, 0, 0, 0.25);
-  appearance: none;
-  print-color-adjust: exact;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
 }
 .form-check-input[type=checkbox] {
   border-radius: 0.25em;
@@ -2490,7 +2632,9 @@ textarea.form-control-lg {
   height: 1.5rem;
   padding: 0;
   background-color: transparent;
-  appearance: none;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
 }
 .form-range:focus {
   outline: 0;
@@ -2511,11 +2655,14 @@ textarea.form-control-lg {
   background-color: #0d6efd;
   border: 0;
   border-radius: 1rem;
+  -webkit-transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  appearance: none;
+  -webkit-appearance: none;
+          appearance: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .form-range::-webkit-slider-thumb {
+    -webkit-transition: none;
     transition: none;
   }
 }
@@ -2537,11 +2684,14 @@ textarea.form-control-lg {
   background-color: #0d6efd;
   border: 0;
   border-radius: 1rem;
+  -moz-transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  appearance: none;
+  -moz-appearance: none;
+       appearance: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .form-range::-moz-range-thumb {
+    -moz-transition: none;
     transition: none;
   }
 }
@@ -2601,9 +2751,16 @@ textarea.form-control-lg {
 .form-floating > .form-control-plaintext {
   padding: 1rem 0.75rem;
 }
+.form-floating > .form-control::-moz-placeholder, .form-floating > .form-control-plaintext::-moz-placeholder {
+  color: transparent;
+}
 .form-floating > .form-control::placeholder,
 .form-floating > .form-control-plaintext::placeholder {
   color: transparent;
+}
+.form-floating > .form-control:not(:-moz-placeholder-shown), .form-floating > .form-control-plaintext:not(:-moz-placeholder-shown) {
+  padding-top: 1.625rem;
+  padding-bottom: 0.625rem;
 }
 .form-floating > .form-control:focus, .form-floating > .form-control:not(:placeholder-shown),
 .form-floating > .form-control-plaintext:focus,
@@ -2619,6 +2776,10 @@ textarea.form-control-lg {
 .form-floating > .form-select {
   padding-top: 1.625rem;
   padding-bottom: 0.625rem;
+}
+.form-floating > .form-control:not(:-moz-placeholder-shown) ~ label {
+  opacity: 0.65;
+  transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
 }
 .form-floating > .form-control:focus ~ label,
 .form-floating > .form-control:not(:placeholder-shown) ~ label,
@@ -2933,7 +3094,9 @@ textarea.form-control-lg {
   text-decoration: none;
   vertical-align: middle;
   cursor: pointer;
-  user-select: none;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
   border: var(--bs-btn-border-width) solid var(--bs-btn-border-color);
   border-radius: var(--bs-btn-border-radius);
   background-color: var(--bs-btn-bg);
@@ -5381,7 +5544,9 @@ textarea.form-control-lg {
 }
 .btn-close:disabled, .btn-close.disabled {
   pointer-events: none;
-  user-select: none;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
   opacity: 0.25;
 }
 
@@ -5427,6 +5592,7 @@ textarea.form-control-lg {
   --bs-toast-zindex: 1090;
   position: absolute;
   z-index: var(--bs-toast-zindex);
+  width: -moz-max-content;
   width: max-content;
   max-width: 100%;
   pointer-events: none;
@@ -6052,7 +6218,8 @@ textarea.form-control-lg {
   float: left;
   width: 100%;
   margin-right: -100%;
-  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
   transition: transform 0.6s ease-in-out;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -6966,14 +7133,17 @@ textarea.form-control-lg {
   }
 }
 .placeholder-wave {
-  mask-image: linear-gradient(130deg, #000 55%, rgba(0, 0, 0, 0.8) 75%, #000 95%);
-  mask-size: 200% 100%;
+  -webkit-mask-image: linear-gradient(130deg, #000 55%, rgba(0, 0, 0, 0.8) 75%, #000 95%);
+          mask-image: linear-gradient(130deg, #000 55%, rgba(0, 0, 0, 0.8) 75%, #000 95%);
+  -webkit-mask-size: 200% 100%;
+          mask-size: 200% 100%;
   animation: placeholder-wave 2s linear infinite;
 }
 
 @keyframes placeholder-wave {
   100% {
-    mask-position: -200% 0%;
+    -webkit-mask-position: -200% 0%;
+            mask-position: -200% 0%;
   }
 }
 .clearfix::after {
@@ -8549,15 +8719,21 @@ textarea.form-control-lg {
 }
 
 .user-select-all {
-  user-select: all !important;
+  -webkit-user-select: all !important;
+     -moz-user-select: all !important;
+          user-select: all !important;
 }
 
 .user-select-auto {
-  user-select: auto !important;
+  -webkit-user-select: auto !important;
+     -moz-user-select: auto !important;
+          user-select: auto !important;
 }
 
 .user-select-none {
-  user-select: none !important;
+  -webkit-user-select: none !important;
+     -moz-user-select: none !important;
+          user-select: none !important;
 }
 
 .pe-none {
@@ -11807,31 +11983,37 @@ textarea.form-control-lg {
 .row-cols-1 > * {
   flex: 0 0 auto;
   width: 100%;
+  float: left;
 }
 
 .row-cols-2 > * {
   flex: 0 0 auto;
   width: 50%;
+  float: left;
 }
 
 .row-cols-3 > * {
   flex: 0 0 auto;
   width: 33.3333333333%;
+  float: left;
 }
 
 .row-cols-4 > * {
   flex: 0 0 auto;
   width: 25%;
+  float: left;
 }
 
 .row-cols-5 > * {
   flex: 0 0 auto;
   width: 20%;
+  float: left;
 }
 
 .row-cols-6 > * {
   flex: 0 0 auto;
   width: 16.6666666667%;
+  float: left;
 }
 
 .col-auto {
@@ -11842,61 +12024,73 @@ textarea.form-control-lg {
 .col-1 {
   flex: 0 0 auto;
   width: 8.33333333%;
+  float: left;
 }
 
 .col-2 {
   flex: 0 0 auto;
   width: 16.66666667%;
+  float: left;
 }
 
 .col-3 {
   flex: 0 0 auto;
   width: 25%;
+  float: left;
 }
 
 .col-4 {
   flex: 0 0 auto;
   width: 33.33333333%;
+  float: left;
 }
 
 .col-5 {
   flex: 0 0 auto;
   width: 41.66666667%;
+  float: left;
 }
 
 .col-6 {
   flex: 0 0 auto;
   width: 50%;
+  float: left;
 }
 
 .col-7 {
   flex: 0 0 auto;
   width: 58.33333333%;
+  float: left;
 }
 
 .col-8 {
   flex: 0 0 auto;
   width: 66.66666667%;
+  float: left;
 }
 
 .col-9 {
   flex: 0 0 auto;
   width: 75%;
+  float: left;
 }
 
 .col-10 {
   flex: 0 0 auto;
   width: 83.33333333%;
+  float: left;
 }
 
 .col-11 {
   flex: 0 0 auto;
   width: 91.66666667%;
+  float: left;
 }
 
 .col-12 {
   flex: 0 0 auto;
   width: 100%;
+  float: left;
 }
 
 .offset-1 {
@@ -12014,26 +12208,32 @@ textarea.form-control-lg {
   .row-cols-xs-1 > * {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .row-cols-xs-2 > * {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .row-cols-xs-3 > * {
     flex: 0 0 auto;
     width: 33.3333333333%;
+    float: left;
   }
   .row-cols-xs-4 > * {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .row-cols-xs-5 > * {
     flex: 0 0 auto;
     width: 20%;
+    float: left;
   }
   .row-cols-xs-6 > * {
     flex: 0 0 auto;
     width: 16.6666666667%;
+    float: left;
   }
   .col-xs-auto {
     flex: 0 0 auto;
@@ -12042,50 +12242,62 @@ textarea.form-control-lg {
   .col-xs-1 {
     flex: 0 0 auto;
     width: 8.33333333%;
+    float: left;
   }
   .col-xs-2 {
     flex: 0 0 auto;
     width: 16.66666667%;
+    float: left;
   }
   .col-xs-3 {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .col-xs-4 {
     flex: 0 0 auto;
     width: 33.33333333%;
+    float: left;
   }
   .col-xs-5 {
     flex: 0 0 auto;
     width: 41.66666667%;
+    float: left;
   }
   .col-xs-6 {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .col-xs-7 {
     flex: 0 0 auto;
     width: 58.33333333%;
+    float: left;
   }
   .col-xs-8 {
     flex: 0 0 auto;
     width: 66.66666667%;
+    float: left;
   }
   .col-xs-9 {
     flex: 0 0 auto;
     width: 75%;
+    float: left;
   }
   .col-xs-10 {
     flex: 0 0 auto;
     width: 83.33333333%;
+    float: left;
   }
   .col-xs-11 {
     flex: 0 0 auto;
     width: 91.66666667%;
+    float: left;
   }
   .col-xs-12 {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .offset-xs-0 {
     margin-left: 0;
@@ -12183,26 +12395,32 @@ textarea.form-control-lg {
   .row-cols-sm-1 > * {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .row-cols-sm-2 > * {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .row-cols-sm-3 > * {
     flex: 0 0 auto;
     width: 33.3333333333%;
+    float: left;
   }
   .row-cols-sm-4 > * {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .row-cols-sm-5 > * {
     flex: 0 0 auto;
     width: 20%;
+    float: left;
   }
   .row-cols-sm-6 > * {
     flex: 0 0 auto;
     width: 16.6666666667%;
+    float: left;
   }
   .col-sm-auto {
     flex: 0 0 auto;
@@ -12211,50 +12429,62 @@ textarea.form-control-lg {
   .col-sm-1 {
     flex: 0 0 auto;
     width: 8.33333333%;
+    float: left;
   }
   .col-sm-2 {
     flex: 0 0 auto;
     width: 16.66666667%;
+    float: left;
   }
   .col-sm-3 {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .col-sm-4 {
     flex: 0 0 auto;
     width: 33.33333333%;
+    float: left;
   }
   .col-sm-5 {
     flex: 0 0 auto;
     width: 41.66666667%;
+    float: left;
   }
   .col-sm-6 {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .col-sm-7 {
     flex: 0 0 auto;
     width: 58.33333333%;
+    float: left;
   }
   .col-sm-8 {
     flex: 0 0 auto;
     width: 66.66666667%;
+    float: left;
   }
   .col-sm-9 {
     flex: 0 0 auto;
     width: 75%;
+    float: left;
   }
   .col-sm-10 {
     flex: 0 0 auto;
     width: 83.33333333%;
+    float: left;
   }
   .col-sm-11 {
     flex: 0 0 auto;
     width: 91.66666667%;
+    float: left;
   }
   .col-sm-12 {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .offset-sm-0 {
     margin-left: 0;
@@ -12352,26 +12582,32 @@ textarea.form-control-lg {
   .row-cols-md-1 > * {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .row-cols-md-2 > * {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .row-cols-md-3 > * {
     flex: 0 0 auto;
     width: 33.3333333333%;
+    float: left;
   }
   .row-cols-md-4 > * {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .row-cols-md-5 > * {
     flex: 0 0 auto;
     width: 20%;
+    float: left;
   }
   .row-cols-md-6 > * {
     flex: 0 0 auto;
     width: 16.6666666667%;
+    float: left;
   }
   .col-md-auto {
     flex: 0 0 auto;
@@ -12380,50 +12616,62 @@ textarea.form-control-lg {
   .col-md-1 {
     flex: 0 0 auto;
     width: 8.33333333%;
+    float: left;
   }
   .col-md-2 {
     flex: 0 0 auto;
     width: 16.66666667%;
+    float: left;
   }
   .col-md-3 {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .col-md-4 {
     flex: 0 0 auto;
     width: 33.33333333%;
+    float: left;
   }
   .col-md-5 {
     flex: 0 0 auto;
     width: 41.66666667%;
+    float: left;
   }
   .col-md-6 {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .col-md-7 {
     flex: 0 0 auto;
     width: 58.33333333%;
+    float: left;
   }
   .col-md-8 {
     flex: 0 0 auto;
     width: 66.66666667%;
+    float: left;
   }
   .col-md-9 {
     flex: 0 0 auto;
     width: 75%;
+    float: left;
   }
   .col-md-10 {
     flex: 0 0 auto;
     width: 83.33333333%;
+    float: left;
   }
   .col-md-11 {
     flex: 0 0 auto;
     width: 91.66666667%;
+    float: left;
   }
   .col-md-12 {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .offset-md-0 {
     margin-left: 0;
@@ -12521,26 +12769,32 @@ textarea.form-control-lg {
   .row-cols-lg-1 > * {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .row-cols-lg-2 > * {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .row-cols-lg-3 > * {
     flex: 0 0 auto;
     width: 33.3333333333%;
+    float: left;
   }
   .row-cols-lg-4 > * {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .row-cols-lg-5 > * {
     flex: 0 0 auto;
     width: 20%;
+    float: left;
   }
   .row-cols-lg-6 > * {
     flex: 0 0 auto;
     width: 16.6666666667%;
+    float: left;
   }
   .col-lg-auto {
     flex: 0 0 auto;
@@ -12549,50 +12803,62 @@ textarea.form-control-lg {
   .col-lg-1 {
     flex: 0 0 auto;
     width: 8.33333333%;
+    float: left;
   }
   .col-lg-2 {
     flex: 0 0 auto;
     width: 16.66666667%;
+    float: left;
   }
   .col-lg-3 {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .col-lg-4 {
     flex: 0 0 auto;
     width: 33.33333333%;
+    float: left;
   }
   .col-lg-5 {
     flex: 0 0 auto;
     width: 41.66666667%;
+    float: left;
   }
   .col-lg-6 {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .col-lg-7 {
     flex: 0 0 auto;
     width: 58.33333333%;
+    float: left;
   }
   .col-lg-8 {
     flex: 0 0 auto;
     width: 66.66666667%;
+    float: left;
   }
   .col-lg-9 {
     flex: 0 0 auto;
     width: 75%;
+    float: left;
   }
   .col-lg-10 {
     flex: 0 0 auto;
     width: 83.33333333%;
+    float: left;
   }
   .col-lg-11 {
     flex: 0 0 auto;
     width: 91.66666667%;
+    float: left;
   }
   .col-lg-12 {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .offset-lg-0 {
     margin-left: 0;
@@ -12690,26 +12956,32 @@ textarea.form-control-lg {
   .row-cols-xl-1 > * {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .row-cols-xl-2 > * {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .row-cols-xl-3 > * {
     flex: 0 0 auto;
     width: 33.3333333333%;
+    float: left;
   }
   .row-cols-xl-4 > * {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .row-cols-xl-5 > * {
     flex: 0 0 auto;
     width: 20%;
+    float: left;
   }
   .row-cols-xl-6 > * {
     flex: 0 0 auto;
     width: 16.6666666667%;
+    float: left;
   }
   .col-xl-auto {
     flex: 0 0 auto;
@@ -12718,50 +12990,62 @@ textarea.form-control-lg {
   .col-xl-1 {
     flex: 0 0 auto;
     width: 8.33333333%;
+    float: left;
   }
   .col-xl-2 {
     flex: 0 0 auto;
     width: 16.66666667%;
+    float: left;
   }
   .col-xl-3 {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .col-xl-4 {
     flex: 0 0 auto;
     width: 33.33333333%;
+    float: left;
   }
   .col-xl-5 {
     flex: 0 0 auto;
     width: 41.66666667%;
+    float: left;
   }
   .col-xl-6 {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .col-xl-7 {
     flex: 0 0 auto;
     width: 58.33333333%;
+    float: left;
   }
   .col-xl-8 {
     flex: 0 0 auto;
     width: 66.66666667%;
+    float: left;
   }
   .col-xl-9 {
     flex: 0 0 auto;
     width: 75%;
+    float: left;
   }
   .col-xl-10 {
     flex: 0 0 auto;
     width: 83.33333333%;
+    float: left;
   }
   .col-xl-11 {
     flex: 0 0 auto;
     width: 91.66666667%;
+    float: left;
   }
   .col-xl-12 {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .offset-xl-0 {
     margin-left: 0;
@@ -12859,26 +13143,32 @@ textarea.form-control-lg {
   .row-cols-xxl-1 > * {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .row-cols-xxl-2 > * {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .row-cols-xxl-3 > * {
     flex: 0 0 auto;
     width: 33.3333333333%;
+    float: left;
   }
   .row-cols-xxl-4 > * {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .row-cols-xxl-5 > * {
     flex: 0 0 auto;
     width: 20%;
+    float: left;
   }
   .row-cols-xxl-6 > * {
     flex: 0 0 auto;
     width: 16.6666666667%;
+    float: left;
   }
   .col-xxl-auto {
     flex: 0 0 auto;
@@ -12887,50 +13177,62 @@ textarea.form-control-lg {
   .col-xxl-1 {
     flex: 0 0 auto;
     width: 8.33333333%;
+    float: left;
   }
   .col-xxl-2 {
     flex: 0 0 auto;
     width: 16.66666667%;
+    float: left;
   }
   .col-xxl-3 {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .col-xxl-4 {
     flex: 0 0 auto;
     width: 33.33333333%;
+    float: left;
   }
   .col-xxl-5 {
     flex: 0 0 auto;
     width: 41.66666667%;
+    float: left;
   }
   .col-xxl-6 {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .col-xxl-7 {
     flex: 0 0 auto;
     width: 58.33333333%;
+    float: left;
   }
   .col-xxl-8 {
     flex: 0 0 auto;
     width: 66.66666667%;
+    float: left;
   }
   .col-xxl-9 {
     flex: 0 0 auto;
     width: 75%;
+    float: left;
   }
   .col-xxl-10 {
     flex: 0 0 auto;
     width: 83.33333333%;
+    float: left;
   }
   .col-xxl-11 {
     flex: 0 0 auto;
     width: 91.66666667%;
+    float: left;
   }
   .col-xxl-12 {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .offset-xxl-0 {
     margin-left: 0;
@@ -16762,9 +17064,7 @@ div.striped > div:nth-child(odd) {
   margin: 0;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -khtml-user-select: none;
   -moz-user-select: none;
-  -ms-user-select: none;
   user-select: none;
 }
 .datepicker table tr td, .datepicker table tr th {
@@ -17122,8 +17422,6 @@ div.striped > div:nth-child(odd) {
   background-color: #428bca;
 }
 .switch input:checked + .slider:before {
-  -webkit-transform: translateX(19px);
-  -ms-transform: translateX(19px);
   transform: translateX(19px);
 }
 .switch input:focus + .slider {
@@ -17138,7 +17436,6 @@ div.striped > div:nth-child(odd) {
   right: 0;
   bottom: 0;
   background-color: #ccc;
-  -webkit-transition: 0.4s;
   transition: 0.4s;
   border-radius: 26px;
 }
@@ -17150,7 +17447,6 @@ div.striped > div:nth-child(odd) {
   left: 3px;
   bottom: 3px;
   background-color: white;
-  -webkit-transition: 0.4s;
   transition: 0.4s;
   border-radius: 50%;
 }
@@ -17537,21 +17833,6 @@ hr.menu {
 
 #home-page-advanced-search-link {
   color: #FFF;
-}
-
-#lookfor:-ms-input-placeholder {
-  color: #495057;
-  font-size: initial;
-}
-
-#lookfor::-webkit-input-placeholder {
-  color: #495057;
-  font-size: initial;
-}
-
-#lookfor:-moz-placeholder {
-  color: #495057;
-  font-size: initial;
 }
 
 #lookfor::-moz-placeholder {
@@ -17999,9 +18280,11 @@ p {
 }
 
 abbr[title] {
-  text-decoration: underline dotted;
+  -webkit-text-decoration: underline dotted;
+          text-decoration: underline dotted;
   cursor: help;
-  text-decoration-skip-ink: none;
+  -webkit-text-decoration-skip-ink: none;
+          text-decoration-skip-ink: none;
 }
 
 address {
@@ -18531,31 +18814,37 @@ progress {
 .row-cols-1 > * {
   flex: 0 0 auto;
   width: 100%;
+  float: left;
 }
 
 .row-cols-2 > * {
   flex: 0 0 auto;
   width: 50%;
+  float: left;
 }
 
 .row-cols-3 > * {
   flex: 0 0 auto;
   width: 33.3333333333%;
+  float: left;
 }
 
 .row-cols-4 > * {
   flex: 0 0 auto;
   width: 25%;
+  float: left;
 }
 
 .row-cols-5 > * {
   flex: 0 0 auto;
   width: 20%;
+  float: left;
 }
 
 .row-cols-6 > * {
   flex: 0 0 auto;
   width: 16.6666666667%;
+  float: left;
 }
 
 .col-auto {
@@ -18566,61 +18855,73 @@ progress {
 .col-1 {
   flex: 0 0 auto;
   width: 8.33333333%;
+  float: left;
 }
 
 .col-2 {
   flex: 0 0 auto;
   width: 16.66666667%;
+  float: left;
 }
 
 .col-3 {
   flex: 0 0 auto;
   width: 25%;
+  float: left;
 }
 
 .col-4 {
   flex: 0 0 auto;
   width: 33.33333333%;
+  float: left;
 }
 
 .col-5 {
   flex: 0 0 auto;
   width: 41.66666667%;
+  float: left;
 }
 
 .col-6 {
   flex: 0 0 auto;
   width: 50%;
+  float: left;
 }
 
 .col-7 {
   flex: 0 0 auto;
   width: 58.33333333%;
+  float: left;
 }
 
 .col-8 {
   flex: 0 0 auto;
   width: 66.66666667%;
+  float: left;
 }
 
 .col-9 {
   flex: 0 0 auto;
   width: 75%;
+  float: left;
 }
 
 .col-10 {
   flex: 0 0 auto;
   width: 83.33333333%;
+  float: left;
 }
 
 .col-11 {
   flex: 0 0 auto;
   width: 91.66666667%;
+  float: left;
 }
 
 .col-12 {
   flex: 0 0 auto;
   width: 100%;
+  float: left;
 }
 
 .offset-1 {
@@ -18738,26 +19039,32 @@ progress {
   .row-cols-xs-1 > * {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .row-cols-xs-2 > * {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .row-cols-xs-3 > * {
     flex: 0 0 auto;
     width: 33.3333333333%;
+    float: left;
   }
   .row-cols-xs-4 > * {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .row-cols-xs-5 > * {
     flex: 0 0 auto;
     width: 20%;
+    float: left;
   }
   .row-cols-xs-6 > * {
     flex: 0 0 auto;
     width: 16.6666666667%;
+    float: left;
   }
   .col-xs-auto {
     flex: 0 0 auto;
@@ -18766,50 +19073,62 @@ progress {
   .col-xs-1 {
     flex: 0 0 auto;
     width: 8.33333333%;
+    float: left;
   }
   .col-xs-2 {
     flex: 0 0 auto;
     width: 16.66666667%;
+    float: left;
   }
   .col-xs-3 {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .col-xs-4 {
     flex: 0 0 auto;
     width: 33.33333333%;
+    float: left;
   }
   .col-xs-5 {
     flex: 0 0 auto;
     width: 41.66666667%;
+    float: left;
   }
   .col-xs-6 {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .col-xs-7 {
     flex: 0 0 auto;
     width: 58.33333333%;
+    float: left;
   }
   .col-xs-8 {
     flex: 0 0 auto;
     width: 66.66666667%;
+    float: left;
   }
   .col-xs-9 {
     flex: 0 0 auto;
     width: 75%;
+    float: left;
   }
   .col-xs-10 {
     flex: 0 0 auto;
     width: 83.33333333%;
+    float: left;
   }
   .col-xs-11 {
     flex: 0 0 auto;
     width: 91.66666667%;
+    float: left;
   }
   .col-xs-12 {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .offset-xs-0 {
     margin-left: 0;
@@ -18907,26 +19226,32 @@ progress {
   .row-cols-sm-1 > * {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .row-cols-sm-2 > * {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .row-cols-sm-3 > * {
     flex: 0 0 auto;
     width: 33.3333333333%;
+    float: left;
   }
   .row-cols-sm-4 > * {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .row-cols-sm-5 > * {
     flex: 0 0 auto;
     width: 20%;
+    float: left;
   }
   .row-cols-sm-6 > * {
     flex: 0 0 auto;
     width: 16.6666666667%;
+    float: left;
   }
   .col-sm-auto {
     flex: 0 0 auto;
@@ -18935,50 +19260,62 @@ progress {
   .col-sm-1 {
     flex: 0 0 auto;
     width: 8.33333333%;
+    float: left;
   }
   .col-sm-2 {
     flex: 0 0 auto;
     width: 16.66666667%;
+    float: left;
   }
   .col-sm-3 {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .col-sm-4 {
     flex: 0 0 auto;
     width: 33.33333333%;
+    float: left;
   }
   .col-sm-5 {
     flex: 0 0 auto;
     width: 41.66666667%;
+    float: left;
   }
   .col-sm-6 {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .col-sm-7 {
     flex: 0 0 auto;
     width: 58.33333333%;
+    float: left;
   }
   .col-sm-8 {
     flex: 0 0 auto;
     width: 66.66666667%;
+    float: left;
   }
   .col-sm-9 {
     flex: 0 0 auto;
     width: 75%;
+    float: left;
   }
   .col-sm-10 {
     flex: 0 0 auto;
     width: 83.33333333%;
+    float: left;
   }
   .col-sm-11 {
     flex: 0 0 auto;
     width: 91.66666667%;
+    float: left;
   }
   .col-sm-12 {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .offset-sm-0 {
     margin-left: 0;
@@ -19076,26 +19413,32 @@ progress {
   .row-cols-md-1 > * {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .row-cols-md-2 > * {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .row-cols-md-3 > * {
     flex: 0 0 auto;
     width: 33.3333333333%;
+    float: left;
   }
   .row-cols-md-4 > * {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .row-cols-md-5 > * {
     flex: 0 0 auto;
     width: 20%;
+    float: left;
   }
   .row-cols-md-6 > * {
     flex: 0 0 auto;
     width: 16.6666666667%;
+    float: left;
   }
   .col-md-auto {
     flex: 0 0 auto;
@@ -19104,50 +19447,62 @@ progress {
   .col-md-1 {
     flex: 0 0 auto;
     width: 8.33333333%;
+    float: left;
   }
   .col-md-2 {
     flex: 0 0 auto;
     width: 16.66666667%;
+    float: left;
   }
   .col-md-3 {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .col-md-4 {
     flex: 0 0 auto;
     width: 33.33333333%;
+    float: left;
   }
   .col-md-5 {
     flex: 0 0 auto;
     width: 41.66666667%;
+    float: left;
   }
   .col-md-6 {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .col-md-7 {
     flex: 0 0 auto;
     width: 58.33333333%;
+    float: left;
   }
   .col-md-8 {
     flex: 0 0 auto;
     width: 66.66666667%;
+    float: left;
   }
   .col-md-9 {
     flex: 0 0 auto;
     width: 75%;
+    float: left;
   }
   .col-md-10 {
     flex: 0 0 auto;
     width: 83.33333333%;
+    float: left;
   }
   .col-md-11 {
     flex: 0 0 auto;
     width: 91.66666667%;
+    float: left;
   }
   .col-md-12 {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .offset-md-0 {
     margin-left: 0;
@@ -19245,26 +19600,32 @@ progress {
   .row-cols-lg-1 > * {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .row-cols-lg-2 > * {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .row-cols-lg-3 > * {
     flex: 0 0 auto;
     width: 33.3333333333%;
+    float: left;
   }
   .row-cols-lg-4 > * {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .row-cols-lg-5 > * {
     flex: 0 0 auto;
     width: 20%;
+    float: left;
   }
   .row-cols-lg-6 > * {
     flex: 0 0 auto;
     width: 16.6666666667%;
+    float: left;
   }
   .col-lg-auto {
     flex: 0 0 auto;
@@ -19273,50 +19634,62 @@ progress {
   .col-lg-1 {
     flex: 0 0 auto;
     width: 8.33333333%;
+    float: left;
   }
   .col-lg-2 {
     flex: 0 0 auto;
     width: 16.66666667%;
+    float: left;
   }
   .col-lg-3 {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .col-lg-4 {
     flex: 0 0 auto;
     width: 33.33333333%;
+    float: left;
   }
   .col-lg-5 {
     flex: 0 0 auto;
     width: 41.66666667%;
+    float: left;
   }
   .col-lg-6 {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .col-lg-7 {
     flex: 0 0 auto;
     width: 58.33333333%;
+    float: left;
   }
   .col-lg-8 {
     flex: 0 0 auto;
     width: 66.66666667%;
+    float: left;
   }
   .col-lg-9 {
     flex: 0 0 auto;
     width: 75%;
+    float: left;
   }
   .col-lg-10 {
     flex: 0 0 auto;
     width: 83.33333333%;
+    float: left;
   }
   .col-lg-11 {
     flex: 0 0 auto;
     width: 91.66666667%;
+    float: left;
   }
   .col-lg-12 {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .offset-lg-0 {
     margin-left: 0;
@@ -19414,26 +19787,32 @@ progress {
   .row-cols-xl-1 > * {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .row-cols-xl-2 > * {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .row-cols-xl-3 > * {
     flex: 0 0 auto;
     width: 33.3333333333%;
+    float: left;
   }
   .row-cols-xl-4 > * {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .row-cols-xl-5 > * {
     flex: 0 0 auto;
     width: 20%;
+    float: left;
   }
   .row-cols-xl-6 > * {
     flex: 0 0 auto;
     width: 16.6666666667%;
+    float: left;
   }
   .col-xl-auto {
     flex: 0 0 auto;
@@ -19442,50 +19821,62 @@ progress {
   .col-xl-1 {
     flex: 0 0 auto;
     width: 8.33333333%;
+    float: left;
   }
   .col-xl-2 {
     flex: 0 0 auto;
     width: 16.66666667%;
+    float: left;
   }
   .col-xl-3 {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .col-xl-4 {
     flex: 0 0 auto;
     width: 33.33333333%;
+    float: left;
   }
   .col-xl-5 {
     flex: 0 0 auto;
     width: 41.66666667%;
+    float: left;
   }
   .col-xl-6 {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .col-xl-7 {
     flex: 0 0 auto;
     width: 58.33333333%;
+    float: left;
   }
   .col-xl-8 {
     flex: 0 0 auto;
     width: 66.66666667%;
+    float: left;
   }
   .col-xl-9 {
     flex: 0 0 auto;
     width: 75%;
+    float: left;
   }
   .col-xl-10 {
     flex: 0 0 auto;
     width: 83.33333333%;
+    float: left;
   }
   .col-xl-11 {
     flex: 0 0 auto;
     width: 91.66666667%;
+    float: left;
   }
   .col-xl-12 {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .offset-xl-0 {
     margin-left: 0;
@@ -19583,26 +19974,32 @@ progress {
   .row-cols-xxl-1 > * {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .row-cols-xxl-2 > * {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .row-cols-xxl-3 > * {
     flex: 0 0 auto;
     width: 33.3333333333%;
+    float: left;
   }
   .row-cols-xxl-4 > * {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .row-cols-xxl-5 > * {
     flex: 0 0 auto;
     width: 20%;
+    float: left;
   }
   .row-cols-xxl-6 > * {
     flex: 0 0 auto;
     width: 16.6666666667%;
+    float: left;
   }
   .col-xxl-auto {
     flex: 0 0 auto;
@@ -19611,50 +20008,62 @@ progress {
   .col-xxl-1 {
     flex: 0 0 auto;
     width: 8.33333333%;
+    float: left;
   }
   .col-xxl-2 {
     flex: 0 0 auto;
     width: 16.66666667%;
+    float: left;
   }
   .col-xxl-3 {
     flex: 0 0 auto;
     width: 25%;
+    float: left;
   }
   .col-xxl-4 {
     flex: 0 0 auto;
     width: 33.33333333%;
+    float: left;
   }
   .col-xxl-5 {
     flex: 0 0 auto;
     width: 41.66666667%;
+    float: left;
   }
   .col-xxl-6 {
     flex: 0 0 auto;
     width: 50%;
+    float: left;
   }
   .col-xxl-7 {
     flex: 0 0 auto;
     width: 58.33333333%;
+    float: left;
   }
   .col-xxl-8 {
     flex: 0 0 auto;
     width: 66.66666667%;
+    float: left;
   }
   .col-xxl-9 {
     flex: 0 0 auto;
     width: 75%;
+    float: left;
   }
   .col-xxl-10 {
     flex: 0 0 auto;
     width: 83.33333333%;
+    float: left;
   }
   .col-xxl-11 {
     flex: 0 0 auto;
     width: 91.66666667%;
+    float: left;
   }
   .col-xxl-12 {
     flex: 0 0 auto;
     width: 100%;
+    float: left;
   }
   .offset-xxl-0 {
     margin-left: 0;
@@ -20011,7 +20420,9 @@ progress {
   background-color: #fff;
   background-clip: padding-box;
   border: 1px solid #ced4da;
-  appearance: none;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
   border-radius: 0.375rem;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
@@ -20036,6 +20447,10 @@ progress {
 .form-control::-webkit-date-and-time-value {
   height: 1.5em;
 }
+.form-control::-moz-placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
 .form-control::placeholder {
   color: #6c757d;
   opacity: 1;
@@ -20047,7 +20462,8 @@ progress {
 .form-control::file-selector-button {
   padding: 0.375rem 0.75rem;
   margin: -0.375rem -0.75rem;
-  margin-inline-end: 0.75rem;
+  -webkit-margin-end: 0.75rem;
+          margin-inline-end: 0.75rem;
   color: #212529;
   background-color: #e9ecef;
   pointer-events: none;
@@ -20095,7 +20511,8 @@ progress {
 .form-control-sm::file-selector-button {
   padding: 0.25rem 0.5rem;
   margin: -0.25rem -0.5rem;
-  margin-inline-end: 0.5rem;
+  -webkit-margin-end: 0.5rem;
+          margin-inline-end: 0.5rem;
 }
 
 .form-control-lg {
@@ -20107,7 +20524,8 @@ progress {
 .form-control-lg::file-selector-button {
   padding: 0.5rem 1rem;
   margin: -0.5rem -1rem;
-  margin-inline-end: 1rem;
+  -webkit-margin-end: 1rem;
+          margin-inline-end: 1rem;
 }
 
 textarea.form-control {
@@ -20159,7 +20577,9 @@ textarea.form-control-lg {
   border: 1px solid #ced4da;
   border-radius: 0.375rem;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  appearance: none;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .form-select {
@@ -20231,8 +20651,11 @@ textarea.form-control-lg {
   background-position: center;
   background-size: contain;
   border: 1px solid rgba(0, 0, 0, 0.25);
-  appearance: none;
-  print-color-adjust: exact;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
 }
 .form-check-input[type=checkbox] {
   border-radius: 0.25em;
@@ -20326,7 +20749,9 @@ textarea.form-control-lg {
   height: 1.5rem;
   padding: 0;
   background-color: transparent;
-  appearance: none;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
 }
 .form-range:focus {
   outline: 0;
@@ -20347,11 +20772,14 @@ textarea.form-control-lg {
   background-color: #0d6efd;
   border: 0;
   border-radius: 1rem;
+  -webkit-transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  appearance: none;
+  -webkit-appearance: none;
+          appearance: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .form-range::-webkit-slider-thumb {
+    -webkit-transition: none;
     transition: none;
   }
 }
@@ -20373,11 +20801,14 @@ textarea.form-control-lg {
   background-color: #0d6efd;
   border: 0;
   border-radius: 1rem;
+  -moz-transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  appearance: none;
+  -moz-appearance: none;
+       appearance: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .form-range::-moz-range-thumb {
+    -moz-transition: none;
     transition: none;
   }
 }
@@ -20437,9 +20868,16 @@ textarea.form-control-lg {
 .form-floating > .form-control-plaintext {
   padding: 1rem 0.75rem;
 }
+.form-floating > .form-control::-moz-placeholder, .form-floating > .form-control-plaintext::-moz-placeholder {
+  color: transparent;
+}
 .form-floating > .form-control::placeholder,
 .form-floating > .form-control-plaintext::placeholder {
   color: transparent;
+}
+.form-floating > .form-control:not(:-moz-placeholder-shown), .form-floating > .form-control-plaintext:not(:-moz-placeholder-shown) {
+  padding-top: 1.625rem;
+  padding-bottom: 0.625rem;
 }
 .form-floating > .form-control:focus, .form-floating > .form-control:not(:placeholder-shown),
 .form-floating > .form-control-plaintext:focus,
@@ -20455,6 +20893,10 @@ textarea.form-control-lg {
 .form-floating > .form-select {
   padding-top: 1.625rem;
   padding-bottom: 0.625rem;
+}
+.form-floating > .form-control:not(:-moz-placeholder-shown) ~ label {
+  opacity: 0.65;
+  transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
 }
 .form-floating > .form-control:focus ~ label,
 .form-floating > .form-control:not(:placeholder-shown) ~ label,
@@ -20769,7 +21211,9 @@ textarea.form-control-lg {
   text-decoration: none;
   vertical-align: middle;
   cursor: pointer;
-  user-select: none;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
   border: var(--bs-btn-border-width) solid var(--bs-btn-border-color);
   border-radius: var(--bs-btn-border-radius);
   background-color: var(--bs-btn-bg);
@@ -23217,7 +23661,9 @@ textarea.form-control-lg {
 }
 .btn-close:disabled, .btn-close.disabled {
   pointer-events: none;
-  user-select: none;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
   opacity: 0.25;
 }
 
@@ -23263,6 +23709,7 @@ textarea.form-control-lg {
   --bs-toast-zindex: 1090;
   position: absolute;
   z-index: var(--bs-toast-zindex);
+  width: -moz-max-content;
   width: max-content;
   max-width: 100%;
   pointer-events: none;
@@ -23888,7 +24335,8 @@ textarea.form-control-lg {
   float: left;
   width: 100%;
   margin-right: -100%;
-  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
   transition: transform 0.6s ease-in-out;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -24802,14 +25250,17 @@ textarea.form-control-lg {
   }
 }
 .placeholder-wave {
-  mask-image: linear-gradient(130deg, #000 55%, rgba(0, 0, 0, 0.8) 75%, #000 95%);
-  mask-size: 200% 100%;
+  -webkit-mask-image: linear-gradient(130deg, #000 55%, rgba(0, 0, 0, 0.8) 75%, #000 95%);
+          mask-image: linear-gradient(130deg, #000 55%, rgba(0, 0, 0, 0.8) 75%, #000 95%);
+  -webkit-mask-size: 200% 100%;
+          mask-size: 200% 100%;
   animation: placeholder-wave 2s linear infinite;
 }
 
 @keyframes placeholder-wave {
   100% {
-    mask-position: -200% 0%;
+    -webkit-mask-position: -200% 0%;
+            mask-position: -200% 0%;
   }
 }
 .clearfix::after {
@@ -26385,15 +26836,21 @@ textarea.form-control-lg {
 }
 
 .user-select-all {
-  user-select: all !important;
+  -webkit-user-select: all !important;
+     -moz-user-select: all !important;
+          user-select: all !important;
 }
 
 .user-select-auto {
-  user-select: auto !important;
+  -webkit-user-select: auto !important;
+     -moz-user-select: auto !important;
+          user-select: auto !important;
 }
 
 .user-select-none {
-  user-select: none !important;
+  -webkit-user-select: none !important;
+     -moz-user-select: none !important;
+          user-select: none !important;
 }
 
 .pe-none {
@@ -29677,28 +30134,24 @@ textarea.form-control-lg {
 }
 @media (min-width: 0) {
   .home-page-browse-thumbnails {
-    -webkit-column-count: 2;
     -moz-column-count: 2;
     column-count: 2;
   }
 }
 @media (min-width: 480px) {
   .home-page-browse-thumbnails {
-    -webkit-column-count: 3;
     -moz-column-count: 3;
     column-count: 3;
   }
 }
 @media (min-width: 992px) {
   .home-page-browse-thumbnails {
-    -webkit-column-count: 4;
     -moz-column-count: 4;
     column-count: 4;
   }
 }
 @media (min-width: 1200px) {
   .home-page-browse-thumbnails {
-    -webkit-column-count: 6;
     -moz-column-count: 6;
     column-count: 6;
   }
@@ -29706,28 +30159,24 @@ textarea.form-control-lg {
 
 @media (min-width: 0) {
   .browse-thumbnails-few {
-    -webkit-column-count: 1;
     -moz-column-count: 1;
     column-count: 1;
   }
 }
 @media (min-width: 480px) {
   .browse-thumbnails-few {
-    -webkit-column-count: 1;
     -moz-column-count: 1;
     column-count: 1;
   }
 }
 @media (min-width: 992px) {
   .browse-thumbnails-few {
-    -webkit-column-count: 2;
     -moz-column-count: 2;
     column-count: 2;
   }
 }
 @media (min-width: 1200px) {
   .browse-thumbnails-few {
-    -webkit-column-count: 2;
     -moz-column-count: 2;
     column-count: 2;
   }
@@ -29735,35 +30184,30 @@ textarea.form-control-lg {
 
 @media (min-width: 0) {
   .browse-thumbnails-medium {
-    -webkit-column-count: 1;
     -moz-column-count: 1;
     column-count: 1;
   }
 }
 @media (min-width: 480px) {
   .browse-thumbnails-medium {
-    -webkit-column-count: 2;
     -moz-column-count: 2;
     column-count: 2;
   }
 }
 @media (min-width: 768px) {
   .browse-thumbnails-medium {
-    -webkit-column-count: 2;
     -moz-column-count: 2;
     column-count: 2;
   }
 }
 @media (min-width: 992px) {
   .browse-thumbnails-medium {
-    -webkit-column-count: 3;
     -moz-column-count: 3;
     column-count: 3;
   }
 }
 @media (min-width: 1200px) {
   .browse-thumbnails-medium {
-    -webkit-column-count: 4;
     -moz-column-count: 4;
     column-count: 4;
   }
@@ -29771,35 +30215,32 @@ textarea.form-control-lg {
 
 @media (min-width: 0) {
   .home-page-browse-grid {
-    -webkit-column-count: 1;
     -moz-column-count: 1;
     column-count: 1;
   }
 }
 @media (min-width: 480px) and (max-width: 767px) {
   .home-page-browse-grid {
-    -webkit-column-count: 2;
     -moz-column-count: 2;
     column-count: 2;
   }
 }
 @media (min-width: 768px) {
   .home-page-browse-grid {
-    -webkit-column-count: 2;
     -moz-column-count: 2;
     column-count: 2;
   }
 }
 @media (min-width: 992px) {
   .home-page-browse-grid {
-    -webkit-column-count: 3;
     -moz-column-count: 3;
     column-count: 3;
   }
 }
 
 .browse-thumbnail {
-  break-inside: avoid-column;
+  -moz-column-break-inside: avoid;
+       break-inside: avoid-column;
   -webkit-column-break-inside: avoid;
   display: inline-block;
 }
@@ -29818,7 +30259,8 @@ textarea.form-control-lg {
 }
 
 .browse-list {
-  break-inside: avoid-column;
+  -moz-column-break-inside: avoid;
+       break-inside: avoid-column;
   -webkit-column-break-inside: avoid;
   display: inline-block;
   text-align: left;
@@ -30556,7 +30998,6 @@ textarea.form-control-lg {
 }
 
 .moreFacetPopup {
-  -webkit-column-gap: 35px;
   -moz-column-gap: 35px;
   column-gap: 35px;
   padding-left: 20px;
@@ -30564,21 +31005,18 @@ textarea.form-control-lg {
 }
 @media (min-width: 0) {
   .moreFacetPopup {
-    -webkit-column-count: 1;
     -moz-column-count: 1;
     column-count: 1;
   }
 }
 @media (min-width: 768px) {
   .moreFacetPopup {
-    -webkit-column-count: 1;
     -moz-column-count: 1;
     column-count: 1;
   }
 }
 @media (min-width: 992px) {
   .moreFacetPopup {
-    -webkit-column-count: 2;
     -moz-column-count: 2;
     column-count: 2;
   }
@@ -30694,10 +31132,6 @@ textarea.form-control-lg {
   position: absolute;
   right: 0;
   z-index: 4;
-  -webkit-transition: 0.75s ease-out;
-  -moz-transition: 0.75s ease-out;
-  -o-transition: 0.75s ease-out;
-  -ms-transition: 0.75s ease-out;
   transition: 0.75s ease-out;
 }
 
@@ -30743,9 +31177,7 @@ textarea.form-control-lg {
   top: 60px;
   display: inline-block;
   white-space: nowrap;
-  -webkit-transform: rotate(90deg) translateY(-20%);
   transform: rotate(90deg) translateY(-20%);
-  -webkit-transform-origin: 0 0;
   transform-origin: 0 0;
 }
 
@@ -30771,10 +31203,6 @@ textarea.form-control-lg {
   background: #00a4e3;
   padding: 10px;
   color: white;
-  -webkit-transition: 0.15s ease-out;
-  -moz-transition: 0.15s ease-out;
-  -o-transition: 0.15s ease-out;
-  -ms-transition: 0.15s ease-out;
   transition: 0.15s ease-out;
   width: 350px;
 }
@@ -31465,5 +31893,3 @@ body.masqueradeMode:after {
 #searchSource {
   color: #597635;
 }
-
-/*# sourceMappingURL=main.css.map */
