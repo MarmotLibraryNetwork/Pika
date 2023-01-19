@@ -1234,15 +1234,16 @@ class Sierra  implements \DriverInterface {
 		$pinReset->userId = $patron->id;
 
 		$resetToken = $pinReset->insertReset();
-		// build reset url
+		// build reset url (Note: the site url gets automatically set as the interface url
 		$resetUrl = $this->configArray['Site']['url'] . "/MyAccount/ResetPin?uid=".$patron->id.'&resetToken='.$resetToken;
 
 		// build the message
-		$subject = "Pin Reset Link";
+		$pin         = translate('pin');
+		$subject     = ucfirst($pin) . ' Reset Link';
 		$htmlMessage = <<<EOT
-		<p>We received a password reset request. The link to reset your password is below.  
+		<p>We received a $pin reset request. The link to reset your $pin is below.  
 If you did not make this request, you can ignore this email</p>  
-<p>Here is your password reset link:</br>  
+<p>Here is your $pin reset link:</br>  
 $resetUrl
 EOT;
 
