@@ -22,6 +22,7 @@
 
 	</div>
 
+	{if !$isUpdatePinPage}
 	<div class="logoutOptions"{if !$loggedIn} style="display: none;"{/if}>
 		<div class="hidden-xs col-sm-2 col-sm-offset-5 col-md-2 col-md-offset-0 col-lg-2 col-lg-offset-0">
 			<a id="myAccountNameLink" href="/MyAccount/Home">
@@ -49,6 +50,18 @@
 			</a>
 		{/if}
 	</div>
+	{else}
+		{* Show log out option on Force Pin Update so users can log out if they choose *}
+		<div class="logoutOptions"{if !$loggedIn} style="display: none;"{/if}>
+			<div class="hidden-xs col-sm-2 col-sm-offset-7 col-md-2 col-md-offset-2 col-lg-offset-2 col-lg-2">
+				<a href="/MyAccount/Logout"{if $masqueradeMode} onclick="return confirm('This will end both Masquerade Mode and your session as well. Continue to log out?')"{/if} id="logoutLink">
+					<div class="header-button header-primary">
+						{translate text="Log Out"}
+					</div>
+				</a>
+			</div>
+		</div>
+	{/if}
 
 	{if $topLinks}
 		<div class="col-tn-12" id="header-links">

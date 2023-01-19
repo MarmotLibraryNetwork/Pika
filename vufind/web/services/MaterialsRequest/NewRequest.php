@@ -116,20 +116,6 @@ class MaterialsRequest_NewRequest extends Action {
 				$interface->assign('specialFieldFormatsJSON', json_encode($specialFieldFormats));
 			}
 
-			// Set up for User Log in
-			if (isset($library)){
-				$interface->assign('newMaterialsRequestSummary', $library->newMaterialsRequestSummary);
-
-				$interface->assign('enableSelfRegistration', $library->enableSelfRegistration || $library->externalSelfRegistrationUrl);
-				$interface->assign('selfRegLink', empty($library->externalSelfRegistrationUrl) ? '/MyAccount/SelfReg' : $library->externalSelfRegistrationUrl);
-				$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
-				$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
-			}else{
-				$interface->assign('enableSelfRegistration', 0);
-				$interface->assign('usernameLabel', 'Your Name');
-				$interface->assign('passwordLabel', 'Library Card Number');
-			}
-
 			$this->display('new.tpl', translate('Materials_Request_alt'));
 		}
 	}

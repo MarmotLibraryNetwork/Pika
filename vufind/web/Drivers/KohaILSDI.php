@@ -388,24 +388,24 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 	private function getPatronInformation($kohaUserId, $password = ''){
 		$patron = false;
 
-		$urlParameters = array(
+		$urlParameters = [
 			'service'         => 'GetPatronInfo',
 			'patron_id'       => $kohaUserId,
 			'show_contact'    => 1,
 //			'show_fines'      => 1,
 //			'show_holds'      => 1,
 			'show_attributes' => 1,
-		);
+		];
 
 		$webServiceURL = $this->getWebServiceURL() . $this->ilsdiscript;
 		$webServiceURL .= '?' . http_build_query($urlParameters);
 
 		$patronInfoResponse = $this->getWebServiceResponse($webServiceURL);
 		if (!empty($patronInfoResponse->cardnumber)){
-			$userExistsInDB       = false;
-			$patron               = new User();
-			$patron->source       = $this->accountProfile->name;
-			$patron->cat_username = (string)$patronInfoResponse->cardnumber;
+			$userExistsInDB  = false;
+			$patron          = new User();
+			$patron->source  = $this->accountProfile->name;
+			$patron->barcode = (string)$patronInfoResponse->cardnumber;
 			if ($patron->find(true)){
 				$userExistsInDB = true;
 			}
@@ -424,15 +424,15 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 			if ($forceDisplayNameUpdate){
 				$patron->displayName = '';
 			}
-			$patron->fullname     = $firstName . ' ' . $lastName;
-			$patron->ilsUserId    = $kohaUserId;
-			$patron->cat_username = (string)$patronInfoResponse->cardnumber;
+			$patron->fullname  = $firstName . ' ' . $lastName;
+			$patron->ilsUserId = $kohaUserId;
+			$patron->barcode   = (string)$patronInfoResponse->cardnumber;
 			if (!empty($password)) {
-				$patron->cat_password = $password;
+				$patron->setPassword($password);
 			}
 			$patron->email      = (string)$patronInfoResponse->email;
 			$patron->patronType = (string)$patronInfoResponse->categorycode;
-			$patron->web_note   = (string)$patronInfoResponse->opacnote; //TODO: double check that the point of the opac note is the same as our webnote
+			$patron->webNote    = (string)$patronInfoResponse->opacnote; //TODO: double check that the point of the opac note is the same as our webnote
 			$patron->address1   = (string)$patronInfoResponse->address;
 			$patron->city       = (string)$patronInfoResponse->city;
 			$patron->state      = (string)$patronInfoResponse->state;

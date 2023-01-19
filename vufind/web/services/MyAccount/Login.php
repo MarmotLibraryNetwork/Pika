@@ -19,14 +19,12 @@
 
 require_once ROOT_DIR . "/Action.php";
 
-class MyAccount_Login extends Action
-{
-	function __construct()
-	{
+class MyAccount_Login extends Action {
+
+	function __construct(){
 	}
 
-	function launch($msg = null)
-	{
+	function launch($msg = null){
 		global $interface;
 		global $module;
 		global $action;
@@ -57,7 +55,7 @@ class MyAccount_Login extends Action
 		if ($followup != 'Home' || (isset($_REQUEST['followupModule']) && isset($_REQUEST['followupAction']))) {
 			$interface->assign('followup', $followup);
 			$interface->assign('followupModule', isset($_REQUEST['followupModule']) ? strip_tags($_REQUEST['followupModule']) : $module);
-			$interface->assign('followupAction', isset($_REQUEST['followupAction']) ? $_REQUEST['followupAction'] : $action);
+			$interface->assign('followupAction', $_REQUEST['followupAction'] ?? $action);
 
 			// Special case -- if user is trying to view a private list, we need to
 			// attach the list ID to the action:
@@ -95,28 +93,24 @@ class MyAccount_Login extends Action
 		if (isset($_REQUEST['username'])) {
 			$interface->assign('username', $_REQUEST['username']);
 		}
+
+		$catalog              = CatalogFactory::getCatalogConnectionInstance();
+		$defaultUserNameLabel = $catalog->accountProfile->usingPins() ? 'Library Card Number' : 'Name';
+		$defaultPasswordLabel = $catalog->accountProfile->usingPins() ? translate('PIN') : 'Library Card Number';
+
 		if (isset($library)){
 			$interface->assign('enableSelfRegistration', $library->enableSelfRegistration || $library->externalSelfRegistrationUrl);
 			$interface->assign('selfRegLink', empty($library->externalSelfRegistrationUrl) ? '/MyAccount/SelfReg' : $library->externalSelfRegistrationUrl);
-			$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
-			$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
+			$interface->assign('usernameLabel', !empty($library->loginFormUsernameLabel) ? $library->loginFormUsernameLabel : $defaultUserNameLabel);
+			$interface->assign('passwordLabel', !empty($library->loginFormPasswordLabel) ? $library->loginFormPasswordLabel : $defaultPasswordLabel);
 		}else{
 			$interface->assign('enableSelfRegistration', 0);
-			$interface->assign('usernameLabel', 'Your Name');
-			$interface->assign('passwordLabel', 'Library Card Number');
+			$interface->assign('usernameLabel', $defaultUserNameLabel);
+			$interface->assign('passwordLabel', $defaultPasswordLabel);
 		}
-		if ($configArray['Catalog']['ils'] == 'Horizon' || $configArray['Catalog']['ils'] == 'Symphony'){
+
+		if (!empty($catalog->accountProfile) && $catalog->accountProfile->usingPins() && method_exists($catalog->driver, 'emailResetPin')){
 			$interface->assign('showForgotPinLink', true);
-			$catalog = CatalogFactory::getCatalogConnectionInstance();
-			$useEmailResetPin = method_exists($catalog->driver, 'emailResetPin');
-			$interface->assign('useEmailResetPin', $useEmailResetPin);
-		} elseif ($configArray['Catalog']['ils'] == 'Sierra') {
-			$catalog = CatalogFactory::getCatalogConnectionInstance();
-			if (!empty($catalog->accountProfile->loginConfiguration) && $catalog->accountProfile->loginConfiguration == 'barcode_pin') {
-				$interface->assign('showForgotPinLink', true);
-				$useEmailResetPin = method_exists($catalog->driver, 'emailResetPin');
-				$interface->assign('useEmailResetPin', $useEmailResetPin);
-			}
 		}
 
 		$interface->assign('isLoginPage', true);

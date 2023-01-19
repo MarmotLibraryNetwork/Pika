@@ -68,8 +68,8 @@ abstract class SIP2Driver implements DriverInterface{
 					}
 					//Override circulation status based on SIP
 					if (isset($result['fixed']['CirculationStatus'])){
-						$itemSip2Data['status'] = $result['fixed']['CirculationStatus'];
-						$itemSip2Data['status_full'] = mapValue('item_status', $result['fixed']['CirculationStatus']);
+						$itemSip2Data['status']       = $result['fixed']['CirculationStatus'];
+						$itemSip2Data['status_full']  = mapValue('item_status', $result['fixed']['CirculationStatus']);
 						$itemSip2Data['availability'] = $result['fixed']['CirculationStatus'] == 3;
 					}
 				}
@@ -84,42 +84,11 @@ abstract class SIP2Driver implements DriverInterface{
 
 
 	public function patronLogin($username, $password, $validatedViaSSO) {
+		//TODO: Rewrite entire method. This needs to return a User object. It needs to actually check against SIP
+		// offline handling should happen before this is called
 		//TODO: Implement $validatedViaSSO
-		//Koha uses SIP2 authentication for login.  See
-		//The catalog is offline, check the database to see if the user is valid
-		global $timer;
-		$user = new User();
-		$user->cat_username = $username;
-		if ($user->find(true)){
-			$userValid = false;
-			if ($user->cat_username){
-				$userValid = true;
-			}
-			if ($userValid){
-				$returnVal = [
-					'id'           => $password,
-					'username'     => $user->ilsUserId,
-					'firstname'    => $user->firstname,
-					'lastname'     => $user->lastname,
-					'fullname'     => $user->firstname . ' ' . $user->lastname,     //Added to array for possible display later.
-					'cat_username' => $username, //Should this be $Fullname or $patronDump['PATRN_NAME']
-					'cat_password' => $password,
-					'email'        => $user->email,
-					'major'        => null,
-					'college'      => null,
-					'patronType'   => $user->patronType,
-					'web_note'     => translate('The catalog is currently down.  You will have limited access to circulation information.')
-				];
-				$timer->logTime("patron logged in successfully");
-				return $returnVal;
-			} else {
-				$timer->logTime("patron login failed");
-				return null;
-			}
-		} else {
-			$timer->logTime("patron login failed");
-			return null;
-		}
+
+		return null;
 	}
 
 	protected function initSipConnection($host, $port) {

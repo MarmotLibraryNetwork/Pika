@@ -94,6 +94,9 @@ class Sierra  implements \DriverInterface {
 	protected $urlIdRegExp = "/.*\/(\d*)$/";
 
 
+	/**
+	 * @param \AccountProfile $accountProfile
+	 */
 	public function __construct($accountProfile) {
 		global $configArray;
 
@@ -337,56 +340,51 @@ class Sierra  implements \DriverInterface {
 	 * @access  public
 	 * @throws ErrorException
 	 */
-	public function patronLogin($username, $password, $validatedViaSSO = FALSE){
-		// get the login configuration barcode_pin or name_barcode
-		$loginMethod = $this->accountProfile->loginConfiguration;
+	public function patronLogin($username, $password, $validatedViaSSO = false){
 		// check patron credentials depending on login config.
 		// the returns from _auth methods should be either a sierra patron id or false.
-		$username = str_replace("’", "'",trim($username));
+		$username = str_replace("’", "'", trim($username));
 		$password = trim($password);
 
-		if($validatedViaSSO) {
-			$patronId = $this->getPatronId($password);
-			$this->patronBarcode = $password;
-		} elseif ($loginMethod == "barcode_pin") {
-			$barcode = $username;
-			$this->patronBarcode = $barcode;
-			$patronId = $this->_authBarcodePin($username, $password);
-		} elseif ($loginMethod == "name_barcode") {
-			$barcode = $password;
-			$this->patronBarcode = $barcode;
-			$patronId = $this->_authNameBarcode($username, $password);
-			// check last api error for duplicate barcodes
-			if(stristr($this->apiLastError, 'Duplicate patrons found')) {
-				// use the /patron/query endpoint to get user ids with barcode.
-				$operation = 'patrons/query?offset=0&limit=3';
-				$payload   = '{"target": {' .
-											'"record": {"type": "patron"},' .
-											'"field": {"tag": "b"}},' .
-											'"expr": {' .
-											'"op": "equals",' .
-											'"operands": [ "' . $barcode . '" ]}}';
-				$r2 = $this->_doRequest($operation, $payload, 'POST');
-				if (!$r2) {
-					return false;
-				}
-				// get the sierra ids for the patron/query
-				foreach ($r2->entries as $entry) {
-					$sPID = preg_match($this->urlIdRegExp, $entry->link, $m);
-					if($this->_authPatronIdName($m[1], $username)) {
-						return $this->getPatron($m[1]);
+		if ($validatedViaSSO){
+			$this->patronBarcode = $this->accountProfile->usingPins() ? $username : $password;
+			$patronId            = $this->getPatronId($this->patronBarcode);
+		}else{
+			if ($this->accountProfile->usingPins()){
+				$this->patronBarcode = $username;
+				$patronId            = $this->_authBarcodePin($username, $password);
+			}else{
+				$barcode             = $password;
+				$this->patronBarcode = $barcode;
+				$patronId            = $this->_authNameBarcode($username, $password);
+				// check last api error for duplicate barcodes
+				if (stristr($this->apiLastError, 'Duplicate patrons found')){
+					// use the /patron/query endpoint to get user ids with barcode.
+					$operation = 'patrons/query?offset=0&limit=3';
+					$payload   = '{"target": {' .
+						'"record": {"type": "patron"},' .
+						'"field": {"tag": "b"}},' .
+						'"expr": {' .
+						'"op": "equals",' .
+						'"operands": [ "' . $barcode . '" ]}}';
+					$r2        = $this->_doRequest($operation, $payload, 'POST');
+					if (!$r2){
+						return false;
+					}
+					// get the sierra ids for the patron/query
+					foreach ($r2->entries as $entry){
+						$sPID = preg_match($this->urlIdRegExp, $entry->link, $m);
+						if ($this->_authPatronIdName($m[1], $username)){
+							return $this->getPatron($m[1]);
+						}
 					}
 				}
 			}
-		} else {
-			$msg = "Invalid loginConfiguration setting. : '$loginMethod'";
-			$this->logger->error($msg);
-			throw new InvalidArgumentException($msg);
 		}
 		// can't find patron
-		if (!$patronId) {
-			$msg = "Can't get patron id from Sierra API.";
-			$this->logger->debug($msg, ['barcode'=>$this->patronBarcode]);
+		if (!$patronId){
+			$msg = 'Failed to get patron id from Sierra API.';
+			$this->logger->debug($msg, ['barcode' => $this->patronBarcode]);
 			return null;
 		}
 
@@ -402,13 +400,12 @@ class Sierra  implements \DriverInterface {
 	 * Any class extending this base class can include a method name processPatronAddress($addresses) for handling
 	 * that particularly finicky bit.
 	 *
-	 * @param int $patronId Unique Sierra patron id
+	 * @param int $sierraPatronId Unique Sierra patron id
 	 * @return User|null
 	 * @throws InvalidArgumentException
 	 * @throws ErrorException
 	 */
-	public function getPatron($patronId)
-	{
+	public function getPatron($sierraPatronId){
 
 		$createPatron = false;
 		$updatePatron = false;
@@ -419,23 +416,23 @@ class Sierra  implements \DriverInterface {
 		$patron            = new User();
 //		$patron->whereAdd("ilsUserId = '{$patronId}'", 'OR');
 //		$patron->whereAdd("username = '{$patronId}'", 'OR'); // if ilsUserId can't be found fall back to username //TODO: temporary, username column is deprecated
-		$patron->ilsUserId = $patronId;
+		$patron->ilsUserId = $sierraPatronId;
 
 		if ($patron->find(true) && $patron->N != 0) {
 			$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 			if ($pObj = $this->cache->get($patronObjectCacheKey)) {
-				$this->logger->info("Found patron in memcache:" . $patronObjectCacheKey);
+				$this->logger->info('Found patron in memcache: ' . $patronObjectCacheKey);
 				return $pObj;
 			}
 		}
 
 		// grab everything from the patron record the api can provide.
-		$params = [
+		$params    = [
 			'fields' => 'names,addresses,phones,emails,expirationDate,homeLibraryCode,moneyOwed,patronType,barcodes,patronCodes,createdDate,blockInfo,message,pMessage,langPref,fixedFields,varFields,updatedDate,createdDate'
 		];
-		$operation = 'patrons/'.$patronId;
-		$pInfo = $this->_doRequest($operation, $params);
-		if(!$pInfo) {
+		$operation = 'patrons/' . $sierraPatronId;
+		$pInfo     = $this->_doRequest($operation, $params);
+		if (!$pInfo){
 			return null;
 		}
 
@@ -443,7 +440,7 @@ class Sierra  implements \DriverInterface {
 
 		// does the user exist in database?
 		if(!$patron || $patron->N == 0) {
-			$this->logger->debug('Patron does not exist in Pika database.', ['Sierra ID'=>$patronId]);
+			$this->logger->debug('Patron does not exist in Pika database.', ['Sierra ID'=>$sierraPatronId]);
 			$createPatron = true;
 		}
 
@@ -469,7 +466,7 @@ class Sierra  implements \DriverInterface {
 			if($pInfo->barcodes[0] != '') {
 				$barcode = $pInfo->barcodes[0];
 			} else {
-				$this->logger->error("Sierra user id $patronId did not return a barcode");
+				$this->logger->error("Sierra user id $sierraPatronId did not return a barcode");
 			}
 		} elseif (!empty($this->patronBarcode)) {
 			// Since Sacramento's student Id's aren't treated as barcodes, we have to ignore the barcodes array from the API
@@ -477,7 +474,6 @@ class Sierra  implements \DriverInterface {
 		}
 
 		// check all the places barcodes are stored and determine if they need updated.
-		$loginMethod    = $this->accountProfile->loginConfiguration;
 		$patron->source = $this->accountProfile->name;
 
 		if ($patron->barcode != $barcode){
@@ -488,21 +484,21 @@ class Sierra  implements \DriverInterface {
 		// Checks; make sure patron info from sierra matches database. update if needed.
 		// ilsUserId
 		$ilsUserId = $pInfo->id;
-		if($ilsUserId != $patron->ilsUserId) {
+		if ($ilsUserId != $patron->ilsUserId){
 			$patron->ilsUserId = $ilsUserId;
-			$updatePatron = true;
+			$updatePatron      = true;
 		}
 
 		// check patron type
 		if((int)$pInfo->patronType !== (int)$patron->patronType) {
-			$updatePatron = true;
+			$updatePatron       = true;
 			$patron->patronType = $pInfo->patronType;
 		}
 
 		// check names
-		if ($loginMethod == "name_barcode") {
+		if (!$this->accountProfile->usingPins()) {
 			if($patron->cat_username != $pInfo->names[0]) {
-				$updatePatron = true;
+				$updatePatron         = true;
 				$patron->cat_username = $pInfo->names[0];
 			}
 		}
@@ -527,7 +523,7 @@ class Sierra  implements \DriverInterface {
 			}
 		}
 		if($firstName != $patron->firstname || $lastName != $patron->lastname) {
-			$updatePatron = true;
+			$updatePatron      = true;
 			$patron->firstname = $firstName;
 			$patron->lastname  = $lastName;
 			// empty display name so it will reset to new name
@@ -537,11 +533,11 @@ class Sierra  implements \DriverInterface {
 		// Check email
 		// email is returned as array from sierra api
 		if((isset($pInfo->emails) && !empty($pInfo->emails)) && $pInfo->emails[0] != $patron->email) {
-			$updatePatron = true;
+			$updatePatron  = true;
 			$patron->email = $pInfo->emails[0];
 		} elseif((empty($pInfo->emails) || !isset($pInfo->emails))) {
 			// Check for empty email-- update db even if empty
-			$updatePatron = true;
+			$updatePatron  = true;
 			$patron->email = '';
 		}
 
@@ -556,14 +552,14 @@ class Sierra  implements \DriverInterface {
 		// this is used on sites allowing username login.
 		if($this->hasUsernameField()) {
 			$fields = $pInfo->varFields;
-			$i = array_filter($fields, function($k) {
+			$i      = array_filter($fields, function ($k){
 				return ($k->fieldTag == 'i');
 			});
 			if(empty($i)) {
 				$patron->alt_username = '';
 			} else {
-				$key = array_key_first($i);
-				$alt_username = $i[$key]->content;
+				$key                  = array_key_first($i);
+				$alt_username         = $i[$key]->content;
 				$patron->alt_username = $alt_username;
 			}
 		}
@@ -583,10 +579,10 @@ class Sierra  implements \DriverInterface {
 			}
 			// try home phone first then mobile phone
 			if(!empty($homePhone) && $patron->phone != $homePhone) {
-				$updatePatron = true;
+				$updatePatron  = true;
 				$patron->phone = $homePhone;
-			} elseif(!isset($homePhone) && isset($mobilePhone) && $patron->phone != $mobilePhone) {
-				$updatePatron = true;
+			}elseif (!isset($homePhone) && isset($mobilePhone) && $patron->phone != $mobilePhone){
+				$updatePatron  = true;
 				$patron->phone = $mobilePhone;
 			} else {
 				if(empty($patron->phone)) {
@@ -657,7 +653,7 @@ class Sierra  implements \DriverInterface {
 					  // now split out the rest of the address
 					  $cityStateTest = preg_match_all($splitRegExp, trim($homeAddressArray[1]), $cityStateMatches);
 					  if($cityStateTest) {
-						  $cityState = $cityStateMatches[1];
+						  $cityState      = $cityStateMatches[1];
 						  $cityStateCount = count($cityState) - 1; // zero index
 						  // state should be last
 						  $patronState = $cityState[$cityStateCount];
@@ -734,12 +730,12 @@ class Sierra  implements \DriverInterface {
 		}
 
 		// number of checkouts from ils
-		$patron->numCheckedOutIls  = $this->getNumCheckedOutsILS($patronId);
+		$patron->numCheckedOutIls  = $this->getNumCheckedOutsILS($sierraPatronId);
 		//TODO: Go back to the below if iii fixes bug. See: D-3447
 		//$patron->numCheckedOutIls = $pInfo->fixedFields->{'50'}->value;
 
 		// fines
-		$patron->fines = number_format($pInfo->moneyOwed, 2, '.', '');
+		$patron->fines    = number_format($pInfo->moneyOwed, 2, '.', '');
 		$patron->finesVal = number_format($pInfo->moneyOwed, 2, '.', '');
 
 		// hold counts
@@ -750,24 +746,43 @@ class Sierra  implements \DriverInterface {
 			$patron->numHoldsIls          = $patron->numHoldsAvailableIls + $patron->numHoldsRequestedIls;
 		}
 
-		if(isset($pInfo->varFields) && isset($this->configArray['Catalog']['sierraPatronWebNoteField']) && $this->configArray['Catalog']['sierraPatronWebNoteField'] != '') {
-			$webNotesVarField = $this->configArray['Catalog']['sierraPatronWebNoteField'];
-			$webNote = $this->_getVarField($webNotesVarField,$pInfo->varFields);
-			if(count($webNote) > 0) {
-				$index = array_key_first($webNote);
-				$patron->web_note = $webNote[$index]->content;
+		if(isset($pInfo->varFields)){
+			if (!empty($this->configArray['Catalog']['sierraPatronWebNoteField'])){
+				$webNotesVarField = $this->configArray['Catalog']['sierraPatronWebNoteField'];
+				$webNotes         = $this->_getVarField($webNotesVarField, $pInfo->varFields);
+				if (count($webNotes) > 0){
+					foreach ($webNotes as $webNote){
+						if (!empty($webNote->content)){
+							$patron->webNote[] = $webNote->content;
+						}
+					}
+				}
+			}
+			if (!empty($this->configArray['Catalog']['patronPinSetTimeField'])){
+				$varField = $this->_getVarField($this->configArray['Catalog']['patronPinSetTimeField'], $pInfo->varFields);
+				if (empty($varField)){
+					$patron->pinUpdateRequired = true;
+				} else {
+					$lastPinUpdateTimeInILS = (reset($varField))->content;
+					if (empty($lastPinUpdateTimeInILS)){
+						$patron->pinUpdateRequired = true;
+					}
+				}
 			}
 		}
 
 		if($createPatron) {
 			$patron->created = date('Y-m-d');
-			if($patron->insert() === false) {
-				$this->logger->error('Could not save patron to Pika database.', ['barcode'=>$this->patronBarcode,
-				                                                                 'error'=>$patron->_lastError->userinfo,
-				                                                                 'backtrace'=>$patron->_lastError->backtrace]);
+			if ($patron->insert() === false){
+				$this->logger->error('Could not save patron to Pika database.',
+					[
+						'barcode'   => $this->patronBarcode,
+						'error'     => $patron->_lastError->userinfo,
+						'backtrace' => $patron->_lastError->backtrace
+					]);
 				throw new ErrorException('Error saving patron to Pika database');
-			} else {
-				$this->logger->debug('Created patron in Pika database.', ['barcode'=> $patron->getBarcode()]);
+			}else{
+				$this->logger->debug('Created patron in Pika database.', ['barcode' => $patron->getBarcode()]);
 			}
 		} elseif ($updatePatron && !$createPatron) {
 			$patron->update();
@@ -775,7 +790,7 @@ class Sierra  implements \DriverInterface {
 		// if this is a new user we won't cache -- will happen on next getPatron call
 		if(isset($patron->id)) {
 			$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
-			$this->logger->debug("Saving patron to memcache:" . $patronObjectCacheKey);
+			$this->logger->debug('Saving patron to memcache: ' . $patronObjectCacheKey);
 			$this->cache->set($patronObjectCacheKey, $patron, $this->configArray['Caching']['user']);
 		}
 		return $patron;
@@ -796,10 +811,9 @@ class Sierra  implements \DriverInterface {
 		return $numCheckouts;
 	}
 
-	private function _getVarField($key, $fields)
-	{
+	private function _getVarField($key, $fields){
 
-		$found = array_filter($fields, function ($k) use ($key) {
+		$found = array_filter($fields, function ($k) use ($key){
 			return $k->fieldTag == $key;
 		});
 
@@ -818,13 +832,16 @@ class Sierra  implements \DriverInterface {
 	public function getPatronId($patronOrBarcode, $searchSacramentoStudentIdField = false) {
 		// if a patron object was passed
 		if (is_object($patronOrBarcode)){
-				$barcode = $patronOrBarcode->barcode;
+			if (!empty($patronOrBarcode->ilsUserId)){
+				return $patronOrBarcode->ilsUserId;
+			}
+			$barcode = $patronOrBarcode->barcode;
 		} elseif (is_string($patronOrBarcode) || is_int($patronOrBarcode)) {
 			// the api expects barcode in form of string. Just in case cast to string.
 			$barcode = (string)$patronOrBarcode;
 		}
 		// patron ids are cached by default for 86400
-		$patronIdCacheKey = "patron_".$barcode."_sierraid";
+		$patronIdCacheKey = "patron_" . $barcode . "_sierraid";
 		if($patronId = $this->cache->get($patronIdCacheKey)) {
 			return $patronId;
 		}
@@ -838,7 +855,7 @@ class Sierra  implements \DriverInterface {
 		$r = $this->_doRequest('patrons/find', $params);
 		// there was an error with the last call -- use $this->apiLastError for messages.
 		if(!$r) {
-			$this->logger->warn('Could not get patron ID.', ['barcode'=>$barcode, 'error'=>$this->apiLastError]);
+			$this->logger->warn('Could not get patron ID.', ['barcode' => $barcode, 'error' => $this->apiLastError]);
 			return false;
 		}
 
@@ -848,6 +865,11 @@ class Sierra  implements \DriverInterface {
 	}
 
 
+	/**
+	 * @param string $barcode
+	 * @return User|null
+	 * @throws ErrorException
+	 */
 	public function findNewUser($barcode){
 		$sierraUserId = $this->getPatronId($barcode);
 		return $this->getPatron($sierraUserId);
@@ -1042,6 +1064,23 @@ class Sierra  implements \DriverInterface {
 		return $errors;
 	}
 
+	function setPatronPinSetTimeInILS(User $patron){
+		global $configArray;
+		if (!empty($configArray['Catalog']['patronPinSetTimeField'])){
+			$params['varFields'] = [(object)[
+				'fieldTag' => $configArray['Catalog']['patronPinSetTimeField'],
+				'content'  => date('Y-m-d H:i:s')]
+			];
+			$operation           = 'patrons/' . $patron->ilsUserId;
+			$r                   = $this->_doRequest($operation, $params, 'PUT');
+			if (!$r){
+				$this->logger->error('Unable to set patron pin set time in Sierra for user ' . $patron->ilsUserId, ["message" => $this->apiLastError]);
+				$errors[] = 'An error occurred. Please try in again later.';
+				return false;
+			}
+		}
+		return true;
+	}
 
 	/**
 	 * Update a users PIN
@@ -1056,30 +1095,44 @@ class Sierra  implements \DriverInterface {
 	 * @throws ErrorException
 	 */
 	public function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
-		$patronId = $this->_authBarcodePin($patron->barcode, $oldPin);
-
-		if(!$patronId) {
-			return "Your current PIN is incorrect. Please try again.";
+		$patronId = $patron->ilsUserId;
+		if (empty($patronId)){
+			// The user actually should have been already validated at this point
+			$patronId = $this->_authBarcodePin($patron->barcode, $oldPin);
 		}
 
-		if(!($newPin == $confirmNewPin)) {
-			return "PIN and PIN confirmation do not match. Please try again.";
+		// Note: pin testing & checking is done by the calling updatePin method CatalogConnection class
+
+		if (!$patronId){
+			// This really shouldn't occur
+			$this->logger->error('Failed to find Sierra patron id for pika user ' . $patron->id);
+			return 'Your current ' . translate('pin') . ' is incorrect. Please try again.';
 		}
 
-		$operation = 'patrons/'.$patronId;
+		global $configArray;
+		$operation = 'patrons/' . $patronId;
 		$params    = ['pin' => $newPin];
+		if (!empty($configArray['Catalog']['patronPinSetTimeField'])){
+			// Taken from setPatronPinSetTimeInILS()
+			// Set the patron pin set time in the same call
+			$params['varFields'] = [(object)[
+				'fieldTag' => $configArray['Catalog']['patronPinSetTimeField'],
+				'content'  => date('Y-m-d H:i:s')]
+			];
+		}
 		$r = $this->_doRequest($operation, $params, 'PUT');
 
 		if(!$r) {
 			$message = $this->_getPrettyError();
-			return 'Could not update PIN: '. $message;
+			return 'Could not update ' . translate('pin') . ': '. $message;
 		}
 		$result = $patron->updatePassword($newPin);
+		$patron->pinUpdateRequired = false;
 
 		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 		$this->cache->delete($patronCacheKey);
 		// Important: A success message won't be displayed unless the words are EXACTLY as below.
-		return 'Your pin number was updated successfully.';
+		return 'Your ' . translate('pin') . ' was updated successfully.';
 	}
 
 	/**
@@ -1087,48 +1140,58 @@ class Sierra  implements \DriverInterface {
 	 *
 	 * Handles a pin reset when requested with emailResetPin().
 	 *
-	 * @param  $patron
-	 * @param  $newPin
-	 * @param  $resetToken
+	 * @param  User $patron
+	 * @param  string $newPin
+	 * @param  string $resetToken
 	 * @return array|bool
 	 * @throws ErrorException
 	 */
 	public function resetPin($patron, $newPin, $resetToken){
-
-		$pinReset = new PinReset();
+		$pinReset         = new PinReset();
 		$pinReset->userId = $patron->id;
 		$pinReset->find(true);
 		if(!$pinReset->N) {
-			return ['error' => 'Unable to reset your PIN. Please try again later.'];
+			return ['error' => 'Unable to reset your ' . translate('pin') . '. Please try again later.'];
 		} elseif($pinReset->N == 0) {
-			return ['error' => 'Unable to reset your PIN. You have not requested a PIN reset.'];
+			return ['error' => 'Unable to reset your ' . translate('pin') . '. You have not requested a ' . translate('pin') . ' reset.'];
 		}
 		// expired?
 		if($pinReset->expires < time()) {
-			return ['error' => 'The reset token has expired. Please request a new PIN reset.'];
+			return ['error' => 'The reset token has expired. Please request a new ' . translate('pin') . ' reset.'];
 		}
-		$token = $pinReset->selector.$pinReset->token;
+		$token = $pinReset->selector . $pinReset->token;
 		// make sure and type cast the two numbers
 		if ((int)$token != (int)$resetToken) {
-			return ['error' => 'Unable to reset your PIN. Invalid reset token.'];
+			return ['error' => 'Unable to reset your ' . translate('pin') . '. Invalid reset token.'];
 		}
 		// everything is good
-		$patronId = $this->getPatronId($patron);
-		$operation = 'patrons/'.$patronId;
+		global $configArray;
+		$patronId  = $this->getPatronId($patron);
+		$operation = 'patrons/' . $patronId;
 		$params    = ['pin' => (string)$newPin];
+		if (!empty($configArray['Catalog']['patronPinSetTimeField'])){
+			// Taken from setPatronPinSetTimeInILS()
+			// Set the patron pin set time in the same call
+			$params['varFields'] = [(object)[
+				'fieldTag' => $configArray['Catalog']['patronPinSetTimeField'],
+				'content'  => date('Y-m-d H:i:s')]
+			];
+		}
 
 		// update sierra first
 		$r = $this->_doRequest($operation, $params, 'PUT');
-		if(!$r) {
+		if (!$r){
 			$message = $this->_getPrettyError();
-			return ['error' => 'Could not update PIN: '. $message];
+			$this->logger->error('Error updating pin in Sierra for user ' . $patron->id, [$message]);
+			return ['error' => 'Could not update ' . translate('pin') . ': ' . $message];
 		}
 		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
-		$r = $patron->setPassword($newPin);
-		if(!$r) {
+		$r              = $patron->updatePassword($newPin);
+		if (!$r){
 			// this shouldn't matter since we hit the api first when logging in a patron, but ....
+			$this->logger->error('Error updating pin in pika db for user ' . $patron->id);
 			$this->cache->delete($patronCacheKey);
-			return ['error' => 'Please try logging in with you new PIN. If you are unable to login please contact your library.'];
+			return ['error' => 'Please try logging in with your new ' . translate('pin') . '. If you are unable to login please contact your library.'];
 		}
 		$pinReset->delete();
 		$this->cache->delete($patronCacheKey);
@@ -1147,41 +1210,40 @@ class Sierra  implements \DriverInterface {
 	 * @throws \PHPMailer\PHPMailer\Exception
 	 */
 	public function emailResetPin($barcode) {
-		$patron = new User();
+		$patron          = new User();
 		$patron->barcode = $barcode;
-
-		$patron->find(true);
-		if(! $patron->N || $patron->N == 0) {
+		if ($patron->find(true)){
 			// might be a new user
-			if($patronId = $this->getPatronId($barcode)) {
+			if ($patronId = $this->getPatronId($barcode)){
 				// load them in the database.
 				unset($patron);
 				$patron = $this->getPatron($patronId);
-			} else {
-				return ['error' => 'Unable to find an account associated with barcode: '.$barcode ];
+			}else{
+				return ['error' => 'Unable to find an account associated with barcode: ' . $barcode];
 			}
 		}
-		if(!isset($patron->email) || $patron->email == '') {
-			return ['error' => 'You do not have an email address on your account. Please visit your library to reset your pin.'];
+		if (empty($patron->email)){
+			return ['error' => 'You do not have an email address on your account. Please visit your library to reset your ' . translate('pin') . '.'];
 		}
 
 		// make sure there's no old token.
-		$pinReset = new PinReset();
+		$pinReset         = new PinReset();
 		$pinReset->userId = $patron->id;
 		$pinReset->delete();
 		// to be safe after delete is called ...
 		$pinReset->userId = $patron->id;
 
 		$resetToken = $pinReset->insertReset();
-		// build reset url
+		// build reset url (Note: the site url gets automatically set as the interface url
 		$resetUrl = $this->configArray['Site']['url'] . "/MyAccount/ResetPin?uid=".$patron->id.'&resetToken='.$resetToken;
 
 		// build the message
-		$subject = "Pin Reset Link";
+		$pin         = translate('pin');
+		$subject     = ucfirst($pin) . ' Reset Link';
 		$htmlMessage = <<<EOT
-		<p>We received a password reset request. The link to reset your password is below.  
+		<p>We received a $pin reset request. The link to reset your $pin is below.  
 If you did not make this request, you can ignore this email</p>  
-<p>Here is your password reset link:</br>  
+<p>Here is your $pin reset link:</br>  
 $resetUrl
 EOT;
 
@@ -1224,36 +1286,36 @@ EOT;
 
 		global $library;
 		// sanity checks
-		if(!property_exists($library, 'selfRegistrationDefaultpType') || empty($library->selfRegistrationDefaultpType)) {
+		if (!property_exists($library, 'selfRegistrationDefaultpType') || empty($library->selfRegistrationDefaultpType)){
 			$message = 'Missing configuration parameter selfRegistrationDefaultpType for ' . $library->displayName;
 			$this->logger->error($message);
 			throw new InvalidArgumentException($message);
 		}
-		if(!property_exists($library, 'selfRegistrationAgencyCode') || empty($library->selfRegistrationAgencyCode)) {
+		if (!property_exists($library, 'selfRegistrationAgencyCode') || empty($library->selfRegistrationAgencyCode)){
 			$message = 'Missing configuration parameter selfRegistrationAgencyCode for ' . $library->displayName;
 			$this->logger->error($message);
 			throw new InvalidArgumentException($message);
 		}
 
 		$params = [];
-		foreach ($_POST as $key=>$val) {
-			switch ($key) {
+		foreach ($_POST as $key => $val){
+			switch ($key){
 				case 'email':
-					$val = trim($val);
+					$val          = trim($val);
 					$successEmail = false;
-					if(!empty($val)){
-						$successEmail = $val;
+					if (!empty($val)){
+						$successEmail       = $val;
 						$params['emails'][] = $val;
 					}
 					break;
 				case 'address': // street part of address
-					$val = trim($val);
+					$val                                = trim($val);
 					$params['addresses'][0]['lines'][0] = $val;
-					$params['addresses'][0]['type'] = 'a';
+					$params['addresses'][0]['type']     = 'a';
 					break;
 				case 'altaddress':
 					$val = trim($val);
-					if(!empty($val)){
+					if (!empty($val)){
 						$params['addresses'][1]['lines'][0] = $val;
 					}else{
 						$params['addresses'][1]['lines'][0] = 'none';
@@ -1262,24 +1324,24 @@ EOT;
 					break;
 				case 'primaryphone':
 					$val = trim($val);
-					if(!empty($val)){
-						$params['phones'][] = ['number'=>$val, 'type'=>'t'];
+					if (!empty($val)){
+						$params['phones'][] = ['number' => $val, 'type' => 't'];
 					}
 					break;
 				case 'altphone':
 					$val = trim($val);
-					if(!empty($val)){
-						$params['phones'][] = ['number'=>$val, 'type'=>'p'];
+					if (!empty($val)){
+						$params['phones'][] = ['number' => $val, 'type' => 'p'];
 					}
 					break;
 				case 'birthdate':
-					if(!empty($val)) {
+					if (!empty($val)){
 						$date                = DateTime::createFromFormat('m-d-Y', $val);
 						$params['birthDate'] = $date->format('Y-m-d');
 					}
 					break;
 				case 'homelibrarycode':
-					if(!empty($val)){
+					if (!empty($val)){
 						$params['homeLibraryCode'] = $val;
 					}
 					break;
@@ -1295,65 +1357,75 @@ EOT;
 		// it's possible to register a patron with a barcode that is already in Sierra so make sure this doesn't happen
 		$barcodeTest = true;
 		do {
-			$barcode = (string)mt_rand((int)$min, (int)$max);
+			$barcode     = (string)mt_rand((int)$min, (int)$max);
 			$barcodeTest = $this->getPatronId($barcode);
 		} while ($barcodeTest === true);
 		$params['barcodes'][] = $barcode;
 
 		// agency code -- not all sierra libraries use the agency field
-		if($library->selfRegistrationAgencyCode >= 1) {
+		if ($library->selfRegistrationAgencyCode >= 1){
 			$params['fixedFields']["158"] = [
-			 "label" => "PAT AGENCY",
-			 "value" => $library->selfRegistrationAgencyCode
+				"label" => "PAT AGENCY",
+				"value" => $library->selfRegistrationAgencyCode
 			];
 		}
 		// expiration date
-		$interval = 'P'.$library->selfRegistrationDaysUntilExpire.'D';
+		$interval   = 'P' . $library->selfRegistrationDaysUntilExpire . 'D';
 		$expireDate = new DateTime();
 		$expireDate->add(new DateInterval($interval));
 		$params['expirationDate'] = $expireDate->format('Y-m-d');
 
 		// names -- standard is Last, First Middle
-		$name  = trim($_POST['lastname']) . ", ";
+		$name = trim($_POST['lastname']) . ", ";
 		$name .= trim($_POST['firstname']);
-		if(!empty($_POST['middlename'])) {
-			$name .= ' '.trim($_POST['middlename']);
+		if (!empty($_POST['middlename'])){
+			$name .= ' ' . trim($_POST['middlename']);
 		}
 		$params['names'][] = $name;
 
 		// city state and zip
-		$cityStateZip = trim($_POST['city']).', '.trim($_POST['state']).' '.trim($_POST['zip']);
+		$cityStateZip = trim($_POST['city']) . ', ' . trim($_POST['state']) . ' ' . trim($_POST['zip']);
 		// address line 2
 		$params['addresses'][0]['lines'][1] = $cityStateZip;
 
 		// if library uses pins
-		if($this->accountProfile->loginConfiguration == "barcode_pin") {
-			$pin = trim($_POST['pin']);
+		if ($this->accountProfile->usingPins()){
+			$pin        = trim($_POST['pin']);
 			$pinConfirm = trim($_POST['pinconfirm']);
 
-			if(!($pin == $pinConfirm)) {
-				return ['success'=>false, 'barcode'=>''];
-			} else {
+			if (!($pin == $pinConfirm)){
+				return ['success' => false, 'barcode' => ''];
+			}else{
 				$params['pin'] = $pin;
 			}
 		}
 
+		// Set Pin set time
+		if (!empty($configArray['Catalog']['patronPinSetTimeField'])){
+			// Taken from setPatronPinSetTimeInILS()
+			// Set the patron pin set time in the same call
+			$params['varFields'] = [(object)[
+				'fieldTag' => $configArray['Catalog']['patronPinSetTimeField'],
+				'content'  => date('Y-m-d H:i:s')]
+			];
+		}
+
 		// EXTRA SELF REG PARAMETERS
 		// do this last in case there are any parameters set up that need to be overridden
-		if($extraSelfRegParams) {
+		if ($extraSelfRegParams){
 			$params = array_merge($params, $extraSelfRegParams);
 		}
 
-		$this->logger->debug('Self registering patron', ['params'=>$params]);
-		$operation = "patrons/";
-		$r = $this->_doRequest($operation, $params, "POST");
+		$this->logger->debug('Self registering patron', ['params' => $params]);
+		$operation = 'patrons/';
+		$r         = $this->_doRequest($operation, $params, 'POST');
 
-		if(!$r) {
+		if (!$r){
 			$this->logger->warning('Failed to self register patron');
-			return ['success'=>false, 'barcode'=>''];
+			return ['success' => false, 'barcode' => ''];
 		}
 
-		if($successEmail) {
+		if ($successEmail){
 			$emailSent = $this->sendSelfRegSuccessEmail($barcode);
 		}
 
@@ -1383,121 +1455,147 @@ EOT;
 		$l->orderBy('displayName');
 		$homeLocations = $l->fetchAll('code', 'displayName');
 
-		$fields[] = ['property'   => 'firstname',
-		             'type'       => 'text',
-		             'label'      => 'First name',
-		             'description'=> 'Your first name',
-		             'maxLength'  => 30,
-		             'required'   => true];
+		$fields[] = [
+			'property'    => 'firstname',
+			'type'        => 'text',
+			'label'       => 'First name',
+			'description' => 'Your first name',
+			'maxLength'   => 30,
+			'required'    => true
+		];
 
-		$fields[] = ['property'   => 'middlename',
-		             'type'       => 'text',
-		             'label'      => 'Middle name',
-		             'description'=> 'Your middle name or initial',
-		             'maxLength'  => 30,
-		             'required'   => false];
+		$fields[] = [
+			'property'    => 'middlename',
+			'type'        => 'text',
+			'label'       => 'Middle name',
+			'description' => 'Your middle name or initial',
+			'maxLength'   => 30,
+			'required'    => false
+		];
 
-		$fields[] = ['property'   => 'lastname',
-		             'type'       => 'text',
-		             'label'      => 'Last name',
-		             'description'=> 'Your last name (surname)',
-		             'maxLength'  => 30,
-		             'required'   => true];
+		$fields[] = [
+			'property'    => 'lastname',
+			'type'        => 'text',
+			'label'       => 'Last name',
+			'description' => 'Your last name (surname)',
+			'maxLength'   => 30,
+			'required'    => true
+		];
 
-		$fields[] = ['property'   => 'homelibrarycode',
-		             'type'       => 'enum',
-		             'label'      => 'Home Library/Preferred pickup location',
-		             'description'=> 'Your home library and preferred pickup location.',
-		             'values'     => $homeLocations,
-		             'required'   => true];
+		$fields[] = [
+			'property'    => 'homelibrarycode',
+			'type'        => 'enum',
+			'label'       => 'Home Library/Preferred pickup location',
+			'description' => 'Your home library and preferred pickup location.',
+			'values'      => $homeLocations,
+			'required'    => true
+		];
 
 		// allow usernames?
-		if($this->hasUsernameField()) {
-			$fields[] = ['property'   => 'username',
-			             'type'       => 'text',
-			             'label'      => 'Username',
-			             'description'=> 'Set an optional username.',
-			             'maxLength'  => 20,
-			             'required'   => false];
+		if ($this->hasUsernameField()){
+			$fields[] = [
+				'property'    => 'username',
+				'type'        => 'text',
+				'label'       => 'Username',
+				'description' => 'Set an optional username.',
+				'maxLength'   => 20,
+				'required'    => false
+			];
 		}
 		// if library would like a birthdate
 		if ($library && $library->promptForBirthDateInSelfReg){
-			$fields[] = ['property'   => 'birthdate',
-			             'type'       => 'date',
-			             'label'      => 'Date of Birth (MM-DD-YYYY)',
-			             'description'=> 'Date of birth',
-			             'maxLength'  => 10,
-			             'required'   => true];
+			$fields[] = [
+				'property'    => 'birthdate',
+				'type'        => 'date',
+				'label'       => 'Date of Birth (MM-DD-YYYY)',
+				'description' => 'Date of birth',
+				'maxLength'   => 10,
+				'required'    => true
+			];
 		}
 
-		$fields[] = ['property'   => 'address',
-		             'type'       => 'text',
-		             'label'      => 'Mailing Address',
-		             'description'=> 'Mailing Address.',
-		             'maxLength'  => 40,
-		             'required'   => true];
+		$fields[] = [
+			'property'    => 'address',
+			'type'        => 'text',
+			'label'       => 'Mailing Address',
+			'description' => 'Mailing Address.',
+			'maxLength'   => 40,
+			'required'    => true
+		];
 
-		$fields[] = ['property'   => 'city',
-		             'type'       => 'text',
-		             'label'      => 'City',
-		             'description'=> 'The city you receive mail in.',
-		             'maxLength'  => 20,
-		             'required'   => true];
+		$fields[] = [
+			'property'    => 'city',
+			'type'        => 'text',
+			'label'       => 'City',
+			'description' => 'The city you receive mail in.',
+			'maxLength'   => 20,
+			'required'    => true
+		];
 
-		$fields[] = ['property'   => 'state',
-		             'type'       => 'text',
-		             'label'      => 'State',
-		             'description'=> 'The state you receive mail in.',
-		             'maxLength'  => 20,
-		             'required'   => true];
+		$fields[] = [
+			'property'    => 'state',
+			'type'        => 'text',
+			'label'       => 'State',
+			'description' => 'The state you receive mail in.',
+			'maxLength'   => 20,
+			'required'    => true
+		];
 
-		$fields[] = ['property'   => 'zip',
-		             'type'       => 'text',
-		             'label'      => 'ZIP code',
-		             'description'=> 'The ZIP code for your mail.',
-		             'maxLength'  => 16,
-		             'required'   => true];
+		$fields[] = [
+			'property'    => 'zip',
+			'type'        => 'text',
+			'label'       => 'ZIP code',
+			'description' => 'The ZIP code for your mail.',
+			'maxLength'   => 16,
+			'required'    => true
+		];
 
-		$fields[] = ['property'   => 'email',
-		             'type'       => 'email',
-		             'label'      => 'Email',
-		             'description'=> 'Your email address',
-		             'maxLength'  => 50,
-		             'required'   => false];
+		$fields[] = [
+			'property'    => 'email',
+			'type'        => 'email',
+			'label'       => 'Email',
+			'description' => 'Your email address',
+			'maxLength'   => 50,
+			'required'    => false
+		];
 
-		$fields[] = ['property'   => 'primaryphone',
-		             'type'       => 'text',
-		             'label'      => 'Primary phone (XXX-XXX-XXXX)',
-		             'description'=> 'Your primary phone number.',
-		             'maxLength'  => 20,
-		             'required'   => false];
+		$fields[] = [
+			'property'    => 'primaryphone',
+			'type'        => 'text',
+			'label'       => 'Primary phone (XXX-XXX-XXXX)',
+			'description' => 'Your primary phone number.',
+			'maxLength'   => 20,
+			'required'    => false
+		];
 
 		if ($library && $library->showWorkPhoneInProfile){
-			$fields[] = ['property'   => 'altphone',
-			             'type'       => 'text',
-			             'label'      => 'Work phone (XXX-XXX-XXXX)',
-			             'description'=> 'Work Phone',
-			             'maxLength'  => 40,
-			             'required'   => true];
+			$fields[] = [
+				'property'    => 'altphone',
+				'type'        => 'text',
+				'label'       => 'Work phone (XXX-XXX-XXXX)',
+				'description' => 'Work Phone',
+				'maxLength'   => 40,
+				'required'    => true
+			];
 		}
 		
 		// if library uses pins
-		if($this->accountProfile->loginConfiguration == "barcode_pin") {
+		if($this->accountProfile->usingPins()) {
 			$fields[] = [
 				'property'    => 'pin',
 				'type'        => 'pin',
-				'label'       => 'PIN',
-				'description' => 'Please set a PIN (personal identification number).',
-				'maxLength'   => 10,
+				'label'       => translate('PIN'),
+				'description' => 'Please set a ' . translate('pin') . '.',
+//				'maxLength'   => 10,
 				'required'    => true
 			];
 
 			$fields[] = [
 				'property'    => 'pinconfirm',
 				'type'        => 'pin',
-				'label'       => 'Confirm PIN',
-				'description' => 'Please reenter your PIN.',
-				'maxLength'   => 10,
+				'label'       => 'Confirm ' . translate('PIN'),
+				'description' => 'Please confirm your ' . translate('pin') . '.',
+//				'maxLength'   => 10,
 				'required'    => true
 			];
 		}
@@ -1683,14 +1781,18 @@ EOT;
 			return false;
 		}
 
-		$operation = "patrons/".$patronId."/holds";
-		if((integer)$this->configArray['Catalog']['api_version'] > 4) {
-			$params=["fields" => "default,pickupByDate,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate",
-			         "limit"  => 1000,
-			         "expand" => "record"];
-		} else {
-			$params=["fields" => "default,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate",
-			         "limit"  => 1000];
+		$operation = "patrons/$patronId/holds";
+		if ((integer)$this->configArray['Catalog']['api_version'] > 4){
+			$params = [
+				'fields' => 'default,pickupByDate,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate',
+				'limit'  => 1000,
+				'expand' => 'record'
+			];
+		}else{
+			$params = [
+				'fields' => 'default,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate',
+				'limit'  => 1000
+			];
 		}
 		$holds = $this->_doRequest($operation, $params);
 
@@ -1997,7 +2099,7 @@ EOT;
 		// because the patron object has holds information we need to clear that cache too.
 		$patronObjectCacheKey = $this->cache->makePatronKey('holds', $patron->id);
 		if(!$this->cache->delete($patronObjectCacheKey)) {
-			$this->logger->warn("Failed to remove patron from memcache: ".$patronObjectCacheKey);
+			$this->logger->warn("Failed to remove patron from memcache: " . $patronObjectCacheKey);
 		}
 
 		$params = [
@@ -2014,7 +2116,7 @@ EOT;
 		$r = $this->_doRequest($operation, $params, "POST");
 
 		// check if error we need to do an item level hold
-		if($this->apiLastError && stristr($this->apiLastError,'Volume record selection is required to proceed')
+		if ($this->apiLastError && stristr($this->apiLastError, 'Volume record selection is required to proceed')
 		   || (stristr($this->apiLastError,"This record is not available") && (integer)$this->configArray['Catalog']['api_version'] == 4)) {
 
 			$itemsAsVolumes = $r->details->itemsAsVolumes ?? null; // Response when item level hold is required includes the list of items
@@ -2038,7 +2140,7 @@ EOT;
 		}
 
 		// oops! something went wrong.
-		if(!$r) {
+		if (!$r){
 			$return['success'] = false;
 			if ($this->apiLastError) {
 				$message = $this->_getPrettyError();
@@ -2054,8 +2156,8 @@ EOT;
 		$return['success'] = true;
 
 		// get title of record
-		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
-		$recordTitle  = $record->isValid() ? $record->getTitle() : null;
+		$record      = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
+		$recordTitle = $record->isValid() ? $record->getTitle() : null;
 
 		if($recordTitle) {
 			$recordTitle = trim($recordTitle, ' /');
@@ -2347,7 +2449,7 @@ EOT;
 	 * @throws ErrorException
 	 */
 	public function deleteAllReadingHistory($patron) {
-		$patronId = $this->getPatronId($patron->barcode);
+		$patronId = $this->getPatronId($patron);
 
 		if(!$patronId) {
 			return false;
@@ -2378,15 +2480,15 @@ EOT;
 		$bibIds = [];
 		foreach($selectedTitles as $key => $val) {
 			$selectedId = trim($val, 'rsh');
-			$h = new ReadingHistoryEntry();
-			$h->id = $selectedId;
+			$h          = new ReadingHistoryEntry();
+			$h->id      = $selectedId;
 			$h->find(true);
-			if($h) {
+			if ($h){
 				$bibId = 0;
 			}
 		}
 
-		$patronId = $this->getPatronId($patron->barcode);
+		$patronId = $this->getPatronId($patron);
 		if(!$patronId) {
 			return false;
 		}
@@ -2438,7 +2540,7 @@ EOT;
 			return ['historyActive' => false, 'numTitles' => 0, 'titles' => []];
 		}
 
-		$patronSierraId = $this->getPatronId($patron->barcode);
+		$patronSierraId = $this->getPatronId($patron);
 
 		$patronReadingHistoryCacheKey = $this->cache->makePatronKey('history', $patron->id);
 		$patronCachedReadingHistory   = $this->cache->get($patronReadingHistoryCacheKey);
@@ -2579,8 +2681,8 @@ EOT;
 	 * @throws ErrorException
 	 */
 	public function loadReadingHistoryFromIls($patron, $loadAdditional = null){
-		$patronId       = $this->getPatronId($patron->barcode);
-		if ($patronId  == false){
+		$patronId = $this->getPatronId($patron);
+		if ($patronId == false){
 			return false;
 		}
 		set_time_limit(300);
@@ -2693,7 +2795,7 @@ EOT;
 			$apiVersion  = (int)$this->configArray['Catalog']['api_version'];
 			if ($apiVersion >= 6){
 				$recordNumber = substr($bibId, 2, -1); // remove the .x and the last check digit
-				$patronIlsId  = $this->getPatronId($patron->barcode);
+				$patronIlsId  = $this->getPatronId($patron);
 				$operation    = "patrons/$patronIlsId/holds/requests/form";
 				$params       = ['recordNumber' => $recordNumber];
 				$res          = $this->_doRequest($operation, $params);
@@ -2872,82 +2974,117 @@ EOT;
 	 * @throws ErrorException
 	 */
 	protected function _authBarcodePin(string $barcode, string $pin) {
-		// if using username field check if username exists
-		// username replaces barcode
-		if($this->hasUsernameField()) {
-			$params = [
-			'varFieldTag'     => 'i',
-			'varFieldContent' => $barcode,
-			'fields'          => 'barcodes',
-			];
-
-			$provisionSierraUserId = null;
-			$operation = 'patrons/find';
-			$r = $this->_doRequest($operation, $params);
-
-			if(!empty($r->barcodes)) {
-				// Note: for sacramento student ids, this call doesn't not return any barcodes
-				$barcode             = $r->barcodes[0];
-				$this->patronBarcode = $barcode;
-				// this call also returns the sierra id; keep it so we can skip an extra call after pin validation
-			}
-
-			if (!empty($r->id)){
-				// The call above can return an Id even if it doesn't return a barcode, eg for sacramento students
-				$provisionSierraUserId = $r->id;
-			}
-		}
-
 		$params = [
-			"barcode" => $barcode,
-			"pin"     => $pin,
+			'authMethod'   => 'native',
+			'patronId'     => $barcode,
+			'patronSecret' => $pin
 		];
 
-		//This setting is required for Sacramento student Ids to get a good pin validation response.
-		//  I suspect that there is an ILS setting that overrides this any way (pascal 2/6/2020)
-		if ($this->configArray['Catalog']['barcodeCaseSensitive']) {
-			$params["caseSensitivity"] = true;
-		} else {
-			$params["caseSensitivity"] = false;
-		}
-
-		if (!$this->_doRequest("patrons/validate", $params, "POST")) {
-			return false;
-		}
-
-		if (!empty($provisionSierraUserId)){
-			$patronId = $provisionSierraUserId; // now that the user passed validation, set the patron id from the barcode lookup above.
-		} elseif(!$patronId = $this->getPatronId($barcode)){
+		$patronId = $this->_doRequest('patrons/auth', $params, 'POST');
+		if (!$patronId) {
 			return false;
 		}
 
 		// check that pin matches database
 		$patron            = new User();
 		$patron->ilsUserId = $patronId;
-		$patron->find(true);
+
 		// if we don't find a patron in database, do insert. Will be populated with data retrieved from api
-		if ($patron->N == 0){
+		if (!$patron->find(true)){
+			$patron            = new User();
 			$patron->created   = date('Y-m-d');
 			$patron->ilsUserId = $patronId;
 			$patron->barcode   = $barcode;
+			$patron->setPassword($pin);
 			$patron->insert();
-			// insert pin
-			$patron = new User();
-			$patron->ilsUserId = $patronId;
-			$patron->find(true);
-			if ($patron->N >= 1) {
+		}else{
+			// Update the stored pin if it has changed
+			$password = $patron->getPassword();
+			if ($password != $pin){
 				$patron->updatePassword($pin);
 			}
 		}
 
-		// Update the stored pin if it has changed
-		$password = $patron->getPassword();
-		if($password != $pin) {
-			$patron->updatePassword($pin);
-		}
-
 		return $patronId;
 	}
+
+	//	protected function _authBarcodePin(string $barcode, string $pin) {
+//		// if using username field check if username exists
+//		// username replaces barcode
+//		if($this->hasUsernameField()) {
+//			$params = [
+//			'varFieldTag'     => 'i',
+//			'varFieldContent' => $barcode,
+//			'fields'          => 'barcodes',
+//			];
+//
+//			$provisionSierraUserId = null;
+//			$operation = 'patrons/find';
+//			$r = $this->_doRequest($operation, $params);
+//
+//			if(!empty($r->barcodes)) {
+//				// Note: for sacramento student ids, this call doesn't not return any barcodes
+//				$barcode             = $r->barcodes[0];
+//				$this->patronBarcode = $barcode;
+//				// this call also returns the sierra id; keep it so we can skip an extra call after pin validation
+//			}
+//
+//			if (!empty($r->id)){
+//				// The call above can return an Id even if it doesn't return a barcode, eg for sacramento students
+//				$provisionSierraUserId = $r->id;
+//			}
+//		}
+//
+//		$params = [
+//			'barcode' => $barcode,
+//			'pin'     => $pin,
+//		];
+//
+//		//This setting is required for Sacramento student Ids to get a good pin validation response.
+//		//  I suspect that there is an ILS setting that overrides this any way (pascal 2/6/2020)
+//		if ($this->configArray['Catalog']['barcodeCaseSensitive']) {
+//			$params['caseSensitivity'] = true;
+//		} else {
+//			$params['caseSensitivity'] = false;
+//		}
+//
+//		if (!$this->_doRequest('patrons/validate', $params, 'POST')) {
+//			return false;
+//		}
+//
+//		if (!empty($provisionSierraUserId)){
+//			$patronId = $provisionSierraUserId; // now that the user passed validation, set the patron id from the barcode lookup above.
+//		} elseif(!$patronId = $this->getPatronId($barcode)){
+//			return false;
+//		}
+//
+//		// check that pin matches database
+//		$patron            = new User();
+//		$patron->ilsUserId = $patronId;
+//		$patron->find(true);
+//		// if we don't find a patron in database, do insert. Will be populated with data retrieved from api
+//		if ($patron->N == 0){
+//			$patron->created   = date('Y-m-d');
+//			$patron->ilsUserId = $patronId;
+//			$patron->barcode   = $barcode;
+//			$patron->insert();
+//			// insert pin
+//			$patron            = new User();
+//			$patron->ilsUserId = $patronId;
+//			$patron->find(true);
+//			if ($patron->N >= 1) {
+//				$patron->updatePassword($pin);
+//			}
+//		}
+//
+//		// Update the stored pin if it has changed
+//		$password = $patron->getPassword();
+//		if($password != $pin) {
+//			$patron->updatePassword($pin);
+//		}
+//
+//		return $patronId;
+//	}
 
 	/**
 	 * function _oAuth
@@ -3041,13 +3178,13 @@ EOT;
 	 * @return bool|object         Returns false fail or JSON object
 	 * @throws ErrorException
 	 */
-	protected function _doRequest($operation, $params = array(), $method = "GET", $extraHeaders = null) {
+	protected function _doRequest($operation, $params = [], $method = 'GET', $extraHeaders = null) {
 		$this->apiLastError = false;
 		// setup headers
 		// These headers are common to all Sierra API except token requests.
 		$headers = [
 			'Host'           => parse_url($this->apiUrl, PHP_URL_HOST),
-			'Authorization'  => 'Bearer '.$this->oAuthToken,
+			'Authorization' => 'Bearer ' . $this->oAuthToken,
 			'User-Agent'     => 'Pika',
 			'X-Forwarded-For'=> $_SERVER['SERVER_ADDR']
 		];
@@ -3066,7 +3203,7 @@ EOT;
 		if($operation == 'about'){
 			$operationUrl = $this->aboutUrl;
 		}else{
-			$operationUrl = $this->apiUrl.$operation;
+			$operationUrl = $this->apiUrl . $operation;
 		}
 		try {
 			$c = new Curl();
@@ -3167,13 +3304,13 @@ EOT;
 		// base url for following calls
 		$vendorOpacUrl = $this->accountProfile->vendorOpacUrl;
 
-		$headers = [
-			"Accept"         => "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5",
-			"Cache-Control"  => "max-age=0",
-			"Connection"     => "keep-alive",
-			"Accept-Charset" => "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
-			"Accept-Language"=> "en-us,en;q=0.5",
-			"User-Agent"     => "Pika"
+		$headers       = [
+			'Accept'          => 'text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5',
+			'Cache-Control'   => 'max-age=0',
+			'Connection'      => 'keep-alive',
+			'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
+			'Accept-Language' => 'en-us,en;q=0.5',
+			'User-Agent'      => 'Pika'
 		];
 		$c->setHeaders($headers);
 
@@ -3192,26 +3329,22 @@ EOT;
 		$c->setOpts($curlOpts);
 
 		// first log patron in
-		if($this->accountProfile->loginConfiguration == "barcode_pin") {
-			$postData = [
-				'code' => $patron->barcode,
-				'pin'  => $patron->getPassword()
-			];
-		} else {
-			$postData = [
-				'name' => $patron->cat_username,
-				'code' => $patron->barcode
-			];
-		}
+		$postData = $this->accountProfile->usingPins() ? [
+			'code' => $patron->barcode,
+			'pin'  => $patron->getPassword()
+		] : [
+			'name' => $patron->cat_username,
+			'code' => $patron->barcode
+		];
 		$loginUrl = $vendorOpacUrl . '/patroninfo/';
-		$r = $c->post($loginUrl, $postData);
+		$r        = $c->post($loginUrl, $postData);
 
-		if($c->isError()) {
+		if ($c->isError()){
 			$c->close();
 			return false;
 		}
 
-		if(!stristr($r, $patron->cat_username)) {
+		if (!stristr($r, $patron->cat_username)){
 			// check for cas login. do cas login if possible
 			$casUrl = '/iii/cas/login';
 			if(stristr($r, $casUrl)) {
@@ -3234,9 +3367,9 @@ EOT;
 		}
 
 		// now we can call the optin or optout url
-		$scope = isset($this->configArray['OPAC']['defaultScope']) ? $this->configArray['OPAC']['defaultScope'] : '93';
-		$patronId = $this->getPatronId($patron->barcode);
-		$optUrl = $vendorOpacUrl . "/patroninfo~S". $scope. "/" . $patronId . "/readinghistory/" . $optInOptOut;
+		$scope    = $this->configArray['OPAC']['defaultScope'] ?? '93';
+		$patronId = $this->getPatronId($patron);
+		$optUrl   = $vendorOpacUrl . "/patroninfo~S" . $scope . "/" . $patronId . "/readinghistory/" . $optInOptOut;
 
 		//$c->setUrl();
 		$r = $c->get($optUrl);

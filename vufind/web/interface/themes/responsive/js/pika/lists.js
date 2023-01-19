@@ -98,6 +98,7 @@ Pika.Lists = (function(){
 			return this.submitListForm('saveList', page, pageSize, sort);
 		},
 
+		// No references to the method found. 1/19/23
 		clearSelectedList: function (){
 			var ids = Array();
 			var idStr = $('#myListActionData').val();
@@ -126,7 +127,7 @@ Pika.Lists = (function(){
 			var x = ids.length;
 			var list = " list";
 			if(x !=1){list = " lists";}
-			Pika.confirm("Are you sure you want to delete " + x + list + "? This cannot be undone.", function () {
+			Pika.confirm("<p class='alert alert-danger'>Are you sure you want to delete <strong>" + x + "</strong>" + list + "? <strong>This cannot be undone.</strong></p>", function () {
 				return Pika.Lists.submitToLists("deleteSelectedLists");
 
 			});

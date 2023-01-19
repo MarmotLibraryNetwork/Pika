@@ -77,23 +77,23 @@ class CarlX extends SIP2Driver{
 					}
 
 					$forceDisplayNameUpdate = false;
-					$firstName = isset($firstName) ? $firstName : '';
+					$firstName = $firstName ?? '';
 					if ($user->firstname != $firstName) {
 						$user->firstname = $firstName;
 						$forceDisplayNameUpdate = true;
 					}
-					$lastName = isset($lastName) ? $lastName : '';
+					$lastName = $lastName ?? '';
 					if ($user->lastname != $lastName){
-						$user->lastname = isset($lastName) ? $lastName : '';
+						$user->lastname = $lastName ?? '';
 						$forceDisplayNameUpdate = true;
 					}
 					if ($forceDisplayNameUpdate){
 						$user->displayName = '';
 					}
-					$user->fullname     = isset($fullName) ? $fullName : '';
-					$user->cat_username = $username;
-					$user->cat_password = $result->Patron->PatronPIN;
-					$user->email        = $result->Patron->Email;
+					$user->fullname = $fullName ?? '';
+					$user->barcode  = $username;
+					$user->email    = $result->Patron->Email;
+					$user->setPassword($result->Patron->PatronPIN);
 
 					if ($userExistsInDB && $user->trackReadingHistory != $result->Patron->LoanHistoryOptInFlag) {
 						$user->trackReadingHistory = $result->Patron->LoanHistoryOptInFlag;
@@ -129,7 +129,7 @@ class CarlX extends SIP2Driver{
 					}
 
 					$user->patronType  = $result->Patron->PatronType; // Example: "ADULT"
-					$user->web_note    = '';
+					$user->webNote     = '';
 					$user->phone       = $result->Patron->Phone1;
 
 					$user->setUserExpirationSettings($this->extractDateFromCarlXDateField($result->Patron->ExpirationDate));
@@ -200,20 +200,20 @@ class CarlX extends SIP2Driver{
 
 		//renew the item via SIP 2
 		require_once ROOT_DIR . '/sys/SIP2.php';
-		$mysip = new sip2();
+		$mysip           = new sip2();
 		$mysip->hostname = $configArray['SIP2']['host'];
-		$mysip->port = $configArray['SIP2']['port'];
+		$mysip->port     = $configArray['SIP2']['port'];
 
-		$renew_result = array(
-				'success' => false,
-				'message' => array(),
-				'Renewed' => 0,
-				'Unrenewed' => $patron->numCheckedOutIls,
-				'Total' => $patron->numCheckedOutIls
-		);
+		$renew_result = [
+			'success'   => false,
+			'message'   => [],
+			'Renewed'   => 0,
+			'Unrenewed' => $patron->numCheckedOutIls,
+			'Total'     => $patron->numCheckedOutIls
+		];
 		if ($mysip->connect()) {
 			//send selfcheck status message
-			$in = $mysip->msgSCStatus();
+			$in         = $mysip->msgSCStatus();
 			$msg_result = $mysip->get_message($in);
 			// Make sure the response is 98 as expected
 			if (preg_match("/^98/", $msg_result)) {
@@ -232,10 +232,10 @@ class CarlX extends SIP2Driver{
 					$mysip->AN = '';
 				}
 
-				$mysip->patron    = $patron->cat_username;
-				$mysip->patronpwd = $patron->cat_password;
+				$mysip->patron    = $patron->barcode;
+				$mysip->patronpwd = $patron->getPassword();
 
-				$in = $mysip->msgRenewAll();
+				$in         = $mysip->msgRenewAll();
 				$msg_result = $mysip->get_message($in);
 				//print_r($msg_result);
 
@@ -262,24 +262,24 @@ class CarlX extends SIP2Driver{
 					}
 				}else{
 					$this->logger->error("Invalid message returned from SIP server '$msg_result''");
-					$renew_result['message'] = array("Invalid message returned from SIP server");
+					$renew_result['message'] = ["Invalid message returned from SIP server"];
 				}
 			}else{
 				$this->logger->error("Could not authenticate with the SIP server");
-				$renew_result['message'] = array("Could not authenticate with the SIP server");
+				$renew_result['message'] = ["Could not authenticate with the SIP server"];
 			}
 		}else{
 			$this->logger->error("Could not connect to the SIP server");
-			$renew_result['message'] = array("Could not connect to circulation server, please try again later.");
+			$renew_result['message'] = ["Could not connect to circulation server, please try again later."];
 		}
 
 		return $renew_result;
 	}
 
-	private $genericResponseSOAPCallOptions = array(
+	private $genericResponseSOAPCallOptions = [
 		'features' => SOAP_WAIT_ONE_WAY_CALLS, // This setting overcomes the SOAP client's expectation that there is no response from our update request.
-		'trace' => 1,                          // enable use of __getLastResponse, so that we can determine the response.
-	);
+		'trace'    => 1,                       // enable use of __getLastResponse, so that we can determine the response.
+	];
 
 	private function doSoapRequest($requestName, $request, $WSDL = '', $soapRequestOptions = array()) {
 		if (empty($WSDL)) { // Let the patron WSDL be the assumed default WSDL when not specified.
@@ -640,6 +640,13 @@ class CarlX extends SIP2Driver{
 		return $checkedOutTitles;
 	}
 
+	/**
+	 * @param User $user
+	 * @param $oldPin
+	 * @param $newPin
+	 * @param $confirmNewPin
+	 * @return string|void
+	 */
 	public function updatePin($user, $oldPin, $newPin, $confirmNewPin) {
 		$request = $this->getSearchbyPatronIdRequest($user);
 		$request->Patron->PatronPIN = $newPin;
@@ -657,23 +664,23 @@ class CarlX extends SIP2Driver{
 					if (!$success) {
 						// TODO: might not want to include sending message back to user
 						$errorMessage = $response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:LongMessage'];
-						return 'Failed to update your pin'. ($errorMessage ? ' : ' .$errorMessage : '');
+						return 'Failed to update your ' . translate('pin') . ($errorMessage ? ' : ' .$errorMessage : '');
 					} else {
-						$user->cat_password = $newPin;
+						$user->setPassword($newPin);
 						$user->update();
-						return "Your pin number was updated successfully.";
+						return 'Your ' . translate('pin') . ' was updated successfully.';
 					}
 
 				} else {
 
 					$this->logger->error('Unable to read XML from CarlX response when attempting to update Patron PIN.');
-					return 'Unable to update your pin.';
+					return 'Unable to update your ' . translate('pin') . '.';
 				}
 
 			} else {
 
 				$this->logger->error('CarlX ILS gave no response when attempting to update Patron PIN.');
-				return 'Unable to update your pin.';
+				return 'Unable to update your ' . translate('pin') . '.';
 			}
 		} elseif (!$result) {
 			return 'Failed to contact Circulation System.';
@@ -1448,7 +1455,15 @@ class CarlX extends SIP2Driver{
 	}
 
 
-	public function freezeThawHoldViaSIP($patron, $recordId, $itemToFreezeId = null, $dateToReactivate = null, $type = 'freeze'){
+	/**
+	 * @param User $patron
+	 * @param $recordId
+	 * @param $itemToFreezeId
+	 * @param $dateToReactivate
+	 * @param $type
+	 * @return array
+	 */
+	public function freezeThawHoldViaSIP($patron, $recordId, $itemToFreezeId = null, $dateToReactivate = null, $type = 'freeze'): array{
 		global $configArray;
 		//Place the hold via SIP 2
 		require_once ROOT_DIR . '/sys/SIP2.php';
@@ -1480,8 +1495,8 @@ class CarlX extends SIP2Driver{
 					$mySip->AN = '';
 				}
 
-				$mySip->patron    = $patron->cat_username;
-				$mySip->patronpwd = $patron->cat_password;
+				$mySip->patron    = $patron->barcode;
+				$mySip->patronpwd = $patron->getPassword();
 
 				$holdId = $recordId;
 
@@ -1516,12 +1531,12 @@ class CarlX extends SIP2Driver{
 				}
 			}
 		}
-		return array(
+		return [
 			'title'   => $title,
 			'bib'     => $recordId,
 			'success' => $success,
 			'message' => $message
-		);
+		];
 	}
 
 	private function getUnavailableHold($patron, $holdID) {
@@ -1575,8 +1590,8 @@ class CarlX extends SIP2Driver{
 					$mySip->AN = '';
 				}
 
-				$mySip->patron    = $patron->cat_username;
-				$mySip->patronpwd = $patron->cat_password;
+				$mySip->patron    = $patron->barcode;
+				$mySip->patronpwd = $patron->getPassword();
 
 				if (empty($pickupBranch)){
 					//Get the code for the location
@@ -1636,12 +1651,12 @@ class CarlX extends SIP2Driver{
 				}
 			}
 		}
-		return array(
+		return [
 				'title'   => $title,
 				'bib'     => $recordId,
 				'success' => $success,
 				'message' => $message
-		);
+		];
 	}
 
 
@@ -1681,8 +1696,8 @@ class CarlX extends SIP2Driver{
 					$mysip->AN = '';
 				}
 
-				$mysip->patron    = $patron->cat_username;
-				$mysip->patronpwd = $patron->cat_password;
+				$mySip->patron    = $patron->barcode;
+				$mySip->patronpwd = $patron->getPassword();
 
 				$in = $mysip->msgRenew($itemId, '', '', '', 'N', 'N', 'Y');
 				$msg_result = $mysip->get_message($in);
@@ -1709,11 +1724,11 @@ class CarlX extends SIP2Driver{
 			$message = "Could not connect to circulation server, please try again later.";
 		}
 
-		return array(
+		return [
 			'itemId'  => $itemId,
 			'success' => $success,
 			'message' => $message
-		);
+		];
 	}
 
 	/**

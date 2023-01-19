@@ -103,19 +103,20 @@ class NorthernWaters extends Sierra {
 		return $fields;
 	}
 
-	public function selfRegister($extraSelfRegParams = false)
-	{
+	public function selfRegister($extraSelfRegParams = false){
 		$countyTownshipString = '';
 		if (isset($_REQUEST['county']) && !empty($_REQUEST['county'])){
-			$county = trim($_REQUEST['county']);
+			$county               = trim($_REQUEST['county']);
 			$countyTownshipString .= "County: " . $county . "  ";
 		}
 		if (isset($_REQUEST['township']) && !empty($_REQUEST['township'])){
-			$township = trim($_REQUEST['township']);
+			$township             = trim($_REQUEST['township']);
 			$countyTownshipString .= "Township: " . $township;
 		}
-		$extraSelfRegParams['varFields'][] = ["fieldTag" => "x",
-		                                      "content"  => $countyTownshipString];
+		$extraSelfRegParams['varFields'][] = [
+			"fieldTag" => "x",
+			"content"  => $countyTownshipString
+		];
 		return parent::selfRegister($extraSelfRegParams);
 	}
 }

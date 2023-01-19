@@ -43,6 +43,7 @@ class User extends DB_DataObject {
 	protected $cat_password;
 	public $barcode;                        // string(50) Replaces $cat_username for sites using barcode/pin auth
 	protected $password;                       // string(128) password - Replaces $cat_password
+	public $lastPasswordSetTime;
 	public $patronType;
 	public $created;                         // datetime(19)  not_null binary
 	public $homeLocationId;                  // int(11)
@@ -79,7 +80,7 @@ class User extends DB_DataObject {
 	public $zip;
 	public $workPhone;
 	public $mobileNumber; //TODO: obsolete
-	public $web_note;
+	public $webNote;
 	public $expires;
 	public $expired;
 	public $expireClose;
@@ -213,7 +214,7 @@ class User extends DB_DataObject {
 	 * @return string
 	 */
 	public function getPassword() {
-		$password = $this->_decryptPassword($this->password);
+		$password = $this->_decryptPassword();
 		return $password;
 	}
 
@@ -227,7 +228,7 @@ class User extends DB_DataObject {
 	 */
 	public function setPassword($password) {
 		$encryptedPassword = $this->_encryptPassword($password);
-		$this->password = $encryptedPassword;
+		$this->password    = $encryptedPassword;
 	}
 
 	/**
@@ -237,15 +238,17 @@ class User extends DB_DataObject {
 	 * @param $password
 	 * @return boolean True on success or false on failure.
 	 */
-	public function updatePassword($password) {
-		$encryptedPassword = $this->_encryptPassword($password);
-		$sql = "UPDATE user SET password = '" . $encryptedPassword . "' WHERE id = " . $this->id . " LIMIT 1";
-
-		$result = $this->query($sql);
-		if(PEAR_Singleton::isError($result)) {
-			$this->logger->warn("Error updating password.", ["message"=>$result->getMessage(), "info"=>$result->userinfo]);
-		}elseif($result >= 1) {
+	public function updatePassword($password){
+		$encryptedPassword         = $this->_encryptPassword($password);
+		$this->password            = $encryptedPassword;
+		$this->lastPasswordSetTime = date('Y-m-d h:i:s');
+		$result                    = $this->update();
+		if (PEAR_Singleton::isError($result)){
+			$this->logger->error('Error updating password.', ['message' => $result->getMessage(), 'info' => $result->userinfo]);
+		}elseif ($result == 1){
 			return true;
+		} elseif ($result > 1){
+			$this->logger->error('More than one user was updated for password', [$this]);
 		}
 		return false;
 	}
@@ -283,54 +286,44 @@ class User extends DB_DataObject {
 	}
 
 	function __get($name){
-		if ($name == 'roles'){
-			return $this->getRoles();
-		}elseif ($name == 'linkedUsers'){
-			return $this->getLinkedUsers();
-		}elseif ($name == 'materialsRequestReplyToAddress'){
-			if (!isset($this->materialsRequestReplyToAddress)){
-				$this->getStaffSettings();
-			}
-			return $this->materialsRequestReplyToAddress;
-		}elseif ($name == 'materialsRequestEmailSignature'){
-			if (!isset($this->materialsRequestEmailSignature)){
-				$this->getStaffSettings();
-			}
-			return $this->materialsRequestEmailSignature;
-		}
-
-		// accessing the password attribute directly will return the encrupted password.
-		if($name == "password") {
-			//$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
-			//$this->logger->debug("Please use getPassword() when getting password from user object.", array("trace" => $calledBy));
-			return $this->password;
-		}
-
-		// handle deprecated cat_password and cat_username
-		if($name == 'cat_password') {
-			if ($accountProfile = $this->getAccountProfile()){
-				if ($accountProfile->loginConfiguration == 'barcode_pin' && $name == 'cat_username'){
-					return $this->barcode;
-				}elseif ($accountProfile->loginConfiguration == 'name_barcode' && $name == 'cat_password'){
-					$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
-					$this->logger->debug($name . '" accessed by " '. $calledBy['function'], ['trace' => $calledBy]);
-					return $this->barcode;
-				} else {
-					return $this->{$name};
+		switch ($name){
+			case 'roles':
+				return $this->getRoles();
+			case 'linkedUsers':
+				return $this->getLinkedUsers();
+			case 'materialsRequestReplyToAddress':
+				if (!isset($this->materialsRequestReplyToAddress)){
+					$this->getStaffSettings();
 				}
-			} else {
-				return $this->{$name};
-			}
-		}else{
-			return $this->data[$name];
+				return $this->materialsRequestReplyToAddress;
+			case 'materialsRequestEmailSignature':
+				if (!isset($this->materialsRequestEmailSignature)){
+					$this->getStaffSettings();
+				}
+				return $this->materialsRequestEmailSignature;
+			case 'password':
+				// accessing the password attribute directly will return the encrupted password.
+				//$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
+				//$this->logger->debug("Please use getPassword() when getting password from user object.", array("trace" => $calledBy));
+				return $this->password;
+			case 'cat_password':
+				// handle deprecated cat_password
+				$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
+				$this->logger->debug($name . '" accessed by " ' . $calledBy['function'], ['trace' => $calledBy]);
+				if ($accountProfile = $this->getAccountProfile()){
+					return $accountProfile->usingPins() ? $this->barcode : $this->getPassword();
+				}
+				break;
 		}
+
+		return $this->data[$name];
 	}
 
 	function __set($name, $value){
 		// for passwords, allows new object to set password for methods like $user->find
 		if($name == "password") {
 			$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
-			$this->logger->debug($name . " being set by " . $calledBy['function'], array("trace" => $calledBy));
+			$this->logger->debug($name . " being set by " . $calledBy['function'], ["trace" => $calledBy]);
 			$this->setPassword($value);
 			return;
 		}
@@ -339,11 +332,11 @@ class User extends DB_DataObject {
 		// If needed update barcode or password field
 		if($name == 'cat_password' || $name == 'cat_username') {
 			$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
-			$this->logger->debug($name . " being set by " . $calledBy['function'], array("trace" => $calledBy));
+			$this->logger->debug($name . " being set by " . $calledBy['function'], ["trace" => $calledBy]);
 			if ($accountProfile = $this->getAccountProfile()){
-				if ($accountProfile->loginConfiguration == 'barcode_pin' && $name == 'cat_username'){
+				if ($name == 'cat_username' && $accountProfile->usingPins()){
 					$this->barcode = $value;
-				}elseif ($accountProfile->loginConfiguration == 'name_barcode' && $name == 'cat_password'){
+				}elseif ($name == 'cat_password' && !$accountProfile->usingPins()){
 					$this->barcode = $value;
 				} else {
 					$this->{$name} = $value;
@@ -494,7 +487,7 @@ class User extends DB_DataObject {
 								if (empty($userData) || isset($_REQUEST['reload'])){
 									//Load full information from the catalog
 									$linkedAccountProfile = $linkedUser->getAccountProfile();
-									if($linkedAccountProfile->loginConfiguration == "barcode_pin") {
+									if($linkedAccountProfile->usingPins()) {
 										$userName = $linkedUser->barcode;
 										$password = $linkedUser->getPassword();
 									} else {
@@ -773,7 +766,7 @@ class User extends DB_DataObject {
 	static function getObjectStructure(){
 		require_once ROOT_DIR . '/sys/Administration/Role.php';
 		$user                   = UserAccount::getActiveUserObj();
-		$displayBarcode         = $user->getAccountProfile()->loginConfiguration != 'name_barcode'; // Do not show barcodes in list of admins when using name_barcode login scheme
+		$displayBarcode         = !$user->getAccountProfile()->usingPins(); // Do not show barcodes in list of admins when using name_barcode login scheme
 		$thisIsNotAListOfAdmins = isset($_REQUEST['objectAction']) && $_REQUEST['objectAction'] != 'list';
 		$roleList               = Role::fetchAllRoles($thisIsNotAListOfAdmins);  // Lookup available roles in the system, don't show the role description is lists of admins
 		$structure              = [
@@ -1877,7 +1870,7 @@ class User extends DB_DataObject {
 
 	}
 
-private $staffPtypes = null;
+	private $staffPtypes = null;
 	/**
 	 * Used by Account Profile, to show users any additional Admin roles they may have.
 	 * @return bool
@@ -1904,6 +1897,8 @@ private $staffPtypes = null;
 		return $result;
 	}
 
+	public $pinUpdateRequired = false;
+
 	public function updatePin(){
 		global $configArray;
 
@@ -1913,31 +1908,31 @@ private $staffPtypes = null;
 		if (isset($_REQUEST['pin'])){
 			$oldPin = $_REQUEST['pin'];
 		}else{
-			return "Please enter your current pin number";
+			return 'Please enter your current ' . translate('pin');
 		}
 		if ($this->getPassword() != $oldPin){
-			return "The old pin number is incorrect";
+			return 'The old ' . translate('pin') . ' is incorrect';
 		}
 		if (!empty($_REQUEST['pin1'])){
 			$newPin = $_REQUEST['pin1'];
 		}else{
-			return "Please enter the new pin number";
+			return 'Please enter the new ' . translate('pin');
 		}
 		if (!empty($_REQUEST['pin2'])){
 			$confirmNewPin = $_REQUEST['pin2'];
 		}else{
-			return "Please enter the new pin number again";
+			return 'Please enter the new ' . translate('pin') . ' again';
 		}
 		if ($newPin != $confirmNewPin){
-			return "New PINs do not match. Please try again.";
+			return 'New ' . translate('pin') . 's do not match. Please try again.';
 		}
 		// pin min and max length check 
 		$pinLength = strlen($newPin);
 		if ($pinLength < $pinMinimumLength OR $pinLength > $pinMaximumLength) {
 			if ($pinMinimumLength == $pinMaximumLength){
-				return "New PIN must be exactly " . $pinMinimumLength . " characters.";
+				return 'New PIN must be exactly ' . $pinMinimumLength . ' characters.';
 			}else{
-				return "New PIN must be " . $pinMinimumLength . " to " . $pinMaximumLength . " characters.";
+				return 'New PIN must be ' . $pinMinimumLength . ' to ' . $pinMaximumLength . ' characters.';
 			}
 		}
 		$result = $this->getCatalogDriver()->updatePin($this, $oldPin, $newPin, $confirmNewPin);

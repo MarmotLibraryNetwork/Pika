@@ -42,28 +42,34 @@ class PinReset extends DB_DataObject {
 	/**
 	 * @return bool|string Returns full reset token
 	 */
-	public function insertReset() {
+	public function insertReset(){
 		$now = new DateTime('NOW');
 		$now->add(new DateInterval('PT01H'));
 
-		$expires  = $now->format('U');
+		$expires = $now->format('U');
 		try {
 			$selector = (string)bin2hex(random_bytes(8));
-		} catch(Exception $e) {
+		} catch (Exception $e){
 			$selector = bin2hex(mt_rand(10000000, 900000000));
 		}
 		try {
 			$token = random_int(1000000000000000, 9999999999999999);
-		} catch(Exception $e) {
+		} catch (Exception $e){
 			$token = mt_rand(1000000000000000, 9999999999999999);
 		}
-		$userId = $this->userId;
+//		$userId = $this->userId;
+
+		$this->expires  = $expires;
+		$this->token    = $token;
+		$this->selector = $selector;
+		$this->insert();
+
 		// the pear DataObject class isn't inserting the selector for some reason. WTF??? Do a "query" to insert.
 		// this is why unmaintained packages SUCK!
 		// this comes with no way to check for errors.
-		$sql = "insert into pin_reset (userId, selector, token, expires) values ({$userId}, '{$selector}', '{$token}', {$expires})";
-		$r = $this->query($sql);
-		return $selector.$token;
+//		$sql = "insert into pin_reset (userId, selector, token, expires) values ({$userId}, '{$selector}', '{$token}', {$expires})";
+//		$r = $this->query($sql);
+		return $selector . $token;
 	}
 
 }

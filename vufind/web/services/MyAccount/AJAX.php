@@ -31,7 +31,7 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	//use Captcha_AJAX;
 
-	protected $methodsThatRespondWithJSONUnstructured = array(
+	protected $methodsThatRespondWithJSONUnstructured = [
 		'GetSuggestions', // not checked
 		'GetListTitles', // only used by MyAccount/ImportListsFromClassic.php && ajax.js //not checked
 //		'GetPreferredBranches', //not checked
@@ -48,15 +48,14 @@ class MyAccount_AJAX extends AJAXHandler {
 		'cancelBooking', 'getCitationFormatsForm', 'getAddBrowseCategoryFromListForm',
 		'getMasqueradeAsForm', 'initiateMasquerade', 'endMasquerade', 'getMenuData',
 		'transferList', 'isStaffUser', 'transferListToUser','copyListPrompt',
-		'copyList', 'getFreezeHoldsForm','freezeHolds', 'thawHolds', ''
-	);
+		'copyList', 'getFreezeHoldsForm','freezeHolds', 'thawHolds',
+		'updatePin'
+	];
 
-	protected $methodsThatRespondWithHTML = array(
+	protected $methodsThatRespondWithHTML = [
 		'LoginForm',
 		'getBulkAddToListForm',
-		'getPinUpdateForm',
-
-	);
+	];
 
 	protected $methodsThatRespondWithJSONResultWrapper = [];
 
@@ -191,20 +190,24 @@ class MyAccount_AJAX extends AJAXHandler {
 		global $interface;
 		global $library;
 
+		$catalog              = CatalogFactory::getCatalogConnectionInstance();
+		$defaultUserNameLabel = $catalog->accountProfile->usingPins() ? 'Library Card Number' : 'Name';
+		$defaultPasswordLabel = $catalog->accountProfile->usingPins() ? translate('PIN') : 'Library Card Number';
+
 		$interface->assign('enableSelfRegistration', 0);
 		if (isset($library)){
-			$interface->assign('usernameLabel', str_replace('Your', '', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name'));
-			$interface->assign('passwordLabel', str_replace('Your', '', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number'));
+			$interface->assign('usernameLabel', str_replace('Your', '', !empty($library->loginFormUsernameLabel) ? $library->loginFormUsernameLabel : $defaultUserNameLabel));
+			$interface->assign('passwordLabel', str_replace('Your', '', !empty($library->loginFormPasswordLabel) ? $library->loginFormPasswordLabel : $defaultPasswordLabel));
 		}else{
-			$interface->assign('usernameLabel', 'Name');
-			$interface->assign('passwordLabel', 'Library Card Number');
+			$interface->assign('usernameLabel', $defaultUserNameLabel);
+			$interface->assign('passwordLabel', $defaultPasswordLabel);
 		}
 		// Display Page
-		$formDefinition = array(
+		$formDefinition = [
 			'title'        => 'Account to Manage',
 			'modalBody'    => $interface->fetch('MyAccount/addAccountLink.tpl'),
 			'modalButtons' => "<span class='tool btn btn-primary' onclick='Pika.Account.processAddLinkedUser(); return false;'>Add Account</span>",
-		);
+		];
 		return $formDefinition;
 	}
 
@@ -1004,39 +1007,52 @@ class MyAccount_AJAX extends AJAXHandler {
 		global $library;
 		global $configArray;
 
+		$catalog              = CatalogFactory::getCatalogConnectionInstance();
+		$defaultUserNameLabel = $catalog->accountProfile->usingPins() ? 'Library Card Number' : 'Name';
+		$defaultPasswordLabel = $catalog->accountProfile->usingPins() ? translate('PIN') : 'Library Card Number';
+
 		if (isset($library)){
 			$interface->assign('enableSelfRegistration', $library->enableSelfRegistration || $library->externalSelfRegistrationUrl);
 			$interface->assign('selfRegLink', empty($library->externalSelfRegistrationUrl) ? '/MyAccount/SelfReg' : $library->externalSelfRegistrationUrl);
-			$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
-			$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
+			$interface->assign('usernameLabel', !empty($library->loginFormUsernameLabel) ? $library->loginFormUsernameLabel : $defaultUserNameLabel);
+			$interface->assign('passwordLabel', !empty($library->loginFormPasswordLabel) ? $library->loginFormPasswordLabel : $defaultPasswordLabel);
 		}else{
 			$interface->assign('enableSelfRegistration', 0);
-			$interface->assign('usernameLabel', 'Your Name');
-			$interface->assign('passwordLabel', 'Library Card Number');
+			$interface->assign('usernameLabel', $defaultUserNameLabel);
+			$interface->assign('passwordLabel', $defaultPasswordLabel);
 		}
-		if ($configArray['Catalog']['ils'] == 'Horizon' || $configArray['Catalog']['ils'] == 'Symphony'){
+
+		if (!empty($catalog->accountProfile) && $catalog->accountProfile->usingPins() && method_exists($catalog->driver, 'emailResetPin')){
 			$interface->assign('showForgotPinLink', true);
-			$catalog          = CatalogFactory::getCatalogConnectionInstance();
-			$useEmailResetPin = $catalog->checkFunction('emailResetPin');
-			$interface->assign('useEmailResetPin', $useEmailResetPin);
-		}elseif ($configArray['Catalog']['ils'] == 'Sierra'){
-			$catalog = CatalogFactory::getCatalogConnectionInstance();
-			if (!empty($catalog->accountProfile->loginConfiguration) && $catalog->accountProfile->loginConfiguration == 'barcode_pin'){
-				$interface->assign('showForgotPinLink', true);
-				$useEmailResetPin = $catalog->checkFunction('emailResetPin');
-				$interface->assign('useEmailResetPin', $useEmailResetPin);
-			}
 		}
 		if (isset($_REQUEST['multistep'])){
 			$interface->assign('multistep', true);
 		}
-		// when in offline mode, need a check because users will need to login with barcode.
-		if($configArray['OPAC']['allowUsername']) {
+		// when in offline mode, need a check because users will need to log in with barcode.
+		if ($configArray['OPAC']['allowUsername']){
 			$interface->assign('allowUsername', true);
-		} else {
+		}else{
 			$interface->assign('allowUsername', false);
 		}
 		return $interface->fetch('MyAccount/ajax-login.tpl');
+	}
+
+	function updatePin(){
+		$message = 'User not logged in';
+		if (UserAccount::isLoggedIn()){
+			$user    = UserAccount::getLoggedInUser();
+			$message = $user->updatePin();
+			if (strpos($message, 'success')){
+				return [
+					'success' => true,
+					'message' => $message,
+				];
+			}
+		}
+		return [
+			'success' => false,
+			'message' => $message,
+		];
 	}
 
 	function transferListToUser(){
@@ -1045,11 +1061,13 @@ class MyAccount_AJAX extends AJAXHandler {
 			$user = UserAccount::getLoggedInUser();
 			if ($user->isStaff()){
 				$listId = $_REQUEST['id'];
-				return ['title'   => 'Transfer List',
-				        'body'    => '<label for="barcode">Please enter recipient barcode</label> <input type="text" name="barcode" id="barcode" class="form-control">' .
-					        '<div class="validation" id="validation" style="display:none; color:darkred;">Invalid Barcode</div>' .
-					        '<script>$("#barcode").on("change keyup paste", function(data){Pika.Lists.checkUser($("#barcode").val())});</script>',
-				        'buttons' => '<button value="transfer" disabled="disabled" id="transfer" class="btn btn-danger" onclick="Pika.Lists.transferList(' . $listId . ', document.getElementById(\'barcode\').value);return false;">Transfer</button>'];
+				return [
+					'title'   => 'Transfer List',
+					'body'    => '<label for="barcode">Please enter recipient barcode</label> <input type="text" name="barcode" id="barcode" class="form-control">' .
+						'<div class="validation" id="validation" style="display:none; color:darkred;">Invalid Barcode</div>' .
+						'<script>$("#barcode").on("change keyup paste", function(data){Pika.Lists.checkUser($("#barcode").val())});</script>',
+					'buttons' => '<button value="transfer" disabled="disabled" id="transfer" class="btn btn-danger" onclick="Pika.Lists.transferList(' . $listId . ', document.getElementById(\'barcode\').value);return false;">Transfer</button>'
+				];
 			}
 
 		}
@@ -1069,7 +1087,6 @@ class MyAccount_AJAX extends AJAXHandler {
 				$list     = new UserList();
 				$list->id = $listId;
 				$list->get();
-
 				$list->user_id = $userTo->id;
 				if ($list->update()){
 					return ['title' => 'Transfer List', 'body' => 'The list has been transferred'];

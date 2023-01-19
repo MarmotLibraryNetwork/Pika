@@ -15,7 +15,7 @@
 
 			{if $profileUpdateErrors}
 				{foreach from=$profileUpdateErrors item=errorMsg}
-					{if $errorMsg == 'Your pin number was updated successfully.'}
+					{if strpos($errorMsg, 'success')}
 						<div class="alert alert-success">{$errorMsg}</div>
 					{else}
 						<div class="alert alert-danger">{$errorMsg}</div>
@@ -228,7 +228,7 @@
 						<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#pinPanel">
 							<div class="panel-heading">
 								<div class="panel-title">
-									Personal Identification Number (PIN)
+									{translate text='Update PIN'}
 								</div>
 							</div>
 						</a>
@@ -241,7 +241,8 @@
 									<div class="form-group">
 										<div class="col-xs-4"><label for="pin" class="control-label">{translate text='Old PIN'}:</label></div>
 										<div class="col-xs-8">
-											<input type="password" name="pin" id="pin" value="" size="4" maxlength="30" class="form-control required{if $numericOnlyPins} digits{else}{if $alphaNumericOnlyPins} alphaNumeric{/if}{/if}">
+											<input type="password" name="pin" id="pin" value="" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
+												{* No size limits in case previously set password doesn't meet current restrictions *}
 										</div>
 									</div>
 									<div class="form-group">
@@ -258,7 +259,7 @@
 									</div>
 									<div class="form-group">
 										<div class="col-xs-8 col-xs-offset-4">
-													<input type="submit" value="Update PIN" name="update" class="btn btn-primary">
+													<input type="submit" value="{translate text='Update PIN'}" name="update" class="btn btn-primary">
 										</div>
 									</div>
 									<script type="text/javascript">

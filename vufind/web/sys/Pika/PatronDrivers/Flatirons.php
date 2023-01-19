@@ -32,8 +32,7 @@ use Location;
 
 class Flatirons extends Sierra
 {
-	public function getSelfRegistrationFields()
-	{
+	public function getSelfRegistrationFields(){
 		global $library;
 
 		$libSubDomain = strtolower($library->subdomain);
@@ -41,127 +40,129 @@ class Flatirons extends Sierra
 		$location            = new Location();
 		$location->libraryId = $library->libraryId;
 		$location->find(true);
-		if(!$location) {
-			return ['success'=>false, 'barcode'=>''];
+		if (!$location){
+			return ['success' => false, 'barcode' => ''];
 		}
 		$homeLibraryCode = $location->code;
 
-		$fields = array();
+		$fields   = [];
 		$fields[] = [
 			'property' => 'homelibrarycode',
 			'type'     => 'hidden',
 			'default'  => $homeLibraryCode
 		];
-		$fields[] = array(
-			'property' => 'firstname',
-			'type' => 'text',
-			'label' => 'First Name',
+		$fields[] = [
+			'property'    => 'firstname',
+			'type'        => 'text',
+			'label'       => 'First Name',
 			'description' => 'Your first name',
-			'maxLength' => 40,
-			'required' => true
-		);
-		$fields[] = array(
-			'property' => 'middlename',
-			'type' => 'text',
-			'label' => 'Middle Name',
+			'maxLength'   => 40,
+			'required'    => true
+		];
+		$fields[] = [
+			'property'    => 'middlename',
+			'type'        => 'text',
+			'label'       => 'Middle Name',
 			'description' => 'Your middle name',
-			'maxLength' => 40,
-			'required' => false
-		);
-		$fields[] = array(
-			'property' => 'lastname',
-			'type' => 'text',
-			'label' => 'Last Name',
+			'maxLength'   => 40,
+			'required'    => false
+		];
+		$fields[] = [
+			'property'    => 'lastname',
+			'type'        => 'text',
+			'label'       => 'Last Name',
 			'description' => 'Your last name',
-			'maxLength' => 40,
-			'required' => true
-		);
-		if ($library && $library->promptForBirthDateInSelfReg) {
-			$fields[] = array(
-				'property' => 'birthdate',
-				'type' => 'date',
-				'label' => 'Date of Birth (MM-DD-YYYY)',
+			'maxLength'   => 40,
+			'required'    => true
+		];
+		if ($library && $library->promptForBirthDateInSelfReg){
+			$fields[] = [
+				'property'    => 'birthdate',
+				'type'        => 'date',
+				'label'       => 'Date of Birth (MM-DD-YYYY)',
 				'description' => 'Date of birth',
-				'maxLength' => 10,
-				'required' => true
-			);
+				'maxLength'   => 10,
+				'required'    => true
+			];
 		}
-		$fields[] = array(
-			'property' => 'address',
-			'type' => 'text',
-			'label' => 'Mailing Address',
+		$fields[] = [
+			'property'    => 'address',
+			'type'        => 'text',
+			'label'       => 'Mailing Address',
 			'description' => 'Mailing Address',
-			'maxLength' => 128,
-			'required' => true
-		);
-		$fields[] = array(
-			'property' => 'city',
-			'type' => 'text',
-			'label' => 'City',
+			'maxLength'   => 128,
+			'required'    => true
+		];
+		$fields[] = [
+			'property'    => 'city',
+			'type'        => 'text',
+			'label'       => 'City',
 			'description' => 'City',
-			'maxLength' => 48,
-			'required' => true
-		);
-		$fields[] = array(
-			'property' => 'state',
-			'type' => 'text',
-			'label' => 'State',
+			'maxLength'   => 48,
+			'required'    => true
+		];
+		$fields[] = [
+			'property'    => 'state',
+			'type'        => 'text',
+			'label'       => 'State',
 			'description' => 'State',
-			'maxLength' => 32,
-			'required' => true
-		);
-		$fields[] = array(
-			'property' => 'zip',
-			'type' => 'text',
-			'label' => 'Zip Code',
+			'maxLength'   => 32,
+			'required'    => true
+		];
+		$fields[] = [
+			'property'    => 'zip',
+			'type'        => 'text',
+			'label'       => 'Zip Code',
 			'description' => 'Zip Code',
-			'maxLength' => 32,
-			'required' => true
-		);
-		$fields[] = array(
-			'property' => 'primaryphone',
-			'type' => 'text',
-			'label' => 'Phone Number',
+			'maxLength'   => 32,
+			'required'    => true
+		];
+		$fields[] = [
+			'property'    => 'primaryphone',
+			'type'        => 'text',
+			'label'       => 'Phone Number',
 			'description' => 'Phone Number',
-			'maxLength' => 16,
-			'required' => true
-		);
-		if($libSubDomain == "boulder") {
-			$fields[] = array(
-			 'property' => 'email',
-			 'type' => 'email',
-			 'label' => 'E-Mail',
-			 'description' => 'E-Mail',
-			 'maxLength' => 128,
-			 'required' => true
-			);
-		} else {
-			$fields[] = array(
-			 'property' => 'email',
-			 'type' => 'email',
-			 'label' => 'E-Mail',
-			 'description' => 'E-Mail',
-			 'maxLength' => 128,
-			 'required' => false
-			);
+			'maxLength'   => 16,
+			'required'    => true
+		];
+		if ($libSubDomain == "boulder"){
+			$fields[] = [
+				'property'    => 'email',
+				'type'        => 'email',
+				'label'       => 'E-Mail',
+				'description' => 'E-Mail',
+				'maxLength'   => 128,
+				'required'    => true
+			];
+		}else{
+			$fields[] = [
+				'property'    => 'email',
+				'type'        => 'email',
+				'label'       => 'E-Mail',
+				'description' => 'E-Mail',
+				'maxLength'   => 128,
+				'required'    => false
+			];
 		}
 		// Username and PIN
 		// allow usernames?
-		if($this->hasUsernameField()) {
-			$fields[] = ['property'   => 'username',
-			             'type'       => 'text',
-			             'label'      => 'Username',
-			             'description'=> 'Set an optional username.',
-			             'maxLength'  => 20,
-			             'required'   => false];
+		if ($this->hasUsernameField()){
+			$fields[] = [
+				'property'    => 'username',
+				'type'        => 'text',
+				'label'       => 'Username',
+				'description' => 'Set an optional username.',
+				'maxLength'   => 20,
+				'required'    => false
+			];
 		}
 		// if library uses pins
-		if($this->accountProfile->loginConfiguration == "barcode_pin") {
+		if ($this->accountProfile->usingPins()){
 			$fields[] = [
 				'property'    => 'pin',
 				'type'        => 'pin',
-				'label'       => 'PIN',
-				'description' => 'Please set a PIN (personal identification number).',
+				'label'       => translate('PIN'),
+				'description' => 'Please set a ' . translate('pin') . '.',
 				'maxLength'   => 10,
 				'required'    => true
 			];
@@ -169,9 +170,9 @@ class Flatirons extends Sierra
 			$fields[] = [
 				'property'    => 'pinconfirm',
 				'type'        => 'pin',
-				'label'       => 'Confirm PIN',
-				'description' => 'Please reenter your PIN.',
-				'maxLength'   => 10,
+				'label'       => 'Confirm ' . translate('PIN'),
+				'description' => 'Please confirm your ' . translate('pin') . '.',
+//				'maxLength'   => 10,
 				'required'    => true
 			];
 		}
@@ -179,8 +180,7 @@ class Flatirons extends Sierra
 		return $fields;
 	}
 
-	function selfRegister($extraSelfRegParams = false)
-	{
+	function selfRegister($extraSelfRegParams = false){
 		global $library;
 		$libSubDomain = strtolower($library->subdomain);
 		$extraSelfRegParams = [];

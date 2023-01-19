@@ -53,6 +53,14 @@ class Sacramento extends Sierra {
 	}
 
 
+	/**
+	 * @param User $patron
+	 * @param string $pageToCall
+	 * @param string[] $postParams
+	 * @param bool $patronAction
+	 * @return Curl|false|mixed|null
+	 * @throws \ErrorException
+	 */
 	private function _curlLegacy($patron, $pageToCall, $postParams = array(), $patronAction = true){
 
 		$c = new Curl();
@@ -85,17 +93,13 @@ class Sacramento extends Sierra {
 		$c->setOpts($curlOpts);
 
 		// first log patron in
-		if ($this->accountProfile->loginConfiguration == 'name_barcode'){
-			$postData = [
-				'name' => $patron->cat_username,
-				'code' => $patron->barcode
-			];
-		}else{
-			$postData = [
-				'code' => $patron->barcode,
-				'pin'  => $patron->getPassword()
-			];
-		}
+		$postData = $this->accountProfile->usingPins() ? [
+			'code' => $patron->barcode,
+			'pin'  => $patron->getPassword()
+		] : [
+			'name' => $patron->cat_username,
+			'code' => $patron->barcode
+		];
 
 		$loginUrl = $vendorOpacUrl . '/patroninfo/';
 		$r        = $c->post($loginUrl, $postData);
@@ -105,7 +109,7 @@ class Sacramento extends Sierra {
 			return false;
 		}
 
-		$sierraPatronId = $this->getPatronId($patron->barcode); //when logging in with pin, this is what we will find
+		$sierraPatronId = $this->getPatronId($patron); //when logging in with pin, this is what we will find
 
 		if(!strpos($r, (string) $sierraPatronId) && !stripos($r, (string) $patron->cat_username)) {
 			// check for cas login. do cas login if possible
@@ -156,7 +160,7 @@ class Sacramento extends Sierra {
 	}
 
 
-	public function updateSms($patron) {
+	public function updateSms(User $patron) {
 		$patronId = $this->getPatronId($patron);
 
 		$cc = new Curl();
@@ -188,26 +192,22 @@ class Sacramento extends Sierra {
 		$cc->setOpts($curlOpts);
 
 		// first log patron in
-		if($this->accountProfile->loginConfiguration == "barcode_pin") {
-			$postData = [
-			 'code' => $patron->barcode,
-			 'pin'  => $patron->password
-			];
-		} else {
-			$postData = [
-			 'name' => $patron->cat_username,
-			 'code' => $patron->barcode
-			];
-		}
+		$postData = $this->accountProfile->usingPins() ? [
+			'code' => $patron->barcode,
+			'pin'  => $patron->password
+		] : [
+			'name' => $patron->cat_username,
+			'code' => $patron->barcode
+		];
 		$loginUrl = $vendorOpacUrl . '/patroninfo/';
-		$r = $cc->post($loginUrl, $postData);
+		$r        = $cc->post($loginUrl, $postData);
 
-		if($cc->isError()) {
+		if ($cc->isError()){
 			$cc->close();
 			return false;
 		}
 
-		if(!stristr($r, $patron->cat_username)) {
+		if (!stristr($r, $patron->cat_username)){
 			// check for cas login. do cas login if possible
 			$casUrl = '/iii/cas/login';
 			if(stristr($r, $casUrl)) {
@@ -232,9 +232,9 @@ class Sacramento extends Sierra {
 		// first update mobile #
 		if(isset($_POST['smsNotices']) && $_POST['smsNotices'] == 'on') {
 			$mobileNumber = trim($_POST['mobileNumber']);
-			$phones[] = ['number'=>$mobileNumber, 'type'=>'o'];
-		} else {
-			$phones[] = ['number'=>' ', 'type'=>'o']; #todo: does api accept empty for updates?
+			$phones[]     = ['number' => $mobileNumber, 'type' => 'o'];
+		}else{
+			$phones[] = ['number' => ' ', 'type' => 'o']; #todo: does api accept empty for updates?
 		}
 		$apiParams = ['phones' => $phones];
 		// to note: calling _doRequest will create a new instance of Curl so we won't destroy the cookie jar
@@ -253,8 +253,8 @@ class Sacramento extends Sierra {
 		} else {
 			$params = ['optin' => 'off'];
 		}
-		$scope = isset($this->configArray['OPAC']['defaultScope']) ? $this->configArray['OPAC']['defaultScope'] : '93';
-		$optUrl = $vendorOpacUrl . "/patroninfo~S". $scope. "/" . $patronId . "/modpinfo";
+		$scope  = isset($this->configArray['OPAC']['defaultScope']) ? $this->configArray['OPAC']['defaultScope'] : '93';
+		$optUrl = $vendorOpacUrl . "/patroninfo~S" . $scope . "/" . $patronId . "/modpinfo";
 
 		$cc->setUrl($optUrl);
 		$r = $cc->post($params);
@@ -317,14 +317,16 @@ class Sacramento extends Sierra {
 		$birthDate           = date_create_from_format('m-d-Y', $birthDate);
 		$birthDay            = date_format($birthDate, 'd');
 		$birthMonth          = date_format($birthDate, 'm');
-		$ddepartment = $lastNameFourLetters . $firstNameOneLetter . $birthMonth . $birthDay; //var field d
-		$params['varFields'][] = ["fieldTag" => "d",
-		                          "content"  => $ddepartment];
+		$ddepartment         = $lastNameFourLetters . $firstNameOneLetter . $birthMonth . $birthDay; //var field d
+		$params['varFields'][] = [
+			"fieldTag" => "d",
+			"content"  => $ddepartment
+		];
 
 		foreach ($_POST as $key=>$val) {
 			switch ($key) {
 				case 'email':
-					$val = trim($val);
+					$val          = trim($val);
 					$successEmail = false;
 					if(!empty($val)) {
 						$successEmail = $val;
@@ -348,12 +350,12 @@ class Sacramento extends Sierra {
 						$todayDate = new DateTime();
 						$dateDiff  = $birthDate->diff($todayDate);
 						$days      = (integer)$dateDiff->days;
-						if($days < 30) {
-							return ['success'=>false, 'barcode'=>''];
+						if ($days < 30){
+							return ['success' => false, 'barcode' => ''];
 						}
 						$params['birthDate'] = $birthDate->format('Y-m-d');
-					} else {
-						return ['success'=>false, 'barcode'=>''];
+					}else{
+						return ['success' => false, 'barcode' => ''];
 					}
 					break;
 			}
@@ -411,13 +413,17 @@ class Sacramento extends Sierra {
 		$params['barcodes'][] = $barcode;
 
 		// agency code
-		$params['fixedFields']["158"] = ["label" => "PAT AGENCY",
-		                                 "value" => $library->selfRegistrationAgencyCode];
+		$params['fixedFields']["158"] = [
+			"label" => "PAT AGENCY",
+			"value" => $library->selfRegistrationAgencyCode
+		];
 		// notice preference -- default to z
-		$params['fixedFields']['268'] = ["label" => "Notice Preference",
-		                                 "value" => 'z'];
+		$params['fixedFields']['268'] = [
+			"label" => "Notice Preference",
+			"value" => 'z'
+		];
 		// expiration date
-		$interval = 'P'.$library->selfRegistrationDaysUntilExpire.'D';
+		$interval   = 'P' . $library->selfRegistrationDaysUntilExpire . 'D';
 		$expireDate = new DateTime();
 		$expireDate->add(new DateInterval($interval));
 		$params['expirationDate'] = $expireDate->format('Y-m-d');
@@ -470,7 +476,7 @@ class Sacramento extends Sierra {
 		$params['addresses'][0]['type'] = 'a';
 
 		// if library uses pins
-		if($this->accountProfile->loginConfiguration == "barcode_pin") {
+		if($this->accountProfile->usingPins()) {
 			$pin = trim($_POST['pin']);
 			$pinConfirm = trim($_POST['pinconfirm']);
 
@@ -481,7 +487,7 @@ class Sacramento extends Sierra {
 			}
 		}
 
-		$this->logger->debug('Self registering patron', ['params'=>$params]);
+		$this->logger->debug('Self registering patron', ['params' => $params]);
 		$operation = "patrons/";
 		$r = parent::_doRequest($operation, $params, "POST");
 
@@ -502,67 +508,67 @@ class Sacramento extends Sierra {
 
 	public function getSelfRegistrationFields(){
 		global $library;
-		$fields = array();
+		$fields = [];
 		if ($library && $library->promptForBirthDateInSelfReg){
-			$fields[] = array(
+			$fields[] = [
 				'property'    => 'birthdate',
 				'type'        => 'date',
 				'label'       => 'Date of Birth (MM-DD-YYYY)',
 				'description' => 'Date of birth',
 				'maxLength'   => 10,
 				'required'    => true
-			);
+			];
 		}
-		$fields[] = array(
+		$fields[] = [
 			'property'    => 'firstname',
 			'type'        => 'text',
 			'label'       => 'First Name',
 			'description' => 'Your first name',
 			'maxLength'   => 40,
 			'required'    => true
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'middlename',
 			'type'        => 'text',
 			'label'       => 'Middle Initial',
 			'description' => 'Your middle initial',
 			'maxLength'   => 40,
 			'required'    => false
-		);
+		];
 
-		$fields[] = array(
+		$fields[] = [
 			'property'    => 'lastname',
 			'type'        => 'text',
 			'label'       => 'Last Name',
 			'description' => 'Your last name',
 			'maxLength'   => 40,
 			'required'    => true
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'address',
 			'type'        => 'text',
 			'label'       => 'Mailing Address',
 			'description' => 'Mailing Address',
 			'maxLength'   => 128,
 			'required'    => true
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'apartmentnumber',
 			'type'        => 'text',
 			'label'       => 'Apartment Number',
 			'description' => 'Apartment Number',
 			'maxLength'   => 10,
 			'required'    => false
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'city',
 			'type'        => 'text',
 			'label'       => 'City',
 			'description' => 'City',
 			'maxLength'   => 48,
 			'required'    => true
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'state',
 			'type'        => 'text',
 			'label'       => 'State',
@@ -570,17 +576,17 @@ class Sacramento extends Sierra {
 			'maxLength'   => 2,
 			'required'    => true,
 			'default'     => 'CA'
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'zip',
 			'type'        => 'text',
 			'label'       => 'Zip Code',
 			'description' => 'Zip Code',
 			'maxLength'   => 32,
 			'required'    => true
-		);
+		];
 		// require phone for folsom
-		if($library->subdomain == "folsom") {
+		if ($library->subdomain == "folsom"){
 			$fields[] = [
 				'property'    => 'primaryphone',
 				'type'        => 'text',
@@ -589,7 +595,7 @@ class Sacramento extends Sierra {
 				'maxLength'   => 128,
 				'required'    => true
 			];
-		} else{
+		}else{
 			$fields[] = [
 				'property'    => 'primaryphone',
 				'type'        => 'text',
@@ -600,7 +606,7 @@ class Sacramento extends Sierra {
 			];
 		}
 		// require email for folsom
-		if($library->subdomain == "folsom"){
+		if ($library->subdomain == "folsom"){
 			$fields[] = [
 				'property'    => 'email',
 				'type'        => 'email',
@@ -609,7 +615,7 @@ class Sacramento extends Sierra {
 				'maxLength'   => 128,
 				'required'    => true
 			];
-		} else {
+		}else{
 			$fields[] = [
 				'property'    => 'email',
 				'type'        => 'email',
@@ -619,40 +625,40 @@ class Sacramento extends Sierra {
 				'required'    => false
 			];
 		}
-		$fields[] = array(
+		$fields[] = [
 			'property'    => 'guardianFirstName',
 			'type'        => 'text',
 			'label'       => 'Parent/Guardian First Name',
 			'description' => 'Your parent\'s or guardian\'s first name',
 			'maxLength'   => 40,
 			'required'    => false
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'guardianLastName',
 			'type'        => 'text',
 			'label'       => 'Parent/Guardian Last Name',
 			'description' => 'Your parent\'s or guardian\'s last name',
 			'maxLength'   => 40,
 			'required'    => false
-		);
+		];
 		//These two fields will be made required by javascript in the template
 
-		$fields[] = array(
+		$fields[] = [
 			'property'    => 'pin',
 			'type'        => 'pin',
 			'label'       => 'Pin',
 			'description' => 'Your desired pin',
 			/*'maxLength' => 4, 'size' => 4,*/
 			'required'    => true
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'pinconfirm',
 			'type'        => 'pin',
-			'label'       => 'Confirm Pin',
-			'description' => 'Re-type your desired pin',
+			'label'       => 'Confirm ' . translate('PIN'),
+			'description' => 'Please confirm your ' . translate('pin') . '.',
 			/*'maxLength' => 4, 'size' => 4,*/
 			'required'    => true
-		);
+		];
 
 		return $fields;
 	}

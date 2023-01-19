@@ -73,9 +73,9 @@ class SelfReg extends Action {
 				$pinLength = strlen($_POST['pin']);
 				if ($pinLength < $pinMinimumLength or $pinLength > $pinMaximumLength){
 					if ($pinMinimumLength == $pinMaximumLength){
-						return "New PIN must be exactly " . $pinMinimumLength . " characters.";
+						return 'New ' . translate('pin') . ' must be exactly ' . $pinMinimumLength . ' characters.';
 					}else{
-						return "New PIN must be " . $pinMinimumLength . " to " . $pinMaximumLength . " characters.";
+						return 'New ' . translate('pin') . ' must be ' . $pinMinimumLength . " to " . $pinMaximumLength . ' characters.';
 					}
 				}
 			}

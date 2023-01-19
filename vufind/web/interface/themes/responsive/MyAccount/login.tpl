@@ -13,7 +13,7 @@
 		</p>
 		{if $action == "WSJ"}
 			<div class="alert alert-info">
-				<p>In order for you to access the <em>Wall Street Journal</em> as provided	by <em>{$WSJLibraryName}</em> you are required to log in on this page with your name and library card number.</p>
+				<p>In order for you to access the <em>Wall Street Journal</em> as provided	by <em>{$WSJLibraryName}</em> you are required to log in on this page with {$usernameLabel|strtolower} and {$passwordLabel|strtolower}.</p>
 				<p>Once you log in with the requested credentials, you will be directed to the <em>Wall Street Journal</em> site for <em>{$WSJLibraryName}</em>, where you will set up <em>WSJ.com</em> login credentials, and then you can browse and read articles and full issues of the Wall Street Journal.</p>
 				<p>You will have access, from anywhere, for the next 10 days. After 10 days, you can return to your library's site and redeem access - with the same login credentials - for another 10 days, and repeat this process as often as you would like.</p>
 			</div>
@@ -47,12 +47,8 @@
 							<input type="password" name="password" id="password" size="28" onkeypress="return Pika.submitOnEnter(event, '#loginForm');" class="form-control">
 							{if $showForgotPinLink}
 								<p class="help-block">
-									<strong>Forgot PIN?</strong>&nbsp;
-									{if $useEmailResetPin}
-										<a href="/MyAccount/EmailResetPin">Reset My PIN</a>
-									{else}
-										<a href="/MyAccount/EmailPin">E-mail my PIN</a>
-									{/if}
+									<strong>{translate text="Forgot PIN?"}</strong>&nbsp;
+									<a href="/MyAccount/EmailResetPin">{translate text='Reset My PIN'}</a>
 								</p>
 							{/if}
 

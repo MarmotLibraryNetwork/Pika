@@ -300,15 +300,16 @@ class UserAccount {
 				$userData     = new User();
 				$userData->id = $activeUserId;
 				if (!empty($userData->find(true))){
-					$cat_username   = $userData->cat_username;
 					$accountProfile = $userData->getAccountProfile();
 					if (!is_null($accountProfile)){
-						if ($accountProfile->loginConfiguration == 'barcode_pin'){
+						if (!$accountProfile->usingPins()){
+							$cat_username   = $userData->cat_username;
+							$barcode_or_pin = $userData->barcode;
+						}else{
 							$cat_username   = $userData->barcode;
 							$barcode_or_pin = $userData->getPassword();
-						}else{
-							$barcode_or_pin = $userData->barcode;
-						}//self::getLogger()->debug("Loading user with ID $userData->id because we didn't have data in memcache");
+						}
+						//self::getLogger()->debug("Loading user with ID $userData->id because we didn't have data in memcache");
 						$userData = UserAccount::validateAccount($cat_username, $barcode_or_pin, $userData->source);
 						self::updateSession($userData);
 					}else{
@@ -462,7 +463,6 @@ class UserAccount {
 					$patronCacheKey = $cache->makePatronKey('patron', $tempUser->id);
 					$cache->set($patronCacheKey, $tempUser, $configArray['Caching']['user']);
 
-					$validUsers[] = $tempUser;
 					if ($primaryUser == null){
 						$primaryUser = $tempUser;
 						self::updateSession($primaryUser);
@@ -623,27 +623,6 @@ class UserAccount {
 				$msg = 'No Account Profiles set. A default account (usually ils) must be in db.';
 				self::getLogger()->critical($msg);
 				die($msg);
-
-//				//Create default information for historic login.  This will eventually be obsolete
-//				$accountProfile                       = new AccountProfile();
-//				$accountProfile->recordSource         = 'ils';
-//				$accountProfile->name                 = 'ils';
-//				$accountProfile->authenticationMethod = 'ils';
-//				$accountProfile->driver               = $configArray['Catalog']['driver'];
-//				$accountProfile->loginConfiguration   = 'name_barcode';
-//				if (isset($configArray['Catalog']['url'])){
-//					$accountProfile->vendorOpacUrl = $configArray['Catalog']['url'];
-//				}
-//				if (isset($configArray['OPAC']['patron_host'])){
-//					$accountProfile->patronApiUrl = $configArray['OPAC']['patron_host'];
-//				}
-//
-//				$additionalInfo                         = [
-//					'driver'               => $accountProfile->driver,
-//					'authenticationMethod' => 'ILS',
-//					'accountProfile'       => $accountProfile
-//				];
-//				$accountProfiles[$accountProfile->name] = $additionalInfo;
 			}
 
 			$cache->set('account_profiles_' . $instanceName, $accountProfiles, $configArray['Caching']['account_profiles']);

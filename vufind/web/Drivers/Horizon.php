@@ -434,53 +434,53 @@ abstract class Horizon extends ScreenScrapingDriver{
 	}
 
 /**
-	 * Email the user's pin number to the account on record if any exists.
+	 * Email the user's pin to the account on record if any exists.
 	 */
-	function emailPin($barcode){
-		global $configArray;
-		if ($this->useDb){
-			$sql = "SELECT name, borrower.borrower#, bbarcode, pin#, email_name, email_address from borrower inner join borrower_barcode on borrower.borrower# = borrower_barcode.borrower# inner join borrower_address on borrower.borrower# = borrower_address.borrower#  where bbarcode= '" . DB_common::escapeSimple($barcode) . "'";
-
-			try {
-				$sqlStmt = $this->_query($sql);
-				$foundPatron = false;
-				while ($row = $this->_fetch_assoc($sqlStmt)) {
-					$pin = $row['pin#'];
-					$email = $row['email_address'];
-					$foundPatron = true;
-					break;
-				}
-
-				if ($foundPatron){
-					if (strlen($email) == 0){
-						return array('error' => 'Your account does not have an email address on record. Please visit your local library to retrieve your PIN number.');
-					}
-					require_once ROOT_DIR . '/sys/Mailer.php';
-
-					$mailer = new VuFindMailer();
-					$subject = "PIN number for your Library Card";
-					$body = "The PIN number for your Library Card is $pin.  You may use this PIN number to log into your account.";
-					$mailer->send($email, $configArray['Site']['email'], $subject, $body);
-					return array(
-						'success' => true,
-						'pin' => $pin,
-						'email' => $email,
-					);
-				}else{
-					return array('error' => 'Sorry, we could not find an account with that barcode.');
-				}
-			} catch (PDOException $e) {
-				return array(
-					'error' => 'Unable to read your PIN from the database.  Please try again later.'
-					);
-			}
-		}else{
-			$result = array(
-				'error' => 'This functionality requires a connection to the database.',
-			);
-		}
-		return $result;
-	}
+//	function emailPin($barcode){
+//		global $configArray;
+//		if ($this->useDb){
+//			$sql = "SELECT name, borrower.borrower#, bbarcode, pin#, email_name, email_address from borrower inner join borrower_barcode on borrower.borrower# = borrower_barcode.borrower# inner join borrower_address on borrower.borrower# = borrower_address.borrower#  where bbarcode= '" . DB_common::escapeSimple($barcode) . "'";
+//
+//			try {
+//				$sqlStmt     = $this->_query($sql);
+//				$foundPatron = false;
+//				while ($row = $this->_fetch_assoc($sqlStmt)){
+//					$pin         = $row['pin#'];
+//					$email       = $row['email_address'];
+//					$foundPatron = true;
+//					break;
+//				}
+//
+//				if ($foundPatron){
+//					if (strlen($email) == 0){
+//						return ['error' => 'Your account does not have an email address on record. Please visit your local library to retrieve your ' . translate('pin') . '.'];
+//					}
+//					require_once ROOT_DIR . '/sys/Mailer.php';
+//
+//					$mailer  = new VuFindMailer();
+//					$subject = translate('pin') . ' for your Library Card';
+//					$body    = "The " . translate('pin') . " for your Library Card is $pin.  You may use this " . translate('pin') . " to log into your account.";
+//					$mailer->send($email, $configArray['Site']['email'], $subject, $body);
+//					return [
+//						'success' => true,
+//						'pin'     => $pin,
+//						'email'   => $email,
+//					];
+//				}else{
+//					return ['error' => 'Sorry, we could not find an account with that barcode.'];
+//				}
+//			} catch (PDOException $e) {
+//				return [
+//					'error' => 'Unable to read your ' . translate('pin') . ' from the database.  Please try again later.'
+//				];
+//			}
+//		}else{
+//			$result = [
+//				'error' => 'This functionality requires a connection to the database.',
+//			];
+//		}
+//		return $result;
+//	}
 
 	abstract function translateCollection($collection);
 

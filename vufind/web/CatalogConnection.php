@@ -166,36 +166,41 @@ class CatalogConnection
 		global $offlineMode;
 
 		//Get the barcode property
-		$barcode = $this->accountProfile->loginConfiguration == 'barcode_pin' ? $username : $password;
+		$barcode = $this->accountProfile->usingPins() ? $username : $password;
 		//TODO: some libraries may have barcodes that the space character is valid. So far Aspencat appears to be one. pascal 9/27/2018
 		$barcode = trim($barcode);
 
 		// Offline Mode
 		if ($offlineMode){
 			//The catalog is offline, check the database to see if the user is valid
-			$user = new User();
+			$user          = new User();
 			$user->barcode = $barcode;
 
 			if ($user->find(true)){
-				if ($this->driver->accountProfile->loginConfiguration == 'barcode_pin') {
+				if ($this->driver->accountProfile->usingPins()) {
 					//We load the account based on the barcode make sure the pin matches
 					$userValid = $user->getPassword() == $password;
+					if (!$userValid){
+						$timer->logTime('offline patron login failed due to invalid password');
+						$this->logger->info('offline patron login failed due to invalid password');
+						return null;
+					}
 				}else{
 					//We still load based on barcode, make sure the username is similar
 					$userValid = $this->areNamesSimilar($username, $user->cat_username);
-				}
-				if (!$userValid){
-					$timer->logTime('offline patron login failed due to invalid name');
-					$this->logger->info('offline patron login failed due to invalid name');
-					return null;
+					if (!$userValid){
+						$timer->logTime('offline patron login failed due to invalid name');
+						$this->logger->info('offline patron login failed due to invalid name');
+						return null;
+					}
 				}
 			} else {
-				$timer->logTime("offline patron login failed because we haven't seen this user before");
-				$this->logger->info("offline patron login failed because we haven't seen this user before");
+				$timer->logTime('offline patron login failed because we haven\'t seen this user before');
+				$this->logger->info('offline patron login failed because we haven\'t seen this user before');
 				return null;
 			}
 		} else {
-			if ($this->driver->accountProfile->loginConfiguration == 'barcode_pin') {
+			if ($this->driver->accountProfile->usingPins()) {
 				$username = $barcode;
 			}else{
 				$password = $barcode;
@@ -391,8 +396,7 @@ class CatalogConnection
 	 * @return mixed        Array of the patron's fines on success, PEAR_Error otherwise.
 	 * @access public
 	 */
-	public function getMyFines($patron, $includeMessages = false, $linkedAccount = false)
-	{
+	public function getMyFines($patron, $includeMessages = false, $linkedAccount = false){
 		return $this->driver->getMyFines($patron, $includeMessages, $linkedAccount);
 	}
 
@@ -893,10 +897,9 @@ class CatalogConnection
 	 * @return mixed             Varies by method (false if undefined method)
 	 * @access public
 	 */
-	public function __call($methodName, $params)
-	{
-		$method = array($this->driver, $methodName);
-		if (is_callable($method)) {
+	public function __call($methodName, $params){
+		$method = [$this->driver, $methodName];
+		if (is_callable($method)){
 			return call_user_func_array($method, $params);
 		}
 		return false;
@@ -1119,12 +1122,12 @@ class CatalogConnection
 		}else{
 			//Get all list of all transactions
 			$currentTransactions = $this->driver->getMyCheckouts($patron);
-			$renewResult = array(
-				'success' => true,
-				'message' => array(),
-				'Renewed' => 0,
+			$renewResult = [
+				'success'   => true,
+				'message'   => [],
+				'Renewed'   => 0,
 				'Unrenewed' => 0
-			);
+			];
 			$renewResult['Total'] = count($currentTransactions);
 			$numRenewals = 0;
 			$failure_messages = array();
@@ -1154,17 +1157,18 @@ class CatalogConnection
 	}
 
 	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch, $cancelDate = null) {
-		if ($this->checkFunction('placeVolumeHold')){
+		if (method_exists($this->driver, 'placeVolumeHold')){
 			return $this->driver->placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch, $cancelDate);
 		}else{
-			return array(
+			return [
 					'success' => false,
-					'message' => 'Volume level holds have not been implemented for this ILS.');
+					'message' => 'Volume level holds have not been implemented for this ILS.'
+			];
 		}
 	}
 
 	public function importListsFromIls($patron){
-		if ($this->checkFunction('importListsFromIls')){
+		if (method_exists($this->driver, 'importListsFromIls')){
 			return $this->driver->importListsFromIls($patron);
 		}else{
 			return [
@@ -1175,7 +1179,7 @@ class CatalogConnection
 	}
 
 	public function getShowUsernameField() {
-		if ($this->checkFunction('hasUsernameField')) {
+		if (method_exists($this->driver, 'hasUsernameField')) {
 			return $this->driver->hasUsernameField();
 		}else{
 			return false;

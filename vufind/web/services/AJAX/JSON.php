@@ -61,7 +61,7 @@ class AJAX_JSON extends AJAXHandler {
 		if (!$isLoggedIn){
 			$user = UserAccount::login();
 
-			$interface->assign('user', $user); // PLB Assignment Needed before error checking?
+//			$interface->assign('user', $user); // PLB Assignment Needed before error checking?
 			if (!$user || PEAR_Singleton::isError($user)){
 
 				// Expired Card Notice
@@ -85,9 +85,46 @@ class AJAX_JSON extends AJAXHandler {
 			$user = UserAccount::getLoggedInUser();
 		}
 
-		return [
+		$return = [
 			'success' => true,
 			'name'    => $user->displayName,
+		];
+		if ($user->pinUpdateRequired){
+			$return['forcePinUpdate'] = true;
+			$form                     = $this->getPinUpdateForm();
+			$return                   = array_merge($return, $form);
+		}
+		return $return;
+	}
+
+	function getPinUpdateForm(){
+		/** @var Library $library */
+		global $interface;
+		global $library;
+		global $configArray;
+
+		$interface->assign('enableSelfRegistration', 0);
+
+		$catalog = CatalogFactory::getCatalogConnectionInstance();
+		if (!empty($catalog->accountProfile) && $catalog->accountProfile->usingPins() && method_exists($catalog->driver, 'emailResetPin')){
+			$interface->assign('showForgotPinLink', true);
+		}
+
+		// Password Requirements
+		$numericOnlyPins      = $configArray['Catalog']['numericOnlyPins'];
+		$alphaNumericOnlyPins = $configArray['Catalog']['alphaNumericOnlyPins'];
+		$pinMinimumLength     = $configArray['Catalog']['pinMinimumLength'];
+		$pinMaximumLength     = $configArray['Catalog']['pinMaximumLength'];
+		$interface->assign('numericOnlyPins', $numericOnlyPins);
+		$interface->assign('alphaNumericOnlyPins', $alphaNumericOnlyPins);
+		$interface->assign('pinMinimumLength', $pinMinimumLength);
+		$interface->assign('pinMaximumLength', $pinMaximumLength);
+
+		$title = translate('Update PIN');
+		return [
+			'title'        => $title,
+			'modalBody'    => $interface->fetch('MyAccount/updatePinPopUp.tpl'),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#pinForm\").submit();'>$title</button>",
 		];
 	}
 

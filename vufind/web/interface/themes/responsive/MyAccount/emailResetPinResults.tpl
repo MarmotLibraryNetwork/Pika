@@ -10,11 +10,11 @@
 					</div>
 				{else}
 					<p class="alert alert-success">
-						A email has been sent to the email address associated with your account containing a link to reset your PIN.
+						A email has been sent to the email address associated with your account containing a link to reset your {translate text='pin'}.
 					</p>
 					<p class="alert alert-warning">
 						If you do not receive an email within a few minutes, please check any spam folder your email service may
-						&nbsp;have.   If you do not receive an email, please contact your library to have them reset your pin.
+						&nbsp;have.   If you do not receive an email, please contact your library to have them reset your {translate text='pin'}.
 					</p>
 					<p>
 						<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Login'}</a>

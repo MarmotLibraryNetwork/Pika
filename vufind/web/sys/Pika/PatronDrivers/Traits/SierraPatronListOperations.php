@@ -169,12 +169,12 @@ trait SierraPatronListOperations {
 		$vendorOpacUrl = $this->accountProfile->vendorOpacUrl;
 
 		$headers = [
-			"Accept"          => "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5",
-			"Cache-Control"   => "max-age=0",
-			"Connection"      => "keep-alive",
-			"Accept-Charset"  => "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
-			"Accept-Language" => "en-us,en;q=0.5",
-			"User-Agent"      => "Pika"
+			'Accept'          => 'text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5',
+			'Cache-Control'   => 'max-age=0',
+			'Connection'      => 'keep-alive',
+			'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
+			'Accept-Language' => 'en-us,en;q=0.5',
+			'User-Agent'      => 'Pika'
 		];
 		$c->setHeaders($headers);
 
@@ -193,18 +193,13 @@ trait SierraPatronListOperations {
 		$c->setOpts($curlOpts);
 
 		// first log patron in
-		if ($this->accountProfile->loginConfiguration == 'name_barcode'){
-			$postData = [
-				'name' => $patron->cat_username,
-				'code' => $patron->barcode
-			];
-		}else{
-			$postData = [
-				'code' => $patron->barcode,
-				'pin'  => $patron->getPassword()
-			];
-
-		}
+		$postData = $this->accountProfile->usingPins() ? [
+			'code' => $patron->barcode,
+			'pin'  => $patron->getPassword()
+		] : [
+			'name' => $patron->cat_username,
+			'code' => $patron->barcode
+		];
 
 		$loginUrl = $vendorOpacUrl . '/patroninfo/';
 		$r        = $c->post($loginUrl, $postData);

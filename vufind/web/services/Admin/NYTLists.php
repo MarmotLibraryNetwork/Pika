@@ -74,7 +74,7 @@ class NYTLists extends Admin_Admin {
 			// Get user id
 			$catalog              = CatalogFactory::getCatalogConnectionInstance();
 			$nyTimesUser          = new User();
-			$nyTimesUser->barcode = $catalog->accountProfile->loginConfiguration == 'barcode_pin' ? $configArray['NYT_API']['pika_username'] : $configArray['NYT_API']['pika_password'];
+			$nyTimesUser->barcode = $catalog->accountProfile->usingPins() ? $configArray['NYT_API']['pika_username'] : $configArray['NYT_API']['pika_password'];
 			if ($nyTimesUser->find(1)){
 				// Get User Lists
 				$nyTimesUserLists          = new UserList();

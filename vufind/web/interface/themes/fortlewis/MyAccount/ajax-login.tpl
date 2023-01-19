@@ -42,7 +42,8 @@
 							<input type="password" name="password" id="password" size="28" onkeypress="return Pika.submitOnEnter(event, '#loginForm');" class="form-control">
 							{if $showForgotPinLink}
 								<p class="text-muted help-block">
-									<strong>Forgot PIN?</strong> <a href="/MyAccount/EmailPin">E-mail PIN</a>
+									<strong>{translate text="Forgot PIN?"}</strong>&nbsp;
+									<a href="/MyAccount/EmailResetPin">{translate text='Reset My PIN'}</a>
 								</p>
 							{/if}
 							{include file="MyAccount/selfReglink.tpl"}

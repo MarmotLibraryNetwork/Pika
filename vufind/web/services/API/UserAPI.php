@@ -24,6 +24,10 @@ use Pika\PatronDrivers\EcontentSystem\OverDriveDriverFactory;
 
 class UserAPI extends AJAXHandler {
 
+	protected $methodsThatRespondWithJSONUnstructured = [
+		'setDefaultPin',
+		];
+
 	protected $methodsThatRespondWithJSONResultWrapper = [
 		'isLoggedIn',
 		'login',
@@ -1286,6 +1290,38 @@ class UserAPI extends AJAXHandler {
 		}
 	}
 
+	public function setDefaultPin(){
+//		global $pikaLogger;
+//		$pikaLogger->debug('POST', [$_POST]);
+//		$pikaLogger->debug('REQUEST', [$_REQUEST]);
+
+		if (!empty($_REQUEST['token'])){
+			global $configArray;
+			if (!empty($configArray['System']['allowSetDefaultPin'])){
+				// Check that a config setting has been set as additional security precaution
+				$user = $this->validateUserApiToken();
+				if ($user){
+					if (!empty($_POST['defaultPin'])){
+						//TODO: existing password check?
+						$user->setPassword($_POST['defaultPin']);
+						if ($user->update()){
+							return ['success' => true];
+						}else{
+							global $pikaLogger;
+							$pikaLogger->error("Failed to set a default pin for user $user->id");
+							return ['success' => false, 'message' => 'Failed to set default pin'];
+						}
+					}else{
+						global $pikaLogger;
+						$pikaLogger->error("setDefaultPassword received request for user $user->id that did not contain a default Pin");
+						return ['success' => false, 'message' => 'Missing default pin'];
+					}
+				}
+			}
+		}
+		return ['success' => false];
+	}
+
 	/**
 	 * @return array
 	 */
@@ -1320,7 +1356,7 @@ class UserAPI extends AJAXHandler {
 								return $user;
 							} else {
 								global $pikaLogger;
-								$pikaLogger->warning('User API call had a invalid token paremeter');
+								$pikaLogger->warning('User API call had a invalid token parameter');
 							}
 						}else{
 							global $pikaLogger;

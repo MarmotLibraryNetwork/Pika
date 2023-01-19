@@ -26,7 +26,7 @@
  *
  */
 
-require_once ROOT_DIR . "/Action.php";
+require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 
 class ResetPin extends Action{
@@ -36,8 +36,7 @@ class ResetPin extends Action{
 	{
 	}
 
-	function launch($msg = null)
-	{
+	function launch($msg = null){
 		global $interface;
 
 		if (!empty($_REQUEST['resetToken'])) {
@@ -74,48 +73,42 @@ class ResetPin extends Action{
 						// Did not find a matching user to the uid
 						// This check could be optional if the resetPin method verifies that the ILS user matches the Pika user.
 						$resetPinResult = [
-							'error' => 'Invalid parameter. Your PIN can not be reset'
+							'error' => 'Invalid parameter. Your ' . translate('pin') . ' can not be reset.'
 						];
 					}elseif (empty($newPin)){
 						$resetPinResult = [
-							'error' => 'Please enter a new PIN number.'
+							'error' => 'Please enter a new ' . translate('pin') . '.'
 						];
 					}elseif (empty($confirmNewPin)){
 						$resetPinResult = [
-							'error' => 'Please confirm your new PIN number.'
+							'error' => 'Please confirm your new ' . translate('pin') . '.'
 						];
 					}elseif ($newPin !== $confirmNewPin){
 						$resetPinResult = [
-							'error' => 'The new PIN you entered did not match. Please try again.'
+							'error' => 'The new ' . translate('pin') . 's do not match. Please try again.'
 						];
 					}elseif (empty($resetToken) || empty($userID)){
-						// These checks is for Horizon Driver, this may need to be moved into resetPin function if used for another ILS
+						// These checks are for Horizon Driver, this may need to be moved into resetPin function if used for another ILS
 						$resetPinResult = [
-							'error' => 'Required parameter missing. Your PIN can not be reset.'
+							'error' => 'Required parameter missing. Your ' . translate('pin') . ' can not be reset.'
 						];
 					}elseif ($newPinLength < $pinMinimumLength or $newPinLength > $pinMaximumLength){
 						if ($pinMinimumLength == $pinMaximumLength){
-							$errorMsg = "New PIN must be exactly " . $pinMinimumLength . " characters.";
+							$resetPinResult = ['error' => 'New ' . translate('pin') . ' must be exactly ' . $pinMinimumLength . ' characters.'];
 						}else{
-							$errorMsg = "New PIN must be " . $pinMinimumLength . " to " . $pinMaximumLength . " characters.";
+							$resetPinResult = ['error' => 'New ' . translate('pin') . ' must be ' . $pinMinimumLength . " to " . $pinMaximumLength . ' characters.'];
 						}
-
-						$resetPinResult = [
-							'error' => $errorMsg
-						];
 					}else{
 						$resetPinResult = $driver->resetPin($patron, $newPin, $resetToken);
 					}
 				}
 			}else{
-				$resetPinResult = array(
+				$resetPinResult = [
 					'error' => 'This functionality is not available in the circulation system.',
-				);
+				];
 			}
 			$interface->assign('resetPinResult', $resetPinResult);
-			$this->display('resetPinResults.tpl', 'Reset My Pin');
-		}else{
-			$this->display('resetPin.tpl', 'Reset My Pin');
 		}
+		$this->display('resetPin.tpl', translate('Reset My PIN'));
 	}
 }
