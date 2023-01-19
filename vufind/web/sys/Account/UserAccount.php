@@ -463,7 +463,6 @@ class UserAccount {
 					$patronCacheKey = $cache->makePatronKey('patron', $tempUser->id);
 					$cache->set($patronCacheKey, $tempUser, $configArray['Caching']['user']);
 
-					$validUsers[] = $tempUser;
 					if ($primaryUser == null){
 						$primaryUser = $tempUser;
 						self::updateSession($primaryUser);
