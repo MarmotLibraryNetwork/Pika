@@ -404,7 +404,9 @@ public class GroupedReindexMain {
 		
 		//Start a reindex log entry 
 		try {
-			logger.info("Creating log entry for indexing");
+			if (logger.isDebugEnabled()) {
+				logger.debug("Creating log entry for indexing");
+			}
 			PreparedStatement createLogEntryStatement = pikaConn.prepareStatement("INSERT INTO reindex_log (startTime, lastUpdate, notes) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
 			createLogEntryStatement.setLong(1, new Date().getTime() / 1000);
 			createLogEntryStatement.setLong(2, new Date().getTime() / 1000);

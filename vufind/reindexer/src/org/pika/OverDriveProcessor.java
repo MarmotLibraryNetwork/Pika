@@ -206,7 +206,7 @@ public class OverDriveProcessor {
 									groupedWork.addSeries(series, "");
 									//TODO: add volume info?, from either subtitle or sort title with phrase "book X"
 								}
-								final String author = productRS.getString("fileAs");
+								final String author = productRS.getString("fileAs");  // using the fileAs name for the primaryCreatorName in the products table
 								groupedWork.setAuthor(author, primaryFormat);
 								groupedWork.setAuthAuthor(author);
 								groupedWork.setAuthorDisplay(author, primaryFormat);

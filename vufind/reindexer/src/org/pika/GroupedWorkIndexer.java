@@ -854,11 +854,11 @@ public class GroupedWorkIndexer {
 			File dataDir = new File(PikaConfigIni.getIniValue("Reindex", "marcPath"));
 			dataDir = dataDir.getParentFile();
 			//write the records in CSV format to the data directory
-			Date curDate = new Date();
-			String curDateFormatted = dayFormatter.format(curDate);
-			File recordsFile = new File(dataDir.getAbsolutePath() + "/reindex_stats_" + curDateFormatted + ".csv");
-			CSVWriter recordWriter = new CSVWriter(new FileWriter(recordsFile));
-			ArrayList<String> headers = new ArrayList<>();
+			Date              curDate          = new Date();
+			String            curDateFormatted = dayFormatter.format(curDate);
+			File              recordsFile      = new File(dataDir.getAbsolutePath() + "/reindex_stats_" + curDateFormatted + ".csv");
+			CSVWriter         recordWriter     = new CSVWriter(new FileWriter(recordsFile));
+			ArrayList<String> headers          = new ArrayList<>();
 			headers.add("Scope Name");
 			headers.add("Owned works");
 			headers.add("Total works");
