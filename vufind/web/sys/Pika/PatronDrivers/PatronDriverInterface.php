@@ -54,6 +54,10 @@ abstract class PatronDriverInterface {
 	 * @return User|Exception          The User object for the patron
 	 *                                 If an error occurs, return an appropriate exception.
 	 * @access  public
+	 *
+	 * @note                          It is possible that, if names are used for username or password, that apple's smart
+	 *                                punctuation will cause login problems. A simple $username = str_replace("’", "'", trim($username));
+	 *                                should fix this.
 	 */
 
 	public abstract function patronLogin($username, $password, $validatedViaSSO);

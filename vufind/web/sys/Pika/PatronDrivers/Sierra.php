@@ -343,6 +343,7 @@ class Sierra  implements \DriverInterface {
 	public function patronLogin($username, $password, $validatedViaSSO = false){
 		// check patron credentials depending on login config.
 		// the returns from _auth methods should be either a sierra patron id or false.
+		// we replace the curly quote with a straight quote in usernames to account for iphone smart punctuation.
 		$username = str_replace("’", "'", trim($username));
 		$password = trim($password);
 
