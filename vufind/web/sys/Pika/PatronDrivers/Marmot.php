@@ -566,7 +566,7 @@ class Marmot extends Sierra {
 		}
 
 		$scope    = $this->getLibrarySierraScope(); // IMPORTANT: Scope is needed for Bookings Actions to work
-		$patronId = $this->getPatronId($patron->barcode);
+		$patronId = $patron->ilsUserId ?? $this->getPatronId($patron);
 		$optUrl   = $patronAction ? $vendorOpacUrl . '/patroninfo~S' . $scope . '/' . $patronId . '/' . $pageToCall
 			: $vendorOpacUrl . '/' . $pageToCall;
 		// Most curl calls are patron interactions, getting the bookings calendar isn't
@@ -595,15 +595,15 @@ class Marmot extends Sierra {
 	 */
 	private
 	function parseBookingsPage($html){
-		$bookings = array();
+		$bookings = [];
 
 		// Table Rows for each Booking
 		if (preg_match_all('/<tr\\s+class="patFuncEntry">(?<bookingRow>.*?)<\/tr>/si', $html, $rows, PREG_SET_ORDER)){
 			foreach ($rows as $index => $row){ // Go through each row
 
-				// Get Record/Title
-				if (!preg_match('/.*?<a href=\\"\/record=(?<recordId>.*?)(?:~S\\d{1,3})\\">(?<title>.*?)<\/a>.*/', $row['bookingRow'], $matches)){
-					$this->logger->error("Failed to parse My Bookings page from classic");
+				// Get Record Id/Title
+				if (!preg_match('/.*?<a .*?href=\\"\/record=(?<recordId>.*?)(?:~S\\d{1,3})\\">(?<title>.*?)<\/a>.*/', $row['bookingRow'], $matches)){
+					$this->logger->error('Failed to parse My Bookings page from classic');
 				}
 
 				$shortId = $matches['recordId'];
