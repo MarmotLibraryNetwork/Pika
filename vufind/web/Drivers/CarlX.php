@@ -177,8 +177,9 @@ class CarlX extends SIP2Driver{
 		return true;
 	}
 
-	public function getNumHoldsOnRecord($id) {
-		// TODO: Implement getNumHoldsOnRecord() method.
+	public function getNumHoldsOnRecord($bibId) {
+		// Values tracked in ils_hold_summary table by export/extractor process
+		return false;
 	}
 
 	/**

@@ -467,20 +467,17 @@ abstract class HorizonROA implements \DriverInterface {
 	 * @param  string|int $bibId
 	 * @return bool|int
 	 */
-	public function getNumHoldsOnRecord($bibId) {
+	public function getNumHoldsOnRecord($bibId){
 		//This uses the standard / REST method to retrieve this information from the ILS.
 		// It isn't an ROA call.
-		global $offlineMode;
-		if (!$offlineMode){
-			$lookupTitleInfoUrl      =  '/rest/standard/lookupTitleInfo?titleKey=' . $bibId . '&includeItemInfo=false&includeHoldCount=true';
-			$lookupTitleInfoResponse = $this->getWebServiceResponse($lookupTitleInfoUrl);
-			if (!empty($lookupTitleInfoResponse->titleInfo)){
-				if (is_array($lookupTitleInfoResponse->titleInfo) && isset($lookupTitleInfoResponse->titleInfo[0]->holdCount)) {
-					return (int) $lookupTitleInfoResponse->titleInfo[0]->holdCount;
-				} elseif (isset($lookupTitleInfoResponse->titleInfo->holdCount)) {
-					//TODO: I suspect that this never occurs
-					return (int) $lookupTitleInfoResponse->titleInfo->holdCount;
-				}
+		$lookupTitleInfoUrl      = '/rest/standard/lookupTitleInfo?titleKey=' . $bibId . '&includeItemInfo=false&includeHoldCount=true';
+		$lookupTitleInfoResponse = $this->getWebServiceResponse($lookupTitleInfoUrl);
+		if (!empty($lookupTitleInfoResponse->titleInfo)){
+			if (is_array($lookupTitleInfoResponse->titleInfo) && isset($lookupTitleInfoResponse->titleInfo[0]->holdCount)){
+				return (int)$lookupTitleInfoResponse->titleInfo[0]->holdCount;
+			}elseif (isset($lookupTitleInfoResponse->titleInfo->holdCount)){
+				//TODO: I suspect that this never occurs
+				return (int)$lookupTitleInfoResponse->titleInfo->holdCount;
 			}
 		}
 		return false;

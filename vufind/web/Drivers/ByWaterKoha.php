@@ -91,11 +91,12 @@ abstract class ByWaterKoha extends KohaILSDI {
 
 	/**
 	 * Return the number of holds that are on a record
-	 * @param int $id biblionumber of title
-	 * @return int
+	 * @param int $bibId biblionumber of title
+	 * @return false
 	 */
-	public function getNumHoldsOnRecord($id) {
-
+	public function getNumHoldsOnRecord($bibId) {
+		// Values tracked in ils_hold_summary table by export/extractor process
+		return false;
 	}
 
 	/**

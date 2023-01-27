@@ -1913,15 +1913,9 @@ class MarcRecord extends IndexRecord {
 			global $pikaLogger;
 			$pikaLogger->debug('fetching num of Holds from MarcRecord');
 
-			$catalog = CatalogFactory::getCatalogConnectionInstance();
-//			$pikaLogger->debug('$catalog :'.var_export($catalog, true));
-			if (isset($catalog->status) && $catalog->status){
-				$this->numHolds = $catalog->getNumHoldsFromRecord($this->getUniqueID());
-			}else{
-				$this->numHolds = 0;
-			}
+			$catalog        = CatalogFactory::getCatalogConnectionInstance();
+			$this->numHolds = $catalog->getNumHoldsFromRecord($this->getUniqueID());
 		}else{
-
 			require_once ROOT_DIR . '/sys/Extracting/IlsHoldSummary.php';
 			$holdSummary        = new IlsHoldSummary();
 			$holdSummary->ilsId = $this->getUniqueID();
@@ -2202,11 +2196,11 @@ class MarcRecord extends IndexRecord {
 						$issueSummaries[$issueSummaryKey]['holdings'][strtolower($key)] = $holding;
 					}else{
 						//Need to automatically add a summary so we don't lose data
-						$issueSummaries[$holding['shelfLocation']] = array(
+						$issueSummaries[$holding['shelfLocation']] = [
 							'location' => $holding['shelfLocation'],
 							'type'     => 'issue',
-							'holdings' => array(strtolower($key) => $holding),
-						);
+							'holdings' => [strtolower($key) => $holding],
+						];
 					}
 				}
 				foreach ($issueSummaries as $key => $issueSummary){

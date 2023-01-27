@@ -79,7 +79,7 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 					$gitBranch = substr($gitBranch, 0, -1);
 				}
 				$userAgent = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
-				$header    = array();
+				$header    = [];
 				$header[0] = "Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5";
 				$header[]  = "Cache-Control: max-age=0";
 				$header[]  = "Connection: keep-alive";
@@ -94,7 +94,7 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 			$cookie = $this->getCookieJar();
 
 			$this->curl_connection = curl_init($curlUrl);
-			$default_curl_options  = array(
+			$default_curl_options  = [
 				CURLOPT_CONNECTTIMEOUT    => 20,
 				CURLOPT_TIMEOUT           => 60,
 				CURLOPT_HTTPHEADER        => $header,
@@ -108,12 +108,12 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 				CURLOPT_AUTOREFERER       => true,
 				//  CURLOPT_HEADER => true, // debugging only
 				//  CURLOPT_VERBOSE => true, // debugging only
-			);
+			];
 
-			if ($curl_options) {
-				//TODO: if this comes into play, the second line is better I suspect. because the curl option constants are all numeric, therefore array_merge will redo the keys index.
-				$default_curl_options = array_merge($default_curl_options, $curl_options);
-//				$default_curl_options = $default_curl_options + $curl_options;
+			if (!empty($curl_options)) {
+				foreach ($curl_options as $curlOption => $setting){
+					$default_curl_options[$curlOption] = $setting;
+				}
 			}
 			curl_setopt_array($this->curl_connection, $default_curl_options);
 		}else{
@@ -147,8 +147,8 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 	 *
 	 * @return string   The response from the web page if any
 	 */
-	public function _curlGetPage($url){
-		$this->_curl_connect($url);
+	public function _curlGetPage($url, $curlOptions = []){
+		$this->_curl_connect($url, $curlOptions);
 		$return = curl_exec($this->curl_connection);
 //		$info = curl_getinfo($this->curl_connection);
 		if (!$return) { // log curl error

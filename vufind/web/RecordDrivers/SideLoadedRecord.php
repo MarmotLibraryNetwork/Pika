@@ -109,8 +109,12 @@ class SideLoadedRecord extends BaseEContentDriver {
 		return $this->profileType;
 	}
 
+	/**
+	 * Override the ils record function
+	 * @return int
+	 */
 	function getNumHolds(){
-		return 0;
+		return 0; // Prevent any holds count look up for a default sideloaded econtent collection
 	}
 
 	function getFormats(){

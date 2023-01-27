@@ -792,19 +792,32 @@ abstract class HorizonAPI extends Horizon{
 		];
 	}
 
+	protected bool $doNumHoldLookup = true;
 	/**
 	 * Return the number of holds that are on a record
 	 * @param  string|int $bibId
 	 * @return bool|int
 	 */
-	public function getNumHoldsOnRecord($bibId) {
-		global $offlineMode;
-		if (!$offlineMode){
+	public function getNumHoldsOnRecord($bibId){
+		if ($this->doNumHoldLookup){
 			global $configArray;
-			$lookupTitleInfoUrl      = $this->getWebServiceURL() . '/standard/lookupTitleInfo?clientID=' . $configArray['Catalog']['clientId'] . '&titleKey=' . $bibId . '&includeItemInfo=false&includeHoldCount=true' ;
-			$lookupTitleInfoResponse = $this->getWebServiceResponse($lookupTitleInfoUrl);
+			$lookupTitleInfoUrl      = $this->getWebServiceURL() . '/standard/lookupTitleInfo?clientID=' . $configArray['Catalog']['clientId'] . '&titleKey=' . $bibId . '&includeItemInfo=false&includeHoldCount=true';
+			$curlOptions             = [
+				CURLOPT_CONNECTTIMEOUT => 3,
+				// shorten time-out calls to this to 3 seconds so that page loading for search results is reduced
+				// when the ils is not responding
+			];
+			$lookupTitleInfoResponse = $this->getWebServiceResponse($lookupTitleInfoUrl, $curlOptions);
 			if (!empty($lookupTitleInfoResponse->titleInfo)){
+//				$this->doNumHoldLookup = true;
 				return is_array($lookupTitleInfoResponse->titleInfo) ? (int)$lookupTitleInfoResponse->titleInfo[0]->holdCount : (int)$lookupTitleInfoResponse->titleInfo->holdCount;
+			}else{
+				$error = curl_error($this->curl_connection);
+				if (strpos($error, 'Connection timed out') === 0){
+					// When we get a timeout, prevent subsequent looks up for this page call
+					// so search results can load quickly dispite time-out above
+					$this->doNumHoldLookup = false;
+				}
 			}
 		}
 		return false;
@@ -941,8 +954,8 @@ abstract class HorizonAPI extends Horizon{
 		return [$lastName, $firstName];
 	}
 
-	public function getWebServiceResponse($url){
-		$xml = $this->_curlGetPage($url);
+	public function getWebServiceResponse($url, $curlOptions = []){
+		$xml = $this->_curlGetPage($url, $curlOptions);
 		if ($xml !== false && $xml !== 'false'){
 			if (strpos($xml, '<') !== FALSE){
 				//Strip any non-UTF-8 characters

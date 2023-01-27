@@ -50,7 +50,7 @@ class CatalogConnection
 	 * The object of the appropriate driver.
 	 *
 	 * @access private
-	 * @var    \Pika\PatronDrivers\Sierra|HorizonROA|SirsiDynixROA|DriverInterface
+	 * @var    \Pika\PatronDrivers\Sierra|\Pika\PatronDrivers\HorizonROA|HorizonAPI3_23|SirsiDynixROA|DriverInterface
 	 */
 	public $driver;
 
@@ -1074,20 +1074,31 @@ class CatalogConnection
 
 	/**
 	 * Return the number of holds that are on a record
-	 * @param $id
-	 * @return int
+	 * @param $bibId Record Id Number
+	 * @return int|false
 	 */
-	public function getNumHoldsFromRecord($id) {
-		// these all need to live with the owning object.
-		$key = 'num_holds_' . $id ;
-		$cachedValue = $this->cache->get($key);
-		if ($cachedValue == false || isset($_REQUEST['reload'])){
-			global $configArray;
-			$cachedValue = $this->driver->getNumHoldsOnRecord($id);
-			$this->cache->set($key, $cachedValue, $configArray['Caching']['item_data']);
+	public function getNumHoldsFromRecord($bibId){
+		if ($this->status){
+			global $instanceName;
+			$key         = $instanceName . '_num_holds_' . $bibId;
+			$cachedValue = $this->cache->get($key);
+			if ($cachedValue === false || is_null($cachedValue) // allow for cached value of 0
+				|| isset($_REQUEST['reload'])
+			){
+				global $offlineMode;
+				if (!$offlineMode){ // Prevent a holds look-up if we know the ils is offline
+					$cachedValue = $this->driver->getNumHoldsOnRecord($bibId);
+					if ($cachedValue !== false){ // Don't cache value of false, since that will just cause another look-up anyway
+						global $configArray;
+						$this->cache->set($key, $cachedValue, $configArray['Caching']['item_data']);
+					}
+				}else{
+					return false;
+				}
+			}
+			return $cachedValue;
 		}
-
-		return $cachedValue;
+		return false;
 	}
 
 	function cancelHold($patron, $recordId, $cancelId) {
