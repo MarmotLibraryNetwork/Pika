@@ -65,6 +65,18 @@ class EmailResetPin extends Action {
 			$interface->assign('emailResult', $emailResult);
 			$this->display('emailResetPinResults.tpl', translate('Email to Reset Pin'), $sidebarTemplate);
 		}else{
+
+			/** @var Library $library */
+			global $library;
+			$catalog              = CatalogFactory::getCatalogConnectionInstance();
+			if ($catalog->accountProfile->usingPins()){
+				$barcodeLabel = empty($library->loginFormUsernameLabel) ? 'Library Card Number' : $library->loginFormUsernameLabel;
+			}else {
+				//Note: Name/Barcode schema shouldn't really need to support password reset
+				$barcodeLabel = empty($library->loginFormPasswordLabel) ? 'Library Card Number' : $library->loginFormPasswordLabel;
+			}
+			$interface->assign('barcodeLabel', $barcodeLabel);
+
 			$this->display('emailResetPin.tpl', translate('Email to Reset Pin'), $sidebarTemplate);
 		}
 	}
