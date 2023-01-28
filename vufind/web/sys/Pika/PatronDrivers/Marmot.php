@@ -149,29 +149,30 @@ class Marmot extends Sierra {
 		// Fetch Classic WebPac Bookings page
 		$html = $this->_curlLegacy($patron, 'bookings');
 
-		// Parse out Bookings Information
-		/** @var MyBooking[] $bookings */
-		$bookings = $this->parseBookingsPage($html);
+		if (!empty($html)){
+			// Parse out Bookings Information
+			/** @var MyBooking[] $bookings */
+			$bookings = $this->parseBookingsPage($html);
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
+			foreach ($bookings as &$booking){
+				$booking->userDisplayName = $patron->getNameAndLibraryLabel();
+				$booking->userId          = $patron->id;
 
-		require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-		foreach ($bookings as &$booking){
-			$booking->userDisplayName = $patron->getNameAndLibraryLabel();
-			$booking->userId          = $patron->id;
-
-			$recordDriver = new MarcRecord($booking->id);
-			if ($recordDriver->isValid()){
-				$booking->title         = $recordDriver->getTitle();
-				$booking->sortTitle     = $recordDriver->getSortableTitle();
-				$booking->author        = $recordDriver->getPrimaryAuthor();
-				$booking->format        = $recordDriver->getFormat();
-				$booking->linkUrl       = $recordDriver->getRecordUrl();
-				$booking->coverUrl      = $recordDriver->getBookcoverUrl('medium');
-				$booking->groupedWorkId = $recordDriver->getGroupedWorkId();
-				$booking->ratingData    = $recordDriver->getRatingData();
+				$recordDriver = new MarcRecord($booking->id);
+				if ($recordDriver->isValid()){
+					$booking->title         = $recordDriver->getTitle();
+					$booking->sortTitle     = $recordDriver->getSortableTitle();
+					$booking->author        = $recordDriver->getPrimaryAuthor();
+					$booking->format        = $recordDriver->getFormat();
+					$booking->linkUrl       = $recordDriver->getRecordUrl();
+					$booking->coverUrl      = $recordDriver->getBookcoverUrl('medium');
+					$booking->groupedWorkId = $recordDriver->getGroupedWorkId();
+					$booking->ratingData    = $recordDriver->getRatingData();
+				}
 			}
+			return $bookings;
 		}
-
-		return $bookings;
+		return [];
 	}
 
 	public function bookMaterial(User $patron, \SourceAndId $recordId, $startDate, $startTime = null, $endDate = null, $endTime = null){
