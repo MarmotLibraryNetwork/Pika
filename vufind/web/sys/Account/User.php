@@ -1897,7 +1897,7 @@ class User extends DB_DataObject {
 		return $result;
 	}
 
-	public $pinUpdateRequired = false;
+	public bool $pinUpdateRequired = false;
 
 	public function updatePin(){
 		global $configArray;

@@ -1002,8 +1002,20 @@ class MyAccount_AJAX extends AJAXHandler {
 	}
 
 	function LoginForm(){
-		/** @var Library $library */
+		// Check if already logged in (eg. in another tab)
+		/** @var User $user */
 		global $interface;
+		$user = UserAccount::getLoggedInUser();
+		if (!empty($user)){
+			if (!empty($user->pinUpdateRequired)){
+				require_once ROOT_DIR . '/services/AJAX/JSON.php';
+				$ajax = new AJAX_JSON();
+				$form = $ajax->getPinUpdateForm();
+				$interface->assign('form', $form);
+				return $interface->fetch('MyAccount/result-array-to-html.tpl');
+			}
+		}
+		/** @var Library $library */
 		global $library;
 		global $configArray;
 

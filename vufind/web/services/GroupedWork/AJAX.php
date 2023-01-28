@@ -585,16 +585,16 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 //			$title   = ($library->showFavorites && !$library->showComments) ? 'Rating' : 'Review'; // the library object doesn't seem to have the up-to-date settings.
 			$title   = ($interface->get_template_vars('showRatings') && !$interface->get_template_vars('showComments')) ? 'Rating' : 'Review';
-			$results = array(
+			$results = [
 				'title'        => $title,
 				'modalBody'    => $interface->fetch("GroupedWork/review-form-body.tpl"),
 				'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.GroupedWork.saveReview(\"{$id}\");'>Submit $title</button>",
-			);
+			];
 		}else{
-			$results = array(
+			$results = [
 				'error'   => true,
 				'message' => 'Invalid ID.',
-			);
+			];
 		}
 		return $results;
 	}

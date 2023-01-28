@@ -1213,7 +1213,7 @@ class Sierra  implements \DriverInterface {
 	public function emailResetPin($barcode) {
 		$patron          = new User();
 		$patron->barcode = $barcode;
-		if ($patron->find(true)){
+		if (!$patron->find(true)){
 			// might be a new user
 			if ($patronId = $this->getPatronId($barcode)){
 				// load them in the database.
@@ -1223,7 +1223,7 @@ class Sierra  implements \DriverInterface {
 				return ['error' => 'Unable to find an account associated with barcode: ' . $barcode];
 			}
 		}
-		if (empty($patron->email)){
+		if ($patron->N && empty($patron->email)){
 			return ['error' => 'You do not have an email address on your account. Please visit your library to reset your ' . translate('pin') . '.'];
 		}
 
@@ -1242,8 +1242,8 @@ class Sierra  implements \DriverInterface {
 		$pin         = translate('pin');
 		$subject     = ucfirst($pin) . ' Reset Link';
 		$htmlMessage = <<<EOT
-		<p>We received a $pin reset request. The link to reset your $pin is below.  
-If you did not make this request, you can ignore this email</p>  
+		<p>We received a $pin reset request. The link to reset your $pin is below.  Copy and paste the link into your web browser to set your $pin.</p>
+<p>If you did not make this request, you can ignore this email</p>  
 <p>Here is your $pin reset link:</br>  
 $resetUrl
 EOT;
@@ -3468,7 +3468,8 @@ EOT;
 		}
 	}
 
-	public function getNumHoldsOnRecord($id){
+	public function getNumHoldsOnRecord($bibId){
+		// Values tracked in ils_hold_summary table by export/extractor process
 		return false;
 	}
 }

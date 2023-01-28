@@ -106,7 +106,6 @@ Pika.Account = (function(){
 					/*
 					  Set the trigger html element attribute data-login="true" to cause the pop-up login dialog
 					  to act as if the only action is login, ie not a multi-step process.
-
 					 */
 				}
 				var dialogDestination = '/MyAccount/AJAX?method=LoginForm';
@@ -115,6 +114,7 @@ Pika.Account = (function(){
 				}
 				var modalDialog = $("#modalDialog");
 				$('.modal-body').html("Loading...");
+				$('.modal-buttons').html(''); // Hide any pre-existing buttons
 				$(".modal-content").load(dialogDestination);
 				$(".modal-title").text(dialogTitle);
 				modalDialog.modal("show");

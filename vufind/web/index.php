@@ -188,10 +188,10 @@ $interface->assign('enableMaterialsRequest', MaterialsRequest::enableMaterialsRe
 
 //Override MyAccount Home as needed
 if ($isLoggedIn){
-	if (!($action == 'AJAX' && $module == 'MyAccount' && $_REQUEST['method'] == 'updatePin')){
+	if (!($action == 'AJAX' && $module == 'MyAccount' && in_array($_REQUEST['method'] , ['updatePin', 'LoginForm']))){
 		// exception for updatePin popup process
 		$user = UserAccount::getLoggedInUser();
-		if ($user->pinUpdateRequired
+		if (!empty($user->pinUpdateRequired)
 			&& !in_array($action, ['Logout', 'EmailResetPin']) // Force pin update when logged in, except for users that are clicking the log-out button or using pin reset
 			&& empty($_SESSION['guidingUserId']) // don't force pin update when masquerading as user
 		){
