@@ -1066,10 +1066,9 @@ class Sierra  implements \DriverInterface {
 	}
 
 	function setPatronPinSetTimeInILS(User $patron){
-		global $configArray;
-		if (!empty($configArray['Catalog']['patronPinSetTimeField'])){
+		if (!empty($this->configArray['Catalog']['patronPinSetTimeField'])){
 			$params['varFields'] = [(object)[
-				'fieldTag' => $configArray['Catalog']['patronPinSetTimeField'],
+				'fieldTag' => $this->configArray['Catalog']['patronPinSetTimeField'],
 				'content'  => date('Y-m-d H:i:s')]
 			];
 			$operation           = 'patrons/' . $patron->ilsUserId;
@@ -1110,14 +1109,13 @@ class Sierra  implements \DriverInterface {
 			return 'Your current ' . translate('pin') . ' is incorrect. Please try again.';
 		}
 
-		global $configArray;
 		$operation = 'patrons/' . $patronId;
 		$params    = ['pin' => $newPin];
-		if (!empty($configArray['Catalog']['patronPinSetTimeField'])){
+		if (!empty($this->configArray['Catalog']['patronPinSetTimeField'])){
 			// Taken from setPatronPinSetTimeInILS()
 			// Set the patron pin set time in the same call
 			$params['varFields'] = [(object)[
-				'fieldTag' => $configArray['Catalog']['patronPinSetTimeField'],
+				'fieldTag' => $this->configArray['Catalog']['patronPinSetTimeField'],
 				'content'  => date('Y-m-d H:i:s')]
 			];
 		}
@@ -1166,15 +1164,14 @@ class Sierra  implements \DriverInterface {
 			return ['error' => 'Unable to reset your ' . translate('pin') . '. Invalid reset token.'];
 		}
 		// everything is good
-		global $configArray;
 		$patronId  = $this->getPatronId($patron);
 		$operation = 'patrons/' . $patronId;
 		$params    = ['pin' => (string)$newPin];
-		if (!empty($configArray['Catalog']['patronPinSetTimeField'])){
+		if (!empty($this->configArray['Catalog']['patronPinSetTimeField'])){
 			// Taken from setPatronPinSetTimeInILS()
 			// Set the patron pin set time in the same call
 			$params['varFields'] = [(object)[
-				'fieldTag' => $configArray['Catalog']['patronPinSetTimeField'],
+				'fieldTag' => $this->configArray['Catalog']['patronPinSetTimeField'],
 				'content'  => date('Y-m-d H:i:s')]
 			];
 		}
@@ -1401,20 +1398,20 @@ EOT;
 			}
 		}
 
-		// Set Pin set time
-		if (!empty($configArray['Catalog']['patronPinSetTimeField'])){
-			// Taken from setPatronPinSetTimeInILS()
-			// Set the patron pin set time in the same call
-			$params['varFields'] = [(object)[
-				'fieldTag' => $configArray['Catalog']['patronPinSetTimeField'],
-				'content'  => date('Y-m-d H:i:s')]
-			];
-		}
-
 		// EXTRA SELF REG PARAMETERS
 		// do this last in case there are any parameters set up that need to be overridden
 		if ($extraSelfRegParams){
 			$params = array_merge($params, $extraSelfRegParams);
+		}
+
+		// Set Pin set time
+		if (!empty($this->configArray['Catalog']['patronPinSetTimeField'])){
+			// Have to do have the extra params ($extraSelfRegParams) merging above since there can be more than one varFields
+			// to add to self reg users
+			$params['varFields'][] = [
+				'fieldTag' => $this->configArray['Catalog']['patronPinSetTimeField'],
+				'content'  => date('Y-m-d H:i:s')
+			];
 		}
 
 		$this->logger->debug('Self registering patron', ['params' => $params]);
