@@ -1,0 +1,162 @@
+// Core variables and mixins
+@import "../../responsive/css/variables.scss";
+@import "variables.scss";
+
+// Always include the base .scss file
+@import "../../responsive/css/responsive_base.scss";
+
+#searchSource {
+  color: $green-boulder;
+}
+
+#browse-category-picker .jcarousel-control-prev, #browse-category-picker .jcarousel-control-next {
+  //background-color: $green-louisville-background;
+}
+
+#header-container-header{
+  font-family: "Trebuchet MS",Verdana,Arial,Helvetica,sans-serif; color: $green-boulder; white-space: nowrap; /*padding-left: 175px;*/ padding-top: 40px;
+}
+
+#header-container {
+  background: rgba(0, 0, 0, 0) linear-gradient(to bottom, #ffffff, #ffffff) repeat scroll 0 0;
+  border-bottom: 8px solid $blue-boulder;
+  height: 90px;
+  margin-bottom: 0;
+  min-height: 110px;
+  padding-top: 0;
+}
+
+#header-links {background: $green-boulder}
+.header-link-wrapper a {color: white; font-weight:bold;}
+#header-links .header-link-wrapper {border: none}
+/*#header-links .header-link-wrapper:last-of-type {border-right: 1px solid $green-boulder}*/
+
+.header-button {
+  border-radius: .5em;
+  border: 1px solid #ccc;
+  color: #333!important;
+  background-color: #fff;
+  margin-top: 20px;
+  line-height: 60px!important;
+  text-shadow: none;
+}
+
+.header-button:hover {
+  color: #333;
+  background-color: #ebebeb;
+  border-color: #adadad;
+}
+
+#home-page-search {
+  background-color: $blue-boulder;}
+
+.searchTypeHome {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+#horizontal-search-box {
+  background: rgba(0, 0, 0, 0) linear-gradient(to bottom, $blue-boulder, $blue-boulder) repeat scroll 0 0;
+  padding: 15px 0;
+}
+
+.sidebar-links .active .panel-heading {
+  background: linear-gradient(to bottom, $blue-boulder, $blue-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);}
+#home-page-browse-header {
+  background-color: #ffffff;}
+
+.browse-label-text {
+  background-color: #ffffff;
+  color: #0a61ae;}
+
+
+#home-page-search {
+  padding: 48px 0 47px;}
+
+#home-page-browse-header {
+  background-color: #ffffff;}
+
+
+#browse-label {
+  height: 0;
+  background-color: #ffffff;
+  margin-top: 10px;
+  margin-bottom: 0;
+  margin-right: -15px;
+  z-index: -1;}
+
+.browse-label-text {
+  background-color: #ffffff;
+  color: #ffffff;}
+
+.browse-category{
+  border-radius:10px;
+}
+
+.browse-category.category0 {
+  background: linear-gradient(to bottom, $green-boulder, $green-boulder 82%, $green-boulder 83%, $green-boulder 84%, $green-boulder 88%, $green-boulder 89%, $green-boulder 90%, $green-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);}
+
+.browse-category.category1 {
+  background: linear-gradient(to bottom, $green-boulder, $green-boulder 82%, $green-boulder 83%, $green-boulder 84%, $green-boulder 88%, $green-boulder 89%, $green-boulder 90%, $green-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);}
+
+.browse-category.category2 {
+  background: linear-gradient(to bottom, $green-boulder, $green-boulder 82%, $green-boulder 83%, $green-boulder 84%, $green-boulder 88%, $green-boulder 89%, $green-boulder 90%, $green-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);}
+
+.browse-category.category3 {
+  background: linear-gradient(to bottom, $green-boulder, $green-boulder 82%, $green-boulder 83%, $green-boulder 84%, $green-boulder 88%, $green-boulder 89%, $green-boulder 90%, $green-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);}
+
+.browse-category.category4 {
+  background: linear-gradient(to bottom, $green-boulder, $green-boulder 82%, $green-boulder 83%, $green-boulder 84%, $green-boulder 88%, $green-boulder 89%, $green-boulder 90%, $green-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);}
+
+.browse-category.category5 {
+  background: linear-gradient(to bottom, $green-boulder, $green-boulder 82%, $green-boulder 83%, $green-boulder 84%, $green-boulder 88%, $green-boulder 89%, $green-boulder 90%, $green-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);}
+
+.browse-category.category6 {
+  background: linear-gradient(to bottom, $green-boulder, $green-boulder 82%, $green-boulder 83%, $green-boulder 84%, $green-boulder 88%, $green-boulder 89%, $green-boulder 90%, $green-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);}
+
+.browse-category.category7 {
+  background: linear-gradient(to bottom, $green-boulder, $green-boulder 82%, $green-boulder 83%, $green-boulder 84%, $green-boulder 88%, $green-boulder 89%, $green-boulder 90%, $green-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);}
+
+.browse-category.category8 {
+  background: linear-gradient(to bottom, $green-boulder, $green-boulder 82%, $green-boulder 83%, $green-boulder 84%, $green-boulder 88%, $green-boulder 89%, $green-boulder 90%, $green-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);}
+
+.browse-category.category9 {
+  background: linear-gradient(to bottom, $green-boulder, $green-boulder 82%, $green-boulder 83%, $green-boulder 84%, $green-boulder 88%, $green-boulder 89%, $green-boulder 90%, $green-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);}
+
+#horizontal-search-box #lookfor {
+  height: 34px!important;
+}
+
+.sidebar-links .panel-heading{
+  background:#e7e7e7;
+}
+.panel{
+  border:none;
+  border-radius:0;
+}
+
+.panel-group .panel{
+  border-radius:0;
+}
+.sidebar-links .active .panel-heading{
+  background: $blue-boulder;
+}
+
+.sidebar-button{
+  background:$blue-boulder;
+  padding: 7px 0;
+}
+
+.menu-bar{
+  background:$blue-boulder;
+}
+#vertical-menu-bar{
+  background: $green-boulder;
+}
+#horizontal-menu-bar-container .menu-icon.menu-icon-selected{
+  background: $green-boulder;
+}
+#vertical-menu-bar .menu-bar-option.menu-icon-selected{
+  background:$blue-boulder;
+}
+#library-name-header {font-family: "Verdana",Arial,Helvetica,sans-serif; color: #484848; font-size: 27px; white-space: nowrap; /*padding-left: 175px;*/ padding-top: 40px;}

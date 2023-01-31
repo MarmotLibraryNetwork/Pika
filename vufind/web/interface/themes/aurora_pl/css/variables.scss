@@ -1,0 +1,65 @@
+$aurora-orange: #d15700;
+$aurora-green: #448234;
+$aurora-purple: #62269E;
+
+$font-family-sans-serif-resp: 'Verdana', sans-serif;
+
+$aurora-main-menu-gray: #848484;
+$aurora-light-gray: #EEEEEE;
+
+$link-color-resp: #2970ca;
+$link-hover-color: darken($link-color-resp, 15%);
+
+$home-search-top-color: $aurora-purple; //Top color for background gradient in header
+$home-search-bottom-color: $aurora-purple;
+
+$sidebar-link-color: #333333;
+$menu-bar-background-color: $aurora-purple;
+$menu-bar-selected-background-color: $aurora-orange;
+
+$header-top-color: #ffffff; //Top color for background gradient in header
+$header-middle-color: #ffffff; //middle color for background gradient in header $80% of header height from bottom
+$header-bottom-color: #ffffff; //Bottom color for background gradient in header
+
+//$header-top-color: #ffc28e; //Top color for background gradient in header
+//$header-middle-color: lighten(#ffc28e, 50%); //middle color for background gradient in header $80% of header height from bottom
+//$header-bottom-color: #ffffff; //Bottom color for background gradient in header
+
+$header-bottom-border-color: $aurora-purple;
+$footer-top-border-color: $aurora-purple;
+
+
+$header-buttons-background-color : $aurora-orange;
+$btn-primary-bg: $aurora-orange;
+
+$category1MainColor: #ffffff;
+$categoryLineColor: none;
+$categoryLineShadow: none;
+$selectedCategoryBorderColor: none;
+
+$browse-header-background-color: #ffffff;
+$browseCarouselControlBackgroundColor: #ffffff;
+$browseCarouselControlColor: $aurora-orange;
+
+// Selected Category color to give a highlighted appearance
+$selectedCategoryColor: $aurora-green;
+$selectedSubCategoryBackgroundColor: $selectedCategoryColor;
+
+
+// set all browse category colors to the first color to remove lightening of successive categories. plb 9-17-2014*/
+$category2MainColor: $category1MainColor;
+$category3MainColor: $category1MainColor;
+$category4MainColor: $category1MainColor;
+$category5MainColor: $category1MainColor;
+$category6MainColor: $category1MainColor;
+$category7MainColor: $category1MainColor;
+$category8MainColor: $category1MainColor;
+$category9MainColor: $category1MainColor;
+
+$browse-label-text-color: $aurora-purple;
+$browse-category-text-color: #333333;
+$selected-browse-label-search-color: $aurora-purple;
+$browse-category-font-size: 30px;
+
+// set opened accordions color
+$accordion-active-header-backgroundcolor: $aurora-orange;

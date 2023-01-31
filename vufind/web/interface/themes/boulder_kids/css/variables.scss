@@ -1,0 +1,42 @@
+// Variables for Flatirons Consortium styling
+
+// Colors taken from current catalog homepage
+$blue-boulder-text : #0A61AE;
+$green-boulder : #4F823A;
+$light-blue-boulder : #669;
+
+$blue-boulder : #1A2B4B;
+
+$bright-purple : #7C14B8;
+
+
+
+// Header Variables
+//$header-height: 90px;
+$header-top-color: #fff; //Top color for background gradient in header
+$header-middle-color: #F1F5FA; //lighten(#80B5D9, .8); //middle color for background gradient in header $80% of header height from bottom
+$header-bottom-color: #80B5D9; //Bottom color for background gradient in header
+$header-bottom-border-color: $blue-boulder-text;
+
+// Display Name Variables
+$library-display-name-font: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+$library-display-name-font-size: 22px;
+
+// Search Box color
+$home-search-top-color: $blue-boulder-text; //Top color for background gradient in header
+$home-search-bottom-color: $blue-boulder; //Bottom color for background gradient in header
+
+//Home Page Browse Category labels
+//$browse-header-background-color: $green-louisville-background; //#d7dce3;
+//$browse-label-text-color: $blue-boulder-text;
+//$browse-label-line-color: $blue-boulder-text;
+
+//Home Page Browse categories
+$browse-category-font-size: 20px;
+$categoryLineShadow: $blue-boulder;
+$categoryLineColor: $blue-boulder;
+$category1MainColor: $blue-boulder;
+$selectedCategoryBorderColor: #525355;
+
+//Accordions
+$accordion-active-header-backgroundcolor:$blue-boulder;
