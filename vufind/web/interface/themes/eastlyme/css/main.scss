@@ -1,9 +1,9 @@
 // Core variables and mixins
-@import (reference) "../../responsive/css/variables.less";
-@import (reference) "variables.less";
+@import "../../responsive/css/variables.scss";
+@import "variables.scss";
 
-// Always include the base .less file
-@import "../../responsive/css/responsive_base.less";
+// Always include the base .scss file
+@import "../../responsive/css/responsive_base.scss";
 
 #header-container{
   height: 150px;
@@ -14,42 +14,37 @@
   height: 140px;
 }
 
-.header-login-button-mixin(@header-buttons-background-color); // to match logo. plb 3-31-2015
+.header-login-button{
+  background: $header-buttons-background-color;
+} // to match logo. plb 3-31-2015
 
 #horizontal-search-label,
 #home-page-search-label,
 #keepFiltersSwitchLabel, #advancedSearchLink,
 #horizontal-search-box #horizontal-search-label,
 #home-page-advanced-search-link{
-  color: @home-search-label-color;
+  color: $home-search-label-color;
 }
 #horizontal-search-box {
   .searchSourceHorizontal, #horizontal-search-box .searchTypeHorizontal {
     border: inherit;
   }
-  //border-bottom: 2px solid @salida-medium-gray-button-color;
+  //border-bottom: 2px solid $salida-medium-gray-button-color;
 }
 #home-page-login,#home-page-search-label,.browse-category
 {
-  text-shadow: 1px 1px  @salida-light-gray;
-}
-// mixin to select all the typical states of <a> like tags
-.allLinkStates(@rules) {
-  &, &:hover, &:active, &:visited {
-    @rules();
-  }
+  text-shadow: 1px 1px  $salida-light-gray;
 }
 .sidebar-links{
   .panel.active > a {
-    .allLinkStates({
       text-shadow: 1px 1px #c0c0c0;
-    })
+    }
   }
   .panel-body {
     background-color: transparent;
   }
 
-}
+
 
 #more-details-accordion {
    .active {
@@ -60,19 +55,11 @@
   }
 }
 
-// Browse Category customizations based on AnyThink
-
-// mixin to select all the typical states of <a> like tags
-.allLinkStates(@rules) {
-  &, &:hover, &:active, &:visited {
-    @rules();
-  }
-}
 
 #browse-label {
   background-color: #ffffff;
-  //  background: linear-gradient(to bottom, #fff, #fff 98%, @browse-label-text-color 99%);
-  border-bottom: 1px solid @browse-label-text-color;
+  //  background: linear-gradient(to bottom, #fff, #fff 98%, $browse-label-text-color 99%);
+  border-bottom: 1px solid $browse-label-text-color;
   margin: 25px 0 15px;
   height: auto;
   padding-bottom: 20px;
@@ -88,7 +75,7 @@
   height: 120px;
 
   div {
-    color: @browse-label-text-color;
+    color: $browse-label-text-color;
     text-shadow: none;
     text-transform: uppercase;
     font-size: large;
@@ -99,11 +86,11 @@
   }
   &.selected {
     //border: none;
-    background-color: @selectedCategoryColor;
-    background: @selectedCategoryColor;
-    //background: linear-gradient(to bottom, @selectedCategoryColor 0%, @selectedCategoryColor 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
+    background-color: $selectedCategoryColor;
+    background: $selectedCategoryColor;
+    //background: linear-gradient(to bottom, $selectedCategoryColor 0%, $selectedCategoryColor 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
     div {
-      color: @eastlyme-red;
+      color: $eastlyme-red;
     }
   }
 }
@@ -111,13 +98,13 @@
 // Left/Right Arrows on browse category carousel
 #browse-category-picker {
   .jcarousel-control-prev, .jcarousel-control-next {
-    background-color: @content-bg;
-    color: @browseCarouselControlColor;
+    background-color: $content-bg;
+    color: $browseCarouselControlColor;
     &:active, &:hover {
-      color: @selectedCategoryColor;
+      color: $selectedCategoryColor;
       text-decoration: none;
     }
-    .box-shadow(none);
+    @include box-shadow(none);
     font-size: 20px;
   }
   a {
@@ -131,12 +118,11 @@
   // indicator dots at bottom of browse category carousel
   .jcarousel-pagination a {
     &.active {
-      background: @browseCarouselControlColor;
+      background: $browseCarouselControlColor;
       // keep shadowing in place on active item
-      .box-shadow(0 0 2px #4E443C);
+      @include box-shadow(0 0 2px #4E443C);
     }
-    @detached-outline-ruleset: {outline: none};
-    .allLinkStates(@detached-outline-ruleset)
+    .allLinkStates{outline: none;}
   }
 }
 
@@ -144,7 +130,7 @@
   color: black; //TODO: set color
   background: none; //override line through label
   padding: 20px 0;
-  border-top: 1px solid @browse-label-text-color;
+  border-top: 1px solid $browse-label-text-color;
 }
 
 .selected-browse-label-search {
@@ -157,11 +143,11 @@
 
 #browse-sub-category-menu {
   button.selected {
-    border: 2px solid @selectedCategoryBorderColor;
-    background-color: @selectedCategoryColor;
+    border: 2px solid $selectedCategoryBorderColor;
+    background-color: $selectedCategoryColor;
   }
 }
 
 // MIXIN: Vertically Align cover images with the thumbnail block; up to a maximum size.  Thumbnail blocks will have a
 // uniform height and fall into columns evenly.
-.verticalAlignThumbnailArt();
+@include verticalAlignThumbnailArt();

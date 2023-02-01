@@ -1,32 +1,35 @@
 // Core variables and mixins
-@import (reference) "../../responsive/css/variables.less";
-@import (reference) "variables";
+@import  "../../responsive/css/variables.scss";
+@import  "variables.scss";
 
-// Always include the base .less file
-@import "../../responsive/css/responsive_base.less";
+// Always include the base .scss file
+@import "../../responsive/css/responsive_base.scss";
 
-#home-page-login .loginOptions a.loginLink {
-  color: #FFF;
-}
-
-#headerLoginLink div.header-button {
-  color: #fff;
-  font-weight: bold;
-}
-
-.header-login-button-mixin(@header-buttons-background-color, @header-buttons-color);
-.header-button,#logoutLink > .header-button {
-  text-transform: uppercase;
-  border: 2px solid @scranton-medium-blue2;
-  margin-top: 30px;
-  &:hover {
-    background-color: @scranton-green;
-    border-color: @scranton-green;
+#header-container{
+  background-image: url('../../englewood/images/header_background.png');
+  @media (min-width: 999px) {
+    background-repeat: round;
+    /* background image is only 998px long */
   }
 }
 
-#header-logo {
-  padding-bottom: 10px;
+#header-logo{
+  background-color: rgba(255, 255, 255, 0.75);
+  border-radius: 0.5em;
+  margin-top: 20px;
+  padding: 5px;
+}
+
+.header-login-button {
+  background: rgba(255,255,255,0.75);
+  color: $home-page-login-color;
+}
+
+.header-button {
+  font-weight: bolder;
+  &:hover {
+    box-shadow: 2px 2px 5px darkgrey;
+  }
 }
 
 // This vertically centers #library-name-header (taken from https://css-tricks.com/centering-in-the-unknown/)
@@ -43,12 +46,9 @@
   vertical-align: middle;
 }
 
-
-
-// Adopting Nashville styling of browse categories
 #main-content-with-sidebar>.row.breadcrumbs,
 #home-page-browse-header {
-  margin-left: 1px; // to give a gap of white background between the search box and the browse category carousel
+  margin-left: 0; // to give a gap of white background between the search box and the browse category carousel
 }
 .selected-browse-label-search {
   margin-left: 0;
@@ -61,7 +61,6 @@
 }
 #selected-browse-label {
   background: none;
-
   > .btn-group {
     margin-right: 0;
     padding: 0 3px;
@@ -75,32 +74,28 @@
   height: 90px;
   cursor: pointer;
   font-weight: 600;
-  border: 1px solid @spl-border-gray;
+  border: 1px solid $border-gray;
   div {
     height: 90px;
     padding: 15px;
-    //font-size: 20px;
     &:hover {
       text-decoration: none;
     }
   }
   &.selected {
-    border: 1px solid @selectedCategoryBorderColor;
+    border: 1px solid $selectedCategoryBorderColor;
     div {
-      background: @selectedCategoryColor;
-      //color:#fff;
-      font-size: @browse-category-font-size;
+      background: $selectedCategoryColor;
+      font-size: $browse-category-font-size;
       &:hover {
-        background: @scranton-green;
+        background: $selectedCategoryColor;
       }
     }
   }
   &:hover {
-    background: @scranton-green;
-    //text-decoration: none;
-    transition: all 0.3s ease;
+    background: #E4E4E4;
+    transition: all .3s ease-in-out;
   }
-
 }
 
 #browse-category-picker {
@@ -110,15 +105,15 @@
     border: 1px solid #ccc;
     &:hover {
       text-decoration: none;
-      background: @scranton-green;
-      transition: all 0.3s ease;
+      background: #E4E4E4;
+      transition: all .3s ease-in-out;
     }
   }
   .jcarousel-pagination a {
     &.active {
-      background: @browseCarouselControlColor;
+      background: $browseCarouselControlColor;
       // keep shadowing in place on active item
-      .box-shadow(0 0 2px #4E443C);
+      @include box-shadow(0 0 2px #4E443C);
     }
     &, &:hover, &:active, &:visited  {outline: none};
   }
@@ -140,7 +135,7 @@
   }
   button {
     &.selected {
-      border: 1px solid @selectedCategoryBorderColor;
+      border: 1px solid $selectedCategoryBorderColor;
     }
   }
 }
@@ -151,7 +146,6 @@
   border: 0 solid #eee;
 }
 
-
 .panel-title{
   font-size: 16px;
 }
@@ -159,10 +153,10 @@
 // Remove gradients from accordions & facets; set a white background for body content //
 #account-settings-accordion, #more-details-accordion, .sidebar-links, #account-settings-accordion {
   .panel-heading{
-    background: @accordion-header-bg-color;
+    background: $accordion-header-bg-color;
   }
   .active .panel-heading{
-    background: @accordion-active-header-backgroundcolor;
+    background: $accordion-active-header-backgroundcolor;
   }
   .panel,.panel-heading {
     border-radius: 0;
@@ -173,7 +167,7 @@
   }
 }
 .facetTitle, .exploreMoreTitle{
-  background: @spl-other-gray;
+  background: $other-gray;
 }
 
 .facetDetails {
@@ -205,7 +199,7 @@
 #more-details-accordion, #account-settings-accordion{
   .active {
     .panel-title {
-      color: @accordion-active-header-color;
+      color: $accordion-active-header-color;
       text-shadow: 1px 1px #fff;
     }
   }
@@ -227,7 +221,7 @@
   padding-top:15px;
 }
 .sidebar-label{
-  background: @sidebar-label-background-color;
+  background: $sidebar-label-background-color;
   font-weight: bold;
 }
 
@@ -257,15 +251,10 @@
   display: table;
 }
 
-.btn-primary, .btn-info {
-  background-color: @scranton-navy;
-  //border-color: @scranton-navy;
-  color: #FFF;
-
+.btn-primary {
   &:hover {
-    transition: all 0.3s ease;
-    background-color: @scranton-green;
-    border-color: @scranton-green;
+    background-color: $theme-primary-color-light;
+    border-color: $theme-primary-color-light;
   }
 }
 
@@ -286,10 +275,3 @@
   font-size: 16px;
   text-align: left;
 }
-// Return Now button.  Had bad side effects. Turned off
-//.btn-warning {
-//  &:hover {
-//    background-color: #E9E9E9;
-//    border-color:@btn-warning-border;
-//  }
-//}
