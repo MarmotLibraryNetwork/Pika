@@ -620,79 +620,84 @@ class Sierra  implements \DriverInterface {
 		$patronState         = '';
 		$patronZip           = '';
 
-		$zipRegExp    = '|\d{5}$|';
-		$splitRegExp  = '%([a-zA-Z]+)[\s|,]%'; // splits on spaces or commas -- doesn't include zip
-		if(isset($pInfo->addresses) && is_array($pInfo->addresses)){
+		$zipRegExp   = '|\d{5}$|';
+		$splitRegExp = '%([a-zA-Z]+)[\s|,]%'; // splits on spaces or commas -- doesn't include zip
+		if (isset($pInfo->addresses) && is_array($pInfo->addresses)){
 			// get the home address -- we won't handle alt addresses in Pika.
 			$homeAddressArray = false;
-			foreach ($pInfo->addresses as $address) {
+			foreach ($pInfo->addresses as $address){
 				// a = primary address, h = alt address
-				if ($address->type == 'a') {
+				if ($address->type == 'a'){
 					$homeAddressArray = $address->lines;
 				}
 			}
 			// found a home address
-			if($homeAddressArray) {
+			if ($homeAddressArray){
 				$addressLineCount = count($homeAddressArray);
 				// 3 lines - if we have three lines the first is c/o or something similar
-				if ($addressLineCount == 3) {
+				if ($addressLineCount == 3){
 					// set care of
 					$patron->careOf = $homeAddressArray[0];
-					array_shift($homeAddressArray); // shift off the first line
+					array_shift($homeAddressArray);               // shift off the first line
 					$addressLineCount = count($homeAddressArray); // reset line count and continue
 				}
 				// 2 lines (or previously 3) - if we have at least 2 lines we should have a full address
-			  if($addressLineCount == 2) {
+				if ($addressLineCount == 2){
 					// we can set address1 and address2
-				  $patron->address1 = $homeAddressArray[0];
-				  $patron->address2 = $homeAddressArray[1];
-				  // check last line for a zip -- this is where we assume it lives
-				  $zipTest = preg_match($zipRegExp, trim($homeAddressArray[1]), $zipMatch);
-				  if($zipTest === 1) {
-					  // OK, this should be a full address
-					  $patronZip = $zipMatch[0];
-					  // now split out the rest of the address
-					  $cityStateTest = preg_match_all($splitRegExp, trim($homeAddressArray[1]), $cityStateMatches);
-					  if($cityStateTest) {
-						  $cityState      = $cityStateMatches[1];
-						  $cityStateCount = count($cityState) - 1; // zero index
-						  // state should be last
-						  $patronState = $cityState[$cityStateCount];
-						  // pop last value and join array
-						  array_pop($cityState);
-						  $patronCity = implode(' ', $cityState);
-					  }
-				  } else {
-				  	// no zip, not a full address
-					  // todo: how to handle, if at all
-				  }
-			  } else {
-				  // 1 line - only one address line -- this could be anything so start checking
-				  $patron->address1 = $homeAddressArray[0];
-				  // does it contain a zip? It might be some like grand junction, co 81501
-				  $zipTest = preg_match($zipRegExp, $homeAddressArray[0], $zipMatch);
-				  if ($zipTest === 1) {
-					  // found a zip
-					  $patronZip = $zipMatch[0];
-					  // find a city and state?
-					  $cityStateTest = preg_match_all($splitRegExp, trim($homeAddressArray[0]), $cityStateMatches);
-					  if ($cityStateTest) {
-						  $cityState      = $cityStateMatches[1];
-						  $cityStateCount = count($cityState) - 1; // zero index
-						  // state should be last
-						  $patronState = $cityState[$cityStateCount];
-						  // unset last value and join array
-						  array_pop($cityState);
-						  $patronCity = implode(' ', $cityState);
-					  } else {
-						  // well, that should'a matched something
-						  // todo: what do to?
-					  }
-				  } else {
-					  // couldn't find a zip -- not much to do
-					  // todo: what do to?
-				  }
-			  }
+					$patron->address1 = $homeAddressArray[0];
+					$patron->address2 = $homeAddressArray[1];
+					// check last line for a zip -- this is where we assume it lives
+					$zipTest = preg_match($zipRegExp, trim($homeAddressArray[1]), $zipMatch);
+					if ($zipTest === 1){
+						// OK, this should be a full address
+						$patronZip = $zipMatch[0];
+						// now split out the rest of the address
+						$cityStateTest = preg_match_all($splitRegExp, trim($homeAddressArray[1]), $cityStateMatches);
+						if ($cityStateTest){
+							$cityState      = $cityStateMatches[1];
+							$cityStateCount = count($cityState) - 1; // zero index
+							// state should be last
+							$patronState = $cityState[$cityStateCount];
+							// pop last value and join array
+							array_pop($cityState);
+							$patronCity = implode(' ', $cityState);
+						}
+					}elseif ($zipTest === 0){
+						// didn't find a zip
+						// find a city and state?
+						$cityStateArray = explode(',', $homeAddressArray[1]);
+						if (count($cityStateArray) == 2){
+							$patronCity  = $cityStateArray[0];
+							$patronState = $cityStateArray[1];
+						}
+					}
+				}else{
+					// 1 line - only one address line -- this could be anything so start checking
+					$patron->address1 = $homeAddressArray[0];
+					// does it contain a zip? It might be some like grand junction, co 81501
+					$zipTest = preg_match($zipRegExp, $homeAddressArray[0], $zipMatch);
+					if ($zipTest === 1){
+						// found a zip
+						$patronZip = $zipMatch[0];
+						// find a city and state?
+						$cityStateTest = preg_match_all($splitRegExp, trim($homeAddressArray[0]), $cityStateMatches);
+						if ($cityStateTest){
+							$cityState      = $cityStateMatches[1];
+							$cityStateCount = count($cityState) - 1; // zero index
+							// state should be last
+							$patronState = $cityState[$cityStateCount];
+							// unset last value and join array
+							array_pop($cityState);
+							$patronCity = implode(' ', $cityState);
+						}else{
+							// well, that should'a matched something
+							// todo: what do to?
+						}
+					}else{
+						// couldn't find a zip -- not much to do
+						// todo: what do to?
+					}
+				}
 			}
 		}
 		$patron->city  = $patronCity;
