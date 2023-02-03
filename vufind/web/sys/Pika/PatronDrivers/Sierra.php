@@ -1074,7 +1074,7 @@ class Sierra  implements \DriverInterface {
 		if (!empty($this->configArray['Catalog']['patronPinSetTimeField'])){
 			$params['varFields'] = [(object)[
 				'fieldTag' => $this->configArray['Catalog']['patronPinSetTimeField'],
-				'content'  => date('Y-m-d H:i:s')]
+				'content'  => 'Patron set in Pika on ' . date('Y-m-d H:i:s')]
 			];
 			$operation           = 'patrons/' . $patron->ilsUserId;
 			$r                   = $this->_doRequest($operation, $params, 'PUT');
@@ -1121,7 +1121,7 @@ class Sierra  implements \DriverInterface {
 			// Set the patron pin set time in the same call
 			$params['varFields'] = [(object)[
 				'fieldTag' => $this->configArray['Catalog']['patronPinSetTimeField'],
-				'content'  => date('Y-m-d H:i:s')]
+				'content'  => 'Patron set in Pika on ' .  date('Y-m-d H:i:s')]
 			];
 		}
 		$r = $this->_doRequest($operation, $params, 'PUT');
@@ -1177,7 +1177,7 @@ class Sierra  implements \DriverInterface {
 			// Set the patron pin set time in the same call
 			$params['varFields'] = [(object)[
 				'fieldTag' => $this->configArray['Catalog']['patronPinSetTimeField'],
-				'content'  => date('Y-m-d H:i:s')]
+				'content'  => 'Patron set in Pika on ' . date('Y-m-d H:i:s')]
 			];
 		}
 
@@ -1415,7 +1415,7 @@ EOT;
 			// to add to self reg users
 			$params['varFields'][] = [
 				'fieldTag' => $this->configArray['Catalog']['patronPinSetTimeField'],
-				'content'  => date('Y-m-d H:i:s')
+				'content'  => 'Patron set in Pika on ' . date('Y-m-d H:i:s')
 			];
 		}
 
