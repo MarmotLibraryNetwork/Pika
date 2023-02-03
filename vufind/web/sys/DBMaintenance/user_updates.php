@@ -74,15 +74,24 @@ function getUserUpdates(){
 			),
 		),
 
-		'user_track_reading_history' => array(
+		'user_track_reading_history' => [
 			'title'           => 'User Track Reading History',
 			'description'     => 'Add Track Reading History ',
 			'continueOnError' => true,
-			'sql'             => array(
+			'sql'             => [
 				"ALTER TABLE user ADD trackReadingHistory TINYINT DEFAULT 0",
 				"ALTER TABLE user ADD initialReadingHistoryLoaded TINYINT DEFAULT 0",
-			),
-		),
+			],
+		],
+
+		'2023.01_reading_history_last_updated_time' => [
+			'title'           => 'User Reading History Last Update Time',
+			'description'     => 'Track when cron process updates user\'s reading history',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE user ADD readingHistoryLastUpdated INT UNSIGNED NULL AFTER initialReadingHistoryLoaded",
+			],
+		],
 
 		'user_preference_review_prompt' => array(
 			'title'           => 'User Preference Prompt for Reviews',

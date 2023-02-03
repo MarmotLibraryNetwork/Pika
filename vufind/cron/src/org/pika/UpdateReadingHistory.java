@@ -43,6 +43,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 	private String              pikaUrl;
 	private Logger              logger;
 	private PreparedStatement   insertReadingHistoryStmt;
+	private PreparedStatement   updatedReadingHistoryTimeStmt;
 	private String              userApiToken                     = "";
 	private int                 initialHistoriesLoaded           = 0;
 	private int                 initialHistoriesFailedToBeLoaded = 0;
@@ -80,14 +81,15 @@ public class UpdateReadingHistory implements IProcessHandler {
 			// Get a list of all patrons that have reading history turned on.
 				//Order by make it so that reading histories that haven't been processed yet are done first.
 				PreparedStatement countUsersStmt                    = pikaConn.prepareStatement("SELECT COUNT(*) as readingHistoryUsers FROM user WHERE trackReadingHistory=1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-				PreparedStatement getUsersStmt                      = pikaConn.prepareStatement("SELECT id, barcode, initialReadingHistoryLoaded FROM user WHERE trackReadingHistory=1 ORDER BY initialReadingHistoryLoaded", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				PreparedStatement getUsersStmt                      = pikaConn.prepareStatement("SELECT id, barcode, initialReadingHistoryLoaded FROM user WHERE trackReadingHistory=1 ORDER BY initialReadingHistoryLoaded, readingHistoryLastUpdated", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				PreparedStatement updateInitialReadingHistoryLoaded = pikaConn.prepareStatement("UPDATE user SET initialReadingHistoryLoaded = 1 WHERE id = ?");
 				PreparedStatement getUserCheckedOutTitlesAlreadyInReadingHistory        = pikaConn.prepareStatement("SELECT id, groupedWorkPermanentId, source, sourceId, title FROM user_reading_history_work WHERE userId=? AND checkInDate IS NULL", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				PreparedStatement updateReadingHistoryStmt          = pikaConn.prepareStatement("UPDATE user_reading_history_work SET checkInDate=? WHERE id = ?");
 				ResultSet countUsersResults                         = countUsersStmt.executeQuery(); // Fetches patrons that haven't had the initial load done first
 				ResultSet userResults                               = getUsersStmt.executeQuery(); // Fetches patrons that haven't had the initial load done first
 		){
-			insertReadingHistoryStmt = pikaConn.prepareStatement("INSERT INTO user_reading_history_work (userId, groupedWorkPermanentId, source, sourceId, title, author, format, checkOutDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+			insertReadingHistoryStmt      = pikaConn.prepareStatement("INSERT INTO user_reading_history_work (userId, groupedWorkPermanentId, source, sourceId, title, author, format, checkOutDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+			updatedReadingHistoryTimeStmt = pikaConn.prepareStatement("UPDATE user SET readingHistoryLastUpdated = ? WHERE id = ?");
 			if (countUsersResults.next()){
 				final int totalReadingHistoryUsers = countUsersResults.getInt("readingHistoryUsers");
 				final String note = totalReadingHistoryUsers + " total users with reading history turned on.";
@@ -144,7 +146,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 					processTitlesForUser(userId, barcode, checkedOutTitlesAlreadyInReadingHistory);
 
 					//Any titles that are left in checkedOutTitlesAlreadyInReadingHistory were checked out previously and are no longer checked out.
-					Long curTime = new Date().getTime() / 1000;
+					long curTime = new Date().getTime() / 1000;
 					for (CheckedOutTitle curTitle : checkedOutTitlesAlreadyInReadingHistory) {
 						updateReadingHistoryStmt.setLong(1, curTime);
 						updateReadingHistoryStmt.setLong(2, curTitle.getId());
@@ -430,6 +432,11 @@ public class UpdateReadingHistory implements IProcessHandler {
 								for (int i = 0; i < checkedOutItems.length(); i++) {
 									processCheckedOutTitle(checkedOutItems.getJSONObject(i), userId, checkedOutTitlesAlreadyInReadingHistory);
 								}
+								long curTime = new Date().getTime() / 1000;
+								updatedReadingHistoryTimeStmt.setLong(1, curTime);
+								updatedReadingHistoryTimeStmt.setLong(2, userId);
+								updatedReadingHistoryTimeStmt.executeUpdate();
+
 								loadedHistoriesUpdated++;
 							} else {
 								processLog.incErrors();
