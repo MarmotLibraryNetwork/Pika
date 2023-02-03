@@ -1,0 +1,62 @@
+// Variables for Flatirons Consortium styling
+
+// Colors taken from current catalog homepage
+$banner-longmont : #133155;
+$medium-blue-longmont: #326295;
+$green-louisville-text : #597635;
+$purple-broomfield-text : #669;
+
+$blue-boulder-background : #E1EAF4;
+$green-louisville-background : #E0E4D4;
+$purple-broomfield-background: #D7D4E0;
+
+$bright-purple : #7C14B8;
+
+$light-gray-longmont:#F7F7F7;
+$dark-gray-longmont:#515581;
+$medium-gray-longmont:#C4CBD4;
+
+
+// Header Variables
+//$header-height: 90px;
+$header-top-color: $banner-longmont; //Top color for background gradient in header
+$header-middle-color: $banner-longmont; //lighten(#80B5D9, .8); //middle color for background gradient in header $80% of header height from bottom
+$header-bottom-color: $banner-longmont; //Bottom color for background gradient in header
+$header-bottom-border-color: $light-gray-longmont;
+
+
+$home-search-label-color: $banner-longmont;
+
+// Search Box color
+$home-search-top-color: $light-gray-longmont; //Top color for background gradient in header
+$home-search-bottom-color: $light-gray-longmont; //Bottom color for background gradient in header
+
+//Home Page Browse Category labels
+$browse-header-background-color: $light-gray-longmont; //#d7dce3;
+//$browse-label-text-color: $blue-boulder-text;
+$browse-label-line-color: $light-gray-longmont;
+$selected-browse-label-search-color: black;
+
+//Home Page Browse categories
+$browse-category-font-size: 18px;
+$categoryLineShadow: $medium-blue-longmont;
+$categoryLineColor: $medium-blue-longmont;
+$category1MainColor: $medium-blue-longmont;
+$selectedCategoryBorderColor: $banner-longmont;
+
+$category2MainColor: $category1MainColor;
+$category3MainColor: $category1MainColor;
+$category4MainColor: $category1MainColor;
+$category5MainColor: $category1MainColor;
+$category6MainColor: $category1MainColor;
+$category7MainColor: $category1MainColor;
+$category8MainColor: $category1MainColor;
+$category9MainColor: $category1MainColor;
+
+
+$browseCarouselControlBackgroundColor: white;
+$browseCarouselControlColor:$medium-blue-longmont;
+
+//Accordions
+$accordion-active-header-backgroundcolor: $medium-blue-longmont;
+

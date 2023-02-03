@@ -1,0 +1,69 @@
+// Variables for Flatirons Consortium styling
+$font-family-sans-serif-resp: 'Open Sans', verdana, sans-serif;
+// Colors taken from current catalog homepage
+$light-blue: #428bca;
+$light-green : #597635;
+$bright-green :#84bd00;
+$grey-lafayette: #3b3f43;
+$mid-blue: #3276b1;
+
+$blue-boulder-background : #E1EAF4;
+$green-louisville-background : #E0E4D4;
+$purple-broomfield-background: #D7D4E0;
+
+$bright-purple : #7C14B8;
+
+
+
+// Header Variables
+//$header-height: 90px;
+$header-top-color: #fff; //Top color for background gradient in header
+$header-bottom-color: #fff; //Bottom color for background gradient in header
+$header-middle-color: #fff;
+$header-bottom-border-color: #fff;
+
+
+// Search Box color
+$home-search-top-color: $grey-lafayette; //Top color for background gradient in header
+$home-search-bottom-color: $grey-lafayette; //Bottom color for background gradient in header
+
+//Home Page Browse Category labels
+//$browse-header-background-color: $green-louisville-background; //#d7dce3;
+//$browse-label-text-color: $blue-boulder-text;
+//$browse-label-line-color: $blue-boulder-text;
+
+//Home Page Browse categories
+$browse-header-background-color: #ffffff;
+$browseCarouselControlBackgroundColor: #ffffff;
+
+$browse-category-font-size: 15px;
+
+$categoryLineShadow: #fff;
+$categoryLineColor: #fff;
+$browse-category-text-color: #3b3f43;
+$category1MainColor: #fff;
+$selectedCategoryBorderColor:$bright-green;
+
+$category2MainColor: $category1MainColor;
+$category3MainColor: $category1MainColor;
+$category4MainColor: $category1MainColor;
+$category5MainColor: $category1MainColor;
+$category6MainColor: $category1MainColor;
+$category7MainColor: $category1MainColor;
+$category8MainColor: $category1MainColor;
+$category9MainColor: $category1MainColor;
+$browseCarouselControlColor:$grey-lafayette;
+$selectedSubCategoryBackgroundColor: $light-blue;
+
+
+
+//Accordions
+$accordion-active-header-backgroundcolor: $grey-lafayette;
+
+$breadcrumb-bg:#fff;
+
+$home-page-login-background-color: $light-blue;
+$header-buttons-background-color: $light-blue;
+$header-buttons-color:#fff;
+
+$alert-info-text: black;
