@@ -1241,14 +1241,13 @@ class Sierra  implements \DriverInterface {
 		$resetUrl = $this->configArray['Site']['url'] . "/MyAccount/ResetPin?uid=".$patron->id.'&resetToken='.$resetToken;
 
 		// build the message
-		$pin         = translate('pin');
-		$subject     = ucfirst($pin) . ' Reset Link';
-		$htmlMessage = <<<EOT
-		<p>We received a $pin reset request. The link to reset your $pin is below.  Copy and paste the link into your web browser to set your $pin.</p>
-<p>If you did not make this request, you can ignore this email</p>  
-<p>Here is your $pin reset link:</br>  
-$resetUrl
-EOT;
+		$pin     = translate('pin');
+		$subject = ucfirst($pin) . ' Reset Link';
+
+		global $interface;
+		$interface->assign('pin', $pin);
+		$interface->assign('resetUrl', $resetUrl);
+		$htmlMessage = $interface->fetch('Emails/pin-reset-email.tpl');
 
 		$mail = new PHPMailer;
 		$mail->setFrom($this->configArray['Site']['email']);
