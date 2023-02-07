@@ -164,7 +164,8 @@ class CatalogConnection
 	public function patronLogin($username, $password, $parentAccount = null, $validatedViaSSO = false) {
 		global $timer;
 		global $offlineMode;
-
+		// we replace the curly quote with a straight quote in usernames to account for iphone smart punctuation.
+		$username = str_replace("’", "'", trim($username));
 		//Get the barcode property
 		$barcode = $this->accountProfile->usingPins() ? $username : $password;
 		//TODO: some libraries may have barcodes that the space character is valid. So far Aspencat appears to be one. pascal 9/27/2018
