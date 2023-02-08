@@ -468,9 +468,6 @@ class User extends DB_DataObject {
 			$this->linkedUsers = [];
 			/* var Library $library */
 			global $library;
-			/** @var Memcache $memCache */
-			global $memCache;
-			global $serverName;
 
 			if ($this->id && $library->allowLinkedAccounts){
 				require_once ROOT_DIR . '/sys/Account/UserLink.php';
@@ -482,8 +479,9 @@ class User extends DB_DataObject {
 							$linkedUser     = new User();
 							$linkedUser->id = $userLink->linkedAccountId;
 							if ($linkedUser->find(true)){
-								$cacheKey = $_SERVER['SERVER_NAME'] . "-patron-" . $linkedUser->id; /* todo: update to new caching */
-								$userData = $memCache->get($cacheKey);
+								$cache    = new Cache();
+								$cacheKey = $cache->makePatronKey('patron', $linkedUser->id);
+								$userData = $cache->get($cacheKey);
 								if (empty($userData) || isset($_REQUEST['reload'])){
 									//Load full information from the catalog
 									$linkedAccountProfile = $linkedUser->getAccountProfile();
