@@ -11,20 +11,19 @@
 		{/if}
 	</div>
 
-	<div class="alert alert-danger" id="errorMsg" style="display: none"></div>
-	<div class="alert alert-success" id="successMsg" style="display: none"></div>
-
-
     {* Copied from profile.tpl *}
     {if $pinUpdateErrors}
 		{foreach from=$pinUpdateErrors item=errorMsg}
 			{if strpos($errorMsg, 'success')}
-				<div class="alert alert-success">{$errorMsg}</div>
+				<div id="errorMsg"  class="alert alert-success">{$errorMsg}</div>
 			{else}
-				<div class="alert alert-danger">{$errorMsg}</div>
+				<div id="successMsg" class="alert alert-danger">{$errorMsg}</div>
 			{/if}
 		{/foreach}
-	{/if}
+		{else}
+			<div id="errorMsg"  class="alert alert-danger" style="display: none"></div>
+			<div id="successMsg" class="alert alert-success" style="display: none"></div>
+	 {/if}
 
     {* Copied from profile.tpl *}
 	<form action="/MyAccount/UpdatePin" method="post" class="form-horizontal" id="pinForm">

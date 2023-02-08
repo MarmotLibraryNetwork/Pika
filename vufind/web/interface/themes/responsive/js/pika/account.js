@@ -244,6 +244,7 @@ Pika.Account = (function(){
 					newPin = $('#pin1').val(),
 					confirmNewPin = $('#pin2').val(),
 					url = '/MyAccount/AJAX?method=updatePin';
+			$('#errorMsg,#successMsg').hide();
 			$.post(url, {'pin': oldPin, 'pin1': newPin, 'pin2': confirmNewPin}, function (result){
 				if (result.success){
 					$('#errorMsg').hide();
