@@ -10496,8 +10496,8 @@ body {
 #browse-label {
   background: none;
   height: inherit;
-  margin-top: 0;
-  border-top: #3f0085 4px solid;
+  margin-top: 10px;
+  border-top: none;
 }
 .browse-category {
   text-shadow: none;
