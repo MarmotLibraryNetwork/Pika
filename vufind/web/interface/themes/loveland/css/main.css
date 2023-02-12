@@ -10587,3 +10587,8 @@ fieldset[disabled] .btn-masquerade.active {
 #vertical-menu-bar .menu-bar-option.menu-icon-selected {
   background: #603A17;
 }
+#browse-sub-category-menu button:active,
+#browse-subcategory-menu button:focus,
+#browse-subcategory-menu button:visited {
+  font-weight: initial;
+}
