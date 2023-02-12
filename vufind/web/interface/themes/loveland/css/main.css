@@ -10550,6 +10550,11 @@ fieldset[disabled] .btn-masquerade.active {
 #browse-sub-category-menu button.selected {
   background-color: #77A240;
 }
+#browse-subcategory-menu button:active,
+#browse-subcategory-menu button:focus,
+#browse-subcategory-menu button:visited {
+  font-weight: initial;
+}
 .sidebar-links .panel-heading {
   background: #e7e7e7;
 }
