@@ -106,17 +106,20 @@ class CASAuthentication implements Authentication {
 	protected function initializeCASClient() {
 		if (!CASAuthentication::$clientInitialized) {
 
+			/** @var Library $library */
 			global $library;
 			global $configArray;
 			if ($configArray['System']['debug']) {
-				phpCAS::setDebug();
+				phpCAS::setLogger($this->logger);
 				phpCAS::setVerbose(true);
 			}
 
 
 			$this->logger->debug("Initializing CAS Client");
 
-			phpCAS::client(CAS_VERSION_3_0, $library->casHost, (int)$library->casPort, $library->casContext);
+			$service_name = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'];
+			// Service name allows the cas system to determine if our site is allowed to get validation
+			phpCAS::client(CAS_VERSION_3_0, $library->casHost, (int)$library->casPort, $library->casContext, $service_name);
 
 			phpCAS::setNoCasServerValidation();
 
