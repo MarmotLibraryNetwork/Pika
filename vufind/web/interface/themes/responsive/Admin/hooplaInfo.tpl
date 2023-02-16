@@ -68,6 +68,7 @@
 									<th>Hoopla Library Id</th>
 									<th>Library</th>
 									<th>Check Outs</th>
+									<th>Patron Count</th>
 								</tr>
 								</thead>
 								<tbody>
@@ -76,6 +77,7 @@
 										<td>{$checkout.hooplaLibraryId}</td>
 										<td>{$checkout.libraryName}</td>
 										<td>{$checkout.checkouts}</td>
+										<td>{$checkout.patrons}</td>
 									</tr>
 								{/foreach}
 								</tbody>

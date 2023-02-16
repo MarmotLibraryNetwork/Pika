@@ -64,12 +64,14 @@ class Admin_HooplaInfo extends Admin_Admin {
 				/** @var Library[] $libraryList */
 				foreach ($libraryList as $library){
 					if (!empty($library->hooplaLibraryID)){
-						$checkOutsResponse = $driver->getLibraryHooplaTotalCheckOuts($library->hooplaLibraryID, $startTime, $endTime);
+						$checkOutsResponse   = $driver->getLibraryHooplaTotalCheckOuts($library->hooplaLibraryID, $startTime, $endTime);
+						$patronCountResponse = $driver->getLibraryHooplaPatronCount($library->hooplaLibraryID, $startTime, $endTime);
 						if (isset($checkOutsResponse->checkouts)){
 							$hooplaLibraries[] = [
 								'hooplaLibraryId' => $library->hooplaLibraryID,
 								'libraryName'     => $library->displayName,
 								'checkouts'       => $checkOutsResponse->checkouts,
+								'patrons'         => $patronCountResponse->count,
 							];
 							if (!empty($_REQUEST['hooplaId']) && is_null($hooplaLibraryId)){
 								$hooplaLibraryId = $library->hooplaLibraryID;

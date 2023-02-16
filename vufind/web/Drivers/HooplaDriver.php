@@ -492,7 +492,14 @@ class HooplaDriver
 
 		$result = $this->getAPIResponse($url);
 		return $result;
+	}
 
+	public function getLibraryHooplaPatronCount($libraryId, $startTime, $endTime){
+		$url = $this->hooplaAPIBaseURL . '/api/v1/libraries/' . $libraryId
+			. '/patron-count?startTime=' . $startTime . '&endTime=' . $endTime;
+
+		$result = $this->getAPIResponse($url);
+		return $result;
 	}
 
 	public function getHooplaRecordMetaData($libraryId, $hooplaId){
