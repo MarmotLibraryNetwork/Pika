@@ -10524,10 +10524,10 @@ fieldset[disabled] .btn-masquerade.active {
 .header-primary {
   border: 1px solid #ccc;
 }
-#headerLoginLink,
-#logoutLink,
-#myAccountNameLink {
-  color: #333!important;
+a#headerLoginLink,
+a#logoutLink,
+a#myAccountNameLink {
+  color: #333;
 }
 .header-button {
   border-radius: .5em;
