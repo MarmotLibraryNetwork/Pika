@@ -348,8 +348,11 @@ class Sierra  implements \DriverInterface {
 		$password = trim($password);
 
 		if ($validatedViaSSO){
-			$this->patronBarcode = $this->accountProfile->usingPins() ? $username : $password;
+			// When validated via CAS both $userName and $password as set to the patron's library card, which is what the
+			// CAS returns as the user id. See $casUsername in UserAccount
+			$this->patronBarcode = $username;
 			$patronId            = $this->getPatronId($this->patronBarcode);
+			$this->logger->debug("Sierra ID is $patronId for CAS validated user $username ");
 		}else{
 			if ($this->accountProfile->usingPins()){
 				$this->patronBarcode = $username;

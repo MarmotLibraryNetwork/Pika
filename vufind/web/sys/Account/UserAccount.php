@@ -451,6 +451,7 @@ class UserAccount {
 				// If we authenticated, store the user in the session:
 				if (!PEAR_Singleton::isError($tempUser)){
 					if ($validatedViaSSO){
+						@session_start();
 						$_SESSION['loggedInViaCAS'] = true;
 					}
 					global $library;
@@ -544,8 +545,9 @@ class UserAccount {
 					if ($validatedUser && !PEAR_Singleton::isError($validatedUser)){
 						$patronCacheKey = $cache->makePatronKey('patron', $validatedUser->id);
 						$cache->set($patronCacheKey, $validatedUser, $configArray['Caching']['user']);
-						self::getLogger()->debug("Cached user {$validatedUser->id}");
+						self::getLogger()->debug("Cached user {$validatedUser->id}", ['key' => $patronCacheKey]);
 						if ($validatedViaSSO){
+							@session_start();
 							$_SESSION['loggedInViaCAS'] = true;
 						}
 						UserAccount::$validatedAccounts[$username . $password] = $validatedUser;

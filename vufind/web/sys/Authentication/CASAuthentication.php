@@ -28,6 +28,7 @@ class CASAuthentication implements Authentication {
 
 	public function __construct($additionalInfo = []) {
 		$this->logger = new Logger(__CLASS__);
+		$this->logger->debug('Initialized logger in CAS Authentication class');
 	}
 
 	public function authenticate($validatedViaSSO = false){
@@ -42,6 +43,7 @@ class CASAuthentication implements Authentication {
 				//TODO: If we use other CAS systems we will need a configuration option to store which
 				//attribute the id is in
 				$userId = $userAttributes['flcid'];
+				$this->logger->debug("CAS authenticated user, reporting Sierra barcode $userId", $userAttributes);
 				return $userId;
 			}else{
 				return false;
@@ -97,10 +99,10 @@ class CASAuthentication implements Authentication {
 	}
 
 	public function logout() {
-		//global $pikaLogger;
 		$this->initializeCASClient();
-		//$pikaLogger->log('Logging the user out from CAS');
+		$this->logger->info('Logging the user out from CAS');
 		phpCAS::logout();
+		$this->logger->info('Logging the user out from CAS');
 	}
 
 	protected function initializeCASClient() {
