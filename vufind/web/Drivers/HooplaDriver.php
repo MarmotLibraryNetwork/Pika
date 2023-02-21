@@ -36,6 +36,8 @@ class HooplaDriver
 	private $hooplaEnabled = false;
 	private $cache;
 	private $logger;
+	private $connectionTimeout = 5;
+	private $timeout = 10;
 
 
 	public function __construct(){
@@ -44,6 +46,12 @@ class HooplaDriver
 		global $configArray;
 		if (!empty($configArray['Hoopla']['HooplaAPIUser']) && !empty($configArray['Hoopla']['HooplaAPIpassword'])){
 			$this->hooplaEnabled = true;
+			if ($configArray['Hoopla']['HooplaConnectionTimeOut'] && $configArray['Hoopla']['HooplaConnectionTimeOut'] != ''){
+				$this->connectionTimeout = $configArray['Hoopla']['HooplaConnectionTimeOut'];
+			}
+			if ($configArray['Hoopla']['HooplaTimeOut'] && $configArray['Hoopla']['HooplaTimeOut'] != ''){
+				$this->timeout = $configArray['Hoopla']['HooplaTimeOut'];
+			}
 			if (!empty($configArray['Hoopla']['APIBaseURL'])){
 				$this->hooplaAPIBaseURL = $configArray['Hoopla']['APIBaseURL'];
 				$this->getAccessToken();
@@ -97,6 +105,8 @@ class HooplaDriver
 		$this->logger->info('Hoopla API URL :' .$url);
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connectionTimeout );
+		curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
 		$headers  = [
 			'Accept: application/json',
 			'Content-Type: application/json',
@@ -141,12 +151,15 @@ class HooplaDriver
 		}
 
 		$this->logger->debug("Hoopla API response\r\n$json");
+		if($errno = curl_errno($ch)){
+			$error_message = curl_strerror($errno);
+			$this->logger->warn('Curl error in getAPIResponse: ' . $error_message);
+		}
 		curl_close($ch);
 
 		if ($json !== false && $json !== 'false') {
 			return json_decode($json);
 		} else {
-			$this->logger->warn('Curl problem in getAPIResponse');
 			return false;
 		}
 	}
@@ -168,6 +181,8 @@ class HooplaDriver
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connectionTimeout );
+		curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
 		global $instanceName;
 		if (stripos($instanceName, 'localhost') !== false) {
 			// For local debugging only
@@ -182,6 +197,10 @@ class HooplaDriver
 //		$err  = curl_getinfo($ch);
 //		$headerRequest = curl_getinfo($ch, CURLINFO_HEADER_OUT);
 //		}
+		if($errno = curl_errno($ch)){
+			$error_message = curl_strerror($errno);
+			$this->logger->warn('Curl error: ' . $error_message);
+		}
 		curl_close($ch);
 		return $http_code == 204;
 	}
@@ -339,6 +358,8 @@ class HooplaDriver
 			curl_setopt($curl, CURLOPT_POST, true);
 			curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($curl, CURLOPT_POSTFIELDS, array());
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connectionTimeout );
+			curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
 
 			global $instanceName;
 			if (stripos($instanceName, 'localhost') !== false) {
@@ -347,6 +368,10 @@ class HooplaDriver
 				curl_setopt($curl, CURLINFO_HEADER_OUT, true);
 			}
 			$response = curl_exec($curl);
+			if($errno = curl_errno($ch)){
+				$error_message = curl_strerror($errno);
+				$this->logger->warn('Curl error in getAPIResponse: ' . $error_message);
+			}
 //			// Use for debugging
 //			if (stripos($instanceName, 'localhost') !== false) {
 //				$err  = curl_getinfo($curl);
