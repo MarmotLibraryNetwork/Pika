@@ -33,7 +33,6 @@ require_once ROOT_DIR . "/Action.php";
 require_once ROOT_DIR . '/CatalogConnection.php';
 
 class EmailResetPin extends Action {
-	protected $catalog;
 
 	function __construct(){
 	}
@@ -52,8 +51,8 @@ class EmailResetPin extends Action {
 
 
 		if (isset($_REQUEST['submit'])){
-			$this->catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
-			$driver        = $this->catalog->driver;
+			$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+			$driver  = $catalog->driver;
 			if (method_exists($driver, 'emailResetPin')){
 				$barcode     = strip_tags($_REQUEST['barcode']);
 				$emailResult = $driver->emailResetPin($barcode);

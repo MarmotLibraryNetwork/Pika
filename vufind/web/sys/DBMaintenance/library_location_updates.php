@@ -1205,6 +1205,15 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			],
 		],
 
+		'2023.01.0_hide_pin_reset' => [
+			'title'           => 'Hide Pin Reset Link',
+			'description'     => 'Add Library setting to hide pin reset link',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE library ADD hideResetPinLink TINYINT(1) UNSIGNED DEFAULT 0 NOT NULL AFTER allowPinReset;",
+			],
+		],
+
 		'2022.02.0_add_changeRequiresReindexing_to_libraries_locations' => [
 			'title'           => 'Add changeRequiresReindexing to Library and Location',
 			'description'     => 'Timestamp for when a setting has changed which requires indexing',
@@ -1214,7 +1223,6 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 				'ALTER TABLE `location` ADD `changeRequiresReindexing` INT UNSIGNED NULL; ',
 			],
 		],
-
 
 		'2021.02.0_obsolete_location_subdomain' => [
 			'title'           => 'Remove Location subdomain',
