@@ -46,10 +46,10 @@ class HooplaDriver
 		global $configArray;
 		if (!empty($configArray['Hoopla']['HooplaAPIUser']) && !empty($configArray['Hoopla']['HooplaAPIpassword'])){
 			$this->hooplaEnabled = true;
-			if ($configArray['Hoopla']['HooplaConnectionTimeOut'] && $configArray['Hoopla']['HooplaConnectionTimeOut'] != ''){
+			if (isset($configArray['Hoopla']['HooplaConnectionTimeOut']) && $configArray['Hoopla']['HooplaConnectionTimeOut'] != ''){
 				$this->connectionTimeout = $configArray['Hoopla']['HooplaConnectionTimeOut'];
 			}
-			if ($configArray['Hoopla']['HooplaTimeOut'] && $configArray['Hoopla']['HooplaTimeOut'] != ''){
+			if (isset($configArray['Hoopla']['HooplaTimeOut']) && $configArray['Hoopla']['HooplaTimeOut'] != ''){
 				$this->timeout = $configArray['Hoopla']['HooplaTimeOut'];
 			}
 			if (!empty($configArray['Hoopla']['APIBaseURL'])){
@@ -358,8 +358,8 @@ class HooplaDriver
 			curl_setopt($curl, CURLOPT_POST, true);
 			curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($curl, CURLOPT_POSTFIELDS, array());
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connectionTimeout );
-			curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
+			curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, $this->connectionTimeout );
+			curl_setopt($curl, CURLOPT_TIMEOUT, $this->timeout);
 
 			global $instanceName;
 			if (stripos($instanceName, 'localhost') !== false) {
@@ -368,7 +368,7 @@ class HooplaDriver
 				curl_setopt($curl, CURLINFO_HEADER_OUT, true);
 			}
 			$response = curl_exec($curl);
-			if($errno = curl_errno($ch)){
+			if($errno = curl_errno($curl)){
 				$error_message = curl_strerror($errno);
 				$this->logger->warn('Curl error in getAPIResponse: ' . $error_message);
 			}

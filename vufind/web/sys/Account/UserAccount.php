@@ -53,9 +53,6 @@ class UserAccount {
 	 * @return bool|User
 	 */
 	public static function isLoggedIn(){
-		global $library;
-		global $action;
-		global $module;
 		if (UserAccount::$isLoggedIn == null){
 			if (isset($_SESSION['activeUserId'])){
 				UserAccount::$isLoggedIn = true;
@@ -65,35 +62,30 @@ class UserAccount {
 				//if ($action != 'AJAX' && $action != 'DjatokaResolver' && $action != 'Logout' && $module != 'MyAccount' && $module != 'API' && !isset($_REQUEST['username'])){
 				//If the library uses CAS/SSO we may already be logged in even though they never logged in within Pika
 
+				global $library;
+				global $action;
+				global $module;
 				if (strlen($library->casHost) > 0){
-					$checkCAS = false;
-					$curTime  = time();
-					if (!isset($_SESSION['lastCASCheck'])){
-						$checkCAS = true;
-					}elseif ($curTime - $_SESSION['lastCASCheck'] > 10){
-						$checkCAS = true;
-					}
-
-					if ($checkCAS && $action != 'AJAX' && $action != 'DjatokaResolver' && $action != 'Logout' && $module != 'MyAccount' && $module != 'API' && !isset($_REQUEST['username'])){
+					$checkCAS = !isset($_SESSION['lastCASCheck']) || time() - $_SESSION['lastCASCheck'] > 10;
+					if ($checkCAS && !isset($_REQUEST['username']) && !in_array($action, ['AJAX', 'DjatokaResolver', 'Logout']) && !in_array($module, ['MyAccount', 'API'])){
 						//Check CAS first
 						//require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 
 						$casAuthentication        = new CASAuthentication(null);
+						//self::getLogger()->debug("Do CAS validation in UserAccount::isLoggedIn()");
 						$casUsername              = $casAuthentication->validateAccount(null, null, null, false);
 						$_SESSION['lastCASCheck'] = time();
 						self::getLogger()->debug("Checked CAS Authentication from UserAccount::isLoggedIn result was $casUsername");
 						if ($casUsername == false || PEAR_Singleton::isError($casUsername)){
 							//The user could not be authenticated in CAS
 							UserAccount::$isLoggedIn = false;
-
 						}else{
 							self::getLogger()->debug('We got a valid user from CAS, getting the user from the database');
 							//We have a valid user via CAS, need to do a log into Pika
 							$_REQUEST['casLogin']    = true;
 							UserAccount::$isLoggedIn = true;
 							//Set the active user id for the user
-							$user = new User();
-							//TODO this may need to change if anyone but Fort Lewis ever does CAS authentication
+							$user          = new User();
 							$user->barcode = $casUsername;
 							if ($user->find(true)){
 								$_SESSION['activeUserId']             = $user->id;
@@ -104,6 +96,7 @@ class UserAccount {
 				}
 			}
 		}
+		//self::getLogger()->debug('UserAccount::$isLoggedIn = ' . (UserAccount::$isLoggedIn ? 'true' : 'false'));
 		return UserAccount::$isLoggedIn;
 	}
 
@@ -176,10 +169,12 @@ class UserAccount {
 				$user     = new User();
 				$user->id = $activeUserId;
 				if ($user->find(true)){
+					//self::getLogger()->debug('Loading User DB Object');
 					UserAccount::$primaryUserObjectFromDB = $user;
 					return;
 				}
 			}
+			//self::getLogger()->debug('Did not load User DB Object');
 			UserAccount::$primaryUserObjectFromDB = false;
 		}
 	}
@@ -200,7 +195,6 @@ class UserAccount {
 			}else{
 				return UserAccount::$primaryUserObjectFromDB->firstname . ' ' . UserAccount::$primaryUserObjectFromDB->lastname;
 			}
-
 		}
 		return '';
 	}
@@ -504,6 +498,7 @@ class UserAccount {
 	 * @return User|false
 	 */
 	public static function validateAccount($username, $password, $accountSource = null, $parentAccount = null){
+		self::getLogger()->debug("Running UserAccount::validateAccount", $_SESSION);
 		global $library;
 		global $configArray;
 		$cache  = new Pika\Cache();
@@ -516,7 +511,14 @@ class UserAccount {
 		$driversToTest = self::loadAccountProfiles();
 
 		$validatedViaSSO = false;
-		if (strlen($library->casHost) > 0 && $username == null && $password == null){
+//		self::getLogger()->debug('cas check',
+//			[
+//				'cas host'       => $library->casHost,
+//				'username'       => $username,
+//				'loggedInViaCAS' => $_SESSION['loggedInViaCAS'],
+//			]);
+
+		if (strlen($library->casHost) > 0 && !empty($_SESSION['loggedInViaCAS'])){
 			//Check CAS first
 			//require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 			$casAuthentication = new CASAuthentication(null);

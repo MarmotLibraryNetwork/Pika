@@ -69,12 +69,10 @@ class CASAuthentication implements Authentication {
 			$this->initializeCASClient();
 
 			try{
-
-				$this->logger->debug("Checking CAS Authentication");
+				$this->logger->debug('Checking CAS Authentication');
 				$isValidated = phpCAS::checkAuthentication();
-				$this->logger->debug("isValidated = ". ($isValidated ? 'true' : 'false'));
+				$this->logger->debug('CAS isValidated = '. ($isValidated ? 'true' : 'false'));
 			}catch (CAS_AuthenticationException $e){
-
 				$this->logger->error("Error validating account in CAS $e");
 				$isValidated = false;
 			}
@@ -88,12 +86,14 @@ class CASAuthentication implements Authentication {
 					$userId = $userAttributes['flcid'];
 					return $userId;
 				}else{
-					$this->logger->warning("Did not find flcid in user attributes " . print_r($userAttributes, true));
+					$this->logger->warning('Did not find flcid in user attributes ',  $userAttributes);
 				}
 			}else{
+				$this->logger->debug('Returning false for CAS validation');
 				return false;
 			}
 		} else {
+			$this->logger->debug('Returning PEAR error for CAS validation');
 			return new PEAR_Error('Should not pass username and password to account validation for CAS');
 		}
 	}
@@ -117,7 +117,7 @@ class CASAuthentication implements Authentication {
 			}
 
 
-			$this->logger->debug("Initializing CAS Client");
+			$this->logger->debug('Initializing CAS Client');
 
 			$service_name = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'];
 			// Service name allows the cas system to determine if our site is allowed to get validation
