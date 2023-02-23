@@ -46,10 +46,10 @@ class HooplaDriver
 		global $configArray;
 		if (!empty($configArray['Hoopla']['HooplaAPIUser']) && !empty($configArray['Hoopla']['HooplaAPIpassword'])){
 			$this->hooplaEnabled = true;
-			if ($configArray['Hoopla']['HooplaConnectionTimeOut'] && $configArray['Hoopla']['HooplaConnectionTimeOut'] != ''){
+			if (isset($configArray['Hoopla']['HooplaConnectionTimeOut']) && $configArray['Hoopla']['HooplaConnectionTimeOut'] != ''){
 				$this->connectionTimeout = $configArray['Hoopla']['HooplaConnectionTimeOut'];
 			}
-			if ($configArray['Hoopla']['HooplaTimeOut'] && $configArray['Hoopla']['HooplaTimeOut'] != ''){
+			if (isset($configArray['Hoopla']['HooplaTimeOut']) && $configArray['Hoopla']['HooplaTimeOut'] != ''){
 				$this->timeout = $configArray['Hoopla']['HooplaTimeOut'];
 			}
 			if (!empty($configArray['Hoopla']['APIBaseURL'])){
