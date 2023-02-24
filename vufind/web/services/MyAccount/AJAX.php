@@ -1034,7 +1034,7 @@ class MyAccount_AJAX extends AJAXHandler {
 			$interface->assign('passwordLabel', $defaultPasswordLabel);
 		}
 
-		if (!empty($catalog->accountProfile) && $catalog->accountProfile->usingPins() && method_exists($catalog->driver, 'emailResetPin') && !empty($library->hideResetPinLink)){
+		if (!empty($catalog->accountProfile) && $catalog->accountProfile->usingPins() && method_exists($catalog->driver, 'emailResetPin') && empty($library->hideResetPinLink)){
 			$interface->assign('showForgotPinLink', true);
 		}
 		if (isset($_REQUEST['multistep'])){

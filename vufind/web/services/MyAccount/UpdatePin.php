@@ -155,7 +155,7 @@ class MyAccount_UpdatePin extends MyAccount {
 		$interface->assign('enableSelfRegistration', 0);
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
-		if (!empty($catalog->accountProfile) && $catalog->accountProfile->usingPins() && method_exists($catalog->driver, 'emailResetPin') && !empty($library->hideResetPinLink)){
+		if (!empty($catalog->accountProfile) && $catalog->accountProfile->usingPins() && method_exists($catalog->driver, 'emailResetPin') && empty($library->hideResetPinLink)){
 			$interface->assign('showForgotPinLink', true);
 		}
 
