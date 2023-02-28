@@ -88,7 +88,8 @@ class Cache implements CacheInterface
 	 */
 	public function get($key, $default = null)
 	{
-		$return = $this->handler->get($key) ? $this->handler->get($key) : $default;
+		$return = ($this->handler->get($key) !== false) ? $this->handler->get($key) : $default;
+		// The cached value can be 0; For example, see isPidValidForPika()
 		$this->_log('Get', $key, $return);
 		return $return;
 	}
