@@ -83,6 +83,8 @@ org.eclipse.*.prefs
 *.iml
 .idea/
 .settings/
+# java compile directories for intellij
+run_output/
 out/
 # ignore any thing shevled by intellij
 .shelf/
