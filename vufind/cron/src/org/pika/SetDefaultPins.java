@@ -15,6 +15,7 @@
 package org.pika;
 
 import au.com.bytecode.opencsv.CSVReader;
+import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Profile;
 import org.json.JSONException;
@@ -22,10 +23,12 @@ import org.json.JSONObject;
 
 import java.io.*;
 import java.math.BigInteger;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+//import java.net.HttpURLConnection;
+//import java.net.MalformedURLException;
+//import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
@@ -33,7 +36,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import static org.apache.logging.log4j.core.util.NameUtil.md5;
+//import static org.apache.logging.log4j.core.util.NameUtil.md5;
 
 /**
  * Pika
@@ -46,6 +49,12 @@ public class SetDefaultPins implements IProcessHandler {
 	private String              pikaUrl;
 	private Logger              logger;
 	private String              userApiToken = "";
+	private int linesOfFileProcessed = 0;
+	private int numTotalUsersProcessed = 0;
+	private int numUsersNotFoundinPikaUserTable = 0;
+	private int numPinSet = 0;
+	private int numAlreadyHasPinSet = 0;
+	private int numPinsFailedToSet = 0;
 
 	/**
 	 * @param serverName
@@ -91,18 +100,51 @@ public class SetDefaultPins implements IProcessHandler {
 			return;
 		}
 
-		String ilsPatronExportFilePath = processSettings.get("ilsPatronExportFilePath");
-		File   file                    = new File(ilsPatronExportFilePath);
+		String  systemVariableName  = this.getClass().getSimpleName() + "_linesProcessed";
+		Integer linesReadPreviously = systemVariables.getIntValuedVariable(systemVariableName);
+		if (linesReadPreviously == null) {
+			linesReadPreviously = 1; // Skip header line
+		}
+		linesOfFileProcessed = linesReadPreviously;
+
+		String ilsPatronExportFilePath = processSettings.get("ilsPatronExportFilePath"); // Full path and name of the csv file to process
+		if (ilsPatronExportFilePath == null || ilsPatronExportFilePath.length() == 0) {
+			String message = "Default Password CSV setting not set";
+			logger.error(message);
+			processLog.incErrors();
+			processLog.addNote(message);
+			return;
+		}
+		String neverPikaPatronsFilePath = processSettings.get("neverPikaPatronsFilePath");
+		if (neverPikaPatronsFilePath == null || neverPikaPatronsFilePath.length() == 0) {
+			String message = "Never Pika CSV setting not set";
+			logger.error(message);
+			processLog.incErrors();
+			processLog.addNote(message);
+			return;
+		}
+		File file   = new File(ilsPatronExportFilePath);
+		File report = new File(neverPikaPatronsFilePath);
 		if (file.exists()) {
+			boolean appendReport = report.exists();
 			try (
-							PreparedStatement getUsersStmt = pikaConn.prepareStatement("SELECT id, barcode FROM user WHERE ilsUserId = ?");
-							CSVReader patronExportReader = new CSVReader(new InputStreamReader(new FileInputStream(ilsPatronExportFilePath), StandardCharsets.UTF_8))
+							PreparedStatement getUsersStmt = pikaConn.prepareStatement("SELECT id, barcode, password FROM user WHERE ilsUserId = ?");
+							CSVReader patronExportReader = new CSVReader(new InputStreamReader(Files.newInputStream(Paths.get(ilsPatronExportFilePath)), StandardCharsets.UTF_8),',', '"', '\\', linesReadPreviously);
+							CSVWriter neverPikaReport = new CSVWriter(new FileWriter(report, appendReport))
 			) {
-				patronExportReader.readNext(); // Skip header line
-				String[] patronFields = patronExportReader.readNext();
+				logger.info("Starting at line " + (linesReadPreviously + 1) + " of the file.");
+				String[] patronFields = patronExportReader.readNext(); linesOfFileProcessed++;
 				while (patronFields != null) {
-					String ilsPatronId = patronFields[0];
+					String originalIlsPatronId = patronFields[0];
+					String ilsPatronId         = patronFields[0];
 					if (ilsPatronId != null && !ilsPatronId.isEmpty()) {
+						// ils Ids extracted from Sierra begin with a p and end with an a. eg. p0001a
+						if (ilsPatronId.startsWith("p")){
+							ilsPatronId = ilsPatronId.substring(1);
+						}
+						if (ilsPatronId.endsWith("a")){
+							ilsPatronId = ilsPatronId.substring(0, ilsPatronId.length() - 1);
+						}
 						try {
 							getUsersStmt.setString(1, ilsPatronId);
 							ResultSet userResults = getUsersStmt.executeQuery();
@@ -110,26 +152,45 @@ public class SetDefaultPins implements IProcessHandler {
 								// Set default pin for user
 								Long   userId     = userResults.getLong("id");
 								String barcode    = userResults.getString("barcode");
-								String defaultPin = patronFields[1];
-								if (defaultPin != null && !defaultPin.isEmpty()) {
-									setPatronDefaultPin(userId, barcode, defaultPin);
+								String password   = userResults.getString("password");
+								if (password == null || password.isEmpty()) {
+									String defaultPin = patronFields[1];
+									if (defaultPin != null && !defaultPin.isEmpty()) {
+										setPatronDefaultPin(userId, barcode, defaultPin);
+									} else {
+										logger.error("Default PIN was empty in CSV for " + originalIlsPatronId);
+									}
+								} else {
+									numAlreadyHasPinSet++;
+									logger.debug("pin already set for " + originalIlsPatronId);
 								}
 							} else {
-								//TODO: write to report for non-pika patron
+								numUsersNotFoundinPikaUserTable++;
+								String[] neverPikaPatron = new String[3];
+								neverPikaPatron[0] = originalIlsPatronId;
+								neverPikaPatron[1] = patronFields[2];
+								neverPikaPatron[2] = patronFields[3];
+								neverPikaReport.writeNext(neverPikaPatron);
+								logger.debug("Never Pika User : original p number : " + originalIlsPatronId);
 							}
 						} catch (SQLException e) {
-							throw new RuntimeException(e);
+							logger.error(e.getMessage(), e);
 						}
+					} else {
+						logger.error("Empty user");
 					}
-					patronFields = patronExportReader.readNext(); // fetch next row
+					numTotalUsersProcessed++;
+
+					if (linesOfFileProcessed % 100 == 0){
+						systemVariables.setVariable(systemVariableName, (long) linesOfFileProcessed);
+						logger.info("Processed " + linesOfFileProcessed + " of the file");
+					}
+
+					patronFields = patronExportReader.readNext(); linesOfFileProcessed++; // fetch next row
 				}
 
-			} catch (FileNotFoundException e) {
-				throw new RuntimeException(e);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			} catch (SQLException e) {
-				throw new RuntimeException(e);
+			} catch (IOException | SQLException e) {
+				logger.error(e.getMessage(), e);
 			}
 
 		} else {
@@ -140,6 +201,24 @@ public class SetDefaultPins implements IProcessHandler {
 			return;
 		}
 
+
+		String note = "Total entries processed : " + numTotalUsersProcessed;
+		processLog.addNote(note);
+		logger.info(note);
+		note = "Number of users pins set for : " + numPinSet;
+		processLog.addNote(note);
+		note = "Number of users failed to set pins for : " + numPinsFailedToSet;
+		logger.info(note);
+		processLog.addNote(note);
+		note = "Number of users not found in Pika user table : " + numUsersNotFoundinPikaUserTable;
+		logger.info(note);
+		processLog.addNote(note);
+		note = "Number of users with a password already set in Pika user table : " + numAlreadyHasPinSet;
+		logger.info(note);
+		processLog.addNote(note);
+		note = "Number of line processed in file : " + linesOfFileProcessed;
+		logger.info(note);
+		processLog.addNote(note);
 	}
 
 	private void setPatronDefaultPin(Long userId, String barcode, String defaultPin) {
@@ -152,16 +231,21 @@ public class SetDefaultPins implements IProcessHandler {
 			try {
 				JSONObject result = new JSONObject(patronDataJson);
 				if (result.getBoolean("success")) {
-					//TODO: update count?
+					numPinSet++;
+					processLog.incUpdated();
 				} else {
-					//TODO: Failed. try again?
+					numPinsFailedToSet++;
+					logger.error("Failed to set pin for user " + userId + " with barcode " + barcode);
+					processLog.incErrors();
 				}
 			} catch (JSONException e) {
-				throw new RuntimeException(e);
+				processLog.incErrors();
+				logger.error("JSON Error" + e.getMessage(), e);
 			}
-
 		} else {
-			//TODO: handle bad response
+			numPinsFailedToSet++;
+			processLog.incErrors();
+			logger.error("Failed to get response to set pin for user " + userId + " with barcode " + barcode);
 		}
 	}
 

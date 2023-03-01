@@ -64,6 +64,20 @@ public class PikaSystemVariables {
 		return null;
 	}
 
+	public Integer getIntValuedVariable(String name) {
+		try (PreparedStatement preparedStatement = pikaConn.prepareStatement("SELECT * FROM variables WHERE name = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
+			preparedStatement.setString(1, name);
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				if (resultSet.next()) {
+					return resultSet.getInt("value");
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Unable to load " + name + " from variables", e);
+		}
+		return null;
+	}
+
 	public Boolean getBooleanValuedVariable(String name) {
 		try (PreparedStatement preparedStatement = pikaConn.prepareStatement("SELECT * FROM variables WHERE name = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
 			preparedStatement.setString(1, name);
