@@ -56,10 +56,13 @@ class PlaceDriver extends IslandoraDriver {
 					$geoData['latitude']  = $this->convertDMSToDD($latitude);
 					$geoData['longitude'] = $this->convertDMSToDD($longitude);
 					//Update MODS record to include the lat/lon in decimal degrees
-					$modsData = $this->getModsData();
-					$modsData = str_replace('<marmot:latitude></marmot:latitude>', "<marmot:latitude>{$geoData['latitude']}</marmot:latitude", $modsData);
-					$modsData = str_replace('<marmot:longitude></marmot:longitude>', "<marmot:longitude>{$geoData['longitude']}</marmot:longitude", $modsData);
-					$this->archiveObject->getDatastream('MODS')->content = $modsData;
+					$modsData     = $this->getModsData();
+					$originalData = $modsData;
+					$modsData     = str_replace('<marmot:latitude></marmot:latitude>', "<marmot:latitude>{$geoData['latitude']}</marmot:latitude", $modsData);
+					$modsData     = str_replace('<marmot:longitude></marmot:longitude>', "<marmot:longitude>{$geoData['longitude']}</marmot:longitude", $modsData);
+					if ($modsData != $originalData){
+						$this->archiveObject->getDatastream('MODS')->content = $modsData;
+					}
 				}else{
 					$geoData['latitude']  = $latitude;
 					$geoData['longitude'] = $longitude;
@@ -128,10 +131,13 @@ class PlaceDriver extends IslandoraDriver {
 			}
 			if ($foundLatLon){
 				//we found the latitude and longitude from a link update the MODS record
-				$modsData = $this->getModsData();
-				$modsData = str_replace('<marmot:latitude/>', "<marmot:latitude>{$geoData['latitude']}</marmot:latitude>", $modsData);
-				$modsData = str_replace('<marmot:longitude/>', "<marmot:longitude>{$geoData['longitude']}</marmot:longitude>", $modsData);
-				$this->archiveObject->getDatastream('MODS')->content = $modsData;
+				$modsData     = $this->getModsData();
+				$originalData = $modsData;
+				$modsData     = str_replace('<marmot:latitude/>', "<marmot:latitude>{$geoData['latitude']}</marmot:latitude>", $modsData);
+				$modsData     = str_replace('<marmot:longitude/>', "<marmot:longitude>{$geoData['longitude']}</marmot:longitude>", $modsData);
+				if ($modsData != $originalData){
+					$this->archiveObject->getDatastream('MODS')->content = $modsData;
+				}
 			}
 		}
 
