@@ -32,9 +32,6 @@ use DateInterval;
 use DateTime;
 use InvalidArgumentException;
 
-use Library;
-use Location;
-
 class Sacramento extends Sierra {
 
 	public function __construct($accountProfile){
@@ -71,13 +68,13 @@ class Sacramento extends Sierra {
 		// base url for following calls
 		$vendorOpacUrl = $this->accountProfile->vendorOpacUrl;
 
-		$headers       = [
-			'Accept'          => 'text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5',
-			'Cache-Control'   => 'max-age=0',
-			'Connection'      => 'keep-alive',
-			'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
-			'Accept-Language' => 'en-us,en;q=0.5',
-			'User-Agent'      => 'Pika'
+		$headers = [
+			"Accept"          => "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5",
+			"Cache-Control"   => "max-age=0",
+			"Connection"      => "keep-alive",
+			"Accept-Charset"  => "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
+			"Accept-Language" => "en-us,en;q=0.5",
+			"User-Agent"      => "Pika"
 		];
 		$c->setHeaders($headers);
 
@@ -171,12 +168,12 @@ class Sacramento extends Sierra {
 		$vendorOpacUrl = $this->accountProfile->vendorOpacUrl;
 
 		$headers = [
-			'Accept'          => 'text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5',
-			'Cache-Control'   => 'max-age=0',
-			'Connection'      => 'keep-alive',
-			'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
-			'Accept-Language' => 'en-us,en;q=0.5',
-			'User-Agent'      => 'Pika'
+		 "Accept"         => "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5",
+		 "Cache-Control"  => "max-age=0",
+		 "Connection"     => "keep-alive",
+		 "Accept-Charset" => "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
+		 "Accept-Language"=> "en-us,en;q=0.5",
+		 "User-Agent"     => "Pika"
 		];
 		$cc->setHeaders($headers);
 
@@ -665,233 +662,4 @@ class Sacramento extends Sierra {
 
 		return $fields;
 	}
-
-	/**
-	 * At this time, Marmot is the only site that uses this.
-
-	 * Legacy Screen Scraping to get holding_record information for periodicals. (This may require the Serials module.)
-	 *
-	 * @param $recordId
-	 * @param $checkInGridId
-	 * @return array
-	 * @throws ErrorException
-	 */
-	function getCheckInGrid($recordId, $checkInGridId){
-		//Issue summaries are loaded from the main record page.
-		$sourceAndId = new \SourceAndId($recordId);
-
-		$id_         = $this->getShortId($sourceAndId->getRecordId());
-		$host        = $this->accountProfile->vendorOpacUrl;
-		$branchScope = $this->getLibrarySierraScope();
-		$url         = $host . "/search~S{$branchScope}/.b" . $id_ . "/.b" . $id_ . "/1,1,1,B/$checkInGridId&FF=1,0,";
-		$c           = new Curl();
-		$headers     = [
-			'Accept'          => 'text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5',
-			'Cache-Control'   => 'max-age=0',
-			'Connection'      => 'keep-alive',
-			'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
-			'Accept-Language' => 'en-us,en;q=0.5',
-			'User-Agent'      => 'Pika'
-		];
-		$c->setHeaders($headers);
-
-		$cookie   = @tempnam("/tmp", "CURLCOOKIE");
-		$curlOpts = [
-			CURLOPT_CONNECTTIMEOUT    => 20,
-			CURLOPT_TIMEOUT           => 60,
-			CURLOPT_RETURNTRANSFER    => true,
-			CURLOPT_FOLLOWLOCATION    => true,
-			CURLOPT_UNRESTRICTED_AUTH => true,
-			CURLOPT_COOKIEJAR         => $cookie,
-			CURLOPT_COOKIESESSION     => false,
-			CURLOPT_HEADER            => false,
-			CURLOPT_AUTOREFERER       => true,
-		];
-		$c->setOpts($curlOpts);
-
-		$result = $c->get($url);
-
-		if ($c->isError()){
-			return array();
-		}
-
-		//Extract the actual table
-		$checkInData = array();
-		if (preg_match('/<table  class="checkinCardTable">(.*?)<\/table>/s', $result, $matches)){
-			$checkInTable = trim($matches[1]);
-
-			//Extract each item from the grid.
-			preg_match_all('/.*?<td valign="top" class="(.*?)">(.*?)<\/td>/s', $checkInTable, $checkInCellMatch, PREG_SET_ORDER);
-			for ($matchi = 0;$matchi < count($checkInCellMatch);$matchi++){
-				$cellData             = trim($checkInCellMatch[$matchi][2]);
-				$checkInCell          = array();
-				$checkInCell['class'] = $checkInCellMatch[$matchi][1];
-				//Load issue date, status, date received, issue number, copies received
-				if (preg_match('/(.*?)<br\\s*\/?>.*?<span class="(?:.*?)">(.*?)<\/span>.*?on (\\d{1,2}-\\d{1,2}-\\d{1,2})<br\\s*\/?>(.*?)(?:<!-- copies --> \\((\\d+) copy\\))?<br\\s*\/?>/s', $cellData, $matches)){
-					$checkInCell['issueDate']   = trim($matches[1]);
-					$checkInCell['status']      = trim($matches[2]);
-					$checkInCell['statusDate']  = trim($matches[3]);
-					$checkInCell['issueNumber'] = trim($matches[4]);
-					if (isset($matches[5])){
-						$checkInCell['copies'] = trim($matches[5]);
-					}
-				}
-				$checkInData[] = $checkInCell;
-			}
-		}
-		return $checkInData;
-	}
-
-	/**
-	 * At this time, Marmot is the only site that uses this.
-	 *
-	 * Legacy Screen Scraping to get holding_record information for periodicals
-	 *
-	 * If there are issue summaries available, it will return them in an array.
-	 * With holdings below them.
-	 *
-	 * If there are no issue summaries, null will be returned from the summary.
-	 *
-	 * @param string $recordId
-	 * @return array|null - array or null
-	 * @throws ErrorException
-	 */
-	public function getIssueSummaries($recordId){
-		$scope    = $this->getLibrarySierraScope(true); // Use library scope if searching is restricted to the library
-		$id_      = $this->getShortId($recordId);
-		$host     = $this->accountProfile->vendorOpacUrl;
-		$c        = new Curl();
-		$headers  = [
-			'Accept'          => 'text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5',
-			'Cache-Control'   => 'max-age=0',
-			'Connection'      => 'keep-alive',
-			'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
-			'Accept-Language' => 'en-us,en;q=0.5',
-			'User-Agent'      => 'Pika'
-		];
-		$cookie   = @tempnam("/tmp", "CURLCOOKIE");
-		$curlOpts = [
-			CURLOPT_CONNECTTIMEOUT    => 20,
-			CURLOPT_TIMEOUT           => 60,
-			CURLOPT_RETURNTRANSFER    => true,
-			CURLOPT_FOLLOWLOCATION    => true,
-			CURLOPT_UNRESTRICTED_AUTH => true,
-			CURLOPT_COOKIEJAR         => $cookie,
-			CURLOPT_COOKIESESSION     => false,
-			CURLOPT_HEADER            => false,
-			CURLOPT_AUTOREFERER       => true,
-		];
-		$c->setHeaders($headers);
-		$c->setOpts($curlOpts);
-
-		//Legacy process would load this page first. The results weren't used, and it doesn't appear required to read the URL further down
-//		$url                       = $host . "/search~S{$scope}/." . $id_ . "/." . $id_ . "/1,1,1,B/holdings~" . $id_;
-//		$issuesSummaryHoldingsInfo = $c->get($url);  // Not used any where
-//		if ($c->isError()){
-//			return null;
-//		}
-
-		$url                       = $host . "/search~S{$scope}/." . $id_ . "/." . $id_ . "/1,1,1,B/frameset~" . $id_;
-		$issuesSummaryFrameSetInfo = $c->get($url);
-		if ($c->isError()){
-			return null;
-		}
-
-		if (preg_match('/class\\s*=\\s*\\"bibHoldings\\"/s', $issuesSummaryFrameSetInfo)){
-			//There are issue summaries available
-			//Extract the table with the holdings
-			$issueSummaries = [];
-			$matches        = [];
-			if (preg_match('/<table\\s.*?class=\\"bibHoldings\\">(.*?)<\/table>/s', $issuesSummaryFrameSetInfo, $matches)){
-				$issueSummaryTable = trim($matches[1]);
-				//Each holdingSummary begins with a holdingsDivider statement
-				$summaryMatches = explode('<tr><td colspan="2"><hr  class="holdingsDivider" /></td></tr>', $issueSummaryTable);
-				if (count($summaryMatches) > 1){
-					//Process each match independently
-					foreach ($summaryMatches as $summaryData){
-						$summaryData = trim($summaryData);
-						if (strlen($summaryData) > 0){
-							//Get each line within the summary
-							$issueSummary         = [];
-							$issueSummary['type'] = 'issueSummary';
-							$summaryLines         = [];
-							preg_match_all('/<tr\\s*>(.*?)<\/tr>/s', $summaryData, $summaryLines, PREG_SET_ORDER);
-							for ($matchi = 0;$matchi < count($summaryLines);$matchi++){
-								$summaryLine = trim(str_replace('&nbsp;', ' ', $summaryLines[$matchi][1]));
-								$summaryCols = [];
-								if (preg_match('/<td.*?>(.*?)<\/td>.*?<td.*?>(.*?)<\/td>/s', $summaryLine, $summaryCols)){
-									$labelOriginal = $label = trim($summaryCols[1]);
-									$value = trim(strip_tags($summaryCols[2]));
-									//Check to see if this has a link to a check-in grid.
-									if (preg_match('/.*?<a href="(.*?)">.*/s', $label, $linkData)){
-										//Parse the check-in id
-										$checkInLink = $linkData[1];
-										if (preg_match('/\/search~S\\d+\\?\/.*?\/.*?\/.*?\/(.*?)&.*/', $checkInLink, $checkInGridInfo)){
-											$issueSummary['checkInGridId'] = $checkInGridInfo[1];
-										}
-									}
-									//Convert to camel case
-									$label = lcfirst(preg_replace('/[^\\w]/', '', strip_tags($label)));
-									if ($label == 'location'){
-										//Try to trim the courier code if any
-										if (preg_match('/(.*?)\\sC\\d{3}\\w{0,2}$/', $value, $locationParts)){
-											$value = $locationParts[1];
-										}
-									}elseif ($label == 'holdings'){
-										//Change the label to avoid conflicts with actual holdings
-										$label = 'holdingStatement';
-									}
-									$issueSummary[$label] = $value;
-								}
-							}
-							$issueSummaries[$issueSummary['location'] . count($issueSummaries)] = $issueSummary;
-						}
-					}
-				}
-			}
-
-			return $issueSummaries;
-		}
-		return null;
-	}
-
-
-	/**
-	 * Classic OPAC scope for legacy screen scraping calls
-	 * @param bool $checkLibraryRestrictions  Whether or not to condition the use of Sierra OPAC scope by the library setting $restrictSearchByLibrary;
-	 * @return mixed|string
-	 */
-	protected function getLibrarySierraScope($checkLibraryRestrictions = false){
-
-		//Load the holding label for the branch where the user is physically.
-		$searchLocation = Location::getSearchLocation();
-		if (!empty($searchLocation->scope)){
-			return $searchLocation->scope;
-		}
-
-		$searchLibrary = Library::getSearchLibrary();
-		if (!empty($searchLibrary->scope)){
-			if (!$checkLibraryRestrictions || $searchLibrary->restrictSearchByLibrary){
-				return $searchLibrary->scope;
-			}
-		}
-		return $this->getDefaultSierraScope();
-	}
-
-	protected function getDefaultSierraScope(){
-		global $configArray;
-		return $configArray['OPAC']['defaultScope'] ?? '93';
-	}
-	/**
-	 * Taken from the class MarcRecord method getShortId.
-	 *
-	 * @param string $longId III record Id with a trailing check digit included
-	 * @return mixed|string   the initial dot & the trailing check digit removed
-	 */
-	protected static function getShortId($longId){
-		$shortId = str_replace('.b', 'b', $longId);
-		$shortId = substr($shortId, 0, strlen($shortId) - 1);
-		return $shortId;
-	}
-
 }
