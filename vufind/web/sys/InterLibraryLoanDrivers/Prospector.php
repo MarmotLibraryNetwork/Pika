@@ -49,6 +49,9 @@ class Prospector {
 		//Load the HTML from Prospector
 		try {
 			$curl            = new Curl();
+			$curl->setOpts([
+				CURLOPT_SSL_VERIFYPEER => false, // Something strange going on with Prospector's peer cert, curl doesn't  validate
+			]);
 			$prospectorInfo = $curl->get($prospectorUrl);
 		} catch (ErrorException $e){
 			$this->logger->error($e->getMessage(), ['stacktrace'=>$e->getTraceAsString()]);
