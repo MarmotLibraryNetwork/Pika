@@ -81,6 +81,7 @@ public class SetDefaultPins implements IProcessHandler {
 			logger.error(errMsg);
 			processLog.incErrors();
 			processLog.addNote(errMsg);
+			processLog.saveToDatabase(pikaConn, logger);
 			return;
 		}
 
@@ -89,6 +90,7 @@ public class SetDefaultPins implements IProcessHandler {
 			logger.error("Unable to get user API token for Pika in ConfigIni settings.  Please add token to the System section.");
 			processLog.incErrors();
 			processLog.addNote("Unable to get user API token for Pika in ConfigIni settings.  Please add token to the System section.");
+			processLog.saveToDatabase(pikaConn, logger);
 			return;
 		}
 
@@ -97,6 +99,7 @@ public class SetDefaultPins implements IProcessHandler {
 			logger.error("Unable to get URL for Pika in ConfigIni settings.  Please add a url key to the Site section.");
 			processLog.incErrors();
 			processLog.addNote("Unable to get URL for Pika in ConfigIni settings.  Please add a url key to the Site section.");
+			processLog.saveToDatabase(pikaConn, logger);
 			return;
 		}
 
@@ -113,6 +116,7 @@ public class SetDefaultPins implements IProcessHandler {
 			logger.error(message);
 			processLog.incErrors();
 			processLog.addNote(message);
+			processLog.saveToDatabase(pikaConn, logger);
 			return;
 		}
 		String neverPikaPatronsFilePath = processSettings.get("neverPikaPatronsFilePath");
@@ -121,6 +125,7 @@ public class SetDefaultPins implements IProcessHandler {
 			logger.error(message);
 			processLog.incErrors();
 			processLog.addNote(message);
+			processLog.saveToDatabase(pikaConn, logger);
 			return;
 		}
 		File file   = new File(ilsPatronExportFilePath);
@@ -184,6 +189,7 @@ public class SetDefaultPins implements IProcessHandler {
 					if (linesOfFileProcessed % 100 == 0){
 						systemVariables.setVariable(systemVariableName, (long) linesOfFileProcessed);
 						logger.info("Processed " + linesOfFileProcessed + " of the file");
+						processLog.saveToDatabase(pikaConn, logger);
 					}
 
 					patronFields = patronExportReader.readNext(); linesOfFileProcessed++; // fetch next row
@@ -198,6 +204,7 @@ public class SetDefaultPins implements IProcessHandler {
 			logger.error(errMsg);
 			processLog.incErrors();
 			processLog.addNote(errMsg);
+			processLog.saveToDatabase(pikaConn, logger);
 			return;
 		}
 
@@ -219,6 +226,7 @@ public class SetDefaultPins implements IProcessHandler {
 		note = "Number of line processed in file : " + linesOfFileProcessed;
 		logger.info(note);
 		processLog.addNote(note);
+		processLog.saveToDatabase(pikaConn, logger);
 	}
 
 	private void setPatronDefaultPin(Long userId, String barcode, String defaultPin) {
