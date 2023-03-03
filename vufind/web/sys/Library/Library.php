@@ -534,7 +534,7 @@ class Library extends DB_DataObject {
 							'selfRegistrationAgencyCode'     => ['property' =>'selfRegistrationAgencyCode', 'type' =>'text', 'label' =>'Agency Code (Sierra Only)', 'description' =>'Sierra library agency code.', 'hideInLists' => true, 'default' => '', 'maxLength' => '3'],
 							'selfRegistrationDefaultpType'   => ['property' =>'selfRegistrationDefaultpType', 'type' =>'text', 'label' =>'Self Registration Patron Type (Sierra Only)', 'description' =>'The default patron type for self registered patrons.', 'hideInLists' => true, 'default' => ''],
 							'selfRegistrationBarcodeLength'  => ['property' =>'selfRegistrationBarcodeLength', 'type' =>'text', 'label' =>'Barcode length (Sierra Only)', 'description' =>'The barcode length of a self registered patron.', 'hideInLists' => true, 'default' => '7', 'maxLength' => '2'],
-							'selfRegistrationDaysUntilExpire'=> ['property' =>'selfRegistrationDaysUntilExpire', 'type' =>'text', 'label' =>'Days Until Expiration (Sierra Only)', 'description' =>'The number of days the account will be valid.', 'hideInLists' => true, 'default' => '90', 'maxLength' => '3'],
+							'selfRegistrationDaysUntilExpire'=> ['property' =>'selfRegistrationDaysUntilExpire', 'type' =>'integer', 'label' =>'Days Until Expiration (Sierra Only) [0 or less to disable]', 'description' =>'The number of days the account will be valid.', 'hideInLists' => true, 'default' => '90', /*'maxLength' => '3'*/],
 
 							/* sierra patron api self reg */
 							'promptForBirthDateInSelfReg'    => ['property' => 'promptForBirthDateInSelfReg', 'type' => 'checkbox', 'label' => 'Prompt For Birth Date', 'description' =>'Whether or not to prompt for birth date when self registering'],

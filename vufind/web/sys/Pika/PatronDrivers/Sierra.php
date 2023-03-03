@@ -1384,10 +1384,12 @@ class Sierra  implements \DriverInterface {
 			];
 		}
 		// expiration date
-		$interval   = 'P' . $library->selfRegistrationDaysUntilExpire . 'D';
-		$expireDate = new DateTime();
-		$expireDate->add(new DateInterval($interval));
-		$params['expirationDate'] = $expireDate->format('Y-m-d');
+		if ($library->selfRegistrationDaysUntilExpire > 0){
+			$interval   = 'P' . $library->selfRegistrationDaysUntilExpire . 'D';
+			$expireDate = new DateTime();
+			$expireDate->add(new DateInterval($interval));
+			$params['expirationDate'] = $expireDate->format('Y-m-d');
+		}
 
 		// names -- standard is Last, First Middle
 		$name = trim($_POST['lastname']) . ", ";

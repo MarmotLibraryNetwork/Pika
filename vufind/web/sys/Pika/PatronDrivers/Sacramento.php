@@ -423,10 +423,12 @@ class Sacramento extends Sierra {
 			"value" => 'z'
 		];
 		// expiration date
-		$interval   = 'P' . $library->selfRegistrationDaysUntilExpire . 'D';
-		$expireDate = new DateTime();
-		$expireDate->add(new DateInterval($interval));
-		$params['expirationDate'] = $expireDate->format('Y-m-d');
+		if ($library->selfRegistrationDaysUntilExpire > 0){
+			$interval   = 'P' . $library->selfRegistrationDaysUntilExpire . 'D';
+			$expireDate = new DateTime();
+			$expireDate->add(new DateInterval($interval));
+			$params['expirationDate'] = $expireDate->format('Y-m-d');
+		}
 
 		// names -- standard is Last, First Middle for sacramento
 		$name  = trim($_POST['lastname']) . ", ";
