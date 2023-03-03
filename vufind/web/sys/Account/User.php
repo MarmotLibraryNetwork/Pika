@@ -719,11 +719,13 @@ class User extends DB_DataObject {
 
 
 	function update($dataObject = false){
-		$phone = $this->phone;
-		if(count_chars($phone) > 30) {
-			$phoneParts = str_split($phone, 30);
-			$this->phone = $phoneParts[0];
+		if (strlen($this->phone) > 30) {
+			$this->phone = substr($this->phone, 0,30);
 		}
+		if (strlen($this->firstname) > 50){
+			$this->firstname = substr($this->firstname, 0, 50);
+		}
+
 		$result = parent::update();
 		$this->clearCache(); // Every update to object requires clearing the Memcached version of the object
 		return $result;
@@ -734,7 +736,7 @@ class User extends DB_DataObject {
 		if (!isset($this->homeLocationId)){
 			$this->homeLocationId = 0;
 
-			$this->logger->warning('No Home Location ID was set for newly created user.');
+			$this->logger->warning('No Home Location ID was set for newly created user w/ ilsId :'. $this->ilsUserId);
 		}
 		if (!isset($this->myLocation1Id)){
 			$this->myLocation1Id = 0;
@@ -745,9 +747,11 @@ class User extends DB_DataObject {
 		if (!isset($this->bypassAutoLogout)){
 			$this->bypassAutoLogout = 0;
 		}
-		if(count_chars($this->phone) > 30) {
-			$phoneParts = str_split($this->phone, 30);
-			$this->phone = $phoneParts[0];
+		if (strlen($this->phone) > 30) {
+			$this->phone = substr($this->phone, 0,30);
+		}
+		if (strlen($this->firstname) > 50){
+			$this->firstname = substr($this->firstname, 0, 50);
 		}
 
 		$r = parent::insert();
