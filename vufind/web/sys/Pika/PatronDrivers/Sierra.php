@@ -794,7 +794,16 @@ class Sierra  implements \DriverInterface {
 				$this->logger->debug('Created patron in Pika database.', ['barcode' => $patron->getBarcode()]);
 			}
 		} elseif ($updatePatron && !$createPatron) {
-			$patron->update();
+			$result = $patron->update();
+			if (!$result){
+				if (is_string($patron->_lastError)){
+					$this->logger->error("Error updating user $patron->id : " . $patron->_lastError);
+					return null;
+				}
+				// Error is pear error
+				$this->logger->error("Error updating user $patron->id : " . $patron->_lastError->getUserInfo());
+				return $patron->_lastError;
+			}
 		}
 		// if this is a new user we won't cache -- will happen on next getPatron call
 		if(isset($patron->id)) {
