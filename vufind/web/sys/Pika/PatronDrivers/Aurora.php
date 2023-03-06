@@ -2,7 +2,7 @@
 
 /*
  * Pika Discovery Layer
- * Copyright (C) 2021  Marmot Library Network
+ * Copyright (C) 2023  Marmot Library Network
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

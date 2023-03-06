@@ -1,63 +1,21 @@
 <?php
 
-/* *******************************************
- // Copyright 2010-2012, Anthony Hand
- //
- // File version date: April 23, 2012
- //              Update:
- //              - Updated DetectAmazonSilk(): Fixed an issue in the detection logic.
- //
- // File version date: April 22, 2012 - Second update
- //              Update: To address additional Kindle issues...
- //              - Updated DetectRichCSS(): Excluded e-Ink Kindle devices.
- //              - Created DetectAmazonSilk(): Created to detect Kindle Fire devices in Silk mode.
- //              - Updated DetectMobileQuick(): Updated to include e-Ink Kindle devices and the Kindle Fire in Silk mode.
- //
- // File version date: April 11, 2012
- //              Update:
- //              - Added a new variable for the new BlackBerry Curve Touch (9380): deviceBBCurveTouch.
- //              - Updated DetectBlackBerryTouch() to support the new BlackBerry Curve Touch (9380).
- //              - Updated DetectKindle(): Added the missing 'this' class identifier for the DetectAndroid() call.
- //
- // File version date: January 21, 2012
- //              Update:
- //              - Added the constructor method per new features in PHP 5.0: __construct().
- //              - Moved Windows Phone 7 to the iPhone Tier. WP7.5's IE 9-based browser is good enough now.
- //              - Added a new variable for 2 versions of the new BlackBerry Bold Touch (9900 and 9930): deviceBBBoldTouch.
- //              - Updated DetectBlackBerryTouch() to support the 2 versions of the new BlackBerry Bold Touch (9900 and 9930).
- //              - Updated DetectKindle() to focus on eInk devices only. The Kindle Fire should be detected as a regular Android device.
- //
- // File version date: August 22, 2011
- //              Update:
- //              - Updated DetectAndroidTablet() to fix a bug introduced in the last fix! The true/false returns were mixed up.
- //
- // File version date: August 16, 2011
- //              Update:
- //              - Updated DetectAndroidTablet() to exclude Opera Mini, which was falsely reporting as running on a tablet device when on a phone.
- //
- //
- // LICENSE INFORMATION
- // Licensed under the Apache License, Version 2.0 (the "License");
- // you may not use this file except in compliance with the License.
- // You may obtain a copy of the License at
- //        http://www.apache.org/licenses/LICENSE-2.0
- // Unless required by applicable law or agreed to in writing,
- // software distributed under the License is distributed on an
- // "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
- // either express or implied. See the License for the specific
- // language governing permissions and limitations under the License.
- //
- //
- // ABOUT THIS PROJECT
- //   Project Owner: Anthony Hand
- //   Email: anthony.hand@gmail.com
- //   Web Site: http://www.mobileesp.com
- //   Source Files: http://code.google.com/p/mobileesp/
- //
- //   Versions of this code are available for:
- //      PHP, JavaScript, Java, ASP.NET (C#), and Ruby
- //
- // *******************************************
+/*
+ * Pika Discovery Layer
+ * Copyright (C) 2023  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 
