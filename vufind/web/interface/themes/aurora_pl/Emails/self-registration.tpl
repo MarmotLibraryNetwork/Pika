@@ -1,6 +1,6 @@
 Hello {$patronName},
 
-Thank you for registering for a library card at Aurora Public Library! Your temporary library card number is valid for 6 months. Visit any of our library locations to convert your temporary card into a regular library card to gain full access to Aurora Public Library services.
+Thank you for registering for a Digital Library Card with Aurora Public Library! Your Digital Library Card is valid for 5 years. You can visit any of our library locations to convert your digital card into a full service library card to check out physical items with Aurora Public Library. To make a full service library card, please bring your photo ID and proof of current address.
 
 Your new library card number is: {$barcode}
 
