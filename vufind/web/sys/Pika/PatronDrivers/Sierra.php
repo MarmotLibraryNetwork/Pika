@@ -2135,6 +2135,7 @@ class Sierra  implements \DriverInterface {
 		if ($this->apiLastError && stristr($this->apiLastError, 'Volume record selection is required to proceed')
 		   || (stristr($this->apiLastError,"This record is not available") && (integer)$this->configArray['Catalog']['api_version'] == 4)) {
 
+			$this->logger->notice("Sierra patron $patronId hold on $recordId requires item level hold");
 			$itemsAsVolumes = $r->details->itemsAsVolumes ?? null; // Response when item level hold is required includes the list of items
 			if (!empty($r->detail->itemIds)){
 				// API version ~5.5 style response is a list of Ids; convert to a form matching the others;
@@ -2160,6 +2161,7 @@ class Sierra  implements \DriverInterface {
 			$return['success'] = false;
 			if ($this->apiLastError) {
 				$message = $this->_getPrettyError();
+				$this->logger->notice("Hold error $message", [$this->apiLastError]);
 				if($message) {
 					$return['message'] = $message;
 				} else {

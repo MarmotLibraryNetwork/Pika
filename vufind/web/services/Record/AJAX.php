@@ -300,6 +300,9 @@ class Record_AJAX extends AJAXHandler {
 							$return = $patron->placeHold($shortId, $campus, $cancelDate);
 							// If the hold requires an item-level hold, but there is only one item to choose from, just complete the hold with that one item
 							if (!empty($return['items']) && count($return['items']) == 1){
+								global $pikaLogger;
+								$logger = $pikaLogger->withName(__CLASS__);
+								$logger->notice("Automatically placing item-level hold on single holdable item for {$return['items'][0]['itemNumber']}");
 								$return = $patron->placeItemHold($shortId, $return['items'][0]['itemNumber'], $campus, $cancelDate);
 							}
 						}
