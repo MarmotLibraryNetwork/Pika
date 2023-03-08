@@ -799,10 +799,11 @@ class Sierra  implements \DriverInterface {
 				if (is_string($patron->_lastError)){
 					$this->logger->error("Error updating user $patron->id : " . $patron->_lastError);
 					return null;
+				} elseif (!empty($patron->_lastError)){
+					// Error is pear error
+					$this->logger->error("Error updating user $patron->id : " . $patron->_lastError->getUserInfo());
+					return $patron->_lastError;
 				}
-				// Error is pear error
-				$this->logger->error("Error updating user $patron->id : " . $patron->_lastError->getUserInfo());
-				return $patron->_lastError;
 			}
 		}
 		// if this is a new user we won't cache -- will happen on next getPatron call
