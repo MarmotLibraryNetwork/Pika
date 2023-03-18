@@ -145,7 +145,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 						ResultSet loanRuleDeterminersRS = loanRuleDeterminersStmt.executeQuery()
 				) {
 					while (loanRuleDeterminersRS.next()) {
-						LoanRuleDeterminer loanRuleDeterminer = new LoanRuleDeterminer();
+						LoanRuleDeterminer loanRuleDeterminer = new LoanRuleDeterminer(logger);
 						loanRuleDeterminer.setRowNumber(loanRuleDeterminersRS.getLong("rowNumber"));
 						loanRuleDeterminer.setLocation(loanRuleDeterminersRS.getString("location"));
 						loanRuleDeterminer.setPatronType(loanRuleDeterminersRS.getString("patronType"));

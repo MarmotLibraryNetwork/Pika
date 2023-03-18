@@ -14,18 +14,25 @@
 
 package org.pika;
 
+import org.apache.logging.log4j.Logger;
+
 import java.util.HashSet;
 
 public class LoanRuleDeterminer {
-	private String        location;
-	private String        trimmedLocation;
-	private String        patronType;
-	private HashSet<Long> patronTypes;
-	private String        itemType;
-	private HashSet<Long> itemTypes;
-	private Long          loanRuleId;
-	private boolean       active;
-	private Long          rowNumber;
+	protected Logger        logger;
+	private   String        location;
+	private   String        trimmedLocation;
+	private   String        patronType;
+	private   HashSet<Long> patronTypes;
+	private   String        itemType;
+	private   HashSet<Long> itemTypes;
+	private   Long          loanRuleId;
+	private   boolean       active;
+	private   Long          rowNumber;
+
+	public LoanRuleDeterminer(Logger logger){
+		this.logger = logger;
+	}
 
 	public Long getRowNumber() {
 		return rowNumber;
@@ -84,20 +91,38 @@ public class LoanRuleDeterminer {
 	}
 
 	private HashSet<Long> splitNumberRangeString(String numberRangeString) {
-		HashSet<Long> result      = new HashSet<>();
-		String[]      iTypeValues = numberRangeString.split(",");
-
-		for (String iTypeValue : iTypeValues) {
-			if (iTypeValue.indexOf('-') > 0) {
-				String[] iTypeRange      = iTypeValue.split("-");
-				Long     iTypeRangeStart = Long.parseLong(iTypeRange[0]);
-				Long     iTypeRangeEnd   = Long.parseLong(iTypeRange[1]);
-				for (Long j = iTypeRangeStart; j <= iTypeRangeEnd; j++) {
-					result.add(j);
+		HashSet<Long> result = new HashSet<>();
+		try {
+			String[] iTypeValues = numberRangeString.split(",");
+			for (String iTypeValue : iTypeValues) {
+				if (iTypeValue.contains("-")) {
+					String[] iTypeRange = iTypeValue.split("-");
+					if (!iTypeRange[0].isEmpty()) {
+						long iTypeRangeStart = Long.parseLong(iTypeRange[0]);
+						if (iTypeRange.length == 2 && !iTypeRange[1].isEmpty()) {
+							long iTypeRangeEnd = Long.parseLong(iTypeRange[1]);
+							for (long j = iTypeRangeStart; j <= iTypeRangeEnd; j++) {
+								result.add(j);
+							}
+						} else {
+							logger.error("Ending range value missing for Loan Rule Determiner row number " + this.rowNumber + " for range value : " + numberRangeString);
+						}
+					} else {
+						logger.error("Beginning range value missing for Loan Rule Determiner row number " + this.rowNumber + " for range value : " + numberRangeString);
+					}
+				} else {
+					if (!iTypeValue.isEmpty()) {
+						result.add(Long.parseLong(iTypeValue));
+					} else {
+						logger.warn("Empty parsed value for Loan Rule Determiner row number " + this.rowNumber + " for range value : " + numberRangeString + " (check for leading, trailing or double commas");
+					}
 				}
-			} else {
-				result.add(Long.parseLong(iTypeValue));
 			}
+		} catch (NumberFormatException e) {
+			logger.error("Error parsing value for Loan Rule Determiner row number " + this.rowNumber, e);
+		}
+		if (result.size() == 0) {
+			logger.warn("No value(s) set for Loan Rule Determiner row number " + this.rowNumber + " for range value : " + numberRangeString);
 		}
 		return result;
 	}
