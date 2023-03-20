@@ -421,12 +421,13 @@ function getIndexingUpdates(){
 			],
 		],
 
-		'2021.04.0_add_grouping_time_for_sideloads' => [
-			'title'           => 'Add a last grouped time to each indexing profile',
-			'description'     => 'Enable grouping time tracking for sideloads.',
+		'2023.01.1_expand_loan_rule_determiners' => [
+			'title'           => 'Expand Loan Rule Determiner columns for Patron and Item Types',
+			'description'     => 'Expand Loan Rule Determiner columns for Patron and Item Types',
 			'continueOnError' => true,
 			'sql'             => [
-				'ALTER TABLE `indexing_profiles` ADD `lastGroupedTime` INT UNSIGNED NULL; ',
+				'ALTER TABLE `loan_rule_determiners` CHANGE COLUMN `patronType` `patronType` VARCHAR(400) NOT NULL COMMENT \'The patron types that this rule applies to\';',
+				'ALTER TABLE `loan_rule_determiners` CHANGE COLUMN `itemType` `itemType` VARCHAR(400) DEFAULT \'0\' NOT NULL COMMENT \'The item types that this rule applies to\';',
 			],
 		],
 
