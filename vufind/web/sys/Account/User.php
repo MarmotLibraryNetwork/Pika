@@ -725,6 +725,9 @@ class User extends DB_DataObject {
 		if (strlen($this->firstname) > 50){
 			$this->firstname = substr($this->firstname, 0, 50);
 		}
+		if (strlen($this->cat_username) > 50){
+			$this->firstname = substr($this->cat_username, 0, 50);
+		}
 
 		$result = parent::update();
 		$this->clearCache(); // Every update to object requires clearing the Memcached version of the object
@@ -752,6 +755,9 @@ class User extends DB_DataObject {
 		}
 		if (strlen($this->firstname) > 50){
 			$this->firstname = substr($this->firstname, 0, 50);
+		}
+		if (strlen($this->cat_username) > 50){
+			$this->firstname = substr($this->cat_username, 0, 50);
 		}
 
 		$r = parent::insert();
