@@ -726,7 +726,7 @@ class User extends DB_DataObject {
 			$this->firstname = substr($this->firstname, 0, 50);
 		}
 		if (strlen($this->cat_username) > 50){
-			$this->firstname = substr($this->cat_username, 0, 50);
+			$this->cat_username = substr($this->cat_username, 0, 50);
 		}
 
 		$result = parent::update();
@@ -757,7 +757,7 @@ class User extends DB_DataObject {
 			$this->firstname = substr($this->firstname, 0, 50);
 		}
 		if (strlen($this->cat_username) > 50){
-			$this->firstname = substr($this->cat_username, 0, 50);
+			$this->cat_username = substr($this->cat_username, 0, 50);
 		}
 
 		$r = parent::insert();
