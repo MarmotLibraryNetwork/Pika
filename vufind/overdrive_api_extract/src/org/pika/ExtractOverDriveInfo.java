@@ -115,6 +115,9 @@ class ExtractOverDriveInfo {
 	private CRC32   checksumCalculator = new CRC32();
 	private boolean errorsWhileLoadingProducts;
 
+	private final Set<String> productsToMarkForReindexing = new HashSet<>();
+
+
 	void extractOverDriveInfo(PikaSystemVariables systemVariables, Connection pikaConn, Connection econtentConn, OverDriveExtractLogEntry logEntry, boolean doFullReload, String individualIdToProcess) {
 		this.pikaConn        = pikaConn;
 		this.econtentConn    = econtentConn;
@@ -454,6 +457,10 @@ class ExtractOverDriveInfo {
 
 					updateOverDriveAvailabilityBatchV3(libraryId, productsToUpdateBatch, sharedStatsHashMap);
 				}
+				for (String productId: productsToMarkForReindexing){
+					markWorkForReindex(productId);
+				}
+				productsToMarkForReindexing.clear();
 
 				if (logger.isInfoEnabled()){
 					logger.info("Finished availability update for batch #" + batchNum);
@@ -1807,6 +1814,7 @@ class ExtractOverDriveInfo {
 			if (availabilityChanged) {
 				updateProductAvailabilityStmt.setLong(2, curTime);
 				results.incrementAvailabilityChanges();
+				productsToMarkForReindexing.add(curProduct.overDriveId);
 			} else {
 				updateProductAvailabilityStmt.setLong(2, curProduct.lastAvailabilityChange);
 			}
