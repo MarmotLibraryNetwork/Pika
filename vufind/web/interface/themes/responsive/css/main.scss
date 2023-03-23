@@ -1,0 +1,13 @@
+// Core variables and mixins
+@import 'bootstrap/scss/functions';
+@import 'bootstrap/scss/variables';
+@import 'bootstrap/scss/maps';
+@import 'bootstrap/scss/mixins';
+@import 'bootstrap/scss/helpers';
+@import 'bootstrap/scss/root';
+
+@import 'bootstrap/scss/variables';
+
+// Always include the base .scss file
+@import 'responsive_base.css';
+@import 'variables.scss';

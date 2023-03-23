@@ -1,0 +1,64 @@
+// Core variables and mixins
+@import "../../responsive/css/variables.scss";
+@import "variables.scss";
+
+// Always include the base .scss file
+@import "../../responsive/css/responsive_base.scss";
+
+// Main Styling for Pine River Library
+
+#header-container{
+  background-image: url('../../pineriver/images/header_background.png');
+  background-repeat: no-repeat;
+}
+
+
+
+#header-logo{
+//  padding-top: 0;
+  display: none;
+}
+
+
+
+
+// Browse Category Arrows
+#browse-category-picker {
+  .jcarousel-control-prev, .jcarousel-control-next {
+    background-color: #fff;
+    color: $pineriverbrown;
+    @include box-shadow(none);
+
+    &:active, &:hover {
+      color: $pineriverlightblue;
+    }
+  }
+
+  // indicator dots at bottom of browse category carousel
+  .jcarousel-pagination a {
+    &.active {
+      background: $pineriverbrown;
+      // keep shadowing in place on active item
+      @include box-shadow(0 0 2px #4E443C);
+    }
+    &:hover, &:active{
+      background: $pineriverlightblue;
+    }
+//    .allLinkstates({
+//      outline: none;
+//    })
+  }
+}
+
+.library-header-link {
+  .allLinkstates{color: white;}
+
+
+}
+.header-link-wrapper {
+  background-color: rgba(51,51,51,0.6);
+  border-right: none;
+}
+#header-links {
+  margin-top: 10px;
+}

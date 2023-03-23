@@ -1,0 +1,31 @@
+// Core variables and mixins
+@import "../../responsive/css/variables.scss";
+@import "variables.scss";
+
+// Always include the base .scss file
+@import "../../responsive/css/responsive_base.scss";
+
+
+//// hide search icon
+//#selected-browse-label .glyphicon-search {
+//  display: none;
+//}
+//// add next icon
+//#selected-browse-label .selected-browse-label-search-text:after{
+//  //.glyphicon-chevron-right
+//  content: "\e075";
+//}
+#selected-browse-search-link .icon-before {
+  display:none;
+}
+
+
+// custom styling of main browse category carousel
+@include noCarouselBrowseCategoriesMixin();
+
+// Selected Category needs to give a highlighted appearance
+@include noCarouselSelectedCategoryMixin();
+
+.sidebar-button{
+  background:#242D40;
+}

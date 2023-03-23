@@ -1,0 +1,13 @@
+// Core variables and mixins
+@import "../../responsive/css/variables.scss";
+@import "variables.scss";
+
+// Always include the base .scss file
+@import "../../responsive/css/responsive_base.scss";
+
+#header-logo{
+  border-radius:  0.5em;
+  margin-top:7px;
+  padding: 5px;
+  background-color: #22702A;
+}
