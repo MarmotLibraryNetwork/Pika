@@ -169,10 +169,15 @@ class MyAccount_UpdatePin extends MyAccount {
 		$alphaNumericOnlyPins = $configArray['Catalog']['alphaNumericOnlyPins'];
 		$pinMinimumLength     = $configArray['Catalog']['pinMinimumLength'];
 		$pinMaximumLength     = $configArray['Catalog']['pinMaximumLength'];
+		$sierraTrivialPin     = !empty($configArray['Catalog']['sierraTrivialPin']) && ($configArray['Catalog']['sierraTrivialPin'] == 1 || $configArray['Catalog']['sierraTrivialPin'] == "true");
+
 		$interface->assign('numericOnlyPins', $numericOnlyPins);
 		$interface->assign('alphaNumericOnlyPins', $alphaNumericOnlyPins);
 		$interface->assign('pinMinimumLength', $pinMinimumLength);
 		$interface->assign('pinMaximumLength', $pinMaximumLength);
+		if ($sierraTrivialPin) {
+			$interface->assign('sierraTrivialPin', true);
+		}
 
 		$this->display('../MyAccount/updatePin.tpl', translate('Update My Pin'), ''); // remove sidebar
 	}

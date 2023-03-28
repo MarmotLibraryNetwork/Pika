@@ -108,6 +108,7 @@ class SelfReg extends Action {
 
 		$numericOnlyPins      = $configArray['Catalog']['numericOnlyPins'];
 		$alphaNumericOnlyPins = $configArray['Catalog']['alphaNumericOnlyPins'];
+		$sierraTrivialPin     = !empty($configArray['Catalog']['sierraTrivialPin']) && ($configArray['Catalog']['sierraTrivialPin'] == 1 || $configArray['Catalog']['sierraTrivialPin'] == "true");
 		$selfRegStateRegex    = $configArray['Catalog']['selfRegStateRegex'];
 		$selfRegStateMessage  = $configArray['Catalog']['selfRegStateMessage'];
 		$selfRegZipRegex      = $configArray['Catalog']['selfRegZipRegex'];
@@ -120,6 +121,9 @@ class SelfReg extends Action {
 		$interface->assign('selfRegStateMessage', $selfRegStateMessage);
 		$interface->assign('selfRegZipRegex', $selfRegZipRegex);
 		$interface->assign('selfRegZipMessage', $selfRegZipMessage);
+		if ($sierraTrivialPin) {
+			$interface->assign('sierraTrivialPin', true);
+		}
 
 		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 		$interface->assign('selfRegForm', $fieldsForm);

@@ -9,6 +9,11 @@
 		{else}
 			<p><strong>&bull; Your new {translate text='pin'} must be {$pinMinimumLength} to {$pinMaximumLength} characters in length.</strong></p>
 		{/if}
+    {if $sierraTrivialPin}
+			<br>
+			<p><strong>&bull; Do not repeat a number or letter more than two times in a row (<code>1112</code>, <code>abcdabcd</code>, or <code>zeee</code> will not work).</strong></p>
+			<p><strong>&bull; Do not repeat the same two numbers or letters in a row (<code>1212</code>, <code>queue</code>, or <code>banana</code> will not work).</strong></p>
+    {/if}
 	</div>
 
     {* Copied from profile.tpl *}
