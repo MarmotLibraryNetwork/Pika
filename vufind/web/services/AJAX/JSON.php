@@ -119,6 +119,10 @@ class AJAX_JSON extends AJAXHandler {
 		$interface->assign('alphaNumericOnlyPins', $alphaNumericOnlyPins);
 		$interface->assign('pinMinimumLength', $pinMinimumLength);
 		$interface->assign('pinMaximumLength', $pinMaximumLength);
+		$sierraTrivialPin     = !empty($configArray['Catalog']['sierraTrivialPin']) && ($configArray['Catalog']['sierraTrivialPin'] == 1 || $configArray['Catalog']['sierraTrivialPin'] == "true");
+		if ($sierraTrivialPin) {
+			$interface->assign('sierraTrivialPin', true);
+		}
 
 		$title = translate('Update PIN');
 		return [
