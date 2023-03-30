@@ -1668,16 +1668,15 @@ class MyAccount_AJAX extends AJAXHandler {
 			$result['expirationFinesNotice'] = $interface->fetch('MyAccount/expirationFinesNotice.tpl');
 			//Fines Badge
 			$result['fines'] = '';
-			$fines = $user->getTotalFines(true);
-			$minimum = $homeLibrary->minimumFineAmount;
-			$alert = $homeLibrary->fineAlertAmount;
-			if($fines >= $alert && $fines != 0)
-			{
+			$fines           = $user->getTotalFines(true);
+			$minimum         = $homeLibrary->minimumFineAmount;
+			$alert           = $homeLibrary->fineAlertAmount;
+			if ($fines >= $alert && $fines != 0){
 				$result['fines'] = '<span class="badge badge-danger">$' . $fines . '</span>';
-			}
-			else if($fines > 0 && $fines < $alert)
-			{
-				$result['fines'] = '<span class ="badge">$' . $fines . '</span>';
+			}else{
+				if ($fines > 0 && $fines < $alert){
+					$result['fines'] = '<span class ="badge">$' . $fines . '</span>';
+				}
 			}
 			// Get My Tags
 			$tagList = $user->getTags();

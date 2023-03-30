@@ -1064,7 +1064,7 @@ class User extends DB_DataObject {
 						$totalFines += $user->getTotalFines(false);
 					}
 				}
-				$this->totalFinesForLinkedUsers = $totalFines;
+				$this->totalFinesForLinkedUsers = number_format($totalFines, 2, '.', '');
 			}else{
 				$totalFines = $this->totalFinesForLinkedUsers;
 			}
