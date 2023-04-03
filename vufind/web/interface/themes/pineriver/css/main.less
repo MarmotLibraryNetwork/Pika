@@ -8,17 +8,19 @@
 // Main Styling for Pine River Library
 
 #header-container{
-  background-image: url('/interface/themes/pineriver/images/header_background.png');
-  background-repeat: no-repeat;
+
 }
 
-//.header-login-button-mixin(fade(@pineriverlightblue, 40%));
-.header-login-button-mixin;
+.header-login-button-mixin(@pineriverblue);
+
+.header-button:hover{
+  background: @pinerivergrey;
+}
+//.header-login-button-mixin;
 
 
 #header-logo{
-//  padding-top: 0;
-  display: none;
+padding:0;
 }
 
 
@@ -33,23 +35,23 @@
 #browse-category-picker {
   .jcarousel-control-prev, .jcarousel-control-next {
     background-color: #fff;
-    color: @pineriverbrown;
+    color: @pinerivergrey;
     .box-shadow(none);
 
     &:active, &:hover {
-      color: @pineriverlightblue;
+      color: @pineriverblue;
     }
   }
 
   // indicator dots at bottom of browse category carousel
   .jcarousel-pagination a {
     &.active {
-      background: @pineriverbrown;
+      background: @pinerivergrey;
       // keep shadowing in place on active item
       .box-shadow(0 0 2px #4E443C);
     }
     &:hover, &:active{
-      background: @pineriverlightblue;
+      background: @pineriverblue;
     }
 //    .allLinkstates({
 //      outline: none;
@@ -68,4 +70,11 @@
 }
 #header-links {
   margin-top: 10px;
+}
+
+#vertical-menu-bar .menu-bar-option.menu-icon-selected {
+  background-color: @pineriverblue;
+}
+#vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
+  color: #FFF;
 }
