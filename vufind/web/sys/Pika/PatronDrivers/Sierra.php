@@ -1255,7 +1255,7 @@ class Sierra  implements \DriverInterface {
 
 		// build the message
 		$pin     = translate('pin');
-		$subject = ucfirst($pin) . ' Reset Link';
+		$subject = '[DO NOT REPLY] ' . ucfirst($pin) . ' Reset Link';
 
 		global $interface;
 		$interface->assign('pin', $pin);
