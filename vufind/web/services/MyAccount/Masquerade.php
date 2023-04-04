@@ -62,6 +62,16 @@ class MyAccount_Masquerade extends MyAccount {
 						$masqueradedUser = new User();
 						$masqueradedUser->barcode = $libraryCard;
 						if ($masqueradedUser->find(true)){
+							if ($masqueradedUser->N > 1){
+								global $pikaLogger;
+								$logger = $pikaLogger->withName(__CLASS__);
+								$logger->warn("$masqueradedUser->N users with same barcode $libraryCard when initiating masquerade");
+
+								return [
+									'success' => false,
+									'error'   => 'Multiple users with that barcode.'
+								];
+							}
 							if ($masqueradedUser->id == $user->id){
 								return [
 									'success' => false,
@@ -70,15 +80,15 @@ class MyAccount_Masquerade extends MyAccount {
 							}
 						}else{
 							// Check for another ILS with a different login configuration
-							$accountProfile = new AccountProfile();
-							$accountProfile->groupBy('loginConfiguration');
-							$numConfigurations = $accountProfile->count('loginConfiguration');
-							if ($numConfigurations > 1){
-								// Now that we know there is more than loginConfiguration type, check the opposite column
-								$masqueradedUser = new User();
-								$masqueradedUser->barcode = $libraryCard;
-								$masqueradedUser->find(true);
-							}
+//							$accountProfile = new AccountProfile();
+//							$accountProfile->groupBy('loginConfiguration');
+//							$numConfigurations = $accountProfile->count('loginConfiguration');
+//							if ($numConfigurations > 1){
+//								// Now that we know there is more than loginConfiguration type, check the opposite column
+//								$masqueradedUser = new User();
+//								$masqueradedUser->barcode = $libraryCard;
+//								$masqueradedUser->find(true);
+//							}
 
 							if ($masqueradedUser->N == 0){
 								// Test for a user that hasn't logged into Pika before
