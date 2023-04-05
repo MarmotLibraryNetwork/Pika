@@ -577,6 +577,10 @@ class UserAccount {
 	 * preserve hold message and search information
 	 */
 	public static function softLogout(){
+		@session_start();
+		// This is needed so that the logout() above doesn't generate the error :
+		// "session_regenerate_id(): Cannot regenerate session id - session is not active"
+		// Especially needed for ending Masquerade Mode
 		if (isset($_SESSION['activeUserId'])){
 			if (isset($_SESSION['guidingUserId'])){
 				// Shouldn't end up here while in Masquerade Mode, but if does happen end masquerading as well
