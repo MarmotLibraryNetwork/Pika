@@ -256,6 +256,7 @@ Pika.Account = (function(){
 				} else {
 					$('#errorMsg').text(result.message).show();
 				}
+				$('#pinFormSubmitButton').attr("disabled", false); // Re-enable button if needed.
 			});
 			return false;
 		},

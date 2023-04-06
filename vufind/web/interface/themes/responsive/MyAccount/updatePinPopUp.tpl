@@ -91,6 +91,7 @@
 					}
 				},
 				submitHandler: function(){
+					$('#pinFormSubmitButton').attr("disabled", true); // Disable the button to prevent multiple submissions
 					Pika.Account.updatePin();
 				}
 			});
