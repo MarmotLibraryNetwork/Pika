@@ -26,7 +26,7 @@
   background: linear-gradient(to bottom, #B5192B 0%, #D82538 100%);
 }
 
-.header-login-button{fade(#6F737A, 70%);}
+@include header-login-button-mixin(fade(#6F737A, 70%));
 
 
 .facetTitle, .exploreMoreTitle{
@@ -35,7 +35,7 @@
 
 .facetTitle:hover, .exploreMoreTitle:hover{
   background-color: #9d162b;
-  background: linear-gradient(left center , #9d162b 0%, #d81f3c 100%);
+  background: linear-gradient(to right, #9d162b 0%, #d81f3c 100%);
   color: #fff;
   text-shadow: none;
 }

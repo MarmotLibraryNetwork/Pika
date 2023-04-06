@@ -1,5 +1,5 @@
 //@import (reference) "bootstrap/less/variables.scss";
-@import "variables.scss";
+@import "variables";
 
 //Functionality related to the overall layout
 //Headers, Footer, columns, etc.
@@ -298,13 +298,13 @@ hr.menu{
   width: $vertical-menu-bar-width;
   &.rightSidebar {
     @media (min-width: $screen-sm) {
-      left: 100% - percentage( round($vertical-menu-bar-width/($container-sm - $grid-gutter-width)));
+      left: 100% - percentage( round(calc($vertical-menu-bar-width / ($container-sm - $grid-gutter-width))));
     }
     @media (min-width: $screen-md) {
-      left:  100% - percentage( round($vertical-menu-bar-width/($container-md - $grid-gutter-width))) ;
+      left:  100% - percentage( round(calc($vertical-menu-bar-width / ($container-md - $grid-gutter-width))));
     }
     @media (min-width: $screen-lg-min) {
-      left: 100% - percentage( round($vertical-menu-bar-width/($container-lg - $grid-gutter-width)));
+      left: 100% - percentage( round(calc($vertical-menu-bar-width / ($container-lg - $grid-gutter-width))));
     }
   }
 }
@@ -313,13 +313,13 @@ hr.menu{
 .mainContentWhenSiderbarCollapsed {
 
   @media (min-width: $screen-sm) {
-    width: 100% - percentage( round($vertical-menu-bar-width/($container-sm - $grid-gutter-width))) ;
+    width: 100% - percentage( round(calc($vertical-menu-bar-width / ($container-sm - $grid-gutter-width))));
   }
   @media (min-width: $screen-md) {
-    width: 100% - percentage( round($vertical-menu-bar-width/($container-md - $grid-gutter-width)));
+    width: 100% - percentage( round(calc($vertical-menu-bar-width / ($container-md - $grid-gutter-width))));
   }
   @media (min-width: $screen-lg-min) {
-    width: 100% - percentage( round($vertical-menu-bar-width/($container-lg - $grid-gutter-width)));
+    width: 100% - percentage( round(calc($vertical-menu-bar-width / ($container-lg - $grid-gutter-width))));
   }
   &.rightSidebar {
     // Adjustments to display when the sidebar is on the right hand side.
@@ -385,7 +385,6 @@ hr.menu{
   background: #702C29;
   background-image: none;
 }
-
 .header-button{
   border: 0;
   border-radius:  0.5em;

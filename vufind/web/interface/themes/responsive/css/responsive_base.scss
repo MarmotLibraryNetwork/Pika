@@ -6,8 +6,9 @@ $navbarCollapseWidth: 480px;
 $navbarCollapseDesktopWidth: 481px;
 $horizontalComponentOffsetNarrow: 80px;
 $icon-font-path: '/fonts/';
-@import "bootstrap/scss/bootstrap.scss";
-@import "bootstrap/scss/bootstrap-grid.scss";
+@import "bootstrap/scss/bootstrap";
+@import "bootstrap/scss/bootstrap-grid";
+@import "variables";
 
 //
 //  Basic Style overrides
@@ -104,7 +105,7 @@ body {
 }
 // Modals
 .modal {
-  //position: fixed; // In modals.scss
+  //position: fixed; // In modals
   left: 50%;
   width: 80%;
   margin-left: -40%;
@@ -235,25 +236,28 @@ div.striped {
 .goog-te-gadget {
   display: inline-block;
 }
-@import "functions.scss";
+//classic column styling from bootstrap 3
+@import "classicResponsive";
+
+@import "functions";
 // Third party imports
-@import "ratings.scss";
-@import "datepicker.scss";
-@import "jcarousel.responsive.scss";
+@import "ratings";
+@import "datepicker";
+@import "jcarousel.responsive";
 
 // Customized import
-@import "switch.scss";
+@import "switch";
 
 // Imports of functionality related to Pika
-@import "layout.scss";
-@import "home.scss";
-@import "browse-categories.scss";
-@import "account.scss";
-@import "author.scss";
-@import "title-scroller.scss";
-@import "record.scss";
-@import "results-list.scss";
-@import "grouped_work.scss";
-@import "genealogy.scss";
-@import "repository.scss";
-@import "admin.scss";
+@import "layout";
+@import "home";
+@import "browse-categories";
+@import "account";
+@import "author";
+@import "title-scroller";
+@import "record";
+@import "results-list";
+@import "grouped_work";
+@import "genealogy";
+@import "repository";
+@import "admin";
