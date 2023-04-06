@@ -33,7 +33,7 @@
     {* Copied from profile.tpl *}
 	<form action="/MyAccount/UpdatePin" method="post" class="form-horizontal" id="pinForm">
 	<div class="form-group">
-		<div class="col-xs-4"><label for="pin" class="control-label">{translate text='Old PIN'}:</label></div>
+		<div class="col-xs-4"><label for="pin" class="control-label">{translate text='Default PIN'}:</label></div>
 		<div class="col-xs-8">
 			<div class="input-group">
 				<input type="password" name="pin" id="pin" value="" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
