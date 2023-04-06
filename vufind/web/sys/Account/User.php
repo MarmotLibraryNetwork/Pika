@@ -1919,7 +1919,7 @@ class User extends DB_DataObject {
 			return 'Please enter your current ' . translate('pin');
 		}
 		if ($this->getPassword() != $oldPin){
-			return 'The old ' . translate('pin') . ' is incorrect';
+			return 'The ' . translate('Default PIN') . ' is incorrect';
 		}
 		if (!empty($_REQUEST['pin1'])){
 			$newPin = $_REQUEST['pin1'];
