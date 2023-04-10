@@ -907,17 +907,20 @@ class MarcRecord extends IndexRecord {
 	 */
 	public function getSortableTitle(){
 		/** @var File_MARC_Data_Field $titleField */
-		$titleField = $this->getMarcRecord()->getField('245');
-		if ($titleField != null && $titleField->getSubfield('a') != null){
-			$untrimmedTitle = $titleField->getSubfield('a')->getData();
-			try {
-				$charsToTrim = $titleField->getIndicator(2);
-				if (is_numeric($charsToTrim)){
-					return mb_substr($untrimmedTitle, $charsToTrim);
+		$marcRecord = $this->getMarcRecord();
+		if (!empty($marcRecord)){
+			$titleField = $marcRecord->getField('245');
+			if ($titleField != null && $titleField->getSubfield('a') != null){
+				$untrimmedTitle = $titleField->getSubfield('a')->getData();
+				try {
+					$charsToTrim = $titleField->getIndicator(2);
+					if (is_numeric($charsToTrim)){
+						return mb_substr($untrimmedTitle, $charsToTrim);
+					}
+				} catch (File_MARC_Exception $e){
 				}
-			} catch (File_MARC_Exception $e){
+				return $untrimmedTitle;
 			}
-			return $untrimmedTitle;
 		}
 		return 'Unknown';
 	}
