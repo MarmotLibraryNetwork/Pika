@@ -219,6 +219,7 @@ class MyAccount_Profile extends MyAccount
 		}
 
 		$this->display('profile.tpl', 'Account Settings');
+		unset($_SESSION['profileUpdateErrors']); // Remove error messages after displayed so that they aren't displayed on subsequent page loads
 	}
 
 }
