@@ -75,7 +75,13 @@
 								{if $showUsernameField}
 									<div class="form-group">
 										<div class="col-xs-4"><label for="alternate_username">Username:</label></div>
-										<div class="col-xs-8"><input type="text" name="alternate_username" id="alternate_username" value="{if !is_numeric(trim($profile->alt_username))}{$profile->alt_username|escape}{/if}" size="25" maxlength="25" class="form-control">
+										<div class="col-xs-8">
+                    {if !empty($linkedUsers) && count($linkedUsers) > 1 && $selectedUser != $activeUserId}
+                        {*Security: Prevent changing email, username, or password for linked accounts. See D-4031 *}
+                        {if !empty(trim($profile->alt_username))}{$profile->alt_username|escape}{/if}
+	                    {else}
+	                       <input type="text" name="alternate_username" id="alternate_username" value="{if !is_numeric(trim($profile->alt_username))}{$profile->alt_username|escape}{/if}" size="25" maxlength="25" class="form-control">
+	                    {/if}
 											<a href="#" onclick="$('#usernameHelp').toggle()">What is this?</a>
 											<div id="usernameHelp" style="display:none">
 												A username is an optional feature. If you set one, your username will be your alias on hold slips and can also be used to log into your account in place of your card number.  A username can be set, reset or removed from the “Account Settings” section of your online account. Usernames must be between 6 and 25 characters (letters and number only, no special characters).
@@ -92,7 +98,7 @@
 									{* Only Display Barcode when the barcode is used as a username and not a password *}
 									<div class="form-group">
 										<div class="col-xs-4"><strong>{translate text='Library Card Number'}:</strong></div>
-										<div class="col-xs-8">{$profile->cat_username|escape}</div>
+										<div class="col-xs-8">{$profile->barcode|escape}</div>
 									</div>
 									{/if}
 									<div class="form-group">
@@ -172,8 +178,15 @@
 								<div class="form-group">
 									<div class="col-xs-4"><label for="email">{translate text='E-mail'}:</label></div>
 									<div class="col-xs-8">
-										{if !$offline && $canUpdateContactInfo == true}<input type="text" name="email" id="email" value="{$profile->email|escape}" size="50" maxlength="75" class="form-control multiemail">{else}{$profile->email|escape}{/if}
-										{* Multiemail class is for form validation; type has to be text for multiemail validation to work correctly *}
+										{if !empty($linkedUsers) && count($linkedUsers) > 1 && $selectedUser != $activeUserId}
+											{*Security: Prevent changing email, username, or password for linked accounts. See D-4031 *}
+											{$profile->email|escape}
+										{else}
+											{if !$offline && $canUpdateContactInfo == true}
+												<input type="text" name="email" id="email" value="{$profile->email|escape}" size="50" maxlength="75" class="form-control multiemail">
+												{* Multiemail class is for form validation; type has to be text for multiemail validation to work correctly *}
+											{else}{$profile->email|escape}{/if}
+										{/if}
 									</div>
 								</div>
 								{if $showPickupLocationInProfile}
@@ -222,69 +235,88 @@
 				{if $showSMSNoticesInProfile}
 					{include file="MyAccount/profile-sms-notices.tpl"}
 				{/if}
+        {if !empty($linkedUsers) && count($linkedUsers) > 1 && $selectedUser != $activeUserId}
+					{*Security: Prevent changing email, username, or password for linked accounts. See D-4031 *}
+				{else}
+					{if $allowPinReset && !$offline}
+						<div class="panel active">
+							<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#pinPanel">
+								<div class="panel-heading">
+									<div class="panel-title">
+										{translate text='Update PIN'}
+									</div>
+								</div>
+							</a>
+							<div id="pinPanel" class="panel-collapse collapse in">
+								<div class="panel-body">
 
-				{if $allowPinReset && !$offline}
-					<div class="panel active">
-						<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#pinPanel">
-							<div class="panel-heading">
-								<div class="panel-title">
-									{translate text='Update PIN'}
+									{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
+									<form action="" method="post" class="form-horizontal" id="pinForm">
+										<input type="hidden" name="updateScope" value="pin">
+										<div class="form-group">
+											<div class="col-xs-4"><label for="pin" class="control-label">{translate text='Old PIN'}:</label></div>
+											<div class="col-xs-8">
+												<div class="input-group">
+													<input type="password" name="pin" id="pin" value="" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
+													{* No size limits in case previously set password doesn't meet current restrictions *}
+													<span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
+														<button onclick="$('span', this).toggle(); return Pika.pwdToText('pin')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-open" aria-hidden="true" title="Show {translate text='PIN'}"></span><span class="glyphicon glyphicon-eye-close" style="display: none" aria-hidden="true" title="Hide {translate text='PIN'}"></span></button>
+													</span>
+												</div>
+											</div>
+										</div>
+										<div class="form-group">
+											<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New PIN'}:</label></div>
+											<div class="col-xs-8">
+												<div class="input-group">
+													<input type="password" name="pin1" id="pin1" value="" size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
+													<span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
+														<button onclick="$('span', this).toggle(); return Pika.pwdToText('pin1')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-open" aria-hidden="true" title="Show {translate text='PIN'}"></span><span class="glyphicon glyphicon-eye-close" style="display: none" aria-hidden="true" title="Hide {translate text='PIN'}"></span></button>
+													</span>
+												</div>
+											</div>
+										</div>
+										<div class="form-group">
+											<div class="col-xs-4"><label for="pin2" class="control-label">{translate text='Re-enter New PIN'}:</label></div>
+											<div class="col-xs-8">
+												<div class="input-group">
+													<input type="password" name="pin2" id="pin2" value="" size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
+													<span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
+														<button onclick="$('span', this).toggle(); return Pika.pwdToText('pin2')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-open" aria-hidden="true" title="Show {translate text='PIN'}"></span><span class="glyphicon glyphicon-eye-close" style="display: none" aria-hidden="true" title="Hide {translate text='PIN'}"></span></button>
+													</span>
+												</div>
+											</div>
+										</div>
+										<div class="form-group">
+											<div class="col-xs-8 col-xs-offset-4">
+														<input type="submit" value="{translate text='Update PIN'}" name="update" class="btn btn-primary">
+											</div>
+										</div>
+										<script type="text/javascript">
+											{* input classes  'required', 'digits', 'alphaNumeric' are validation rules for the validation plugin *}
+											{literal}
+											$("#pinForm").validate({
+												rules: {
+													pin1: {minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}{literal},
+														maxlength:{/literal}{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}{literal}},
+													pin2: {
+														equalTo: "#pin1",
+														minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}{literal}
+													}
+												},
+												submitHandler: function (form) {
+													$("#pinForm input[type=submit]").attr("disabled", true);
+													form.submit(); /* Using function variable form prevents recursion error that would trigger new loop of validations */
+												}
+											});
+											{/literal}
+										</script>
+									</form>
 								</div>
 							</div>
-						</a>
-						<div id="pinPanel" class="panel-collapse collapse in">
-							<div class="panel-body">
-
-								{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
-								<form action="" method="post" class="form-horizontal" id="pinForm">
-									<input type="hidden" name="updateScope" value="pin">
-									<div class="form-group">
-										<div class="col-xs-4"><label for="pin" class="control-label">{translate text='Old PIN'}:</label></div>
-										<div class="col-xs-8">
-											<input type="password" name="pin" id="pin" value="" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
-												{* No size limits in case previously set password doesn't meet current restrictions *}
-										</div>
-									</div>
-									<div class="form-group">
-										<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New PIN'}:</label></div>
-										<div class="col-xs-8">
-											<input type="password" name="pin1" id="pin1" value="" size="4" maxlength="30" class="form-control required{if $numericOnlyPins} digits{else}{if $alphaNumericOnlyPins} alphaNumeric{/if}{/if}">
-										</div>
-									</div>
-									<div class="form-group">
-										<div class="col-xs-4"><label for="pin2" class="control-label">{translate text='Re-enter New PIN'}:</label></div>
-										<div class="col-xs-8">
-												<input type="password" name="pin2" id="pin2" value="" size="4" maxlength="30" class="form-control required{if $numericOnlyPins} digits{else}{if $alphaNumericOnlyPins} alphaNumeric{/if}{/if}">
-										</div>
-									</div>
-									<div class="form-group">
-										<div class="col-xs-8 col-xs-offset-4">
-													<input type="submit" value="{translate text='Update PIN'}" name="update" class="btn btn-primary">
-										</div>
-									</div>
-									<script type="text/javascript">
-										{* input classes  'required', 'digits', 'alphaNumeric' are validation rules for the validation plugin *}
-										{literal}
-										$("#pinForm").validate({
-											rules: {
-												pin1: {minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}0{/if}{literal}},
-												pin2: {
-													equalTo: "#pin1",
-													minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}0{/if}{literal}
-												}
-											},
-											submitHandler: function (form) {
-												$("#pinForm input[type=submit]").attr("disabled", true);
-												form.submit(); /* Using function variable form prevents recursion error that would trigger new loop of validations */
-											}
-										});
-										{/literal}
-									</script>
-								</form>
-							</div>
 						</div>
-					</div>
-				{/if}
+					{/if}{* end of update pin section *}
+				{/if}{* end of linked accounts checked for update pin section *}
 
 					{*OverDrive Options*}
 					{if $profile->isValidForOverDrive()}
@@ -304,7 +336,7 @@
 						</div>
 					{/if}
 
-          {*Hoopla Options*}
+				{*Hoopla Options*}
 				{if $profile->isValidForHoopla()}
 				<div class="panel active">
 					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#hooplaPanel">
@@ -439,7 +471,7 @@
 								<p>The following accounts can view checkout and hold information from this account.  If someone is viewing your account that you do not want to have access, please contact library staff.</p>
 								<ul>
 								{foreach from=$profile->getViewers() item=tmpUser}
-									<li>{$tmpUser->getNameAndLibraryLabel()}</li>
+									<li>{$tmpUser->getNameAndLibraryLabel()} <button class="btn btn-xs btn-warning" onclick="Pika.Account.removeViewer({$tmpUser->id});">Remove</button> </li>
 								{foreachelse}
 									<li>None</li>
 								{/foreach}
@@ -469,13 +501,43 @@
 									<div class="col-tn-12">
 										<ul>
 											{foreach from=$profile->roles item=role}
-												<li>{$role}</li>
+												<li>
+														{if $role == "archives"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#Archives-Role" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "cataloging"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#Cataloging" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "circulationReports"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#Circulation-Reports" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "contentEditor"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#Content-Editor" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "genealogyContributor"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#Genealogy-Contributor" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "libraryAdmin"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#Library-Admin" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "libraryManager"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#Library-Manager" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "library_material_requests"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#Library-Material-Requests" title="Pika {$role} documentation" target="_blank">{$role}</a>
+                            {elseif $role == "listPublisher"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#List-Publisher" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "locationManager"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#Location-Manager" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "locationReports"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#Location-Reports" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "opacAdmin"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#OPAC-Admin" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{elseif $role == "userAdmin"}
+															<a href ="https://marmot-support.atlassian.net/wiki/spaces/MKB/pages/928088073/Detailed+Pika+Administrator+Roles#User-Admin" title="Pika {$role} documentation" target="_blank">{$role}</a>
+														{else}
+																{$role}
+														{/if}
+												</li>
 											{/foreach}
 										</ul>
 									</div>
 									<div class="col-tn-12">
 										<div class="alert alert-info">
-											For more information about what each role can do, see the <a href="https://marmot-support.atlassian.net/l/c/zJP1kcDf">online documentation</a>.
+											For more information about what each role can do, see the <a target="_blank" href="https://marmot-support.atlassian.net/l/c/zJP1kcDf">online documentation</a>.
 										</div>
 									</div>
 								</div>

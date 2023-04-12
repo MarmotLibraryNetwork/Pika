@@ -51,7 +51,8 @@
 										<div class="col-xs-4"><label for="alternate_username">Username:</label></div>
 										<div class="col-xs-8">
                     {if !empty($linkedUsers) && count($linkedUsers) > 1 && $selectedUser != $activeUserId}
-                        {if !is_numeric(trim($profile->alt_username))}{$profile->alt_username|escape}{/if}
+                        {*Security: Prevent changing email, username, or password for linked accounts. See D-4031 *}
+                        {if !empty(trim($profile->alt_username))}{$profile->alt_username|escape}{/if}
 	                    {else}
 	                       <input type="text" name="alternate_username" id="alternate_username" value="{if !is_numeric(trim($profile->alt_username))}{$profile->alt_username|escape}{/if}" size="25" maxlength="25" class="form-control">
 	                    {/if}
@@ -151,12 +152,15 @@
 								<div class="form-group">
 									<div class="col-xs-4"><label for="email">{translate text='E-mail'}:</label></div>
 									<div class="col-xs-8">
-              {if !empty($linkedUsers) && count($linkedUsers) > 1 && $selectedUser != $activeUserId}
-                  {$profile->email|escape}
-              {else}
-		          {if !$offline && $canUpdateContactInfo == true}<input type="text" name="email" id="email" value="{$profile->email|escape}" size="50" maxlength="75" class="form-control multiemail">{else}{$profile->email|escape}{/if}
-		        {/if}
-										{* Multiemail class is for form validation; type has to be text for multiemail validation to work correctly *}
+										{if !empty($linkedUsers) && count($linkedUsers) > 1 && $selectedUser != $activeUserId}
+											{*Security: Prevent changing email, username, or password for linked accounts. See D-4031 *}
+											{$profile->email|escape}
+										{else}
+											{if !$offline && $canUpdateContactInfo == true}
+												<input type="text" name="email" id="email" value="{$profile->email|escape}" size="50" maxlength="75" class="form-control multiemail">
+												{* Multiemail class is for form validation; type has to be text for multiemail validation to work correctly *}
+											{else}{$profile->email|escape}{/if}
+										{/if}
 									</div>
 								</div>
 								{if $showPickupLocationInProfile}
@@ -212,72 +216,87 @@
 					{include file="MyAccount/profile-sms-notices.tpl"}
 				{/if}
         {if !empty($linkedUsers) && count($linkedUsers) > 1 && $selectedUser != $activeUserId}
+					{*Security: Prevent changing email, username, or password for linked accounts. See D-4031 *}
+				{else}
+					{if $allowPinReset && !$offline}
+						<div class="panel active">
+							<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#pinPanel">
+								<div class="panel-heading">
+									<div class="panel-title">
+										{translate text='Update PIN'}
+									</div>
+								</div>
+							</a>
+							<div id="pinPanel" class="panel-collapse collapse in">
+								<div class="panel-body">
 
-        {else}
-				{if $allowPinReset && !$offline}
-					<div class="panel active">
-						<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#pinPanel">
-							<div class="panel-heading">
-								<div class="panel-title">
-									{translate text='Update PIN'}
+									{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
+									<form action="" method="post" class="form-horizontal" id="pinForm">
+										<input type="hidden" name="updateScope" value="pin">
+										<div class="form-group">
+											<div class="col-xs-4"><label for="pin" class="control-label">{translate text='Old PIN'}:</label></div>
+											<div class="col-xs-8">
+												<div class="input-group">
+													<input type="password" name="pin" id="pin" value="" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
+													{* No size limits in case previously set password doesn't meet current restrictions *}
+													<span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
+														<button onclick="$('span', this).toggle(); return Pika.pwdToText('pin')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-open" aria-hidden="true" title="Show {translate text='PIN'}"></span><span class="glyphicon glyphicon-eye-close" style="display: none" aria-hidden="true" title="Hide {translate text='PIN'}"></span></button>
+													</span>
+												</div>
+											</div>
+										</div>
+										<div class="form-group">
+											<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New PIN'}:</label></div>
+											<div class="col-xs-8">
+												<div class="input-group">
+													<input type="password" name="pin1" id="pin1" value="" size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
+													<span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
+														<button onclick="$('span', this).toggle(); return Pika.pwdToText('pin1')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-open" aria-hidden="true" title="Show {translate text='PIN'}"></span><span class="glyphicon glyphicon-eye-close" style="display: none" aria-hidden="true" title="Hide {translate text='PIN'}"></span></button>
+													</span>
+												</div>
+											</div>
+										</div>
+										<div class="form-group">
+											<div class="col-xs-4"><label for="pin2" class="control-label">{translate text='Re-enter New PIN'}:</label></div>
+											<div class="col-xs-8">
+												<div class="input-group">
+													<input type="password" name="pin2" id="pin2" value="" size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
+													<span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
+														<button onclick="$('span', this).toggle(); return Pika.pwdToText('pin2')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-open" aria-hidden="true" title="Show {translate text='PIN'}"></span><span class="glyphicon glyphicon-eye-close" style="display: none" aria-hidden="true" title="Hide {translate text='PIN'}"></span></button>
+													</span>
+												</div>
+											</div>
+										</div>
+										<div class="form-group">
+											<div class="col-xs-8 col-xs-offset-4">
+														<input type="submit" value="{translate text='Update PIN'}" name="update" class="btn btn-primary">
+											</div>
+										</div>
+										<script type="text/javascript">
+											{* input classes  'required', 'digits', 'alphaNumeric' are validation rules for the validation plugin *}
+											{literal}
+											$("#pinForm").validate({
+												rules: {
+													pin1: {minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}{literal},
+														maxlength:{/literal}{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}{literal}},
+													pin2: {
+														equalTo: "#pin1",
+														minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}{literal}
+													}
+												},
+												submitHandler: function (form) {
+													$("#pinForm input[type=submit]").attr("disabled", true);
+													form.submit(); /* Using function variable form prevents recursion error that would trigger new loop of validations */
+												}
+											});
+											{/literal}
+										</script>
+									</form>
 								</div>
 							</div>
-						</a>
-						<div id="pinPanel" class="panel-collapse collapse in">
-							<div class="panel-body">
-
-								{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
-								<form action="" method="post" class="form-horizontal" id="pinForm">
-									<input type="hidden" name="updateScope" value="pin">
-									<div class="form-group">
-										<div class="col-xs-4"><label for="pin" class="control-label">{translate text='Old PIN'}:</label></div>
-										<div class="col-xs-8">
-											<input type="password" name="pin" id="pin" value="" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
-												{* No size limits in case previously set password doesn't meet current restrictions *}
-										</div>
-									</div>
-									<div class="form-group">
-										<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New PIN'}:</label></div>
-										<div class="col-xs-8">
-											<input type="password" name="pin1" id="pin1" value="" size="4" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
-										</div>
-									</div>
-									<div class="form-group">
-										<div class="col-xs-4"><label for="pin2" class="control-label">{translate text='Re-enter New PIN'}:</label></div>
-										<div class="col-xs-8">
-												<input type="password" name="pin2" id="pin2" value="" size="4" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
-										</div>
-									</div>
-									<div class="form-group">
-										<div class="col-xs-8 col-xs-offset-4">
-													<input type="submit" value="{translate text='Update PIN'}" name="update" class="btn btn-primary">
-										</div>
-									</div>
-									<script type="text/javascript">
-										{* input classes  'required', 'digits', 'alphaNumeric' are validation rules for the validation plugin *}
-										{literal}
-										$("#pinForm").validate({
-											rules: {
-												pin1: {minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}{literal},
-													maxlength:{/literal}{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}{literal}},
-												pin2: {
-													equalTo: "#pin1",
-													minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}{literal}
-												}
-											},
-											submitHandler: function (form) {
-												$("#pinForm input[type=submit]").attr("disabled", true);
-												form.submit(); /* Using function variable form prevents recursion error that would trigger new loop of validations */
-											}
-										});
-										{/literal}
-									</script>
-								</form>
-							</div>
 						</div>
-					</div>
-				{/if}
-				{/if}
+					{/if}{* end of update pin section *}
+				{/if}{* end of linked accounts checked for update pin section *}
 
 				{*OverDrive Options*}
 				{if $profile->isValidForOverDrive()}
