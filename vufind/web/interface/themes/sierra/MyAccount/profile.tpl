@@ -272,6 +272,10 @@
 													equalTo: "#pin1",
 													minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}0{/if}{literal}
 												}
+											},
+											submitHandler: function (form) {
+												$("#pinForm input[type=submit]").attr("disabled", true);
+												form.submit(); /* Using function variable form prevents recursion error that would trigger new loop of validations */
 											}
 										});
 										{/literal}
