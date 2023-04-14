@@ -6,8 +6,6 @@
 @import 'bootstrap/scss/helpers';
 @import 'bootstrap/scss/root';
 
-@import 'bootstrap/scss/variables';
-
+@import 'variables.scss';
 // Always include the base .scss file
 @import 'responsive_base.scss';
-@import 'variables.scss';

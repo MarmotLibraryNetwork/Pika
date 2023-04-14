@@ -1077,8 +1077,78 @@ td.hidden-inline-block-lg,th.hidden-inline-block-lg {
 .browse-category.selected {
   font-size: 33px
 }
-
 .browse-category.category0,.browse-category.category1,.browse-category.category2,.browse-category.category3,.browse-category.category4,.browse-category.category5,.browse-category.category6,.browse-category.category7,.browse-category.category8 {
 
   background: #fff linear-gradient(to bottom,#fff,#fff 82%,transparent 83%,transparent 84%,transparent 88%,transparent 89%,#fff 90%,#fff)
+}
+.collapsedSidebar {
+  width: 40px;
+}
+
+@media (min-width: 768px) {
+  #content-container {
+    width:100%
+  }
+
+  .collapsedSidebar.rightSidebar {
+    left: 94.44%
+  }
+
+  .mainContentWhenSiderbarCollapsed {
+    width: 94.44%
+  }
+}
+
+@media (min-width: 992px) {
+  .collapsedSidebar.rightSidebar {
+    left:95.74%
+  }
+}
+
+@media (min-width: 992px) {
+  .mainContentWhenSiderbarCollapsed {
+    width:95.74%
+  }
+}
+
+@media (min-width: 1200px) {
+  .collapsedSidebar.rightSidebar {
+    left:96.49%
+  }
+
+  .mainContentWhenSiderbarCollapsed {
+    width: 96.49%
+  }
+}
+
+.mainContentWhenSiderbarCollapsed.rightSidebar {
+  right: 40px
+}
+
+#main-content-with-sidebar {
+  padding-bottom: 15px
+}
+
+.jcarousel ul>li {
+  text-align: center
+}
+
+.jcarousel .thumbnail img {
+  max-height: 125px!important
+}
+
+#sectionLabel {
+  width: 100%;
+  background-color: #dcf3fb;
+  color: #137de2;
+  text-transform: capitalize;
+  font-weight: 700;
+  padding: 5px;
+  text-align: center;
+  font-size: 16px
+}
+
+.nopadding {
+  padding: 0!important;
+  margin: 0!important
 }

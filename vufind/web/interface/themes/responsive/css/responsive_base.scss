@@ -236,8 +236,7 @@ div.striped {
 .goog-te-gadget {
   display: inline-block;
 }
-//classic column styling from bootstrap 3
-@import "classicResponsive";
+
 
 @import "functions";
 // Third party imports
@@ -261,3 +260,5 @@ div.striped {
 @import "genealogy";
 @import "repository";
 @import "admin";
+//classic column styling from bootstrap 3
+@import "classicResponsive";
