@@ -214,11 +214,11 @@ function handlePEARError($error, $method = null){
 	// Log the error for administrative purposes -- we need to build a variety
 	// of pieces so we can supply information at five different verbosity levels:
 	$baseError      = $error->toString();
-	$basicServer    = " (Server: IP = {$_SERVER['REMOTE_ADDR']}, " .
-		', Referer = ' . ($_SERVER['HTTP_REFERER'] ?? '') .
-		', User Agent = ' . ($_SERVER['HTTP_USER_AGENT'] ?? '') .
-		", Request URI = {$_SERVER['REQUEST_URI']})";
-	$detailedServer = "\nServer Context:\n" . print_r($_SERVER, true);
+//	$basicServer    = " (Server: IP = {$_SERVER['REMOTE_ADDR']}, " .
+//		', Referer = ' . ($_SERVER['HTTP_REFERER'] ?? '') .
+//		', User Agent = ' . ($_SERVER['HTTP_USER_AGENT'] ?? '') .
+//		", Request URI = {$_SERVER['REQUEST_URI']})";
+//	$detailedServer = "\nServer Context:\n" . print_r($_SERVER, true);
 	$basicBacktrace = "\nBacktrace:\n";
 	if (is_array($error->backtrace)){
 		foreach ($error->backtrace as $line){
@@ -226,17 +226,18 @@ function handlePEARError($error, $method = null){
 				. ' - class = ' . ($line['class'] ?? 'none') . ', function = ' . ($line['function'] ?? 'none') . "\n";
 		}
 	}
-	$detailedBacktrace = "\nBacktrace:\n" . print_r($error->backtrace, true);
-	$errorDetails      = [
-		1 => $baseError,
-		2 => $baseError . $basicServer,
-		3 => $baseError . $basicServer . $basicBacktrace,
-		4 => $baseError . $detailedServer . $basicBacktrace,
-		5 => $baseError . $detailedServer . $detailedBacktrace
-	];
+//	$detailedBacktrace = "\nBacktrace:\n" . print_r($error->backtrace, true);
+//	$errorDetails      = [
+//		1 => $baseError,
+//		2 => $baseError . $basicServer,
+//		3 => $baseError . $basicServer . $basicBacktrace,
+//		4 => $baseError . $detailedServer . $basicBacktrace,
+//		5 => $baseError . $detailedServer . $detailedBacktrace
+//	];
 
 	global $pikaLogger;
-	$pikaLogger->error("Pear error", $errorDetails);
+//	$pikaLogger->error("Pear error", $errorDetails);
+	$pikaLogger->error("Pear error : " + $baseError, $basicBacktrace);
 
 	exit();
 }
