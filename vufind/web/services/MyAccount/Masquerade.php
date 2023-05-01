@@ -69,7 +69,7 @@ class MyAccount_Masquerade extends MyAccount {
 
 								return [
 									'success' => false,
-									'error'   => 'Multiple users with that barcode.'
+									'error'   => 'Multiple users with that barcode. Please contact Marmot Help Desk with the barcode number to clean up.'
 								];
 							}
 							if ($masqueradedUser->id == $user->id){
