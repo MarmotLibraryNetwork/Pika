@@ -15,7 +15,7 @@
 					<input id="startDate" name="startDate" type="text" class="form-control required" placeholder="mm/dd/yyyy"
 					       {if $smarty.request.startDate} value="{$smarty.request.startDate}" {/if}
 					       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-start-date="0d" data-date-end-date="+2y"
-					       data-date-autoclose="true" data-disabletouchkeyboard="true" {* TODO: test that does this works on mibile devices*}
+					       data-date-autoclose="true" data-disabletouchkeyboard="true" {* TODO: test that does this works on mobile devices*}
 									>
 					<span class="input-group-addon"><span class="glyphicon glyphicon-calendar" onclick="$('#startDate').datepicker('show')" aria-hidden="true"></span></span>
 				</div>

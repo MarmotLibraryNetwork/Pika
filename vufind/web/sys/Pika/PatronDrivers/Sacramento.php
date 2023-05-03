@@ -61,24 +61,23 @@ class Sacramento extends Sierra {
 	 * @return Curl|false|mixed|null
 	 * @throws \ErrorException
 	 */
-	private function _curlLegacy($patron, $pageToCall, $postParams = array(), $patronAction = true){
+	private function _curlLegacy($patron, $pageToCall, $postParams = [], $patronAction = true){
 
 		$c = new Curl();
 
 		// base url for following calls
 		$vendorOpacUrl = $this->accountProfile->vendorOpacUrl;
-
 		$headers = [
-			"Accept"          => "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5",
-			"Cache-Control"   => "max-age=0",
-			"Connection"      => "keep-alive",
-			"Accept-Charset"  => "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
-			"Accept-Language" => "en-us,en;q=0.5",
-			"User-Agent"      => "Pika"
+			'Accept'          => 'text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5',
+			'Cache-Control'   => 'max-age=0',
+			'Connection'      => 'keep-alive',
+			'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
+			'Accept-Language' => 'en-us,en;q=0.5',
+			'User-Agent'      => 'Pika'
 		];
 		$c->setHeaders($headers);
 
-		$cookie   = tempnam("/tmp", "CURLCOOKIE");
+		$cookie   = @tempnam("/tmp", "CURLCOOKIE");
 		$curlOpts = [
 			CURLOPT_CONNECTTIMEOUT    => 20,
 			CURLOPT_TIMEOUT           => 60,
@@ -105,6 +104,7 @@ class Sacramento extends Sierra {
 		$r        = $c->post($loginUrl, $postData);
 
 		if ($c->isError()){
+			$this->logger->error('Error for screen scraping login : ' . $c->getErrorMessage());
 			$c->close();
 			return false;
 		}
@@ -123,8 +123,8 @@ class Sacramento extends Sierra {
 				} else {
 					return false;
 				}
-				$casLoginUrl = $vendorOpacUrl.$casUrl;
-				$r = $c->post($casLoginUrl, $postData);
+				$casLoginUrl = $vendorOpacUrl . $casUrl;
+				$r           = $c->post($casLoginUrl, $postData);
 				if(!stristr($r, $patron->cat_username)) {
 					$this->logger->warning('cas login failed.');
 					return false;
@@ -149,6 +149,7 @@ class Sacramento extends Sierra {
 		}
 
 		if ($c->isError()){
+			$this->logger->error('Error for screen scraping after login : ' . $c->getErrorMessage());
 			return false;
 		}
 

@@ -569,15 +569,15 @@ class Marmot extends Sierra {
 			return false;
 		}
 
-		if (!stristr($r, $patron->cat_username)){
-			$this->logger->warn('Failed to find user name on screen scraping login.', [$loginUrl, $patron->cat_username]);
+		$sierraPatronId = $this->getPatronId($patron); //when logging in with pin, this is what we will find
+		if (!strpos($r, (string) $sierraPatronId)){
+			$this->logger->warn('Failed to find sierraPatronId on screen scraping login.', [$loginUrl, $sierraPatronId]);
 			$c->close();
 			return false;
 		}
 
 		$scope    = $this->getLibrarySierraScope(); // IMPORTANT: Scope is needed for Bookings Actions to work
-		$patronId = $patron->ilsUserId ?? $this->getPatronId($patron);
-		$optUrl   = $patronAction ? $vendorOpacUrl . '/patroninfo~S' . $scope . '/' . $patronId . '/' . $pageToCall
+		$optUrl   = $patronAction ? $vendorOpacUrl . '/patroninfo~S' . $scope . '/' . $sierraPatronId . '/' . $pageToCall
 			: $vendorOpacUrl . '/' . $pageToCall;
 		// Most curl calls are patron interactions, getting the bookings calendar isn't
 
