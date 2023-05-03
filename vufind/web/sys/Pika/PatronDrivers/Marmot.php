@@ -213,7 +213,14 @@ class Marmot extends Sierra {
 
 		// Get pagen from form
 		/** @var Curl $c */
-		$c            = $this->_curlLegacy($patron, $bookingUrl, null, false);
+		$c = $this->_curlLegacy($patron, $bookingUrl, null, false);
+		if (!$c){
+			// Error for the curlLegacy call above.
+			return [
+				'success' => false,
+				'message' => 'Scheduling action failed.'
+			];
+		}
 		$curlResponse = $c->getResponse();
 
 		if (preg_match('/You cannot book this material/i', $curlResponse)){
@@ -284,7 +291,7 @@ class Marmot extends Sierra {
 			'webbook_end_n_Hour'  => $endDateTime->format('h'),
 			'webbook_end_n_Min'   => $endDateTime->format('i'),
 			'webbook_end_n_AMPM'  => $endDateTime->format('H') > 11 ? 'PM' : 'AM', // has to be uppercase for the screen scraping
-			'webbook_note'        => '', // the web note doesn't seem to be displayed to the user any where after submit
+			'webbook_note'        => '', // the web note doesn't seem to be displayed to the user anywhere after submit
 		];
 		if (!empty($loc)){
 			// if we have this info add it, don't include otherwise.
@@ -312,7 +319,7 @@ class Marmot extends Sierra {
 		// Look for Account Error Messages
 		// <h1>There is a problem with your record.  Please see a librarian.</h1>
 		$numMatches = preg_match('/<h1>(?P<error>There is a problem with your record\..\sPlease see a librarian.)<\/h1>/', $curlResponse, $matches);
-		// ?P<name> syntax will creates named matches in the matches array
+		// ?P<name> syntax will create named matches in the matches array
 		if ($numMatches){
 			return [
 				'success' => false,
@@ -324,7 +331,7 @@ class Marmot extends Sierra {
 
 		// Look for Error Messages
 		$numMatches = preg_match('/<span.\s?class="errormessage">(?P<error>.+?)<\/span>/is', $curlResponse, $matches);
-		// ?P<name> syntax will creates named matches in the matches array
+		// ?P<name> syntax will create named matches in the matches array
 		if ($numMatches){
 			return [
 				'success' => false,
@@ -557,11 +564,13 @@ class Marmot extends Sierra {
 		$r        = $c->post($loginUrl, $postData);
 
 		if ($c->isError()){
+			$this->logger->error('Error for screen scraping login : ' . $c->getErrorMessage());
 			$c->close();
 			return false;
 		}
 
 		if (!stristr($r, $patron->cat_username)){
+			$this->logger->warn('Failed to find user name on screen scraping login.', [$loginUrl, $patron->cat_username]);
 			$c->close();
 			return false;
 		}
@@ -580,6 +589,7 @@ class Marmot extends Sierra {
 		}
 
 		if ($c->isError()){
+			$this->logger->error('Error for screen scraping after login : ' . $c->getErrorMessage());
 			return false;
 		}
 
