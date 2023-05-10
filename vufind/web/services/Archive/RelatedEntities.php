@@ -17,8 +17,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// NOTE: Links to this are only generated for the Explore More bar;
+// and apparently are very rarely clicked on.
+// Pascal 5/9/23
+
 /**
- * Finde Entities related to a search term
+ * Find Entities related to a search term
  *
  * @category Pika
  * @author Mark Noble <pika@marmot.org>
