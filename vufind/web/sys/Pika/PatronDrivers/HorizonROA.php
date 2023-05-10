@@ -191,7 +191,7 @@ abstract class HorizonROA implements \DriverInterface {
 				global $configArray;
 				$this->cache->set($memCacheKey, $session, $configArray['Caching']['horizon_roa_session_token']);
 			} elseif (isset($loginUserResponse->messageList)) {
-				$this->getLogger()->debug(print_r($loginUserResponse->messageList));
+				$this->getLogger()->debug($loginUserResponse->messageList);
 				$errorMessage = 'Horizon ROA Webservice Login Error: ';
 				foreach ($loginUserResponse->messageList as $error){
 					$errorMessage .= $error->message.'; ';
