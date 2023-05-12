@@ -173,10 +173,15 @@ class MyAccount_Masquerade extends MyAccount {
 								return ['success' => true];
 							}else{
 								unset($_SESSION['guidingUserId']);
-								$user = $guidingUser;
+								$user  = $guidingUser;
+								$error = 'Failed to initiate masquerade as specified user.';
+								if ($accountProfile->usingPins() && empty($masqueradedUser->getPassword())){
+									// For sites using passwords, Pika has to have the user's credentials
+									$error = 'Cannot masquerade as a user that has never logged in to the catalog.';
+								}
 								return [
 									'success' => false,
-									'error'   => 'Failed to initiate masquerade as specified user.'
+									'error'   => $error
 								];
 							}
 						}
