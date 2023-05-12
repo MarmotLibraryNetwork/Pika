@@ -485,8 +485,13 @@ public class FormatDetermination {
 		// check for music recordings quickly so we can figure out if it is music
 		// for category (need to do here since checking what is on the Compact
 		// Disc/Phonograph, etc is difficult).
-		if (leaderBit != null && leaderBit.equals('j')) {
-			printFormats.add("MusicRecording");
+		if (leaderBit != null) {
+			if (leaderBit.equals('j')) {
+				printFormats.add("MusicRecording");
+			}
+			else if (leaderBit.equals('r')) {
+				printFormats.add("PhysicalObject");
+			}
 			//TODO: finish early?
 		}
 		getFormatFromPublicationInfo(record, printFormats);
@@ -707,7 +712,7 @@ public class FormatDetermination {
 				printFormats.remove("Video");
 			}
 		}
-		if ((printFormats.contains("CDROM") && printFormats.contains("DVD")) || (printFormats.contains("CDROM") &&printFormats.contains("VideoDisc"))){
+		if ((printFormats.contains("CDROM") && printFormats.contains("DVD")) || (printFormats.contains("CDROM") && printFormats.contains("VideoDisc"))){
 			if(printFormats.contains("CDROM")){
 				printFormats.remove("CDROM");
 			}
