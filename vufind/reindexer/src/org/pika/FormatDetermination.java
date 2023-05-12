@@ -887,6 +887,7 @@ public class FormatDetermination {
 			printFormats.remove("DVD");
 			printFormats.remove("Blu-ray");
 			printFormats.remove("4KUltraBlu-Ray");
+			printFormats.remove("PhysicalObject");
 		}
 	}
 
