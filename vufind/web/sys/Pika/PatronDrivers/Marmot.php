@@ -98,42 +98,48 @@ class Marmot extends Sierra {
 	 */
 	public function selfRegister($extraSelfRegParams = false){
 		global $library;
-		// include test and production
 		$libSubDomain = strtolower($library->subdomain);
-		if ($libSubDomain == 'vail' || $libSubDomain == 'vail2'){
-			/* VAIL */
-			$extraSelfRegParams['varFields'][] = [
-				"fieldTag" => "u",
-				"content"  => "#"
-			];
-			$extraSelfRegParams['varFields'][] = [
-				"fieldTag" => "i",
-				"content"  => "#"
-			];
-			$extraSelfRegParams['varFields'][] = [
-				"fieldTag" => "q",
-				"content"  => "XXXLLFF"
-			];
-			$extraSelfRegParams['pMessage']    = 'f';
-
-		}elseif ($libSubDomain == 'mesa' || $libSubDomain == 'mesa2'){
-			/* MESA */
-			$extraSelfRegParams['patronCodes']['pcode3'] = 84;
-			$extraSelfRegParams['varFields'][]           = [
-				"fieldTag" => "m",
-				"content"  => "Temp Online Acct: Verify ALL information, add Telephone Number" .
-					" in the Unique ID field, verify notice preference, update barcode & exp. date, then change alias & p-type"
-			];
-			$extraSelfRegParams['varFields'][]           = [
-				"fieldTag" => "q",
-				"content"  => "dig access"
-			];
-			if (!empty($_REQUEST['isCmuStudent'])){
+		switch ($libSubDomain){
+			case 'vail':
+				/* VAIL */
 				$extraSelfRegParams['varFields'][] = [
-					"fieldTag" => "x",
-					"content"  => "Mesa County college student"
+					'fieldTag' => 'u',
+					'content'  => '#'
 				];
-			}
+				$extraSelfRegParams['varFields'][] = [
+					'fieldTag' => 'i',
+					'content'  => '#'
+				];
+				$extraSelfRegParams['varFields'][] = [
+					'fieldTag' => 'q',
+					'content'  => 'XXXLLFF'
+				];
+				$extraSelfRegParams['pMessage']    = 'f';
+
+				break;
+			case 'mesa':
+				/* MESA */
+				$extraSelfRegParams['patronCodes']['pcode3'] = 84;
+				$extraSelfRegParams['varFields'][]           = [
+					'fieldTag' => 'm',
+					'content'  => 'Temp Online Acct: Verify ALL information, add Telephone Number' .
+						' in the Unique ID field, verify notice preference, update barcode & exp. date, then change alias & p-type'
+				];
+				$extraSelfRegParams['varFields'][]           = [
+					'fieldTag' => 'q',
+					'content'  => 'dig access'
+				];
+				if (!empty($_REQUEST['isCmuStudent'])){
+					$extraSelfRegParams['varFields'][] = [
+						'fieldTag' => 'x',
+						'content'  => 'Mesa County college student'
+					];
+				}
+				break;
+			case 'englewood':
+				/* Englewood */
+				$extraSelfRegParams['patronCodes']['pcode2'] = 'z';
+				break;
 		}
 		return parent::selfRegister($extraSelfRegParams);
 	}
