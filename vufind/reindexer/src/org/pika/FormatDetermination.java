@@ -889,6 +889,25 @@ public class FormatDetermination {
 			printFormats.remove("4KUltraBlu-Ray");
 			printFormats.remove("PhysicalObject");
 		}
+
+		// Physical Object Things
+		if (printFormats.contains("PhysicalObject") && printFormats.contains("SeedPacket")){
+			printFormats.remove("PhysicalObject");
+		}
+		if (printFormats.contains("PhysicalObject") && printFormats.contains("DVD")){
+			// Probable DVD players
+			printFormats.remove("DVD");
+		}
+		if (printFormats.contains("PhysicalObject") && printFormats.contains("Blu-ray")){
+			// Probable Blu-ray players
+			printFormats.remove("Blu-ray");
+		}
+		if (printFormats.contains("PhysicalObject") && printFormats.contains("SoundDisc")){
+			printFormats.remove("SoundDisc");
+		}
+		if (printFormats.contains("PhysicalObject") && printFormats.contains("MP3")){
+			printFormats.remove("MP3");
+		}
 	}
 
 	private boolean isComboPack(Record record) {
