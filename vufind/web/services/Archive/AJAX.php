@@ -21,7 +21,7 @@ require_once ROOT_DIR . '/AJAXHandler.php';
 
 class Archive_AJAX extends AJAXHandler {
 
-	protected $methodsThatRespondWithJSONUnstructured = array(
+	protected $methodsThatRespondWithJSONUnstructured = [
 		'getRelatedObjectsForScroller',
 		'getRelatedObjectsForTimelineExhibit',
 		'getRelatedObjectsForMappedCollection',
@@ -42,7 +42,7 @@ class Archive_AJAX extends AJAXHandler {
 		'processTimelineData',
 		'setCoversDisplayMode',
 		'clearCache',
-	);
+	];
 
 	function getRelatedObjectsForExhibit(){
 		if (isset($_REQUEST['collectionId'])){
@@ -109,7 +109,7 @@ class Archive_AJAX extends AJAXHandler {
 					foreach ($response['response']['docs'] as $objectInCollection){
 						/** @var IslandoraDriver $firstObjectDriver */
 						$firstObjectDriver = RecordDriverFactory::initRecordDriver($objectInCollection);
-						$relatedObject     = array(
+						$relatedObject     = [
 							'title'       => $firstObjectDriver->getTitle(),
 							'description' => $firstObjectDriver->getDescription(),
 							'image'       => $firstObjectDriver->getBookcoverUrl('medium'),
@@ -117,11 +117,12 @@ class Archive_AJAX extends AJAXHandler {
 							'link'        => $firstObjectDriver->getRecordUrl(),
 							'pid'         => $firstObjectDriver->getUniqueID(),
 							'recordIndex' => $recordIndex++,
-						);
+						];
 						if ($sort == 'dateAdded'){
 							$relatedObject['dateCreated'] = date('M j, Y', strtotime($objectInCollection['fgs_createdDate_dt']));
 						}elseif ($sort == 'dateModified'){
 							$relatedObject['dateCreated'] = date('M j, Y', strtotime($objectInCollection['fgs_lastModifiedDate_dt']));
+							//TODO: should the array index be 'dateCreated' or should it be changed to 'dateModified'
 						}
 						$relatedObjects[] = $relatedObject;
 						$timer->logTime('Loaded related object');
@@ -134,15 +135,15 @@ class Archive_AJAX extends AJAXHandler {
 
 				$interface->assign('relatedObjects', $relatedObjects);
 			}
-			return array(
+			return [
 				'success'        => true,
 				'relatedObjects' => $interface->fetch('Archive/relatedObjects.tpl'),
-			);
+			];
 		}else{
-			return array(
+			return [
 				'success' => false,
 				'message' => 'You must supply the collection and place to load data for',
-			);
+			];
 		}
 	}
 
@@ -162,10 +163,10 @@ class Archive_AJAX extends AJAXHandler {
 				$interface->assign('reloadHeader', '1');
 			}
 
-			$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+			$page = $_REQUEST['page'] ?? 1;
 			$interface->assign('page', $page);
 
-			$sort = isset($_REQUEST['sort']) ? $_REQUEST['sort'] : 'title';
+			$sort = $_REQUEST['sort'] ?? 'title';
 			$interface->assign('sort', $sort);
 
 			$displayType = 'scroller';
@@ -184,10 +185,10 @@ class Archive_AJAX extends AJAXHandler {
 			$searchObject->clearFilters();
 			$searchObject->clearFacets();
 
-			$searchObject->setSearchTerms(array(
+			$searchObject->setSearchTerms([
 				'lookfor' => '"' . $pid . '"',
 				'index'   => 'IslandoraRelationshipsById',
-			));
+			]);
 
 			$searchObject->setLimit(24);
 
@@ -224,7 +225,7 @@ class Archive_AJAX extends AJAXHandler {
 					foreach ($response['response']['docs'] as $objectInCollection){
 						/** @var IslandoraDriver $firstObjectDriver */
 						$firstObjectDriver = RecordDriverFactory::initRecordDriver($objectInCollection);
-						$relatedObject     = array(
+						$relatedObject     = [
 							'title'       => $firstObjectDriver->getTitle(),
 							'description' => $firstObjectDriver->getDescription(),
 							'image'       => $firstObjectDriver->getBookcoverUrl('medium'),
@@ -232,11 +233,12 @@ class Archive_AJAX extends AJAXHandler {
 							'link'        => $firstObjectDriver->getRecordUrl(),
 							'pid'         => $firstObjectDriver->getUniqueID(),
 							'recordIndex' => $recordIndex++,
-						);
+						];
 						if ($sort == 'dateAdded'){
 							$relatedObject['dateCreated'] = date('M j, Y', strtotime($objectInCollection['fgs_createdDate_dt']));
 						}elseif ($sort == 'dateModified'){
 							$relatedObject['dateCreated'] = date('M j, Y', strtotime($objectInCollection['fgs_lastModifiedDate_dt']));
+							//TODO: should the array index be 'dateCreated' or should it be changed to 'dateModified'
 						}
 						$relatedObjects[] = $relatedObject;
 						$timer->logTime('Loaded related object');
@@ -249,15 +251,15 @@ class Archive_AJAX extends AJAXHandler {
 
 			$interface->assign('relatedObjects', $relatedObjects);
 
-			return array(
+			return [
 				'success'        => true,
 				'relatedObjects' => $interface->fetch('Archive/relatedObjects.tpl'),
-			);
+			];
 		}else{
-			return array(
+			return [
 				'success' => false,
 				'message' => 'You must supply the collection and place to load data for',
-			);
+			];
 		}
 	}
 
@@ -276,10 +278,10 @@ class Archive_AJAX extends AJAXHandler {
 				$interface->assign('reloadHeader', '1');
 			}
 
-			$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+			$page = $_REQUEST['page'] ?? 1;
 			$interface->assign('page', $page);
 
-			$sort = isset($_REQUEST['sort']) ? $_REQUEST['sort'] : 'title';
+			$sort = $_REQUEST['sort'] ?? 'title';
 			$interface->assign('sort', $sort);
 
 			$displayType = 'timeline';
@@ -349,7 +351,7 @@ class Archive_AJAX extends AJAXHandler {
 					foreach ($response['response']['docs'] as $objectInCollection){
 						/** @var IslandoraDriver $firstObjectDriver */
 						$firstObjectDriver = RecordDriverFactory::initRecordDriver($objectInCollection);
-						$relatedObject     = array(
+						$relatedObject     = [
 							'title'       => $firstObjectDriver->getTitle(),
 							'description' => $firstObjectDriver->getDescription(),
 							'image'       => $firstObjectDriver->getBookcoverUrl('medium'),
@@ -357,11 +359,12 @@ class Archive_AJAX extends AJAXHandler {
 							'link'        => $firstObjectDriver->getRecordUrl(),
 							'pid'         => $firstObjectDriver->getUniqueID(),
 							'recordIndex' => $recordIndex++,
-						);
+						];
 						if ($sort == 'dateAdded'){
 							$relatedObject['dateCreated'] = date('M j, Y', strtotime($objectInCollection['fgs_createdDate_dt']));
 						}elseif ($sort == 'dateModified'){
 							$relatedObject['dateCreated'] = date('M j, Y', strtotime($objectInCollection['fgs_lastModifiedDate_dt']));
+							//TODO: should the array index be 'dateCreated' or should it be changed to 'dateModified'
 						}
 						$relatedObjects[] = $relatedObject;
 						$timer->logTime('Loaded related object');
@@ -374,15 +377,15 @@ class Archive_AJAX extends AJAXHandler {
 			}
 
 			$interface->assign('relatedObjects', $relatedObjects);
-			return array(
+			return [
 				'success'        => true,
 				'relatedObjects' => $interface->fetch('Archive/relatedObjects.tpl'),
-			);
+			];
 		}else{
-			return array(
+			return [
 				'success' => false,
 				'message' => 'You must supply the collection and place to load data for',
-			);
+			];
 		}
 	}
 
@@ -403,12 +406,12 @@ class Archive_AJAX extends AJAXHandler {
 				$interface->assign('reloadHeader', '1');
 			}
 
-			$additionalCollections = array();
+			$additionalCollections = [];
 			if ($collectionDriver->getModsValue('pikaCollectionDisplay', 'marmot') == 'custom'){
 				//Load the options to show
 				$collectionOptionsOriginalRaw = $collectionDriver->getModsValue('collectionOptions', 'marmot');
 				$collectionOptionsOriginal    = explode("\r\n", html_entity_decode($collectionOptionsOriginalRaw));
-				$additionalCollections        = array();
+				$additionalCollections        = [];
 				if (isset($collectionOptionsOriginal)){
 					foreach ($collectionOptionsOriginal as $collectionOption){
 						if (strpos($collectionOption, 'googleMap') === 0){
@@ -449,10 +452,10 @@ class Archive_AJAX extends AJAXHandler {
 
 			$interface->assign('label', $placeObject->label);
 
-			$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+			$page = $_REQUEST['page'] ?? 1;
 			$interface->assign('page', $page);
 
-			$sort = isset($_REQUEST['sort']) ? $_REQUEST['sort'] : 'title';
+			$sort = $_REQUEST['sort'] ?? 'title';
 			$interface->assign('sort', $sort);
 
 			$this->setShowCovers();
@@ -491,7 +494,7 @@ class Archive_AJAX extends AJAXHandler {
 
 			$searchObject->setLimit(24);
 
-			$relatedObjects = array();
+			$relatedObjects = [];
 			$response       = $searchObject->processSearch(true, false, true);
 			if ($response && isset($response['error'])){
 				$interface->assign('solrError', $response['error']['msg']);
@@ -519,7 +522,7 @@ class Archive_AJAX extends AJAXHandler {
 					foreach ($response['response']['docs'] as $objectInCollection){
 						/** @var IslandoraDriver $firstObjectDriver */
 						$firstObjectDriver = RecordDriverFactory::initRecordDriver($objectInCollection);
-						$relatedObject     = array(
+						$relatedObject     = [
 							'title'       => $firstObjectDriver->getTitle(),
 							'description' => $firstObjectDriver->getDescription(),
 							'image'       => $firstObjectDriver->getBookcoverUrl('medium'),
@@ -527,11 +530,12 @@ class Archive_AJAX extends AJAXHandler {
 							'link'        => $firstObjectDriver->getRecordUrl(),
 							'pid'         => $firstObjectDriver->getUniqueID(),
 							'recordIndex' => $recordIndex++,
-						);
+						];
 						if ($sort == 'dateAdded'){
 							$relatedObject['dateCreated'] = date('M j, Y', strtotime($objectInCollection['fgs_createdDate_dt']));
 						}elseif ($sort == 'dateModified'){
 							$relatedObject['dateCreated'] = date('M j, Y', strtotime($objectInCollection['fgs_lastModifiedDate_dt']));
+							//TODO: should the array index be 'dateCreated' or should it be changed to 'dateModified'
 						}
 						$relatedObjects[] = $relatedObject;
 						$timer->logTime('Loaded related object');
@@ -543,30 +547,30 @@ class Archive_AJAX extends AJAXHandler {
 			}
 
 			$interface->assign('relatedObjects', $relatedObjects);
-			return array(
+			return [
 				'success'        => true,
 				'relatedObjects' => $interface->fetch('Archive/relatedObjects.tpl'),
-			);
+			];
 		}else{
-			return array(
+			return [
 				'success' => false,
 				'message' => 'You must supply the collection and place to load data for',
-			);
+			];
 		}
 	}
 
 	function getEntityFacetValuesForExhibit(){
 		if (!isset($_REQUEST['id'])){
-			return array(
+			return [
 				'success' => false,
 				'message' => 'You must supply the id to load facet data for',
-			);
+			];
 		}
 		if (!isset($_REQUEST['facetName'])){
-			return array(
+			return [
 				'success' => false,
 				'message' => 'You must supply the facetName to load facet data for',
-			);
+			];
 		}
 
 		$pid = urldecode($_REQUEST['id']);
@@ -596,7 +600,7 @@ class Archive_AJAX extends AJAXHandler {
 
 		$searchObject->setLimit(1);
 
-		$facetValues = array();
+		$facetValues = [];
 		$response    = $searchObject->processSearch(true, false);
 		if ($response && isset($response['error'])){
 			$interface->assign('solrError', $response['error']['msg']);
@@ -607,35 +611,35 @@ class Archive_AJAX extends AJAXHandler {
 			foreach ($facetFieldData as $field){
 				$entityDriver = RecordDriverFactory::initIslandoraDriverFromPid($field[0]);
 				if (!PEAR_Singleton::isError($entityDriver) && $entityDriver != null){
-					$facetValues[$entityDriver->getTitle()] = array(
+					$facetValues[$entityDriver->getTitle()] = [
 						'display' => $entityDriver->getTitle(),
 						'url'     => $entityDriver->getRecordUrl(),
 						'count'   => $field[1],
-					);
+					];
 				}
 			}
 			ksort($facetValues);
 		}
 
 		$interface->assign('facetValues', $facetValues);
-		$results = array(
-			'modalBody' => $interface->fetch("Archive/browseFacetPopup.tpl"),
-		);
+		$results = [
+			'modalBody' => $interface->fetch('Archive/browseFacetPopup.tpl'),
+		];
 		return $results;
 	}
 
 	function getFacetValuesForExhibit(){
 		if (!isset($_REQUEST['id'])){
-			return array(
+			return [
 				'success' => false,
 				'message' => 'You must supply the id to load facet data for',
-			);
+			];
 		}
 		if (!isset($_REQUEST['facetName'])){
-			return array(
+			return [
 				'success' => false,
 				'message' => 'You must supply the facetName to load facet data for',
-			);
+			];
 		}
 
 		$pid = urldecode($_REQUEST['id']);
@@ -665,7 +669,7 @@ class Archive_AJAX extends AJAXHandler {
 
 		$searchObject->setLimit(1);
 
-		$facetValues = array();
+		$facetValues = [];
 		$response    = $searchObject->processSearch(true, false);
 		if ($response && isset($response['error'])){
 			$interface->assign('solrError', $response['error']['msg']);
@@ -675,28 +679,28 @@ class Archive_AJAX extends AJAXHandler {
 			$facetFieldData = $response['facet_counts']['facet_fields'][$facetName];
 			foreach ($facetFieldData as $field){
 				$searchLink             = $searchObject->renderLinkWithFilter("$facetName:$field[0]");
-				$facetValues[$field[0]] = array(
+				$facetValues[$field[0]] = [
 					'display' => $field[0],
 					'url'     => $searchLink,
 					'count'   => $field[1],
-				);
+				];
 			}
 			ksort($facetValues);
 		}
 
 		$interface->assign('facetValues', $facetValues);
-		$results = array(
+		$results = [
 			'modalBody' => $interface->fetch("Archive/browseFacetPopup.tpl"),
-		);
+		];
 		return $results;
 	}
 
 	function getExploreMoreContent(){
 		if (!isset($_REQUEST['id'])){
-			return array(
+			return [
 				'success' => false,
 				'message' => 'You must supply the id to load explore more content for',
-			);
+			];
 		}
 		global $interface;
 		global $timer;
@@ -716,7 +720,7 @@ class Archive_AJAX extends AJAXHandler {
 		$timer->logTime("Called loadExploreMoreSidebar");
 
 		$relatedSubjects = $recordDriver->getAllSubjectHeadings(true, 5);
-		$ebscoMatches    = $exploreMore->loadEbscoOptions('archive', array(), implode($relatedSubjects, " or "));
+		$ebscoMatches    = $exploreMore->loadEbscoOptions('archive', [], implode($relatedSubjects, " or "));
 		if (!empty($ebscoMatches)){
 			$interface->assign('relatedArticles', $ebscoMatches);
 		}
@@ -732,10 +736,10 @@ class Archive_AJAX extends AJAXHandler {
 		$interface->assign('archiveSections', ArchiveExploreMoreBar::$archiveSections);
 		$timer->logTime("Loaded Settings");
 
-		return array(
+		return [
 			'success'     => true,
 			'exploreMore' => $interface->fetch('explore-more-sidebar.tpl'),
-		);
+		];
 	}
 
 	public function getObjectInfo(){
@@ -758,11 +762,11 @@ class Archive_AJAX extends AJAXHandler {
 		$escapedPid           = urlencode($pid);
 		$addToFavoritesLabel  = translate('Add to favorites');
 		$addToFavoritesButton = "<button onclick=\"return Pika.Archive.showSaveToListForm(this, '$escapedPid');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$addToFavoritesLabel</button>";
-		return array(
+		return [
 			'title'        => "{$urlStr}{$recordDriver->getTitle()}</a>",
 			'modalBody'    => $interface->fetch('Archive/archivePopup.tpl'),
 			'modalButtons' => "$addToFavoritesButton{$urlStr}<button class='modal-buttons btn btn-primary'>More Info</button></a>",
-		);
+		];
 	}
 
 	public function getMetadata(){
@@ -796,10 +800,10 @@ class Archive_AJAX extends AJAXHandler {
 
 
 		$metadata = $interface->fetch('Archive/moredetails-accordion.tpl');
-		return array(
+		return [
 			'success'  => true,
 			'metadata' => $metadata,
-		);
+		];
 	}
 
 	private function setMoreDetailsDisplayMode(){
@@ -826,21 +830,21 @@ class Archive_AJAX extends AJAXHandler {
 		$randomImagePid = $recordDriver->getRandomObject();
 		if ($randomImagePid != null){
 			$randomObject     = RecordDriverFactory::initRecordDriver($fedoraUtils->getObject($randomImagePid));
-			$randomObjectInfo = array(
+			$randomObjectInfo = [
 				'label' => $randomObject->getTitle(),
 				'link'  => $randomObject->getRecordUrl(),
 				'image' => $randomObject->getBookcoverUrl('medium'),
-			);
+			];
 			$interface->assign('randomObject', $randomObjectInfo);
-			return array(
+			return [
 				'success' => true,
 				'image'   => $interface->fetch('Archive/randomImage.tpl'),
-			);
+			];
 		}else{
-			return array(
+			return [
 				'success' => false,
 				'message' => 'No ID provided',
-			);
+			];
 		}
 	}
 
@@ -901,10 +905,10 @@ class Archive_AJAX extends AJAXHandler {
 
 		$this->setMoreDetailsDisplayMode();
 
-		return array(
+		return [
 			'success'           => true,
 			'additionalObjects' => $interface->fetch('Archive/additionalRelatedObjects.tpl'),
-		);
+		];
 	}
 
 	function getSaveToListForm(){
@@ -1107,22 +1111,22 @@ class Archive_AJAX extends AJAXHandler {
 	 */
 	public function processTimelineData($response, $interface){
 		if (!empty($response['facet_counts']['facet_ranges'])){
-			$dateFacetInfo = array();
+			$dateFacetInfo = [];
 			if (isset($response['facet_counts']['facet_ranges']['dateCreated'])){
 				$dateCreatedInfo = $response['facet_counts']['facet_ranges']['dateCreated'];
 				if ($dateCreatedInfo['before'] > 0){
-					$dateFacetInfo['1870'] = array(
+					$dateFacetInfo['1870'] = [
 						'label' => 'Before 1880',
 						'count' => $dateCreatedInfo['before'],
 						'value' => 'before1880',
-					);
+					];
 				}
 				foreach ($dateCreatedInfo['counts'] as $facetInfo){
-					$dateFacetInfo[substr($facetInfo[0], 0, 4) . '\'s'] = array(
+					$dateFacetInfo[substr($facetInfo[0], 0, 4) . '\'s'] = [
 						'label' => substr($facetInfo[0], 0, 4) . '\'s',
 						'count' => $facetInfo[1],
 						'value' => $facetInfo[0],
-					);
+					];
 				}
 			}
 
@@ -1133,11 +1137,11 @@ class Archive_AJAX extends AJAXHandler {
 			}
 			$numUnknown = $response['response']['numFound'] - $totalFound;
 			/*if ($numUnknown > 0){
-				$dateFacetInfo['Unknown'] = array(
+				$dateFacetInfo['Unknown'] = [
 						'label' => 'Unknown',
 						'count' => $numUnknown,
 						'value' => 'unknown'
-				);
+				];
 			}*/
 			$interface->assign('numObjectsWithUnknownDate', $numUnknown);
 

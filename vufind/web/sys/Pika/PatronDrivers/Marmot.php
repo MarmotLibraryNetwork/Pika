@@ -98,42 +98,48 @@ class Marmot extends Sierra {
 	 */
 	public function selfRegister($extraSelfRegParams = false){
 		global $library;
-		// include test and production
 		$libSubDomain = strtolower($library->subdomain);
-		if ($libSubDomain == 'vail' || $libSubDomain == 'vail2'){
-			/* VAIL */
-			$extraSelfRegParams['varFields'][] = [
-				"fieldTag" => "u",
-				"content"  => "#"
-			];
-			$extraSelfRegParams['varFields'][] = [
-				"fieldTag" => "i",
-				"content"  => "#"
-			];
-			$extraSelfRegParams['varFields'][] = [
-				"fieldTag" => "q",
-				"content"  => "XXXLLFF"
-			];
-			$extraSelfRegParams['pMessage']    = 'f';
-
-		}elseif ($libSubDomain == 'mesa' || $libSubDomain == 'mesa2'){
-			/* MESA */
-			$extraSelfRegParams['patronCodes']['pcode3'] = 84;
-			$extraSelfRegParams['varFields'][]           = [
-				"fieldTag" => "m",
-				"content"  => "Temp Online Acct: Verify ALL information, add Telephone Number" .
-					" in the Unique ID field, verify notice preference, update barcode & exp. date, then change alias & p-type"
-			];
-			$extraSelfRegParams['varFields'][]           = [
-				"fieldTag" => "q",
-				"content"  => "dig access"
-			];
-			if (!empty($_REQUEST['isCmuStudent'])){
+		switch ($libSubDomain){
+			case 'vail':
+				/* VAIL */
 				$extraSelfRegParams['varFields'][] = [
-					"fieldTag" => "x",
-					"content"  => "Mesa County college student"
+					'fieldTag' => 'u',
+					'content'  => '#'
 				];
-			}
+				$extraSelfRegParams['varFields'][] = [
+					'fieldTag' => 'i',
+					'content'  => '#'
+				];
+				$extraSelfRegParams['varFields'][] = [
+					'fieldTag' => 'q',
+					'content'  => 'XXXLLFF'
+				];
+				$extraSelfRegParams['pMessage']    = 'f';
+
+				break;
+			case 'mesa':
+				/* MESA */
+				$extraSelfRegParams['patronCodes']['pcode3'] = 84;
+				$extraSelfRegParams['varFields'][]           = [
+					'fieldTag' => 'm',
+					'content'  => 'Temp Online Acct: Verify ALL information, add Telephone Number' .
+						' in the Unique ID field, verify notice preference, update barcode & exp. date, then change alias & p-type'
+				];
+				$extraSelfRegParams['varFields'][]           = [
+					'fieldTag' => 'q',
+					'content'  => 'dig access'
+				];
+				if (!empty($_REQUEST['isCmuStudent'])){
+					$extraSelfRegParams['varFields'][] = [
+						'fieldTag' => 'x',
+						'content'  => 'Mesa County college student'
+					];
+				}
+				break;
+			case 'englewood':
+				/* Englewood */
+				$extraSelfRegParams['patronCodes']['pcode2'] = 'z';
+				break;
 		}
 		return parent::selfRegister($extraSelfRegParams);
 	}
@@ -213,7 +219,14 @@ class Marmot extends Sierra {
 
 		// Get pagen from form
 		/** @var Curl $c */
-		$c            = $this->_curlLegacy($patron, $bookingUrl, null, false);
+		$c = $this->_curlLegacy($patron, $bookingUrl, null, false);
+		if (!$c){
+			// Error for the curlLegacy call above.
+			return [
+				'success' => false,
+				'message' => 'Scheduling action failed.'
+			];
+		}
 		$curlResponse = $c->getResponse();
 
 		if (preg_match('/You cannot book this material/i', $curlResponse)){
@@ -284,7 +297,7 @@ class Marmot extends Sierra {
 			'webbook_end_n_Hour'  => $endDateTime->format('h'),
 			'webbook_end_n_Min'   => $endDateTime->format('i'),
 			'webbook_end_n_AMPM'  => $endDateTime->format('H') > 11 ? 'PM' : 'AM', // has to be uppercase for the screen scraping
-			'webbook_note'        => '', // the web note doesn't seem to be displayed to the user any where after submit
+			'webbook_note'        => '', // the web note doesn't seem to be displayed to the user anywhere after submit
 		];
 		if (!empty($loc)){
 			// if we have this info add it, don't include otherwise.
@@ -312,7 +325,7 @@ class Marmot extends Sierra {
 		// Look for Account Error Messages
 		// <h1>There is a problem with your record.  Please see a librarian.</h1>
 		$numMatches = preg_match('/<h1>(?P<error>There is a problem with your record\..\sPlease see a librarian.)<\/h1>/', $curlResponse, $matches);
-		// ?P<name> syntax will creates named matches in the matches array
+		// ?P<name> syntax will create named matches in the matches array
 		if ($numMatches){
 			return [
 				'success' => false,
@@ -324,7 +337,7 @@ class Marmot extends Sierra {
 
 		// Look for Error Messages
 		$numMatches = preg_match('/<span.\s?class="errormessage">(?P<error>.+?)<\/span>/is', $curlResponse, $matches);
-		// ?P<name> syntax will creates named matches in the matches array
+		// ?P<name> syntax will create named matches in the matches array
 		if ($numMatches){
 			return [
 				'success' => false,
@@ -557,18 +570,20 @@ class Marmot extends Sierra {
 		$r        = $c->post($loginUrl, $postData);
 
 		if ($c->isError()){
+			$this->logger->error('Error for screen scraping login : ' . $c->getErrorMessage());
 			$c->close();
 			return false;
 		}
 
-		if (!stristr($r, $patron->cat_username)){
+		$sierraPatronId = $this->getPatronId($patron); //when logging in with pin, this is what we will find
+		if (!strpos($r, (string) $sierraPatronId)){
+			$this->logger->warn('Failed to find sierraPatronId on screen scraping login.', [$loginUrl, $sierraPatronId]);
 			$c->close();
 			return false;
 		}
 
 		$scope    = $this->getLibrarySierraScope(); // IMPORTANT: Scope is needed for Bookings Actions to work
-		$patronId = $patron->ilsUserId ?? $this->getPatronId($patron);
-		$optUrl   = $patronAction ? $vendorOpacUrl . '/patroninfo~S' . $scope . '/' . $patronId . '/' . $pageToCall
+		$optUrl   = $patronAction ? $vendorOpacUrl . '/patroninfo~S' . $scope . '/' . $sierraPatronId . '/' . $pageToCall
 			: $vendorOpacUrl . '/' . $pageToCall;
 		// Most curl calls are patron interactions, getting the bookings calendar isn't
 
@@ -580,6 +595,7 @@ class Marmot extends Sierra {
 		}
 
 		if ($c->isError()){
+			$this->logger->error('Error for screen scraping after login : ' . $c->getErrorMessage());
 			return false;
 		}
 

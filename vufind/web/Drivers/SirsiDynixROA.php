@@ -310,6 +310,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 
 //  Calls that show how patron-related data is represented
 //			$patronDescribeResponse           = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/describe', null, $sessionToken);
+//			$patronDescribeResponse           = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/customInformation/describe', null, $sessionToken);
 //			$patronPhoneDescribeResponse           = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/phone/describe', null, $sessionToken);
 //			$patronPhoneListDescribeResponse           = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/phoneList/describe', null, $sessionToken);
 //			$patronStatusInfoDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/v1/user/patronStatusInfo/describe', null, $sessionToken);
@@ -320,12 +321,12 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 			//TODO: This resource is currently hidden
 
 
-			$acountInfoLookupURL = $webServiceURL . '/v1/user/patron/key/' . $sirsiRoaUserID .
-				'?includeFields=firstName,lastName,privilegeExpiresDate,patronStatusInfo{*},preferredAddress,address1,address2,address3,library,circRecordList{claimsReturnedDate,status},blockList{owed},holdRecordList{status},phoneList{*}';
+			$accountInfoLookupURL = $webServiceURL . '/v1/user/patron/key/' . $sirsiRoaUserID .
+				'?includeFields=firstName,lastName,privilegeExpiresDate,patronStatusInfo{*},preferredName,preferredAddress,address1,address2,address3,library,circRecordList{claimsReturnedDate,status},blockList{owed},holdRecordList{status},phoneList{*}';
 
 			// phoneList is for texting notification preferences
 
-			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($acountInfoLookupURL, null, $sessionToken);
+			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($accountInfoLookupURL, null, $sessionToken);
 			if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)){
 				$lastName  = $lookupMyAccountInfoResponse->fields->lastName;
 				$firstName = $lookupMyAccountInfoResponse->fields->firstName;
@@ -356,28 +357,30 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 				}
 
 				$forceDisplayNameUpdate = false;
-				$firstName              = isset($firstName) ? $firstName : '';
+				$firstName              = $firstName ?? '';
 				if ($user->firstname != $firstName){
 					$user->firstname        = $firstName;
 					$forceDisplayNameUpdate = true;
 				}
-				$lastName = isset($lastName) ? $lastName : '';
+				$lastName = $lastName ?? '';
 				if ($user->lastname != $lastName){
-					$user->lastname         = isset($lastName) ? $lastName : '';
+					$user->lastname         = $lastName;
 					$forceDisplayNameUpdate = true;
 				}
-				if ($forceDisplayNameUpdate){
+				if (isset($lookupMyAccountInfoResponse->fields->preferredName)){
+					$user->displayName = $lookupMyAccountInfoResponse->fields->preferredName;
+				}
+				elseif ($forceDisplayNameUpdate){
 					$user->displayName = '';
 				}
-				$user->fullname     = isset($fullName) ? $fullName : '';
-				//$user->cat_username = $username;
-				$user->barcode = $username;
-				$user->setPassword($password);
+				$user->fullname = $fullName ?? '';
+				$user->barcode  = $username;
+				$user->setPassword($password); // TODO: isn't password always set when needed above
 
-				$Address1 = "";
-				$City     = "";
-				$State    = "";
-				$Zip      = "";
+				$Address1 = '';
+				$City     = '';
+				$State    = '';
+				$Zip      = '';
 
 				if (isset($lookupMyAccountInfoResponse->fields->preferredAddress)){
 					$preferredAddress = $lookupMyAccountInfoResponse->fields->preferredAddress;
@@ -509,10 +512,10 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 					unset($tmpUser);
 				}
 
-				$timer->logTime("patron logged in successfully");
+				$timer->logTime('patron logged in successfully');
 				return $user;
 			}else{
-				$timer->logTime("lookupMyAccountInfo failed");
+				$timer->logTime('lookupMyAccountInfo failed');
 
 				$this->logger->error('Symphony API call lookupMyAccountInfo failed.');
 				return null;

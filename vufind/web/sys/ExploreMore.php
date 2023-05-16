@@ -506,7 +506,7 @@ class ExploreMore {
 						if ($archiveObject != null){
 							$exploreMoreOptions[] = [
 								'label'       => "Events (" . $numEvents . ")",
-								'description' => "Places related to {$islandoraSearchObject->getQuery()}",
+								'description' => "Events related to {$islandoraSearchObject->getQuery()}",
 								'image'       => $fedoraUtils->getObjectImageUrl($archiveObject, 'medium', 'eventCModel'),
 								'link'        => '/Archive/RelatedEntities?lookfor=' . urlencode($searchTerm) . '&entityType=event',
 								'usageCount'  => $numEvents

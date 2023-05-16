@@ -485,8 +485,13 @@ public class FormatDetermination {
 		// check for music recordings quickly so we can figure out if it is music
 		// for category (need to do here since checking what is on the Compact
 		// Disc/Phonograph, etc is difficult).
-		if (leaderBit != null && leaderBit.equals('j')) {
-			printFormats.add("MusicRecording");
+		if (leaderBit != null) {
+			if (leaderBit.equals('j')) {
+				printFormats.add("MusicRecording");
+			}
+			else if (leaderBit.equals('r')) {
+				printFormats.add("PhysicalObject");
+			}
 			//TODO: finish early?
 		}
 		getFormatFromPublicationInfo(record, printFormats);
@@ -707,7 +712,7 @@ public class FormatDetermination {
 				printFormats.remove("Video");
 			}
 		}
-		if ((printFormats.contains("CDROM") && printFormats.contains("DVD")) || (printFormats.contains("CDROM") &&printFormats.contains("VideoDisc"))){
+		if ((printFormats.contains("CDROM") && printFormats.contains("DVD")) || (printFormats.contains("CDROM") && printFormats.contains("VideoDisc"))){
 			if(printFormats.contains("CDROM")){
 				printFormats.remove("CDROM");
 			}
@@ -882,6 +887,26 @@ public class FormatDetermination {
 			printFormats.remove("DVD");
 			printFormats.remove("Blu-ray");
 			printFormats.remove("4KUltraBlu-Ray");
+			printFormats.remove("PhysicalObject");
+		}
+
+		// Physical Object Things
+		if (printFormats.contains("PhysicalObject") && printFormats.contains("SeedPacket")){
+			printFormats.remove("PhysicalObject");
+		}
+		if (printFormats.contains("PhysicalObject") && printFormats.contains("DVD")){
+			// Probable DVD players
+			printFormats.remove("DVD");
+		}
+		if (printFormats.contains("PhysicalObject") && printFormats.contains("Blu-ray")){
+			// Probable Blu-ray players
+			printFormats.remove("Blu-ray");
+		}
+		if (printFormats.contains("PhysicalObject") && printFormats.contains("SoundDisc")){
+			printFormats.remove("SoundDisc");
+		}
+		if (printFormats.contains("PhysicalObject") && printFormats.contains("MP3")){
+			printFormats.remove("MP3");
 		}
 	}
 

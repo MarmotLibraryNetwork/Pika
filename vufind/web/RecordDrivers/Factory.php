@@ -60,7 +60,7 @@ class RecordDriverFactory {
 			if (empty($driver)){
 				if (!isset($record['RELS_EXT_hasModel_uri_s'])){
 					//print_r($record);
-					PEAR_Singleton::raiseError('Unable to load Driver for ' . $record['PID'] . " model did not exist");
+					PEAR_Singleton::raiseError('Unable to load Driver for ' . $record['PID'] . ' ; model did not exist');
 				}
 				$recordType = $record['RELS_EXT_hasModel_uri_s'];
 				//Get rid of islandora namespace information

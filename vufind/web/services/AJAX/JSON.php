@@ -89,7 +89,7 @@ class AJAX_JSON extends AJAXHandler {
 			'success' => true,
 			'name'    => $user->displayName,
 		];
-		if ($user->pinUpdateRequired){
+		if (!empty($user->pinUpdateRequired)){
 			$return['forcePinUpdate'] = true;
 			$form                     = $this->getPinUpdateForm();
 			$return                   = array_merge($return, $form);
