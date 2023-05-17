@@ -58,7 +58,8 @@ abstract class Record_Record extends Action {
 		}
 
 		//TODO: This RDF link doesn't seem to work
-		$interface->assign('addHeader', '<link rel="alternate" type="application/rdf+xml" title="RDF Representation" href="/Record/' . urlencode($this->sourceAndId->getRecordId()) . '/RDF">');
+//		$interface->assign('addHeader', '<link rel="alternate" type="application/rdf+xml" title="RDF Representation" href="/Record/' . urlencode($this->sourceAndId->getRecordId()) . '/RDF">');
+		// Disabling this link since there doesn't appear to be an actual RDF module. pascal 5/2/2023
 
 		// Retrieve User Search History
 		$interface->assign('lastsearch', $_SESSION['lastSearchURL'] ?? false);
