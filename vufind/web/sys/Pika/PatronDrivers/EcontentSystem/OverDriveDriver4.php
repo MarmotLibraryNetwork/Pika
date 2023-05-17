@@ -653,13 +653,17 @@ class OverDriveDriver4 {
 				}
 				if (!empty($supplementalTitles)){
 					foreach ($supplementalTitles as $supplementalTitleId){
-						$key               = $bookshelfItem['checkoutSource'] . $supplementalTitleId . $bookshelfItem['user'];
-						$supplementalTitle = $checkedOutTitles[$key];
-						unset($checkedOutTitles[$key]);
-						foreach ($checkedOutTitles as &$checkedOutTitle){
-							if (!empty($checkedOutTitle['supplementalTitle']) && in_array($supplementalTitleId, array_keys($checkedOutTitle['supplementalTitle']))){
-								$checkedOutTitle['supplementalTitle'][$supplementalTitleId] = $supplementalTitle;
+						$key = $bookshelfItem['checkoutSource'] . $supplementalTitleId . $bookshelfItem['user'];
+						if (!empty($checkedOutTitles[$key])){
+							$supplementalTitle = $checkedOutTitles[$key];
+							unset($checkedOutTitles[$key]);
+							foreach ($checkedOutTitles as &$checkedOutTitle){
+								if (!empty($checkedOutTitle['supplementalTitle']) && in_array($supplementalTitleId, array_keys($checkedOutTitle['supplementalTitle']))){
+									$checkedOutTitle['supplementalTitle'][$supplementalTitleId] = $supplementalTitle;
+								}
 							}
+						} else {
+							$this->logger->warn('Information for OverDrive Checkout supplement title not found');
 						}
 					}
 				}
