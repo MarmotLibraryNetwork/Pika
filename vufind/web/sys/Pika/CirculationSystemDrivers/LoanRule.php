@@ -27,7 +27,14 @@ class LoanRule extends DB_DataObject {
 	public $id;
 	public $loanRuleId;
 	public $name;
-	public $code;
+	public $code;  // loan period code
+				//A = Absolute (fixed) Julian calendar date
+				//R = Days ("Regular" loan period)
+				//H = Hours, rounded to nearest hour, overnight loan allowed
+				//I = Hours, rounded to nearest hour, no overnight loan
+				//J = Hours, rounded to nearest minute, overnight allowed
+				//K = Hours, rounded to nearest minute, no overnight
+				//N = Non-circulating (if overridden at checkout, the system assumes units are days)
 	public $normalLoanPeriod;
 	public $holdable;
 	public $bookable;
