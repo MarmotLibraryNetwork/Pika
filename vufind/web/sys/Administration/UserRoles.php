@@ -34,7 +34,7 @@ class UserRoles extends DB_DataObject {
 	public $roleId; // int(11)
 
 	function keys(){
-		return array('userId', 'roleId');
+		return ['userId', 'roleId'];
 	}
 
 }

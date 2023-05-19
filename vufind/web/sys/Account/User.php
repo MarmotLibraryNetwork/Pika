@@ -302,7 +302,7 @@ class User extends DB_DataObject {
 				}
 				return $this->materialsRequestEmailSignature;
 			case 'password':
-				// accessing the password attribute directly will return the encrupted password.
+				// accessing the password attribute directly will return the encrypted password.
 				//$calledBy = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
 				//$this->logger->debug("Please use getPassword() when getting password from user object.", array("trace" => $calledBy));
 				return $this->password;
@@ -1887,14 +1887,18 @@ class User extends DB_DataObject {
 		if (count($this->getRoles()) > 0){
 			return true;
 		}else{
-			if (is_null($this->staffPtypes)){
-				$pType               = new PType();
-				$pType->isStaffPType = true;
-				$this->staffPtypes   = $pType->fetchAll('Ptype');
-			}
-			if (!empty($this->staffPtypes) && in_array($this->patronType, $this->staffPtypes)){
-				return true;
-			}
+			return $this->hasStaffPtypes();
+		}
+	}
+
+	public function hasStaffPtypes(){
+		if (is_null($this->staffPtypes)){
+			$pType               = new PType();
+			$pType->isStaffPType = true;
+			$this->staffPtypes   = $pType->fetchAll('Ptype');
+		}
+		if (!empty($this->staffPtypes) && in_array($this->patronType, $this->staffPtypes)){
+			return true;
 		}
 		return false;
 	}
