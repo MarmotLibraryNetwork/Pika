@@ -32,7 +32,7 @@ namespace Pika\PatronDrivers;
 use Location;
 use Pika\SierraPatronListOperations;
 
-require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/SierraPatronListOperations.php";
+require_once ROOT_DIR . '/sys/Pika/PatronDrivers/Traits/SierraPatronListOperations.php';
 
 class NorthernWaters extends Sierra {
 
@@ -68,7 +68,7 @@ class NorthernWaters extends Sierra {
 	public function getSelfRegistrationFields(){
 		$fields = parent::getSelfRegistrationFields();
 
-		if(isset($fields['success']) && $fields['success'] == false) {
+		if (isset($fields['success']) && $fields['success'] == false){
 			return $fields;
 		}
 
@@ -76,50 +76,58 @@ class NorthernWaters extends Sierra {
 		$loc                        = new Location();
 		$loc->validHoldPickupBranch = '1';
 		$loc->find();
-		if(!$loc->N) {
-			return ['success'=>false, 'barcode'=>''];
+		if (!$loc->N){
+			return ['success' => false, 'barcode' => ''];
 		}
 		$loc->orderBy('displayName');
 		$homeLocations = $loc->fetchAll('code', 'displayName');
 
-		for ($i = 0; $i < count($fields); $i++ ){
+		for ($i = 0;$i < count($fields);$i++){
 			if ($fields[$i]['property'] == 'homelibrarycode'){
 				$fields[$i]['values'] = $homeLocations;
-			} elseif ($fields[$i]['property'] == 'altaddress') {
-				$fields[$i]['label'] = 'Address of Residence';
+			}elseif ($fields[$i]['property'] == 'altaddress'){
+				$fields[$i]['label']       = 'Address of Residence';
 				$fields[$i]['description'] = 'Address of Residence';
 			}
 		}
-		$fields[] = ['property'   => 'county',
-		             'type'       => 'text',
-		             'label'      => 'County of Residence',
-		             'description'=> 'County of Residence',
-		             'maxLength'  => 30,
-		             'required'   => false];
+		$fields[] = [
+			'property'    => 'county',
+			'type'        => 'text',
+			'label'       => 'County of Residence',
+			'description' => 'County of Residence',
+			'maxLength'   => 30,
+			'required'    => false
+		];
 
-		$fields[] = ['property'   => 'township',
-		             'type'       => 'text',
-		             'label'      => 'Township, Village or City of Residence',
-		             'description'=> 'Township, Village or City of Residence',
-		             'maxLength'  => 30,
-		             'required'   => false];
+		$fields[] = [
+			'property'    => 'township',
+			'type'        => 'text',
+			'label'       => 'Township, Village or City of Residence',
+			'description' => 'Township, Village or City of Residence',
+			'maxLength'   => 30,
+			'required'    => false
+		];
 
 		return $fields;
 	}
 
 	public function selfRegister($extraSelfRegParams = false){
 		$countyTownshipString = '';
-		if (isset($_REQUEST['county']) && !empty($_REQUEST['county'])){
+		if (!empty($_REQUEST['county'])){
 			$county               = trim($_REQUEST['county']);
-			$countyTownshipString .= "County: " . $county . "  ";
+			$countyTownshipString .= "County: $county  ";
 		}
-		if (isset($_REQUEST['township']) && !empty($_REQUEST['township'])){
+		if (!empty($_REQUEST['township'])){
 			$township             = trim($_REQUEST['township']);
-			$countyTownshipString .= "Township: " . $township;
+			$countyTownshipString .= "Township: $township";
 		}
 		$extraSelfRegParams['varFields'][] = [
-			"fieldTag" => "x",
-			"content"  => $countyTownshipString
+			'fieldTag' => 'x',
+			'content'  => $countyTownshipString
+		];
+		$extraSelfRegParams['varFields'][] = [
+			'fieldTag' => 'm',
+			'content'  => 'Self-registered patron. Issue physical card, update record and verify residence to check out physical items.'
 		];
 		return parent::selfRegister($extraSelfRegParams);
 	}

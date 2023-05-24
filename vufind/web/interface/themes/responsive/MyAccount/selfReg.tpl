@@ -14,7 +14,7 @@
 			<div class="alert alert-info">
 				Your library card number is <strong>{$selfRegResult.barcode}</strong>.
 			</div>
-			{if $pinSetSuccess}
+{*			{if $pinSetSuccess}
 				<div class="alert alert-info">
 					{$pinSetSuccess}
 				</div>
@@ -23,7 +23,7 @@
 				<div class="alert alert-warning">
 					{$pinSetFail}
 				</div>
-			{/if}
+			{/if}*}
 		{else}
 			{img_assign filename='self_reg_banner.png' var=selfRegBanner}
 			{if $selfRegBanner}
@@ -39,16 +39,16 @@
 			</div>
 			{if (isset($selfRegResult))}
 				{*TODO: Good idea, couldn't finish it at this time. pascal 10-23-2018*}
-				{*{if !$selfRegResult.success && !empty($selfRegResult.message)}*}
-					{*<div id="selfRegFail" class="alert alert-warning">*}
-						{*{$selfRegResult.message}*}
-					{*</div>*}
-				{*{else}*}
-				<div id="selfRegFail" class="alert alert-warning">
-					Sorry, we were unable to create a library card for you.  You may already have an account or there may be an error with the information you entered.
-					&nbsp;Please try again or visit the library in person (with a valid ID) so we can create a card for you.
-				</div>
-				{*{/if}*}
+				{if !$selfRegResult.success && !empty($selfRegResult.message)}
+					<div id="selfRegFail" class="alert alert-warning">
+						{$selfRegResult.message}
+					</div>
+				{else}
+					<div id="selfRegFail" class="alert alert-warning">
+						Sorry, we were unable to create a library card for you.  You may already have an account or there may be an error with the information you entered.
+						&nbsp;Please try again or visit the library in person (with a valid ID) so we can create a card for you.
+					</div>
+				{/if}
 			{/if}
 			{if $captchaMessage}
 				<div id="selfRegFail" class="alert alert-warning">

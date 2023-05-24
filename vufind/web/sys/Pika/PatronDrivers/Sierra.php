@@ -80,6 +80,7 @@ class Sierra  implements \DriverInterface {
 	protected $oAuthToken;
 	/* @var $apiLastError false|string false if no error or last error message */
 	protected $apiLastError = false;
+	protected $apiLastErrorForPatron = false;
 	/** @var  AccountProfile $accountProfile */
 	public $accountProfile;
 	/* @var $patronBarcode string The patrons barcode */
@@ -444,7 +445,7 @@ class Sierra  implements \DriverInterface {
 
 		// does the user exist in database?
 		if(!$patron || $patron->N == 0) {
-			$this->logger->debug('Patron does not exist in Pika database.', ['Sierra ID'=>$sierraPatronId]);
+			$this->logger->debug('Patron does not exist in Pika database.', ['Sierra ID' => $sierraPatronId]);
 			$createPatron = true;
 		}
 
@@ -1379,9 +1380,9 @@ class Sierra  implements \DriverInterface {
 
 		// agency code -- not all sierra libraries use the agency field
 		if ($library->selfRegistrationAgencyCode >= 1){
-			$params['fixedFields']["158"] = [
-				"label" => "PAT AGENCY",
-				"value" => $library->selfRegistrationAgencyCode
+			$params['fixedFields']['158'] = [
+				'label' => 'PAT AGENCY',
+				'value' => $library->selfRegistrationAgencyCode
 			];
 		}
 		// expiration date
@@ -1393,7 +1394,7 @@ class Sierra  implements \DriverInterface {
 		}
 
 		// names -- standard is Last, First Middle
-		$name = trim($_POST['lastname']) . ", ";
+		$name = trim($_POST['lastname']) . ', ';
 		$name .= trim($_POST['firstname']);
 		if (!empty($_POST['middlename'])){
 			$name .= ' ' . trim($_POST['middlename']);
@@ -1438,8 +1439,12 @@ class Sierra  implements \DriverInterface {
 		$r         = $this->_doRequest($operation, $params, 'POST');
 
 		if (!$r){
+			$result = ['success' => false, 'barcode' => ''];
 			$this->logger->warning('Failed to self register patron');
-			return ['success' => false, 'barcode' => ''];
+			if (!empty($this->apiLastErrorForPatron)){
+				$result['message'] = $this->apiLastErrorForPatron;
+			}
+			return $result;
 		}
 
 		if ($successEmail){
@@ -3227,7 +3232,7 @@ class Sierra  implements \DriverInterface {
 		try {
 			$c = new Curl();
 		} catch (Exception $e) {
-			$this->logger->error($e->getMessage(), ['stacktrace'=>$e->getTraceAsString()]);
+			$this->logger->error($e->getMessage(), ['stacktrace' => $e->getTraceAsString()]);
 			return false;
 		}
 		$c->setHeaders($headers);
@@ -3268,7 +3273,7 @@ class Sierra  implements \DriverInterface {
 			// This will probably never be triggered since we have the try/catch above.
 			$message = 'curl Error: '.$c->getCurlErrorCode().': '.$c->getCurlErrorMessage();
 			$this->apiLastError = $message;
-			$this->logger->warning($message, ["backtrace" => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)]);
+			$this->logger->warning($message, ['backtrace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)]);
 			return false;
 		} elseif ($c->isHttpError()) {
 			// this will be a 4xx response
@@ -3279,19 +3284,22 @@ class Sierra  implements \DriverInterface {
 			// check for failed authentication
 			if($c->errorCode == 400 && $c->response->code == 108) {
 				// bad credentials
-				$message = 'Authentication Error: '.$c->response->httpStatus.': '.$c->response->name;
+				$message = 'Authentication Error: ' . $c->response->httpStatus . ': ' . $c->response->name;
 				$this->apiLastError = $message;
 				$this->logger->debug($message);
 				return false;
 			}
 			if(isset($c->response->code)) {
-				$message = 'API Error: ' . $c->response->code . ': ' . $c->response->name;
+				//$message = 'API Error: ' . $c->response->code . ': ' . $c->response->name;
+				$message = 'API Error: ' . $c->response->code . ': '; // name usually redundant part of the description below
 				if(isset($c->response->description)){
-					$message = $message . " " . $c->response->description;
-					$this->logger->warning($message, ['api_response'=>$c->response]);
+					$message                     = $message . ' ' . $c->response->description;
+					$this->apiLastErrorForPatron = $c->response->description;
+					$this->logger->warning($message, ['api_response' => $c->response]);
 				}
 			} else {
-				$message = 'HTTP Error: '.$c->getErrorCode().': '.$c->getErrorMessage();
+				$message                     = 'HTTP Error: ' . $c->getErrorCode() . ': ' . $c->getErrorMessage();
+				$this->apiLastErrorForPatron = $c->getErrorMessage();
 				$this->logger->warning($message, [$operationUrl, $params]);
 			}
 			$this->apiLastError = $message;
@@ -3440,13 +3448,13 @@ class Sierra  implements \DriverInterface {
 	 * @param $itemId
 	 * @return int
 	 */
-	protected function _getBibIdFromItemId($itemId) {
-		$operation = "items/".$itemId;
-		$params = ["fields"=>"bibIds"];
-		$iR = $this->_doRequest($operation, $params);
-		if($iR) {
+	protected function _getBibIdFromItemId($itemId){
+		$operation = "items/" . $itemId;
+		$params    = ["fields" => "bibIds"];
+		$iR        = $this->_doRequest($operation, $params);
+		if ($iR){
 			$bid = $iR->bibIds[0];
-		} else {
+		}else{
 			$bid = false;
 		}
 		return $bid;

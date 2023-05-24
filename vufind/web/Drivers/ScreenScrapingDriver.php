@@ -170,10 +170,10 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 		$post_string = http_build_query($postParams);
 
 		$this->_curl_connect($url);
-		curl_setopt_array($this->curl_connection, array(
+		curl_setopt_array($this->curl_connection, [
 			CURLOPT_POST       => true,
 			CURLOPT_POSTFIELDS => $post_string
-		));
+		]);
 
 //		global $instanceName;
 //		$usingLocalDevelopment = stripos($instanceName, 'localhost') !== false;
@@ -214,12 +214,19 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 		}
 
 		$this->_curl_connect($url);
-		curl_setopt_array($this->curl_connection, array(
+		curl_setopt_array($this->curl_connection, [
 			CURLOPT_POST       => true,
 			CURLOPT_POSTFIELDS => $post_string,
-		));
+		]);
 
-		return curl_exec($this->curl_connection);
+
+		$return = curl_exec($this->curl_connection);
+		if (!$return){
+			$error = curl_error($this->curl_connection);
+			$this->logger->error('curl post error : '. $error, [$url, $postParams]);
+
+		}
+		return $return;
 	}
 
 	protected function setupDebugging(){
