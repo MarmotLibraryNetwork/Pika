@@ -20,6 +20,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -36,7 +37,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 class ExtractOverDriveInfo {
-	private static Logger                   logger = LogManager.getLogger(ExtractOverDriveInfo.class);
+	private static final Logger             logger = LogManager.getLogger(ExtractOverDriveInfo.class);
 	private        Connection               pikaConn;
 	private        Connection               econtentConn;
 	private        PikaSystemVariables      systemVariables;
@@ -112,7 +113,7 @@ class ExtractOverDriveInfo {
 	private PreparedStatement markGroupedWorkForBibAsChangedStmt;
 	private boolean           hadTimeoutsFromOverDrive;
 
-	private CRC32   checksumCalculator = new CRC32();
+	private final CRC32 checksumCalculator = new CRC32();
 	private boolean errorsWhileLoadingProducts;
 
 	private final Set<String> productsToMarkForReindexing = new HashSet<>();
@@ -177,7 +178,7 @@ class ExtractOverDriveInfo {
 				//Check to see if a partial extract is running
 				boolean partialExtractRunning = systemVariables.getBooleanValuedVariable("partial_overdrive_extract_running");
 				if (partialExtractRunning) {
-					//Oops, a overdrive extract is already running.
+					//Oops, an overdrive extract is already running.
 					logger.warn("A partial overdrive extract is already running, verify that multiple extracts are not running for best performance.");
 					//return;
 				} else {
@@ -255,7 +256,7 @@ class ExtractOverDriveInfo {
 				try (
 						PreparedStatement advantageCollectionMapStmt = pikaConn.prepareStatement("SELECT libraryId, overdriveAdvantageName, overdriveAdvantageProductsKey, sharedOverdriveCollection FROM library WHERE enableOverdriveCollection = 1");
 						// Only include libraries that have enabled Overdrive Collection in Pika, even if they have an Advantage account  (eg. CMC)
-						ResultSet advantageCollectionMapRS = advantageCollectionMapStmt.executeQuery();
+						ResultSet advantageCollectionMapRS = advantageCollectionMapStmt.executeQuery()
 				) {
 					while (advantageCollectionMapRS.next()) {
 						//1 = (pika) libraryId, 2 = overDriveAdvantageName, 3 = overDriveAdvantageProductsKey
@@ -339,7 +340,7 @@ class ExtractOverDriveInfo {
 						logger.debug(note);
 					}
 					systemVariables.setVariable("last_overdrive_extract_time", extractStartTime);
-					note = "Setting last extract time to " + extractStartTime + " " + new Date(extractStartTime * 1000).toString();
+					note = "Setting last extract time to " + extractStartTime + " " + new Date(extractStartTime * 1000);
 					results.addNote(note);
 					logger.debug(note);
   				}
@@ -353,7 +354,7 @@ class ExtractOverDriveInfo {
 		} catch (SQLException e) {
 			// handle any errors
 			logger.error("Error initializing overdrive extraction", e);
-			results.addNote("Error initializing overdrive extraction " + e.toString());
+			results.addNote("Error initializing overdrive extraction " + e);
 			results.incrementErrors();
 		}
 	}
@@ -569,7 +570,7 @@ class ExtractOverDriveInfo {
 				econtentConn.setAutoCommit(true);
 			} catch (SQLException e) {
 				logger.info("Error saving/updating product ", e);
-				results.addNote("Error saving/updating product " + e.toString());
+				results.addNote("Error saving/updating product " + e);
 				results.incrementErrors();
 			}
 
@@ -605,7 +606,7 @@ class ExtractOverDriveInfo {
 		} catch (SQLException e) {
 			final String message = "Error deleting overdrive product " + overDriveDBInfo.getDbId();
 			logger.info(message, e);
-			results.addNote(message + e.toString());
+			results.addNote(message + e);
 			results.incrementErrors();
 			results.saveResults();
 		}
@@ -675,7 +676,7 @@ class ExtractOverDriveInfo {
 						setNeedsUpdated(overdriveId, true);
 					} else {
 						alwaysAvailableTitles++;
-						// Don't Mark AlwaysAvailable titles for reprocessing because really only the meta data will change
+						// Don't Mark AlwaysAvailable titles for reprocessing because really only the metadata will change
 						// and not the availability data.
 //						long lastAvailabilityCheck = availabilityTypesRS.getLong("lastAvailabilityCheck");
 						long lastMetadataCheck = availabilityTypesRS.getLong("lastMetadataCheck");
@@ -707,7 +708,7 @@ class ExtractOverDriveInfo {
 		} catch (SQLException e) {
 			final String message = "Error updating overdrive product " + overDriveInfo.getId();
 			logger.info(message, e);
-			results.addNote(message + e.toString());
+			results.addNote(message + e);
 			results.incrementErrors();
 			results.saveResults();
 		}
@@ -764,7 +765,7 @@ class ExtractOverDriveInfo {
 			throw e1;
 		} catch (SQLException e) {
 			logger.warn("Error saving product " + overDriveInfo.getId() + " to the database", e);
-			results.addNote("Error saving product " + overDriveInfo.getId() + " to the database " + e.toString());
+			results.addNote("Error saving product " + overDriveInfo.getId() + " to the database " + e);
 			results.incrementErrors();
 			results.saveResults();
 		}
@@ -791,7 +792,7 @@ class ExtractOverDriveInfo {
 			return true;
 		} catch (SQLException e) {
 			logger.warn("Error loading products from database", e);
-			results.addNote("Error loading products from database " + e.toString());
+			results.addNote("Error loading products from database " + e);
 			results.incrementErrors();
 			results.saveResults();
 			return false;
@@ -814,7 +815,7 @@ class ExtractOverDriveInfo {
 		} catch (SQLException e) {
 			final String message = "Error loading product from database for " + overDriveId;
 			logger.warn(message, e);
-			results.addNote(message + " " + e.toString());
+			results.addNote(message + " " + e);
 			results.incrementErrors();
 			results.saveResults();
 		}
@@ -887,7 +888,7 @@ class ExtractOverDriveInfo {
 				} catch (SocketTimeoutException toe) {
 					throw toe;
 				} catch (Exception e) {
-					results.addNote("error loading information from OverDrive API " + e.toString());
+					results.addNote("error loading information from OverDrive API " + e);
 					results.incrementErrors();
 					logger.info("Error loading overdrive titles", e);
 					return false;
@@ -1098,61 +1099,67 @@ class ExtractOverDriveInfo {
 			logger.error("Error " + metaDataResponse.getResponseCode() + " retrieving batch metadata for batch " + url + " " + metaDataResponse.getError());
 		} else {
 			JSONObject bulkResponse = metaDataResponse.getResponse();
-			if (bulkResponse.has("metadata")) {
-				try {
-					JSONArray metaDataArray = bulkResponse.getJSONArray("metadata");
-					for (int i = 0; i < metaDataArray.length(); i++) {
-						JSONObject metadata = metaDataArray.getJSONObject(i);
-						//Get the product to update
-						for (MetaAvailUpdateData curProduct : productsToUpdateMetadata) {
-							if (metadata.getString("id").equalsIgnoreCase(curProduct.overDriveId)) {
-								if (metadata.getBoolean("isOwnedByCollections")) {
-									updateDBMetadataForProduct(curProduct, metadata, curTime);
-								} else {
-									boolean ownedByAdvantage = false;
-//									if (logger.isDebugEnabled()) {
-//										logger.debug("Product " + curProduct.overDriveId + " is not owned by the shared collection -1, checking other shared and advantage collections.");
-//									}
-									//Sometimes a product is owned by just advantage accounts or other shared overdrive accounts so we need to check those accounts too
-									for (String advantageKey : libToOverDriveAPIKeyMap.values()) {
-										//TODO: shared advantage accounts, only call once per shared account
-										if (!advantageKey.equals(apiKey)) {
-											url = new StringBuilder("https://api.overdrive.com/v1/collections/" + advantageKey + "/products/" + curProduct.overDriveId + "/metadata");
-											WebServiceResponse advantageMetaDataResponse = callOverDriveURL(url.toString());
-											if (advantageMetaDataResponse.getResponseCode() != 200) {
-												//Doesn't exist in this collection, skip to the next.
-												logger.error("Error " + advantageMetaDataResponse.getResponseCode() + " retrieving metadata for advantage account " + url + " " + metaDataResponse.getError());
-											} else {
-												JSONObject advantageMetadata = advantageMetaDataResponse.getResponse();
-												if (advantageMetadata.getBoolean("isOwnedByCollections")) {
-													updateDBMetadataForProduct(curProduct, advantageMetadata, curTime);
-													ownedByAdvantage = true;
-													break;
+			if (bulkResponse != null) {
+				if (bulkResponse.has("metadata")) {
+					try {
+						JSONArray metaDataArray = bulkResponse.getJSONArray("metadata");
+						for (int i = 0; i < metaDataArray.length(); i++) {
+							JSONObject metadata = metaDataArray.getJSONObject(i);
+							//Get the product to update
+							for (MetaAvailUpdateData curProduct : productsToUpdateMetadata) {
+								if (metadata.getString("id").equalsIgnoreCase(curProduct.overDriveId)) {
+									if (metadata.getBoolean("isOwnedByCollections")) {
+										updateDBMetadataForProduct(curProduct, metadata, curTime);
+									} else {
+										boolean ownedByAdvantage = false;
+	//									if (logger.isDebugEnabled()) {
+	//										logger.debug("Product " + curProduct.overDriveId + " is not owned by the shared collection -1, checking other shared and advantage collections.");
+	//									}
+										//Sometimes a product is owned by just advantage accounts or other shared overdrive accounts so we need to check those accounts too
+										for (String advantageKey : libToOverDriveAPIKeyMap.values()) {
+											//TODO: shared advantage accounts, only call once per shared account
+											if (!advantageKey.equals(apiKey)) {
+												url = new StringBuilder("https://api.overdrive.com/v1/collections/" + advantageKey + "/products/" + curProduct.overDriveId + "/metadata");
+												WebServiceResponse advantageMetaDataResponse = callOverDriveURL(url.toString());
+												if (advantageMetaDataResponse.getResponseCode() != 200) {
+													//Doesn't exist in this collection, skip to the next.
+													logger.error("Error " + advantageMetaDataResponse.getResponseCode() + " retrieving metadata for advantage account " + url + " " + metaDataResponse.getError());
+												} else {
+													JSONObject advantageMetadata = advantageMetaDataResponse.getResponse();
+													if (advantageMetadata.getBoolean("isOwnedByCollections")) {
+														updateDBMetadataForProduct(curProduct, advantageMetadata, curTime);
+														ownedByAdvantage = true;
+														break;
+													}
 												}
 											}
 										}
+										// The following block is no longer accurate when handling multiple overdrive accounts.
+										// So we will always
+	//									if (!ownedByAdvantage) {
+	//										//Not owned by any collections, make sure we set that it isn't owned.
+	//										if (logger.isDebugEnabled()) {
+	//											logger.debug("Product " + curProduct.overDriveId + " is not owned by any collections.");
+	//										}
+	//										updateDBMetadataForProduct(curProduct, metadata, curTime);
+	//									}
 									}
-									// The following block is no longer accurate when handling multiple overdrive accounts.
-									// So we will always
-//									if (!ownedByAdvantage) {
-//										//Not owned by any collections, make sure we set that it isn't owned.
-//										if (logger.isDebugEnabled()) {
-//											logger.debug("Product " + curProduct.overDriveId + " is not owned by any collections.");
-//										}
-//										updateDBMetadataForProduct(curProduct, metadata, curTime);
-//									}
+
+									curProduct.metadataUpdated = true;
+									productsToUpdateMetadata.remove(curProduct);
+									break;
 								}
-
-								curProduct.metadataUpdated = true;
-								productsToUpdateMetadata.remove(curProduct);
-								break;
 							}
-						}
 
+						}
+					} catch (Exception e) {
+						logger.error("Error loading metadata within batch", e);
 					}
-				} catch (Exception e) {
-					logger.error("Error loading metadata within batch", e);
+				} else {
+					logger.warn("bulk metadata response did not have JSON 'metadata' object : " + bulkResponse);
 				}
+			} else {
+				logger.error("Got null response for bulk metadata URL call : " + url);
 			}
 		}
 	}
@@ -1199,7 +1206,8 @@ class ExtractOverDriveInfo {
 				metaDataStatement.setBoolean(++curCol, metaData.has("isPublicDomain") && metaData.getBoolean("isPublicDomain"));
 				metaDataStatement.setBoolean(++curCol, metaData.has("isPublicPerformanceAllowed") && metaData.getBoolean("isPublicPerformanceAllowed"));
 				metaDataStatement.setString(++curCol, metaData.has("shortDescription") ? metaData.getString("shortDescription") : "");
-				metaDataStatement.setString(++curCol, metaData.has("fullDescription") ? scrubEmojis(metaData.getString("fullDescription")) : "");
+//				metaDataStatement.setString(++curCol, metaData.has("fullDescription") ? scrubEmojis(metaData.getString("fullDescription")) : "");
+				metaDataStatement.setString(++curCol, metaData.has("fullDescription") ? metaData.getString("fullDescription") : "");
 				metaDataStatement.setDouble(++curCol, metaData.has("starRating") ? metaData.getDouble("starRating") : 0);
 				metaDataStatement.setInt(++curCol, metaData.has("popularity") ? metaData.getInt("popularity") : 0);
 				String thumbnail = "";
@@ -1216,7 +1224,8 @@ class ExtractOverDriveInfo {
 				metaDataStatement.setString(++curCol, thumbnail);
 				metaDataStatement.setString(++curCol, cover);
 				metaDataStatement.setBoolean(++curCol, metaData.has("isOwnedByCollections") && metaData.getBoolean("isOwnedByCollections"));
-				metaDataStatement.setString(++curCol, scrubEmojis(metaData.toString(2)));
+//				metaDataStatement.setString(++curCol, scrubEmojis(metaData.toString(2)));
+				metaDataStatement.setString(++curCol, metaData.toString(2));
 
 				if (isUpdateStatement) {
 					metaDataStatement.setLong(++curCol, databaseMetaData.getId());
@@ -1362,7 +1371,7 @@ class ExtractOverDriveInfo {
 			} catch (Exception e) {
 				final String message = "Error loading meta data for title " + updateData.overDriveId;
 				logger.info(message, e);
-				results.addNote(message + " " + e.toString());
+				results.addNote(message + " " + e);
 				updateData.hadMetadataErrors = true;
 			}
 		}
@@ -1378,7 +1387,7 @@ class ExtractOverDriveInfo {
 		} catch (SQLException e) {
 			final String message = "Error updating product metadata summary " + updateData.overDriveId;
 			logger.warn(message, e);
-			results.addNote(message + " " + e.toString());
+			results.addNote(message + " " + e);
 			updateData.hadMetadataErrors = true;
 		}
 	}
@@ -1401,7 +1410,7 @@ class ExtractOverDriveInfo {
 			}
 		} catch (SQLException e) {
 			logger.warn("Error loading product metadata ", e);
-			results.addNote("Error loading product metadata for " + databaseId + " " + e.toString());
+			results.addNote("Error loading product metadata for " + databaseId + " " + e);
 			results.incrementErrors();
 		}
 		return metaData;
@@ -1492,14 +1501,14 @@ class ExtractOverDriveInfo {
 					} catch (JSONException e) {
 						final String message = "JSON Error loading availability for title "+ overDriveInfo.getId() ;
 						logger.info(message, e);
-						results.addNote(message + " " + e.toString());
+						results.addNote(message + " " + e);
 						results.incrementErrors();
 					}
 				}
 			} catch (SQLException e) {
 				final String message = "SQL Error loading availability for title " + overDriveInfo.getId();
 				logger.info(message, e);
-				results.addNote(message + " " + e.toString());
+				results.addNote(message + " " + e);
 				results.incrementErrors();
 			}
 		}
@@ -1520,7 +1529,7 @@ class ExtractOverDriveInfo {
 			updateProductAvailabilityStmt.executeUpdate();
 		} catch (SQLException e) {
 			logger.warn("Error updating product availability status ", e);
-			results.addNote("Error updating product availability status " + overDriveInfo.getId() + " " + e.toString());
+			results.addNote("Error updating product availability status " + overDriveInfo.getId() + " " + e);
 			results.incrementErrors();
 		}
 	}
@@ -1584,10 +1593,11 @@ class ExtractOverDriveInfo {
 	 * @param libraryId The library id for the advantage or shared collection
 	 */
 	private boolean deleteOverDriveAvailability(long productId, long libraryId) {
-		try {
-			//No availability for this product
-			ResultSet existingAvailabilityRS  = checkForExistingAvailability(productId, libraryId);
-			boolean   hasExistingAvailability = existingAvailabilityRS.next();
+		try (
+						//No availability for this product
+						ResultSet existingAvailabilityRS = checkForExistingAvailability(productId, libraryId)
+		) {
+			boolean hasExistingAvailability = existingAvailabilityRS.next();
 			if (hasExistingAvailability) {
 				deleteAvailabilityStmt.setLong(1, existingAvailabilityRS.getLong("id"));
 				deleteAvailabilityStmt.executeUpdate();
@@ -1802,7 +1812,7 @@ class ExtractOverDriveInfo {
 			} catch (JSONException | SQLException e) {
 				final String message = "Error loading availability for title " + curProduct.overDriveId;
 				logger.info(message, e);
-				results.addNote(message + " " + e.toString());
+				results.addNote(message + " " + e);
 				results.incrementErrors();
 				curProduct.hadAvailabilityErrors = true;
 			}
@@ -1822,7 +1832,7 @@ class ExtractOverDriveInfo {
 			updateProductAvailabilityStmt.executeUpdate();
 		} catch (SQLException e) {
 			logger.warn("Error updating product availability status ", e);
-			results.addNote("Error updating product availability status " + curProduct.overDriveId + " " + e.toString());
+			results.addNote("Error updating product availability status " + curProduct.overDriveId + " " + e);
 			results.incrementErrors();
 			curProduct.hadAvailabilityErrors = true;
 		}
@@ -2013,7 +2023,7 @@ class ExtractOverDriveInfo {
 			conn.setConnectTimeout(30000);
 			conn.setDoOutput(true);
 
-			try (OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream(), "UTF8")) {
+			try (OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream(), StandardCharsets.UTF_8)) {
 				wr.write("grant_type=client_credentials");
 				wr.flush();
 			}
@@ -2067,7 +2077,7 @@ class ExtractOverDriveInfo {
 			String accountId   = accountIds.get(i);
 			return overDriveProductsKeys.get(accountId);
 		} else if (logger.isDebugEnabled()) {
-			logger.debug("Shared Collection ID '" + sharedCollectionId.toString() + "' doesn't have a matching Overdrive Account Id. Failed to get corresponding Products key.");
+			logger.debug("Shared Collection ID '" + sharedCollectionId + "' doesn't have a matching Overdrive Account Id. Failed to get corresponding Products key.");
 		}
 		return "";
 	}
