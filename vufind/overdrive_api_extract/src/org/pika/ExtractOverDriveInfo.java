@@ -1225,7 +1225,6 @@ class ExtractOverDriveInfo {
 				metaDataStatement.setString(++curCol, cover);
 				metaDataStatement.setBoolean(++curCol, metaData.has("isOwnedByCollections") && metaData.getBoolean("isOwnedByCollections"));
 				metaDataStatement.setString(++curCol, scrubEmojis(metaData.toString(2)));
-//				metaDataStatement.setString(++curCol, metaData.toString(2));
 
 				if (isUpdateStatement) {
 					metaDataStatement.setLong(++curCol, databaseMetaData.getId());
@@ -1393,13 +1392,13 @@ class ExtractOverDriveInfo {
 	}
 
 	 private String scrubEmojis(String str){
-		 String extracted = str.replaceAll("\uD83D\uDE03", "").replaceAll("\uD83D\uDE0A", "");
+		 String extracted = str.replaceAll("\uD83D\uDE03", "").replaceAll("\uD83D\uDE0A", "").replaceAll("\uD83D\uDE0E", "");
 		 if (!str.equals(extracted)){
-			 logger.info("String had extractable characters : " + str);
+			 logger.info("String had scrubable emoji characters : " + str);
 		 }
 		return str;
 
-//		return str.replaceAll("\uD83D\uDE03", "").replaceAll("\uD83D\uDE0A", "");
+//		return str.replaceAll("\uD83D\uDE03", "").replaceAll("\uD83D\uDE0A", "").replaceAll("\uD83D\uDE0E", "");
 	}
 
 	private OverDriveDBMetaData loadMetadataFromDatabase(long databaseId) {
