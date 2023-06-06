@@ -617,10 +617,14 @@ public class GroupedWorkIndexer {
 //							}
 
 							for (int i : isbnKeys){
-								if (arFields.length >= i) {
-									ISBN isbn = new ISBN(arFields[i]);
-									if (isbn.isValidIsbn()) {
-										arInformation.put(isbn.toString(), titleInfo);
+								if (arFields.length > i) { // length should be longer than index. eg index 17 requires an 18 length array
+									try {
+										ISBN isbn = new ISBN(arFields[i]);
+										if (isbn.isValidIsbn()) {
+											arInformation.put(isbn.toString(), titleInfo);
+										}
+									} catch (Exception e) {
+										logger.info("Error getting ISBN (col " + i + " from AR data line " + numLines, e);
 									}
 								}
 							}
