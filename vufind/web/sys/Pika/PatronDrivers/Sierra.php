@@ -3296,6 +3296,11 @@ class Sierra  implements \DriverInterface {
 					$message                     = $message . ' ' . $c->response->description;
 					$this->apiLastErrorForPatron = $c->response->description;
 					$this->logger->warning($message, ['api_response' => $c->response]);
+				} elseif (isset($c->response->name)){
+					// So far, this section is needed for :
+					// * getting item hold information from bib-level hold call
+					$message .= ' ' . $c->response->name;
+					$this->logger->warning($message, ['api_response' => $c->response]);
 				}
 			} else {
 				$message                     = 'HTTP Error: ' . $c->getErrorCode() . ': ' . $c->getErrorMessage();
