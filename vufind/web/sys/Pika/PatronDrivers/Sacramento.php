@@ -380,10 +380,6 @@ class Sacramento extends Sierra {
 			case 'folsom':
 				$pCode3 = 44;
 				break;
-			case 'spl':
-			case 'catalog':
-				$pCode3 = 117;
-				break;
 			case 'sutter':
 			case 'suttercounty':
 				$pCode3 = 158;
@@ -391,6 +387,14 @@ class Sacramento extends Sierra {
 			case 'woodland':
 			case 'cityofwoodland':
 				$pCode3 = 172;
+				break;
+			case 'spl':
+			case 'catalog':
+				$pCode3 = 117;
+				break;
+			default : // use sacramento pCode3 option for unknown options
+				$this->logger->error("Unknown library subdomain used for Sacramento self registration : $librarySubDomain");
+				$pCode3 = 117;
 				break;
 		}
 		// sacramento defaults for pcodes
