@@ -279,6 +279,14 @@ class Sacramento extends Sierra {
 		return true;
 	}
 	
+	/**
+	 * Send a Self Registration request to the ILS.
+	 *
+	 * PUT patrons
+	 * @param  bool|array   $extraSelfRegParams Extra self reg parameters. This will be array merged with other params
+	 * @return array        [success = bool, barcode = null or barcode]
+	 * @throws ErrorException
+	 */
 	public function selfRegister($extraSelfRegParams = false) {
 		global $library;
 		// sacramento test and production, woodlands test and production
@@ -320,11 +328,11 @@ class Sacramento extends Sierra {
 		$birthMonth          = date_format($birthDate, 'm');
 		$ddepartment         = $lastNameFourLetters . $firstNameOneLetter . $birthMonth . $birthDay; //var field d
 		$params['varFields'][] = [
-			"fieldTag" => "d",
-			"content"  => $ddepartment
+			'fieldTag' => 'd',
+			'content'  => $ddepartment
 		];
 
-		foreach ($_POST as $key=>$val) {
+		foreach ($_POST as $key => $val){
 			switch ($key) {
 				case 'email':
 					$val          = trim($val);
@@ -387,10 +395,10 @@ class Sacramento extends Sierra {
 		}
 		// sacramento defaults for pcodes
 		$params['patronCodes'] = [
-			"pcode1" => "e",
-			"pcode2" => "3",
-			"pcode3" => $pCode3,
-			"pcode4" => 0
+			'pcode1' => 'e',
+			'pcode2' => '3',
+			'pcode3' => $pCode3,
+			'pcode4' => 0
 		];
 
 		// sacramento default message field
@@ -408,20 +416,22 @@ class Sacramento extends Sierra {
 		// it's possible to register a patron with a barcode that is already in Sierra so make sure this doesn't happen
 		$barcodeTest = true;
 		do {
-			$barcode = (string)mt_rand((int)$min, (int)$max);
+			$barcode     = (string)mt_rand((int)$min, (int)$max);
 			$barcodeTest = $this->getPatronId($barcode);
 		} while ($barcodeTest === true);
 		$params['barcodes'][] = $barcode;
 
-		// agency code
-		$params['fixedFields']["158"] = [
-			"label" => "PAT AGENCY",
-			"value" => $library->selfRegistrationAgencyCode
-		];
+		// agency code -- not all sierra libraries use the agency field
+		if ($library->selfRegistrationAgencyCode >= 1){
+			$params['fixedFields']['158'] = [
+				'label' => 'PAT AGENCY',
+				'value' => $library->selfRegistrationAgencyCode
+			];
+		}
 		// notice preference -- default to z
 		$params['fixedFields']['268'] = [
-			"label" => "Notice Preference",
-			"value" => 'z'
+			'label' => 'Notice Preference',
+			'value' => 'z'
 		];
 		// expiration date
 		if ($library->selfRegistrationDaysUntilExpire > 0){
@@ -432,29 +442,30 @@ class Sacramento extends Sierra {
 		}
 
 		// names -- standard is Last, First Middle for sacramento
-		$name  = trim($_POST['lastname']) . ", ";
+		$name  = trim($_POST['lastname']) . ', ';
 		$name .= trim($_POST['firstname']);
 		if(!empty($_POST['middlename'])) {
 			$name .= ' ' . trim($_POST['middlename']);
 		}
 		// for sacramento check if the name exists
-		$nameCheckParams = [
-		  'varFieldTag'     => 'n',
-		  'varFieldContent' => $name,
-		  'fields'          => 'names,birthDate'
+		$nameCheckParams    = [
+			'varFieldTag'     => 'n',
+			'varFieldContent' => $name,
+			'fields'          => 'names,birthDate'
 		];
 		$nameCheckOperation = 'patrons/find';
-		$nameCheckRes = $this->_doRequest($nameCheckOperation, $nameCheckParams, 'GET');
+		$nameCheckRes       = $this->_doRequest($nameCheckOperation, $nameCheckParams, 'GET');
 		// the api returns an error if it finds more than one patron (silly!) so need to check for "duplicate"
 		// the api returns ALSO returns an error if the name isn't found so be careful here
 		// if $nameCheckRes is not false than a record was found matching the name.
 		if(!$nameCheckRes) {
 			//return false;
-			if(stristr($this->apiLastError, "duplicate")) {
-				return false;
+			if(stristr($this->apiLastError, 'duplicate')) {
+				return ['success' => false, 'barcode' => ''];
 			}
 		} elseif($nameCheckRes) {
-			return false;
+			
+			return ['success' => false, 'barcode' => '', 'message' => 'Found a user with that name'];
 		}
 		$params['names'][] = $name;
 
@@ -474,29 +485,49 @@ class Sacramento extends Sierra {
 
 		$params['addresses'][0]['lines'][] = $address;
 		// city state and zip -- no comma for Sacramento
-		$cityStateZip = trim($_POST['city']).' '.trim($_POST['state']).' '.trim($_POST['zip']);
+		$cityStateZip                      = trim($_POST['city']) . ' ' . trim($_POST['state']) . ' ' . trim($_POST['zip']);
 		$params['addresses'][0]['lines'][] = $cityStateZip;
-		$params['addresses'][0]['type'] = 'a';
+		$params['addresses'][0]['type']    = 'a';
 
 		// if library uses pins
 		if($this->accountProfile->usingPins()) {
-			$pin = trim($_POST['pin']);
+			$pin        = trim($_POST['pin']);
 			$pinConfirm = trim($_POST['pinconfirm']);
 
 			if(!($pin == $pinConfirm)) {
-				return ['success'=>false, 'barcode'=>''];
+				return ['success' => false, 'barcode' => ''];
 			} else {
 				$params['pin'] = $pin;
 			}
 		}
 
+		// EXTRA SELF REG PARAMETERS
+		// do this last in case there are any parameters set up that need to be overridden
+		if ($extraSelfRegParams){
+			$params = array_merge($params, $extraSelfRegParams);
+		}
+
+		// Set Pin set time
+		if (!empty($this->configArray['Catalog']['patronPinSetTimeField'])){
+			// Have to do have the extra params ($extraSelfRegParams) merging above since there can be more than one varFields
+			// to add to self reg users
+			$params['varFields'][] = [
+				'fieldTag' => $this->configArray['Catalog']['patronPinSetTimeField'],
+				'content'  => 'Patron set in Pika on ' . date('Y-m-d H:i:s')
+			];
+		}
+
 		$this->logger->debug('Self registering patron', ['params' => $params]);
-		$operation = "patrons/";
-		$r = parent::_doRequest($operation, $params, "POST");
+		$operation = 'patrons/';
+		$r         = $this->_doRequest($operation, $params, 'POST');
 
 		if(!$r) {
-			$this->logger->warning('Failed to self register patron');
-			return ['success'=>false, 'barcode'=>''];
+			$result = ['success' => false, 'barcode' => ''];
+			$this->logger->warning('Failed to self register patron', [$this->apiLastError]);
+			if (!empty($this->apiLastErrorForPatron)){
+				$result['message'] = $this->apiLastErrorForPatron;
+			}
+			return $result;
 		}
 
 		if($successEmail) {
@@ -505,7 +536,6 @@ class Sacramento extends Sierra {
 
 		$this->logger->debug('Success self registering patron');
 		return ['success' => true, 'barcode' => $barcode];
-
 	}
 
 
