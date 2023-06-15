@@ -44,10 +44,9 @@ class Lion extends Sierra {
 		$this->logger->info('Using Pika\PatronDrivers\Lion.');
 	}
 
-	public function selfRegister($extraSelfRegParams = false)
-	{
+	public function selfRegister($extraSelfRegParams = false){
 		$extraSelfRegParams = [
-		 'pMessage' => 's',
+			'pMessage' => 's',
 		];
 		return parent::selfRegister($extraSelfRegParams);
 	}
@@ -63,85 +62,87 @@ class Lion extends Sierra {
 		//}
 		$homeLibraryCode = $location->code;
 
-		$fields   = array();
+		$fields   = [];
 		$fields[] = [
 			'property' => 'homelibrarycode',
 			'type'     => 'hidden',
 			'default'  => $homeLibraryCode
 		];
-		$fields[] = array(
+		$fields[] = [
 			'property'    => 'firstname',
 			'type'        => 'text',
 			'label'       => 'First Name',
 			'description' => 'Your first name',
 			'maxLength'   => 40,
 			'required'    => true
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'lastname',
 			'type'        => 'text',
 			'label'       => 'Last Name',
 			'description' => 'Your last name',
 			'maxLength'   => 40,
 			'required'    => true
-		);
+		];
 		// if library would like a birthdate
 		if ($library && $library->promptForBirthDateInSelfReg){
-			$fields[] = ['property'   => 'birthdate',
-			             'type'       => 'date',
-			             'label'      => 'Date of Birth (MM-DD-YYYY)',
-			             'description'=> 'Date of birth',
-			             'maxLength'  => 10,
-			             'required'   => true];
+			$fields[] = [
+				'property'    => 'birthdate',
+				'type'        => 'date',
+				'label'       => 'Date of Birth (MM-DD-YYYY)',
+				'description' => 'Date of birth',
+				'maxLength'   => 10,
+				'required'    => true
+			];
 		}
-		$fields[] = array(
+		$fields[] = [
 			'property'    => 'email',
 			'type'        => 'email',
 			'label'       => 'E-Mail',
 			'description' => 'E-Mail (for confirmation, notices and newsletters)',
 			'maxLength'   => 128,
 			'required'    => true
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'primaryphone',
 			'type'        => 'text',
 			'label'       => 'Phone Number',
 			'description' => 'Phone Number',
 			'maxLength'   => 12,
 			'required'    => true
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'address',
 			'type'        => 'text',
 			'label'       => 'Address',
 			'description' => 'Address',
 			'maxLength'   => 128,
 			'required'    => true
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'city',
 			'type'        => 'text',
 			'label'       => 'City',
 			'description' => 'City',
 			'maxLength'   => 48,
 			'required'    => true
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'state',
 			'type'        => 'text',
 			'label'       => 'State',
 			'description' => 'State',
 			'maxLength'   => 32,
 			'required'    => true
-		);
-		$fields[] = array(
+		];
+		$fields[] = [
 			'property'    => 'zip',
 			'type'        => 'text',
 			'label'       => 'Zip Code',
 			'description' => 'Zip Code',
 			'maxLength'   => 5,
 			'required'    => true
-		);
+		];
 
 		return $fields;
 	}

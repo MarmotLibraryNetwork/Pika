@@ -125,7 +125,7 @@ class Flatirons extends Sierra
 			'maxLength'   => 16,
 			'required'    => true
 		];
-		if ($libSubDomain == "boulder"){
+		if ($libSubDomain == 'boulder'){
 			$fields[] = [
 				'property'    => 'email',
 				'type'        => 'email',
@@ -182,10 +182,10 @@ class Flatirons extends Sierra
 
 	function selfRegister($extraSelfRegParams = false){
 		global $library;
-		$libSubDomain = strtolower($library->subdomain);
+		$libSubDomain       = strtolower($library->subdomain);
 		$extraSelfRegParams = [];
 		// set boulder home location code
-		if($libSubDomain == "boulder") {
+		if($libSubDomain == 'boulder') {
 			$extraSelfRegParams['homeLibraryCode'] = 'bm';
 			if(isset($_REQUEST['homelibrarycode'])) {
 				unset($_REQUEST['homelibrarycode']);
@@ -197,7 +197,7 @@ class Flatirons extends Sierra
 		$_REQUEST['state']   = strtoupper($_REQUEST['state']);
 		$_REQUEST['zip']     = strtoupper($_REQUEST['zip']);
 
-		$extraSelfRegParams['varFields'][] = ["fieldTag" => "x", "content"  => "Created Online"];
+		$extraSelfRegParams['varFields'][] = ['fieldTag' => 'x', 'content'  => 'Created Online'];
 		$extraSelfRegParams['pMessage']    = 'o';
 
 		return parent::selfRegister($extraSelfRegParams);

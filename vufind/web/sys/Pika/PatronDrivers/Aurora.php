@@ -56,7 +56,7 @@ class Aurora extends Sierra {
 
 		$extraSelfRegParams['patronCodes']['pcode1'] = 's';
 		$extraSelfRegParams['patronCodes']['pcode3'] = 32;
-		$extraSelfRegParams['fixedFields']           = ['268' => ["label" => "Notice Preference", "value" => 'z']];
+		$extraSelfRegParams['fixedFields']           = ['268' => ['label' => 'Notice Preference', 'value' => 'z']];
 
 		return parent::selfRegister($extraSelfRegParams);
 	}
