@@ -1440,7 +1440,7 @@ class Sierra  implements \DriverInterface {
 
 		if (!$r){
 			$result = ['success' => false, 'barcode' => ''];
-			$this->logger->warning('Failed to self register patron');
+			$this->logger->warning('Failed to self register patron', [$this->apiLastError]);
 			if (!empty($this->apiLastErrorForPatron)){
 				$result['message'] = $this->apiLastErrorForPatron;
 			}
