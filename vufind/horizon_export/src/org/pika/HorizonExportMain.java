@@ -24,6 +24,7 @@ import org.marc4j.MarcStreamWriter;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
+import org.marc4j.marc.VariableField;
 
 import java.io.*;
 import java.sql.*;
@@ -111,7 +112,7 @@ public class HorizonExportMain {
 	 * we just process the last extract.
 	 *
 	 * Expects extracts to already be copied to the server and to be in the
-	 * /data/pika-plus/{sitename}/marc_updates directory
+	 * /data/pika/{sitename}/marc_updates directory
 	 */
 	private static void processChangesFromHorizon() {
 		File         fullExportFile      = new File(indexingProfile.marcPath + "/fullexport.mrc");
@@ -200,7 +201,7 @@ public class HorizonExportMain {
 		if (!errorUpdatingDatabase) {
 			//Finally, move all files we have processed to another folder (or delete) so we don't process them again
 			for (File file : filesToProcess.values()) {
-				logger.debug("Deleting " + file.getName() + " since it has been processed");
+				logger.info("Deleting " + file.getName() + " since it has been processed");
 				if (!file.delete()) {
 					logger.warn("Could not delete " + file.getName());
 				}
@@ -217,6 +218,7 @@ public class HorizonExportMain {
 			File marcFile = indexingProfile.getFileForIlsRecord(recordId);
 			if (!marcFile.exists()) {
 				//This is a new record, we can just skip it for now.
+				logger.info("New record " + recordId + " found in partial export wasn't written and not processed.");
 				return true;
 			}
 
@@ -227,8 +229,8 @@ public class HorizonExportMain {
 				updateWriter.close();
 				//Update the database to indicate it has changed
 
-				//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
-				//or creating a new grouped work
+				// Set up the grouped work for the record.  This will take care of either adding it to the proper grouped work
+				// or creating a new grouped work
 				if (!recordGroupingProcessor.processMarcRecord(recordToUpdate, true)) {
 					logger.warn(recordId + " was suppressed");
 				} else {
@@ -267,7 +269,7 @@ public class HorizonExportMain {
 	}
 
 	private static List<DataField> getDataFields(Record marcRecord, String tag) {
-		List variableFields = marcRecord.getVariableFields(tag);
+		List<VariableField> variableFields = marcRecord.getVariableFields(tag);
 		List<DataField> variableFieldsReturn = new ArrayList<>();
 		for (Object variableField : variableFields){
 			if (variableField instanceof DataField){
