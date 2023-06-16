@@ -16,7 +16,7 @@ package org.pika;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
+//import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -400,7 +400,8 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	 * @param subtitle the separate subtitle
 	 * @return the full title with the subtitle included
 	 */
-	private String normalizePassedInSubtitle(@NotNull String title, String subtitle) {
+//	private String normalizePassedInSubtitle(@NotNull String title, String subtitle) {
+	private String normalizePassedInSubtitle(String title, String subtitle) {
 		if (!title.endsWith(subtitle)){
 			// Remove bracketed subtitles
 			String newSubtitle = bracketedCharacterStrip.matcher(subtitle).replaceAll("");

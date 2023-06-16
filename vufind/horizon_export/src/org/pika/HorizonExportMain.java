@@ -143,8 +143,9 @@ public class HorizonExportMain {
 			try (
 							FileInputStream marcFileStream = new FileInputStream(file)
 			) {
-				//Record Grouping always writes individual MARC records as UTF8
-				MarcReader updatesReader = new MarcPermissiveStreamReader(marcFileStream, true, true, "UTF8");
+//				MarcReader updatesReader = new MarcPermissiveStreamReader(marcFileStream, true, true, "UTF8");
+				MarcReader updatesReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
+				// Input file from partial export files is likely MARC8 rather than UTF8
 				while (updatesReader.hasNext()) {
 					try {
 						Record curBib   = updatesReader.next();
@@ -220,8 +221,8 @@ public class HorizonExportMain {
 			}
 
 			try (FileOutputStream marcOutputStream = new FileOutputStream(marcFile)) {
-				MarcStreamWriter updateWriter = new MarcStreamWriter(marcOutputStream);
-				updateWriter.setAllowOversizeEntry(true);
+				MarcStreamWriter updateWriter = new MarcStreamWriter(marcOutputStream, "UTF-8", true);
+				// Save as UTF8 encoded record
 				updateWriter.write(recordToUpdate);
 				updateWriter.close();
 				//Update the database to indicate it has changed

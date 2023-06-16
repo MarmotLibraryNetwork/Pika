@@ -15,7 +15,7 @@
 package org.pika;
 
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
+//import org.jetbrains.annotations.NotNull;
 import org.marc4j.marc.*;
 
 import java.io.File;
@@ -504,7 +504,7 @@ class RecordGroupingProcessor {
 	 * @param author Inverted author name to convert, eg "Last, First M."
 	 * @return an regular ordered name "First M. Last"
 	 */
-	@NotNull
+//	@NotNull
 	private String deInvertAuthorName(String author, RecordIdentifier identifier) {
 		author = author.replaceAll(",+$",""); // trim all trailing commas
 		int commaPosition = author.indexOf(',');
