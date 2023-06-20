@@ -179,7 +179,7 @@ class Admin_AJAX extends AJAXHandler {
 	}
 
 	function displayClonePrompt(){
-		$results = [
+			$results = [
 			'title' => 'Clone Location',
 			'body'  => 'No Data available',
 		];
@@ -471,7 +471,7 @@ class Admin_AJAX extends AJAXHandler {
 		return $locationList;
 	}
 
-	function getLibraryList($libraryId){
+	private function getLibraryList($libraryId){
 		//Look lookup information for display in the user interface
 		$user = UserAccount::getLoggedInUser();
 
@@ -864,7 +864,7 @@ class Admin_AJAX extends AJAXHandler {
 			$facetLabel = $_REQUEST['facetLabel'];
 		}
 		$user = UserAccount::getLoggedInUser();
-		if (UserAccount::userHasRole("opacAdmin")){
+		if (UserAccount::userHasRole('opacAdmin')){
 			$library  = new Library();
 			$copyFrom = new Library();
 
@@ -1019,14 +1019,16 @@ class Admin_AJAX extends AJAXHandler {
 			'title' => 'Error',
 			'body'  => 'Failed to load Patron Types',
 		];
-
-		$sierraDna = new SierraDNA();
-		$res       = $sierraDna->loadPtypes();
-		if ($res){
-			$results = [
-				'title' => 'Success',
-				'body'  => 'Patron Types loaded.',
-			];
+		$user = UserAccount::getLoggedInUser();
+		if (UserAccount::userHasRole('opacAdmin')){
+			$sierraDna = new SierraDNA();
+			$res       = $sierraDna->loadPtypes();
+			if ($res){
+				$results = [
+					'title' => 'Success',
+					'body'  => 'Patron Types loaded.',
+				];
+			}
 		}
 		return $results;
 	}
