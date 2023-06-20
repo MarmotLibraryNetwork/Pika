@@ -219,13 +219,13 @@ function handlePEARError($error, $method = null){
 //		', User Agent = ' . ($_SERVER['HTTP_USER_AGENT'] ?? '') .
 //		", Request URI = {$_SERVER['REQUEST_URI']})";
 //	$detailedServer = "\nServer Context:\n" . print_r($_SERVER, true);
-	$basicBacktrace = "\nBacktrace:\n";
-	if (is_array($error->backtrace)){
-		foreach ($error->backtrace as $line){
-			$basicBacktrace .= ($line['file'] ?? 'none') . '  line ' . ($line['line'] ?? 'none')
-				. ' - class = ' . ($line['class'] ?? 'none') . ', function = ' . ($line['function'] ?? 'none') . "\n";
-		}
-	}
+//	$basicBacktrace = "\nBacktrace:\n";
+//	if (is_array($error->backtrace)){
+//		foreach ($error->backtrace as $line){
+//			$basicBacktrace .= ($line['file'] ?? 'none') . '  line ' . ($line['line'] ?? 'none')
+//				. ' - class = ' . ($line['class'] ?? 'none') . ', function = ' . ($line['function'] ?? 'none') . "\n";
+//		}
+//	}
 //	$detailedBacktrace = "\nBacktrace:\n" . print_r($error->backtrace, true);
 //	$errorDetails      = [
 //		1 => $baseError,
@@ -237,7 +237,15 @@ function handlePEARError($error, $method = null){
 
 	global $pikaLogger;
 //	$pikaLogger->error("Pear error", $errorDetails);
-	$pikaLogger->error("Pear error : " + $baseError, $basicBacktrace);
+	$pikaLogger->error('Pear error : ' . $baseError);
+	//TODO: if in debug, log basic backtrace
+	//	$basicBacktrace = "\nBacktrace:\n";
+	//	if (is_array($error->backtrace)){
+	//		foreach ($error->backtrace as $line){
+	//			$basicBacktrace .= ($line['file'] ?? 'none') . '  line ' . ($line['line'] ?? 'none')
+	//				. ' - class = ' . ($line['class'] ?? 'none') . ', function = ' . ($line['function'] ?? 'none') . "\n";
+	//		}
+	//	}
 
 	exit();
 }
