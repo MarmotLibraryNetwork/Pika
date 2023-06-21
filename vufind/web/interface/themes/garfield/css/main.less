@@ -15,7 +15,7 @@
 //}
 //
 //.header-button {
-//  color: #80561B !important;
+// color: #80561B !important;
 //  font-size: 125%;
 //  line-height: 30px !important;
 //  padding: 0;
@@ -26,12 +26,34 @@
 //}
 //
 //
-//.logoutOptions > .hidden-xs {
-//  float: right;
-//  //width: 200px;
-//  margin-left: 30px; /* replace above with this */
-//  font-size: 80%;
-//}
+.logoutOptions > .hidden-xs {
+  float: right;
+  width: 200px;
+  padding-top:20px;
+  transition: all 0.3s ease-in-out;
+
+}
+.logoutOptions > .hidden-xs:hover{
+  transform: scale(0.9);
+
+}
+.logoutOptions .header-button{
+  background: @garfieldBlue;
+  border-radius: 50px;
+
+
+}
+.header-button{
+  line-height: 45px!important;
+  color:white!important;
+  border:none;
+  text-shadow:none;
+}
+.header-button:hover{
+  border:none;
+}
+
+
 //
 //#headerLoginLink {
 //  font-size: 100%;
