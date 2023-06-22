@@ -156,7 +156,7 @@ abstract class ObjectEditor extends Admin_Admin {
 				}else{
 					$errorDescription = 'Unknown error';
 				}
-				$pikaLogger->debug('Could not insert new object ' . $ret . ' ' . $errorDescription);
+				$pikaLogger->error('Could not insert new object ' . $ret . ' ' . $errorDescription);
 				@session_start();
 				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br>{$errorDescription}";
 
@@ -165,7 +165,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		}else{
 			global $pikaLogger;
 			$errorDescription = implode(', ', $validationResults['errors']);
-			$pikaLogger->debug('Could not validate new object ' . $objectType . ' ' . $errorDescription);
+			$pikaLogger->notice('Could not validate new object ' . $objectType . ' ' . $errorDescription);
 			@session_start();
 			$_SESSION['lastError'] = "The information entered was not valid. <br>" . implode('<br>', $validationResults['errors']);
 
@@ -261,6 +261,8 @@ abstract class ObjectEditor extends Admin_Admin {
 								}else{
 									$errorDescription = 'Unknown error';
 								}
+								global $pikaLogger;
+								$pikaLogger->error("An error occurred updating {$this->getObjectType()} with id of $id : $errorDescription");
 								@session_start();
 								$_SESSION['lastError'] = "An error occurred updating {$this->getObjectType()} with id of $id <br><br><blockquote class=\"alert-warning\">{$errorDescription}</blockquote>";
 								$errorOccurred         = true;
@@ -279,10 +281,14 @@ abstract class ObjectEditor extends Admin_Admin {
 							if ($ret === false){
 								$_SESSION['lastError'] = "Unable to delete {$this->getObjectType()} with id of $id";
 								$errorOccurred         = true;
+								global $pikaLogger;
+								$pikaLogger->error($_SESSION['lastError']);
 							}
 						}else{
 							$_SESSION['lastError'] = "Not allowed to delete {$this->getObjectType()} with id of $id";
 							$errorOccurred         = true;
+							global $pikaLogger;
+							$pikaLogger->error($_SESSION['lastError']);
 						}
 						break;
 				}
@@ -291,6 +297,8 @@ abstract class ObjectEditor extends Admin_Admin {
 				session_start();
 				$_SESSION['lastError'] = "An error occurred, could not find {$this->getObjectType()} with id of $id";
 				$errorOccurred         = true;
+				global $pikaLogger;
+				$pikaLogger->error($_SESSION['lastError']);
 			}
 		}
 		global $configArray;
