@@ -139,6 +139,12 @@ class Marmot extends Sierra {
 			case 'englewood':
 				/* Englewood */
 				$extraSelfRegParams['patronCodes']['pcode2'] = 'z';
+
+				// notice preference -- default to z
+				$extraSelfRegParams['fixedFields']['268'] = [
+					'label' => 'Notice Preference',
+					'value' => 'z'
+				];
 				break;
 		}
 		return parent::selfRegister($extraSelfRegParams);
