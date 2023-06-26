@@ -218,8 +218,10 @@ public class HorizonExportMain {
 			File marcFile = indexingProfile.getFileForIlsRecord(recordId);
 			if (!marcFile.exists()) {
 				//This is a new record, we can just skip it for now.
-				logger.info("New record " + recordId + " found in partial export wasn't written and not processed.");
-				return true;
+//				logger.info("New record " + recordId + " found in partial export wasn't written and not processed.");
+//				return true;
+				logger.info("New record " + recordId + " found in partial export and will be grouped.");
+				// The file exist check above should be redundant now with the record grouping below.
 			}
 
 			try (FileOutputStream marcOutputStream = new FileOutputStream(marcFile)) {
