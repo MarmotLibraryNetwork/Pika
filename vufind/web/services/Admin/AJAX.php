@@ -1005,15 +1005,17 @@ class Admin_AJAX extends AJAXHandler {
 	}
 
 	function fileExists(){
-		$filename    = trim($_REQUEST['fileName']);
-		$storagePath = trim($_REQUEST['storagePath']);
+		$user = UserAccount::getLoggedInUser();
+		if (UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin', 'cataloging'])){
+			$filename    = trim($_REQUEST['fileName']);
+			$storagePath = trim($_REQUEST['storagePath']);
 
-		if (file_exists($storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $filename)){
-			return ["exists" => "true"];
+			if (file_exists($storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $filename)){
+				return ["exists" => "true"];
+			}
+			return ["exists" => "false"];
 		}
-		return ["exists" => "false"];
 	}
-
 	function loadPtypes(){
 		$results = [
 			'title' => 'Error',
