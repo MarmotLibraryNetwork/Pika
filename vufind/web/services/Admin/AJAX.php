@@ -1015,6 +1015,7 @@ class Admin_AJAX extends AJAXHandler {
 			}
 			return ["exists" => "false"];
 		}
+		return ["error" => "you must be logged in to perform this action"];
 	}
 	function loadPtypes(){
 		$results = [
