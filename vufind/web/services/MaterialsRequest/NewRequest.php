@@ -89,6 +89,8 @@ class MaterialsRequest_NewRequest extends Action {
 			$interface->assign('useWorldCat', $useWorldCat);
 
 			if (isset($library)){
+				$interface->assign('newMaterialsRequestSummary', $library->newMaterialsRequestSummary);
+
 				// Get the Fields to Display for the form
 				$requestFormFields = $request->getRequestFormFields($library->libraryId);
 				$interface->assign('requestFormFields', $requestFormFields);
