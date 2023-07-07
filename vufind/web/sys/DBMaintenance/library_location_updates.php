@@ -897,15 +897,23 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			)
 		),
 
-		'masquerade_automatic_timeout_length' => array(
+		'masquerade_automatic_timeout_length' => [
 			'title'       => 'Library Option to set Masquerade Mode time out length',
 			'description' => 'Allow libraries to set the value is seconds before an idle Masquerade session times out.',
-			'sql'         => array(
+			'sql'         => [
 				'ALTER TABLE `library` ADD COLUMN `masqueradeAutomaticTimeoutLength` TINYINT(1) UNSIGNED NULL;',
 				'ALTER TABLE `library` ADD COLUMN `allowMasqueradeMode` TINYINT(1) DEFAULT "0";',
 				'ALTER TABLE `library` ADD COLUMN `allowReadingHistoryDisplayInMasqueradeMode` TINYINT(1) DEFAULT "0";',
-			)
-		),
+			]
+		],
+
+		'2023.03.0_masquerade_automatic_timeout_length' => [
+			'title'       => 'Increase Masquerade Mode time out length',
+			'description' => 'Allow libraries to set a maximum of 600 seconds before an idle Masquerade session times out.',
+			'sql'         => [
+				'ALTER TABLE `pika`.`library` CHANGE COLUMN `masqueradeAutomaticTimeoutLength` `masqueradeAutomaticTimeoutLength` TINYINT(2) UNSIGNED NULL DEFAULT NULL;',
+			]
+		],
 
 		'explore_more_configuration' => array(
 			'title'       => 'Library option to configure display of Archive Explore More Side bar.',
