@@ -911,7 +911,7 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			'title'       => 'Increase Masquerade Mode time out length',
 			'description' => 'Allow libraries to set a maximum of 600 seconds before an idle Masquerade session times out.',
 			'sql'         => [
-				'ALTER TABLE `pika`.`library` CHANGE COLUMN `masqueradeAutomaticTimeoutLength` `masqueradeAutomaticTimeoutLength` TINYINT(2) UNSIGNED NULL DEFAULT NULL;',
+				'ALTER TABLE `library` CHANGE COLUMN `masqueradeAutomaticTimeoutLength` `masqueradeAutomaticTimeoutLength` SMALLINT(3) UNSIGNED NULL DEFAULT NULL;',
 			]
 		],
 
