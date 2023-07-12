@@ -43,7 +43,7 @@ class Archive_Home extends Action{
 		}
 
 		$archiveName = $library->displayName;
-		//Get the archive name from islnadora
+		//Get the archive name from islandora
 		/** @var SearchObject_Islandora $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 		$searchObject->init();
@@ -52,6 +52,8 @@ class Archive_Home extends Action{
 		$searchObject->clearFilters();
 		$searchObject->clearHiddenFilters();
 		$searchObject->setBasicQuery("RELS_EXT_isMemberOfCollection_uri_ms:\"info:fedora/islandora:root\" AND PID:{$library->archiveNamespace}*");
+		//Get the library top-level collection
+
 		$searchObject->setApplyStandardFilters(false);
 		$response = $searchObject->processSearch(true, false, true);
 		if ($response && isset($response['response']) && $response['response']['numFound'] > 0){
