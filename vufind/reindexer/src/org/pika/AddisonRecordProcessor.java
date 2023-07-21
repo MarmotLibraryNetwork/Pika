@@ -131,6 +131,8 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 				econtentSource = "EBSCO";
 			} else if (url.contains("gale")) {
 				econtentSource = "Gale";
+			} else if (url.contains("rkma.com")) {
+				econtentSource = "Richard K. Miller & Associates";
 			}
 		}
 		return econtentSource;
