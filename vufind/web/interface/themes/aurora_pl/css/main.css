@@ -2111,7 +2111,7 @@ fieldset[disabled] .btn-default.active {
   background-color: #fff;
 }
 .btn-primary {
-  color: #fff;
+  color: #000;
   background-color: #6ABF4B;
   border-color: #5eb13f;
 }
@@ -2120,7 +2120,7 @@ fieldset[disabled] .btn-default.active {
 .btn-primary:active,
 .btn-primary.active,
 .open .dropdown-toggle.btn-primary {
-  color: #fff;
+  color: #000;
   background-color: #58a63b;
   border-color: #46842f;
 }
@@ -6836,7 +6836,7 @@ a:hover {
 a.btn-primary,
 a.btn-warning,
 a.btn-info {
-  color: #fff;
+  color: #000;
 }
 @media print {
   a:link:after,
@@ -7490,7 +7490,7 @@ fieldset[disabled] .datepicker table tr td.selected.highlighted.active {
 }
 .datepicker table tr td.active,
 .datepicker table tr td.active.highlighted {
-  color: #fff;
+  color: #000;
   background-color: #6ABF4B;
   border-color: #5eb13f;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
@@ -7505,7 +7505,7 @@ fieldset[disabled] .datepicker table tr td.selected.highlighted.active {
 .datepicker table tr td.active.highlighted.active,
 .open .dropdown-toggle.datepicker table tr td.active,
 .open .dropdown-toggle.datepicker table tr td.active.highlighted {
-  color: #fff;
+  color: #000;
   background-color: #58a63b;
   border-color: #46842f;
 }
@@ -7579,7 +7579,7 @@ fieldset[disabled] .datepicker table tr td.active.highlighted.active {
 .datepicker table tr td span.active:hover,
 .datepicker table tr td span.active.disabled,
 .datepicker table tr td span.active.disabled:hover {
-  color: #fff;
+  color: #000;
   background-color: #6ABF4B;
   border-color: #5eb13f;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
@@ -7604,7 +7604,7 @@ fieldset[disabled] .datepicker table tr td.active.highlighted.active {
 .open .dropdown-toggle.datepicker table tr td span.active:hover,
 .open .dropdown-toggle.datepicker table tr td span.active.disabled,
 .open .dropdown-toggle.datepicker table tr td span.active.disabled:hover {
-  color: #fff;
+  color: #000;
   background-color: #58a63b;
   border-color: #46842f;
 }
@@ -8059,7 +8059,7 @@ hr.menu {
   background-color: #6ABF4B;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
-  color: #FFF;
+  color: #000000;
 }
 #vertical-menu-bar .menu-icon {
   padding: 5px;
@@ -8313,8 +8313,8 @@ hr.menu {
 }
 .sidebar-links .panel-heading {
   padding: 5px 15px;
-  background-color: #e7e7e7;
-  background: linear-gradient(to bottom, #fff, #d7d7d7);
+  background-color: #00758D;
+  background: linear-gradient(to bottom, #00758D, #5BB0BD);
   border-bottom: 1px solid #a1a1a1;
 }
 .sidebar-links .panel > a,
@@ -8327,7 +8327,7 @@ hr.menu {
 .sidebar-links .panel.active > a,
 .sidebar-links .panel.active > a:visited,
 .sidebar-links .panel.active > a:hover {
-  color: #fff;
+  color: #000000;
   text-shadow: 1px 1px #555555;
   outline: none;
 }
@@ -8985,7 +8985,7 @@ a.browse-thumbnail-sorted.active {
 #contactUpdateForm .btn-group .btn-default.active {
   background-color: #6ABF4B;
   box-shadow: none;
-  color: #fff;
+  color: #000;
 }
 .wikipedia_image {
   margin: 0 10px 10px;
@@ -10469,7 +10469,7 @@ fieldset[disabled] .btn-masquerade.active {
 .header-button {
   border: 0;
   border-radius: 0.5em;
-  color: #fff !important;
+  color: #000000 !important;
   background-color: #6ABF4B;
   margin-top: 20px;
   line-height: 60px !important;
@@ -10482,14 +10482,14 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .sidebar-button {
   padding: 5px 15px;
-  background-color: #e7e7e7;
-  background: linear-gradient(to bottom, #fff, #d7d7d7);
+  background-color: #00758D;
+  background: linear-gradient(to bottom, #00758D, #5BB0BD);
   color: #fff;
   margin-bottom: 15px;
   border-radius: 4px;
 }
 .sidebar-button {
-  color: #333;
+  color: #fff;
 }
 #header-logo {
   padding: 0;
@@ -10530,7 +10530,7 @@ fieldset[disabled] .btn-masquerade.active {
   /*background: linear-gradient(to bottom, @selectedCategoryColor 0%, @selectedCategoryColor 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);*/
 }
 .browse-category.selected div {
-  color: #fff;
+  color: black;
 }
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
@@ -10576,4 +10576,18 @@ fieldset[disabled] .btn-masquerade.active {
 }
 #browse-sub-category-menu button.selected {
   background-color: #5BB0BD;
+}
+.sidebar-links .panel > a,
+.sidebar-links .panel > a:visited,
+.sidebar-links .panel > a:hover {
+  font-size: 14px;
+  color: #fff;
+  text-shadow: 1px 1px #000;
+}
+.sidebar-links .panel.active > a,
+.sidebar-links .panel.active > a:visited,
+.sidebar-links .panel.active > a:hover {
+  color: #000000;
+  text-shadow: 1px 1px #ccc;
+  outline: none;
 }
