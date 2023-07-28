@@ -1,5 +1,4 @@
-//@import (reference) "bootstrap/less/variables.scss";
-@import "variables";
+
 
 //Functionality related to the overall layout
 //Headers, Footer, columns, etc.
@@ -400,3 +399,5 @@ hr.menu{
     box-shadow: 2px 2px 5px #fff;
   }
 }
+//@import (reference) "bootstrap/less/variables.scss";
+@import "variables";

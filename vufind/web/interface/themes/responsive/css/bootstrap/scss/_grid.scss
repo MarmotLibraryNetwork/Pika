@@ -36,6 +36,7 @@
 //Visibility
 //
 // Make elements visible/invisible
-@if $enable-visible-classes{
-
-}
+//@if $enable-visible-classes{
+//  @include make-visible-columns();
+//  @include make-visible-rows();
+//}

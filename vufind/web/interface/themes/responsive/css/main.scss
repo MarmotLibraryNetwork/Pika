@@ -1,3 +1,6 @@
+@import 'variables.scss';
+// Always include the base .scss file
+@import 'responsive_base.scss';
 // Core variables and mixins
 @import 'bootstrap/scss/functions';
 @import 'bootstrap/scss/variables';
@@ -6,6 +9,4 @@
 @import 'bootstrap/scss/helpers';
 @import 'bootstrap/scss/root';
 
-@import 'variables.scss';
-// Always include the base .scss file
-@import 'responsive_base.scss';
+

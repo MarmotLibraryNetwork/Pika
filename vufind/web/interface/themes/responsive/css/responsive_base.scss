@@ -1,18 +1,46 @@
-//
-// Main responsive theme css
-//
-//Default values for variables
+// 1. Include functions first (so you can manipulate colors, SVGs, calc, etc)
+@import "bootstrap/scss/functions";
+
+// 2. Include any default variable overrides here
+@import "layout";
+@import "home";
+@import "browse-categories";
+@import "account";
+@import "author";
+@import "title-scroller";
+@import "record";
+@import "results-list";
+@import "grouped_work";
+@import "genealogy";
+@import "repository";
+@import "admin";
+@import "variables";
+@import "switch";
+
+
+// 3. Include remainder of required Bootstrap stylesheets
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/mixins";
+
+// 4. Include any optional Bootstrap components as you like
+@import "bootstrap/scss/root";
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/images";
+@import "bootstrap/scss/containers";
+@import "bootstrap/scss/grid";
+@import "ratings";
+@import "datepicker";
+@import "jcarousel.responsive";
+
+
+// 5. Add additional custom code here
+
 $navbarCollapseWidth: 480px;
 $navbarCollapseDesktopWidth: 481px;
 $horizontalComponentOffsetNarrow: 80px;
 $icon-font-path: '/fonts/';
-@import "bootstrap/scss/bootstrap";
-@import "bootstrap/scss/bootstrap-grid";
-@import "variables";
 
-//
-//  Basic Style overrides
-//
 a, a:visited{
   color: $link-color-resp;
 }
@@ -163,7 +191,7 @@ body {
       padding-top: 5px;
       width: 100%;
     }
-    padding-top: 5px;
+    padding-top: 50px;
   }
 }
 
@@ -236,29 +264,3 @@ div.striped {
 .goog-te-gadget {
   display: inline-block;
 }
-
-
-@import "functions";
-// Third party imports
-@import "ratings";
-@import "datepicker";
-@import "jcarousel.responsive";
-
-// Customized import
-@import "switch";
-
-// Imports of functionality related to Pika
-@import "layout";
-@import "home";
-@import "browse-categories";
-@import "account";
-@import "author";
-@import "title-scroller";
-@import "record";
-@import "results-list";
-@import "grouped_work";
-@import "genealogy";
-@import "repository";
-@import "admin";
-//classic column styling from bootstrap 3
-@import "classicResponsive";

@@ -1,0 +1,274 @@
+//
+//Variables for Pika customization.  These can be overridden at the local theme level
+//
+
+
+
+$body-bg-resp:  #fff!default;
+$content-bg: #fff!default;
+$body-text-color: #6B6B6B!default;
+$link-color-resp: #428bca!default;
+$font-family-sans-serif-resp:  "Helvetica Neue", Helvetica, Arial, sans-serif!default;
+$font-family-serif-resp:       Georgia, "Times New Roman", Times, serif!default;
+$icon-font-path:               "../../../../fonts/"!default;
+
+
+// Brand colors
+// -------------------------
+
+$brand-primary:         #428bca!default;
+$brand-success:         #5cb85c!default;
+$brand-warning:         #f0ad4e!default;
+$brand-danger:          #d9534f!default;
+$brand-info:            #5bc0de!default;
+//Media Queries
+// --------------------------------------------------
+
+// Extra small screen / phone
+// Note: Deprecated $screen-xs and $screen-phone as of v3.0.1
+$screen-tn:                  320px!default;
+$screen-tn-min:              $screen-tn!default;
+
+// Extra small screen / phone
+// Note: Deprecated $screen-xs and $screen-phone as of v3.0.1
+$screen-xs:                  480px!default;
+$screen-xs-min:              $screen-xs!default;
+$screen-phone:               $screen-xs-min!default;
+
+// Small screen / tablet
+// Note: Deprecated $screen-sm and $screen-tablet as of v3.0.1
+$screen-sm:                  768px!default;
+$screen-sm-min:              $screen-sm!default;
+$screen-tablet:              $screen-sm-min!default;
+
+// Medium screen / desktop
+// Note: Deprecated $screen-md and $screen-desktop as of v3.0.1
+$screen-md:                  992px!default;
+$screen-md-min:              $screen-md!default;
+$screen-desktop:             $screen-md-min!default;
+
+// Large screen / wide desktop
+// Note: Deprecated $screen-lg and $screen-lg-desktop as of v3.0.1
+$screen-lg:                  1200px!default;
+$screen-lg-min:              $screen-lg!default;
+$screen-lg-desktop:          $screen-lg-min!default;
+
+// So media queries don't overlap when required, provide a maximum
+$screen-tn-max:              ($screen-xs-min - 1)!default;
+$screen-xs-max:              ($screen-sm-min - 1)!default;
+$screen-sm-max:              ($screen-md-min - 1)!default;
+$screen-md-max:              ($screen-lg-min - 1)!default;
+
+//Header Variables
+$header-height: 90px!default;
+$header-top-color: #fff!default; //Top color for background gradient in header
+$header-middle-color: #fff!default; //middle color for background gradient in header $80% of header height from bottom
+$header-bottom-color: #fff!default; //Bottom color for background gradient in header
+$header-bottom-border-color: #b7b7b7!default;
+$header-bottom-border-width: 8px!default;
+
+//Header link/buttons
+$header-link-color: #8b8b8b!default;
+$header-link-color-hover: #088ec6!default;
+$header-button-border-vertical: #d9d8d8!default;
+
+$header-button-background-color: rgba(51,51,51,0.6)!default;
+$header-button-color: #fff!default;
+$header-button-margin-top: 20px!default;
+
+$library-display-name-color: #8b8b8b!default;
+$library-display-name-font: "Palatino Linotype", "Book Antiqua", Palatino, serif!default;
+$library-display-name-font-size: 30px!default;
+
+//Footer Variables
+$footer-top-border-color: #088ec6!default;
+
+//Search Box color
+$home-search-top-color: #00a4e3!default; //Top color for background gradient in header
+$home-search-bottom-color: #147ce2!default; //Bottom color for background gradient in header
+$home-search-label-color: #FFF!default;
+$horizontal-search-label-color: $home-search-label-color!default;
+
+//Menu Bar Variables
+$menu-bar-background-color: #00a4e3!default;
+$menu-bar-color: #FFF!default;
+$vertical-menu-bar-width: 2.5rem!default;
+$menu-bar-selected-background-color: darken($menu-bar-background-color, 50%)!default;
+$menu-bar-selected-color: #FFF!default;
+$menu-bar-z-index: 101!default;
+
+// Sidebar Login Section
+$home-page-login-color: #FFF!default;
+$home-page-login-background-color: #AFAFAF!default;
+
+//Sidebar font data
+$sidebar-font-size: 14px!default;
+$sidebar-link-color: $link-color-resp!default;
+$sidebar-label-background-color: #7c7c7d!default;
+$sidebar-label-color: #fff!default;
+
+//Home Page Browse Category labels
+$browse-header-background-color: #d7dce3!default;
+$home-page-browse-content-background-color: $content-bg!default;
+$browse-label-text-color: #3497d1!default;
+$browse-label-line-color: #bbd4e3!default;
+$selected-browse-label-search-color: #0072bc!default;
+
+//Home Page Browse categories
+$browse-category-font-size: 20px!default;
+$browse-category-text-color: #fff!default;
+$categoryLineShadow: #64b7d8!default;
+$categoryLineColor: #89cae5!default;
+$category1MainColor: #0d8ec7!default;
+$category2MainColor: lighten($category1MainColor, 3%)!default;
+$category3MainColor: lighten($category1MainColor, 6%)!default;
+$category4MainColor: lighten($category1MainColor, 9%)!default;
+$category5MainColor: lighten($category1MainColor, 12%)!default;
+$category6MainColor: lighten($category1MainColor, 15%)!default;
+$category7MainColor: lighten($category1MainColor, 18%)!default;
+$category8MainColor: lighten($category1MainColor, 21%)!default;
+$category9MainColor: lighten($category1MainColor, 24%)!default;
+$selectedCategoryBorderColor: #3497d1!default;
+
+//Home Page Browse Category Carousel Controls
+$browseCarouselControlBackgroundColor: #9e9fa3!default;
+$browseCarouselControlColor: #d4d4d4!default;
+
+// Home Page Browse Sub-Categories
+$selectedSubCategoryFontColor: #fff!default;
+$selectedSubCategoryBackgroundColor: $category1MainColor!default;
+
+// Home Page Browse Category More Results button
+$more-browse-results-backgroundcolor: #e6e6e6!default;
+$more-browse-results-color: #c7c9ca!default;
+
+//Accordions
+$accordion-active-header-backgroundcolor: #4dacde!default;
+$accordion-active-header-color: #fff!default;
+
+$accordion-header-bg-color:#e7e7e7!default;
+$accordion-header-top-gradient-color: $accordion-active-header-color!default;
+$accordion-header-bottom-gradient-color: #d7d7d7!default;
+
+// Explore More Bar
+$explore-more-bar-label-bg-color: $menu-bar-background-color!default;
+$explore-more-bar-label-color: $menu-bar-color!default;
+$explore-more-bar-label-width: $vertical-menu-bar-width!default;
+$explore-more-bar-border-width : 1px!default;
+$explore-more-bar-image-height: 150px!default;
+
+// Explore More Side Bar
+$explore-more-sidebar-bg-color: darken($explore-more-bar-label-bg-color, 5%)!default;
+$explore-more-sidebar-color: $explore-more-bar-label-color!default;
+$explore-more-sidebar-body-bg-color: #f8f8f8!default;
+
+
+$title-color: #000075!default;
+$subsection-title-color: $title-color!default;
+
+// Masquerade Variables
+$masquerade-background-color: #8a00e6!default;
+$masquerade-color: #FFF!default;
+$masquerade-bar-height: 50px!default;
+$masquerade-button-bg-color: #ebccff!default;
+$masquerade-button-color: #003366!default;
+
+// Digital Archive
+$archiveComponent-color: $menu-bar-color!default;
+$archiveComponentControl-background-color: $menu-bar-background-color!default;
+
+// Components
+// -------------------------
+// Based on 14px font-size and 1.428 line-height (~20px to start)
+
+$padding-base-vertical:          6px!default;
+$padding-base-horizontal:        12px!default;
+
+$padding-large-vertical:         10px!default;
+$padding-large-horizontal:       16px!default;
+
+$padding-small-vertical:         5px!default;
+$padding-small-horizontal:       10px!default;
+
+$padding-xs-vertical:            1px!default;
+$padding-xs-horizontal:          5px!default;
+
+$line-height-large:              1.33!default;
+$line-height-small:              1.5!default;
+
+$border-radius-base:             4px!default;
+$border-radius-large:            6px!default;
+$border-radius-small:            3px!default;
+
+$component-active-color:         #fff!default;
+$component-active-bg:            $brand-primary!default;
+
+$caret-width-base:               4px!default;
+$caret-width-large:              5px!default;
+
+// Tables
+// -------------------------
+
+$table-cell-padding:                 8px!default;
+$table-condensed-cell-padding:       5px!default;
+
+$table-bg:                           transparent!default; // overall background-color
+$table-bg-accent:                    #f9f9f9!default; // for striping
+$table-bg-hover:                     #f5f5f5!default;
+$table-bg-active:                    $table-bg-hover!default;
+
+$table-border-color:                 #ddd!default; // table and cell border
+
+
+// Buttons
+// -------------------------
+
+$btn-font-weight:                normal!default;
+
+$btn-default-color:              #333!default;
+$btn-default-bg:                 #fff!default;
+$btn-default-border:             #ccc!default;
+
+$btn-primary-color:              #fff!default;
+$btn-primary-bg:                 $brand-primary!default;
+$btn-primary-border:             darken($btn-primary-bg, 5%)!default;
+
+$btn-success-color:              #fff!default;
+$btn-success-bg:                 $brand-success!default;
+$btn-success-border:             darken($btn-success-bg, 5%)!default;
+
+$btn-warning-color:              #fff!default;
+$btn-warning-bg:                 $brand-warning!default;
+$btn-warning-border:             darken($btn-warning-bg, 5%)!default;
+
+$btn-danger-color:               #fff!default;
+$btn-danger-bg:                  $brand-danger!default;
+$btn-danger-border:              darken($btn-danger-bg, 5%)!default;
+
+$btn-info-color:                 #fff!default;
+$btn-info-bg:                    $brand-info!default;
+$btn-info-border:                darken($btn-info-bg, 5%)!default;
+
+$btn-link-disabled-color:        #e9ecef!default;
+
+// Container sizes
+// --------------------------------------------------
+
+// Small screen / tablet
+$container-tablet:             ((45rem + $grid-gutter-width))!default;
+$container-sm:                 $container-tablet!default;
+
+// Medium screen / desktop
+$container-desktop:            ((58.75rem + $grid-gutter-width))!default;
+$container-md:                 $container-desktop!default;
+
+// Large screen / wide desktop
+$container-large-desktop:      ((71.25rem + $grid-gutter-width))!default;
+$container-lg:                 $container-large-desktop!default;
+
+@mixin center-block(){
+  // Center-align a block level element
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
