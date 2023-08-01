@@ -675,81 +675,74 @@ abstract class HorizonROA implements \DriverInterface {
 			return $holds;
 		}
 
-		//Now that we have the session token, get holds information
-
-//		$holdRecordDescribe  = $this->getWebServiceResponse( "/v1/circulation/holdRecord/describe", null, $sessionToken);
-		$bibDescribe  = $this->getWebServiceResponse( "/v1/catalog/bib/describe", null, $sessionToken);
-//		$itemDescribe  = $this->getWebServiceResponse( "/v1/catalog/item/describe", null, $sessionToken);
-//		$callDescribe  = $this->getWebServiceResponse( "/v1/catalog/call/describe", null, $sessionToken);
-//		$copyDescribe  = $this->getWebServiceResponse( "/v1/catalog/copy/describe", null, $sessionToken);
-
 		//Get a list of holds for the user
-		// (Call now includes Item information for when the hold is an item level hold.)
-//		$patronHolds = $this->getWebServiceResponse( '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=holdRecordList{*,item{itemType,barcode,call{callNumber}}}', null, $sessionToken);
-		$patronHolds = $this->getWebServiceResponse( '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=holdRecordList', null, $sessionToken);
-		if ($patronHolds && isset($patronHolds->fields)) {
-			require_once ROOT_DIR . '/RecordDrivers/Factory.php';
-			foreach ($patronHolds->fields->holdRecordList as $holdRecord) {
-				$holdKey                = $holdRecord->key;
-				$lookupHoldResponse = $this->getWebServiceResponse( '/v1/circulation/holdRecord/key/' . $holdKey, null, $sessionToken);
-				if (isset($lookupHoldResponse->fields)) {
-					$hold = $lookupHoldResponse->fields;
+		$includeFields = urlencode('holdRecordList{suspendEndDate,fillByDate,queuePosition,status,expirationDate,item{barcode,call{callNumber}},bib{title,author,bibStatus{displayName}},pickupLibrary{displayName}}');
+		$response = $this->getWebServiceResponse( '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields='.$includeFields, null, $sessionToken);
+		$patronHolds = $response->fields->holdRecordList;
 
-					//TODO: Volume for title?
-					//TODO: AvailableTime (availableTime only referenced in ilsHolds template and Holds Excel function)
+		if(count($patronHolds)  == 0) {
+			return $holds;
+		}
 
-					$bibId          = $hold->bib->key;
-					$expireDate     = empty($hold->expirationDate) ? null : $hold->expirationDate;
-					$reactivateDate = empty($hold->suspendEndDate) ? null : $hold->suspendEndDate;
-					$createDate     = empty($hold->placedDate) ? null : $hold->placedDate;
-					$fillByDate     = empty($hold->fillByDate) ? null : $hold->fillByDate;
+		require_once ROOT_DIR . '/RecordDrivers/Factory.php';
+		foreach ($patronHolds as $patronHold) {
+			$hold = $patronHold->fields;
+			//TODO: Volume for title?
+			//TODO: AvailableTime (availableTime only referenced in ilsHolds template and Holds Excel function)
 
-					$curHold                         = [];
-					$curHold['id']                    = $bibId; // Template uses record Id for the ID instead of the hold ID
-					$curHold['recordId']              = $bibId;
-					$curHold['shortId']               = $bibId;
-					$curHold['holdSource']            = 'ILS';
-					$curHold['itemId']                = empty($hold->item->key) ? '' : $hold->item->key; //TODO: test
-					$curHold['cancelId']              = $holdKey;
-					$curHold['position']              = empty($hold->queuePosition) ? null : $hold->queuePosition;
-					$curHold['status']                = ucfirst(strtolower($hold->status));
-					$curHold['create']                = strtotime($createDate);
-					$curHold['expire']                = strtotime($expireDate);
-					$curHold['automaticCancellation'] = strtotime($fillByDate);
-					$curHold['reactivate']            = $reactivateDate;
-					$curHold['reactivateTime']        = strtotime($reactivateDate);
-					$curHold['cancelable']            = strcasecmp($curHold['status'], 'Suspended') != 0 && strcasecmp($curHold['status'], 'Expired') != 0;
-					$curHold['frozen']                = strcasecmp($curHold['status'], 'Suspended') == 0;
-					$curHold['freezeable']            = true;
-					if (strcasecmp($curHold['status'], 'Transit') == 0 || strcasecmp($curHold['status'], 'Expired') == 0) {
-						$curHold['freezeable'] = false;
-					}
-					$curHold['locationUpdateable']    = true;
-					if (strcasecmp($curHold['status'], 'Transit') == 0 || strcasecmp($curHold['status'], 'Expired') == 0) {
-						$curHold['locationUpdateable'] = false;
-					}
-					$curPickupBranch       = new \Location();
-					$curPickupBranch->code = $hold->pickupLibrary->key;
-					if ($curPickupBranch->find(true)) {
-						$curPickupBranch->fetch();
-						$curHold['currentPickupId']   = $curPickupBranch->locationId;
-						$curHold['currentPickupName'] = $curPickupBranch->displayName;
-						$curHold['location']          = $curPickupBranch->displayName;
-					}
+				$bibId          = $hold->bib->key;
+				$expireDate     = empty($hold->expirationDate) ? null : $hold->expirationDate;
+				$reactivateDate = empty($hold->suspendEndDate) ? null : $hold->suspendEndDate;
+				$createDate     = empty($hold->placedDate) ? null : $hold->placedDate;
+				// fillByDate appears to be traditional expires date.
+				$fillByDate     = empty($hold->fillByDate) ? null : $hold->fillByDate;
 
-					$recordDriver = \RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bibId);
-					if ($recordDriver->isValid()) {
-						$curHold['title']           = $recordDriver->getTitle();
-						$curHold['author']          = $recordDriver->getPrimaryAuthor();
-						$curHold['sortTitle']       = $recordDriver->getSortableTitle();
-						$curHold['format']          = $recordDriver->getFormat();
-						$curHold['isbn']            = $recordDriver->getCleanISBN();
-						$curHold['upc']             = $recordDriver->getCleanUPC();
-						$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
-						$curHold['link']            = $recordDriver->getRecordUrl();
-						$curHold['ratingData']      = $recordDriver->getRatingData(); //Load rating information
+				$curHold                         = [];
+				$curHold['id']                    = $bibId; // Template uses record Id for the ID instead of the hold ID
+				$curHold['recordId']              = $bibId;
+				$curHold['shortId']               = $bibId;
+				$curHold['holdSource']            = 'ILS';
+				$curHold['itemId']                = empty($hold->key) ? '' : $hold->key; //TODO: test
+				$curHold['cancelId']              = $patronHold->key;
+				$curHold['position']              = empty($hold->queuePosition) ? null : $hold->queuePosition;
+				$curHold['status']                = ucfirst(strtolower($hold->status));
+				$curHold['create']                = strtotime($createDate);
+				$curHold['expire']                = strtotime($expireDate);
+				$curHold['automaticCancellation'] = strtotime($fillByDate);
+				$curHold['reactivate']            = $reactivateDate;
+				$curHold['reactivateTime']        = strtotime($reactivateDate);
+				$curHold['cancelable']            = strcasecmp($curHold['status'], 'Suspended') != 0 && strcasecmp($curHold['status'], 'Expired') != 0;
+				$curHold['frozen']                = strcasecmp($curHold['status'], 'Suspended') == 0;
+				$curHold['freezeable']            = true;
+				if (strcasecmp($curHold['status'], 'Transit') == 0 || strcasecmp($curHold['status'], 'Expired') == 0) {
+					$curHold['freezeable'] = false;
+				}
+				$curHold['locationUpdateable']    = true;
+				if (strcasecmp($curHold['status'], 'Transit') == 0 || strcasecmp($curHold['status'], 'Expired') == 0) {
+					$curHold['locationUpdateable'] = false;
+				}
+				$curPickupBranch       = new \Location();
+				$curPickupBranch->code = $hold->pickupLibrary->key;
+				if ($curPickupBranch->find(true)) {
+					$curPickupBranch->fetch();
+					$curHold['currentPickupId']   = $curPickupBranch->locationId;
+					$curHold['currentPickupName'] = $curPickupBranch->displayName;
+					$curHold['location']          = $curPickupBranch->displayName;
+				}
 
-						//TODO: WCPL doesn't do item level holds
+				$recordDriver = \RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bibId);
+				if ($recordDriver->isValid()) {
+					$curHold['title']           = $recordDriver->getTitle();
+					$curHold['author']          = $recordDriver->getPrimaryAuthor();
+					$curHold['sortTitle']       = $recordDriver->getSortableTitle();
+					$curHold['format']          = $recordDriver->getFormat();
+					$curHold['isbn']            = $recordDriver->getCleanISBN();
+					$curHold['upc']             = $recordDriver->getCleanUPC();
+					$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
+					$curHold['link']            = $recordDriver->getRecordUrl();
+					$curHold['ratingData']      = $recordDriver->getRatingData(); //Load rating information
+
+					//TODO: WCPL doesn't do item level holds
 //						if ($hold->fields->holdType == 'COPY') {
 //
 //							$curHold['title2'] = $hold->fields->item->fields->itemType->key . ' - ' . $hold->fields->item->fields->call->fields->callNumber;
@@ -770,23 +763,23 @@ abstract class HorizonROA implements \DriverInterface {
 ////						}
 //						}
 
-					} else {
-						// If we don't have good marc record, ask the ILS for title info
-						[$title, $author] = $this->getTitleAuthorForBib($bibId, $patron);
-						$simpleSortTitle      = preg_replace('/^The\s|^A\s/i', '', $title); // remove beginning The or A
-						$curHold['title']     = $title;
-						$curHold['sortTitle'] = empty($simpleSortTitle) ? $title : $simpleSortTitle;
-						$curHold['author']    = $author;
-					}
-
-					if (!isset($curHold['status']) || strcasecmp($curHold['status'], 'being_held') != 0) {
-						$holds['unavailable'][] = $curHold;
-					} else {
-						$holds['available'][] = $curHold;
-					}
+				} else {
+					// If we don't have good marc record, ask the ILS for title info
+					[$title, $author] = $this->getTitleAuthorForBib($bibId, $patron);
+					$simpleSortTitle      = preg_replace('/^The\s|^A\s/i', '', $title); // remove beginning The or A
+					$curHold['title']     = $title;
+					$curHold['sortTitle'] = empty($simpleSortTitle) ? $title : $simpleSortTitle;
+					$curHold['author']    = $author;
 				}
-			}
+
+				if (!isset($curHold['status']) || strcasecmp($curHold['status'], 'being_held') != 0) {
+					$holds['unavailable'][] = $curHold;
+				} else {
+					$holds['available'][] = $curHold;
+				}
+
 		}
+
 		return $holds;
 	}
 
