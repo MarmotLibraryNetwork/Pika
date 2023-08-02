@@ -11,6 +11,9 @@
 @import "bootstrap/scss/grid";
 @import "bootstrap/scss/carousel";
 @import "bootstrap/scss/accordion";
+@import "bootstrap/scss/containers";
+@import "bootstrap/scss/forms";
+
 
 //import responsive theme plugins
 @import "layout";
@@ -140,6 +143,7 @@ body {
     margin-left: -50%;
   }
 }
+
 
 .modal-dialog {
   max-width: 100%; // constrain content to the modal box

@@ -45,12 +45,19 @@
   width: auto;
 
 }
-@mixin make-col-vis($size, $columns: $grid-row-columns){
+@mixin make-col-vis($break, $size, $columns: $grid-row-columns) {
   display:none;
-  @each $bp in map-keys($columns) {
-    @if $bp == $size{
-      display:block!important;
-    }
+  @if $size == $break {
+
+        display: flex;
+      }
+}
+
+@mixin make-col-hid($break, $size, $columns: $grid-row-columns) {
+  display:flex;
+  @if $size == $break {
+
+    display: none;
   }
 }
 
@@ -71,6 +78,9 @@
   }
 }
 
+//Visible grid generation
+
+
 // Framework grid generation
 //
 // Used only by Bootstrap to generate the correct number of grid classes given
@@ -89,10 +99,18 @@
       .row-cols#{$infix}-auto > * {
         @include make-col-auto();
       }
-      .visible#{$infix}{
-       @include make-col-vis($breakpoint,$grid-breakpoints);
+      @each $bp in map-keys($breakpoints) {
+        $if: breakpoint-infix($bp, $breakpoints);
+        .visible#{$if} {
+          @include make-col-vis($bp, $breakpoint, $breakpoints);
+        }
       }
-
+      @each $bp in map-keys($breakpoints) {
+        $if: breakpoint-infix($bp, $breakpoints);
+        .hidden#{$if} {
+          @include make-col-hid($bp, $breakpoint, $breakpoints);
+        }
+      }
       @if $grid-row-columns > 0 {
         @for $i from 1 through $grid-row-columns {
           .row-cols#{$infix}-#{$i} {

@@ -224,7 +224,7 @@
   z-index: 1030;
 }
 
-@media (min-width: 300px) {
+@media (min-width: 0px) {
   .sticky-tn-top {
     position: sticky;
     top: 0;
@@ -360,7 +360,7 @@
   opacity: 0.25;
 }
 
-@media (min-width: 300px) {
+@media (min-width: 0px) {
   .float-tn-start {
     float: left !important;
   }
