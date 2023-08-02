@@ -260,10 +260,9 @@ abstract class HorizonROA implements \DriverInterface {
 
 //			$patronTypesQuery = $this->getWebServiceResponse( '/v1/policy/patronType/simpleQuery?key=*&includeFields=*', null, $sessionToken);
 
-			$acountInfoLookupURL =  '/v1/user/patron/key/' . $horizonRoaUserID
-			. '?includeFields=displayName,privilegeExpiresDate,primaryAddress,primaryPhone,library,patronType'
-			. ',holdRecordList,circRecordList,blockList'
-			. ",estimatedOverdueAmount";
+			$includeFields = urlencode('displayName,privilegeExpiresDate,primaryAddress,primaryPhone,library,'
+				. 'patronType,holdRecordList{status},circRecordList,blockList{amount,owed}');
+			$acountInfoLookupURL =  '/v1/user/patron/key/' . $horizonRoaUserID . '?includeFields=' .$includeFields;
 			// Note that {*} notation doesn't work for Horizon ROA yet
 
 			//TODO: see what default fields is now
@@ -373,32 +372,30 @@ abstract class HorizonROA implements \DriverInterface {
 				// Long Overdue fines do not get added to the estimatedOverdueAmount it seems with a current test case.
 				// pascal 1/26/22
 
-					if (isset($lookupMyAccountInfoResponse->fields->blockList)) {
-					foreach ($lookupMyAccountInfoResponse->fields->blockList as $blockEntry) {
-						$block = $this->getWebServiceResponse( '/v1/circulation/block/key/' . $blockEntry->key . '?includeFields=owed', null, $sessionToken);
-						if (isset($block->fields)){
-							$fineAmount = (float) $block->fields->owed->amount;
+					if (count($lookupMyAccountInfoResponse->fields->blockList) >= 1) {
+					foreach ($lookupMyAccountInfoResponse->fields->blockList as $patronBlock) {
+						$block = $patronBlock->fields;
+							$fineAmount = (float) $block->owed->amount;
 							$finesVal   += $fineAmount;
-						}
 					}
 				}
 
 				$numHolds          = 0;
 				$numHoldsAvailable = 0;
 				$numHoldsRequested = 0;
-				if (isset($lookupMyAccountInfoResponse->fields->holdRecordList)) {
+				if (count($lookupMyAccountInfoResponse->fields->holdRecordList) >= 1) {
 					$numHolds = count($lookupMyAccountInfoResponse->fields->holdRecordList);
-					foreach ($lookupMyAccountInfoResponse->fields->holdRecordList as $hold) {
-						$lookupHoldResponse = $this->getWebServiceResponse( '/v1/circulation/holdRecord/key/' . $hold->key . '?includeFields=status', null, $sessionToken);
-						if (!empty($lookupHoldResponse->fields)) {
-							if ($lookupHoldResponse->fields->status == 'BEING_HELD') {
+					foreach ($lookupMyAccountInfoResponse->fields->holdRecordList as $patronHold) {
+						$hold = $patronHold->fields;
+
+							if ($hold->status == 'BEING_HELD') {
 								$numHoldsAvailable++;
-							} elseif ($lookupHoldResponse->fields->status != 'EXPIRED') {
+							} elseif ($hold->status != 'EXPIRED') {
 								$numHoldsRequested++;
 							}
 						}
 					}
-				}
+
 //
 				$numCheckedOut = 0;
 				if (isset($lookupMyAccountInfoResponse->fields->circRecordList)) {
@@ -1234,7 +1231,6 @@ abstract class HorizonROA implements \DriverInterface {
 				'amountOutstanding' => $block->owed->amount,
 				'date'              => date('n/j/Y', strtotime($block->createDate))
 			];
-
 		}
 
 		return $fines;
