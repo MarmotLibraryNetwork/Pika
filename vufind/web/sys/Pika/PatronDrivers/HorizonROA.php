@@ -676,6 +676,8 @@ abstract class HorizonROA implements \DriverInterface {
 		}
 
 		//Get a list of holds for the user
+		$logger = $this->getLogger();
+		$logger->info('Using bracket notation to fetch patron holds');
 		$includeFields = urlencode('holdRecordList{suspendEndDate,fillByDate,queuePosition,status,expirationDate,item{barcode,call{callNumber}},bib{title,author,bibStatus{displayName}},pickupLibrary{displayName}}');
 		$response = $this->getWebServiceResponse( '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields='.$includeFields, null, $sessionToken);
 		$patronHolds = $response->fields->holdRecordList;
@@ -1198,46 +1200,41 @@ abstract class HorizonROA implements \DriverInterface {
 			return $fines;
 		}
 
-		// Now that we have the session token, get fines information
+		$logger = $this->getLogger();
+		$logger->info('Using bracket notation to fetch patron fines');
+		$includeFields = urlencode('blockList{item{key,bib{title}},createDate,amount,block{key},comment,owed}');
+		$response = $this->getWebServiceResponse( '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields='.$includeFields, null, $sessionToken);
+		if(empty($response)) {
+			return $fines;
+		}
 
-//		$blockListDescribe  = $this->getWebServiceResponse( "/v1/circulation/block/describe", null, $sessionToken);
+		$patronBlockList = $response->fields->blockList;
+		if(count($patronBlockList) == 0) {
+			return $fines;
+		}
 
-		//Get a list of fines for the user
-		$patronFines = $this->getWebServiceResponse( '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=blockList', null, $sessionToken);
-		if (!empty($patronFines->fields->blockList)){
-			require_once ROOT_DIR . '/RecordDrivers/Factory.php';
-			foreach ($patronFines->fields->blockList as $blockList){
-				$blockListKey        = $blockList->key;
-				$lookupBlockResponse = $this->getWebServiceResponse( '/v1/circulation/block/key/' . $blockListKey, null, $sessionToken);
-				if (isset($lookupBlockResponse->fields)){
-					$fine = $lookupBlockResponse->fields;
-
-//					if ((int) $fine->amount->amount > 0){ // Is there a fine amount
-
-						// Lookup book title associated with the block
-						$title = '';
-						if (isset($fine->item->key)){
-							$itemId = $fine->item->key;
-							[$bibId] = $this->getItemInfo($itemId, $patron);
-							$recordDriver = \RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bibId);
-							if ($recordDriver->isValid()){
-								$title = $recordDriver->getTitle();
-							}else{
-								[$title] = $this->getTitleAuthorForBib($bibId, $patron);
-							}
-						}
-						$reason  = $this->getBlockPolicy($fine->block->key, $patron);
-						$fines[] = [
-							'reason'            => $reason,
-							'amount'            => $fine->amount->amount,
-							'message'           => $title,
-							'amountOutstanding' => $fine->owed->amount,
-							'date'              => date('M j, Y', strtotime($fine->createDate))
-						];
-//					}
-
+		foreach ($patronBlockList as $patronBlock){
+			$block = $patronBlock->fields;
+			// handle title
+			// if there is no item associated with block, use message as title
+			// this is currently the display on WCPL production 8/2/23
+			$title = '';
+			if(isset($block->item)) {
+				$title = $block->item->fields->bib->fields->title;
+			} else {
+				if(isset($block->comment) AND $block->comment != null) {
+					$title = $block->comment;
 				}
 			}
+			$reason  = $this->getBlockPolicy($patronBlock->fields->block->key, $patron);
+			$fines[] = [
+				'reason'            => $reason,
+				'amount'            => $block->amount->amount,
+				'message'           => $title,
+				'amountOutstanding' => $block->owed->amount,
+				'date'              => date('n/j/Y', strtotime($block->createDate))
+			];
+
 		}
 
 		return $fines;
