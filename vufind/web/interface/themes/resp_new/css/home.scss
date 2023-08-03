@@ -20,12 +20,7 @@
   color: $home-search-label-color;
 }
 // Hide the Place Holder text on the search box by default for
-@mixin placeholder-mixin() {
-  font-size: 0; // zero out the text as a fail safe
-  color: transparent;
-  text-shadow: none;
-  border: 0;
-}
+@include placeholder-mixin();
 
 // Must keep selectors separate because if the browser does not
 // recognize one of the selectors, it will dispose of the ruleset.
@@ -314,36 +309,7 @@
   left:auto
 }
 
-@mixin header-login-button-mixin($background-color: rgba(51,51,51,0.6), $color: #fff, $margin-top: 20px) {
-  .header-button{
-    @content($background-color, $color, $margin-top);
-    border: 0;
-    border-radius:  0.5em;
-    color:$color !important;
-    background-color: $background-color;
-    margin-top: $margin-top;
-    //height: 60px !important;
-    line-height: 60px !important;
-    text-shadow: none;
-    &:hover {
-      text-decoration: underline;
-      border-bottom: 0;
-      box-shadow: 2px 2px 5px #fff;
-    }
-  }
-}
 
-@mixin sidebar-button-mixin() {
-  .sidebar-button{
-    @content();
-    padding: 5px 15px;
-    background-color: $accordion-header-bg-color;
-    background: linear-gradient(to bottom, $accordion-header-top-gradient-color, $accordion-header-bottom-gradient-color);
-    color: #fff;
-    margin-bottom: 15px;
-    border-radius: 4px;
-  }
-}
 
 .badge.badge-danger{
   background: red;

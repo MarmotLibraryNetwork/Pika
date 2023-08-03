@@ -56,7 +56,6 @@
 @mixin make-col-hid($break, $size, $columns: $grid-row-columns) {
   display:flex;
   @if $size == $break {
-
     display: none;
   }
 }

@@ -49,6 +49,7 @@ hr.menu{
   padding: 3px;
 }
 //Define the header elements
+@include header-login-button-mixin($header-button-background-color,$header-button-color);
 #header-container{
   padding-top: 0;
   height: $header-height;
@@ -66,17 +67,7 @@ hr.menu{
   }
 }
 
-.header-button{
-  text-align: center;
-  text-shadow: 1px 1px #fff;
-  vertical-align: middle;
-  line-height: $header-height - 8px !important;
-  border-bottom: 4px solid $header-bottom-color;
-  color: $header-link-color !important;
-  &:hover{
-    border-bottom: 4px solid $link-hover-color;
-  }
-}
+
 .header-primary{
   border-left: 2px solid $header-button-border-vertical;
   border-right: 2px solid $header-button-border-vertical;
@@ -165,8 +156,8 @@ hr.menu{
       background-color: $menu-bar-selected-background-color;
     }
   }
-  padding-left: $padding-xs-horizontal;
-  padding-right: $padding-xs-horizontal;
+  //padding-left: $padding-xs-horizontal;
+  //padding-right: $padding-xs-horizontal;
 
   &.sticky-menu-bar {
     // sticks to top of view port
@@ -180,6 +171,7 @@ hr.menu{
 
 }
 
+@include sidebar-button-mixin();
 // Vertical Menu Bar
 
 .sticky-sidebar {
@@ -358,19 +350,4 @@ hr.menu{
 .btn-danger {
   background: #702C29;
   background-image: none;
-}
-.header-button{
-  border: 0;
-  border-radius:  0.5em;
-  color:  $header-button-color!important;
-  background-color: $header-button-background-color;
-  margin-top: $header-button-margin-top;
-  //height: 60px !important;
-  line-height: 60px !important;
-  text-shadow: none;
-  &:hover {
-    text-decoration: underline;
-    border-bottom: 0;
-    box-shadow: 2px 2px 5px #fff;
-  }
 }

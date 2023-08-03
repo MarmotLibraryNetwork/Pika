@@ -1,0 +1,117 @@
+@mixin header-login-button-mixin($background-color: rgba(51,51,51,0.6), $color: #fff, $margin-top: 20px) {
+
+  .header-button{
+    @content($background-color, $color, $margin-top);
+    border: 0;
+    border-radius:  0.5em;
+    color:$color !important;
+    background-color: $background-color;
+    margin-top: $margin-top;
+    //height: 60px !important;
+    line-height: 60px !important;
+    text-shadow: none;
+    &:hover {
+      text-decoration: underline;
+      border-bottom: 0;
+      box-shadow: 2px 2px 5px #fff;
+    }
+  }
+}
+
+@mixin sidebar-button-mixin() {
+  .sidebar-button{
+    @content();
+    padding: 5px 15px;
+    background-color: $accordion-header-bg-color;
+    background: linear-gradient(to bottom, $accordion-header-top-gradient-color, $accordion-header-bottom-gradient-color);
+    color: #fff;
+    margin-bottom: 15px;
+    border-radius: 4px;
+  }
+}
+
+@mixin placeholder-mixin() {
+.placeholder {
+  @content();
+  font-size: 0; // zero out the text as a fail safe
+  color: transparent;
+  text-shadow: none;
+  border: 0;
+}
+}
+
+// Mixin that hides the Jcarousel controls and shows all the categories as a grid
+@mixin noCarouselBrowseCategoriesMixin($titlesPerRow: 4){
+  #browse-category-carousel {
+    overflow: visible; // allow all list items to be seen
+    left: 0;
+    width: 95%;
+    margin-left: 5%;
+
+    ul {
+      position: static; // restore positioning behavior
+      width: 100%;
+    }
+
+    li {
+      // set number items to display in a row based on screen size
+      // default 4 per row, small 2 per row, middle 3 per row, tiny 1 per row
+      //width: 23% !important;
+      width: round(100/$titlesPerRow - 2%) !important;
+      @media (max-width: $screen-sm-max) {
+        //width: 31% !important;
+        width: round(100/($titlesPerRow - 1) - 2%) !important;
+      }
+      @media (max-width: $screen-xs-max) {
+        //width: 48% !important;
+        width: round(100/($titlesPerRow - 2) - 2%) !important;
+      }
+      @media (max-width: $screen-tn-max) {
+        //width: 48% !important;
+        width: round(100/($titlesPerRow - 3) - 2%) !important;
+      }
+      float: left; // retains float left; ul positional is more critical. plb 9-16-2014
+    }
+  }
+
+  // hide scrolling controls
+  #browse-category-picker {
+    .jcarousel-control-prev, .jcarousel-control-next, .jcarousel-pagination {
+      display: none;
+    }
+  }
+
+}
+
+// Gives Selected Category a highlighted appearance
+@mixin noCarouselSelectedCategoryMixin($selectedCategoryColor: $category6MainColor) {
+  .browse-category.selected {
+    background-color: $selectedCategoryColor;
+    background: linear-gradient(to bottom, $selectedCategoryColor, $selectedCategoryColor 82%, $categoryLineShadow 83%, $categoryLineColor 84%, $categoryLineColor 88%, $categoryLineShadow 89%, $selectedCategoryColor 90%, $selectedCategoryColor);
+    font-size: $browse-category-font-size + 2;
+  }
+}
+
+// MIXIN: Vertically Align cover images with the thumbnail block; up to a maximum size.  Thumbnail blocks will have a
+// uniform height and fall into columns evenly.
+@mixin verticalAlignThumbnailArt() {
+  .browse-thumbnail {
+    div:first-child {
+      height: 180px;
+      display: flex;
+      align-items: center;
+    }
+    a {
+      img {
+        max-height: 180px;
+      }
+    }
+  }
+  .column-fix {
+    -webkit-column-break-inside: avoid;
+    -moz-column-break-inside: avoid;
+    -o-column-break-inside: avoid;
+    column-break-inside: avoid;
+    display: table;
+  }
+}

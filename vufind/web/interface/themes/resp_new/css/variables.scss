@@ -108,7 +108,7 @@ $sidebar-label-background-color: #7c7c7d!default;
 $sidebar-label-color: #fff!default;
 
 //Home Page Browse Category labels
-$browse-header-background-color: #d7dce3!default;
+$browse-header-background-color: #fff!default;
 $home-page-browse-content-background-color: $content-bg!default;
 $browse-label-text-color: #3497d1!default;
 $browse-label-line-color: #bbd4e3!default;
@@ -191,7 +191,7 @@ $padding-small-vertical:         5px!default;
 $padding-small-horizontal:       10px!default;
 
 $padding-xs-vertical:            1px!default;
-$padding-xs-horizontal:          5px!default;
+$padding-xs-horizontal:          inherit!important;
 
 $line-height-large:              1.33!default;
 $line-height-small:              1.5!default;
