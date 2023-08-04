@@ -10,6 +10,7 @@
 .sidebar-button-mixin();
 .sidebar-button {
   color: #fff;
+  background:@aurora-dark-grey;
 }
 #header-logo { padding: 0; }
 // Browse Category customizations based on AnyThink
@@ -118,6 +119,9 @@
   }
 }
 .sidebar-links {
+  .panel-heading{
+    background: @aurora-dark-grey;
+  }
   .panel {
     & > a { // keep the title's link underlining the same color as the title
       // these end up applying to content in div.panel-title

@@ -10490,6 +10490,7 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .sidebar-button {
   color: #fff;
+  background: #373A36;
 }
 #header-logo {
   padding: 0;
@@ -10576,6 +10577,9 @@ fieldset[disabled] .btn-masquerade.active {
 }
 #browse-sub-category-menu button.selected {
   background-color: #5BB0BD;
+}
+.sidebar-links .panel-heading {
+  background: #373A36;
 }
 .sidebar-links .panel > a,
 .sidebar-links .panel > a:visited,
