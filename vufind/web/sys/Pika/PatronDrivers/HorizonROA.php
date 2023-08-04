@@ -253,11 +253,9 @@ abstract class HorizonROA implements \DriverInterface {
 //  Calls that show how patron-related data is represented
 //			$patronDescribeResponse = $this->getWebServiceResponse( '/v1/user/patron/describe', null, $sessionToken);
 //			$patronDescribeResponseV2 = $this->getWebServiceResponse( '/v2/user/patron/describe', null, $sessionToken);
-
 //			$patronDSearchescribeResponse = $this->getWebServiceResponse( '/v1/user/patron/search/describe', null, $sessionToken);
 				//TODO: a patron search may require a staff user account.
 //			$patronSearchResponse = $this->getWebServiceResponse( '/v1/user/patron/search', array('q' => 'borr|2:22046027101218'), $sessionToken);
-
 //			$patronTypesQuery = $this->getWebServiceResponse( '/v1/policy/patronType/simpleQuery?key=*&includeFields=*', null, $sessionToken);
 
 			$includeFields = urlencode('displayName,privilegeExpiresDate,primaryAddress,primaryPhone,library,'
@@ -306,11 +304,7 @@ abstract class HorizonROA implements \DriverInterface {
 				if (isset($lookupMyAccountInfoResponse->fields->primaryAddress)) {
 					$preferredAddress = $lookupMyAccountInfoResponse->fields->primaryAddress->fields;
 					// Set for Account Updating
-					// TODO: area isn't valid any longer. Response from server looks like this:
-					// {"ROAObject":"\/ROAObject\/primaryPatronAddressObject","fields":{"line1":"4020 Carya Dr","line2":"1","line3":"Lizard Lick, NC","line4":null,"postalCode":"20001","emailAddress":"askwcpl@wakegov.com"}}
-					// city state looks to be line3
 					//$cityState = $preferredAddress->area;
-
 
 					if (!empty($preferredAddress->area)){
 						if ($preferredAddress->area == 'other'){
@@ -396,9 +390,8 @@ abstract class HorizonROA implements \DriverInterface {
 						}
 					}
 
-//
 				$numCheckedOut = 0;
-				if (isset($lookupMyAccountInfoResponse->fields->circRecordList)) {
+				if (!empty($lookupMyAccountInfoResponse->fields->circRecordList)) {
 					$numCheckedOut = count($lookupMyAccountInfoResponse->fields->circRecordList);
 				}
 
@@ -496,78 +489,73 @@ abstract class HorizonROA implements \DriverInterface {
 
 		//Get the session token for the user
 		$sessionToken = $this->getSessionToken($patron);
-		if (!$sessionToken) {
+		if (!$sessionToken){
 			return $checkedOutTitles;
 		}
 
 		// Now that we have the session token, get checkout  information
-
 		//Get a list of checkouts for the user
-		$patronCheckouts = $this->getWebServiceResponse( '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=circRecordList', null, $sessionToken);
+		$includeFields   = urlencode('circRecordList{checkOutDate,dueDate,overdue,renewalCount,checkOutFee,item{bib,barcode,itemType}}');
+		$patronCheckouts = $this->getWebServiceResponse('/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=' . $includeFields, null, $sessionToken);
 
-		if (!empty($patronCheckouts->fields->circRecordList)) {
-//			$sCount = 0;
-			require_once ROOT_DIR . '/RecordDrivers/Factory.php';
+		if (empty($patronCheckouts->fields->circRecordList)){
+			return $checkedOutTitles;
+		}
 
-			foreach ($patronCheckouts->fields->circRecordList as $checkoutRecord) {
-				$checkOutKey = $checkoutRecord->key;
-				$lookupCheckOutResponse = $this->getWebServiceResponse( '/v1/circulation/circRecord/key/' . $checkOutKey, null, $sessionToken);
-				if (isset($lookupCheckOutResponse->fields)) {
-					$checkout = $lookupCheckOutResponse->fields;
+		require_once ROOT_DIR . '/RecordDrivers/Factory.php';
+		foreach ($patronCheckouts->fields->circRecordList as $circRecord){
+			$checkOutKey = $circRecord->key;
 
-					$itemId  = $checkout->item->key;
-					[$bibId, $barcode, $itemType] = $this->getItemInfo($itemId, $patron);
-					if (!empty($bibId)) {
-						//TODO: volumes?
+			$itemId       = $circRecord->fields->item->key;
+			$bibId        = $circRecord->fields->item->fields->bib->key;
+			$barcode      = $circRecord->fields->item->fields->barcode;
+			$itemType     = $circRecord->fields->item->fields->itemType->key;
+			$dueDate      = $circRecord->fields->dueDate;
+			$checkOutDate = $circRecord->fields->checkOutDate;
+			$fine         = $circRecord->fields->checkOutFee->amount;
+			if (!empty($fine) && (float)$fine <= 0){
+				// handle case of string '0.00'
+				$fine = null;
+			}
+			if (!empty($bibId)){
+				$curTitle                    = [];
+				$curTitle['checkoutSource']  = $this->accountProfile->recordSource;
+				$curTitle['recordId']        = $bibId;
+				$curTitle['shortId']         = $bibId;
+				$curTitle['id']              = $bibId;
+				$curTitle['itemid']          = $itemId;
+				$curTitle['barcode']         = $barcode;
+				$curTitle['renewIndicator']  = $itemId;
+				$curTitle['dueDate']         = strtotime($dueDate);
+				$curTitle['checkoutdate']    = strtotime($checkOutDate);
+				$curTitle['renewCount']      = $circRecord->fields->renewalCount;
+				$curTitle['canrenew']        = $this->canRenew($itemType);
+				$curTitle['format']          = 'Unknown';                    //TODO: I think this makes sorting working better
+				$curTitle['overdue']         = $circRecord->fields->overdue; // (optional) CatalogConnection method will calculate this based on due date
+				$curTitle['fine']            = $fine;
+				$curTitle['holdQueueLength'] = $this->getNumHoldsOnRecord($bibId);
 
-						$dueDate      = empty($checkout->dueDate) ? null : $checkout->dueDate;
-						$checkOutDate = empty($checkout->checkOutDate) ? null : $checkout->checkOutDate;
-						$fine         = empty($checkout->checkOutFee->amount) ? null : $checkout->checkOutFee->amount;
-						if (!empty($fine) && (float) $fine <= 0) {
-							// handle case of string '0.00'
-							$fine = null;
-						}
-
-						$curTitle                   = [];
-						$curTitle['checkoutSource'] = $this->accountProfile->recordSource;
-						$curTitle['recordId']       = $bibId;
-						$curTitle['shortId']        = $bibId;
-						$curTitle['id']             = $bibId;
-						$curTitle['itemid']         = $itemId;
-						$curTitle['barcode']        = $barcode;
-						$curTitle['renewIndicator'] = $itemId;
-						$curTitle['dueDate']        = strtotime($dueDate);
-						$curTitle['checkoutdate']   = strtotime($checkOutDate);
-						$curTitle['renewCount']     = $checkout->renewalCount;
-						$curTitle['canrenew']       = $this->canRenew($itemType);
-						$curTitle['format']         = 'Unknown'; //TODO: I think this makes sorting working better
-						$curTitle['overdue']        = $checkout->overdue; // (optional) CatalogConnection method will calculate this based on due date
-						$curTitle['fine']           = $fine;
-						$curTitle['holdQueueLength'] = $this->getNumHoldsOnRecord($bibId);
-
-						$recordDriver = \RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bibId);
-						if ($recordDriver->isValid()) {
-							$curTitle['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
-							$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
-							$curTitle['format']        = $recordDriver->getPrimaryFormat();
-							$curTitle['title']         = $recordDriver->getTitle();
-							$curTitle['title_sort']    = $recordDriver->getSortableTitle();
-							$curTitle['author']        = $recordDriver->getPrimaryAuthor();
-							$curTitle['link']          = $recordDriver->getLinkUrl();
-							$curTitle['ratingData']    = $recordDriver->getRatingData();
-						} else {
-							// If we don't have good marc record, ask the ILS for title info
-							[$title, $author]       = $this->getTitleAuthorForBib($bibId, $patron);
-							$simpleSortTitle        = preg_replace('/^The\s|^A\s/i', '', $title); // remove beginning The or A
-							$curTitle['title']      = $title;
-							$curTitle['title_sort'] = empty($simpleSortTitle) ? $title : $simpleSortTitle;
-							$curTitle['author']     = $author;
-						}
-
-						$checkedOutTitles[] = $curTitle;
-
-					}
+				$recordDriver = \RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bibId);
+				if ($recordDriver->isValid()){
+					$curTitle['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
+					$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
+					$curTitle['format']        = $recordDriver->getPrimaryFormat();
+					$curTitle['title']         = $recordDriver->getTitle();
+					$curTitle['title_sort']    = $recordDriver->getSortableTitle();
+					$curTitle['author']        = $recordDriver->getPrimaryAuthor();
+					$curTitle['link']          = $recordDriver->getLinkUrl();
+					$curTitle['ratingData']    = $recordDriver->getRatingData();
+				}else{
+					// If we don't have good marc record, ask the ILS for title info
+					[$title, $author] = $this->getTitleAuthorForBib($bibId, $patron);
+					$simpleSortTitle        = preg_replace('/^The\s|^A\s/i', '', $title); // remove beginning The or A
+					$curTitle['title']      = $title;
+					$curTitle['title_sort'] = empty($simpleSortTitle) ? $title : $simpleSortTitle;
+					$curTitle['author']     = $author;
 				}
+
+				$checkedOutTitles[] = $curTitle;
+
 			}
 		}
 		return $checkedOutTitles;
