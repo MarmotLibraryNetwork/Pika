@@ -43,18 +43,16 @@ abstract class HorizonROA implements \DriverInterface {
 
 	/** @var  \AccountProfile $accountProfile */
 	public $accountProfile;
-
 	private Cache $cache;
-
+	protected Logger $logger;
 	public function __construct($accountProfile){
 		global $configArray;
 		$this->clientId       = $configArray['Catalog']['clientId'];
 		$this->accountProfile = $accountProfile;
 		$cache                = initCache();
 		$this->cache          = new Cache($cache);
+		$this->logger         = new Logger(__CLASS__);
 	}
-
-	protected Logger $logger;
 
 	/**
 	 * @return Logger
@@ -356,7 +354,7 @@ abstract class HorizonROA implements \DriverInterface {
 				}
 				$user->setUserExpirationSettings($dateString);
 
-				//Get additional information about fines, etc
+				//Get information about fines
 				$finesVal = 0;
 //				if (isset($lookupMyAccountInfoResponse->fields->estimatedOverdueAmount)){
 //					//TODO: confirm this is populated for user with fees.
@@ -495,14 +493,20 @@ abstract class HorizonROA implements \DriverInterface {
 
 		// Now that we have the session token, get checkout  information
 		//Get a list of checkouts for the user
-		$includeFields   = urlencode('circRecordList{checkOutDate,dueDate,overdue,renewalCount,checkOutFee,item{bib,barcode,itemType}}');
+		$includeFields   = urlencode('circRecordList{checkOutDate,dueDate,overdue,renewalCount,checkOutFee,'
+		. 'item{bib,barcode,itemType}}');
+		//$time_start = microtime(true); // time
 		$patronCheckouts = $this->getWebServiceResponse('/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=' . $includeFields, null, $sessionToken);
+	  //$time_end = microtime(true); // time
+		//$time = $time_end - $time_start; // time
+		$this->logger->warn('ROA checkouts call returned in '.$time);
 
 		if (empty($patronCheckouts->fields->circRecordList)){
 			return $checkedOutTitles;
 		}
 
 		require_once ROOT_DIR . '/RecordDrivers/Factory.php';
+		//$time_start = microtime(true); // time
 		foreach ($patronCheckouts->fields->circRecordList as $circRecord){
 			$checkOutKey = $circRecord->key;
 
@@ -533,7 +537,7 @@ abstract class HorizonROA implements \DriverInterface {
 				$curTitle['format']          = 'Unknown';                    //TODO: I think this makes sorting working better
 				$curTitle['overdue']         = $circRecord->fields->overdue; // (optional) CatalogConnection method will calculate this based on due date
 				$curTitle['fine']            = $fine;
-				$curTitle['holdQueueLength'] = $this->getNumHoldsOnRecord($bibId);
+				//$curTitle['holdQueueLength'] = $this->getNumHoldsOnRecord($bibId);
 
 				$recordDriver = \RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bibId);
 				if ($recordDriver->isValid()){
@@ -558,6 +562,9 @@ abstract class HorizonROA implements \DriverInterface {
 
 			}
 		}
+		//$time_end = microtime(true); // time
+		//$time = $time_end - $time_start; // time
+		$this->logger->warn('Build checkouts finished in '.$time);
 		return $checkedOutTitles;
 	}
 
@@ -663,11 +670,12 @@ abstract class HorizonROA implements \DriverInterface {
 		//Get a list of holds for the user
 		$logger = $this->getLogger();
 		$logger->info('Using bracket notation to fetch patron holds');
-		$includeFields = urlencode('holdRecordList{suspendEndDate,fillByDate,queuePosition,status,expirationDate,item{barcode,call{callNumber}},bib{title,author,bibStatus{displayName}},pickupLibrary{displayName}}');
+		$includeFields = urlencode('holdRecordList{suspendEndDate,fillByDate,queuePosition,status,expirationDate,"
+		. "item{barcode,call{callNumber}},bib{title,author,bibStatus{displayName}},pickupLibrary{displayName}}');
 		$response = $this->getWebServiceResponse( '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields='.$includeFields, null, $sessionToken);
 		$patronHolds = $response->fields->holdRecordList;
 
-		if(count($patronHolds)  == 0) {
+		if(count($patronHolds) == 0) {
 			return $holds;
 		}
 
