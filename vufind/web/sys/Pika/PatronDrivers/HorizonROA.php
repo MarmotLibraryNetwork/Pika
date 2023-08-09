@@ -499,7 +499,7 @@ abstract class HorizonROA implements \DriverInterface {
 		$patronCheckouts = $this->getWebServiceResponse('/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=' . $includeFields, null, $sessionToken);
 	  //$time_end = microtime(true); // time
 		//$time = $time_end - $time_start; // time
-		$this->logger->warn('ROA checkouts call returned in '.$time);
+		//$this->logger->warn('ROA checkouts call returned in '.$time);
 
 		if (empty($patronCheckouts->fields->circRecordList)){
 			return $checkedOutTitles;
@@ -564,7 +564,7 @@ abstract class HorizonROA implements \DriverInterface {
 		}
 		//$time_end = microtime(true); // time
 		//$time = $time_end - $time_start; // time
-		$this->logger->warn('Build checkouts finished in '.$time);
+		//$this->logger->warn('Build checkouts finished in '.$time);
 		return $checkedOutTitles;
 	}
 
