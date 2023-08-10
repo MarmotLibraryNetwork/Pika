@@ -1973,12 +1973,12 @@
 }
 @media (min-width: 1200px) {
   .container-xl, .container-lg, .container-md, .container-sm, .container-xs, .container-tn {
-    max-width: 1140px;
+    max-width: 1200px;
   }
 }
 @media (min-width: 1400px) {
   .container-xxl, .container-xl, .container-lg, .container-md, .container-sm, .container-xs, .container-tn {
-    max-width: 1320px;
+    max-width: 1200px;
   }
 }
 .form-label {
@@ -4376,6 +4376,8 @@ hr.menu {
   margin-top: 20px;
   line-height: 60px !important;
   text-shadow: none;
+  display: block;
+  text-align: center;
 }
 .header-button:hover {
   text-decoration: underline;
@@ -4981,6 +4983,11 @@ hr.menu {
 
 .badge.badge-dark {
   background: #343a40;
+}
+
+.row > button {
+  display: block;
+  width: unset;
 }
 
 #home-page-browse-header {
@@ -7441,6 +7448,10 @@ body.masqueradeMode:after {
   color: #fff;
   opacity: 1;
   box-shadow: 0 0 2px #F0EFE7;
+}
+
+*, :after, :before {
+  box-sizing: border-box;
 }
 
 a, a:visited {

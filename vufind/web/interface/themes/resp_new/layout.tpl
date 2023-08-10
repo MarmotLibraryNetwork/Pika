@@ -42,7 +42,7 @@
 			{include file="masquerade-top-navbar.tpl"}
 		{/if}
 		{strip}
-			<div class="container">
+			<div class="container-xl">
 				{if !empty($systemMessage)}
 					{if is_array($systemMessage)}
 						{foreach from=$systemMessage item=aSystemMessage}
