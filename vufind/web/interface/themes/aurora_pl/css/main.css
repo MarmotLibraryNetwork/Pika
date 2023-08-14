@@ -10592,6 +10592,6 @@ fieldset[disabled] .btn-masquerade.active {
 .sidebar-links .panel.active > a:visited,
 .sidebar-links .panel.active > a:hover {
   color: #000000;
-  text-shadow: 1px 1px #ccc;
+  text-shadow: none;
   outline: none;
 }
