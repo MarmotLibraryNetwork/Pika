@@ -278,6 +278,8 @@ public class SierraExportAPIMain {
 		// Since we only need the reindexer at this time to delete entries, let's just skip over the reindexer to the Solr handler
 		String solrPort = PikaConfigIni.getIniValue("Reindex", "solrPort");
 		updateServer = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped").withQueueSize(500).withThreadCount(8).build();
+		// Including the reindexer.jar in the IntelliJ module build and configuration appears to be necessary for the updateServer to initiate correctly.
+		// (Otherwise an java.lang.NoClassDefFoundError error is triggered.)
 //		updateServer.setRequestWriter(new BinaryRequestWriter());
 
 
