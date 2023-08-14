@@ -121,10 +121,8 @@ abstract class HorizonAPI3_23 extends HorizonAPI {
 			if ($patron->ilsUserId == $changeMyPinResponse['patronKey']) { // Check that the ILS user matches the Pika user
 				$patron->updatePassword($newPin);
 			}
-			return [
-				'success' => true,
-			];
-//			return "Your pin was updated successfully.";
+			return true;
+
 		}else{
 			return [
 				'error' => 'Sorry, we could not update your ' . translate('pin') . '. Please try again later.'
