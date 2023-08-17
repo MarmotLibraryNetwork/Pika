@@ -173,6 +173,9 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 
 	private HashMap<String, HashMap<RelevantLoanRule, LoanRuleDeterminer>> cachedRelevantLoanRules = new HashMap<>();
 	private HashMap<RelevantLoanRule, LoanRuleDeterminer> getRelevantLoanRules(String iType, String locationCode, HashSet<Long> pTypesToCheck) {
+		return getRelevantLoanRules(iType, locationCode, pTypesToCheck, null);
+	}
+	private HashMap<RelevantLoanRule, LoanRuleDeterminer> getRelevantLoanRules(String iType, String locationCode, HashSet<Long> pTypesToCheck, ItemInfo itemInfo) {
 		//Look for ac cached value
 		String                                        key               = iType + locationCode + pTypesToCheck.toString();
 		HashMap<RelevantLoanRule, LoanRuleDeterminer> relevantLoanRules = cachedRelevantLoanRules.get(key);
@@ -195,7 +198,8 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		for (LoanRuleDeterminer curDeterminer : loanRuleDeterminers) {
 			if (curDeterminer.isActive()) {
 				//Make sure the location matches
-				if (curDeterminer.matchesLocation(locationCode)) {
+//				if (curDeterminer.matchesLocation(locationCode)) {
+				if (curDeterminer.matchesLocation(locationCode, itemInfo)) {
 					//logger.debug("    " + curDeterminer.getRowNumber() + " matches location");
 					if (isWildCardValue(curDeterminer.getItemType()) || curDeterminer.getItemTypes().contains(iTypeLong)) {
 						//logger.debug("    " + curDeterminer.getRowNumber() + " matches iType");
@@ -256,7 +260,8 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 				String                 key          = curScope.getScopeName() + locationCode + itemIType;
 				HoldabilityInformation cachedInfo   = holdabilityCache.get(key);
 				if (cachedInfo == null){
-					HashMap<RelevantLoanRule, LoanRuleDeterminer> relevantLoanRules = getRelevantLoanRules(itemIType, locationCode, curScope.getRelatedNumericPTypes());
+					//HashMap<RelevantLoanRule, LoanRuleDeterminer> relevantLoanRules = getRelevantLoanRules(itemIType, locationCode, curScope.getRelatedNumericPTypes());
+					HashMap<RelevantLoanRule, LoanRuleDeterminer> relevantLoanRules = getRelevantLoanRules(itemIType, locationCode, curScope.getRelatedNumericPTypes(), itemInfo);
 					HashSet<Long> holdablePTypes = new HashSet<>();
 
 					//Set back to false and then prove true

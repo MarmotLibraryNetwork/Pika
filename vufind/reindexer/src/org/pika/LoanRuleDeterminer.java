@@ -128,8 +128,22 @@ public class LoanRuleDeterminer {
 	}
 
 
-	public boolean matchesLocation(String locationCode) {
-		return location.equals("*") || location.equals("?????") || locationCode.toLowerCase().startsWith(this.trimmedLocation);
+//	public boolean matchesLocation(String locationCode) {
+	public boolean matchesLocation(String locationCode, ItemInfo itemInfo) {
+		boolean wildCardMatch    = location.equals("*") || location.equals("?????");
+		if (wildCardMatch) return true;
+		boolean originalMatching = locationCode.toLowerCase().startsWith(this.trimmedLocation);
+		if (location.endsWith("*")){
+			return originalMatching;
+		} else {
+			boolean basicMatch = locationCode.toLowerCase().equals(location);
+			if (originalMatching != basicMatch) {
+				if (itemInfo != null) {
+					logger.debug("Difference loan rule determiner " + rowNumber + " location matching for item " + itemInfo.getItemIdentifier() + ". locationCode : " + locationCode + " LRD location : " + location);
+				}
+			}
+			return basicMatch;
+		}
 	}
 
 	public HashSet<Long> getPatronTypes() {
