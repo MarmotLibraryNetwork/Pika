@@ -37,6 +37,7 @@ public class IndexingProfile {
 	private char    eContentDescriptor = ' ';
 	private String  itemTag;
 	private boolean doAutomaticEcontentSuppression;
+	public  char    itemRecordNumberSubfield;
 
 	public String getRecordNumberTag() {
 		return recordNumberTag;

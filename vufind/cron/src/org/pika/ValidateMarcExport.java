@@ -14,6 +14,7 @@
 
 package org.pika;
 
+//import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Profile;
 import org.marc4j.MarcException;
@@ -23,6 +24,8 @@ import org.marc4j.marc.*;
 
 import java.io.File;
 import java.io.FileInputStream;
+//import java.io.FileWriter;
+//import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -73,6 +76,12 @@ public class ValidateMarcExport implements IProcessHandler {
 
 				File[] catalogBibFiles = new File(marcPath).listFiles();
 				if (catalogBibFiles != null) {
+					//try (
+					//				FileWriter itemCSVFile = new FileWriter("item_ids_report.csv", false);
+					//				CSVWriter itemCsvWriter = new CSVWriter(itemCSVFile)
+					//) {
+
+
 					for (File curBibFile : catalogBibFiles) {
 						Pattern      filesToMatchPattern = Pattern.compile(curProfile.filenamesToInclude, Pattern.CASE_INSENSITIVE);
 						final String curBibFileName      = curBibFile.getName();
@@ -124,6 +133,12 @@ public class ValidateMarcExport implements IProcessHandler {
 													numRecordsToIndex++;
 													lastRecordProcessed = recordIdentifier.getIdentifier();
 												}
+												//List<DataField> itemRecords = curBib.getDataFields(curProfile.getItemTag());
+												//for (DataField itemField : itemRecords) {
+												//	String[] csvLine = {itemField.getSubfield(curProfile.itemRecordNumberSubfield).getData(), recordIdentifier.getIdentifier()};
+												//	itemCsvWriter.writeNext(csvLine);
+												//}
+
 											} catch (MarcException me) {
 												if (!lastProcessedRecordLogged.equals(lastRecordProcessed)) {
 													logger.warn("Error processing individual record on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue", me);
@@ -170,6 +185,10 @@ public class ValidateMarcExport implements IProcessHandler {
 							}
 						}
 					}
+
+					//} catch (IOException e) {
+					//	logger.error("Error writing file", e);
+					//}
 				}
 				processLog.saveToDatabase(pikaConn, logger);
 			}
@@ -205,6 +224,7 @@ public class ValidateMarcExport implements IProcessHandler {
 				profile.individualMarcPath                = indexingProfilesRS.getString("individualMarcPath");
 				profile.recordNumberTag                   = indexingProfilesRS.getString("recordNumberTag");
 				profile.recordNumberField                 = getCharFromString(indexingProfilesRS.getString("recordNumberField"));
+				profile.itemRecordNumberSubfield          = getCharFromString(indexingProfilesRS.getString("itemRecordNumber"));
 				profile.marcEncoding                      = indexingProfilesRS.getString("marcEncoding");
 				profile.numCharsToCreateFolderFrom        = indexingProfilesRS.getInt("numCharsToCreateFolderFrom");
 				profile.createFolderFromLeadingCharacters = indexingProfilesRS.getBoolean("createFolderFromLeadingCharacters");
