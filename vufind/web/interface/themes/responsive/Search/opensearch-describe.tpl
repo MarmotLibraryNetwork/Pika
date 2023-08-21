@@ -6,7 +6,7 @@
   <Image height="16" width="16" type="image/png">{$url}{img filename=favicon.png}</Image>
   <Contact>{$supportEmail}</Contact>
   <Developer>Marmot Library Network</Developer>
-  <Attribution>Copyright 2019, Marmot Library Network, All Rights Reserved</Attribution>
+  <Attribution>Copyright 2023, Marmot Library Network, All Rights Reserved</Attribution>
   <SyndicationRight>{if $productionServer}open{else}closed{/if}</SyndicationRight>
   <Url type="text/html" method="get" template="{$url}/Search/Results?lookfor={literal}{searchTerms}&amp;page={startPage?}{/literal}"/>
   <Url type="application/rss+xml" method="get" template="{$url}/Search/Results?lookfor={literal}{searchTerms}{/literal}&amp;view=rss"/>
