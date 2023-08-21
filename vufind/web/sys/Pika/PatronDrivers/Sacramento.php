@@ -370,7 +370,8 @@ class Sacramento extends Sierra {
 			}
 		}
 
-		// get the right pCode3
+		// set the right pCodes
+		$pCode4           = 0;
 		$librarySubDomain = $library->subdomain;
 		switch($librarySubDomain) {
 			case 'colusa':
@@ -379,6 +380,7 @@ class Sacramento extends Sierra {
 				break;
 			case 'folsom':
 				$pCode3 = 44;
+				$pCode4 = 192;
 				break;
 			case 'sutter':
 			case 'suttercounty':
@@ -397,12 +399,13 @@ class Sacramento extends Sierra {
 				$pCode3 = 117;
 				break;
 		}
-		// sacramento defaults for pcodes
+		// sacramento defaults for pCodes
+
 		$params['patronCodes'] = [
 			'pcode1' => 'e',
 			'pcode2' => '3',
 			'pcode3' => $pCode3,
-			'pcode4' => 0
+			'pcode4' => $pCode4,
 		];
 
 		// sacramento default message field
