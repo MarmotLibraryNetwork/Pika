@@ -104,6 +104,9 @@ documentation/~*.tmp
 # Word Tempory File
 .vagrant/
 
+# Folder for Islandora migration run configurations  (Can be removed after migration is complete. )
+.run/
+
 # File-watcher mishaps #
 ########################
 *.min.min.js
