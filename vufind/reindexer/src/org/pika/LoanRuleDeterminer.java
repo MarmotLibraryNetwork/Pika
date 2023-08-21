@@ -139,7 +139,11 @@ public class LoanRuleDeterminer {
 			boolean basicMatch = locationCode.toLowerCase().equals(location);
 			if (originalMatching != basicMatch) {
 				if (itemInfo != null) {
-					logger.debug("Difference loan rule determiner " + rowNumber + " location matching for item " + itemInfo.getItemIdentifier() + ". locationCode : " + locationCode + " LRD location : " + location);
+//					logger.debug("Difference for loan rule determiner " + rowNumber + " location-matching locationCode : " + locationCode + " LRD location : " + location
+//					+ " for item " + itemInfo.getItemIdentifier() + " on " + itemInfo.getFullRecordIdentifier());
+					logger.debug("LDR " + rowNumber + " location-match change for LRD code " + location + " on item loc " + locationCode + " is now "
+					+ (basicMatch ? "True" : "False")
+					+ " for item " + itemInfo.getItemIdentifier() + " on " + itemInfo.getFullRecordIdentifier());
 				}
 			}
 			return basicMatch;
