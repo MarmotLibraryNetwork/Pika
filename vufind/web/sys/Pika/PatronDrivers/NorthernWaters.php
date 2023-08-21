@@ -85,7 +85,20 @@ class NorthernWaters extends Sierra {
 		for ($i = 0;$i < count($fields);$i++){
 			if ($fields[$i]['property'] == 'homelibrarycode'){
 				$fields[$i]['values'] = $homeLocations;
+			}elseif ($fields[$i]['property'] == 'zip'){
+				$result = array_splice($fields, ++$i, 0, [[
+					'property'    => 'otheraddress',
+					'type'        => 'text',
+					'label' => '(If this is not your permanent address, please include your permanent address.)',
+//					'label'       => 'Other Address ',
+//					'description' => '(If this is not your permanent address, please include your permanent address.)',
+//					'showDescription' => true,
+					'maxLength'   => 40,
+				]]);
+				// increase index count before array insertion so that next round of the for loop isn't zip again.
+
 			}elseif ($fields[$i]['property'] == 'altaddress'){
+				//TODO: I'm not  finding any reference to altaddress for northern waters
 				$fields[$i]['label']       = 'Address of Residence';
 				$fields[$i]['description'] = 'Address of Residence';
 			}
@@ -129,6 +142,13 @@ class NorthernWaters extends Sierra {
 			'fieldTag' => 'm',
 			'content'  => 'Self-registered patron. Issue physical card, update record and verify residence to check out physical items.'
 		];
+		if (!empty($_REQUEST['otheraddress'])){
+			$extraSelfRegParams['varFields'][] = [
+				'fieldTag' => 'd',
+				'content'  => trim($_REQUEST['otheraddress']),
+			];
+
+		}
 		return parent::selfRegister($extraSelfRegParams);
 	}
 }
