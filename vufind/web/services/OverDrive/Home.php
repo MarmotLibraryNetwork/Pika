@@ -58,11 +58,10 @@ class OverDrive_Home extends Action{
 			$this->loadCitations($recordDriver);
 
 			// Retrieve User Search History
-			$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ?
-			$_SESSION['lastSearchURL'] : false);
+			$interface->assign('lastsearch', $_SESSION['lastSearchURL'] ?? false);
 
 			//Get Next/Previous Links
-			$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+			$searchSource = $_REQUEST['searchSource'] ?? 'local';
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init($searchSource);
 			$searchObject->getNextPrevLinks();

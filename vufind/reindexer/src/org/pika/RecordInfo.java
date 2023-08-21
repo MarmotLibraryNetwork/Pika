@@ -332,6 +332,7 @@ public class RecordInfo {
 							}
 						} else {
 							stats.numPhysicalItemsTotal += curItem.getNumCopies();
+							//TODO: write out Item Ids
 							if (locallyOwned) {
 								stats.numPhysicalItemsOwned += curItem.getNumCopies();
 							}

@@ -153,7 +153,7 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 //		$info = curl_getinfo($this->curl_connection);
 		if (!$return) { // log curl error
 
-			$this->logger->error('curl get error : '.curl_error($this->curl_connection));
+			$this->logger->error('curl get error : ' . curl_error($this->curl_connection));
 		}
 		return $return;
 	}
@@ -192,7 +192,7 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 
 		if (!$return) { // log curl error
 
-			$this->logger->error('curl post error : '.curl_error($this->curl_connection));
+			$this->logger->error('curl post error : ' . curl_error($this->curl_connection));
 		}
 		return $return;
 	}
@@ -223,7 +223,7 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 		$return = curl_exec($this->curl_connection);
 		if (!$return){
 			$error = curl_error($this->curl_connection);
-			$this->logger->error('curl post error : '. $error, [$url, $postParams]);
+			$this->logger->error('curl post error : ' . $error, [$url, $postParams]);
 
 		}
 		return $return;
@@ -236,6 +236,10 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 		return $result1 && $result2;
 	}
 
+	/**
+	 * @deprecated Only used by the probable obsolete Library Solution patron integration driver
+	 * @return false|string
+	 */
 	public function getVendorOpacUrl(){
 		if ($this->accountProfile && $this->accountProfile->vendorOpacUrl ){
 			$host = $this->accountProfile->vendorOpacUrl;

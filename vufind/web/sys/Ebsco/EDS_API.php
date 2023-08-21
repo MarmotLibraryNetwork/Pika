@@ -84,10 +84,10 @@ class EDS_API {
     <InterfaceId>{$library->edsApiProfile}</InterfaceId>
 </UIDAuthRequestMessage>
 BODY;
-			$headers               = array(
+			$headers               = [
 				'Content-Type: application/xml',
 				'Content-Length: ' . strlen($params)
-			);
+			];
 
 			curl_setopt($this->curl_connection, CURLOPT_CONNECTTIMEOUT, 15);
 			curl_setopt($this->curl_connection, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
@@ -113,12 +113,12 @@ BODY;
   <Guest>n</Guest>
   <Org>{$library->displayName}</Org>
 </CreateSessionRequestMessage>
-BODY;;
-				$headers = array(
+BODY;
+				$headers = [
 					'Content-Type: application/xml',
 					'Content-Length: ' . strlen($params),
 					'x-authenticationToken: ' . $this->authenticationToken
-				);
+				];
 				curl_setopt($this->curl_connection, CURLOPT_POST, true);
 				curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, $headers);
 				curl_setopt($this->curl_connection, CURLOPT_URL, $this->edsBaseApi . '/createsession');
@@ -147,7 +147,7 @@ BODY;;
 		}
 	}
 
-	public function getSearchResults($searchTerms, $sort = null, $filters = array()){
+	public function getSearchResults($searchTerms, $sort = null, $filters = []){
 		if (!$this->authenticate()){
 			return null;
 		}
@@ -180,10 +180,10 @@ BODY;;
 		}
 
 		curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
-		curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, array(
+		curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, [
 			'x-authenticationToken: ' . $this->authenticationToken,
 			'x-sessionToken: ' . $this->sessionId,
-		));
+		]);
 		curl_setopt($this->curl_connection, CURLOPT_URL, $searchUrl);
 		$result = curl_exec($this->curl_connection);
 		try {
@@ -224,10 +224,9 @@ BODY;;
 	 *
 	 * @access protected
 	 */
-	protected function startQueryTimer()
-	{
+	protected function startQueryTimer(){
 		// Get time before the query
-		$time = explode(" ", microtime());
+		$time                 = explode(' ', microtime());
 		$this->queryStartTime = $time[1] + $time[0];
 	}
 
@@ -237,11 +236,10 @@ BODY;;
 	 *
 	 * @access protected
 	 */
-	protected function stopQueryTimer()
-	{
-		$time = explode(" ", microtime());
+	protected function stopQueryTimer(){
+		$time               = explode(' ', microtime());
 		$this->queryEndTime = $time[1] + $time[0];
-		$this->queryTime = $this->queryEndTime - $this->queryStartTime;
+		$this->queryTime    = $this->queryEndTime - $this->queryStartTime;
 	}
 
 	/**
@@ -251,7 +249,7 @@ BODY;;
 	 * @return  array   summary of results
 	 */
 	public function getResultSummary() {
-		$summary = array();
+		$summary = [];
 
 		$summary['page']        = $this->page;
 		$summary['perPage']     = $this->limit;
@@ -316,10 +314,9 @@ BODY;;
 	 * @access  public
 	 * @return  array   Array of HTML chunks for individual records.
 	 */
-	public function getResultRecordHTML()
-	{
+	public function getResultRecordHTML(){
 		global $interface;
-		$html = array();
+		$html = [];
 		//global $pikaLogger;
 		//$pikaLogger->warn(print_r($this->lastSearchResults, true));
 		if (isset($this->lastSearchResults->Data->Records)) {
@@ -348,10 +345,9 @@ BODY;;
 	 * @access  public
 	 * @return  array   Array of HTML chunks for individual records.
 	 */
-	public function getCombinedResultHTML()
-	{
+	public function getCombinedResultHTML(){
 		global $interface;
-		$html = array();
+		$html = [];
 		//global $pikaLogger;
 		//pikaLogger->warn(print_r($this->lastSearchResults, true));
 		if (isset($this->lastSearchResults->Data->Records)) {
@@ -405,7 +401,7 @@ BODY;;
 
 	public function getSearchTypes(){
 		$searchOptions = $this->getSearchOptions();
-		$searchTypes = array();
+		$searchTypes   = [];
 		if ($searchOptions != null){
 			foreach ($searchOptions->AvailableSearchCriteria->AvailableSearchFields->AvailableSearchField as $searchField){
 				$searchTypes[(string)$searchField->FieldCode] = (string)$searchField->Label;
@@ -416,7 +412,7 @@ BODY;;
 
 	public function getSortList() {
 		$searchOptions = $this->getSearchOptions();
-		$list = array();
+		$list          = [];
 		if ($searchOptions != null){
 			foreach ($searchOptions->AvailableSearchCriteria->AvailableSorts->AvailableSort as $sortOption){
 				$sort = (string)$sortOption->Id;
@@ -440,8 +436,7 @@ BODY;;
 	 * @param   string   $newSort   A field to sort by
 	 * @return  string   URL of a new search
 	 */
-	public function renderLinkWithSort($newSort)
-	{
+	public function renderLinkWithSort($newSort){
 		// Stash our old data for a minute
 		$oldSort = $this->sort;
 		// Add the new sort
@@ -455,29 +450,29 @@ BODY;;
 	}
 
 	public function getAppliedFilters() {
-		$appliedFilters = array();
+		$appliedFilters = [];
 		return $appliedFilters;
 	}
 
 	public function getFacetSet() {
-		$availableFacets = array();
+		$availableFacets = [];
 		if (isset($this->lastSearchResults) && isset($this->lastSearchResults->AvailableFacets)){
 			foreach ($this->lastSearchResults->AvailableFacets->AvailableFacet as $facet){
-				$facetId = (string)$facet->Id;
-				$availableFacets[$facetId] = array(
-						'collapseByDefault' => true,
-						'label' => (string)$facet->Label,
-						'valuesToShow' => 5,
-				);
-				$list = array();
+				$facetId                   = (string)$facet->Id;
+				$availableFacets[$facetId] = [
+					'collapseByDefault' => true,
+					'label'             => (string)$facet->Label,
+					'valuesToShow'      => 5,
+				];
+				$list                      = [];
 				foreach ($facet->AvailableFacetValues->AvailableFacetValue as $value){
-					$facetValue = (string)$value->Value;
+					$facetValue   = (string)$value->Value;
 					$urlWithFacet = $this->renderSearchUrl() . '&filter[]=' . $facetId . ':' . urlencode($facetValue);
-					$list[] = array(
-							'display' => $facetValue,
-							'count' => (string)$value->Count,
-							'url' => $urlWithFacet
-					);
+					$list[]       = [
+						'display' => $facetValue,
+						'count'   => (string)$value->Count,
+						'url'     => $urlWithFacet
+					];
 				}
 				$availableFacets[$facetId]['list'] = $list;
 			}
@@ -490,10 +485,10 @@ BODY;;
 			return null;
 		}else{
 			curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
-			curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, array(
+			curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, [
 					'x-authenticationToken: ' . $this->authenticationToken,
 					'x-sessionToken: ' . $this->sessionId,
-			));
+			]);
 			$infoUrl = $this->edsBaseApi . "/Retrieve?an=$an&dbid=$dbId";
 			curl_setopt($this->curl_connection, CURLOPT_URL, $infoUrl);
 			$recordInfoStr = curl_exec($this->curl_connection);

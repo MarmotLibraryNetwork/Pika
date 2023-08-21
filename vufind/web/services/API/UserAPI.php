@@ -1302,7 +1302,6 @@ class UserAPI extends AJAXHandler {
 				$user = $this->validateUserApiToken();
 				if ($user){
 					if (!empty($_POST['defaultPin'])){
-						//TODO: existing password check?
 						$user->setPassword($_POST['defaultPin']);
 						if ($user->update()){
 							return ['success' => true];
