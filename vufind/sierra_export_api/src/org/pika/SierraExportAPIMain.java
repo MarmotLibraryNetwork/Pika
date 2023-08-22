@@ -381,34 +381,35 @@ public class SierraExportAPIMain {
 		String url              = PikaConfigIni.getIniValue("Catalog", "sierra_db");
 		String sierraDBUser     = PikaConfigIni.getIniValue("Catalog", "sierra_db_user");
 		String sierraDBPassword = PikaConfigIni.getIniValue("Catalog", "sierra_db_password");
+		Properties connectionProperties = new Properties();
+		if (sierraDBUser != null && sierraDBPassword != null && !sierraDBPassword.isEmpty() && !sierraDBUser.isEmpty()) {
+			// Use specific user name and password when the are issues with special characters
+			connectionProperties.setProperty("user", sierraDBUser);
+			connectionProperties.setProperty("password", sierraDBPassword);
+		}
+		connectionProperties.setProperty("socketTimeout ", "300");
+		// Set a socket timeout so that the Extractor doesn't hang on missed responsed from SierraDNA
 
-		if (url != null) {
+			if (url != null) {
 			Connection sierraDBConn = null;
 			try {
 				//Open the connection to the database
-				if (sierraDBUser != null && sierraDBPassword != null && !sierraDBPassword.isEmpty() && !sierraDBUser.isEmpty()) {
-					// Use specific user name and password when the are issues with special characters
-					sierraDBConn = DriverManager.getConnection(url, sierraDBUser, sierraDBPassword);
-				} else {
-					// This version assumes user name and password are supplied in the url
-					sierraDBConn = DriverManager.getConnection(url);
-				}
+				sierraDBConn = DriverManager.getConnection(url, connectionProperties);
 
 				// Data extracted from the Sierra Database
 				exportActiveOrders(sierraDBConn);
-//				exportActiveOrders(exportPath, sierraDBConn);
 //				exportDueDates(exportPath, sierraDBConn); // Shouldn't be needed any longer. Pascal 6/13/2019
 				exportHolds(sierraDBConn, pikaConn);
 
 			} catch (Exception e) {
-				logger.error("Error: " + e.toString(), e);
+				logger.error("Sierra DNA Error: " + e, e);
 			}
 			if (sierraDBConn != null) {
 				try {
 					//Close the connection
 					sierraDBConn.close();
 				} catch (Exception e) {
-					logger.error("Error: " + e.toString(), e);
+					logger.error("Sierra DNA Error: " + e, e);
 				}
 			}
 		}
@@ -2092,7 +2093,7 @@ public class SierraExportAPIMain {
 			URL    emptyIndexURL = new URL(apiBaseUrl + "/token");
 			String clientKey     = PikaConfigIni.getIniValue("Catalog", "clientKey");
 			String clientSecret  = PikaConfigIni.getIniValue("Catalog", "clientSecret");
-			String encoded       = new String(Base64.getEncoder().encode((clientKey + ":" + clientSecret).getBytes()));
+			String encoded       = Base64.getEncoder().encodeToString((clientKey + ":" + clientSecret).getBytes());
 
 			conn = (HttpURLConnection) emptyIndexURL.openConnection();
 			checkForSSLConnection(conn);
