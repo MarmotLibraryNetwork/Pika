@@ -138,7 +138,7 @@ public class LoanRuleDeterminer {
 		} else {
 			boolean basicMatch = locationCode.toLowerCase().equals(location);
 			if (originalMatching != basicMatch) {
-				if (itemInfo != null) {
+				if (logger.isDebugEnabled() && itemInfo != null) {
 //					logger.debug("Difference for loan rule determiner " + rowNumber + " location-matching locationCode : " + locationCode + " LRD location : " + location
 //					+ " for item " + itemInfo.getItemIdentifier() + " on " + itemInfo.getFullRecordIdentifier());
 					logger.debug("LDR " + rowNumber + " location-match change for LRD code " + location + " on item loc " + locationCode + " is now "

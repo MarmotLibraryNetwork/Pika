@@ -197,14 +197,20 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		boolean hasDefaultPType = pTypesToCheck.contains(-1L);
 		for (LoanRuleDeterminer curDeterminer : loanRuleDeterminers) {
 			if (curDeterminer.isActive()) {
-				//Make sure the location matches
-//				if (curDeterminer.matchesLocation(locationCode)) {
-				if (curDeterminer.matchesLocation(locationCode, itemInfo)) {
-					//logger.debug("    " + curDeterminer.getRowNumber() + " matches location");
-					if (isWildCardValue(curDeterminer.getItemType()) || curDeterminer.getItemTypes().contains(iTypeLong)) {
-						//logger.debug("    " + curDeterminer.getRowNumber() + " matches iType");
-						if (hasDefaultPType || isWildCardValue(curDeterminer.getPatronType()) || isPTypeValid(curDeterminer.getPatronTypes(), pTypesNotAccountedFor)) {
-							//logger.debug("    " + curDeterminer.getRowNumber() + " matches pType");
+				if (isWildCardValue(curDeterminer.getItemType()) || curDeterminer.getItemTypes().contains(iTypeLong)) {
+					//logger.debug("    " + curDeterminer.getRowNumber() + " matches iType");
+
+					if (hasDefaultPType || isWildCardValue(curDeterminer.getPatronType()) || isPTypeValid(curDeterminer.getPatronTypes(), pTypesNotAccountedFor)) {
+						//logger.debug("    " + curDeterminer.getRowNumber() + " matches pType");
+
+
+						//Make sure the location matches
+//					if (curDeterminer.matchesLocation(locationCode)) {
+						if (curDeterminer.matchesLocation(locationCode, itemInfo)) {
+							// Matching location last so that we can debug lrd logic when the other factors are already a match.
+							//logger.debug("    " + curDeterminer.getRowNumber() + " matches location");
+
+
 							LoanRule loanRule = loanRules.get(curDeterminer.getLoanRuleId());
 							relevantLoanRules.put(new RelevantLoanRule(loanRule, curDeterminer.getPatronTypes()), curDeterminer);
 
