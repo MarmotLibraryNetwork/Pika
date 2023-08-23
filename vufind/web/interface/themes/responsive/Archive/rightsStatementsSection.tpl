@@ -20,7 +20,7 @@
 		<div><em>Rights created by <a href="{$rightsCreatorLink}">{$rightsCreatorTitle}</a></em></div>
 	{/if}
 	{if !empty($rightsEffectiveDate) || !empty($rightsExpirationDate)}
-		<div><em>{if !empty($rightsEffectiveDate)}Rights statement effective {$rightsEffectiveDate}.  {/if}{if !empty($rightsEffectiveDate)}Rights statement expires {$rightsExpirationDate}.  {/if}</em></div>
+		<div><em>{if !empty($rightsEffectiveDate)}Rights statement effective {$rightsEffectiveDate}.  {/if}{if !empty($rightsExpirationDate)}Rights statement expires {$rightsExpirationDate}.  {/if}</em></div>
 	{/if}
 
 	<div class="row">
