@@ -1451,16 +1451,17 @@ class SearchObject_Islandora extends SearchObject_Base {
 		if ($library->archiveNamespace != 'islandora'){
 			$filters[] = "!PID:islandora\\:*";
 		}
-		$filters[] = "!PID:demo\\:*";
-		$filters[] = "!PID:testCollection\\:*";
+//		$filters[] = "!PID:demo\\:*";
+//		$filters[] = "!PID:testCollection\\:*";
 		$filters[] = "!PID:testcollection\\:*";
 		$filters[] = "!PID:marmot\\:*";
-		$filters[] = "!PID:ssb\\:*";
-		$filters[] = "!PID:mandala\\:*";
+//		$filters[] = "!PID:ssb\\:*";
+//		$filters[] = "!PID:mandala\\:*";
 		$filters[] = "!RELS_EXT_hasModel_uri_s:info\\:fedora/islandora\\:newspaperIssueCModel";
 		$filters[] = "!RELS_EXT_hasModel_uri_s:info\\:fedora/ir\\:thesisCModel";
 		$filters[] = "!RELS_EXT_hasModel_uri_s:info\\:fedora/ir\\:citationCModel";
 
+		//TODO: This should be first filter applied
 		global $configArray;
 		if ($configArray['Site']['isProduction']) {
 			$filters[] = "!mods_extension_marmotLocal_pikaOptions_includeInPika_ms:(no OR testOnly)";

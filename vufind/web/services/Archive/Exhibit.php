@@ -61,6 +61,8 @@ class Archive_Exhibit extends Archive_Object {
 
 		$displayType = 'basic';
 		switch ($pikaCollectionDisplay){
+			//TODO: I have refactored in Islandora 2 that map is map no time line;
+			// and that a map with a timeline will be designated mapTimeline
 			case 'map':
 				$displayType = 'map';
 				$mapZoom     = $this->recordDriver->getModsValue('mapZoomLevel', 'marmot');
@@ -164,7 +166,7 @@ class Archive_Exhibit extends Archive_Object {
 		}elseif ($displayType == 'custom'){
 //			$this->endExhibitContext();
 			$this->startExhibitContext();
-			$collectionTemplates = array();
+			$collectionTemplates = [];
 			foreach ($collectionOptions as $option){
 				if (strpos($option, 'searchCollection') === 0){
 					$filterOptions     = explode('|', $option);
@@ -197,7 +199,7 @@ class Archive_Exhibit extends Archive_Object {
 					$collectionDriver = RecordDriverFactory::initRecordDriver($collectionToLoadFromObject);
 
 					$collectionObjects = $collectionDriver->getChildren();
-					$collectionTitles  = array();
+					$collectionTitles  = [];
 
 					//Check the MODS for the collection to see if it has information about ordering
 					// Likely used for Exhibits that have 1 page.
@@ -214,11 +216,11 @@ class Archive_Exhibit extends Archive_Object {
 					}
 					foreach ($collectionObjects as $childPid){
 						$childObject     = RecordDriverFactory::initRecordDriver($fedoraUtils->getObject($childPid));
-						$collectionTitle = array(
+						$collectionTitle = [
 							'pid'   => $childPid,
 							'title' => $childObject->getTitle(),
 							'link'  => $childObject->getRecordUrl(),
-						);
+						];
 						if ($collectionTemplate == 'scroller'){
 							$collectionTitle['image'] = $childObject->getBookcoverUrl('medium');
 							//MDN 12/27/2016 Jordan and I talked today and decided that we would just show the actual object rather than using the scroller as a facet.
@@ -235,7 +237,7 @@ class Archive_Exhibit extends Archive_Object {
 					// Likely used for Exhibits that have 1 page.
 					// Might be for Exhibit of Exhibits
 					if ($sortingInfo){
-						$sortedImages = array();
+						$sortedImages = [];
 						foreach ($sortingInfo as $sortingPid){
 							if (array_key_exists($sortingPid, $collectionTitles)){
 								$sortedImages[] = $collectionTitles[$sortingPid];
@@ -246,11 +248,11 @@ class Archive_Exhibit extends Archive_Object {
 						$collectionTitles = $sortedImages + $collectionTitles;
 					}
 
-					$browseCollectionTitlesData = array(
+					$browseCollectionTitlesData = [
 						'collectionPid'    => $collectionToLoadFromObject,
 						'title'            => $collectionToLoadFromObject->label,
 						'collectionTitles' => $collectionTitles,
-					);
+					];
 					$interface->assignAppendToExisting('browseCollectionTitlesData', $browseCollectionTitlesData);
 					if (count($collectionTitles) > 0){
 						if ($collectionTemplate == 'browse'){
@@ -264,7 +266,7 @@ class Archive_Exhibit extends Archive_Object {
 
 				}elseif (strpos($option, 'randomImage') === 0){
 					$filterOptions      = explode('|', $option);
-					$randomObjectPids   = array();
+					$randomObjectPids   = [];
 					$randomObjectPids[] = $this->pid;
 					if (count($filterOptions) > 1){
 						$randomObjectPids = explode(',', $filterOptions[1]);
@@ -278,11 +280,11 @@ class Archive_Exhibit extends Archive_Object {
 					$randomImagePid               = $randomObjectCollectionDriver->getRandomObject();
 					if ($randomImagePid != null){
 						$randomObject     = RecordDriverFactory::initRecordDriver($fedoraUtils->getObject(trim($randomImagePid)));
-						$randomObjectInfo = array(
+						$randomObjectInfo = [
 							'label' => $randomObject->getTitle(),
 							'link'  => $randomObject->getRecordUrl(),
 							'image' => $randomObject->getBookcoverUrl('medium'),
-						);
+						];
 						$interface->assign('randomObject', $randomObjectInfo);
 						$collectionTemplates[] = $interface->fetch('Archive/randomImageComponent.tpl');
 					}
