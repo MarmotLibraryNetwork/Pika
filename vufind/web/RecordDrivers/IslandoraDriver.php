@@ -2993,7 +2993,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 		$rightsCreator = $this->getModsValue('rightsCreator', 'marmot');
 		if (!empty($rightsCreator)) {
-			$rightsCreatorPid = $this->getModsValue('entityPid', 'marmot', $rightsCreator);
+			$rightsCreatorPid   = $this->getModsValue('entityPid', 'marmot', $rightsCreator);
 			$rightsCreatorTitle = $this->getModsValue('entityTitle', 'marmot', $rightsCreator);
 			if ($rightsCreatorPid) {
 				$interface->assign('rightsCreatorTitle', $rightsCreatorTitle);
