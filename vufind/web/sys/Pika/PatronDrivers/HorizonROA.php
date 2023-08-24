@@ -249,16 +249,16 @@ abstract class HorizonROA implements \DriverInterface {
 			}
 
 //  Calls that show how patron-related data is represented
-//			$patronDescribeResponse = $this->getWebServiceResponse( '/v1/user/patron/describe', null, $sessionToken);
+//			$patronDescribeResponse = $this->getWebServiceResponse( '/user/patron/describe', null, $sessionToken);
 //			$patronDescribeResponseV2 = $this->getWebServiceResponse( '/v2/user/patron/describe', null, $sessionToken);
-//			$patronDSearchescribeResponse = $this->getWebServiceResponse( '/v1/user/patron/search/describe', null, $sessionToken);
+//			$patronDSearchescribeResponse = $this->getWebServiceResponse( '/user/patron/search/describe', null, $sessionToken);
 				//TODO: a patron search may require a staff user account.
-//			$patronSearchResponse = $this->getWebServiceResponse( '/v1/user/patron/search', array('q' => 'borr|2:22046027101218'), $sessionToken);
-//			$patronTypesQuery = $this->getWebServiceResponse( '/v1/policy/patronType/simpleQuery?key=*&includeFields=*', null, $sessionToken);
+//			$patronSearchResponse = $this->getWebServiceResponse( '/user/patron/search', array('q' => 'borr|2:22046027101218'), $sessionToken);
+//			$patronTypesQuery = $this->getWebServiceResponse( '/policy/patronType/simpleQuery?key=*&includeFields=*', null, $sessionToken);
 
 			$includeFields = urlencode('displayName,privilegeExpiresDate,primaryAddress,primaryPhone,library,'
 				. 'patronType,holdRecordList{status},circRecordList,blockList{amount,owed}');
-			$acountInfoLookupURL =  '/v1/user/patron/key/' . $horizonRoaUserID . '?includeFields=' .$includeFields;
+			$acountInfoLookupURL =  '/user/patron/key/' . $horizonRoaUserID . '?includeFields=' .$includeFields;
 			// Note that {*} notation doesn't work for Horizon ROA yet
 
 			//TODO: see what default fields is now
@@ -456,6 +456,7 @@ abstract class HorizonROA implements \DriverInterface {
 	 * @return bool|int
 	 */
 	public function getNumHoldsOnRecord($bibId){
+		// TODO: make ROA call
 		//This uses the standard / REST method to retrieve this information from the ILS.
 		// It isn't an ROA call.
 		$lookupTitleInfoUrl      = '/rest/standard/lookupTitleInfo?titleKey=' . $bibId . '&includeItemInfo=false&includeHoldCount=true';
@@ -494,12 +495,8 @@ abstract class HorizonROA implements \DriverInterface {
 		// Now that we have the session token, get checkout  information
 		//Get a list of checkouts for the user
 		$includeFields   = urlencode('circRecordList{checkOutDate,dueDate,overdue,renewalCount,checkOutFee,'
-		. 'item{bib,barcode,itemType}}');
-		//$time_start = microtime(true); // time
-		$patronCheckouts = $this->getWebServiceResponse('/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=' . $includeFields, null, $sessionToken);
-	  //$time_end = microtime(true); // time
-		//$time = $time_end - $time_start; // time
-		//$this->logger->warn('ROA checkouts call returned in '.$time);
+		. 'item{bib{title,titleHoldCount,holdRecordList},barcode,itemType}}');
+		$patronCheckouts = $this->getWebServiceResponse('/user/patron/key/' . $patron->ilsUserId . '?includeFields=' . $includeFields, null, $sessionToken);
 
 		if (empty($patronCheckouts->fields->circRecordList)){
 			return $checkedOutTitles;
@@ -537,7 +534,7 @@ abstract class HorizonROA implements \DriverInterface {
 				$curTitle['format']          = 'Unknown';                    //TODO: I think this makes sorting working better
 				$curTitle['overdue']         = $circRecord->fields->overdue; // (optional) CatalogConnection method will calculate this based on due date
 				$curTitle['fine']            = $fine;
-				//$curTitle['holdQueueLength'] = $this->getNumHoldsOnRecord($bibId);
+				$curTitle['holdQueueLength'] = count($circRecord->fields->item->fields->bib->fields->holdRecordList);
 
 				$recordDriver = \RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bibId);
 				if ($recordDriver->isValid()){
@@ -613,7 +610,7 @@ abstract class HorizonROA implements \DriverInterface {
 			]
 		];
 
-		$renewCheckOutResponse = $this->getWebServiceResponse( '/v1/circulation/circRecord/renew', $params, $sessionToken, 'POST');
+		$renewCheckOutResponse = $this->getWebServiceResponse( '/circulation/circRecord/renew', $params, $sessionToken, 'POST');
 		if (!empty($renewCheckOutResponse->circRecord)){
 			return [
 				'itemId'  => $itemId,
@@ -672,7 +669,7 @@ abstract class HorizonROA implements \DriverInterface {
 		$logger->info('Using bracket notation to fetch patron holds');
 		$includeFields = urlencode('holdRecordList{suspendEndDate,fillByDate,queuePosition,status,expirationDate,"
 		. "item{barcode,call{callNumber}},bib{title,author,bibStatus{displayName}},pickupLibrary{displayName}}');
-		$response = $this->getWebServiceResponse( '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields='.$includeFields, null, $sessionToken);
+		$response = $this->getWebServiceResponse( '/user/patron/key/' . $patron->ilsUserId . '?includeFields='.$includeFields, null, $sessionToken);
 		$patronHolds = $response->fields->holdRecordList;
 
 		if(count($patronHolds) == 0) {
@@ -896,9 +893,9 @@ abstract class HorizonROA implements \DriverInterface {
 				$holdData['fillByDate'] = date('Y-m-d', $timestamp);
 			}
 		}
-//				$holdRecordDescribe = $this->getWebServiceResponse( "/v1/circulation/holdRecord/describe", null, $sessionToken);
-//				$placeHoldDescribe  = $this->getWebServiceResponse( "/v1/circulation/holdRecord/placeHold/describe", null, $sessionToken);
-		$createHoldResponse = $this->getWebServiceResponse( "/v1/circulation/holdRecord/placeHold", $holdData, $sessionToken);
+//				$holdRecordDescribe = $this->getWebServiceResponse( "/circulation/holdRecord/describe", null, $sessionToken);
+//				$placeHoldDescribe  = $this->getWebServiceResponse( "/circulation/holdRecord/placeHold/describe", null, $sessionToken);
+		$createHoldResponse = $this->getWebServiceResponse( "/circulation/holdRecord/placeHold", $holdData, $sessionToken);
 
 		$hold_result = [
 			'success' => false,
@@ -944,7 +941,7 @@ abstract class HorizonROA implements \DriverInterface {
 		}
 
 		//create the hold using the web service
-		$cancelHoldResponse = $this->getWebServiceResponse("/v1/circulation/holdRecord/key/$cancelId", null, $sessionToken, 'DELETE');
+		$cancelHoldResponse = $this->getWebServiceResponse("/circulation/holdRecord/key/$cancelId", null, $sessionToken, 'DELETE');
 
 		if (empty($cancelHoldResponse)){
 			return [
@@ -983,8 +980,8 @@ abstract class HorizonROA implements \DriverInterface {
 			]
 		];
 
-//		$describe  = $this->getWebServiceResponse( "/v1/circulation/holdRecord/unsuspendHold/describe", null, $sessionToken);
-		$updateHoldResponse = $this->getWebServiceResponse( "/v1/circulation/holdRecord/suspendHold", $params, $sessionToken, 'POST');
+//		$describe  = $this->getWebServiceResponse( "/circulation/holdRecord/unsuspendHold/describe", null, $sessionToken);
+		$updateHoldResponse = $this->getWebServiceResponse( "/circulation/holdRecord/suspendHold", $params, $sessionToken, 'POST');
 
 		if (!empty($updateHoldResponse->holdRecord)){
 			$frozen = translate('frozen');
@@ -1027,9 +1024,9 @@ abstract class HorizonROA implements \DriverInterface {
 			]
 		];
 
-//		$describe           = $this->getWebServiceResponse( '/v1/circulation/holdRecord/unsuspendHold/describe', null, $sessionToken);
+//		$describe           = $this->getWebServiceResponse( '/circulation/holdRecord/unsuspendHold/describe', null, $sessionToken);
 //		$describe           = $this->getWebServiceResponse( '/circulation/holdRecord/changePickupLibrary/describe', null, $sessionToken);
-		$updateHoldResponse = $this->getWebServiceResponse( '/v1/circulation/holdRecord/unsuspendHold', $params, $sessionToken, 'POST');
+		$updateHoldResponse = $this->getWebServiceResponse( '/circulation/holdRecord/unsuspendHold', $params, $sessionToken, 'POST');
 
 		if (!empty($updateHoldResponse->holdRecord)){
 			$thawed = translate('thawed');
@@ -1078,7 +1075,7 @@ abstract class HorizonROA implements \DriverInterface {
 		];
 
 		//$describe           = $this->getWebServiceResponse( "/circulation/holdRecord/changePickupLibrary/describe", null, $sessionToken);
-		$updateHoldResponse = $this->getWebServiceResponse( "/v1/circulation/holdRecord/changePickupLibrary", $params, $sessionToken, 'POST');
+		$updateHoldResponse = $this->getWebServiceResponse( "/circulation/holdRecord/changePickupLibrary", $params, $sessionToken, 'POST');
 
 		if (!empty($updateHoldResponse->holdRecord)){
 			return [
@@ -1123,8 +1120,8 @@ abstract class HorizonROA implements \DriverInterface {
 			if (!$itemInfo || isset($_REQUEST['reload'])){
 				$sessionToken  = $this->getSessionToken($patron);
 
-//				$itemInfoLookupResponse  = $this->getWebServiceResponse( "/v1/catalog/item/key/" . $itemId, null, $sessionToken);
-				$itemInfoLookupResponse = $this->getWebServiceResponse( "/v1/catalog/item/key/" . $itemId . '?includeFields=bib,barcode,itemType', null, $sessionToken);
+//				$itemInfoLookupResponse  = $this->getWebServiceResponse( "/catalog/item/key/" . $itemId, null, $sessionToken);
+				$itemInfoLookupResponse = $this->getWebServiceResponse( "/catalog/item/key/" . $itemId . '?includeFields=bib,barcode,itemType', null, $sessionToken);
 				if (!empty($itemInfoLookupResponse->fields)){
 					$bibId    = $itemInfoLookupResponse->fields->bib->key;
 					$barcode  = $itemInfoLookupResponse->fields->barcode;
@@ -1157,8 +1154,8 @@ abstract class HorizonROA implements \DriverInterface {
 			if (!$bibInfo || isset($_REQUEST['reload'])){
 				$sessionToken  = $this->getSessionToken($patron);
 
-//				$bibInfoLookupResponse = $this->getWebServiceResponse( '/v1/catalog/bib/key/' . $bibId . '?includeFields=*', null, $sessionToken);
-				$bibInfoLookupResponse = $this->getWebServiceResponse( '/v1/catalog/bib/key/' . $bibId . '?includeFields=title,author', null, $sessionToken);
+//				$bibInfoLookupResponse = $this->getWebServiceResponse( '/catalog/bib/key/' . $bibId . '?includeFields=*', null, $sessionToken);
+				$bibInfoLookupResponse = $this->getWebServiceResponse( '/catalog/bib/key/' . $bibId . '?includeFields=title,author', null, $sessionToken);
 				if (!empty($bibInfoLookupResponse->fields)){
 					$title      = $bibInfoLookupResponse->fields->title;
 					$shortTitle = strstr($title, '/', true); //drop everything from title after '/' character (author info)
@@ -1196,7 +1193,7 @@ abstract class HorizonROA implements \DriverInterface {
 		$logger = $this->getLogger();
 		$logger->info('Using bracket notation to fetch patron fines');
 		$includeFields = urlencode('blockList{item{key,bib{title}},createDate,amount,block{key},comment,owed}');
-		$response = $this->getWebServiceResponse( '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields='.$includeFields, null, $sessionToken);
+		$response = $this->getWebServiceResponse( '/user/patron/key/' . $patron->ilsUserId . '?includeFields='.$includeFields, null, $sessionToken);
 		if(empty($response)) {
 			return $fines;
 		}
@@ -1244,7 +1241,7 @@ abstract class HorizonROA implements \DriverInterface {
 		$blockPolicy = $this->cache->get($memCacheKey);
 		if (!$blockPolicy) {
 			$sessionToken  = $this->getSessionToken($patron);
-			$lookupBlockPolicy = $this->getWebServiceResponse( '/v1/policy/block/key/' . $blockPolicyKey, null, $sessionToken);
+			$lookupBlockPolicy = $this->getWebServiceResponse( '/policy/block/key/' . $blockPolicyKey, null, $sessionToken);
 			if (!empty($lookupBlockPolicy->fields)) {
 				$blockPolicy = empty($lookupBlockPolicy->fields->description) ? null : $lookupBlockPolicy->fields->description;
 				global $configArray;
@@ -1400,7 +1397,7 @@ abstract class HorizonROA implements \DriverInterface {
 		$staffPass   = $configArray['Catalog']['webServiceStaffPass'];
 		$body        = ['login' => $staffUser, 'password' => $staffPass];
 		$xtraHeaders = ['sd-originating-app-id' => 'Pika'];
-		$res         = $this->getWebServiceResponse($this->webServiceURL . '/v1/user/staff/login', $body, null, "POST", $xtraHeaders);
+		$res         = $this->getWebServiceResponse($this->webServiceURL . '/user/staff/login', $body, null, "POST", $xtraHeaders);
 
 		if (!$res || !isset($res->sessionToken)){
 			return false;
@@ -1453,8 +1450,8 @@ abstract class HorizonROA implements \DriverInterface {
 				// TODO: update call not working.
 //				$updateAccountInfoResponse = $this->getWebServiceResponse( '/adminws/clientID/describe', null, $sessionToken);
 				$updateAccountInfoResponse = $this->getWebServiceResponse( '/adminws/selfRegConfig/describe', null, $sessionToken);
-//				$updateAccountInfoResponse = $this->getWebServiceResponse( '/v1/user/patron/register/describe', null, $sessionToken, 'PUT');
-				$updateAccountInfoResponse = $this->getWebServiceResponse( '/v1/user/patron/key/' . $horizonRoaUserId, $updatePatronInfoParameters, $sessionToken, 'PUT');
+//				$updateAccountInfoResponse = $this->getWebServiceResponse( '/user/patron/register/describe', null, $sessionToken, 'PUT');
+				$updateAccountInfoResponse = $this->getWebServiceResponse( '/user/patron/key/' . $horizonRoaUserId, $updatePatronInfoParameters, $sessionToken, 'PUT');
 
 				if (isset($updateAccountInfoResponse->messageList)) {
 					foreach ($updateAccountInfoResponse->messageList as $message) {
