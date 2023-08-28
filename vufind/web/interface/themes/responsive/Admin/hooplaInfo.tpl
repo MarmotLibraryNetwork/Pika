@@ -40,7 +40,7 @@
 					<div class="form-group">
 						<label for="hooplaId" class="control-label col-sm-2">Hoopla Record Id</label>
 						<div class="col-sm-3">
-						<input type="text" name="hooplaId" id="hooplaId" class="form-control"{if $smarty.get.hooplaId} value="{$smarty.get.hooplaId}"{/if}>
+						<input type="text" name="hooplaId" id="hooplaId" class="form-control"{if ctype_digit($smarty.get.hooplaId)} value="{$smarty.get.hooplaId}"{/if}>
 						</div>
 					</div>
 
