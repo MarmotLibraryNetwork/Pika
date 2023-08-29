@@ -1354,7 +1354,7 @@ abstract class HorizonROA implements \DriverInterface {
 	 * @param User $patron
 	 * @param $newPin
 	 * @param $resetToken
-	 * @return array
+	 * @return array|bool
 	 */
 	public function resetPin(User $patron, $newPin, $resetToken){
 		if (empty($resetToken)){
@@ -1378,9 +1378,7 @@ abstract class HorizonROA implements \DriverInterface {
 			if ($patron->ilsUserId == $changeMyPinResponse->patronKey){ // Check that the ILS user matches the Pika user
 				$patron->updatePassword($newPin);
 			}
-			return [
-				'success' => true,
-			];
+			return true;
 		}else{
 			return [
 				'error' => 'Sorry, we could not update your ' . translate('pin') . ' number. Please try again later.'
