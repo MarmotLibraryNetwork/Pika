@@ -1569,7 +1569,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 	 * @param User $patron
 	 * @param $newPin
 	 * @param null $resetToken
-	 * @return array|void
+	 * @return array|bool
 	 */
 	function resetPin($patron, $newPin, $resetToken = null){
 		if (empty($resetToken)){
@@ -1601,9 +1601,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 			if ($patron->ilsUserId == $changeMyPinResponse->patronKey){ // Check that the ILS user matches the Pika user
 				$patron->updatePassword($newPin);
 			}
-			return [
-				'success' => true,
-			];
+			return true;
 		}else{
 			return [
 				'error' => 'Sorry, we could not update your ' . translate('pin') . '. Please try again later.'

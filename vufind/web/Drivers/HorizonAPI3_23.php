@@ -90,7 +90,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI {
 	 * @param User        $patron
 	 * @param string      $newPin
 	 * @param null|string $resetToken
-	 * @return array
+	 * @return array|bool
 	 */
 	function resetPin($patron, $newPin, $resetToken=null){
 		if (empty($resetToken)) {
