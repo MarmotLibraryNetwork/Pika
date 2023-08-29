@@ -31,6 +31,8 @@ use \Pika\Logger;
 
 abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't need the Screen Scraping
 	//TODO: Additional caching of sessionIds by patron
+
+	// NOTE: API call URLs no longer require v1 indicator after symphony version 2017.09 release
 	private static $sessionIdsForUsers = [];
 
 	protected $logger;
@@ -126,7 +128,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 		if (!empty($sessionToken)){
 			$webServiceURL = $this->getWebServiceURL();
 //			$patronDescribeResponse           = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/describe', null, $sessionToken);
-			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/search?q=ID:' . $barcode . '&rw=1&ct=1&includeFields=firstName,lastName,privilegeExpiresDate,patronStatusInfo{*},preferredAddress,address1,address2,address3,library,circRecordList,blockList{owed},holdRecordList{status}', null, $sessionToken);
+			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/search?q=ID:' . $barcode . '&rw=1&ct=1&includeFields=firstName,lastName,privilegeExpiresDate,patronStatusInfo{*},preferredAddress,address1,address2,address3,library,circRecordList,blockList{owed},holdRecordList{status}', null, $sessionToken);
 			if (!empty($lookupMyAccountInfoResponse->result) && $lookupMyAccountInfoResponse->totalResults == 1){
 				$userID                      = $lookupMyAccountInfoResponse->result[0]->key;
 				$lookupMyAccountInfoResponse = $lookupMyAccountInfoResponse->result[0];
@@ -321,7 +323,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 			//TODO: This resource is currently hidden
 
 
-			$accountInfoLookupURL = $webServiceURL . '/v1/user/patron/key/' . $sirsiRoaUserID .
+//			$accountInfoLookupURL = $webServiceURL . '/v1/user/patron/key/' . $sirsiRoaUserID .
+			$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $sirsiRoaUserID .
 				'?includeFields=firstName,lastName,privilegeExpiresDate,patronStatusInfo{*},preferredName,preferredAddress,address1,address2,address3,library,circRecordList{claimsReturnedDate,status},blockList{owed},holdRecordList{status},phoneList{*}';
 
 			// phoneList is for texting notification preferences
@@ -662,7 +665,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 				$selfRegClientID = $configArray['Catalog']['selfRegClientId'];
 
 
-				$createNewPatronResponse = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/', $createPatronInfoParameters, $sessionToken, 'POST', $overrideHeaders, $selfRegClientID);
+//				$createNewPatronResponse = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/', $createPatronInfoParameters, $sessionToken, 'POST', $overrideHeaders, $selfRegClientID);
+				$createNewPatronResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/', $createPatronInfoParameters, $sessionToken, 'POST', $overrideHeaders, $selfRegClientID);
 
 				if (isset($createNewPatronResponse->messageList)){
 					foreach ($createNewPatronResponse->messageList as $message){
@@ -805,7 +809,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 		$webServiceURL = $this->getWebServiceURL();
 		//Get a list of checkouts for the user
 //		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=circRecordList{*,item{itemType,call{dispCallNumber}}}', null, $sessionToken);
-		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=circRecordList{*,item{call{dispCallNumber}}}', null, $sessionToken);
+//		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=circRecordList{*,item{call{dispCallNumber}}}', null, $sessionToken);
+		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->ilsUserId . '?includeFields=circRecordList{*,item{call{dispCallNumber}}}', null, $sessionToken);
 
 		if (!empty($patronCheckouts->fields->circRecordList)){
 			$sCount = 0;
@@ -840,7 +845,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 						$curTitle['ratingData']    = $recordDriver->getRatingData();
 					}else{
 						// Presumably ILL Items
-						$bibInfo                = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId, null, $sessionToken);
+//						$bibInfo                = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId, null, $sessionToken);
+						$bibInfo                = $this->getWebServiceResponse($webServiceURL . '/catalog/bib/key/' . $bibId, null, $sessionToken);
 						$curTitle['title']      = $bibInfo->fields->title;
 						$simpleSortTitle        = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove begining The or A
 						$curTitle['title_sort'] = empty($simpleSortTitle) ? $bibInfo->fields->title : $simpleSortTitle;
@@ -917,7 +923,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 
 		//Get a list of holds for the user
 		// (Call now includes Item information for when the hold is an item level hold.)
-		$patronHolds = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=holdRecordList{*,item{itemType,barcode,call{callNumber}}}', null, $sessionToken);
+//		$patronHolds = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=holdRecordList{*,item{itemType,barcode,call{callNumber}}}', null, $sessionToken);
+		$patronHolds = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->ilsUserId . '?includeFields=holdRecordList{*,item{itemType,barcode,call{callNumber}}}', null, $sessionToken);
 		if ($patronHolds && isset($patronHolds->fields)){
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
 			foreach ($patronHolds->fields->holdRecordList as $hold){
@@ -995,7 +1002,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 
 				}else{
 					// If we don't have good marc record, ask the ILS for title info
-					$bibInfo              = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId, null, $sessionToken);
+//					$bibInfo              = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId, null, $sessionToken);
+					$bibInfo              = $this->getWebServiceResponse($webServiceURL . '/catalog/bib/key/' . $bibId, null, $sessionToken);
 					$curHold['title']     = $bibInfo->fields->title;
 					$simpleSortTitle      = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove begining The or A
 					$curHold['sortTitle'] = empty($simpleSortTitle) ? $bibInfo->fields->title : $simpleSortTitle;
@@ -1151,7 +1159,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 			}
 //				$holdRecord         = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/holdRecord/describe", null, $sessionToken);
 //				$placeHold          = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/holdRecord/placeHold/describe", null, $sessionToken);
-			$createHoldResponse = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/holdRecord/placeHold", $holdData, $sessionToken);
+//			$createHoldResponse = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/holdRecord/placeHold", $holdData, $sessionToken);
+			$createHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/placeHold", $holdData, $sessionToken);
 
 			$hold_result = [];
 			if (isset($createHoldResponse->messageList)){
@@ -1213,7 +1222,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 		//create the hold using the web service
 		$webServiceURL = $this->getWebServiceURL();
 
-		$cancelHoldResponse = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/holdRecord/key/$cancelId", null, $sessionToken, 'DELETE');
+//		$cancelHoldResponse = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/holdRecord/key/$cancelId", null, $sessionToken, 'DELETE');
+		$cancelHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/key/$cancelId", null, $sessionToken, 'DELETE');
 
 		if (empty($cancelHoldResponse)){
 			return [
@@ -1264,7 +1274,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 			]
 		];
 
-		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/holdRecord/key/$holdId", $params, $sessionToken, 'PUT');
+//		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/holdRecord/key/$holdId", $params, $sessionToken, 'PUT');
+		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/key/$holdId", $params, $sessionToken, 'PUT');
 		if (isset($updateHoldResponse->key) && isset($updateHoldResponse->fields->pickupLibrary->key) && ($updateHoldResponse->fields->pickupLibrary->key == strtoupper($newPickupLocation))){
 			return [
 				'success' => true,
@@ -1318,7 +1329,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 			]
 		];
 
-		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/holdRecord/key/$holdToFreezeId", $params, $sessionToken, 'PUT');
+//		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/holdRecord/key/$holdToFreezeId", $params, $sessionToken, 'PUT');
+		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/key/$holdToFreezeId", $params, $sessionToken, 'PUT');
 
 		if (isset($updateHoldResponse->key) && isset($updateHoldResponse->fields->status) && $updateHoldResponse->fields->status == "SUSPENDED"){
 			$frozen = translate('frozen');
@@ -1372,7 +1384,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 			]
 		];
 
-		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/holdRecord/key/$holdToThawId", $params, $sessionToken, 'PUT');
+//		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/holdRecord/key/$holdToThawId", $params, $sessionToken, 'PUT');
+		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/key/$holdToThawId", $params, $sessionToken, 'PUT');
 
 		if (isset($updateHoldResponse->key) && is_null($updateHoldResponse->fields->suspendEndDate)){
 			$thawed = translate('thawed');
@@ -1423,7 +1436,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 			]
 		];
 
-		$circRenewResponse = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/circRecord/renew", $params, $sessionToken, 'POST');
+//		$circRenewResponse = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/circRecord/renew", $params, $sessionToken, 'POST');
+		$circRenewResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/circRecord/renew", $params, $sessionToken, 'POST');
 
 		if (isset($circRenewResponse->circRecord->key)){
 			// Success
@@ -1469,7 +1483,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 			$webServiceURL = $this->getWebServiceURL();
 
 //			$blockList = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=blockList{*}', null, $sessionToken);
-			$blockList = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=blockList{*,item{bib{title,author}}}', null, $sessionToken);
+//			$blockList = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=blockList{*,item{bib{title,author}}}', null, $sessionToken);
+			$blockList = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->ilsUserId . '?includeFields=blockList{*,item{bib{title,author}}}', null, $sessionToken);
 			// Include Title data if available
 
 			if (!empty($blockList->fields->blockList)){
@@ -1527,7 +1542,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 //		$updatePinResponse = $this->getWebServiceResponse($webServiceURL . "/v1/user/patron/changeMyPin", $params, $sessionToken, 'POST', $overrideHeaders);
 
 
-		$updatePinResponse = $this->getWebServiceResponse($webServiceURL . "/v1/user/patron/changeMyPin", $params, $sessionToken, 'POST');
+		$updatePinResponse = $this->getWebServiceResponse($webServiceURL . "/user/patron/changeMyPin", $params, $sessionToken, 'POST');
+//		$updatePinResponse = $this->getWebServiceResponse($webServiceURL . "/v1/user/patron/changeMyPin", $params, $sessionToken, 'POST');
 		if (!empty($updatePinResponse->patronKey) && $updatePinResponse->patronKey == $patron->ilsUserId){
 			$patron->updatePassword($newPin);
 			return 'Your ' . translate('pin') . ' was updated successfully.';
@@ -1564,7 +1580,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 			];
 		}
 
-		$changeMyPinAPIUrl   = $this->getWebServiceUrl() . '/v1/user/patron/changeMyPin';
+//		$changeMyPinAPIUrl   = $this->getWebServiceUrl() . '/v1/user/patron/changeMyPin';
+		$changeMyPinAPIUrl   = $this->getWebServiceUrl() . '/user/patron/changeMyPin';
 		$jsonParameters      = [
 			'resetPinToken' => $resetToken,
 			'newPin'        => $newPin,
@@ -1613,7 +1630,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 					// Yay! We were able to login with the pin Pika has!
 
 					//Now check for an email address
-					$lookupMyAccountInfoResponse = $this->getWebServiceResponse($this->getWebServiceURL() . '/v1/user/patron/key/' . $userID . '?includeFields=preferredAddress,address1,address2,address3', null, $sessionToken);
+//					$lookupMyAccountInfoResponse = $this->getWebServiceResponse($this->getWebServiceURL() . '/v1/user/patron/key/' . $userID . '?includeFields=preferredAddress,address1,address2,address3', null, $sessionToken);
+					$lookupMyAccountInfoResponse = $this->getWebServiceResponse($this->getWebServiceURL() . '/user/patron/key/' . $userID . '?includeFields=preferredAddress,address1,address2,address3', null, $sessionToken);
 					if ($lookupMyAccountInfoResponse){
 						if (isset($lookupMyAccountInfoResponse->fields->preferredAddress)){
 							$preferredAddress = $lookupMyAccountInfoResponse->fields->preferredAddress;
@@ -1641,7 +1659,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 			}
 
 			// email the pin to the user
-			$resetPinAPIUrl = $this->getWebServiceUrl() . '/v1/user/patron/resetMyPin';
+//			$resetPinAPIUrl = $this->getWebServiceUrl() . '/v1/user/patron/resetMyPin';
+			$resetPinAPIUrl = $this->getWebServiceUrl() . '/user/patron/resetMyPin';
 			$jsonPOST       = [
 				'login'       => $barcode,
 				'resetPinUrl' => $configArray['Site']['url'] . '/MyAccount/ResetPin?resetToken=<RESET_PIN_TOKEN>&uid=' . $pikaUserID
@@ -1778,7 +1797,8 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 						}
 					}
 
-					$updateAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $userID, $updatePatronInfoParameters, $sessionToken, 'PUT');
+//					$updateAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $userID, $updatePatronInfoParameters, $sessionToken, 'PUT');
+					$updateAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $userID, $updatePatronInfoParameters, $sessionToken, 'PUT');
 
 					if (isset($updateAccountInfoResponse->messageList)){
 						foreach ($updateAccountInfoResponse->messageList as $message){
