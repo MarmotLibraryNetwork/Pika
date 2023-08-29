@@ -539,10 +539,10 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	function getFreezeHoldsForm(){
 
-		$cancelId = array();
+		$cancelId = [];
 		global $configArray;
-		$ils                       = $configArray['Catalog']['ils'];
-		$reinstateDate = ($ils == 'Symphony');
+		$ils           = $configArray['Catalog']['ils'];
+		$reinstateDate = ($ils == 'Symphony' || $ils == 'Horizon');
 		if (!empty($_REQUEST['holdselected'])){
 			$cancelId = $_REQUEST['holdselected'];
 		}
@@ -552,12 +552,12 @@ class MyAccount_AJAX extends AJAXHandler {
 		$interface->assign('reinstate', $reinstate);
 		$interface->assign('holdSelected', $cancelId);
 		$interface->assign('reinstateDate', $reinstateDate);
-		$result = array(
-			'title' => translate("Freeze") . ' Holds',
-			'body' => $interface->fetch('MyAccount/freezeHoldForm.tpl'),
+		$result = [
+			'title'   => translate("Freeze") . ' Holds',
+			'body'    => $interface->fetch('MyAccount/freezeHoldForm.tpl'),
 			'buttons' => '<button class="btn btn-default" name="submitFreeze" onclick="Pika.Account.freezeSelectedHolds(' .  $freezeIds . ')">' . translate("Freeze") . ' Hold'. (count($cancelId)>1 ? "s":"") . '</button>',
 			'success' => true,
-		);
+		];
 
 		return $result;
 	}
@@ -588,20 +588,24 @@ class MyAccount_AJAX extends AJAXHandler {
 			if($patronOwningHold == false){
 				$result['message'] = 'Sorry, you do not have access to ' . translate('freeze') . ' holds for the supplied user.';
 			}else{
-				foreach($freezeId as $freeze){
-					if(!strstr($freeze, "~overdrive~")){
+				foreach ($freezeId as $freeze){
+					if (!strstr($freeze, "~overdrive~")){
 						$catalog = CatalogFactory::getCatalogConnectionInstance();
-						$result = $catalog->freezeHold($user, $freeze, $freeze, $suspendDate);
-						if(!$result['success']){$failed[] = $result;}
+						$result  = $catalog->freezeHold($user, $freeze, $freeze, $suspendDate);
+						if (!$result['success']){
+							$failed[] = $result;
+						}
 					}else{
-						$catalog = \Pika\PatronDrivers\EcontentSystem\OverDriveDriverFactory::getDriver();
-						$overdriveFreeze = explode("~",$freeze);
-						$overdriveId = $overdriveFreeze[2];
-						$result = $catalog->freezeOverDriveHold($overdriveId, $user);
-						if(!$result['success']){$failed[] = $result;}
-					}
+						$catalog         = \Pika\PatronDrivers\EcontentSystem\OverDriveDriverFactory::getDriver();
+						$overdriveFreeze = explode("~", $freeze);
+						$overdriveId     = $overdriveFreeze[2];
+						$result          = $catalog->freezeOverDriveHold($overdriveId, $user);
+						if (!$result['success']){
+							$failed[] = $result;
+						}
 					}
 				}
+			}
 
 			}
 		$result['numFrozen'] = count($freezeId) - count($failed);
