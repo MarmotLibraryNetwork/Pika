@@ -2,7 +2,8 @@
 	<div id="page-content" class="col-xs-12">
 
 		<h2>{translate text='Reset My PIN'}</h2>
-		<div class="alert alert-info"> {*Please enter your complete card number.*} Click the "{translate text='Reset My PIN'}" button to receive an email to the email address on file containing a link to reset your {translate text='pin'}.</div>
+		<div class="alert alert-info"> Provide the requested information and click the "{translate text='Reset My PIN'}" button to receive an email to the address on file containing a link to reset your {translate text='pin'}.</div>
+{*		<div class="alert alert-info"> *}{*Please enter your complete card number.*}{* Click the "{translate text='Reset My PIN'}" button to receive an email to the email address on file containing a link to reset your {translate text='pin'}.</div>*}
 		{*Reference to card number is removed to avoid confusion on login form labels. See D-4417 *}
 
 		<form id="emailResetPin" method="POST" action="/MyAccount/EmailResetPin" class="form-horizontal">
