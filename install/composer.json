@@ -17,8 +17,8 @@
         "pear/pager": "~2.5",
         "pear/mail": "~1.4",
         "pear/net_smtp": "~1.9",
-        "jasig/phpcas": "~1.3",
         "chillerlan/php-qrcode": "~3.3",
-        "google/recaptcha": "~1.2"
+        "google/recaptcha": "~1.2",
+        "apereo/phpcas": "~1.6"
     }
 }
