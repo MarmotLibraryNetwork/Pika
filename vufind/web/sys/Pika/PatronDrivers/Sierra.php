@@ -1424,7 +1424,9 @@ class Sierra  implements \DriverInterface {
 			// Combine fixed fields ahead of merging main parameters (because any set in $params would be overwritten)
 			// eg selfRegistrationAgencyCode is set; but site driver sets notification preferences
 			if (isset($extraSelfRegParams['fixedFields']) && isset($params['fixedFields'])){
-				$params['fixedFields'] = array_merge($params['fixedFields'], $extraSelfRegParams['fixedFields']);
+                $params['fixedFields'] += $extraSelfRegParams['fixedFields'];
+                // Use array + (union) operator in order to preserve the specific numeric keys
+                // required for setting the fixedFields on a self-reg user.
 			}
 			$params = array_merge($params, $extraSelfRegParams);
 		}
