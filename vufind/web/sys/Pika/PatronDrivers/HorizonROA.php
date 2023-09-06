@@ -1269,7 +1269,8 @@ abstract class HorizonROA implements \DriverInterface {
 	}
 
 	private function changeMyPin($patron, $newPin, $currentPin = null, $resetToken = null){
-		global $configArray;
+		//global $configArray;
+		$updatePinUrl   = '/user/patron/changeMyPin';
 		if (empty($resetToken)){
 			$sessionToken = $this->getSessionToken($patron);
 			if (!$sessionToken){
@@ -1285,16 +1286,13 @@ abstract class HorizonROA implements \DriverInterface {
 			}
 
 		}else{
-			// Apparently pin resetting does not require a version number in the operation url
-			$updatePinUrl   = '/user/patron/changeMyPin';
 			$sessionToken   = null;
 			$jsonParameters = [
 				'newPin'        => $newPin,
 				'resetPinToken' => $resetToken
 			];
 		}
-		$updatePinResponse = $this->getWebServiceResponse($updatePinUrl, $jsonParameters, empty($sessionToken) ? null : $sessionToken, 'POST', empty($xtraHeaders) ? null : $xtraHeaders);
-		return $updatePinResponse;
+		return $this->getWebServiceResponse($updatePinUrl, $jsonParameters, empty($sessionToken) ? null : $sessionToken, 'POST', empty($xtraHeaders) ? null : $xtraHeaders);
 	}
 
 	public function emailResetPin($barcode){
