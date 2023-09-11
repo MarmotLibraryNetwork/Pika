@@ -1509,9 +1509,9 @@ class Library extends DB_DataObject {
 			$libraryLocations->libraryId = $this->libraryId;
 			$libraryLocations->find();
 			while ($libraryLocations->fetch()){
+				//TODO Below sql can be simplified to match by User's homeLibraryId column now
 				$user       = new User();
 				$numChanges = $user->query("UPDATE user SET displayName = '' WHERE homeLocationId = {$libraryLocations->locationId}");
-
 			}
 		}
 		// Do this last so that everything else can update even if we get an error here
