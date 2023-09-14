@@ -98,7 +98,7 @@ abstract class HorizonROA implements \DriverInterface {
 
 
 	/**
-	 * @param string $apiCall           The Specific call to build the URL with
+	 * @param string $apiCall           The Specific call to build the URL with-- URL endpoint
 	 * @param null $params               Any call parameters needed
 	 * @param null $sessionToken        The API sessionToken for the logged in user
 	 * @param string|null $customRequest is for curl, can be 'PUT', 'DELETE', 'POST'
@@ -250,7 +250,6 @@ abstract class HorizonROA implements \DriverInterface {
 
 //  Calls that show how patron-related data is represented
 //			$patronDescribeResponse = $this->getWebServiceResponse( '/user/patron/describe', null, $sessionToken);
-//			$patronDescribeResponseV2 = $this->getWebServiceResponse( '/v2/user/patron/describe', null, $sessionToken);
 //			$patronDSearchescribeResponse = $this->getWebServiceResponse( '/user/patron/search/describe', null, $sessionToken);
 				//TODO: a patron search may require a staff user account.
 //			$patronSearchResponse = $this->getWebServiceResponse( '/user/patron/search', array('q' => 'borr|2:22046027101218'), $sessionToken);
@@ -259,13 +258,16 @@ abstract class HorizonROA implements \DriverInterface {
 			$includeFields = urlencode('displayName,privilegeExpiresDate,primaryAddress,primaryPhone,library,'
 				. 'patronType,holdRecordList{status},circRecordList,blockList{amount,owed}');
 			$acountInfoLookupURL =  '/user/patron/key/' . $horizonRoaUserID . '?includeFields=' .$includeFields;
-			// Note that {*} notation doesn't work for Horizon ROA yet
-
-			//TODO: see what default fields is now
-
-			// phoneList is for texting notification preferences
-
+			// get a new token if the session has timed out
+			// this is necessary when updating passwords
 			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($acountInfoLookupURL, null, $sessionToken);
+			if (isset($lookupMyAccountInfoResponse->messageList[0]->code) && $lookupMyAccountInfoResponse->messageList[0]->code == 'sessionTimedOut') {
+				//If it was just a session timeout, just clear out the session
+				$memCacheKey = "horizon_ROA_session_token_info_$barcode";
+				$this->cache->delete($memCacheKey);
+				[$userValid, $sessionToken, $horizonRoaUserID] = $this->loginViaWebService($barcode, $password);
+				$lookupMyAccountInfoResponse = $this->getWebServiceResponse($acountInfoLookupURL, null, $sessionToken);
+			}
 			if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)) {
 				$fullName = $lookupMyAccountInfoResponse->fields->displayName;
 				if (strpos($fullName, ',')) {
@@ -1252,38 +1254,47 @@ abstract class HorizonROA implements \DriverInterface {
 	}
 
 	public function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
-		$updatePinResponse = $this->changeMyPin($patron, $newPin, $oldPin);
-		if (isset($updatePinResponse->messageList)) {
+		//$updatePinResponse = $this->changeMyPin($patron, $newPin, $oldPin);
+		$sessionToken = $this->getSessionToken($patron);
+		if(!$sessionToken) {
+			return "Sorry, it does not look like you are logged in currently. Please log in and try again";
+		}
+		$params = [
+			'currentPin' => $oldPin,
+			'newPin'     => $newPin
+		];
+
+		$res = $this->getWebServiceResponse('/user/patron/changeMyPin', $params, $sessionToken, 'POST');
+		if (isset($res->messageList)) {
 			$errors = '';
-			foreach ($updatePinResponse->messageList as $errorMessage) {
+			foreach ($res->messageList as $errorMessage) {
 				$errors .= $errorMessage->message . ';';
 			}
 			$this->getLogger()->error('Horizon ROA Driver error updating user\'s Pin :'.$errors);
 			return 'Sorry, we encountered an error while attempting to update your ' . translate('pin') . '. Please contact your local library.';
-		} elseif (!empty($updatePinResponse->sessionToken)){
+		} elseif (!empty($res->sessionToken)){
 			$patron->updatePassword($newPin);
+			//$this->patronLogin($patron->barcode, $newPin);
 			return 'Your ' . translate('pin') . ' was updated successfully.';
-		}else{
-			return 'Sorry, we could not update your ' . translate('pin') . '. Please try again later.';
 		}
+		return 'Sorry, we could not update your ' . translate('pin') . '. Please try again later.';
 	}
 
 	private function changeMyPin($patron, $newPin, $currentPin = null, $resetToken = null){
-		global $configArray;
+		$updatePinUrl   = '/user/patron/changeMyPin';
 		if (empty($resetToken)){
 			$sessionToken = $this->getSessionToken($patron);
 			if (!$sessionToken){
-				return 'Sorry, it does not look like you are logged in currently.  Please log in and try again';
+				return 'Sorry, it does not look like you are logged in currently. Please log in and try again';
 			}
 			if (!empty($newPin) && !empty($currentPin)){
 				$jsonParameters = [
 					'currentPin' => $currentPin,
-					'newPin'     => $newPin,
+					'newPin'     => $newPin
 				];
 			}else{
 				return 'Sorry the current ' . translate('pin') . ' or new ' . translate('pin') . ' is blank';
 			}
-
 		}else{
 			// Apparently pin resetting does not require a version number in the operation url
 			$updatePinUrl   = '/user/patron/changeMyPin';
@@ -1293,8 +1304,8 @@ abstract class HorizonROA implements \DriverInterface {
 				'resetPinToken' => $resetToken
 			];
 		}
-		$updatePinResponse = $this->getWebServiceResponse($updatePinUrl, $jsonParameters, empty($sessionToken) ? null : $sessionToken, 'POST', empty($xtraHeaders) ? null : $xtraHeaders);
-		return $updatePinResponse;
+		$r = $this->getWebServiceResponse($updatePinUrl, $jsonParameters, empty($sessionToken) ? null : $sessionToken, 'POST', empty($xtraHeaders) ? null : $xtraHeaders);
+		return $r;
 	}
 
 	public function emailResetPin($barcode){
@@ -1340,8 +1351,6 @@ abstract class HorizonROA implements \DriverInterface {
 					}
 					return $result;
 				}
-
-
 			}else{
 				return [
 					'error' => 'Sorry, we did not find the card number you entered or you have not logged into the catalog previously.  Please contact your library to reset your ' . translate('pin') . '.'
