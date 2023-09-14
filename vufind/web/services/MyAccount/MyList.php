@@ -137,18 +137,19 @@ class MyAccount_MyList extends MyAccount {
 				}
 				//Redirect back to avoid having the parameters stay in the URL (keeping both pagesize and current page).
 				$params = [];
-				if (!empty($_REQUEST['myListPageSize'])){
+				if (!empty($_REQUEST['myListPageSize']) && is_numeric($_REQUEST['myListPageSize'])){
 					$params['pagesize'] = $_REQUEST['myListPageSize'];
 				}
-				if (!empty($_REQUEST['myListPage'])){
+				if (!empty($_REQUEST['myListPage']) && is_numeric($_REQUEST['myListPage'])){
 					$params['page'] = $_REQUEST['myListPage'];
 				}
-				if (!empty($_REQUEST['myListSort'])){
+				if (!empty($_REQUEST['myListSort']) && in_array($_REQUEST['myListSort'],array('author','title','dateAdded','recentlyAdded','custom'))){
 					$params['sort'] = $_REQUEST['myListSort'];
 				}
 				if (!empty($_REQUEST['filter'])){
 					$params['filter'] = $_REQUEST['filter'];
 				}
+				$interface->assign('params', $params);
 				$queryString = empty($params) ? '' : '?' . http_build_query($params);
 				header("Location: /MyAccount/MyList/{$list->id}" . $queryString);
 				die;
@@ -167,6 +168,7 @@ class MyAccount_MyList extends MyAccount {
 			}
 
 			// Send list to template so title/description can be displayed:
+
 			$interface->assign('favList', $list);
 //		$shortTitle = $list->title;
 //		$interface->assign('shortPageTitle', $shortTitle);
