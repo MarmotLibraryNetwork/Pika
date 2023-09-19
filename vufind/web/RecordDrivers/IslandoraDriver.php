@@ -717,6 +717,11 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 		//See if we need another section for wikipedia content.
 		if (!empty($interface->getVariable('wikipediaData'))){
+			// Only use first two characters of language string; Wikipedia
+			// uses language domains but doesn't break them up into regional
+			// variations like pt-br or en-gb.
+			$wiki_lang   = substr($configArray['Site']['language'], 0, 2);
+			$interface->assign('wiki_lang', $wiki_lang);
 			if (strlen($description) > 0){
 				$moreDetailsOptions['wikipedia'] = [
 					'label'         => 'From Wikipedia',
