@@ -2034,7 +2034,8 @@ abstract class IslandoraDriver extends RecordInterface {
 							$this->logger->warning("Failed to parse a transcript timestamp: " . $match);
 						}
 						$offset = $minutes * 60 + $seconds;
-						$replacement = '<a onclick="document.getElementById(\'player\').currentTime=\'' . $offset . '\';" style="cursor:pointer">' . $match . '</a>';
+						$replacement = '<a onclick="$(\'#video-player,#audio-player\').get(0).currentTime=\'' . $offset . '\';" style="cursor:pointer">' . $match . '</a>';
+						// Player could be either an audio player or video player, (Element Ids had to be changed for compounds)
 						$transcriptionTextWithLinks = str_replace($match, $replacement, $transcriptionTextWithLinks);
 					}
 
@@ -2049,7 +2050,8 @@ abstract class IslandoraDriver extends RecordInterface {
 							$this->logger->warning("Failed to parse a transcript timestamp: " . $match);
 						}
 						$offset = $hours * 3600 + $minutes * 60 + $seconds;
-						$replacement = '<a onclick="document.getElementById(\'player\').currentTime=\'' . $offset . '\';" style="cursor:pointer">' . $match . '</a>';
+						$replacement = '<a onclick="$(\'#video-player,#audio-player\').get(0).currentTime=\'' . $offset . '\';" style="cursor:pointer">' . $match . '</a>';
+						// Player could be either an audio player or video player, (Element Ids had to be changed for compounds)
 						$transcriptionTextWithLinks = str_replace($match, $replacement, $transcriptionTextWithLinks);
 					}
 				}
