@@ -259,10 +259,9 @@ abstract class HorizonROA implements \DriverInterface {
 				. 'patronType,holdRecordList{status},circRecordList,blockList{amount,owed}');
 			$acountInfoLookupURL =  '/user/patron/key/' . $horizonRoaUserID . '?includeFields=' .$includeFields;
 			// get a new token if the session has timed out
-			// this is necessary when updating passwords
 			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($acountInfoLookupURL, null, $sessionToken);
 			if (isset($lookupMyAccountInfoResponse->messageList[0]->code) && $lookupMyAccountInfoResponse->messageList[0]->code == 'sessionTimedOut') {
-				//If it was just a session timeout, just clear out the session
+				// remove old cache key and get a new one
 				$memCacheKey = "horizon_ROA_session_token_info_$barcode";
 				$this->cache->delete($memCacheKey);
 				[$userValid, $sessionToken, $horizonRoaUserID] = $this->loginViaWebService($barcode, $password);
@@ -358,15 +357,8 @@ abstract class HorizonROA implements \DriverInterface {
 
 				//Get information about fines
 				$finesVal = 0;
-//				if (isset($lookupMyAccountInfoResponse->fields->estimatedOverdueAmount)){
-//					//TODO: confirm this is populated for user with fees.
-//					$finesVal = $lookupMyAccountInfoResponse->fields->estimatedOverdueAmount->amount;
-//				}else
-				// Not all fines are added to the estimatedOverdueAmount unfortunately;
-				// Long Overdue fines do not get added to the estimatedOverdueAmount it seems with a current test case.
-				// pascal 1/26/22
 
-					if (count($lookupMyAccountInfoResponse->fields->blockList) >= 1) {
+				if (count($lookupMyAccountInfoResponse->fields->blockList) >= 1) {
 					foreach ($lookupMyAccountInfoResponse->fields->blockList as $patronBlock) {
 						$block = $patronBlock->fields;
 							$fineAmount = (float) $block->owed->amount;
@@ -1253,7 +1245,7 @@ abstract class HorizonROA implements \DriverInterface {
 		return $blockPolicy;
 	}
 
-	public function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
+	public function updatePin($patron, $oldPin, $newPin, $confirmNewPin): string{
 		//$updatePinResponse = $this->changeMyPin($patron, $newPin, $oldPin);
 		$sessionToken = $this->getSessionToken($patron);
 		if(!$sessionToken) {
@@ -1274,7 +1266,6 @@ abstract class HorizonROA implements \DriverInterface {
 			return 'Sorry, we encountered an error while attempting to update your ' . translate('pin') . '. Please contact your local library.';
 		} elseif (!empty($res->sessionToken)){
 			$patron->updatePassword($newPin);
-			//$this->patronLogin($patron->barcode, $newPin);
 			return 'Your ' . translate('pin') . ' was updated successfully.';
 		}
 		return 'Sorry, we could not update your ' . translate('pin') . '. Please try again later.';
