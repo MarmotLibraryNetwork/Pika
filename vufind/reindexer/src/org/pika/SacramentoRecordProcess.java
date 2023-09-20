@@ -99,7 +99,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 			String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
 
 			// Handle KitKeeper Records
-			if (matType != null && !matType.isEmpty() && kitKeeperMaterialType.indexOf(matType.charAt(0)) >= 0 ){
+			if (matType != null && !matType.isEmpty() && kitKeeperMaterialType.equals(matType)){
 
 				String      url          = MarcUtil.getFirstFieldVal(record, "856u");
 				Set<String> bibLocations = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + bibLevelLocationsSubfield);
