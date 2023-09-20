@@ -49,7 +49,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 		if (!status.isEmpty()) {
 			if (status.equals("KitKeeperStatus")) {
 				available = true;
-			} else if (availableStatus.indexOf(status.charAt(0)) >= 0) {
+			} else if (availableStatusCodes.contains(status.toLowerCase())) {
 				if (isEmptyDueDate(itemInfo.getDueDate())) {
 					available = true;
 				}
@@ -61,7 +61,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 	@Override
 	protected HoldabilityInformation isItemHoldable(ItemInfo itemInfo, Scope curScope, HoldabilityInformation isHoldableUnscoped) {
 		String  status    = itemInfo.getStatusCode();
-		if (!status.isEmpty() && status.equals("KitKeeperStatus")) {
+		if (status.equals("KitKeeperStatus")) {
 			// If the record is Kit Keeper, make it not holdable.
 			return new HoldabilityInformation(false, new HashSet<Long>());
 		}

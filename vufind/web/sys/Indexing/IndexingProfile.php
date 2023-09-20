@@ -286,21 +286,21 @@ class IndexingProfile extends DB_DataObject{
 			                         'helpLink' => '', 'properties' => [
 					'availableStatuses'      => ['property'    => 'availableStatuses',
 					                             'type'        => 'text',
-					                             'label'       => 'Available Statuses (lists of characters for Sierra ils profiles, regex for Horizon ils profiles)',
+					                             'label'       => 'Available Statuses (list of codes seperated by pipe character | for Sierra ils profiles, regex for Horizon ils profiles)',
 					                             'maxLength'   => 255,
 //					                             'default'     => "-",
-					                             'description' => 'A list of characters that are valid available item statues.'
+					                             'description' => 'A list of codes that are valid available item statues.'
 					                             , 'changeRequiresReindexing' => true],
 					'checkedOutStatuses'     => ['property'    => 'checkedOutStatuses',
 					                             'type'        => 'text',
-					                             'label'       => 'Checked Out Statuses (Sierra ils profiles only)',
+					                             'label'       => 'Checked Out Statuses (Sierra ils profiles only, lists of codes seperated by pipe character |)',
 					                             'maxLength'   => 255,
 //					                             'default'     => "-",
 					                             'description' => 'A list of characters that are valid checked out item statuses.'
 					                             , 'changeRequiresReindexing' => true],
 					'libraryUseOnlyStatuses' => ['property'    => 'libraryUseOnlyStatuses',
 					                             'type'        => 'text',
-					                             'label'       => 'Library Use Only Statuses (Sierra ils profiles only)',
+					                             'label'       => 'Library Use Only Statuses (Sierra ils profiles only, list of codes seperated by pipe character |)',
 					                             'maxLength'   => 255,
 //					                             'default'     => "o",
 					                             'description' => 'A list of characters that are valid checked out item statuses.'

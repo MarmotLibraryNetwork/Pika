@@ -28,6 +28,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Record Processor to handle processing records from iii's Sierra ILS
@@ -44,8 +45,14 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	private String                                exportPath;
 
 	// A list of status codes that are eligible to show items as checked out.
-	protected String availableStatus          = "-";
-	protected String libraryUseOnlyStatus     = "o";
+	protected String  availableStatus          = "-";
+	protected  HashSet<String> availableStatusCodes  = new HashSet<String>() {{
+		add("-");
+	}};
+	//protected Pattern availableStatusesPattern = null;
+	protected  HashSet<String> libraryUseOnlyStatusCodes = new HashSet<String>() {{
+		add("o");
+	}};
 	protected String validOnOrderRecordStatus = "o1";
 	HashSet<String> validCheckedOutStatusCodes = new HashSet<String>() {{
 		add("-");
@@ -59,19 +66,21 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		try {
 			exportPath = indexingProfileRS.getString("marcPath");
 
-			String availableStatuses      = indexingProfileRS.getString("availableStatuses");
+			String availableStatusString = indexingProfileRS.getString("availableStatuses");
 			String checkedOutStatuses     = indexingProfileRS.getString("checkedOutStatuses");
 			String libraryUseOnlyStatuses = indexingProfileRS.getString("libraryUseOnlyStatuses");
-			if (availableStatuses != null && !availableStatuses.isEmpty()){
-				availableStatus = availableStatuses;
-			}
+			if (availableStatusString != null && !availableStatusString.isEmpty()){
+				availableStatusCodes.addAll(Arrays.asList(availableStatusString.split("\\|")));
+				//availableStatusesPattern = Pattern.compile("^(" + availableStatusString + ")$");
+			}// else {
+				// Compile default available status otherwise into regex
+				//availableStatusesPattern = Pattern.compile("^(" + availableStatus + ")$");
+			//}
 			if (checkedOutStatuses != null && !checkedOutStatuses.isEmpty()){
-				for (Character c : checkedOutStatuses.toCharArray()){
-					validCheckedOutStatusCodes.add(c.toString());
-				}
+				validCheckedOutStatusCodes.addAll(Arrays.asList(checkedOutStatuses.split("\\|")));
 			}
 			if (libraryUseOnlyStatuses != null && !libraryUseOnlyStatuses.isEmpty()){
-				libraryUseOnlyStatus = libraryUseOnlyStatuses;
+				libraryUseOnlyStatusCodes.addAll(Arrays.asList(libraryUseOnlyStatuses.split("\\|")));
 			}
 		} catch (SQLException e) {
 			logger.error("Error loading indexing profile information from database for IIIRecordProcessor", e);
@@ -100,7 +109,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 
 	protected boolean isLibraryUseOnly(ItemInfo itemInfo) {
 		String status = itemInfo.getStatusCode();
-		return status != null && !status.isEmpty() && libraryUseOnlyStatus.indexOf(status.charAt(0)) >= 0;
+		return status != null && !status.isEmpty() && libraryUseOnlyStatusCodes.contains(status);
 	}
 
 	@Override
@@ -108,7 +117,8 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		boolean available = false;
 		String  status    = itemInfo.getStatusCode();
 
-		if (status != null && !status.isEmpty() && availableStatus.indexOf(status.charAt(0)) >= 0) {
+		//if (status != null && !status.isEmpty() && availableStatusesPattern.matcher(status.toLowerCase()).matches()) {
+		if (status != null && !status.isEmpty() && availableStatusCodes.contains(status.toLowerCase())) {
 			if (isEmptyDueDate(itemInfo.getDueDate())) {
 				available = true;
 			}
