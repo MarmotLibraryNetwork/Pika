@@ -304,12 +304,14 @@ class RecordGroupingProcessor {
 	}
 
 	private String getMoviePlayTimeForGroupingAuthor(Record marcRecord, RecordIdentifier identifier) {
-		String       author     = null;
-		ControlField fixedField = (ControlField) marcRecord.getVariableField("008");
+		String       author            = null;
+		String       movieDuration     = "";
+		boolean      invalid008runtime = false;
+		ControlField fixedField        = (ControlField) marcRecord.getVariableField("008");
 		if (fixedField != null) {
 			String oo8Data = fixedField.getData();
 			if (oo8Data.length() > 20) {
-				String movieDuration = oo8Data.substring(18, 21)
+				movieDuration = oo8Data.substring(18, 21)
 						.trim();  //Some records will just use 2 digit playtimes instead of 3, eg  '89 ' instead of '089'
 				if (movieDuration.equals("000")) {
 					logger.debug("movie 008 running time exceeds 999 minutes - " + identifier);
@@ -321,7 +323,8 @@ class RecordGroupingProcessor {
 				} else {
 					if (fullRegrouping && !movieDuration.equals("|||") && !movieDuration.equals("   ") && !movieDuration.equals("---")) {
 						// entries that are coded with these values (essentially denoting that record doesn't have the playtime info populated in 008)
-						logger.warn("008 running time invalid : '" + movieDuration + "' for " + identifier);
+						//logger.warn("008 running time invalid : '" + movieDuration + "' for " + identifier);
+						invalid008runtime = true;
 					}
 				}
 			} else if (fullRegrouping){
@@ -345,6 +348,10 @@ class RecordGroupingProcessor {
 						author = String.valueOf(roundOffTens(Integer.parseInt(playTimeMatcher.group(1))));
 					}
 				}
+			}
+			if (invalid008runtime && author == null){
+				// now that we checked both places and didn't get a run time, issue a warning
+				logger.warn("008 running time invalid : '" + movieDuration + "' and none found in physical description for " + identifier);
 			}
 		}
 		return author;
