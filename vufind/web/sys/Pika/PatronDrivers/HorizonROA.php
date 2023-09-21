@@ -528,7 +528,7 @@ abstract class HorizonROA implements \DriverInterface {
 				$curTitle['format']          = 'Unknown';                    //TODO: I think this makes sorting working better
 				$curTitle['overdue']         = $circRecord->fields->overdue; // (optional) CatalogConnection method will calculate this based on due date
 				$curTitle['fine']            = $fine;
-				$curTitle['holdQueueLength'] = count($circRecord->fields->item->fields->bib->fields->holdRecordList);
+				$curTitle['holdQueueLength'] = $circRecord->fields->item->fields->bib->fields->titleHoldCount;
 
 				$recordDriver = \RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bibId);
 				if ($recordDriver->isValid()){
