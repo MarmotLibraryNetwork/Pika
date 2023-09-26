@@ -90,13 +90,12 @@ class MarcSplitOption {
 			for (DataField curField : curBib.getDataFields()) {
 				boolean addField = true;
 				if (curField.getTag().equals(itemTag)) {
+					addField = false;
 					Subfield locationSubfieldInst = curField.getSubfield(locationSubfield);
 					if (locationSubfieldInst != null) {
 						String locationCode = locationSubfieldInst.getData();
 						addField = locationsToIncludePattern.matcher(locationCode).matches();
 					}
-				} else {
-					addField = true;
 				}
 				if (addField) {
 					marcCopy.addVariableField(curField);
