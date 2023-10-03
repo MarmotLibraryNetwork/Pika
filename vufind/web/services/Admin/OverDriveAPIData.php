@@ -196,14 +196,18 @@ class Admin_OverDriveAPIData extends Admin_Admin {
 										}
 									}
 								}
-							}elseif ($_REQUEST['formAction'] == 'Search CrossRefId'){
-								$searchResponse = $driver->searchAPI($productKey, $overDriveId); //cross Ref Id
-								if ($searchResponse){
-									$contents .= '<br>' . $this->easy_printr("Search - {$libraryInfo->name} shared collection", "search_{$overDriveId}_{$productKey}", $searchResponse);
-								}else{
-									$contents .= ('<br>' . "No search Response<br>");
-								}
 							}
+						}elseif ($_REQUEST['formAction'] == 'Search CrossRefId' && ctype_digit($_REQUEST['id'])){
+							$overDriveId    = trim(strip_tags(urldecode($_REQUEST['id'])));
+							$productKey     = $libraryInfo->collectionToken;
+							$searchResponse = $driver->searchAPI($productKey, $overDriveId); //cross Ref Id
+							if ($searchResponse){
+								$contents .= '<br>' . $this->easy_printr("Search - {$libraryInfo->name} shared collection", "search_{$overDriveId}_{$productKey}", $searchResponse);
+							}else{
+								$contents .= ('<br>' . "No search Response<br>");
+							}
+							global $interface;
+							$interface->assign('overDriveId', $overDriveId);
 						}else{
 							$contents .= '<div class="alert alert-danger">Invalid OverDrive ID.</div>';
 						}
