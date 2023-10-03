@@ -1238,6 +1238,15 @@ class Sierra  implements \DriverInterface {
 			}else{
 				return ['error' => 'Unable to find an account associated with barcode: ' . $barcode];
 			}
+		}elseif (empty($patron->email)){
+			// Sierra might have an email for the user that Pika doesn't have
+			if ($patronId = $this->getPatronId($barcode)){
+				// load them in the database.
+				unset($patron);
+				$patron = $this->getPatron($patronId);
+			}  else {
+				$this->logger->notice('Patron user found in Pika not found in Sierra for barcode ' . $barcode);
+			}
 		}
 		if ($patron->N && empty($patron->email)){
 			return ['error' => 'You do not have an email address on your account. Please visit your library to reset your ' . translate('pin') . '.'];
