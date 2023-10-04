@@ -1248,7 +1248,11 @@ class Sierra  implements \DriverInterface {
 				$this->logger->notice('Patron user found in Pika not found in Sierra for barcode ' . $barcode);
 			}
 		}
-		if ($patron->N && empty($patron->email)){
+		if (!empty($patron->ilsUserId) && empty($patron->email)){
+			// Can't use a check of $patron->N that user data has be found because
+			// "$patron = $this->getPatron($patronId);" lines doesn't populate $patron->N but will have user data (if called successfully)
+			// $patron->ilsUserId must be populated if we have good user data, so we will use that field for checking for a valid user.
+
 			return ['error' => 'You do not have an email address on your account. Please visit your library to reset your ' . translate('pin') . '.'];
 		}
 
