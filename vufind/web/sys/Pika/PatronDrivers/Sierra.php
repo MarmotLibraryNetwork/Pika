@@ -1474,7 +1474,7 @@ class Sierra  implements \DriverInterface {
 			$emailSent = $this->sendSelfRegSuccessEmail($barcode);
 		}
 
-		$this->logger->debug('Success self registering patron');
+		$this->logger->debug('Success self registering patron : ' . $barcode);
 		return ['success' => true, 'barcode' => $barcode];
 	}
 
