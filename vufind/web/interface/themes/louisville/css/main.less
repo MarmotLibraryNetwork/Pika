@@ -20,14 +20,20 @@ body{
   //background-color: @green-louisville-background;
 }
 
+.browse-category > div{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 #header-logo {
   padding-top: 20px;
 }
 
 .header-button:hover{
-  border-bottom: 2px solid @green-louisville;
-  background-color: @green-louisville;
-  color: white!important;
+  border-bottom: 2px solid #f6f6f6;
+  background-color: #f6f6f6;
+  color: @green-louisville!important;
   text-shadow: none;
   font-weight: bold;
   text-decoration: none;
@@ -37,16 +43,13 @@ body{
   line-height:55px!important;
   border-radius:35px;
   margin-top:25px;
-  background-color: #f6f6f6;
-  color: @green-louisville!important;
+  background-color: @green-louisville;
+  color: white!important;
   text-shadow: none;
   font-weight: bold;
 }
 #browse-label{
-  background:none;
-  height:inherit;
-  margin-top:10px;
-  border-top:none;
+display:none;
 }
 
 .browse-category{
