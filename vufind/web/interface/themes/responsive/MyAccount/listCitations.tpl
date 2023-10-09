@@ -1,6 +1,6 @@
-{if $smarty.get.page}{assign var="pageNum" value=$smarty.get.page}{else}{assign var="pageNum" value=1}{/if}
-{if $smarty.get.pagesize}{assign var="pageSize" value=$smarty.get.pagesize}{else}{assign var="pageSize" value=20}{/if}
-{if $smarty.get.sort}{assign var="listSort" value=$smarty.get.sort}{else}{assign var="listSort" value=null}{/if}
+{if $params.page}{assign var="pageNum" value=$params.page}{else}{assign var="pageNum" value=1}{/if}
+{if $params.pagesize}{assign var="pageSize" value=$params.pagesize}{else}{assign var="pageSize" value=20}{/if}
+{if $params.sort}{assign var="listSort" value=$params.sort}{else}{assign var="listSort" value=null}{/if}
 <a href="/MyAccount/MyList/{$favList->id}" title="Return to My List" class="btn btn-default btn-sm">Return to My List</a>
 
 <h3 id="listTitle"><a href="/MyAccount/MyList/{$favList->id}">{$favList->title|escape:"html"}</a></h3>

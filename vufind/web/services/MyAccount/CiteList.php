@@ -36,7 +36,20 @@ class CiteList extends Action {
 			$list->find(true);
 		}
 		$interface->assign('favList', $list);
-
+		$params = [];
+		if (!empty($_REQUEST['myListPageSize']) && is_numeric($_REQUEST['myListPageSize'])){
+			$params['pagesize'] = $_REQUEST['myListPageSize'];
+		}
+		if (!empty($_REQUEST['myListPage']) && is_numeric($_REQUEST['myListPage'])){
+			$params['page'] = $_REQUEST['myListPage'];
+		}
+		if (!empty($_REQUEST['myListSort']) && in_array($_REQUEST['myListSort'],array('author','title','dateAdded','recentlyAdded','custom'))){
+			$params['sort'] = $_REQUEST['myListSort'];
+		}
+		if (!empty($_REQUEST['filter'])){
+			$params['filter'] = $_REQUEST['filter'];
+		}
+		$interface->assign('params', $params);
 		// Get all titles on the list
 //		$favorites = $list->getListEntries();
 //		$favList = new FavoriteHandler($favorites, null, $list->id, false);

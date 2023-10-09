@@ -1256,6 +1256,20 @@ class MyAccount_AJAX extends AJAXHandler {
 	function getCitationFormatsForm(){
 		require_once ROOT_DIR . '/sys/LocalEnrichment/CitationBuilder.php';
 		global $interface;
+		$params = [];
+		if (!empty($_REQUEST['myListPageSize']) && is_numeric($_REQUEST['myListPageSize'])){
+			$params['pagesize'] = $_REQUEST['myListPageSize'];
+		}
+		if (!empty($_REQUEST['myListPage']) && is_numeric($_REQUEST['myListPage'])){
+			$params['page'] = $_REQUEST['myListPage'];
+		}
+		if (!empty($_REQUEST['myListSort']) && in_array($_REQUEST['myListSort'],array('author','title','dateAdded','recentlyAdded','custom'))){
+			$params['sort'] = $_REQUEST['myListSort'];
+		}
+		if (!empty($_REQUEST['filter'])){
+			$params['filter'] = $_REQUEST['filter'];
+		}
+		$interface->assign('params', $params);
 		$interface->assign('popupTitle', 'Please select a citation format');
 		$interface->assign('listId', $_REQUEST['listId']);
 		$citationFormats = CitationBuilder::getCitationFormats();
