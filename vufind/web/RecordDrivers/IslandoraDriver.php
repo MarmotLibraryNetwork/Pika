@@ -239,15 +239,15 @@ abstract class IslandoraDriver extends RecordInterface {
 		$physicalLocations = $this->getModsValues('physicalLocation', 'mods');
 		$publisher = array();
 		foreach ($physicalLocations as $key => $physicalLocation){
-			if(strpos($physicalLocation, 'physicalLocation')!= false){
+			if(strpos($physicalLocation, 'physicalLocation') !== false){
 					array_splice($physicalLocations, $key);
 			   }
 			else{
-				$pubParts = explode(", ", $physicalLocation);
-				$publisher = array(
+				$pubParts  = explode(', ', $physicalLocation);
+				$publisher = [
 					'pubPlace' => $pubParts[1],
-					'pubName' =>  $pubParts[0]
-				);
+					'pubName'  => $pubParts[0]
+				];
 			}
 		}
 
@@ -272,16 +272,16 @@ abstract class IslandoraDriver extends RecordInterface {
 			$physicalExtents[] = $extent;
 		}
 		$description = implode(", ", $physicalExtents);
-		$details = array(
-		'title' => $this->getFullTitle(),
-		'authors' => '',
-		'pubName'  => count($publisher) > 0 ? $publisher['pubName'] : null,
-		'pubPlace'  => count($publisher) > 1? $publisher['pubPlace']: null,
-		'format' => $this->getFormat(),
-		'pubDate' => $date,
-		'edition' => $description,
-		'url' => $this->getAbsoluteUrl(),
-		);
+		$details     = [
+			'title'    => $this->getFullTitle(),
+			'authors'  => '',
+			'pubName'  => count($publisher) > 0 ? $publisher['pubName'] : null,
+			'pubPlace' => count($publisher) > 1 ? $publisher['pubPlace'] : null,
+			'format'   => $this->getFormat(),
+			'pubDate'  => $date,
+			'edition'  => $description,
+			'url'      => $this->getAbsoluteUrl(),
+		];
 
 		$citation = new CitationBuilder($details);
 
@@ -2881,11 +2881,13 @@ abstract class IslandoraDriver extends RecordInterface {
 		$interface->assign('language', $language);
 
 		$physicalDescriptions = $this->getModsValues('physicalDescription', 'mods');
-		$physicalExtents = [];
+		$physicalExtents      = [];
 		foreach ($physicalDescriptions as $physicalDescription){
-			$extent = $this->getModsValue('extent', 'mods', $physicalDescription);
-			$form = $this->getModsValue('form', 'mods', $physicalDescription);
-			$note = $this->getModsValue('note', 'mods', $physicalDescription);
+			$values = $this->getModsValues('extent', 'mods', $physicalDescription);
+			$values = array_filter($values, function($value) { return !empty($value); });
+			$extent = implode(', ', $values);
+			$form   = $this->getModsValue('form', 'mods', $physicalDescription);
+			$note   = $this->getModsValue('note', 'mods', $physicalDescription);
 			if (empty($extent)){
 				$extent = $form;
 			}elseif (!empty($form) && !empty($note)){

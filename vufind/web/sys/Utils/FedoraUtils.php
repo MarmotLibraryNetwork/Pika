@@ -319,7 +319,7 @@ class FedoraUtils {
 				return $match;
 			}
 		}
-		return array();
+		return [];
 	}
 
 	static public function decodeXmlCharacterReferences($strings) {
