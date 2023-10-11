@@ -76,7 +76,7 @@ $timer->logTime("Basic Initialization");
 loadLibraryAndLocation();
 $timer->logTime("Finished load library and location");
 loadSearchInformation();
-
+loadIndexingProfiles();
 $timer->logTime('Bootstrap done');
 
 
@@ -329,11 +329,6 @@ function loadSearchInformation(){
 	//Determine the Search Source, need to do this always.
 	global $searchSource;
 	global $library;
-	/** @var Memcache $memCache */
-	global $memCache;
-	global $instanceName;
-	global $configArray;
-
 
 	$searchSource = 'global';
 	if (!empty($_GET['searchSource'])){
@@ -383,8 +378,8 @@ function loadSearchInformation(){
 	global $solrScope;
 	global $scopeType;
 	global $isGlobalScope;
-	$solrScope = false;
-	$scopeType = '';
+	$solrScope     = false;
+	$scopeType     = '';
 	$isGlobalScope = false;
 
 	if ($searchLibrary){
@@ -406,20 +401,27 @@ function loadSearchInformation(){
 		$scopeType = 'Unscoped';
 	}
 
+}
+
+function loadIndexingProfiles(): void {
 	//Load indexing profiles
 	require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
 	/** @var $indexingProfiles IndexingProfile[] */
 	global $indexingProfiles;
-	$memCacheKey              = "{$instanceName}_indexing_profiles";
+	/** @var Memcache $memCache */
+	global $memCache;
+	global $instanceName;
+	$memCacheKey      = "{$instanceName}_indexing_profiles";
 	$indexingProfiles = $memCache->get($memCacheKey);
 	if ($indexingProfiles === false || isset($_REQUEST['reload'])){
 		$indexingProfiles = IndexingProfile::getAllIndexingProfiles();
+		global $configArray;
 //		global $pikaLogger;
 //		$pikaLogger->debug("Updating memcache variable {$instanceName}_indexing_profiles");
 		if (!$memCache->set($memCacheKey, $indexingProfiles, 0, $configArray['Caching']['indexing_profiles'])) {
 			global $pikaLogger;
 			$pikaLogger->error("Failed to update memcache variable $memCacheKey");
-		};
+		}
 	}
 }
 
