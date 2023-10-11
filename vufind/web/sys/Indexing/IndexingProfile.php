@@ -309,9 +309,9 @@ class IndexingProfile extends DB_DataObject{
 
 			'nonholdableSection' => ['property' =>'nonholdableSection', 'type' => 'section', 'label' =>'Non-holdable Settings (ils profile only)', 'hideInLists' => true,
 			                         'helpLink' => '', 'properties' => [
-					'nonHoldableStatuses'  => ['property' => 'nonHoldableStatuses', 'type' => 'text', 'label' => 'Non Holdable Statuses', 'maxLength' => 255, 'description' => 'A regular expression for any statuses that should not allow holds', 'changeRequiresReindexing' => true],
-					'nonHoldableLocations' => ['property' => 'nonHoldableLocations', 'type' => 'text', 'label' => 'Non Holdable Locations', 'maxLength' => 255, 'description' => 'A regular expression for any locations that should not allow holds', 'changeRequiresReindexing' => true],
-					'nonHoldableITypes'    => ['property' => 'nonHoldableITypes', 'type' => 'text', 'label' => 'Non Holdable ITypes', 'maxLength' => 255, 'description' => 'A regular expression for any ITypes that should not allow holds', 'changeRequiresReindexing' => true],
+					'nonHoldableStatuses'  => ['property' => 'nonHoldableStatuses', 'type' => 'text', 'label' => 'Non Holdable Statuses (list of codes seperated by pipe character |)', 'maxLength' => 255, 'description' => 'A regular expression for any statuses that should not allow holds', 'changeRequiresReindexing' => true],
+					'nonHoldableLocations' => ['property' => 'nonHoldableLocations', 'type' => 'text', 'label' => 'Non Holdable Locations (list of codes seperated by pipe character |)', 'maxLength' => 255, 'description' => 'A regular expression for any locations that should not allow holds', 'changeRequiresReindexing' => true],
+					'nonHoldableITypes'    => ['property' => 'nonHoldableITypes', 'type' => 'text', 'label' => 'Non Holdable ITypes (list of codes seperated by pipe character |)', 'maxLength' => 255, 'description' => 'A regular expression for any ITypes that should not allow holds', 'changeRequiresReindexing' => true],
 				]],
 
 			'suppressionSection' => ['property' =>'suppressionSection', 'type' => 'section', 'label' =>'Suppression Settings (ils profile only)', 'hideInLists' => true,
