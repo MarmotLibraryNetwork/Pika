@@ -44,7 +44,7 @@
 		<script src="/interface/themes/responsive/js/lib/bootstrap.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/jcarousel.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/bootstrap-datepicker.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/lib/jquery-ui-1.12.1.custom.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/jquery-ui-1.13.2.custom.js?v={$gitBranch|urlencode}"></script>
 	{* autocomplete still uses jquery=-ui*}
 		<script src="/interface/themes/responsive/js/lib/jquery.touchwipe.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/jquery.rwdImageMaps.min.js?v={$gitBranch|urlencode}"></script>
