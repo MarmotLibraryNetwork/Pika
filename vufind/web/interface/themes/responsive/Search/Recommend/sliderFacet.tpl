@@ -1,4 +1,4 @@
-<form id="{$title}Filter" action="{$fullPath}" class="form-inline" method="post">
+<form id="{$title}Filter" action="{$cluster.list.url|escape}" class="form-inline" method="post">
 	<div class="facet-form">
 		{if $title == 'lexile_score'}
 			<div id="lexile-range"></div>

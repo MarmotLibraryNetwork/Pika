@@ -1937,8 +1937,8 @@ class SearchObject_Solr extends SearchObject_Base {
 				if (strpos($field, 'availability_by_format') === 0){
 					foreach ($validFields as $validFieldName){
 						if (strpos($validFieldName, 'availability_toggle') === 0){
-							$field = $validFieldName;
-							$isValid  = true;
+							$field   = $validFieldName;
+							$isValid = true;
 							break;
 						}
 					}
@@ -1946,8 +1946,8 @@ class SearchObject_Solr extends SearchObject_Base {
 				elseif (strpos($field, 'available_at_by_format') === 0){
 					foreach ($validFields as $validFieldName){
 						if (strpos($validFieldName, 'available_at') === 0){
-							$field = $validFieldName;
-							$isValid  = true;
+							$field   = $validFieldName;
+							$isValid = true;
 							break;
 						}
 					}
@@ -1980,118 +1980,123 @@ class SearchObject_Solr extends SearchObject_Base {
 			$translate                = in_array($field, $this->translatedFacets);
 			$numValidRelatedLocations = 0;
 			$numValidLibraries        = 0;
-			// Loop through values:
-			foreach ($data as $facet) {
-				// Initialize the array of data about the current facet:
-				$currentSettings              = [];
-				$currentSettings['value']     = $facet[0];
-				$currentSettings['display']   = $translate ? translate($facet[0]) : $facet[0];
-				$currentSettings['count']     = $facet[1];
-				$currentSettings['isApplied'] = false;
-				$currentSettings['url']       = $this->renderLinkWithFilter("$field:" . $facet[0]);
-				// If we want to have expanding links (all values matching the facet)
-				// in addition to limiting links (filter current search with facet),
-				// do some extra work:
-				if ($expandingLinks) {
-					$currentSettings['expandUrl'] = $this->getExpandingFacetLink($field, $facet[0]);
-				}
-				// Is this field a current filter?
-				if (in_array($field, array_keys($this->filterList))) {
-					// and is this value a selected filter?
-					if (in_array($facet[0], $this->filterList[$field])) {
-						$currentSettings['isApplied']  = true;
-						$currentSettings['removalUrl'] = $this->renderLinkWithoutFilter("$field:{$facet[0]}");
-					}
-				}
 
-				//Setup the key to allow sorting alphabetically if needed.
-				$valueKey = $facet[0];
-				$okToAdd  = true;
-				if ($doInstitutionProcessing){
-					//Special processing for Marmot digital library
-					if ($facet[0] == $currentLibrary->facetLabel){
-						$valueKey         = '1' . $valueKey;
-						$foundInstitution = true;
-						$numValidLibraries++;
-					}elseif ($facet[0] == $currentLibrary->facetLabel . ' Online'){
-						$valueKey         = '1' . $valueKey;
-						$foundInstitution = true;
-						$numValidLibraries++;
-					}elseif ($facet[0] == $currentLibrary->facetLabel . ' On Order' || $facet[0] == $currentLibrary->facetLabel . ' Under Consideration'){
-						$valueKey         = '1' . $valueKey;
-						$foundInstitution = true;
-						$numValidLibraries++;
-					}elseif ($facet[0] == 'Digital Collection' || $facet[0] == 'Marmot Digital Library'){
-						$valueKey         = '2' . $valueKey;
-						$foundInstitution = true;
-						$numValidLibraries++;
-					}elseif (!is_null($currentLibrary) && $currentLibrary->restrictOwningBranchesAndSystems == 1){
-						//$okToAdd = false;
+			if (in_array($field, array_merge($this->rangeFilters, $this->dateFilters))){
+				$list[$field]['list']['url'] = $this->renderSearchUrl();
+			}else{
+				// Loop through values:
+				foreach ($data as $facet){
+					// Initialize the array of data about the current facet:
+					$currentSettings              = [];
+					$currentSettings['value']     = $facet[0];
+					$currentSettings['display']   = $translate ? translate($facet[0]) : $facet[0];
+					$currentSettings['count']     = $facet[1];
+					$currentSettings['isApplied'] = false;
+					$currentSettings['url']       = $this->renderLinkWithFilter("$field:" . $facet[0]);
+					// If we want to have expanding links (all values matching the facet)
+					// in addition to limiting links (filter current search with facet),
+					// do some extra work:
+					if ($expandingLinks){
+						$currentSettings['expandUrl'] = $this->getExpandingFacetLink($field, $facet[0]);
 					}
-				}elseif ($doBranchProcessing){
-					if (strlen($facet[0]) > 0){
-						if ($activeLocationFacet != null && $facet[0] == $activeLocationFacet){
-							$valueKey    = '1' . $valueKey;
-							$foundBranch = true;
-							$numValidRelatedLocations++;
-						}elseif (isset($currentLibrary) && $facet[0] == $currentLibrary->facetLabel . ' Online'){
-							$valueKey = '1' . $valueKey;
-							$numValidRelatedLocations++;
-						}elseif (isset($currentLibrary) && ($facet[0] == $currentLibrary->facetLabel . ' On Order' || $facet[0] == $currentLibrary->facetLabel . ' Under Consideration')){
-							$valueKey = '1' . $valueKey;
-							$numValidRelatedLocations++;
-						}elseif (!is_null($relatedLocationFacets) && in_array($facet[0], $relatedLocationFacets)){
-							$valueKey = '2' . $valueKey;
-							$numValidRelatedLocations++;
-						}elseif (!is_null($relatedLocationFacets) && in_array($facet[0], $relatedLocationFacets)){
-							$valueKey = '2' . $valueKey;
-							$numValidRelatedLocations++;
-						}elseif (!is_null($relatedHomeLocationFacets) && in_array($facet[0], $relatedHomeLocationFacets)){
-							$valueKey = '2' . $valueKey;
-							$numValidRelatedLocations++;
-						}elseif (!is_null($currentLibrary) && $facet[0] == $currentLibrary->facetLabel . ' Online'){
-							$valueKey = '3' . $valueKey;
-							$numValidRelatedLocations++;
-						}elseif ($field == 'available_at' && !is_null($additionalAvailableAtLocations) && in_array($facet[0], $additionalAvailableAtLocations)){
-							$valueKey = '4' . $valueKey;
-							$numValidRelatedLocations++;
-						}elseif ($facet[0] == 'Marmot Digital Library' || $facet[0] == 'Digital Collection' || $facet[0] == 'OverDrive' || $facet[0] == 'Online'){
-							$valueKey = '5' . $valueKey;
-							$numValidRelatedLocations++;
+					// Is this field a current filter?
+					if (in_array($field, array_keys($this->filterList))){
+						// and is this value a selected filter?
+						if (in_array($facet[0], $this->filterList[$field])){
+							$currentSettings['isApplied']  = true;
+							$currentSettings['removalUrl'] = $this->renderLinkWithoutFilter("$field:{$facet[0]}");
+						}
+					}
+
+					//Set up the key to allow sorting alphabetically if needed.
+					$valueKey = $facet[0];
+					$okToAdd  = true;
+					if ($doInstitutionProcessing){
+						//Special processing for Marmot digital library
+						if ($facet[0] == $currentLibrary->facetLabel){
+							$valueKey         = '1' . $valueKey;
+							$foundInstitution = true;
+							$numValidLibraries++;
+						}elseif ($facet[0] == $currentLibrary->facetLabel . ' Online'){
+							$valueKey         = '1' . $valueKey;
+							$foundInstitution = true;
+							$numValidLibraries++;
+						}elseif ($facet[0] == $currentLibrary->facetLabel . ' On Order' || $facet[0] == $currentLibrary->facetLabel . ' Under Consideration'){
+							$valueKey         = '1' . $valueKey;
+							$foundInstitution = true;
+							$numValidLibraries++;
+						}elseif ($facet[0] == 'Digital Collection' || $facet[0] == 'Marmot Digital Library'){
+							$valueKey         = '2' . $valueKey;
+							$foundInstitution = true;
+							$numValidLibraries++;
 						}elseif (!is_null($currentLibrary) && $currentLibrary->restrictOwningBranchesAndSystems == 1){
 							//$okToAdd = false;
 						}
+					}elseif ($doBranchProcessing){
+						if (strlen($facet[0]) > 0){
+							if ($activeLocationFacet != null && $facet[0] == $activeLocationFacet){
+								$valueKey    = '1' . $valueKey;
+								$foundBranch = true;
+								$numValidRelatedLocations++;
+							}elseif (isset($currentLibrary) && $facet[0] == $currentLibrary->facetLabel . ' Online'){
+								$valueKey = '1' . $valueKey;
+								$numValidRelatedLocations++;
+							}elseif (isset($currentLibrary) && ($facet[0] == $currentLibrary->facetLabel . ' On Order' || $facet[0] == $currentLibrary->facetLabel . ' Under Consideration')){
+								$valueKey = '1' . $valueKey;
+								$numValidRelatedLocations++;
+							}elseif (!is_null($relatedLocationFacets) && in_array($facet[0], $relatedLocationFacets)){
+								$valueKey = '2' . $valueKey;
+								$numValidRelatedLocations++;
+							}elseif (!is_null($relatedLocationFacets) && in_array($facet[0], $relatedLocationFacets)){
+								$valueKey = '2' . $valueKey;
+								$numValidRelatedLocations++;
+							}elseif (!is_null($relatedHomeLocationFacets) && in_array($facet[0], $relatedHomeLocationFacets)){
+								$valueKey = '2' . $valueKey;
+								$numValidRelatedLocations++;
+							}elseif (!is_null($currentLibrary) && $facet[0] == $currentLibrary->facetLabel . ' Online'){
+								$valueKey = '3' . $valueKey;
+								$numValidRelatedLocations++;
+							}elseif ($field == 'available_at' && !is_null($additionalAvailableAtLocations) && in_array($facet[0], $additionalAvailableAtLocations)){
+								$valueKey = '4' . $valueKey;
+								$numValidRelatedLocations++;
+							}elseif ($facet[0] == 'Marmot Digital Library' || $facet[0] == 'Digital Collection' || $facet[0] == 'OverDrive' || $facet[0] == 'Online'){
+								$valueKey = '5' . $valueKey;
+								$numValidRelatedLocations++;
+							}elseif (!is_null($currentLibrary) && $currentLibrary->restrictOwningBranchesAndSystems == 1){
+								//$okToAdd = false;
+							}
+						}
 					}
-				}
 
 
-				// Store the collected values:
-				if ($okToAdd){
-					$list[$field]['list'][$valueKey] = $currentSettings;
+					// Store the collected values:
+					if ($okToAdd){
+						$list[$field]['list'][$valueKey] = $currentSettings;
+					}
 				}
 			}
 
 			if (!$foundInstitution && $doInstitutionProcessing){
 				$list[$field]['list']['1' . $currentLibrary->facetLabel] =
-					array(
+					[
 						'value'     => $currentLibrary->facetLabel,
 						'display'   => $currentLibrary->facetLabel,
 						'count'     => 0,
 						'isApplied' => false,
 						'url'       => null,
 						'expandUrl' => null,
-					);
+					];
 			}
 			if (!$foundBranch && $doBranchProcessing && !is_null($activeLocationFacet)){
 				$list[$field]['list']['1' . $activeLocationFacet] =
-					array(
+					[
 						'value'     => $activeLocationFacet,
 						'display'   => $activeLocationFacet,
 						'count'     => 0,
 						'isApplied' => false,
 						'url'       => null,
 						'expandUrl' => null,
-					);
+					];
 				$numValidRelatedLocations++;
 			}
 
@@ -2110,7 +2115,7 @@ class SearchObject_Solr extends SearchObject_Base {
 			//Sort the facet alphabetically?
 			//Sort the system and location alphabetically unless we are in the global scope
 			global $solrScope;
-			if (in_array($field, array('owning_library_' . $solrScope, 'owning_location_' . $solrScope, 'available_at_' . $solrScope))  && isset($currentLibrary) ){
+			if (in_array($field, ['owning_library_' . $solrScope, 'owning_location_' . $solrScope, 'available_at_' . $solrScope])  && isset($currentLibrary) ){
 				$list[$field]['showAlphabetically'] = true;
 			}else{
 				$list[$field]['showAlphabetically'] = false;

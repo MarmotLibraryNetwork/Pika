@@ -1,4 +1,4 @@
-<form id="{$title}Filter" action="{$fullPath}" class="form-inline" method="post">
+<form id="{$title}Filter" action="{$cluster.list.url|escape}" class="form-inline" method="post">
 	<div class="facet-form">
 		<div class="form-group">
 			<label for="{$title}yearfrom" class="yearboxlabel sr-only control-label">From</label>
