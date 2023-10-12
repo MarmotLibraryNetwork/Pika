@@ -19,8 +19,7 @@
 
 class SearchSources {
 	static function getSearchSources(){
-		$searchSources = self::getSearchSourcesDefault();
-		return $searchSources;
+		return self::getSearchSourcesDefault();
 	}
 
 	/**
@@ -298,19 +297,19 @@ class SearchSources {
 			$enableCombinedResults    = $location->enableCombinedResults;
 			$showCombinedResultsFirst = $location->defaultToCombinedResults;
 			$combinedResultsName      = $location->combinedResultsLabel;
-			return array($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName);
+			return [$enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName];
 		}else{
 			if ($library){
 				$enableCombinedResults    = $library->enableCombinedResults;
 				$showCombinedResultsFirst = $library->defaultToCombinedResults;
 				$combinedResultsName      = $library->combinedResultsLabel;
-				return array($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName);
+				return [$enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName];
 			}
 		}
-		return array($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName);
+		return [$enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName];
 	}
 
-	public function getWorldCatSearchType($type){
+	static function getWorldCatSearchType($type){
 		switch ($type){
 			case 'Subject':
 				return 'su';
@@ -333,13 +332,13 @@ class SearchSources {
 
 
 
-	public function getExternalLink($searchSource, $type, $lookFor){
-		global /** @var Library $library */
-		$library;
+	public static function getExternalLink($searchSource, $type, $lookFor){
+		/** @var Library $library */
+		global $library;
 		global $configArray;
 		switch ($searchSource){
 			case 'worldcat':
-				$worldCatSearchType = $this->getWorldCatSearchType($type);
+				$worldCatSearchType = self::getWorldCatSearchType($type);
 				$worldCatLink       = "http://www.worldcat.org/search?q={$worldCatSearchType}%3A" . urlencode($lookFor);
 				if (!empty($library->worldCatUrl)){
 					$worldCatLink = $library->worldCatUrl;
@@ -361,7 +360,7 @@ class SearchSources {
 //				$overDriveUrl = $configArray['OverDrive']['url'];
 //				return "$overDriveUrl/library/kids/search?query=" . urlencode($lookFor);
 			case 'prospector':
-				$prospectorSearchType = $this->getProspectorSearchType($type);
+				$prospectorSearchType = self::getProspectorSearchType($type);
 				$lookFor              = str_replace('+', '%20', rawurlencode($lookFor));
 				// Handle special exception: ? character in the search must be encoded specially
 				$lookFor = str_replace('%3F', 'Pw%3D%3D', $lookFor);
@@ -392,7 +391,7 @@ class SearchSources {
 		}
 	}
 
-	public function getProspectorSearchType($type){
+	static function getProspectorSearchType($type){
 		switch ($type){
 			case 'Subject':
 				return 'd';

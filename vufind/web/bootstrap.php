@@ -326,21 +326,27 @@ function getLibraryObject(){
 }
 
 function loadSearchInformation(){
+	require_once ROOT_DIR . '/sys/Search/SearchSources.php';
+
 	//Determine the Search Source, need to do this always.
 	global $searchSource;
-	global $library;
 
-	$searchSource = 'global';
+	$searchSource = 'local';
 	if (!empty($_GET['searchSource'])){
 		if (is_array($_GET['searchSource'])){
 			$_GET['searchSource'] = reset($_GET['searchSource']);
 		}
-		$searchSource             = $_GET['searchSource'];
-		$_REQUEST['searchSource'] = $searchSource; //Update request since other check for it here
-		$_SESSION['searchSource'] = $searchSource; //Update the session so we can remember what the user was doing last.
+		$searchSources = SearchSources::getSearchSources();
+		if (isset($searchSources[$_GET['searchSource']])){
+			$searchSource             = $_GET['searchSource'];
+			$_SESSION['searchSource'] = $searchSource; //Update the session, so we can remember what the user was doing last.
+		} else {
+			unset( $_GET['searchSource']);
+			global $pikaLogger;
+			$pikaLogger->notice('Invalid search source in url', [$_SERVER['REQUEST_URI']]);
+		}
 	}elseif (isset($_SESSION['searchSource'])){ //Didn't get a source, use what the user was doing last
-		$searchSource             = $_SESSION['searchSource'];
-		$_REQUEST['searchSource'] = $searchSource;
+		$searchSource = $_SESSION['searchSource'];
 	}else{
 		//Use a default search source
 		$module = $_GET['module'] ?? null;
@@ -351,26 +357,25 @@ function loadSearchInformation(){
 		}elseif ($module == 'EBSCO'){
 			$searchSource = 'ebsco';
 		}else{
-			require_once ROOT_DIR . '/sys/Search/SearchSources.php';
-			$searchSources = new SearchSources();
 			global $locationSingleton;
+			global $library;
 			$location = $locationSingleton->getActiveLocation();
-			[$enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName] = $searchSources::getCombinedSearchSetupParameters($location, $library);
+			[$enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName] = SearchSources::getCombinedSearchSetupParameters($location, $library);
 			if ($enableCombinedResults && $showCombinedResultsFirst){
 				$searchSource = 'combinedResults';
 			}else{
 				$searchSource = 'local';
 			}
 		}
-		$_REQUEST['searchSource'] = $searchSource;
 	}
+	$_REQUEST['searchSource'] = $searchSource;
 
 	/** @var Library $searchLibrary */
 	$searchLibrary  = Library::getSearchLibrary($searchSource);
 	$searchLocation = Location::getSearchLocation($searchSource);
 
 	//set searchSource for 'Repeat Search within Marmot Collection' option
-	if ($searchSource == 'marmot' || $searchSource == 'global'){
+	if ($searchSource == 'marmot'){
 		$searchSource = $searchLibrary->subdomain;
 	}
 

@@ -35,10 +35,9 @@ class Union_Search extends Action {
 		global $action;
 		global $interface;
 		//Get the search source and determine what to show.
-		$searchSource  = empty($_REQUEST['searchSource']) ? 'local' : $_REQUEST['searchSource'];
-		$searchSources = new SearchSources();
-		$searches      = $searchSources->getSearchSources();
-		if (!isset($searches[$searchSource]) && $searchSource == 'marmot'){
+		$searchSource = empty($_REQUEST['searchSource']) ? 'local' : $_REQUEST['searchSource'];
+		$searches     = SearchSources::getSearchSources();
+		if ($searchSource == 'marmot' && !isset($searches[$searchSource])){
 			$searchSource = 'local';
 		}
 		$searchInfo = $searches[$searchSource];
@@ -48,7 +47,7 @@ class Union_Search extends Action {
 			//Need to redirect to the appropriate search location with the new value for look for
 			$type    = $_REQUEST['basicType'] ?? $_REQUEST['type'];
 			$lookfor = $_REQUEST['lookfor'] ?? '';
-			$link    = $searchSources->getExternalLink($searchSource, $type, $lookfor);
+			$link    = SearchSources::getExternalLink($searchSource, $type, $lookfor);
 			header('Location: ' . $link);
 			die();
 		}else{

@@ -689,8 +689,7 @@ function setUpSearchDisplayOptions($module, $action){
 
 	//Load repeat search options
 	require_once ROOT_DIR . '/sys/Search/SearchSources.php';
-	$searchSources = new SearchSources();
-	$interface->assign('searchSources', $searchSources->getSearchSources());
+	$interface->assign('searchSources', SearchSources::getSearchSources());
 
 	global $configArray;
 	if (isset($configArray['Genealogy']) && $library->enableGenealogy){
