@@ -200,7 +200,6 @@ class SideFacets implements RecommendationInterface {
 		//Process the side facet set to handle the Added In Last facet which we only want to be
 		//visible if there is not a value selected for the facet (makes it single select
 		$sideFacets    = $this->searchObject->getFacetList($this->mainFacets);
-		$searchLibrary = Library::getSearchLibrary();
 
 		//Do additional processing of facets for non-genealogy searches
 		if ($this->searchObject->getSearchType() != 'genealogy'/* && $this->searchObject->getSearchType() != 'islandora'*/){
