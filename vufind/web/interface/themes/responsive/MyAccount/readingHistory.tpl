@@ -47,7 +47,7 @@
 
 
 		{* Do not display Reading History in Masquerade Mode, unless the library has allowed it *}
-	<form id="readingListForm" action="{$fullPath}" class="form-inline" onkeydown="return event.key != 'Enter';">
+	<form id="readingListForm" class="form-inline" onkeydown="return event.key != 'Enter';">
 
 		{* Reading History Actions *}
 		<div class="row">
@@ -89,7 +89,7 @@
 					<label for="searchTerm">Search Reading History</label>
 				</div>
 				<div class="col-xs-6">
-					<input type="search" name="searchTerm" id="searchTerm" class="form-control" value="{if $searchTerm}{$searchTerm}{/if}">
+					<input type="search" name="searchTerm" id="searchTerm" class="form-control" value="{if $searchTerm}{$searchTerm|escape}{*Escape to prevent javascript injection*}{/if}">
 				</div>
 				<div class="col-xs-3">
 					<select name="searchBy" id="searchBy" class="form-control">
@@ -148,7 +148,7 @@
 				</div>
           {if $historyActive == true && $isReadingHistorySearch == true && count($transList) lt 1}
               {* History search request, No entries in the history *}
-						<div class="alert alert-warning text-center">There are no entries in your reading history that match your search <strong>{if $searchTerm}{$searchTerm}{/if}</strong></div>
+						<div class="alert alert-warning text-center">There are no entries in your reading history that match your search <strong>{if $searchTerm}{$searchTerm|escape}{* Escape term to prevent embeded javascript in term from executing *}{/if}</strong></div>
           {/if}
 				{* Reading History Entries *}
 				<div class="striped">
@@ -237,6 +237,7 @@
 								</div>
 
 								{if $showRatings == 1}
+										{* $showRatings is set by UInterface method loadDisplayOptions() *}
 									{if $record.recordId != -1 && $record.ratingData}
 										<div class="row">
 											<div class="result-label col-tn-3">Rating&nbsp;</div>

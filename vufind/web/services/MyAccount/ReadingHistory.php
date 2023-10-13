@@ -31,146 +31,142 @@ class ReadingHistory extends MyAccount {
 	}
 
 	function launch(){
-		global $interface;
-		$user = UserAccount::getLoggedInUser();
-
-		global $library;
-		if (isset($library)){
-			$interface->assign('showRatings', $library->showRatings);
-		}else{
-			$interface->assign('showRatings', 1);
-		}
-
 		global $offlineMode;
 		if (!$offlineMode){
+			global $interface;
 			$interface->assign('offline', false);
 
 			// Get My Transactions
+			$user = UserAccount::getLoggedInUser();
 			if ($user){
 				$linkedUsers = $user->getLinkedUsers();
 				$patronId    = empty($_REQUEST['patronId']) ? $user->id : $_REQUEST['patronId'];
-
-				$patron = $user->getUserReferredTo($patronId);
-				if (count($linkedUsers) > 0){
-					array_unshift($linkedUsers, $user);
-
-				}
-				// make sure linkedUsers makes to template even if empty so we don't get warnings
-				$interface->assign('linkedUsers', $linkedUsers);
-				$interface->assign('selectedUser', $patronId); // needs to be set even when there is only one user so that the patronId hidden input gets a value in the reading history form.
-
-				// Setup history search variables
-				$searchBy = false;
-				$searchTerm = false;
-				$interface->assign('isReadingHistorySearch', false);
-				if(isset($_REQUEST['readingHistoryAction']) && $_REQUEST['readingHistoryAction'] == 'searchReadingHistory') {
-					$searchTerm = isset($_REQUEST['searchTerm']) ? $_REQUEST['searchTerm'] : '';
-					$searchBy   = isset($_REQUEST['searchBy']) ? $_REQUEST['searchBy'] : 'title';
-
-					$interface->assign('searchTerm', $searchTerm);
-					$interface->assign('searchBy', $searchBy);
-					$interface->assign('isReadingHistorySearch', true);
-				}
-
-				//Check to see if there is an action to perform.
-				if (!empty($_REQUEST['readingHistoryAction']) && !is_array($_REQUEST['readingHistoryAction']) &&
-				 $_REQUEST['readingHistoryAction'] != 'exportToExcel' && $_REQUEST['readingHistoryAction'] != 'searchReadingHistory'){
-
-					//Perform the requested action
-					$selectedTitles       = isset($_REQUEST['selected']) ? $_REQUEST['selected'] : array();
-					$readingHistoryAction = trim($_REQUEST['readingHistoryAction']);
-					switch ($readingHistoryAction){
-						case 'optIn':
-							$patron->optInReadingHistory();
-							break;
-						case 'optOut':
-							$patron->optOutReadingHistory();
-							break;
-						case 'deleteAll':
-							$patron->deleteAllReadingHistory();
-							break;
-						case 'deleteMarked':
-							$patron->deleteMarkedReadingHistory($selectedTitles);
-							break;
-						default:
-							// Deprecated action; should be replaced with above action-specific calls
-							$this->logger->warn('Call to undefined reading history action : ' . $readingHistoryAction);
+				$patron      = $user->getUserReferredTo($patronId);
+				if ($patron){
+					if (count($linkedUsers) > 0){
+						array_unshift($linkedUsers, $user);
 					}
+					// make sure linkedUsers makes to template even if empty, so we don't get warnings
+					$interface->assign('linkedUsers', $linkedUsers);
+					$interface->assign('selectedUser', $patronId); // needs to be set even when there is only one user so that the patronId hidden input gets a value in the reading history form.
 
-					//redirect back to the current location without the action.
-					$newLocation = "/MyAccount/ReadingHistory";
-					if (isset($_REQUEST['page']) && $readingHistoryAction != 'deleteAll' && $readingHistoryAction != 'optOut'){
-						$params[] = 'page=' . $_REQUEST['page'];
-					}
-					if (isset($_REQUEST['accountSort'])){
-						$params[] = 'accountSort=' . $_REQUEST['accountSort'];
-					}
-					if (isset($_REQUEST['pagesize'])){
-						$params[] = 'pagesize=' . $_REQUEST['pagesize'];
-					}
-					if (isset($_REQUEST['patronId'])){
-						$params[] = 'patronId=' . $_REQUEST['patronId'];
-					}
-					if (count($params) > 0){
-						$additionalParams = implode('&', $params);
-						$newLocation      .= '?' . $additionalParams;
-					}
-					header("Location: $newLocation");
-					die();
-				}
-
-				// Define sorting options
-				$sortOptions = [
-					'title'      => 'Title',
-					'author'     => 'Author',
-					'checkedOut' => 'Checkout Date',
-					'format'     => 'Format',
-				];
-				$selectedSortOption = $_REQUEST['accountSort'] ?? 'checkedOut';
-				$interface->assign('sortOptions', $sortOptions);
-
-				$interface->assign('defaultSortOption', $selectedSortOption);
-				$page = $_REQUEST['page'] ?? 1;
-				$interface->assign('page', $page);
-
-				$recordsPerPage = isset($_REQUEST['pagesize']) && (is_numeric($_REQUEST['pagesize'])) ? $_REQUEST['pagesize'] : 25;
-				$interface->assign('recordsPerPage', $recordsPerPage);
-				if (isset($_REQUEST['readingHistoryAction']) && $_REQUEST['readingHistoryAction'] == 'exportToExcel'){
-					$recordsPerPage = -1;
-					$page           = 1;
-				}
-
-				if (!$patron){
-					PEAR_Singleton::RaiseError(new PEAR_Error("The patron provided is invalid"));
-				}
-				$result = $patron->getReadingHistory($page, $recordsPerPage, $selectedSortOption, $searchTerm, $searchBy); //$searchTerm, $searchBy
-
-				$link = $_SERVER['REQUEST_URI'];
-				if (preg_match('/[&?]page=/', $link)){
-					$link = preg_replace("/page=\\d+/", "page=%d", $link);
-				}else{
-					if (strpos($link, "?") > 0){
-						$link .= "&page=%d";
-					}else{
-						$link .= "?page=%d";
-					}
-				}
-				if ($recordsPerPage != '-1'){
-					$options = [
-						'totalItems' => $result['numTitles'],
-						'fileName'   => $link,
-						'perPage'    => $recordsPerPage,
-						'append'     => false,
+					// Define sorting options
+					$sortOptions = [
+						'title'      => 'Title',
+						'author'     => 'Author',
+						'checkedOut' => 'Checkout Date',
+						'format'     => 'Format',
 					];
-					$pager   = new VuFindPager($options);
-					$interface->assign('pageLinks', $pager->getLinks());
-				}
-				if (!PEAR_Singleton::isError($result)){
-					$interface->assign('historyActive', $result['historyActive']);
-					$interface->assign('transList', $result['titles']);
+					$selectedSortOption = !empty($_REQUEST['accountSort']) && isset($sortOptions[$_REQUEST['accountSort']]) ? $_REQUEST['accountSort'] : 'checkedOut';
+					$interface->assign('sortOptions', $sortOptions);
+					$interface->assign('defaultSortOption', $selectedSortOption);
+
+					$page = !empty($_REQUEST['page']) && ctype_digit($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+					$interface->assign('page', $page);
+
+					$recordsPerPage = isset($_REQUEST['pagesize']) && is_numeric($_REQUEST['pagesize']) ? $_REQUEST['pagesize'] : 25;
+					$interface->assign('recordsPerPage', $recordsPerPage);
 					if (isset($_REQUEST['readingHistoryAction']) && $_REQUEST['readingHistoryAction'] == 'exportToExcel'){
-						$this->exportToExcel($result['titles']);
+						$recordsPerPage = -1;
+						$page           = 1;
 					}
+
+					// Setup history search variables
+					$searchBy   = false;
+					$searchTerm = false;
+					$interface->assign('isReadingHistorySearch', false);
+					if (isset($_REQUEST['readingHistoryAction']) && $_REQUEST['readingHistoryAction'] == 'searchReadingHistory'){
+						$searchTerm = $_REQUEST['searchTerm'] ?? '';
+						$searchBy   = in_array($_REQUEST['searchBy'], ['title', 'author']) ? $_REQUEST['searchBy'] : 'title';
+
+						$interface->assign('searchTerm', $searchTerm);
+						$interface->assign('searchBy', $searchBy);
+						$interface->assign('isReadingHistorySearch', true);
+					}
+
+					// Construct Variables for URLs
+					$newLocation = '/MyAccount/ReadingHistory';
+					$params[] = 'patronId=' . $patronId;
+					if ($selectedSortOption != 'checkedOut'){
+						$params[] = 'accountSort=' . $selectedSortOption;
+					}
+					if ($recordsPerPage != 25){
+						$params[] = 'pagesize=' . $recordsPerPage;
+					}
+					if (!empty($searchTerm) && $_REQUEST['readingHistoryAction'] == 'searchReadingHistory'){
+						$params[] = 'readingHistoryAction=searchReadingHistory';
+						$params[] = 'searchTerm=' . $searchTerm;
+						$params[] = 'searchBy=' . $searchBy;
+					}
+
+
+					// Check to see if there is an action to perform.
+					if (!empty($_REQUEST['readingHistoryAction']) && !is_array($_REQUEST['readingHistoryAction']) &&
+						$_REQUEST['readingHistoryAction'] != 'exportToExcel' && $_REQUEST['readingHistoryAction'] != 'searchReadingHistory'){
+
+						//Perform the requested action
+						$selectedTitles       = $_REQUEST['selected'] ?? [];
+						$readingHistoryAction = trim($_REQUEST['readingHistoryAction']);
+						switch ($readingHistoryAction){
+							case 'optIn':
+								$patron->optInReadingHistory();
+								break;
+							case 'optOut':
+								$patron->optOutReadingHistory();
+								break;
+							case 'deleteAll':
+								$patron->deleteAllReadingHistory();
+								break;
+							case 'deleteMarked':
+								$patron->deleteMarkedReadingHistory($selectedTitles);
+								break;
+							default:
+								// Deprecated action; should be replaced with above action-specific calls
+								$this->logger->warn('Call to undefined reading history action : ' . $readingHistoryAction);
+						}
+
+						// Redirect back to the current location without the action.
+						if ($page > 1 && $readingHistoryAction != 'deleteAll' && $readingHistoryAction != 'optOut'){
+							$params[] = 'page=' . $_REQUEST['page'];
+						}
+
+						if (count($params) > 0){
+							$additionalParams = implode('&', $params);
+							$newLocation      .= '?' . $additionalParams;
+						}
+						header("Location: $newLocation");
+						die();
+					}
+
+					$result = $patron->getReadingHistory($page, $recordsPerPage, $selectedSortOption, $searchTerm, $searchBy); //$searchTerm, $searchBy
+
+					$link = $newLocation . '?' . implode('&', $params);
+					if (preg_match('/[&?]page=/', $link)){
+						$link = preg_replace('/page=\\d+/', 'page=%d', $link);
+					}elseif (strpos($link, '?') > 0){
+						$link .= '&page=%d';
+					}else{
+						$link .= '?page=%d';
+					}
+					if ($recordsPerPage != '-1'){
+						$options = [
+							'totalItems' => $result['numTitles'],
+							'fileName'   => $link,
+							'perPage'    => $recordsPerPage,
+							'append'     => false,
+						];
+						$pager   = new VuFindPager($options);
+						$interface->assign('pageLinks', $pager->getLinks());
+					}
+					if (!PEAR_Singleton::isError($result)){
+						$interface->assign('historyActive', $result['historyActive']);
+						$interface->assign('transList', $result['titles']);
+						if (isset($_REQUEST['readingHistoryAction']) && $_REQUEST['readingHistoryAction'] == 'exportToExcel'){
+							$this->exportToExcel($result['titles']);
+						}
+					}
+				} else {
+					$this->logger->warn("Invalid Patron Id for Reading History $patronId", [$_SERVER['REQUEST_URI']]);
 				}
 			}
 		}
