@@ -1607,17 +1607,17 @@ class SearchObject_Islandora extends SearchObject_Base {
 			}
 		}
 			if ($searchId) {
-			//rerun the search
-			$interface->assign('searchId',$searchId);
-			if (is_null($page)) {
-				$page = isset($_REQUEST['page']) && ctype_digit($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-			}
-			$interface->assign('page', $page);
-
 			require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 			$s = new SearchEntry();
 			if ($s->get($searchId)){
-				$minSO        = unserialize($s->search_object);
+				//rerun the search
+				$interface->assign('searchId',$searchId);
+				if (is_null($page)) {
+					$page = isset($_REQUEST['page']) && ctype_digit($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+				}
+				$interface->assign('page', $page);
+
+ 				$minSO        = unserialize($s->search_object);
 				/** @var SearchObject_Islandora $searchObject */
 				$searchObject = SearchObjectFactory::deminify($minSO);
 				$searchObject->setPage($page);
@@ -1647,7 +1647,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 				}
 
 				if (PEAR_Singleton::isError($result)) {
-					//If we get an error excuting the search, just eat it for now.
+					//If we get an error executing the search, just eat it for now.
 				}else{
 					if ($searchObject->getResultTotal() < 1) {
 						//No results found

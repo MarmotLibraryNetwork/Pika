@@ -28,7 +28,7 @@ class Record_Home extends Record_Record {
 		$this->loadCitations();
 		$timer->logTime('Loaded Citations');
 
-		if (isset($_REQUEST['searchId'])){
+		if (isset($_REQUEST['searchId']) && ctype_digit($_REQUEST['searchId'])){
 			$_SESSION['searchId'] = $_REQUEST['searchId'];
 		}
 		if (isset($_SESSION['searchId'])){

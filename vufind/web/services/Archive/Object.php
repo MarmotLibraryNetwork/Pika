@@ -478,8 +478,8 @@ abstract class Archive_Object extends Action {
 			$collectionDriver->getNextPrevLinks($this->pid);
 
 		} elseif (!empty($_SESSION['exhibitSearchId']) && !$isExhibit) {
-			$recordIndex = isset($_COOKIE['recordIndex']) ? $_COOKIE['recordIndex'] : null;
-			$page        = isset($_COOKIE['page']) ? $_COOKIE['page'] : null;
+			$recordIndex = $_COOKIE['recordIndex'] ?? null;
+			$page        = $_COOKIE['page'] ?? null;
 			// Restore Islandora Search
 			/** @var SearchObject_Islandora $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject('Islandora');

@@ -2532,15 +2532,14 @@ class SearchObject_Solr extends SearchObject_Base {
 		global $timer;
 		//Setup next and previous links based on the search results.
 		if (isset($_REQUEST['searchId']) && isset($_REQUEST['recordIndex']) && ctype_digit($_REQUEST['searchId']) && ctype_digit($_REQUEST['recordIndex'])){
-			//rerun the search
 			require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
-			$s           = new SearchEntry();
-			$s->id       = $_REQUEST['searchId'];
-			$currentPage = isset($_REQUEST['page']) && ctype_digit($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-			$interface->assign('searchId', $_REQUEST['searchId']);
-			$interface->assign('page', $currentPage);
-
+			$s     = new SearchEntry();
+			$s->id = $_REQUEST['searchId'];
 			if ($s->find(true)){
+				$currentPage = isset($_REQUEST['page']) && ctype_digit($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+				$interface->assign('searchId', $_REQUEST['searchId']);
+				$interface->assign('page', $currentPage);
+
 				$minSO = unserialize($s->search_object);
 				/** @var SearchObject_Solr $searchObject */
 				$searchObject = SearchObjectFactory::deminify($minSO);

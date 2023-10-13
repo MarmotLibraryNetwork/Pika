@@ -1118,10 +1118,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 */
 	protected function getSearchParams(){
 		$params = parent::getSearchParams();
-
 		$params[] = 'genealogyType=' . ($_REQUEST['genealogyType'] ?? 'GenealogyKeyword'); //TODO: can this be replaced with general $_REQUEST['type']
-		$params[] = 'searchSource=' . $_REQUEST['searchSource'];
-
 		return $params;
 	}
 
@@ -1138,17 +1135,17 @@ class SearchObject_Genealogy extends SearchObject_Base {
 			require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 			$s     = new SearchEntry();
 			$s->id = $_REQUEST['searchId'];
-			$interface->assign('searchId', $_REQUEST['searchId']);
-			$currentPage = isset($_REQUEST['page']) && ctype_digit($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-			$interface->assign('page', $currentPage);
-
 			if ($s->find(true)){
+				$currentPage = isset($_REQUEST['page']) && ctype_digit($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+				$interface->assign('searchId', $_REQUEST['searchId']);
+				$interface->assign('page', $currentPage);
+
 				$minSO = unserialize($s->search_object);
 				/** @var SearchObject_Solr $searchObject */
 				$searchObject = SearchObjectFactory::deminify($minSO);
 				$searchObject->setPage($currentPage);
 				//Run the search
-				$result = $searchObject->processSearch(true, false, false);
+				$result = $searchObject->processSearch(true);
 
 				//Check to see if we need to run a search for the next or previous page
 				$currentResultIndex  = $_REQUEST['recordIndex'] - 1;
