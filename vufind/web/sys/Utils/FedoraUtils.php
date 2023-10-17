@@ -323,7 +323,7 @@ class FedoraUtils {
 	}
 
 	static public function decodeXmlCharacterReferences($strings) {
-		$newStrings = array();
+		$newStrings = [];
 		foreach ($strings as $string) {
 			$newStrings[] = mb_convert_encoding($string, 'UTF-8', 'HTML-ENTITIES');
 		}

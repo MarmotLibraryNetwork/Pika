@@ -237,7 +237,7 @@ abstract class IslandoraDriver extends RecordInterface {
 	public function getCitation($format) {
 		require_once ROOT_DIR . '/sys/LocalEnrichment/CitationBuilder.php';
 		$physicalLocations = $this->getModsValues('physicalLocation', 'mods');
-		$publisher = array();
+		$publisher = [];
 		foreach ($physicalLocations as $key => $physicalLocation){
 			if(strpos($physicalLocation, 'physicalLocation') !== false){
 					array_splice($physicalLocations, $key);
@@ -2880,14 +2880,21 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 		$interface->assign('language', $language);
 
-		$physicalDescriptions = $this->getModsValues('physicalDescription', 'mods');
+		$physicalDescriptions =  FedoraUtils::cleanValues($this->getModsValues('physicalDescription', 'mods'));
 		$physicalExtents      = [];
 		foreach ($physicalDescriptions as $physicalDescription){
 			$values = $this->getModsValues('extent', 'mods', $physicalDescription);
-			$values = array_filter($values, function($value) { return !empty($value); });
+			$values = FedoraUtils::cleanValues($values);
 			$extent = implode(', ', $values);
-			$form   = $this->getModsValue('form', 'mods', $physicalDescription);
-			$note   = $this->getModsValue('note', 'mods', $physicalDescription);
+
+			$values = $this->getModsValues('form', 'mods', $physicalDescription);
+			$values = FedoraUtils::cleanValues($values);
+			$form   = implode(', ', $values);
+
+			$values = $this->getModsValues('note', 'mods', $physicalDescription);
+			$values = FedoraUtils::cleanValues($values);
+			$note   = implode(', ', $values);
+
 			if (empty($extent)){
 				$extent = $form;
 			}elseif (!empty($form) && !empty($note)){
@@ -2897,13 +2904,15 @@ abstract class IslandoraDriver extends RecordInterface {
 			}elseif (!empty($note)){
 				$extent .= " ($note)";
 			}
-			$physicalExtents[] = $extent;
+			if (!empty($extent)){
+				$physicalExtents[] = $extent;
+			}
 
 		}
 		$interface->assign('physicalExtents', $physicalExtents);
 
 		$physicalLocation = $this->getModsValues('physicalLocation', 'mods');
-		$interface->assign('physicalLocation', $physicalLocation);
+		$interface->assign('physicalLocation',  FedoraUtils::cleanValues($physicalLocation));
 
 		$shelfLocator = $this->getModsValues('shelfLocator', 'mods');
 		$interface->assign('shelfLocator', FedoraUtils::cleanValues($shelfLocator));
@@ -2913,7 +2922,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 		//Load migration information
 		$migratedFileName = $this->getModsValue('migratedFileName', 'marmot');
-		$interface->assign('migratedFileName', $migratedFileName);
+		$interface->assign('migratedFileName',  FedoraUtils::cleanValue($migratedFileName));
 
 		$migratedIdentifier = $this->getModsValue('migratedIdentifier', 'marmot');
 		$interface->assign('migratedIdentifier', FedoraUtils::cleanValue($migratedIdentifier));
