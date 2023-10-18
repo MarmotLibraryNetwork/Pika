@@ -2915,7 +2915,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		$interface->assign('physicalLocation',  FedoraUtils::cleanValues($physicalLocation));
 
 		$shelfLocator = $this->getModsValues('shelfLocator', 'mods');
-		$interface->assign('shelfLocator', FedoraUtils::cleanValues($shelfLocator));
+		$interface->assign('shelfLocation', FedoraUtils::cleanValues($shelfLocator));
 
 		$collections = $this->getRelatedCollections();
 		$interface->assign('collectionInfo', $collections);

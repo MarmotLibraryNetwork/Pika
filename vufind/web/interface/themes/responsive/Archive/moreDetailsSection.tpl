@@ -24,12 +24,12 @@
 		</div>
 	{/if}
 
-	{* Shelf Locator *}
-	{if !empty($shelfLocator)}
+	{* Shelf Location *}
+	{if !empty($shelfLocation)}
 		<div class="row">
-			<div class="result-label col-sm-4">Shelf Locator: </div>
+			<div class="result-label col-sm-4">Shelf Location: </div>
 			<div class="result-value col-sm-8">
-				{foreach from=$shelfLocator item=location}
+				{foreach from=$shelfLocation item=location}
 					{if $location}
 						<div>{$location}</div>
 					{/if}
