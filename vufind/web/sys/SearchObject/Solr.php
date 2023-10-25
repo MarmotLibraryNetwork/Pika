@@ -1142,7 +1142,7 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @return  array    Array of URL parameters (key=url_encoded_value format)
 	 */
 	protected function getSearchParams(){
-		if (is_null($this->params)){
+		//if (is_null($this->params)){ // caching the params locally breaks the base class function renderLinkWithReplacedTerm() changing search terms
 			$params = [];
 			switch ($this->searchType){
 				// Author Home screen
@@ -1190,7 +1190,7 @@ class SearchObject_Solr extends SearchObject_Base {
 				$params[] = 'type=' . $_REQUEST['type'];
 			}
 			$this->params = $params;
-		}
+		//}
 		return $this->params;
 	}
 
