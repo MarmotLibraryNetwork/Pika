@@ -276,7 +276,7 @@ class Library extends DB_DataObject {
 	public $changeRequiresReindexing;
 
 
-	// Use this to set which details will be shown in the the Main Details section of the record view.
+	// Use this to set which details will be shown in the Main Details section of the record view.
 	// You should be able to add options here without needing to change the database.
 	// set the key to the desired SMARTY template variable name, set the value to the label to show in the library configuration page
 	static $showInMainDetailsOptions = [
