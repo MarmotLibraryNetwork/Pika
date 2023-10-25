@@ -43,7 +43,7 @@ class CiteList extends Action {
 		if (!empty($_REQUEST['myListPage']) && is_numeric($_REQUEST['myListPage'])){
 			$params['page'] = $_REQUEST['myListPage'];
 		}
-		if (!empty($_REQUEST['myListSort']) && in_array($_REQUEST['myListSort'],array('author','title','dateAdded','recentlyAdded','custom'))){
+		if (!empty($_REQUEST['myListSort']) && in_array($_REQUEST['myListSort'], ['author', 'title', 'dateAdded', 'recentlyAdded', 'custom'])){
 			$params['sort'] = $_REQUEST['myListSort'];
 		}
 		if (!empty($_REQUEST['filter'])){
@@ -51,13 +51,10 @@ class CiteList extends Action {
 		}
 		$interface->assign('params', $params);
 		// Get all titles on the list
-//		$favorites = $list->getListEntries();
-//		$favList = new FavoriteHandler($favorites, null, $list->id, false);
-		//TODO: test this
 		$favList         = new FavoriteHandler($list, false);
 		$citationFormat  = $_REQUEST['citationFormat'];
-		$page = $_REQUEST['myListPage'];
-		$pageSize = $_REQUEST['myListPageSize'];
+		$page            = $_REQUEST['myListPage'];
+		$pageSize        = $_REQUEST['myListPageSize'];
 		$citationFormats = CitationBuilder::getCitationFormats();
 		$interface->assign('citationFormat', $citationFormats[$citationFormat]);
 		$citations = $favList->getCitations($citationFormat,$page,$pageSize);

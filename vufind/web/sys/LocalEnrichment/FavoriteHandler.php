@@ -310,7 +310,7 @@ class FavoriteHandler {
 //		unset($_REQUEST['type']); // Remove variable so that search filter links don't include type parameter
 		$isPageSizeParamSet = isset($_REQUEST['pagesize']) && is_numeric($_REQUEST['pagesize']);
 		$recordsPerPage     = $isPageSizeParamSet ? $_REQUEST['pagesize'] : $recordsPerPage;
-		$page               = $_REQUEST['page'] ?? $page;
+		$page               = isset($_REQUEST['page']) && is_numeric($_REQUEST['page']) ? $_REQUEST['page'] : $page;
 		$startRecord        = ($page - 1) * $recordsPerPage + 1;
 		$endRecord          = $page * $recordsPerPage;
 		if ($startRecord < 0){
@@ -559,7 +559,7 @@ class FavoriteHandler {
 		$interface->assign('recordEnd', min($pageInfo['endRecord'], $pageInfo['resultTotal']));  //search filtering may reduce the number of entries being displayed
 		$interface->assign('recordsPerPage', $pageInfo['perPage']);
 
-		$link = $_SERVER['REQUEST_URI'];
+		$link = $sortOptions[$this->sort]['sortUrl']; // Use sanitized url to prevent cross-site script injection via url variables
 		if (preg_match('/[&?]page=/', $link)){
 			$link = preg_replace("/page=\\d+/", 'page=%d', $link);
 		}elseif (strpos($link, '?') > 0){

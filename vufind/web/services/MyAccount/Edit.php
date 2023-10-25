@@ -46,24 +46,20 @@ class MyAccount_Edit extends MyAccount {
 				// After changes are saved, send the user back to an appropriate page;
 				// either the list they were viewing when they started editing, or the
 				// overall favorites list.
-                $queryString = "";
-                if(isset($_REQUEST['myListPageSize']))
-                {
-                    $queryString = "?pagesize=" . $_REQUEST['myListPageSize'];
-                }
-                if(isset($_REQUEST['myListPage']))
-                {
-                    if (isset($_REQUEST['myListPageSize'])) {
-                        $queryString = "?pagesize=" . $_REQUEST['myListPageSize'] . "&page=" . $_REQUEST['myListPage'];
-                    }
-                    else{
-                        $queryString = "?page=" . $_REQUEST['myListPage'];
-                    }
-                }
-                if(isset($_REQUEST['myListSort']))
-                {
-                   $queryString = $queryString . "&sort=" . $_REQUEST['myListSort'];
-                }
+				$queryString = "";
+				if (isset($_REQUEST['myListPageSize'])){
+					$queryString = "?pagesize=" . $_REQUEST['myListPageSize'];
+				}
+				if (isset($_REQUEST['myListPage'])){
+					if (isset($_REQUEST['myListPageSize'])){
+						$queryString = "?pagesize=" . $_REQUEST['myListPageSize'] . "&page=" . $_REQUEST['myListPage'];
+					}else{
+						$queryString = "?page=" . $_REQUEST['myListPage'];
+					}
+				}
+				if (isset($_REQUEST['myListSort'])){
+					$queryString = $queryString . "&sort=" . $_REQUEST['myListSort'];
+				}
 				if (isset($listId)){
 					$nextAction = 'MyList/' . $listId . $queryString;
 				}else{
@@ -112,7 +108,7 @@ class MyAccount_Edit extends MyAccount {
 					if (!empty($_REQUEST['myListPage']) && is_numeric($_REQUEST['myListPage'])){
 						$params['page'] = $_REQUEST['myListPage'];
 					}
-					if (!empty($_REQUEST['myListSort']) && in_array($_REQUEST['myListSort'],array('author','title','dateAdded','recentlyAdded','custom'))){
+					if (!empty($_REQUEST['myListSort']) && in_array($_REQUEST['myListSort'], ['author', 'title', 'dateAdded', 'recentlyAdded', 'custom'])){
 						$params['sort'] = $_REQUEST['myListSort'];
 					}
 					if (!empty($_REQUEST['filter'])){
