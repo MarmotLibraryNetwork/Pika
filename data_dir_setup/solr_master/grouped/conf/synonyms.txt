@@ -17,6 +17,19 @@
 #
 #        foo => foo bar, baz
 #
+
+# https://marmot.myjetbrains.com/youtrack/issue/D-4603
+youre => you're
+theyre => they're
+arent => aren't
+couldnt => couldn't
+didnt => didn't
+doesnt => doesn't
+dont => don't
+isnt => isn't
+wasnt => wasn't
+wouldnt => wouldn't
+
 illegal alien, illegal immigrant => undocumented immigrant
 I,i,1,one,One
 II,ii,2,two,Two
