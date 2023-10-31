@@ -308,14 +308,17 @@ abstract class Archive_Object extends Action {
 		}
 
 		$endDate = $this->recordDriver->getModsValue('placeDateEnd', 'marmot');
+		//TODO: I don't think these mods fields exist. I think all marmot entities just use the mods endDate (solr field : mods_extension_marmotLocal_endDate_s)
 		if ($endDate) {
 			$interface->assign('placeEndDate', $endDate);
 		}
 		$endDate = $this->recordDriver->getModsValue('eventEndDate', 'marmot');
+		//TODO: I don't think these mods fields exist. I think all marmot entities just use the mods endDate (solr field : mods_extension_marmotLocal_endDate_s)
 		if ($endDate) {
 			$interface->assign('eventEndDate', $endDate);
 		}
 		$endDate = $this->recordDriver->getModsValue('dateDisbanded', 'marmot');
+		//TODO: I don't think these mods fields exist. I think all marmot entities just use the mods endDate (solr field : mods_extension_marmotLocal_endDate_s)
 		if ($endDate) {
 			$interface->assign('organizationEndDate', $endDate);
 		}
