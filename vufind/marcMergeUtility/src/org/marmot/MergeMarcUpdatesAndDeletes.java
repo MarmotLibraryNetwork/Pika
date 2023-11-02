@@ -44,6 +44,8 @@ class MergeMarcUpdatesAndDeletes {
 	private String recordNumberSubfield = "";
 	private Logger logger;
 
+	private String isbnColumn;
+
 
 	// The marc encoding used to be a setting to determine what encoding to read a marc file with.
 	// It appears that the MarcReader best guess encoding is a better setting though, and can handle mixed encoding cases.
@@ -200,6 +202,7 @@ class MergeMarcUpdatesAndDeletes {
 							if (isValidMarcFile(deleteFile)) {
 								processMarcFile(recordsToDelete, deleteFile);
 							} else if (deleteFile.getName().endsWith("csv")) {
+								isbnColumn = configIni.get("MergeUpdate", "ISBNColumnLabel");
 								processCsvFile(recordsToDelete, deleteFile);
 							}
 							if (logger.isInfoEnabled()) {
@@ -248,15 +251,34 @@ class MergeMarcUpdatesAndDeletes {
 										if (logger.isInfoEnabled()) {
 											logger.info("Updating... " + recordId);
 										}
-									} else if (recordsToDelete.contains(recordId)) {
-										numDeletions++;
-										if (logger.isInfoEnabled()) {
-											logger.info("Deleting..." + recordId);
+									} else if (!recordsToDelete.isEmpty()){
+										if (isbnColumn != null && !isbnColumn.isEmpty()) {
+											boolean delete = false;
+											for (String isbn : getISBNsFromMarcRecord(curBib)){
+												if (recordsToDelete.contains(isbn)) {
+													numDeletions++;
+													if (logger.isInfoEnabled()) {
+														logger.info("Deleting..." + recordId + " via matching ISBN " + isbn);
+													}
+													delete = true;
+													break;
+												}
+											}
+											if (delete){
+												lastRecordId = recordId;
+												continue;
+											}
+										} else if (recordsToDelete.contains(recordId)) {
+											numDeletions++;
+											if (logger.isInfoEnabled()) {
+												logger.info("Deleting..." + recordId);
+											}
+											lastRecordId = recordId;
+											continue;
 										}
-									} else if (!recordsToDelete.contains(recordId)) {
-										//Unless the record is marked for deletion, write it
-										mainWriter.write(curBib);
 									}
+									//Unless the record is marked for deletion, write it
+									mainWriter.write(curBib);
 									lastRecordId = recordId;
 								}
 
@@ -411,12 +433,18 @@ class MergeMarcUpdatesAndDeletes {
 	}
 
 
-	private static void processCsvFile(HashSet<String> recordsToDelete, File deleteFile) throws IOException {
+	private void processCsvFile(HashSet<String> recordsToDelete, File deleteFile) throws IOException {
 		try (CSVReader reader = new CSVReader(new FileReader(deleteFile.getPath()))) {
 
 			String[] nextLine;
+			int column = isbnColumn != null && !isbnColumn.isEmpty() ? -1 : 0;
 			while ((nextLine = reader.readNext()) != null) {
-				recordsToDelete.add(nextLine[0]);
+				if (column == -1){
+					column = Arrays.asList(nextLine).indexOf(isbnColumn);
+					logger.info("Will delete records by ISBN matching from csv file on column " + column);
+				} else {
+					recordsToDelete.add(nextLine[column]);
+				}
 			}
 
 		}
@@ -455,6 +483,18 @@ class MergeMarcUpdatesAndDeletes {
 			marcFileStream.close();
 	}
 
+
+	private Set<String> getISBNsFromMarcRecord(Record marcRecord) {
+		Set<String> ISBNs          = new HashSet<>();
+		List<DataField> isbnFields = getDataFields(marcRecord, "020");
+		for (DataField dataField : isbnFields) {
+			Subfield subfield = dataField.getSubfield('a');
+			if (subfield != null) {
+				ISBNs.add(subfield.getData().trim());
+			}
+		}
+		return ISBNs;
+	}
 
 	private String getRecordIdFromMarcRecord(Record marcRecord) {
 		//if a subfield is found in ini file, then use it
