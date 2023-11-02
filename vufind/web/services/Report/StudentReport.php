@@ -40,15 +40,15 @@ class Report_StudentReport extends Report_Report {
 		if (UserAccount::userHasRole('opacAdmin') && UserAccount::userHasRole('locationReports')){
 			$allowableLocationCodes = '.*';
 		}elseif (UserAccount::userHasRole('libraryAdmin') && UserAccount::userHasRole('locationReports')){
-			$homeLibrary = UserAccount::getUserHomeLibrary();
+			$homeLibrary            = UserAccount::getUserHomeLibrary();
 			$allowableLocationCodes = trim($homeLibrary->ilsCode) . '.*';
 		}elseif (UserAccount::userHasRole('locationReports')){
-			$homeLocation = Location::getUserHomeLocation();
+			$homeLocation           = Location::getUserHomeLocation();
 			$allowableLocationCodes = trim($homeLocation->code) . '.*';
 		}
-		$availableReports = array();
-		$dh  = opendir($reportDir);
-		while (false !== ($filename = readdir($dh))) {
+		$availableReports = [];
+		$dh               = opendir($reportDir);
+		while (false !== ($filename = readdir($dh))){
 			if (is_file($reportDir . '/' . $filename)){
 				if (preg_match('/(\w+)_school_report\.csv/i', $filename, $matches)){
 					$locationCode = $matches[1];
@@ -63,16 +63,16 @@ class Report_StudentReport extends Report_Report {
 
 		$selectedReport = isset($_REQUEST['selectedReport']) ? $availableReports[$_REQUEST['selectedReport']] : reset($availableReports);
 		$interface->assign('selectedReport', $selectedReport);
-		$showOverdueOnly = isset($_REQUEST['showOverdueOnly']) ? $_REQUEST['showOverdueOnly'] == 'overdue': true;
+		$showOverdueOnly = isset($_REQUEST['showOverdueOnly']) ? $_REQUEST['showOverdueOnly'] == 'overdue' : true;
 		$interface->assign('showOverdueOnly', $showOverdueOnly);
-		$now = time();
-		$fileData = array();
+		$now      = time();
+		$fileData = [];
 		if ($selectedReport){
-			$filemtime = date('Y-m-d H:i:s',filemtime($reportDir . '/' . $selectedReport));
+			$filemtime = date('Y-m-d H:i:s', filemtime($reportDir . '/' . $selectedReport));
 			$interface->assign('reportDateTime', $filemtime);
 			$fhnd = fopen($reportDir . '/' . $selectedReport, "r");
 			if ($fhnd){
-				while (($data = fgetcsv($fhnd)) !== FALSE){
+				while (($data = fgetcsv($fhnd)) !== false){
 					$okToInclude = true;
 					if ($showOverdueOnly){
 						$dueDate = $data[12];
@@ -82,11 +82,10 @@ class Report_StudentReport extends Report_Report {
 						}
 					}
 					if ($okToInclude || count($fileData) == 0){
-						if(end($data) == NULL ){
+						if (end($data) == null){
 							array_pop($data);
 						}
 						$fileData[] = $data;
-
 
 
 					}
@@ -120,6 +119,6 @@ class Report_StudentReport extends Report_Report {
 	}
 
 	function getAllowableRoles(){
-		return array('locationReports', 'opacAdmin','libraryAdmin');
+		return ['locationReports', 'opacAdmin', 'libraryAdmin'];
 	}
 }
