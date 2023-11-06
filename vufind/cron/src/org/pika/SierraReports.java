@@ -76,8 +76,9 @@ public class SierraReports implements IProcessHandler {
 				createStudentReportsByHomeroom(conn, processSettings, reportsPath);
 				conn.close();
 			}catch(Exception e){
-				System.out.println("Error: " + e.toString());
-				e.printStackTrace();
+				logger.error("Error: ", e);
+				processLog.incErrors();
+				processLog.addNote("Error ended Sierra Reports");
 			}
 		}
 
@@ -169,9 +170,10 @@ public class SierraReports implements IProcessHandler {
 					}
 				}
 			}
-
+			processLog.incUpdated();
+			processLog.addNote("Updated report for " + curLibraryPrefix);
+			processLog.saveToDatabase(conn, logger);
 		}
-
 	}
 
 }
