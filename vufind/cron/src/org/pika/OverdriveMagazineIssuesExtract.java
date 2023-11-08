@@ -33,6 +33,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 	private       PreparedStatement       insertIssues;
 	private       PreparedStatement       updateIssues;
 	private       PreparedStatement       doesIdExist;
+	private       PreparedStatement       setNeedsUpdateStmt;
 
 	@Override
 	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
@@ -119,6 +120,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 								"SET crossRefId = ?, title = ?, edition = ?, pubDate = ?, coverUrl = ?, parentId = ?, " +
 								"description = ?, dateUpdated = ? WHERE overdriveId = ? ");
 				doesIdExist = econtentConn.prepareStatement("SELECT id FROM `overdrive_api_magazine_issues` WHERE overdriveId =?");
+				setNeedsUpdateStmt = econtentConn.prepareStatement("UPDATE overdrive_api_products SET needsUpdate = ? WHERE overdriveId = ?");
 				bookCoverUrl = PikaConfigIni.getIniValue("Site", "url");
 				bookCoverUrl += "/bookcover.php?size=medium&type=overdrive&reload&id=";
 
@@ -215,6 +217,8 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 				processLog.incErrors();
 				processLog.addNote("No magazines issues found for " + magazineParentId);
 				processLog.saveToDatabase(pikaConn, logger);
+				setNeedsUpdated(magazineParentId, true, logger);
+				// Mark main product for re-extraction in case the magazine has been removed
 				return;
 			}
 
@@ -374,6 +378,8 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 				processLog.incErrors();
 				processLog.addNote("No magazines issues found for " + magazineParentId);
 				processLog.saveToDatabase(pikaConn, logger);
+				setNeedsUpdated(magazineParentId, true, logger);
+				// Mark main product for re-extraction in case the magazine has been removed
 				return;
 			}
 
@@ -636,4 +642,22 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 		}
 		return "";
 	}
+
+	/**
+	 * Marks the overdrive title as needing further updating by the extractor of metadata & availability
+	 * @param overdriveId  overdriveId
+	 * @param needsUpdated does the title need updated
+	 * @return number of titles that were updated (should be 1)
+	 */
+	private int setNeedsUpdated(String overdriveId, boolean needsUpdated, Logger logger){
+		try {
+			setNeedsUpdateStmt.setBoolean(1, needsUpdated);
+			setNeedsUpdateStmt.setString(2, overdriveId);
+			return setNeedsUpdateStmt.executeUpdate();
+		} catch (SQLException e) {
+			logger.error("Unable to update needs updating in prdouct table for " + overdriveId, e);
+		}
+		return 0;
+	}
+
 }
