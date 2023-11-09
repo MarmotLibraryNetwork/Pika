@@ -490,7 +490,7 @@ class MergeMarcUpdatesAndDeletes {
 		for (DataField dataField : isbnFields) {
 			Subfield subfield = dataField.getSubfield('a');
 			if (subfield != null) {
-				ISBNs.add(subfield.getData().trim());
+				ISBNs.add(subfield.getData().replaceAll("[^\\dX]", "")); // Strip any non-numeric characters (except X which can be a 10-digit ISBN check digit)
 			}
 		}
 		return ISBNs;
