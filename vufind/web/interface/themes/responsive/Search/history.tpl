@@ -10,15 +10,15 @@
 		{if !$noHistory}
 			{if $saved}
 				<h2>{translate text="history_saved_searches"}</h2>
-				<table class="table table-bordered table-striped" width="100%">
+				<table class="table table-bordered table-striped">
 					<tr>
-						<th width="4%">{translate text="history_id"}</th>
-						<th width="18%">{translate text="history_time"}</th>
-						<th width="30%">{translate text="history_search"}</th>
-						<th width="28%">{translate text="history_limits"}</th>
-						<th width="10%">{translate text="history_search_source"}</th>
-						<th width="5%">{translate text="history_results"}</th>
-						<th width="5%">{translate text="history_delete"}</th>
+						<th>{translate text="history_id"}</th>
+						<th>{translate text="history_time"}</th>
+						<th>{translate text="history_search"}</th>
+						<th>{translate text="history_limits"}</th>
+						<th>{translate text="history_search_source"}</th>
+						<th>{translate text="history_results"}</th>
+						<th>{translate text="history_delete"}</th>
 					</tr>
 					{foreach item=info from=$saved name=historyLoop}
 					<tr>
@@ -30,7 +30,7 @@
 						{/foreach}{/foreach}</td>
 						<td>{$info.source}</td>
 						<td>{$info.hits}</td>
-						<td><a class="btn btn-xs btn-warning" role="button" href="/MyAccount/SaveSearch?delete={$info.searchId|escape:"url"}&amp;mode=history">{translate text="history_delete_link"}</a></td>
+						<td><button class="btn btn-xs btn-warning" onclick="return Pika.Account.deleteSearch('{$info.searchId}', 1, 1)">{translate text="history_delete_link"}</button></td>
 					</tr>
 					{/foreach}
 				</table>
@@ -39,14 +39,14 @@
 
 			{if $links}
 				<div class="resulthead"><h3>{translate text="history_recent_searches"}</h3></div>
-				<table class="table table-bordered table-striped" width="100%">
+				<table class="table table-bordered table-striped">
 					<tr>
-						<th width="15%">{translate text="history_time"}</th>
-						<th width="30%">{translate text="history_search"}</th>
-						<th width="30%">{translate text="history_limits"}</th>
-						<th width="10%">{translate text="history_search_source"}</th>
-						<th width="10%">{translate text="history_results"}</th>
-						<th width="5%">{translate text="history_save"}</th>
+						<th>{translate text="history_time"}</th>
+						<th>{translate text="history_search"}</th>
+						<th>{translate text="history_limits"}</th>
+						<th>{translate text="history_search_source"}</th>
+						<th>{translate text="history_results"}</th>
+						<th>{translate text="history_save"}</th>
 					</tr>
 					{foreach item=info from=$links name=historyLoop}
 					<tr>
@@ -60,7 +60,7 @@
 							{/foreach}</td>
 							<td>{$info.source}</td>
 							<td>{$info.hits}</td>
-							<td><a class="btn btn-xs btn-info" role="button" href="/MyAccount/SaveSearch?save={$info.searchId|escape:"url"}&amp;mode=history">{translate text="history_save_link"}</a></td>
+							<td><button class="btn btn-xs btn-info" onclick="return Pika.Account.saveSearch('{$info.searchId}', 1, 1)">{translate text="history_save_link"}</button></td>
 						</tr>
 					{/foreach}
 				</table>

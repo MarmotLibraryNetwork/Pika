@@ -272,27 +272,30 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	function saveSearch(){
 		require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
-		$searchId   = $_REQUEST['searchId'];
-		$search     = new SearchEntry();
-		$search->id = $searchId;
-		$saveOk     = false;
-		if ($search->find(true)){
-			// Found, make sure this is a search from this user
-			if ($search->session_id == session_id() || $search->user_id == UserAccount::getActiveUserId()){
-				if ($search->saved != 1){
-					$search->user_id = UserAccount::getActiveUserId();
-					$search->saved   = 1;
-					$saveOk          = ($search->update() !== false);
-					$message         = $saveOk ? 'Your search was saved successfully.  You can view the saved search by clicking on <a href="/Search/History?require_login">Search History</a> within ' . translate('My Account') . '.' : "Sorry, we could not save that search for you.  It may have expired.";
+		$saveOk   = false;
+		$searchId = $_REQUEST['searchId'];
+		if (ctype_digit($searchId)){
+			$search = new SearchEntry();
+			if ($search->get($searchId)){
+				// Found, make sure this is a search from this user
+				if ($search->session_id == session_id() || $search->user_id == UserAccount::getActiveUserId()){
+					if ($search->saved != 1){
+						$search->user_id = UserAccount::getActiveUserId();
+						$search->saved   = 1;
+						$saveOk          = ($search->update() !== false);
+						$message         = $saveOk ? 'Your search was saved successfully.  You can view the saved search by clicking on <a href="/Search/History?require_login">Search History</a> within ' . translate('My Account') . '.' : 'Sorry, we could not save that search for you.  It may have expired.';
+					}else{
+						$saveOk  = true;
+						$message = 'That search was already saved.';
+					}
 				}else{
-					$saveOk  = true;
-					$message = "That search was already saved.";
+					$message = 'Sorry, it looks like that search does not belong to you.';
 				}
 			}else{
-				$message = "Sorry, it looks like that search does not belong to you.";
+				$message = 'Sorry, it looks like that search has expired.';
 			}
-		}else{
-			$message = "Sorry, it looks like that search has expired.";
+		} else {
+			$message = 'Invalid search ID.';
 		}
 		$result = [
 			'result'  => $saveOk,
@@ -303,26 +306,29 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	function deleteSavedSearch(){
 		require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
-		$searchId   = $_REQUEST['searchId'];
-		$search     = new SearchEntry();
-		$search->id = $searchId;
-		$saveOk     = false;
-		if ($search->find(true)){
-			// Found, make sure this is a search from this user
-			if ($search->session_id == session_id() || $search->user_id == UserAccount::getActiveUserId()){
-				if ($search->saved != 0){
-					$search->saved = 0;
-					$saveOk        = ($search->update() !== false);
-					$message       = $saveOk ? "Your saved search was deleted successfully." : "Sorry, we could not delete that search for you.  It may have already been deleted.";
+		$saveOk   = false;
+		$searchId = $_REQUEST['searchId'];
+		if (ctype_digit($searchId)){
+			$search     = new SearchEntry();
+			if ($search->get($searchId)){
+				// Found, make sure this is a search from this user
+				if ($search->session_id == session_id() || $search->user_id == UserAccount::getActiveUserId()){
+					if ($search->saved != 0){
+						$search->saved = 0;
+						$saveOk        = ($search->update() !== false);
+						$message       = $saveOk ? 'Your saved search was deleted successfully.' : 'Sorry, we could not delete that search for you.  It may have already been deleted.';
+					}else{
+						$saveOk  = true;
+						$message = 'That search is not saved.';
+					}
 				}else{
-					$saveOk  = true;
-					$message = "That search is not saved.";
+					$message = 'Sorry, it looks like that search does not belong to you.';
 				}
 			}else{
-				$message = "Sorry, it looks like that search does not belong to you.";
+				$message = 'Sorry, it looks like that search has expired.';
 			}
 		}else{
-			$message = "Sorry, it looks like that search has expired.";
+			$message = 'Invalid search ID.';
 		}
 		$result = [
 			'result'  => $saveOk,
@@ -336,11 +342,11 @@ class MyAccount_AJAX extends AJAXHandler {
 		$recordId          = $_REQUEST['recordId'];
 		$cancelId          = $_REQUEST['cancelId'];
 		$cancelButtonLabel = translate('Confirm Cancel Hold');
-		return array(
+		return [
 			'title'   => translate('Cancel Hold'),
 			'body'    => translate("Are you sure you want to cancel this hold?"),
 			'buttons' => "<span class='tool btn btn-primary' onclick='Pika.Account.cancelHold(\"$patronId\", \"$recordId\", \"$cancelId\")'>$cancelButtonLabel</span>",
-		);
+		];
 	}
 
 	function cancelHold(){

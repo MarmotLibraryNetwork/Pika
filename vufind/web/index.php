@@ -278,18 +278,6 @@ $memoryWatcher->logMemory('Finished index.php');
 $memoryWatcher->writeMemory();
 
 
-
-//function processFollowup(){
-//	global $configArray;
-//
-//	switch($_REQUEST['followup']) {
-//		case 'SaveSearch':
-//			header("Location: /".$_REQUEST['followupModule']."/".$_REQUEST['followupAction']."?".$_REQUEST['recordId']);
-//			die();
-//			break;
-//	}
-//}
-
 /**
  *  Check if the website is available for use and display Unavailable page if not.
  *  Privileged browsers (determined by Ip) can access the site to do Maintenance work

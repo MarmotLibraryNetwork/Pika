@@ -545,23 +545,6 @@ Pika.Account = (function(){
 			return false;
 		},
 
-		deleteSearch: function(searchId){
-			Pika.Account.ajaxLogin(function (){
-				var url = "/MyAccount/AJAX";
-				var params = "method=deleteSearch&searchId=" + encodeURIComponent(searchId);
-				$.getJSON(url + '?' + params,
-						function(data) {
-							if (data.result) {
-								Pika.showMessage("Success", data.message);
-							} else {
-								Pika.showMessage("Error", data.message);
-							}
-						}
-				);
-			});
-			return false;
-		},
-
 		doChangeHoldLocation: function(){
 			var url = "/MyAccount/AJAX"
 					,params = {
@@ -695,14 +678,31 @@ Pika.Account = (function(){
 			return queryString;
 		},
 
-		saveSearch: function(searchId){
+		saveSearch: function(searchId, autoClose, refreshAfterClose){
 			Pika.Account.ajaxLogin(function (){
 				var url = "/MyAccount/AJAX",
 						params = {method :'saveSearch', searchId :searchId};
 				$.getJSON(url, params,
 						function(data){
 							if (data.result) {
-								Pika.showMessage("Success", data.message);
+								Pika.showMessage("Success", data.message, autoClose, refreshAfterClose);
+							} else {
+								Pika.showMessage("Error", data.message);
+							}
+						}
+				).fail(Pika.ajaxFail);
+			});
+			return false;
+		},
+
+		deleteSearch: function(searchId, autoClose, refreshAfterClose){
+			Pika.Account.ajaxLogin(function (){
+				var url = "/MyAccount/AJAX",
+						params = {method :'deleteSavedSearch', searchId :searchId};
+				$.getJSON(url, params,
+						function(data){
+							if (data.result) {
+								Pika.showMessage("Success", data.message, autoClose, refreshAfterClose);
 							} else {
 								Pika.showMessage("Error", data.message);
 							}
