@@ -26,9 +26,11 @@ class ExternalEContent_Home extends Action{
 		global $interface;
 
 		if (isset($_REQUEST['searchId'])){
-			$_SESSION['searchId'] = $_REQUEST['searchId'];
-		}
-		if (isset($_SESSION['searchId'])){
+			if (ctype_digit($_REQUEST['searchId'])){
+				$_SESSION['searchId'] = $_REQUEST['searchId'];
+				$interface->assign('searchId', $_SESSION['searchId']);
+			}
+		}elseif (isset($_SESSION['searchId'])){
 			$interface->assign('searchId', $_SESSION['searchId']);
 		}
 
