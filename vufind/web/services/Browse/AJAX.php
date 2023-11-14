@@ -51,12 +51,21 @@ class Browse_AJAX extends AJAXHandler {
 		$interface->assign('property', $temp['subCategoryId']);
 
 		// Display Page
-		$interface->assign('searchId', strip_tags($_REQUEST['searchId']));
-		$results = [
-			'title'        => 'Add as Browse Category to Home Page',
-			'modalBody'    => $interface->fetch('Browse/addBrowseCategoryForm.tpl'),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>Create Category</button>",
-		];
+		$searchId = strip_tags($_REQUEST['searchId']);
+		if (ctype_digit($searchId)){
+			$interface->assign('searchId', $searchId);
+			$results = [
+				'title'        => 'Add as Browse Category to Home Page',
+				'modalBody'    => $interface->fetch('Browse/addBrowseCategoryForm.tpl'),
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>Create Category</button>",
+			];
+		}else{
+			$results = [
+				'title'        => 'Add as Browse Category to Home Page',
+				'modalBody'    => '<p class="alert alert-warning">Invalid Search ID</p>',
+				'modalButtons' => '',
+			];
+		}
 		return $results;
 	}
 
@@ -107,22 +116,41 @@ class Browse_AJAX extends AJAXHandler {
 					];
 				}else{
 					if (!empty($_REQUEST['searchId'])){
-						$searchId = $_REQUEST['searchId'];
+						if (ctype_digit($_REQUEST['searchId'])){
+							$searchId = $_REQUEST['searchId'];
 
-						/** @var SearchObject_Solr|SearchObject_Base $searchObject */
-						$searchObject = SearchObjectFactory::initSearchObject();
-						$searchObject->init();
-						$searchObject = $searchObject->restoreSavedSearch($searchId, false, true);
+							/** @var SearchObject_Solr|SearchObject_Base $searchObject */
+							$searchObject = SearchObjectFactory::initSearchObject();
+							$searchObject->init();
+							$searchObject = $searchObject->restoreSavedSearch($searchId, false, true);
 
-						if (!$browseCategory->updateFromSearch($searchObject)){
+							if (!$browseCategory->updateFromSearch($searchObject)){
+								return [
+									'success' => false,
+									'message' => 'Sorry, this search is too complex to create a category from.',
+								];
+							}
+						} else {
 							return [
 								'success' => false,
-								'message' => "Sorry, this search is too complex to create a category from.",
+								'message' => 'Invalid Search ID.',
 							];
 						}
-					}else{
-						$listId                       = $_REQUEST['listId'];
-						$browseCategory->sourceListId = $listId;
+					}elseif (!empty($_REQUEST['listId'])){
+						if (ctype_digit($_REQUEST['listId'])){
+							$listId                       = $_REQUEST['listId'];
+							$browseCategory->sourceListId = $listId;
+						} else {
+							return [
+								'success' => false,
+								'message' => "Invalid List ID.",
+							];
+						}
+					} else {
+						return [
+							'success' => false,
+							'message' => "Sorry, no set parameter to create a category from.",
+						];
 					}
 
 					$categoryName                   = htmlspecialchars($categoryName, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5);
