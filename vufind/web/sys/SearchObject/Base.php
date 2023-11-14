@@ -1482,7 +1482,8 @@ abstract class SearchObject_Base {
 			require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 			$search     = new SearchEntry();
 			$search->id = strip_tags($_REQUEST['saved'] ?? $searchId);
-			if ($search->find(true)){
+			if (ctype_digit($search->id) /* Ensure is valid parameter */
+				&& $search->find(true)){
 				// Found, make sure the user has the
 				//   rights to view this search
 				if ($forceReload || $search->session_id == session_id() || (UserAccount::isLoggedIn() && $search->user_id == UserAccount::getActiveUserId())){
