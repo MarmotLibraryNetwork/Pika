@@ -57,7 +57,7 @@ public class SierraReports implements IProcessHandler {
 			if (url.startsWith("\"")){
 				url = url.substring(1, url.length() - 1);
 			}
-			Connection conn = null;
+			Connection sierraDNAConn = null;
 			try{
 				//Open the connection to the database
 				if (sierraDBUser != null && sierraDBPassword != null && !sierraDBPassword.isEmpty() && !sierraDBUser.isEmpty()) {
@@ -68,13 +68,13 @@ public class SierraReports implements IProcessHandler {
 					if (sierraDBPassword.startsWith("\"")){
 						sierraDBPassword = sierraDBPassword.substring(1, sierraDBPassword.length() - 1);
 					}
-					conn = DriverManager.getConnection(url, sierraDBUser, sierraDBPassword);
+					sierraDNAConn = DriverManager.getConnection(url, sierraDBUser, sierraDBPassword);
 				} else {
-					conn = DriverManager.getConnection(url);
+					sierraDNAConn = DriverManager.getConnection(url);
 				}
 
-				createStudentReportsByHomeroom(conn, processSettings, reportsPath);
-				conn.close();
+				createStudentReportsByHomeroom(sierraDNAConn, processSettings, reportsPath, pikaConn);
+				sierraDNAConn.close();
 			}catch(Exception e){
 				logger.error("Error: ", e);
 				processLog.incErrors();
@@ -86,31 +86,31 @@ public class SierraReports implements IProcessHandler {
 		processLog.saveToDatabase(pikaConn, logger);
 	}
 
-	private void createStudentReportsByHomeroom(Connection conn, Profile.Section processSettings, String reportsPath) throws SQLException, IOException {
+	private void createStudentReportsByHomeroom(Connection sierraDNAConn, Profile.Section processSettings, String reportsPath, Connection pikaConn) throws SQLException, IOException {
 		//Get a list of libraries that we should create reports for
 		String   allLibrariesToCreateReportsFor = processSettings.get("librariesToCreateReportsFor");
 		String[] librariesToCreateReportsFor    = allLibrariesToCreateReportsFor.split(",");
-		PreparedStatement patronsToProcessStmt = conn.prepareStatement("SELECT DISTINCT py.field_content AS gradelvl, pr.field_content AS homeroom, patron_record_fullname.last_name, patron_record_fullname.first_name, patron_record_fullname.middle_name, pb.field_content as barcode, patron_record.id, patron_record.ptype_code, patron_record.home_library_code, patron_record.owed_amt, patron_record.pcode1, addr1, addr2, addr3, city, region, postal_code, patron_record_address_type_id, patron_record_address.display_order from sierra_view.patron_record \n" +
-				"LEFT OUTER JOIN sierra_view.varfield pr\n" +
-				"ON patron_record.id = pr.record_id AND pr.varfield_type_code = 'r'\n" +
-				"LEFT OUTER JOIN sierra_view.varfield pb\n" +
-				"ON patron_record.id = pb.record_id AND pb.varfield_type_code = 'b'\n" +
-				"LEFT OUTER JOIN sierra_view.varfield py\n" +
-				"ON patron_record.id = py.record_id AND py.varfield_type_code = 'y'\n" +
-				"INNER JOIN sierra_view.patron_record_fullname\n" +
-				"ON patron_record_id = patron_record.id \n" +
-				"LEFT OUTER JOIN sierra_view.patron_record_address\n" +
-				"ON patron_record.id = patron_record_address.patron_record_id AND patron_record_address_type_id = 1\n" +
-				"where home_library_code like ? AND (checkout_count > 0 OR owed_amt > 0)\n" +
-				"ORDER BY gradelvl, homeroom, last_name", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-		PreparedStatement itemsOutStmt = conn.prepareStatement("SELECT due_gmt, checkout_gmt, location_code, item_view.record_num AS itemNumber, item_status_code, barcode, bib_view.record_num, bib_view.record_type_code, title, ia.field_content AS callNumber \n" +
-				"FROM sierra_view.checkout \n" +
-				"INNER JOIN sierra_view.item_view ON checkout.item_record_id = item_view.id \n" +
-				"INNER JOIN sierra_view.bib_record_item_record_link ON item_view.id = bib_record_item_record_link.item_record_id \n" +
-				"INNER JOIN sierra_view.bib_view ON bib_record_item_record_link.bib_record_id = bib_view.id \n" +
-				"LEFT OUTER JOIN sierra_view.varfield ia\n" +
-				"ON item_view.id = ia.record_id AND ia.varfield_type_code = 'c'\n" +
-				"where patron_record_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement patronsToProcessStmt = sierraDNAConn.prepareStatement("SELECT DISTINCT py.field_content AS gradelvl, pr.field_content AS homeroom, patron_record_fullname.last_name, patron_record_fullname.first_name, patron_record_fullname.middle_name, pb.field_content as barcode, patron_record.id, patron_record.ptype_code, patron_record.home_library_code, patron_record.owed_amt, patron_record.pcode1, addr1, addr2, addr3, city, region, postal_code, patron_record_address_type_id, patron_record_address.display_order from sierra_view.patron_record \n" +
+						"LEFT OUTER JOIN sierra_view.varfield pr\n" +
+						"ON patron_record.id = pr.record_id AND pr.varfield_type_code = 'r'\n" +
+						"LEFT OUTER JOIN sierra_view.varfield pb\n" +
+						"ON patron_record.id = pb.record_id AND pb.varfield_type_code = 'b'\n" +
+						"LEFT OUTER JOIN sierra_view.varfield py\n" +
+						"ON patron_record.id = py.record_id AND py.varfield_type_code = 'y'\n" +
+						"INNER JOIN sierra_view.patron_record_fullname\n" +
+						"ON patron_record_id = patron_record.id \n" +
+						"LEFT OUTER JOIN sierra_view.patron_record_address\n" +
+						"ON patron_record.id = patron_record_address.patron_record_id AND patron_record_address_type_id = 1\n" +
+						"where home_library_code like ? AND (checkout_count > 0 OR owed_amt > 0)\n" +
+						"ORDER BY gradelvl, homeroom, last_name", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement itemsOutStmt = sierraDNAConn.prepareStatement("SELECT due_gmt, checkout_gmt, location_code, item_view.record_num AS itemNumber, item_status_code, barcode, bib_view.record_num, bib_view.record_type_code, title, ia.field_content AS callNumber \n" +
+						"FROM sierra_view.checkout \n" +
+						"INNER JOIN sierra_view.item_view ON checkout.item_record_id = item_view.id \n" +
+						"INNER JOIN sierra_view.bib_record_item_record_link ON item_view.id = bib_record_item_record_link.item_record_id \n" +
+						"INNER JOIN sierra_view.bib_view ON bib_record_item_record_link.bib_record_id = bib_view.id \n" +
+						"LEFT OUTER JOIN sierra_view.varfield ia\n" +
+						"ON item_view.id = ia.record_id AND ia.varfield_type_code = 'c'\n" +
+						"where patron_record_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		for (String curLibraryPrefix : librariesToCreateReportsFor){
 			logger.info("Writing report for " + curLibraryPrefix);
 			File patronReportFile = new File (reportsPath + "/" + curLibraryPrefix + "_school_report.csv");
@@ -172,7 +172,7 @@ public class SierraReports implements IProcessHandler {
 			}
 			processLog.incUpdated();
 			processLog.addNote("Updated report for " + curLibraryPrefix);
-			processLog.saveToDatabase(conn, logger);
+			processLog.saveToDatabase(pikaConn, logger);
 		}
 	}
 
