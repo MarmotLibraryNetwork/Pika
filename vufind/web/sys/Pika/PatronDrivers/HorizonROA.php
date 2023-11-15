@@ -24,7 +24,7 @@
  * @author   Pascal Brammeier
  * @author   Chris Froese
  *
- * Updated
+ *
  *
  */
 
@@ -181,7 +181,6 @@ abstract class HorizonROA implements \DriverInterface {
 			$loginUserResponse = $this->getWebServiceResponse($loginUserUrl, $params);
 			if (!empty($loginUserResponse->sessionToken)) {
 				//We got at valid user (A bad call will have isset($loginUserResponse->messageList) )
-
 				$horizonRoaUserID                            = $loginUserResponse->patronKey;
 				$sessionToken                                = $loginUserResponse->sessionToken;
 				self::$sessionIdsForUsers[$horizonRoaUserID] = $sessionToken;
@@ -208,6 +207,28 @@ abstract class HorizonROA implements \DriverInterface {
 		}else{
 			[, $sessionToken] = $this->loginViaWebService($patron->barcode, $patron->getPassword());
 			return $sessionToken;
+		}
+	}
+
+	/**
+	 * Delete the session token associated with a user.
+	 *
+	 * This function removes the session token for a given user from the internal storage.
+	 *
+	 * @param User $patron The User object for which to delete the session token.
+	 *
+	 * @return void
+	 */
+	private function deleteSessionToken(User $patron): void
+	{
+		/**
+		 * @var int $userId The unique identifier from ILS.
+		 */
+		$userId = $patron->ilsUserId;
+
+		// Check if the session token exists for the user and remove it.
+		if (isset(self::$sessionIdsForUsers[$userId])) {
+			unset(self::$sessionIdsForUsers[$userId]);
 		}
 	}
 
@@ -260,7 +281,7 @@ abstract class HorizonROA implements \DriverInterface {
 			$acountInfoLookupURL =  '/user/patron/key/' . $horizonRoaUserID . '?includeFields=' .$includeFields;
 			// get a new token if the session has timed out
 			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($acountInfoLookupURL, null, $sessionToken);
-			if (isset($lookupMyAccountInfoResponse->messageList[0]->code) && $lookupMyAccountInfoResponse->messageList[0]->code == 'sessionTimedOut') {
+			if (isset($lookupMyAccountInfoResponse->messageList[0]->code) && $lookupMyAccountInfoResponse->messageList[0]->code === 'sessionTimedOut') {
 				// remove old cache key and get a new one
 				$memCacheKey = "horizon_ROA_session_token_info_$barcode";
 				$this->cache->delete($memCacheKey);
@@ -1170,7 +1191,6 @@ abstract class HorizonROA implements \DriverInterface {
 		return $bibInfo;
 	}
 
-
 	/**
 	 * @param User $patron
 	 * @param $includeMessages
@@ -1245,6 +1265,18 @@ abstract class HorizonROA implements \DriverInterface {
 		return $blockPolicy;
 	}
 
+	/**
+	 * Update the PIN for a patron.
+	 *
+	 * This function updates the PIN for a patron by making a request to the appropriate web service endpoint.
+	 *
+	 * @param User   $patron           The patron for whom the PIN should be updated.
+	 * @param string $oldPin           The current PIN of the patron.
+	 * @param string $newPin           The new PIN to be set for the patron.
+	 * @param string $confirmNewPin    Confirmation of the new PIN to be set.
+	 *
+	 * @return string A message indicating the success or failure of the PIN update process.
+	 */
 	public function updatePin($patron, $oldPin, $newPin, $confirmNewPin): string{
 		//$updatePinResponse = $this->changeMyPin($patron, $newPin, $oldPin);
 		$sessionToken = $this->getSessionToken($patron);
@@ -1266,11 +1298,30 @@ abstract class HorizonROA implements \DriverInterface {
 			return 'Sorry, we encountered an error while attempting to update your ' . translate('pin') . '. Please contact your local library.';
 		} elseif (!empty($res->sessionToken)){
 			$patron->updatePassword($newPin);
+
+			// remove session token
+			$this->deleteSessionToken($patron);
+			// remove user object from cache
+			$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
+			$this->cache->delete($patronObjectCacheKey);
+
 			return 'Your ' . translate('pin') . ' was updated successfully.';
 		}
 		return 'Sorry, we could not update your ' . translate('pin') . '. Please try again later.';
 	}
 
+	/**
+	 * Change the PIN for a patron.
+	 *
+	 * This function changes the PIN for a patron by making a request to the appropriate web service endpoint.
+	 *
+	 * @param User        $patron        The patron for whom the PIN should be changed.
+	 * @param string      $newPin        The new PIN to be set for the patron.
+	 * @param string|null $currentPin    The current PIN of the patron. Optional, defaults to null.
+	 * @param string|null $resetToken    The reset token for changing the PIN. Optional, defaults to null.
+	 *
+	 * @return string The response from the web service endpoint after attempting to change the PIN.
+	 */
 	private function changeMyPin($patron, $newPin, $currentPin = null, $resetToken = null){
 		$updatePinUrl   = '/user/patron/changeMyPin';
 		if (empty($resetToken)){
@@ -1288,7 +1339,6 @@ abstract class HorizonROA implements \DriverInterface {
 			}
 		}else{
 			// Apparently pin resetting does not require a version number in the operation url
-			$updatePinUrl   = '/user/patron/changeMyPin';
 			$sessionToken   = null;
 			$jsonParameters = [
 				'newPin'        => $newPin,
@@ -1385,7 +1435,6 @@ abstract class HorizonROA implements \DriverInterface {
 			];
 		}
 	}
-
 
 	private function getStaffSessionToken(){
 		global $configArray;
