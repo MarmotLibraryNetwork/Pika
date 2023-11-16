@@ -211,6 +211,12 @@ abstract class HorizonROA implements \DriverInterface {
 		}
 	}
 
+	private function deleteSessionToken() {
+		if (isset(self::$sessionIdsForUsers[$horizonRoaUserId])){
+			unset( self::$sessionIdsForUsers[$horizonRoaUserId]);
+		}
+	}
+	
 	/**
 	 * @param $barcode
 	 * @param $password
