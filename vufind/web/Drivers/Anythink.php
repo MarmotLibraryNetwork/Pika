@@ -120,152 +120,151 @@ class Anythink extends HorizonAPI {
 
 	public function translateLocation($locationCode){
 		$locationCode = strtolower($locationCode);
-		$locationMap = array(
-        'acpl' => 'Administration',
-        'be' => 'Bennett',
-        'br'  => 'Brighton',
-        'cc'  => 'Commerce City',
-        'ext' => 'In Motion Bookmobile',
-        'ng'  => 'Huron Street',
-        'pm' => 'Perl Mack',
-        'th'  => 'Washington Street',
-        'wf' => 'Wright Farms',
-        );
-        return isset($locationMap[$locationCode]) ? $locationMap[$locationCode] : 'Unknown' ;
+		$locationMap = [
+			'acpl' => 'Administration',
+			'be'   => 'Bennett',
+			'br'   => 'Brighton',
+			'cc'   => 'Commerce City',
+			'ext'  => 'In Motion Bookmobile',
+			'ng'   => 'Huron Street',
+			'pm'   => 'Perl Mack',
+			'th'   => 'Washington Street',
+			'wf'   => 'Wright Farms',
+		];
+        return $locationMap[$locationCode] ?? 'Unknown';
 	}
 
 	public function translateCollection($collectionCode){
 		$collectionCode = strtolower($collectionCode);
-		$collectionMap = array(
-			'ajob'   => 'Jobs & Employment',
-			'at'     => 'Audio Tapes',
-			'atls'   => 'Atlas Case',
-			'b'      => 'Biographies',
-			'bb'     => 'Book Bags',
-			'board'  => 'Board Books',
-			'cd'     => 'Audio CDs',
-			'cdd'    => 'Data CDs',
-			'cde'    => 'Easy CDs',
-			'cdi'    => 'CD I',
-			'cdj'    => 'Juvenile CDs',
-			'cdt'    => 'Teen CDs',
-			'co'     => 'Colorado Section',
-			'coe'    => 'Easy Colorado',
-			'coi'    => 'Colorado Section',
-			'coj'    => 'Juvenile Colorado',
-			'cot'    => 'Colorado Section',
-			'dvd'    => 'DVDs',
-			'dvdbox' => 'DVD Media Box',
-			'e'      => 'Easy Non-fiction',
-			'ebook'  => 'E-Books / E-Audiobooks',
-			'ecap'   => 'ABCs & 123s',
-			'ef'     => 'Easy Picture Book',
-			'ency'   => 'Encyclopedias',
-			'eqx'    => 'Equipment',
-			'er'     => 'Easy Reader',
-			'f'      => 'Adult Fiction',
-			'FA'     => 'Fast Add',
-			'FA-BI'  => 'Fast Add',
-			'FA-I'   => 'Fast Add',
-			'fan'    => 'Fantasy',
-			'gn'     => 'Graphic Novels',
-			'gw'     => 'Genealogy & Western History',
-			'hilo'   => 'HI LO',
-			'hol'    => 'Adult Holiday',
-			'hole'   => 'Easy Holiday',
-			'holj'   => 'Juvenile Holiday',
-			'hrl'    => 'Brighton Health Resources Library',
-			'i'      => 'Intermediate Non-Fiction',
-			'if'     => 'Intermediate Fiction',
-			'if1'    => 'I Early Chapter Books',
-			'ill'    => 'Item Not Available for Lending',
-			'indx'   => 'Index Tables',
-			'j'      => 'Juvenile Non-Fiction',
-			'jb'     => 'Juvenile Biography',
-			'jdvd'   => 'Juvenile DVDs',
-			'jf'     => 'Chapter Books',
-			'jf1'    => 'Chapter Books',
-			'jfan'   => 'Chapter Books -- Fantasy',
-			'jgn'    => 'Juvenile Graphic Novels',
-			'jrcs'   => 'Juvenile Reading Club',
-			'kit'    => "Children's Book & CD kit",
-			'laptop' => 'Anythink Laptops',
-			'lit'    => 'Literacy',
-			'lp'     => 'Large Print Fiction',
-			'lpnf'   => 'Large Print Non-Fiction',
-			'lsta'   => 'LSTA',
-			'mcd'    => 'Music CDs',
-			'mcdj'   => 'Juvenile Music CDs',
-			'mcdpop' => 'Music CDs POP',
-			'mcf'    => 'Adult Fiction',
-			'mcn'    => 'Adult Non-fiction',
-			'mpa'    => 'Playaway fiction',
-			'mpan'   => 'Playaway Non-fiction',
-			'mpj'    => 'Playaway Juvenile fiction',
-			'mpjn'   => 'Playaway Children Non-fiction',
-			'mpt'    => 'Playaway YA fiction',
-			'mptn'   => 'Playaway YA Non-fiction',
-			'mxblu'  => 'CD World / Folk / Bluegrass',
-			'mxchl'  => 'CD Children',
-			'mxcls'  => 'CD Classical',
-			'mxctr'  => 'CD Country',
-			'mxgos'  => 'CD Gospel',
-			'mxhol'  => 'CD Holiday',
-			'mxjaz'  => 'CD Jazz / R&B',
-			'mxopr'  => 'CD Opera',
-			'mxpop'  => 'CD Pop / Rock / Rap',
-			'mxstr'  => 'CD Soundtracks / Musicals',
-			'mys'    => 'Mysteries',
-			'new'    => 'New Books',
-			'newco'  => 'New Colorado Books',
-			'newmy'  => 'New Mysteries',
-			'newnf'  => 'New Non-Fiction',
-			'newsf'  => 'New Science Fiction',
-			'newwe'  => 'New Westerns',
-			'nf'     => 'Adult Non-Fiction',
-			'ol'     => 'Overload',
-			'per'    => 'Periodicals',
-			'pn'     => 'FOTO',
-			'puz'    => 'Puzzles & Games',
-			'rcs'    => 'Book Club',
-			'read'   => 'Readers',
-			'ref'    => 'Reference',
-			'ref7d'  => '7 Day Reference',
-			'refa'   => 'Juvenile Reference',
-			'refb'   => 'Business Reference',
-			'refc'   => 'Refc',
-			'refco'  => 'Colorado Reference',
-			'refe'   => 'Easy Reference',
-			'refi'   => 'Intermediate Reference',
-			'refj'   => 'Juvenile Reference',
-			'refr'   => 'Ready Reference',
-			'refx'   => 'Reference - Special Shelving',
-			'rom'    => 'Romance',
-			'sf'     => 'Science Fiction',
-			'span'   => 'Spanish Adult',
-			'spane'  => 'Span E',
-			'spaner' => 'Spanish Readers',
-			'spani'  => 'Intermediate Spanish',
-			'spanj'  => 'Juvenile Spanish',
-			'spant'  => 'Teen Spanish',
-			't'      => 'Teen Nonfiction',
-			'tco'	 => 'Colorado Teen',
-			'tf'     => 'Teen Fiction',
-			'tfan'   => 'YA Fantasy',
-			'tgn'    => 'YA Graphic Novels',
-			'tmys'   => 'YA Mystery',
-			'trcs'   => 'YA Reading Club',
-			'trom'   => 'YA Romance',
-			'u'      => 'Special Collection - Fast CAT',
-			'vf'     => 'Vertical File',
-			'vtx'    => 'Video Tapes',
-			'west'   => 'Westerns',
+		$collectionMap = [
+			'ajob'    => 'Jobs & Employment',
+			'at'      => 'Audio Tapes',
+			'atls'    => 'Atlas Case',
+			'b'       => 'Biographies',
+			'bb'      => 'Book Bags',
+			'board'   => 'Board Books',
+			'cd'      => 'Audio CDs',
+			'cdd'     => 'Data CDs',
+			'cde'     => 'Easy CDs',
+			'cdi'     => 'CD I',
+			'cdj'     => 'Juvenile CDs',
+			'cdt'     => 'Teen CDs',
+			'co'      => 'Colorado Section',
+			'coe'     => 'Easy Colorado',
+			'coi'     => 'Colorado Section',
+			'coj'     => 'Juvenile Colorado',
+			'cot'     => 'Colorado Section',
+			'dvd'     => 'DVDs',
+			'dvdbox'  => 'DVD Media Box',
+			'e'       => 'Easy Non-fiction',
+			'ebook'   => 'E-Books / E-Audiobooks',
+			'ecap'    => 'ABCs & 123s',
+			'ef'      => 'Easy Picture Book',
+			'ency'    => 'Encyclopedias',
+			'eqx'     => 'Equipment',
+			'er'      => 'Easy Reader',
+			'f'       => 'Adult Fiction',
+			'FA'      => 'Fast Add',
+			'FA-BI'   => 'Fast Add',
+			'FA-I'    => 'Fast Add',
+			'fan'     => 'Fantasy',
+			'gn'      => 'Graphic Novels',
+			'gw'      => 'Genealogy & Western History',
+			'hilo'    => 'HI LO',
+			'hol'     => 'Adult Holiday',
+			'hole'    => 'Easy Holiday',
+			'holj'    => 'Juvenile Holiday',
+			'hrl'     => 'Brighton Health Resources Library',
+			'i'       => 'Intermediate Non-Fiction',
+			'if'      => 'Intermediate Fiction',
+			'if1'     => 'I Early Chapter Books',
+			'ill'     => 'Item Not Available for Lending',
+			'indx'    => 'Index Tables',
+			'j'       => 'Juvenile Non-Fiction',
+			'jb'      => 'Juvenile Biography',
+			'jdvd'    => 'Juvenile DVDs',
+			'jf'      => 'Chapter Books',
+			'jf1'     => 'Chapter Books',
+			'jfan'    => 'Chapter Books -- Fantasy',
+			'jgn'     => 'Juvenile Graphic Novels',
+			'jrcs'    => 'Juvenile Reading Club',
+			'kit'     => "Children's Book & CD kit",
+			'laptop'  => 'Anythink Laptops',
+			'lit'     => 'Literacy',
+			'lp'      => 'Large Print Fiction',
+			'lpnf'    => 'Large Print Non-Fiction',
+			'lsta'    => 'LSTA',
+			'mcd'     => 'Music CDs',
+			'mcdj'    => 'Juvenile Music CDs',
+			'mcdpop'  => 'Music CDs POP',
+			'mcf'     => 'Adult Fiction',
+			'mcn'     => 'Adult Non-fiction',
+			'mpa'     => 'Playaway fiction',
+			'mpan'    => 'Playaway Non-fiction',
+			'mpj'     => 'Playaway Juvenile fiction',
+			'mpjn'    => 'Playaway Children Non-fiction',
+			'mpt'     => 'Playaway YA fiction',
+			'mptn'    => 'Playaway YA Non-fiction',
+			'mxblu'   => 'CD World / Folk / Bluegrass',
+			'mxchl'   => 'CD Children',
+			'mxcls'   => 'CD Classical',
+			'mxctr'   => 'CD Country',
+			'mxgos'   => 'CD Gospel',
+			'mxhol'   => 'CD Holiday',
+			'mxjaz'   => 'CD Jazz / R&B',
+			'mxopr'   => 'CD Opera',
+			'mxpop'   => 'CD Pop / Rock / Rap',
+			'mxstr'   => 'CD Soundtracks / Musicals',
+			'mys'     => 'Mysteries',
+			'new'     => 'New Books',
+			'newco'   => 'New Colorado Books',
+			'newmy'   => 'New Mysteries',
+			'newnf'   => 'New Non-Fiction',
+			'newsf'   => 'New Science Fiction',
+			'newwe'   => 'New Westerns',
+			'nf'      => 'Adult Non-Fiction',
+			'ol'      => 'Overload',
+			'per'     => 'Periodicals',
+			'pn'      => 'FOTO',
+			'puz'     => 'Puzzles & Games',
+			'rcs'     => 'Book Club',
+			'read'    => 'Readers',
+			'ref'     => 'Reference',
+			'ref7d'   => '7 Day Reference',
+			'refa'    => 'Juvenile Reference',
+			'refb'    => 'Business Reference',
+			'refc'    => 'Refc',
+			'refco'   => 'Colorado Reference',
+			'refe'    => 'Easy Reference',
+			'refi'    => 'Intermediate Reference',
+			'refj'    => 'Juvenile Reference',
+			'refr'    => 'Ready Reference',
+			'refx'    => 'Reference - Special Shelving',
+			'rom'     => 'Romance',
+			'sf'      => 'Science Fiction',
+			'span'    => 'Spanish Adult',
+			'spane'   => 'Span E',
+			'spaner'  => 'Spanish Readers',
+			'spani'   => 'Intermediate Spanish',
+			'spanj'   => 'Juvenile Spanish',
+			'spant'   => 'Teen Spanish',
+			't'       => 'Teen Nonfiction',
+			'tco'     => 'Colorado Teen',
+			'tf'      => 'Teen Fiction',
+			'tfan'    => 'YA Fantasy',
+			'tgn'     => 'YA Graphic Novels',
+			'tmys'    => 'YA Mystery',
+			'trcs'    => 'YA Reading Club',
+			'trom'    => 'YA Romance',
+			'u'       => 'Special Collection - Fast CAT',
+			'vf'      => 'Vertical File',
+			'vtx'     => 'Video Tapes',
+			'west'    => 'Westerns',
 			'xbconly' => 'ON ORDER',
 			'xparpro' => 'ON ORDER',
-			'xunpro' => 'ON ORDER',
-
-		);
-		return isset($collectionMap[$collectionCode]) ? $collectionMap[$collectionCode] : 'Unknown';
+			'xunpro'  => 'ON ORDER',
+		];
+		return $collectionMap[$collectionCode] ?? 'Unknown';
 	}
 
 	public function translateStatus($statusCode){
@@ -313,19 +312,19 @@ class Anythink extends HorizonAPI {
 		}
 
 		//Login by posting username and password
-		$post_data = array(
-      'aspect' => 'overview',
-      'button' => 'New User',
-      'login_prompt' => 'true',
-      'menu' => 'account',
+		$post_data  = [
+			'aspect'         => 'overview',
+			'button'         => 'New User',
+			'login_prompt'   => 'true',
+			'menu'           => 'account',
 			'newuser_prompt' => 'true',
-      'profile' => $this->selfRegProfile,
-      'ri' => '',
-      'sec1' => '',
-      'sec2' => '',
-      'session' => $sessionId,
-		);
-		$post_items = array();
+			'profile'        => $this->selfRegProfile,
+			'ri'             => '',
+			'sec1'           => '',
+			'sec2'           => '',
+			'session'        => $sessionId,
+		];
+		$post_items = [];
 		foreach ($post_data as $key => $value) {
 			$post_items[] = $key . '=' . urlencode($value);
 		}
@@ -339,49 +338,49 @@ class Anythink extends HorizonAPI {
 		/*
 		Form variables are built using horizonAPI class, getSelfRegistrationFields() which uses the API to get fields from ILS.
 	*/
-		$firstName = strip_tags($_REQUEST['firstname']);
-		$lastName = strip_tags($_REQUEST['lastname']);
-		$address1 = strip_tags($_REQUEST['address1']);
-		$address2 = strip_tags($_REQUEST['address2']);
-		$citySt = strip_tags($_REQUEST['city_st']);
-		$zip = strip_tags($_REQUEST['postal_code']);
-		$email = strip_tags($_REQUEST['email_address']);
+		$firstName    = strip_tags($_REQUEST['firstname']);
+		$lastName     = strip_tags($_REQUEST['lastname']);
+		$address1     = strip_tags($_REQUEST['address1']);
+		$address2     = strip_tags($_REQUEST['address2']);
+		$citySt       = strip_tags($_REQUEST['city_st']);
+		$zip          = strip_tags($_REQUEST['postal_code']);
+		$email        = strip_tags($_REQUEST['email_address']);
 		$sendNoticeBy = strip_tags($_REQUEST['send_notice_by']);
-		$pin = strip_tags($_REQUEST['pin#']);
-		$confirmPin = strip_tags($_REQUEST['confirmpin#']);
-		$phone = strip_tags($_REQUEST['phone_no']);
-		$phoneType = strip_tags($_REQUEST['phone_type']); // option 'z' has a label of 't', rather than 'telephone'. (also pager options needed?)
-		$language = strip_tags($_REQUEST['language']);
+		$pin          = strip_tags($_REQUEST['pin#']);
+		$confirmPin   = strip_tags($_REQUEST['confirmpin#']);
+		$phone        = strip_tags($_REQUEST['phone_no']);
+		$phoneType    = strip_tags($_REQUEST['phone_type']); // option 'z' has a label of 't', rather than 'telephone'. (also pager options needed?)
+		$language     = strip_tags($_REQUEST['language']);
 		$borrowerNote = strip_tags($_REQUEST['borrower_note']); // used as a BirthDate Field. plb 12-10-2014
 
 		//Register the patron
-		$post_data = array(
-      'address1' => $address1,
-		  'address2' => $address2,
-			'aspect' => 'basic',
-			'pin#' => $pin,
-			'button' => 'I accept',
-			'city_st' => $citySt,
-			'confirmpin#' => $confirmPin,
-			'email_address' => $email,
-			'firstname' => $firstName,
-			'borrower_note' => $borrowerNote,
-			'ipp' => 20,
-			'lastname' => $lastName,
-			'language' => $language,
+		$post_data = [
+			'address1'       => $address1,
+			'address2'       => $address2,
+			'aspect'         => 'basic',
+			'pin#'           => $pin,
+			'button'         => 'I accept',
+			'city_st'        => $citySt,
+			'confirmpin#'    => $confirmPin,
+			'email_address'  => $email,
+			'firstname'      => $firstName,
+			'borrower_note'  => $borrowerNote,
+			'ipp'            => 20,
+			'lastname'       => $lastName,
+			'language'       => $language,
 			//'location' => $location,
-			'menu' => 'account',
-			'newuser_info' => 'true',
-			'npp' => 30,
-			'postal_code' => $zip,
-      'phone_no' => $phone,
-			'phone_type' => $phoneType,
-      'profile' => $this->selfRegProfile,
-			'ri' => '',
+			'menu'           => 'account',
+			'newuser_info'   => 'true',
+			'npp'            => 30,
+			'postal_code'    => $zip,
+			'phone_no'       => $phone,
+			'phone_type'     => $phoneType,
+			'profile'        => $this->selfRegProfile,
+			'ri'             => '',
 			'send_notice_by' => $sendNoticeBy,
-			'session' => $sessionId,
-			'spp' => 20
-		);
+			'session'        => $sessionId,
+			'spp'            => 20
+		];
 
 //		$post_items = array();
 //		foreach ($post_data as $key => $value) {
@@ -408,10 +407,10 @@ class Anythink extends HorizonAPI {
 
 		unlink($cookie);
 
-		return array(
+		return [
 		  'barcode' => $tempBarcode,
 		  'success'  => $success
-		);
+		];
 
 	}
 }

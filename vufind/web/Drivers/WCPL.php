@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
+/*
 require_once 'DriverInterface.php';
 require_once ROOT_DIR . '/Drivers/HorizonAPI3_23.php';
 
@@ -360,7 +360,7 @@ class WCPL extends HorizonAPI3_23 {
 		}
 
 		//Login by posting username and password
-		$postData = array(
+		$postData = [
       'aspect'         => 'overview',
       'button'         => 'New User',
       'login_prompt'   => 'true',
@@ -371,7 +371,7 @@ class WCPL extends HorizonAPI3_23 {
       'sec1'           => '',
       'sec2'           => '',
       'session'        => $sessionId,
-		);
+		];
 
 		$curlUrl    = $this->hipUrl . "/ipac20/ipac.jsp";
 		$curlResult = $this->_curlPostPage($curlUrl, $postData);
@@ -389,7 +389,7 @@ class WCPL extends HorizonAPI3_23 {
 		$phone         = strip_tags($_REQUEST['phone_no']);
 
 		//Register the patron
-		$postData = array(
+		$postData = [
       'address1'       => $streetAddress,
 		  'address2'       => $apartment,
 			'aspect'         => 'basic',
@@ -411,7 +411,7 @@ class WCPL extends HorizonAPI3_23 {
 			'send_notice_by' => $sendNoticeBy,
 			'session'        => $sessionId,
 			'spp'            => 20
-		);
+		];
 
 		$curlResult = $this->_curlPostPage($curlUrl, $postData);
 
@@ -419,16 +419,17 @@ class WCPL extends HorizonAPI3_23 {
 		if (preg_match('/Here is your temporary barcode\\. Use it for future authentication:&nbsp;([\\d-]+)/s', $curlResult, $regs)) {
 			$tempBarcode = $regs[1];
 			$tempBarcode = '22046' . $tempBarcode; //Append the library prefix to the card number
-			return array(
+			return [
 				'barcode' => $tempBarcode,
 				'success' => true
-			);
+			];
 		}
 
-		return array(
+		return [
 		  'barcode' => null,
 		  'success' => false
-		);
+		];
 	}
 
 }
+*/

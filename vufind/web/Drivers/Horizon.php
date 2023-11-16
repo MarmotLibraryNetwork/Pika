@@ -33,13 +33,13 @@ abstract class Horizon extends ScreenScrapingDriver{
 	public $accountProfile;
 
 	function __construct($accountProfile) {
-		$this->logger = new Logger(__CLASS__);
+		$this->logger         = new Logger(__CLASS__);
 		$this->accountProfile = $accountProfile;
 		// Load Configuration for this Module
 		global $configArray;
 
-		$this->hipUrl = $configArray['Catalog']['hipUrl'];
-		$this->hipProfile = $configArray['Catalog']['hipProfile'];
+		$this->hipUrl         = $configArray['Catalog']['hipUrl'];
+		$this->hipProfile     = $configArray['Catalog']['hipProfile'];
 		$this->selfRegProfile = $configArray['Catalog']['selfRegProfile'];
 
 		// Connect to database
@@ -117,17 +117,17 @@ abstract class Horizon extends ScreenScrapingDriver{
 
 		//Login by posting username and password
 		curl_setopt($curl_connection, CURLOPT_POST, true);
-		$post_data = array(
-      'aspect' => 'overview',
-      'button' => 'Log into Your Account',
-      'login_prompt' => 'true',
-      'menu' => 'account',
-      'profile' => $configArray['Catalog']['hipProfile'],
-      'ri' => '',
-      'sec1' => $patron->barcode,
-      'sec2' => $patron->getPassword(),
-      'session' => $sessionId,
-		);
+		$post_data = [
+			'aspect'       => 'overview',
+			'button'       => 'Log into Your Account',
+			'login_prompt' => 'true',
+			'menu'         => 'account',
+			'profile'      => $configArray['Catalog']['hipProfile'],
+			'ri'           => '',
+			'sec1'         => $patron->barcode,
+			'sec2'         => $patron->getPassword(),
+			'session'      => $sessionId,
+		];
 		$post_string = http_build_query($post_data);
 
 		$curl_url = $this->hipUrl . "/ipac20/ipac.jsp";
@@ -138,18 +138,18 @@ abstract class Horizon extends ScreenScrapingDriver{
 		preg_match_all('/<tr>.*?<td bgcolor="#FFFFFF"><a class="normalBlackFont2">(.*?)<\/a>.*?<a class="normalBlackFont2">(.*?)<\/a>.*?<a class="normalBlackFont2">(.*?)<\/a>.*?<a class="normalBlackFont2">(.*?)<\/a>.*?<\/tr>/s', $sresult, $messageInfo, PREG_SET_ORDER);
 		$messages = array();
 		for ($matchi = 0; $matchi < count($messageInfo); $matchi++) {
-			$messages[] = array(
-                'reason' => $messageInfo[$matchi][1],
-                'amount' => $messageInfo[$matchi][3],
-                'message' => ($messageInfo[$matchi][2] != '&nbsp;') ? $messageInfo[$matchi][2] : '',
-                'date' => $messageInfo[$matchi][4]
-			);
+			$messages[] = [
+				'reason'  => $messageInfo[$matchi][1],
+				'amount'  => $messageInfo[$matchi][3],
+				'message' => ($messageInfo[$matchi][2] != '&nbsp;') ? $messageInfo[$matchi][2] : '',
+				'date'    => $messageInfo[$matchi][4]
+			];
 		}
 		unlink($cookie);
 		return $messages;
 	}
-	public function getMyFinesViaDB($patron, $includeMessages = false)
-	{
+
+	public function getMyFinesViaDB($patron, $includeMessages = false){
 		$sql = "select title_inverted.title as TITLE, item.bib# as BIB_NUM, item.item# as ITEM_NUM, " .
                "burb.borrower# as BORROWER_NUM, burb.amount as AMOUNT, burb.comment, " .
                "burb.date as DUEDATE, " .
@@ -177,43 +177,43 @@ abstract class Horizon extends ScreenScrapingDriver{
 				}
 
 				//print_r($row);
-				$checkout = '';
-				$duedate = $this->addDays('1970-01-01', $row['DUEDATE']);
-				$bib_num = $row['BIB_NUM'];
-				$item_num = $row['ITEM_NUM'];
+				$checkout     = '';
+				$duedate      = $this->addDays('1970-01-01', $row['DUEDATE']);
+				$bib_num      = $row['BIB_NUM'];
+				$item_num     = $row['ITEM_NUM'];
 				$borrower_num = $row['BORROWER_NUM'];
-				$amount = $row['AMOUNT'];
-				$balance += $amount;
-				$comment = is_null($row['comment']) ? $row['TITLE'] : $row['comment'];
+				$amount       = $row['AMOUNT'];
+				$balance      += $amount;
+				$comment      = is_null($row['comment']) ? $row['TITLE'] : $row['comment'];
 
-				if (isset($bib_num) && isset($item_num))
-				{
-					$cko = "select date as CHECKOUT " .
-                           "from burb where borrower#=" . $borrower_num . " " .
-                           "and item#=" . $item_num . " and block='infocko'";
+				if (isset($bib_num) && isset($item_num)){
+					$cko         = "select date as CHECKOUT " .
+						"from burb where borrower#=" . $borrower_num . " " .
+						"and item#=" . $item_num . " and block='infocko'";
 					$sqlStmt_cko = $this->_query($cko);
 
-					if ($row_cko = $this->_fetch_assoc($sqlStmt_cko)) {
+					if ($row_cko = $this->_fetch_assoc($sqlStmt_cko)){
 						$checkout = $this->addDays('1970-01-01', $row_cko['CHECKOUT']);
 					}
 
-					$due = "select convert(varchar(12),dateadd(dd, date, '01 jan 1970')) as DUEDATE " .
-                           "from burb where borrower#=" . $borrower_num . " " .
-                           "and item#=" . $item_num . " and block='infodue'";
+					$due         = "select convert(varchar(12),dateadd(dd, date, '01 jan 1970')) as DUEDATE " .
+						"from burb where borrower#=" . $borrower_num . " " .
+						"and item#=" . $item_num . " and block='infodue'";
 					$sqlStmt_due = $this->_query($due);
 
-					if ($row_due = $this->_fetch_assoc($sqlStmt_due)) {
+					if ($row_due = $this->_fetch_assoc($sqlStmt_due)){
 						$duedate = $row_due['DUEDATE'];
 					}
 				}
 
-				$fineList[] = array('id' => $bib_num,
-                                    'message'  => $comment,
-                                    'amount'   => $amount > 0 ? '$' . sprintf('%0.2f', $amount / 100) : '',
-                                    'reason'   => $this->translateFineMessageType($row['FINE']),
-                                    'balance'  => $balance,  // TODO: not in my fines template
-                                    'checkout' => $checkout, // TODO: not in my fines template
-                                    'date'     => date('M j, Y', strtotime($duedate)));
+				$fineList[] = [
+					'id'       => $bib_num,
+					'message'  => $comment,
+					'amount'   => $amount > 0 ? '$' . sprintf('%0.2f', $amount / 100) : '',
+					'reason'   => $this->translateFineMessageType($row['FINE']),
+					'balance'  => $balance,  // TODO: not in my fines template
+					'checkout' => $checkout, // TODO: not in my fines template
+					'date'     => date('M j, Y', strtotime($duedate))];
 			}
 			return $fineList;
 		} catch (PDOException $e) {
@@ -228,7 +228,7 @@ abstract class Horizon extends ScreenScrapingDriver{
 	 * @return array                         Array of error messages for errors that occurred
 	 */
 	function updatePatronInfo($user, $canUpdateContactInfo){
-		$updateErrors = array();
+		$updateErrors = [];
 		if ($canUpdateContactInfo) {
 			global $configArray;
 			//Check to make sure the patron alias is valid if provided
@@ -258,7 +258,7 @@ abstract class Horizon extends ScreenScrapingDriver{
 
 			//Start at My Account Page
 			$curl_url = $this->hipUrl . "/ipac20/ipac.jsp?profile={$configArray['Catalog']['hipProfile']}&menu=account";
-			$sResult = $this->_curlGetPage($curl_url);
+			$sResult  = $this->_curlGetPage($curl_url);
 
 			//Extract the session id from the requestcopy javascript on the page
 			if (preg_match('/\\?session=(.*?)&/s', $sResult, $matches)) {
@@ -276,38 +276,39 @@ abstract class Horizon extends ScreenScrapingDriver{
 			//Login by posting username and password
 
 			$this->logger->info("Logging into user account from updatePatronInfo $curl_url");
-			$post_data   = array(
-				'aspect' => 'overview',
-				'button' => 'Log into Your Account',
-				//'ipp' => '20',
-				//'lastlogin' => '1299616721524',
+			$post_data   = [
+				'aspect'       => 'overview',
+				'button'       => 'Log into Your Account',
+				//'ipp'          => '20',
+				//'lastlogin'    => '1299616721524',
 				'login_prompt' => 'true',
-				'menu' => 'account',
-				//'npp' => '10',
-				'profile' => $configArray['Catalog']['hipProfile'],
-				'ri' => '',
-				'sec1' => $user->barcode,
-				'sec2' => $user->getPassword(),
-				'session' => $sessionId,
-				//'spp' => '20'
-			);
+				'menu'         => 'account',
+				//'npp'          => '10',
+				'profile'      => $configArray['Catalog']['hipProfile'],
+				'ri'           => '',
+				'sec1'         => $user->barcode,
+				'sec2'         => $user->getPassword(),
+				'session'      => $sessionId,
+				//'spp'          => '20'
+			];
+
 			$curl_url    = $this->hipUrl . "/ipac20/ipac.jsp";
 			$sResult = $this->_curlPostPage($curl_url, $post_data);
 			//TODO check for Login success
 
 			//Update patron information.  Use HIP to update the e-mail to make sure that all business rules are followed.
 			if (isset($_REQUEST['email'])) {
-				$post_data   = array(
-					'menu' => 'account',
+				$post_data = [
+					'menu'         => 'account',
 					'newemailtext' => $_REQUEST['email'],
-					'newpin' => '',
-					'oldpin' => '',
-					'profile' => $configArray['Catalog']['hipProfile'],
-					'renewpin' => '',
-					'session' => $sessionId,
-					'submenu' => 'info',
-					'updateemail' => 'Update',
-				);
+					'newpin'       => '',
+					'oldpin'       => '',
+					'profile'      => $configArray['Catalog']['hipProfile'],
+					'renewpin'     => '',
+					'session'      => $sessionId,
+					'submenu'      => 'info',
+					'updateemail'  => 'Update',
+				];
 				$sResult = $this->_curlPostPage($curl_url, $post_data);
 
 				//check for errors in boldRedFont1
@@ -320,17 +321,17 @@ abstract class Horizon extends ScreenScrapingDriver{
 			}
 
 			if (isset($_REQUEST['oldPin']) && strlen($_REQUEST['oldPin']) > 0 && isset($_REQUEST['newPin']) && strlen($_REQUEST['newPin']) > 0) {
-				$post_data   = array(
-					'menu' => 'account',
+				$post_data = [
+					'menu'         => 'account',
 					'newemailtext' => $_REQUEST['email'],
-					'newpin' => $_REQUEST['newPin'],
-					'oldpin' => $_REQUEST['oldPin'],
-					'profile' => $configArray['Catalog']['hipProfile'],
-					'renewpin' => $_REQUEST['verifyPin'],
-					'session' => $sessionId,
-					'submenu' => 'info',
-					'updatepin' => 'Update',
-				);
+					'newpin'       => $_REQUEST['newPin'],
+					'oldpin'       => $_REQUEST['oldPin'],
+					'profile'      => $configArray['Catalog']['hipProfile'],
+					'renewpin'     => $_REQUEST['verifyPin'],
+					'session'      => $sessionId,
+					'submenu'      => 'info',
+					'updatepin'    => 'Update',
+				];
 				$sResult = $this->_curlPostPage($curl_url, $post_data);
 
 				//check for errors in boldRedFont1
@@ -381,21 +382,21 @@ abstract class Horizon extends ScreenScrapingDriver{
 		return $updateErrors;
 	}
 
-	function addDays($givendate,$day) {
-		$cd = strtotime($givendate);
-		$newdate = date('Y-m-d H:i:s', mktime(date('H',$cd),
-		date('i',$cd), date('s',$cd), date('m',$cd),
-		date('d',$cd)+$day, date('Y',$cd)));
+	function addDays($givendate, $day){
+		$cd      = strtotime($givendate);
+		$newdate = date('Y-m-d H:i:s', mktime(date('H', $cd),
+			date('i', $cd), date('s', $cd), date('m', $cd),
+			date('d', $cd) + $day, date('Y', $cd)));
 		return $newdate;
 	}
 
-	function addMinutes($givendate,$minutes) {
-		$cd = strtotime($givendate);
-		$newdate = date('Y-m-d H:i:s', mktime(date('H',$cd),
-		date('i',$cd) + $minutes, date('s',$cd), date('m',$cd),
-		date('d',$cd), date('Y',$cd)));
-		return $newdate;
-	}
+//	function addMinutes($givendate,$minutes) {
+//		$cd      = strtotime($givendate);
+//		$newdate = date('Y-m-d H:i:s', mktime(date('H', $cd),
+//		date('i',$cd) + $minutes, date('s',$cd), date('m',$cd),
+//		date('d',$cd), date('Y',$cd)));
+//		return $newdate;
+//	}
 
 	protected function _query($query){
 		global $configArray;
