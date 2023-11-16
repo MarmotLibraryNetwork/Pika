@@ -163,15 +163,15 @@ abstract class HorizonROA implements \DriverInterface {
 		}
 	}
 
-
-	protected function loginViaWebService($barcode, $password){
+	protected function loginViaWebService($barcode, $password) {
 		$memCacheKey = "horizon_ROA_session_token_info_$barcode";
-		$session     = $this->cache->get($memCacheKey);
-		if ($session) {
-			[, $sessionToken, $horizonRoaUserID] = $session;
-			self::$sessionIdsForUsers[$horizonRoaUserID] = $sessionToken;
-		} else {
-//		$loginDescribeResponse = $this->getWebServiceResponse( '/user/patron/login/describe');
+// This bit is breaking login after PIN updates. We should only store session info in a single store (memcache) to make access reliable
+//		$session     = $this->cache->get($memCacheKey);
+//		if ($session) {
+//			[, $sessionToken, $horizonRoaUserID] = $session;
+//			self::$sessionIdsForUsers[$horizonRoaUserID] = $sessionToken;
+//		} else {
+			// $loginDescribeResponse = $this->getWebServiceResponse( '/user/patron/login/describe');
 			$session           = [false, false, false];
 			$loginUserUrl      =  '/user/patron/login';
 			$params            = [
@@ -195,7 +195,7 @@ abstract class HorizonROA implements \DriverInterface {
 				}
 				$this->getLogger()->error($errorMessage);
 			}
-		}
+		// }
 		return $session;
 	}
 
@@ -248,16 +248,16 @@ abstract class HorizonROA implements \DriverInterface {
 				}
 			}
 
-//  Calls that show how patron-related data is represented
-//			$patronDescribeResponse = $this->getWebServiceResponse( '/user/patron/describe', null, $sessionToken);
-//			$patronDSearchescribeResponse = $this->getWebServiceResponse( '/user/patron/search/describe', null, $sessionToken);
-				//TODO: a patron search may require a staff user account.
-//			$patronSearchResponse = $this->getWebServiceResponse( '/user/patron/search', array('q' => 'borr|2:22046027101218'), $sessionToken);
-//			$patronTypesQuery = $this->getWebServiceResponse( '/policy/patronType/simpleQuery?key=*&includeFields=*', null, $sessionToken);
+			// Calls that show how patron-related data is represented
+			// $patronDescribeResponse = $this->getWebServiceResponse( '/user/patron/describe', null, $sessionToken);
+			// $patronDSearchescribeResponse = $this->getWebServiceResponse( '/user/patron/search/describe', null, $sessionToken)
+			// $patronSearchResponse = $this->getWebServiceResponse( '/user/patron/search', array('q' => 'borr|2:22046027101218'), $sessionToken);
+			// $patronTypesQuery = $this->getWebServiceResponse( '/policy/patronType/simpleQuery?key=*&includeFields=*', null, $sessionToken);
 
 			$includeFields = urlencode('displayName,privilegeExpiresDate,primaryAddress,primaryPhone,library,'
 				. 'patronType,holdRecordList{status},circRecordList,blockList{amount,owed}');
 			$acountInfoLookupURL =  '/user/patron/key/' . $horizonRoaUserID . '?includeFields=' .$includeFields;
+
 			// get a new token if the session has timed out
 			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($acountInfoLookupURL, null, $sessionToken);
 			if (isset($lookupMyAccountInfoResponse->messageList[0]->code) && $lookupMyAccountInfoResponse->messageList[0]->code == 'sessionTimedOut') {
@@ -267,6 +267,7 @@ abstract class HorizonROA implements \DriverInterface {
 				[$userValid, $sessionToken, $horizonRoaUserID] = $this->loginViaWebService($barcode, $password);
 				$lookupMyAccountInfoResponse = $this->getWebServiceResponse($acountInfoLookupURL, null, $sessionToken);
 			}
+
 			if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)) {
 				$fullName = $lookupMyAccountInfoResponse->fields->displayName;
 				if (strpos($fullName, ',')) {
@@ -1245,8 +1246,20 @@ abstract class HorizonROA implements \DriverInterface {
 		return $blockPolicy;
 	}
 
-	public function updatePin($patron, $oldPin, $newPin, $confirmNewPin): string{
-		//$updatePinResponse = $this->changeMyPin($patron, $newPin, $oldPin);
+	/**
+	 * Update the PIN for a patron.
+	 *
+	 * This function updates the PIN for a patron by making a request to the appropriate web service endpoint.
+	 *
+	 * @param User   $patron           The patron for whom the PIN should be updated.
+	 * @param string $oldPin           The current PIN of the patron.
+	 * @param string $newPin           The new PIN to be set for the patron.
+	 * @param string $confirmNewPin    Confirmation of the new PIN to be set.
+	 *
+	 * @return string A message indicating the success or failure of the PIN update process.
+	 */
+	public function updatePin($patron, $oldPin, $newPin, $confirmNewPin): string {
+
 		$sessionToken = $this->getSessionToken($patron);
 		if(!$sessionToken) {
 			return "Sorry, it does not look like you are logged in currently. Please log in and try again";
@@ -1264,8 +1277,19 @@ abstract class HorizonROA implements \DriverInterface {
 			}
 			$this->getLogger()->error('Horizon ROA Driver error updating user\'s Pin :'.$errors);
 			return 'Sorry, we encountered an error while attempting to update your ' . translate('pin') . '. Please contact your local library.';
-		} elseif (!empty($res->sessionToken)){
+		} elseif (!empty($res->sessionToken)) {
 			$patron->updatePassword($newPin);
+
+			// remove session token
+			$this->deleteSessionToken($patron);
+			// remove memcache session token
+			$barcode = $patron->barcode;
+			$sessionTokenKey = "horizon_ROA_session_token_info_$barcode";
+			$this->cache->delete($sessionTokenKey);
+			// remove user object from cache
+			$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
+			$this->cache->delete($patronObjectCacheKey);
+
 			return 'Your ' . translate('pin') . ' was updated successfully.';
 		}
 		return 'Sorry, we could not update your ' . translate('pin') . '. Please try again later.';
@@ -1443,9 +1467,9 @@ abstract class HorizonROA implements \DriverInterface {
 //				$updatePatronInfoParameters['fields'][] = $primaryAddress;
 
 				//$staffSessionToken = $this->getStaffSessionToken();
-				// TODO: update call not working.
+
 //				$updateAccountInfoResponse = $this->getWebServiceResponse( '/adminws/clientID/describe', null, $sessionToken);
-				$updateAccountInfoResponse = $this->getWebServiceResponse( '/adminws/selfRegConfig/describe', null, $sessionToken);
+				//$updateAccountInfoResponse = $this->getWebServiceResponse( '/adminws/selfRegConfig/describe', null, $sessionToken);
 //				$updateAccountInfoResponse = $this->getWebServiceResponse( '/user/patron/register/describe', null, $sessionToken, 'PUT');
 				$updateAccountInfoResponse = $this->getWebServiceResponse( '/user/patron/key/' . $horizonRoaUserId, $updatePatronInfoParameters, $sessionToken, 'PUT');
 
