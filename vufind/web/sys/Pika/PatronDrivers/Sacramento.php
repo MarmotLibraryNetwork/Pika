@@ -67,7 +67,7 @@ class Sacramento extends Sierra {
 
 		// base url for following calls
 		$vendorOpacUrl = $this->accountProfile->vendorOpacUrl;
-		$headers = [
+		$headers       = [
 			'Accept'          => 'text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5',
 			'Cache-Control'   => 'max-age=0',
 			'Connection'      => 'keep-alive',
@@ -220,8 +220,8 @@ class Sacramento extends Sierra {
 				} else {
 					return false;
 				}
-				$casLoginUrl = $vendorOpacUrl.$casUrl;
-				$r = $cc->post($casLoginUrl, $postData);
+				$casLoginUrl = $vendorOpacUrl . $casUrl;
+				$r           = $cc->post($casLoginUrl, $postData);
 				if(!stristr($r, $patron->cat_username)) {
 					$this->logger->warning('cas login failed.');
 					return false;

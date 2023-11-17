@@ -552,7 +552,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		if (!empty($_REQUEST['holdselected'])){
 			$cancelId = $_REQUEST['holdselected'];
 		}
-		$freezeIds = "'" . implode(",",$cancelId) . "'";
+		$freezeIds = "'" . implode(',', $cancelId) . "'";
 		global $interface;
 		$reinstate = strtotime(date('dMY', strtotime('+1 month', (strtotime(date("Y/m/d"))))));
 		$interface->assign('reinstate', $reinstate);

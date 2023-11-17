@@ -33,7 +33,7 @@ class MyAccount_CheckedOut extends MyAccount{
 
 	function launch(){
 
-		$allCheckedOut = array();
+		$allCheckedOut = [];
 		global $offlineMode;
 		if (!$offlineMode) {
 			global $configArray,
@@ -84,7 +84,7 @@ class MyAccount_CheckedOut extends MyAccount{
 
 				$interface->assign('showNotInterested', false);
 				//Do sorting now that we have all records
-				$curTransaction = 0;
+				$curTransaction           = 0;
 				$hasOnlyEContentCheckOuts = true;
 				foreach ($allCheckedOut as $i => $curTitle) {
 					$curTransaction++;
@@ -126,8 +126,8 @@ class MyAccount_CheckedOut extends MyAccount{
 					$sortKey = strtolower($sortKey);
 					$sortKey = utf8_encode($sortKey . '-' . $curTransaction);
 
-					$itemBarcode = isset($curTitle['barcode']) ? $curTitle['barcode'] : null;
-					$itemId      = isset($curTitle['itemid']) ? $curTitle['itemid'] : null;
+					$itemBarcode = $curTitle['barcode'] ?? null;
+					$itemId      = $curTitle['itemid'] ?? null;
 					if ($itemBarcode != null && isset($_SESSION['renew_message'][$itemBarcode])) {
 						$renewMessage             = $_SESSION['renew_message'][$itemBarcode]['message'];
 						$renewResult              = $_SESSION['renew_message'][$itemBarcode]['success'];

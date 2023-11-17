@@ -632,7 +632,7 @@ class IndexingProfile extends DB_DataObject{
 
 		if ($sourceName != strtolower($sourceName)){
 			$validationResults['validatedOk'] = false;
-			$validationResults['errors'][] = 'The Source Name should consist of lower case characters';
+			$validationResults['errors'][]    = 'The Source Name should consist of lower case characters';
 		}
 
 		if ($validationResults['validatedOk']){

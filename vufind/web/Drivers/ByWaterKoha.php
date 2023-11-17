@@ -47,7 +47,7 @@ abstract class ByWaterKoha extends KohaILSDI {
 		$this->accountProfile = $accountProfile;
 		$this->sipHost        = $configArray['SIP2']['host'];
 		$this->sipPort        = $configArray['SIP2']['port'];
-		$this->debug          = isset($configArray['System']['debug'])        ? $configArray['System']['debug'] : false;
+		$this->debug          = $configArray['System']['debug'] ?? false;
 	}
 
 	protected function initSipConnection($host = null, $port = null){
@@ -84,8 +84,7 @@ abstract class ByWaterKoha extends KohaILSDI {
 	}
 
 
-	public function hasNativeReadingHistory()
-	{
+	public function hasNativeReadingHistory(){
 		return false;
 	}
 
@@ -141,9 +140,7 @@ abstract class ByWaterKoha extends KohaILSDI {
 	 * @access public
 	 */
 	public function getMyCheckouts($patron){
-
 		return $this->getMyCheckoutsFromDB($patron);
-
 	}
 
 	/**
@@ -178,14 +175,14 @@ EOD;
 
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()){
-			$transaction = array();
+			$transaction                   = [];
 			$transaction['checkoutSource'] = $this->accountProfile->recordSource;
 
-			$transaction['id'] = $curRow['biblionumber'];
+			$transaction['id']       = $curRow['biblionumber'];
 			$transaction['recordId'] = $curRow['biblionumber'];
-			$transaction['shortId'] = $curRow['biblionumber'];
-			$transaction['title'] = $curRow['title'];
-			$transaction['author'] = $curRow['author'];
+			$transaction['shortId']  = $curRow['biblionumber'];
+			$transaction['title']    = $curRow['title'];
+			$transaction['author']   = $curRow['author'];
 
 			$dateDue = DateTime::createFromFormat('Y-m-d G:i:s', $curRow['date_due']);
 			if ($dateDue){
@@ -248,8 +245,7 @@ EOD;
 	/**
 	 * @return boolean true if the driver can renew all titles in a single pass
 	 */
-	public function hasFastRenewAll()
-	{
+	public function hasFastRenewAll(){
 		return false;
 	}
 
@@ -429,9 +425,9 @@ EOD;
 			$readingHistoryTitles[$key] = $historyEntry;
 		}
 
-			return array('historyActive'=>$historyActive, 'titles'=>$readingHistoryTitles, 'numTitles'=> $numTitles);
+			return ['historyActive' => $historyActive, 'titles' => $readingHistoryTitles, 'numTitles' => $numTitles];
 		}
-		return array('historyActive'=>false, 'titles'=>array(), 'numTitles'=> 0);
+		return ['historyActive' => false, 'titles' => [], 'numTitles' => 0];
 	}
 
 
@@ -450,9 +446,9 @@ EOD;
 		global $configArray;
 
 		$result = [
-			'title' => '',
+			'title'   => '',
 			'success' => false,
-			'message' => 'Unable to ' . translate('freeze') .' your hold.'
+			'message' => 'Unable to ' . translate('freeze') . ' your hold.'
 		];
 
 		$apiUrl = $configArray['Catalog']['koha_api_url'];
@@ -460,7 +456,7 @@ EOD;
 
 		$response = $this->_curl_post_request($apiUrl);
 
-		if(!$response) {
+		if (!$response){
 			return $result;
 		}
 
@@ -478,12 +474,12 @@ EOD;
 		global $configArray;
 
 		$result = [
-			'title' => '',
+			'title'   => '',
 			'success' => false,
 			'message' => 'Unable to ' . translate('thaw') . ' your hold.'
 		];
 
-		$apiUrl =  $configArray['Catalog']['koha_api_url'];
+		$apiUrl = $configArray['Catalog']['koha_api_url'];
 		$apiUrl .= "/api/v1/contrib/pika/holds/{$itemToThawId}/resume/";
 
 		$response = $this->_curl_post_request($apiUrl);

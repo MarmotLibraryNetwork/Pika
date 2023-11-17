@@ -223,8 +223,8 @@ trait SierraPatronListOperations {
 				} else {
 					return false;
 				}
-				$casLoginUrl = $vendorOpacUrl.$casUrl;
-				$r = $c->post($casLoginUrl, $postData);
+				$casLoginUrl = $vendorOpacUrl . $casUrl;
+				$r           = $c->post($casLoginUrl, $postData);
 				if(!stristr($r, $patron->cat_username)) {
 					$this->logger->warning('cas login failed.');
 					return false;
