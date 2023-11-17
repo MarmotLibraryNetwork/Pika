@@ -31,7 +31,7 @@ import java.util.*;
  * Date: 5/24/2018
  */
 
-class SacramentoRecordProcessor extends IIIRecordProcessor {
+class SacramentoRecordProcessor extends SierraRecordProcessor {
 	private final String kitKeeperMaterialType     = "o";
 	private final String bibLevelLocationsSubfield = "a";
 	private final String econtentSourceField       = "901a";

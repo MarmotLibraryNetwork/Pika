@@ -25,7 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-public class AddisonRecordProcessor extends IIIRecordProcessor {
+public class AddisonRecordProcessor extends SierraRecordProcessor {
 
 	AddisonRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);

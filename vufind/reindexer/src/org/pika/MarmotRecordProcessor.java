@@ -32,7 +32,7 @@ import java.util.*;
  * Date: 2/21/14
  * Time: 3:00 PM
  */
-class MarmotRecordProcessor extends IIIRecordProcessor {
+class MarmotRecordProcessor extends SierraRecordProcessor {
 	MarmotRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 	}

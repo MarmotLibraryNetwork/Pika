@@ -30,7 +30,7 @@ import java.util.HashSet;
  * Date: 2/21/14
  * Time: 3:00 PM
  */
-class LionRecordProcessor extends IIIRecordProcessor {
+class LionRecordProcessor extends SierraRecordProcessor {
 	LionRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 	}

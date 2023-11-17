@@ -29,7 +29,7 @@ import java.util.List;
  * @author pbrammeier
  * 				Date:   3/17/2021
  */
-public class NorthernWatersRecordProcessor extends IIIRecordProcessor {
+public class NorthernWatersRecordProcessor extends SierraRecordProcessor {
 //	private final String econtentSourceField = "901a";
 	NorthernWatersRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);

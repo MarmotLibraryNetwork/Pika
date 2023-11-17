@@ -96,16 +96,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private char itemUrlSubfieldIndicator;
 	boolean suppressItemlessBibs;
 
-	//Fields for loading order information
-	private String orderTag;
-	private char orderLocationSubfield;
-	private char singleOrderLocationSubfield;
-	private char orderCopiesSubfield;
-	private char orderStatusSubfield;
-	private char orderCode3Subfield;
-
-	private boolean addOnOrderShelfLocations = false;
-
 	private int numCharsToCreateFolderFrom;
 	private boolean createFolderFromLeadingCharacters;
 
@@ -235,13 +225,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			eContentSubfieldIndicator        = getSubfieldIndicatorFromConfig(indexingProfileRS, "eContentDescriptor");
 			useEContentSubfield              = eContentSubfieldIndicator != ' ';
 			doAutomaticEcontentSuppression   = indexingProfileRS.getBoolean("doAutomaticEcontentSuppression");
-
-			orderTag                    = indexingProfileRS.getString("orderTag");
-			orderLocationSubfield       = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderLocation");
-			singleOrderLocationSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderLocationSingle");
-			orderCopiesSubfield         = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderCopies");
-			orderStatusSubfield         = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderStatus");
-			orderCode3Subfield          = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderCode3");
 
 			loadTranslationMapsForProfile(pikaConn, indexingProfileRS.getLong("id"));
 			formatDetermination = new FormatDetermination(indexingProfileRS, translationMaps, logger);
@@ -512,84 +495,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems){
-		List<DataField> orderFields = MarcUtil.getDataFields(record, orderTag);
-		for (DataField curOrderField : orderFields){
-			//Check here to make sure the order item is valid before doing further processing.
-			String status = "";
-			if (curOrderField.getSubfield(orderStatusSubfield) != null) {
-				status = curOrderField.getSubfield(orderStatusSubfield).getData();
-			}
-			String code3 = null;
-			if (orderCode3Subfield != ' ' && curOrderField.getSubfield(orderCode3Subfield) != null){
-				code3 = curOrderField.getSubfield(orderCode3Subfield).getData();
-			}
-
-			if (isOrderItemValid(status, code3)){
-				int copies = 0;
-				//If the location is multi, we actually have several records that should be processed separately
-				List<Subfield> detailedLocationSubfield = curOrderField.getSubfields(orderLocationSubfield);
-				if (detailedLocationSubfield.size() == 0){
-					//Didn't get detailed locations
-					if (curOrderField.getSubfield(orderCopiesSubfield) != null){
-						copies = Integer.parseInt(curOrderField.getSubfield(orderCopiesSubfield).getData());
-					}
-					String locationCode = "multi";
-					if (curOrderField.getSubfield(singleOrderLocationSubfield) != null){
-						locationCode = curOrderField.getSubfield(singleOrderLocationSubfield).getData().trim();
-					}
-					createAndAddOrderItem(recordInfo, curOrderField, locationCode, copies);
-				} else {
-					for (Subfield curLocationSubfield : detailedLocationSubfield) {
-						String curLocation = curLocationSubfield.getData();
-						if (curLocation.startsWith("(")) {
-							//There are multiple copies for this location
-							String tmpLocation = curLocation;
-							try {
-								copies = Integer.parseInt(tmpLocation.substring(1, tmpLocation.indexOf(")")));
-								curLocation = tmpLocation.substring(tmpLocation.indexOf(")") + 1).trim();
-							} catch (StringIndexOutOfBoundsException e) {
-								logger.error("Error parsing copies and location for order item " + tmpLocation);
-							}
-						} else {
-							//If we only get one location in the detailed copies, we need to read the copies subfield rather than
-							//hard coding to 1
-							copies = 1;
-							if (orderCopiesSubfield != ' ') {
-								if (detailedLocationSubfield.size() == 1 && curOrderField.getSubfield(orderCopiesSubfield) != null) {
-									String copiesData = curOrderField.getSubfield(orderCopiesSubfield).getData().trim();
-									try {
-										copies = Integer.parseInt(copiesData);
-									} catch (StringIndexOutOfBoundsException e) {
-										logger.error("StringIndexOutOfBoundsException loading number of copies " + copiesData, e);
-									} catch (Exception e) {
-										logger.error("Exception loading number of copies " + copiesData, e);
-									} catch (Error e) {
-										logger.error("Error loading number of copies " + copiesData, e);
-									}
-								}
-							}
-						}
-						if (createAndAddOrderItem(recordInfo, curOrderField, curLocation, copies)) {
-							//For On Order Items, increment popularity based on number of copies that are being purchased.
-							groupedWork.addPopularity(copies);
-						}
-					}
-				}
-			}
-		}
-		if (!hasTangibleItems && recordInfo.getNumCopiesOnOrder() > 0){
-			groupedWork.addKeywords("On Order");
-			groupedWork.addKeywords("Coming Soon");
-			/*//Don't do this anymore, see D-1893
-			HashSet<String> additionalOrderSubjects = new HashSet<>();
-			additionalOrderSubjects.add("On Order");
-			additionalOrderSubjects.add("Coming Soon");
-			groupedWork.addTopic(additionalOrderSubjects);
-			groupedWork.addTopicFacet(additionalOrderSubjects);*/
-		}
+		//By default, do nothing
 	}
 
-	private boolean createAndAddOrderItem(RecordInfo recordInfo, DataField curOrderField, String location, int copies) {
+	protected boolean createAndAddOrderItem(RecordInfo recordInfo, DataField curOrderField, String location, int copies) {
 		ItemInfo itemInfo = new ItemInfo();
 		if (curOrderField.getSubfield('a') == null){
 			//Skip if we have no identifier
@@ -1407,7 +1316,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			formatDetermination.loadEContentFormatInformation(record, econtentRecord, econtentItem);
 	}
 
-	private char getSubfieldIndicatorFromConfig(ResultSet indexingProfileRS, String subfieldName) throws SQLException{
+	protected char getSubfieldIndicatorFromConfig(ResultSet indexingProfileRS, String subfieldName) throws SQLException{
 		String subfieldString = indexingProfileRS.getString(subfieldName);
 		char subfield = ' ';
 		if (!indexingProfileRS.wasNull() && subfieldString.length() > 0)  {

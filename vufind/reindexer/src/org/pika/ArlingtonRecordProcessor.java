@@ -31,7 +31,7 @@ import java.util.*;
  * Date: 10/15/2015
  * Time: 9:48 PM
  */
-class ArlingtonRecordProcessor extends IIIRecordProcessor {
+class ArlingtonRecordProcessor extends SierraRecordProcessor {
 
 	ArlingtonRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);

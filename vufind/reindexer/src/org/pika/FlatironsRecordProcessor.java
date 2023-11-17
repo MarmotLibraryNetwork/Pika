@@ -30,7 +30,7 @@ import java.util.*;
  * Date: 12/29/2014
  * Time: 10:25 AM
  */
-class FlatironsRecordProcessor extends IIIRecordProcessor {
+class FlatironsRecordProcessor extends SierraRecordProcessor {
 	char locationsSubfield = 'b'; // usually stored in the 998, but for flatirons it is in the record number tag (907)
 	char sierraFixedFilesLocationsSubfield = 'h'; // typically subfield 'a' but is 'h' for flatirons
 

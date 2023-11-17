@@ -28,7 +28,7 @@ import java.sql.ResultSet;
  * User: Mark Noble
 
  */
-class SantaFeRecordProcessor extends IIIRecordProcessor {
+class SantaFeRecordProcessor extends SierraRecordProcessor {
 
 	SantaFeRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
