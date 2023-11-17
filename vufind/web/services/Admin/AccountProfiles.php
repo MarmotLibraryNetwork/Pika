@@ -73,4 +73,8 @@ class Admin_AccountProfiles extends ObjectEditor {
 		return UserAccount::userHasRole('opacAdmin');
 	}
 
+	function getInstructions(){
+		return 'Settings for interacting with library circulation system (ILS).';
+	}
+
 }
