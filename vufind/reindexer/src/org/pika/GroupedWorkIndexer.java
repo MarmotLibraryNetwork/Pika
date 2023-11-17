@@ -250,9 +250,6 @@ public class GroupedWorkIndexer {
 								case "Lion":
 									indexingRecordProcessors.put(sourceName, new LionRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
-								case "Addison":
-									indexingRecordProcessors.put(sourceName, new AddisonRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-									break;
 								case "Aurora":
 									indexingRecordProcessors.put(sourceName, new AuroraRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
