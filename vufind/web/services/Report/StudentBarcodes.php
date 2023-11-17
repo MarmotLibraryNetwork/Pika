@@ -18,7 +18,7 @@
  */
 
 /**
- * Displays Student Barcodes Created by cron
+ * Displays Student Barcodes Created by running command line script NashvilleAdHocBarcodes.php
  *
  * @category Pika
  * @author Mark Noble <pika@marmot.org>
