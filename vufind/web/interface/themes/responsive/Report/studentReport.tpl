@@ -22,9 +22,9 @@
 					<option value="checkedOut" {if !$showOverdueOnly}selected="selected"{/if}>Checked Out Items</option>
 				</select>
 				&nbsp;
-				<input type="submit" name="showData" value="Show Data" class="btn btn-sm btn-primary"/>
+				<input type="submit" name="showData" value="Show Data" class="btn btn-sm btn-primary">
 				&nbsp;
-				<input type="submit" name="download" value="Download CSV" class="btn btn-sm btn-info"/>
+				<input type="submit" name="download" value="Download CSV" class="btn btn-sm btn-info">
 			</form>
 
 			{if $reportData}
