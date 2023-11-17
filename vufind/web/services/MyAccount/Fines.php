@@ -18,12 +18,11 @@
  */
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
-class Fines extends MyAccount
-{
+
+class Fines extends MyAccount {
 	private $currency_symbol = '$';
 
-	function launch()
-	{
+	function launch(){
 		global $interface,
 		       $configArray;
 
@@ -118,23 +117,21 @@ class Fines extends MyAccount
  * @param $number          number to be displayed as monetary value
  * @return mixed|string    string to be displayed
  */
-function formatNumber($number)
-{
+function formatNumber($number){
 	// money_format() does not exist on windows
-	if (function_exists('money_format')) {
+	if (function_exists('money_format')){
 		return money_format('%.2n', $number);
-	} else {
+	}else{
 		return safeMoneyFormat($number);
 	}
 }
 
 // Windows alternatives
-function safeMoneyFormat($number)
-{
+function safeMoneyFormat($number){
 	// '' or NULL gets the locale values from environment variables
 	setlocale(LC_ALL, '');
 	$locale = localeconv();
-	forEach($locale as $key => $val) {
+	foreach ($locale as $key => $val){
 		$$key = $val;
 	}
 
@@ -160,16 +157,8 @@ function safeMoneyFormat($number)
 	// Format the absolute value of the number
 	$m = number_format(abs($number), $frac_digits, $mon_decimal_point, $mon_thousands_sep);
 	// Spaces between the number and symbol?
-	if ($sep_by_space) {
-		$space = ' ';
-	} else {
-		$space = '';
-	}
-	if ($cs_precedes) {
-		$m = $currency_symbol.$space.$m;
-	} else {
-		$m = $m.$space.$currency_symbol;
-	}
+	$space = $sep_by_space ? ' ' : '';
+	$m     = $cs_precedes ? $currency_symbol . $space . $m : $m . $space . $currency_symbol;
 	// HTML spaces
 	$m = str_replace(' ', '&nbsp;', $m);
 
@@ -179,14 +168,10 @@ function safeMoneyFormat($number)
 			$m = "($m)";
 			break;
 		case 1:
-			$m = $sign.$m;
-			break;
-		case 2:
-			$m = $m.$sign;
-			break;
 		case 3:
 			$m = $sign.$m;
 			break;
+		case 2:
 		case 4:
 			$m = $m.$sign;
 			break;
@@ -202,69 +187,69 @@ function safeMoneyFormat($number)
 // turning currency symbols into valid UTF-8.
 function safeMoneyFormatMakeUTF8($instr){
 	static $nibble_good_chars = false;
-	static $byte_map = array();
+	static $byte_map = [];
 
-	if (empty($byte_map)) {
-		for($x=128;$x<256;++$x){
-			$byte_map[chr($x)]=utf8_encode(chr($x));
+	if (empty($byte_map)){
+		for ($x = 128;$x < 256;++$x){
+			$byte_map[chr($x)] = utf8_encode(chr($x));
 		}
-		$cp1252_map=array(
-            "\x80"=>"\xE2\x82\xAC",    // EURO SIGN
-            "\x82" => "\xE2\x80\x9A",  // SINGLE LOW-9 QUOTATION MARK
-            "\x83" => "\xC6\x92",      // LATIN SMALL LETTER F WITH HOOK
-            "\x84" => "\xE2\x80\x9E",  // DOUBLE LOW-9 QUOTATION MARK
-            "\x85" => "\xE2\x80\xA6",  // HORIZONTAL ELLIPSIS
-            "\x86" => "\xE2\x80\xA0",  // DAGGER
-            "\x87" => "\xE2\x80\xA1",  // DOUBLE DAGGER
-            "\x88" => "\xCB\x86",      // MODIFIER LETTER CIRCUMFLEX ACCENT
-            "\x89" => "\xE2\x80\xB0",  // PER MILLE SIGN
-            "\x8A" => "\xC5\xA0",      // LATIN CAPITAL LETTER S WITH CARON
-            "\x8B" => "\xE2\x80\xB9",  // SINGLE LEFT-POINTING ANGLE QUOTATION MARK
-            "\x8C" => "\xC5\x92",      // LATIN CAPITAL LIGATURE OE
-            "\x8E" => "\xC5\xBD",      // LATIN CAPITAL LETTER Z WITH CARON
-            "\x91" => "\xE2\x80\x98",  // LEFT SINGLE QUOTATION MARK
-            "\x92" => "\xE2\x80\x99",  // RIGHT SINGLE QUOTATION MARK
-            "\x93" => "\xE2\x80\x9C",  // LEFT DOUBLE QUOTATION MARK
-            "\x94" => "\xE2\x80\x9D",  // RIGHT DOUBLE QUOTATION MARK
-            "\x95" => "\xE2\x80\xA2",  // BULLET
-            "\x96" => "\xE2\x80\x93",  // EN DASH
-            "\x97" => "\xE2\x80\x94",  // EM DASH
-            "\x98" => "\xCB\x9C",      // SMALL TILDE
-            "\x99" => "\xE2\x84\xA2",  // TRADE MARK SIGN
-            "\x9A" => "\xC5\xA1",      // LATIN SMALL LETTER S WITH CARON
-            "\x9B" => "\xE2\x80\xBA",  // SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
-            "\x9C" => "\xC5\x93",      // LATIN SMALL LIGATURE OE
-            "\x9E" => "\xC5\xBE",      // LATIN SMALL LETTER Z WITH CARON
-            "\x9F" => "\xC5\xB8"       // LATIN CAPITAL LETTER Y WITH DIAERESIS
-		);
-		foreach($cp1252_map as $k=>$v){
-			$byte_map[$k]=$v;
+		$cp1252_map = [
+			"\x80" => "\xE2\x82\xAC",  // EURO SIGN
+			"\x82" => "\xE2\x80\x9A",  // SINGLE LOW-9 QUOTATION MARK
+			"\x83" => "\xC6\x92",      // LATIN SMALL LETTER F WITH HOOK
+			"\x84" => "\xE2\x80\x9E",  // DOUBLE LOW-9 QUOTATION MARK
+			"\x85" => "\xE2\x80\xA6",  // HORIZONTAL ELLIPSIS
+			"\x86" => "\xE2\x80\xA0",  // DAGGER
+			"\x87" => "\xE2\x80\xA1",  // DOUBLE DAGGER
+			"\x88" => "\xCB\x86",      // MODIFIER LETTER CIRCUMFLEX ACCENT
+			"\x89" => "\xE2\x80\xB0",  // PER MILLE SIGN
+			"\x8A" => "\xC5\xA0",      // LATIN CAPITAL LETTER S WITH CARON
+			"\x8B" => "\xE2\x80\xB9",  // SINGLE LEFT-POINTING ANGLE QUOTATION MARK
+			"\x8C" => "\xC5\x92",      // LATIN CAPITAL LIGATURE OE
+			"\x8E" => "\xC5\xBD",      // LATIN CAPITAL LETTER Z WITH CARON
+			"\x91" => "\xE2\x80\x98",  // LEFT SINGLE QUOTATION MARK
+			"\x92" => "\xE2\x80\x99",  // RIGHT SINGLE QUOTATION MARK
+			"\x93" => "\xE2\x80\x9C",  // LEFT DOUBLE QUOTATION MARK
+			"\x94" => "\xE2\x80\x9D",  // RIGHT DOUBLE QUOTATION MARK
+			"\x95" => "\xE2\x80\xA2",  // BULLET
+			"\x96" => "\xE2\x80\x93",  // EN DASH
+			"\x97" => "\xE2\x80\x94",  // EM DASH
+			"\x98" => "\xCB\x9C",      // SMALL TILDE
+			"\x99" => "\xE2\x84\xA2",  // TRADE MARK SIGN
+			"\x9A" => "\xC5\xA1",      // LATIN SMALL LETTER S WITH CARON
+			"\x9B" => "\xE2\x80\xBA",  // SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
+			"\x9C" => "\xC5\x93",      // LATIN SMALL LIGATURE OE
+			"\x9E" => "\xC5\xBE",      // LATIN SMALL LETTER Z WITH CARON
+			"\x9F" => "\xC5\xB8"       // LATIN CAPITAL LETTER Y WITH DIAERESIS
+		];
+		foreach ($cp1252_map as $k => $v){
+			$byte_map[$k] = $v;
 		}
 	}
-	if (!$nibble_good_chars) {
-		$ascii_char='[\x00-\x7F]';
-		$cont_byte='[\x80-\xBF]';
-		$utf8_2='[\xC0-\xDF]'.$cont_byte;
-		$utf8_3='[\xE0-\xEF]'.$cont_byte.'{2}';
-		$utf8_4='[\xF0-\xF7]'.$cont_byte.'{3}';
-		$utf8_5='[\xF8-\xFB]'.$cont_byte.'{4}';
+	if (!$nibble_good_chars){
+		$ascii_char        = '[\x00-\x7F]';
+		$cont_byte         = '[\x80-\xBF]';
+		$utf8_2            = '[\xC0-\xDF]' . $cont_byte;
+		$utf8_3            = '[\xE0-\xEF]' . $cont_byte . '{2}';
+		$utf8_4            = '[\xF0-\xF7]' . $cont_byte . '{3}';
+		$utf8_5            = '[\xF8-\xFB]' . $cont_byte . '{4}';
 		$nibble_good_chars = "@^($ascii_char+|$utf8_2|$utf8_3|$utf8_4|$utf8_5)(.*)$@s";
 	}
 
-	$outstr='';
-	$char='';
-	$rest='';
-	while((strlen($instr))>0){
-		if(1==preg_match($nibble_good_chars,$instr,$match)){
-			$char=$match[1];
-			$rest=$match[2];
-			$outstr.=$char;
-		}elseif(1==preg_match('@^(.)(.*)$@s',$instr,$match)){
-			$char=$match[1];
-			$rest=$match[2];
-			$outstr.=$byte_map[$char];
+	$outstr = '';
+	$char   = '';
+	$rest   = '';
+	while ((strlen($instr)) > 0){
+		if (1 == preg_match($nibble_good_chars, $instr, $match)){
+			$char   = $match[1];
+			$rest   = $match[2];
+			$outstr .= $char;
+		}elseif (1 == preg_match('@^(.)(.*)$@s', $instr, $match)){
+			$char   = $match[1];
+			$rest   = $match[2];
+			$outstr .= $byte_map[$char];
 		}
-		$instr=$rest;
+		$instr = $rest;
 	}
 	return $outstr;
 }

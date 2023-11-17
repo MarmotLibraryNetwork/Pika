@@ -19,22 +19,20 @@
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
-class MyAccount_Profile extends MyAccount
-{
-	function launch()
-	{
+class MyAccount_Profile extends MyAccount {
+	function launch(){
 		global $configArray;
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 
 		$ils = $configArray['Catalog']['ils'];
-		if ($ils == 'Sierra') {
+		if ($ils == 'Sierra'){
 			// SMS Options are for the iii's ils-integration SMS service only
 			$smsEnabled = $configArray['Catalog']['smsEnabled'];
-			if ($smsEnabled) {
+			if ($smsEnabled){
 				$interface->assign('showSMSNoticesInProfile', true);
 				$smsTermsLink = $configArray['Catalog']['smsTermsLink'];
-				if ($smsTermsLink) {
+				if ($smsTermsLink){
 					$interface->assign('smsTermsLink', $smsTermsLink);
 				}
 			}
