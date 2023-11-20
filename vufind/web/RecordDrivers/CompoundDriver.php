@@ -78,8 +78,7 @@ EOQ;
 			];
 			$sectionObject  = $fedoraUtils->getObject($this->getUniqueID());
 			$sectionDetails = $this->loadPagesForSection($sectionObject, $sectionDetails);
-			$pikaLogger->debug("no result section details for this object" . $this->getUniqueID());
-			$pikaLogger->debug($sectionDetails);
+			$pikaLogger->debug("No result section details for this object " . $this->getUniqueID(), $sectionDetails);
 
 			$sections[$this->getUniqueID()] = $sectionDetails;
 		}else{
@@ -173,24 +172,21 @@ EOQ;
 
 		$results = $fedoraUtils->doSparqlQuery($query);
 		global $pikaLogger;
-		$pikaLogger->debug("Pages for section with object id : " .$sectionObject->id);
-		$pikaLogger->debug(implode(", ", $results));
+		$pikaLogger->debug("Pages for section with object id : " .$sectionObject->id, $results);
 
 		// Get rid of the "extra" info...
+
 		$map   = function ($o){
 			foreach ($o as $key => &$info){
 				$info = $info['value'];
 			}
-
 			$o = array_filter($o);
-
 			return $o;
 		};
 		$pages = array_map($map, $results);
-		if(!empty($pages))
-		{
-		$pikaLogger->debug($pages);
-		}
+//		if (!empty($pages)){
+//			$pikaLogger->debug("Filtered pages info for section with object id : " . $sectionObject->id, $pages);
+//		}
 		// Sort the pages into their proper order.
 		$sort = function ($a, $b){
 			$a = (is_array($a) && isset($a['page'])) ? $a['page'] : 0;
