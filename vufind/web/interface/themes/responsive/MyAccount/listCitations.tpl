@@ -10,7 +10,7 @@
 {/if}
 <div id="listTopButtons" class="btn-toolbar">
 	<div class="btn-group">
-		<a value="viewList" id="FavEdit" class="btn btn-sm btn-info" href="/MyAccount/MyList/{$favList->id}">Return to List</a>
+		<a value="viewList" id="FavEdit" class="btn btn-sm btn-info" href="/MyAccount/MyList/{$favList->id}?page={$pageNum}&pagesize={$pageSize}&sort={$listSort}">Return to List</a>
 	</div>
 </div>
 <div class="alert alert-info">Citations in {$citationFormat} format.</div>

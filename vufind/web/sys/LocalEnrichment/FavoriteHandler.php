@@ -648,14 +648,14 @@ class FavoriteHandler {
 		if (!empty($this->catalogIds)){
 			/** @var SearchObject_UserListSolr searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject('UserListSolr');
-			$searchObject->setLimit(2000);
+			$searchObject->setLimit($pageSize);
+
 			$searchObject->userListSort = $this->isUserListSort ? $this->userListSortOptions[$this->sort] : null;
 			$searchObject->init();
 			if (!$this->isUserListSort){
 				$searchObject->setSort($this->sort);
-				$searchObject->setLimit($pageSize);
-				$searchObject->setPage($page);
 			}
+			$searchObject->setPage(1);
 			$searchObject->setQueryIDs($this->catalogIds);
 			$catalogResults = $searchObject->processSearch();
 			if (!empty($catalogResults['response']['docs'])){
@@ -680,8 +680,6 @@ class FavoriteHandler {
 				$this->archiveIds = array_slice($this->archiveIds, $offset, $pageSize);
 				if(!$this->isUserListSort){
 					$archiveObject->setSort($this->sort);
-					$archiveObject->setLimit($pageSize);
-					$archiveObject->setPage($page);
 				}
 				$archiveObject->setQueryIds($this->archiveIds);
 				$archiveResults = $archiveObject->processSearch();

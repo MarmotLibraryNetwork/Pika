@@ -5,8 +5,8 @@
 	{if $message}<div class="error">{$message|translate}</div>{/if}
 	<form action="/MyAccount/CiteList" method="get" class="form" id="citeListForm">
 		<input type="hidden" name="listId" value="{$listId|escape}">
-		<input type="hidden" name="myListPage" id="myListPage" value="{$pageNum}">
-		<input type="hidden" name="myListPageSize" id="myListPageSize" value="{$pageSize}">
+		<input type="hidden" name="page" id="myListPage" value="{$pageNum}">
+		<input type="hidden" name="pagesize" id="myListPageSize" value="{$pageSize}">
 		<input type="hidden" name="sort" id="myListSort" value="{$listSort}">
 		<div class="form-group">
 			<label for="citationFormat">{translate text='Citation Format'}:</label>

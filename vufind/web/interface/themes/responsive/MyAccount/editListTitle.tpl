@@ -13,11 +13,11 @@
 				<h3 id="resourceTitle">{$recordDriver->getTitle()|escape:"html"}</h3>
 
 				<form method="post" id="listEntryEditForm" action="/MyAccount/Edit" class="form-horizontal">
-					<input type="hidden" name="listEntry" value="{$listEntry->id}">
-					<input type="hidden" name="list_id" value="{$list->id}">
-					<input type="hidden" name="myListPage" value="{$pageNum}">
-					<input type="hidden" name="myListPageSize" value="{$pageSize}">
-					<input type="hidden" name="myListSort" value="{$listSort}">
+					<input type="hidden" id="listEntry" name="listEntry" value="{$listEntry->id}">
+					<input type="hidden" id="list_id" name="list_id" value="{$list->id}">
+					<input type="hidden" id="myListPage" name="page" value="{$pageNum}">
+					<input type="hidden" id = "myListPageSize" name="pagesize" value="{$pageSize}">
+					<input type="hidden" id = "myListSort" name="sort" value="{$listSort}">
 					<div>
 						<div class="form-group">
 							<label for="listName" class="col-sm-3">{translate text='List'}: </label>

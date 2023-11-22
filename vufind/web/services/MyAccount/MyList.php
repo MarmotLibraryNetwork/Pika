@@ -137,14 +137,14 @@ class MyAccount_MyList extends MyAccount {
 				}
 				//Redirect back to avoid having the parameters stay in the URL (keeping both pagesize and current page).
 				$params = [];
-				if (!empty($_REQUEST['myListPageSize']) && is_numeric($_REQUEST['myListPageSize'])){
-					$params['pagesize'] = $_REQUEST['myListPageSize'];
+				if (!empty($_REQUEST['pagesize']) && is_numeric($_REQUEST['pagesize'])){
+					$params['pagesize'] = $_REQUEST['pagesize'];
 				}
-				if (!empty($_REQUEST['myListPage']) && is_numeric($_REQUEST['myListPage'])){
-					$params['page'] = $_REQUEST['myListPage'];
+				if (!empty($_REQUEST['page']) && is_numeric($_REQUEST['page'])){
+					$params['page'] = $_REQUEST['page'];
 				}
-				if (!empty($_REQUEST['myListSort']) && in_array($_REQUEST['myListSort'],array('author','title','dateAdded','recentlyAdded','custom'))){
-					$params['sort'] = $_REQUEST['myListSort'];
+				if (!empty($_REQUEST['sort']) && in_array($_REQUEST['sort'],array('author','title','dateAdded','recentlyAdded','custom'))){
+					$params['sort'] = $_REQUEST['sort'];
 				}
 				if (!empty($_REQUEST['filter'])){
 					$params['filter'] = $_REQUEST['filter'];

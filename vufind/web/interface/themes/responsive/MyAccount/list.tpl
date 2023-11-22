@@ -11,9 +11,9 @@
 			{foreach from=$smarty.get.filter item="filter"}<input type="hidden" name="filter[]" value="{$filter|escape}">{/foreach}
 			<input type="hidden" name="myListActionHead" id="myListActionHead">
 			<input type="hidden" name="myListActionData" id="myListActionData">
-			<input type="hidden" name="myListPage" id="myListPage">
-			<input type="hidden" name="myListPageSize" id="myListPageSize">
-			<input type="hidden" name="myListSort" id="myListSort">
+			<input type="hidden" name="page" id="myListPage">
+			<input type="hidden" name="pagesize" id="myListPageSize">
+			<input type="hidden" name="sort" id="myListSort">
 			<h3 id="listTitle">{$favList->title|escape:"html"}</h3>
 			{if $notes}
 				<div id="listNotes" class="alert alert-info">
