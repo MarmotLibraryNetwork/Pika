@@ -27,7 +27,6 @@
  */
 namespace Pika\PatronDrivers;
 
-
 use Location;
 
 class Flatirons extends Sierra
@@ -125,7 +124,7 @@ class Flatirons extends Sierra
 			'maxLength'   => 16,
 			'required'    => true
 		];
-		if ($libSubDomain == 'boulder'){
+		if ($libSubDomain == 'boulder' || $libSubDomain == 'longmont'){
 			$fields[] = [
 				'property'    => 'email',
 				'type'        => 'email',
