@@ -1133,7 +1133,7 @@ abstract class IslandoraDriver extends RecordInterface {
 	public function getModsData(){
 		global $timer;
 		if ($this->modsData == null){
-			$fedoraUtils = FedoraUtils::getInstance();
+			$fedoraUtils    = FedoraUtils::getInstance();
 			$this->modsData = $fedoraUtils->getModsData($this->getArchiveObject());
 			$timer->logTime('Loaded MODS data for ' . $this->getUniqueID());
 		}

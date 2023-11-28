@@ -178,28 +178,32 @@ class FedoraUtils {
 	 * @return SimpleXMLElement
 	 */
 	public function getModsData($archiveObject){
-		global $timer;
-		if (array_key_exists($archiveObject->id, $this->modsCache)) {
-			$modsData = $this->modsCache[$archiveObject->id];
-		}else{
-			$modsStream = $archiveObject->getDatastream('MODS');
-			if ($modsStream){
-				$timer->logTime('Retrieved mods stream from fedora ' . $archiveObject->id);
-				try{
-					$modsData = $modsStream->content;
-				}catch (Exception $e){
-					echo("Unable to load MODS data for " . $archiveObject->id);
-				}
-				$timer->logTime('Retrieved mods stream content from fedora ' . $archiveObject->id);
-				$this->modsCache[$archiveObject->id] = $modsData;
+		if (isset($archiveObject)){
+			if (array_key_exists($archiveObject->id, $this->modsCache)){
+				$modsData = $this->modsCache[$archiveObject->id];
 			}else{
-				return null;
+				$modsStream = $archiveObject->getDatastream('MODS');
+				if ($modsStream){
+					global $timer;
+					$timer->logTime('Retrieved mods stream from fedora ' . $archiveObject->id);
+					try {
+						$modsData = $modsStream->content;
+					} catch (Exception $e){
+						echo("Unable to load MODS data for " . $archiveObject->id);
+					}
+					$timer->logTime('Retrieved mods stream content from fedora ' . $archiveObject->id);
+					$this->modsCache[$archiveObject->id] = $modsData;
+				}else{
+					return null;
+				}
 			}
+			return $modsData;
+		}else{
+			return null;
 		}
-		return $modsData;
 	}
 
-	private $modsCache = array();
+	private $modsCache = [];
 
 	public function doSparqlQuery($query){
 		$results = $this->repository->ri->sparqlQuery($query);
