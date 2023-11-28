@@ -1440,22 +1440,22 @@ abstract class HorizonROA implements \DriverInterface {
 		}
 	}
 
-	private function getStaffSessionToken(){
-		global $configArray;
-
-		//Get a staff token
-		$staffUser   = $configArray['Catalog']['webServiceStaffUser'];
-		$staffPass   = $configArray['Catalog']['webServiceStaffPass'];
-		$body        = ['login' => $staffUser, 'password' => $staffPass];
-		$xtraHeaders = ['sd-originating-app-id' => 'Pika'];
-		$res         = $this->getWebServiceResponse($this->webServiceURL . '/user/staff/login', $body, null, "POST", $xtraHeaders);
-
-		if (!$res || !isset($res->sessionToken)){
-			return false;
-		}
-
-		return $res->sessionToken;
-	}
+//	private function getStaffSessionToken(){
+//		global $configArray;
+//
+//		//Get a staff token
+//		$staffUser   = $configArray['Catalog']['webServiceStaffUser'];
+//		$staffPass   = $configArray['Catalog']['webServiceStaffPass'];
+//		$body        = ['login' => $staffUser, 'password' => $staffPass];
+//		$xtraHeaders = ['sd-originating-app-id' => 'Pika'];
+//		$res         = $this->getWebServiceResponse($this->webServiceURL . '/user/staff/login', $body, null, "POST", $xtraHeaders);
+//
+//		if (!$res || !isset($res->sessionToken)){
+//			return false;
+//		}
+//
+//		return $res->sessionToken;
+//	}
 
 	/**
 	 * @param User $patron                   The User Object to make updates to
