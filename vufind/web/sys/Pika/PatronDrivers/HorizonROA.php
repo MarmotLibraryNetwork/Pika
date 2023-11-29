@@ -157,6 +157,21 @@ abstract class HorizonROA implements \DriverInterface {
 		}
 	}
 
+	/**
+	 * Log in a user via the Horizon ROA web service.
+	 *
+	 * This function attempts to log in a user by making a request to the Horizon ROA web service login endpoint.
+	 *
+	 * @param string $barcode  The barcode associated with the user.
+	 * @param string $password The password for the user.
+	 *
+	 * @return array An array containing login information. The array has three elements:
+	 *               - Element 0 (bool): Indicates if the login is valid (true) or not (false).
+	 *               - Element 1 (mixed): The session token if the login was successful, otherwise false.
+	 *               - Element 2 (mixed): The user ID if the login was successful, otherwise false.
+	 *
+	 * @throws Exception If there is an error in processing the web service response.
+	 */
 	protected function loginViaWebService($barcode, $password) {
 		$memCacheKey = "horizon_ROA_session_token_info_$barcode";
 		$session     = $this->cache->get($memCacheKey);
