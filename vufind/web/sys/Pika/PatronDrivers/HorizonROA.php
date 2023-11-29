@@ -24,8 +24,6 @@
  * @author   Pascal Brammeier
  * @author   Chris Froese
  *
- *
- *
  */
 
 namespace Pika\PatronDrivers;
@@ -34,9 +32,7 @@ use User;
 use \Pika\Logger;
 use \Pika\Cache;
 
-
 abstract class HorizonROA implements \DriverInterface {
-
 	private static $sessionIdsForUsers = [];
 	private $webServiceURL;
 	private $clientId;
@@ -63,7 +59,6 @@ abstract class HorizonROA implements \DriverInterface {
 		}
 		return $this->logger;
 	}
-
 
 	/**
 	 * Split a name into lastName, firstName.
@@ -95,7 +90,6 @@ abstract class HorizonROA implements \DriverInterface {
 		}
 		return $this->webServiceURL;
 	}
-
 
 	/**
 	 * @param string $apiCall           The Specific call to build the URL with-- URL endpoint
@@ -165,45 +159,46 @@ abstract class HorizonROA implements \DriverInterface {
 
 	protected function loginViaWebService($barcode, $password) {
 		$memCacheKey = "horizon_ROA_session_token_info_$barcode";
-// This bit is breaking login after PIN updates. We should only store session info in a single store (memcache) to make access reliable
-//		$session     = $this->cache->get($memCacheKey);
-//		if ($session) {
-//			[, $sessionToken, $horizonRoaUserID] = $session;
-//			self::$sessionIdsForUsers[$horizonRoaUserID] = $sessionToken;
-//		} else {
-			// $loginDescribeResponse = $this->getWebServiceResponse( '/user/patron/login/describe');
-			$session           = [false, false, false];
-			$loginUserUrl      =  '/user/patron/login';
-			$params            = [
-				'barcode'  => $barcode,
-				'password' => $password,
-			];
-			$loginUserResponse = $this->getWebServiceResponse($loginUserUrl, $params);
-			if (!empty($loginUserResponse->sessionToken)) {
-				//We got at valid user (A bad call will have isset($loginUserResponse->messageList) )
-				$horizonRoaUserID                            = $loginUserResponse->patronKey;
-				$sessionToken                                = $loginUserResponse->sessionToken;
-				self::$sessionIdsForUsers[$horizonRoaUserID] = $sessionToken;
-				$session = [true, $sessionToken, $horizonRoaUserID];
-				global $configArray;
-				$this->cache->set($memCacheKey, $session, $configArray['Caching']['horizon_roa_session_token']);
-			} elseif (isset($loginUserResponse->messageList)) {
-				$errorMessage = 'Horizon ROA Webservice Login Error: ';
-				foreach ($loginUserResponse->messageList as $error){
-					$errorMessage .= $error->message.'; ';
-				}
-				$this->getLogger()->error($errorMessage);
+		$session     = $this->cache->get($memCacheKey);
+
+		if ($session){
+			return $session;
+		}
+		// $loginDescribeResponse = $this->getWebServiceResponse( '/user/patron/login/describe');
+		$session           = [false, false, false];
+		$loginUserUrl      =  '/user/patron/login';
+		$params            = [
+			'barcode'  => $barcode,
+			'password' => $password,
+		];
+		$loginUserResponse = $this->getWebServiceResponse($loginUserUrl, $params);
+		if (!empty($loginUserResponse->sessionToken)) {
+			//We got at valid user (A bad call will have isset($loginUserResponse->messageList) )
+			$horizonRoaUserID                            = $loginUserResponse->patronKey;
+			$sessionToken                                = $loginUserResponse->sessionToken;
+
+			$session = [true, $sessionToken, $horizonRoaUserID];
+			global $configArray;
+			$this->cache->set($memCacheKey, $session, $configArray['Caching']['horizon_roa_session_token']);
+		} elseif (isset($loginUserResponse->messageList)) {
+			$errorMessage = 'Horizon ROA Webservice Login Error: ';
+			foreach ($loginUserResponse->messageList as $error){
+				$errorMessage .= $error->message.'; ';
 			}
-		// }
+			$this->getLogger()->error($errorMessage);
+		}
+
 		return $session;
 	}
 
 	private function getSessionToken(User $patron){
-		$horizonRoaUserId = $patron->ilsUserId;
+		$barcode = $patron->barcode;
+		$memCacheKey = "horizon_ROA_session_token_info_$barcode";
+		$session     = $this->cache->get($memCacheKey);
 
 		//Get the session token for the user
-		if (isset(self::$sessionIdsForUsers[$horizonRoaUserId])){
-			return self::$sessionIdsForUsers[$horizonRoaUserId];
+		if ($session){
+			return $session[1];
 		}else{
 			[, $sessionToken] = $this->loginViaWebService($patron->barcode, $patron->getPassword());
 			return $sessionToken;
