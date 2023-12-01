@@ -680,6 +680,13 @@ public class FormatDetermination {
 			}
 		}
 
+		// Playaway Launchpad
+		if (printFormats.contains("PlayawayLaunchpad")){
+			printFormats.clear();
+			printFormats.add("PlayawayLaunchpad");
+			return;
+		}
+
 		// AudioBook Devices
 		if (printFormats.contains("PlayawayView")){
 			printFormats.clear();
@@ -1174,6 +1181,8 @@ public class FormatDetermination {
 						result.add("VoxBooks");
 					} else if (noteValue.contains("wonderbook")) {
 						result.add("WonderBook");
+					} else if (noteValue.contains("playaway launchpad")) {
+						result.add("PlayawayLaunchpad");
 					} else if (noteValue.contains("playaway view")) {
 						result.add("PlayawayView");
 					} else if (noteValue.contains("playaway")) {
