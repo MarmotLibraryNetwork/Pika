@@ -1066,14 +1066,19 @@ public class FormatDetermination {
 	private void getFormatFromPhysicalDescription(Record record, Set<String> result) {
 		List<DataField> physicalDescription = MarcUtil.getDataFields(record, "300");
 		if (physicalDescription != null) {
-			Iterator<DataField> fieldsIter = physicalDescription.iterator();
+			Iterator<DataField> fieldsIter   = physicalDescription.iterator();
 			DataField           field;
 			while (fieldsIter.hasNext()) {
 				field = fieldsIter.next();
+				boolean             hasDigital   = false;
+				boolean             hasSoundDisc = false;
 				List<Subfield> subFields = field.getSubfields();
 				for (Subfield subfield : subFields) {
 					if (subfield.getCode() != 'e') {
 						String physicalDescriptionData = subfield.getData().toLowerCase();
+						if (physicalDescriptionData.contains("digital")){
+							hasDigital = true;
+						}
 						if (physicalDescriptionData.contains("large type") || physicalDescriptionData.contains("large print")) {
 							result.add("LargePrint");
 						} else if (physicalDescriptionData.contains("braille")){
@@ -1090,9 +1095,14 @@ public class FormatDetermination {
 							result.add("Software");
 						} else if (physicalDescriptionData.contains("sound cassettes")) {
 							result.add("SoundCassette");
-						} else if (physicalDescriptionData.contains("sound disc") || physicalDescriptionData.contains("audio disc") || physicalDescriptionData.contains("compact disc")) {
-							//TODO "compact disc" should be it's own entry to CD
+						} else if (physicalDescriptionData.contains("compact disc")){
+							result.add("CD");
+						} else if (physicalDescriptionData.contains("sound disc") || physicalDescriptionData.contains("audio disc")) {
+							hasSoundDisc = true;
 							result.add("SoundDisc");
+//						} else if (physicalDescriptionData.contains("sound disc") || physicalDescriptionData.contains("audio disc") || physicalDescriptionData.contains("compact disc")) {
+//							//TODO "compact disc" should be it's own entry to CD
+//							result.add("SoundDisc");
 						} else if (physicalDescriptionData.contains("wonderbook")) {
 							result.add("WonderBook");
 						}else if (physicalDescriptionData.contains("vox book")){
@@ -1104,6 +1114,19 @@ public class FormatDetermination {
 						if (result.size() == 0 && subfield.getCode() == 'f' && physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")) {
 							result.add("Book");
 						}
+					}
+				}
+				if (hasSoundDisc && hasDigital){
+					if (result.contains("MusicRecording")){
+						// Since MusicRecording is determined by leader at beginning of format determination,
+						// it should be reliably already determined at this point
+						result.add("MusicCD");
+						result.remove("SoundDisc");
+						result.remove("MusicRecording");
+					} else {
+						// Otherwise it should be at least a CD.
+						// (I might be wrong here, remove or refine if you determine so.)
+						result.add("CD");
 					}
 				}
 			}
