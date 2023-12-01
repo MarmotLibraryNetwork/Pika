@@ -697,9 +697,8 @@ public class FormatDetermination {
 			return;
 		}
 		// Video Things
-		if(printFormats.contains("DVD") || printFormats.contains("Blu-ray"))
-		{
-			if(isComboPack(record)) {
+		if (printFormats.contains("DVD") || printFormats.contains("Blu-ray")) {
+			if (isComboPack(record)) {
 				printFormats.clear();
 				printFormats.add("DVDBlu-rayCombo");
 			}
@@ -712,10 +711,8 @@ public class FormatDetermination {
 				printFormats.remove("Video");
 			}
 		}
-		if ((printFormats.contains("CDROM") && printFormats.contains("DVD")) || (printFormats.contains("CDROM") && printFormats.contains("VideoDisc"))){
-			if(printFormats.contains("CDROM")){
-				printFormats.remove("CDROM");
-			}
+		if (printFormats.contains("CDROM") && (printFormats.contains("DVD")) || printFormats.contains("VideoDisc")){
+			printFormats.remove("CDROM");
 		}
 		if(printFormats.contains("WindowsGame") && printFormats.contains("VideoDisc")){
 			printFormats.remove("WindowsGame");
@@ -740,8 +737,11 @@ public class FormatDetermination {
 			printFormats.clear();
 			printFormats.add("MusicCassette");
 		}
+		if (printFormats.contains("MusicRecording") && printFormats.contains("SoundDisc")) {
+			// This is likely music phonographs, which get determined as music recordings
+			printFormats.remove("SoundDisc");
+		}
 		if (printFormats.contains("MusicRecording") && (printFormats.contains("CD") || printFormats.contains("CompactDisc")
-				|| printFormats.contains("SoundDisc")
 				|| printFormats.contains("DVD") || printFormats.contains("Blu-ray") /* likely accompanying material */
 		)){
 			if(printFormats.contains("DVD"))
@@ -1091,6 +1091,7 @@ public class FormatDetermination {
 						} else if (physicalDescriptionData.contains("sound cassettes")) {
 							result.add("SoundCassette");
 						} else if (physicalDescriptionData.contains("sound disc") || physicalDescriptionData.contains("audio disc") || physicalDescriptionData.contains("compact disc")) {
+							//TODO "compact disc" should be it's own entry to CD
 							result.add("SoundDisc");
 						} else if (physicalDescriptionData.contains("wonderbook")) {
 							result.add("WonderBook");
