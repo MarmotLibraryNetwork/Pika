@@ -95,6 +95,18 @@ class Record_AJAX extends AJAXHandler {
 			}
 			$autoCancels = $this->getAutoCancelHoldMessages($patronLibrary);
 
+			global $configArray;
+			$ils = $configArray['Catalog']['ils'];
+			if ($ils == 'Sierra' && $user->isStaff()){
+				$interface->assign('allowStaffPlacedHoldRequest', true);
+				if ($user->getAccountProfile()->usingPins()) {
+					$patronBarcodeLabel = !empty($patronLibrary->loginFormUsernameLabel) ? $patronLibrary->loginFormUsernameLabel : 'Library Card Number';
+				} else {
+					$patronBarcodeLabel = !empty($patronLibrary->loginFormPasswordLabel) ? $patronLibrary->loginFormPasswordLabel : 'Library Card Number';
+				}
+				$interface->assign('patronBarcodeLabel', $patronBarcodeLabel);
+			}
+
 			foreach ($linkedUsers as $linkedUser){
 				$this->getMaxHoldsWarnings($linkedUser);
 
@@ -231,98 +243,103 @@ class Record_AJAX extends AJAXHandler {
 			if (!empty($_REQUEST['campus'])){
 				//Check to see what account we should be placing a hold for
 				//Rather than asking the user for this explicitly, we do it based on the pickup location
-				$campus = $_REQUEST['campus'];
+				$campus               = $_REQUEST['campus'];
+				$cancelDate           = empty($_REQUEST['canceldate']) ? null : trim($_REQUEST['canceldate']);
+				$patron               = null;
+				$doingStaffPlacedHold = !empty($_REQUEST['patronBarcode']);
 
-				$patron = null;
-				if (!empty($_REQUEST['selectedUser'])){
-					$selectedUserId = $_REQUEST['selectedUser'];
-					if (is_numeric($selectedUserId)){ // we expect an id
-						if ($user->id == $selectedUserId){
-							$patron = $user;
-						}else{
+				if (!$doingStaffPlacedHold){
+					if (!empty($_REQUEST['selectedUser'])){
+						$selectedUserId = $_REQUEST['selectedUser'];
+						if (is_numeric($selectedUserId)){ // we expect an id
+							if ($user->id == $selectedUserId){
+								$patron = $user;
+							}else{
+								$linkedUsers = $user->getLinkedUsers();
+								foreach ($linkedUsers as $tmpUser){
+									if ($tmpUser->id == $selectedUserId){
+										$patron = $tmpUser;
+										break;
+									}
+								}
+							}
+						}
+					}else{
+						//block below sets the $patron variable to place the hold through pick-up location. (shouldn't be needed anymore. plb 10-27-2015)
+						$location = new Location();
+						/** @var Location[] $userPickupLocations */
+						$userPickupLocations = $location->getPickupBranches($user);
+						foreach ($userPickupLocations as $tmpLocation){
+							if ($tmpLocation->code == $campus){
+								$patron = $user;
+								break;
+							}
+						}
+						if ($patron == null){
+							//Check linked users
 							$linkedUsers = $user->getLinkedUsers();
 							foreach ($linkedUsers as $tmpUser){
-								if ($tmpUser->id == $selectedUserId){
-									$patron = $tmpUser;
+								$location = new Location();
+								/** @var Location[] $userPickupLocations */
+								$userPickupLocations = $location->getPickupBranches($tmpUser);
+								foreach ($userPickupLocations as $tmpLocation){
+									if ($tmpLocation->code == $campus){
+										$patron = $tmpUser;
+										break;
+									}
+								}
+								if ($patron != null){
 									break;
 								}
-							}
-						}
-					}
-				}else{
-					//block below sets the $patron variable to place the hold through pick-up location. (shouldn't be needed anymore. plb 10-27-2015)
-					$location = new Location();
-					/** @var Location[] $userPickupLocations */
-					$userPickupLocations = $location->getPickupBranches($user);
-					foreach ($userPickupLocations as $tmpLocation){
-						if ($tmpLocation->code == $campus){
-							$patron = $user;
-							break;
-						}
-					}
-					if ($patron == null){
-						//Check linked users
-						$linkedUsers = $user->getLinkedUsers();
-						foreach ($linkedUsers as $tmpUser){
-							$location = new Location();
-							/** @var Location[] $userPickupLocations */
-							$userPickupLocations = $location->getPickupBranches($tmpUser);
-							foreach ($userPickupLocations as $tmpLocation){
-								if ($tmpLocation->code == $campus){
-									$patron = $tmpUser;
-									break;
-								}
-							}
-							if ($patron != null){
-								break;
 							}
 						}
 					}
 				}
-				if ($patron == null){
+				if ($patron == null && !$doingStaffPlacedHold){
 					$results = [
 						'success' => false,
 						'message' => 'You must select a valid user to place the hold for.',
 						'title'   => 'Select valid user',
 					];
-				}else{
-					$homeLibrary = $patron->getHomeLibrary();
-
-					$cancelDate = empty($_REQUEST['canceldate']) ? null : trim($_REQUEST['canceldate']);
-
-					if (isset($_REQUEST['selectedItem'])){
+				}
+				else{
+					if ($doingStaffPlacedHold){
+						$patronBarcode = trim(strip_tags($_REQUEST['patronBarcode']));
+						$return        = $user->staffPlacedHold($patronBarcode, $shortId, $campus, $cancelDate, $_REQUEST['selectedItem'] ?? null, $_REQUEST['volume'] ?? null);
+					}elseif (isset($_REQUEST['selectedItem'])){
 						$return = $patron->placeItemHold($shortId, $_REQUEST['selectedItem'], $campus, $cancelDate);
+					}elseif (isset($_REQUEST['volume'])){
+						$return = $patron->placeVolumeHold($shortId, $_REQUEST['volume'], $campus, $cancelDate);
 					}else{
-						if (isset($_REQUEST['volume'])){
-							$return = $patron->placeVolumeHold($shortId, $_REQUEST['volume'], $campus, $cancelDate);
-						}else{
-
-							$return = $patron->placeHold($shortId, $campus, $cancelDate);
-							// If the hold requires an item-level hold, but there is only one item to choose from, just complete the hold with that one item
-							if (!empty($return['items']) && count($return['items']) == 1){
-								global $pikaLogger;
-								$logger = $pikaLogger->withName(__CLASS__);
-								$logger->notice("Automatically placing item-level hold on single holdable item for {$return['items'][0]['itemNumber']}");
-								$return = $patron->placeItemHold($shortId, $return['items'][0]['itemNumber'], $campus, $cancelDate);
-							}
+						$return = $patron->placeHold($shortId, $campus, $cancelDate);
+						// If the hold requires an item-level hold, but there is only one item to choose from, just complete the hold with that one item
+						if (!empty($return['items']) && count($return['items']) == 1){
+							global $pikaLogger;
+							$logger = $pikaLogger->withName(__CLASS__);
+							$logger->notice("Automatically placing item-level hold on single holdable item for {$return['items'][0]['itemNumber']}");
+							$return = $patron->placeItemHold($shortId, $return['items'][0]['itemNumber'], $campus, $cancelDate);
 						}
 					}
 
 					if (!empty($return['items'])){ // only go to item-level hold prompt if there are holdable items to choose from
+						$items = $return['items'];
 						$interface->assign('campus', $campus);
 						$interface->assign('canceldate', $cancelDate);
-						$items = $return['items'];
 						$interface->assign('items', $items);
 						$interface->assign('message', $return['message']);
 						$interface->assign('id', $shortId);
-						$interface->assign('patronId', $patron->id);
 						if (!empty($_REQUEST['autologout'])){
 							$interface->assign('autologout', $_REQUEST['autologout']);
 						} // carry user selection to Item Hold Form
 
-						$interface->assign('showDetailedHoldNoticeInformation', $homeLibrary->showDetailedHoldNoticeInformation);
-						$interface->assign('treatPrintNoticesAsPhoneNotices', $homeLibrary->treatPrintNoticesAsPhoneNotices);
-
+						if ($doingStaffPlacedHold){
+							$interface->assign('patronBarcode', $patronBarcode);
+						}else{
+							$homeLibrary = $patron->getHomeLibrary();
+							$interface->assign('patronId', $patron->id);
+							$interface->assign('showDetailedHoldNoticeInformation', $homeLibrary->showDetailedHoldNoticeInformation);
+							$interface->assign('treatPrintNoticesAsPhoneNotices', $homeLibrary->treatPrintNoticesAsPhoneNotices);
+						}
 						// Need to place item level holds.
 						$results = [
 							'success'            => true,
@@ -334,20 +351,23 @@ class Record_AJAX extends AJAXHandler {
 						$interface->assign('message', $return['message']);
 						$interface->assign('success', $return['success']);
 
-						$canUpdateContactInfo = $homeLibrary->allowProfileUpdates == 1;
-						// set update permission based on active library's settings. Or allow by default.
-						$canChangeNoticePreference = $homeLibrary->showNoticeTypeInProfile == 1;
-						// when user preference isn't set, they will be shown a link to account profile. this link isn't needed if the user can not change notification preference.
-						$interface->assign('canUpdate', $canUpdateContactInfo && !isset($_REQUEST['autologout'])); //Don't allow updating if the auto log out has been set (because the user will be logged out instead).
-						$interface->assign('canChangeNoticePreference', $canChangeNoticePreference);
-						$interface->assign('showDetailedHoldNoticeInformation', $homeLibrary->showDetailedHoldNoticeInformation);
-						$interface->assign('treatPrintNoticesAsPhoneNotices', $homeLibrary->treatPrintNoticesAsPhoneNotices);
-						$interface->assign('profile', $patron); // Use the account the hold was placed with for the success message.
+						if (!$doingStaffPlacedHold){
+							$homeLibrary          = $patron->getHomeLibrary();
+							$canUpdateContactInfo = $homeLibrary->allowProfileUpdates == 1;
+							// set update permission based on active library's settings. Or allow by default.
+							$canChangeNoticePreference = $homeLibrary->showNoticeTypeInProfile == 1;
+							// when user preference isn't set, they will be shown a link to account profile. this link isn't needed if the user can not change notification preference.
+							$interface->assign('canUpdate', $canUpdateContactInfo && !isset($_REQUEST['autologout'])); //Don't allow updating if the auto log out has been set (because the user will be logged out instead).
+							$interface->assign('canChangeNoticePreference', $canChangeNoticePreference);
+							$interface->assign('showDetailedHoldNoticeInformation', $homeLibrary->showDetailedHoldNoticeInformation);
+							$interface->assign('treatPrintNoticesAsPhoneNotices', $homeLibrary->treatPrintNoticesAsPhoneNotices);
+							$interface->assign('profile', $patron); // Use the account the hold was placed with for the success message.
+						}
 
 						$results = [
 							'success' => $return['success'],
 							'message' => $interface->fetch('Record/hold-success-popup.tpl'),
-							//							'title'   => isset($return['title']) ? $return['title'] : '',
+							//'title'   => isset($return['title']) ? $return['title'] : '',
 							'buttons' => '', // This removes the submit button
 						];
 						if (isset($_REQUEST['autologout'])){
@@ -361,8 +381,10 @@ class Record_AJAX extends AJAXHandler {
 							$results['autologout'] = true;
 							unset($_REQUEST['autologout']); // Prevent entering the second auto log out code-block below.
 						}else{
-							// Only show View My Holds button if the user did not select the auto log out option.
-							$results['buttons'] = '<a class="btn btn-primary" href="/MyAccount/Holds" role="button">View My Holds</a>';
+							if (!$doingStaffPlacedHold){
+								// Only show View My Holds button if the user did not select the auto log out option.
+								$results['buttons'] = '<a class="btn btn-primary" href="/MyAccount/Holds" role="button">View My Holds</a>';
+							}
 						}
 					}
 				}

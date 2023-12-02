@@ -1975,7 +1975,7 @@ class Sierra  implements \DriverInterface {
 					$freezeable   = false;
 					$updatePickup = false;
 					break;
-				case "#": // inn-reach status
+				case "#": // inn-reach status (Received)
 					$hold->status->code = 'i';
 					$status             = 'Ready';
 					$freezeable         = false;
@@ -2134,6 +2134,13 @@ class Sierra  implements \DriverInterface {
 		$recordNumber   = substr($recordId, 2, -1); // remove the .x and the last check digit
 		$pickupLocation = $pickupBranch;
 		$patronId       = $this->getPatronId($patron);
+		if (!$patronId){
+			// We may have a bad barcode from a staff placed hold request
+			return [
+				'success' => false,
+				'message' => 'Did not find patron in Sierra'
+			];
+		}
 
 		// delete memcache holds
 		$patronHoldsCacheKey = $this->cache->makePatronKey('holds', $patron->id);

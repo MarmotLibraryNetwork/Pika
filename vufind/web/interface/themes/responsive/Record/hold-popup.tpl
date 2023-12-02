@@ -91,7 +91,15 @@
 						});
 						{/literal}
 					</script>
-				{if $showHoldCancelDate}
+          {if $allowStaffPlacedHoldRequest}
+						<div id="staffPlacedHolds" class="form-group has-success">
+							<label for="patronBarcode" class="control-label">Or place hold for patron with {$patronBarcodeLabel} :</label>
+							<div class="controls">
+								<input type="text" name="patronBarcode" id="patronBarcode" class="form-control" size="10">
+							</div>
+						</div>
+          {/if}
+          {if $showHoldCancelDate}
 					<div id="cancelHoldDate" class="form-group">
 						<label class="control-label" for="canceldate">{translate text="Automatically cancel this hold if not filled by"}:</label>
 						<div class="input-group input-append date controls" id="cancelDatePicker">
