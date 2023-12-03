@@ -630,6 +630,20 @@ function getIndexingUpdates(){
 					'PlayawayLaunchpad', '3')"
 			],
 		],
+		'2023.04.0_add_CD-translations'     => [
+			'title'             => 'Add Format CD translations',
+			'description'       => 'Add CD Formats to translation maps',
+			'continueOnError'   => true,
+			'sql'               =>[
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'CD', 'Audio CD')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'CD', 'Audio Books')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'CD', '3')"
+			],
+		],
 	);
 }
 
