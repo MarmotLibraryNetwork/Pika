@@ -616,6 +616,20 @@ function getIndexingUpdates(){
 					'IllustratedEdition', '10')"
 			],
 		],
+		'2023.04.0_add_playaway_launchpad'     => [
+			'title'             => 'Add Playaway Launchpad Format',
+			'description'       => 'Add Playaway Launchpad Formats to translation maps',
+			'continueOnError'   => true,
+			'sql'               =>[
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'PlayawayLaunchpad', 'Playaway Launchpad')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'PlayawayLaunchpad', '')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'PlayawayLaunchpad', '3')"
+			],
+		],
 	);
 }
 

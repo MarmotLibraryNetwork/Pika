@@ -1459,6 +1459,65 @@ class User extends DB_DataObject {
 		];
 	}
 
+	/**
+	 * Staff-placed Hold on behalf of a patron
+	 *
+	 *
+	 * @param   string  $recordId        The id of the bib record
+	 * @param   string  $pickupBranch    The branch where the user wants to pick up the item when available
+	 * @param   null|string $cancelDate  The date to cancel the hold if it isn't fulfilled
+	 * @return  mixed                    True if successful, false if unsuccessful
+	 *                                   If an error occurs, return a PEAR_Error
+	 * @access  public
+	 */
+	function staffPlacedHold($patronBarcode, $recordId, $pickupBranch, $cancelDate = null, $itemId = null, $volumeId = null) {
+		if ($this->isStaff()){
+			$tempPatronObject          = new User();
+			$tempPatronObject->barcode = $patronBarcode;
+
+			if (empty($cancelDate)){
+				//Set not need after date, if not supplied, based on library settings
+				$cancelDate = $this->getHoldNotNeededAfterDate();
+			}
+
+			global $offlineMode;
+			global $configArray;
+			$useOfflineHolds = $configArray['Catalog']['useOfflineHoldsInsteadOfRegularHolds'] ?? false;
+			if ($offlineMode || $useOfflineHolds){
+				$enableOfflineHolds = $configArray['Catalog']['enableOfflineHolds'] ?? false;
+				if ($enableOfflineHolds || $useOfflineHolds){
+					if (!$tempPatronObject->find(true)){
+						// A pika user id is needed to process an offline hold, so store a new entry in database
+						$tempPatronObject->setUserHomeLocations($pickupBranch);
+						$tempPatronObject->created  = date('Y-m-d');
+						$tempPatronObject->lastname = 'Offline Hold created user';
+						$tempPatronObject->source   = $this->source;
+						$tempPatronObject->insert();
+					}
+					return $tempPatronObject->placeOfflineHold($recordId, $pickupBranch, $itemId);
+				} else {
+					return [
+						'bib'     => $recordId,
+						'success' => false,
+						'message' => 'The circulation system is currently offline.  Please try again later.'
+					];
+				}
+			}elseif (!empty($itemId)){
+				return $this->getCatalogDriver()->placeItemHold($tempPatronObject, $recordId, $itemId, $pickupBranch, $cancelDate);
+			} elseif (!empty($volumeId)){
+				return $this->getCatalogDriver()->placeVolumeHold($tempPatronObject, $recordId, $volumeId, $pickupBranch, $cancelDate);
+			} else{
+				return $this->getCatalogDriver()->placeHold($tempPatronObject, $recordId, $pickupBranch, $cancelDate);
+			}
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Not Staff User',
+			];
+
+		}
+	}
+
 	private function getHoldNotNeededAfterDate(){
 		$cancelDate  = null;
 		$homeLibrary = $this->getHomeLibrary();

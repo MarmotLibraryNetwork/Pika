@@ -148,6 +148,10 @@ class UserList extends DB_DataObject {
 		return $result;
 	}
 	function delete($useWhere = false){
+		global $pikaLogger;
+		global $user;
+		$pikaLogger->notice("User $user->id marking list $this->id as deleted");
+
 		$this->deleted     = 1;
 		$this->dateUpdated = time();
 		return parent::update();
@@ -302,6 +306,9 @@ class UserList extends DB_DataObject {
 		* remove all resources within this list
 		*/
 	function removeAllListEntries(){
+		global $pikaLogger;
+		global $user;
+		$pikaLogger->notice("User $user->id clearing list entries for list $this->id");
 		$allListEntries = $this->getListTitles();
 		foreach ($allListEntries as $listEntry){
 			$this->removeListEntry($listEntry);

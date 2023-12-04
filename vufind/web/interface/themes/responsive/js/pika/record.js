@@ -137,6 +137,7 @@ Pika.Record = (function(){
 						,canceldate: $('#canceldate').val()
 						,recordSource: $('#recordSource').val()
 						,account: $('#account').val()
+						,patronBarcode: $('#patronBarcode').val()
 					};
 			if (autoLogOut){
 				params['autologout'] = true;

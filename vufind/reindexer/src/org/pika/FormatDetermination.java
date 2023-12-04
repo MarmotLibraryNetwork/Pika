@@ -680,6 +680,13 @@ public class FormatDetermination {
 			}
 		}
 
+		// Playaway Launchpad
+		if (printFormats.contains("PlayawayLaunchpad")){
+			printFormats.clear();
+			printFormats.add("PlayawayLaunchpad");
+			return;
+		}
+
 		// AudioBook Devices
 		if (printFormats.contains("PlayawayView")){
 			printFormats.clear();
@@ -697,9 +704,8 @@ public class FormatDetermination {
 			return;
 		}
 		// Video Things
-		if(printFormats.contains("DVD") || printFormats.contains("Blu-ray"))
-		{
-			if(isComboPack(record)) {
+		if (printFormats.contains("DVD") || printFormats.contains("Blu-ray")) {
+			if (isComboPack(record)) {
 				printFormats.clear();
 				printFormats.add("DVDBlu-rayCombo");
 			}
@@ -712,10 +718,8 @@ public class FormatDetermination {
 				printFormats.remove("Video");
 			}
 		}
-		if ((printFormats.contains("CDROM") && printFormats.contains("DVD")) || (printFormats.contains("CDROM") && printFormats.contains("VideoDisc"))){
-			if(printFormats.contains("CDROM")){
-				printFormats.remove("CDROM");
-			}
+		if (printFormats.contains("CDROM") && (printFormats.contains("DVD")) || printFormats.contains("VideoDisc")){
+			printFormats.remove("CDROM");
 		}
 		if(printFormats.contains("WindowsGame") && printFormats.contains("VideoDisc")){
 			printFormats.remove("WindowsGame");
@@ -740,8 +744,11 @@ public class FormatDetermination {
 			printFormats.clear();
 			printFormats.add("MusicCassette");
 		}
+		if (printFormats.contains("MusicRecording") && printFormats.contains("SoundDisc")) {
+			// This is likely music phonographs, which get determined as music recordings
+			printFormats.remove("SoundDisc");
+		}
 		if (printFormats.contains("MusicRecording") && (printFormats.contains("CD") || printFormats.contains("CompactDisc")
-				|| printFormats.contains("SoundDisc")
 				|| printFormats.contains("DVD") || printFormats.contains("Blu-ray") /* likely accompanying material */
 		)){
 			if(printFormats.contains("DVD"))
@@ -793,9 +800,11 @@ public class FormatDetermination {
 			}
 		}
 		if (printFormats.contains("CD") && printFormats.contains("SoundDisc")){
+			//TODO: Likely obsolete - no determinations of CD
 			printFormats.remove("CD");
 		}
 		if (printFormats.contains("AudioCD") && printFormats.contains("CD")){
+			//TODO: Likely obsolete - no determinations of AudioCD
 			printFormats.remove("AudioCD");
 		}
 		if (printFormats.contains("DVD") && printFormats.contains("SoundDisc")){
@@ -1066,14 +1075,19 @@ public class FormatDetermination {
 	private void getFormatFromPhysicalDescription(Record record, Set<String> result) {
 		List<DataField> physicalDescription = MarcUtil.getDataFields(record, "300");
 		if (physicalDescription != null) {
-			Iterator<DataField> fieldsIter = physicalDescription.iterator();
+			Iterator<DataField> fieldsIter   = physicalDescription.iterator();
 			DataField           field;
 			while (fieldsIter.hasNext()) {
 				field = fieldsIter.next();
+				boolean             hasDigital   = false;
+				boolean             hasSoundDisc = false;
 				List<Subfield> subFields = field.getSubfields();
 				for (Subfield subfield : subFields) {
 					if (subfield.getCode() != 'e') {
 						String physicalDescriptionData = subfield.getData().toLowerCase();
+						if (physicalDescriptionData.contains("digital")){
+							hasDigital = true;
+						}
 						if (physicalDescriptionData.contains("large type") || physicalDescriptionData.contains("large print")) {
 							result.add("LargePrint");
 						} else if (physicalDescriptionData.contains("braille")){
@@ -1090,8 +1104,15 @@ public class FormatDetermination {
 							result.add("Software");
 						} else if (physicalDescriptionData.contains("sound cassettes")) {
 							result.add("SoundCassette");
-						} else if (physicalDescriptionData.contains("sound disc") || physicalDescriptionData.contains("audio disc") || physicalDescriptionData.contains("compact disc")) {
+						} else if (physicalDescriptionData.contains("compact disc")){
+							result.add("CompactDisc");
+							//TODO: likely need to additional logic to set to something more specific
+						} else if (physicalDescriptionData.contains("sound disc") || physicalDescriptionData.contains("audio disc")) {
+							hasSoundDisc = true;
 							result.add("SoundDisc");
+//						} else if (physicalDescriptionData.contains("sound disc") || physicalDescriptionData.contains("audio disc") || physicalDescriptionData.contains("compact disc")) {
+//							//TODO "compact disc" should be it's own entry to CD
+//							result.add("SoundDisc");
 						} else if (physicalDescriptionData.contains("wonderbook")) {
 							result.add("WonderBook");
 						}else if (physicalDescriptionData.contains("vox book")){
@@ -1103,6 +1124,19 @@ public class FormatDetermination {
 						if (result.size() == 0 && subfield.getCode() == 'f' && physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")) {
 							result.add("Book");
 						}
+					}
+				}
+				if (hasSoundDisc && hasDigital){
+					if (result.contains("MusicRecording")){
+						// Since MusicRecording is determined by leader at beginning of format determination,
+						// it should be reliably already determined at this point
+						result.add("MusicCD");
+						result.remove("SoundDisc");
+						result.remove("MusicRecording");
+					} else {
+						// Otherwise it should be an audio CD (the translation for SoundDisc).
+						// (I might be wrong here, remove or refine if you determine so.)
+						result.add("SoundDisc");
 					}
 				}
 			}
@@ -1150,6 +1184,8 @@ public class FormatDetermination {
 						result.add("VoxBooks");
 					} else if (noteValue.contains("wonderbook")) {
 						result.add("WonderBook");
+					} else if (noteValue.contains("playaway launchpad")) {
+						result.add("PlayawayLaunchpad");
 					} else if (noteValue.contains("playaway view")) {
 						result.add("PlayawayView");
 					} else if (noteValue.contains("playaway")) {
@@ -1221,13 +1257,13 @@ public class FormatDetermination {
 			return "Xbox360";
 		} else if (value.contains("playstation vita") /*&& !value.contains("compatible")*/) {
 			return "PlayStationVita";
-		} else if (value.contains("playstation 5") || value.matches(".*[^a-z]ps5.*") && !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player")) {
+		} else if (value.contains("playstation 5") || value.matches(".*[^a-z]ps5.*") && !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player") && !value.contains("blu-ray disc computer")) {
 			return "PlayStation5";
-		} else if (value.contains("playstation 4") || value.matches(".*[^a-z]ps4.*") && !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player")) {
+		} else if (value.contains("playstation 4") || value.matches(".*[^a-z]ps4.*") && !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player") && !value.contains("blu-ray disc computer")) {
 			return "PlayStation4";
-		} else if (value.contains("playstation 3") || value.matches(".*[^a-z]ps3.*") && !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player")) {
+		} else if (value.contains("playstation 3") || value.matches(".*[^a-z]ps3.*") && !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player") && !value.contains("blu-ray disc computer")) {
 			return "PlayStation3";
-		} else if (value.contains("playstation") && !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player")) {
+		} else if (value.contains("playstation") && !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player") && !value.contains("blu-ray disc computer")) {
 			return "PlayStation";
 		} else if (value.contains("wii u")) {
 			return "WiiU";

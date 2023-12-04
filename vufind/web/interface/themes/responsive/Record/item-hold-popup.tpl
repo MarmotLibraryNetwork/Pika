@@ -3,6 +3,7 @@
 	<form{* action="/MyAccount/HoldItems"*} method="POST" class="form">
 		<input type="hidden" name="id" id="id" value="{$id}">
 		<input type="hidden" name="patronId" id="patronId" value="{$patronId}">
+		<input type="hidden" name="patronBarcode" id="patronBarcode" value="{$patronBarcode}">
 		<input type="hidden" name="campus" id="campus" value="{$campus}">
 		<input type="hidden" name="canceldate" id="canceldate" value="{$canceldate}">
 		<input type="hidden" name="module" id="module" value="{$activeRecordProfileModule}">
