@@ -800,9 +800,11 @@ public class FormatDetermination {
 			}
 		}
 		if (printFormats.contains("CD") && printFormats.contains("SoundDisc")){
+			//TODO: Likely obsolete - no determinations of CD
 			printFormats.remove("CD");
 		}
 		if (printFormats.contains("AudioCD") && printFormats.contains("CD")){
+			//TODO: Likely obsolete - no determinations of AudioCD
 			printFormats.remove("AudioCD");
 		}
 		if (printFormats.contains("DVD") && printFormats.contains("SoundDisc")){
@@ -1103,7 +1105,8 @@ public class FormatDetermination {
 						} else if (physicalDescriptionData.contains("sound cassettes")) {
 							result.add("SoundCassette");
 						} else if (physicalDescriptionData.contains("compact disc")){
-							result.add("CD");
+							result.add("CompactDisc");
+							//TODO: likely need to additional logic to set to something more specific
 						} else if (physicalDescriptionData.contains("sound disc") || physicalDescriptionData.contains("audio disc")) {
 							hasSoundDisc = true;
 							result.add("SoundDisc");
@@ -1131,9 +1134,9 @@ public class FormatDetermination {
 						result.remove("SoundDisc");
 						result.remove("MusicRecording");
 					} else {
-						// Otherwise it should be at least a CD.
+						// Otherwise it should be an audio CD (the translation for SoundDisc).
 						// (I might be wrong here, remove or refine if you determine so.)
-						result.add("CD");
+						result.add("SoundDisc");
 					}
 				}
 			}
