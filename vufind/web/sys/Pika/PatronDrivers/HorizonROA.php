@@ -166,9 +166,9 @@ abstract class HorizonROA implements \DriverInterface {
 	 * @param string $password The password for the user.
 	 *
 	 * @return array An array containing login information. The array has three elements:
-	 *               - Element 0 (bool): Indicates if the login is valid (true) or not (false).
-	 *               - Element 1 (mixed): The session token if the login was successful, otherwise false.
-	 *               - Element 2 (mixed): The user ID if the login was successful, otherwise false.
+	 *               - [0] (bool): Indicates if the login is valid (true) or not (false).
+	 *               - [1] (mixed): The session token if the login was successful, otherwise false.
+	 *               - [2] (mixed): The user ID if the login was successful, otherwise false.
 	 *
 	 * @throws Exception If there is an error in processing the web service response.
 	 */
@@ -229,17 +229,11 @@ abstract class HorizonROA implements \DriverInterface {
 	 *
 	 * @return void
 	 */
-	private function deleteSessionToken(User $patron): void
+	private function deleteRoaSessionToken(User $patron): void
 	{
-		/**
-		 * @var int $userId The unique identifier from ILS.
-		 */
-		$userId = $patron->ilsUserId;
-
-		// Check if the session token exists for the user and remove it.
-		if (isset(self::$sessionIdsForUsers[$userId])) {
-			unset(self::$sessionIdsForUsers[$userId]);
-		}
+		$barcode = $patron->barcode;
+		$memCacheKey = "horizon_ROA_session_token_info_$barcode";
+		$r = $this->cache->delete($memCacheKey);
 	}
 
 	/**
@@ -249,7 +243,6 @@ abstract class HorizonROA implements \DriverInterface {
 	 * @return false|User
 	 */
 	public function patronLogin($barcode, $password, $validatedViaSSO){
-
 		//TODO: check which login style in use. Right now assuming barcode_pin
 		$barcode  = preg_replace('/[\s]/', '', $barcode); // remove all space characters
 		$password = trim($password);
@@ -1279,7 +1272,8 @@ abstract class HorizonROA implements \DriverInterface {
 	/**
 	 * Update the PIN for a patron.
 	 *
-	 * This function updates the PIN for a patron by making a request to the appropriate web service endpoint.
+	 * This function updates the PIN for a patron by making a request to the appropriate web service endpoint. This method
+	 * is called when a patron updates PIN from MyAccount
 	 *
 	 * @param User   $patron           The patron for whom the PIN should be updated.
 	 * @param string $oldPin           The current PIN of the patron.
@@ -1309,16 +1303,13 @@ abstract class HorizonROA implements \DriverInterface {
 			return 'Sorry, we encountered an error while attempting to update your ' . translate('pin') . '. Please contact your local library.';
 		} elseif (!empty($res->sessionToken)) {
 			$patron->updatePassword($newPin);
-
-			// remove session token
-			$this->deleteSessionToken($patron);
-			// remove memcache session token
-			$barcode = $patron->barcode;
-			$sessionTokenKey = "horizon_ROA_session_token_info_$barcode";
-			$this->cache->delete($sessionTokenKey);
+			// remove session token from cache
+			$this->deleteRoaSessionToken($patron);
 			// remove user object from cache
 			$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 			$this->cache->delete($patronObjectCacheKey);
+			// login user
+			$this->loginViaWebService($patron->barcode, $newPin);
 
 			return 'Your ' . translate('pin') . ' was updated successfully.';
 		}

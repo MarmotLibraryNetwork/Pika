@@ -577,6 +577,7 @@ class UserAccount {
 	 * preserve hold message and search information
 	 */
 	public static function softLogout(){
+		// TODO: this wont work in php 8
 		@session_start();
 		// This is needed so that the logout() above doesn't generate the error :
 		// "session_regenerate_id(): Cannot regenerate session id - session is not active"
@@ -595,6 +596,9 @@ class UserAccount {
 			if (isset($_SESSION['lastCASCheck'])){
 				unset($_SESSION['lastCASCheck']);
 			}
+			// unset all session variables - Session variables are being displayed after logouts so unset all
+			session_unset();
+
 			UserAccount::$isLoggedIn              = false;
 			UserAccount::$primaryUserData         = null;
 			UserAccount::$primaryUserObjectFromDB = null;
