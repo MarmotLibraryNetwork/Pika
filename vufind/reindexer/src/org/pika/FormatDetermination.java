@@ -1400,7 +1400,9 @@ public class FormatDetermination {
 				Subfield subfieldA = field.getSubfield('a');
 				if (subfieldA != null && subfieldA.getData() != null) {
 					String fieldData = subfieldA.getData().toLowerCase();
-					if (fieldData.contains("playaway view")) {
+					if (fieldData.contains("playaway launchpad")) {
+						result.add("PlayawayLaunchpad");
+					}else if (fieldData.contains("playaway view")) {
 						result.add("PlayawayView");
 					}else if (fieldData.contains("playaway digital audio") || fieldData.contains("findaway world")) {
 						result.add("Playaway");
