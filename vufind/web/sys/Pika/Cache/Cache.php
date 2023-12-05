@@ -130,9 +130,9 @@ class Cache implements CacheInterface
 	 */
 	public function delete($key)
 	{
-		if(!($this->handler instanceof  Memcached)) {
-			$this->handler = initCache();
-		}
+//		if(!($this->handler instanceof  Memcached)) {
+//			$this->handler = initCache();
+//		}
 		$return = $this->handler->delete($key);
 		if($return === false && $this->handler->getResultCode() == Memcached::RES_NOTFOUND) {
 			$return = true;

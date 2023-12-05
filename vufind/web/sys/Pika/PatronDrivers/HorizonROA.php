@@ -164,6 +164,7 @@ abstract class HorizonROA implements \DriverInterface {
 	 *
 	 * @param string $barcode  The barcode associated with the user.
 	 * @param string $password The password for the user.
+	 * @param bool $nocache  Weather or not to check cache for session object true: don't check cache, false: check cache
 	 *
 	 * @return array An array containing login information. The array has three elements:
 	 *               - [0] (bool): Indicates if the login is valid (true) or not (false).
@@ -172,15 +173,19 @@ abstract class HorizonROA implements \DriverInterface {
 	 *
 	 * @throws Exception If there is an error in processing the web service response.
 	 */
-	protected function loginViaWebService($barcode, $password) {
-		$memCacheKey = "horizon_ROA_session_token_info_$barcode";
-		$session     = $this->cache->get($memCacheKey);
-
-		if ($session){
-			return $session;
+	protected function loginViaWebService(string $barcode, string $password, bool $nocache = false): array{
+		// check cache for token info?
+		if(!$nocache){
+			$memCacheKey = "horizon_ROA_session_token_info_$barcode";
+			$cachedSess = $this->cache->get($memCacheKey);
+			// we can get a null return from cache, only return if array
+			if (is_array($cachedSess)){
+				return $cachedSess;
+			}
 		}
+		// continue to log in with web service
+		$session = [false, false, false];
 		// $loginDescribeResponse = $this->getWebServiceResponse( '/user/patron/login/describe');
-		$session           = [false, false, false];
 		$loginUserUrl      =  '/user/patron/login';
 		$params            = [
 			'barcode'  => $barcode,
@@ -202,7 +207,10 @@ abstract class HorizonROA implements \DriverInterface {
 			}
 			$this->getLogger()->error($errorMessage);
 		}
-
+		// make sure an array is returned
+		if (!is_array($session)){
+			return [false, false, false];
+		}
 		return $session;
 	}
 
@@ -233,7 +241,7 @@ abstract class HorizonROA implements \DriverInterface {
 	{
 		$barcode = $patron->barcode;
 		$memCacheKey = "horizon_ROA_session_token_info_$barcode";
-		$r = $this->cache->delete($memCacheKey);
+		$this->cache->delete($memCacheKey);
 	}
 
 	/**
@@ -247,29 +255,38 @@ abstract class HorizonROA implements \DriverInterface {
 		$barcode  = preg_replace('/[\s]/', '', $barcode); // remove all space characters
 		$password = trim($password);
 
+		// Check if user exists in database
+		$user          = new User();
+		$user->source  = $this->accountProfile->name;
+		$user->barcode = $barcode;
+
+		$userExistsInDB = false;
+		if ($user->find(true)){
+			$userExistsInDB = true;
+		}
+
 		//Authenticate the user via WebService
-		//First call loginUser
 		global $timer;
 		$timer->logTime('Logging in through Horizon ROA APIs');
-		[$userValid, $sessionToken, $horizonRoaUserID] = $this->loginViaWebService($barcode, $password);
+		// make sure password in database matches
+		$currentPassword = $user->getPassword();
+		if ($password !== $currentPassword) {
+			// don't use cache if password mismatch, user may have reset password
+			[$userValid, $sessionToken, $horizonRoaUserID] = $this->loginViaWebService($barcode, $password, true);
+		} else {
+			[$userValid, $sessionToken, $horizonRoaUserID] = $this->loginViaWebService($barcode, $password);
+		}
+
 		if ($validatedViaSSO) {
 			$userValid = true;
 		}
 		if ($userValid) {
 			$timer->logTime('User is valid in horizon');
-
-			$userExistsInDB = false;
 			/** @var User $user */
-			$user            = new User();
-			$user->source    = $this->accountProfile->name;
-			$user->ilsUserId = $horizonRoaUserID;
-			if ($user->find(true)) {
-				$userExistsInDB = true;
-				$patronObjectCacheKey = $this->cache->makePatronKey('patron', $user->id);
-				if ($userObject = $this->cache->get($patronObjectCacheKey)) {
-					$this->getLogger()->info('Found patron in memcache:' . $patronObjectCacheKey);
-					return $userObject;
-				}
+			$patronObjectCacheKey = $this->cache->makePatronKey('patron', $user->id);
+			if ($userObject = $this->cache->get($patronObjectCacheKey)) {
+				$this->getLogger()->info('Found patron in memcache:' . $patronObjectCacheKey);
+				return $userObject;
 			}
 
 			// Calls that show how patron-related data is represented
@@ -462,6 +479,7 @@ abstract class HorizonROA implements \DriverInterface {
 				return false;
 			}
 		}
+		//return false;
 	}
 
 
@@ -1275,14 +1293,14 @@ abstract class HorizonROA implements \DriverInterface {
 	 * This function updates the PIN for a patron by making a request to the appropriate web service endpoint. This method
 	 * is called when a patron updates PIN from MyAccount
 	 *
-	 * @param User   $patron           The patron for whom the PIN should be updated.
+	 * @param User $patron           The patron for whom the PIN should be updated.
 	 * @param string $oldPin           The current PIN of the patron.
 	 * @param string $newPin           The new PIN to be set for the patron.
 	 * @param string $confirmNewPin    Confirmation of the new PIN to be set.
 	 *
 	 * @return string A message indicating the success or failure of the PIN update process.
 	 */
-	public function updatePin($patron, $oldPin, $newPin, $confirmNewPin): string {
+	public function updatePin(User $patron, string $oldPin, string $newPin, string $confirmNewPin): string {
 
 		$sessionToken = $this->getSessionToken($patron);
 		if(!$sessionToken) {
@@ -1309,7 +1327,7 @@ abstract class HorizonROA implements \DriverInterface {
 			$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 			$this->cache->delete($patronObjectCacheKey);
 			// login user
-			$this->loginViaWebService($patron->barcode, $newPin);
+			$this->loginViaWebService($patron->barcode, $newPin, true);
 
 			return 'Your ' . translate('pin') . ' was updated successfully.';
 		}
