@@ -277,6 +277,9 @@ abstract class HorizonROA implements \DriverInterface {
 			[$userValid, $sessionToken, $horizonRoaUserID] = $this->loginViaWebService($barcode, $password);
 		}
 
+		// set the user ils id so it's saved to DB
+		$user->ilsUserId = $horizonRoaUserID;
+
 		if ($validatedViaSSO) {
 			$userValid = true;
 		}
