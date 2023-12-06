@@ -244,11 +244,16 @@ public class SierraExportAPIMain {
 		if (singleRecordToProcess != null && !singleRecordToProcess.isEmpty()) {
 			try {
 				long id = Long.parseLong(singleRecordToProcess);
+				logger.info("Extracting single record : " + id);
 				initializeRecordGrouper(pikaConn);
-				allowFastExportMethod = systemVariables.getBooleanValuedVariable("allow_sierra_fast_export");
+				//allowFastExportMethod = systemVariables.getBooleanValuedVariable("allow_sierra_fast_export");
+				allowFastExportMethod = false;  // Set to false for single record to ensure deleted records get marked as deleted;
+					// We will need better handling for dealing with deleted records with the fast export method.
 				setUpSqlStatements(pikaConn);
 				updateMarcAndRegroupRecordIds(singleRecordToProcess, Collections.singletonList(id));
-				System.out.println("Extract process for record " + singleRecordToProcess + " finished.");
+				String message = "Extract process for record " + singleRecordToProcess + " finished.";
+				logger.info(message);
+				System.out.println(message);
 				System.exit(0);
 //			} catch (SQLException e) {
 //				logger.error("Error setting up prepared statements for Record extraction processing", e);
