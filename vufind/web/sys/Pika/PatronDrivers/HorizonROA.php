@@ -550,7 +550,7 @@ abstract class HorizonROA implements \DriverInterface {
 			$itemType     = $circRecord->fields->item->fields->itemType->key;
 			$dueDate      = $circRecord->fields->dueDate;
 			$checkOutDate = $circRecord->fields->checkOutDate;
-			$fine         = $circRecord->fields->checkOutFee->amount;
+			$fine         = $circRecord->fields->checkOutFee->amount ?? null;
 			if (!empty($fine) && (float)$fine <= 0){
 				// handle case of string '0.00'
 				$fine = null;
