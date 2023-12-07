@@ -801,25 +801,30 @@ abstract class HorizonAPI extends Horizon{
 	public function getNumHoldsOnRecord($bibId){
 		if ($this->doNumHoldLookup){
 			global $configArray;
-			$lookupTitleInfoUrl      = $this->getWebServiceURL() . '/standard/lookupTitleInfo?clientID=' . $configArray['Catalog']['clientId'] . '&titleKey=' . $bibId . '&includeItemInfo=false&includeHoldCount=true';
-			$curlOptions             = [
-				CURLOPT_CONNECTTIMEOUT => 3,
-				// shorten time-out calls to this to 3 seconds so that page loading for search results is reduced
-				// when the ils is not responding
-			];
-			$lookupTitleInfoResponse = $this->getWebServiceResponse($lookupTitleInfoUrl, $curlOptions);
-			if (!empty($lookupTitleInfoResponse->titleInfo)){
+			if (empty($configArray['Catalog']['offline'])){
+				$lookupTitleInfoUrl      = $this->getWebServiceURL() . '/standard/lookupTitleInfo?clientID=' . $configArray['Catalog']['clientId'] . '&titleKey=' . $bibId . '&includeItemInfo=false&includeHoldCount=true';
+				$curlOptions             = [
+					CURLOPT_CONNECTTIMEOUT => 3,
+					// shorten time-out calls to this to 3 seconds so that page loading for search results is reduced
+					// when the ils is not responding
+				];
+				$lookupTitleInfoResponse = $this->getWebServiceResponse($lookupTitleInfoUrl, $curlOptions);
+				if (!empty($lookupTitleInfoResponse->titleInfo)){
 //				$this->doNumHoldLookup = true;
-				return is_array($lookupTitleInfoResponse->titleInfo) ? (int)$lookupTitleInfoResponse->titleInfo[0]->holdCount : (int)$lookupTitleInfoResponse->titleInfo->holdCount;
-			}else{
-				$error = curl_error($this->curl_connection);
-				if (strpos($error, 'Connection timed out') === 0){
-					// When we get a timeout, prevent subsequent looks up for this page call
-					// so search results can load quickly dispite time-out above
-					$this->doNumHoldLookup = false;
+					return is_array($lookupTitleInfoResponse->titleInfo) ? (int)$lookupTitleInfoResponse->titleInfo[0]->holdCount : (int)$lookupTitleInfoResponse->titleInfo->holdCount;
+				}else{
+					$error = curl_error($this->curl_connection);
+					if (strpos($error, 'Connection timed out') === 0){
+						// When we get a timeout, prevent subsequent looks up for this page call
+						// so search results can load quickly despite time-out above
+						$this->doNumHoldLookup = false;
+					}
 				}
+			}else{
+				$this->doNumHoldLookup = false;
 			}
 		}
+
 		return false;
 	}
 
