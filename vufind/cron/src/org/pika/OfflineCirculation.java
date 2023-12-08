@@ -19,8 +19,8 @@ import org.ini4j.Profile;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.io.InputStream;
+import javax.net.ssl.HttpsURLConnection;
+import java.io.*;
 import java.math.BigInteger;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -30,6 +30,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Base64;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,9 +45,11 @@ import java.util.regex.Pattern;
 public class OfflineCirculation implements IProcessHandler {
 	private CronProcessLogEntry processLog;
 	private Logger              logger;
-	private CookieManager       manager      = new CookieManager();
+	private final CookieManager       manager      = new CookieManager();
 	private String              ils          = "Sierra";
 	private String              userApiToken = "";
+
+	private String baseApiUrl;
 	@Override
 	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		this.logger = logger;
@@ -80,7 +83,8 @@ public class OfflineCirculation implements IProcessHandler {
 					offlineHoldsOnly = offlineHoldsOnlyStr.equals("true") || offlineHoldsOnlyStr.equals("1");
 				}
 				if (!offlineHoldsOnly) {
-					processOfflineCirculationEntries(pikaConn);
+					processOfflineCirculationEntriesViaSierraAPI(pikaConn);
+					//processOfflineCirculationEntriesViaCirca(pikaConn);
 				} else {
 					logger.info("Processing Offline Holds only.");
 				}
@@ -101,7 +105,7 @@ public class OfflineCirculation implements IProcessHandler {
 	}
 
 	/**
-	 * Enters any holds that were entered while the catalog was offline
+	 * Enters any holds that were entered while the ILS was offline
 	 *
 	 * @param pikaConn  Connection to the database
 	 */
@@ -209,7 +213,44 @@ public class OfflineCirculation implements IProcessHandler {
 	 *
 	 * @param pikaConn Connection to the database
 	 */
-	private void processOfflineCirculationEntries(Connection pikaConn) {
+	private void processOfflineCirculationEntriesViaSierraAPI(Connection pikaConn) {
+		processLog.addNote("Processing offline checkouts via Sierra API");
+		int numProcessed = 0;
+		try (
+			PreparedStatement circulationEntryToProcessStmt = pikaConn.prepareStatement("SELECT offline_circulation.* FROM offline_circulation WHERE status='Not Processed' ORDER BY login ASC, patronBarcode ASC, timeEntered ASC");
+			PreparedStatement updateCirculationEntry        = pikaConn.prepareStatement("UPDATE offline_circulation SET timeProcessed = ?, status = ?, notes = ? WHERE id = ?");
+			PreparedStatement sierraVendorOpacUrlStmt       = pikaConn.prepareStatement("SELECT vendorOpacUrl FROM account_profiles WHERE name = 'ils'")
+		){
+			try (ResultSet sierraVendorOpacUrlRS = sierraVendorOpacUrlStmt.executeQuery()) {
+				if (sierraVendorOpacUrlRS.next()) {
+					String apiVersion = PikaConfigIni.getIniValue("Catalog", "api_version");
+					if (apiVersion == null || apiVersion.length() == 0) {
+						logger.error("Sierra API version must be set.");
+					} else {
+						baseApiUrl = sierraVendorOpacUrlRS.getString("vendorOpacUrl") + "/iii/sierra-api/v" + apiVersion;
+
+						try (ResultSet circulationEntriesToProcessRS = circulationEntryToProcessStmt.executeQuery()) {
+							while (circulationEntriesToProcessRS.next()) {
+								processOfflineCirculationEntryViaSierraAPI(updateCirculationEntry, baseApiUrl, circulationEntriesToProcessRS);
+								numProcessed++;
+							}
+						}
+					}
+				}
+			}
+		} catch (SQLException e) {
+			processLog.incErrors();
+			processLog.addNote("Error processing offline circs " + e);
+		}
+		processLog.addNote(numProcessed + " offline circs processed.");
+	}
+
+	/**
+	 * Processes any checkouts and check-ins that were done while the circulation system was offline.
+	 *
+	 * @param pikaConn Connection to the database
+	 */
+	private void processOfflineCirculationEntriesViaCirca(Connection pikaConn) {
 		processLog.addNote("Processing offline checkouts and check-ins");
 		int numProcessed = 0;
 		try (
@@ -219,16 +260,16 @@ public class OfflineCirculation implements IProcessHandler {
 		){
 			try (ResultSet sierraVendorOpacUrlRS = sierraVendorOpacUrlStmt.executeQuery()) {
 				if (sierraVendorOpacUrlRS.next()) {
-					String baseUrl = sierraVendorOpacUrlRS.getString("vendorOpacUrl");
+					String baseAirpacUrl = sierraVendorOpacUrlRS.getString("vendorOpacUrl") + "/iii/airwkst/";
 					try (ResultSet circulationEntriesToProcessRS = circulationEntryToProcessStmt.executeQuery()) {
 						while (circulationEntriesToProcessRS.next()) {
-							processOfflineCirculationEntry(updateCirculationEntry, baseUrl, circulationEntriesToProcessRS);
+							processOfflineCirculationEntry(updateCirculationEntry, baseAirpacUrl, circulationEntriesToProcessRS);
 							numProcessed++;
 						}
 					}
 					if (numProcessed > 0) {
 						//Logout of the system
-						Util.getURL(baseUrl + "/airwkstcore?action=AirWkstReturnToWelcomeAction", logger);
+						Util.getURL(baseAirpacUrl + "?action=AirWkstReturnToWelcomeAction", logger);
 					}
 				}
 			}
@@ -269,6 +310,26 @@ public class OfflineCirculation implements IProcessHandler {
 		updateCirculationEntry.executeUpdate();
 	}
 
+	private void processOfflineCirculationEntryViaSierraAPI(PreparedStatement updateCirculationEntry, String sierraApiUrl, ResultSet circulationEntriesToProcessRS) throws SQLException {
+		long circulationEntryId = circulationEntriesToProcessRS.getLong("id");
+		updateCirculationEntry.clearParameters();
+		updateCirculationEntry.setLong(1, new Date().getTime() / 1000);
+		updateCirculationEntry.setLong(4, circulationEntryId);
+		String itemBarcode      = circulationEntriesToProcessRS.getString("itemBarcode");
+		String login            = circulationEntriesToProcessRS.getString("login");
+		String patronBarcode    = circulationEntriesToProcessRS.getString("patronBarcode");
+		OfflineCirculationResult result = processOfflineCheckout(sierraApiUrl, login, itemBarcode, patronBarcode);
+		if (result.isSuccess()){
+			processLog.incUpdated();
+			updateCirculationEntry.setString(2, "Processing Succeeded");
+		}else{
+			processLog.incErrors();
+			updateCirculationEntry.setString(2, "Processing Failed");
+		}
+		updateCirculationEntry.setString(3, result.getNote());
+		updateCirculationEntry.executeUpdate();
+	}
+
 	private void logCookies(){
 		logger.debug("Cookies:");
 		for(HttpCookie cookie : manager.getCookieStore().getCookies()){
@@ -280,6 +341,19 @@ public class OfflineCirculation implements IProcessHandler {
 	private String lastInitials;
 	private String lastPatronBarcode;
 	private boolean lastPatronHadError;
+
+	/**
+	 * Process that uses Circa
+	 *
+	 * @param baseAirpacUrl
+	 * @param login
+	 * @param loginPassword
+	 * @param initials
+	 * @param initialsPassword
+	 * @param itemBarcode
+	 * @param patronBarcode
+	 * @return
+	 */
 	private OfflineCirculationResult processOfflineCheckout(String baseAirpacUrl, String login, String loginPassword, String initials, String initialsPassword, String itemBarcode, String patronBarcode) {
 		OfflineCirculationResult result = new OfflineCirculationResult();
 		try{
@@ -309,7 +383,7 @@ public class OfflineCirculation implements IProcessHandler {
 						.append("&submit.y=8")
 						.append("&subpurpose=null")
 						.append("&validationstatus=needlogin");
-				loginResponse = Util.postToURL(baseAirpacUrl + "/airwkstcore?" + loginParams.toString(), null, "text/html", baseAirpacUrl + "/", logger);
+				loginResponse = Util.postToURL(baseAirpacUrl + "/airwkstcore?" + loginParams, null, "text/html", baseAirpacUrl + "/", logger);
 			}
 			//logCookies();
 			if (bypassLogin || (loginResponse.isSuccess() && (loginResponse.getMessage().contains("needinitials")) || ils.equalsIgnoreCase("sierra"))){
@@ -357,14 +431,14 @@ public class OfflineCirculation implements IProcessHandler {
 					}
 					URLPostResponse patronBarcodeResponse = null;
 					if (bypassPatronPage == false) {
-						URLPostResponse checkOutPageResponse = Util.getURL(baseAirpacUrl + "/?action=GetAirWkstUserInfoAction&purpose=checkout", logger);
+						URLPostResponse checkOutPageResponse = Util.getURL(baseAirpacUrl + "?action=GetAirWkstUserInfoAction&purpose=checkout", logger);
 						StringBuilder patronBarcodeParams = new StringBuilder("action=LogInAirWkstPatronAction")
 								.append("&patronbarcode=").append(patronBarcode)
 								.append("&purpose=checkout")
 								.append("&submit.x=42")
 								.append("&submit.y=12")
 								.append("&sourcebrowse=airwkstpage");
-						patronBarcodeResponse = Util.postToURL(baseAirpacUrl + "/airwkstcore?" + patronBarcodeParams.toString(), null, "text/html", baseAirpacUrl + "/", logger);
+						patronBarcodeResponse = Util.postToURL(baseAirpacUrl + "/airwkstcore?" + patronBarcodeParams, null, "text/html", baseAirpacUrl + "/", logger);
 					}
 					if (bypassPatronPage || (patronBarcodeResponse.isSuccess() && patronBarcodeResponse.getMessage().contains("Please scan item barcode"))) {
 						lastPatronHadError = false;
@@ -375,14 +449,14 @@ public class OfflineCirculation implements IProcessHandler {
 								.append("&searchstring=").append(itemBarcode)
 								.append("&searchtype=b")
 								.append("&sourcebrowse=airwkstpage");
-						URLPostResponse itemBarcodeResponse = Util.postToURL(baseAirpacUrl + "/airwkstcore?" + itemBarcodeParams.toString(), null, "text/html", baseAirpacUrl + "/", logger);
+						URLPostResponse itemBarcodeResponse = Util.postToURL(baseAirpacUrl + "/airwkstcore?" + itemBarcodeParams, null, "text/html", baseAirpacUrl + "/", logger);
 						String    itemBarcodeMessage            = itemBarcodeResponse.getMessage();
 						if (itemBarcodeResponse.isSuccess()) {
 							if (itemBarcodeMessage.contains("<h4>Item has message")){
 								// Additional confirmation required due to item message
 								itemBarcodeParams = new StringBuilder("action=CheckOutAirWkstItemAction&purpose=checkout&checkoutdespiteiormmessage=true&itembarcode=").append(itemBarcode);
 								//Tested example also included this param: &itemrecordkey=i12755587
-								itemBarcodeResponse = Util.postToURL(baseAirpacUrl + "/airwkstcore?" + itemBarcodeParams.toString(), null, "text/html", baseAirpacUrl + "/", logger);
+								itemBarcodeResponse = Util.postToURL(baseAirpacUrl + "/airwkstcore?" + itemBarcodeParams, null, "text/html", baseAirpacUrl + "/", logger);
 								itemBarcodeMessage = itemBarcodeResponse.getMessage();
 							}
 							errorMessage = getErrorMessage(itemBarcodeMessage);
@@ -448,7 +522,36 @@ public class OfflineCirculation implements IProcessHandler {
 		return result;
 	}
 
-	private OfflineCirculationResult processOfflineCheckIn(String baseAirpacUrl, String login, String loginPassword, String initials, String initialsPassword, String itemBarcode, Long timeEntered) {
+	private OfflineCirculationResult processOfflineCheckout(String baseSierraApiUrl, String sierraCircLogin, String itemBarcode, String patronBarcode) {
+		OfflineCirculationResult result = new OfflineCirculationResult();
+		String checkoutUrl = baseSierraApiUrl + "/patrons/checkout";
+		try {
+			String checkoutJson = new JSONObject()
+							.put("patronBarcode", patronBarcode)
+							.put("itemBarcode", itemBarcode)
+							.put("username", sierraCircLogin).toString();
+			JSONObject response = callSierraApiURL(checkoutUrl, checkoutJson, true);
+			if (response != null){
+				if (response.has("id")){
+					result.setSuccess(true);
+				} else {
+					logger.info("Check out failed. Request : " + checkoutJson  + "  Response : " + response);
+					String error = response.getString("name");
+					result.setSuccess(false);
+					result.setNote(error);
+				}
+
+			}
+		} catch (JSONException e) {
+			String message = "JSON error with post data or response";
+			logger.error(message, e);
+			result.setSuccess(false);
+			result.setNote(message);
+		}
+		return result;
+	}
+
+		private OfflineCirculationResult processOfflineCheckIn(String baseAirpacUrl, String login, String loginPassword, String initials, String initialsPassword, String itemBarcode, Long timeEntered) {
 		OfflineCirculationResult result = new OfflineCirculationResult();
 		Pattern errorRegex              = Pattern.compile("<h[123] class=\"error\">(.*?)</h[123]>");
 		try{
@@ -463,7 +566,7 @@ public class OfflineCirculation implements IProcessHandler {
 					.append("&submit.y=8")
 					.append("&subpurpose=null")
 					.append("&validationstatus=needlogin");
-			URLPostResponse loginResponse = Util.postToURL(baseAirpacUrl + "/airwkstcore?" + loginParams.toString(), null, "text/html", baseAirpacUrl + "/", logger);
+			URLPostResponse loginResponse = Util.postToURL(baseAirpacUrl + "/airwkstcore?" + loginParams, null, "text/html", baseAirpacUrl + "/", logger);
 			if (loginResponse.isSuccess() && loginResponse.getMessage().contains("needinitials")){
 				//Login to airpac (initials)
 				StringBuilder initialsParams = new StringBuilder("action=ValidateAirWkstUserAction")
@@ -475,10 +578,10 @@ public class OfflineCirculation implements IProcessHandler {
 						.append("&submit.y=8")
 						.append("&subpurpose=null")
 						.append("&validationstatus=needinitials");
-				URLPostResponse initialsResponse = Util.postToURL(baseAirpacUrl + "/airwkstcore?" + initialsParams.toString(), null, "text/html", baseAirpacUrl + "/airwkstcore", logger);
+				URLPostResponse initialsResponse = Util.postToURL(baseAirpacUrl + "/airwkstcore?" + initialsParams, null, "text/html", baseAirpacUrl + "/airwkstcore", logger);
 				if (initialsResponse.isSuccess() && initialsResponse.getMessage().contains("Check In")){
 					//Go to the checkin page
-					URLPostResponse checkinPageResponse = Util.getURL(baseAirpacUrl + "/?action=GetAirWkstUserInfoAction&purpose=fullcheckin", logger);
+					URLPostResponse checkinPageResponse = Util.getURL(baseAirpacUrl + "?action=GetAirWkstUserInfoAction&purpose=fullcheckin", logger);
 					//Process the barcode
 					StringBuilder checkinParams = new StringBuilder("action=GetAirWkstItemOneAction")
 							.append("&prevscreen=AirWkstItemRequestPage")
@@ -486,7 +589,7 @@ public class OfflineCirculation implements IProcessHandler {
 							.append("&searchstring=").append(itemBarcode)
 							.append("&searchtype=b")
 							.append("&sourcebrowse=airwkstpage");
-					URLPostResponse checkinResponse = Util.postToURL(baseAirpacUrl + "/airwkstcore?" + checkinParams.toString(), null, "text/html", baseAirpacUrl + "/", logger);
+					URLPostResponse checkinResponse = Util.postToURL(baseAirpacUrl + "/airwkstcore?" + checkinParams, null, "text/html", baseAirpacUrl + "/", logger);
 					if (checkinResponse.isSuccess()){
 //						Pattern Regex = Pattern.compile("<h3 class=\"error\">(.*?)</h3>", Pattern.CANON_EQ);
 						Matcher RegexMatcher = errorRegex.matcher(checkinResponse.getMessage());
@@ -567,4 +670,169 @@ public class OfflineCirculation implements IProcessHandler {
 		}
 	return md5.toString();
 	}
+
+
+	private static String sierraAPIToken;
+	private static String sierraAPITokenType;
+	private static long   sierraAPIExpiration;
+
+	private boolean connectToSierraAPI() {
+		//Check to see if we already have a valid token
+		if (sierraAPIToken != null) {
+			if (sierraAPIExpiration - new Date().getTime() > 0) {
+				//logger.debug("token is still valid");
+				return true;
+			} else {
+				logger.debug("Token has expired");
+			}
+		}
+		if (baseApiUrl == null || baseApiUrl.isEmpty()) {
+			logger.error("Sierra API URL is not set");
+			return false;
+		}
+		//Connect to the API to get our token
+		HttpURLConnection conn;
+		try {
+			URL    emptyIndexURL = new URL(baseApiUrl + "/token");
+			String clientKey     = PikaConfigIni.getIniValue("Catalog", "clientKey");
+			String clientSecret  = PikaConfigIni.getIniValue("Catalog", "clientSecret");
+			String encoded       = Base64.getEncoder().encodeToString((clientKey + ":" + clientSecret).getBytes());
+
+			conn = (HttpURLConnection) emptyIndexURL.openConnection();
+			checkForSSLConnection(conn);
+			conn.setReadTimeout(30000);
+			conn.setConnectTimeout(30000);
+			conn.setRequestMethod("POST");
+			conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+			conn.setRequestProperty("Authorization", "Basic " + encoded);
+			conn.setDoOutput(true);
+			try (OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream(), StandardCharsets.UTF_8)) {
+				wr.write("grant_type=client_credentials");
+				wr.flush();
+			}
+
+			StringBuilder response;
+			if (conn.getResponseCode() == 200) {
+				// Get the response
+				response = getTheResponse(conn.getInputStream());
+				try {
+					JSONObject parser = new JSONObject(response.toString());
+					sierraAPIToken     = parser.getString("access_token");
+					sierraAPITokenType = parser.getString("token_type");
+					//logger.debug("Token expires in " + parser.getLong("expires_in") + " seconds");
+					sierraAPIExpiration = new Date().getTime() + (parser.getLong("expires_in") * 1000) - 10000;
+					//logger.debug("Sierra token is " + sierraAPIToken);
+				} catch (JSONException jse) {
+					logger.error("Error parsing response to json " + response.toString(), jse);
+					return false;
+				}
+
+			} else {
+				logger.error("Received error " + conn.getResponseCode() + " connecting to sierra authentication service");
+				// Get any errors
+				response = getTheResponse(conn.getErrorStream());
+				logger.error(response);
+				return false;
+			}
+
+		} catch (Exception e) {
+			logger.error("Error connecting to sierra API", e);
+			return false;
+		}
+		return true;
+	}
+
+	private StringBuilder getTheResponse(InputStream inputStream) {
+		StringBuilder response = new StringBuilder();
+		try (BufferedReader rd = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+			// Setting the charset is apparently important sometimes. See D-4555
+			String line;
+			while ((line = rd.readLine()) != null) {
+				response.append(line);
+			}
+		} catch (Exception e) {
+			logger.warn("Error reading response :", e);
+		}
+		return response;
+	}
+
+	private static boolean lastCallTimedOut = false;
+
+	private JSONObject callSierraApiURL(String sierraUrl, String postData, boolean logErrors) {
+		lastCallTimedOut = false;
+		if (connectToSierraAPI()) {
+			//Connect to the API to get our token
+			HttpURLConnection conn;
+			try {
+				URL emptyIndexURL = new URL(sierraUrl);
+				conn = (HttpURLConnection) emptyIndexURL.openConnection();
+				checkForSSLConnection(conn);
+				conn.setRequestMethod("POST");
+				conn.setRequestProperty("Accept-Charset", "UTF-8");
+				conn.setRequestProperty("Authorization", sierraAPITokenType + " " + sierraAPIToken);
+				conn.setRequestProperty("Accept", "application/json");
+				conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+				conn.setReadTimeout(20000);
+				conn.setConnectTimeout(5000);
+
+				conn.setDoOutput(true);
+				try (OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream(), StandardCharsets.UTF_8)) {
+					wr.write(postData);
+					wr.flush();
+				}
+
+
+				StringBuilder response;
+				int           responseCode = conn.getResponseCode();
+				if (responseCode == 200) {
+					// Get the response
+					response = getTheResponse(conn.getInputStream());
+					try {
+						return new JSONObject(response.toString());
+					} catch (JSONException jse) {
+						logger.error("Error parsing response \n" + response, jse);
+						return null;
+					}
+
+				} else if (responseCode == 500 || responseCode == 404) {
+					// 404 is record not found
+					if (logErrors) {
+						// Get any errors
+						if (logger.isInfoEnabled()) {
+							logger.info("Received response code " + responseCode + " calling sierra API " + sierraUrl);
+							response = getTheResponse(conn.getErrorStream());
+							logger.info("Finished reading response : " + response);
+						}
+					}
+				} else {
+					if (logErrors) {
+						logger.error("Received error " + responseCode + " calling sierra API " + sierraUrl);
+						// Get any errors
+						response = getTheResponse(conn.getErrorStream());
+						logger.error("Finished reading response : " + response);
+					}
+				}
+
+			} catch (java.net.SocketTimeoutException e) {
+				logger.error("Socket timeout talking to to sierra API (callSierraApiURL) " + sierraUrl + " - " + e);
+				lastCallTimedOut = true;
+			} catch (java.net.ConnectException e) {
+				logger.error("Timeout connecting to sierra API (callSierraApiURL) " + sierraUrl + " - " + e);
+				lastCallTimedOut = true;
+			} catch (Exception e) {
+				logger.error("Error loading data from sierra API (callSierraApiURL) " + sierraUrl + " - ", e);
+			}
+		}
+		return null;
+	}
+
+	private static void checkForSSLConnection(HttpURLConnection conn) {
+		if (conn instanceof HttpsURLConnection) {
+			HttpsURLConnection sslConn = (HttpsURLConnection) conn;
+			sslConn.setHostnameVerifier((hostname, session) -> {
+				return true; //Do not verify host names
+			});
+		}
+	}
+
 }
