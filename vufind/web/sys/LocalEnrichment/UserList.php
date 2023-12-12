@@ -308,7 +308,12 @@ class UserList extends DB_DataObject {
 	function removeAllListEntries(){
 		global $pikaLogger;
 		global $user;
-		$pikaLogger->notice("User $user->id clearing list entries for list $this->id");
+		if (!empty($user->id)){
+			$pikaLogger->notice("User $user->id clearing list entries for list $this->id");
+		} else {
+			$pikaLogger->notice("Clearing list entries for list $this->id, (no global \$user set)");
+			// at least NY Times lists update this way
+		}
 		$allListEntries = $this->getListTitles();
 		foreach ($allListEntries as $listEntry){
 			$this->removeListEntry($listEntry);
