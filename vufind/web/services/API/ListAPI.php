@@ -530,7 +530,7 @@ class ListAPI extends AJAXHandler {
 		global $configArray;
 
 		if (is_numeric($listId) || preg_match('/list[-:](.*)/', $listId, $listInfo)){
-			if (isset($listInfo)){
+			if (isset($listInfo[1])){
 				$listId = $listInfo[1];
 			}
 			return [
@@ -538,14 +538,6 @@ class ListAPI extends AJAXHandler {
 				'cacheName'    => 'list_general_list:' . $listId,
 				'cacheLength'  => $configArray['Caching']['list_general'],
 				'fullListLink' => '/MyAccount/MyList/' . $listId,
-			];
-
-		}elseif (preg_match('/review:(.*)/', $listId, $reviewInfo)){
-			return [
-				'cacheType'    => 'general',
-				'cacheName'    => 'list_general_' . $listId,
-				'cacheLength'  => $configArray['Caching']['list_general'],
-				'fullListLink' => '',
 			];
 		}elseif ($listId == 'highestRated'){
 			return [
