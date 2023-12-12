@@ -613,14 +613,6 @@ class ListAPI extends AJAXHandler {
 		}
 	}
 
-	function comparePublicationDates($a, $b){
-		if ($a['pubDate'] == $b['pubDate']){
-			return 0;
-		}else{
-			return $a['pubDate'] > $b['pubDate'] ? 1 : -1;
-		}
-	}
-
 	private function loadTitleInformationForIds($ids, $numTitlesToShow, $orderedListOfIds = array()){
 		$titles = array();
 		if (count($ids) > 0){
@@ -715,13 +707,13 @@ class ListAPI extends AJAXHandler {
 		$username = $_REQUEST['username'];
 		$password = $_REQUEST['password'];
 		if (!isset($_REQUEST['title'])){
-			return array('success' => false, 'message' => 'You must provide the title of the list to be created.');
+			return ['success' => false, 'message' => 'You must provide the title of the list to be created.'];
 		}
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$list              = new UserList();
 			$list->title       = $_REQUEST['title'];
-			$list->description = strip_tags(isset($_REQUEST['description']) ? $_REQUEST['description'] : '');
+			$list->description = strip_tags($_REQUEST['description'] ?? '');
 			$list->public      = isset($_REQUEST['public']) ? (($_REQUEST['public'] == true || $_REQUEST['public'] == 1) ? 1 : 0) : 0;
 			$list->user_id     = $user->id;
 			$list->insert();
@@ -731,9 +723,9 @@ class ListAPI extends AJAXHandler {
 				$result             = $this->addTitlesToList();
 				return $result;
 			}
-			return array('success' => true, 'listId' => $list->id);
+			return ['success' => true, 'listId' => $list->id];
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 
@@ -861,7 +853,7 @@ class ListAPI extends AJAXHandler {
 		$username = $_REQUEST['username'];
 		$password = $_REQUEST['password'];
 		if (!isset($_REQUEST['listId'])){
-			return array('success' => false, 'message' => 'You must provide the listId to clear titles from.');
+			return ['success' => false, 'message' => 'You must provide the listId to clear titles from.'];
 		}
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
@@ -872,10 +864,10 @@ class ListAPI extends AJAXHandler {
 				return array('success' => false, 'message' => 'Unable to find the list to clear titles from.');
 			}else{
 				$list->removeAllListEntries();
-				return array('success' => true);
+				return ['success' => true];
 			}
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 
@@ -977,7 +969,7 @@ class ListAPI extends AJAXHandler {
 		//Convert into an object that can be processed
 		$availableLists = json_decode($availableListsRaw);
 
-		//Get the human readable title for our selected list
+		//Get the human-readable title for our selected list
 		$selectedListTitle       = null;
 		$selectedListTitleShort  = null;
 		$selectedListDescription = null;
@@ -1034,7 +1026,7 @@ class ListAPI extends AJAXHandler {
 				'success' => true,
 				'message' => "Updated list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>",
 			];
-			//We already have a list, clear the contents so we don't have titles from last time
+			//We already have a list, clear the contents, so we don't have titles from last time
 			$nytList->removeAllListEntries();
 		}
 
