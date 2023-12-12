@@ -15,7 +15,6 @@
 package org.pika;
 
 import org.apache.logging.log4j.Logger;
-import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -225,6 +224,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 										logger.debug(patronApiUrl.toString());
 										logger.debug("Json for patron reading history " + patronDataJson);
 									}
+									patronDataJson = stripPHPNoticeFromJSONResponse(patronDataJson);
 
 									JSONObject patronData = new JSONObject(patronDataJson);
 									JSONObject result     = patronData.getJSONObject("result");
@@ -293,7 +293,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 					processLog.incErrors();
 					hadError = true;
 				} catch (IOException e) {
-					logger.error("Unable to retrieve information from patron API for user Id " + userId, e);
+					logger.error("Unable to retrieve information from patron API for initial load for user Id " + userId, e);
 					processLog.incErrors();
 					hadError = true;
 				}
@@ -413,6 +413,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 						logger.debug(patronApiUrl.toString());
 						logger.debug("Json for patron checked out items " + patronDataJson);
 					}
+					patronDataJson = stripPHPNoticeFromJSONResponse(patronDataJson);
 					try {
 						JSONObject patronData = new JSONObject(patronDataJson);
 						JSONObject result     = patronData.getJSONObject("result");
@@ -432,10 +433,14 @@ public class UpdateReadingHistory implements IProcessHandler {
 								for (int i = 0; i < checkedOutItems.length(); i++) {
 									processCheckedOutTitle(checkedOutItems.getJSONObject(i), userId, checkedOutTitlesAlreadyInReadingHistory);
 								}
-								long curTime = new Date().getTime() / 1000;
-								updatedReadingHistoryTimeStmt.setLong(1, curTime);
-								updatedReadingHistoryTimeStmt.setLong(2, userId);
-								updatedReadingHistoryTimeStmt.executeUpdate();
+								try {
+									long curTime = new Date().getTime() / 1000;
+									updatedReadingHistoryTimeStmt.setLong(1, curTime);
+									updatedReadingHistoryTimeStmt.setLong(2, userId);
+									updatedReadingHistoryTimeStmt.executeUpdate();
+								} catch (SQLException e) {
+									logger.error("Error updating user reading history timestamp", e);
+								}
 
 								loadedHistoriesUpdated++;
 							} else {
@@ -450,7 +455,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 					} catch (JSONException e) {
 						final String message = "Unable to load patron information for user Id " + userId + ", exception loading response ";
 						logger.error(message, e);
-						logger.error(patronDataJson);
+						logger.error("Response for error above :" + patronDataJson);
 						processLog.incErrors();
 //						processLog.addNote(message + e);
 						//TODO: I'm not sure adding this to the cron log entries is needed, especially on test where most errors are JSON errors
@@ -606,4 +611,13 @@ public class UpdateReadingHistory implements IProcessHandler {
 		return md5.toString();
 	}
 
+	public String stripPHPNoticeFromJSONResponse(String resultStr){
+		if (resultStr != null && !resultStr.isEmpty() && resultStr.charAt(0) != '{'){
+			String[] split     = resultStr.split("\\{", 2);
+			String   phpNotice = split[0];
+			resultStr = "{" + split[1];
+			logger.info("PHP notice from API call: " + phpNotice);
+		}
+		return resultStr;
+	}
 }

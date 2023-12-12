@@ -91,7 +91,7 @@ public class NYTList implements IProcessHandler {
 					str.append(scan.nextLine());
 				}
 			}
-			JSONObject obj     = new JSONObject(str.toString());
+			JSONObject obj     = new JSONObject(stripPHPNoticeFromJSONResponse(str, logger));
 			JSONObject result  = obj.getJSONObject("result");
 			JSONArray  results = result.getJSONArray("results");
 			for (int i = 0; i < results.length(); i++) {
@@ -104,7 +104,8 @@ public class NYTList implements IProcessHandler {
 					while (updateScan.hasNext()) {
 						updateStr.append(updateScan.nextLine());
 					}
-					JSONObject updateStatus = new JSONObject(updateStr.toString());
+					String     resultStr    = stripPHPNoticeFromJSONResponse(updateStr, logger);
+					JSONObject updateStatus = new JSONObject(resultStr);
 					JSONObject resultJSON   = updateStatus.getJSONObject("result");
 					if (resultJSON.getBoolean("success")) {
 						String message = resultJSON.getString("message").split("<br>")[1];
@@ -124,13 +125,16 @@ public class NYTList implements IProcessHandler {
 			logger.error("Cannot reach Pika server or server down", e);
 		}
 	}
+
+	public String stripPHPNoticeFromJSONResponse(StringBuilder updateStr, Logger logger){
+		String resultStr = updateStr.toString();
+		if (!resultStr.isEmpty() && updateStr.charAt(0) != '{'){
+			String[] split     = resultStr.split("\\{", 2);
+			String   phpNotice = split[0];
+			resultStr = "{" + split[1];
+			logger.info("PHP notice from API call : " + phpNotice);
+		}
+		return resultStr;
+	}
 }
 
-class NYTListOptions
-{
-	String list_name;
-	String display_name;
-	String list_name_encoded;
-	String oldest_published_date;
-	String newest_published_date;
-}
