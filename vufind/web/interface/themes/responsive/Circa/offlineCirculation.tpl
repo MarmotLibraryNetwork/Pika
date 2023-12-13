@@ -22,7 +22,7 @@
 				<div><label for="login">{$ILSname} Username</label>:</div>
 				<div><input type="text" name="login" id="login" value="{$lastLogin}" class="required" onchange="clearOfflineCircResults();"> </div>
 			</div>
-			<div class="col-xs-3">
+{*			<div class="col-xs-3">
 				<div><label for="password1">{$ILSname} Password</label>:</div>
 				<div><input type="password" name="password1" id="password1" value="{$lastPassword1}" class="required" onchange="clearOfflineCircResults();"></div>
 			</div>
@@ -31,7 +31,7 @@
 					<input type="checkbox" id="showPwd" name="showPwd" onclick="return Pika.pwdToText('password1')">
 					Show {$ILSname} Password
 				</label>
-			</div>
+			</div>*}
 		</div>
 		<div class="row">
 			<fieldset>
@@ -53,8 +53,8 @@
 
 </form>
 <div class="well" style="margin:10px 0;">
-	<p>This Offline Circulation functionality is intended to be used to checkout titles to patrons while connectivity to the ILS is not available or not ready for usage.</p>
-	<p>To use this functionality, enter the same {$ILSname} username and password that you use while logging in to the {$ILSname} Client. You will only need to do this once per session.</p>
+	<p>This Offline Circulation functionality is intended to be used to check out titles to patrons while connectivity to the ILS is not available or not ready for usage.</p>
+	<p>To use this functionality, enter the same {$ILSname} username {*and password *}that you use while logging in to the {$ILSname} Client. You will only need to do this once per session.</p>
 	<p>When a patron arrives at the circulation desk, first enter their barcode either by typing it in or scanning it. If you do not have their barcode or the patron does not know it, enter their name and the transaction can be manually processed once the system is back online.</p>
 	<p>Next scan or enter the barcode of each item to be checked out, one per line. Once all items have been entered, press the "Submit Offline Checkouts" button.</p>
 	<p>After submitting the form, check the page to ensure that no errors occurred saving the checkout transaction. If errors occurred, they are displayed at the top of the screen in red.</p>
