@@ -33,9 +33,9 @@ class ExploreMore {
 			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 			$fedoraUtils = FedoraUtils::getInstance();
 		}
-		$exploreMoreSectionsToShow = array();
+		$exploreMoreSectionsToShow = [];
 
-		$relatedPikaContent = array();
+		$relatedPikaContent = [];
 		if ($activeSection == 'archive'){
 			//If this is a book or a page, show a table of contents
 			//Check to see if the record is part of a compound object.  If so we will want to link to the parent compound object.
@@ -58,19 +58,19 @@ class ExploreMore {
 						}
 					}
 
-					$exploreMoreSectionsToShow['parentBook'] = array(
+					$exploreMoreSectionsToShow['parentBook'] = [
 //							'title' => 'Entire Book',
 							'format' => 'list',
-							'values' => array(
-									array(
-											'pid' => $parentObject->id,
-											'label' => $parentDriver->getTitle(),
-											'link' => $parentDriver->getRecordUrl(),
-											'image' => $parentDriver->getBookcoverUrl('small'),
-											'object' => $parentObject,
-									),
-							)
-					);
+							'values' => [
+								[
+									'pid'    => $parentObject->id,
+									'label'  => $parentDriver->getTitle(),
+									'link'   => $parentDriver->getRecordUrl(),
+									'image'  => $parentDriver->getBookcoverUrl('small'),
+									'object' => $parentObject,
+								],
+							]
+					];
 
 					$exploreMoreSectionsToShow = $this->setupTableOfContentsForBook($parentDriver, $exploreMoreSectionsToShow, false);
 
@@ -103,17 +103,17 @@ class ExploreMore {
 			$archiveDriver = $recordDriver;
 			if (!isset($this->relatedCollections)){
 				$this->relatedCollections = $archiveDriver->getRelatedCollections();
-				$this->relatedCollections['all'] = array(
+				$this->relatedCollections['all'] = [
 					'label' => 'See All Digital Archive Collections',
 					'link' => '/Archive/Home'
-				);
+				];
 				if (count($this->relatedCollections) > 1){ //Don't show if the only link is back to the All Collections page
 					$displayType = count($this->relatedCollections) > 3 ? 'textOnlyList' : 'list';
-					$exploreMoreSectionsToShow['relatedCollections'] = array(
+					$exploreMoreSectionsToShow['relatedCollections'] = [
 //							'title' => 'Related Archive Collections',
 							'format' => $displayType,
 							'values' => $this->relatedCollections
-					);
+					];
 				}
 				$timer->logTime("Loaded related collections for archive object");
 			}
@@ -121,21 +121,21 @@ class ExploreMore {
 			//Find content from the catalog that is directly related to the object or collection based on linked data
 			$relatedPikaContent = $archiveDriver->getRelatedPikaContent();
 			if (count($relatedPikaContent) > 0){
-				$exploreMoreSectionsToShow['linkedCatalogRecords'] = array(
+				$exploreMoreSectionsToShow['linkedCatalogRecords'] = [
 //						'title' => 'Librarian Picks',
 						'format' => 'scroller',
 						'values' => $relatedPikaContent
-				);
+				];
 			}
-			$timer->logTime("Loaded related Pika content");
+			$timer->logTime('Loaded related Pika content');
 
 			//Find other entities
 		}
 
 		//Get subjects that can be used for searching other systems
 		$subjects                   = $recordDriver->getAllSubjectHeadings(true, 5);
-		$subjectsForSearching       = array();
-		$quotedSubjectsForSearching = array();
+		$subjectsForSearching       = [];
+		$quotedSubjectsForSearching = [];
 		foreach ($subjects as $subject){
 			if (is_array($subject)){
 				$searchSubject = implode(" ", $subject);
@@ -159,20 +159,20 @@ class ExploreMore {
 		//Get objects from the archive based on search subjects
 		if ($activeSection != 'archive'){
 			foreach ($subjectsForSearching as $curSubject){
-				$exactEntityMatches = $this->loadExactEntityMatches(array(), $curSubject);
+				$exactEntityMatches = $this->loadExactEntityMatches([], $curSubject);
 				if (count($exactEntityMatches) > 0){
-					$exploreMoreSectionsToShow['exactEntityMatches'] = array(
+					$exploreMoreSectionsToShow['exactEntityMatches'] = [
 //							'title' => 'Related People, Places &amp; Events',
 							'format' => 'list',
 							'values' => usort($exactEntityMatches, 'ExploreMore::sortRelatedEntities')
-					);
+					];
 				}
 			}
-			$timer->logTime("Loaded related entities");
+			$timer->logTime('Loaded related entities');
 		}
 
 		//Always load ebsco even if we are already in that section
-		$ebscoMatches = $this->loadEbscoOptions('', array(), $searchTerm);
+		$ebscoMatches = $this->loadEbscoOptions('', [], $searchTerm);
 		if (count($ebscoMatches) > 0){
 			$interface->assign('relatedArticles', $ebscoMatches);
 		}
@@ -186,35 +186,35 @@ class ExploreMore {
 			if (count($relatedArchiveEntities) > 0){
 				if (isset($relatedArchiveEntities['people'])){
 					usort($relatedArchiveEntities['people'], 'ExploreMore::sortRelatedEntities');
-					$exploreMoreSectionsToShow['relatedPeople'] = array(
+					$exploreMoreSectionsToShow['relatedPeople'] = [
 //							'title' => 'Associated People',
 							'format' => 'textOnlyList',
 							'values' => $relatedArchiveEntities['people']
-					);
+					];
 				}
 				if (isset($relatedArchiveEntities['places'])){
 					usort($relatedArchiveEntities['places'], 'ExploreMore::sortRelatedEntities');
-					$exploreMoreSectionsToShow['relatedPlaces'] = array(
+					$exploreMoreSectionsToShow['relatedPlaces'] = [
 //							'title' => 'Associated Places',
 							'format' => 'textOnlyList',
 							'values' => $relatedArchiveEntities['places']
-					);
+					];
 				}
 				if (isset($relatedArchiveEntities['organizations'])){
 					usort($relatedArchiveEntities['organizations'], 'ExploreMore::sortRelatedEntities');
-					$exploreMoreSectionsToShow['relatedOrganizations'] = array(
+					$exploreMoreSectionsToShow['relatedOrganizations'] = [
 //							'title' => 'Associated Organizations',
 							'format' => 'textOnlyList',
 							'values' => $relatedArchiveEntities['organizations']
-					);
+					];
 				}
 				if (isset($relatedArchiveEntities['events'])){
 					usort($relatedArchiveEntities['events'], 'ExploreMore::sortRelatedEntities');
-					$exploreMoreSectionsToShow['relatedEvents'] = array(
+					$exploreMoreSectionsToShow['relatedEvents'] = [
 //							'title' => 'Associated Events',
 							'format' => 'textOnlyList',
 							'values' => $relatedArchiveEntities['events']
-					);
+					];
 				}
 			}
 		}
@@ -223,23 +223,23 @@ class ExploreMore {
 		$driver                = $activeSection == 'archive' ? $recordDriver : null;
 		$relatedArchiveContent = $this->getRelatedArchiveObjects($quotedSearchTerm, $searchSubjectsOnly, $driver);
 		if (count($relatedArchiveContent) > 0){
-			$exploreMoreSectionsToShow['relatedArchiveData'] = array(
-//				'title'  => 'From the Archive',
+			$exploreMoreSectionsToShow['relatedArchiveData'] = [
+				//'title'  => 'From the Archive',
 				'format' => 'subsections',
 				'values' => $relatedArchiveContent,
-			);
+			];
 		}
 
 		if ($activeSection != 'catalog'){
 			$relatedWorks = $this->getRelatedWorks($quotedSubjectsForSearching, $relatedPikaContent);
 			if ($relatedWorks['numFound'] > 0){
-				$exploreMoreSectionsToShow['relatedCatalog'] = array(
-//						'title' => 'More From the Catalog',
-						'format' => 'scrollerWithLink',
-						'values' => $relatedWorks['values'],
-						'link' => $relatedWorks['link'],
-						'numFound' => $relatedWorks['numFound'],
-				);
+				$exploreMoreSectionsToShow['relatedCatalog'] = [
+					//'title'    => 'More From the Catalog',
+					'format'   => 'scrollerWithLink',
+					'values'   => $relatedWorks['values'],
+					'link'     => $relatedWorks['link'],
+					'numFound' => $relatedWorks['numFound'],
+				];
 			}
 		}
 
@@ -251,11 +251,11 @@ class ExploreMore {
 			$relatedSubjects = $this->getRelatedArchiveSubjects($archiveDriver);
 			if (count($relatedSubjects) > 0){
 				usort($relatedSubjects, 'ExploreMore::sortRelatedEntities');
-				$exploreMoreSectionsToShow['relatedSubjects'] = array(
-//						'title' => 'Related Subjects',
-						'format' => 'textOnlyList',
-						'values' => $relatedSubjects
-				);
+				$exploreMoreSectionsToShow['relatedSubjects'] = [
+					//'title'  => 'Related Subjects',
+					'format' => 'textOnlyList',
+					'values' => $relatedSubjects
+				];
 			}
 
 			//Load DPLA Content
@@ -265,13 +265,13 @@ class ExploreMore {
 				//Check to see if we get any results from DPLA for this entity
 				$dplaResults = $dpla->getDPLAResults('"' . $archiveDriver->getTitle() . '"');
 				if (count($dplaResults)){
-					$exploreMoreSectionsToShow['dpla'] = array(
-//							'title' => 'Digital Public Library of America',
-							'format' => 'scrollerWithLink',
-							'values' => $dplaResults['records'],
-							'link' => 'http://dp.la/search?q=' . urlencode('"' . $archiveDriver->getTitle() . '"'),
-							'openInNewWindow' => true,
-					);
+					$exploreMoreSectionsToShow['dpla'] = [
+						//'title'           => 'Digital Public Library of America',
+						'format'          => 'scrollerWithLink',
+						'values'          => $dplaResults['records'],
+						'link'            => 'http://dp.la/search?q=' . urlencode('"' . $archiveDriver->getTitle() . '"'),
+						'openInNewWindow' => true,
+					];
 				}
 			}else{
 				//Display donor and contributor information
@@ -305,12 +305,12 @@ class ExploreMore {
 
 					usort($brandingResults, 'sortBrandingResults');
 
-					$exploreMoreSectionsToShow['acknowledgements'] = array(
-//							'title' => 'Acknowledgements',
-							'format' => 'list',
-							'values' => $brandingResults,
-							'showTitles' => true,
-					);
+					$exploreMoreSectionsToShow['acknowledgements'] = [
+						//'title'      => 'Acknowledgements',
+						'format'     => 'list',
+						'values'     => $brandingResults,
+						'showTitles' => true,
+					];
 				}
 			}
 		}
@@ -592,10 +592,10 @@ class ExploreMore {
 				/** @var SearchObject_Solr $searchObject */
 				$searchObjectSolr = SearchObjectFactory::initSearchObject();
 				$searchObjectSolr->init('local');
-				$searchObjectSolr->setSearchTerms(array(
-						'lookfor' => $searchTerm,
-						'index' => 'Keyword'
-				));
+				$searchObjectSolr->setSearchTerms([
+					'lookfor' => $searchTerm,
+					'index'   => 'Keyword'
+				]);
 				$searchObjectSolr->clearHiddenFilters();
 				$searchObjectSolr->clearFilters();
 				$searchObjectSolr->addFilter('literary_form_full:Non Fiction');
@@ -612,22 +612,22 @@ class ExploreMore {
 						$numCatalogResults = $results['response']['numFound'];
 						if ($numCatalogResultsAdded == 4 && $numCatalogResults > 5) {
 							//Add a link to remaining catalog results
-							$exploreMoreOptions[] = array(
-									'label' => "Catalog Results ($numCatalogResults)",
-									'description' => "Catalog Results ($numCatalogResults)",
-									'image' => '/interface/themes/responsive/images/library_symbol.png',
-									'link' => $searchObjectSolr->renderSearchUrl(),
-									'usageCount' => 1
-							);
+							$exploreMoreOptions[] = [
+								'label'       => "Catalog Results ($numCatalogResults)",
+								'description' => "Catalog Results ($numCatalogResults)",
+								'image'       => '/interface/themes/responsive/images/library_symbol.png',
+								'link'        => $searchObjectSolr->renderSearchUrl(),
+								'usageCount'  => 1
+							];
 						} else {
 							//Add a link to the actual title
-							$exploreMoreOptions[] = array(
-									'label' => $driver->getTitle(),
-									'description' => $driver->getTitle(),
-									'image' => $driver->getBookcoverUrl('medium'),
-									'link' => $driver->getLinkUrl(),
-									'usageCount' => 1
-							);
+							$exploreMoreOptions[] = [
+								'label'       => $driver->getTitle(),
+								'description' => $driver->getTitle(),
+								'image'       => $driver->getBookcoverUrl('medium'),
+								'link'        => $driver->getLinkUrl(),
+								'usageCount'  => 1
+							];
 						}
 
 						$numCatalogResultsAdded++;
