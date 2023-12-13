@@ -35,19 +35,19 @@ class Circa_OfflineCirculation extends Action{
 
 		if (isset($_POST['submit'])){
 			$login     = $_REQUEST['login'];
-			$password1 = $_REQUEST['password1'];
+			//$password1 = $_REQUEST['password1'];
 			$interface->assign('lastLogin', $login);
-			$interface->assign('lastPassword1', $password1);
+			//$interface->assign('lastPassword1', $password1);
 
 			$loginInfoValid = true;
 			if (strlen($login) == 0){
 				$error          .= "Please enter your login.<br>";
 				$loginInfoValid = false;
 			}
-			if (strlen($password1) == 0){
-				$error          .= "Please enter your login password.<br>";
-				$loginInfoValid = false;
-			}
+			//if (strlen($password1) == 0){
+			//	$error          .= "Please enter your login password.<br>";
+			//	$loginInfoValid = false;
+			//}
 
 			if ($loginInfoValid){
 				//$barcodesToCheckIn = $_REQUEST['barcodesToCheckIn'];
@@ -87,7 +87,7 @@ class Circa_OfflineCirculation extends Action{
 							$offlineCirculationEntry->timeEntered   = time();
 							$offlineCirculationEntry->itemBarcode   = $barcode;
 							$offlineCirculationEntry->login         = $login;
-							$offlineCirculationEntry->loginPassword = $password1;
+							//$offlineCirculationEntry->loginPassword = $password1;
 							$offlineCirculationEntry->patronBarcode = $patronBarcode;
 							$offlineCirculationEntry->patronId      = $patronId;
 							$offlineCirculationEntry->type          = 'Check Out';
