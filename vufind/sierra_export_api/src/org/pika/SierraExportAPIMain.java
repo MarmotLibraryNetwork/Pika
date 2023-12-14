@@ -2212,7 +2212,7 @@ public class SierraExportAPIMain {
 				}
 
 			} catch (java.net.SocketTimeoutException e) {
-				logger.error("Socket timeout talking to to sierra API (callSierraApiURL) " + sierraUrl + " - " + e);
+				logger.error("Socket timeout talking to sierra API (callSierraApiURL) " + sierraUrl + " - " + e);
 				lastCallTimedOut = true;
 			} catch (java.net.ConnectException e) {
 				logger.error("Timeout connecting to sierra API (callSierraApiURL) " + sierraUrl + " - " + e);
@@ -2266,7 +2266,7 @@ public class SierraExportAPIMain {
 				}
 
 			} catch (java.net.SocketTimeoutException e) {
-				logger.error("Socket timeout talking to to sierra API (getMarcFromSierraApiURL) " + e.toString());
+				logger.error("Socket timeout talking to sierra API (getMarcFromSierraApiURL) " + e.toString());
 				lastCallTimedOut = true;
 			} catch (java.net.ConnectException e) {
 				logger.error("Timeout connecting to sierra API (getMarcFromSierraApiURL) " + e.toString());
