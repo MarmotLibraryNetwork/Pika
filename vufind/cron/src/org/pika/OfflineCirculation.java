@@ -530,7 +530,7 @@ public class OfflineCirculation implements IProcessHandler {
 							.put("patronBarcode", patronBarcode)
 							.put("itemBarcode", itemBarcode)
 							.put("username", sierraCircLogin).toString();
-			JSONObject response = callSierraApiURL(checkoutUrl, checkoutJson, true);
+			JSONObject response = callSierraApiURL(checkoutUrl, checkoutJson/*, true*/);
 			if (response != null){
 				if (response.has("id")){
 					result.setSuccess(true);
@@ -758,7 +758,7 @@ public class OfflineCirculation implements IProcessHandler {
 
 	private static boolean lastCallTimedOut = false;
 
-	private JSONObject callSierraApiURL(String sierraUrl, String postData, boolean logErrors) {
+	private JSONObject callSierraApiURL(String sierraUrl, String postData/*, boolean logErrors*/) {
 		lastCallTimedOut = false;
 		if (connectToSierraAPI()) {
 			//Connect to the API to get our token
@@ -796,25 +796,27 @@ public class OfflineCirculation implements IProcessHandler {
 
 				} else if (responseCode == 500 || responseCode == 404) {
 					// 404 is record not found
-					if (logErrors) {
+					//if (logErrors) {
 						// Get any errors
 						if (logger.isInfoEnabled()) {
 							logger.info("Received response code " + responseCode + " calling sierra API " + sierraUrl);
 							response = getTheResponse(conn.getErrorStream());
 							logger.info("Finished reading response : " + response);
+							return new JSONObject(response.toString());
 						}
-					}
+					//}
 				} else {
-					if (logErrors) {
+					//if (logErrors) {
 						logger.error("Received error " + responseCode + " calling sierra API " + sierraUrl);
 						// Get any errors
 						response = getTheResponse(conn.getErrorStream());
 						logger.error("Finished reading response : " + response);
-					}
+						return new JSONObject(response.toString());
+					//}
 				}
 
 			} catch (java.net.SocketTimeoutException e) {
-				logger.error("Socket timeout talking to to sierra API (callSierraApiURL) " + sierraUrl + " - " + e);
+				logger.error("Socket timeout talking to sierra API (callSierraApiURL) " + sierraUrl + " - " + e);
 				lastCallTimedOut = true;
 			} catch (java.net.ConnectException e) {
 				logger.error("Timeout connecting to sierra API (callSierraApiURL) " + sierraUrl + " - " + e);
