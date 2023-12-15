@@ -2,8 +2,7 @@
 <form {*method="post" action=""*} name="popupForm" class="form-horizontal" id="emailForm">
 	<div class="alert alert-info">
 		<p>
-			Sharing via e-mail message will send the series (with a link back to the series page) to you so you can easily find it in
-			the future.
+			Sharing via e-mail message will send the series (with a link back to the series page) to you so you can easily find it in the future.
 		</p>
 	</div>
 	<div class="form-group">
