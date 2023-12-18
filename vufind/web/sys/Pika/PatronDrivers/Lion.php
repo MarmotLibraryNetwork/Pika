@@ -37,7 +37,9 @@ require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/SierraPatronListOperatio
 
 class Lion extends Sierra {
 
-	use SierraPatronListOperations;
+	use SierraPatronListOperations {
+		importListsFromIls as importListsFromIlsOriginal;
+	}
 
 	public function __construct($accountProfile){
 		parent::__construct($accountProfile);
@@ -151,4 +153,9 @@ class Lion extends Sierra {
 		return true;
 	}
 
+	public function importListsFromIls(\User $patron){
+		$this->classicListsRegex = '%<tr[^>]*?class="patFuncEntry"[^>]*?>.*?<input type="checkbox".*?<a.*?href="[^"]*?listNum=(\d+)".*?>(.*?)<\/a>.*?<td[^>]*class="patFuncDetails">(.*?)<\/td>.*?<\/tr>%si';
+		return $this->importListsFromIlsOriginal($patron);
+
+	}
 }
