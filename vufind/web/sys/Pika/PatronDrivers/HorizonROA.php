@@ -256,11 +256,15 @@ abstract class HorizonROA implements \DriverInterface {
 		$password = trim($password);
 
 		// Check if user exists in database
-		$user          = new User();
-		$user->source  = $this->accountProfile->name;
-		$user->barcode = $barcode;
-
 		$userExistsInDB = false;
+		$user          = new User();
+		$user->barcode = $barcode;
+		// $this->accountProfile->name might be empty.
+		// empty accountProfile->name seems to happen with password reset, but haven't confirmed
+		if(isset($user->source)) {
+			$user->source  = $this->accountProfile->name;
+		}
+
 		if ($user->find(true)){
 			$userExistsInDB = true;
 		}
@@ -452,10 +456,17 @@ abstract class HorizonROA implements \DriverInterface {
 					$user->update();
 					// update password if needed
 					if($password != $user->getPassword()) {
+						// format date for mariadb datetime column
+						// if H:i:s is omitted the date will be wrong in DB
+						$user->lastPasswordSetTime = date("Y-m-d H:i:s");
+						$user->update();
 						$user->updatePassword($password);
 					}
 				} else {
-					$user->created = date('Y-m-d');
+					// format date for mariadb datetime column
+					// if H:i:s is omitted the date will be wrong in DB
+					$user->created = date("Y-m-d H:i:s");
+					$user->lastPasswordSetTime = date("Y-m-d H:i:s");
 					$user->insert();
 					// update password after user is created
 					$user->updatePassword($password);
