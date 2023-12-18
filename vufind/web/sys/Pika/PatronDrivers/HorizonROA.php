@@ -257,11 +257,11 @@ abstract class HorizonROA implements \DriverInterface {
 
 		// Check if user exists in database
 		$userExistsInDB = false;
-		$user          = new User();
-		$user->barcode = $barcode;
+		$user           = new User();
+		$user->barcode  = $barcode;
 		// $this->accountProfile->name might be empty.
 		// empty accountProfile->name seems to happen with password reset, but haven't confirmed
-		if(isset($user->source)) {
+		if(isset($this->accountProfile->name)) {
 			$user->source  = $this->accountProfile->name;
 		}
 
