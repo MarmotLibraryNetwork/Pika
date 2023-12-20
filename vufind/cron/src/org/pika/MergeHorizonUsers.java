@@ -24,7 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Tool to cleanup users that have entries in the user table for both the barcode and Horizon unique id
+ * Tool to clean up users that have entries in the user table for both the barcode and Horizon unique id
  * Pika
  * User: Mark Noble
  * Date: 9/28/2015
@@ -52,9 +52,10 @@ public class MergeHorizonUsers implements IProcessHandler {
 		processLog.saveToDatabase(pikaConn, logger);
 
 		//Get a list of users that are in the database twice
+		int       numDuplicateUsers = 0;
 		try {
-			PreparedStatement duplicateUsersStmt       = pikaConn.prepareStatement("SELECT cat_username, COUNT(id) AS numDuplicates FROM user GROUP BY cat_username HAVING numDuplicates > 1");
-			PreparedStatement getDuplicateUserInfoStmt = pikaConn.prepareStatement("SELECT id, username, cat_username FROM user WHERE cat_username = ?");
+			PreparedStatement duplicateUsersStmt       = pikaConn.prepareStatement("SELECT barcode, COUNT(id) AS numDuplicates FROM user WHERE barcode IS NOT NULL GROUP BY barcode HAVING numDuplicates > 1");
+			PreparedStatement getDuplicateUserInfoStmt = pikaConn.prepareStatement("SELECT id, ilsUserId, barcode FROM user WHERE barcode = ?");
 			mergeUserLinksStmt          = pikaConn.prepareStatement("UPDATE user_link SET primaryAccountId = ? WHERE primaryAccountId = ?");
 			mergeUserLinks2Stmt         = pikaConn.prepareStatement("UPDATE user_link SET linkedAccountId = ? WHERE linkedAccountId = ?");
 			mergeUserLinks3Stmt         = pikaConn.prepareStatement("UPDATE user_link_blocks SET primaryAccountId = ? WHERE primaryAccountId = ?");
@@ -68,32 +69,31 @@ public class MergeHorizonUsers implements IProcessHandler {
 			mergeBrowseCategoriesStmt   = pikaConn.prepareStatement("UPDATE browse_category SET userId = ? WHERE userId = ?");
 			mergeMaterialsRequestsStmt  = pikaConn.prepareStatement("UPDATE materials_request SET createdBy = ? WHERE createdBy = ?");
 			mergeUserReviewsStmt        = pikaConn.prepareStatement("UPDATE user_work_review SET userId = ? WHERE userId = ?");
-			removeDuplicateUserStmt     = pikaConn.prepareStatement("DELETE FROM user WHERE id = ?");
+			removeDuplicateUserStmt     = pikaConn.prepareStatement("DELETE FROM user WHERE id = ? LIMIT 1");
 			ResultSet duplicateUsersRS  = duplicateUsersStmt.executeQuery();
-			int       numDuplicateUsers = 0;
 			while (duplicateUsersRS.next()) {
 				numDuplicateUsers++;
-				String barcode = duplicateUsersRS.getString("cat_username");
+				String barcode = duplicateUsersRS.getString("barcode");
 				try {
 					getDuplicateUserInfoStmt.setString(1, barcode);
 					ResultSet duplicateUserInfo = getDuplicateUserInfoStmt.executeQuery();
 
-					Long preferredUsername = -1L;
-					Long duplicateUsername = -1L;
-					Long preferredUserId   = -1L;
-					Long duplicateUserId   = -1L;
+					long preferredIlsUserId = -1L;
+					long duplicateIlsUserId = -1L;
+					long preferredUserId    = -1L;
+					long duplicateUserId    = -1L;
 
 					while (duplicateUserInfo.next()) {
-						String userId = duplicateUserInfo.getString("username");
+						String userId = duplicateUserInfo.getString("ilsUserId").trim();
 						if (userId.equals(barcode)) {
-							duplicateUsername = duplicateUserInfo.getLong("username");
-							duplicateUserId   = duplicateUserInfo.getLong("id");
+							duplicateIlsUserId = duplicateUserInfo.getLong("ilsUserId");
+							duplicateUserId    = duplicateUserInfo.getLong("id");
 						} else {
-							preferredUsername = duplicateUserInfo.getLong("username");
-							preferredUserId   = duplicateUserInfo.getLong("id");
+							preferredIlsUserId = duplicateUserInfo.getLong("ilsUserId");
+							preferredUserId    = duplicateUserInfo.getLong("id");
 						}
 					}
-					if (preferredUsername == -1L || duplicateUsername == -1L) {
+					if (preferredIlsUserId == -1L || duplicateIlsUserId == -1L) {
 						logger.error("Could not determine preferred and duplicate id for barcode " + barcode);
 					} else {
 						//Merge enrichment for the users
@@ -109,7 +109,8 @@ public class MergeHorizonUsers implements IProcessHandler {
 						numChanges += mergeMaterialsRequests(preferredUserId, duplicateUserId);
 						numChanges += mergeUserReviews(preferredUserId, duplicateUserId);
 
-						logger.debug("Made " + numChanges + " changes for user barcode ");
+						logger.info("Made " + numChanges + " changes for user barcode " + barcode);
+
 
 						//Remove the duplicate user
 						removeDuplicateUserStmt.setLong(1, duplicateUserId);
@@ -120,19 +121,20 @@ public class MergeHorizonUsers implements IProcessHandler {
 					}
 				} catch (SQLException e) {
 					processLog.incErrors();
-					processLog.addNote("Error processing barcode " + barcode + ". " + e.toString());
+					processLog.addNote("Error processing barcode " + barcode + ". " + e);
 					logger.error("Error processing barcode " + barcode, e);
 					processLog.saveToDatabase(pikaConn, logger);
 				}
 			}
-			logger.debug("Processed " + numDuplicateUsers + " users with more than one instance in the system.");
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			processLog.incErrors();
-			processLog.addNote("Error loading duplicate users. " + e.toString());
+			processLog.addNote("Error loading duplicate users. " + e);
 			logger.error("Error loading duplicate users", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
-
+		String message = "Processed " + numDuplicateUsers + " users with more than one instance in the system.";
+		logger.info(message);
+		processLog.addNote(message);
 
 		processLog.setFinished();
 		processLog.saveToDatabase(pikaConn, logger);
