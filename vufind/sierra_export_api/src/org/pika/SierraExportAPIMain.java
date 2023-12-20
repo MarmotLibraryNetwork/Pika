@@ -393,7 +393,7 @@ public class SierraExportAPIMain {
 			connectionProperties.setProperty("password", sierraDBPassword);
 		}
 		connectionProperties.setProperty("socketTimeout ", "300");
-		// Set a socket timeout so that the Extractor doesn't hang on missed responsed from SierraDNA
+		// Set a socket timeout so that the Extractor doesn't hang on missed responses from SierraDNA
 
 			if (url != null) {
 			Connection sierraDBConn = null;
