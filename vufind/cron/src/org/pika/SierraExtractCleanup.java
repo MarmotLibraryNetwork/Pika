@@ -82,6 +82,9 @@ public class SierraExtractCleanup implements IProcessHandler{
 					String  bibId           = extractsResults.getString("ilsId");
 					long    shortId         = Long.parseLong(bibId.substring(2, bibId.length() - 1));
 					boolean markedAsDeleted = isDeletedInAPI(shortId);
+					if (logger.isDebugEnabled()){
+						logger.debug("Checking record " +bibId);
+					}
 					if (!markedAsDeleted) {
 						// Remove being marked as deleted and mark for re-extraction
 						try {
@@ -120,6 +123,7 @@ public class SierraExtractCleanup implements IProcessHandler{
 							processLog.incErrors();
 						}
 					}
+					processLog.saveToDatabase(pikaConn, logger);
 				}
 			} catch (SQLException e) {
 				logger.error("SQL error", e);
