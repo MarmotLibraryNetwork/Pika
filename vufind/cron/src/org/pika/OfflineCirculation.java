@@ -130,6 +130,9 @@ public class OfflineCirculation implements IProcessHandler {
 				while (holdsToProcessRS.next()) {
 					processOfflineHold(updateHold, baseUrl, holdsToProcessRS);
 					holdsProcessed++;
+					if (holdsProcessed % 10 == 0){
+						processLog.saveToDatabase(pikaConn, logger);
+					}
 				}
 			}
 		} catch (SQLException e) {
@@ -233,6 +236,13 @@ public class OfflineCirculation implements IProcessHandler {
 							while (circulationEntriesToProcessRS.next()) {
 								processOfflineCirculationEntryViaSierraAPI(updateCirculationEntry, baseApiUrl, circulationEntriesToProcessRS);
 								numProcessed++;
+								if (numProcessed % 10 == 0){
+									try {
+										processLog.saveToDatabase(pikaConn, logger);
+									} catch (Exception e) {
+										logger.error("Error updating cron logging", e);
+									}
+								}
 							}
 						}
 					}
