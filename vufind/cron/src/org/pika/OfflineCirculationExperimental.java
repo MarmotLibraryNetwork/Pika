@@ -58,8 +58,7 @@ public class OfflineCirculationExperimental implements IProcessHandler  {
 		ExecutorService executor = Executors.newFixedThreadPool(5);
 		processLog.addNote("Processing offline checkouts via Sierra API");
 		try (
-						PreparedStatement circulationEntryToProcessStmt = pikaConn.prepareStatement("SELECT offline_circulation.* FROM offline_circulation WHERE status='Not Processed' ORDER BY login ASC, patronBarcode ASC, timeEntered ASC"
-						+ " LIMIT 15");
+						PreparedStatement circulationEntryToProcessStmt = pikaConn.prepareStatement("SELECT offline_circulation.* FROM offline_circulation WHERE status='Not Processed' ORDER BY login ASC, patronBarcode ASC, timeEntered ASC");
 						PreparedStatement sierraVendorOpacUrlStmt = pikaConn.prepareStatement("SELECT vendorOpacUrl FROM account_profiles WHERE name = 'ils'")
 		) {
 			try (ResultSet sierraVendorOpacUrlRS = sierraVendorOpacUrlStmt.executeQuery()) {
