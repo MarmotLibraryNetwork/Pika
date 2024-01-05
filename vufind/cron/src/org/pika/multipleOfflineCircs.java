@@ -97,7 +97,9 @@ public class multipleOfflineCircs implements Runnable {
 				} else {
 					logger.info("Check out failed. Request : " + checkoutJson + "  Response : " + response);
 					String error = response.getString("name");
-					result.setSuccess(false);
+					if (response.has("description")){
+						error += " : " + response.getString("description");
+					}					result.setSuccess(false);
 					result.setNote(error);
 				}
 
