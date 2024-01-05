@@ -36,15 +36,36 @@ class MyAccount_MyLists extends MyAccount{
 			$staffUser      = $user->isStaff();
 			$shortPageTitle = 'My Lists';
 			$interface->assign('shortPageTitle', $shortPageTitle);
+			$sortOptions = [
+				'title'      => 'Title',
+				'created'     => 'Created',
+				'dateUpdated' => 'Last Updated',
+			];
+			$sortOption = $_REQUEST['sort'] ?? 'title';
+			switch ($_REQUEST['sort']){
+				case 'created' :
+					$listsSortOption = 'created ASC';
+					break;
+				case 'dateUpdated' :
+					$listsSortOption = 'dateUpdated DESC';
+					break;
+				case 'title' :
+				default :
+					$sortOption = 'title';  // Set the sort option when the request parameter isn't a valid option
+					$listsSortOption = 'title ASC';
+			}
+			$interface->assign('sortOptions', $sortOptions);
+			$interface->assign('defaultSortOption', $sortOption);
 			//Load a list of lists
-			$userListsData = $this->cache->get('user_lists_data_' . UserAccount::getActiveUserId());
+			$memcacheKey           = 'user_lists_data_' . UserAccount::getActiveUserId();
+			$userListsData = $this->cache->get($memcacheKey);
 			if ($userListsData == null || isset($_REQUEST['reload'])){
 				$myLists = [];
 				require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 				$tmpList          = new UserList();
 				$tmpList->user_id = UserAccount::getActiveUserId();
 				$tmpList->deleted = 0;
-				$tmpList->orderBy('title ASC');
+				$tmpList->orderBy($listsSortOption);
 
 				if ($tmpList->find()){
 					while ($tmpList->fetch()){
@@ -73,10 +94,12 @@ class MyAccount_MyLists extends MyAccount{
 							'description' => $tmpList->description,
 							'defaultSort' => $defaultSort,
 							'isPublic'    => $tmpList->public,
+							'created'     => $tmpList->created,
+							'dateUpdated' => $tmpList->dateUpdated,
 						];
 					}
 				}
-				$this->cache->set('user_lists_data_' . UserAccount::getActiveUserId(), $userListsData, $configArray['Caching']['user']);
+				$this->cache->set($memcacheKey, $userListsData, $configArray['Caching']['user']);
 				//$timer->logTime("Load Lists");
 			}else{
 				$myLists = $userListsData;

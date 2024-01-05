@@ -1,21 +1,31 @@
-<form action="/MyAccount/MyLists" id="myListFormHead">
+<form action="/MyAccount/MyLists" id="myListFormHead" class="form form-inline">
     <h3 id="listsTitle">My Lists</h3>
 	<div class="alert alert-info">
 		For more information about User Lists, see the <a href="https://marmot-support.atlassian.net/l/c/NVtFyBaG">online documentation</a>.
 	</div>
-    <div id="listTopButtons" class="btn-toolbar">
-        <div class="btn-group">
-            <a href="#" onclick="return Pika.Account.showCreateListForm();" class="btn btn-sm btn-primary">Create a New List</a>
-            {if $showConvertListsFromClassic}
-                <button value="importFromClassic" class="btn btn-sm btn-default" onclick="return Pika.Lists.importListsFromClassic();">Import Lists from Classic</button>
-            {/if}
-
-        </div>
-	    <div class="btn-group pull-right">
-
-		    <button value="deleteSelected" class="btn btn-sm btn-danger" onclick="return Pika.Lists.deleteSelectedList();">Delete Selected Lists</button>
-	    </div>
+	<div id="listTopButtons" class="btn-toolbar">
+    <div class="btn-group">
+      <a href="#" onclick="return Pika.Account.showCreateListForm();" class="btn btn-sm btn-primary">Create a New List</a>
+      {if $showConvertListsFromClassic}
+        <button value="importFromClassic" class="btn btn-sm btn-default" onclick="return Pika.Lists.importListsFromClassic();">Import Lists from Classic</button>
+      {/if}
     </div>
+    <div class="btn-group pull-right">
+	    <button value="deleteSelected" class="btn btn-sm btn-danger" onclick="return Pika.Lists.deleteSelectedList();">Delete Selected Lists</button>
+    </div>
+  </div>
+	<hr>
+	<div class="row">
+		<div class="form-group col-sm-4" id="sortOptions">
+			<label for="sort" class="control-label">Sort By&nbsp;</label>
+			<select class="sortMethod form-control" id="sort" name="sort" onchange="Pika.Account.changeAccountSort($(this).val(), 'sort')">
+          {foreach from=$sortOptions item=sortOptionLabel key=sortOption}
+						<option value="{$sortOption}" {if $sortOption == $defaultSortOption}selected="selected"{/if}>{$sortOptionLabel}</option>
+          {/foreach}
+			</select>
+		</div>
+	</div>
+	<hr>
     <input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
     <input type="hidden" name="myListActionData" id="myListActionData" class="form">
 
@@ -55,6 +65,17 @@
                                 <span class="result-label">Default Sort:</span>
                                 <span class="result-value">{$myList.defaultSort}</span>
                             </div>
+                        </div>
+                        <div class="row related-manifestation">
+                            <div class="col-tn-5 col-xs-5">
+                                <span class="result-label">Created:</span>
+                                <span class="result-value">{$myList.created|date_format:"%b %d, %Y %r"}</span>
+                            </div>
+                            <div class="col-tnt-5 col-xs-5">
+                                <span class="result-label">Last Updated:</span>
+                                <span class="result-value">{$myList.dateUpdated|date_format:"%b %d, %Y %r"}</span>
+                            </div>
+
                         </div>
                         <div class="row">
 
