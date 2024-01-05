@@ -43,13 +43,13 @@ import java.util.regex.Pattern;
  * Time: 5:18 PM
  */
 public class OfflineCirculation implements IProcessHandler {
-	private CronProcessLogEntry processLog;
-	private Logger              logger;
+	private       CronProcessLogEntry processLog;
+	private       Logger              logger;
 	private final CookieManager       manager      = new CookieManager();
-	private String              ils          = "Sierra";
-	private String              userApiToken = "";
+	private       String              ils          = "Sierra";
+	private       String              userApiToken = "";
+	private       String              baseApiUrl;
 
-	private String baseApiUrl;
 	@Override
 	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		this.logger = logger;
@@ -90,7 +90,7 @@ public class OfflineCirculation implements IProcessHandler {
 				}
 
 				//process holds
-				if (userApiToken == null || userApiToken.length() == 0) {
+				if (userApiToken == null || userApiToken.isEmpty()) {
 					// the userApiToken is needed for processing Offline Holds now.
 					logger.error("Unable to get user API token for Pika in ConfigIni settings.  Please add token to the System section.");
 					processLog.incErrors();
