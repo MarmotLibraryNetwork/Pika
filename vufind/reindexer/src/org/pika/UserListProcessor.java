@@ -17,6 +17,7 @@ package org.pika;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -67,10 +68,15 @@ public class UserListProcessor {
 		}
 	}
 
-	public Long processPublicUserLists(long lastReindexTime, ConcurrentUpdateSolrClient updateServer, HttpSolrClient solrServer, boolean userListsOnly) {
+	public Long processPublicUserLists(long lastReindexTime, HttpSolrClient solrServer, boolean userListsOnly) {
 		GroupedReindexMain.addNoteToReindexLog("Starting to process public lists");
-		long numListsProcessed = 0L;
-		long numListsSkipped = 0L;
+		long                       numListsProcessed = 0L;
+		long                       numListsSkipped   = 0L;
+		String                     solrPort          = PikaConfigIni.getIniValue("Reindex", "solrPort");
+		final String               baseSolrUrl       = "http://localhost:" + solrPort + "/solr/grouped";
+		ConcurrentUpdateSolrClient updateServer      = new ConcurrentUpdateSolrClient.Builder(baseSolrUrl).withQueueSize(500).withThreadCount(8).build();
+		updateServer.setRequestWriter(new BinaryRequestWriter());
+		// Build a new update server in case the full index one closed on us
 		try {
 			PreparedStatement listsStmt;
 			final String      sql = "SELECT user_list.id AS id, deleted, public, title, description, user_list.created, dateUpdated, firstname, lastname, displayName, homeLocationId, user_id FROM user_list INNER JOIN user ON user_id = user.id ";
@@ -142,10 +148,10 @@ public class UserListProcessor {
 	}
 
 	/**
-	 * @param updateServer
-	 * @param solrServer
-	 * @param getTitlesForListStmt
-	 * @param allPublicListsRS
+	 * @param updateServer          Solr indexer core
+	 * @param solrServer            Solr searcher core
+	 * @param getTitlesForListStmt  SQL statement to fetch grouped work ID and list note for list entry
+	 * @param allPublicListsRS      SQL results for user list to process
 	 * @return Whether the list was indexed or not
 	 * @throws SQLException
 	 * @throws SolrServerException
@@ -203,7 +209,7 @@ public class UserListProcessor {
 				userListSolr.setCreated(allPublicListsRS.getLong("created"));
 
 				String displayName = allPublicListsRS.getString("displayName");
-				if (displayName != null && displayName.length() > 0) {
+				if (displayName != null && !displayName.isEmpty()) {
 					userListSolr.setAuthor(displayName);
 				} else {
 					if (logger.isDebugEnabled()) {
@@ -216,7 +222,7 @@ public class UserListProcessor {
 					if (firstName == null) firstName = "";
 					if (lastName == null) lastName = "";
 					String firstNameFirstChar = "";
-					if (firstName.length() > 0) {
+					if (!firstName.isEmpty()) {
 						firstNameFirstChar = firstName.charAt(0) + ". ";
 					}
 					userListSolr.setAuthor(firstNameFirstChar + lastName);
@@ -229,7 +235,7 @@ public class UserListProcessor {
 				try (ResultSet allTitlesRS = getTitlesForListStmt.executeQuery()) {
 					while (allTitlesRS.next()) {
 						String groupedWorkId = allTitlesRS.getString("groupedWorkPermanentId");
-						if (!allTitlesRS.wasNull() && groupedWorkId.length() > 0 && !groupedWorkId.contains(":")) {
+						if (!allTitlesRS.wasNull() && !groupedWorkId.isEmpty() && !groupedWorkId.contains(":")) {
 							// Skip archive object Ids
 //						groupedWorkIds.append(groupedWorkId).append(',');
 
