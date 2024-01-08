@@ -17,10 +17,13 @@ package org.pika;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.commons.text.similarity.FuzzyScore;
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
@@ -288,7 +291,7 @@ public class GroupedWorkIndexer {
 			logger.error("Error loading record processors for ILS records", e);
 		}
 		//Load translation maps
-		loadSystemTranslationMaps(); // This loads the file-based mmaps
+		loadSystemTranslationMaps(); // This loads the file-based maps
 
 		//Setup prepared statements to load local enrichment
 		try {
@@ -788,6 +791,7 @@ public class GroupedWorkIndexer {
 			}
 			enableSearcherSolrPolling();
 		}else {
+			// Regular, day-time, partial indexing
 			try {
 				GroupedReindexMain.addNoteToReindexLog("Doing a soft commit to make sure changes are saved");
 				updateServer.commit(false, false, true);
@@ -1022,7 +1026,7 @@ public class GroupedWorkIndexer {
 					GroupedReindexMain.updateNumWorksProcessed(numWorksProcessed);
 					if (fullReindex && (numWorksProcessed % 25000 == 0)){
 						//Testing shows that regular commits do seem to improve performance.
-						//However, we can't do it too often or we get errors with too many searchers warming.
+						//However, we can't do it too often, or we get errors with too many searchers warming.
 						//This is happening now with the auto commit settings in solrconfig.xml
 					/*try {
 						logger.info("Doing a regular commit during full indexing");
@@ -1031,9 +1035,23 @@ public class GroupedWorkIndexer {
 						logger.warn("Error committing changes", e);
 					}*/
 						long reportIntervalEnd = new Date().getTime();
-						long interval = ((reportIntervalEnd - reportIntervalStart)/1000)/60;
+						long interval          = ((reportIntervalEnd - reportIntervalStart) / 1000) / 60;
+						long                indexerWorkCount     = -1L;
+						try {
+							final SolrQuery query = new SolrQuery("*:*");
+							query.setRows(0); // Don't need any actual resulting documents
+							final QueryResponse indexerDocumentCount = solrServer.query(query);
+							SolrDocumentList    results              = indexerDocumentCount.getResults();
+							indexerWorkCount = results.getNumFound();
+						} catch (SolrServerException | IOException e) {
+							logger.error("Error querying indexer for work count", e);
+						}
+						if (indexerWorkCount >= 0) {
+							GroupedReindexMain.addNoteToReindexLog(numWorksProcessed + " grouped works processed. Indexer Work count: " + indexerWorkCount + " ; Interval for this batch (mins) : " + interval);
+						} else {
+							GroupedReindexMain.addNoteToReindexLog(numWorksProcessed + " grouped works processed. Interval for this batch (mins) : " + interval);
+						}
 						reportIntervalStart = reportIntervalEnd; // set up next interval
-						GroupedReindexMain.addNoteToReindexLog(numWorksProcessed + " grouped works processed. Interval for this batch (mins) : " + interval);
 					}
 					if (!fullReindex && maxWorksToProcess != -1 && numWorksProcessed >= maxWorksToProcess){
 						String message = "Stopping processing now because we've reached the max works to process.";
@@ -1151,7 +1169,7 @@ public class GroupedWorkIndexer {
 			while (groupedWorkPrimaryIdentifiers.next()) {
 				RecordIdentifier identifier = new RecordIdentifier(groupedWorkPrimaryIdentifiers.getString("type"), groupedWorkPrimaryIdentifiers.getString("identifier"));
 
-				//Make a copy of the grouped work so we can revert if we don't add any records
+				//Make a copy of the grouped work, so we can revert if we don't add any records
 				GroupedWorkSolr originalWork;
 				try {
 					originalWork = groupedWork.clone();
@@ -1209,12 +1227,12 @@ public class GroupedWorkIndexer {
 				logger.error("Error adding grouped work to solr " + groupedWork.getId(), e);
 			}
 		}else{
-			//Log that this record did not have primary identifiers after
-			if (logger.isDebugEnabled()) {
-				logger.debug("Grouped work " + permanentId + " did not have any primary identifiers for it, suppressing");
-			}
 			if (!fullReindex){
 				try {
+					//Log that this record did not have primary identifiers after
+					if (logger.isDebugEnabled()) {
+						logger.debug("Grouped work " + permanentId + " did not have any primary identifiers for it, deleting solr document.");
+					}
 					updateServer.deleteById(permanentId);
 				}catch (Exception e){
 					logger.error("Error deleting suppressed work " + permanentId, e);
@@ -1611,7 +1629,7 @@ public class GroupedWorkIndexer {
 		}
 		if (translatedValue != null){
 			translatedValue = translatedValue.trim();
-			if (translatedValue.length() == 0){
+			if (translatedValue.isEmpty()){
 				translatedValue = null;
 			}
 		}
@@ -1663,7 +1681,7 @@ public class GroupedWorkIndexer {
 
 	long processPublicUserLists(boolean userListsOnly) {
 		UserListProcessor listProcessor = new UserListProcessor(this, pikaConn, logger, fullReindex);
-		return listProcessor.processPublicUserLists(lastReindexTime, updateServer, solrServer, userListsOnly);
+		return listProcessor.processPublicUserLists(lastReindexTime, solrServer, userListsOnly);
 	}
 
 	public boolean isGiveOnOrderItemsTheirOwnShelfLocation() {

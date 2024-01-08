@@ -73,7 +73,7 @@ public class GroupedReindexMain {
 			System.exit(1);
 		}
 		serverName = args[0];
-		System.setProperty("reindex.process.serverName", serverName);
+		//System.setProperty("reindex.process.serverName", serverName);
 		//TODO: explain why this is done. Is it needed?
 		
 		if (args.length >= 2) {
@@ -365,7 +365,7 @@ public class GroupedReindexMain {
 		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
 
 		String solrPort = PikaConfigIni.getIniValue("Reindex", "solrPort");
-		if (solrPort == null || solrPort.length() == 0) {
+		if (solrPort == null || solrPort.isEmpty()) {
 			logger.error("You must provide the port where the solr index is loaded in the import configuration file");
 			System.exit(1);
 		}
@@ -379,7 +379,7 @@ public class GroupedReindexMain {
 		logger.info("Setting up database connections");
 		//Setup connections to pika and econtent databases
 		String databaseConnectionInfo = PikaConfigIni.getIniValue("Database", "database_vufind_jdbc");
-		if (databaseConnectionInfo == null || databaseConnectionInfo.length() == 0) {
+		if (databaseConnectionInfo == null || databaseConnectionInfo.isEmpty()) {
 			logger.error("Pika Database connection information not found in Database Section.  Please specify connection information in database_vufind_jdbc.");
 			System.exit(1);
 		}
@@ -391,7 +391,7 @@ public class GroupedReindexMain {
 		}
 
 		String econtentDBConnectionInfo = PikaConfigIni.getIniValue("Database", "database_econtent_jdbc");
-		if (econtentDBConnectionInfo == null || econtentDBConnectionInfo.length() == 0) {
+		if (econtentDBConnectionInfo == null || econtentDBConnectionInfo.isEmpty()) {
 			logger.error("Database connection information for eContent database not found in Database Section.  Please specify connection information as database_econtent_jdbc key.");
 			System.exit(1);
 		}
