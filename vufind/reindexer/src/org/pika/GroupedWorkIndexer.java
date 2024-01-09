@@ -134,8 +134,7 @@ public class GroupedWorkIndexer {
 
 			//MDN 10-21-2015 - use the grouped core since we are using replication.
 			solrServer   = new HttpSolrClient.Builder(baseSolrUrl).build();
-			updateServer = new ConcurrentUpdateSolrClient.Builder(baseSolrUrl).withQueueSize(500).withThreadCount(8).build();
-			updateServer.setRequestWriter(new BinaryRequestWriter());
+			initializeUpdateServer(baseSolrUrl);
 
 			//Stop replication from the master
 			String url                              = baseSolrUrl + "/replication?command=disablereplication";
@@ -205,8 +204,7 @@ public class GroupedWorkIndexer {
 				}
 			}
 
-			updateServer = new ConcurrentUpdateSolrClient.Builder(baseSolrUrl).withQueueSize(500).withThreadCount(8).build();
-			updateServer.setRequestWriter(new BinaryRequestWriter());
+			initializeUpdateServer(baseSolrUrl);
 			solrServer   = new HttpSolrClient.Builder(baseSolrUrl).build();
 		}
 
@@ -308,6 +306,21 @@ public class GroupedWorkIndexer {
 		if (fullReindex){
 			clearIndex();
 		}
+	}
+
+	/**
+	 *  Set up solr indexing server to update with solr documents to index
+	 *
+	 * @param baseSolrUrl URL for indexer core
+	 */
+	private void initializeUpdateServer(String baseSolrUrl) {
+		updateServer = new ConcurrentUpdateSolrClient.Builder(baseSolrUrl).withQueueSize(500).withThreadCount(8).build();
+		updateServer.setRequestWriter(new BinaryRequestWriter());
+	}
+
+	private void initializeUpdateServer(){
+		final String baseSolrUrl = "http://localhost:" + solrPort + "/solr/grouped";
+		initializeUpdateServer(baseSolrUrl);
 	}
 
 	private void setupIndexingStats() {
@@ -1011,6 +1024,7 @@ public class GroupedWorkIndexer {
 			ResultSet groupedWorks = getAllGroupedWorks.executeQuery();
 			GroupedReindexMain.addNoteToReindexLog("First work to be retrieved from DB");
 			long reportIntervalStart = new Date().getTime();
+			long lastIndexerWorkCount = 0L;
 			while (groupedWorks.next()) {
 				long   id                = groupedWorks.getLong("id");
 				String permanentId       = groupedWorks.getString("permanent_id");
@@ -1047,9 +1061,15 @@ public class GroupedWorkIndexer {
 							logger.error("Error querying indexer for work count", e);
 						}
 						if (indexerWorkCount >= 0) {
-							GroupedReindexMain.addNoteToReindexLog(numWorksProcessed + " grouped works processed. Indexer Work count: " + indexerWorkCount + " ; Interval for this batch (mins) : " + interval);
+							GroupedReindexMain.addNoteToReindexLog(numWorksProcessed + " works processed. Indexer works : " + indexerWorkCount + "  Interval for this batch (mins) : " + interval);
+							if (indexerWorkCount > 0 && lastIndexerWorkCount == indexerWorkCount){
+								logger.warn("Solr Indexer work count is not increasing; apparently stopped at " + indexerWorkCount);
+								logger.warn("Re-initializing the solr update server");
+								initializeUpdateServer();
+							}
+							lastIndexerWorkCount = indexerWorkCount; // set for comparison in next round
 						} else {
-							GroupedReindexMain.addNoteToReindexLog(numWorksProcessed + " grouped works processed. Interval for this batch (mins) : " + interval);
+							GroupedReindexMain.addNoteToReindexLog(numWorksProcessed + " works processed. Interval for this batch (mins) : " + interval);
 						}
 						reportIntervalStart = reportIntervalEnd; // set up next interval
 					}
