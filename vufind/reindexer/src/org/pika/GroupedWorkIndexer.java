@@ -1050,7 +1050,7 @@ public class GroupedWorkIndexer {
 					}*/
 						long reportIntervalEnd = new Date().getTime();
 						long interval          = ((reportIntervalEnd - reportIntervalStart) / 1000) / 60;
-						long                indexerWorkCount     = -1L;
+						long indexerWorkCount  = -1L;
 						try {
 							final SolrQuery query = new SolrQuery("*:*");
 							query.setRows(0); // Don't need any actual resulting documents
