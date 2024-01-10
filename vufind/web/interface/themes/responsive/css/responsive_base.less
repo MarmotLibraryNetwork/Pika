@@ -16,6 +16,9 @@
 a, a:visited{
   color: @link-color-resp;
 }
+a:focus{
+  outline-color: @focus-ring-color;
+}
 a:hover{
   color: darken(@link-color-resp, 10%);
 }
@@ -236,6 +239,31 @@ div.striped {
 }
 .goog-te-gadget {
   display: inline-block;
+}
+
+ .form-control:focus {
+  border: 1px solid @focus-ring-color;
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(225, 95, 21, 0.7);
+}
+ .btn-default:focus{
+   border-color:@focus-ring-color;
+ }
+#horizontal-search-box .searchSourceHorizontal:focus, #horizontal-search-box .searchTypeHorizontal:focus,#horizontal-search-box .searchSourceHorizontal:focus, #horizontal-search-box .searchTypeHorizontal:focus{
+  border: 1px solid @focus-ring-color;
+}
+.btn-group > .btn:focus, .btn-group-vertical > .btn:focus{
+  outline: 5px auto @focus-ring-color;
+}
+#vertical-menu-bar .menu-bar-option:has(.menu-icon:focus-visible){
+  border: 2px solid @focus-ring-color;
+  outline: 2px solid white;
+}
+#vertical-menu-bar .menu-icon-selected:has(.menu-icon:focus-visible){
+  border: 2px solid @menu-bar-background-color;
+  outline:2px solid white;
+}
+a:focus>.header-button{
+  outline: 5px auto @menu-bar-background-color;
 }
 
 // Third party imports
