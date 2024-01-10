@@ -546,6 +546,9 @@ public class OfflineCirculation implements IProcessHandler {
 				} else {
 					logger.info("Check out failed. Request : " + checkoutJson  + "  Response : " + response);
 					String error = response.getString("name");
+					if (response.has("description")){
+						error += " : " + response.getString("description");
+					}
 					result.setSuccess(false);
 					result.setNote(error);
 				}
