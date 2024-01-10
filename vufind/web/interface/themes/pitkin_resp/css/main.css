@@ -6830,6 +6830,9 @@ a,
 a:visited {
   color: #428bca;
 }
+a:focus {
+  outline-color: #E15F15;
+}
 a:hover {
   color: #3071a9;
 }
@@ -7025,6 +7028,34 @@ a.bg-overdue:focus {
 }
 .goog-te-gadget {
   display: inline-block;
+}
+.form-control:focus {
+  border: 1px solid #E15F15;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(225, 95, 21, 0.7);
+}
+.btn-default:focus {
+  border-color: #E15F15;
+}
+#horizontal-search-box .searchSourceHorizontal:focus,
+#horizontal-search-box .searchTypeHorizontal:focus,
+#horizontal-search-box .searchSourceHorizontal:focus,
+#horizontal-search-box .searchTypeHorizontal:focus {
+  border: 1px solid #E15F15;
+}
+.btn-group > .btn:focus,
+.btn-group-vertical > .btn:focus {
+  outline: 5px auto #E15F15;
+}
+#vertical-menu-bar .menu-bar-option:has(.menu-icon:focus-visible) {
+  border: 2px solid #E15F15;
+  outline: 2px solid white;
+}
+#vertical-menu-bar .menu-icon-selected:has(.menu-icon:focus-visible) {
+  border: 2px solid #939396;
+  outline: 2px solid white;
+}
+a:focus > .header-button {
+  outline: 5px auto #939396;
 }
 .ui-rater > span {
   vertical-align: top;

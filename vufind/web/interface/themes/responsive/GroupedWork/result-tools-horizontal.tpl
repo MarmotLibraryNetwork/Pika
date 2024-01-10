@@ -5,7 +5,7 @@
 			{if $showMoreInfo || $showComments || $showFavorites}
 			{if $showMoreInfo !== false}
 				<div class="btn-group btn-group-sm">
-					<a href="{if $summUrl}{$summUrl}{else}{$recordDriver->getMoreInfoLinkUrl()}{/if}" class="btn btn-sm ">More Info</a>
+					<a href="{if $summUrl}{$summUrl}{else}{$recordDriver->getMoreInfoLinkUrl()}{/if}" alt="Get More Information" class="btn btn-sm ">More Info</a>
 				</div>
 			{/if}
 			{if $showComments == 1}
@@ -18,7 +18,7 @@
 			{/if}
 			{if $showFavorites == 1}
 				<div class="btn-group btn-group-sm">
-					<button onclick="return Pika.GroupedWork.showSaveToListForm(this, '{$summId|escape}');" class="btn btn-sm ">{translate text='Add to favorites'}</button>
+					<button onclick="return Pika.GroupedWork.showSaveToListForm(this, '{$summId|escape}');" title="{translate text='Add to favorites'}" class="btn btn-sm ">{translate text='Add to favorites'}</button>
 				</div>
 			{/if}
 			{/if}
@@ -27,7 +27,7 @@
 			{if is_array($exportFormats) && count($exportFormats) > 0}
 				{foreach from=$exportFormats item=exportFormat}
 					<div class="btn-group btn-group-sm">
-					<a {if $exportFormat=="RefWorks"}target="{$exportFormat}Main" {/if}href="/Record/{$id|escape:"url"}/Export?style={$exportFormat|escape:"url"}">
+					<a {if $exportFormat=="RefWorks"}target="{$exportFormat}Main" alt="Export to RefWorks" {/if}href="/Record/{$id|escape:"url"}/Export?style={$exportFormat|escape:"url"}">
 						<button class="btn btn-sm ">{$exportFormat|escape}</button>
 					</a>
 					</div>
