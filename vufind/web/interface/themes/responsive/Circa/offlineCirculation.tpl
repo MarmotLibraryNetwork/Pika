@@ -22,7 +22,7 @@
 				<div><label for="login">{$ILSname} Username</label>:</div>
 				<div><input type="text" name="login" id="login" value="{$lastLogin}" class="required" onchange="clearOfflineCircResults();"> </div>
 			</div>
-{*			<div class="col-xs-3">
+			<div class="col-xs-3">
 				<div><label for="password1">{$ILSname} Password</label>:</div>
 				<div><input type="password" name="password1" id="password1" value="{$lastPassword1}" class="required" onchange="clearOfflineCircResults();"></div>
 			</div>
@@ -31,7 +31,7 @@
 					<input type="checkbox" id="showPwd" name="showPwd" onclick="return Pika.pwdToText('password1')">
 					Show {$ILSname} Password
 				</label>
-			</div>*}
+			</div>
 		</div>
 		<div class="row">
 			<fieldset>
