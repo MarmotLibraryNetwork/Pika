@@ -99,7 +99,8 @@ public class multipleOfflineCircs implements Runnable {
 					String error = response.getString("name");
 					if (response.has("description")){
 						error += " : " + response.getString("description");
-					}					result.setSuccess(false);
+					}
+					result.setSuccess(false);
 					result.setNote(error);
 				}
 

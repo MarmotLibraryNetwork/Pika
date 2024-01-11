@@ -34,28 +34,28 @@ class Circa_OfflineCirculation extends Action{
 		$error = '';
 
 		if (isset($_POST['submit'])){
-			$login     = $_REQUEST['login'];
-			//$password1 = $_REQUEST['password1'];
+			$login     = trim($_REQUEST['login']);
+			$password1 = trim($_REQUEST['password1']);
 			$interface->assign('lastLogin', $login);
-			//$interface->assign('lastPassword1', $password1);
+			$interface->assign('lastPassword1', $password1);
 
 			$loginInfoValid = true;
-			if (strlen($login) == 0){
+			if (empty($login)){
 				$error          .= "Please enter your login.<br>";
 				$loginInfoValid = false;
 			}
-			//if (strlen($password1) == 0){
-			//	$error          .= "Please enter your login password.<br>";
-			//	$loginInfoValid = false;
-			//}
+			if (empty($password1)){
+				$error          .= "Please enter your login password.<br>";
+				$loginInfoValid = false;
+			}
 
 			if ($loginInfoValid){
-				//$barcodesToCheckIn = $_REQUEST['barcodesToCheckIn'];
-				$patronBarcode      = $_REQUEST['patronBarcode'];
-				$barcodesToCheckOut = $_REQUEST['barcodesToCheckOut'];
+				//$barcodesToCheckIn = trim($_REQUEST['barcodesToCheckIn']);
+				$patronBarcode      = trim($_REQUEST['patronBarcode']);
+				$barcodesToCheckOut = trim($_REQUEST['barcodesToCheckOut']);
 
 				//First store any titles that are being checked in
-				/*if (strlen(trim($barcodesToCheckIn)) > 0){
+				/*if (!empty($barcodesToCheckIn)){
 					$barcodesToCheckIn = preg_split('/[\\s\\r\\n]+/', $barcodesToCheckIn);
 					foreach ($barcodesToCheckIn as $barcode){
 						$offlineCirculationEntry = new OfflineCirculationEntry();
@@ -69,7 +69,7 @@ class Circa_OfflineCirculation extends Action{
 					}
 				}*/
 				$numItemsCheckedOut = 0;
-				if (strlen(trim($barcodesToCheckOut)) > 0 && strlen($patronBarcode) > 0){
+				if (!empty($barcodesToCheckOut) && !empty($patronBarcode)){
 					$patronId              = null;
 					$userObj               = new User();
 					$userObj->barcode      = $patronBarcode;
@@ -82,12 +82,12 @@ class Circa_OfflineCirculation extends Action{
 					}
 					foreach ($barcodesToCheckOut as $barcode){
 						$barcode = trim($barcode);
-						if (strlen($barcode) > 0){
+						if (!empty($barcode)){
 							$offlineCirculationEntry                = new OfflineCirculationEntry();
 							$offlineCirculationEntry->timeEntered   = time();
 							$offlineCirculationEntry->itemBarcode   = $barcode;
 							$offlineCirculationEntry->login         = $login;
-							//$offlineCirculationEntry->loginPassword = $password1;
+							$offlineCirculationEntry->loginPassword = $password1;
 							$offlineCirculationEntry->patronBarcode = $patronBarcode;
 							$offlineCirculationEntry->patronId      = $patronId;
 							$offlineCirculationEntry->type          = 'Check Out';

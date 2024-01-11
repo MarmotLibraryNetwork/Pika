@@ -83,8 +83,8 @@ public class OfflineCirculation implements IProcessHandler {
 					offlineHoldsOnly = offlineHoldsOnlyStr.equals("true") || offlineHoldsOnlyStr.equals("1");
 				}
 				if (!offlineHoldsOnly) {
-					processOfflineCirculationEntriesViaSierraAPI(pikaConn);
-					//processOfflineCirculationEntriesViaCirca(pikaConn);
+					//processOfflineCirculationEntriesViaSierraAPI(pikaConn);
+					processOfflineCirculationEntriesViaCirca(pikaConn);
 				} else {
 					logger.info("Processing Offline Holds only.");
 				}
@@ -217,7 +217,9 @@ public class OfflineCirculation implements IProcessHandler {
 	 * @param pikaConn Connection to the database
 	 */
 	private void processOfflineCirculationEntriesViaSierraAPI(Connection pikaConn) {
-		processLog.addNote("Processing offline checkouts via Sierra API");
+		String note = "Processing offline checkouts via Sierra API";
+		processLog.addNote(note);
+		logger.info(note);
 		int numProcessed = 0;
 		try (
 			PreparedStatement circulationEntryToProcessStmt = pikaConn.prepareStatement("SELECT offline_circulation.* FROM offline_circulation WHERE status='Not Processed' ORDER BY login ASC, patronBarcode ASC, timeEntered ASC");
@@ -261,7 +263,9 @@ public class OfflineCirculation implements IProcessHandler {
 	 * @param pikaConn Connection to the database
 	 */
 	private void processOfflineCirculationEntriesViaCirca(Connection pikaConn) {
-		processLog.addNote("Processing offline checkouts and check-ins");
+		String note = "Processing offline checkouts via Circa"; // and check-ins
+		processLog.addNote(note);
+		logger.info(note);
 		int numProcessed = 0;
 		try (
 			PreparedStatement circulationEntryToProcessStmt = pikaConn.prepareStatement("SELECT offline_circulation.* FROM offline_circulation WHERE status='Not Processed' ORDER BY login ASC, initials ASC, patronBarcode ASC, timeEntered ASC");
@@ -479,9 +483,11 @@ public class OfflineCirculation implements IProcessHandler {
 								if (itemBarcodeMessage.contains("checked out; due")){
 									// Success page says item is checked out, and gives the due date
 									result.setSuccess(true);
+									logger.info("Check out succeeded.");
 								} else {
 									result.setSuccess(false);
 									result.setNote("Expected a success message but did not find it. (Did not find an error message either.) ");
+									logger.info("Check out failed.");
 								}
 							}
 						} else {
@@ -533,13 +539,17 @@ public class OfflineCirculation implements IProcessHandler {
 	}
 
 	private OfflineCirculationResult processOfflineCheckout(String baseSierraApiUrl, String sierraCircLogin, String itemBarcode, String patronBarcode) {
-		OfflineCirculationResult result = new OfflineCirculationResult();
-		String checkoutUrl = baseSierraApiUrl + "/patrons/checkout";
+		OfflineCirculationResult result      = new OfflineCirculationResult();
+		String                   checkoutUrl = baseSierraApiUrl + "/patrons/checkout";
 		try {
 			String checkoutJson = new JSONObject()
 							.put("patronBarcode", patronBarcode)
 							.put("itemBarcode", itemBarcode)
 							.put("username", sierraCircLogin).toString();
+			if (logger.isDebugEnabled()){
+				logger.debug("URL call : " + checkoutUrl);
+				logger.debug("POST body : " + checkoutJson);
+			}
 			JSONObject response = callSierraApiURL(checkoutUrl, checkoutJson/*, true*/);
 			if (response != null){
 				if (response.has("id")){
@@ -547,6 +557,9 @@ public class OfflineCirculation implements IProcessHandler {
 				} else {
 					logger.info("Check out failed. Request : " + checkoutJson  + "  Response : " + response);
 					String error = response.getString("name");
+					if (response.has("description")){
+						error += " : " + response.getString("description");
+					}
 					result.setSuccess(false);
 					result.setNote(error);
 				}
