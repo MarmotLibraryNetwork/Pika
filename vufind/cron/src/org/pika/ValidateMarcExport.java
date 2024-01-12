@@ -178,6 +178,11 @@ public class ValidateMarcExport implements IProcessHandler {
 								} catch (SQLException e) {
 									logger.error("Error storing MARC validation results to database", e);
 								}
+								if (isFileValid){
+									processLog.incUpdated();
+								} else {
+									processLog.incErrors();
+								}
 							} else {
 								final String note = curBibFileName + " previously validated on " + validationTime;
 								processLog.addNote(note);
