@@ -240,7 +240,6 @@ div.striped {
 .goog-te-gadget {
   display: inline-block;
 }
-
  .form-control:focus {
   border: 1px solid @focus-ring-color;
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(225, 95, 21, 0.7);
@@ -264,6 +263,15 @@ div.striped {
 }
 a:focus>.header-button{
   outline: 5px auto @menu-bar-background-color;
+}
+#browse-category-picker .jcarousel-control-prev:focus, #browse-category-picker .jcarousel-control-next:focus {
+  outline: 5px auto @focus-ring-color!important;
+}
+.jcarousel-pagination > a:focus {
+   outline: 1px solid @focus-ring-color!important;
+ }
+.jcarousel-pagination >a.active:focus{
+  outline: 2px solid @menu-bar-background-color;
 }
 
 // Third party imports

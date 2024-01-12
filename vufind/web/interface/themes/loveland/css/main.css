@@ -7057,6 +7057,16 @@ a.bg-overdue:focus {
 a:focus > .header-button {
   outline: 5px auto #2E85C7;
 }
+#browse-category-picker .jcarousel-control-prev:focus,
+#browse-category-picker .jcarousel-control-next:focus {
+  outline: 5px auto #E15F15 !important;
+}
+.jcarousel-pagination > a:focus {
+  outline: 1px solid #E15F15 !important;
+}
+.jcarousel-pagination > a.active:focus {
+  outline: 2px solid #2E85C7;
+}
 .ui-rater > span {
   vertical-align: top;
 }
