@@ -30,7 +30,8 @@ import java.sql.Connection;
 import java.net.URL;
 
 /**
- * Pika
+ * Create file dplaFeed.json in the root web directory so that Plains to Peaks (regional hub for DPLA)
+ * can ingest MLN1 archive objects' metadata.
  *
  * @author pbrammeier
  * 		Date:   5/15/2019
