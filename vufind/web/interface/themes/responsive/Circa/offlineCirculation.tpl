@@ -58,7 +58,7 @@
 	<p>When a patron arrives at the circulation desk, first enter their barcode either by typing it in or scanning it. If you do not have their barcode or the patron does not know it, enter their name and the transaction can be manually processed once the system is back online.</p>
 	<p>Next scan or enter the barcode of each item to be checked out, one per line. Once all items have been entered, press the "Submit Offline Checkouts" button.</p>
 	<p>After submitting the form, check the page to ensure that no errors occurred saving the checkout transaction. If errors occurred, they are displayed at the top of the screen in red.</p>
-	<p>When the ILS is back online, all transactions will be automatically processed and library staff will be given a list of exceptions that need to be handled manually.</p>
+	<p>When the ILS is back online, all transactions will be processed and library staff will be given a list of exceptions that need to be handled manually.</p>
 	<p class="alert alert-warning">Note: This form does not check that the barcodes that were entered are correct or properly formatted. Those errors will only be detected once the ILS is online and the transactions are processed.</p>
 </div>
 

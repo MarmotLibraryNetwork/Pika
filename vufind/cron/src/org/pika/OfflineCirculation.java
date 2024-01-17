@@ -490,9 +490,11 @@ public class OfflineCirculation implements IProcessHandler {
 								}
 							}
 						} else {
-							logger.debug("Item Barcode response\r\n" + itemBarcodeMessage);
+							String note = "Could not process check out because the item response was not successful";
+							logger.info(note);
+							logger.info("Item Barcode response\r\n" + itemBarcodeMessage);
 							result.setSuccess(false);
-							result.setNote("Could not process check out because the item response was not successful");
+							result.setNote(note);
 						}
 //					} else if (patronBarcodeResponse.isSuccess() && patronBarcodeResponse.getMessage().contains("<h[123] class=\"error\">")) {
 					} else if (patronBarcodeResponse.isSuccess() && patronBarcodeResponse.getMessage().contains(" class=\"error\">")) {
@@ -509,9 +511,11 @@ public class OfflineCirculation implements IProcessHandler {
 						}
 					} else {
 						lastPatronHadError = true;
-						logger.debug("Patron Barcode response\r\n" + patronBarcodeResponse.getMessage());
+						String note = "Could not process check out because the patron could not be logged in";
+						logger.info(note);
+						logger.info("Patron Barcode response\r\n" + patronBarcodeResponse.getMessage());
 						result.setSuccess(false);
-						result.setNote("Could not process check out because the patron could not be logged in");
+						result.setNote(note);
 					}
 				} else {
 					if (errorMessage != null) {
