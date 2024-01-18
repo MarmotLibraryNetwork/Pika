@@ -18,7 +18,7 @@
  */
 
 /**
- * A report of check ins and check outs that have been placed offline with their status.
+ * A report of check-outs that have been placed offline with their status.
  *
  * @category Pika
  * @author Mark Noble <pika@marmot.org>
@@ -32,22 +32,22 @@ class Circa_OfflineCirculationReport extends Admin_Admin{
 		global $interface;
 
 		if (isset($_REQUEST['startDate'])){
-			$startDate = new DateTime($_REQUEST['startDate']);
+			$startDate = new DateTime(trim($_REQUEST['startDate']));
 		}else{
 			$startDate = new DateTime();
 			date_sub($startDate, new DateInterval('P1D')); // 1 day ago
 		}
 		if (isset($_REQUEST['endDate'])){
-			$endDate = new DateTime($_REQUEST['endDate']);
+			$endDate = new DateTime(trim($_REQUEST['endDate']));
 		}else{
 			$endDate = new DateTime();
 		}
 		$endDate->setTime(23,59,59); //second before midnight
-		$typesToInclude = isset($_REQUEST['typesToInclude']) ? $_REQUEST['typesToInclude'] : 'everything';
-		$loginsToInclude = isset($_REQUEST['loginsToInclude']) ? $_REQUEST['loginsToInclude'] : '';
+		$typesToInclude   = $_REQUEST['typesToInclude'] ?? 'checkouts';
+		$loginsToInclude  = $_REQUEST['loginsToInclude'] ?? '';
 		$hideNotProcessed = isset($_REQUEST['hideNotProcessed']);
-		$hideFailed = isset($_REQUEST['hideFailed']);
-		$hideSuccess = isset($_REQUEST['hideSuccess']);
+		$hideFailed       = isset($_REQUEST['hideFailed']);
+		$hideSuccess      = isset($_REQUEST['hideSuccess']);
 
 		$interface->assign('startDate', $startDate->getTimestamp());
 		$interface->assign('endDate', $endDate->getTimestamp());
@@ -58,7 +58,7 @@ class Circa_OfflineCirculationReport extends Admin_Admin{
 		$interface->assign('hideSuccess', $hideSuccess);
 
 
-		$offlineCirculationEntries = array();
+		$offlineCirculationEntries = [];
 		$offlineCirculationEntryObj = new OfflineCirculationEntry();
 		$offlineCirculationEntryObj->whereAdd("timeEntered >= " . $startDate->getTimestamp() . " AND timeEntered <= " . $endDate->getTimestamp());
 		if ($typesToInclude == 'checkouts'){
@@ -76,23 +76,23 @@ class Circa_OfflineCirculationReport extends Admin_Admin{
 			$offlineCirculationEntryObj->whereAdd("status != 'Not Processed'", 'AND');
 		}
 		if (strlen($loginsToInclude) > 0){
-			$logins = explode(',', $loginsToInclude);
+			$logins       = explode(',', $loginsToInclude);
 			$loginsToFind = '';
 			foreach ($logins as $login){
 				$login = trim($login);
 				if (strlen($loginsToFind) > 0){
-					$loginsToFind .= ", ";
+					$loginsToFind .= ', ';
 				}
-				$loginsToFind .= "'{$login}'";
+				$loginsToFind .= "'$login'";
 			}
-			if (strlen($loginsToFind) > 0){
+			if (!empty($loginsToFind)){
 				$offlineCirculationEntryObj->whereAdd("login IN ($loginsToFind)", 'AND');
 			}
 		}
 		$offlineCirculationEntryObj->find();
-		$totalRecords = 0;
-		$totalPassed = 0;
-		$totalFailed = 0;
+		$totalRecords      = 0;
+		$totalPassed       = 0;
+		$totalFailed       = 0;
 		$totalNotProcessed = 0;
 		while ($offlineCirculationEntryObj->fetch()){
 			$offlineCirculationEntries[] = clone $offlineCirculationEntryObj;
@@ -115,6 +115,6 @@ class Circa_OfflineCirculationReport extends Admin_Admin{
 	}
 
 	function getAllowableRoles() {
-		return array('opacAdmin', 'libraryAdmin', 'circulationReports');
+		return ['opacAdmin', 'libraryAdmin', 'circulationReports'];
 	}
 }
