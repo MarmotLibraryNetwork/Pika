@@ -718,7 +718,7 @@ public class FormatDetermination {
 				printFormats.remove("Video");
 			}
 		}
-		if (printFormats.contains("CDROM") && (printFormats.contains("DVD")) || printFormats.contains("VideoDisc")){
+		if (printFormats.contains("CDROM") && (printFormats.contains("DVD") || printFormats.contains("VideoDisc"))){
 			printFormats.remove("CDROM");
 		}
 		if(printFormats.contains("WindowsGame") && printFormats.contains("VideoDisc")){
@@ -751,14 +751,13 @@ public class FormatDetermination {
 		if (printFormats.contains("MusicRecording") && (printFormats.contains("CD") || printFormats.contains("CompactDisc")
 				|| printFormats.contains("DVD") || printFormats.contains("Blu-ray") /* likely accompanying material */
 		)){
-			if(printFormats.contains("DVD"))
-			{
-			  printFormats.clear();
+			if (printFormats.contains("DVD")) {
+				printFormats.clear();
 				printFormats.add("MusicCDWithDVD");
-			}else if(printFormats.contains("Blu-ray")){
+			} else if (printFormats.contains("Blu-ray")) {
 				printFormats.clear();
 				printFormats.add("MusicCDWithBluRay");
-			}else {
+			} else {
 				printFormats.clear();
 				printFormats.add("MusicCD");
 			}
@@ -776,20 +775,20 @@ public class FormatDetermination {
 				printFormats.remove("SoundRecording");
 			}
 		}
-		if(printFormats.contains("SoundDisc")) {
-			if(printFormats.contains("MP3")){
+		if (printFormats.contains("SoundDisc")) {
+			if (printFormats.contains("MP3")) {
 				printFormats.clear();
 				printFormats.add("MP3Disc");
 			}
-			if(printFormats.contains("CDROM")||printFormats.contains("WindowsGame")){
+			if (printFormats.contains("CDROM") || printFormats.contains("WindowsGame")) {
 
 				if (printFormats.contains("CDROM")) {
 					printFormats.remove("CDROM");
 				}
-				if(printFormats.contains("WindowsGame")) {
+				if (printFormats.contains("WindowsGame")) {
 					printFormats.remove("WindowsGame");
 				}
-					printFormats.add("SoundDiscWithCDROM");
+				printFormats.add("SoundDiscWithCDROM");
 			}
 		}
 		if (printFormats.contains("CompactDisc")) {
@@ -1257,13 +1256,13 @@ public class FormatDetermination {
 			return "Xbox360";
 		} else if (value.contains("playstation vita") /*&& !value.contains("compatible")*/) {
 			return "PlayStationVita";
-		} else if (value.contains("playstation 5") || value.matches(".*[^a-z]ps5.*") && !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player") && !value.contains("blu-ray disc computer")) {
+		} else if ((value.contains("playstation 5") || value.matches(".*[^a-z]ps5.*")) && isNotBluRayPlayerDescription(value)) {
 			return "PlayStation5";
-		} else if (value.contains("playstation 4") || value.matches(".*[^a-z]ps4.*") && !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player") && !value.contains("blu-ray disc computer")) {
+		} else if ((value.contains("playstation 4") || value.matches(".*[^a-z]ps4.*")) && isNotBluRayPlayerDescription(value)) {
 			return "PlayStation4";
-		} else if (value.contains("playstation 3") || value.matches(".*[^a-z]ps3.*") && !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player") && !value.contains("blu-ray disc computer")) {
+		} else if ((value.contains("playstation 3") || value.matches(".*[^a-z]ps3.*")) && isNotBluRayPlayerDescription(value)) {
 			return "PlayStation3";
-		} else if (value.contains("playstation") && !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player") && !value.contains("blu-ray disc computer")) {
+		} else if (value.contains("playstation") && isNotBluRayPlayerDescription(value)) {
 			return "PlayStation";
 		} else if (value.contains("wii u")) {
 			return "WiiU";
@@ -1282,6 +1281,17 @@ public class FormatDetermination {
 		}else{
 			return null;
 		}
+	}
+
+	/**
+	 *  Avoid play station format determinations for descriptions of Blu-ray player that note
+	 *  that a play station is compatible with Blu-ray players.
+	 *
+	 * @param value text of a subfield
+	 * @return
+	 */
+	private static boolean isNotBluRayPlayerDescription(String value) {
+		return !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player") && !value.contains("blu-ray disc computer");
 	}
 
 	private void getFormatFromSubjects(Record record, Set<String> result) {
