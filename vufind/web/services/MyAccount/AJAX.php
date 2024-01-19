@@ -744,6 +744,7 @@ class MyAccount_AJAX extends AJAXHandler {
 				$list          = new UserList();
 				$list->title   = strip_tags($title);
 				$list->user_id = $user->id;
+				$list->deleted = 0;  // Since lists only marked deleted and not deleted; we need to filter for lists that aren't deleted here
 				//Check to see if there is already a list with this id
 				$existingList = false;
 				if ($list->find(true)){
