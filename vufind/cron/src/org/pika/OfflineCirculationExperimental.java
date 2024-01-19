@@ -35,7 +35,7 @@ public class OfflineCirculationExperimental implements IProcessHandler  {
 			processLog.addNote("Not processing offline circulation because the system is currently offline.");
 		}
 		else {
-			if (processSettings.containsKey("TimeOut")){
+			if (processSettings != null && processSettings.containsKey("TimeOut")){
 				String timeOutStr = processSettings.get("TimeOut");
 				long timeout = Long.parseLong(timeOutStr);
 				if (timeout > 0L){
