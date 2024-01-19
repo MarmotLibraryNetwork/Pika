@@ -630,6 +630,16 @@ function getIndexingUpdates(){
 					'PlayawayLaunchpad', '3')"
 			],
 		],
+		'2024.01.0_fix_cdrom_translation' => [
+			'title'           => 'Fix CD-ROM translation',
+			'description'     => 'Translate CDROM to CD-ROM instead of Software',
+			'continueOnError' => true,
+			'sql' => [
+				'UPDATE pika.translation_map_values SET `translation` = "CD-ROM" WHERE value = "CDROM" and translation = "Software" ' .
+				' AND translationMapId = (SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = "ils") AND name = "format") ' .
+				' LIMIT 1;',
+			]
+		]
 	);
 }
 
