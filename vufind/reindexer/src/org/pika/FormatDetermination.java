@@ -1088,10 +1088,8 @@ public class FormatDetermination {
 							result.add("Blu-ray");
 						} else if (physicalDescriptionData.contains("videodisc")){
 							result.add("VideoDisc");
-						}	else if (physicalDescriptionData.contains("cd-rom") || physicalDescriptionData.contains("cdrom")) {
+						}	else if (physicalDescriptionData.contains("cd-rom") || physicalDescriptionData.contains("cdrom") || physicalDescriptionData.contains("computer optical disc")) {
 							result.add("CDROM");
-						}else if (physicalDescriptionData.contains("computer optical disc")) {
-							result.add("Software");
 						} else if (physicalDescriptionData.contains("sound cassettes")) {
 							result.add("SoundCassette");
 						} else if (physicalDescriptionData.contains("compact disc")){
