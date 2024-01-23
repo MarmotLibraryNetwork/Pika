@@ -559,7 +559,7 @@ public class FormatDetermination {
 			if (curField.equalsIgnoreCase("Blu-Ray")){
 				printFormats.add("Blu-ray");
 			}else if (curField.equalsIgnoreCase("DVD-ROM") || curField.equalsIgnoreCase("DVDROM")){
-				printFormats.add("CDROM");
+				printFormats.add("CDROM"); //TODO: should be determined as format dvd-rom (wouldn't work in cd-rom player) TODO: add exclusion check for CD ROM eg. "CD-ROM or DVD-ROM drive"
 			}else if (curField.equalsIgnoreCase("DVD video")){
 				printFormats.add("DVD");
 			}
@@ -718,7 +718,11 @@ public class FormatDetermination {
 				printFormats.remove("Video");
 			}
 		}
-		if (printFormats.contains("CDROM") && (printFormats.contains("DVD") || printFormats.contains("VideoDisc"))){
+		if (printFormats.contains("CDROM") && (
+						printFormats.contains("DVD")
+						|| printFormats.contains("VideoDisc")
+						|| printFormats.contains("MusicCD")  // Result of Enhanced music CDs
+		)){
 			printFormats.remove("CDROM");
 		}
 		if (printFormats.contains("WindowsGame") && printFormats.contains("VideoDisc")){
@@ -746,6 +750,7 @@ public class FormatDetermination {
 		if (printFormats.contains("SoundCassette") && printFormats.contains("MusicRecording")){
 			printFormats.clear();
 			printFormats.add("MusicCassette");
+			return;
 		}
 		if (printFormats.contains("SoundDisc") && printFormats.contains("MusicRecording")) {
 			// This is likely music phonographs, which get determined as music recordings
@@ -969,7 +974,7 @@ public class FormatDetermination {
 			}else if (titleMedium.contains("blu-ray")){
 				printFormats.add("Blu-ray");
 			}else if (titleMedium.contains("dvd-rom") || titleMedium.contains("dvdrom")){
-				printFormats.add("CDROM");
+				printFormats.add("CDROM"); //TODO: should be determined as format dvd-rom (wouldn't work in cd-rom player) TODO: add exclusion check for CD ROM eg. "CD-ROM or DVD-ROM drive"
 			}else if (titleMedium.contains("dvd")){
 				printFormats.add("DVD");
 			}
@@ -1151,7 +1156,7 @@ public class FormatDetermination {
 						} else if (sysDetailsValue.contains("bluray") || sysDetailsValue.contains("blu-ray")) {
 							result.add("Blu-ray");
 						} else if (sysDetailsValue.contains("dvd-rom") || sysDetailsValue.contains("dvdrom")) {
-							result.add("CDROM");
+							result.add("CDROM"); //TODO: should be determined as format dvd-rom (wouldn't work in cd-rom player)
 						} else if (sysDetailsValue.contains("dvd")) {
 							result.add("DVD");
 						} else if (sysDetailsValue.contains("vertical file")) {
