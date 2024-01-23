@@ -221,7 +221,7 @@ public class FormatDetermination {
 						case "cdrom":
 						case "soundcassette":
 						case "compactdisc":
-						case "chipcartridge":
+						//case "chipcartridge":
 						case "mp3disc":
 						case "mp3":
 						case "eaudio":
@@ -250,13 +250,6 @@ public class FormatDetermination {
 							econtentItem.setFormatCategory("Movies");
 							econtentRecord.setFormatBoost(10);
 							break;
-						case "electronic":
-						case "software":
-						case "mixedmaterials":
-							econtentItem.setFormat("Online Materials");
-							econtentItem.setFormatCategory("Other");
-							econtentRecord.setFormatBoost(2);
-							break;
 						case "photo":
 							econtentItem.setFormat("Photo");
 							econtentItem.setFormatCategory("Other");
@@ -274,6 +267,17 @@ public class FormatDetermination {
 							break;
 						default:
 							logger.warn("Could not find appropriate eContent format for " + format + " while side loading eContent " + econtentRecord.getFullIdentifier());
+							// Use the generic format determination for the cases below
+						case "electronic":
+						case "software":
+						case "mixedmaterials":
+						case "tapecartreel":
+						case "tapecartridge":
+						case "disccartridge":
+						case "chipcartridge":
+							econtentItem.setFormat("Online Materials");
+							econtentItem.setFormatCategory("Other");
+							econtentRecord.setFormatBoost(2);
 					}
 				}
 			}
