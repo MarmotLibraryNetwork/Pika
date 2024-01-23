@@ -138,8 +138,11 @@ abstract class HorizonROA implements \DriverInterface {
 		}
 		$json = curl_exec($ch);
 
-
-/*		if (stripos($instanceName, 'localhost') !== false){
+		if (!$json) {
+			$curl_error = curl_error($ch);
+		}
+		
+		/*		if (stripos($instanceName, 'localhost') !== false){
 			$err           = curl_getinfo($ch);
 			$headerRequest = curl_getinfo($ch, CURLINFO_HEADER_OUT);
 		}*/
@@ -152,7 +155,7 @@ abstract class HorizonROA implements \DriverInterface {
 		if ($json !== false && $json !== 'false'){
 			return json_decode($json);
 		}else{
-			$this->getLogger()->warn('Curl problem in getWebServiceResponse');
+			$this->getLogger()->warn('Curl error: ' . $curl_error);
 			return false;
 		}
 	}
