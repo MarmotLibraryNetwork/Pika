@@ -138,26 +138,22 @@ abstract class HorizonROA implements \DriverInterface {
 		}
 		$json = curl_exec($ch);
 
-		if (!$json) {
-			$curl_error = curl_error($ch);
-		}
-		
 		/*		if (stripos($instanceName, 'localhost') !== false){
 			$err           = curl_getinfo($ch);
 			$headerRequest = curl_getinfo($ch, CURLINFO_HEADER_OUT);
 		}*/
 
-		$this->getLogger()->debug("Web service response\r\n$json");
-		global $timer;
-
-		curl_close($ch);
+		$this->getLogger()->debug("Web service response\n$json");
 
 		if ($json !== false && $json !== 'false'){
-			return json_decode($json);
+			$return = json_decode($json);
 		}else{
+			$curl_error = curl_error($ch);
 			$this->getLogger()->warn('Curl error: ' . $curl_error);
-			return false;
+			$return = false;
 		}
+		curl_close($ch);
+		return $return;
 	}
 
 	/**
@@ -264,9 +260,9 @@ abstract class HorizonROA implements \DriverInterface {
 		$user->barcode  = $barcode;
 		// $this->accountProfile->name might be empty.
 		// empty accountProfile->name seems to happen with password reset, but haven't confirmed
-		if(isset($this->accountProfile->name)) {
-			$user->source  = $this->accountProfile->name;
-		}
+		//if(isset($this->accountProfile->name)) {
+			//$user->source  = $this->accountProfile->name;
+		//}
 
 		if ($user->find(true)){
 			$userExistsInDB = true;
