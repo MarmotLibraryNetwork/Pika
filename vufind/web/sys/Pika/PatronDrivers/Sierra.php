@@ -2233,22 +2233,22 @@ class Sierra  implements \DriverInterface {
 	}
 
 	public function changeHoldPickupLocation($patron, $bibId, $holdId, $newPickupLocation){
-		$operation = "patrons/holds/".$holdId;
-		$params = ["pickupLocation"=>$newPickupLocation];
+		$operation = "patrons/holds/" . $holdId;
+		$params    = ["pickupLocation" => $newPickupLocation];
 
 		// delete holds cache
 		$patronHoldsCacheKey = $this->cache->makePatronKey('holds', $patron->id);
 		$this->cache->delete($patronHoldsCacheKey);
 
-		$r = $this->_doRequest($operation,$params, "PUT");
+		$r = $this->_doRequest($operation, $params, "PUT");
 
 		// something went wrong
-		if(!$r) {
+		if (!$r){
 			$return = ['success' => false];
-			if($this->apiLastError) {
-				$message = $this->_getPrettyError();
+			if ($this->apiLastError){
+				$message           = $this->_getPrettyError();
 				$return['message'] = $message;
-			} else {
+			}else{
 				$return['message'] = "Unable to change pickup location. Please contact your library for further assistance.";
 			}
 			return $return;
