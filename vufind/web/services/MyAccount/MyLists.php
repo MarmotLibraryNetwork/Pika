@@ -42,7 +42,7 @@ class MyAccount_MyLists extends MyAccount{
 				'dateUpdated' => 'Last Updated',
 			];
 			$sortOption = $_REQUEST['sort'] ?? 'title';
-			switch ($_REQUEST['sort']){
+			switch ($sortOption){
 				case 'created' :
 					$listsSortOption = 'created ASC';
 					break;
@@ -51,8 +51,8 @@ class MyAccount_MyLists extends MyAccount{
 					break;
 				case 'title' :
 				default :
-					$sortOption = 'title';  // Set the sort option when the request parameter isn't a valid option
-					$listsSortOption = 'title ASC';
+				$sortOption      = 'title';  // Set the sort option when the request parameter isn't a valid option
+				$listsSortOption = 'title ASC';
 			}
 			$interface->assign('sortOptions', $sortOptions);
 			$interface->assign('defaultSortOption', $sortOption);
