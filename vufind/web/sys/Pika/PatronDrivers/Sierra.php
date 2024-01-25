@@ -2126,7 +2126,7 @@ class Sierra  implements \DriverInterface {
 	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {
 		if($cancelDate) {
 			$d        = DateTime::createFromFormat('m/d/Y', $cancelDate); // convert needed by date
-			$neededBy = $d->format('Y-m-d');
+			$neededBy = $d ? $d->format('Y-m-d') : false;
 		} else {
 			$neededBy = false;
 		}
@@ -2149,7 +2149,7 @@ class Sierra  implements \DriverInterface {
 		}
 
 		// because the patron object has holds information we need to clear that cache too.
-		$patronObjectCacheKey = $this->cache->makePatronKey('holds', $patron->id);
+		$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 		if(!$this->cache->delete($patronObjectCacheKey)) {
 			$this->logger->warn("Failed to remove patron from memcache: " . $patronObjectCacheKey);
 		}
@@ -3418,8 +3418,8 @@ class Sierra  implements \DriverInterface {
 				} else {
 					return false;
 				}
-				$casLoginUrl = $vendorOpacUrl.$casUrl;
-				$r = $c->post($casLoginUrl, $postData);
+				$casLoginUrl = $vendorOpacUrl . $casUrl;
+				$r           = $c->post($casLoginUrl, $postData);
 				if(!stristr($r, $patron->cat_username)) {
 					$this->logger->warning('cas login failed.');
 					return false;
