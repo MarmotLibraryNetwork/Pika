@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Likely obsolete, but has potentially usable code for reading our ini files
+
 # sideload.sh
 # James Staub
 # Nashville Public Library
