@@ -36,7 +36,7 @@ class Admin_GenealogyIndexing extends Admin_Admin {
 	function launch(){
 		global $pikaLogger;
 		if (!UserAccount::userHasRole('genealogyContributor')){
-			// constructor ensures user is opacAdmin; this ensure the user *also* has genealogy role
+			// constructor ensures user is opacAdmin; this ensures the user *also* has genealogy role
 			$this->display('../Admin/noPermission.tpl', 'Access Error');
 			die;
 		}
