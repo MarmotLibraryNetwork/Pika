@@ -1366,7 +1366,7 @@ class MarcRecord extends IndexRecord {
 		$archiveLink = GroupedWorkDriver::getArchiveLinkForWork($this->getGroupedWorkId());
 		if ($archiveLink != null){
 			$actions[] = [
-				'title'        => 'View Online',
+				'title'        => 'View in Archive',
 				'url'          => $archiveLink,
 				'requireLogin' => false,
 			];
@@ -2219,9 +2219,9 @@ class MarcRecord extends IndexRecord {
 	}
 
 	private function getLinks(){
-		$links      = array();
+		$links      = [];
 		$marcRecord = $this->getMarcRecord();
-		if ($marcRecord != false){
+		if ($marcRecord){
 			$linkFields = $marcRecord->getFields('856');
 			/** @var File_MARC_Data_Field $field */
 			foreach ($linkFields as $field){
@@ -2230,7 +2230,7 @@ class MarcRecord extends IndexRecord {
 					$isCustomCover = false;
 					if (!empty($field->getSubfield('2'))){
 						$customCoverCode = strtolower(trim($field->getSubfield('2')->getData()));
-						$isCustomCover   = in_array($customCoverCode, array('pika', 'pikaimage', 'pika_image', 'image', 'vufind_image', 'vufindimage', 'vufind'));
+						$isCustomCover   = in_array($customCoverCode, ['pika', 'pikaimage', 'pika_image', 'image', 'vufind_image', 'vufindimage', 'vufind']);
 					}
 					if (!$isCustomCover){
 						$url = $field->getSubfield('u')->getData();
@@ -2244,10 +2244,10 @@ class MarcRecord extends IndexRecord {
 						}else{
 							$title = $url;
 						}
-						$links[] = array(
+						$links[] = [
 							'title' => $title,
 							'url'   => $url,
-						);
+						];
 					}
 				}
 			}
