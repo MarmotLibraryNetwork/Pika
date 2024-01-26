@@ -506,6 +506,7 @@ abstract class HorizonROA implements \DriverInterface {
 	 * @return bool|int
 	 */
 	public function getNumHoldsOnRecord($bibId){
+		// Caching of count happens in Catalog Connection driver
 		// TODO: make ROA call
 		//This uses the standard / REST method to retrieve this information from the ILS.
 		// It isn't an ROA call.
