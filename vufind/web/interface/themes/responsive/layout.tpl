@@ -116,7 +116,7 @@
 							</div>
 
 						{else} {* Sidebar on the left *}
-							<div class="col-xs-12 col-sm-4 col-md-3 col-lg-3 " id="side-bar">
+							<div class="col-xs-12 col-sm-4 col-md-3 col-lg-3" id="side-bar">
 								{include file="sidebar.tpl"}
 							</div>
 							<div class="col-xs-12 col-sm-8 col-md-9 col-lg-9" id="main-content-with-sidebar">
