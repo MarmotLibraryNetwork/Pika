@@ -38,13 +38,12 @@
 {if isset($usageByNamespace) && is_array($usageByNamespace) && count($usageByNamespace) > 5}
 	<script type="text/javascript">
 		{literal}
-		$(document).ready(function(){
+		$(function(){
 			$('#adminTable').DataTable({
 				"order": [[0, "asc"]],
 				pageLength: 100
 			});
 		})
-
 		{/literal}
 	</script>
 {/if}

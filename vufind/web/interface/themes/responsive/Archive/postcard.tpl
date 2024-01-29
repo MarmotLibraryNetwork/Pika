@@ -86,7 +86,7 @@
 {/if}
 {* {/strip} *}
 <script type="text/javascript">
-	$().ready(function(){ldelim}
+	$(function(){ldelim}
 		Pika.Archive.loadExploreMore('{$pid|urlencode}');
 		{rdelim});
 </script>

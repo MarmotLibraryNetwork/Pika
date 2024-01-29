@@ -74,11 +74,9 @@
 	{if $showExploreMoreBar}
 		<div id="explore-more-bar-placeholder"></div>
 		<script type="text/javascript">
-			$(document).ready(
-					function () {ldelim}
-						Pika.Searches.loadExploreMoreBar('{$exploreMoreSection}', '{$exploreMoreSearchTerm|escape:"html"}');
-						{rdelim}
-			);
+			$(function(){ldelim}
+				Pika.Searches.loadExploreMoreBar('{$exploreMoreSection}', '{$exploreMoreSearchTerm|escape:"html"}');
+			{rdelim});
 		</script>
 	{/if}
 

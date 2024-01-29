@@ -49,7 +49,7 @@
 		<div id="main-content">
 			<h2>Offline Holds</h2>
 			{if count($offlineHolds) > 0}
-				<table class="citation stripe" id="offlineHoldsReport" >
+				<table class="citation stripe" id="offlineHoldsReport">
 					<thead>
 						<tr><th>Patron Barcode</th><th>Record Id</th><th>Title</th><th>Date Entered</th><th>Status</th><th>Notes</th></tr>
 					</thead>
@@ -67,7 +67,7 @@
 	</div>
 	<script type="text/javascript">
 		{literal}
-		$(document).ready(function(){
+		$(function(){
 			$('#offlineHoldsReport').DataTable({
 				"order": [[0, "asc"]],
 				pageLength: 100

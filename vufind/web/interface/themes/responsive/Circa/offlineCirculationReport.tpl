@@ -102,8 +102,8 @@
 				</table>
 <script type="text/javascript">
 	{literal}
-	$(document).ready(function(){
-		$('#offlineCirculation').DataTable({
+	$(function(){
+		$('#offlineCirculationReport').DataTable({
 			"order": [[0, "asc"]],
 			pageLength: 100
 		});
