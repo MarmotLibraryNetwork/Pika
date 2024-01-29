@@ -1,23 +1,15 @@
-<table class="table table-striped">
-	<th>
-		Title
-	</th>
-	<th>
-		Author
-	</th>
-	<th>
-		Pub. Date
-	</th>
-	<th>
-		Format
-	</th>
+{strip}
+<table id="prospectorTitles" class="table table-striped">
+	<th>Title</th>
+	<th>Author</th>
+	<th>Pub. Date</th>
+	<th>Format</th>
   {foreach from=$prospectorResults item=prospectorTitle}
 	  {if $similar.recordId != -1}
 		  <tr>
 			  <td>
-		      <a href="{$prospectorTitle.link}" rel="external" onclick="window.open (this.href, 'child'); return false"><h5>{$prospectorTitle.title|removeTrailingPunctuation|escape}</h5></a>
+		      <a href="{$prospectorTitle.link}" rel="external" target="_blank">{$prospectorTitle.title|removeTrailingPunctuation|escape}</a>
 			  </td>
-
 		    <td>
 				  {if $prospectorTitle.author}<small>{$prospectorTitle.author|escape}</small>{/if}
 		    </td>
@@ -31,3 +23,4 @@
 	  {/if}
   {/foreach}
 </table>
+{/strip}
