@@ -57,13 +57,13 @@ class SearchObject_Islandora extends SearchObject_Base {
 
 	// Spelling
 	private $spellingLimit = 3;
-	private $spellQuery    = array();
+	private $spellQuery    = [];
 	private $dictionary    = 'default';
 	private $spellSimple   = false;
 	private $spellSkipNumeric = true;
 
 	// Display Modes //
-	public $viewOptions = array('list', 'covers');
+	public $viewOptions = ['list', 'covers'];
 
 	/**
 	 * Constructor. Initialise some details about the server
@@ -394,8 +394,8 @@ class SearchObject_Islandora extends SearchObject_Base {
 	 * @param array $orderedListOfIDs  Use the index of the matched ID as the index of the resulting array of ListWidget data (for later merging)
 	 * @return array
 	 */
-	public function getListWidgetTitles($orderedListOfIDs = array()){
-		$widgetTitles = array();
+	public function getListWidgetTitles($orderedListOfIDs = []){
+		$widgetTitles = [];
 		for ($x = 0;$x < count($this->indexResult['response']['docs']);$x++){
 			$current = &$this->indexResult['response']['docs'][$x];
 			$record  = RecordDriverFactory::initRecordDriver($current);
@@ -594,7 +594,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 	 *   query used in the search (not the filters).
 	 *
 	 * @access  public
-	 * @return  string   user friendly version of 'query'
+	 * @return  string   user-friendly version of 'query'
 	 */
 	public function displayQuery(){
 		// Maybe this is a restored object...
@@ -820,18 +820,17 @@ class SearchObject_Islandora extends SearchObject_Base {
 	 * @access  private
 	 * @return  string    Spelling query
 	 */
-	private function buildSpellingQuery()
-	{
-		$this->spellQuery = array();
+	private function buildSpellingQuery(){
+		$this->spellQuery = [];
 		// Basic search
-		if ($this->searchType == $this->basicSearchType) {
+		if ($this->searchType == $this->basicSearchType){
 			// Just the search query is fine
 			return $this->query;
 
 			// Advanced search
-		} else {
-			foreach ($this->searchTerms as $search) {
-				foreach ($search['group'] as $field) {
+		}else{
+			foreach ($this->searchTerms as $search){
+				foreach ($search['group'] as $field){
 					// Add just the search terms to the list
 					$this->spellQuery[] = $field['lookfor'];
 				}
@@ -846,8 +845,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 	 *
 	 * @access  private
 	 */
-	private function processSpelling()
-	{
+	private function processSpelling(){
 		global $configArray;
 
 		// Do nothing if spelling is disabled
@@ -856,14 +854,13 @@ class SearchObject_Islandora extends SearchObject_Base {
 		}
 
 		// Do nothing if there are no suggestions
-		$suggestions = isset($this->indexResult['spellcheck']['suggestions']) ?
-		$this->indexResult['spellcheck']['suggestions'] : array();
+		$suggestions = $this->indexResult['spellcheck']['suggestions'] ?? [];
 		if (count($suggestions) == 0) {
 			return;
 		}
 
 		// Loop through the array of search terms we have suggestions for
-		$suggestionList = array();
+		$suggestionList = [];
 		foreach ($suggestions as $suggestion) {
 			$ourTerm = $suggestion[0];
 
@@ -920,8 +917,8 @@ class SearchObject_Islandora extends SearchObject_Base {
 	 * @param   array    $termList List of suggestions
 	 * @return  array    Filtered list
 	 */
-	private function filterSpellingTerms($termList) {
-		$newList = array();
+	private function filterSpellingTerms($termList){
+		$newList = [];
 		if (count($termList) == 0) return $newList;
 
 		foreach ($termList as $term) {
@@ -941,8 +938,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 	 * @access  private
 	 * @return  array     Suggestions array
 	 */
-	private function basicSpelling()
-	{
+	private function basicSpelling(){
 		// TODO: There might be a way to run the
 		//   search against both dictionaries from
 		//   inside solr. Investigate. Currently
@@ -998,30 +994,23 @@ class SearchObject_Islandora extends SearchObject_Base {
 	 */
 	public function getFilterList($excludeCheckboxFilters = false){
 		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
-		global $library;
 		$fedoraUtils = FedoraUtils::getInstance();
 
 		// Get a list of checkbox filters to skip if necessary:
-		$skipList = $excludeCheckboxFilters ? array_keys($this->checkboxFacets) : array();
+		$skipList = $excludeCheckboxFilters ? array_keys($this->checkboxFacets) : [];
 
-		$list = array();
+		$list = [];
 		// Loop through all the current filter fields
 		foreach ($this->filterList as $field => $values) {
 			// and each value currently used for that field
-			$translate = in_array($field, $this->translatedFacets);
-			$lookupPid = in_array($field, $this->pidFacets);
+			$translate       = in_array($field, $this->translatedFacets);
+			$lookupPid       = in_array($field, $this->pidFacets);
 			$namespaceLookup = $field == 'namespace_s';
 			foreach ($values as $value) {
 				// Add to the list unless it's in the list of fields to skip:
 				if (!in_array($field, $skipList)) {
 					$facetLabel = $this->getFacetLabel($field);
-					if ($namespaceLookup){
-						$tmpLibrary = new Library();
-						$tmpLibrary->archiveNamespace = $value;
-						if ($tmpLibrary->find(true)){
-							$display = $tmpLibrary->displayName;
-						}
-					}elseif ($lookupPid) {
+					if ($lookupPid) {
 						$pid = str_replace('info:fedora/', '', $value);
 						if ($field == 'RELS_EXT_isMemberOfCollection_uri_ms'){
 							$okToShow = $this->showCollectionAsFacet($pid);
@@ -1037,7 +1026,17 @@ class SearchObject_Islandora extends SearchObject_Base {
 							continue;
 						}
 					}elseif ($translate){
-						$display = translate($value);
+						if ($namespaceLookup){
+							$tmpLibrary = new Library();
+							$tmpLibrary->archiveNamespace = $value;
+							if ($tmpLibrary->find(true)){
+								$display = $tmpLibrary->displayName;
+							} else {
+								$display = translate($value);
+							}
+						}else{
+							$display = translate($value);
+						}
 					}else{
 						$display = $value;
 					}
@@ -1101,22 +1100,16 @@ class SearchObject_Islandora extends SearchObject_Base {
 			$list[$field]['list']  = [];
 
 			// Should we translate values for the current facet?
-			$translate = in_array($field, $this->translatedFacets);
-			$lookupPid = in_array($field, $this->pidFacets);
+			$translate       = in_array($field, $this->translatedFacets);
+			$lookupPid       = in_array($field, $this->pidFacets);
 			$namespaceLookup = $field == 'namespace_s';
 
 			// Loop through values:
 			foreach ($data as $facet) {
 				// Initialize the array of data about the current facet:
-				$currentSettings = [];
+				$currentSettings          = [];
 				$currentSettings['value'] = $facet[0];
-				if ($namespaceLookup){
-					$tmpLibrary = new Library();
-					$tmpLibrary->archiveNamespace = $facet[0];
-					if ($tmpLibrary->find(true)){
-						$currentSettings['display'] = $tmpLibrary->displayName;
-					}
-				}elseif ($lookupPid) {
+				if ($lookupPid) {
 					$pid = str_replace('info:fedora/', '', $facet[0]);
 					if ($field == 'RELS_EXT_isMemberOfCollection_uri_ms'){
 						$okToShow = $this->showCollectionAsFacet($pid);
@@ -1134,7 +1127,17 @@ class SearchObject_Islandora extends SearchObject_Base {
 					}
 
 				}elseif ($translate){
-					$currentSettings['display'] = translate($facet[0]);
+					if ($namespaceLookup){
+						$tmpLibrary                   = new Library();
+						$tmpLibrary->archiveNamespace = $facet[0];
+						if ($tmpLibrary->find(true)){
+							$currentSettings['display'] = $tmpLibrary->displayName;
+						} else {
+							$currentSettings['display'] = translate($facet[0]);
+						}
+					}else{
+						$currentSettings['display'] = translate($facet[0]);
+					}
 				}else{
 					$currentSettings['display'] = $facet[0];
 				}
