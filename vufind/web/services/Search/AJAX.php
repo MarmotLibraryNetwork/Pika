@@ -18,13 +18,10 @@
  */
 
 require_once ROOT_DIR . '/Action.php';
-//require_once ROOT_DIR . '/services/AJAX/Captcha_AJAX.php';
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
 use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 
 class AJAX extends AJAXHandler {
-
-	//use Captcha_AJAX;
 
 	protected $methodsThatRespondWithHTML = [
 		'getProspectorResults',

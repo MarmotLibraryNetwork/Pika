@@ -37,7 +37,6 @@
 		<script src="/interface/themes/responsive/js/lib/jquery.validate.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/additional-methods.min.js?v={$gitBranch|urlencode}"></script>
 
-		<script src="/interface/themes/responsive/js/lib/recaptcha_ajax.js?v={$gitBranch|urlencode}"></script>
 		{* Combined into ratings.js (part of the pika.min.js)*}
 		{*<script src="/interface/themes/responsive/js/lib/rater.min.js"></script>*}
 		{*<script src="/interface/themes/responsive/js/lib/rater.js"></script>*}

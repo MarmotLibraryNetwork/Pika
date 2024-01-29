@@ -61,6 +61,7 @@ function recaptchaGetQuestion() {
 
 	return '<script src="https://www.google.com/recaptcha/api.js" async defer></script>' .
 	       '<div class="g-recaptcha" data-sitekey="'. $key .'">';
+	//TODO: include  alt="Captcha test to confirm you are not a robot"  ??
 }
 
 function recaptchaCheckAnswer($recaptchaResponse = false) {

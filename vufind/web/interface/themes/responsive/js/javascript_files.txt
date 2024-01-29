@@ -9,7 +9,6 @@ lib/additional-methods.min.js
 lib/jquery.touchwipe.min.js
 lib/jquery.rwdImageMaps.min.js
 lib/rater.min.js
-lib/recaptcha_ajax.min.js
 pika/globals.min.js
 pika/base.min.js
 pika/account.min.js

@@ -30,8 +30,6 @@ use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 
 class GroupedWork_AJAX extends AJAXHandler {
 
-	//use Captcha_AJAX;
-
 	protected $methodsThatRespondWithJSONUnstructured = array(
 		'clearUserRating',
 		'deleteUserReview',
