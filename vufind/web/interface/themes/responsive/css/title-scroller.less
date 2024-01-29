@@ -82,7 +82,9 @@
   width: 100%;
   text-align: center;
   font-weight: bold;
-  color: #A9A9A9;
+  //color: #A9A9A9; // Fails AA https://webaim.org/resources/contrastchecker/?fcolor=A9A9A9&bcolor=FFFFFF
+  //color: #797676; // Passes AA https://webaim.org/resources/contrastchecker/?fcolor=797676&bcolor=FFFFFF
+  color: #5E5353 // Passes AAA https://webaim.org/resources/contrastchecker/?fcolor=5E5353&bcolor=FFFFFF
 }
 .scrollerBodyContainer{
   position: relative;
