@@ -155,25 +155,7 @@
 		{/strip}
 
 		{if $google_translate_key}
-		{literal}
-			<script type="text/javascript">
-				function googleTranslateElementInit() {
-				new google.translate.TranslateElement({
-				pageLanguage: 'en',
-				layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-		{/literal}
-			{if $google_included_languages}
-			, includedLanguages: '{$google_included_languages}'
-			{/if}
-					{if $trackTranslation}
-					, gaTrack: true, gaId: '{$googleAnalyticsId}'
-					{/if}
-		{literal}
-				}, 'google_translate_element');
-				}
-			</script>
-			<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-		{/literal}
+			{include file="googleTranslate.tpl"}
 		{/if}
 	</body>
 </html>
