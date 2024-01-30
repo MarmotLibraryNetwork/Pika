@@ -28,7 +28,7 @@
 <h4>Integration notes</h4>
 <div class="well">
 	<p>
-		To have a list widget which adjusts it's height based on the html content within the list widget use the source url :
+		To have a list widget which adjusts its height based on the html content within the list widget use the source url :
 	</p>
 	<blockquote class="alert-info">
 	{$url}/API/SearchAPI?method=getListWidget&amp;id={$object->id}<span style="font-weight: bold;">&resizeIframe=on</span>
@@ -90,8 +90,8 @@
 </div>
 <h4>Live Preview</h4>
 <iframe id="listWidget{$object->id}" onload="setWidgetSizing(this, 30)" src="{$url}/API/SearchAPI?method=getListWidget&id={$object->id}&resizeIframe=on&reload=true" width="{$width}" {*height="{$height}"*} scrolling="{if $selectedStyle == "text-list"}yes{else}no{/if}">
-<p>Your browser does not support iframes. :( </p>
-	</iframe>
+	<p>Your browser does not support iframes. :( </p>
+</iframe>
 
 	{* Iframe dynamic Height Re-sizing script *}
 	<script type="text/javascript" src="/js/iframeResizer/iframeResizer.min.js"></script>
