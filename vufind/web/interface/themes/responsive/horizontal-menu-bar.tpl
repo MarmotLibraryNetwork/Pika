@@ -1,4 +1,5 @@
 {strip}
+	{* Mobile Horizontal Menu *}
 	{if $loggedIn}{* Logged In *}
 		<a href="/MyAccount/Logout" id="logoutLink" class="menu-icon" title="{translate text="Log Out"}">
 			<img src="{img filename='/interface/themes/responsive/images/Logout.png'}" alt="{translate text="Log Out"}">
@@ -9,7 +10,7 @@
 			</a>
 		{/if}
 	{else} {* Not Logged In *}
-		<a href="/MyAccount/Home" id="loginLink" onclick="{if $isLoginPage}$('#username').focus();return false{else}return Pika.Account.followLinkIfLoggedIn(this){/if}" data-login="true" class="menu-icon" title="{translate text='Login'}">
+		<a href="/MyAccount/Home" id="mobileLoginLink" onclick="{if $isLoginPage}$('#username').focus();return false{else}return Pika.Account.followLinkIfLoggedIn(this){/if}" data-login="true" class="menu-icon" title="{translate text='Login'}">
 			{*<img src="{img filename='/interface/themes/responsive/images/Account.png'}" alt="{translate text='Login'}">*}
 			<img src="{img filename='/interface/themes/responsive/images/Login.png'}" alt="{translate text='Login'}">
 		</a>
