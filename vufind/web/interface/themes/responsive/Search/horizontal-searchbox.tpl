@@ -77,7 +77,7 @@
 									<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}"
 											{if $searchKey == $searchSource} selected="selected"{/if}
 											{if $searchKey == $searchSource} id="default_search_type"{/if}
-											    title="{$searchOption.description}">
+											   {*leading space for clean parsing*} title="{$searchOption.description}">
 										{translate text="in"} {$searchOption.name}{if $searchOption.external} *{/if}
 									</option>
 								{/foreach}

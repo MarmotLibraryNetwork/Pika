@@ -15,8 +15,7 @@
 				</div>
 				{* The div below has to be immediately after the div above for the menubar hiding/showing to work *}
 				<div class="row"{if $displaySidebarMenu} style="display: none"{/if}>
-					<select id="results-sort" name="sort"
-					        onchange="document.location.href = this.options[this.selectedIndex].value;" class="input-medium">
+					<select id="results-sort" name="sort" onchange="document.location.href = this.options[this.selectedIndex].value;" class="input-medium">
 						{foreach from=$sortList item=sortData key=sortLabel}
 							<option value="{$sortData.sortUrl|escape}"{if $sortData.selected} selected="selected"{/if}>{translate text=$sortData.desc}</option>
 						{/foreach}
