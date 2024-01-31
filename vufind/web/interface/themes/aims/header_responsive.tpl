@@ -14,7 +14,7 @@
 
 			<div class="logoutOptions"{if !$loggedIn} style="display: none;"{/if}>
 				<div class="hidden-xs col-sm-2 col-sm-offset-5 col-md-2 col-md-offset-0 col-lg-2 col-lg-offset-0">
-					<a id="myAccountNameLink" href="/MyAccount/Home">
+					<a id="headerMyAccountLink" href="/MyAccount/Home">
 						<div class="header-button header-primary">
 							{translate text="Your Account"}
 						</div>
