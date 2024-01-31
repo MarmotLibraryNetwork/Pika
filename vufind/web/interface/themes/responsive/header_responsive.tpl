@@ -1,7 +1,7 @@
 {strip}
 
-	{* In mobile view this is the top div and spans across the screen *}
 	{* Logo Div *}
+	{* In mobile view this div is the top div and spans across the screen *}
 	<div class="col-xs-12 col-sm-3 col-md-3 col-lg-3">
 		<a href="{$logoLink}/">
 			<img src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="{$librarySystemName}" title="{$logoAlt}" id="header-logo" {if $showDisplayNameInHeader && $librarySystemName}class="pull-left"{/if}>
@@ -33,7 +33,7 @@
 		</div>
 
 		<div class="hidden-xs col-sm-2 col-md-2 col-lg-2">
-			<a href="/MyAccount/Logout"{if $masqueradeMode} onclick="return confirm('This will end both Masquerade Mode and your session as well. Continue to log out?')"{/if} id="logoutLink">
+			<a id="headerLogoutLink" href="/MyAccount/Logout"{if $masqueradeMode} onclick="return confirm('This will end both Masquerade Mode and your session as well. Continue to log out?')"{/if}>
 				<div class="header-button header-primary">
 					{translate text="Log Out"}
 				</div>
@@ -54,7 +54,7 @@
 		{* Show log out option on Force Pin Update so users can log out if they choose *}
 		<div class="logoutOptions"{if !$loggedIn} style="display: none;"{/if}>
 			<div class="hidden-xs col-sm-2 col-sm-offset-7 col-md-2 col-md-offset-2 col-lg-offset-2 col-lg-2">
-				<a href="/MyAccount/Logout"{if $masqueradeMode} onclick="return confirm('This will end both Masquerade Mode and your session as well. Continue to log out?')"{/if} id="logoutLink">
+				<a  id="headerLogoutLink" href="/MyAccount/Logout"{if $masqueradeMode} onclick="return confirm('This will end both Masquerade Mode and your session as well. Continue to log out?')"{/if}>
 					<div class="header-button header-primary">
 						{translate text="Log Out"}
 					</div>

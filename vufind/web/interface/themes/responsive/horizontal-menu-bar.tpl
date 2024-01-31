@@ -1,7 +1,7 @@
 {strip}
 	{* Mobile Horizontal Menu *}
 	{if $loggedIn}{* Logged In *}
-		<a href="/MyAccount/Logout" id="logoutLink" class="menu-icon" title="{translate text="Log Out"}">
+		<a href="/MyAccount/Logout" id="mobileLogoutLink" class="menu-icon" title="{translate text="Log Out"}">
 			<img src="{img filename='/interface/themes/responsive/images/Logout.png'}" alt="{translate text="Log Out"}">
 		</a>
 		{if !$isUpdatePinPage}

@@ -7,7 +7,7 @@
 					<div class="bottom-border-line"></div> {* divs added to aid anythink styling. plb 11-19-2014 *}
 				</div>
 				<div class="logoutOptions">
-					<a href="#" onclick="Pika.Account.endMasquerade()" id="logoutLink">{translate text="End Masquerade"}</a>
+					<a id="sidebarLogoutLink" href="#" onclick="Pika.Account.endMasquerade()">{translate text="End Masquerade"}</a>
 					<div class="bottom-border-line"></div>
 				</div>
 			</div>
@@ -16,7 +16,7 @@
 				<div class="bottom-border-line"></div> {* divs added to aid anythink styling. plb 11-19-2014 *}
 			</div>
 			<div class="logoutOptions">
-				<a href="/MyAccount/Logout" id="logoutLink" >{translate text="Log Out"}</a>
+				<a id="sidebarLogoutLink" href="/MyAccount/Logout">{translate text="Log Out"}</a>
 				<div class="bottom-border-line"></div>
 			</div>
 
@@ -26,7 +26,7 @@
 				<div class="bottom-border-line"></div> {* divs added to aid anythink styling. plb 11-19-2014 *}
 			</div>
 			<div class="logoutOptions" {if !$loggedIn} style="display: none;"{/if}>
-				<a href="/MyAccount/Logout" id="logoutLink" >{translate text="Log Out"}</a>
+				<a id="sidebarLogoutLink" href="/MyAccount/Logout">{translate text="Log Out"}</a>
 				<div class="bottom-border-line"></div>
 			</div>
 			{if !$loggedIn}
