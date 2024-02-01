@@ -374,7 +374,11 @@ class BookCoverProcessor {
 		// Sanitize incoming parameters to avoid filesystem attacks.  We'll make sure the
 		// provided size matches a whitelist, and we'll strip illegal characters from the
 		// ISBN.
-		$this->size = in_array($_GET['size'], ['small', 'medium', 'large']) ? $_GET['size'] : 'small';
+		if (isset($_GET['size'])){
+			$this->size = in_array($_GET['size'], ['small', 'medium', 'large']) ? $_GET['size'] : 'small';
+		} else {
+			$this->size = 'small';
+		}
 		if (isset($_GET['isn'])){
 			if (is_array($_GET['isn'])){
 				$_GET['isn'] = array_pop($_GET['isn']);

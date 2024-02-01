@@ -20,7 +20,7 @@
 require_once 'bootstrap.php';
 use chillerlan\QRCode\{QRCode, QROptions};
 //Create the QR Code if it doesn't exit or we have a reload url parameter
-// todo: the $_REQUEST['id'] is always the grouped work id. If this changes use type to point to item record.
+// todo: the $_REQUEST['id'] is always the grouped work id. If this changes use type to point to related record.
 //$type     = $_REQUEST['type'];
 $type     = 'GroupedWork';
 $id       = $_REQUEST['id'];
