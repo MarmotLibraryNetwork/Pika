@@ -5,7 +5,7 @@
 			{if $showMoreInfo || $showComments || $showFavorites}
 			{if $showMoreInfo !== false}
 				<div class="btn-group btn-group-sm">
-					<a href="{if $summUrl}{$summUrl}{else}{$recordDriver->getMoreInfoLinkUrl()}{/if}" alt="Get More Information" class="btn btn-sm ">More Info</a>
+					<a href="{if $summUrl}{$summUrl}{else}{$recordDriver->getMoreInfoLinkUrl()}{/if}" title="Get More Information" class="btn btn-sm ">More Info</a>
 				</div>
 			{/if}
 			{if $showComments == 1}
