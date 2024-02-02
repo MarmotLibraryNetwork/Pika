@@ -467,7 +467,7 @@ BODY;
 				$list                      = [];
 				foreach ($facet->AvailableFacetValues->AvailableFacetValue as $value){
 					$facetValue   = (string)$value->Value;
-					$urlWithFacet = $this->renderSearchUrl() . '&filter[]=' . $facetId . ':' . urlencode($facetValue);
+					$urlWithFacet = $this->renderSearchUrl() . '&' . urlencode('filter[]') . '=' . $facetId . ':' . urlencode($facetValue);
 					$list[]       = [
 						'display' => $facetValue,
 						'count'   => (string)$value->Count,

@@ -865,17 +865,18 @@ abstract class SearchObject_Base {
 
 		// Add any filters
 		if (count($this->filterList) > 0){
+			$encodedFilterArrayString = urlencode('filter[]');
 			foreach ($this->filterList as $field => $filter){
 				foreach ($filter as $value){
 					if (preg_match('/\\[.*?\\sTO\\s.*?\\]/', $value)){
-						$params[] = "filter[]=$field:$value";
+						$params[] = "$encodedFilterArrayString=$field:$value";
 					}elseif (preg_match('/^\\(.*?\\)$/', $value)){
-						$params[] = "filter[]=$field:$value";
+						$params[] = "$encodedFilterArrayString=$field:$value";
 					}else{
 						if (is_numeric($field)){
-							$params[] = 'filter[]=' . urlencode($value);
+							$params[] = $encodedFilterArrayString . '=' . urlencode($value);
 						}else{
-							$params[] = 'filter[]=' . urlencode("$field:\"$value\"");
+							$params[] = $encodedFilterArrayString . '=' . urlencode("$field:\"$value\"");
 						}
 					}
 				}

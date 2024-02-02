@@ -663,27 +663,27 @@ class ExploreMore {
 							if ($facetInfo->Id == 'SourceType') {
 								foreach ($facetInfo->AvailableFacetValues->AvailableFacetValue as $facetValue) {
 									$facetValueStr = (string)$facetValue->Value;
-									if (in_array($facetValueStr, array('Magazines', 'News', 'Academic Journals', 'Primary Source Documents'))) {
-										$numFacetMatches = (int)$facetValue->Count;
-										$iconName = 'ebsco_' . str_replace(' ', '_', strtolower($facetValueStr));
-										$exploreMoreOptions[] = array(
-												'label' => "$facetValueStr ({$numFacetMatches})",
-												'description' => "{$facetValueStr} in EBSCO related to {$searchTerm}",
-												'image' => "/interface/themes/responsive/images/{$iconName}.png",
-												'link' => '/EBSCO/Results?lookfor=' . urlencode($searchTerm) . '&filter[]=' . $facetInfo->Id . ':' . $facetValueStr,
-										);
+									if (in_array($facetValueStr, ['Magazines', 'News', 'Academic Journals', 'Primary Source Documents'])) {
+										$numFacetMatches      = (int)$facetValue->Count;
+										$iconName             = 'ebsco_' . str_replace(' ', '_', strtolower($facetValueStr));
+										$exploreMoreOptions[] = [
+											'label'       => "$facetValueStr ({$numFacetMatches})",
+											'description' => "{$facetValueStr} in EBSCO related to {$searchTerm}",
+											'image'       => "/interface/themes/responsive/images/{$iconName}.png",
+											'link'        => '/EBSCO/Results?lookfor=' . urlencode($searchTerm) . '&' . urlencode('filter[]') . '=' . $facetInfo->Id . ':' . $facetValueStr,
+										];
 									}
 
 								}
 							}
 						}
 
-						$exploreMoreOptions[] = array(
-								'label' => "All EBSCO Results ({$numMatches})",
-								'description' => "All Results in EBSCO related to {$searchTerm}",
-								'image' => '/interface/themes/responsive/images/ebsco_eds.png',
-								'link' => '/EBSCO/Results?lookfor=' . urlencode($searchTerm)
-						);
+						$exploreMoreOptions[] = [
+							'label'       => "All EBSCO Results ({$numMatches})",
+							'description' => "All Results in EBSCO related to {$searchTerm}",
+							'image'       => '/interface/themes/responsive/images/ebsco_eds.png',
+							'link'        => '/EBSCO/Results?lookfor=' . urlencode($searchTerm)
+						];
 					}
 				}
 			}
@@ -694,11 +694,11 @@ class ExploreMore {
 	function loadExploreMoreContent(){
 		global $timer;
 		require_once ROOT_DIR . '/sys/Archive/ArchiveSubject.php';
-		$archiveSubjects = new ArchiveSubject();
-		$subjectsToIgnore = array();
-		$subjectsToRestrict = array();
+		$archiveSubjects    = new ArchiveSubject();
+		$subjectsToIgnore   = [];
+		$subjectsToRestrict = [];
 		if ($archiveSubjects->find(true)){
-			$subjectsToIgnore = array_flip(explode("\r\n", strtolower($archiveSubjects->subjectsToIgnore)));
+			$subjectsToIgnore   = array_flip(explode("\r\n", strtolower($archiveSubjects->subjectsToIgnore)));
 			$subjectsToRestrict = array_flip(explode("\r\n", strtolower($archiveSubjects->subjectsToRestrict)));
 		}
 		$this->getRelatedCollections();
