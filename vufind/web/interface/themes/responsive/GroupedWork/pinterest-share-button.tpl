@@ -1,5 +1,5 @@
 {strip}
-	<a href="http://www.pinterest.com/pin/create/button/?url={$urlToShare}{if $coverUrl}&media={$coverUrl|escape:'url'}{/if}{if $description}&description={$description}{/if}" {* keep space between attributes *}
+	<a href="http://www.pinterest.com/pin/create/button/?url={$urlToShare}{if $coverUrl}&media={$coverUrl|escape:'url'}{/if}{if $description}&description={$description|escape:'url'}{/if}" {* keep space between attributes *}
 		 data-pin-custom="true" {* keep space between attributes *}
 		 {if $coverUrl}
 			 data-pin-do="buttonPin" {* keep space between attributes *}
