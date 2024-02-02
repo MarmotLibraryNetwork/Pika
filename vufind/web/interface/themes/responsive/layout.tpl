@@ -2,7 +2,8 @@
 <html lang="{$userLang}">
 	<head prefix="og: http://ogp.me/ns#">{strip}
 		<title>{$pageTitle|truncate:64:"..."}</title>
-		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+			{* Direct Microsoft browsers to use latest rendering engine standards. TODO: likely obsolete *}
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 		{include file="ga4tracking.tpl"}
