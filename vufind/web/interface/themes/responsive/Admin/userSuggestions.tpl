@@ -25,19 +25,19 @@
 						{if isset($suggestions) && is_array($suggestions)}
 							{foreach from=$suggestions item=suggestion key=id}
 							<tr>
-								<td><input type='hidden' name='id[{$id}]' value='{$id}'/>{$suggestion->name|escape:"htmlall"}</td>
+								<td><input type='hidden' name='id[{$id}]' value='{$id}'>{$suggestion->name|escape:"htmlall"}</td>
 								<td><a href="mailto:{$suggestion->email|escape:"hex"}">{$suggestion->email|escape:"hexentity"}</a></td>
 								<td>{$suggestion->suggestion|escape:"htmlall"}</td>
 								<td>{$suggestion->enteredOn|date_format:"%Y-%m-%d %H:%M"}</td>
 								<td class="centered"><input type='checkbox' name='hide[{$id}]' {if $suggestion->hide == 1}checked='checked'{/if}></td>
 								<td class='notes'><textarea rows='2' cols='20' name='internalNotes[{$id}]'>{$suggestion->internalNotes|escape:"htmlall"}</textarea></td>
-								<td class="centered"><input type='checkbox' name='delete[{$id}]'/></td>
+								<td class="centered"><input type='checkbox' name='delete[{$id}]'></td>
 							</tr>
 							{/foreach}
 						{/if}
 					</tbody>
 				</table>
-				<input type="submit" name="submit" value="Save Changes" class="btn btn-primary"/>
+				<input type="submit" name="submit" value="Save Changes" class="btn btn-primary">
 			</div>
 		</form>
 	</div>

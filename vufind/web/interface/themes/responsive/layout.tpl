@@ -20,16 +20,16 @@
 		{/if}
 			<meta property="og:site_name" content="{$librarySystemName|removeTrailingPunctuation|escape:html}">
 		{if $og_title}
-			<meta property="og:title" content="{$og_title|removeTrailingPunctuation|escape:html}" />
+			<meta property="og:title" content="{$og_title|removeTrailingPunctuation|escape:html}" >
 		{/if}
 		{if $og_type}
-			<meta property="og:type" content="{$og_type|escape:html}" />
+			<meta property="og:type" content="{$og_type|escape:html}" >
 		{/if}
 		{if $og_image}
-			<meta property="og:image" content="{$og_image|escape:html}" />
+			<meta property="og:image" content="{$og_image|escape:html}" >
 		{/if}
 		{if $og_url}
-			<meta property="og:url" content="{$og_url|escape:html}" />
+			<meta property="og:url" content="{$og_url|escape:html}" >
 		{/if}
 		<link rel="shortcut icon" type="image/x-icon" href="{img filename=favicon.png}">
 		<link rel="search" type="application/opensearchdescription+xml" title="{$librarySystemName} Catalog Search" href="/Search/OpenSearch">

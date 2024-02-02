@@ -57,13 +57,13 @@
 							<label class="control-label col-sm-2">Status</label>
 							<div class="col-sm-6">
 								<div class="checkbox">
-									<label for="hideNotProcessed"><input type="checkbox" name="hideNotProcessed" id="hideNotProcessed" {if $hideNotProcessed}checked="checked"{/if}/> Hide Not Processed</label>
+									<label for="hideNotProcessed"><input type="checkbox" name="hideNotProcessed" id="hideNotProcessed" {if $hideNotProcessed}checked="checked"{/if}> Hide Not Processed</label>
 								</div>
 								<div class="checkbox">
-									<label for="hideFailed"><input type="checkbox" name="hideFailed" id="hideFailed" {if $hideFailed}checked="checked"{/if}/> Hide Failed</label>
+									<label for="hideFailed"><input type="checkbox" name="hideFailed" id="hideFailed" {if $hideFailed}checked="checked"{/if}> Hide Failed</label>
 								</div>
 								<div class="checkbox">
-									<label for="hideSuccess"><input type="checkbox" name="hideSuccess" id="hideSuccess" {if $hideSuccess}checked="checked"{/if}/> Hide Successful</label>
+									<label for="hideSuccess"><input type="checkbox" name="hideSuccess" id="hideSuccess" {if $hideSuccess}checked="checked"{/if}> Hide Successful</label>
 								</div>
 							</div>
 						</div>

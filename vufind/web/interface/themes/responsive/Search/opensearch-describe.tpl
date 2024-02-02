@@ -8,7 +8,7 @@
   <Developer>Marmot Library Network</Developer>
   <Attribution>Copyright 2023, Marmot Library Network, All Rights Reserved</Attribution>
   <SyndicationRight>{if $productionServer}open{else}closed{/if}</SyndicationRight>
-  <Url type="text/html" method="get" template="{$url}/Search/Results?lookfor={literal}{searchTerms}&amp;page={startPage?}{/literal}"/>
-  <Url type="application/rss+xml" method="get" template="{$url}/Search/Results?lookfor={literal}{searchTerms}{/literal}&amp;view=rss"/>
-  <Url type="application/json" rel="suggestions" method="get" template="{$url}/Search/Suggest?lookfor={literal}{searchTerms}{/literal}&amp;format=JSON"/>
+  <Url type="text/html" method="get" template="{$url}/Search/Results?lookfor={literal}{searchTerms}&amp;page={startPage?}{/literal}">
+  <Url type="application/rss+xml" method="get" template="{$url}/Search/Results?lookfor={literal}{searchTerms}{/literal}&amp;view=rss">
+  <Url type="application/json" rel="suggestions" method="get" template="{$url}/Search/Suggest?lookfor={literal}{searchTerms}{/literal}&amp;format=JSON">
 </OpenSearchDescription>

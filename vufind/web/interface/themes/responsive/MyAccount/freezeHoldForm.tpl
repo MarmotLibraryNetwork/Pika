@@ -7,7 +7,7 @@
 					<label for="suspendDate">Date to {translate text="Thaw Hold"}{if count($holdSelected) > 1}s{/if}: </label>
 				</div>
 				<div class="col-sm-9">
-					<input type="date" id="suspendDate" name="suspendDate" value="{$reinstate|date_format:"%Y-%m-%d"}" />
+					<input type="date" id="suspendDate" name="suspendDate" value="{$reinstate|date_format:"%Y-%m-%d"}" >
 				</div>
 			</div>
 		</form>

@@ -5,8 +5,8 @@
 		{else}
 			<form action="/Admin/Locations" method="get" class="form">
 				<div>
-					<input type="hidden" name="id" value="{$id}"/>
-					<input type="hidden" name="objectAction" value="copyDataFromLocation"/>
+					<input type="hidden" name="id" value="{$id}">
+					<input type="hidden" name="objectAction" value="copyDataFromLocation">
 					<div class="input-group">
 						<label for="locationToCopyFrom" class="control-label">Select a location to copy data from:</label>
 						<select id="locationToCopyFrom" name="locationToCopyFrom" class="form-control">
@@ -17,7 +17,7 @@
 					</div>
 
 					<div class="input-group">
-						<input type="submit" name="submit" value="Copy Data" class="btn btn-primary"/>
+						<input type="submit" name="submit" value="Copy Data" class="btn btn-primary">
 					</div>
 				</div>
 			</form>

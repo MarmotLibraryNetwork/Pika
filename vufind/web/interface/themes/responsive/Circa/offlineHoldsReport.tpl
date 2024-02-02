@@ -37,7 +37,7 @@
 								</div>
 							</div>							<br>
 							<div class="form-group">
-								<input type="submit" name="updateFilters" value="Update Filters" class="btn btn-primary"/>
+								<input type="submit" name="updateFilters" value="Update Filters" class="btn btn-primary">
 							</div>
 
 						</div>

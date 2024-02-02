@@ -15,8 +15,8 @@
 							<div class="input-group-btn" id="search-actions">
 								<button class="btn btn-default" type="submit">GO</button>
 							</div>
-							<input type="hidden" name="islandoraType" value="IslandoraKeyword"/>
-							<input type="hidden" name="filter[]" value='RELS_EXT_isMemberOfCollection_uri_ms:"info:fedora/{$exhibitPid}"'/>
+							<input type="hidden" name="islandoraType" value="IslandoraKeyword">
+							<input type="hidden" name="filter[]" value='RELS_EXT_isMemberOfCollection_uri_ms:"info:fedora/{$exhibitPid}"'>
 						</div>
 					</form>
 				{elseif $displayType == 'basic'}

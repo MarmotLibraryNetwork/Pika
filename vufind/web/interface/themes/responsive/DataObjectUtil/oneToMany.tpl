@@ -35,7 +35,7 @@
 							{elseif $subProperty.type=='number'}
 								<input type="number" name='{$propName}_{$subPropName}[{$subObject->id}]' value="{$subPropValue|escape}" class="form-control {if $subProperty.required}required{/if}"{if $subProperty.max} max="{$subProperty.max}"{/if}{if $subProperty.min} min="{$subProperty.min}"{/if}{if $subProperty.maxLength} maxlength='{$subProperty.maxLength}'{/if}{if $subProperty.size} size='{$subProperty.size}'{/if}{if $subProperty.step} step='{$subProperty.step}'{/if}>
 							{elseif $subProperty.type=='checkbox'}
-								<input type='checkbox' name='{$propName}_{$subPropName}[{$subObject->id}]' {if $subPropValue == 1}checked='checked'{/if}/>
+								<input type='checkbox' name='{$propName}_{$subPropName}[{$subObject->id}]' {if $subPropValue == 1}checked='checked'{/if}>
 							{else}
 								<select name='{$propName}_{$subPropName}[{$subObject->id}]' id='{$propName}{$subPropName}_{$subObject->id}' class='form-control {if $subProperty.required == true} required{/if}'>
 								{foreach from=$subProperty.values item=propertyName key=propertyValue}
