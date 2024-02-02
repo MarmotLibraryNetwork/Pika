@@ -45,7 +45,7 @@ class UInterface extends Smarty {
 		$themeArray = array_unique(explode(',', $this->pikaTheme));
 		$local      = $configArray['Site']['local'];
 		if (count($themeArray) > 1){
-			$this->template_dir = array();
+			$this->template_dir = [];
 			foreach ($themeArray as $currentTheme){
 				$currentTheme         = trim($currentTheme);
 				$this->template_dir[] = "$local/interface/themes/$currentTheme";
@@ -77,7 +77,7 @@ class UInterface extends Smarty {
 			}
 		}
 
-		$this->plugins_dir = array('plugins', "$local/interface/plugins", 'Smarty/plugins');
+		$this->plugins_dir = ['plugins', "$local/interface/plugins", 'Smarty/plugins'];
 		// TODO: The correct setting for caching is 0, 1 or 2
 		// 0 will turn caching off. Not sure what a false value will do.
 		$this->caching       = false;
