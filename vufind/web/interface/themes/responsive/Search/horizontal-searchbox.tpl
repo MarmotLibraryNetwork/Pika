@@ -37,7 +37,7 @@
 					<textarea class="form-control"{/strip}
 							          id="lookfor"
 							          placeholder="&#128269; SEARCH" {* disabled in css by default. plb 11-19-2014 *}
-							          type="search"
+{*							          type="search"*}
 							          name="lookfor"
 {*							          value=""*}
 							          title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term."
@@ -47,7 +47,7 @@
 							          rows="1"
 											{strip}>
 								{if $searchType != 'advanced'}{$lookfor|escape:"html"}{/if}
-								</textarea>
+					</textarea>
 				</div>
 
 				{* Search Type *}
