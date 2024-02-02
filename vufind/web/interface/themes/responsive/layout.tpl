@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{$userLang}">
+<html lang="{$userLang}">{* lang required for Accessibility WCAG 2.1 standard 3.1.1 Language of Page *}
 	<head prefix="og: http://ogp.me/ns#">{strip}
 		<title>{$pageTitle|truncate:64:"..."}</title>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">

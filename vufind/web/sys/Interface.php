@@ -244,11 +244,8 @@ class UInterface extends Smarty {
 	}
 
 	function setLanguage($lang){
-		global $configArray;
-
 		$this->lang = $lang;
 		$this->assign('userLang', $lang);
-		$this->assign('allLangs', $configArray['Languages']);
 	}
 
 	/**
