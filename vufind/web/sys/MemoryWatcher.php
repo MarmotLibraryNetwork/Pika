@@ -20,7 +20,7 @@
 class MemoryWatcher{
 	private $lastMemory = 0;
 	private $firstMemory = 0;
-	private $memoryMessages;
+	private $memoryMessages = [];
 	private $memoryLoggingEnabled = false;
 
 
@@ -30,47 +30,44 @@ class MemoryWatcher{
 
 	public function MemoryWatcher(){
 		global $configArray;
-		if ($configArray){
-			if (isset($configArray['System']['logMemoryUsage'])) {
-				$this->memoryLoggingEnabled = $configArray['System']['logMemoryUsage'];
-			}
-		}else{
-			$this->memoryLoggingEnabled = true;
+		if (isset($configArray['System']['logMemoryUsage'])){
+			$this->enableMemoryLogging($configArray['System']['logMemoryUsage']);
 		}
-
-		$startMemory = memory_get_usage();
-		$this->lastMemory = $startMemory;
-		$this->firstMemory = $startMemory;
-		$this->memoryMessages = array();
+		if ($this->memoryLoggingEnabled){
+			$startMemory          = memory_get_usage();
+			$this->lastMemory     = $startMemory;
+			$this->firstMemory    = $startMemory;
+			$this->memoryMessages = [];
+		}
 	}
 
 	public function logMemory($message){
 		if ($this->memoryLoggingEnabled){
-			$curTime = memory_get_usage();
-			$elapsedTime = number_format($curTime - $this->lastMemory);
-			$totalElapsedTime = number_format($curTime - $this->firstMemory);
+			$curTime                = memory_get_usage();
+			$elapsedTime            = number_format($curTime - $this->lastMemory);
+			$totalElapsedTime       = number_format($curTime - $this->firstMemory);
 			$this->memoryMessages[] = "\"$message\",\"$elapsedTime\",\"$totalElapsedTime\"";
-			$this->lastMemory = $curTime;
+			$this->lastMemory       = $curTime;
 		}
 	}
 
-	public function enableMemoryLogging($enable){
+	public function enableMemoryLogging(bool $enable){
 		$this->memoryLoggingEnabled = $enable;
 	}
 
 	public function writeMemory(){
 		if ($this->memoryLoggingEnabled){
-			$curMemoryUsage = memory_get_usage();
-			$memoryChange = $curMemoryUsage - $this->lastMemory;
+			$curMemoryUsage         = memory_get_usage();
+			$memoryChange           = $curMemoryUsage - $this->lastMemory;
 			$this->memoryMessages[] = "Finished run: $curMemoryUsage ($memoryChange bytes)";
-			$this->lastMemory = $curMemoryUsage;
+			$this->lastMemory       = $curMemoryUsage;
+			$totalMemoryUsage       = number_format($curMemoryUsage - $this->firstMemory);
+			$timingInfo             = "\r\nMemory usage for: " . $_SERVER['REQUEST_URI'] . "\r\n";
+			$timingInfo             .= implode("\r\n", $this->memoryMessages);
+			$timingInfo             .= "\r\nFinal Memory usage was: $totalMemoryUsage bytes.";
+			$peakUsage              = number_format(memory_get_peak_usage());
+			$timingInfo             .= "\r\nPeak Memory usage was: $peakUsage bytes.\r\n";
 			global $pikaLogger;
-			$totalMemoryUsage = number_format($curMemoryUsage - $this->firstMemory);
-			$timingInfo = "\r\nMemory usage for: " . $_SERVER['REQUEST_URI'] . "\r\n";
-			$timingInfo .= implode("\r\n", $this->memoryMessages);
-			$timingInfo .= "\r\nFinal Memory usage was: $totalMemoryUsage bytes.";
-			$peakUsage = number_format(memory_get_peak_usage());
-			$timingInfo .= "\r\nPeak Memory usage was: $peakUsage bytes.\r\n";
 			$pikaLogger->notice($timingInfo);
 		}
 	}
@@ -79,9 +76,9 @@ class MemoryWatcher{
 		if ($this->memoryLoggingEnabled){
 			global $pikaLogger;
 			if ($pikaLogger){
-				$curMemoryUsage = memory_get_usage();
+				$curMemoryUsage   = memory_get_usage();
 				$totalMemoryUsage = number_format($curMemoryUsage - $this->firstMemory);
-				$timingInfo = "\r\nMemory usage for: " . $_SERVER['REQUEST_URI'] . "\r\n";
+				$timingInfo       = "\r\nMemory usage for: " . $_SERVER['REQUEST_URI'] . "\r\n";
 				if (count($this->memoryMessages) > 0){
 					$timingInfo .= implode("\r\n", $this->memoryMessages);
 				}
