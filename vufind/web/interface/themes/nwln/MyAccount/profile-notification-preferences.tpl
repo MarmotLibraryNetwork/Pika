@@ -27,7 +27,7 @@
 				<p class='alert alert-warning'><strong>(Format: xxx-xxx-xxxx) &nbsp; Be sure to include the dashes.</strong></p>
 			{else}{$profile->workPhone|escape}{/if}</div>
 	</div>
-	<script type="text/javascript">
+	<script>
 		jQuery.validator.addMethod("simplePhoneFormat",
 		{literal}
 			function (value, element){

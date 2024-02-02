@@ -27,7 +27,7 @@
     {/if}
 </form>
 
-<script type="text/javascript">
+<script>
 	{literal}
 	$("#emailSearchForm").validate({
 		submitHandler: function(){

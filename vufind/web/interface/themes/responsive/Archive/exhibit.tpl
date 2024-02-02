@@ -20,7 +20,7 @@
 		<div class="col-tn-12">
 		{if $hasImageMap}
 			{$imageMap}
-			<script type="text/javascript">
+			<script>
 				$(document).ready(function(e) {ldelim}
 					$('img[usemap]').addClass('img-responsive');
 					$('img[usemap]').rwdImageMaps();
@@ -187,7 +187,7 @@
 	{/if}
 </div>
 {/strip}
-<script type="text/javascript">
+<script>
 	$().ready(function(){ldelim}
 		Pika.Archive.loadExploreMore('{$pid|urlencode}');
 	{rdelim});

@@ -36,7 +36,7 @@
 {/strip}
 
 {if isset($usageByNamespace) && is_array($usageByNamespace) && count($usageByNamespace) > 5}
-	<script type="text/javascript">
+	<script>
 		{literal}
 		$(function(){
 			$('#adminTable').DataTable({

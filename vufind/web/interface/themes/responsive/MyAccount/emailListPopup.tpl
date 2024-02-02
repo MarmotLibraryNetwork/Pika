@@ -34,7 +34,7 @@
 	</form>
 </div>
 {/strip}
-<script type="text/javascript">
+<script>
 	{literal}
 	$("#emailListForm").validate({
 		submitHandler: function(){

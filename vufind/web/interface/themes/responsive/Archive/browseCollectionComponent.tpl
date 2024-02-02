@@ -18,7 +18,7 @@
 					</div>
 				</div>
 
-				<script type="text/javascript">
+				<script>
 					$(function(){ldelim}
 						return Pika.Archive.handleCollectionScrollerClick('{$pid}');
 						{rdelim});

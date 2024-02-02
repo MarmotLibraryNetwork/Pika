@@ -95,7 +95,7 @@
 </div>
 
 {* Embedded Javascript For this Page *}
-<script type="text/javascript">
+<script>
 	$('.checkbox-results').change(function(){ldelim}
 				Pika.GroupedWork.showBookbag(this);
 			{rdelim});

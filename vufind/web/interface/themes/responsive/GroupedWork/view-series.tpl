@@ -1,6 +1,6 @@
 {* Main Listing *}
 {if (isset($title)) }
-<script type="text/javascript">
+<script>
 	alert("{$title}");
 </script>
 {/if}

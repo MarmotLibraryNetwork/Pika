@@ -23,6 +23,6 @@
 	</form>
 	<br>
 {/strip}
-<script type="text/javascript">{literal}
+<script>{literal}
 	$(document).ready(Pika.setupCheckBoxSwitches);
 {/literal}</script>

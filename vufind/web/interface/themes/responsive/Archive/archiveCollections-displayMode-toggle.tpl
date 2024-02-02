@@ -17,7 +17,7 @@
 	</div>
 {/strip}
 {* Embedded Javascript For this Page *}
-<script type="text/javascript">
+<script>
 	$(function(){ldelim}
 		if (!Globals.opac && Pika.hasLocalStorage()) {ldelim} {* store setting in browser if not an opac computer *}
 			Pika.Account.showCovers = {if $showCovers}true{else}false{/if};

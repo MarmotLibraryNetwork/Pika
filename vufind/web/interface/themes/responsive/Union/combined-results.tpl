@@ -32,7 +32,7 @@
 	</div>
 {/strip}
 
-<script type="text/javascript">
+<script>
 	Pika.Searches.combinedResultsDefinedOrder = [
 		{foreach from=$combinedResultSections item=combinedResultSection}
 		"#combined-results-section-results-{$combinedResultSection->id}",

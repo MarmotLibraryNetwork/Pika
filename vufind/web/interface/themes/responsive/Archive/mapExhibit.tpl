@@ -37,7 +37,7 @@
 		<div class="col-xs-12">
 			{/strip}
 			{if $mapsBrowserKey}
-				<script type="text/javascript">
+				<script>
 					var infowindow;
 					function initMap() {ldelim}
 						Pika.Archive.archive_map = new google.maps.Map(document.getElementById('exhibit-map'), {ldelim}
@@ -170,7 +170,7 @@
 		<script src="https://maps.googleapis.com/maps/api/js?key={$mapsBrowserKey}&callback=initMap" async defer></script>
 	{/if}
 {/strip}
-<script type="text/javascript">
+<script>
 	$().ready(function(){ldelim}
 		Pika.Archive.loadExploreMore('{$pid|urlencode}');
 	{rdelim});

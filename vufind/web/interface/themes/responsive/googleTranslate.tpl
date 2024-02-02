@@ -1,5 +1,5 @@
 {literal}
-<script type="text/javascript">
+<script>
 	function googleTranslateElementInit() {
 		new google.translate.TranslateElement({
 			pageLanguage: 'en',

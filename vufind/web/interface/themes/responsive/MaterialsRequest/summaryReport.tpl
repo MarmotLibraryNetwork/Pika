@@ -133,14 +133,14 @@
 		{* Export to Excel option *}
 	</div>
 
-<script type="text/javascript">
+<script>
 {literal}
 	$("#startDate").datepicker();
 	$("#endDate").datepicker();
 
 {/literal}
 </script>
-	<script type="text/javascript">
+	<script>
 		{literal}
 		$(document).ready(function(){
 			$('#summaryTable').DataTable({

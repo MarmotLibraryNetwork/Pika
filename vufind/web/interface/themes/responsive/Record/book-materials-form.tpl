@@ -70,7 +70,7 @@
 
 			<div id="bookingCalendar" class="collapse"></div>
 	</div>
-	<script type="text/javascript">
+	<script>
 		{if !$errorMessage}{* don't add this on reload of form *}
 {*		{literal}
 		var time = [], hours = [1,2,3,4,5,6,7,8,9,10,11,12], mins = ['00',10,20,30,40,50], meridian = ['pm','am'];
@@ -150,7 +150,7 @@
 	</script>
 {/strip}
 {*
-<script type="text/javascript">
+<script>
 	{literal}
 	var hours = [1,2,3,4,5,6,7,8,9,10,11,12],
 					mins = [10,20,30,40,50],

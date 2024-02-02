@@ -7,7 +7,7 @@
 	<input type="text" class="form-control{if !$isLocation} required{/if}" id="catalogUrl" value="{$catalogUrl}">
 </form>
 {/strip}
-<script type="text/javascript">
+<script>
 	{literal}
 	$("#catalogUrlForm").validate({
 		submitHandler: function(){

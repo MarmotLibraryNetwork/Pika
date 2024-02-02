@@ -123,7 +123,7 @@
 <script src="/js/openseadragon/openseadragon.js" ></script>
 <script src="/js/openseadragon/djtilesource.js" ></script>
 {if $canView}
-<script type="text/javascript">
+<script>
 	{if !($anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload))}
 		Pika.Archive.allowPDFView = false;
 	{/if}
@@ -164,7 +164,7 @@
 	{rdelim});
 </script>
 {/if}
-<script type="text/javascript">
+<script>
 	$().ready(function(){ldelim}
 		Pika.Archive.loadExploreMore('{$pid|urlencode}');
 	{rdelim});

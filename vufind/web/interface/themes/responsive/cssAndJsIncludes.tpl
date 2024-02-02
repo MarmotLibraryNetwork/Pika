@@ -88,7 +88,7 @@
 	{/if}
 
 	{/strip}
-  <script type="text/javascript">
+  <script>
 		{* Override variables as needed *}
 		{literal}
 		$(document).ready(function(){{/literal}

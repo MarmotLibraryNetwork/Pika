@@ -84,7 +84,7 @@
 							</table>
 						</div>
 					</div>
-				<script type="text/javascript">
+				<script>
 						{literal}
 						$(function(){
 							$('#hooplaCheckoutsReport').DataTable({

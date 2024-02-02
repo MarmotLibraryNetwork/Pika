@@ -65,7 +65,7 @@
 <script src="/js/openseadragon/openseadragon.js" ></script>
 <script src="/js/openseadragon/djtilesource.js" ></script>
 
-<script type="text/javascript">
+<script>
 	{if !($anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload))}
 	Pika.Archive.allowPDFView = false;
 	{/if}

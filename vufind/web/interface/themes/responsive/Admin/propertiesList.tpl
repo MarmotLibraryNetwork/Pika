@@ -234,7 +234,7 @@
 {if isset($dataList) && is_array($dataList) && count($dataList) > 5}
 
 	{if $objectType == "TranslationMap"}
-		<script type="text/javascript">
+		<script>
 			{literal}
 			$.fn.dataTable.ext.order['dom-numeric'] = function (settings, col){
 				return this.api().column(col, {order:'index'}).nodes().map(function (td, i){
@@ -279,7 +279,7 @@
 		</script>
 
 	{else}
-	<script type="text/javascript">
+	<script>
 		{literal}
 		$.fn.dataTable.ext.order['dom-numeric'] = function (settings, col){
 			return this.api().column(col, {order:'index'}).nodes().map(function (td, i){

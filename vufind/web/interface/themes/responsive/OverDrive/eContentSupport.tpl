@@ -71,7 +71,7 @@
 	</form>
 </div>
 {literal}
-<script type="text/javascript">
+<script>
 $(function(){
 	var supportForm = $("#eContentSupport");
 	supportForm.validate({

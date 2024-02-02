@@ -243,7 +243,7 @@
 {else}
 <script type="text/javascript" src="/services/Search/advanced.min.js"></script>
 {/if}
-<script type="text/javascript">
+<script>
 	{* Define our search arrays so they are usuable in the javascript *}
 	var searchFields = {ldelim}
 	{foreach from=$advancedSearchTypes item=searchDesc key=searchVal}

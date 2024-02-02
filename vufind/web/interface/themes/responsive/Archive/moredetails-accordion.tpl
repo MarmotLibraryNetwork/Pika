@@ -20,7 +20,7 @@
 						{/if}
 					</div>
 					{if $moreDetailsOption.onShow}
-						<script type="text/javascript">
+						<script>
 							{literal}
 							$('#{/literal}{$moreDetailsKey}Panel'){literal}.on('shown.bs.collapse', function () {
 								{/literal}{$moreDetailsOption.onShow}{literal}
@@ -35,7 +35,7 @@
 {/strip}
 {*
 {literal}
-	<script type="text/javascript">
+	<script>
 
 	</script>
 {/literal}

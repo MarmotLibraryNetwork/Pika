@@ -33,7 +33,7 @@
 		</div>
 	</div>
 	{if !empty($availableWidgets) && count($availableWidgets) > 5}
-		<script type="text/javascript">
+		<script>
 			{literal}
 			$(document).ready(function(){
 				$('#offlineCirculation').DataTable({

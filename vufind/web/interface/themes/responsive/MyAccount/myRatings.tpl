@@ -1,5 +1,5 @@
 {*{if (isset($title)) }*}
-	{*<script type="text/javascript">*}
+	{*<script>*}
 		{*alert("{$title}");*}
 	{*</script>*}
 {*{/if}*}
@@ -56,7 +56,7 @@
 						</tbody>
 					</table>
 			{if count($ratings) > 5}
-				<script type="text/javascript">
+				<script>
 					{literal}
 					$.fn.dataTable.ext.order['dom-rating'] = function (settings, col){
 						return this.api().column(col, {order: 'index'}).nodes().map(function (td, i){
@@ -111,7 +111,7 @@
 					</tbody>
 				</table>
 				{if count($notInterested) > 5}
-				<script type="text/javascript">
+				<script>
 					{literal}
 
 					$.fn.dataTable.ext.order['dom-ni-date'] = function (settings, col){

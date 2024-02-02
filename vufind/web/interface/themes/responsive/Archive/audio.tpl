@@ -38,7 +38,7 @@
 		{include file="Archive/metadata.tpl"}
 	</div>
 {/strip}
-<script type="text/javascript">
+<script>
 		{literal}
 		$(function(){
 		Pika.Archive.loadExploreMore('{/literal}{$pid}{literal}');

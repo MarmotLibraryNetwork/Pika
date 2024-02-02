@@ -64,7 +64,7 @@
 		{/if}
 	</div>
 {/strip}
-<script type="text/javascript">
+<script>
 	{literal}
 	$(function () {
 		$("#resetPin").validate({

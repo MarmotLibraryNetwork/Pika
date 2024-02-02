@@ -71,7 +71,7 @@
 {/strip}
 
 {* Embedded Javascript For this Page *}
-	<script type="text/javascript">
+	<script>
 		$(document).ready(function (){ldelim}
 		{if $showWikipedia}
 			Pika.Wikipedia.getWikipediaArticle('{$wikipediaAuthorName|escape:'javascript'}');

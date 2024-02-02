@@ -1,5 +1,5 @@
 {if $recordDriver}
-<script type="text/javascript">
+<script>
 	{literal}$(function(){{/literal}
 		Pika.GroupedWork.loadEnrichmentInfo('{$recordDriver->getPermanentId()|escape:"url"}');
 		Pika.GroupedWork.loadReviewInfo('{$recordDriver->getPermanentId()|escape:"url"}');

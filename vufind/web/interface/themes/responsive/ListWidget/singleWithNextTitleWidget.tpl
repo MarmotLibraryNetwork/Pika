@@ -31,7 +31,7 @@
 		</div>
 	</div>
 </div>
-<script type="text/javascript">
+<script>
 	$("#list-" + '{$wrapperId}'+" .rightScrollerButton").button(
 		{literal}
 		{icons: {primary:'ui-icon-triangle-1-e'}, text: false}

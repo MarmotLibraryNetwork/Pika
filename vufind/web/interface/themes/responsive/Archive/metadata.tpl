@@ -1,7 +1,7 @@
 {strip}
 <div id="archive-metadata">
 </div>
-<script type="text/javascript">
+<script>
 	{literal}
 	$().ready(function(){
 		Pika.Archive.loadMetadata('{/literal}{$pid}{literal}');

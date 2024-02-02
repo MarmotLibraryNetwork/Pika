@@ -28,7 +28,7 @@
 		</div>
 	</div>
 </div>
-<script type="text/javascript">
+<script>
 	{* touch swiping controls *}
 	$(document).ready(function(){ldelim}
 		$('#titleScroller{$scrollerName} .scrollerBodyContainer')

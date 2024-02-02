@@ -451,7 +451,7 @@
 		{include file="library-links.tpl" libraryLinks=$libraryAccountLinks linksId='home-library-account-links' section='Account'}
 	</div>
 {/if}
-<script type="text/javascript">
+<script>
 	Pika.Account.loadMenuData();
 </script>
 {/strip}

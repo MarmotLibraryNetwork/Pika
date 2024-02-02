@@ -100,7 +100,7 @@
 					{/foreach}
 					</tbody>
 				</table>
-<script type="text/javascript">
+<script>
 	{literal}
 	$(function(){
 		$('#offlineCirculationReport').DataTable({

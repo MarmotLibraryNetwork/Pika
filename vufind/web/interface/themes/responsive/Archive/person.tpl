@@ -42,7 +42,7 @@
 		{include file="Archive/metadata.tpl"}
 	</div>
 {/strip}
-<script type="text/javascript">
+<script>
 	$().ready(function(){ldelim}
 		Pika.Archive.loadExploreMore('{$pid|urlencode}');
 		{rdelim});

@@ -98,12 +98,12 @@
 	{/strip}
 
 	{* Width Resizing Code *}
-<script type="text/javascript">
+<script>
 	jQuery('#listWidget{$object->id}').iFrameResize();
 </script>
 
 {literal}
-	<script type="text/javascript">
+	<script>
 		setWidgetSizing = function(iframe, OutsidePadding){
 			originalWidth = jQuery(iframe).width();
 			wasResized = false;

@@ -19,7 +19,7 @@
 						{/if}
 					</div>
 					{if $moreDetailsOption.onShow}
-						<script type="text/javascript">
+						<script>
 							{literal}
 							$('#{/literal}{$moreDetailsKey}Panel'){literal}.on('shown.bs.collapse', function () {
 								{/literal}{$moreDetailsOption.onShow}{literal}
@@ -33,7 +33,7 @@
 	</div> {* End of tabs*}
 {/strip}
 {literal}
-<script type="text/javascript">
+<script>
 	$(function(){
 		$('#excerptPanel').on('show.bs.collapse', function (e) {
 			Pika.GroupedWork.getGoDeeperData({/literal}'{$recordDriver->getPermanentId()}'{literal}, 'excerpt');

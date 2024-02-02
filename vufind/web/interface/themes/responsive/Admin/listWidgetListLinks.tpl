@@ -1,5 +1,5 @@
  {literal}
-<script type="text/javascript">
+<script>
 	$(document).ready(function(){
 		$('#widgetsListLinks tbody').sortable({
 			update: function(event, ui){

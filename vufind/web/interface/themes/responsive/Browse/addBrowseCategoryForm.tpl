@@ -27,7 +27,7 @@
 	</form>
 </div>
 {/strip}
-<script type="text/javascript">
+<script>
 	{literal}
 	$('#categoryName').focus();
 	$("#createBrowseCategory").validate({

@@ -94,7 +94,7 @@
 </div>
 {/strip}
 {literal}
-	<script type="text/javascript">
+	<script>
 		$('#username').focus().select();
 		$(function(){
 			Pika.Account.validateCookies();

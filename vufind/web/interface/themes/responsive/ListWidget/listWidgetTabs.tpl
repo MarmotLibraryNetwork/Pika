@@ -69,7 +69,7 @@
 		{/if}
 	{/foreach}
 	</div>
-	<script type="text/javascript">
+	<script>
 		{* Load title scrollers *}
 
 		{foreach from=$widget->lists item=list}

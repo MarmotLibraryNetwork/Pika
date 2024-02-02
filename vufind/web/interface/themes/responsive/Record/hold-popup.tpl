@@ -66,7 +66,7 @@
 							</select>
 						</div>
 					</div>
-					<script type="text/javascript">
+					<script>
 						{literal}
 						$(function(){
 							var userNames = {

@@ -78,7 +78,7 @@
 	</div>
 	</form>
 
-	<script type="text/javascript">
+	<script>
       {* input classes  'required', 'digits', 'alphaNumeric' are validation rules for the validation plugin *}
       {literal}
 			$("#pinForm").validate({

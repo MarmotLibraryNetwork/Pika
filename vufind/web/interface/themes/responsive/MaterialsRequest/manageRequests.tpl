@@ -337,7 +337,7 @@
 	{/if}
 </div>
 {/strip}
-	<script type="text/javascript">
+	<script>
 		{literal}
 		$(document).ready(function(){
 			$.fn.dataTable.ext.order['dom-date'] = function (settings, col){

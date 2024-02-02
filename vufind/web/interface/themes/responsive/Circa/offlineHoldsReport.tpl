@@ -65,7 +65,7 @@
 			{/if}
 		</div>
 	</div>
-	<script type="text/javascript">
+	<script>
 		{literal}
 		$(function(){
 			$('#offlineHoldsReport').DataTable({

@@ -70,7 +70,7 @@
 		</div>
 	</div>
 {/strip}
-<script type="text/javascript">
+<script>
 	$(function(){ldelim}
 		{if $selectedBrowseCategory}
 			Pika.Browse.curCategory = '{$selectedBrowseCategory->textId}';

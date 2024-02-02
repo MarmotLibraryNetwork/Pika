@@ -17,7 +17,7 @@
 					<a href="{$lastCollection}">Return to <strong>{$collectionName}</strong> Collection</a>
 				{/if}
 {*				{literal}
-<script type="text/javascript">
+<script>
 	$(function(){
 		$(window).on('beforeunload', function(e){
 			console.log(e, 'current URL', e.currentTarget.document.URL, 'next? target:', e.target.URL);

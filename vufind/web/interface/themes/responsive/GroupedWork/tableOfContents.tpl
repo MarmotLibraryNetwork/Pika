@@ -8,7 +8,7 @@
 				<div class="col-xs-12">{$note}</div>
 			</div>
 		{/foreach}
-		<script type="text/javascript">
+		<script>
 			Pika.GroupedWork.hasTableOfContentsInRecord = true;
 		</script>
 	{else}

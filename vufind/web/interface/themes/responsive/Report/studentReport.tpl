@@ -63,7 +63,7 @@
 					</tbody>
 				</table>
 
-			<script type="text/javascript">
+			<script>
 				{literal}
 				$(document).ready(function(){
 					$('.table').DataTable({

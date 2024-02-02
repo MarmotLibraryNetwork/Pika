@@ -12,7 +12,7 @@
 	</div>
 </form>
 {/strip}
-	<script type="text/javascript">
+	<script>
 		{literal}
 		$('#cardNumber').focus();
 		$("#masqueradeForm").validate({

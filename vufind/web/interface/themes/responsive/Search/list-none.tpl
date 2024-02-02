@@ -73,7 +73,7 @@
 
 	{if $showExploreMoreBar}
 		<div id="explore-more-bar-placeholder"></div>
-		<script type="text/javascript">
+		<script>
 			$(function(){ldelim}
 				Pika.Searches.loadExploreMoreBar('{$exploreMoreSection}', '{$exploreMoreSearchTerm|escape:"html"}');
 			{rdelim});
@@ -112,7 +112,7 @@
     {include file="Search/searchTools.tpl" showAdminTools=false}
 </div>
 
-<script type="text/javascript">
+<script>
 	$(function(){ldelim}
 		{if $showProspectorLink}
       {* Include slight delay to give time for the search to be saved into the database for retrieval here. See D-3592 *}

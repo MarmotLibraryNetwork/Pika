@@ -120,7 +120,7 @@
 
 	</div>
 
-<script type="text/javascript">
+<script>
 {literal}
 	$("#startDate").datepicker();
 	$("#endDate").datepicker();

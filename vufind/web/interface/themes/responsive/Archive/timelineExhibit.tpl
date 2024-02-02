@@ -66,7 +66,7 @@
 	{/if}
 </div>
 {/strip}
-<script type="text/javascript">
+<script>
 	$().ready(function(){ldelim}
 		Pika.Archive.handleTimelineClick('{$pid|urlencode}');
 		Pika.Archive.loadExploreMore('{$pid|urlencode}');

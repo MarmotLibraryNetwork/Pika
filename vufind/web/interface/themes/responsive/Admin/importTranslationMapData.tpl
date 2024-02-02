@@ -44,7 +44,7 @@
 	</form>
 </div>
 
-<script type="text/javascript">
+<script>
 	{literal}
 	function setObjectAction(newValue){
 		$("#objectAction").val(newValue);

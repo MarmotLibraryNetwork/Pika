@@ -41,7 +41,7 @@
 			</div>
 		</div>
 	</div>
-	<script type="text/javascript">
+	<script>
 		{*//	 touch swiping controls *}
 		$(document).ready(function(){ldelim}
 			var scrollFactor = 10; {*// swipe size per item to scroll.*}

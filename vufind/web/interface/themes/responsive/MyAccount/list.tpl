@@ -219,7 +219,7 @@
 			</div>
 
 {if $userSort}
-				<script type="text/javascript">
+				<script>
 					{literal}
 					$(function(){
 						$('#UserList').sortable({

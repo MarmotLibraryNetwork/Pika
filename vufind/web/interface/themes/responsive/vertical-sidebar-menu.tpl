@@ -43,7 +43,7 @@
 				{/if}
 
 				{* Open Appropriate Section on Initial Page Load *}
-				<script type="text/javascript">
+				<script>
 					$(function(){ldelim}
 						{* .filter(':visible') clauses below ensures that a menu option is triggered if the side bar option is visible is visible :  *}
 

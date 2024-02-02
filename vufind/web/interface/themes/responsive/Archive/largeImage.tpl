@@ -59,7 +59,7 @@
 	<script src="/js/openseadragon/openseadragon.js" ></script>
 	<script src="/js/openseadragon/djtilesource.js" ></script>
 {if $canView}
-	<script type="text/javascript">
+	<script>
 		$(document).ready(function(){ldelim}
 			if (!$('#pika-openseadragon').hasClass('processed')) {ldelim}
 				var openSeadragonSettings = {ldelim}
@@ -115,7 +115,7 @@
 	</script>
 {/if}
 {* {/strip} *}
-<script type="text/javascript">
+<script>
 	$(function(){ldelim}
 		Pika.Archive.loadExploreMore('{$pid|urlencode}');
 	{rdelim});

@@ -14,7 +14,7 @@
 	</div>
 	<button class="tool btn btn-primary" onclick="$('#masqueradeForm').submit()">Start</button>
 </form>
-	<script type="text/javascript">
+	<script>
 		$('#cardNumber').focus().select();
 		{literal}
 		$("#masqueradeForm").validate({

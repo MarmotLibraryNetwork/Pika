@@ -18,7 +18,7 @@
 	</div>
 {/strip}
 {if $edit}
-<script type="text/javascript">{literal}
+<script>{literal}
 	$(function(){
 		$('#selectedWidgetLists tbody').sortable({
 			update: function(event, ui){

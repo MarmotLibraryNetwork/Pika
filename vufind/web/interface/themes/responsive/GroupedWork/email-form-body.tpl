@@ -48,7 +48,7 @@
 			</div>
     {/if}
 </form>
-<script type="text/javascript">
+<script>
 	{literal}
 	$("#emailForm").validate({
 		submitHandler: function(){

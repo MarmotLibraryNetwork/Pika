@@ -82,7 +82,7 @@
 		</div>
 	</div>
 {/strip}
-<script type="text/javascript">
+<script>
 	{literal}
 	$(function(){
 /* Close side bar menu

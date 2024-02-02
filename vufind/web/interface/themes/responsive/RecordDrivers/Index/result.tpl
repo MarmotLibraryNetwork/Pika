@@ -136,7 +136,7 @@
 		</div>
 	</div>
 
-	<script type="text/javascript">
+	<script>
 		{if $summISBN}
 		Pika.ResultsList.addIdToSeriesList('{$summISBN}');
 		{/if}

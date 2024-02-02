@@ -71,7 +71,7 @@
 </form>
 
 {literal}
-<script type="text/javascript">
+<script>
 	function clearOfflineCircResults(){
 		$("#offline-circulation-result").hide();
 	}

@@ -5,7 +5,7 @@
   </div>
   {if $showExploreMoreBar && ($smarty.foreach.recordLoop.iteration == 2 || count($recordSet) < 2)}
     <div id="explore-more-bar-placeholder"></div>
-    <script type="text/javascript">
+    <script>
       $(function(){ldelim}
           Pika.Searches.loadExploreMoreBar('ebsco', '{$exploreMoreSearchTerm|escape:"html"}');
         {rdelim}

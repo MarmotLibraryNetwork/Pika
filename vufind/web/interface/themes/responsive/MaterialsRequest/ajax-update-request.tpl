@@ -7,7 +7,7 @@
 
 </form>
 
-<script type="text/javascript">
+<script>
 Pika.MaterialsRequest.authorLabels = {$formatAuthorLabelsJSON};
 Pika.MaterialsRequest.specialFields = {$specialFieldFormatsJSON};
 Pika.MaterialsRequest.setFieldVisibility();

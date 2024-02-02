@@ -133,7 +133,7 @@
 		{/if}
 	</div>
 	{/strip}
-	<script type="text/javascript">
+	<script>
 		{literal}$(function(){{/literal}
 		{if $property.sortable}
 			{literal}$('#{/literal}{$propName}{literal} tbody').sortable({
@@ -203,7 +203,7 @@
 	</script>
 	{if $propName == "translationMapValues"}
 
-	<script type="text/javascript">
+	<script>
 
 		{literal}
 		$.fn.dataTable.ext.order['dom-text'] = function  ( settings, col )

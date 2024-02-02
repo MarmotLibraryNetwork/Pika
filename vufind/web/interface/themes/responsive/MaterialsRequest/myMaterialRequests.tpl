@@ -66,7 +66,7 @@
 		<div id="createNewMaterialsRequest"><a href="/MaterialsRequest/NewRequest" class="btn btn-primary btn-sm">Submit a New {translate text='Materials_Request_alt'}</a></div>
 	{/if}
 </div>
-<script type="text/javascript">
+<script>
 	{literal}
 	$(document).ready(function(){
 		$.fn.dataTable.ext.order['dom-date'] = function (settings, col){

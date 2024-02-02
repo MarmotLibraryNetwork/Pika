@@ -48,7 +48,7 @@
    {include file="Search/searchTools.tpl" showAdminTools=false}
 </div>
 {* Embedded Javascript For this Page *}
-<script type="text/javascript">
+<script>
 	$(function(){ldelim}
 		if ($('#horizontal-menu-bar-container').is(':visible')) {ldelim}
 			$('#home-page-search').show();  {*// Always show the searchbox for search results in mobile views.*}

@@ -32,7 +32,7 @@
 				</div>
 			</div>
 	</form>
-	<script type="text/javascript">
+	<script>
 		$(function(){ldelim}
 			$("#bulkAddToList").validate();
 		{rdelim});

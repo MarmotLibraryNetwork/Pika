@@ -272,7 +272,7 @@
 														<input type="submit" value="{translate text='Update PIN'}" name="update" class="btn btn-primary">
 											</div>
 										</div>
-										<script type="text/javascript">
+										<script>
 											{* input classes  'required', 'digits', 'alphaNumeric' are validation rules for the validation plugin *}
 											{literal}
 											$("#pinForm").validate({

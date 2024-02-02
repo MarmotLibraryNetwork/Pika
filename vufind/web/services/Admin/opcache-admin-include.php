@@ -433,7 +433,7 @@ if (!function_exists('opcache_get_status')) {
 				<br style="clear:both;"/>
 			</div>
 		</div>
-		<script type="text/javascript">
+		<script>
 			$(function () {
 				var realtime = false;
 
@@ -513,7 +513,7 @@ if (!function_exists('opcache_get_status')) {
 				<?php endforeach; ?>
 			</table>
 		</div>
-		<script type="text/javascript">
+		<script>
 			$(function () {
 				$('span.showmore span.button').click(function () {
 					if ($(this).next().is(":visible")) {
