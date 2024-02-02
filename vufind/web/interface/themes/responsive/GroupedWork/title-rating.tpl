@@ -4,11 +4,10 @@
 		{*<div class="title-rating" onclick="return Pika.GroupedWork.showReviewForm(this, '{$summId}');">*}
 		<div class="title-rating rater" {*onclick="return Pika.GroupedWork.showReviewForm(this, '{$summId}');"*}
 						{* AJAX rater data fields *}
-         data-user_rating="{$ratingData.user}" data-average_rating="{$ratingData.average}"
-         data-id="{$id}"
+         data-user_rating="{$ratingData.user}" data-average_rating="{$ratingData.average}" {* keep a space between attributes *}
+         data-id="{$id}" {* keep a space between attributes *}
          data-show_review="{if $showComments  && (!$loggedIn || !$user->noPromptForUserReviews)}1{else}0{/if}"
-
-						>
+		>
 			<span class="ui-rater-starsOff" style="width:90px">
 				{if $ratingData.user}
 					<span class="ui-rater-starsOn userRated" style="width:{math equation="90*rating/5" rating=$ratingData.user}px"></span>

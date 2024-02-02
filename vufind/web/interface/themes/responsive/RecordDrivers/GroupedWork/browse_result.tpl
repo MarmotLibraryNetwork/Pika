@@ -18,10 +18,10 @@
 			{if $showRatings && $browseCategoryRatingsMode != 'none'}
 				<div class="browse-rating{if $browseCategoryRatingsMode == 'stars'} rater{/if}"
 				{if $browseCategoryRatingsMode == 'popup'} onclick="return Pika.GroupedWork.showReviewForm(this, '{$summId}');" style="cursor: pointer"{/if}
-				{if $browseCategoryRatingsMode == 'stars'}
+				{if $browseCategoryRatingsMode == 'stars'} {* keep space between attributes *}
 					{* AJAX rater data fields *}
 					{*{if $ratingData.user}data-user_rating="{$ratingData.user}" {/if}*}{* Don't show user ratings in browse results because the results get cached so shouldn't be particular to a single user.*}
-					data-average_rating="{$ratingData.average}" data-id="{$summId}"
+					data-average_rating="{$ratingData.average}" data-id="{$summId}" {* keep space between attributes *}
 					data-show_review="{$showComments}"
 				{/if}
 				>{* finishes this div tag above *}

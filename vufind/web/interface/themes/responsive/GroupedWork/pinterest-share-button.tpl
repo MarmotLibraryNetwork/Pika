@@ -1,14 +1,13 @@
 {strip}
 	<a href="http://www.pinterest.com/pin/create/button/?url={$urlToShare}{if $coverUrl}&media={$coverUrl|escape:'url'}{/if}{if $description}&description={$description}{/if}"
-	   data-pin-custom="true"
-	   {if $coverUrl}
-	   data-pin-do="buttonPin"
-	   data-pin-media="{$coverUrl}"
-	   {/if}
-	   target="_blank"
-	   style="cursor:pointer;"
-	   title="Pin on Pinterest"
-
+		 data-pin-custom="true" {* keep space between attributes *}
+		 {if $coverUrl}
+			 data-pin-do="buttonPin" {* keep space between attributes *}
+			 data-pin-media="{$coverUrl}"
+		 {/if}
+		target="_blank" {* keep space between attributes *}
+		style="cursor:pointer;" {* keep space between attributes *}
+		title="Pin on Pinterest"
 		>
 		{if $linkText}{$linkText}{/if}
 		<img {if $imgClass}class="{$imgClass}"{/if} src="{img filename='pinterest-icon.png'}" alt="Pin on Pinterest">

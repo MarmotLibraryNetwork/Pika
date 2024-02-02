@@ -5,9 +5,9 @@
 			{if $ratingData.user}
 				<div class="your-rating row rater" {*onclick="return Pika.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')"*}
 								{* AJAX rater data fields *}
-             data-user_rating="{$ratingData.user}" data-average_rating="{$ratingData.average}" data-id="{$recordDriver->getPermanentId()}"
-             data-show_review="{if $showComments && !$user->noPromptForUserReviews}1{else}0{/if}"
-								>
+            data-user_rating="{$ratingData.user}" data-average_rating="{$ratingData.average}" data-id="{$recordDriver->getPermanentId()}" {* keep space between attributes *}
+            data-show_review="{if $showComments && !$user->noPromptForUserReviews}1{else}0{/if}"
+						>
 					<div class="rating-label col-xs-12 col-sm-5">Your Rating</div>
 					<div class="col-xs-12 col-sm-6">
 				<span class="ui-rater-starsOff" style="width:90px">
@@ -20,7 +20,7 @@
 			<div class="average-rating row{if !$ratingData.user} rater{/if}" {*onclick="return Pika.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')"*}
 							{if !$ratingData.user} {* When user is not logged in or has not rating the work *}
 								{* AJAX rater data fields *}
-								data-average_rating="{$ratingData.average}" data-id="{$recordDriver->getPermanentId()}"
+								data-average_rating="{$ratingData.average}" data-id="{$recordDriver->getPermanentId()}" {* keep space between attributes *}
 								data-show_review="{if $showComments  && (!$user || !$user->noPromptForUserReviews)}1{else}0{/if}"
 								{*  Show Reviews is enabled and the user hasn't opted out or user hasn't logged in yet. *}
 							{/if}
