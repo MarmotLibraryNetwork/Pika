@@ -23,7 +23,7 @@
 		<div class="row">
 			<div class="result-label col-md-3">{translate text='Physical Description'}:</div>
 			<div class="col-md-9 result-value">
-				{implode subject=$recordDriver->getPhysicalDescriptions() glue=", "}
+				{implode subject=$recordDriver->getPhysicalDescriptions()|escape glue=", "}
 			</div>
 		</div>
 	{/if}

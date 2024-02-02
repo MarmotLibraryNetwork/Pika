@@ -122,7 +122,7 @@
 		<div class="row">
 			<div class="result-label col-sm-4">{translate text='Physical Desc'}:</div>
 			<div class="col-sm-8 result-value">
-				{implode subject=$recordDriver->getPhysicalDescriptions() glue=", "}
+				{implode subject=$recordDriver->getPhysicalDescriptions()|escape glue=", "}
 {*				{implode subject=$physicalDescriptions glue=", <br>"}*}
 			</div>
 		</div>

@@ -78,7 +78,7 @@
 			{* Use a different label for Econtent Views *}
 			<div class="result-label col-sm-4">{translate text='Content Description'}:</div>
 			<div class="col-sm-8 result-value">
-				{implode subject=$recordDriver->getPhysicalDescriptions() glue=", "}
+				{implode subject=$recordDriver->getPhysicalDescriptions()|escape glue=", "}
 			</div>
 		</div>
 	{/if}

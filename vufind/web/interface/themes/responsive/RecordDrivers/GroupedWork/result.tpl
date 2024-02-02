@@ -186,7 +186,7 @@
 							<div class="result-value col-tn-8">
 
 								{if $summPhysicalDesc}
-									{$summPhysicalDesc}
+									{$summPhysicalDesc|escape}
 								{elseif $alwaysShowSearchResultsMainDetails}
 									{translate text="Not Supplied"}
 								{/if}

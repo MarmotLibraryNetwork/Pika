@@ -32,7 +32,7 @@
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='eContent_Description_Label'}:</div>
 			<div class="col-xs-9 result-value">
-				{implode subject=$recordDriver->getPhysicalDescriptions() glue="<br>"}
+				{implode subject=$recordDriver->getPhysicalDescriptions()|escape glue="<br>"}
 			</div>
 		</div>
 	{/if}
