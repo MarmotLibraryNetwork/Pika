@@ -1,25 +1,21 @@
 {strip}
-<div id="record{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}" class="resultsList row">
-    {if isset($summExplain)}
-			<div class="hidden" id="scoreExplanationValue{$jquerySafeId|escape}">
-				<samp  style="overflow-wrap: break-word">{$summExplain}</samp>
-			</div>
-    {/if}
+<div id="record{if $jquerySafeId}{$jquerySafeId}{*{else}{$summId|escape}*}{/if}" class="resultsList row">
+	{if isset($summExplain)}
+		<div class="hidden" id="scoreExplanationValue{$jquerySafeId|escape}">
+			<samp style="overflow-wrap: break-word">{$summExplain}</samp>
+		</div>
+	{/if}
 
 	{if $showCovers}
-
-	<div class="col-xs-12 col-sm-3{if !$viewingCombinedResults} col-md-3 col-lg-2{/if} text-center">
-		{*TODO: show covers *}
-		{if $disableCoverArt != 1}
-			{*<div class='descriptionContent{$summShortId|escape}' style='display:none'>{$summDescription}</div>*}
-			<a href="{$summUrl}">
-				<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image'}">
-			</a>
-		{/if}
-	</div>
-{/if}
-	{if isset($summExplain)}
-		<div class="hidden" id="scoreExplanationValue{$summId|escape}">{$summExplain}</div>
+		<div class="col-xs-12 col-sm-3{if !$viewingCombinedResults} col-md-3 col-lg-2{/if} text-center">
+			{*TODO: show covers *}
+			{if $disableCoverArt != 1}
+				{*<div class='descriptionContent{$summShortId|escape}' style='display:none'>{$summDescription}</div>*}
+				<a href="{$summUrl}">
+					<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image'}">
+				</a>
+			{/if}
+		</div>
 	{/if}
 
 	<div class="{if !$showCovers}col-xs-12 col-sm-12{if !$viewingCombinedResults} col-md-12 col-lg-12{/if}{else}col-xs-12 col-sm-9{if !$viewingCombinedResults} col-md-9 col-lg-10{/if}{/if}col-xs-12 col-sm-9{if !$viewingCombinedResults} col-md-9 col-lg-10{/if}">
@@ -90,7 +86,7 @@
 		{/if}
 
 		<div class="row well-small">
-			<div class="col-tn-12 result-value" id="descriptionValue{$summId|escape}">{$summDescription|highlight|html_entity_decode|truncate_html:450:"..."|strip_tags|htmlentities}</div>
+			<div class="col-tn-12 result-value" id="descriptionValue{$jquerySafeId|escape}">{$summDescription|highlight|html_entity_decode|truncate_html:450:"..."|strip_tags|htmlentities}</div>
 		</div>
 
 		<div class="row">

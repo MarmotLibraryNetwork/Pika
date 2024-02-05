@@ -464,7 +464,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		$id = $this->getUniqueID();
 		$interface->assign('summId', $id);
 		$interface->assign('summTitle', $this->getTitle());
-		//$interface->assign('module', $this->getModule());
+		$interface->assign('jquerySafeId', str_replace(':', '_', $id)); // make id safe for jquery & css calls
 
 		$linkUrl = $this->getLinkUrl();
 		if (strpos($linkUrl, '?') === false){
@@ -483,7 +483,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
 		global $configArray;
-		if ($configArray['System']['debugSolr']){
+		if (!empty($configArray['System']['debugSolr'])){
 			$interface->assign('summScore', $this->getScore());
 			$interface->assign('summExplain', $this->getExplain());
 		}
