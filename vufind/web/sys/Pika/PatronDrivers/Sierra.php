@@ -2399,28 +2399,28 @@ class Sierra  implements \DriverInterface {
 	 * @param  User $patron
 	 * @return bool $success  Whether or not the opt-in action was successful
 	 */
-	public function optInReadingHistory($patron) {
+	public function optInReadingHistory($patron){
 		$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 		$this->cache->delete($patronObjectCacheKey);
 
 		$success = false;
 		$apiInfo = $this->_getApiInfo();
 
-		if($apiInfo['VersionMajor'] >= 6 && $apiInfo['VersionMinor'] >= 2) {
+		if ($apiInfo['VersionMajor'] >= 6 && $apiInfo['VersionMinor'] >= 2){
 			$operation = 'patrons/' . $patron->ilsUserId . '/checkouts/history/activationStatus';
-			$params = ["readingHistoryActivation" => true];
-			$r = $this->_doRequest($operation, $params, "POST");
-			if($r === "") {
+			$params    = ["readingHistoryActivation" => true];
+			$r         = $this->_doRequest($operation, $params, "POST");
+			if ($r === ""){
 				// $r can be false and will wrongly match $r == ""
 				$success = true;
 			}
-		} else {
+		}else{
 			$success = $this->_curlOptInOptOut($patron, 'OptIn');
 		}
 		if (!$success){
 			$this->logger->warning('Unable to opt in patron ' . $patron->barcode . ' from ILS reading history. Falling back to Pika.');
 			return false;
-		} else{
+		}else{
 			return true;
 		}
 	}
@@ -2431,25 +2431,25 @@ class Sierra  implements \DriverInterface {
 	 * @param  User $patron
 	 * @return bool Whether or not the opt-out action was successful
 	 */
-	public function optOutReadingHistory($patron) {
+	public function optOutReadingHistory($patron){
 		$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 		$this->cache->delete($patronObjectCacheKey);
 
 		$success = false;
 		$apiInfo = $this->_getApiInfo();
 
-		if($apiInfo['VersionMajor'] >= 6 && $apiInfo['VersionMinor'] >= 2) {
+		if ($apiInfo['VersionMajor'] >= 6 && $apiInfo['VersionMinor'] >= 2){
 			$operation = 'patrons/' . $patron->ilsUserId . '/checkouts/history/activationStatus';
-			$params = ["readingHistoryActivation" => false];
-			$r = $this->_doRequest($operation, $params, "POST");
-			if($r == "") {
+			$params    = ["readingHistoryActivation" => false];
+			$r         = $this->_doRequest($operation, $params, "POST");
+			if ($r == ""){
 				$success = true;
 			}
-		} else{
+		}else{
 			$success = $this->_curlOptInOptOut($patron, 'OptOut');
 		}
-		if(!$success) {
-			$this->logger->warning('Unable to opt out patron '. $patron->barcode . ' from ILS reading history. Falling back to Pika.');
+		if (!$success){
+			$this->logger->warning('Unable to opt out patron ' . $patron->barcode . ' from ILS reading history. Falling back to Pika.');
 		}
 		$patron->trackReadingHistory = false;
 		$patron->update();
