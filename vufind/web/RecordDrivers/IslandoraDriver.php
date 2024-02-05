@@ -1076,11 +1076,11 @@ abstract class IslandoraDriver extends RecordInterface {
 				$subjectPart = trim($subjectPart);
 				$subjectLink = '/Archive/Results?lookfor=';
 				if (!empty($subjectPart)){
-					$encodedFilterString       = urlencode('filter[]');
+					$encodedFilterString       = urlencode('filter[]'); // un-encoded braces technically not url allowed  (Good parsing for Accessibility 4.1.1)
 					$subjectLink               .= '&' . $encodedFilterString . '=mods_subject_topic_ms%3A' . urlencode('"' . str_replace('"', '\"', (string)$subjectPart) . '"');
 					$this->subjectsWithLinks[] = [
 						'link'  => $subjectLink,
-						'label' => (string)$subjectPart,
+						'label' => $subjectPart,
 					];
 				}
 			}

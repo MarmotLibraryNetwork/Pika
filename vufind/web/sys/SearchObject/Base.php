@@ -865,7 +865,7 @@ abstract class SearchObject_Base {
 
 		// Add any filters
 		if (count($this->filterList) > 0){
-			$encodedFilterArrayString = urlencode('filter[]');
+			$encodedFilterArrayString = urlencode('filter[]'); // un-encoded braces technically not url allowed  (Good parsing for Accessibility 4.1.1)
 			foreach ($this->filterList as $field => $filter){
 				foreach ($filter as $value){
 					if (preg_match('/\\[.*?\\sTO\\s.*?\\]/', $value)){
