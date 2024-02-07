@@ -42,7 +42,7 @@
 	            <input type="checkbox" class="form-control-static myListsCheckBoxes" value="{$myList.id}">
             </div>
             <div class="col-md-2">
-	            <img src="/bookcover.php?id={$myList.id}&size=medium&type=userList" alt="Cover Image for list \"{$myList.name}\"">
+	            <img src="/bookcover.php?id={$myList.id}&size=medium&type=userList" alt="Cover Image for list &quot;{$myList.name}&quot;">
             </div>
             <div class="col-md-9">
 	            <div class="row">
