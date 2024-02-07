@@ -836,6 +836,10 @@ class GoDeeperData {
 					$data = self::getContentCafeExcerpt($isbn, $upc);
 					$interface->assign('excerptData', $data);
 					return $interface->fetch('Record/view-syndetics-excerpt.tpl');
+				case 'summary' :
+					$summaryInfo = GoDeeperData::getSummary($isbn, $upc);
+					$interface->assign('summaryData', $summaryInfo);
+					return $interface->fetch('Record/view-syndetics-summary.tpl');
 				default :
 					return "Loading data for Content Cafe $dataType still needs to be handled.";
 			}
