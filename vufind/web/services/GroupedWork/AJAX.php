@@ -328,9 +328,9 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$isbn         = $recordDriver->getCleanISBN();
 
 		$formattedData = GoDeeperData::getHtmlData($dataType, 'GroupedWork', $isbn, $upc);
-		$return        = array(
+		$return        = [
 			'formattedData' => $formattedData,
-		);
+		];
 		return $return;
 
 	}

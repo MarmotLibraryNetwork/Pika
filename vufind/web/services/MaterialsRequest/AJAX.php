@@ -357,22 +357,22 @@ class MaterialsRequest_AJAX extends AJAXHandler {
 		}
 		global $interface;
 		$interface->assign('suggestedIdentifiers', $suggestedIdentifiers);
-		return array(
+		return [
 			'success'              => true,
 			'identifiers'          => $suggestedIdentifiers,
 			'formattedSuggestions' => $interface->fetch('MaterialsRequest/ajax-suggested-identifiers.tpl'),
-		);
+		];
 	}
 
 	function GetWorldCatTitles(){
 		global $configArray;
 		if (!isset($_REQUEST['title']) && !isset($_REQUEST['author'])){
-			return array(
+			return [
 				'success' => false,
 				'error'   => 'Cannot load titles from WorldCat, an API Key must be provided in the config file.',
-			);
+			];
 		}else{
-			if (isset($configArray['WorldCat']['apiKey']) & strlen($configArray['WorldCat']['apiKey']) > 0){
+			if (!empty($configArray['WorldCat']['apiKey'])){
 				$worldCatUrl = "http://www.worldcat.org/webservices/catalog/search/opensearch?q=";
 				if (isset($_REQUEST['title'])){
 					$worldCatUrl .= urlencode($_REQUEST['title']);
@@ -395,12 +395,12 @@ class MaterialsRequest_AJAX extends AJAXHandler {
 				$worldCatResults = array();
 				foreach ($worldCatData->channel->item as $item){
 					/** @var SimpleXMLElement $item */
-					$curTitle = array(
+					$curTitle = [
 						'title'       => (string)$item->title,
 						'author'      => (string)$item->author->name,
 						'description' => (string)$item->description,
 						'link'        => (string)$item->link,
-					);
+					];
 
 					$oclcChildren = $item->children('oclcterms', true);
 					foreach ($oclcChildren as $child){
@@ -435,15 +435,15 @@ class MaterialsRequest_AJAX extends AJAXHandler {
 					}
 					$worldCatResults[] = $curTitle;
 				}
-				return array(
+				return [
 					'success' => true,
 					'titles'  => $worldCatResults,
-				);
+				];
 			}else{
-				return array(
+				return [
 					'success' => false,
 					'error'   => 'Cannot load titles from WorldCat, an API Key must be provided in the config file.',
-				);
+				];
 			}
 		}
 	}
