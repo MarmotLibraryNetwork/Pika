@@ -136,7 +136,7 @@ if (!function_exists('opcache_get_status')) {
 	);
 
 	?>
-	<style type="text/css">
+	<style>
 		div#main-content {
 			padding: 2em;
 		}

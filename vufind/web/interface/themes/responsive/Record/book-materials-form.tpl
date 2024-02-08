@@ -59,7 +59,7 @@
 		</button>
 
 		<div class="col-xs-10 col-xs-offset-1">
-			<style type="text/css" scoped>
+			<style scoped>
 				#bookingCalendar table td.active {ldelim} {* muted text applied to closed and unavailable times. *}
 					color: #999999;
 				{rdelim}

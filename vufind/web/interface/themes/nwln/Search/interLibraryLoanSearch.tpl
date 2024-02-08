@@ -17,7 +17,7 @@
 		</div>
 	</div>
 
-	<style type="text/css">
+	<style>
 		{literal}
 		#prospectorSection {
 			padding-top: 15px;
