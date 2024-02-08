@@ -15,7 +15,7 @@
 	<button class="tool btn btn-primary" onclick="$('#masqueradeForm').submit()">Start</button>
 </form>
 	<script>
-		$('#cardNumber').focus().select();
+		$('#cardNumber').focus().trigger('select'); // Select/highlight inputted text
 		{literal}
 		$("#masqueradeForm").validate({
 			submitHandler: function(){
@@ -23,6 +23,5 @@
 			}
 		});
 		{/literal}
-
 	</script>
 {/strip}
