@@ -82,8 +82,11 @@ public class OfflineCirculation implements IProcessHandler {
 					offlineHoldsOnly = offlineHoldsOnlyStr.equals("true") || offlineHoldsOnlyStr.equals("1");
 				}
 				if (!offlineHoldsOnly) {
-					//processOfflineCirculationEntriesViaSierraAPI(pikaConn);
-					processOfflineCirculationEntriesViaCirca(pikaConn);
+					if (PikaConfigIni.getIniValue("Catalog", "offlineCircProcess").equalsIgnoreCase("circa")){
+						processOfflineCirculationEntriesViaCirca(pikaConn);
+					} else {
+						processOfflineCirculationEntriesViaSierraAPI(pikaConn);
+					}
 				} else {
 					logger.info("Processing Offline Holds only.");
 				}
