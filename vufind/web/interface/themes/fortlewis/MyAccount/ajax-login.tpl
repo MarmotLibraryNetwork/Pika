@@ -85,7 +85,7 @@
 {/strip}
 {literal}
 <script>
-	$('#username').focus().select();
+	$('#username').focus().trigger('select'); // Select/highlight inputted text
 	$(function(){
 		Pika.Account.validateCookies();
 		var haslocalStorage = Pika.hasLocalStorage() || false;
@@ -107,7 +107,7 @@
 			}
 {/literal}{* // Once Box is shown, focus on username input and Select the text;*}{literal}
 			$("#modalDialog").on('shown.bs.modal', function(){
-				$('#username').focus().select();
+				$('#username').focus().trigger('select'); // Select/highlight inputted text
 			})
 		});
 </script>

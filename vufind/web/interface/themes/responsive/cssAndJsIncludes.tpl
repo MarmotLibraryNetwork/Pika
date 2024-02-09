@@ -11,7 +11,7 @@
 
 	{/if}
 	{if $additionalCss}
-		<style type="text/css">
+		<style>
 			{$additionalCss}
 		</style>
 	{/if}

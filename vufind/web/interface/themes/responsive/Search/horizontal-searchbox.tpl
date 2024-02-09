@@ -42,7 +42,7 @@
 {*							          value=""*}
 							          title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term."
 							          onkeyup="return Pika.Searches.resetSearchType()"
-							          onfocus="$(this).select()"
+							          onfocus="$(this).trigger('select')" {* Select/highlight inputted text *}
 							          autocomplete="off"
 							          rows="1"
 											{strip}>

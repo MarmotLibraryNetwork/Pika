@@ -45,10 +45,10 @@ class Admin_PHPInfo extends Admin_Admin {
 		$info = substr($info, 0,strrpos($info, '</div>')+6); //+6 to include closing tag
 		// re-add slightly modified styling
 
-		$info .= '<style type="text/css">
+		$info .= '<style>
 #maincontent {background-color: #ffffff; color: #000000;}
 #maincontent, td, th, h1, h2 {font-family: sans-serif;}
-pre {margin: 0px; font-family: monospace;}
+pre {margin: 0; font-family: monospace;}
 #maincontent a:link {color: #000099; text-decoration: none; background-color: #ffffff;}
 #maincontent a:hover {text-decoration: underline;}
 #maincontent table {border-collapse: collapse;}
@@ -63,8 +63,8 @@ h2 {font-size: 125%;}
 .h {background-color: #9999cc; font-weight: bold; color: #000000;}
 .v {background-color: #cccccc; color: #000000;}
 .vr {background-color: #cccccc; text-align: right; color: #000000;}
-#maincontent img {float: right; border: 0px;}
-#maincontent hr {width: 600px; background-color: #cccccc; border: 0px; height: 1px; color: #000000;}
+#maincontent img {float: right; border: 0;}
+#maincontent hr {width: 600px; background-color: #cccccc; border: 0; height: 1px; color: #000000;}
 </style>';
 
 		$interface->assign("info", $info);

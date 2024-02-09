@@ -38,7 +38,7 @@
 		</div>
 	</div>
 
-	<style type="text/css">
+	<style>
 		{literal}
 		#prospectorSection,#prospectorSearchResultsSection {
 			padding-top: 15px;

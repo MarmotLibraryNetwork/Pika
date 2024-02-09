@@ -324,8 +324,8 @@ var Pika = (function(){
 					confirmFunction();
 				}
 			});
-			$("#modalDialog").on('shown.bs.modal', function(event) {
-				$("#confirm-button").focus().select();
+			$("#modalDialog").on('shown.bs.modal', function() {
+				$("#confirm-button").focus();
 			});
 			this.showMessageWithButtons('Confirm?', message, button);
 		},

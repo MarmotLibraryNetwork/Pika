@@ -545,7 +545,7 @@ class PHPExcel_Writer_HTML implements PHPExcel_Writer_IWriter {
 
 		// Start styles
 		if ($generateSurroundingHTML) {
-			$html .= '	<style type="text/css">' . PHP_EOL;
+			$html .= '	<style>' . PHP_EOL;
 			$html .= '	  html { ' . $this->_assembleCSS($css['html']) . ' }' . PHP_EOL;
 		}
 
