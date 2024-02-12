@@ -258,13 +258,13 @@ class User extends DB_DataObject {
 	 * @param string  $password
 	 * @return string Encrypted password
 	 */
-	private function _encryptPassword($password) {
+	private function _encryptPassword($password){
 		global $configArray;
-		$key = base64_decode($configArray["Site"]["passwordEncryptionKey"]);
-		$v   = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
-		$e   = openssl_encrypt($password, 'aes-256-cbc', $key, 0, $v);
-		$p   = base64_encode($e . '::' . $v);
-		return $p;
+		$key         = base64_decode($configArray["Site"]["passwordEncryptionKey"]);
+		$initVector  = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
+		$encryptedPW = openssl_encrypt($password, 'aes-256-cbc', $key, 0, $initVector);
+		$string      = base64_encode($encryptedPW . '::' . $initVector);
+		return $string;
 	}
 
 	/**
@@ -279,8 +279,8 @@ class User extends DB_DataObject {
 			global $configArray;
 			$key    = base64_decode($configArray['Site']['passwordEncryptionKey']);
 			$string = base64_decode($this->password);
-			[$encryptedPW, $v] = explode('::', $string, 2);
-			$password = openssl_decrypt($encryptedPW, 'aes-256-cbc', $key, 0, $v);
+			[$encryptedPW, $initVector] = explode('::', $string, 2);
+			$password = openssl_decrypt($encryptedPW, 'aes-256-cbc', $key, 0, $initVector);
 		}
 		return $password;
 	}

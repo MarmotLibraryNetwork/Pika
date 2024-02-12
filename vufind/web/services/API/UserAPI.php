@@ -26,6 +26,7 @@ class UserAPI extends AJAXHandler {
 
 	protected $methodsThatRespondWithJSONUnstructured = [
 		'setDefaultPin',
+		'getPatronPin',
 		];
 
 	protected $methodsThatRespondWithJSONResultWrapper = [
@@ -1314,6 +1315,28 @@ class UserAPI extends AJAXHandler {
 						global $pikaLogger;
 						$pikaLogger->error("setDefaultPassword received request for user $user->id that did not contain a default Pin");
 						return ['success' => false, 'message' => 'Missing default pin'];
+					}
+				}
+			}
+		}
+		return ['success' => false];
+	}
+
+	public function getPatronPin(){
+		if (!empty($_REQUEST['token'])){
+			global $configArray;
+			if (!empty($configArray['System']['allowGetPatronPin'])){
+				// Check that a config setting has been set as additional security precaution
+				$user = $this->validateUserApiToken();
+				if ($user){
+					$pin = $user->getPassword();
+					if (!empty($pin)){
+						global $pikaLogger;
+						$pikaLogger->notice("Returning pin for patron $user->id");
+						return [
+							'success' => true,
+							'pin'     => $pin,
+						];
 					}
 				}
 			}
