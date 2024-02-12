@@ -76,6 +76,7 @@ class Admin_ArchiveUsage extends Admin_Admin {
 			if ($response && $response['response']['numFound'] > 0){
 				$numProcessed                                               = 0;
 				$usageByNamespace[$archiveLibraries->archiveNamespace]['numObjects'] = $response['response']['numFound'];
+
 				while ($numProcessed < $response['response']['numFound']){
 					foreach ($response['response']['docs'] as $doc){
 						if (isset ($doc['fedora_datastream_latest_OBJ_SIZE_ms'])){
@@ -88,6 +89,7 @@ class Admin_ArchiveUsage extends Admin_Admin {
 						$response = $searchObject->processSearch(true, false);
 					}
 				}
+
 			}
 		}
 

@@ -1,5 +1,6 @@
 {strip}
 	<h2 id="pageTitle">Archive Usage By Library</h2>
+	<div class="alert alert-warning">This page lists only usage for libraries of this site. Other archive libraries on their Pika site.</div>
 	<div class="adminTableRegion">
 		<table class="adminTable table table-striped order-column table-condensed" id="adminTable">
 			<thead>
