@@ -406,11 +406,12 @@ class Sierra  implements \DriverInterface {
 	 * that particularly finicky bit.
 	 *
 	 * @param int $sierraPatronId Unique Sierra patron id
+	 * @param bool $noCache true to ignore cached user object
 	 * @return User|null
 	 * @throws InvalidArgumentException
 	 * @throws ErrorException
 	 */
-	public function getPatron($sierraPatronId){
+	public function getPatron($sierraPatronId, $noCache=false){
 
 		$createPatron = false;
 		$updatePatron = false;
@@ -424,10 +425,12 @@ class Sierra  implements \DriverInterface {
 		$patron->ilsUserId = $sierraPatronId;
 
 		if ($patron->find(true) && $patron->N != 0) {
-			$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
-			if ($pObj = $this->cache->get($patronObjectCacheKey)) {
-				$this->logger->info('Found patron in memcache: ' . $patronObjectCacheKey);
-				return $pObj;
+			if(!$noCache){
+				$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
+				if ($pObj = $this->cache->get($patronObjectCacheKey)){
+					$this->logger->info('Found patron in memcache: ' . $patronObjectCacheKey);
+					return $pObj;
+				}
 			}
 		}
 
@@ -1227,34 +1230,49 @@ class Sierra  implements \DriverInterface {
 	 * @throws \PHPMailer\PHPMailer\Exception
 	 */
 	public function emailResetPin($barcode) {
-		$patron          = new User();
-		$patron->barcode = $barcode;
-		if (!$patron->find(true)){
-			// might be a new user
-			if ($patronId = $this->getPatronId($barcode)){
-				// load them in the database.
-				unset($patron);
-				$patron = $this->getPatron($patronId);
-			}else{
-				return ['error' => 'Unable to find an account associated with barcode: ' . $barcode];
-			}
-		}elseif (empty($patron->email)){
-			// Sierra might have an email for the user that Pika doesn't have
-			if ($patronId = $this->getPatronId($barcode)){
-				// load them in the database.
-				unset($patron);
-				$patron = $this->getPatron($patronId);
-			}  else {
-				$this->logger->notice('Patron user found in Pika not found in Sierra for barcode ' . $barcode);
-			}
+		// Check Sierra for an email address.
+		// It may be the case the patron updated their email via a means other than
+		// Pika. Don't rely on the email in the database as this can cause issues.
+		$patronId = $this->getPatronId($barcode);
+		if(!$patronId) {
+			return ['error' => 'The barcode you provided is not valid. Please check the barcode and try again.'];
 		}
-		if (!empty($patron->ilsUserId) && empty($patron->email)){
-			// Can't use a check of $patron->N that user data has be found because
-			// "$patron = $this->getPatron($patronId);" lines doesn't populate $patron->N but will have user data (if called successfully)
-			// $patron->ilsUserId must be populated if we have good user data, so we will use that field for checking for a valid user.
+		// getPatron fetches new user data from Sierra and updates any conflicting details and returns a fresh user
+		// object. It will also create a new user in the database if one isn't found.
+		$patron   = $this->getPatron($patronId, true);
 
+		//$patron          = new User();
+		//$patron->barcode = $barcode;
+//		if (!$patron->find(true)){
+//			// might be a new user
+//			if ($patronId = $this->getPatronId($barcode)){
+//				// load them in the database.
+//				unset($patron);
+//				$patron = $this->getPatron($patronId);
+//			}else{
+//				return ['error' => 'Unable to find an account associated with barcode: ' . $barcode];
+//			}
+//		}elseif (empty($patron->email)){
+
+		// If the email is empty at this point we don't have a good address for the patron.
+		if (empty($patron->email)){
 			return ['error' => 'You do not have an email address on your account. Please visit your library to reset your ' . translate('pin') . '.'];
+			// Sierra might have an email for the user that Pika doesn't have
+//			if ($patronId = $this->getPatronId($barcode)){
+//				// load them in the database.
+//				unset($patron);
+//				$patron = $this->getPatron($patronId);
+//			}  else {
+//				$this->logger->notice('Patron user found in Pika not found in Sierra for barcode ' . $barcode);
+//			}
 		}
+//		if (!empty($patron->ilsUserId) && empty($patron->email)){
+//			// Can't use a check of $patron->N that user data has be found because
+//			// "$patron = $this->getPatron($patronId);" lines doesn't populate $patron->N but will have user data (if called successfully)
+//			// $patron->ilsUserId must be populated if we have good user data, so we will use that field for checking for a valid user.
+//
+//			return ['error' => 'You do not have an email address on your account. Please visit your library to reset your ' . translate('pin') . '.'];
+//		}
 
 		// make sure there's no old token.
 		$pinReset         = new PinReset();
