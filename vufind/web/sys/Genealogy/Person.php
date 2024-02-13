@@ -462,6 +462,7 @@ class Person extends SolrDataObject {
 	}
 
 	function deleteObituaries(){
+		//TODO: delete uploaded images first
 		if (isset($this->personId)){
 			$obit = new Obituary();
 			$obit->query("DELETE FROM obituary WHERE personId = {$this->personId}");
@@ -469,6 +470,7 @@ class Person extends SolrDataObject {
 	}
 
 	function delete($useWhere = false){
+		//TODO: delete uploaded images first
 		$this->deleteMarriages();
 		$this->deleteObituaries();
 		parent::delete();
