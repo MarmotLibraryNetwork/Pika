@@ -54,6 +54,16 @@ class Marmot extends Sierra {
 		$fields = parent::getSelfRegistrationFields();
 
 		$libSubDomain = $library->subdomain;
+
+		// Grand County require email
+		if ($libSubDomain == 'gcld' || $libSubDomain == 'gcld2'){
+			foreach ($fields as $field) {
+				if ($field['property'] === 'email') {
+					$field['required'] = true;
+				}
+			}
+		}
+
 		// Bemis Signature Field
 		if ($libSubDomain == 'bemis' || $libSubDomain == 'bemis2'){
 			$fields[] = [
