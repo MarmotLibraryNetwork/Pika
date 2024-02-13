@@ -16,9 +16,9 @@
 		<div class="col-md-7 text-center">
 			<a href="/Person/{$summShortId}">
 			{if $summPicture}
-			<img src="{$summPicture}" class="alignleft listResultImage" alt="{translate text='Picture'}"><br>
+			<img src="{$summPicture}" class="listResultImage" alt="{translate text='Picture'}"><br>
 			{else}
-			<img src="/interface/themes/default/images/person.png" class="alignleft listResultImage" alt="{translate text='No Cover Image'}"><br>
+			<img src="/interface/themes/default/images/person.png" class="listResultImage" alt="{translate text='No Cover Image'}"><br>
 			{/if}
 			</a>
 		</div>

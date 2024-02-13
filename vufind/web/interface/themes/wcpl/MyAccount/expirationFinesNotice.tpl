@@ -25,7 +25,7 @@
 
 				{if $showExpirationWarnings && $user->expireClose}
 					<div class="myAccountLink">
-						<a class="alignright" title="Please contact your local library to have your library card renewed." style="color:red; font-weight:bold;" onclick="alert('Please Contact your local library to have your library card renewed.')" href="#">
+						<a title="Please contact your local library to have your library card renewed." style="color:red; font-weight:bold;" onclick="alert('Please Contact your local library to have your library card renewed.')" href="#">
 							{if $user->expired}
 								{if $expiredMessage}
 									{$expiredMessage}

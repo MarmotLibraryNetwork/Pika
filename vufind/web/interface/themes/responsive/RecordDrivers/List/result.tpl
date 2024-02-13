@@ -7,7 +7,7 @@
     {if $showCovers}
 		<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
 			{if $disableCoverArt != 1}
-				<a href="/MyAccount/MyList/{$summShortId}" class="alignleft listResultImage">
+				<a href="/MyAccount/MyList/{$summShortId}" class="listResultImage">
 					<img src="/bookcover.php?id={$summShortId}&type=userList&size=medium" class="listResultImage img-thumbnail" alt="{translate text='No Cover Image'}">
 				</a>
 

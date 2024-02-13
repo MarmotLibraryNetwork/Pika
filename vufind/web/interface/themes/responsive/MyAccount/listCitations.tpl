@@ -6,7 +6,7 @@
 <h3 id="listTitle"><a href="/MyAccount/MyList/{$favList->id}">{$favList->title|escape:"html"}</a></h3>
 
 {if $favList->description}
-	<div class="listDescription alignleft" id="listDescription">{$favList->description|escape}</div>
+	<div class="listDescription" id="listDescription">{$favList->description|escape}</div>
 {/if}
 <div id="listTopButtons" class="btn-toolbar">
 	<div class="btn-group">
