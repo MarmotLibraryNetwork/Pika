@@ -91,8 +91,7 @@
   <script>
 		{* Override variables as needed *}
 		{literal}
-		$(document).ready(function(){{/literal}
-			Globals.path = '{$path}';
+		$(function(){{/literal}
 			Globals.url = '{$url}';
 			Globals.loggedIn = {if $loggedIn}true{else}false{/if};
 			Globals.opac = {if $onInternalIP}true{else}false{/if};
