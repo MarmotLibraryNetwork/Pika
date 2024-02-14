@@ -131,7 +131,7 @@ class Search_Results extends Union_Results {
 		$interface->assign('showSaved', true);
 		$interface->assign('savedSearch', $searchObject->isSavedSearch());
 		$interface->assign('searchId', $searchObject->getSearchId());
-		$currentPage = isset($_REQUEST['page']) && ctype_digit($_REQUEST['page']) ?? 1;
+		$currentPage = isset($_REQUEST['page']) && ctype_digit($_REQUEST['page']) ? $_REQUEST['page'] : 1;
 		$interface->assign('page', $currentPage);
 
 		//Enable and disable functionality based on library settings
