@@ -255,20 +255,17 @@ abstract class HorizonROA implements \DriverInterface {
 		$password = trim($password);
 
 		// Check if user exists in database
+		// NOTE: the user may still exist in the database if barcode has changed. this will be checked next.
+		// this select still needs to be made so we can compare passwords and update if necessary.
 		$userExistsInDB = false;
 		$user           = new User();
 		$user->barcode  = $barcode;
-		// $this->accountProfile->name might be empty.
-		// empty accountProfile->name seems to happen with password reset, but haven't confirmed
-		//if(isset($this->accountProfile->name)) {
-			//$user->source  = $this->accountProfile->name;
-		//}
 
 		if ($user->find(true)){
 			$userExistsInDB = true;
 		}
 
-		//Authenticate the user via WebService
+		// authenticate the user via api
 		global $timer;
 		$timer->logTime('Logging in through Horizon ROA APIs');
 		// make sure password in database matches
@@ -280,8 +277,19 @@ abstract class HorizonROA implements \DriverInterface {
 			[$userValid, $sessionToken, $horizonRoaUserID] = $this->loginViaWebService($barcode, $password);
 		}
 
-		// set the user ils id so it's saved to DB
-		$user->ilsUserId = $horizonRoaUserID;
+		// check again if the user using the ils id
+		// barcodes can change and we don't want to create another account
+		if(!$userExistsInDB) {
+			unset($user);
+			$user = new User();
+			$user->ilsUserId = $horizonRoaUserID;
+			if ($user->find(true)){
+				$userExistsInDB = true;
+			}
+		} else {
+			// set the user ils id so it's saved to DB
+			$user->ilsUserId = $horizonRoaUserID;
+		}
 
 		if ($validatedViaSSO) {
 			$userValid = true;
@@ -337,12 +345,6 @@ abstract class HorizonROA implements \DriverInterface {
 				}
 				$user->fullname     = $fullName ?? '';
 				$user->barcode      = $barcode;
-				// update password if not a match
-				if($password != $user->getPassword()) {
-					$user->updatePassword($password);
-				} else{
-					$user->setPassword($password);
-				}
 
 				$Address1    = "";
 				$City        = "";
@@ -419,16 +421,15 @@ abstract class HorizonROA implements \DriverInterface {
 				$numHoldsRequested = 0;
 				if (count($lookupMyAccountInfoResponse->fields->holdRecordList) >= 1) {
 					$numHolds = count($lookupMyAccountInfoResponse->fields->holdRecordList);
-					foreach ($lookupMyAccountInfoResponse->fields->holdRecordList as $patronHold) {
+					foreach ($lookupMyAccountInfoResponse->fields->holdRecordList as $patronHold){
 						$hold = $patronHold->fields;
-
-							if ($hold->status == 'BEING_HELD') {
-								$numHoldsAvailable++;
-							} elseif ($hold->status != 'EXPIRED') {
-								$numHoldsRequested++;
-							}
+						if ($hold->status == 'BEING_HELD'){
+							$numHoldsAvailable++;
+						}elseif ($hold->status != 'EXPIRED'){
+							$numHoldsRequested++;
 						}
 					}
+				}
 
 				$numCheckedOut = 0;
 				if (!empty($lookupMyAccountInfoResponse->fields->circRecordList)) {
@@ -494,7 +495,6 @@ abstract class HorizonROA implements \DriverInterface {
 		}
 		//return false;
 	}
-
 
 	public function hasNativeReadingHistory(){
 		return false;
