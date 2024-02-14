@@ -34,8 +34,8 @@ class ExploreMore {
 			$fedoraUtils = FedoraUtils::getInstance();
 		}
 		$exploreMoreSectionsToShow = [];
+		$relatedPikaContent        = [];
 
-		$relatedPikaContent = [];
 		if ($activeSection == 'archive'){
 			//If this is a book or a page, show a table of contents
 			//Check to see if the record is part of a compound object.  If so we will want to link to the parent compound object.
@@ -63,7 +63,7 @@ class ExploreMore {
 							'format' => 'list',
 							'values' => [
 								[
-									'pid'    => $parentObject->id,
+									'pid'    => $parentObject->id, // TODO: is id right
 									'label'  => $parentDriver->getTitle(),
 									'link'   => $parentDriver->getRecordUrl(),
 									'image'  => $parentDriver->getBookcoverUrl('small'),
@@ -74,19 +74,19 @@ class ExploreMore {
 
 					$exploreMoreSectionsToShow = $this->setupTableOfContentsForBook($parentDriver, $exploreMoreSectionsToShow, false);
 
-					$this->relatedCollections = $parentDriver->getRelatedCollections();
-					$this->relatedCollections['all'] = array(
+					$this->relatedCollections        = $parentDriver->getRelatedCollections();
+					$this->relatedCollections['all'] = [
 						'label' => 'See All Digital Archive Collections',
-						'link' => '/Archive/Home'
-					);
+						'link'  => '/Archive/Home'
+					];
 
 					if (count($this->relatedCollections) > 1){ //Don't show if the only link is back to the All Collections page
 						$displayType = count($this->relatedCollections) > 3 ? 'textOnlyList' : 'list';
-						$exploreMoreSectionsToShow['relatedCollections'] = array(
+						$exploreMoreSectionsToShow['relatedCollections'] = [
 //								'title' => 'Related Archive Collections',
 								'format' => $displayType,
 								'values' => $this->relatedCollections
-						);
+						];
 					}
 				}
 				$timer->logTime('Loaded table of contents');
@@ -235,6 +235,7 @@ class ExploreMore {
 			if ($relatedWorks['numFound'] > 0){
 				$exploreMoreSectionsToShow['relatedCatalog'] = [
 					//'title'    => 'More From the Catalog',
+
 					'format'   => 'scrollerWithLink',
 					'values'   => $relatedWorks['values'],
 					'link'     => $relatedWorks['link'],
@@ -253,8 +254,8 @@ class ExploreMore {
 				usort($relatedSubjects, 'ExploreMore::sortRelatedEntities');
 				$exploreMoreSectionsToShow['relatedSubjects'] = [
 					//'title'  => 'Related Subjects',
-					'format' => 'textOnlyList',
-					'values' => $relatedSubjects
+						'format' => 'textOnlyList',
+						'values' => $relatedSubjects
 				];
 			}
 
