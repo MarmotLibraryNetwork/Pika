@@ -176,7 +176,6 @@ class Sierra  implements \DriverInterface {
 			$count   = count($checkoutEntries) + 1;
 		} while ($count < $total);
 
-
 		$checkouts = [];
 		foreach($checkoutEntries as $entry) {
 			// standard stuff
@@ -214,7 +213,7 @@ class Sierra  implements \DriverInterface {
 				continue;
 			}
 
-			// grab the bib id and make Pika-tize it
+			// grab the bib id and Pika-tize it
 			preg_match($this->urlIdRegExp, $entry->item, $m);
 			$itemId = $m[1];
 			$bid = $this->_getBibIdFromItemId($itemId);
@@ -1978,11 +1977,7 @@ class Sierra  implements \DriverInterface {
 					$status     = 'In transit';
 					$cancelable = true;
 					$freezeable = false;
-					if($canUpdatePL) {
-						$updatePickup = true;
-					} else {
-						$updatePickup = false;
-					}
+					$updatePickup = false;
 					break;
 				case "&": // inn-reach status
 					$status       = "Requested";
