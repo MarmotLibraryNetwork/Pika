@@ -20,7 +20,7 @@
 						<td class="text-right">{$row.numObjects|number_format}</td>
 						<td class="text-right">{$row.numDpla|number_format}</td>
 						<td class="text-right">{$row.driveSpace|number_format}</td>
-						<td class="text-right">{$row.driveSpaceDisplay|number_format:1}</td>
+						<td class="text-right">{$row.driveSpaceGB|number_format:1}</td>
 					</tr>
 				{/foreach}
 			</tbody>

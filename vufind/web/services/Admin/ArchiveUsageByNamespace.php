@@ -17,9 +17,10 @@
  */
 
 require_once ROOT_DIR . '/services/API/ArchiveAPI.php';
-require_once ROOT_DIR . '/services/Admin/Admin.php';
+require_once ROOT_DIR . '/services/Admin/ArchiveUsage.php';
 
-class Admin_ArchiveUsageByNamespace extends Admin_Admin {
+class Admin_ArchiveUsageByNamespace extends Admin_ArchiveUsage {
+	private $pageTitle  = 'Archive Usage By Name Space';
 
 	function launch(){
 		$usageArray  = [];
@@ -49,102 +50,22 @@ class Admin_ArchiveUsageByNamespace extends Admin_Admin {
 		$totalBytes      = 0;
 		$totalDpla       = 0;
 		foreach ($usageArray as $namespace => &$usageStats){
-			$totalObjects                    += $usageStats['numObjects'];
-			$totalBytes                      += $usageStats['driveSpace'];
-			$diskSpaceGB                     = round($this->bytesToGigabytes($usageStats['driveSpace']), 1);
-			$totalDriveSpace                 += $diskSpaceGB;
-			$usageStats['driveSpaceDisplay'] = $diskSpaceGB;
-			$usageStats['numDpla']           = $dplaUsage[$namespace] ?? 0;
-			$totalDpla                       += $usageStats['numDpla'];
+			$totalObjects               += $usageStats['numObjects'];
+			$totalBytes                 += $usageStats['driveSpace'];
+			$diskSpaceGB                = round($this->bytesToGigabytes($usageStats['driveSpace']), 1);
+			$totalDriveSpace            += $diskSpaceGB;
+			$usageStats['driveSpaceGB'] = $diskSpaceGB;
+			$usageStats['numDpla']      = $dplaUsage[$namespace] ?? 0;
+			$totalDpla                  += $usageStats['numDpla'];
 		}
 
 		global $interface;
+		$interface->assign('usageArray', $usageArray);
 		$interface->assign('totalBytes', $totalBytes);
 		$interface->assign('totalDriveSpace', $totalDriveSpace);
 		$interface->assign('totalObjects', $totalObjects);
 		$interface->assign('totalDpla', $totalDpla);
-		$interface->assign('usageArray', $usageArray);
 
-		$this->display('archiveUsageByNamespace.tpl', 'Archive Usage By Name Space');
-
+		$this->display('archiveUsageByNamespace.tpl', $this->pageTitle);
 	}
-
-	function bytesToGigabytes($bytes) {
-		return $bytes / 1073741824;
-	}
-	function getAllowableRoles(){
-		return ['archives'];
-	}
-
-	/**
-	 * @param $fieldValue
-	 * @param string $solrFieldToFilterBy
-	 * @param array $usageByContentType
-	 * @param $contentTypeLabel
-	 * @return array
-	 */
-	public function getUsageByFacetValue(string $solrFieldToFilterBy, $fieldValue): array{
-		$numObjects = 0;
-		$bytes      = 0;
-
-		/** @var SearchObject_Islandora $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
-		$searchObject->init();
-		//$searchObject->setDebugging(false, false);
-		$searchObject->setLimit(250);
-		$searchObject->clearFilters();
-		$searchObject->clearHiddenFilters();
-
-		$searchObject->setBasicQuery("\"$fieldValue\"", $solrFieldToFilterBy);
-		$searchObject->addFieldsToReturn(['fedora_datastream_latest_OBJ_SIZE_ms']);
-		$searchObject->setApplyStandardFilters(false);
-
-		$response = $searchObject->processSearch(true, false, true);
-		// use $preventQueryModification to stop removal of slash in the content Type value
-		if (!empty($response['response']['numFound'])){
-			$numProcessed = 0;
-			$numObjects   = $response['response']['numFound'];
-
-			while ($numProcessed < $numObjects){
-				foreach ($response['response']['docs'] as $doc){
-					if (isset($doc['fedora_datastream_latest_OBJ_SIZE_ms'])){
-						$bytes += $doc['fedora_datastream_latest_OBJ_SIZE_ms'][0];
-					}
-					$numProcessed++;
-				}
-				if ($numProcessed < $response['response']['numFound']){
-					$searchObject->setPage($searchObject->getPage() + 1);
-					$response = $searchObject->processSearch(true, false, true);
-				}
-			}
-
-		}
-		return [$numObjects, $bytes];
-	}
-
-	/**
-	 * @param string $solrFieldToFilterBy
-	 * @return array
-	 */
-	public function getSolrFacetValues(string $solrFieldToFilterBy){
-		$facetResponse = [];
-
-		/** @var SearchObject_Islandora $searchObject */
-		$archiveTypesSearch = SearchObjectFactory::initSearchObject('Islandora');
-		$archiveTypesSearch->init();
-		//$archiveTypesSearch->setDebugging(false, false);
-		$archiveTypesSearch->setLimit(0); // Don't need results
-		$archiveTypesSearch->clearFilters();
-		$archiveTypesSearch->clearHiddenFilters();
-		$archiveTypesSearch->setApplyStandardFilters(false); //TODO: needed?
-		//$archiveTypesSearch->setBasicQuery('');
-		$archiveTypesSearch->addFacet($solrFieldToFilterBy, 'Filter Option');
-		//TODO: set one facet to return
-		$contentTypeResponse = $archiveTypesSearch->processSearch(true, false);
-		if (!empty($contentTypeResponse['facet_counts']['facet_fields'][$solrFieldToFilterBy])){
-			$facetResponse = $contentTypeResponse['facet_counts']['facet_fields'][$solrFieldToFilterBy];
-		}
-		return $facetResponse;
-	}
-
 }
