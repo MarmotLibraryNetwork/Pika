@@ -329,21 +329,22 @@
 
 })(jQuery);
 
-$(document).ready(function(){
+$(function(){
 	startIdleTimer();
 });
 
+const logoutPromptTimeout = 20000;
 var autoLogoutTimer;
 function showLogoutMessage(){
 	var url = '/AJAX/JSON?method=getAutoLogoutPrompt';
 	Pika.Account.ajaxLightbox(url, false);
-	autoLogoutTimer = setTimeout("endSession()", 10000);
+	autoLogoutTimer = setTimeout("endSession()", logoutPromptTimeout);
 }
 
 function showRedirectToHomeMessage(){
 	var url = '/AJAX/JSON?method=getReturnToHomePrompt';
 	Pika.Account.ajaxLightbox(url, false);
-	autoLogoutTimer = setTimeout("endSession()", 10000);
+	autoLogoutTimer = setTimeout("endSession()", logoutPromptTimeout);
 }
 
 function startIdleTimer(){
@@ -378,7 +379,7 @@ function endSession(){
 	if (masqueradeMode) {
 		Pika.Account.endMasquerade()
 	} else {
-		//Redirect to logout page
+		//Redirect to log out page
 		window.location = "/MyAccount/Logout";
 	}
 }
