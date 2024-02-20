@@ -169,7 +169,7 @@ public class FormatDetermination {
 			econtentRecord.setFormatBoost(specifiedFormatBoost);
 		} else {
 			LinkedHashSet<String> printFormats = getFormatsFromBib(record, econtentRecord);
-			if (this.translationMaps.size() > 0){
+			if (!this.translationMaps.isEmpty()){
 				String firstFormat    = printFormats.iterator().next();
 				String formatBoostStr = translateValue("format_boost", firstFormat, econtentRecord.getRecordIdentifier());
 				econtentItem.setFormat(translateValue("format", firstFormat, econtentRecord.getRecordIdentifier()));
@@ -271,10 +271,17 @@ public class FormatDetermination {
 						case "electronic":
 						case "software":
 						case "mixedmaterials":
-						case "tapecartreel":
+							// bad electronic format determinations, likely from 007 codes
+						case "tapereel":
+						case "tapecassette":
 						case "tapecartridge":
 						case "disccartridge":
 						case "chipcartridge":
+						case "floppydisk":
+							// Mis-determined game formats of econtent
+						case "playstation":
+						case "xbox":
+						case "xbox360":
 							econtentItem.setFormat("Online Materials");
 							econtentItem.setFormatCategory("Other");
 							econtentRecord.setFormatBoost(2);
@@ -292,7 +299,7 @@ public class FormatDetermination {
 			logger.debug("    " + format);
 		}*/
 		HashSet<String> translatedFormats = translateCollection("format", printFormats, recordInfo.getRecordIdentifier());
-		if (translatedFormats.size() == 0){
+		if (translatedFormats.isEmpty()){
 			logger.warn("Did not find a format for " + recordInfo.getRecordIdentifier() + " using standard format method " + printFormats.toString());
 		}
 		HashSet<String> translatedFormatCategories = translateCollection("format_category", printFormats, recordInfo.getRecordIdentifier());
