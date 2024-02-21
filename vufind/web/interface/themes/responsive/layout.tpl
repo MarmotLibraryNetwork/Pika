@@ -14,7 +14,6 @@
 		{if $google_verification_key}
 			<meta name="google-site-verification" content="{$google_verification_key}">
 		{/if}
-		{if $addHeader}{$addHeader}{/if}
 
 		{if $metadataTemplate}
 			{include file=$metadataTemplate}

@@ -275,8 +275,7 @@ class MarcRecord extends IndexRecord {
 		// if nothing in config array).
 		global $configArray;
 		global $library;
-		$active = isset($configArray['Export']) ?
-			$configArray['Export'] : ['RefWorks' => true, 'EndNote' => true];
+		$active = $configArray['Export'] ?? ['RefWorks' => true, 'EndNote' => true];
 
 		// These are the formats we can possibly support if they are turned on in
 		// config.ini:
