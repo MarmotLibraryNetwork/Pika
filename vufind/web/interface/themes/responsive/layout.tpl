@@ -53,25 +53,14 @@
 					<div id="system-message-header" class="row system-message-header">{$systemMessage}</div>
 				{/if}
 			{/if}
-			<div class="row breadcrumbs">
-				<div class="col-xs-12 col-sm-9">
-					{* if $showBreadcrumbs}
-					<ul class="breadcrumb">
-						<li><a href="{$homeBreadcrumbLink}" id="home-breadcrumb"> {translate text=$homeLinkText}</a> <span class="divider">&raquo;</span></li>
-						{include file="$module/breadcrumbs.tpl"}
-					</ul>
-					{/if *}
+			<a id="top"></a>{*TODO: Does anything trigger navigation to page #top? *}
+			{if $google_translate_key}
+				<div class="row breadcrumbs">
+					<div class="col-xs-12 col-sm-3 col-sm-offset-9 text-right">
+						<div id="google_translate_element"></div>
+					</div>
 				</div>
-				<a id="top"></a>
-				<div class="col-xs-12 col-sm-3 text-right">
-					{if $google_translate_key}
-						{literal}
-						<div id="google_translate_element">
-						</div>
-						{/literal}
-					{/if}
-				</div>
-			</div>
+			{/if}
 
 			<div id="header-wrapper" class="row">
 				<div id="header-container">
