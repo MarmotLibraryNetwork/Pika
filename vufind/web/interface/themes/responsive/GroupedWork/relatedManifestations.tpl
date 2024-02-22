@@ -17,7 +17,7 @@
 
 								{if $relatedManifestation.numRelatedRecords == 1}
 								<a href="#" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
-									<span class="manifestation-toggle collapsed" id='manifestation-toggle-{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>+</span> {$relatedManifestation.format}
+									<span  aria-hidden="true" class="manifestation-toggle collapsed" id='manifestation-toggle-{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>+</span> {$relatedManifestation.format}
 								</a>
 								<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 								<a href="#" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
@@ -29,7 +29,7 @@
 							{else}
 
 								<a href="#" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
-									<span class="manifestation-toggle collapsed" id='manifestation-toggle-{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>+</span> {$relatedManifestation.format}
+									<span aria-hidden="true" class="manifestation-toggle collapsed" id='manifestation-toggle-{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>+</span> {$relatedManifestation.format}
 								</a>
 								<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 								<a href="#" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
