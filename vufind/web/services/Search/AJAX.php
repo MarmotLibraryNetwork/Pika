@@ -332,7 +332,7 @@ class AJAX extends AJAXHandler {
 		$displayTemplate = 'Search/covers-list.tpl'; // structure for bookcover tiles
 
 		// Rating Settings
-		global $library, $location;
+		global $library, $location;  /** @var Library $library */
 		$browseCategoryRatingsMode = null;
 		if ($location){
 			$browseCategoryRatingsMode = $location->browseCategoryRatingsMode;

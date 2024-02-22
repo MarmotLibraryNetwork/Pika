@@ -43,7 +43,7 @@ class SearchSources {
 	private static function getSearchSourcesDefault(){
 		$searchOptions = [];
 		//Check to see if marmot catalog is a valid option
-		global $library;
+		global $library;  /** @var Library $library */
 		global $configArray;
 		$repeatSearchSetting               = '';
 		$repeatInWorldCat                  = false;

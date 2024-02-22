@@ -760,7 +760,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 		// Rating Settings
-		global $library, $location;
+		global $library, $location; /** @var Library $library */
 		$browseCategoryRatingsMode = null;
 		if ($location){ // Try Location Setting
 			$browseCategoryRatingsMode = $location->browseCategoryRatingsMode;

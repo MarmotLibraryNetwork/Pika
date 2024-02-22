@@ -127,7 +127,7 @@ class Library extends DB_DataObject {
 	public $systemsToRepeatIn;
 	public $additionalLocationsToShowAvailabilityFor;
 	public $homeLink;
-	public $homeLinkText;
+	public $homeLinkText;  // Text for Home in breadcrumbs
 	public $useHomeLinkInBreadcrumbs;
 	public $useHomeLinkForLogo;
 	public $showAdvancedSearchbox;

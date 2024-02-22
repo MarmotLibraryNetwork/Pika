@@ -620,7 +620,7 @@ function killSpammySearchPhrases(){
 
 function setUpSearchDisplayOptions($module, $action){
 	global $interface;
-	global $library;
+	global $library;  /** @var Library $library */
 	global $timer;
 
 	global $solrScope;

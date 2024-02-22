@@ -366,7 +366,7 @@ class Browse_AJAX extends AJAXHandler {
 					// Do we need to initialize the ajax ratings?
 					if ($this->browseMode == 'covers'){
 						// Rating Settings
-						global $library;
+						global $library;  /** @var Library $library */
 						$location                  = Location::getActiveLocation();
 						$browseCategoryRatingsMode = null;
 						if ($location){
@@ -430,7 +430,7 @@ class Browse_AJAX extends AJAXHandler {
 			if (!empty($location->defaultBrowseMode)){ // check location setting
 				$browseMode = $location->defaultBrowseMode;
 			}else{
-				global $library;
+				global $library;  /** @var Library $library */
 				if (!empty($library->defaultBrowseMode)){ // check location setting
 					$browseMode = $library->defaultBrowseMode;
 				}else{
