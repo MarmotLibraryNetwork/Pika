@@ -56,8 +56,8 @@ class Marmot extends Sierra {
 		$libSubDomain = $library->subdomain;
 
 		// Grand County require email
-		if ($libSubDomain == 'gcld' || $libSubDomain == 'gcld2'){
-			foreach ($fields as $field) {
+		if ($libSubDomain == 'gcld'/* || $libSubDomain == 'gcld2'*/){
+			foreach ($fields as &$field) {
 				if ($field['property'] === 'email') {
 					$field['required'] = true;
 				}
@@ -65,7 +65,9 @@ class Marmot extends Sierra {
 		}
 
 		// Bemis Signature Field
-		if ($libSubDomain == 'bemis' || $libSubDomain == 'bemis2'){
+		if ($libSubDomain == 'bemis'/* || $libSubDomain == 'bemis2'*/){
+			$this->logger->debug("Fields", $fields);
+			$this->removeSelfRegistrationField('homelibrarycode', $fields);
 			$fields[] = [
 				'property'    => 'signature',
 				'type'        => 'text',
@@ -76,7 +78,7 @@ class Marmot extends Sierra {
 			];
 		}
 		// mesa cmu field
-		if ($libSubDomain == 'mesa' || $libSubDomain == 'mesa2'){
+		if ($libSubDomain == 'mesa'/* || $libSubDomain == 'mesa2'*/){
 			$fields[] = [
 				'property'    => 'isCmuStudent',
 				'type'        => 'checkbox',
@@ -87,7 +89,7 @@ class Marmot extends Sierra {
 		}
 
 		// vail fields
-		if ($libSubDomain == 'vail' || $libSubDomain == 'vail2'){
+		if ($libSubDomain == 'vail'/* || $libSubDomain == 'vail2'*/){
 			$fields[] = [
 				'property'    => 'altaddress',
 				'type'        => 'text',
@@ -155,6 +157,9 @@ class Marmot extends Sierra {
 					'label' => 'Notice Preference',
 					'value' => 'z'
 				];
+				break;
+			case 'bemis' :
+				$extraSelfRegParams['homeLibraryCode'] = 'be';
 				break;
 		}
 		return parent::selfRegister($extraSelfRegParams);

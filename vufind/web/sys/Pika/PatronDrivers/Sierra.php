@@ -1665,6 +1665,14 @@ class Sierra  implements \DriverInterface {
 		return $fields;
 	}
 
+	function removeSelfRegistrationField(string $fieldProperty, array &$selfRegistrationFields){
+		foreach ($selfRegistrationFields as $index => $field){
+			if ($field["property"] == $fieldProperty){
+				unset($selfRegistrationFields[$index]);
+				break;
+			}
+		}
+	}
 
 	/**
 	 * Send a self registration success email
