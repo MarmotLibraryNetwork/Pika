@@ -174,8 +174,8 @@ abstract class HorizonROA implements \DriverInterface {
 	 */
 	protected function loginViaWebService(string $barcode, string $password, bool $nocache = false): array{
 		// check cache for token info?
+		$memCacheKey = "horizon_ROA_session_token_info_$barcode";
 		if(!$nocache){
-			$memCacheKey = "horizon_ROA_session_token_info_$barcode";
 			$cachedSess = $this->cache->get($memCacheKey);
 			// we can get a null return from cache, only return if array
 			if (is_array($cachedSess)){
@@ -285,10 +285,14 @@ abstract class HorizonROA implements \DriverInterface {
 			$user->ilsUserId = $horizonRoaUserID;
 			if ($user->find(true)){
 				$userExistsInDB = true;
+				// update the barcode right away to avoid conflicts with ajax calls
+				$user->barcode = $barcode;
+				$user->update();
 			}
 		} else {
-			// set the user ils id so it's saved to DB
+			// set the user ils id and barcode
 			$user->ilsUserId = $horizonRoaUserID;
+			$user->barcode   = $barcode;
 		}
 
 		if ($validatedViaSSO) {
@@ -344,7 +348,8 @@ abstract class HorizonROA implements \DriverInterface {
 					$user->displayName = '';
 				}
 				$user->fullname     = $fullName ?? '';
-				$user->barcode      = $barcode;
+				// we tested the barcode at the start of log in and set it-- no need to do it again.
+				//$user->barcode      = $barcode;
 
 				$Address1    = "";
 				$City        = "";
@@ -453,7 +458,7 @@ abstract class HorizonROA implements \DriverInterface {
 				$user->webNote               = '';
 
 				if ($userExistsInDB) {
-					$user->update();
+					$e = $user->update();
 					// update password if needed
 					if($password != $user->getPassword()) {
 						// format date for mariadb datetime column
@@ -613,9 +618,7 @@ abstract class HorizonROA implements \DriverInterface {
 
 			}
 		}
-		//$time_end = microtime(true); // time
-		//$time = $time_end - $time_start; // time
-		//$this->logger->warn('Build checkouts finished in '.$time);
+
 		return $checkedOutTitles;
 	}
 
@@ -839,7 +842,7 @@ abstract class HorizonROA implements \DriverInterface {
 	 * @param   string  $recordId        The id of the bib record
 	 * @param   string  $pickupBranch    The branch where the user wants to pickup the item when available
 	 * @param   null|string $cancelDate  The date to cancel the Hold if it isn't filled
-	 * @return  array                                 Array of (success and message) to be used for an AJAX response
+	 * @return  array                    Array of (success and message) to be used for an AJAX response
 	 * @access  public
 	 */
 	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {

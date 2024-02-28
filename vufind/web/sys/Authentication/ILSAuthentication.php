@@ -73,8 +73,11 @@ class ILSAuthentication implements Authentication {
 				if ($patron && !PEAR_Singleton::isError($patron)) {
 					$this->logger->debug("Authenticated user with id {$patron->id} via the ILS");
 					/** @var User $user */
+					// TODO: why do we make a copy of the object? Better to just return $patron; rather than eat up memory
 					$user = $patron;
 				} elseif (PEAR_Singleton::isError($patron)){
+					// TODO: why are we checking for an error then just returning anyway?
+					// TODO: why do we make a copy of the object? Better to just return $patron; rather than eat up memory
 					$user = $patron;
 				} else{
 					$user = new PEAR_Error('authentication_error_invalid');
