@@ -733,6 +733,7 @@ public class FormatDetermination {
 						printFormats.contains("DVD")
 						|| printFormats.contains("VideoDisc")
 						|| printFormats.contains("MusicCD")  // Result of Enhanced music CDs
+						|| printFormats.contains("PlayStation4") // PlayStation 4 with CD-ROM physical description
 		)){
 			printFormats.remove("CDROM");
 		}
