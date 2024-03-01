@@ -260,7 +260,7 @@ abstract class HorizonROA implements \DriverInterface {
 		$userExistsInDB = false;
 		$user           = new User();
 		$user->barcode  = $barcode;
-
+		$user->source   = $this->accountProfile->name;
 		if ($user->find(true)){
 			$userExistsInDB = true;
 		}
@@ -283,6 +283,7 @@ abstract class HorizonROA implements \DriverInterface {
 			unset($user);
 			$user = new User();
 			$user->ilsUserId = $horizonRoaUserID;
+			$user->source    = $this->accountProfile->name;
 			if ($user->find(true)){
 				$userExistsInDB = true;
 				// update the barcode right away to avoid conflicts with ajax calls
