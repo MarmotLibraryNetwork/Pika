@@ -46,7 +46,6 @@
 
 # Clean Up Temporary Files
 #26 * * * * cd /tmp; /bin/rm -rf CURLCOOKIE*
-#27 */2 * * * cd /tmp; /bin/rm -rf epb*
 
 # Restart Apache
 0 0-7 * * * /usr/sbin/apachectl restart > /dev/null 2>&1
