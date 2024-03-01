@@ -4,8 +4,7 @@
 		<table class="adminTable table table-striped order-column table-condensed" id="adminTable">
 			<thead>
 			<tr>
-{*				<th><label title="Content Type">Content Type</label></th>*}
-				<th><label title="Content Type">Library</label></th>
+				<th><label title="Content Type">Content Type</label></th>
 				<th><label title="Num Objects">Num Objects</label></th>
 				<th><label title="Disk Space">Disk Space Used</label></th>
 				<th><label title="Disk Space (GB)">Disk Space Used (GB)</label></th>
