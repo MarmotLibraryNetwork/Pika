@@ -1,12 +1,4 @@
 {strip}
-{* lightbox references likely obsolete Pascal 1/4/2021
-{if $lightbox}
-<div onmouseup="this.style.cursor='default';" id="popupboxHeader" class="header">
-	<a onclick="hideLightbox(); return false;" href="">close</a>
-	{translate text='Title Citation'}
-</div>
-<div id="popupboxContent" class="content">
-{/if}*}
 {if $citationCount < 1}
 	{translate text="No citations are available for this record"}.
 {else}
