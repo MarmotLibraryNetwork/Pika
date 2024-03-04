@@ -248,21 +248,24 @@ div.striped {
    border-color:@focus-ring-color;
  }
 #horizontal-search-box .searchSourceHorizontal:focus, #horizontal-search-box .searchTypeHorizontal:focus,#horizontal-search-box .searchSourceHorizontal:focus, #horizontal-search-box .searchTypeHorizontal:focus{
-  border: 1px solid @focus-ring-color;
+  border: 1px solid @focus-ring-color!important;
 }
 .btn-group > .btn:focus, .btn-group-vertical > .btn:focus{
-  outline: 5px auto @focus-ring-color;
+  outline: 5px auto @focus-ring-color!important;
 }
-#vertical-menu-bar .menu-bar-option:has(.menu-icon:focus-visible){
-  border: 2px solid @focus-ring-color;
+a:focus img {
+  outline: 5px auto @focus-ring-color!important;
+}
+#vertical-menu-bar .menu-bar-option:has(.menu-icon:focus){
+  border: 2px solid @focus-ring-color!important;
   outline: 2px solid white;
 }
-#vertical-menu-bar .menu-icon-selected:has(.menu-icon:focus-visible){
-  border: 2px solid @menu-bar-background-color;
+#vertical-menu-bar .menu-icon-selected:has(.menu-icon:focus){
+  border: 2px solid @menu-bar-background-color!important;
   outline:2px solid white;
 }
 a:focus>.header-button{
-  outline: 5px auto @menu-bar-background-color;
+  outline: 5px auto @menu-bar-background-color!important;
 }
 #browse-category-picker .jcarousel-control-prev:focus, #browse-category-picker .jcarousel-control-next:focus {
   outline: 5px auto @focus-ring-color!important;
@@ -271,9 +274,11 @@ a:focus>.header-button{
    outline: 1px solid @focus-ring-color!important;
  }
 .jcarousel-pagination >a.active:focus{
-  outline: 2px solid @menu-bar-background-color;
+  outline: 2px solid @menu-bar-background-color!important;
 }
-
+input[type="checkbox"]:focus{
+  outline: 5px auto @menu-bar-background-color!important;
+}
 // Third party imports
 @import "ratings.less";
 @import "datepicker.less";
