@@ -62,7 +62,7 @@
 
 	{if $displayMode == 'covers'}
 		{if $recordEnd < $recordCount}
-			<a onclick="return Pika.Searches.getMoreResults()" role="button">
+			<a onclick="return Pika.Searches.getMoreResults()" role="button" aria-label="Get more search results" tabindex="0">
 				<div class="row" id="more-browse-results">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 				</div>

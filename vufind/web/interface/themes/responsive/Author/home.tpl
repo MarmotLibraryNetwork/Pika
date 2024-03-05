@@ -56,7 +56,7 @@
 
 	{if $displayMode == 'covers'}
 		{if $recordEnd < $recordCount}
-			<a onclick="return Pika.Searches.getMoreResults()">
+			<a onclick="return Pika.Searches.getMoreResults()" role="button" aria-label="Get more search results" tabindex="0">>
 				<div class="row" id="more-browse-results">
 					<img src="{img filename="browse_more_arrow.png"}" alt="Load More Search Results" title="Load More Search Results">
 				</div>

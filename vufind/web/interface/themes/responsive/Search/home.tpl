@@ -10,7 +10,7 @@
 						<ul>
 							{foreach from=$browseCategories item=browseCategory name="browseCategoryLoop"}
 								<li id="browse-category-{$browseCategory->textId}" class="browse-category category{$smarty.foreach.browseCategoryLoop.index%9}{if (!$selectedBrowseCategory && $smarty.foreach.browseCategoryLoop.index == 0) || $selectedBrowseCategory && $selectedBrowseCategory->textId == $browseCategory->textId} selected{/if}" data-category-id="{$browseCategory->textId}">
-										<div >
+										<div>
 											{$browseCategory->label}
 										</div>
 								</li>
@@ -18,7 +18,7 @@
 						</ul>
 					</div>
 
-					<a href="#" class="jcarousel-control-prev"></a>
+					<a href="#" class="jcarousel-control-prev" aria-label="Previous Browse Category"></a>
 					<a href="#" class="jcarousel-control-next"></a>
 
 					<p class="jcarousel-pagination"></p>
@@ -62,7 +62,7 @@
 				</div>
 			</div>
 
-			<a onclick="return Pika.Browse.getMoreResults()" role="button">
+			<a onclick="return Pika.Browse.getMoreResults()" role="button" aria-label="Get more results for browse category" tabindex="0">
 				<div class="row" id="more-browse-results">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 				</div>
