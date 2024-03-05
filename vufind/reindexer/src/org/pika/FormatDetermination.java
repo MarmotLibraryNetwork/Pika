@@ -733,7 +733,6 @@ public class FormatDetermination {
 						printFormats.contains("DVD")
 						|| printFormats.contains("VideoDisc")
 						|| printFormats.contains("MusicCD")  // Result of Enhanced music CDs
-						|| printFormats.contains("PlayStation4") // PlayStation 4 with CD-ROM physical description
 		)){
 			printFormats.remove("CDROM");
 		}
@@ -899,11 +898,12 @@ public class FormatDetermination {
 				|| printFormats.contains("PlayStation") || printFormats.contains("PlayStation3")
 				|| printFormats.contains("PlayStation4") || printFormats.contains("PlayStation5")
 				|| printFormats.contains("Wii") || printFormats.contains("WiiU")
+				|| printFormats.contains("NintendoSwitch")
 				|| printFormats.contains("NintendoDS") || printFormats.contains("3DS")
 				|| printFormats.contains("WindowsGame")){
 			printFormats.remove("Software");
 			printFormats.remove("Electronic");
-			printFormats.remove("CDROM");
+			printFormats.remove("CDROM");  // Game systems with CD-ROM physical description
 			printFormats.remove("DVD");
 			printFormats.remove("Blu-ray");
 			printFormats.remove("4KUltraBlu-Ray");
