@@ -10,7 +10,7 @@
 		<div class="row">
 			{if $showCovers}
 				{if $showBookbag}
-					<div class="col-xs-1 col-sm-1"><input type="checkbox" id="select_{$summId|escape}" class="checkbox checkbox-results" ></div>
+					<div class="col-xs-1 col-sm-1"><input type="checkbox" id="select_{$summId|escape}" class="checkbox checkbox-results" aria-label="Add title to bookbag" title="Add title to bookbag"></div>
 					{/if}
 				<div class="coversColumn col-xs-3 col-sm-3{if !$viewingCombinedResults} col-md-3 col-lg-2{/if} text-center">
 
