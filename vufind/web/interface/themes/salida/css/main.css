@@ -8325,7 +8325,6 @@ hr.menu {
   background-color: #FFF;
   color: #000;
   font-size: 18px;
-  text-shadow: 1px 1px #999999;
   padding: 5px;
   margin-bottom: 5px;
 }
@@ -8345,9 +8344,8 @@ hr.menu {
 }
 .sidebar-button {
   text-align: center;
-  background-color: #7c7c7d;
-  background: linear-gradient(to bottom, #7c7c7d, #3d4244);
   color: #fff;
+  background-color: #4F5253;
   padding: 3px 0;
   margin-bottom: 15px;
 }
