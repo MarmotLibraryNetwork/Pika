@@ -31,7 +31,7 @@
 			{if $holding.reserve == "Y"}
 				{translate text="On Reserve - Ask at Circulation Desk"}
 			{else}
-				<span class="{if $holding.availability}available{else}checkedout{/if}">
+				<span class="{if $holding.availability}available{else}checkedOut{/if}">
 					{if $holding.onOrderCopies > 1}{$holding.onOrderCopies}&nbsp;{/if}
 					{$holding.statusFull|translate}{if $holding.holdable == 0 && $showHoldButton} <label class='notHoldable' title='{$holding.nonHoldableReason}'>(Not Holdable)</label>{/if}
 				</span>
