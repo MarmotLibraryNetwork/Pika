@@ -6828,13 +6828,13 @@ td.hidden-inline-block-lg {
 }
 a,
 a:visited {
-  color: #428bca;
+  color: #4273AC;
 }
 a:focus {
   outline-color: #E15F15;
 }
 a:hover {
-  color: #3071a9;
+  color: #345a87;
 }
 a.btn-primary,
 a.btn-warning,
@@ -8388,7 +8388,7 @@ hr.menu {
 .sidebar-links .panel-body a:not(.btn),
 .sidebar-links .panel-body a:visited:not(.btn),
 .sidebar-links .panel-body a:hover:not(.btn) {
-  color: #428bca;
+  color: #4273AC;
 }
 .ui-helper-hidden {
   display: none;
@@ -9397,6 +9397,14 @@ a.browse-thumbnail-sorted.active {
 #formatCategories {
   padding-top: 3px;
 }
+.formatCategoryLabel {
+  vertical-align: central;
+  color: #8d929a;
+  margin-top: 3px;
+}
+.formatCategoryLabel a {
+  color: #8d929a;
+}
 #availabilityControlContainer {
   border-bottom: 3px solid #d5d6da;
   padding-bottom: 6px;
@@ -9412,18 +9420,20 @@ a.browse-thumbnail-sorted.active {
 .top-facet {
   margin-bottom: 10px;
 }
-.facetCol {
-  display: inline-block;
-  padding: 15px;
-  width: 120px;
-  vertical-align: top;
+.facetDetails {
+  padding: 10px;
+  border: 1px solid #c5c5c5;
+  border-top: none;
+  background-color: #fff;
 }
 .facetValue {
-  padding: 5px 0 5px 20px;
-  color: #888888;
+  padding: 3px 5px;
+  font-size: medium;
 }
 .facetValue a {
-  color: #888888;
+  color: #427AB3;
+  line-height: 1.7;
+  border-bottom: none;
 }
 .facetValue:first-of-type {
   margin-top: 3px;
@@ -9451,14 +9461,6 @@ a.browse-thumbnail-sorted.active {
   padding: 8px 30px 6px 15px;
   border-top: 1px solid #f4f4f4;
   border-bottom: 1px solid #adadad;
-}
-.formatCategoryLabel {
-  vertical-align: central;
-  color: #8d929a;
-  margin-top: 3px;
-}
-.formatCategoryLabel a {
-  color: #8d929a;
 }
 @media print {
   .top-facet {
@@ -10641,21 +10643,6 @@ fieldset[disabled] .btn-masquerade.active {
 .facetTitle,
 .exploreMoreTitle {
   background: #e8e8e8;
-}
-.facetDetails {
-  padding: 10px;
-  border: 1px solid #c5c5c5;
-  border-top: none;
-  background-color: #fff;
-}
-.facetValue {
-  padding: 3px 5px;
-  font-size: medium;
-}
-.facetValue a {
-  color: #428bca;
-  line-height: 1.7;
-  border-bottom: none;
 }
 #home-page-search-label {
   text-shadow: none;

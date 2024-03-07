@@ -9402,6 +9402,14 @@ a.browse-thumbnail-sorted.active {
 #formatCategories {
   padding-top: 3px;
 }
+.formatCategoryLabel {
+  vertical-align: central;
+  color: #8d929a;
+  margin-top: 3px;
+}
+.formatCategoryLabel a {
+  color: #8d929a;
+}
 #availabilityControlContainer {
   border-bottom: 3px solid #d5d6da;
   padding-bottom: 6px;
@@ -9417,18 +9425,20 @@ a.browse-thumbnail-sorted.active {
 .top-facet {
   margin-bottom: 10px;
 }
-.facetCol {
-  display: inline-block;
-  padding: 15px;
-  width: 120px;
-  vertical-align: top;
+.facetDetails {
+  padding: 10px;
+  border: 1px solid #c5c5c5;
+  border-top: none;
+  background-color: #fff;
 }
 .facetValue {
-  padding: 5px 0 5px 20px;
-  color: #888888;
+  padding: 3px 5px;
+  font-size: medium;
 }
 .facetValue a {
-  color: #888888;
+  color: #427AB3;
+  line-height: 1.7;
+  border-bottom: none;
 }
 .facetValue:first-of-type {
   margin-top: 3px;
@@ -9456,14 +9466,6 @@ a.browse-thumbnail-sorted.active {
   padding: 8px 30px 6px 15px;
   border-top: 1px solid #f4f4f4;
   border-bottom: 1px solid #adadad;
-}
-.formatCategoryLabel {
-  vertical-align: central;
-  color: #8d929a;
-  margin-top: 3px;
-}
-.formatCategoryLabel a {
-  color: #8d929a;
 }
 @media print {
   .top-facet {
@@ -10662,24 +10664,10 @@ fieldset[disabled] .btn-masquerade.active {
   background: #eee;
 }
 .facetTitle.panel-title,
-exploreMoreTitle.panel-title,
+.exploreMoreTitle.panel-title,
 .form-group .panel-title {
   color: #333;
   text-shadow: 1px 1px #fff;
-}
-.facetDetails {
-  padding: 10px;
-  border-top: none;
-  background-color: #fff;
-}
-.facetValue {
-  padding: 3px 5px;
-  font-size: 13px;
-}
-.facetValue a {
-  color: #428bca;
-  line-height: 1.2;
-  border-bottom: none;
 }
 .panel-group .panel.panel-default .panel-heading {
   background: #f5f5f5;
