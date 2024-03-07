@@ -8444,16 +8444,6 @@ hr.menu {
   border-radius: 0;
   background-image: none;
 }
-.categoryValue {
-  font-size: smaller;
-}
-.categoryValue img {
-  max-width: 50px;
-  height: 50px;
-}
-.categoryValue:hover img {
-  opacity: 0.7;
-}
 @media (max-width: 540px) {
   .formatCategoryLabel {
     float: none;
@@ -9400,12 +9390,21 @@ a.browse-thumbnail-sorted.active {
   padding-top: 3px;
 }
 .formatCategoryLabel {
-  vertical-align: central;
-  color: #8d929a;
+  color: #707785;
   margin-top: 3px;
 }
 .formatCategoryLabel a {
-  color: #8d929a;
+  color: #707785;
+}
+.categoryValue {
+  font-size: smaller;
+}
+.categoryValue img {
+  max-width: 50px;
+  height: 50px;
+}
+.categoryValue:hover img {
+  opacity: 0.7;
 }
 #availabilityControlContainer {
   border-bottom: 3px solid #d5d6da;
