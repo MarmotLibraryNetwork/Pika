@@ -2112,8 +2112,8 @@ fieldset[disabled] .btn-default.active {
 }
 .btn-primary {
   color: #fff;
-  background-color: #5891AA;
-  border-color: #4e839a;
+  background-color: #457D9C;
+  border-color: #3d6f8a;
 }
 .btn-primary:hover,
 .btn-primary:focus,
@@ -2121,8 +2121,8 @@ fieldset[disabled] .btn-default.active {
 .btn-primary.active,
 .open .dropdown-toggle.btn-primary {
   color: #fff;
-  background-color: #497a90;
-  border-color: #3a6172;
+  background-color: #386680;
+  border-color: #2a4d60;
 }
 .btn-primary:active,
 .btn-primary.active,
@@ -2144,11 +2144,11 @@ fieldset[disabled] .btn-primary:active,
 .btn-primary.disabled.active,
 .btn-primary[disabled].active,
 fieldset[disabled] .btn-primary.active {
-  background-color: #5891AA;
-  border-color: #4e839a;
+  background-color: #457D9C;
+  border-color: #3d6f8a;
 }
 .btn-primary .badge {
-  color: #5891AA;
+  color: #457D9C;
   background-color: #fff;
 }
 .btn-warning {
@@ -7054,11 +7054,11 @@ a:focus img {
   outline: 2px solid white;
 }
 #vertical-menu-bar .menu-icon-selected:has(.menu-icon:focus) {
-  border: 2px solid #457D9C !important;
+  border: 2px solid #2D5D82 !important;
   outline: 2px solid white;
 }
 a:focus > .header-button {
-  outline: 5px auto #457D9C !important;
+  outline: 5px auto #2D5D82 !important;
 }
 #browse-category-picker .jcarousel-control-prev:focus,
 #browse-category-picker .jcarousel-control-next:focus {
@@ -7068,10 +7068,10 @@ a:focus > .header-button {
   outline: 1px solid #E15F15 !important;
 }
 .jcarousel-pagination > a.active:focus {
-  outline: 2px solid #457D9C !important;
+  outline: 2px solid #2D5D82 !important;
 }
 input[type="checkbox"]:focus {
-  outline: 5px auto #457D9C !important;
+  outline: 5px auto #2D5D82 !important;
 }
 .ui-rater > span {
   vertical-align: top;
@@ -7538,8 +7538,8 @@ fieldset[disabled] .datepicker table tr td.selected.highlighted.active {
 .datepicker table tr td.active,
 .datepicker table tr td.active.highlighted {
   color: #fff;
-  background-color: #5891AA;
-  border-color: #4e839a;
+  background-color: #457D9C;
+  border-color: #3d6f8a;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 .datepicker table tr td.active:hover,
@@ -7553,8 +7553,8 @@ fieldset[disabled] .datepicker table tr td.selected.highlighted.active {
 .open .dropdown-toggle.datepicker table tr td.active,
 .open .dropdown-toggle.datepicker table tr td.active.highlighted {
   color: #fff;
-  background-color: #497a90;
-  border-color: #3a6172;
+  background-color: #386680;
+  border-color: #2a4d60;
 }
 .datepicker table tr td.active:active,
 .datepicker table tr td.active.highlighted:active,
@@ -7594,12 +7594,12 @@ fieldset[disabled] .datepicker table tr td.active.highlighted:active,
 .datepicker table tr td.active.highlighted[disabled].active,
 fieldset[disabled] .datepicker table tr td.active.active,
 fieldset[disabled] .datepicker table tr td.active.highlighted.active {
-  background-color: #5891AA;
-  border-color: #4e839a;
+  background-color: #457D9C;
+  border-color: #3d6f8a;
 }
 .datepicker table tr td.active .badge,
 .datepicker table tr td.active.highlighted .badge {
-  color: #5891AA;
+  color: #457D9C;
   background-color: #fff;
 }
 .datepicker table tr td span {
@@ -7627,8 +7627,8 @@ fieldset[disabled] .datepicker table tr td.active.highlighted.active {
 .datepicker table tr td span.active.disabled,
 .datepicker table tr td span.active.disabled:hover {
   color: #fff;
-  background-color: #5891AA;
-  border-color: #4e839a;
+  background-color: #457D9C;
+  border-color: #3d6f8a;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 .datepicker table tr td span.active:hover,
@@ -7652,8 +7652,8 @@ fieldset[disabled] .datepicker table tr td.active.highlighted.active {
 .open .dropdown-toggle.datepicker table tr td span.active.disabled,
 .open .dropdown-toggle.datepicker table tr td span.active.disabled:hover {
   color: #fff;
-  background-color: #497a90;
-  border-color: #3a6172;
+  background-color: #386680;
+  border-color: #2a4d60;
 }
 .datepicker table tr td span.active:active,
 .datepicker table tr td span.active:hover:active,
@@ -7729,14 +7729,14 @@ fieldset[disabled] .datepicker table tr td span.active.active,
 fieldset[disabled] .datepicker table tr td span.active:hover.active,
 fieldset[disabled] .datepicker table tr td span.active.disabled.active,
 fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
-  background-color: #5891AA;
-  border-color: #4e839a;
+  background-color: #457D9C;
+  border-color: #3d6f8a;
 }
 .datepicker table tr td span.active .badge,
 .datepicker table tr td span.active:hover .badge,
 .datepicker table tr td span.active.disabled .badge,
 .datepicker table tr td span.active.disabled:hover .badge {
-  color: #5891AA;
+  color: #457D9C;
   background-color: #fff;
 }
 .datepicker table tr td span.old,
@@ -7879,13 +7879,13 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
   height: 0;
 }
 .switch input:checked + .slider {
-  background-color: #5891AA;
+  background-color: #457D9C;
 }
 .switch input:checked + .slider:before {
   transform: translateX(19px);
 }
 .switch input:focus + .slider {
-  box-shadow: 0 0 1px #5891AA;
+  box-shadow: 0 0 1px #457D9C;
 }
 .slider {
   position: absolute;
@@ -7958,7 +7958,7 @@ hr.menu {
   height: 90px;
   background-color: #ffffff;
   background: linear-gradient(to bottom, #ffffff, #ffffff 85%, #ffffff);
-  border-bottom: 8px solid #457D9C;
+  border-bottom: 8px solid #2D5D82;
   margin-bottom: 0;
   min-height: 110px;
 }
@@ -8009,7 +8009,7 @@ hr.menu {
   font-size: 16px;
 }
 #footer-container {
-  border-top: 8px solid #457D9C;
+  border-top: 8px solid #2D5D82;
   padding-top: 3px;
 }
 @media screen and (max-width: 767px) {
@@ -8036,7 +8036,7 @@ hr.menu {
   padding: 0 3px 0 3px;
 }
 #navigation-controls {
-  border-top: 8px solid #457D9C;
+  border-top: 8px solid #2D5D82;
   background: #fff;
 }
 @media print {
@@ -8046,7 +8046,7 @@ hr.menu {
 }
 .menu-bar {
   color: #FFF;
-  background-color: #457D9C;
+  background-color: #2D5D82;
 }
 #horizontal-menu-bar-container {
   padding-left: 5px;
@@ -8066,7 +8066,7 @@ hr.menu {
   float: left;
 }
 #horizontal-menu-bar-container .menu-icon.menu-icon-selected {
-  background-color: #E15F15;
+  background-color: #D6430A;
 }
 #horizontal-menu-bar-container.sticky-menu-bar {
   position: fixed;
@@ -8089,7 +8089,7 @@ hr.menu {
   width: 40px;
   height: 2000px;
   height: 100vh;
-  background-color: #457D9C;
+  background-color: #2D5D82;
   color: #FFF;
   padding-left: 0;
   padding-right: 0;
@@ -8103,7 +8103,7 @@ hr.menu {
   position: relative;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected {
-  background-color: #E15F15;
+  background-color: #D6430A;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
   color: #FFF;
@@ -8228,8 +8228,8 @@ hr.menu {
   background-image: none;
 }
 #home-page-search {
-  background-color: #457D9C;
-  background: linear-gradient(to bottom, #457D9C, #5891AA);
+  background-color: #2D5D82;
+  background: linear-gradient(to bottom, #2D5D82, #457D9C);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8257,7 +8257,7 @@ hr.menu {
 .searchSource {
   margin: 5px 0 0;
   color: #fff;
-  background-color: #5891AA;
+  background-color: #457D9C;
   border: none;
   width: 90% !important;
 }
@@ -8268,8 +8268,8 @@ hr.menu {
   font-size: 85%;
 }
 #horizontal-search-box {
-  background-color: #457D9C;
-  background: linear-gradient(to bottom, #457D9C, #5891AA);
+  background-color: #2D5D82;
+  background: linear-gradient(to bottom, #2D5D82, #457D9C);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -8377,8 +8377,8 @@ hr.menu {
   outline: none;
 }
 .sidebar-links .active .panel-heading {
-  background-color: #E15F15;
-  background: linear-gradient(to bottom, #E15F15, #b24b11);
+  background-color: #D6430A;
+  background: linear-gradient(to bottom, #D6430A, #a53408);
 }
 .sidebar-links .panel-body {
   font-size: 13px;
@@ -8388,7 +8388,7 @@ hr.menu {
 .sidebar-links .panel-body a:not(.btn),
 .sidebar-links .panel-body a:visited:not(.btn),
 .sidebar-links .panel-body a:hover:not(.btn) {
-  color: #5891AA;
+  color: #457D9C;
 }
 .ui-helper-hidden {
   display: none;
@@ -8528,7 +8528,7 @@ hr.menu {
 .browse-label-text {
   background-color: #ffffff;
   font-size: 22px;
-  color: #457D9C;
+  color: #2D5D82;
   line-height: 5px;
   vertical-align: top;
   margin: auto;
@@ -8538,7 +8538,7 @@ hr.menu {
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
   background-color: #ffffff;
-  color: #E15F15;
+  color: #D6430A;
   font-size: 50px;
 }
 #browse-category-picker .jcarousel-control-prev:focus,
@@ -8563,7 +8563,7 @@ hr.menu {
   outline: none;
 }
 .browse-category {
-  color: #457D9C;
+  color: #2D5D82;
   font-size: 30px;
   padding: 10px;
   text-shadow: 1px 1px #555555;
@@ -8577,7 +8577,7 @@ hr.menu {
   color: darkblue;
 }
 .browse-category div {
-  color: #457D9C;
+  color: #2D5D82;
   cursor: pointer;
   height: 80px;
 }
@@ -8696,7 +8696,7 @@ hr.menu {
 }
 .selected-browse-label-search {
   font-size: 20px;
-  color: #457D9C;
+  color: #2D5D82;
   vertical-align: top;
   margin-left: 20px;
   float: left;
@@ -8704,7 +8704,7 @@ hr.menu {
   padding: 0 8px;
 }
 .selected-browse-label-search a {
-  color: #457D9C;
+  color: #2D5D82;
 }
 #selected-browse-search-link .icon-before {
   position: relative;
@@ -8979,7 +8979,7 @@ a.browse-thumbnail-sorted.active {
 }
 #browse-sub-category-menu button.selected {
   color: #fff;
-  background-color: #EA7315;
+  background-color: #D6430A;
 }
 #browse-sub-category-menu button:focus {
   outline: none;
@@ -9028,7 +9028,7 @@ a.browse-thumbnail-sorted.active {
   font-size: 18px;
 }
 #contactUpdateForm .btn-group .btn-default.active {
-  background-color: #5891AA;
+  background-color: #457D9C;
   box-shadow: none;
   color: #fff;
 }
@@ -9656,7 +9656,7 @@ a.browse-thumbnail-sorted.active {
   width: 100%;
   display: inline-block;
   padding: 2px 2px 20px;
-  border-top: 5px solid #457D9C;
+  border-top: 5px solid #2D5D82;
   margin-top: 15px;
 }
 .combined-results-section .related-manifestation {
@@ -9671,8 +9671,8 @@ a.browse-thumbnail-sorted.active {
 .combined-results-button {
   float: right;
   margin-top: 4px;
-  background-color: #457D9C;
-  border-color: #457D9C;
+  background-color: #2D5D82;
+  border-color: #2D5D82;
 }
 .bookbag-container {
   position: fixed;
@@ -9695,7 +9695,7 @@ a.browse-thumbnail-sorted.active {
 }
 .bookbag {
   height: 2em;
-  background: #457D9C;
+  background: #2D5D82;
   color: white;
   width: 3em;
   line-height: 2em;
@@ -9765,7 +9765,7 @@ a.browse-thumbnail-sorted.active {
   }
 }
 .cart-container {
-  background: #457D9C;
+  background: #2D5D82;
   padding: 10px;
   color: white;
   transition: 0.15s ease-out;
@@ -9863,8 +9863,8 @@ a.browse-thumbnail-sorted.active {
   text-shadow: 1px 1px #fff;
 }
 #more-details-accordion .active .panel-heading {
-  background-color: #E15F15;
-  background: linear-gradient(to bottom, #E15F15, #b24b11);
+  background-color: #D6430A;
+  background: linear-gradient(to bottom, #D6430A, #a53408);
 }
 #more-details-accordion .active .panel-title {
   color: #fff;
@@ -9921,15 +9921,15 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
 }
 #explore-more-sidebar {
-  background-color: #457D9C;
-  background: linear-gradient(to bottom, #457D9C, #5891AA);
+  background-color: #2D5D82;
+  background: linear-gradient(to bottom, #2D5D82, #457D9C);
 }
 #explore-more-header {
   padding: 10px 25px 5px 0;
   margin-top: 5px;
   text-align: right;
   color: #FFF;
-  background-color: #3d6f8a;
+  background-color: #264f6f;
   font-variant: small-caps;
   font-weight: bold;
   font-size: 16px;
@@ -9946,7 +9946,7 @@ a.browse-thumbnail-sorted.active {
   text-transform: uppercase;
   font-weight: bold;
   color: #000075;
-  border-bottom: 2px solid #457D9C;
+  border-bottom: 2px solid #2D5D82;
   margin-top: 15px;
 }
 #explore-more-body .section {
@@ -9988,12 +9988,12 @@ a.browse-thumbnail-sorted.active {
   }
 }
 .exploreMoreBar {
-  border: solid 1px #457D9C;
+  border: solid 1px #2D5D82;
   margin: 10px 5px 15px;
 }
 .exploreMoreBar .exploreMoreBarLabel {
   color: #FFF;
-  background-color: #457D9C;
+  background-color: #2D5D82;
   font-weight: bold;
   text-transform: uppercase;
   white-space: nowrap;
@@ -10011,7 +10011,7 @@ a.browse-thumbnail-sorted.active {
 }
 .exploreMoreBar .label-left,
 .exploreMoreBar .label-left img {
-  background-color: #457D9C;
+  background-color: #2D5D82;
 }
 .exploreMoreBar .label-left .exploreMoreBarLabel {
   position: absolute;
@@ -10031,7 +10031,7 @@ a.browse-thumbnail-sorted.active {
 }
 .exploreMoreBar .label-top,
 .exploreMoreBar .label-top img {
-  background-color: #457D9C;
+  background-color: #2D5D82;
   display: inline-block;
 }
 .exploreMoreBar .label-top .exploreMoreBarLabel {
@@ -10098,7 +10098,7 @@ a.browse-thumbnail-sorted.active {
 #book-sections .jcarousel-control-next {
   height: 100%;
   background-color: transparent;
-  color: #457D9C;
+  color: #2D5D82;
   z-index: 2;
   box-shadow: white 0px 0px 0px 0px;
 }
@@ -10262,7 +10262,7 @@ a.browse-thumbnail-sorted.active {
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentControls,
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentSearchControls {
   color: #FFF;
-  background-color: #457D9C;
+  background-color: #2D5D82;
   padding: 10px 0;
   min-height: 124px;
 }
@@ -10272,7 +10272,7 @@ a.browse-thumbnail-sorted.active {
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox #searchComponentForm {
   background-color: white;
-  border: 1px solid #356179;
+  border: 1px solid #20425c;
   padding: 3px;
   margin-left: 5px;
 }
@@ -10300,7 +10300,7 @@ a.browse-thumbnail-sorted.active {
   top: 65px;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader {
-  background-color: #457D9C;
+  background-color: #2D5D82;
   padding: 10px 10px 0;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader + .row {
@@ -10490,7 +10490,7 @@ fieldset[disabled] .btn-masquerade.active {
   border: 0;
   border-radius: 0.5em;
   color: #fff !important;
-  background-color: #E15F15;
+  background-color: #D6430A;
   margin-top: 20px;
   line-height: 60px !important;
   text-shadow: none;
@@ -10502,7 +10502,7 @@ fieldset[disabled] .btn-masquerade.active {
 }
 #browse-label {
   background-color: #ffffff;
-  border-bottom: 1px solid #457D9C;
+  border-bottom: 1px solid #2D5D82;
   margin: 25px 0 15px;
   height: auto;
   padding-bottom: 20px;
@@ -10525,9 +10525,9 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .browse-category.selected {
   border: none;
-  background-color: #EA7315;
-  background: #EA7315;
-  background: linear-gradient(to bottom, #EA7315 0%, #EA7315 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
+  background-color: #D6430A;
+  background: #D6430A;
+  background: linear-gradient(to bottom, #D6430A 0%, #D6430A 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
 }
 .browse-category.selected div {
   color: #fff;
@@ -10535,7 +10535,7 @@ fieldset[disabled] .btn-masquerade.active {
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
   background-color: #fff;
-  color: #E15F15;
+  color: #D6430A;
   box-shadow: none;
   font-size: 20px;
 }
@@ -10543,7 +10543,7 @@ fieldset[disabled] .btn-masquerade.active {
 #browse-category-picker .jcarousel-control-next:active,
 #browse-category-picker .jcarousel-control-prev:hover,
 #browse-category-picker .jcarousel-control-next:hover {
-  color: #EA7315;
+  color: #D6430A;
   text-decoration: none;
 }
 #browse-category-picker a.jcarousel-control-next:after {
@@ -10553,7 +10553,7 @@ fieldset[disabled] .btn-masquerade.active {
   content: "◀";
 }
 #browse-category-picker .jcarousel-pagination a.active {
-  background: #E15F15;
+  background: #D6430A;
   box-shadow: 0 0 2px #4E443C;
 }
 #browse-category-picker .jcarousel-pagination a,
@@ -10566,7 +10566,7 @@ fieldset[disabled] .btn-masquerade.active {
   color: black;
   background: none;
   padding: 20px 0;
-  border-top: 1px solid #457D9C;
+  border-top: 1px solid #2D5D82;
 }
 .selected-browse-label-search {
   background: none;
@@ -10575,7 +10575,7 @@ fieldset[disabled] .btn-masquerade.active {
   text-transform: uppercase;
 }
 #browse-sub-category-menu button.selected {
-  background-color: #EA7315;
+  background-color: #D6430A;
 }
 .sidebar-links .panel-heading {
   background: #e7e7e7;
