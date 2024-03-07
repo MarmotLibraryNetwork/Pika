@@ -67,16 +67,6 @@
   margin-top: 20px;
 }
 
-// The html tag also has .sidebar-label class so this is redundant
-//#narrow-search-label{
-//  text-align: center;
-//  background-color: #7c7c7d;
-//  background: linear-gradient(to bottom, #7c7c7d, #3d4244);
-//  color: #fff;
-//  padding: 3px 0;
-//  margin-top: 20px;
-//}
-
 .facetTitle, .exploreMoreTitle{
   background-color: #e8e8e8;
   background: linear-gradient(to bottom, #e8e8e8, #d7d7d7);
@@ -143,12 +133,10 @@
 }
 .result-tools-horizontal{
   margin-top: 6px;
-  //margin-left: 30px; // disabled for search results. If needed elsewhere create a more specific rule. plb 1-28-2016
-}
-.result-tools-horizontal .btn{
-  background-color: #909090;
-  background: linear-gradient(to bottom, #909090, #686b6c);
-  color: #fff;
+  & .btn {
+    background-color: #4F5253; // passes AAA for normal text https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=4F5253
+    color: #fff;
+  }
 }
 
 .gray-line-mixin() {
@@ -162,6 +150,7 @@
 }
 .related-manifestations{
   margin-top: 3px;
+  margin-bottom: 5px;
 }
 .manifestation-toggle{
   display: inline-block;
@@ -177,14 +166,14 @@
 .manifestation-toggle-placeholder{
   display: inline-block;
   padding: 3px;
-  width:20px;
+  width: 20px;
   height: 18px;
 }
 .manifestation-toggle{
   content: "-";
-}
-.manifestation-toggle.collapsed{
-  content: "+";
+  &.collapsed{
+    content: "+";
+  }
 }
 .related-manifestation{
   padding-top: 4px;
@@ -201,9 +190,6 @@
 .manifestation-actions .btn-default{
   background-color: #088ec6;
   color: #fff;
-}
-.related-manifestations{
-  margin-bottom: 5px;
 }
 .manifestation-format{
   font-size:13px;
@@ -279,15 +265,7 @@
   #availabilityControl button {
 
   }
-  //.title-rating {
-  //  display: none;
-  //}
 }
-
-//// Hide Formats label when shown in modal pop-up
-//.modal .related-manifestations-header {
-//  display: none;
-//}
 
 .search-results-navigation {
   display: flex;
@@ -325,11 +303,9 @@
   }
   width: 100%;
   display: inline-block;
-  padding: 2px;
-  padding-bottom: 20px;
+  padding: 2px 2px 20px;
   border-top: 5px solid @menu-bar-background-color;
   margin-top: 15px;
-
 }
 .combined-results-section-title {
   font-weight: bold;
@@ -338,10 +314,10 @@
   float:left;
 }
 .combined-results-button{
-  float:right;
+  float: right;
   margin-top: 4px;
   background-color: @menu-bar-background-color;
-	border-color: @menu-bar-background-color;
+  border-color: @menu-bar-background-color;
 }
 
 
@@ -350,75 +326,63 @@
   height: 4em;
   z-index:3;
   right: 0;
-}
-.bookbag-container.sticky{
-  position: fixed;
-  right: 0;
-  top:5px;
+  &.sticky {
+    position: fixed;
+    right: 0;
+    top: 5px;
+  }
 }
 
 @media (max-width: @screen-md-min) {
-
-  .bookbag-container{
+  .bookbag-container, .bookbag-container.sticky{
     position: fixed;
     right: 0;
     top: 50px;
   }
-  .bookbag-container.sticky{
-    position: fixed;
-    right: 0;
-    top:50px;
-  }
 }
 
-
-.bookbag{
+.bookbag {
   height: 2em;
   background: @menu-bar-background-color;
-  color:white;
+  color: white;
   width: 3em;
-  line-height:2em;
-  border-radius:10px;
-  animation-name:none;
+  line-height: 2em;
+  border-radius: 10px;
+  animation-name: none;
   cursor: pointer;
-  position:absolute;
-  right:0;
-  z-index:4;
-  -webkit-transition: .75s ease-out;
-  -moz-transition: .75s ease-out;
-  -o-transition: .75s ease-out;
-  -ms-transition: .75s ease-out;
+  position: absolute;
+  right: 0;
+  z-index: 4;
   transition: .75s ease-out;
-}
-
-.bookbag::before{
-  content:"‹";
-  font-size: 60px;
-  font-weight: lighter;
-  float:left;
-  line-height:15px;
+  &::before {
+    content: "‹";
+    font-size: 60px;
+    font-weight: lighter;
+    float: left;
+    line-height: 15px;
   }
-.bookbag .itemCheckCount{
-  float:left;
-}
-.bookbag.bounce{
-  animation:bounce .7s 3;
-  transition-timing-function:ease-out;
-}
-.bookbag.open{
-  left:3px;
-  width:15px;
-  top: 6px;
-}
-.bookbag.open::before{
-  content: "›";
-  font-size: 60px;
-  font-weight: lighter;
-  float:left;
-  line-height:15px;
-}
-.bookbag.open .itemCheckCount{
-  display:none;
+  & .itemCheckCount {
+    float: left;
+  }
+  &.bounce {
+    animation: bounce .7s 3;
+    transition-timing-function: ease-out;
+  }
+  &.open {
+    left: 3px;
+    width: 15px;
+    top: 6px;
+    &::before{
+      content: "›";
+      font-size: 60px;
+      font-weight: lighter;
+      float: left;
+      line-height: 15px;
+    }
+   .itemCheckCount{
+      display: none;
+    }
+  }
 }
 
 .bbLabel{
@@ -428,13 +392,11 @@
   top: 60px;
   display: inline-block;
   white-space: nowrap;
-  -webkit-transform: rotate(90deg) translateY(-20%);
   transform: rotate(90deg) translateY(-20%);
-  -webkit-transform-origin: 0 0;
   transform-origin: 0 0;
-}
-.bbLabel.open{
-  display: none;
+  &.open {
+    display: none;
+  }
 }
 
 @keyframes bounce {
@@ -457,21 +419,16 @@
   background: @menu-bar-background-color;
   padding: 10px;
   color: white;
-  -webkit-transition: .15s ease-out;
-  -moz-transition: .15s ease-out;
-  -o-transition: .15s ease-out;
-  -ms-transition: .15s ease-out;
   transition: .15s ease-out;
   width:350px;
-}
-.cart-container.cartIn{
-  position:absolute;
-  right: -325px;
-  padding: 1px 10px 10px 25px;
-
+  &.cartIn {
+    position: absolute;
+    right: -325px;
+    padding: 1px 10px 10px 25px;
+  }
 }
 .cart{
-  background:white;
+  background: white;
   padding: 5px 10px 5px 10px;
   color: #6B6B6B;
   height: 300px;
@@ -488,12 +445,3 @@
   font-size: medium;
   cursor: pointer;
 }
-//@media (min-width: @screen-md-min) {
-//  //#combined-results-container {
-//  //  column-count: 2;
-//  //  column-gap: 15px;
-//  //}
-//  .combined-results-section {
-//    page-break-inside: avoid;
-//  }
-//}

@@ -9516,8 +9516,7 @@ a.browse-thumbnail-sorted.active {
   margin-top: 6px;
 }
 .result-tools-horizontal .btn {
-  background-color: #909090;
-  background: linear-gradient(to bottom, #909090, #686b6c);
+  background-color: #4F5253;
   color: #fff;
 }
 .results-covers {
@@ -9527,6 +9526,7 @@ a.browse-thumbnail-sorted.active {
 }
 .related-manifestations {
   margin-top: 3px;
+  margin-bottom: 5px;
 }
 .manifestation-toggle {
   display: inline-block;
@@ -9565,9 +9565,6 @@ a.browse-thumbnail-sorted.active {
 .manifestation-actions .btn-default {
   background-color: #088ec6;
   color: #fff;
-}
-.related-manifestations {
-  margin-bottom: 5px;
 }
 .manifestation-format {
   font-size: 13px;
@@ -9673,8 +9670,7 @@ a.browse-thumbnail-sorted.active {
 .combined-results-section {
   width: 100%;
   display: inline-block;
-  padding: 2px;
-  padding-bottom: 20px;
+  padding: 2px 2px 20px;
   border-top: 5px solid #007A53;
   margin-top: 15px;
 }
@@ -9705,11 +9701,7 @@ a.browse-thumbnail-sorted.active {
   top: 5px;
 }
 @media (max-width: 992px) {
-  .bookbag-container {
-    position: fixed;
-    right: 0;
-    top: 50px;
-  }
+  .bookbag-container,
   .bookbag-container.sticky {
     position: fixed;
     right: 0;
