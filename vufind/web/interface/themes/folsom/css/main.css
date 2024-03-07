@@ -8530,7 +8530,7 @@ hr.menu {
 .browse-label-text {
   background-color: #ffffff;
   font-size: 22px;
-  color: #467E99;
+  color: #457D9C;
   line-height: 5px;
   vertical-align: top;
   margin: auto;
@@ -8565,7 +8565,7 @@ hr.menu {
   outline: none;
 }
 .browse-category {
-  color: #467E99;
+  color: #457D9C;
   font-size: 20px;
   padding: 10px;
   text-shadow: 1px 1px #555555;
@@ -8579,7 +8579,7 @@ hr.menu {
   color: darkblue;
 }
 .browse-category div {
-  color: #467E99;
+  color: #457D9C;
   cursor: pointer;
   height: 80px;
 }
@@ -8698,7 +8698,7 @@ hr.menu {
 }
 .selected-browse-label-search {
   font-size: 20px;
-  color: #467E99;
+  color: #457D9C;
   vertical-align: top;
   margin-left: 20px;
   float: left;
@@ -8706,7 +8706,7 @@ hr.menu {
   padding: 0 8px;
 }
 .selected-browse-label-search a {
-  color: #467E99;
+  color: #457D9C;
 }
 #selected-browse-search-link .icon-before {
   position: relative;
@@ -9857,7 +9857,7 @@ a.browse-thumbnail-sorted.active {
 .share-tools {
   background-color: #e6e6e6;
   background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
-  color: #6e6f6f;
+  color: #524747;
   border-bottom: 1px solid #adadad;
   font-weight: bold;
   text-align: left;
@@ -9870,10 +9870,6 @@ a.browse-thumbnail-sorted.active {
 }
 .share-tools-label {
   padding-right: 10px;
-}
-#side-bar .share-tools {
-  margin-top: 8px;
-  width: 200px;
 }
 #more-details-accordion .panel-group .panel + .panel {
   margin-top: 0;

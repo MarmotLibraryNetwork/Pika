@@ -42,7 +42,12 @@
 .share-tools{
   background-color: #e6e6e6;
   background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
-  color: #6e6f6f;
+  //color: #6e6f6f;
+  // AA Fails normal text https://webaim.org/resources/contrastchecker/?fcolor=6E6F6F&bcolor=E6E6E6
+  //background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
+  // AA Fails  normal text  https://webaim.org/resources/contrastchecker/?fcolor=6E6F6F&bcolor=E7E7E7
+  // AA Fails  normal text  https://webaim.org/resources/contrastchecker/?fcolor=6E6F6F&bcolor=D7D7D7
+  color: #524747; // Passes AAA https://webaim.org/resources/contrastchecker/?fcolor=524747&bcolor=E6E6E6
   border-bottom: 1px solid #adadad;
   font-weight: bold;
   text-align: left;
@@ -57,11 +62,11 @@
   padding-right: 10px;
 }
 
-//TODO: used anymore?
-#side-bar .share-tools{
-  margin-top: 8px;
-  width: 200px;
-}
+
+//#side-bar .share-tools{
+//  margin-top: 8px;
+//  width: 200px;
+//}
 
 // More Like this formatting //
 #more-details-accordion {

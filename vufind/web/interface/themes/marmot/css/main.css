@@ -7054,11 +7054,11 @@ a:focus img {
   outline: 2px solid white;
 }
 #vertical-menu-bar .menu-icon-selected:has(.menu-icon:focus) {
-  border: 2px solid #467E99 !important;
+  border: 2px solid #457D9C !important;
   outline: 2px solid white;
 }
 a:focus > .header-button {
-  outline: 5px auto #467E99 !important;
+  outline: 5px auto #457D9C !important;
 }
 #browse-category-picker .jcarousel-control-prev:focus,
 #browse-category-picker .jcarousel-control-next:focus {
@@ -7068,10 +7068,10 @@ a:focus > .header-button {
   outline: 1px solid #E15F15 !important;
 }
 .jcarousel-pagination > a.active:focus {
-  outline: 2px solid #467E99 !important;
+  outline: 2px solid #457D9C !important;
 }
 input[type="checkbox"]:focus {
-  outline: 5px auto #467E99 !important;
+  outline: 5px auto #457D9C !important;
 }
 .ui-rater > span {
   vertical-align: top;
@@ -7958,7 +7958,7 @@ hr.menu {
   height: 90px;
   background-color: #ffffff;
   background: linear-gradient(to bottom, #ffffff, #ffffff 85%, #ffffff);
-  border-bottom: 8px solid #467E99;
+  border-bottom: 8px solid #457D9C;
   margin-bottom: 0;
   min-height: 110px;
 }
@@ -8009,7 +8009,7 @@ hr.menu {
   font-size: 16px;
 }
 #footer-container {
-  border-top: 8px solid #467E99;
+  border-top: 8px solid #457D9C;
   padding-top: 3px;
 }
 @media screen and (max-width: 767px) {
@@ -8036,7 +8036,7 @@ hr.menu {
   padding: 0 3px 0 3px;
 }
 #navigation-controls {
-  border-top: 8px solid #467E99;
+  border-top: 8px solid #457D9C;
   background: #fff;
 }
 @media print {
@@ -8046,7 +8046,7 @@ hr.menu {
 }
 .menu-bar {
   color: #FFF;
-  background-color: #467E99;
+  background-color: #457D9C;
 }
 #horizontal-menu-bar-container {
   padding-left: 5px;
@@ -8089,7 +8089,7 @@ hr.menu {
   width: 40px;
   height: 2000px;
   height: 100vh;
-  background-color: #467E99;
+  background-color: #457D9C;
   color: #FFF;
   padding-left: 0;
   padding-right: 0;
@@ -8228,8 +8228,8 @@ hr.menu {
   background-image: none;
 }
 #home-page-search {
-  background-color: #467E99;
-  background: linear-gradient(to bottom, #467E99, #5891AA);
+  background-color: #457D9C;
+  background: linear-gradient(to bottom, #457D9C, #5891AA);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8268,8 +8268,8 @@ hr.menu {
   font-size: 85%;
 }
 #horizontal-search-box {
-  background-color: #467E99;
-  background: linear-gradient(to bottom, #467E99, #5891AA);
+  background-color: #457D9C;
+  background: linear-gradient(to bottom, #457D9C, #5891AA);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -8530,7 +8530,7 @@ hr.menu {
 .browse-label-text {
   background-color: #ffffff;
   font-size: 22px;
-  color: #467E99;
+  color: #457D9C;
   line-height: 5px;
   vertical-align: top;
   margin: auto;
@@ -8565,7 +8565,7 @@ hr.menu {
   outline: none;
 }
 .browse-category {
-  color: #467E99;
+  color: #457D9C;
   font-size: 30px;
   padding: 10px;
   text-shadow: 1px 1px #555555;
@@ -8579,7 +8579,7 @@ hr.menu {
   color: darkblue;
 }
 .browse-category div {
-  color: #467E99;
+  color: #457D9C;
   cursor: pointer;
   height: 80px;
 }
@@ -8698,7 +8698,7 @@ hr.menu {
 }
 .selected-browse-label-search {
   font-size: 20px;
-  color: #467E99;
+  color: #457D9C;
   vertical-align: top;
   margin-left: 20px;
   float: left;
@@ -8706,7 +8706,7 @@ hr.menu {
   padding: 0 8px;
 }
 .selected-browse-label-search a {
-  color: #467E99;
+  color: #457D9C;
 }
 #selected-browse-search-link .icon-before {
   position: relative;
@@ -9675,7 +9675,7 @@ a.browse-thumbnail-sorted.active {
   display: inline-block;
   padding: 2px;
   padding-bottom: 20px;
-  border-top: 5px solid #467E99;
+  border-top: 5px solid #457D9C;
   margin-top: 15px;
 }
 .combined-results-section .related-manifestation {
@@ -9690,8 +9690,8 @@ a.browse-thumbnail-sorted.active {
 .combined-results-button {
   float: right;
   margin-top: 4px;
-  background-color: #467E99;
-  border-color: #467E99;
+  background-color: #457D9C;
+  border-color: #457D9C;
 }
 .bookbag-container {
   position: fixed;
@@ -9718,7 +9718,7 @@ a.browse-thumbnail-sorted.active {
 }
 .bookbag {
   height: 2em;
-  background: #467E99;
+  background: #457D9C;
   color: white;
   width: 3em;
   line-height: 2em;
@@ -9788,7 +9788,7 @@ a.browse-thumbnail-sorted.active {
   }
 }
 .cart-container {
-  background: #467E99;
+  background: #457D9C;
   padding: 10px;
   color: white;
   transition: 0.15s ease-out;
@@ -9858,7 +9858,7 @@ a.browse-thumbnail-sorted.active {
 .share-tools {
   background-color: #e6e6e6;
   background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
-  color: #6e6f6f;
+  color: #524747;
   border-bottom: 1px solid #adadad;
   font-weight: bold;
   text-align: left;
@@ -9871,10 +9871,6 @@ a.browse-thumbnail-sorted.active {
 }
 .share-tools-label {
   padding-right: 10px;
-}
-#side-bar .share-tools {
-  margin-top: 8px;
-  width: 200px;
 }
 #more-details-accordion .panel-group .panel + .panel {
   margin-top: 0;
@@ -9948,15 +9944,15 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
 }
 #explore-more-sidebar {
-  background-color: #467E99;
-  background: linear-gradient(to bottom, #467E99, #5891AA);
+  background-color: #457D9C;
+  background: linear-gradient(to bottom, #457D9C, #5891AA);
 }
 #explore-more-header {
   padding: 10px 25px 5px 0;
   margin-top: 5px;
   text-align: right;
   color: #FFF;
-  background-color: #3e7088;
+  background-color: #3d6f8a;
   font-variant: small-caps;
   font-weight: bold;
   font-size: 16px;
@@ -9973,7 +9969,7 @@ a.browse-thumbnail-sorted.active {
   text-transform: uppercase;
   font-weight: bold;
   color: #000075;
-  border-bottom: 2px solid #467E99;
+  border-bottom: 2px solid #457D9C;
   margin-top: 15px;
 }
 #explore-more-body .section {
@@ -10015,12 +10011,12 @@ a.browse-thumbnail-sorted.active {
   }
 }
 .exploreMoreBar {
-  border: solid 1px #467E99;
+  border: solid 1px #457D9C;
   margin: 10px 5px 15px;
 }
 .exploreMoreBar .exploreMoreBarLabel {
   color: #FFF;
-  background-color: #467E99;
+  background-color: #457D9C;
   font-weight: bold;
   text-transform: uppercase;
   white-space: nowrap;
@@ -10038,7 +10034,7 @@ a.browse-thumbnail-sorted.active {
 }
 .exploreMoreBar .label-left,
 .exploreMoreBar .label-left img {
-  background-color: #467E99;
+  background-color: #457D9C;
 }
 .exploreMoreBar .label-left .exploreMoreBarLabel {
   position: absolute;
@@ -10058,7 +10054,7 @@ a.browse-thumbnail-sorted.active {
 }
 .exploreMoreBar .label-top,
 .exploreMoreBar .label-top img {
-  background-color: #467E99;
+  background-color: #457D9C;
   display: inline-block;
 }
 .exploreMoreBar .label-top .exploreMoreBarLabel {
@@ -10125,7 +10121,7 @@ a.browse-thumbnail-sorted.active {
 #book-sections .jcarousel-control-next {
   height: 100%;
   background-color: transparent;
-  color: #467E99;
+  color: #457D9C;
   z-index: 2;
   box-shadow: white 0px 0px 0px 0px;
 }
@@ -10289,7 +10285,7 @@ a.browse-thumbnail-sorted.active {
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentControls,
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentSearchControls {
   color: #FFF;
-  background-color: #467E99;
+  background-color: #457D9C;
   padding: 10px 0;
   min-height: 124px;
 }
@@ -10299,7 +10295,7 @@ a.browse-thumbnail-sorted.active {
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox #searchComponentForm {
   background-color: white;
-  border: 1px solid #366176;
+  border: 1px solid #356179;
   padding: 3px;
   margin-left: 5px;
 }
@@ -10327,7 +10323,7 @@ a.browse-thumbnail-sorted.active {
   top: 65px;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader {
-  background-color: #467E99;
+  background-color: #457D9C;
   padding: 10px 10px 0;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader + .row {
@@ -10529,7 +10525,7 @@ fieldset[disabled] .btn-masquerade.active {
 }
 #browse-label {
   background-color: #ffffff;
-  border-bottom: 1px solid #467E99;
+  border-bottom: 1px solid #457D9C;
   margin: 25px 0 15px;
   height: auto;
   padding-bottom: 20px;
@@ -10593,7 +10589,7 @@ fieldset[disabled] .btn-masquerade.active {
   color: black;
   background: none;
   padding: 20px 0;
-  border-top: 1px solid #467E99;
+  border-top: 1px solid #457D9C;
 }
 .selected-browse-label-search {
   background: none;

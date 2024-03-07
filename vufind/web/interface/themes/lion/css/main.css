@@ -9858,7 +9858,7 @@ a.browse-thumbnail-sorted.active {
 .share-tools {
   background-color: #e6e6e6;
   background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
-  color: #6e6f6f;
+  color: #524747;
   border-bottom: 1px solid #adadad;
   font-weight: bold;
   text-align: left;
@@ -9871,10 +9871,6 @@ a.browse-thumbnail-sorted.active {
 }
 .share-tools-label {
   padding-right: 10px;
-}
-#side-bar .share-tools {
-  margin-top: 8px;
-  width: 200px;
 }
 #more-details-accordion .panel-group .panel + .panel {
   margin-top: 0;
