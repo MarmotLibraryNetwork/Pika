@@ -1,8 +1,7 @@
 {strip}
-	<![CDATA[
 	<div class="row" id="prospectorSection">
 		<div class="col-tn-12 col-sm-4">
-			<img class="center-block" src="{img filename='innReachEncoreLogo.png'}" style="max-width: 100%">
+			<img class="center-block" src="{img filename='innReachEncoreLogo.png'}" alt="{$interLibraryLoanName} Logo" style="max-width: 100%">
 		</div>
 		<div class="col-tn-12 col-sm-8">
 			<h2>In {$innReachEncoreName}</h2>

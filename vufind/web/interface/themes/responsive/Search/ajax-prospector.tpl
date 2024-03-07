@@ -1,7 +1,7 @@
 {strip}
 	<div class="row" id="prospectorSection">
 		<div class="col-tn-12 col-sm-3">
-			<img class="center-block" src="{img filename='innReachEncoreLogo.png'}" style="max-width: 100%">
+			<img class="center-block" src="{img filename='innReachEncoreLogo.png'}" alt="{$innReachEncoreName} Logo" style="max-width: 100%">
 		</div>
 		<div class="col-tn-12 col-sm-9">
 			<h2>In {$innReachEncoreName}</h2>
