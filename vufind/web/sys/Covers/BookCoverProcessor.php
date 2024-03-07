@@ -628,7 +628,7 @@ class BookCoverProcessor {
 					@rename($tempFile, $finalFile);
 
 				}
-				// Cache the grouped work cover if doesn't already exist
+				// Cache the grouped work cover if it doesn't already exist
 				if (isset($this->groupedWorkCacheFileName) && !file_exists($this->groupedWorkCacheFileName)){
 					@copy($finalFile, $this->groupedWorkCacheFileName);
 				}
