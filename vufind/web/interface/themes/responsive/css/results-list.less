@@ -6,58 +6,83 @@
 // * If a rule is used as part of both a record and the results list it should be defined in record.less
 // **
 
-.result{
+.result {
   border-bottom: 2px solid #d5d6da;
   padding: 10px 0 15px;
   margin-left: 5px;
   margin-right: 5px;
   font-size: 12px;
 }
-.result-value-bold{
+
+.result-value-bold {
   font-weight: bold;
 }
-.result-label{
+
+.result-label {
   font-weight: bold;
   color: #44484a;
 }
-#formatCategories{
+
+#formatCategories {
   padding-top: 3px;
 }
+
+.formatCategoryLabel {
+  vertical-align: central; // center not valid, set to central. plb 5-11-2015
+  color: #8d929a;
+  margin-top: 3px;
+
+  a {
+    color: #8d929a;
+  }
+}
+
 #availabilityControlContainer {
   border-bottom: 3px solid #d5d6da;
   padding-bottom: @padding-base-vertical;
 }
-#wikipedia_placeholder,#name-variations-placeholder,#listEditControls {
+
+#wikipedia_placeholder, #name-variations-placeholder, #listEditControls {
   #availabilityControlContainer();
   margin-bottom: @padding-large-vertical;
   display: none;
 }
-.top-facet{
- margin-bottom: 10px;
+
+.top-facet {
+  margin-bottom: 10px;
 }
-.facetCol{
-  display: inline-block;
-  padding: 15px;
-  width: 120px;
-  vertical-align: top;
+
+.facetDetails {
+  padding: 10px;
+  border: 1px solid #c5c5c5;
+  border-top: none;
+  background-color: #fff;
 }
+
 .facetValue {
-  padding: 5px 0 5px 20px;
-  color: #888888;
+  padding: 3px 5px;
+  font-size: medium;
+
   a {
-    color: #888888;
+    color: #427AB3; // https://webaim.org/resources/contrastchecker/?fcolor=427AB3&bcolor=FFFFFF
+    line-height: 1.7;
+    border-bottom: none;
   }
+
   &:first-of-type {
     margin-top: 3px;
   }
+
   &:last-of-type {
     margin-bottom: 3px;
   }
 }
-.facet-form{
+
+.facet-form {
   margin: 5px 30px;
 }
-.sidebar-label{
+
+.sidebar-label {
   text-align: center;
   background-color: @sidebar-label-background-color;
   //background: linear-gradient(to bottom, @sidebar-label-background-color, #3d4244); //TODO find precent darken for 2nd color and then change to a darken function
@@ -67,7 +92,7 @@
   margin-top: 20px;
 }
 
-.facetTitle, .exploreMoreTitle{
+.facetTitle, .exploreMoreTitle {
   background-color: #e8e8e8;
   background: linear-gradient(to bottom, #e8e8e8, #d7d7d7);
   color: #555555;
@@ -77,16 +102,8 @@
   border-bottom: 1px solid #adadad;
 }
 
-.formatCategoryLabel {
-  vertical-align: central; // center not valid, set to central. plb 5-11-2015
-  color: #8d929a;
-  margin-top: 3px;
-  a {
-    color: #8d929a;
-  }
-}
-.top-facet{
-  @media print{
+.top-facet {
+  @media print {
     display: none;
   }
 }
@@ -101,38 +118,47 @@
 //  margin-top: 20px;
 //  font-size: 14px;
 //}
-#results-sort{
+#results-sort {
   width: 80%;
   margin: 5px 10%;
 }
-.result-head{
+
+.result-head {
   font-size: smaller;
   color: #0d8ec6;
-  #selected-browse-label{
+
+  #selected-browse-label {
     .gray-line-mixin;
   }
 
 }
-#replacement-search-info{
+
+#replacement-search-info {
   font-size: 16px;
   font-style: italic;
 }
-#original-search-info{
+
+#original-search-info {
   font-size: 12px;
 }
-.replacement-search-info-text{
+
+.replacement-search-info-text {
   color: #888888;
   font-style: normal;
 }
-.result-title{
+
+.result-title {
   font-weight: bold;
   font-size: 18px;
 }
-.result-index{
+
+.result-index {
   font-size: 18px;
 }
-.result-tools-horizontal{
+
+.result-tools-horizontal {
   margin-top: 6px;
+
   & .btn {
     background-color: #4F5253; // passes AAA for normal text https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=4F5253
     color: #fff;
@@ -143,106 +169,125 @@
   background: linear-gradient(to bottom, @content-bg, @content-bg 44%, #d5d6da 45%, #d5d6da 55%, @content-bg 56%);
 }
 
-.results-covers{
+.results-covers {
   padding-top: @padding-base-vertical;
   margin-top: @padding-base-vertical;
   border-bottom: 1px solid #d5d6da;
 }
-.related-manifestations{
+
+.related-manifestations {
   margin-top: 3px;
   margin-bottom: 5px;
 }
-.manifestation-toggle{
+
+.manifestation-toggle {
   display: inline-block;
   background-color: #777272;
   padding: 3px;
   color: #fff;
   font-weight: bold;
-  width:18px;
+  width: 18px;
   height: 18px;
   text-align: center;
   line-height: 14px;
 }
-.manifestation-toggle-placeholder{
+
+.manifestation-toggle-placeholder {
   display: inline-block;
   padding: 3px;
   width: 20px;
   height: 18px;
 }
-.manifestation-toggle{
+
+.manifestation-toggle {
   content: "-";
-  &.collapsed{
+
+  &.collapsed {
     content: "+";
   }
 }
-.related-manifestation{
+
+.related-manifestation {
   padding-top: 4px;
   padding-bottom: 4px;
   border-bottom: 1px dotted #d3d3d3;
 }
-.related-manifestations-header{
+
+.related-manifestations-header {
   border-bottom: 1px solid #d3d3d3;
 }
+
 // Make Choose a Format Label Larger
 .related-manifestations-label {
-  font-size:10pt;
+  font-size: 10pt;
 }
-.manifestation-actions .btn-default{
+
+.manifestation-actions .btn-default {
   background-color: #088ec6;
   color: #fff;
 }
-.manifestation-format{
-  font-size:13px;
-  font-weight: bold;
-}
-.related-manifestation-shelf-status,.related_record_status{
+
+.manifestation-format {
   font-size: 13px;
   font-weight: bold;
-  &.available{
+}
+
+.related-manifestation-shelf-status, .related_record_status {
+  font-size: 13px;
+  font-weight: bold;
+
+  &.available {
     color: green;
   }
-  &.checked_out{
+
+  &.checked_out {
     color: red;
   }
-  &.isAvailableToOrder{
+
+  &.isAvailableToOrder {
     color: #ff00f9;
   }
-  &.availableOther{
+
+  &.availableOther {
     color: #BB0099;
   }
 }
-.itemSummaryTable tr.available{
+
+.itemSummaryTable tr.available {
   color: green;
   font-weight: bold;
 }
-.itemSummary{
+
+.itemSummary {
   font-size: 12px;
   text-indent: -10px;
   padding-left: 10px;
 }
-.moreFacetPopup{
-  -webkit-column-gap:   35px;
-  -moz-column-gap:      35px;
-  column-gap:           35px;
+
+.moreFacetPopup {
+  -webkit-column-gap: 35px;
+  -moz-column-gap: 35px;
+  column-gap: 35px;
   padding-left: 20px;
   text-indent: -15px;
-  @media(min-width: 0){
+  @media (min-width: 0) {
     -webkit-column-count: 1;
-    -moz-column-count:    1;
-    column-count:         1;
+    -moz-column-count: 1;
+    column-count: 1;
   }
-  @media(min-width: @screen-sm-min){
+  @media (min-width: @screen-sm-min) {
     -webkit-column-count: 1;
-    -moz-column-count:    1;
-    column-count:         1;
+    -moz-column-count: 1;
+    column-count: 1;
   }
-  @media(min-width: @screen-md-min){
+  @media (min-width: @screen-md-min) {
     -webkit-column-count: 2;
-    -moz-column-count:    2;
-    column-count:         2;
+    -moz-column-count: 2;
+    column-count: 2;
   }
 }
-.highlight{
+
+.highlight {
   font-weight: bolder;
   background-color: lemonchiffon;
 }
@@ -252,6 +297,7 @@
   .coversColumn & {
     margin-top: @padding-small-vertical;
   }
+
   margin-bottom: @padding-small-vertical;
 }
 
@@ -262,6 +308,7 @@
     padding-left: 0;
     padding-right: 0;
   }
+
   #availabilityControl button {
 
   }
@@ -271,13 +318,15 @@
   display: flex;
   flex-direction: row;
   justify-content: center;
-  align-items:center;
+  align-items: center;
+
   .previous {
     flex-grow: 1;
     cursor: pointer;
     white-space: nowrap;
     text-align: right
   }
+
   .return {
     flex-grow: 3;
     white-space: normal;
@@ -285,6 +334,7 @@
     padding-left: 2px;
     padding-right: 2px;
   }
+
   .next {
     white-space: nowrap;
     cursor: pointer;
@@ -292,7 +342,7 @@
   }
 }
 
-.yearbox{
+.yearbox {
   padding: 3px 6px;
 }
 
@@ -301,19 +351,22 @@
   .related-manifestation {
     border-bottom: none;
   }
+
   width: 100%;
   display: inline-block;
   padding: 2px 2px 20px;
   border-top: 5px solid @menu-bar-background-color;
   margin-top: 15px;
 }
+
 .combined-results-section-title {
   font-weight: bold;
   margin-top: 10px;
   margin-bottom: 15px;
-  float:left;
+  float: left;
 }
-.combined-results-button{
+
+.combined-results-button {
   float: right;
   margin-top: 4px;
   background-color: @menu-bar-background-color;
@@ -321,11 +374,12 @@
 }
 
 
-.bookbag-container{
+.bookbag-container {
   position: fixed;
   height: 4em;
-  z-index:3;
+  z-index: 3;
   right: 0;
+
   &.sticky {
     position: fixed;
     right: 0;
@@ -334,7 +388,7 @@
 }
 
 @media (max-width: @screen-md-min) {
-  .bookbag-container, .bookbag-container.sticky{
+  .bookbag-container, .bookbag-container.sticky {
     position: fixed;
     right: 0;
     top: 50px;
@@ -354,6 +408,7 @@
   right: 0;
   z-index: 4;
   transition: .75s ease-out;
+
   &::before {
     content: "‹";
     font-size: 60px;
@@ -361,31 +416,36 @@
     float: left;
     line-height: 15px;
   }
+
   & .itemCheckCount {
     float: left;
   }
+
   &.bounce {
     animation: bounce .7s 3;
     transition-timing-function: ease-out;
   }
+
   &.open {
     left: 3px;
     width: 15px;
     top: 6px;
-    &::before{
+
+    &::before {
       content: "›";
       font-size: 60px;
       font-weight: lighter;
       float: left;
       line-height: 15px;
     }
-   .itemCheckCount{
+
+    .itemCheckCount {
       display: none;
     }
   }
 }
 
-.bbLabel{
+.bbLabel {
   float: left;
   position: absolute;
   left: 18px;
@@ -394,13 +454,14 @@
   white-space: nowrap;
   transform: rotate(90deg) translateY(-20%);
   transform-origin: 0 0;
+
   &.open {
     display: none;
   }
 }
 
 @keyframes bounce {
-  0%  {
+  0% {
     right: -2px;
   }
   25%, 75% {
@@ -415,25 +476,28 @@
 }
 
 
-.cart-container{
+.cart-container {
   background: @menu-bar-background-color;
   padding: 10px;
   color: white;
   transition: .15s ease-out;
-  width:350px;
+  width: 350px;
+
   &.cartIn {
     position: absolute;
     right: -325px;
     padding: 1px 10px 10px 25px;
   }
 }
-.cart{
+
+.cart {
   background: white;
   padding: 5px 10px 5px 10px;
   color: #6B6B6B;
   height: 300px;
 }
-.remove{
+
+.remove {
   background: red;
   width: 1em;
   line-height: .9em;

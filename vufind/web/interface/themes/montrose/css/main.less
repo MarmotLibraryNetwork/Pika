@@ -19,13 +19,16 @@
   text-transform: uppercase;
   border: 2px solid @gold;
   margin-top: 30px;
+
   &:hover {
     background-color: @dark-gold;
   }
 }
+
 #headerLogoutLink > .header-button {
   background-color: #fff;
   border: 1px solid @gold;
+
   &:hover {
     background-color: @dark-gold;
   }
@@ -44,27 +47,30 @@
   vertical-align: middle;
   margin-right: -0.25em; // Adjusts for spacing
 }
+
 #headingInfo {
   display: inline-block;
   vertical-align: middle;
 }
 
 
-
 // Adopting Nashville styling of browse categories
-#main-content-with-sidebar>.row.breadcrumbs,
+#main-content-with-sidebar > .row.breadcrumbs,
 #home-page-browse-header {
   margin-left: 0; // to give a gap of white background between the search box and the browse category carousel
 }
+
 .selected-browse-label-search {
   margin-left: 0;
   float: left;
   padding: 0 3px;
   font-weight: 600;
 }
+
 #browse-label {
 
 }
+
 #selected-browse-label {
   background: none;
 
@@ -73,6 +79,7 @@
     padding: 0 3px;
   }
 }
+
 #browse-category-carousel .browse-category {
   text-shadow: none;
   padding: 0;
@@ -82,6 +89,7 @@
   cursor: pointer;
   font-weight: 600;
   border: 1px solid @spl-border-gray;
+
   div {
     height: 90px;
     padding: 15px;
@@ -90,17 +98,21 @@
       text-decoration: none;
     }
   }
+
   &.selected {
     border: 1px solid @selectedCategoryBorderColor;
-     div {
+
+    div {
       background: @selectedCategoryColor;
       //color:#fff;
       font-size: @browse-category-font-size;
+
       &:hover {
         background: @selectedCategoryColor;
       }
     }
   }
+
   &:hover {
     background: #E4E4E4;
     //text-decoration: none;
@@ -114,19 +126,25 @@
     height: 90px;
     line-height: 75px;
     border: 1px solid #ccc;
+
     &:hover {
       text-decoration: none;
       background: #E4E4E4;
       transition: all .3s ease-in-out;
     }
   }
+
   .jcarousel-pagination a {
     &.active {
       background: @browseCarouselControlColor;
       // keep shadowing in place on active item
       .box-shadow(0 0 2px #4E443C);
     }
-    &, &:hover, &:active, &:visited  {outline: none};
+
+    &, &:hover, &:active, &:visited {
+      outline: none
+    }
+  ;
   }
 }
 
@@ -139,11 +157,13 @@
 // this controls the subcategory menu button are and menu buttons on browse
 #browse-sub-category-menu {
   margin-top: 20px;
+
   .btn {
     padding: 6px 10px;
     margin-right: 5px;
     margin-bottom: 5px;
   }
+
   button {
     &.selected {
       border: 1px solid @selectedCategoryBorderColor;
@@ -158,48 +178,35 @@
 }
 
 
-.panel-title{
+.panel-title {
   font-size: 16px;
 }
 
 // Remove gradients from accordions & facets; set a white background for body content //
 #account-settings-accordion, #more-details-accordion, .sidebar-links, #account-settings-accordion {
-  .panel-heading{
+  .panel-heading {
     background: @accordion-header-bg-color;
   }
-  .active .panel-heading{
+
+  .active .panel-heading {
     background: @accordion-active-header-backgroundcolor;
   }
-  .panel,.panel-heading {
+
+  .panel, .panel-heading {
     border-radius: 0;
   }
+
   .panel-body {
     background-color: transparent;
     border: 1px solid #c5c5c5;
   }
 }
-.facetTitle, .exploreMoreTitle{
+
+.facetTitle, .exploreMoreTitle {
   background: @spl-other-gray;
 }
 
-.facetDetails {
-  padding: 10px;
-  border: 1px solid #c5c5c5;
-  border-top: none;
-  background-color: #fff;
-}
-.facetValue {
-  padding: 3px 5px;
-  //color: #888;
-  font-size: medium;
-  a {
-    color: #428bca;
-    line-height: 1.7;
-    border-bottom: none;
-  }
-}
-
-.searchTypeHome,.searchSource{
+.searchTypeHome, .searchSource {
   color: #333;
   background-color: #fff;
 }
@@ -208,7 +215,7 @@
   text-shadow: none;
 }
 
-#more-details-accordion, #account-settings-accordion{
+#more-details-accordion, #account-settings-accordion {
   .active {
     .panel-title {
       color: @accordion-active-header-color;
@@ -216,6 +223,7 @@
     }
   }
 }
+
 .sidebar-links {
   .panel {
     &.active {
@@ -228,16 +236,18 @@
     }
   }
 }
+
 //TODO: I think this should go into the main styling.
-#refineSearch~#home-account-links{
-  padding-top:15px;
+#refineSearch ~ #home-account-links {
+  padding-top: 15px;
 }
-.sidebar-label{
+
+.sidebar-label {
   background: @sidebar-label-background-color;
   font-weight: bold;
 }
 
-.related-manifestation-shelf-status.availableOther{
+.related-manifestation-shelf-status.availableOther {
   color: #000;
   font-weight: bold;
 }
@@ -249,12 +259,14 @@
     display: flex;
     align-items: center;
   }
+
   a {
     img {
       max-height: 180px;
     }
   }
 }
+
 .column-fix {
   -webkit-column-break-inside: avoid;
   -moz-column-break-inside: avoid;
@@ -287,6 +299,7 @@
   font-size: 16px;
   text-align: left;
 }
+
 // Return Now button.  Had bad side effects. Turned off
 //.btn-warning {
 //  &:hover {

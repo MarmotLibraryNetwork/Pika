@@ -21,6 +21,7 @@ body {
   vertical-align: middle;
   margin-right: -0.25em; // Adjusts for spacing
 }
+
 #headingInfo {
   display: inline-block;
   vertical-align: middle;
@@ -29,6 +30,7 @@ body {
 #library-name-header {
   text-align: center;
 }
+
 // Adopting Nashville styling of browse categories
 .selected-browse-label-search {
   margin-left: 0;
@@ -36,9 +38,11 @@ body {
   padding: 0 3px;
   font-weight: 600;
 }
+
 #browse-label {
   display: none;
 }
+
 #selected-browse-label {
   background: none;
 
@@ -47,6 +51,7 @@ body {
     padding: 0 3px;
   }
 }
+
 #browse-category-carousel .browse-category {
   text-shadow: none;
   padding: 0;
@@ -56,6 +61,7 @@ body {
   cursor: pointer;
   font-weight: 600;
   border: 1px solid #d7d7d7;
+
   div {
     height: 60px;
     padding: 15px;
@@ -64,14 +70,17 @@ body {
       text-decoration: none;
     }
   }
+
   &.selected div {
     background: @selectedCategoryColor;
-    color:#fff;
+    color: #fff;
     font-size: @browse-category-font-size;
+
     &:hover {
       background: @selectedCategoryColor;
     }
   }
+
   &:hover {
     background: #E4E4E4;
     border: 1px solid #d7d7d7;
@@ -86,19 +95,25 @@ body {
     height: 60px;
     line-height: 60px;
     border: 1px solid #ccc;
+
     &:hover {
       text-decoration: none;
       background: #E4E4E4;
       transition: all .3s ease-in-out;
     }
   }
+
   .jcarousel-pagination a {
     &.active {
       background: @browseCarouselControlColor;
       // keep shadowing in place on active item
       .box-shadow(0 0 2px #4E443C);
     }
-    &, &:hover, &:active, &:visited  {outline: none};
+
+    &, &:hover, &:active, &:visited {
+      outline: none
+    }
+  ;
   }
 }
 
@@ -111,6 +126,7 @@ body {
 /* this controls the subcategory menu button are and menu buttons on browse */
 #browse-sub-category-menu {
   margin-top: 20px;
+
   .btn {
     padding: 6px 10px;
     margin-right: 5px;
@@ -125,46 +141,30 @@ body {
 }
 
 
-.panel-title{
+.panel-title {
   font-size: 16px;
 }
 
 // Remove gradients from accordions & facets; set a white background for body content //
 #account-settings-accordion, #more-details-accordion, .sidebar-links, #account-settings-accordion {
-  .panel-heading{
+  .panel-heading {
     background: @accordion-header-bg-color;
   }
-  .active .panel-heading{
+
+  .active .panel-heading {
     background: @accordion-active-header-backgroundcolor;
   }
-  .panel,.panel-heading {
+
+  .panel, .panel-heading {
     border-radius: 0;
   }
+
   .panel-body {
     background-color: transparent;
     border: 1px solid #c5c5c5;
   }
 }
-.facetTitle, .exploreMoreTitle{
+
+.facetTitle, .exploreMoreTitle {
   background: #e8e8e8;
 }
-
-.facetDetails {
-  padding: 10px;
-  border: 1px solid #c5c5c5;
-  border-top: none;
-  background-color: #fff;
-}
-.facetValue {
-  padding: 3px 5px;
-  //color: #888;
-  font-size: medium;
-}
-
-
-.facetValue a {
-  color: #428bca;
-  line-height: 1.7;
-  border-bottom: none;
-}
-
