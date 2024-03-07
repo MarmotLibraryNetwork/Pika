@@ -5,7 +5,7 @@ var Pika = (function(){
 		Globals.LeavingPage = true
 	};
 
-	$(document).ready(function(){
+	$(function(){
 		Pika.initializeModalDialogs();
 		Pika.setupFieldSetToggles(); // appears to be only used for ManageRequests. pascal 12/29/2020
 		Pika.setupCheckBoxSwitches();

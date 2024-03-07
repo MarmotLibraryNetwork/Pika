@@ -96,19 +96,6 @@
 
 {* Embedded Javascript For this Page *}
 <script>
-	$('.checkbox-results').change(function(){ldelim}
-				Pika.GroupedWork.showBookbag(this);
-			{rdelim});
-	$('.bookbag').click(function(){ldelim}
-			Pika.GroupedWork.openBookbag(this);
-	{rdelim});
-	$('body').on('click', 'span.remove', function(){ldelim}
-			var checkedId = this.id.replace(/remove_/g, 'select_');
-			if($("#"  + checkedId +":checked")){ldelim}
-						$("#"+ checkedId).prop("checked", false);
-						Pika.GroupedWork.showBookbag(this);
-					{rdelim};
-			{rdelim});
 	$(function(){ldelim}
 		if ($('#horizontal-menu-bar-container').is(':visible')) {ldelim}
 			$('#home-page-search').show();  {*// Always show the searchbox for search results in mobile views.*}

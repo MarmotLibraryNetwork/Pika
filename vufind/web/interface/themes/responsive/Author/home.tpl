@@ -72,7 +72,7 @@
 
 {* Embedded Javascript For this Page *}
 	<script>
-		$(document).ready(function (){ldelim}
+		$(function (){ldelim}
 		{if $showWikipedia}
 			Pika.Wikipedia.getWikipediaArticle('{$wikipediaAuthorName|escape:'javascript'}');
 		{/if}
@@ -98,19 +98,4 @@
 			$('#'+Pika.Searches.displayMode).parent('label').addClass('active'); {* show user which one is selected *}
 
 			{rdelim});
-
-			$('.checkbox-results').change(function(){ldelim}
-			Pika.GroupedWork.showBookbag(this);
-				{rdelim});
-			$('.bookbag').click(function(){ldelim}
-			Pika.GroupedWork.openBookbag(this);
-				{rdelim});
-			$('body').on('click', 'span.remove', function(){ldelim}
-			var checkedId = this.id.replace(/remove_/g, 'select_');
-			if($("#"  + checkedId +":checked")){ldelim}
-			$("#"+ checkedId).prop("checked", false);
-			Pika.GroupedWork.showBookbag(this);
-				{rdelim};
-				{rdelim});
-
 	</script>
