@@ -8215,7 +8215,7 @@ hr.menu {
   margin: 0 !important;
 }
 .required-input {
-  color: red;
+  color: #EC130E;
 }
 .sidebar-button {
   padding: 7px 0;
@@ -8474,7 +8474,7 @@ hr.menu {
   left: auto;
 }
 .badge.badge-danger {
-  background: red;
+  background: #EC130E;
 }
 .badge.badge-warning {
   background: #ffc107;
@@ -8977,6 +8977,10 @@ a.browse-thumbnail-sorted.active {
 .selected-browse-sub-category-label-search-text::before {
   content: ' \00bb \00a0';
 }
+#myFinesAlert {
+  color: #EC130E;
+  font-weight: bold;
+}
 #account-settings-accordion .panel-group .panel + .panel {
   margin-top: 0;
 }
@@ -9003,11 +9007,11 @@ a.browse-thumbnail-sorted.active {
   background-color: #eeeeee;
 }
 .overdueLabel {
-  color: red;
+  color: #C81B0B;
   font-weight: bold;
 }
 .dueSoonLabel {
-  color: #e58e29;
+  color: #B55A0A;
   font-weight: bold;
 }
 .holdDisclaimerLibrary {
@@ -9782,12 +9786,12 @@ a.browse-thumbnail-sorted.active {
   height: 300px;
 }
 .remove {
-  background: red;
+  color: white;
+  background: #EC130E;
   width: 1em;
   line-height: .9em;
   height: 1em;
   border-radius: 10px;
-  color: white;
   display: block;
   text-align: center;
   font-size: medium;

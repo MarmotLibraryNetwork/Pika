@@ -245,7 +245,7 @@
   }
 
   &.checked_out {
-    color: #EC130E; // https://webaim.org/resources/contrastchecker/?fcolor=EC130E&bcolor=FFFFFF
+    color: @accessible-red;
   }
 
   &.isAvailableToOrder {
@@ -502,12 +502,12 @@
 }
 
 .remove {
-  background: red;
+  color: white;
+  background: @accessible-red;
   width: 1em;
   line-height: .9em;
   height: 1em;
   border-radius: 10px;
-  color: white;
   display: block;
   text-align: center;
   font-size: medium;
