@@ -8378,7 +8378,8 @@ hr.menu {
 .sidebar-links .panel-body {
   font-size: 13px;
   color: #333333;
-  background-color: #eeeeee;
+  background-color: transparent;
+  border: 1px solid #c5c5c5;
 }
 .sidebar-links .panel-body a:not(.btn),
 .sidebar-links .panel-body a:visited:not(.btn),
