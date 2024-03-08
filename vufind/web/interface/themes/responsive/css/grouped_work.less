@@ -1,45 +1,54 @@
 //@import (reference) "bootstrap/less/variables.less";
 @import (reference) "variables.less";
-.graph-bar{
+
+.graph-bar {
   background-color: #088ec6;
 }
+
 // TODO used anymore?
-#side-bar .userreviewlink,
-#side-bar .addtolistlink{
-  width: 196px;
-}
-.userreviewlink, .addtolistlink{
+//#side-bar .addtolistlink {
+//  width: 196px;
+//}
+
+.userreviewlink, .addtolistlink {
   background-color: #088ec6;
   color: #ffffff;
+
   &:hover {
     background-color: #2897c6;
     color: #ffffff;
   }
 }
 
-.full-record-tools{
+.full-record-tools {
   padding: 4px 0;
 }
-.full-rating{
+
+.full-rating {
   padding: 10px 5px 4px;
   white-space: nowrap;
   font-size: 11px;
 }
-.rating-graph{
+
+.rating-graph {
   margin: 4px 0;
-  .row{
+
+  .row {
     margin-top: 2px;
   }
 }
-.title-rating{
+
+.title-rating {
   margin-top: 4px;
 }
+
 // Modify placement of the tool bar on full record views
 #main-content .result-tools-horizontal {
   margin-top: 10px;
   margin-bottom: 10px;
 }
-.share-tools{
+
+.share-tools {
   background-color: #e6e6e6;
   background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
   //color: #6e6f6f;
@@ -53,12 +62,14 @@
   text-align: left;
   padding: 5px 10px;
   display: inline-block;
-  img{
+
+  img {
     margin-left: 2px;
     margin-right: 2px;
   }
 }
-.share-tools-label{
+
+.share-tools-label {
   padding-right: 10px;
 }
 
@@ -70,55 +81,78 @@
 
 // More Like this formatting //
 #more-details-accordion {
-  .panel-group .panel + .panel{
+  .panel-group .panel + .panel {
     margin-top: 0;
   }
-  .panel-heading{
-    padding: 5px 15px;
-    background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
+
+  .panel-heading {
+    padding: 10px 15px;
+    background-color: @accordion-header-bg-color;
+    //background: linear-gradient(to bottom, @accordion-header-bg-color, #d7d7d7 /*@accordion-header-bottom-gradient-color*/);
     border-bottom: 1px solid #a1a1a1;
   }
-  .panel-title{
-    font-size: 13px;
+
+  .panel-title {
+    //font-size: 13px;
     color: @gray-dark;
     text-shadow: 1px 1px #fff;
   }
+
   .active {
     .panel-heading {
       background-color: @accordion-active-header-backgroundcolor;
-      background: linear-gradient(to bottom, @accordion-active-header-backgroundcolor, darken(@accordion-active-header-backgroundcolor, 10%));
+      //background: linear-gradient(to bottom, @accordion-active-header-backgroundcolor, darken(@accordion-active-header-backgroundcolor, 10%));
     }
+
     .panel-title {
       color: #fff;
       text-shadow: 1px 1px @gray;
     }
+
+    > a {
+      text-decoration: #FFF;
+    }
   }
-  .panel-body{
-    font-size:12px;
+
+  .panel-body {
+    //font-size: 12px;
     color: @gray-dark;
-    background-color: #eeeeee;
+    background-color: transparent;
+    border: 1px solid #c5c5c5;
+  }
+
+  #descriptionPanelBody, .excerpt, .review {
+    line-height: 1.7em;
   }
 }
 
-.novelist-similar-item{
+.review {
+  border-bottom: 1px dotted #d3d3d3;
+}
+
+.novelist-similar-item {
   padding: 6px;
 }
-.novelist-similar-item-header{
+
+.novelist-similar-item-header {
   font-size: 14px;
   font-weight: bold;
   margin-bottom: 2px;
 }
-.novelist-similar-item-reason{
+
+.novelist-similar-item-reason {
   font-style: italic;
   margin-left: 6px;
 }
 
-.results-nav-fixed{
+.results-nav-fixed {
 
 }
-.results-nav-fixed .search-results-navigation{
+
+.results-nav-fixed .search-results-navigation {
 
 }
+
 @media only screen and (max-width: 767px) {
   .results-nav-fixed.sticky {
     position: fixed;
@@ -128,6 +162,7 @@
     z-index: 4;
   }
 }
+
 @media only screen and (min-width: 767px) {
   .results-nav-fixed.sticky {
     position: fixed;
@@ -139,6 +174,7 @@
 
 
 }
+
 .results-nav-fixed.sticky + .search-results-navigation {
   padding-top: 60px;
 }
