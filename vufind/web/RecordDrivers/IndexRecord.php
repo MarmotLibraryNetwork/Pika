@@ -312,9 +312,10 @@ class IndexRecord extends RecordInterface {
 	public function getSearchResult($view = 'list') {
 		global $configArray;
 		global $interface;
-
+		global $pikaLogger;
 
 		$id = $this->getUniqueID();
+		$pikaLogger->notice("Index Record getSearchResult() called for $id");
 		$interface->assign('summId', $id);
 		if (substr($id, 0, 1) == '.'){
 			$interface->assign('summShortId', substr($id, 1));

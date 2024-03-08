@@ -1,6 +1,7 @@
 {strip}
 {* //TODO: QUESTION: is this Depricated? *}
 <div id="record{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}" class="resultsList row">
+	{if $debug}<script>console.log('Index record template served for {$summShortId}')</script>{/if}
 	<div class="imageColumn col-md-3">
 		<div class="row">
 			<div class="selectTitle col-md-4">
