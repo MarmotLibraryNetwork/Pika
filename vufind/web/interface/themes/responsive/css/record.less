@@ -22,12 +22,15 @@
 
 .statusValue {
   font-weight: bold;
+
   &.available, &.here {
     color: #009900;
   }
+
   &.nearby {
     color: #BB0099;
   }
+
   &.unavailable, &.checkedOut, &.reserve {
     color: #cc0000;
   }
@@ -43,6 +46,11 @@
   position: absolute;
   right: -5px;
   z-index: 2;
+}
+
+#formatHelp a {
+  color: @darkened-link-color-resp;
+  text-decoration: underline;
 }
 
 .eContentHolding {
