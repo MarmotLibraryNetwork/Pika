@@ -12,7 +12,7 @@
 			<div class="applied-filters"{if $displaySidebarMenu} style="display: none"{/if}>
 			{foreach from=$filterList item=filters key=field }
 				{foreach from=$filters item=filter}
-					<div class="facetValue">{translate text=$field}: {$filter.display|translate|escape} <a href="{$filter.removalUrl|escape}"><span class="glyphicon glyphicon-remove-circle" title="Delete" aria-hidden="true"></span></a></div>
+					<div class="facetValue">{translate text=$field}: {$filter.display|translate|escape} <a href="{$filter.removalUrl|escape}" aria-label="Remove this applied filter"><span class="glyphicon glyphicon-remove-circle" title="Remove this applied filter" aria-hidden="true"></span></a></div>
 				{/foreach}
 			{/foreach}
 			</div>
