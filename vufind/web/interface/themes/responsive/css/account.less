@@ -5,6 +5,7 @@
   color: @accessible-red;
   font-weight: bold;
 }
+
 // Account Settings formatting //
 #account-settings-accordion .panel-group .panel + .panel {
   margin-top: 0;
@@ -35,6 +36,17 @@
   font-size: 12px;
   color: @gray-dark;
   background-color: #eeeeee;
+}
+
+// Used on Checked Out Page
+.bg-overdue {
+  background-color: @state-danger-bg !important; // important is needed to override .striped on checked out page
+  color: darken(@body-text-color, 2.5%); // https://webaim.org/resources/contrastchecker/?fcolor=656565&bcolor=F2DEDE
+  a.result-title, // Title link
+  .result-value > a // Author link
+  {
+    color: darken(@link-color-resp, 5%); // https://webaim.org/resources/contrastchecker/?fcolor=3B679A&bcolor=F2DEDE
+  }
 }
 
 .overdueLabel {
