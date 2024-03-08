@@ -7012,14 +7012,6 @@ div.striped > div:nth-child(odd),
 div.striped > div:nth-child(odd) {
   background-color: #f9f9f9;
 }
-.bg-overdue {
-  background-color: #f2dede !important;
-  color: #656565;
-}
-a.bg-overdue:hover,
-a.bg-overdue:focus {
-  background-color: #e4b9b9;
-}
 #propertyRowfacets {
   overflow-x: scroll;
 }
@@ -9005,6 +8997,14 @@ a.browse-thumbnail-sorted.active {
   font-size: 12px;
   color: #333333;
   background-color: #eeeeee;
+}
+.bg-overdue {
+  background-color: #f2dede !important;
+  color: #656565;
+}
+.bg-overdue a.result-title,
+.bg-overdue .result-value > a {
+  color: #2c5a86;
 }
 .overdueLabel {
   color: #C81B0B;
