@@ -1,6 +1,24 @@
-{if $lastsearch}
-&nbsp;<a href="{$lastsearch|escape}#record{$id|escape:"url"}">{translate text="Catalog Search Results"}</a> <span class="divider">&raquo;</span>
-{/if}
-&nbsp;{if !$lastsearch}Catalog {/if}{if $recordDriver}<a href="/GroupedWork/{$recordDriver->getPermanentId()}">{$recordDriver->getBreadcrumb()|truncate:30:"..."|escape}</a> <span class="divider">&raquo;</span>
-&nbsp;<em>{if $recordDriver->getFormats()}{implode subject=$recordDriver->getFormats() glue=", "}{/if}</em> <span class="divider">&raquo;</span>
-{/if}
+{strip}
+	{if $lastsearch}
+		<li>
+			{if $lastsearch}
+				<a href="{$lastsearch|escape}#record{$id|escape:"url"}">{translate text="Return to Search Results"}</a>
+				<span class="divider">&raquo;</span>
+			{else}
+				Catalog
+			{/if}
+		</li>
+	{/if}
+	{if $recordDriver}
+		<li>
+			<a href="/GroupedWork/{$recordDriver->getPermanentId()}">{$recordDriver->getBreadcrumb()|truncate:30:"..."|escape}</a>
+			<span class="divider">&raquo;</span>
+		</li>
+		{if $recordDriver->getFormats()}
+			<li>
+				&nbsp;<em>{implode subject=$recordDriver->getFormats() glue=", "}</em> <span class="divider">&raquo;</span>
+			</li>
+		{/if}
+	{/if}
+
+{/strip}
