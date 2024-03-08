@@ -15,11 +15,17 @@
 @accessible-red: #EC130E; // https://webaim.org/resources/contrastchecker/?fcolor=EC130E&bcolor=FFFFFF
 // Use to replace CSS color red  (#FF0000)
 
+@accessible-gray-light: #797676; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=797676
+// Use to replace bootstrap @gray-light (#999)
+
 // Make single-title manifestation box contrast accessible
-@label-default-bg: #797676; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=797676
+@label-default-bg: @accessible-gray-light;
 
 // Make multiple-title manifestation box contrast accessible
 @brand-info: #097FAF; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=097FAF
+
+// Make default badge contrast acessible
+@badge-bg: @accessible-gray-light;
 
   //Header Variables
 @header-height: 90px;
