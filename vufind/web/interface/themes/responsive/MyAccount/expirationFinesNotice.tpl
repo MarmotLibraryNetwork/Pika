@@ -7,7 +7,7 @@
 				{if $showFines && ($totalFines >= $fineAlertAmount) && ($totalFines > 0.00)}
 
 						<div class="myAccountLink">
-							<a href="/MyAccount/Fines/"  style="color:red; font-weight:bold;">
+							<a href="/MyAccount/Fines/" id="myFinesAlert">
 								Your account{if count($user->getLinkedUsers())>0}s have{else} has{/if} ${$totalFines|number_format:2} in {translate text='Fines'}.
 							</a>
 						</div>

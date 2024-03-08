@@ -1,43 +1,57 @@
 //@import (reference) "bootstrap/less/variables.less";
 @import (reference) "variables.less";
 
+#myFinesAlert {
+  color: @accessible-red;
+  font-weight: bold;
+}
 // Account Settings formatting //
-#account-settings-accordion .panel-group .panel + .panel{
+#account-settings-accordion .panel-group .panel + .panel {
   margin-top: 0;
 }
-#account-settings-accordion .panel-heading{
+
+#account-settings-accordion .panel-heading {
   padding: 5px 15px;
   background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
   border-bottom: 1px solid #a1a1a1;
 }
-#account-settings-accordion .active .panel-heading{
+
+#account-settings-accordion .active .panel-heading {
   background: linear-gradient(to bottom, #4dacde, #0f8fd2);
 }
-#account-settings-accordion .panel-title{
+
+#account-settings-accordion .panel-title {
   font-size: 13px;
   color: @gray-dark;
   text-shadow: 1px 1px #fff;
 }
-#account-settings-accordion .active .panel-title{
+
+#account-settings-accordion .active .panel-title {
   color: #fff;
   text-shadow: 1px 1px @gray;
 }
-#account-settings-accordion .panel-body{
-  font-size:12px;
+
+#account-settings-accordion .panel-body {
+  font-size: 12px;
   color: @gray-dark;
   background-color: #eeeeee;
 }
-.overdueLabel{
-  color: red;
+
+.overdueLabel {
+  color: #C81B0B; // https://webaim.org/resources/contrastchecker/?fcolor=C81B0B&bcolor=F2DEDE
   font-weight: bold;
 }
-.dueSoonLabel{
-  color: #e58e29;
+
+.dueSoonLabel {
+  color: #B55A0A; // https://webaim.org/resources/contrastchecker/?fcolor=B55A0A&bcolor=F9F9F9
+  //color: #B95E04; // https://webaim.org/resources/contrastchecker/?fcolor=B95E04&bcolor=FFFFFF
   font-weight: bold;
 }
-.holdDisclaimerLibrary{
+
+.holdDisclaimerLibrary {
   font-weight: bold;
 }
+
 #mobileHeader {
   .myAccountLink {
     font-weight: bold;
