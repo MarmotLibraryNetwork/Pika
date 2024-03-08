@@ -9442,6 +9442,9 @@ a.browse-thumbnail-sorted.active {
   line-height: 1.7;
   border-bottom: none;
 }
+.facetValue a .glyphicon-remove-circle {
+  color: #EC130E;
+}
 .facetValue:first-of-type {
   margin-top: 3px;
 }
