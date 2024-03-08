@@ -18,6 +18,9 @@
 @accessible-gray-light: #797676; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=797676
 // Use to replace bootstrap @gray-light (#999)
 
+// Replace all gray-light coloring with @accessible-gray-light
+@gray-light: @accessible-gray-light;
+
 // Make single-title manifestation box contrast accessible
 @label-default-bg: @accessible-gray-light;
 
@@ -66,7 +69,7 @@
 
 // Sidebar Login Section
 @home-page-login-color: #FFF;
-@home-page-login-background-color: #AFAFAF;
+@home-page-login-background-color: @accessible-gray-light;
 
 //Sidebar font data
 @sidebar-font-size: 14px;
