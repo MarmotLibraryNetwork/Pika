@@ -9313,6 +9313,10 @@ a.browse-thumbnail-sorted.active {
   right: -5px;
   z-index: 2;
 }
+#formatHelp a {
+  color: #3b679a;
+  text-decoration: underline;
+}
 .eContentHolding {
   width: 100%;
   border: 1px solid #AAAAAA;
