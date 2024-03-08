@@ -4,7 +4,7 @@
 		<div class="row">
 			<div class="selectTitle col-xs-2">
 				{if $myBooking->cancelValue}
-					<input type="checkbox" name="cancelId[{$myBooking->userId}][{$myBooking->cancelName}]" value="{$myBooking->cancelValue}" id="selected{$myBooking->cancelValue}" class="titleSelect">&nbsp;
+					<input type="checkbox" name="cancelId[{$myBooking->userId}][{$myBooking->cancelName}]" value="{$myBooking->cancelValue}" id="selected{$myBooking->cancelValue}" class="titleSelect" aria-label="Select title to cancel">&nbsp;
 				{/if}
 			</div>
 			<div class="col-xs-9 text-center">

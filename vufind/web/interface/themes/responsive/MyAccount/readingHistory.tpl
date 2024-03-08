@@ -92,7 +92,7 @@
 					<input type="search" name="searchTerm" id="searchTerm" class="form-control" value="{if $searchTerm}{$searchTerm|escape}{*Escape to prevent javascript injection*}{/if}">
 				</div>
 				<div class="col-xs-3">
-					<select name="searchBy" id="searchBy" class="form-control">
+					<select name="searchBy" id="searchBy" class="form-control" aria-label="Search by">
 						<option value="title" {if $searchBy == 'title'}selected{/if}>by Title</option>
 						<option value="author" {if $searchBy == 'author'}selected{/if}>by Author</option>
 					</select>
@@ -132,7 +132,7 @@
 				{* Header Row with Column Labels *}
 				<div class="row hidden-xs">
 					<div class="col-sm-1">
-						<input id="selectAll" type="checkbox" onclick="Pika.toggleCheckboxes('.titleSelect', '#selectAll');" title="Select All/Deselect All">
+						<input id="selectAll" type="checkbox" onclick="Pika.toggleCheckboxes('.titleSelect', '#selectAll');" title="Select All/Deselect All" aria-label="Select All/Deselect All">
 					</div>
 					{if $showCovers}
 					<div class="col-sm-2">
@@ -161,7 +161,7 @@
 							<div class="col-tn-3">
 								<div class="row">
 									<div class="col-xs-12 col-sm-1">
-										<input type="checkbox" name="selected[{$record.permanentId|escape:"url"}]" class="titleSelect" value="rsh{$record.itemindex}" id="rsh{$record.itemindex}">
+										<input type="checkbox" name="selected[{$record.permanentId|escape:"url"}]" class="titleSelect" value="rsh{$record.itemindex}" id="rsh{$record.itemindex}" aria-label="Select title to delete">
 									</div>
 									<div class="col-xs-12 col-sm-10">
 										{if $record.coverUrl}
@@ -178,7 +178,7 @@
 							</div>
 							{else}
 								<div class="col-tn-1">
-									<input type="checkbox" name="selected[{$record.permanentId|escape:"url"}]" class="titleSelect" value="rsh{$record.itemindex}" id="rsh{$record.itemindex}">
+									<input type="checkbox" name="selected[{$record.permanentId|escape:"url"}]" class="titleSelect" value="rsh{$record.itemindex}" id="rsh{$record.itemindex}" aria-label="Select title to delete">
 								</div>
 							{/if}
 

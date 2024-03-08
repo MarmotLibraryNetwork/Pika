@@ -46,7 +46,7 @@
 				</div>
 				<div class="row result">
 					<div class="col-sm-1">
-						<input id="selectAll{$sectionKey}" type="checkbox" onclick="Pika.toggleCheckboxes('.titleSelect{$sectionKey}', '#selectAll{$sectionKey}');" title="Select All/Deselect All">
+						<input id="selectAll{$sectionKey}" type="checkbox" onclick="Pika.toggleCheckboxes('.titleSelect{$sectionKey}', '#selectAll{$sectionKey}');" title="Select All/Deselect All" aria-label="Select All/Deselect All">
 						{* element Id needs to be unique for each section so that toggleCheckboxes() functions *}
 					</div>
 				</div>

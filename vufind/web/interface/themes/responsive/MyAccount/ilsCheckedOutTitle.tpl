@@ -8,7 +8,7 @@
 			<div class="row">
 				<div class="selectTitle col-xs-12 col-sm-1">
 					{if !isset($record.canrenew) || $record.canrenew == true}
-					<input type="checkbox" name="selected[{$record.userId}|{$record.recordId}|{$record.renewIndicator}]" class="titleSelect" id="selected{$record.itemid}">
+					<input type="checkbox" name="selected[{$record.userId}|{$record.recordId}|{$record.renewIndicator}]" class="titleSelect" id="selected{$record.itemid}" aria-label="Select title to renew">
 					{/if}
 				</div>
 				<div class="{*coverColumn *}text-center col-xs-12 col-sm-10">
@@ -29,7 +29,7 @@
 		{else}
 			<div class="col-xs-1">
 				{if !isset($record.canrenew) || $record.canrenew == true}
-					<input type="checkbox" name="selected[{$record.userId}|{$record.recordId}|{$record.renewIndicator}]" class="titleSelect" id="selected{$record.itemid}">
+					<input type="checkbox" name="selected[{$record.userId}|{$record.recordId}|{$record.renewIndicator}]" class="titleSelect" id="selected{$record.itemid}" aria-label="Select title to renew">
 				{/if}
 			</div>
 		{/if}
