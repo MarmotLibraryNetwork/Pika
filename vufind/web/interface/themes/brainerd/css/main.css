@@ -7017,6 +7017,7 @@ div.striped > div:nth-child(odd) {
 }
 .bg-overdue {
   background-color: #f2dede !important;
+  color: #656565;
 }
 a.bg-overdue:hover,
 a.bg-overdue:focus {
