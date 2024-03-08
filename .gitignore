@@ -145,7 +145,7 @@ sites/librarycatalog.sutter.localhost/*
 sites/marmot.localhost/sql_backup/marmot_econtent.sql
 sites/marmot.localhost/sql_backup/marmot_vufind.sql
 *.sql
-main.tmpcss
+*.tmpcss
 
 # Chris' VM   #
 ###############
