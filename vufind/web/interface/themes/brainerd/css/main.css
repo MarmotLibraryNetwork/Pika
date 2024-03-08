@@ -361,7 +361,7 @@ h6 .small,
 .h6 .small {
   font-weight: normal;
   line-height: 1;
-  color: #999999;
+  color: #797676;
 }
 h1,
 h2,
@@ -437,7 +437,7 @@ cite {
   font-style: normal;
 }
 .text-muted {
-  color: #999999;
+  color: #797676;
 }
 .text-primary {
   color: #428bca;
@@ -557,7 +557,7 @@ dd {
 abbr[title],
 abbr[data-original-title] {
   cursor: help;
-  border-bottom: 1px dotted #999999;
+  border-bottom: 1px dotted #797676;
 }
 .initialism {
   font-size: 90%;
@@ -580,7 +580,7 @@ blockquote small,
 blockquote .small {
   display: block;
   line-height: 1.42857143;
-  color: #999999;
+  color: #797676;
 }
 blockquote small:before,
 blockquote .small:before {
@@ -1780,17 +1780,17 @@ output {
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
 }
 .form-control:-moz-placeholder {
-  color: #999999;
+  color: #797676;
 }
 .form-control::-moz-placeholder {
-  color: #999999;
+  color: #797676;
   opacity: 1;
 }
 .form-control:-ms-input-placeholder {
-  color: #999999;
+  color: #797676;
 }
 .form-control::-webkit-input-placeholder {
-  color: #999999;
+  color: #797676;
 }
 .form-control[disabled],
 .form-control[readonly],
@@ -2344,7 +2344,7 @@ fieldset[disabled] .btn-link {
 fieldset[disabled] .btn-link:hover,
 .btn-link[disabled]:focus,
 fieldset[disabled] .btn-link:focus {
-  color: #999999;
+  color: #797676;
   text-decoration: none;
 }
 .btn-lg {
@@ -3094,7 +3094,7 @@ input[type="button"].btn-block {
 .dropdown-menu > .disabled > a,
 .dropdown-menu > .disabled > a:hover,
 .dropdown-menu > .disabled > a:focus {
-  color: #999999;
+  color: #797676;
 }
 .dropdown-menu > .disabled > a:hover,
 .dropdown-menu > .disabled > a:focus {
@@ -3115,7 +3115,7 @@ input[type="button"].btn-block {
   padding: 3px 20px;
   font-size: 12px;
   line-height: 1.42857143;
-  color: #999999;
+  color: #797676;
 }
 .dropdown-backdrop {
   position: fixed;
@@ -3537,11 +3537,11 @@ textarea.input-group-sm > .input-group-btn > .btn {
   background-color: #eeeeee;
 }
 .nav > li.disabled > a {
-  color: #999999;
+  color: #797676;
 }
 .nav > li.disabled > a:hover,
 .nav > li.disabled > a:focus {
-  color: #999999;
+  color: #797676;
   text-decoration: none;
   background-color: transparent;
   cursor: not-allowed;
@@ -4127,7 +4127,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
   border-color: #080808;
 }
 .navbar-inverse .navbar-brand {
-  color: #999999;
+  color: #797676;
 }
 .navbar-inverse .navbar-brand:hover,
 .navbar-inverse .navbar-brand:focus {
@@ -4135,10 +4135,10 @@ textarea.input-group-sm > .input-group-btn > .btn {
   background-color: transparent;
 }
 .navbar-inverse .navbar-text {
-  color: #999999;
+  color: #797676;
 }
 .navbar-inverse .navbar-nav > li > a {
-  color: #999999;
+  color: #797676;
 }
 .navbar-inverse .navbar-nav > li > a:hover,
 .navbar-inverse .navbar-nav > li > a:focus {
@@ -4185,7 +4185,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
     background-color: #080808;
   }
   .navbar-inverse .navbar-nav .open .dropdown-menu > li > a {
-    color: #999999;
+    color: #797676;
   }
   .navbar-inverse .navbar-nav .open .dropdown-menu > li > a:hover,
   .navbar-inverse .navbar-nav .open .dropdown-menu > li > a:focus {
@@ -4206,7 +4206,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
   }
 }
 .navbar-inverse .navbar-link {
-  color: #999999;
+  color: #797676;
 }
 .navbar-inverse .navbar-link:hover {
   color: #fff;
@@ -4227,7 +4227,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
   color: #ccc;
 }
 .breadcrumb > .active {
-  color: #999999;
+  color: #797676;
 }
 .pagination {
   display: inline-block;
@@ -4284,7 +4284,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .pagination > .disabled > a,
 .pagination > .disabled > a:hover,
 .pagination > .disabled > a:focus {
-  color: #999999;
+  color: #797676;
   background-color: #fff;
   border-color: #ddd;
   cursor: not-allowed;
@@ -4369,7 +4369,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .pager .disabled > a:hover,
 .pager .disabled > a:focus,
 .pager .disabled > span {
-  color: #999999;
+  color: #797676;
   background-color: #fff;
   cursor: not-allowed;
 }
@@ -7206,7 +7206,7 @@ input[type="checkbox"]:focus {
 }
 .datepicker table tr td.old,
 .datepicker table tr td.new {
-  color: #999999;
+  color: #797676;
 }
 .datepicker table tr td.day:hover,
 .datepicker table tr td.focused {
@@ -7216,7 +7216,7 @@ input[type="checkbox"]:focus {
 .datepicker table tr td.disabled,
 .datepicker table tr td.disabled:hover {
   background: none;
-  color: #999999;
+  color: #797676;
   cursor: default;
 }
 .datepicker table tr td.highlighted {
@@ -7267,7 +7267,7 @@ fieldset[disabled] .datepicker table tr td.highlighted.active {
 .datepicker table tr td.highlighted.disabled,
 .datepicker table tr td.highlighted.disabled:active {
   background: #e8f4fa;
-  color: #999999;
+  color: #797676;
 }
 .datepicker table tr td.today {
   color: #000;
@@ -7316,7 +7316,7 @@ fieldset[disabled] .datepicker table tr td.today.active {
 .datepicker table tr td.today.disabled,
 .datepicker table tr td.today.disabled:active {
   background: #ffdb99;
-  color: #999999;
+  color: #797676;
 }
 .datepicker table tr td.range {
   color: #000;
@@ -7366,7 +7366,7 @@ fieldset[disabled] .datepicker table tr td.range.active {
 .datepicker table tr td.range.disabled,
 .datepicker table tr td.range.disabled:active {
   background: #eeeeee;
-  color: #999999;
+  color: #797676;
 }
 .datepicker table tr td.range.highlighted {
   color: #000;
@@ -7415,7 +7415,7 @@ fieldset[disabled] .datepicker table tr td.range.highlighted.active {
 .datepicker table tr td.range.highlighted.disabled,
 .datepicker table tr td.range.highlighted.disabled:active {
   background: #ebf1f4;
-  color: #999999;
+  color: #797676;
 }
 .datepicker table tr td.range.today {
   color: #000;
@@ -7461,12 +7461,12 @@ fieldset[disabled] .datepicker table tr td.range.today.active {
 .datepicker table tr td.range.today.disabled,
 .datepicker table tr td.range.today.disabled:active {
   background: #f7ca77;
-  color: #999999;
+  color: #797676;
 }
 .datepicker table tr td.selected,
 .datepicker table tr td.selected.highlighted {
   color: #fff;
-  background-color: #999999;
+  background-color: #797676;
   border-color: #555555;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
@@ -7481,7 +7481,7 @@ fieldset[disabled] .datepicker table tr td.range.today.active {
 .open .dropdown-toggle.datepicker table tr td.selected,
 .open .dropdown-toggle.datepicker table tr td.selected.highlighted {
   color: #fff;
-  background-color: #858585;
+  background-color: #646262;
   border-color: #373737;
 }
 .datepicker table tr td.selected:active,
@@ -7522,12 +7522,12 @@ fieldset[disabled] .datepicker table tr td.selected.highlighted:active,
 .datepicker table tr td.selected.highlighted[disabled].active,
 fieldset[disabled] .datepicker table tr td.selected.active,
 fieldset[disabled] .datepicker table tr td.selected.highlighted.active {
-  background-color: #999999;
+  background-color: #797676;
   border-color: #555555;
 }
 .datepicker table tr td.selected .badge,
 .datepicker table tr td.selected.highlighted .badge {
-  color: #999999;
+  color: #797676;
   background-color: #fff;
 }
 .datepicker table tr td.active,
@@ -7614,7 +7614,7 @@ fieldset[disabled] .datepicker table tr td.active.highlighted.active {
 .datepicker table tr td span.disabled,
 .datepicker table tr td span.disabled:hover {
   background: none;
-  color: #999999;
+  color: #797676;
   cursor: default;
 }
 .datepicker table tr td span.active,
@@ -7736,7 +7736,7 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
 }
 .datepicker table tr td span.old,
 .datepicker table tr td span.new {
-  color: #999999;
+  color: #797676;
 }
 .datepicker .datepicker-switch {
   width: 145px;
@@ -8231,7 +8231,7 @@ hr.menu {
 #home-page-search-label {
   font-size: 35px;
   color: #FFF;
-  text-shadow: 1px 1px #999999;
+  text-shadow: 1px 1px #797676;
 }
 #home-page-advanced-search-link {
   color: #FFF;
@@ -8317,7 +8317,7 @@ hr.menu {
   margin-bottom: 0;
 }
 #home-page-login {
-  background-color: #AFAFAF;
+  background-color: #797676;
   color: #FFF;
   font-size: 18px;
   padding: 5px;
