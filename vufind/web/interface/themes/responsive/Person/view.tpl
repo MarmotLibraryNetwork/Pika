@@ -11,9 +11,9 @@
 		</div>
 	{/if}
 
-	<h2>
-		{$person->firstName|escape} {$person->middleName|escape}{if $person->nickName} "{$person->nickName|escape}"{/if}{if $person->maidenName} ({$person->maidenName}){/if} {$person->lastName|escape}
-	</h2>
+	<h1 role="heading" class="h2">
+	{$person->firstName|escape} {$person->middleName|escape}{if $person->nickName} "{$person->nickName|escape}"{/if}{if $person->maidenName} ({$person->maidenName}){/if} {$person->lastName|escape}
+	</h1>
 	{if $userIsAdmin}
 		<p class="btn-toolbar">
 			<div class="btn-group">

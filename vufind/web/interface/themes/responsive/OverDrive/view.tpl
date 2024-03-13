@@ -6,14 +6,14 @@
 		{include file="GroupedWork/search-results-navigation.tpl"}
 
 		{* Display Title *}
-		<h2>
+		<h1 role="heading" class="h2">
 			{$recordDriver->getTitle()|removeTrailingPunctuation|escape}
 			{if $recordDriver->getSubTitle() && $recordDriver->getSubTitle()|lower != $recordDriver->getTitle()|lower}: {$recordDriver->getSubTitle()|removeTrailingPunctuation|escape}{/if}
 			{* Don't display the subtitle if it is the same text as the short title *}
 			{if $recordDriver->getFormats()}
 				<br><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
 			{/if}
-		</h2>
+		</h1>
 
 		<div class="row">
 			<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
