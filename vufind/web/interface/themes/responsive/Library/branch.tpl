@@ -1,7 +1,7 @@
 {strip}
-	<h2 class="notranslate">
+	<h1 role="heading" class="h2 notranslate">
 		{$location->displayName}
-	</h2>
+	</h1>
 
 	<div class="row">
 		<div class="col-xs-12 col-sm-3">
