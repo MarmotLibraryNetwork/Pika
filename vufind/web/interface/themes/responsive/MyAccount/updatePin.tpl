@@ -1,5 +1,5 @@
 {strip}
-	<h2>{translate text='Update My PIN'}</h2>
+	<h1 role="heading" class="h2">{translate text='Update My PIN'}</h1>
 	<div class="alert alert-info">
 		<p>Please update your {translate text='pin'}. If you have any questions, please contact your library.</p>
 		<p class="alert alert-warning"> This action is required to access your account.</p>

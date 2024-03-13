@@ -5,7 +5,7 @@
 
 			{* Report filters *}
 			<div class="sidegroup">
-				<h4>Report Filters</h4>
+				<div class="h4">Report Filters</div>
 				<div class="sidegroupContents">
 					<form id="offlineHoldsFilter">
 						<div class="form-horizontal">
@@ -88,7 +88,7 @@
 				<tr><th>Failed</th><td>{$totalFailed}</td></tr>
 			</table>
 
-			<h2>Offline Circulation</h2>
+			<h1 role="heading" class="h2">Offline Circulation</h1>
 			{if count($offlineCirculation) > 0}
 				<table class="table stripe" id="offlineCirculationReport">
 					<thead>

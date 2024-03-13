@@ -8,7 +8,7 @@
 		<span class='availableHoldsNoticePlaceHolder'></span>
 
 		{* Internal Grid *}
-		<h2 class="myAccountTitle">{translate text='Recommended for you'}</h2>
+		<h1 role="heading" class="h2 myAccountTitle">{translate text='Recommended for you'}</h1>
 
 		<div id="pager" class="navbar form-inline">
 			<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>

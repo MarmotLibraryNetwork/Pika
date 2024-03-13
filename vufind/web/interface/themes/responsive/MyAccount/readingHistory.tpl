@@ -8,7 +8,7 @@
 
 	<span class='availableHoldsNoticePlaceHolder'></span>
 
-	<h2>{translate text='My Reading History'} {if $historyActive == true}<small><a id="readingListWhatsThis" href="#" onclick="$('#readingListDisclaimer').toggle();return false;">(What's This?)</a></small>{/if}</h2>
+	<h1 role="heading" class="h2">{translate text='My Reading History'} {if $historyActive == true}<small><a id="readingListWhatsThis" href="#" onclick="$('#readingListDisclaimer').toggle();return false;">(What's This?)</a></small>{/if}</h1>
 
 		{include file="MyAccount/switch-linked-user-form.tpl" label="View Reading History for" actionPath="/MyAccount/ReadingHistory"}
 

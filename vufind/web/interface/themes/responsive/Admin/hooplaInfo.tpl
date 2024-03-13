@@ -1,6 +1,6 @@
 {strip}
 	<div id="page-content" class="col-tn-12">
-		<h2>Hoopla API Info</h2>
+		<h1 role="heading" class="h2">Hoopla API Info</h1>
 		{if $isHooplaEnabled}
 
 		<h4>Report Filters</h4>

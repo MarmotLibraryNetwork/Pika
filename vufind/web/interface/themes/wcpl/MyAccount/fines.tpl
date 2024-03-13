@@ -6,7 +6,7 @@
 
 	<span class='availableHoldsNoticePlaceHolder'></span>
 
-	<h2>{translate text='Fines_page_title'}</h2>
+	<h1 role="heading" class="h2">{translate text='Fines_page_title'}</h1>
 {if $offline}
 	<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to retrieve information about your {translate text='Fines'|lower} at this time.</div>
 {else}

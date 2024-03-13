@@ -4,7 +4,7 @@
 		<div id="sidebar">
 			{* Report filters *}
 			<div class="sidegroup">
-				<h4>Report Filters</h4>
+				<div class="h4">Report Filters</div>
 				<div class="sidegroupContents">
 					<form id="offlineHoldsFilter">
 						<div  class="form-horizontal">
@@ -47,7 +47,7 @@
 		</div>
 
 		<div id="main-content">
-			<h2>Offline Holds</h2>
+			<h1 role="heading" class="h2">Offline Holds</h1>
 			{if count($offlineHolds) > 0}
 				<table class="citation stripe" id="offlineHoldsReport">
 					<thead>

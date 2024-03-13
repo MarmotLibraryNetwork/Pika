@@ -1,7 +1,7 @@
 {strip}
 		{include file="Search/bookbag.tpl"}
 <div>
-	<h2>{$authorName}</h2>
+	<h1 role="heading" class="h2">{$authorName}</h1>
 	<div class="row">
 		<div id="wikipedia_placeholder" class="col-xs-12">
 		</div>

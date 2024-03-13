@@ -1,7 +1,7 @@
 {strip}
-	{*<h2>
+	{*<h1 role="heading" class="h2">
 		{$pageTitleShort}
-	</h2>*}
+	</h1>*}
 	<div class="result-head">
 		{* User's viewing mode toggle switch *}
 		{*

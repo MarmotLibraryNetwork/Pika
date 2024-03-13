@@ -10,7 +10,7 @@
 		{/foreach}
 		<a class="btn btn-sm btn-default" href='/Admin/TranslationMaps?objectAction=list'>Return to List</a>
 	</div>
-	<h2>{$mapName}</h2>
+	<h1 role="heading" class="h2">{$mapName}</h1>
 	<div class="well">
 		<p>Translation map values can be loaded from either an INI formatted record
 			or from a CSV formatted record.
@@ -36,7 +36,7 @@
 			<input type="hidden" name="objectAction" value="doAppend" id="objectAction">
 			<input type="hidden" name="id" value="{$id}">
 			<p>
-				<textarea rows="20" cols="80" name="translationMapData" class="form-control"></textarea>
+				<textarea aria-label="Translation text to Import" rows="20" cols="80" name="translationMapData" class="form-control"></textarea>
 			</p>
 			<input type="submit" name="reload" value="Append/Overwrite Values" class="btn btn-primary" onclick="setObjectAction('doAppend')">
 			<input type="submit" name="reload" value="Reload Map Values" class="btn btn-danger" onclick="if(confirm('Confirm Map Reload? This will erase all current translations for this map.'))setObjectAction('doReload');else return false;">

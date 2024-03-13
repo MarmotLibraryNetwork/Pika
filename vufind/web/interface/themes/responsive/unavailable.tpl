@@ -136,13 +136,13 @@ window.onload = start
 	<div id="container">
 		<div id="title">
 			
-			<h1>The {$libraryName|regex_replace:"/catalog\s*$/i":""} Catalog is Down</h1>{* strip from any library name that ends with the word catalog to avoid duplication *}
+			<h1 role="heading">The {$libraryName|regex_replace:"/catalog\s*$/i":""} Catalog is Down</h1>{* strip from any library name that ends with the word catalog to avoid duplication *}
 			<h2>for maintenance</h2>
 			{if $maintenanceMessage}
-				<h3>{$maintenanceMessage}</h3>
+				<div class="h3">{$maintenanceMessage}</div>
 			{/if}
 			{if $showLinkToClassicInMaintenanceMode}
-			<h4> Please search our <a href="{$classicCatalogUrl}">Classic Catalog</a></h4>
+			<div class="h4"> Please search our <a href="{$classicCatalogUrl}">Classic Catalog</a></div>
 			{/if}
 		</div>
 		<!-- server ip {$activeIp} -->
