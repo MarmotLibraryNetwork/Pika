@@ -22,8 +22,9 @@
 
 	</div>
 
+	{if !$isUpdatePinPage}
 	<div class="logoutOptions"{if !$loggedIn} style="display: none;"{/if}>
-		<div class="hidden-xs col-sm-2 col-md-2 col-md-offset-0 col-lg-2 col-lg-offset-0">
+		<div class="hidden-xs col-sm-2 col-sm-offset-5 col-md-2 col-md-offset-0 col-lg-2 col-lg-offset-0">
 			<a id="headerMyAccountLink" href="/MyAccount/Home">
 				<div class="header-button header-primary">
 					{translate text="Your Account"}
@@ -40,7 +41,7 @@
 		</div>
 	</div>
 
-	<div class="loginOptions col-sm-2 col-md-2 col-md-offset-2 col-lg-offset-2 col-lg-2"{if $loggedIn} style="display: none;"{/if}>
+	<div class="loginOptions col-sm-2 col-sm-offset-7 col-md-2 col-md-offset-2 col-lg-offset-2 col-lg-2"{if $loggedIn} style="display: none;"{/if}>
 		{if $showLoginButton == 1}
 			<a id="headerLoginLink" href="/MyAccount/Home" class="loginLink" data-login="true" title="Login" onclick="{if $isLoginPage}$('#username').focus();return false{else}return Pika.Account.followLinkIfLoggedIn(this);{/if}">
 				<div class="hidden-xs header-button header-primary">
@@ -49,6 +50,18 @@
 			</a>
 		{/if}
 	</div>
+	{else}
+		{* Show log out option on Force Pin Update so users can log out if they choose *}
+		<div class="logoutOptions"{if !$loggedIn} style="display: none;"{/if}>
+			<div class="hidden-xs col-sm-2 col-sm-offset-7 col-md-2 col-md-offset-2 col-lg-offset-2 col-lg-2">
+				<a  id="headerLogoutLink" href="/MyAccount/Logout"{if $masqueradeMode} onclick="return confirm('This will end both Masquerade Mode and your session as well. Continue to log out?')"{/if}>
+					<div class="header-button header-primary">
+						{translate text="Log Out"}
+					</div>
+				</a>
+			</div>
+		</div>
+	{/if}
 
 	{if $topLinks}
 		<div class="col-tn-12" id="header-links">
