@@ -4,7 +4,7 @@
 	{* In mobile view this div is the top div and spans across the screen *}
 	<div class="col-xs-12 col-sm-3 col-md-3 col-lg-3">
 		<a href="{$logoLink}/">
-			<img src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="{$librarySystemName}" title="{$logoAlt}" id="header-logo" {if $showDisplayNameInHeader && $librarySystemName}class="pull-left"{/if}>
+			<img src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="Logo for {$librarySystemName}" title="{$logoImageTagTitleAttribute}" id="header-logo" {if $showDisplayNameInHeader && $librarySystemName}class="pull-left"{/if}>
 		</a>
 	</div>
 
