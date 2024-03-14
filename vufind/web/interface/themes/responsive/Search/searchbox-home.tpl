@@ -40,7 +40,7 @@
 							</div>
 							<div class="input-group-btn" id="search-actions">
 								<button class="btn btn-default" type="submit">GO</button>
-								<button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+								<button class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-label="Select type of search">
 									<span class="caret"></span>
 								</button>
 
