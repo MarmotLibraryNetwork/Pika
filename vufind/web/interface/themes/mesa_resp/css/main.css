@@ -8220,8 +8220,8 @@ hr.menu {
   background-image: none;
 }
 #home-page-search {
-  background-color: #00a4e3;
-  background: linear-gradient(to bottom, #00a4e3, #147ce2);
+  background-color: #057DBC;
+  background: linear-gradient(to bottom, #057DBC, #147ce2);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8260,8 +8260,8 @@ hr.menu {
   font-size: 85%;
 }
 #horizontal-search-box {
-  background-color: #00a4e3;
-  background: linear-gradient(to bottom, #00a4e3, #147ce2);
+  background-color: #057DBC;
+  background: linear-gradient(to bottom, #057DBC, #147ce2);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -9938,8 +9938,8 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
 }
 #explore-more-sidebar {
-  background-color: #00a4e3;
-  background: linear-gradient(to bottom, #00a4e3, #147ce2);
+  background-color: #057DBC;
+  background: linear-gradient(to bottom, #057DBC, #147ce2);
 }
 #explore-more-header {
   padding: 10px 25px 5px 0;

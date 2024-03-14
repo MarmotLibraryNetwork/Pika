@@ -7046,11 +7046,11 @@ a:focus img {
   outline: 2px solid white;
 }
 #vertical-menu-bar .menu-icon-selected:has(.menu-icon:focus) {
-  border: 2px solid #00a4e3 !important;
+  border: 2px solid #057DBC !important;
   outline: 2px solid white;
 }
 a:focus > .header-button {
-  outline: 5px auto #00a4e3 !important;
+  outline: 5px auto #057DBC !important;
 }
 #browse-category-picker .jcarousel-control-prev:focus,
 #browse-category-picker .jcarousel-control-next:focus {
@@ -7060,10 +7060,10 @@ a:focus > .header-button {
   outline: 1px solid #E15F15 !important;
 }
 .jcarousel-pagination > a.active:focus {
-  outline: 2px solid #00a4e3 !important;
+  outline: 2px solid #057DBC !important;
 }
 input[type="checkbox"]:focus {
-  outline: 5px auto #00a4e3 !important;
+  outline: 5px auto #057DBC !important;
 }
 .ui-rater > span {
   vertical-align: top;
@@ -8038,7 +8038,7 @@ hr.menu {
 }
 .menu-bar {
   color: #FFF;
-  background-color: #00a4e3;
+  background-color: #057DBC;
 }
 #horizontal-menu-bar-container {
   padding-left: 5px;
@@ -8058,7 +8058,7 @@ hr.menu {
   float: left;
 }
 #horizontal-menu-bar-container .menu-icon.menu-icon-selected {
-  background-color: #80d2f1;
+  background-color: #82bede;
 }
 #horizontal-menu-bar-container.sticky-menu-bar {
   position: fixed;
@@ -8081,7 +8081,7 @@ hr.menu {
   width: 40px;
   height: 2000px;
   height: 100vh;
-  background-color: #00a4e3;
+  background-color: #057DBC;
   color: #FFF;
   padding-left: 0;
   padding-right: 0;
@@ -8095,7 +8095,7 @@ hr.menu {
   position: relative;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected {
-  background-color: #80d2f1;
+  background-color: #82bede;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
   color: #FFF;
@@ -9668,7 +9668,7 @@ a.browse-thumbnail-sorted.active {
   width: 100%;
   display: inline-block;
   padding: 2px 2px 20px;
-  border-top: 5px solid #00a4e3;
+  border-top: 5px solid #057DBC;
   margin-top: 15px;
 }
 .combined-results-section .related-manifestation {
@@ -9683,8 +9683,8 @@ a.browse-thumbnail-sorted.active {
 .combined-results-button {
   float: right;
   margin-top: 4px;
-  background-color: #00a4e3;
-  border-color: #00a4e3;
+  background-color: #057DBC;
+  border-color: #057DBC;
 }
 .bookbag-container {
   position: fixed;
@@ -9707,7 +9707,7 @@ a.browse-thumbnail-sorted.active {
 }
 .bookbag {
   height: 2em;
-  background: #00a4e3;
+  background: #057DBC;
   color: white;
   width: 3em;
   line-height: 2em;
@@ -9777,7 +9777,7 @@ a.browse-thumbnail-sorted.active {
   }
 }
 .cart-container {
-  background: #00a4e3;
+  background: #057DBC;
   padding: 10px;
   color: white;
   transition: 0.15s ease-out;
@@ -9947,7 +9947,7 @@ a.browse-thumbnail-sorted.active {
   margin-top: 5px;
   text-align: right;
   color: #FFF;
-  background-color: #0092ca;
+  background-color: #046ca3;
   font-variant: small-caps;
   font-weight: bold;
   font-size: 16px;
@@ -9964,7 +9964,7 @@ a.browse-thumbnail-sorted.active {
   text-transform: uppercase;
   font-weight: bold;
   color: #000075;
-  border-bottom: 2px solid #00a4e3;
+  border-bottom: 2px solid #057DBC;
   margin-top: 15px;
 }
 #explore-more-body .section {
@@ -10006,12 +10006,12 @@ a.browse-thumbnail-sorted.active {
   }
 }
 .exploreMoreBar {
-  border: solid 1px #00a4e3;
+  border: solid 1px #057DBC;
   margin: 10px 5px 15px;
 }
 .exploreMoreBar .exploreMoreBarLabel {
   color: #FFF;
-  background-color: #00a4e3;
+  background-color: #057DBC;
   font-weight: bold;
   text-transform: uppercase;
   white-space: nowrap;
@@ -10029,7 +10029,7 @@ a.browse-thumbnail-sorted.active {
 }
 .exploreMoreBar .label-left,
 .exploreMoreBar .label-left img {
-  background-color: #00a4e3;
+  background-color: #057DBC;
 }
 .exploreMoreBar .label-left .exploreMoreBarLabel {
   position: absolute;
@@ -10049,7 +10049,7 @@ a.browse-thumbnail-sorted.active {
 }
 .exploreMoreBar .label-top,
 .exploreMoreBar .label-top img {
-  background-color: #00a4e3;
+  background-color: #057DBC;
   display: inline-block;
 }
 .exploreMoreBar .label-top .exploreMoreBarLabel {
@@ -10116,7 +10116,7 @@ a.browse-thumbnail-sorted.active {
 #book-sections .jcarousel-control-next {
   height: 100%;
   background-color: transparent;
-  color: #00a4e3;
+  color: #057DBC;
   z-index: 2;
   box-shadow: white 0px 0px 0px 0px;
 }
@@ -10280,7 +10280,7 @@ a.browse-thumbnail-sorted.active {
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentControls,
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentSearchControls {
   color: #FFF;
-  background-color: #00a4e3;
+  background-color: #057DBC;
   padding: 10px 0;
   min-height: 124px;
 }
@@ -10290,7 +10290,7 @@ a.browse-thumbnail-sorted.active {
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox #searchComponentForm {
   background-color: white;
-  border: 1px solid #007fb0;
+  border: 1px solid #045c8a;
   padding: 3px;
   margin-left: 5px;
 }
@@ -10318,7 +10318,7 @@ a.browse-thumbnail-sorted.active {
   top: 65px;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader {
-  background-color: #00a4e3;
+  background-color: #057DBC;
   padding: 10px 10px 0;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader + .row {
