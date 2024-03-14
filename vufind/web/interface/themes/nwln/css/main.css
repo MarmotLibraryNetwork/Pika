@@ -8063,7 +8063,7 @@ hr.menu {
   float: left;
 }
 #horizontal-menu-bar-container .menu-icon.menu-icon-selected {
-  background-color: #3E91CA;
+  background-color: #1878D3;
 }
 #horizontal-menu-bar-container.sticky-menu-bar {
   position: fixed;
@@ -8100,7 +8100,7 @@ hr.menu {
   position: relative;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected {
-  background-color: #3E91CA;
+  background-color: #1878D3;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
   color: #FFF;
@@ -8226,7 +8226,7 @@ hr.menu {
 }
 #home-page-search {
   background-color: #006aac;
-  background: linear-gradient(to bottom, #006aac, #3E91CA);
+  background: linear-gradient(to bottom, #006aac, #1878D3);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8254,7 +8254,7 @@ hr.menu {
 .searchSource {
   margin: 5px 0 0;
   color: #fff;
-  background-color: #3E91CA;
+  background-color: #1878D3;
   border: none;
   width: 90% !important;
 }
@@ -8266,7 +8266,7 @@ hr.menu {
 }
 #horizontal-search-box {
   background-color: #006aac;
-  background: linear-gradient(to bottom, #006aac, #3E91CA);
+  background: linear-gradient(to bottom, #006aac, #1878D3);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -8966,7 +8966,7 @@ a.browse-thumbnail-sorted.active {
 }
 #browse-sub-category-menu button.selected {
   color: #333;
-  background-color: #3E91CA;
+  background-color: #1878D3;
 }
 #browse-sub-category-menu button:focus {
   outline: none;
@@ -9943,7 +9943,7 @@ a.browse-thumbnail-sorted.active {
 }
 #explore-more-sidebar {
   background-color: #006aac;
-  background: linear-gradient(to bottom, #006aac, #3E91CA);
+  background: linear-gradient(to bottom, #006aac, #1878D3);
 }
 #explore-more-header {
   padding: 10px 25px 5px 0;
@@ -10585,11 +10585,11 @@ fieldset[disabled] .btn-masquerade.active {
   border: 1px solid #006aac;
 }
 #browse-category-carousel .browse-category.selected div {
-  background: #3E91CA;
+  background: #1878D3;
   font-size: 20px;
 }
 #browse-category-carousel .browse-category.selected div:hover {
-  background: #3E91CA;
+  background: #1878D3;
 }
 #browse-category-carousel .browse-category:hover {
   background: #E4E4E4;
@@ -10763,8 +10763,8 @@ fieldset[disabled] .btn-masquerade.active {
   display: table;
 }
 .btn-primary:hover {
-  background-color: #3E91CA;
-  border-color: #3E91CA;
+  background-color: #1878D3;
+  border-color: #1878D3;
 }
 .panel-group > a,
 #home-page-library-section > a {
