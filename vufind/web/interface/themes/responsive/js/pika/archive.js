@@ -160,9 +160,9 @@ Pika.Archive = (function(){
 			return false;
 		},
 
-		initializeOpenSeadragon: function(viewer){
-
-		},
+		// initializeOpenSeadragon: function(viewer){
+		//
+		// },
 
 		getMoreExhibitResults: function(exhibitPid, reloadHeader){
 			this.curPage = this.curPage +1;
