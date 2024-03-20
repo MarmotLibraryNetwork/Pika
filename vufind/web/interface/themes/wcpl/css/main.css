@@ -10579,3 +10579,10 @@ fieldset[disabled] .btn-masquerade.active {
 .sidebar-button {
   background: #242D40;
 }
+input.btn.btn-warning {
+  background-color: #a83f3c;
+  border-color: #a83f3c;
+}
+.badge.badge-danger {
+  background-color: #a83f3c;
+}
