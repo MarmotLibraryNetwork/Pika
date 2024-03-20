@@ -8,7 +8,7 @@
 	{if $breadcrumbText}
 		<li>
 			&nbsp;
-			<em aria-current="page">{$breadcrumbText|truncate:30:"..."|escape}</em> <span class="divider">&raquo;</span>
+			<a href="" aria-current="page">{$breadcrumbText|truncate:30:"..."|escape}</a> <span class="divider">&raquo;</span>
 		</li>
 	{/if}
 	{if $action == "Series"}

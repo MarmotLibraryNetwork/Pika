@@ -246,7 +246,7 @@ div.striped {
   outline: 5px auto @focus-ring-color!important;
 }
 a:focus img {
-  outline: 5px auto @focus-ring-color!important;
+  //outline: 5px auto @focus-ring-color!important;
 }
 #vertical-menu-bar .menu-bar-option:has(.menu-icon:focus){
   border: 2px solid @focus-ring-color!important;
@@ -270,6 +270,11 @@ a:focus>.header-button{
 }
 input[type="checkbox"]:focus{
   outline: 5px auto @menu-bar-background-color!important;
+}
+nav.breadcrumbs [aria-current="page"]{
+  text-decoration: none!important;
+  font-style:italic!important;
+  color: #222;
 }
 // Third party imports
 @import "ratings.less";
