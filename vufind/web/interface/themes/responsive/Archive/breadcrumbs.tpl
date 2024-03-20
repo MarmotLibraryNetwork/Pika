@@ -10,7 +10,7 @@
 	</li>
 	<li>
 		{if $breadcrumbText}
-			<em>{$breadcrumbText|truncate:30:"..."|escape}</em>
+			<em aria-current="page">{$breadcrumbText|truncate:30:"..."|escape}</em>
 			<span class="divider">&raquo;</span>
 		{/if}
 	</li>
