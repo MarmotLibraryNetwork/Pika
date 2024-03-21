@@ -34,6 +34,7 @@
   text-shadow: 1px 1px  @salida-light-gray;
 }
 // mixin to select all the typical states of <a> like tags
+// this mixin apparently needs to stay here to apply to the rule below. 3-21-2024 pascal
 .allLinkStates(@rules) {
   &, &:hover, &:active, &:visited {
     @rules();
@@ -62,12 +63,6 @@
 
 // Browse Category customizations based on AnyThink
 
-// mixin to select all the typical states of <a> like tags
-.allLinkStates(@rules) {
-  &, &:hover, &:active, &:visited {
-    @rules();
-  }
-}
 
 #browse-label {
   background-color: #ffffff;

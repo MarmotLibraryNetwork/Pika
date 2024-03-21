@@ -470,3 +470,13 @@
     display: table;
   }
 }
+
+
+// Browse Category customization mixins based on anythink theme
+
+// mixin to select all the typical states of <a> like tags
+.allLinkStates(@rules) {
+  &, &:hover, &:active, &:visited {
+    @rules();
+  }
+}
