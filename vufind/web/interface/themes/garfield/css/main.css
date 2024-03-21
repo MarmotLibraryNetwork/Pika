@@ -8060,7 +8060,7 @@ hr.menu {
   float: left;
 }
 #horizontal-menu-bar-container .menu-icon.menu-icon-selected {
-  background-color: #80bcd7;
+  background-color: #0175E4;
 }
 #horizontal-menu-bar-container.sticky-menu-bar {
   position: fixed;
@@ -8097,7 +8097,7 @@ hr.menu {
   position: relative;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected {
-  background-color: #80bcd7;
+  background-color: #0175E4;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
   color: #FFF;
