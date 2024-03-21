@@ -11,7 +11,7 @@
 	{/if}
 	{if $recordDriver}
 		<li>
-			<a href="/GroupedWork/{$recordDriver->getPermanentId()}">{$recordDriver->getBreadcrumb()|truncate:30:"..."|escape}</a>
+			<a href="/GroupedWork/{$recordDriver->getPermanentId()}" aria-current="page">{$recordDriver->getBreadcrumb()|truncate:30:"..."|escape}</a>
 			<span class="divider">&raquo;</span>
 		</li>
 		{if $recordDriver->getFormats()}
