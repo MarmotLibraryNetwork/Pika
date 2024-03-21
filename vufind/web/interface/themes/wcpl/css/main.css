@@ -8577,40 +8577,40 @@ hr.menu {
   font-size: 23px;
 }
 .browse-category.category0 {
-  background-color: #0d8ec7;
-  background: linear-gradient(to bottom, #0d8ec7, #0d8ec7 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0d8ec7 90%, #0d8ec7);
+  background-color: #0B7EB5;
+  background: linear-gradient(to bottom, #0B7EB5, #0B7EB5 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0B7EB5 90%, #0B7EB5);
 }
 .browse-category.category1 {
-  background-color: #0e98d5;
-  background: linear-gradient(to bottom, #0e98d5, #0e98d5 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0e98d5 90%, #0e98d5);
+  background-color: #0B7EB5;
+  background: linear-gradient(to bottom, #0B7EB5, #0B7EB5 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0B7EB5 90%, #0B7EB5);
 }
 .browse-category.category2 {
-  background-color: #0fa2e4;
-  background: linear-gradient(to bottom, #0fa2e4, #0fa2e4 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0fa2e4 90%, #0fa2e4);
+  background-color: #0B7EB5;
+  background: linear-gradient(to bottom, #0B7EB5, #0B7EB5 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0B7EB5 90%, #0B7EB5);
 }
 .browse-category.category3 {
-  background-color: #12acf0;
-  background: linear-gradient(to bottom, #12acf0, #12acf0 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #12acf0 90%, #12acf0);
+  background-color: #0B7EB5;
+  background: linear-gradient(to bottom, #0B7EB5, #0B7EB5 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0B7EB5 90%, #0B7EB5);
 }
 .browse-category.category4 {
-  background-color: #21b1f0;
-  background: linear-gradient(to bottom, #21b1f0, #21b1f0 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #21b1f0 90%, #21b1f0);
+  background-color: #0B7EB5;
+  background: linear-gradient(to bottom, #0B7EB5, #0B7EB5 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0B7EB5 90%, #0B7EB5);
 }
 .browse-category.category5 {
-  background-color: #2fb6f1;
-  background: linear-gradient(to bottom, #2fb6f1, #2fb6f1 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #2fb6f1 90%, #2fb6f1);
+  background-color: #0B7EB5;
+  background: linear-gradient(to bottom, #0B7EB5, #0B7EB5 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0B7EB5 90%, #0B7EB5);
 }
 .browse-category.category6 {
-  background-color: #3dbbf2;
-  background: linear-gradient(to bottom, #3dbbf2, #3dbbf2 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #3dbbf2 90%, #3dbbf2);
+  background-color: #0B7EB5;
+  background: linear-gradient(to bottom, #0B7EB5, #0B7EB5 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0B7EB5 90%, #0B7EB5);
 }
 .browse-category.category7 {
-  background-color: #4cc0f3;
-  background: linear-gradient(to bottom, #4cc0f3, #4cc0f3 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #4cc0f3 90%, #4cc0f3);
+  background-color: #0B7EB5;
+  background: linear-gradient(to bottom, #0B7EB5, #0B7EB5 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0B7EB5 90%, #0B7EB5);
 }
 .browse-category.category8 {
-  background-color: #5ac5f4;
-  background: linear-gradient(to bottom, #5ac5f4, #5ac5f4 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #5ac5f4 90%, #5ac5f4);
+  background-color: #0B7EB5;
+  background: linear-gradient(to bottom, #0B7EB5, #0B7EB5 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0B7EB5 90%, #0B7EB5);
 }
 #selected-browse-label {
   background-color: #fff;
@@ -8964,7 +8964,7 @@ a.browse-thumbnail-sorted.active {
 }
 #browse-sub-category-menu button.selected {
   color: #fff;
-  background-color: #0d8ec7;
+  background-color: #0B7EB5;
 }
 #browse-sub-category-menu button:focus {
   outline: none;
@@ -10574,8 +10574,8 @@ fieldset[disabled] .btn-masquerade.active {
   display: none;
 }
 .browse-category.selected {
-  background-color: #2fb6f1;
-  background: linear-gradient(to bottom, #2fb6f1, #2fb6f1 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #2fb6f1 90%, #2fb6f1);
+  background-color: #0B7EB5;
+  background: linear-gradient(to bottom, #0B7EB5, #0B7EB5 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0B7EB5 90%, #0B7EB5);
   font-size: 22px;
 }
 .sidebar-button {

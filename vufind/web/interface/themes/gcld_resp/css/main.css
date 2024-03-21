@@ -8577,40 +8577,40 @@ hr.menu {
   font-size: 23px;
 }
 .browse-category.category0 {
-  background-color: #0d8ec7;
-  background: linear-gradient(to bottom, #0d8ec7, #0d8ec7 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0d8ec7 90%, #0d8ec7);
+  background-color: #0B7EB5;
+  background: linear-gradient(to bottom, #0B7EB5, #0B7EB5 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0B7EB5 90%, #0B7EB5);
 }
 .browse-category.category1 {
-  background-color: #0d8ec7;
-  background: linear-gradient(to bottom, #0d8ec7, #0d8ec7 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0d8ec7 90%, #0d8ec7);
+  background-color: #0B7EB5;
+  background: linear-gradient(to bottom, #0B7EB5, #0B7EB5 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0B7EB5 90%, #0B7EB5);
 }
 .browse-category.category2 {
-  background-color: #0d8ec7;
-  background: linear-gradient(to bottom, #0d8ec7, #0d8ec7 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0d8ec7 90%, #0d8ec7);
+  background-color: #0B7EB5;
+  background: linear-gradient(to bottom, #0B7EB5, #0B7EB5 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0B7EB5 90%, #0B7EB5);
 }
 .browse-category.category3 {
-  background-color: #0d8ec7;
-  background: linear-gradient(to bottom, #0d8ec7, #0d8ec7 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0d8ec7 90%, #0d8ec7);
+  background-color: #0B7EB5;
+  background: linear-gradient(to bottom, #0B7EB5, #0B7EB5 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0B7EB5 90%, #0B7EB5);
 }
 .browse-category.category4 {
-  background-color: #0d8ec7;
-  background: linear-gradient(to bottom, #0d8ec7, #0d8ec7 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0d8ec7 90%, #0d8ec7);
+  background-color: #0B7EB5;
+  background: linear-gradient(to bottom, #0B7EB5, #0B7EB5 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0B7EB5 90%, #0B7EB5);
 }
 .browse-category.category5 {
-  background-color: #0d8ec7;
-  background: linear-gradient(to bottom, #0d8ec7, #0d8ec7 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0d8ec7 90%, #0d8ec7);
+  background-color: #0B7EB5;
+  background: linear-gradient(to bottom, #0B7EB5, #0B7EB5 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0B7EB5 90%, #0B7EB5);
 }
 .browse-category.category6 {
-  background-color: #0d8ec7;
-  background: linear-gradient(to bottom, #0d8ec7, #0d8ec7 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0d8ec7 90%, #0d8ec7);
+  background-color: #0B7EB5;
+  background: linear-gradient(to bottom, #0B7EB5, #0B7EB5 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0B7EB5 90%, #0B7EB5);
 }
 .browse-category.category7 {
-  background-color: #0d8ec7;
-  background: linear-gradient(to bottom, #0d8ec7, #0d8ec7 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0d8ec7 90%, #0d8ec7);
+  background-color: #0B7EB5;
+  background: linear-gradient(to bottom, #0B7EB5, #0B7EB5 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0B7EB5 90%, #0B7EB5);
 }
 .browse-category.category8 {
-  background-color: #0d8ec7;
-  background: linear-gradient(to bottom, #0d8ec7, #0d8ec7 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0d8ec7 90%, #0d8ec7);
+  background-color: #0B7EB5;
+  background: linear-gradient(to bottom, #0B7EB5, #0B7EB5 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0B7EB5 90%, #0B7EB5);
 }
 #selected-browse-label {
   background-color: #fff;
@@ -8964,7 +8964,7 @@ a.browse-thumbnail-sorted.active {
 }
 #browse-sub-category-menu button.selected {
   color: #fff;
-  background-color: #0d8ec7;
+  background-color: #0B7EB5;
 }
 #browse-sub-category-menu button:focus {
   outline: none;
@@ -10540,7 +10540,7 @@ fieldset[disabled] .btn-masquerade.active {
   display: none;
 }
 .browse-category.selected {
-  background-color: #2ab4f1;
-  background: linear-gradient(to bottom, #2ab4f1, #2ab4f1 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #2ab4f1 90%, #2ab4f1);
+  background-color: #17aaf1;
+  background: linear-gradient(to bottom, #17aaf1, #17aaf1 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #17aaf1 90%, #17aaf1);
   font-size: 22px;
 }
