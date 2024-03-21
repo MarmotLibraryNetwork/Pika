@@ -104,16 +104,29 @@
 @browse-category-text-color: #fff;
 @categoryLineShadow: #64b7d8;
 @categoryLineColor: #89cae5;
-@category1MainColor: #0d8ec7;
-@category2MainColor: lighten(@category1MainColor, 3%);
-@category3MainColor: lighten(@category1MainColor, 6%);
-@category4MainColor: lighten(@category1MainColor, 9%);
-@category5MainColor: lighten(@category1MainColor, 12%);
-@category6MainColor: lighten(@category1MainColor, 15%);
-@category7MainColor: lighten(@category1MainColor, 18%);
-@category8MainColor: lighten(@category1MainColor, 21%);
-@category9MainColor: lighten(@category1MainColor, 24%);
+@category1MainColor: #0B7EB5; //https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=0B7EB5
+// Set all browse categories the same bu default
+@category2MainColor: @category1MainColor;
+@category3MainColor: @category1MainColor;
+@category4MainColor: @category1MainColor;
+@category5MainColor: @category1MainColor;
+@category6MainColor: @category1MainColor;
+@category7MainColor: @category1MainColor;
+@category8MainColor: @category1MainColor;
+@category9MainColor: @category1MainColor;
+
+// Lightening the category colors likely results in inaccessible contrasts
+//@category2MainColor: lighten(@category1MainColor, 3%);
+//@category3MainColor: lighten(@category1MainColor, 6%);
+//@category4MainColor: lighten(@category1MainColor, 9%);
+//@category5MainColor: lighten(@category1MainColor, 12%);
+//@category6MainColor: lighten(@category1MainColor, 15%);
+//@category7MainColor: lighten(@category1MainColor, 18%);
+//@category8MainColor: lighten(@category1MainColor, 21%);
+//@category9MainColor: lighten(@category1MainColor, 24%);
+
 @selectedCategoryBorderColor: #3497d1;
+
 
 //Home Page Browse Category Carousel Controls
 @browseCarouselControlBackgroundColor: #9e9fa3;
