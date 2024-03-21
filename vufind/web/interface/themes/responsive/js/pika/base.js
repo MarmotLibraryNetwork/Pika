@@ -163,8 +163,11 @@ var Pika = (function(){
 					})
 					.jcarouselPagination({
 						perPage: 1,
+						// item: function(page) {
+						// 	return '<a href="#' + page + '">' + page + '</a>';
+						// }
 						item: function(page) {
-							return '<a href="#' + page + '">' + page + '</a>';
+							return '<a>' + page + '</a>';
 						}
 					});
 

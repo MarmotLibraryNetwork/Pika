@@ -5,7 +5,12 @@
 				<span class="browse-label-text">BROWSE THE CATALOG</span>
 			</div>
 			<div class="row text-center" id="browse-category-picker">
+
+
 				<div class="jcarousel-wrapper">
+
+					<a href="#" class="jcarousel-control-prev" aria-label="Previous Browse Category"></a>
+
 					<div class="jcarousel" id="browse-category-carousel">
 						<ul>
 							{foreach from=$browseCategories item=browseCategory name="browseCategoryLoop"}
@@ -18,8 +23,7 @@
 						</ul>
 					</div>
 
-					<a href="#" class="jcarousel-control-prev" aria-label="Previous Browse Category"></a>
-					<a href="#" class="jcarousel-control-next"></a>
+					<a href="#" class="jcarousel-control-next" aria-label="Next Browse Category"></a>
 
 					<p class="jcarousel-pagination"></p>
 				</div>
