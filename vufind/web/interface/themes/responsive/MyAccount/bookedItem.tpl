@@ -11,7 +11,7 @@
 				{if $myBooking->id}
 				<a href="{$myBooking->linkUrl}">
 					{/if}
-					<img src="{$myBooking->coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image'}">
+					<img src="{$myBooking->coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{if !$myBooking->title}Cover image for booked item.{else}Cover image for {$myBooking->title}.{/if}">
 					{if $myBooking->id}
 				</a>
 				{/if}
