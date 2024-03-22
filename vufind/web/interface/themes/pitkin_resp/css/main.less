@@ -30,32 +30,18 @@
   color: @pitkin-logo-gray;
 }
 
-// the category text
-.browse-category {
-  padding-top: 20px; // extra padding on top to center text
-  height: 80px;
+.browse-category(@selectedCategoryColor);
 
-  div {
-    //color: @browse-label-text-color;
-    text-shadow: none;
-    text-transform: uppercase;
-    font-size: large;
-    font-weight: 500;
-    &:focus {
-      outline: none; // hide outlining of clicked category
-    }
-  }
+//Some rules to override the mixin
+.browse-category {
+  height: 80px;
   &.selected {
-    border: none;
     border-radius: 5px;
     background-color: @selectedCategoryColor;
     background: @selectedCategoryColor;
-    //background: linear-gradient(to bottom, @selectedCategoryColor 0%, @selectedCategoryColor 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
-    div {
-      color: #fff;
-    }
   }
 }
+
 #browse-category-picker {
   .jcarousel-control-prev, .jcarousel-control-next {
     background-color: @content-bg;

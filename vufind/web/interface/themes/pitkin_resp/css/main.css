@@ -10537,7 +10537,7 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .browse-category {
   padding-top: 20px;
-  height: 80px;
+  height: 120px;
 }
 .browse-category div {
   text-shadow: none;
@@ -10550,12 +10550,23 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .browse-category.selected {
   border: none;
+  background-color: #5183BF;
+  background: #5183BF;
+  background: linear-gradient(to bottom, #5183BF 0%, #5183BF 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
+}
+.browse-category.selected div {
+  color: #FFF;
+}
+#browse-sub-category-menu button.selected {
+  background-color: #5183BF;
+}
+.browse-category {
+  height: 80px;
+}
+.browse-category.selected {
   border-radius: 5px;
   background-color: #5183BF;
   background: #5183BF;
-}
-.browse-category.selected div {
-  color: #fff;
 }
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
