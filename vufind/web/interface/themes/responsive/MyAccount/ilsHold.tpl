@@ -20,10 +20,10 @@
 					{if $record.coverUrl}
 						{if $record.recordId && $record.linkUrl}
 							<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}">
-								<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{if !$record.title}Cover image for library hold.{else}Cover image for {$record.title}{/if}">
+								<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{if !$record.title}Cover image for library hold.{else}Cover image for {$record.title}.{/if}">
 							</a>
 						{else} {* Cover Image but no Record-View link *}
-							<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{if !$record.title}Cover image for library hold.{else}Cover image for {$record.title}{/if}">
+							<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{if !$record.title}Cover image for library hold.{else}Cover image for {$record.title}.{/if}">
 						{/if}
 					{/if}
 
