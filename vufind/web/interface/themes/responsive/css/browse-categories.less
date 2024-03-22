@@ -126,6 +126,45 @@
   }
 }
 
+#sacramento-browse-category(@selectedCategoryColor, @selectedCategoryColor, @browse-category-font-size, @height: 60px, @border-gray: #d7d7d7, @selectedCategoryBorderColor: #d7d7d7){
+  #browse-category-carousel .browse-category {
+    text-shadow: none;
+    padding: 0;
+    margin-left: 1px;
+    margin-right: 1px;
+    height: @height;
+    cursor: pointer;
+    font-weight: 600;
+    border: 1px solid @border-gray;
+
+    div {
+      height: @height;
+      padding: 15px;
+
+      &:hover {
+        text-decoration: none;
+      }
+    }
+
+    &.selected {
+      border: 1px solid @selectedCategoryBorderColor;
+
+      div {
+        background: @selectedCategoryColor;
+        font-size: @browse-category-font-size;
+
+        &:hover {
+          background: @selectedCategoryColor;
+        }
+      }
+    }
+
+    &:hover {
+      background: #E4E4E4;
+      transition: all .3s ease-in-out;
+    }
+  }
+}
 .selected-browse-label-mixin(@side: right){
   margin-@{side}: 20px;
   float: @side;
