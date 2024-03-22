@@ -500,9 +500,9 @@
   .hide-selected-browse-label-background;
 }
 
-#browse-label(@browse-label-text-color){
+#browse-label(@browse-label-text-color, @browse-label-bgcolor: #FFF){
   #browse-label {
-    background-color: #ffffff;
+    background-color: @browse-label-bgcolor;
     border-bottom: 1px solid @browse-label-text-color;
     margin: 25px 0 15px;
     height: auto;
