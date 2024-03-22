@@ -10555,9 +10555,11 @@ fieldset[disabled] .btn-masquerade.active {
 #browse-category-carousel .browse-category div:hover {
   text-decoration: none;
 }
+#browse-category-carousel .browse-category.selected {
+  border: 1px solid #d7d7d7;
+}
 #browse-category-carousel .browse-category.selected div {
   background: #d65d00;
-  color: #fff;
   font-size: 20px;
 }
 #browse-category-carousel .browse-category.selected div:hover {
@@ -10565,8 +10567,10 @@ fieldset[disabled] .btn-masquerade.active {
 }
 #browse-category-carousel .browse-category:hover {
   background: #E4E4E4;
-  border: 1px solid #d7d7d7;
   transition: all 0.3s ease-in-out;
+}
+#browse-category-carousel .browse-category.selected div {
+  color: #FFF;
 }
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
