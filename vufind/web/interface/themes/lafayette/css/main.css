@@ -8214,9 +8214,6 @@ hr.menu {
 .sidebar-button {
   padding: 7px 0;
 }
-#horizontal-search-box #lookfor {
-  height: 34px!important;
-}
 .btn-danger {
   background: #702C29;
   background-image: none;
@@ -8301,9 +8298,6 @@ hr.menu {
 }
 #horizontal-search-box #horizontal-search-label {
   color: #FFF;
-}
-#horizontal-search-box #lookfor {
-  height: 34px;
 }
 #horizontal-search-box .searchSourceHorizontal,
 #horizontal-search-box .searchTypeHorizontal {
@@ -8454,7 +8448,6 @@ hr.menu {
   border-radius: 3px 0 0 3px;
   overflow-y: hidden;
   padding-top: 0.4em;
-  height: 18px;
   line-height: 20px;
   min-height: 18px;
 }
@@ -10547,9 +10540,6 @@ h6 {
   color: #333;
   background-color: #fff;
 }
-#horizontal-search-box #lookfor {
-  height: 34px!important;
-}
 .header-button:hover {
   border-bottom: 2px solid #3b3f43;
   background-color: #3b3f43;
@@ -10609,9 +10599,6 @@ h6 {
 .h3,
 h3 {
   color: #428bca;
-}
-#horizontal-search-box #lookfor {
-  height: 34px!important;
 }
 .sidebar-links .panel-heading {
   background: #e7e7e7;

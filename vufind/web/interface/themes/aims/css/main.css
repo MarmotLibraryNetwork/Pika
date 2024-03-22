@@ -8215,9 +8215,6 @@ hr.menu {
 .sidebar-button {
   padding: 7px 0;
 }
-#horizontal-search-box #lookfor {
-  height: 34px!important;
-}
 .btn-danger {
   background: #702C29;
   background-image: none;
@@ -8302,9 +8299,6 @@ hr.menu {
 }
 #horizontal-search-box #horizontal-search-label {
   color: #FFF;
-}
-#horizontal-search-box #lookfor {
-  height: 34px;
 }
 #horizontal-search-box .searchSourceHorizontal,
 #horizontal-search-box .searchTypeHorizontal {
@@ -8455,7 +8449,6 @@ hr.menu {
   border-radius: 3px 0 0 3px;
   overflow-y: hidden;
   padding-top: 0.4em;
-  height: 18px;
   line-height: 20px;
   min-height: 18px;
 }
