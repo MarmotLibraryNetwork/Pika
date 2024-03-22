@@ -10556,7 +10556,7 @@ body {
   background: linear-gradient(to bottom, #34678a 0%, #34678a 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
 }
 .browse-category.selected div {
-  color: #fff;
+  color: #FFF;
 }
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
