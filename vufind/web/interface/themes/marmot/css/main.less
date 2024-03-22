@@ -18,20 +18,8 @@
 .browse-category(@selectedCategoryColor);
 
 #anythink-browse-category-picker(@browseCarouselControlColor, @selectedCategoryColor, @content-bg);
-#selected-browse-label {
-  color: black; //TODO: set color
-  background: none; //override line through label
-  padding: 20px 0;
-  border-top: 1px solid @browse-label-text-color;
-}
 
-.selected-browse-label-search {
-  background: none;
-}
-
-#selected-browse-search-link{
-  text-transform: uppercase;
-}
+#anythink-selected-browse-label(@browse-label-text-color);
 
 #browse-sub-category-menu {
   button.selected {
