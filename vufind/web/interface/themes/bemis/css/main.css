@@ -10589,7 +10589,10 @@ a img#header-logo {
   background: linear-gradient(to bottom, #b71f36 0%, #b71f36 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
 }
 .browse-category.selected div {
-  color: #fff;
+  color: #FFF;
+}
+#browse-sub-category-menu button.selected {
+  background-color: #b71f36;
 }
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {

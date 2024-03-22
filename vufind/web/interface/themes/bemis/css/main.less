@@ -49,31 +49,7 @@ a img#header-logo {
   background: linear-gradient(to bottom, #F9F9F0 0%, #F9F9F0 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
 }
 
-// the category text
-.browse-category {
-  padding-top: 20px; // extra padding on top to center text
-  height: 120px;
-  div {
-    //color: @browse-label-text-color;
-    text-shadow: none;
-    text-transform: uppercase;
-    font-size: large;
-    font-weight: 500;
-    &:focus {
-      outline: none; // hide outlining of clicked category
-    }
-  }
-  &.selected {
-    border: none;
-    background-color: @selectedCategoryColor;
-    background: @selectedCategoryColor;
-    background: linear-gradient(to bottom, @selectedCategoryColor 0%, @selectedCategoryColor 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
-    div {
-      color: #fff;
-    }
-  }
-}
-
+.browse-category(@selectedCategoryColor);
 
 #anythink-browse-category-picker(@browseCarouselControlColor, @selectedCategoryColor, @content-bg);
 
