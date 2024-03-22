@@ -88,38 +88,7 @@
 
 }
 
-#browse-category-picker {
-  .jcarousel-control-prev, .jcarousel-control-next {
-    height: 90px;
-    line-height: 75px;
-    border: 1px solid #ccc;
-
-    &:hover {
-      text-decoration: none;
-      background: @scranton-green;
-      transition: all 0.3s ease;
-    }
-  }
-
-  .jcarousel-pagination a {
-    &.active {
-      background: @browseCarouselControlColor;
-      // keep shadowing in place on active item
-      .box-shadow(0 0 2px #4E443C);
-    }
-
-    &, &:hover, &:active, &:visited {
-      outline: none
-    }
-  ;
-  }
-}
-
-.jcarousel-wrapper {
-  margin: 10px auto;
-  position: relative;
-}
-
+#sacramento-browse-category-pickers(@browseCarouselControlColor, 90px, 75px, @scranton-green);
 
 // this controls the subcategory menu button are and menu buttons on browse
 #browse-sub-category-menu {

@@ -609,7 +609,7 @@
   }
 }
 
-#sacramento-browse-category-pickers(@browseCarouselControlColor, @control-height: 60px, @control-line-height: 60px){
+#sacramento-browse-category-pickers(@browseCarouselControlColor, @control-height: 60px, @control-line-height: 60px, @hover-bgcolor: #E4E4E4){
   #browse-category-picker {
     .jcarousel-control-prev, .jcarousel-control-next {
       height: @control-height;
@@ -618,7 +618,7 @@
 
       &:hover {
         text-decoration: none;
-        background: #E4E4E4;
+        background: @hover-bgcolor;
         transition: all .3s ease-in-out;
       }
     }
