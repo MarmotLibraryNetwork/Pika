@@ -40,7 +40,7 @@
 .browse-category {
   padding-top: 20px; // extra padding on top to center text
   height: 120px;
-  border: none !important;
+  border: none !important; // different from mixin
 
   div {
     //color: @browse-label-text-color;
@@ -49,29 +49,30 @@
     font-size: large;
     font-weight: 500;
     &:focus {
-      outline: none; // hide outlining of clicked category
+      outline: none; // hide outlining of clicked category // different from mixin
     }
   }
   &.selected {
+    // border: none; // different from mixin
     background-color: @selectedCategoryColor;
     background: @selectedCategoryColor;
     background: linear-gradient(to bottom, @selectedCategoryColor 0%, @selectedCategoryColor 75%, @oldlyme-offwhite 75%, @oldlyme-offwhite 80%, #CCCCCC 80%, @oldlyme-offwhite 100%);
     div {
-      color: #6e6864;
+      color: #6e6864; // different from mixin
     }
   }
 }
-
-
-#anythink-browse-category-picker(@browseCarouselControlColor, @selectedCategoryColor, @content-bg);
-
-#anythink-selected-browse-label(@browse-label-text-color);
 
 #browse-sub-category-menu {
   button.selected {
     background-color: @selectedCategoryColor;
   }
 }
+
+#anythink-browse-category-picker(@browseCarouselControlColor, @selectedCategoryColor, @content-bg);
+
+#anythink-selected-browse-label(@browse-label-text-color);
+
 
 // MIXIN: Vertically Align cover images with the thumbnail block; up to a maximum size.  Thumbnail blocks will have a
 // uniform height and fall into columns evenly.

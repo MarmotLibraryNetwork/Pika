@@ -39,6 +39,11 @@
   }
 }
 
+#browse-sub-category-menu {
+  button.selected {
+    background-color: @selectedCategoryColor;
+  }
+}
 
 #anythink-browse-category-picker(@browseCarouselControlColor, @selectedCategoryColor, @content-bg);
 #selected-browse-label {
@@ -56,11 +61,6 @@
   text-transform: uppercase;
 }
 
-#browse-sub-category-menu {
-  button.selected {
-    background-color: @selectedCategoryColor;
-  }
-}
 #browse-subcategory-menu button:active, #browse-subcategory-menu button:focus, #browse-subcategory-menu button:visited {
 font-weight:initial;
 }

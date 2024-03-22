@@ -10554,6 +10554,9 @@ fieldset[disabled] .btn-masquerade.active {
 .browse-category.selected div {
   color: #8b001f;
 }
+#browse-sub-category-menu button.selected {
+  background-color: #f9f9f9;
+}
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
   background-color: #fff;
