@@ -2111,7 +2111,7 @@ fieldset[disabled] .btn-default.active {
   background-color: #fff;
 }
 .btn-primary {
-  color: #fff;
+  color: #000;
   background-color: #46ACA4;
   border-color: #46ACA4;
 }
@@ -2120,7 +2120,7 @@ fieldset[disabled] .btn-default.active {
 .btn-primary:active,
 .btn-primary.active,
 .open .dropdown-toggle.btn-primary {
-  color: #fff;
+  color: #000;
   background-color: #3a8f88;
   border-color: #34817b;
 }
@@ -6838,7 +6838,7 @@ a:hover {
 }
 a.btn-primary,
 a.btn-info {
-  color: #fff;
+  color: #000;
 }
 @media print {
   a:link:after,
@@ -7531,7 +7531,7 @@ fieldset[disabled] .datepicker table tr td.selected.highlighted.active {
 }
 .datepicker table tr td.active,
 .datepicker table tr td.active.highlighted {
-  color: #fff;
+  color: #000;
   background-color: #46ACA4;
   border-color: #46ACA4;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
@@ -7546,7 +7546,7 @@ fieldset[disabled] .datepicker table tr td.selected.highlighted.active {
 .datepicker table tr td.active.highlighted.active,
 .open .dropdown-toggle.datepicker table tr td.active,
 .open .dropdown-toggle.datepicker table tr td.active.highlighted {
-  color: #fff;
+  color: #000;
   background-color: #3a8f88;
   border-color: #34817b;
 }
@@ -7620,7 +7620,7 @@ fieldset[disabled] .datepicker table tr td.active.highlighted.active {
 .datepicker table tr td span.active:hover,
 .datepicker table tr td span.active.disabled,
 .datepicker table tr td span.active.disabled:hover {
-  color: #fff;
+  color: #000;
   background-color: #46ACA4;
   border-color: #46ACA4;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
@@ -7645,7 +7645,7 @@ fieldset[disabled] .datepicker table tr td.active.highlighted.active {
 .open .dropdown-toggle.datepicker table tr td span.active:hover,
 .open .dropdown-toggle.datepicker table tr td span.active.disabled,
 .open .dropdown-toggle.datepicker table tr td span.active.disabled:hover {
-  color: #fff;
+  color: #000;
   background-color: #3a8f88;
   border-color: #34817b;
 }
@@ -8039,7 +8039,7 @@ hr.menu {
   }
 }
 .menu-bar {
-  color: #FFF;
+  color: #555555;
   background-color: #46ACA4;
 }
 #horizontal-menu-bar-container {
@@ -8084,7 +8084,7 @@ hr.menu {
   height: 2000px;
   height: 100vh;
   background-color: #46ACA4;
-  color: #FFF;
+  color: #555555;
   padding-left: 0;
   padding-right: 0;
   margin-top: 2px;
@@ -8100,7 +8100,7 @@ hr.menu {
   background-color: #9cdad5;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
-  color: #FFF;
+  color: #000;
 }
 #vertical-menu-bar .menu-icon {
   padding: 5px;
@@ -8112,11 +8112,11 @@ hr.menu {
 #vertical-menu-bar .menu-icon:hover,
 #vertical-menu-bar .menu-icon:focus {
   text-decoration: none;
-  color: #FFF;
+  color: #555555;
   outline: none;
 }
 #vertical-menu-bar .menu-icon .menu-bar-label {
-  color: #FFF;
+  color: #555555;
   font-weight: bold;
   text-transform: uppercase;
   margin-top: 10px;
@@ -9026,7 +9026,7 @@ a.browse-thumbnail-sorted.active {
 #contactUpdateForm .btn-group .btn-default.active {
   background-color: #46ACA4;
   box-shadow: none;
-  color: #fff;
+  color: #000;
 }
 .wikipedia_image {
   margin: 0 10px 10px;
@@ -9946,7 +9946,7 @@ a.browse-thumbnail-sorted.active {
   padding: 10px 25px 5px 0;
   margin-top: 5px;
   text-align: right;
-  color: #FFF;
+  color: #555555;
   background-color: #3f9a93;
   font-variant: small-caps;
   font-weight: bold;
@@ -10010,7 +10010,7 @@ a.browse-thumbnail-sorted.active {
   margin: 10px 5px 15px;
 }
 .exploreMoreBar .exploreMoreBarLabel {
-  color: #FFF;
+  color: #555555;
   background-color: #46ACA4;
   font-weight: bold;
   text-transform: uppercase;
@@ -10025,7 +10025,7 @@ a.browse-thumbnail-sorted.active {
   float: left;
   width: 40px;
   min-height: 167px;
-  color: #FFF;
+  color: #555555;
 }
 .exploreMoreBar .label-left,
 .exploreMoreBar .label-left img {
@@ -10044,7 +10044,7 @@ a.browse-thumbnail-sorted.active {
   margin: 16px auto;
 }
 .exploreMoreBar .label-top {
-  color: #FFF;
+  color: #555555;
   width: 100%;
 }
 .exploreMoreBar .label-top,
@@ -10246,7 +10246,7 @@ a.browse-thumbnail-sorted.active {
 }
 .archiveComponentContainer .archiveComponent {
   border: 1px solid lightgrey;
-  color: #FFF;
+  color: #555555;
   font-size: 20px;
   margin: 10px;
 }
@@ -10256,7 +10256,7 @@ a.browse-thumbnail-sorted.active {
 }
 .archiveComponentContainer .archiveComponent a .archiveComponentHeader,
 .archiveComponentContainer .archiveComponent a:visited .archiveComponentHeader {
-  color: #FFF;
+  color: #555555;
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody {
   margin-left: 0;
@@ -10279,7 +10279,7 @@ a.browse-thumbnail-sorted.active {
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentControls,
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentSearchControls {
-  color: #FFF;
+  color: #555555;
   background-color: #46ACA4;
   padding: 10px 0;
   min-height: 124px;
@@ -10708,6 +10708,9 @@ fieldset[disabled] .btn-masquerade.active {
   -o-column-break-inside: avoid;
   column-break-inside: avoid;
   display: table;
+}
+.btn-primary {
+  font-weight: bold;
 }
 .btn-primary:hover {
   background-color: #9cdad5;
