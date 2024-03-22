@@ -10633,9 +10633,6 @@ a img#header-logo {
 #selected-browse-search-link {
   text-transform: uppercase;
 }
-#browse-sub-category-menu button.selected {
-  background-color: #b71f36;
-}
 .sidebar-links .panel-group .panel + .panel {
   margin-top: 0;
 }

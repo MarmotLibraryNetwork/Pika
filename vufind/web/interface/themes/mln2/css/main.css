@@ -10551,6 +10551,9 @@ fieldset[disabled] .btn-masquerade.active {
 .browse-category.selected div {
   color: #FFF;
 }
+#browse-sub-category-menu button.selected {
+  background-color: #3A500A;
+}
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
   background-color: #fff;
@@ -10592,9 +10595,6 @@ fieldset[disabled] .btn-masquerade.active {
 }
 #selected-browse-search-link {
   text-transform: uppercase;
-}
-#browse-sub-category-menu button.selected {
-  background-color: #3A500A;
 }
 #horizontal-search-box #lookfor {
   height: 34px!important;
