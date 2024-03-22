@@ -481,6 +481,21 @@
   }
 }
 
+.hide-browse-label(){
+  #browse-label {
+    display: none;
+  }
+
+  #selected-browse-label {
+    background: none;
+
+    > .btn-group {
+      margin-right: 0;
+      padding: 0 3px;
+    }
+  }
+}
+
 #browse-label(@browse-label-text-color){
   #browse-label {
     background-color: #ffffff;
