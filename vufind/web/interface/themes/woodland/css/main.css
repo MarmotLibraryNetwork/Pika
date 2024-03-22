@@ -10523,17 +10523,6 @@ fieldset[disabled] .btn-masquerade.active {
 .container > div:nth-child(1).breadcrumbs {
   background-color: #fff;
 }
-#headingInfo:before {
-  content: '';
-  display: inline-block;
-  height: 100%;
-  vertical-align: middle;
-  margin-right: -0.25em;
-}
-#headingInfo {
-  display: inline-block;
-  vertical-align: middle;
-}
 .selected-browse-label-search {
   margin-left: 0;
   float: left;

@@ -10511,17 +10511,6 @@ fieldset[disabled] .btn-masquerade.active {
   border-bottom: 0;
   box-shadow: 2px 2px 5px #fff;
 }
-#headingInfo:before {
-  content: '';
-  display: inline-block;
-  height: 100%;
-  vertical-align: middle;
-  margin-right: -0.25em;
-}
-#headingInfo {
-  display: inline-block;
-  vertical-align: middle;
-}
 .selected-browse-label-search {
   margin-left: 0;
   float: left;

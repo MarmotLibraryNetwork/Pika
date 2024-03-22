@@ -10525,17 +10525,6 @@ div#more-details-accordion.panel-group .panel a .panel-title {
   color: #fff;
   text-shadow: none;
 }
-#headingInfo:before {
-  content: '';
-  display: inline-block;
-  height: 100%;
-  vertical-align: middle;
-  margin-right: -0.25em;
-}
-#headingInfo {
-  display: inline-block;
-  vertical-align: middle;
-}
 .selected-browse-label-search {
   margin-left: 0;
   float: left;

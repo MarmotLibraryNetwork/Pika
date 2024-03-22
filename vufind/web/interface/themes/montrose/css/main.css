@@ -10536,17 +10536,6 @@ fieldset[disabled] .btn-masquerade.active {
 #header-logo {
   padding-bottom: 10px;
 }
-#headingInfo:before {
-  content: '';
-  display: inline-block;
-  height: 100%;
-  vertical-align: middle;
-  margin-right: -0.25em;
-}
-#headingInfo {
-  display: inline-block;
-  vertical-align: middle;
-}
 #main-content-with-sidebar > .row.breadcrumbs,
 #home-page-browse-header {
   margin-left: 0;
