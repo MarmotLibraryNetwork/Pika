@@ -481,11 +481,7 @@
   }
 }
 
-.hide-browse-label(){
-  #browse-label {
-    display: none;
-  }
-
+.hide-selected-browse-label-background() {
   #selected-browse-label {
     background: none;
 
@@ -494,6 +490,14 @@
       padding: 0 3px;
     }
   }
+}
+
+.hide-browse-label(){
+  #browse-label {
+    display: none;
+  }
+
+  .hide-selected-browse-label-background;
 }
 
 #browse-label(@browse-label-text-color){
