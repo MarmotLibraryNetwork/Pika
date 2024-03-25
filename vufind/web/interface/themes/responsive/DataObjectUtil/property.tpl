@@ -152,7 +152,7 @@
 		{/if}
 
 			{* Display a table of the association with the ability to add and edit new values *}
-			<div class="row" >
+			<div class="row">
 				<div class="col-md-12 custom-file">
 					<input type="file" name='{$propName}' id='{$propName}' value="{$propValue}" class="custom-file-input">
 					{*<label class="custom-file-label" for='{$propName}'>Choose File</label>*}

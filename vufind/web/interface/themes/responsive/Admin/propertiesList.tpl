@@ -62,7 +62,9 @@
 						{if !isset($property.hideInLists) || $property.hideInLists == false}
 							<td>
 							{if $property.type == 'label'}
+								{if strlen($propValue) > 0}{* Don't display link with no text *}
 									<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>&nbsp;{$propValue}</a>
+								{/if}
 							{elseif $property.type == 'text' || $property.type == 'textarea' || $property.type == 'hidden'
 							|| $property.type == 'file' || $property.type == 'integer' || $property.type == 'email'}
 									{$propValue}
