@@ -7067,6 +7067,14 @@ nav.breadcrumbs [aria-current="page"] {
   font-style: italic!important;
   color: #222;
 }
+table.dataTable.display tbody tr.odd > .sorting_1 a,
+table.dataTable.order-column.stripe tbody tr.odd > .sorting_1 a,
+table.dataTable.display tbody tr.odd > .sorting_2 a,
+table.dataTable.order-column.stripe tbody tr.odd > .sorting_2 a,
+table.dataTable.display tbody tr.odd > .sorting_3 a,
+table.dataTable.order-column.stripe tbody tr.odd > .sorting_3 a {
+  color: #c7002e;
+}
 .ui-rater > span {
   vertical-align: top;
 }
