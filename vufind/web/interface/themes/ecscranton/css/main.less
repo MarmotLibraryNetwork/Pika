@@ -42,6 +42,7 @@
 
 .hide-selected-browse-label-background;
 
+//#sacramento-browse-category(@selectedCategoryColor, @selectedCategoryColor, @browse-category-font-size, 90px, @spl-border-gray, @scranton-green);
 #browse-category-carousel .browse-category {
   text-shadow: none;
   padding: 0;
@@ -102,13 +103,7 @@
   }
 }
 
-#home-page-browse-results hr {
-  margin-top: 0;
-  margin-bottom: 0;
-  border: 0 solid #eee;
-}
-
-
+.hide-browse-category-results-divider;
 .panel-title {
   font-size: 16px;
 }
@@ -184,27 +179,7 @@
 }
 
 // Vertically Align cover images with the thumbnail block; up to a maximum size.  so that the thumbnail blocks have a uniform height and fall into columns evenly
-.browse-thumbnail {
-  div:first-child {
-    height: 180px;
-    display: flex;
-    align-items: center;
-  }
-
-  a {
-    img {
-      max-height: 180px;
-    }
-  }
-}
-
-.column-fix {
-  -webkit-column-break-inside: avoid;
-  -moz-column-break-inside: avoid;
-  -o-column-break-inside: avoid;
-  column-break-inside: avoid;
-  display: table;
-}
+.verticalAlignThumbnailArt;
 
 .btn-primary, .btn-info {
   background-color: @scranton-navy;
