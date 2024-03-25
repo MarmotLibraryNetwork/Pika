@@ -51,7 +51,7 @@ class Admin_UserAdmin extends Admin_Admin {
 						$patron          = new User();
 						$patron->barcode = $barcode;
 						$count           = $patron->find();
-						if ($count > 1){
+						if ($count >= 1){
 							require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 							require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
 							require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
