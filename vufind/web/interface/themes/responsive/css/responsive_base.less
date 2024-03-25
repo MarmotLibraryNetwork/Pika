@@ -276,6 +276,15 @@ nav.breadcrumbs [aria-current="page"]{
   font-style:italic!important;
   color: #222;
 }
+// Datatable style overrides
+table.dataTable.display tbody tr.odd, table.dataTable.order-column.stripe tbody tr.odd {
+  & > .sorting_1,& > .sorting_2,& > .sorting_3 {
+    a {
+      color: @darkened-link-color-resp;
+    }
+  }
+}
+
 // Third party imports
 @import "ratings.less";
 @import "datepicker.less";
