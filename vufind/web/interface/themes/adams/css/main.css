@@ -8225,8 +8225,8 @@ hr.menu {
   background-image: none;
 }
 #home-page-search {
-  background-color: #007A53;
-  background: linear-gradient(to bottom, #007A53, #014731);
+  background-color: #006648;
+  background: linear-gradient(to bottom, #006648, #004d36);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8254,7 +8254,7 @@ hr.menu {
 .searchSource {
   margin: 5px 0 0;
   color: #fff;
-  background-color: #014731;
+  background-color: #004d36;
   border: none;
   width: 90% !important;
 }
@@ -8265,8 +8265,8 @@ hr.menu {
   font-size: 85%;
 }
 #horizontal-search-box {
-  background-color: #007A53;
-  background: linear-gradient(to bottom, #007A53, #014731);
+  background-color: #006648;
+  background: linear-gradient(to bottom, #006648, #004d36);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -9943,8 +9943,8 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
 }
 #explore-more-sidebar {
-  background-color: #007A53;
-  background: linear-gradient(to bottom, #007A53, #014731);
+  background-color: #006648;
+  background: linear-gradient(to bottom, #006648, #004d36);
 }
 #explore-more-header {
   padding: 10px 25px 5px 0;
@@ -10530,7 +10530,6 @@ fieldset[disabled] .btn-masquerade.active {
   line-height: 21px;
   background: linear-gradient(#007A53, #014731);
   padding: 20px;
-  width: 100%;
   margin: 0;
   height: 64px;
 }
@@ -10557,22 +10556,11 @@ fieldset[disabled] .btn-masquerade.active {
 .nielsenlibrarytxt:focus {
   color: black;
 }
-#horizontal-search-box {
-  background-color: #006648;
-  background: linear-gradient(to bottom, #006648, #004d36);
-  padding: 15px 0;
-}
 /* Search Bar CSS Changes */
-#horizontal-search-box {
-  background-color: #006648;
-  background: linear-gradient(to bottom, #006648, #004d36);
-  padding: 15px 0;
-}
 /* Facets CSS Changes */
 #home-page-login {
   background-color: #fff;
   color: #808080;
-  text-shadow: 2px 2px #fff;
   font-size: 18px;
   padding: 5px;
   margin-bottom: 5px;
