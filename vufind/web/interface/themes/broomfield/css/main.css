@@ -9778,7 +9778,8 @@ a.browse-thumbnail-sorted.active {
 }
 .series a {
   color: #3b679a;
-  text-decoration: underline;
+  -webkit-text-decoration: underline dotted;
+          text-decoration: underline dotted;
 }
 .cart-container {
   background: #057DBC;
