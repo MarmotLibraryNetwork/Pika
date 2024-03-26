@@ -48,7 +48,7 @@
 		});
 		{/literal}
 	</script>
-	<div style="background-color: #FAFAFA; border: 1px lightgrey solid; border-top: none">
+	<div class="editor-tips" style="background-color: #FAFAFA; border: 1px lightgrey solid; border-top: none">
 		<span>&nbsp;<a href="https://marmot-support.atlassian.net/l/c/iWkS65uV" target="_blank">Editor tips</a>&nbsp;|</span>
 		{if !empty($property.allowableTags)}
 			<span class="">Allowed HTML tags : <small><code style="white-space: break-spaces">{$property.allowableTags|replace:'>':'> '|escape}</code></small></span>

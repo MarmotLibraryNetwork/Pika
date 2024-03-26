@@ -18,11 +18,11 @@
 			<div class="col-xs-11">
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label}</label>
 					{if $property.isIndexingSetting}
-						&nbsp;<span class="glyphicon glyphicon-time" aria-hidden="true" title="This setting is a change to indexing"></span>
+						&nbsp;<span class="glyphicon glyphicon-time" title="This setting is a change to indexing"></span>
 					{/if}
 			</div>
 			<div class="col-xs-1">
-				<a href="{$property.helpLink}" target="_blank"><span class="glyphicon glyphicon-question-sign" title="Help" aria-hidden="true" style="color: blue;"></span></a>
+				<a href="{$property.helpLink}" aria-label="Help Link" target="_blank"><span class="glyphicon glyphicon-question-sign" title="Help" aria-hidden="true" style="color: blue;"></span></a>
 			</div>
 			</div>
 		{elseif $property.type != 'section' && $property.type != 'checkbox'}
@@ -32,7 +32,7 @@
 						<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label}{if $property.required}<span class="required-input">*</span>{/if}</label>
 					</div>
 					<div class="col-xs-1">
-						<a href="{$property.helpLink}" target="_blank"><span class="glyphicon glyphicon-question-sign" title="Help" aria-hidden="true" style="color: blue;"></span></a>
+						<a href="{$property.helpLink}" aria-label="Help Link" target="_blank"><span class="glyphicon glyphicon-question-sign" title="Help" aria-hidden="true" style="color: blue;"></span></a>
 					</div>
 				</div>
 			{else}
@@ -57,7 +57,7 @@
 						</h4>
 						{if $property.helpLink}
 							<div class="col-xs-1">
-								<a href="{$property.helpLink}" target="_blank"><span class="glyphicon glyphicon-question-sign" title="Help" aria-hidden="true" style="color: blue;"></span></a>
+								<a href="{$property.helpLink}" aria-label="Help Link" target="_blank"><span class="glyphicon glyphicon-question-sign" title="Help" aria-hidden="true" style="color: blue;"></span></a>
 							</div>
 						{/if}
 					</div>

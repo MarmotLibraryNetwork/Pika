@@ -31,13 +31,13 @@
 							{assign var=subPropValue value=$subObject->$subPropName}
 {*							{if $subProperty.type=='text' || $subProperty.type=='date' || $subProperty.type=='integer' || $subProperty.type=='textarea' || $subProperty.type=='html'}*}
 							{if in_array($subProperty.type, array('text', 'date', 'integer', 'textarea', 'html'))}
-								<input type="text" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if $subProperty.type=='date'} datepicker{elseif $subProperty.type=="integer"} integer{/if}{if $subProperty.required == true} required{/if}">
+								<input type="text" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" aria-label="{$subProperty.label}" class="form-control{if $subProperty.type=='date'} datepicker{elseif $subProperty.type=="integer"} integer{/if}{if $subProperty.required == true} required{/if}">
 							{elseif $subProperty.type=='number'}
 								<input type="number" name='{$propName}_{$subPropName}[{$subObject->id}]' value="{$subPropValue|escape}" class="form-control {if $subProperty.required}required{/if}"{if $subProperty.max} max="{$subProperty.max}"{/if}{if $subProperty.min} min="{$subProperty.min}"{/if}{if $subProperty.maxLength} maxlength='{$subProperty.maxLength}'{/if}{if $subProperty.size} size='{$subProperty.size}'{/if}{if $subProperty.step} step='{$subProperty.step}'{/if}>
 							{elseif $subProperty.type=='checkbox'}
-								<input type='checkbox' name='{$propName}_{$subPropName}[{$subObject->id}]' {if $subPropValue == 1}checked='checked'{/if}>
+								<input type="checkbox" name='{$propName}_{$subPropName}[{$subObject->id}]' aria-label="{$subProperty.label}" {if $subPropValue == 1}checked='checked'{/if}>
 							{else}
-								<select name='{$propName}_{$subPropName}[{$subObject->id}]' id='{$propName}{$subPropName}_{$subObject->id}' class='form-control {if $subProperty.required == true} required{/if}'>
+								<select name='{$propName}_{$subPropName}[{$subObject->id}]' id='{$propName}{$subPropName}_{$subObject->id}' aria-label="{$subProperty.label}" class='form-control {if $subProperty.required == true} required{/if}'>
 								{foreach from=$subProperty.values item=propertyName key=propertyValue}
 									<option value='{$propertyValue}' {if $subPropValue == $propertyValue}selected='selected'{/if}>{$propertyName}</option>
 								{/foreach}
@@ -63,12 +63,12 @@
 				{* link to delete*}
 				<input type="hidden" id="{$propName}Deleted_{$subObject->id}" name="{$propName}Deleted[{$subObject->id}]" value="false">
 					{* link to delete *}
-				<a href="#" onclick="if (confirm('Are you sure you want to delete this?')){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required'){literal}}{/literal};return false;">
+				<a href="#" aria-label="Delete entry" onclick="if (confirm('Are you sure you want to delete this?')){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required'){literal}}{/literal};return false;">
 					{* On delete action, also remove class 'required' to turn off form validation of the deleted input; so that the form can be submitted by the user  *}
 					<span class="glyphicon glyphicon-remove-circle" title="Delete" aria-hidden="true" style="color: red;"></span>
 				</a>
 				{if $property.editLink neq ''}
-					&nbsp;<a href='{$property.editLink}?objectAction=edit&widgetListId={$subObject->id}&widgetId={$widgetid}' alt='Edit SubLinks' title='Edit SubLinks'>
+					&nbsp;<a href='{$property.editLink}?objectAction=edit&widgetListId={$subObject->id}&widgetId={$widgetid}' aria-label='Edit SubLinks' title='Edit SubLinks'>
 						<span class="glyphicon glyphicon-link" title="edit links">&nbsp;</span>
 					</a>
 				{elseif $property.canEdit}
