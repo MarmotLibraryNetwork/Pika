@@ -128,7 +128,7 @@
 						{/if}
 					</a>
 					{if $value.linkingReason}
-						&nbsp;<span class="glyphicon glyphicon-question-sign" title="{$value.linkingReason|escape}" aria-hidden="true" style="color: blue;"></span>
+						&nbsp;<span class="help-icon glyphicon glyphicon-question-sign" title="{$value.linkingReason|escape}" aria-hidden="true"></span>
 					{/if}
 				</div>
 			{/foreach}
