@@ -10411,6 +10411,11 @@ a.browse-thumbnail-sorted.active {
 .help-icon {
   color: blue;
 }
+.editor-tips a {
+  color: #2c5a86;
+  -webkit-text-decoration: underline dotted;
+          text-decoration: underline dotted;
+}
 .editor .panel-group .panel-body > .form-group > .controls {
   overflow-x: auto;
 }
