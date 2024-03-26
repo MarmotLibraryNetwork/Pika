@@ -10119,21 +10119,7 @@ a.browse-thumbnail-sorted.active {
   background-color: transparent;
   color: #20368c;
   z-index: 2;
-  box-shadow: white 0px 0px 0px 0px;
-}
-#explore-more-body .jcarousel-control-prev:focus,
-#relatedProjectScroller .jcarousel-control-prev:focus,
-#relatedProjectOtherScroller .jcarousel-control-prev:focus,
-#relatedContentTypesContainer .jcarousel-control-prev:focus,
-.exploreMoreBar .jcarousel-control-prev:focus,
-#book-sections .jcarousel-control-prev:focus,
-#explore-more-body .jcarousel-control-next:focus,
-#relatedProjectScroller .jcarousel-control-next:focus,
-#relatedProjectOtherScroller .jcarousel-control-next:focus,
-#relatedContentTypesContainer .jcarousel-control-next:focus,
-.exploreMoreBar .jcarousel-control-next:focus,
-#book-sections .jcarousel-control-next:focus {
-  outline: none;
+  box-shadow: white 0 0 0 0;
 }
 #explore-more-body .jcarousel-control-prev .glyphicon,
 #relatedProjectScroller .jcarousel-control-prev .glyphicon,
