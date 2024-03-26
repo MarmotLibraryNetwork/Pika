@@ -10517,7 +10517,6 @@ fieldset[disabled] .btn-masquerade.active {
 #header_black {
   background: black;
   border: 5px solid black;
-  width: 100%;
 }
 #header_library {
   line-height: 21px;
