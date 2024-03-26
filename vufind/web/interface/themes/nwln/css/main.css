@@ -10413,6 +10413,9 @@ a.browse-thumbnail-sorted.active {
   display: block;
   width: 100%;
 }
+.help-icon {
+  color: blue;
+}
 .editor .panel-group .panel-body > .form-group > .controls {
   overflow-x: auto;
 }
