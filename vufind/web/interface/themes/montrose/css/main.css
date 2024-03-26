@@ -10671,9 +10671,6 @@ fieldset[disabled] .btn-masquerade.active {
   color: #333;
   background-color: #fff;
 }
-#home-page-login {
-  text-shadow: none;
-}
 #more-details-accordion .active .panel-title,
 #account-settings-accordion .active .panel-title {
   color: #333333;
