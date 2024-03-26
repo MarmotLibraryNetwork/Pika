@@ -242,8 +242,10 @@ div.striped {
 #horizontal-search-box .searchSourceHorizontal:focus, #horizontal-search-box .searchTypeHorizontal:focus,#horizontal-search-box .searchSourceHorizontal:focus, #horizontal-search-box .searchTypeHorizontal:focus{
   border: 1px solid @focus-ring-color!important;
 }
-.btn-group > .btn:focus, .btn-group-vertical > .btn:focus{
-  outline: 5px auto @focus-ring-color!important;
+.btn-group, .btn-group-vertical {
+  & > .btn:focus {
+    outline: 5px auto @focus-ring-color !important;
+  }
 }
 a:focus img {
   //outline: 5px auto @focus-ring-color!important;
