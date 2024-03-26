@@ -9775,6 +9775,10 @@ a.browse-thumbnail-sorted.active {
     right: 0;
   }
 }
+.series a {
+  color: #c7002e;
+  text-decoration: underline;
+}
 .cart-container {
   background: #a71930;
   padding: 10px;
