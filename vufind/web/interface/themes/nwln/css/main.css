@@ -6980,9 +6980,7 @@ body > .container {
   }
 }
 @media print {
-  #header-wrapper {
-    display: none;
-  }
+  #header-wrapper,
   #side-bar {
     display: none;
   }
