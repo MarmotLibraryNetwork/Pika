@@ -53,20 +53,17 @@ class LibraryLink extends DB_DataObject {
 		while ($library->fetch()){
 			$libraryList[$library->libraryId] = $library->displayName;
 		}
-		$structure = array(
-			'id'            => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the hours within the database'),
-			'libraryId'     => array('property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'A link to the library which the location belongs to'),
-			'category'      => array('property' => 'category', 'type' => 'text', 'label' => 'Category', 'description' => 'The category of the link', 'size' => '80', 'maxLength' => 100),
-			'linkText'      => array('property' => 'linkText', 'type' => 'text', 'label' => 'Link Text', 'description' => 'The text to display for the link ', 'size' => '80', 'maxLength' => 100),
-			'url'           => array('property' => 'url', 'type' => 'text', 'label' => 'URL', 'description' => 'The url to link to', 'size' => '80', 'maxLength' => 255),
-			'htmlContents'  => array('property' => 'htmlContents', 'type' => 'html', 'label' => 'HTML Contents', 'description' => 'Optional full HTML contents to show rather than showing a basic link within the sidebar.', 'size' => '80', 'maxLength' => '512', 'allowableTags' => '<p><div><span><a><strong><b><em><i><ul><ol><li><br><hr><h1><h2><h3><h4><h5><h6><script><img><iframe>'),
-			'showInAccount' => array('property' => 'showInAccount', 'type' => 'checkbox', 'label' => 'Show in Account', 'description' => 'Show the link within the Account Menu.',),
-			'showInHelp'    => array('property' => 'showInHelp', 'type' => 'checkbox', 'label' => 'Show In Help', 'description' => 'Show the link within the Help Menu', 'default' => '1'),
-			'showExpanded'  => array('property' => 'showExpanded', 'type' => 'checkbox', 'label' => 'Show Expanded', 'description' => 'Expand the category by default',),
-//			'weight'        => array('property' => 'weight', 'type' => 'integer', 'label' => 'Weight', 'weight' => 'Defines how lists are sorted within the widget.  Lower weights are displayed to the left of the screen.', 'required' => true),
-			// Weight column never needs to be displayed in the single entry edit pages
-
-		);
+		$structure = [
+			'id'            => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the hours within the database'],
+			'libraryId'     => ['property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'A link to the library which the location belongs to'],
+			'category'      => ['property' => 'category', 'type' => 'text', 'label' => 'Category', 'description' => 'The category of the link', 'size' => '80', 'maxLength' => 100],
+			'linkText'      => ['property' => 'linkText', 'type' => 'text', 'label' => 'Link Text', 'description' => 'The text to display for the link ', 'size' => '80', 'maxLength' => 100],
+			'url'           => ['property' => 'url', 'type' => 'text', 'label' => 'URL', 'description' => 'The url to link to', 'size' => '80', 'maxLength' => 255],
+			'htmlContents'  => ['property' => 'htmlContents', 'type' => 'html', 'label' => 'HTML Contents', 'description' => 'Optional full HTML contents to show rather than showing a basic link within the sidebar.', 'size' => '80', 'maxLength' => '512', 'allowableTags' => '<p><div><span><a><strong><b><em><i><ul><ol><li><br><hr><h1><h2><h3><h4><h5><h6><script><img><iframe>'],
+			'showInAccount' => ['property' => 'showInAccount', 'type' => 'checkbox', 'label' => 'Show in Account', 'description' => 'Show the link within the Account Menu.',],
+			'showInHelp'    => ['property' => 'showInHelp', 'type' => 'checkbox', 'label' => 'Show In Help', 'description' => 'Show the link within the Help Menu', 'default' => '1'],
+			'showExpanded'  => ['property' => 'showExpanded', 'type' => 'checkbox', 'label' => 'Show Expanded', 'description' => 'Expand the category by default',],
+		];
 		return $structure;
 	}
 
