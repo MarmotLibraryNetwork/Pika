@@ -8225,8 +8225,8 @@ hr.menu {
   background-image: none;
 }
 #home-page-search {
-  background-color: #75777a;
-  background: linear-gradient(to bottom, #75777a, #75777a);
+  background-color: #757778;
+  background: linear-gradient(to bottom, #757778, #757778);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8254,7 +8254,7 @@ hr.menu {
 .searchSource {
   margin: 5px 0 0;
   color: #fff;
-  background-color: #75777a;
+  background-color: #757778;
   border: none;
   width: 90% !important;
 }
@@ -8265,8 +8265,8 @@ hr.menu {
   font-size: 85%;
 }
 #horizontal-search-box {
-  background-color: #75777a;
-  background: linear-gradient(to bottom, #75777a, #75777a);
+  background-color: #757778;
+  background: linear-gradient(to bottom, #757778, #757778);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -8316,7 +8316,7 @@ hr.menu {
   margin-bottom: 0;
 }
 #home-page-login {
-  background-color: #75777a;
+  background-color: #757778;
   color: #FFF;
   font-size: 18px;
   padding: 5px;
@@ -9943,8 +9943,8 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
 }
 #explore-more-sidebar {
-  background-color: #75777a;
-  background: linear-gradient(to bottom, #75777a, #75777a);
+  background-color: #757778;
+  background: linear-gradient(to bottom, #757778, #757778);
 }
 #explore-more-header {
   padding: 10px 25px 5px 0;
@@ -10542,7 +10542,7 @@ a img#header-logo {
 .sidebar-links .panel > a:hover {
   font-size: 14px;
   color: #EEEEEE;
-  text-shadow: 1px 1px #75777a;
+  text-shadow: 1px 1px #757778;
 }
 #browse-label {
   background-color: #FFF;
@@ -10644,7 +10644,7 @@ a img#header-logo {
 .sidebar-links .panel > a:hover {
   font-size: 14px;
   color: #FFF;
-  text-shadow: 1px 1px #75777a;
+  text-shadow: 1px 1px #757778;
 }
 .sidebar-links .panel.active > a,
 .sidebar-links .panel.active > a:visited,
