@@ -8316,7 +8316,7 @@ hr.menu {
   margin-bottom: 0;
 }
 #home-page-login {
-  background-color: #797676;
+  background-color: #75777a;
   color: #FFF;
   font-size: 18px;
   padding: 5px;
@@ -10519,9 +10519,6 @@ fieldset[disabled] .btn-masquerade.active {
 a img#header-logo {
   margin-left: -15px;
   margin-top: -10px;
-}
-#home-page-login {
-  background-color: #75777a;
 }
 .sidebar-button {
   padding: 5px 15px;
