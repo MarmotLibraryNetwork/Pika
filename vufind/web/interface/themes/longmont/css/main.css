@@ -10526,16 +10526,15 @@ fieldset[disabled] .btn-masquerade.active {
 .header-button {
   background: #C4CBD4 !important;
   border-radius: 50px;
-  height: 65px;
   border: none;
-  color: black!important;
+  color: black !important;
   text-shadow: none;
-  line-height: 65px!important;
+  line-height: 65px !important;
 }
 .header-button:hover {
   border: none;
   background: #326295 !important;
-  color: white!important;
+  color: white !important;
   font-weight: bold;
 }
 .header-primary {
