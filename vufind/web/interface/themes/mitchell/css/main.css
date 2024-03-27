@@ -8353,7 +8353,7 @@ hr.menu {
 .sidebar-links .panel-heading {
   padding: 5px 15px;
   background-color: #e7e7e7;
-  background: linear-gradient(to bottom, #fff, #d7d7d7);
+  background: linear-gradient(to bottom, #5E5E5E, #d7d7d7);
   border-bottom: 1px solid #a1a1a1;
 }
 .sidebar-links .panel > a,
@@ -8995,7 +8995,7 @@ a.browse-thumbnail-sorted.active {
   text-shadow: 1px 1px #555555;
 }
 #account-settings-accordion .panel-body {
-  font-size: 12px;
+  font-size: 13px;
   color: #333333;
   background-color: #eeeeee;
 }
