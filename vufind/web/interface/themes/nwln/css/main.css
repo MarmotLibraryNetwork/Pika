@@ -8222,9 +8222,6 @@ hr.menu {
 .required-input {
   color: #EC130E;
 }
-.sidebar-button {
-  padding: 7px 0;
-}
 .btn-danger {
   background: #702C29;
   background-image: none;
@@ -8343,9 +8340,9 @@ hr.menu {
 }
 .sidebar-button {
   text-align: center;
-  color: #fff;
+  color: #FFF;
   background-color: #4F5253;
-  padding: 3px 0;
+  padding: 7px 0;
   margin-bottom: 15px;
 }
 #home-page-hours-locations,

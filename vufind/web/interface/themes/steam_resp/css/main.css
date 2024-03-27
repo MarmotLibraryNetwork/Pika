@@ -8217,9 +8217,6 @@ hr.menu {
 .required-input {
   color: #EC130E;
 }
-.sidebar-button {
-  padding: 7px 0;
-}
 .btn-danger {
   background: #702C29;
   background-image: none;
@@ -8338,9 +8335,9 @@ hr.menu {
 }
 .sidebar-button {
   text-align: center;
-  color: #fff;
+  color: #FFF;
   background-color: #4F5253;
-  padding: 3px 0;
+  padding: 7px 0;
   margin-bottom: 15px;
 }
 #home-page-hours-locations,
@@ -9460,7 +9457,7 @@ a.browse-thumbnail-sorted.active {
   text-align: center;
   background-color: #494A0C;
   background: linear-gradient(to bottom, #494A0C, #000000);
-  color: #fff;
+  color: #FFF;
   padding: 3px 0;
   margin-top: 20px;
 }
