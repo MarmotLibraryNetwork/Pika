@@ -54,15 +54,15 @@ a img#header-logo {
 
 
 .sidebar-links {
-  .panel-group .panel + .panel {
-    margin-top: 0;
-  }
-  .panel-heading {
-    padding: 5px 15px;
-    background-color: @accordion-header-bg-color;
-    background: linear-gradient(to bottom, @accordion-header-top-gradient-color, darken(@accordion-header-top-gradient-color, 5%));
-    border-bottom: 1px solid #a1a1a1;
-  }
+  //.panel-group .panel + .panel {
+  //  margin-top: 0;
+  //}
+  //.panel-heading {
+  //  padding: 5px 15px;
+  //  background-color: @accordion-header-bg-color;
+  //  background: linear-gradient(to bottom, @accordion-header-top-gradient-color, darken(@accordion-header-top-gradient-color, 5%));
+  //  border-bottom: 1px solid #a1a1a1;
+  //}
   .panel {
     & > a { // keep the title's link underlining the same color as the title
       // these end up applying to content in div.panel-title
@@ -72,39 +72,36 @@ a img#header-logo {
         text-shadow: 1px 1px @bemis-gray;
       }
     }
-    &.active {
-      & > a { // keep the title's link underlining the same color as the title
-        // these end up applying to content in .active div.panel-title
-        &, &:visited, &:hover {
-          color: @accordion-active-header-color;
-          text-shadow: 1px 1px @gray;
-          outline: none;
-        }
-      }
-    }
+    //&.active {
+    //  & > a { // keep the title's link underlining the same color as the title
+    //    // these end up applying to content in .active div.panel-title
+    //    &, &:visited, &:hover {
+    //      color: @accordion-active-header-color;
+    //      text-shadow: 1px 1px @gray;
+    //      outline: none;
+    //    }
+    //  }
+    //}
   }
   .panel-title {
     text-shadow: 1px 1px @gray;
   }
-  .active {
-    .panel-heading {
-      background-color: @accordion-active-header-backgroundcolor;
-      background: linear-gradient(to bottom, darken(@accordion-header-top-gradient-color, 5%), darken(@accordion-header-top-gradient-color, 10%));
-    }
-    .panel-title {
-      text-shadow: 1px 1px @gray;
-    }
-  }
+  //.active {
+  //  .panel-heading {
+  //    background-color: @accordion-active-header-backgroundcolor;
+  //    background: linear-gradient(to bottom, darken(@accordion-header-top-gradient-color, 5%), darken(@accordion-header-top-gradient-color, 10%));
+  //  }
+  //}
   .panel-body {
-    font-size: 13px;
-    color: @gray-dark;
+    //font-size: 13px;
+    //color: @gray-dark;
     background-color: #eeeeee;
-    a {
-      &, &:visited, &:hover {
-        &:not(.btn) { // Let buttons in the sidebar have their normal font color.
-          color: @sidebar-link-color;
-        }
-      }
-    }
+    //a {
+    //  &, &:visited, &:hover {
+    //    &:not(.btn) { // Let buttons in the sidebar have their normal font color.
+    //      color: @sidebar-link-color;
+    //    }
+    //  }
+    //}
   }
 }

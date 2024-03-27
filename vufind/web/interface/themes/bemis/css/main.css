@@ -10630,15 +10630,6 @@ a img#header-logo {
 #selected-browse-search-link {
   text-transform: uppercase;
 }
-.sidebar-links .panel-group .panel + .panel {
-  margin-top: 0;
-}
-.sidebar-links .panel-heading {
-  padding: 5px 15px;
-  background-color: #e7e7e7;
-  background: linear-gradient(to bottom, #cb2037, #b51d31);
-  border-bottom: 1px solid #a1a1a1;
-}
 .sidebar-links .panel > a,
 .sidebar-links .panel > a:visited,
 .sidebar-links .panel > a:hover {
@@ -10646,30 +10637,9 @@ a img#header-logo {
   color: #FFF;
   text-shadow: 1px 1px #757778;
 }
-.sidebar-links .panel.active > a,
-.sidebar-links .panel.active > a:visited,
-.sidebar-links .panel.active > a:hover {
-  color: #fff;
-  text-shadow: 1px 1px #555555;
-  outline: none;
-}
 .sidebar-links .panel-title {
   text-shadow: 1px 1px #555555;
 }
-.sidebar-links .active .panel-heading {
-  background-color: #b71f36;
-  background: linear-gradient(to bottom, #b51d31, #9f192b);
-}
-.sidebar-links .active .panel-title {
-  text-shadow: 1px 1px #555555;
-}
 .sidebar-links .panel-body {
-  font-size: 13px;
-  color: #333333;
   background-color: #eeeeee;
-}
-.sidebar-links .panel-body a:not(.btn),
-.sidebar-links .panel-body a:visited:not(.btn),
-.sidebar-links .panel-body a:hover:not(.btn) {
-  color: #231f20;
 }
