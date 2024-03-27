@@ -8336,7 +8336,7 @@ hr.menu {
 .sidebar-button {
   text-align: center;
   color: #FFF;
-  background-color: #4F5253;
+  background-color: #3b3f43;
   padding: 7px 0;
   margin-bottom: 15px;
 }
@@ -10610,8 +10610,4 @@ h3 {
 }
 .sidebar-links .active .panel-heading {
   background: #3b3f43;
-}
-.sidebar-button {
-  background: #3b3f43;
-  padding: 7px 0;
 }
