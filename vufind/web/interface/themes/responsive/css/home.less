@@ -147,11 +147,21 @@
 
 .sidebar-button {
   text-align: center;
-  color: #fff;
-  background-color: #4F5253; // passes AAA for normal text https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=4F5253
-  // (same pair of colors as .result-tools-horizontal)
-  padding: 3px 0;
+  color: @sidebar-button-color;
+  background-color: @sidebar-button-bg-color;
+  padding: 7px 0;
   margin-bottom: 15px;
+}
+
+.sidebar-button-mixin() {
+  .sidebar-button {
+    padding: 5px 15px;
+    background-color: @accordion-header-bg-color;
+    background: linear-gradient(to bottom, @accordion-header-top-gradient-color, @accordion-header-bottom-gradient-color);
+    color: #fff;
+    margin-bottom: 15px;
+    border-radius: 4px;
+  }
 }
 
 #home-page-hours-locations, #home-page-home-button {
@@ -323,17 +333,6 @@
 .dropdown-menu-right {
   right: 0;
   left: auto
-}
-
-.sidebar-button-mixin() {
-  .sidebar-button {
-    padding: 5px 15px;
-    background-color: @accordion-header-bg-color;
-    background: linear-gradient(to bottom, @accordion-header-top-gradient-color, @accordion-header-bottom-gradient-color);
-    color: #fff;
-    margin-bottom: 15px;
-    border-radius: 4px;
-  }
 }
 
 .badge.badge-danger {
