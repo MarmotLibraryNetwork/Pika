@@ -8336,7 +8336,7 @@ hr.menu {
 .sidebar-button {
   text-align: center;
   color: #FFF;
-  background-color: #4F5253;
+  background-color: #133155;
   padding: 7px 0;
   margin-bottom: 15px;
 }
@@ -10553,10 +10553,6 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .sidebar-links .active .panel-heading {
   background: #326295;
-}
-.sidebar-button {
-  background: #133155;
-  padding: 7px 0;
 }
 .menu-bar {
   background: #326295;
