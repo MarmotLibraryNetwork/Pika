@@ -10537,13 +10537,6 @@ a img#header-logo {
   border-bottom: 1px solid #a1a1a1;
 }
 */
-.sidebar-links .panel > a,
-.sidebar-links .panel > a:visited,
-.sidebar-links .panel > a:hover {
-  font-size: 14px;
-  color: #EEEEEE;
-  text-shadow: 1px 1px #757778;
-}
 #browse-label {
   background-color: #FFF;
   border-bottom: 1px solid #231f20;
