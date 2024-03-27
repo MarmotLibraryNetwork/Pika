@@ -5,26 +5,24 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
-#header-container{
+#header-container {
   background: none;
 }
-span.browse-label-text {
-  color: @aims-black;
-  background:#FFF;
-}
 
-#browse-label {
-  background: @aims-black;
-}
 .browse-category.selected {
-  border-color: @aims-black;
   border-width: 1px;
 }
+
 #home-page-browse-header {
-  background: #fff;
   border-bottom: @aims-black 4px solid;
 }
-//.header-login-button-mixin(@aims-red, #fff, 0);
+
+#selected-browse-label {
+   background: linear-gradient(to bottom, #fff, #fff 44%, #bbd4e3 45%, #bbd4e3 55%, #fff 56%);
+  // Keep original background line coloring
+}
+
+  //.header-login-button-mixin(@aims-red, #fff, 0);
 .header-button {
   border: 0;
   border-radius: 0.5em;
@@ -42,12 +40,13 @@ a#headerMyAccountLink, a#headerLoginLink, a#headerLogoutLink {
   text-decoration: none;
 }
 
-#header_black{
+#header_black {
   background: none;
   //border: 5px solid black;
   //width: 100%; // not needed. provided by col-tn-12 or col-xs-12
 }
-#header_library{
+
+#header_library {
   line-height: 21px;
   background: @aims-black;
   padding: 20px;

@@ -8495,7 +8495,7 @@ hr.menu {
   background: #343a40;
 }
 #home-page-browse-header {
-  background-color: #d7dce3;
+  background-color: #FFF;
   padding-bottom: 15px;
 }
 #home-page-browse-content {
@@ -8504,16 +8504,16 @@ hr.menu {
 }
 #browse-label {
   height: 5px;
-  background-color: #bbd4e3;
+  background-color: #221f1f;
   margin-top: 15px;
   margin-bottom: 15px;
   margin-right: -15px;
   z-index: -1;
 }
 .browse-label-text {
-  background-color: #d7dce3;
+  background-color: #FFF;
   font-size: 22px;
-  color: #2D5D82;
+  color: #221f1f;
   line-height: 5px;
   vertical-align: top;
   margin: auto;
@@ -8572,7 +8572,7 @@ hr.menu {
   text-decoration: underline;
 }
 .browse-category.selected {
-  border: 2px solid #3497d1;
+  border: 2px solid #221f1f;
   font-size: 23px;
 }
 .browse-category.category0 {
@@ -8613,7 +8613,7 @@ hr.menu {
 }
 #selected-browse-label {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 44%, #bbd4e3 45%, #bbd4e3 55%, #fff 56%);
+  background: linear-gradient(to bottom, #fff, #fff 44%, #221f1f 45%, #221f1f 55%, #fff 56%);
   margin-bottom: 5px;
 }
 #selected-browse-label > div.btn-group {
@@ -10506,20 +10506,14 @@ fieldset[disabled] .btn-masquerade.active {
 #header-container {
   background: none;
 }
-span.browse-label-text {
-  color: #221f1f;
-  background: #FFF;
-}
-#browse-label {
-  background: #221f1f;
-}
 .browse-category.selected {
-  border-color: #221f1f;
   border-width: 1px;
 }
 #home-page-browse-header {
-  background: #fff;
   border-bottom: #221f1f 4px solid;
+}
+#selected-browse-label {
+  background: linear-gradient(to bottom, #fff, #fff 44%, #bbd4e3 45%, #bbd4e3 55%, #fff 56%);
 }
 .header-button {
   border: 0;
