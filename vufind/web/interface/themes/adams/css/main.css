@@ -10603,6 +10603,9 @@ fieldset[disabled] .btn-masquerade.active {
   color: #000000;
   font-size: small;
 }
+.facetValue a {
+  color: #000000;
+}
 .facetTitle {
   background-color: #fff;
   background: linear-gradient(to bottom, #fff, #fff);
@@ -10611,23 +10614,19 @@ fieldset[disabled] .btn-masquerade.active {
   padding: 8px 30px 6px 15px;
   border-bottom: 1px solid #fff;
 }
-.facetValue a {
-  color: #000000;
-}
-/* Details Page CSS Changes */
 #more-details-accordion .panel-heading {
   padding: 5px 15px;
   background: #fff;
+  background: linear-gradient(to bottom, #fff, #fff);
+}
+#more-details-accordion .active .panel-heading {
+  background-color: #fff;
   background: linear-gradient(to bottom, #fff, #fff);
 }
 #more-details-accordion .panel-title {
   font-size: 13px;
   color: #333;
   text-shadow: 1px 1px #fff;
-}
-#more-details-accordion .active .panel-heading {
-  background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff);
 }
 #more-details-accordion .active .panel-title {
   color: #000000;
