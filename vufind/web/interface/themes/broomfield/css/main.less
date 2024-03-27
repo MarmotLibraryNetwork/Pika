@@ -30,29 +30,25 @@
 #header-links .header-link-wrapper {border: none}
 /*#header-links .header-link-wrapper:last-of-type {border-right: 1px solid #0078ae}*/
 
-
+.header-login-button-mixin(#FFF, #333);
 .header-button {
-  border-radius: .5em;
-  border: 1px solid #80B5D9;
-  color: #333!important;
-  border-color: #ccc;
-  background-color: #fff;
-  margin-top: 20px;
-  line-height: 60px!important;
-  text-shadow: none;
-}
-.header-button:hover {
-  color: #333;
-  background-color: #ebebeb;
-  border-color: #adadad;
+  border: 1px solid #CCC;
+
+  &:hover {
+    color: #333;
+    background-color: #ebebeb;
+    border-bottom: 4px solid #adadad;
+  }
 }
 
-#sidebar-content{
-  background:#fff;
+
+#sidebar-content {
+  background: #fff;
 }
 
 #home-page-browse-header {
-  background-color: #ffffff;}
+  background-color: #ffffff;
+}
 
 .searchTypeHome {
   background-color: #ffffff;
@@ -61,22 +57,25 @@
 
 #browse-label {
   height: 0;
-  background-color: #ffffff!important;
+  background-color: #ffffff !important;
   margin-top: 10px;
-  margin-bottom: 0px;
+  margin-bottom: 0;
   margin-right: -15px;
-  z-index: -1!important;}
+  z-index: -1 !important;
+}
 
 .browse-label-text {
   background-color: #ffffff;
-  color: #205724!important;}
+  color: #205724 !important;
+}
 
 
 #selected-browse-label {
   background-color: #fff;
-  background: linear-gradient(to bottom,#fff,#fff 44%,#205724 45%,#205724 55%,#fff 56%);
+  background: linear-gradient(to bottom, #fff, #fff 44%, #205724 45%, #205724 55%, #fff 56%);
   margin-bottom: 5px;
 }
+
 .selected-browse-label-search a {
   color: #205724
 }
@@ -86,11 +85,9 @@
   color: @green-broomfield;
 }
 .browse-category {
-
-  text-shadow: 0px 0px!important;
+  text-shadow: 0 0 !important;
   border: 1px solid #FFFFFF;
-  background-color: #ffffff;
-
+  background-color: #FFFFFF;
 }
 
 .browse-category.category0 {

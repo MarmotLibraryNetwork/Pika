@@ -31,24 +31,20 @@
 #header-links .header-link-wrapper {border: none}
 /*#header-links .header-link-wrapper:last-of-type {border-right: 1px solid @green-boulder}*/
 
+.header-login-button-mixin(#FFF, #333);
 .header-button {
-  border-radius: .5em;
-  border: 1px solid #ccc;
-  color: #333!important;
-  background-color: #fff;
-  margin-top: 20px;
-  line-height: 60px!important;
-  text-shadow: none;
-}
+  border: 1px solid #CCC;
 
-.header-button:hover {
-  color: #333;
-  background-color: #ebebeb;
-  border-color: #adadad;
+  &:hover {
+    color: #333;
+    background-color: #ebebeb;
+    border-bottom: 4px solid #adadad;
+  }
 }
 
 #home-page-search {
-  background-color: @blue-boulder;}
+  background-color: @blue-boulder;
+}
 
 .searchTypeHome {
   background-color: #ffffff;
