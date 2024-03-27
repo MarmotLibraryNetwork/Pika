@@ -108,7 +108,7 @@ hr.menu{
   border-right: 2px solid @header-button-border-vertical;
 }
 
-.header-login-button-mixin(@background-color: rgba(51,51,51,0.6); @color: #fff; @margin-top: 20px) {
+.header-login-button-mixin(@background-color: rgba(51,51,51,0.6); @color: #FFF; @margin-top: 20px; @header-line-height: 60px) {
   .header-button {
     border: 0;
     border-radius: 0.5em;
@@ -116,7 +116,7 @@ hr.menu{
     background-color: @background-color;
     margin-top: @margin-top;
     //height: 60px !important;
-    line-height: 60px !important;
+    line-height: @header-line-height !important;
     text-shadow: none;
 
     &:hover {
