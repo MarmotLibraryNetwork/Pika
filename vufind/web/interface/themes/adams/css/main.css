@@ -10511,16 +10511,13 @@ fieldset[disabled] .btn-masquerade.active {
   color: #fff !important;
   background-color: rgba(51, 51, 51, 0.4);
   margin-top: 0;
-  line-height: 60px !important;
+  line-height: 30px !important;
   text-shadow: none;
 }
 .header-button:hover {
   text-decoration: underline;
   border-bottom: 0;
   box-shadow: 2px 2px 5px #fff;
-}
-.header-button {
-  line-height: 30px !important;
 }
 #header_black {
   background: black;
