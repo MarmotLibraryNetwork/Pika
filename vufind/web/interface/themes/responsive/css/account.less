@@ -10,31 +10,26 @@
 #account-settings-accordion {
   .panel-heading {
     //padding: 5px 15px; (use default values instead)
-    background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
-    //background-color: @accordion-header-bg-color;
+    //background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
+    background-color: @accordion-header-bg-color;
     //background: linear-gradient(to bottom, @accordion-header-top-gradient-color, @accordion-header-bottom-gradient-color);
   }
 
-  .active .panel-heading {
-    background: linear-gradient(to bottom, #4dacde, #0f8fd2);
-  }
-  //.active {
-  //  .panel-heading {
-  //    background-color: @accordion-active-header-backgroundcolor;
-  //    background: linear-gradient(to bottom, @accordion-active-header-backgroundcolor, darken(@accordion-active-header-backgroundcolor, 10%));
-  //  }
-  //}
+  .active {
+    .panel-heading {
+      background-color: @accordion-active-header-backgroundcolor;
+    }
 
+    .panel-title {
+      color: @accordion-active-header-color;
+      text-shadow: 1px 1px @gray;
+    }
+  }
 
   .panel-title {
     font-size: 13px;
     color: @gray-dark;
     text-shadow: 1px 1px #fff;
-  }
-
-  .active .panel-title {
-    color: #fff;
-    text-shadow: 1px 1px @gray;
   }
 
   .panel-body {
