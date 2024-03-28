@@ -8895,19 +8895,19 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
 }
 #account-settings-accordion .panel-heading {
-  background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
+  background-color: #e7e7e7;
 }
 #account-settings-accordion .active .panel-heading {
-  background: linear-gradient(to bottom, #4dacde, #0f8fd2);
+  background-color: #3b3f43;
+}
+#account-settings-accordion .active .panel-title {
+  color: #fff;
+  text-shadow: 1px 1px #555555;
 }
 #account-settings-accordion .panel-title {
   font-size: 13px;
   color: #333333;
   text-shadow: 1px 1px #fff;
-}
-#account-settings-accordion .active .panel-title {
-  color: #fff;
-  text-shadow: 1px 1px #555555;
 }
 #account-settings-accordion .panel-body {
   font-size: 13px;
