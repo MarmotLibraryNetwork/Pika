@@ -6846,9 +6846,6 @@ body > .container {
     content: "";
   }
 }
-.panel-title {
-  font-size: 14px;
-}
 .modal {
   left: 50%;
   width: 80%;
@@ -8280,7 +8277,6 @@ hr.menu {
 .sidebar-links .panel > a,
 .sidebar-links .panel > a:visited,
 .sidebar-links .panel > a:hover {
-  font-size: 14px;
   color: #333333;
   text-shadow: 1px 1px #fff;
 }
@@ -8905,7 +8901,6 @@ a.browse-thumbnail-sorted.active {
   text-shadow: 1px 1px #555555;
 }
 #account-settings-accordion .panel-title {
-  font-size: 13px;
   color: #333333;
   text-shadow: 1px 1px #fff;
 }
@@ -10536,7 +10531,6 @@ a img#header-logo {
 .sidebar-links .panel > a,
 .sidebar-links .panel > a:visited,
 .sidebar-links .panel > a:hover {
-  font-size: 14px;
   color: #FFF;
   text-shadow: 1px 1px #757778;
 }
