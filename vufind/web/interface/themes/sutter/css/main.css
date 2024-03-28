@@ -4895,7 +4895,7 @@ a.list-group-item.active:focus .list-group-item-text {
   overflow: hidden;
 }
 .panel-group .panel + .panel {
-  margin-top: 5px;
+  margin-top: 0;
 }
 .panel-group .panel-heading {
   border-bottom: 0;
@@ -8344,9 +8344,6 @@ hr.menu {
 #home-page-home-button {
   text-transform: uppercase;
 }
-.sidebar-links .panel-group .panel + .panel {
-  margin-top: 0;
-}
 .sidebar-links .panel-heading {
   padding: 10px 15px;
   background-color: #0a2e5c;
@@ -8967,9 +8964,6 @@ a.browse-thumbnail-sorted.active {
 #myFinesAlert {
   color: #EC130E;
   font-weight: bold;
-}
-#account-settings-accordion .panel-group .panel + .panel {
-  margin-top: 0;
 }
 #account-settings-accordion .panel-heading {
   padding: 5px 15px;
@@ -9854,9 +9848,6 @@ a.browse-thumbnail-sorted.active {
 }
 .share-tools-label {
   padding-right: 10px;
-}
-#more-details-accordion .panel-group .panel + .panel {
-  margin-top: 0;
 }
 #more-details-accordion .panel-heading {
   padding: 10px 15px;
