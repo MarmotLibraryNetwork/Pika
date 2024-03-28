@@ -8350,7 +8350,7 @@ hr.menu {
 .sidebar-links .panel-heading {
   padding: 5px 15px;
   background-color: #e7e7e7;
-  background: linear-gradient(to bottom, #1C76BC, #d7d7d7);
+  background: linear-gradient(to bottom, #fff, #d7d7d7);
   border-bottom: 1px solid #a1a1a1;
 }
 .sidebar-links .panel > a,
