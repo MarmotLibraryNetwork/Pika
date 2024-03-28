@@ -8345,7 +8345,6 @@ hr.menu {
   text-transform: uppercase;
 }
 .sidebar-links .panel-heading {
-  padding: 10px 15px;
   background-color: #FAFAFA;
   border-bottom: 1px solid #a1a1a1;
 }
@@ -8967,7 +8966,6 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
 }
 #account-settings-accordion .panel-heading {
-  padding: 5px 15px;
   background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
   border-bottom: 1px solid #a1a1a1;
 }
@@ -9851,7 +9849,6 @@ a.browse-thumbnail-sorted.active {
   padding-right: 10px;
 }
 #more-details-accordion .panel-heading {
-  padding: 10px 15px;
   background-color: #FAFAFA;
   border-bottom: 1px solid #a1a1a1;
 }
