@@ -8353,9 +8353,8 @@ hr.menu {
   margin-top: 0;
 }
 .sidebar-links .panel-heading {
-  padding: 5px 15px;
+  padding: 10px 15px;
   background-color: #006aac;
-  background: linear-gradient(to bottom, #006aac, #006aac);
   border-bottom: 1px solid #a1a1a1;
 }
 .sidebar-links .panel > a,
@@ -8374,7 +8373,6 @@ hr.menu {
 }
 .sidebar-links .active .panel-heading {
   background-color: #006aac;
-  background: linear-gradient(to bottom, #006aac, #004b79);
 }
 .sidebar-links .panel-body {
   font-size: 13px;
