@@ -6851,6 +6851,33 @@ body > .container {
     content: "";
   }
 }
+.panel-heading {
+  background-color: #006aac;
+}
+.panel-title {
+  color: #333333;
+  text-shadow: 1px 1px #fff;
+}
+.active .panel-heading {
+  background-color: #006aac;
+}
+.active .panel-title {
+  color: #FFF;
+  text-shadow: 1px 1px #555555;
+}
+.active > a:hover {
+  -webkit-text-decoration: underline #FFF;
+          text-decoration: underline #FFF;
+}
+.active > a:focus {
+  text-decoration: none;
+}
+.active > a:focus .panel-title {
+  text-shadow: 1px 1px #E15F15;
+}
+.active > a:visited {
+  text-decoration: none;
+}
 .modal {
   left: 50%;
   width: 80%;
@@ -8276,33 +8303,6 @@ hr.menu {
 #home-page-home-button {
   text-transform: uppercase;
 }
-.sidebar-links .panel-heading {
-  background-color: #006aac;
-}
-.sidebar-links .panel-title {
-  color: #333333;
-  text-shadow: 1px 1px #fff;
-}
-.sidebar-links .active .panel-heading {
-  background-color: #006aac;
-}
-.sidebar-links .active .panel-title {
-  color: #FFF;
-  text-shadow: 1px 1px #555555;
-}
-.sidebar-links .active > a:hover {
-  -webkit-text-decoration: underline #fff;
-          text-decoration: underline #fff;
-}
-.sidebar-links .active > a:focus {
-  text-decoration: none;
-}
-.sidebar-links .active > a:focus .panel-title {
-  text-shadow: 1px 1px #E15F15;
-}
-.sidebar-links .active > a:visited {
-  text-decoration: none;
-}
 .sidebar-links .panel-body {
   font-size: 13px;
   color: #333333;
@@ -8901,33 +8901,6 @@ a.browse-thumbnail-sorted.active {
 #myFinesAlert {
   color: #EC130E;
   font-weight: bold;
-}
-#account-settings-accordion .panel-heading {
-  background-color: #006aac;
-}
-#account-settings-accordion .panel-title {
-  color: #333333;
-  text-shadow: 1px 1px #fff;
-}
-#account-settings-accordion .active .panel-heading {
-  background-color: #006aac;
-}
-#account-settings-accordion .active .panel-title {
-  color: #FFF;
-  text-shadow: 1px 1px #555555;
-}
-#account-settings-accordion .active > a:hover {
-  -webkit-text-decoration: underline #fff;
-          text-decoration: underline #fff;
-}
-#account-settings-accordion .active > a:focus {
-  text-decoration: none;
-}
-#account-settings-accordion .active > a:focus .panel-title {
-  text-shadow: 1px 1px #E15F15;
-}
-#account-settings-accordion .active > a:visited {
-  text-decoration: none;
 }
 #account-settings-accordion .panel-body {
   font-size: 13px;
@@ -9795,33 +9768,6 @@ a.browse-thumbnail-sorted.active {
 }
 .share-tools-label {
   padding-right: 10px;
-}
-#more-details-accordion .panel-heading {
-  background-color: #006aac;
-}
-#more-details-accordion .panel-title {
-  color: #333333;
-  text-shadow: 1px 1px #fff;
-}
-#more-details-accordion .active .panel-heading {
-  background-color: #006aac;
-}
-#more-details-accordion .active .panel-title {
-  color: #FFF;
-  text-shadow: 1px 1px #555555;
-}
-#more-details-accordion .active > a:hover {
-  -webkit-text-decoration: underline #fff;
-          text-decoration: underline #fff;
-}
-#more-details-accordion .active > a:focus {
-  text-decoration: none;
-}
-#more-details-accordion .active > a:focus .panel-title {
-  text-shadow: 1px 1px #E15F15;
-}
-#more-details-accordion .active > a:visited {
-  text-decoration: none;
 }
 #more-details-accordion .panel-body {
   color: #333333;
