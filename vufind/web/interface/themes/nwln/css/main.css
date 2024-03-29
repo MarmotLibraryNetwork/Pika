@@ -269,12 +269,12 @@ textarea {
   line-height: inherit;
 }
 a {
-  color: #428bca;
+  color: #0A75E3;
   text-decoration: none;
 }
 a:hover,
 a:focus {
-  color: #2a6496;
+  color: #074f9a;
   text-decoration: underline;
 }
 a:focus {
@@ -445,10 +445,10 @@ cite {
   color: #797676;
 }
 .text-primary {
-  color: #428bca;
+  color: #0A75E3;
 }
 .text-primary:hover {
-  color: #3071a9;
+  color: #085cb2;
 }
 .text-warning {
   color: #8a6d3b;
@@ -2321,7 +2321,7 @@ fieldset[disabled] .btn-info.active {
   background-color: #fff;
 }
 .btn-link {
-  color: #428bca;
+  color: #0A75E3;
   font-weight: normal;
   cursor: pointer;
   border-radius: 0;
@@ -2341,7 +2341,7 @@ fieldset[disabled] .btn-link {
 }
 .btn-link:hover,
 .btn-link:focus {
-  color: #2a6496;
+  color: #074f9a;
   text-decoration: underline;
   background-color: transparent;
 }
@@ -3094,7 +3094,7 @@ input[type="button"].btn-block {
   color: #fff;
   text-decoration: none;
   outline: 0;
-  background-color: #428bca;
+  background-color: #0A75E3;
 }
 .dropdown-menu > .disabled > a,
 .dropdown-menu > .disabled > a:hover,
@@ -3552,7 +3552,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .nav .open > a:hover,
 .nav .open > a:focus {
   background-color: #eeeeee;
-  border-color: #428bca;
+  border-color: #0A75E3;
 }
 .nav .nav-divider {
   height: 1px;
@@ -3645,7 +3645,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .nav-pills > li.active > a:hover,
 .nav-pills > li.active > a:focus {
   color: #fff;
-  background-color: #428bca;
+  background-color: #0A75E3;
 }
 .nav-stacked > li {
   float: none;
@@ -4276,8 +4276,8 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .pagination > .active > span:focus {
   z-index: 2;
   color: #fff;
-  background-color: #428bca;
-  border-color: #428bca;
+  background-color: #0A75E3;
+  border-color: #0A75E3;
   cursor: default;
 }
 .pagination > .disabled > span,
@@ -4408,11 +4408,11 @@ textarea.input-group-sm > .input-group-btn > .btn {
   background-color: #5f5d5d;
 }
 .label-primary {
-  background-color: #428bca;
+  background-color: #0A75E3;
 }
 .label-primary[href]:hover,
 .label-primary[href]:focus {
-  background-color: #3071a9;
+  background-color: #085cb2;
 }
 .label-success {
   background-color: #128A0B;
@@ -4471,7 +4471,7 @@ a.badge:focus {
 }
 a.list-group-item.active > .badge,
 .nav-pills > .active > a > .badge {
-  color: #428bca;
+  color: #0A75E3;
   background-color: #fff;
 }
 .nav-pills > li > a > .badge {
@@ -4535,7 +4535,7 @@ a.list-group-item.active > .badge,
 a.thumbnail:hover,
 a.thumbnail:focus,
 a.thumbnail.active {
-  border-color: #428bca;
+  border-color: #0A75E3;
 }
 .thumbnail .caption {
   padding: 9px;
@@ -4638,7 +4638,7 @@ a.thumbnail.active {
   line-height: 20px;
   color: #fff;
   text-align: center;
-  background-color: #428bca;
+  background-color: #0A75E3;
   box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.15);
   transition: width 0.6s ease;
 }
@@ -4744,8 +4744,8 @@ a.list-group-item.active:hover,
 a.list-group-item.active:focus {
   z-index: 2;
   color: #fff;
-  background-color: #428bca;
-  border-color: #428bca;
+  background-color: #0A75E3;
+  border-color: #0A75E3;
 }
 a.list-group-item.active .list-group-item-heading,
 a.list-group-item.active:hover .list-group-item-heading,
@@ -4755,7 +4755,7 @@ a.list-group-item.active:focus .list-group-item-heading {
 a.list-group-item.active .list-group-item-text,
 a.list-group-item.active:hover .list-group-item-text,
 a.list-group-item.active:focus .list-group-item-text {
-  color: #e1edf7;
+  color: #bddcfc;
 }
 .list-group-item-heading {
   margin-top: 0;
@@ -7939,7 +7939,7 @@ hr.menu {
   color: #8b8b8b !important;
 }
 .header-button:hover {
-  border-bottom: 4px solid #2a6496;
+  border-bottom: 4px solid #074f9a;
 }
 .header-primary {
   border-left: 2px solid #d9d8d8;
@@ -8804,7 +8804,7 @@ hr.menu {
 a.browse-thumbnail:hover,
 a.browse-thumbnail:focus,
 a.browse-thumbnail.active {
-  border-color: #428bca;
+  border-color: #0A75E3;
 }
 .browse-thumbnail .caption {
   padding: 9px;
@@ -8838,7 +8838,7 @@ a.browse-thumbnail.active {
 a.browse-thumbnail-sorted:hover,
 a.browse-thumbnail-sorted:focus,
 a.browse-thumbnail-sorted.active {
-  border-color: #428bca;
+  border-color: #0A75E3;
 }
 .browse-thumbnail-sorted .caption {
   padding: 9px;
