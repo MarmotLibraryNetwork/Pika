@@ -1861,7 +1861,7 @@ fieldset[disabled] .checkbox-inline {
 }
 .input-sm {
   height: 30px;
-  padding: 5px 10px;
+  padding: 5px 5px;
   font-size: 12px;
   line-height: 1.5;
   border-radius: 3px;
@@ -2354,7 +2354,7 @@ fieldset[disabled] .btn-link:focus {
   border-radius: 6px;
 }
 .btn-sm {
-  padding: 5px 10px;
+  padding: 5px 5px;
   font-size: 12px;
   line-height: 1.5;
   border-radius: 3px;
@@ -3248,7 +3248,7 @@ input[type="button"].btn-block {
   border-radius: 3px;
 }
 .btn-group-sm > .btn {
-  padding: 5px 10px;
+  padding: 5px 5px;
   font-size: 12px;
   line-height: 1.5;
   border-radius: 3px;
@@ -3399,7 +3399,7 @@ textarea.input-group-lg > .input-group-btn > .btn {
 .input-group-sm > .input-group-addon,
 .input-group-sm > .input-group-btn > .btn {
   height: 30px;
-  padding: 5px 10px;
+  padding: 5px 5px;
   font-size: 12px;
   line-height: 1.5;
   border-radius: 3px;
@@ -3443,7 +3443,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
   border-radius: 4px;
 }
 .input-group-addon.input-sm {
-  padding: 5px 10px;
+  padding: 5px 5px;
   font-size: 12px;
   border-radius: 3px;
 }
@@ -4303,7 +4303,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 }
 .pagination-sm > li > a,
 .pagination-sm > li > span {
-  padding: 5px 10px;
+  padding: 5px 5px;
   font-size: 12px;
 }
 .pagination-sm > li:first-child > a,
@@ -9861,7 +9861,7 @@ a.browse-thumbnail-sorted.active {
   color: #000075;
 }
 #explore-more-body .jcarousel-wrapper {
-  margin-left: -10px;
+  margin-left: -5px;
   margin-top: 5px;
 }
 #explore-more-body .jcarousel {
