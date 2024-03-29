@@ -104,6 +104,48 @@ body {
   }
 }
 
+.panel-heading-gradient(@start-color: @accordion-header-top-gradient-color; @end-color: @accordion-header-bottom-gradient-color){
+  .panel-heading {
+    #gradient > .vertical(@start-color; @end-color);
+  }
+}
+
+.panel-heading {
+  background-color: @accordion-header-bg-color;
+  //background: linear-gradient(to bottom, @accordion-header-bg-color, #d7d7d7 /*@accordion-header-bottom-gradient-color*/);
+}
+
+.panel-title {
+  color: @accordion-header-color;
+  text-shadow: 1px 1px @accordion-header-shadow-color;
+}
+
+.active {
+  .panel-heading {
+    background-color: @accordion-active-header-bg-color;
+  }
+
+  .panel-title {
+    color: @accordion-active-header-color;
+    text-shadow: 1px 1px @accordion-active-header-shadow-color;
+  }
+
+  > a:hover {
+    text-decoration: underline @accordion-active-header-color; // keep the title's link underlining the same color as the title
+  }
+
+  > a:focus {
+    text-decoration: none;
+    .panel-title {
+      text-shadow: 1px 1px @focus-ring-color;
+    }
+  }
+
+  > a:visited {
+    text-decoration: none;
+  }
+}
+
 // Modals
 .modal {
   //position: fixed; // In modals.less

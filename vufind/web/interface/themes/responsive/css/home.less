@@ -181,42 +181,6 @@
 
 // Library Link Formatting
 .sidebar-links {
-  .panel-heading {
-    background-color: @accordion-header-bg-color;
-    //background: linear-gradient(to bottom, @accordion-header-top-gradient-color, @accordion-header-bottom-gradient-color);
-  }
-
-  .panel-title {
-    color: @gray-dark;
-    text-shadow: 1px 1px #fff;
-  }
-
-  .active {
-    .panel-heading {
-      background-color: @accordion-active-header-backgroundcolor;
-    }
-
-    .panel-title {
-      color: @accordion-active-header-color;
-      text-shadow: 1px 1px @gray;
-    }
-
-    > a:hover {
-      text-decoration: underline #fff; // keep the title's link underlining the same color as the title
-    }
-
-    > a:focus {
-      text-decoration: none;
-      .panel-title {
-        text-shadow: 1px 1px @focus-ring-color;
-      }
-    }
-
-    > a:visited {
-      text-decoration: none;
-    }
-  }
-
   .panel-body {
     font-size: 13px;
     color: @gray-dark;
