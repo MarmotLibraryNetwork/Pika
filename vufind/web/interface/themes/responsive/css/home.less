@@ -186,25 +186,9 @@
     //background: linear-gradient(to bottom, @accordion-header-top-gradient-color, @accordion-header-bottom-gradient-color);
   }
 
-  .panel {
-    & > a { // keep the title's link underlining the same color as the title
-      // these end up applying to content in div.panel-title
-      &, &:visited, &:hover {
-        color: @gray-dark;
-        text-shadow: 1px 1px #fff;
-      }
-    }
-
-    &.active {
-      & > a { // keep the title's link underlining the same color as the title
-        // these end up applying to content in .active div.panel-title
-        &, &:visited, &:hover {
-          color: @accordion-active-header-color;
-          text-shadow: 1px 1px @gray;
-          outline: none;
-        }
-      }
-    }
+  .panel-title {
+    color: @gray-dark;
+    text-shadow: 1px 1px #fff;
   }
 
   .active {
@@ -212,6 +196,25 @@
       background-color: @accordion-active-header-backgroundcolor;
     }
 
+    .panel-title {
+      color: @accordion-active-header-color;
+      text-shadow: 1px 1px @gray;
+    }
+
+    > a:hover {
+      text-decoration: underline #fff; // keep the title's link underlining the same color as the title
+    }
+
+    > a:focus {
+      text-decoration: none;
+      .panel-title {
+        text-shadow: 1px 1px @focus-ring-color;
+      }
+    }
+
+    > a:visited {
+      text-decoration: none;
+    }
   }
 
   .panel-body {

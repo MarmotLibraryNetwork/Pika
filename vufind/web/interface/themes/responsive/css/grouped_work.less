@@ -101,8 +101,19 @@
       text-shadow: 1px 1px @gray;
     }
 
-    > a {
-      text-decoration: #FFF;
+    > a:hover {
+      text-decoration: underline #fff; // keep the title's link underlining the same color as the title
+    }
+
+    > a:focus {
+      text-decoration: none;
+      .panel-title {
+        text-shadow: 1px 1px @focus-ring-color;
+      }
+    }
+
+    > a:visited {
+      text-decoration: none;
     }
   }
 
