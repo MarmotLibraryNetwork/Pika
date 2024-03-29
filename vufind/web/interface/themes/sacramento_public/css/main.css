@@ -8274,21 +8274,29 @@ hr.menu {
 .sidebar-links .panel-heading {
   background-color: #F0EFEF;
 }
-.sidebar-links .panel > a,
-.sidebar-links .panel > a:visited,
-.sidebar-links .panel > a:hover {
+.sidebar-links .panel-title {
   color: #333333;
   text-shadow: 1px 1px #fff;
 }
-.sidebar-links .panel.active > a,
-.sidebar-links .panel.active > a:visited,
-.sidebar-links .panel.active > a:hover {
-  color: #333333;
-  text-shadow: 1px 1px #555555;
-  outline: none;
-}
 .sidebar-links .active .panel-heading {
   background-color: #F0EFEF;
+}
+.sidebar-links .active .panel-title {
+  color: #333333;
+  text-shadow: 1px 1px #555555;
+}
+.sidebar-links .active > a:hover {
+  -webkit-text-decoration: underline #fff;
+          text-decoration: underline #fff;
+}
+.sidebar-links .active > a:focus {
+  text-decoration: none;
+}
+.sidebar-links .active > a:focus .panel-title {
+  text-shadow: 1px 1px #E15F15;
+}
+.sidebar-links .active > a:visited {
+  text-decoration: none;
 }
 .sidebar-links .panel-body {
   font-size: 13px;
@@ -8892,6 +8900,10 @@ a.browse-thumbnail-sorted.active {
 #account-settings-accordion .panel-heading {
   background-color: #F0EFEF;
 }
+#account-settings-accordion .panel-title {
+  color: #333333;
+  text-shadow: 1px 1px #fff;
+}
 #account-settings-accordion .active .panel-heading {
   background-color: #F0EFEF;
 }
@@ -8899,9 +8911,18 @@ a.browse-thumbnail-sorted.active {
   color: #333333;
   text-shadow: 1px 1px #555555;
 }
-#account-settings-accordion .panel-title {
-  color: #333333;
-  text-shadow: 1px 1px #fff;
+#account-settings-accordion .active > a:hover {
+  -webkit-text-decoration: underline #fff;
+          text-decoration: underline #fff;
+}
+#account-settings-accordion .active > a:focus {
+  text-decoration: none;
+}
+#account-settings-accordion .active > a:focus .panel-title {
+  text-shadow: 1px 1px #E15F15;
+}
+#account-settings-accordion .active > a:visited {
+  text-decoration: none;
 }
 #account-settings-accordion .panel-body {
   font-size: 13px;
@@ -9784,9 +9805,18 @@ a.browse-thumbnail-sorted.active {
   color: #333333;
   text-shadow: 1px 1px #555555;
 }
-#more-details-accordion .active > a {
-  -webkit-text-decoration: #FFF;
-          text-decoration: #FFF;
+#more-details-accordion .active > a:hover {
+  -webkit-text-decoration: underline #fff;
+          text-decoration: underline #fff;
+}
+#more-details-accordion .active > a:focus {
+  text-decoration: none;
+}
+#more-details-accordion .active > a:focus .panel-title {
+  text-shadow: 1px 1px #E15F15;
+}
+#more-details-accordion .active > a:visited {
+  text-decoration: none;
 }
 #more-details-accordion .panel-body {
   color: #333333;
