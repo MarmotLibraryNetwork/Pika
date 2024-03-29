@@ -21,7 +21,7 @@
   line-height: 21px;
   background: linear-gradient(#007A53, #014731);
   padding: 20px;
-  //width: 100%; not needed
+  //width: 100%; // not needed
   margin: 0;
   height: 64px;
 }
@@ -30,7 +30,7 @@
 
 .nielsenlibrarytxt {
   &,&:visited {
-    color: #ffffff;
+    color: #fff;
   }
   &:hover, &:active,&:focus {
     color: black;
@@ -43,7 +43,7 @@
   text-decoration: none;
 }
 
-/* Search Bar CSS Changes */
+// Search Bar CSS Changes //
 
 // Setting  @home-search-top-color & @home-search-bottom-color make this unneeded
 //#horizontal-search-box {
@@ -53,48 +53,25 @@
 //  padding: 15px 0;
 //}
 
-/* Facets CSS Changes */
+// Facets CSS Changes //
 
-#home-page-login {
-  background-color: #fff;
-  color: #808080;
-  //text-shadow: 2px 2px #fff;
-  font-size: 18px;
-  padding: 5px;
-  margin-bottom: 5px;
-
-  a {
-    color: #000000;
-  }
-}
 
 .sidebar-button {
   background-color: #fff;
   background: linear-gradient(to bottom,#e7e7e7,#d7d7d7);
-  color: #000000;
+  color: #000;
   padding: 3px 0;
   margin-bottom: 15px;
 }
 
-#sidebar-content {
-  background-color: #fff;
-}
-
-.sidebar-links .panel-heading {
-  padding: 5px 15px;
-  background-color: #fff;
-  border-bottom: 1px solid #fff;
-}
-
-.sidebar-links .active .panel-heading {
-  background-color: #fff;
+#account-link-accordion {
+  .accordion-headers-and-titles(#e7e7e7; @asu-green);
 }
 
 #results-sort-label {
   text-align: center;
-  background-color: #fff;
-  background: linear-gradient(to bottom,#fff,#fff);
-  color: #000000;
+  background: #fff;
+  color: #000;
   padding: 3px 0;
   margin-top: 20px;
   font-size: 14px;
@@ -102,62 +79,61 @@
 
 #narrow-search-label,.sidebar-label {
   text-align: center;
-  background-color: #fff;
-  background: linear-gradient(to bottom,#fff,#fff);
-  color: #000000;
+  background: #fff;
+  color: #000;
   padding: 3px 0;
   margin-top: 20px;
 }
 
-.facetValue {
-  padding: 0 0 0 30px;
-  color: #000000;
-  font-size: small;
-  a {
-    color: #000000;
-  }
-}
-
 .facetTitle {
-  background-color: #fff;
-  background: linear-gradient(to bottom,#fff,#fff);
-  color: #000000;
+  background: #fff;
+  color: #000;
   font-weight: bold;
   padding: 8px 30px 6px 15px;
-  border-bottom: 1px solid #fff;
+  //border-bottom: 1px solid #c5c5c5;
+  border-bottom: none;
 }
 
+.facetDetails {
+  border: 1px solid #f4f4f4;
+  //border-bottom: 1px solid #c5c5c5;
+}
+
+.facetValue {
+  padding: 0 0 0 30px;
+  color: #000;
+  //font-size: small;
+  a {
+    //color: #000; // Needs to be distinguishable from text
+  }
+}
 // Details Page CSS Changes //
 
 #more-details-accordion {
-  .panel-heading {
-    padding: 5px 15px;
-    background: #fff;
-    background: linear-gradient(to bottom,#fff,#fff);
+  .accordion-headers-and-titles(#fff, #fff, #333, #000, none, none);
+  /*.panel-group*/ .panel-heading {
+    //border-bottom: 1px solid #c5c5c5;
+    border: 1px solid #c5c5c5;
   }
 
-  .active .panel-heading {
-    background-color: #fff;
-    background: linear-gradient(to bottom, #fff, #fff);
-  }
-
-  .panel-title {
-    color: #333;
-    text-shadow: 1px 1px #fff;
-  }
-
-  .active .panel-title {
-    color: #000000;
-    text-shadow: 1px 1px #fff;
-  }
+  //.panel-title {
+  //  color: #333;
+  //  text-shadow: none;
+  //}
+  //
+  //.active .panel-title {
+  //  color: #000;
+  //  text-shadow: none;
+  //}
 
   .panel-body {
     font-size: 14px;
-    color: #000000;
-    background-color: #fff;
+    color: #000;
+    //background-color: #fff;
   }
 }
-/* Prospector CSS Changes */
+
+// Prospector CSS Changes //
 
 .result {
   border-bottom: 2px solid #d5d6da;

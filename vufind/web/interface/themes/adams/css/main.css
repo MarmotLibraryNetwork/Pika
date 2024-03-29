@@ -6854,7 +6854,7 @@ body > .container {
   text-shadow: 1px 1px #fff;
 }
 .active .panel-heading {
-  background-color: #007A53;
+  background-color: #014731;
 }
 .active .panel-title {
   color: #fff;
@@ -8267,14 +8267,14 @@ hr.menu {
   margin-bottom: 0;
 }
 #home-page-login {
-  background-color: #797676;
-  color: #FFF;
+  background-color: #fff;
+  color: #000;
   font-size: 18px;
   padding: 5px;
   margin-bottom: 5px;
 }
 #home-page-login a {
-  color: #FFF;
+  color: #000;
 }
 #horizontal-search-wrapper + #content-container #home-page-login {
   margin-top: 5px;
@@ -9838,7 +9838,7 @@ a.browse-thumbnail-sorted.active {
   font-size: 16px;
 }
 #sidebar-content {
-  background-color: #f8f8f8;
+  background-color: #fff;
 }
 @media (max-width: 767px) {
   #sidebar-content {
@@ -10427,48 +10427,51 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .nielsenlibrarytxt,
 .nielsenlibrarytxt:visited {
-  color: #ffffff;
+  color: #fff;
 }
 .nielsenlibrarytxt:hover,
 .nielsenlibrarytxt:active,
 .nielsenlibrarytxt:focus {
   color: black;
 }
-/* Search Bar CSS Changes */
-/* Facets CSS Changes */
-#home-page-login {
-  background-color: #fff;
-  color: #808080;
-  font-size: 18px;
-  padding: 5px;
-  margin-bottom: 5px;
-}
-#home-page-login a {
-  color: #000000;
-}
 .sidebar-button {
   background-color: #fff;
   background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
-  color: #000000;
+  color: #000;
   padding: 3px 0;
   margin-bottom: 15px;
 }
-#sidebar-content {
-  background-color: #fff;
+#account-link-accordion .panel-heading {
+  background-color: #e7e7e7;
 }
-.sidebar-links .panel-heading {
-  padding: 5px 15px;
-  background-color: #fff;
-  border-bottom: 1px solid #fff;
+#account-link-accordion .panel-title {
+  color: #333333;
+  text-shadow: 1px 1px #fff;
 }
-.sidebar-links .active .panel-heading {
-  background-color: #fff;
+#account-link-accordion .active .panel-heading {
+  background-color: #014731;
+}
+#account-link-accordion .active .panel-title {
+  color: #fff;
+  text-shadow: 1px 1px #555555;
+}
+#account-link-accordion .active > a:hover {
+  -webkit-text-decoration: underline #fff;
+          text-decoration: underline #fff;
+}
+#account-link-accordion .active > a:focus {
+  text-decoration: none;
+}
+#account-link-accordion .active > a:focus .panel-title {
+  text-shadow: 1px 1px #E15F15;
+}
+#account-link-accordion .active > a:visited {
+  text-decoration: none;
 }
 #results-sort-label {
   text-align: center;
-  background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff);
-  color: #000000;
+  background: #fff;
+  color: #000;
   padding: 3px 0;
   margin-top: 20px;
   font-size: 14px;
@@ -10476,51 +10479,62 @@ fieldset[disabled] .btn-masquerade.active {
 #narrow-search-label,
 .sidebar-label {
   text-align: center;
-  background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff);
-  color: #000000;
+  background: #fff;
+  color: #000;
   padding: 3px 0;
   margin-top: 20px;
 }
-.facetValue {
-  padding: 0 0 0 30px;
-  color: #000000;
-  font-size: small;
-}
-.facetValue a {
-  color: #000000;
-}
 .facetTitle {
-  background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff);
-  color: #000000;
+  background: #fff;
+  color: #000;
   font-weight: bold;
   padding: 8px 30px 6px 15px;
-  border-bottom: 1px solid #fff;
+  border-bottom: none;
+}
+.facetDetails {
+  border: 1px solid #f4f4f4;
+}
+.facetValue {
+  padding: 0 0 0 30px;
+  color: #000;
+}
+#more-details-accordion {
+  /*.panel-group*/
 }
 #more-details-accordion .panel-heading {
-  padding: 5px 15px;
-  background: #fff;
-  background: linear-gradient(to bottom, #fff, #fff);
-}
-#more-details-accordion .active .panel-heading {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff);
 }
 #more-details-accordion .panel-title {
   color: #333;
-  text-shadow: 1px 1px #fff;
+  text-shadow: none;
+}
+#more-details-accordion .active .panel-heading {
+  background-color: #fff;
 }
 #more-details-accordion .active .panel-title {
-  color: #000000;
-  text-shadow: 1px 1px #fff;
+  color: #000;
+  text-shadow: none;
+}
+#more-details-accordion .active > a:hover {
+  -webkit-text-decoration: underline #000;
+          text-decoration: underline #000;
+}
+#more-details-accordion .active > a:focus {
+  text-decoration: none;
+}
+#more-details-accordion .active > a:focus .panel-title {
+  text-shadow: 1px 1px #E15F15;
+}
+#more-details-accordion .active > a:visited {
+  text-decoration: none;
+}
+#more-details-accordion .panel-heading {
+  border: 1px solid #c5c5c5;
 }
 #more-details-accordion .panel-body {
   font-size: 14px;
-  color: #000000;
-  background-color: #fff;
+  color: #000;
 }
-/* Prospector CSS Changes */
 .result {
   border-bottom: 2px solid #d5d6da;
   padding: 10px 5px 15px;
