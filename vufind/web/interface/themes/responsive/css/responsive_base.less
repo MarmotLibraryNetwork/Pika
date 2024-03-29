@@ -110,41 +110,79 @@ body {
   }
 }
 
-.panel-heading {
-  background-color: @accordion-header-bg-color;
-  //background: linear-gradient(to bottom, @accordion-header-bg-color, #d7d7d7 /*@accordion-header-bottom-gradient-color*/);
-}
-
-.panel-title {
-  color: @accordion-header-color;
-  text-shadow: 1px 1px @accordion-header-shadow-color;
-}
-
-.active {
+.accordion-headers-and-titles(@accordion-header-bg-color: @accordion-header-bg-color; @accordion-active-header-bg-color: @accordion-active-header-bg-color;
+  @accordion-header-color: @accordion-header-color; @accordion-active-header-color: @accordion-active-header-color;
+  @accordion-header-shadow: 1px 1px @accordion-header-shadow-color; @accordion-active-header-shadow:  1px 1px  @accordion-active-header-shadow-color){
   .panel-heading {
-    background-color: @accordion-active-header-bg-color;
+    background-color: @accordion-header-bg-color;
   }
 
   .panel-title {
-    color: @accordion-active-header-color;
-    text-shadow: 1px 1px @accordion-active-header-shadow-color;
+    color: @accordion-header-color;
+    text-shadow: @accordion-header-shadow;
   }
 
-  > a:hover {
-    text-decoration: underline @accordion-active-header-color; // keep the title's link underlining the same color as the title
-  }
+  .active {
+    .panel-heading {
+      background-color: @accordion-active-header-bg-color;
+    }
 
-  > a:focus {
-    text-decoration: none;
     .panel-title {
-      text-shadow: 1px 1px @focus-ring-color;
+      color: @accordion-active-header-color;
+      text-shadow: @accordion-active-header-shadow;
+    }
+
+    > a:hover {
+      text-decoration: underline @accordion-active-header-color; // keep the title's link underlining the same color as the title
+    }
+
+    > a:focus {
+      text-decoration: none;
+      .panel-title {
+        text-shadow: 1px 1px @focus-ring-color;
+      }
+    }
+
+    > a:visited {
+      text-decoration: none;
     }
   }
-
-  > a:visited {
-    text-decoration: none;
-  }
 }
+.accordion-headers-and-titles;
+//.panel-heading {
+//  background-color: @accordion-header-bg-color;
+//}
+//
+//.panel-title {
+//  color: @accordion-header-color;
+//  text-shadow: 1px 1px @accordion-header-shadow-color;
+//}
+//
+//.active {
+//  .panel-heading {
+//    background-color: @accordion-active-header-bg-color;
+//  }
+//
+//  .panel-title {
+//    color: @accordion-active-header-color;
+//    text-shadow: 1px 1px @accordion-active-header-shadow-color;
+//  }
+//
+//  > a:hover {
+//    text-decoration: underline @accordion-active-header-color; // keep the title's link underlining the same color as the title
+//  }
+//
+//  > a:focus {
+//    text-decoration: none;
+//    .panel-title {
+//      text-shadow: 1px 1px @focus-ring-color;
+//    }
+//  }
+//
+//  > a:visited {
+//    text-decoration: none;
+//  }
+//}
 
 // Modals
 .modal {
