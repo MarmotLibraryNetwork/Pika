@@ -18,6 +18,9 @@
 @font-family-serif-resp:       Georgia, "Times New Roman", Times, serif;
 @icon-font-path:               "../../../../fonts/";
 
+@accessible-blue: #0A75E3; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=0A75E3
+// use to replace @brand-primary color (#428bca)
+
 @accessible-red: #EC130E; // https://webaim.org/resources/contrastchecker/?fcolor=EC130E&bcolor=FFFFFF
 // Use to replace CSS color red  (#FF0000)
 
@@ -31,6 +34,8 @@
 
 // Make single-title manifestation box contrast accessible
 @label-default-bg: @accessible-gray-light;
+
+@brand-primary: @accessible-blue; // make primary blue color an accessible contrast with #fff
 
 // Make multiple-title manifestation box contrast accessible
 @brand-info: #097FAF; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=097FAF
