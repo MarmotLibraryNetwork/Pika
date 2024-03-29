@@ -55,25 +55,6 @@
 
 .hide-browse-category-results-divider;
 
-// Remove gradients from accordions & facets; set a white background for body content //
-#account-settings-accordion, #more-details-accordion, .sidebar-links, #account-settings-accordion {
-  .panel-heading {
-    background: @accordion-header-bg-color;
-  }
-
-  .active .panel-heading {
-    background: @accordion-active-header-bg-color;
-  }
-
-  .panel, .panel-heading {
-    border-radius: 0;
-  }
-
-  .panel-body {
-    background-color: transparent;
-    border: 1px solid #c5c5c5;
-  }
-}
 
 .facetTitle, .exploreMoreTitle {
   background: @other-gray;
@@ -84,25 +65,9 @@
   background-color: #fff;
 }
 
-#more-details-accordion, #account-settings-accordion {
-  .active {
-    .panel-title {
-      color: @accordion-active-header-color;
-      text-shadow: 1px 1px #fff;
-    }
-  }
-}
-
-.sidebar-links {
-  .panel {
-    &.active {
-      & > a { // keep the title's link underlining the same color as the title
-        // these end up applying to content in .active div.panel-title
-        &, &:visited, &:hover {
-          text-shadow: 1px 1px #fff;
-        }
-      }
-    }
+#more-details-accordion, #account-link-accordion {
+  /*.panel-group*/ .panel-heading {
+    border: 1px solid #c5c5c5;
   }
 }
 

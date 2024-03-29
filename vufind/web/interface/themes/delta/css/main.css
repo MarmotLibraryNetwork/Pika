@@ -6847,18 +6847,18 @@ body > .container {
   }
 }
 .panel-heading {
-  background-color: #FFF;
+  background-color: #fff;
 }
 .panel-title {
   color: #333333;
   text-shadow: 1px 1px #fff;
 }
 .active .panel-heading {
-  background-color: #FFF;
+  background-color: #fff;
 }
 .active .panel-title {
   color: #333333;
-  text-shadow: 1px 1px #555555;
+  text-shadow: 1px 1px #fff;
 }
 .active > a:hover {
   -webkit-text-decoration: underline #333333;
@@ -7910,8 +7910,8 @@ hr.menu {
 #header-container {
   padding-top: 0;
   height: 130px;
-  background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 85%, #ffffff);
+  background-color: #fff;
+  background: linear-gradient(to bottom, #fff, #fff 85%, #fff);
   border-bottom: 8px solid #fff;
   margin-bottom: 0;
   min-height: 110px;
@@ -7930,7 +7930,7 @@ hr.menu {
   text-shadow: 1px 1px #fff;
   vertical-align: middle;
   line-height: 122px !important;
-  border-bottom: 4px solid #ffffff;
+  border-bottom: 4px solid #fff;
   color: #8b8b8b !important;
 }
 .header-button:hover {
@@ -7999,7 +7999,7 @@ hr.menu {
   }
 }
 .menu-bar {
-  color: #555555;
+  color: #333;
   background-color: #46ACA4;
 }
 #horizontal-menu-bar-container {
@@ -8044,7 +8044,7 @@ hr.menu {
   height: 2000px;
   height: 100vh;
   background-color: #46ACA4;
-  color: #555555;
+  color: #333;
   padding-left: 0;
   padding-right: 0;
   margin-top: 2px;
@@ -8072,11 +8072,11 @@ hr.menu {
 #vertical-menu-bar .menu-icon:hover,
 #vertical-menu-bar .menu-icon:focus {
   text-decoration: none;
-  color: #555555;
+  color: #333;
   outline: none;
 }
 #vertical-menu-bar .menu-icon .menu-bar-label {
-  color: #555555;
+  color: #333;
   font-weight: bold;
   text-transform: uppercase;
   margin-top: 10px;
@@ -8499,40 +8499,40 @@ hr.menu {
   font-size: 23px;
 }
 .browse-category.category0 {
-  background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
+  background-color: #fff;
+  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category1 {
-  background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
+  background-color: #fff;
+  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category2 {
-  background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
+  background-color: #fff;
+  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category3 {
-  background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
+  background-color: #fff;
+  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category4 {
-  background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
+  background-color: #fff;
+  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category5 {
-  background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
+  background-color: #fff;
+  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category6 {
-  background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
+  background-color: #fff;
+  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category7 {
-  background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
+  background-color: #fff;
+  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category8 {
-  background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
+  background-color: #fff;
+  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 #selected-browse-label {
   background-color: #fff;
@@ -8866,7 +8866,7 @@ a.browse-thumbnail-sorted.active {
 }
 #more-browse-results {
   background-color: #46ACA4;
-  color: #FFF;
+  color: #fff;
   text-align: center;
   padding: 2px;
   cursor: pointer;
@@ -9830,7 +9830,7 @@ a.browse-thumbnail-sorted.active {
   padding: 10px 25px 5px 0;
   margin-top: 5px;
   text-align: right;
-  color: #555555;
+  color: #333;
   background-color: #3f9a93;
   font-variant: small-caps;
   font-weight: bold;
@@ -9894,7 +9894,7 @@ a.browse-thumbnail-sorted.active {
   margin: 10px 5px 15px;
 }
 .exploreMoreBar .exploreMoreBarLabel {
-  color: #555555;
+  color: #333;
   background-color: #46ACA4;
   font-weight: bold;
   text-transform: uppercase;
@@ -9909,7 +9909,7 @@ a.browse-thumbnail-sorted.active {
   float: left;
   width: 40px;
   min-height: 167px;
-  color: #555555;
+  color: #333;
 }
 .exploreMoreBar .label-left,
 .exploreMoreBar .label-left img {
@@ -9928,7 +9928,7 @@ a.browse-thumbnail-sorted.active {
   margin: 16px auto;
 }
 .exploreMoreBar .label-top {
-  color: #555555;
+  color: #333;
   width: 100%;
 }
 .exploreMoreBar .label-top,
@@ -10116,7 +10116,7 @@ a.browse-thumbnail-sorted.active {
 }
 .archiveComponentContainer .archiveComponent {
   border: 1px solid lightgrey;
-  color: #555555;
+  color: #333;
   font-size: 20px;
   margin: 10px;
 }
@@ -10126,7 +10126,7 @@ a.browse-thumbnail-sorted.active {
 }
 .archiveComponentContainer .archiveComponent a .archiveComponentHeader,
 .archiveComponentContainer .archiveComponent a:visited .archiveComponentHeader {
-  color: #555555;
+  color: #333;
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody {
   margin-left: 0;
@@ -10149,7 +10149,7 @@ a.browse-thumbnail-sorted.active {
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentControls,
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentSearchControls {
-  color: #555555;
+  color: #333;
   background-color: #46ACA4;
   padding: 10px 0;
   min-height: 124px;
@@ -10497,35 +10497,6 @@ fieldset[disabled] .btn-masquerade.active {
   margin-bottom: 0;
   border: 0 solid #eee;
 }
-#account-settings-accordion .panel-heading,
-#more-details-accordion .panel-heading,
-.sidebar-links .panel-heading,
-#account-settings-accordion .panel-heading {
-  background: #FFF;
-}
-#account-settings-accordion .active .panel-heading,
-#more-details-accordion .active .panel-heading,
-.sidebar-links .active .panel-heading,
-#account-settings-accordion .active .panel-heading {
-  background: #FFF;
-}
-#account-settings-accordion .panel,
-#more-details-accordion .panel,
-.sidebar-links .panel,
-#account-settings-accordion .panel,
-#account-settings-accordion .panel-heading,
-#more-details-accordion .panel-heading,
-.sidebar-links .panel-heading,
-#account-settings-accordion .panel-heading {
-  border-radius: 0;
-}
-#account-settings-accordion .panel-body,
-#more-details-accordion .panel-body,
-.sidebar-links .panel-body,
-#account-settings-accordion .panel-body {
-  background-color: transparent;
-  border: 1px solid #c5c5c5;
-}
 .facetTitle,
 .exploreMoreTitle {
   background: #f0f0f0;
@@ -10535,15 +10506,13 @@ fieldset[disabled] .btn-masquerade.active {
   color: #333;
   background-color: #fff;
 }
-#more-details-accordion .active .panel-title,
-#account-settings-accordion .active .panel-title {
-  color: #333333;
-  text-shadow: 1px 1px #fff;
+#more-details-accordion,
+#account-link-accordion {
+  /*.panel-group*/
 }
-.sidebar-links .panel.active > a,
-.sidebar-links .panel.active > a:visited,
-.sidebar-links .panel.active > a:hover {
-  text-shadow: 1px 1px #fff;
+#more-details-accordion .panel-heading,
+#account-link-accordion .panel-heading {
+  border: 1px solid #c5c5c5;
 }
 #refineSearch ~ #home-account-links {
   padding-top: 15px;
