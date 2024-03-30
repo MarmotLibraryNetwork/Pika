@@ -5,11 +5,12 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
-#header-container{
+#header-container {
   height: 150px;
   border-bottom-width: 3px;
 }
-#header-logo{
+
+#header-logo {
   padding: 5px 0;
   height: 140px;
 }
@@ -23,40 +24,23 @@
 #home-page-advanced-search-link{
   color: @home-search-label-color;
 }
+
 #horizontal-search-box {
   .searchSourceHorizontal, #horizontal-search-box .searchTypeHorizontal {
     border: inherit;
   }
   //border-bottom: 2px solid @salida-medium-gray-button-color;
 }
-#home-page-login,#home-page-search-label,.browse-category
-{
-  text-shadow: 1px 1px  @salida-light-gray;
-}
-// mixin to select all the typical states of <a> like tags
-// this mixin apparently needs to stay here to apply to the rule below. 3-21-2024 pascal
-.allLinkStates(@rules) {
-  &, &:hover, &:active, &:visited {
-    @rules();
-  }
-}
-.sidebar-links{
-  .panel.active > a {
-    .allLinkStates({
-      text-shadow: 1px 1px #c0c0c0;
-    })
-  }
-  .panel-body {
-    background-color: transparent;
-  }
 
+#home-page-login,#home-page-search-label,.browse-category {
+  text-shadow: 1px 1px  @salida-light-gray;
 }
 
 #more-details-accordion {
    .active {
     .panel-title {
       color: #000;
-      text-shadow: 1px 1px #c0c0c0;
+      //text-shadow: 1px 1px #c0c0c0;
     }
   }
 }
