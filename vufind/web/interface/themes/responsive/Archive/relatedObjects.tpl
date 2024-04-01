@@ -137,7 +137,7 @@
 	{if $displayType == 'map' || $displayType == 'mapNoTimeline'}
 		{* {$recordCount-$recordEnd} more records to load *}
 		{if $recordEnd < $recordCount}
-			<a onclick="return Pika.Archive.getMoreMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', '{if $displayType == 'map'}true{else}false{/if}')" role="button">
+			<a onclick="return Pika.Archive.getMoreMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', '{if $displayType == 'map'}true{else}false{/if}')" role="button" aria-label="Load more objects">
 				<div class="row" id="more-browse-results">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 				</div>
@@ -146,7 +146,7 @@
 	{elseif $displayType == 'timeline'}
 		{* {$recordCount-$recordEnd} more records to load *}
 		{if $recordEnd < $recordCount}
-			<a onclick="return Pika.Archive.getMoreTimelineResults('{$exhibitPid|urlencode}')" role="button">
+			<a onclick="return Pika.Archive.getMoreTimelineResults('{$exhibitPid|urlencode}')" role="button" aria-label="Load more objects">
 				<div class="row" id="more-browse-results">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 				</div>
@@ -155,7 +155,7 @@
 	{elseif $displayType == 'scroller'}
 		{* {$recordCount-$recordEnd} more records to load *}
 		{if $recordEnd < $recordCount}
-			<a onclick="return Pika.Archive.getMoreScrollerResults('{$exhibitPid|urlencode}')" role="button">
+			<a onclick="return Pika.Archive.getMoreScrollerResults('{$exhibitPid|urlencode}')" role="button" aria-label="Load more objects">
 				<div class="row" id="more-browse-results">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 				</div>
@@ -164,7 +164,7 @@
 	{else}
 		{if $recordEnd < $recordCount}
 			{* {$recordCount-$recordEnd} more records to load *}
-			<a onclick="return Pika.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}')" role="button">
+			<a onclick="return Pika.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}')" role="button" aria-label="Load more objects">
 				<div class="row" id="more-browse-results">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 				</div>

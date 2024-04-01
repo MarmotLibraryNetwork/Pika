@@ -7,7 +7,7 @@
 
 	{if $main_image}
 		<div class="main-project-image">
-			<img src="{$main_image}" class="img-responsive" usemap="#map">
+			<img src="{$main_image}" class="img-responsive" usemap="#map" alt='Main image for "{$title}" collection'>
 		</div>
 	{/if}
 
@@ -29,7 +29,7 @@
 		{else}
 			{if $thumbnail && !$main_image}
 				{if $exhibitThumbnailURL}<a href="{$exhibitThumbnailURL}">{/if}
-				<img src="{$thumbnail}" class="img-responsive thumbnail exhibit-thumbnail">
+				<img src="{$thumbnail}" class="img-responsive thumbnail exhibit-thumbnail" alt='Thumbnail for "{$title}" collection'>
 				{if $exhibitThumbnailURL}</a>{/if}
 
 			{/if}
@@ -58,7 +58,7 @@
 									<figure class="thumbnail" title="{$image.title|escape}">
 										<div class="explore-more-image">
 											<a href='{$image.link}'>
-												<img src="{$image.image}" alt="{$image.title|escape}">
+												<img src="{$image.image}" alt='Thumbnail for "{$image.title|escape}"'>
 											</a>
 										</div>
 										<figcaption class="explore-more-category-title">
@@ -97,7 +97,7 @@
 			</div>
 			<div class="col-sm-4 col-sm-offset-2">
 				{* Display information to sort the results (by date or by title *}
-				<select id="results-sort" name="sort" onchange="Pika.Archive.sort = this.options[this.selectedIndex].value;Pika.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}', 1);" class="form-control">
+				<select aria-label="Sort collection by" id="results-sort" name="sort" onchange="Pika.Archive.sort = this.options[this.selectedIndex].value;Pika.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}', 1);" class="form-control">
 					<option value="title" {if $sort=='title'}selected="selected"{/if}>{translate text='Sort by ' }Title</option>
 					<option value="newest" {if $sort=='newest'}selected="selected"{/if}>{translate text='Sort by ' }Newest First</option>
 					<option value="oldest" {if $sort=='oldest'}selected="selected"{/if}>{translate text='Sort by ' }Oldest First</option>
@@ -146,7 +146,7 @@
 		{* Show more link if we aren't seeing all the records already *}
 		<div id="nextInsertPoint">
 		{if $recordEnd < $recordCount}
-			<a onclick="return Pika.Archive.getMoreExhibitResults('{$pid|urlencode}')" role="button">
+			<a onclick="return Pika.Archive.getMoreExhibitResults('{$pid|urlencode}')" role="button" aria-label="Load more objects">
 				<div class="row" id="more-browse-results">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 				</div>
