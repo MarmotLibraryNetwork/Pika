@@ -13,7 +13,7 @@
 	<span class='availableHoldsNoticePlaceHolder'></span>
 
 	<div class="resulthead">
-		<h3>{translate text='My Ratings'}</h3>
+		<h1 role="heading" class="h3">{translate text='My Ratings'}</h1>
 
 		<div class="page">
 			{if $ratings}
