@@ -77,21 +77,21 @@
 				</div>
 			</div>
 		{elseif $property.type == 'text' || $property.type == 'folder'}
-			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}'>
+			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class="form-control {if $property.required}required{/if}"{if $property.required} aria-required="true"{/if}>
 		{elseif $property.type == 'integer'}
-			<input type="number" name='{$propName}' id='{$propName}' value='{$propValue|escape}'{if isset($property.max)} max="{$property.max}"{/if}{if isset($property.min)} min="{$property.min}"{/if}{if $property.maxLength} maxlength='{$property.maxLength}'{/if}{if $property.size} size='{$property.size}'{/if}{if $property.step} step='{$property.step}'{/if} class='form-control{if $property.required} required{/if}{if isset($property.min)} minimum{/if}{if isset($property.max)} maximum{/if}'>
+			<input type="number" name='{$propName}' id='{$propName}' value='{$propValue|escape}'{if isset($property.max)} max="{$property.max}"{/if}{if isset($property.min)} min="{$property.min}"{/if}{if $property.maxLength} maxlength='{$property.maxLength}'{/if}{if $property.size} size='{$property.size}'{/if}{if $property.step} step='{$property.step}'{/if} class="form-control{if $property.required} required{/if}{if isset($property.min)} minimum{/if}{if isset($property.max)} maximum{/if}"{if $property.required} aria-required="true"{/if}>
 				{*use isset() with property.min because it can be set to zero, which cause a false in if block*}
 		{elseif $property.type == 'url'}
-			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control url {if $property.required}required{/if}'>
+			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class="form-control url {if $property.required}required{/if}"{if $property.required} aria-required="true"{/if}>
 		{elseif $property.type == 'email'}
-			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control email {if $property.required}required{/if}'>
+			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class="form-control email {if $property.required}required{/if}"{if $property.required} aria-required="true"{/if}>
 		{elseif $property.type == 'multiemail'}
-			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control multiemail {if $property.required}required{/if}'>
+			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class="form-control multiemail {if $property.required}required{/if}"{if $property.required} aria-required="true"{/if}>
 		{elseif $property.type == 'date'}
-			{*<input type='{$property.type}' name='{$propName}' id='{$propName}' value='{$propValue}' {if $property.maxLength}maxLength='10'{/if}	class='form-control {if $property.required}required{/if} date'>*}
+			{*<input type='{$property.type}' name='{$propName}' id='{$propName}' value='{$propValue}' {if $property.maxLength}maxLength='10'{/if}	class="form-control {if $property.required}required{/if} date"{if $property.required} aria-required="true"{/if}>*}
 			{* disable html5 features until consistly implemented *}
-			{*<input type='text' name='{$propName}' id='{$propName}' value='{$propValue}' {if $property.maxLength}maxLength='10'{/if}	class='form-control {if $property.required}required{/if} date'>*}
-			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue}' {if $property.maxLength}maxLength='10'{/if}	class='form-control {if $property.required}required{/if} datePika'>
+			{*<input type='text' name='{$propName}' id='{$propName}' value='{$propValue}' {if $property.maxLength}maxLength='10'{/if}	class="form-control {if $property.required}required{/if} date"{if $property.required} aria-required="true"{/if}>*}
+			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue}' {if $property.maxLength}maxLength='10'{/if}	class="form-control {if $property.required}required{/if} datePika"{if $property.required} aria-required="true"{/if}>
 			{* datePika is for the form validator *}
 		{elseif $property.type == 'dateReadOnly'}
 			{if !empty($propValue)}
@@ -107,7 +107,7 @@
 			<input type="password" name='{$propName}' id='{$propName}'>
 
 		{elseif $property.type == 'pin'}
-			<input type="password" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class="form-control{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}{if $property.required} required{/if}"{* doesn't work {if $pinMinimumLength > 0} data-rule-minlength="{$pinMinimumLength}"{/if}*}>
+			<input type="password" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class="form-control{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}{if $property.required} required{/if}"{* doesn't work {if $pinMinimumLength > 0} data-rule-minlength="{$pinMinimumLength}"{/if}*} {if $property.required} aria-required="true"{/if}>
 
 
 		{elseif $property.type == 'currency'}
