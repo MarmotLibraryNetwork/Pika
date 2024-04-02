@@ -8,7 +8,7 @@
 			<input type="hidden" name="listId" value="{$listId|escape}">
 			<label for="to" class="control-label col-xs-2">{translate text='To'} <span class="requiredIndicator">*</span></label>
 			<div class="col-xs-10">
-				<input type="text" name="to" id="to" size="40" class="required email form-control">
+				<input type="text" name="to" id="to" size="40" class="required email form-control" aria-required="true">
 			</div>
 		</div>
 		<div class="form-group">

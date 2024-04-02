@@ -15,7 +15,7 @@
 			<input type="hidden" name="method" value="createBrowseCategory">
 			<div class="form-group">
 				<label for="categoryName" class="control-label">New Category Name</label>
-				<input type="text" id="categoryName" name="categoryName" value="" class="form-control required">
+				<input type="text" id="categoryName" name="categoryName" value="" class="form-control required" aria-required="true">
 			</div>
 			{if $property} {* If data for Select tag is present, use the object editor template to build the <select> *}
 			<div class="form-group">

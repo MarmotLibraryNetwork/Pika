@@ -10,7 +10,7 @@
 			<div class="form-group">
 				<label for="barcode" class="control-label col-xs-12 col-sm-4">{if empty($barcodeLabel)}Card Number{else}{$barcodeLabel}{/if}<span class="required">*</span></label>
 				<div class="col-xs-12 col-sm-8">
-					<input id="barcode" name="barcode" type="text" size="14" maxlength="14" class="required form-control">
+					<input id="barcode" name="barcode" type="text" size="14" maxlength="14" class="required form-control" aria-required="true">
 				</div>
 			</div>
 			<div class="form-group">

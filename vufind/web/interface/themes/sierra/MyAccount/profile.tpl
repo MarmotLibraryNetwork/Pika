@@ -29,7 +29,7 @@
 
 			<div class="panel-group" id="account-settings-accordion">
 				{* barcode *}
-				<div class="panel active">
+				<div class="col-sm-12 panel active">
 					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#barcodePanel">
 						<div class="panel-heading">
 							<div class="panel-title">
@@ -117,7 +117,7 @@
 										</div>
 										<div class="col-xs-8">
 											{if !$offline && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
-												<input name="address1" id="address1" value='{$profile->address1|escape}' size="50" maxlength="75" class="form-control required">
+												<input name="address1" id="address1" value='{$profile->address1|escape}' size="50" maxlength="75" class="form-control required" aria-required="true">
 											{elseif !$offline && $millenniumNoAddress}
 												<input name="address1" id="address1" value='{$profile->address1|escape}' type="hidden">
 												{if $profile->careOf}{$profile->careOf|escape}<br>{/if}
@@ -257,7 +257,7 @@
 											<div class="col-xs-4"><label for="pin" class="control-label">{translate text='Old PIN'}:</label></div>
 											<div class="col-xs-8">
 												<div class="input-group">
-													<input type="password" name="pin" id="pin" value="" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
+													<input type="password" name="pin" id="pin" value="" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}" aria-required="true">
 													{* No size limits in case previously set password doesn't meet current restrictions *}
 													<span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
 														<button onclick="$('span', this).toggle(); return Pika.pwdToText('pin')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-open" aria-hidden="true" title="Show {translate text='PIN'}"></span><span class="glyphicon glyphicon-eye-close" style="display: none" aria-hidden="true" title="Hide {translate text='PIN'}"></span></button>
@@ -269,7 +269,7 @@
 											<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New PIN'}:</label></div>
 											<div class="col-xs-8">
 												<div class="input-group">
-													<input type="password" name="pin1" id="pin1" value="" size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
+													<input type="password" name="pin1" id="pin1" value="" size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}" aria-required="true">
 													<span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
 														<button onclick="$('span', this).toggle(); return Pika.pwdToText('pin1')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-open" aria-hidden="true" title="Show {translate text='PIN'}"></span><span class="glyphicon glyphicon-eye-close" style="display: none" aria-hidden="true" title="Hide {translate text='PIN'}"></span></button>
 													</span>
@@ -280,7 +280,7 @@
 											<div class="col-xs-4"><label for="pin2" class="control-label">{translate text='Re-enter New PIN'}:</label></div>
 											<div class="col-xs-8">
 												<div class="input-group">
-													<input type="password" name="pin2" id="pin2" value="" size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
+													<input type="password" name="pin2" id="pin2" value="" size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}" aria-required="true">
 													<span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
 														<button onclick="$('span', this).toggle(); return Pika.pwdToText('pin2')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-open" aria-hidden="true" title="Show {translate text='PIN'}"></span><span class="glyphicon glyphicon-eye-close" style="display: none" aria-hidden="true" title="Hide {translate text='PIN'}"></span></button>
 													</span>

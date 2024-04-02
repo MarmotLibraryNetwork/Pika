@@ -13,7 +13,7 @@ necassary *}
 					<label class="control-label col-sm-3" for="format">{$formField->fieldLabel}: <span class="requiredIndicator">*</span></label>
 					<div class="request_detail_field_value col-sm-9">
 
-						<select name="format" class="required form-control" id="format" onchange="Pika.MaterialsRequest.setFieldVisibility();">
+						<select name="format" class="required form-control" aria-required="true" id="format" onchange="Pika.MaterialsRequest.setFieldVisibility();">
 							{* For New Requests, set the first format as the one selected by default *}
 							{foreach from=$availableFormats item=label key=formatKey}
 								<option value="{$formatKey}"{if $materialsRequest->format==$formatKey} selected='selected'{/if}>{$label}</option>
@@ -29,7 +29,7 @@ necassary *}
 				<div class="form-group specialFormatField articleField">
 					<label for="magazineTitle" class="col-sm-3 control-label">Magazine/Journal Title: <span class="requiredIndicator">*</span> </label>
 					<div class="col-sm-9">
-						<input name="magazineTitle" id="magazineTitle" size="90" maxlength="255" class="required form-control" value="{$materialsRequest->magazineTitle}">
+						<input name="magazineTitle" id="magazineTitle" size="90" maxlength="255" class="required form-control" aria-required="true" value="{$materialsRequest->magazineTitle}">
 					</div>
 				</div>
 				<div class="form-group specialFormatField articleField">
@@ -186,6 +186,7 @@ necassary *}
 						<input name="{$materialRequestTableColumnName}" id="{$materialRequestTableColumnName}"
 										size="90" maxlength="255"
 										class="required form-control"
+										aria-required="true"
 										value="{$materialsRequest->$materialRequestTableColumnName}">
 					</div>
 				</div>
@@ -218,7 +219,7 @@ necassary *}
 					<label for="{$materialRequestTableColumnName}" class="control-label col-sm-3">{$formField->fieldLabel}: </label>
 					<div class="request_detail_field_value col-sm-9">
 							<textarea name="{$materialRequestTableColumnName}" id="{$materialRequestTableColumnName}" rows="3" cols="80"
-							          class="form-control {if $formField->fieldType == 'about' && $requireAboutField} required{/if}">
+							          class="form-control {if $formField->fieldType == 'about' && $requireAboutField} required{/if}"{if $formField->fieldType == 'about' && $requireAboutField} aria-required="true"{/if}>
 								{$materialsRequest->$materialRequestTableColumnName}
 							</textarea>
 					</div>

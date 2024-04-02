@@ -20,11 +20,11 @@
 		<div class="row">
 			<div class="col-xs-3">
 				<div><label for="login">{$ILSname} Username</label>:</div>
-				<div><input type="text" name="login" id="login" value="{$lastLogin}" class="required" onchange="clearOfflineCircResults();"> </div>
+				<div><input type="text" name="login" id="login" value="{$lastLogin}" class="required" aria-required="true" onchange="clearOfflineCircResults();"> </div>
 			</div>
 			<div class="col-xs-3">
 				<div><label for="password1">{$ILSname} Password</label>:</div>
-				<div><input type="password" name="password1" id="password1" value="{$lastPassword1}" class="required" onchange="clearOfflineCircResults();"></div>
+				<div><input type="password" name="password1" id="password1" value="{$lastPassword1}" class="required" aria-required="true" onchange="clearOfflineCircResults();"></div>
 			</div>
 			<div class="col-xs-4">
 				<label for="showPwd" class="checkbox">
@@ -38,11 +38,11 @@
 				<legend class="col-xs-12" style="margin-top: 10px">Checkout titles</legend>
 				<div class="col-xs-12">
 					<div><label for="patronBarcode">Patron Barcode</label>:</div>
-					<div><input type="text" name="patronBarcode" id="patronBarcode" class="required" onchange="clearOfflineCircResults();"></div>
+					<div><input type="text" name="patronBarcode" id="patronBarcode" class="required" aria-required="true" onchange="clearOfflineCircResults();"></div>
 				</div>
 				<div class="col-xs-12">
 					<div><label for="barcodesToCheckOut">Enter barcodes to check out (one per line)</label>:</div>
-					<textarea rows="10" cols="20" name="barcodesToCheckOut" id="barcodesToCheckOut" class="required" onchange="clearOfflineCircResults();"></textarea>
+					<textarea rows="10" cols="20" name="barcodesToCheckOut" id="barcodesToCheckOut" class="required" aria-required="true" onchange="clearOfflineCircResults();"></textarea>
 				</div>
 				<div class="col-xs-12">
 					<button name="submit" class="btn btn-primary pull-right">Submit Offline Checkouts</button>
