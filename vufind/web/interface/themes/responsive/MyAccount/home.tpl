@@ -6,7 +6,7 @@
 			{* Alternate Mobile MyAccount Menu *}
 			{include file="MyAccount/mobilePageHeader.tpl"}
 
-			<h3>{translate text='Account Summary'}</h3>
+			<h1 role="heading" class="h2">{translate text='Account Summary'}</h1>
 			<div>
 				{if $offline}
 				<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to retrieve information about your check outs and holds at this time.</div>
@@ -25,7 +25,7 @@
 			</div>
 				{/if}
 			{if $showRatings}
-				<h3>{translate text='Recommended for you'}</h3>
+				<h2 class="h3">{translate text='Recommended for you'}</h2>
 				{if !$hasRatings}
 					<p>
 						You have not rated any titles.
