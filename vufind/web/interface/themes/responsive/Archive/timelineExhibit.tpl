@@ -7,7 +7,7 @@
 
 	{if $main_image}
 		<div class="main-project-image">
-			<img src="{$main_image}" class="img-responsive" usemap="#map">
+			<img src="{$main_image}" class="img-responsive" usemap="#map" alt='Main image for "{$title}" collection'>
 		</div>
 	{/if}
 
@@ -19,7 +19,7 @@
 	<div class="lead">
 		{if $thumbnail && !$main_image}
 			{if $exhibitThumbnailURL}<a href="{$exhibitThumbnailURL}">{/if}
-			<img src="{$thumbnail}" class="img-responsive thumbnail exhibit-thumbnail">
+			<img src="{$thumbnail}" class="img-responsive thumbnail exhibit-thumbnail" alt='Thumbnail for "{$title}" collection'>
 			{if $exhibitThumbnailURL}</a>{/if}
 		{/if}
 		{$description}
