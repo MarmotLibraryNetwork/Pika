@@ -1,8 +1,8 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h3>Indexing Statistics : {$indexingStatsDate}
+		<h1 role="heading" class="h3">Indexing Statistics : {$indexingStatsDate}
 			{if !empty($compareTo)} vs {$compareTo}{/if}
-		</h3>
+		</h1>
 
 		<div class="row">
 

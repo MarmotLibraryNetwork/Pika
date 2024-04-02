@@ -1,4 +1,4 @@
-<h1>Terms and Conditions/Privacy Policy</h1>
+<h1 role="heading">Terms and Conditions/Privacy Policy</h1>
 <h3>
 	Marmot Library Network Company Overview</h3>
 <p>
