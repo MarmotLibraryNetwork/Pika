@@ -7839,7 +7839,7 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
   transform: translateX(19px);
 }
 .switch input:focus + .slider {
-  box-shadow: 0 0 1px #32b700;
+  box-shadow: 0 0 3px 3px #E15F15;
 }
 .slider {
   position: absolute;
