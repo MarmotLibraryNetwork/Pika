@@ -43,10 +43,10 @@
 			<div class="row" id="selected-browse-label">
 
 				<div class="btn-group btn-group-sm" data-toggle="buttons">
-					<label for="covers" title="Covers" class="btn btn-sm btn-default"><input onchange="Pika.Browse.toggleBrowseMode(this.id)" type="radio" id="covers">
+					<label for="covers" tabindex="0" title="Covers" class="btn btn-sm btn-default"><input onclick="Pika.Browse.toggleBrowseMode(this.id)" type="radio" id="covers">
 						<span class="thumbnail-icon"></span><span> Covers</span>
 					</label>
-					<label for="grid" title="Grid" class="btn btn-sm btn-default"><input onchange="Pika.Browse.toggleBrowseMode(this.id);" type="radio" id="grid">
+					<label for="grid" tabindex="0" title="Grid" class="btn btn-sm btn-default"><input onclick="Pika.Browse.toggleBrowseMode(this.id);" type="radio" id="grid">
 						<span class="grid-icon"></span><span> Grid</span>
 					</label>
 				</div>
