@@ -6858,7 +6858,7 @@ body > .container {
 }
 .active .panel-title {
   color: #333333;
-  text-shadow: 1px 1px #555555;
+  text-shadow: 1px 1px #fff;
 }
 .active > a:hover {
   -webkit-text-decoration: underline #333333;
@@ -10529,13 +10529,6 @@ fieldset[disabled] .btn-masquerade.active {
 #account-settings-accordion .panel-heading {
   border-radius: 0;
 }
-#account-settings-accordion .panel-body,
-#more-details-accordion .panel-body,
-.sidebar-links .panel-body,
-#account-settings-accordion .panel-body {
-  background-color: transparent;
-  border: 1px solid #c5c5c5;
-}
 .facetTitle,
 .exploreMoreTitle {
   background: #f0f0f0;
@@ -10544,16 +10537,6 @@ fieldset[disabled] .btn-masquerade.active {
 .searchSource {
   color: #333;
   background-color: #fff;
-}
-#more-details-accordion .active .panel-title,
-#account-settings-accordion .active .panel-title {
-  color: #333333;
-  text-shadow: 1px 1px #fff;
-}
-.sidebar-links .panel.active > a,
-.sidebar-links .panel.active > a:visited,
-.sidebar-links .panel.active > a:hover {
-  text-shadow: 1px 1px #fff;
 }
 #refineSearch ~ #home-account-links {
   padding-top: 15px;
