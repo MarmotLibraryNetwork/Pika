@@ -614,9 +614,13 @@ public class UpdateReadingHistory implements IProcessHandler {
 	public String stripPHPNoticeFromJSONResponse(String resultStr){
 		if (resultStr != null && !resultStr.isEmpty() && resultStr.charAt(0) != '{'){
 			String[] split     = resultStr.split("\\{", 2);
-			String   phpNotice = split[0];
-			resultStr = "{" + split[1];
-			logger.info("PHP notice from API call: " + phpNotice);
+			if (split.length < 2) {
+				logger.info("Response did not begin with { and did not contain { : '" + resultStr + "'");
+			} else {
+				String phpNotice = split[0];
+				resultStr = "{" + split[1];
+				logger.info("PHP notice from API call: " + phpNotice);
+			}
 		}
 		return resultStr;
 	}
