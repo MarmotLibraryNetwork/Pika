@@ -16,7 +16,7 @@
 				<div class="form-group">
 					<label for="widget" class="col-sm-4">Select a widget:</label>
 					<div class="col-sm-8">
-						<select id="widgetId" name="widgetId" class="form-control">
+						<select aria-label="Select widget" id="widgetId" name="widgetId" class="form-control">
 							<option value="-1">Create a new widget</option>
 							{foreach from=$existingWidgets item=widgetName key=widgetId}
 								<option value="{$widgetId}">{$widgetName}</option>
@@ -28,7 +28,7 @@
 			<div class="form-group">
 				<label for="widgetName" class="col-sm-4">New Widget Name / New Tab Name:</label>
 				<div class="col-sm-8">
-					<input type="text" id="widgetName" name="widgetName" value="" class="form-control required">
+					<input type="text" id="widgetName" name="widgetName" value="" class="form-control required" aria-required="true">
 				</div>
 			</div>
 	</form>
