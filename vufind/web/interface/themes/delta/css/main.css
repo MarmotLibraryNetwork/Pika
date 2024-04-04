@@ -10507,11 +10507,16 @@ fieldset[disabled] .btn-masquerade.active {
   background-color: #fff;
 }
 #more-details-accordion,
-#account-link-accordion {
+#account-link-accordion,
+#account-settings-accordion {
   /*.panel-group*/
 }
 #more-details-accordion .panel-heading,
-#account-link-accordion .panel-heading {
+#account-link-accordion .panel-heading,
+#account-settings-accordion .panel-heading,
+#more-details-accordion .panel-body,
+#account-link-accordion .panel-body,
+#account-settings-accordion .panel-body {
   border: 1px solid #c5c5c5;
 }
 #refineSearch ~ #home-account-links {
