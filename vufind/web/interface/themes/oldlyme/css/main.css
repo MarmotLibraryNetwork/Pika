@@ -8901,7 +8901,7 @@ a.browse-thumbnail-sorted.active {
 #account-settings-accordion .panel-body {
   font-size: 13px;
   color: #333333;
-  background-color: #eeeeee;
+  border: 1px solid #c5c5c5;
 }
 .bg-overdue {
   background-color: #f2dede !important;
