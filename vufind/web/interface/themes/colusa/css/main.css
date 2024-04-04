@@ -7902,7 +7902,7 @@ hr.menu {
   color: #ccc;
 }
 .system-message-header {
-  background-color: #282E1E;
+  background-color: #f5f5f5;
   color: black;
   text-align: center;
   padding: 3px;
@@ -10524,13 +10524,6 @@ body {
 .sidebar-links .panel-heading,
 #account-settings-accordion .panel-heading {
   border-radius: 0;
-}
-#account-settings-accordion .panel-body,
-#more-details-accordion .panel-body,
-.sidebar-links .panel-body,
-#account-settings-accordion .panel-body {
-  background-color: transparent;
-  border: 1px solid #c5c5c5;
 }
 .facetTitle,
 .exploreMoreTitle {
