@@ -1,4 +1,4 @@
-<textarea name='{$propName}' id='{$propName}' rows='{$property.rows}' cols='{$property.cols}' title='{$property.description}' class="form-control {if $property.required}required{/if}"{if $property.required} aria-required="true"{/if}>{$propValue|escape}</textarea>
+<textarea name='{$propName}' id='{$propName}' rows='{$property.rows}' cols='{$property.cols}' title='{$property.description}' class="form-control {if $property.required}required{/if}"{if $property.required} aria-required="true"{/if}>{$propValue|escape}{if $property.autocomplete} autocomplete="{$property.autocomplete}"{/if}</textarea>
 {if $property.type == 'html'}
 	<script>
 		{literal}

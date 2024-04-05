@@ -549,40 +549,44 @@ class Sacramento extends Sierra {
 	public function getSelfRegistrationFields(){
 		global $library;
 		$fields = [];
-		if ($library && $library->promptForBirthDateInSelfReg){
+		if (isset($library) && $library->promptForBirthDateInSelfReg){
 			$fields[] = [
-				'property'    => 'birthdate',
-				'type'        => 'date',
-				'label'       => 'Date of Birth (MM-DD-YYYY)',
-				'description' => 'Date of birth',
-				'maxLength'   => 10,
-				'required'    => true
+				'property'     => 'birthdate',
+				'type'         => 'date',
+				'label'        => 'Date of Birth (MM-DD-YYYY)',
+				'description'  => 'Date of birth',
+				'maxLength'    => 10,
+				'required'     => true,
+				'autocomplete' => 'bday',
 			];
 		}
 		$fields[] = [
-			'property'    => 'firstname',
-			'type'        => 'text',
-			'label'       => 'First Name',
-			'description' => 'Your first name',
-			'maxLength'   => 40,
-			'required'    => true
+			'property'     => 'firstname',
+			'type'         => 'text',
+			'label'        => 'First Name',
+			'description'  => 'Your first name',
+			'maxLength'    => 50,
+			'required'     => true,
+			'autocomplete' => 'given-name',
 		];
 		$fields[] = [
-			'property'    => 'middlename',
-			'type'        => 'text',
-			'label'       => 'Middle Initial',
-			'description' => 'Your middle initial',
-			'maxLength'   => 40,
-			'required'    => false
+			'property'     => 'middlename',
+			'type'         => 'text',
+			'label'        => 'Middle Initial',
+			'description'  => 'Your middle initial',
+			'maxLength'    => 40,
+			'required'     => false,
+			'autocomplete' => 'additional-name',
 		];
 
 		$fields[] = [
-			'property'    => 'lastname',
-			'type'        => 'text',
-			'label'       => 'Last Name',
-			'description' => 'Your last name',
-			'maxLength'   => 40,
-			'required'    => true
+			'property'     => 'lastname',
+			'type'         => 'text',
+			'label'        => 'Last Name',
+			'description'  => 'Your last name',
+			'maxLength'    => 40,
+			'required'     => true,
+			'autocomplete' => 'family-name',
 		];
 		$fields[] = [
 			'property'    => 'address',
@@ -590,7 +594,9 @@ class Sacramento extends Sierra {
 			'label'       => 'Mailing Address',
 			'description' => 'Mailing Address',
 			'maxLength'   => 128,
-			'required'    => true
+			'required'    => true,
+			'autocomplete' => 'shipping street-address',
+
 		];
 		$fields[] = [
 			'property'    => 'apartmentnumber',
@@ -601,70 +607,51 @@ class Sacramento extends Sierra {
 			'required'    => false
 		];
 		$fields[] = [
-			'property'    => 'city',
-			'type'        => 'text',
-			'label'       => 'City',
-			'description' => 'City',
-			'maxLength'   => 48,
-			'required'    => true
+			'property'     => 'city',
+			'type'         => 'text',
+			'label'        => 'City',
+			'description'  => 'City',
+			'maxLength'    => 48,
+			'required'     => true,
+			'autocomplete' => 'address-level2',
 		];
 		$fields[] = [
-			'property'    => 'state',
-			'type'        => 'text',
-			'label'       => 'State',
-			'description' => 'State',
-			'maxLength'   => 2,
-			'required'    => true,
-			'default'     => 'CA'
+			'property'     => 'state',
+			'type'         => 'text',
+			'label'        => 'State',
+			'description'  => 'State',
+			'maxLength'    => 2,
+			'required'     => true,
+			'default'      => 'CA',
+			'autocomplete' => 'address-level1',
 		];
 		$fields[] = [
-			'property'    => 'zip',
-			'type'        => 'text',
-			'label'       => 'Zip Code',
-			'description' => 'Zip Code',
-			'maxLength'   => 32,
-			'required'    => true
+			'property'     => 'zip',
+			'type'         => 'text',
+			'label'        => 'Zip Code',
+			'description'  => 'Zip Code',
+			'maxLength'    => 32,
+			'required'     => true,
+			'autocomplete' => 'postal-code',
 		];
-		// require phone for folsom
-		if ($library->subdomain == "folsom"){
-			$fields[] = [
-				'property'    => 'primaryphone',
-				'type'        => 'text',
-				'label'       => 'Phone (xxx-xxx-xxxx)',
-				'description' => 'Phone',
-				'maxLength'   => 128,
-				'required'    => true
-			];
-		}else{
-			$fields[] = [
-				'property'    => 'primaryphone',
-				'type'        => 'text',
-				'label'       => 'Phone (xxx-xxx-xxxx)',
-				'description' => 'Phone',
-				'maxLength'   => 128,
-				'required'    => false
-			];
-		}
-		// require email for folsom
-		if ($library->subdomain == "folsom"){
-			$fields[] = [
-				'property'    => 'email',
-				'type'        => 'email',
-				'label'       => 'E-Mail',
-				'description' => 'E-Mail',
-				'maxLength'   => 128,
-				'required'    => true
-			];
-		}else{
-			$fields[] = [
-				'property'    => 'email',
-				'type'        => 'email',
-				'label'       => 'E-Mail',
-				'description' => 'E-Mail',
-				'maxLength'   => 128,
-				'required'    => false
-			];
-		}
+		$fields[] = [
+			'property'     => 'primaryphone',
+			'type'         => 'text',
+			'label'        => 'Phone (xxx-xxx-xxxx)',
+			'description'  => 'Phone',
+			'maxLength'    => 20,
+			'required'     => (isset($library->subdomain) && $library->subdomain == "folsom"), // require phone for folsom
+			'autocomplete' => 'tel-national',
+		];
+		$fields[] = [
+			'property'     => 'email',
+			'type'         => 'email',
+			'label'        => 'E-Mail',
+			'description'  => 'E-Mail',
+			'maxLength'    => 128,
+			'required'     => (isset($library->subdomain) && $library->subdomain == "folsom"), // require email for folsom
+			'autocomplete' => 'email',
+		];
 		$fields[] = [
 			'property'    => 'guardianFirstName',
 			'type'        => 'text',

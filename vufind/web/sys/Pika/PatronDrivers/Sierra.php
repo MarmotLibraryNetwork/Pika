@@ -1518,30 +1518,33 @@ class Sierra  implements \DriverInterface {
 		$homeLocations = $l->fetchAll('code', 'displayName');
 
 		$fields[] = [
-			'property'    => 'firstname',
-			'type'        => 'text',
-			'label'       => 'First name',
-			'description' => 'Your first name',
-			'maxLength'   => 30,
-			'required'    => true
+			'property'     => 'firstname',
+			'type'         => 'text',
+			'label'        => 'First name',
+			'description'  => 'Your first name',
+			'maxLength'    => 50,
+			'required'     => true,
+			'autocomplete' => 'given-name',
 		];
 
 		$fields[] = [
-			'property'    => 'middlename',
-			'type'        => 'text',
-			'label'       => 'Middle name',
-			'description' => 'Your middle name or initial',
-			'maxLength'   => 30,
-			'required'    => false
+			'property'     => 'middlename',
+			'type'         => 'text',
+			'label'        => 'Middle name',
+			'description'  => 'Your middle name or initial',
+			'maxLength'    => 30,
+			'required'     => false,
+			'autocomplete' => 'additional-name',
 		];
 
 		$fields[] = [
-			'property'    => 'lastname',
-			'type'        => 'text',
-			'label'       => 'Last name',
-			'description' => 'Your last name (surname)',
-			'maxLength'   => 30,
-			'required'    => true
+			'property'     => 'lastname',
+			'type'         => 'text',
+			'label'        => 'Last name',
+			'description'  => 'Your last name (surname)',
+			'maxLength'    => 40,
+			'required'     => true,
+			'autocomplete' => 'family-name',
 		];
 
 		$fields[] = [
@@ -1556,78 +1559,87 @@ class Sierra  implements \DriverInterface {
 		// allow usernames?
 		if ($this->hasUsernameField()){
 			$fields[] = [
-				'property'    => 'username',
-				'type'        => 'text',
-				'label'       => 'Username',
-				'description' => 'Set an optional username.',
-				'maxLength'   => 20,
-				'required'    => false
+				'property'     => 'username',
+				'type'         => 'text',
+				'label'        => 'Username',
+				'description'  => 'Set an optional username.',
+				'maxLength'    => 20,
+				'required'     => false,
+				'autocomplete' => 'username',
 			];
 		}
 		// if library would like a birthdate
-		if ($library && $library->promptForBirthDateInSelfReg){
+		if (isset($library) && $library->promptForBirthDateInSelfReg){
 			$fields[] = [
-				'property'    => 'birthdate',
-				'type'        => 'date',
-				'label'       => 'Date of Birth (MM-DD-YYYY)',
-				'description' => 'Date of birth',
-				'maxLength'   => 10,
-				'required'    => true
+				'property'     => 'birthdate',
+				'type'         => 'date',
+				'label'        => 'Date of Birth (MM-DD-YYYY)',
+				'description'  => 'Date of birth',
+				'maxLength'    => 10,
+				'required'     => true,
+				'autocomplete' => 'bday',
 			];
 		}
 
 		$fields[] = [
-			'property'    => 'address',
-			'type'        => 'text',
-			'label'       => 'Mailing Address',
-			'description' => 'Mailing Address.',
-			'maxLength'   => 40,
-			'required'    => true
+			'property'     => 'address',
+			'type'         => 'text',
+			'label'        => 'Mailing Address',
+			'description'  => 'Mailing Address.',
+			'maxLength'    => 40,
+			'required'     => true,
+			'autocomplete' => 'street-address',
+
 		];
 
 		$fields[] = [
-			'property'    => 'city',
-			'type'        => 'text',
-			'label'       => 'City',
-			'description' => 'The city you receive mail in.',
-			'maxLength'   => 20,
-			'required'    => true
+			'property'     => 'city',
+			'type'         => 'text',
+			'label'        => 'City',
+			'description'  => 'The city you receive mail in.',
+			'maxLength'    => 128,
+			'required'     => true,
+			'autocomplete' => 'address-level2',
 		];
 
 		$fields[] = [
-			'property'    => 'state',
-			'type'        => 'text',
-			'label'       => 'State',
-			'description' => 'The state you receive mail in.',
-			'maxLength'   => 20,
-			'required'    => true
+			'property'     => 'state',
+			'type'         => 'text',
+			'label'        => 'State',
+			'description'  => 'The state you receive mail in.',
+			'maxLength'    => 20,
+			'required'     => true,
+			'autocomplete' => 'address-level1',
 		];
 
 		$fields[] = [
-			'property'    => 'zip',
-			'type'        => 'text',
-			'label'       => 'ZIP code',
-			'description' => 'The ZIP code for your mail.',
-			'maxLength'   => 16,
-			'required'    => true
+			'property'     => 'zip',
+			'type'         => 'text',
+			'label'        => 'ZIP code',
+			'description'  => 'The ZIP code for your mail.',
+			'maxLength'    => 16,
+			'required'     => true,
+			'autocomplete' => 'postal-code',
 		];
 
 		$fields[] = [
-			'property'    => 'email',
-			'type'        => 'email',
-			'label'       => 'Email',
-			'description' => 'Your email address',
-			'maxLength'   => 50,
-			'required'    => false
+			'property'     => 'email',
+			'type'         => 'email',
+			'label'        => 'Email',
+			'description'  => 'Your email address',
+			'maxLength'    => 128,
+			'required'     => false,
+			'autocomplete' => 'email',
 		];
 
 		$fields[] = [
-			'property'    => 'primaryphone',
-			'type'        => 'text',
-			'label'       => 'Primary phone (XXX-XXX-XXXX)',
-			'description' => 'Your primary phone number.',
-			'maxLength'   => 20,
-			'required'    => false
+			'property'     => 'primaryphone',
+			'type'         => 'text',
+			'label'        => 'Primary phone (XXX-XXX-XXXX)',
+			'description'  => 'Your primary phone number.',
+			'maxLength'    => 20,
+			'required'     => false,
+			'autocomplete' => 'tel-national',
 		];
 
 		if ($library && $library->showWorkPhoneInProfile){

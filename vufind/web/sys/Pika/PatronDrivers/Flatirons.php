@@ -51,98 +51,98 @@ class Flatirons extends Sierra
 			'default'  => $homeLibraryCode
 		];
 		$fields[] = [
-			'property'    => 'firstname',
-			'type'        => 'text',
-			'label'       => 'First Name',
-			'description' => 'Your first name',
-			'maxLength'   => 40,
-			'required'    => true
+			'property'     => 'firstname',
+			'type'         => 'text',
+			'label'        => 'First name',
+			'description'  => 'Your first name',
+			'maxLength'    => 50,
+			'required'     => true,
+			'autocomplete' => 'given-name',
 		];
 		$fields[] = [
-			'property'    => 'middlename',
-			'type'        => 'text',
-			'label'       => 'Middle Name',
-			'description' => 'Your middle name',
-			'maxLength'   => 40,
-			'required'    => false
+			'property'     => 'middlename',
+			'type'         => 'text',
+			'label'        => 'Middle name',
+			'description'  => 'Your middle name or initial',
+			'maxLength'    => 30,
+			'required'     => false,
+			'autocomplete' => 'additional-name',
 		];
 		$fields[] = [
-			'property'    => 'lastname',
-			'type'        => 'text',
-			'label'       => 'Last Name',
-			'description' => 'Your last name',
-			'maxLength'   => 40,
-			'required'    => true
+			'property'     => 'lastname',
+			'type'         => 'text',
+			'label'        => 'Last name',
+			'description'  => 'Your last name (surname)',
+			'maxLength'    => 30,
+			'required'     => true,
+			'autocomplete' => 'family-name',
 		];
+		// if library would like a birthdate
 		if ($library && $library->promptForBirthDateInSelfReg){
 			$fields[] = [
-				'property'    => 'birthdate',
-				'type'        => 'date',
-				'label'       => 'Date of Birth (MM-DD-YYYY)',
-				'description' => 'Date of birth',
-				'maxLength'   => 10,
-				'required'    => true
+				'property'     => 'birthdate',
+				'type'         => 'date',
+				'label'        => 'Date of Birth (MM-DD-YYYY)',
+				'description'  => 'Date of birth',
+				'maxLength'    => 10,
+				'required'     => true,
+				'autocomplete' => 'bday',
 			];
 		}
 		$fields[] = [
-			'property'    => 'address',
-			'type'        => 'text',
-			'label'       => 'Mailing Address',
-			'description' => 'Mailing Address',
-			'maxLength'   => 128,
-			'required'    => true
+			'property'     => 'address',
+			'type'         => 'text',
+			'label'        => 'Mailing Address',
+			'description'  => 'Mailing Address',
+			'maxLength'    => 128,
+			'required'     => true,
+			'autocomplete' => 'shipping street-address',
 		];
 		$fields[] = [
-			'property'    => 'city',
-			'type'        => 'text',
-			'label'       => 'City',
-			'description' => 'City',
-			'maxLength'   => 48,
-			'required'    => true
+			'property'     => 'city',
+			'type'         => 'text',
+			'label'        => 'City',
+			'description'  => 'City',
+			'maxLength'    => 48,
+			'required'     => true,
+			'autocomplete' => 'address-level2',
 		];
 		$fields[] = [
-			'property'    => 'state',
-			'type'        => 'text',
-			'label'       => 'State',
-			'description' => 'State',
-			'maxLength'   => 32,
-			'required'    => true
+			'property'     => 'state',
+			'type'         => 'text',
+			'label'        => 'State',
+			'description'  => 'State',
+			'maxLength'    => 32,
+			'required'     => true,
+			'autocomplete' => 'address-level1',
 		];
 		$fields[] = [
-			'property'    => 'zip',
-			'type'        => 'text',
-			'label'       => 'Zip Code',
-			'description' => 'Zip Code',
-			'maxLength'   => 32,
-			'required'    => true
+			'property'     => 'zip',
+			'type'         => 'text',
+			'label'        => 'Zip Code',
+			'description'  => 'Zip Code',
+			'maxLength'    => 32,
+			'required'     => true,
+			'autocomplete' => 'postal-code',
 		];
 		$fields[] = [
-			'property'    => 'primaryphone',
-			'type'        => 'text',
-			'label'       => 'Phone Number',
-			'description' => 'Phone Number',
-			'maxLength'   => 16,
-			'required'    => true
+			'property'     => 'primaryphone',
+			'type'         => 'text',
+			'label'        => 'Phone Number',
+			'description'  => 'Phone Number',
+			'maxLength'    => 16,
+			'required'     => true,
+			'autocomplete' => 'tel-national',
 		];
-		if ($libSubDomain == 'boulder' || $libSubDomain == 'longmont'){
-			$fields[] = [
-				'property'    => 'email',
-				'type'        => 'email',
-				'label'       => 'E-Mail',
-				'description' => 'E-Mail',
-				'maxLength'   => 128,
-				'required'    => true
-			];
-		}else{
-			$fields[] = [
-				'property'    => 'email',
-				'type'        => 'email',
-				'label'       => 'E-Mail',
-				'description' => 'E-Mail',
-				'maxLength'   => 128,
-				'required'    => false
-			];
-		}
+		$fields[] = [
+			'property'     => 'email',
+			'type'         => 'email',
+			'label'        => 'E-Mail',
+			'description'  => 'E-Mail',
+			'maxLength'    => 128,
+			'required'     => in_array($libSubDomain, ['boulder', 'longmont']), // Required for boulder and longmont
+			'autocomplete' => 'email',
+		];
 		// Username and PIN
 		// allow usernames?
 		if ($this->hasUsernameField()){
@@ -152,7 +152,8 @@ class Flatirons extends Sierra
 				'label'       => 'Username',
 				'description' => 'Set an optional username.',
 				'maxLength'   => 20,
-				'required'    => false
+				'required'    => false,
+				'autocomplete' => 'username',
 			];
 		}
 		// if library uses pins

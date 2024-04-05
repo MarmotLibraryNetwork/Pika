@@ -71,55 +71,61 @@ class Lion extends Sierra {
 			'default'  => $homeLibraryCode
 		];
 		$fields[] = [
-			'property'    => 'firstname',
-			'type'        => 'text',
-			'label'       => 'First Name',
-			'description' => 'Your first name',
-			'maxLength'   => 40,
-			'required'    => true
+			'property'     => 'firstname',
+			'type'         => 'text',
+			'label'        => 'First name',
+			'description'  => 'Your first name',
+			'maxLength'    => 50,
+			'required'     => true,
+			'autocomplete' => 'given-name',
 		];
 		$fields[] = [
-			'property'    => 'lastname',
-			'type'        => 'text',
-			'label'       => 'Last Name',
-			'description' => 'Your last name',
-			'maxLength'   => 40,
-			'required'    => true
+			'property'     => 'lastname',
+			'type'         => 'text',
+			'label'        => 'Last name',
+			'description'  => 'Your last name (surname)',
+			'maxLength'    => 40,
+			'required'     => true,
+			'autocomplete' => 'family-name',
 		];
 		// if library would like a birthdate
-		if ($library && $library->promptForBirthDateInSelfReg){
+		if (isset($library) && $library->promptForBirthDateInSelfReg){
 			$fields[] = [
-				'property'    => 'birthdate',
-				'type'        => 'date',
-				'label'       => 'Date of Birth (MM-DD-YYYY)',
-				'description' => 'Date of birth',
-				'maxLength'   => 10,
-				'required'    => true
+				'property'     => 'birthdate',
+				'type'         => 'date',
+				'label'        => 'Date of Birth (MM-DD-YYYY)',
+				'description'  => 'Date of birth',
+				'maxLength'    => 10,
+				'required'     => true,
+				'autocomplete' => 'bday',
 			];
 		}
 		$fields[] = [
-			'property'    => 'email',
-			'type'        => 'email',
-			'label'       => 'E-Mail',
-			'description' => 'E-Mail (for confirmation, notices and newsletters)',
-			'maxLength'   => 128,
-			'required'    => true
+			'property'     => 'email',
+			'type'         => 'email',
+			'label'        => 'E-Mail',
+			'description'  => 'E-Mail (for confirmation, notices and newsletters)',
+			'maxLength'    => 128,
+			'required'     => true,
+			'autocomplete' => 'email',
 		];
 		$fields[] = [
-			'property'    => 'primaryphone',
-			'type'        => 'text',
-			'label'       => 'Phone Number',
-			'description' => 'Phone Number',
-			'maxLength'   => 12,
-			'required'    => true
+			'property'     => 'primaryphone',
+			'type'         => 'text',
+			'label'        => 'Phone Number',
+			'description'  => 'Phone Number',
+			'maxLength'    => 12,
+			'required'     => true,
+			'autocomplete' => 'tel-national',
 		];
 		$fields[] = [
-			'property'    => 'address',
-			'type'        => 'text',
-			'label'       => 'Address',
-			'description' => 'Address',
-			'maxLength'   => 128,
-			'required'    => true
+			'property'     => 'address',
+			'type'         => 'text',
+			'label'        => 'Address',
+			'description'  => 'Address',
+			'maxLength'    => 128,
+			'required'     => true,
+			'autocomplete' => 'street-address',
 		];
 		$fields[] = [
 			'property'    => 'city',
@@ -130,20 +136,22 @@ class Lion extends Sierra {
 			'required'    => true
 		];
 		$fields[] = [
-			'property'    => 'state',
-			'type'        => 'text',
-			'label'       => 'State',
-			'description' => 'State',
-			'maxLength'   => 32,
-			'required'    => true
+			'property'     => 'state',
+			'type'         => 'text',
+			'label'        => 'State',
+			'description'  => 'State',
+			'maxLength'    => 32,
+			'required'     => true,
+			'autocomplete' => 'address-level1',
 		];
 		$fields[] = [
-			'property'    => 'zip',
-			'type'        => 'text',
-			'label'       => 'Zip Code',
-			'description' => 'Zip Code',
-			'maxLength'   => 5,
-			'required'    => true
+			'property'     => 'zip',
+			'type'         => 'text',
+			'label'        => 'Zip Code',
+			'description'  => 'Zip Code',
+			'maxLength'    => 5,
+			'required'     => true,
+			'autocomplete' => 'postal-code',
 		];
 
 		return $fields;
