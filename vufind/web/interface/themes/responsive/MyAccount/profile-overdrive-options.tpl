@@ -47,13 +47,13 @@
 					{foreach from=$overDriveSettings.lendingPeriods item=lendingOption key="formatType"}
 						{if !empty($lendingOption->options)}
 							{* Magazines are listed here but there is no options available. So we won't display in this form *}
-							<div class="form-group">
+							<div id="overdrive-lending-options" class="form-group">
 								<div class="col-xs-4"><label class="control-label">{$formatType}:</label></div>
 								<div class="col-xs-8">
-									<div class="btn-group btn-group-sm" data-toggle="buttons">
+									<div class="btn-group btn-group-sm"{* data-toggle="buttons"*}>
 											{foreach from=$lendingOption->options item=option}
 													{if !$offline}
-														<label for="{$formatType}_{$option}" class="btn btn-sm btn-default {if $lendingOption->lendingPeriod == $option}active{/if}"><input type="radio" name="lendingPeriods[{$formatType}]" value="{$option}" id="{$formatType}_{$option}" {if $lendingOption->lendingPeriod  == $option}checked="checked"{/if} class="form-control">&nbsp;{$option}</label>
+														<label for="{$formatType}_{$option}" class="btn btn-sm btn-default{* {if $lendingOption->lendingPeriod == $option}active{/if}*}"><input type="radio" name="lendingPeriods[{$formatType}]" value="{$option}" id="{$formatType}_{$option}" {if $lendingOption->lendingPeriod  == $option}checked="checked"{/if}{* class="form-control"*}>&nbsp; {$option}</label>
 													{elseif $lendingOption->lendingPeriod == $option}
 															{$option}
 													{/if}
