@@ -54,8 +54,18 @@
 // Account Profile
 
 // make Receive Notices Toggle match color scheming of bootstrap switches
-#contactUpdateForm .btn-group .btn-default.active {
-  background-color: @btn-primary-bg;
-  .box-shadow(none);
-  color: @btn-primary-color;
+//#contactUpdateForm .btn-group .btn-default.active {
+#contactUpdateForm, #overdrive-lending-options {
+  .btn-group .btn-default {
+    &:has(input[type="radio"]:checked) {
+      background-color: @btn-primary-bg;
+      //.box-shadow(none);
+      color: @btn-primary-color;
+    }
+
+    &:focus-within {
+      border: 1px solid @focus-ring-color;
+      box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(225, 95, 21, 0.7);
+    }
+  }
 }
