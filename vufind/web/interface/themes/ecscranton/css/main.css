@@ -7012,8 +7012,8 @@ input[type="checkbox"]:focus {
   outline: 5px auto #729FBB !important;
 }
 nav.breadcrumbs [aria-current="page"] {
-  text-decoration: none!important;
-  font-style: italic!important;
+  text-decoration: none !important;
+  font-style: italic !important;
   color: #222;
 }
 table.dataTable.display tbody tr.odd > .sorting_1 a,
