@@ -9683,7 +9683,8 @@ a.browse-thumbnail-sorted.active {
     right: 0;
   }
 }
-.series a {
+.series a,
+.novelistSeries a {
   color: #2c5a86;
   -webkit-text-decoration: underline dotted;
           text-decoration: underline dotted;
