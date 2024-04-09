@@ -13,19 +13,29 @@
 //
 //  Basic Style overrides
 //
-a, a:visited{
+
+// Mixin to use on links in order to distinguish from text without relying on color (Accessibility 1.4.1)
+.link-decorating-mixin(){
+  color: @darkened-link-color-resp;
+  text-decoration: underline dotted;
+}
+
+a, a:visited {
   color: @link-color-resp;
 }
-a:focus{
+
+a:focus {
   outline-color: @focus-ring-color;
 }
-a:hover{
+
+a:hover {
   color: darken(@link-color-resp, 10%);
 }
 
-a.btn-primary, a.btn-info{
+a.btn-primary, a.btn-info {
   color: @btn-primary-color;
 }
+
 @media print {
   a:link:after,
   a:visited:after {
@@ -36,16 +46,16 @@ a.btn-primary, a.btn-info{
 body {
   font-family: @font-family-sans-serif-resp;
   background-color: @body-bg-resp;
-  > .container{
+  > .container {
     background-color: @content-bg;
   }
 }
 
-.noBreak{
+.noBreak {
   white-space: nowrap;
 }
 
-.collapsed, .expanded{
+.collapsed, .expanded {
   cursor: pointer;
 }
 
@@ -254,28 +264,30 @@ body {
   }
 }
 
-.footer-column{
+.footer-column {
   @media (max-width: 767px) {
-    h4:before{
+    h4:before {
       content: "▼ ";
     }
-    h4.collapsed:before{
+
+    h4.collapsed:before {
       content: "► ";
     }
 
   }
 }
-.footerContents{
+
+.footerContents {
   @media (min-width: 767px) {
     .collapse.in;
   }
 }
 
-#largeLogo{
-  padding: 20px 0 15px;
-}
+//#largeLogo {
+//  padding: 20px 0 15px;
+//}
 
-.bold{
+.bold {
   font-weight: bold;
 }
 
@@ -299,7 +311,7 @@ div.striped {
 }
 
 // Google translate
-#google_translate_element{
+#google_translate_element {
   font-size: smaller;
   padding-left: 5px;
 }
