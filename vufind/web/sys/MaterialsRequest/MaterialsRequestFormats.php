@@ -38,34 +38,33 @@ class MaterialsRequestFormats extends DB_DataObject {
 	public $specialFields;   // SET Data type, possible values : 'Abridged/Unabridged', 'Article Field', 'Eaudio format', 'Ebook format', 'Season'
 	public $weight;
 
-	static $materialsRequestFormatsSpecialFieldOptions = array(
+	static $materialsRequestFormatsSpecialFieldOptions = [
 		'Abridged/Unabridged', 'Article Field', 'Eaudio format', 'Ebook format', 'Season'
-	);
+	];
 
 
 	static function getObjectStructure() {
-		$structure = array(
-			'id'            => array('property' => 'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of this association'),
-			'weight'        => array('property' => 'weight', 'type'=>'integer', 'label'=>'Weight', 'description'=>'The sort order of rule', 'default' => 0),
-			'format'        => array('property' => 'format', 'type' => 'text', 'label' => 'Format', 'description' => 'internal value for format, please use camelCase and no spaces ie. cdAudio'),
-			'formatLabel'   => array('property' => 'formatLabel', 'type' => 'text', 'label' => 'Format Label', 'description' => 'Label for the format that will be displayed to users.'),
-			'authorLabel'   => array('property' => 'authorLabel', 'type' => 'text', 'label' => 'Author Label', 'description' => 'Label for the author field associated with this format that will be displayed to users.'),
-		  'specialFields' => array('property' => 'specialFields', 'type' => 'multiSelect', 'listStyle' => 'checkboxList', 'label' => 'Special Fields for Format', 'description' => 'Any Special Fields to use with this format', 'values' => self::$materialsRequestFormatsSpecialFieldOptions)
-			//			'libraryId' => array(), // hidden value or internally updated.
-
-		);
+		$structure = [
+			'id'            => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of this association'],
+			'weight'        => ['property' => 'weight', 'type' => 'integer', 'label' => 'Weight', 'description' => 'The sort order of rule', 'default' => 0],
+			'format'        => ['property' => 'format', 'type' => 'text', 'label' => 'Format', 'description' => 'internal value for format, please use camelCase and no spaces ie. cdAudio'],
+			'formatLabel'   => ['property' => 'formatLabel', 'type' => 'text', 'label' => 'Format Label', 'description' => 'Label for the format that will be displayed to users.'],
+			'authorLabel'   => ['property' => 'authorLabel', 'type' => 'text', 'label' => 'Author Label', 'description' => 'Label for the author field associated with this format that will be displayed to users.'],
+			'specialFields' => ['property' => 'specialFields', 'type' => 'multiSelect', 'listStyle' => 'checkboxList', 'label' => 'Special Fields for Format', 'description' => 'Any Special Fields to use with this format', 'values' => self::$materialsRequestFormatsSpecialFieldOptions],
+			//'libraryId'     => [], // hidden value or internally updated.
+		];
 		return $structure;
 	}
 
 	static function getDefaultMaterialRequestFormats($libraryId = -1) {
-		$defaultFormats = array();
+		$defaultFormats = [];
 
 		$defaultFormat                = new MaterialsRequestFormats();
 		$defaultFormat->libraryId     = $libraryId;
 		$defaultFormat->format        = 'book';
 		$defaultFormat->formatLabel   = translate('Book');
 		$defaultFormat->authorLabel   = 'Author';
-		$defaultFormat->specialFields = array(); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
+		$defaultFormat->specialFields = []; // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight        = count($defaultFormats) + 1;
 		$defaultFormats[]             = $defaultFormat;
 
@@ -74,7 +73,7 @@ class MaterialsRequestFormats extends DB_DataObject {
 		$defaultFormat->format        = 'largePrint';
 		$defaultFormat->formatLabel   = translate('Large Print');
 		$defaultFormat->authorLabel   = 'Author';
-		$defaultFormat->specialFields = array(); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
+		$defaultFormat->specialFields = []; // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight        = count($defaultFormats) + 1;
 		$defaultFormats[]             = $defaultFormat;
 
@@ -83,7 +82,7 @@ class MaterialsRequestFormats extends DB_DataObject {
 		$defaultFormat->format        = 'dvd';
 		$defaultFormat->formatLabel   = translate('DVD');
 		$defaultFormat->authorLabel   = 'Actor / Director';
-		$defaultFormat->specialFields = array('Season'); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
+		$defaultFormat->specialFields = ['Season']; // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight        = count($defaultFormats) + 1;
 		$defaultFormats[]             = $defaultFormat;
 
@@ -92,7 +91,7 @@ class MaterialsRequestFormats extends DB_DataObject {
 		$defaultFormat->format        = 'bluray';
 		$defaultFormat->formatLabel   = translate('Blu-ray');
 		$defaultFormat->authorLabel   = 'Actor / Director';
-		$defaultFormat->specialFields = array('Season'); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
+		$defaultFormat->specialFields = ['Season']; // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight        = count($defaultFormats) + 1;
 		$defaultFormats[]             = $defaultFormat;
 
@@ -101,7 +100,7 @@ class MaterialsRequestFormats extends DB_DataObject {
 		$defaultFormat->format        = 'cdAudio';
 		$defaultFormat->formatLabel   = translate('CD Audio Book');
 		$defaultFormat->authorLabel   = 'Author';
-		$defaultFormat->specialFields = array('Abridged/Unabridged'); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
+		$defaultFormat->specialFields = ['Abridged/Unabridged']; // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight        = count($defaultFormats) + 1;
 		$defaultFormats[]             = $defaultFormat;
 
@@ -110,7 +109,7 @@ class MaterialsRequestFormats extends DB_DataObject {
 		$defaultFormat->format        = 'cdMusic';
 		$defaultFormat->formatLabel   = translate('Music CD');
 		$defaultFormat->authorLabel   = 'Artist / Composer';
-		$defaultFormat->specialFields = array(); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
+		$defaultFormat->specialFields = []; // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight        = count($defaultFormats) + 1;
 		$defaultFormats[]             = $defaultFormat;
 
@@ -119,7 +118,7 @@ class MaterialsRequestFormats extends DB_DataObject {
 		$defaultFormat->format        = 'ebook';
 		$defaultFormat->formatLabel   = translate('eBook');
 		$defaultFormat->authorLabel   = 'Author';
-		$defaultFormat->specialFields = array('Ebook format'); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
+		$defaultFormat->specialFields = ['Ebook format']; // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight        = count($defaultFormats) + 1;
 		$defaultFormats[]             = $defaultFormat;
 
@@ -128,7 +127,7 @@ class MaterialsRequestFormats extends DB_DataObject {
 		$defaultFormat->format        = 'eaudio';
 		$defaultFormat->formatLabel   = translate('eAudio');
 		$defaultFormat->authorLabel   = 'Author';
-		$defaultFormat->specialFields = array('Eaudio format', 'Abridged/Unabridged'); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
+		$defaultFormat->specialFields = ['Eaudio format', 'Abridged/Unabridged']; // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight        = count($defaultFormats) + 1;
 		$defaultFormats[]             = $defaultFormat;
 
@@ -137,7 +136,7 @@ class MaterialsRequestFormats extends DB_DataObject {
 		$defaultFormat->format        = 'playaway';
 		$defaultFormat->formatLabel   = translate('Playaway');
 		$defaultFormat->authorLabel   = 'Author';
-		$defaultFormat->specialFields = array('Abridged/Unabridged'); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
+		$defaultFormat->specialFields = ['Abridged/Unabridged']; // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight        = count($defaultFormats) + 1;
 		$defaultFormats[]             = $defaultFormat;
 
@@ -146,7 +145,7 @@ class MaterialsRequestFormats extends DB_DataObject {
 		$defaultFormat->format        = 'article';
 		$defaultFormat->formatLabel   = translate('Article');
 		$defaultFormat->authorLabel   = 'Author';
-		$defaultFormat->specialFields = array('Article Field'); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
+		$defaultFormat->specialFields = ['Article Field']; // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight        = count($defaultFormats) + 1;
 		$defaultFormats[]             = $defaultFormat;
 
@@ -155,7 +154,7 @@ class MaterialsRequestFormats extends DB_DataObject {
 		$defaultFormat->format        = 'cassette';
 		$defaultFormat->formatLabel   = translate('Cassette');
 		$defaultFormat->authorLabel   = 'Artist / Composer';
-		$defaultFormat->specialFields = array('Abridged/Unabridged'); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
+		$defaultFormat->specialFields = ['Abridged/Unabridged']; // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight        = count($defaultFormats) + 1;
 		$defaultFormats[]             = $defaultFormat;
 
@@ -164,7 +163,7 @@ class MaterialsRequestFormats extends DB_DataObject {
 		$defaultFormat->format        = 'vhs';
 		$defaultFormat->formatLabel   = translate('VHS');
 		$defaultFormat->authorLabel   = 'Actor / Director';
-		$defaultFormat->specialFields = array('Season'); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
+		$defaultFormat->specialFields = ['Season']; // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight        = count($defaultFormats) + 1;
 		$defaultFormats[]             = $defaultFormat;
 
@@ -173,7 +172,7 @@ class MaterialsRequestFormats extends DB_DataObject {
 		$defaultFormat->format        = 'other';
 		$defaultFormat->formatLabel   = 'Other';
 		$defaultFormat->authorLabel   = 'Author';
-		$defaultFormat->specialFields = array(); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
+		$defaultFormat->specialFields = []; // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight        = count($defaultFormats) + 1;
 		$defaultFormats[]             = $defaultFormat;
 
@@ -183,7 +182,7 @@ class MaterialsRequestFormats extends DB_DataObject {
 //		$defaultFormat->format        = '';
 //		$defaultFormat->formatLabel   = '';
 //		$defaultFormat->authorLabel   = 'Author';
-//		$defaultFormat->specialFields = array(); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
+//		$defaultFormat->specialFields = []; // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 //		$defaultFormat->weight        = count($defaultFormats) + 1;
 //		$defaultFormats[]             = $defaultFormat;
 
@@ -193,12 +192,12 @@ class MaterialsRequestFormats extends DB_DataObject {
 
 	static function getAuthorLabelsAndSpecialFields($libraryId) {
 		// Format Labels
-		$formats = new self();
-		$formats->libraryId = $libraryId;
+		$formats             = new self();
+		$formats->libraryId  = $libraryId;
 		$usingDefaultFormats = $formats->count() == 0;
 
 		// Get Author Labels for all Formats
-		$specialFieldFormats = $formatAuthorLabels = array();
+		$specialFieldFormats = $formatAuthorLabels = [];
 		if ($usingDefaultFormats) {
 			$defaultFormats = self::getDefaultMaterialRequestFormats();
 			/** @var MaterialsRequestFormats $format */
@@ -214,7 +213,7 @@ class MaterialsRequestFormats extends DB_DataObject {
 			$formatAuthorLabels = $formats->fetchAll('format', 'authorLabel');
 
 			// Get Formats that use Special Fields
-			$formats = new self();
+			$formats            = new self();
 			$formats->libraryId = $libraryId;
 			$formats->whereAdd('`specialFields` IS NOT NULL');
 			$specialFieldFormats = $formats->fetchAll('format', 'specialFields');
@@ -300,11 +299,9 @@ class MaterialsRequestFormats extends DB_DataObject {
 	 * @access public
 	 * @return mixed Int (No. of rows affected) on success, false on failure, 0 on no data affected
 	 */
-	function delete($useWhere = false)
-	{
-
-		$materialRequest = new MaterialsRequest();
-		$materialRequest->format = $this->format;
+	function delete($useWhere = false){
+		$materialRequest            = new MaterialsRequest();
+		$materialRequest->format    = $this->format;
 		$materialRequest->libraryId = $this->libraryId;
 		if ($materialRequest->count() == 0){
 			return parent::delete($useWhere);
@@ -313,7 +310,8 @@ class MaterialsRequestFormats extends DB_DataObject {
 
 	}
 
-	public function hasSpecialFieldOption($option) {
+	public function hasSpecialFieldOption($option){
 		return is_array($this->specialFields) && in_array($option, $this->specialFields);
- }
+	}
+
 }
