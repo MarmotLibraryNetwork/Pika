@@ -7007,12 +7007,6 @@ a:focus > .header-button {
 #browse-category-picker .jcarousel-control-next:focus {
   outline: 5px auto #E15F15 !important;
 }
-.jcarousel-pagination > a:focus {
-  outline: 1px solid #E15F15 !important;
-}
-.jcarousel-pagination > a.active:focus {
-  outline: 2px solid #1a716b !important;
-}
 input[type="checkbox"]:focus {
   outline: 5px auto #1a716b !important;
 }
