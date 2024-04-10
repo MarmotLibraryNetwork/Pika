@@ -9681,7 +9681,8 @@ a.browse-thumbnail-sorted.active {
   }
 }
 .series a,
-.novelistSeries a {
+.novelistSeries a,
+.facetDetails a {
   color: #c7002e;
   -webkit-text-decoration: underline dotted;
           text-decoration: underline dotted;
