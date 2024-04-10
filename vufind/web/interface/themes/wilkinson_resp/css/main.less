@@ -51,3 +51,8 @@ div.sidebar-button {
   text-decoration: underline #fff;
 }
 
+// prevent overrides from applying to the object editor form system
+.panel-default:not(.active) .panel-title {
+  color: inherit;
+  text-shadow: none;
+}

@@ -10437,3 +10437,7 @@ div.sidebar-button {
   -webkit-text-decoration: underline #fff;
           text-decoration: underline #fff;
 }
+.panel-default:not(.active) .panel-title {
+  color: inherit;
+  text-shadow: none;
+}
