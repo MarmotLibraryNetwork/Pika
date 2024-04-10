@@ -6781,6 +6781,11 @@ a.btn-info {
     content: "" !important;
   }
 }
+#more-details-accordion .panel-body a {
+  color: #2c5a86;
+  -webkit-text-decoration: underline dotted;
+          text-decoration: underline dotted;
+}
 body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   background-color: #fff;
