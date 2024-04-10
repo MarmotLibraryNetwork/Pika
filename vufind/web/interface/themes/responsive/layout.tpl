@@ -80,11 +80,11 @@
 
 		{if !$isUpdatePinPage}
 			{if $horizontalSearchBar}
-				<div id="horizontal-search-wrapper" class="row">
+				<search id="horizontal-search-wrapper" class="row">
 					<div id="horizontal-search-container" class="col-xs-12">
 						{include file="Search/horizontal-searchbox.tpl"}
 					</div>
-				</div>
+				</search>
 			{/if}
 		{/if}
 
