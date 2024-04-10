@@ -3,11 +3,11 @@
 		<table class="logEntryDetails table table-bordered table-hover">
 			<thead>
 			<tr>
-				<th></th>
+				<td></td> {* Can't be <th>, for accessiblity. "Table header elements should have visible text. Ensure that the table header can be used by screen reader users. If the element is not a header, marking it up with a `td` is more appropriate." *}
 				<th colspan="4">Timing</th>
 				<th colspan="6">Collection Updates</th>
 				<th colspan="3">Title Updates</th>
-				<th></th>
+				<td></td> {* Can't be <th>, for accessiblity. "Table header elements should have visible text. Ensure that the table header can be used by screen reader users. If the element is not a header, marking it up with a `td` is more appropriate." *}
 			</tr>
 			<tr>
 				<th>Id</th>

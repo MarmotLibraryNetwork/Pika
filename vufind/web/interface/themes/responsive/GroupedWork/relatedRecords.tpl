@@ -30,7 +30,7 @@
 			{display_if_set array=$relatedRecords key="abridged"}
 				<th>Abridged</th>
 			{/display_if_set}
-			<th></th>
+			<td></td> {* Can't be <th>, for accessiblity. "Table header elements should have visible text. Ensure that the table header can be used by screen reader users. If the element is not a header, marking it up with a `td` is more appropriate." *}
 		</tr>
 		</thead>
 		{foreach from=$relatedRecords item=relatedRecord key=index}
