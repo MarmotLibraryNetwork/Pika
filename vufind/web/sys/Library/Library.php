@@ -291,7 +291,7 @@ class Library extends DB_DataObject {
 		'showFountasPinnell'       => 'Show Fountas &amp; Pinnell Information  (This data must be present in MARC records)',
 	];
 
-	// Use this to set which details will be shown in the the Main Details section of the record in the search results.
+	// Use this to set which details will be shown in the Main Details section of the record in the search results.
 	// You should be able to add options here without needing to change the database.
 	// set the key to the desired SMARTY template variable name, set the value to the label to show in the library configuration page
 	static $searchResultsMainDetailsOptions = [

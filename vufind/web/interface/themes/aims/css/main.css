@@ -6777,6 +6777,11 @@ a.btn-info {
     content: "" !important;
   }
 }
+#more-details-accordion .panel-body a {
+  color: #3b679a;
+  -webkit-text-decoration: underline dotted;
+          text-decoration: underline dotted;
+}
 body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   background-color: #fff;
@@ -6948,9 +6953,6 @@ body > .container {
     display: block;
   }
 }
-#largeLogo {
-  padding: 20px 0 15px;
-}
 .bold {
   font-weight: bold;
 }
@@ -7016,8 +7018,8 @@ input[type="checkbox"]:focus {
   outline: 5px auto #221f1f !important;
 }
 nav.breadcrumbs [aria-current="page"] {
-  text-decoration: none!important;
-  font-style: italic!important;
+  text-decoration: none !important;
+  font-style: italic !important;
   color: #222;
 }
 table.dataTable.display tbody tr.odd > .sorting_1 a,
@@ -9685,7 +9687,8 @@ a.browse-thumbnail-sorted.active {
     right: 0;
   }
 }
-.series a {
+.series a,
+.novelistSeries a {
   color: #3b679a;
   -webkit-text-decoration: underline dotted;
           text-decoration: underline dotted;

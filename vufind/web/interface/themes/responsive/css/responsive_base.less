@@ -13,19 +13,29 @@
 //
 //  Basic Style overrides
 //
-a, a:visited{
+
+// Mixin to use on links in order to distinguish from text without relying on color (Accessibility 1.4.1)
+.link-decorating-mixin(){
+  color: @darkened-link-color-resp;
+  text-decoration: underline dotted;
+}
+
+a, a:visited {
   color: @link-color-resp;
 }
-a:focus{
+
+a:focus {
   outline-color: @focus-ring-color;
 }
-a:hover{
+
+a:hover {
   color: darken(@link-color-resp, 10%);
 }
 
-a.btn-primary, a.btn-info{
+a.btn-primary, a.btn-info {
   color: @btn-primary-color;
 }
+
 @media print {
   a:link:after,
   a:visited:after {
@@ -33,19 +43,25 @@ a.btn-primary, a.btn-info{
   }
 }
 
+#more-details-accordion .panel-body {
+  a {
+    .link-decorating-mixin;
+  }
+}
+
 body {
   font-family: @font-family-sans-serif-resp;
   background-color: @body-bg-resp;
-  > .container{
+  > .container {
     background-color: @content-bg;
   }
 }
 
-.noBreak{
+.noBreak {
   white-space: nowrap;
 }
 
-.collapsed, .expanded{
+.collapsed, .expanded {
   cursor: pointer;
 }
 
@@ -65,13 +81,16 @@ body {
   cursor: pointer;
   font-size: 14px;
 }
-.fieldset-collapsible-label:before{
+
+.fieldset-collapsible-label:before {
   content: "▼ ";
 }
+
 .fieldset-collapsed .fieldset-collapsible-label {
   background-position: 4px 4px;
 }
-.fieldset-collapsed .fieldset-collapsible-label:before{
+
+.fieldset-collapsed .fieldset-collapsible-label:before {
   content: "► ";
 }
 
@@ -254,28 +273,30 @@ body {
   }
 }
 
-.footer-column{
+.footer-column {
   @media (max-width: 767px) {
-    h4:before{
+    h4:before {
       content: "▼ ";
     }
-    h4.collapsed:before{
+
+    h4.collapsed:before {
       content: "► ";
     }
 
   }
 }
-.footerContents{
+
+.footerContents {
   @media (min-width: 767px) {
     .collapse.in;
   }
 }
 
-#largeLogo{
-  padding: 20px 0 15px;
-}
+//#largeLogo {
+//  padding: 20px 0 15px;
+//}
 
-.bold{
+.bold {
   font-weight: bold;
 }
 
@@ -299,57 +320,71 @@ div.striped {
 }
 
 // Google translate
-#google_translate_element{
+#google_translate_element {
   font-size: smaller;
   padding-left: 5px;
 }
+
 .goog-te-gadget {
   display: inline-block;
 }
- .form-control:focus {
+
+.form-control:focus {
   border: 1px solid @focus-ring-color;
-  box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(225, 95, 21, 0.7);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(225, 95, 21, 0.7);
 }
- .btn-default:focus{
-   border-color:@focus-ring-color;
- }
-#horizontal-search-box .searchSourceHorizontal:focus, #horizontal-search-box .searchTypeHorizontal:focus,#horizontal-search-box .searchSourceHorizontal:focus, #horizontal-search-box .searchTypeHorizontal:focus{
-  border: 1px solid @focus-ring-color!important;
+
+.btn-default:focus {
+  border-color: @focus-ring-color;
 }
+
+#horizontal-search-box .searchSourceHorizontal:focus, #horizontal-search-box .searchTypeHorizontal:focus, #horizontal-search-box .searchSourceHorizontal:focus, #horizontal-search-box .searchTypeHorizontal:focus {
+  border: 1px solid @focus-ring-color !important;
+}
+
 .btn-group, .btn-group-vertical {
   & > .btn:focus {
     outline: 5px auto @focus-ring-color !important;
   }
 }
+
 a:focus img {
   //outline: 5px auto @focus-ring-color!important;
 }
-#vertical-menu-bar .menu-bar-option:has(.menu-icon:focus){
-  border: 2px solid @focus-ring-color!important;
+
+#vertical-menu-bar .menu-bar-option:has(.menu-icon:focus) {
+  border: 2px solid @focus-ring-color !important;
   outline: 2px solid white;
 }
-#vertical-menu-bar .menu-icon-selected:has(.menu-icon:focus){
-  border: 2px solid @menu-bar-background-color!important;
-  outline:2px solid white;
+
+#vertical-menu-bar .menu-icon-selected:has(.menu-icon:focus) {
+  border: 2px solid @menu-bar-background-color !important;
+  outline: 2px solid white;
 }
-a:focus>.header-button{
-  outline: 5px auto @menu-bar-background-color!important;
+
+a:focus > .header-button {
+  outline: 5px auto @menu-bar-background-color !important;
 }
+
 #browse-category-picker .jcarousel-control-prev:focus, #browse-category-picker .jcarousel-control-next:focus {
-  outline: 5px auto @focus-ring-color!important;
+  outline: 5px auto @focus-ring-color !important;
 }
+
 .jcarousel-pagination > a:focus {
-   outline: 1px solid @focus-ring-color!important;
- }
-.jcarousel-pagination >a.active:focus{
-  outline: 2px solid @menu-bar-background-color!important;
+  outline: 1px solid @focus-ring-color !important;
 }
-input[type="checkbox"]:focus{
-  outline: 5px auto @menu-bar-background-color!important;
+
+.jcarousel-pagination > a.active:focus {
+  outline: 2px solid @menu-bar-background-color !important;
 }
-nav.breadcrumbs [aria-current="page"]{
-  text-decoration: none!important;
-  font-style:italic!important;
+
+input[type="checkbox"]:focus {
+  outline: 5px auto @menu-bar-background-color !important;
+}
+
+nav.breadcrumbs [aria-current="page"] {
+  text-decoration: none !important;
+  font-style: italic !important;
   color: #222;
 }
 // Datatable style overrides

@@ -484,9 +484,10 @@
   }
 }
 
-.series a {
-  color: @darkened-link-color-resp;
-  text-decoration: underline dotted;
+.series, .novelistSeries {
+  a {
+    .link-decorating-mixin;
+  }
 }
 
 .cart-container {
