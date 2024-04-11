@@ -17,5 +17,9 @@ User-agent: SemrushBot-SA
 Disallow: /
 
 User-agent: facebookexternalhit
-Allow: /MyAccount/
-Allow: /MyAccount/MyList/
+Allow: /MyAccount/*
+Allow: /MyAccount/MyList/*
+
+User-agent: facebookexternalhit/1.1
+Allow: /MyAccount/*
+Allow: /MyAccount/MyList/*
