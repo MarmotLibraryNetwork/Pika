@@ -43,43 +43,48 @@
 		{/if}
 		{strip}
 			<div class="container">
-				{if !empty($systemMessage)}
-					{if is_array($systemMessage)}
-						{foreach from=$systemMessage item=aSystemMessage}
-							<div class="row system-message-header">{$aSystemMessage}</div>
-					{/foreach}
-					{else}
-					<div id="system-message-header" class="row system-message-header">{$systemMessage}</div>
-				{/if}
-			{/if}
-			<a id="top"></a>{*TODO: Does anything trigger navigation to page #top? *}
-			{if $google_translate_key}
-				<div class="row breadcrumbs">
-					<div class="col-xs-12 col-sm-3 col-sm-offset-9 text-right">
-						<div id="google_translate_element"></div>
+
+				<header>
+					{if !empty($systemMessage)}
+						{if is_array($systemMessage)}
+							{foreach from=$systemMessage item=aSystemMessage}
+								<div class="row system-message-header">{$aSystemMessage}</div>
+							{/foreach}
+							{else}
+							<div id="system-message-header" class="row system-message-header">{$systemMessage}</div>
+						{/if}
+					{/if}
+
+					<a id="top"></a>{*TODO: Does anything trigger navigation to page #top? *}
+
+					{if $google_translate_key}
+						<div class="row breadcrumbs">
+							<div class="col-xs-12 col-sm-3 col-sm-offset-9 text-right">
+								<div id="google_translate_element"></div>
+							</div>
+						</div>
+					{/if}
+
+					<div id="header-wrapper" class="row">
+						<div id="header-container">
+							{include file='header_responsive.tpl'}
+						</div>
 					</div>
-				</div>
-			{/if}
 
-			<div id="header-wrapper" class="row">
-				<div id="header-container">
-					{include file='header_responsive.tpl'}
-				</div>
-			</div>
-
-			<div id="horizontal-menu-bar-wrapper" class="row visible-xs">
-				<div id="horizontal-menu-bar-container" class="col-tn-12 col-xs-12 menu-bar">
-					{include file='horizontal-menu-bar.tpl'}
-				</div>
-			</div>
+					<div id="horizontal-menu-bar-wrapper" class="row visible-xs">
+						<div id="horizontal-menu-bar-container" class="col-tn-12 col-xs-12 menu-bar">
+							{include file='horizontal-menu-bar.tpl'}
+						</div>
+					</div>
+				</header>
 
 		{if !$isUpdatePinPage}
 			{if $horizontalSearchBar}
-				<div id="horizontal-search-wrapper" class="row">
+				<search id="horizontal-search-wrapper" class="row">
 					<div id="horizontal-search-container" class="col-xs-12">
 						{include file="Search/horizontal-searchbox.tpl"}
 					</div>
-				</div>
+				</search>
 			{/if}
 		{/if}
 
@@ -94,14 +99,7 @@
 							</div>
 							<div class="rightSidebar col-xs-12 col-sm-8 col-sm-pull-4 col-md-9 col-md-pull-3 col-lg-9 col-lg-pull-3" id="main-content-with-sidebar" style="overflow-x: auto;">
 								{* If main content overflows, use a scrollbar *}
-								{if $showBreadcrumbs}
-									{include file="breadcrumbs.tpl"}
-								{/if}
-								{if $module}
-									{include file="$module/$pageTemplate"}
-								{else}
-									{include file="$pageTemplate"}
-								{/if}
+								{include file="main-content.tpl"}
 							</div>
 
 						{else} {* Sidebar on the left *}
@@ -109,30 +107,19 @@
 								{include file="sidebar.tpl"}
 							</div>
 							<div class="col-xs-12 col-sm-8 col-md-9 col-lg-9" id="main-content-with-sidebar">
-								{if $showBreadcrumbs}
-									{include file="breadcrumbs.tpl"}
-								{/if}
-								{if $module}
-									{include file="$module/$pageTemplate"}
-								{else}
-									{include file="$pageTemplate"}
-								{/if}
+								{include file="main-content.tpl"}
 							</div>
 						{/if}
 
 					{else} {* Main Content Only, no sidebar *}
-						{if $module}
-							{include file="$module/$pageTemplate"}
-						{else}
-							{include file="$pageTemplate"}
-						{/if}
+						{include file="main-content.tpl"}
 					{/if}
 				</div>
 			</div>
 
-			<div id="footer-container" class="row">
+			<footer id="footer-container" class="row">
 				{include file="footer_responsive.tpl"}
-			</div>
+			</footer>
 
 		</div>
 

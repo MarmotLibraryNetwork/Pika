@@ -5,15 +5,15 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
-.facetTitle, .exploreMoreTitle{
+.facetTitle, .exploreMoreTitle {
   background: #f8f8f8;
-}
 
-.facetTitle:hover, .exploreMoreTitle:hover{
-  background-color: @wilkinson-dark-blue;
-  background: -moz-linear-gradient(left center , darken(#d81f3c, 15%) 0%, @wilkinson-dark-blue 100%);
-  color: #fff;
-  text-shadow: none;
+  &:hover {
+    background-color: @wilkinson-dark-blue;
+    background: -moz-linear-gradient(left center, darken(#d81f3c, 15%) 0%, @wilkinson-dark-blue 100%);
+    color: #fff;
+    text-shadow: none;
+  }
 }
 
 .header-login-button-mixin;
@@ -27,22 +27,32 @@
 }
 
 .btn.btn-primary {
-  background-color: @wilkinson-red;
+  //background-color: @wilkinson-red;
   border: none;
 }
 .sidebar-links div.panel-heading {
-  background-image: none;
-  background-color: @wilkinson-dark-blue;
+  //background-image: none;
+  //background-color: @wilkinson-dark-blue;
   background: @wilkinson-dark-blue;
   color: white;
   text-shadow: none;
 }
 
-div.sidebar-button{
+div.sidebar-button {
   padding: 5px 15px;
   background-color: @wilkinson-dark-blue;
   background-image: none;
   color: #fff;
   margin-bottom: 15px;
   border-radius: 4px;
+}
+
+.panel a:hover {
+  text-decoration: underline #fff;
+}
+
+// prevent overrides from applying to the object editor form system
+.panel-default:not(.active) .panel-title {
+  color: inherit;
+  text-shadow: none;
 }

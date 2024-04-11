@@ -1,6 +1,6 @@
 {strip}
-<div id="home-page-search" class="row"{if $displaySidebarMenu} style="display: none"{/if}>
-	<div class="col-xs-12">
+<search id="home-page-search" class="row"{if $displaySidebarMenu} style="display: none"{/if}>
+	<div class="col-tn-12">
 		<div class="row">
 			<div class="hidden-xs-inline col-md-12 text-center" id="home-page-search-label">
 				SEARCH <span class="glyphicon glyphicon-search"></span>
@@ -207,5 +207,5 @@
 			{/if}
 		</form>
 	</div>
-</div>
+</search>
 {/strip}

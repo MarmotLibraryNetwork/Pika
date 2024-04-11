@@ -7007,12 +7007,6 @@ a:focus > .header-button {
 #browse-category-picker .jcarousel-control-next:focus {
   outline: 5px auto #E15F15 !important;
 }
-.jcarousel-pagination > a:focus {
-  outline: 1px solid #E15F15 !important;
-}
-.jcarousel-pagination > a.active:focus {
-  outline: 2px solid #78ada3 !important;
-}
 input[type="checkbox"]:focus {
   outline: 5px auto #78ada3 !important;
 }
@@ -7866,7 +7860,7 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
   border-radius: 50%;
 }
 body {
-  color: #6B6B6B;
+  color: #656565;
 }
 #content-container {
   padding: 0;
@@ -8907,7 +8901,6 @@ a.browse-thumbnail-sorted.active {
 }
 .bg-overdue {
   background-color: #f2dede !important;
-  color: #656565;
 }
 .bg-overdue a.result-title,
 .bg-overdue .result-value > a {
@@ -9687,7 +9680,8 @@ a.browse-thumbnail-sorted.active {
   }
 }
 .series a,
-.novelistSeries a {
+.novelistSeries a,
+.facetDetails a {
   color: #3b679a;
   -webkit-text-decoration: underline dotted;
           text-decoration: underline dotted;
@@ -9707,7 +9701,7 @@ a.browse-thumbnail-sorted.active {
 .cart {
   background: white;
   padding: 5px 10px 5px 10px;
-  color: #6B6B6B;
+  color: #656565;
   height: 300px;
 }
 .remove {
@@ -10180,12 +10174,12 @@ a.browse-thumbnail-sorted.active {
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentLinks {
   padding: 20px;
   font-size: 14px;
-  color: #6B6B6B;
+  color: #656565;
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentRandomImage {
   padding: 20px;
   font-size: 14px;
-  color: #6B6B6B;
+  color: #656565;
   text-align: center;
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentRandomImage figure a img {
