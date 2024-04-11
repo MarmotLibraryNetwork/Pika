@@ -118,7 +118,7 @@
 			</div>
 
 			<footer id="footer-container" class="row">
-				{include file="footer_responsive.tpl"}
+				{include file="footer-responsive.tpl"}
 			</footer>
 
 		</div>
