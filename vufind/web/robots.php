@@ -52,5 +52,5 @@ BLOCK;
 
 	}
 }else{
-	echo "User-agent: *\r\nDisallow: /vufind/\r\n";
+	echo "User-agent: *\r\nAllow: /\r\n";
 }
