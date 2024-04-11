@@ -52,5 +52,5 @@ BLOCK;
 
 	}
 }else{
-	echo "User-agent: *\r\nDisallow: /\r\n";
+	//echo "User-agent: *\r\nDisallow: /\r\n";
 }
