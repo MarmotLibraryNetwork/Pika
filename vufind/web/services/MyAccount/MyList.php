@@ -195,6 +195,8 @@ class MyAccount_MyList extends MyAccount {
 			$favList = new FavoriteHandler($list, $userCanEdit);
 			$favList->buildListForDisplay();
 		}
+		$interface->assign('metadataTemplate', 'MyAccount/listMetadata.tpl');
+		$interface->assign('semanticData', $list);
 		$this->display('../MyAccount/list.tpl', $list->title ?? 'My List', 'Search/results-sidebar.tpl');
 		// this relative template path is used when an Archive object is in the list;
 	}
