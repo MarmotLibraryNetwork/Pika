@@ -6,18 +6,7 @@
 				{include file="contact-info.tpl"}
 			</div>
 			<div class="col-tn-12 col-sm-4 text-left pull-left" id="install-info">
-				{if !$productionServer}
-					<small class='location_info'>{$physicalLocation}{if $debug} ({$activeIp}){/if} - {$deviceName}</small>
-				{/if}
-				<small class='version_info'>{if !$productionServer} / {/if}v. {$gitBranch}{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles))} ({$gitCommit}){/if}</small>
-				{if $debug}
-					<small class='session_info'> / session {$session}</small>
-					<small class='session_info'> / Smarty v. {$smarty.version}</small>
-					<small class='scope_info'> / scope {$solrScope}</small>
-					{if (!empty($smarty.cookies.test_ip))}
-						<small> / test_ip : {$smarty.cookies.test_ip}</small>
-					{/if}
-				{/if}
+				{include file="footer-install-info.tpl"}
 			</div>
 			<div class="col-tn-12 col-sm-4 text-center pull-left">
 				<a href="https://www.littletongov.org/" title="The City of Littleton, CO.">
@@ -30,13 +19,7 @@
 				{/if}
 			</div>
 		</div>
-		{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('cataloging', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
-			<div class="row">
-				<div class="col-sm-7 text-left" id="indexing-info">
-					<small>Last Full Index {$lastFullReindexFinish}, Last Partial Index {$lastPartialReindexFinish}</small>
-				</div>
-			</div>
-		{/if}
+		{include file="footer-indexing-info.tpl"}
 	</div>
 </div>
 {/strip}
