@@ -38,7 +38,10 @@
 		{/strip}
 	</head>
 	<body class="module_{$module} action_{$action}{if $masqueradeMode} masqueradeMode{/if}" id="{$module}-{$action}">
-		{if $masqueradeMode}
+
+	{include file="bybass-blocks-links.tpl"}
+
+	{if $masqueradeMode}
 			{include file="masquerade-top-navbar.tpl"}
 		{/if}
 		{strip}

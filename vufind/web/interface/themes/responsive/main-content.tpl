@@ -2,7 +2,7 @@
 	{if $showBreadcrumbs}
 		{include file="breadcrumbs.tpl"}
 	{/if}
-	<main>
+	<main id="main">
 		{if $module}
 			{include file="$module/$pageTemplate"}
 		{else}
