@@ -29,7 +29,7 @@
 require_once 'bootstrap.php';
 global $configArray;
 global $library;
-//if ($configArray['Site']['isProduction']){
+if ($configArray['Site']['isProduction']){
 	echo @file_get_contents('robots.txt');
 	$url  = empty($library->catalogUrl) ? $configArray['Site']['url'] : $_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl;
 
@@ -51,6 +51,6 @@ BLOCK;
 		//Google may want this with a lower case sitemap even though they specify capitalized.  Provide both.
 
 	}
-/*}else{
+}else{
 	echo "User-agent: *\r\nDisallow: /\r\n";
-}*/
+}
