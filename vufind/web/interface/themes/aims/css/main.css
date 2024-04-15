@@ -6798,7 +6798,8 @@ a.btn-info {
   text-decoration: none;
   top: 20em;
 }
-#more-details-accordion .panel-body a:not(.btn) {
+#more-details-accordion .panel-body a:not(.btn),
+.related-manifestation table a:not(.btn) {
   color: #3b679a;
   -webkit-text-decoration: underline dotted;
           text-decoration: underline dotted;
