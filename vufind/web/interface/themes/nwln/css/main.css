@@ -9800,6 +9800,7 @@ a.browse-thumbnail-sorted.active {
 }
 #more-details-accordion #descriptionPanelBody,
 #more-details-accordion .excerpt,
+#more-details-accordion .summary,
 #more-details-accordion .review {
   line-height: 1.7em;
 }
