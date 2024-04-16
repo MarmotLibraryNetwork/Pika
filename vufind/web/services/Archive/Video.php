@@ -39,6 +39,12 @@ class Archive_Video  extends Archive_Object{
 			$interface->assign('videoLink', $configArray['Islandora']['objectUrl'] . "/{$this->pid}/datastream/OBJ/view");
 		}
 
+		# Closed Captions
+		if($this->archiveObject->getDatastream('CC') != null){
+			$interface->assign('vttLink', $configArray['Islandora']['objectUrl'] . "/{$this->pid}/datastream/CC/view");
+		}
+
+
 		$interface->assign('showExploreMore', true);
 
 		// Display Page

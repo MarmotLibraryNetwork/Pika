@@ -10,6 +10,9 @@
 		{if $canView}
 			<video width="100%" controls poster="{$medium_image}" id="video-player" oncontextmenu="return false;">
 				<source src="{$videoLink}" type="video/mp4">
+				{if $vttLink}
+				<track kind="captions" src="{$vttLink}" srclang="en" label="English" />
+				{/if}
 			</video>
 		{else}
 			{include file="Archive/noAccess.tpl"}
