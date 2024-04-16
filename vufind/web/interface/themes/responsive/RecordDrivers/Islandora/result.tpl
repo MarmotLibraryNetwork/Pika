@@ -12,7 +12,7 @@
 			{if $disableCoverArt != 1}
 				{*<div class='descriptionContent{$summShortId|escape}' style='display:none'>{$summDescription}</div>*}
 				<a href="{$summUrl}">
-					<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image'}">
+					<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail img-responsive" alt="Thumbnail{if $summTitle} for '{$summTitle}'{/if}">
 				</a>
 			{/if}
 		</div>

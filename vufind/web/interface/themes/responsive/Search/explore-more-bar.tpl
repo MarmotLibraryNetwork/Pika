@@ -1,10 +1,10 @@
 {strip}
 	{* TODO: Consider renaming classes to assume they are under the exploreMoreBar class *}
-<div class="exploreMoreBar row">
+<aside class="exploreMoreBar row" aria-labelledby="exploreMoreBarLabel">
 	{*<div class="label-left">*}
 	<div class="label-top">
-		<img src="{img filename='/interface/themes/responsive/images/ExploreMore.png'}" alt="{translate text='Explore More'}">
-		<div class="exploreMoreBarLabel">{translate text='Explore More'}</div>
+		<img src="{img filename='/interface/themes/responsive/images/ExploreMore.png'}" alt=""{* "Alternative text of images should not be repeated as text" *}>
+		<div id="exploreMoreBarLabel" class="exploreMoreBarLabel">{translate text='Explore More'}</div>
 	</div>
 
 	<div class="exploreMoreContainer">
@@ -42,6 +42,6 @@
 		</div>
 	</div>
 
-</div>
+</aside>
 {/strip}
 

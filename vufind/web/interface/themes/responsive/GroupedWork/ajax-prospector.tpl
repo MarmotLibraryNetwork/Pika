@@ -2,7 +2,7 @@
 <table id="prospectorTitles" class="table table-striped">
 	<th>Title</th>
 	<th>Author</th>
-	<th>Pub. Date</th>
+	<th>Publication Date</th>
 	<th>Format</th>
   {foreach from=$prospectorResults item=prospectorTitle}
 	  {if $similar.recordId != -1}

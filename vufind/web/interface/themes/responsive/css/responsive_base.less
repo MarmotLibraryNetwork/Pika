@@ -43,8 +43,35 @@ a.btn-primary, a.btn-info {
   }
 }
 
-#more-details-accordion .panel-body {
+// Skip block navigation
+// (HTML and styling (originally scss) for skip block navigation taken from https://developer.mozilla.org )
+
+.a11y-nav {
+  position: absolute;
+  top: -20em;
+  width: 100%;
+  z-index: 10000; // var(--z-index-a11y); //  10000
+
   a {
+    background-color: rgba(255, 255, 255, 0.9);
+    font-weight: bold; // var(--font-body-strong-weight); // 600
+    left: 0;
+    padding: 0.5rem;
+    position: absolute;
+    right: 0;
+    text-align: center;
+
+    &:hover,
+    &:focus {
+      box-shadow: 0 1px 2px rgba(43,42,51,.05); // var(--shadow-01); // 0 1px 2px rgba(43,42,51,.05);
+      text-decoration: none;
+      top: 20em;
+    }
+  }
+}
+
+#more-details-accordion .panel-body, .related-manifestation table {
+  a:not(.btn) {
     .link-decorating-mixin;
   }
 }
@@ -129,6 +156,7 @@ body {
   }
 }
 
+// accordion mixin
 .accordion-headers-and-titles(@accordion-header-bg-color: @accordion-header-bg-color; @accordion-active-header-bg-color: @accordion-active-header-bg-color;
   @accordion-header-color: @accordion-header-color; @accordion-active-header-color: @accordion-active-header-color;
   @accordion-header-shadow: 1px 1px @accordion-header-shadow-color; @accordion-active-header-shadow:  1px 1px  @accordion-active-header-shadow-color){
@@ -220,7 +248,7 @@ body {
 .modal-dialog {
   max-width: 100%; // constrain content to the modal box
 }
-.modal-buttons{
+.modal-buttons {
   margin-left: 3px;
   margin-right: 3px;
 }
@@ -230,18 +258,18 @@ body {
   font-size: 40px;
   opacity: .4;
 }
-.btn:active, .btn.active{
+.btn:active, .btn.active {
   font-weight: bold;
 }
 
-.btn-toolbar{
-  @media print{
+.btn-toolbar {
+  @media print {
     display: none;
   }
 }
 
-.btn-group{
-  @media print{
+.btn-group {
+  @media print {
     display: none;
   }
 }
@@ -256,10 +284,10 @@ body {
   margin-bottom: 0;
 }
 
-#search_box_group{
+#search_box_group {
   // Append input to search box when larger than phone
   @media (max-width: 480px) {
-    #search_button{
+    #search_button {
       padding-top: 5px;
       width: 100%;
     }
@@ -348,8 +376,8 @@ div.striped {
   }
 }
 
-a:focus img {
-  //outline: 5px auto @focus-ring-color!important;
+a:focus img.listResultImage {
+  outline: 5px auto @focus-ring-color!important;
 }
 
 #vertical-menu-bar .menu-bar-option:has(.menu-icon:focus) {
@@ -369,17 +397,18 @@ a:focus > .header-button {
 #browse-category-picker .jcarousel-control-prev:focus, #browse-category-picker .jcarousel-control-next:focus {
   outline: 5px auto @focus-ring-color !important;
 }
-
-.jcarousel-pagination > a:focus {
-  outline: 1px solid @focus-ring-color !important;
-}
-
-.jcarousel-pagination > a.active:focus {
-  outline: 2px solid @menu-bar-background-color !important;
-}
+// Links have been removed from the jcarousel-pagination display
+//.jcarousel-pagination > a:focus {
+//  outline: 1px solid @focus-ring-color !important;
+//}
+//
+//.jcarousel-pagination > a.active:focus {
+//  outline: 2px solid @menu-bar-background-color !important;
+//}
 
 input[type="checkbox"]:focus {
   outline: 5px auto @menu-bar-background-color !important;
+  //TODO: use focus ring color
 }
 
 nav.breadcrumbs [aria-current="page"] {
@@ -387,6 +416,7 @@ nav.breadcrumbs [aria-current="page"] {
   font-style: italic !important;
   color: #222;
 }
+
 // Datatable style overrides
 table.dataTable.display tbody tr.odd, table.dataTable.order-column.stripe tbody tr.odd {
   & > .sorting_1,& > .sorting_2,& > .sorting_3 {

@@ -9,7 +9,7 @@
 			<div class="col-xs-11 col-sm-3 col-md-3 col-lg-2 text-center">
 				{if $disableCoverArt != 1}
 					<a href="{$summUrl}">
-						<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image'}">
+						<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail img-responsive" alt="Thumbnail{if $summTitle} for '{$summTitle}'{/if}">
 					</a>
 				{/if}
 			</div>

@@ -64,9 +64,9 @@
 				<th>Created</th>
 				<th>ILS user ID</th>
 				<th>Home Library</th>
-				<th></th>
-				<th></th>
-				<th></th>
+				<td></td> {* Can't be <th>, for accessiblity. "Table header elements should have visible text. Ensure that the table header can be used by screen reader users. If the element is not a header, marking it up with a `td` is more appropriate." *}
+				<td></td>
+				<td></td>
 			</tr>
 				{foreach from=$duplicateUsers item=duplicateUser name=loop}
 						<tr style="border-top: 1px solid #ddd">

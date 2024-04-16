@@ -34,9 +34,9 @@
 					<table class="table table-striped table-condensed itemSummaryTable">
 						<thead>
 						<tr>
-							<th>Avail. Copies</th>
+							<th>Available Copies</th>
 							<th>Location</th>
-							<th>Call #</th>
+							<th>Call Number</th>
 						</tr>
 						</thead>
 						<tbody>

@@ -6779,7 +6779,29 @@ a.btn-info {
     content: "" !important;
   }
 }
-#more-details-accordion .panel-body a {
+.a11y-nav {
+  position: absolute;
+  top: -20em;
+  width: 100%;
+  z-index: 10000;
+}
+.a11y-nav a {
+  background-color: rgba(255, 255, 255, 0.9);
+  font-weight: bold;
+  left: 0;
+  padding: 0.5rem;
+  position: absolute;
+  right: 0;
+  text-align: center;
+}
+.a11y-nav a:hover,
+.a11y-nav a:focus {
+  box-shadow: 0 1px 2px rgba(43, 42, 51, 0.05);
+  text-decoration: none;
+  top: 20em;
+}
+#more-details-accordion .panel-body a:not(.btn),
+.related-manifestation table a:not(.btn) {
   color: #3b679a;
   -webkit-text-decoration: underline dotted;
           text-decoration: underline dotted;
@@ -6995,6 +7017,9 @@ div.striped > div:nth-child(odd) {
 .btn-group-vertical > .btn:focus {
   outline: 5px auto #E15F15 !important;
 }
+a:focus img.listResultImage {
+  outline: 5px auto #E15F15 !important;
+}
 #vertical-menu-bar .menu-bar-option:has(.menu-icon:focus) {
   border: 2px solid #E15F15 !important;
   outline: 2px solid white;
@@ -7009,12 +7034,6 @@ a:focus > .header-button {
 #browse-category-picker .jcarousel-control-prev:focus,
 #browse-category-picker .jcarousel-control-next:focus {
   outline: 5px auto #E15F15 !important;
-}
-.jcarousel-pagination > a:focus {
-  outline: 1px solid #E15F15 !important;
-}
-.jcarousel-pagination > a.active:focus {
-  outline: 2px solid #1F364C !important;
 }
 input[type="checkbox"]:focus {
   outline: 5px auto #1F364C !important;
@@ -7869,7 +7888,7 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
   border-radius: 50%;
 }
 body {
-  color: #6B6B6B;
+  color: #656565;
 }
 #content-container {
   padding: 0;
@@ -8910,7 +8929,6 @@ a.browse-thumbnail-sorted.active {
 }
 .bg-overdue {
   background-color: #f2dede !important;
-  color: #656565;
 }
 .bg-overdue a.result-title,
 .bg-overdue .result-value > a {
@@ -9690,7 +9708,9 @@ a.browse-thumbnail-sorted.active {
   }
 }
 .series a,
-.novelistSeries a {
+.novelistSeries a,
+.facetDetails a,
+.solicit-new-materials-request a {
   color: #3b679a;
   -webkit-text-decoration: underline dotted;
           text-decoration: underline dotted;
@@ -9710,7 +9730,7 @@ a.browse-thumbnail-sorted.active {
 .cart {
   background: white;
   padding: 5px 10px 5px 10px;
-  color: #6B6B6B;
+  color: #656565;
   height: 300px;
 }
 .remove {
@@ -9783,6 +9803,7 @@ a.browse-thumbnail-sorted.active {
 }
 #more-details-accordion #descriptionPanelBody,
 #more-details-accordion .excerpt,
+#more-details-accordion .summary,
 #more-details-accordion .review {
   line-height: 1.7em;
 }
@@ -10183,12 +10204,12 @@ a.browse-thumbnail-sorted.active {
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentLinks {
   padding: 20px;
   font-size: 14px;
-  color: #6B6B6B;
+  color: #656565;
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentRandomImage {
   padding: 20px;
   font-size: 14px;
-  color: #6B6B6B;
+  color: #656565;
   text-align: center;
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentRandomImage figure a img {

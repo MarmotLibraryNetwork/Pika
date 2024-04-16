@@ -21,7 +21,7 @@
 		<div class="col-tn-12">
 		{if $thumbnail && !$main_image}
 			{if $exhibitThumbnailURL}<a href="{$exhibitThumbnailURL}">{/if}
-			<img src="{$thumbnail}" class="img-responsive ex0hibit-thumbnail" alt='Thumbnail for "{$title}" collection'>
+			<img src="{$thumbnail}" class="img-responsive exhibit-thumbnail" alt='Thumbnail for "{$title}" collection'>
 			{if $exhibitThumbnailURL}</a>{/if}
 			<span id="exhibitMainDescriptionContainer" class="lead">
 				{$description}

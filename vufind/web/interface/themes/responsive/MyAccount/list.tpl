@@ -1,5 +1,5 @@
 {*{strip}*}
-<meta property="og:image" content="/bookcover.php?id={$myList.id}&size=medium&type=userList">
+
 {if $params.page}{assign var="pageNum" value=$params.page}{else}{assign var="pageNum" value=1}{/if}
 {if $params.pagesize}{assign var="pageSize" value=$params.pagesize}{else}{assign var="pageSize" value=20}{/if}
 {if $params.sort}{assign var="listSort" value=$params.sort}{else}{assign var="listSort" value=null}{/if}

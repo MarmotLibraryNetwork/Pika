@@ -95,7 +95,7 @@
 					</div>
 
 					<div class="row">
-						<div class="result-label col-tn-3">Pub. Date: </div>
+						<div class="result-label col-tn-3">Publication Date: </div>
 						<div class="result-value col-tn-9">
 							{if $summPubDate}
 								{$summPubDate|escape}
