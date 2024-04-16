@@ -7019,6 +7019,9 @@ div.striped > div:nth-child(odd) {
 .btn-group-vertical > .btn:focus {
   outline: 5px auto #E15F15 !important;
 }
+a:focus img.listResultImage {
+  outline: 5px auto #E15F15 !important;
+}
 #vertical-menu-bar .menu-bar-option:has(.menu-icon:focus) {
   border: 2px solid #E15F15 !important;
   outline: 2px solid white;
