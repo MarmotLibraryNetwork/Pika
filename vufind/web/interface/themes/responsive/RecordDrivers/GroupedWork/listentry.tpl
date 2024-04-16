@@ -4,7 +4,7 @@
 	{if $params.sort}{assign var="listSort" value=$params.sort}{else}{assign var="listSort" value=""}{/if}
 	<div class="row">
 		<div class="col-md-1"><input type="checkbox" name="marked" id="favorite_{$summId|escape}" class="form-control-static" value="{$summId|escape}"></div>
-	<div class="col-md-11 rslt">
+	<div class="col-md-11">
 		<div id="groupedRecord{$summId|escape}" class="resultsList" data-order="{$resultIndex}">
 			{* the data-order attribute is used for user-defined ordering in user lists  *}
 		<a name="record{$summId|escape:"url"}"></a>
