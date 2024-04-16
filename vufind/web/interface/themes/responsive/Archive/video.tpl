@@ -8,7 +8,7 @@
 		</h1>
 
 		{if $canView}
-			<video width="100%" controls poster="{$medium_image}" id="video-player" oncontextmenu="return false;" crossorigin="anonymous">
+			<video width="100%" controls poster="{$medium_image}" id="video-player" oncontextmenu="return false;">
 				<source src="{$videoLink}" type="video/mp4">
 				{if $vttLink}
 				<track kind="captions" src="{$vttLink}" label="English" />
