@@ -11,7 +11,7 @@
 			<video width="100%" controls poster="{$medium_image}" id="video-player" oncontextmenu="return false;">
 				<source src="{$videoLink}" type="video/mp4">
 				{if $vttLink}
-				<track kind="captions" src="{$vttLink}" srclang="en" label="English" />
+				<track kind="captions" src="{$vttLink}" label="English" />
 				{/if}
 			</video>
 		{else}
