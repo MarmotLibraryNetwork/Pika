@@ -7017,6 +7017,7 @@ div.striped > div:nth-child(odd) {
 .btn-group-vertical > .btn:focus {
   outline: 5px auto #E15F15 !important;
 }
+.browse-thumbnail a:focus img,
 a:focus img.listResultImage {
   outline: 5px auto #E15F15 !important;
 }
