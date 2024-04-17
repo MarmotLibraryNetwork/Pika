@@ -40,8 +40,9 @@ class Archive_Video  extends Archive_Object{
 		}
 
 		# Closed Captions
-		if($this->archiveObject->getDatastream('CC') != null){
-			$interface->assign('vttLink', $configArray['Islandora']['objectUrl'] . "/{$this->pid}/datastream/CC/view");
+		if ($this->archiveObject->getDatastream('CC') != null){
+			$interface->assign('vttLink', '/Archive/AJAX?method=getVtt&pid='. $this->pid); // AJAX call to work around CORS
+			//$interface->assign('vttLink', $configArray['Islandora']['objectUrl'] . "/{$this->pid}/datastream/CC/view"); //Direct stream
 		}
 
 

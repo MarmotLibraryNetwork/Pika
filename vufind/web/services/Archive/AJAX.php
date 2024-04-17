@@ -44,6 +44,10 @@ class Archive_AJAX extends AJAXHandler {
 		'clearCache',
 	];
 
+	protected $methodsThatRespondThemselves = [
+		'getVtt',
+	];
+
 	function getRelatedObjectsForExhibit(){
 		if (isset($_REQUEST['collectionId'])){
 			global $interface;
@@ -318,7 +322,7 @@ class Archive_AJAX extends AJAXHandler {
 			$this->setupTimelineSorts($sort, $searchObject);
 			$interface->assign('showThumbnailsSorted', true);
 
-			$relatedObjects = array();
+			$relatedObjects = [];
 			$response       = $searchObject->processSearch(true, false);
 			if ($response && isset($response['error'])){
 				$interface->assign('solrError', $response['error']['msg']);
@@ -886,6 +890,32 @@ class Archive_AJAX extends AJAXHandler {
 		return [
 			'success' => false,
 		];
+	}
+
+	/**
+	 * Output vtt file stored in the islandora.
+	 * Used to get around the requirements for setting up CORS requests on the Islandora server.
+	 */
+	public function getVtt(){
+		$pid = urldecode($_REQUEST['pid']);
+		if (!empty($pid)){
+			global $configArray;
+			$objectUrl          = $configArray['Islandora']['objectUrl'];
+			$closedCaptionsUrl  = $objectUrl . '/' . $pid . '/datastream/CC/view';
+			$closedCaptionsData = file_get_contents($closedCaptionsUrl);
+
+			if ($closedCaptionsData){
+				header('Content-Type: text/vtt');
+				echo $closedCaptionsData;
+
+
+			}
+		}else{
+			//TODO: log error
+			echo ''; //TODO Echo an httpd error code?
+
+		}
+
 	}
 
 	public function getAdditionalRelatedObjects(){
