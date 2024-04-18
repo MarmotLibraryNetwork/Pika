@@ -2111,7 +2111,7 @@ class MarcRecord extends IndexRecord {
 		}
 		// Consolidate ON Order Copies Data for display
 		foreach ($this->holdingSections as $holdingSection){
-			$onOrderCopies = array();
+			$onOrderCopies = [];
 			foreach ($holdingSection['holdings'] as $index => $holding){
 				if ($holding['status'] == 'On Order'){
 					$shelfLocation = $holding['shelfLocation'];
@@ -2120,7 +2120,7 @@ class MarcRecord extends IndexRecord {
 						$onOrderCopies[$shelfLocation]['onOrderCopies'] += $holding['onOrderCopies'];
 					}else{
 						// Create the initial On Order holding entry
-						$onOrderCopies[$shelfLocation] = array(
+						$onOrderCopies[$shelfLocation] = [
 							'shelfLocation' => $shelfLocation,
 							'callNumber'    => $holding['callNumber'],
 							'available'     => false,
@@ -2128,7 +2128,7 @@ class MarcRecord extends IndexRecord {
 							'status'        => $holding['status'],
 							'statusFull'    => $holding['statusFull'],
 							'holdable'      => true,
-						);
+						];
 					}
 					unset($this->holdingSections[$holdingSection['sectionId']]['holdings'][$index]);
 				}
@@ -2149,8 +2149,7 @@ class MarcRecord extends IndexRecord {
 		$interface->assign('statusSummary', $this->statusSummary);
 	}
 
-	public function getCopies()
-	{
+	public function getCopies(){
 		$this->loadCopies();
 		return $this->holdings;
 	}

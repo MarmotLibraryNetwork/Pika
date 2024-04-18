@@ -39,7 +39,7 @@ class VuFindPager {
 	 * @param   array $options        The Pager options to override.
 	 * @access  public
 	 */
-	public function __construct($options = array()){
+	public function __construct($options = []){
 		// Set default Pager options:
 		$finalOptions = [
 			'mode'                  => 'sliding',
