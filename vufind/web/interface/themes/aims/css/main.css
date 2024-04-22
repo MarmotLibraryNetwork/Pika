@@ -10494,3 +10494,7 @@ a#headerLogoutLink {
     font-size: 18px;
   }
 }
+.btn.active,
+.btn:active {
+  font-weight: 400;
+}
