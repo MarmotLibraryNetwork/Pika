@@ -85,11 +85,16 @@ a#headerMyAccountLink, a#headerLoginLink, a#headerLogoutLink {
 }
 
 .btn, .btn-sm {
-  border-radius: 0px;
+  border-radius: 0;
 }
 
 @media (max-width: 992px) {
   .nielsenlibrarytxt {
     font-size: 18px;
   }
+}
+
+// Override bold button text
+.btn.active, .btn:active {
+  font-weight: 400;
 }

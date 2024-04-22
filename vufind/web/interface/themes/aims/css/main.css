@@ -3252,7 +3252,7 @@ input[type="button"].btn-block {
   font-size: 12px;
   line-height: 1.5;
   border-radius: 3px;
-  border-radius: 0px;
+  border-radius: 0;
 }
 .btn-group-lg > .btn {
   padding: 10px 16px;
@@ -10590,10 +10590,14 @@ a#headerLogoutLink {
 }
 .btn,
 .btn-sm {
-  border-radius: 0px;
+  border-radius: 0;
 }
 @media (max-width: 992px) {
   .nielsenlibrarytxt {
     font-size: 18px;
   }
+}
+.btn.active,
+.btn:active {
+  font-weight: 400;
 }
