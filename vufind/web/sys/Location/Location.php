@@ -1631,7 +1631,7 @@ class Location extends DB_DataObject {
 		$hours        = $this->getHoursFormatted();
 		$mapAddress   = urlencode(preg_replace('/\r\n|\r|\n/', '+', $this->address));
 		$mapLink      = $_SERVER['REQUEST_SCHEME'] . "://maps.google.com/maps?f=q&hl=en&geocode=&q=$mapAddress&ie=UTF8&z=15&iwloc=addr&om=1&t=m";
-		$mapImageLink = $_SERVER['REQUEST_SCHEME'] . "://maps.googleapis.com/maps/api/staticmap?center=$mapAddress&zoom=15&size=200x200&sensor=false&markers=color:red%7C$mapAddress&key=" . $configArray['Maps']['apiKey'];
+		$mapImageLink = $_SERVER['REQUEST_SCHEME'] . "://maps.googleapis.com/maps/api/staticmap?center=$mapAddress&zoom=15&size=300x300&sensor=false&markers=color:red%7C$mapAddress&key=" . $configArray['Maps']['apiKey'];
 		$locationInfo = [
 			'id'        => $this->locationId,
 			'name'      => $this->displayName,
