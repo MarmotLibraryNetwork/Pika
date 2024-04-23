@@ -10577,7 +10577,7 @@ fieldset[disabled] .btn-masquerade.active {
   color: #000;
 }
 body {
-  background-image: url("http://www.salidalibrary.org/wp-content/uploads/2014/02/monarch-ski-resort-trees-11_20132.jpg");
+  background-image: url('https://www.salidalibrary.org/wp-content/uploads/2023/12/Monarch-Ski-Resort-2013.jpg');
   background-position: center top;
   background-size: auto;
   background-repeat: no-repeat;
@@ -10591,4 +10591,11 @@ body {
   background-color: #FFF;
   padding: 4px;
   border-radius: 4px;
+}
+.sidebar-button {
+  /*background: linear-gradient(to bottom, #203354, #808080);*/
+  background: #808080;
+}
+.header-button {
+  background: #808080;
 }
