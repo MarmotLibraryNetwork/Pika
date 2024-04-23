@@ -10524,3 +10524,227 @@ a#headerMyAccountLink {
     float: right;
   }
 }
+/*** Browse Boxes & Header ***/
+/* Gets rid of the blue thick border under the button when mousing over */
+.header-button:hover {
+  border-bottom: 1px solid #adadad !important;
+}
+/* Drives the color for the Magnifying Glass and the name of the selected browse list */
+.selected-browse-label-search a {
+  color: #646510;
+}
+/* Drives the color for the horizontal rule for the name of the selected browse list */
+#selected-browse-label {
+  background: linear-gradient(to bottom, #FFFFFF, #FFFFFF 50%, #a8a96f 30%, #a8a96f 33%, #FFFFFF 56%) repeat scroll 0 0 rgba(0, 0, 0, 0);
+  margin-bottom: 5px;
+}
+/*Replaces the look of the mouseover on the login buttons*/
+.header-button:hover {
+  border-bottom: 4px solid #7B1405;
+}
+/*** Horizontal Search Box ***/
+#header-container {
+  border-bottom: 0;
+}
+#horizontal-search-box {
+  background-color: #a3a60f;
+  background: linear-gradient(to bottom, #a3a60f, #a3a60f);
+}
+#searchSource {
+  background-color: #fff;
+  border: medium none;
+}
+/**** Search Results Page Buttons ****/
+/* Colors the Place Hold buttons from green to grey on mouseover */
+.btn-primary:active,
+.btn-primary:focus,
+.btn-primary:hover {
+  color: #333;
+  background-color: #ebebeb;
+  border-color: #adadad;
+}
+/* Styles the Vertically stacked buttons that appear if you show editions */
+.btn-info {
+  background-color: #a3a60f;
+  border-color: #adadad;
+}
+a.btn.btn-sm.btn-default {
+  color: #333;
+}
+.btn-group-vertical > .btn:hover,
+.btn-group > .btn:hover {
+  background-color: #ebebeb;
+  border-color: #adadad;
+  color: #333;
+}
+/* Styles the Prospector Button */
+#moreResultsFromProspector .btn-info {
+  background-color: #646510;
+  border-color: #4e4f0d;
+  color: #fff;
+}
+#moreResultsFromProspector .btn-info:active,
+#moreResultsFromProspector .btn-info:hover {
+  background-color: #ebebeb;
+  border-color: #adadad;
+  color: #333;
+}
+/*** Accordion Styling ***/
+/****Horizontal Carousel Widget Code****/
+/*Gets rid of the grey bar that features the title and view all link and sets the area for our font size*/
+.embeddedListWidgetBody .titleScrollerHeader {
+  background: none repeat scroll 0 0 rgba(0, 0, 0, 0);
+  height: 19px;
+}
+/*Gets rid of the subtle left and right bars that appear when you remove the iframe border*/
+.embeddedListWidgetBody .tab-content {
+  border-left: none;
+  border-right: none;
+  padding: 0;
+}
+/*Gets rid of the black bounding box around jacket art and replaces with orange*/
+.embeddedListWidgetBody .scrollerTitle.selected {
+  border: 1px solid #C65500;
+  border-radius: 1px;
+  padding: 0;
+  text-align: center;
+}
+/*re-sizes the jacket art to mimic our website carousels*/
+.embeddedListWidgetBody .mediumScroller .scrollerTitleCover {
+  max-height: 175px;
+  max-width: 175px;
+}
+/*resizes the area of the jacket art to something smaller so that the titles lie closer to the art*/
+.embeddedListWidgetBody .mediumScroller .scrollerBody {
+  height: 190px;
+}
+/*gets rid of the opacity of the jackets*/
+.embeddedListWidgetBody .scrollerTitle img {
+  opacity: 1;
+}
+/*keeps jacket art from wrapping onto another line*/
+.embeddedListWidgetBody .scrollerBody {
+  white-space: nowrap;
+}
+/*gets rid of the navigation arrows used by the widget*/
+.embeddedListWidgetBody .glyphicon {
+  display: none;
+}
+/*inserts the navigation arrows used on our website*/
+.embeddedListWidgetBody .leftScrollerButton {
+  background: url("http://www.steamboatlibrary.org/sites/all/modules/jcarousellite/modules/jcarousellite_views/images/prev-horizontal.png");
+  background-repeat: no-repeat;
+  height: 35px;
+  text-align: center;
+  width: 28px;
+}
+.embeddedListWidgetBody .rightScrollerButton {
+  background: url("http://www.steamboatlibrary.org/sites/all/modules/jcarousellite/modules/jcarousellite_views/images/next-horizontal.png");
+  background-repeat: no-repeat;
+  height: 35px;
+  text-align: center;
+  width: 28px;
+}
+/*Gets rid of the title for specific widgets*/
+div#listWidget253 .listTitle,
+div#listWidget262 .listTitle,
+div#listWidget263 .listTitle,
+div#listWidget264 .listTitle,
+div#listWidget265 .listTitle {
+  display: none;
+}
+/*sets the title of a book/movie to orange and in our font size*/
+.embeddedListWidgetBody .titleScrollerSelectedTitle {
+  color: #494A0C;
+  font-size: 12px;
+  text-transform: capitalize;
+}
+/*set the author of a book, etc. to the grey/black of our font color*/
+.embeddedListWidgetBody .titleScrollerSelectedAuthor {
+  color: #383838;
+  font-weight: normal;
+  font-size: 12px;
+}
+/*sets the View All link to our colors.*/
+.embeddedListWidgetBody .linkTab a,
+.embeddedListWidgetBody .linkTab a:visited {
+  color: #c65500;
+  text-decoration: none;
+}
+.embeddedListWidgetBody.linkTab a:hover,
+.embeddedListWidgetBody .linkTab a:active {
+  color: #c65500;
+  text-decoration: underline;
+}
+/*Sets the title of the list to our font*/
+.embeddedListWidgetBody .listTitle {
+  color: #8C8E17;
+  font-size: 18px;
+  font-weight: normal;
+}
+/****Text List Widget Code****/
+/*Gets rid of the numbers and the word "by" on the list.*/
+.scrollerTextOnlyListNumber,
+.scrollerTextOnlyListBySpan {
+  display: none;
+}
+/*Theming the links*/
+#BookBuzzKitsList a,
+#BookBuzzKitsList a:visited,
+#BookBuzzKitsList a:hover,
+#BookBuzzKitsList a:active,
+#CarpetBagList a,
+#CarpetBagList a:visited,
+#CarpetBagList a:hover,
+#CarpetBagList a:active {
+  color: #C65500;
+}
+/*Theming the block*/
+.scrollerTitle {
+  display: block;
+  width: 155px;
+  margin: 3px auto;
+  box-sizing: border-box;
+  float: left;
+  font-size: 85%;
+}
+.scrollerTextOnlyListTitle,
+.scrollerTextOnlyListAuthor {
+  display: block;
+  width: 148px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.scrollerTextOnlyListAuthor {
+  color: #383838;
+}
+.scrollerTextOnlyListTitle {
+  text-transform: capitalize;
+}
+/****Digital Archive Display****/
+/*Moves the TWW Jacet image to the right so that the TOC flow better*/
+.img-responsive.thumbnail.exhibit-thumbnail {
+  float: right;
+}
+/*Gets the text in the description to align with the title on a Collection Homepage*/
+.lead.row {
+  margin-left: auto;
+}
+/*Browse Categories Boxes on the Archive Homepage*/
+.archiveComponentBox {
+  background-color: white;
+}
+.archiveComponentContainer .archiveComponent .archiveComponentBody a,
+.archiveComponentContainer .archiveComponent .archiveComponentBody a:visited {
+  color: #6b6b6b;
+}
+.archiveComponentContainer .archiveComponent {
+  color: #6b6b6b;
+}
+.archiveComponentContainer .archiveComponent .archiveComponentHeader {
+  width: 75%;
+}
+.archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox #searchComponentForm {
+  margin-right: 10px;
+}
