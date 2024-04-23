@@ -6,3 +6,363 @@
 @import "../../responsive/css/responsive_base.less";
 
 .header-login-button-mixin();
+
+
+
+
+
+/// Library CSS Overrides
+
+//#browse-sub-category-menu button {
+//  background-color: #FFF;
+//}
+
+#browse-sub-category-menu button.selected {
+  background-color: #336FA3;
+}
+
+.breadcrumbs {
+  background-color: #FFFFFF
+}
+
+.breadcrumb {
+  background-color: #FFFFFF;
+  border-radius: 4px;
+  list-style: none outside none;
+  margin-bottom: 20px;
+  padding: 8px 15px;
+  font-size: 14px;
+}
+
+#horizontal-search-box {
+  background: #336FA3;
+  padding: 9px 0;
+  margin-top: 20px;
+}
+
+#header-container {
+  background: none repeat scroll 0 0 #FFFFFF;
+  border-bottom: 0 solid #336FA3;
+}
+
+.header-primary {
+  border-left: medium none;
+  border-right: medium none;
+}
+
+#header-logo {
+  padding: 0 10px 0 0;
+}
+
+.header-button > a {
+  color: white !important;
+  line-height: 51px !important;
+  text-shadow: none;
+}
+
+.header-button {
+  background-color: rgba(51, 51, 51, 0.6);
+  margin-top: 9px;
+  border: 0 none;
+  border-radius: 0.5em;
+  line-height: 51px !important;
+  text-align: center;
+  height: 47px !important;
+}
+
+.header-button > a:visited {
+  color: #fff !important;
+}
+
+.header-link-wrapper a {
+  font-size: 18px;
+  color: #336FA3;
+}
+
+/*********browse carousel************/
+.browse-label-text {
+  background-color: #FFFFFF;
+  color: #575757;
+  font-size: 22px;
+  line-height: 5px;
+  margin: auto;
+  padding: 0 8px;
+  vertical-align: top;
+}
+
+#home-page-browse-header {
+  background-color: #FFFFFF;
+  padding-bottom: 15px;
+}
+
+#browse-label {
+
+  height: 3px;
+  margin-bottom: 0;
+  margin-right: -15px;
+  margin-top: 20px;
+  background-color: #ffffff;
+}
+
+.browse-label-text {
+  font-size: 0;
+}
+
+#browse-category-picker .jcarousel-control-prev, #browse-category-picker .jcarousel-control-next {
+  background-color: rgba(0, 0, 0, 0);
+  color: #575757;
+  font-size: 75px;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0);
+  text-shadow: none;
+}
+
+
+.jcarousel-pagination a {
+  background: none repeat scroll 0 0 #FFFFFF;
+  border-radius: 10px;
+  box-shadow: 0 0 2px #575757;
+  color: #575757;
+  display: inline-block;
+  font-size: 11px;
+  height: 10px;
+  line-height: 10px;
+  margin-right: 7px;
+  text-decoration: none;
+  text-indent: -9999px;
+  width: 10px;
+}
+
+.jcarousel-pagination a.active {
+  background: none repeat scroll 0 0 #575757;
+  box-shadow: 0 0 2px #575757;
+  color: #FFFFFF;
+  opacity: 1;
+}
+
+.browse-category.category0, .browse-category.category1, .browse-category.category2, .browse-category.category3, .browse-category.category4, .browse-category.category5, .browse-category.category6, .browse-category.category7, .browse-category.category8 {
+  background: #FFFFFF;
+}
+
+.browse-category div {
+  color: #575757;
+  text-shadow: none;
+  display: table-cell;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+/*  center vertically & horizontally category titles within the carousel */
+.browse-category div {
+  height: auto; /* overwrite height: 80px */
+  display: block; /* looks like display:flex works too. */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.jcarousel li {
+  display: flex;
+  align-items: center;
+  display: -webkit-flex; /* Safari */
+  -webkit-align-items: center; /* Safari 7.0+ */
+}
+
+#more-browse-results {
+  background-color: #FFFFFF;
+}
+
+.browse-category.selected {
+  border: 2px solid #BBD4E3;
+}
+
+/************************Search Sidebar*******************************/
+
+.sidebar-button {
+  font-weight: bold;
+}
+
+#home-page-home-button {
+  background: #336fa3;
+}
+
+.sidebar-button {
+  margin-bottom: 0;
+}
+
+#sidebar .col-lg-3 { /*restricted to sidebar; rule may not be applying anymore. pascal 2-9-2016 */
+  margin-top: 20px;
+}
+
+#home-page-search-label {
+  color: #FFFFFF;
+  font-size: 35px;
+  text-shadow: none;
+}
+
+#home-page-search {
+  background: none repeat scroll 0 0 #336fa3;
+  margin-bottom: 5px;
+  padding: 20px 0 10px;
+}
+
+
+#searchSource {
+  background-color: #336fa3;
+  border: medium none;
+  color: #FFFFFF;
+  padding: 5px 0;
+  width: 90%;
+}
+
+#home-page-login a {
+  color: #575757;
+  font-size: 110%;
+}
+
+#home-page-login {
+  text-shadow: none;
+  background-color: #FFFFFF;
+  font-size: 18px;
+  margin-bottom: 5px;
+  margin-top: 25px;
+  padding: 5px;
+}
+
+
+.panel-group .panel {
+  border-radius: 0;
+  margin-bottom: 0;
+  overflow: hidden;
+
+}
+
+.sidebar-links .active .panel-heading, #home-page-hours-locations, #similar-authors-label, .sidebar-links .panel-heading,
+#narrow-search-label, #remove-search-label, #results-sort-label, .exploreMoreTitle {
+  background: none repeat scroll 0 0 #336fa3;
+  border: none;
+}
+
+#explore-more-header {
+  font-variant: none;
+}
+
+.sidebar-links .active .panel-title, #home-page-hours-locations, .sidebar-links .panel-title, .sidebar-label, #results-sort-label {
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  text-shadow: none;
+  text-transform: uppercase;
+}
+
+.sidebar-links .panel-body {
+  background-color: #FFFFFF;
+  color: #336fa3;
+  font-size: 15px;
+}
+
+
+#sidebar-content {
+  background-color: #ffffff;
+}
+
+.sidebar-button {
+  background: #7c7c7d;
+}
+
+hr.menu {
+  border-top: none;
+  height: 0;
+  margin-bottom: 3px;
+  margin-top: 3px;
+}
+
+#home-page-library-section {
+  background-color: #FFFFFF;
+  height: 100%;
+  padding: 15px 0;
+}
+
+.sidebar-links .panel-heading {
+  border-bottom: medium none;
+  padding: 5px 15px;
+}
+
+.panel-heading {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.facetValue {
+  color: #575757;
+  font-size: 14px;
+  padding: 0 0 0 30px;
+}
+
+.facetTitle {
+  background: none repeat scroll 0 0 #FFFFFF;
+  border-bottom: none;
+  border-top: none;
+  color: #014C8D;
+  padding: 8px 30px 6px;
+  text-shadow: none;
+}
+
+#home-page-hours-locations {
+  margin-bottom: 1px;
+}
+
+/********Item Page*******/
+
+#more-details-accordion .panel-body {
+  background-color: #FFFFFF;
+  color: #6B6B6B;
+  font-size: 14px;
+}
+
+#more-details-accordion .panel-title {
+  color: #ffffff;
+  font-size: 16px;
+  text-shadow: none;
+}
+
+#more-details-accordion .active .panel-title {
+  text-shadow: none;
+}
+
+#more-details-accordion .panel-heading {
+  background: #336fa3;
+}
+
+#more-details-accordion .active .panel-heading {
+  background: #336fa3;
+
+}
+
+#list-morelikethis.titleScroller, #list-series.titleScroller {
+  border: medium none;
+}
+
+
+/*********footer************/
+
+#footer-container {
+  border-top: 8px solid #336fa3;
+  padding-top: 3px;
+}
+
+/*********scroller************/
+
+.scrollerTitle.selected {
+  border: 3px solid #336fa3;
+}
+
+
+/*********results************/
+.btn-primary {
+  color: #FFF;
+  background-color: #336fa3;
+}
+
+.sidebar-links .panel-body a:hover:not(.btn), .sidebar-links .panel-body a:not(.btn), .sidebar-links .panel-body a:visited:not(.btn) {
+  color: #336fa3;
+}
