@@ -12,22 +12,236 @@
 .noCarouselSelectedCategoryMixin(@selectedCategoryColor);
 
 
-// TODO Add To Library Admin AdditionalCSS
-//.header-button {
-//  background: -moz-linear-gradient(top,  rgba(255,255,255,0) 0%, rgba(141,197,50,1) 100%); /* FF3.6-15 */
-//  background: -webkit-linear-gradient(top,  rgba(255,255,255,0) 0%,rgba(141,197,50,1) 100%); /*     Chrome10-25,Safari5.1-6 */
-//  background: linear-gradient(to bottom,  rgba(255,255,255,0) 0%,rgba(141,197,50,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-//  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#8dc532',GradientType=0 ); /* IE6-9 */
-//  text-align: center;
-//  font-size: x-large;
-//  border-radius: 12px;
-//  line-height: 82px !important;
-//  vertical-align: middle;
-//  color: #003A68 !important;
-//}
-//
-//.header-button:hover {
-//  border-bottom: 5px solid #003A68;
-//}
+// Library CSS Overrides
+
+/**** header ****/
+
+.breadcrumbs {
+  background-color: #FFFFFF;
+}
+
+.breadcrumb {
+  padding: 8px 15px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  list-style: none outside none;
+  background-color: #FFFFFF;
+}
+
+#header-container {
+  background: none repeat scroll 0 0 #FFFFFF;
+  border-bottom: none;
+  margin-bottom: 15px;
+  margin-top: 15px;
+}
+
+.header-primary {
+  border-left: medium none;
+  border-right: medium none;
+}
+
+#system-message-header {
+  background-color: #FFFFFF;
+  color: #FF0000;
+  font-weight: bold;
+  text-align: center;
+  padding: 3px;
+}
+
+.header-button {
+  background: -moz-linear-gradient(top,  rgba(255,255,255,0) 0%, rgba(141,197,50,1) 100%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(top,  rgba(255,255,255,0) 0%,rgba(141,197,50,1) 100%); /*     Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(to bottom,  rgba(255,255,255,0) 0%,rgba(141,197,50,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#8dc532',GradientType=0 ); /* IE6-9 */
+  text-align: center;
+  font-size: x-large;
+  line-height: 82px !important;
+  vertical-align: middle;
+  color: #003A68 !important;
+}
+
+.header-button:hover {
+  border-bottom: 5px solid #003A68;
+}
+/**** browse categories ****/
+
+.browse-category.category0, .browse-category.category1, .browse-category.category2, .browse-category.category3, .browse-category.category4, .browse-category.category5, .browse-category.category6, .browse-category.category7, .browse-category.category8 {
+  background: #003a68;
+  margin-top: 2px;
+}
+
+.browse-category.selected {
+  background: #80d2f1;
+}
+
+#home-page-browse-header {
+  background-color: #FFFFFF;
+  padding-bottom: 15px;
+}
+
+#browse-label {
+  height: 4px;
+  background-color: #003A68;
+  margin-top: 1px;
+  margin-bottom: 15px;
+  margin-right: -15px;
+  z-index: -1;
+}
+
+.browse-label-text {
+  background-color: #FFFFFF;
+  font-size: 22px;
+  color: #003A68;
+  line-height: 5px;
+  vertical-align: top;
+  margin: auto;
+  padding: 0 8px;
+  z-index: 2;
+}
+
+#more-browse-results {
+  background-color: #FFFFFF;
+  color: #C7C9CA;
+  text-align: center;
+  font-weight: 700;
+  font-size: 16px;
+  padding: 2px;
+  cursor: pointer;
+}
 
 
+/**** left sidebar ****/
+
+#home-page-search {
+  background: #003a68;
+  padding: 20px 0 10px;
+  margin-bottom: 5px;
+}
+
+#searchSource {
+  margin: 5px 0 0;
+  color: #FFFFFF;
+  background-color: #003a68;
+  border: medium none;
+  width: 90%;
+}
+
+#searchSource > option {
+  background-color: #003a68;
+  color: #FFFFFF;
+}
+
+.form-control:focus {
+  border-color: #3497D1;
+  outline: 0 none;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(102, 175, 233, 0.6);
+}
+
+#home-page-login {
+  text-shadow: none;
+  background-color: #FFFFFF;
+  font-size: 18px;
+  margin: 1px;
+  margin-top: 15px;
+  padding: 2px;
+}
+
+#home-page-login a {
+  color: #000000;
+  font-size: 110%;
+}
+
+
+/**** left sidebar links ****/
+
+.panel-group .panel {
+  border-radius: 0;
+  margin-bottom: 0;
+  overflow: hidden;
+}
+
+.sidebar-button, #home-page-hours-locations, #home-page-home-button, .sidebar-links .active .panel-heading, .sidebar-links .panel-heading,
+#narrow-search-label, #remove-search-label, #results-sort-label, #similar-authors-label {
+  background: none repeat scroll 0 0 #003a68;
+  border: none;
+  border-radius:5px;
+  color: #003A68;
+}
+
+.facetList  > .facetTitle, .facetList  > .panel-title {
+  color: #000000;
+  text-align: left;
+}
+
+.sidebar-links .active .panel-title, .sidebar-links .panel-title, .sidebar-label, #results-sort-label, #similar-authors-label {
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: left;
+  text-shadow: none;
+  text-transform: uppercase;
+}
+
+#home-page-hours-locations, #home-page-home-button {
+  color: #FFFFFF;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: bold;
+  text-shadow: none;
+  text-transform: uppercase;
+}
+
+.sidebar-links .panel-body {
+  background-color: #FFFFFF;
+  color: #333333;
+  font-size: 15px;
+}
+
+hr.menu {
+  border-top: none;
+  height: 0;
+  margin-bottom: 3px;
+  margin-top: 3px;
+}
+
+#home-page-library-section {
+  background-color: #FFFFFF;
+  height: 100%;
+  padding: 15px 0;
+}
+
+.sidebar-links .panel-heading {
+  border-bottom: medium none;
+  padding: 5px 15px;
+}
+
+.panel-heading {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.facetValue {
+  color: #000000;
+  font-size: 14px;
+  padding: 0 0 0 30px;
+}
+
+.facetTitle {
+  background: none repeat scroll 0 0 #FFFFFF;
+  border-bottom: none;
+  border-top: none;
+  color: #003a68;
+  padding: 8px 30px 6px;
+  text-shadow: none;
+}
+
+#home-page-hours-locations {
+  margin-bottom: 1px;
+}
+
+/**** footer ****/
+
+#footer-container {
+  border-top: 8px solid #003A68;
+  padding-top: 3px;
+}
