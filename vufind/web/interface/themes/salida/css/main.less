@@ -5,14 +5,15 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
-#header-container{
+#header-container {
   background: transparent;
   //background-image: url('/interface/themes/salida/images/header.jpg');
   height: 130px;
   border-bottom-width: 3px;
 }
+
 // modifications to logo for the spring 2015 header image plb 3-31-2015
-#header-logo{
+#header-logo {
   background-color: white; // added background shading
   border-radius: 0.5em;
   padding: 4px 0;
@@ -25,28 +26,32 @@
 #home-page-search-label,
 #keepFiltersSwitchLabel, #advancedSearchLink,
 #horizontal-search-box #horizontal-search-label,
-#home-page-advanced-search-link{
+#home-page-advanced-search-link {
   color: @home-search-label-color;
 }
+
 #horizontal-search-box .searchSourceHorizontal, #horizontal-search-box .searchTypeHorizontal {
   border: inherit;
 }
-#home-page-login,#home-page-search-label,.browse-category
-{
-  text-shadow: 1px 1px  @salida-light-gray;
+
+#home-page-login, #home-page-search-label, .browse-category {
+  text-shadow: 1px 1px @salida-light-gray;
 }
+
 // mixin to select all the typical states of <a> like tags
 .allLinkStates(@rules) {
   &, &:hover, &:active, &:visited {
     @rules();
   }
 }
-.sidebar-links{
+
+.sidebar-links {
   .panel.active > a {
     .allLinkStates({
       text-shadow: 1px 1px #c0c0c0;
     })
   }
+
   .panel-body {
     background-color: transparent;
   }
@@ -54,7 +59,7 @@
 }
 
 #more-details-accordion {
-   .active {
+  .active {
     .panel-title {
       color: #000;
       text-shadow: 1px 1px #c0c0c0;
@@ -63,11 +68,12 @@
 }
 
 
-#browse-category-picker{
+#browse-category-picker {
   .jcarousel-control-prev, .jcarousel-control-next {
     box-shadow: none;
   }
 }
+
 #browse-sub-category-menu {
   button.selected {
     border: 2px solid @selectedCategoryBorderColor;
@@ -75,8 +81,9 @@
     //background-color: @selectedCategoryColor;
   }
 }
+
 body {
-  background-image: url("http://www.salidalibrary.org/wp-content/uploads/2014/02/monarch-ski-resort-trees-11_20132.jpg");
+  background-image: url('https://www.salidalibrary.org/wp-content/uploads/2023/12/Monarch-Ski-Resort-2013.jpg');
   background-position: center top;
   background-size: auto;
   background-repeat: no-repeat;
@@ -87,9 +94,25 @@ body {
   background-color: #32393F;
   color: #FFF;
 }
+
 #footer-pika-logo {
   background-color: #FFF;
   padding: 4px;
   border-radius: 4px;
-
 }
+
+
+// Library CSS Overrides //
+
+
+.sidebar-button {
+  background-color: #203354;
+  /*background: linear-gradient(to bottom, #203354, #808080);*/
+  background: rgba(128, 128, 128);
+}
+
+
+.header-button {
+  background: rgba(128, 128, 128);
+}
+
