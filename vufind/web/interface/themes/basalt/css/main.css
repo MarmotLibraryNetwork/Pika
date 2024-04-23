@@ -10723,16 +10723,6 @@ h2 {
 .panel-default > .panel-heading {
   background: #b5b5ba;
 }
-div#titleScrollerSelectedTitleNewAdult2017 {
-  font-family: sans-serif;
-  color: #65656a;
-  font-size: 18px;
-  text-transform: uppercase;
-  margin-top: 15px;
-}
-div#listWidget408 .selected {
-  border-color: #fdb525;
-}
 a:hover,
 a:focus {
   text-decoration: none !important;
