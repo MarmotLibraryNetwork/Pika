@@ -1,44 +1,59 @@
 //Variables Customizations for Pine River theme
 @pinerivergreen: #A3B650;
-@pineriverblue: #588299;
+//@pineriverblue: #588299;
 @pinerivergrey: #828386;
-@pineriverbrown: #f0ad4e;
+//@pineriverbrown: #f0ad4e;
+
+@pineriverdarkblue: #3D5D6B;  // (AAA) https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=3D5D6B
+@pineriverdarkgreen: #4B5F2B; // (AAA) https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=4B5F2B
+@pineriverdarkergreen: #405125;
 
 // Header
 @header-top-color : #fff;
 @header-middle-color : #fff;
 @header-bottom-color : #fff;
-@header-bottom-border-color: #fff;
 
 //@header-height: 141px;
 
 // Border Lines
-@header-bottom-border-color: @pinerivergreen;
-@footer-top-border-color: @pinerivergrey;
+@header-bottom-border-color: #fff;
+@footer-top-border-color: @pineriverdarkblue;
 
 
 // Search Box
-@home-search-top-color: @pinerivergreen; //Top color for background gradient in header
-@home-search-bottom-color: @pinerivergreen;
+@home-search-top-color: @pineriverdarkblue; //Top color for background gradient in header
+@home-search-bottom-color: @pineriverdarkblue;
 
 // Browse Category
 //@category1MainColor: @pinerivergreen;
 //@categoryLineColor: @pinerivergrey;
 //@categoryLineShadow: @pinerivergreen;
-//@selectedCategoryBorderColor: @pinerivergrey;
 
-@category1MainColor: @pineriverblue;
-@categoryLineColor: @pineriverblue;
-@categoryLineShadow: @pineriverblue;
+@selectedCategoryColor: @pineriverdarkgreen;
+//@selectedCategoryBorderColor: @pineriverdarkgreen;
 
-@browse-label-text-color: @pinerivergrey;
-@selected-browse-label-search-color: @pinerivergrey;
-@browse-label-line-color: fade(@pinerivergrey, 50);
+@category1MainColor: @pineriverdarkblue;
+@categoryLineColor: @pineriverdarkblue;
+@categoryLineShadow: @pineriverdarkblue;
+
+@browseCarouselControlBackgroundColor: #fff;
+@browseCarouselControlColor: @pineriverdarkgreen;
+@selectedSubCategoryBackgroundColor: @pineriverdarkgreen;
+
+@more-browse-results-color: @pineriverdarkgreen;
+
+//@browse-label-text-color: @pinerivergrey;
+@selected-browse-label-search-color: @pineriverdarkergreen;
+//@browse-label-line-color: fade(@pinerivergrey, 50);
 @browse-header-background-color: #fff;
 
-@selectedCategoryBorderColor: @pinerivergrey;
+@selectedCategoryBorderColor: #fff;
 
-  // Sidebar Accordion
-@accordion-active-header-bg-color: @pinerivergreen;
+// Sidebar Accordion
+@accordion-active-header-bg-color: @pineriverdarkgreen;
 
-@menu-bar-background-color: @pinerivergreen;
+@menu-bar-background-color: @pineriverdarkblue;
+@menu-bar-selected-background-color: @pineriverdarkgreen;
+
+// Buttons
+@btn-primary-bg: #62810E; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=62810E
