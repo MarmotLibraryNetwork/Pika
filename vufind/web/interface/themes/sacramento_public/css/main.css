@@ -6885,7 +6885,7 @@ body > .container {
 }
 .active .panel-title {
   color: #333333;
-  text-shadow: 1px 1px #555555;
+  text-shadow: 1px 1px #fff;
 }
 .active > a:hover {
   -webkit-text-decoration: underline #333333;
@@ -7932,8 +7932,8 @@ hr.menu {
 #header-container {
   padding-top: 0;
   height: 110px;
-  background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 85%, #ffffff);
+  background-color: #fff;
+  background: linear-gradient(to bottom, #fff, #fff 85%, #fff);
   border-bottom: 8px solid #fff;
   margin-bottom: 0;
   min-height: 110px;
@@ -7952,7 +7952,7 @@ hr.menu {
   text-shadow: 1px 1px #fff;
   vertical-align: middle;
   line-height: 102px !important;
-  border-bottom: 4px solid #ffffff;
+  border-bottom: 4px solid #fff;
   color: #8b8b8b !important;
 }
 .header-button:hover {
@@ -8521,40 +8521,40 @@ hr.menu {
   font-size: 23px;
 }
 .browse-category.category0 {
-  background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
+  background-color: #fff;
+  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category1 {
-  background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
+  background-color: #fff;
+  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category2 {
-  background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
+  background-color: #fff;
+  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category3 {
-  background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
+  background-color: #fff;
+  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category4 {
-  background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
+  background-color: #fff;
+  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category5 {
-  background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
+  background-color: #fff;
+  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category6 {
-  background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
+  background-color: #fff;
+  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category7 {
-  background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
+  background-color: #fff;
+  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category8 {
-  background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
+  background-color: #fff;
+  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 #selected-browse-label {
   background-color: #fff;
@@ -10584,6 +10584,10 @@ fieldset[disabled] .btn-masquerade.active {
 #home-page-home-button {
   display: none;
 }
+.panel-group > a {
+  text-decoration-color: #333333;
+  color: #333333;
+}
 #more-details-accordion .active .panel-title,
 #account-settings-accordion .active .panel-title {
   color: #333333;
@@ -10623,10 +10627,6 @@ fieldset[disabled] .btn-masquerade.active {
 .btn-info:hover {
   background-color: #7ebe38;
   border-color: #7BAD42;
-}
-.panel-group > a {
-  text-decoration-color: #333333;
-  color: #333333;
 }
 .sidebar-button {
   color: #333;
