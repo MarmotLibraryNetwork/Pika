@@ -10573,12 +10573,10 @@ fieldset[disabled] .btn-masquerade.active {
 /************************Search Sidebar*******************************/
 .sidebar-button {
   font-weight: bold;
+  margin-bottom: 0;
 }
 #home-page-home-button {
   background: #336fa3;
-}
-.sidebar-button {
-  margin-bottom: 0;
 }
 #sidebar .col-lg-3 {
   /*restricted to sidebar; rule may not be applying anymore. pascal 2-9-2016 */
@@ -10601,10 +10599,6 @@ fieldset[disabled] .btn-masquerade.active {
   padding: 5px 0;
   width: 90%;
 }
-#home-page-login a {
-  color: #575757;
-  font-size: 110%;
-}
 #home-page-login {
   text-shadow: none;
   background-color: #FFF;
@@ -10612,6 +10606,10 @@ fieldset[disabled] .btn-masquerade.active {
   margin-bottom: 5px;
   margin-top: 25px;
   padding: 5px;
+}
+#home-page-login a {
+  color: #575757;
+  font-size: 110%;
 }
 .panel-group .panel {
   border-radius: 0;
@@ -10633,10 +10631,10 @@ fieldset[disabled] .btn-masquerade.active {
   font-variant: none;
 }
 .sidebar-links .active .panel-title,
-#home-page-hours-locations,
 .sidebar-links .panel-title,
 .sidebar-label,
-#results-sort-label {
+#results-sort-label,
+#home-page-hours-locations {
   color: #FFF;
   font-size: 14px;
   font-weight: bold;
@@ -10648,6 +10646,14 @@ fieldset[disabled] .btn-masquerade.active {
   background-color: #FFF;
   color: #336fa3;
   font-size: 15px;
+}
+.sidebar-links .panel-heading {
+  border-bottom: medium none;
+  padding: 5px 15px;
+}
+.panel-heading {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 #sidebar-content {
   background-color: #FFF;
@@ -10665,14 +10671,6 @@ hr.menu {
   background-color: #FFF;
   height: 100%;
   padding: 15px 0;
-}
-.sidebar-links .panel-heading {
-  border-bottom: medium none;
-  padding: 5px 15px;
-}
-.panel-heading {
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
 }
 .facetValue {
   color: #575757;

@@ -34,7 +34,7 @@
 #horizontal-search-box {
   background: #336FA3;
   padding: 9px 0;
-  margin-top: 20px;
+  margin-top: 20px; //TODO: should add as margin botton to header links block
 }
 
 #header-container {
@@ -174,14 +174,11 @@
 
 .sidebar-button {
   font-weight: bold;
+  margin-bottom: 0;
 }
 
 #home-page-home-button {
   background: #336fa3;
-}
-
-.sidebar-button {
-  margin-bottom: 0;
 }
 
 #sidebar .col-lg-3 { /*restricted to sidebar; rule may not be applying anymore. pascal 2-9-2016 */
@@ -209,11 +206,6 @@
   width: 90%;
 }
 
-#home-page-login a {
-  color: #575757;
-  font-size: 110%;
-}
-
 #home-page-login {
   text-shadow: none;
   background-color: #FFF;
@@ -221,6 +213,11 @@
   margin-bottom: 5px;
   margin-top: 25px;
   padding: 5px;
+}
+
+#home-page-login a {
+  color: #575757;
+  font-size: 110%;
 }
 
 
@@ -231,8 +228,15 @@
 
 }
 
-.sidebar-links .active .panel-heading, #home-page-hours-locations, #similar-authors-label, .sidebar-links .panel-heading,
-#narrow-search-label, #remove-search-label, #results-sort-label, .exploreMoreTitle {
+.sidebar-links .active .panel-heading,
+#home-page-hours-locations,
+#similar-authors-label,
+.sidebar-links .panel-heading,
+#narrow-search-label,
+#remove-search-label,
+#results-sort-label,
+.exploreMoreTitle
+{
   background: none repeat scroll 0 0 #336fa3;
   border: none;
 }
@@ -241,7 +245,12 @@
   font-variant: none;
 }
 
-.sidebar-links .active .panel-title, #home-page-hours-locations, .sidebar-links .panel-title, .sidebar-label, #results-sort-label {
+.sidebar-links .active .panel-title,
+.sidebar-links .panel-title,
+.sidebar-label,
+#results-sort-label,
+#home-page-hours-locations
+{
   color: #FFF;
   font-size: 14px;
   font-weight: bold;
@@ -256,6 +265,15 @@
   font-size: 15px;
 }
 
+.sidebar-links .panel-heading {
+  border-bottom: medium none;
+  padding: 5px 15px;
+}
+
+.panel-heading {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
 
 #sidebar-content {
   background-color: #FFF;
@@ -276,16 +294,6 @@ hr.menu {
   background-color: #FFF;
   height: 100%;
   padding: 15px 0;
-}
-
-.sidebar-links .panel-heading {
-  border-bottom: medium none;
-  padding: 5px 15px;
-}
-
-.panel-heading {
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
 }
 
 .facetValue {
