@@ -6947,32 +6947,10 @@ body > .container {
 .nav-tabs {
   margin-bottom: 0;
 }
-@media (max-width: 480px) {
-  #search_box_group {
-    padding-top: 5px;
-  }
-  #search_box_group #search_button {
-    padding-top: 5px;
-    width: 100%;
-  }
-}
 @media print {
   #header-wrapper,
   #side-bar {
     display: none;
-  }
-}
-@media (max-width: 767px) {
-  .footer-column h4:before {
-    content: "▼ ";
-  }
-  .footer-column h4.collapsed:before {
-    content: "► ";
-  }
-}
-@media (min-width: 767px) {
-  .footerContents {
-    display: block;
   }
 }
 .bold {
