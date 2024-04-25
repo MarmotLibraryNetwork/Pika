@@ -54,7 +54,7 @@
 								<div class="row system-message-header">{$aSystemMessage}</div>
 							{/foreach}
 							{else}
-							<div id="system-message-header" class="row system-message-header">{$systemMessage}</div>
+							<div class="row system-message-header">{$systemMessage}</div>
 						{/if}
 					{/if}
 
