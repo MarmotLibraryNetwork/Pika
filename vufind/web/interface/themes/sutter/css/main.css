@@ -9387,7 +9387,7 @@ a.browse-thumbnail-sorted.active {
 }
 .sidebar-label {
   text-align: center;
-  background-color: #414141;
+  background-color: #0a2e5c;
   color: #FFF;
   padding: 3px 0;
   margin-top: 20px;
@@ -10535,7 +10535,7 @@ div#more-details-accordion.panel-group .panel a .panel-title {
 #account-settings-accordion .panel-heading {
   background: #0a2e5c;
   color: #FFF;
-  text-shadow: 1px 1px #555555;
+  text-shadow: 1px 1px #555;
 }
 #account-settings-accordion .active .panel-heading,
 #more-details-accordion .active .panel-heading,
@@ -10564,7 +10564,6 @@ div#more-details-accordion.panel-group .panel a .panel-title {
 .exploreMoreTitle {
   background: #e8e8e8;
 }
-.sidebar-label,
 .sidebar-button {
   background: #0a2e5c;
 }
