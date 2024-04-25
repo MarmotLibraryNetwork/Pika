@@ -9389,7 +9389,6 @@ a.browse-thumbnail-sorted.active {
 .sidebar-label {
   text-align: center;
   background-color: #494A0C;
-  background: linear-gradient(to bottom, #494A0C, #000000);
   color: #FFF;
   padding: 3px 0;
   margin-top: 20px;
