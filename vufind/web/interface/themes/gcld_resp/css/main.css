@@ -4212,7 +4212,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
   padding: 8px 15px;
   margin-bottom: 20px;
   list-style: none;
-  background-color: #f5f5f5;
+  background-color: #fff;
   border-radius: 4px;
 }
 .breadcrumb > li {
@@ -7908,7 +7908,7 @@ hr.menu {
   border-top: 1px solid #d3d3d3;
 }
 .breadcrumbs {
-  background-color: #f5f5f5;
+  background-color: #fff;
   padding: 3px;
 }
 .breadcrumb {
@@ -7985,7 +7985,7 @@ hr.menu {
   font-size: 16px;
 }
 #footer-container {
-  border-top: 8px solid #088ec6;
+  border-top: 8px solid #003A68;
   padding-top: 3px;
 }
 @media screen and (max-width: 767px) {
@@ -8012,7 +8012,7 @@ hr.menu {
   padding: 0 3px 0 3px;
 }
 #navigation-controls {
-  border-top: 8px solid #088ec6;
+  border-top: 8px solid #003A68;
   background: #fff;
 }
 @media print {
@@ -10451,16 +10451,11 @@ fieldset[disabled] .btn-masquerade.active {
   background: linear-gradient(to bottom, #17aaf1, #17aaf1 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #17aaf1 90%, #17aaf1);
   font-size: 22px;
 }
-/**** header ****/
-.breadcrumbs {
-  background-color: #FFFFFF;
-}
 .breadcrumb {
   padding: 8px 15px;
   margin-bottom: 20px;
   border-radius: 4px;
   list-style: none outside none;
-  background-color: #FFFFFF;
 }
 #header-container {
   background: none repeat scroll 0 0 #FFFFFF;
@@ -10472,9 +10467,7 @@ fieldset[disabled] .btn-masquerade.active {
   border-left: medium none;
   border-right: medium none;
 }
-#system-message-header {
-  background-color: #FFFFFF;
-  color: #FF0000;
+.system-message-header {
   font-weight: bold;
   text-align: center;
   padding: 3px;
@@ -10505,7 +10498,7 @@ fieldset[disabled] .btn-masquerade.active {
 .browse-category.category6,
 .browse-category.category7,
 .browse-category.category8 {
-  background: #003a68;
+  background: #003A68;
   margin-top: 2px;
 }
 .browse-category.selected {
@@ -10544,19 +10537,19 @@ fieldset[disabled] .btn-masquerade.active {
 }
 /**** left sidebar ****/
 #home-page-search {
-  background: #003a68;
+  background: #003A68;
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
 #searchSource {
   margin: 5px 0 0;
   color: #FFFFFF;
-  background-color: #003a68;
+  background-color: #003A68;
   border: medium none;
   width: 90%;
 }
 #searchSource > option {
-  background-color: #003a68;
+  background-color: #003A68;
   color: #FFFFFF;
 }
 .form-control:focus {
@@ -10566,7 +10559,7 @@ fieldset[disabled] .btn-masquerade.active {
 }
 #home-page-login {
   text-shadow: none;
-  background-color: #FFFFFF;
+  background-color: #FFF;
   font-size: 18px;
   margin: 1px;
   margin-top: 15px;
@@ -10583,15 +10576,13 @@ fieldset[disabled] .btn-masquerade.active {
   overflow: hidden;
 }
 .sidebar-button,
-#home-page-hours-locations,
-#home-page-home-button,
 .sidebar-links .active .panel-heading,
 .sidebar-links .panel-heading,
 #narrow-search-label,
 #remove-search-label,
 #results-sort-label,
 #similar-authors-label {
-  background: none repeat scroll 0 0 #003a68;
+  background: none repeat scroll 0 0 #003A68;
   border: none;
   border-radius: 5px;
   color: #003A68;
@@ -10615,17 +10606,20 @@ fieldset[disabled] .btn-masquerade.active {
 }
 #home-page-hours-locations,
 #home-page-home-button {
-  color: #FFFFFF;
   border-radius: 5px;
-  font-size: 14px;
-  font-weight: bold;
-  text-shadow: none;
-  text-transform: uppercase;
 }
 .sidebar-links .panel-body {
   background-color: #FFFFFF;
   color: #333333;
   font-size: 15px;
+}
+.sidebar-links .panel-heading {
+  border-bottom: medium none;
+  padding: 5px 15px;
+}
+.panel-heading {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 hr.menu {
   border-top: none;
@@ -10638,14 +10632,6 @@ hr.menu {
   height: 100%;
   padding: 15px 0;
 }
-.sidebar-links .panel-heading {
-  border-bottom: medium none;
-  padding: 5px 15px;
-}
-.panel-heading {
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-}
 .facetValue {
   color: #000000;
   font-size: 14px;
@@ -10655,15 +10641,10 @@ hr.menu {
   background: none repeat scroll 0 0 #FFFFFF;
   border-bottom: none;
   border-top: none;
-  color: #003a68;
+  color: #003A68;
   padding: 8px 30px 6px;
   text-shadow: none;
 }
 #home-page-hours-locations {
   margin-bottom: 1px;
-}
-/**** footer ****/
-#footer-container {
-  border-top: 8px solid #003A68;
-  padding-top: 3px;
 }
