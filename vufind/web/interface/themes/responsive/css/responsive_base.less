@@ -129,9 +129,10 @@ body {
       content: "";
     }
   }
+
   .panel-title.expanded:before {
     content: "▼ ";
-    @media print{
+    @media print {
       content: "";
     }
   }
@@ -139,13 +140,14 @@ body {
 
 .panel .panel-title:before {
   content: "► ";
-  @media print{
+  @media print {
     content: "";
   }
 }
+
 .panel.active .panel-title:before {
   content: "▼ ";
-  @media print{
+  @media print {
     content: "";
   }
 }
@@ -248,16 +250,19 @@ body {
 .modal-dialog {
   max-width: 100%; // constrain content to the modal box
 }
+
 .modal-buttons {
   margin-left: 3px;
   margin-right: 3px;
 }
- // top-right close button
+
+// top-right close button
 .modal-header .close {
   margin-top: -10px;
   font-size: 40px;
   opacity: .4;
 }
+
 .btn:active, .btn.active {
   font-weight: bold;
 }
@@ -274,7 +279,7 @@ body {
   }
 }
 
-.tab-content {
+.tab-content { // Only applies to list widgets at this point
   border-left: 1px solid #ddd;
   border-right: 1px solid #ddd;
   padding: 10px;
@@ -284,45 +289,11 @@ body {
   margin-bottom: 0;
 }
 
-#search_box_group {
-  // Append input to search box when larger than phone
-  @media (max-width: 480px) {
-    #search_button {
-      padding-top: 5px;
-      width: 100%;
-    }
-    padding-top: 5px;
-  }
-}
-
 @media print {
   #header-wrapper, #side-bar {
     display: none;
   }
 }
-
-.footer-column {
-  @media (max-width: 767px) {
-    h4:before {
-      content: "▼ ";
-    }
-
-    h4.collapsed:before {
-      content: "► ";
-    }
-
-  }
-}
-
-.footerContents {
-  @media (min-width: 767px) {
-    .collapse.in;
-  }
-}
-
-//#largeLogo {
-//  padding: 20px 0 15px;
-//}
 
 .bold {
   font-weight: bold;
