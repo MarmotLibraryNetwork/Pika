@@ -8183,6 +8183,7 @@ hr.menu {
 }
 #home-page-search-label {
   font-size: 35px;
+  font-weight: normal;
   color: #FFF;
   text-shadow: 1px 1px #797676;
 }
@@ -10413,7 +10414,6 @@ fieldset[disabled] .btn-masquerade.active {
   box-shadow: 2px 2px 5px #fff;
 }
 #horizontal-search-label,
-#home-page-search-label,
 #keepFiltersSwitchLabel,
 #advancedSearchLink,
 #horizontal-search-box #horizontal-search-label,
