@@ -155,7 +155,7 @@
 		<div class="result-label col-sm-4">{translate text='Status'}:</div>
 		<div class="col-sm-8 result-value">
 			{include file='GroupedWork/statusIndicator.tpl' statusInformation=$statusSummary viewingIndividualRecord=1}
-			{*		<div class="col-sm-8 result-value result-value-bold statusValue here" id="statusValue">*}
+			{*		<div class="col-sm-8 result-value bold statusValue here" id="statusValue">*}
 {*			Available Online*}
 		</div>
 	</div>
