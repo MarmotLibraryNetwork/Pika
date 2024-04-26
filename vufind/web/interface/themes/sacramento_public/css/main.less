@@ -99,17 +99,20 @@
   background-color: #fff;
 }
 
-
-#home-page-hours-locations, #home-page-home-button {
-  display: none;
+// Hide the library hours and library home page
+// (Hide from screen readers)
+#home-page-library-section {
+  > a:nth-child(1), > a:nth-child(2) {
+    display: none;
+  }
 }
 
 .panel-group > a {
-  text-decoration-color: #333333;
-  color: #333333;
+  text-decoration-color: #333;
+  color: #333;
 }
 
-#more-details-accordion, #account-settings-accordion {
+#more-details-accordion, #account-settings-accordion, #link-accordion {
   .active {
     .panel-title {
       color: @accordion-active-header-color;

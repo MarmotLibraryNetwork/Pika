@@ -10548,16 +10548,17 @@ fieldset[disabled] .btn-masquerade.active {
   color: #333;
   background-color: #fff;
 }
-#home-page-hours-locations,
-#home-page-home-button {
+#home-page-library-section > a:nth-child(1),
+#home-page-library-section > a:nth-child(2) {
   display: none;
 }
 .panel-group > a {
-  text-decoration-color: #333333;
-  color: #333333;
+  text-decoration-color: #333;
+  color: #333;
 }
 #more-details-accordion .active .panel-title,
-#account-settings-accordion .active .panel-title {
+#account-settings-accordion .active .panel-title,
+#link-accordion .active .panel-title {
   color: #333333;
   text-shadow: 1px 1px #fff;
 }
