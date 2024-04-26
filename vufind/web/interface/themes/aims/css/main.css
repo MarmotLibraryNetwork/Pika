@@ -10296,6 +10296,8 @@ a.browse-thumbnail-sorted.active {
 .help-icon {
   color: blue;
 }
+#pika-status a,
+.solr-info a,
 .editor-tips a {
   color: #3b679a;
   -webkit-text-decoration: underline dotted;
