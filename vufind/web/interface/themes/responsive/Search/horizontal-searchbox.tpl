@@ -24,14 +24,14 @@
 
 		<div class="col-sm-9 col-xs-12">
 			<div class="row">
-				<div class="col-lg-1 col-md-1 col-sm-2 col-xs-12">
+				<div class="col-lg-1 col-md-2 col-sm-2 col-xs-12">
 					<label id="horizontal-search-label" for="lookfor"{* class=""*}>{translate text="Search for"} </label>
 				</div>
 				<div class="
 				{if $hiddenSearchSource}
-				col-lg-9 col-md-9
+				col-lg-9 col-md-8
 				{else}
-				col-lg-6 col-md-6
+				col-lg-6 col-md-5
 				{/if} col-sm-10 col-xs-12">
 					{* Main Search Term Box *}
 					<textarea class="form-control"{/strip}
