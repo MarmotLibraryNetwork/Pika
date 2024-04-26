@@ -50,13 +50,13 @@
 			<div class="panel-group" id="accordion_{$property.label|escapeCSS}">
 				<div class="panel panel-default">
 					<div class="panel-heading row">
-						<h4 class="panel-title col-xs-11">
+						<div class="panel-title col-tn-11">
 							<a data-toggle="collapse" data-parent="#accordion_{$property.label|escapeCSS}" href="#accordion_body_{$property.label|escapeCSS}">
 								{$property.label}
 							</a>
-						</h4>
+						</div>
 						{if $property.helpLink}
-							<div class="col-xs-1">
+							<div class="col-tn-1">
 								<a href="{$property.helpLink}" aria-label="Help Link" target="_blank"><span class="help-icon glyphicon glyphicon-question-sign" title="Help" aria-hidden="true"></span></a>
 							</div>
 						{/if}
