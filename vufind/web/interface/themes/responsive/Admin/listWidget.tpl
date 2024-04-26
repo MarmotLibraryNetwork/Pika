@@ -4,7 +4,7 @@
 	<h4>Integration notes</h4>
 	<div class="well">
 		<p>To integrate this widget into another site, insert an iFrame into your site with a source of :</p>
-		<blockquote class="alert-info" style="font-weight: bold;">{$url}/API/SearchAPI?method=getListWidget&amp;id={$object->id}</blockquote>
+		<blockquote class="alert-info bold">{$url}/API/SearchAPI?method=getListWidget&amp;id={$object->id}</blockquote>
 		<p>
 			<code style="white-space: normal">&lt;iframe src=&quot;{$url}/API/SearchAPI?method=getListWidget&amp;id={$object->id}&quot;
 				width=&quot;{$width}&quot; height=&quot;{$height}&quot;
@@ -31,7 +31,7 @@
 		To have a list widget which adjusts its height based on the html content within the list widget use the source url :
 	</p>
 	<blockquote class="alert-info">
-	{$url}/API/SearchAPI?method=getListWidget&amp;id={$object->id}<span style="font-weight: bold;">&resizeIframe=on</span>
+	{$url}/API/SearchAPI?method=getListWidget&amp;id={$object->id}<span class="bold">&resizeIframe=on</span>
 	</blockquote>
 	<p>
 		Include the iframe tag and javascript tags in the site :
