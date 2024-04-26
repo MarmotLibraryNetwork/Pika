@@ -9364,7 +9364,7 @@ a.browse-thumbnail-sorted.active {
 }
 .facetTitle,
 .exploreMoreTitle {
-  background-color: #f2f2f2;
+  background-color: #e8e8e8;
   color: #333;
   text-shadow: 1px 1px #fcfcfc;
   padding: 9px 30px 8px 15px;
@@ -10523,10 +10523,6 @@ fieldset[disabled] .btn-masquerade.active {
 #account-settings-accordion .panel-body {
   background-color: transparent;
   border: 1px solid #c5c5c5;
-}
-.facetTitle,
-.exploreMoreTitle {
-  background: #e8e8e8;
 }
 #home-page-search-label {
   text-shadow: none;

@@ -9364,7 +9364,7 @@ a.browse-thumbnail-sorted.active {
 }
 .facetTitle,
 .exploreMoreTitle {
-  background-color: #f2f2f2;
+  background-color: #e8e8e8;
   color: #333;
   text-shadow: 1px 1px #fcfcfc;
   padding: 9px 30px 8px 15px;
@@ -10527,10 +10527,6 @@ div#more-details-accordion.panel-group .panel a .panel-title {
 #account-settings-accordion .panel-body {
   background-color: transparent;
   border: 1px solid #c5c5c5;
-}
-.facetTitle,
-.exploreMoreTitle {
-  background: #e8e8e8;
 }
 .sidebar-button {
   background: #0a2e5c;
