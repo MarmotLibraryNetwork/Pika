@@ -7901,6 +7901,11 @@ body {
   text-align: center;
   padding: 3px;
 }
+.system-message-header a {
+  color: #3b679a;
+  -webkit-text-decoration: underline dotted;
+          text-decoration: underline dotted;
+}
 #header-container {
   padding-top: 0;
   height: 185px;
@@ -9364,7 +9369,7 @@ a.browse-thumbnail-sorted.active {
 }
 .facetTitle,
 .exploreMoreTitle {
-  background-color: #f2f2f2;
+  background-color: #f0f0f0;
   color: #333;
   text-shadow: 1px 1px #fcfcfc;
   padding: 9px 30px 8px 15px;
@@ -10525,10 +10530,6 @@ fieldset[disabled] .btn-masquerade.active {
 .sidebar-links .panel-heading,
 #account-settings-accordion .panel-heading {
   border-radius: 0;
-}
-.facetTitle,
-.exploreMoreTitle {
-  background: #f0f0f0;
 }
 .searchTypeHome,
 .searchSource {

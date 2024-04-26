@@ -7904,6 +7904,11 @@ body {
   text-align: center;
   padding: 3px;
 }
+.system-message-header a {
+  color: #3b679a;
+  -webkit-text-decoration: underline dotted;
+          text-decoration: underline dotted;
+}
 #header-container {
   padding-top: 0;
   height: 150px;

@@ -15,8 +15,8 @@
 //
 
 // Mixin to use on links in order to distinguish from text without relying on color (Accessibility 1.4.1)
-.link-decorating-mixin(){
-  color: @darkened-link-color-resp;
+.link-decorating-mixin(@link-color: @darkened-link-color-resp){
+  color:@link-color;
   text-decoration: underline dotted;
 }
 
