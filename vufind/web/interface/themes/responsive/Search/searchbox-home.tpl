@@ -34,7 +34,6 @@
 							       onfocus="$(this)$(this).trigger('select')" {* Select/highlight inputted text *}
 							       autocomplete="off"
 							       rows="1"
-							       aria-labelledby="home-page-search-label"
 											{strip}>
 								{if $searchType != 'advanced'}{$lookfor|escape:"html"}{/if}
 								</textarea>
