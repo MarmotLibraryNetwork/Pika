@@ -120,7 +120,7 @@
 				{if !empty($holdDisclaimers)}
 					{foreach from=$holdDisclaimers item=holdDisclaimer key=library}
 						<div class="holdDisclaimer alert alert-warning">
-							{if count($holdDisclaimers) > 1}<div class="holdDisclaimerLibrary">{$library}</div>{/if}
+							{if count($holdDisclaimers) > 1}<div class="bold">{$library}</div>{/if}
 							{$holdDisclaimer}
 						</div>
 					{/foreach}
