@@ -9204,9 +9204,6 @@ a.browse-thumbnail-sorted.active {
 .statusValue.here {
   color: green;
 }
-.statusValue.nearby {
-  color: #BB0099;
-}
 .statusValue.unavailable,
 .statusValue.checkedOut,
 .statusValue.reserve {
