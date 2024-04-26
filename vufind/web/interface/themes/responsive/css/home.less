@@ -13,6 +13,12 @@
   margin-bottom: 5px;
 }
 
+#home-page-search-gradient(@home-search-top-color, @home-search-bottom-color){
+  #home-page-search {
+    background: linear-gradient(to bottom, @home-search-top-color, @home-search-bottom-color);
+  }
+}
+
 #home-page-search-label {
   font-size: 35px;
   font-weight: normal; // Remove bold from styling applied to label tag
