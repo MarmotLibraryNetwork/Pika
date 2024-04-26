@@ -4,7 +4,7 @@
 	<hr>
 	{if $PikaStatus}
 	<h2>Pika Status</h2>
-		<table class="table table-bordered">
+		<table id="pika-status" class="table table-bordered">
 			<tr class="{if $PikaStatus == 'critical'}danger{elseif $PikaStatus == 'warning'}warning{else}success{/if}">
 				<th>{$PikaStatus|capitalize}</th>
 			</tr>
@@ -19,7 +19,7 @@
 	<h2>Searcher Core</h2>
 
 	<h3>Grouped Index</h3>
-	<table class="table table-bordered">
+	<table class="solr-info table table-bordered">
 		<tr>
 			<th>Document Count: </th>
 			<td>{$data.grouped.index.numDocs}</td>
@@ -50,7 +50,7 @@
 
 	{if !empty($data.genealogy) && !empty($data.genealogy.index.numDocs)}
 		<h3>Genealogy Index</h3>
-		<table class="table table-bordered">
+		<table class="solr-info table table-bordered">
 			<tr>
 				<th>Document Count: </th>
 				<td>{$data.genealogy.index.numDocs}</td>
@@ -86,7 +86,7 @@
 		<h2>Indexer Core</h2>
 
 		<h3>Grouped Index</h3>
-		<table class="table table-bordered">
+		<table class="solr-info table table-bordered">
 			<tr>
 				<th>Document Count: </th>
 				<td>{$masterData.grouped.index.numDocs}</td>
@@ -122,7 +122,7 @@
 		<h2>Archive Solr</h2>
 
 		<h3>{$archiveSolrCore} Index</h3>
-		<table class="table table-bordered">
+		<table class="solr-info table table-bordered">
 			<tr>
 				<th>Document Count: </th>
 				<td>{$archiveData.collection1.index.numDocs}</td>
