@@ -7879,12 +7879,6 @@ body {
     width: 100%;
   }
 }
-hr.menu {
-  margin-top: 3px;
-  margin-bottom: 3px;
-  height: 0;
-  border-top: 1px solid #d3d3d3;
-}
 .breadcrumbs {
   background-color: #fff;
   padding: 3px;
@@ -8184,11 +8178,11 @@ hr.menu {
 #home-page-search-label {
   font-size: 35px;
   font-weight: normal;
-  color: #fff;
+  color: #205724;
   text-shadow: 1px 1px #797676;
 }
 #home-page-advanced-search-link {
-  color: #fff;
+  color: #205724;
 }
 #lookfor::-moz-placeholder {
   font-size: 0;
@@ -8212,7 +8206,7 @@ hr.menu {
 }
 #keepFiltersSwitchLabel,
 #advancedSearchLink {
-  color: #fff;
+  color: #205724;
   font-weight: normal;
   font-size: 85%;
 }
@@ -8255,7 +8249,7 @@ hr.menu {
   }
 }
 #horizontal-search-box #horizontal-search-label {
-  color: #fff;
+  color: #205724;
 }
 #horizontal-search-box .searchSourceHorizontal,
 #horizontal-search-box .searchTypeHorizontal {
@@ -8309,6 +8303,12 @@ hr.menu {
 .sidebar-links .panel-body a:visited:not(.btn),
 .sidebar-links .panel-body a:hover:not(.btn) {
   color: #4273AC;
+}
+hr.menu {
+  margin-top: 3px;
+  margin-bottom: 3px;
+  height: 0;
+  border-top: 1px solid #d3d3d3;
 }
 .ui-helper-hidden {
   display: none;
@@ -10382,11 +10382,6 @@ fieldset[disabled] .btn-masquerade.active {
 .btn-masquerade .badge {
   color: #f1dbff;
   background-color: #fff;
-}
-#horizontal-search-box #horizontal-search-label,
-#advancedSearchLink,
-#keepFiltersSwitchLabel {
-  color: #205724;
 }
 #header-logo {
   padding: 10px 0 0;

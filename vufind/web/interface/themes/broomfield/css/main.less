@@ -6,10 +6,6 @@
 @import "../../responsive/css/responsive_base.less";
 
 
-#horizontal-search-box #horizontal-search-label,
-#advancedSearchLink, #keepFiltersSwitchLabel {
-  color: #205724;
-}
 
 #header-logo {
   padding: 10px 0 0;
@@ -61,18 +57,18 @@
 
 .browse-label-text {
   background-color: #fff;
-  color: #205724 !important;
+  color: @broomfield-darkgreen !important;
 }
 
 
 #selected-browse-label {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 44%, #205724 45%, #205724 55%, #fff 56%);
+  background: linear-gradient(to bottom, #fff, #fff 44%, @broomfield-darkgreen 45%, @broomfield-darkgreen 55%, #fff 56%);
   margin-bottom: 5px;
 }
 
 .selected-browse-label-search a {
-  color: #205724
+  color: @broomfield-darkgreen
 }
 
 
@@ -128,7 +124,7 @@
 
 .browse-category.selected {
   border: none;
-  background: #205724;
+  background: @broomfield-darkgreen;
 }
 .browse-category.selected div {
   color: #fff;
@@ -212,5 +208,5 @@
   background: @green-broomfield;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected{
-  background: #205724;
+  background: @broomfield-darkgreen;
 }
