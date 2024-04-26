@@ -9486,7 +9486,7 @@ a.browse-thumbnail-sorted.active {
 }
 .related-manifestation-shelf-status.availableOther,
 .related_record_status.availableOther {
-  color: #A60489;
+  color: #000;
 }
 .itemSummaryTable tr.available {
   color: green;
@@ -10521,10 +10521,6 @@ fieldset[disabled] .btn-masquerade.active {
   padding-top: 15px;
 }
 .sidebar-label {
-  font-weight: bold;
-}
-.related-manifestation-shelf-status.availableOther {
-  color: #000;
   font-weight: bold;
 }
 .browse-thumbnail div:first-child {
