@@ -9202,7 +9202,7 @@ a.browse-thumbnail-sorted.active {
 }
 .statusValue.available,
 .statusValue.here {
-  color: #128A0B;
+  color: green;
 }
 .statusValue.nearby {
   color: #BB0099;
@@ -9210,7 +9210,7 @@ a.browse-thumbnail-sorted.active {
 .statusValue.unavailable,
 .statusValue.checkedOut,
 .statusValue.reserve {
-  color: #cc0000;
+  color: #EC130E;
 }
 #recordcover {
   position: relative;
