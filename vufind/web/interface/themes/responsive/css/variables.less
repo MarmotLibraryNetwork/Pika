@@ -190,11 +190,11 @@
 @subsection-title-color: @title-color;
 
 // Masquerade Variables
-@masquerade-background-color: #6200a4;
 @masquerade-color: #FFF;
+@masquerade-background-color: #6200a4; // (AAA) https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=6200A4
 @masquerade-bar-height: 50px;
-@masquerade-button-bg-color: #f1dbff;
 @masquerade-button-color: #003366;
+@masquerade-button-bg-color: #f1dbff; // (AAA) https://webaim.org/resources/contrastchecker/?fcolor=003366&bcolor=F1DBFF
 
 // Digital Archive
 @archiveComponent-color: @menu-bar-color;
@@ -202,3 +202,14 @@
 
 //selected colors
 @focus-ring-color: #E15F15;
+
+// Item/Record/Work Status colors
+
+@available-status-color: @accessible-success-green; // #128A0B; // https://webaim.org/resources/contrastchecker/?fcolor=128A0B&bcolor=FFFFFF
+@nearby-status-color: #BB0099; // https://webaim.org/resources/contrastchecker/?fcolor=BB0099&bcolor=FFFFFF
+@checkedOut-status-color: #cc0000; // https://webaim.org/resources/contrastchecker/?fcolor=CC0000&bcolor=FFFFFF;
+
+@dueSoon-status-color: #B55A0A; // https://webaim.org/resources/contrastchecker/?fcolor=B55A0A&bcolor=F9F9F9;
+//color: #B95E04; // https://webaim.org/resources/contrastchecker/?fcolor=B95E04&bcolor=FFFFFF
+
+@overdue-status-color: #C81B0B; // https://webaim.org/resources/contrastchecker/?fcolor=C81B0B&bcolor=F2DEDE

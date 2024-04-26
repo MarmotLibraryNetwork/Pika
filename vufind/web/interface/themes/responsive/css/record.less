@@ -24,15 +24,15 @@
   font-weight: bold;
 
   &.available, &.here {
-    color: #128A0B; // https://webaim.org/resources/contrastchecker/?fcolor=128A0B&bcolor=FFFFFF
+    color: @available-status-color;
   }
 
   &.nearby {
-    color: #BB0099; // https://webaim.org/resources/contrastchecker/?fcolor=BB0099&bcolor=FFFFFF
+    color: @nearby-status-color;
   }
 
   &.unavailable, &.checkedOut, &.reserve {
-    color: #cc0000; // https://webaim.org/resources/contrastchecker/?fcolor=CC0000&bcolor=FFFFFF
+    color: @checkedOut-status-color;
   }
 }
 
