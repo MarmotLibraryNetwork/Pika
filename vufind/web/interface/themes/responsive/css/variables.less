@@ -200,16 +200,22 @@
 @archiveComponent-color: @menu-bar-color;
 @archiveComponentControl-background-color: @menu-bar-background-color;
 
-//selected colors
+// Keyboard Focus colors
 @focus-ring-color: #E15F15;
 
 // Item/Record/Work Status colors
-
-@available-status-color: @accessible-success-green; // #128A0B; // https://webaim.org/resources/contrastchecker/?fcolor=128A0B&bcolor=FFFFFF
-@nearby-status-color: #BB0099; // https://webaim.org/resources/contrastchecker/?fcolor=BB0099&bcolor=FFFFFF
-@checkedOut-status-color: #cc0000; // https://webaim.org/resources/contrastchecker/?fcolor=CC0000&bcolor=FFFFFF;
+@available-status-color: green; // (#008000;) (5.13:1) https://webaim.org/resources/contrastchecker/?fcolor=008000&bcolor=FFFFFF
+        //@accessible-success-green; // #128A0B; // (4.5:1) https://webaim.org/resources/contrastchecker/?fcolor=128A0B&bcolor=FFFFFF
+@checkedOut-status-color: @accessible-red; // ( 4.5:1)
+        //#cc0000; // (5.88:1) https://webaim.org/resources/contrastchecker/?fcolor=CC0000&bcolor=FFFFFF;
 
 @dueSoon-status-color: #B55A0A; // https://webaim.org/resources/contrastchecker/?fcolor=B55A0A&bcolor=F9F9F9;
 //color: #B95E04; // https://webaim.org/resources/contrastchecker/?fcolor=B95E04&bcolor=FFFFFF
 
 @overdue-status-color: #C81B0B; // https://webaim.org/resources/contrastchecker/?fcolor=C81B0B&bcolor=F2DEDE
+
+@nearby-status-color: #BB0099; // https://webaim.org/resources/contrastchecker/?fcolor=BB0099&bcolor=FFFFFF
+
+@availableToOrder-status-color: #CF05D8; // https://webaim.org/resources/contrastchecker/?fcolor=CF05D8&bcolor=FFFFFF
+
+@availableOther-status-color: #A60489; // https://webaim.org/resources/contrastchecker/?fcolor=A60489&bcolor=FFFFFF
