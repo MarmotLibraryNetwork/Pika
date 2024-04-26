@@ -9369,7 +9369,7 @@ a.browse-thumbnail-sorted.active {
 }
 .facetTitle,
 .exploreMoreTitle {
-  background-color: #f2f2f2;
+  background-color: #eee;
   color: #333;
   text-shadow: 1px 1px #fcfcfc;
   padding: 9px 30px 8px 15px;
@@ -10552,10 +10552,8 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .facetTitle,
 .exploreMoreTitle {
-  background: #eee;
+  text-shadow: 1px 1px #fff;
 }
-.facetTitle.panel-title,
-.exploreMoreTitle.panel-title,
 .form-group .panel-title {
   color: #333;
   text-shadow: 1px 1px #fff;

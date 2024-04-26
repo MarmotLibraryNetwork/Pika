@@ -9365,8 +9365,8 @@ a.browse-thumbnail-sorted.active {
 }
 .facetTitle,
 .exploreMoreTitle {
-  background-color: #f2f2f2;
-  color: #333;
+  background-color: #fff;
+  color: #000;
   text-shadow: 1px 1px #fcfcfc;
   padding: 9px 30px 8px 15px;
   border-bottom: 1px solid #adadad;
@@ -10474,10 +10474,7 @@ fieldset[disabled] .btn-masquerade.active {
   font-size: 14px;
 }
 .facetTitle {
-  background: #fff;
-  color: #000;
   font-weight: bold;
-  padding: 8px 30px 6px 15px;
   border-bottom: none;
 }
 .facetDetails {
