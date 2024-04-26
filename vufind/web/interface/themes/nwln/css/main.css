@@ -6882,8 +6882,8 @@ body > .container {
   background-color: #006aac;
 }
 .panel-title {
-  color: #333333;
-  text-shadow: 1px 1px #fff;
+  color: #FFF;
+  text-shadow: 1px 1px #555555;
 }
 .active .panel-heading {
   background-color: #006aac;
@@ -8183,11 +8183,11 @@ body {
 #home-page-search-label {
   font-size: 35px;
   font-weight: normal;
-  color: #000;
+  color: #fff;
   text-shadow: 1px 1px #797676;
 }
 #home-page-advanced-search-link {
-  color: #000;
+  color: #fff;
 }
 #lookfor::-moz-placeholder {
   font-size: 0;
@@ -8211,7 +8211,7 @@ body {
 }
 #keepFiltersSwitchLabel,
 #advancedSearchLink {
-  color: #000;
+  color: #fff;
   font-weight: normal;
   font-size: 85%;
 }
@@ -8254,7 +8254,7 @@ body {
   }
 }
 #horizontal-search-box #horizontal-search-label {
-  color: #000;
+  color: #fff;
 }
 #horizontal-search-box .searchSourceHorizontal,
 #horizontal-search-box .searchTypeHorizontal {
@@ -9486,7 +9486,7 @@ a.browse-thumbnail-sorted.active {
 }
 .related-manifestation-shelf-status.availableOther,
 .related_record_status.availableOther {
-  color: #A60489;
+  color: #000;
 }
 .itemSummaryTable tr.available {
   color: green;
@@ -10522,34 +10522,6 @@ fieldset[disabled] .btn-masquerade.active {
   margin-bottom: 0;
   border: 0 solid #eee;
 }
-#account-settings-accordion .panel-heading,
-#more-details-accordion .panel-heading,
-.sidebar-links .panel-heading,
-#account-settings-accordion .panel-heading {
-  background: #006aac;
-}
-#account-settings-accordion .active .panel-heading,
-#more-details-accordion .active .panel-heading,
-.sidebar-links .active .panel-heading,
-#account-settings-accordion .active .panel-heading {
-  background: #006aac;
-}
-#account-settings-accordion .panel,
-#more-details-accordion .panel,
-.sidebar-links .panel,
-#account-settings-accordion .panel,
-#account-settings-accordion .panel-heading,
-#more-details-accordion .panel-heading,
-.sidebar-links .panel-heading,
-#account-settings-accordion .panel-heading {
-  border-radius: 0;
-}
-#account-settings-accordion .panel-body,
-#more-details-accordion .panel-body,
-.sidebar-links .panel-body,
-#account-settings-accordion .panel-body {
-  background-color: transparent;
-}
 .facetTitle,
 .exploreMoreTitle {
   text-shadow: 1px 1px #fff;
@@ -10564,56 +10536,37 @@ fieldset[disabled] .btn-masquerade.active {
 .panel.panel-default .panel-heading {
   background: #006aac;
 }
-.facetList {
-  background: #006aac;
-}
 .searchTypeHome,
 .searchSource {
   color: #333;
   background-color: #fff;
 }
 #horizontal-search-box #horizontal-search-label {
-  color: white;
   text-shadow: 1px 1px #333;
   white-space: nowrap;
   padding-top: 7px;
   margin-left: -4px;
 }
 #advancedSearchLink {
-  color: white;
   text-shadow: 1px 1px #333;
 }
-#keepFiltersSwitchLabel {
-  color: white;
-  text-shadow: 1px 1px #333;
-}
-#more-details-accordion .active .panel-title,
-#account-settings-accordion .active .panel-title {
+#more-details-accordion a:hover,
+#account-settings-accordion a:hover,
+.sidebar-links a:hover,
+#more-details-accordion a:visited,
+#account-settings-accordion a:visited,
+.sidebar-links a:visited {
   color: #FFF;
-  text-shadow: 1px 1px #333;
-}
-#more-details-accordion .panel-title,
-#account-settings-accordion .panel-title {
-  color: #FFF;
-  text-shadow: 1px 1px #333;
 }
 .sidebar-links .panel.active > a,
 .sidebar-links .panel.active > a:visited,
 .sidebar-links .panel.active > a:hover {
   text-shadow: 1px 1px #333;
 }
-.panel-title {
-  color: #FFF;
-  text-shadow: 1px 1px #333;
-}
 #refineSearch ~ #home-account-links {
   padding-top: 15px;
 }
 .sidebar-label {
-  font-weight: bold;
-}
-.related-manifestation-shelf-status.availableOther {
-  color: #000;
   font-weight: bold;
 }
 .browse-thumbnail div:first-child {
