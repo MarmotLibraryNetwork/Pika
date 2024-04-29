@@ -134,7 +134,7 @@
 	{if $person->ledgerVolume || $person->ledgerYear || $person->ledgerEntry}
 		<h3 class="blockhead">Ledger Information</h3>
 		{if $person->ledgerVolume}
-			<div class='personDetail'><span class='result-label'>Volume:</span><span class='result-value-bold'>{$person->ledgerVolume}</span></div>
+			<div class='personDetail'><span class='result-label'>Volume:</span><span class='bold'>{$person->ledgerVolume}</span></div>
 		{/if}
 		{if $person->ledgerYear}
 			<div class='personDetail'><span class='result-label'>Year:</span><span class='personDetailValue'>{$person->ledgerYear}</span></div>

@@ -6946,32 +6946,10 @@ body > .container {
 .nav-tabs {
   margin-bottom: 0;
 }
-@media (max-width: 480px) {
-  #search_box_group {
-    padding-top: 5px;
-  }
-  #search_box_group #search_button {
-    padding-top: 5px;
-    width: 100%;
-  }
-}
 @media print {
   #header-wrapper,
   #side-bar {
     display: none;
-  }
-}
-@media (max-width: 767px) {
-  .footer-column h4:before {
-    content: "▼ ";
-  }
-  .footer-column h4.collapsed:before {
-    content: "► ";
-  }
-}
-@media (min-width: 767px) {
-  .footerContents {
-    display: block;
   }
 }
 .bold {
@@ -7901,12 +7879,6 @@ body {
     width: 100%;
   }
 }
-hr.menu {
-  margin-top: 3px;
-  margin-bottom: 3px;
-  height: 0;
-  border-top: 1px solid #d3d3d3;
-}
 .breadcrumbs {
   background-color: #f5f5f5;
   padding: 3px;
@@ -7928,6 +7900,11 @@ hr.menu {
   color: black;
   text-align: center;
   padding: 3px;
+}
+.system-message-header a {
+  color: #3b679a;
+  -webkit-text-decoration: underline dotted;
+          text-decoration: underline dotted;
 }
 #header-container {
   padding-top: 0;
@@ -8205,6 +8182,7 @@ hr.menu {
 }
 #home-page-search-label {
   font-size: 35px;
+  font-weight: normal;
   color: #FFF;
   text-shadow: 1px 1px #797676;
 }
@@ -8312,7 +8290,7 @@ hr.menu {
 .sidebar-button {
   text-align: center;
   color: #FFF;
-  background-color: #4F5253;
+  background-color: #494A0C;
   padding: 7px 0;
   margin-bottom: 15px;
 }
@@ -8330,6 +8308,12 @@ hr.menu {
 .sidebar-links .panel-body a:visited:not(.btn),
 .sidebar-links .panel-body a:hover:not(.btn) {
   color: #333;
+}
+hr.menu {
+  margin-top: 3px;
+  margin-bottom: 3px;
+  height: 0;
+  border-top: 1px solid #d3d3d3;
 }
 .ui-helper-hidden {
   display: none;
@@ -8940,9 +8924,6 @@ a.browse-thumbnail-sorted.active {
   color: #B55A0A;
   font-weight: bold;
 }
-.holdDisclaimerLibrary {
-  font-weight: bold;
-}
 #mobileHeader .myAccountLink {
   font-weight: bold;
   font-size: 18px;
@@ -9225,15 +9206,12 @@ a.browse-thumbnail-sorted.active {
 }
 .statusValue.available,
 .statusValue.here {
-  color: #009900;
-}
-.statusValue.nearby {
-  color: #BB0099;
+  color: green;
 }
 .statusValue.unavailable,
 .statusValue.checkedOut,
 .statusValue.reserve {
-  color: #cc0000;
+  color: #EC130E;
 }
 #recordcover {
   position: relative;
@@ -9317,9 +9295,6 @@ a.browse-thumbnail-sorted.active {
   margin-right: 5px;
   font-size: 12px;
 }
-.result-value-bold {
-  font-weight: bold;
-}
 .result-label {
   font-weight: bold;
   color: #44484a;
@@ -9389,19 +9364,16 @@ a.browse-thumbnail-sorted.active {
 .sidebar-label {
   text-align: center;
   background-color: #494A0C;
-  background: linear-gradient(to bottom, #494A0C, #000000);
   color: #FFF;
   padding: 3px 0;
   margin-top: 20px;
 }
 .facetTitle,
 .exploreMoreTitle {
-  background-color: #e8e8e8;
-  background: linear-gradient(to bottom, #e8e8e8, #d7d7d7);
-  color: #555555;
+  background-color: #f2f2f2;
+  color: #333;
   text-shadow: 1px 1px #fcfcfc;
-  padding: 8px 30px 6px 15px;
-  border-top: 1px solid #f4f4f4;
+  padding: 9px 30px 8px 15px;
   border-bottom: 1px solid #adadad;
 }
 @media print {
@@ -10488,13 +10460,6 @@ a#headerMyAccountLink {
 }
 .searchTypeHome {
   background-color: #99980A;
-}
-.sidebar-button {
-  background-color: #494A0C;
-  background: linear-gradient(to bottom, #646510, #494A0C) repeat scroll 0 0 rgba(0, 0, 0, 0);
-}
-.sidebar-label {
-  background: linear-gradient(to bottom, #646510, #494A0C) repeat scroll 0 0 rgba(0, 0, 0, 0);
 }
 .facetTitle:hover,
 .exploreMoreTitle:hover {

@@ -5,9 +5,18 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
-.header-login-button-mixin(@summit-gray);
+#header-container {
+  background: linear-gradient(to bottom, @summit-accent-gray, @summit-accent-gray 34px, #fff 34px, #fff 100%);
 
-.result-tools-horizontal .btn{
+  #header-logo {
+    padding-top: 0;
+  }
+}
+
+//.header-login-button-mixin(@summit-gray);
+.header-login-button-mixin;
+
+.result-tools-horizontal .btn {
   background-color: @summit-green;
   background: linear-gradient(to bottom, @summit-green, darken(@summit-green, 10%));
 }

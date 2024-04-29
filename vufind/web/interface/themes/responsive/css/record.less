@@ -24,15 +24,16 @@
   font-weight: bold;
 
   &.available, &.here {
-    color: #009900;
+    color: @available-status-color;
   }
 
-  &.nearby {
-    color: #BB0099;
-  }
+  // Currently not used in templates
+  //&.nearby {
+  //  color: @nearby-status-color;
+  //}
 
   &.unavailable, &.checkedOut, &.reserve {
-    color: #cc0000;
+    color: @checkedOut-status-color;
   }
 }
 

@@ -9,14 +9,15 @@
 @theme-primary-color-light: #1878D3; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=1878D3
 @theme-primary-color-medium: #056DAC; /* additional light-ish color; little more readable for buttons */
 
-@link-color-resp:#326799;
+@link-color-resp: #326799;
 
 @other-gray: #f0f0f0;
 @border-gray: #A2A1A1;
 
 @home-search-top-color: @theme-primary-color;
-@home-search-bottom-color:@theme-primary-color-light;
-@home-search-label-color: #000;
+@home-search-bottom-color: @theme-primary-color-light;
+@home-search-label-color: #fff;
+@horizontal-search-label-color: #fff;
 
 //@home-page-login-color: #000;
 
@@ -51,7 +52,7 @@
 @selectedCategoryBorderColor: @theme-primary-color;
 
 @jcarousel-item-border-color: #d7d7d7;
-@browse-header-background-color:#fff;
+@browse-header-background-color: #fff;
 @browseCarouselControlBackgroundColor: #fff;
 @browseCarouselControlColor: @theme-primary-color;
 
@@ -70,10 +71,12 @@
 @more-browse-results-color: #FFF;
 
 @accordion-header-bg-color: @theme-primary-color;
-@accordion-active-header-bg-color: @accordion-header-bg-color;
-@accordion-header-top-gradient-color: @accordion-header-bg-color;
-@accordion-header-bottom-gradient-color: @accordion-header-bg-color;
-@accordion-active-header-color: #FFF; // same as when closed;
+@accordion-active-header-bg-color: @theme-primary-color;
+@accordion-header-top-gradient-color: @theme-primary-color;
+@accordion-header-bottom-gradient-color:@theme-primary-color;
+@accordion-header-color: #FFF;
+@accordion-active-header-color: #FFF;
+@accordion-header-shadow-color: @gray;
 
 //No rounded corners
 @border-radius-base:             0;
@@ -81,6 +84,12 @@
 @border-radius-small:            0;
 
 @sidebar-label-color: #000;
-@sidebar-label-background-color: #C6C6C6;
+@sidebar-label-background-color: #C6C6C6; // (AAA) https://webaim.org/resources/contrastchecker/?fcolor=000000&bcolor=C6C6C6
 
 @breadcrumb-bg: @other-gray;
+
+// Search Results
+@facetTitle-bg-color: #eee;
+@facetTitle-color: #333;
+
+@availableOther-status-color: #000;

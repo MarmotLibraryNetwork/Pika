@@ -29,6 +29,7 @@
     box-shadow: 2px 2px 5px darkgrey;
   }
 }
+
 .vertical-align-library-name-header;
 
 #library-name-header {
@@ -79,30 +80,30 @@
 .hide-browse-category-results-divider;
 
 // Remove gradients from accordions & facets; set a white background for body content //
-#account-settings-accordion, #more-details-accordion, .sidebar-links, #account-settings-accordion {
-  .panel-heading {
-    background: @accordion-header-bg-color;
-  }
-
-  .active .panel-heading {
-    background: @accordion-active-header-bg-color;
-  }
-
-  .panel, .panel-heading {
-    border-radius: 0;
-  }
-
-  .panel-body {
-    background-color: transparent;
-
-  }
-}
+//#account-settings-accordion, #more-details-accordion, .sidebar-links, #account-settings-accordion {
+//  .panel-heading {
+//    background: @accordion-header-bg-color;
+//  }
+//
+//  .active .panel-heading {
+//    background: @accordion-active-header-bg-color;
+//  }
+//
+//  .panel, .panel-heading {
+//    border-radius: 0;
+//  }
+//
+//  .panel-body {
+//    background-color: transparent;
+//
+//  }
+//}
 
 .facetTitle, .exploreMoreTitle {
-  background: #eee;
+  text-shadow: 1px 1px #fff;
 }
 
-.facetTitle.panel-title, .exploreMoreTitle.panel-title, .form-group .panel-title {
+.form-group .panel-title {
   color: #333;
   text-shadow: 1px 1px #fff;
 }
@@ -112,12 +113,12 @@
 }
 
 .panel.panel-default .panel-heading {
-  background: @accordion-header-bg-color;
+  background: @theme-primary-color;
 }
 
-.facetList {
-  background: @accordion-header-bg-color;
-}
+//.facetList {
+//  background: @accordion-header-bg-color;
+//}
 
 .searchTypeHome, .searchSource {
   color: #333;
@@ -125,7 +126,6 @@
 }
 
 #horizontal-search-box #horizontal-search-label {
-  color: white;
   text-shadow: 1px 1px #333;
   white-space: nowrap;
   padding-top: 7px;
@@ -133,29 +133,28 @@
 }
 
 #advancedSearchLink {
-  color: white;
   text-shadow: 1px 1px #333;
 }
 
-#keepFiltersSwitchLabel {
-  color: white;
-  text-shadow: 1px 1px #333;
-}
+//#more-details-accordion, #account-settings-accordion {
+//  .active {
+//    .panel-title {
+//      color: @accordion-active-header-color;
+//      text-shadow: 1px 1px #333;
+//    }
+//  }
+//
+//  .panel-title {
+//    color: @accordion-active-header-color;
+//    text-shadow: 1px 1px #333;
+//  }
+//}
 
-#more-details-accordion, #account-settings-accordion {
-  .active {
-    .panel-title {
-      color: @accordion-active-header-color;
-      text-shadow: 1px 1px #333;
-    }
+#more-details-accordion, #account-settings-accordion, .sidebar-links {
+  a:hover, a:visited {
+    color: #FFF;
   }
-
-  .panel-title {
-    color: @accordion-active-header-color;
-    text-shadow: 1px 1px #333;
-  }
 }
-
 
 .sidebar-links {
   .panel {
@@ -171,10 +170,10 @@
 
 }
 
-.panel-title {
-  color: @accordion-active-header-color;
-  text-shadow: 1px 1px #333;
-}
+//.panel-title {
+//  color: @accordion-active-header-color;
+//  text-shadow: 1px 1px #333;
+//}
 
 //TODO: I think this should go into the main styling.
 #refineSearch ~ #home-account-links {
@@ -182,12 +181,6 @@
 }
 
 .sidebar-label {
-  background: @sidebar-label-background-color;
-  font-weight: bold;
-}
-
-.related-manifestation-shelf-status.availableOther {
-  color: #000;
   font-weight: bold;
 }
 

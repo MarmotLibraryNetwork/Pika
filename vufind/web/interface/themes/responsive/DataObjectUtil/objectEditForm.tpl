@@ -15,7 +15,7 @@
 
 {* Create the base form *}
 {strip}
-<form id="objectEditor" method="post" {if $contentType}enctype="{$contentType}"{/if} action="{$submitUrl}" role="form">
+<form id="objectEditor" method="post" {if $contentType}enctype="{$contentType}"{/if} action="{$submitUrl}">
 	{literal}
 		<script>
 			$(function(){

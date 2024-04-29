@@ -30,17 +30,12 @@
 }
 
 .overdueLabel {
-  color: #C81B0B; // https://webaim.org/resources/contrastchecker/?fcolor=C81B0B&bcolor=F2DEDE
+  color: @overdue-status-color;
   font-weight: bold;
 }
 
 .dueSoonLabel {
-  color: #B55A0A; // https://webaim.org/resources/contrastchecker/?fcolor=B55A0A&bcolor=F9F9F9
-  //color: #B95E04; // https://webaim.org/resources/contrastchecker/?fcolor=B95E04&bcolor=FFFFFF
-  font-weight: bold;
-}
-
-.holdDisclaimerLibrary {
+  color: @dueSoon-status-color;
   font-weight: bold;
 }
 
