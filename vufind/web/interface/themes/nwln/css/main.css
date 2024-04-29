@@ -6883,7 +6883,7 @@ body > .container {
 }
 .panel-title {
   color: #FFF;
-  text-shadow: 1px 1px #555555;
+  text-shadow: 1px 1px #555;
 }
 .active .panel-heading {
   background-color: #006aac;
@@ -7914,8 +7914,7 @@ body {
 #header-container {
   padding-top: 0;
   height: 160px;
-  background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 85%, #ffffff);
+  background-color: #fff;
   border-bottom: 8px solid #fff;
   margin-bottom: 0;
   min-height: 110px;
@@ -7934,7 +7933,7 @@ body {
   text-shadow: 1px 1px #fff;
   vertical-align: middle;
   line-height: 152px !important;
-  border-bottom: 4px solid #ffffff;
+  border-bottom: 4px solid #e0e0e0;
   color: #8b8b8b !important;
 }
 .header-button:hover {

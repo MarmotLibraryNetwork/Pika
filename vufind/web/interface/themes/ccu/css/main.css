@@ -7910,8 +7910,7 @@ body {
   padding-top: 0;
   height: 98px;
   background-color: #00416B;
-  background: linear-gradient(to bottom, #00416B, #00416B 85%, #00416B);
-  border-bottom: 3px solid #fff;
+  border-bottom: 3px solid #000000;
   margin-bottom: 0;
   min-height: 110px;
 }
@@ -7929,7 +7928,7 @@ body {
   text-shadow: 1px 1px #fff;
   vertical-align: middle;
   line-height: 90px !important;
-  border-bottom: 4px solid #00416B;
+  border-bottom: 4px solid #e0e0e0;
   color: #8b8b8b !important;
 }
 .header-button:hover {

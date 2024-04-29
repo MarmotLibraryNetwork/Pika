@@ -7910,7 +7910,6 @@ body {
   padding-top: 0;
   height: 90px;
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #F1F5FA 85%, #80B5D9);
   border-bottom: 8px solid #0A61AE;
   margin-bottom: 0;
   min-height: 110px;
@@ -7929,7 +7928,7 @@ body {
   text-shadow: 1px 1px #fff;
   vertical-align: middle;
   line-height: 82px !important;
-  border-bottom: 4px solid #80B5D9;
+  border-bottom: 4px solid #CCC;
   color: #8b8b8b !important;
 }
 .header-button:hover {
@@ -10397,13 +10396,13 @@ fieldset[disabled] .btn-masquerade.active {
   /*padding-left: 175px;*/
   padding-top: 40px;
 }
-#header-container {
-  background: rgba(0, 0, 0, 0) linear-gradient(to bottom, #ffffff, #ffffff) repeat scroll 0 0;
-  border-bottom: 8px solid #1A2B4B;
-  height: 90px;
-  margin-bottom: 0;
-  min-height: 110px;
-  padding-top: 0;
+#library-name-header {
+  font-family: "Verdana", Arial, Helvetica, sans-serif;
+  color: #484848;
+  font-size: 27px;
+  white-space: nowrap;
+  /*padding-left: 175px;*/
+  padding-top: 40px;
 }
 #header-links {
   background: #4F823A;
@@ -10415,7 +10414,6 @@ fieldset[disabled] .btn-masquerade.active {
 #header-links .header-link-wrapper {
   border: none;
 }
-/*#header-links .header-link-wrapper:last-of-type {border-right: 1px solid @green-boulder}*/
 .header-button {
   border: 0;
   border-radius: 0.5em;
@@ -10538,12 +10536,4 @@ fieldset[disabled] .btn-masquerade.active {
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected {
   background: #1A2B4B;
-}
-#library-name-header {
-  font-family: "Verdana", Arial, Helvetica, sans-serif;
-  color: #484848;
-  font-size: 27px;
-  white-space: nowrap;
-  /*padding-left: 175px;*/
-  padding-top: 40px;
 }

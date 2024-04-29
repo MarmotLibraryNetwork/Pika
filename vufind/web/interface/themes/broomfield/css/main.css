@@ -7910,7 +7910,6 @@ body {
   padding-top: 0;
   height: 90px;
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 85%, #fff);
   border-bottom: 8px solid #fff;
   margin-bottom: 0;
   min-height: 110px;
@@ -7929,7 +7928,7 @@ body {
   text-shadow: 1px 1px #fff;
   vertical-align: middle;
   line-height: 82px !important;
-  border-bottom: 4px solid #fff;
+  border-bottom: 4px solid #CCC;
   color: #8b8b8b !important;
 }
 .header-button:hover {
@@ -10512,13 +10511,13 @@ fieldset[disabled] .btn-masquerade.active {
   background-color: #fff;
   color: #d4d4d4;
   font-size: 50px;
-  box-shadow: 0 0 0px #fff;
+  box-shadow: 0 0 0 #fff;
 }
 #browse-category-picker .jcarousel-control-next {
   background-color: #fff;
   color: #d4d4d4;
   font-size: 50px;
-  box-shadow: 0 0 0px #fff;
+  box-shadow: 0 0 0 #fff;
 }
 #vertical-menu-bar-wrapper {
   width: 40px;

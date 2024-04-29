@@ -7910,8 +7910,7 @@ body {
   padding-top: 0;
   height: 90px;
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #F1F5FA 85%, #80B5D9);
-  border-bottom: 8px solid #0A61AE;
+  border-bottom: 8px solid #4F823A;
   margin-bottom: 0;
   min-height: 110px;
 }
@@ -7929,7 +7928,7 @@ body {
   text-shadow: 1px 1px #fff;
   vertical-align: middle;
   line-height: 82px !important;
-  border-bottom: 4px solid #80B5D9;
+  border-bottom: 4px solid #CCC;
   color: #8b8b8b !important;
 }
 .header-button:hover {
@@ -10396,14 +10395,6 @@ fieldset[disabled] .btn-masquerade.active {
   white-space: nowrap;
   /*padding-left: 175px;*/
   padding-top: 40px;
-}
-#header-container {
-  background: rgba(0, 0, 0, 0) linear-gradient(to bottom, #ffffff, #ffffff) repeat scroll 0 0;
-  border-bottom: 8px solid #4F823A;
-  height: 90px;
-  margin-bottom: 0;
-  min-height: 110px;
-  padding-top: 0;
 }
 #header-links {
   background: #4F823A;
