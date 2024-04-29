@@ -2,12 +2,12 @@
 	{* User's viewing mode toggle switch *}
 	<div class="row" id="selected-browse-label">{* browse styling replicated here *}
 		<div class="btn-group btn-group-sm" data-toggle="buttons">
-			<label for="covers" tabindex="0" title="Covers" class="btn btn-sm btn-default"><input onchange="Pika.Archive.toggleDisplayMode(this.id)" type="radio" id="covers">
+			<a href="#" tabindex="0" title="Covers" aria-label="change results to cover layout" onclick="Pika.Archive.toggleDisplayMode(this.id)" id="covers" class="btn btn-sm btn-default displayMode">
 				<span class="thumbnail-icon"></span><span> Covers</span>
-			</label>
-			<label for="list" tabindex="0" title="Lists" class="btn btn-sm btn-default"><input onchange="Pika.Archive.toggleDisplayMode(this.id)" type="radio" id="list">
+			</a>
+			<a href="#" tabindex="0" title="Lists" aria-label="change results to list layout"  onclick="Pika.Archive.toggleDisplayMode(this.id)" type="radio" id="list"class="btn btn-sm btn-default displayMode">
 				<span class="list-icon"></span><span> List</span>
-			</label>
+			</a>
 		</div>
 		<div class="btn-group" id="hideSearchCoversSwitch"{if $displayMode != 'list'} style="display: none;"{/if}>
 			<label for="hideCovers" class="checkbox{* control-label*}"> Hide Covers
@@ -31,7 +31,7 @@
 		Pika.Archive.displayMode = '{$displayMode}';
 		Globals.opac = 1; {* set to true to keep opac browsers from storing browse mode *}
 		{/if}
-		$('#'+Pika.Archive.displayMode).parent('label').addClass('active'); {* show user which one is selected *}
+		$('#'+Pika.Archive.displayMode).addClass('active'); {* show user which one is selected *}
 
 			Pika.Archive.ajaxReloadCallback = function(){ldelim}
 				{if $displayType == 'map'}

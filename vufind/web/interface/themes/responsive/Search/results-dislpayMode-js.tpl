@@ -10,4 +10,4 @@
 	Pika.Searches.displayMode = '{$displayMode}';
 	Globals.opac = 1; {* set to true to keep opac browsers from storing browse mode *}
 {/if}
-$('#'+Pika.Searches.displayMode).parent('label').addClass('active'); {* show user which one is selected *}
+$('#'+Pika.Searches.displayMode).addClass('active'); {* show user which one is selected *}
