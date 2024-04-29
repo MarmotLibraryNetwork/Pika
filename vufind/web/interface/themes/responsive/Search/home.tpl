@@ -43,12 +43,12 @@
 			<div class="row" id="selected-browse-label">
 
 				<div class="btn-group btn-group-sm" data-toggle="buttons">
-					<label for="covers" tabindex="0" title="Covers" class="btn btn-sm btn-default"><input onclick="Pika.Browse.toggleBrowseMode(this.id)" type="radio" id="covers">
+					<a href="#" onclick="Pika.Browse.toggleBrowseMode(this.id)" id="covers" aria-label="change browse titles to cover layout" tabindex="0" title="Covers" class="btn btn-sm btn-default browseMode">
 						<span class="thumbnail-icon"></span><span> Covers</span>
-					</label>
-					<label for="grid" tabindex="0" title="Grid" class="btn btn-sm btn-default"><input onclick="Pika.Browse.toggleBrowseMode(this.id);" type="radio" id="grid">
+					</a>
+					<a href="#" onclick="Pika.Browse.toggleBrowseMode(this.id);" id="grid" aria-label="change browse titles to grid layout" tabindex="0" title="Grid" class="btn btn-sm btn-default browseMode">
 						<span class="grid-icon"></span><span> Grid</span>
-					</label>
+					</a>
 				</div>
 
 				<div class="selected-browse-label-search">
@@ -66,7 +66,7 @@
 				</div>
 			</div>
 
-			<a onclick="return Pika.Browse.getMoreResults()" role="button" aria-label="Get more results for browse category" tabindex="0">
+			<a href="#" onclick="return Pika.Browse.getMoreResults()" role="button" aria-label="Get more results for browse category" tabindex="0">
 				<div class="row" id="more-browse-results">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 				</div>
@@ -90,7 +90,7 @@
 		{else}
 		Pika.Browse.browseMode = '{$browseMode}';
 		{/if}
-		$('#'+Pika.Browse.browseMode).parent('label').addClass('active'); {* show user which one is selected *}
+		$('#{$browseMode}').addClass('active'); {* show user which one is selected *}
 			{if $selectedBrowseCategory && !$isDefaultCategory} {* This triggers the carousel to display the correct category (and subcategory) when these have been set with url parameters. *}
 				let carousel = $("#browse-category-carousel");
 				carousel.jcarousel('scroll', carousel.find("li#browse-category-" + Pika.Browse.curCategory));

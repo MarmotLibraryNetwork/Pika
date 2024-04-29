@@ -59,9 +59,12 @@ Pika.Browse = (function(){
 		},
 
 		toggleBrowseMode : function(selectedMode){
+
 			var categoryTextId = this.curCategory || $('#browse-category-carousel .selected').data('category-id'),
 					subCategoryTextId = this.curSubCategory || $('#browse-sub-category-menu .selected').data('sub-category-id');
 			this.browseMode = this.browseModeClasses.hasOwnProperty(selectedMode) ? selectedMode : this.browseMode; // check that selected mode is a valid option
+			$(".browseMode").removeClass("active");
+			$('#' + this.browseMode).addClass("active");
 			if (!Globals.opac && Pika.hasLocalStorage() ) { // store setting in browser if not an opac computer
 				window.localStorage.setItem('browseMode', this.browseMode);
 			}
@@ -157,6 +160,7 @@ Pika.Browse = (function(){
 				$('#home-page-browse-results div').html('').show(); // should be first div
 				//$('.home-page-browse-thumbnails').html('').show();
 			}).done(function() {
+				$('#more-browse-results').removeAttr("style");
 				Pika.Browse.loadingCategory = null;  // done loading category, empty flag
 			});
 			return false;
@@ -204,6 +208,8 @@ Pika.Browse = (function(){
 				Pika.ajaxFail();
 				$('#home-page-browse-results div.row').html('').show(); // should be first div
 				$('.selected-browse-sub-category-label-search-text').fadeOut(); // hide sub-category Label
+			}).done(function(){
+				$('#more-browse-results').removeAttr("style");
 			});
 			return false;
 		},
