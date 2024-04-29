@@ -10386,6 +10386,9 @@ fieldset[disabled] .btn-masquerade.active {
   color: #f1dbff;
   background-color: #fff;
 }
+#header-container {
+  background: linear-gradient(to bottom, #fff, #D6E6E8 85%, #C6DEE2);
+}
 .header-button {
   border: 0;
   border-radius: 0.5em;

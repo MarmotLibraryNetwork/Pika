@@ -7909,7 +7909,7 @@ body {
 #header-container {
   padding-top: 0;
   height: 115px;
-  background-color: #fff;
+  background-color: #4C7EB9;
   border-bottom: 8px solid #2C3D58;
   margin-bottom: 0;
   min-height: 110px;
@@ -8174,8 +8174,8 @@ body {
   background-image: none;
 }
 #home-page-search {
-  background-color: #057DBC;
-  background: linear-gradient(to bottom, #057DBC, #147ce2);
+  background-color: #242D40;
+  background: linear-gradient(to bottom, #242D40, #242D40);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8204,7 +8204,7 @@ body {
 .searchSource {
   margin: 5px 0 0;
   color: #fff;
-  background-color: #147ce2;
+  background-color: #242D40;
   border: none;
   width: 90% !important;
 }
@@ -8215,8 +8215,8 @@ body {
   font-size: 85%;
 }
 #horizontal-search-box {
-  background-color: #057DBC;
-  background: linear-gradient(to bottom, #057DBC, #147ce2);
+  background-color: #242D40;
+  background: linear-gradient(to bottom, #242D40, #242D40);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -9825,8 +9825,8 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
 }
 #explore-more-sidebar {
-  background-color: #057DBC;
-  background: linear-gradient(to bottom, #057DBC, #147ce2);
+  background-color: #242D40;
+  background: linear-gradient(to bottom, #242D40, #242D40);
 }
 #explore-more-header {
   padding: 10px 25px 5px 0;
@@ -10386,25 +10386,9 @@ fieldset[disabled] .btn-masquerade.active {
   color: #f1dbff;
   background-color: #fff;
 }
-#selected-browse-search-link .icon-before {
-  display: none;
-}
-#selected-browse-search-link .icon-after {
-  position: relative;
-  top: 1px;
-  display: inline-block;
-  font-family: 'Glyphicons Halflings';
-  font-style: normal;
-  font-weight: normal;
-  line-height: 1;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-#selected-browse-search-link .icon-after:empty {
-  width: 1em;
-}
-#selected-browse-search-link .icon-after:before {
-  content: "\e080";
+#header-container {
+  background-color: #4c7eb9;
+  background: linear-gradient(to bottom, #4c7eb9, #395982 65%, #314869);
 }
 .header-button {
   border: 0;
@@ -10458,6 +10442,26 @@ fieldset[disabled] .btn-masquerade.active {
   background-color: #0B7EB5;
   background: linear-gradient(to bottom, #0B7EB5, #0B7EB5 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #0B7EB5 90%, #0B7EB5);
   font-size: 22px;
+}
+#selected-browse-search-link .icon-before {
+  display: none;
+}
+#selected-browse-search-link .icon-after {
+  position: relative;
+  top: 1px;
+  display: inline-block;
+  font-family: 'Glyphicons Halflings';
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+#selected-browse-search-link .icon-after:empty {
+  width: 1em;
+}
+#selected-browse-search-link .icon-after:before {
+  content: "\e080";
 }
 .sidebar-button {
   background: #242D40;
