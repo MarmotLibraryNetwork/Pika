@@ -5,6 +5,10 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
+#header-container {
+  background: linear-gradient(to bottom, @header-top-color, @header-middle-color 85%, @header-bottom-color);
+}
+
 .header-login-button-mixin(@header-buttons-background-color);
 
 #header-logo {
