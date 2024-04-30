@@ -159,11 +159,18 @@ body {
 }
 
 // accordion mixin
-.accordion-headers-and-titles(@accordion-header-bg-color: @accordion-header-bg-color; @accordion-active-header-bg-color: @accordion-active-header-bg-color;
-  @accordion-header-color: @accordion-header-color; @accordion-active-header-color: @accordion-active-header-color;
-  @accordion-header-shadow: 1px 1px @accordion-header-shadow-color; @accordion-active-header-shadow:  1px 1px @accordion-active-header-shadow-color){
+.accordion-headers-and-titles(
+  @accordion-header-bg-color: @accordion-header-bg-color;
+  @accordion-active-header-bg-color: @accordion-active-header-bg-color;
+  @accordion-header-color: @accordion-header-color;
+  @accordion-active-header-color: @accordion-active-header-color;
+  @accordion-header-shadow: 1px 1px @accordion-header-shadow-color;
+  @accordion-active-header-shadow:  1px 1px @accordion-active-header-shadow-color;
+  @accordion-header-border-color: @accordion-header-border-color
+){
   .panel-heading {
     background-color: @accordion-header-bg-color;
+    border: 1px solid @panel-inner-border;
   }
 
   .panel-title {
