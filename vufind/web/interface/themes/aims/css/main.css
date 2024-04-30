@@ -4549,6 +4549,8 @@ a.thumbnail.active {
 }
 .alert a {
   font-weight: bold;
+  -webkit-text-decoration: dotted underline;
+          text-decoration: dotted underline;
 }
 .alert > p,
 .alert > ul {
