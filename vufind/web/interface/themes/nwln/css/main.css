@@ -9684,8 +9684,7 @@ a.browse-thumbnail-sorted.active {
     right: 0;
   }
 }
-.series a,
-.novelistSeries a,
+.result-value a,
 .facetDetails a,
 .solicit-new-materials-request a {
   color: #2c5a86;
