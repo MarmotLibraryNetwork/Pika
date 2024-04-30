@@ -10492,6 +10492,10 @@ fieldset[disabled] .btn-masquerade.active {
 #account-link-accordion .active a:hover {
   text-decoration-color: #333333;
 }
+#link-accordion .active .panel-title {
+  color: #333333;
+  text-shadow: 1px 1px #fff;
+}
 .sidebar-button {
   padding: 7px 0;
 }
