@@ -92,12 +92,12 @@ class ListRecord extends IndexRecord{
 //		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
 
-		return 'RecordDrivers/List/cover_result.tpl';
+		return 'RecordDrivers/List/cover-result.tpl';
 	}
 
 	function getFormat() {
 		// overwrites class IndexRecord getFormat() so that getBookCoverURL() call will work without warning notices
-		return array('List');
+		return ['List'];
 	}
 
 	/**
