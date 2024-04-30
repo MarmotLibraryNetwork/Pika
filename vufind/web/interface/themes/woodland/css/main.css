@@ -8429,7 +8429,7 @@ hr.menu {
   background: #343a40;
 }
 #home-page-browse-header {
-  background-color: #ffffff;
+  background-color: #fff;
   padding-bottom: 15px;
 }
 #home-page-browse-content {
@@ -8445,7 +8445,7 @@ hr.menu {
   z-index: -1;
 }
 .browse-label-text {
-  background-color: #ffffff;
+  background-color: #fff;
   font-size: 22px;
   color: #00847a;
   line-height: 5px;
