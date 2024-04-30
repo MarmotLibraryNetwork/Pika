@@ -6880,6 +6880,7 @@ body > .container {
 }
 .panel-heading {
   background-color: #006aac;
+  border: 1px solid #ddd;
 }
 .panel-title {
   color: #FFF;

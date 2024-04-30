@@ -6875,6 +6875,7 @@ body > .container {
 }
 .panel-heading {
   background-color: #e7e7e7;
+  border: 1px solid #ddd;
 }
 .panel-title {
   color: #333333;
@@ -10449,6 +10450,7 @@ fieldset[disabled] .btn-masquerade.active {
 }
 #account-link-accordion .panel-heading {
   background-color: #e7e7e7;
+  border: 1px solid #ddd;
 }
 #account-link-accordion .panel-title {
   color: #333333;
@@ -10498,6 +10500,7 @@ fieldset[disabled] .btn-masquerade.active {
 }
 #more-details-accordion .panel-heading {
   background-color: #fff;
+  border: 1px solid #ddd;
 }
 #more-details-accordion .panel-title {
   color: #333;

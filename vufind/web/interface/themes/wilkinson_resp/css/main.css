@@ -6875,6 +6875,7 @@ body > .container {
 }
 .panel-heading {
   background-color: #121c2d;
+  border: 1px solid #ddd;
 }
 .panel-title {
   color: #fff;
