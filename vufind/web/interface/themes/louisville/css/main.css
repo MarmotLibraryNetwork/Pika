@@ -6996,11 +6996,11 @@ div.striped > div:nth-child(odd) {
 a:focus img.listResultImage {
   outline: 5px auto #E15F15 !important;
 }
-#vertical-menu-bar .menu-bar-option:has(.menu-icon:focus) {
+#vertical-menu-bar .menu-bar-option:focus-within {
   border: 2px solid #E15F15 !important;
   outline: 2px solid white;
 }
-#vertical-menu-bar .menu-icon-selected:has(.menu-icon:focus) {
+#vertical-menu-bar .menu-icon-selected:focus-within {
   border: 2px solid #3f0085 !important;
   outline: 2px solid white;
 }
@@ -7009,6 +7009,9 @@ a:focus > .header-button {
 }
 #browse-category-picker .jcarousel-control-prev:focus,
 #browse-category-picker .jcarousel-control-next:focus {
+  outline: 5px auto #E15F15 !important;
+}
+a:focus > #more-browse-results {
   outline: 5px auto #E15F15 !important;
 }
 input[type="checkbox"]:focus {

@@ -353,21 +353,25 @@ div.striped {
   outline: 5px auto @focus-ring-color!important;
 }
 
-#vertical-menu-bar .menu-bar-option:has(.menu-icon:focus) {
+#vertical-menu-bar .menu-bar-option:focus-within {
   border: 2px solid @focus-ring-color !important;
   outline: 2px solid white;
 }
 
-#vertical-menu-bar .menu-icon-selected:has(.menu-icon:focus) {
+#vertical-menu-bar .menu-icon-selected:focus-within {
   border: 2px solid @menu-bar-background-color !important;
   outline: 2px solid white;
 }
+
 
 a:focus > .header-button {
   outline: 5px auto @menu-bar-background-color !important;
 }
 
 #browse-category-picker .jcarousel-control-prev:focus, #browse-category-picker .jcarousel-control-next:focus {
+  outline: 5px auto @focus-ring-color !important;
+}
+a:focus > #more-browse-results{
   outline: 5px auto @focus-ring-color !important;
 }
 // Links have been removed from the jcarousel-pagination display
