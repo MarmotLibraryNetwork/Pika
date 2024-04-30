@@ -2,8 +2,8 @@
 	{if $browseMode == 'grid'}
 		<div class="browse-list">
 			<a onclick="return Pika.GroupedWork.showGroupedWorkInfo('{$summId}', '{$browseCategoryId}')" href="{$summUrl}">
-					<img class="img-responsive" src="{$bookCoverUrl}" alt=""{* Empty alt text since is just duplicates the link text*} {*alt="{$summTitle} by {$summAuthor}" title="{$summTitle} by {$summAuthor}"*}>
-				<div><strong>{$summTitle}</strong><br> by {$summAuthor}</div>
+					<img class="img-responsive" src="{$bookCoverUrl}" alt=""{* Empty alt text since is just duplicates the link text*} {*alt="{$summTitle}{if $summAuthor} by {$summAuthor}{/if}"*} title="{$summTitle}{if $summAuthor} by {$summAuthor}{/if}">
+				<div><strong>{$summTitle}</strong>{if $summAuthor}<br> by {$summAuthor}{/if}</div>
 			</a>
 		</div>
 
@@ -12,7 +12,7 @@
 		<div class="browse-thumbnail">
 			<a onclick="return Pika.GroupedWork.showGroupedWorkInfo('{$summId}','{$browseCategoryId}')" href="{$summUrl}">
 				<div>
-					<img onclick="trackBrowseTitleClick(this)" src="{$bookCoverUrlMedium}" alt="{$summTitle} by {$summAuthor}" title="{$summTitle} by {$summAuthor}">
+					<img onclick="trackBrowseTitleClick(this)" src="{$bookCoverUrlMedium}" alt="{$summTitle}{if $summAuthor} by {$summAuthor}{/if}" title="{$summTitle}{if $summAuthor} by {$summAuthor}{/if}">
 				</div>
 			</a>
 			{if $showRatings && $browseCategoryRatingsMode != 'none'}

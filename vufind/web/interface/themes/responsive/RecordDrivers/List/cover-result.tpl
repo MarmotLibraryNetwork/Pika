@@ -5,7 +5,7 @@
 		<a {*onclick="return alert('{$summId}'" *} href="{$summUrl}">
 			{*<div>*}
 
-			<img class="img-responsive" src="/bookcover.php?id={$listId}&size=medium&type=userList" alt=""{* Empty alt text since is just duplicates the link text*} {*alt="{$summTitle} by {$summAuthor}"*} title="{$summTitle} by {$summAuthor}">
+			<img class="img-responsive" src="/bookcover.php?id={$listId}&size=medium&type=userList" alt=""{* Empty alt text since is just duplicates the link text*} {*alt="{$summTitle} by {$summAuthor}"*} title="{$summTitle}{if $summAuthor} by {$summAuthor}{/if}">
 			{*</div>*}
 			<div><strong>{$summTitle} </strong><br> by {$summAuthor}</div>
 		</a>
@@ -19,7 +19,7 @@
 		<a {*onclick="return alert('{$summId}'" *} href="{$summUrl}">
 			{*  TODO: add pop-up for list *}
 			<div>
-				<img src="/bookcover.php?id={$listId}&size=medium&type=userList{*$bookCoverUrlMedium*}" alt="{$summTitle} by {$summAuthor}" title="{$summTitle} by {$summAuthor}">
+				<img src="/bookcover.php?id={$listId}&size=medium&type=userList{*$bookCoverUrlMedium*}" alt="{$summTitle}{if $summAuthor} by {$summAuthor}{/if}" title="{$summTitle}{if $summAuthor} by {$summAuthor}{/if}">
 			</div>
 		</a>
 		{*{if $showComments}*}
