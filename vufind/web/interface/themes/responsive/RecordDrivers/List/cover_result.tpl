@@ -1,11 +1,11 @@
 {strip}
 	{assign var=listId value=$summId|replace:'list':''}
 	{if $browseMode == 'grid'}
-	<div class="{*browse-title *}browse-list">
+	<div class="browse-list">
 		<a {*onclick="return alert('{$summId}'" *} href="{$summUrl}">
 			{*<div>*}
 
-			<img class="img-responsive" src="/bookcover.php?id={$listId}&size=medium&type=userList" alt="{$summTitle} by {$summAuthor}" title="{$summTitle} by {$summAuthor}">
+			<img class="img-responsive" src="/bookcover.php?id={$listId}&size=medium&type=userList" alt=""{* Empty alt text since is just duplicates the link text*} {*alt="{$summTitle} by {$summAuthor}"*} title="{$summTitle} by {$summAuthor}">
 			{*</div>*}
 			<div><strong>{$summTitle} </strong><br> by {$summAuthor}</div>
 		</a>
