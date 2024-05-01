@@ -4766,7 +4766,7 @@ a.list-group-item.active:focus .list-group-item-text {
   margin-bottom: 20px;
   background-color: #fff;
   border: 1px solid transparent;
-  border-radius: 4px;
+  border-radius: 0;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
 }
 .panel-body {
@@ -4869,8 +4869,8 @@ a.list-group-item.active:focus .list-group-item-text {
 .panel-heading {
   padding: 10px 15px;
   border-bottom: 1px solid #a1a1a1;
-  border-top-right-radius: 3px;
-  border-top-left-radius: 3px;
+  border-top-right-radius: -1;
+  border-top-left-radius: -1;
 }
 .panel-heading > .dropdown .dropdown-toggle {
   color: inherit;
@@ -4888,12 +4888,12 @@ a.list-group-item.active:focus .list-group-item-text {
   padding: 10px 15px;
   background-color: #f5f5f5;
   border-top: 1px solid #ddd;
-  border-bottom-right-radius: 3px;
-  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: -1;
+  border-bottom-left-radius: -1;
 }
 .panel-group .panel {
   margin-bottom: 0;
-  border-radius: 4px;
+  border-radius: 0;
   overflow: hidden;
 }
 .panel-group .panel + .panel {
@@ -10492,13 +10492,6 @@ h3 {
 }
 .sidebar-links .panel-heading {
   background: #e7e7e7;
-}
-.panel {
-  border: none;
-  border-radius: 0;
-}
-.panel-group .panel {
-  border-radius: 0;
 }
 .sidebar-links .active .panel-heading {
   background: #3b3f43;
