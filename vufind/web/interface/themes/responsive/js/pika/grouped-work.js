@@ -602,13 +602,26 @@ Pika.GroupedWork = (function(){
 				return Pika.GroupedWork.deselectBookbag();
 			}else{
 				ids = ids.replace(remove + ',', '');
+				//this looks duplicative but as the last item in the string doesn't have a comma it's the only way I could think to do this
+				ids = ids.replace(',' + remove,'');
+				Pika.GroupedWork.deselectBookbag(ids, remove);
 				return Pika.GroupedWork.openBookbag(ids, remove);
 			}
 		},
 
-		deselectBookbag: function(){
-			$('.checkbox-results').prop("checked", false);
-			$('.addToBag').remove();
+		deselectBookbag: function(ids, deselect){
+			if(typeof deselect !== 'undefined'){
+				var boxId = 'select_' + deselect;
+				var selectedIds = '"' + ids + '"';
+				var gwId = '"' + deselect + '"';
+				var bookbagText = "<div class='addToBag'><a href='#' aria-label='Open Bookbag' onclick='return Pika.GroupedWork.openBookbag("+ selectedIds +", "+ gwId +")'><img src='/interface/themes/responsive/images/bookbag.png' class='img-thumbnail' alt='open bookbag'></a></div>"
+				$('#' + boxId).parent("div").children(".addToBag").remove();
+				$('#' + boxId).prop("checked", false);
+				$('.checkbox-results:checked').last().parent("div").append(bookbagText);
+			}else{
+				$('.checkbox-results').prop("checked", false);
+				$('.checkbox-results').parent("div").children(".addToBag").remove();
+			}
 			return false;
 		},
 
