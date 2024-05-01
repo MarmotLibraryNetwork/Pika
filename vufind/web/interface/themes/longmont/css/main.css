@@ -8217,6 +8217,10 @@ body {
   font-weight: normal;
   font-size: 85%;
 }
+#advancedSearchLink {
+  -webkit-text-decoration: underline dotted;
+          text-decoration: underline dotted;
+}
 #horizontal-search-box {
   background-color: #F7F7F7;
   background: linear-gradient(to bottom, #F7F7F7, #F7F7F7);
