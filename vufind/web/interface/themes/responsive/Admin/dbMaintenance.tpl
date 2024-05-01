@@ -10,7 +10,7 @@
 			<table class="table">
 				<thead>
 					<tr>
-						<th><input type="checkbox" id="selectAll" onclick="Pika.toggleCheckboxes('.selectedUpdate:visible', '#selectAll');" checked="checked"></th>
+						<th><input type="checkbox" aria-label="Select or Unselect All" id="selectAll" onclick="Pika.toggleCheckboxes('.selectedUpdate:visible', '#selectAll');" checked="checked"></th>
 						<th>Name</th>
 						<th>Description</th>
 						<th>Already Run?</th>
@@ -24,7 +24,7 @@
 					<tr class="{if $update.alreadyRun}updateRun{else}updateNotRun{/if}
 					{if $update.status == 'Update succeeded'} success{elseif strpos($update.status, 'Warning') !== false} warning{elseif strpos($update.status, 'fail') !== false || strpos($update.status, 'error') !== false} danger{/if}"
 					{if $update.alreadyRun && !$update.status} style="display:none"{/if}>
-						<td><input type="checkbox" name="selected[{$updateKey}]"{if !$update.alreadyRun} checked="checked"{/if} class="selectedUpdate"></td>
+						<td><input aria-label="Select this database update" type="checkbox" name="selected[{$updateKey}]"{if !$update.alreadyRun} checked="checked"{/if} class="selectedUpdate"></td>
 						<td>{$update.title}</td>
 						<td>{$update.description}</td>
 						<td>{if $update.alreadyRun}Yes{else}No{/if}</td>
