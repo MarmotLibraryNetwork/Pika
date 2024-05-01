@@ -19,7 +19,6 @@
 			{include file=$recommendations}
 		{/foreach}
 	{/if}
-{include file="Search/bookbag.tpl"}
 
 		{* Search Replacement Term notice *}
 		{include file="Search/search-replacementTerm-notice.tpl"}

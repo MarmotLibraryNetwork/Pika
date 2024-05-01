@@ -9,7 +9,6 @@
 				 *}
 		{translate text='for search'} <b>'{$lookfor|escape}'</b>
 	{/if}
-    {include file="Search/bookbag.tpl"}
 	<div class="pull-right">
 		{translate text='Sort'}
 		<select name="sort" onchange="document.location.href = this.options[this.selectedIndex].value;">

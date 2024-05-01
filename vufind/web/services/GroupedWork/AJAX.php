@@ -71,6 +71,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		'sendSeriesEmail',
 		'getCreateSeriesForm',
 		'createSeriesList',
+		'openBookbag',
 
 	);
 
@@ -1675,6 +1676,35 @@ function getSaveSeriesToListForm(){
 			'message' => $cacheMessage,
 		);
 	}
+
+	/**
+	 * Open Bookbag
+	 *
+	 * @return array
+	 */
+	function openBookbag(){
+		global $interface;
+		require_once ROOT_DIR . "/RecordDrivers/GroupedWorkDriver.php";
+		$idString = $_REQUEST['ids'];
+		$ids = explode(',', $idString);
+		$idString = "'" . $idString . "'";
+		$items = array();
+		foreach($ids as $id){
+			$recordDriver = new GroupedWorkDriver($id);
+			$description = $recordDriver->getDescriptionFast(false);
+			$description = strip_tags($description);
+			$title = "Bookbag - " . count($ids) . " item";
+			if(count($ids) > 1){
+				$title = $title . "s";
+			}
+			$items[$id] = array ('cover'=> $recordDriver->getBookcoverUrl(),'title'=> $recordDriver->getTitle(false), 'author'=>$recordDriver->getPrimaryAuthor(), 'description'=> $description);
+		}
+		$interface->assign('items',$items);
+		$interface->assign('idString', $idString);
+		$message = $interface->fetch('Search/bookbag.tpl');
+		return array('success' => true, 'title'=>$title, 'message' => $message, 'buttons'=> '<button id="addItemsToList" onclick="Pika.GroupedWork.addSelectedToList('.$idString.')" class="tool btn btn-primary">Add All To List</button>');
+	}
+
 
 	/**
 	 * @throws Exception
