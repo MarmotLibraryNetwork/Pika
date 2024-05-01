@@ -9590,10 +9590,95 @@ a.browse-thumbnail-sorted.active {
   background-color: #00416B;
   border-color: #00416B;
 }
-#bookbagContainer {
-  max-height: 400px;
-  overflow-y: auto;
-  overflow-x: hidden;
+.bookbag-container {
+  position: fixed;
+  height: 4em;
+  z-index: 3;
+  right: 0;
+}
+.bookbag-container.sticky {
+  position: fixed;
+  right: 0;
+  top: 5px;
+}
+@media (max-width: 992px) {
+  .bookbag-container,
+  .bookbag-container.sticky {
+    position: fixed;
+    right: 0;
+    top: 50px;
+  }
+}
+.bookbag {
+  height: 2em;
+  background: #00416B;
+  color: white;
+  width: 3em;
+  line-height: 2em;
+  border-radius: 10px;
+  animation-name: none;
+  cursor: pointer;
+  position: absolute;
+  right: 0;
+  z-index: 4;
+  transition: 0.75s ease-out;
+}
+.bookbag::before {
+  content: "‹";
+  font-size: 60px;
+  font-weight: lighter;
+  float: left;
+  line-height: 15px;
+}
+.bookbag .itemCheckCount {
+  float: left;
+}
+.bookbag.bounce {
+  animation: bounce .7s 3;
+  transition-timing-function: ease-out;
+}
+.bookbag.open {
+  left: 3px;
+  width: 15px;
+  top: 6px;
+}
+.bookbag.open::before {
+  content: "›";
+  font-size: 60px;
+  font-weight: lighter;
+  float: left;
+  line-height: 15px;
+}
+.bookbag.open .itemCheckCount {
+  display: none;
+}
+.bbLabel {
+  float: left;
+  position: absolute;
+  left: 18px;
+  top: 60px;
+  display: inline-block;
+  white-space: nowrap;
+  transform: rotate(90deg) translateY(-20%);
+  transform-origin: 0 0;
+}
+.bbLabel.open {
+  display: none;
+}
+@keyframes bounce {
+  0% {
+    right: -2px;
+  }
+  25%,
+  75% {
+    right: -5px;
+  }
+  50% {
+    right: -10px;
+  }
+  100% {
+    right: 0;
+  }
 }
 .series a,
 .novelistSeries a,
@@ -9602,6 +9687,36 @@ a.browse-thumbnail-sorted.active {
   color: #3b679a;
   -webkit-text-decoration: underline dotted;
           text-decoration: underline dotted;
+}
+.cart-container {
+  background: #00416B;
+  padding: 10px;
+  color: white;
+  transition: 0.15s ease-out;
+  width: 350px;
+}
+.cart-container.cartIn {
+  position: absolute;
+  right: -325px;
+  padding: 1px 10px 10px 25px;
+}
+.cart {
+  background: white;
+  padding: 5px 10px 5px 10px;
+  color: #656565;
+  height: 300px;
+}
+.remove {
+  color: white;
+  background: #EC130E;
+  width: 1em;
+  line-height: .9em;
+  height: 1em;
+  border-radius: 10px;
+  display: block;
+  text-align: center;
+  font-size: medium;
+  cursor: pointer;
 }
 .graph-bar {
   background-color: #088ec6;
