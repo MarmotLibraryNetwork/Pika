@@ -1,5 +1,4 @@
 {strip}
-		{include file="Search/bookbag.tpl"}
 <div>
 	<h1 role="heading" class="h2">{$authorName}</h1>
 	<div class="row">

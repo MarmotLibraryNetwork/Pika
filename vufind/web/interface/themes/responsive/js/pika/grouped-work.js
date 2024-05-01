@@ -528,17 +528,9 @@ Pika.GroupedWork = (function(){
 			return this.basicAjaxHandler('getAddTagForm', id, trigger);
 		},
 
-		addSelectedToList: function(){
+		addSelectedToList: function(ids){
 			Pika.Account.ajaxLogin(function(){
-				if ($(".checkbox-results").is(":checked")){
-					var gwIds = [];
-					$(".checkbox-results:checked").each(function (){
-						gwIds.push(this.id.replace(/select_/g, ''));
-					});
-						return Pika.GroupedWork.showSaveMultipleToListForm(this, gwIds);
-				}else{
-
-				}
+				return Pika.GroupedWork.showSaveMultipleToListForm(this, ids);
 			});
 			return false;
 		},
@@ -576,48 +568,48 @@ Pika.GroupedWork = (function(){
 			return false;
 		},
 		showBookbag: function(trigger){
+			var tId = trigger.id;
+			var gwId = '"' + tId.replace('select_','') + '"';
+			var ids = [];
+			$('.checkbox-results:checked').each(function(index){
+				var id = $(this).attr('id').toString().replace('select_', '');
+				ids.push(id);
+			});
+			var selectedIds = '"' + ids.join(",") + '"';
+			var bookbagText = "<div class='addToBag'><a href='#' aria-label='Open Bookbag' onclick='return Pika.GroupedWork.openBookbag("+ selectedIds +", "+ gwId +")'><img src='/interface/themes/responsive/images/bookbag.png' class='img-thumbnail' alt='open bookbag'></a></div>";
 
-			if($(".checkbox-results").is(":checked")){
+			$(".addToBag").remove();
+			if($('#' + tId).is(":checked")){
+					$('#' + tId).parent("div").append(bookbagText);
+				}else{
+				$('.checkbox-results').parent("div").children(".addToBag").remove();
 
-				var checked = $('.checkbox-results:checked').length;
-				$(".bookbag-container").show();
-				if(!$(".bookbag").hasClass("bounce")){
-					$(".bookbag").addClass("bounce");
-				}
-
-				$(".bookbag").html("<span class='itemCheckCount'>" + checked +"</span>");
-
-				var gwIds = [];
-				$(".checkbox-results:checked").each(function(){
-					 gwIds.push(this.id.replace(/select_/g, ''));
-				});
-						params = {
-							'method': 'getTitles',
-							'ids' : gwIds
-						};
-					$.getJSON("/GroupedWork/AJAX", params, function(data){
-						$("#cartList").empty();
-						jQuery.each(data.titles,function(){
-							var removeId = "remove_" + this.id;
-							var append = '<li><div class="row"><div class="col-xs-1"><span class="remove" id="'+ removeId +'">x</span></div><div class="col-xs-10">' + this.title + '</div></div></li>';
-						$("#cartList").append(append);
-						});
-					}).fail(Pika.ajaxFail);
-			}else{
-				$(".cart-container").addClass("cartIn");
-				$(".bookbag-container").fadeOut();
-				$(".bookbag").removeClass("open");
-				$("#cartList").empty();
-				$(".bookbag").removeClass("bounce");
-				$(".bbLabel").removeClass("open");
+				$('.checkbox-results:checked').last().parent("div").append(bookbagText);
 			}
 		},
-		openBookbag: function(trigger){
 
-			$(".cart-container").toggleClass("cartIn");
-			$(".bookbag").toggleClass("open");
-			$(".bbLabel").toggleClass("open");
-			
+		openBookbag: function(ids,gwId){
+			Pika.loadingMessage();
+			$.getJSON("/GroupedWork/" + encodeURIComponent(gwId) + "/AJAX?method=openBookbag&ids=" + encodeURIComponent(ids),function(data){
+				Pika.showMessageWithButtons(data.title,data.message, data.buttons)
+			}).fail(Pika.ajaxFail);
+			return false;
+		},
+
+		removeFromBookbag: function(ids, remove){
+			if(ids == remove){
+				$("#modalDialog .close").click();
+				return Pika.GroupedWork.deselectBookbag();
+			}else{
+				ids = ids.replace(remove + ',', '');
+				return Pika.GroupedWork.openBookbag(ids, remove);
+			}
+		},
+
+		deselectBookbag: function(){
+			$('.checkbox-results').prop("checked", false);
+			$('.addToBag').remove();
+			return false;
 		},
 
 	};

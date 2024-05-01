@@ -27,10 +27,10 @@
 			{/if}
 
 			{if $showBookbag}
-			<div class="{if !$showCovers}col-xs-11{else}col-xs-8 col-sm-8{if !$viewingCombinedResults} col-md-8 col-lg-9{/if}{/if}">{* May turn out to be more than one situation to consider here *}
-				{else}
-			<div class="{if !$showCovers}col-xs-12{else}col-xs-9 col-sm-9{if !$viewingCombinedResults} col-md-9 col-lg-10{/if}{/if}">{* May turn out to be more than one situation to consider here *}
-					{/if}
+				<div class="{if !$showCovers}col-xs-11{else}col-xs-8 col-sm-8{if !$viewingCombinedResults} col-md-8 col-lg-9{/if}{/if}">{* May turn out to be more than one situation to consider here *}
+			{else}
+				<div class="{if !$showCovers}col-xs-12{else}col-xs-9 col-sm-9{if !$viewingCombinedResults} col-md-9 col-lg-10{/if}{/if}">{* May turn out to be more than one situation to consider here *}
+			{/if}
 				{* Title Row *}
 				<div class="row">
 					<div class="col-xs-12">
