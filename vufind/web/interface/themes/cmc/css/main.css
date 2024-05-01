@@ -8949,6 +8949,9 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
   font-size: 18px;
 }
+.hiddenText {
+  font-size: 0px;
+}
 #contactUpdateForm .btn-group .btn-default:has(input[type="radio"]:checked),
 #overdrive-lending-options .btn-group .btn-default:has(input[type="radio"]:checked) {
   background-color: #0A75E3;
