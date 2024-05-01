@@ -43,12 +43,12 @@
 			<div class="row" id="selected-browse-label">
 
 				<div class="btn-group btn-group-sm" data-toggle="buttons">
-					<a href="#" onclick="Pika.Browse.toggleBrowseMode(this.id)" id="covers" aria-label="change browse titles to cover layout" tabindex="0" title="Covers" class="btn btn-sm btn-default browseMode">
+					<button onclick="Pika.Browse.toggleBrowseMode(this.id)" id="covers" aria-label="change browse titles to cover layout" tabindex="0" title="Covers" class="btn btn-sm btn-default browseMode">
 						<span class="thumbnail-icon"></span><span> Covers</span>
-					</a>
-					<a href="#" onclick="Pika.Browse.toggleBrowseMode(this.id);" id="grid" aria-label="change browse titles to grid layout" tabindex="0" title="Grid" class="btn btn-sm btn-default browseMode">
+					</button>
+					<button onclick="Pika.Browse.toggleBrowseMode(this.id);" id="grid" aria-label="change browse titles to grid layout" tabindex="0" title="Grid" class="btn btn-sm btn-default browseMode">
 						<span class="grid-icon"></span><span> Grid</span>
-					</a>
+					</button>
 				</div>
 
 				<div class="selected-browse-label-search">

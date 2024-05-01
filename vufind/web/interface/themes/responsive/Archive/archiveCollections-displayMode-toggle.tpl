@@ -2,12 +2,12 @@
 	{* User's viewing mode toggle switch *}
 	<div class="row" id="selected-browse-label">{* browse styling replicated here *}
 		<div class="btn-group btn-group-sm" data-toggle="buttons">
-			<a href="#" tabindex="0" title="Covers" aria-label="change results to cover layout" onclick="Pika.Archive.toggleDisplayMode(this.id)" id="covers" class="btn btn-sm btn-default displayMode">
+			<button tabindex="0" title="Covers" aria-label="change results to cover layout" onclick="Pika.Archive.toggleDisplayMode(this.id)" id="covers" class="btn btn-sm btn-default displayMode">
 				<span class="thumbnail-icon"></span><span> Covers</span>
-			</a>
-			<a href="#" tabindex="0" title="Lists" aria-label="change results to list layout"  onclick="Pika.Archive.toggleDisplayMode(this.id)" type="radio" id="list"class="btn btn-sm btn-default displayMode">
+			</button>
+			<button tabindex="0" title="Lists" aria-label="change results to list layout"  onclick="Pika.Archive.toggleDisplayMode(this.id)" type="radio" id="list"class="btn btn-sm btn-default displayMode">
 				<span class="list-icon"></span><span> List</span>
-			</a>
+			</button>
 		</div>
 		<div class="btn-group" id="hideSearchCoversSwitch"{if $displayMode != 'list'} style="display: none;"{/if}>
 			<label for="hideCovers" class="checkbox{* control-label*}"> Hide Covers
