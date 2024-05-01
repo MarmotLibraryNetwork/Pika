@@ -8,12 +8,8 @@
 #header-container {
   background-image: url('/interface/themes/pitkin_resp/images/header_background.png');
 }
-//#header-container{
-//  height: 150px; // increased height from standard 130px for spring 2015 background. plb 3-31-2015
-//}
 
-// modifications to logo for the spring 2015 header image plb 3-31-2015
-#header-logo{
+#header-logo {
   background-color: @header-buttons-background-color; // added background shading
   border-radius: 0.5em;
   padding: 4px 0;
@@ -54,42 +50,19 @@
     .box-shadow(none);
     //font-size: 20px;
   }
-  //a {
-  //  &.jcarousel-control-next:after {
-  //    content: "▶";
-  //  }
-  //  &.jcarousel-control-prev:before {
-  //    content: "◀";
-  //  }
-  //}
   // indicator dots at bottom of browse category carousel
-  .jcarousel-pagination a {
+  .jcarousel-pagination {
     &.active {
       background: @browseCarouselControlColor;
       // keep shadowing in place on active item
       .box-shadow(0 0 2px #4E443C);
     }
-    @detached-outline-ruleset: {outline: none};
-    .allLinkStates(@detached-outline-ruleset)
   }
 }
-.browse-label-text{
+
+.browse-label-text {
   font-style: italic;
   //font-size: 2.5em;
   font-weight: normal;
   line-height: 1em;
 }
-.system-message-header {
-  background-color: transparent;
-  background: none;
-
-}
-//#install-info, #footer-pika-logo, #connect-with-us-label {
-//  background-color: @header-buttons-background-color;
-//  padding: 4px;
-//  border-radius: 4px;
-//  color: #fff;
-//}
-//#footer-pika-logo {
-//  background-color: #c0c0c080;
-//}

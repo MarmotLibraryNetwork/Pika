@@ -6,13 +6,9 @@
 @import "../../responsive/css/responsive_base.less";
 
 
-#selected-browse-search-link .icon-before {
-  display:none;
-}
-#selected-browse-search-link .icon-after {
-  .glyphicon;
-  //display: inline;
-  .glyphicon-chevron-right;
+#header-container {
+  background-color: #4c7eb9;
+  background: linear-gradient(to bottom,#4c7eb9,#395982 65%,#314869);
 }
 
 .header-login-button-mixin;
@@ -24,7 +20,17 @@
 // Selected Category needs to give a highlighted appearance
 .noCarouselSelectedCategoryMixin();
 
-.sidebar-button{
+#selected-browse-search-link .icon-before {
+  display:none;
+}
+
+#selected-browse-search-link .icon-after {
+  .glyphicon;
+  //display: inline;
+  .glyphicon-chevron-right;
+}
+
+.sidebar-button {
   background:#242D40;
 }
 

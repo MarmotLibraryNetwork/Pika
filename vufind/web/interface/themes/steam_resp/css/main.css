@@ -6875,6 +6875,7 @@ body > .container {
 }
 .panel-heading {
   background-color: #e7e7e7;
+  border: 1px solid #ddd;
 }
 .panel-title {
   color: #333333;
@@ -7913,7 +7914,6 @@ body {
   padding-top: 0;
   height: 130px;
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 85%, #fff);
   border-bottom: 8px solid #DFE5EB;
   margin-bottom: 0;
   min-height: 110px;
@@ -7932,7 +7932,7 @@ body {
   text-shadow: 1px 1px #fff;
   vertical-align: middle;
   line-height: 122px !important;
-  border-bottom: 4px solid #fff;
+  border-bottom: 4px solid #e0e0e0;
   color: #8b8b8b !important;
 }
 .header-button:hover {
@@ -9680,8 +9680,7 @@ a.browse-thumbnail-sorted.active {
     right: 0;
   }
 }
-.series a,
-.novelistSeries a,
+.result-value a,
 .facetDetails a,
 .solicit-new-materials-request a {
   color: #3b679a;
@@ -10298,6 +10297,8 @@ a.browse-thumbnail-sorted.active {
 .help-icon {
   color: blue;
 }
+#pika-status a,
+.solr-info a,
 .editor-tips a {
   color: #3b679a;
   -webkit-text-decoration: underline dotted;
@@ -10546,152 +10547,19 @@ a.btn.btn-sm.btn-default {
   color: #333;
 }
 /* Styles the Prospector Button */
-#moreResultsFromProspector .btn-info {
+#prospectorLinkSection .btn-info {
   background-color: #646510;
   border-color: #4e4f0d;
   color: #fff;
 }
-#moreResultsFromProspector .btn-info:active,
-#moreResultsFromProspector .btn-info:hover {
+#prospectorLinkSection .btn-info:active,
+#prospectorLinkSection .btn-info:hover {
   background-color: #ebebeb;
   border-color: #adadad;
   color: #333;
 }
-/*** Accordion Styling ***/
-/****Horizontal Carousel Widget Code****/
-/*Gets rid of the grey bar that features the title and view all link and sets the area for our font size*/
-.embeddedListWidgetBody .titleScrollerHeader {
-  background: none repeat scroll 0 0 rgba(0, 0, 0, 0);
-  height: 19px;
-}
-/*Gets rid of the subtle left and right bars that appear when you remove the iframe border*/
-.embeddedListWidgetBody .tab-content {
-  border-left: none;
-  border-right: none;
-  padding: 0;
-}
-/*Gets rid of the black bounding box around jacket art and replaces with orange*/
-.embeddedListWidgetBody .scrollerTitle.selected {
-  border: 1px solid #C65500;
-  border-radius: 1px;
-  padding: 0;
-  text-align: center;
-}
-/*re-sizes the jacket art to mimic our website carousels*/
-.embeddedListWidgetBody .mediumScroller .scrollerTitleCover {
-  max-height: 175px;
-  max-width: 175px;
-}
-/*resizes the area of the jacket art to something smaller so that the titles lie closer to the art*/
-.embeddedListWidgetBody .mediumScroller .scrollerBody {
-  height: 190px;
-}
-/*gets rid of the opacity of the jackets*/
-.embeddedListWidgetBody .scrollerTitle img {
-  opacity: 1;
-}
-/*keeps jacket art from wrapping onto another line*/
-.embeddedListWidgetBody .scrollerBody {
-  white-space: nowrap;
-}
-/*gets rid of the navigation arrows used by the widget*/
-.embeddedListWidgetBody .glyphicon {
-  display: none;
-}
-/*inserts the navigation arrows used on our website*/
-.embeddedListWidgetBody .leftScrollerButton {
-  background: url("http://www.steamboatlibrary.org/sites/all/modules/jcarousellite/modules/jcarousellite_views/images/prev-horizontal.png");
-  background-repeat: no-repeat;
-  height: 35px;
-  text-align: center;
-  width: 28px;
-}
-.embeddedListWidgetBody .rightScrollerButton {
-  background: url("http://www.steamboatlibrary.org/sites/all/modules/jcarousellite/modules/jcarousellite_views/images/next-horizontal.png");
-  background-repeat: no-repeat;
-  height: 35px;
-  text-align: center;
-  width: 28px;
-}
-/*Gets rid of the title for specific widgets*/
-div#listWidget253 .listTitle,
-div#listWidget262 .listTitle,
-div#listWidget263 .listTitle,
-div#listWidget264 .listTitle,
-div#listWidget265 .listTitle {
-  display: none;
-}
-/*sets the title of a book/movie to orange and in our font size*/
-.embeddedListWidgetBody .titleScrollerSelectedTitle {
-  color: #494A0C;
-  font-size: 12px;
-  text-transform: capitalize;
-}
-/*set the author of a book, etc. to the grey/black of our font color*/
-.embeddedListWidgetBody .titleScrollerSelectedAuthor {
-  color: #383838;
-  font-weight: normal;
-  font-size: 12px;
-}
-/*sets the View All link to our colors.*/
-.embeddedListWidgetBody .linkTab a,
-.embeddedListWidgetBody .linkTab a:visited {
-  color: #c65500;
-  text-decoration: none;
-}
-.embeddedListWidgetBody.linkTab a:hover,
-.embeddedListWidgetBody .linkTab a:active {
-  color: #c65500;
-  text-decoration: underline;
-}
-/*Sets the title of the list to our font*/
-.embeddedListWidgetBody .listTitle {
-  color: #8C8E17;
-  font-size: 18px;
-  font-weight: normal;
-}
-/****Text List Widget Code****/
-/*Gets rid of the numbers and the word "by" on the list.*/
-.scrollerTextOnlyListNumber,
-.scrollerTextOnlyListBySpan {
-  display: none;
-}
-/*Theming the links*/
-#BookBuzzKitsList a,
-#BookBuzzKitsList a:visited,
-#BookBuzzKitsList a:hover,
-#BookBuzzKitsList a:active,
-#CarpetBagList a,
-#CarpetBagList a:visited,
-#CarpetBagList a:hover,
-#CarpetBagList a:active {
-  color: #C65500;
-}
-/*Theming the block*/
-.scrollerTitle {
-  display: block;
-  width: 155px;
-  margin: 3px auto;
-  box-sizing: border-box;
-  float: left;
-  font-size: 85%;
-}
-.scrollerTextOnlyListTitle,
-.scrollerTextOnlyListAuthor {
-  display: block;
-  width: 148px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.scrollerTextOnlyListAuthor {
-  color: #383838;
-}
-.scrollerTextOnlyListTitle {
-  text-transform: capitalize;
-}
 /****Digital Archive Display****/
-/*Moves the TWW Jacet image to the right so that the TOC flow better*/
+/*Moves the TWW Jacket image to the right so that the TOC flow better*/
 .img-responsive.thumbnail.exhibit-thumbnail {
   float: right;
 }

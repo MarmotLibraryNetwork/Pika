@@ -6876,6 +6876,7 @@ body > .container {
 }
 .panel-heading {
   background-color: #e7e7e7;
+  border: 1px solid #ddd;
 }
 .panel-title {
   color: #333333;
@@ -7913,8 +7914,7 @@ body {
 #header-container {
   padding-top: 0;
   height: 114px;
-  background-color: #f2f2f2;
-  background: linear-gradient(to bottom, #f2f2f2, #dddddd 85%, #e0e0e0);
+  background-color: #fff;
   border-bottom: 8px solid #221f1f;
   margin-bottom: 0;
   min-height: 110px;
@@ -9681,8 +9681,7 @@ a.browse-thumbnail-sorted.active {
     right: 0;
   }
 }
-.series a,
-.novelistSeries a,
+.result-value a,
 .facetDetails a,
 .solicit-new-materials-request a {
   color: #3b679a;
@@ -10299,6 +10298,8 @@ a.browse-thumbnail-sorted.active {
 .help-icon {
   color: blue;
 }
+#pika-status a,
+.solr-info a,
 .editor-tips a {
   color: #3b679a;
   -webkit-text-decoration: underline dotted;
