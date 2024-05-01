@@ -67,14 +67,6 @@
 	</div>
 
 	{if $topLinks}
-		<div class="row">
-			<div class="col-tn-12" id="header-links">
-				{foreach from=$topLinks item=link}
-					<div class="header-link-wrapper">
-						<a href="{$link->url}" class="library-header-link">{$link->linkText}</a>
-					</div>
-				{/foreach}
-			</div>
-		</div>
+		{include file="top-links.tpl"}
 	{/if}
 {/strip}
