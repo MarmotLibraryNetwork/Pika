@@ -58,7 +58,6 @@
 }
 
 .browse-category {
-  //color: @browse-category-text-color; //TODO: needed?
   font-size: @browse-category-font-size;
   padding: 10px;
   text-shadow: 1px 1px @gray;
@@ -66,6 +65,7 @@
   height: 100px;
   margin-left: 4px;
   margin-right: 4px;
+  //border-radius: @browse-category-border-radius; //TODO: turn on
 
   &:hover {
     background-color: lightskyblue;
@@ -73,6 +73,7 @@
   }
 
   div {
+    height: 80px;
     color: @browse-category-text-color;
     cursor: pointer;
     &:focus {
@@ -81,8 +82,8 @@
     &:hover {
       text-decoration: underline; // emulate link behavior
     }
-    height: 80px;
   }
+
   &.selected {
     border: 2px solid @selectedCategoryBorderColor;
     font-size: @browse-category-font-size + 3; // decreased size of increase, set relative to base font size  plb 9-17-2014

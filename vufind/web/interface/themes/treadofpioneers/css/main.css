@@ -8499,9 +8499,9 @@ hr.menu {
   color: darkblue;
 }
 .browse-category div {
+  height: 80px;
   color: #000;
   cursor: pointer;
-  height: 80px;
 }
 .browse-category div:focus {
   outline: none;
