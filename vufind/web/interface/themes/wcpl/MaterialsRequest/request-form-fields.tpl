@@ -183,10 +183,10 @@
 									<div class="row form-group">
 										<label id="titleLabel" for="{$materialRequestTableColumnName}" class="control-label col-sm-3">{$formField->fieldLabel}: <span class='requiredIndicator'>*</span></label>
 										<div class="request_detail_field_value col-sm-9">
-											<input name="{$materialRequestTableColumnName}" id="{$materialRequestTableColumnName}"
-											       size="90" maxlength="255"
-											       class="required form-control"
-											       value="{$materialsRequest->$materialRequestTableColumnName}"
+											<input name="{$materialRequestTableColumnName}" id="{$materialRequestTableColumnName}"  {* space to preserve good parsing after strip *}
+											       size="90" maxlength="255" {* space to preserve good parsing after strip *}
+											       class="required form-control"  {* space to preserve good parsing after strip *}
+											       value="{$materialsRequest->$materialRequestTableColumnName}" {* space to preserve good parsing after strip *}
 											       aria-required="true">
 										</div>
 									</div>
