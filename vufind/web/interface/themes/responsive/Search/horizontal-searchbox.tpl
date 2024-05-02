@@ -62,7 +62,7 @@
 						{/foreach}
 					</select>
 					{*TODO: How to chose the Genealogy Search type initially *}
-					<select name="genealogyType" aria-label="Type of genealogy search"  class="searchTypeHorizontal form-control genealogyType" id="genealogySearchTypes" {if $searchSource != 'genealogy'}style="display:none"{/if}>
+					<select name="genealogyType" aria-label="Type of genealogy search" class="searchTypeHorizontal form-control genealogyType" id="genealogySearchTypes" {if $searchSource != 'genealogy'}style="display:none"{/if}>
 						{foreach from=$genealogySearchTypes item=searchDesc key=searchVal}
 							<option value="{$searchVal}"{if $genealogySearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 						{/foreach}
@@ -72,7 +72,7 @@
 
 					{if !$hiddenSearchSource}
 						<div class="col-lg-3 col-md-3 col-sm-5 col-xs-7">
-							<select name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="Pika.Searches.enableSearchTypes();" class="searchSourceHorizontal form-control">
+							<select name="searchSource" id="searchSource" aria-label="Select search source" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="Pika.Searches.enableSearchTypes();" class="searchSourceHorizontal form-control">
 								{foreach from=$searchSources item=searchOption key=searchKey}
 									<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}"
 											{if $searchKey == $searchSource} selected="selected"{/if}
