@@ -7913,12 +7913,12 @@ body {
           text-decoration: underline dotted;
 }
 #header-container {
+  height: 100px;
+  min-height: 100px;
   padding-top: 0;
-  height: 90px;
   background-color: #fff;
-  border-bottom: 8px solid #fff;
+  border-bottom: 8px solid #b7b7b7;
   margin-bottom: 0;
-  min-height: 110px;
 }
 #header-logo {
   padding: 10px 10px 0 0;
@@ -7929,20 +7929,22 @@ body {
     height: auto;
   }
 }
-.header-button {
+a .header-button {
   text-align: center;
-  text-shadow: 1px 1px #fff;
-  vertical-align: middle;
-  line-height: 82px !important;
-  border-bottom: 4px solid #e0e0e0;
-  color: #8b8b8b !important;
+  line-height: 55px;
+  color: #fff;
+  background-color: #00853f;
+  border: 1px solid #fff;
+  margin-top: 22.5px;
 }
-.header-button:hover {
-  border-bottom: 4px solid #074f9a;
+a .header-button:hover {
+  color: #00853f;
+  background-color: #f6f6f6;
+  font-weight: bold;
+  text-decoration-color: #00853f;
 }
-.header-primary {
-  border-left: 2px solid #3f0085;
-  border-right: 2px solid #3f0085;
+a .header-button:visited {
+  text-decoration-color: #00853f;
 }
 #library-name-header {
   font-size: 22px;
@@ -10286,22 +10288,13 @@ fieldset[disabled] .btn-masquerade.active {
 #header-logo {
   padding-top: 20px;
 }
-.header-button {
+a .header-button {
   border: none;
-  line-height: 55px !important;
   border-radius: 35px;
-  margin-top: 25px;
-  background-color: #00853f;
-  color: white !important;
-  text-shadow: none;
   font-weight: bold;
 }
-.header-button:hover {
-  border-bottom: 2px solid #f6f6f6;
-  background-color: #f6f6f6;
-  color: #00853f !important;
-  text-shadow: none;
-  font-weight: bold;
+a .header-button:hover {
+  border: 1px solid #ccc;
   text-decoration: none;
 }
 #searchSource {
