@@ -9,8 +9,8 @@
 
 		<div class="row">
 			{if $showCovers}
-				{if $showBookbag}
-					<div class="col-xs-1 col-sm-1" aria-live="polite"><input type="checkbox" id="select_{$summId|escape}" class="checkbox checkbox-results" aria-label="Add title to bookbag" title="Add title to bookbag"></div>
+				{if $showBookshelf}
+					<div class="col-xs-1 col-sm-1" aria-live="polite"><input type="checkbox" id="select_{$summId|escape}" class="checkbox checkbox-results" aria-label="Add title to bookshelf" title="Add title to bookshelf"></div>
 					{/if}
 				<div class="coversColumn col-xs-3 col-sm-3{if !$viewingCombinedResults} col-md-3 col-lg-2{/if} text-center">
 
@@ -26,7 +26,7 @@
 				</div>
 			{/if}
 
-			{if $showBookbag}
+			{if $showBookshelf}
 				<div class="{if !$showCovers}col-xs-11{else}col-xs-8 col-sm-8{if !$viewingCombinedResults} col-md-8 col-lg-9{/if}{/if}">{* May turn out to be more than one situation to consider here *}
 			{else}
 				<div class="{if !$showCovers}col-xs-12{else}col-xs-9 col-sm-9{if !$viewingCombinedResults} col-md-9 col-lg-10{/if}{/if}">{* May turn out to be more than one situation to consider here *}

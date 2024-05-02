@@ -1,18 +1,22 @@
 Pika.GroupedWork = (function(){
 	$(function (){
 
-		/* Initiate bookbag functionality */
+		/* Initiate bookshelf functionality */
 		$('.checkbox-results').change(function (){
-			Pika.GroupedWork.showBookbag(this);
-		});
-		$('.bookbag').click(function (){
-			Pika.GroupedWork.openBookbag(this);
-		});
-		$('body').on('click', 'span.remove', function (){
-			var checkedId = this.id.replace(/remove_/g, 'select_');
-			if ($("#" + checkedId + ":checked")){
-				$("#" + checkedId).prop("checked", false);
-				Pika.GroupedWork.showBookbag(this);
+			var helpText = "<div class='bookshelfHelpText'>Click icon to open bookshelf</div>";
+			Pika.GroupedWork.showBookshelf(this);
+			if($('.checkbox-results:checked').length === 1){
+
+				$('.checkbox-results:checked').parent('div').append(helpText);
+
+				$('.bookshelfHelpText').on("click", function(){
+					$('.bookshelfHelpText').remove();
+				});
+				$('.bookshelfHelpText').delay(7000).fadeOut(800, function(){
+					$('.bookshelfHelpText').remove();
+				});
+			}else{
+				$('.bookshelfHelpText').remove();
 			}
 		});
 	});
@@ -567,7 +571,7 @@ Pika.GroupedWork = (function(){
 			}, $(trigger));
 			return false;
 		},
-		showBookbag: function(trigger){
+		showBookshelf: function(trigger){
 			var tId = trigger.id;
 			var gwId = '"' + tId.replace('select_','') + '"';
 			var ids = [];
@@ -576,51 +580,45 @@ Pika.GroupedWork = (function(){
 				ids.push(id);
 			});
 			var selectedIds = '"' + ids.join(",") + '"';
-			var bookbagText = "<div class='addToBag'><a href='#' aria-label='Open Bookbag' onclick='return Pika.GroupedWork.openBookbag("+ selectedIds +", "+ gwId +")'><img src='/interface/themes/responsive/images/bookbag.png' class='img-thumbnail' alt='open bookbag'></a></div>";
+			var bookshelfText = "<div class='addToShelf'><a href='#' aria-label='Open Bookshelf' onclick='return Pika.GroupedWork.openBookshelf("+ selectedIds +", "+ gwId +")'><img src='/interface/themes/responsive/images/bookshelf.png' class='img-thumbnail' alt='open bookshelf'></a></div>";
 
-			$(".addToBag").remove();
-			if($('#' + tId).is(":checked")){
-					$('#' + tId).parent("div").append(bookbagText);
-				}else{
-				$('.checkbox-results').parent("div").children(".addToBag").remove();
-
-				$('.checkbox-results:checked').last().parent("div").append(bookbagText);
-			}
+			$(".addToShelf").remove();
+			$('.checkbox-results:checked').parent("div").append(bookshelfText);
 		},
 
-		openBookbag: function(ids,gwId){
+		openBookshelf: function(ids,gwId){
 			Pika.loadingMessage();
-			$.getJSON("/GroupedWork/" + encodeURIComponent(gwId) + "/AJAX?method=openBookbag&ids=" + encodeURIComponent(ids),function(data){
+			$.getJSON("/GroupedWork/" + encodeURIComponent(gwId) + "/AJAX?method=openBookshelf&ids=" + encodeURIComponent(ids),function(data){
 				Pika.showMessageWithButtons(data.title,data.message, data.buttons)
 			}).fail(Pika.ajaxFail);
 			return false;
 		},
 
-		removeFromBookbag: function(ids, remove){
+		removeFromBookshelf: function(ids, remove){
 			if(ids == remove){
 				$("#modalDialog .close").click();
-				return Pika.GroupedWork.deselectBookbag();
+				return Pika.GroupedWork.deselectBookshelf();
 			}else{
 				ids = ids.replace(remove + ',', '');
 				//this looks duplicative but as the last item in the string doesn't have a comma it's the only way I could think to do this
 				ids = ids.replace(',' + remove,'');
-				Pika.GroupedWork.deselectBookbag(ids, remove);
-				return Pika.GroupedWork.openBookbag(ids, remove);
+				Pika.GroupedWork.deselectBookshelf(ids, remove);
+				return Pika.GroupedWork.openBookshelf(ids, remove);
 			}
 		},
 
-		deselectBookbag: function(ids, deselect){
+		deselectBookshelf: function(ids, deselect){
 			if(typeof deselect !== 'undefined'){
 				var boxId = 'select_' + deselect;
 				var selectedIds = '"' + ids + '"';
 				var gwId = '"' + deselect + '"';
-				var bookbagText = "<div class='addToBag'><a href='#' aria-label='Open Bookbag' onclick='return Pika.GroupedWork.openBookbag("+ selectedIds +", "+ gwId +")'><img src='/interface/themes/responsive/images/bookbag.png' class='img-thumbnail' alt='open bookbag'></a></div>"
-				$('#' + boxId).parent("div").children(".addToBag").remove();
+				var bookshelfText = "<div class='addToShelf'><a href='#' aria-label='Open Bookshelf' onclick='return Pika.GroupedWork.openBookshelf("+ selectedIds +", "+ gwId +")'><img src='/interface/themes/responsive/images/bookshelf.png' class='img-thumbnail' alt='open bookshelf'></a></div>"
+				$(".addToShelf").remove();
 				$('#' + boxId).prop("checked", false);
-				$('.checkbox-results:checked').last().parent("div").append(bookbagText);
+				$('.checkbox-results:checked').parent("div").append(bookshelfText);
 			}else{
 				$('.checkbox-results').prop("checked", false);
-				$('.checkbox-results').parent("div").children(".addToBag").remove();
+				$(".addToShelf").remove();
 			}
 			return false;
 		},
