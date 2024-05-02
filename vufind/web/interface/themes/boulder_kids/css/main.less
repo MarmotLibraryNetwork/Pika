@@ -5,49 +5,23 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
-#searchSource {
-  color: @green-boulder;
-}
-
-#browse-category-picker .jcarousel-control-prev, #browse-category-picker .jcarousel-control-next {
-  //background-color: @green-louisville-background;
-}
-
-#header-container-header {
-  font-family: "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
-  color: @green-boulder;
-  white-space: nowrap;
-  /*padding-left: 175px;*/
-  padding-top: 40px;
-}
+// Can't find an element with this id.
+//#header-container-header {
+//  font-family: "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
+//  color: @green-boulder;
+//  white-space: nowrap;
+//  /*padding-left: 175px;*/
+//  padding-top: 40px;
+//}
 
 #library-name-header {
-  font-family: "Verdana", Arial, Helvetica, sans-serif;
-  color: #484848;
-  font-size: 27px;
   white-space: nowrap;
-  /*padding-left: 175px;*/
   padding-top: 40px;
 }
 
-#header-links {
-  background: @green-boulder
-}
-
-.header-link-wrapper a {
-  color: white;
-  font-weight: bold;
-}
-
-#header-links .header-link-wrapper {
-  border: none
-}
-
-//#header-links .header-link-wrapper:last-of-type {border-right: 1px solid @green-boulder}
-
-.header-login-button-mixin(#FFF, #333);
+.header-login-button-mixin(#fff, #333);
 a .header-button {
-  border: 1px solid #CCC;
+  border: 1px solid #ccc;
 
   &:hover {
     color: #333;
@@ -56,126 +30,61 @@ a .header-button {
   }
 }
 
-#home-page-search {
-  background-color: @blue-boulder;
+// Header Links
+// (mimics homepage menu bar)
+#header-links {
+  background: @green-boulder;
+  border-bottom: 1px dotted #111;
+
+  .header-link-wrapper {
+    border: none;
+    padding: 15px;
+
+    a {
+      color: white;
+      font-size: 18.66px;
+    }
+
+    &:hover {
+      background-color: #fff;
+      a {
+        color: #161616;
+      }
+    }
+  }
 }
 
+
+// Search Boxes
 .searchTypeHome {
-  background-color: #ffffff;
-  color: #000000;
+  background-color: #fff;
+  color: #000;
 }
 
 #horizontal-search-box {
-  background: rgba(0, 0, 0, 0) linear-gradient(to bottom, @blue-boulder, @blue-boulder) repeat scroll 0 0;
-  padding: 15px 0;
+  background: @blue-boulder;
 }
 
-.sidebar-links .active .panel-heading {
-  background: linear-gradient(to bottom, @blue-boulder, @blue-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);
-}
-
-#home-page-browse-header {
-  background-color: #ffffff;
-}
-
-.browse-label-text {
-  background-color: #ffffff;
-  color: #0a61ae;
-}
-
-
-#home-page-search {
-  padding: 48px 0 47px;
-}
-
-#home-page-browse-header {
-  background-color: #ffffff;
-}
-
-
+// Browse Categories
 #browse-label {
   height: 0;
-  background-color: #ffffff;
   margin-top: 10px;
   margin-bottom: 0;
-  margin-right: -15px;
-  z-index: -1;
-}
-
-.browse-label-text {
-  background-color: #ffffff;
-  color: #ffffff;
 }
 
 .browse-category {
   border-radius: 10px;
 }
 
-.browse-category.category0 {
-  background: linear-gradient(to bottom, @green-boulder, @green-boulder 82%, @green-boulder 83%, @green-boulder 84%, @green-boulder 88%, @green-boulder 89%, @green-boulder 90%, @green-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);
-}
-
-.browse-category.category1 {
-  background: linear-gradient(to bottom, @green-boulder, @green-boulder 82%, @green-boulder 83%, @green-boulder 84%, @green-boulder 88%, @green-boulder 89%, @green-boulder 90%, @green-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);
-}
-
-.browse-category.category2 {
-  background: linear-gradient(to bottom, @green-boulder, @green-boulder 82%, @green-boulder 83%, @green-boulder 84%, @green-boulder 88%, @green-boulder 89%, @green-boulder 90%, @green-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);
-}
-
-.browse-category.category3 {
-  background: linear-gradient(to bottom, @green-boulder, @green-boulder 82%, @green-boulder 83%, @green-boulder 84%, @green-boulder 88%, @green-boulder 89%, @green-boulder 90%, @green-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);
-}
-
-.browse-category.category4 {
-  background: linear-gradient(to bottom, @green-boulder, @green-boulder 82%, @green-boulder 83%, @green-boulder 84%, @green-boulder 88%, @green-boulder 89%, @green-boulder 90%, @green-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);
-}
-
-.browse-category.category5 {
-  background: linear-gradient(to bottom, @green-boulder, @green-boulder 82%, @green-boulder 83%, @green-boulder 84%, @green-boulder 88%, @green-boulder 89%, @green-boulder 90%, @green-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);
-}
-
-.browse-category.category6 {
-  background: linear-gradient(to bottom, @green-boulder, @green-boulder 82%, @green-boulder 83%, @green-boulder 84%, @green-boulder 88%, @green-boulder 89%, @green-boulder 90%, @green-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);
-}
-
-.browse-category.category7 {
-  background: linear-gradient(to bottom, @green-boulder, @green-boulder 82%, @green-boulder 83%, @green-boulder 84%, @green-boulder 88%, @green-boulder 89%, @green-boulder 90%, @green-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);
-}
-
-.browse-category.category8 {
-  background: linear-gradient(to bottom, @green-boulder, @green-boulder 82%, @green-boulder 83%, @green-boulder 84%, @green-boulder 88%, @green-boulder 89%, @green-boulder 90%, @green-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);
-}
-
+.browse-category.category0,
+.browse-category.category1,
+.browse-category.category2,
+.browse-category.category3,
+.browse-category.category4,
+.browse-category.category5,
+.browse-category.category6,
+.browse-category.category7,
+.browse-category.category8,
 .browse-category.category9 {
-  background: linear-gradient(to bottom, @green-boulder, @green-boulder 82%, @green-boulder 83%, @green-boulder 84%, @green-boulder 88%, @green-boulder 89%, @green-boulder 90%, @green-boulder) repeat scroll 0 0 rgba(0, 0, 0, 0);
-}
-
-.sidebar-links .panel-heading {
-  background: #e7e7e7;
-}
-
-.sidebar-links .active .panel-heading {
-  background: @blue-boulder;
-}
-
-.sidebar-button {
-  background: @blue-boulder;
-  padding: 7px 0;
-}
-
-.menu-bar {
-  background: @blue-boulder;
-}
-
-#vertical-menu-bar {
   background: @green-boulder;
-}
-
-#horizontal-menu-bar-container .menu-icon.menu-icon-selected {
-  background: @green-boulder;
-}
-
-#vertical-menu-bar .menu-bar-option.menu-icon-selected {
-  background: @blue-boulder;
 }
