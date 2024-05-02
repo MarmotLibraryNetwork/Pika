@@ -9596,10 +9596,22 @@ a.browse-thumbnail-sorted.active {
   background-color: #2E85C7;
   border-color: #2E85C7;
 }
-#bookbagContainer {
+#bookshelfContainer {
   max-height: 400px;
   overflow-y: auto;
   overflow-x: hidden;
+}
+.bookshelfHelpText {
+  position: absolute;
+  width: 14.5em;
+  left: -4.5em;
+  z-index: 2;
+  background: rgba(222, 224, 64, 0.75);
+  border-radius: 5px;
+  padding: 1px 5px;
+  box-shadow: black 2px 2px 3px;
+  color: black;
+  font-weight: bold;
 }
 .result-value a,
 .facetDetails a,
