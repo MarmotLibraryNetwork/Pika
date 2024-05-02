@@ -59,20 +59,27 @@
 //Header Variables
 
 @system-message-bg: @body-bg-resp;
-@header-height: 90px;
+@header-bg-color: #fff;
+@header-height: 100px; // there is minimum header height of 110px
+
 //@header-top-color: #f2f2f2; //Top color for background gradient in header
 //@header-middle-color: #dddddd; //middle color for background gradient in header @80% of header height from bottom
 //@header-bottom-color: #e0e0e0; //Bottom color for background gradient in header
 @header-bottom-border-color: #b7b7b7;
-
-@header-bg-color: #fff;
 @header-bottom-border-width: 8px;
-@header-login-button-bg-color: #e0e0e0;
 
-//Header link/buttons
-@header-link-color: #8b8b8b;
-@header-link-color-hover: #088ec6;
-@header-button-border-vertical: #d9d8d8;
+
+//Header buttons
+@header-button-color: #222;
+@header-button-bg-color: @header-bg-color;
+@header-button-hover-color: #fff;
+@header-button-hover-bg-color: rgba(51,51,51,0.7);
+//@header-button-bg-color: rgba(51,51,51,0.7);
+//@header-link-color-hover: #088ec6;
+@header-button-border-color: #555;
+//@header-button-border-color: #d9d8d8;
+//@header-button-border-vertical: #d9d8d8; //TODO remove all instances
+@header-button-height: 50px;
 
 @library-display-name-color: #8b8b8b;
 @library-display-name-font: "Palatino Linotype", "Book Antiqua", Palatino, serif;

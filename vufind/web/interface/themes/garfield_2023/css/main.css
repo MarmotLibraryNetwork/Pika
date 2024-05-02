@@ -7913,12 +7913,12 @@ body {
           text-decoration: underline dotted;
 }
 #header-container {
+  height: 100px;
+  min-height: 100px;
   padding-top: 0;
-  height: 90px;
   background-color: #fff;
   border-bottom: 8px solid #0078ae;
   margin-bottom: 0;
-  min-height: 110px;
 }
 #header-logo {
   padding: 10px 10px 0 0;
@@ -7929,20 +7929,22 @@ body {
     height: auto;
   }
 }
-.header-button {
+a .header-button {
   text-align: center;
-  text-shadow: 1px 1px #fff;
-  vertical-align: middle;
-  line-height: 82px !important;
-  border-bottom: 4px solid #e0e0e0;
-  color: #8b8b8b !important;
+  line-height: 50px;
+  color: #222;
+  background-color: #fff;
+  border: 1px solid #555;
+  margin-top: 25px;
 }
-.header-button:hover {
-  border-bottom: 4px solid #074f9a;
+a .header-button:hover {
+  color: #fff;
+  background-color: rgba(51, 51, 51, 0.7);
+  font-weight: bold;
+  text-decoration-color: #fff;
 }
-.header-primary {
-  border-left: 2px solid #d9d8d8;
-  border-right: 2px solid #d9d8d8;
+a .header-button:visited {
+  text-decoration-color: #fff;
 }
 #library-name-header {
   font-size: 30px;
@@ -10294,17 +10296,17 @@ fieldset[disabled] .btn-masquerade.active {
 .logoutOptions > .hidden-xs:hover {
   transform: scale(0.9);
 }
-.loginOptions .header-button,
-.logoutOptions .header-button {
+.loginOptions a .header-button,
+.logoutOptions a .header-button {
   background: #0078ae;
   border-radius: 50px;
 }
-.header-button {
-  line-height: 45px!important;
-  color: white!important;
+a .header-button {
+  line-height: 45px;
+  color: white;
   border: none;
   text-shadow: none;
 }
-.header-button:hover {
+a .header-button:hover {
   border: none;
 }

@@ -7913,12 +7913,12 @@ body {
           text-decoration: underline dotted;
 }
 #header-container {
-  padding-top: 0;
   height: 150px;
+  min-height: 100px;
+  padding-top: 0;
   background-color: #20368c;
   border-bottom: 2px solid #fff;
   margin-bottom: 0;
-  min-height: 110px;
 }
 #header-logo {
   padding: 10px 10px 0 0;
@@ -7929,20 +7929,22 @@ body {
     height: auto;
   }
 }
-.header-button {
+a .header-button {
   text-align: center;
-  text-shadow: 1px 1px #fff;
-  vertical-align: middle;
-  line-height: 142px !important;
-  border-bottom: 4px solid #e0e0e0;
-  color: #8b8b8b !important;
+  line-height: 50px;
+  color: #222;
+  background-color: #20368c;
+  border: 1px solid #555;
+  margin-top: 50px;
 }
-.header-button:hover {
-  border-bottom: 4px solid #074f9a;
+a .header-button:hover {
+  color: #fff;
+  background-color: rgba(51, 51, 51, 0.7);
+  font-weight: bold;
+  text-decoration-color: #fff;
 }
-.header-primary {
-  border-left: 2px solid #d9d8d8;
-  border-right: 2px solid #d9d8d8;
+a .header-button:visited {
+  text-decoration-color: #fff;
 }
 #library-name-header {
   font-size: 30px;
@@ -10280,16 +10282,16 @@ fieldset[disabled] .btn-masquerade.active {
   color: #f1dbff;
   background-color: #fff;
 }
-.header-button {
+a .header-button {
   border: 0;
   border-radius: 0.5em;
-  color: #000 !important;
+  color: #000;
   background-color: #fff;
   margin-top: 20px;
-  line-height: 60px !important;
+  line-height: 60px;
   text-shadow: none;
 }
-.header-button:hover {
+a .header-button:hover {
   text-decoration: underline;
   border-bottom: 0;
   box-shadow: 2px 2px 5px #fff;

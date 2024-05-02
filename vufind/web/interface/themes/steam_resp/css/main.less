@@ -19,7 +19,7 @@ a#headerLogoutLink, a#headerLogoutLink, a#headerMyAccountLink {
 }
 
 // Styles most of the button
-.header-button {
+a .header-button {
   border-radius: .5em;
   color: #333!important;
   border-color: #ccc;
@@ -36,6 +36,19 @@ a#headerLogoutLink, a#headerLogoutLink, a#headerMyAccountLink {
     //border-bottom: 1px solid #adadad;
   }
 }
+
+/* Gets rid of the blue thick border under the button when mousing over */
+// library override
+a .header-button:hover {
+  border-bottom: 1px solid #adadad !important;
+}
+
+/*Replaces the look of the mouseover on the login buttons*/
+// library override
+a .header-button:hover {
+  border-bottom: 4px solid #7B1405;
+}
+
 
 #browse-label, // Horizontal link on both sides of the words Browse the Catalog
 .browse-label-text { // Background and text for Browse the Catalog
@@ -165,10 +178,6 @@ a#headerLogoutLink, a#headerLogoutLink, a#headerMyAccountLink {
 
 /*** Browse Boxes & Header ***/
 
-/* Gets rid of the blue thick border under the button when mousing over */
-.header-button:hover {
-  border-bottom: 1px solid #adadad !important;
-}
 
 
 /* Drives the color for the Magnifying Glass and the name of the selected browse list */
@@ -180,11 +189,6 @@ a#headerLogoutLink, a#headerLogoutLink, a#headerMyAccountLink {
 #selected-browse-label {
   background: linear-gradient(to bottom, #FFFFFF, #FFFFFF 50%, #a8a96f 30%, #a8a96f 33%, #FFFFFF 56%) repeat scroll 0 0 rgba(0, 0, 0, 0);
   margin-bottom: 5px;
-}
-
-/*Replaces the look of the mouseover on the login buttons*/
-.header-button:hover {
-  border-bottom: 4px solid #7B1405;
 }
 
 /*** Horizontal Search Box ***/
