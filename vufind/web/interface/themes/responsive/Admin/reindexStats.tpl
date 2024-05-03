@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h1 role="heading" class="h3">Indexing Statistics : {$indexingStatsDate}
+		<h1 role="heading" aria-level="1" class="h2">Indexing Statistics : {$indexingStatsDate}
 			{if !empty($compareTo)} vs {$compareTo}{/if}
 		</h1>
 

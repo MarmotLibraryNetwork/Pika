@@ -1,6 +1,6 @@
 {strip}
 <div id="page-content" class="col-xs-12">
-	<h1 role="heading" class="h2">{if $action == "WSJ"}Log into your account to access WSJ site{elseif $action == "eContentSupport"}Log into your account to submit eContent support request{else}{translate text='Log into your account'}{/if}</h1>
+	<h1 role="heading" aria-level="1" class="h2">{if $action == "WSJ"}Log into your account to access WSJ site{elseif $action == "eContentSupport"}Log into your account to submit eContent support request{else}{translate text='Log into your account'}{/if}</h1>
 	<div id="loginFormWrapper">
 		{if $message}{* Errors for Full Login Page *}
 			<p class="alert alert-danger" id="loginError" >{$message|translate}</p>

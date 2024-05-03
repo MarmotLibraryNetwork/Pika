@@ -5,7 +5,7 @@
 		{include file="GroupedWork/search-results-navigation.tpl"}
 
 		{* Display Title *}
-		<h1 role="heading" class="h2 notranslate">
+		<h1 role="heading" aria-level="1" class="h2 notranslate">
 			{$recordDriver->getTitleShort()|removeTrailingPunctuation|escape}
 			{if $recordDriver->getSubtitle()}
 				: {$recordDriver->getSubtitle()|removeTrailingPunctuation|escape}

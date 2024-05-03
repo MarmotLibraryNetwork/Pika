@@ -1,11 +1,11 @@
 {strip}
-	<h1>Pika Lists based on the New York Times API</h1>
+	<h1 role="heading" aria-level="1" class="h2">Pika Lists based on the New York Times API</h1>
 	<div class="alert alert-info">
 		For more information on using the New York Times lists, see the <a href="https://marmot-support.atlassian.net/l/c/QiEJFkxb">online documentation</a>.
 	</div>
 
 
-	<h3>Create or Update a List</h3>
+	<h2 class="h3">Create or Update a List</h2>
 
 	{if $error}
 		<div class="alert alert-danger">{$error}</div>
@@ -30,7 +30,7 @@
 	</form>
 
 	{if !empty($pikaLists)}
-		<h3>Existing New York Times Lists</h3>
+		<h2 class="h3">Existing New York Times Lists</h2>
 		<table class="table table-bordered table-hover">
 			<tr>
 				<th>

@@ -1,7 +1,7 @@
 {*<div id="page-content" *}{*class="col-xs-12 col-sm-8 col-md-9 col-lg-9" defined by container*}{*>*}
 <form action="" method="post" id="offlineCircForm">
 	<div id="main-content" class="full-result-content">
-		<h1 role="heading" class="h2">Offline Circulation</h1>
+		<h1 role="heading" aria-level="1" class="h2">Offline Circulation</h1>
 		<div class="alert alert-info">
 			For more information about Offline Circulation, see the <a href="https://marmot-support.atlassian.net/l/c/ZM1de8yJ">online documentation</a>.
 		</div>

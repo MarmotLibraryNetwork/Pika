@@ -6,7 +6,7 @@
 		{include file="GroupedWork/search-results-navigation.tpl"}
 
 		{* Display Title *}
-		<h1 role="heading" class="h2">
+		<h1 role="heading" aria-level="1" class="h2">
 			{$recordDriver->getTitle()|removeTrailingPunctuation|escape}
 			{if $recordDriver->getSubTitle() && $recordDriver->getSubTitle()|lower != $recordDriver->getTitle()|lower}: {$recordDriver->getSubTitle()|removeTrailingPunctuation|escape}{/if}
 			{* Don't display the subtitle if it is the same text as the short title *}

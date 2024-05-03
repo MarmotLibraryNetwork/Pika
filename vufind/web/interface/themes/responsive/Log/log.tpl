@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h1 role="heading" class="h3">{$pageTitleShort}</h1>
+		<h1 role="heading" aria-level="1" class="h2">{$pageTitleShort}</h1>
 		<hr>
 
 		{if $alert}{$alert}{/if}

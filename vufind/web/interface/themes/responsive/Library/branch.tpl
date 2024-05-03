@@ -1,5 +1,5 @@
 {strip}
-	<h1 role="heading" class="h2 notranslate">
+	<h1 role="heading" aria-level="1" class="h2 notranslate">
 		{$location->displayName}
 	</h1>
 

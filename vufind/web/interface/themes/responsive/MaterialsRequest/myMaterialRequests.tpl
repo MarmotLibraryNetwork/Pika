@@ -2,7 +2,7 @@
 
 	<span class='availableHoldsNoticePlaceHolder'></span>
 
-	<h1 role="heading" class="h2">My {translate text='Materials_Request_alt'}s</h1>
+	<h1 role="heading" aria-level="1" class="h2">My {translate text='Materials_Request_alt'}s</h1>
 	{if $error}
 		<div class="alert alert-danger">{$error}</div>
 	{else}

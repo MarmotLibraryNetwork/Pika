@@ -4,7 +4,7 @@
 			<div class="alert alert-danger">{$error}</div>
 		{/if}
 
-		<h1 role="heading" class="h2 text-center">Choose a Library Catalog</h1>
+		<h1 role="heading" aria-level="1" class="h2 text-center">Choose a Library Catalog</h1>
 
 		<div class="text-center alert alert-info">{translate text='Select the Library Catalog you wish to use'}</div>
 

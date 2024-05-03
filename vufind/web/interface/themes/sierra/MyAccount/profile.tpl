@@ -8,7 +8,7 @@
 
 			<span class='availableHoldsNoticePlaceHolder'></span>
 
-				<h1 role="heading" class="h2">{translate text='Account Settings'}</h1>
+				<h1 role="heading" aria-level="1" class="h2">{translate text='Account Settings'}</h1>
 		{if $offline}
 			<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to retrieve information about your {translate text='Account Settings'|lower} at this time.</div>
 		{else}

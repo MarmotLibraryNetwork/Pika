@@ -10,7 +10,7 @@
 		{/foreach}
 		<a class="btn btn-sm btn-default" href='/Admin/TranslationMaps?objectAction=list'>Return to List</a>
 	</div>
-	<h1 role="heading" class="h2">{$mapName}</h1>
+	<h1 role="heading" aria-level="1" class="h2">{$mapName}</h1>
 	<div class="well">
 		<p>Translation map values can be loaded from either an INI formatted record
 			or from a CSV formatted record.

@@ -1,6 +1,6 @@
 {strip}
 	<div class="col-xs-12">
-		<h1 role="heading" class="h3">Import Lists from Classic Catalog</h1>
+		<h1 role="heading" aria-level="1" class="h2">Import Lists from Classic Catalog</h1>
 	{if $importResults && $importResults.success}
 		<div class="alert alert-success">
 			<span class="badge">{$importResults.totalTitles}</span> title{if $importResults.totalTitles !=1}s{/if} from <span class="badge">{$importResults.totalLists}</span> list{if $importResults.totalLists != 1}s{/if} were successfully imported.

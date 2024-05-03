@@ -6,7 +6,7 @@
 
 	<span class='availableHoldsNoticePlaceHolder'></span>
 
-	<h1 role="heading" class="h2">{translate text='Fines_page_title'}</h1>
+	<h1 role="heading" aria-level="1" class="h2">{translate text='Fines_page_title'}</h1>
 {if $offline}
 	<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to retrieve information about your {translate text='Fines'|lower} at this time.</div>
 {else}
@@ -23,7 +23,7 @@
 		{/if}
 
 		{foreach from=$userFines item=fines key=userId name=fineTable}
-			{if count($userFines) > 1}<h3>{$userAccountLabel.$userId}</h3>{/if}{* Only show account name if there is more than one account. *}
+			{if count($userFines) > 1}<h2 class="h3">{$userAccountLabel.$userId}</h2>{/if}{* Only show account name if there is more than one account. *}
 			{if $fines}
 			<table id="finesTable{$smarty.foreach.fineTable.index}" class="fines-table table table-striped">
 				<thead>

@@ -7,7 +7,7 @@
 
 		<span class='availableHoldsNoticePlaceHolder'></span>
 
-		<h1 role="heading" class="h2">{translate text='Checked Out Titles'}</h1>
+		<h1 role="heading" aria-level="1" class="h2">{translate text='Checked Out Titles'}</h1>
 
     {include file="MyAccount/libraryHoursMessage.tpl"}
 

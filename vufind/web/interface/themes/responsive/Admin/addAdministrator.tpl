@@ -5,7 +5,7 @@
 	{/if}
 	<form name="addAdministrator" method="post" enctype="multipart/form-data" class="form-horizontal">
 		<fieldset>
-			<legend><h3>Setup a New Administrator</h3></legend>
+			<legend><h1 role="heading" aria-level="1" class="h2">Add a New Administrator</h1></legend>
 			<input type="hidden" name="objectAction" value="processNewAdministrator">
 			<div class="row form-group">
 				<label for="barcode" class="col-sm-2 control-label">Barcode: </label>

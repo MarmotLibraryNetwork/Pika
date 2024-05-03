@@ -94,7 +94,7 @@
 			<div>
 				<div class="advSearchContent">
 
-					<h1 role="heading" class="h3">{translate text='Advanced Search'}</h1>
+					<h1 role="heading" aria-level="1" class="h2">{translate text='Advanced Search'}</h1>
 
 					{if $editErr}
 						{assign var=error value="advSearchError_$editErr"}

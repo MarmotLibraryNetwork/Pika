@@ -1,5 +1,5 @@
 {strip}
-<h1 role="heading" class="h2">{translate text='nohit_heading'}</h1>
+<h1 role="heading" aria-level="1" class="h2">{translate text='nohit_heading'}</h1>
 
 <p class="alert alert-info">{translate text='nohit_prefix'} - <b>{if $lookfor}{$lookfor|escape:"html"}{else}&lt;empty&gt;{/if}</b> - {translate text='nohit_suffix'}</p>
 

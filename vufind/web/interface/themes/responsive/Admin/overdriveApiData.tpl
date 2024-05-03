@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h1 role="heading" class="h2">OverDrive API Data</h1>
+		<h1 role="heading" aria-level="1" class="h2">OverDrive API Data</h1>
 		<div class="navbar row">
 			<form class="form">
 				<div class="form-group col-tn-12"  style="min-width: 40%">

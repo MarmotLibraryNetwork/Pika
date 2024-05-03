@@ -1,7 +1,7 @@
 {strip}
 	<div id="page-content" class="col-xs-12">
 
-		<h1 role="heading" class="h2">{translate text='Reset My PIN'}</h1>
+		<h1 role="heading" aria-level="1" class="h2">{translate text='Reset My PIN'}</h1>
       {if $resetPinResult.error}
 				<p class="alert alert-danger">{$resetPinResult.error}</p>
 		{/if}

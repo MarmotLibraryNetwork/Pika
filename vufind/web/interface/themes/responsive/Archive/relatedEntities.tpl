@@ -1,6 +1,6 @@
 {strip}
 	<div class="resulthead">
-		<h1 role="heading" class="h2">
+		<h1 role="heading" aria-level="1" class="h2">
 			{$shortPageTitle}
 		</h1>
 

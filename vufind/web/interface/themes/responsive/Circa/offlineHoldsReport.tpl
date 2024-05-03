@@ -47,7 +47,7 @@
 		</div>
 
 		<div id="main-content">
-			<h1 role="heading" class="h2">Offline Holds</h1>
+			<h1 role="heading" aria-level="1" class="h2">Offline Holds</h1>
 			{if count($offlineHolds) > 0}
 				<table class="citation stripe" id="offlineHoldsReport">
 					<thead>

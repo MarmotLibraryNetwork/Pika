@@ -1,3 +1,4 @@
+<h1 role="heading" aria-level="1" class="h2">Archive Home</h1>
 
 	<div class="col-xs-12">
 		{if count($relatedContentTypes) == 0 && count($relatedProjectsLibrary) == 0 && count($relatedProjectsOther) == 0}
@@ -10,7 +11,7 @@
 			{if !empty($relatedProjectsLibrary)}
 				<div class="row">
 					<div class="col-xs-12">
-						<h3><a href="{$libraryProjectsUrl}">Collections from {$archiveName}</a></h3>
+						<h2 class="h3"><a href="{$libraryProjectsUrl}">Collections from {$archiveName}</a></h2>
 						<div id="relatedProjectScroller" class="jcarousel-wrapper">
 							<a href="#" class="jcarousel-control-prev"><i class="glyphicon glyphicon-chevron-left"></i></a>
 							<a href="#" class="jcarousel-control-next"><i class="glyphicon glyphicon-chevron-right"></i></a>
@@ -36,8 +37,8 @@
 
 			{if !empty($relatedProjectsOther)}
 				<div class="row">
-					<div class="col-xs-12">
-						<h3><a href="{$otherProjectsUrl}">{if count($relatedProjectsLibrary) > 0}More collections{else}Collections{/if} from the archive</a></h3>
+					<div class="col-tn-12">
+						<h2 class="h3"><a href="{$otherProjectsUrl}">{if count($relatedProjectsLibrary) > 0}More collections{else}Collections{/if} from the archive</a></h2>
 						<div id="relatedProjectOtherScroller" class="jcarousel-wrapper">
 							<a href="#" class="jcarousel-control-prev"><i class="glyphicon glyphicon-chevron-left"></i></a>
 							<a href="#" class="jcarousel-control-next"><i class="glyphicon glyphicon-chevron-right"></i></a>
@@ -62,8 +63,8 @@
 			{/if}
 
 			<div class="row">
-				<div class="col-xs-12">
-					<h3>Types of materials in the archive</h3>
+				<div class="col-tn-12">
+					<h2 class="h3">Types of materials in the archive</h2>
 					<div id="relatedContentTypesContainer" class="jcarousel-wrapper">
 						<a href="#" class="jcarousel-control-prev"><i class="glyphicon glyphicon-chevron-left"></i></a>
 						<a href="#" class="jcarousel-control-next"><i class="glyphicon glyphicon-chevron-right"></i></a>

@@ -1,5 +1,5 @@
 	<div id="main-content" class="col-md-12">
-		<h1 role="heading" class="h3">Materials Request Requests by User Report</h1>
+		<h1 role="heading" aria-level="1" class="h2">Materials Request Requests by User Report</h1>
 		{if $error}
 			<div class="alert alert-danger">{$error}</div>
 		{/if}

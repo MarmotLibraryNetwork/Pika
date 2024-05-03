@@ -88,7 +88,7 @@
 				<tr><th>Failed</th><td>{$totalFailed}</td></tr>
 			</table>
 
-			<h1 role="heading" class="h2">Offline Circulation</h1>
+			<h1 role="heading" aria-level="1" class="h2">Offline Circulation</h1>
 			{if count($offlineCirculation) > 0}
 				<table class="table stripe" id="offlineCirculationReport">
 					<thead>

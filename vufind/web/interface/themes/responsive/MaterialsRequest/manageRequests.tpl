@@ -1,6 +1,6 @@
 {strip}
 <div id="main-content" class="col-md-12">
-	<h1 role="heading" class="h2">Manage Materials Requests</h1>
+	<h1 role="heading" aria-level="1" class="h2">Manage Materials Requests</h1>
 	{if $materialRequestStaffSettingsWarning}
 		<div class="alert alert-warning">
 			Please set the "Reply-To Email Address" and "Email Signature" in the Materials Request Management section in Staff Settings on the <a href="/MyAccount/Profile">Account Settings</a> page.

@@ -1,5 +1,5 @@
 {strip}
-	<h1 role="heading" class="h3">Claim Authorship of Archive Materials</h1>
+	<h1 role="heading" aria-level="1" class="h2">Claim Authorship of Archive Materials</h1>
 	<div class="page">
 		{if $requestSubmitted}
 			{if $error}

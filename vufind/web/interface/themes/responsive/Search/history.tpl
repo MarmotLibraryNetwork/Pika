@@ -9,7 +9,7 @@
 
 		{if !$noHistory}
 			{if $saved}
-				<h1 role="heading" class="h2">{translate text="history_saved_searches"}</h1>
+				<h1 role="heading" aria-level="1" class="h2">{translate text="history_saved_searches"}</h1>
 				<table class="table table-bordered table-striped">
 					<tr>
 						<th>{translate text="history_id"}</th>
@@ -38,7 +38,7 @@
 			{/if}
 
 			{if $links}
-				<div class="resulthead"><h3>{translate text="history_recent_searches"}</h3></div>
+				<h2 class="h3">{translate text="history_recent_searches"}</h2>
 				<table class="table table-bordered table-striped">
 					<tr>
 						<th>{translate text="history_time"}</th>
@@ -68,7 +68,7 @@
 			{/if}
 
 		{else}
-			<h3>{translate text="history_recent_searches"}</h3>
+			<h2 class="h3">{translate text="history_recent_searches"}</h2>
 			{translate text="history_no_searches"}
 		{/if}
 	</div>

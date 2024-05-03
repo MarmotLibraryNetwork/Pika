@@ -1,5 +1,5 @@
 {strip}
-<h1 role="heading" class="h3">{translate text='Register for a Library Card'}</h1>
+<h1 role="heading" aria-level="1" class="h2">{translate text='Register for a Library Card'}</h1>
 <div class="page">
 		{if (isset($selfRegResult) && $selfRegResult.success)}
 			<div id="selfRegSuccess" class="alert alert-success">

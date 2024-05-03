@@ -1,7 +1,7 @@
 {strip}
 	<div class="col-xs-12">
 		{* Display Title *}
-		<h1 role="heading" class="h2">
+		<h1 role="heading" aria-level="1" class="h2">
 		{$recordDriver->getTitle()|escape}
 			{if $recordDriver->getFormats()}
 				<br><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>

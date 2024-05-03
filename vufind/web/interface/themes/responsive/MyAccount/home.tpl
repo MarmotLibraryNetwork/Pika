@@ -6,7 +6,7 @@
 			{* Alternate Mobile MyAccount Menu *}
 			{include file="MyAccount/mobilePageHeader.tpl"}
 
-			<h1 role="heading" class="h2">{translate text='Account Summary'}</h1>
+			<h1 role="heading" aria-level="1" class="h2">{translate text='Account Summary'}</h1>
 			<div>
 				{if $offline}
 				<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to retrieve information about your check outs and holds at this time.</div>

@@ -6,7 +6,7 @@
 	{/foreach}
 {/if}
 
-	<h1 role="heading" class="h2">{translate text='nohit_heading'}</h1>
+	<h1 role="heading" aria-level="1" class="h2">{translate text='nohit_heading'}</h1>
 
 	{* Search Replacement Term notice *}
 	{include file="Search/search-replacementTerm-notice.tpl"}

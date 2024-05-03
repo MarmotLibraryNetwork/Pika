@@ -1,7 +1,7 @@
 {*<div id="page-content" *}{*class="col-xs-12 col-sm-8 col-md-9 col-lg-9" defined by container*}{*>*}
 <form action="" method="post" id="offlineCircForm">
 	<div id="main-content" class="full-result-content">
-		<h1 role="heading" class="h2">Migrate Circs</h1>
+		<h1 role="heading" aria-level="1" class="h2">Migrate Circs</h1>
 
 		{if $error}
 			<div class="alert alert-danger">

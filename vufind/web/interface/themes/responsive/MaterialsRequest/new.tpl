@@ -1,6 +1,6 @@
 <div id="page-content" class="content">
 	<div id="main-content">
-		<h1 role="heading" class="h2">{translate text='Materials_Request_alt'}</h1>
+		<h1 role="heading" aria-level="1" class="h2">{translate text='Materials_Request_alt'}</h1>
 		<div id="materialsRequest">
 			<div class="materialsRequestExplanation alert alert-info">
 				{if empty($newMaterialsRequestSummary)}

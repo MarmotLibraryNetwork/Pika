@@ -7,7 +7,7 @@
 
 		<span class='availableHoldsNoticePlaceHolder'></span>
 
-		<h1 role="heading" class="h3">My Scheduled Items</h1>
+		<h1 role="heading" aria-level="1" class="h2">My Scheduled Items</h1>
 
     {include file="MyAccount/libraryHoursMessage.tpl"}
 

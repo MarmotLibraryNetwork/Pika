@@ -11,7 +11,7 @@
 		</div>
 	{/if}
 
-	<h1 role="heading" class="h2">
+	<h1 role="heading" aria-level="1" class="h2">
 	{$person->firstName|escape} {$person->middleName|escape}{if $person->nickName} "{$person->nickName|escape}"{/if}{if $person->maidenName} ({$person->maidenName}){/if} {$person->lastName|escape}
 	</h1>
 	{if $userIsAdmin}
@@ -78,7 +78,7 @@
 		</p>
 	</div>
 	{if count($marriages) > 0 || $userIsAdmin}
-		<h3 class="blockhead">Marriages</h3>
+		<h2 class="h2 blockhead">Marriages</h2>
 		{foreach from=$marriages item=marriage}
 			<p class="marriageTitle">
 				 {$marriage.spouseName}{if $marriage.formattedMarriageDate} - {$marriage.formattedMarriageDate}{/if}
@@ -100,7 +100,7 @@
 
 	{/if}
 	{if $person->cemeteryName || $person->cemeteryLocation || $person->mortuaryName || $person->cemeteryAvenue || $person->lot || $person->block || $person->grave || $person->addition}
-		<h3 class="blockhead">Burial Details</h3>
+		<h2 class="blockhead h3">Burial Details</h2>
 		{if $person->cemeteryName}
 		<div class='personDetail'><span class='result-label'>Cemetery Name: </span><span class='personDetailValue'>{$person->cemeteryName}</span></div>
 		{/if}
@@ -127,12 +127,12 @@
 		{/if}
 	{/if}
 	{if count($obituaries) > 0 || $userIsAdmin}
-		<h3 class="blockhead">Obituaries</h3>
+		<h2 class="blockhead">Obituaries</h2>
 			{include file="Person/obituariesSection.tpl"}
 
 	{/if}
 	{if $person->ledgerVolume || $person->ledgerYear || $person->ledgerEntry}
-		<h3 class="blockhead">Ledger Information</h3>
+		<h2 class="blockhead">Ledger Information</h2>
 		{if $person->ledgerVolume}
 			<div class='personDetail'><span class='result-label'>Volume:</span><span class='bold'>{$person->ledgerVolume}</span></div>
 		{/if}
@@ -143,7 +143,7 @@
 			<div class='personDetail'><span class='result-label'>Entry:</span><span class='personDetailValue'>{$person->ledgerEntry}</span></div>
 		{/if}
 	{/if}
-	<h3 class="blockhead">Comments</h3>
+	<h2 class="h3">Comments</h2>
 	{if $person->comments}
 	<div class='personComments'>{$person->comments|escape}</div>
 	{else}
