@@ -9603,6 +9603,22 @@ a.browse-thumbnail-sorted.active {
   color: black;
   font-weight: bold;
 }
+@media (min-width: 0) {
+  .bookshelfHelpText {
+    left: 0;
+  }
+}
+@media (min-width: 768px) {
+  .bookshelfHelpText {
+    left: 0;
+  }
+}
+@media (min-width: 992px) {
+  .bookshelfHelpText {
+    left: -4.5em;
+    z-index: 999;
+  }
+}
 .result-value a,
 .facetDetails a,
 .solicit-new-materials-request a {
