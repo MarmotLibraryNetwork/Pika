@@ -1,14 +1,8 @@
-{* Main Listing *}
-{if (isset($title)) }
-<script>
-	alert("{$title}");
-</script>
-{/if}
 <div class="col-xs-12">
 	{if $seriesTitle}
-	<h2 class="notranslate">
+	<h1 role="heading" aria-level="1" class="notranslate">
 		{$seriesTitle}
-	</h2>
+	</h1>
 	{/if}
 	{if $seriesAuthors}
 	<div class="row">

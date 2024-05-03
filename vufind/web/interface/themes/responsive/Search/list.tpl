@@ -1,5 +1,5 @@
-
 <div id="searchInfo">
+	<h1 role="heading" aria-level="1" class="h2">Search Results</h1>
 
 		{if $searchType == 'advanced'}
 			<div id="advanced-search" class="well well-sm">

@@ -1,4 +1,7 @@
 <div id="searchInfo">
+
+	<h1 role="heading" aria-level="1" class="h2">Genealogy Search Results</h1>
+
 	{* Recommendations *}
 	{if $topRecommendations}
 		{foreach from=$topRecommendations item="recommendations"}
