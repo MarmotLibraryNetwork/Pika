@@ -7,11 +7,31 @@
 			</div>
 		{/if}
 
+		{* Title Row *}
+		<div class="row result-title-row">
+			<div class="col-tn-12">
+				<span class="result-index">{$resultIndex}.</span>&nbsp;
+				<a href="{$summUrl}" class="result-title notranslate">
+					{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
+					{if $summSubTitle|removeTrailingPunctuation}: {$summSubTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
+				</a>
+				{if $summTitleStatement}
+					&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|highlight|truncate:180:"..."}
+				{/if}
+				{if isset($summScore)}
+					&nbsp;(<a href="#" onclick="return Pika.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)
+				{/if}
+			</div>
+		</div>
+
 		<div class="row">
-			{if $showCovers}
 				{if $showBookshelf}
-					<div class="col-xs-1 col-sm-1" aria-live="polite"><input type="checkbox" id="select_{$summId|escape}" class="checkbox checkbox-results" aria-label="Add title to bookshelf" title="Add title to bookshelf"></div>
-					{/if}
+					<div class="col-tn-1 col-sm-1" aria-live="polite">
+						<input type="checkbox" id="select_{$summId|escape}" class="checkbox checkbox-results" aria-label="Add title to bookshelf" title="Add title to bookshelf">
+					</div>
+				{/if}
+			{if $showCovers}
+
 				<div class="coversColumn col-xs-3 col-sm-3{if !$viewingCombinedResults} col-md-3 col-lg-2{/if} text-center">
 
 						{if $disableCoverArt != 1}
@@ -31,22 +51,6 @@
 			{else}
 				<div class="{if !$showCovers}col-xs-12{else}col-xs-9 col-sm-9{if !$viewingCombinedResults} col-md-9 col-lg-10{/if}{/if}">{* May turn out to be more than one situation to consider here *}
 			{/if}
-				{* Title Row *}
-				<div class="row">
-					<div class="col-xs-12">
-						<span class="result-index">{$resultIndex})</span>&nbsp;
-						<a href="{$summUrl}" class="result-title notranslate">
-							{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
-							{if $summSubTitle|removeTrailingPunctuation}: {$summSubTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
-						</a>
-						{if $summTitleStatement}
-							&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|highlight|truncate:180:"..."}
-						{/if}
-						{if isset($summScore)}
-							&nbsp;(<a href="#" onclick="return Pika.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)
-						{/if}
-					</div>
-				</div>
 
 				{if $summAuthor}
 					<div class="row">
