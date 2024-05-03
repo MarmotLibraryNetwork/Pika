@@ -8,17 +8,17 @@
 		{if $overDriveId}<input type="hidden" name="overDriveId" value="{$overDriveId}">{/if}
 		{if !$loggedIn}
 			<div class="form-group">
-				<label for='libraryCardNumber' class="control-label">Library Card Number:  <span class="requiredIndicator">*</span></label><input type="text" name="libraryCardNumber" id="libraryCardNumber" class="required form-control" maxlength="20" size="20">
+				<label for='libraryCardNumber' class="control-label">Library Card Number:  <span class="requiredIndicator">*</span></label><input type="text" name="libraryCardNumber" id="libraryCardNumber" class="required form-control" aria-required="true" maxlength="20" size="20">
 			</div>
 		{/if}
 		<div class="form-group">
-			<label for="name" class="control-label">Name: <span class="requiredIndicator">*</span></label><input type="text" name="name" id="name" class="required form-control" maxlength="120" size="60" value="{$name}">
+			<label for="name" class="control-label">Name: <span class="requiredIndicator">*</span></label><input type="text" name="name" id="name" class="required form-control" aria-required="true" maxlength="120" size="60" value="{$name}">
 		</div>
 		<div class="form-group">
-			<label for="email" class="control-label">E-mail: <span class="requiredIndicator">*</span></label><input type="text" name="email" id="email" class="required email form-control" maxlength="120" size="60" value="{$email}">
+			<label for="email" class="control-label">E-mail: <span class="requiredIndicator">*</span></label><input type="text" name="email" id="email" class="required email form-control" aria-required="true" maxlength="120" size="60" value="{$email}">
 		</div>
 		<div class="form-group">
-			<label for='bookAuthor' class="control-label">Book Title/Author:</label><input type="text" name="bookAuthor" id="bookAuthor" maxlength="120" size="60" class="form-control" value="{$titleAndAuthor}">
+			<label for="bookAuthor" class="control-label">Book Title/Author:</label><input type="text" name="bookAuthor" id="bookAuthor" maxlength="120" size="60" class="form-control" value="{$titleAndAuthor}">
 		</div>
 		<div class="form-group">
 			<label for="device" class="control-label">Device:</label><input type="text" name="device" id="device"{if $deviceName} value="{$deviceName}"{/if} maxlength="120" size="60" class="form-control">

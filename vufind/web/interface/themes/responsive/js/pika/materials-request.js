@@ -165,12 +165,12 @@ Pika.MaterialsRequest = (function(){
 
 			if ((hasSpecialFields && Pika.MaterialsRequest.specialFields[selectedFormat] && Pika.MaterialsRequest.specialFields[selectedFormat].indexOf('Article Field') > -1)){
 				$("#magazineTitle,#acceptCopyrightYes").addClass('required');
-				$("#acceptCopyrightYes").addClass('required');
+				$("#acceptCopyrightYes").addClass('required').attr('aria-required', true);
 				$("#copyright").show();
 				$("#supplementalDetails").hide();
 				$("#titleLabel").html("Article Title <span class='requiredIndicator'>*</span>");
 			}else{
-				$("#magazineTitle,#acceptCopyrightYes").removeClass('required');
+				$("#magazineTitle,#acceptCopyrightYes").removeClass('required').attr('aria-required', false);
 				$("#copyright").hide();
 				$("#supplementalDetails").show();
 				$("#titleLabel").html("Title <span class='requiredIndicator'>*</span>");

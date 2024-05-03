@@ -14,7 +14,7 @@
 		<div class="form-group">
 			<label for="from" class="control-label col-xs-2">{translate text='From'} <span class="requiredIndicator">*</span></label>
 			<div class="col-xs-10">
-				<input type="text" name="from" id="from" size="40" class="required email form-control"{if $from} value="{$from}"{/if}>
+				<input type="text" name="from" id="from" size="40" class="required email form-control" aria-required="true"{if $from} value="{$from}"{/if}>
 			</div>
 		</div>
 		<div class="form-group">
