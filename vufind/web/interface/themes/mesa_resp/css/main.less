@@ -6,6 +6,14 @@
 @import "../../responsive/css/responsive_base.less";
 
 .header-login-button-mixin();
+a .header-button {
+  &:hover {
+    background-color: rgba(51, 51, 51, .8); // make slightly more opaque on hover
+  }
+}
+a:visited .header-button {
+  color: #fff !important;
+}
 
 
 /// Library CSS Overrides
@@ -15,72 +23,64 @@
 //}
 
 #browse-sub-category-menu button.selected {
-  background-color: #336FA3;
-}
-
-.breadcrumbs {
-  background-color: #FFFFFF
+  background-color: @mesaSearchBoxBlue;
 }
 
 .breadcrumb {
-  background-color: #FFF;
   border-radius: 4px;
   list-style: none outside none;
-  margin-bottom: 20px;
+  //margin-bottom: 20px;  // Likely not needed given the addition of the h1 for search results
   padding: 8px 15px;
   font-size: 14px;
 }
 
 #horizontal-search-box {
-  background: #336FA3;
+  //background: @mesaSearchBoxBlue;
   padding: 9px 0;
   margin-top: 20px; //TODO: should add as margin botton to header links block
 }
 
-#header-container {
-  background: none repeat scroll 0 0 #FFF;
-  border-bottom: 0 solid #336FA3;
-}
+//#header-container {
+//  background: none repeat scroll 0 0 #FFF;
+//  border-bottom: 0 solid @mesaSearchBoxBlue;
+//}
 
-.header-primary {
-  border-left: medium none;
-  border-right: medium none;
-}
+//.header-primary {
+//  border-left: medium none;
+//  border-right: medium none;
+//}
 
 #header-logo {
   padding: 0 10px 0 0;
 }
 
 //.header-button > a {
-a .header-button {
-  color: white;
-  line-height: 51px;
-  text-shadow: none;
-}
+//a .header-button {
+//  color: white;
+//  line-height: 51px;
+//  text-shadow: none;
+//}
+//
+//a .header-button {
+//  background-color: rgba(51, 51, 51, 0.6);
+//  margin-top: 9px;
+//  border: 0 none;
+//  border-radius: 0.5em;
+//  line-height: 51px;
+//  text-align: center;
+//  //height: 47px;
+//}
 
-a .header-button {
-  background-color: rgba(51, 51, 51, 0.6);
-  margin-top: 9px;
-  border: 0 none;
-  border-radius: 0.5em;
-  line-height: 51px;
-  text-align: center;
-  //height: 47px;
-}
-
-a:visited > .header-button {
-  color: #FFF !important;
-}
 
 .header-link-wrapper a {
   font-size: 18px;
-  color: #336FA3;
+  color: @mesaSearchBoxBlue;
 }
 
 /*********browse carousel************/
 .browse-label-text {
   background-color: #FFF;
-  color: #575757;
+  color: @mesaCarouselDarkGray;
   font-size: 22px;
   line-height: 5px;
   margin: auto;
@@ -107,7 +107,7 @@ a:visited > .header-button {
 
 #browse-category-picker .jcarousel-control-prev, #browse-category-picker .jcarousel-control-next {
   background-color: rgba(0, 0, 0, 0);
-  color: #575757;
+  color: @mesaCarouselDarkGray;
   font-size: 75px;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0);
   text-shadow: none;
@@ -117,8 +117,8 @@ a:visited > .header-button {
 .jcarousel-pagination a {
   background: none repeat scroll 0 0 #FFF;
   border-radius: 10px;
-  box-shadow: 0 0 2px #575757;
-  color: #575757;
+  box-shadow: 0 0 2px @mesaCarouselDarkGray;
+  color: @mesaCarouselDarkGray;
   display: inline-block;
   font-size: 11px;
   height: 10px;
@@ -130,8 +130,8 @@ a:visited > .header-button {
 }
 
 .jcarousel-pagination a.active {
-  background: none repeat scroll 0 0 #575757;
-  box-shadow: 0 0 2px #575757;
+  background: none repeat scroll 0 0 @mesaCarouselDarkGray;
+  box-shadow: 0 0 2px @mesaCarouselDarkGray;
   color: #FFF;
   opacity: 1;
 }
@@ -141,7 +141,7 @@ a:visited > .header-button {
 }
 
 .browse-category div {
-  color: #575757;
+  color: @mesaCarouselDarkGray;
   text-shadow: none;
   display: table-cell;
   line-height: 1;
@@ -179,26 +179,26 @@ a:visited > .header-button {
 }
 
 #home-page-home-button {
-  background: #336fa3;
+  background: @mesaSearchBoxBlue;
 }
 
-#sidebar .col-lg-3 { /*restricted to sidebar; rule may not be applying anymore. pascal 2-9-2016 */
-  margin-top: 20px;
-}
+//#sidebar .col-lg-3 { /*restricted to sidebar; rule may not be applying anymore. pascal 2-9-2016 */
+//  margin-top: 20px;
+//}
 
 #home-page-search-label {
   text-shadow: none;
 }
 
 #home-page-search {
-  background: none repeat scroll 0 0 #336fa3;
+  background: none repeat scroll 0 0 @mesaSearchBoxBlue;
   margin-bottom: 5px;
   padding: 20px 0 10px;
 }
 
 
 #searchSource {
-  background-color: #336fa3;
+  background-color: @mesaSearchBoxBlue;
   border: medium none;
   color: #FFF;
   padding: 5px 0;
@@ -215,7 +215,7 @@ a:visited > .header-button {
 }
 
 #home-page-login a {
-  color: #575757;
+  color: @mesaCarouselDarkGray;
   font-size: 110%;
 }
 
@@ -236,7 +236,7 @@ a:visited > .header-button {
 #results-sort-label,
 .exploreMoreTitle
 {
-  background: none repeat scroll 0 0 #336fa3;
+  background: none repeat scroll 0 0 @mesaSearchBoxBlue;
   border: none;
 }
 
@@ -260,7 +260,7 @@ a:visited > .header-button {
 
 .sidebar-links .panel-body {
   background-color: #FFF;
-  color: #336fa3;
+  color: @mesaSearchBoxBlue;
   font-size: 15px;
 }
 
@@ -278,10 +278,6 @@ a:visited > .header-button {
   background-color: #FFF;
 }
 
-.sidebar-button {
-  background: #7c7c7d;
-}
-
 .hideMenuHr;
 
 #home-page-library-section {
@@ -291,7 +287,7 @@ a:visited > .header-button {
 }
 
 .facetValue {
-  color: #575757;
+  color: @mesaCarouselDarkGray;
   font-size: 14px;
   padding: 0 0 0 30px;
 }
@@ -324,11 +320,11 @@ a:visited > .header-button {
 }
 
 #more-details-accordion .panel-heading {
-  background: #336fa3;
+  background: @mesaSearchBoxBlue;
 }
 
 #more-details-accordion .active .panel-heading {
-  background: #336fa3;
+  background: @mesaSearchBoxBlue;
 
 }
 
@@ -340,23 +336,23 @@ a:visited > .header-button {
 /*********footer************/
 
 #footer-container {
-  border-top: 8px solid #336fa3;
+  border-top: 8px solid @mesaSearchBoxBlue;
   padding-top: 3px;
 }
 
 /*********scroller************/
 
 .scrollerTitle.selected {
-  border: 3px solid #336fa3;
+  border: 3px solid @mesaSearchBoxBlue;
 }
 
 
 /*********results************/
 .btn-primary {
   color: #FFF;
-  background-color: #336fa3;
+  background-color: @mesaSearchBoxBlue;
 }
 
 .sidebar-links .panel-body a:hover:not(.btn), .sidebar-links .panel-body a:not(.btn), .sidebar-links .panel-body a:visited:not(.btn) {
-  color: #336fa3;
+  color: @mesaSearchBoxBlue;
 }
