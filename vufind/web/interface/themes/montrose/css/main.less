@@ -5,26 +5,25 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
-.header-login-button-mixin(@header-buttons-background-color, @header-buttons-color);
+.header-login-button-mixin(@header-buttons-background-color, @header-buttons-color, 30px);
 a .header-button {
   text-transform: uppercase;
   font-weight: bold;
-  border: 2px solid @gold;
-  margin-top: 30px;
+  //border: 2px solid @gold;
 
   &:hover {
-    background-color: @dark-gold;
+    background-color: @dark-blue-montrose;
   }
 }
-
-a#headerLogoutLink > .header-button {
-  background-color: #fff;
-  border: 1px solid @gold;
-
-  &:hover {
-    background-color: @dark-gold;
-  }
-}
+//
+//a#headerLogoutLink > .header-button {
+//  background-color: #fff;
+//  border: 1px solid @gold;
+//
+//  &:hover {
+//    background-color: @dark-gold;
+//  }
+//}
 
 #header-logo {
   padding-bottom: 10px;
@@ -82,9 +81,10 @@ a#headerLogoutLink > .header-button {
 // Vertically Align cover images with the thumbnail block; up to a maximum size.  so that the thumbnail blocks have a uniform height and fall into columns evenly
 .verticalAlignThumbnailArt;
 
-.btn-primary, .btn-info {
+.btn-info {
+  color: #333; // correct override in response_base for a.btn-info
   &:hover {
-    background-color: lighten(@green, 7%);
+    background-color: lighten(@green-montrose, 7%);
     border-color: #7BAD42;
   }
 }
@@ -92,8 +92,8 @@ a#headerLogoutLink > .header-button {
 .panel-group,
 #home-page-library-section {
   > a {
-    text-decoration-color: #333333;
-    color: #333333;
+    text-decoration-color: #333;
+    color: #333;
   }
 }
 
