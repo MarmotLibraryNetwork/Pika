@@ -82,10 +82,12 @@ a .header-button {
 .verticalAlignThumbnailArt;
 
 .btn-info {
-  color: #333; // correct override in response_base for a.btn-info
   &:hover {
     background-color: lighten(@green-montrose, 7%);
     border-color: #7BAD42;
+  }
+  a& {
+    color: #333; // correct override in response_base for a.btn-info
   }
 }
 

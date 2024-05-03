@@ -9290,7 +9290,7 @@ a.browse-thumbnail-sorted.active {
   padding: 10px 0 15px;
   margin-left: 5px;
   margin-right: 5px;
-  font-size: 12px;
+  line-height: 1.7;
 }
 .result-label {
   font-weight: bold;
@@ -9397,15 +9397,15 @@ a.browse-thumbnail-sorted.active {
   font-size: 12px;
 }
 .replacement-search-info-text {
-  color: #888888;
+  color: #888;
   font-style: normal;
 }
-.result-title {
-  font-weight: bold;
-  font-size: 18px;
+.result-title-row {
+  margin-bottom: 15px;
 }
 .result-index {
   font-size: 18px;
+  padding-right: 15px;
 }
 .result-tools-horizontal {
   margin-top: 6px;
@@ -10419,12 +10419,12 @@ a .header-button:hover {
   column-break-inside: avoid;
   display: table;
 }
-.btn-info {
-  color: #333;
-}
 .btn-info:hover {
   background-color: #b2d4ab;
   border-color: #7BAD42;
+}
+a.btn-info {
+  color: #333;
 }
 .panel-group > a,
 #home-page-library-section > a {
