@@ -39,8 +39,8 @@ class Help_AJAX extends AJAXHandler {
 				$to = $userLibrary->accessibilityEmail;
 			}elseif(!empty($currentLibrary) && $currentLibrary->accessibilityEmail != ''){
 				$to = $currentLibrary->accessibilityEmail;
-			}elseif (!empty($configArray['Site']['accessibilityEmail'])){
-				$to = $configArray['Site']['accessibilityEmail'];
+			}elseif (!empty($configArray['Site']['email'])){
+				$to = $configArray['Site']['email'];
 			}else{
 				return [
 					'title'   => 'Support Request Not Sent',
