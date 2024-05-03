@@ -12,7 +12,7 @@
 {else}
 
 	{if count($userFines) > 0}
-R
+
 		{* Show Fine Alert when the user has no linked accounts *}
 		{if  count($userFines) == 1 && $user->fines}
 			<div class="alert alert-info">
