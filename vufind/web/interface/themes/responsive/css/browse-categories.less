@@ -77,7 +77,7 @@
 
   &:hover {
     background-color: lightskyblue;
-    color: darkblue;
+    color: darkblue; // https://webaim.org/resources/contrastchecker/?fcolor=00008B&bcolor=87CEFA
   }
 
   div {
@@ -99,39 +99,72 @@
 
   &.category0 {
     background-color: @category1MainColor;
-    background: linear-gradient(to bottom, @category1MainColor, @category1MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category1MainColor 90%, @category1MainColor);
   }
   &.category1 {
     background-color: @category2MainColor;
-    background: linear-gradient(to bottom, @category2MainColor, @category2MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category2MainColor 90%, @category2MainColor);
   }
   &.category2 {
     background-color: @category3MainColor;
-    background: linear-gradient(to bottom, @category3MainColor, @category3MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category3MainColor 90%, @category3MainColor);
   }
   &.category3 {
     background-color: @category4MainColor;
-    background: linear-gradient(to bottom, @category4MainColor, @category4MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category4MainColor 90%, @category4MainColor);
   }
   &.category4 {
     background-color: @category5MainColor;
-    background: linear-gradient(to bottom, @category5MainColor, @category5MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category5MainColor 90%, @category5MainColor);
   }
   &.category5 {
     background-color: @category6MainColor;
-    background: linear-gradient(to bottom, @category6MainColor, @category6MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category6MainColor 90%, @category6MainColor);
   }
   &.category6 {
     background-color: @category7MainColor;
-    background: linear-gradient(to bottom, @category7MainColor, @category7MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category7MainColor 90%, @category7MainColor);
   }
   &.category7 {
     background-color: @category8MainColor;
-    background: linear-gradient(to bottom, @category8MainColor, @category8MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category8MainColor 90%, @category8MainColor);
   }
   &.category8 {
     background-color: @category9MainColor;
-    background: linear-gradient(to bottom, @category9MainColor, @category9MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category9MainColor 90%, @category9MainColor);
+  }
+}
+
+// Original styling of browse category carousel items
+.addDecorativeGradientToBrowseCategory() {
+  .browse-category {
+    &.category0 {
+      background-color: @category1MainColor;
+      background: linear-gradient(to bottom, @category1MainColor, @category1MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category1MainColor 90%, @category1MainColor);
+    }
+    &.category1 {
+      background-color: @category2MainColor;
+      background: linear-gradient(to bottom, @category2MainColor, @category2MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category2MainColor 90%, @category2MainColor);
+    }
+    &.category2 {
+      background-color: @category3MainColor;
+      background: linear-gradient(to bottom, @category3MainColor, @category3MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category3MainColor 90%, @category3MainColor);
+    }
+    &.category3 {
+      background-color: @category4MainColor;
+      background: linear-gradient(to bottom, @category4MainColor, @category4MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category4MainColor 90%, @category4MainColor);
+    }
+    &.category4 {
+      background-color: @category5MainColor;
+      background: linear-gradient(to bottom, @category5MainColor, @category5MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category5MainColor 90%, @category5MainColor);
+    }
+    &.category5 {
+      background-color: @category6MainColor;
+      background: linear-gradient(to bottom, @category6MainColor, @category6MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category6MainColor 90%, @category6MainColor);
+    }
+    &.category6 {
+      background-color: @category7MainColor;
+      background: linear-gradient(to bottom, @category7MainColor, @category7MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category7MainColor 90%, @category7MainColor);
+    }
+    &.category7 {
+      background-color: @category8MainColor;
+      background: linear-gradient(to bottom, @category8MainColor, @category8MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category8MainColor 90%, @category8MainColor);
+    }
+    &.category8 {
+      background-color: @category9MainColor;
+      background: linear-gradient(to bottom, @category9MainColor, @category9MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category9MainColor 90%, @category9MainColor);
+    }
   }
 }
 
