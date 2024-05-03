@@ -7,16 +7,20 @@
 	{/if}
 
 	{* Title Row *}
-	<div class="row">
-		<div class="col-xs-12">
-			<span class="result-index">{$resultIndex})</span>&nbsp;
+	<div class="row result-title-row">
+		<div class="col-tn-12">
+			<h2 class="h3">
+			<span class="result-index">{$resultIndex}.</span>&nbsp;
+
 			<a href="{$summUrl}" class="result-title notranslate">{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}</a>
 			{if $summTitleStatement}
 				&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|highlight|truncate:180:"..."}
 			{/if}
+
 			{if isset($summScore)}
-				&nbsp;(<a href="#" onclick="return Pika.showElementInPopup('Score Explanation', '#scoreExplanationValue{$jquerySafeId|escape}');">{$summScore}</a>)
+				&nbsp;<small>(<a href="#" onclick="return Pika.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)</small>
 			{/if}
+			</h2>
 		</div>
 	</div>
 

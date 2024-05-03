@@ -2,23 +2,11 @@
 	{if $params.page}{assign var="pageNum" value=$params.page}{else}{assign var="pageNum" value=1}{/if}
 	{if $params.pagesize}{assign var="pageSize" value=$params.pagesize}{else}{assign var="pageSize" value=20}{/if}
 	{if $params.sort}{assign var="listSort" value=$params.sort}{else}{assign var="listSort" value=""}{/if}
-	<div class="row">
-		<div class="col-md-1"><input type="checkbox" name="marked" id="favorite_{$summId|escape}" class="form-control-static" value="{$summId|escape}"></div>
-	<div class="col-md-11">
-		<div id="groupedRecord{$summId|escape}" class="resultsList" data-order="{$resultIndex}">
-			{* the data-order attribute is used for user-defined ordering in user lists  *}
-		<a name="record{$summId|escape:"url"}"></a>
-		<div class="row">
-		{if $showCovers}
-		<div class="col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
-			<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail{* img-responsive*}" alt="Book cover for {$summTitle}.">
-			{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$summId ratingData=$summRating showNotInterested=false}
-		</div>
-		{/if}
-		<div class="{if !$showCovers}col-xs-10 col-sm-10 col-md-10 col-lg-11{else}col-xs-7 col-sm-7 col-md-7 col-lg-9{/if}">
-			<div class="row">
-				<div class="col-xs-12">
-					<span class="result-index">{$resultIndex})</span>&nbsp;
+
+		<div class="row result-title-row">
+			<div class="col-tn-12">
+				<h2 class="h3">
+					<span class="result-index">{$resultIndex}.</span>&nbsp;
 					<a href="{$summUrl}" class="result-title notranslate">
 						{$summTitle|removeTrailingPunctuation|escape}
 						{if $summSubTitle|removeTrailingPunctuation}: {$summSubTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
@@ -26,8 +14,26 @@
 					{if $summTitleStatement}
 						&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|truncate:180:"..."|highlight}
 					{/if}
-				</div>
+				</h2>
 			</div>
+		</div>
+	<div class="row">
+		<div class="col-md-1">
+			<input type="checkbox" name="marked" id="favorite_{$summId|escape}" class="form-control-static" value="{$summId|escape}" aria-label="Select title to delete">
+		</div>
+	<div class="col-md-11">
+		<div id="groupedRecord{$summId|escape}" class="resultsList" data-order="{$resultIndex}">
+			{* the data-order attribute is used for user-defined ordering in user lists  *}
+		<a id="record{$summId|escape:"url"}"></a>
+
+			<div class="row">
+		{if $showCovers}
+		<div class="col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
+			<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail{* img-responsive*}" alt="Book cover for {$summTitle}.">
+			{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$summId ratingData=$summRating showNotInterested=false}
+		</div>
+		{/if}
+		<div class="{if !$showCovers}col-xs-10 col-sm-10 col-md-10 col-lg-11{else}col-xs-7 col-sm-7 col-md-7 col-lg-9{/if}">
 
 			{if $summAuthor}
 				<div class="row">

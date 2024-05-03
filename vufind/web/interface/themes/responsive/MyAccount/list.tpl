@@ -15,7 +15,7 @@
 			<input type="hidden" name="page" id="myListPage">
 			<input type="hidden" name="pagesize" id="myListPageSize">
 			<input type="hidden" name="sort" id="myListSort">
-			<h3 id="listTitle">{$favList->title|escape:"html"}</h3>
+			<h1 role="heading" aria-level="1" class="h2" id="listTitle">{$favList->title|escape:"html"}</h1>
 			{if $notes}
 				<div id="listNotes" class="alert alert-info">
 				{foreach from=$notes item="note"}
@@ -63,8 +63,8 @@
 							<button value="editList" id="FavEdit" class="btn btn-sm btn-info" onclick="return Pika.Lists.editListAction()">Edit List</button>
 							<button type="button" class="btn btn-sm btn-default btn-toolbar dropdown-toggle" data-toggle="dropdown" area-expanded="false">Share <span class="caret"></span></button>
 							<ul class=" dropdown-menu dropdown-menu-right" role="menu">
-								{if $favList->public}<li><a href="#" value="emailList" id="FavEmail"  onclick='return Pika.Lists.emailListAction("{$favList->id}")'>Email List</a></li>{/if}
-								<li><a href="#" value="printList" id="FavPrint"  onclick='return Pika.Lists.printListAction()'>Print List</a></li>
+								{if $favList->public}<li><a href="#" value="emailList" id="FavEmail" onclick='return Pika.Lists.emailListAction("{$favList->id}")'>Email List</a></li>{/if}
+								<li><a href="#" value="printList" id="FavPrint" onclick='return Pika.Lists.printListAction()'>Print List</a></li>
 								{if $favList->public}<li><a href="#" id="copyList" onclick="return Pika.Lists.copyList({$favList->id})">Copy List</a></li>{/if}
 								<li><a href="#" value="exportToExcel" id="FavExcel" onclick='return Pika.Lists.exportListAction("{$favList->id}");'>Export to Excel</a></li>
 								{if $favList->public}<li><a href="https://twitter.com/compose/tweet?text={$favList->title|escape:"html"}+{$url|escape:"html"}/MyAccount/MyList/{$favList->id}" id="Twitter Share">Share on Twitter <img class="pull-right" src="{img filename='twitter-icon.png'}" alt="Share on Twitter"></a></li>{/if}

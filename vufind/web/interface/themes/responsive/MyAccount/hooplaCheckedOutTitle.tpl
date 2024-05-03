@@ -1,5 +1,25 @@
 {strip}
-	<div id="hoopla_{$record.recordId|escape}" class="result row">
+	<div id="hoopla_{$record.recordId|escape}" class="result">
+
+		{* Title Row *}
+		<div class="row result-title-row">
+			<div class="col-tn-12">
+				<h2 class="h3">
+					<span class="result-index">{$resultIndex}.</span>&nbsp;
+					{if $record.linkUrl}
+						<a href="{$record.linkUrl}" class="result-title notranslate">
+							{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+						</a>
+					{else}
+						<span class="result-title notranslate">
+							{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+						</span>
+					{/if}
+				</h2>
+			</div>
+		</div>
+
+		<div class="row">
 
 		{* Cover Column *}
 		{if $showCovers}
@@ -32,26 +52,6 @@
 
 		{* Title Details Column *}
 		<div class="{if $showCovers}col-xs-9 col-sm-8 col-md-9{else}col-xs-11{/if}">
-			{* Title *}
-			<div class="row">
-				<div class="col-xs-12">
-					<span class="result-index">{$resultIndex})</span>&nbsp;
-					{if $record.linkUrl}
-						<a href="{$record.linkUrl}" class="result-title notranslate">
-							{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
-						</a>
-					{else}
-						<span class="result-title notranslate">
-							{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
-						</span>
-					{/if}
-					{*				{if $record.recordId != -1}
-									<a href="{$record.recordUrl}" class="result-title notranslate">{/if}
-										{$record.title}{if $record.recordId == -1}OverDrive Record {$record.overDriveId}{/if}{if $record.recordId != -1}
-									</a>
-									{/if}*}
-				</div>
-			</div>
 			<div class="row">
 				<div class="resultDetails col-xs-12 col-md-9">
 					{if strlen($record.author) > 0}
@@ -163,5 +163,6 @@
 				</div>
 			</div>
 		</div>
+	</div>
 	</div>
 {/strip}

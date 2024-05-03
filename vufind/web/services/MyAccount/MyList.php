@@ -46,7 +46,7 @@ class MyAccount_MyList extends MyAccount {
 		$list       = new UserList();
 		$list->id   = $listId;
 		$listExists = $list->find(true);
-		$params = array();
+		$params     = [];
 		if ($listExists){
 			// Ensure user has privileges to view the list
 			if (!$list->public){
@@ -175,7 +175,7 @@ class MyAccount_MyList extends MyAccount {
 			if (!empty($_REQUEST['page']) && is_numeric($_REQUEST['page'])){
 				$params['page'] = $_REQUEST['page'];
 			}
-			if (!empty($_REQUEST['sort']) && in_array($_REQUEST['sort'],array('author','title','dateAdded','recentlyAdded','custom'))){
+			if (!empty($_REQUEST['sort']) && in_array($_REQUEST['sort'], ['author', 'title', 'dateAdded', 'recentlyAdded', 'custom'])){
 				$params['sort'] = $_REQUEST['sort'];
 			}
 			if (!empty($_REQUEST['filter'])){

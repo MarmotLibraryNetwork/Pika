@@ -311,7 +311,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		$html = [];
 		for ($x = 0;$x < count($this->indexResult['response']['docs']);$x++){
 			$current = &$this->indexResult['response']['docs'][$x];
-			$interface->assign('recordIndex', $x + 1);
+			$interface->assign('resultIndex', $x + 1);
 			$record = RecordDriverFactory::initRecordDriver($current);
 			if (!PEAR_Singleton::isError($record)){
 				$interface->assign('recordDriver', $record);
