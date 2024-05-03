@@ -175,6 +175,7 @@ class Library extends DB_DataObject {
 	public $instagramLink;
 	public $goodreadsLink;
 	public $generalContactLink;
+	public $accessibilityEmail;
 
 	public $allowPinReset;
 	public $preventExpiredCardLogin;
@@ -467,6 +468,7 @@ class Library extends DB_DataObject {
 					'instagramLink'      => ['property' => 'instagramLink', 'type' => 'text', 'label' => 'Instagram Link Url', 'description' => 'The url to Instagram (leave blank if the library does not have a Instagram account', 'size' => '40', 'maxLength' => 255, 'hideInLists' => true/*, 'default' => 'Home'*/],
 					'goodreadsLink'      => ['property' => 'goodreadsLink', 'type' => 'text', 'label' => 'GoodReads Link Url', 'description' => 'The url to GoodReads (leave blank if the library does not have a GoodReads account', 'size' => '40', 'maxLength' => 255, 'hideInLists' => true/*, 'default' => 'Home'*/],
 					'generalContactLink' => ['property' => 'generalContactLink', 'type' => 'text', 'label' => 'General Contact Link Url', 'description' => 'The url to a General Contact Page, i.e webform or mailto link', 'size' => '40', 'maxLength' => 255, 'hideInLists' => true/*, 'default' => 'Home'*/],
+					'accessibilityEmail'   => ['property' => 'accessibilityEmail', 'type' => 'multiemail', 'label' => 'Accessibility Report Address', 'description' => 'An e-mail address to receive accessibility issue reports.', 'size' => '80', 'hideInLists' => true, 'default' => 'pika@marmot.org'],
 				],
 			],
 			// defaults should be blank so that icons don't appear on page when the link is not set. plb 1-21-2015

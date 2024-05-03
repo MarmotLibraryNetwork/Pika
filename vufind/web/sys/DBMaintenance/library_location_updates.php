@@ -1299,5 +1299,14 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			],
 		],
 
+		'2024.02.0_addAccessibilityReportEmail' =>[
+				'title'           => 'Add Accessibility Email',
+				'description'           => 'Add Accessibility Report Email to library',
+				'continueOnError' => true,
+				'sql'             => [
+					"ALTER TABLE `library` ADD `accessibilityEmail` VARCHAR(255) DEFAULT '';",
+				],
+		],
+
 	);
 }
