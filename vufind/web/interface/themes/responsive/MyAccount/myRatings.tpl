@@ -13,7 +13,7 @@
 	<span class='availableHoldsNoticePlaceHolder'></span>
 
 	<div class="resulthead">
-		<h1 role="heading" class="h2">{translate text='My Ratings'}</h1>
+		<h1 role="heading" aria-level="1" class="h2">{translate text='My Ratings'}</h1>
 
 		<br>
 
@@ -91,7 +91,7 @@
 				{/if}
 
 			{if $notInterested}
-				<h3>{translate text='Not Interested'}</h3>
+				<h2 class="h3">{translate text='Not Interested'}</h2>
 				<table class="myAccountTable table stripe" id="notInterestedTable">
 					<thead>
 						<tr>
