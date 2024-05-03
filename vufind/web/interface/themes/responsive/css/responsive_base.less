@@ -25,7 +25,8 @@ a, a:visited {
 }
 
 a:focus {
-  outline-color: @focus-ring-color;
+  outline: @focus-ring-color 2px solid;
+
 }
 
 a:hover {
@@ -352,12 +353,12 @@ div.striped {
 
 .btn-group, .btn-group-vertical {
   & > .btn:focus {
-    outline: 5px auto @focus-ring-color !important;
+    outline: 2px solid @focus-ring-color !important;
   }
 }
 
 .browse-thumbnail a:focus img, a:focus img.listResultImage {
-  outline: 5px auto @focus-ring-color!important;
+  outline: 2px solid @focus-ring-color!important;
 }
 
 #vertical-menu-bar .menu-bar-option:focus-within {
@@ -372,14 +373,14 @@ div.striped {
 
 
 a:focus > .header-button {
-  outline: 5px auto @menu-bar-background-color !important;
+  outline: 1px solid @focus-ring-color !important;
 }
 
 #browse-category-picker .jcarousel-control-prev:focus, #browse-category-picker .jcarousel-control-next:focus {
-  outline: 5px auto @focus-ring-color !important;
+  outline: 2px solid @focus-ring-color !important;
 }
 a:focus > #more-browse-results{
-  outline: 5px auto @focus-ring-color !important;
+  outline: 1px solid @focus-ring-color !important;
 }
 // Links have been removed from the jcarousel-pagination display
 //.jcarousel-pagination > a:focus {
@@ -391,14 +392,21 @@ a:focus > #more-browse-results{
 //}
 
 input[type="checkbox"]:focus {
-  outline: 5px auto @menu-bar-background-color !important;
+  outline: 2px solid @focus-ring-color !important;
   //TODO: use focus ring color
+}
+select:focus,input[type="select"]:focus {
+  outline: 1px solid @focus-ring-color !important;
 }
 
 nav.breadcrumbs [aria-current="page"] {
   text-decoration: none !important;
   font-style: italic !important;
   color: #222;
+}
+
+.categoryValue:focus-within{
+  outline: 1px solid @focus-ring-color !important;
 }
 
 // Datatable style overrides
