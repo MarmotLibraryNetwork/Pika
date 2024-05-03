@@ -1,6 +1,24 @@
 {strip}
-<div class="result row">
-	<div class="col-xs-12 col-sm-3">
+<div class="result">
+
+	{* Title row *}
+	<div class="row result-title-row">
+		<div class="col-tn-12">
+			<h2 class="h3">
+				<span class="result-index">{$resultIndex}.</span>&nbsp;
+				{if $myBooking->id}
+				<a href="{$myBooking->linkUrl}" class="result-title notranslate">
+				{/if}
+					{if !$myBooking->title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$myBooking->title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+				{if $myBooking->id}
+				</a>
+				{/if}
+			</h2>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-xs-12 col-sm-3">
 		<div class="row">
 			<div class="selectTitle col-xs-2">
 				{if $myBooking->cancelValue}
@@ -19,19 +37,7 @@
 		</div>
 	</div>
 
-	<div class="col-xs-12 col-sm-9">
-		<div class="row">
-			<div class="col-xs-12">
-				<span class="result-index">{$resultIndex})</span>&nbsp;
-				{if $myBooking->id}
-					<a href="{$myBooking->linkUrl}" class="result-title notranslate">
-				{/if}
-				{if !$myBooking->title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$myBooking->title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
-				{if $myBooking->id}
-					</a>
-				{/if}
-			</div>
-		</div>
+		<div class="col-xs-12 col-sm-9">
 
 		<div class="row">
 			<div class="resultDetails col-xs-12 col-md-9">
@@ -128,7 +134,7 @@
 
 		</div>
 	</div>
-
+	</div>
 
 </div>
 {/strip}

@@ -1,5 +1,31 @@
 {strip}
-	<div class="result row" id="overDriveHold_{$record.overDriveId}">
+	<div class="result" id="overDriveHold_{$record.overDriveId}">
+
+		{* Title *}
+		<div class="row result-title-row">
+			<div class="col-tn-12">
+				<h2 class="h3">
+					<span class="result-index">{$resultIndex}.</span>&nbsp;
+					{if $record.linkUrl}
+						<a href="{$record.linkUrl}" class="result-title notranslate">
+							{*{if !$record.title}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation}{/if}*}
+							{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+						</a>
+					{else}
+						<span class="result-title notranslate">
+							{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+						</span>
+					{/if}
+					{if $record.subTitle}
+						<div class="searchResultSectionInfo">
+							{$record.subTitle|removeTrailingPunctuation}
+						</div>
+					{/if}
+				</h2>
+			</div>
+		</div>
+
+		<div class="row">
 		{* Cover column *}
 		{if $showCovers}
 		<div class="col-xs-4 col-sm-3">
@@ -30,27 +56,6 @@
 		{/if}
 		{* Details Column*}
 		<div class="{if $showCovers}col-xs-8 col-sm-9{else}col-xs-12{/if}">
-			{* Title *}
-			<div class="row">
-				<div class="col-xs-12">
-					<span class="result-index">{$resultIndex})</span>&nbsp;
-					{if $record.linkUrl}
-					<a href="{$record.linkUrl}" class="result-title notranslate">
-						{*{if !$record.title}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation}{/if}*}
-						{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
-					</a>
-					{else}
-						<span class="result-title notranslate">
-							{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
-						</span>
-					{/if}
-					{if $record.subTitle}
-						<div class="searchResultSectionInfo">
-							{$record.subTitle|removeTrailingPunctuation}
-						</div>
-					{/if}
-				</div>
-			</div>
 
 			<div class="row">
 				<div class="resultDetails col-xs-12 col-md-8 col-lg-9">
@@ -142,6 +147,7 @@
 
 				</div>
 			</div>
+		</div>
 		</div>
 	</div>
 {/strip}

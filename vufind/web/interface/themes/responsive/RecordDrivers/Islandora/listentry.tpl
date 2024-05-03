@@ -2,9 +2,23 @@
 	<div id="archive{$jquerySafeId|escape}" class="resultsList" data-order="{$resultIndex}">
 		{* Because colons give css & jquery trouble the Ids from Islandora have : replaced with _ *}
 		{* the data-order attribute is used for user-defined ordering in user lists  *}
-		<a name="record{$summId|escape:"url"}"></a>{* TODO: remove colons from these Ids as well *}
+		<a id="record{$summId|escape:"url"}"></a>{* TODO: remove colons from these Ids as well *}
+
+		{* Title row *}
+		<div class="row result-title-row">
+			<div class="col-tn-12">
+				<h2 class="h3">
+					<span class="result-index">{$resultIndex}.</span>&nbsp;
+					<a href="{$summUrl}" class="result-title notranslate">{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}</a>
+					{if $summTitleStatement}
+						&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|highlight|truncate:180:"..."}
+					{/if}
+				</h2>
+			</div>
+		</div>
+
 		<div class="row">
-			<div class="col-md-1"><input type="checkbox" name="marked" id="favorite_{$summId|escape}" class="form-control-static" value="{$summId|escape}"></div>
+			<div class="col-md-1"><input type="checkbox" name="marked" id="favorite_{$summId|escape}" class="form-control-static" value="{$summId|escape}"  aria-label="Select archive item to delete"></div>
 			{if $showCovers}
 			<div class="col-xs-11 col-sm-3 col-md-3 col-lg-2 text-center">
 				{if $disableCoverArt != 1}
@@ -16,15 +30,6 @@
 			{/if}
 
 			<div class="{if !$showCovers}col-xs-9 col-sm-9 col-md-9 col-lg-10{else}col-xs-6 col-sm-6 col-md-6 col-lg-8{/if}">
-				<div class="row">
-					<div class="col-xs-12">
-						<span class="result-index">{$resultIndex})</span>&nbsp;
-						<a href="{$summUrl}" class="result-title notranslate">{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}</a>
-						{if $summTitleStatement}
-							&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|highlight|truncate:180:"..."}
-						{/if}
-					</div>
-				</div>
 
 				{if $summAuthor}
 					<div class="row">

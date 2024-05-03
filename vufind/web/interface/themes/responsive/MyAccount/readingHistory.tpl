@@ -155,6 +155,26 @@
 
 					{foreach from=$transList item=record name="recordLoop" key=recordKey}
 						<div class="row">
+							<div class="col-tn-12">
+
+						<div class="row result-title-row">
+							<div class="col-xs-12">
+								<h2 class="h3">
+									{if $record.recordId && $record.linkUrl}
+										<a href="{$record.linkUrl}" class="title">{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}</a>
+									{else}
+										{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation}{/if}
+									{/if}
+									{if $record.title2}
+										<div class="searchResultSectionInfo">
+											{$record.title2|removeTrailingPunctuation|truncate:180:"..."|highlight}
+										</div>
+									{/if}
+								</h2>
+							</div>
+						</div>
+
+						<div class="row">
 
 							{* Cover Column *}
 							{if $showCovers}
@@ -184,22 +204,6 @@
 
 							{* Title Details Column *}
 							<div class="{if $showCovers}col-tn-7 col-sm-7{else}col-tn-9 col-sm-9{/if}">
-								<div class="row">
-									<div class="col-xs-12">
-										<strong>
-											{if $record.recordId && $record.linkUrl}
-												<a href="{$record.linkUrl}" class="title">{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}</a>
-											{else}
-												{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation}{/if}
-											{/if}
-											{if $record.title2}
-												<div class="searchResultSectionInfo">
-													{$record.title2|removeTrailingPunctuation|truncate:180:"..."|highlight}
-												</div>
-											{/if}
-										</strong>
-									</div>
-								</div>
 
 								{if $record.author}
 									<div class="row">
@@ -270,6 +274,9 @@
 									</div>
 								</div>
                 {/if}
+							</div>
+						</div>
+
 							</div>
 						</div>
 					{/foreach}

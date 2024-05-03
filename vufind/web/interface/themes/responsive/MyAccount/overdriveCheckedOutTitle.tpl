@@ -34,7 +34,7 @@
 		{* Title *}
 		<div class="row">
 			<div class="col-xs-12">
-				<span class="result-index">{$resultIndex})</span>&nbsp;
+				<span class="result-index">{$resultIndex}.</span>&nbsp;
 				{if $record.linkUrl}
 					<a href="{$record.linkUrl}" class="result-title notranslate">
 						{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}

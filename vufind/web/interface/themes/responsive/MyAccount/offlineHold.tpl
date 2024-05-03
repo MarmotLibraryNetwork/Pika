@@ -1,6 +1,31 @@
 {strip}
 	{* Overall hold *}
-	<div class="result row">
+	<div class="result">
+
+		{* Title row *}
+		<div class="row result-title-row">
+			<div class="col-tn-12">
+				<h2 class="h3">
+					<span class="result-index">{$resultIndex}.</span>&nbsp;
+					{if $record.link}
+						<a href="{$record.link}" class="result-title notranslate">
+							{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+						</a>
+					{else}
+						<span class="result-title notranslate">
+							{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+						</span>
+					{/if}
+					{if $record.title2}
+						<div class="searchResultSectionInfo">
+							{$record.title2|removeTrailingPunctuation|truncate:180:"..."|highlight}
+						</div>
+					{/if}
+				</h2>
+			</div>
+		</div>
+
+		<div class="row">
 		{* Cover column *}
 		{if $showCovers}
 		<div class="col-xs-4 col-sm-3">
@@ -34,26 +59,6 @@
 		{/if}
 		{* Details Column*}
 			<div class="{if $showCovers}col-xs-8 col-sm-9{else}col-xs-12{/if}">
-			{* Title *}
-			<div class="row">
-				<div class="col-xs-12">
-					<span class="result-index">{$resultIndex})</span>&nbsp;
-					{if $record.link}
-						<a href="{$record.link}" class="result-title notranslate">
-							{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
-						</a>
-					{else}
-						<span class="result-title notranslate">
-							{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
-						</span>
-					{/if}
-					{if $record.title2}
-						<div class="searchResultSectionInfo">
-							{$record.title2|removeTrailingPunctuation|truncate:180:"..."|highlight}
-						</div>
-					{/if}
-				</div>
-			</div>
 
 			{* 2 column row to show information and then actions*}
 			<div class="row">
@@ -216,6 +221,7 @@
 *}
 				</div>
 			</div>
+		</div>
 		</div>
 	</div>
 {/strip}

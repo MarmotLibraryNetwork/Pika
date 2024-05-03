@@ -1,6 +1,29 @@
 {strip}
 	<div id="record{$record.source}_{$record.id|escape}" class="result row{if $record.overdue} bg-overdue{/if}">
 
+		{* Title Row *}
+		<div class="row result-title-row">
+			<div class="col-tn-12">
+				<h2 class="h3">
+					<span class="result-index">{$resultIndex}.</span>&nbsp;
+					{if $record.link}
+						<a href="{$record.link}" class="result-title notranslate">
+							{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+						</a>
+					{else}
+						<span class="result-title notranslate">
+							{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+						</span>
+					{/if}
+					{if $record.title2}
+						<div class="searchResultSectionInfo">
+							{$record.title2|removeTrailingPunctuation|truncate:180:"..."|highlight}
+						</div>
+					{/if}
+				</h2>
+			</div>
+		</div>
+
 		{* Cover Column *}
 		{if $showCovers}
 		{*<div class="col-xs-4">*}
@@ -36,26 +59,6 @@
 
 		{* Title Details Column *}
 		<div class="{if $showCovers}col-xs-9 col-sm-8 col-md-9{else}col-xs-11{/if}">
-			{* Title *}
-			<div class="row">
-				<div class="col-xs-12">
-					<span class="result-index">{$resultIndex})</span>&nbsp;
-					{if $record.link}
-						<a href="{$record.link}" class="result-title notranslate">
-							{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
-						</a>
-					{else}
-						<span class="result-title notranslate">
-							{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
-						</span>
-					{/if}
-					{if $record.title2}
-						<div class="searchResultSectionInfo">
-							{$record.title2|removeTrailingPunctuation|truncate:180:"..."|highlight}
-						</div>
-					{/if}
-				</div>
-			</div>
 
 			<div class="row">
 				<div class="resultDetails col-xs-12 col-md-9">

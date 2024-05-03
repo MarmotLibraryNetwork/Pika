@@ -1,10 +1,30 @@
 {strip}
-<div id="record{$summId|escape}" class="resultsList row">
-    {if isset($summExplain)}
-			<div class="hidden" id="scoreExplanationValue{$summId|escape}">{$summExplain}</div>
-    {/if}
+<div id="record{$summId|escape}" class="{*result *}resultsList{* TODO: what's the difference? *}">
 
-    {if $showCovers}
+	{if isset($summExplain)}
+		<div class="hidden" id="scoreExplanationValue{$summId|escape}">{$summExplain}</div>
+	{/if}
+
+	{* Title Row *}
+	<div class="row result-title-row">
+		<div class="col-tn-12">
+			<h2 class="h3">
+				<span class="result-index">{$resultIndex}.</span>&nbsp;
+				<a href="/MyAccount/MyList/{$summShortId}" class="result-title notranslate">
+					{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
+				</a>
+				{if $summTitleStatement}
+					&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|highlight|truncate:180:"..."}
+				{/if}
+				{if isset($summScore)}
+					&nbsp;(<a href="#" onclick="return Pika.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)
+				{/if}
+			</h2>
+		</div>
+	</div>
+
+	<div class="row">
+	{if $showCovers}
 		<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
 			{if $disableCoverArt != 1}
 				<a href="/MyAccount/MyList/{$summShortId}" class="listResultImage">
@@ -21,22 +41,6 @@
 
 
 	<div class="{if !$showCovers}col-xs-12{else}col-xs-9 col-sm-9 col-md-9 col-lg-10{/if}">{* May turn out to be more than one situation to consider here *}
-		{* Title Row *}
-
-		<div class="row">
-			<div class="col-xs-12">
-				<span class="result-index">{$resultIndex})</span>&nbsp;
-				<a href="/MyAccount/MyList/{$summShortId}" class="result-title notranslate">
-					{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
-				</a>
-				{if $summTitleStatement}
-					&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|highlight|truncate:180:"..."}
-				{/if}
-				{if isset($summScore)}
-					&nbsp;(<a href="#" onclick="return Pika.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)
-				{/if}
-			</div>
-		</div>
 
 		{if $summAuthor}
 			<div class="row">
@@ -92,6 +96,7 @@
 		<div class="resultActions row">
 			{include file='List/result-tools.tpl' id=$summId shortId=$shortId module=$summModule summTitle=$summTitle ratingData=$summRating recordUrl=$summUrl}
 		</div>
+	</div>
 	</div>
 </div>
 {/strip}

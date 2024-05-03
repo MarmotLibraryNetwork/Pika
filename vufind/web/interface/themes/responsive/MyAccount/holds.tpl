@@ -6,6 +6,8 @@
 
 		<span class='availableHoldsNoticePlaceHolder'></span>
 
+		<h1 role="heading" aria-level="1" class="h2">Titles on Hold</h1>
+
 		{* Check to see if there is data for the section *}
 		{include file="MyAccount/libraryHoursMessage.tpl"}
 
@@ -19,7 +21,7 @@
 		</p>
 
 		{foreach from=$recordList item=sectionData key=sectionKey}
-			<h3>{if $sectionKey == 'available'}Holds Ready For Pickup{else}Pending Holds{/if}</h3>
+			<h2 class="h3">{if $sectionKey == 'available'}Holds Ready For Pickup{else}Pending Holds{/if}</h2>
 			<p class="alert alert-info">
 				{if $sectionKey == 'available'}
 					{translate text="available hold summary"}
@@ -92,7 +94,7 @@
 		{/foreach}
 	{/if}
 	{if !empty($offlineHolds)}
-		<h3>Offline Holds</h3>
+		<h2 class="h3">Offline Holds</h2>
 		<p class="alert alert-warning">
 			These titles will have a hold placed on them when access to the circulation system is restored.
 		</p>
