@@ -34,8 +34,11 @@ class Help_AJAX extends AJAXHandler {
 			require_once ROOT_DIR . '/sys/Mailer.php';
 			$mail        = new VuFindMailer();
 			$userLibrary = UserAccount::getUserHomeLibrary();
+			$currentLibrary = Library::getActiveLibrary();
 			if (!empty($userLibrary->accessibilityEmail)){
 				$to = $userLibrary->accessibilityEmail;
+			}elseif(!empty($currentLibrary)){
+				$to = $currentLibrary->accessibilityEmail;
 			}elseif (!empty($configArray['Site']['accessibilityEmail'])){
 				$to = $configArray['Site']['accessibilityEmail'];
 			}else{
