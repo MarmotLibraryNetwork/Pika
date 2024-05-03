@@ -18,13 +18,11 @@
  */
 
 
-require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
+require_once ROOT_DIR . '/services/Help/Home.php';
 require_once ROOT_DIR . '/services/Help/AJAX.php';
 
-class AccessibilityReport extends MyAccount {
+class AccessibilityReport extends Action {
 	function launch(){
-
-		global $interface;
 
 			$this->display('accessibilityReportForm.tpl', 'Report Accessibility Issue');
 
