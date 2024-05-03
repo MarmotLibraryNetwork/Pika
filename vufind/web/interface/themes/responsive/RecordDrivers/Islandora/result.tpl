@@ -1,11 +1,30 @@
 {strip}
-<div id="record{if $jquerySafeId}{$jquerySafeId}{*{else}{$summId|escape}*}{/if}" class="resultsList row">
+<div id="record{if $jquerySafeId}{$jquerySafeId}{*{else}{$summId|escape}*}{/if}" class="resultsList">
 	{if isset($summExplain)}
 		<div class="hidden" id="scoreExplanationValue{$jquerySafeId|escape}">
 			<samp style="overflow-wrap: break-word">{$summExplain}</samp>
 		</div>
 	{/if}
 
+	{* Title Row *}
+	<div class="row result-title-row">
+		<div class="col-tn-12">
+			<h2 class="h3">
+			<span class="result-index">{$resultIndex}.</span>&nbsp;
+
+			<a href="{$summUrl}" class="result-title notranslate">{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}</a>
+			{if $summTitleStatement}
+				&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|highlight|truncate:180:"..."}
+			{/if}
+
+			{if isset($summScore)}
+				&nbsp;<small>(<a href="#" onclick="return Pika.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)</small>
+			{/if}
+			</h2>
+		</div>
+	</div>
+
+	<div class="row">
 	{if $showCovers}
 		<div class="col-xs-12 col-sm-3{if !$viewingCombinedResults} col-md-3 col-lg-2{/if} text-center">
 			{*TODO: show covers *}
@@ -18,19 +37,7 @@
 		</div>
 	{/if}
 
-	<div class="{if !$showCovers}col-xs-12 col-sm-12{if !$viewingCombinedResults} col-md-12 col-lg-12{/if}{else}col-xs-12 col-sm-9{if !$viewingCombinedResults} col-md-9 col-lg-10{/if}{/if}col-xs-12 col-sm-9{if !$viewingCombinedResults} col-md-9 col-lg-10{/if}">
-		<div class="row">
-			<div class="col-xs-12">
-				<span class="result-index">{$resultIndex})</span>&nbsp;
-				<a href="{$summUrl}" class="result-title notranslate">{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}</a>
-				{if $summTitleStatement}
-					&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|highlight|truncate:180:"..."}
-				{/if}
-				{if isset($summScore)}
-					&nbsp;(<a href="#" onclick="return Pika.showElementInPopup('Score Explanation', '#scoreExplanationValue{$jquerySafeId|escape}');">{$summScore}</a>)
-				{/if}
-			</div>
-		</div>
+		<div class="{if !$showCovers}col-xs-12 col-sm-12{if !$viewingCombinedResults} col-md-12 col-lg-12{/if}{else}col-xs-12 col-sm-9{if !$viewingCombinedResults} col-md-9 col-lg-10{/if}{/if}col-xs-12 col-sm-9{if !$viewingCombinedResults} col-md-9 col-lg-10{/if}">
 
 		{if $summAuthor}
 			<div class="row">
@@ -96,7 +103,7 @@
 		</div>
 
 	</div>
-
+	</div>
 	{if $summCOinS}<span class="Z3988" title="{$summCOinS|escape}" style="display:none">&nbsp;</span>{/if}
 </div>
 {/strip}

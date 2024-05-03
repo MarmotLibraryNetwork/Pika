@@ -8175,7 +8175,7 @@ a .header-button:visited {
   margin: 0 !important;
 }
 .required-input {
-  color: #EC130E;
+  color: #D32522;
 }
 .btn-danger {
   background: #702C29;
@@ -8406,7 +8406,7 @@ hr.menu {
   left: auto;
 }
 .badge.badge-danger {
-  background: #EC130E;
+  background: #D32522;
 }
 .badge.badge-warning {
   background: #ffc107;
@@ -8493,14 +8493,10 @@ hr.menu {
   margin-left: 4px;
   margin-right: 4px;
 }
-.browse-category:hover {
-  background-color: lightskyblue;
-  color: darkblue;
-}
 .browse-category div {
+  height: 80px;
   color: #320DCE;
   cursor: pointer;
-  height: 80px;
 }
 .browse-category div:focus {
   outline: none;
@@ -8514,39 +8510,30 @@ hr.menu {
 }
 .browse-category.category0 {
   background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
 }
 .browse-category.category1 {
   background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
 }
 .browse-category.category2 {
   background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
 }
 .browse-category.category3 {
   background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
 }
 .browse-category.category4 {
   background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
 }
 .browse-category.category5 {
   background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
 }
 .browse-category.category6 {
   background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
 }
 .browse-category.category7 {
   background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
 }
 .browse-category.category8 {
   background-color: #ffffff;
-  background: linear-gradient(to bottom, #ffffff, #ffffff 82%, #ffffff 83%, #ffffff 84%, #ffffff 88%, #ffffff 89%, #ffffff 90%, #ffffff);
 }
 #selected-browse-label {
   background-color: #fff;
@@ -8909,7 +8896,7 @@ a.browse-thumbnail-sorted.active {
   content: ' \00bb \00a0';
 }
 #myFinesAlert {
-  color: #EC130E;
+  color: #D32522;
   font-weight: bold;
 }
 #account-settings-accordion .panel-body {
@@ -9222,7 +9209,7 @@ a.browse-thumbnail-sorted.active {
 .statusValue.unavailable,
 .statusValue.checkedOut,
 .statusValue.reserve {
-  color: #EC130E;
+  color: #D32522;
 }
 #recordcover {
   position: relative;
@@ -9304,7 +9291,7 @@ a.browse-thumbnail-sorted.active {
   padding: 10px 0 15px;
   margin-left: 5px;
   margin-right: 5px;
-  font-size: 12px;
+  line-height: 1.7;
 }
 .result-label {
   font-weight: bold;
@@ -9361,7 +9348,7 @@ a.browse-thumbnail-sorted.active {
   border-bottom: none;
 }
 .facetValue a .glyphicon-remove-circle {
-  color: #EC130E;
+  color: #D32522;
 }
 .facetValue:first-of-type {
   margin-top: 3px;
@@ -9411,15 +9398,15 @@ a.browse-thumbnail-sorted.active {
   font-size: 12px;
 }
 .replacement-search-info-text {
-  color: #888888;
+  color: #888;
   font-style: normal;
 }
-.result-title {
-  font-weight: bold;
-  font-size: 18px;
+.result-title-row {
+  margin-bottom: 15px;
 }
 .result-index {
   font-size: 18px;
+  padding-right: 15px;
 }
 .result-tools-horizontal {
   margin-top: 6px;
@@ -9490,7 +9477,7 @@ a.browse-thumbnail-sorted.active {
 }
 .related-manifestation-shelf-status.checked_out,
 .related_record_status.checked_out {
-  color: #EC130E;
+  color: #D32522;
 }
 .related-manifestation-shelf-status.isAvailableToOrder,
 .related_record_status.isAvailableToOrder {
