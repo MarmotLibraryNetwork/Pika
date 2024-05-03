@@ -860,6 +860,7 @@ CREATE TABLE `library` (
   `goodreadsLink` varchar(255) DEFAULT NULL,
   `facebookLink` varchar(255) DEFAULT '',
   `generalContactLink` varchar(255) DEFAULT '',
+  'accessibilityEmail' varchar(255) DEFAULT '',
   `allowPinReset` tinyint(1) DEFAULT NULL,
   `additionalLocalBoostFactor` int(11) DEFAULT 1,
   `repeatInOnlineCollection` int(11) DEFAULT 1,

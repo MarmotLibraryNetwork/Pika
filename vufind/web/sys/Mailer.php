@@ -70,7 +70,7 @@ class VuFindMailer {
 	 *
 	 * @return  mixed               PEAR error on error, boolean true otherwise
 	 */
-	public function send($to, $from, $subject, $body, $replyTo = null) {
+	public function send($to, $from, $subject, $body, $replyTo = null, $cc = null) {
 
 		// Validate sender and recipient
 		$validator = new Mail_RFC822();
@@ -95,13 +95,16 @@ class VuFindMailer {
 			$this->logger->info("Overriding From address, using " . $this->settings['fromAddress']);
 			$headers['From'] = $this->settings['fromAddress'];
 			$headers['Reply-To'] = $from;
+
 		}else{
 			$headers['From'] = $from;
 		}
 		if ($replyTo != null){
 			$headers['Reply-To'] = $replyTo;
 		}
-
+		if($cc != null){
+			$headers['CC'] = $cc;
+		}
 		// Get mail object
 		if ($this->settings['host'] != false){
 			$mailFactory = new Mail();
