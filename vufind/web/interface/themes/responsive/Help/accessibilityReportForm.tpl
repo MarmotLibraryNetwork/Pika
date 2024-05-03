@@ -11,7 +11,7 @@
 			<label for="name" class="control-label">Name: <span class="requiredIndicator">*</span></label><input type="text" name="name" id="name" class="required form-control" maxlength="120" size="60" value="{$name}">
 		</div>
 		<div class="form-group">
-			<label for='libraryCardNumber' class="control-label">Library Card Number: </label><input type="text" name="libraryCardNumber" id="libraryCardNumber"  maxlength="120" size="60">
+			<label for='libraryCardNumber' class="control-label">Library Card Number: </label><input type="text" name="libraryCardNumber" id="libraryCardNumber"  maxlength="120" size="60" class="form-control">
 		</div>
 		<div class="form-group">
 			<label for="email" class="control-label">E-mail: <span class="requiredIndicator">*</span></label><input type="text" name="email" id="email" class="required email form-control" maxlength="120" size="60" value="{$email}">
