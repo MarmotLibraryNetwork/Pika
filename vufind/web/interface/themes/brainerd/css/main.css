@@ -8178,7 +8178,7 @@ a .header-button:visited {
   margin: 0 !important;
 }
 .required-input {
-  color: #EC130E;
+  color: #D32522;
 }
 .btn-danger {
   background: #702C29;
@@ -8409,7 +8409,7 @@ hr.menu {
   left: auto;
 }
 .badge.badge-danger {
-  background: #EC130E;
+  background: #D32522;
 }
 .badge.badge-warning {
   background: #ffc107;
@@ -8912,7 +8912,7 @@ a.browse-thumbnail-sorted.active {
   content: ' \00bb \00a0';
 }
 #myFinesAlert {
-  color: #EC130E;
+  color: #D32522;
   font-weight: bold;
 }
 #account-settings-accordion .panel-body {
@@ -9225,7 +9225,7 @@ a.browse-thumbnail-sorted.active {
 .statusValue.unavailable,
 .statusValue.checkedOut,
 .statusValue.reserve {
-  color: #EC130E;
+  color: #D32522;
 }
 #recordcover {
   position: relative;
@@ -9364,7 +9364,7 @@ a.browse-thumbnail-sorted.active {
   border-bottom: none;
 }
 .facetValue a .glyphicon-remove-circle {
-  color: #EC130E;
+  color: #D32522;
 }
 .facetValue:first-of-type {
   margin-top: 3px;
@@ -9493,7 +9493,7 @@ a.browse-thumbnail-sorted.active {
 }
 .related-manifestation-shelf-status.checked_out,
 .related_record_status.checked_out {
-  color: #EC130E;
+  color: #D32522;
 }
 .related-manifestation-shelf-status.isAvailableToOrder,
 .related_record_status.isAvailableToOrder {
