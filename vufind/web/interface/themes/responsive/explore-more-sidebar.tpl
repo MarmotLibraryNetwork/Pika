@@ -40,7 +40,7 @@
 							<li class="relatedTitle">
 								<a href="{$title.link}">
 									<figure class="thumbnail">
-										<img src="{$title.image}" alt="{$title.label|removeTrailingPunctuation|truncate:40:"..."}">
+										<img src="{$title.image}" alt="{* alt text should not duplicate captions *}">
 										<figcaption>{$title.label|removeTrailingPunctuation|truncate:40:"..."}</figcaption>
 									</figure>
 								</a>
@@ -74,7 +74,7 @@
 							<li class="relatedTitle">
 								<a href="{$title.link}">
 									<figure class="thumbnail">
-										<img src="{$title.image}" alt="{$title.label|removeTrailingPunctuation|truncate:40:"..."}">
+										<img src="{$title.image}" alt="{* alt text should not duplicate captions *}">
 										<figcaption>{$title.label|removeTrailingPunctuation|truncate:40:"..."}</figcaption>
 									</figure>
 								</a>
@@ -116,7 +116,7 @@
 					<a href="{$value.link}">
 						{if $value.image}
 							<figure style="text-align: center">
-								<img src="{$value.image}" alt="{$value.label}" class="img-responsive img-thumbnail">
+								<img src="{$value.image}" alt="{if $section.showTitles}{*alt text should not duplicate captions *}{else}{$value.label}{/if}" class="img-responsive img-thumbnail">
 								{if $section.showTitles}
 									<figcaption>
 										{$value.label}

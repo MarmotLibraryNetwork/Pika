@@ -90,7 +90,7 @@
 										<li class="relatedTitle">
 											<a href="{$section.link}">
 												<figure class="thumbnail">
-													<img src="{$section.cover}" alt="{$section.title|removeTrailingPunctuation|truncate:80:"..."}">
+													<img src="{$section.cover}" alt="{* alt text should not duplicate captions *}">
 													<figcaption>{$section.title|removeTrailingPunctuation|truncate:80:"..."}</figcaption>
 												</figure>
 											</a>

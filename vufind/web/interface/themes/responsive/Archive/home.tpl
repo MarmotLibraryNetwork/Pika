@@ -22,7 +22,7 @@
 										<li class="relatedTitle">
 											<a href="{$project.link}">
 												<figure class="thumbnail">
-													<img src="{$project.image}" alt="{$project.title|removeTrailingPunctuation|truncate:80:"..."}|urlencode">
+													<img src="{$project.image}" alt="{* alt text should not duplicate captions *}">
 													<figcaption>{$project.title|removeTrailingPunctuation|truncate:80:"..."}</figcaption>
 												</figure>
 											</a>
@@ -49,7 +49,7 @@
 										<li class="relatedTitle">
 											<a href="{$project.link}">
 												<figure class="thumbnail">
-													<img src="{$project.image}" alt="{$project.title|removeTrailingPunctuation|truncate:80:"..."}|urlencode">
+													<img src="{$project.image}" alt="{* alt text should not duplicate captions *}">
 													<figcaption>{$project.title|removeTrailingPunctuation|truncate:80:"..."}</figcaption>
 												</figure>
 											</a>
@@ -75,7 +75,7 @@
 									<li class="relatedTitle">
 										<a href="{$contentType.link}">
 											<figure class="thumbnail">
-												<img src="{$contentType.image}" alt="{$contentType.title|removeTrailingPunctuation|truncate:80:"..."|urlencode}">
+												<img src="{$contentType.image}" alt="{* alt text should not duplicate captions *}">
 												<figcaption>{$contentType.title|removeTrailingPunctuation|truncate:80:"..."}</figcaption>
 											</figure>
 										</a>
