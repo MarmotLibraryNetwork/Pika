@@ -11,7 +11,7 @@
 				{if ($displayType == 'map' || $displayType == 'mapNoTimeline' || $displayType == 'timeline')}
 					<form action="/Archive/Results">
 						<div class="input-group">
-							<input type="text" name="lookfor" size="30" title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term." autocomplete="off" class="form-control" placeholder="Search this collection">
+							<input type="text" name="lookfor" size="30" title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term." autocomplete="off" class="form-control" placeholder="Search this collection" aria-label="Search this collection">
 							<div class="input-group-btn" id="search-actions">
 								<button class="btn btn-default" type="submit">GO</button>
 							</div>
@@ -22,7 +22,7 @@
 				{elseif $displayType == 'basic'}
 					<form action="/Archive/Results">
 						<div class="input-group">
-							<input type="text" name="lookfor" size="30" title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term." autocomplete="off" class="form-control" placeholder="Search this collection">
+							<input type="text" name="lookfor" size="30" title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term." autocomplete="off" class="form-control" placeholder="Search this collection" aria-label="Search this collection">
 							<div class="input-group-btn" id="search-actions">
 								<button class="btn btn-default" type="submit">GO</button>
 							</div>
@@ -34,7 +34,8 @@
 			</div>
 			<div class="col-sm-4 col-sm-offset-2">
 				{* Display information to sort the results (by date or by title *}
-				<select id="results-sort" name="sort" onchange="Pika.Archive.sort = this.options[this.selectedIndex].value;
+				{* TODO: switch onchange event to make keyboard-user friendly *}
+				<select aria-label="Sort collection by" id="results-sort" name="sort" onchange="Pika.Archive.sort = this.options[this.selectedIndex].value;
 								{if $displayType == 'map'}
 									Pika.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 1);
 								{elseif $displayType == 'mapNoTimeline'}
