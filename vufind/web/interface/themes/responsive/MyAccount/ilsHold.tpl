@@ -34,9 +34,9 @@
 				<div class="selectTitle col-xs-12 col-sm-1">
 					{if $record.cancelable}
 						{if $section == 'available'}
-							<input type="checkbox" name="availableholdselected[]" value="{$record.cancelId}" id="selected{$record.cancelId|escape:"url"}" class="titleSelect{$sectionKey} titleSelect" aria-label="select tile to {translate text='freeze'} or cancel">&nbsp;
+							<input type="checkbox" name="availableholdselected[]" value="{$record.cancelId}" id="selected{$record.cancelId|escape:"url"}" class="titleSelect{$sectionKey} titleSelect" aria-label="select title to {translate text='freeze'} or cancel">&nbsp;
 						{else}
-							<input type="checkbox" name=  "waitingholdselected[]" value="{$record.cancelId}" id="selected{$record.cancelId|escape:"url"}" class="titleSelect{$sectionKey} titleSelect" aria-label="select tile to {translate text='freeze'} or cancel">&nbsp;
+							<input type="checkbox" name=  "waitingholdselected[]" value="{$record.cancelId}" id="selected{$record.cancelId|escape:"url"}" class="titleSelect{$sectionKey} titleSelect" aria-label="select title to {translate text='freeze'} or cancel">&nbsp;
 						{/if}
 					{/if}
 				</div>

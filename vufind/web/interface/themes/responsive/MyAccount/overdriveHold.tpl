@@ -33,9 +33,9 @@
 
 				<div class="selectTitle col-xs-2">
 					{if $section == 'available'}
-						<input type="checkbox" name="availableholdselected[]" value="{$record.userId}~{$record.overDriveId}~{$record.overDriveId}" id="selected{$record.cancelId|escape:"url"}" class="titleSelect{$sectionKey} titleSelect" aria-label="select tile to {translate text='freeze'} or cancel">&nbsp;
+						<input type="checkbox" name="availableholdselected[]" value="{$record.userId}~{$record.overDriveId}~{$record.overDriveId}" id="selected{$record.cancelId|escape:"url"}" class="titleSelect{$sectionKey} titleSelect" aria-label="select title to {translate text='freeze'} or cancel">&nbsp;
 					{else}
-						<input type="checkbox" name="waitingholdselected[]" value="{$record.userId}~overdrive~{$record.overDriveId}" id="selected{$record.cancelId|escape:"url"}" class="titleSelect{$sectionKey} titleSelect" aria-label="select tile to {translate text='freeze'} or cancel">&nbsp;
+						<input type="checkbox" name="waitingholdselected[]" value="{$record.userId}~overdrive~{$record.overDriveId}" id="selected{$record.cancelId|escape:"url"}" class="titleSelect{$sectionKey} titleSelect" aria-label="select title to {translate text='freeze'} or cancel">&nbsp;
 					{/if}
 				</div>
 
