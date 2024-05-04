@@ -6763,7 +6763,7 @@ a:visited {
   color: #4273AC;
 }
 a:focus {
-  outline-color: #E15F15;
+  outline: #E15F15 2px solid;
 }
 a:hover {
   color: #345a87;
@@ -6993,11 +6993,11 @@ div.striped > div:nth-child(odd) {
 }
 .btn-group > .btn:focus,
 .btn-group-vertical > .btn:focus {
-  outline: 5px auto #E15F15 !important;
+  outline: 2px solid #E15F15 !important;
 }
 .browse-thumbnail a:focus img,
 a:focus img.listResultImage {
-  outline: 5px auto #E15F15 !important;
+  outline: 2px solid #E15F15 !important;
 }
 #vertical-menu-bar .menu-bar-option:focus-within {
   border: 2px solid #E15F15 !important;
@@ -7008,22 +7008,29 @@ a:focus img.listResultImage {
   outline: 2px solid white;
 }
 a:focus > .header-button {
-  outline: 5px auto #568ebf !important;
+  outline: 1px solid #E15F15 !important;
 }
 #browse-category-picker .jcarousel-control-prev:focus,
 #browse-category-picker .jcarousel-control-next:focus {
-  outline: 5px auto #E15F15 !important;
+  outline: 2px solid #E15F15 !important;
 }
 a:focus > #more-browse-results {
-  outline: 5px auto #E15F15 !important;
+  outline: 1px solid #E15F15 !important;
 }
 input[type="checkbox"]:focus {
-  outline: 5px auto #568ebf !important;
+  outline: 2px solid #E15F15 !important;
+}
+select:focus,
+input[type="select"]:focus {
+  outline: 1px solid #E15F15 !important;
 }
 nav.breadcrumbs [aria-current="page"] {
   text-decoration: none !important;
   font-style: italic !important;
   color: #222;
+}
+.categoryValue:focus-within {
+  outline: 1px solid #E15F15 !important;
 }
 table.dataTable.display tbody tr.odd > .sorting_1 a,
 table.dataTable.order-column.stripe tbody tr.odd > .sorting_1 a,
@@ -9601,6 +9608,22 @@ a.browse-thumbnail-sorted.active {
   box-shadow: black 2px 2px 3px;
   color: black;
   font-weight: bold;
+}
+@media (min-width: 0) {
+  .bookshelfHelpText {
+    left: 0;
+  }
+}
+@media (min-width: 768px) {
+  .bookshelfHelpText {
+    left: 0;
+  }
+}
+@media (min-width: 992px) {
+  .bookshelfHelpText {
+    left: -4.5em;
+    z-index: 999;
+  }
 }
 .result-value a,
 .facetDetails a,

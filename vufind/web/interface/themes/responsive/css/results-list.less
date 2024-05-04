@@ -401,6 +401,23 @@
   font-weight: bold;
 }
 
+@media (min-width: 0) {
+  .bookshelfHelpText{
+    left:0;
+  }
+}
+@media (min-width: @screen-sm-min) {
+  .bookshelfHelpText{
+    left:0;
+  }
+}
+@media (min-width: @screen-md-min) {
+  .bookshelfHelpText{
+    left: -4.5em;
+    z-index: 999;
+  }
+}
+
 .result-value, /*.series, .novelistSeries,*/ .facetDetails, .solicit-new-materials-request {
   a {
     .link-decorating-mixin;
