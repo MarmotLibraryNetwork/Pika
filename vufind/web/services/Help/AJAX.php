@@ -18,7 +18,8 @@
  */
 
 require_once ROOT_DIR . '/AJAXHandler.php';
-
+require_once ROOT_DIR . '/sys/Pika/Functions.php';
+use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 
 class Help_AJAX extends AJAXHandler {
 	protected $methodsThatRespondWithJSONUnstructured = [
@@ -27,6 +28,8 @@ class Help_AJAX extends AJAXHandler {
 	protected $methodsThatRespondThemselves = [];
 
 	function submitAccessibilityReport(){
+
+
 		global $interface;
 		global $configArray;
 
@@ -70,27 +73,40 @@ class Help_AJAX extends AJAXHandler {
 			$interface->assign('subject', $subject);
 
 			$body = $interface->fetch('Help/accessibilityReportEmail.tpl');
-			$emailResult = $mail->send($to, $sendingAddress, $subject, $body, $patronEmail,$ccAddress);
-			if (PEAR::isError($emailResult)){
-				global $pikaLogger;
-				$pikaLogger->error('Accessibility Report email not sent: ' . $emailResult->getMessage());
-				return [
-					'title'   => "Accessibility Report Not Sent",
-					'message' => "<p>We're sorry, an error occurred while submitting your report.</p>" . $emailResult->getMessage()
-				];
-			}elseif ($emailResult){
-				return [
-					'title'   => "Accessibility Report Sent",
-					'message' => "<p>Your report was sent to our team.</p><p>Thank you for using the catalog.</p>"
-				];
+			if (isset($configArray['ReCaptcha']['privateKey'])){
+				try {
+					$recaptchaValid = recaptchaCheckAnswer();
+				} catch (Exception $e){
+					$recaptchaValid = false;
+				}
 			}else{
-				return [
-					'title'   => "Support Request Not Sent",
-					'message' => "<p>We're sorry, but your request could not be submitted to our support team at this time.</p><p>Please try again later.</p>"
-				];
+				$recaptchaValid = true;
+			}
+			if (!$recaptchaValid){
+				return ['title' => "Accessibility Report Not Sent", 'message' => "<p>The CAPTCHA response was incorrect.</p> <p>Please try again.</p>"];
+			}else{
+				$emailResult = $mail->send($to, $sendingAddress, $subject, $body, $patronEmail, $ccAddress);
+				if (PEAR::isError($emailResult)){
+					global $pikaLogger;
+					$pikaLogger->error('Accessibility Report email not sent: ' . $emailResult->getMessage());
+					return [
+						'title'   => "Accessibility Report Not Sent",
+						'message' => "<p>We're sorry, an error occurred while submitting your report.</p>" . $emailResult->getMessage()
+					];
+				}elseif ($emailResult){
+					return [
+						'title'   => "Accessibility Report Sent",
+						'message' => "<p>Your report was sent to our team.</p><p>Thank you for using the catalog.</p>"
+					];
+				}else{
+					return [
+						'title'   => "Support Request Not Sent",
+						'message' => "<p>We're sorry, but your request could not be submitted to our support team at this time.</p><p>Please try again later.</p>"
+					];
+				}
 			}
 		}else{
-			return false;
+			return ['title'=> "Error", 'message'=>"<p>We're sorry, but your request could not be submitted to our support team at this time.</p><p>Please try again later.</p>"];
 		}
 
 	}

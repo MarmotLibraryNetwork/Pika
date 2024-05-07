@@ -24,6 +24,18 @@
 			<label for="report" class="control-label">Please describe your issue: <span class="required-input" aria-required="true">*</span></label><br>
 			<textarea rows="10" cols="40" name="report" id="report" class="form-control required"></textarea>
 		</div>
+      {if $captcha}
+				<div class="form-group">
+					<div class="col-sm-9 col-sm-offset-3">
+              {$captcha}
+					</div>
+				</div>
+      {/if}
+      {if $captchaMessage}
+				<div class="alert alert-warning">
+            {$captchaMessage}
+				</div>
+      {/if}
       {if $lightbox == false}
 				<div class="form-group">
 					<button class="btn btn-sm btn-primary" onclick='return $("#accessibilityReport").validate()'>Submit</button>
@@ -37,7 +49,7 @@
 			var supportForm = $("#accessibilityReport");
 			supportForm.validate({
 				submitHandler: function () {
-					Pika.submitAccessibilityReport();
+						Pika.submitAccessibilityReport();
 				}
 			});
 		});

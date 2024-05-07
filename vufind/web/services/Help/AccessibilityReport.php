@@ -20,10 +20,17 @@
 
 require_once ROOT_DIR . '/services/Help/Home.php';
 require_once ROOT_DIR . '/services/Help/AJAX.php';
+require_once ROOT_DIR . '/sys/Pika/Functions.php';
+use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 
 class AccessibilityReport extends Action {
 	function launch(){
-
+		global $configArray;
+		global $interface;
+		if (isset($configArray['ReCaptcha']['publicKey'])) {
+			$captchaCode        = recaptchaGetQuestion();
+			$interface->assign('captcha', $captchaCode);
+		}
 			$this->display('accessibilityReportForm.tpl', 'Report Accessibility Issue');
 
 	}
