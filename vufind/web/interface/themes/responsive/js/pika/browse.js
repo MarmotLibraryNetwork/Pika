@@ -19,10 +19,13 @@ Pika.Browse = (function(){
 
 			var browseCategoryCarousel = $("#browse-category-carousel");
 
+
+
 			// connect the browse catalog functions to the jcarousel controls
 			browseCategoryCarousel.on('jcarousel:targetin', 'li', function(){
 				var categoryId = $(this).data('category-id');
 				Pika.Browse.changeBrowseCategory(categoryId);
+
 			});
 
 			if ($('#browse-category-picker .jcarousel-control-prev').css('display') != 'none') {
@@ -31,7 +34,8 @@ Pika.Browse = (function(){
 				// TODO: when disabling the carousel feature is turned into an option, change this code to check that setting.
 
 				// attach jcarousel navigation to clicking on a category
-				browseCategoryCarousel.find('li').click(function(){
+				browseCategoryCarousel.find('li').on('click',function(n){
+					//$(this).trigger('jcarousel:targetin');
 					$("#browse-category-carousel").jcarousel('scroll', $(this));
 				});
 
@@ -56,6 +60,15 @@ Pika.Browse = (function(){
 				});
 			}
 
+		},
+
+		setTabs : function(){
+			//timeout is necessary for carousel to give us the visible items.
+			setTimeout(function(){
+			$('.jcarousel').jcarousel('items').children('button').attr('tabindex','-1');
+			var visible = $('.jcarousel').jcarousel('fullyvisible');
+			visible.children('button').attr('tabindex',"0");
+			}, 100);
 		},
 
 		toggleBrowseMode : function(selectedMode){
@@ -128,13 +141,14 @@ Pika.Browse = (function(){
 			// Set a flag for the results we are currently loading
 			//   so that if the user moves onto another category before we get results, we won't do anything
 			this.loadingCategory = loadingID;
+			Pika.Browse.setTabs();
 			$.getJSON(url, params, function(data){
+
 				if (Pika.Browse.loadingCategory == loadingID) {
 					if (data.success == false) {
 						Pika.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
 					} else {
 						$('.selected-browse-label-search-text').html(data.label); // update label
-
 						Pika.Browse.curPage = 1;
 						Pika.Browse.curCategory = data.textId;
 						Pika.Browse.curSubCategory = data.subCategoryTextId || '';
@@ -161,7 +175,7 @@ Pika.Browse = (function(){
 				//$('.home-page-browse-thumbnails').html('').show();
 			}).done(function() {
 				$('#more-browse-results').removeAttr("style");
-				Pika.Browse.loadingCategory = null;  // done loading category, empty flag
+				Pika.Browse.loadingCategory = null; // done loading category, empty flag
 			});
 			return false;
 		},
