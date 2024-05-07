@@ -2,7 +2,7 @@
 	<form class="form-horizontal" role="form">
 		{if $showRatings}
 		<div class="rateTitle form-group">
-			<label for="rating" class="col-sm-3">Rate the Title</label>
+			<label for="rating{$id}" class="col-sm-3">Rate the Title</label>
 			<div class="col-sm-9">
 				<select name="rating" id="rating{$id}" class="form-control">
 					<option value="-1">{translate text="Select a Rating"}</option>
