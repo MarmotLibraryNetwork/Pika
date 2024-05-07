@@ -8500,20 +8500,27 @@ hr.menu {
   margin-left: 4px;
   margin-right: 4px;
 }
-.browse-category div {
-  height: 80px;
+.browse-category:focus-within {
+  border: 2px solid #E15F15;
+}
+.browse-category button {
   color: #50A647;
   cursor: pointer;
+  background: none;
+  border: 0;
 }
-.browse-category div:focus {
+.browse-category button:focus {
   outline: none;
 }
-.browse-category div:hover {
+.browse-category button:hover {
   text-decoration: underline;
 }
 .browse-category.selected {
   border: 2px solid #ffffff;
   font-size: 33px;
+}
+.browse-category.selected:focus-within {
+  border: #E15F15 2px solid;
 }
 .browse-category.category0 {
   background-color: #ffffff;
