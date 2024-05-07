@@ -1,7 +1,7 @@
 {strip}
 	<div class="row" id="prospectorSection">
 		<div class="col-tn-12 col-sm-4">
-			<img class="center-block" src="{img filename='innReachEncoreLogo.png'}" alt="{$interLibraryLoanName} Logo" style="max-width: 100%">
+			<img class="center-block" src="{img filename='innReachEncoreLogo.png'}" alt="{$innReachEncoreName} Logo" style="max-width: 100%">
 		</div>
 		<div class="col-tn-12 col-sm-8">
 			<h2>In {$innReachEncoreName}</h2>
@@ -13,18 +13,28 @@
 		<div class="row" id="prospectorSearchResultsSection">
 			<div class="col-tn-12">
 
-				<div class="striped">
-					{foreach from=$prospectorResults item=prospectorResult}
-						<div class="result">
-							<div class="resultItemLine1">
-								<a class="title" href='{$prospectorResult.link}' rel="external" onclick="window.open(this.href, 'child'); return false">
-									{$prospectorResult.title}
-								</a>
+				{foreach from=$prospectorResults item=prospectorResult name="recordLoop"}
+
+					<div class="result">
+						<h3 class="h4">
+							<span class="result-index">{$smarty.foreach.recordLoop.iteration}.</span>&nbsp;
+							<a class="result-title notranslate" href="{$prospectorResult.link}" rel="external" target="_blank">
+								{$prospectorResult.title}
+							</a>
+						</h3>
+						{if $prospectorResult.author}
+							<div class="row">
+								<div class="col-tn-12">by {$prospectorResult.author}</div>
 							</div>
-							<div class="resultItemLine2">by {$prospectorResult.author} Published {$prospectorResult.pubDate}</div>
-						</div>
-					{/foreach}
-				</div>
+						{/if}
+						{if $prospectorResult.pubDate}
+							<div class="row">
+								<div class="col-tn-12">Published: {$prospectorResult.pubDate}</div>
+							</div>
+						{/if}
+					</div>
+
+				{/foreach}
 
 			</div>
 		</div>
