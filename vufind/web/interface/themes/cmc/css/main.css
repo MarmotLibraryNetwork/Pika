@@ -9617,7 +9617,7 @@ a.browse-thumbnail-sorted.active {
   position: absolute;
   width: 14.5em;
   left: -4.5em;
-  z-index: 2;
+  z-index: 102;
   background: rgba(222, 224, 64, 0.75);
   border-radius: 5px;
   padding: 1px 5px;
@@ -9625,20 +9625,56 @@ a.browse-thumbnail-sorted.active {
   color: black;
   font-weight: bold;
 }
-@media (min-width: 0) {
+@media (min-width: 0) and (max-width: 479px) {
+  .bookshelfHelpText {
+    left: 1em;
+  }
+  .checkbox-results {
+    position: relative;
+    z-index: 2;
+    width: 20px;
+  }
+  .addToShelf img {
+    min-width: 50px;
+    max-width: 60px;
+    z-index: 2;
+    position: relative;
+    margin-left: -1em;
+    margin-top: 10px;
+  }
+}
+@media (min-width: 480px) and (max-width: 991px) {
   .bookshelfHelpText {
     left: 0;
   }
-}
-@media (min-width: 768px) {
-  .bookshelfHelpText {
-    left: 0;
+  .checkbox-results {
+    position: relative;
+    z-index: 2;
+    width: 20px;
+  }
+  .addToShelf img {
+    min-width: 50px;
+    max-width: 60px;
+    position: relative;
+    margin-left: -1em;
+    margin-top: 10px;
   }
 }
-@media (min-width: 992px) {
+@media (min-width: 992px) and (max-width: 1200px) {
   .bookshelfHelpText {
     left: -4.5em;
-    z-index: 999;
+    z-index: 105;
+  }
+  .addToShelf img {
+    min-width: inherit;
+    max-width: inherit;
+    position: inherit;
+    margin: inherit;
+  }
+  .checkbox-results {
+    position: inherit;
+    z-index: inherit;
+    width: 20px;
   }
 }
 .result-value a,
