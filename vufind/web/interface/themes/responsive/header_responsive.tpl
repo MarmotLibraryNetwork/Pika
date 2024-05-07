@@ -4,7 +4,7 @@
 	{* Logo Div *}
 	{* In mobile view this div is the top div and spans across the screen *}
 	<div class="col-xs-12 col-sm-3 col-md-3 col-lg-3">
-		{if(!empty($logoLink))}
+		{if !empty($logoLink)}
 					<a href="{$logoLink}">
 		{else}
 					<a href="/">
