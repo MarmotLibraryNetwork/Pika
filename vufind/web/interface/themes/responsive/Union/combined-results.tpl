@@ -1,7 +1,5 @@
 {strip}
-	{*<h1 role="heading" aria-level="1" class="h2">
-		{$pageTitleShort}
-	</h1>*}
+	<h1 role="heading" aria-level="1" class="h2">{$pageTitleShort}</h1>
 	<div class="result-head">
 		{* User's viewing mode toggle switch *}
 		{*

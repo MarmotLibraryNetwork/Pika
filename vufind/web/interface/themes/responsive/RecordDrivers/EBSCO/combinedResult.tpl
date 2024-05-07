@@ -1,12 +1,14 @@
 {strip}
 <div id="record{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}" class="resultsList row">
-	<div class="col-xs-12">
+	<div class="col-tn-12">
 		<div class="row">
-			<div class="col-xs-12">
-				<span class="result-index">{$resultIndex})</span>&nbsp;
-				<a href="{$summUrl}" class="result-title notranslate">
-					{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
-				</a>
+			<div class="col-tn-12">
+				<h3 class="h4">
+					<span class="result-index">{$resultIndex}.</span>&nbsp;
+					<a href="{$summUrl}" class="result-title notranslate">
+						{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+					</a>
+				</h3>
 			</div>
 		</div>
 

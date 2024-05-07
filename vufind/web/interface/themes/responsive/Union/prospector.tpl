@@ -1,3 +1,6 @@
+
+{* This template is used by Combined Results searches *}
+
 {foreach from=$prospectorResults item=prospectorResult name="recordLoop"}
 	<div class='result'>
 		<div class='resultsList row'>
@@ -11,13 +14,15 @@
 				</div>
 			{/if *}
 
-			<div class="col-xs-12">
+			<div class="col-tn-12">
 				<div class="row">
-					<div class="col-xs-12">
-						<span class="result-index">{$smarty.foreach.recordLoop.iteration})</span>&nbsp;
-						<a href="{$prospectorResult.link}" class="result-title notranslate">
-							{if !$prospectorResult.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$prospectorResult.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
-						</a>
+					<div class="col-tn-12">
+						<h3 class="h4">
+							<span class="result-index">{$smarty.foreach.recordLoop.iteration}.</span>&nbsp;
+							<a href="{$prospectorResult.link}" class="result-title notranslate">
+								{if !$prospectorResult.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$prospectorResult.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+							</a>
+						</h3>
 					</div>
 				</div>
 

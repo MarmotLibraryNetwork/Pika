@@ -1,16 +1,18 @@
 {strip}
 <div id="record{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}" class="resultsList row">
-	<div class="col-xs-12 col-sm-12">
+	<div class="col-tn-12">
 		<div class="row">
-			<div class="col-xs-12">
-				<span class="result-index">{$resultIndex})</span>&nbsp;
-				<a href="{$summUrl}" class="result-title notranslate">{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}</a>
-				{if $summTitleStatement}
-					&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|highlight|truncate:180:"..."}
-				{/if}
-				{if isset($summScore)}
-					&nbsp;(<a href="#" onclick="return Pika.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)
-				{/if}
+			<div class="col-tn-12">
+				<h3 class="h4">
+					<span class="result-index">{$resultIndex}.</span>&nbsp;
+					<a href="{$summUrl}" class="result-title notranslate">{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}</a>
+					{if $summTitleStatement}
+						&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|highlight|truncate:180:"..."}
+					{/if}
+					{if isset($summScore)}
+						&nbsp;(<a href="#" onclick="return Pika.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)
+					{/if}
+				</h3>
 			</div>
 		</div>
 
