@@ -11,7 +11,7 @@
 					{$newMaterialsRequestSummary}
 				{/if}
 			</div>
-			<form id="materialsRequestForm" action="/MaterialsRequest/Submit" method="post" class="form form-horizontal" role="form">
+			<form id="materialsRequestForm" action="/MaterialsRequest/Submit" method="post" class="form form-horizontal"{* role="form" Assigning form role to html form tags is not neccessary *}>
 				{include file="MaterialsRequest/request-form-fields.tpl"}
 
 				<div class="materialsRequestLoggedInFields" {if !$loggedIn}style="display:none"{/if}>
