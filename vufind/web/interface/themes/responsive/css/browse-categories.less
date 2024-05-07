@@ -20,7 +20,7 @@
   margin-top: 15px;
   margin-bottom: 15px;
   margin-right: -15px;
-  z-index: -1;
+  z-index: -1; // make sure this line is under other content
 }
 
 .browse-label-text {
@@ -28,10 +28,11 @@
   font-size: 22px;
   color: @browse-label-text-color;
   line-height: 5px;
+  //text-transform: capitalize;
   vertical-align: top;
   margin: auto;
   padding: 0 8px;
-  z-index: 2;
+  z-index: 2; // places the text above the line for #browse-label
 }
 
 #browse-category-picker {
