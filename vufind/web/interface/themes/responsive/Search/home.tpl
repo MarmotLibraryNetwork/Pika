@@ -15,9 +15,9 @@
 						<ul>
 							{foreach from=$browseCategories item=browseCategory name="browseCategoryLoop"}
 								<li id="browse-category-{$browseCategory->textId}" class="browse-category category{$smarty.foreach.browseCategoryLoop.index%9}{if (!$selectedBrowseCategory && $smarty.foreach.browseCategoryLoop.index == 0) || $selectedBrowseCategory && $selectedBrowseCategory->textId == $browseCategory->textId} selected{/if}" data-category-id="{$browseCategory->textId}">
-										<div>
+										<button>
 											{$browseCategory->label}
-										</div>
+										</button>
 								</li>
 							{/foreach}
 						</ul>
@@ -97,5 +97,6 @@
 			{else}
 				Pika.Browse.toggleBrowseMode();
 			{/if}
+			Pika.Browse.setTabs();
 	{rdelim});
 </script>
