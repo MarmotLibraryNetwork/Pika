@@ -10488,6 +10488,9 @@ a .header-button:hover {
   padding: 10px 5px 15px;
   font-size: 14px;
 }
-#prospectorSearchResultsPlaceholder {
+#prospectorSearchResultsSection {
   background-color: #F4EAE4;
+}
+#prospectorSearchResultsSection a {
+  color: #3b679a;
 }
