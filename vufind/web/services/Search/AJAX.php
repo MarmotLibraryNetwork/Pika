@@ -271,16 +271,17 @@ class AJAX extends AJAXHandler {
 	}
 
 	function getDplaResults(){
+		$this->setShowCovers(); // Need to set this so that DPLA cover images will be shown
 		require_once ROOT_DIR . '/sys/SearchObject/DPLA.php';
 		$dpla             = new DPLA();
 		$searchTerm       = $_REQUEST['searchTerm'];
 		$results          = $dpla->getDPLAResults($searchTerm);
 		$formattedResults = $dpla->formatResults($results['records']);
 
-		$returnVal = array(
+		$returnVal = [
 			'rawResults'       => $results['records'],
 			'formattedResults' => $formattedResults,
-		);
+		];
 
 		//Format the results
 		return $returnVal;

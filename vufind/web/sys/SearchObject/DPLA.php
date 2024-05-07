@@ -41,7 +41,7 @@ class DPLA {
 
 				//Extract, title, author, source, and the thumbnail
 				foreach ($responseData->docs as $curDoc) {
-					$curResult = array();
+					$curResult = [];
 
 					$curResult['id']           = @$this->getDataForNode($curDoc->id);
 					$curResult['link']         = @$this->getDataForNode($curDoc->isShownAt);
@@ -52,9 +52,12 @@ class DPLA {
 					$curResult['date']         = @$this->getDataForNode($curDoc->sourceResource->date->displayDate);
 					$curResult['description']  = @$this->getDataForNode($curDoc->sourceResource->description);
 					$curResult['dataProvider'] = @$this->getDataForNode($curDoc->dataProvider);
-					$curResult['format']       = @$this->getDataForNode($curDoc->originalRecord->format);
+					//$curResult['format']       = @$this->getDataForNode($curDoc->originalRecord->format);
+//					$curResult['format']       = @implode(',', $this->getDataForNode($curDoc->sourceResource->format));
+					$curResult['format']       = @$this->getDataForNode($curDoc->sourceResource->format);
 					if ($curResult['format'] == "") {
-						$curResult['format'] = @$this->getDataForNode($curDoc->originalRecord->type);
+						//$curResult['format'] = @$this->getDataForNode($curDoc->originalRecord->type);
+						$curResult['format'] = ucfirst(@$this->getDataForNode($curDoc->sourceResource->type));
 					}
 					if ($curResult['format'] == "") {
 						$curResult['format'] = 'Not Provided';
@@ -68,12 +71,12 @@ class DPLA {
 			}
 		}
 
-		return array(
+		return [
 				'firstRecord' => 0,
 				'lastRecord'  => count($results),
 				'resultTotal' => isset($responseData->count) ? $responseData->count : 0,
 				'records'     => $results
-		);
+		];
 	}
 
 	public function getDataForNode($node){
