@@ -366,7 +366,7 @@ necassary *}
 			{elseif $formField->fieldType == 'ageLevel'}
 				{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 				<div class="row form-group">
-					<label class="control-label col-sm-3">{$formField->fieldLabel}: </label>
+					<label for="ageLevel" class="control-label col-sm-3">{$formField->fieldLabel}: </label>
 					<div class="request_detail_field_value col-sm-9">
 						<select name="ageLevel" id="ageLevel" class="form-control">
 							<option value="adult" {if $materialsRequest->ageLevel=='adult'}selected='selected'{/if}>Adult</option>
