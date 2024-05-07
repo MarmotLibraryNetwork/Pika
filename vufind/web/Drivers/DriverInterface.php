@@ -36,7 +36,7 @@ interface DriverInterface
 	public function patronLogin($username, $password, $validatedViaSSO);
 
 	/**
-	 * Specifies Whether or not an ILS has it's own reading history functions we can use
+	 * Specifies Whether an ILS has its own reading history functions we can use
 	 *
 	 * @param $id
 	 * @return int
