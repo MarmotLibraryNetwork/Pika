@@ -6,13 +6,13 @@
 	<form id="emailListForm" class="form form-horizontal">
 		<div class="form-group">
 			<input type="hidden" name="listId" value="{$listId|escape}">
-			<label for="to" class="control-label col-xs-2">{translate text='To'} <span class="requiredIndicator">*</span></label>
+			<label for="to" class="control-label col-xs-2">{translate text='To'} <span class="required-input">*</span></label>
 			<div class="col-xs-10">
 				<input type="text" name="to" id="to" size="40" class="required email form-control" aria-required="true">
 			</div>
 		</div>
 		<div class="form-group">
-			<label for="from" class="control-label col-xs-2">{translate text='From'} <span class="requiredIndicator">*</span></label>
+			<label for="from" class="control-label col-xs-2">{translate text='From'} <span class="required-input">*</span></label>
 			<div class="col-xs-10">
 				<input type="text" name="from" id="from" size="40" class="required email form-control" aria-required="true"{if $from} value="{$from}"{/if}>
 			</div>

@@ -168,12 +168,12 @@ Pika.MaterialsRequest = (function(){
 				$("#acceptCopyrightYes").addClass('required').attr('aria-required', true);
 				$("#copyright").show();
 				$("#supplementalDetails").hide();
-				$("#titleLabel").html("Article Title <span class='requiredIndicator'>*</span>");
+				$("#titleLabel").html("Article Title <span class='required-input'>*</span>");
 			}else{
 				$("#magazineTitle,#acceptCopyrightYes").removeClass('required').attr('aria-required', false);
 				$("#copyright").hide();
 				$("#supplementalDetails").show();
-				$("#titleLabel").html("Title <span class='requiredIndicator'>*</span>");
+				$("#titleLabel").html("Title <span class='required-input'>*</span>");
 			}
 
 		},
