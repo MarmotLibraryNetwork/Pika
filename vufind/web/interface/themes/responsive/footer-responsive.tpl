@@ -2,9 +2,6 @@
 <div class="navbar navbar-static-bottom">
 	<div class="navbar-inner">
 		<div class="row">
-			<div class="col-tn-12 col-sm 2 text-right pull-right" id="ReportAccessibilityIssue" aria-label="report accessibility issue">
-				<a href="/Help/AccessibilityReport" title="issue reporting">Report Accessibility Issue</a>
-			</div>
 			<div class="col-tn-12 col-sm-4 text-right pull-right" id="connect-with-us-info" role="region" aria-label="Contact Information">
 				{include file="contact-info.tpl"}
 			</div>
