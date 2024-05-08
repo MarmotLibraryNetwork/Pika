@@ -69,7 +69,7 @@ trait PatronReadingHistoryOperations {
 	 * Opt out the patron from Reading History within the ILS.
 	 *
 	 * @param  User $patron
-	 * @return boolean $success  Whether or not the opt-out action was successful
+	 * @return boolean $success  Whether the opt-out action was successful
 	 */
 	public abstract function optOutReadingHistory($patron);
 
@@ -77,7 +77,7 @@ trait PatronReadingHistoryOperations {
 	 * Delete all Reading History within the ILS for the patron.
 	 *
 	 * @param  User $patron
-	 * @return boolean $success  Whether or not the delete all action was successful
+	 * @return boolean $success  Whether the delete all action was successful
 	 */
 	// As currently implemented, Pika doesn't delete reading history entries in the ILS
 	//TODO: discuss and document whether we should or not in fact delete reading history in the ILS
