@@ -69,7 +69,7 @@
 					{/if}
 
 					<div id="header-wrapper" class="row">
-						<div id="header-container">
+						<div id="header-container" class="col-tn-12">
 							{include file='header_responsive.tpl'}
 						</div>
 					</div>
