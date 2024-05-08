@@ -1,5 +1,5 @@
 
-<h1 id="pageTitle" role="heading" class="h2">{$shortPageTitle}</h1>
+<h1 id="pageTitle" role="heading" aria-level="1" class="h2">{$shortPageTitle}</h1>
 {if $lastError}
 	<div class="alert alert-danger">
 		{$lastError}

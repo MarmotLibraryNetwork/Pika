@@ -1,5 +1,5 @@
 {strip}
-	<h1 id="pageTitle" role="heading" class="h2">{$shortPageTitle}</h1>
+	<h1 id="pageTitle" role="heading" aria-level="1" class="h2">{$shortPageTitle}</h1>
 	<div class="adminTableRegion">
 		<table class="adminTable table table-striped order-column table-condensed" id="adminTable">
 			<thead>
