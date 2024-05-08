@@ -164,7 +164,7 @@ Pika.MaterialsRequest = (function(){
 			}
 
 			if ((hasSpecialFields && Pika.MaterialsRequest.specialFields[selectedFormat] && Pika.MaterialsRequest.specialFields[selectedFormat].indexOf('Article Field') > -1)){
-				$("#magazineTitle,#acceptCopyrightYes").addClass('required');
+				$("#magazineTitle,#acceptCopyrightYes").addClass('required').attr('aria-required', true);
 				$("#acceptCopyrightYes").addClass('required').attr('aria-required', true);
 				$("#copyright").show();
 				$("#supplementalDetails").hide();
