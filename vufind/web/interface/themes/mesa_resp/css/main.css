@@ -2112,8 +2112,8 @@ fieldset[disabled] .btn-default.active {
 }
 .btn-primary {
   color: #fff;
-  background-color: #0A75E3;
-  border-color: #0968cb;
+  background-color: #336fa3;
+  border-color: #2d6290;
 }
 .btn-primary:hover,
 .btn-primary:focus,
@@ -2121,8 +2121,8 @@ fieldset[disabled] .btn-default.active {
 .btn-primary.active,
 .open .dropdown-toggle.btn-primary {
   color: #fff;
-  background-color: #0861bc;
-  border-color: #064a90;
+  background-color: #295a84;
+  border-color: #1e4261;
 }
 .btn-primary:active,
 .btn-primary.active,
@@ -2144,11 +2144,11 @@ fieldset[disabled] .btn-primary:active,
 .btn-primary.disabled.active,
 .btn-primary[disabled].active,
 fieldset[disabled] .btn-primary.active {
-  background-color: #0A75E3;
-  border-color: #0968cb;
+  background-color: #336fa3;
+  border-color: #2d6290;
 }
 .btn-primary .badge {
-  color: #0A75E3;
+  color: #336fa3;
   background-color: #fff;
 }
 .btn-warning {
@@ -4766,7 +4766,7 @@ a.list-group-item.active:focus .list-group-item-text {
   margin-bottom: 20px;
   background-color: #fff;
   border: 1px solid transparent;
-  border-radius: 4px;
+  border-radius: 0;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
 }
 .panel-body {
@@ -4869,8 +4869,8 @@ a.list-group-item.active:focus .list-group-item-text {
 .panel-heading {
   padding: 10px 15px;
   border-bottom: 1px solid #a1a1a1;
-  border-top-right-radius: 3px;
-  border-top-left-radius: 3px;
+  border-top-right-radius: -1;
+  border-top-left-radius: -1;
 }
 .panel-heading > .dropdown .dropdown-toggle {
   color: inherit;
@@ -4888,12 +4888,12 @@ a.list-group-item.active:focus .list-group-item-text {
   padding: 10px 15px;
   background-color: #f5f5f5;
   border-top: 1px solid #ddd;
-  border-bottom-right-radius: 3px;
-  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: -1;
+  border-bottom-left-radius: -1;
 }
 .panel-group .panel {
   margin-bottom: 0;
-  border-radius: 4px;
+  border-radius: 0;
   overflow: hidden;
 }
 .panel-group .panel + .panel {
@@ -6876,15 +6876,15 @@ body > .container {
   }
 }
 .panel-heading {
-  background-color: #e7e7e7;
+  background-color: #336fa3;
   border: 1px solid #ddd;
 }
 .panel-title {
-  color: #333333;
+  color: #fff;
   text-shadow: 1px 1px #fff;
 }
 .active .panel-heading {
-  background-color: #4dacde;
+  background-color: #336fa3;
 }
 .active .panel-title {
   color: #fff;
@@ -7505,8 +7505,8 @@ fieldset[disabled] .datepicker table tr td.selected.highlighted.active {
 .datepicker table tr td.active,
 .datepicker table tr td.active.highlighted {
   color: #fff;
-  background-color: #0A75E3;
-  border-color: #0968cb;
+  background-color: #336fa3;
+  border-color: #2d6290;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 .datepicker table tr td.active:hover,
@@ -7520,8 +7520,8 @@ fieldset[disabled] .datepicker table tr td.selected.highlighted.active {
 .open .dropdown-toggle.datepicker table tr td.active,
 .open .dropdown-toggle.datepicker table tr td.active.highlighted {
   color: #fff;
-  background-color: #0861bc;
-  border-color: #064a90;
+  background-color: #295a84;
+  border-color: #1e4261;
 }
 .datepicker table tr td.active:active,
 .datepicker table tr td.active.highlighted:active,
@@ -7561,12 +7561,12 @@ fieldset[disabled] .datepicker table tr td.active.highlighted:active,
 .datepicker table tr td.active.highlighted[disabled].active,
 fieldset[disabled] .datepicker table tr td.active.active,
 fieldset[disabled] .datepicker table tr td.active.highlighted.active {
-  background-color: #0A75E3;
-  border-color: #0968cb;
+  background-color: #336fa3;
+  border-color: #2d6290;
 }
 .datepicker table tr td.active .badge,
 .datepicker table tr td.active.highlighted .badge {
-  color: #0A75E3;
+  color: #336fa3;
   background-color: #fff;
 }
 .datepicker table tr td span {
@@ -7594,8 +7594,8 @@ fieldset[disabled] .datepicker table tr td.active.highlighted.active {
 .datepicker table tr td span.active.disabled,
 .datepicker table tr td span.active.disabled:hover {
   color: #fff;
-  background-color: #0A75E3;
-  border-color: #0968cb;
+  background-color: #336fa3;
+  border-color: #2d6290;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 .datepicker table tr td span.active:hover,
@@ -7619,8 +7619,8 @@ fieldset[disabled] .datepicker table tr td.active.highlighted.active {
 .open .dropdown-toggle.datepicker table tr td span.active.disabled,
 .open .dropdown-toggle.datepicker table tr td span.active.disabled:hover {
   color: #fff;
-  background-color: #0861bc;
-  border-color: #064a90;
+  background-color: #295a84;
+  border-color: #1e4261;
 }
 .datepicker table tr td span.active:active,
 .datepicker table tr td span.active:hover:active,
@@ -7696,14 +7696,14 @@ fieldset[disabled] .datepicker table tr td span.active.active,
 fieldset[disabled] .datepicker table tr td span.active:hover.active,
 fieldset[disabled] .datepicker table tr td span.active.disabled.active,
 fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
-  background-color: #0A75E3;
-  border-color: #0968cb;
+  background-color: #336fa3;
+  border-color: #2d6290;
 }
 .datepicker table tr td span.active .badge,
 .datepicker table tr td span.active:hover .badge,
 .datepicker table tr td span.active.disabled .badge,
 .datepicker table tr td span.active.disabled:hover .badge {
-  color: #0A75E3;
+  color: #336fa3;
   background-color: #fff;
 }
 .datepicker table tr td span.old,
@@ -7846,7 +7846,7 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
   height: 0;
 }
 .switch input:checked + .slider {
-  background-color: #0A75E3;
+  background-color: #336fa3;
 }
 .switch input:checked + .slider:before {
   transform: translateX(19px);
@@ -7976,7 +7976,7 @@ a .header-button:visited {
   font-size: 16px;
 }
 #footer-container {
-  border-top: 8px solid #004A8D;
+  border-top: 8px solid #336fa3;
   padding-top: 3px;
 }
 @media screen and (max-width: 767px) {
@@ -8003,7 +8003,7 @@ a .header-button:visited {
   padding: 0 3px 0 3px;
 }
 #navigation-controls {
-  border-top: 8px solid #004A8D;
+  border-top: 8px solid #336fa3;
   background: #fff;
 }
 @media print {
@@ -8033,7 +8033,7 @@ a .header-button:visited {
   float: left;
 }
 #horizontal-menu-bar-container .menu-icon.menu-icon-selected {
-  background-color: #0175E4;
+  background-color: #004A8D;
 }
 #horizontal-menu-bar-container.sticky-menu-bar {
   position: fixed;
@@ -8070,7 +8070,7 @@ a .header-button:visited {
   position: relative;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected {
-  background-color: #0175E4;
+  background-color: #004A8D;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
   color: #FFF;
@@ -8282,14 +8282,14 @@ a .header-button:visited {
   margin-bottom: 0;
 }
 #home-page-login {
-  background-color: #524747;
-  color: #FFF;
+  background-color: #fff;
+  color: #575757;
   font-size: 18px;
   padding: 5px;
   margin-bottom: 5px;
 }
 #home-page-login a {
-  color: #FFF;
+  color: #575757;
 }
 #horizontal-search-wrapper + #content-container #home-page-login {
   margin-top: 5px;
@@ -8457,7 +8457,7 @@ hr.menu {
 .browse-label-text {
   background-color: #fff;
   font-size: 22px;
-  color: #2D5D82;
+  color: #575757;
   line-height: 5px;
   vertical-align: top;
   margin: auto;
@@ -8504,7 +8504,7 @@ hr.menu {
   border: 2px solid #E15F15;
 }
 .browse-category button {
-  color: #fff;
+  color: #575757;
   cursor: pointer;
   background: none;
   border: 0;
@@ -8523,31 +8523,31 @@ hr.menu {
   border: #E15F15 2px solid;
 }
 .browse-category.category0 {
-  background-color: #0B7EB5;
+  background-color: #fff;
 }
 .browse-category.category1 {
-  background-color: #0B7EB5;
+  background-color: #fff;
 }
 .browse-category.category2 {
-  background-color: #0B7EB5;
+  background-color: #fff;
 }
 .browse-category.category3 {
-  background-color: #0B7EB5;
+  background-color: #fff;
 }
 .browse-category.category4 {
-  background-color: #0B7EB5;
+  background-color: #fff;
 }
 .browse-category.category5 {
-  background-color: #0B7EB5;
+  background-color: #fff;
 }
 .browse-category.category6 {
-  background-color: #0B7EB5;
+  background-color: #fff;
 }
 .browse-category.category7 {
-  background-color: #0B7EB5;
+  background-color: #fff;
 }
 .browse-category.category8 {
-  background-color: #0B7EB5;
+  background-color: #fff;
 }
 #selected-browse-label {
   background-color: #fff;
@@ -8881,7 +8881,7 @@ a.browse-thumbnail-sorted.active {
   border-radius: 3px;
 }
 #more-browse-results {
-  background-color: #e6e6e6;
+  background-color: #fff;
   color: #c7c9ca;
   text-align: center;
   padding: 2px;
@@ -8901,7 +8901,7 @@ a.browse-thumbnail-sorted.active {
 }
 #browse-sub-category-menu button.selected {
   color: #fff;
-  background-color: #0B7EB5;
+  background-color: #336fa3;
 }
 #browse-sub-category-menu button:focus {
   outline: none;
@@ -8942,7 +8942,7 @@ a.browse-thumbnail-sorted.active {
 }
 #contactUpdateForm .btn-group .btn-default:has(input[type="radio"]:checked),
 #overdrive-lending-options .btn-group .btn-default:has(input[type="radio"]:checked) {
-  background-color: #0A75E3;
+  background-color: #336fa3;
   color: #fff;
 }
 #contactUpdateForm .btn-group .btn-default:focus-within,
@@ -9375,7 +9375,7 @@ a.browse-thumbnail-sorted.active {
 }
 .sidebar-label {
   text-align: center;
-  background-color: #414141;
+  background-color: #336fa3;
   color: #FFF;
   padding: 3px 0;
   margin-top: 20px;
@@ -9800,7 +9800,7 @@ a.browse-thumbnail-sorted.active {
   font-size: 16px;
 }
 #sidebar-content {
-  background-color: #f8f8f8;
+  background-color: #fff;
 }
 @media (max-width: 767px) {
   #sidebar-content {
@@ -10367,9 +10367,6 @@ a .header-button:hover {
 a:visited .header-button {
   color: #fff !important;
 }
-#browse-sub-category-menu button.selected {
-  background-color: #336fa3;
-}
 .breadcrumb {
   border-radius: 4px;
   list-style: none outside none;
@@ -10378,28 +10375,20 @@ a:visited .header-button {
 }
 #horizontal-search-box {
   padding: 9px 0;
-  margin-top: 20px;
 }
 #header-logo {
   padding: 0 10px 0 0;
+}
+#header-links {
+  margin-bottom: 15px;
 }
 .header-link-wrapper a {
   font-size: 18px;
   color: #336fa3;
 }
-/*********browse carousel************/
 .browse-label-text {
   background-color: #FFF;
-  color: #575757;
   font-size: 22px;
-  line-height: 5px;
-  margin: auto;
-  padding: 0 8px;
-  vertical-align: top;
-}
-#home-page-browse-header {
-  background-color: #FFF;
-  padding-bottom: 15px;
 }
 #browse-label {
   height: 3px;
@@ -10407,9 +10396,6 @@ a:visited .header-button {
   margin-right: -15px;
   margin-top: 20px;
   background-color: #FFF;
-}
-.browse-label-text {
-  font-size: 0;
 }
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
@@ -10420,81 +10406,65 @@ a:visited .header-button {
   text-shadow: none;
 }
 .jcarousel-pagination a {
-  background: none repeat scroll 0 0 #FFF;
+  color: #575757;
+  background: #fff;
   border-radius: 10px;
   box-shadow: 0 0 2px #575757;
-  color: #575757;
   display: inline-block;
   font-size: 11px;
-  height: 10px;
   line-height: 10px;
   margin-right: 7px;
   text-decoration: none;
   text-indent: -9999px;
+  height: 10px;
   width: 10px;
 }
-.jcarousel-pagination a.active {
-  background: none repeat scroll 0 0 #575757;
+.jcarousel-pagination a a.active {
+  background: #575757;
   box-shadow: 0 0 2px #575757;
-  color: #FFF;
+  color: #fff;
   opacity: 1;
 }
-.browse-category.category0,
-.browse-category.category1,
-.browse-category.category2,
-.browse-category.category3,
-.browse-category.category4,
-.browse-category.category5,
-.browse-category.category6,
-.browse-category.category7,
-.browse-category.category8 {
-  background: #FFF;
-}
-.browse-category div {
-  color: #575757;
+.browse-category button {
   text-shadow: none;
-  display: table-cell;
   line-height: 1;
   vertical-align: middle;
-}
-/*  center vertically & horizontally category titles within the carousel */
-.browse-category div {
   height: auto;
-  /* overwrite height: 80px */
   display: block;
-  /* looks like display:flex works too. */
   margin-left: auto;
   margin-right: auto;
 }
 .jcarousel li {
   display: flex;
   align-items: center;
-  display: -webkit-flex;
-  /* Safari */
-  -webkit-align-items: center;
-  /* Safari 7.0+ */
 }
 #more-browse-results {
-  background-color: #FFF;
+  border: 1px solid #c7c9ca;
 }
 .browse-category.selected {
   border: 2px solid #BBD4E3;
 }
-/************************Search Sidebar*******************************/
+#home-page-login {
+  text-shadow: none;
+  margin-top: 25px;
+}
+#home-page-login a {
+  font-size: 110%;
+}
 .sidebar-button {
   font-weight: bold;
   margin-bottom: 0;
 }
-#home-page-home-button {
-  background: #336fa3;
+#home-page-library-section {
+  background-color: #FFF;
+  height: 100%;
+  padding: 15px 0;
+}
+#home-page-hours-locations {
+  margin-bottom: 1px;
 }
 #home-page-search-label {
   text-shadow: none;
-}
-#home-page-search {
-  background: none repeat scroll 0 0 #336fa3;
-  margin-bottom: 5px;
-  padding: 20px 0 10px;
 }
 #searchSource {
   background-color: #336fa3;
@@ -10503,32 +10473,9 @@ a:visited .header-button {
   padding: 5px 0;
   width: 90%;
 }
-#home-page-login {
-  text-shadow: none;
-  background-color: #FFF;
-  font-size: 18px;
-  margin-bottom: 5px;
-  margin-top: 25px;
-  padding: 5px;
-}
-#home-page-login a {
-  color: #575757;
-  font-size: 110%;
-}
-.panel-group .panel {
-  border-radius: 0;
-  margin-bottom: 0;
-  overflow: hidden;
-}
-.sidebar-links .active .panel-heading,
-#home-page-hours-locations,
-#similar-authors-label,
 .sidebar-links .panel-heading,
-#narrow-search-label,
-#remove-search-label,
-#results-sort-label,
 .exploreMoreTitle {
-  background: none repeat scroll 0 0 #336fa3;
+  background: #336fa3;
   border: none;
 }
 #explore-more-header {
@@ -10555,20 +10502,19 @@ a:visited .header-button {
   border-bottom: medium none;
   padding: 5px 15px;
 }
-.panel-heading {
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
+.sidebar-links .panel-body a:hover:not(.btn),
+.sidebar-links .panel-body a:not(.btn),
+.sidebar-links .panel-body a:visited:not(.btn) {
+  color: #336fa3;
 }
-#sidebar-content {
-  background-color: #FFF;
+.panel-default .panel-title {
+  color: #333333;
+}
+.panel-default.active .panel-title {
+  color: #fff;
 }
 hr.menu {
   border: none;
-}
-#home-page-library-section {
-  background-color: #FFF;
-  height: 100%;
-  padding: 15px 0;
 }
 .facetValue {
   color: #575757;
@@ -10579,10 +10525,6 @@ hr.menu {
   border-bottom: none;
   text-shadow: none;
 }
-#home-page-hours-locations {
-  margin-bottom: 1px;
-}
-/********Item Page*******/
 #more-details-accordion .panel-body {
   background-color: #FFF;
   color: #6B6B6B;
@@ -10593,35 +10535,10 @@ hr.menu {
   font-size: 16px;
   text-shadow: none;
 }
-#more-details-accordion .active .panel-title {
-  text-shadow: none;
-}
-#more-details-accordion .panel-heading {
-  background: #336fa3;
-}
-#more-details-accordion .active .panel-heading {
-  background: #336fa3;
-}
 #list-morelikethis.titleScroller,
 #list-series.titleScroller {
   border: medium none;
 }
-/*********footer************/
-#footer-container {
-  border-top: 8px solid #336fa3;
-  padding-top: 3px;
-}
-/*********scroller************/
 .scrollerTitle.selected {
   border: 3px solid #336fa3;
-}
-/*********results************/
-.btn-primary {
-  color: #FFF;
-  background-color: #336fa3;
-}
-.sidebar-links .panel-body a:hover:not(.btn),
-.sidebar-links .panel-body a:not(.btn),
-.sidebar-links .panel-body a:visited:not(.btn) {
-  color: #336fa3;
 }
