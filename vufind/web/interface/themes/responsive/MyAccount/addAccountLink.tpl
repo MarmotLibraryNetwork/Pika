@@ -1,6 +1,6 @@
 {strip}
 <p class="alert alert-danger" id="loginError" style="display: none"></p>
-<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal" role="form" onsubmit="return Pika.Account.processAjaxLogin()">
+<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal"{* role="form" Assigning form role to html form tags is not neccessary *} onsubmit="return Pika.Account.processAjaxLogin()">
 	<div id="missingLoginPrompt" style="display: none">Please enter both {$usernameLabel} and {$passwordLabel}.</div>
 	<div id ='loginUsernameRow' class='form-group'>
 		<label for="username" class='control-label col-xs-12 col-sm-4'>{$usernameLabel}:</label>

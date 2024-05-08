@@ -1,6 +1,6 @@
 {strip}
 	{if count($libraryLocations) > 1}
-	<form role="form">
+	<form{* role="form" Assigning form role to html form tags is not neccessary *}>
 		<div class="form-group">
 			<label for="selectLibrary">Select a Location</label>
 			<select name="selectLibrary" id="selectLibrary" onchange="return Pika.showLocationHoursAndMap();" class="form-control">

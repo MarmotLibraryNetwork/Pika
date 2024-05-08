@@ -1,5 +1,5 @@
 {strip}
-	<form class="form-horizontal" role="form">
+	<form class="form-horizontal"{* role="form" Assigning form role to html form tags is not neccessary *}>
 		{if $showRatings}
 		<div class="rateTitle form-group">
 			<label for="rating{$id}" class="col-sm-3">Rate the Title</label>

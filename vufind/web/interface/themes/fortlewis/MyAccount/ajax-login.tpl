@@ -19,7 +19,7 @@
 			</p>
 		</div>
 	{else}
-		<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal" role="form" onsubmit="return Pika.Account.processAjaxLogin()">
+		<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal"{* role="form" Assigning form role to html form tags is not neccessary *} onsubmit="return Pika.Account.processAjaxLogin()">
 			<div class="row">
 
 				<div class="col-sm-6">
