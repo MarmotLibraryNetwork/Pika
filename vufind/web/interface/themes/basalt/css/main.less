@@ -119,31 +119,27 @@ a .header-button {
   margin-top: 40px;
 }
 
-#home-page-browse-header {
-  background: #fff;
-}
 
 .browse-label-text {
-  background: #fff;
-  color: #f99d25;
   letter-spacing: .25em;
   text-decoration: underline;
 }
 
-.browse-category div {
-  color: #65656a;
-  border: none;
+.browse-category button {
+  //color: #65656a;
+  //border: none;
+
+  &:hover {
+    color: #fdb525;
+    text-decoration: none;
+    //border: none;
+  }
+
+  &.selected {
+    color: #fdb525;
+  }
 }
 
-.browse-category div:hover {
-  color: #fdb525;
-  text-decoration: none;
-  border: none;
-}
-
-.browse-category div.selected {
-  color: #fdb525;
-}
 
 li[id^="browse-category"], li[class^="browse-category category"] {
   text-shadow: none;
@@ -175,34 +171,22 @@ li[class$="selected"] {
   border: none !important;
 }
 
-#selected-browse-label {
-  background: linear-gradient(to bottom, #fff, #fff 44%, #00afaa 45%, #00afaa 55%, #fff 56%);
-}
-
-.selected-browse-label-search a {
-  color: #65656a;
-}
 
 // FOOTER //
 #more-browse-results {
-  background: #fff;
+  border: 1px solid #c7c9ca;
 }
 
-#footer-container {
-  border-top: 8px solid #00afaa;
-}
 
 //  GENERAL  //
-.breadcrumbs {
-  background: #fff;
-}
-
 .h2, h2 {
   color: #f99d25;
 }
 
-.browse-thumbnail:hover {
-  box-shadow: 5px 5px 10px #DCDCDC;
+.browse-thumbnail, .browse-list {
+  &:hover {
+    box-shadow: 5px 5px 10px #DCDCDC;
+  }
 }
 
 .panel {
@@ -210,7 +194,7 @@ li[class$="selected"] {
 }
 
 #more-details-accordion .panel-title {
-  color: #65656a !important;
+  color: #65656a;
 }
 
 #more-details-accordion .panel-heading {
@@ -223,7 +207,7 @@ li[class$="selected"] {
 }
 
 #more-details-accordion .active .panel-title {
-  color: #fff !important;
+  color: #fff;
 }
 
 #more-details-accordion .panel-body {
@@ -267,9 +251,9 @@ div.header-link-wrapper {
 
 a.library-header-link {
   color: #65656a !important;
-  text-transform: normal;
+  text-transform: none;
   letter-spacing: .1em;
-  font-weight: normal !important;
+  font-weight: normal;
 }
 
 a.library-header-link:hover {
