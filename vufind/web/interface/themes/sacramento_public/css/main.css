@@ -8511,6 +8511,7 @@ hr.menu {
   border: 0;
   height: 100%;
   width: 100%;
+  padding-inline: 0;
 }
 #browse-category-carousel .browse-category button:focus {
   outline: none;
@@ -10416,6 +10417,7 @@ a#headerLogoutLink > .header-button:hover {
 #browse-category-carousel .browse-category button {
   height: 100%;
   width: 100%;
+  padding-inline: 0;
 }
 #browse-category-carousel .browse-category button:focus {
   height: 100%;

@@ -8511,6 +8511,7 @@ hr.menu {
   border: 0;
   height: 100%;
   width: 100%;
+  padding-inline: 0;
 }
 #browse-category-carousel .browse-category button:focus {
   outline: none;
@@ -10409,6 +10410,7 @@ div#more-details-accordion.panel-group .panel a .panel-title {
 #browse-category-carousel .browse-category button {
   height: 100%;
   width: 100%;
+  padding-inline: 0;
 }
 #browse-category-carousel .browse-category button:focus {
   height: 100%;
