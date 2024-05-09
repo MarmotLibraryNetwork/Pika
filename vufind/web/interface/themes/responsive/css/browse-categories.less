@@ -66,7 +66,7 @@
   }
 }
 
-.browse-category {
+#browse-category-carousel .browse-category {
   font-size: @browse-category-font-size;
   padding: 10px;
   text-shadow: 1px 1px @gray;
@@ -74,6 +74,7 @@
   height: 100px;
   margin-left: 4px;
   margin-right: 4px;
+  vertical-align: unset;
   //border-radius: @browse-category-border-radius; //TODO: turn on
   &:focus-within{
     border: 2px solid @focus-ring-color;
@@ -83,6 +84,8 @@
     cursor: pointer;
     background: none;
     border: 0;
+    height: 100%;
+    width:100%;
     &:focus {
       outline: none;
     }
@@ -183,9 +186,17 @@
     font-weight: 600;
     border: 1px solid @border-gray;
 
+    &:focus-within{
+      border: 1px solid @focus-ring-color;
+    }
+
     button {
-      height: @height;
-      padding: 15px;
+      height: 100%;
+      width:100%;
+
+      &:focus{
+        height:100%;
+      }
 
       &:hover {
         text-decoration: none;
@@ -194,6 +205,10 @@
 
     &.selected {
       border: 1px solid @selectedCategoryBorderColor;
+
+      &:focus-within{
+        border: 1px solid @focus-ring-color;
+      }
 
       button {
         background: @selectedCategoryColor;
@@ -627,9 +642,9 @@
   }
 }
 
-.browse-category(@selectedCategoryColor, @browse-category-text-color: #FFF) {
+.browse-category(@selectedCategoryColor, @browse-category-text-color: #FFF, @button-vAlign: top, @button-height:auto) {
   // the category text
-  .browse-category {
+  #browse-category-carousel .browse-category {
     padding-top: 20px; // extra padding on top to center text
     height: 120px;
 
@@ -641,6 +656,8 @@
       font-weight: 500;
       background:none;
       border:0;
+      height: @button-height;
+      vertical-align: @button-vAlign;
 
       &:focus {
         outline:none// hide outlining of clicked category
