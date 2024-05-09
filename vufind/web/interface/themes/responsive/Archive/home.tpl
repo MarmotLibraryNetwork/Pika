@@ -13,8 +13,8 @@
 					<div class="col-xs-12">
 						<h2 class="h3"><a href="{$libraryProjectsUrl}">Collections from {$archiveName}</a></h2>
 						<div id="relatedProjectScroller" class="jcarousel-wrapper">
-							<a href="#" class="jcarousel-control-prev"><i class="glyphicon glyphicon-chevron-left"></i></a>
-							<a href="#" class="jcarousel-control-next"><i class="glyphicon glyphicon-chevron-right"></i></a>
+							<a href="#" class="jcarousel-control-prev" aria-label="Previous Collection"><i class="glyphicon glyphicon-chevron-left"></i></a>
+							<a href="#" class="jcarousel-control-next" aria-label="Next Collection"><i class="glyphicon glyphicon-chevron-right"></i></a>
 
 							<div class="relatedTitlesContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
 								<ul>
@@ -40,8 +40,8 @@
 					<div class="col-tn-12">
 						<h2 class="h3"><a href="{$otherProjectsUrl}">{if count($relatedProjectsLibrary) > 0}More collections{else}Collections{/if} from the archive</a></h2>
 						<div id="relatedProjectOtherScroller" class="jcarousel-wrapper">
-							<a href="#" class="jcarousel-control-prev"><i class="glyphicon glyphicon-chevron-left"></i></a>
-							<a href="#" class="jcarousel-control-next"><i class="glyphicon glyphicon-chevron-right"></i></a>
+							<a href="#" class="jcarousel-control-prev" aria-label="Previous Collection"><i class="glyphicon glyphicon-chevron-left"></i></a>
+							<a href="#" class="jcarousel-control-next" aria-label="Next Collection"><i class="glyphicon glyphicon-chevron-right"></i></a>
 
 							<div class="relatedTitlesContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
 								<ul>
@@ -66,8 +66,8 @@
 				<div class="col-tn-12">
 					<h2 class="h3">Types of materials in the archive</h2>
 					<div id="relatedContentTypesContainer" class="jcarousel-wrapper">
-						<a href="#" class="jcarousel-control-prev"><i class="glyphicon glyphicon-chevron-left"></i></a>
-						<a href="#" class="jcarousel-control-next"><i class="glyphicon glyphicon-chevron-right"></i></a>
+						<a href="#" class="jcarousel-control-prev" aria-label="Previous Category"><i class="glyphicon glyphicon-chevron-left"></i></a>
+						<a href="#" class="jcarousel-control-next" aria-label="Next Category"><i class="glyphicon glyphicon-chevron-right"></i></a>
 
 						<div class="relatedTitlesContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
 							<ul>

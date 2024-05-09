@@ -79,8 +79,8 @@
 			<div class="row">
 				<div class="col-xs-12 text-center">
 					<div class="jcarousel-wrapper" id="book-sections">
-						<a href="#" class="jcarousel-control-prev"{* data-target="-=1"*}><i class="glyphicon glyphicon-chevron-left"></i></a>
-						<a href="#" class="jcarousel-control-next"{* data-target="+=1"*}><i class="glyphicon glyphicon-chevron-right"></i></a>
+						<a href="#" class="jcarousel-control-prev" aria-label="Previous Page"><i class="glyphicon glyphicon-chevron-left"></i></a>
+						<a href="#" class="jcarousel-control-next" aria-label="Next Page"><i class="glyphicon glyphicon-chevron-right"></i></a>
 
 						<div class="relatedTitlesContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
 							<ul>
