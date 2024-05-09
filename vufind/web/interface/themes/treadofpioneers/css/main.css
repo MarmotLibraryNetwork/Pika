@@ -7930,6 +7930,7 @@ body {
 }
 #header-logo {
   padding: 10px 10px 0 0;
+  max-height: 6em;
 }
 @media (max-width: 767px) {
   #header-logo {
