@@ -14,13 +14,37 @@
   background-color: @home-page-browse-content-background-color;
 }
 
+// Original browse category label styling of a background center-line
+.browse-label-center-line(@browse-label-line-color: #bbd4e3; @browse-label-text-color: #2D5D82){
 #browse-label {
   height: 5px;
   background-color: @browse-label-line-color;
   margin-top: 15px;
   margin-bottom: 15px;
   margin-right: -15px;
-  z-index: -1; // make sure this line is under other content
+    z-index: -1; // make sure this line is under the content of browse-label-text
+  }
+
+  .browse-label-text {
+    background-color: @browse-header-background-color;
+    font-size: 22px;
+    color: @browse-label-text-color;
+    line-height: 5px;
+    text-transform: uppercase;
+    vertical-align: top;
+    margin: auto;
+    padding: 0 8px;
+    z-index: 2; // places the text above the line for #browse-label
+  }
+}
+
+#browse-label {
+  height: 5px;
+  background-color: @browse-label-line-color;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  margin-right: -15px;
+  z-index: -1; // make sure this line is under the content of browse-label-text
 }
 
 .browse-label-text {
@@ -631,9 +655,9 @@
   .hide-selected-browse-label-background;
 }
 
-#browse-label(@browse-label-text-color, @browse-label-bgcolor: #FFF){
+#anythink-browse-label(@browse-label-text-color, @browse-label-bg-color: #fff){
   #browse-label {
-    background-color: @browse-label-bgcolor;
+    background-color: @browse-label-bg-color;
     border-bottom: 1px solid @browse-label-text-color;
     margin: 25px 0 15px;
     height: auto;
@@ -651,7 +675,6 @@
     height: 120px;
 
     button {
-      //color: @browse-label-text-color;
       text-shadow: none;
       text-transform: uppercase;
       font-size: large;
@@ -736,12 +759,12 @@
   }
 }
 
-#anythink-selected-browse-label(@browse-label-text-color) {
+#anythink-selected-browse-label(@bg-line-color) {
   #selected-browse-label {
     color: black; //TODO: set color
     background: none; //override line through label
     padding: 20px 0;
-    border-top: 1px solid @browse-label-text-color;
+    border-top: 1px solid @bg-line-color;
   }
 
   .selected-browse-label-search {
