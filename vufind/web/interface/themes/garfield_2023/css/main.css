@@ -10359,6 +10359,7 @@ fieldset[disabled] .btn-masquerade.active {
   width: 200px;
   padding-top: 20px;
   transition: all 0.3s ease-in-out;
+  margin-top: initial;
 }
 .loginOptions > a#headerLoginLink:hover,
 .logoutOptions > .hidden-xs:hover {
