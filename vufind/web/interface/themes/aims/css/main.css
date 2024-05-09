@@ -8910,7 +8910,7 @@ a.browse-thumbnail-sorted.active {
   background-color: #da1418;
 }
 #browse-sub-category-menu button:focus {
-  outline: none;
+  outline: #E15F15 solid 2px;
 }
 .selected-browse-sub-category-label-search-text::before {
   content: ' \00bb \00a0';
