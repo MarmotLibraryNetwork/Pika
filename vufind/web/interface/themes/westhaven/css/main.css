@@ -10416,14 +10416,14 @@ a .header-button:hover {
   padding-top: 20px;
   height: 120px;
 }
-.browse-category div {
+.browse-category button {
   color: #000;
   text-shadow: none;
   text-transform: uppercase;
   font-size: large;
   font-weight: 500;
 }
-.browse-category div:focus {
+.browse-category button:focus {
   outline: none;
 }
 .browse-category.selected {

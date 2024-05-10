@@ -10366,12 +10366,12 @@ a .header-button:hover {
 #browse-label .browse-label-text {
   font-weight: 600;
 }
-.browse-category div {
+.browse-category button {
   text-shadow: none;
   font-size: 18px;
   font-weight: 500;
 }
-.browse-category div:focus {
+.browse-category button:focus {
   outline: none;
 }
 .browse-category.selected {

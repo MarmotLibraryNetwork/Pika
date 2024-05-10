@@ -10405,7 +10405,7 @@ a .header-button:hover {
 .selected-browse-label-search a {
   color: #205724;
 }
-.browse-category div {
+.browse-category button {
   color: #40ae49;
 }
 .browse-category {

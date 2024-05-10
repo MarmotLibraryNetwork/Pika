@@ -10417,7 +10417,7 @@ a .header-button:hover {
   height: inherit;
   max-height: 100px;
 }
-.browse-category div {
+.browse-category button {
   height: 55px;
 }
 .browse-category.selected {

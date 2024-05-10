@@ -10386,12 +10386,12 @@ a .header-button:hover {
 .jcarousel-control-prev {
   box-shadow: none;
 }
-.browse-category div {
+.browse-category button {
   color: #646510;
   text-shadow: none;
   font-size: 20px;
 }
-.browse-category div:focus {
+.browse-category button:focus {
   outline: none;
 }
 .browse-category.selected {

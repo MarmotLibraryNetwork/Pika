@@ -10379,13 +10379,13 @@ a .header-button:hover {
   height: 120px;
   border: none !important;
 }
-.browse-category div {
+.browse-category button {
   text-shadow: none;
   text-transform: uppercase;
   font-size: large;
   font-weight: 500;
 }
-.browse-category div:focus {
+.browse-category button:focus {
   outline: none;
 }
 .browse-category.selected {
