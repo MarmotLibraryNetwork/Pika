@@ -48,8 +48,8 @@
 			<div class="exploreMoreContainer">
 				<div class="jcarousel-wrapper">
 					{* Scrolling Buttons *}
-					<a href="#" class="jcarousel-control-prev"{* data-target="-=1"*}><i class="glyphicon glyphicon-chevron-left"></i></a>
-					<a href="#" class="jcarousel-control-next"{* data-target="+=1"*}><i class="glyphicon glyphicon-chevron-right"></i></a>
+					<a href="#" class="jcarousel-control-prev" aria-label="Previous Category"><i class="glyphicon glyphicon-chevron-left"></i></a>
+					<a href="#" class="jcarousel-control-next" aria-label="Next Category"><i class="glyphicon glyphicon-chevron-right"></i></a>
 
 					<div class="exploreMoreItemsContainer jcarousel"{* data-wrap="circular" data-jcarousel="true"*}> {* noIntialize is a filter for Pika.initCarousels() *}
 						<ul>
@@ -144,13 +144,11 @@
 			</div>
 		{/if}
 		{* Show more link if we aren't seeing all the records already *}
-		<div id="nextInsertPoint">
+		<div id="nextInsertPoint" class="text-center">
 		{if $recordEnd < $recordCount}
-			<a onclick="return Pika.Archive.getMoreExhibitResults('{$pid|urlencode}')" role="button" aria-label="Load more objects">
-				<div class="row" id="more-browse-results">
+			<button type="button" id="more-browse-results" onclick="return Pika.Archive.getMoreExhibitResults('{$pid|urlencode}')" aria-label="Load more objects">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
-				</div>
-			</a>
+			</button>
 		{/if}
 		</div>
 		</div>
@@ -188,7 +186,7 @@
 </div>
 {/strip}
 <script>
-	$().ready(function(){ldelim}
+	$(function(){ldelim}
 		Pika.Archive.loadExploreMore('{$pid|urlencode}');
 	{rdelim});
 </script>

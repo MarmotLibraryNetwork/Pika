@@ -1,11 +1,10 @@
 {strip}
 	<div id="home-page-browse-header" class="row">
-		<div class="col-sm-12">
+		<div class="col-tn-12">
 			<div class="row text-center" id="browse-label">
 				<span class="browse-label-text">BROWSE THE CATALOG</span>
 			</div>
 			<div class="row text-center" id="browse-category-picker">
-
 
 				<div class="jcarousel-wrapper">
 
@@ -27,7 +26,8 @@
 
 					<p class="jcarousel-pagination"></p>
 				</div>
-				<div class="clearfix"></div>
+				{*<div class="clearfix"></div> // Doesn't seem to be needed *}
+
 			</div>
 			<div id="browse-sub-category-menu" class="row text-center">
 				{* Initial load of content done by AJAX call on page load, unless sub-category is specified via URL *}
@@ -38,7 +38,7 @@
 		</div>
 	</div>
 	<div id="home-page-browse-content" class="row">
-		<div class="col-sm-12">
+		<div class="col-tn-12">
 
 			<div class="row" id="selected-browse-label">
 
@@ -59,6 +59,7 @@
 						<span class="icon-after"></span>
 					</a>
 				</div>
+
 			</div>
 
 			<div id="home-page-browse-results">
@@ -66,11 +67,10 @@
 				</div>
 			</div>
 
-			<a href="#" onclick="return Pika.Browse.getMoreResults()" role="button" aria-label="Get more results for browse category" tabindex="0">
-				<div class="row" id="more-browse-results">
-					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
-				</div>
-			</a>
+			<button type="button" id="more-browse-results" onclick="return Pika.Browse.getMoreResults()" aria-label="Load more results for browse category">
+				<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+			</button>
+
 		</div>
 	</div>
 {/strip}

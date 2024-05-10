@@ -134,43 +134,27 @@
 	</div>
 	{/if}
 
-	<div id="nextInsertPoint">
-	{if $displayType == 'map' || $displayType == 'mapNoTimeline'}
+	<div id="nextInsertPoint" class="text-center">
 		{* {$recordCount-$recordEnd} more records to load *}
 		{if $recordEnd < $recordCount}
-			<a onclick="return Pika.Archive.getMoreMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', '{if $displayType == 'map'}true{else}false{/if}')" role="button" aria-label="Load more objects">
-				<div class="row" id="more-browse-results">
+
+			{if $displayType == 'map' || $displayType == 'mapNoTimeline'}
+				<button type="button" id="more-browse-results" onclick="return Pika.Archive.getMoreMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', '{if $displayType == 'map'}true{else}false{/if}')" aria-label="Load more objects">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
-				</div>
-			</a>
-		{/if}
-	{elseif $displayType == 'timeline'}
-		{* {$recordCount-$recordEnd} more records to load *}
-		{if $recordEnd < $recordCount}
-			<a onclick="return Pika.Archive.getMoreTimelineResults('{$exhibitPid|urlencode}')" role="button" aria-label="Load more objects">
-				<div class="row" id="more-browse-results">
+				</button>
+			{elseif $displayType == 'timeline'}
+				<button type="button" id="more-browse-results" onclick="return Pika.Archive.getMoreTimelineResults('{$exhibitPid|urlencode}')" aria-label="Load more objects">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
-				</div>
-			</a>
-		{/if}
-	{elseif $displayType == 'scroller'}
-		{* {$recordCount-$recordEnd} more records to load *}
-		{if $recordEnd < $recordCount}
-			<a onclick="return Pika.Archive.getMoreScrollerResults('{$exhibitPid|urlencode}')" role="button" aria-label="Load more objects">
-				<div class="row" id="more-browse-results">
+				</button>
+			{elseif $displayType == 'scroller'}
+				<button type="button" id="more-browse-results" onclick="return Pika.Archive.getMoreScrollerResults('{$exhibitPid|urlencode}')" aria-label="Load more objects">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
-				</div>
-			</a>
-		{/if}
-	{else}
-		{if $recordEnd < $recordCount}
-			{* {$recordCount-$recordEnd} more records to load *}
-			<a onclick="return Pika.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}')" role="button" aria-label="Load more objects">
-				<div class="row" id="more-browse-results">
+				</button>
+			{else}
+				<button type="button" role="button" onclick="return Pika.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}')" id="more-browse-results">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
-				</div>
-			</a>
+				</button>
+			{/if}
 		{/if}
-	{/if}
 	</div>
 {/strip}

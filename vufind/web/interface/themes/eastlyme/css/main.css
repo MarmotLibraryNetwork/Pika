@@ -7014,9 +7014,6 @@ a:focus > .header-button {
 #browse-category-picker .jcarousel-control-next:focus {
   outline: 2px solid #E15F15 !important;
 }
-a:focus > #more-browse-results {
-  outline: 1px solid #E15F15 !important;
-}
 input[type="checkbox"]:focus {
   outline: 2px solid #E15F15 !important;
 }
@@ -8890,13 +8887,16 @@ a.browse-thumbnail-sorted.active {
   color: #c7c9ca;
   text-align: center;
   padding: 2px;
-  cursor: pointer;
   border-radius: 4px;
   line-height: 0;
+  width: 100%;
 }
 #more-browse-results span {
   font-weight: bold;
   font-size: 33px;
+}
+#more-browse-results:focus {
+  outline: 2px solid #E15F15;
 }
 #browse-sub-category-menu {
   margin-top: 10px;
@@ -10393,7 +10393,7 @@ a .header-button:hover {
   color: #000;
 }
 #browse-label {
-  background-color: #FFF;
+  background-color: #fff;
   border-bottom: 1px solid #000;
   margin: 25px 0 15px;
   height: auto;
