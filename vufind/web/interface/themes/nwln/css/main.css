@@ -10350,6 +10350,7 @@ fieldset[disabled] .btn-masquerade.active {
   margin-top: 0;
   padding: 15px;
   height: 160px;
+  max-height: inherit;
 }
 a .header-button {
   border: 0;
