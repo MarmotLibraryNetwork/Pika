@@ -22,7 +22,6 @@
   margin-top: 15px;
   margin-bottom: 15px;
   margin-right: -15px;
-    z-index: -1; // make sure this line is under the content of browse-label-text
   }
 
   .browse-label-text {
@@ -32,32 +31,29 @@
     line-height: 5px;
     text-transform: uppercase;
     display: inline-block; // this makes the h1 not full width so that the background displays
-    margin: auto;
-    padding: 0 8px;
+    vertical-align: top; // Brings the text up so that the background line centers on the text
+    margin: auto;  // Keeps the text over the background line
+    padding: 0 8px; // adds some white space betweeen the text and the background line
     z-index: 2; // places the text above the line for #browse-label
+    position: relative; // needed to allow z-index to go into effect
   }
 }
 
-#browse-label {
-  height: 5px;
-  background-color: @browse-label-line-color;
-  margin-top: 15px;
-  margin-bottom: 15px;
-  margin-right: -15px;
-  z-index: -1; // make sure this line is under the content of browse-label-text
-}
+//#browse-label {
+//  height: 5px;
+//  background-color: @browse-label-line-color;
+//  margin-top: 15px;
+//  margin-bottom: 15px;
+//  margin-right: -15px;
+//  z-index: -1; // make sure this line is under the content of browse-label-text
+//}
 
 .browse-label-text {
   color: @browse-label-text-color;
-  background-color: @browse-header-background-color;
   font-size: 22px;
-  line-height: 5px;
   text-transform: uppercase;
-  display: inline-block; // this makes the h1 not full width so that the background displays
-  //vertical-align: top;
-  margin: auto;
-  padding: 0 8px;
-  z-index: 2; // places the text above the line for #browse-label
+  margin-top: 10px;  // Override h1 margins
+  margin-bottom: 0;
 }
 
 #browse-category-picker {
