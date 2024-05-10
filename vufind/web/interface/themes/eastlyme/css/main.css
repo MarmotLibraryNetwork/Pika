@@ -8542,7 +8542,7 @@ hr.menu {
 }
 #selected-browse-label {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 44%, #AAAAAA 45%, #AAAAAA 55%, #fff 56%);
+  background: linear-gradient(to bottom, #fff, #fff 44%, #bbd4e3 45%, #bbd4e3 55%, #fff 56%);
   margin-bottom: 5px;
 }
 #selected-browse-label > div.btn-group {
@@ -10348,6 +10348,7 @@ fieldset[disabled] .btn-masquerade.active {
 #header-logo {
   padding: 5px 0;
   height: 140px;
+  max-height: none;
 }
 a .header-button {
   border: 0;
@@ -10391,25 +10392,24 @@ a .header-button:hover {
 #browse-label .browse-label-text {
   font-weight: 600;
 }
-.browse-category {
+#browse-category-carousel .browse-category {
   padding-top: 20px;
-  height: 120px;
 }
-.browse-category div {
+#browse-category-carousel .browse-category button {
   color: #000;
   text-shadow: none;
   text-transform: uppercase;
   font-size: large;
   font-weight: 500;
 }
-.browse-category div:focus {
+#browse-category-carousel .browse-category button:focus {
   outline: none;
 }
-.browse-category.selected {
+#browse-category-carousel .browse-category.selected {
   background-color: #FFF;
   background: #FFF;
 }
-.browse-category.selected div {
+#browse-category-carousel .browse-category.selected button {
   color: #780d0d;
 }
 #browse-category-picker .jcarousel-control-prev,
