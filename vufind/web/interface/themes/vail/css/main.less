@@ -7,38 +7,23 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
-#header-container{
+#header-container {
   background-image: @header_image;
   background-position: center;
   border-bottom: 4px solid @vail_logo_green;
 }
-// padding adds light-colored space for the logo to be displayed against a black background
-#header-logo{
-  //background-color: @header-buttons-background-color;
+
+// padding adds dark-colored space for the logo to be displayed against a black background
+#header-logo {
   border-radius: 0.5em;
   margin-top: 15px;
   padding: 20px 60px;
-//  margin-top: 20px;
-//  padding: 8px 25px;
 }
-.header-login-button-mixin(@header-buttons-background-color);
-.header-button{
-  margin-top: 42px;
-  //color: @vail_logo_black !important;
-  //&:visited {
-  //  color: @vail_logo_black !important;
-  //}
-}
+.header-login-button-mixin;
 
-//// for white browse category option
-//.browse-category a,
-//.browse-category button {
-////  color: lighten(@vail_logo_black, 20%);
-//  color: @vail_dark_blue;
-//}
-//#searchSource {
-//  color: black;
-//}
+.header-button {
+  margin-top: 42px;
+}
 
 // custom styling of main browse category carousel
 // Hide the Carousel Controls
@@ -46,6 +31,12 @@
 
 // Selected Category needs to give a highlighted appearance
 .noCarouselSelectedCategoryMixin(@selectedCategoryColor);
+
+// Add traditional accent line back onto unselected carousel entries
+.browse-category {
+  background-color: @category1MainColor;
+  background: linear-gradient(to bottom, @category1MainColor, @category1MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category1MainColor 90%, @category1MainColor);
+}
 
 // Vertically Align cover images with the thumbnail block; up to a maximum size.  so that the thumbnail blocks have a uniform height and fall into columns evenly
 // added by Chris 11/14/2018

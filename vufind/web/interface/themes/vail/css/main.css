@@ -7917,7 +7917,7 @@ body {
           text-decoration: underline dotted;
 }
 #header-container {
-  height: 150px;
+  height: 155px;
   min-height: 100px;
   padding-top: 0;
   background-color: #ffffff;
@@ -7940,7 +7940,7 @@ a .header-button {
   color: #222;
   background-color: #ffffff;
   border: 1px solid #555;
-  margin-top: 50px;
+  margin-top: 52.5px;
 }
 a .header-button:hover {
   color: #fff;
@@ -8032,7 +8032,7 @@ a .header-button:visited {
   float: left;
 }
 #horizontal-menu-bar-container .menu-icon.menu-icon-selected {
-  background-color: #4f8ac4;
+  background-color: #2776C4;
 }
 #horizontal-menu-bar-container.sticky-menu-bar {
   position: fixed;
@@ -8069,7 +8069,7 @@ a .header-button:visited {
   position: relative;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected {
-  background-color: #4f8ac4;
+  background-color: #2776C4;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
   color: #FFF;
@@ -8189,7 +8189,7 @@ a .header-button:visited {
 }
 #home-page-search {
   background-color: #336699;
-  background: linear-gradient(to bottom, #336699, #79a6d2);
+  background: linear-gradient(to bottom, #336699, #336699);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8215,7 +8215,7 @@ a .header-button:visited {
 .searchSource {
   margin: 5px 0 0;
   color: #fff;
-  background-color: #79a6d2;
+  background-color: #336699;
   border: none;
   width: 90% !important;
 }
@@ -8231,7 +8231,7 @@ a .header-button:visited {
 }
 #horizontal-search-box {
   background-color: #336699;
-  background: linear-gradient(to bottom, #336699, #79a6d2);
+  background: linear-gradient(to bottom, #336699, #336699);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -9782,7 +9782,7 @@ a.browse-thumbnail-sorted.active {
 }
 #explore-more-sidebar {
   background-color: #336699;
-  background: linear-gradient(to bottom, #336699, #79a6d2);
+  background: linear-gradient(to bottom, #336699, #336699);
 }
 #explore-more-header {
   padding: 10px 25px 5px 0;
@@ -10356,7 +10356,7 @@ a .header-button {
   border: 0;
   border-radius: 0.5em;
   color: #fff;
-  background-color: rgba(230, 230, 230, 0.3);
+  background-color: rgba(51, 51, 51, 0.7);
   margin-top: 20px;
   line-height: 60px;
   text-shadow: none;
@@ -10404,9 +10404,13 @@ a .header-button:hover {
   display: none;
 }
 .browse-category.selected {
-  background-color: #4f8ac4;
-  background: linear-gradient(to bottom, #4f8ac4, #4f8ac4 82%, #32702b 83%, #54B948 84%, #54B948 88%, #32702b 89%, #4f8ac4 90%, #4f8ac4);
+  background-color: #2776C4;
+  background: linear-gradient(to bottom, #2776C4, #2776C4 82%, #32702b 83%, #54B948 84%, #54B948 88%, #32702b 89%, #2776C4 90%, #2776C4);
   font-size: 22px;
+}
+.browse-category {
+  background-color: #336699;
+  background: linear-gradient(to bottom, #336699, #336699 82%, #32702b 83%, #54B948 84%, #54B948 88%, #32702b 89%, #336699 90%, #336699);
 }
 .browse-thumbnail div:first-child {
   height: 180px;
