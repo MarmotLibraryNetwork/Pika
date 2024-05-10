@@ -8444,24 +8444,12 @@ hr.menu {
   padding: 15px;
   background-color: #fff;
 }
-#browse-label {
-  height: 5px;
-  background-color: #bbd4e3;
-  margin-top: 15px;
-  margin-bottom: 15px;
-  margin-right: -15px;
-  z-index: -1;
-}
 .browse-label-text {
   color: #45b6b7;
-  background-color: #fff;
   font-size: 22px;
-  line-height: 5px;
   text-transform: uppercase;
-  display: inline-block;
-  margin: auto;
-  padding: 0 8px;
-  z-index: 2;
+  margin-top: 10px;
+  margin-bottom: 0;
 }
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
