@@ -10365,8 +10365,6 @@ body {
 #browse-label {
   background-color: #fff;
   border-bottom: 1px solid #130840;
-  margin: 25px 0 15px;
-  height: auto;
   padding-bottom: 20px;
 }
 #browse-label .browse-label-text {
