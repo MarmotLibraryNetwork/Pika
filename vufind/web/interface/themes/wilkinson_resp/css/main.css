@@ -10362,7 +10362,7 @@ a .header-button:hover {
   border-bottom: 0;
   box-shadow: 2px 2px 5px #fff;
 }
-.browse-category.selected {
+#browse-category-carousel .browse-category.selected {
   background: #0a9abc;
 }
 #header-container {
