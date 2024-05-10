@@ -65,9 +65,10 @@ Pika.Browse = (function(){
 		setTabs : function(){
 			//timeout is necessary for carousel to give us the visible items.
 			setTimeout(function(){
+				if(!$('#browse-category-carousel').css('overflow','visible')){
 			$('.jcarousel').jcarousel('items').children('button').attr('tabindex','-1');
 			var visible = $('.jcarousel').jcarousel('fullyvisible');
-			visible.children('button').attr('tabindex',"0");
+			visible.children('button').attr('tabindex',"0")};
 			}, 100);
 		},
 
