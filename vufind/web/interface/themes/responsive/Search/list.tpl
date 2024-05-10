@@ -61,11 +61,9 @@
 
 	{if $displayMode == 'covers'}
 		{if $recordEnd < $recordCount}
-			<a href="#" onclick="return Pika.Searches.getMoreResults()" role="button" aria-label="Get more search results" tabindex="0">
-				<div class="row" id="more-browse-results">
-					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
-				</div>
-			</a>
+			<button type="button" id="more-browse-results" onclick="return Pika.Searches.getMoreResults()" aria-label="Load more search results">
+				<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+			</button>
 		{/if}
 	{else}
 		{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}

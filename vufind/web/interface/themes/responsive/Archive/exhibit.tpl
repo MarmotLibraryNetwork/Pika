@@ -144,13 +144,11 @@
 			</div>
 		{/if}
 		{* Show more link if we aren't seeing all the records already *}
-		<div id="nextInsertPoint">
+		<div id="nextInsertPoint" class="text-center">
 		{if $recordEnd < $recordCount}
-			<a onclick="return Pika.Archive.getMoreExhibitResults('{$pid|urlencode}')" role="button" aria-label="Load more objects">
-				<div class="row" id="more-browse-results">
+			<button type="button" id="more-browse-results" onclick="return Pika.Archive.getMoreExhibitResults('{$pid|urlencode}')" aria-label="Load more objects">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
-				</div>
-			</a>
+			</button>
 		{/if}
 		</div>
 		</div>
@@ -188,7 +186,7 @@
 </div>
 {/strip}
 <script>
-	$().ready(function(){ldelim}
+	$(function(){ldelim}
 		Pika.Archive.loadExploreMore('{$pid|urlencode}');
 	{rdelim});
 </script>
