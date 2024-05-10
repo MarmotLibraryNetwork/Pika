@@ -10426,7 +10426,7 @@ a#headerLogoutLink {
   z-index: 2;
   position: relative;
 }
-.browse-category.selected {
+#browse-category-carousel .browse-category.selected {
   border-width: 1px;
 }
 #home-page-browse-header {

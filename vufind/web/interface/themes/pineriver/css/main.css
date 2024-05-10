@@ -10361,6 +10361,6 @@ a .header-button:hover {
 #header-logo {
   padding: 0;
 }
-.browse-category.selected {
+#browse-category-carousel .browse-category.selected {
   background: #4B5F2B;
 }

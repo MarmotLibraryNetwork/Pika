@@ -10435,7 +10435,7 @@ a:visited .header-button {
 #more-browse-results {
   border: 1px solid #c7c9ca;
 }
-.browse-category.selected {
+#browse-category-carousel .browse-category.selected {
   border: 2px solid #BBD4E3;
 }
 #home-page-login {

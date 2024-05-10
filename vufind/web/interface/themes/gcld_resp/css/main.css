@@ -10430,7 +10430,7 @@ a .header-button:hover {
   background: #003A68;
   margin-top: 2px;
 }
-.browse-category.selected {
+#browse-category-carousel .browse-category.selected {
   background: #80d2f1;
 }
 #home-page-browse-header {
