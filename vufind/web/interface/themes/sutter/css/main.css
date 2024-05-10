@@ -10388,7 +10388,6 @@ div#more-details-accordion.panel-group .panel a .panel-title {
   margin-right: 1px;
   height: 60px;
   cursor: pointer;
-  font-weight: 600;
   border: 1px solid #d7d7d7;
 }
 #browse-category-carousel .browse-category:focus-within {
@@ -10398,6 +10397,7 @@ div#more-details-accordion.panel-group .panel a .panel-title {
   height: 100%;
   width: 100%;
   padding-inline: 0;
+  font-weight: 600;
 }
 #browse-category-carousel .browse-category button:focus {
   height: 100%;

@@ -10385,7 +10385,6 @@ a .header-button:hover {
   margin-right: 1px;
   height: 60px;
   cursor: pointer;
-  font-weight: 600;
   border: 1px solid #d7d7d7;
 }
 #browse-category-carousel .browse-category:focus-within {
@@ -10395,6 +10394,7 @@ a .header-button:hover {
   height: 100%;
   width: 100%;
   padding-inline: 0;
+  font-weight: 600;
 }
 #browse-category-carousel .browse-category button:focus {
   height: 100%;
@@ -10419,8 +10419,8 @@ a .header-button:hover {
   background: #E4E4E4;
   transition: all 0.3s ease-in-out;
 }
-#browse-category-carousel .browse-category.selected div {
-  color: #FFF;
+#browse-category-carousel .browse-category.selected button {
+  color: #fff;
 }
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {

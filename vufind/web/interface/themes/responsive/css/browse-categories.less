@@ -205,7 +205,6 @@
     margin-right: 1px;
     height: @height;
     cursor: pointer;
-    font-weight: 600;
     border: 1px solid @border-gray;
 
     &:focus-within {
@@ -214,11 +213,12 @@
 
     button {
       height: 100%;
-      width:100%;
-      padding-inline:0;
+      width: 100%;
+      padding-inline: 0;
+      font-weight: 600;
 
-      &:focus{
-        height:100%;
+      &:focus {
+        height: 100%;
       }
 
       &:hover {
@@ -229,7 +229,7 @@
     &.selected {
       border: 1px solid @selectedCategoryBorderColor;
 
-      &:focus-within{
+      &:focus-within {
         border: 1px solid @focus-ring-color;
       }
 
