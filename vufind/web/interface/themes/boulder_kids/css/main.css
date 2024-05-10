@@ -7921,7 +7921,7 @@ body {
   min-height: 100px;
   padding-top: 0;
   background-color: #fff;
-  border-bottom: 8px solid #0A61AE;
+  border-bottom: 8px solid #fff;
   margin-bottom: 0;
 }
 #header-logo {
@@ -8445,7 +8445,7 @@ hr.menu {
   background-color: #fff;
 }
 .browse-label-text {
-  color: #fff;
+  color: #2D5D82;
   font-size: 22px;
   text-transform: uppercase;
   margin-top: 10px;
@@ -8514,35 +8514,35 @@ hr.menu {
   border: #E15F15 2px solid;
 }
 #browse-category-carousel .browse-category.category0 {
-  background-color: #1A2B4B;
+  background-color: #4F823A;
 }
 #browse-category-carousel .browse-category.category1 {
-  background-color: #1A2B4B;
+  background-color: #4F823A;
 }
 #browse-category-carousel .browse-category.category2 {
-  background-color: #1A2B4B;
+  background-color: #4F823A;
 }
 #browse-category-carousel .browse-category.category3 {
-  background-color: #1A2B4B;
+  background-color: #4F823A;
 }
 #browse-category-carousel .browse-category.category4 {
-  background-color: #1A2B4B;
+  background-color: #4F823A;
 }
 #browse-category-carousel .browse-category.category5 {
-  background-color: #1A2B4B;
+  background-color: #4F823A;
 }
 #browse-category-carousel .browse-category.category6 {
-  background-color: #1A2B4B;
+  background-color: #4F823A;
 }
 #browse-category-carousel .browse-category.category7 {
-  background-color: #1A2B4B;
+  background-color: #4F823A;
 }
 #browse-category-carousel .browse-category.category8 {
-  background-color: #1A2B4B;
+  background-color: #4F823A;
 }
 #selected-browse-label {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 44%, #fff 45%, #fff 55%, #fff 56%);
+  background: linear-gradient(to bottom, #fff, #fff 44%, #bbd4e3 45%, #bbd4e3 55%, #fff 56%);
   margin-bottom: 5px;
 }
 #selected-browse-label > div.btn-group {
@@ -8895,7 +8895,7 @@ a.browse-thumbnail-sorted.active {
 }
 #browse-sub-category-menu button.selected {
   color: #fff;
-  background-color: #1A2B4B;
+  background-color: #4F823A;
 }
 #browse-sub-category-menu button:focus {
   outline: #E15F15 solid 2px;
@@ -10367,24 +10367,6 @@ a .header-button:hover {
   background-color: #ebebeb;
   border-bottom: 4px solid #adadad;
 }
-#header-links {
-  background: #4F823A;
-  border-bottom: 1px dotted #111;
-}
-#header-links .header-link-wrapper {
-  border: none;
-  padding: 15px;
-}
-#header-links .header-link-wrapper a {
-  color: white;
-  font-size: 18.66px;
-}
-#header-links .header-link-wrapper:hover {
-  background-color: #fff;
-}
-#header-links .header-link-wrapper:hover a {
-  color: #161616;
-}
 .searchTypeHome {
   background-color: #fff;
   color: #000;
@@ -10392,23 +10374,6 @@ a .header-button:hover {
 #horizontal-search-box {
   background: #1A2B4B;
 }
-#browse-label {
-  height: 0;
-  margin-top: 10px;
-  margin-bottom: 0;
-}
 .browse-category {
   border-radius: 10px;
-}
-.browse-category.category0,
-.browse-category.category1,
-.browse-category.category2,
-.browse-category.category3,
-.browse-category.category4,
-.browse-category.category5,
-.browse-category.category6,
-.browse-category.category7,
-.browse-category.category8,
-.browse-category.category9 {
-  background: #4F823A;
 }
