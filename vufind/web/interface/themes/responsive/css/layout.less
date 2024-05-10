@@ -21,7 +21,7 @@ body {
 
 //Breadcrumbs (above header)
 .breadcrumbs {
-  background-color: @breadcrumb-bg;
+  background-color: @breadcrumb-bg; //TODO: is this redundant given that background-color is set on .breadcrumb in breadcrumbs.less
   padding: 3px;
 }
 
@@ -97,6 +97,7 @@ a .header-button {
 }
 
 .header-login-button-mixin(@background-color: rgba(51,51,51,0.7); @color: #fff; @margin-top: 20px; @header-line-height: 60px) {
+  //TODO: add hover bg-color & color
   // rgba(51,51,51,0.7) https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=6F6F6F
   a .header-button {
     border: 0;
@@ -407,6 +408,7 @@ a .header-button {
   max-height: 125px !important;
 }
 
+//TODO: no sectionLabel
 #sectionLabel {
   width: 100%;
   background-color: lighten(#80D2F1, 20%);
