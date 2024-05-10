@@ -10371,10 +10371,6 @@ a .header-button:hover {
 a .header-button:hover {
   border-bottom: 4px solid #7B1405;
 }
-#browse-label,
-.browse-label-text {
-  display: none;
-}
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
   text-shadow: none;
@@ -10386,27 +10382,28 @@ a .header-button:hover {
 .jcarousel-control-prev {
   box-shadow: none;
 }
-.browse-category button {
+#browse-category-carousel .browse-category button {
   color: #646510;
   text-shadow: none;
   font-size: 20px;
 }
-.browse-category button:focus {
+#browse-category-carousel .browse-category button:focus {
   outline: none;
 }
-.browse-category.selected {
+#browse-category-carousel .browse-category.selected {
   border: none;
   background-color: #646510;
   background: #646510;
   background: linear-gradient(to bottom, #646510 0%, #494A0C 75%, #fff 75%, #fff 80%, #CCC 80%, #fff 100%);
 }
-.browse-category.selected div {
+#browse-category-carousel .browse-category.selected button {
   color: #fff;
   text-shadow: none;
+  height: 50px;
 }
-.browse-category a:visited,
-.browse-category a:hover,
-.browse-category a:active {
+#browse-category-carousel .browse-category a:visited,
+#browse-category-carousel .browse-category a:hover,
+#browse-category-carousel .browse-category a:active {
   color: #646510;
 }
 #selected-browse-label {

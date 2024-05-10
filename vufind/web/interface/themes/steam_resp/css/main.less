@@ -50,10 +50,10 @@ a .header-button:hover {
 }
 
 
-#browse-label, // Horizontal link on both sides of the words Browse the Catalog
-.browse-label-text { // Background and text for Browse the Catalog
-  display: none;
-}
+//#browse-label, // Horizontal link on both sides of the words Browse the Catalog
+//.browse-label-text { // Background and text for Browse the Catalog
+//  display: none;
+//}
 
 //styles the arrows on both side of the browse categories
 #browse-category-picker {
@@ -72,7 +72,7 @@ a .header-button:hover {
 }
 
 // the category text
-.browse-category {
+#browse-category-carousel .browse-category {
   button {
     color: @browse-label-text-color; //TODO: add to main stylesheet
     text-shadow: none;
@@ -90,9 +90,10 @@ a .header-button:hover {
     background: linear-gradient(to bottom, @selectedCategoryColor 0%, @steamboat-darkgoldengreen2 75%, #fff 75%, #fff 80%, #CCC 80%, #fff 100%);
 
     // Drives the white text in each selected browse box
-    div {
+    button {
       color: #fff;
       text-shadow: none;
+      height: 50px;  // Makes the button text center on the colored part above the shading
     }
   }
   a { // Keeps the links green when mousing over the boxes in the carousel
