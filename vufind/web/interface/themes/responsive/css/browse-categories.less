@@ -26,12 +26,12 @@
   }
 
   .browse-label-text {
+    color: @browse-label-text-color;
     background-color: @browse-header-background-color;
     font-size: 22px;
-    color: @browse-label-text-color;
     line-height: 5px;
     text-transform: uppercase;
-    vertical-align: top;
+    display: inline-block; // this makes the h1 not full width so that the background displays
     margin: auto;
     padding: 0 8px;
     z-index: 2; // places the text above the line for #browse-label
@@ -48,12 +48,13 @@
 }
 
 .browse-label-text {
+  color: @browse-label-text-color;
   background-color: @browse-header-background-color;
   font-size: 22px;
-  color: @browse-label-text-color;
   line-height: 5px;
-  //text-transform: capitalize;
-  vertical-align: top;
+  text-transform: uppercase;
+  display: inline-block; // this makes the h1 not full width so that the background displays
+  //vertical-align: top;
   margin: auto;
   padding: 0 8px;
   z-index: 2; // places the text above the line for #browse-label
