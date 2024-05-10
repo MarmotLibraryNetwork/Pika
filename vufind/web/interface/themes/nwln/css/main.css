@@ -7971,6 +7971,7 @@ a .header-button:visited {
   border-right: 0 solid black;
 }
 .header-link-wrapper {
+  margin-top: 10px;
   display: inline-block;
   padding: 2px 15px;
   border-right: 1px solid #0078ae;
@@ -8449,23 +8450,12 @@ hr.menu {
   padding: 15px;
   background-color: #fff;
 }
-#browse-label {
-  height: 5px;
-  background-color: #bbd4e3;
-  margin-top: 15px;
-  margin-bottom: 15px;
-  margin-right: -15px;
-  z-index: -1;
-}
 .browse-label-text {
-  background-color: #fff;
-  font-size: 22px;
   color: #000;
-  line-height: 5px;
-  vertical-align: top;
-  margin: auto;
-  padding: 0 8px;
-  z-index: 2;
+  font-size: 22px;
+  text-transform: uppercase;
+  margin-top: 10px;
+  margin-bottom: 0;
 }
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
@@ -10420,7 +10410,6 @@ a .header-button:hover {
   margin-right: 1px;
   height: 90px;
   cursor: pointer;
-  font-weight: 600;
   border: 1px solid #A2A1A1;
 }
 #browse-category-carousel .browse-category:focus-within {
@@ -10430,6 +10419,7 @@ a .header-button:hover {
   height: 100%;
   width: 100%;
   padding-inline: 0;
+  font-weight: 600;
 }
 #browse-category-carousel .browse-category button:focus {
   height: 100%;
@@ -10454,12 +10444,12 @@ a .header-button:hover {
   background: #E4E4E4;
   transition: all 0.3s ease-in-out;
 }
-#browse-category-carousel .browse-category.selected div {
-  color: white;
+#browse-category-carousel .browse-category.selected button {
+  color: #fff;
   text-shadow: 1px 1px #333;
 }
 #browse-sub-category-menu button.selected {
-  color: white;
+  color: #fff;
   text-shadow: 1px 1px #333;
 }
 #browse-category-picker .jcarousel-control-prev,

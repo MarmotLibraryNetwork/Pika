@@ -5,13 +5,14 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
-#header-container{
+#header-container {
   background-image: @header_image;
   background-position: center;
   height: 150px;
   border-bottom-width: 3px;
 }
-#header-logo{
+
+#header-logo {
   padding: 5px 0;
   height: 140px;
   @media (max-width: @screen-xs-max) {
@@ -31,11 +32,12 @@
   .searchSourceHorizontal, #horizontal-search-box .searchTypeHorizontal {
     border: inherit;
   }
-  //border-bottom: 2px solid @salida-medium-gray-button-color;
+
+  //border-bottom: 2px solid @westhaven-medium-gray-button-color;
 }
-#home-page-login,#home-page-search-label,.browse-category
-{
-  text-shadow: 1px 1px  @salida-light-gray;
+
+#home-page-login, #home-page-search-label, .browse-category {
+  text-shadow: 1px 1px @westhaven-light-gray;
 }
 // mixin to select all the typical states of <a> like tags
 // this mixin apparently needs to stay here to apply to the rule below. 3-21-2024 pascal
@@ -44,12 +46,14 @@
     @rules();
   }
 }
-.sidebar-links{
+
+.sidebar-links {
   .panel.active > a {
     .allLinkStates({
       text-shadow: 1px 1px #c0c0c0;
     })
   }
+
   .panel-body {
     background-color: transparent;
   }
@@ -70,13 +74,13 @@
 
 #anythink-browse-label(@browse-label-text-color);
 
+#anythink-browse-category-picker(@browseCarouselControlColor, @selectedCategoryColor, @content-bg);
 
-// the category text
-.browse-category {
+#browse-category-carousel .browse-category {
   padding-top: 20px; // extra padding on top to center text
-  height: 120px;
+  //height: 120px;
 
-  div {
+  button {
     color: @browse-label-text-color;
     text-shadow: none;
     text-transform: uppercase;
@@ -88,24 +92,20 @@
   }
   &.selected {
     //border: none;
-    background-color: @selectedCategoryColor;
-    background: @selectedCategoryColor;
-    //background: linear-gradient(to bottom, @selectedCategoryColor 0%, @selectedCategoryColor 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
-    div {
+    //background: @selectedCategoryColor;
+    button {
       color: @lion-dark-blue;
     }
   }
 }
 
 
-#anythink-browse-category-picker(@browseCarouselControlColor, @selectedCategoryColor, @content-bg);
-
 #anythink-selected-browse-label(@browse-label-text-color);
 
 #browse-sub-category-menu {
   button.selected {
     border: 2px solid @selectedCategoryBorderColor;
-    background-color: @selectedCategoryColor;
+    //background-color: @selectedCategoryColor;
   }
 }
 

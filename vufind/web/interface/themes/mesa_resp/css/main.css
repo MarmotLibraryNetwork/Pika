@@ -7917,7 +7917,7 @@ body {
           text-decoration: underline dotted;
 }
 #header-container {
-  height: 100px;
+  height: 125px;
   min-height: 100px;
   padding-top: 0;
   background-color: #fff;
@@ -7940,7 +7940,7 @@ a .header-button {
   color: #222;
   background-color: #fff;
   border: 1px solid #555;
-  margin-top: 25px;
+  margin-top: 37.5px;
 }
 a .header-button:hover {
   color: #fff;
@@ -7966,6 +7966,7 @@ a .header-button:visited {
   border-right: 0 solid black;
 }
 .header-link-wrapper {
+  margin-top: 10px;
   display: inline-block;
   padding: 2px 15px;
   border-right: 1px solid #0078ae;
@@ -8444,23 +8445,12 @@ hr.menu {
   padding: 15px;
   background-color: #fff;
 }
-#browse-label {
-  height: 5px;
-  background-color: #bbd4e3;
-  margin-top: 15px;
-  margin-bottom: 15px;
-  margin-right: -15px;
-  z-index: -1;
-}
 .browse-label-text {
-  background-color: #fff;
-  font-size: 22px;
   color: #575757;
-  line-height: 5px;
-  vertical-align: top;
-  margin: auto;
-  padding: 0 8px;
-  z-index: 2;
+  font-size: 22px;
+  text-transform: uppercase;
+  margin-top: 10px;
+  margin-bottom: 0;
 }
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
@@ -10391,17 +10381,6 @@ a:visited .header-button {
   font-size: 18px;
   color: #336fa3;
 }
-.browse-label-text {
-  background-color: #FFF;
-  font-size: 22px;
-}
-#browse-label {
-  height: 3px;
-  margin-bottom: 0;
-  margin-right: -15px;
-  margin-top: 20px;
-  background-color: #FFF;
-}
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
   background-color: rgba(0, 0, 0, 0);
@@ -10446,7 +10425,7 @@ a:visited .header-button {
 #more-browse-results {
   border: 1px solid #c7c9ca;
 }
-.browse-category.selected {
+#browse-category-carousel .browse-category.selected {
   border: 2px solid #BBD4E3;
 }
 #home-page-login {

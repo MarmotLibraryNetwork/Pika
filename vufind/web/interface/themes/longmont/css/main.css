@@ -7917,7 +7917,7 @@ body {
           text-decoration: underline dotted;
 }
 #header-container {
-  height: 100px;
+  height: 110px;
   min-height: 100px;
   padding-top: 0;
   background-color: #133155;
@@ -7940,7 +7940,7 @@ a .header-button {
   color: #222;
   background-color: #133155;
   border: 1px solid #555;
-  margin-top: 25px;
+  margin-top: 30px;
 }
 a .header-button:hover {
   color: #fff;
@@ -7966,6 +7966,7 @@ a .header-button:visited {
   border-right: 0 solid black;
 }
 .header-link-wrapper {
+  margin-top: 10px;
   display: inline-block;
   padding: 2px 15px;
   border-right: 1px solid #0078ae;
@@ -8444,23 +8445,12 @@ hr.menu {
   padding: 15px;
   background-color: #fff;
 }
-#browse-label {
-  height: 5px;
-  background-color: #F7F7F7;
-  margin-top: 15px;
-  margin-bottom: 15px;
-  margin-right: -15px;
-  z-index: -1;
-}
 .browse-label-text {
-  background-color: #F7F7F7;
-  font-size: 22px;
   color: #2D5D82;
-  line-height: 5px;
-  vertical-align: top;
-  margin: auto;
-  padding: 0 8px;
-  z-index: 2;
+  font-size: 22px;
+  text-transform: uppercase;
+  margin-top: 10px;
+  margin-bottom: 0;
 }
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
@@ -8553,7 +8543,7 @@ hr.menu {
 }
 #selected-browse-label {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 44%, #F7F7F7 45%, #F7F7F7 55%, #fff 56%);
+  background: linear-gradient(to bottom, #fff, #fff 44%, #bbd4e3 45%, #bbd4e3 55%, #fff 56%);
   margin-bottom: 5px;
 }
 #selected-browse-label > div.btn-group {

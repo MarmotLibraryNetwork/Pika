@@ -5,23 +5,9 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
-#header-container {
-  background: none;
-}
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab&display=swap');
 
-.browse-category.selected {
-  border-width: 1px;
-}
-
-#home-page-browse-header {
-  border-bottom: @aims-black 4px solid;
-}
-
-#selected-browse-label {
-   background: linear-gradient(to bottom, #fff, #fff 44%, #bbd4e3 45%, #bbd4e3 55%, #fff 56%);
-  // Keep original background line coloring
-}
-
+// Header
 .header-login-button-mixin(@aims-red, #FFF, 0, 30px);
 
 a .header-button:hover {
@@ -47,7 +33,6 @@ a#headerMyAccountLink, a#headerLoginLink, a#headerLogoutLink {
   height: 64px;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab&display=swap');
 
 .nielsenlibrarytxt {
   &,&:visited {
@@ -61,7 +46,12 @@ a#headerMyAccountLink, a#headerLoginLink, a#headerLogoutLink {
   font-size: 2.5em;
   margin: .25em 0 .35em;
   text-decoration: none;
+
+  @media (max-width: 992px) {
+    font-size: 18px;
+  }
 }
+
 
 #horizontal-search-box {
   background-color: @aims-black;
@@ -70,14 +60,27 @@ a#headerMyAccountLink, a#headerLoginLink, a#headerLogoutLink {
   padding: 15px 0;
 }
 
-.btn, .btn-sm {
-  border-radius: 0;
+
+// Browse Category
+.browse-label-center-line(@aims-black, @aims-black);
+
+#browse-category-carousel .browse-category.selected {
+  border-width: 1px;
 }
 
-@media (max-width: 992px) {
-  .nielsenlibrarytxt {
-    font-size: 18px;
-  }
+#home-page-browse-header {
+  border-bottom: @aims-black 4px solid;
+}
+
+#selected-browse-label {
+  background: linear-gradient(to bottom, #fff, #fff 44%, #bbd4e3 45%, #bbd4e3 55%, #fff 56%);
+  // Keep original background line coloring
+}
+
+
+// Buttons
+.btn, .btn-sm {
+  border-radius: 0;
 }
 
 // Override bold button text during clicking

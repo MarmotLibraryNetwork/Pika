@@ -22,41 +22,38 @@
   margin-top: 15px;
   margin-bottom: 15px;
   margin-right: -15px;
-    z-index: -1; // make sure this line is under the content of browse-label-text
   }
 
   .browse-label-text {
+    color: @browse-label-text-color;
     background-color: @browse-header-background-color;
     font-size: 22px;
-    color: @browse-label-text-color;
     line-height: 5px;
     text-transform: uppercase;
-    vertical-align: top;
-    margin: auto;
-    padding: 0 8px;
+    display: inline-block; // this makes the h1 not full width so that the background displays
+    vertical-align: top; // Brings the text up so that the background line centers on the text
+    margin: auto;  // Keeps the text over the background line
+    padding: 0 8px; // adds some white space betweeen the text and the background line
     z-index: 2; // places the text above the line for #browse-label
+    position: relative; // needed to allow z-index to go into effect
   }
 }
 
-#browse-label {
-  height: 5px;
-  background-color: @browse-label-line-color;
-  margin-top: 15px;
-  margin-bottom: 15px;
-  margin-right: -15px;
-  z-index: -1; // make sure this line is under the content of browse-label-text
-}
+//#browse-label {
+//  height: 5px;
+//  background-color: @browse-label-line-color;
+//  margin-top: 15px;
+//  margin-bottom: 15px;
+//  margin-right: -15px;
+//  z-index: -1; // make sure this line is under the content of browse-label-text
+//}
 
 .browse-label-text {
-  background-color: @browse-header-background-color;
-  font-size: 22px;
   color: @browse-label-text-color;
-  line-height: 5px;
-  //text-transform: capitalize;
-  vertical-align: top;
-  margin: auto;
-  padding: 0 8px;
-  z-index: 2; // places the text above the line for #browse-label
+  font-size: 22px;
+  text-transform: uppercase;
+  margin-top: 10px;  // Override h1 margins
+  margin-bottom: 0;
 }
 
 #browse-category-picker {
@@ -124,7 +121,7 @@
     border: 2px solid @selectedCategoryBorderColor;
     font-size: @browse-category-font-size + 3; // decreased size of increase, set relative to base font size  plb 9-17-2014
 
-    &:focus-within{
+    &:focus-within {
       border: @focus-ring-color 2px solid;
     }
   }
@@ -208,7 +205,6 @@
     margin-right: 1px;
     height: @height;
     cursor: pointer;
-    font-weight: 600;
     border: 1px solid @border-gray;
 
     &:focus-within {
@@ -217,11 +213,12 @@
 
     button {
       height: 100%;
-      width:100%;
-      padding-inline:0;
+      width: 100%;
+      padding-inline: 0;
+      font-weight: 600;
 
-      &:focus{
-        height:100%;
+      &:focus {
+        height: 100%;
       }
 
       &:hover {
@@ -232,7 +229,7 @@
     &.selected {
       border: 1px solid @selectedCategoryBorderColor;
 
-      &:focus-within{
+      &:focus-within {
         border: 1px solid @focus-ring-color;
       }
 
@@ -512,7 +509,7 @@
 }
 
 #more-browse-results {
-  background-color: @more-browse-results-backgroundcolor;
+  background-color: @more-browse-results-bg-color;
   color: @more-browse-results-color;
   .text-center();
   padding: 2px;
@@ -664,8 +661,8 @@
   #browse-label {
     background-color: @browse-label-bg-color;
     border-bottom: 1px solid @browse-label-text-color;
-    margin: 25px 0 15px;
-    height: auto;
+    //margin: 25px 0 15px;
+    //height: auto;
     padding-bottom: 20px;
     .browse-label-text {
       font-weight: 600;
@@ -714,11 +711,11 @@
   }
 }
 
-#anythink-browse-category-picker(@browseCarouselControlColor, @selectedCategoryColor, @content-bg) {
+#anythink-browse-category-picker(@browseCarouselControlColor, @selectedCategoryColor, @control-bg-color: @content-bg) {
   // Left/Right Arrows on browse category carousel
   #browse-category-picker {
     .jcarousel-control-prev, .jcarousel-control-next {
-      background-color: @content-bg;
+      background-color: @control-bg-color;
       color: @browseCarouselControlColor;
 
       &:active, &:hover {

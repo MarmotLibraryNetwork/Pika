@@ -7966,6 +7966,7 @@ a .header-button:visited {
   border-right: 0 solid black;
 }
 .header-link-wrapper {
+  margin-top: 10px;
   display: inline-block;
   padding: 2px 15px;
   border-right: 1px solid #0078ae;
@@ -8444,23 +8445,12 @@ hr.menu {
   padding: 15px;
   background-color: #fff;
 }
-#browse-label {
-  height: 5px;
-  background-color: #00afaa;
-  margin-top: 15px;
-  margin-bottom: 15px;
-  margin-right: -15px;
-  z-index: -1;
-}
 .browse-label-text {
-  background-color: #fff;
-  font-size: 22px;
   color: #f99d25;
-  line-height: 5px;
-  vertical-align: top;
-  margin: auto;
-  padding: 0 8px;
-  z-index: 2;
+  font-size: 22px;
+  text-transform: uppercase;
+  margin-top: 10px;
+  margin-bottom: 0;
 }
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
@@ -8553,7 +8543,7 @@ hr.menu {
 }
 #selected-browse-label {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 44%, #00afaa 45%, #00afaa 55%, #fff 56%);
+  background: linear-gradient(to bottom, #fff, #fff 44%, #bbd4e3 45%, #bbd4e3 55%, #fff 56%);
   margin-bottom: 5px;
 }
 #selected-browse-label > div.btn-group {
@@ -8906,7 +8896,7 @@ a.browse-thumbnail-sorted.active {
 }
 #browse-sub-category-menu button.selected {
   color: #fff;
-  background-color: #fff;
+  background-color: #78ada3;
 }
 #browse-sub-category-menu button:focus {
   outline: #E15F15 solid 2px;
@@ -10455,7 +10445,6 @@ a .header-button {
   color: #ca602b;
 }
 #browse-label {
-  background: #fff;
   margin-top: 40px;
 }
 .browse-label-text {

@@ -2,7 +2,7 @@
 	<div id="home-page-browse-header" class="row">
 		<div class="col-tn-12">
 			<div class="row text-center" id="browse-label">
-				<span class="browse-label-text">BROWSE THE CATALOG</span>
+				<h1 role="heading" aria-level="1" class="browse-label-text">Browse the Catalog</h1>
 			</div>
 			<div class="row text-center" id="browse-category-picker">
 

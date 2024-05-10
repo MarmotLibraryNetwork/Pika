@@ -64,41 +64,40 @@ a .header-button {
   }
 }
 
-#browse-label {
-  background: none;
-  height: inherit;
-  margin-top: 0;
-  @border-top: 4px solid @grey-lafayette;
-  display: none;
+.browse-label-text {
+  line-height: inherit;
 }
 
-.browse-category {
+#browse-category-carousel .browse-category {
   text-shadow: none;
-  font-weight: bold;
   border-radius: 10px;
   height: inherit;
   max-height: 100px;
 
-  & div {
+  &:hover {
+    background: #f6f6f6;
+  }
+
+  button {
+    font-weight: bold;
     height: 55px;
   }
 
   &.selected {
     font-size: 15px;
-    background: @bright-green !important;
+    background: @bright-green;
 
-    div {
-      color: white !important;
+    :hover {
+      background: @bright-green;
+    }
+
+    button {
+      color: white;
+      :hover {
+        background: @bright-green;
+      }
     }
   }
-
-  &:hover {
-    background: #f6f6f6;
-  }
-}
-
-.browse-label-text {
-  line-height: inherit;
 }
 
 .jcarousel-control-next,
