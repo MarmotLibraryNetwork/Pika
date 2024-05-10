@@ -9681,7 +9681,8 @@ a.browse-thumbnail-sorted.active {
 }
 .result-value a,
 .facetDetails a,
-.solicit-new-materials-request a {
+.solicit-new-materials-request a,
+.wikipedia_article a {
   color: #3b679a;
   -webkit-text-decoration: underline dotted;
           text-decoration: underline dotted;
