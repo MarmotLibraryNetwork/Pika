@@ -7917,7 +7917,7 @@ body {
           text-decoration: underline dotted;
 }
 #header-container {
-  height: 100px;
+  height: 110px;
   min-height: 100px;
   padding-top: 0;
   background-color: #133155;
@@ -7940,7 +7940,7 @@ a .header-button {
   color: #222;
   background-color: #133155;
   border: 1px solid #555;
-  margin-top: 25px;
+  margin-top: 30px;
 }
 a .header-button:hover {
   color: #fff;
@@ -8542,7 +8542,7 @@ hr.menu {
 }
 #selected-browse-label {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 44%, #F7F7F7 45%, #F7F7F7 55%, #fff 56%);
+  background: linear-gradient(to bottom, #fff, #fff 44%, #bbd4e3 45%, #bbd4e3 55%, #fff 56%);
   margin-bottom: 5px;
 }
 #selected-browse-label > div.btn-group {
