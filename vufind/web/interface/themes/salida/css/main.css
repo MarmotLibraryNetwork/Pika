@@ -8542,7 +8542,7 @@ hr.menu {
 }
 #selected-browse-label {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 44%, #666 45%, #666 55%, #fff 56%);
+  background: linear-gradient(to bottom, #fff, #fff 44%, #aaa 45%, #aaa 55%, #fff 56%);
   margin-bottom: 5px;
 }
 #selected-browse-label > div.btn-group {
@@ -10373,6 +10373,26 @@ a .header-button:hover {
 #home-page-search-label,
 .browse-category {
   text-shadow: 1px 1px #FAFAFA;
+}
+#browse-label {
+  height: 5px;
+  background-color: #aaa;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  margin-right: -15px;
+}
+.browse-label-text {
+  color: #000;
+  background-color: #fff;
+  font-size: 22px;
+  line-height: 5px;
+  text-transform: uppercase;
+  display: inline-block;
+  vertical-align: top;
+  margin: auto;
+  padding: 0 8px;
+  z-index: 2;
+  position: relative;
 }
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
