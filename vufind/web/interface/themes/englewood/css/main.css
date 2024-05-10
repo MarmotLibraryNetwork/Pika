@@ -8453,11 +8453,12 @@ hr.menu {
   z-index: -1;
 }
 .browse-label-text {
+  color: #000;
   background-color: #f0f0f0;
   font-size: 22px;
-  color: #000;
   line-height: 5px;
-  vertical-align: top;
+  text-transform: uppercase;
+  display: inline-block;
   margin: auto;
   padding: 0 8px;
   z-index: 2;
