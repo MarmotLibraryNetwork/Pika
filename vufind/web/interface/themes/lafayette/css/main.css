@@ -10405,34 +10405,34 @@ a .header-button:hover {
   font-weight: bold;
   text-decoration: none !important;
 }
-#browse-label {
-  background: none;
-  height: inherit;
-  margin-top: 0;
-  display: none;
+.browse-label-text {
+  line-height: inherit;
 }
-.browse-category {
+#browse-category-carousel .browse-category {
   text-shadow: none;
-  font-weight: bold;
   border-radius: 10px;
   height: inherit;
   max-height: 100px;
 }
-.browse-category button {
-  height: 55px;
-}
-.browse-category.selected {
-  font-size: 15px;
-  background: #84bd00 !important;
-}
-.browse-category.selected div {
-  color: white !important;
-}
-.browse-category:hover {
+#browse-category-carousel .browse-category:hover {
   background: #f6f6f6;
 }
-.browse-label-text {
-  line-height: inherit;
+#browse-category-carousel .browse-category button {
+  font-weight: bold;
+  height: 55px;
+}
+#browse-category-carousel .browse-category.selected {
+  font-size: 15px;
+  background: #84bd00;
+}
+#browse-category-carousel .browse-category.selected :hover {
+  background: #84bd00;
+}
+#browse-category-carousel .browse-category.selected button {
+  color: white;
+}
+#browse-category-carousel .browse-category.selected button :hover {
+  background: #84bd00;
 }
 .jcarousel-control-next,
 .jcarousel-control-prev {
