@@ -10376,7 +10376,6 @@ a .header-button:hover {
 }
 #header-logo {
   padding-bottom: 10px;
-  max-height: inherit;
 }
 #main-content-with-sidebar > .row.breadcrumbs,
 #home-page-browse-header {

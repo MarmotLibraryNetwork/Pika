@@ -10359,7 +10359,6 @@ a .header-button:hover {
 }
 #header-logo {
   height: 150px;
-  max-height: inherit;
 }
 #browse-label {
   background-color: #fff;

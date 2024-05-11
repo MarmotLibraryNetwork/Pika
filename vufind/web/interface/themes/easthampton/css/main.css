@@ -10359,7 +10359,6 @@ a .header-button:hover {
 }
 #header-logo {
   height: 140px;
-  max-height: inherit;
 }
 .sidebar-button {
   background-color: #D8AE34;

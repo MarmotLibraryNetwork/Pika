@@ -10359,7 +10359,6 @@ a .header-button:hover {
 }
 #header-logo {
   height: 140px;
-  max-height: inherit;
 }
 #header-container {
   background-image: url('/interface/themes/acton/images/header_background.png');

@@ -10362,7 +10362,6 @@ a .header-button:hover {
 }
 #header-logo {
   height: 87px;
-  max-height: inherit;
 }
 .btn-sm,
 .btn-xs,
