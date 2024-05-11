@@ -10361,7 +10361,8 @@ a .header-button:hover {
   box-shadow: 2px 2px 5px #fff;
 }
 #header-logo {
-  height: 92;
+  height: 92px;
+  max-height: inherit;
 }
 #browse-label {
   background-color: #fff;

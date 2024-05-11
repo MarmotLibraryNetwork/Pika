@@ -10365,6 +10365,7 @@ a .header-button:hover {
   padding: 5px 5px 0 0;
   height: 140px;
   margin-left: -5px;
+  max-height: inherit;
 }
 .system-message-header,
 .system-message-header ~ .breadcrumbs,

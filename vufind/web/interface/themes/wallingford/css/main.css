@@ -7917,7 +7917,7 @@ body {
           text-decoration: underline dotted;
 }
 #header-container {
-  height: 150px;
+  height: 100px;
   min-height: 100px;
   padding-top: 0;
   background-color: #fff;
@@ -7940,7 +7940,7 @@ a .header-button {
   color: #222;
   background-color: #fff;
   border: 1px solid #555;
-  margin-top: 50px;
+  margin-top: 25px;
 }
 a .header-button:hover {
   color: #fff;
@@ -10358,8 +10358,7 @@ a .header-button:hover {
   box-shadow: 2px 2px 5px #fff;
 }
 #header-logo {
-  padding-top: 0;
-  height: 140px;
+  padding: 5px 10px 0 0;
 }
 #browse-label {
   background-color: #fff;

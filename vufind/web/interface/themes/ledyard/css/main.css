@@ -10361,6 +10361,7 @@ a .header-button:hover {
   padding-top: 0;
   margin-top: 0;
   height: 130px;
+  max-height: inherit;
 }
 a.btn-primary {
   color: #24606f;

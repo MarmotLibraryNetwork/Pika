@@ -10352,6 +10352,7 @@ fieldset[disabled] .btn-masquerade.active {
 #header-logo {
   padding: 5px 0;
   height: 140px;
+  max-height: inherit;
 }
 @media (max-width: 767px) {
   #header-logo {
