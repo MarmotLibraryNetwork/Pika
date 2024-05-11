@@ -7926,7 +7926,7 @@ body {
 }
 #header-logo {
   padding: 10px 10px 0 0;
-  max-height: 6em;
+  max-height: none;
 }
 @media (max-width: 767px) {
   #header-logo {
@@ -10376,6 +10376,7 @@ a .header-button:hover {
 }
 #header-logo {
   padding-bottom: 10px;
+  max-height: none;
 }
 #main-content-with-sidebar > .row.breadcrumbs,
 #home-page-browse-header {

@@ -7926,7 +7926,7 @@ body {
 }
 #header-logo {
   padding: 10px 10px 0 0;
-  max-height: 6em;
+  max-height: none;
 }
 @media (max-width: 767px) {
   #header-logo {
@@ -10360,6 +10360,7 @@ a .header-button:hover {
 #header-logo {
   padding-top: 0;
   height: 145px;
+  max-height: none;
 }
 #browse-label {
   background-color: #fff;

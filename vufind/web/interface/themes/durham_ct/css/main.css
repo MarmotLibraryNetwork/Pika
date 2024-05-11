@@ -7926,7 +7926,7 @@ body {
 }
 #header-logo {
   padding: 10px 10px 0 0;
-  max-height: 6em;
+  max-height: none;
 }
 @media (max-width: 767px) {
   #header-logo {
@@ -10365,6 +10365,7 @@ a .header-button:hover {
   padding: 5px 5px 0 0;
   height: 140px;
   margin-left: -5px;
+  max-height: none;
 }
 .system-message-header,
 .system-message-header ~ .breadcrumbs,
