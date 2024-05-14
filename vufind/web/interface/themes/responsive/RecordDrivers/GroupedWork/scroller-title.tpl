@@ -1,9 +1,9 @@
 {strip}
 		{* Scroller title entry plus pop-up for when the entry isn't in the catalog (eg Series carousel) *}
 	{if $noResultOriginalId}
-		<div id="scrollerTitle{$scrollerName}{$index}" class="scrollerTitle" onclick="return Pika.showElementInPopup('{$title|escape:quotes}', '#noResults{$index}')">
+		<button id="scrollerTitle{$scrollerName}{$index}" class="scrollerTitle" onclick="return Pika.showElementInPopup('{$title|escape:quotes}', '#noResults{$index}')">
 			<img src="{$bookCoverUrlMedium}" class="scrollerTitleCover" alt="{$title|escape} Cover" title="{$title|escape}">
-		</div>
+		</button>
 		<div id="noResults{$index}" style="display:none">
 			<div class="row">
 				<div class="result-label col-md-3">Author:</div>

@@ -211,7 +211,7 @@ TitleScroller.prototype.setVisibleTabIndex = function(scroller){
 		var displayedItems = Math.floor(width/(coverWidth + 30));
 		var currentIndex = scroller.currentScrollerIndex;
 		let indexArray = [];
-		$('button.scrollerTitle').attr('tabindex','-1');
+		$( '#' + scrollerId  + ' button.scrollerTitle').attr('tabindex','-1');
 		if(currentIndex + displayedItems > scroller.numScrollerTitles ){
 			let overflowTitles = (currentIndex + displayedItems) - scroller.numScrollerTitles;
 			for (let n = currentIndex; n < currentIndex + displayedItems - overflowTitles; n++)

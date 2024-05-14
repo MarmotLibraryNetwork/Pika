@@ -135,7 +135,7 @@ Pika.GroupedWork = (function(){
 					try{
 						var seriesData = data.seriesInfo;
 						if (seriesData && seriesData.titles.length > 0) {
-							seriesScroller = new TitleScroller('titleScrollerSeries', 'Series', 'seriesList');
+							seriesScroller = new TitleScroller('titleScrollerSeries', 'Series', 'seriesList', undefined,undefined, true);
 							$('#seriesInfo').show();
 							seriesScroller.loadTitlesFromJsonData(seriesData);
 							$('#seriesPanel').show();
