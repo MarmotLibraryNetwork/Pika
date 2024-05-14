@@ -9,7 +9,7 @@
  * @return
  */
 function TitleScroller(scrollerId, scrollerShortName, container,
-		autoScroll, style) {
+		autoScroll, style, tabSelect) {
 	this.scrollerTitles = [];
 	this.currentScrollerIndex = 0;
 	this.numScrollerTitles = 0;
@@ -20,6 +20,7 @@ function TitleScroller(scrollerId, scrollerShortName, container,
 	this.swipeInterval = 5;
 	this.autoScroll = (typeof autoScroll == "undefined") ? false : autoScroll;
 	this.style = (typeof style == "undefined") ? 'horizontal' : style;
+	this.tabSelect = (typeof tabSelect == "undefined") ? false: tabSelect;
 }
 
 TitleScroller.prototype.loadTitlesFrom = function(jsonUrl) {
@@ -192,6 +193,45 @@ TitleScroller.prototype.finishLoadingScroller = function() {
 			}
 		}, 5000);
 	}
+	if(this.tabSelect){
+		$('button.scrollerTitle').on("focus", function(){
+			var scrollerTitleId = "scrollerTitle" + curScroller.scrollerShortName;
+			var scrollerIndex = $(this).attr('id').replace(scrollerTitleId,"");
+			var index = scrollerIndex.replace(".scrollerTitle","");
+			curScroller.scrollToIndex(index);
+		});
+
+	}
+};
+
+TitleScroller.prototype.setVisibleTabIndex = function(scroller){
+		var scrollerId = scroller.scrollerId;
+		var width = $('#'+scrollerId).width();
+		var coverWidth = $('#scrollerTitle'+ scroller.scrollerShortName + scroller.currentScrollerIndex).width();
+		var displayedItems = Math.floor(width/(coverWidth + 30));
+		var currentIndex = scroller.currentScrollerIndex;
+		let indexArray = [];
+		$('button.scrollerTitle').attr('tabindex','-1');
+		if(currentIndex + displayedItems > scroller.numScrollerTitles ){
+			let overflowTitles = (currentIndex + displayedItems) - scroller.numScrollerTitles;
+			for (let n = currentIndex; n < currentIndex + displayedItems - overflowTitles; n++)
+			{
+				indexArray.push(n);
+			}
+			for (let i = 0; i < overflowTitles; i++)
+			{
+				indexArray.push(i);
+			}
+
+		}else{
+			for (let n = currentIndex; n < currentIndex + displayedItems; n++)
+			{
+				indexArray.push(n);
+			}
+		}
+		indexArray.forEach(function(i){
+			$('#scrollerTitle'+ scroller.scrollerShortName + i).attr('tabindex', '0');
+		});
 };
 
 TitleScroller.prototype.scrollToRight = function() {
@@ -239,41 +279,81 @@ TitleScroller.prototype.swipeDown = function(customSwipeInterval) {
 		this.currentScrollerIndex = 0;
 	TitleScroller.prototype.activateCurrentTitle.call(this);
 };
+TitleScroller.prototype.scrollToIndex = function(index){
+	var previousIndex = (typeof this.currentScrollerIndex == "undefined") ? 0 : this.currentScrollerIndex;
+	if(index > previousIndex){
+		this.currentScrollerIndex++;
+		if (this.currentScrollerIndex > this.numScrollerTitles - 1)
+			this.currentScrollerIndex = 0;
+	} else if(index < previousIndex){
+		this.currentScrollerIndex--;
+		if (this.currentScrollerIndex < 0)
+			this.currentScrollerIndex = this.numScrollerTitles - 1;
+	} else{
+		this.currentScrollerIndex = this.currentScrollerIndex;
+	}
+	TitleScroller.prototype.activateCurrentTitle(false, this);
+};
 
-TitleScroller.prototype.activateCurrentTitle = function() {
-	if (this.numScrollerTitles === 0) {
+TitleScroller.prototype.activateCurrentTitle = function(scroll, curScroller) {
+	var scroller = (typeof curScroller == "undefined") ? this : curScroller;
+	if (scroller.numScrollerTitles === 0) {
 		return;
 	}
-	var scrollerTitles = this.scrollerTitles,
-			scrollerShortName = this.scrollerShortName,
-			currentScrollerIndex = this.currentScrollerIndex,
-			scrollerBody = $('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody"),
-			scrollerTitleId = "#scrollerTitle" + this.scrollerShortName + currentScrollerIndex;
+	var scrollerTitles = scroller.scrollerTitles,
+			scrollerShortName = scroller.scrollerShortName,
+			currentScrollerIndex = scroller.currentScrollerIndex,
+			scrollerBody = $('#' + scroller.scrollerId + " .scrollerBodyContainer .scrollerBody"),
+			scrollerTitleId = "#scrollerTitle" + scroller.scrollerShortName + currentScrollerIndex;
 
 	$("#tooltip").hide();  //Make sure to clear the current tooltip if any
 
 	// Update the actual display
-	if (this.style == 'horizontal'){
+	if (scroller.style == 'horizontal'){
 		$("#titleScrollerSelectedTitle" + scrollerShortName).html(scrollerTitles[currentScrollerIndex]['title']);
 		$("#titleScrollerSelectedAuthor" + scrollerShortName).html(scrollerTitles[currentScrollerIndex]['author']);
 
-		if ($(scrollerTitleId).length != 0) {
-				var widthItemsLeft = $(scrollerTitleId).position().left,
-						widthCurrent = $(scrollerTitleId).width(),
-						containerWidth = $('#' + this.scrollerId + " .scrollerBodyContainer").width(),
-						// center the book in the container
-						leftPosition = -((widthItemsLeft + widthCurrent / 2) - (containerWidth / 2));
+		if ($(scrollerTitleId).length != 0){
+			var widthItemsLeft = $(scrollerTitleId).position().left,
+					widthCurrent = $(scrollerTitleId).width(),
+					containerWidth = $('#' + scroller.scrollerId + " .scrollerBodyContainer").width();
+
+			if (scroller.tabSelect){
+				var leftPosition = -(widthItemsLeft);
+				var doScroll = (typeof scroll == "undefined") ? true : scroll;
+				if (doScroll){
+					scrollerBody.animate({left: leftPosition + "px"}, 200, function (){
+						for (var i in scrollerTitles){
+							var scrollerTitleId2 = "#scrollerTitle" + scrollerShortName + i;
+							$(scrollerTitleId2).removeClass('selected');
+						}
+						$(scrollerTitleId).addClass('selected');
+					});
+					TitleScroller.prototype.setVisibleTabIndex(scroller);
+				}else{
+					for (var i in scrollerTitles){
+						var scrollerTitleId2 = "#scrollerTitle" + scrollerShortName + i;
+						$(scrollerTitleId2).removeClass('selected');
+					}
+					$(scrollerTitleId).addClass('selected');
+				}
+
+			}else{
+				// center the book in the container
+				var leftPosition = -((widthItemsLeft + widthCurrent / 2) - (containerWidth / 2));
+
 				scrollerBody.animate({
-					left : leftPosition + "px"
-				}, 400, function() {
-					for ( var i in scrollerTitles) {
+					left: leftPosition + "px"
+				}, 400, function (){
+					for (var i in scrollerTitles){
 						var scrollerTitleId2 = "#scrollerTitle" + scrollerShortName + i;
 						$(scrollerTitleId2).removeClass('selected');
 					}
 					$(scrollerTitleId).addClass('selected');
 				});
+			}
 		}
-	}else if (this.style == 'vertical'){
+	}else if (scroller.style == 'vertical'){
 		$("#titleScrollerSelectedTitle" + scrollerShortName).html(scrollerTitles[currentScrollerIndex]['title']);
 		$("#titleScrollerSelectedAuthor" + scrollerShortName).html(scrollerTitles[currentScrollerIndex]['author']);
 
@@ -293,15 +373,16 @@ TitleScroller.prototype.activateCurrentTitle = function() {
 				$(scrollerTitleId).addClass('selected');
 			});
 		}
-	}else if (this.style == 'text-list'){
+	}else if (scroller.style == 'text-list'){
 		// No Action Needed
 	}else{
 		$("#titleScrollerSelectedTitle" + scrollerShortName).html(scrollerTitles[currentScrollerIndex]['title']);
 		$("#titleScrollerSelectedAuthor" + scrollerShortName).html(scrollerTitles[currentScrollerIndex]['author']);
 
 		scrollerBody.left = "0px";
-		scrollerBody.html(this.scrollerTitles[currentScrollerIndex]['formattedTitle']);
+		scrollerBody.html(scroller.scrollerTitles[currentScrollerIndex]['formattedTitle']);
 	}
+
 };
 
 /*

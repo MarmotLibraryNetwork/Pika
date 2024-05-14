@@ -144,7 +144,7 @@ Pika.GroupedWork = (function(){
 						}
 						var similarTitleData = data.similarTitles;
 						if (similarTitleData && similarTitleData.titles.length > 0) {
-							morelikethisScroller = new TitleScroller('titleScrollerMoreLikeThis', 'MoreLikeThis', 'morelikethisList');
+							morelikethisScroller = new TitleScroller('titleScrollerMoreLikeThis', 'MoreLikeThis', 'morelikethisList',undefined,undefined,true);
 							$('#moreLikeThisInfo').show();
 							morelikethisScroller.loadTitlesFromJsonData(similarTitleData);
 						}

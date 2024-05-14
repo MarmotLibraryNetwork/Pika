@@ -22,8 +22,8 @@
 			</div>
 		{/if}
 		<div id="titleScroller{$scrollerName}" class="titleScrollerBody">
-			<div class="leftScrollerButton enabled btn" onclick="{$scrollerVariable}.scrollToLeft();"><i class="glyphicon glyphicon-chevron-left"></i></div>
-			<div class="rightScrollerButton btn" onclick="{$scrollerVariable}.scrollToRight();"><i class="glyphicon glyphicon-chevron-right"></i></div>
+			<button class="leftScrollerButton enabled btn" onclick="{$scrollerVariable}.scrollToLeft();" tabindex="0" aria-label="scroll left"><i class="glyphicon glyphicon-chevron-left"></i></button>
+
 			<div class="scrollerBodyContainer">
 				<div class="scrollerBody" style="display:none"></div>
 				<div class="scrollerLoadingContainer">
@@ -37,7 +37,9 @@
 			{if !isset($widget) || $widget->showAuthor}
 				<div id="titleScrollerSelectedAuthor{$scrollerName}" class="titleScrollerSelectedAuthor notranslate"></div>
 			{/if}
+			<button class="rightScrollerButton btn" onclick="{$scrollerVariable}.scrollToRight();" tabindex="0" aria-label="scroll right"><i class="glyphicon glyphicon-chevron-right"></i></button>
 		</div>
+
 	</div>
 </div>
 <script>

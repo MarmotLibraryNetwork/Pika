@@ -26,8 +26,8 @@
 			</div>
 		</div>
 	{else}
-		<div id="scrollerTitle{$scrollerName}{$index}" class="scrollerTitle" onclick="return Pika.GroupedWork.showGroupedWorkInfo('{$id}')">
+		<button id="scrollerTitle{$scrollerName}{$index}" class="scrollerTitle" onclick="return Pika.GroupedWork.showGroupedWorkInfo('{$id}')">
 			<img src="{$bookCoverUrlMedium}" class="scrollerTitleCover" alt="{$title|escape} Cover" title="{$title|escape}{if $author} by {$author|escape}{/if}">
-		</div>
+		</button>
 	{/if}
 {/strip}
