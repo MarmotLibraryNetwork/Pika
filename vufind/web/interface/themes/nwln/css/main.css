@@ -8995,25 +8995,32 @@ a.browse-thumbnail-sorted.active {
 .leftScrollerButton,
 .rightScrollerButton {
   display: inline-block;
-  height: 135px;
+  height: 90%;
   line-height: 135px;
   vertical-align: middle;
   width: 25px;
-  float: left;
   cursor: pointer;
   margin-left: 5px;
   margin-top: 5px;
   zoom: 1;
+  background: none;
+  position: absolute;
+  top: 0;
+  padding-inline: 0;
+  z-index: 100;
   *display: inline;
 }
+.leftScrollerButton:focus,
+.rightScrollerButton:focus {
+  outline: 2px solid #E15F15;
+}
 .leftScrollerButton {
-  float: left;
-  margin-left: 5px;
+  left: 0;
 }
 .rightScrollerButton {
-  float: right;
+  right: 0;
   margin-right: 5px;
-  z-index: 100;
+  margin-left: 0;
 }
 .scrollerButtonUp,
 .scrollerButtonDown {
@@ -9094,6 +9101,9 @@ a.browse-thumbnail-sorted.active {
 }
 .scrollerTitle.selected img {
   opacity: 1;
+}
+.scrollerTitle:focus {
+  outline: 2px solid #E15F15;
 }
 .verticalTitleScroller {
   width: 150px;
