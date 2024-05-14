@@ -39,7 +39,7 @@
 						<div class="input-group">
 							<input type="password" name="pin1" id="pin1" value="" size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
 							<span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
-				        <button onclick="$('span', this).toggle(); return Pika.pwdToText('pin1')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-open" aria-hidden="true" title="Show {translate text='PIN'}"></span><span class="glyphicon glyphicon-eye-close" style="display: none" aria-hidden="true" title="Hide {translate text='PIN'}"></span></button>
+				        <button aria-label="{translate text='PIN'} is hidden, click to show" onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin1')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-close" aria-hidden="true" title="Show {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div></span><span class="glyphicon glyphicon-eye-open" style="display: none" title="Hide {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div></span></button>
 				      </span>
 						</div>
 					</div>
@@ -50,7 +50,7 @@
 						<div class="input-group">
 							<input type="password" name="pin2" id="pin2" value="" size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
 							<span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
-				        <button onclick="$('span', this).toggle(); return Pika.pwdToText('pin2')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-open" aria-hidden="true" title="Show {translate text='PIN'}"></span><span class="glyphicon glyphicon-eye-close" style="display: none" aria-hidden="true" title="Hide {translate text='PIN'}"></span></button>
+				        <button aria-label="{translate text='PIN'} is hidden, click to show" onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin2')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-close" aria-hidden="true" title="Show {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div></span><span class="glyphicon glyphicon-eye-open" style="display: none" title="Hide {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div></span></button>
 				      </span>
 						</div>
 					</div>
