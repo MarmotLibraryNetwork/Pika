@@ -6768,10 +6768,6 @@ a:focus {
 a:hover {
   color: #345a87;
 }
-a.btn-primary,
-a.btn-info {
-  color: #fff;
-}
 @media print {
   a:link:after,
   a:visited:after {
@@ -7004,7 +7000,7 @@ a:focus img.listResultImage {
   outline: 2px solid white;
 }
 #vertical-menu-bar .menu-icon-selected:focus-within {
-  border: 2px solid #9BBA90 !important;
+  border: 2px solid #3f7036 !important;
   outline: 2px solid white;
 }
 a:focus > .header-button {
@@ -7921,7 +7917,7 @@ body {
   min-height: 100px;
   padding-top: 0;
   background-color: #fff;
-  border-bottom: 8px solid #FFF;
+  border-bottom: 8px solid #fff;
   margin-bottom: 0;
 }
 #header-logo {
@@ -7944,7 +7940,7 @@ a .header-button {
 }
 a .header-button:hover {
   color: #fff;
-  background-color: rgba(51, 51, 51, 0.7);
+  background-color: #355F2E;
   font-weight: bold;
   text-decoration-color: #fff;
 }
@@ -8012,7 +8008,7 @@ a .header-button:visited {
 }
 .menu-bar {
   color: #FFF;
-  background-color: #9BBA90;
+  background-color: #3f7036;
 }
 #horizontal-menu-bar-container {
   padding-left: 5px;
@@ -8032,7 +8028,7 @@ a .header-button:visited {
   float: left;
 }
 #horizontal-menu-bar-container .menu-icon.menu-icon-selected {
-  background-color: #355F2E;
+  background-color: #453451;
 }
 #horizontal-menu-bar-container.sticky-menu-bar {
   position: fixed;
@@ -8055,7 +8051,7 @@ a .header-button:visited {
   width: 40px;
   height: 2000px;
   height: 100vh;
-  background-color: #9BBA90;
+  background-color: #3f7036;
   color: #FFF;
   padding-left: 0;
   padding-right: 0;
@@ -8069,7 +8065,7 @@ a .header-button:visited {
   position: relative;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected {
-  background-color: #355F2E;
+  background-color: #453451;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
   color: #FFF;
@@ -8543,7 +8539,7 @@ hr.menu {
 }
 #selected-browse-label {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 44%, #9BBA90 45%, #9BBA90 55%, #fff 56%);
+  background: linear-gradient(to bottom, #fff, #fff 44%, #3f7036 45%, #3f7036 55%, #fff 56%);
   margin-bottom: 5px;
 }
 #selected-browse-label > div.btn-group {
@@ -9586,7 +9582,7 @@ a.browse-thumbnail-sorted.active {
   width: 100%;
   display: inline-block;
   padding: 2px 2px 20px;
-  border-top: 5px solid #9BBA90;
+  border-top: 5px solid #3f7036;
   margin-top: 15px;
 }
 .combined-results-section .related-manifestation {
@@ -9601,8 +9597,8 @@ a.browse-thumbnail-sorted.active {
 .combined-results-button {
   float: right;
   margin-top: 4px;
-  background-color: #9BBA90;
-  border-color: #9BBA90;
+  background-color: #3f7036;
+  border-color: #3f7036;
 }
 #bookshelfContainer {
   max-height: 400px;
@@ -9800,7 +9796,7 @@ a.browse-thumbnail-sorted.active {
   margin-top: 5px;
   text-align: right;
   color: #FFF;
-  background-color: #8db080;
+  background-color: #355f2e;
   font-variant: small-caps;
   font-weight: bold;
   font-size: 16px;
@@ -9817,7 +9813,7 @@ a.browse-thumbnail-sorted.active {
   text-transform: uppercase;
   font-weight: bold;
   color: #000075;
-  border-bottom: 2px solid #9BBA90;
+  border-bottom: 2px solid #3f7036;
   margin-top: 15px;
 }
 #explore-more-body .section {
@@ -9859,12 +9855,12 @@ a.browse-thumbnail-sorted.active {
   }
 }
 .exploreMoreBar {
-  border: solid 1px #9BBA90;
+  border: solid 1px #3f7036;
   margin: 10px 5px 15px;
 }
 .exploreMoreBar .exploreMoreBarLabel {
   color: #FFF;
-  background-color: #9BBA90;
+  background-color: #3f7036;
   font-weight: bold;
   text-transform: uppercase;
   white-space: nowrap;
@@ -9882,7 +9878,7 @@ a.browse-thumbnail-sorted.active {
 }
 .exploreMoreBar .label-left,
 .exploreMoreBar .label-left img {
-  background-color: #9BBA90;
+  background-color: #3f7036;
 }
 .exploreMoreBar .label-left .exploreMoreBarLabel {
   position: absolute;
@@ -9902,7 +9898,7 @@ a.browse-thumbnail-sorted.active {
 }
 .exploreMoreBar .label-top,
 .exploreMoreBar .label-top img {
-  background-color: #9BBA90;
+  background-color: #3f7036;
   display: inline-block;
 }
 .exploreMoreBar .label-top .exploreMoreBarLabel {
@@ -9969,7 +9965,7 @@ a.browse-thumbnail-sorted.active {
 #book-sections .jcarousel-control-next {
   height: 100%;
   background-color: transparent;
-  color: #9BBA90;
+  color: #3f7036;
   z-index: 2;
   box-shadow: white 0 0 0 0;
 }
@@ -10119,7 +10115,7 @@ a.browse-thumbnail-sorted.active {
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentControls,
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentSearchControls {
   color: #FFF;
-  background-color: #9BBA90;
+  background-color: #3f7036;
   padding: 10px 0;
   min-height: 124px;
 }
@@ -10129,7 +10125,7 @@ a.browse-thumbnail-sorted.active {
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox #searchComponentForm {
   background-color: white;
-  border: 1px solid #7fa671;
+  border: 1px solid #2c4e25;
   padding: 3px;
   margin-left: 5px;
 }
@@ -10157,7 +10153,7 @@ a.browse-thumbnail-sorted.active {
   top: 65px;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader {
-  background-color: #9BBA90;
+  background-color: #3f7036;
   padding: 10px 10px 0;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader + .row {
@@ -10357,7 +10353,7 @@ a .header-button {
   border: 0;
   border-radius: 0.5em;
   color: #fff;
-  background-color: #9BBA90;
+  background-color: #3f7036;
   margin-top: 20px;
   line-height: 60px;
   text-shadow: none;
@@ -10367,32 +10363,30 @@ a .header-button:hover {
   border-bottom: 0;
   box-shadow: 2px 2px 5px #fff;
 }
-.browse-category {
+#browse-category-carousel .browse-category {
   padding-top: 20px;
   height: 80px;
 }
-.browse-category div {
+#browse-category-carousel .browse-category button {
   text-shadow: none;
   text-transform: uppercase;
   font-size: large;
   font-weight: 500;
 }
-.browse-category div:focus {
-  outline: none;
-}
-.browse-category.selected {
+#browse-category-carousel .browse-category.selected {
   border: none;
   border-radius: 5px;
-  background-color: #9078A0;
   background: #9078A0;
 }
-.browse-category.selected div {
+#browse-category-carousel .browse-category.selected button {
   color: #fff;
 }
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
   background-color: #fff;
   color: #453451;
+  height: 80px;
+  line-height: 80px;
   box-shadow: none;
 }
 #browse-category-picker .jcarousel-control-prev:active,

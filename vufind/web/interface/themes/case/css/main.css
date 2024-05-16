@@ -6771,10 +6771,6 @@ a:focus {
 a:hover {
   color: #345a87;
 }
-a.btn-primary,
-a.btn-info {
-  color: #fff;
-}
 @media print {
   a:link:after,
   a:visited:after {
