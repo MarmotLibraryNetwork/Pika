@@ -9,14 +9,14 @@
 
 .header-login-button-mixin;
 
-//#header-container {
-////  background: linear-gradient(to bottom, @header-top-color, @header-middle-color 85%, @header-bottom-color);
-////  original styling above
-////  background: linear-gradient(to bottom, @header-top-color, @header-middle-color 20%, @header-bottom-color 10%, @header-bottom-color);
-//    background: linear-gradient(to bottom, @header-top-color, @header-middle-color 40%, @header-bottom-color 55%,@header-bottom-color);
-//
-//}
-
-#header-logo{
+#header-logo {
   padding-top: 0;
+  max-height: none;
+}
+
+#browse-category-carousel .browse-category.selected {
+  background-color: @selectedCategoryColor;
+  button {
+    color: @selectedSubCategoryFontColor;
+  }
 }
