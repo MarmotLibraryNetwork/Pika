@@ -5,68 +5,28 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
-#header-logo{
-  max-width: 100%;
+#header-logo {
+  //max-width: 100%;
+  //max-height: none;
 }
 
-// Below should go in Library Admin Overrides
-//.header-primary, .header-button, .header-button:hover {
-//  border: none;
-//}
-//
-//.header-button {
-// color: #80561B !important;
-//  font-size: 125%;
-//  line-height: 30px !important;
-//  padding: 0;
-//  text-align: right;
-//  text-decoration: underline;
-//  text-shadow: 1px 1px #FFFFFF;
-//  vertical-align: middle;
-//}
-//
-//
 .loginOptions > a#headerLoginLink, .logoutOptions > .hidden-xs {
   float: right;
   width: 200px;
-  padding-top:20px;
   transition: all 0.3s ease-in-out;
 
-
-}
-.loginOptions > a#headerLoginLink:hover, .logoutOptions > .hidden-xs:hover{
-  transform: scale(0.9);
-
-}
-
-.loginOptions a .header-button, .logoutOptions a .header-button {
-  background: @garfieldBlue;
-  border-radius: 50px;
+  &:hover {
+    transform: scale(0.9);
+  }
 }
 
 a .header-button {
-  line-height: 45px;
-  color: white;
+  border-radius: 50px;
   border: none;
   text-shadow: none;
-  margin-top: inherit;
+
+  &:hover {
+    border: none;
+  }
 }
 
-a .header-button:hover {
-  border: none;
-}
-
-
-//
-//#headerLoginLink {
-//  font-size: 100%;
-//  visibility: hidden;
-//}
-//
-//#headerLoginLink:after {
-//  content: 'My Account';
-//  visibility: visible;
-//  color: #80561B !important;
-//  text-decoration: underline;
-//  text-shadow: 1px 1px #FFFFFF;
-//}

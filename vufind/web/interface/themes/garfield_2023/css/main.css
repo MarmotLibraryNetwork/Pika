@@ -7932,15 +7932,15 @@ body {
 }
 a .header-button {
   text-align: center;
-  line-height: 50px;
-  color: #222;
-  background-color: #fff;
+  line-height: 45px;
+  color: #fff;
+  background-color: #0078ae;
   border: 1px solid #555;
-  margin-top: 25px;
+  margin-top: 27.5px;
 }
 a .header-button:hover {
   color: #fff;
-  background-color: rgba(51, 51, 51, 0.7);
+  background-color: #0078ae;
   font-weight: bold;
   text-decoration-color: #fff;
 }
@@ -8511,31 +8511,31 @@ hr.menu {
   border: #E15F15 2px solid;
 }
 #browse-category-carousel .browse-category.category0 {
-  background-color: #28ab75;
+  background-color: #047949;
 }
 #browse-category-carousel .browse-category.category1 {
   background-color: #694d71;
 }
 #browse-category-carousel .browse-category.category2 {
-  background-color: #ffbc30;
+  background-color: #D63E30;
 }
 #browse-category-carousel .browse-category.category3 {
   background-color: #0078ae;
 }
 #browse-category-carousel .browse-category.category4 {
-  background-color: #ef5b4e;
+  background-color: #047949;
 }
 #browse-category-carousel .browse-category.category5 {
-  background-color: #73b5d3;
-}
-#browse-category-carousel .browse-category.category6 {
-  background-color: #28ab75;
-}
-#browse-category-carousel .browse-category.category7 {
   background-color: #694d71;
 }
+#browse-category-carousel .browse-category.category6 {
+  background-color: #D63E30;
+}
+#browse-category-carousel .browse-category.category7 {
+  background-color: #0078ae;
+}
 #browse-category-carousel .browse-category.category8 {
-  background-color: #ffbc30;
+  background-color: #047949;
 }
 #selected-browse-label {
   background-color: #fff;
@@ -8892,7 +8892,7 @@ a.browse-thumbnail-sorted.active {
 }
 #browse-sub-category-menu button.selected {
   color: #fff;
-  background-color: #28ab75;
+  background-color: #047949;
 }
 #browse-sub-category-menu button:focus {
   outline: #E15F15 solid 2px;
@@ -10349,31 +10349,20 @@ fieldset[disabled] .btn-masquerade.active {
   color: #f1dbff;
   background-color: #fff;
 }
-#header-logo {
-  max-width: 100%;
-}
 .loginOptions > a#headerLoginLink,
 .logoutOptions > .hidden-xs {
   float: right;
   width: 200px;
-  padding-top: 20px;
   transition: all 0.3s ease-in-out;
 }
 .loginOptions > a#headerLoginLink:hover,
 .logoutOptions > .hidden-xs:hover {
   transform: scale(0.9);
 }
-.loginOptions a .header-button,
-.logoutOptions a .header-button {
-  background: #0078ae;
-  border-radius: 50px;
-}
 a .header-button {
-  line-height: 45px;
-  color: white;
+  border-radius: 50px;
   border: none;
   text-shadow: none;
-  margin-top: inherit;
 }
 a .header-button:hover {
   border: none;

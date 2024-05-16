@@ -1,10 +1,12 @@
 // Variables Customizations for Garfield County theme
 @garfieldBlue: #0078ae;
-@garfieldGreen: #28ab75;
+//@garfieldGreen: #28ab75;
+@garfieldGreen: #047949; // (5.47) https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=047949
 @garfieldPurple: #694d71;
 @garfieldYellow: #ffbc30;
 @garfieldLightBlue: #73b5d3;
-@garfieldRed: #ef5b4e;
+//@garfieldRed: #ef5b4e;
+@garfieldRed: #D63E30; // (4.57) https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=D63E30
 
 @browseCarouselControlBackgroundColor: #ffffff;
 
@@ -18,20 +20,23 @@
 
 // set all browse category colors to the first color to remove lightening of successive categories. plv 9-17-2014
 @category2MainColor: @garfieldPurple;
-@category3MainColor: @garfieldYellow;
+@category3MainColor: @garfieldRed;
 @category4MainColor: @garfieldBlue;
-@category5MainColor: @garfieldRed;
-@category6MainColor: @garfieldLightBlue;
-@category7MainColor: @category1MainColor;
-@category8MainColor: @category2MainColor;
-@category9MainColor: @category3MainColor;
+@category5MainColor: @category1MainColor;
+@category6MainColor: @category2MainColor;
+@category7MainColor: @category3MainColor;
+@category8MainColor: @category4MainColor;
 
 
 // Selected Category border color to highlight Selected category
 //@selectedCategoryBorderColor: lighten(@garfieldBrown, 30%); //softer touch
 @selectedCategoryBorderColor: @garfieldBlue;
 
-@header-buttons-background-color : @garfieldBlue;
+@header-button-height: 45px;
+@header-button-color: #fff;
+@header-button-bg-color : @garfieldBlue;
+@header-button-hover-bg-color: @garfieldBlue;
+@header-button-hover-color: #fff;
 
 @menu-bar-background-color: @garfieldBlue;
 //@menu-bar-selected-background-color: @garfieldBrown;
