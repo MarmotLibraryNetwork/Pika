@@ -71,7 +71,11 @@
 					<div class="btn-group btn-group-vertical btn-group-sm">
 						<a href="{$relatedRecord.url}" class="btn btn-sm btn-info">More Info</a>
 						{foreach from=$relatedRecord.actions item=curAction}
-							<a href="{$curAction.url}" {if $curAction.onclick}onclick="{$curAction.onclick}"{/if} class="btn btn-sm btn-default" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
+							{if empty($curAction.url)} {* For accessibility, use buttons instead of <a> when there is no URL *}
+								<button {if $curAction.onclick}onclick="{$curAction.onclick}"{/if} class="btn btn-sm btn-default" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</button>
+							{else}
+								<a href="{$curAction.url}" {if $curAction.onclick}onclick="{$curAction.onclick}"{/if} class="btn btn-sm btn-default" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
+							{/if}
 						{/foreach}
 					</div>
 				</td>
