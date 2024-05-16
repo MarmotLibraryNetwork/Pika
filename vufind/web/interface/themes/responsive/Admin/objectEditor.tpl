@@ -18,7 +18,11 @@
 		</p>
 		<div class="btn-group">
 			{foreach from=$additionalObjectActions item=action}
+				{if empty($action.url)} {* For accessibility, use buttons instead of <a> when there is no URL *}
+					<button class="btn btn-default btn-sm"{if $action.onclick} onclick="{$action.onclick}"{/if}>{$action.text}</button>
+				{else}
 				<a class="btn btn-default btn-sm"{if $action.url} href='{$action.url}'{/if}{if $action.onclick} onclick="{$action.onclick}"{/if}>{$action.text}</a>
+				{/if}
 			{/foreach}
 		</div>
 		{include file="DataObjectUtil/objectEditForm.tpl"}

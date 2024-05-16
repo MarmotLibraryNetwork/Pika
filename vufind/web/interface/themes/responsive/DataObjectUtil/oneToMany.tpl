@@ -33,7 +33,7 @@
 							{if in_array($subProperty.type, array('text', 'date', 'integer', 'textarea', 'html'))}
 								<input type="text" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" aria-label="{$subProperty.label}" class="form-control{if $subProperty.type=='date'} datepicker{elseif $subProperty.type=="integer"} integer{/if}{if $subProperty.required == true} required{/if}">
 							{elseif $subProperty.type=='number'}
-								<input type="number" name='{$propName}_{$subPropName}[{$subObject->id}]' value="{$subPropValue|escape}" class="form-control {if $subProperty.required}required{/if}"{if $subProperty.max} max="{$subProperty.max}"{/if}{if $subProperty.min} min="{$subProperty.min}"{/if}{if $subProperty.maxLength} maxlength='{$subProperty.maxLength}'{/if}{if $subProperty.size} size='{$subProperty.size}'{/if}{if $subProperty.step} step='{$subProperty.step}'{/if}>
+								<input type="number" name='{$propName}_{$subPropName}[{$subObject->id}]' aria-label="{$subProperty.label}" value="{$subPropValue|escape}" class="form-control {if $subProperty.required}required{/if}"{if $subProperty.max} max="{$subProperty.max}"{/if}{if $subProperty.min} min="{$subProperty.min}"{/if}{if $subProperty.maxLength} maxlength='{$subProperty.maxLength}'{/if}{if $subProperty.size} size='{$subProperty.size}'{/if}{if $subProperty.step} step='{$subProperty.step}'{/if}>
 							{elseif $subProperty.type=='checkbox'}
 								<input type="checkbox" name='{$propName}_{$subPropName}[{$subObject->id}]' aria-label="{$subProperty.label}" {if $subPropValue == 1}checked='checked'{/if}>
 							{else}
@@ -104,7 +104,7 @@
 	</table>
 
 	<div class="{$propName}Actions">
-		<a href="#" onclick="addNew{$propName}();return false;"  class="btn btn-primary btn-sm">Add New</a>
+		<button onclick="addNew{$propName}();return false;" class="btn btn-primary btn-sm">Add New</button>
 		{if $property.additionalOneToManyActions && $id}{* Only display these actions for an existing object *}
 			<div class="btn-group pull-right">
 				{foreach from=$property.additionalOneToManyActions item=action}
@@ -121,7 +121,11 @@
 						{assign var="actionAllowed" value=true}
 					{/if}
 					{if $actionAllowed}
-					<a class="btn {if $action.class}{$action.class}{else}btn-default{/if} btn-sm"{if $action.url} href="{$action.url|replace:'$id':$id}"{/if}{if $action.onclick} onclick="{$action.onclick|replace:'$id':$id}"{/if}>{$action.text}</a>
+						{if empty($action.url)} {* For accessibility, use buttons instead of <a> when there is no URL *}
+							<button class="btn {if $action.class}{$action.class}{else}btn-default{/if} btn-sm"{if $action.onclick} onclick="{$action.onclick|replace:'$id':$id}"{/if}>{$action.text}</button>
+						{else}
+							<a class="btn {if $action.class}{$action.class}{else}btn-default{/if} btn-sm"{if $action.url} href="{$action.url|replace:'$id':$id}"{/if}{if $action.onclick} onclick="{$action.onclick|replace:'$id':$id}"{/if}>{$action.text}</a>
+						{/if}
 					{elseif $action.allowed_roles && $userRoles && (!in_array($action.allowed_roles, $userRoles))}
 						<small></small>
 					{else}

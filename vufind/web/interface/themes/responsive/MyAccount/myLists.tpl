@@ -5,7 +5,7 @@
 	</div>
 	<div id="listTopButtons" class="btn-toolbar">
 		<div class="btn-group">
-			<a href="#" onclick="return Pika.Account.showCreateListForm();" class="btn btn-sm btn-primary">Create a New List</a>
+			<button onclick="return Pika.Account.showCreateListForm();" class="btn btn-sm btn-primary">Create a New List</button>
 			{if $showConvertListsFromClassic}
 				<button value="importFromClassic" class="btn btn-sm btn-default" onclick="return Pika.Lists.importListsFromClassic();">Import Lists from Classic</button>
 			{/if}
