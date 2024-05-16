@@ -401,60 +401,66 @@
   font-weight: bold;
 }
 
-@media (min-width: 0) and (max-width:@screen-tn-max) {
+@media (min-width: 0) and (max-width: @screen-tn-max) {
   .bookshelfHelpText {
     left: 1em;
   }
-    .checkbox-results{
-      position:relative;
-      z-index:2;
-      width: 20px;
-    }
-    .addToShelf img{
-      min-width:50px;
-      max-width:60px;
-      z-index: 2;
-      position: relative;
-      margin-left:-1em;
-      margin-top: 10px;
 
-    }
-}
-@media (min-width: @screen-xs-min) and (max-width:@screen-sm-max) {
-  .bookshelfHelpText{
-    left: 0;
-  }
-
-  .checkbox-results{
-    position:relative;
-    z-index:2;
+  .checkbox-results {
+    position: relative;
+    z-index: 2;
     width: 20px;
   }
 
-  .addToShelf img{
-    min-width:50px;
-    max-width:60px;
+  .addToShelf img {
+    min-width: 50px;
+    max-width: 60px;
+    z-index: 2;
     position: relative;
-    margin-left:-1em;
+    margin-left: -1em;
+    margin-top: 10px;
+
+  }
+}
+
+@media (min-width: @screen-xs-min) and (max-width: @screen-sm-max) {
+  .bookshelfHelpText {
+    left: 0;
+  }
+
+  .checkbox-results {
+    position: relative;
+    z-index: 2;
+    width: 20px;
+  }
+
+  .addToShelf img {
+    min-width: 50px;
+    max-width: 60px;
+    position: relative;
+    margin-left: -1em;
     margin-top: 10px;
   }
 
 }
-@media (min-width: @screen-md-min) and (max-width:@screen-lg-desktop) {
-  .bookshelfHelpText{
+
+@media (min-width: @screen-md-min) and (max-width: @screen-lg-desktop) {
+  .bookshelfHelpText {
     left: -4.5em;
     z-index: 105;
   }
-  .addToShelf img{
-    min-width:inherit;
-    max-width:inherit;
+
+  .addToShelf img {
+    min-width: inherit;
+    max-width: inherit;
     position: inherit;
     margin: inherit;
 
   }
-  .checkbox-results{
-    position:inherit;
-    z-index:inherit;
+
+  .checkbox-results {
+    position: inherit;
+    z-index: inherit;
     width: 20px;
   }
 }
@@ -462,6 +468,7 @@
 
 .result-value,
 //.series, .novelistSeries,
+.similar-authors,
 .facetDetails, .solicit-new-materials-request,
 .wikipedia_article {
   a {
