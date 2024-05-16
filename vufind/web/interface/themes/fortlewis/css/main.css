@@ -6768,10 +6768,6 @@ a:focus {
 a:hover {
   color: #345a87;
 }
-a.btn-primary,
-a.btn-info {
-  color: #004B8D;
-}
 @media print {
   a:link:after,
   a:visited:after {
@@ -7921,7 +7917,7 @@ body {
   min-height: 100px;
   padding-top: 0;
   background-color: #fff;
-  border-bottom: 8px solid #004B8D;
+  border-bottom: 8px solid #fff;
   margin-bottom: 0;
 }
 #header-logo {
@@ -8188,8 +8184,8 @@ a .header-button:visited {
   background-image: none;
 }
 #home-page-search {
-  background-color: #007CC3;
-  background: linear-gradient(to bottom, #007CC3, #004B8D);
+  background-color: #004B8D;
+  background: linear-gradient(to bottom, #004B8D, #004B8D);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8230,8 +8226,8 @@ a .header-button:visited {
           text-decoration: underline dotted;
 }
 #horizontal-search-box {
-  background-color: #007CC3;
-  background: linear-gradient(to bottom, #007CC3, #004B8D);
+  background-color: #004B8D;
+  background: linear-gradient(to bottom, #004B8D, #004B8D);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -9792,8 +9788,8 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
 }
 #explore-more-sidebar {
-  background-color: #007CC3;
-  background: linear-gradient(to bottom, #007CC3, #004B8D);
+  background-color: #004B8D;
+  background: linear-gradient(to bottom, #004B8D, #004B8D);
 }
 #explore-more-header {
   padding: 10px 25px 5px 0;
