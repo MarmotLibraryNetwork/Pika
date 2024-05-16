@@ -751,12 +751,13 @@ class Novelist3{
 			foreach ($items as $item){
 				$allIsbnsArray = array_merge($allIsbnsArray, array_slice($item->isbns, 0, $limitISBNSperItem));
 			}
+
 			$allIsbns = implode(' OR ', $allIsbnsArray);
 			$searchObject->setBasicQuery($allIsbns, "isbn");
 			$searchObject->clearFacets();
 			$searchObject->disableSpelling();
 			$searchObject->disableLogging();
-			$searchObject->setLimit(count($items));
+			$searchObject->setLimit(count($items)+1);
 			$response = $searchObject->processSearch(true, false, false);
 
 			//Get all the titles from the catalog
