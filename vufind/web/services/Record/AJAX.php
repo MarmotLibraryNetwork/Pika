@@ -212,17 +212,17 @@ class Record_AJAX extends AJAXHandler {
 			$format                = $marcRecord->getFormat();
 			$relatedManifestations = $relatedManifestations[$format[0]];
 			$interface->assign('relatedManifestation', $relatedManifestations);
-			$results = array(
+			$results = [
 				'title'        => 'Place Hold on Alternate Edition?',
 				'modalBody'    => $interface->fetch('Record/hold-select-edition-popup.tpl'),
-				'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return Pika.Record.showPlaceHold(\'Record\', \'' . $id . '\', false);">No, place a hold on this edition</a>',
-			);
+				'modalButtons' => '<button class="btn btn-primary" onclick="return Pika.Record.showPlaceHold(\'Record\', \'' . $id . '\', false);">No, place a hold on this edition</button>',
+			];
 		}else{
-			$results = array(
+			$results = [
 				'title'        => 'Please log in',
 				'modalBody'    => "You must be logged in.  Please close this dialog and login before placing your hold.",
 				'modalButtons' => '',
-			);
+			];
 		}
 		return $results;
 		}

@@ -825,7 +825,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		return array(
 			'title'       => 'Create new List',
 			'modalBody'   => $interface->fetch("MyAccount/list-form-multiple.tpl"),
-			'modalButtons' => "<span class = 'tool btn btn-primary' onclick='return Pika.Account.addListMultiple(\"{$ids}\");'>Create List</span>",
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='return Pika.Account.addListMultiple(\"{$ids}\");'>Create List</span>",
 		);
 	}
 	function addListMultiple(){
@@ -1282,7 +1282,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		return array(
 			'title'        => 'Select Citation Format',
 			'modalBody'    => $pageContent,
-			'modalButtons' => '<input class="btn btn-primary" onclick="Pika.Lists.processCiteListForm(); return false;" value="' . translate('Generate Citations') . '">',
+			'modalButtons' => '<button class="btn btn-primary" onclick="Pika.Lists.processCiteListForm(); return false;">' . translate('Generate Citations') . '</button>',
 		);
 	}
 
@@ -1781,7 +1781,7 @@ class MyAccount_AJAX extends AJAXHandler {
 
 			$newList         = $list->id;
 			$return['title'] = 'Copy List';
-			$return['body']  = '<h4>The list has been successfully copied</h4>' . '<a class="btn btn-primary" href="/MyAccount/MyList/' . $newList . '" role="button">View My List</a>';
+			$return['body']  = '<h3>The list has been successfully copied</h3>' . '<a class="btn btn-primary" href="/MyAccount/MyList/' . $newList . '" role="button">View My List</a>';
 		}else{
 			$return['Title']   = "false";
 			$return['message'] = "You must be logged in to create a list";

@@ -53,20 +53,21 @@
 									{foreach from=$relatedManifestation.actions item=curAction}
 										{if $curAction.url && strlen($curAction.url) > 0}
                       {if $relatedManifestation.numRelatedRecords == 1}
-											  <a href="{$curAction.url}" class="btn btn-sm btn-primary" onclick="{if $curAction.requireLogin}return Pika.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
+											  <button href="{$curAction.url}" class="btn btn-sm btn-primary" onclick="{if $curAction.requireLogin}return Pika.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</button>
 											{else}
-												<a href="#" class="btn btn-sm btn-primary" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">{translate text="econtent_available_from"}</a>
+												<button class="btn btn-sm btn-primary" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">{translate text="econtent_available_from"}</button>
 											{/if}
 										{else}
-												{if $relatedManifestation.isEContent || $relatedManifestation.format == 'Physical Object'}
-													{if $relatedManifestation.numRelatedRecords == 1}
-														<a href="#" class="btn btn-sm btn-primary" onclick="{$curAction.onclick}" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
-													{else}
-														<a href="#" class="btn btn-sm btn-primary" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">{if $relatedManifestation.format == 'Physical Object'}Show Options{else}{translate text="econtent_available_from"}{/if}</a>
-													{/if}
+											{if $relatedManifestation.isEContent || $relatedManifestation.format == 'Physical Object'}
+												{if $relatedManifestation.numRelatedRecords == 1}
+													<button class="btn btn-sm btn-primary" onclick="{$curAction.onclick}" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</button>
 												{else}
-												<a href="#" class="btn btn-sm btn-primary" onclick="{$curAction.onclick}" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>{/if}
+													<button class="btn btn-sm btn-primary" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">{if $relatedManifestation.format == 'Physical Object'}Show Options{else}{translate text="econtent_available_from"}{/if}</button>
 												{/if}
+											{else}
+												<button class="btn btn-sm btn-primary" onclick="{$curAction.onclick}" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</button>
+											{/if}
+										{/if}
 									{/foreach}
 								</div>
 							</div>
