@@ -6872,12 +6872,12 @@ body > .container {
   }
 }
 .panel-heading {
-  background-color: #e7e7e7;
+  background-color: #cb2037;
   border: 1px solid #ddd;
 }
 .panel-title {
-  color: #333333;
-  text-shadow: 1px 1px #fff;
+  color: #fff;
+  text-shadow: 1px 1px #757778;
 }
 .active .panel-heading {
   background-color: #b71f36;
@@ -10368,8 +10368,7 @@ a img#header-logo {
 }
 .sidebar-button {
   padding: 5px 15px;
-  background-color: #e7e7e7;
-  background: linear-gradient(to bottom, #cb2037, #b71f36);
+  background-color: #cb2037;
   color: #fff;
   margin-bottom: 15px;
   border-radius: 4px;
