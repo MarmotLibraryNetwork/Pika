@@ -10365,7 +10365,6 @@ a .header-button:hover {
   box-shadow: 2px 2px 5px #fff;
 }
 #browse-category-carousel .browse-category {
-  padding-top: 20px;
   height: 80px;
 }
 #browse-category-carousel .browse-category button {
@@ -10396,16 +10395,6 @@ a .header-button:hover {
 #browse-category-picker .jcarousel-control-next:hover {
   color: #9078A0;
   text-decoration: none;
-}
-#browse-category-picker .jcarousel-pagination a.active {
-  background: #453451;
-  box-shadow: 0 0 2px #4E443C;
-}
-#browse-category-picker .jcarousel-pagination a,
-#browse-category-picker .jcarousel-pagination a:hover,
-#browse-category-picker .jcarousel-pagination a:active,
-#browse-category-picker .jcarousel-pagination a:visited {
-  outline: none;
 }
 .browse-label-text {
   font-style: italic;
