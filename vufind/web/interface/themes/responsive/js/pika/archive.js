@@ -227,6 +227,7 @@ Pika.Archive = (function(){
 					$("#nextInsertPoint").replaceWith(data.relatedObjects);
 				}
 			});
+			return false;
 		},
 
 		handleMapClick: function(markerIndex, exhibitPid, placePid, label, redirect, showTimeline){
