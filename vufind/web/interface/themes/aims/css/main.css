@@ -9006,6 +9006,12 @@ a.browse-thumbnail-sorted.active {
 .rightScrollerButton:focus {
   outline: 2px solid #E15F15;
 }
+.scrollerTitle:focus-within {
+  outline: 2px solid #E15F15;
+}
+.scrollerTitle a:focus {
+  outline: none;
+}
 .leftScrollerButton {
   left: 0;
 }
