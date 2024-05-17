@@ -9807,7 +9807,7 @@ a.browse-thumbnail-sorted.active {
   font-size: 16px;
 }
 #sidebar-content {
-  background-color: #f8f8f8;
+  background-color: #fff;
 }
 @media (max-width: 767px) {
   #sidebar-content {
@@ -10398,8 +10398,20 @@ a .header-button:hover {
   letter-spacing: 0.02em;
 }
 #sidebar-content {
-  background: #fff;
   padding-top: 1.5rem;
+}
+.panel {
+  box-shadow: none;
+}
+.panel-title {
+  text-shadow: none;
+}
+#more-details-accordion .panel-body {
+  color: #65656a;
+  line-height: 1.7em;
+}
+.panel-default > .panel-heading {
+  background: #b5b5ba;
 }
 .sidebar-links .panel-heading {
   padding: 5px 15px;
@@ -10407,14 +10419,9 @@ a .header-button:hover {
   border-bottom: 1px solid #fff;
   text-shadow: none;
 }
-.panel-title {
-  text-shadow: none;
-}
 .sidebar-links .panel.active > a,
 .sidebar-links .panel.active > a:hover,
-.sidebar-links .panel.active > a:visited {
-  text-shadow: none;
-}
+.sidebar-links .panel.active > a:visited,
 .sidebar-links .panel > a,
 .sidebar-links .panel > a:hover,
 .sidebar-links .panel > a:visited {
@@ -10467,29 +10474,6 @@ h2 {
 .browse-thumbnail:hover,
 .browse-list:hover {
   box-shadow: 5px 5px 10px #DCDCDC;
-}
-.panel {
-  box-shadow: none;
-}
-#more-details-accordion .panel-title {
-  color: #65656a;
-}
-#more-details-accordion .panel-heading {
-  background: #eeeeef;
-  border: none;
-}
-#more-details-accordion .active .panel-heading {
-  background: #197B68;
-}
-#more-details-accordion .active .panel-title {
-  color: #fff;
-}
-#more-details-accordion .panel-body {
-  color: #65656a;
-  line-height: 1.7em;
-}
-.panel-default > .panel-heading {
-  background: #b5b5ba;
 }
 a:hover,
 a:focus {

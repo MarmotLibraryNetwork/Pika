@@ -53,8 +53,48 @@ a .header-button {
 }
 
 #sidebar-content {
-  background: #fff;
+  //background: #fff;
   padding-top: 1.5rem;
+}
+
+// Accordion Styling
+
+.panel {
+  box-shadow: none;
+}
+
+.panel-title {
+  //color: #fff;
+  text-shadow: none;
+  //letter-spacing: .1em;
+}
+
+//#more-details-accordion .panel-title {
+//  color: #65656a;
+//}
+//
+//#more-details-accordion .panel-heading {
+//  background: #eeeeef;
+//  border: none;
+//}
+
+//#more-details-accordion .active .panel-heading {
+//  background: @copper-green
+//}
+//
+//#more-details-accordion .active .panel-title {
+//  color: #fff;
+//}
+
+#more-details-accordion .panel-body {
+  color: #65656a;
+  //background: #fff;
+  line-height: 1.7em;
+}
+
+// Library admin accordion
+.panel-default > .panel-heading {
+  background: #b5b5ba;
 }
 
 //.sidebar-links .panel-body {
@@ -72,16 +112,7 @@ a .header-button {
 //  background: @copper-green
 //}
 
-.panel-title {
-  //color: #fff;
-  text-shadow: none;
-  //letter-spacing: .1em;
-}
-
-.sidebar-links .panel.active > a, .sidebar-links .panel.active > a:hover, .sidebar-links .panel.active > a:visited {
-  text-shadow: none;
-}
-
+.sidebar-links .panel.active > a, .sidebar-links .panel.active > a:hover, .sidebar-links .panel.active > a:visited,
 .sidebar-links .panel > a, .sidebar-links .panel > a:hover, .sidebar-links .panel > a:visited {
   text-shadow: none;
 }
@@ -190,36 +221,6 @@ a .header-button {
   }
 }
 
-.panel {
-  box-shadow: none;
-}
-
-#more-details-accordion .panel-title {
-  color: #65656a;
-}
-
-#more-details-accordion .panel-heading {
-  background: #eeeeef;
-  border: none;
-}
-
-#more-details-accordion .active .panel-heading {
-  background: @copper-green
-}
-
-#more-details-accordion .active .panel-title {
-  color: #fff;
-}
-
-#more-details-accordion .panel-body {
-  color: #65656a;
-  //background: #fff;
-  line-height: 1.7em;
-}
-
-.panel-default > .panel-heading {
-  background: #b5b5ba;
-}
 
 // IFRAME WIDGETS //
 //div#titleScrollerSelectedTitleNewAdult2017 {
