@@ -8950,17 +8950,16 @@ a.browse-thumbnail-sorted.active {
   }
 }
 .tab-content {
-  border-left: 1px solid #ddd;
-  border-right: 1px solid #ddd;
+  border: 1px solid #ddd;
+  border-top: none;
   padding: 10px;
 }
 .titleScrollerHeader {
-  background: url(/interface/themes/default/images/breadcrumb-gradient.png) repeat-x top left;
-  padding: 2px;
+  background: #efefef;
+  padding: 5px;
   color: #00125E;
-  font-size: 12px;
+  font-size: 15px;
   font-weight: bold;
-  height: 20px;
 }
 .titleScrollerHeader .linkTab {
   padding-right: 10px;
