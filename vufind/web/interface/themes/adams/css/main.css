@@ -9386,7 +9386,8 @@ a.browse-thumbnail-sorted.active {
   margin-top: 20px;
 }
 .facetTitle,
-.exploreMoreTitle {
+.exploreMoreTitle,
+.active .exploreMoreTitle {
   background-color: #fff;
   color: #000;
   text-shadow: 1px 1px #fcfcfc;
