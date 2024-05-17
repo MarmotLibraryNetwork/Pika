@@ -5,43 +5,36 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
-.header-login-button-mixin(rgba(250, 148, 1, 0.5));  // best orange-ish buttons. plb 9-17-2014
+.header-login-button-mixin(#fff, @new-basalt-dark-red, 60px);  // best orange-ish buttons. plb 9-17-2014
 
 // HEADER //
 #header-container {
   border-bottom: 8px solid #fff;
+  height: auto;
+}
+#header-logo {
+  max-height: none;
 }
 
 a .header-button {
-  background-color: #fff;
-  color: #ca602b;
-  margin-top: 60px;
   font-weight: bold;
   font-size: 16px;
+
+  &:hover {
+    background-color: #fff;
+    color: @new-basalt-dark-red;
+  }
 }
 
-.breadcrumbs {
-  background: #fff;
-}
 
 
-#header-container {
-  background: #fff;
-}
+
 
 // MENU & SEARCH BAR //
 #home-page-login {
   text-shadow: none;
 }
 
-.menu-bar {
-  color: #fff;
-  background: #00afaa;
-}
-
-#horizontal-search-box {
-  background: #00afaa;
-}
 
 // ADDITIONAL PADDING & WHITESPACE //
 #main-content-with-sidebar {
@@ -55,8 +48,8 @@ a .header-button {
 }
 
 .sidebar-button {
-  background: #909094;
-  letter-spacing: .02em;
+  //background: #909094;
+  letter-spacing: .02em // TODO: this is likely too close for accessibility
 }
 
 #sidebar-content {
@@ -64,25 +57,25 @@ a .header-button {
   padding-top: 1.5rem;
 }
 
-.sidebar-links .panel-body {
-  background: #fff;
-}
+//.sidebar-links .panel-body {
+//  background: #fff;
+//}
 
 .sidebar-links .panel-heading {
   padding: 5px 15px;
-  background: #00afaa !important;
+  background: @copper-green;
   border-bottom: 1px solid #fff;
   text-shadow: none;
 }
 
-.sidebar-links .active .panel-heading {
-  background: #00afaa;
-}
+//.sidebar-links .active .panel-heading {
+//  background: @copper-green
+//}
 
 .panel-title {
-  color: #fff !important;
-  text-shadow: none !important;
-  letter-spacing: .1em;
+  //color: #fff;
+  text-shadow: none;
+  //letter-spacing: .1em;
 }
 
 .sidebar-links .panel.active > a, .sidebar-links .panel.active > a:hover, .sidebar-links .panel.active > a:visited {
@@ -123,51 +116,61 @@ a .header-button {
   text-decoration: underline;
 }
 
-.browse-category button {
-  //color: #65656a;
-  //border: none;
-
-  &:hover {
-    color: #fdb525;
-    text-decoration: none;
+#browse-category-carousel .browse-category {
+  button {
+    //color: #65656a;
     //border: none;
+
+    &:hover {
+      color: #fdb525;
+      text-decoration: none;
+      //border: none;
+
+    }
   }
 
   &.selected {
-    color: #fdb525;
+    background-color: #fdb525;
+    button {
+      color: @dark-gray;
+    }
+
+    //:hover {
+    //  color: @dark-gray;
+    //}
   }
 }
 
 
-li[id^="browse-category"], li[class^="browse-category category"] {
-  text-shadow: none;
-  padding: .5em;
-  background: #fff !important;
-  border: none;
-}
-
-li[id^="browse-category"], li[class^="browse-category category"]:hover {
-  color: #fdb525 !important;
-  text-decoration: none;
-  border: none;
-}
-
-li[id^="browse-category"], li[class$="selected"] div {
-  color: #fff;
-  background: #fdb525;
-  border-radius: .25em;
-  border: none !important;
-  padding: 5px;
-}
-
-li[id^="browse-category"], li[class$="selected"] div:hover {
-  color: #fff;
-}
-
-li[class$="selected"] {
-  color: #fdb525;
-  border: none !important;
-}
+//li[id^="browse-category"], li[class^="browse-category category"] {
+//  text-shadow: none;
+//  padding: .5em;
+//  background: #fff !important;
+//  border: none;
+//}
+//
+//li[id^="browse-category"], li[class^="browse-category category"]:hover {
+//  color: #fdb525 !important;
+//  text-decoration: none;
+//  border: none;
+//}
+//
+//li[id^="browse-category"], li[class$="selected"] div {
+//  color: #fff;
+//  background: #fdb525;
+//  border-radius: .25em;
+//  border: none !important;
+//  padding: 5px;
+//}
+//
+//li[id^="browse-category"], li[class$="selected"] div:hover {
+//  color: #fff;
+//}
+//
+//li[class$="selected"] {
+//  color: #fdb525;
+//  border: none !important;
+//}
 
 
 // FOOTER //
@@ -178,10 +181,10 @@ li[class$="selected"] {
 
 //  GENERAL  //
 .h2, h2 {
-  color: #f99d25;
+  color: @new-basalt-dark-orange;
 }
 
-.browse-thumbnail, .browse-list {
+.browse-thumbnail, .browse-list { // TODO: Move into browse category main styling
   &:hover {
     box-shadow: 5px 5px 10px #DCDCDC;
   }
@@ -201,7 +204,7 @@ li[class$="selected"] {
 }
 
 #more-details-accordion .active .panel-heading {
-  background: #00afaa;
+  background: @copper-green
 }
 
 #more-details-accordion .active .panel-title {
@@ -210,7 +213,7 @@ li[class$="selected"] {
 
 #more-details-accordion .panel-body {
   color: #65656a;
-  background: #fff;
+  //background: #fff;
   line-height: 1.7em;
 }
 
@@ -233,7 +236,7 @@ li[class$="selected"] {
 
 // --FORCEFUL!-- //
 a:hover, a:focus {
-  text-decoration: none !important;
+  //text-decoration: none !important; // this is a bad idea for accessibility
   font-weight: bold;
 }
 
@@ -254,7 +257,7 @@ a.library-header-link {
   font-weight: normal;
 }
 
-a.library-header-link:hover {
-  text-decoration: underline !important;
-}
+//a.library-header-link:hover {
+//  //text-decoration: underline !important;
+//}
 

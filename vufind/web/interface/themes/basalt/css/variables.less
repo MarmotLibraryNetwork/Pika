@@ -1,58 +1,73 @@
 //Variables Customizations for Basalt theme
-@copper-green: #78ada3;
+//@copper-green: #78ada3;
+@copper-green: #197B68; // (5.15) https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=197B68
 @new-basalt-text-gray: #717170; // As of 5/8/2024
 // (4.88) https://webaim.org/resources/contrastchecker/?fcolor=717170&bcolor=FFFFFF
 
-@header-bg-color: #EFEFEF;
+@dark-gray: #2F3438; // good contrast with @new-basalt-orange (5.91) https://webaim.org/resources/contrastchecker/?fcolor=2F3438&bcolor=F99D25
+
+@new-basalt-dark-red: #A82E2E;
+//@new-basalt-dark-orange: #CA602B; // not enough contrast with white
+@new-basalt-dark-orange: #CA5010; // (4.5) https://webaim.org/resources/contrastchecker/?fcolor=CA5010&bcolor=FFFFFF
+@new-basalt-orange: #F99D25; // not enough contrast with white
+@new-basalt-light-orange: #FDB525; // not enough contrast with white
+
+//@header-bg-color: #EFEFEF;
 @header-bottom-border-color: @copper-green;
 @footer-top-border-color: #00afaa;
 @header-height: 115px;
 @breadcrumb-bg: #fff;
 
-//TODO:
-//@home-search-top-color: #00afaa;
-//@home-search-bottom-color: #00afaa;
-@home-search-top-color: #EC5802; //Top color for background gradient in header
-@home-search-bottom-color: #FEA501;
 
-@home-page-login-background-color: lighten(@home-search-bottom-color, 5%);
+@home-search-top-color: @copper-green;
+@home-search-bottom-color: @copper-green;
+
+//@home-page-login-background-color: lighten(@home-search-bottom-color, 5%);
 
 // Browse Category
 @category1MainColor: #fff;
 @browse-category-text-color: #65656a;
 
-@browse-label-text-color: #f99d25;
+@browse-label-text-color: @new-basalt-dark-orange;
 @selected-browse-label-search-color: #65656a;
 
 //@selectedCategoryBorderColor: #63B200;
-@selectedCategoryBorderColor: @categoryLineColor; // makes outline more subtle
+@selectedCategoryBorderColor: #fdb525; // makes outline more subtle
 
 // Selected Category color to give a highlighted appearance
-@selectedCategoryColor: lighten(@category1MainColor, 14%); //softer touch
+@selectedCategoryColor: #fff;
 //@selectedCategoryColor: lighten(@category1MainColor, 19%); // stronger highlight
 
-@selectedSubCategoryBackgroundColor: @copper-green;
+@selectedSubCategoryBackgroundColor: #fdb525;
+@selectedSubCategoryFontColor: @dark-gray;
 
 // set all browse category colors to the first color to remove lightening of successive categories. plb 9-17-2014
-@category2MainColor: @category1MainColor;
-@category3MainColor: @category1MainColor;
-@category4MainColor: @category1MainColor;
-@category5MainColor: @category1MainColor;
-@category6MainColor: @category1MainColor;
-@category7MainColor: @category1MainColor;
-@category8MainColor: @category1MainColor;
-@category9MainColor: @category1MainColor;
+//@category2MainColor: @category1MainColor;
+//@category3MainColor: @category1MainColor;
+//@category4MainColor: @category1MainColor;
+//@category5MainColor: @category1MainColor;
+//@category6MainColor: @category1MainColor;
+//@category7MainColor: @category1MainColor;
+//@category8MainColor: @category1MainColor;
+//@category9MainColor: @category1MainColor;
 
 
 @more-browse-results-bg-color: #fff;
 
 // set opened accordions to Basalt copper-rust color
 @accordion-active-header-bg-color : @copper-green;
+@accordion-header-color: #fff;
 
 @menu-bar-background-color: @copper-green;
+@menu-bar-selected-background-color: @new-basalt-orange;
+@menu-bar-selected-color: @dark-gray;
 
 @sidebar-label-background-color: #65656a; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=65656A
 
 // Search Results
 @facetTitle-bg-color: #eeeeef;
-@facetTitle-color: #65656a;
+@facetTitle-color: #65656a; // (4.99) https://webaim.org/resources/contrastchecker/?fcolor=65656A&bcolor=EEEEEF
+
+
+//@btn-primary-bg: @new-basalt-orange;
+//@btn-primary-color: @dark-gray;
