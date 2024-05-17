@@ -23,8 +23,8 @@
 				</div>
 			{/if}
 			<div id="titleScrollerIssues" class="titleScrollerBody">
-				<div class="leftScrollerButton enabled btn issuesLeft"> <i class="glyphicon glyphicon-chevron-left"></i></div>
-				<div class="rightScrollerButton btn issuesRight"><i class="glyphicon glyphicon-chevron-right"></i></div>
+				<div class="leftScrollerButton enabled btn btn-default issuesLeft"> <i class="glyphicon glyphicon-chevron-left"></i></div>
+				<div class="rightScrollerButton btn btn-default issuesRight"><i class="glyphicon glyphicon-chevron-right"></i></div>
 				<div class="scrollerBodyContainer">
 					<div class="scrollerBody" style="display:none"></div>
 					<div class="scrollerLoadingContainer">

@@ -9000,7 +9000,6 @@ a.browse-thumbnail-sorted.active {
   top: 0;
   padding-inline: 0;
   z-index: 100;
-  *display: inline;
 }
 .leftScrollerButton:focus,
 .rightScrollerButton:focus {
@@ -9193,7 +9192,7 @@ a.browse-thumbnail-sorted.active {
 }
 .mediumScroller .leftScrollerButton,
 .mediumScroller .rightScrollerButton {
-  margin-top: 85px;
+  margin-top: 5px;
 }
 .mediumScroller .scrollerButtonUp,
 .mediumScroller .scrollerButtonDown {
@@ -10260,7 +10259,8 @@ a.browse-thumbnail-sorted.active {
 }
 #pika-status a,
 .solr-info a,
-.editor-tips a {
+.editor-tips a,
+.well a {
   color: #3b679a;
   -webkit-text-decoration: underline dotted;
           text-decoration: underline dotted;
