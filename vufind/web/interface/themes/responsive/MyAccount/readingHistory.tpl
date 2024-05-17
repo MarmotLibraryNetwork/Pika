@@ -34,6 +34,9 @@
 		{strip}
 		</div>
 	</div>
+			<div class="row">
+				<div class="alert alert-info text-center"><a href="https://marmot-support.atlassian.net/l/cp/GPkTPPrd" target="_blank">My Reading History Guide  (opens in new tab)</a></div>
+			</div>
 
 	{if !$masqueradeMode || ($masqueradeMode && $allowReadingHistoryDisplayInMasqueradeMode)}
 
