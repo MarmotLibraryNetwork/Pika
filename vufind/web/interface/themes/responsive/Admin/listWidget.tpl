@@ -1,12 +1,13 @@
 {strip}
 <div id="listWidgetHelp">
-	<h3>List Widget</h3>
-	<h4>Integration notes</h4>
+	<h2 class="h3">List Widget</h2>
+	<h3 class="h4">Integration notes</h3>
 	<div class="well">
 		<p>To integrate this widget into another site, insert an iFrame into your site with a source of :</p>
 		<blockquote class="alert-info bold">{$url}/API/SearchAPI?method=getListWidget&amp;id={$object->id}</blockquote>
 		<p>
 			<code style="white-space: normal">&lt;iframe src=&quot;{$url}/API/SearchAPI?method=getListWidget&amp;id={$object->id}&quot;
+				title=&quot;[Useful description of the embedded widget for text-only viewers]&quot;
 				width=&quot;{$width}&quot; height=&quot;{$height}&quot;
 				scrolling=&quot;{if $selectedStyle == "text-list"}yes{else}no{/if}&quot;&gt;&lt;/iframe&gt;
 			</code>
@@ -20,7 +21,7 @@
 
 <h4>Live Preview</h4>
 
-<iframe src="{$url}/API/SearchAPI?method=getListWidget&id={$object->id}&reload=true" width="{$width}" height="{$height}" scrolling="{if $selectedStyle == "text-list"}yes{else}no{/if}" >
+<iframe src="{$url}/API/SearchAPI?method=getListWidget&id={$object->id}&reload=true" title="{$name}" width="{$width}" height="{$height}" scrolling="{if $selectedStyle == "text-list"}yes{else}no{/if}" >
 	<p>Your browser does not support iframes. :( </p>
 </iframe>
 <hr>

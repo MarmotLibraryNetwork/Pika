@@ -6942,11 +6942,6 @@ body > .container {
     display: none;
   }
 }
-.tab-content {
-  border-left: 1px solid #ddd;
-  border-right: 1px solid #ddd;
-  padding: 10px;
-}
 .nav-tabs {
   margin-bottom: 0;
 }
@@ -8958,6 +8953,11 @@ a.browse-thumbnail-sorted.active {
     display: block;
     margin: 0px auto 10px;
   }
+}
+.tab-content {
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  padding: 10px;
 }
 .titleScrollerHeader {
   background: url(/interface/themes/default/images/breadcrumb-gradient.png) repeat-x top left;
