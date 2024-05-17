@@ -130,14 +130,17 @@
 			</div>
 		</div>
 
+			{* //Suppress display of Summplemental Titles since overdrive changed how they are represented in the get my checkouts calls
 		{if !empty($record.supplementalTitle)}
-				{* Note: the supplemental title template has modifications of html built here *}
+				*}{* Note: the supplemental title template has modifications of html built here *}{*
 				<br>
 				{foreach from=$record.supplementalTitle key="keyIgnored" item="supplementalTitle"}
 					{include file="MyAccount/overdriveSupplementTitle.tpl" }
         {/foreach}
 		{/if}
-	</div>
+
+*}
+		</div>
 	</div>
 </div>
 {/strip}
