@@ -1,8 +1,28 @@
 {strip}
-<div id="overdrive_{if $record.overdriveMagazine}{$record.issueId|escape}{else}{$record.overDriveId|escape}{/if}" class="result row">
+<div id="overdrive_{if $record.overdriveMagazine}{$record.issueId|escape}{else}{$record.overDriveId|escape}{/if}" class="result">
 
-	{* Cover Column *}
-	{if $showCovers}
+	{* Title Row *}
+	<div class="row result-title-row">
+		<div class="col-tn-12">
+			<h2 class="h3">
+				<span class="result-index">{$resultIndex}.</span>&nbsp;
+				{if $record.linkUrl}
+					<a href="{$record.linkUrl}" class="result-title notranslate">
+						{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+					</a>
+				{else}
+					<span class="result-title notranslate">
+							{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+						</span>
+				{/if}
+			</h2>
+		</div>
+	</div>
+
+	<div class="row">
+
+		{* Cover Column *}
+		{if $showCovers}
 		<div class="col-xs-3 col-sm-4 col-md-3 checkedOut-covers-column">
 			<div class="row">
 				<div class="selectTitle hidden-xs col-sm-1">
@@ -29,23 +49,9 @@
 		</div>
 	{/if}
 
-	{* Title Details Column *}
-	<div class="{if $showCovers}col-xs-9 col-sm-8 col-md-9{else}col-xs-11{/if}">
-		{* Title *}
-		<div class="row">
-			<div class="col-xs-12">
-				<span class="result-index">{$resultIndex}.</span>&nbsp;
-				{if $record.linkUrl}
-					<a href="{$record.linkUrl}" class="result-title notranslate">
-						{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
-					</a>
-				{else}
-					<span class="result-title notranslate">
-							{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
-						</span>
-				{/if}
-			</div>
-		</div>
+		{* Title Details Column *}
+		<div class="{if $showCovers}col-xs-9 col-sm-8 col-md-9{else}col-xs-11{/if}">
+
 		<div class="row">
 			<div class="resultDetails col-xs-12 col-md-9">
 				{if strlen($record.author) > 0}
@@ -131,6 +137,7 @@
 					{include file="MyAccount/overdriveSupplementTitle.tpl" }
         {/foreach}
 		{/if}
+	</div>
 	</div>
 </div>
 {/strip}

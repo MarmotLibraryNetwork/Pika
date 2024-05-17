@@ -21,8 +21,8 @@
 
 		<div class="row">
 
-		{* Cover Column *}
-		{if $showCovers}
+			{* Cover Column *}
+			{if $showCovers}
 			{*<div class="col-xs-4">*}
 			<div class="col-xs-3 col-sm-4 col-md-3 checkedOut-covers-column">
 				<div class="row">
@@ -50,8 +50,8 @@
 			</div>
 		{/if}
 
-		{* Title Details Column *}
-		<div class="{if $showCovers}col-xs-9 col-sm-8 col-md-9{else}col-xs-11{/if}">
+			{* Title Details Column *}
+			<div class="{if $showCovers}col-xs-9 col-sm-8 col-md-9{else}col-xs-11{/if}">
 			<div class="row">
 				<div class="resultDetails col-xs-12 col-md-9">
 					{if strlen($record.author) > 0}
@@ -163,6 +163,6 @@
 				</div>
 			</div>
 		</div>
-	</div>
+		</div>
 	</div>
 {/strip}
