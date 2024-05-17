@@ -204,37 +204,34 @@ TitleScroller.prototype.finishLoadingScroller = function() {
 	}
 };
 
-TitleScroller.prototype.setVisibleTabIndex = function(scroller){
-		var scrollerId = scroller.scrollerId;
-		var width = $('#'+scrollerId).width();
-		var coverWidth = $('#scrollerTitle'+ scroller.scrollerShortName + scroller.currentScrollerIndex).width();
-		var displayedItems = Math.floor(width/(coverWidth + 30));
-		var currentIndex = scroller.currentScrollerIndex;
-		let indexArray = [];
-		$( '#' + scrollerId  + ' button.scrollerTitle').attr('tabindex','-1');
-		if(currentIndex + displayedItems > scroller.numScrollerTitles ){
-			let overflowTitles = (currentIndex + displayedItems) - scroller.numScrollerTitles;
-			for (let n = currentIndex; n < currentIndex + displayedItems - overflowTitles; n++)
-			{
-				indexArray.push(n);
-			}
-			for (let i = 0; i < overflowTitles; i++)
-			{
-				indexArray.push(i);
-			}
-
-		}else{
-			for (let n = currentIndex; n < currentIndex + displayedItems; n++)
-			{
-				indexArray.push(n);
-			}
+TitleScroller.prototype.setVisibleTabIndex = function (scroller){
+	var scrollerId = scroller.scrollerId,
+	 width = $('#' + scrollerId).width(),
+	 coverWidth = $('#scrollerTitle' + scroller.scrollerShortName + scroller.currentScrollerIndex).width(),
+	 displayedItems = Math.floor(width / (coverWidth + 30)),
+	 currentIndex = scroller.currentScrollerIndex;
+	let indexArray = [];
+	$('#' + scrollerId + ' button.scrollerTitle').attr('tabindex', '-1');
+	if (currentIndex + displayedItems > scroller.numScrollerTitles){
+		let overflowTitles = (currentIndex + displayedItems) - scroller.numScrollerTitles;
+		for (let n = currentIndex; n < currentIndex + displayedItems - overflowTitles; n++){
+			indexArray.push(n);
 		}
-		indexArray.forEach(function(i){
-			$('#scrollerTitle'+ scroller.scrollerShortName + i).attr('tabindex', '0');
-		});
+		for (let i = 0; i < overflowTitles; i++){
+			indexArray.push(i);
+		}
+
+	}else{
+		for (let n = currentIndex; n < currentIndex + displayedItems; n++){
+			indexArray.push(n);
+		}
+	}
+	indexArray.forEach(function (i){
+		$('#scrollerTitle' + scroller.scrollerShortName + i).attr('tabindex', '0');
+	});
 };
 
-TitleScroller.prototype.scrollToRight = function() {
+TitleScroller.prototype.scrollToRight = function (){
 	this.currentScrollerIndex++;
 	if (this.currentScrollerIndex > this.numScrollerTitles - 1)
 		this.currentScrollerIndex = 0;
@@ -256,7 +253,7 @@ TitleScroller.prototype.swipeToRight = function(customSwipeInterval) {
 	TitleScroller.prototype.activateCurrentTitle.call(this);
 };
 
-TitleScroller.prototype.swipeToLeft = function(customSwipeInterval) {
+TitleScroller.prototype.swipeToLeft = function (customSwipeInterval) {
 	customSwipeInterval  = (typeof customSwipeInterval === 'undefined') ? this.swipeInterval : customSwipeInterval;
 	this.currentScrollerIndex += customSwipeInterval; // swipes progress the opposite of scroll buttons
 	if (this.currentScrollerIndex > this.numScrollerTitles - 1)
@@ -265,7 +262,7 @@ TitleScroller.prototype.swipeToLeft = function(customSwipeInterval) {
 };
 
 TitleScroller.prototype.swipeUp = function(customSwipeInterval) {
-	customSwipeInterval  = (typeof customSwipeInterval === 'undefined') ? this.swipeInterval : customSwipeInterval;
+	customSwipeInterval = (typeof customSwipeInterval === 'undefined') ? this.swipeInterval : customSwipeInterval;
 	this.currentScrollerIndex -= customSwipeInterval;
 	if (this.currentScrollerIndex < 0)
 		this.currentScrollerIndex = this.numScrollerTitles - 1;
@@ -273,23 +270,24 @@ TitleScroller.prototype.swipeUp = function(customSwipeInterval) {
 };
 
 TitleScroller.prototype.swipeDown = function(customSwipeInterval) {
-	customSwipeInterval  = (typeof customSwipeInterval === 'undefined') ? this.swipeInterval : customSwipeInterval;
+	customSwipeInterval = (typeof customSwipeInterval === 'undefined') ? this.swipeInterval : customSwipeInterval;
 	this.currentScrollerIndex += customSwipeInterval;
 	if (this.currentScrollerIndex > this.numScrollerTitles - 1)
 		this.currentScrollerIndex = 0;
 	TitleScroller.prototype.activateCurrentTitle.call(this);
 };
-TitleScroller.prototype.scrollToIndex = function(index){
+
+TitleScroller.prototype.scrollToIndex = function (index){
 	var previousIndex = (typeof this.currentScrollerIndex == "undefined") ? 0 : this.currentScrollerIndex;
-	if(index > previousIndex){
+	if (index > previousIndex){
 		this.currentScrollerIndex++;
 		if (this.currentScrollerIndex > this.numScrollerTitles - 1)
 			this.currentScrollerIndex = 0;
-	} else if(index < previousIndex){
+	}else if (index < previousIndex){
 		this.currentScrollerIndex--;
 		if (this.currentScrollerIndex < 0)
 			this.currentScrollerIndex = this.numScrollerTitles - 1;
-	} else{
+	} else {
 		this.currentScrollerIndex = this.currentScrollerIndex;
 	}
 	TitleScroller.prototype.activateCurrentTitle(false, this);
