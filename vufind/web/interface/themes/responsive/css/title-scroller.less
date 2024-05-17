@@ -62,6 +62,14 @@
   }
 }
 
+// Item keyboard focus
+.scrollerTitle:focus-within {
+  outline: 2px solid @focus-ring-color;
+}
+.scrollerTitle a:focus {
+  outline: none; // hide the default outlining for the outlining above
+}
+
 .leftScrollerButton {
   left: 0;
 }
