@@ -6763,8 +6763,8 @@ td.hidden-inline-block-lg {
     display: none !important;
   }
 }
-a,
-a:visited {
+a:not(.btn),
+a:visited:not(.btn) {
   color: #326799;
 }
 a:focus {
