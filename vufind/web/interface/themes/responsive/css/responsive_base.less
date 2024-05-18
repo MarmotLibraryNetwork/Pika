@@ -22,7 +22,9 @@
 }
 
 a, a:visited {
-  color: @link-color-resp;
+  &:not(.btn) {  // Prevent this from applying to links styled as buttons
+    color: @link-color-resp;
+  }
 }
 
 a:focus {
