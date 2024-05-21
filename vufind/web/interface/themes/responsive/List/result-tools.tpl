@@ -14,7 +14,7 @@
 			<div class="btn-group btn-group-sm">
 					<div class="share-tools">
 						<span id="share-list-tools-label-{$summShortId}" class="share-tools-label hidden-inline-xs">SHARE LIST</span>
-						<ul aria-labelledby="share-list-tools-label-{$summShortId}" class="share-tools-list list-inline" style="display: inline">
+						<ul aria-labelledby="share-list-tools-label-{$summShortId}" class="share-tools-list list-inline">
 							<li>
 								<a href="#" onclick="return Pika.Lists.emailListAction({$summShortId})" title="share via e-mail">
 									<img src="{img filename='email-icon.png'}" alt="E-mail this" style="cursor:pointer;">
