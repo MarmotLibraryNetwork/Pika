@@ -25,7 +25,7 @@
 				{foreach from=$sideFacetSet item=cluster key=title name=facetSet}
 					{if count($cluster.list) > 0}
 						<div class="facetList">
-							<div class="facetTitle panel-title {if $cluster.collapseByDefault}collapsed{else}expanded{/if}" onclick="$(this).toggleClass('expanded');$(this).toggleClass('collapsed');$('#facetDetails_{$title}').toggle()">
+							<div class="facetTitle panel-title {if $cluster.collapseByDefault}collapsed{else}expanded{/if}" tabindex="0" onkeydown="if (event.keyCode == 13){ldelim}$(this).toggleClass('expanded collapsed');$('#facetDetails_{$title}').toggle(){rdelim}" onclick="$(this).toggleClass('expanded collapsed');$('#facetDetails_{$title}').toggle()">
 								{translate text=$cluster.label}
 							</div>
 							<div id="facetDetails_{$title}" class="facetDetails" {if $cluster.collapseByDefault}style="display:none"{/if}>
