@@ -289,9 +289,7 @@ a:focus {
   text-decoration: underline;
 }
 a:focus {
-  outline: thin dotted;
-  outline: 5px auto -webkit-focus-ring-color;
-  outline-offset: -2px;
+  outline: #E15F15 2px solid;
 }
 img {
   vertical-align: middle;
@@ -1758,9 +1756,7 @@ select optgroup {
 input[type="file"]:focus,
 input[type="radio"]:focus,
 input[type="checkbox"]:focus {
-  outline: thin dotted;
-  outline: 5px auto -webkit-focus-ring-color;
-  outline-offset: -2px;
+  outline: #E15F15 2px solid;
 }
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
@@ -2061,9 +2057,7 @@ textarea.input-lg {
   user-select: none;
 }
 .btn:focus {
-  outline: thin dotted;
-  outline: 5px auto -webkit-focus-ring-color;
-  outline-offset: -2px;
+  outline: #E15F15 2px solid;
 }
 .btn:hover,
 .btn:focus {
