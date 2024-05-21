@@ -1630,18 +1630,22 @@ class MyAccount_AJAX extends AJAXHandler {
 //			$result['lists'] = $interface->fetch('MyAccount/listsMenu.tpl');
 
 			//Count of Checkouts
-			$result['checkouts'] = '</div><span class="badge">' . $user->getNumCheckedOutTotal() . '</span>';
+			$result['checkouts'] = '<span class="badge">' . $user->getNumCheckedOutTotal() . '</span>';
 
 			//Count of Holds
 			$result['holds'] = '<span class="badge">' . $user->getNumHoldsTotal() . '</span>';
 			if ($user->getNumHoldsAvailableTotal() > 0){
-				$result['holds'] .= '&nbsp;<span class="label label-success">' . $user->getNumHoldsAvailableTotal() . ' ready for pick up</span>';
+				$readyToPickupStr = '&nbsp;<span class="label label-success">' . $user->getNumHoldsAvailableTotal() . ' ready for pick up</span>';
+				$result['holds']  .= $readyToPickupStr;
+				if ($_REQUEST['activeModule'] == 'MyAccount' && $_REQUEST['activeAction'] == 'Home'){
+					$result['accountSummaryHolds'] = '<strong><span class="badge">' . $user->getNumHoldsTotal() . '</span></strong> titles on <a href="/MyAccount/Holds">hold</a>' . $readyToPickupStr;
+				}
 			}
 
 			//Count of bookings
 			$homeLibrary = $user->getHomeLibrary();
 			if (!empty($homeLibrary) && $homeLibrary->enableMaterialsBooking){
-				$result['bookings'] = '</div><span class="badge">' . $user->getNumBookingsTotal() . '</span>';
+				$result['bookings'] = '<span class="badge">' . $user->getNumBookingsTotal() . '</span>';
 			}else{
 				$result['bookings'] = '';
 			}

@@ -142,6 +142,9 @@ Pika.Account = (function(){
 				// $("#lists-placeholder").html(data.lists);
 				$(".checkouts-placeholder").html(data.checkouts);
 				$(".holds-placeholder").html(data.holds);
+				if (Globals.activeModule === "MyAccount" && Globals.activeAction === "Home"){
+					$('#account-summary-holds').html(data.accountSummaryHolds);
+				}
 				$(".readingHistory-placeholder").html(data.readingHistory);
 				$(".materialsRequests-placeholder").html(data.materialsRequests);
 				$(".bookings-placeholder").html(data.bookings);
