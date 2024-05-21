@@ -121,6 +121,7 @@ var Pika = (function(){
 					} else if (width >= 300) {
 						numItemsToShow = Math.min(2, numCategories);
 					}
+					Pika.setExploreMoreTabs(wrapper);
 				}
 
 				// Set the width of each item in the carousel
@@ -143,12 +144,18 @@ var Pika = (function(){
 					.jcarouselControl({
 						target: '-=1'
 					});
+			$('.jcarousel-control-prev', wrapper).on("click", function(){
+				Pika.setExploreMoreTabs(wrapper);
+			});
 
 			$('.jcarousel-control-next', wrapper)
 					//.not('.ajax-carousel-control') // ajax carousels get initiated when content is loaded
 					.jcarouselControl({
 						target: '+=1'
 					});
+			$('.jcarousel-control-next', wrapper).on("click", function(){
+				Pika.setExploreMoreTabs(wrapper);
+			});
 
 			$('.jcarousel-pagination', wrapper)
 					//.not('.ajax-carousel-control') // ajax carousels get initiated when content is loaded
@@ -174,6 +181,31 @@ var Pika = (function(){
 			// If Browse Category js is set, initialize those functions
 			if (typeof Pika.Browse.initializeBrowseCategory == 'function') {
 				Pika.Browse.initializeBrowseCategory();
+			}
+
+		},
+		setExploreMoreTabs: function(wrapper){
+			let jcarousel = wrapper.children('.jcarousel');
+			if(!jcarousel.is('#browse-category-carousel'))
+			{
+					setTimeout(function (){
+						if ($(jcarousel).css('overflow') === 'hidden'){
+							let visible = jcarousel.jcarousel('fullyvisible');
+							let first = jcarousel.jcarousel('first');
+							if ($(first).has('div.explore-more-image').length !==0){
+								jcarousel.jcarousel('items').children('figure.thumbnail').children('div.explore-more-image').children('a').attr('tabindex', '-1');
+								visible.children('figure.thumbnail').children('div.explore-more-image').children('a').attr('tabindex', "0");
+							}else{
+								jcarousel.jcarousel('items').children('a').attr('tabindex', '-1');
+								visible.children('a').attr('tabindex', "0");
+							}
+							if (visible.length == 1){
+								$('.jcarousel').jcarousel('items').children("a").removeClass('active');
+								$(visible[0]).children("a").addClass('active');
+							}
+						}
+					}, 100);
+
 			}
 		},
 

@@ -85,9 +85,10 @@
 						<div class="relatedTitlesContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
 							<ul>
 								{assign var=pageCounter value=1}
+								{assign var='i' value=0}
 								{foreach from=$bookContents item=section}
 									{if count($section.pages) == 0}
-										<li class="relatedTitle">
+										<li id = "relatedTitle{$i}" class="relatedTitle">
 											<a href="{$section.link}">
 												<figure class="thumbnail">
 													<img src="{$section.cover}" alt="{* alt text should not duplicate captions *}">
@@ -98,7 +99,7 @@
 										{assign var=pageCounter value=$pageCounter+1}
 									{else}
 										{foreach from=$section.pages item=page}
-											<li class="relatedTitle">
+											<li id="relatedTitlePage{$i}" class="relatedTitle">
 												<a href="{$page.link}?pagePid={$page.pid}" onclick="return Pika.Archive.handleBookClick('{$pid}', '{$page.pid}', Pika.Archive.activeBookViewer);">
 													<figure class="thumbnail">
 														<img src="{$page.cover}" alt="Page {$pageCounter}">
@@ -109,6 +110,7 @@
 											{assign var=pageCounter value=$pageCounter+1}
 										{/foreach}
 									{/if}
+										{assign var='i' value=$i++}
 								{/foreach}
 							</ul>
 						</div>
