@@ -8923,6 +8923,10 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
   font-size: 18px;
 }
+.myAccountLink {
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
 .hiddenText {
   font-size: 0;
 }
