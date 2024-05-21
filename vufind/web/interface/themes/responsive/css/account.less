@@ -8,9 +8,8 @@
 
 // Account Settings formatting //
 #account-settings-accordion {
-
   .panel-body {
-    font-size: 13px;
+    font-size: 13px; // TODO: use body default
     color: @gray-dark;
     //background-color: #eeeeee;
     //background-color: transparent;
@@ -44,6 +43,12 @@
     font-weight: bold;
     font-size: 18px;
   }
+}
+
+// Include enough vertical spacing between sidebar menu links to meet Accessibility stardard for minimum target size
+.myAccountLink {
+  margin-top: 2px;
+  margin-bottom: 2px;
 }
 
 // Account Profile
