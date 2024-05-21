@@ -97,6 +97,7 @@
 			Globals.opac = {if $onInternalIP}true{else}false{/if};
 			Globals.activeModule = '{$module}';
 			Globals.activeAction = '{$action}';
+			//console.log('{$module}', '{$action}');
 			{*Globals.masqueradeMode = {if $masqueradeMode}true{else}false{/if};*}
 			{if $repositoryUrl}
 				Globals.repositoryUrl = '{$repositoryUrl}';
