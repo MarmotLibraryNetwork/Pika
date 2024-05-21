@@ -15,6 +15,11 @@
 //  Basic Style overrides
 //
 
+// Override bootstrap mixin
+.tab-focus() {
+  outline: @focus-ring-color 2px solid;
+}
+
 // Mixin to use on links in order to distinguish from text without relying on color (Accessibility 1.4.1)
 .link-decorating-mixin(@link-color: @darkened-link-color-resp){
   color:@link-color;
@@ -29,7 +34,6 @@ a, a:visited {
 
 a:focus {
   outline: @focus-ring-color 2px solid;
-
 }
 
 a:hover {
