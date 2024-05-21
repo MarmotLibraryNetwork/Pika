@@ -40,7 +40,6 @@ class MyAccount_AJAX extends AJAXHandler {
 		'confirmCancelHold', 'cancelHold', 'cancelHolds', 'freezeHold', 'thawHold', 'getChangeHoldLocationForm', 'changeHoldLocation',
 		'getReactivationDateForm', //not checked
 		'renewItem', 'renewAll', 'renewSelectedItems',
-		//			'getPinResetForm',
 		'getAddAccountLinkForm', 'addAccountLink', 'removeAccountLink', 'removeViewingAccount',
 		'cancelBooking', 'getCitationFormatsForm', 'getAddBrowseCategoryFromListForm',
 		'getMasqueradeAsForm', 'initiateMasquerade', 'endMasquerade', 'getMenuData',
@@ -229,21 +228,6 @@ class MyAccount_AJAX extends AJAXHandler {
 		return $formDefinition;
 	}
 
-	// TODO: Clean-up: No Calls to this method were found. plb 2-1-2016
-//	function getPinResetForm(){
-//		global $interface;
-//		$interface->assign('popupTitle', 'Reset PIN Request');
-//
-//		$formDefinition = array(
-//			'title'        => 'Reset PIN',
-//			'modalBody'    => $interface->fetch('MyAccount/resetPinPopup.tpl'),
-//			'modalButtons' => "<span class='tool btn btn-primary' onclick='Pika.Account.resetPinReset(); return false;'>Add To List</span>",
-//		);
-//		return $formDefinition;
-////		$pageContent = $interface->fetch('MyResearch/resetPinPopup.tpl');
-////		$interface->assign('popupContent', $pageContent);
-////		return $interface->fetch('popup-wrapper.tpl');
-//	}
 
 	function removeTag(){
 		if (UserAccount::isLoggedIn()){
@@ -342,7 +326,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		return [
 			'title'   => translate('Cancel Hold'),
 			'body'    => translate("Are you sure you want to cancel this hold?"),
-			'buttons' => "<span class='tool btn btn-primary' onclick='Pika.Account.cancelHold(\"$patronId\", \"$recordId\", \"$cancelId\")'>$cancelButtonLabel</span>",
+			'buttons' => "<button class='btn btn-primary' onclick='Pika.Account.cancelHold(\"$patronId\", \"$recordId\", \"$cancelId\")'>$cancelButtonLabel</button>",
 		];
 	}
 
@@ -805,11 +789,11 @@ class MyAccount_AJAX extends AJAXHandler {
 			$id = '';
 		}
 		$interface->assign('list', $list);
-		return array(
+		return [
 			'title'        => 'Create new List',
 			'modalBody'    => $interface->fetch("MyAccount/list-form.tpl"),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='return Pika.Account.addList(\"{$id}\");'>Create List</span>",
-		);
+			'modalButtons' => "<button class='btn btn-primary' onclick='return Pika.Account.addList(\"{$id}\");'>Create List</button>",
+		];
 	}
 
 	function getCreateListMultipleForm(){
@@ -822,11 +806,11 @@ class MyAccount_AJAX extends AJAXHandler {
 			$ids = '';
 		}
 		$interface->assign('list', $list);
-		return array(
+		return [
 			'title'       => 'Create new List',
 			'modalBody'   => $interface->fetch("MyAccount/list-form-multiple.tpl"),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='return Pika.Account.addListMultiple(\"{$ids}\");'>Create List</span>",
-		);
+			'modalButtons' => "<button class='btn btn-primary' onclick='return Pika.Account.addListMultiple(\"{$ids}\");'>Create List</button>",
+		];
 	}
 	function addListMultiple(){
 		$recordsToAdd = false;
@@ -1143,11 +1127,11 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	function getMasqueradeAsForm(){
 		global $interface;
-		return array(
+		return [
 			'title'        => translate('Masquerade As'),
 			'modalBody'    => $interface->fetch("MyAccount/ajax-masqueradeAs.tpl"),
-			'modalButtons' => '<button class="tool btn btn-primary" onclick="$(\'#masqueradeForm\').submit()">Start</button>',
-		);
+			'modalButtons' => '<button class="btn btn-primary" onclick="$(\'#masqueradeForm\').submit()">Start</button>',
+		];
 	}
 
 	function initiateMasquerade(){
@@ -1176,23 +1160,23 @@ class MyAccount_AJAX extends AJAXHandler {
 
 			$location       = new Location();
 			$pickupBranches = $location->getPickupBranches($patronOwningHold, null);
-			$locationList   = array();
+			$locationList   = [];
 			foreach ($pickupBranches as $curLocation){
 				$locationList[$curLocation->code] = $curLocation->displayName;
 			}
 			$interface->assign('pickupLocations', $locationList);
 
-			$results = array(
+			$results = [
 				'title'        => 'Change Hold Location',
 				'modalBody'    => $interface->fetch("MyAccount/changeHoldLocation.tpl"),
-				'modalButtons' => '<span class="tool btn btn-primary" onclick="Pika.Account.doChangeHoldLocation(); return false;">Change Location</span>',
-			);
+				'modalButtons' => '<button class="btn btn-primary" onclick="Pika.Account.doChangeHoldLocation(); return false;">Change Location</button>',
+			];
 		}else{
-			$results = array(
+			$results = [
 				'title'        => 'Please log in',
 				'modalBody'    => "You must be logged in.  Please close this dialog and login before changing your hold's pick-up location.",
-				'modalButtons' => "",
-			);
+				'modalButtons' => '',
+			];
 		}
 
 		return $results;
@@ -1213,11 +1197,11 @@ class MyAccount_AJAX extends AJAXHandler {
 		$interface->assign('reactivateDateNotRequired', $reactivateDateNotRequired);
 
 		$title   = translate('Freeze Hold'); // language customization
-		$results = array(
+		$results = [
 			'title'        => $title,
 			'modalBody'    => $interface->fetch("MyAccount/reactivationDate.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' id='doFreezeHoldWithReactivationDate' onclick='$(\".form\").submit(); return false;'>$title</button>",
-		);
+			'modalButtons' => "<button class='btn btn-primary' id='doFreezeHoldWithReactivationDate' onclick='$(\".form\").submit(); return false;'>$title</button>",
+		];
 		return $results;
 	}
 
@@ -1406,7 +1390,7 @@ class MyAccount_AJAX extends AJAXHandler {
 				'title'        => 'Email a list',
 				'modalBody'    => $interface->fetch('MyAccount/emailListPopup.tpl'),
 				//			'modalButtons' => '<input type="submit" name="submit" value="Send" class="btn btn-primary" onclick="$(\'#emailListForm\').submit();">'
-				'modalButtons' => '<span class="tool btn btn-primary" onclick="$(\'#emailListForm\').submit();">Send E-Mail</span>',
+				'modalButtons' => '<button class="btn btn-primary" onclick="$(\'#emailListForm\').submit();">Send E-Mail</button>',
 			];
 		}
 	}

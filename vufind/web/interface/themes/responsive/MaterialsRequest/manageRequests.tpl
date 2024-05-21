@@ -298,7 +298,7 @@
 											{/foreach}
 
 										</select>
-										<span class="btn btn-sm btn-primary input-group-addon" onclick="return Pika.MaterialsRequest.assignSelectedRequests();">Assign Selected Requests</span>
+										<button class="btn btn-sm btn-primary input-group-addon" onclick="return Pika.MaterialsRequest.assignSelectedRequests();">Assign Selected Requests</button>
 									{else}
 										<span class="text-warning">No Valid Assignees Found</span>
 									{/if}
@@ -317,7 +317,7 @@
 											<option value="{$status}">{$statusLabel}</option>
 										{/foreach}
 									</select>
-									<span class="btn btn-sm btn-primary input-group-addon" onclick="return Pika.MaterialsRequest.updateSelectedRequests();">Update Selected Requests</span>
+									<button class="btn btn-sm btn-primary input-group-addon" onclick="return Pika.MaterialsRequest.updateSelectedRequests();">Update Selected Requests</button>
 								</div>
 							</div>
 						</div>
