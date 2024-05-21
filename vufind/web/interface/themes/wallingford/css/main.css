@@ -8178,6 +8178,14 @@ a .header-button:visited {
   background: #702C29;
   background-image: none;
 }
+.jcarousel li:focus-within {
+  outline: 2px solid #E15F15;
+  outline-offset: -3px;
+  border: 1px solid #fff;
+}
+.jcarousel .active figure.thumbnail img {
+  border: 2px solid #E15F15;
+}
 #home-page-search {
   background-color: #2977a9;
   background: linear-gradient(to bottom, #2977a9, #2977a9);
