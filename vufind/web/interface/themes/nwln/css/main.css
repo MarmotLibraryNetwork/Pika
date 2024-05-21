@@ -8908,6 +8908,9 @@ a.browse-thumbnail-sorted.active {
   color: #333333;
   border: 1px solid #c5c5c5;
 }
+#pika-roles li {
+  margin-bottom: 3px;
+}
 .bg-overdue {
   background-color: #f2dede !important;
 }
