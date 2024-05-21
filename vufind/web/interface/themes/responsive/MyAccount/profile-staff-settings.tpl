@@ -4,7 +4,7 @@
 	</div>
 	<div class="row">
 		<div class="col-tn-12">
-			<ul aria-labelledby="pika-roles-label">
+			<ul id="pika-roles" aria-labelledby="pika-roles-label">
 				{foreach from=$profile->roles item=role}
 					<li>
 						{if $role == "archives"}
