@@ -128,18 +128,18 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	function removeAccountLink(){
 		if (!UserAccount::isLoggedIn()){
-			$result = array(
+			$result = [
 				'result'  => false,
 				'message' => 'Sorry, you must be logged in to manage accounts.',
-			);
+			];
 		}else{
 			$accountToRemove = $_REQUEST['idToRemove'];
 			$user            = UserAccount::getLoggedInUser();
 			if ($user->removeLinkedUser($accountToRemove)){
-				$result = array(
+				$result = [
 					'result'  => true,
 					'message' => 'Successfully removed linked account.',
-				);
+				];
 				// todo: since this doesn't call a patron driver have to remove cache here for Pika/PatronDrivers/Sierra
 				// this is pretty sloppy need a better way to control caching on objects -- setters would be best.
 				$patronCacheKey = $this->cache->makePatronKey('patron', $user->id);
@@ -147,10 +147,10 @@ class MyAccount_AJAX extends AJAXHandler {
 					$this->cache->delete($patronCacheKey);
 				}
 			}else{
-				$result = array(
+				$result = [
 					'result'  => false,
 					'message' => 'Sorry, we could remove that account.',
-				);
+				];
 			}
 		}
 		return $result;
@@ -158,10 +158,10 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	function removeViewingAccount(){
 		if (!UserAccount::isLoggedIn()){
-			$result = array(
+			$result = [
 				'result'  => false,
 				'message' => 'Sorry, you must be logged in to manage accounts.',
-			);
+			];
 		}else{
 			$viewingAccountId = $_REQUEST['idToRemove'];
 			$viewingAccount =  new User();
@@ -169,15 +169,15 @@ class MyAccount_AJAX extends AJAXHandler {
 			$viewingAccount->find(true);
 			$user           = UserAccount::getLoggedInUser();
 			if ($viewingAccount->removeLinkedUser($user->id)){
-				$result = array(
+				$result = [
 					'result'  => true,
 					'message' => 'Successfully removed linked account.',
-				);
+				];
 			}else{
-			$result = array(
+			$result = [
 				'result'  => false,
 				'message' => 'Sorry, we could not remove that account.',
-			);
+			];
 			}
 		}
 		return $result;
@@ -203,7 +203,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		$formDefinition = [
 			'title'        => 'Account to Manage',
 			'modalBody'    => $interface->fetch('MyAccount/addAccountLink.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='Pika.Account.processAddLinkedUser(); return false;'>Add Account</span>",
+			'modalButtons' => "<button class='btn btn-primary' onclick='Pika.Account.processAddLinkedUser(); return false;'>Add Account</button>",
 		];
 		return $formDefinition;
 	}
@@ -221,11 +221,11 @@ class MyAccount_AJAX extends AJAXHandler {
         $interface->assign('itemCount', $listItems);
 		$interface->assign('listId', $listId);
 		$interface->assign('popupTitle', 'Add titles to list');
-		$formDefinition = array(
+		$formDefinition = [
 			'title'        => 'Add titles to list',
 			'modalBody'    => $interface->fetch('MyAccount/bulkAddToListPopup.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='Pika.Lists.processBulkAddForm(); return false;'>Add To List</span>",
-		);
+			'modalButtons' => "<button class='btn btn-primary' onclick='$(\"#bulkAddToList\").submit(); return false;'>Add To List</button>",
+		];
 		return $formDefinition;
 	}
 
@@ -254,10 +254,10 @@ class MyAccount_AJAX extends AJAXHandler {
 			$userTag->tag    = $tagToRemove;
 			$userTag->userId = UserAccount::getActiveUserId();
 			$numDeleted      = $userTag->delete();
-			$result          = array(
+			$result          = [
 				'result'  => true,
 				'message' => "Removed tag '{$tagToRemove}' from $numDeleted titles.",
-			);
+			];
 		}else{
 			$result = [
 				'result'  => false,
