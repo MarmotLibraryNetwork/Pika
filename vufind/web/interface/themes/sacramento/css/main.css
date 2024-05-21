@@ -8911,6 +8911,11 @@ a.browse-thumbnail-sorted.active {
   color: #333333;
   border: 1px solid #c5c5c5;
 }
+#account-summary-content a {
+  color: #3b679a;
+  -webkit-text-decoration: underline dotted;
+          text-decoration: underline dotted;
+}
 #pika-roles li {
   margin-bottom: 3px;
 }
