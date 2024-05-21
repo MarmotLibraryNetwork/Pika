@@ -62,15 +62,14 @@
 						<div class="btn-group">
 							<button value="editList" id="FavEdit" class="btn btn-sm btn-info" onclick="return Pika.Lists.editListAction()">Edit List</button>
 							<button type="button" class="btn btn-sm btn-default btn-toolbar dropdown-toggle" data-toggle="dropdown" area-expanded="false">Share <span class="caret"></span></button>
-							<ul class=" dropdown-menu dropdown-menu-right" role="menu">
-								{if $favList->public}<li><a href="#" value="emailList" id="FavEmail" onclick='return Pika.Lists.emailListAction("{$favList->id}")'>Email List</a></li>{/if}
-								<li><a href="#" value="printList" id="FavPrint" onclick='return Pika.Lists.printListAction()'>Print List</a></li>
+							<ul class="dropdown-menu dropdown-menu-right" role="menu">
+								{if $favList->public}<li><a href="#" onclick='return Pika.Lists.emailListAction("{$favList->id}")'>Email List</a></li>{/if}
+								<li><a href="#" onclick='return Pika.Lists.printListAction()'>Print List</a></li>
 								{if $favList->public}<li><a href="#" id="copyList" onclick="return Pika.Lists.copyList({$favList->id})">Copy List</a></li>{/if}
-								<li><a href="#" value="exportToExcel" id="FavExcel" onclick='return Pika.Lists.exportListAction("{$favList->id}");'>Export to Excel</a></li>
+								<li><a href="#" onclick='return Pika.Lists.exportListAction("{$favList->id}");'>Export to Excel</a></li>
 								{if $favList->public}<li><a href="https://twitter.com/compose/tweet?text={$favList->title|escape:"html"}+{$url|escape:"html"}/MyAccount/MyList/{$favList->id}" id="Twitter Share">Share on Twitter <img class="pull-right" src="{img filename='twitter-icon.png'}" alt="Share on Twitter"></a></li>{/if}
 								{if $favList->public}<li><a href="http://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" id="">Share on Facebook <img src="{img filename='facebook-icon.png'}" alt="Share on Facebook"></a></li>{/if}
 								{if $favList->public}<li>{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|escape:"html"|cat:"/MyAccount/MyList/"|cat:$favList->id description="See My List '"|cat:$favList->title|cat:"' at $homeLibrary" linkText="Pin on Pinterest" imgClass="pull-right"}</li>{/if}
-
 							</ul>
 						</div>
 						<div class="btn-group">
@@ -84,10 +83,10 @@
 								<ul class="dropdown-menu dropdown-menu-right" role="menu">
 									<li><a href="#"  id="FavPrivate"  onclick='return Pika.Lists.makeListPrivateAction({$pageNum}, {$pageSize},"{$listSort}")'>Make Private</a></li>
 								{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('contentEditor', $userRoles))}
-								<li><a href="#"  id="FavCreateWidget" onclick="return Pika.ListWidgets.createWidgetFromList('{$favList->id}')">Create Widget</a></li>
+								<li><a href="#" id="FavCreateWidget" onclick="return Pika.ListWidgets.createWidgetFromList('{$favList->id}')">Create Widget</a></li>
 								{/if}
 								{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('contentEditor', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
-									<li><a href="#" id="FavHome"  onclick="return Pika.Lists.addToHomePage('{$favList->id}')">{translate text='Add To Home Page'}</a></li>
+									<li><a href="#" id="FavHome" onclick="return Pika.Lists.addToHomePage('{$favList->id}')">{translate text='Add To Home Page'}</a></li>
 									{if $favList->public !=0}
 										<li><a href="#" id="TransferList" onclick="return Pika.Lists.transferListToUser('{$favList->id}')">{translate text='Transfer List'}</a></li>
 									{/if}
@@ -106,22 +105,33 @@
 
 								<div class="btn-group btn-group-sm">
 									<div class="share-tools">
-										<span class="share-tools-label hidden-inline-xs">SHARE LIST</span>
-										<a href="#" onclick="return Pika.Lists.emailListAction({$favList->id})" title="share via e-mail">
-											<img src="{img filename='email-icon.png'}" alt="E-mail this" style="cursor:pointer;">
-										</a>
-										<a href="#" id="FavExcel" onclick="return Pika.Lists.exportListFromLists({$favList->id});" title="Export List to Excel">
-											<img src="{img filename='excel.png'}" alt="Export to Excel">
-										</a>
-										<a href="https://twitter.com/compose/tweet?text={$favList->title|escape:"html"}+{$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on Twitter">
-											<img src="{img filename='twitter-icon.png'}" alt="Share on Twitter">
-										</a>
-										<a href="http://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on Facebook">
+										<span id="share-list-tools-label-{$favList->id}" class="share-tools-label hidden-inline-xs">SHARE LIST</span>
+										<ul aria-labelledby="share-list-tools-label-{$favList->id}" class="share-tools-list list-inline" style="display: inline">
+
+											<li>
+												<a href="#" onclick="return Pika.Lists.emailListAction({$favList->id})" title="share via e-mail">
+													<img src="{img filename='email-icon.png'}" alt="E-mail this" style="cursor:pointer;">
+												</a>
+											</li>
+											<li>
+												<a href="#" onclick="return Pika.Lists.exportListFromLists({$favList->id});" title="Export List to Excel">
+													<img src="{img filename='excel.png'}" alt="Export to Excel">
+												</a>
+											</li>
+											<li>
+												<a href="https://twitter.com/compose/tweet?text={$favList->title|escape:"html"}+{$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on Twitter">
+													<img src="{img filename='twitter-icon.png'}" alt="Share on Twitter">
+												</a>
+											</li>
+											<li>
+												<a href="http://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on Facebook">
 											<img src="{img filename='facebook-icon.png'}" alt="Share on Facebook">
 										</a>
-
-										{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|escape:"html"|cat:"/MyAccount/MyList/"|cat:$favList->id description="See My List '"|cat:$favList->title|cat:"' at $homeLibrary"}
-
+											</li>
+											<li>
+												{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|escape:"html"|cat:"/MyAccount/MyList/"|cat:$favList->id description="See My List '"|cat:$favList->title|cat:"' at $homeLibrary"}
+											</li>
+										</ul>
 									</div>
 								</div>
 								<div class="btn-group btn-group-sm">

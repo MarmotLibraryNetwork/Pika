@@ -96,38 +96,44 @@
 
 													<div class="btn-group btn-group-sm">
 														<div class="share-tools">
-															<span class="share-tools-label hidden-inline-xs">SHARE LIST</span>
-															<a href="#" onclick="return Pika.Lists.emailListAction({$myList.id})"
-																 title="share via e-mail">
-																<img src="{img filename='email-icon.png'}" alt="E-mail this"
-																		 style="cursor:pointer;">
+															<span id="share-list-tools-label-{$myList.id}" class="share-tools-label hidden-inline-xs">SHARE LIST</span>
+															<ul aria-labelledby="share-list-tools-label-{$myList.id}" class="share-tools-list list-inline" style="display: inline">
+																<li>
+																	<a href="#" onclick="return Pika.Lists.emailListAction({$myList.id})" title="share via e-mail">
+																<img src="{img filename='email-icon.png'}" alt="E-mail this" style="cursor:pointer;">
 															</a>
-															<a href="#" id="FavExcel"
-																 onclick="return Pika.Lists.exportListFromLists('{$myList.id}');"
-																 title="Export List to Excel">
+																</li>
+																<li>
+																	<a href="#" onclick="return Pika.Lists.exportListFromLists('{$myList.id}');" title="Export List to Excel">
 																<img src="{img filename='excel.png'}" alt="Export to Excel">
 															</a>
-															<a href="https://twitter.com/compose/tweet?text={$myList.name|escape:"html"}+{$url|escape:"html"}/MyAccount/MyList/{$myList.id}"
+																</li>
+																<li>
+																	<a href="https://twitter.com/compose/tweet?text={$myList.name|escape:"html"}+{$url|escape:"html"}/MyAccount/MyList/{$myList.id}"
 																 target="_blank" title="Share on Twitter">
 																<img src="{img filename='twitter-icon.png'}" alt="Share on Twitter">
 															</a>
-															<a href="http://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$myList.id}"
+																</li>
+																<li>
+																	<a href="http://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$myList.id}"
 																 target="_blank" title="Share on Facebook">
 																<img src="{img filename='facebook-icon.png'}" alt="Share on Facebook">
 															</a>
-
-															{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|cat:"/MyAccount/MyList/"|cat:$myList.id description="See My List "|cat:$myList.name|cat:" at $homeLibrary" coverUrl=$url|cat:"/bookcover.php?id="|cat:$myList.id|cat:"&size=medium&type=userList"}
-
+																</li>
+																<li>
+																	{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|cat:"/MyAccount/MyList/"|cat:$myList.id description="See My List "|cat:$myList.name|cat:" at $homeLibrary" coverUrl=$url|cat:"/bookcover.php?id="|cat:$myList.id|cat:"&size=medium&type=userList"}
+																</li>
+															</ul>
 														</div>
 													</div>
 												</div>
 											{else}
 												<div class="btn-group btn-group-sm">
-													<button value="emailList" class="btn btn-sm btn-default" id="Email List"
+													<button value="emailList" class="btn btn-sm btn-default"
 																	onclick='return Pika.Lists.emailListAction("{$myList.id}")'
-																	title="share via e-mail">Email List
+																	title="Share via e-mail">Email List
 													</button>
-													<button value="exportToExcel" class="btn btn-sm btn-default" id="FavExcel"
+													<button value="exportToExcel" class="btn btn-sm btn-default"
 																	onclick="return Pika.Lists.exportListFromLists('{$myList.id}');">Export to Excel
 													</button>
 												</div>
