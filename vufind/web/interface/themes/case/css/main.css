@@ -9720,9 +9720,6 @@ a.browse-thumbnail-sorted.active {
 }
 .share-tools {
   background-color: #e6e6e6;
-  background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
-  color: #524747;
-  border-bottom: 1px solid #adadad;
   font-weight: bold;
   text-align: left;
   padding: 5px 10px;
@@ -9733,7 +9730,11 @@ a.browse-thumbnail-sorted.active {
   margin-right: 2px;
 }
 .share-tools-label {
+  color: #524747;
   padding-right: 10px;
+}
+.share-tools-list {
+  display: inline;
 }
 #more-details-accordion .panel-body {
   color: #333333;
