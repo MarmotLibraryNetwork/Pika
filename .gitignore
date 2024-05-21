@@ -119,11 +119,6 @@ dplaFeed.json
 #########################
 sites/*.marmot.org
 
-# Flatirons Symbolic Links #
-############################
-sites/*.flatironslibrary.org
-sites/*.boulderlibrary.org
-
 # Lion Symbolic Links #
 #######################
 sites/*.lionlibraries.org
@@ -152,3 +147,8 @@ sites/marmot.localhost/sql_backup/marmot_vufind.sql
 sites/*.vm-server.net
 
 /package-lock.json
+
+
+# Output file for PRTG sensor #
+###############################
+vufind/web/solrIndex.json

@@ -13,19 +13,29 @@
 		{if $showEmailThis == 1 || $showShareOnExternalSites == 1}
 			<div class="btn-group btn-group-sm">
 					<div class="share-tools">
-						<span class="share-tools-label hidden-inline-xs">SHARE LIST</span>
-						<a href="#" onclick="return Pika.Lists.emailListAction({$summShortId})" title="share via e-mail">
-							<img src="{img filename='email-icon.png'}" alt="E-mail this" style="cursor:pointer;">
-						</a>
-						<a href="https://twitter.com/compose/tweet?text={$recordDriver->getTitle()|urlencode}+{$url|escape:"html"}/MyAccount/MyList/{$summShortId}" target="_blank" title="Share on Twitter">
-							<img src="{img filename='twitter-icon.png'}" alt="Share on Twitter">
-						</a>
-						<a href="http://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$summShortId}" target="_blank" title="Share on Facebook">
-							<img src="{img filename='facebook-icon.png'}" alt="Share on Facebook">
-						</a>
-						{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|escape:"html"|cat:"/MyAccount/MyList/"|cat:$summShortId description="See My List '"|cat:$recordDriver->getTitle()|cat:"' at $homeLibrary"}
-
-
+						<span id="share-list-tools-label-{$summShortId}" class="share-tools-label hidden-inline-xs">SHARE LIST</span>
+						<ul aria-labelledby="share-list-tools-label-{$summShortId}" class="share-tools-list list-inline">
+							<li>
+								<a href="#" onclick="return Pika.Lists.emailListAction({$summShortId})" title="share via e-mail">
+									<img src="{img filename='email-icon.png'}" alt="E-mail this" style="cursor:pointer;">
+								</a>
+							</li>
+							<li>
+								<a href="https://twitter.com/compose/tweet?text={$recordDriver->getTitle()|urlencode}+{$url|escape:"html"}/MyAccount/MyList/{$summShortId}"
+								   target="_blank" title="Share on Twitter">
+									<img src="{img filename='twitter-icon.png'}" alt="Share on Twitter">
+								</a>
+							</li>
+							<li>
+								<a href="http://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$summShortId}"
+								   target="_blank" title="Share on Facebook">
+									<img src="{img filename='facebook-icon.png'}" alt="Share on Facebook">
+								</a>
+							</li>
+							<li>
+								{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|escape:"html"|cat:"/MyAccount/MyList/"|cat:$summShortId description="See My List '"|cat:$recordDriver->getTitle()|cat:"' at $homeLibrary"}
+							</li>
+						</ul>
 					</div>
 				</div>
 
