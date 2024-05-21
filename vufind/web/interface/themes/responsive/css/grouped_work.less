@@ -50,14 +50,13 @@
 
 .share-tools {
   background-color: #e6e6e6;
-  background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
+  //background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
   //color: #6e6f6f;
   // AA Fails normal text https://webaim.org/resources/contrastchecker/?fcolor=6E6F6F&bcolor=E6E6E6
   //background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
   // AA Fails  normal text  https://webaim.org/resources/contrastchecker/?fcolor=6E6F6F&bcolor=E7E7E7
   // AA Fails  normal text  https://webaim.org/resources/contrastchecker/?fcolor=6E6F6F&bcolor=D7D7D7
-  color: #524747; // Passes AAA https://webaim.org/resources/contrastchecker/?fcolor=524747&bcolor=E6E6E6
-  border-bottom: 1px solid #adadad;
+  //border-bottom: 1px solid #adadad;
   font-weight: bold;
   text-align: left;
   padding: 5px 10px;
@@ -70,9 +69,13 @@
 }
 
 .share-tools-label {
+  color: #524747; // Passes AAA https://webaim.org/resources/contrastchecker/?fcolor=524747&bcolor=E6E6E6
   padding-right: 10px;
 }
 
+.share-tools-list {
+  display: inline; // make list items (icons) display inline
+}
 
 //#side-bar .share-tools{
 //  margin-top: 8px;
