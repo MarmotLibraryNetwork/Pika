@@ -15,22 +15,15 @@
 				  <div class="row">
 						<div class="col-tn-4 col-xs-4{if !$viewingCombinedResults} col-md-4{/if} manifestation-format">
 							<a href="#" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
-
 								{if $relatedManifestation.numRelatedRecords == 1}
-
-									<span  aria-hidden="true" class="manifestation-toggle collapsed" id='manifestation-toggle-{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>+</span> {$relatedManifestation.format}
-
-								<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-									<span class="manifestation-toggle-text label label-default" id='manifestation-toggle-text-{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>Show&nbsp;Edition</span>
-
-								{*<span class="manifestation-toggle-placeholder">&nbsp;</span>*}
-								{*<a href="{$relatedManifestation.url}">{$relatedManifestation.format}</a>*}
-							{else}
-
 									<span aria-hidden="true" class="manifestation-toggle collapsed" id='manifestation-toggle-{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>+</span> {$relatedManifestation.format}
-								<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									<span class="manifestation-toggle-text label label-default" id='manifestation-toggle-text-{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>Show&nbsp;Edition</span>
+								{else}
+									<span aria-hidden="true" class="manifestation-toggle collapsed" id='manifestation-toggle-{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>+</span> {$relatedManifestation.format}
+									<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 									<span class="manifestation-toggle-text label label-info" id='manifestation-toggle-text-{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>Show&nbsp;Editions</span>
-							{/if}
+								{/if}
 							</a>
 						</div>
 						<div class="col-tn-8 col-xs-7{if !$viewingCombinedResults} col-md-4 col-lg-5{/if}">
