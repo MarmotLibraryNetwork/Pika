@@ -2,22 +2,25 @@
 	{if $displaySidebarMenu}
 		<div class="hidden-xs col-sm-1 col-md-1 col-lg-1" id="vertical-menu-bar-wrapper">
 			<div id="vertical-menu-bar">
+				{*For link title attributes (for accessibility) : "The title attribute value is used to provide advisory information.
+				It typically appears when the users hovers the mouse over an element. The advisory information presented
+				should not be identical to or very similar to the element text or alternative text."*}
 				<div class="menu-bar-option">
-					<a href="#" onclick="Pika.Menu.SideBar.showSearch(this)" class="menu-icon" title="Search" id="vertical-menu-search-button">
+					<a href="#" onclick="Pika.Menu.SideBar.showSearch(this)" class="menu-icon"{* title="Search"*} id="vertical-menu-search-button">
 						<img src="{img filename='/interface/themes/responsive/images/Search.png'}" alt=""{* "Alternative text of images should not be repeated as text" *}>
 						<div class="menu-bar-label rotated-text"><span class="rotated-text-inner">Search</span></div>
 					</a>
 				</div>
 				{if $loggedIn}{* Logged In *}
 					<div class="menu-bar-option">
-						<a href="#" onclick="Pika.Menu.SideBar.showAccount(this)" class="menu-icon" title="Account">
+						<a href="#" onclick="Pika.Menu.SideBar.showAccount(this)" class="menu-icon"{* title="Account"*}>
 							<img src="{img filename='/interface/themes/responsive/images/Account.png'}" alt=""{* "Alternative text of images should not be repeated as text" *}>
 							<div class="menu-bar-label rotated-text"><span class="rotated-text-inner">Account</span></div>
 						</a>
 					</div>
 				{else} {* Not Logged In *}
 					<div class="menu-bar-option">
-						<a href="/MyAccount/Home" id="sidebarLoginLink" onclick="{if $isLoginPage}$('#username').focus();return false{else}return Pika.Account.followLinkIfLoggedIn(this){/if}" data-login="true" class="menu-icon" title="{translate text='Login'}">
+						<a href="/MyAccount/Home" id="sidebarLoginLink" onclick="{if $isLoginPage}$('#username').focus();return false{else}return Pika.Account.followLinkIfLoggedIn(this){/if}" data-login="true" class="menu-icon"{* title="{translate text='Login'}"*}>
 							<img src="{img filename='/interface/themes/responsive/images/Login.png'}" alt=""{* "Alternative text of images should not be repeated as text" *}>
 							<div class="menu-bar-label rotated-text"><span class="rotated-text-inner">{translate text='Login'}</span></div>
 						</a>
@@ -31,7 +34,7 @@
 				</div>
 				{if $showExploreMore}
 					<div id="sidebar-menu-option-explore-more" class="menu-bar-option">
-						<a href="#" onclick="Pika.Menu.SideBar.showExploreMore(this)" class="menu-icon" title="{translate text='Explore More'}">
+						<a href="#" onclick="Pika.Menu.SideBar.showExploreMore(this)" class="menu-icon"{* title="{translate text='Explore More'}"*}>
 							<img src="{img filename='/interface/themes/responsive/images/ExploreMore.png'}" alt=""{* "Alternative text of images should not be repeated as text" *}>
 							<div class="menu-bar-label rotated-text">
 									<span class="rotated-text-inner">
