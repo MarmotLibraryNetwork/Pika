@@ -32,7 +32,7 @@
 		{assign var='i' value=0}
 			{* JCarousel with related titles *}
 			<div class="jcarousel-wrapper" id="scroll{$sectionId}">
-				<a href="#" class="jcarousel-control-prev" aria-label="Previous title"><i class="glyphicon glyphicon-chevron-left"></i></a>
+				<button class="jcarousel-control-prev" aria-label="Previous title"><i class="glyphicon glyphicon-chevron-left"></i></button>
 				<div class="relatedTitlesContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
 					<ul>
 						{foreach from=$section.values item=title}
@@ -44,11 +44,11 @@
 									</figure>
 								</a>
 							</li>
-								{assign var='$i' value=$i++}
+								{assign var='i' value=$i++}
 						{/foreach}
 					</ul>
 				</div>
-				<a href="#" class="jcarousel-control-next" aria-label="Next Title"><i class="glyphicon glyphicon-chevron-right"></i></a>
+				<button class="jcarousel-control-next" aria-label="Next Title"><i class="glyphicon glyphicon-chevron-right"></i></button>
 			</div>
 		{elseif $section.format == 'subsections'}
 			{foreach from=$section.values item=section}
@@ -65,7 +65,7 @@
     {assign var='n' value=0}
 			{* Related Titles Widget *}
 			<div class="jcarousel-wrapper" id="scroll{$sectionId}">
-				<a href="#" class="jcarousel-control-prev" aria-label="Previous Title"><i class="glyphicon glyphicon-chevron-left"></i></a>
+				<button class="jcarousel-control-prev" aria-label="Previous Title"><i class="glyphicon glyphicon-chevron-left"></i></button>
 				<div class="relatedTitlesContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
 					<ul>
 						{foreach from=$section.values item=title}
@@ -81,7 +81,7 @@
 						{/foreach}
 					</ul>
 				</div>
-				<a href="#" class="jcarousel-control-next" aria-label="Next Title"><i class="glyphicon glyphicon-chevron-right"></i></a>
+				<button class="jcarousel-control-next" aria-label="Next Title"><i class="glyphicon glyphicon-chevron-right"></i></button>
 			</div>
 			<a class="explore-more-scroller-link" href="{$section.link}" {if $section.openInNewWindow}target="_blank"{/if}>All Results {if $section.numFound}({$section.numFound}){/if}</a>
 
@@ -166,9 +166,9 @@
 	{foreach from=$exploreMoreInfo item=exploreMoreOption}
 		<div class="sectionHeader"{if $exploreMoreOption.hideByDefault} style="display: none;"{/if}>{$exploreMoreOption.label}</div>
 		<div class="{*col-sm-12 *}jcarousel-wrapper"{if $exploreMoreOption.hideByDefault} style="display: none;"{/if}>
-			<a href="#" class="jcarousel-control-prev" aria-label="Previous Title"><i class="glyphicon glyphicon-chevron-left"></i></a>
+			<button class="jcarousel-control-prev" aria-label="Previous Title"><i class="glyphicon glyphicon-chevron-left"></i></button>
 			{$exploreMoreOption.body}
-			<a href="#" class="jcarousel-control-next" aria-label="Next Title"><i class="glyphicon glyphicon-chevron-right"></i></a>
+			<button class="jcarousel-control-next" aria-label="Next Title"><i class="glyphicon glyphicon-chevron-right"></i></button>
 		</div>
 	{/foreach}
 {/strip}

@@ -10,7 +10,7 @@
 	<div class="exploreMoreContainer">
 		<div class="jcarousel-wrapper" id="exploreMoreBarScroll">
 			{* Scrolling Buttons *}
-			<a href="#" class="jcarousel-control-prev"{* data-target="-=1"*} aria-label="Previous Category"><i class="glyphicon glyphicon-chevron-left"></i></a>
+			<button class="jcarousel-control-prev"{* data-target="-=1"*} aria-label="Previous Category"><i class="glyphicon glyphicon-chevron-left"></i></button>
 
 				{assign var='i' value=0}
 			<div class="exploreMoreItemsContainer jcarousel"{* data-wrap="circular" data-jcarousel="true"*}> {* noIntialize is a filter for Pika.initCarousels() *}
@@ -41,7 +41,7 @@
 					{/foreach}
 				</ul>
 			</div>
-			<a href="#" class="jcarousel-control-next"{* data-target="+=1"*} aria-label="Next Category"><i class="glyphicon glyphicon-chevron-right"></i></a>
+			<button class="jcarousel-control-next"{* data-target="+=1"*} aria-label="Next Category"><i class="glyphicon glyphicon-chevron-right"></i></button>
 		</div>
 	</div>
 

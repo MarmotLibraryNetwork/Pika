@@ -204,14 +204,14 @@ var Pika = (function(){
 
 		},
 		setExploreMoreTabs: function(wrapper){
-			let jcarousel = wrapper.children('.jcarousel');
-			if(!jcarousel.is('#browse-category-carousel'))
-			{
+			if(wrapper.length === 1){
+				let jcarousel = wrapper.children('.jcarousel');
+				if (!jcarousel.is('#browse-category-carousel')){
 					setTimeout(function (){
 						if ($(jcarousel).css('overflow') === 'hidden'){
 							let visible = jcarousel.jcarousel('fullyvisible');
 							let first = jcarousel.jcarousel('first');
-							if ($(first).has('div.explore-more-image').length !==0){
+							if ($(first).has('div.explore-more-image').length !== 0){
 								jcarousel.jcarousel('items').children('figure.thumbnail').children('div.explore-more-image').children('a').attr('tabindex', '-1');
 								visible.children('figure.thumbnail').children('div.explore-more-image').children('a').attr('tabindex', "0");
 							}else{
@@ -219,12 +219,35 @@ var Pika = (function(){
 								visible.children('a').attr('tabindex', "0");
 							}
 							if (visible.length == 1){
-								$('.jcarousel').jcarousel('items').children("a").removeClass('active');
+								jcarousel.jcarousel('items').children("a").removeClass('active');
 								$(visible[0]).children("a").addClass('active');
 							}
 						}
 					}, 100);
-
+				}
+			}else if (wrapper.length > 1){
+				wrapper.each(function(){
+					let jcarousel = $(this).children('.jcarousel');
+					if (!jcarousel.is('#browse-category-carousel')){
+						setTimeout(function (){
+							if ($(jcarousel).css('overflow') === 'hidden'){
+								let visible = jcarousel.jcarousel('fullyvisible');
+								let first = jcarousel.jcarousel('first');
+								if ($(first).has('div.explore-more-image').length !== 0){
+									jcarousel.jcarousel('items').children('figure.thumbnail').children('div.explore-more-image').children('a').attr('tabindex', '-1');
+									visible.children('figure.thumbnail').children('div.explore-more-image').children('a').attr('tabindex', "0");
+								}else{
+									jcarousel.jcarousel('items').children('a').attr('tabindex', '-1');
+									visible.children('a').attr('tabindex', "0");
+								}
+								if (visible.length == 1){
+									jcarousel.jcarousel('items').children("a").removeClass('active');
+									$(visible[0]).children("a").addClass('active');
+								}
+							}
+						}, 100);
+					}
+				});
 			}
 		},
 

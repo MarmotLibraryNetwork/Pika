@@ -104,9 +104,7 @@
 			<div class="row">
 				<div class="col-xs-12 text-center">
 					<div class="jcarousel-wrapper" id="book-sections">
-						<a href="#" class="jcarousel-control-prev"{* data-target="-=1"*}><i class="glyphicon glyphicon-chevron-left"></i></a>
-
-
+						<button class="jcarousel-control-prev"{* data-target="-=1"*}><i class="glyphicon glyphicon-chevron-left"></i></button>
 						<div class="relatedTitlesContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
 							<ul>
 								{assign var=pageCounter value=1}
@@ -138,7 +136,7 @@
 								{/foreach}
 							</ul>
 						</div>
-						<a href="#" class="jcarousel-control-next"{* data-target="+=1"*}><i class="glyphicon glyphicon-chevron-right"></i></a>
+						<button class="jcarousel-control-next"{* data-target="+=1"*}><i class="glyphicon glyphicon-chevron-right"></i></button>
 					</div>
 				</div>
 			</div>
