@@ -1,5 +1,5 @@
 {strip}
-<div id="main-content" class="col-md-12">
+<div id="main-content" class="col-tn-12">
 	<h1 role="heading" aria-level="1" class="h2">Manage Materials Requests</h1>
 	{if $materialRequestStaffSettingsWarning}
 		<div class="alert alert-warning">
@@ -26,13 +26,13 @@
 	{if $loggedIn}
 		<div id="materialsRequestFilters" class="accordion">
 			<div class="panel panel-default">
-			<div class="panel-heading">
-				<div class="panel-title {if !$filterError}collapsed{else}active{/if}">
-					<a href="#filterPanel" data-toggle="collapse" role="button">
-						Filters
-					</a>
-				</div>
-			</div>
+				<a href="#filterPanel" data-toggle="collapse" role="button">
+					<div class="panel-heading">
+						<div class="panel-title {if !$filterError}collapsed{else}active{/if}">
+								Filters
+						</div>
+					</div>
+				</a>
 			<div id="filterPanel" class="panel-collapse collapse{if $filterError} in{/if}">
 				<div class="panel-body">
 
@@ -41,7 +41,7 @@
 							<legend>Statuses to Show:</legend>
 							<div class="form-group checkbox">
 								<label for="selectAllStatusFilter">
-									<input type="checkbox" name="selectAllStatusFilter" id="selectAllStatusFilter" onchange="Pika.toggleCheckboxes('.statusFilter', '#selectAllStatusFilter');">
+									<input type="checkbox" name="selectAllStatusFilter" id="selectAllStatusFilter" onchange="Pika.toggleCheckboxes('.statusFilter', '#selectAllStatusFilter');" aria-label="Select or Unselect all statuses to filter by">
 									<strong>Select All</strong>
 								</label>
 							</div>
@@ -118,7 +118,7 @@
 							<legend>Format:</legend>
 							<div class="form-group checkbox">
 								<label for="selectAllFormatFilter">
-									<input type="checkbox" name="selectAllFormatFilter" id="selectAllFormatFilter" onchange="Pika.toggleCheckboxes('.formatFilter', '#selectAllFormatFilter');">
+									<input type="checkbox" name="selectAllFormatFilter" id="selectAllFormatFilter" onchange="Pika.toggleCheckboxes('.formatFilter', '#selectAllFormatFilter');" aria-label="Select or Unselect all formats to filter by">
 									<strong>Select All</strong>
 								</label>
 							</div>
@@ -140,7 +140,7 @@
 							</div>
 								<div class="form-group checkbox">
 								<label for="selectAllAssigneesFilter">
-									<input type="checkbox" name="selectAllAssigneesFilter" id="selectAllAssigneesFilter" onchange="Pika.toggleCheckboxes('.assigneesFilter', '#selectAllAssigneesFilter');">
+									<input type="checkbox" name="selectAllAssigneesFilter" id="selectAllAssigneesFilter" onchange="Pika.toggleCheckboxes('.assigneesFilter', '#selectAllAssigneesFilter');"  aria-label="Select or Unselect all assignees to filter by">
 									<strong>Select All</strong>
 								</label>
 							</div>
@@ -167,17 +167,17 @@
 				<table id="requestedMaterials" class="table order-column stripe table-hover">
 					<thead>
 						<tr>
-							<th><input type="checkbox" name="selectAll" id="selectAll" onchange="Pika.toggleCheckboxes('.select', '#selectAll');"></th>
+							<th><input type="checkbox" name="selectAll" id="selectAll" onchange="Pika.toggleCheckboxes('.select', '#selectAll');" aria-label="Select or Unselect all requests"></th>
 							{foreach from=$columnsToDisplay item=label}
 								<th>{$label}</th>
 							{/foreach}
-							<th>&nbsp;</th> {* Action Buttons Column *}
+							<td>&nbsp;</td> {* Action Buttons Column *}
 						</tr>
 					</thead>
 					<tbody>
 						{foreach from=$allRequests item=request}
 							<tr>
-								<td><input type="checkbox" name="select[{$request->id}]" class="select"></td>
+								<td><input type="checkbox" name="select[{$request->id}]" class="select" aria-label="Request {$request->id} for '{$request->title}'"></td>
 								{foreach name="columnLoop" from=$columnsToDisplay item=label key=column}
 									{if $column == 'format'}
 										<td>
@@ -193,8 +193,7 @@
 									{elseif $column == 'about' || $column == 'comments'}
 										<td>
 											{if !empty($request->$column)}
-												<textarea cols="30" rows="4" readonly disabled>
-												{* TODO: use truncate modifier? *}
+												<textarea cols="30" rows="4" readonly disabled aria-label="{$column}">
 													{$request->$column}
 											</textarea>
 											{/if}
@@ -271,9 +270,9 @@
 									{/if}
 								{/foreach}
 								<td>
-									<div class="btn-group btn-group-vertical btn-group-sm">
-										<button type="button" onclick="Pika.MaterialsRequest.showMaterialsRequestDetails('{$request->id}', true)" class="btn btn-sm btn-info">Details</button>
-										<button type="button" onclick="Pika.MaterialsRequest.updateMaterialsRequest('{$request->id}')" class="btn btn-sm btn-primary">Update&nbsp;Request</button>
+									<div class="btn-group btn-group-vertical">
+										<button type="button" onclick="Pika.MaterialsRequest.showMaterialsRequestDetails('{$request->id}', true)" class="btn btn-info">Details</button>
+										<button type="button" onclick="Pika.MaterialsRequest.updateMaterialsRequest('{$request->id}')" class="btn btn-primary">Update&nbsp;Request</button>
 									</div>
 								</td>
 							</tr>
@@ -298,7 +297,9 @@
 											{/foreach}
 
 										</select>
-										<button class="btn btn-sm btn-primary input-group-addon" onclick="return Pika.MaterialsRequest.assignSelectedRequests();">Assign Selected Requests</button>
+									<span class="input-group-btn">
+										<button class="btn btn-primary" onclick="return Pika.MaterialsRequest.assignSelectedRequests();">Assign Selected Requests</button>
+									</span>
 									{else}
 										<span class="text-warning">No Valid Assignees Found</span>
 									{/if}
@@ -317,13 +318,15 @@
 											<option value="{$status}">{$statusLabel}</option>
 										{/foreach}
 									</select>
-									<button class="btn btn-sm btn-primary input-group-addon" onclick="return Pika.MaterialsRequest.updateSelectedRequests();">Update Selected Requests</button>
+									<span class="input-group-btn">
+										<button class="btn btn-primary" onclick="return Pika.MaterialsRequest.updateSelectedRequests();">Update Selected Requests</button>
+									</span>
 								</div>
 							</div>
 						</div>
 						<div class="row">
 							<div class="col-xs-12">
-								<input class="btn btn-sm btn-default" type="submit" name="exportSelected" value="Export Selected To Excel" onclick="return Pika.MaterialsRequest.exportSelectedRequests();">
+								<input class="btn btn-default" type="submit" name="exportSelected" value="Export Selected To Excel" onclick="return Pika.MaterialsRequest.exportSelectedRequests();">
 							</div>
 						</div>
 					</div>
