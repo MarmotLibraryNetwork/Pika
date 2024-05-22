@@ -13,6 +13,25 @@ var Pika = (function(){
 
 		$("#modalDialog").modal({show:false});
 
+		var basePageFocusElement;
+		$("#modalDialog").on('show.bs.modal', function (){
+			// Upon modal dialog initialization, save which element had keyboard focus
+			if (basePageFocusElement == null){ // null or undefined
+				basePageFocusElement = document.activeElement;
+				//console.log('Set base focused element', basePageFocusElement);
+			}
+			// else {
+			// 	console.log('Already set focused element', basePageFocusElement);
+			// }
+		}).on ('hidden.bs.modal', function (){
+			// Upon closing modal box, if we had the keyboard-focused element, return the keyboard focus there
+			if (basePageFocusElement){
+				basePageFocusElement.focus(); // return focus
+				//console.log('Returned focus', basePageFocusElement);
+				basePageFocusElement = null; // reset variable for potential next round
+			}
+		});
+
 		$('.panel')
 				.on('show.bs.collapse', function () {
 					$(this).addClass('active');
