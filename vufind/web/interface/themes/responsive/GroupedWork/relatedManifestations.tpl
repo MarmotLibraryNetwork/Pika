@@ -14,28 +14,24 @@
 				<div class="col-sm-12">
 				  <div class="row">
 						<div class="col-tn-4 col-xs-4{if !$viewingCombinedResults} col-md-4{/if} manifestation-format">
+							<a href="#" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
 
 								{if $relatedManifestation.numRelatedRecords == 1}
-								<a href="#" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
+
 									<span  aria-hidden="true" class="manifestation-toggle collapsed" id='manifestation-toggle-{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>+</span> {$relatedManifestation.format}
-								</a>
+
 								<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-								<a href="#" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
 									<span class="manifestation-toggle-text label label-default" id='manifestation-toggle-text-{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>Show&nbsp;Edition</span>
-								</a>
 
 								{*<span class="manifestation-toggle-placeholder">&nbsp;</span>*}
 								{*<a href="{$relatedManifestation.url}">{$relatedManifestation.format}</a>*}
 							{else}
 
-								<a href="#" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
 									<span aria-hidden="true" class="manifestation-toggle collapsed" id='manifestation-toggle-{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>+</span> {$relatedManifestation.format}
-								</a>
 								<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-								<a href="#" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
 									<span class="manifestation-toggle-text label label-info" id='manifestation-toggle-text-{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>Show&nbsp;Editions</span>
-								</a>
 							{/if}
+							</a>
 						</div>
 						<div class="col-tn-8 col-xs-7{if !$viewingCombinedResults} col-md-4 col-lg-5{/if}">
 							{include file='GroupedWork/statusIndicator.tpl' statusInformation=$relatedManifestation viewingIndividualRecord=0}
