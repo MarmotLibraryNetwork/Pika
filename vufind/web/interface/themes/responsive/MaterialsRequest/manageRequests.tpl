@@ -339,7 +339,7 @@
 {/strip}
 	<script>
 		{literal}
-		$(document).ready(function(){
+		$(function(){
 			$.fn.dataTable.ext.order['dom-date'] = function (settings, col){
 				return this.api().column(col, {order: 'index'}).nodes().map(function (td, i){
 					return $('span', td).attr("data-date");

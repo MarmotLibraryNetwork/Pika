@@ -51,9 +51,9 @@
 							<td>{$request->statusLabel|translate}</td>
 							<td><span data-date="{$request->dateCreated}">{$request->dateCreated|date_format}</span></td>
 							<td>
-								<a role="button" onclick='Pika.MaterialsRequest.showMaterialsRequestDetails("{$request->id}", false)' class="btn btn-info btn-sm">Details</a>
+								<button onclick='Pika.MaterialsRequest.showMaterialsRequestDetails("{$request->id}", false)' class="btn btn-info btn-sm">Details</button>
 								{if $request->status == $defaultStatus}
-								<a role="button" onclick="return Pika.MaterialsRequest.cancelMaterialsRequest('{$request->id}');" class="btn btn-danger btn-sm">Cancel {'materials_request_short'|translate|capitalize}</a>
+									<button onclick="return Pika.MaterialsRequest.cancelMaterialsRequest('{$request->id}');" class="btn btn-danger btn-sm">Cancel {'materials_request_short'|translate|capitalize}</button>
 								{/if}
 							</td>
 						</tr>
@@ -68,7 +68,7 @@
 </div>
 <script>
 	{literal}
-	$(document).ready(function(){
+	$(function(){
 		$.fn.dataTable.ext.order['dom-date'] = function (settings, col){
 			return this.api().column(col, {order: 'index'}).nodes().map(function (td, i){
 				return $('span', td).attr("data-date");
