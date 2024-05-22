@@ -8450,6 +8450,7 @@ hr.menu {
   background-color: #ffffff;
   color: #568ebf;
   font-size: 50px;
+  border: 1px solid #568ebf;
 }
 #browse-category-picker .jcarousel-control-prev:focus,
 #browse-category-picker .jcarousel-control-next:focus {
@@ -8460,10 +8461,10 @@ hr.menu {
 #browse-category-picker .jcarousel-control-next:hover {
   text-decoration: none;
 }
-#browse-category-picker a.jcarousel-control-next:after {
+#browse-category-picker button.jcarousel-control-next:after {
   content: "›";
 }
-#browse-category-picker a.jcarousel-control-prev:before {
+#browse-category-picker button.jcarousel-control-prev:before {
   content: "‹";
 }
 #browse-category-picker .jcarousel-pagination a,
@@ -9976,20 +9977,7 @@ a.browse-thumbnail-sorted.active {
   color: #568ebf;
   z-index: 2;
   box-shadow: white 0 0 0 0;
-}
-#explore-more-body .jcarousel-control-prev .glyphicon,
-#relatedProjectScroller .jcarousel-control-prev .glyphicon,
-#relatedProjectOtherScroller .jcarousel-control-prev .glyphicon,
-#relatedContentTypesContainer .jcarousel-control-prev .glyphicon,
-.exploreMoreBar .jcarousel-control-prev .glyphicon,
-#book-sections .jcarousel-control-prev .glyphicon,
-#explore-more-body .jcarousel-control-next .glyphicon,
-#relatedProjectScroller .jcarousel-control-next .glyphicon,
-#relatedProjectOtherScroller .jcarousel-control-next .glyphicon,
-#relatedContentTypesContainer .jcarousel-control-next .glyphicon,
-.exploreMoreBar .jcarousel-control-next .glyphicon,
-#book-sections .jcarousel-control-next .glyphicon {
-  top: 39px;
+  border: 1px solid #568ebf;
 }
 #explore-more-body .jcarousel-control-prev,
 #relatedProjectScroller .jcarousel-control-prev,
@@ -9998,6 +9986,7 @@ a.browse-thumbnail-sorted.active {
 .exploreMoreBar .jcarousel-control-prev,
 #book-sections .jcarousel-control-prev {
   left: 2px;
+  padding-inline: 0;
 }
 #explore-more-body .jcarousel-control-next,
 #relatedProjectScroller .jcarousel-control-next,
@@ -10006,6 +9995,7 @@ a.browse-thumbnail-sorted.active {
 .exploreMoreBar .jcarousel-control-next,
 #book-sections .jcarousel-control-next {
   right: 2px;
+  padding-inline: 0;
 }
 #explore-more-body .panel-body,
 #relatedProjectScroller .panel-body,
