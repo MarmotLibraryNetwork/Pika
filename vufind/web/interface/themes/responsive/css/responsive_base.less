@@ -22,15 +22,17 @@
 
 // Mixin to use on links in order to distinguish from text without relying on color (Accessibility 1.4.1)
 .link-decorating-mixin(@link-color: @darkened-link-color-resp){
-  color:@link-color;
+  color: @link-color;
   text-decoration: underline dotted;
 }
 
-a, a:visited {
-  &:not(.btn) {  // Prevent this from applying to links styled as buttons
-    color: @link-color-resp;
-  }
-}
+// Setting bootstrap @link-color instead of using this rule.
+// (May need to re-include the a:visited rule)
+//a, a:visited {
+//  //&:not(.btn) {  // Prevent this from applying to links styled as buttons
+//    color: @link-color-resp;
+//  //}
+//}
 
 a:focus {
   outline: @focus-ring-color 2px solid;
@@ -415,7 +417,7 @@ nav.breadcrumbs [aria-current="page"] {
   color: #222;
 }
 
-.categoryValue:focus-within{
+.categoryValue:focus-within {
   outline: 1px solid @focus-ring-color !important;
 }
 
