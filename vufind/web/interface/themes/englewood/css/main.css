@@ -8450,7 +8450,8 @@ hr.menu {
   background-color: #fff;
   color: #5B8226;
   font-size: 50px;
-  border: 1px solid #5B8226;
+  border: none;
+  padding-inline: 0;
 }
 #browse-category-picker .jcarousel-control-prev:focus,
 #browse-category-picker .jcarousel-control-next:focus {

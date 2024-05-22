@@ -8450,7 +8450,8 @@ hr.menu {
   background-color: #ffffff;
   color: #DD8626;
   font-size: 50px;
-  border: 1px solid #2E85C7;
+  border: none;
+  padding-inline: 0;
 }
 #browse-category-picker .jcarousel-control-prev:focus,
 #browse-category-picker .jcarousel-control-next:focus {
@@ -10405,10 +10406,10 @@ a .header-button:hover {
   color: #77A240;
   text-decoration: none;
 }
-#browse-category-picker a.jcarousel-control-next:after {
+#browse-category-picker button.jcarousel-control-next:after {
   content: "▶";
 }
-#browse-category-picker a.jcarousel-control-prev:before {
+#browse-category-picker button.jcarousel-control-prev:before {
   content: "◀";
 }
 #browse-category-picker .jcarousel-pagination a.active {
