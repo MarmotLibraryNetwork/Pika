@@ -15,11 +15,11 @@ function addSearch(group, term, field)
 			+ '</div>';
 
 	// Terms
-	newSearch += "<div class='input-group col-sm-10'><input type='text' class='form-control' name='lookfor" + group + "[]'  value='" + jsEntityEncode(term) + "'>";
+	newSearch += "<div class='input-group col-sm-10'><input type='text' aria-label='search phrase' class='form-control' name='lookfor" + group + "[]'  value='" + jsEntityEncode(term) + "'>";
 
 	// Field
 	newSearch += "<span class='input-group-addon'>" + searchFieldLabel + " </span>";
-	newSearch += "<select class='form-control' name='type" + group + "[]'>";
+	newSearch += "<select aria-label='type of search' class='form-control' name='type" + group + "[]'>";
 	for (key in searchFields) {
 			newSearch += "<option value='" + key + "'";
 			if (key == field) {
@@ -57,11 +57,11 @@ function addGroup(firstTerm, firstField, join)
 
 	newGroup += "<div class='groupSearchDetails clearfix'>";
 	// Delete link
-	newGroup += "<a href='javascript:void(0);' class='delete btn btn-sm btn-warning' id='delete_link_" + nextGroupNumber + "' onclick='deleteGroupJS(this);'>" + deleteSearchGroupString + "</a>";
+	newGroup += "<button class='delete btn btn-sm btn-warning' id='delete_link_" + nextGroupNumber + "' onclick='deleteGroupJS(this);'>" + deleteSearchGroupString + "</button>";
 
 	// Boolean operator drop-down
-	newGroup += "<div class='join'>" + searchMatch + " : ";
-	newGroup += "<select name='bool" + nextGroupNumber + "[]'>";
+	newGroup += "<label for='join" + nextGroupNumber + "' class='join'>" + searchMatch + " : ";
+	newGroup += "<select id='join" + nextGroupNumber + "' name='bool" + nextGroupNumber + "[]'>";
 	for (key in searchJoins) {
 		newGroup += "<option value='" + key + "'";
 		if (key == join) {
@@ -70,14 +70,14 @@ function addGroup(firstTerm, firstField, join)
 		newGroup += ">" + searchJoins[key] + "</option>";
 	}
 	newGroup += "</select>";
-	newGroup += "</div>";
+	newGroup += "</label>";
 
 	newGroup += "</div>";
 
 	// Holder for all the search fields
 	newGroup += "<div id='group" + nextGroupNumber + "SearchHolder' class='groupSearchHolder'></div>";
 	// Add search term link
-	newGroup += "<div class='addSearch row'><div class='col-sm-4 col-sm-offset-2'><a href='javascript:void(0);' class='add btn btn-sm btn-default' id='add_search_link_" + nextGroupNumber + "' onclick='addSearchJS(this);'>" + addSearchString + "</a></div></div>";
+	newGroup += "<div class='addSearch row'><div class='col-sm-4 col-sm-offset-2'><button class='add btn btn-sm btn-default' id='add_search_link_" + nextGroupNumber + "' onclick='addSearchJS(this);'>" + addSearchString + "</button></div></div>";
 
 	newGroup += "</div>";
 
