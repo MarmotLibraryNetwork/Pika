@@ -44,7 +44,7 @@
 									<span class="caret"></span>
 								</button>
 
-								<ul id="searchType" class="dropdown-menu text-left" role="menu">
+								<ul id="searchType" class="dropdown-menu text-left" role="list"> {* Axe accessibility plugin says the role should be list (rather than menu) *}
 									{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword'}
 										{foreach from=$basicSearchTypes item=searchDesc key=searchVal}
 											<li>
