@@ -1,4 +1,3 @@
-
 <h1 id="pageTitle" role="heading" aria-level="1" class="h2">{$shortPageTitle}</h1>
 {if $lastError}
 	<div class="alert alert-danger">
@@ -22,19 +21,14 @@
 
 {foreach from=$customListActions item=customAction}
 	{if !is_null($customAction.action)}
-	<form action="" method="get">
-		<div>
-
+		<form action="" method="get">
+			<div>
 				<input type="hidden" name="objectAction" value='{$customAction.action}'>
-
-			<button type="submit" value='{$customAction.action}' class="btn btn-small btn-default">{$customAction.label}</button>
-
-		</div>
-	</form>
-	{/if}
-
-	{if is_null($customAction.action) && $customAction.onclick}
-		<a class="btn btn-default btn-sm" onclick="{$customAction.onclick}">{$customAction.label}</a>
+				<button type="submit" value='{$customAction.action}' class="btn btn-default">{$customAction.label}</button>
+			</div>
+		</form>
+	{elseif is_null($customAction.action) && $customAction.onclick}
+		<button class="btn btn-default{* btn-sm*}" onclick="{$customAction.onclick}">{$customAction.label}</button>
 	{/if}
 {/foreach}
 
@@ -44,7 +38,8 @@
 			<tr>
 				{foreach from=$structure item=property key=id}
 					{if !isset($property.hideInLists) || $property.hideInLists == false}
-					<th><label title='{$property.description}'>{$property.label}</label></th>
+					<th title='{$property.description}'>{$property.label}</th>
+{*					<th><label title='{$property.description}'>{$property.label}</label></th> // label tag is likely unneeded. WAVE plugin calls this an orphaned label since it's not associated with an input tag *}
 					{/if}
 				{/foreach}
 				<th>Actions</th>
@@ -139,7 +134,7 @@
 	var storagePath = "{$structure.cover.storagePath}";
 	var processing = true;
 	{literal}
-	$("#adminTableRegion").addClass("drop").prepend("<h4>Drag covers here to upload</h4>");
+	$("#adminTableRegion").addClass("drop").prepend("<h2 class='h4 text-center'>Drag covers here to upload</h2>");
 	var coverDrop = new Dropzone("#adminTableRegion", {
 		url: "/Admin/Covers?objectAction=addNew",
 		clickable: false,
