@@ -4,13 +4,8 @@
 	{* Logo Div *}
 	{* In mobile view this div is the top div and spans across the screen *}
 	<div class="col-xs-12 col-sm-3 col-md-3 col-lg-3">
-		{if !empty($logoLink)}
-					<a href="{$logoLink}">
-		{else}
-					<a href="/">
-		{/if}
-
-			<img src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="Logo for {$librarySystemName}" title="{$logoImageTagTitleAttribute}" id="header-logo" {if $showDisplayNameInHeader && $librarySystemName}class="pull-left"{/if}>
+		<a href="{if !empty($logoLink)}{$logoLink}{else}/{*empty link to home page*}{/if}" title="{$logoLinkTitleAttribute}">
+			<img id="header-logo" src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="Logo for {$librarySystemName}" {if $showDisplayNameInHeader && $librarySystemName}class="pull-left"{/if}>
 		</a>
 	</div>
 

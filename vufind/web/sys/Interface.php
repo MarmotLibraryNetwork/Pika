@@ -368,7 +368,7 @@ class UInterface extends Smarty {
 			(!empty($library->homeLink) && $library->homeLink != 'default' ? $library->homeLink : false);
 		$this->assign('homeLink', $homeLink);
 		$this->assign('logoLink', empty($library->useHomeLinkForLogo) ? '' : $homeLink);
-		$this->assign('logoImageTagTitleAttribute', empty($library->useHomeLinkForLogo) ? 'Return to Catalog Home' : 'Library Home Page');
+		$this->assign('logoLinkTitleAttribute', empty($library->useHomeLinkForLogo) ? 'Return to Catalog Home' : 'Library Home Page');
 
 		// Check for overriding images of the theme's main logo
 		if (is_object($location)){
