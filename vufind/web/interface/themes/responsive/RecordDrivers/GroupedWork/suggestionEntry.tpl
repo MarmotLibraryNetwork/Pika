@@ -44,13 +44,13 @@
 				<div class="col-md-12 result-value" id="descriptionValue{$summId|escape}">{$summDescription|truncate_html:450:"..."}</div>
 			</div>
 
-			<div class="resultActions row">
+			<div class="row">
 				<div class="col-xs-12">
 					{include file='GroupedWork/relatedManifestations.tpl'}
 				</div>
 			</div>
 
-			<div class="resultActions row">
+			<div class="row">
 				<div class="col-xs-12">
 					{include file='GroupedWork/result-tools-horizontal.tpl' id=$summId shortId=$shortId summTitle=$summTitle ratingData=$summRating recordUrl=$summUrl}
 				</div>

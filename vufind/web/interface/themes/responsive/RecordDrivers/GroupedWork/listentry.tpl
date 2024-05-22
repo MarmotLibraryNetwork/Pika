@@ -125,7 +125,7 @@
 			{/if}
 
 
-			<div class="resultActions row">
+			<div class="row">
 				{include file='GroupedWork/result-tools-horizontal.tpl' id=$summId shortId=$shortId summTitle=$summTitle ratingData=$summRating recordUrl=$summUrl}
 			</div>
 		</div>

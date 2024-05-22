@@ -131,7 +131,7 @@
 				</div>
 			</div>
 
-			<div class="resultActions col-md-3">
+			<div class="col-md-3">
 				{include file='Record/result-tools.tpl' id=$summId shortId=$shortId module=$summModule summTitle=$summTitle ratingData=$summRating recordUrl=$summUrl}
 			</div>
 		</div>
