@@ -13,6 +13,25 @@ var Pika = (function(){
 
 		$("#modalDialog").modal({show:false});
 
+		var basePageFocusElement;
+		$("#modalDialog").on('show.bs.modal', function (){
+			// Upon modal dialog initialization, save which element had keyboard focus
+			if (basePageFocusElement == null){ // null or undefined
+				basePageFocusElement = document.activeElement;
+				//console.log('Set base focused element', basePageFocusElement);
+			}
+			// else {
+			// 	console.log('Already set focused element', basePageFocusElement);
+			// }
+		}).on ('hidden.bs.modal', function (){
+			// Upon closing modal box, if we had the keyboard-focused element, return the keyboard focus there
+			if (basePageFocusElement){
+				basePageFocusElement.focus(); // return focus
+				//console.log('Returned focus', basePageFocusElement);
+				basePageFocusElement = null; // reset variable for potential next round
+			}
+		});
+
 		$('.panel')
 				.on('show.bs.collapse', function () {
 					$(this).addClass('active');
@@ -121,6 +140,7 @@ var Pika = (function(){
 					} else if (width >= 300) {
 						numItemsToShow = Math.min(2, numCategories);
 					}
+					Pika.setExploreMoreTabs(wrapper);
 				}
 
 				// Set the width of each item in the carousel
@@ -143,12 +163,18 @@ var Pika = (function(){
 					.jcarouselControl({
 						target: '-=1'
 					});
+			$('.jcarousel-control-prev', wrapper).on("click", function(){
+				Pika.setExploreMoreTabs(wrapper);
+			});
 
 			$('.jcarousel-control-next', wrapper)
 					//.not('.ajax-carousel-control') // ajax carousels get initiated when content is loaded
 					.jcarouselControl({
 						target: '+=1'
 					});
+			$('.jcarousel-control-next', wrapper).on("click", function(){
+				Pika.setExploreMoreTabs(wrapper);
+			});
 
 			$('.jcarousel-pagination', wrapper)
 					//.not('.ajax-carousel-control') // ajax carousels get initiated when content is loaded
@@ -174,6 +200,54 @@ var Pika = (function(){
 			// If Browse Category js is set, initialize those functions
 			if (typeof Pika.Browse.initializeBrowseCategory == 'function') {
 				Pika.Browse.initializeBrowseCategory();
+			}
+
+		},
+		setExploreMoreTabs: function(wrapper){
+			if(wrapper.length === 1){
+				let jcarousel = wrapper.children('.jcarousel');
+				if (!jcarousel.is('#browse-category-carousel')){
+					setTimeout(function (){
+						if ($(jcarousel).css('overflow') === 'hidden'){
+							let visible = jcarousel.jcarousel('fullyvisible');
+							let first = jcarousel.jcarousel('first');
+							if ($(first).has('div.explore-more-image').length !== 0){
+								jcarousel.jcarousel('items').children('figure.thumbnail').children('div.explore-more-image').children('a').attr('tabindex', '-1');
+								visible.children('figure.thumbnail').children('div.explore-more-image').children('a').attr('tabindex', "0");
+							}else{
+								jcarousel.jcarousel('items').children('a').attr('tabindex', '-1');
+								visible.children('a').attr('tabindex', "0");
+							}
+							if (visible.length == 1){
+								jcarousel.jcarousel('items').children("a").removeClass('active');
+								$(visible[0]).children("a").addClass('active');
+							}
+						}
+					}, 100);
+				}
+			}else if (wrapper.length > 1){
+				wrapper.each(function(){
+					let jcarousel = $(this).children('.jcarousel');
+					if (!jcarousel.is('#browse-category-carousel')){
+						setTimeout(function (){
+							if ($(jcarousel).css('overflow') === 'hidden'){
+								let visible = jcarousel.jcarousel('fullyvisible');
+								let first = jcarousel.jcarousel('first');
+								if ($(first).has('div.explore-more-image').length !== 0){
+									jcarousel.jcarousel('items').children('figure.thumbnail').children('div.explore-more-image').children('a').attr('tabindex', '-1');
+									visible.children('figure.thumbnail').children('div.explore-more-image').children('a').attr('tabindex', "0");
+								}else{
+									jcarousel.jcarousel('items').children('a').attr('tabindex', '-1');
+									visible.children('a').attr('tabindex', "0");
+								}
+								if (visible.length == 1){
+									jcarousel.jcarousel('items').children("a").removeClass('active');
+									$(visible[0]).children("a").addClass('active');
+								}
+							}
+						}, 100);
+					}
+				});
 			}
 		},
 

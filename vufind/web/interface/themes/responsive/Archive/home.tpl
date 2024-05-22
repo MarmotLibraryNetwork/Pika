@@ -9,80 +9,85 @@
 			</div>
 		{else}
 			{if !empty($relatedProjectsLibrary)}
+				{assign var='n' value=0}
 				<div class="row">
 					<div class="col-xs-12">
 						<h2 class="h3"><a href="{$libraryProjectsUrl}">Collections from {$archiveName}</a></h2>
-						<div id="relatedProjectScroller" class="jcarousel-wrapper">
-							<a href="#" class="jcarousel-control-prev" aria-label="Previous Collection"><i class="glyphicon glyphicon-chevron-left"></i></a>
-							<a href="#" class="jcarousel-control-next" aria-label="Next Collection"><i class="glyphicon glyphicon-chevron-right"></i></a>
+						<div id="relatedProjectsLibraryScroller" class="jcarousel-wrapper">
+							<button class="jcarousel-control-prev" aria-label="Previous Collection"><i class="glyphicon glyphicon-chevron-left"></i></button>
 
-							<div class="relatedTitlesContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
+
+							<div class="relatedTitlesLibraryContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
 								<ul>
 									{foreach from=$relatedProjectsLibrary item=project}
-										<li class="relatedTitle">
-											<a href="{$project.link}">
+										<li id="relatedTitleLibrary{$n}" class="relatedTitle">
+											<a href="{$project.link}" >
 												<figure class="thumbnail">
-													<img src="{$project.image}" alt="{* alt text should not duplicate captions *}">
+													<img src="{$project.image}" alt="Collection: {$project.title|removeTrailingPunctuation|truncate:40}">
 													<figcaption>{$project.title|removeTrailingPunctuation|truncate:80:"..."}</figcaption>
 												</figure>
 											</a>
 										</li>
+											{assign var='n' value= $n+1}
 									{/foreach}
 								</ul>
 							</div>
+							<button class="jcarousel-control-next" aria-label="Next Collection"><i class="glyphicon glyphicon-chevron-right"></i></button>
 						</div>
 					</div>
 				</div>
 			{/if}
 
 			{if !empty($relatedProjectsOther)}
+				{assign var='i' value=0}
 				<div class="row">
 					<div class="col-tn-12">
 						<h2 class="h3"><a href="{$otherProjectsUrl}">{if count($relatedProjectsLibrary) > 0}More collections{else}Collections{/if} from the archive</a></h2>
 						<div id="relatedProjectOtherScroller" class="jcarousel-wrapper">
-							<a href="#" class="jcarousel-control-prev" aria-label="Previous Collection"><i class="glyphicon glyphicon-chevron-left"></i></a>
-							<a href="#" class="jcarousel-control-next" aria-label="Next Collection"><i class="glyphicon glyphicon-chevron-right"></i></a>
-
-							<div class="relatedTitlesContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
+							<button class="jcarousel-control-prev" aria-label="Previous Collection"><i class="glyphicon glyphicon-chevron-left"></i></button>
+							<div class="relatedTitlesOtherContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
 								<ul>
 									{foreach from=$relatedProjectsOther item=project}
-										<li class="relatedTitle">
-											<a href="{$project.link}">
+										<li id="relatedTitleOther{$i}" class="relatedTitle">
+											<a href="{$project.link}" title="Collection: {$project.title|removeTrailingPunctuation|truncate:40}">
 												<figure class="thumbnail">
-													<img src="{$project.image}" alt="{* alt text should not duplicate captions *}">
+													<img src="{$project.image}" alt="Collection: {$project.title|removeTrailingPunctuation|truncate:40}">
 													<figcaption>{$project.title|removeTrailingPunctuation|truncate:80:"..."}</figcaption>
 												</figure>
 											</a>
 										</li>
+											{assign var='i' value=$i+1}
 									{/foreach}
 								</ul>
 							</div>
+							<button class="jcarousel-control-next" aria-label="Next Collection"><i class="glyphicon glyphicon-chevron-right"></i></button>
 						</div>
 					</div>
 				</div>
 			{/if}
-
+			{assign var='x' value=0}
 			<div class="row">
 				<div class="col-tn-12">
 					<h2 class="h3">Types of materials in the archive</h2>
 					<div id="relatedContentTypesContainer" class="jcarousel-wrapper">
-						<a href="#" class="jcarousel-control-prev" aria-label="Previous Category"><i class="glyphicon glyphicon-chevron-left"></i></a>
-						<a href="#" class="jcarousel-control-next" aria-label="Next Category"><i class="glyphicon glyphicon-chevron-right"></i></a>
+						<button class="jcarousel-control-prev" aria-label="Previous Category"><i class="glyphicon glyphicon-chevron-left"></i></button>
 
-						<div class="relatedTitlesContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
+						<div class="relatedTitlesTypesContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
 							<ul>
 								{foreach from=$relatedContentTypes item=contentType}
-									<li class="relatedTitle">
+									<li id="relatedTitleTypes{$x}" class="relatedTitle">
 										<a href="{$contentType.link}">
 											<figure class="thumbnail">
-												<img src="{$contentType.image}" alt="{* alt text should not duplicate captions *}">
+												<img src="{$contentType.image}" alt="Collection: {$project.title|removeTrailingPunctuation|truncate:40}">
 												<figcaption>{$contentType.title|removeTrailingPunctuation|truncate:80:"..."}</figcaption>
 											</figure>
 										</a>
 									</li>
+										{assign var= 'x' value=$x+1}
 								{/foreach}
 							</ul>
 						</div>
+						<button class="jcarousel-control-next" aria-label="Next Category"><i class="glyphicon glyphicon-chevron-right"></i></button>
 					</div>
 				</div>
 			</div>

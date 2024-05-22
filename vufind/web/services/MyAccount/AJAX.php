@@ -40,7 +40,6 @@ class MyAccount_AJAX extends AJAXHandler {
 		'confirmCancelHold', 'cancelHold', 'cancelHolds', 'freezeHold', 'thawHold', 'getChangeHoldLocationForm', 'changeHoldLocation',
 		'getReactivationDateForm', //not checked
 		'renewItem', 'renewAll', 'renewSelectedItems',
-		//			'getPinResetForm',
 		'getAddAccountLinkForm', 'addAccountLink', 'removeAccountLink', 'removeViewingAccount',
 		'cancelBooking', 'getCitationFormatsForm', 'getAddBrowseCategoryFromListForm',
 		'getMasqueradeAsForm', 'initiateMasquerade', 'endMasquerade', 'getMenuData',
@@ -128,18 +127,18 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	function removeAccountLink(){
 		if (!UserAccount::isLoggedIn()){
-			$result = array(
+			$result = [
 				'result'  => false,
 				'message' => 'Sorry, you must be logged in to manage accounts.',
-			);
+			];
 		}else{
 			$accountToRemove = $_REQUEST['idToRemove'];
 			$user            = UserAccount::getLoggedInUser();
 			if ($user->removeLinkedUser($accountToRemove)){
-				$result = array(
+				$result = [
 					'result'  => true,
 					'message' => 'Successfully removed linked account.',
-				);
+				];
 				// todo: since this doesn't call a patron driver have to remove cache here for Pika/PatronDrivers/Sierra
 				// this is pretty sloppy need a better way to control caching on objects -- setters would be best.
 				$patronCacheKey = $this->cache->makePatronKey('patron', $user->id);
@@ -147,10 +146,10 @@ class MyAccount_AJAX extends AJAXHandler {
 					$this->cache->delete($patronCacheKey);
 				}
 			}else{
-				$result = array(
+				$result = [
 					'result'  => false,
 					'message' => 'Sorry, we could remove that account.',
-				);
+				];
 			}
 		}
 		return $result;
@@ -158,10 +157,10 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	function removeViewingAccount(){
 		if (!UserAccount::isLoggedIn()){
-			$result = array(
+			$result = [
 				'result'  => false,
 				'message' => 'Sorry, you must be logged in to manage accounts.',
-			);
+			];
 		}else{
 			$viewingAccountId = $_REQUEST['idToRemove'];
 			$viewingAccount =  new User();
@@ -169,15 +168,15 @@ class MyAccount_AJAX extends AJAXHandler {
 			$viewingAccount->find(true);
 			$user           = UserAccount::getLoggedInUser();
 			if ($viewingAccount->removeLinkedUser($user->id)){
-				$result = array(
+				$result = [
 					'result'  => true,
 					'message' => 'Successfully removed linked account.',
-				);
+				];
 			}else{
-			$result = array(
+			$result = [
 				'result'  => false,
 				'message' => 'Sorry, we could not remove that account.',
-			);
+			];
 			}
 		}
 		return $result;
@@ -203,7 +202,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		$formDefinition = [
 			'title'        => 'Account to Manage',
 			'modalBody'    => $interface->fetch('MyAccount/addAccountLink.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='Pika.Account.processAddLinkedUser(); return false;'>Add Account</span>",
+			'modalButtons' => "<button class='btn btn-primary' onclick='Pika.Account.processAddLinkedUser(); return false;'>Add Account</button>",
 		];
 		return $formDefinition;
 	}
@@ -221,29 +220,14 @@ class MyAccount_AJAX extends AJAXHandler {
         $interface->assign('itemCount', $listItems);
 		$interface->assign('listId', $listId);
 		$interface->assign('popupTitle', 'Add titles to list');
-		$formDefinition = array(
+		$formDefinition = [
 			'title'        => 'Add titles to list',
 			'modalBody'    => $interface->fetch('MyAccount/bulkAddToListPopup.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='Pika.Lists.processBulkAddForm(); return false;'>Add To List</span>",
-		);
+			'modalButtons' => "<button class='btn btn-primary' onclick='$(\"#bulkAddToList\").submit(); return false;'>Add To List</button>",
+		];
 		return $formDefinition;
 	}
 
-	// TODO: Clean-up: No Calls to this method were found. plb 2-1-2016
-//	function getPinResetForm(){
-//		global $interface;
-//		$interface->assign('popupTitle', 'Reset PIN Request');
-//
-//		$formDefinition = array(
-//			'title'        => 'Reset PIN',
-//			'modalBody'    => $interface->fetch('MyAccount/resetPinPopup.tpl'),
-//			'modalButtons' => "<span class='tool btn btn-primary' onclick='Pika.Account.resetPinReset(); return false;'>Add To List</span>",
-//		);
-//		return $formDefinition;
-////		$pageContent = $interface->fetch('MyResearch/resetPinPopup.tpl');
-////		$interface->assign('popupContent', $pageContent);
-////		return $interface->fetch('popup-wrapper.tpl');
-//	}
 
 	function removeTag(){
 		if (UserAccount::isLoggedIn()){
@@ -254,10 +238,10 @@ class MyAccount_AJAX extends AJAXHandler {
 			$userTag->tag    = $tagToRemove;
 			$userTag->userId = UserAccount::getActiveUserId();
 			$numDeleted      = $userTag->delete();
-			$result          = array(
+			$result          = [
 				'result'  => true,
 				'message' => "Removed tag '{$tagToRemove}' from $numDeleted titles.",
-			);
+			];
 		}else{
 			$result = [
 				'result'  => false,
@@ -342,7 +326,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		return [
 			'title'   => translate('Cancel Hold'),
 			'body'    => translate("Are you sure you want to cancel this hold?"),
-			'buttons' => "<span class='tool btn btn-primary' onclick='Pika.Account.cancelHold(\"$patronId\", \"$recordId\", \"$cancelId\")'>$cancelButtonLabel</span>",
+			'buttons' => "<button class='btn btn-primary' onclick='Pika.Account.cancelHold(\"$patronId\", \"$recordId\", \"$cancelId\")'>$cancelButtonLabel</button>",
 		];
 	}
 
@@ -805,11 +789,11 @@ class MyAccount_AJAX extends AJAXHandler {
 			$id = '';
 		}
 		$interface->assign('list', $list);
-		return array(
+		return [
 			'title'        => 'Create new List',
 			'modalBody'    => $interface->fetch("MyAccount/list-form.tpl"),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='return Pika.Account.addList(\"{$id}\");'>Create List</span>",
-		);
+			'modalButtons' => "<button class='btn btn-primary' onclick='return Pika.Account.addList(\"{$id}\");'>Create List</button>",
+		];
 	}
 
 	function getCreateListMultipleForm(){
@@ -822,11 +806,11 @@ class MyAccount_AJAX extends AJAXHandler {
 			$ids = '';
 		}
 		$interface->assign('list', $list);
-		return array(
+		return [
 			'title'       => 'Create new List',
 			'modalBody'   => $interface->fetch("MyAccount/list-form-multiple.tpl"),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='return Pika.Account.addListMultiple(\"{$ids}\");'>Create List</span>",
-		);
+			'modalButtons' => "<button class='btn btn-primary' onclick='return Pika.Account.addListMultiple(\"{$ids}\");'>Create List</button>",
+		];
 	}
 	function addListMultiple(){
 		$recordsToAdd = false;
@@ -1143,11 +1127,11 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	function getMasqueradeAsForm(){
 		global $interface;
-		return array(
+		return [
 			'title'        => translate('Masquerade As'),
 			'modalBody'    => $interface->fetch("MyAccount/ajax-masqueradeAs.tpl"),
-			'modalButtons' => '<button class="tool btn btn-primary" onclick="$(\'#masqueradeForm\').submit()">Start</button>',
-		);
+			'modalButtons' => '<button class="btn btn-primary" onclick="$(\'#masqueradeForm\').submit()">Start</button>',
+		];
 	}
 
 	function initiateMasquerade(){
@@ -1176,23 +1160,23 @@ class MyAccount_AJAX extends AJAXHandler {
 
 			$location       = new Location();
 			$pickupBranches = $location->getPickupBranches($patronOwningHold, null);
-			$locationList   = array();
+			$locationList   = [];
 			foreach ($pickupBranches as $curLocation){
 				$locationList[$curLocation->code] = $curLocation->displayName;
 			}
 			$interface->assign('pickupLocations', $locationList);
 
-			$results = array(
+			$results = [
 				'title'        => 'Change Hold Location',
 				'modalBody'    => $interface->fetch("MyAccount/changeHoldLocation.tpl"),
-				'modalButtons' => '<span class="tool btn btn-primary" onclick="Pika.Account.doChangeHoldLocation(); return false;">Change Location</span>',
-			);
+				'modalButtons' => '<button class="btn btn-primary" onclick="Pika.Account.doChangeHoldLocation(); return false;">Change Location</button>',
+			];
 		}else{
-			$results = array(
+			$results = [
 				'title'        => 'Please log in',
 				'modalBody'    => "You must be logged in.  Please close this dialog and login before changing your hold's pick-up location.",
-				'modalButtons' => "",
-			);
+				'modalButtons' => '',
+			];
 		}
 
 		return $results;
@@ -1213,11 +1197,11 @@ class MyAccount_AJAX extends AJAXHandler {
 		$interface->assign('reactivateDateNotRequired', $reactivateDateNotRequired);
 
 		$title   = translate('Freeze Hold'); // language customization
-		$results = array(
+		$results = [
 			'title'        => $title,
 			'modalBody'    => $interface->fetch("MyAccount/reactivationDate.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' id='doFreezeHoldWithReactivationDate' onclick='$(\".form\").submit(); return false;'>$title</button>",
-		);
+			'modalButtons' => "<button class='btn btn-primary' id='doFreezeHoldWithReactivationDate' onclick='$(\".form\").submit(); return false;'>$title</button>",
+		];
 		return $results;
 	}
 
@@ -1406,7 +1390,7 @@ class MyAccount_AJAX extends AJAXHandler {
 				'title'        => 'Email a list',
 				'modalBody'    => $interface->fetch('MyAccount/emailListPopup.tpl'),
 				//			'modalButtons' => '<input type="submit" name="submit" value="Send" class="btn btn-primary" onclick="$(\'#emailListForm\').submit();">'
-				'modalButtons' => '<span class="tool btn btn-primary" onclick="$(\'#emailListForm\').submit();">Send E-Mail</span>',
+				'modalButtons' => '<button class="btn btn-primary" onclick="$(\'#emailListForm\').submit();">Send E-Mail</button>',
 			];
 		}
 	}
@@ -1646,18 +1630,22 @@ class MyAccount_AJAX extends AJAXHandler {
 //			$result['lists'] = $interface->fetch('MyAccount/listsMenu.tpl');
 
 			//Count of Checkouts
-			$result['checkouts'] = '</div><span class="badge">' . $user->getNumCheckedOutTotal() . '</span>';
+			$result['checkouts'] = '<span class="badge">' . $user->getNumCheckedOutTotal() . '</span>';
 
 			//Count of Holds
 			$result['holds'] = '<span class="badge">' . $user->getNumHoldsTotal() . '</span>';
 			if ($user->getNumHoldsAvailableTotal() > 0){
-				$result['holds'] .= '&nbsp;<span class="label label-success">' . $user->getNumHoldsAvailableTotal() . ' ready for pick up</span>';
+				$readyToPickupStr = '&nbsp;<span class="label label-success">' . $user->getNumHoldsAvailableTotal() . ' ready for pick up</span>';
+				$result['holds']  .= $readyToPickupStr;
+				if ($_REQUEST['activeModule'] == 'MyAccount' && $_REQUEST['activeAction'] == 'Home'){
+					$result['accountSummaryHolds'] = '<strong><span class="badge">' . $user->getNumHoldsTotal() . '</span></strong> titles on <a href="/MyAccount/Holds">hold</a>' . $readyToPickupStr;
+				}
 			}
 
 			//Count of bookings
 			$homeLibrary = $user->getHomeLibrary();
 			if (!empty($homeLibrary) && $homeLibrary->enableMaterialsBooking){
-				$result['bookings'] = '</div><span class="badge">' . $user->getNumBookingsTotal() . '</span>';
+				$result['bookings'] = '<span class="badge">' . $user->getNumBookingsTotal() . '</span>';
 			}else{
 				$result['bookings'] = '';
 			}

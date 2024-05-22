@@ -208,16 +208,19 @@
     color: @explore-more-bar-label-bg-color;
     z-index: 2; // keep above carousel content
     box-shadow: white 0 0 0 0;
+    border: 1px solid @archiveComponentControl-background-color;
     .glyphicon {
-      top: 39px; // center the button a bit better. I haven't find a good way to make it center with out a specific value yet
+       // center the button a bit better. I haven't find a good way to make it center with out a specific value yet
     }
   }
   // Horizontal Placement of Previous Next Buttons
   .jcarousel-control-prev {
     left: 2px;
+    padding-inline: 0;
   }
   .jcarousel-control-next {
     right: 2px;
+    padding-inline: 0;
   }
 
   // Acordion Styling

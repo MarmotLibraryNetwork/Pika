@@ -1,5 +1,5 @@
 {strip}
-	<div data-role="content">
+	<div id="account-summary-content">
 		{if $loggedIn}
 			{include file="MyAccount/patronWebNotes.tpl"}
 
@@ -15,7 +15,7 @@
 				You currently have:
 				<ul>
 					<li><strong><span class="checkouts-placeholder"><img src="/images/loading.gif" alt="loading"></span></strong> titles <a href="/MyAccount/CheckedOut">checked out</a></li>
-					<li><strong><span class="holds-placeholder"><img src="/images/loading.gif" alt="loading"></span></strong> titles on <a href="/MyAccount/Holds">hold</a></li>
+					<li><span id="account-summary-holds"><strong><span class="holds-placeholder"><img src="/images/loading.gif" alt="loading"></span></strong> titles on <a href="/MyAccount/Holds">hold</a></span></li>
 					{if $enableMaterialsBooking}
 					<li><strong><span class="bookings-placeholder"><img src="/images/loading.gif" alt="loading"></span></strong> titles <a href="/MyAccount/Bookings">scheduled</a></li>
 					{/if}

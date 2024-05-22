@@ -8,7 +8,7 @@
 
 				<div class="jcarousel-wrapper">
 
-					<a href="#" class="jcarousel-control-prev" aria-label="Previous Browse Category"></a>
+					<button class="jcarousel-control-prev" aria-label="Previous Browse Category"></button>
 
 					<div class="jcarousel" id="browse-category-carousel">
 						<ul>
@@ -22,7 +22,7 @@
 						</ul>
 					</div>
 
-					<a href="#" class="jcarousel-control-next" aria-label="Next Browse Category"></a>
+					<button class="jcarousel-control-next" aria-label="Next Browse Category"></button>
 
 					<p class="jcarousel-pagination"></p>
 				</div>

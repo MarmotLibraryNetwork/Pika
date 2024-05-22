@@ -8,9 +8,8 @@
 
 // Account Settings formatting //
 #account-settings-accordion {
-
   .panel-body {
-    font-size: 13px;
+    font-size: 13px; // TODO: use body default
     color: @gray-dark;
     //background-color: #eeeeee;
     //background-color: transparent;
@@ -18,6 +17,13 @@
   }
 }
 
+#account-summary-content a {
+  .link-decorating-mixin(); // Account summary page links should have dotted underline to meet accessibility standar1.4.1 : URLs must be distinguishable without relying on colord
+}
+
+#pika-roles li {
+  margin-bottom: 3px; // Increase vertical spacing between link to meet accessibility standard for minimum target space
+}
 // Used on Checked Out Page
 .bg-overdue {
   background-color: @state-danger-bg !important; // important is needed to override .striped on checked out page
@@ -44,6 +50,12 @@
     font-weight: bold;
     font-size: 18px;
   }
+}
+
+// Include enough vertical spacing between sidebar menu links to meet Accessibility stardard for minimum target size
+.myAccountLink, .adminMenuLink {
+  margin-top: 2px;
+  margin-bottom: 2px;
 }
 
 // Account Profile

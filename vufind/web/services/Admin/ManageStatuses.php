@@ -21,24 +21,26 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestStatus.php';
 
-class ManageStatuses extends ObjectEditor
-{
+class ManageStatuses extends ObjectEditor {
 
 	function getObjectType(){
 		return 'MaterialsRequestStatus';
 	}
+
 	function getToolName(){
 		return 'ManageStatuses';
 	}
+
 	function getPageTitle(){
 		return 'Materials Request Statuses';
 	}
+
 	function getAllObjects($orderBy = null){
 		$user = UserAccount::getLoggedInUser();
 
 		$status = new MaterialsRequestStatus();
 		if (UserAccount::userHasRole('library_material_requests')){
-			$homeLibrary = UserAccount::getUserHomeLibrary();
+			$homeLibrary       = UserAccount::getUserHomeLibrary();
 			$status->libraryId = $homeLibrary->libraryId;
 		}
 		$status->orderBy('isDefault DESC');
@@ -46,32 +48,37 @@ class ManageStatuses extends ObjectEditor
 		$status->orderBy('isOpen DESC');
 		$status->orderBy('description ASC');
 		$status->find();
-		$objectList = array();
+		$objectList = [];
 		while ($status->fetch()){
 			$objectList[$status->id] = clone $status;
 		}
 		return $objectList;
 	}
+
 	function getObjectStructure(){
 		return MaterialsRequestStatus::getObjectStructure();
 	}
+
 	function getPrimaryKeyColumn(){
 		return 'description';
 	}
+
 	function getIdKeyColumn(){
 		return 'id';
 	}
+
 	function getAllowableRoles(){
-		return array('library_material_requests');
+		return ['library_material_requests'];
 	}
+
 	function customListActions(){
-		$objectActions = array();
-		$user = UserAccount::getLoggedInUser();
+		$objectActions = [];
+		$user          = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('library_material_requests')){
-			$objectActions[] = array(
-				'label' => 'Reset to Default',
+			$objectActions[] = [
+				'label'  => 'Reset to Default',
 				'action' => 'resetToDefault',
-			);
+			];
 		}
 
 		return $objectActions;
@@ -80,18 +87,19 @@ class ManageStatuses extends ObjectEditor
 	function resetToDefault(){
 		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('library_material_requests')){
-			$homeLibrary = UserAccount::getUserHomeLibrary();
-			$materialRequestStatus = new MaterialsRequestStatus();
-			$materialRequestStatus->libraryId = $homeLibrary->libraryId;
-			$materialRequestStatus->delete();
-
-			$materialRequestStatus = new MaterialsRequestStatus();
-			$materialRequestStatus->libraryId = -1;
-			$materialRequestStatus->find();
-			while ($materialRequestStatus->fetch()){
-				$materialRequestStatus->id = null;
+			$homeLibrary                      = UserAccount::getUserHomeLibrary();
+			if (!empty($homeLibrary->libraryId)){
+				$materialRequestStatus            = new MaterialsRequestStatus();
 				$materialRequestStatus->libraryId = $homeLibrary->libraryId;
-				$materialRequestStatus->insert();
+				$materialRequestStatus->delete();
+				$materialRequestStatus            = new MaterialsRequestStatus();
+				$materialRequestStatus->libraryId = -1;
+				$materialRequestStatus->find();
+				while ($materialRequestStatus->fetch()){
+					$materialRequestStatus->id        = null;
+					$materialRequestStatus->libraryId = $homeLibrary->libraryId;
+					$materialRequestStatus->insert();
+				}
 			}
 		}
 		header("Location: /Admin/ManageStatuses");

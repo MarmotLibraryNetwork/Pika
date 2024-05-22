@@ -273,9 +273,7 @@ a:focus {
   text-decoration: underline;
 }
 a:focus {
-  outline: thin dotted;
-  outline: 5px auto -webkit-focus-ring-color;
-  outline-offset: -2px;
+  outline: #E15F15 2px solid;
 }
 img {
   vertical-align: middle;
@@ -1742,9 +1740,7 @@ select optgroup {
 input[type="file"]:focus,
 input[type="radio"]:focus,
 input[type="checkbox"]:focus {
-  outline: thin dotted;
-  outline: 5px auto -webkit-focus-ring-color;
-  outline-offset: -2px;
+  outline: #E15F15 2px solid;
 }
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
@@ -2045,9 +2041,7 @@ textarea.input-lg {
   user-select: none;
 }
 .btn:focus {
-  outline: thin dotted;
-  outline: 5px auto -webkit-focus-ring-color;
-  outline-offset: -2px;
+  outline: #E15F15 2px solid;
 }
 .btn:hover,
 .btn:focus {
@@ -8178,6 +8172,14 @@ a .header-button:visited {
   background: #702C29;
   background-image: none;
 }
+.jcarousel li:focus-within {
+  outline: 2px solid #E15F15;
+  outline-offset: -3px;
+  border: 1px solid #fff;
+}
+.jcarousel .active figure.thumbnail img {
+  border: 2px solid #E15F15;
+}
 #home-page-search {
   background-color: #a7b8a7;
   background: linear-gradient(to bottom, #a7b8a7, #729272);
@@ -8448,6 +8450,8 @@ hr.menu {
   background-color: #f8f6ea;
   color: #4d6c4d;
   font-size: 50px;
+  border: none;
+  padding-inline: 0;
 }
 #browse-category-picker .jcarousel-control-prev:focus,
 #browse-category-picker .jcarousel-control-next:focus {
@@ -8458,10 +8462,10 @@ hr.menu {
 #browse-category-picker .jcarousel-control-next:hover {
   text-decoration: none;
 }
-#browse-category-picker a.jcarousel-control-next:after {
+#browse-category-picker button.jcarousel-control-next:after {
   content: "›";
 }
-#browse-category-picker a.jcarousel-control-prev:before {
+#browse-category-picker button.jcarousel-control-prev:before {
   content: "‹";
 }
 #browse-category-picker .jcarousel-pagination a,
@@ -8904,6 +8908,14 @@ a.browse-thumbnail-sorted.active {
   color: #333333;
   border: 1px solid #c5c5c5;
 }
+#account-summary-content a {
+  color: #3b679a;
+  -webkit-text-decoration: underline dotted;
+          text-decoration: underline dotted;
+}
+#pika-roles li {
+  margin-bottom: 3px;
+}
 .bg-overdue {
   background-color: #f2dede !important;
 }
@@ -8922,6 +8934,11 @@ a.browse-thumbnail-sorted.active {
 #mobileHeader .myAccountLink {
   font-weight: bold;
   font-size: 18px;
+}
+.myAccountLink,
+.adminMenuLink {
+  margin-top: 2px;
+  margin-bottom: 2px;
 }
 .hiddenText {
   font-size: 0;
@@ -9453,12 +9470,6 @@ a.browse-thumbnail-sorted.active {
   height: 18px;
   text-align: center;
 }
-.manifestation-toggle-placeholder {
-  display: inline-block;
-  padding: 3px;
-  width: 20px;
-  height: 18px;
-}
 .manifestation-toggle {
   content: "-";
 }
@@ -9967,20 +9978,7 @@ a.browse-thumbnail-sorted.active {
   color: #a7b8a7;
   z-index: 2;
   box-shadow: white 0 0 0 0;
-}
-#explore-more-body .jcarousel-control-prev .glyphicon,
-#relatedProjectScroller .jcarousel-control-prev .glyphicon,
-#relatedProjectOtherScroller .jcarousel-control-prev .glyphicon,
-#relatedContentTypesContainer .jcarousel-control-prev .glyphicon,
-.exploreMoreBar .jcarousel-control-prev .glyphicon,
-#book-sections .jcarousel-control-prev .glyphicon,
-#explore-more-body .jcarousel-control-next .glyphicon,
-#relatedProjectScroller .jcarousel-control-next .glyphicon,
-#relatedProjectOtherScroller .jcarousel-control-next .glyphicon,
-#relatedContentTypesContainer .jcarousel-control-next .glyphicon,
-.exploreMoreBar .jcarousel-control-next .glyphicon,
-#book-sections .jcarousel-control-next .glyphicon {
-  top: 39px;
+  border: 1px solid #a7b8a7;
 }
 #explore-more-body .jcarousel-control-prev,
 #relatedProjectScroller .jcarousel-control-prev,
@@ -9989,6 +9987,7 @@ a.browse-thumbnail-sorted.active {
 .exploreMoreBar .jcarousel-control-prev,
 #book-sections .jcarousel-control-prev {
   left: 2px;
+  padding-inline: 0;
 }
 #explore-more-body .jcarousel-control-next,
 #relatedProjectScroller .jcarousel-control-next,
@@ -9997,6 +9996,7 @@ a.browse-thumbnail-sorted.active {
 .exploreMoreBar .jcarousel-control-next,
 #book-sections .jcarousel-control-next {
   right: 2px;
+  padding-inline: 0;
 }
 #explore-more-body .panel-body,
 #relatedProjectScroller .panel-body,
@@ -10422,10 +10422,10 @@ a .header-button:hover {
   color: #e4d8c5;
   text-decoration: none;
 }
-#browse-category-picker a.jcarousel-control-next:after {
+#browse-category-picker button.jcarousel-control-next:after {
   content: "▶";
 }
-#browse-category-picker a.jcarousel-control-prev:before {
+#browse-category-picker button.jcarousel-control-prev:before {
   content: "◀";
 }
 #browse-category-picker .jcarousel-pagination a.active {

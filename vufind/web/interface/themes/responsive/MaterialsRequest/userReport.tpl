@@ -4,7 +4,7 @@
 			<div class="alert alert-danger">{$error}</div>
 		{/if}
 			<div id="materialsRequestFilters">
-				<legend>Filters</legend>
+				<h2 class="h3">Filters</h2>
 
 				<form action="/MaterialsRequest/UserReport" method="get">
 					<fieldset class="fieldset-collapsible">
@@ -53,11 +53,8 @@
 											 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 											 class="form-control" >
 								<span class="input-group-addon">
-											<span class="glyphicon glyphicon-calendar"
-														onclick="$('#startDate').focus().datepicker('show')"
-														aria-hidden="true">
-											</span>
-										</span>
+									<span class="glyphicon glyphicon-calendar" onclick="$('#startDate').focus().datepicker('show')" aria-hidden="true"></span>
+								</span>
 							</div>
 						</div>
 						<div class="form-group">
@@ -80,7 +77,7 @@
 			</div>
 
 		{if !empty($statuses)}
-			<legend>Table</legend>
+			<h2 class="h3">Table</h2>
 
 			{* Display results in table*}
 			<table id="summaryTable" class="table stripe table-bordered">
@@ -109,12 +106,12 @@
 			</table>
 
 			{* Export to Excel option *}
-		<form action="{$fullPath}" method="get">
-			<input type="submit" id="exportToExcel" name="exportToExcel" value="Export to Excel" class="btn btn-default">
+			<form action="{$fullPath}" method="get">
+				<input type="submit" id="exportToExcel" name="exportToExcel" value="Export to Excel" class="btn btn-default">
 				{foreach from=$statusFilter item=status}
 					<input type="hidden" name="statusFilter[]" value="{$status}">
 				{/foreach}
-		</form>
+			</form>
 
 		{/if}
 
@@ -125,7 +122,7 @@
 	$("#startDate").datepicker();
 	$("#endDate").datepicker();
 
-	$(document).ready(function(){
+	$(function(){
 		$('#summaryTable').DataTable({
 			"order": [[0, "asc"]],
 			pageLength: 100

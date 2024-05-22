@@ -41,20 +41,21 @@
 	<div class="clear-both"></div>
 
 	{if $showWidgetView}
+	{assign var='i' value=0}
 		<div id="related-exhibit-images" class="exploreMoreBar row">
 			<div class="label-top">
 				<div class="exploreMoreBarLabel">{translate text='Categories'}</div>
 			</div>
 			<div class="exploreMoreContainer">
-				<div class="jcarousel-wrapper">
+				<div class="jcarousel-wrapper" id="scrollExploreMore">
 					{* Scrolling Buttons *}
-					<a href="#" class="jcarousel-control-prev" aria-label="Previous Category"><i class="glyphicon glyphicon-chevron-left"></i></a>
-					<a href="#" class="jcarousel-control-next" aria-label="Next Category"><i class="glyphicon glyphicon-chevron-right"></i></a>
+					<button class="jcarousel-control-prev" aria-label="Previous Category"><i class="glyphicon glyphicon-chevron-left"></i></button>
+
 
 					<div class="exploreMoreItemsContainer jcarousel"{* data-wrap="circular" data-jcarousel="true"*}> {* noIntialize is a filter for Pika.initCarousels() *}
 						<ul>
 							{foreach from=$relatedImages item=image}
-								<li class="explore-more-option">
+								<li id="exploreMore{$i}" class="explore-more-option">
 									<figure class="thumbnail" title="{$image.title|escape}">
 										<div class="explore-more-image">
 											<a href='{$image.link}'>
@@ -66,9 +67,11 @@
 										</figcaption>
 									</figure>
 								</li>
+									{assign var='i' value=$i++}
 							{/foreach}
 						</ul>
 					</div>
+					<button class="jcarousel-control-next" aria-label="Next Category"><i class="glyphicon glyphicon-chevron-right"></i></button>
 				</div>
 			</div>
 		</div>

@@ -455,6 +455,8 @@
 	</div>
 {/if}
 <script>
-	Pika.Account.loadMenuData();
+	$(function () {ldelim} {* Load menu data only after document is ready, since requires Globals.activeModule & Globals.activeAction *}
+		Pika.Account.loadMenuData();
+		{rdelim});
 </script>
 {/strip}

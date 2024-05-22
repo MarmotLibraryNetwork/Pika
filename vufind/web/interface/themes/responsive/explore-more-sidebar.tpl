@@ -29,15 +29,14 @@
 				<div class="panel-body">
 
 		{if $section.format == 'scroller'}
+		{assign var='i' value=0}
 			{* JCarousel with related titles *}
-			<div class="jcarousel-wrapper">
-				<a href="#" class="jcarousel-control-prev" aria-label="Previous title"><i class="glyphicon glyphicon-chevron-left"></i></a>
-				<a href="#" class="jcarousel-control-next" aria-label="Next Title"><i class="glyphicon glyphicon-chevron-right"></i></a>
-
+			<div class="jcarousel-wrapper" id="scroll{$sectionId}">
+				<button class="jcarousel-control-prev" aria-label="Previous title"><i class="glyphicon glyphicon-chevron-left"></i></button>
 				<div class="relatedTitlesContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
 					<ul>
 						{foreach from=$section.values item=title}
-							<li class="relatedTitle">
+							<li id="relatedTitle{$i}" class="relatedTitle">
 								<a href="{$title.link}">
 									<figure class="thumbnail">
 										<img src="{$title.image}" alt="{* alt text should not duplicate captions *}">
@@ -45,15 +44,15 @@
 									</figure>
 								</a>
 							</li>
+								{assign var='i' value=$i++}
 						{/foreach}
 					</ul>
 				</div>
+				<button class="jcarousel-control-next" aria-label="Next Title"><i class="glyphicon glyphicon-chevron-right"></i></button>
 			</div>
-
 		{elseif $section.format == 'subsections'}
 			{foreach from=$section.values item=section}
 				<div class="section">
-
 					<div class="row">
 						<div class="subsectionTitle col-xs-5">{$section.title}</div>
 						<div class="subsection col-xs-7">
@@ -63,15 +62,14 @@
 				</div>
 			{/foreach}
 		{elseif $section.format == 'scrollerWithLink'}
+    {assign var='n' value=0}
 			{* Related Titles Widget *}
-			<div class="jcarousel-wrapper">
-				<a href="#" class="jcarousel-control-prev" aria-label="Previous Title"><i class="glyphicon glyphicon-chevron-left"></i></a>
-				<a href="#" class="jcarousel-control-next" aria-label="Next Title"><i class="glyphicon glyphicon-chevron-right"></i></a>
-
+			<div class="jcarousel-wrapper" id="scroll{$sectionId}">
+				<button class="jcarousel-control-prev" aria-label="Previous Title"><i class="glyphicon glyphicon-chevron-left"></i></button>
 				<div class="relatedTitlesContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
 					<ul>
 						{foreach from=$section.values item=title}
-							<li class="relatedTitle">
+							<li id="relatedTitle{$n}" class="relatedTitle">
 								<a href="{$title.link}">
 									<figure class="thumbnail">
 										<img src="{$title.image}" alt="{* alt text should not duplicate captions *}">
@@ -79,9 +77,11 @@
 									</figure>
 								</a>
 							</li>
+								{assign var='n' value =$n++}
 						{/foreach}
 					</ul>
 				</div>
+				<button class="jcarousel-control-next" aria-label="Next Title"><i class="glyphicon glyphicon-chevron-right"></i></button>
 			</div>
 			<a class="explore-more-scroller-link" href="{$section.link}" {if $section.openInNewWindow}target="_blank"{/if}>All Results {if $section.numFound}({$section.numFound}){/if}</a>
 
@@ -166,9 +166,9 @@
 	{foreach from=$exploreMoreInfo item=exploreMoreOption}
 		<div class="sectionHeader"{if $exploreMoreOption.hideByDefault} style="display: none;"{/if}>{$exploreMoreOption.label}</div>
 		<div class="{*col-sm-12 *}jcarousel-wrapper"{if $exploreMoreOption.hideByDefault} style="display: none;"{/if}>
-			<a href="#" class="jcarousel-control-prev" aria-label="Previous Title"><i class="glyphicon glyphicon-chevron-left"></i></a>
-			<a href="#" class="jcarousel-control-next" aria-label="Next Title"><i class="glyphicon glyphicon-chevron-right"></i></a>
+			<button class="jcarousel-control-prev" aria-label="Previous Title"><i class="glyphicon glyphicon-chevron-left"></i></button>
 			{$exploreMoreOption.body}
+			<button class="jcarousel-control-next" aria-label="Next Title"><i class="glyphicon glyphicon-chevron-right"></i></button>
 		</div>
 	{/foreach}
 {/strip}
