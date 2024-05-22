@@ -11,7 +11,7 @@
 		</svg>
 	</label>
 
-	<input value="1" id="{$id}-star1" type="radio" name="rating" class="visuallyhidden" {if $ratingData.user == 1}checked{/if}/>
+	<input value="1" id="{$id}-star1" type="radio" name="rating" class="visuallyhidden"{if $ratingData.user == 1} checked=""{/if} />
 	<label for="{$id}-star1">
 		<span class="visuallyhidden">1 Star</span>
 		<svg viewBox="0 0 512 512">
