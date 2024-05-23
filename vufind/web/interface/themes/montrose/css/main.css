@@ -8387,8 +8387,7 @@ hr.menu {
   border-radius: 0 0 0 0;
   overflow-y: hidden;
   padding-top: 0.4em;
-  line-height: 20px;
-  min-height: 18px;
+  min-height: 24px;
 }
 #search-actions.input-group-btn {
   vertical-align: top;
