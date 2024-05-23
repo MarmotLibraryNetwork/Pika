@@ -7871,7 +7871,7 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
   border-radius: 50%;
 }
 body {
-  color: #656565;
+  color: #454545;
 }
 #content-container {
   padding: 0;
@@ -10147,12 +10147,12 @@ a.browse-thumbnail-sorted.active {
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentLinks {
   padding: 20px;
   font-size: 14px;
-  color: #656565;
+  color: #454545;
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentRandomImage {
   padding: 20px;
   font-size: 14px;
-  color: #656565;
+  color: #454545;
   text-align: center;
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentRandomImage figure a img {
