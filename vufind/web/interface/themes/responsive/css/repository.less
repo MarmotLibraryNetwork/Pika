@@ -191,7 +191,7 @@
 }
 
 // Common Rules between Explore More Bar & Explore More Sidebar
-#explore-more-body, #relatedProjectScroller, #relatedProjectOtherScroller, #relatedContentTypesContainer, .exploreMoreBar, #book-sections {
+#explore-more-body, #relatedProjectScroller, #relatedTitlesLibraryContainer, #relatedProjectOtherScroller, #relatedContentTypesContainer, .exploreMoreBar, #book-sections {
   .jcarousel {
     .thumbnail {
       margin-bottom: 0;
@@ -208,7 +208,7 @@
     color: @explore-more-bar-label-bg-color;
     z-index: 2; // keep above carousel content
     box-shadow: white 0 0 0 0;
-    border: 1px solid @archiveComponentControl-background-color;
+    border: 1px solid @explore-more-bar-label-bg-color;
     .glyphicon {
        // center the button a bit better. I haven't find a good way to make it center with out a specific value yet
     }
@@ -518,6 +518,7 @@
 
     }
   }
+
   .browse-thumbnail-sorted {
     /* autoprefixer: off */
     //autoprefixer adds the page-break-inside: which breaks display on firefox.

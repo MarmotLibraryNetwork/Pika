@@ -9973,6 +9973,7 @@ a.browse-thumbnail-sorted.active {
 }
 #explore-more-body .jcarousel .thumbnail,
 #relatedProjectScroller .jcarousel .thumbnail,
+#relatedTitlesLibraryContainer .jcarousel .thumbnail,
 #relatedProjectOtherScroller .jcarousel .thumbnail,
 #relatedContentTypesContainer .jcarousel .thumbnail,
 .exploreMoreBar .jcarousel .thumbnail,
@@ -9983,12 +9984,14 @@ a.browse-thumbnail-sorted.active {
 }
 #explore-more-body .jcarousel-control-prev,
 #relatedProjectScroller .jcarousel-control-prev,
+#relatedTitlesLibraryContainer .jcarousel-control-prev,
 #relatedProjectOtherScroller .jcarousel-control-prev,
 #relatedContentTypesContainer .jcarousel-control-prev,
 .exploreMoreBar .jcarousel-control-prev,
 #book-sections .jcarousel-control-prev,
 #explore-more-body .jcarousel-control-next,
 #relatedProjectScroller .jcarousel-control-next,
+#relatedTitlesLibraryContainer .jcarousel-control-next,
 #relatedProjectOtherScroller .jcarousel-control-next,
 #relatedContentTypesContainer .jcarousel-control-next,
 .exploreMoreBar .jcarousel-control-next,
@@ -10002,6 +10005,7 @@ a.browse-thumbnail-sorted.active {
 }
 #explore-more-body .jcarousel-control-prev,
 #relatedProjectScroller .jcarousel-control-prev,
+#relatedTitlesLibraryContainer .jcarousel-control-prev,
 #relatedProjectOtherScroller .jcarousel-control-prev,
 #relatedContentTypesContainer .jcarousel-control-prev,
 .exploreMoreBar .jcarousel-control-prev,
@@ -10011,6 +10015,7 @@ a.browse-thumbnail-sorted.active {
 }
 #explore-more-body .jcarousel-control-next,
 #relatedProjectScroller .jcarousel-control-next,
+#relatedTitlesLibraryContainer .jcarousel-control-next,
 #relatedProjectOtherScroller .jcarousel-control-next,
 #relatedContentTypesContainer .jcarousel-control-next,
 .exploreMoreBar .jcarousel-control-next,
@@ -10020,6 +10025,7 @@ a.browse-thumbnail-sorted.active {
 }
 #explore-more-body .panel-body,
 #relatedProjectScroller .panel-body,
+#relatedTitlesLibraryContainer .panel-body,
 #relatedProjectOtherScroller .panel-body,
 #relatedContentTypesContainer .panel-body,
 .exploreMoreBar .panel-body,
