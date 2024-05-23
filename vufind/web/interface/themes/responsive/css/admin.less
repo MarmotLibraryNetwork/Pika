@@ -10,6 +10,12 @@
   }
 }
 
+// Give a visual indicator of text overflow on Admin page inputs.
+// Especially needed for our One-to-Many tables that have small horizontal space for individual columns
+.module_Admin input {
+  text-overflow: ellipsis ellipsis;
+}
+
 // Keep Tables within an Admin panel section navigable with a scroll bar
 .editor {
   .panel-group {
