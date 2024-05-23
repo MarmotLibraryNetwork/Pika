@@ -25,12 +25,18 @@ body {
   background-color: #fff;
 }
 
-.btn-primary:hover {
-  background-color: @evld-button-hover-yellow;
+.btn-primary, #more-browse-results {
+  &:hover {
+    background-color: @evld-button-hover-yellow;
+  }
 }
 
 #browse-category-picker {
   .jcarousel-control-prev, .jcarousel-control-next {
     border: 1px solid #ccc;
+
+    &:hover {
+      background-color: @evld-button-hover-yellow;
+    }
   }
 }

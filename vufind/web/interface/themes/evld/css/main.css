@@ -4206,7 +4206,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
   padding: 8px 15px;
   margin-bottom: 23px;
   list-style: none;
-  background-color: #f5f5f5;
+  background-color: transparent;
   border-radius: 4px;
 }
 .breadcrumb > li {
@@ -7940,7 +7940,7 @@ body {
   }
 }
 .breadcrumbs {
-  background-color: #f5f5f5;
+  background-color: transparent;
   padding: 3px;
 }
 .breadcrumb {
@@ -8941,8 +8941,8 @@ a.browse-thumbnail-sorted.active {
   box-shadow: 5px 5px 10px #DCDCDC;
 }
 #more-browse-results {
-  background-color: #e6e6e6;
-  color: #c7c9ca;
+  background-color: #EFF9EE;
+  color: #000;
   text-align: center;
   padding: 2px;
   border-radius: 4px;
@@ -10479,10 +10479,15 @@ body {
 .selected-browse-label-search {
   background-color: #fff;
 }
-.btn-primary:hover {
+.btn-primary:hover,
+#more-browse-results:hover {
   background-color: #FFD400;
 }
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
   border: 1px solid #ccc;
+}
+#browse-category-picker .jcarousel-control-prev:hover,
+#browse-category-picker .jcarousel-control-next:hover {
+  background-color: #FFD400;
 }
