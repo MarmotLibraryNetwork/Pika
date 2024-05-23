@@ -5,20 +5,26 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
-#header-container {
-  min-height: @header-height + 20;
-  // in some other themes, @header-height is less than the min height set in responsive, set at 110px. plb 9-24-2014
+#header-logo {
+  max-height: none;
 }
 
 a .header-button {
-  border-radius:  0.5em;
+  border-radius: 0.5em;
   //margin-top: 40px;
   //line-height: 35px;
 }
 
 #browse-category-carousel .browse-category.selected {
   background-color: @bvOrange;
+
   button {
     color: @selectedSubCategoryFontColor;
+  }
+}
+
+#browse-category-picker {
+  .jcarousel-control-prev, .jcarousel-control-next {
+    .box-shadow(2px 2px 5px #aaa);
   }
 }
