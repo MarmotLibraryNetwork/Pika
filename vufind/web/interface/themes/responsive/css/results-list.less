@@ -396,6 +396,16 @@
   font-weight: bold;
 }
 
+
+.addToShelf a:focus{
+  outline:none;
+  img{
+    outline: @focus-ring-color 2px solid;
+    z-index:3;
+  }
+
+}
+
 @media (min-width: 0) and (max-width: @screen-tn-max) {
   .bookshelfHelpText {
     left: 1em;
@@ -414,8 +424,8 @@
     position: relative;
     margin-left: -1em;
     margin-top: 10px;
-
   }
+
 }
 
 @media (min-width: @screen-xs-min) and (max-width: @screen-sm-max) {
@@ -428,6 +438,7 @@
     z-index: 2;
     width: 20px;
   }
+
 
   .addToShelf img {
     min-width: 50px;
