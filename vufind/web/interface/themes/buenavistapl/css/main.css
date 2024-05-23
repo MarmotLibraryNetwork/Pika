@@ -2105,7 +2105,7 @@ fieldset[disabled] .btn-default.active {
   background-color: #fff;
 }
 .btn-primary {
-  color: #000000;
+  color: #00384C;
   background-color: #faa41c;
   border-color: #f79905;
 }
@@ -2114,7 +2114,7 @@ fieldset[disabled] .btn-default.active {
 .btn-primary:active,
 .btn-primary.active,
 .open .dropdown-toggle.btn-primary {
-  color: #000000;
+  color: #00384C;
   background-color: #e89005;
   border-color: #bb7404;
 }
@@ -7482,7 +7482,7 @@ fieldset[disabled] .datepicker table tr td.selected.highlighted.active {
 }
 .datepicker table tr td.active,
 .datepicker table tr td.active.highlighted {
-  color: #000000;
+  color: #00384C;
   background-color: #faa41c;
   border-color: #f79905;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
@@ -7497,7 +7497,7 @@ fieldset[disabled] .datepicker table tr td.selected.highlighted.active {
 .datepicker table tr td.active.highlighted.active,
 .open .dropdown-toggle.datepicker table tr td.active,
 .open .dropdown-toggle.datepicker table tr td.active.highlighted {
-  color: #000000;
+  color: #00384C;
   background-color: #e89005;
   border-color: #bb7404;
 }
@@ -7571,7 +7571,7 @@ fieldset[disabled] .datepicker table tr td.active.highlighted.active {
 .datepicker table tr td span.active:hover,
 .datepicker table tr td span.active.disabled,
 .datepicker table tr td span.active.disabled:hover {
-  color: #000000;
+  color: #00384C;
   background-color: #faa41c;
   border-color: #f79905;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
@@ -7596,7 +7596,7 @@ fieldset[disabled] .datepicker table tr td.active.highlighted.active {
 .open .dropdown-toggle.datepicker table tr td span.active:hover,
 .open .dropdown-toggle.datepicker table tr td span.active.disabled,
 .open .dropdown-toggle.datepicker table tr td span.active.disabled:hover {
-  color: #000000;
+  color: #00384C;
   background-color: #e89005;
   border-color: #bb7404;
 }
@@ -7898,7 +7898,7 @@ body {
           text-decoration: underline dotted;
 }
 #header-container {
-  height: 120px;
+  height: 100px;
   min-height: 100px;
   padding-top: 0;
   background-color: #fff;
@@ -7917,11 +7917,11 @@ body {
 }
 a .header-button {
   text-align: center;
-  line-height: 35px;
+  line-height: 50px;
   color: #222;
   background-color: #fff;
   border: 1px solid #555;
-  margin-top: 42.5px;
+  margin-top: 25px;
 }
 a .header-button:hover {
   color: #fff;
@@ -7956,7 +7956,7 @@ a .header-button:visited {
   font-size: 16px;
 }
 #footer-container {
-  border-top: 8px solid #000000;
+  border-top: 8px solid #00384C;
   padding-top: 3px;
 }
 @media screen and (max-width: 767px) {
@@ -7983,7 +7983,7 @@ a .header-button:visited {
   padding: 0 3px 0 3px;
 }
 #navigation-controls {
-  border-top: 8px solid #000000;
+  border-top: 8px solid #00384C;
   background: #fff;
 }
 @media print {
@@ -8053,7 +8053,7 @@ a .header-button:visited {
   background-color: #faa41c;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
-  color: #000000;
+  color: #00384C;
 }
 #vertical-menu-bar .menu-icon {
   padding: 5px;
@@ -8177,8 +8177,8 @@ a .header-button:visited {
   border: 2px solid #E15F15;
 }
 #home-page-search {
-  background-color: #036482;
-  background: linear-gradient(to bottom, #036482, #036482);
+  background-color: #00384C;
+  background: linear-gradient(to bottom, #00384C, #00384C);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8204,7 +8204,7 @@ a .header-button:visited {
 .searchSource {
   margin: 5px 0 0;
   color: #fff;
-  background-color: #036482;
+  background-color: #00384C;
   border: none;
   width: 90% !important;
 }
@@ -8219,8 +8219,8 @@ a .header-button:visited {
           text-decoration: underline dotted;
 }
 #horizontal-search-box {
-  background-color: #036482;
-  background: linear-gradient(to bottom, #036482, #036482);
+  background-color: #00384C;
+  background: linear-gradient(to bottom, #00384C, #00384C);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -8387,8 +8387,7 @@ hr.menu {
   border-radius: 3px 0 0 3px;
   overflow-y: hidden;
   padding-top: 0.4em;
-  line-height: 20px;
-  min-height: 18px;
+  min-height: 24px;
 }
 #search-actions.input-group-btn {
   vertical-align: top;
@@ -8443,8 +8442,8 @@ hr.menu {
 }
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
-  background-color: #9e9fa3;
-  color: #d4d4d4;
+  background-color: #fff;
+  color: #faa41c;
   font-size: 50px;
   border: none;
   padding-inline: 0;
@@ -8506,31 +8505,31 @@ hr.menu {
   border: #E15F15 2px solid;
 }
 #browse-category-carousel .browse-category.category0 {
-  background-color: #000000;
+  background-color: #036482;
 }
 #browse-category-carousel .browse-category.category1 {
-  background-color: #000000;
+  background-color: #036482;
 }
 #browse-category-carousel .browse-category.category2 {
-  background-color: #000000;
+  background-color: #036482;
 }
 #browse-category-carousel .browse-category.category3 {
-  background-color: #000000;
+  background-color: #036482;
 }
 #browse-category-carousel .browse-category.category4 {
-  background-color: #000000;
+  background-color: #036482;
 }
 #browse-category-carousel .browse-category.category5 {
-  background-color: #000000;
+  background-color: #036482;
 }
 #browse-category-carousel .browse-category.category6 {
-  background-color: #000000;
+  background-color: #036482;
 }
 #browse-category-carousel .browse-category.category7 {
-  background-color: #000000;
+  background-color: #036482;
 }
 #browse-category-carousel .browse-category.category8 {
-  background-color: #000000;
+  background-color: #036482;
 }
 #selected-browse-label {
   background-color: #fff;
@@ -8806,6 +8805,9 @@ a.browse-thumbnail.active {
 .browse-thumbnail img {
   width: 100%;
 }
+.browse-thumbnail:hover {
+  box-shadow: 5px 5px 10px #DCDCDC;
+}
 .browse-thumbnail-sorted {
   display: block;
   padding: 4px;
@@ -8840,6 +8842,9 @@ a.browse-thumbnail-sorted.active {
 .browse-thumbnail-sorted img {
   max-height: 150px;
 }
+.browse-thumbnail-sorted:hover {
+  box-shadow: 5px 5px 10px #DCDCDC;
+}
 .browse-list {
   -moz-column-break-inside: avoid;
        break-inside: avoid-column;
@@ -8863,9 +8868,12 @@ a.browse-thumbnail-sorted.active {
   width: 80px;
   border-radius: 3px;
 }
+.browse-list:hover {
+  box-shadow: 5px 5px 10px #DCDCDC;
+}
 #more-browse-results {
-  background-color: #e6e6e6;
-  color: #c7c9ca;
+  background-color: #faa41c;
+  color: #00384C;
   text-align: center;
   padding: 2px;
   border-radius: 4px;
@@ -8886,7 +8894,7 @@ a.browse-thumbnail-sorted.active {
   margin-right: 5px;
 }
 #browse-sub-category-menu button.selected {
-  color: #000000;
+  color: #00384C;
   background-color: #faa41c;
 }
 #browse-sub-category-menu button:focus {
@@ -8942,7 +8950,7 @@ a.browse-thumbnail-sorted.active {
 #contactUpdateForm .btn-group .btn-default:has(input[type="radio"]:checked),
 #overdrive-lending-options .btn-group .btn-default:has(input[type="radio"]:checked) {
   background-color: #faa41c;
-  color: #000000;
+  color: #00384C;
 }
 #contactUpdateForm .btn-group .btn-default:focus-within,
 #overdrive-lending-options .btn-group .btn-default:focus-within {
@@ -9794,8 +9802,8 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
 }
 #explore-more-sidebar {
-  background-color: #036482;
-  background: linear-gradient(to bottom, #036482, #036482);
+  background-color: #00384C;
+  background: linear-gradient(to bottom, #00384C, #00384C);
 }
 #explore-more-header {
   padding: 10px 25px 5px 0;
@@ -10266,6 +10274,9 @@ a.browse-thumbnail-sorted.active {
   -webkit-text-decoration: underline dotted;
           text-decoration: underline dotted;
 }
+.module_Admin input {
+  text-overflow: ellipsis ellipsis;
+}
 .editor .panel-group .panel-body > .form-group > .controls {
   overflow-x: auto;
 }
@@ -10351,8 +10362,8 @@ fieldset[disabled] .btn-masquerade.active {
   color: #f1dbff;
   background-color: #fff;
 }
-#header-container {
-  min-height: 140px;
+#header-logo {
+  max-height: none;
 }
 a .header-button {
   border-radius: 0.5em;
@@ -10361,5 +10372,9 @@ a .header-button {
   background-color: #faa41c;
 }
 #browse-category-carousel .browse-category.selected button {
-  color: #000000;
+  color: #00384C;
+}
+#browse-category-picker .jcarousel-control-prev,
+#browse-category-picker .jcarousel-control-next {
+  box-shadow: 2px 2px 5px #aaa;
 }
