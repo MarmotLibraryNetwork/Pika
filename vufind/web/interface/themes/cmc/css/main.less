@@ -21,3 +21,28 @@
 
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
+
+#sacramento-browse-category(@cmc-yellow, @browse-category-font-size, 90px);
+
+#sacramento-browse-category-pickers(@browseCarouselControlColor, 90px, 75px);
+
+#browse-category-carousel .selected button {
+  color: @cmc-blue;
+}
+
+// this controls the subcategory menu button are and menu buttons on browse
+#browse-sub-category-menu {
+  margin-top: 20px;
+
+  .btn {
+    padding: 6px 10px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+  }
+
+  button {
+    &.selected {
+      border: 1px solid @selectedCategoryBorderColor;
+    }
+  }
+}
