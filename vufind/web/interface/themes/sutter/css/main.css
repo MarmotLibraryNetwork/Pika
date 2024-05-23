@@ -6976,6 +6976,10 @@ div.striped > div:nth-child(odd) {
 .btn-group-vertical > .btn:focus {
   outline: 2px solid #E15F15 !important;
 }
+.browse-thumbnail a:focus,
+.coversColumn a:focus {
+  outline: none;
+}
 .browse-thumbnail a:focus img,
 a:focus img.listResultImage {
   outline: 2px solid #E15F15 !important;
@@ -7066,6 +7070,71 @@ table.dataTable.order-column.stripe tbody tr.odd > .sorting_3 a {
   float: right;
   margin-right: 40px;
   text-align: center;
+}
+.star_rating svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  stroke: currentColor;
+}
+.star_rating label,
+.star_rating output {
+  box-sizing: content-box;
+  line-height: normal;
+  display: block;
+  float: left;
+  font-size: 18px;
+  font-weight: normal;
+  height: 22px;
+  color: #d6430a;
+  cursor: pointer;
+  /* Transparent border avoids jumping when a colored border is applied on :hover/:focus */
+  border: 2px solid transparent;
+}
+.star_rating output {
+  font-size: 18px;
+  padding: 0 18px;
+}
+.star_rating input:checked ~ label {
+  color: #999;
+}
+.star_rating input:checked + label {
+  color: #d6430a;
+  border-bottom-color: #d6430a;
+}
+.star_rating input:focus + label {
+  border: #E15F15 solid 2px;
+}
+.star_rating:hover input + label {
+  color: #d6430a;
+}
+.star_rating input:hover ~ label,
+.star_rating input:focus ~ label,
+.star_rating input[class="star0"] + label {
+  color: #999;
+}
+.star_rating input:hover + label,
+.star_rating input:focus + label {
+  color: #d6430a;
+}
+.star_rating input[class="star0"]:checked + label {
+  color: #d6430a;
+}
+.star_rating [type="submit"] {
+  float: none;
+}
+.visuallyhidden {
+  border: 0;
+  clip: rect(0 0 0 0);
+  -webkit-clip-path: inset(50%);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+  white-space: nowrap;
 }
 .datepicker {
   border-radius: 0;
@@ -9633,6 +9702,13 @@ a.browse-thumbnail-sorted.active {
   box-shadow: black 2px 2px 3px;
   color: black;
   font-weight: bold;
+}
+.addToShelf a:focus {
+  outline: none;
+}
+.addToShelf a:focus img {
+  outline: #E15F15 2px solid;
+  z-index: 3;
 }
 @media (min-width: 0) and (max-width: 479px) {
   .bookshelfHelpText {
