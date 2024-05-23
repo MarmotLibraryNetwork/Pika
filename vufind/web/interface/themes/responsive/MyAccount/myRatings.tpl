@@ -64,10 +64,45 @@
 						var output = form.querySelector('output');
 
 						var submit_rating = function (star_rating, rating_text) {
-							var grouped_work_id = form.querySelector('[name="grouped-work-id"]').value;
-							alert('Grouped Work ID: ' + grouped_work_id + ', Star Rating: ' + star_rating);
+							//alert('Grouped Work ID: ' + grouped_work_id + ', Star Rating: ' + star_rating);
+							let grouped_work_id = form.querySelector('[name="grouped-work-id"]').value;
+
+							// Create a new FormData object to hold the form data
+							let formData = new FormData();
+							formData.append('method', 'RateTitle')
+							formData.append('grouped-work-id', grouped_work_id);
+							formData.append('rating', star_rating);
+
+							// Protocol
+							var protocol = window.location.protocol;
+							console.log('Protocol:', protocol);
+
+							let hostname = window.location.hostname;
+							let xhr_url = protocol + "//" + hostname + "/GroupedWork/" + encodeURIComponent(grouped_work_id) + "/AJAX?" +
+											"method=RateTitle" +
+											"&id=" + encodeURIComponent(grouped_work_id) +
+											"&rating=" + encodeURIComponent(star_rating);
+							console.log(xhr_url);
+							// Create a new XMLHttpRequest object
+							var xhr = new XMLHttpRequest();
+							xhr.open('GET', xhr_url, true);
+
+							// Set up a handler for when the request finishes
+							xhr.onload = function () {
+								if (xhr.status === 200) {
+									// Successfully received response
+									alert('Rating submitted successfully');
+								} else {
+									// There was a problem with the request
+									alert('Error submitting rating');
+								}
+							};
+
+							// Send the form data
+							xhr.send(formData);
+
+							// Update the output with the rating text
 							output.textContent = rating_text;
-							// use ajax to send to server
 						};
 
 						Array.prototype.forEach.call(radios, function (el) {
