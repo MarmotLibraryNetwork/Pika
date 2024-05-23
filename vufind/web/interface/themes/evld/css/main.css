@@ -8387,8 +8387,7 @@ hr.menu {
   border-radius: 3px 0 0 3px;
   overflow-y: hidden;
   padding-top: 0.4em;
-  line-height: 20px;
-  min-height: 18px;
+  min-height: 24px;
 }
 #search-actions.input-group-btn {
   vertical-align: top;
@@ -10274,6 +10273,9 @@ a.browse-thumbnail-sorted.active {
   color: #3b679a;
   -webkit-text-decoration: underline dotted;
           text-decoration: underline dotted;
+}
+.module_Admin input {
+  text-overflow: ellipsis ellipsis;
 }
 .editor .panel-group .panel-body > .form-group > .controls {
   overflow-x: auto;
