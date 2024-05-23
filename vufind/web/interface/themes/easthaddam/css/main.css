@@ -8809,6 +8809,9 @@ a.browse-thumbnail.active {
 .browse-thumbnail img {
   width: 100%;
 }
+.browse-thumbnail:hover {
+  box-shadow: 5px 5px 10px #DCDCDC;
+}
 .browse-thumbnail-sorted {
   display: block;
   padding: 4px;
@@ -8843,6 +8846,9 @@ a.browse-thumbnail-sorted.active {
 .browse-thumbnail-sorted img {
   max-height: 150px;
 }
+.browse-thumbnail-sorted:hover {
+  box-shadow: 5px 5px 10px #DCDCDC;
+}
 .browse-list {
   -moz-column-break-inside: avoid;
        break-inside: avoid-column;
@@ -8865,6 +8871,9 @@ a.browse-thumbnail-sorted.active {
   margin: 0 4px 10px 0;
   width: 80px;
   border-radius: 3px;
+}
+.browse-list:hover {
+  box-shadow: 5px 5px 10px #DCDCDC;
 }
 #more-browse-results {
   background-color: #e6e6e6;
