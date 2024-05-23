@@ -10272,6 +10272,9 @@ a.browse-thumbnail-sorted.active {
   -webkit-text-decoration: underline dotted;
           text-decoration: underline dotted;
 }
+.module_Admin input {
+  text-overflow: ellipsis ellipsis;
+}
 .editor .panel-group .panel-body > .form-group > .controls {
   overflow-x: auto;
 }
