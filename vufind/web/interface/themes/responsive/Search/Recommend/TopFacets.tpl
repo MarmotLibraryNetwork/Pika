@@ -7,14 +7,14 @@
 		{if stripos($title, 'category') !== false}
 			{if ($categorySelected == false)}
 				<div class="formatCategories top-facet" id="formatCategories">
-					<div id="categoryValues" class="row">
-						{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
+					<ul id="categoryValues" class="row list-unstyled">
+						{foreach from=$cluster.list item=thisFacet name="narrowLoop" key="i"}
 							{if $thisFacet.isApplied}
-								<div class="categoryValue categoryValue_{translate text=$thisFacet.value|lower|replace:' ':''} col-tn-2">
+								<li class="categoryValue categoryValue_{translate text=$thisFacet.value|lower|replace:' ':''} col-tn-2{if $thisFacet.value=="Books"}{* Add offset to first column *} col-tn-offset-1{/if}">
 									<a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink" title="Remove Filter">
 										<div class="row">
 											<div class="col-xs-6">
-												<img src="{img filename=$thisFacet.imageNameSelected}" alt="{translate text=$thisFacet.value|escape}">
+												<img src="{img filename=$thisFacet.imageNameSelected}" alt="{translate text=$thisFacet.value|escape} selected">
 											</div>
 											<div class="col-xs-6 formatCategoryLabel">
 												{$thisFacet.value|escape}
@@ -22,9 +22,9 @@
 											</div>
 										</div>
 									</a>
-								</div>
+								</li>
 							{else}
-								<div class="categoryValue categoryValue_{translate text=$thisFacet.value|lower|replace:' ':''} col-tn-2">
+								<li class="categoryValue categoryValue_{translate text=$thisFacet.value|lower|replace:' ':''} col-tn-2{if $thisFacet.value=="Books"}{* Add offset to first column *} col-tn-offset-1{/if}">
 									<a href="{$thisFacet.url|escape}">
 										<div class="row">
 											<div class="col-xs-6">
@@ -35,10 +35,10 @@
 											</div>
 										</div>
 									</a>
-								</div>
+								</li>
 							{/if}
 						{/foreach}
-					</div>
+					</ul>
 					<div class="clearfix"></div>
 				</div>
 			{/if}
@@ -48,7 +48,7 @@
 					<div id="availabilityControl" class="btn-group" data-toggle="buttons-radio">
 						{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
 							{if $thisFacet.isApplied}
-								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-primary" name="availabilityControls">{$thisFacet.value|escape}{if $thisFacet.count > 0} ({$thisFacet.count|number_format:0:".":","}){/if}</button>
+								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" aria-pressed="true" class="btn btn-primary" name="availabilityControls">{$thisFacet.value|escape}{if $thisFacet.count > 0} ({$thisFacet.count|number_format:0:".":","}){/if}</button>
 							{else}
 								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-default" name="availabilityControls" data-url="{$thisFacet.url|escape}" onclick="window.location = $(this).data('url')" >{$thisFacet.value|escape}{if $thisFacet.count > 0} ({$thisFacet.count|number_format:0:".":","}){/if}</button>
 							{/if}
@@ -72,7 +72,7 @@
 							<tr>
 						{/if}
 						{if $thisFacet.isApplied}
-							<td>{$thisFacet.value|escape}</a> <img src="/images/silk/tick.png" alt="Selected"> <a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink">(remove)</a></td>
+							<td>{$thisFacet.value|escape} <img src="/images/silk/tick.png" alt="Selected"> <a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink">(remove)</a></td>
 						{else}
 							<td><a href="{$thisFacet.url|escape}">{$thisFacet.value|escape}</a> ({$thisFacet.count})</td>
 						{/if}
