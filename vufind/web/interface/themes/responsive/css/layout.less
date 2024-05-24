@@ -4,11 +4,6 @@
 //Functionality related to the overall layout
 //Headers, Footer, columns, etc.
 
-//Body
-body {
-  color: @body-text-color;
-}
-
 #content-container {
   @media (max-width: @screen-sm-min) {
     width: auto;
@@ -18,6 +13,11 @@ body {
   }
   padding: 0;
 }
+//
+//#content-container,
+//#main-content-with-sidebar { // needed if @body-bg-resp is set to transparent (eg. to support image background)
+//  background-color: @content-bg;
+//}
 
 //Breadcrumbs (above header)
 .breadcrumbs {
