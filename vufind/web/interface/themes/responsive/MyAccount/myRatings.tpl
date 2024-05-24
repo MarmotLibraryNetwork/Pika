@@ -20,14 +20,12 @@
 							<th>{translate text='Date'}</th>
 							<th>{translate text='Title'}</th>
 							<th>{translate text='Author'}</th>
-							<th>{translate text='Rating'}</th>
-							<th>&nbsp;</th>
+							<th aria-label="{translate text='Rating'} column">{translate text='Rating'}</th>
 						</tr>
 					</thead>
 					<tbody>
 
 						{foreach from=$ratings name="recordLoop" key=recordKey item=rating}
-
 							<tr id="myRating{$rating.groupedWorkId|escape}" class="result {if ($smarty.foreach.recordLoop.iteration % 2) == 0}alt{/if} record{$smarty.foreach.recordLoop.iteration}">
 								<td>
 									{if isset($rating.dateRated)}
@@ -35,19 +33,19 @@
 									{/if}
 								</td>
 								<td class="myAccountCell">
-									<a href='{$rating.link}'>{$rating.title}</a>
+									<a href='{$rating.link}' title="rate title">{$rating.title}</a>
 								</td>
 								<td class="myAccountCell">
 									{$rating.author}
 								</td>
 								<td class="myAccountCell">
 									{* include file='GroupedWork/title-rating.tpl' id=$rating.groupedWorkId ratingData=$rating.ratingData *}
-									{include file='MyAccount/star-rating.tpl' id=$rating.groupedWorkId ratingData=$rating.ratingData}
-									<p>{$rating.review}</p>
+									{include file='MyAccount/star-rating.tpl' id=$rating.groupedWorkId ratingData=$rating.ratingData ratingTitle=$rating.title}
+
 								</td>
-								<td class="myAccountCell">
+{*								<td class="myAccountCell">
 									<!-- span class="btn btn-xs btn-warning" onclick="return Pika.GroupedWork.clearUserRating('{$rating.groupedWorkId}');">{translate text="Clear"}</span -->
-								</td>
+								</td>*}
 							</tr>
 						{/foreach}
 						</tbody>
@@ -90,8 +88,10 @@
 							// Set up a handler for when the request finishes
 							xhr.onload = function () {
 								if (xhr.status === 200) {
+									let title = form.querySelector('[name="title"]').value;
+									$('#ratingsText' + grouped_work_id + ' span').html(title +' - rated ' + star_rating + ' stars.');
 									// Successfully received response
-									alert('Rating submitted successfully');
+
 								} else {
 									// There was a problem with the request
 									alert('Error submitting rating');
@@ -104,16 +104,24 @@
 							// Update the output with the rating text
 							output.textContent = rating_text;
 						};
+						$(radios).on('change', function(){
+							let grouped_work_id = form.querySelector('[name="grouped-work-id"]').value;
+							let star_rating = $(this).prop('checked',true).val();
+							let title = $(this).parent('form.star_rating').children('#title').val();
+							console.log(star_rating);
+							$('#ratingsText'+ grouped_work_id + ' span').html('press enter to rate ' + title + ' - ' + star_rating + ' stars.');
+						});
 
 						Array.prototype.forEach.call(radios, function (el) {
 							var label = el.nextSibling.nextSibling;
-
 							label.addEventListener("click", function () {
 								var star_rating = el.value;
 								var rating_text = label.querySelector('span').textContent;
 								submit_rating(star_rating, rating_text);
 							});
 						});
+
+
 
 						form.addEventListener('submit', function (event) {
 							var star_rating = form.querySelector(':checked').value;
@@ -170,11 +178,17 @@
 											{"orderDataType": "dom-date"},
 											null,
 											null,
-											{"orderDataType": "dom-rating"},
-											{"orderable": false}
+											{"orderDataType": "dom-rating"}
 							],
 							pageLength: 10,
-							"order": [[0, "desc"]]
+							"order": [[0, "desc"]],
+							"language": {
+								"aria": {
+									"sortAscending": " - sortable",
+									"sortDescending": " - sortable",
+									"orderable": " - sortable"
+								}
+							}
 						});
 					})
 					{/literal}
