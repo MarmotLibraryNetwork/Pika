@@ -6794,6 +6794,7 @@ a:hover {
 body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   background-color: #fff;
+  color: #454545;
 }
 body > .container {
   background-color: transparent;
@@ -7922,9 +7923,6 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
   background-color: white;
   transition: 0.4s;
   border-radius: 50%;
-}
-body {
-  color: #454545;
 }
 #content-container {
   padding: 0;
@@ -9533,22 +9531,6 @@ a.browse-thumbnail-sorted.active {
   margin-top: 3px;
   margin-bottom: 5px;
 }
-.manifestation-toggle {
-  display: inline-block;
-  background-color: #777272;
-  padding: 3px;
-  color: #fff;
-  font-weight: bold;
-  width: 18px;
-  height: 18px;
-  text-align: center;
-}
-.manifestation-toggle {
-  content: "-";
-}
-.manifestation-toggle.collapsed {
-  content: "+";
-}
 .related-manifestation {
   padding-top: 4px;
   padding-bottom: 4px;
@@ -9564,9 +9546,10 @@ a.browse-thumbnail-sorted.active {
   background-color: #088ec6;
   color: #fff;
 }
-.manifestation-format {
-  font-size: 13px;
+.manifestation-format button {
   font-weight: bold;
+  text-align: left;
+  padding-left: 0;
 }
 .related-manifestation-shelf-status,
 .related_record_status {
