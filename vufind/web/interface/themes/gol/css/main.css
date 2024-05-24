@@ -6794,6 +6794,7 @@ a:hover {
 body {
   font-family: "HalisR-Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
   background-color: #fff;
+  color: #454545;
 }
 body > .container {
   background-color: #fff;
@@ -7922,9 +7923,6 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
   background-color: white;
   transition: 0.4s;
   border-radius: 50%;
-}
-body {
-  color: #454545;
 }
 #content-container {
   padding: 0;
