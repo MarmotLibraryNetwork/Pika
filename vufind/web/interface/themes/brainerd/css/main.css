@@ -9827,6 +9827,14 @@ a.browse-thumbnail-sorted.active {
 .share-tools-list {
   display: inline;
 }
+.share-tools-list li {
+  padding-left: 2px;
+  padding-right: 3px;
+}
+.share-tools-list li:hover {
+  box-shadow: 1px 1px 3px #aaa;
+  border-radius: 4px;
+}
 #more-details-accordion .panel-body {
   color: #333333;
   background-color: transparent;
