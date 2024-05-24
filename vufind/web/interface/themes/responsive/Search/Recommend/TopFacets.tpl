@@ -4,10 +4,10 @@
 <div class="topFacets">
 	<br>
 	{foreach from=$topFacetSet item=cluster key=title}
-		{if stripos($title, 'category') !== false}
+		{if stripos($title, 'format_category') !== false}
 			{if ($categorySelected == false)}
 				<div class="formatCategories top-facet" id="formatCategories">
-					<ul id="categoryValues" class="row list-unstyled">
+					<ul id="categoryValues" class="row list-unstyled" aria-label="{$cluster.label}">
 						{foreach from=$cluster.list item=thisFacet name="narrowLoop" key="i"}
 							{if $thisFacet.isApplied}
 								<li class="categoryValue categoryValue_{translate text=$thisFacet.value|lower|replace:' ':''} col-tn-2{if $thisFacet.value=="Books"}{* Add offset to first column *} col-tn-offset-1{/if}">
@@ -45,7 +45,7 @@
 		{elseif stripos($title, 'availability_toggle') !== false}
 			<div id="availabilityControlContainer" class="row text-center top-facet">
 				<div class="col-tn-12">
-					<div id="availabilityControl" class="btn-group" data-toggle="buttons-radio">
+					<div id="availabilityControl" class="btn-group" data-toggle="buttons-radio" aria-label="{$cluster.label}">
 						{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
 							{if $thisFacet.isApplied}
 								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" aria-pressed="true" class="btn btn-primary" name="availabilityControls">{$thisFacet.value|escape}{if $thisFacet.count > 0} ({$thisFacet.count|number_format:0:".":","}){/if}</button>
