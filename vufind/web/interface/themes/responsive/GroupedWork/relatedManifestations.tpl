@@ -13,20 +13,18 @@
 			<div class="row related-manifestation {if $relatedManifestation.hideByDefault}hiddenManifestation_{$summId}{/if}" {if $relatedManifestation.hideByDefault}style="display: none"{/if}>
 				<div class="col-sm-12">
 				  <div class="row">
-						<div class="col-tn-4 col-xs-4{if !$viewingCombinedResults} col-md-4{/if} manifestation-format">
-							<a href="#" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
+						<div class="col-tn-5 col-xs-4{if !$viewingCombinedResults} col-md-4{/if} manifestation-format">
+{*							<button class="btn-link" onclick="return Pika.showElementInPopup('Edition', '#relatedRecordPopup_{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">*}
+							<button class="btn-link" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
+								{$relatedManifestation.format}<br>
 								{if $relatedManifestation.numRelatedRecords == 1}
-									<span aria-hidden="true" class="manifestation-toggle collapsed" id='manifestation-toggle-{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>+</span> {$relatedManifestation.format}
-									<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 									<span class="manifestation-toggle-text label label-default" id='manifestation-toggle-text-{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>Show&nbsp;Edition</span>
 								{else}
-									<span aria-hidden="true" class="manifestation-toggle collapsed" id='manifestation-toggle-{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>+</span> {$relatedManifestation.format}
-									<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 									<span class="manifestation-toggle-text label label-info" id='manifestation-toggle-text-{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>Show&nbsp;Editions</span>
 								{/if}
-							</a>
+							</button>
 						</div>
-						<div class="col-tn-8 col-xs-7{if !$viewingCombinedResults} col-md-4 col-lg-5{/if}">
+						<div class="col-tn-7 col-xs-8{if !$viewingCombinedResults} col-md-4 col-lg-5{/if}">
 							{include file='GroupedWork/statusIndicator.tpl' statusInformation=$relatedManifestation viewingIndividualRecord=0}
 
 							{if $relatedManifestation.numRelatedRecords == 1}
@@ -36,7 +34,7 @@
 							{/if}
 						</div>
 					  {*  Work here *}
-						<div class="col-tn-9 col-tn-offset-3 col-xs-8 col-xs-offset-4{if !$viewingCombinedResults} col-md-4 col-md-offset-0 col-lg-3{/if} manifestation-actions">
+						<div class="col-tn-12{*col-tn-9 col-tn-offset-3*} col-xs-8 col-xs-offset-4{if !$viewingCombinedResults} col-md-4 col-md-offset-0 col-lg-3{/if} manifestation-actions">
 							<div class="btn-toolbar">
 								<div class="btn-group btn-group-vertical btn-block">
 									{foreach from=$relatedManifestation.actions item=curAction}
@@ -79,7 +77,7 @@
 		{if $hasHiddenFormats}
 			<div class="row related-manifestation" id="formatToggle_{$summId}">
 				<div class="col-sm-12">
-					<a href="#" onclick="$('.hiddenManifestation_{$summId}').show();$('#formatToggle_{$summId}').hide();return false;">View all Formats</a>
+					<button class="btn-link" onclick="$('.hiddenManifestation_{$summId}').show();$('#formatToggle_{$summId}').hide();return false;">View all Formats</button>
 				</div>
 			</div>
 		{/if}
