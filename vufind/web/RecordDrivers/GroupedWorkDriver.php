@@ -1564,14 +1564,14 @@ class GroupedWorkDriver extends RecordInterface {
 
 		//Check to see if we have applied a format or format category facet
 		$selectedFormats              = null;
-		$selectedFormatCategory       = null;
+		$selectedFormatCategories     = null;
 		$selectedAvailability         = null;
 		$selectedDetailedAvailability = null;
 		$selectedEcontentSource       = null;
 		if (isset($_REQUEST['filter'])){
 			foreach ($_REQUEST['filter'] as $filter){
 				if (preg_match('/^format_category(?:\w*):"?(.+?)"?$/', $filter, $matches)){
-					$selectedFormatCategory = urldecode($matches[1]);
+					$selectedFormatCategories[] = urldecode($matches[1]);
 				}elseif (preg_match('/^format(?:\w*):"?(.+?)"?$/', $filter, $matches)){
 					$selectedFormats[] = urldecode($matches[1]);
 				}elseif (preg_match('/^econtent_source(?:\w*):"?(.+?)"?$/', $filter, $matches)){
@@ -1758,10 +1758,10 @@ class GroupedWorkDriver extends RecordInterface {
 
 
 			// Set Up Manifestation Display when a format category facet is set
-			if ($selectedFormatCategory && $selectedFormatCategory != $manifestation['formatCategory']){
-				if (($manifestation['format'] == 'eAudiobook') && ($selectedFormatCategory == 'eBook' || $selectedFormatCategory == 'Audio Books')){
+			if ($selectedFormatCategories && !in_array($manifestation['formatCategory'], $selectedFormatCategories)){
+				if (($manifestation['format'] == 'eAudiobook') && (in_array('eBook', $selectedFormatCategories) || in_array('Audio Books', $selectedFormatCategories))){
 					//This is a special case where the format is in 2 categories
-				}elseif (($manifestation['format'] == 'VOX Books') && ($selectedFormatCategory == 'Books' || $selectedFormatCategory == 'Audio Books')){
+				}elseif (in_array($manifestation['format'], ['VOX Books', "WonderBook"]) && (in_array('Books', $selectedFormatCategories) || in_array('Audio Books', $selectedFormatCategories))){
 					//This is another special case where the format is in 2 categories
 				}else{
 					$manifestation['hideByDefault'] = true;
