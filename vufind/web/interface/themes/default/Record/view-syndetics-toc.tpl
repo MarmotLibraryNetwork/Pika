@@ -1,19 +1,23 @@
 {strip}
 	{* This template gets loaded into tableofContentsPlaceHolder via AJAX *}
 	<div class="tableOfContents">
+		{if !empty($tocData)}
+			<ol class="list-unstyled">
 		{foreach from=$tocData item=entry}
 			{if $entry.label}
-				<div class="tocEntry">
+				<li class="tocEntry">
 					<span class="tocLabel">{$entry.label} </span>
 					<span class="tocTitle">{$entry.title} </span>
 					<span class="tocPage">{$entry.page}</span>
-				</div>
+				</li>
 			{else}
-				<div>
+				<li>
 					<span class="trackNumber">{$entry.number} </span>
 					<span class="trackName">{$entry.name}</span>
-				</div>
+				</li>
 			{/if}
 		{/foreach}
+			</ol>
+		{/if}
 	</div>
 {/strip}
