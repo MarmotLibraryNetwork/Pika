@@ -10500,6 +10500,11 @@ body {
   background-color: #32393F;
   color: #FFF;
 }
+#footer-container a {
+  color: #fff;
+  -webkit-text-decoration: dotted underline;
+          text-decoration: dotted underline;
+}
 #footer-pika-logo {
   background-color: #FFF;
   padding: 4px;
