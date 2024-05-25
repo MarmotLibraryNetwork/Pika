@@ -2,7 +2,7 @@
 	{foreach from=$librarianReviews item=librarianReview}
 		<div class="review">
 		{if $librarianReview->title}
-			<h4 class="reviewSource">{$librarianReview->title}</h4>
+			<h3 class="reviewSource h4">{$librarianReview->title}</h3>
 		{/if}
 			<div>
 				<p class="reviewContent">{$librarianReview->review}</p>

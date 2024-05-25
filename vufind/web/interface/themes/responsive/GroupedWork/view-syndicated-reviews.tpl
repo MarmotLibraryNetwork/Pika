@@ -4,7 +4,7 @@
 			{if $review.Content}
 			<div class='review'>
 				{if $review.Source}
-					<h4 class='reviewSource'>{$review.Source}</h4>
+					<h3 class="reviewSource h4">{$review.Source}</h3>
 				{/if}
 				<div>
 				<p class="reviewContent">{$review.Content}</p>
