@@ -195,9 +195,9 @@ TitleScroller.prototype.finishLoadingScroller = function() {
 	}
 	if(this.tabSelect){
 		$('button.scrollerTitle').on("focus", function(){
-			var scrollerTitleId = "scrollerTitle" + curScroller.scrollerShortName;
-			var scrollerIndex = $(this).attr('id').replace(scrollerTitleId,"");
-			var index = scrollerIndex.replace(".scrollerTitle","");
+			let scrollerTitleId = "scrollerTitle" + curScroller.scrollerShortName;
+			let scrollerIndex = $(this).attr('id').replace(scrollerTitleId,"");
+			let index = scrollerIndex.replace(".scrollerTitle","");
 			curScroller.scrollToIndex(index);
 		});
 
@@ -217,9 +217,9 @@ TitleScroller.prototype.setVisibleTabIndex = function (scroller){
 		for (let n = currentIndex; n < currentIndex + displayedItems - overflowTitles; n++){
 			indexArray.push(n);
 		}
-		for (let i = 0; i < overflowTitles; i++){
+		/*for (let i = 0; i < overflowTitles; i++){
 			indexArray.push(i);
-		}
+		}*/
 
 	}else{
 		for (let n = currentIndex; n < currentIndex + displayedItems; n++){

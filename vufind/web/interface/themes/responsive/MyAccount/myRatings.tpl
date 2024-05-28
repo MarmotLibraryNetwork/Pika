@@ -41,11 +41,8 @@
 								<td class="myAccountCell">
 									{* include file='GroupedWork/title-rating.tpl' id=$rating.groupedWorkId ratingData=$rating.ratingData *}
 									{include file='MyAccount/star-rating.tpl' id=$rating.groupedWorkId ratingData=$rating.ratingData ratingTitle=$rating.title}
-
+									<p>{$rating.review}</p>
 								</td>
-{*								<td class="myAccountCell">
-									<!-- span class="btn btn-xs btn-warning" onclick="return Pika.GroupedWork.clearUserRating('{$rating.groupedWorkId}');">{translate text="Clear"}</span -->
-								</td>*}
 							</tr>
 						{/foreach}
 						</tbody>
@@ -58,7 +55,7 @@
 					*/
 					document.querySelectorAll('.star_rating').forEach(function(form) {
 						var radios = form.querySelectorAll('input[type=radio]');
-						var btn = form.querySelector('button');
+						//var btn = form.querySelector('button');
 						var output = form.querySelector('output');
 
 						var submit_rating = function (star_rating, rating_text) {
@@ -67,20 +64,18 @@
 
 							// Create a new FormData object to hold the form data
 							let formData = new FormData();
-							formData.append('method', 'RateTitle')
+							formData.append('method', 'RateTitle');
 							formData.append('grouped-work-id', grouped_work_id);
 							formData.append('rating', star_rating);
 
-							// Protocol
-							var protocol = window.location.protocol;
-							console.log('Protocol:', protocol);
-
+							// Build the XHR url
+							let protocol = window.location.protocol;
 							let hostname = window.location.hostname;
 							let xhr_url = protocol + "//" + hostname + "/GroupedWork/" + encodeURIComponent(grouped_work_id) + "/AJAX?" +
 											"method=RateTitle" +
 											"&id=" + encodeURIComponent(grouped_work_id) +
 											"&rating=" + encodeURIComponent(star_rating);
-							console.log(xhr_url);
+							// console.log(xhr_url);
 							// Create a new XMLHttpRequest object
 							var xhr = new XMLHttpRequest();
 							xhr.open('GET', xhr_url, true);
@@ -115,8 +110,14 @@
 						Array.prototype.forEach.call(radios, function (el) {
 							var label = el.nextSibling.nextSibling;
 							label.addEventListener("click", function () {
-								var star_rating = el.value;
-								var rating_text = label.querySelector('span').textContent;
+								let star_rating = el.value;
+								//var rating_text = label.querySelector('span').textContent;
+								let rating_title = el.closest('div').getAttribute('data-rating_title');
+								let rating_text = rating_title + " rated " + star_rating + " star";
+								if (star_rating != 1) {
+									star_rating += "s";
+								}
+
 								submit_rating(star_rating, rating_text);
 							});
 						});
@@ -124,39 +125,18 @@
 
 
 						form.addEventListener('submit', function (event) {
-							var star_rating = form.querySelector(':checked').value;
-							var rating_text = form.querySelector(':checked ~ label span').textContent;
+							let star_rating = form.querySelector(':checked').value;
+							//var rating_text = form.querySelector(':checked ~ label span').textContent;
+							let rating_title = form.closest("div").getAttribute('data-rating_title');
+							let rating_text = rating_title + " rated " + star_rating + " star";
+							if (star_rating != 1) {
+								star_rating += "s";
+							}
 							submit_rating(star_rating, rating_text);
 							event.preventDefault();
 							event.stopImmediatePropagation();
 						});
 					});
-
-					// var radios = document.querySelectorAll('.star_rating input[type=radio]');
-					// var btn = document.querySelector('.star_rating button');
-					// var output = document.querySelector('.star_rating output');
-					// var submit_rating = function (star_rating, rating_text) {
-					// 	alert(star_rating);
-					// 	output.textContent = rating_text;
-					// 	// use ajax to send to server
-					//
-					// };
-					//
-					// Array.prototype.forEach.call(radios, function (el, i) {
-					// 	var label = el.nextSibling.nextSibling;
-					//
-					// 	label.addEventListener("click", function (event) {
-					// 		star_rating = el.value;
-					// 		rating_text = label.querySelector('span').textContent;
-					// 		submit_rating(star_rating, rating_text);
-					// 	});
-					// });
-					//
-					// document.querySelector('.star_rating').addEventListener('submit', function (event) {
-					// 	submit_rating(document.querySelector('.star_rating :checked ~ label span').textContent);
-					// 	event.preventDefault();
-					// 	event.stopImmediatePropagation();
-					// });
 					{/literal}
 				</script>
 			{if count($ratings) > 5}
@@ -164,7 +144,7 @@
 					{literal}
 					$.fn.dataTable.ext.order['dom-rating'] = function (settings, col){
 						return this.api().column(col, {order: 'index'}).nodes().map(function (td, i){
-							return $('.title-rating', td).attr("data-user_rating") * 1;
+							return $('.title-rating', td).attr("data-user_rating");
 						});
 					}
 					$.fn.dataTable.ext.order['dom-date'] = function (settings, col){
@@ -226,7 +206,6 @@
 
 					$.fn.dataTable.ext.order['dom-ni-date'] = function (settings, col){
 						return this.api().column(col, {order:'index'}).nodes().map(function (td, i){
-
 							return $('span', td).attr("data-date");
 						});
 					}
