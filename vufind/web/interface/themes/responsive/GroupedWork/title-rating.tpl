@@ -1,7 +1,7 @@
 {if $showRatings == 1}
 	{strip}
 	<div{if $ratingClass} class="{$ratingClass} rate{$summId}"{/if}>
-		{*<div class="title-rating" onclick="return Pika.GroupedWork.showReviewForm(this, '{$summId}');">*}
+
 		<div class="title-rating rater" {*onclick="return Pika.GroupedWork.showReviewForm(this, '{$summId}');"*}
 						{* AJAX rater data fields *}
          data-user_rating="{$ratingData.user}" data-average_rating="{$ratingData.average}" {* keep a space between attributes *}
