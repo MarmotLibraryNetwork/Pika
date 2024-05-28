@@ -20,7 +20,7 @@
 							<th>{translate text='Date'}</th>
 							<th>{translate text='Title'}</th>
 							<th>{translate text='Author'}</th>
-							<th style="min-width: fit-content" aria-label="{translate text='Rating'} column">{translate text='Rating'}</th>
+							<th aria-label="{translate text='Rating'} column">{translate text='Rating'}</th>
 							{*<th>&nbsp;</th>*}
 						</tr>
 					</thead>
@@ -106,7 +106,7 @@
 							label.addEventListener("click", function () {
 								let star_rating = el.value;
 								//var rating_text = label.querySelector('span').textContent;
-								let rating_title = el.closest('form').getAttribute('data-rating_title');
+								let rating_title = el.closest('div').getAttribute('data-rating_title');
 								let rating_text = rating_title + " rated " + star_rating + " star";
 								if (star_rating != 1) {
 									star_rating += "s";
@@ -119,7 +119,7 @@
 						form.addEventListener('submit', function (event) {
 							let star_rating = form.querySelector(':checked').value;
 							//var rating_text = form.querySelector(':checked ~ label span').textContent;
-							let rating_title = form.getAttribute('data-rating_title');
+							let rating_title = form.closest("div").getAttribute('data-rating_title');
 							let rating_text = rating_title + " rated " + star_rating + " star";
 							if (star_rating != 1) {
 								star_rating += "s";
