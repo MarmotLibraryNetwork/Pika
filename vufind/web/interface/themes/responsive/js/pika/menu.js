@@ -19,6 +19,9 @@ Pika.Menu = (function(){
 		var mobileMode = false;
 
 		if ($('#horizontal-menu-bar-container').is(':visible')) {
+			// Stack availability toggle buttons in mobile views
+			$('#availabilityControl').toggleClass('btn-group btn-group-vertical');
+
 			Pika.Menu.hideAllFast();
 			mobileMode = true;
 		}
@@ -29,7 +32,10 @@ Pika.Menu = (function(){
 				// Entered Sidebar Mode
 				if (!$('#horizontal-menu-bar-container').is(':visible')) { // this depends on horizontal menu always being present
 				//	console.log('Entered SideBar Mode');
-					mobileMode = false;
+					mobileMode = false
+
+					// Undo stacking availability toggle buttons from non-mobile views
+					$('#availabilityControl').toggleClass('btn-group btn-group-vertical');
 
 					if ($('#vertical-menu-bar').length) { // Sidebar Menu is in use
 						//console.log('SideBar Menu is on');
@@ -79,6 +85,9 @@ Pika.Menu = (function(){
 
 					// Un-select any horizontal option that might have been selected previously
 					$('.menu-icon-selected', '#horizontal-menu-bar-container').removeClass('menu-icon-selected');
+
+					// Stack availability toggle buttons in mobile views
+					$('#availabilityControl').toggleClass('btn-group btn-group-vertical');
 
 					// Hide SideBar Content
 					Pika.Menu.hideAllFast();

@@ -45,9 +45,9 @@
 				<div class="panel {*active*}{*toggle on for open*}" id="staffViewPanel">
 					<a href="#staffViewPanelBody" data-toggle="collapse">
 						<div class="panel-heading">
-							<div class="panel-title">
+							<h2 class="panel-title">
 								Staff View
-							</div>
+							</h2>
 						</div>
 					</a>
 					<div id="staffViewPanelBody" class="panel-collapse collapse {*in*}{*toggle on for open*}">

@@ -3,11 +3,11 @@
 	<div id="tableOfContentsPlaceholder" style="display:none"{if $tableOfContents} class="loaded"{/if}>
 
 	{if $tableOfContents}
+		<ol class="list-unstyled">
 		{foreach from=$tableOfContents item=note}
-			<div class="row">
-				<div class="col-xs-12">{$note}</div>
-			</div>
+			<li>{$note}</li>
 		{/foreach}
+		</ol>
 		<script>
 			Pika.GroupedWork.hasTableOfContentsInRecord = true;
 		</script>

@@ -68,7 +68,7 @@
 					<td>{if $relatedRecord.abridged}Abridged{/if}</td>
 				{/display_if_set}
 				<td>
-					<div class="btn-group btn-group-vertical btn-group-sm">
+					<div class="{*btn-group /* affects the right-top corner when used */ *}btn-group-vertical btn-group-sm">
 						<a href="{$relatedRecord.url}" class="btn btn-sm btn-info">More Info</a>
 						{foreach from=$relatedRecord.actions item=curAction}
 							{if empty($curAction.url)} {* For accessibility, use buttons instead of <a> when there is no URL *}
