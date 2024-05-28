@@ -8337,7 +8337,7 @@ a .header-button:visited {
   margin-bottom: 0;
 }
 #home-page-login {
-  background-color: #428bca;
+  background-color: #1A79CA;
   color: #FFF;
   font-size: 18px;
   padding: 5px;
@@ -8564,7 +8564,7 @@ hr.menu {
   text-decoration: underline;
 }
 #browse-category-carousel .browse-category.selected {
-  border: 2px solid #84bd00;
+  border: 2px solid #207217;
   font-size: 18px;
 }
 #browse-category-carousel .browse-category.selected:focus-within {
@@ -8961,7 +8961,7 @@ a.browse-thumbnail-sorted.active {
 }
 #browse-sub-category-menu button.selected {
   color: #fff;
-  background-color: #428bca;
+  background-color: #1A79CA;
 }
 #browse-sub-category-menu button:focus {
   outline: #E15F15 solid 2px;
@@ -10448,7 +10448,7 @@ h6 {
 }
 .h3,
 h3 {
-  color: #428bca;
+  color: #3276b1;
 }
 #browse-sub-category-menu button {
   margin-bottom: 10px;
@@ -10476,7 +10476,7 @@ a .header-button {
   line-height: 55px !important;
   border-radius: 0;
   margin-top: 25px;
-  background-color: #428bca;
+  background-color: #1A79CA;
   color: #FFF !important;
   text-shadow: none;
   font-weight: bold;
@@ -10507,16 +10507,16 @@ a .header-button:hover {
 }
 #browse-category-carousel .browse-category.selected {
   font-size: 15px;
-  background: #84bd00;
+  background: #207217;
 }
 #browse-category-carousel .browse-category.selected :hover {
-  background: #84bd00;
+  background: #207217;
 }
 #browse-category-carousel .browse-category.selected button {
-  color: white;
+  color: #fff;
 }
 #browse-category-carousel .browse-category.selected button :hover {
-  background: #84bd00;
+  background: #207217;
 }
 .jcarousel-control-next,
 .jcarousel-control-prev {
