@@ -6,13 +6,13 @@
 @import "../../responsive/css/responsive_base.less";
 
 .system-message-header,
-.system-message-header~.breadcrumbs,   // the google translate box
+.system-message-header ~ .breadcrumbs, // the google translate box
 .container > div:nth-child(1).breadcrumbs // the google translate box when there is no system message
 {
   background-color: @body-bg-resp;
 }
 
-#header-container{
+#header-container {
   background-color: #B5192B;
   //background-image: url('/interface/themes/western_resp/images/header_background.png');
   background-position: right bottom;
@@ -21,7 +21,8 @@
   height: 100px;
   padding: 0;
 }
-#header-wrapper{
+
+#header-wrapper {
   background-color: #B5192B;
   background: linear-gradient(to bottom, #B5192B 0%, #D82538 100%);
 }
@@ -30,9 +31,9 @@
 .header-login-button-mixin();
 
 
-.facetTitle:hover, .exploreMoreTitle:hover{
+.facetTitle:hover, .exploreMoreTitle:hover {
   background-color: #9d162b;
-  background: linear-gradient(left center , #9d162b 0%, #d81f3c 100%);
+  background: linear-gradient(left center, #9d162b 0%, #d81f3c 100%);
   color: #fff;
   text-shadow: none;
 }
