@@ -32,16 +32,16 @@ a .header-button {
   color: @purple-louisville;
 }
 
-.browse-category {
-  text-shadow: none;
-  font-weight: bold;
+#browse-category-picker .browse-category {
   border-radius: 10px;
 
   &:hover {
     background: #f6f6f6;
   }
 
-  > button {
+  button {
+    text-shadow: none;
+    font-weight: bold;
     min-height: 55px;
     display: flex;
     justify-content: center;
@@ -50,17 +50,21 @@ a .header-button {
 
   &.selected {
     font-size: 18px;
-    background: @green-louisville !important;
+    background: @green-louisville;
 
-    div {
-      color: white !important;
+    button {
+      color: #fff;
+    }
+
+    &:hover {
+      background-color: @green-louisville;
     }
   }
 }
 
-#browse-label {
-  display: none;
-}
+//#browse-label { // Every page needs a h1 heading for accessibility
+//  display: none;
+//}
 
 .jcarousel-control-next, .jcarousel-control-prev {
   box-shadow: none;
@@ -71,7 +75,7 @@ a .header-button {
 }
 
 .sidebar-links .panel-heading {
-  background: #e7e7e7;
+//  background: #e7e7e7;
 }
 
 .sidebar-links .active .panel-heading {
