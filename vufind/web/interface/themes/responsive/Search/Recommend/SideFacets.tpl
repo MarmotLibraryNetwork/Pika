@@ -8,7 +8,7 @@
 		{/if}
 		{* Filters that have been applied *}
 		{if $filterList}
-			<div id="remove-search-label" class="sidebar-label"{if $displaySidebarMenu} style="display: none"{/if}>{translate text='Applied Filters'}</div>
+			<div id="remove-search-label" class="results-sidebar-label"{if $displaySidebarMenu} style="display: none"{/if}>{translate text='Applied Filters'}</div>
 			<div class="applied-filters"{if $displaySidebarMenu} style="display: none"{/if}>
 			{foreach from=$filterList item=filters key=field }
 				{foreach from=$filters item=filter}
@@ -20,7 +20,7 @@
 
 		{* Available filters *}
 		{if $sideFacetSet && $recordCount > 0}
-			<div id="narrow-search-label" class="sidebar-label"{if $displaySidebarMenu} style="display: none"{/if}>{if $action != 'MyList'}{translate text='Narrow Search'}{else}{translate text='Narrow List By'}{/if}</div>
+			<div id="narrow-search-label" class="results-sidebar-label"{if $displaySidebarMenu} style="display: none"{/if}>{if $action != 'MyList'}{translate text='Narrow Search'}{else}{translate text='Narrow List By'}{/if}</div>
 			<div id="facet-accordion" class="accordion"{if $displaySidebarMenu} style="display: none"{/if}>
 				{foreach from=$sideFacetSet item=cluster key=title name=facetSet}
 					{if count($cluster.list) > 0}
