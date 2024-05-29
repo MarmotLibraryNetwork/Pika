@@ -5,8 +5,19 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
-#header-container{
+#header-container {
   background-image: url('/interface/themes/msc_resp/images/header_background.png');
 }
 
 .header-login-button-mixin;
+
+
+#browse-category-picker .browse-category {
+  &.selected {
+    background: @cmu-accent-yellow;
+
+    button {
+      color: @cmu-text-color-for-yellow;
+    }
+  }
+}
