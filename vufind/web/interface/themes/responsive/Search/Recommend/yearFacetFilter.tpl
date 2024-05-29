@@ -9,7 +9,7 @@
 			<input type="text" size="4" maxlength="4" class="yearbox form-control" placeholder="to" name="{$title}yearto" id="{$title}yearto" value="">
 		</div>
 
-		<input type="submit" value="Go" class="goButton btn btn-sm btn-primary">
+		<input type="submit" value="Go" class="goButton btn btn-primary">
 
 		{if $title == 'publishDate'}
 			<div id="yearDefaultLinks">
