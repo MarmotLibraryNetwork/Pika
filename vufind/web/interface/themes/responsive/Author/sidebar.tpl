@@ -24,7 +24,7 @@
 			{/if}
 
 			{*TODO: delete this once menu bar is well-implemented *}
-			<div id="xs-main-content-insertion-point" class="row"></div>
+{*			<div id="xs-main-content-insertion-point" class="row"></div>*}
 
 			{if $enrichment.novelist->similarAuthorCount != 0}
 				<div id="similar-authors" class="sidebar-links row"{if $displaySidebarMenu} style="display: none"{/if}>

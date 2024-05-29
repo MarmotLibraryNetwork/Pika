@@ -24,7 +24,7 @@
 			{/if}
 
 			{*TODO: delete this once menu bar is well-implemented *}
-			<div id="xs-main-content-insertion-point" class="row"></div>
+{*			<div id="xs-main-content-insertion-point" class="row"></div>*}
 
 			{* Narrow Results *}
 			<div class="row">
