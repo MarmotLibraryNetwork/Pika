@@ -9487,10 +9487,6 @@ a.browse-thumbnail-sorted.active {
     display: none;
   }
 }
-#results-sort {
-  width: 80%;
-  margin: 5px 10%;
-}
 .result-head {
   font-size: smaller;
   color: #277EAC;
