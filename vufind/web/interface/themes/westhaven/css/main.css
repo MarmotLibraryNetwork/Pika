@@ -8270,7 +8270,7 @@ a .header-button:visited {
 .searchTypeHome,
 .searchSource {
   margin: 5px 0 0;
-  color: #fff;
+  color: #000;
   background-color: #fff;
   border: none;
   width: 90% !important;

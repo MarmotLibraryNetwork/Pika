@@ -8255,7 +8255,7 @@ a .header-button:visited {
 #home-page-search-label {
   font-size: 35px;
   font-weight: normal;
-  color: #FFF;
+  color: #fff;
   text-shadow: 1px 1px #797676;
 }
 #lookfor::-moz-placeholder {
@@ -8274,13 +8274,13 @@ a .header-button:visited {
 .searchSource {
   margin: 5px 0 0;
   color: #fff;
-  background-color: #8B001F;
+  background-color: #AC1939;
   border: none;
   width: 90% !important;
 }
 #keepFiltersSwitchLabel,
 #advancedSearchLink {
-  color: #FFF;
+  color: #fff;
   font-weight: normal;
   font-size: 85%;
 }
@@ -8327,7 +8327,7 @@ a .header-button:visited {
   }
 }
 #horizontal-search-box #horizontal-search-label {
-  color: #FFF;
+  color: #fff;
 }
 #horizontal-search-box .searchSourceHorizontal,
 #horizontal-search-box .searchTypeHorizontal {
