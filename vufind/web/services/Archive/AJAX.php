@@ -724,11 +724,11 @@ class Archive_AJAX extends AJAXHandler {
 		$timer->logTime("Called loadExploreMoreSidebar");
 
 		$relatedSubjects = $recordDriver->getAllSubjectHeadings(true, 5);
-		$ebscoMatches    = $exploreMore->loadEbscoOptions('archive', [], implode($relatedSubjects, " or "));
+		$ebscoMatches    = $exploreMore->loadEbscoOptions('archive', [], implode($relatedSubjects, ' or '));
 		if (!empty($ebscoMatches)){
 			$interface->assign('relatedArticles', $ebscoMatches);
 		}
-		$timer->logTime("Loaded Ebsco options");
+		$timer->logTime('Loaded Ebsco options');
 
 		require_once ROOT_DIR . '/sys/Archive/ArchiveExploreMoreBar.php';
 		global $library;
@@ -738,7 +738,7 @@ class Archive_AJAX extends AJAXHandler {
 		}
 		$interface->assign('exploreMoreSettings', $exploreMoreSettings);
 		$interface->assign('archiveSections', ArchiveExploreMoreBar::$archiveSections);
-		$timer->logTime("Loaded Settings");
+		$timer->logTime('Loaded Settings');
 
 		return [
 			'success'     => true,
