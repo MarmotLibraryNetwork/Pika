@@ -8451,7 +8451,6 @@ hr.menu {
 }
 #lookfor {
   border-radius: 0 0 0 0;
-  overflow-y: hidden;
   padding-top: 0.4em;
   min-height: 24px;
 }
