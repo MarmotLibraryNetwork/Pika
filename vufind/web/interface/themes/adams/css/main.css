@@ -10536,10 +10536,6 @@ a .header-button:hover {
 .facetDetails {
   border: 1px solid #f4f4f4;
 }
-.facetValue {
-  padding: 0 0 0 30px;
-  color: #000;
-}
 #more-details-accordion {
   /*.panel-group*/
 }
