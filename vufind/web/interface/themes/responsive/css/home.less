@@ -13,6 +13,7 @@
   margin-bottom: 5px;
 }
 
+//TODO: update any themes that actually use a gradient to have the mixin
 #home-page-search-gradient(@home-search-top-color, @home-search-bottom-color){
   #home-page-search {
     background: linear-gradient(to bottom, @home-search-top-color, @home-search-bottom-color);
@@ -44,8 +45,8 @@
 
 .searchTypeHome, .searchSource {
   margin: 5px 0 0;
-  color: #fff;
-  background-color: @home-search-bottom-color;
+  color: @home-search-label-color;
+  background-color: @home-search-top-color;
   border: none;
   width: 90% !important;
 }
