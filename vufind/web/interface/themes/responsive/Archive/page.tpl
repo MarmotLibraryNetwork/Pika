@@ -55,7 +55,7 @@
 				<a class="btn btn-default" href="/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
 			{/if}
 			{if $showFavorites == 1}
-				<a onclick="return Pika.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</a>
+				<button onclick="return Pika.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</button>
 			{/if}
 		</div>
 
@@ -78,7 +78,7 @@
 	{rdelim};
 	{assign var=pageCounter value=$pageCounter+1}
 
-	$().ready(function(){ldelim}
+	$(function(){ldelim}
 		{if $canView}
 		Pika.Archive.changeActiveBookViewer('{$activeViewer}', '{$page.pid}')
 		{/if}

@@ -3,7 +3,7 @@
 	<h1 role="heading">Pika Solr Administration</h1>
 	<hr>
 	{if $PikaStatus}
-	<h2>Pika Status</h2>
+	<h1 class="h2" role="heading" aria-level="1">Pika Status</h1>
 		<table id="pika-status" class="table table-bordered">
 			<tr class="{if $PikaStatus == 'critical'}danger{elseif $PikaStatus == 'warning'}warning{else}success{/if}">
 				<th>{$PikaStatus|capitalize}</th>
@@ -42,7 +42,7 @@
 		</tr>
 		<tr>
 			<th>Full Status: </th>
-			<td><a onclick="$('#searcherStatus').show();">Show full status</a>
+			<td><button class="btn btn-link" onclick="$('#searcherStatus').show();">Show full status</button>
 				<div id="searcherStatus" style="display:none"><pre>{$data.grouped|print_r}</pre></div>
 			</td>
 		</tr>
@@ -74,7 +74,7 @@
 			</tr>
 			<tr>
 				<th>Full Status: </th>
-				<td><a onclick="$('#searcherGenealogyStatus').show();">Show full status</a>
+				<td><button class="btn btn-link" onclick="$('#searcherGenealogyStatus').show();">Show full status</button>
 					<div id="searcherGenealogyStatus" style="display:none"><pre>{$data.genealogy|print_r}</pre></div>
 				</td>
 			</tr>
@@ -110,7 +110,7 @@
 			</tr>
 			<tr>
 				<th>Full Status: </th>
-				<td><a onclick="$('#masterStatus').show();">Show full status</a>
+				<td><button class="btn btn-link" onclick="$('#masterStatus').show();">Show full status</button>
 					<div id="masterStatus" style="display:none"><pre>{$masterData|print_r}</pre></div>
 				</td>
 			</tr>
@@ -146,7 +146,7 @@
 			</tr>
 			<tr>
 				<th>Full Status: </th>
-				<td><a onclick="$('#archiveStatus').show();">Show full status</a>
+				<td><button class="btn btn-link" onclick="$('#archiveStatus').show();">Show full status</button>
 					<div id="archiveStatus" style="display:none"><pre>{$archiveData|print_r}</pre></div>
 				</td>
 			</tr>

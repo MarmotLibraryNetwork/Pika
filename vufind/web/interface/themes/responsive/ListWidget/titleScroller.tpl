@@ -33,6 +33,8 @@
 			<div class="clearer"></div>
 			{if !isset($widget) || $widget->showTitle}
 				<div id="titleScrollerSelectedTitle{$scrollerName}" class="titleScrollerSelectedTitle notranslate"></div>
+			{else}
+				<div id="titleScrollerSelectedTitle{$scrollerName}" aria-live="polite" class="visuallyhidden titleScrollerSelectedTitle notranslate"></div>
 			{/if}
 			{if !isset($widget) || $widget->showAuthor}
 				<div id="titleScrollerSelectedAuthor{$scrollerName}" class="titleScrollerSelectedAuthor notranslate"></div>
@@ -41,9 +43,9 @@
 		</div>
 		{if isset($widget)}
 		<div class="sliderControls">
-			<button class="btn btn-primary slowDown glyphicon glyphicon-fast-backward" aria-label="Slow Down"><span class="visuallyhidden">Slow Down</span></button>
+{*			<button class="btn btn-primary slowDown glyphicon glyphicon-fast-backward" aria-label="Slow Down"><span class="visuallyhidden">Slow Down</span></button>*}
 			<button class="btn btn-primary pause glyphicon glyphicon-pause" aria-label="Pause"><span class="visuallyhidden">Pause</span></button>
-			<button class="btn btn-primary speedUp glyphicon glyphicon-fast-forward" aria-label="Speed Up"><span class="visuallyhidden">Speed Up</span></button>
+{*			<button class="btn btn-primary speedUp glyphicon glyphicon-fast-forward" aria-label="Speed Up"><span class="visuallyhidden">Speed Up</span></button>*}
 		</div>
 		{/if}
 	</div>
@@ -66,13 +68,13 @@
 
 		$('#titleScroller{$scrollerName} .scrollerBodyContainer').parent('.titleScrollerBody').parent('.titleScrollerWrapper').children('.sliderControls').on('click', 'button.pause, button.play', function(){ldelim}
 			TitleScroller.prototype.playPauseControl(this, {$scrollerVariable});
-		{rdelim})
-						.on('click', 'button.speedUp', function() {ldelim}
+		{rdelim});
+						/*.on('click', 'button.speedUp', function() {ldelim}
 								TitleScroller.prototype.fasterControl({$scrollerVariable},{$scrollerVariable}.interval);
             {rdelim})
 						.on('click', 'button.slowDown', function() {ldelim}
 								TitleScroller.prototype.slowerControl({$scrollerVariable}, {$scrollerVariable}.interval);
-						{rdelim});
+						{rdelim});;*/
 	{rdelim});
 
 </script>

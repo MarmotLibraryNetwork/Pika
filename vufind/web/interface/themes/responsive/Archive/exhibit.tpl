@@ -91,23 +91,28 @@
 					<div class="input-group">
 						<input type="text" name="lookfor" size="30" title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term." autocomplete="off" class="form-control" placeholder="Search this collection" aria-label="Search this collection">
 						<div class="input-group-btn" id="search-actions">
-							<button class="btn btn-default" type="submit">GO</button>
+							<button class="btn btn-primary                " type="submit">GO</button>
 						</div>
 						<input type="hidden" name="islandoraType" value="IslandoraKeyword">
 						<input type="hidden" name="filter[]" value='ancestors_ms:"{$pid}"'>
 					</div>
 				</form>
 			</div>
-			<div class="col-sm-4 col-sm-offset-2">
+			<div class="col-sm-5 col-sm-offset-1">
 				{* Display information to sort the results (by date or by title *}
-				<select aria-label="Sort collection by" id="results-sort" name="sort" onchange="Pika.Archive.sort = this.options[this.selectedIndex].value;Pika.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}', 1);" class="form-control">
-					<option value="title" {if $sort=='title'}selected="selected"{/if}>{translate text='Sort by ' }Title</option>
-					<option value="newest" {if $sort=='newest'}selected="selected"{/if}>{translate text='Sort by ' }Newest First</option>
-					<option value="oldest" {if $sort=='oldest'}selected="selected"{/if}>{translate text='Sort by ' }Oldest First</option>
-					{* Added these two options to basic exhibit page. pascal 2-24-2017 *}
-					<option value="dateAdded" {if $sort=='dateAdded'}selected="selected"{/if}>{translate text='Sort by ' }Date Added</option>
-					<option value="dateModified" {if $sort=='dateModified'}selected="selected"{/if}>{translate text='Sort by ' }Date Modified</option>
-				</select>
+				<div class="input-group">
+					<label for="results-sort" class="input-group-addon">Sort By</label>
+					<select id="results-sort" name="sort" class="form-control">
+						<option value="title" {if $sort=='title'}selected="selected"{/if}>Title</option>
+						<option value="newest" {if $sort=='newest'}selected="selected"{/if}>Newest First</option>
+						<option value="oldest" {if $sort=='oldest'}selected="selected"{/if}>Oldest First</option>
+						<option value="dateAdded" {if $sort=='dateAdded'}selected="selected"{/if}>Date Added</option>
+						<option value="dateModified" {if $sort=='dateModified'}selected="selected"{/if}>Date Modified</option>
+					</select>
+					<span class="input-group-btn">
+						<button class="btn btn-primary" onclick="el=document.getElementById('results-sort');Pika.Archive.sort = el.options[el.selectedIndex ].value;Pika.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}', 1);">GO</button>
+					</span>
+				</div>
 			</div>
 		</div>
 		<div class="row">
