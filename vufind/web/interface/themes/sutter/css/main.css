@@ -8968,7 +8968,8 @@ a.browse-thumbnail-sorted.active {
 .selected-browse-sub-category-label-search-text::before {
   content: ' \00bb \00a0';
 }
-#myFinesAlert {
+#myFinesAlert,
+.myAccountLink .glyphicon-remove-circle {
   color: #D32522;
   font-weight: bold;
 }
