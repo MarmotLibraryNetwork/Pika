@@ -3,6 +3,16 @@ Pika.Searches = (function(){
 		Pika.Searches.enableSearchTypes();
 		Pika.Searches.initAutoComplete();
 
+		// Resize Search box textarea automatically to show all inputted text
+		// Solution from : https://stackoverflow.com/questions/454202/creating-a-textarea-with-auto-resize
+		// Answer titled : A complete yet simple soultion
+		$("textarea#lookfor").each(function () {
+			this.setAttribute("style", "height:" + (this.scrollHeight) + "px;overflow-y:hidden;");
+		}).on("input", function () {
+			this.style.height = 0;
+			this.style.height = (this.scrollHeight) + "px";
+		});
+
 		//console.log(
 		//		'Not opac', !Globals.opac,
 		//		'Not Logged In', !Globals.loggedIn,
@@ -28,7 +38,7 @@ Pika.Searches = (function(){
 			}
 		}
 	});
-	return{
+	return {
 		searchGroups: [],
 		curPage: 1,
 		displayMode: 'list', // default display Mode for results
