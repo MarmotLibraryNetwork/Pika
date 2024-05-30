@@ -7965,7 +7965,7 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
           text-decoration: underline dotted;
 }
 #header-container {
-  height: 100px;
+  height: 120px;
   min-height: 100px;
   padding-top: 0;
   background-color: #fff;
@@ -7974,7 +7974,7 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
 }
 #header-logo {
   padding: 10px 10px 0 0;
-  max-height: 6em;
+  max-height: 100px;
 }
 @media (max-width: 767px) {
   #header-logo {
@@ -7988,7 +7988,7 @@ a .header-button {
   color: #222;
   background-color: #fff;
   border: 1px solid #555;
-  margin-top: 25px;
+  margin-top: 35px;
 }
 a .header-button:hover {
   color: #fff;
@@ -10459,18 +10459,15 @@ a .header-button:hover {
 #browse-category-carousel .browse-category.selected {
   background: #0a9abc;
 }
-#header-container {
-  background-image: none;
-}
 .btn.btn-primary {
   border: none;
 }
-.sidebar-links div.panel-heading {
+.sidebar-links .panel-heading {
   background: #121c2d;
   color: white;
   text-shadow: none;
 }
-div.sidebar-button {
+.sidebar-button {
   padding: 5px 15px;
   background-color: #121c2d;
   background-image: none;
