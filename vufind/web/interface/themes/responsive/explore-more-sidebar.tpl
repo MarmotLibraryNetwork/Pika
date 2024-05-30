@@ -56,7 +56,7 @@
 					<div class="row">
 						<div class="subsectionTitle col-xs-5">{$section.title}</div>
 						<div class="subsection col-xs-7">
-							<a href="{$section.link}"><img src="{$section.image}" alt="{$section.description}" class="img-responsive img-thumbnail"></a>
+							<a href="{$section.link}"><img src="{$section.image}" alt="{$section.description|escape}" class="img-responsive img-thumbnail"></a>
 						</div>
 					</div>
 				</div>
@@ -116,7 +116,7 @@
 					<a href="{$value.link}">
 						{if $value.image}
 							<figure style="text-align: center">
-								<img src="{$value.image}" alt="{if $section.showTitles}{*alt text should not duplicate captions *}{else}{$value.label}{/if}" class="img-responsive img-thumbnail">
+								<img src="{$value.image}" alt="{if $section.showTitles}{*alt text should not duplicate captions *}{else}{$value.label|escape}{/if}" class="img-responsive img-thumbnail">
 								{if $section.showTitles}
 									<figcaption>
 										{$value.label}
@@ -153,7 +153,7 @@
 			<div class="row">
 				<a href="{$section.link}">
 					<div class="subsection col-xs-5">
-						<img src="{$section.image}" alt="{$section.description}" class="img-responsive img-thumbnail">
+						<img src="{$section.image}" alt="{$section.description|escape}" class="img-responsive img-thumbnail">
 					</div>
 					<div class="subsectionTitle col-xs-7">{$section.title}</div>
 				</a>
