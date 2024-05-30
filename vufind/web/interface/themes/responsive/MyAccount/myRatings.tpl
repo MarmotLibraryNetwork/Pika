@@ -17,10 +17,10 @@
 				<table class="table table-striped" id="myRatingsTable">
 					<thead>
 					<tr>
-						<th>{translate text='Date'}</th>
+						<th style="min-width: 80px;">{translate text='Date'}</th>
 						<th>{translate text='Title'}</th>
 						<th>{translate text='Author'}</th>
-						<th>{translate text='Rating'}</th>
+						<th style="min-width: 130px;">{translate text='Star Rating'}</th>
 					</tr>
 					</thead>
 					<tbody>
