@@ -80,7 +80,7 @@
 						{if $allowMasqueradeMode && !$masqueradeMode}
 							{if $canMasquerade}
 								<hr class="menu">
-								<div class="myAccountLink"><a onclick="Pika.Account.getMasqueradeForm();" href="#">Masquerade</a></div>
+								<div class="myAccountLink"><a href="#" onclick="Pika.Account.getMasqueradeForm();">Masquerade</a></div>
 							{/if}
 						{/if}
 					</div>
