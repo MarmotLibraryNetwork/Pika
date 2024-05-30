@@ -139,3 +139,81 @@ $.fn.rater.rate = function($this, opts, rating) {
 		});
 	}, null, true);
 };
+
+/*
+Accessible star ratings 5-2024
+This is vanilla js
+by chris froese
+*/
+function initStarRatings() {
+	document.querySelectorAll('.star_rating').forEach(function(form) {
+		var radios = form.querySelectorAll('input[type=radio]');
+		var output = form.querySelector('output');
+
+		var submit_rating = function(star_rating, rating_text) {
+			let grouped_work_id = form.querySelector('[name="grouped-work-id"]').value;
+
+			// Create a new FormData object to hold the form data
+			let formData = new FormData();
+			formData.append('method', 'RateTitle');
+			formData.append('grouped-work-id', grouped_work_id);
+			formData.append('rating', star_rating);
+
+			// Build the XHR url
+			let protocol = window.location.protocol;
+			let hostname = window.location.hostname;
+			let xhr_url = `${protocol}//${hostname}/GroupedWork/${encodeURIComponent(grouped_work_id)}/AJAX?` +
+					`method=RateTitle&id=${encodeURIComponent(grouped_work_id)}&rating=${encodeURIComponent(star_rating)}`;
+			// console.log(xhr_url);
+			// Create a new XMLHttpRequest object
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', xhr_url, true);
+
+			// Set up a handler for when the request finishes
+			xhr.onload = function() {
+				if (xhr.status === 200) {
+					// Successfully received response
+					alert('Rating submitted successfully');
+				} else {
+					// There was a problem with the request
+					alert('Error submitting rating');
+				}
+			};
+
+			// Send the form data
+			xhr.send(formData);
+
+			// Update the output with the rating text
+			output.textContent = rating_text;
+		};
+
+		Array.prototype.forEach.call(radios, function(el) {
+			var label = el.nextSibling.nextSibling;
+
+			label.addEventListener("click", function() {
+				let star_rating = el.value;
+				let rating_title = el.closest('div').getAttribute('data-rating_title');
+				let rating_text = `${rating_title} rated ${star_rating} star`;
+				if (star_rating !== 1) {
+					star_rating += "s";
+				}
+
+				submit_rating(star_rating, rating_text);
+			});
+		});
+
+		form.addEventListener('submit', function(event) {
+			let star_rating = form.querySelector(':checked').value;
+			let rating_title = form.closest("div").getAttribute('data-rating_title');
+			let rating_text = `${rating_title} rated ${star_rating} star`;
+			if (star_rating != 1) {
+				star_rating += "s";
+			}
+			submit_rating(star_rating, rating_text);
+			event.preventDefault();
+			event.stopImmediatePropagation();
+		});
+	});
+}
+
+
