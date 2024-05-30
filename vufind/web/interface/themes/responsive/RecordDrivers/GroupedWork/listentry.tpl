@@ -110,15 +110,13 @@
 			{if $summDescription}
 				<div class="row visible-xs">
 					<div class="result-label col-tn-3 col-xs-3">Description:</div>
-					<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">Click to view</a></div>
 				</div>
 			{/if}
 
 			{* Description Section *}
 			{if $summDescription}
 				<div class="row">
-					{* Hide in mobile view *}
-					<div class="result-value hidden-xs col-sm-12" id="descriptionValue{$summId|escape}">
+					<div class="result-value col-tn-12" id="descriptionValue{$summId|escape}">
 						{$summDescription|highlight|truncate_html:450:"..."}
 					</div>
 				</div>

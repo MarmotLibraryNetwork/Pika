@@ -229,6 +229,7 @@
 
 
 				{* Short Mobile Entry for Formats when there aren't hidden formats *}
+{*				{if !empty($relatedManifestations)}*}
 				<div class="row visible-xs">
 
 					{* Determine if there were hidden Formats for this entry *}
@@ -247,12 +248,13 @@
 						</div>
 						<div class="hidethisdiv{$summId|escape} result-value col-tn-8">
 							<a href="#" onclick="$('#relatedManifestationsValue{$summId|escape},.hidethisdiv{$summId|escape}').toggleClass('hidden-xs');return false;">
-								{implode subject=$relatedManifestations|@array_keys glue=", "}
+									{implode subject=$relatedManifestations|@array_keys glue=",&nbsp;"}
 							</a>
 						</div>
 					{/if}
 
 				</div>
+{*				{/if}*}
 
 				{* Formats Section *}
 				<div class="row">
@@ -270,15 +272,10 @@
 					{if $summDescription}
 						<div class="row visible-xs">
 							<div class="result-label col-tn-3">Description:</div>
-							<div class="result-value col-tn-8"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">Click to view</a></div>
 						</div>
-					{/if}
 
-					{* Description Section *}
-					{if $summDescription}
 						<div class="row">
-							{* Hide in mobile view *}
-							<div class="result-value hidden-xs col-sm-12" id="descriptionValue{$summId|escape}">
+							<div class="result-value col-tn-12" id="descriptionValue{$summId|escape}">
 								{$summDescription|highlight|truncate_html:450:"..."}
 							</div>
 						</div>
