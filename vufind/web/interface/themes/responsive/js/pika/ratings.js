@@ -149,6 +149,9 @@ function initStarRatings() {
 	document.querySelectorAll('.star_rating').forEach(function(form) {
 		var radios = form.querySelectorAll('input[type=radio]');
 		var output = form.querySelector('output');
+		var do_review = parseInt(form.closest("div.title-rating").getAttribute('data-show_review'));
+
+		// Make sure we have a number for comparison
 
 		var submit_rating = function(star_rating, rating_text) {
 			let grouped_work_id = form.querySelector('[name="grouped-work-id"]').value;
@@ -181,6 +184,9 @@ function initStarRatings() {
 							alert('Error submitting rating.');
 						} else {
 							alert('Rating submitted successfully.');
+							if (do_review === 1){
+								Pika.Ratings.doRatingReview(grouped_work_id);
+							}
 						}
 					} catch (e) {
 						// If there is an error parsing the JSON
