@@ -184,15 +184,21 @@ TitleScroller.prototype.finishLoadingScroller = function() {
 
 	// Set initial state.
 	curScroller.hovered = false;
+	curScroller.interval = (curScroller.interval == 5000 || typeof curScroller.interval == 'undefined') ? 5000 : curScroller.interval;
+	curScroller.updateInterval = (curScroller.updateInterval == false || typeof curScroller.updateInterval == 'undefined') ? false : curScroller.updateInterval;
+
 
 	if (this.autoScroll && this.scrollInterval == 0){
+		curScroller.scrolling = true;
 		this.scrollInterval = setInterval(function() {
 			// Only proceed if not hovering.
-			if (!curScroller.hovered) {
+			if (!curScroller.hovered && curScroller.scrolling === true) {
 				curScroller.scrollToRight();
 			}
 		}, 5000);
 	}
+
+
 	if(this.tabSelect){
 		$('button.scrollerTitle').on("focus", function(){
 			let scrollerTitleId = "scrollerTitle" + curScroller.scrollerShortName;
@@ -203,6 +209,74 @@ TitleScroller.prototype.finishLoadingScroller = function() {
 
 	}
 };
+
+TitleScroller.prototype.playPauseControl = function (sender, scroller){
+
+	let scrolling = scroller.scrolling;
+	let controlWrapper = $('#' + scroller.scrollerId).parent('.titleScrollerWrapper').children('.sliderControls');
+		if(scrolling == true){
+			scroller.scrolling = false;
+			controlWrapper.children('button.pause').addClass('play glyphicon-play');
+			controlWrapper.children('button.play').removeClass('pause glyphicon-pause');
+			controlWrapper.children('button.play').children('span').html("Resume");
+			controlWrapper.children('button.play').attr('aria-label',"Resume");
+		}else{
+			scroller.scrolling = true;
+			controlWrapper.children('button.play').addClass('pause glyphicon-pause');
+			controlWrapper.children('button.pause').removeClass('play glyphicon-play');
+			controlWrapper.children('button.pause').children('span').html("Pause");
+			controlWrapper.children('button.pause').attr('aria-label',"Pause");
+		}
+}
+
+TitleScroller.prototype.fasterControl = function (scroller){
+	let interval = scroller.interval;
+	let controlWrapper = $('#' + scroller.scrollerId).parent('.titleScrollerWrapper').children('.sliderControls');
+	controlWrapper.children('button.slowDown').prop('disabled', false);
+	controlWrapper.children('button.speedUp').attr('aria-label',"Speed Up");
+	let newInterval = interval - 500;
+			if (newInterval < 1000){
+				$(controlWrapper).children('button.speedUp').prop('disabled', true);
+				interval = 500;
+			}else{
+				interval = newInterval;
+			}
+			scroller.interval = interval;
+			clearInterval(scroller.scrollInterval);
+			clearInterval(this.scrollInterval);
+			scroller.scrollInterval = setInterval(function() {
+		// Only proceed if not hovering.
+		if (!scroller.hovered && scroller.scrolling === true) {
+			scroller.scrollToRight();
+		}
+	}, interval);
+			let intervalHuman = interval/1000;
+	controlWrapper.children('button.speedUp').attr('aria-label',"Speed: " + intervalHuman);
+}
+TitleScroller.prototype.slowerControl = function (scroller){
+	let interval = scroller.interval;
+	let controlWrapper = $('#' + scroller.scrollerId).parent('.titleScrollerWrapper').children('.sliderControls');
+	controlWrapper.children('button.speedUp').prop('disabled', false);
+	controlWrapper.children('button.slowDown').attr('aria-label',"Slow Down");
+	let newInterval = interval + 500;
+	if (newInterval > 10000){
+		$(controlWrapper).children('button.slowDown').prop('disabled', true);
+		interval = 10500;
+	}else{
+		interval = newInterval;
+	}
+	scroller.interval = interval;
+	clearInterval(scroller.scrollInterval);
+	clearInterval(this.scrollInterval);
+	scroller.scrollInterval = setInterval(function() {
+		// Only proceed if not hovering.
+		if (!scroller.hovered && scroller.scrolling === true) {
+			scroller.scrollToRight();
+		}
+	}, interval);
+	let intervalHuman = interval/1000;
+	controlWrapper.children('button.slowDown').attr('aria-label',"Speed: " + intervalHuman);
+}
 
 TitleScroller.prototype.setVisibleTabIndex = function (scroller){
 	var scrollerId = scroller.scrollerId,

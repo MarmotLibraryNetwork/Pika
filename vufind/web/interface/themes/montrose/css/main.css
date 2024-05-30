@@ -9288,6 +9288,15 @@ a.browse-thumbnail-sorted.active {
 .mediumScroller .scrollerButtonDown {
   width: 223px;
 }
+.sliderControls {
+  text-align: center;
+}
+.sliderControls button {
+  height: 2em;
+}
+.sliderControls button:focus {
+  z-index: 2;
+}
 /**
  * Additional Styling specific to the display of full records.
  *

@@ -39,7 +39,13 @@
 			{/if}
 			<button class="rightScrollerButton btn btn-default" onclick="{$scrollerVariable}.scrollToRight();" tabindex="0" aria-label="Scroll right"><i class="glyphicon glyphicon-chevron-right"></i></button>
 		</div>
-
+		{if isset($widget)}
+		<div class="sliderControls">
+			<button class="btn btn-primary slowDown glyphicon glyphicon-fast-backward" aria-label="Slow Down"><span class="visuallyhidden">Slow Down</span></button>
+			<button class="btn btn-primary pause glyphicon glyphicon-pause" aria-label="Pause"><span class="visuallyhidden">Pause</span></button>
+			<button class="btn btn-primary speedUp glyphicon glyphicon-fast-forward" aria-label="Speed Up"><span class="visuallyhidden">Speed Up</span></button>
+		</div>
+		{/if}
 	</div>
 </div>
 <script>
@@ -57,6 +63,17 @@
 					{$scrollerVariable}.swipeToRight(scrollInterval);
 				{rdelim}
 		{rdelim});
+
+		$('#titleScroller{$scrollerName} .scrollerBodyContainer').parent('.titleScrollerBody').parent('.titleScrollerWrapper').children('.sliderControls').on('click', 'button.pause, button.play', function(){ldelim}
+			TitleScroller.prototype.playPauseControl(this, {$scrollerVariable});
+		{rdelim})
+						.on('click', 'button.speedUp', function() {ldelim}
+								TitleScroller.prototype.fasterControl({$scrollerVariable},{$scrollerVariable}.interval);
+            {rdelim})
+						.on('click', 'button.slowDown', function() {ldelim}
+								TitleScroller.prototype.slowerControl({$scrollerVariable}, {$scrollerVariable}.interval);
+						{rdelim});
 	{rdelim});
+
 </script>
 {/strip}
