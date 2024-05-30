@@ -95,7 +95,7 @@
 				<a class="btn btn-default" href="/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
 			{/if}
 			{if $showFavorites == 1}
-				<a onclick="return Pika.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</a>
+				<button onclick="return Pika.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</button>
 			{/if}
 		</div>
 
@@ -200,7 +200,7 @@
 </script>
 {/if}
 <script>
-	$().ready(function(){ldelim}
+	$(function(){ldelim}
 		Pika.Archive.loadExploreMore('{$pid|urlencode}');
 	{rdelim});
 </script>

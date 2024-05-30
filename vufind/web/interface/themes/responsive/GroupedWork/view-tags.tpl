@@ -7,9 +7,9 @@
 				{foreach from=$recordDriver->getTags() item=tag name=tagLoop}
 					<a href="/Search/Results?tag={$tag->tag|escape:"url"}">{$tag->tag|escape:"html"}</a> <span class="badge btn-info">{$tag->cnt}</span>
 					{if $tag->userAddedThis}
-						&nbsp;<a onclick="return Pika.GroupedWork.removeTag('{$recordDriver->getPermanentId()|escape}', '{$tag->tag}');" class="btn btn-xs btn-danger">
+						&nbsp;<button onclick="return Pika.GroupedWork.removeTag('{$recordDriver->getPermanentId()|escape}', '{$tag->tag}');" class="btn btn-sm btn-danger">
 							Delete
-						</a>
+						</button>
 					{/if}
 					<br>
 				{/foreach}
@@ -20,9 +20,9 @@
 			{/if}
 			<br>
 			<div>
-				<a href="#" onclick="return Pika.GroupedWork.showTagForm(this, '{$recordDriver->getPermanentId()|escape}');" class="btn btn-sm btn-default">
+				<button onclick="return Pika.GroupedWork.showTagForm(this, '{$recordDriver->getPermanentId()|escape}');" class="btn btn-default">
 					{translate text="Add Tag"}
-				</a>
+				</button>
 			</div>
 		</div>
 
