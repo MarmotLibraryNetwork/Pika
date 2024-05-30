@@ -207,7 +207,7 @@ function initStarRatings() {
 			let rating_title = form.closest("div").getAttribute('data-rating_title');
 			let rating_text = `${rating_title} rated ${star_rating} star`;
 			if (star_rating != 1) {
-				star_rating += "s";
+				rating_text += "s";
 			}
 			submit_rating(star_rating, rating_text);
 			event.preventDefault();
