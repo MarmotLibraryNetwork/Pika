@@ -6863,7 +6863,7 @@ body > .container {
   }
 }
 .panel-heading {
-  background-color: #e7e7e7;
+  background-color: #eee;
   border: 1px solid #ddd;
 }
 .panel-title {
@@ -10559,7 +10559,7 @@ a .header-button:hover {
 #more-details-accordion .panel-heading,
 .sidebar-links .panel-heading,
 #account-settings-accordion .panel-heading {
-  background: #e7e7e7;
+  background: #eee;
 }
 #account-settings-accordion .active .panel-heading,
 #more-details-accordion .active .panel-heading,
