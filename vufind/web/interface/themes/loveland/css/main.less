@@ -5,9 +5,9 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
-.header-login-button-mixin(@header-buttons-background-color);
+.header-login-button-mixin(@header-buttons-background-color, #333);
 
-#header-logo{
+#header-logo {
   padding: 0;
 }
 
@@ -17,7 +17,7 @@
 #anythink-browse-label(@browse-label-text-color);
 
 // the category text
-.browse-category {
+#browse-category-picker .browse-category {
   //padding-top: 20px; // extra padding on top to center text
   //height: 120px;
 
@@ -26,15 +26,18 @@
     text-shadow: none;
     font-size: 18px;
     font-weight: 500;
+
     &:focus {
       outline: none; // hide outlining of clicked category
     }
   }
+
   &.selected {
     border: none;
     background: @selectedCategoryColor;
-    div {
-      color: #fff;
+
+    button {
+      color: #333;
     }
   }
 }
@@ -46,8 +49,9 @@
 }
 
 #anythink-browse-category-picker(@browseCarouselControlColor, @selectedCategoryColor, @content-bg);
+
 #selected-browse-label {
-  color: @loveland-dark-blue;
+  //color: @loveland-dark-blue;
   background: none; //override line through label
   padding: 20px 0;
   border-top: 1px solid @browse-label-text-color;
@@ -57,48 +61,52 @@
   background: none;
 }
 
-#selected-browse-search-link{
+#selected-browse-search-link {
   text-transform: uppercase;
 }
 
 #browse-subcategory-menu button:active, #browse-subcategory-menu button:focus, #browse-subcategory-menu button:visited {
-font-weight:initial;
+  font-weight: initial;
 }
 
-.sidebar-links .panel-heading{
-  background:#e7e7e7;
-}
-.panel{
-  border:none;
-  border-radius:0;
+.sidebar-links .panel-heading {
+  background: #e7e7e7;
 }
 
-.panel-group .panel{
-  border-radius:0;
+.panel {
+  border: none;
+  border-radius: 0;
 }
-.sidebar-links .active .panel-heading{
+
+.panel-group .panel {
+  border-radius: 0;
+}
+
+.sidebar-links .active .panel-heading {
   background: @loveland-dark-blue;
 }
 
-.sidebar-button{
-  background:@loveland-dark-blue;
+.sidebar-button {
+  background: @loveland-dark-blue;
   padding: 5px 0;
 }
 
-.menu-bar{
-  background:@loveland-green;
+//.menu-bar {
+//  background: @loveland-green;
+//}
+
+#browse-sub-category-menu button {
+  margin-bottom: 10px;
 }
 
-#browse-sub-category-menu button{
-  margin-bottom:10px;
-}
-#vertical-menu-bar{
-  background: @loveland-green;
-}
-#vertical-menu-bar .menu-bar-option.menu-icon-selected{
-  background: @loveland-brown;
-}
+//#vertical-menu-bar {
+//  background: @loveland-green;
+//}
+//
+//#vertical-menu-bar .menu-bar-option.menu-icon-selected {
+//  background: @loveland-brown;
+//}
 
 #browse-sub-category-menu button:active, #browse-subcategory-menu button:focus, #browse-subcategory-menu button:visited {
-  font-weight:initial;
+  font-weight: initial;
 }
