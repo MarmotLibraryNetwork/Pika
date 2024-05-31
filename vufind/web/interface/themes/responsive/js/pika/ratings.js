@@ -146,6 +146,7 @@ This is vanilla js
 by chris froese
 */
 function initStarRatings() {
+
 	document.querySelectorAll('.star_rating').forEach(function(form) {
 		var radios = form.querySelectorAll('input[type=radio]');
 		var output = form.querySelector('output');
@@ -153,57 +154,59 @@ function initStarRatings() {
 
 		// Make sure we have a number for comparison
 
-		var submit_rating = function(star_rating, rating_text) {
-			let grouped_work_id = form.querySelector('[name="grouped-work-id"]').value;
-			// testing error
-			// star_rating += "trigger-error";
-			// Create a new FormData object for form data
-			let formData = new FormData();
-			formData.append('method', 'RateTitle');
-			formData.append('grouped-work-id', grouped_work_id);
-			formData.append('rating', star_rating);
+		var submit_rating = function(star_rating, rating_text){
+			Pika.Account.ajaxLogin(function (){
+				let grouped_work_id = form.querySelector('[name="grouped-work-id"]').value;
+				// testing error
+				// star_rating += "trigger-error";
+				// Create a new FormData object for form data
+				let formData = new FormData();
+				formData.append('method', 'RateTitle');
+				formData.append('grouped-work-id', grouped_work_id);
+				formData.append('rating', star_rating);
 
-			// Build the XHR url
-			let protocol = window.location.protocol;
-			let hostname = window.location.hostname;
-			let xhr_url = `${protocol}//${hostname}/GroupedWork/${encodeURIComponent(grouped_work_id)}/AJAX?` +
-					`method=RateTitle&id=${encodeURIComponent(grouped_work_id)}&rating=${encodeURIComponent(star_rating)}`;
-			// console.log(xhr_url);
-			// Create a new XMLHttpRequest object
-			var xhr = new XMLHttpRequest();
-			xhr.open('GET', xhr_url, true);
+				// Build the XHR url
+				let protocol = window.location.protocol;
+				let hostname = window.location.hostname;
+				let xhr_url = `${protocol}//${hostname}/GroupedWork/${encodeURIComponent(grouped_work_id)}/AJAX?` +
+						`method=RateTitle&id=${encodeURIComponent(grouped_work_id)}&rating=${encodeURIComponent(star_rating)}`;
+				// console.log(xhr_url);
+				// Create a new XMLHttpRequest object
+				var xhr = new XMLHttpRequest();
+				xhr.open('GET', xhr_url, true);
 
-			// Set up a handler for when the request finishes
-			xhr.onload = function() {
-				if (xhr.status === 200) {
-					try {
-						// Parse the JSON response
-						var response = JSON.parse(xhr.responseText);
-						// If the response contains an error message
-						if (response.error) {
-							alert('Error submitting rating.');
-						} else {
-							alert('Rating submitted successfully.');
-							if (do_review === 1){
-								Pika.Ratings.doRatingReview(grouped_work_id);
+				// Set up a handler for when the request finishes
+				xhr.onload = function (){
+					if (xhr.status === 200){
+						try {
+							// Parse the JSON response
+							var response = JSON.parse(xhr.responseText);
+							// If the response contains an error message
+							if (response.error){
+								alert('Error submitting rating.');
+							}else{
+								alert('Rating submitted successfully.');
+								if (do_review === 1){
+									Pika.Ratings.doRatingReview(grouped_work_id);
+								}
 							}
+						} catch(e){
+							// If there is an error parsing the JSON
+							alert('Error submitting rating.');
 						}
-					} catch (e) {
-						// If there is an error parsing the JSON
+					}else{
+						// There was a problem with the request
 						alert('Error submitting rating.');
 					}
-				} else {
-					// There was a problem with the request
-					alert('Error submitting rating.');
-				}
-			};
+				};
 
-			// Send the form data
-			xhr.send(formData);
+				// Send the form data
+				xhr.send(formData);
 
-			// Update the output with the rating text
-			output.textContent = rating_text;
-		};
+				// Update the output with the rating text
+				output.textContent = rating_text;
+			}, null, true);
+		}
 
 		Array.prototype.forEach.call(radios, function(el) {
 			var label = el.nextSibling.nextSibling;

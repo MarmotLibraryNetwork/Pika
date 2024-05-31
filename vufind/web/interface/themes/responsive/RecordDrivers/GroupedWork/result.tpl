@@ -45,7 +45,15 @@
 					{/if}
 
 					{if $showRatings}
-						{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$summId ratingData=$summRating}
+						<div class="title-rating"
+						     data-user_rating="{$summRating.user}"
+						     data-rating_title="{$summTitle}"
+						     data-id="{$summId}"
+						     data-show_review="{if $showComments  && (!$loggedIn || !$user->noPromptForUserReviews)}1{else}0{/if}"
+						>
+							{include file='MyAccount/star-rating.tpl' id=$summId ratingData=$summRating ratingTitle=$summTitle}
+						</div>
+						{* include file="GroupedWork/title-rating.tpl" ratingClass="" id=$summId ratingData=$summRating *}
 					{/if}
 				</div>
 			{/if}

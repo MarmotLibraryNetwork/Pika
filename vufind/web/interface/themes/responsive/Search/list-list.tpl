@@ -17,4 +17,8 @@
 		{/foreach}
 	</div>
 {/strip}
-
+<script>
+	{literal}
+	document.addEventListener('DOMContentLoaded', initStarRatings);
+	{/literal}
+</script>
