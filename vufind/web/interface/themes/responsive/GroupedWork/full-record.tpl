@@ -13,14 +13,14 @@
 		</h1>
 
 		<div class="row">
-			<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
+			<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3">
 				{if $disableCoverArt != 1}
 					<div id="recordcover" class="text-center row">
 						<img alt="{translate text='Book Cover'}" class="img-thumbnail" src="{$recordDriver->getBookcoverUrl('medium')}">
 					</div>
 				{/if}
 				{if $showRatings}
-					{include file="GroupedWork/title-rating-full.tpl" ratingClass="" showFavorites=0 ratingData=$recordDriver->getRatingData() showNotInterested=false hideReviewButton=true}
+					{include file="GroupedWork/title-rating-full.tpl" ratingClass="" ratingTitle=$recordDriver->getTitleShort() showFavorites=0 ratingData=$recordDriver->getRatingData() showNotInterested=false hideReviewButton=true}
 				{/if}
 			</div>
 			<div id="main-content" class="col-xs-8 col-sm-7 col-md-8 col-lg-9">
