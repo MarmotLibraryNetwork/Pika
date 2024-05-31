@@ -7078,6 +7078,12 @@ table.dataTable.order-column.stripe tbody tr.odd > .sorting_3 a {
   fill: currentColor;
   stroke: currentColor;
 }
+.list-rating .star_rating svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  stroke: currentColor;
+}
 .star_rating label,
 .star_rating output {
   box-sizing: content-box;
