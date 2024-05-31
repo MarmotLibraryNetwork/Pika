@@ -1,17 +1,8 @@
 Pika.Searches = (function(){
 	$(function(){
+		console.log("Searches loading");
 		Pika.Searches.enableSearchTypes();
 		Pika.Searches.initAutoComplete();
-
-		// Resize Search box textarea automatically to show all inputted text
-		// Solution from : https://stackoverflow.com/questions/454202/creating-a-textarea-with-auto-resize
-		// Answer titled : A complete yet simple soultion
-		$("textarea#lookfor").each(function () {
-			this.setAttribute("style", "height:" + (this.scrollHeight) + "px;overflow-y:hidden;");
-		}).on("input", function () {
-			this.style.height = 0;
-			this.style.height = (this.scrollHeight) + "px";
-		});
 
 		//console.log(
 		//		'Not opac', !Globals.opac,
@@ -21,7 +12,7 @@ Pika.Searches = (function(){
 		//);
 
 		// Add Browser-stored showCovers setting to the search form if there is a stored value set, and
-		// this is not a OPAC Machine, and the user is not logged in, and there is not a hidden value
+		// this is not an OPAC Machine, and the user is not logged in, and there is not a hidden value
 		// already set in the search form.
 		// This allows a preset showCovers setting to be sent back with the first search without requiring login or
 		// a page reload on the search results page.
