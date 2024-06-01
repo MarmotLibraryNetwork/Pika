@@ -9112,6 +9112,11 @@ a.browse-thumbnail-sorted.active {
   cursor: pointer;
   text-align: center;
 }
+.scrollerButtonUp.btn,
+.scrollerButtonDown.btn {
+  padding-top: 0;
+  padding-bottom: 0;
+}
 .scrollerButtonUp {
   top: 0;
   left: 0;
