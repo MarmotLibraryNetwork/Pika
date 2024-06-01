@@ -150,9 +150,8 @@ function initStarRatings() {
 	document.querySelectorAll('.star_rating').forEach(function(form) {
 		var radios = form.querySelectorAll('input[type=radio]');
 		var output = form.querySelector('output');
-		var do_review = parseInt(form.closest("div.title-rating").getAttribute('data-show_review'));
-
 		// Make sure we have a number for comparison
+		var do_review = parseInt(form.closest("div.title-rating").getAttribute('data-show_review'));
 
 		var submit_rating = function(star_rating, rating_text){
 			Pika.Account.ajaxLogin(function (){

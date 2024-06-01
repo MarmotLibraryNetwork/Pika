@@ -3,18 +3,30 @@
 	<div class="full-rating">
 		{if $showRatings}
 			{if $ratingData.user}
-				<div class="your-rating row rater" {*onclick="return Pika.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')"*}
-								{* AJAX rater data fields *}
-            data-user_rating="{$ratingData.user}" data-average_rating="{$ratingData.average}" data-id="{$recordDriver->getPermanentId()}" {* keep space between attributes *}
-            data-show_review="{if $showComments && !$user->noPromptForUserReviews}1{else}0{/if}"
-						>
-					<div class="rating-label col-xs-12 col-sm-5">Your Rating</div>
-					<div class="col-xs-12 col-sm-6">
-				<span class="ui-rater-starsOff" style="width:90px">
-					<span class="ui-rater-starsOn userRated" style="width:{math equation="90*rating/5" rating=$ratingData.user}px"></span>
-				</span>
-					</div>
+				<span>Your Rating:</span>
+				<div class="title-rating"
+				     data-user_rating="{$ratingData.user}"
+				     data-rating_title="{$ratingTitle}"
+				     data-id="{$recordDriver->getPermanentId()}"
+				     data-show_review="{if $showComments && !$user->noPromptForUserReviews}1{else}0{/if}"
+				>
+					{include file='MyAccount/star-rating.tpl' id=$recordDriver->getPermanentId() ratingData=$ratingData ratingTitle=$ratingTitle}
 				</div>
+			<script>
+				initStarRatings();
+			</script>
+{*				<div class="your-rating row rater" onclick="return Pika.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')"*}
+{*								 AJAX rater data fields *}
+{*            data-user_rating="{$ratingData.user}" data-average_rating="{$ratingData.average}" data-id="{$recordDriver->getPermanentId()}"  keep space between attributes *}
+{*            data-show_review="{if $showComments && !$user->noPromptForUserReviews}1{else}0{/if}"*}
+{*						>*}
+{*					<div class="rating-label col-xs-12 col-sm-5">Your Rating</div>*}
+{*					<div class="col-xs-12 col-sm-6">*}
+{*				<span class="ui-rater-starsOff" style="width:90px">*}
+{*					<span class="ui-rater-starsOn userRated" style="width:{math equation="90*rating/5" rating=$ratingData.user}px"></span>*}
+{*				</span>*}
+{*					</div>*}
+{*				</div>*}
 			{/if}
 
 			<div class="average-rating row{if !$ratingData.user} rater{/if}" {*onclick="return Pika.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')"*}
@@ -25,11 +37,11 @@
 								{*  Show Reviews is enabled and the user hasn't opted out or user hasn't logged in yet. *}
 							{/if}
 							>
-				<div class="rating-label col-xs-12 col-sm-5">Average Rating</div>
+				<div class="{* rating-label *}col-xs-12 col-sm-5">Other Ratings:</div>
 				<div class="col-xs-12 col-sm-6">
-			<span class="ui-rater-starsOff" style="width:90px">
-					<span class="ui-rater-starsOn" style="width:{math equation="90*rating/5" rating=$ratingData.average}px"></span>
-				</span>
+{*			<span class="ui-rater-starsOff" style="width:90px">*}
+{*					<span class="ui-rater-starsOn" style="width:{math equation="90*rating/5" rating=$ratingData.average}px"></span>*}
+{*				</span>*}
 				</div>
 			</div>
 

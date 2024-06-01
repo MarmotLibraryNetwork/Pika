@@ -45,7 +45,7 @@
 					{/if}
 
 					{if $showRatings}
-						<div class="title-rating"
+						<div class="title-rating list-rating"
 						     data-user_rating="{$summRating.user}"
 						     data-rating_title="{$summTitle}"
 						     data-id="{$summId}"
