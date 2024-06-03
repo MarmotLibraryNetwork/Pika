@@ -7960,7 +7960,7 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
   color: #ccc;
 }
 .system-message-header {
-  background-color: #f7ece8;
+  background-color: #fff;
   color: black;
   text-align: center;
   padding: 3px;
