@@ -5,7 +5,7 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
-.header-login-button-mixin(@header-buttons-background-color, #6e6864);
+.header-login-button-mixin(@header-buttons-background-color, @oldlyme-dark-text-color);
 
 #header-logo {
   //padding-top: 0;
@@ -13,11 +13,11 @@
   max-height: @header-logo-max-height;
 }
 
-.system-message-header,
+//.system-message-header,
 .system-message-header~.breadcrumbs,   // the google translate box
 .container > div:nth-child(1).breadcrumbs // the google translate box when there is no system message
 {
-  background-color: @oldlyme-tan;
+  background-color: @oldlyme-offwhite;
 }
 #footer-container {
   background-color: @body-bg-resp;
@@ -27,10 +27,10 @@
 #anythink-browse-label(@browse-label-text-color, @oldlyme-offwhite);
 
 // the category text
-.browse-category {
+#browse-category-picker .browse-category {
   padding-top: 20px; // extra padding on top to center text
   height: 120px;
-  border: none !important; // different from mixin
+  border: none; // different from mixin
 
   button {
     //color: @browse-label-text-color;
@@ -47,8 +47,8 @@
     background-color: @selectedCategoryColor;
     background: @selectedCategoryColor;
     background: linear-gradient(to bottom, @selectedCategoryColor 0%, @selectedCategoryColor 75%, @oldlyme-offwhite 75%, @oldlyme-offwhite 80%, #CCCCCC 80%, @oldlyme-offwhite 100%);
-    div {
-      color: #6e6864; // different from mixin
+    button {
+      color: @oldlyme-dark-text-color;
     }
   }
 }
@@ -63,7 +63,25 @@
 
 #anythink-selected-browse-label(@browse-label-text-color);
 
+.formatCategoryLabel {
+  &, a {
+    color: #5B606C; // (5.8)  https://webaim.org/resources/contrastchecker/?fcolor=5B606C&bcolor=F8F6EA
+  }
+}
+
+.result-head {
+  color: #216B93; // (5.39) // https://webaim.org/resources/contrastchecker/?fcolor=216B93&bcolor=F8F6EA
+}
+
 
 // MIXIN: Vertically Align cover images with the thumbnail block; up to a maximum size.  Thumbnail blocks will have a
 // uniform height and fall into columns evenly.
 .verticalAlignThumbnailArt();
+
+#ReportAccessibilityIssue a {
+  color: @lion-dark-blue;
+}
+
+.connect-icon img {
+  background-color: #fff; // color in transparent icon images
+}
