@@ -3,8 +3,8 @@
 @scranton-light-blue: #95CDEB;
 @scranton-medium-blue: #0E83C6;
 @scranton-medium-blue2: #4CB0E3;
-@scranton-deep-blue: #0A78B7;
-@scranton-grey-blue: #729FBB;
+@scranton-deep-blue: #0A78B7; // (4.79) https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=0A78B7
+@scranton-grey-blue: #729FBB; // accessible with black (7.39) https://webaim.org/resources/contrastchecker/?fcolor=000000&bcolor=729FBB
 @scranton-navy: #26256B;
 
 //@spl-readable-green: #A2C451;
@@ -23,12 +23,12 @@
 @home-search-label-color: @spl-black;
 
 @home-page-login-background-color: @scranton-medium-blue;
-@home-page-login-color: #FFF;
+@home-page-login-color: @spl-black;
 
 @header-buttons-background-color: @scranton-medium-blue;
-@header-buttons-color: #FFF;
+@header-buttons-color: @spl-black;
 
-@header-bg-color: #fff;
+//@header-bg-color: #fff;
 
 
 @library-display-name-color: @scranton-navy;
@@ -39,29 +39,31 @@
 //@footer-top-border-color: @spl-gray;
 
 @btn-primary-bg: @scranton-navy;
-@btn-primary-color: #FFF;
+@btn-primary-color: #fff;
 @btn-primary-border: @scranton-navy;
 
 // Return Now button.  Had bad side effects. Turned off
-//@btn-warning-bg: #FFF;
+//@btn-warning-bg: #fff;
 //@btn-warning-border: @spl-border-gray;
 
 // I suspect this is a bad idea to color these the same as primary buttons.
 @btn-info-bg: @scranton-light-blue;
 @btn-info-border: @scranton-light-blue;
-@btn-info-color: #FFF;
+@btn-info-color: @spl-black
 
 @alert-info-bg: @spl-other-gray;
 @alert-info-border: @spl-border-gray;
 
 @menu-bar-background-color: @scranton-grey-blue;
 @menu-bar-selected-background-color: @scranton-green;
-//@menu-bar-selected-color: #fff;
+@menu-bar-selected-color: @spl-black;
+@menu-bar-color: @spl-black;
 
 @category1MainColor: @scranton-grey-blue;
 @categoryLineColor: @category1MainColor;
 @categoryLineShadow: @category1MainColor;
 @selectedCategoryBorderColor: @scranton-green;
+@browse-category-text-color: @spl-black;
 
 @jcarousel-item-border-color: #d7d7d7;
 @browse-header-background-color: @spl-other-gray;
@@ -71,17 +73,17 @@
 // Selected Category color to give a highlighted appearance
 @selectedCategoryColor: @scranton-navy;
 @selectedSubCategoryBackgroundColor: @scranton-navy;
-@selectedSubCategoryFontColor: #FFF;
+@selectedSubCategoryFontColor: #fff;
 
 
 @browse-label-text-color: @spl-black;
-@browse-category-text-color: #FFF;
+@browse-category-text-color: #fff;
 @selected-browse-label-search-color: @spl-black;
 //@browse-category-font-size: 20px;
 
 // Home Page Browse Category More Results button
 @more-browse-results-bg-color: @scranton-navy;
-@more-browse-results-color: #FFF;
+@more-browse-results-color: #fff;
 
 @accordion-header-bg-color: @spl-other-gray;
 @accordion-active-header-bg-color: @accordion-header-bg-color;
