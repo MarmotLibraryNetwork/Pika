@@ -8055,6 +8055,9 @@ a .header-button:visited {
 .connect-icon {
   padding: 0 3px 0 3px;
 }
+.connect-icon img {
+  background-color: #fff;
+}
 #navigation-controls {
   border-top: 8px solid #130840;
   background: #fff;
@@ -10561,7 +10564,4 @@ a .header-button:hover {
 }
 #ReportAccessibilityIssue a {
   color: #3b679a;
-}
-.connect-icon img {
-  background-color: #fff;
 }

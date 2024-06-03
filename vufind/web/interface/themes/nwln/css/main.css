@@ -8060,6 +8060,9 @@ a .header-button:visited {
 .connect-icon {
   padding: 0 3px 0 3px;
 }
+.connect-icon img {
+  background-color: #fff;
+}
 #navigation-controls {
   border-top: 8px solid #006aac;
   background: #fff;
