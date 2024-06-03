@@ -32,13 +32,13 @@ a .header-button {
 
 .hide-selected-browse-label-background;
 
-#sacramento-browse-category(@selectedCategoryColor, @browse-category-font-size);
+#sacramento-browse-category(@selectedCategoryColor, @browse-category-font-size, 90px);
 
 #browse-category-carousel .browse-category.selected button {
-  color: #fff;
+  color: @dark-blue-text-color;
 }
 
-#sacramento-browse-category-pickers(@browseCarouselControlColor);
+#sacramento-browse-category-pickers(@browseCarouselControlColor, 90px);
 
 
 /* this controls the subcategory menu button are and menu buttons on browse */
