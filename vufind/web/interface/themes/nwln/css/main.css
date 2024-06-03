@@ -8063,6 +8063,11 @@ a .header-button:visited {
 .connect-icon img {
   background-color: #fff;
 }
+#ReportAccessibilityIssue a {
+  color: #2c5a86;
+  -webkit-text-decoration: underline dotted;
+          text-decoration: underline dotted;
+}
 #navigation-controls {
   border-top: 8px solid #006aac;
   background: #fff;

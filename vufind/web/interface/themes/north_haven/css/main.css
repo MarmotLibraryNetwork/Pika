@@ -8058,6 +8058,11 @@ a .header-button:visited {
 .connect-icon img {
   background-color: #fff;
 }
+#ReportAccessibilityIssue a {
+  color: #3b679a;
+  -webkit-text-decoration: underline dotted;
+          text-decoration: underline dotted;
+}
 #navigation-controls {
   border-top: 8px solid #93639D;
   background: #fff;
