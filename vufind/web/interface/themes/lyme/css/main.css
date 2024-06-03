@@ -8073,7 +8073,7 @@ a .header-button:visited {
   }
 }
 .menu-bar {
-  color: #FFF;
+  color: #000;
   background-color: #D4C7B2;
 }
 #horizontal-menu-bar-container {
@@ -8118,7 +8118,7 @@ a .header-button:visited {
   height: 2000px;
   height: 100vh;
   background-color: #D4C7B2;
-  color: #FFF;
+  color: #000;
   padding-left: 0;
   padding-right: 0;
   margin-top: 2px;
@@ -8134,7 +8134,7 @@ a .header-button:visited {
   background-color: #EAE3D1;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
-  color: #FFF;
+  color: #000;
 }
 #vertical-menu-bar .menu-icon {
   padding: 5px;
@@ -8146,11 +8146,11 @@ a .header-button:visited {
 #vertical-menu-bar .menu-icon:hover,
 #vertical-menu-bar .menu-icon:focus {
   text-decoration: none;
-  color: #FFF;
+  color: #000;
   outline: none;
 }
 #vertical-menu-bar .menu-icon .menu-bar-label {
-  color: #FFF;
+  color: #000;
   font-weight: bold;
   text-transform: uppercase;
   margin-top: 10px;
@@ -8266,7 +8266,7 @@ a .header-button:visited {
 #home-page-search-label {
   font-size: 35px;
   font-weight: normal;
-  color: #fff;
+  color: #000;
   text-shadow: 1px 1px #797676;
 }
 #lookfor::-moz-placeholder {
@@ -8284,14 +8284,14 @@ a .header-button:visited {
 .searchTypeHome,
 .searchSource {
   margin: 5px 0 0;
-  color: #fff;
+  color: #000;
   background-color: #D4C7B2;
   border: none;
   width: 90% !important;
 }
 #keepFiltersSwitchLabel,
 #advancedSearchLink {
-  color: #fff;
+  color: #000;
   font-weight: normal;
   font-size: 85%;
 }
@@ -8338,7 +8338,7 @@ a .header-button:visited {
   }
 }
 #horizontal-search-box #horizontal-search-label {
-  color: #fff;
+  color: #000;
 }
 #horizontal-search-box .searchSourceHorizontal,
 #horizontal-search-box .searchTypeHorizontal {
@@ -8521,8 +8521,8 @@ hr.menu {
 }
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
-  background-color: #ffffff;
-  color: #EAE3D1;
+  background-color: #fff;
+  color: #320DCE;
   font-size: 50px;
   border: none;
   padding-inline: 0;
@@ -8577,38 +8577,38 @@ hr.menu {
   text-decoration: underline;
 }
 #browse-category-carousel .browse-category.selected {
-  border: 2px solid #ffffff;
+  border: 2px solid #fff;
   font-size: 33px;
 }
 #browse-category-carousel .browse-category.selected:focus-within {
   border: #E15F15 2px solid;
 }
 #browse-category-carousel .browse-category.category0 {
-  background-color: #ffffff;
+  background-color: #fff;
 }
 #browse-category-carousel .browse-category.category1 {
-  background-color: #ffffff;
+  background-color: #fff;
 }
 #browse-category-carousel .browse-category.category2 {
-  background-color: #ffffff;
+  background-color: #fff;
 }
 #browse-category-carousel .browse-category.category3 {
-  background-color: #ffffff;
+  background-color: #fff;
 }
 #browse-category-carousel .browse-category.category4 {
-  background-color: #ffffff;
+  background-color: #fff;
 }
 #browse-category-carousel .browse-category.category5 {
-  background-color: #ffffff;
+  background-color: #fff;
 }
 #browse-category-carousel .browse-category.category6 {
-  background-color: #ffffff;
+  background-color: #fff;
 }
 #browse-category-carousel .browse-category.category7 {
-  background-color: #ffffff;
+  background-color: #fff;
 }
 #browse-category-carousel .browse-category.category8 {
-  background-color: #ffffff;
+  background-color: #fff;
 }
 #selected-browse-label {
   background-color: #fff;
@@ -8973,7 +8973,7 @@ a.browse-thumbnail-sorted.active {
   margin-right: 5px;
 }
 #browse-sub-category-menu button.selected {
-  color: #fff;
+  color: #000;
   background-color: #EAE3D1;
 }
 #browse-sub-category-menu button:focus {
@@ -9900,7 +9900,7 @@ a.browse-thumbnail-sorted.active {
   padding: 10px 25px 5px 0;
   margin-top: 5px;
   text-align: right;
-  color: #FFF;
+  color: #000;
   background-color: #cbbba2;
   font-variant: small-caps;
   font-weight: bold;
@@ -9964,7 +9964,7 @@ a.browse-thumbnail-sorted.active {
   margin: 10px 5px 15px;
 }
 .exploreMoreBar .exploreMoreBarLabel {
-  color: #FFF;
+  color: #000;
   background-color: #D4C7B2;
   font-weight: bold;
   text-transform: uppercase;
@@ -9979,7 +9979,7 @@ a.browse-thumbnail-sorted.active {
   float: left;
   width: 40px;
   min-height: 167px;
-  color: #FFF;
+  color: #000;
 }
 .exploreMoreBar .label-left,
 .exploreMoreBar .label-left img {
@@ -9998,7 +9998,7 @@ a.browse-thumbnail-sorted.active {
   margin: 16px auto;
 }
 .exploreMoreBar .label-top {
-  color: #FFF;
+  color: #000;
   width: 100%;
 }
 .exploreMoreBar .label-top,
@@ -10181,7 +10181,7 @@ a.browse-thumbnail-sorted.active {
 }
 .archiveComponentContainer .archiveComponent {
   border: 1px solid lightgrey;
-  color: #FFF;
+  color: #000;
   font-size: 20px;
   margin: 10px;
 }
@@ -10191,7 +10191,7 @@ a.browse-thumbnail-sorted.active {
 }
 .archiveComponentContainer .archiveComponent a .archiveComponentHeader,
 .archiveComponentContainer .archiveComponent a:visited .archiveComponentHeader {
-  color: #FFF;
+  color: #000;
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody {
   margin-left: 0;
@@ -10214,7 +10214,7 @@ a.browse-thumbnail-sorted.active {
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentControls,
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentSearchControls {
-  color: #FFF;
+  color: #000;
   background-color: #D4C7B2;
   padding: 10px 0;
   min-height: 124px;
@@ -10513,7 +10513,7 @@ a .header-button:hover {
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
   background-color: #fff;
-  color: #EAE3D1;
+  color: #320DCE;
   box-shadow: none;
   font-size: 20px;
 }
@@ -10531,7 +10531,7 @@ a .header-button:hover {
   content: "◀";
 }
 #browse-category-picker .jcarousel-pagination a.active {
-  background: #EAE3D1;
+  background: #320DCE;
   box-shadow: 0 0 2px #4E443C;
 }
 #browse-category-picker .jcarousel-pagination a,
