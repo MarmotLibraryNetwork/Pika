@@ -10567,6 +10567,3 @@ a .header-button:hover {
   column-break-inside: avoid;
   display: table;
 }
-#ReportAccessibilityIssue a {
-  color: #3b679a;
-}

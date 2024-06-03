@@ -195,6 +195,10 @@ a .header-button {
   }
 }
 
+#ReportAccessibilityIssue a {
+  .link-decorating-mixin(@darkened-link-color-resp);
+}
+
 // Fixed navigation in footer
 #navigation-controls {
   border-top: 8px solid @footer-top-border-color;
@@ -441,11 +445,12 @@ a .header-button {
   background-image: none;
 }
 
-.jcarousel li:focus-within{
+.jcarousel li:focus-within {
   outline: 2px solid @focus-ring-color;
   outline-offset: -3px;
   border: 1px solid #fff;
 }
-.jcarousel .active figure.thumbnail img{
+
+.jcarousel .active figure.thumbnail img {
   border: 2px solid @focus-ring-color;
 }
