@@ -111,10 +111,18 @@ class Admin_ListWidgets extends ObjectEditor {
 				default :
 				case 'horizontal':
 					$width  = 650;
-					$height = ($existingObject->coverSize == 'medium') ? 325 : 275;
+					if ($existingObject->autoRotate){
+						$height = ($existingObject->coverSize == 'medium') ? 350 : 275;
+					} else {
+						$height = ($existingObject->coverSize == 'medium') ? 325 : 275;
+					}
 					break;
 				case 'vertical' :
-					$width  = ($existingObject->coverSize == 'medium') ? 275 : 175;
+//					if ($existingObject->autoRotate){
+//						$width = ($existingObject->coverSize == 'medium') ? 300 : 200;
+//					} else {
+						$width = ($existingObject->coverSize == 'medium') ? 275 : 175;
+//					}
 					$height = ($existingObject->coverSize == 'medium') ? 700 : 400;
 					break;
 				case 'text-list' :
