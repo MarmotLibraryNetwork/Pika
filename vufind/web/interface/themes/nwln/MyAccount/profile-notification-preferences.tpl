@@ -3,11 +3,11 @@
 		<div class="col-xs-4"><strong>{translate text='Receive notices by'}:</strong></div>
 		<div class="col-xs-8">
 			{if !$offline && $canUpdateContactInfo == true}
-				<div class="btn-group btn-group-sm" data-toggle="buttons">
-					<label for="noticesTel" tabindex="0" class="btn btn-sm btn-default {if $profile->notices == 'p'}active{/if}"><input type="radio" value="p" id="noticesTel" name="notices" {if $profile->notices == 'p'}checked="checked"{/if}> Telephone</label>
-					<label for="noticesText" tabindex="0" class="btn btn-sm btn-default {if $profile->notices == 't'}active{/if}"><input type="radio" value="t" id="noticesText" name="notices" {if $profile->notices == 't'}checked="checked"{/if}> Text</label>
-					<label for="noticesEmail" tabindex="0" class="btn btn-sm btn-default {if $profile->notices == 'z'}active{/if}"><input type="radio" value="z" id="noticesEmail" name="notices" {if $profile->notices == 'z'}checked="checked"{/if}> Email</label>
-					<label for="noticesNone" tabindex="0" class="btn btn-sm btn-default {if $profile->notices == '-'}active{/if}"><input type="radio" value="-" id="noticesNone" name="notices" {if $profile->notices == '-'}checked="checked"{/if}> No Preference</label>
+				<div class="btn-group btn-group-sm">
+					<label for="noticesTel" class="btn btn-sm btn-default{* {if $profile->notices == 'p'}active{/if}*}"><input type="radio" value="p" id="noticesTel" name="notices" {if $profile->notices == 'p'}checked="checked"{/if}> Telephone</label>
+					<label for="noticesText" class="btn btn-sm btn-default{* {if $profile->notices == 't'}active{/if}*}"><input type="radio" value="t" id="noticesText" name="notices" {if $profile->notices == 't'}checked="checked"{/if}> Text</label>
+					<label for="noticesEmail" class="btn btn-sm btn-default{* {if $profile->notices == 'z'}active{/if}*}"><input type="radio" value="z" id="noticesEmail" name="notices" {if $profile->notices == 'z'}checked="checked"{/if}> Email</label>
+					<label for="noticesNone" class="btn btn-sm btn-default{* {if $profile->notices == '-'}active{/if}*}"><input type="radio" value="-" id="noticesNone" name="notices" {if $profile->notices == '-'}checked="checked"{/if}> No Preference</label>
 				</div>
 			{else}
 				{$profile->noticePreferenceLabel|escape}
