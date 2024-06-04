@@ -112,7 +112,13 @@ class Admin_ListWidgets extends ObjectEditor {
 				case 'horizontal':
 					$width  = 650;
 					if ($existingObject->autoRotate){
-						$height = ($existingObject->coverSize == 'medium') ? 350 : 275;
+						$height = ($existingObject->coverSize == 'medium') ? 375 : 300;
+						if($existingObject->showTitle){
+							$height = $height + 20;
+						}
+						if($existingObject->showAuthor){
+							 $height = $height + 10;
+						}
 					} else {
 						$height = ($existingObject->coverSize == 'medium') ? 325 : 275;
 					}
