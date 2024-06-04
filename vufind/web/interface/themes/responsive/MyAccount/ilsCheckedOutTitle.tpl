@@ -110,10 +110,10 @@
 {*								</div>*}
 					<div class="row">
 						<div class="title-rating"
-						     data-user_rating="{$record.ratingData.user}"
-						     data-rating_title="{$record.title}"
-						     data-id="{$record.groupedWorkId}"
-						     data-show_review="{if $showComments  && (!$loggedIn || !$user->noPromptForUserReviews)}1{else}0{/if}"
+						     data-user_rating="{$record.ratingData.user}" 
+						     data-rating_title="{$record.title}" 
+						     data-id="{$record.groupedWorkId}" 
+						     data-show_review="{if $showComments  && (!$loggedIn || !$user->noPromptForUserReviews)}1{else}0{/if}" 
 						>
 							{include file='MyAccount/star-rating.tpl' id=$record.groupedWorkId ratingData=$record.ratingData ratingTitle=$record.title}
 						</div>
