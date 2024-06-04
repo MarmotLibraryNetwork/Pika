@@ -9035,6 +9035,12 @@ a.browse-thumbnail-sorted.active {
   border: 1px solid #E15F15;
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(225, 95, 21, 0.7);
 }
+.pull-right.x-twit {
+  background: #2b2b2b;
+  height: 20px;
+  padding: 1px;
+  border-radius: 5px;
+}
 .wikipedia_image {
   margin: 0 10px 10px;
 }
@@ -9297,7 +9303,7 @@ a.browse-thumbnail-sorted.active {
   height: 215px;
 }
 .mediumScroller.scrollerWithRatings .scrollerBody {
-  height: 230px;
+  height: 245px;
 }
 .mediumScroller .leftScrollerButton,
 .mediumScroller .rightScrollerButton {
