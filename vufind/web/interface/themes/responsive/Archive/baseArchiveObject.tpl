@@ -10,7 +10,7 @@
 			<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
 				<div class="main-project-image">
 					{if $large_image}<a href="{$large_image}">{/if}
-					<img src="{$medium_image}" class="img-responsive">
+					<img src="{$medium_image}" class="img-responsive" alt="Main image for {$title}">
 						{if $large_image}</a>{/if}
 				</div>
 
@@ -160,7 +160,7 @@
 						<div class="row">
 							<div class="result-label col-sm-4">Location: </div>
 							<div class="result-value col-sm-8">
-								<iframe width="100%" height="" frameborder="0" style="border:0" src="https://www.google.com/maps/embed/v1/place?q={$addressInfo.latitude|escape}%2C%20{$addressInfo.longitude|escape}&key={$mapsKey}" allowfullscreen></iframe>
+								<iframe title="Google map for {$title}" width="100%" height="" style="border:0" src="https://www.google.com/maps/embed/v1/place?q={$addressInfo.latitude|escape}%2C%20{$addressInfo.longitude|escape}&key={$mapsKey}" allowfullscreen></iframe>
 							</div>
 						</div>
 						<div class="row">
