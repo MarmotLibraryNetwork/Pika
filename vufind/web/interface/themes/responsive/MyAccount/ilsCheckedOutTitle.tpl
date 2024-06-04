@@ -109,6 +109,7 @@
 {*									{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$record.groupedWorkId ratingData=$record.ratingData showNotInterested=false}*}
 {*								</div>*}
 {*					<div class="row">*}
+					{* New star ratings *}
 {*						<div class="title-rating"*}
 {*						     data-user_rating="{$record.ratingData.user}" *}
 {*						     data-rating_title="{$record.title}" *}
