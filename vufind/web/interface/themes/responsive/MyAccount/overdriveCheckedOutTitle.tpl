@@ -88,14 +88,15 @@
 					</div>
 				{/if}
 
-				{if $showRatings && $record.groupedWorkId && $record.ratingData}
-					<div class="row">
-						<div class="result-label col-tn-4 col-lg-3">Rating&nbsp;</div>
-						<div class="result-value col-tn-8 col-lg-9">
-							{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$record.groupedWorkId ratingData=$record.ratingData showNotInterested=false}
-						</div>
-					</div>
-				{/if}
+				{* this ratings system isn't accessible, new star ratings can't be implemented due to this being one giant form. *}
+{*				{if $showRatings && $record.groupedWorkId && $record.ratingData}*}
+{*					<div class="row">*}
+{*						<div class="result-label col-tn-4 col-lg-3">Rating&nbsp;</div>*}
+{*						<div class="result-value col-tn-8 col-lg-9">*}
+{*							{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$record.groupedWorkId ratingData=$record.ratingData showNotInterested=false}*}
+{*						</div>*}
+{*					</div>*}
+{*				{/if}*}
 
 				{if $hasLinkedUsers}
 					<div class="row">
