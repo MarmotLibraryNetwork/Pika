@@ -61,14 +61,14 @@
 					{if $allowEdit}
 						<div class="btn-group">
 							<button value="editList" id="FavEdit" class="btn btn-sm btn-info" onclick="return Pika.Lists.editListAction()">Edit List</button>
-							<button type="button" class="btn btn-sm btn-default btn-toolbar dropdown-toggle" data-toggle="dropdown" area-expanded="false">Share <span class="caret"></span></button>
+							<button type="button" class="btn btn-sm btn-default btn-toolbar dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Share <span class="caret"></span></button>
 							<ul class="dropdown-menu dropdown-menu-right" role="menu">
 								{if $favList->public}<li><a href="#" onclick='return Pika.Lists.emailListAction("{$favList->id}")'>Email List</a></li>{/if}
 								<li><a href="#" onclick='return Pika.Lists.printListAction()'>Print List</a></li>
 								{if $favList->public}<li><a href="#" id="copyList" onclick="return Pika.Lists.copyList({$favList->id})">Copy List</a></li>{/if}
 								<li><a href="#" onclick='return Pika.Lists.exportListAction("{$favList->id}");'>Export to Excel</a></li>
-								{if $favList->public}<li><a href="https://twitter.com/compose/tweet?text={$favList->title|escape:"html"}+{$url|escape:"html"}/MyAccount/MyList/{$favList->id}" id="Twitter Share">Share on Twitter <img class="pull-right" src="{img filename='twitter-icon.png'}" alt="Share on Twitter"></a></li>{/if}
-								{if $favList->public}<li><a href="http://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" id="">Share on Facebook <img src="{img filename='facebook-icon.png'}" alt="Share on Facebook"></a></li>{/if}
+								{if $favList->public}<li><a href="https://x.com/intent/post?text={$favList->title|escape:"html"}&url={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" id="X Share">Share on X <img class="pull-right x-twit" src="{img filename='x-icon.png'}" alt="Share on X"></a></li>{/if}
+								{if $favList->public}<li><a href="https://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" id="">Share on Facebook <img src="{img filename='facebook-icon.png'}" alt="Share on Facebook"></a></li>{/if}
 								{if $favList->public}<li>{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|escape:"html"|cat:"/MyAccount/MyList/"|cat:$favList->id description="See My List '"|cat:$favList->title|cat:"' at $homeLibrary" linkText="Pin on Pinterest" imgClass="pull-right"}</li>{/if}
 							</ul>
 						</div>
@@ -119,8 +119,8 @@
 												</a>
 											</li>
 											<li>
-												<a href="https://twitter.com/compose/tweet?text={$favList->title|escape:"html"}+{$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on Twitter">
-													<img src="{img filename='twitter-icon.png'}" alt="Share on Twitter">
+												<a href="https://x.com/intent/post?text={$favList->title|escape:"html"}&url={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on Twitter">
+													<img src="{img filename='x-icon.png'}" alt="Share on X">
 												</a>
 											</li>
 											<li>
@@ -151,7 +151,7 @@
 							<ul class="dropdown-menu dropdown-menu-right" role="menu">
 								{foreach from=$sortList item=sortData}
 									<li>
-										<a{if !$sortData.selected} href="{$sortData.sortUrl|escape}"{/if}> {* only add link on un-selected options *}
+										<a{if !$sortData.selected} href="{$sortData.sortUrl|escape}"{else} href="#" onclick='return false;'{/if}> {* only add link on un-selected options *}
 											{translate text=$sortData.desc}
 											{if $sortData.selected} <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>{/if}
 										</a>
@@ -293,4 +293,18 @@
 		Invalid List
 	</div>
 {/if}
+{literal}
+	<script>
+		$(function(){
+			$(".dropdown-toggle").on('click', function(){
+				if($(this).attr('aria-expanded') == 'false'){
+					$(this).attr('aria-expanded', 'true').trigger("menuExpanded");
+				}else{
+					$(this).attr('aria-expanded', 'false').trigger("menuContracted");
+				}
+			});
+		});
+
+	</script>
+{/literal}
 {*{/strip}*}
