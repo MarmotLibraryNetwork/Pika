@@ -60,7 +60,7 @@
 				</div>
 			</div>
 		</div>
-		<h2>{$label}</h2>
+		{if !empty($label)}<h2>{$label}</h2>{/if}{* For accessibility, don't display an empty heading *}
 		<div class="row">
 			<div class="col-sm-4">
 				{if $recordCount}
