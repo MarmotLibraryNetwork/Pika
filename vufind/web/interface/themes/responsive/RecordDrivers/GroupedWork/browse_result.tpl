@@ -18,7 +18,7 @@
 			{if $showRatings && $browseCategoryRatingsMode != 'none'}
 				<div class="browse-rating{if $browseCategoryRatingsMode == 'stars'} rater{/if}"
 				{if $browseCategoryRatingsMode == 'popup'} onclick="return Pika.GroupedWork.showReviewForm(this, '{$summId}');" style="cursor: pointer"
-					{literal}onkeydown="if(event.key === 'Enter') { return Pika.GroupedWork.showReviewForm(this, '{/literal}{$summId}{literal}'); }"{/literal}
+					{literal}onkeydown="if(event.key === 'Enter') { return Pika.GroupedWork.showReviewForm(this, '{/literal}{$summId}{literal}'); }"{/literal} 
 				{/if}
 				{if $browseCategoryRatingsMode == 'stars'} {* keep space between attributes *}
 					{* AJAX rater data fields *}
