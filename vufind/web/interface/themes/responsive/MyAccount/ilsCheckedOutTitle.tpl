@@ -104,12 +104,11 @@
 					{/if}
 
 					{if $showRatings && $record.groupedWorkId && $record.ratingData}
-{*							<div class="row">*}
 {*								<div class="result-label col-tn-4 col-lg-3">{translate text='Rating'}</div>*}
 {*								<div class="result-value col-tn-8 col-lg-9">*}
 {*									{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$record.groupedWorkId ratingData=$record.ratingData showNotInterested=false}*}
 {*								</div>*}
-{*							</div>*}
+					<div class="row">
 						<div class="title-rating"
 						     data-user_rating="{$record.ratingData.user}"
 						     data-rating_title="{$record.title}"
@@ -118,6 +117,7 @@
 						>
 							{include file='MyAccount/star-rating.tpl' id=$record.groupedWorkId ratingData=$record.ratingData ratingTitle=$record.title}
 						</div>
+					</div>
 					{/if}
 
 					{if $hasLinkedUsers}
