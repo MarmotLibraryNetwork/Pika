@@ -159,6 +159,9 @@ function initStarRatings() {
 				// testing error
 				// star_rating += "trigger-error";
 				// Create a new FormData object for form data
+
+				// clear rating
+				// var url = '/GroupedWork/' + groupedWorkId + '/AJAX?method=clearUserRating';
 				let formData = new FormData();
 				formData.append('method', 'RateTitle');
 				formData.append('grouped-work-id', grouped_work_id);
@@ -167,8 +170,14 @@ function initStarRatings() {
 				// Build the XHR url
 				let protocol = window.location.protocol;
 				let hostname = window.location.hostname;
-				let xhr_url = `${protocol}//${hostname}/GroupedWork/${encodeURIComponent(grouped_work_id)}/AJAX?` +
-						`method=RateTitle&id=${encodeURIComponent(grouped_work_id)}&rating=${encodeURIComponent(star_rating)}`;
+				if(parseInt(star_rating) === 0) {
+					//clear rating
+					var xhr_url = `${protocol}//${hostname}/GroupedWork/${encodeURIComponent(grouped_work_id)}/AJAX?` +
+					`method=clearUserRating`;
+				} else {
+					var xhr_url = `${protocol}//${hostname}/GroupedWork/${encodeURIComponent(grouped_work_id)}/AJAX?` +
+							`method=RateTitle&id=${encodeURIComponent(grouped_work_id)}&rating=${encodeURIComponent(star_rating)}`;
+				}
 				// console.log(xhr_url);
 				// Create a new XMLHttpRequest object
 				var xhr = new XMLHttpRequest();

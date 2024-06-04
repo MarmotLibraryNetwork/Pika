@@ -2,10 +2,9 @@
 {strip}
 	<div class="full-rating">
 		{if $showRatings}
-			{if $ratingData.user}
 				<span>Your Rating:</span>
 				<div class="title-rating"
-				     data-user_rating="{$ratingData.user}"
+				     data-user_rating="{if $ratingData.user}$ratingData.user{else}0{/if}"
 				     data-rating_title="{$ratingTitle}"
 				     data-id="{$recordDriver->getPermanentId()}"
 				     data-show_review="{if $showComments && !$user->noPromptForUserReviews}1{else}0{/if}"
@@ -27,7 +26,6 @@
 {*				</span>*}
 {*					</div>*}
 {*				</div>*}
-			{/if}
 
 			<div class="average-rating row{if !$ratingData.user} rater{/if}" {*onclick="return Pika.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')"*}
 							{if !$ratingData.user} {* When user is not logged in or has not rating the work *}
@@ -75,7 +73,7 @@
 			</div>
 			{/if}
 
-		{/if}
+		{/if} {* end if show ratings *}
 		{if $showComments && !$hideReviewButton}{* Add hideReviewButton=true to {include} tag to disable below *}
 			<div class="row">
 				<div class="col-xs-12 text-center">
