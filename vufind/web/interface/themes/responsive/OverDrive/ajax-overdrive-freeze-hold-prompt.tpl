@@ -1,5 +1,5 @@
 {strip}
-<form method="post" action="" id="overdriveFreezeHoldPromptsForm" class="form">
+<form method="post" action="" id="overdriveFreezeHoldPromptsForm">
 	<div>
 		<input type="hidden" name="overDriveId" value="{$overDriveId}">
 		<input type="hidden" name="patronId" id="patronId" value="{$patronId}">
@@ -14,10 +14,10 @@
 		<p class="alert alert-info">
 			If a date is not selected, the hold will be {translate text="frozen"} until you {translate text="thaw"} it.
 		</p>
-	<script	type="text/javascript">
+	<script>
 {literal}
 $(function(){
-	$(".form").validate({
+	$("#overdriveFreezeHoldPromptsForm").validate({
 		submitHandler: function(){
 			Pika.OverDrive.processFreezeOverDriveHoldPrompts()
 		}

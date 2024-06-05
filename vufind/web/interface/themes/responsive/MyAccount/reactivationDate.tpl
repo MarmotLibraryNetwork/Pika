@@ -13,10 +13,10 @@
 			</p>
 		{/if}
 	</form>
-	<script	type="text/javascript">
+	<script>
 		{literal}
 		$(function(){
-			$(".form").validate({
+			$('#freeze-hold-form').validate({
 				submitHandler: function(){
 					Pika.Account.doFreezeHoldWithReactivationDate('#doFreezeHoldWithReactivationDate');
 				}

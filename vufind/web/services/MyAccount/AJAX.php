@@ -614,10 +614,10 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	function freezeHold(){
 		$user   = UserAccount::getLoggedInUser();
-		$result = array(
+		$result = [
 			'success' => false,
 			'message' => 'Error ' . translate('freezing') . ' hold.',
-		);
+		];
 		if (!$user){
 			$result['message'] = 'You must be logged in to ' . translate('freeze') . ' a hold.  Please close this dialog and login again.';
 		}elseif (!empty($_REQUEST['patronId'])){
