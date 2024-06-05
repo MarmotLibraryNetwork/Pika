@@ -8,12 +8,12 @@
 			</div>
 		{else}
 			<p class="alert alert-success">
-				A email has been sent to the email address associated with your account containing a link to reset
+				An email has been sent to the email address associated with your account containing a link to reset {* preserve trailing space*}
 				your {translate text='pin'}.
 			</p>
 			<p class="alert alert-warning">
-				If you do not receive an email within a few minutes, please check any spam folder your email service may
-				&nbsp;have. If you do not receive an email, please contact your library to have them reset
+				If you do not receive an email within a few minutes, please check any spam folder your email service may {* preserve trailing space*}
+				&nbsp;have. If you do not receive an email, please contact your library to have them reset {* preserve trailing space*}
 				your {translate text='pin'}.
 			</p>
 			<p>
