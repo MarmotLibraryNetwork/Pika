@@ -1,5 +1,5 @@
 {strip}
-	<form{* role="form" Assigning form role to html form tags is not neccessary *}>
+	<form id="freeze-hold-form"{* role="form" Assigning form role to html form tags is not neccessary *}>
 		<input type="hidden" name="holdId" value="{$holdId}" id="holdId">
 		<input type="hidden" name="patronId" value="{$patronId}" id="patronId">
 		<input type="hidden" name="recordId" value="{$recordId}" id="recordId">

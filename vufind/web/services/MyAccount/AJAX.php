@@ -1200,7 +1200,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		$results = [
 			'title'        => $title,
 			'modalBody'    => $interface->fetch("MyAccount/reactivationDate.tpl"),
-			'modalButtons' => "<button class='btn btn-primary' id='doFreezeHoldWithReactivationDate' onclick='$(\".form\").submit(); return false;'>$title</button>",
+			'modalButtons' => "<button class='btn btn-primary' id='doFreezeHoldWithReactivationDate' onclick='$(\"#freeze-hold-form\").submit(); return false;'>$title</button>",
 		];
 		return $results;
 	}
