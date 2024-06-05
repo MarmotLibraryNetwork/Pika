@@ -25,7 +25,7 @@
 	<div id="record-qr-code" class="text-center hidden-xs visible-md"><img src="{$recordDriver->getQRCodeUrl()}" alt="QR Code for Record"></div>
 {/if}
 
-<h4>Grouping Information</h4>
+<h3 class="h4">Grouping Information</h3>
 <table class="table-striped table table-condensed notranslate">
 	<tr>
 		<th>Grouped Work ID</th>
@@ -39,7 +39,7 @@
 	{/foreach}
 </table>
 <div class="enrichmentInfo"{if $novelistPrimaryISBN} style="display: none"{/if}>
-	<h4>Enrichment Information</h4>
+	<h3 class="h4">Enrichment Information</h3>
 	<div class="row">
 		<div class="col-xs-6 col-sm-3"><strong>Novelist Primary ISBN</strong></div>
 		<div id="novelistPrimaryISBN" class="col-xs-6 col-sm-9">{$novelistPrimaryISBN}</div>
@@ -49,7 +49,7 @@
 		<div id="isbnForReviews" class="col-xs-6 col-sm-9"></div>
 	</div>
 </div>
-<h4>Solr Fields</h4>
+<h3 class="h4">Solr Fields</h3>
 	{foreach from=$details key='field' item='values'}
 			<div class="row" style="border: solid #ddd; border-width: 1px 0 0 0">
 			{if strpos($field, "scoping_details") === false
@@ -64,7 +64,7 @@
 			</div>
 	{/foreach}
 	{* Display Details tables last *}
-	<h4>Solr Details Tables</h4>
+	<h3 class="h4">Solr Details Tables</h3>
 		{foreach from=$details key='field' item='values'}
 			<div class="row" style="border: solid #ddd; border-width: 1px 0 0 0">
 			{if strpos($field, "scoping_details") !== false}
