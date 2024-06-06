@@ -14,36 +14,26 @@
 			<script>
 				initStarRatings();
 			</script>
-{*				<div class="your-rating row rater" onclick="return Pika.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')"*}
-{*								 AJAX rater data fields *}
-{*            data-user_rating="{$ratingData.user}" data-average_rating="{$ratingData.average}" data-id="{$recordDriver->getPermanentId()}"  keep space between attributes *}
-{*            data-show_review="{if $showComments && !$user->noPromptForUserReviews}1{else}0{/if}"*}
-{*						>*}
-{*					<div class="rating-label col-xs-12 col-sm-5">Your Rating</div>*}
-{*					<div class="col-xs-12 col-sm-6">*}
-{*				<span class="ui-rater-starsOff" style="width:90px">*}
-{*					<span class="ui-rater-starsOn userRated" style="width:{math equation="90*rating/5" rating=$ratingData.user}px"></span>*}
-{*				</span>*}
-{*					</div>*}
-{*				</div>*}
 
-			<div class="average-rating row{if !$ratingData.user} rater{/if}" {*onclick="return Pika.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')"*}
-							{if !$ratingData.user} {* When user is not logged in or has not rating the work *}
-								{* AJAX rater data fields *}
-								data-average_rating="{$ratingData.average}" data-id="{$recordDriver->getPermanentId()}" {* keep space between attributes *}
-								data-show_review="{if $showComments  && (!$user || !$user->noPromptForUserReviews)}1{else}0{/if}"
-								{*  Show Reviews is enabled and the user hasn't opted out or user hasn't logged in yet. *}
-							{/if}
-							>
-				<div class="{* rating-label *}col-xs-12 col-sm-5">Other Ratings:</div>
-				<div class="col-xs-12 col-sm-6">
+{*			<div class="average-rating row{if !$ratingData.user} rater{/if}" *}{*onclick="return Pika.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')"*}
+{*							{if !$ratingData.user} *}{* When user is not logged in or has not rating the work *}
+{*								*}{* AJAX rater data fields *}
+{*								data-average_rating="{$ratingData.average}" data-id="{$recordDriver->getPermanentId()}" *}{* keep space between attributes *}
+{*								data-show_review="{if $showComments  && (!$user || !$user->noPromptForUserReviews)}1{else}0{/if}"*}
+{*								*}{*  Show Reviews is enabled and the user hasn't opted out or user hasn't logged in yet. *}
+{*							{/if}*}
+{*							>*}
+{*				*}
+{*				<div class="col-xs-12 col-sm-6">*}
 {*			<span class="ui-rater-starsOff" style="width:90px">*}
 {*					<span class="ui-rater-starsOn" style="width:{math equation="90*rating/5" rating=$ratingData.average}px"></span>*}
 {*				</span>*}
-				</div>
-			</div>
+{*				</div>*}
+{*			</div>*}
 
 			{if $ratingData.average > 0}{* Only show histogram when there is rating data *}
+			<div class="{* rating-label *}col-xs-12 col-sm-5" style="display: block;clear: both;">Other Ratings:</div>
+			<br>
 			<div class="rating-graph">
 				<div class="row">
 					<div class="col-xs-4">5 star</div>
