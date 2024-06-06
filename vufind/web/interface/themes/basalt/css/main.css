@@ -6871,7 +6871,7 @@ body > .container {
   text-shadow: 1px 1px #fff;
 }
 .active .panel-heading {
-  background-color: #197B68;
+  background-color: #00837F;
 }
 .active .panel-title {
   color: #fff;
@@ -6990,7 +6990,7 @@ a:focus img.listResultImage {
   outline: 2px solid white;
 }
 #vertical-menu-bar .menu-icon-selected:focus-within {
-  border: 2px solid #197B68 !important;
+  border: 2px solid #00837F !important;
   outline: 2px solid white;
 }
 a:focus > .header-button {
@@ -7975,7 +7975,7 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
   min-height: 100px;
   padding-top: 0;
   background-color: #fff;
-  border-bottom: 8px solid #197B68;
+  border-bottom: 8px solid #00837F;
   margin-bottom: 0;
 }
 #header-logo {
@@ -8074,7 +8074,7 @@ a .header-button:visited {
 }
 .menu-bar {
   color: #FFF;
-  background-color: #197B68;
+  background-color: #00837F;
 }
 #horizontal-menu-bar-container {
   padding-left: 5px;
@@ -8117,7 +8117,7 @@ a .header-button:visited {
   width: 40px;
   height: 2000px;
   height: 100vh;
-  background-color: #197B68;
+  background-color: #00837F;
   color: #FFF;
   padding-left: 0;
   padding-right: 0;
@@ -8258,8 +8258,8 @@ a .header-button:visited {
   border: 2px solid #E15F15;
 }
 #home-page-search {
-  background-color: #197B68;
-  background: linear-gradient(to bottom, #197B68, #197B68);
+  background-color: #00837F;
+  background: linear-gradient(to bottom, #00837F, #00837F);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8285,7 +8285,7 @@ a .header-button:visited {
 .searchSource {
   margin: 5px 0 0;
   color: #fff;
-  background-color: #197B68;
+  background-color: #00837F;
   border: none;
   width: 90% !important;
 }
@@ -8300,8 +8300,8 @@ a .header-button:visited {
           text-decoration: underline dotted;
 }
 #horizontal-search-box {
-  background-color: #197B68;
-  background: linear-gradient(to bottom, #197B68, #197B68);
+  background-color: #00837F;
+  background: linear-gradient(to bottom, #00837F, #00837F);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -9671,7 +9671,7 @@ a.browse-thumbnail-sorted.active {
   width: 100%;
   display: inline-block;
   padding: 2px 2px 20px;
-  border-top: 5px solid #197B68;
+  border-top: 5px solid #00837F;
   margin-top: 15px;
 }
 .combined-results-section .related-manifestation {
@@ -9686,8 +9686,8 @@ a.browse-thumbnail-sorted.active {
 .combined-results-button {
   float: right;
   margin-top: 4px;
-  background-color: #197B68;
-  border-color: #197B68;
+  background-color: #00837F;
+  border-color: #00837F;
 }
 #bookshelfContainer {
   max-height: 400px;
@@ -9888,15 +9888,15 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
 }
 #explore-more-sidebar {
-  background-color: #197B68;
-  background: linear-gradient(to bottom, #197B68, #197B68);
+  background-color: #00837F;
+  background: linear-gradient(to bottom, #00837F, #00837F);
 }
 #explore-more-header {
   padding: 10px 25px 5px 0;
   margin-top: 5px;
   text-align: right;
   color: #FFF;
-  background-color: #156656;
+  background-color: #006a66;
   font-variant: small-caps;
   font-weight: bold;
   font-size: 16px;
@@ -9913,7 +9913,7 @@ a.browse-thumbnail-sorted.active {
   text-transform: uppercase;
   font-weight: bold;
   color: #000075;
-  border-bottom: 2px solid #197B68;
+  border-bottom: 2px solid #00837F;
   margin-top: 15px;
 }
 #explore-more-body .section {
@@ -9955,12 +9955,12 @@ a.browse-thumbnail-sorted.active {
   }
 }
 .exploreMoreBar {
-  border: solid 1px #197B68;
+  border: solid 1px #00837F;
   margin: 10px 5px 15px;
 }
 .exploreMoreBar .exploreMoreBarLabel {
   color: #FFF;
-  background-color: #197B68;
+  background-color: #00837F;
   font-weight: bold;
   text-transform: uppercase;
   white-space: nowrap;
@@ -9978,7 +9978,7 @@ a.browse-thumbnail-sorted.active {
 }
 .exploreMoreBar .label-left,
 .exploreMoreBar .label-left img {
-  background-color: #197B68;
+  background-color: #00837F;
 }
 .exploreMoreBar .label-left .exploreMoreBarLabel {
   position: absolute;
@@ -9998,7 +9998,7 @@ a.browse-thumbnail-sorted.active {
 }
 .exploreMoreBar .label-top,
 .exploreMoreBar .label-top img {
-  background-color: #197B68;
+  background-color: #00837F;
   display: inline-block;
 }
 .exploreMoreBar .label-top .exploreMoreBarLabel {
@@ -10068,10 +10068,10 @@ a.browse-thumbnail-sorted.active {
 #book-sections .jcarousel-control-next {
   height: 100%;
   background-color: transparent;
-  color: #197B68;
+  color: #00837F;
   z-index: 2;
   box-shadow: white 0 0 0 0;
-  border: 1px solid #197B68;
+  border: 1px solid #00837F;
 }
 #explore-more-body .jcarousel-control-prev,
 #relatedProjectScroller .jcarousel-control-prev,
@@ -10210,7 +10210,7 @@ a.browse-thumbnail-sorted.active {
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentControls,
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentSearchControls {
   color: #FFF;
-  background-color: #197B68;
+  background-color: #00837F;
   padding: 10px 0;
   min-height: 124px;
 }
@@ -10220,7 +10220,7 @@ a.browse-thumbnail-sorted.active {
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox #searchComponentForm {
   background-color: white;
-  border: 1px solid #105144;
+  border: 1px solid #00504e;
   padding: 3px;
   margin-left: 5px;
 }
@@ -10248,7 +10248,7 @@ a.browse-thumbnail-sorted.active {
   top: 65px;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader {
-  background-color: #197B68;
+  background-color: #00837F;
   padding: 10px 10px 0;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader + .row {
@@ -10508,7 +10508,7 @@ a .header-button:hover {
 }
 .sidebar-links .panel-heading {
   padding: 5px 15px;
-  background: #197B68;
+  background: #00837F;
   border-bottom: 1px solid #fff;
   text-shadow: none;
 }
