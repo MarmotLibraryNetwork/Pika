@@ -9532,17 +9532,6 @@ a.browse-thumbnail-sorted.active {
 .result-head #selected-browse-label {
   background: linear-gradient(to bottom, #fff, #fff 44%, #d5d6da 45%, #d5d6da 55%, #fff 56%);
 }
-#replacement-search-info {
-  font-size: 16px;
-  font-style: italic;
-}
-#original-search-info {
-  font-size: 12px;
-}
-.replacement-search-info-text {
-  color: #888;
-  font-style: normal;
-}
 .result-title-row {
   margin-bottom: 15px;
 }
