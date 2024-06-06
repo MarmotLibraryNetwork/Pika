@@ -31,7 +31,6 @@ class AccessibilityReport extends Action {
 			$captchaCode        = recaptchaGetQuestion();
 			$interface->assign('captcha', $captchaCode);
 		}
-			$this->display('accessibilityReportForm.tpl', 'Report Accessibility Issue');
-
+		$this->display('accessibilityReportForm.tpl', 'Report Accessibility Issue');
 	}
 }
