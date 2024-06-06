@@ -60,7 +60,10 @@ var Pika = (function(){
 		},
 
 		changePageSize: function(){
-			var url = window.location.href;
+			//var url = window.location.href;
+			// the above includes any hash in the URL (ie #main)
+			// when using the logic below, the hash comes before the url paramaters
+			var url = window.location.protocol + '//' + window.location.hostname + window.location.pathname + window.location.search;
 			if (url.match(/[&?]pagesize=\d+/)) {
 				url = url.replace(/pagesize=\d+/, "pagesize=" + $("#pagesize").val());
 			} else {
