@@ -16,15 +16,23 @@
 		{else}
 
 			{if $transList}
+{*				<form action="/MyAccount/CheckedOut" method="get">*}
+{*				<label for="accountSort" class="control-label">{translate text='Sort by'}:&nbsp;</label>*}
+{*				<select name="accountSort" id="accountSort" class="form-control">*}
+{*					{foreach from=$sortOptions item=sortDesc key=sortVal}*}
+{*						<option value="{$sortVal}"{if $defaultSortOption == $sortVal} selected="selected"{/if}>{translate text=$sortDesc}</option>*}
+{*					{/foreach}*}
+{*				</select>*}
+{*					<button type="submit" class="visuallyhidden">Sort</button>*}
+{*				</form>*}
 				<form id="renewForm" action="/MyAccount/RenewMultiple">
 					<div id="pager" class="navbar form-inline">
 						<label for="accountSort" class="control-label">{translate text='Sort by'}:&nbsp;</label>
-						<select name="accountSort" id="accountSort" class="form-control" onchange="Pika.Account.changeAccountSort($(this).val());">
+						<select name="accountSort" id="accountSort" class="form-control" onkeydown="{literal}if(event.key === 'Enter') { Pika.Account.changeAccountSort($(this).val()); }{/literal}">
 							{foreach from=$sortOptions item=sortDesc key=sortVal}
-								<option value="{$sortVal}"{if $defaultSortOption == $sortVal} selected="selected"{/if}>{translate text=$sortDesc}</option>
+								<option onclick="Pika.Account.changeAccountSort($(this).val());" value="{$sortVal}"{if $defaultSortOption == $sortVal} selected="selected"{/if}>{translate text=$sortDesc}</option>
 							{/foreach}
 						</select>
-
 						<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 					</div>
 
