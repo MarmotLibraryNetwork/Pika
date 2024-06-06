@@ -5,7 +5,7 @@
 		{* Title row *}
 		<div class="row result-title-row">
 			<div class="col-tn-12">
-				<h2 class="h3">
+				<h3>
 					<span class="result-index">{$resultIndex}.</span>&nbsp;
 					{if $record.link}
 						<a href="{$record.link}" class="result-title notranslate">
@@ -21,7 +21,7 @@
 							{$record.title2|removeTrailingPunctuation|truncate:180:"..."|highlight}
 						</div>
 					{/if}
-				</h2>
+				</h3>
 			</div>
 		</div>
 
