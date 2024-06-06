@@ -12,8 +12,8 @@
 }
 
 #header-links {
-  /* Set @header-height to 120px for header links to show */
-  background: #0A61AE;
+  // Set @header-height to 120px for header links to show //
+  background: #0A61AE; // (6.29) https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=0A61AE
 
   .header-link-wrapper {
     border: none
@@ -38,20 +38,20 @@ a .header-button {
 }
 
 
-#sidebar-content {
-  background: #fff;
-}
+//#sidebar-content {
+//  background: #fff;
+//}
 
 .searchTypeHome {
   background-color: #fff;
   color: #000;
 }
 
-#selected-browse-label {
-  background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 44%, @broomfield-darkgreen 45%, @broomfield-darkgreen 55%, #fff 56%);
-  margin-bottom: 5px;
-}
+//#selected-browse-label {
+//  background-color: #fff;
+//  background: linear-gradient(to bottom, #fff, #fff 44%, @broomfield-darkgreen 45%, @broomfield-darkgreen 55%, #fff 56%);
+//  margin-bottom: 5px;
+//}
 
 //#browse-category-carousel .browse-category {
 //  text-shadow: 0 0 !important;
@@ -61,7 +61,7 @@ a .header-button {
 
 #browse-category-carousel .browse-category.selected {
   border: none;
-  background: @broomfield-darkgreen;
+  background: @broomfield-darkblue;
 
  button {
    color: #fff;
@@ -69,25 +69,14 @@ a .header-button {
  }
 }
 
+#browse-sub-category-menu button {
+  margin-bottom: 10px;
+}
+
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
   .box-shadow(none)
 }
-
-#replacement-search-info {
-  font-size: 22px;
-}
-
-.replacement-search-info-text {
-  color: #4F4F50;
-  font-style: normal;
-}
-
-
-#original-search-info {
-  font-size: 18px;
-}
-
 
 #availabilityControlContainer, #wikipedia_placeholder {
   padding-bottom: 20px;
@@ -106,6 +95,3 @@ a .header-button {
   padding: 7px 0;
 }
 
-#browse-sub-category-menu button {
-  margin-bottom: 10px;
-}
