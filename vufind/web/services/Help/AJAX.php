@@ -28,51 +28,10 @@ class Help_AJAX extends AJAXHandler {
 	protected $methodsThatRespondThemselves = [];
 
 	function submitAccessibilityReport(){
-
-
 		global $interface;
 		global $configArray;
 
 		if (isset($_REQUEST['submit'])){
-			require_once ROOT_DIR . '/sys/Mailer.php';
-			$mail        = new VuFindMailer();
-			$userLibrary = UserAccount::getUserHomeLibrary();
-			$currentLibrary = Library::getActiveLibrary();
-			if (!empty($userLibrary->accessibilityEmail)){
-				$to = $userLibrary->accessibilityEmail;
-			}elseif(!empty($currentLibrary) && $currentLibrary->accessibilityEmail != ''){
-				$to = $currentLibrary->accessibilityEmail;
-			}elseif (!empty($configArray['Site']['email'])){
-				$to = $configArray['Site']['email'];
-			}else{
-				return [
-					'title'   => 'Support Request Not Sent',
-					'message' => "<p>We're sorry, but your request could not be submitted because we do not have a support email address on file.</p><p>Please contact your local library.</p>"
-				];
-			}
-
-			$multipleEmailAddresses = preg_split('/[;,]/', $to, null, PREG_SPLIT_NO_EMPTY);
-			if (!empty($multipleEmailAddresses)){
-				$sendingAddress = $multipleEmailAddresses[0];
-				$to             = str_replace(';', ',', $to); //The newer mailer needs 'to' addresses to be separated by commas rather than semicolon
-			}else{
-				$sendingAddress = $to;
-			}
-
-			$name        = $_REQUEST['name'];
-			$subject     = 'Accessibility Issue Report from ' . $name;
-			$patronEmail = $_REQUEST['email'];
-			$cardNumber = !empty($_REQUEST['libraryCardNumber']) ? $_REQUEST['libraryCardNumber'] : 'Not Entered';
-			$browser = !empty($_REQUEST['browser']) ? $_REQUEST['browser'] : 'Not Entered';
-			$ccAddress = "pika@marmot.org";
-			$interface->assign('report', $_REQUEST['report']);
-			$interface->assign('name', $name);
-			$interface->assign('email', $patronEmail);
-			$interface->assign('browser', $browser);
-			$interface->assign('cardNumber', $cardNumber);
-			$interface->assign('subject', $subject);
-
-			$body = $interface->fetch('Help/accessibilityReportEmail.tpl');
 			if (isset($configArray['ReCaptcha']['privateKey'])){
 				try {
 					$recaptchaValid = recaptchaCheckAnswer();
@@ -83,30 +42,78 @@ class Help_AJAX extends AJAXHandler {
 				$recaptchaValid = true;
 			}
 			if (!$recaptchaValid){
-				return ['title' => "Accessibility Report Not Sent", 'message' => "<p>The CAPTCHA response was incorrect.</p> <p>Please try again.</p>"];
+				return [
+					'title'   => "Accessibility Report Not Sent",
+					'message' => "<p class='alert alert-danger'>The CAPTCHA response was incorrect.</p> <p>Please try again.</p>"
+				];
 			}else{
+				require_once ROOT_DIR . '/sys/Mailer.php';
+				$mail           = new VuFindMailer();
+				$userLibrary    = UserAccount::getUserHomeLibrary();
+				$currentLibrary = Library::getActiveLibrary();
+				if (!empty($userLibrary->accessibilityEmail)){
+					$to = $userLibrary->accessibilityEmail;
+				}elseif (!empty($currentLibrary->accessibilityEmail)){
+					$to = $currentLibrary->accessibilityEmail;
+				}elseif (!empty($configArray['Site']['email'])){
+					$to = $configArray['Site']['email'];
+				}else{
+					global $pikaLogger;
+					$pikaLogger->error("No email for Accessibility Report set. Please check that at least a site email is available");
+					return [
+						'title'   => 'Support Request Not Sent',
+						'message' => "<p>We're sorry, but your request could not be submitted because we do not have a support email address on file.</p><p>Please contact your local library.</p>"
+					];
+				}
+
+				$multipleEmailAddresses = preg_split('/[;,]/', $to, null, PREG_SPLIT_NO_EMPTY);
+				if (!empty($multipleEmailAddresses)){
+					$sendingAddress = $multipleEmailAddresses[0];
+					$to             = str_replace(';', ',', $to); //The newer mailer needs 'to' addresses to be separated by commas rather than semicolon
+				}else{
+					$sendingAddress = $to;
+				}
+
+				$name        = $_REQUEST['name'];
+				$subject     = 'Accessibility Issue Report from ' . $name;
+				$patronEmail = $_REQUEST['email'];
+				$cardNumber  = !empty($_REQUEST['libraryCardNumber']) ? $_REQUEST['libraryCardNumber'] : 'Not Entered';
+				$browser     = !empty($_REQUEST['browser']) ? $_REQUEST['browser'] : 'Not Entered';
+				$ccAddress   = "pika@marmot.org";
+				$interface->assign('libraryName', $userLibrary->displayName ?? $currentLibrary->displayName);
+				$interface->assign('report', $_REQUEST['report']);
+				$interface->assign('name', $name);
+				$interface->assign('email', $patronEmail);
+				$interface->assign('browser', $browser);
+				$interface->assign('cardNumber', $cardNumber);
+				$interface->assign('subject', $subject);
+
+				$body        = $interface->fetch('Help/accessibilityReportEmail.tpl');
 				$emailResult = $mail->send($to, $sendingAddress, $subject, $body, $patronEmail, $ccAddress);
 				if (PEAR::isError($emailResult)){
 					global $pikaLogger;
 					$pikaLogger->error('Accessibility Report email not sent: ' . $emailResult->getMessage());
 					return [
 						'title'   => "Accessibility Report Not Sent",
-						'message' => "<p>We're sorry, an error occurred while submitting your report.</p>" . $emailResult->getMessage()
+						'message' => "<p class='alert alert-danger'>We're sorry, an error occurred while submitting your report.</p>" . $emailResult->getMessage()
 					];
 				}elseif ($emailResult){
 					return [
 						'title'   => "Accessibility Report Sent",
-						'message' => "<p>Your report was sent to our team.</p><p>Thank you for using the catalog.</p>"
+						'message' => "<p class='alert alert-success'>Your report was sent to our team.</p><p>Thank you for using the catalog.</p>"
 					];
 				}else{
 					return [
 						'title'   => "Support Request Not Sent",
-						'message' => "<p>We're sorry, but your request could not be submitted to our support team at this time.</p><p>Please try again later.</p>"
+						'message' => "<p class='alert alert-danger'>We're sorry, but your request could not be submitted to our support team at this time.</p><p>Please try again later.</p>"
 					];
 				}
 			}
 		}else{
-			return ['title'=> "Error", 'message'=>"<p>We're sorry, but your request could not be submitted to our support team at this time.</p><p>Please try again later.</p>"];
+			return [
+				'title' => "Error",
+				'message' => "<p class='alert alert-danger'>We're sorry, but your request could not be submitted to our support team at this time.</p><p>Please try again later.</p>"
+			];
 		}
 
 	}

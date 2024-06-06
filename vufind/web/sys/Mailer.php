@@ -40,16 +40,18 @@ class VuFindMailer {
 	 *
 	 * @access  public
 	 */
-	public function __construct() {
+	public function __construct(){
 		global $configArray;
 		$this->logger = new Logger(__CLASS__);
 		// Load settings from the config file into the object; we'll do the
 		// actual creation of the mail object later since that will make error
 		// detection easier to control.
-		$this->settings = array('host' => $configArray['Mail']['host'],
-                            'port' => $configArray['Mail']['port']);
-		if (isset($configArray['Mail']['username']) && isset($configArray['Mail']['password'])) {
-			$this->settings['auth'] = true;
+			$this->settings = [
+				'host' => $configArray['Mail']['host'],
+				'port' => $configArray['Mail']['port']
+			];
+		if (!empty($configArray['Mail']['username']) && !empty($configArray['Mail']['password'])){
+			$this->settings['auth']     = true;
 			$this->settings['username'] = $configArray['Mail']['username'];
 			$this->settings['password'] = $configArray['Mail']['password'];
 		}
@@ -70,30 +72,33 @@ class VuFindMailer {
 	 *
 	 * @return  mixed               PEAR error on error, boolean true otherwise
 	 */
-	public function send($to, $from, $subject, $body, $replyTo = null, $cc = null) {
+	public function send($to, $from, $subject, $body, $replyTo = null, $cc = null){
 
 		// Validate sender and recipient
 		$validator = new Mail_RFC822();
 		//Allow the to address to be split
 		disableErrorHandler();
-		try{
+		try {
 			//Validate the address list to make sure we don't get an error.
 			$validator->parseAddressList($to);
-		}catch (Exception $e){
+		} catch (Exception $e){
 			return new PEAR_Error('Invalid Recipient Email Address');
 		}
 		enableErrorHandler();
 
-		if (!$validator->isValidInetAddress($from)) {
+		if (!$validator->isValidInetAddress($from)){
 			return new PEAR_Error('Invalid Sender Email Address');
 		}
 
-		$headers = array('To' => $to, 'Subject' => $subject,
-		                 'Date' => date('D, d M Y H:i:s O'),
-		                 'Content-Type' => 'text/plain; charset="UTF-8"');
+		$headers = [
+			'To'           => $to,
+			'Subject'      => $subject,
+			'Date'         => date('D, d M Y H:i:s O'),
+			'Content-Type' => 'text/plain; charset="UTF-8"'
+		];
 		if (isset($this->settings['fromAddress'])){
 			$this->logger->info("Overriding From address, using " . $this->settings['fromAddress']);
-			$headers['From'] = $this->settings['fromAddress'];
+			$headers['From']     = $this->settings['fromAddress'];
 			$headers['Reply-To'] = $from;
 
 		}else{
@@ -102,14 +107,14 @@ class VuFindMailer {
 		if ($replyTo != null){
 			$headers['Reply-To'] = $replyTo;
 		}
-		if($cc != null){
+		if ($cc != null){
 			$headers['CC'] = $cc;
 		}
 		// Get mail object
 		if ($this->settings['host'] != false){
 			$mailFactory = new Mail();
-			$mail = $mailFactory->factory('smtp', $this->settings);
-			if (PEAR_Singleton::isError($mail)) {
+			$mail        = $mailFactory->factory('smtp', $this->settings);
+			if (PEAR_Singleton::isError($mail)){
 				return $mail;
 			}
 
@@ -130,7 +135,7 @@ class VuFindMailer {
 			return true;
 		}
 
-	}
+		}
 }
 
 /**
@@ -158,10 +163,10 @@ class SMSMailer extends VuFindMailer {
 		if (isset($configArray['Extra_Config']['sms'])){
 			$smsConfig = getExtraConfigArray('sms');
 			if (!empty($smsConfig['Carriers'])){
-				$this->carriers = array();
+				$this->carriers = [];
 				foreach ($smsConfig['Carriers'] as $id => $config){
-					list($domain, $name) = explode(':', $config, 2);
-					$this->carriers[$id] = array('name' => $name, 'domain' => $domain);
+					[$domain, $name] = explode(':', $config, 2);
+					$this->carriers[$id] = ['name' => $name, 'domain' => $domain];
 				}
 			}
 		}
