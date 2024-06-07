@@ -10509,6 +10509,12 @@ a .header-button:hover {
 .panel-title {
   text-shadow: none;
 }
+.advSearchContent .accordion .active .panel-title {
+  color: #fff;
+}
+.advSearchContent .accordion .panel-title {
+  color: #2F3438;
+}
 #more-details-accordion .active .panel-title {
   color: #fff;
 }
