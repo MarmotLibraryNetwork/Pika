@@ -234,9 +234,9 @@
 </div>
 {/strip}
 {if $debugJs}
-<script type="text/javascript" src="/services/Search/advanced.js"></script>
+<script src="/services/Search/advanced.js"></script>
 {else}
-<script type="text/javascript" src="/services/Search/advanced.min.js"></script>
+<script src="/services/Search/advanced.min.js"></script>
 {/if}
 <script>
 	{* Define our search arrays so they are usuable in the javascript *}

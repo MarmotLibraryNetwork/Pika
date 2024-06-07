@@ -79,7 +79,7 @@
 		{/foreach}
 
 
-		$(document).ready(function(){ldelim}
+		$(function(){ldelim}
 			{if count($widget->lists) > 1 && (!isset($widget->listDisplayType) || $widget->listDisplayType == 'tabs')}
 			$('#listWidget{$widget->id} a[data-toggle="tab"]').on('shown.bs.tab', function (e) {ldelim}
 {*				alert(e.target); // activated tab

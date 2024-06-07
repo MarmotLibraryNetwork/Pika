@@ -52,15 +52,15 @@
 
 &lt;!-- Horizontal Resizing : Based on Iframe Content --&gt;
 
-&lt;script type=&quot;text/javascript&quot; src=&quot;{/literal}{$url}{literal}/js/iframeResizer/iframeResizer.min.js&quot;&gt;&lt;/script&gt;
-&lt;script type=&quot;text/javascript&quot;&gt;
+&lt;script src=&quot;{/literal}{$url}{literal}/js/iframeResizer/iframeResizer.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
 	jQuery(&quot;#listWidget{/literal}{$object->id}{literal}&quot;).iFrameResize();
 &lt;/script&gt;
 
 &lt;!-- Vertical Resizing : When Iframe is larger than viewport width,
 	resize to 100% of browser width - 2 * padding (in px) --&gt;
 
-&lt;script type=&quot;text/javascript&quot;&gt;
+&lt;script&gt;
 	setWidgetSizing = function(iframe, OutsidePadding){
 		originalWidth = jQuery(iframe).width();
 		wasResized = false;
@@ -104,7 +104,7 @@
 </iframe>
 
 	{* Iframe dynamic Height Re-sizing script *}
-	<script type="text/javascript" src="/js/iframeResizer/iframeResizer.min.js"></script>
+	<script src="/js/iframeResizer/iframeResizer.min.js"></script>
 	{/strip}
 
 	{* Width Resizing Code *}
