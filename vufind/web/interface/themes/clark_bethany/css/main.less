@@ -5,7 +5,7 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
-.header-login-button-mixin(@header-buttons-background-color);
+.header-login-button-mixin(@header-buttons-background-color, @lion-dark-blue);
 
 #header-logo {
   padding-top: 0;
@@ -16,12 +16,11 @@
 // Browse Category customizations based on AnyThink
 #anythink-browse-label(@browse-label-text-color);
 
-.browse-category(@selectedCategoryColor);
+.browse-category(@selectedCategoryColor, @lion-dark-blue);
 
 #anythink-browse-category-picker(@browseCarouselControlColor, @selectedCategoryColor, @content-bg);
 
 #anythink-selected-browse-label(@browse-label-text-color);
-
 
 
 // MIXIN: Vertically Align cover images with the thumbnail block; up to a maximum size.  Thumbnail blocks will have a
