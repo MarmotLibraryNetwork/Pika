@@ -9780,12 +9780,12 @@ a.browse-thumbnail-sorted.active {
 .userreviewlink,
 .addtolistlink {
   background-color: #088ec6;
-  color: #ffffff;
+  color: #fff;
 }
 .userreviewlink:hover,
 .addtolistlink:hover {
   background-color: #2897c6;
-  color: #ffffff;
+  color: #fff;
 }
 .full-record-tools {
   padding: 4px 0;
@@ -9793,7 +9793,6 @@ a.browse-thumbnail-sorted.active {
 .full-rating {
   padding: 10px 5px 4px;
   white-space: nowrap;
-  font-size: 11px;
 }
 .rating-graph {
   margin: 4px 0;
@@ -10499,8 +10498,13 @@ a .header-button:hover {
 .panel-title {
   text-shadow: none;
 }
+#more-details-accordion .active .panel-title {
+  color: #fff;
+}
+#more-details-accordion .panel-title {
+  color: #2F3438;
+}
 #more-details-accordion .panel-body {
-  color: #65656a;
   line-height: 1.7em;
 }
 .panel-default > .panel-heading {

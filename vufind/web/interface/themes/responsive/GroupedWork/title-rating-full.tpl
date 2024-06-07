@@ -1,8 +1,9 @@
 {if $showRatings || $showComments}
 {strip}
 	<div class="full-rating">
+		<div class="row">
 		{if $showRatings}
-				<span>Your Rating:</span>
+				<span>Your Rating: {$ratingData.user} stars</span>
 				<div class="title-rating"
 				     data-user_rating="{if $ratingData.user}$ratingData.user{else}0{/if}"
 				     data-rating_title="{$ratingTitle}"
@@ -11,6 +12,8 @@
 				>
 					{include file='MyAccount/star-rating.tpl' id=$recordDriver->getPermanentId() ratingData=$ratingData ratingTitle=$ratingTitle}
 				</div>
+			<hr style="margin-top: 1em; margin-bottom: 1em;">
+		</div>
 			<script>
 				initStarRatings();
 			</script>
@@ -32,8 +35,8 @@
 {*			</div>*}
 
 			{if $ratingData.average > 0}{* Only show histogram when there is rating data *}
-			<div class="{* rating-label *}col-xs-12 col-sm-5" style="display: block;clear: both;">Other Ratings:</div>
-			<br>
+			<div class="row">Average user rating: {math equation="round(average_rating,1)" average_rating=$ratingData.average} stars</div>
+			<div class="row">User ratings:</div>
 			<div class="rating-graph">
 				<div class="row">
 					<div class="col-xs-4">5 star</div>

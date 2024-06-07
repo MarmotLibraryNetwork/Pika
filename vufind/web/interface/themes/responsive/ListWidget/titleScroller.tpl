@@ -41,13 +41,15 @@
 			{/if}
 			<button class="rightScrollerButton btn btn-default" onclick="{$scrollerVariable}.scrollToRight();" tabindex="0" aria-label="Scroll right"><i class="glyphicon glyphicon-chevron-right"></i></button>
 		</div>
-		{if isset($widget)}
+			{if isset($widget)}
+		{if $widget->autoRotate}
 		<div class="sliderControls">
 {*			<button class="btn btn-primary slowDown glyphicon glyphicon-fast-backward" aria-label="Slow Down"><span class="visuallyhidden">Slow Down</span></button>*}
 			<button class="btn btn-primary pause glyphicon glyphicon-pause" aria-label="Pause"><span class="visuallyhidden">Pause</span></button>
 {*			<button class="btn btn-primary speedUp glyphicon glyphicon-fast-forward" aria-label="Speed Up"><span class="visuallyhidden">Speed Up</span></button>*}
 		</div>
 		{/if}
+      {/if}
 	</div>
 </div>
 <script>
