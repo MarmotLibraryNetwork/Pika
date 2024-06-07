@@ -91,14 +91,18 @@ a .header-button {
   .active .panel-title {
     color: #fff;
   }
+
   .panel-title {
     color: @dark-gray;
   }
-.panel-body {
-  color: #65656a; // (5.79) https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=65656A
-  //background: #fff;
-  line-height: 1.7em;
-}
+
+  .panel-body {
+    //color: #65656a; // (5.79) https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=65656A
+    // let the darker base text color to be in place
+
+    //background: #fff;
+    line-height: 1.7em;
+  }
 }
 
 // Library admin accordion
