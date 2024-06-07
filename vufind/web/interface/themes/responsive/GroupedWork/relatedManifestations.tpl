@@ -38,9 +38,9 @@
 							<div class="btn-toolbar">
 								<div class="btn-group btn-group-vertical btn-block">
 									{foreach from=$relatedManifestation.actions item=curAction}
-										{if $curAction.url && strlen($curAction.url) > 0}
-                      {if $relatedManifestation.numRelatedRecords == 1}
-											  <button href="{$curAction.url}" class="btn btn-sm btn-primary" onclick="{if $curAction.requireLogin}return Pika.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</button>
+										{if !empty($curAction.url)}
+											{if $relatedManifestation.numRelatedRecords == 1}
+												<a href="{$curAction.url}" class="btn btn-sm btn-primary" {if $curAction.requireLogin}onclick="return Pika.Account.followLinkIfLoggedIn(this, '{$curAction.url}');"{/if} {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
 											{else}
 												<button class="btn btn-sm btn-primary" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">{translate text="econtent_available_from"}</button>
 											{/if}

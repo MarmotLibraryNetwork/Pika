@@ -181,12 +181,12 @@
 		{if $resourceList}
 			<form class="navbar form-inline">
 				<label for="pagesize" class="control-label">Records Per Page</label>&nbsp;
-				<select id="pagesize" class="pagesize form-control{* input-sm*}" onchange="Pika.changePageSize()">
-					<option value="20"{if $recordsPerPage == 20} selected="selected"{/if}>20</option>
-					<option value="40"{if $recordsPerPage == 40} selected="selected"{/if}>40</option>
-					<option value="60"{if $recordsPerPage == 60} selected="selected"{/if}>60</option>
-					<option value="80"{if $recordsPerPage == 80} selected="selected"{/if}>80</option>
-					<option value="100"{if $recordsPerPage == 100} selected="selected"{/if}>100</option>
+				<select id="pagesize" class="pagesize form-control{* input-sm*}" onkeydown="{literal}if(event.key === 'Enter') { Pika.changePageSize()}{/literal}">
+					<option onclick="Pika.changePageSize()" value="20"{if $recordsPerPage == 20} selected="selected"{/if}>20</option>
+					<option onclick="Pika.changePageSize()" value="40"{if $recordsPerPage == 40} selected="selected"{/if}>40</option>
+					<option onclick="Pika.changePageSize()" value="60"{if $recordsPerPage == 60} selected="selected"{/if}>60</option>
+					<option onclick="Pika.changePageSize()" value="80"{if $recordsPerPage == 80} selected="selected"{/if}>80</option>
+					<option onclick="Pika.changePageSize()" value="100"{if $recordsPerPage == 100} selected="selected"{/if}>100</option>
 				</select>
 				<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 			</form>

@@ -108,12 +108,12 @@
 					<div class="row">
 						<div class="form-group col-sm-5" id="recordsPerPage">
 							<label for="pagesize" class="control-label">Records Per Page&nbsp;</label>
-							<select id="pagesize" class="pagesize form-control input-sm" onchange="Pika.changePageSize()">
-								<option value="10"{if $recordsPerPage == 10} selected="selected"{/if}>10</option>
-								<option value="25"{if $recordsPerPage == 25} selected="selected"{/if}>25</option>
-								<option value="50"{if $recordsPerPage == 50} selected="selected"{/if}>50</option>
-								<option value="75"{if $recordsPerPage == 75} selected="selected"{/if}>75</option>
-								<option value="100"{if $recordsPerPage == 100} selected="selected"{/if}>100</option>
+							<select id="pagesize" class="pagesize form-control{* input-sm*}" onkeydown="{literal}if(event.key === 'Enter') { Pika.changePageSize()}{/literal}">
+								<option onclick="Pika.changePageSize()" value="20"{if $recordsPerPage == 20} selected="selected"{/if}>20</option>
+								<option onclick="Pika.changePageSize()" value="40"{if $recordsPerPage == 40} selected="selected"{/if}>40</option>
+								<option onclick="Pika.changePageSize()" value="60"{if $recordsPerPage == 60} selected="selected"{/if}>60</option>
+								<option onclick="Pika.changePageSize()" value="80"{if $recordsPerPage == 80} selected="selected"{/if}>80</option>
+								<option onclick="Pika.changePageSize()" value="100"{if $recordsPerPage == 100} selected="selected"{/if}>100</option>
 							</select>
 						</div>
 						<div class="form-group col-sm-5" id="sortOptions">

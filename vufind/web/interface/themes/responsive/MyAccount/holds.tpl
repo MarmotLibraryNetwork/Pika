@@ -34,9 +34,9 @@
 			{if is_array($recordList.$sectionKey) && count($recordList.$sectionKey) > 0}
 				<div id="pager" class="navbar form-inline">
 					<label for="{$sectionKey}HoldSort" class="control-label">{translate text='Sort by'}:&nbsp;</label>
-					<select name="{$sectionKey}HoldSort" id="{$sectionKey}HoldSort" class="form-control" onchange="Pika.Account.changeAccountSort($(this).val(), '{$sectionKey}HoldSort');">
+					<select name="{$sectionKey}HoldSort" id="{$sectionKey}HoldSort" class="form-control" onkeydown="{literal}if(event.key === 'Enter') { Pika.Account.changeAccountSort($(this).val(), '{/literal}{$sectionKey}{literal}HoldSort')}{/literal}">
 						{foreach from=$sortOptions[$sectionKey] item=sortDesc key=sortVal}
-							<option value="{$sortVal}"{if $defaultSortOption[$sectionKey] == $sortVal} selected="selected"{/if}>{translate text=$sortDesc}</option>
+							<option onclick="Pika.Account.changeAccountSort($(this).val(), '{$sectionKey}HoldSort');"  value="{$sortVal}"{if $defaultSortOption[$sectionKey] == $sortVal} selected="selected"{/if}>{translate text=$sortDesc}</option>
 						{/foreach}
 					</select>
 

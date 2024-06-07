@@ -10542,6 +10542,9 @@ fieldset[disabled] .btn-masquerade.active {
   margin: 10px auto;
   position: relative;
 }
+#browse-category-carousel .browse-category button:hover {
+  color: #003DA5;
+}
 #browse-category-carousel .selected button {
   color: #003DA5;
 }
