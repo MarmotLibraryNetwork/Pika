@@ -10510,6 +10510,12 @@ a .header-button:hover {
 .panel-title {
   text-shadow: none;
 }
+#more-details-accordion .active .panel-title {
+  color: #fff;
+}
+#more-details-accordion .panel-title {
+  color: #2F3438;
+}
 #more-details-accordion .panel-body {
   color: #65656a;
   line-height: 1.7em;
