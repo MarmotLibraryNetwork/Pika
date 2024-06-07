@@ -2352,8 +2352,8 @@ class Sierra  implements \DriverInterface {
 	 * @return array An array with success and message
 	 */
 	public function freezeHold($patron, $bibId, $holdId, $dateToReactivate = null){
-		$operation = "patrons/holds/".$holdId;
-		$params = ["freeze"=>true];
+		$operation = 'patrons/holds/' . $holdId;
+		$params    = ["freeze" => true];
 
 		// delete holds cache
 		$patronHoldsCacheKey = $this->cache->makePatronKey('holds', $patron->id);
@@ -2361,7 +2361,7 @@ class Sierra  implements \DriverInterface {
 			$this->logger->warn('Failed to delete patron holds from cache:'.$patronHoldsCacheKey);
 		}
 
-		$r = $this->_doRequest($operation,$params, "PUT");
+		$r = $this->_doRequest($operation, $params, "PUT");
 
 		// something went wrong
 		if(!$r) {
@@ -2392,8 +2392,8 @@ class Sierra  implements \DriverInterface {
 	 * @return array
 	 */
 	public function thawHold($patron, $bibId, $holdId){
-		$operation = "patrons/holds/".$holdId;
-		$params = ["freeze"=>false];
+		$operation = 'patrons/holds/' . $holdId;
+		$params    = ["freeze" => false];
 
 		// delete holds cache
 		$patronHoldsCacheKey = $this->cache->makePatronKey('holds', $patron->id);
@@ -2401,7 +2401,7 @@ class Sierra  implements \DriverInterface {
 			$this->logger->warn('Failed to delete patron holds cache: '.$patronHoldsCacheKey);
 		}
 
-		$r = $this->_doRequest($operation,$params, "PUT");
+		$r = $this->_doRequest($operation,$params, 'PUT');
 
 		// something went wrong
 		if(!$r) {
@@ -2417,7 +2417,8 @@ class Sierra  implements \DriverInterface {
 
 		$return = [
 			'success' => true,
-			'message' => 'Your hold has been thawed.'];
+			'message' => 'Your hold has been thawed.'
+		];
 
 		return $return;
 	}
