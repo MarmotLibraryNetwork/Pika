@@ -109,7 +109,7 @@ Pika.Browse = (function(){
 						,textId : categoryTextId || Pika.Browse.curCategory
 						,browseMode : this.browseMode
 					},
-					newLabel = $('#browse-category-'+categoryTextId+' div').first().text(), // get label from corresponding li div
+					newLabel = $('#browse-category-'+categoryTextId+' button').first().text(),// get label from corresponding li button
 			// the carousel clones these divs sometimes, so grab only the text from the first one.
 					loadingID = categoryTextId || initial;
 
