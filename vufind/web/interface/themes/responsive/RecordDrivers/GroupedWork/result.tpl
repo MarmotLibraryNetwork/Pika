@@ -51,6 +51,9 @@
 						     data-id="{$summId}"
 						     data-show_review="{if $showComments  && (!$loggedIn || !$user->noPromptForUserReviews)}1{else}0{/if}"
 						>
+							{if $summRating.user}
+							<div class="text-left small">Your rating: {$summRating.user} stars</div>
+							{/if}
 							{include file='MyAccount/star-rating.tpl' id=$summId ratingData=$summRating ratingTitle=$summTitle}
 						</div>
 						{* include file="GroupedWork/title-rating.tpl" ratingClass="" id=$summId ratingData=$summRating *}
@@ -223,7 +226,16 @@
 						</div>
 					</div>
 				{/if}
-
+					
+				{if $showRatings && $summRating.average}
+					<div class="row">
+						<div class="result-label col-tn-3">Average Rating: </div>
+						<div class="result-value col-tn-8">
+							{math equation="round(average_rating,1)" average_rating=$summRating.average} stars
+						</div>
+					</div>
+				{/if}	
+					
 				{if $summSnippets}
 					{foreach from=$summSnippets item=snippet}
 						<div class="row">

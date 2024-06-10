@@ -8521,7 +8521,7 @@ hr.menu {
 }
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
-  background-color: #ffffff;
+  background-color: #fff;
   color: #3b3f43;
   font-size: 50px;
   border: none;
@@ -8577,7 +8577,7 @@ hr.menu {
   text-decoration: underline;
 }
 #browse-category-carousel .browse-category.selected {
-  border: 2px solid #207217;
+  border: 2px solid #89ce00;
   font-size: 18px;
 }
 #browse-category-carousel .browse-category.selected:focus-within {
@@ -8973,8 +8973,8 @@ a.browse-thumbnail-sorted.active {
   margin-right: 5px;
 }
 #browse-sub-category-menu button.selected {
-  color: #fff;
-  background-color: #1A79CA;
+  color: #3b3f43;
+  background-color: #89ce00;
 }
 #browse-sub-category-menu button:focus {
   outline: #E15F15 solid 2px;
@@ -9791,12 +9791,12 @@ a.browse-thumbnail-sorted.active {
 .userreviewlink,
 .addtolistlink {
   background-color: #088ec6;
-  color: #ffffff;
+  color: #fff;
 }
 .userreviewlink:hover,
 .addtolistlink:hover {
   background-color: #2897c6;
-  color: #ffffff;
+  color: #fff;
 }
 .full-record-tools {
   padding: 4px 0;
@@ -9804,7 +9804,6 @@ a.browse-thumbnail-sorted.active {
 .full-rating {
   padding: 10px 5px 4px;
   white-space: nowrap;
-  font-size: 11px;
 }
 .rating-graph {
   margin: 4px 0;
@@ -10540,16 +10539,10 @@ a .header-button:hover {
 }
 #browse-category-carousel .browse-category.selected {
   font-size: 15px;
-  background: #207217;
-}
-#browse-category-carousel .browse-category.selected :hover {
-  background: #207217;
-}
-#browse-category-carousel .browse-category.selected button {
-  color: #fff;
+  background: #89ce00;
 }
 #browse-category-carousel .browse-category.selected button :hover {
-  background: #207217;
+  background: #89ce00;
 }
 .jcarousel-control-next,
 .jcarousel-control-prev {

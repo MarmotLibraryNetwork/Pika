@@ -77,7 +77,7 @@ function addGroup(firstTerm, firstField, join)
 	// Holder for all the search fields
 	newGroup += "<div id='group" + nextGroupNumber + "SearchHolder' class='groupSearchHolder'></div>";
 	// Add search term link
-	newGroup += "<div class='addSearch row'><div class='col-sm-4 col-sm-offset-2'><button class='add btn btn-sm btn-default' id='add_search_link_" + nextGroupNumber + "' onclick='addSearchJS(this);'>" + addSearchString + "</button></div></div>";
+	newGroup += "<div class='addSearch row'><div class='col-sm-4 col-sm-offset-2'><button class='add btn btn-sm btn-default' id='add_search_link_" + nextGroupNumber + "' onclick='return addSearchJS(this);'>" + addSearchString + "</button></div></div>";
 
 	newGroup += "</div>";
 
