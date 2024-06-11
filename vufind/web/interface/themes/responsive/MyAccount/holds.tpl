@@ -34,9 +34,9 @@
 			{if is_array($recordList.$sectionKey) && count($recordList.$sectionKey) > 0}
 				<div id="pager" class="navbar form-inline">
 					<label for="{$sectionKey}HoldSort" class="control-label">{translate text='Sort by'}:&nbsp;</label>
-					<select name="{$sectionKey}HoldSort" id="{$sectionKey}HoldSort" class="form-control" onkeydown="{literal}if(event.key === 'Enter') { Pika.Account.changeAccountSort($(this).val(), '{/literal}{$sectionKey}{literal}HoldSort')}{/literal}">
+					<select name="{$sectionKey}HoldSort" id="{$sectionKey}HoldSort" class="form-control">
 						{foreach from=$sortOptions[$sectionKey] item=sortDesc key=sortVal}
-							<option onclick="Pika.Account.changeAccountSort($(this).val(), '{$sectionKey}HoldSort');"  value="{$sortVal}"{if $defaultSortOption[$sectionKey] == $sortVal} selected="selected"{/if}>{translate text=$sortDesc}</option>
+							<option value="{$sortVal}"{if $defaultSortOption[$sectionKey] == $sortVal} selected="selected"{/if}>{translate text=$sortDesc}</option>
 						{/foreach}
 					</select>
 
@@ -83,6 +83,30 @@
 						</div>
 					</form>
 				</div>
+				<script>
+					{literal}
+					// Setup sorting for holds
+					document.addEventListener('DOMContentLoaded', function() {
+						var selectElement = document.getElementById('{/literal}{$sectionKey}{literal}HoldSort');
+
+						// Add event listener for click to sort options
+						selectElement.addEventListener('click', function(e) {
+							let val = checkSelectedOption(this);
+							if(val !== null) {
+								Pika.Account.changeAccountSort(val, '{/literal}{$sectionKey}{literal}HoldSort');
+							}
+						})
+
+						// Add event listener for keypress (accessibility)
+						selectElement.addEventListener('keypress', function(e) {
+							let val = checkSelectedOption(this);
+							if(e.key === 'Enter' && val !== null) {
+								Pika.Account.changeAccountSort(val, '{/literal}{$sectionKey}{literal}HoldSort');
+							}
+						})
+					});
+					{/literal}
+				</script>
 			{else} {* Check to see if records are available *}
 				{if $sectionKey == 'available'}
 					{translate text='You do not have any holds that are ready to be picked up.'}

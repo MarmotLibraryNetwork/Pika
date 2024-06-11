@@ -3,8 +3,8 @@
 
 	{include file="MyAccount/patronWebNotes.tpl"}
 
-		{* Alternate Mobile MyAccount Menu *}
-		{include file="MyAccount/mobilePageHeader.tpl"}
+	{* Alternate Mobile MyAccount Menu *}
+	{include file="MyAccount/mobilePageHeader.tpl"}
 
 	<span class='availableHoldsNoticePlaceHolder'></span>
 
@@ -50,13 +50,12 @@
 
 
 		{* Do not display Reading History in Masquerade Mode, unless the library has allowed it *}
-	<form id="readingListForm" class="form-inline">
-
+	<form id="readingHistoryActionForm" class="form-inline readingHistoryActionForm">
 		{* Reading History Actions *}
 		<div class="row">
 			<input type="hidden" name="page" value="{$page}">
 			<input type="hidden" name="patronId" value="{$selectedUser}">
-			<input type="hidden" name="readingHistoryAction" id="readingHistoryAction" value="">
+			<input type="hidden" name="readingHistoryAction">
 
 			<div id="readingListActionsTop" class="col-xs-6">
 				<div class="btn-group btn-group-sm">
@@ -80,8 +79,9 @@
 				</div>
 			</div>
 			{/if}
-
-
+		</div>
+	</form>
+	<div class="row">
 			<hr>
 
 			{if $transList || $isReadingHistorySearch}
@@ -102,7 +102,7 @@
 					<button class="btn btn-default" type="submit" onclick="return Pika.Account.ReadingHistory.searchReadingHistoryAction()">Search</button>
 				</div>
 				</div>
-					<hr>
+				<hr>
 				{* Results Page Options *}
 				<div id="pager" class="col-xs-12">
 					<div class="row">
@@ -245,11 +245,22 @@
 
 								{if $showRatings == 1}
 										{* $showRatings is set by UInterface method loadDisplayOptions() *}
-									{if $record.recordId != -1 && $record.ratingData}
+									{if $record.recordId != -1 && $record.ratingData.user}
 										<div class="row">
-											<div class="result-label col-tn-3">Rating&nbsp;</div>
+											<div class="result-label col-tn-3">Your Rating: </div>
 											<div class="result-value col-tn-9">
-												{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$record.permanentId ratingData=$record.ratingData showNotInterested=false}
+												<div class="title-rating"
+												     data-user_rating="{$record.ratingData.user}"
+												     data-rating_title="{$record.title}"
+												     data-id="{$record.permanentId}"
+												     data-show_review="{if $showComments  && (!$loggedIn || !$user->noPromptForUserReviews)}1{else}0{/if}"
+												>
+													{if $record.ratingData.user}
+														<div class="text-left small">Your rating: {$record.ratingData.user} stars</div>
+													{/if}
+													{include file='MyAccount/star-rating.tpl' id=$record.permanentId ratingData=$record.ratingData ratingTitle=$record.title}
+												</div>
+												{* include file="GroupedWork/title-rating.tpl" ratingClass="" id=$record.permanentId ratingData=$record.ratingData showNotInterested=false *}
 											</div>
 										</div>
 									{/if}
