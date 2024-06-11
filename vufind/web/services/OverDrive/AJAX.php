@@ -350,21 +350,19 @@ class OverDrive_AJAX extends AJAXHandler {
 		$issuesList = $overdriveIssues->fetchAll();
 		$i          = 0;
 		foreach ($issuesList as $issue){
-			$formatted = "<div id=\"scrollerTitleIssues" . $i . "\" class=\"scrollerTitle\" onclick=\"Pika.OverDrive.checkoutOverdriveMagazineByIssueID('" . $issue->overdriveId . "')\"><img src=\"" . $issue->coverUrl . "\" class=\"scrollerTitleCover\" alt=\"" . $issue->edition . "\"></div>";
-
-			$issues = [
+			$formatted = '<button id="scrollerTitleIssues' . $i . '" class="scrollerTitle" onclick="Pika.OverDrive.checkoutOverdriveMagazineByIssueID(\'' . $issue->overdriveId . '\')"><img src="' . $issue->coverUrl . '" class="scrollerTitleCover" alt="' . $issue->edition . '"></div>';
+			$issues    = [
 				'id'             => $issue->overdriveId,
 				'image'          => $issue->coverUrl,
 				'author'         => '',
 				'title'          => $issue->edition,
 				'formattedTitle' => $formatted
 			];
-
-			$data[$i] = $issues;
+			$data[$i]  = $issues;
 			$i++;
 		}
 		global $timer;
-		$timer->logTime("Finished getIssues for OverDrive record {$parentId}");
+		$timer->logTime("Finished getIssues for OverDrive record $parentId");
 
 		return $data;
 	}

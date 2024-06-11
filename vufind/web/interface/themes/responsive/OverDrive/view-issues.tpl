@@ -1,9 +1,10 @@
 {strip}
-
 	<div id="list-magazineIssues"{if $display == 'false'} style="display:none"{/if} class="titleScroller tab-pane{if $active} active{/if}{if $widget->coverSize == 'medium'} mediumScroller{/if}{if $widget->showRatings} scrollerWithRatings{/if}">
 		<div id="magazineIssues" class="titleScrollerWrapper">
+{*
 			{if $showListWidgetTitle || $showViewMoreLink || $Links}
 				<div id="list-{$wrapperId}Header" class="titleScrollerHeader">
+
 					{if $showListWidgetTitle}
 						<span class="listTitle resultInformationLabel">{if $scrollerTitle}{$scrollerTitle|escape:"html"}{/if}</span>
 					{/if}
@@ -20,8 +21,10 @@
 						</div>
 					{/if}
 
+
 				</div>
 			{/if}
+*}
 			<div id="titleScrollerIssues" class="titleScrollerBody">
 				<button class="leftScrollerButton enabled btn btn-default issuesLeft" aria-label="Previous Issue"><i class="glyphicon glyphicon-chevron-left"></i></button>
 				<div class="scrollerBodyContainer">
@@ -43,7 +46,7 @@
 	</div>
 	<script>
 		{*//	 touch swiping controls *}
-		$(document).ready(function(){ldelim}
+		$(function(){ldelim}
 			var scrollFactor = 10; {*// swipe size per item to scroll.*}
 			var issuesTitleScroller = new TitleScroller("titleScrollerIssues", "Issues", "titleScrollerIssues", undefined, undefined, true);
 			var ajaxUrl = "/OverDrive/AJAX?method=getIssuesList&parentId=" + '{$id}';
@@ -53,21 +56,18 @@
 					wipeLeft : function(dx){ldelim}
 						var scrollInterval = Math.round(dx / scrollFactor); {*// vary scroll interval based on wipe length *}
 						issuesTitleScroller.swipeToLeft(scrollInterval);
-						{rdelim},
+					{rdelim},
 					wipeRight: function(dx) {ldelim}
 						var scrollInterval = Math.round(dx / scrollFactor); {*// vary scroll interval based on wipe length *}
 						issuesTitleScroller.swipeToRight(scrollInterval);
-						{rdelim}
-					{rdelim});
-			$(".issuesLeft").click(function(){ldelim}
-
-				issuesTitleScroller.scrollToLeft();
+					{rdelim}
 				{rdelim});
+			$(".issuesLeft").click(function(){ldelim}
+				issuesTitleScroller.scrollToLeft();
+			{rdelim});
 			$(".issuesRight").click(function(){ldelim}
 				issuesTitleScroller.scrollToRight();
-				{rdelim});
 			{rdelim});
-
+		{rdelim});
 	</script>
-
 {/strip}

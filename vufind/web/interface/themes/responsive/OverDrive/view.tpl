@@ -1,7 +1,7 @@
 {include file="GroupedWork/load-full-record-view-enrichment.tpl"}
 
 {strip}
-	<div class="col-xs-12">
+	<div class="col-xs-12" xmlns="http://www.w3.org/1999/html">
 		{* Search Navigation *}
 		{include file="GroupedWork/search-results-navigation.tpl"}
 
@@ -38,21 +38,23 @@
 				{/if}
 
 				<div class="row">
-					<div id="record-details-column" class="col-xs-12 col-sm-9">
+					<div id="record-details-column" class="col-xs-12 col-sm-8">
+{*					<div id="record-details-column" class="col-xs-12 col-sm-9">*}
 						{include file="OverDrive/view-title-details.tpl"}
 					</div>
 
-					<div id="recordTools" class="col-xs-12 col-sm-6 col-md-3">
+{*					<div id="recordTools" class="col-xs-12 col-sm-6 col-md-3">*}
+					<div id="recordTools" class="col-xs-12 col-sm-6 col-md-4">
 						<div class="btn-toolbar">
 							<div class="btn-group btn-group-vertical btn-block">
 								{* Show hold/checkout button as appropriate *}
 								{if $holdingsSummary.showPlaceHold}
 									{* Place hold link *}
-									<a href="#" class="btn btn-sm btn-block btn-primary" id="placeHold{$recordDriver->getUniqueID()|escape:"url"}" onclick="return Pika.OverDrive.placeOverDriveHold('{$recordDriver->getUniqueID()}')">{translate text="Place Hold OverDrive"}</a>
+									<button class="btn btn-sm btn-block btn-primary" id="placeHold{$recordDriver->getUniqueID()|escape:"url"}" onclick="return Pika.OverDrive.placeOverDriveHold('{$recordDriver->getUniqueID()}')">{translate text="Place Hold OverDrive"}</button>
 								{/if}
 								{if $holdingsSummary.showCheckout}
 									{* Checkout link *}
-									<a href="#" class="btn btn-sm btn-block btn-primary" id="checkout{$recordDriver->getUniqueID()|escape:"url"}" onclick="return Pika.OverDrive.checkOutOverDriveTitle('{$recordDriver->getUniqueID()}')">{translate text="Check Out OverDrive"}</a>
+									<button class="btn btn-sm btn-block btn-primary" id="checkout{$recordDriver->getUniqueID()|escape:"url"}" onclick="return Pika.OverDrive.checkOutOverDriveTitle('{$recordDriver->getUniqueID()}')">{translate text="Check Out OverDrive"}</button>
 								{/if}
 							</div>
 						</div>
