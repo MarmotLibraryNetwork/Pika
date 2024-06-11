@@ -815,3 +815,25 @@ Pika.Account = (function(){
 
 	};
 }(Pika.Account || {}));
+
+/**
+ * checkSelectedOption - Checks for the initially selected option in a select element.
+ *
+ * This function addresses the limitation where the onclick event on select boxes always returns the currently visible option.
+ * It works by checking if the initially visible option (the one with the 'selected' attribute) is currently selected.
+ * This is particularly useful in scenarios like in Pika where the initial option is pre-selected.
+ *
+ * Note: This function only works if the initial visible option has the 'selected' attribute.
+ *
+ * @param {HTMLSelectElement} selectElement - The select DOM element to check.
+ * @returns {string|null} - Returns the value of the selected option, or null if the option is already selected.
+ */
+function checkSelectedOption(selectElement) {
+	var selectedOption = selectElement.options[selectElement.selectedIndex];
+	var selectedValue = selectedOption.value;
+
+	if (selectedOption.hasAttribute('selected')) {
+		return null;
+	}
+	return selectedValue;
+}
