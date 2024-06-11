@@ -245,22 +245,11 @@
 
 								{if $showRatings == 1}
 										{* $showRatings is set by UInterface method loadDisplayOptions() *}
-									{if $record.recordId != -1 && $record.ratingData.user}
+									{if $record.recordId != -1 && $record.ratingData}
 										<div class="row">
-											<div class="result-label col-tn-3">Your Rating: </div>
+											<div class="result-label col-tn-3">Rating&nbsp;</div>
 											<div class="result-value col-tn-9">
-												<div class="title-rating"
-												     data-user_rating="{$record.ratingData.user}"
-												     data-rating_title="{$record.title}"
-												     data-id="{$record.permanentId}"
-												     data-show_review="{if $showComments  && (!$loggedIn || !$user->noPromptForUserReviews)}1{else}0{/if}"
-												>
-													{if $record.ratingData.user}
-														<div class="text-left small">Your rating: {$record.ratingData.user} stars</div>
-													{/if}
-													{include file='MyAccount/star-rating.tpl' id=$record.permanentId ratingData=$record.ratingData ratingTitle=$record.title}
-												</div>
-												{* include file="GroupedWork/title-rating.tpl" ratingClass="" id=$record.permanentId ratingData=$record.ratingData showNotInterested=false *}
+												{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$record.permanentId ratingData=$record.ratingData showNotInterested=false}
 											</div>
 										</div>
 									{/if}
