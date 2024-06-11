@@ -17,11 +17,11 @@
 			<div class="form-group col-xs-5 pull-right">
 				<span class="pull-right">
 					<label for="pagesize" class="control-label">Entries Per Page:&nbsp;</label>
-					<select id="pagesize" name="pagesize" class="pagesize form-control input-sm" onkeydown="{literal}if(event.key === 'Enter') { Pika.changePageSize()}{/literal}">
-						<option onclick="Pika.changePageSize()" value="30"{if $recordsPerPage == 30} selected="selected"{/if}>30</option>
-						<option onclick="Pika.changePageSize()" value="50"{if $recordsPerPage == 50} selected="selected"{/if}>50</option>
-						<option onclick="Pika.changePageSize()" value="75"{if $recordsPerPage == 75} selected="selected"{/if}>75</option>
-						<option onclick="Pika.changePageSize()" value="100"{if $recordsPerPage == 100} selected="selected"{/if}>100</option>
+					<select id="pagesize" name="pagesize" class="pagesize form-control input-sm">
+						<option value="30"{if $recordsPerPage == 30} selected="selected"{/if}>30</option>
+						<option value="50"{if $recordsPerPage == 50} selected="selected"{/if}>50</option>
+						<option value="75"{if $recordsPerPage == 75} selected="selected"{/if}>75</option>
+						<option value="100"{if $recordsPerPage == 100} selected="selected"{/if}>100</option>
 					</select>
 				</span>
 			</div>
@@ -61,3 +61,29 @@
       {if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
 	</div>
 {/strip}
+
+<script>
+	{literal}
+	// Setup sorting for logs
+	document.addEventListener('DOMContentLoaded', function() {
+		var selectElement = document.getElementById('pagesize');
+
+		// Add event listener for click to sort options
+		selectElement.addEventListener('click', function(e) {
+			let val = checkSelectedOption(this);
+			if(val !== null) {
+				//alert("Selected Value: " + val)
+				Pika.changePageSize()
+			}
+		})
+
+		// Add event listener for keypress (accessibility)
+		selectElement.addEventListener('keypress', function(e) {
+			let val = checkSelectedOption(this);
+			if(e.key === 'Enter' && val !== null) {
+				Pika.changePageSize()
+			}
+		})
+	});
+	{/literal}
+</script>
