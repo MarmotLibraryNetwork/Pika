@@ -76,7 +76,7 @@
             {rdelim})
 						.on('click', 'button.slowDown', function() {ldelim}
 								TitleScroller.prototype.slowerControl({$scrollerVariable}, {$scrollerVariable}.interval);
-						{rdelim});;*/
+						{rdelim});*/
 	{rdelim});
 
 </script>
