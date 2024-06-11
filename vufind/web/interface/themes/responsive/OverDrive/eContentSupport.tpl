@@ -46,11 +46,14 @@
 			<label for="operatingSystem" class="control-label">Operating System:</label>
 			<select name="operatingSystem" id="operatingSystem" class="form-control">
 				<option value="">-Select an Operating System-</option>
+				<option value="Win-11">Windows 11</option>
 				<option value="Win-10">Windows 10</option>
 				<option value="Win-8">Windows 8</option>
 				<option value="Win-7">Windows 7</option>
+{*
 				<option value="XP">Windows XP</option>
 				<option value="Vista">Windows Vista</option>
+*}
 				<option value="Mac">Mac OS</option>
 				<option value="kindle">Kindle</option>
 				<option value="Linux">Linux/Unix</option>
