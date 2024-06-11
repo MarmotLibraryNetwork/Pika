@@ -7,7 +7,7 @@
 <h1 role="heading" aria-level="1" class="h2" id="listTitle"><a href="/MyAccount/MyList/{$favList->id}?page={$pageNum}&pagesize={$pageSize}&sort={$listSort}">{$favList->title|escape:"html"}</a></h1>
 
 {if $favList->description}
-	<div class="listDescription" id="listDescription">{$favList->description|escape}</div>
+	<div class="listDescription well" id="listDescription">{$favList->description|escape}</div>
 {/if}
 {* Not needed. Two links already back to list above
 <div id="listTopButtons" class="btn-toolbar">
