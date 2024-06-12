@@ -14,13 +14,12 @@
 	{if count($userFines) > 0}
 
 		{* Show Fine Alert when the user has no linked accounts *}
-		{if  count($userFines) == 1 && $user->fines}
 			<div class="alert alert-info">
-				Your account has <strong>{$user->fines}</strong> in fines.
-				<div>&nbsp;</div>
+		{if count($userFines) == 1 && $user->fines}
+			<p>Your account has <strong>{$user->fines}</strong> in fines.</p>
+		{/if}
 				<p>The items below are far enough past their due date that they have been assigned replacement fees. If you return the items, these fees will be removed. If the items are truly lost or damaged, you can visit the library to make arrangements to pay or <a title="Pay Fines Online" href="https://wakenc.comprisesmartpay.com/">pay online</a></p>
 			</div>
-		{/if}
 
 		{foreach from=$userFines item=fines key=userId name=fineTable}
 			{if count($userFines) > 1}<h2 class="h3">{$userAccountLabel.$userId}</h2>{/if}{* Only show account name if there is more than one account. *}
