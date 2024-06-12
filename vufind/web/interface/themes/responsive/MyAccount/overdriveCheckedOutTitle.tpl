@@ -124,7 +124,7 @@
           {/if}
 
 					{if $record.earlyReturn}
-						<a href="#" onclick="return Pika.OverDrive.returnOverDriveTitle('{$record.userId}', '{if $record.overdriveMagazine}{$record.issueId}{else}{$record.overDriveId}{/if}');" class="btn btn-sm btn-warning">Return&nbsp;Now</a>
+						<button onclick="return Pika.OverDrive.returnOverDriveTitle('{$record.userId}', '{if $record.overdriveMagazine}{$record.issueId}{else}{$record.overDriveId}{/if}');" class="btn btn-sm btn-warning">Return&nbsp;Now</button>
 					{/if}
 				</div>
 
