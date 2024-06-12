@@ -18,7 +18,7 @@
 	<div class="row">
 		<div class="form-group col-sm-4" id="sortOptions">
 			<label for="sort" class="control-label">Sort Lists By&nbsp;</label>
-			<select class="sortMethod form-control" id="sort" name="sort" onchange="Pika.Account.changeAccountSort($(this).val(), 'sort')">
+			<select class="sortMethod form-control" id="sort" name="sort">
 					{foreach from=$sortOptions item=sortOptionLabel key=sortOption}
 						<option value="{$sortOption}" {if $sortOption == $defaultSortOption}selected="selected"{/if}>{$sortOptionLabel}</option>
 					{/foreach}
@@ -159,9 +159,9 @@
 		{/foreach}
 {literal}
 	<script>
-		$(document).ready(function(){
+		$(function(){
 			let myListActionData = $("#myListActionData");
-			$(".myListsCheckBoxes").click(function(data){
+			$(".myListsCheckBoxes").on('click', function(){
 				if (this.checked) {
 					myListActionData.val(myListActionData.val() + this.value + ",");
 				} else {
@@ -170,16 +170,29 @@
 					myListActionData.val(newStr);
 				}
 			});
-			$("#toggleSelectBoxes").click(function (data) {
+			$("#toggleSelectBoxes").on('click', function(){
 				if (this.checked) {
 					var ids = Array();
-					$(".myListsCheckBoxes").each(function () {
+					$(".myListsCheckBoxes").each(function(){
 						ids.push(this.value.replace(",", ""));
 					});
 					var stringId = ids.join();
 					myListActionData.val(stringId + ",");
 				} else {
 					myListActionData.val("");
+				}
+			});
+
+			// Add event listener for click to sort options
+			$('#sort').on('click', function(){
+				let val = checkSelectedOption(this);
+				if(val !== null) {
+						Pika.Account.changeAccountSort(val, 'sort');
+				}
+			}).on('keypress', function(e){
+				// Add event listener for keypress (accessibility)
+				if(e.key === 'Enter') {
+					$(this).trigger('click');
 				}
 			});
 		});

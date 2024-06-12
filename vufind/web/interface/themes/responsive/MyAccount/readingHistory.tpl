@@ -3,8 +3,8 @@
 
 	{include file="MyAccount/patronWebNotes.tpl"}
 
-		{* Alternate Mobile MyAccount Menu *}
-		{include file="MyAccount/mobilePageHeader.tpl"}
+	{* Alternate Mobile MyAccount Menu *}
+	{include file="MyAccount/mobilePageHeader.tpl"}
 
 	<span class='availableHoldsNoticePlaceHolder'></span>
 
@@ -50,13 +50,12 @@
 
 
 		{* Do not display Reading History in Masquerade Mode, unless the library has allowed it *}
-	<form id="readingListForm" class="form-inline">
-
+	<form id="readingHistoryActionForm" class="form-inline readingHistoryActionForm">
 		{* Reading History Actions *}
 		<div class="row">
 			<input type="hidden" name="page" value="{$page}">
 			<input type="hidden" name="patronId" value="{$selectedUser}">
-			<input type="hidden" name="readingHistoryAction" id="readingHistoryAction" value="">
+			<input type="hidden" name="readingHistoryAction">
 
 			<div id="readingListActionsTop" class="col-xs-6">
 				<div class="btn-group btn-group-sm">
@@ -80,8 +79,9 @@
 				</div>
 			</div>
 			{/if}
-
-
+		</div>
+	</form>
+	<div class="row">
 			<hr>
 
 			{if $transList || $isReadingHistorySearch}
@@ -102,23 +102,23 @@
 					<button class="btn btn-default" type="submit" onclick="return Pika.Account.ReadingHistory.searchReadingHistoryAction()">Search</button>
 				</div>
 				</div>
-					<hr>
+				<hr>
 				{* Results Page Options *}
 				<div id="pager" class="col-xs-12">
 					<div class="row">
 						<div class="form-group col-sm-5" id="recordsPerPage">
 							<label for="pagesize" class="control-label">Records Per Page&nbsp;</label>
-							<select id="pagesize" class="pagesize form-control{* input-sm*}" onkeydown="{literal}if(event.key === 'Enter') { Pika.changePageSize()}{/literal}">
-								<option onclick="Pika.changePageSize()" value="20"{if $recordsPerPage == 20} selected="selected"{/if}>20</option>
-								<option onclick="Pika.changePageSize()" value="40"{if $recordsPerPage == 40} selected="selected"{/if}>40</option>
-								<option onclick="Pika.changePageSize()" value="60"{if $recordsPerPage == 60} selected="selected"{/if}>60</option>
-								<option onclick="Pika.changePageSize()" value="80"{if $recordsPerPage == 80} selected="selected"{/if}>80</option>
-								<option onclick="Pika.changePageSize()" value="100"{if $recordsPerPage == 100} selected="selected"{/if}>100</option>
+							<select id="pagesize" class="pagesize form-control{* input-sm*}">
+								<option value="20"{if $recordsPerPage == 20} selected="selected"{/if}>20</option>
+								<option value="40"{if $recordsPerPage == 40} selected="selected"{/if}>40</option>
+								<option value="60"{if $recordsPerPage == 60} selected="selected"{/if}>60</option>
+								<option value="80"{if $recordsPerPage == 80} selected="selected"{/if}>80</option>
+								<option value="100"{if $recordsPerPage == 100} selected="selected"{/if}>100</option>
 							</select>
 						</div>
 						<div class="form-group col-sm-5" id="sortOptions">
 							<label for="sortMethod" class="control-label">Sort By&nbsp;</label>
-							<select class="sortMethod form-control" id="sortMethod" name="accountSort" onchange="Pika.Account.changeAccountSort($(this).val())">
+							<select class="sortMethod form-control" id="sortMethod" name="accountSort">
 								{foreach from=$sortOptions item=sortOptionLabel key=sortOption}
 									<option value="{$sortOption}" {if $sortOption == $defaultSortOption}selected="selected"{/if}>{$sortOptionLabel}</option>
 								{/foreach}
@@ -319,3 +319,46 @@
     {include file="MyAccount/loginRequired.tpl"}
 {/if}
 </div>
+
+<script>
+	{literal}
+	// Setup sorting for logs
+	document.addEventListener('DOMContentLoaded', function() {
+		var pagesizeSelectElement = document.getElementById('pagesize');
+		// Add event listener for click to sort options
+		pagesizeSelectElement.addEventListener('click', function(e) {
+			let val = checkSelectedOption(this);
+			if(val !== null) {
+				//alert("Selected Value: " + val)
+				Pika.changePageSize()
+			}
+		})
+
+		// Add event listener for keypress (accessibility)
+		pagesizeSelectElement.addEventListener('keypress', function(e) {
+			let val = checkSelectedOption(this);
+			if(e.key === 'Enter' && val !== null) {
+				Pika.changePageSize()
+			}
+		})
+
+		var sortMethodElement = document.getElementById('sortMethod');
+		// Add event listener for click to sort options
+		sortMethodElement.addEventListener('click', function(e) {
+			let val = checkSelectedOption(this);
+			if(val !== null) {
+				//alert("Selected Value: " + val)
+				Pika.Account.changeAccountSort(val)
+			}
+		})
+
+		// Add event listener for keypress (accessibility)
+		sortMethodElement.addEventListener('keypress', function(e) {
+			let val = checkSelectedOption(this);
+			if(e.key === 'Enter' && val !== null) {
+				Pika.Account.changeAccountSort(val)
+			}
+		})
+	});
+	{/literal}
+</script>

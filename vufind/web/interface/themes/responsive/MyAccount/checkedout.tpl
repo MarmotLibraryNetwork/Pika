@@ -28,9 +28,9 @@
 				<form id="renewForm" action="/MyAccount/RenewMultiple">
 					<div id="pager" class="navbar form-inline">
 						<label for="accountSort" class="control-label">{translate text='Sort by'}:&nbsp;</label>
-						<select name="accountSort" id="accountSort" class="form-control" onkeydown="{literal}if(event.key === 'Enter') { Pika.Account.changeAccountSort($(this).val()); }{/literal}">
+						<select name="accountSort" id="accountSort" class="form-control">
 							{foreach from=$sortOptions item=sortDesc key=sortVal}
-								<option onclick="Pika.Account.changeAccountSort($(this).val());" value="{$sortVal}"{if $defaultSortOption == $sortVal} selected="selected"{/if}>{translate text=$sortDesc}</option>
+								<option value="{$sortVal}"{if $defaultSortOption == $sortVal} selected="selected" data-selected=""{/if}>{translate text=$sortDesc}</option>
 							{/foreach}
 						</select>
 						<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
@@ -93,3 +93,28 @@
       {include file="MyAccount/loginRequired.tpl"}
 	{/if}
 {/strip}
+<script>
+	{literal}
+	// Setup sorting for checked out titles
+	document.addEventListener('DOMContentLoaded', function() {
+		var selectElement = document.getElementById('accountSort');
+		
+		// Add event listener for click to sort options
+		selectElement.addEventListener('click', function(e) {
+			let val = checkSelectedOption(this);
+			if(val !== null) {
+				//alert("Selected Value: " + val)
+				Pika.Account.changeAccountSort(val);
+			}
+		})
+		
+		// Add event listener for keypress (accessibility)
+		selectElement.addEventListener('keypress', function(e) {
+			let val = checkSelectedOption(this);
+			if(e.key === 'Enter' && val !== null) {
+				Pika.Account.changeAccountSort(val);
+			}
+		}) 
+	});
+	{/literal}
+</script>
