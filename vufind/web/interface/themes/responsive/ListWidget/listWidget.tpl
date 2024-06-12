@@ -9,13 +9,13 @@
 	{*TODO a smaller suite of javascript for List Widgets*}
 
 	{if $resizeIframe}
-	<script type="text/javascript" src="/js/iframeResizer/iframeResizer.contentWindow.min.js"></script>
+	<script src="/js/iframeResizer/iframeResizer.contentWindow.min.js"></script>
 	{/if}
 
   {if $widget->customCss}
   	<link rel="stylesheet" type="text/css" href="{$widget->customCss}">
   {/if}
-  <base href="" target="_parent">
+  <base href="" target="_parent">{* Sets the default target of all links in the list widget to the parent page *}
 </head>
 
 <body class="embeddedListWidgetBody">

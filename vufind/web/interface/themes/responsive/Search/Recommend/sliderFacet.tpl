@@ -11,6 +11,6 @@
 			<label for="{$title}to" class="yearboxlabel sr-only control-label">To:</label>
 			<input type="text" size="4" maxlength="4" class="yearbox form-control" placeholder="to" name="{$title}to" id="{$title}to" value="">
 		</div>
-		<input type="submit" value="Go" id="goButton" class="goButton btn btn-primary">
+		<input type="submit" value="Go" id="goButton-{$title}" class="goButton btn btn-primary">
 	</div>
 </form>

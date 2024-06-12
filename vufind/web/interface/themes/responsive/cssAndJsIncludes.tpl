@@ -119,9 +119,9 @@
 
 	{if $includeAutoLogoutCode == true}
 		{if $debugJs}
-			<script type="text/javascript" src="/interface/themes/responsive/js/pika/autoLogout.js?v={$gitBranch|urlencode}"></script>
+			<script src="/interface/themes/responsive/js/pika/autoLogout.js?v={$gitBranch|urlencode}"></script>
 		{else}
-			<script type="text/javascript" src="/interface/themes/responsive/js/pika/autoLogout.min.js?v={$gitBranch|urlencode}"></script>
+			<script src="/interface/themes/responsive/js/pika/autoLogout.min.js?v={$gitBranch|urlencode}"></script>
 		{/if}
 	{/if}
 {/strip}

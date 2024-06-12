@@ -102,13 +102,13 @@
 
 					<div id="groupJoin" class="searchGroups">
 						<div class="searchGroupDetails">
-							<label for="join">{translate text="search_match"} :</label>
+							<label for="join">{translate text="search_match"} :</label>&nbsp;
 							<select id="join" name="join">
 								<option value="AND">{translate text="group_AND"}</option>
 								<option value="OR"{if $searchDetails && $searchDetails.0.join == 'OR'} selected="selected"{/if}>{translate text="group_OR"}</option>
 							</select>
 						</div>
-						<strong>{translate text="search_groups"}</strong>:
+						<h2 class="h3">{translate text="search_groups"} :</h2>
 					</div>
 
 					{* An empty div; This is the target for the javascript that builds this screen *}
@@ -124,9 +124,9 @@
 							<div class="panel panel-default {if !empty($searchFilters)} active{/if}">
 								<a href="#facetPanel" data-toggle="collapse" role="button">
 									<div class="panel-heading">
-										<div class="panel-title">
+										<h2 class="panel-title">
 											{translate text='Optional Filters'}
-										</div>
+										</h2>
 									</div>
 								</a>
 
@@ -234,9 +234,9 @@
 </div>
 {/strip}
 {if $debugJs}
-<script type="text/javascript" src="/services/Search/advanced.js"></script>
+<script src="/services/Search/advanced.js"></script>
 {else}
-<script type="text/javascript" src="/services/Search/advanced.min.js"></script>
+<script src="/services/Search/advanced.min.js"></script>
 {/if}
 <script>
 	{* Define our search arrays so they are usuable in the javascript *}
