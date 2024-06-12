@@ -97,7 +97,7 @@
 			{* Pay Fines Button *}
 			{if $showEcommerceLink && $user->finesVal > $minimumFineAmount}
 				<a href="{$ecommerceLink}" target="_blank"{if $showRefreshAccountButton} onclick="Pika.Account.ajaxLightbox('/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
-					<div class="btn btn-sm btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}Click to Pay Fines Online{/if}</div>
+					<div class="btn btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}Click to Pay Fines Online{/if}&nbsp;<small>[Opens in new tab]</small></div>
 				</a>
 			{/if}
 		{/if}
