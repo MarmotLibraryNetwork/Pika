@@ -54,7 +54,7 @@
 </div>
 <script>
 {*//	 touch swiping controls *}
-	$(document).ready(function(){ldelim}
+	$(function(){ldelim}
 		var scrollFactor = 10; {*// swipe size per item to scroll.*}
 		$('#titleScroller{$scrollerName} .scrollerBodyContainer')
 			.touchwipe({ldelim}
@@ -76,7 +76,7 @@
             {rdelim})
 						.on('click', 'button.slowDown', function() {ldelim}
 								TitleScroller.prototype.slowerControl({$scrollerVariable}, {$scrollerVariable}.interval);
-						{rdelim});;*/
+						{rdelim});*/
 	{rdelim});
 
 </script>
