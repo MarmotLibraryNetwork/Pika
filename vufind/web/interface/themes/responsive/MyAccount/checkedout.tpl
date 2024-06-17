@@ -38,8 +38,8 @@
 
 					<div class="btn-group">
 						{if !$hasOnlyEContentCheckOuts}
-							<button onclick="Pika.Account.renewSelectedTitles()" class="btn btn-sm btn-default">Renew Selected Items</button>
-							<button onclick="Pika.Account.renewAll()" class="btn btn-sm btn-default">Renew All</button>
+							<button onclick="return Pika.Account.renewSelectedTitles()" class="btn btn-sm btn-default">Renew Selected Items</button>
+							<button onclick="return Pika.Account.renewAll()" class="btn btn-sm btn-default">Renew All</button>
 						{/if}
 						<a href="/MyAccount/CheckedOut?exportToExcel{if isset($defaultSortOption)}&accountSort={$defaultSortOption}{/if}" class="btn btn-sm btn-default" id="exportToExcelTop">Export to Excel</a>
 					</div>
@@ -77,8 +77,9 @@
 
 					<div class="btn-group">
 						{if !$hasOnlyEContentCheckOuts}
-							<button onclick="Pika.Account.renewSelectedTitles()" class="btn btn-sm btn-default">Renew Selected Items</button>
-							<button onclick="Pika.Account.renewAll()" class="btn btn-sm btn-default">Renew All</button>
+							<button onclick="return Pika.Account.renewSelectedTitles()" class="btn btn-sm btn-default">Renew Selected Items</button>
+							<button onclick="return Pika.Account.renewAll()" class="btn btn-sm btn-default">Renew All</button>
+							{* return for the onclick prevents form submission *}
 						{/if}
 						<a href="/MyAccount/CheckedOut?exportToExcel{if isset($defaultSortOption)}&accountSort={$defaultSortOption}{/if}" class="btn btn-sm btn-default" id="exportToExcelTop">Export to Excel</a>
 					</div>

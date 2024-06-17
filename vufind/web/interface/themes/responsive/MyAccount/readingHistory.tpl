@@ -50,12 +50,12 @@
 
 
 		{* Do not display Reading History in Masquerade Mode, unless the library has allowed it *}
-	<form id="readingHistoryActionForm" class="form-inline readingHistoryActionForm">
+	<form id="readingListForm" class="form-inline readingHistoryActionForm">
 		{* Reading History Actions *}
 		<div class="row">
 			<input type="hidden" name="page" value="{$page}">
 			<input type="hidden" name="patronId" value="{$selectedUser}">
-			<input type="hidden" name="readingHistoryAction">
+			<input type="hidden" name="readingHistoryAction" id="readingHistoryAction" value="">
 
 			<div id="readingListActionsTop" class="col-xs-6">
 				<div class="btn-group btn-group-sm">
@@ -82,7 +82,7 @@
 		</div>
 	</form>
 	<div class="row">
-			<hr>
+	
 
 			{if $transList || $isReadingHistorySearch}
 					<hr>
@@ -291,7 +291,7 @@
 					<div class="col-xs-12">
 					<div id="readingListActionsBottom" class="btn-group btn-group-sm">
 							{if $historyActive == true}
-								<button class="btn btn-sm btn-info" onclick="return Pika.Account.ReadingHistory.exportListAction()">Export To Excel</button>
+								<button class="btn btn-sm btn-info" onclick="return Pika.Account.ReadingHistory.exportListAction()">Export To Excel</button> 
 								{if $transList}
 									<button class="btn btn-sm btn-warning" onclick="return Pika.Account.ReadingHistory.deletedMarkedAction()">Delete Marked</button>
 								{/if}
