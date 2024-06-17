@@ -80,7 +80,7 @@
 			</div>
 			{/if}
 		</div>
-	</form>
+
 	<div class="row">
 	
 
