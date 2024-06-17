@@ -22,6 +22,7 @@ class RenewMultiple extends MyAccount {
 	/** @var CatalogConnection */
 
 	function launch(){
+		require_once ROOT_DIR . '/services/MyAccount/AJAX.php';
 		$renew = new MyAccount_AJAX();
 		$result = $renew->renewSelectedItems();
 //		TODO: renewal messaging
