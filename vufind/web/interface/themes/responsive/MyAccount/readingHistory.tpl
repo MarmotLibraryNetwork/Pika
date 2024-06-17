@@ -50,7 +50,7 @@
 
 
 		{* Do not display Reading History in Masquerade Mode, unless the library has allowed it *}
-	<form id="readingListForm" class="form-inline readingHistoryActionForm">
+	<form id="readingListForm" class="form-inline readingHistoryActionForm"> 
 		{* Reading History Actions *}
 		<div class="row">
 			<input type="hidden" name="page" value="{$page}">
