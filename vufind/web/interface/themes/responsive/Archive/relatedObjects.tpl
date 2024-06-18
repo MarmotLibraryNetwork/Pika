@@ -12,9 +12,9 @@
 					<form action="/Archive/Results">
 						<div class="input-group">
 							<input type="text" name="lookfor" size="30" title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term." autocomplete="off" class="form-control" placeholder="Search this collection" aria-label="Search this collection">
-							<div class="input-group-btn" id="search-actions">
-								<button class="btn btn-default" type="submit">GO</button>
-							</div>
+							<span class="input-group-btn" id="search-actions">
+								<button class="btn btn-primary" type="submit">GO</button>
+							</span>
 							<input type="hidden" name="islandoraType" value="IslandoraKeyword">
 							<input type="hidden" name="filter[]" value='RELS_EXT_isMemberOfCollection_uri_ms:"info:fedora/{$exhibitPid}"'>
 						</div>
@@ -23,9 +23,9 @@
 					<form action="/Archive/Results">
 						<div class="input-group">
 							<input type="text" name="lookfor" size="30" title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term." autocomplete="off" class="form-control" placeholder="Search this collection" aria-label="Search this collection">
-							<div class="input-group-btn" id="search-actions">
+							<span class="input-group-btn" id="search-actions">
 								<button class="btn btn-primary" type="submit">GO</button>
-							</div>
+							</span>
 							<input type="hidden" name="islandoraType" value="IslandoraKeyword">
 							<input type="hidden" name="filter[]" value='ancestors_ms:"{$exhibitPid}"'>
 						</div>
