@@ -205,12 +205,27 @@ abstract class ObjectEditor extends Admin_Admin {
 		}else{
 			unset($_SESSION['redirect_location']);
 		}
-		if (!empty($_REQUEST['id'])){
+		if (!empty($_REQUEST['id']) && ctype_digit($_REQUEST['id'])){
 			$id             = $_REQUEST['id'];
 			$existingObject = $this->getExistingObjectById($id);
 			$interface->assign('id', $id);
 			if (method_exists($existingObject, 'label')){
 				$interface->assign('objectName', $existingObject->label());
+			}
+		}elseif (!empty($_REQUEST['name']) && !empty($structure['name'])){
+			// Convenience for fetching Variables objectes
+			$name                 = trim($_REQUEST['name']);
+			$objectType           = $this->getObjectType();
+			$existingObject       = new $objectType;
+			$existingObject->name = $name;
+			if ($existingObject->find(true)){
+				$_REQUEST['id'] = $existingObject->id; // Set Request variable to skip of new/empty object logic below
+				$interface->assign('id', $existingObject->id);
+				if (method_exists($existingObject, 'label')){
+					$interface->assign('objectName', $existingObject->label());
+				}
+			}else{
+				$existingObject = null;
 			}
 		}else{
 			$existingObject = null;

@@ -42,13 +42,13 @@ class Admin_Variables extends ObjectEditor {
 	}
 
 	function getAllObjects($orderBy = null){
-		$variableList = array();
+		$variableList = [];
 
 		$variable = new Variable();
 		$variable->orderBy($orderBy ?? 'name');
 		$variable->find();
 		while ($variable->fetch()){
-			// Add a human readable date time  of timestamp values in an additional column
+			// Add a human-readable date time  of timestamp values in an additional column
 			$variable->timeDisplay = null;
 			if (ctype_digit($variable->value) && $variable->value > strtotime('-10 years')){
 				$variable->timeDisplay = date("Y-m-d H:i:s T", $variable->value);
@@ -89,30 +89,30 @@ class Admin_Variables extends ObjectEditor {
 	 * @return array
 	 */
 	function getAdditionalObjectActions($existingObject){
-		$actions = array();
+		$actions = [];
 		if ($existingObject && $existingObject->id != ''){
-			$actions[] = array(
+			$actions[] = [
 				'text' => '<span class="glyphicon glyphicon-time" aria-hidden="true"></span> Set to Current Timestamp',
 				'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=setToNow&amp;id=" . $existingObject->id,
-			);
-			$actions[] = array(
+			];
+			$actions[] = [
 				'text' => '<span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span> Increase by 10,000',
 				'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=IncrementVariable&amp;direction=up&amp;id=" . $existingObject->id,
-			);
-			$actions[] = array(
+			];
+			$actions[] = [
 				'text' => '<span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span> Decrease by 1,000',
 				'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=IncrementVariable&amp;direction=down&amp;id=" . $existingObject->id,
-			);
+			];
 			if ($existingObject->value == '1' || $existingObject->value == 'true'){
-				$actions[] = array(
+				$actions[] = [
 					'text' => '<span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span> Set to false',
 					'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=SwitchBooleanVariable&amp;id=" . $existingObject->id,
-				);
+				];
 			}elseif ( $existingObject->value == '0' || $existingObject->value == 'false'){
-				$actions[] = array(
+				$actions[] = [
 					'text' => '<span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> Set to true',
 					'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=SwitchBooleanVariable&amp;id=" . $existingObject->id,
-				);
+				];
 			}
 		}
 		return $actions;
