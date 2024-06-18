@@ -80,7 +80,7 @@
 							</div>
 							{/if}
 						</div>
-					</form>
+					{*</form>*}
 					<div class="row">
 
 						{if $transList || $isReadingHistorySearch}
@@ -306,6 +306,7 @@
 						{/if}
 
 					</div>
+					</form>
 				{/if}
 
 			{/strip}
