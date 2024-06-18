@@ -95,8 +95,8 @@
 								</div>
 								<div class="col-xs-3">
 									<select name="searchBy" id="searchBy" class="form-control" aria-label="Search by">
-										<option value="title" {if $searchBy == 'title'}selected{/if}>by Title</option>
-										<option value="author" {if $searchBy == 'author'}selected{/if}>by Author</option>
+										<option value="title"{if $searchBy == 'title'} selected{/if}>by Title</option>
+										<option value="author"{if $searchBy == 'author'} selected{/if}>by Author</option>
 									</select>
 									<button class="btn btn-default" type="submit" onclick="return Pika.Account.ReadingHistory.searchReadingHistoryAction()">Search</button>
 								</div>
