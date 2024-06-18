@@ -133,7 +133,7 @@ class SearchAPI extends AJAXHandler {
 			if (!empty($partialIndexPauseIntervals->N)){
 
 				if (!empty($partialIndexPauseIntervals->value)){
-					// Format should be hh:mm-hh:mm;hh:mm-hh:mm (some spacing tolerated) (24 hour format; Intervals can't cross 24:00/00:00)
+					// Format should be hh:mm-hh:mm;hh:mm-hh:mm (some spacing tolerated) (24-hour format; Intervals can't cross 24:00/00:00)
 					$intervals = explode(';', trim($partialIndexPauseIntervals->value));
 					foreach ($intervals as $interval){
 						[$start, $stop] = explode('-', trim($interval));
@@ -246,17 +246,17 @@ class SearchAPI extends AJAXHandler {
 					if (!empty($minNumRecordVariable->N)){
 						$minNumRecords = $minNumRecordVariable->value;
 						if (!empty($minNumRecords) && $numRecords < $minNumRecords){
-							// Warn till more that 500 works below the limit
+							// Warn till more than 500 works below the limit
 							$status[] = $numRecords < ($minNumRecords - 500) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-							$notes[]  = "Solr Index (Grouped) Record Count ($numRecords) in below the minimum ($minNumRecords)";
+							$notes[]  = "Index count ($numRecords) in below the minimum ($minNumRecords)";
 						}elseif ($numRecords > $minNumRecords + 10000){
 							$status[] = self::STATUS_WARN;
-							$notes[]  = "Solr Index (Grouped) Record Count ($numRecords) is more than 10,000 above the minimum ($minNumRecords)";
+							$notes[]  = "Index count ($numRecords) is more than 10,000 above the minimum ($minNumRecords)";
 						}
 
 					}else{
 						$status[] = self::STATUS_WARN;
-						$notes[]  = 'The minimum number of records for Solr Index (Grouped) has not been set.';
+						$notes[]  = 'The minimum number of records for Index has not been set.';
 					}
 
 				}else{
