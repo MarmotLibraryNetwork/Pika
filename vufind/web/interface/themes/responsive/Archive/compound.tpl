@@ -145,8 +145,8 @@
 		{include file="Archive/metadata.tpl"}
 	</div>
 {/strip}
-<script src="/js/openseadragon/openseadragon.js" ></script>
-<script src="/js/openseadragon/djtilesource.js" ></script>
+<script src="/js/openseadragon/openseadragon.js"></script>
+<script src="/js/openseadragon/djtilesource.js"></script>
 {if $canView}
 <script>
 	{if !($anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload))}
