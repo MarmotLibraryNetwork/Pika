@@ -90,6 +90,13 @@ function getHooplaUpdates(){
 			],
 		],
 
+		'2024.03.0_expand_ hoopla_rating_col' => [
+			'title'       => 'Expand Hoopla rating Column',
+			'description' => 'Expand Hoopla rating column to hold value "Unrestricted"',
+			'sql'         => [
+				"ALTER TABLE `hoopla_export` CHANGE COLUMN `rating` `rating` VARCHAR(13);",
+			],
+		],
 
 	];
 }
