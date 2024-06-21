@@ -65,13 +65,16 @@ class Help_AJAX extends AJAXHandler {
 						'message' => "<p>We're sorry, but your request could not be submitted because we do not have a support email address on file.</p><p>Please contact your local library.</p>"
 					];
 				}
-
+				if(!empty($configArray['Site']['email'])){
+					$sendingAddress = $configArray['Site']['email'];
+				}elseif (!empty($_REQUEST['email'])){
+					$sendingAddress = $_REQUEST['email'];
+				}else{
+					$sendingAddress = "pika@marmot.org";
+				}
 				$multipleEmailAddresses = preg_split('/[;,]/', $to, null, PREG_SPLIT_NO_EMPTY);
 				if (!empty($multipleEmailAddresses)){
-					$sendingAddress = $multipleEmailAddresses[0];
 					$to             = str_replace(';', ',', $to); //The newer mailer needs 'to' addresses to be separated by commas rather than semicolon
-				}else{
-					$sendingAddress = $to;
 				}
 
 				$name        = $_REQUEST['name'];
