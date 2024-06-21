@@ -1,10 +1,10 @@
 #!/bin/bash
 
 FTPSERVER_IP=10.1.2.7
-OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/horizon_continuous_reindex_output.log"
+OUTPUT_FILE="/var/log/pika/${PIKASERVER}/horizon_continuous_reindex_output.log"
 
-source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
-source "/usr/local/vufind-plus/vufind/bash/continuousFunctions.sh"
+source "/usr/local/pika/vufind/bash/checkConflicts.sh"
+source "/usr/local/pika/vufind/bash/continuousFunctions.sh"
 
 while true
 do
@@ -34,7 +34,7 @@ do
 #			echo "$FILE was modified less than 1 minute ago, waiting to copy " >> ${OUTPUT_FILE}
 			continue
 		else
-			cp $FILE /data/vufind-plus/${PIKASERVER}/marc_updates/ >> ${OUTPUT_FILE}
+			cp $FILE /data/pika/${PIKASERVER}/marc_updates/ >> ${OUTPUT_FILE}
 
 			if [[ ! ${PIKASERVER} =~ ".test" ]]; then
 				# Move to processed (Production Only does this)
@@ -46,17 +46,17 @@ do
 	done
 	umount /mnt/ftp >> ${OUTPUT_FILE}
 
-	if test "`find /data/vufind-plus/${PIKASERVER}/marc_updates/ -name "*.mrc" -mtime +1`"; then
+	if test "`find /data/pika/${PIKASERVER}/marc_updates/ -name "*.mrc" -mtime +1`"; then
 		echo "Partial Exports older than a day found in marc_updates folder. Deleting." >> ${OUTPUT_FILE}
 		echo "" >> ${OUTPUT_FILE}
-		find /data/vufind-plus/${PIKASERVER}/marc_updates/ -name "*.mrc" -mtime +1 >> ${OUTPUT_FILE}
+		find /data/pika/${PIKASERVER}/marc_updates/ -name "*.mrc" -mtime +1 >> ${OUTPUT_FILE}
 
 		#Delete any partial exports older than a day
-		find /data/vufind-plus/${PIKASERVER}/marc_updates/ -name "*.mrc" -mtime +1 -delete >> ${OUTPUT_FILE}
+		find /data/pika/${PIKASERVER}/marc_updates/ -name "*.mrc" -mtime +1 -delete >> ${OUTPUT_FILE}
 	fi
 
 	#merge the changes with the full extract
-	cd /usr/local/vufind-plus/vufind/horizon_export/
+	cd /usr/local/pika/vufind/horizon_export/
 	java -server -XX:+UseG1GC -jar horizon_export.jar ${PIKASERVER} >> ${OUTPUT_FILE}
 
 
@@ -65,7 +65,7 @@ do
 	# push output into a variable to avoid so it doesn't echo out of the script
 
 	#run reindex
-	cd /usr/local/vufind-plus/vufind/reindexer
+	cd /usr/local/pika/vufind/reindexer
 	nice -n -5 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} >> ${OUTPUT_FILE}
 	checkForDBCrash $?
 

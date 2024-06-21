@@ -35,7 +35,7 @@ do
 	: > $OUTPUT_FILE;
 
 	#export from koha (items, holds)
-	cd /usr/local/vufind-plus/vufind/koha_export/
+	cd /usr/local/pika/vufind/koha_export/
 	nice -n -10 java -server -XX:+UseG1GC -jar koha_export.jar ${PIKASERVER} >> ${OUTPUT_FILE}
 
 	# Pause if another reindexer is running; check in 10 second intervals
@@ -43,7 +43,7 @@ do
 	# push output into a variable to avoid so it doesn't echo out of the script
 
 	#run reindex
-	cd /usr/local/vufind-plus/vufind/reindexer
+	cd /usr/local/pika/vufind/reindexer
 	nice -n -5 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} >> ${OUTPUT_FILE}
 	checkForDBCrash $?
 

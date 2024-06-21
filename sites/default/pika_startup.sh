@@ -13,6 +13,6 @@
 ### END INIT INFO
 
 # Solr Engine for {servername} instance
-cd /usr/local/vufind-plus/sites/{servername}
+cd /usr/local/pika/sites/{servername}
 ./{servername}.sh $*
 # this script is passed a "start" or "stop" argument which is passed on to the pika script

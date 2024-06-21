@@ -42,24 +42,24 @@ if [[ $# = 2 ]] || [[ $# = 3 ]];then
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
 
 		# Create installation directories for Pika
-		mkdir /var/${SOLR_INDEXER_NAME} /var/log/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}/
-		mkdir /var/${SOLR_SEARCHER_NAME} /var/log/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}/
+		mkdir /var/${SOLR_INDEXER_NAME} /var/log/pika/${PIKASERVER}/${SOLR_INDEXER_NAME}/
+		mkdir /var/${SOLR_SEARCHER_NAME} /var/log/pika/${PIKASERVER}/${SOLR_SEARCHER_NAME}/
 
 		#Add links for where we want data and logs to actually live
-		ln -s /var/log/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}/ /var/${SOLR_INDEXER_NAME}/logs
-		ln -s /var/log/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}/ /var/${SOLR_SEARCHER_NAME}/logs
+		ln -s /var/log/pika/${PIKASERVER}/${SOLR_INDEXER_NAME}/ /var/${SOLR_INDEXER_NAME}/logs
+		ln -s /var/log/pika/${PIKASERVER}/${SOLR_SEARCHER_NAME}/ /var/${SOLR_SEARCHER_NAME}/logs
 
 		# Move old data directories
-		mv /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME} /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}_old_delete_me
-		mv /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME} /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}_old_delete_me
+		mv /data/pika/${PIKASERVER}/${SOLR_INDEXER_NAME} /data/pika/${PIKASERVER}/${SOLR_INDEXER_NAME}_old_delete_me
+		mv /data/pika/${PIKASERVER}/${SOLR_SEARCHER_NAME} /data/pika/${PIKASERVER}/${SOLR_SEARCHER_NAME}_old_delete_me
 
 		# Install data directories
-		cp -r "${CURRENT_DIR}/../data_dir_setup/${SOLR_INDEXER_NAME}" "/data/vufind-plus/${PIKASERVER}"
-		cp -r "${CURRENT_DIR}/../data_dir_setup/${SOLR_SEARCHER_NAME}" "/data/vufind-plus/${PIKASERVER}"
+		cp -r "${CURRENT_DIR}/../data_dir_setup/${SOLR_INDEXER_NAME}" "/data/pika/${PIKASERVER}"
+		cp -r "${CURRENT_DIR}/../data_dir_setup/${SOLR_SEARCHER_NAME}" "/data/pika/${PIKASERVER}"
 
 		# Add links to solr standard data directory to ours
-		ln -s /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}/ /var/${SOLR_INDEXER_NAME}/data
-		ln -s /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}/ /var/${SOLR_SEARCHER_NAME}/data
+		ln -s /data/pika/${PIKASERVER}/${SOLR_INDEXER_NAME}/ /var/${SOLR_INDEXER_NAME}/data
+		ln -s /data/pika/${PIKASERVER}/${SOLR_SEARCHER_NAME}/ /var/${SOLR_SEARCHER_NAME}/data
 
 		read -p "Directories set up complete. Proceed with SOLR installation?" -n 1 -r
 		echo    # (optional) move to a new line
@@ -92,8 +92,8 @@ if [[ $# = 2 ]] || [[ $# = 3 ]];then
 
 				chown solr /var/${SOLR_INDEXER_NAME}/logs
 				chown solr /var/${SOLR_SEARCHER_NAME}/logs
-				chown solr --recursive /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}
-				chown solr --recursive /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}
+				chown solr --recursive /data/pika/${PIKASERVER}/${SOLR_INDEXER_NAME}
+				chown solr --recursive /data/pika/${PIKASERVER}/${SOLR_SEARCHER_NAME}
 
 				# Set the replicator port for searcher
 				echo 'SOLR_OPTS="$SOLR_OPTS -Dsolr.masterport=8180"' >> /etc/default/${SOLR_SEARCHER_NAME}.in.sh

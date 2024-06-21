@@ -20,10 +20,10 @@ fi
 
 site=$1 
 #echo $site
-confpwd=/usr/local/VuFind-Plus/sites/$site/conf/config.pwd.ini
+confpwd=/usr/local/pika/sites/$site/conf/config.pwd.ini
 #echo $confpwd
 if [ ! -f $confpwd ]; then
-	confpwd=/usr/local/vufind-plus/sites/$site/conf/config.pwd.ini
+	confpwd=/usr/local/pika/sites/$site/conf/config.pwd.ini
 	#echo $confpwd
 	if [ ! -f $confpwd ]; then
 		echo "Please check spelling of site $site; conf.pwd.ini not found at $confpwd"

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/overdrive_continuous_reindex_output.log"
+OUTPUT_FILE="/var/log/pika/${PIKASERVER}/overdrive_continuous_reindex_output.log"
 
-source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
-source "/usr/local/vufind-plus/vufind/bash/continuousFunctions.sh"
+source "/usr/local/pika/vufind/bash/checkConflicts.sh"
+source "/usr/local/pika/vufind/bash/continuousFunctions.sh"
 
 while true
 do
@@ -35,7 +35,7 @@ do
 	: > $OUTPUT_FILE;
 
 	#export from overdrive
-	cd /usr/local/vufind-plus/vufind/overdrive_api_extract/
+	cd /usr/local/pika/vufind/overdrive_api_extract/
 	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} >> ${OUTPUT_FILE}
 
 	# Pause if another reindexer is running; check in 11 second intervals
@@ -44,7 +44,7 @@ do
 	# push output into a variable to avoid so it doesn't echo out of the script
 
 	#run reindex
-	cd /usr/local/vufind-plus/vufind/reindexer
+	cd /usr/local/pika/vufind/reindexer
 	nice -n -5 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} >> ${OUTPUT_FILE}
 	checkForDBCrash $?
 

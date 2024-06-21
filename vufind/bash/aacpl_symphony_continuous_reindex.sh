@@ -1,10 +1,10 @@
 #!/bin/bash
 
 FTPSERVER_IP=10.1.2.7
-OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/symphony_continuous_reindex_output.log"
+OUTPUT_FILE="/var/log/pika/${PIKASERVER}/symphony_continuous_reindex_output.log"
 
-source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
-source "/usr/local/vufind-plus/vufind/bash/continuousFunctions.sh"
+source "/usr/local/pika/vufind/bash/checkConflicts.sh"
+source "/usr/local/pika/vufind/bash/continuousFunctions.sh"
 
 while true
 do
@@ -34,23 +34,23 @@ do
 #			echo "$FILE was modified less than 1 minute ago, waiting to copy " >> ${OUTPUT_FILE}
 			continue
 		else
-			cp --update --preserve=timestamps $FILE /data/vufind-plus/${PIKASERVER}/marc_updates/ >> ${OUTPUT_FILE}
+			cp --update --preserve=timestamps $FILE /data/pika/${PIKASERVER}/marc_updates/ >> ${OUTPUT_FILE}
 		fi
 	done
 
 	#Get orders file from the FTP server
-	cp --update --preserve=timestamps /mnt/ftp/PIKA-onorderfile.txt /data/vufind-plus/${PIKASERVER}/marc/ >> ${OUTPUT_FILE}
+	cp --update --preserve=timestamps /mnt/ftp/PIKA-onorderfile.txt /data/pika/${PIKASERVER}/marc/ >> ${OUTPUT_FILE}
 
 	umount /mnt/ftp >> ${OUTPUT_FILE}
 
 	#Get holds files from Google Drive
-	cd /data/vufind-plus/${PIKASERVER}/marc
+	cd /data/pika/${PIKASERVER}/marc
 #	wget -q "https://drive.google.com/uc?export=download&id=0B_xqNQMfUrAzanJUZkNXekgtU2s" -O "Pika_Hold_Periodicals.csv"
 #	wget -q "https://drive.google.com/uc?export=download&id=0B_xqNQMfUrAzNGJrajJzQWs3ZGs" -O "Pika_Holds.csv"
 	wget -q "https://drive.google.com/uc?export=download&id=1OOS8p8cZcWoHPVnt1jQlpcR9NwRnjlam" -O "Pika_Hold_Periodicals.csv"
 	wget -q "https://drive.google.com/uc?export=download&id=1aT8jXgDd3jG0K3xTYYcFi0hgBRWW6fj2" -O "Pika_Holds.csv"
 
-	cd /usr/local/vufind-plus/vufind/symphony_export/
+	cd /usr/local/pika/vufind/symphony_export/
 	java -server -jar symphony_export.jar  ${PIKASERVER} >> ${OUTPUT_FILE}
 
 
@@ -59,7 +59,7 @@ do
 	# push output into a variable to avoid so it doesn't echo out of the script
 
 	#run reindex
-	cd /usr/local/vufind-plus/vufind/reindexer
+	cd /usr/local/pika/vufind/reindexer
 	nice -n -5 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} >> ${OUTPUT_FILE}
 	checkForDBCrash $?
 

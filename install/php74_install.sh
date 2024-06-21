@@ -50,14 +50,14 @@ esac
 echo
 
 echo Installing Composer packages...
-cd /usr/local/vufind-plus/install \
+cd /usr/local/pika/install \
 && composer update \
 || { printf "%b" "Failed to install Composer packages. Exiting.\n" ; exit 1 ; }
 echo Composer packages installed.
 echo
 
 echo Copying DataObject to vendor directory...
-cp -r /usr/local/vufind-plus/install/PEAR/DB/* /usr/share/composer/vendor/pear/db/DB \
+cp -r /usr/local/pika/install/PEAR/DB/* /usr/share/composer/vendor/pear/db/DB \
 || { printf "%b" "Failed to copy DataObject. Please check that directory exists.\nExiting.\n" ; exit 1 ; }
 
 cd /usr/share/composer/vendor/pear/db/DB

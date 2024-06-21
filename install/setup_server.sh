@@ -5,7 +5,7 @@
 # author: Steve Lindemann
 #   date: 22 Jul 14
 #
-# setup data and logs for a new vufind-plus server by copying the appropriate 
+# setup data and logs for a new pika server by copying the appropriate
 # files from default
 #
 #-------------------------------------------------------------------------
@@ -31,8 +31,8 @@ if [ $# = 1 ];then
   echo "setting up data directory"
   mkdir /data
   cd /data
-  mkdir vufind-plus
-  cd vufind-plus
+  mkdir pika
+  cd pika
   echo "creating accelerated reader data folder"
   mkdir accelerated_reader
   mkdir $HOST
@@ -46,13 +46,13 @@ if [ $# = 1 ];then
   chmod -v g+w covers/*
   #-----------------
   echo "adding hoopla data directory"
-  cd /data/vufind-plus
+  cd /data/pika
   mkdir hoopla hoopla/marc hoopla/marc_recs
   #-----------------
   echo "setting up logs directory"
   cd /var/log
-  mkdir vufind-plus
-  cd vufind-plus
+  mkdir pika
+  cd pika
   mkdir $HOST
   cd $HOST
   mkdir jetty
