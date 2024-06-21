@@ -67,10 +67,8 @@ class Help_AJAX extends AJAXHandler {
 				}
 				if(!empty($configArray['Site']['email'])){
 					$sendingAddress = $configArray['Site']['email'];
-				}elseif (!empty($_REQUEST['email'])){
+				}else {
 					$sendingAddress = $_REQUEST['email'];
-				}else{
-					$sendingAddress = "pika@marmot.org";
 				}
 				$multipleEmailAddresses = preg_split('/[;,]/', $to, null, PREG_SPLIT_NO_EMPTY);
 				if (!empty($multipleEmailAddresses)){
@@ -82,7 +80,6 @@ class Help_AJAX extends AJAXHandler {
 				$patronEmail = $_REQUEST['email'];
 				$cardNumber  = !empty($_REQUEST['libraryCardNumber']) ? $_REQUEST['libraryCardNumber'] : 'Not Entered';
 				$browser     = !empty($_REQUEST['browser']) ? $_REQUEST['browser'] : 'Not Entered';
-				$ccAddress   = "pika@marmot.org";
 				$interface->assign('libraryName', $userLibrary->displayName ?? $currentLibrary->displayName);
 				$interface->assign('report', $_REQUEST['report']);
 				$interface->assign('name', $name);
@@ -92,7 +89,7 @@ class Help_AJAX extends AJAXHandler {
 				$interface->assign('subject', $subject);
 
 				$body        = $interface->fetch('Help/accessibilityReportEmail.tpl');
-				$emailResult = $mail->send($to, $sendingAddress, $subject, $body, $patronEmail, $ccAddress);
+				$emailResult = $mail->send($to, $sendingAddress, $subject, $body, $patronEmail);
 				if (PEAR::isError($emailResult)){
 					global $pikaLogger;
 					$pikaLogger->error('Accessibility Report email not sent: ' . $emailResult->getMessage());
