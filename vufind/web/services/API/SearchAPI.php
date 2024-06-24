@@ -248,7 +248,7 @@ class SearchAPI extends AJAXHandler {
 						if (!empty($minNumRecords) && $numRecords < $minNumRecords){
 							// Warn till more than 500 works below the limit
 							$status[] = $numRecords < ($minNumRecords - 500) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-							$notes[]  = "Index count ($numRecords) in below the minimum ($minNumRecords)";
+							$notes[]  = "Index count ($numRecords) is below the minimum ($minNumRecords)";
 						}elseif ($numRecords > $minNumRecords + 10000){
 							$status[] = self::STATUS_WARN;
 							$notes[]  = "Index count ($numRecords) is more than 10,000 above the minimum ($minNumRecords)";

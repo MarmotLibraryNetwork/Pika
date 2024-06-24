@@ -10,7 +10,7 @@
 			</tr>
 			{foreach from=$PikaStatusMessages item=message}
 				<tr>
-					<td>{$message}{if strpos($message, "Index count")} <a href="/Admin/Variables?objectAction=edit&name=solr_grouped_minimum_number_records"> Change minimum level</a>{/if}</td>
+					<td>{$message}{if strpos($message, "Index count") !== false} <a href="/Admin/Variables?objectAction=edit&name=solr_grouped_minimum_number_records"> Change minimum level</a>{/if}</td>
 				</tr>
 			{/foreach}
 		</table>
