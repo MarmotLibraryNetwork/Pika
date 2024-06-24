@@ -1,9 +1,9 @@
 #!/bin/bash
 
-OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/koha_continuous_reindex_output.log"
+OUTPUT_FILE="/var/log/pika/${PIKASERVER}/koha_continuous_reindex_output.log"
 
-source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
-source "/usr/local/vufind-plus/vufind/bash/continuousFunctions.sh"
+source "/usr/local/pika/vufind/bash/checkConflicts.sh"
+source "/usr/local/pika/vufind/bash/continuousFunctions.sh"
 
 while true
 do
