@@ -318,6 +318,7 @@ class Browse_AJAX extends AJAXHandler {
 			if ($browseCategory){
 				global $interface;
 				$interface->assign('browseCategoryId', $this->textId);
+				$records           = [];
 				$result['success'] = true;
 				$result['textId']  = $browseCategory->textId;
 				$result['label']   = $browseCategory->label;
@@ -330,84 +331,76 @@ class Browse_AJAX extends AJAXHandler {
 					$sourceList->id = $browseCategory->sourceListId;
 					if ($sourceList->find(true)){
 						$records = $sourceList->getBrowseRecords($pageToLoad);
-					}else{
-						$records = [];
 					}
 					$result['searchUrl'] = '/MyAccount/MyList/' . $browseCategory->sourceListId;
 
 					// Search Browse Category //
 				}else{
 					$this->searchObject = SearchObjectFactory::initSearchObject();
-					$defaultFilterInfo  = $browseCategory->defaultFilter;
-					$defaultFilters     = preg_split('/[\r\n,;]+/', $defaultFilterInfo);
-					foreach ($defaultFilters as $filter){
-						$this->searchObject->addFilter(trim($filter));
-					}
-					$this->searchObject->setSort($browseCategory->defaultSort);
-					if ($browseCategory->searchTerm != ''){
-						if ($browseCategory->searchTerm[0] == '(' && $browseCategory->searchTerm[strlen($browseCategory->searchTerm) -1] == ')'){
-							// Some simple Advanced Searches have been saved as browse categories of the form "(SearchType:searchPhrase)"
-							// so strip the parentheses so it can be treated as a basic search term.
-							$browseCategory->searchTerm = substr($browseCategory->searchTerm, 1, -1);
+					if ($this->searchObject->pingServer(false)){
+						$defaultFilterInfo = $browseCategory->defaultFilter;
+						$defaultFilters    = preg_split('/[\r\n,;]+/', $defaultFilterInfo);
+						foreach ($defaultFilters as $filter){
+							$this->searchObject->addFilter(trim($filter));
 						}
-						$this->searchObject->setSearchTermForBrowseCategory($browseCategory->searchTerm);
-					}
+						$this->searchObject->setSort($browseCategory->defaultSort);
+						if ($browseCategory->searchTerm != ''){
+							if ($browseCategory->searchTerm[0] == '(' && $browseCategory->searchTerm[strlen($browseCategory->searchTerm) - 1] == ')'){
+								// Some simple Advanced Searches have been saved as browse categories of the form "(SearchType:searchPhrase)"
+								// so strip the parentheses, so it can be treated as a basic search term.
+								$browseCategory->searchTerm = substr($browseCategory->searchTerm, 1, -1);
+							}
+							$this->searchObject->setSearchTermForBrowseCategory($browseCategory->searchTerm);
+						}                                                       //Get titles for the list
+						$this->searchObject->clearFacets();
+						$this->searchObject->disableSpelling();
+						$this->searchObject->disableLogging();
+						$this->searchObject->setLimit(self::ITEMS_PER_PAGE);
+						$this->searchObject->setPage($pageToLoad);
+						$this->searchObject->processSearch();
+						$records = $this->searchObject->getBrowseRecordHTML();// Do we need to initialize the ajax ratings?
+						if ($this->browseMode == 'covers'){
+							// Rating Settings
+							global $library;
+							/** @var Library $library */
+							$location                  = Location::getActiveLocation();
+							$browseCategoryRatingsMode = null;
+							if ($location){
+								$browseCategoryRatingsMode = $location->browseCategoryRatingsMode;
+							} // Try Location Setting
+							if (!$browseCategoryRatingsMode){
+								$browseCategoryRatingsMode = $library->browseCategoryRatingsMode;
+							}  // Try Library Setting
 
-					//Get titles for the list
-					$this->searchObject->clearFacets();
-					$this->searchObject->disableSpelling();
-					$this->searchObject->disableLogging();
-					$this->searchObject->setLimit(self::ITEMS_PER_PAGE);
-					$this->searchObject->setPage($pageToLoad);
-					$this->searchObject->processSearch();
-
-					$records = $this->searchObject->getBrowseRecordHTML();
-
-					// Do we need to initialize the ajax ratings?
-					if ($this->browseMode == 'covers'){
-						// Rating Settings
-						global $library;  /** @var Library $library */
-						$location                  = Location::getActiveLocation();
-						$browseCategoryRatingsMode = null;
-						if ($location){
-							$browseCategoryRatingsMode = $location->browseCategoryRatingsMode;
-						} // Try Location Setting
-						if (!$browseCategoryRatingsMode){
-							$browseCategoryRatingsMode = $library->browseCategoryRatingsMode;
-						}  // Try Library Setting
-
-						// when the Ajax rating is turned on, they have to be initialized with each load of the category.
-						if ($browseCategoryRatingsMode == 'stars'){
-							$records[] = '<script>Pika.Ratings.initializeRaters()</script>';
+							// when the Ajax rating is turned on, they have to be initialized with each load of the category.
+							if ($browseCategoryRatingsMode == 'stars'){
+								$records[] = '<script>Pika.Ratings.initializeRaters()</script>';
+							}
 						}
+						$result['searchUrl'] = $this->searchObject->renderSearchUrl();// let front end know if we have reached the end of the result set
+						if ($this->searchObject->getPage() * $this->searchObject->getLimit() >= $this->searchObject->getResultTotal()){
+							$result['lastPage'] = true;
+						}// Shutdown the search object
+						$this->searchObject->close();
 					}
-
-					$result['searchUrl'] = $this->searchObject->renderSearchUrl();
-
-					// let front end know if we have reached the end of the result set
-					if ($this->searchObject->getPage() * $this->searchObject->getLimit() >= $this->searchObject->getResultTotal()){
-						$result['lastPage'] = true;
-					}
-
-
-					// Shutdown the search object
-					$this->searchObject->close();
 				}
-				if (count($records) == 0){
-					$records[]          = $interface->fetch('Browse/noResults.tpl');
+				$recordCount          = count($records);
+				$result['records']    = implode('', $records);
+				$result['numRecords'] = $recordCount;
+				if ($recordCount == 0){
+					$result['records']  = $interface->fetch('Browse/noResults.tpl');
 					$result['lastPage'] = true;
 				}
 
-				$result['records']    = implode('', $records);
-				$result['numRecords'] = count($records);
+				elseif ($pageToLoad == 1){
+					// Store first page of browse category in the MemCache (if there were any results (don't cache empty results)
+					global $memCache, $configArray, $solrScope;
+					$key = 'browse_category_' . $this->textId . '_' . $solrScope . '_' . $browseMode;
+					$memCache->add($key, $result, 0, $configArray['Caching']['browse_category_info']);
+				}
+
 			}
 
-			// Store first page of browse category in the MemCache
-			if ($pageToLoad == 1){
-				global $memCache, $configArray, $solrScope;
-				$key = 'browse_category_' . $this->textId . '_' . $solrScope . '_' . $browseMode;
-				$memCache->add($key, $result, 0, $configArray['Caching']['browse_category_info']);
-			}
 			return $result;
 		}
 	}
