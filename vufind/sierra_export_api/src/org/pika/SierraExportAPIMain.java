@@ -550,7 +550,7 @@ public class SierraExportAPIMain {
 					allBibsToUpdate.add(bibId);
 					oldBibsToProcess++;
 				}
-				addNoteToExportLog("Since the number of bibs to process in below 50, another " + oldBibsToProcess + " bibs with the oldest last extracted time will be processed.");
+				addNoteToExportLog("Since the number of bibs to process is below 50, another " + oldBibsToProcess + " bibs with the oldest last extracted time will be processed.");
 			} catch (SQLException e) {
 				logger.error("Error loading bibs with oldest last extract time to process", e);
 			}

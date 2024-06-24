@@ -1018,7 +1018,7 @@ public class RecordGrouperMain {
 						}
 						if (checkMinFileSize && marcFile.length() < curProfile.minMarcFileSize) {
 							processProfile = false;
-							addNoteToGroupingLog(curProfile.sourceName + " will be skipped because the full marc file is below the the minimum file size.");
+							addNoteToGroupingLog(curProfile.sourceName + " will be skipped because the full marc file is below the minimum file size.");
 							logger.error(curProfile.sourceName + " profile's marc file " + marcFile.getName() + " file size " + marcFile.length() + " is below min file size level " + curProfile.minMarcFileSize);
 						} else {
 							filesToProcess.add(marcFile);
