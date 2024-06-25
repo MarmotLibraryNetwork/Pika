@@ -56,6 +56,9 @@
 							{/if}
 							{include file='MyAccount/star-rating.tpl' id=$summId ratingData=$summRating ratingTitle=$summTitle}
 						</div>
+						{if $showNotInterested == true}
+							<button class="button notInterested" title="Select Not Interested if you don't want to see this title again." onclick="return Pika.GroupedWork.markNotInterested('{$summId}');">Not&nbsp;Interested</button>
+						{/if}
 						{* include file="GroupedWork/title-rating.tpl" ratingClass="" id=$summId ratingData=$summRating *}
 					{/if}
 				</div>
