@@ -3,7 +3,7 @@
 # Copy this file to /etc/logrotate.d/
 # and edit to reflect your servername
 #####
-/var/log/vufind-plus/{servername}/*.log
+/var/log/pika/{servername}/*.log
 {
     missingok
     notifempty

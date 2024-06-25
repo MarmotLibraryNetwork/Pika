@@ -15,18 +15,18 @@ echo WORKINGDIR is %WORKINGDIR%
 
 echo setting up data directory
 cd c:\data
-mkdir vufind-plus
-cd c:\data\vufind-plus
+mkdir pika
+cd c:\data\pika
 mkdir %SERVERNAME%
 cd %WORKINGDIR%
-cp -rp data_dir_setup/* c:\data\vufind-plus\%SERVERNAME%
+cp -rp data_dir_setup/* c:\data\pika\%SERVERNAME%
 
 echo setting up logs directory
 cd c:\var\log
-mkdir vufind-plus
-cd c:\var\log\vufind-plus
+mkdir pika
+cd c:\var\log\pika
 mkdir %SERVERNAME%
-cd c:\var\log\vufind-plus\%SERVERNAME%
+cd c:\var\log\pika\%SERVERNAME%
 mkdir jetty
 cd %WORKINGDIR%
 goto end
