@@ -90,19 +90,22 @@ class Help_AJAX extends AJAXHandler {
 
 				$body        = $interface->fetch('Help/accessibilityReportEmail.tpl');
 				$emailResult = $mail->send($to, $sendingAddress, $subject, $body, $patronEmail);
+				global $pikaLogger;
 				if (PEAR::isError($emailResult)){
-					global $pikaLogger;
+
 					$pikaLogger->error('Accessibility Report email not sent: ' . $emailResult->getMessage());
 					return [
 						'title'   => "Accessibility Report Not Sent",
 						'message' => "<p class='alert alert-danger'>We're sorry, an error occurred while submitting your report.</p>" . $emailResult->getMessage()
 					];
 				}elseif ($emailResult){
+					$pikaLogger->warn('Accessibility Report was sent successfully with following message: ' . $emailResult);
 					return [
 						'title'   => "Accessibility Report Sent",
 						'message' => "<p class='alert alert-success'>Your report was sent to our team.</p><p>Thank you for using the catalog.</p>"
 					];
 				}else{
+					$pikaLogger->warn('There was an unknown error sending the accessibility e-mail');
 					return [
 						'title'   => "Support Request Not Sent",
 						'message' => "<p class='alert alert-danger'>We're sorry, but your request could not be submitted to our support team at this time.</p><p>Please try again later.</p>"
