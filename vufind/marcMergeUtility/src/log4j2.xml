@@ -23,8 +23,8 @@
 		</Console>
 
 		<RollingFile name="LOGFILE" bufferedIO="true" immediateFlush="true">
-			<FileName>/var/log/vufind-plus/mergeutility.log</FileName>
-			<FilePattern>/var/log/vufind-plus/mergeutility.log.%i</FilePattern>
+			<FileName>/var/log/pika/mergeutility.log</FileName>
+			<FilePattern>/var/log/pika/mergeutility.log.%i</FilePattern>
 			<SizeBasedTriggeringPolicy size="10 MB"/>
 			<DefaultRolloverStrategy max="5"/>
 			<PatternLayout pattern="%d{yyMMdd HH:mm:ss:SSS} %-5p %c{1} >> %m%n"/>
