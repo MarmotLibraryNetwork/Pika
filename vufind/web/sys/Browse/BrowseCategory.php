@@ -41,7 +41,6 @@ class BrowseCategory extends DB_DataObject{
 	public $searchTerm;
 	public $defaultFilter;
 	public $sourceListId;
-	public $additionalWorksToInclude;
 	public $defaultSort;
 
 	public $catalogScoping;
