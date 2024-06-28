@@ -1299,12 +1299,22 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			],
 		],
 
-		'2024.02.0_addAccessibilityReportEmail' =>[
+		'2024.02.0_addAccessibilityReportEmail' => [
 				'title'           => 'Add Accessibility Email',
-				'description'           => 'Add Accessibility Report Email to library',
+				'description'     => 'Add Accessibility Report Email to library',
 				'continueOnError' => true,
 				'sql'             => [
 					"ALTER TABLE `library` ADD `accessibilityEmail` VARCHAR(255) DEFAULT '';",
+				],
+		],
+
+		'2024.03.0_RemoveBrowseCategoriesColumns' => [
+				'title'           => 'Remove Browse Category columns',
+				'description'     => 'Remove unused columns for browse categories',
+				'continueOnError' => true,
+				'sql'             => [
+					"ALTER TABLE `browse_category` DROP COLUMN `catalogScoping`," .
+					"CHANGE COLUMN `description` `description` TEXT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci' NULL DEFAULT NULL ; ",
 				],
 		],
 
