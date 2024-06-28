@@ -518,13 +518,13 @@ public class RecordGrouperMain {
 						profile.usingSierraAPIExtract = true;
 					}
 				} catch (Exception e) {
-					logger.warn("Error determining whether or not an indexing profile uses the Siera API Extract");
+					logger.warn("Error determining whether or not an indexing profile uses the Sierra API Extract");
 					// log the error but otherwise continue as normal
 				}
 
 				indexingProfiles.add(profile);
 			}
-			if (indexingProfileToRun != null && !indexingProfileToRun.isEmpty() && indexingProfiles.size() == 0) {
+			if (indexingProfileToRun != null && !indexingProfileToRun.isEmpty() && indexingProfiles.isEmpty()) {
 				logger.error("Did not find "+ indexingProfileToRun + " in database.");
 				System.exit(1);
 			}
@@ -649,7 +649,7 @@ public class RecordGrouperMain {
 			if (indexingProfileToRun == null || !indexingProfileToRun.equalsIgnoreCase("overdrive")){
 				indexingProfiles = loadIndexingProfiles(pikaConn, indexingProfileToRun);
 			}
-			if (indexingProfiles != null && indexingProfiles.size() > 0) {
+			if (indexingProfiles != null && !indexingProfiles.isEmpty()) {
 				groupIlsRecords(pikaConn, indexingProfiles, explodeMarcsOnly);
 			}
 
@@ -1088,7 +1088,7 @@ public class RecordGrouperMain {
 					String          marcEncoding                     = curProfile.marcEncoding;
 					long            totalRecordsGroupedForProfile    = 0;
 					TreeSet<String> recordNumbersInExport            = new TreeSet<>();
-					TreeSet<String> suppressedRecordNumbersInExport  = new TreeSet<>();
+ 					TreeSet<String> suppressedRecordNumbersInExport  = new TreeSet<>();
 					TreeSet<String> suppressedControlNumbersInExport = new TreeSet<>();
 					TreeSet<String> marcRecordsOverwritten           = new TreeSet<>();
 					TreeSet<String> marcRecordsWritten               = new TreeSet<>();
@@ -1096,7 +1096,7 @@ public class RecordGrouperMain {
 
 					String lastRecordProcessed = "";
 					for (File curBibFile : filesToProcess) {
-						String recordId            = "";
+ 						String recordId            = "";
 						int    numRecordsProcessed = 0;
 						int    numRecordsRead      = 0;
 						try (FileInputStream marcFileStream = new FileInputStream(curBibFile)) {
@@ -1190,19 +1190,19 @@ public class RecordGrouperMain {
 
 					String profileName = curProfile.sourceName.replaceAll(" ", "_");
 					writeExistingRecordsFile(recordNumbersInExport, "record_grouping_" + profileName + "_bibs_in_export", marcPath);
-					if (suppressedRecordNumbersInExport.size() > 0) {
+					if (!suppressedRecordNumbersInExport.isEmpty()) {
 						writeExistingRecordsFile(suppressedRecordNumbersInExport, "record_grouping_" + profileName + "_bibs_to_ignore", marcPath);
 					}
-					if (suppressedControlNumbersInExport.size() > 0) {
+					if (!suppressedControlNumbersInExport.isEmpty()) {
 						writeExistingRecordsFile(suppressedControlNumbersInExport, "record_grouping_" + profileName + "_control_numbers_to_ignore", marcPath);
 					}
-					if (recordNumbersToIndex.size() > 0) {
+					if (!recordNumbersToIndex.isEmpty()) {
 						writeExistingRecordsFile(recordNumbersToIndex, "record_grouping_" + profileName + "_bibs_to_index", marcPath);
 					}
-					if (marcRecordsWritten.size() > 0) {
+					if (!marcRecordsWritten.isEmpty()) {
 						writeExistingRecordsFile(marcRecordsWritten, "record_grouping_" + profileName + "_new_bibs_written", marcPath);
 					}
-					if (marcRecordsOverwritten.size() > 0) {
+					if (!marcRecordsOverwritten.isEmpty()) {
 						writeExistingRecordsFile(marcRecordsOverwritten, "record_grouping_" + profileName + "_changed_bibs_written", marcPath);
 					}
 				}
@@ -1274,8 +1274,8 @@ public class RecordGrouperMain {
 		}
 	}
 
-	private static SimpleDateFormat oo8DateFormat = new SimpleDateFormat("yyMMdd");
-	private static SimpleDateFormat oo5DateFormat = new SimpleDateFormat("yyyyMMdd");
+	private static final SimpleDateFormat oo8DateFormat = new SimpleDateFormat("yyMMdd");
+	private static final SimpleDateFormat oo5DateFormat = new SimpleDateFormat("yyyyMMdd");
 
 	private static boolean writeIndividualMarc(IndexingProfile indexingProfile, Record marcRecord, RecordIdentifier recordIdentifier, TreeSet<String> marcRecordsWritten, TreeSet<String> marcRecordsOverwritten) {
 		boolean marcRecordUpToDate = false;

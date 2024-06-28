@@ -246,7 +246,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		groupingTitle = groupingTitle.trim();
 
 		//Revert when normalizating title to nothing
-		if (groupingTitle.length() == 0 && titleBeforeRemovingSubtitles.length() > 0){
+		if (groupingTitle.isEmpty() && !titleBeforeRemovingSubtitles.isEmpty()){
 			if (logger.isDebugEnabled()) {
 				logger.debug("Title '" + fullTitle + "' was normalized to nothing, reverting to '" + titleBeforeRemovingSubtitles + "'");
 			}
