@@ -132,7 +132,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			locationSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "location");
 			try {
 				String pattern = indexingProfileRS.getString("nonHoldableLocations");
-				if (pattern != null && pattern.length() > 0) {
+				if (pattern != null && !pattern.isEmpty()) {
 					nonHoldableLocations = Pattern.compile("^(" + pattern + ")$");
 				}
 			} catch (Exception e) {
@@ -142,27 +142,27 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			collectionSubfield       = getSubfieldIndicatorFromConfig(indexingProfileRS, "collection");
 
 			String locationsToSuppress = indexingProfileRS.getString("locationsToSuppress");
-			if (locationsToSuppress != null && locationsToSuppress.length() > 0) {
+			if (locationsToSuppress != null && !locationsToSuppress.isEmpty()) {
 				locationsToSuppressPattern = Pattern.compile(locationsToSuppress);
 			}
 			String collectionsToSuppress = indexingProfileRS.getString("collectionsToSuppress");
-			if (collectionsToSuppress != null && collectionsToSuppress.length() > 0) {
+			if (collectionsToSuppress != null && !collectionsToSuppress.isEmpty()) {
 				collectionsToSuppressPattern = Pattern.compile(collectionsToSuppress);
 			}
 			String statusesToSuppress = indexingProfileRS.getString("statusesToSuppress");
-			if (statusesToSuppress != null && statusesToSuppress.length() > 0) {
+			if (statusesToSuppress != null && !statusesToSuppress.isEmpty()) {
 				statusesToSuppressPattern = Pattern.compile(statusesToSuppress);
 			}
 			String bCode3sToSuppress = indexingProfileRS.getString("bCode3sToSuppress");
-			if (bCode3sToSuppress != null && bCode3sToSuppress.length() > 0) {
+			if (bCode3sToSuppress != null && !bCode3sToSuppress.isEmpty()) {
 				bCode3sToSuppressPattern = Pattern.compile(bCode3sToSuppress);
 			}
 			String iCode2sToSuppress = indexingProfileRS.getString("iCode2sToSuppress");
-			if (iCode2sToSuppress != null && iCode2sToSuppress.length() > 0) {
+			if (iCode2sToSuppress != null && !iCode2sToSuppress.isEmpty()) {
 				iCode2sToSuppressPattern = Pattern.compile(iCode2sToSuppress);
 			}
 			String iTypesToSuppress = indexingProfileRS.getString("iTypesToSuppress");
-			if (iTypesToSuppress != null && iTypesToSuppress.length() > 0) {
+			if (iTypesToSuppress != null && !iTypesToSuppress.isEmpty()) {
 				iTypesToSuppressPattern = Pattern.compile(iTypesToSuppress);
 			}
 
@@ -185,7 +185,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			statusSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "status");
 			try {
 				String pattern = indexingProfileRS.getString("nonHoldableStatuses");
-				if (pattern != null && pattern.length() > 0) {
+				if (pattern != null && !pattern.isEmpty()) {
 					nonHoldableStatuses = Pattern.compile("^(" + pattern + ")$");
 				}
 			} catch (Exception e) {
@@ -194,7 +194,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 			dueDateSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "dueDate");
 			String dueDateFormat = indexingProfileRS.getString("dueDateFormat");
-			if (dueDateFormat.length() > 0) {
+			if (!dueDateFormat.isEmpty()) {
 				dueDateFormatter = new SimpleDateFormat(dueDateFormat);
 			}
 
@@ -205,7 +205,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			iTypeSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "iType");
 			try {
 				String pattern = indexingProfileRS.getString("nonHoldableITypes");
-				if (pattern != null && pattern.length() > 0) {
+				if (pattern != null && !pattern.isEmpty()) {
 					nonHoldableITypes = Pattern.compile("^(" + pattern + ")$");
 				}
 			} catch (Exception e) {
@@ -385,7 +385,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 			//Now look for any eContent that is defined within the ils
 			List<RecordInfo> econtentRecords = loadUnsuppressedEContentItems(groupedWork, identifier, record);
-			if (isItemlessPhysicalRecordToRemove && econtentRecords.size() == 0){
+			if (isItemlessPhysicalRecordToRemove && econtentRecords.isEmpty()){
 				// If the ILS record is both an itemless record and isn't econtent skip further processing of the record
 				return;
 			}
@@ -440,7 +440,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 			for (ItemInfo curItem : recordInfo.getRelatedItems()){
 				String itemIdentifier = curItem.getItemIdentifier();
-				if (itemIdentifier != null && itemIdentifier.length() > 0) {
+				if (itemIdentifier != null && !itemIdentifier.isEmpty()) {
 					groupedWork.addAlternateId(itemIdentifier);
 				}
 			}
@@ -583,11 +583,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	//TODO: this should be an abstract method; this version doesn't really apply to non- III library systems
-	protected boolean isOrderItemValid(String status, String code3) {
-		return status.equals("o") || status.equals("1");
-	}
-
 //TODO: this should move to the iii handler; and a blank method put here instead
 	private void loadOrderIds(GroupedWorkSolr groupedWork, Record record) {
 		//Load order ids from recordNumberTag
@@ -697,11 +692,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private SimpleDateFormat dateAddedFormatter = null;
 	private SimpleDateFormat lastCheckInFormatter = null;
-	ItemInfo getPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField, RecordIdentifier identifier) {
+	void getPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField, RecordIdentifier identifier) {
 		if (dateAddedFormatter == null){
 			dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
 		}
-		if (lastCheckInFormatter == null && lastCheckInFormat != null && lastCheckInFormat.length() > 0){
+		if (lastCheckInFormatter == null && lastCheckInFormat != null && !lastCheckInFormat.isEmpty()){
 			lastCheckInFormatter = new SimpleDateFormat(lastCheckInFormat);
 			lastCheckInFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 			// Assume last check in dates are set in zulu time.
@@ -716,7 +711,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		itemInfo.setLocationCode(itemLocation);
 
 		//if the status and location are null, we can assume this is not a valid item
-		if (!isItemValid(itemStatus, itemLocation)) return null;
+		if (!isItemValid(itemStatus, itemLocation)) return;
 		if (itemStatus == null || itemStatus.isEmpty()) {
 			logger.warn("Item contained no status value for item " + itemInfo.getItemIdentifier() + " for location " + itemLocation + " in record " + identifier);
 		}
@@ -742,7 +737,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (lastCheckInFormatter != null) {
 			String lastCheckInDate = getItemSubfieldData(lastCheckInSubfield, itemField);
 			Date lastCheckIn = null;
-			if (lastCheckInDate != null && lastCheckInDate.length() > 0)
+			if (lastCheckInDate != null && !lastCheckInDate.isEmpty())
 				try {
 					lastCheckIn = lastCheckInFormatter.parse(lastCheckInDate);
 				} catch (ParseException e) {
@@ -766,7 +761,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				itemInfo.setFormatCategory(translateValue("format_category", format, identifier));
 				String formatBoost = translateValue("format_boost", format, identifier);
 				try {
-					if (formatBoost != null && formatBoost.length() > 0) {
+					if (formatBoost != null && !formatBoost.isEmpty()) {
 						recordInfo.setFormatBoost(Integer.parseInt(formatBoost));
 					}
 				} catch (Exception e) {
@@ -781,7 +776,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		groupedWork.addKeywords(itemLocation);
 
 		recordInfo.addItem(itemInfo);
-		return itemInfo;
 	}
 
 	protected void getDueDate(DataField itemField, ItemInfo itemInfo) {
@@ -910,7 +904,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	String getOverriddenStatus(ItemInfo itemInfo, boolean groupedStatus) {
 		String overriddenStatus = null;
-		if (timesToReshelve.size() > 0 && itemInfo.getLastCheckinDate() != null) {
+		if (!timesToReshelve.isEmpty() && itemInfo.getLastCheckinDate() != null) {
 			for (TimeToReshelve timeToReshelve : timesToReshelve) {
 				if (itemInfo.getStatusCode().equalsIgnoreCase(timeToReshelve.getStatusToOverride())) {
 					// Compare statuses first since that is simpler than location code regexes
@@ -1149,7 +1143,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (itemField != null) {
 			shelfLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		}
-		if (shelfLocation == null || shelfLocation.length() == 0 || shelfLocation.equals("none")){
+		if (shelfLocation == null || shelfLocation.isEmpty() || shelfLocation.equals("none")){
 			return "";
 		}else {
 			return translateValue("shelf_location", shelfLocation, identifier);
@@ -1171,14 +1165,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			List<Subfield> subfields = itemField.getSubfields(subfieldIndicator);
 			if (subfields.size() == 1) {
 				return subfields.get(0).getData().trim();
-			} else if (subfields.size() == 0) {
+			} else if (subfields.isEmpty()) {
 				return null;
 			} else {
 				StringBuilder subfieldData = new StringBuilder();
 				for (Subfield subfield:subfields) {
 					String trimmedValue = subfield.getData().trim();
 					boolean okToAdd = false;
-					if (trimmedValue.length() == 0){
+					if (trimmedValue.isEmpty()){
 						continue;
 					}
 					try {

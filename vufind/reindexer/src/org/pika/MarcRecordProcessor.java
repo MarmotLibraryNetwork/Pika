@@ -30,14 +30,14 @@ import java.util.regex.PatternSyntaxException;
  * Time: 12:01 PM
  */
 abstract class MarcRecordProcessor {
-	protected      Logger             logger;
-	protected      GroupedWorkIndexer indexer;
-	private        boolean            fullReindex;
-	private static Pattern            mpaaRatingRegex1    = Pattern.compile("(?:.*?)[rR]ated:?\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
-	private static Pattern            mpaaRatingRegex2    = Pattern.compile("(?:.*?)[rR]ating:?\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
-	private static Pattern            mpaaRatingRegex3    = Pattern.compile("(?:.*?)(G|PG-13|PG|R|NC-17|NR|X)\\sRated(?:.*)", Pattern.CANON_EQ);
-	private static Pattern            mpaaNotRatedRegex   = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
-	private        HashSet<String>    unknownSubjectForms = new HashSet<>();
+	protected            Logger             logger;
+	protected            GroupedWorkIndexer indexer;
+	private final        boolean            fullReindex;
+	private static final Pattern            mpaaRatingRegex1    = Pattern.compile("(?:.*?)[rR]ated:?\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
+	private static final Pattern            mpaaRatingRegex2    = Pattern.compile("(?:.*?)[rR]ating:?\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
+	private static final Pattern            mpaaRatingRegex3    = Pattern.compile("(?:.*?)(G|PG-13|PG|R|NC-17|NR|X)\\sRated(?:.*)", Pattern.CANON_EQ);
+	private static final Pattern            mpaaNotRatedRegex   = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
+	private final        HashSet<String>    unknownSubjectForms = new HashSet<>();
 
 	MarcRecordProcessor(GroupedWorkIndexer indexer, Logger logger, boolean fullReindex) {
 		this.indexer = indexer;

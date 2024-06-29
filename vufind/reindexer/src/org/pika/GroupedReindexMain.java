@@ -167,14 +167,14 @@ public class GroupedReindexMain {
 						logger.warn(hooplaRecordUsingUrlIdExtractInfo.size() + " Hoopla records required using id parsed from record url for extract info (from the Hoopla API)");
 					}
 					if (logger.isInfoEnabled()) {
-						if (hooplaRecordWithOutExtractInfo.size() > 0) {
+						if (!hooplaRecordWithOutExtractInfo.isEmpty()) {
 							logger.info("Hoopla Records without Extract Info  : " + String.join(", ", hooplaRecordWithOutExtractInfo));
 						}
-						if (hooplaRecordUsingUrlIdExtractInfo.size() > 0) {
+						if (!hooplaRecordUsingUrlIdExtractInfo.isEmpty()) {
 							logger.info("Hoopla Records using Id from Url  : " + String.join(", ", hooplaRecordWithOutExtractInfo));
 						}
 
-						if (sortTitleRemovalsList.size() > 0) {
+						if (!sortTitleRemovalsList.isEmpty()) {
 							logger.info("Removed Beginning Sort Title phrases:" + String.join("|", sortTitleRemovalsList));
 							// Use pipe character as removed phrase may also have comma or space characters
 						}

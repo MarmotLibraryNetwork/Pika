@@ -92,23 +92,23 @@ public class FormatDetermination {
 		locationSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "location");
 
 		String locationsToSuppress = indexingProfileRS.getString("locationsToSuppress");
-		if (locationsToSuppress != null && locationsToSuppress.length() > 0) {
+		if (locationsToSuppress != null && !locationsToSuppress.isEmpty()) {
 			locationsToSuppressPattern = Pattern.compile(locationsToSuppress);
 		}
 		String collectionsToSuppress = indexingProfileRS.getString("collectionsToSuppress");
-		if (collectionsToSuppress != null && collectionsToSuppress.length() > 0) {
+		if (collectionsToSuppress != null && !collectionsToSuppress.isEmpty()) {
 			collectionsToSuppressPattern = Pattern.compile(collectionsToSuppress);
 		}
 		String statusesToSuppress = indexingProfileRS.getString("statusesToSuppress");
-		if (statusesToSuppress != null && statusesToSuppress.length() > 0) {
+		if (statusesToSuppress != null && !statusesToSuppress.isEmpty()) {
 			statusesToSuppressPattern = Pattern.compile(statusesToSuppress);
 		}
 		String iTypesToSuppress = indexingProfileRS.getString("iTypesToSuppress");
-		if (iTypesToSuppress != null && iTypesToSuppress.length() > 0) {
+		if (iTypesToSuppress != null && !iTypesToSuppress.isEmpty()) {
 			iTypesToSuppressPattern = Pattern.compile(iTypesToSuppress);
 		}
 		String iCode2sToSuppress = indexingProfileRS.getString("iCode2sToSuppress");
-		if (iCode2sToSuppress != null && iCode2sToSuppress.length() > 0) {
+		if (iCode2sToSuppress != null && !iCode2sToSuppress.isEmpty()) {
 			iCode2sToSuppressPattern = Pattern.compile(iCode2sToSuppress);
 		}
 
@@ -117,7 +117,7 @@ public class FormatDetermination {
 	private char getSubfieldIndicatorFromConfig(ResultSet indexingProfileRS, String subfieldName) throws SQLException{
 		String subfieldString = indexingProfileRS.getString(subfieldName);
 		char subfield = ' ';
-		if (!indexingProfileRS.wasNull() && subfieldString.length() > 0)  {
+		if (!indexingProfileRS.wasNull() && !subfieldString.isEmpty())  {
 			subfield = subfieldString.charAt(0);
 		}
 		return subfield;

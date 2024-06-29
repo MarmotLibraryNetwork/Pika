@@ -251,18 +251,15 @@ public class GroupedWorkIndexer {
 								case "Lion":
 									indexingRecordProcessors.put(sourceName, new LionRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
-								case "Aurora":
-									indexingRecordProcessors.put(sourceName, new AuroraRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-									break;
 								case "NorthernWaters":
 									indexingRecordProcessors.put(sourceName, new NorthernWatersRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
 								case "Sacramento":
 									indexingRecordProcessors.put(sourceName, new SacramentoRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
-								// Symphony Processors
-								case "AACPL":
-									indexingRecordProcessors.put(sourceName, new AACPLRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								// Polaris Processors
+								case "Clearview":
+									indexingRecordProcessors.put(sourceName, new ClearviewRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
 								//Horizon Processors
 								case "WCPL":
@@ -506,7 +503,7 @@ public class GroupedWorkIndexer {
 			String facetLabel  = libraryInformationRS.getString("facetLabel");
 			String subdomain   = libraryInformationRS.getString("subdomain");
 			String displayName = libraryInformationRS.getString("displayName");
-			if (facetLabel.length() == 0){
+			if (facetLabel.isEmpty()){
 				facetLabel = displayName;
 			}
 			//These options determine how scoping is done
