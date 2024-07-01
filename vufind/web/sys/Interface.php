@@ -569,7 +569,7 @@ class UInterface extends Smarty {
 		}
 		$this->assign('showHoldButton', $showHoldButton);
 		$this->assign('showHoldButtonInSearchResults', $showHoldButtonInSearchResults);
-		$this->assign('showNotInterested', true);
+		//$this->assign('showNotInterested', false);  // In general, hide the "Not interested" button used on the recommendations page
 
 		if (!empty($library->additionalCss)){
 			$this->assign('additionalCss', $library->additionalCss);

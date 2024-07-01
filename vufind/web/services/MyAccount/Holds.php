@@ -63,7 +63,6 @@ class MyAccount_Holds extends MyAccount{
 		$interface->assign('showPlacedColumn', $showPlacedColumn);
 		$interface->assign('showDateWhenSuspending', $showDateWhenSuspending);
 		$interface->assign('showPosition', $showPosition);
-		$interface->assign('showNotInterested', false);
 
 
 		// Define sorting options
