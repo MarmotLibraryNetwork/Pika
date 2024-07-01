@@ -297,14 +297,14 @@
 	<script>
 		$(function(){
 			$(".dropdown-toggle").on('click', function(){
-				if($(this).attr('aria-expanded') == 'false'){
+				/* TODO: trigger calls need to be removed */
+				if($(this).attr('aria-expanded') === 'false'){
 					$(this).attr('aria-expanded', 'true').trigger("menuExpanded");
 				}else{
 					$(this).attr('aria-expanded', 'false').trigger("menuContracted");
 				}
 			});
 		});
-
 	</script>
 {/literal}
 {*{/strip}*}
