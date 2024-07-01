@@ -55,11 +55,6 @@
 					{/foreach}
 					</tbody>
 				</table>
-				<script>
-					{literal}
-					document.addEventListener('DOMContentLoaded', initStarRatings);
-					{/literal}
-				</script>
 			{if count($ratings) > 5}
 				<script>
 					{literal}
@@ -73,7 +68,7 @@
 							return $('span', td).attr("data-date");
 						});
 					}
-					$(document).ready(function(){
+					$(function(){
 						$('#myRatingsTable').DataTable({
 							"columns":[
 								{"orderDataType": "dom-date"},

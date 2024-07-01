@@ -1,6 +1,7 @@
 Pika.Ratings = (function(){
 	$(function(){
 		Pika.Ratings.initializeRaters();
+		initStarRatings();
 	});
 	return{
 		initializeRaters: function(){

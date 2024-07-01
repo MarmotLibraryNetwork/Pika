@@ -14,9 +14,6 @@
 				</div>
 			<hr style="margin-top: 1em; margin-bottom: 1em;">
 		</div>
-			<script>
-				initStarRatings();
-			</script>
 
 {*			<div class="average-rating row{if !$ratingData.user} rater{/if}" *}{*onclick="return Pika.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')"*}
 {*							{if !$ratingData.user} *}{* When user is not logged in or has not rating the work *}
