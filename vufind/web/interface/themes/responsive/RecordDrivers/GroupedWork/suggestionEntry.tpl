@@ -1,10 +1,12 @@
+{* TODO: possibly obsolete
+Only used by un-used method SearchObject_Solr->getSuggestionListHTML() *}
 {strip}
-	<a name="record{$summId|escape:"url"}" ></a>
+	<a id="record{$summId|escape:"url"}"></a>
 	<div id="groupedRecord{$summId|escape}" class="resultsList row">
 		<div class="col-xs-12 col-sm-3 col-md-3 col-lg-2 text-center">
-			<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image'}">
-			{*{include file="GroupedWork/title-rating.tpl" ratingClass="" recordId=$summId shortId=$summShortId ratingData=$summRating showNotInterested=true}*}
-			{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$summId ratingData=$summRating showNotInterested=true}
+			<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail img-responsive" alt="Book cover for &quot;{$summTitle}&quot;.">
+			{* TODO: if ever used, update with keyboard-accessible star rating interface
+			{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$summId ratingData=$summRating showNotInterested=true}*}
 		</div>
 		<div class="col-xs-12 col-sm-9 col-md-9 col-lg-10">
 			<div class="row">

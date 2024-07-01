@@ -729,6 +729,8 @@ class SearchObject_Solr extends SearchObject_Base {
 	}
 
 	/**
+	 * TODO: Currently not used by anything in Pika
+	 *
 	 * Use the record driver to build an array of HTML displays from the search
 	 * results suitable for use on a user's "favorites" page.
 	 *
