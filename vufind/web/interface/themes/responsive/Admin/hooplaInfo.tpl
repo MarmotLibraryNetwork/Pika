@@ -3,7 +3,7 @@
 		<h1 role="heading" aria-level="1" class="h2">Hoopla API Info</h1>
 		{if $isHooplaEnabled}
 
-		<h4>Report Filters</h4>
+		<div class="h4">Report Filters</div>
 		<div class="navbar row">
 			<form id="HooplaInfoFilter">
 				<div class="form-horizontal">

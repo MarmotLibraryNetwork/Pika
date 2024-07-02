@@ -94,7 +94,7 @@
 			<div class="row">
 				<div class="col-tn-3 col-xs-3 col-sm-4 col-md-4">
 					<button class="btn btn-default" type="submit">
-						<span class="glyphicon glyphicon-search"></span>
+						<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
 						<span id="horizontal-search-box-submit-text">&nbsp;GO</span>
 						{*<span class="visible-xs-inline"> SEARCH</span>  TODO: Will work when upgraded to Bootstrap 3.0*}
 					</button>
