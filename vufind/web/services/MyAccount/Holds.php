@@ -36,8 +36,8 @@ class MyAccount_Holds extends MyAccount{
 		//User method getMyHolds checks to see if the user account is allowed to freeze holds
 
 		// Set Holds settings that are based on the ILS system
-		$ils = $configArray['Catalog']['ils'];
-		$showPosition                    = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX');
+		$ils          = $configArray['Catalog']['ils'];
+		$showPosition = ($ils == 'Horizon' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'CarlX');
 		// for other ils capable of showing hold position.
 		// If $showPosition is already true don't override that setting
 		// #D-3420
@@ -45,19 +45,10 @@ class MyAccount_Holds extends MyAccount{
 			$showPosition = (boolean)$configArray['OPAC']['showPosition'];
 		}
 		$showExpireTime                  = ($ils == 'Horizon' || $ils == 'Symphony');
-		$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony');
+		$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'CarlX');
+		$showDateWhenSuspending          = ($ils == 'Horizon' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'CarlX');
 		$canChangePickupLocation         = ($ils != 'Koha');
-		$showPlacedColumn                = ($ils == 'Symphony' || $ils == 'Horizon'); //TODO: is this true for earlier versions of Horizon Drivers
-		// for other ils capable of showing date hold was placed.
-		// If $showPlacedColumn is already true don't override that setting
-		// #D-3420
-		if(!$showPlacedColumn && isset($configArray['OPAC']['showDatePlaced'])) {
-			$showPlacedColumn = (boolean)$configArray['OPAC']['showDatePlaced'];
-		}
-		$showDateWhenSuspending          = ($ils == 'Symphony' || $ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Koha');
-		if (isset($configArray['suspend_requires_reactivation_date'])) {
-			$suspendRequiresReactivationDate = $configArray['suspend_requires_reactivation_date'];
-		}
+		$showPlacedColumn                = ($ils == 'Horizon' || $ils == 'Symphony' || !empty($configArray['OPAC']['showDatePlaced'])) ;
 		$interface->assign('suspendRequiresReactivationDate', $suspendRequiresReactivationDate);
 		$interface->assign('canChangePickupLocation', $canChangePickupLocation);
 		$interface->assign('showPlacedColumn', $showPlacedColumn);
