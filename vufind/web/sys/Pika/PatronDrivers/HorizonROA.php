@@ -32,7 +32,7 @@ use User;
 use \Pika\Logger;
 use \Pika\Cache;
 
-abstract class HorizonROA implements \DriverInterface {
+abstract class HorizonROA extends PatronDriverInterface implements \DriverInterface {
 	private static $sessionIdsForUsers = [];
 	private $webServiceURL;
 	private $clientId;
