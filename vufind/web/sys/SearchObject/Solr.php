@@ -256,7 +256,7 @@ class SearchObject_Solr extends SearchObject_Base {
 					}
 				}
 
-				// Scoped Fields
+				// Correct any scoped fields to the current search scope
 				if ($solrScope){
 					if (strcmp($field, 'availability_by_format') == 0){
 						$field = 'availability_by_format_' . $solrScope;
@@ -282,8 +282,8 @@ class SearchObject_Solr extends SearchObject_Base {
 						$field = 'owning_location_' . $solrScope;
 					}elseif ((strcmp($field, 'detailed_location') == 0)){
 						$field = 'detailed_location_' . $solrScope;
-//					}elseif ((strcmp($field, 'local_callnumber') == 0)){
-//						$field = 'local_callnumber_' . $solrScope;
+					}elseif ((strcmp($field, 'local_callnumber') == 0)){
+						$field = 'local_callnumber_' . $solrScope;
 					}
 				}
 
