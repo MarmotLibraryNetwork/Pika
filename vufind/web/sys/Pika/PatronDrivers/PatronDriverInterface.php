@@ -39,6 +39,8 @@
  *
  */
 namespace Pika\PatronDrivers;
+use User;
+
 abstract class PatronDriverInterface {
 
 	/**
@@ -75,7 +77,7 @@ abstract class PatronDriverInterface {
 	public abstract function updatePatronInfo($patron, $canUpdateContactInfo);
 
 	/**
-	 *  Whether or not the ILS has a 'username' field that can be substituted for the login field.
+	 *  Whether the ILS has a 'username' field that can be substituted for the login field.
 	 * The default implementation is that it does not have the username field
 	 *
 	 * @return bool
@@ -85,8 +87,8 @@ abstract class PatronDriverInterface {
 	}
 
 	/**
-	 *   When the ILS provides the capability to look up users with out having login info already, implement this function
-	 * so that Pika can create an User object for users that haven't been stored in Pika's database already.
+	 * When the ILS provides the capability to look up users without having login info already, implement this function
+	 * so that Pika can create a User object for users that haven't been stored in Pika's database already.
 	 * @param $patronBarcode
 	 * @return bool|User
 	 */
