@@ -725,7 +725,7 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 		//Get a list of holds for the user
 		$logger = $this->getLogger();
 		$logger->info('Using bracket notation to fetch patron holds');
-		$includeFields = urlencode('holdRecordList{suspendEndDate,fillByDate,queuePosition,status,expirationDate,"
+		$includeFields = urlencode('holdRecordList{placedDate,suspendEndDate,fillByDate,queuePosition,status,expirationDate,"
 		. "item{barcode,call{callNumber}},bib{title,author,bibStatus{displayName}},pickupLibrary{displayName}}');
 		$response = $this->getWebServiceResponse( '/user/patron/key/' . $patron->ilsUserId . '?includeFields='.$includeFields, null, $sessionToken);
 		$patronHolds = $response->fields->holdRecordList;
