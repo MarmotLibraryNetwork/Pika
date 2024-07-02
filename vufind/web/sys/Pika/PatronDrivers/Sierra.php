@@ -67,7 +67,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
 require_once ROOT_DIR . '/sys/Account/PinReset.php';
 
-class Sierra  implements \DriverInterface {
+class Sierra extends PatronDriverInterface implements \DriverInterface {
 
 	// @var Pika/Memcache instance
 	public  $cache;
