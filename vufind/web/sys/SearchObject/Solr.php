@@ -2504,7 +2504,7 @@ class SearchObject_Solr extends SearchObject_Base {
 				//TODO: this block is obsolete, since all these facets are scoped.  Likely would cause empty document returns
 				// if no scope is set
 				global $pikaLogger;
-				$pikaLogger->warning('Solr scope not set when fetching scoped fields.', $_REQUEST);
+				$pikaLogger->warning('Solr scope not set when fetching scoped fields.', [$_SERVER['REQUEST_URI'], $_REQUEST]);
 				$fieldsToReturn .= ',format';
 				$fieldsToReturn .= ',format_category';
 				$fieldsToReturn .= ',days_since_added';
