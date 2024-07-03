@@ -160,6 +160,8 @@ function ini_merge($config_ini, $custom_ini){
  * Support function -- load the main configuration options, overriding with
  * custom local settings if applicable.
  *
+ * Also sets the global variables: $serverName, $instanceName
+ *
  * @return  array       The desired config.ini settings in array format.
  */
 function readConfig(){
@@ -193,16 +195,13 @@ function readConfig(){
 
 	// Sanity checking to make sure we loaded a good file
 	if ($serverName == 'default'){
-		global $pikaLogger;
-		if ($pikaLogger){
-			$pikaLogger->error('Did not find servername for server ' . $_SERVER['SERVER_NAME']);
-		}
-		PEAR_Singleton::raiseError("Invalid configuration, could not find site for " . $_SERVER['SERVER_NAME']);
-		die();
+		$errorMessage = 'Invalid configuration, could not find configuration file for ' . $_SERVER['SERVER_NAME'];
+		die($errorMessage);
 	}
 
 	if ($mainArray == false){
-		die("Unable to parse configuration file $configFile, please check syntax");
+		$errorMessage = "Unable to parse configuration file $configFile, please check syntax";
+		die($errorMessage);
 	}
 
 	// Set a instanceName so that memcache variables can be stored for a specific instance of Pika,
