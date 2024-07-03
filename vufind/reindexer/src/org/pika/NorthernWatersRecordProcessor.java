@@ -52,7 +52,7 @@ public class NorthernWatersRecordProcessor extends SierraRecordProcessor {
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		if (iseContentRecord(record)) {
 			List<DataField> items = MarcUtil.getDataFields(record, itemTag);
-			if (items.size() > 0) {
+			if (!items.isEmpty()) {
 				String url = MarcUtil.getFirstFieldVal(record, "856u");
 				if (url != null && !url.isEmpty()) {
 					for (DataField itemField : items) {

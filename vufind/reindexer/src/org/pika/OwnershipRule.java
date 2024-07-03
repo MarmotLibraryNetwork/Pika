@@ -35,7 +35,7 @@ public class OwnershipRule {
 	OwnershipRule(String indexingProfileSourceName, @NotNull String locationCode){
 		this.indexingProfileSourceName = indexingProfileSourceName;
 
-		if (locationCode.length() == 0){
+		if (locationCode.isEmpty()){
 			locationCode = ".*";
 		}
 		this.locationCodePattern = Pattern.compile(locationCode, Pattern.CASE_INSENSITIVE);

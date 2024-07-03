@@ -394,7 +394,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			//Since print formats are loaded at the record level, do it after we have loaded items
 			loadPrintFormatInformation(recordInfo, record);
 
-			//Do updates based on the overall bib (shared regardless of scoping)
+			//Do the updates based on the overall bib (shared regardless of scoping)
 			String primaryFormat = null;
 			for (RecordInfo ilsRecord : allRelatedRecords) {
 				primaryFormat = ilsRecord.getPrimaryFormat();
@@ -1061,7 +1061,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 		}
 		if (callNumber != null) {
-			if (volume != null && volume.length() > 0 && !callNumber.toString().endsWith(volume)){
+			if (volume != null && !volume.isEmpty() && !callNumber.toString().endsWith(volume)){
 				addTrailingSpace(callNumber);
 				callNumber.append(volume);
 			}
@@ -1089,13 +1089,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return true;
 	}
 
-	private HashMap<String, Boolean> iTypesThatHaveHoldabilityChecked = new HashMap<>();
-	private HashMap<String, Boolean> locationsThatHaveHoldabilityChecked = new HashMap<>();
-	private HashMap<String, Boolean> statusesThatHaveHoldabilityChecked = new HashMap<>();
+	private final HashMap<String, Boolean> iTypesThatHaveHoldabilityChecked    = new HashMap<>();
+	private final HashMap<String, Boolean> locationsThatHaveHoldabilityChecked = new HashMap<>();
+	private final HashMap<String, Boolean> statusesThatHaveHoldabilityChecked  = new HashMap<>();
 
 	private HoldabilityInformation isItemHoldableUnscoped(ItemInfo itemInfo){
 		String itemItypeCode =  itemInfo.getITypeCode();
-		if (nonHoldableITypes != null && itemItypeCode != null && itemItypeCode.length() > 0){
+		if (nonHoldableITypes != null && itemItypeCode != null && !itemItypeCode.isEmpty()){
 			if (!iTypesThatHaveHoldabilityChecked.containsKey(itemItypeCode)){
 				iTypesThatHaveHoldabilityChecked.put(itemItypeCode, !nonHoldableITypes.matcher(itemItypeCode).matches());
 			}
@@ -1104,7 +1104,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 		}
 		String itemLocationCode =  itemInfo.getLocationCode();
-		if (nonHoldableLocations != null && itemLocationCode != null && itemLocationCode.length() > 0){
+		if (nonHoldableLocations != null && itemLocationCode != null && !itemLocationCode.isEmpty()){
 			if (!locationsThatHaveHoldabilityChecked.containsKey(itemLocationCode)){
 				locationsThatHaveHoldabilityChecked.put(itemLocationCode, !nonHoldableLocations.matcher(itemLocationCode).matches());
 			}
@@ -1113,7 +1113,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 		}
 		String itemStatusCode = itemInfo.getStatusCode();
-		if (nonHoldableStatuses != null && itemStatusCode != null && itemStatusCode.length() > 0){
+		if (nonHoldableStatuses != null && itemStatusCode != null && !itemStatusCode.isEmpty()){
 			if (!statusesThatHaveHoldabilityChecked.containsKey(itemStatusCode)){
 				statusesThatHaveHoldabilityChecked.put(itemStatusCode, !nonHoldableStatuses.matcher(itemStatusCode).matches());
 			}
@@ -1313,7 +1313,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	protected char getSubfieldIndicatorFromConfig(ResultSet indexingProfileRS, String subfieldName) throws SQLException{
 		String subfieldString = indexingProfileRS.getString(subfieldName);
 		char subfield = ' ';
-		if (!indexingProfileRS.wasNull() && subfieldString.length() > 0)  {
+		if (!indexingProfileRS.wasNull() && !subfieldString.isEmpty())  {
 			subfield = subfieldString.charAt(0);
 		}
 		return subfield;
