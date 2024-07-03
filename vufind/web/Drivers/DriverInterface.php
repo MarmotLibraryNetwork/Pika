@@ -19,10 +19,10 @@
 
 
 /**
- * Catalog Specific Driver Class
+ * Circulation System Specific Driver Class
  *
  * This interface class is the definition of the required methods for
- * interacting with the local catalog.
+ * interacting with the local ILS.
  *
  */
 interface DriverInterface

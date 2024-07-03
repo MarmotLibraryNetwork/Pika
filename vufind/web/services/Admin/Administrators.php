@@ -113,6 +113,7 @@ class Admin_Administrators extends ObjectEditor {
 
 		$barcode         = trim($_REQUEST['barcode']);
 		$interface->assign('barcode', $barcode);
+		$interface->setTemplate('addAdministrator.tpl');
 
 		if (!empty($_REQUEST['roles'])){
 			$newAdmin = new User();
@@ -121,7 +122,11 @@ class Admin_Administrators extends ObjectEditor {
 			if ($newAdmin->N == 0){
 				//Try searching ILS for user if no user was found
 				$newAdmin = UserAccount::findNewUser($barcode);
-				$success  = is_a($newAdmin, 'User');
+				$success  = is_a($newAdmin, 'User') && !empty($newAdmin->ilsUserId);
+				if (!$success){
+					$interface->assign('error', 'Could not find a user with that barcode, and did not find a user in ILS with that barcode or can\'t look up new users in ILS');
+					return;
+				}
 			}
 			if ($success){
 				require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
@@ -146,8 +151,6 @@ class Admin_Administrators extends ObjectEditor {
 		}else{
 			$interface->assign('error', 'No roles assigned to new administrator');
 		}
-
-		$interface->setTemplate('addAdministrator.tpl');
 	}
 
 	function getInstructions(){
