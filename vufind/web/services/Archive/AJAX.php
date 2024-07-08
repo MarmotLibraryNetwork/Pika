@@ -757,8 +757,10 @@ class Archive_AJAX extends AJAXHandler {
 		$recordDriver  = RecordDriverFactory::initRecordDriver($archiveObject);
 		$interface->assign('recordDriver', $recordDriver);
 
-		$url = $recordDriver->getLinkUrl();
+		$url   = $recordDriver->getLinkUrl();
+		$title = $recordDriver->getTitle();
 		$interface->assign('url', $url);
+		$interface->assign('title', $title);
 		$interface->assign('description', $recordDriver->getDescription());
 		$interface->assign('image', $recordDriver->getBookcoverUrl('medium'));
 
@@ -767,7 +769,7 @@ class Archive_AJAX extends AJAXHandler {
 		$addToFavoritesLabel  = translate('Add to favorites');
 		$addToFavoritesButton = "<button onclick=\"return Pika.Archive.showSaveToListForm(this, '$escapedPid');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$addToFavoritesLabel</button>";
 		return [
-			'title'        => "{$urlStr}{$recordDriver->getTitle()}</a>",
+			'title'        => "{$urlStr}{$title}</a>",
 			'modalBody'    => $interface->fetch('Archive/archivePopup.tpl'),
 			'modalButtons' => "$addToFavoritesButton{$urlStr}<button class='modal-buttons btn btn-primary'>More Info</button></a>",
 		];
