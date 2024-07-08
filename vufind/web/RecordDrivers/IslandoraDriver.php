@@ -1864,7 +1864,7 @@ abstract class IslandoraDriver extends RecordInterface {
 								$entityInfo['sortIndex'] = 3;
 								break;
 							case 'acknowledgement':
-								$entityInfo['label']     = '';
+								//$entityInfo['label']     = ''; // For accessibility, the accompanying image needs a label
 								$entityInfo['sortIndex'] = 4;
 								break;
 						}
@@ -1902,7 +1902,7 @@ abstract class IslandoraDriver extends RecordInterface {
 								$entityInfo['sortIndex'] = 3;
 								break;
 							case 'acknowledgement':
-								$entityInfo['label']     = '';
+								//$entityInfo['label']     = ''; // For accessibility, the accompanying image needs a label
 								$entityInfo['sortIndex'] = 4;
 								break;
 						}
