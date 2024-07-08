@@ -5,7 +5,7 @@
 				<div class="archiveComponentBox">
 					<div class="archiveComponentHeader">Random Image</div>
 					<div class="archiveComponentRandomImage row">
-						<figure class="" id="randomImagePlaceholder">
+						<figure id="randomImagePlaceholder">
 							{include file="Archive/randomImage.tpl"}
 						</figure>
 						<a href="#" onclick="return Pika.Archive.nextRandomObject('{$randomObjectPids}');"><img id="refreshRandomImage" src="/interface/themes/responsive/images/refresh.png" alt="New Random Image"></a>
