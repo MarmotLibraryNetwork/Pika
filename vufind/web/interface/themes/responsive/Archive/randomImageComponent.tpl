@@ -8,7 +8,8 @@
 						<figure id="randomImagePlaceholder">
 							{include file="Archive/randomImage.tpl"}
 						</figure>
-						<button id="refreshRandomImage" class="btn btn-default" onclick="return Pika.Archive.nextRandomObject('evld:localHistoryArchive');"><img src="/interface/themes/responsive/images/refresh.png" alt="New Random Image"></button>					</div>
+						<button id="refreshRandomImage" class="btn btn-default" onclick="return Pika.Archive.nextRandomObject('evld:localHistoryArchive');"><img src="/interface/themes/responsive/images/refresh.png" alt="New Random Image"></button>
+					</div>
 				</div>
 			</div>
 		</div>
