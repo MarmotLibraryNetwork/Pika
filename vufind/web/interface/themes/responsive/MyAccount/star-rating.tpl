@@ -72,7 +72,7 @@
 			</svg>
 		</label>
 	</fieldset>
-	<button type="submit" class="visuallyhidden">Submit rating for {$ratingTitle}</button>
-
+	<button type="submit" class="visuallyhidden" tabindex="-1">Submit rating for {$ratingTitle}</button>
+	{* Since this is visually hidden; hide it also from keyboard focus *}
 	<output class="visuallyhidden"></output>
 </form>
