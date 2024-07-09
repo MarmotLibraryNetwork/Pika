@@ -23,7 +23,7 @@
 	{* QR Code *}
 	{include file="Record\qrcode.tpl"}
 
-<h3 class="h4">Grouping Information</h3>
+<h3>Grouping Information</h3>
 <table class="table-striped table table-condensed notranslate">
 	<tr>
 		<th>Grouped Work ID</th>
@@ -37,7 +37,7 @@
 	{/foreach}
 </table>
 <div class="enrichmentInfo"{if $novelistPrimaryISBN} style="display: none"{/if}>
-	<h3 class="h4">Enrichment Information</h3>
+	<h3>Enrichment Information</h3>
 	<div class="row">
 		<div class="col-xs-6 col-sm-3"><strong>Novelist Primary ISBN</strong></div>
 		<div id="novelistPrimaryISBN" class="col-xs-6 col-sm-9">{$novelistPrimaryISBN}</div>
@@ -47,7 +47,7 @@
 		<div id="isbnForReviews" class="col-xs-6 col-sm-9"></div>
 	</div>
 </div>
-<h3 class="h4">Solr Fields</h3>
+<h3>Solr Fields</h3>
 	{foreach from=$details key='field' item='values'}
 			<div class="row" style="border: solid #ddd; border-width: 1px 0 0 0">
 			{if strpos($field, "scoping_details") === false
@@ -62,7 +62,7 @@
 			</div>
 	{/foreach}
 	{* Display Details tables last *}
-	<h3 class="h4">Solr Details Tables</h3>
+	<h3>Solr Details Tables</h3>
 		{foreach from=$details key='field' item='values'}
 			<div class="row" style="border: solid #ddd; border-width: 1px 0 0 0">
 			{if strpos($field, "scoping_details") !== false}
