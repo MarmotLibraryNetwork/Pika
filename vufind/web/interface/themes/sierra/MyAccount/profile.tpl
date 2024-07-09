@@ -29,29 +29,29 @@
 
 			<div class="panel-group" id="account-settings-accordion">
 				{* barcode *}
-				<div class="col-sm-12 panel active">
+				<div class="panel active">
 					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#barcodePanel">
 						<div class="panel-heading">
-							<div class="panel-title">
-								Barcode
+							<div class="panel-title" id="barcodeTitle">
+								Scannable Library Card Barcode
 							</div>
 						</div>
 					</a>
 					<div id="barcodePanel" class="panel-collapse collapse in">
 						<div class="panel-body" style="text-align: center;">
-							<svg id="barcode" style="margin: 0 auto;"></svg>
-                {literal}
+							<svg role="img" id="barcode" style="margin: 0 auto;" aria-labelledby="barcodeTitle" alt="Barcode of library card number"></svg>
+							{literal}
 							<script src="https://cdn.jsdelivr.net/jsbarcode/3.6.0/"></script>
 							<script>
-								JsBarcode("#barcode", "{/literal}{$profile->barcode}{literal}", {
+								JsBarcode("#barcode", "{/literal}{$user->barcode}{literal}", {
 									format: "codabar",
 									lineColor: "#000000",
 									width: 2,
-									height: 140,
+									height: 200,
 									displayValue: false
 								});
 							</script>
-                {/literal}
+							{/literal}
 						</div>
 					</div>
 				</div>
