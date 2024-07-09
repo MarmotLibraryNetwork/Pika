@@ -39,7 +39,7 @@
 					</a>
 					<div id="barcodePanel" class="panel-collapse collapse in">
 						<div class="panel-body" style="text-align: center;">
-							<svg role="img" id="barcode" style="margin: 0 auto;" aria-labelledby="barcodeTitle" alt="Barcode of library card number"></svg>
+							<svg role="img" id="barcode" style="margin: 0 auto;" aria-labelledby="barcodeTitle"></svg>
 							{literal}
 							<script src="https://cdn.jsdelivr.net/jsbarcode/3.6.0/"></script>
 							<script>

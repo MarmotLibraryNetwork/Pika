@@ -37,7 +37,7 @@
 				{if $showPatronBarcodeImage}
 					<h2 id="barcodeTitle" class="h4">Scannable Library Card Barcode</h2>
 					<div style="text-align: center; min-height: 200px;">
-						<svg role="img" id="barcode" style="margin: 0 auto;" aria-labelledby="barcodeTitle" alt="Barcode of library card number"></svg>
+						<svg role="img" id="barcode" style="margin: 0 auto;" aria-labelledby="barcodeTitle"></svg>
 						{literal}
 						<script src="https://cdn.jsdelivr.net/jsbarcode/3.6.0/"></script>
 						<script>
