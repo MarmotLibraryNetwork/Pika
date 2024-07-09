@@ -68,9 +68,8 @@
     {/if} {* End of loggedIn*}
 
 	{* QR Code *}
-	{if $showQRCode}
-		<div id="record-qr-code" class="text-center hidden-xs visible-md"><img src="{$recordDriver->getQRCodeUrl()}" alt="QR Code for Record"></div>
-	{/if}
+	{include file="Record\qrcode.tpl"}
+
 {/if}
 
 		{if $hooplaExtract}

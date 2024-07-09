@@ -21,9 +21,7 @@
 
 
 	{* QR Code *}
-{if $showQRCode}
-	<div id="record-qr-code" class="text-center hidden-xs visible-md"><img src="{$recordDriver->getQRCodeUrl()}" alt="QR Code for Record"></div>
-{/if}
+	{include file="Record\qrcode.tpl"}
 
 <h3 class="h4">Grouping Information</h3>
 <table class="table-striped table table-condensed notranslate">
