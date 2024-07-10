@@ -970,7 +970,7 @@ public class RecordGrouperMain {
 			pikaConn.prepareStatement("TRUNCATE grouped_work").executeUpdate();
 			pikaConn.prepareStatement("TRUNCATE grouped_work_primary_identifiers").executeUpdate();
 		} catch (Exception e) {
-			System.out.println("Error clearing database " + e.toString());
+			System.out.println("Error clearing database " + e);
 			System.exit(1);
 		}
 	}
