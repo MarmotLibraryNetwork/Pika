@@ -26,7 +26,7 @@
 		{/if}
 	</div>
 	{if $locationInfo.hours}
-		<h4>Hours</h4>
+		<h2 class="h3">Hours</h2>
 		{foreach from=$locationInfo.hours item=curHours}
 			<div class="row">
 				<div class="col-xs-12 col-sm-4 result-label">

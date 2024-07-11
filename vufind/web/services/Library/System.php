@@ -21,6 +21,8 @@
  * Displays information about a particular library system
  * Organization in schema.org terminology
  *
+ *  URL structure: [host url]/Library/[id number]/System
+ *
  * @category Pika
  * @author Mark Noble <pika@marmot.org>
  * Date: 2/27/2016
@@ -32,42 +34,44 @@ class System extends Action {
 		global $interface;
 		global $configArray;
 
-		$librarySystem            = new Library();
-		$librarySystem->libraryId = $_REQUEST['id'];
-		if ($librarySystem->find(true)){
-			$interface->assign('library', $librarySystem);
-		}
+		if (!empty($_REQUEST['id']) && ctype_digit($_REQUEST['id'])){
+			$librarySystem            = new Library();
+			$librarySystem->libraryId = $_REQUEST['id'];
+			if ($librarySystem->find(true)){
+				$interface->assign('library', $librarySystem);
+			}
 
-		$semanticData = [
-			'@context' => 'http://schema.org',
-			'@type'    => 'Organization',
-			'name'     => $librarySystem->displayName,
-		];
-		//add branches
-		$locations            = new Location();
-		$locations->libraryId = $librarySystem->libraryId;
-		$locations->orderBy('isMainBranch DESC, displayName'); // List Main Branches first, then sort by name
-		$locations->find();
-		$subLocations = [];
-		$branches     = [];
-		while ($locations->fetch()){
-			$branches[]     = [
-				'name' => $locations->displayName,
-				'link' => $configArray['Site']['url'] . "/Library/{$locations->locationId}/Branch"
+			$semanticData = [
+				'@context' => 'http://schema.org',
+				'@type'    => 'Organization',
+				'name'     => $librarySystem->displayName,
 			];
-			$subLocations[] = [
-				'@type' => 'Organization',
-				'name'  => $locations->displayName,
-				'url'   => $configArray['Site']['url'] . "/Library/{$locations->locationId}/Branch"
+			//add branches
+			$locations            = new Location();
+			$locations->libraryId = $librarySystem->libraryId;
+			$locations->orderBy('isMainBranch DESC, displayName'); // List Main Branches first, then sort by name
+			$locations->find();
+			$subLocations = [];
+			$branches     = [];
+			while ($locations->fetch()){
+				$branches[]     = [
+					'name' => $locations->displayName,
+					'link' => $configArray['Site']['url'] . "/Library/{$locations->locationId}/Branch"
+				];
+				$subLocations[] = [
+					'@type' => 'Organization',
+					'name'  => $locations->displayName,
+					'url'   => $configArray['Site']['url'] . "/Library/{$locations->locationId}/Branch"
 
-			];
-		}
-		if (count($subLocations)){
-			$semanticData['subOrganization'] = $subLocations;
-			$interface->assign('branches', $branches);
-		}
-		$interface->assign('semanticData', json_encode($semanticData));
+				];
+			}
+			if (count($subLocations)){
+				$semanticData['subOrganization'] = $subLocations;
+				$interface->assign('branches', $branches);
+			}
+			$interface->assign('semanticData', json_encode($semanticData));
 
-		$this->display('system.tpl', $librarySystem->displayName);
+			$this->display('system.tpl', $librarySystem->displayName);
+		}
 	}
 }
