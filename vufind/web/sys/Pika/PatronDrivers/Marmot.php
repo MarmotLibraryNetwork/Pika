@@ -905,8 +905,8 @@ class Marmot extends Sierra {
 
 		//Load the holding label for the branch where the user is physically.
 		$searchLocation = Location::getSearchLocation();
-		if (!empty($searchLocation->scope)){
-			return $searchLocation->scope;
+		if (!empty($searchLocation->ilsLocationId)){
+			return $searchLocation->ilsLocationId;
 		}
 
 		$searchLibrary = Library::getSearchLibrary();
