@@ -16,6 +16,7 @@ package org.pika;
 
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
+import org.marc4j.marc.Record;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -23,7 +24,8 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashSet;
 
-abstract public class PolarisRecordProcessor  extends IlsRecordProcessor {
+
+abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 	PolarisRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 
@@ -49,6 +51,7 @@ abstract public class PolarisRecordProcessor  extends IlsRecordProcessor {
 	protected HashSet<String> availableStatusCodes       = new HashSet<String>();
 	protected HashSet<String> libraryUseOnlyStatusCodes  = new HashSet<String>();
 	//protected HashSet<String> validCheckedOutStatusCodes = new HashSet<String>();
+	protected char isItemHoldableSubfield = '5';
 
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
@@ -61,12 +64,59 @@ abstract public class PolarisRecordProcessor  extends IlsRecordProcessor {
 		return status != null && !status.isEmpty() && libraryUseOnlyStatusCodes.contains(status);
 	}
 
-	protected String getItemStatus(DataField itemField, RecordIdentifier recordIdentifier) {
-		String itemStatus = super.getItemStatus(itemField, recordIdentifier);
-		if (itemStatus != null && logger.isDebugEnabled()){
-			logger.debug("Polaris indexer, record " + recordIdentifier + ", got status code : " + itemStatus);
+	/**
+	 * @param itemInfo Check if the item's holdable field is on
+	 * @return Unscoped HoldableInformation
+	 */
+	@Override
+	protected HoldabilityInformation isItemHoldableUnscoped(ItemInfo itemInfo) {
+		String  isHoldableCode = itemInfo.getIsHoldableCode();
+		boolean holdable       = isHoldableCode != null && isHoldableCode.equals("1");
+		if (holdable) {
+			// Allow for disabling holdability through Pika profile settings
+			return super.isItemHoldableUnscoped(itemInfo);
 		}
-		return itemStatus;
+		return new HoldabilityInformation(false, new HashSet<>());
 	}
 
+	@Override
+	protected void setItemIsHoldableCode(DataField itemField, ItemInfo itemInfo, RecordIdentifier recordIdentifier) {
+		String isItemHoldableCode = getItemSubfieldData(isItemHoldableSubfield, itemField);
+		itemInfo.setIsHoldableCode(isItemHoldableCode);
 	}
+
+	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, RecordIdentifier identifier) {
+		// Shelf location will be a combination of organization and collection
+		String locationCode = null;
+		if (itemField != null) {
+			locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
+		}
+		String collection = itemInfo.getCollection();
+		if (locationCode == null || locationCode.isEmpty()/* || locationCode.equals("none")*/){
+			return collection;
+		}else {
+			String organization = translateValue("organization", locationCode, identifier);
+			if (organization == null || organization.isEmpty()){
+				return collection;
+			} else if (collection != null && !collection.isEmpty()) {
+				return organization + " " + collection;
+			} else {
+				return organization;
+			}
+		}
+	}
+
+//	protected String getItemStatus(DataField itemField, RecordIdentifier recordIdentifier) {
+//		String itemStatus = super.getItemStatus(itemField, recordIdentifier);
+//		if (itemStatus != null && logger.isDebugEnabled()){
+//			logger.debug("Polaris indexer, record " + recordIdentifier + ", got status code : " + itemStatus);
+//		}
+//		return itemStatus;
+//	}
+
+	//TODO:
+//	RecordInfo getEContentIlsRecord(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier, DataField itemField){
+//
+//	}
+
+}

@@ -60,7 +60,7 @@ class FlatironsRecordProcessor extends SierraRecordProcessor {
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		if (isEContent) {
 			List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
-			if (itemRecords.size() == 0) {
+			if (itemRecords.isEmpty()) {
 				// Item-less eContent
 				Set<String> eContentLocations;
 

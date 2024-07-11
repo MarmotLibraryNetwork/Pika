@@ -26,30 +26,31 @@ import java.util.HashMap;
  * Time: 12:07 AM
  */
 public class ItemInfo {
-	private String itemIdentifier;
-	private String locationCode;
-	private String format;
-	private String formatCategory;
-	private int numCopies = 1;
-	private boolean isOrderItem;
-	private boolean isEContent;
-	private String shelfLocation;
-	private String callNumber;
-	private String sortableCallNumber;
-	private Date dateAdded;
-	private String IType;
-	private String ITypeCode;
-	private String eContentSource;
-	private String eContentUrl;
-	private String statusCode;
-	private String detailedStatus;
-	private String dueDate;
-	private String collection;
-	private Date lastCheckinDate;
+	private String     itemIdentifier;
+	private String     locationCode;
+	private String     format;
+	private String     formatCategory;
+	private int        numCopies = 1;
+	private boolean    isOrderItem;
+	private boolean    isEContent;
+	private String     shelfLocationCode;
+	private String     shelfLocation;
+	private String     collection;
+	private String     callNumber;
+	private String     sortableCallNumber;
+	private Date       dateAdded;
+	private String     IType;
+	private String     ITypeCode;
+	private String     eContentSource;
+	private String     eContentUrl;
+	private String     statusCode;
+	private String     detailedStatus;
+	private String     isHoldableCode;
+	private String     dueDate;
+	private Date       lastCheckinDate;
 	private RecordInfo recordInfo;
 
-	private HashMap<String, ScopingInfo> scopingInfo = new HashMap<>();
-	private String shelfLocationCode;
+	private final HashMap<String, ScopingInfo> scopingInfo = new HashMap<>();
 
 	public void setRecordInfo(RecordInfo recordInfo) {
 		this.recordInfo = recordInfo;
@@ -277,9 +278,7 @@ public class ItemInfo {
 	boolean isLocallyOwned(Scope scope) {
 		ScopingInfo scopeData = scopingInfo.get(scope.getScopeName());
 		if (scopeData != null){
-			if (scopeData.isLocallyOwned()){
-				return true;
-			}
+			return scopeData.isLocallyOwned();
 		}
 		return false;
 	}
@@ -287,9 +286,7 @@ public class ItemInfo {
 	boolean isLibraryOwned(Scope scope) {
 		ScopingInfo scopeData = scopingInfo.get(scope.getScopeName());
 		if (scopeData != null){
-			if (scopeData.isLibraryOwned()){
-				return true;
-			}
+			return scopeData.isLibraryOwned();
 		}
 		return false;
 	}
@@ -297,9 +294,7 @@ public class ItemInfo {
 	boolean isLocallyOwned(String scopeName) {
 		ScopingInfo scopeData = scopingInfo.get(scopeName);
 		if (scopeData != null){
-			if (scopeData.isLocallyOwned()){
-				return true;
-			}
+			return scopeData.isLocallyOwned();
 		}
 		return false;
 	}
@@ -307,9 +302,7 @@ public class ItemInfo {
 	boolean isLibraryOwned(String scopeName) {
 		ScopingInfo scopeData = scopingInfo.get(scopeName);
 		if (scopeData != null){
-			if (scopeData.isLibraryOwned()){
-				return true;
-			}
+			return scopeData.isLibraryOwned();
 		}
 		return false;
 	}
@@ -332,5 +325,13 @@ public class ItemInfo {
 
 	void setLastCheckinDate(Date lastCheckinDate) {
 		this.lastCheckinDate = lastCheckinDate;
+	}
+
+	public String getIsHoldableCode() {
+		return isHoldableCode;
+	}
+
+	public void setIsHoldableCode(String isHoldableCode) {
+		this.isHoldableCode = isHoldableCode;
 	}
 }
