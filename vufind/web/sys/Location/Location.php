@@ -197,7 +197,7 @@ class Location extends DB_DataObject {
 
 		$structure = [
 			'locationId'                      => ['property' => 'locationId', 'type' => 'label', 'label' => 'Location Id', 'description' => 'The unique id of the location within the database'],
-			'code'                            => ['property' => 'code', 'type' => 'text', 'label' => 'Code', 'description' => 'The code for use when communicating with the ILS', 'required' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
+			'code'                            => ['property' => 'code', 'type' => 'text', 'label' => 'Code (Search scope name, and often the hold pick-up branch key in the ILS)', 'description' => 'The code to use when communicating with the ILS', 'required' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
 			'catalogUrl'                      => ['property' => 'catalogUrl', 'type' => 'label', 'label' => 'Catalog URL', 'description' => 'The catalog url used for this location'],
 			'displayName'                     => ['property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'The full name of the location for display to the user', 'size' => '40'],
 			'showDisplayNameInHeader'         => ['property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false],
