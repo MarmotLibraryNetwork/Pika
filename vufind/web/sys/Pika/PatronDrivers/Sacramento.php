@@ -292,12 +292,7 @@ class Sacramento extends Sierra {
 		// sacramento test and production, woodlands test and production
 		if (in_array($library->subdomain, ['catalog', 'spl', 'woodland', 'cityofwoodland'])) {
 			// Capitalize All Input, expect pin passwords
-			foreach ($this->getSelfRegistrationFields() as $formField) {
-				$formFieldName = $formField['property'];
-				if ($formField != 'pin' && $formField != 'pin1') {
-					$_POST[$formFieldName] = strtoupper($_POST[$formFieldName]);
-				}
-			}
+			$this->capitalizeAllSelfRegistrationInputs();
 		}
 
 		// sanity checks

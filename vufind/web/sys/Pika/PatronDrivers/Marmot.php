@@ -66,7 +66,7 @@ class Marmot extends Sierra {
 
 		// Bemis Signature Field
 		if ($libSubDomain == 'bemis'/* || $libSubDomain == 'bemis2'*/){
-			$this->logger->debug("Fields", $fields);
+			//$this->logger->debug('Fields', $fields);
 			$this->removeSelfRegistrationField('homelibrarycode', $fields);
 			$fields[] = [
 				'property'    => 'signature',

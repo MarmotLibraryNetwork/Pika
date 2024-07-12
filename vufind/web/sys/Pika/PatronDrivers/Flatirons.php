@@ -187,15 +187,20 @@ class Flatirons extends Sierra
 		// set boulder home location code
 		if($libSubDomain == 'boulder') {
 			$extraSelfRegParams['homeLibraryCode'] = 'bm';
-			if(isset($_REQUEST['homelibrarycode'])) {
-				unset($_REQUEST['homelibrarycode']);
+			if(isset($_POST['homelibrarycode'])) {
+				unset($_POST['homelibrarycode']);
 			}
 		}
-		// Capitalize Mailing address
-		$_REQUEST['address'] = strtoupper($_REQUEST['address']);
-		$_REQUEST['city']    = strtoupper($_REQUEST['city']);
-		$_REQUEST['state']   = strtoupper($_REQUEST['state']);
-		$_REQUEST['zip']     = strtoupper($_REQUEST['zip']);
+
+		if ($libSubDomain == 'broomfield'){
+			$this->capitalizeAllSelfRegistrationInputs();
+		} else {
+			// Capitalize Mailing address
+			$_POST['address'] = strtoupper($_POST['address']);
+			$_POST['city']    = strtoupper($_POST['city']);
+			$_POST['state']   = strtoupper($_POST['state']);
+			$_POST['zip']     = strtoupper($_POST['zip']);
+		}
 
 		$extraSelfRegParams['varFields'][] = ['fieldTag' => 'x', 'content'  => 'Created Online'];
 		$extraSelfRegParams['pMessage']    = 'o';

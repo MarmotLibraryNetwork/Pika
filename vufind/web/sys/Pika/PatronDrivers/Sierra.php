@@ -1289,12 +1289,12 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 
 		global $library;
 		// sanity checks
-		if (!property_exists($library, 'selfRegistrationDefaultpType') || empty($library->selfRegistrationDefaultpType)){
+		if (empty($library->selfRegistrationDefaultpType)){
 			$message = 'Missing configuration parameter selfRegistrationDefaultpType for ' . $library->displayName;
 			$this->logger->error($message);
 			throw new InvalidArgumentException($message);
 		}
-		if (!property_exists($library, 'selfRegistrationAgencyCode') || empty($library->selfRegistrationAgencyCode)){
+		if (empty($library->selfRegistrationAgencyCode)){
 			$message = 'Missing configuration parameter selfRegistrationAgencyCode for ' . $library->displayName;
 			$this->logger->error($message);
 			throw new InvalidArgumentException($message);
@@ -1634,11 +1634,35 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		return $fields;
 	}
 
+	/**
+	 * @param string $fieldProperty Name of the property to remove from the form
+	 * @param array $selfRegistrationFields  The form fields array
+	 * @return void
+	 */
 	function removeSelfRegistrationField(string $fieldProperty, array &$selfRegistrationFields){
 		foreach ($selfRegistrationFields as $index => $field){
-			if ($field["property"] == $fieldProperty){
+			if ($field['property'] == $fieldProperty){
 				unset($selfRegistrationFields[$index]);
 				break;
+			}
+		}
+	}
+
+	/**
+	 * Capitalize all the form inputs within $_POST, except field pin, pinconfirm,
+	 * and any field provided in $exceptions
+	 *
+	 * @param $exceptions self reg input fields to exclude from capitalization
+	 * @return void
+	 */
+	function capitalizeAllSelfRegistrationInputs($exceptions = []) : void {
+		$exceptions = [... $exceptions, ... ['pin', 'pinconfirm']];
+		foreach ($this->getSelfRegistrationFields() as $field){
+			$key = $field['property'];
+			if (!in_array($key, $exceptions)){
+				if (isset($_POST[$key])){ // :selfRegister() explicitly refers to $_POST instead of $_REQUEST
+					$_POST[$key] = strtoupper($_POST[$key]);
+				}
 			}
 		}
 	}
@@ -1650,15 +1674,16 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 	 * @return bool true if email sent false otherwise
 	 */
 	public function sendSelfRegSuccessEmail($barcode) {
-		global $library;
 		global $interface;
 
 		if(!$patronId = $this->getPatronId($barcode)){
+			$this->logger->error('Failed to get patron Id for ' . __FUNCTION__ . ' for barcode ' . $barcode);
 			return false;
 		}
 
 		$patron = $this->getPatron($patronId);
 		if(!$patron) {
+			$this->logger->error('Failed to load patron for ' . __FUNCTION__ . ' for patron ILS id ' . $patronId);
 			return false;
 		}
 
@@ -1680,7 +1705,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			$mailer = new PHPMailer;
 			$mailer->setFrom($this->configArray['Site']['email']);
 			$mailer->addAddress($emailAddress);
-			$mailer->Subject = "[DO NOT REPLY] Your new library card at " . $libraryName;
+			$mailer->Subject = '[DO NOT REPLY] Your new library card at ' . $libraryName;
 			$mailer->Body    = $emailBody;
 			$mailer->send();
 		} catch (\Exception $e) {
@@ -1689,6 +1714,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		}
 		return true;
 	}
+
 	/**
 	 * Get fines for a patron
 	 * GET patrons/{uid}/fines
