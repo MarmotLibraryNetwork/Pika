@@ -1313,7 +1313,7 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			'description'     => 'Repurpose this field to be used for the Polaris Organization Id.',
 			'continueOnError' => false,
 			'sql'             => [
-				'ALTER TABLE `location` CHANGE `scope` `ilsLocationId` TINYINT UNSIGNED DEFAULT NULL COMMENT "The ID for the location in the ILS. ";'
+				'ALTER TABLE `location` CHANGE `scope` `ilsLocationId` SMALLINT UNSIGNED DEFAULT NULL COMMENT "The ID for the location in the ILS. ";'
 			]
 		],
 
