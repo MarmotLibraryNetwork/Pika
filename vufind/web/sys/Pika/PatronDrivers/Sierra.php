@@ -1591,7 +1591,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 
 		$fields[] = [
 			'property'     => 'primaryphone',
-			'type'         => 'text',
+			'type'         => 'tel',
 			'label'        => 'Primary phone (XXX-XXX-XXXX)',
 			'description'  => 'Your primary phone number.',
 			'maxLength'    => 20,

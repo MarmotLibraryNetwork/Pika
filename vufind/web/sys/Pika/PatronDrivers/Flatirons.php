@@ -88,6 +88,16 @@ class Flatirons extends Sierra
 				'required'     => true,
 				'autocomplete' => 'bday',
 			];
+			if ($libSubDomain == 'broomfield'){
+				$fields[] = [
+					'property'        => 'guardianName',
+					'type'            => 'text',
+					'label'           => 'Name(s) of ALL Parent(s)/Legal Guardian(s)',
+					'description'     => 'If under 16, please also complete parent/guardian field.',
+					'showDescription' => true,
+					'required'        => false
+				];
+			}
 		}
 		$fields[] = [
 			'property'     => 'address',
@@ -127,8 +137,8 @@ class Flatirons extends Sierra
 		];
 		$fields[] = [
 			'property'     => 'primaryphone',
-			'type'         => 'text',
-			'label'        => 'Phone Number',
+			'type'         => 'tel',
+			'label'        => 'Phone Number (xxx-xxx-xxxx)',
 			'description'  => 'Phone Number',
 			'maxLength'    => 16,
 			'required'     => true,
@@ -147,32 +157,33 @@ class Flatirons extends Sierra
 		// allow usernames?
 		if ($this->hasUsernameField()){
 			$fields[] = [
-				'property'    => 'username',
-				'type'        => 'text',
-				'label'       => 'Username',
-				'description' => 'Set an optional username.',
-				'maxLength'   => 20,
-				'required'    => false,
+				'property'     => 'username',
+				'type'         => 'text',
+				'label'        => 'Username',
+				'description'  => 'Set an optional username.',
+				'maxLength'    => 20,
+				'required'     => false,
 				'autocomplete' => 'username',
 			];
 		}
 		// if library uses pins
 		if ($this->accountProfile->usingPins()){
-			$fields[] = [
-				'property'    => 'pin',
-				'type'        => 'pin',
-				'label'       => translate('PIN'),
-				'description' => 'Please set a ' . translate('pin') . '.',
-				'maxLength'   => 10,
-				'required'    => true
+			$PIN = translate('PIN');
+			$fields[]  = [
+				'property'        => 'pin',
+				'type'            => 'pin',
+				'label'           => $PIN,
+				'description'     => "Please set a $PIN. <br>Your $PIN must be at least 4 characters long. Do not repeat a number or letter more than two times in a row (<kbd>1112</kbd> or <kbd>zeee</kbd> will not work). Do not repeat the same two numbers or letters in a row (<kbd>1212</kbd> or <kbd>bebe</kbd> will not work).",
+				'showDescription' => true,
+				'maxLength'       => 10,
+				'required'        => true
 			];
 
 			$fields[] = [
 				'property'    => 'pinconfirm',
 				'type'        => 'pin',
-				'label'       => 'Confirm ' . translate('PIN'),
-				'description' => 'Please confirm your ' . translate('pin') . '.',
-//				'maxLength'   => 10,
+				'label'       => 'Confirm ' . $PIN,
+				'description' => "Please confirm your $PIN.",
 				'required'    => true
 			];
 		}
@@ -185,14 +196,14 @@ class Flatirons extends Sierra
 		$libSubDomain       = strtolower($library->subdomain);
 		$extraSelfRegParams = [];
 		// set boulder home location code
-		if($libSubDomain == 'boulder') {
+		if ($libSubDomain == 'boulder'){
 			$extraSelfRegParams['homeLibraryCode'] = 'bm';
-			if(isset($_POST['homelibrarycode'])) {
+			if (isset($_POST['homelibrarycode'])){
 				unset($_POST['homelibrarycode']);
 			}
 		}
 
-		if ($libSubDomain == 'broomfield'){
+		if (in_array($libSubDomain, ['boulder', 'broomfield'])){
 			$this->capitalizeAllSelfRegistrationInputs();
 		} else {
 			// Capitalize Mailing address

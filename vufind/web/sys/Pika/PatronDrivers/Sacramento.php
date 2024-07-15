@@ -634,7 +634,7 @@ class Sacramento extends Sierra {
 		];
 		$fields[] = [
 			'property'     => 'primaryphone',
-			'type'         => 'text',
+			'type'         => 'tel',
 			'label'        => 'Phone (xxx-xxx-xxxx)',
 			'description'  => 'Phone',
 			'maxLength'    => 20,
@@ -668,10 +668,11 @@ class Sacramento extends Sierra {
 		];
 		//These two fields will be made required by javascript in the template
 
+		$PIN = translate('PIN');
 		$fields[] = [
 			'property'    => 'pin',
 			'type'        => 'pin',
-			'label'       => 'Pin',
+			'label'       => $PIN,
 			'description' => 'Your desired pin',
 			/*'maxLength' => 4, 'size' => 4,*/
 			'required'    => true
@@ -679,8 +680,8 @@ class Sacramento extends Sierra {
 		$fields[] = [
 			'property'    => 'pinconfirm',
 			'type'        => 'pin',
-			'label'       => 'Confirm ' . translate('PIN'),
-			'description' => 'Please confirm your ' . translate('pin') . '.',
+			'label'       => 'Confirm ' . $PIN,
+			'description' => "Please confirm your $PIN.",
 			/*'maxLength' => 4, 'size' => 4,*/
 			'required'    => true
 		];

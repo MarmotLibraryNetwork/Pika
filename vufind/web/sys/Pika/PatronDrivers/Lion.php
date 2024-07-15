@@ -111,8 +111,8 @@ class Lion extends Sierra {
 		];
 		$fields[] = [
 			'property'     => 'primaryphone',
-			'type'         => 'text',
-			'label'        => 'Phone Number',
+			'type'         => 'tel',
+			'label'        => 'Phone Number (XXX-XXX-XXXX)',
 			'description'  => 'Phone Number',
 			'maxLength'    => 12,
 			'required'     => true,

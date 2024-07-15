@@ -83,7 +83,7 @@
 					var today = new Date(),
 							age = today.getFullYear() - birthDate.getFullYear();
 					if (today.getMonth() < birthDate.getMonth() ||
-							(today.getMonth() == birthDate.getMonth() && today.getDate() < birthDate.getDate())) {
+							(today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())) {
 						age--;
 					}
 					var isMinor = age < 18;
@@ -95,24 +95,60 @@
 						required:isMinor
 					});
 					if (isMinor){
-						if ( $('#propertyRowguardianFirstName label span.required-input').length == 0) {
+						if ( $('#propertyRowguardianFirstName label span.required-input').length === 0) {
 							$('#propertyRowguardianFirstName label').append('<span class="required-input">*</span>');
+							$("#guardianFirstName").attr('aria-required', true);
 						}
 						$('#propertyRowguardianFirstName, #propertyRowguardianLastName').show();
-						if ( $('#propertyRowguardianLastName label span.required-input').length == 0) {
+						if ( $('#propertyRowguardianLastName label span.required-input').length === 0) {
 							$('#propertyRowguardianLastName label').append('<span class="required-input">*</span>');
+							$("#guardianLastName").attr('aria-required', true);
 						}
 					} else {
 						$('#propertyRowguardianFirstName, #propertyRowguardianLastName').hide();
+						$("#guardianFirstName,#guardianFirstName").attr('required-input', false);
 						$('#propertyRowguardianFirstName label, #propertyRowguardianLastName label').children('span.required-input').remove();
 					}
 				}
 			});
 		}
+		{/literal}
+
+		{*  Guardian Name is required for users under 16 for Broomfield Public Library *}
+		{literal}
+		if ($('#guardianName').length){
+
+			$('#birthdate').focusout(function(){
+				var birthDate = $(this).datepicker('getDate');
+				if (birthDate) {
+					var today = new Date(),
+									age = today.getFullYear() - birthDate.getFullYear();
+					if (today.getMonth() < birthDate.getMonth() ||
+									(today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())) {
+						age--;
+					}
+					var isMinor = age < 16;
+					$("#guardianName").rules("add", {
+						required:isMinor
+					});
+					if (isMinor){
+						if ( $('#propertyRowguardianName label span.required-input').length === 0) {
+							$('#propertyRowguardianName label').append('<span class="required-input">*</span>');
+							$("#guardianName").attr('aria-required', true);
+						}
+					} else {
+						//$('#propertyRowguardianName').hide();
+						$('#propertyRowguardianName label').children('span.required-input').remove();
+						$("#guardianName").attr('aria-required', false);
+					}
+				}
+			});
+		}
+
 	});
 	{/literal}
 	{/if}
-	{* Pin Validation for CarlX, Sirsi, and Sacramento *}
+	{* Pin Validation for CarlX, Sirsi, MLN1, MLN2, and Sacramento *}
 	{literal}
 	$(function(){
 		$('#zip').rules('add', {zipcodeUS:true});
