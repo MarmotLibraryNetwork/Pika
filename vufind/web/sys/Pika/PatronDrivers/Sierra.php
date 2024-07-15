@@ -1348,6 +1348,9 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 						$params['homeLibraryCode'] = $val;
 					}
 					break;
+				case 'langPref' :
+					$val = substr(trim($val),0, 3); // Ensure input is a three language code
+					$params['langPref'] = $val;
 			}
 		}
 

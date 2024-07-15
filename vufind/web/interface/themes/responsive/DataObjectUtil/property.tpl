@@ -115,7 +115,7 @@
 		{elseif $property.type == 'currency'}
 			{include file="DataObjectUtil/currency.tpl"}
 
-		{elseif $property.type == 'label'  || $property.type == 'readOnly'}
+		{elseif $property.type == 'label' || $property.type == 'readOnly'}
 			<div id='{$propName}'>{$propValue}</div>
 
 		{elseif $property.type == 'enum'}

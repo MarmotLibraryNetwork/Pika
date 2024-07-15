@@ -95,7 +95,8 @@ class Flatirons extends Sierra
 					'label'           => 'Name(s) of ALL Parent(s)/Legal Guardian(s)',
 					'description'     => 'If under 16, please also complete parent/guardian field.',
 					'showDescription' => true,
-					'required'        => false
+					'required'        => false,
+					'autocomplete'    => 'off',
 				];
 			}
 		}
@@ -153,6 +154,19 @@ class Flatirons extends Sierra
 			'required'     => in_array($libSubDomain, ['boulder', 'longmont']), // Required for boulder and longmont
 			'autocomplete' => 'email',
 		];
+
+		if ($libSubDomain == 'broomfield'){
+			$fields[] = [
+				'property'     => 'langPref',
+				'type'         => 'enum',
+				'label'        => 'Notification Language Preference',
+				'values' => [
+					'eng' => 'English',
+					'spi' => 'Spanish',
+				]
+			];
+
+		}
 		// Username and PIN
 		// allow usernames?
 		if ($this->hasUsernameField()){
@@ -204,7 +218,7 @@ class Flatirons extends Sierra
 		}
 
 		if (in_array($libSubDomain, ['boulder', 'broomfield'])){
-			$this->capitalizeAllSelfRegistrationInputs();
+			$this->capitalizeAllSelfRegistrationInputs(['langPref']);
 		} else {
 			// Capitalize Mailing address
 			$_POST['address'] = strtoupper($_POST['address']);
