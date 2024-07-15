@@ -63,7 +63,7 @@ class Cache implements CacheInterface
 			$memCached = new Memcached('pika');
 			// Caution! Since this is a persistent connection adding server adds on every page load
 			// and will max out number of server.
-			if (!count($memCached->getServerList()) || count($memCached->getServerList()) == 0) {
+			if (!count($memCached->getServerList()) || count($memCached->getServerList()) === 0) {
 				$memCached->setOption(Memcached::OPT_NO_BLOCK, true);
 				$memCached->setOption(Memcached::OPT_TCP_NODELAY, true);
 				$memCached->addServer($host, $port);
@@ -204,6 +204,10 @@ class Cache implements CacheInterface
 			}
 		}
 		return true;
+	}
+	
+	public function getAllKeys() {
+		return $this->handler->getAllKeys();
 	}
 
 	/**
