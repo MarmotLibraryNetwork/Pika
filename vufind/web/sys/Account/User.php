@@ -833,7 +833,7 @@ class User extends DB_DataObject {
 			$this->promptForOverDriveLendingPeriods = 0;
 		}
 		if (isset($_REQUEST['overDriveEmail'])){
-			$this->overDriveEmail = strip_tags($_REQUEST['overDriveEmail']);
+			$this->overDriveEmail = trim(strip_tags($_REQUEST['overDriveEmail']));
 		}
 		$this->update();
 		if (!empty($_REQUEST['lendingPeriods'])){
@@ -842,7 +842,7 @@ class User extends DB_DataObject {
 			$overDriveSettings = $cache->get($cacheKey);
 			foreach ($_REQUEST['lendingPeriods'] as $formatClass => $lendingPeriodDays){
 				if (empty($overDriveSettings['lendingPeriods'][$formatClass]) || $lendingPeriodDays != $overDriveSettings['lendingPeriods'][$formatClass]->lendingPeriod){
-					// Only update settings if they have changed from what is cached or we don't have them cached
+					// Only update settings if they have changed from what is cached, or we don't have them cached
 					$overDriveDriver ??= Pika\PatronDrivers\EcontentSystem\OverDriveDriverFactory::getDriver();
 					$overDriveDriver->updateLendingPeriod($this, $formatClass, $lendingPeriodDays);
 				}

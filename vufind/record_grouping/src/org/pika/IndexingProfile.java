@@ -113,23 +113,23 @@ public class IndexingProfile {
 		this.setCollectionSubfield(indexingProfileRS.getString("collection"));
 
 		String locationsToSuppress = indexingProfileRS.getString("locationsToSuppress");
-		if (locationsToSuppress != null && locationsToSuppress.length() > 0) {
+		if (locationsToSuppress != null && !locationsToSuppress.isEmpty()) {
 			this.locationsToSuppressPattern = Pattern.compile(locationsToSuppress);
 		}
 		String collectionsToSuppress = indexingProfileRS.getString("collectionsToSuppress");
-		if (collectionsToSuppress != null && collectionsToSuppress.length() > 0) {
+		if (collectionsToSuppress != null && !collectionsToSuppress.isEmpty()) {
 			this.collectionsToSuppressPattern = Pattern.compile(collectionsToSuppress);
 		}
 		String statusesToSuppress = indexingProfileRS.getString("statusesToSuppress");
-		if (statusesToSuppress != null && statusesToSuppress.length() > 0) {
+		if (statusesToSuppress != null && !statusesToSuppress.isEmpty()) {
 			this.statusesToSuppressPattern = Pattern.compile(statusesToSuppress);
 		}
 		String iCode2sToSuppress = indexingProfileRS.getString("iCode2sToSuppress");
-		if (iCode2sToSuppress != null && iCode2sToSuppress.length() > 0) {
+		if (iCode2sToSuppress != null && !iCode2sToSuppress.isEmpty()) {
 			this.iCode2sToSuppressPattern = Pattern.compile(iCode2sToSuppress);
 		}
 		String iTypesToSuppress = indexingProfileRS.getString("iTypesToSuppress");
-		if (iTypesToSuppress != null && iTypesToSuppress.length() > 0) {
+		if (iTypesToSuppress != null && !iTypesToSuppress.isEmpty()) {
 			this.iTypesToSuppressPattern = Pattern.compile(iTypesToSuppress);
 		}
 		Long minMarcFileSize = (Long) indexingProfileRS.getObject("minMarcFileSize");

@@ -82,7 +82,6 @@ class MyAccount_CheckedOut extends MyAccount{
 				// Get My Transactions
 				$allCheckedOut = $user->getMyCheckouts();
 
-				$interface->assign('showNotInterested', false);
 				//Do sorting now that we have all records
 				$curTransaction           = 0;
 				$hasOnlyEContentCheckOuts = true;

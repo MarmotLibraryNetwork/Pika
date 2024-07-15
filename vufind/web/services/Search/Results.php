@@ -136,7 +136,6 @@ class Search_Results extends Union_Results {
 
 		//Enable and disable functionality based on library settings
 		//This must be done before we process each result
-		$interface->assign('showNotInterested', false);
 
 		$showRatings                 = $library->showRatings ?? 1;
 		$enableProspectorIntegration = $library->enableProspectorIntegration ?? $configArray['Content']['Prospector'] ?? false;

@@ -95,8 +95,8 @@ abstract class Record_Record extends Action {
 						$interface->assign('classicId', $classicId);
 						global $searchSource;
 						$searchLocation = Location::getSearchLocation($searchSource);
-						if (!empty($searchLocation->scope)){
-							$sierraOpacScope = $searchLocation->scope;
+						if (!empty($searchLocation->ilsLocationId)){
+							$sierraOpacScope = $searchLocation->ilsLocationId;
 						}else{
 							$searchLibrary   = Library::getSearchLibrary($searchSource);
 							$sierraOpacScope = $searchLibrary ? $searchLibrary->scope : (empty($configArray['OPAC']['defaultScope']) ? '93' : $configArray['OPAC']['defaultScope']);

@@ -9,7 +9,7 @@
 	{/if}
 	<li>
 		{if $shortPageTitle}
-			<em>{$shortPageTitle}</em>
+			<em aria-current="page">{$shortPageTitle}</em>
 		{else}
 			<em>{$pageTemplate|replace:'.tpl':''|capitalize|translate}</em>
 		{/if}

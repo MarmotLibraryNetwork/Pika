@@ -33,7 +33,6 @@ class BrowseCategory extends DB_DataObject{
 	public $textId;  //A textual id to make it easier to transfer browse categories between systems
 
 	public $userId; //The user who created the browse category
-	public $sharing; //Who to share with (Private, Location, Library, Everyone)
 
 	public $label; //A label for the browse category to be shown in the browse category listing
 	public $description; //A description of the browse category
@@ -41,10 +40,7 @@ class BrowseCategory extends DB_DataObject{
 	public $searchTerm;
 	public $defaultFilter;
 	public $sourceListId;
-	public $additionalWorksToInclude;
 	public $defaultSort;
-
-	public $catalogScoping;
 
 	public $numTimesShown;
 	public $numTitlesClickedOn;
@@ -213,9 +209,9 @@ class BrowseCategory extends DB_DataObject{
 		$structure = [
 			'id'          => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of this association'],
 			'label'       => ['property' => 'label', 'type' => 'text', 'label' => 'Label', 'description' => 'The label to show to the user', 'maxLength' => 50, 'required' => true],
-			'textId'      => ['property' => 'textId', 'type' => 'text', 'label' => 'textId', 'description' => 'A textual id to identify the category', 'serverValidation' => 'validateTextId', 'maxLength' => 50, 'required' => true],
+			'textId'      => ['property' => 'textId', 'type' => 'text', 'label' => 'textId', 'description' => 'A textual id to identify the category',
+			                    'serverValidation' => 'validateTextId', 'maxLength' => 50, 'required' => true],
 			'userId'      => ['property' => 'userId', 'type' => 'label', 'label' => 'userId', 'description' => 'The User Id who created this category', 'default' => UserAccount::getActiveUserId()],
-			//			'sharing' => array('property'=>'sharing', 'type'=>'enum', 'values' => array('private' => 'Just Me', 'location' => 'My Home Branch', 'library' => 'My Home Library', 'everyone' => 'Everyone'), 'label'=>'Share With', 'description'=>'Who the category should be shared with', 'default' =>'everyone'),
 			'description' => ['property' => 'description', 'type' => 'html', 'label' => 'Description', 'description' => 'A description of the category.', 'hideInLists' => true],
 
 			// Define oneToMany interface for choosing and arranging sub-categories
@@ -234,8 +230,6 @@ class BrowseCategory extends DB_DataObject{
 				'canEdit'       => true,
 			],
 
-			//			'catalogScoping' => array('property'=>'catalogScoping', 'type'=>'enum', 'label'=>'Catalog Scoping', 'values' => array('unscoped' => 'Unscoped', 'library' => 'Current Library', 'location' => 'Current Location'), 'description'=>'What scoping should be used for this search scope?.', 'default'=>'unscoped'),
-			// Disabled setting this option since it is not an implemented feature.
 			'searchTerm'         => ['property' => 'searchTerm', 'type' => 'text', 'label' => 'Search Term', 'description' => 'A default search term to apply to the category', 'default' => '', 'hideInLists' => true, 'maxLength' => 500],
 			'defaultFilter'      => ['property' => 'defaultFilter', 'type' => 'textarea', 'label' => 'Search Filter(s)', 'description' => 'Filters to apply to the search by default.', 'hideInLists' => true, 'rows' => 3, 'cols' => 80],
 			'defaultSort'        => ['property' => 'defaultSort', 'type' => 'enum', 'label' => 'Search Sort (does not apply to Source Lists) ', 'values' => $sortOptions, 'description' => 'The sort to apply to the search results', 'default' => 'relevance', 'hideInLists' => true],
@@ -257,15 +251,15 @@ class BrowseCategory extends DB_DataObject{
 		];
 
 		if (empty($this->textId)){
-			$this->textId = $this->label . ' ' . $this->sharing;
-			if ($this->sharing == 'private'){
-				$this->textId .= '_' . $this->userId;
-			}elseif ($this->sharing == 'location'){
-				$location = Location::getUserHomeLocation();
+			$this->textId = $this->label;
+			$location     = Location::getUserHomeLocation();
+			if (!empty($location)){
 				$this->textId .= '_' . $location->code;
-			}elseif ($this->sharing == 'library'){
+			}else{
 				global $library;
-				$this->textId .= '_' . $library->getPatronHomeLibrary()->subdomain;
+				if (!empty($library->getPatronHomeLibrary()->subdomain)){
+					$this->textId .= '_' . $library->getPatronHomeLibrary()->subdomain;
+				}
 			}
 		}
 

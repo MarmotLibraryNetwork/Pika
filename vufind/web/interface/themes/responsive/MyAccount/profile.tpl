@@ -42,9 +42,9 @@
 				<div class="panel active">
 					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#contactPanel">
 						<div class="panel-heading">
-							<div class="panel-title">
+							<h2 class="panel-title">
 								Contact Information
-							</div>
+							</h2>
 						</div>
 					</a>
 					<div id="contactPanel" class="panel-collapse collapse in">
@@ -231,9 +231,9 @@
 						<div class="panel active">
 							<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#pinPanel">
 								<div class="panel-heading">
-									<div class="panel-title">
+									<h2 class="panel-title">
 										{translate text='Update PIN'}
-									</div>
+									</h2>
 								</div>
 							</a>
 							<div id="pinPanel" class="panel-collapse collapse in">
@@ -312,9 +312,9 @@
 				<div class="panel active">
 					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#overdrivePanel">
 						<div class="panel-heading">
-							<div class="panel-title">
+							<h2 class="panel-title">
 								OverDrive Options
-							</div>
+							</h2>
 						</div>
 					</a>
 					<div id="overdrivePanel" class="panel-collapse collapse in">
@@ -330,9 +330,9 @@
 				<div class="panel active">
 					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#hooplaPanel">
 						<div class="panel-heading">
-							<div class="panel-title">
+							<h2 class="panel-title">
 								Hoopla Options
-							</div>
+							</h2>
 						</div>
 					</a>
 					<div id="hooplaPanel" class="panel-collapse collapse in">
@@ -368,9 +368,9 @@
 				<div class="panel active">
 					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#userPreferencePanel">
 						<div class="panel-heading">
-							<div class="panel-title">
+							<h2 class="panel-title">
 								My Preferences
-							</div>
+							</h2>
 						</div>
 					</a>
 					<div id="userPreferencePanel" class="panel-collapse collapse in">
@@ -427,9 +427,9 @@
 					<div class="panel active">
 						<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#linkedAccountPanel">
 							<div class="panel-heading">
-								<div class="panel-title">
+								<h2 class="panel-title">
 									Linked Accounts
-								</div>
+								</h2>
 							</div>
 						</a>
 						<div id="linkedAccountPanel" class="panel-collapse collapse in">
@@ -482,9 +482,9 @@
 					<div class="panel active">
 						<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#rolesPanel">
 							<div class="panel-heading">
-								<div class="panel-title">
+								<h2 class="panel-title">
 									Staff Settings
-								</div>
+								</h2>
 							</div>
 						</a>
 						<div id="rolesPanel" class="panel-collapse collapse in">

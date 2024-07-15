@@ -224,7 +224,6 @@ class AJAX extends AJAXHandler {
 
 						if ($showRatings){
 							$interface->assign('ratingData', $rawData['ratingData']);
-							$interface->assign('showNotInterested', false);
 						}
 
 						$rawData['formattedTitle']         = $interface->fetch('ListWidget/formattedTitle.tpl');

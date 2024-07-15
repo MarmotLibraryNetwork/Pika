@@ -15,17 +15,14 @@
 package org.pika;
 
 import org.apache.logging.log4j.Logger;
-import org.marc4j.marc.ControlField;
-import org.marc4j.marc.DataField;
-import org.marc4j.marc.Record;
-import org.marc4j.marc.Subfield;
+import org.marc4j.marc.*;
 
 import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * A base class for setting title, author, and format for a MARC record
@@ -39,9 +36,14 @@ import java.util.List;
  */
 public class MarcRecordGrouper extends RecordGroupingProcessor {
 
-	private IndexingProfile profile;
+	private final IndexingProfile profile;
+	private final        boolean hasSierraLanguageFixedField;
 
-	private boolean hasSierraLanguageFixedField;
+	//	private static Pattern overdrivePattern = Pattern.compile("(?i)^http://.*?lib\\.overdrive\\.com/ContentDetails\\.htm\\?id=[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$");
+	//above pattern not strictly valid because urls don't have to contain the lib.overdrive.com
+	//private static final Pattern econtentURLsPattern = Pattern.compile("(?i)^http://.*?/ContentDetails\\.htm\\?id=[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$|^https?://link\\.overdrive\\.com.*|^https?://api\\.overdrive\\.com.*");
+	private static final Pattern econtentURLsPattern = Pattern.compile("(?i)^https?://link\\.overdrive\\.com.*|^https?://api\\.overdrive\\.com.*|^https?://www\\.hoopladigital\\.com.*");
+
 
 	/**
 	 * Creates a record grouping processor that saves results to the database.
@@ -156,7 +158,7 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 					if (languageName != null && !languageName.equals("Unknown") && !languageName.equals(oo8languageCode)) {
 						languageCode = oo8languageCode;
 					}
-				} else if (!oo8languageCode.equals("") && !oo8languageCode.equals("|||")) {
+				} else if (!oo8languageCode.isEmpty() && !oo8languageCode.equals("|||")) {
 					//"   " (trimmed to "") & "|||" are equivalent to no language value being set
 					languageCode = oo8languageCode;
 				}
@@ -194,4 +196,118 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 		if (languageCode == null) languageCode = "";
 		workForTitle.setGroupingLanguage(languageCode);
 	}
+
+	RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, String recordSource, boolean doAutomaticEcontentSuppression) {
+		RecordIdentifier    identifier         = null;
+		List<VariableField> recordNumberFields = marcRecord.getVariableFields(recordNumberTag);
+		for (VariableField recordNumberFieldValue : recordNumberFields) {
+			//Make sure we only get one ils identifier
+//			logger.debug("getPrimaryIdentifierFromMarcRecord - Got record number field");
+			if (recordNumberFieldValue != null) {
+				if (recordNumberFieldValue instanceof DataField) {
+//					logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a data field");
+
+					DataField curRecordNumberField = (DataField) recordNumberFieldValue;
+					Subfield  recordNumberSubfield = curRecordNumberField.getSubfield(recordNumberField);
+					if (recordNumberSubfield != null && (recordNumberPrefix.isEmpty() || recordNumberSubfield.getData().length() > recordNumberPrefix.length())) {
+						if (recordNumberSubfield.getData().startsWith(recordNumberPrefix)) {
+							String recordNumber = recordNumberSubfield.getData().trim();
+							if (!recordNumber.contains("/") && !recordNumber.contains("\\")) {
+								identifier = new RecordIdentifier(recordSource, recordNumber);
+								if (recordNumberFields.size() > 1){
+									final String message = "Record found with multiple recordNumber Tags for " + identifier;
+									if (fullRegrouping) {
+										logger.warn(message);
+									} else {
+										logger.info(message);
+									}
+								}
+								break;
+							} else {
+								logger.warn("Record number contained a / or \\ character for " + recordSource + " : " + recordNumber + "; Skipping grouping for this record.");
+							}
+						}
+					}
+				} else {
+					//It's a control field
+//					logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a control field");
+					ControlField curRecordNumberField = (ControlField) recordNumberFieldValue;
+					String       recordNumber         = curRecordNumberField.getData().trim();
+					if (!recordNumber.contains("/") && !recordNumber.contains("\\")) {
+						identifier = new RecordIdentifier(recordSource, recordNumber);
+						if (recordNumberFields.size() > 1){
+							logger.warn("Record found with multiple recordNumber Tags for " + identifier);
+						}
+						break;
+					} else {
+						logger.warn("Record number contained a / or \\ character for " + recordSource + " : " + recordNumber + "; Skipping grouping for this record.");
+					}
+				}
+			}
+		}
+
+		if (doAutomaticEcontentSuppression) {
+			// Suppress Overdrive (or Hoopla for Marmot with ils eContent record with items) records from grouping, typically from the ils profile
+			// This is based on the assumption that OverDrive records will be loaded through APIs
+			// (or sideloaded for Hoopla)
+			if (logger.isDebugEnabled()) {
+				logger.debug("getPrimaryIdentifierFromMarcRecord - Doing automatic eContent Suppression");
+			}
+
+			if (useEContentSubfield) {
+				boolean allItemsSuppressed = true;
+
+				List<DataField> itemFields = getDataFields(marcRecord, itemTag);
+				int             numItems   = itemFields.size();
+				if (numItems == 0) {
+					allItemsSuppressed = false;
+				} else {
+					for (DataField itemField : itemFields) {
+						if (itemField.getSubfield(eContentDescriptor) != null) {
+							//Check the protection types and sources
+							String   eContentData   = itemField.getSubfield(eContentDescriptor).getData();
+							String[] eContentFields = eContentData.split(":");
+							String   sourceType     = eContentFields[0].toLowerCase().trim();
+							if (!sourceType.equals("overdrive") && !sourceType.equals("hoopla")) {
+								allItemsSuppressed = false;
+								break;
+							}
+						} else {
+							allItemsSuppressed = false;
+							break;
+						}
+					}
+				}
+				if (allItemsSuppressed && identifier != null) {
+					//Don't return a primary identifier for this record (we will suppress the bib and just use OverDrive APIs)
+					identifier.setSuppressed(true);
+				}
+			} else {
+				//Check the 856 for an overdrive url
+				if (identifier != null) {
+					List<DataField> linkFields = getDataFields(marcRecord, "856");
+					for (DataField linkField : linkFields) {
+						if (linkField.getSubfield('u') != null) {
+							//Check the url to see if it is from OverDrive
+							String linkData = linkField.getSubfield('u').getData().trim();
+							if (econtentURLsPattern.matcher(linkData).matches()) {
+								identifier.setSuppressed(true);
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("identifier : " + identifier + (identifier != null && identifier.isSuppressed() ? " - suppressed" : ""));
+		}
+		if (identifier != null && identifier.isValid()) {
+			return identifier;
+		} else {
+			return null;
+		}
+	}
+
 }

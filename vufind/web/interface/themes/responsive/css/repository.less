@@ -2,11 +2,12 @@
 @import (reference) "variables.less";
 
 // Explore More SideBar
-#explore-more-sidebar{
+#explore-more-sidebar {
   background-color: @home-search-top-color;
   background: linear-gradient(to bottom, @home-search-top-color, @home-search-bottom-color);
 }
-#explore-more-header{
+
+#explore-more-header {
   padding: 10px 25px 5px 0;
   margin-top: 5px; // to match other menus
   //margin-bottom:5px;
@@ -17,7 +18,8 @@
   font-weight: bold;
   font-size: 16px;
 }
-#sidebar-content{
+
+#sidebar-content {
   background-color: @explore-more-sidebar-body-bg-color;
   //MDN 5/5 disabling separation on sidebar until we can do a little more refinement
   //border: solid @explore-more-bar-border-width @explore-more-bar-label-bg-color;
@@ -27,7 +29,8 @@
     border: none;
   }
 }
-#explore-more-body{
+
+#explore-more-body {
 
   // No longer needed now that an accordion is in place
   //margin-left: floor(-@grid-gutter-width / 2); // undo padding of parent #sidebar-content with negative margin
@@ -40,22 +43,27 @@
     border-bottom: 2px solid @explore-more-bar-label-bg-color;
     margin-top: 15px;
   }
+
   .section {
     padding-right: @padding-xs-horizontal;
     margin-bottom: 20px;
   }
+
   .subsectionTitle {
     color: @subsection-title-color;
   }
+
   .subsection {
 
   }
+
   .jcarousel-wrapper {
     margin-left: -@padding-small-horizontal; // remove padding from #explore-more-body, so that full space is available to the carousel
     margin-top: 5px;
   }
+
   .jcarousel {
-    left: 30px;  // position carousel first item
+    left: 30px; // position carousel first item
     width: calc(100% ~"-" 60px); // Escaping so that LESS doesn't compile the calc rule;
   }
 
@@ -71,7 +79,7 @@
   }
 }
 
-.exhibit-thumbnail{
+.exhibit-thumbnail {
   margin: 8px;
   float: left;
 }
@@ -81,6 +89,7 @@
     display: block;
     clear: both;
   }
+
   .exhibit-thumbnail {
     float: none;
     display: block;
@@ -88,6 +97,7 @@
     margin-right: auto;
   }
 }
+
 // Styling for Explore More Bar in Search Results
 .exploreMoreBar {
   border: solid @explore-more-bar-border-width @explore-more-bar-label-bg-color;
@@ -111,9 +121,11 @@
     width: @explore-more-bar-label-width;
     min-height: 167px; // makes explore more bar contain the left label
     color: @menu-bar-color;
+
     &, & img {
       background-color: @explore-more-bar-label-bg-color;
     }
+
     .exploreMoreBarLabel {
       // Make Font Vertical
       position: absolute;
@@ -123,7 +135,8 @@
       padding-left: 5px; // padding at bottom of text, after transform //TODO this may not be needed in the end
       line-height: @explore-more-bar-label-width; // matches width, after transform
     }
-    &+.exploreMoreContainer{
+
+    & + .exploreMoreContainer {
       padding-left: @explore-more-bar-label-width; // move carousel container to left of the label
       margin: 16px auto; // center the carousel.
 
@@ -134,10 +147,12 @@
   .label-top {
     color: @menu-bar-color;
     width: 100%;
+
     &, & img {
       background-color: @explore-more-bar-label-bg-color;
       display: inline-block;
     }
+
     .exploreMoreBarLabel {
       padding-left: 10px;
       display: inline-block;
@@ -148,10 +163,11 @@
     margin: 5px auto;
 
     .jcarousel {
-      li{
+      li {
         display: block !important;
       }
-      .explore-more-option{
+
+      .explore-more-option {
         padding-left: 10px;
         padding-right: 10px;
         height: 100%;
@@ -162,6 +178,7 @@
               height: 125px;
             }
           }
+
           border: 0 solid white;
           position: relative;
           display: block;
@@ -174,6 +191,7 @@
             left: 50%;
           }
         }
+
         figcaption {
           margin-top: 4px;
           margin-bottom: 4px;
@@ -195,7 +213,7 @@
   .jcarousel {
     .thumbnail {
       margin-bottom: 0;
-      height:175px;
+      height: 175px;
       border: 0 solid white;
     }
   }
@@ -209,15 +227,18 @@
     z-index: 2; // keep above carousel content
     box-shadow: white 0 0 0 0;
     border: 1px solid @explore-more-bar-label-bg-color;
+
     .glyphicon {
-       // center the button a bit better. I haven't find a good way to make it center with out a specific value yet
+      // center the button a bit better. I haven't find a good way to make it center with out a specific value yet
     }
   }
+
   // Horizontal Placement of Previous Next Buttons
   .jcarousel-control-prev {
     left: 2px;
     padding-inline: 0;
   }
+
   .jcarousel-control-next {
     right: 2px;
     padding-inline: 0;
@@ -238,11 +259,11 @@
   }
 }
 
-#relatedProjectScroller .thumbnail, #relatedContentTypesContainer .thumbnail{
+#relatedProjectScroller .thumbnail, #relatedContentTypesContainer .thumbnail {
   border-width: 0;
 }
 
-.large-image-content{
+.large-image-content {
   background-color: #f2f2f2;
   border: 1px solid #ddd;
   border-radius: 5px;
@@ -250,7 +271,7 @@
   box-sizing: border-box;
 }
 
-#download-options{
+#download-options {
   margin-top: 5px;
   margin-bottom: 7px;
   text-align: center;
@@ -267,37 +288,38 @@
   }
 }
 
-.openseadragon-highlight
-{
+.openseadragon-highlight {
   background-color: #F00;
   opacity: 0.5;
 }
 
-#exhibit-map{
+#exhibit-map {
   width: 100%;
   height: 500px;
 }
 
-#alternate-image-navigator{
+#alternate-image-navigator {
   text-align: center;
 }
-.alternate-image{
+
+.alternate-image {
   display: inline-block;
   margin: 3px;
 }
-.explore-more-scroller-link{
+
+.explore-more-scroller-link {
   display: block;
   text-align: center;
 }
 
-.book-pdf{
+.book-pdf {
   width: 100%;
   min-height: 600px;
   //height: inherit;
   height: 100%;
 }
 
-#view-transcription{
+#view-transcription {
   width: 100%;
   height: 600px;
   text-align: left;
@@ -313,11 +335,12 @@
   outline: dotted thin;
 }
 
-.transcriptLocation{
+.transcriptLocation {
   font-weight: bold;
   font-size: larger;
 }
-.transcript{
+
+.transcript {
   margin-bottom: 5px;
 }
 
@@ -411,6 +434,8 @@
   }
 }
 
+
+
 // For Horizontal Components
 .archiveComponentContainer {
   .archiveComponent.horizontalComponent {
@@ -434,15 +459,18 @@
 
 #exhibit-map {
   text-align: center;
+
   figcaption {
     color: white;
   }
+
   img {
     width: 95%;
     max-width: 270px;
   }
 }
-.browseFilterContainer .archiveComponentHeader{
+
+.browseFilterContainer .archiveComponentHeader {
   padding-top: 5%;
   padding-bottom: 5%;
   font-size: 28px;
@@ -450,31 +478,32 @@
   text-transform: uppercase;
 }
 
-#pdfContainer{
+#pdfContainer {
   border: 1px solid lightgrey;
   margin: 10px;
 
-  #pdfContainerBody{
+  #pdfContainerBody {
     position: relative;
-    width:    100%;
+    width: 100%;
 
-    #pdfComponentBox{
+    #pdfComponentBox {
       padding: 10px;
       position: absolute;
-      top:      0;
-      left:     0;
-      bottom:   0;
-      right:    0;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
 
-      #view-pdf{
+      #view-pdf {
         width: 100%;
         height: 100%;
       }
     }
   }
-  #pdfContainerBody:before{
-    content:     "";
-    display:     block;
+
+  #pdfContainerBody:before {
+    content: "";
+    display: block;
     padding-top: 129.5%; /* ratio of 11:8.5*/
   }
 }
@@ -486,6 +515,7 @@
         :not(#relatedOrganizationsPanelBody) {
           height: 125px;
         }
+
         max-height: 125px;
         //width: 100%;
         position: absolute;
@@ -494,6 +524,7 @@
         left: 50%;
       }
     }
+
     //min-block-size: 210px;
     border: 0 solid white;
     position: relative;
@@ -524,8 +555,8 @@
     //autoprefixer adds the page-break-inside: which breaks display on firefox.
     // Fix display for chrome
     -webkit-column-break-inside: avoid;
-    -moz-column-break-inside:avoid;
-    column-break-inside:avoid;
+    -moz-column-break-inside: avoid;
+    column-break-inside: avoid;
     //page-break-inside: avoid;
     break-inside: avoid;
     break-inside: avoid-column;
@@ -542,7 +573,7 @@
 }
 
 // Show audio and video players at full width
-#audio-player,#video-player {
+#audio-player, #video-player {
   display: block;
   width: 100%;
 }

@@ -153,12 +153,10 @@ class Browse_AJAX extends AJAXHandler {
 						];
 					}
 
-					$categoryName                   = htmlspecialchars($categoryName, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5);
-					$browseCategory->label          = $categoryName;
-					$browseCategory->userId         = UserAccount::getActiveUserId();
-					$browseCategory->sharing        = 'everyone';
-					$browseCategory->catalogScoping = 'unscoped';
-					$browseCategory->description    = '';
+					$categoryName                = htmlspecialchars($categoryName, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5);
+					$browseCategory->label       = $categoryName;
+					$browseCategory->userId      = UserAccount::getActiveUserId();
+					$browseCategory->description = '';
 
 
 					//setup and add the category

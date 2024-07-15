@@ -14,7 +14,7 @@
 
 package org.pika;
 
-class RecordIdentifier {
+public class RecordIdentifier {
 	private String  source;
 	private String  identifier;
 	private boolean suppressed;

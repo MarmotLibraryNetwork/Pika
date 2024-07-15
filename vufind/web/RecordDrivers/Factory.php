@@ -114,11 +114,13 @@ class RecordDriverFactory {
 		}elseif (is_array($record) && array_key_exists('recordtype', $record)){
 			// for example, Load Person records (at least from buildRSS)
 			// Also SearchObject_Solr  getBrowseRecordHTML()
+			// Also load groupedwork in SuggestedTitles->launch()
 			$driver = ucwords($record['recordtype']) . 'Record';
 			$path   = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
 			// If we can't load the driver, fall back to the default, index-based one:
 			if (!is_readable($path)){
 				//Try without appending Record
+				// e.g. GroupedWorkDriver
 				$recordType      = $record['recordtype'];
 				$driverNameParts = explode('_', $recordType);
 				$recordType      = '';

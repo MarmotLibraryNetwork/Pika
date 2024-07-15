@@ -112,7 +112,7 @@ public class GroupingFormatDetermination {
 	private char getSubfieldIndicatorFromConfig(ResultSet indexingProfileRS, String subfieldName) throws SQLException{
 		String subfieldString = indexingProfileRS.getString(subfieldName);
 		char subfield = ' ';
-		if (!indexingProfileRS.wasNull() && subfieldString.length() > 0)  {
+		if (!indexingProfileRS.wasNull() && !subfieldString.isEmpty())  {
 			subfield = subfieldString.charAt(0);
 		}
 		return subfield;
@@ -151,7 +151,7 @@ public class GroupingFormatDetermination {
 			groupingCategories.add(specifiedGroupingCategory);
 		} else {
 			LinkedHashSet<String> printFormats = getFormatsFromBib(record, identifier);
-			if (translationMaps.size() > 0 && translationMaps.containsKey("grouping_categories")){
+			if (!translationMaps.isEmpty() && translationMaps.containsKey("grouping_categories")){
 				groupingCategories.addAll(translateCollection("grouping_categories", printFormats, identifier));
 			} else {
 				//Set grouping category from default bib determinations.
@@ -214,7 +214,7 @@ public class GroupingFormatDetermination {
 
 	private void loadPrintFormatFromBib(RecordIdentifier identifier, Record record) {
 		LinkedHashSet<String> printFormats = getFormatsFromBib(record, identifier);
-		if (printFormats.size() == 0){
+		if (printFormats.isEmpty()){
 			logger.warn("Did not find a format for " + identifier + " using standard format method " + printFormats);
 		}
 		groupingCategories.addAll(translateCollection("grouping_categories", printFormats, identifier));
@@ -287,7 +287,7 @@ public class GroupingFormatDetermination {
 			}
 		}
 
-		if (itemTypeToFormat.size() == 0 || itemTypeToFormat.get(mostPopularIType) == null || itemTypeToFormat.get(mostPopularIType).length() == 0){
+		if (itemTypeToFormat.isEmpty() || itemTypeToFormat.get(mostPopularIType) == null || itemTypeToFormat.get(mostPopularIType).isEmpty()){
 			//We didn't get any formats from the collections, get formats from the base method (007, 008, etc).
 			//logger.debug("All formats are books or there were no formats found, loading format information from the bib");
 			loadPrintFormatFromBib(identifier, record);
@@ -381,11 +381,11 @@ public class GroupingFormatDetermination {
 		getFormatFromTitle(record, printFormats);
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
 		getGameFormatFrom753(record, printFormats);
-		if (printFormats.size() == 0) {
+		if (printFormats.isEmpty()) {
 			//Only get from fixed field information if we don't have anything yet since the cataloging of
 			//fixed fields is not kept up to date reliably.  #D-87
 			getFormatFrom007(record, printFormats);
-			if (printFormats.size() == 0) {
+			if (printFormats.isEmpty()) {
 				ControlField          fixedField   = (ControlField) record.getVariableField("008");
 				getFormatFromLeader(printFormats, leader, fixedField);
 				if (printFormats.size() > 1){
@@ -404,7 +404,7 @@ public class GroupingFormatDetermination {
 //			accompanyingMaterialCheck(leaderBit, printFormats);
 //		}
 
-		if (printFormats.size() == 0){
+		if (printFormats.isEmpty()){
 //			if (fullReindex) {
 //				logger.warn("Did not get any formats for record " + recordInfo.getFullIdentifier() + ", assuming it is a book ");
 //			}

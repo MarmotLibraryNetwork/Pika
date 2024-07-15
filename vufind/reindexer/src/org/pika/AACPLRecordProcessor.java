@@ -27,7 +27,6 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * Description goes here
  * Pika
  * User: Mark Noble
  * Date: 4/25/14

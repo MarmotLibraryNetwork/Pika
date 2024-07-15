@@ -55,7 +55,7 @@ class Location extends DB_DataObject {
 	public $validHoldPickupBranch;  //tinyint(4)
 	public $nearbyLocation1;    //int(11)
 	public $nearbyLocation2;    //int(11)
-	public $scope;
+	public $ilsLocationId;
 	public $facetLabel;
 	public $restrictSearchByLocation;
 	/* OVERDRIVE */
@@ -197,7 +197,7 @@ class Location extends DB_DataObject {
 
 		$structure = [
 			'locationId'                      => ['property' => 'locationId', 'type' => 'label', 'label' => 'Location Id', 'description' => 'The unique id of the location within the database'],
-			'code'                            => ['property' => 'code', 'type' => 'text', 'label' => 'Code', 'description' => 'The code for use when communicating with the ILS', 'required' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
+			'code'                            => ['property' => 'code', 'type' => 'text', 'label' => 'Code', /*(Search scope name, and often the hold pick-up branch key in the ILS)'*/ 'description' => 'The code to use when communicating with the ILS', 'required' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
 			'catalogUrl'                      => ['property' => 'catalogUrl', 'type' => 'label', 'label' => 'Catalog URL', 'description' => 'The catalog url used for this location'],
 			'displayName'                     => ['property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'The full name of the location for display to the user', 'size' => '40'],
 			'showDisplayNameInHeader'         => ['property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false],
@@ -226,7 +226,7 @@ class Location extends DB_DataObject {
 				'property' => 'ilsSection', 'type' => 'section', 'label' => 'ILS/Account Integration', 'hideInLists' => true,
 				'helpLink' => 'https://marmot-support.atlassian.net/l/c/SaLWEWH7',
 				'properties' => [
-					['property' => 'scope', 'type' => 'text', 'label' => 'Sierra Scope', 'description' => 'The scope for the system in Sierra to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.'],
+					['property' => 'ilsLocationId', 'type' => 'text', 'label' => 'ILS Location Id  (Polaris Organization ID or Sierra Scope)', 'description' => 'The ID for the location in the ILS. Previously, the scope for the branch used in the Sierra Classic OPAC.'],
 					['property' => 'defaultPType', 'type' => 'text', 'label' => 'Default P-Type', 'description' => 'The P-Type to use when accessing a subdomain if the patron is not logged in.  Use -1 to use the library default PType.', 'default' => -1],
 					['property' => 'validHoldPickupBranch', 'type' => 'enum', 'values' => ['1' => 'Valid for all patrons', '0' => 'Valid for patrons of this branch only', '2' => 'Not Valid'], 'label' => 'Valid Hold Pickup Branch?', 'description' => 'Determines if the location can be used as a pickup location if it is not the patrons home location or the location they are in.', 'hideInLists' => true, 'default' => 1],
 					['property' => 'showHoldButton', 'type' => 'checkbox', 'label' => 'Show Hold Button', 'description' => 'Whether or not the hold button is displayed so patrons can place holds on items', 'hideInLists' => true, 'default' => true],

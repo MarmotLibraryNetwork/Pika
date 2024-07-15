@@ -236,8 +236,9 @@ class SearchAPI extends AJAXHandler {
 					$uptime        = $data['status']['grouped']['uptime'] / 1000;  // Grouped Index, puts uptime into seconds.
 					$solrStartTime = strtotime($data['status']['grouped']['startTime']);
 					if ($uptime >= self::SOLR_RESTART_INTERVAL_WARN){ // Grouped Index
-						$status[] = ($uptime >= self::SOLR_RESTART_INTERVAL_CRITICAL) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-						$notes[]  = 'Solr Index (Grouped) last restarted ' . date('m-d-Y H:i:s', $solrStartTime) . ' - ' . round($uptime / 3600, 2) . ' hours ago';
+						//$status[] = ($uptime >= self::SOLR_RESTART_INTERVAL_CRITICAL) ? self::STATUS_CRITICAL : self::STATUS_WARN;
+						$status[] = self::STATUS_WARN;
+						$notes[]  = 'Solr Index last restarted ' . date('m-d-Y H:i:s', $solrStartTime) . ' - ' . round($uptime / 3600, 2) . ' hours ago';
 					}
 
 					$numRecords = $data['status']['grouped']['index']['numDocs'];

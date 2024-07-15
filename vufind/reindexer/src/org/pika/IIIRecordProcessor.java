@@ -42,7 +42,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	private HashMap<Long, LoanRule>               loanRules           = new HashMap<>();
 	private ArrayList<LoanRuleDeterminer>         loanRuleDeterminers = new ArrayList<>();
 	// A list of status codes that are eligible to show items as checked out.
-	protected String  availableStatus          = "-";
+	//protected String  availableStatus          = "-";
 	protected  HashSet<String> availableStatusCodes  = new HashSet<String>() {{
 		add("-");
 	}};
@@ -130,7 +130,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		return available;
 	}
 
-	protected boolean isOrderItemValid(String status, String code3) {
+	protected boolean isOrderItemValid(String status) {
 		return !status.isEmpty() && validOnOrderRecordStatus.indexOf(status.charAt(0)) >= 0;
 	}
 
@@ -506,7 +506,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 
 		String status = orderItem.getStatus();
 
-		if (isOrderItemValid(status, null)) {
+		if (isOrderItemValid(status)) {
 			recordInfo.addItem(itemInfo);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Add order " + orderNumber + " to " + recordInfo.getFullIdentifier());

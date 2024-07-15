@@ -106,7 +106,7 @@ class MyRatings extends MyAccount {
 
 		$interface->assign('ratings', $ratings);
 		$interface->assign('notInterested', $notInterested);
-		$interface->assign('showNotInterested', false);
+		//$interface->assign('showNotInterested', false);
 
 		$this->display('myRatings.tpl', 'My Ratings');
 	}

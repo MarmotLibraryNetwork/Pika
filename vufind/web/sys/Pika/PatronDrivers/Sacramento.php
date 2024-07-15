@@ -290,7 +290,7 @@ class Sacramento extends Sierra {
 	public function selfRegister($extraSelfRegParams = false) {
 		global $library;
 		// sacramento test and production, woodlands test and production
-		if ($library->subdomain == 'catalog' || $library->subdomain == 'spl' || $library->subdomain == 'woodland' || $library->subdomain == 'cityofwoodland') {
+		if (in_array($library->subdomain, ['catalog', 'spl', 'woodland', 'cityofwoodland'])) {
 			// Capitalize All Input, expect pin passwords
 			foreach ($this->getSelfRegistrationFields() as $formField) {
 				$formFieldName = $formField['property'];
@@ -301,12 +301,12 @@ class Sacramento extends Sierra {
 		}
 
 		// sanity checks
-		if(!property_exists($library, 'selfRegistrationDefaultpType') || empty($library->selfRegistrationDefaultpType)) {
+		if(empty($library->selfRegistrationDefaultpType)) {
 			$message = 'Missing configuration parameter selfRegistrationDefaultpType for ' . $library->displayName;
 			$this->logger->error($message);
 			throw new InvalidArgumentException($message);
 		}
-		if(!property_exists($library, 'selfRegistrationAgencyCode') || empty($library->selfRegistrationAgencyCode)) {
+		if(empty($library->selfRegistrationAgencyCode)) {
 			$message = 'Missing configuration parameter selfRegistrationAgencyCode for ' . $library->displayName;
 			$this->logger->error($message);
 			throw new InvalidArgumentException($message);
@@ -371,6 +371,7 @@ class Sacramento extends Sierra {
 		}
 
 		// set the right pCodes
+		$pcode2           = '3';
 		$pCode4           = 0;
 		$librarySubDomain = $library->subdomain;
 		switch($librarySubDomain) {
@@ -379,6 +380,7 @@ class Sacramento extends Sierra {
 				$pCode3 = 30;
 				break;
 			case 'folsom':
+				$pcode2 = '-';
 				$pCode3 = 44;
 				$pCode4 = 192;
 				break;
@@ -388,6 +390,7 @@ class Sacramento extends Sierra {
 				break;
 			case 'woodland':
 			case 'cityofwoodland':
+				$pcode2 = '-';
 				$pCode3 = 172;
 				break;
 			case 'spl':
@@ -403,7 +406,7 @@ class Sacramento extends Sierra {
 
 		$params['patronCodes'] = [
 			'pcode1' => 'e',
-			'pcode2' => '3',
+			'pcode2' => $pcode2,
 			'pcode3' => $pCode3,
 			'pcode4' => $pCode4,
 		];

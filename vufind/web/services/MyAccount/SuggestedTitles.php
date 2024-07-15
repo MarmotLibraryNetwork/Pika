@@ -31,7 +31,7 @@ class SuggestedTitles extends MyAccount {
 		global $timer;
 
 		$suggestions = Suggestions::getSuggestions();
-		$timer->logTime("Loaded suggestions");
+		$timer->logTime('Loaded suggestions');
 
 		// Setup Search Engine Connection
 		$class = $configArray['Index']['engine'];
@@ -41,6 +41,7 @@ class SuggestedTitles extends MyAccount {
 
 		$resourceList = [];
 		$curIndex     = 0;
+		$interface->assign('showNotInterested', true);
 		if (is_array($suggestions)){
 			$suggestionIds = array_keys($suggestions);
 			$records       = $solrDb->getRecords($suggestionIds);
@@ -52,7 +53,7 @@ class SuggestedTitles extends MyAccount {
 				$resourceList[] = $resourceEntry;
 			}
 		}
-		$timer->logTime("Loaded results for suggestions");
+		$timer->logTime('Loaded results for suggestions');
 		$interface->assign('resourceList', $resourceList);
 
 		//Check to see if the user has rated any titles

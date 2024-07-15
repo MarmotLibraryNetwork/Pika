@@ -1372,14 +1372,14 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER TABLE `librarian_reviews` CHANGE COLUMN `id` `id` INT(11) NOT NULL AUTO_INCREMENT ;",
 					]
 				),
-				'remove_selfReg_template_option' => array(
-                  'title'       => 'Delete selfReg template option',
-                  'description' => 'Get rid of the template option',
-                  'continueOnError' => false,
-                  'sql' => array(
-                      "ALTER TABLE `library` DROP COLUMN 'selfRegistrationTemplate';",
-                  )
-                ),
+				'2024.03.0_remove_selfReg_template_option' => [
+					'title'           => 'Delete  selfReg template option',
+					'description'     => 'Get rid of the template library setting used for opac self reg scren scraping',
+					'continueOnError' => false,
+					'sql'             => [
+						"ALTER TABLE `library` DROP COLUMN `selfRegistrationTemplate`;",
+					]
+				],
 				'update_eContentSupportAddress_default_value' => array(
                     'title'       => 'Update e-Content support Address default address',
                     'description' => 'Update e-Content support Address default e-mail address to pika@marmot.org',

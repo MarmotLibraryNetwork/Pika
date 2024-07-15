@@ -256,9 +256,14 @@ class SearchObject_Solr extends SearchObject_Base {
 					}
 				}
 
+				// Correct any scoped fields to the current search scope
 				if ($solrScope){
-					if (strcmp($field, 'availability_toggle') == 0){
+					if (strcmp($field, 'availability_by_format') == 0){
+						$field = 'availability_by_format_' . $solrScope;
+					}elseif (strcmp($field, 'availability_toggle') == 0){
 						$field = 'availability_toggle_' . $solrScope;
+					}elseif ((strcmp($field, 'available_at') == 0)){
+						$field = 'available_at_' . $solrScope;
 					}elseif (strcmp($field, 'format') == 0){
 						$field = 'format_' . $solrScope;
 					}elseif (strcmp($field, 'format_category') == 0){
@@ -267,14 +272,18 @@ class SearchObject_Solr extends SearchObject_Base {
 						$field = 'econtent_source_' . $solrScope;
 					}elseif ((strcmp($field, 'collection') == 0) || (strcmp($field, 'collection_group') == 0)){
 						$field = 'collection_' . $solrScope;
-					}elseif ((strcmp($field, 'detailed_location') == 0)){
-						$field = 'detailed_location_' . $solrScope;
+					}elseif ((strcmp($field, 'language') == 0)){
+						$field = 'language_' . $solrScope;
+					}elseif ((strcmp($field, 'translation') == 0)){
+						$field = 'translation_' . $solrScope;
+					}elseif ((strcmp($field, 'owning_library') == 0)){
+						$field = 'owning_library_' . $solrScope;
 					}elseif ((strcmp($field, 'owning_location') == 0)){
 						$field = 'owning_location_' . $solrScope;
-					}elseif ((strcmp($field, 'owning_system') == 0)){
-						$field = 'owning_system_' . $solrScope;
-					}elseif ((strcmp($field, 'available_at') == 0)){
-						$field = 'available_at_' . $solrScope;
+					}elseif ((strcmp($field, 'detailed_location') == 0)){
+						$field = 'detailed_location_' . $solrScope;
+					}elseif ((strcmp($field, 'local_callnumber') == 0)){
+						$field = 'local_callnumber_' . $solrScope;
 					}
 				}
 
@@ -720,6 +729,8 @@ class SearchObject_Solr extends SearchObject_Base {
 	}
 
 	/**
+	 * TODO: Currently not used by anything in Pika
+	 *
 	 * Use the record driver to build an array of HTML displays from the search
 	 * results suitable for use on a user's "favorites" page.
 	 *
@@ -2492,8 +2503,9 @@ class SearchObject_Solr extends SearchObject_Base {
 			}else{
 				//TODO: this block is obsolete, since all these facets are scoped.  Likely would cause empty document returns
 				// if no scope is set
+				// Gets called by getRelatedPikaContent()
 				global $pikaLogger;
-				$pikaLogger->warning('Solr scope not set when fetching scoped fields.', $_REQUEST);
+				$pikaLogger->warning('Solr scope not set when fetching scoped fields.', [$_SERVER['REQUEST_URI'], $_REQUEST]);
 				$fieldsToReturn .= ',format';
 				$fieldsToReturn .= ',format_category';
 				$fieldsToReturn .= ',days_since_added';

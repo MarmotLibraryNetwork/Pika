@@ -67,7 +67,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
 require_once ROOT_DIR . '/sys/Account/PinReset.php';
 
-class Sierra  implements \DriverInterface {
+class Sierra extends PatronDriverInterface implements \DriverInterface {
 
 	// @var Pika/Memcache instance
 	public  $cache;
@@ -411,411 +411,365 @@ class Sierra  implements \DriverInterface {
 	 * @throws ErrorException
 	 */
 	public function getPatron($sierraPatronId, $noCache=false){
-
-		$createPatron = false;
-		$updatePatron = false;
-
-		// find user pika id-- needed for cache key
-		// the username db field stores the sierra patron id. we'll use that to determine if the user exists.
-		// Check for a cached user object
-		$patron            = new User();
-//		$patron->whereAdd("ilsUserId = '{$patronId}'", 'OR');
-//		$patron->whereAdd("username = '{$patronId}'", 'OR'); // if ilsUserId can't be found fall back to username //TODO: temporary, username column is deprecated
-		$patron->ilsUserId = $sierraPatronId;
-
-		if ($patron->find(true) && $patron->N != 0) {
-			if(!$noCache){
-				$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
-				if ($pObj = $this->cache->get($patronObjectCacheKey)){
-					$this->logger->info('Found patron in memcache: ' . $patronObjectCacheKey);
-					return $pObj;
-				}
-			}
-		}
-
-		// grab everything from the patron record the api can provide.
-		$params    = [
-			'fields' => 'names,addresses,phones,emails,expirationDate,homeLibraryCode,moneyOwed,patronType,barcodes,patronCodes,createdDate,blockInfo,message,pMessage,langPref,fixedFields,varFields,updatedDate,createdDate'
-		];
-		$operation = 'patrons/' . $sierraPatronId;
-		$pInfo     = $this->_doRequest($operation, $params);
-		if (!$pInfo){
-			return null;
-		}
-
-		// Check to see if the user exists in the database
-
-		// does the user exist in database?
-		if(!$patron || $patron->N == 0) {
-			$this->logger->debug('Patron does not exist in Pika database.', ['Sierra ID' => $sierraPatronId]);
-			$createPatron = true;
-		}
-
-		// Find the right barcode
-		// we need to monkey with the barcodes. barcodes can change!
-		// self registered users may have something in the api response that looks like this
-		// -- before getting a physical card
-		// $pInfo->barcodes['', '201975'] (this is for some marmot online registered accounts where the 2nd barcode is the Sierra id for the barcode, sometimes)
-		// -- after getting a physical card
-		// $pInfo->barcodes['56369856985', '201975']
-		// so we need to look for both barcodes and determine if the temp barcode needs updated to the permanent one
-		$barcode = '';
-		if(count($pInfo->barcodes) > 1) {
-			// if the first barcode is set this should be the permanent barcode.
-			if($pInfo->barcodes[0] != '') {
-				$barcode = $pInfo->barcodes[0];
-			} else {
-				if($pInfo->barcodes[1] != '') {
-					$barcode = $pInfo->barcodes[1];
-				}
-			}
-		} elseif (count($pInfo->barcodes)) {
-			if($pInfo->barcodes[0] != '') {
-				$barcode = $pInfo->barcodes[0];
-			} else {
-				$this->logger->error("Sierra user id $sierraPatronId did not return a barcode");
-			}
-		} elseif (!empty($this->patronBarcode)) {
-			// Since Sacramento's student Id's aren't treated as barcodes, we have to ignore the barcodes array from the API
-			$barcode = $this->patronBarcode;
-		}
-
-		// check all the places barcodes are stored and determine if they need updated.
-		$patron->source = $this->accountProfile->name;
-
-		if ($patron->barcode != $barcode){
-			$updatePatron    = true;
-			$patron->barcode = $barcode;
-		}
-
-		// Checks; make sure patron info from sierra matches database. update if needed.
-		// ilsUserId
-		$ilsUserId = $pInfo->id;
-		if ($ilsUserId != $patron->ilsUserId){
-			$patron->ilsUserId = $ilsUserId;
-			$updatePatron      = true;
-		}
-
-		// check patron type
-		if((int)$pInfo->patronType !== (int)$patron->patronType) {
-			$updatePatron       = true;
-			$patron->patronType = $pInfo->patronType;
-		}
-
-		// check names
-		if (!$this->accountProfile->usingPins()) {
-			if($patron->cat_username != $pInfo->names[0]) {
-				$updatePatron         = true;
-				$patron->cat_username = $pInfo->names[0];
-			}
-		}
-
-		if(stristr($pInfo->names[0], ',')) {
-			// find a comma-- assume the name is in form last, first middle
-			$nameParts = explode(',', $pInfo->names[0]);
-			$firstName = trim($nameParts[1]);
-			$lastName  = trim($nameParts[0]);
-
-		} else {
-			// only spaces --assume last name is last
-			$nameParts = explode(' ', $pInfo->names[0]);
-			// get the last index
-			$countNameParts = count($nameParts) - 1;
-			$lastName = $nameParts[$countNameParts];
-			if ($countNameParts >= 1) {
-				unset($nameParts[$countNameParts]);
-				$firstName = implode(' ', $nameParts);
-			} else {
-				$firstName = '';
-			}
-		}
-		if($firstName != $patron->firstname || $lastName != $patron->lastname) {
-			$updatePatron      = true;
-			$patron->firstname = $firstName;
-			$patron->lastname  = $lastName;
-			// empty display name so it will reset to new name
-			$patron->displayName = '';
-		}
-
-		// Check email
-		// email is returned as array from sierra api
-		if((isset($pInfo->emails) && !empty($pInfo->emails)) && $pInfo->emails[0] != $patron->email) {
-			$updatePatron  = true;
-			$patron->email = $pInfo->emails[0];
-		} elseif((empty($pInfo->emails) || !isset($pInfo->emails))) {
-			// Check for empty email-- update db even if empty
-			$updatePatron  = true;
-			$patron->email = '';
-		}
-
-		// Check locations
-		// home locations
-		if ($patron->setUserHomeLocations($pInfo->homeLibraryCode)){
-			$updatePatron = true;
-		}
-
-		// things not stored in database so don't need to check for updates but do need to add to object.
-		// alt username
-		// this is used on sites allowing username login.
-		if($this->hasUsernameField()) {
-			$fields = $pInfo->varFields;
-			$i      = array_filter($fields, function ($k){
-				return ($k->fieldTag == 'i');
-			});
-			if(empty($i)) {
-				$patron->alt_username = '';
-			} else {
-				$key                  = array_key_first($i);
-				$alt_username         = $i[$key]->content;
-				$patron->alt_username = $alt_username;
-			}
-		}
-
-		// check phones
-		$homePhone   = '';
-		$mobilePhone = '';
-		if(isset($pInfo->phones) && is_array($pInfo->phones)){
-			foreach($pInfo->phones as $phone) {
-				if($phone->type == 't') {
-					$homePhone  = $phone->number;
-				} elseif ($phone->type == 'o') {
-					$mobilePhone = $phone->number;
-				} elseif ($phone->type == 'p') {
-					$patron->workPhone = $phone->number;
-				}
-			}
-			// try home phone first then mobile phone
-			if(!empty($homePhone) && $patron->phone != $homePhone) {
-				$updatePatron  = true;
-				$patron->phone = $homePhone;
-			}elseif (!isset($homePhone) && isset($mobilePhone) && $patron->phone != $mobilePhone){
-				$updatePatron  = true;
-				$patron->phone = $mobilePhone;
-			} else {
-				if(empty($patron->phone)) {
-					$patron->phone = '';
-				}
-			}
-		}
-		if(!isset($patron->phone)) {
-			$patron->phone = '';
-		}
-
-		// fullname
-		$patron->fullname  = $pInfo->names[0];
-
-		// address
-		// some libraries may not use ','  after city so make sure we have all the parts
-		// can assume street as a line and city, st. zip as a line
-		// Note: There are other unusual entries for address as well:
-		// ART
-		// CAMPUS ADDRESS
-		// another:
-		// Words on Wheels Patron Wednesday 1 (Aaron)
-		// another:
-		// Salida Co, 81201 <- comma in the wrong place
-		//Another ugly one; single line (actual street address removed): 123 streetname Drive Apt 8 Woody Creek, CO 81656
-
-		// set these early to avoid warnings.
-		$patron->address1    = '';
-		$patron->address2    = '';
-		$patron->city        = '';
-		$patron->state       = '';
-		$patron->zip         = '';
-		$patronCity          = '';
-		$patronState         = '';
-		$patronZip           = '';
-
-		$zipRegExp   = '|\d{5}$|';
-		$splitRegExp = '%([a-zA-Z]+)[\s|,]%'; // splits on spaces or commas -- doesn't include zip
-		if (isset($pInfo->addresses) && is_array($pInfo->addresses)){
-			// get the home address -- we won't handle alt addresses in Pika.
-			$homeAddressArray = false;
-			foreach ($pInfo->addresses as $address){
-				// a = primary address, h = alt address
-				if ($address->type == 'a'){
-					$homeAddressArray = $address->lines;
-				}
-			}
-			// found a home address
-			if ($homeAddressArray){
-				$addressLineCount = count($homeAddressArray);
-				// 3 lines - if we have three lines the first is c/o or something similar
-				if ($addressLineCount == 3){
-					// set care of
-					$patron->careOf = $homeAddressArray[0];
-					array_shift($homeAddressArray);               // shift off the first line
-					$addressLineCount = count($homeAddressArray); // reset line count and continue
-				}
-				// 2 lines (or previously 3) - if we have at least 2 lines we should have a full address
-				if ($addressLineCount == 2){
-					// we can set address1 and address2
-					$patron->address1 = $homeAddressArray[0];
-					$patron->address2 = $homeAddressArray[1];
-					// check last line for a zip -- this is where we assume it lives
-					$zipTest = preg_match($zipRegExp, trim($homeAddressArray[1]), $zipMatch);
-					if ($zipTest === 1){
-						// OK, this should be a full address
-						$patronZip = $zipMatch[0];
-						// now split out the rest of the address
-						$cityStateTest = preg_match_all($splitRegExp, trim($homeAddressArray[1]), $cityStateMatches);
-						if ($cityStateTest){
-							$cityState      = $cityStateMatches[1];
-							$cityStateCount = count($cityState) - 1; // zero index
-							// state should be last
-							$patronState = $cityState[$cityStateCount];
-							// pop last value and join array
-							array_pop($cityState);
-							$patronCity = implode(' ', $cityState);
-						}
-					}elseif ($zipTest === 0){
-						// didn't find a zip
-						// find a city and state?
-						$cityStateArray = explode(',', $homeAddressArray[1]);
-						if (count($cityStateArray) == 2){
-							$patronCity  = $cityStateArray[0];
-							$patronState = $cityStateArray[1];
-						}
+		if (!empty($sierraPatronId)){
+			$createPatron = false;
+			$updatePatron = false;// find user pika id-- needed for cache key
+			// the username db field stores the sierra patron id. we'll use that to determine if the user exists.
+			// Check for a cached user object
+			$patron = new User(); //		$patron->whereAdd("ilsUserId = '{$patronId}'", 'OR');
+			//		$patron->whereAdd("username = '{$patronId}'", 'OR'); // if ilsUserId can't be found fall back to username //TODO: temporary, username column is deprecated
+			$patron->ilsUserId = $sierraPatronId;
+			if ($patron->find(true) && $patron->N != 0){
+				if (!$noCache){
+					$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
+					if ($pObj = $this->cache->get($patronObjectCacheKey)){
+						$this->logger->info('Found patron in memcache: ' . $patronObjectCacheKey);
+						return $pObj;
 					}
+				}
+			}// grab everything from the patron record the api can provide.
+			$params    = [
+				'fields' => 'names,addresses,phones,emails,expirationDate,homeLibraryCode,moneyOwed,patronType,barcodes,patronCodes,createdDate,blockInfo,message,pMessage,langPref,fixedFields,varFields,updatedDate,createdDate'
+			];
+			$operation = 'patrons/' . $sierraPatronId;
+			$pInfo     = $this->_doRequest($operation, $params);
+			if (!$pInfo){
+				return null;
+			}// Check to see if the user exists in the database
+			// does the user exist in database?
+			if (!$patron || $patron->N == 0){
+				$this->logger->debug('Patron does not exist in Pika database.', ['Sierra ID' => $sierraPatronId]);
+				$createPatron = true;
+			}// Find the right barcode
+			// we need to monkey with the barcodes. barcodes can change!
+			// self registered users may have something in the api response that looks like this
+			// -- before getting a physical card
+			// $pInfo->barcodes['', '201975'] (this is for some marmot online registered accounts where the 2nd barcode is the Sierra id for the barcode, sometimes)
+			// -- after getting a physical card
+			// $pInfo->barcodes['56369856985', '201975']
+			// so we need to look for both barcodes and determine if the temp barcode needs updated to the permanent one
+			$barcode = '';
+			if (count($pInfo->barcodes) > 1){
+				// if the first barcode is set this should be the permanent barcode.
+				if ($pInfo->barcodes[0] != ''){
+					$barcode = $pInfo->barcodes[0];
 				}else{
-					// 1 line - only one address line -- this could be anything so start checking
-					$patron->address1 = $homeAddressArray[0];
-					// does it contain a zip? It might be some like grand junction, co 81501
-					$zipTest = preg_match($zipRegExp, $homeAddressArray[0], $zipMatch);
-					if ($zipTest === 1){
-						// found a zip
-						$patronZip = $zipMatch[0];
-						// find a city and state?
-						$cityStateTest = preg_match_all($splitRegExp, trim($homeAddressArray[0]), $cityStateMatches);
-						if ($cityStateTest){
-							$cityState      = $cityStateMatches[1];
-							$cityStateCount = count($cityState) - 1; // zero index
-							// state should be last
-							$patronState = $cityState[$cityStateCount];
-							// unset last value and join array
-							array_pop($cityState);
-							$patronCity = implode(' ', $cityState);
-						}else{
-							// well, that should'a matched something
-							// todo: what do to?
+					if ($pInfo->barcodes[1] != ''){
+						$barcode = $pInfo->barcodes[1];
+					}
+				}
+			}elseif (count($pInfo->barcodes)){
+				if ($pInfo->barcodes[0] != ''){
+					$barcode = $pInfo->barcodes[0];
+				}else{
+					$this->logger->error("Sierra user id $sierraPatronId did not return a barcode");
+				}
+			}elseif (!empty($this->patronBarcode)){
+				// Since Sacramento's student Id's aren't treated as barcodes, we have to ignore the barcodes array from the API
+				$barcode = $this->patronBarcode;
+			}// check all the places barcodes are stored and determine if they need updated.
+			$patron->source = $this->accountProfile->name;
+			if ($patron->barcode != $barcode){
+				$updatePatron    = true;
+				$patron->barcode = $barcode;
+			}// Checks; make sure patron info from sierra matches database. update if needed.
+			// ilsUserId
+			$ilsUserId = $pInfo->id;
+			if ($ilsUserId != $patron->ilsUserId){
+				$patron->ilsUserId = $ilsUserId;
+				$updatePatron      = true;
+			}// check patron type
+			if ((int)$pInfo->patronType !== (int)$patron->patronType){
+				$updatePatron       = true;
+				$patron->patronType = $pInfo->patronType;
+			}// check names
+			if (!$this->accountProfile->usingPins()){
+				if ($patron->cat_username != $pInfo->names[0]){
+					$updatePatron         = true;
+					$patron->cat_username = $pInfo->names[0];
+				}
+			}
+			if (stristr($pInfo->names[0], ',')){
+				// find a comma-- assume the name is in form last, first middle
+				$nameParts = explode(',', $pInfo->names[0]);
+				$firstName = trim($nameParts[1]);
+				$lastName  = trim($nameParts[0]);
+
+			}else{
+				// only spaces --assume last name is last
+				$nameParts = explode(' ', $pInfo->names[0]);
+				// get the last index
+				$countNameParts = count($nameParts) - 1;
+				$lastName       = $nameParts[$countNameParts];
+				if ($countNameParts >= 1){
+					unset($nameParts[$countNameParts]);
+					$firstName = implode(' ', $nameParts);
+				}else{
+					$firstName = '';
+				}
+			}
+			if ($firstName != $patron->firstname || $lastName != $patron->lastname){
+				$updatePatron      = true;
+				$patron->firstname = $firstName;
+				$patron->lastname  = $lastName;
+				// empty display name so it will reset to new name
+				$patron->displayName = '';
+			}// Check email
+			// email is returned as array from sierra api
+			if ((isset($pInfo->emails) && !empty($pInfo->emails)) && $pInfo->emails[0] != $patron->email){
+				$updatePatron  = true;
+				$patron->email = $pInfo->emails[0];
+			}elseif ((empty($pInfo->emails) || !isset($pInfo->emails))){
+				// Check for empty email-- update db even if empty
+				$updatePatron  = true;
+				$patron->email = '';
+			}// Check locations
+			// home locations
+			if ($patron->setUserHomeLocations($pInfo->homeLibraryCode)){
+				$updatePatron = true;
+			}// things not stored in database so don't need to check for updates but do need to add to object.
+			// alt username
+			// this is used on sites allowing username login.
+			if ($this->hasUsernameField()){
+				$fields = $pInfo->varFields;
+				$i      = array_filter($fields, function ($k){
+					return ($k->fieldTag == 'i');
+				});
+				if (empty($i)){
+					$patron->alt_username = '';
+				}else{
+					$key                  = array_key_first($i);
+					$alt_username         = $i[$key]->content;
+					$patron->alt_username = $alt_username;
+				}
+			}// check phones
+			$homePhone   = '';
+			$mobilePhone = '';
+			if (isset($pInfo->phones) && is_array($pInfo->phones)){
+				foreach ($pInfo->phones as $phone){
+					if ($phone->type == 't'){
+						$homePhone = $phone->number;
+					}elseif ($phone->type == 'o'){
+						$mobilePhone = $phone->number;
+					}elseif ($phone->type == 'p'){
+						$patron->workPhone = $phone->number;
+					}
+				}
+				// try home phone first then mobile phone
+				if (!empty($homePhone) && $patron->phone != $homePhone){
+					$updatePatron  = true;
+					$patron->phone = $homePhone;
+				}elseif (!isset($homePhone) && isset($mobilePhone) && $patron->phone != $mobilePhone){
+					$updatePatron  = true;
+					$patron->phone = $mobilePhone;
+				}else{
+					if (empty($patron->phone)){
+						$patron->phone = '';
+					}
+				}
+			}
+			if (!isset($patron->phone)){
+				$patron->phone = '';
+			}                                           // fullname
+			$patron->fullname = $pInfo->names[0];       // address
+			// some libraries may not use ','  after city so make sure we have all the parts
+			// can assume street as a line and city, st. zip as a line
+			// Note: There are other unusual entries for address as well:
+			// ART
+			// CAMPUS ADDRESS
+			// another:
+			// Words on Wheels Patron Wednesday 1 (Aaron)
+			// another:
+			// Salida Co, 81201 <- comma in the wrong place
+			//Another ugly one; single line (actual street address removed): 123 streetname Drive Apt 8 Woody Creek, CO 81656
+			// set these early to avoid warnings.
+			$patron->address1 = '';
+			$patron->address2 = '';
+			$patron->city     = '';
+			$patron->state    = '';
+			$patron->zip      = '';
+			$patronCity       = '';
+			$patronState      = '';
+			$patronZip        = '';
+			$zipRegExp        = '|\d{5}$|';
+			$splitRegExp      = '%([a-zA-Z]+)[\s|,]%';// splits on spaces or commas -- doesn't include zip
+			if (isset($pInfo->addresses) && is_array($pInfo->addresses)){
+				// get the home address -- we won't handle alt addresses in Pika.
+				$homeAddressArray = false;
+				foreach ($pInfo->addresses as $address){
+					// a = primary address, h = alt address
+					if ($address->type == 'a'){
+						$homeAddressArray = $address->lines;
+					}
+				}
+				// found a home address
+				if ($homeAddressArray){
+					$addressLineCount = count($homeAddressArray);
+					// 3 lines - if we have three lines the first is c/o or something similar
+					if ($addressLineCount == 3){
+						// set care of
+						$patron->careOf = $homeAddressArray[0];
+						array_shift($homeAddressArray);               // shift off the first line
+						$addressLineCount = count($homeAddressArray); // reset line count and continue
+					}
+					// 2 lines (or previously 3) - if we have at least 2 lines we should have a full address
+					if ($addressLineCount == 2){
+						// we can set address1 and address2
+						$patron->address1 = $homeAddressArray[0];
+						$patron->address2 = $homeAddressArray[1];
+						// check last line for a zip -- this is where we assume it lives
+						$zipTest = preg_match($zipRegExp, trim($homeAddressArray[1]), $zipMatch);
+						if ($zipTest === 1){
+							// OK, this should be a full address
+							$patronZip = $zipMatch[0];
+							// now split out the rest of the address
+							$cityStateTest = preg_match_all($splitRegExp, trim($homeAddressArray[1]), $cityStateMatches);
+							if ($cityStateTest){
+								$cityState      = $cityStateMatches[1];
+								$cityStateCount = count($cityState) - 1; // zero index
+								// state should be last
+								$patronState = $cityState[$cityStateCount];
+								// pop last value and join array
+								array_pop($cityState);
+								$patronCity = implode(' ', $cityState);
+							}
+						}elseif ($zipTest === 0){
+							// didn't find a zip
+							// find a city and state?
+							$cityStateArray = explode(',', $homeAddressArray[1]);
+							if (count($cityStateArray) == 2){
+								$patronCity  = $cityStateArray[0];
+								$patronState = $cityStateArray[1];
+							}
 						}
 					}else{
-						// couldn't find a zip -- not much to do
-						// todo: what do to?
-					}
-				}
-			}
-		}
-		$patron->city  = $patronCity;
-		$patron->state = $patronState;
-		$patron->zip   = $patronZip;
-
-		// mobile phone
-		// this triggers sms notifications for libraries using Sierra SMS
-		if(isset($mobilePhone)) {
-			$patron->mobileNumber = $mobilePhone;
-		} else {
-			$patron->mobileNumber = '';
-		}
-
-		// account expiration
-			$patron->setUserExpirationSettings(empty($pInfo->expirationDate) ? '' : $pInfo->expirationDate);
-
-		// notices
-		$patron->notices = $pInfo->fixedFields->{'268'}->value;
-		switch($pInfo->fixedFields->{'268'}->value) {
-			case 't':
-				$patron->noticePreferenceLabel = 'Text';
-				break;
-			case 'a':
-				$patron->noticePreferenceLabel = 'Mail';
-				break;
-			case 'p':
-				$patron->noticePreferenceLabel = 'Telephone';
-				break;
-			case 'z':
-				$patron->noticePreferenceLabel = 'E-mail';
-				break;
-			case '-':
-			default:
-				$patron->noticePreferenceLabel = 'none';
-		}
-
-		// number of checkouts from ils
-		$patron->numCheckedOutIls  = $this->getNumCheckedOutsILS($sierraPatronId);
-		//TODO: Go back to the below if iii fixes bug. See: D-3447
-		//$patron->numCheckedOutIls = $pInfo->fixedFields->{'50'}->value;
-
-		// fines
-		$patron->fines    = number_format($pInfo->moneyOwed, 2, '.', '');
-		$patron->finesVal = number_format($pInfo->moneyOwed, 2, '.', '');
-
-		// hold counts
-		$holds = $this->getMyHolds($patron);
-		if($holds && isset($holds['available'])){
-			$patron->numHoldsAvailableIls = count($holds['available']);
-			$patron->numHoldsRequestedIls = count($holds['unavailable']);
-			$patron->numHoldsIls          = $patron->numHoldsAvailableIls + $patron->numHoldsRequestedIls;
-		}
-
-		if(isset($pInfo->varFields)){
-			if (!empty($this->configArray['Catalog']['sierraPatronWebNoteField'])){
-				$webNotesVarField = $this->configArray['Catalog']['sierraPatronWebNoteField'];
-				$webNotes         = $this->_getVarField($webNotesVarField, $pInfo->varFields);
-				if (count($webNotes) > 0){
-					foreach ($webNotes as $webNote){
-						if (!empty($webNote->content)){
-							$patron->webNote[] = $webNote->content;
+						// 1 line - only one address line -- this could be anything so start checking
+						$patron->address1 = $homeAddressArray[0];
+						// does it contain a zip? It might be some like grand junction, co 81501
+						$zipTest = preg_match($zipRegExp, $homeAddressArray[0], $zipMatch);
+						if ($zipTest === 1){
+							// found a zip
+							$patronZip = $zipMatch[0];
+							// find a city and state?
+							$cityStateTest = preg_match_all($splitRegExp, trim($homeAddressArray[0]), $cityStateMatches);
+							if ($cityStateTest){
+								$cityState      = $cityStateMatches[1];
+								$cityStateCount = count($cityState) - 1; // zero index
+								// state should be last
+								$patronState = $cityState[$cityStateCount];
+								// unset last value and join array
+								array_pop($cityState);
+								$patronCity = implode(' ', $cityState);
+							}else{
+								// well, that should'a matched something
+								// todo: what do to?
+							}
+						}else{
+							// couldn't find a zip -- not much to do
+							// todo: what do to?
 						}
 					}
 				}
 			}
-			if (!empty($this->configArray['Catalog']['patronPinSetTimeField'])){
-				$varField = $this->_getVarField($this->configArray['Catalog']['patronPinSetTimeField'], $pInfo->varFields);
-				if (empty($varField)){
-					$patron->pinUpdateRequired = true;
-				} else {
-					$lastPinUpdateTimeInILS = (reset($varField))->content;
-					if (empty($lastPinUpdateTimeInILS)){
+			$patron->city  = $patronCity;
+			$patron->state = $patronState;
+			$patron->zip   = $patronZip;// mobile phone
+			// this triggers sms notifications for libraries using Sierra SMS
+			if (isset($mobilePhone)){
+				$patron->mobileNumber = $mobilePhone;
+			}else{
+				$patron->mobileNumber = '';
+			}                                                                                                 // account expiration
+			$patron->setUserExpirationSettings(empty($pInfo->expirationDate) ? '' : $pInfo->expirationDate);  // notices
+			$patron->notices = $pInfo->fixedFields->{'268'}->value;
+			switch ($pInfo->fixedFields->{'268'}->value){
+				case 't':
+					$patron->noticePreferenceLabel = 'Text';
+					break;
+				case 'a':
+					$patron->noticePreferenceLabel = 'Mail';
+					break;
+				case 'p':
+					$patron->noticePreferenceLabel = 'Telephone';
+					break;
+				case 'z':
+					$patron->noticePreferenceLabel = 'E-mail';
+					break;
+				case '-':
+				default:
+					$patron->noticePreferenceLabel = 'none';
+			}                                                                          // number of checkouts from ils
+			$patron->numCheckedOutIls = $this->getNumCheckedOutsILS($sierraPatronId);  //TODO: Go back to the below if iii fixes bug. See: D-3447
+			//$patron->numCheckedOutIls = $pInfo->fixedFields->{'50'}->value;
+			// fines
+			$patron->fines    = number_format($pInfo->moneyOwed, 2, '.', '');
+			$patron->finesVal = number_format($pInfo->moneyOwed, 2, '.', '');        // hold counts
+			$holds            = $this->getMyHolds($patron);
+			if ($holds && isset($holds['available'])){
+				$patron->numHoldsAvailableIls = count($holds['available']);
+				$patron->numHoldsRequestedIls = count($holds['unavailable']);
+				$patron->numHoldsIls          = $patron->numHoldsAvailableIls + $patron->numHoldsRequestedIls;
+			}
+			if (isset($pInfo->varFields)){
+				if (!empty($this->configArray['Catalog']['sierraPatronWebNoteField'])){
+					$webNotesVarField = $this->configArray['Catalog']['sierraPatronWebNoteField'];
+					$webNotes         = $this->_getVarField($webNotesVarField, $pInfo->varFields);
+					if (count($webNotes) > 0){
+						foreach ($webNotes as $webNote){
+							if (!empty($webNote->content)){
+								$patron->webNote[] = $webNote->content;
+							}
+						}
+					}
+				}
+				if (!empty($this->configArray['Catalog']['patronPinSetTimeField'])){
+					$varField = $this->_getVarField($this->configArray['Catalog']['patronPinSetTimeField'], $pInfo->varFields);
+					if (empty($varField)){
 						$patron->pinUpdateRequired = true;
+					}else{
+						$lastPinUpdateTimeInILS = (reset($varField))->content;
+						if (empty($lastPinUpdateTimeInILS)){
+							$patron->pinUpdateRequired = true;
+						}
 					}
 				}
 			}
-		}
-
-		if($createPatron) {
-			$patron->created = date('Y-m-d');
-			if ($patron->insert() === false){
-				$this->logger->error('Could not save patron to Pika database.',
-					[
-						'barcode'   => $this->patronBarcode,
-						'error'     => $patron->_lastError->userinfo,
-						'backtrace' => $patron->_lastError->backtrace
-					]);
-				throw new ErrorException('Error saving patron to Pika database');
-			}else{
-				$this->logger->debug('Created patron in Pika database.', ['barcode' => $patron->getBarcode()]);
-			}
-		} elseif ($updatePatron && !$createPatron) {
-			$result = $patron->update();
-			if (!$result){
-				if (is_string($patron->_lastError)){
-					$this->logger->error("Error updating user $patron->id : " . $patron->_lastError);
-					return null;
-				} elseif (!empty($patron->_lastError)){
-					// Error is pear error
-					$this->logger->error("Error updating user $patron->id : " . $patron->_lastError->getUserInfo());
-					return $patron->_lastError;
+			if ($createPatron){
+				$patron->created = date('Y-m-d');
+				if ($patron->insert() === false){
+					$this->logger->error('Could not save patron to Pika database.',
+						[
+							'barcode'   => $this->patronBarcode,
+							'error'     => $patron->_lastError->userinfo,
+							'backtrace' => $patron->_lastError->backtrace
+						]);
+					throw new ErrorException('Error saving patron to Pika database');
+				}else{
+					$this->logger->debug('Created patron in Pika database.', ['barcode' => $patron->getBarcode()]);
 				}
+			}elseif ($updatePatron && !$createPatron){
+				$result = $patron->update();
+				if (!$result){
+					if (is_string($patron->_lastError)){
+						$this->logger->error("Error updating user $patron->id : " . $patron->_lastError);
+						return null;
+					}elseif (!empty($patron->_lastError)){
+						// Error is pear error
+						$this->logger->error("Error updating user $patron->id : " . $patron->_lastError->getUserInfo());
+						return $patron->_lastError;
+					}
+				}
+			}// if this is a new user we won't cache -- will happen on next getPatron call
+			if (isset($patron->id)){
+				$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
+				$this->logger->debug('Saving patron to memcache: ' . $patronObjectCacheKey);
+				$this->cache->set($patronObjectCacheKey, $patron, $this->configArray['Caching']['user']);
 			}
+			return $patron;
+		} else {
+			$this->logger->notice('getPatron call with empty Sierra Id number' [$sierraPatronId]);
+			return null;
 		}
-		// if this is a new user we won't cache -- will happen on next getPatron call
-		if(isset($patron->id)) {
-			$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
-			$this->logger->debug('Saving patron to memcache: ' . $patronObjectCacheKey);
-			$this->cache->set($patronObjectCacheKey, $patron, $this->configArray['Caching']['user']);
-		}
-		return $patron;
 	}
 
 	public function getNumCheckedOutsILS($patronId) {
@@ -889,12 +843,15 @@ class Sierra  implements \DriverInterface {
 
 	/**
 	 * @param string $barcode
-	 * @return User|null
+	 * @return User|false
 	 * @throws ErrorException
 	 */
 	public function findNewUser($barcode){
 		$sierraUserId = $this->getPatronId($barcode);
-		return $this->getPatron($sierraUserId);
+		if (!empty($sierraUserId)){
+			return $this->getPatron($sierraUserId);
+		}
+		return false;
 	}
 
 	/**

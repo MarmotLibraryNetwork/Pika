@@ -14,7 +14,7 @@
 
 package org.pika;
 
-class RecordIdentifier {
+public class RecordIdentifier {
 	private String  source;
 	private String  identifier;
 	private boolean suppressed;
@@ -55,7 +55,7 @@ class RecordIdentifier {
 	}
 
 	boolean isValid() {
-		return identifier.length() > 0;
+		return !identifier.isEmpty();
 	}
 
 	String getIdentifier() {
