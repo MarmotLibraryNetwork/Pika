@@ -1652,8 +1652,8 @@ class GroupedWorkDriver extends RecordInterface {
 				//Figure out what the preferred record is to place a hold on.  Since sorting has been done properly, this should always be the first
 				$bestRecord = reset($manifestation['relatedRecords']);
 
-				if ($manifestation['numRelatedRecords'] > 1 && array_key_exists($bestRecord['groupedStatus'], self::$statusRankings) && self::$statusRankings[$bestRecord['groupedStatus']] <= 5){
-					// Check to set prompt for Alternate Edition for any grouped status equal to or less than that of "Checked Out"
+				if ($manifestation['numRelatedRecords'] > 1 && array_key_exists($bestRecord['groupedStatus'], self::$statusRankings) && self::$statusRankings[$bestRecord['groupedStatus']] <= self::$statusRankings['Library Use Only']){
+					// Check to set prompt for Alternate Edition for any grouped status equal to or less than that of 'Library Use Only'
 					$promptForAlternateEdition = false;
 					foreach ($manifestation['relatedRecords'] as $relatedRecord){
 						if ($relatedRecord['available'] == true && $relatedRecord['holdable'] == true){
@@ -2619,30 +2619,41 @@ class GroupedWorkDriver extends RecordInterface {
 		return $this->fields['language'] ?? [];
 	}
 
+	/**
+	 * Ranking of the item grouped statuses based on relative available-ness to
+	 * patrons.
+	 *
+	 * The highest ranked status of a format manifestation will be displayed in
+	 * the header of each format manifestation on the grouped work display.
+	 * @var int[]
+	 */
 	private static $statusRankings = [
+		// Any change here also needs made in TimeToReshelve->getObjectStructure() groupedStatus values
 		'Currently Unavailable' => 1,
-		'Available to Order'    => 1.6,
-		'On Order'              => 2,
-		'Coming Soon'           => 3,
-		'In Processing'         => 3.5,
-		'Checked Out'           => 4,
-		'Library Use Only'      => 5,
-		'Available Online'      => 6,
-		'In Transit'            => 6.5,
-		'On Shelf'              => 7
+		//Unknown Grouped Status   2,
+		'Available to Order'    => 3,
+		'On Order'              => 4,
+		'Coming Soon'           => 5,
+		'In Processing'         => 6,
+		'Checked Out'           => 7,
+		'Shelving'              => 8,
+		'Library Use Only'      => 9,
+		'Available Online'      => 10,
+		'In Transit'            => 11,
+		'On Shelf'              => 12
 	];
 
+	/**
+	 * Rank Grouped status according to their relative available-ness (the array above) to the patron.
+	 * Unknown grouped statuses get a value of 2, higher than unavailable but lower than all other grouped statuses
+	 *
+	 * @param $groupedStatus
+	 * @param $groupedStatus1
+	 * @return int
+	 */
 	public static function keepBestGroupedStatus($groupedStatus, $groupedStatus1){
-		if (isset(GroupedWorkDriver::$statusRankings[$groupedStatus])){
-			$ranking1 = GroupedWorkDriver::$statusRankings[$groupedStatus];
-		}else{
-			$ranking1 = 1.5;
-		}
-		if (isset(GroupedWorkDriver::$statusRankings[$groupedStatus1])){
-			$ranking2 = GroupedWorkDriver::$statusRankings[$groupedStatus1];
-		}else{
-			$ranking2 = 1.5;
-		}
+		$ranking1 = GroupedWorkDriver::$statusRankings[$groupedStatus] ?? 2;
+		$ranking2 = GroupedWorkDriver::$statusRankings[$groupedStatus1] ?? 2;
 		return $ranking1 > $ranking2 ? $groupedStatus : $groupedStatus1;
 	}
 

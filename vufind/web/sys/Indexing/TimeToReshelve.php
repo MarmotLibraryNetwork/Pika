@@ -47,13 +47,15 @@ class TimeToReshelve extends DB_DataObject {
 			'statusCodeToOverride' => ['property' => 'statusCodeToOverride', 'type' => 'text', 'label' => 'Status Code To Override', 'description' => 'The particular status to override at check-in', 'maxLength' => '1', 'required' => true, 'default' => '-'],
 			'numHoursToOverride'   => ['property' => 'numHoursToOverride', 'type' => 'integer', 'label' => 'Num. Hours to Override', 'description' => 'The number of hours that this override should be applied', 'required' => true],
 			'status'               => ['property' => 'status', 'type' => 'text', 'label' => 'Status', 'description' => 'The Status to display to the user in full record/copies', 'hideInLists' => false, 'default' => false],
-			'groupedStatus'        => ['property' => 'groupedStatus', 'type' => 'enum', 'label' => 'Grouped Status', 'description' => 'The Status to display to the when grouping multiple copies', 'hideInLists' => false, 'default' => false,
+			'groupedStatus'        => ['property' => 'groupedStatus', 'type' => 'enum', 'label' => 'Grouped Status', 'description' => 'The Status to display to the when user grouping multiple copies', 'hideInLists' => false, 'default' => false,
 			                           'values'   => [
+				                           // Any change here also needs made in GroupedWorkDriver::$statusRankings
 				                           'Currently Unavailable' => 'Currently Unavailable',
 				                           'On Order'              => 'On Order',
 				                           'Coming Soon'           => 'Coming Soon',
 				                           'In Processing'         => 'In Processing',
 				                           'Checked Out'           => 'Checked Out',
+				                           'Shelving'              => 'Shelving',
 				                           'Library Use Only'      => 'Library Use Only',
 				                           'Available Online'      => 'Available Online',
 				                           'In Transit'            => 'In Transit',
