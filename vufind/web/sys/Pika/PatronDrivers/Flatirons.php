@@ -182,6 +182,7 @@ class Flatirons extends Sierra
 				'property'     => 'textInSpanish',
 				'type'         => 'checkbox',
 				'label'        => 'Use Spanish for text message notices?',
+				'boldTheLabel' => true,
 
 			];
 
