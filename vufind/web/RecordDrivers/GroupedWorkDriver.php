@@ -3268,19 +3268,36 @@ class GroupedWorkDriver extends RecordInterface {
 		if ($acceleratedReaderInfo != null){
 			$arDetails = '';
 			if (isset($acceleratedReaderInfo['interestLevel'])){
-				$arDetails .= 'IL: <strong>' . $acceleratedReaderInfo['interestLevel'] . '</strong>';
+				$arDetails .= '<abbr title="Interest Level">IL</abbr>: <strong>';
+				switch ($acceleratedReaderInfo['interestLevel']){
+					case 'LG':
+						$arDetails .= '<abbr title="Lower Grades, K - 3">LG</abbr>';
+						break;
+					case 'MG':
+						$arDetails .= '<abbr title="Middle Grades, 4 - 8">MG</abbr>';
+						break;
+					case 'MG+':
+						$arDetails .= '<abbr title="Middle Grades Plus, 6 and up">MG+</abbr>';
+						break;
+					case 'UG':
+						$arDetails .= '<abbr title="Upper Grades, 9 - 12">UG</abbr>';
+						break;
+					default:
+						$arDetails .= $acceleratedReaderInfo['interestLevel'];
+				}
+				$arDetails .=  '</strong>';
 			}
 			if (isset($acceleratedReaderInfo['readingLevel'])){
 				if (strlen($arDetails) > 0){
 					$arDetails .= ' - ';
 				}
-				$arDetails .= 'BL: <strong>' . $acceleratedReaderInfo['readingLevel'] . '</strong>';
+				$arDetails .= '<abbr title="Book Level">BL</abbr>: <strong>' . $acceleratedReaderInfo['readingLevel'] . '</strong>';
 			}
 			if (isset($acceleratedReaderInfo['pointValue'])){
 				if (strlen($arDetails) > 0){
 					$arDetails .= ' - ';
 				}
-				$arDetails .= 'AR Pts: <strong>' . $acceleratedReaderInfo['pointValue'] . '</strong>';
+				$arDetails .= '<abbr title="Accelerated Reading">AR</abbr> Points: <strong>' . $acceleratedReaderInfo['pointValue'] . '</strong>';
 			}
 			return $arDetails;
 		}
