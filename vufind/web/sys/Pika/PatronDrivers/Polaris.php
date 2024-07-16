@@ -35,6 +35,7 @@
 namespace Pika\PatronDrivers;
 
 use DateInterval;
+use MarcRecord;
 use Pika\Cache;
 use Pika\Logger;
 use Curl\Curl;
@@ -44,7 +45,7 @@ use User;
 
 //use Memcache;
 
-class Polaris implements \DriverInterface
+class Polaris extends PatronDriverInterface implements \DriverInterface
 {
     /**
      * $api_access_key Polaris web service access key, maps to Catalog->clientKey
@@ -149,10 +150,16 @@ class Polaris implements \DriverInterface
         return $patron;
     }
 
-    protected function authenticatePatron($barcode, $pin, $validatedViaSSO = false)
+    /**
+     * @param $barcode
+     * @param $pin
+     * @param $validatedViaSSO
+     * @return array|null
+     */
+    protected function authenticatePatron($barcode, $pin, bool $validatedViaSSO = false): ?array
     {
         $request_url  = $this->ws_url . '/authenticator/patron';
-        $request_body = json_encode(['Barcode' => $barcode, 'Password' => $pin], JSON_THROW_ON_ERROR);
+        $request_body = json_encode(['Barcode' => $barcode, 'Password' => $pin]);
 
         $hash = $this->_createHash('POST', $request_url);
 
@@ -344,8 +351,8 @@ class Polaris implements \DriverInterface
         // Polaris returns number of ILS AND number of ILL holds in counts.
         //$user->numHoldsIls = $patron_response->HoldRequestsCurrentCount;
         //$user->numHoldsAvailableIls = $patron_response->HoldRequestsHeldCount;
-				
-				
+
+
         // Notes
         $user->webNote = $patron_response->PatronNotes;
 
@@ -538,10 +545,90 @@ class Polaris implements \DriverInterface
     /**
      * @inheritDoc
      */
-    public function getMyCheckouts($patron)
+    public function getMyCheckouts($patron, $linkedAccount = false)
     {
-        return [];
-        // TODO: Implement getMyCheckouts() method.
+
+        if(!$linkedAccount) {
+            //		    if($patronCheckouts = $this->cache->get($patronCheckoutsCacheKey)) {
+            //			    $this->logger->info("Found checkouts in memcache:".$patronCheckoutsCacheKey);
+            //			    return $patronCheckouts;
+            //		    }
+        }
+        $request_url = $this->ws_url . '/patron/' . $patron->barcode . '/itemsout/all?excludeecontent=false';
+        if(!$patron_access_secret = $this->_getCachePatronSecret($patron->ilsUserId)) {
+            $patron_pin = $patron->getPassword();
+            $patron_access_secret = $this->authenticatePatron($patron->barcode, $patron_pin);
+        }
+        $hash = $this->_createHash('GET', $request_url, $patron_access_secret);
+
+        $headers = [
+            "PolarisDate: " . gmdate('r'),
+            "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
+            "Accept: application/json"
+        ];
+        $c_opts  = [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => $headers
+        ];
+
+        $c = new Curl();
+        $c->setOpts($c_opts);
+        $c->get($request_url);
+
+        if ($c->error || $c->httpStatusCode !== 200) {
+            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode]);
+            return null;
+        } elseif($error = $this->_isPapiError($c->response)) {
+            $this->_logPapiError($error);
+            return null;
+        }
+
+        $checkouts_response = $c->response->PatronItemsOutGetRows;
+        if(count($checkouts_response) === 0) {
+            return [];
+        }
+
+        $offset = 0;
+        $total  = 0;
+        $count  = 0;
+        $limit  = 100;
+
+        $checkouts = [];
+        foreach($checkouts_response as $c) {
+            $bib_id = $c->BibID;
+            $checkout['checkoutSource'] =  $this->accountProfile->recordSource;
+            $checkout['recordId']       = $c->BibID;
+            $checkout['id']             = $c->ItemID;
+            $checkout['dueDate']        = strtotime($c->DueDate);
+            $checkout['checkoutDate']   = strtotime($c->CheckOutDate);
+            $checkout['renewCount']     = $c->RenewalCount;
+            $checkout['barcode']        = $c->Barcode ?? '';
+            $checkout['itemid']         = $c->ItemID;
+            $checkout['renewIndicator'] = $c->ItemID;
+            $checkout['renewMessage']   = '';
+						$checkout['canrenew'] = $c->CanItemBeRenewed;
+						
+            $recordDriver = new MarcRecord($this->accountProfile->recordSource . ':' . $c->BibID);
+            if ($recordDriver->isValid()) {
+                $checkout['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
+                $checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
+                $checkout['ratingData']    = $recordDriver->getRatingData();
+                $checkout['format']        = $recordDriver->getPrimaryFormat();
+                $checkout['author']        = $recordDriver->getPrimaryAuthor();
+                $checkout['title']         = $recordDriver->getTitle();
+                $checkout['title_sort']    = $recordDriver->getSortableTitle();
+                $checkout['link']          = $recordDriver->getLinkUrl();
+            } else {
+                $checkout['coverUrl']      = '';
+                $checkout['groupedWorkId'] = '';
+                $checkout['format']        = 'Unknown';
+                $checkout['author']        = '';
+            }
+
+            $checkouts[] = $checkout;
+        }
+				return $checkouts;
+
     }
 
     /**
@@ -628,5 +715,10 @@ class Polaris implements \DriverInterface
         $hash = hash_hmac('sha1', $s, $this->configArray['Catalog']['clientKey'], true);
         // Encode the hash in base64 and return it
         return base64_encode($hash);
+    }
+
+    public function updatePatronInfo($patron, $canUpdateContactInfo)
+    {
+        // TODO: Implement updatePatronInfo() method.
     }
 }
