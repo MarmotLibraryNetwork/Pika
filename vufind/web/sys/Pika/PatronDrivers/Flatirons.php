@@ -156,6 +156,19 @@ class Flatirons extends Sierra
 		];
 
 		if ($libSubDomain == 'broomfield'){
+//			$fields[] = [
+//				'property'     => 'notices',
+//				'type'         => 'enum',
+//				'label'        => 'Notification Preference',
+//				'values' => [
+//					// Default labels for the sierra options
+//					//'-' => 'No Preference',
+//					'z' => 'E-mail',
+//					't' => 'Text',
+//					'p' => 'Phone',
+//					//'a' => 'Mail',
+//				]
+//			];
 			$fields[] = [
 				'property'     => 'langPref',
 				'type'         => 'enum',
@@ -218,7 +231,7 @@ class Flatirons extends Sierra
 		}
 
 		if (in_array($libSubDomain, ['boulder', 'broomfield'])){
-			$this->capitalizeAllSelfRegistrationInputs(['langPref']);
+			$this->capitalizeAllSelfRegistrationInputs(/*[Any fields that shouldn't be capitalized]*/);
 		} else {
 			// Capitalize Mailing address
 			$_POST['address'] = strtoupper($_POST['address']);
