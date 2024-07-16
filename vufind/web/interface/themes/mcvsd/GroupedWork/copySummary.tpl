@@ -1,4 +1,4 @@
-{strip}
+{strip}{* The main difference for this template is switching the order of the columns to callnumber then location  *}
 	{if !empty($summary)}
 		{assign var=numDefaultItems value="0"}
 		{assign var=numRowsShown value="0"}
@@ -7,11 +7,13 @@
 			{if $item.displayByDefault && $numRowsShown<3}
 				<div class="itemSummary row">
 					{if $item.isEContent == false}
-						<div class="col-xs-4">
+						<div class="col-xs-5{if $inRecordView} col-xs-offset-1{/if}" title="Callnumber" aria-label="Callnumber">
 							<span class="itemSummaryCallNumber notranslate"><strong>{$item.callNumber}</strong></span>
 						</div>
 					{/if}
-					<div class="{if $item.isEContent == false}col-xs-7{else}col-xs-12{/if}">
+					<div class="{if $item.isEContent == false}{if $inRecordView}col-xs-6{else}col-xs-5{/if}{else}col-xs-12{/if}{if !$inEditionsTable} col-tn-offset-1 col-xs-offset-0{/if}" title="Location" aria-label="Location">
+						{* The offset column indents the location on narrow view (tn) when location and call number are in their own row *}
+						{* Don't use offset within the editions table *}
 						<span class="itemSummaryShelfLocation notranslate"><strong>{$item.shelfLocation}</strong>
 							{if $item.availableCopies > 1}
 								&nbsp;has&nbsp;{$item.availableCopies}
@@ -26,9 +28,11 @@
 		{if !$inPopUp}
 			{assign var=numRemainingCopies value=$totalCopies-$numDefaultItems}
 			{if $numRemainingCopies > 0}
+				<div class="row text-center">
 				<button class="itemSummary btn-link" onclick="return Pika.showElementInPopup('Copy Summary', '#itemSummaryPopup_{$itemSummaryId|escapeCSS}_{$relatedManifestation.format|escapeCSS}'{if $recordViewUrl}, '#itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestation.format|escapeCSS}'{/if});">
 					{translate text="Quick Copy View"}
 				</button>
+				</div>
 				<div id="itemSummaryPopup_{$itemSummaryId|escapeCSS}_{$relatedManifestation.format|escapeCSS}" class="itemSummaryPopup" style="display: none">
 					<table class="table table-striped table-condensed itemSummaryTable">
 						<thead>

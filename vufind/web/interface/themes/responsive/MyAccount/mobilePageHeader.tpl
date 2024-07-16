@@ -32,25 +32,25 @@
 					Reading History {if !$offline}<span class="readingHistory-placeholder"><img src="/images/loading.gif" alt="loading"></span>{/if}
 				</a>
 			</div>
-        {** barcode image **}
-        {if $showPatronBarcodeImage}
 
-							<div style="text-align: center; min-height: 200px;">
-								<br>
-								<svg id="barcode" style="margin: 0 auto;"></svg>
-                  {literal}
-								<script src="https://cdn.jsdelivr.net/jsbarcode/3.6.0/"></script>
-								<script>
-									JsBarcode("#barcode", "{/literal}{$user->barcode}{literal}", {
-										format: "codabar",
-										lineColor: "#000000",
-										width: 2,
-										height: 200,
-										displayValue: false
-									});
-								</script>
-                  {/literal}
-							</div>
+				{** barcode image **}
+				{if $showPatronBarcodeImage}
+					<h2 id="barcodeTitle" class="h4">Scannable Library Card Barcode</h2>
+					<div style="text-align: center; min-height: 200px;">
+						<svg role="img" id="barcode" style="margin: 0 auto;" aria-labelledby="barcodeTitle"></svg>
+						{literal}
+						<script src="https://cdn.jsdelivr.net/jsbarcode/3.6.0/"></script>
+						<script>
+							JsBarcode("#barcode", "{/literal}{$user->barcode}{literal}", {
+								format: "codabar",
+								lineColor: "#000000",
+								width: 2,
+								height: 200,
+								displayValue: false
+							});
+						</script>
+						{/literal}
+					</div>
         {/if}
 			<hr>
 		</div>

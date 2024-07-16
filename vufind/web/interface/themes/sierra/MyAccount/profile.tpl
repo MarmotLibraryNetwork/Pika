@@ -29,29 +29,29 @@
 
 			<div class="panel-group" id="account-settings-accordion">
 				{* barcode *}
-				<div class="col-sm-12 panel active">
+				<div class="panel active">
 					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#barcodePanel">
 						<div class="panel-heading">
-							<div class="panel-title">
-								Barcode
-							</div>
+							<h2 class="panel-title" id="barcodeTitle">
+								Scannable Library Card Barcode
+							</h2>
 						</div>
 					</a>
 					<div id="barcodePanel" class="panel-collapse collapse in">
 						<div class="panel-body" style="text-align: center;">
-							<svg id="barcode" style="margin: 0 auto;"></svg>
-                {literal}
+							<svg role="img" id="barcode" style="margin: 0 auto;" aria-labelledby="barcodeTitle"></svg>
+							{literal}
 							<script src="https://cdn.jsdelivr.net/jsbarcode/3.6.0/"></script>
 							<script>
-								JsBarcode("#barcode", "{/literal}{$profile->barcode}{literal}", {
+								JsBarcode("#barcode", "{/literal}{$user->barcode}{literal}", {
 									format: "codabar",
 									lineColor: "#000000",
 									width: 2,
-									height: 140,
+									height: 200,
 									displayValue: false
 								});
 							</script>
-                {/literal}
+							{/literal}
 						</div>
 					</div>
 				</div>
@@ -59,9 +59,9 @@
 				<div class="panel active">
 					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#contactPanel">
 						<div class="panel-heading">
-							<div class="panel-title">
+							<h2 class="panel-title">
 								Contact Information
-							</div>
+							</h2>
 						</div>
 					</a>
 					<div id="contactPanel" class="panel-collapse collapse in">
@@ -242,9 +242,9 @@
 						<div class="panel active">
 							<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#pinPanel">
 								<div class="panel-heading">
-									<div class="panel-title">
+									<h2 class="panel-title">
 										{translate text='Update PIN'}
-									</div>
+									</h2>
 								</div>
 							</a>
 							<div id="pinPanel" class="panel-collapse collapse in">
@@ -323,9 +323,9 @@
 						<div class="panel active">
 							<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#overdrivePanel">
 								<div class="panel-heading">
-									<div class="panel-title">
+									<h2 class="panel-title">
 										OverDrive Options
-									</div>
+									</h2>
 								</div>
 							</a>
 							<div id="overdrivePanel" class="panel-collapse collapse in">
@@ -341,9 +341,9 @@
 				<div class="panel active">
 					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#hooplaPanel">
 						<div class="panel-heading">
-							<div class="panel-title">
+							<h2 class="panel-title">
 								Hoopla Options
-							</div>
+							</h2>
 						</div>
 					</a>
 					<div id="hooplaPanel" class="panel-collapse collapse in">
@@ -379,9 +379,9 @@
 				<div class="panel active">
 					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#userPreferencePanel">
 						<div class="panel-heading">
-							<div class="panel-title">
+							<h2 class="panel-title">
 								My Preferences
-							</div>
+							</h2>
 						</div>
 					</a>
 					<div id="userPreferencePanel" class="panel-collapse collapse in">
@@ -438,9 +438,9 @@
 					<div class="panel active">
 						<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#linkedAccountPanel">
 							<div class="panel-heading">
-								<div class="panel-title">
+								<h2 class="panel-title">
 									Linked Accounts
-								</div>
+								</h2>
 							</div>
 						</a>
 						<div id="linkedAccountPanel" class="panel-collapse collapse in">
@@ -486,9 +486,9 @@
 					<div class="panel active">
 						<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#rolesPanel">
 							<div class="panel-heading">
-								<div class="panel-title">
+								<h2 class="panel-title">
 									Staff Settings
-								</div>
+								</h2>
 							</div>
 						</a>
 						<div id="rolesPanel" class="panel-collapse collapse in">

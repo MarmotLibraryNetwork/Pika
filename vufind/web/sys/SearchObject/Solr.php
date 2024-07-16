@@ -2503,6 +2503,7 @@ class SearchObject_Solr extends SearchObject_Base {
 			}else{
 				//TODO: this block is obsolete, since all these facets are scoped.  Likely would cause empty document returns
 				// if no scope is set
+				// Gets called by getRelatedPikaContent()
 				global $pikaLogger;
 				$pikaLogger->warning('Solr scope not set when fetching scoped fields.', [$_SERVER['REQUEST_URI'], $_REQUEST]);
 				$fieldsToReturn .= ',format';

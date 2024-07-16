@@ -26,12 +26,6 @@
 						</div>
 						<div class="col-tn-7 col-xs-8{if !$viewingCombinedResults} col-md-4 col-lg-5{/if}">
 							{include file='GroupedWork/statusIndicator.tpl' statusInformation=$relatedManifestation viewingIndividualRecord=0}
-
-							{if $relatedManifestation.numRelatedRecords == 1}
-								{include file='GroupedWork/copySummary.tpl' summary=$relatedManifestation.itemSummary totalCopies=$relatedManifestation.copies itemSummaryId=$id recordViewUrl=$relatedManifestation.url}
-							{else}
-								{include file='GroupedWork/copySummary.tpl' summary=$relatedManifestation.itemSummary totalCopies=$relatedManifestation.copies itemSummaryId=$id}
-							{/if}
 						</div>
 					  {*  Work here *}
 						<div class="col-tn-12{*col-tn-9 col-tn-offset-3*} col-xs-8 col-xs-offset-4{if !$viewingCombinedResults} col-md-4 col-md-offset-0 col-lg-3{/if} manifestation-actions">
@@ -60,6 +54,16 @@
 							</div>
 						</div>
 				  </div>
+					<div class="row">
+						<div class="col-tn-11 col-tn-offset-1">
+							{if $relatedManifestation.numRelatedRecords == 1}
+								{include file='GroupedWork/copySummary.tpl' summary=$relatedManifestation.itemSummary totalCopies=$relatedManifestation.copies itemSummaryId=$id recordViewUrl=$relatedManifestation.url}
+							{else}
+								{include file='GroupedWork/copySummary.tpl' summary=$relatedManifestation.itemSummary totalCopies=$relatedManifestation.copies itemSummaryId=$id}
+							{/if}
+						</div>
+					</div>
+
 					<div class="row">
 						<div class="col-sm-12{*{if $relatedManifestation.numRelatedRecords != 1}*} hidden{*{/if}*}" id="relatedRecordPopup_{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}">
 							{include file="GroupedWork/relatedRecords.tpl" relatedRecords=$relatedManifestation.relatedRecords relatedManifestation=$relatedManifestation}

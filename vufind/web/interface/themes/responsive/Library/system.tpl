@@ -1,7 +1,7 @@
 {strip}
-	<h2 class="notranslate">
+	<h1 role="heading" aria-level="1" class="h2 notranslate">
 		{$library->displayName}
-	</h2>
+	</h1>
 
 
 	<div class="row">

@@ -1308,6 +1308,15 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 				],
 		],
 
+		'2024.03.0_rename_and_repurpose_location_field_scope' => [
+			'title'           => 'Change Location "scope" to "ilsLocationId"',
+			'description'     => 'Repurpose this field to be used for the Polaris Organization Id.',
+			'continueOnError' => false,
+			'sql'             => [
+				'ALTER TABLE `location` CHANGE `scope` `ilsLocationId` SMALLINT UNSIGNED DEFAULT NULL COMMENT "The ID for the location in the ILS. ";'
+			]
+		],
+
 		'2024.03.0_RemoveBrowseCategoriesColumns' => [
 				'title'           => 'Remove Browse Category columns',
 				'description'     => 'Remove unused columns for browse categories',

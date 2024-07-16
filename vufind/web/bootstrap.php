@@ -22,7 +22,7 @@ set_include_path(get_include_path() . PATH_SEPARATOR . "/usr/share/composer");
 
 // autoloader stack
 // Composer autoloader
-require_once "vendor/autoload.php";
+require_once 'vendor/autoload.php';
 spl_autoload_register('pika_autoloader');
 spl_autoload_register('vufind_autoloader');
 
@@ -45,10 +45,8 @@ $memoryWatcher = new MemoryWatcher();
 
 // instantiate global logger
 $pikaLogger = new Pika\Logger('Pika', true);
-$timer->logTime("Initialized Pika\Logger");
+$timer->logTime('Initialized Pika\Logger');
 
-
-$timer->logTime("Read Config");
 
 //global $app;
 //$app = new \Pika\App();
@@ -67,14 +65,14 @@ ob_start();
 
 initMemcache();
 initDatabase();
-$timer->logTime("Initialized Database");
+$timer->logTime('Initialized Database');
 requireSystemLibraries();
 initLocale();
 // Sets global error handler for PEAR errors
 PEAR_Singleton::setErrorHandling(PEAR_ERROR_CALLBACK, 'handlePEARError');
-$timer->logTime("Basic Initialization");
+$timer->logTime('Basic Initialization');
 loadLibraryAndLocation();
-$timer->logTime("Finished load library and location");
+$timer->logTime('Finished load library and location');
 loadSearchInformation();
 loadIndexingProfiles();
 $timer->logTime('Bootstrap done');
@@ -111,7 +109,7 @@ function initMemcache(){
 			PEAR_Singleton::raiseError(new PEAR_Error("Could not connect to Memcache (host = {$host}, port = {$port})."));
 		}
 	}
-	$timer->logTime("Initialize Memcache");
+	$timer->logTime('Initialize Memcache');
 }
 
 // todo: this can all be handled in Pika\Cache
@@ -161,7 +159,7 @@ function initLocale(){
 	global $configArray;
 	// Try to set the locale to UTF-8, but fail back to the exact string from the config
 	// file if this doesn't work -- different systems may vary in their behavior here.
-	setlocale(LC_MONETARY, array($configArray['Site']['locale'] . ".UTF-8",
+	setlocale(LC_MONETARY, array($configArray['Site']['locale'] . '.UTF-8',
 	$configArray['Site']['locale']));
 	date_default_timezone_set($configArray['Site']['timezone']);
 }

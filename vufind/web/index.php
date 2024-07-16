@@ -325,7 +325,7 @@ function checkMaintenanceMode(){
 
 function loadModuleActionId(){
 	//Cleanup method information so module, action, and id are set properly.
-	//This ensures that we don't have to change the http-vufind.conf file when new types are added.
+	//This ensures that we don't have to change the httpd-[pika-site].conf file when new types are added.
 
 	/** @var IndexingProfile[] $indexingProfiles*/
 	global $indexingProfiles;
@@ -338,12 +338,12 @@ function loadModuleActionId(){
 	foreach ($indexingProfiles as $profile){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
-	if (preg_match("/(MyAccount)\/([^\/?]+)\/([^\/?]+)(\?.+)?/", $requestURI, $matches)){
+	if (preg_match('/(MyAccount)\/([^\/?]+)\/([^\/?]+)(\?.+)?/', $requestURI, $matches)){
 		// things like /MyAccount/MyList/19141
 		$module     = $matches[1];
 		$id         = $matches[3];
 		$action     = $matches[2];
-	}elseif (preg_match("/(MyAccount)\/([^\/?]+)(\?.+)?/", $requestURI, $matches)){
+	}elseif (preg_match('/(MyAccount)\/([^\/?]+)(\?.+)?/', $requestURI, $matches)){
 		// things /MyAccount/AJAX, /MyAccount/Home, /MyAccount/CiteList
 		$module     = $matches[1];
 		$action     = $matches[2];

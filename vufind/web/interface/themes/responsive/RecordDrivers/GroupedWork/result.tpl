@@ -40,7 +40,7 @@
 
 					{if $disableCoverArt != 1}
 						<a href="{$summUrl}">
-							<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail" alt="Book cover for &quot;{$summTitle}&quot;.">
+							<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail" alt="Book cover{if $summTitle} for &quot;{$summTitle|escape}&quot;.{/if}">
 						</a>
 					{/if}
 

@@ -884,9 +884,9 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		 * This would be better in a router class
 		 * If a method exits in a class extending this class it will be passed a User object.
 		 */
-		if(isset($_POST['profileUpdateAction'])) {
+		if (isset($_POST['profileUpdateAction'])){
 			$profileUpdateAction = trim($_POST['profileUpdateAction']);
-			if(method_exists($this, $profileUpdateAction)) {
+			if (method_exists($this, $profileUpdateAction)){
 				return $this->$profileUpdateAction($patron);
 			}
 		}
@@ -905,9 +905,9 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		foreach($_POST as $key=>$val) {
 			switch($key) {
 				case 'address1':
-					if(empty($val)) {
-						$errors[] = "Street address is required.";
-					} else {
+					if (empty($val)){
+						$errors[] = 'Street address is required.';
+					}else{
 						$address1 = $val;
 					}
 					break;
@@ -917,34 +917,34 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 					// if library allows address updates
 					if((boolean)$library->allowPatronAddressUpdates){
 						if(empty($val)) {
-							$errors[] = "City, state and ZIP are required.";
+							$errors[] = 'City, state and ZIP are required.';
 						} else {
 							$cityStZip[$key] = $val;
 						}
 					}
 					break;
 				case 'phone': // primary phone
-					$val = trim($val);
-					$phones[] = (object)['number'=>$val, 'type'=>'t'];
-					if($val != $patron->phone){
+					$val      = trim($val);
+					$phones[] = (object)['number' => $val, 'type' => 't'];
+					if ($val != $patron->phone){
 						$patron->phone = $val;
 						$patron->update();
 					}
 					break;
 				case 'workPhone': // alt phone
-					$phones[] = (object)['number'=>$val, 'type'=>'p'];
+					$phones[] = (object)['number' => $val, 'type' => 'p'];
 					break;
 				case 'mobileNumber': // mobile phone -- this triggers sms opt in for sierra
-					if(!empty($val)){
-						$phones[] = (object)['number'=>$val, 'type'=>'o'];
-					} else {
-						$phones[] = (object)['number'=>'', 'type'=>'o'];
+					if (!empty($val)){
+						$phones[] = (object)['number' => $val, 'type' => 'o'];
+					}else{
+						$phones[] = (object)['number' => '', 'type' => 'o'];
 					}
 					break;
 				case 'email':
-					if(!empty($val)) {
+					if (!empty($val)){
 						$emails[] = $val;
-					} else {
+					}else{
 						$emails[] = '';
 					}
 					if($val != $patron->email) {
@@ -956,23 +956,23 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 					$homeLibraryCode = $val;
 					break;
 				case 'notices':
-					if(!empty($val) && $val != '') {
+					if(!empty($val)) {
 						$notices = $val;
 					}
 					break;
 				case 'alternate_username':
-					$altUsername = $val;
+					$altUsername        = $val;
 					$currentAltUsername = $patron->alt_username;
-					// check to make sure user name isn't already taken
-					if($altUsername != $currentAltUsername) {
+					// check to make sure username isn't already taken
+					if ($altUsername != $currentAltUsername){
 						$params = [
-						 'varFieldTag'     => 'i',
-						 'varFieldContent' => $altUsername,
-						 'fields'          => 'id'
+							'varFieldTag'     => 'i',
+							'varFieldContent' => $altUsername,
+							'fields'          => 'id'
 						];
-						$r = $this->_doRequest('patrons/find', $params);
-						if($r) {
-							$errors[] = "Username is already taken. Please choose a different username.";
+						$r      = $this->_doRequest('patrons/find', $params);
+						if ($r){
+							$errors[] = 'Username is already taken. Please choose a different username.';
 						}
 					}
 					break;
@@ -988,28 +988,28 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		if(isset($homeLibraryCode) && $homeLibraryCode != '') {
 			$params['homeLibraryCode'] = $homeLibraryCode;
 		}
-		if(isset($emails) && !empty($emails)) {
+		if(!empty($emails)) {
 			$params['emails'] = $emails;
 		}
-		if(isset($phones) && !empty($phones)) {
+		if (!empty($phones)){
 			// we need to send all phone #s on user account (ie, work phone even if it's turned off in Pika) in array or
 			// missing phones will be overwritten in Sierra.
 			$phonesCount = count($phones);
-			if((isset($patron->phone) && isset($patron->workPhone)) && $phonesCount != 2) {
+			if ((isset($patron->phone) && isset($patron->workPhone)) && $phonesCount != 2){
 				$addHomePhone = false;
 				$addAltPhone  = false;
 				foreach ($phones as $phone){
-					if($phone->type == 't') {
+					if ($phone->type == 't'){
 						$addAltPhone = true;
-					} elseif ($phone->type == 'p') {
+					}elseif ($phone->type == 'p'){
 						$addHomePhone = true;
 					}
 				}
-				if($addAltPhone) {
-					$phones[] = (object)['number'=>$patron->workPhone, 'type'=>'p'];
+				if ($addAltPhone){
+					$phones[] = (object)['number' => $patron->workPhone, 'type' => 'p'];
 				}
-				if($addHomePhone) {
-					$phones[] = (object)['number'=>$patron->phone, 'type'=>'t'];
+				if ($addHomePhone){
+					$phones[] = (object)['number' => $patron->phone, 'type' => 't'];
 				}
 
 			}
@@ -1018,26 +1018,26 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		// allow address updates?
 		if((boolean)$library->allowPatronAddressUpdates) {
 			// fix up city state zip
-			$address2 = $cityStZip['city'] . ', ' . $cityStZip['state'] . ' ' . $cityStZip['zip'];
-			$params['addresses'] = [ (object)['lines' => [$address1, $address2], "type" => 'a'] ];
+			$address2            = $cityStZip['city'] . ', ' . $cityStZip['state'] . ' ' . $cityStZip['zip'];
+			$params['addresses'] = [(object)['lines' => [$address1, $address2], "type" => 'a']];
 		}
 
 		// if notice preference is present
 		if(isset($notices)) {
-			$params['fixedFields'] = (object)['268'=>(object)["label" => "Notice Preference", "value" => $notices]];
+			$params['fixedFields'] = (object)['268' => (object)['label' => 'Notice Preference', 'value' => $notices]];
 		}
 
 		// username if present
 		if (isset($altUsername) && $altUsername != '') {
-			$params['varFields'] = [(object)['fieldTag'=>'i', 'content'=>$altUsername]];
+			$params['varFields'] = [(object)['fieldTag' => 'i', 'content' => $altUsername]];
 		}
 
 		$operation = 'patrons/'.$patronId;
 		$r = $this->_doRequest($operation, $params, 'PUT');
 
 		if(!$r){
-			$this->logger->debug("Unable to update patron", ["message"=>$this->apiLastError]);
-			$errors[] = "An error occurred. Please try in again later.";
+			$this->logger->debug('Unable to update patron', ['message' => $this->apiLastError]);
+			$errors[] = 'An error occurred. Please try in again later.';
 		}
 
 		return $errors;
@@ -1289,12 +1289,12 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 
 		global $library;
 		// sanity checks
-		if (!property_exists($library, 'selfRegistrationDefaultpType') || empty($library->selfRegistrationDefaultpType)){
+		if (empty($library->selfRegistrationDefaultpType)){
 			$message = 'Missing configuration parameter selfRegistrationDefaultpType for ' . $library->displayName;
 			$this->logger->error($message);
 			throw new InvalidArgumentException($message);
 		}
-		if (!property_exists($library, 'selfRegistrationAgencyCode') || empty($library->selfRegistrationAgencyCode)){
+		if (empty($library->selfRegistrationAgencyCode)){
 			$message = 'Missing configuration parameter selfRegistrationAgencyCode for ' . $library->displayName;
 			$this->logger->error($message);
 			throw new InvalidArgumentException($message);
@@ -1347,6 +1347,17 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 					if (!empty($val)){
 						$params['homeLibraryCode'] = $val;
 					}
+					break;
+				case 'notices' :
+					$val                        = substr(trim($val), 0, 1); // Ensure input is a single character code
+					$params['fixedFields'][268] = [
+						'label' => 'Notice Preference',
+						'value' => $val,
+					];
+					break;
+				case 'langPref' :
+					$val = substr(trim($val),0, 3); // Ensure input is a three language code
+					$params['langPref'] = $val;
 					break;
 			}
 		}
@@ -1591,7 +1602,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 
 		$fields[] = [
 			'property'     => 'primaryphone',
-			'type'         => 'text',
+			'type'         => 'tel',
 			'label'        => 'Primary phone (XXX-XXX-XXXX)',
 			'description'  => 'Your primary phone number.',
 			'maxLength'    => 20,
@@ -1634,11 +1645,35 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		return $fields;
 	}
 
+	/**
+	 * @param string $fieldProperty Name of the property to remove from the form
+	 * @param array $selfRegistrationFields  The form fields array
+	 * @return void
+	 */
 	function removeSelfRegistrationField(string $fieldProperty, array &$selfRegistrationFields){
 		foreach ($selfRegistrationFields as $index => $field){
-			if ($field["property"] == $fieldProperty){
+			if ($field['property'] == $fieldProperty){
 				unset($selfRegistrationFields[$index]);
 				break;
+			}
+		}
+	}
+
+	/**
+	 * Capitalize all the form inputs within $_POST, except field pin, pinconfirm,
+	 * and any field provided in $exceptions
+	 *
+	 * @param $exceptions self reg input fields to exclude from capitalization
+	 * @return void
+	 */
+	function capitalizeAllSelfRegistrationInputs($exceptions = []) : void {
+		$exceptions = [... $exceptions, ... ['pin', 'pinconfirm', 'langPref', 'notices']];
+		foreach ($this->getSelfRegistrationFields() as $field){
+			$key = $field['property'];
+			if (!in_array($key, $exceptions)){
+				if (isset($_POST[$key])){ // :selfRegister() explicitly refers to $_POST instead of $_REQUEST
+					$_POST[$key] = strtoupper($_POST[$key]);
+				}
 			}
 		}
 	}
@@ -1650,15 +1685,16 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 	 * @return bool true if email sent false otherwise
 	 */
 	public function sendSelfRegSuccessEmail($barcode) {
-		global $library;
 		global $interface;
 
 		if(!$patronId = $this->getPatronId($barcode)){
+			$this->logger->error('Failed to get patron Id for ' . __FUNCTION__ . ' for barcode ' . $barcode);
 			return false;
 		}
 
 		$patron = $this->getPatron($patronId);
 		if(!$patron) {
+			$this->logger->error('Failed to load patron for ' . __FUNCTION__ . ' for patron ILS id ' . $patronId);
 			return false;
 		}
 
@@ -1680,7 +1716,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			$mailer = new PHPMailer;
 			$mailer->setFrom($this->configArray['Site']['email']);
 			$mailer->addAddress($emailAddress);
-			$mailer->Subject = "[DO NOT REPLY] Your new library card at " . $libraryName;
+			$mailer->Subject = '[DO NOT REPLY] Your new library card at ' . $libraryName;
 			$mailer->Body    = $emailBody;
 			$mailer->send();
 		} catch (\Exception $e) {
@@ -1689,6 +1725,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		}
 		return true;
 	}
+
 	/**
 	 * Get fines for a patron
 	 * GET patrons/{uid}/fines

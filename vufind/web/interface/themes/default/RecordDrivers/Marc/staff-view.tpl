@@ -68,9 +68,8 @@
     {/if} {* End of loggedIn*}
 
 	{* QR Code *}
-	{if $showQRCode}
-		<div id="record-qr-code" class="text-center hidden-xs visible-md"><img src="{$recordDriver->getQRCodeUrl()}" alt="QR Code for Record"></div>
-	{/if}
+	{include file="Record\qrcode.tpl"}
+
 {/if}
 
 		{if $hooplaExtract}
@@ -97,7 +96,7 @@
 		{/if}
 
     {if $marcRecord}
-			<h2>Record Information</h2>
+			<h3>Record Information</h3>
 			<table class="table-striped table table-condensed notranslate">
 			{if isset($lastRecordExtractTime)}
 				<tr>
@@ -123,7 +122,7 @@
 			</table>
 
 			<div id="formattedMarcRecord">
-				<h2>MARC Record</h2>
+				<h3>MARC Record</h3>
 				<table class="table table-condensed table-bordered notranslate">
 					<tbody>
 						{*Output leader*}
@@ -150,7 +149,7 @@
 
 {if $solrRecord}
 	<div id="formattedSolrRecord">
-		<h2>Solr Record</h2>
+		<h3>Solr Record</h3>
 		<dl>
 			{foreach from=$solrRecord key='field' item='values'}
 				<dt>{$field|escape}</dt>
