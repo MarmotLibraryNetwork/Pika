@@ -169,14 +169,20 @@ class Flatirons extends Sierra
 //					//'a' => 'Mail',
 //				]
 //			];
+//			$fields[] = [
+//				'property'     => 'langPref',
+//				'type'         => 'enum',
+//				'label'        => 'Notification Language Preference',
+//				'values' => [
+//					'eng' => 'English',
+//					'spi' => 'Spanish',
+//				]
+//			];
 			$fields[] = [
-				'property'     => 'langPref',
-				'type'         => 'enum',
-				'label'        => 'Notification Language Preference',
-				'values' => [
-					'eng' => 'English',
-					'spi' => 'Spanish',
-				]
+				'property'     => 'textInSpanish',
+				'type'         => 'checkbox',
+				'label'        => 'Use Spanish for text message notices?',
+
 			];
 
 		}
@@ -227,6 +233,13 @@ class Flatirons extends Sierra
 			$extraSelfRegParams['homeLibraryCode'] = 'bm';
 			if (isset($_POST['homelibrarycode'])){
 				unset($_POST['homelibrarycode']);
+			}
+		}
+
+		if ($libSubDomain == 'broomfield'){
+			// MLN2 uses variable field i = spi for shoutbomb to use spanish
+			if (!empty($_REQUEST['textInSpanish'])){
+				$extraSelfRegParams['varFields'][] = ['fieldTag' => 'i', 'content'  => 'spi'];
 			}
 		}
 
