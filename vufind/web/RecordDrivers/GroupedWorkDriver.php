@@ -1707,11 +1707,22 @@ class GroupedWorkDriver extends RecordInterface {
 							}
 							break;
 						} else{
+							if ($selectedFormat == 'PlayStation 5' && $manifestation['format'] == 'PlayStation 4'){
+								// Since PS4 games work on PS5, show both manifestions when PS5 is selected
+								$hasSelectedFormatMatches = true;
+								break;
+							} elseif ($selectedFormat == 'Xbox Series X' && $manifestation['format'] == 'Xbox One'){
+								// Since Xbox One games work on Xbox Series X consoles, show both manifestations when Xbox series
+								$hasSelectedFormatMatches = true;
+								break;
+							}
+
 							//TODO: I strongly suspect this check is no longer needed for econtent;
 							//It was used at one point to match Audio CD with CD, see PK-1729
 
 							$currentManifestationFormatDetailedFormat = strtolower(mapValue('format_by_detailed_format', $manifestation['format']));
 							if (strcasecmp($selectedFormat, $currentManifestationFormatDetailedFormat) == 0){
+								//TODO: Log matches
 								$hasSelectedFormatMatches = true;
 								if (!$manifestation['isEContent']){
 									$manifestation['isSelectedNonEcontentFormat'] = true;
@@ -2085,15 +2096,15 @@ class GroupedWorkDriver extends RecordInterface {
 	static function compareHoldRatioForRecords($a, $b){
 		// First calculate hold ratio as needed
 		if (!isset($a['holdRatio'])){
-			$a['holdRatio'] = self::calculateHoldRationForRecord($a);
+			$a['holdRatio'] = self::calculateHoldRatioForRecord($a);
 		}
 		if (!isset($b['holdRatio'])){
-			$b['holdRatio'] = self::calculateHoldRationForRecord($b);
+			$b['holdRatio'] = self::calculateHoldRatioForRecord($b);
 		}
 		return $b['holdRatio'] <=> $a['holdRatio'];
 	}
 
-	static function calculateHoldRationForRecord($relatedRecord){
+	static function calculateHoldRatioForRecord($relatedRecord){
 		// Calculate Hold Ratio
 		$totalCopies     = $relatedRecord['copies'];
 		$availableCopies = $relatedRecord['availableCopies'];

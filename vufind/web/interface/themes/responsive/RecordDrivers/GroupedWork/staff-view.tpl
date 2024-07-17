@@ -21,7 +21,7 @@
 
 
 	{* QR Code *}
-	{include file="Record\qrcode.tpl"}
+	{include file="Record/qrcode.tpl"}
 
 <h3>Grouping Information</h3>
 <table class="table-striped table table-condensed notranslate">

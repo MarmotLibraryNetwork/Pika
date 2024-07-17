@@ -244,7 +244,7 @@
 		{elseif $property.type == 'checkbox'}
 			<div class="checkbox">
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>
-					<input type="checkbox" name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked="checked"{/if}> {$property.label}
+					<input type="checkbox" name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked="checked"{/if}> {if $property.boldTheLabel}<strong>{/if}{$property.label}{if $property.boldTheLabel}</strong>{/if}
 					{if $property.isIndexingSetting}
 						&nbsp;<span class="glyphicon glyphicon-time" aria-hidden="true" title="This setting is a change to indexing"></span>
 					{/if}
