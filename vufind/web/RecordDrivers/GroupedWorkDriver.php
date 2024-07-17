@@ -2085,15 +2085,15 @@ class GroupedWorkDriver extends RecordInterface {
 	static function compareHoldRatioForRecords($a, $b){
 		// First calculate hold ratio as needed
 		if (!isset($a['holdRatio'])){
-			$a['holdRatio'] = self::calculateHoldRationForRecord($a);
+			$a['holdRatio'] = self::calculateHoldRatioForRecord($a);
 		}
 		if (!isset($b['holdRatio'])){
-			$b['holdRatio'] = self::calculateHoldRationForRecord($b);
+			$b['holdRatio'] = self::calculateHoldRatioForRecord($b);
 		}
 		return $b['holdRatio'] <=> $a['holdRatio'];
 	}
 
-	static function calculateHoldRationForRecord($relatedRecord){
+	static function calculateHoldRatioForRecord($relatedRecord){
 		// Calculate Hold Ratio
 		$totalCopies     = $relatedRecord['copies'];
 		$availableCopies = $relatedRecord['availableCopies'];
