@@ -68,7 +68,7 @@
     {/if} {* End of loggedIn*}
 
 	{* QR Code *}
-	{include file="Record\qrcode.tpl"}
+	{include file="Record/qrcode.tpl"}
 
 {/if}
 
