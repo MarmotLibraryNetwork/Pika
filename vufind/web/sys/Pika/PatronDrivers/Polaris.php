@@ -42,6 +42,7 @@ use Curl\Curl;
 use DateTime;
 use DateTimeZone;
 use User;
+use Location;
 
 //use Memcache;
 
@@ -139,12 +140,12 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
         $patron_ils_id = $this->getPatronIlsId($barcode);
 
-        // check cache for patron secret
+        //check cache for patron secret
         if (!$patron_ils_id || !$this->_getCachePatronSecret($patron_ils_id)) {
-            [$patron_ils_id, $patron_secret] = $this->authenticatePatron($barcode, $pin, $validatedViaSSO);
+            $auth  = $this->authenticatePatron($barcode, $pin, $validatedViaSSO);
         }
 
-        $patron = $this->getPatron($patron_ils_id, $barcode);
+        $patron = $this->getPatron($auth['patron_id'], $barcode);
 
         // check for password update
         return $patron;
@@ -180,7 +181,11 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $c->post($request_url, $request_body);
 
         if ($c->error || $c->httpStatusCode !== 200) {
-            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode]);
+            $this->logger->error(
+                'Curl error: ' . $c->errorMessage,
+                ['http_code' => $c->httpStatusCode],
+                ['RequestURL' => $request_url, 'RequestHeaders' => $headers, 'RequestBody' => $request_body]
+            );
             return null;
         } elseif($error = $this->_isPapiError($c->response)) {
             $this->_logPapiError($error);
@@ -209,6 +214,8 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
         $user = new User();
         $user->ilsUserId = $ils_id;
+        $user->source = 'ils';
+
         if (!$user->find(true) || $user->N === 0) {
             // if there's no patron in database
             $create_user = true;
@@ -241,7 +248,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $c->get($request_url);
 
         if ($c->error || $c->httpStatusCode !== 200) {
-            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode]);
+            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode], ['RequestURL' => $request_url, "Headers" => $headers]);
             return null;
         } elseif($error = $this->_isPapiError($c->response)) {
             $this->_logPapiError($error);
@@ -269,11 +276,33 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             }
         }
 
-        // Patron information
-        if ($user->patronType !== $patron_response->PatronCodeID || $user->homeLibraryId !== $patron_response->PatronOrgID) {
-            $user->patronType = $patron_response->PatronCodeID;
-            $user->homeLibraryId = $patron_response->PatronOrgID;
-            if(!$create_user) {
+        // Patron library/location
+        // todo: homelibrary will always be 1?
+        $user->homeLibraryId = 1;
+        // todo: home location is home default pickup location?
+
+        $location = new Location();
+        $location->ilsLocationId = $patron_response->PatronOrgID;
+        if($location->find(true)) {
+            $patron_org_id = $location->ilsLocationId;
+            if ($patron_org_id !== $patron_response->PatronOrgID) {
+                $user->homeLocationId = $location->locationId;
+                if (!$create_user) {
+                    $user->update();
+                }
+            }
+        } else {
+            $this->logger->error('Can not determine users home location. Defaulting to 1');
+            $user->homeLocationId = 1;
+            if (!$create_user) {
+                $user->update();
+            }
+        }
+
+        // Patron code
+        if ($user->patronType !== $patron_response->PatronCodeID) {
+            $user->patronType    = $patron_response->PatronCodeID;
+            if (!$create_user) {
                 $user->update();
             }
         }
@@ -347,14 +376,19 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                 break;
         }
 
-        // Hold counts
+        // Checkouts and holds count
         // Polaris returns number of ILS AND number of ILL holds in counts.
-        //$user->numHoldsIls = $patron_response->HoldRequestsCurrentCount;
-        //$user->numHoldsAvailableIls = $patron_response->HoldRequestsHeldCount;
+        $user->numHoldsIls = $patron_response->HoldRequestsCurrentCount;
+        $user->numHoldsAvailableIls = $patron_response->HoldRequestsHeldCount;
+        $user->numHoldsRequestedIls = $patron_response->HoldRequestsTotalCount;
+        $user->numCheckedOutIls = $patron_response->ItemsOutCount;
 
+        // Fines
+        $user->finesVal = $patron_response->ChargeBalance;
 
         // Notes
-        $user->webNote = $patron_response->PatronNotes;
+	    // todo: do we need this?
+        // $user->webNote = $patron_response->PatronNotes;
 
         $this->_setCachePatronObject($user);
 
@@ -382,7 +416,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     protected function _setCachePatronSecret($patron_ils_id, $patron_secret): bool
     {
         $patron_secret_cache_key = 'patronilsid'.$patron_ils_id.'secret';
-        $expires = new DateInterval('PT23H');
+        $expires = 60 * 60 * 23;
         return $this->cache->set($patron_secret_cache_key, $patron_secret, $expires);
     }
 
@@ -414,7 +448,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     protected function _setCachePatronObject(User $patron)
     {
         $patron_object_cache_key = 'patronilsid'.$patron->ilsUserId.'object';
-        $expires = 10 * 60;
+        $expires = 1 * 60;
         return $this->cache->set($patron_object_cache_key, $patron, $expires);
     }
 
@@ -435,6 +469,19 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             $this->logger->info('Patron object not found in cache.');
             return false;
         }
+    }
+
+    /**
+     * Remove a patron object from cache
+     *
+     *
+     * @param $patron_ils_id
+     * @return bool
+     */
+    protected function _deleteCachePatronObject($patron_ils_id)
+    {
+        $patron_object_cache_key = 'patronilsid'.$patron_ils_id.'object';
+        return $this->cache->delete($patron_object_cache_key);
     }
 
     protected function _deleteCachePatronObjectByPatronId($patron_ils_id)
@@ -525,6 +572,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
         return false;
     }
+
     /**
      * @inheritDoc
      */
@@ -549,10 +597,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     {
 
         if(!$linkedAccount) {
-            //		    if($patronCheckouts = $this->cache->get($patronCheckoutsCacheKey)) {
-            //			    $this->logger->info("Found checkouts in memcache:".$patronCheckoutsCacheKey);
-            //			    return $patronCheckouts;
-            //		    }
+            // do caching maybe?
         }
         $request_url = $this->ws_url . '/patron/' . $patron->barcode . '/itemsout/all?excludeecontent=false';
         if(!$patron_access_secret = $this->_getCachePatronSecret($patron->ilsUserId)) {
@@ -576,7 +621,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $c->get($request_url);
 
         if ($c->error || $c->httpStatusCode !== 200) {
-            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode]);
+            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode], ['RequestURL' => $request_url, "Headers" => $headers]);
             return null;
         } elseif($error = $this->_isPapiError($c->response)) {
             $this->_logPapiError($error);
@@ -587,11 +632,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         if(count($checkouts_response) === 0) {
             return [];
         }
-
-        $offset = 0;
-        $total  = 0;
-        $count  = 0;
-        $limit  = 100;
 
         $checkouts = [];
         foreach($checkouts_response as $c) {
@@ -606,8 +646,8 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             $checkout['itemid']         = $c->ItemID;
             $checkout['renewIndicator'] = $c->ItemID;
             $checkout['renewMessage']   = '';
-						$checkout['canrenew'] = $c->CanItemBeRenewed;
-						
+            $checkout['canrenew'] = $c->CanItemBeRenewed;
+
             $recordDriver = new MarcRecord($this->accountProfile->recordSource . ':' . $c->BibID);
             if ($recordDriver->isValid()) {
                 $checkout['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
@@ -627,8 +667,13 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
             $checkouts[] = $checkout;
         }
-				return $checkouts;
+        return $checkouts;
 
+    }
+
+    protected function _doPatronRequest($method = 'GET', $url, $params = [], $extraHeaders = null)
+    {
+        $date = gmdate('r');
     }
 
     /**
@@ -687,10 +732,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         // TODO: Implement changeHoldPickupLocation() method.
     }
 
-    protected function _doRequest($method = 'GET', $url, $params = [], $extraHeaders = null)
-    {
-        $date = gmdate('r');
-    }
+
 
     /**
      * Create a hash for API authentication.
