@@ -228,7 +228,7 @@
 	{/if}
 {/foreach}
 
-{if isset($dataList) && is_array($dataList) && count($dataList) > 5}
+{if in_array($objectType, array("IndexingProfile")) || (isset($dataList) && is_array($dataList) && count($dataList) > 5)}
 
 	{if $objectType == "TranslationMap"}
 		<script>
