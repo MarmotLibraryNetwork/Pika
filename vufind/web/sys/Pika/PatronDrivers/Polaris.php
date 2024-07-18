@@ -139,15 +139,23 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
 
         $patron_ils_id = $this->getPatronIlsId($barcode);
-
         //check cache for patron secret
         if (!$patron_ils_id || !$this->_getCachePatronSecret($patron_ils_id)) {
-            $auth  = $this->authenticatePatron($barcode, $pin, $validatedViaSSO);
+            $auth = $this->authenticatePatron($barcode, $pin, $validatedViaSSO);
+            if($auth === null || !isset($auth['patron_id'])) {
+                return null;
+            } else {
+                $patron_ils_id = $auth['patron_id'];
+            }
         }
 
-        $patron = $this->getPatron($auth['patron_id'], $barcode);
+        $patron = $this->getPatron($patron_ils_id, $barcode);
 
         // check for password update
+        $patron_pw = $patron->getPassword();
+        if(!isset($patron_pw) || $patron_pw !== $pin) {
+            $patron->updatePassword($pin);
+        }
         return $patron;
     }
 
@@ -191,8 +199,9 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             $this->_logPapiError($error);
             return null;
         }
-        //$this->patron_access_secret = $c->response->AccessSecret;
+
         $this->_setCachePatronSecret($c->response->PatronID, $c->response->AccessSecret);
+
         return ['patron_id' => $c->response->PatronID, 'patron_access_secret' => $c->response->AccessSecret];
     }
 
@@ -387,7 +396,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $user->finesVal = $patron_response->ChargeBalance;
 
         // Notes
-	    // todo: do we need this?
+        // todo: do we need this?
         // $user->webNote = $patron_response->PatronNotes;
 
         $this->_setCachePatronObject($user);
