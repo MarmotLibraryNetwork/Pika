@@ -583,6 +583,115 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     }
 
     /**
+     * @param $item Checkout item 
+     * @return bool
+     */
+    protected function isIllCheckout($item): bool
+    {
+        return $item->FormatDescription === "Interlibrary Loan";
+    }
+
+    /**
+     * Get the format from Polaris format ID
+     *
+     * @param int $matrial_format_id
+     * @return string
+     * @see https://documentation.iii.com/polaris/PAPI/current/PAPIService/PAPIServiceOverview.htm#papiserviceoverview_3170935956_1214294
+     */
+    protected function getMaterialFormatFromId(int $matrial_format_id): string
+    {
+        $media_types = [
+            1 => "Book",
+            2 => "Printed or Manuscript Music",
+            3 => "Cartographic Material",
+            4 => "Visual Materials",
+            5 => "Sound Recording",
+            6 => "Electronic Resources",
+            7 => "Archival Mixed Materials",
+            8 => "Serial",
+            9 => "Printed Music",
+            10 => "Manuscript Music",
+            11 => "Printed Cartographic Material",
+            12 => "Manuscript Cartographic Material",
+            13 => "Map",
+            14 => "Globe",
+            15 => "Manuscript Material",
+            16 => "Projected Medium",
+            17 => "Motion Picture",
+            18 => "Video Recording",
+            19 => "Two Dimensional Non-projected Graphic",
+            20 => "Three Dimensional Object",
+            21 => "Musical Sound Recording",
+            22 => "Nonmusical Sound Recording",
+            23 => "Kit",
+            24 => "Periodical",
+            25 => "Newspaper",
+            26 => "Microform",
+            27 => "Large Print",
+            28 => "Braille",
+            29 => "DVD",
+            30 => "Videotape",
+            31 => "Music CD",
+            32 => "eBook",
+            33 => "Audio Book",
+            38 => "Digital Collection",
+            39 => "Abstract",
+            40 => "Blu-ray Disc",
+            41 => "Eaudiobook",
+            42 => "Book + CD",
+            43 => "Book + Cassette",
+            44 => "Video Game",
+            45 => "Blu-ray + DVD",
+            46 => "Book + DVD",
+            47 => "Atlas",
+            48 => "Streaming Music",
+            49 => "Streaming Video",
+            50 => "Emagazine",
+            51 => "Vinyl",
+            52 => "Audio Book on CD",
+            53 => "Audio Book on Cassette"
+        ];
+
+        if(array_key_exists($matrial_format_id, $media_types)) {
+            return $media_types[$matrial_format_id];
+        }
+        return 'Unknown';
+    }
+
+    /**
+     * Clean an InReach author
+     *
+     * @param $author
+     * @return string If error, original string is returned. Cleaned string otherwise.
+     */
+    protected function cleanIllAuthor($author): string
+    {
+        // Use a regular expression to remove ", author" with optional spaces after the comma and optional
+        // ending period
+        $cleaned_author = preg_replace("/,\s*author\.?$/", "", $author);
+        return $cleaned_author ?? $author;
+    }
+
+    /**
+     * Clean an InReach title
+     *
+     * @param string $title
+     * @return string
+     */
+    protected function cleanIllTitle(string $title): string
+    {
+        if (preg_match('/ILL-(.*?)([:\/])/', $title, $matches)) {
+            return trim($matches[1]);
+        } else {
+            // If neither ":" nor "/" is found, return the entire string after "ILL-"
+            if (preg_match('/ILL-(.*)/', $title, $matches)) {
+                return trim($matches[1]);
+            }
+        }
+        return $title; // Return full title if ILL- isn't found
+    }
+
+    /**
      * @inheritDoc
      */
     public function hasNativeReadingHistory()
@@ -644,6 +753,9 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
         $checkouts = [];
         foreach($checkouts_response as $c) {
+            $checkout = []; // reset checkout
+            // ILL/InReach checkout check
+
             $bib_id = $c->BibID;
             $checkout['checkoutSource'] =  $this->accountProfile->recordSource;
             $checkout['recordId']       = $c->BibID;
@@ -655,7 +767,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             $checkout['itemid']         = $c->ItemID;
             $checkout['renewIndicator'] = $c->ItemID;
             $checkout['renewMessage']   = '';
-            $checkout['canrenew'] = $c->CanItemBeRenewed;
+            $checkout['canrenew']       = $c->CanItemBeRenewed;
 
             $recordDriver = new MarcRecord($this->accountProfile->recordSource . ':' . $c->BibID);
             if ($recordDriver->isValid()) {
@@ -673,11 +785,21 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                 $checkout['format']        = 'Unknown';
                 $checkout['author']        = '';
             }
+						
+						// handle ILL checkouts
+	        if($this->isIllCheckout($c)) {
+		        //$checkout['coverUrl']      = ''; // todo: inn-reach cover
+		        //$checkout['groupedWorkId'] = '';
+		        $checkout['format']        = $this->getMaterialFormatFromId($c->FormatID);
+		        $checkout['author']        = $this->cleanIllAuthor($c->Author);
+		        $checkout['title']         = $this->cleanIllTitle($c->Title);
+		        $checkout['title_sort']    = $checkout['title'];
+	        }
 
             $checkouts[] = $checkout;
+
         }
         return $checkouts;
-
     }
 
     protected function _doPatronRequest($method = 'GET', $url, $params = [], $extraHeaders = null)
