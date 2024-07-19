@@ -257,7 +257,8 @@ public class ValidateMarcExport implements IProcessHandler {
 		return result;
 	}
 
-	private static final Pattern overdrivePattern = Pattern.compile("(?i)^http://.*?/ContentDetails\\.htm\\?id=[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$|^http://link\\.overdrive\\.com.*");
+	//private static final Pattern overdrivePattern    = Pattern.compile("(?i)^http://.*?/ContentDetails\\.htm\\?id=[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$|^http://link\\.overdrive\\.com.*");
+	private static final Pattern econtentURLsPattern = Pattern.compile("(?i)^https?://link\\.overdrive\\.com.*|^https?://api\\.overdrive\\.com.*|^https?://www\\.hoopladigital\\.com.*");
 
 	private RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, IndexingProfile profile) {
 		RecordIdentifier    identifier         = null;
@@ -289,7 +290,7 @@ public class ValidateMarcExport implements IProcessHandler {
 		//Check to see if the record is an overdrive record
 		if (profile.isDoAutomaticEcontentSuppression()) {
 			if (profile.useEContentSubfield()) {
-				//TODO: this suppression calculation should be standardized with the re-indexing version; probably put in a function to easily share across them
+				//TODO: this suppression calculation should be standardized with the re-indexing version, regrouping version; probably put in a function to easily share across them
 				boolean allItemsSuppressed = true; //TODO: itemless bib suppression switch check??
 
 				List<DataField> itemFields = getDataFields(marcRecord, profile.getItemTag());
@@ -302,6 +303,7 @@ public class ValidateMarcExport implements IProcessHandler {
 							//Check the protection types and sources
 							String eContentData = itemField.getSubfield(profile.getEContentDescriptor()).getData();
 							if (eContentData.indexOf(':') >= 0) {
+								// This is specifically for mln1 ils eContent item records
 								String[] eContentFields = eContentData.split(":");
 								String   sourceType     = eContentFields[0].toLowerCase().trim();
 								if (!sourceType.equals("overdrive") && !sourceType.equals("hoopla")) {
@@ -321,15 +323,15 @@ public class ValidateMarcExport implements IProcessHandler {
 					identifier.setSuppressionReason("All Items suppressed");
 				}
 			} else {
-				//Check the 856 for an overdrive url
+				//Check the 856 for an econtent url
 				List<DataField> linkFields = getDataFields(marcRecord, "856");
 				for (DataField linkField : linkFields) {
 					if (linkField.getSubfield('u') != null) {
 						//Check the url to see if it is from OverDrive or Hoopla
 						String linkData = linkField.getSubfield('u').getData().trim();
-						if (overdrivePattern.matcher(linkData).matches()) {
+						if (econtentURLsPattern.matcher(linkData).matches()) {
 							identifier.setSuppressed(true);
-							identifier.setSuppressionReason("OverDrive Title");
+							identifier.setSuppressionReason("eContent Title");
 						}
 					}
 				}
@@ -344,8 +346,8 @@ public class ValidateMarcExport implements IProcessHandler {
 	}
 
 	private List<DataField> getDataFields(Record marcRecord, String tag) {
-		List            variableFields       = marcRecord.getVariableFields(tag);
-		List<DataField> variableFieldsReturn = new ArrayList<>();
+		List<VariableField> variableFields       = marcRecord.getVariableFields(tag);
+		List<DataField>     variableFieldsReturn = new ArrayList<>();
 		for (Object variableField : variableFields) {
 			if (variableField instanceof DataField) {
 				variableFieldsReturn.add((DataField) variableField);
