@@ -483,7 +483,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     /**
      * Remove a patron object from cache
      *
-     *
      * @param $patron_ils_id
      * @return bool
      */
@@ -583,7 +582,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     }
 
     /**
-     * @param $item Checkout item 
+     * @param $item Checkout item
      * @return bool
      */
     protected function isIllCheckout($item): bool
@@ -785,19 +784,16 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                 $checkout['format']        = 'Unknown';
                 $checkout['author']        = '';
             }
-						
-						// handle ILL checkouts
-	        if($this->isIllCheckout($c)) {
-		        //$checkout['coverUrl']      = ''; // todo: inn-reach cover
-		        //$checkout['groupedWorkId'] = '';
-		        $checkout['format']        = $this->getMaterialFormatFromId($c->FormatID);
-		        $checkout['author']        = $this->cleanIllAuthor($c->Author);
-		        $checkout['title']         = $this->cleanIllTitle($c->Title);
-		        $checkout['title_sort']    = $checkout['title'];
-	        }
 
+            // handle ILL checkouts
+            if($this->isIllCheckout($c)) {
+                //$checkout['coverUrl']      = ''; // todo: inn-reach cover?
+                $checkout['format']        = $this->getMaterialFormatFromId($c->FormatID);
+                $checkout['author']        = $this->cleanIllAuthor($c->Author);
+                $checkout['title']         = $this->cleanIllTitle($c->Title);
+                $checkout['title_sort']    = $checkout['title'];
+            }
             $checkouts[] = $checkout;
-
         }
         return $checkouts;
     }
