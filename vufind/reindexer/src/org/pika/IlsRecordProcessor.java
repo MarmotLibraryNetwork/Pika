@@ -707,6 +707,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		ItemInfo itemInfo = new ItemInfo();
 		//Load base information from the Marc Record
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
+		if (itemInfo.getItemIdentifier() == null && logger.isInfoEnabled() ){
+			logger.info("Found item with out identifier info " + identifier);
+		}
 
 		String itemStatus   = getItemStatus(itemField, identifier);
 		String itemLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);

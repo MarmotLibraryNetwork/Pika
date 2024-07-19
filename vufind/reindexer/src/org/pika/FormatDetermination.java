@@ -1280,19 +1280,28 @@ public class FormatDetermination {
 			return "XboxSeriesX";
 		} else if (value.contains("xbox one") && !value.contains("compatible")) {
 			return "XboxOne";
-		} else if (value.contains("xbox") && !value.contains("compatible")) {
+		} else if ((value.contains("xbox 360") || value.contains("xbox360")) && !value.contains("compatible")) {
 			if (logger.isInfoEnabled() && value.contains("xbox live")){
 				logger.info("Potential xbox game format string contains 'xbox live': " + value);
 			}
 			return "Xbox360";
 		} else if (value.contains("playstation vita") /*&& !value.contains("compatible")*/) {
 			return "PlayStationVita";
-		} else if ((value.contains("playstation 5") || value.equals("ps5") || value.matches(".*[^a-z]ps5.*")) && isNotBluRayPlayerDescription(value)) {
+		} else if ((value.contains("playstation 5") ||value.contains("playstation5") || value.equals("ps5") || value.matches(".*[^a-z]ps5.*")) && isNotBluRayPlayerDescription(value)) {
 			// If the entire value is "PS5", good reason to call this a playstation
+			if (value.contains("xbox live")){
+				logger.info("PS string mentioning xbox live :" + value);
+			}
 			return "PlayStation5";
-		} else if ((value.contains("playstation 4") || value.equals("ps4") || value.matches(".*[^a-z]ps4.*")) && isNotBluRayPlayerDescription(value)) {
+		} else if ((value.contains("playstation 4") ||value.contains("playstation4") || value.equals("ps4") || value.matches(".*[^a-z]ps4.*")) && isNotBluRayPlayerDescription(value)) {
+			if (value.contains("xbox live")){
+				logger.info("PS string mentioning xbox live :" + value);
+			}
 			return "PlayStation4";
-		} else if ((value.contains("playstation 3") || value.equals("ps3") || value.matches(".*[^a-z]ps3.*")) && isNotBluRayPlayerDescription(value)) {
+		} else if ((value.contains("playstation 3") ||value.contains("playstation3") || value.equals("ps3") || value.matches(".*[^a-z]ps3.*")) && isNotBluRayPlayerDescription(value)) {
+			if (value.contains("xbox live")){
+				logger.info("PS string mentioning xbox live :" + value);
+			}
 			return "PlayStation3";
 		} else if (value.contains("playstation") && isNotBluRayPlayerDescription(value)) {
 			return "PlayStation";
