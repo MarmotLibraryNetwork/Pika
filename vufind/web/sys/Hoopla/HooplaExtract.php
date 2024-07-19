@@ -30,20 +30,38 @@ require_once 'DB/DataObject.php';
 
 class HooplaExtract extends DB_DataObject {
 
+	public $__table = 'hoopla_export';
+
 	public $id;
 	public $hooplaId;
-	public $active;
+//	public $titleId;
+	public bool $active;
 	public $title;
+	public $language;
 	public $kind;
-	public $price;
-	public $children;
-	public $pa;  //Parental Advisory
-	public $profanity;
+	public $series;
+	public $season;
+	public $publisher;
+	public float $price;
+	public bool $children;
+	public bool $pa;  //Parental Advisory
+	public bool $profanity; // boolean
 	public $rating; // eg TV parental guidance rating
 	public $abridged;
 	public $demo;
+	public $duration;
+	public bool $fiction; // boolean
+	public $purchaseModel;
 	public $dateLastUpdated;
 
-	public $__table = 'hoopla_export';
+//	public $titleTitle;
+//	public $synopsis;
+//	public $year; // publication year
+//	public $genres; //TODO It's own table
+//	public $artist;
+//	public $artists; // TODO table; name, relationship, artistFormal
+//	public $pages;
+
+
 
 }

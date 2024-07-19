@@ -216,7 +216,7 @@ public class HooplaExportMain {
 						updateTitlesInDB(pikaConn, responseTitles);
 						return !updateTitlesInDBHadErrors;
 					} else {
-						logger.error("Returned title " + titleId + "from API was not the title asked for: " + hooplaId);
+						logger.error("Returned title " + titleId + " from API was not the title asked for: " + hooplaId);
 					}
 				}
 			}
@@ -235,7 +235,7 @@ public class HooplaExportMain {
 	 * @param pikaConn     Connection to the Pika Database.
 	 * @param startTime    The time to limit responses to from the Hoopla API.  Fetch changes since this time.
 	 * @param doFullReload Fetch all the data in the Hoopla API
-	 * @return Return if the updating completed with out errors
+	 * @return Return if the updating completed without errors
 	 */
 	private static boolean exportHooplaData(Connection pikaConn, Long startTime, boolean doFullReload) {
 		try {
@@ -337,33 +337,61 @@ public class HooplaExportMain {
 			String marcRecordID = "MWT" + hooplaTitleId;
 			markGroupedWorkForBibAsChangedStmt.setLong(1, startTimeStamp);
 			markGroupedWorkForBibAsChangedStmt.setString(2, marcRecordID);
-			markGroupedWorkForBibAsChangedStmt.executeUpdate();
+			int updated = markGroupedWorkForBibAsChangedStmt.executeUpdate();
+			if (updated == 0){
+				logger.warn("Updated hoopla extract data for a titleId we don't have a grouped work for : " + hooplaTitleId);
+			}
 		} catch (SQLException e) {
 			logger.warn("Failed to mark grouped Work for reindexing ", e);
 		}
 	}
+
+//	private void populateSQLStatement(JSONObject curTitle, int index, String varType, String fieldName, Types type){
+//		if (curTitle.has(fieldName)){
+//
+//		}
+//
+//	}
 
 	private static int updateTitlesInDB(Connection pikaConn, JSONArray responseTitles) {
 		int numUpdates = 0;
 		long titleId = -1L;
 		try {
 			if (updateHooplaTitleInDB == null) {
-				updateHooplaTitleInDB = pikaConn.prepareStatement("INSERT INTO hoopla_export (hooplaId, active, title, kind, pa, demo, profanity, rating, abridged, children, price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY " +
-						"UPDATE active = VALUES(active), title = VALUES(title), kind = VALUES(kind), pa = VALUES(pa), demo = VALUES(demo), profanity = VALUES(profanity), " +
-						"rating = VALUES(rating), abridged = VALUES(abridged), children = VALUES(children), price = VALUES(price)");
+				updateHooplaTitleInDB = pikaConn.prepareStatement("INSERT INTO hoopla_export " +
+								"(hooplaId, active, title, kind, pa, demo, profanity, rating, abridged, children, price, " +
+								"fiction, language, publisher, duration, series, season) " +
+								"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY " +
+						"UPDATE active = VALUES(active), title = VALUES(title), kind = VALUES(kind), pa = VALUES(pa), " +
+								"demo = VALUES(demo), profanity = VALUES(profanity), rating = VALUES(rating), " +
+								"abridged = VALUES(abridged), children = VALUES(children), price = VALUES(price), " +
+								"fiction = VALUE(fiction), language = VALUES(language), publisher = VALUES(publisher), " +
+								"duration = VALUES(duration), series = VALUE(series), season = VALUE(season)"
+				);
 			}
 			for (int i = 0; i < responseTitles.length(); i++) {
 				JSONObject curTitle = responseTitles.getJSONObject(i);
 				titleId = curTitle.getLong("titleId");
+				//if (logger.isDebugEnabled()){
+					if (!curTitle.getString("purchaseModel").equals("INSTANT")){
+						logger.warn("Found new purchase model '" + curTitle.getString("purchaseModel") + " for " + titleId);
+					}
+					long id = curTitle.getLong("id");
+					if (id != titleId){
+						logger.warn("Id (" + id + " ) doesn't match titleId (" + titleId + ")");
+					}
+				//}
 				updateHooplaTitleInDB.setLong(1, titleId);
 				final boolean isActive = curTitle.getBoolean("active");
 				updateHooplaTitleInDB.setBoolean(2, isActive);
-				updateHooplaTitleInDB.setString(3, removeBadChars(curTitle.getString("title")));
+				//updateHooplaTitleInDB.setString(3, removeBadChars(curTitle.getString("title")));
+				updateHooplaTitleInDB.setString(3, curTitle.getString("title"));
 				updateHooplaTitleInDB.setString(4, curTitle.getString("kind"));
 				updateHooplaTitleInDB.setBoolean(5, curTitle.getBoolean("pa"));
 				updateHooplaTitleInDB.setBoolean(6, curTitle.getBoolean("demo"));
 				updateHooplaTitleInDB.setBoolean(7, curTitle.getBoolean("profanity"));
 				updateHooplaTitleInDB.setString(8, curTitle.has("rating") ? curTitle.getString("rating") : "");
+
 				updateHooplaTitleInDB.setBoolean(9, curTitle.getBoolean("abridged"));
 				updateHooplaTitleInDB.setBoolean(10, curTitle.getBoolean("children"));
 				double price = 0;
@@ -375,6 +403,25 @@ public class HooplaExportMain {
 				}
 				if (!isActive) numMarkedInactive++;
 				updateHooplaTitleInDB.setDouble(11, price);
+				updateHooplaTitleInDB.setBoolean(12, curTitle.getBoolean("fiction"));
+				updateHooplaTitleInDB.setString(13, curTitle.getString("language"));
+				updateHooplaTitleInDB.setString(14, curTitle.getString("publisher"));
+				String duration = curTitle.getString("duration");
+				if (duration.equals("0m 0s")){
+					updateHooplaTitleInDB.setNull(15, Types.VARCHAR);
+				} else {
+					updateHooplaTitleInDB.setString(15, duration);
+				}
+				if (curTitle.has("series")){
+					updateHooplaTitleInDB.setString(16, curTitle.getString("series"));
+				} else {
+					updateHooplaTitleInDB.setNull(16, Types.VARCHAR);
+				}
+				if (curTitle.has("season")){
+					updateHooplaTitleInDB.setString(17, curTitle.getString("season"));
+				} else {
+					updateHooplaTitleInDB.setNull(17, Types.VARCHAR);
+				}
 
 				int updated = updateHooplaTitleInDB.executeUpdate();
 				if (updated > 0) {
@@ -408,6 +455,7 @@ public class HooplaExportMain {
 		}
 		return sb.toString();
 	}
+
 	private static String getAccessToken() {
 		String hooplaUsername = PikaConfigIni.getIniValue("Hoopla", "HooplaAPIUser");
 		String hooplaPassword = PikaConfigIni.getIniValue("Hoopla", "HooplaAPIpassword");
