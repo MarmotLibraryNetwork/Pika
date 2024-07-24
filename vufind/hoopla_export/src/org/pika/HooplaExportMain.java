@@ -377,8 +377,8 @@ public class HooplaExportMain {
 				titleId = curTitle.getLong("titleId");
 				try {
 				//if (logger.isDebugEnabled()){
-					if (!curTitle.getString("purchaseModel").equals("INSTANT")){
-						logger.warn("Found new purchase model '" + curTitle.getString("purchaseModel") + " for " + titleId);
+					if (!curTitle.getString("purchaseModel").equals("INSTANT") && !curTitle.getString("purchaseModel").equals("FLEX")){
+						logger.warn("Found new purchase model '" + curTitle.getString("purchaseModel") + "' for " + titleId);
 					}
 					long id = curTitle.getLong("id");
 					if (id != titleId){

@@ -119,7 +119,7 @@ function getHooplaUpdates(){
 					'ADD COLUMN `duration` VARCHAR(15) NULL DEFAULT NULL AFTER `kind`,'.
 					'ADD COLUMN `series` VARCHAR(100) NULL DEFAULT NULL AFTER `duration`,'.
 					'ADD COLUMN `season` VARCHAR(45) NULL DEFAULT NULL AFTER `series`,'.
-					'ADD COLUMN `publisher` VARCHAR(75) NULL AFTER `season`,'.
+					'ADD COLUMN `publisher` VARCHAR(100) NULL AFTER `season`,'.
 					'ADD COLUMN `fiction` TINYINT(1) UNSIGNED NULL DEFAULT 0 AFTER `abridged`,'.
 					'ADD COLUMN `purchaseModel` ENUM(\'INSTANT\', \'FLEX\') NULL DEFAULT "INSTANT" AFTER `price`;', // ENUM requires single quotes ('), double quotes (") don't work
 			],
