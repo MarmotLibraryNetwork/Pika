@@ -36,6 +36,8 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 //import java.util.Arrays;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class HooplaExportMain {
 	private static Logger  logger;
@@ -338,9 +340,10 @@ public class HooplaExportMain {
 			markGroupedWorkForBibAsChangedStmt.setLong(1, startTimeStamp);
 			markGroupedWorkForBibAsChangedStmt.setString(2, marcRecordID);
 			int updated = markGroupedWorkForBibAsChangedStmt.executeUpdate();
-			if (updated == 0){
-				logger.warn("Updated hoopla extract data for a titleId we don't have a grouped work for : " + hooplaTitleId);
-			}
+//			if (updated == 0){
+//				// this happens a lot for the inactive titles, logging would be more useful if we're testing for active titles
+//				logger.info("Updated hoopla extract data for a titleId we don't have a grouped work for : " + hooplaTitleId);
+//			}
 		} catch (SQLException e) {
 			logger.warn("Failed to mark grouped Work for reindexing ", e);
 		}
@@ -372,6 +375,7 @@ public class HooplaExportMain {
 			for (int i = 0; i < responseTitles.length(); i++) {
 				JSONObject curTitle = responseTitles.getJSONObject(i);
 				titleId = curTitle.getLong("titleId");
+				try {
 				//if (logger.isDebugEnabled()){
 					if (!curTitle.getString("purchaseModel").equals("INSTANT")){
 						logger.warn("Found new purchase model '" + curTitle.getString("purchaseModel") + " for " + titleId);
@@ -427,6 +431,27 @@ public class HooplaExportMain {
 				if (updated > 0) {
 					numUpdates++;
 					markGroupedWorkForReindexing(pikaConn, titleId);
+				}
+				} catch (Exception e) {
+					String message = "Error updating hoopla data in Pika database for title " + titleId;
+					if (e.getMessage().contains("Data too long for column")){
+						Pattern pattern = Pattern.compile("Data too long for column '(.*?)'");
+						Matcher matcher = pattern.matcher(e.getMessage());
+						if (matcher.find()) {
+							String column = matcher.group(1);
+							if (curTitle.has(column)){
+								String value = curTitle.getString(column);
+								message += " has length " + value.length() + ", '"+ value + "'";
+								addNoteToHooplaExportLog(message);
+								updateTitlesInDBHadErrors = true;
+							}
+						}
+						logger.error(message);
+					} else {
+						logger.error(message, e);
+						addNoteToHooplaExportLog(message + " " + e);
+						updateTitlesInDBHadErrors = true;
+					}
 				}
 			}
 

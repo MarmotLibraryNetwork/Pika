@@ -93,14 +93,16 @@ function getHooplaUpdates(){
 		'2024.03.0_expand_ hoopla_rating_col' => [
 			'title'       => '2024.03.0 Expand Hoopla rating Column',
 			'description' => 'Expand Hoopla rating column to hold value "Unrestricted"',
+			'release'     => '2024.03.0',
 			'sql'         => [
 				"ALTER TABLE `hoopla_export` CHANGE COLUMN `rating` `rating` VARCHAR(13);",
 			],
 		],
 
-		'2024.03.0_expand_ hoopla_additional_cols' => [
-			'title'       => '2024.03.0 Add Hoopla  Columns',
+		'2024.03.0_expand_hoopla_additional_cols' => [
+			'title'       => '2024.03.0 Add Hoopla Columns',
 			'description' => 'Add several columns to hoopla table.',
+			'release'     => '2024.03.0',
 			'sql'         => [
 				'ALTER TABLE `hoopla_export` '.
 					'CHANGE COLUMN `hooplaId` `hooplaId` INT(11) UNSIGNED NOT NULL ,'.
@@ -113,13 +115,13 @@ function getHooplaUpdates(){
 					'CHANGE COLUMN `abridged` `abridged` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 ,'.
 					'CHANGE COLUMN `children` `children` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 ,'.
 					'CHANGE COLUMN `price` `price` DOUBLE UNSIGNED NOT NULL DEFAULT 0 ,'.
-					'ADD COLUMN `language` VARCHAR(20) NULL DEFAULT NULL AFTER `title`,'.
+					'ADD COLUMN `language` VARCHAR(25) NULL DEFAULT NULL AFTER `title`,'. // to hold "NO LINGUISTIC CONTENT"
 					'ADD COLUMN `duration` VARCHAR(15) NULL DEFAULT NULL AFTER `kind`,'.
-					'ADD COLUMN `series` VARCHAR(45) NULL DEFAULT NULL AFTER `duration`,'.
-					'ADD COLUMN `season` VARCHAR(75) NULL DEFAULT NULL AFTER `series`,'.
+					'ADD COLUMN `series` VARCHAR(100) NULL DEFAULT NULL AFTER `duration`,'.
+					'ADD COLUMN `season` VARCHAR(45) NULL DEFAULT NULL AFTER `series`,'.
 					'ADD COLUMN `publisher` VARCHAR(75) NULL AFTER `season`,'.
 					'ADD COLUMN `fiction` TINYINT(1) UNSIGNED NULL DEFAULT 0 AFTER `abridged`,'.
-					'ADD COLUMN `purchaseModel` ENUM(\'INSTANT\') NULL DEFAULT "INSTANT" AFTER `price`;',
+					'ADD COLUMN `purchaseModel` ENUM(\'INSTANT\', \'FLEX\') NULL DEFAULT "INSTANT" AFTER `price`;', // ENUM requires single quotes ('), double quotes (") don't work
 			],
 		],
 
