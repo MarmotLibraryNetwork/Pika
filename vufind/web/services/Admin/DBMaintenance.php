@@ -1374,7 +1374,7 @@ class DBMaintenance extends Admin_Admin {
 				),
 				'2024.03.0_remove_selfReg_template_option' => [
 					'title'           => 'Delete  selfReg template option',
-					'description'     => 'Get rid of the template library setting used for opac self reg scren scraping',
+					'description'     => 'Get rid of the template library setting used for opac self reg screen scraping',
 					'continueOnError' => false,
 					'sql'             => [
 						"ALTER TABLE `library` DROP COLUMN `selfRegistrationTemplate`;",
