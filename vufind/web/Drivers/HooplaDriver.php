@@ -32,10 +32,10 @@ class HooplaDriver
 {
 	const memCacheKey = 'hoopla_api_access_token';
 	public $hooplaAPIBaseURL = 'https://hoopla-erc.hoopladigital.com';
-	private $accessToken;
-	private $hooplaEnabled = false;
-	private $cache;
-	private $logger;
+	protected $accessToken;
+	protected $hooplaEnabled = false;
+	protected $cache;
+	protected $logger;
 	private $connectionTimeout = 5;
 	private $timeout = 10;
 
@@ -100,8 +100,7 @@ class HooplaDriver
 
 	// Originally copied from SirsiDynixROA Driver
 	// $customRequest is for curl, can be 'PUT', 'DELETE', 'POST'
-	private function getAPIResponse($url, $params = null, $customRequest = null, $additionalHeaders = null)
-	{
+	protected function getAPIResponse($url, $params = null, $customRequest = null, $additionalHeaders = null){
 		$this->logger->info('Hoopla API URL :' .$url);
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
@@ -169,7 +168,7 @@ class HooplaDriver
 	 * @param $url
 	 * @return bool
 	 */
-	private function getAPIResponseReturnHooplaTitle($url)
+	protected function getAPIResponseReturnHooplaTitle($url)
 	{
 		$ch = curl_init();
 		$headers  = array(
@@ -228,7 +227,7 @@ class HooplaDriver
 	/**
 	 * @param $user User
 	 */
-	private function getHooplaBasePatronURL($user) {
+	protected function getHooplaBasePatronURL($user) {
 		$url = null;
 		if ($this->hooplaEnabled) {
 			$hooplaLibraryID = $this->getHooplaLibraryID($user);
@@ -240,7 +239,7 @@ class HooplaDriver
 		return $url;
 		}
 
-	private $hooplaPatronStatuses = array();
+	private $hooplaPatronStatuses = [];
 	/**
 	 * @param $user User
 	 */
@@ -357,7 +356,7 @@ class HooplaDriver
 			curl_setopt($curl, CURLOPT_USERPWD, "$username:$password");
 			curl_setopt($curl, CURLOPT_POST, true);
 			curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($curl, CURLOPT_POSTFIELDS, array());
+			curl_setopt($curl, CURLOPT_POSTFIELDS, []);
 			curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, $this->connectionTimeout );
 			curl_setopt($curl, CURLOPT_TIMEOUT, $this->timeout);
 
@@ -529,8 +528,32 @@ class HooplaDriver
 
 	public function getHooplaRecordMetaData($libraryId, $hooplaId){
 		$url = $this->hooplaAPIBaseURL . '/api/v1/libraries/' . $libraryId
-			. "/content?limit=1&startToken=" . ($hooplaId - 1);
+			. '/content?limit=1&startToken=' . ($hooplaId - 1);
+			//. '&purchaseModel=ALL'
 
+
+		$result = $this->getAPIResponse($url);
+		return $result;
+	}
+
+	/**
+	 * Currently responds as such
+	 * [
+	 * {
+	 * "contentId": 15744197,
+	 * "availability": {
+	 * "status": "BORROW",
+	 * "purchaseModel": "INSTANT"
+	 * }
+	 * }
+	 * ]
+	 * @param $libraryId
+	 * @param $hooplaId
+	 * @return false|mixed
+	 */
+	public function getHooplaTitleInfo($libraryId, $hooplaId){
+		$url = $this->hooplaAPIBaseURL . '/api/v1/libraries/' . $libraryId
+			. '/content/info?contentIds=' . $hooplaId;
 		$result = $this->getAPIResponse($url);
 		return $result;
 	}

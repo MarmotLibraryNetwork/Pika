@@ -104,7 +104,7 @@ function getHooplaUpdates(){
 			'sql'         => [
 				'ALTER TABLE `hoopla_export` '.
 					'CHANGE COLUMN `hooplaId` `hooplaId` INT(11) UNSIGNED NOT NULL ,'.
-					'CHANGE COLUMN `active` `active` TINYINT(4) UNSIGNED NOT NULL DEFAULT 1 ,'.
+					'CHANGE COLUMN `active` `active` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1 ,'.
 					'CHANGE COLUMN `kind` `kind` VARCHAR(15) CHARACTER SET \'utf8mb4\' COLLATE \'utf8mb4_unicode_ci\' NULL DEFAULT NULL ,'.
 					'CHANGE COLUMN `active` `active` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1 ,'.
 					'CHANGE COLUMN `pa` `pa` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 ,'.
@@ -116,7 +116,7 @@ function getHooplaUpdates(){
 					'ADD COLUMN `language` VARCHAR(20) NULL DEFAULT NULL AFTER `title`,'.
 					'ADD COLUMN `duration` VARCHAR(15) NULL DEFAULT NULL AFTER `kind`,'.
 					'ADD COLUMN `series` VARCHAR(45) NULL DEFAULT NULL AFTER `duration`,'.
-					'ADD COLUMN `season` VARCHAR(45) NULL DEFAULT NULL AFTER `series`,'.
+					'ADD COLUMN `season` VARCHAR(75) NULL DEFAULT NULL AFTER `series`,'.
 					'ADD COLUMN `publisher` VARCHAR(75) NULL AFTER `season`,'.
 					'ADD COLUMN `fiction` TINYINT(1) UNSIGNED NULL DEFAULT 0 AFTER `abridged`,'.
 					'ADD COLUMN `purchaseModel` ENUM(\'INSTANT\') NULL DEFAULT "INSTANT" AFTER `price`;',
