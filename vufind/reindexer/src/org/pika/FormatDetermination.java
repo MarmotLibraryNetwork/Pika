@@ -495,7 +495,7 @@ public class FormatDetermination {
 
 		// check for music recordings quickly so we can figure out if it is music
 		// for category (need to do here since checking what is on the Compact
-		// Disc/Phonograph, etc is difficult).
+		// Disc/Phonograph, etc. is difficult).
 		if (leaderBit != null) {
 			if (leaderBit.equals('j')) {
 				printFormats.add("MusicRecording");
@@ -1303,7 +1303,7 @@ public class FormatDetermination {
 				logger.info("PS string mentioning xbox live :" + value);
 			}
 			return "PlayStation3";
-		} else if (value.contains("playstation") && isNotBluRayPlayerDescription(value)) {
+		} else if (value.replaceAll("playstation (plus|network)", "").contains("playstation") && isNotBluRayPlayerDescription(value)) {
 			return "PlayStation";
 		} else if (value.contains("wii u")) {
 			return "WiiU";
@@ -1329,9 +1329,14 @@ public class FormatDetermination {
 	 *  that a play station is compatible with Blu-ray players.
 	 *
 	 * @param value text of a subfield
-	 * @return
+	 * @return whether string is describing being Blu-ray compatible
 	 */
-	private static boolean isNotBluRayPlayerDescription(String value) {
+	private boolean isNotBluRayPlayerDescription(String value) {
+		if (logger.isInfoEnabled() && value.contains("compatible")){
+			logger.info("Blu-ray description test string w/ 'compatible' : " + value);
+			//  keying off only "compatible" is likely a false positive
+			//  since descriptions may be referring to other things.
+		}
 		return !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player") && !value.contains("blu-ray disc computer");
 	}
 
