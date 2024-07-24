@@ -138,10 +138,18 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             return null;
         }
 
-        $patron_ils_id = $this->getPatronIlsId($barcode);
+        // barcode might actually be username so well "validate" the patron first to make sure we have a good
+        // barcode.
+        $r = $this->validatePatron($barcode, $pin);
+        $valid_barcode = $r->PatronBarcode;
+        if($valid_barcode === null) {
+            return null;
+        }
+
+        $patron_ils_id = $this->getPatronIlsId($valid_barcode);
         //check cache for patron secret
         if (!$patron_ils_id || !$this->_getCachePatronSecret($patron_ils_id)) {
-            $auth = $this->authenticatePatron($barcode, $pin, $validatedViaSSO);
+            $auth = $this->authenticatePatron($valid_barcode, $pin, $validatedViaSSO);
             if($auth === null || !isset($auth['patron_id'])) {
                 return null;
             } else {
@@ -149,7 +157,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             }
         }
 
-        $patron = $this->getPatron($patron_ils_id, $barcode);
+        $patron = $this->getPatron($patron_ils_id, $valid_barcode);
 
         // check for password update
         $patron_pw = $patron->getPassword();
@@ -157,6 +165,51 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             $patron->updatePassword($pin);
         }
         return $patron;
+    }
+
+    /**
+     * Check if a patron exists in the Polaris database.
+     * This method will return a real barcode in case the patron is using a username.
+     *
+     *
+     * @param $barcode
+     * @param $pin
+     * @return null|JSON
+     * @see https://documentation.iii.com/polaris/PAPI/current/PAPIService/PAPIServicePatronValidate.htm#papiservicepatronvalidate_1221164799_1220680
+     */
+    protected function validatePatron($barcode, $pin)
+    {
+        $request_url = $this->ws_url . '/patron/' . $barcode;
+        $hash = $this->_createHash('GET', $request_url, $pin);
+
+        $headers = [
+            "PolarisDate: " . gmdate('r'),
+            "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
+            "Accept: application/json"
+        ];
+
+        $c_opts  = [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => $headers
+        ];
+
+        $c = new Curl();
+        $c->setOpts($c_opts);
+        $c->get($request_url);
+
+        if ($c->error || $c->httpStatusCode !== 200) {
+            $this->logger->error(
+                'Curl error: ' . $c->errorMessage,
+                ['http_code' => $c->httpStatusCode],
+                ['RequestURL' => $request_url, 'RequestHeaders' => $headers, 'RequestBody' => $request_body]
+            );
+            return null;
+        } elseif($error = $this->_isPapiError($c->response)) {
+            $this->_logPapiError($error);
+            return null;
+        }
+
+        return $c->response;
     }
 
     /**
@@ -800,7 +853,34 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
     protected function _doPatronRequest($method = 'GET', $url, $params = [], $extraHeaders = null)
     {
-        $date = gmdate('r');
+
+        if(!$patron_access_secret = $this->_getCachePatronSecret()) {
+            $patron_pin = $patron->getPassword();
+            $patron_access_secret = $this->authenticatePatron($patron->barcode, $patron_pin);
+        }
+        $hash = $this->_createHash('GET', $url, $patron_access_secret);
+
+        $headers = [
+            "PolarisDate: " . gmdate('r'),
+            "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
+            "Accept: application/json"
+        ];
+        $c_opts  = [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => $headers
+        ];
+
+        $c = new Curl();
+        $c->setOpts($c_opts);
+        $c->get($request_url);
+
+        if ($c->error || $c->httpStatusCode !== 200) {
+            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode], ['RequestURL' => $request_url, "Headers" => $headers]);
+            return null;
+        } elseif($error = $this->_isPapiError($c->response)) {
+            $this->_logPapiError($error);
+            return null;
+        }
     }
 
     /**
