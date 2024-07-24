@@ -119,7 +119,7 @@ function getHooplaUpdates(){
 					'ADD COLUMN `season` VARCHAR(45) NULL DEFAULT NULL AFTER `series`,'.
 					'ADD COLUMN `publisher` VARCHAR(75) NULL AFTER `season`,'.
 					'ADD COLUMN `fiction` TINYINT(1) UNSIGNED NULL DEFAULT 0 AFTER `abridged`,'.
-					'ADD COLUMN `purchaseModel` ENUM("INSTANT") NULL DEFAULT "INSTANT" AFTER `price`;',
+					'ADD COLUMN `purchaseModel` ENUM(\'INSTANT\') NULL DEFAULT "INSTANT" AFTER `price`;',
 			],
 		],
 
