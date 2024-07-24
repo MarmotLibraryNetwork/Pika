@@ -102,7 +102,7 @@ function getHooplaUpdates(){
 			'title'       => '2024.03.0 Add Hoopla  Columns',
 			'description' => 'Add several columns to hoopla table.',
 			'sql'         => [
-				'ALTER TABLE `clearview_pika`.`hoopla_export` '.
+				'ALTER TABLE `hoopla_export` '.
 					'CHANGE COLUMN `hooplaId` `hooplaId` INT(11) UNSIGNED NOT NULL ,'.
 					'CHANGE COLUMN `active` `active` TINYINT(4) UNSIGNED NOT NULL DEFAULT 1 ,'.
 					'CHANGE COLUMN `kind` `kind` VARCHAR(15) CHARACTER SET \'utf8mb4\' COLLATE \'utf8mb4_unicode_ci\' NULL DEFAULT NULL ,'.
