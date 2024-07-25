@@ -45,10 +45,10 @@
 					{/if}
 
 					{if $showRatings}
-						<div class="title-rating list-rating"
-						     data-user_rating="{$summRating.user}"
-						     data-rating_title="{$summTitle}"
-						     data-id="{$summId}"
+						<div class="title-rating list-rating" {*preserve trailing space for good parsing *}
+						     data-user_rating="{$summRating.user}" {*preserve trailing space for good parsing *}
+						     data-rating_title="{$summTitle}" {*preserve trailing space for good parsing *}
+						     data-id="{$summId}" {*preserve trailing space for good parsing *}
 						     data-show_review="{if $showComments  && (!$loggedIn || !$user->noPromptForUserReviews)}1{else}0{/if}"
 						>
 							{if $summRating.user}
