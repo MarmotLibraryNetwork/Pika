@@ -85,7 +85,7 @@
 									<td>
 											{if $field == 'dateLastUpdated'}
 												{$values|date_format:"%b %d, %Y %r"}
-											{elseif !empty($value)}
+											{elseif !empty($values)}
 												{implode subject=$values glue=', ' sort=true}
 											{/if}
 									</td>
