@@ -169,8 +169,9 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
     /**
      * Check if a patron exists in the Polaris database.
-     * This method will return a real barcode in case the patron is using a username.
      *
+     * This method will return a real barcode in case the patron is using a username. NOTE: When creating the header
+     * auth has the users password must be used in the auth hash.
      *
      * @param $barcode
      * @param $pin
@@ -201,7 +202,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             $this->logger->error(
                 'Curl error: ' . $c->errorMessage,
                 ['http_code' => $c->httpStatusCode],
-                ['RequestURL' => $request_url, 'RequestHeaders' => $headers, 'RequestBody' => $request_body]
+                ['RequestURL' => $request_url, 'RequestHeaders' => $headers]
             );
             return null;
         } elseif($error = $this->_isPapiError($c->response)) {
@@ -213,9 +214,11 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     }
 
     /**
-     * @param $barcode
-     * @param $pin
-     * @param $validatedViaSSO
+     * Authenticate a patron and return the patron id and patron access secret key.
+     *
+     * @param string $barcode
+     * @param string $pin
+     * @param bool $validatedViaSSO
      * @return array|null
      */
     protected function authenticatePatron($barcode, $pin, bool $validatedViaSSO = false): ?array
@@ -457,6 +460,12 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $user;
     }
 
+    /**
+     * Get a patrons ILS patron id
+     *
+     * @param $barcode
+     * @return int|false
+     */
     protected function getPatronIlsId($barcode)
     {
         $patron = new User();
@@ -646,11 +655,11 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     /**
      * Get the format from Polaris format ID
      *
-     * @param int $matrial_format_id
+     * @param int $material_format_id
      * @return string
      * @see https://documentation.iii.com/polaris/PAPI/current/PAPIService/PAPIServiceOverview.htm#papiserviceoverview_3170935956_1214294
      */
-    protected function getMaterialFormatFromId(int $matrial_format_id): string
+    protected function getMaterialFormatFromId(int $material_format_id): string
     {
         $media_types = [
             1 => "Book",
@@ -704,8 +713,8 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             53 => "Audio Book on Cassette"
         ];
 
-        if(array_key_exists($matrial_format_id, $media_types)) {
-            return $media_types[$matrial_format_id];
+        if(array_key_exists($material_format_id, $media_types)) {
+            return $media_types[$material_format_id];
         }
         return 'Unknown';
     }
@@ -763,7 +772,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     /**
      * @inheritDoc
      */
-    public function getMyCheckouts($patron, $linkedAccount = false)
+    public function getMyCheckouts($patron, $linkedAccount = false): ?array
     {
 
         if(!$linkedAccount) {
@@ -806,7 +815,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $checkouts = [];
         foreach($checkouts_response as $c) {
             $checkout = []; // reset checkout
-            // ILL/InReach checkout check
 
             $bib_id = $c->BibID;
             $checkout['checkoutSource'] =  $this->accountProfile->recordSource;
@@ -831,6 +839,15 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                 $checkout['title']         = $recordDriver->getTitle();
                 $checkout['title_sort']    = $recordDriver->getSortableTitle();
                 $checkout['link']          = $recordDriver->getLinkUrl();
+            } elseif($this->isIllCheckout($c) && (!$recordDriver->isValid() || null === $recordDriver->isValid())) {
+	              // handle ILL checkouts
+	              // Polaris creates marc records in the system for ILL checkouts.
+	              // Only do special handling if marc record isn't available.
+                //$checkout['coverUrl']      = ''; // todo: inn-reach cover
+                $checkout['format']        = $this->getMaterialFormatFromId($c->FormatID);
+                $checkout['author']        = $this->cleanIllAuthor($c->Author);
+                $checkout['title']         = $this->cleanIllTitle($c->Title);
+                $checkout['title_sort']    = $checkout['title'];
             } else {
                 $checkout['coverUrl']      = '';
                 $checkout['groupedWorkId'] = '';
@@ -838,14 +855,8 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                 $checkout['author']        = '';
             }
 
-            // handle ILL checkouts
-            if($this->isIllCheckout($c)) {
-                //$checkout['coverUrl']      = ''; // todo: inn-reach cover?
-                $checkout['format']        = $this->getMaterialFormatFromId($c->FormatID);
-                $checkout['author']        = $this->cleanIllAuthor($c->Author);
-                $checkout['title']         = $this->cleanIllTitle($c->Title);
-                $checkout['title_sort']    = $checkout['title'];
-            }
+            
+
             $checkouts[] = $checkout;
         }
         return $checkouts;
