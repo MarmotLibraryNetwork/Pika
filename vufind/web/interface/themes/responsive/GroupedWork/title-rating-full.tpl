@@ -4,10 +4,10 @@
 		<div class="row">
 		{if $showRatings}
 				<span>Your Rating: {$ratingData.user} stars</span>
-				<div class="title-rating"
-				     data-user_rating="{if $ratingData.user}$ratingData.user{else}0{/if}"
-				     data-rating_title="{$ratingTitle}"
-				     data-id="{$recordDriver->getPermanentId()}"
+				<div class="title-rating" {*preserve trailing space for good parsing *}
+				     data-user_rating="{if $ratingData.user}$ratingData.user{else}0{/if}" {*preserve trailing space for good parsing *}
+				     data-rating_title="{$ratingTitle}" {*preserve trailing space for good parsing *}
+				     data-id="{$recordDriver->getPermanentId()}" {*preserve trailing space for good parsing *}
 				     data-show_review="{if $showComments && !$user->noPromptForUserReviews}1{else}0{/if}"
 				>
 					{include file='MyAccount/star-rating.tpl' id=$recordDriver->getPermanentId() ratingData=$ratingData ratingTitle=$ratingTitle}
