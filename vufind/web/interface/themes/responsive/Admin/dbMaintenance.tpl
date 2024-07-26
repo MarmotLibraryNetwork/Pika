@@ -1,8 +1,8 @@
 {strip}
 	{if $action=='DBMaintenanceEContent'}
-		<h1>Database Maintenance eContent</h1>
+		<h1 role="heading" aria-level="1" class="h2">Database Maintenance eContent</h1>
 	{else}
-		<h1>Database Maintenance</h1>
+		<h1 role="heading" aria-level="1" class="h2">Database Maintenance</h1>
 	{/if}
 	<div id="maintenanceOptions"></div>
 	<form id="dbMaintenance" action="/Admin/{$action}">
@@ -11,6 +11,7 @@
 				<thead>
 					<tr>
 						<th><input type="checkbox" aria-label="Select or Unselect All" id="selectAll" onclick="Pika.toggleCheckboxes('.selectedUpdate:visible', '#selectAll');" checked="checked"></th>
+						<th>Release</th>
 						<th>Name</th>
 						<th>Description</th>
 						<th>Already Run?</th>
@@ -25,6 +26,7 @@
 					{if $update.status == 'Update succeeded'} success{elseif strpos($update.status, 'Warning') !== false} warning{elseif strpos($update.status, 'fail') !== false || strpos($update.status, 'error') !== false} danger{/if}"
 					{if $update.alreadyRun && !$update.status} style="display:none"{/if}>
 						<td><input aria-label="Select this database update" type="checkbox" name="selected[{$updateKey}]"{if !$update.alreadyRun} checked="checked"{/if} class="selectedUpdate"></td>
+						<td>{$update.release}</td>
 						<td>{$update.title}</td>
 						<td>{$update.description}</td>
 						<td>{if $update.alreadyRun}Yes{else}No{/if}</td>

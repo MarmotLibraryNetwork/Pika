@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2024  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,12 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/**
- * Updates related to record grouping for cleanliness
+/*
+ * Updates to Admin pages
  *
- */
-
-function getGroupedWorkUpdates(): array{
+ * */
+function getAdminUpdates() {
 
 	// Array Entry Template
 //		'[release-number]_[update-order-#-if-needed]_[unique-update-key-name]' => [
@@ -35,7 +33,6 @@ function getGroupedWorkUpdates(): array{
 //				'[nameOfFunctionToRun]'
 //			]
 //		],
-
 
 	return [
 
