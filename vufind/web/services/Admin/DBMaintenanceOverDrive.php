@@ -17,14 +17,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+require_once ROOT_DIR . '/services/Admin/DBMaintenance.php';
+
 /**
- * Updates related to library & location configuration
- *
+ * Provides a method of running SQL updates to the eContent database.
+ * Shows a list of updates that are available with a description of the updates
  */
+class DBMaintenanceOverDrive extends DBMaintenance {
+	const TITLE = 'Database Maintenance - OverDrive';
 
-function getLibraryLocationUpdates(): array{
+	public function __construct(){
+		parent::__construct();
+		$temp     = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
+		$this->db = $temp->getDatabaseConnection();
+		if (PEAR::isError($this->db)){
+			die($this->db->getMessage());
+		}
+	}
 
-	// Array Entry Template
+	protected function getSQLUpdates(){
+		// Array Entry Template
 //		'[release-number]_[update-order-#-if-needed]_[unique-update-key-name]' => [
 //			'release'         => '[release-number/git-branch]',
 //			'title'           => 'Title of Update',
@@ -36,26 +48,9 @@ function getLibraryLocationUpdates(): array{
 //			]
 //		],
 
-	return [
-		'2024.03.0_remove_selfReg_template_option' => [
-			'release'         => '2024.03.0',
-			'title'           => 'Delete selfReg template option',
-			'description'     => 'Get rid of the template library setting used for opac self reg screen scraping',
-			'continueOnError' => false,
-			'sql'             => [
-				"ALTER TABLE `library` DROP COLUMN `selfRegistrationTemplate`;",
-			]
-		],
+		return [
 
-		'2024.03.0_rename_and_repurpose_location_field_scope' => [
-			'release'         => '2024.03.0',
-			'title'           => 'Change Location "scope" to "ilsLocationId"',
-			'description'     => 'Repurpose this field to be used for the Polaris Organization Id.',
-			'continueOnError' => false,
-			'sql'             => [
-				'ALTER TABLE `location` CHANGE `scope` `ilsLocationId` SMALLINT UNSIGNED DEFAULT NULL COMMENT "The ID for the location in the ILS. ";'
-			]
-		],
+		];
+	}
 
-	];
 }

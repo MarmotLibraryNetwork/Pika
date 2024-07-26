@@ -903,33 +903,6 @@ function getSQLUpdates(){
 					implode(",", createCoversFromDirectory()) . ";"
 				]
 			],
-			'update-overdrive-logs-2020.07' => [
-				'title'           => 'Add column to overdrive logs',
-				'description'     => '[THIS NEEDS the econtent db to named econtent]',
-				'continueOnError' => true,
-				'sql'             => [
-					'ALTER TABLE `econtent`.`overdrive_extract_log` ENGINE = InnoDB ,
-								ADD COLUMN `numTitlesProcessed` INT UNSIGNED NULL DEFAULT NULL AFTER `numMetadataChanges`;',
-					'ALTER TABLE `econtent`.`overdrive_api_products` ENGINE = InnoDB ;',
-				]
-			],
-
-			'overdrive-remove-numeric-formats-2020.07' => [
-				'title'           => 'Remove obsolete numeric formats column from overdrive_api_product_formats',
-				'description'     => '[THIS NEEDS the econtent db to named econtent]',
-				'continueOnError' => true,
-				'sql'             => [
-					'ALTER TABLE `econtent`.`overdrive_api_product_formats` DROP COLUMN `numericId`, DROP INDEX `numericId` ;',
-				]
-			],
-			'2022.01.0-add_edition_column_to_overdrive_metadata' => [
-				'title'       => 'Add edition column to OverDrive Metadata table',
-				'description' => 'Add edition column to OverDrive Metadata table. [THIS NEEDS the econtent db to named econtent]',
-				'sql'         => [
-					"ALTER TABLE `econtent`.`overdrive_api_product_metadata` ADD COLUMN `edition` VARCHAR(128) NULL AFTER `publishDate`;",
-				],
-			],
-
 			'add-pickup-branch-to-offline-holds-2021.01' => [
 				'title'           => 'Add pickup branch to offline holds table',
 				'description'     => '',
@@ -961,35 +934,6 @@ function getSQLUpdates(){
 					"ALTER TABLE `library` ADD COLUMN `fineAlertAmount` FLOAT(11) NOT NULL DEFAULT '0.00' AFTER `minimumFineAmount`"
 				]
 			],
-			'add_OverDrive_Magazine_Issues_table' => [
-				'title'       => 'Add OverDrive Magazine Issues to database',
-				'description' => 'Add a table to the econtent database in which to store OverDrive Magazines. [THIS NEEDS the econtent db to named econtent]',
-				'sql'         => [
-					"CREATE TABLE IF NOT EXISTS `econtent`.`overdrive_api_magazine_issues`(
-    						id INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    						overdriveId varchar(50),
-    						crossRefId varchar (50),
-    					  title varchar(255),
-    						edition varchar(100),
-    						pubDate INT(11),
-    						coverUrl varchar(200),
-    						parentId varchar(50),
-    						description TEXT, 
-    						dateAdded INT(11),
-    						dateUpdated INT(11)
-						)
-						CHARACTER SET = utf8 ;"
-					,
-				]
-			],
-			'add_Index_to_OverDrive_Issues' =>[
-				'title'       =>'Add Index to Magazine Issues table',
-				'description' => 'Index parentId Column.  [THIS NEEDS the econtent db to named econtent]',
-				'sql'         => [
-					"ALTER TABLE `econtent`.`overdrive_api_magazine_issues` ADD INDEX `parentId` (`parentId` ASC);"
-				]
-			],
-
 
 		] // End of main array
 	);

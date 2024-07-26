@@ -41,6 +41,7 @@ function getHooplaUpdates(){
 			'release'     => '2024.03.0',
 			'title'       => 'Expand Hoopla rating Column',
 			'description' => 'Expand Hoopla rating column to hold value "Unrestricted"',
+			'continueOnError' => true,
 			'sql'         => [
 				"ALTER TABLE `hoopla_export` CHANGE COLUMN `rating` `rating` VARCHAR(13);",
 			],
@@ -50,10 +51,11 @@ function getHooplaUpdates(){
 			'release'     => '2024.03.0',
 			'title'       => 'Add Hoopla Columns',
 			'description' => 'Add several columns to hoopla table.',
+			'continueOnError' => false,
 			'sql'         => [
 				'ALTER TABLE `hoopla_export` '.
 					'CHANGE COLUMN `hooplaId` `hooplaId` INT(11) UNSIGNED NOT NULL ,'.
-					'CHANGE COLUMN `active` `active` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1 ,'.
+					//'CHANGE COLUMN `active` `active` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1 ,'. // this causes a strange error: "[nativecode=1054 ** Unknown column 'active' in 'hoopla_export']"
 					'CHANGE COLUMN `kind` `kind` VARCHAR(15) CHARACTER SET \'utf8mb4\' COLLATE \'utf8mb4_unicode_ci\' NULL DEFAULT NULL ,'.
 					'CHANGE COLUMN `active` `active` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1 ,'.
 					'CHANGE COLUMN `pa` `pa` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 ,'.

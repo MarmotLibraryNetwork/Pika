@@ -30,7 +30,7 @@ class DBMaintenance extends Admin_Admin {
 	/** @var DB $db */
 	protected $db;
 
-	const TITLE = 'Database Maintenance';
+	const TITLE = 'Database Maintenance - Pika';
 
 	public function __construct(){
 		parent::__construct();
@@ -54,22 +54,41 @@ class DBMaintenance extends Admin_Admin {
 
 			//Process the updates
 			foreach ($availableUpdates as $key => $update){
-				if (isset($_REQUEST["selected"][$key])){
+				if (isset($_REQUEST['selected'][$key])){
 					$sqlStatements = $update['sql'];
 					$updateOk      = true;
+					$successAll    = true;
 					foreach ($sqlStatements as $sql){
 						if (method_exists($this, $sql)){
-							$this->$sql($update);
+							$updateOk           = $this->$sql($update);
+							$update['status'][] = $updateOk ? 'Update succeeded' : 'Update failed';
+							if (empty($update['continueOnError']) && !$updateOk){
+								break;
+							}
+						}elseif (function_exists($sql)){
+							$updateOk           = $sql($update);
+							$update['status'][] = $updateOk ? 'Update succeeded' : 'Update failed';
+							if (empty($update['continueOnError']) && !$updateOk){
+								break;
+							}
 						}else{
 							if (!$this->runSQLStatement($update, $sql)){
+								$successAll = false;
 								break;
 							}
 						}
+						if ($successAll){
+							$successAll = $updateOk; // Keep updating successAll til it is false
+						}
 					}
-					if ($updateOk){
+					if ($successAll){
 						$this->markUpdateAsRun($key);
 					}
+					$update['success']      = $successAll;
 					$availableUpdates[$key] = $update;
+					if (!$successAll && empty($update['continueOnError'])){
+						break; // Stop additional updates on Error
+					}
 				}
 			}
 		}
@@ -113,20 +132,26 @@ class DBMaintenance extends Admin_Admin {
 		set_time_limit(500);
 		$result   = $this->db->query($sql);
 		$updateOk = true;
+
+		// Since $sql comes from array, we can have multiple update statuses to report.
 		if (empty($result)){ // got an error
-			if (!empty($update['continueOnError'])){
-				if (!isset($update['status'])){
-					$update['status'] = '';
-				}
-				$update['status'] .= 'Warning: ' . $this->db->error() . "<br>";
+			$updateOk           = false;
+			if (empty($update['continueOnError'])){
+				$update['status'][] = 'Update failed: ' . $this->db->error(); //TODO: does this method exist?
 			}else{
-				$update['status'] = 'Update failed ' . $this->db->error();
-				$updateOk         = false;
+				$update['status'][] = 'Warning: ' . $this->db->error();
+			}
+		}elseif (is_a($result, 'DB_Error')){
+			$updateOk           = false;
+			global $pikaLogger;
+			$pikaLogger->error('Error with database update', ['message' => $result->getMessage(), 'info' => $result->userinfo]);
+			if (empty($update['continueOnError'])){
+				$update['status'][] = 'Update failed: ' . $result->getMessage();
+			}else{
+				$update['status'][] = 'Warning: ' . $result->getMessage();
 			}
 		}else{
-			if (!isset($update['status'])){
-				$update['status'] = 'Update succeeded';
-			}
+			$update['status'][] = 'Update succeeded';
 		}
 		return $updateOk;
 	}

@@ -1,9 +1,7 @@
 {strip}
-	{if $action=='DBMaintenanceEContent'}
-		<h1 role="heading" aria-level="1" class="h2">Database Maintenance eContent</h1>
-	{else}
-		<h1 role="heading" aria-level="1" class="h2">Database Maintenance</h1>
-	{/if}
+
+	<h1 role="heading" aria-level="1" class="h2">{$pageTitleShort}</h1>
+
 	<div id="maintenanceOptions"></div>
 	<form id="dbMaintenance" action="/Admin/{$action}">
 		<div>
@@ -23,7 +21,7 @@
 				<tbody>
 					{foreach from=$sqlUpdates item=update key=updateKey}
 					<tr class="{if $update.alreadyRun}updateRun{else}updateNotRun{/if}
-					{if $update.status == 'Update succeeded'} success{elseif strpos($update.status, 'Warning') !== false} warning{elseif strpos($update.status, 'fail') !== false || strpos($update.status, 'error') !== false} danger{/if}"
+					{if isset($update.success)}{if $update.success} success{elseif $update.continueOnError} warning{else} danger{/if}{/if}"
 					{if $update.alreadyRun && !$update.status} style="display:none"{/if}>
 						<td><input aria-label="Select this database update" type="checkbox" name="selected[{$updateKey}]"{if !$update.alreadyRun} checked="checked"{/if} class="selectedUpdate"></td>
 						<td>{$update.release}</td>
@@ -31,7 +29,7 @@
 						<td>{$update.description}</td>
 						<td>{if $update.alreadyRun}Yes{else}No{/if}</td>
 						{if $showStatus}
-						<td>{$update.status}</td>
+						<td>{if is_array($update.status)}{$update.status|@implode:"<br>"}{else}{$update.status}{/if}</td>
 						{/if}
 					</tr>
 					{/foreach}

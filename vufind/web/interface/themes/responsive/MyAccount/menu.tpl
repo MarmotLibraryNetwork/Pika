@@ -153,7 +153,7 @@
 			{/if}
 
 			{if $loggedIn && $userRoles && (in_array('userAdmin', $userRoles) || in_array('opacAdmin', $userRoles))}
-				{if in_array($action, array('Administrators', 'DBMaintenance', 'DBMaintenanceEContent', 'PHPInfo', 'OpCacheInfo', 'Variables', 'MemCacheInfo'))
+				{if in_array($action, array('Administrators', 'DBMaintenance', 'DBMaintenanceOverDrive', 'PHPInfo', 'OpCacheInfo', 'Variables', 'MemCacheInfo'))
 				|| ($module == 'Admin' && $action == 'Home')}
 					{assign var="curSection" value=true}
 				{else}
@@ -173,13 +173,14 @@
 								<div class="adminMenuLink {if $action == "Administrators"} active{/if}"><a href="/Admin/Administrators">Administrators</a></div>
 							{/if}
 							{if in_array('opacAdmin', $userRoles)}
-								<div class="adminMenuLink{if $action == "DBMaintenance"} active{/if}"><a href="/Admin/DBMaintenance">DB Maintenance - Pika</a></div>
-								<div class="adminMenuLink{if $action == "DBMaintenanceEContent"} active{/if}"><a href="/Admin/DBMaintenanceEContent">DB Maintenance - EContent</a></div>
 								<div class="adminMenuLink{if $module == 'Admin' && $action == "Home"} active{/if}"><a href="/Admin/Home">Solr Information</a></div>
 								<div class="adminMenuLink{if $action == "PHPInfo"} active{/if}"><a href="/Admin/PHPInfo">PHP Information</a></div>
 								<div class="adminMenuLink{if $action == "MemCacheInfo"} active{/if}"><a href="/Admin/MemCacheInfo">MemCache Information</a></div>
 								<div class="adminMenuLink{if $action == "OpCacheInfo"} active{/if}"><a href="/Admin/OpCacheInfo">OpCache Information</a></div>
 								<div class="adminMenuLink{if $action == "Variables"} active{/if}"><a href="/Admin/Variables">System Variables</a></div>
+								<hr class="menu">
+								<div class="adminMenuLink{if $action == "DBMaintenance"} active{/if}"><a href="/Admin/DBMaintenance">DB Maintenance - Pika</a></div>
+								<div class="adminMenuLink{if $action == "DBMaintenanceOverDrive"} active{/if}"><a href="/Admin/DBMaintenanceOverDrive">DB Maintenance - OverDrive</a></div>
 							{/if}
 						</div>
 					</div>
