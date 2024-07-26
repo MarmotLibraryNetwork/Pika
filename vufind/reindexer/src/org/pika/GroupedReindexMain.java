@@ -86,19 +86,24 @@ public class GroupedReindexMain {
 					break;
 				case "singlework" :
 					//Process a specific work
-					//Prompt for the work to process
-					System.out.print("Enter the grouped work id of the work to process: ");
+					if (args.length >= 3 && args[2].length() == 36) {
+						individualWorkToProcess = args[2];
+					} else {
+						//Prompt for the work to process
+						System.out.print("Enter the grouped work id of the work to process: ");
 
-					//  open up standard input
-					BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+						//  open up standard input
+						BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-					//  read the work from the command-line; need to use try/catch with the
-					//  readLine() method
-					try {
-						individualWorkToProcess = br.readLine().trim();
-					} catch (IOException ioe) {
-						System.out.println("IO error trying to read the work to process!");
-						System.exit(1);
+						//  read the work from the command-line; need to use try/catch with the
+						//  readLine() method
+						try {
+							individualWorkToProcess = br.readLine().trim();
+						} catch (IOException ioe) {
+							System.out.println("IO error trying to read the work to process!");
+							System.exit(1);
+						}
+
 					}
 					break;
 				default:
@@ -169,9 +174,11 @@ public class GroupedReindexMain {
 					if (logger.isInfoEnabled()) {
 						if (!hooplaRecordWithOutExtractInfo.isEmpty()) {
 							logger.info("Hoopla Records without Extract Info  : " + String.join(", ", hooplaRecordWithOutExtractInfo));
+							//TODO: write as a file
 						}
 						if (!hooplaRecordUsingUrlIdExtractInfo.isEmpty()) {
 							logger.info("Hoopla Records using Id from Url  : " + String.join(", ", hooplaRecordWithOutExtractInfo));
+							//TODO: write as a file
 						}
 
 						if (!sortTitleRemovalsList.isEmpty()) {
@@ -325,8 +332,8 @@ public class GroupedReindexMain {
 		}
 	}*/
 
-	private static StringBuffer reindexNotes = new StringBuffer();
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private static final StringBuffer     reindexNotes = new StringBuffer();
+	private static final SimpleDateFormat dateFormat   = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	static void addNoteToReindexLog(String note) {
 		if (addNoteToReindexLogStmt == null){
 			//This happens when called from another system (i.e. from Sierra Export)

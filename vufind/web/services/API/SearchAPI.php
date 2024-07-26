@@ -40,7 +40,8 @@ class SearchAPI extends AJAXHandler {
 
 	// The time intervals in seconds beyond which we consider the status as not current
 	const FULL_INDEX_INTERVAL_WARN            = 86400;  // 24 Hours (in seconds)
-	const FULL_INDEX_INTERVAL_CRITICAL        = 129600; // 36 Hours (in seconds)
+	const FULL_INDEX_INTERVAL_CRITICAL        = 432000; // 5 days (in seconds)
+	//const FULL_INDEX_INTERVAL_CRITICAL        = 129600; // 36 Hours (in seconds)
 	const PARTIAL_INDEX_INTERVAL_WARN         = 1500;   // 25 Minutes (in seconds)
 	const PARTIAL_INDEX_INTERVAL_CRITICAL     = 3600;   // 1 Hour (in seconds)
 	const SIERRA_EXTRACT_INTERVAL_WARN        = 900;    // 15 Minutes (in seconds)

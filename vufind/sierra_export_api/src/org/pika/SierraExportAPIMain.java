@@ -66,10 +66,10 @@ public class SierraExportAPIMain {
 	private static String  apiBaseUrl            = null;
 	private static boolean allowFastExportMethod = true;
 
-	private static TreeSet<Long> allBibsToUpdate = new TreeSet<>();
-	private static TreeSet<Long> bibsToProcess   = new TreeSet<>();
-	private static TreeSet<Long> allDeletedIds   = new TreeSet<>();
-	private static TreeSet<Long> bibsWithErrors  = new TreeSet<>();
+	private static final TreeSet<Long> allBibsToUpdate = new TreeSet<>();
+	private static final TreeSet<Long> bibsToProcess  = new TreeSet<>();
+	private static final TreeSet<Long> allDeletedIds  = new TreeSet<>();
+	private static final TreeSet<Long> bibsWithErrors = new TreeSet<>();
 
 	//Reporting information
 	private static long              exportLogId;
@@ -198,7 +198,7 @@ public class SierraExportAPIMain {
 		}
 
 		String apiVersion = PikaConfigIni.getIniValue("Catalog", "api_version");
-		if (apiVersion == null || apiVersion.length() == 0) {
+		if (apiVersion == null || apiVersion.isEmpty()) {
 			logger.error("Sierra API version must be set.");
 			closeDBConnections(pikaConn);
 			System.exit(1);
@@ -216,7 +216,7 @@ public class SierraExportAPIMain {
 		} catch (SQLException e) {
 			logger.error("Error retrieving account profile for " + indexingProfile.sourceName, e);
 		}
-		if (apiBaseUrl == null || apiBaseUrl.length() == 0) {
+		if (apiBaseUrl == null || apiBaseUrl.isEmpty()) {
 			logger.error("Sierra API url must be set in account profile column vendorOpacUrl.");
 			closeDBConnections(pikaConn);
 			System.exit(1);
@@ -321,7 +321,11 @@ public class SierraExportAPIMain {
 		long elapsedTime = endTime - startTime.getTime();
 		addNoteToExportLog("Elapsed Minutes " + (elapsedTime / 60000));
 
-		retrieveDataFromSierraDNA(pikaConn);
+		if (!lastCallTimedOut) {
+			retrieveDataFromSierraDNA(pikaConn);
+		} else {
+			logger.warn("Skipping Sierra DNA connection because we had time out errors. Trying to prevent getting stuck.");
+		}
 
 		finalizeExportLogEntry(pikaConn, endTime);
 
@@ -663,10 +667,10 @@ public class SierraExportAPIMain {
 		}
 
 		int numProcessed = 0;
-		if (allBibsToUpdate.size() > 0) {
+		if (!allBibsToUpdate.isEmpty()) {
 			boolean hasMoreIdsToProcess;
-			int     batchSize       = 25;
-			Long    exportStartTime = new Date().getTime() / 1000;
+			int  batchSize       = 25;
+			long exportStartTime = new Date().getTime() / 1000;
 			do {
 				hasMoreIdsToProcess = false;
 				StringBuilder   idsToProcess = new StringBuilder();
@@ -681,18 +685,18 @@ public class SierraExportAPIMain {
 					ids.add(lastId);
 					allBibsToUpdate.remove(lastId);
 				}
-				if (ids.size() > 0) {
+				if (!ids.isEmpty()) {
 					updateMarcAndRegroupRecordIds(idsToProcess, ids);
 				}
 				numProcessed += maxIndex;
-				if (numProcessed % 250 == 0 || allBibsToUpdate.size() == 0) {
+				if (numProcessed % 250 == 0 || allBibsToUpdate.isEmpty()) {
 					addNoteToExportLog("Processed " + numProcessed);
-					if (minutesToProcessExport > 0 && (new Date().getTime() / 1000) - exportStartTime >= minutesToProcessExport * 60) {
+					if (minutesToProcessExport > 0 && (new Date().getTime() / 1000) - exportStartTime >= minutesToProcessExport * 60L) {
 						addNoteToExportLog("Stopping export due to time constraints, there are " + allBibsToUpdate.size() + " bibs remaining to be processed.");
 						break;
 					}
 				}
-				if (allBibsToUpdate.size() > 0) {
+				if (!allBibsToUpdate.isEmpty()) {
 					hasMoreIdsToProcess = true;
 					updateSierraExtractLogNumToProcess(pikaConn, numProcessed);
 				}
@@ -883,7 +887,7 @@ public class SierraExportAPIMain {
 		} while (hasMoreRecords);
 
 
-		if (allDeletedIds.size() > 0) {
+		if (!allDeletedIds.isEmpty()) {
 			for (Long id : allDeletedIds) {
 				if (!isAlreadyMarkedDeleted(id)) {
 					if (deleteRecord(updateTime, id) && markRecordDeletedInExtractInfo(id)) {
@@ -1328,7 +1332,7 @@ public class SierraExportAPIMain {
 		addNoteToExportLog("Finished fetching " + numDeletedItems + " deleted items found, " + numBibsToUpdate + " additional bibs to update");
 	}
 
-	private static MarcFactory marcFactory = MarcFactory.newInstance();
+	private static final MarcFactory marcFactory = MarcFactory.newInstance();
 
 	private static boolean updateMarcAndRegroupRecordId(Long id) {
 		try {
@@ -1517,7 +1521,7 @@ public class SierraExportAPIMain {
 	}
 
 
-	private static SimpleDateFormat sierraAPIDateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+	private static final SimpleDateFormat sierraAPIDateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
 	private static void getItemsForBib(Long id, Record marcRecord) {
 		//Get a list of all items
@@ -1628,7 +1632,7 @@ public class SierraExportAPIMain {
 								String        fieldTag             = curVarField.getString("fieldTag");
 								StringBuilder allFieldContent      = new StringBuilder();
 								JSONArray     subfields            = null;
-								boolean       lookingForEContent   = indexingProfile.APIItemEContentExportFieldTag.length() > 0;
+								boolean       lookingForEContent   = !indexingProfile.APIItemEContentExportFieldTag.isEmpty();
 								boolean       isThisAnEContentItemURL = lookingForEContent && curVarField.has("marcTag") && curVarField.getString("marcTag").equals("856");
 								if (curVarField.has("subfields")) {
 									subfields = curVarField.getJSONArray("subfields");
@@ -1655,13 +1659,13 @@ public class SierraExportAPIMain {
 											JSONObject subfield = subfields.getJSONObject(k);
 											String     tag      = subfield.getString("tag");
 											String     content  = subfield.getString("content");
-											if (indexingProfile.APIItemCallNumberPrestampSubfield.length() > 0 && tag.equalsIgnoreCase(indexingProfile.APIItemCallNumberPrestampSubfield)) {
+											if (!indexingProfile.APIItemCallNumberPrestampSubfield.isEmpty() && tag.equalsIgnoreCase(indexingProfile.APIItemCallNumberPrestampSubfield)) {
 												itemField.addSubfield(marcFactory.newSubfield(indexingProfile.callNumberPrestampSubfield, content));
-											} else if (indexingProfile.APIItemCallNumberSubfield.length() > 0 && tag.equalsIgnoreCase(indexingProfile.APIItemCallNumberSubfield)) {
+											} else if (!indexingProfile.APIItemCallNumberSubfield.isEmpty() && tag.equalsIgnoreCase(indexingProfile.APIItemCallNumberSubfield)) {
 												itemField.addSubfield(marcFactory.newSubfield(indexingProfile.callNumberSubfield, content));
-											} else if (indexingProfile.APIItemCallNumberCutterSubfield.length() > 0 && tag.equalsIgnoreCase(indexingProfile.APIItemCallNumberCutterSubfield)) {
+											} else if (!indexingProfile.APIItemCallNumberCutterSubfield.isEmpty() && tag.equalsIgnoreCase(indexingProfile.APIItemCallNumberCutterSubfield)) {
 												itemField.addSubfield(marcFactory.newSubfield(indexingProfile.callNumberCutterSubfield, content));
-											} else if (indexingProfile.APICallNumberPoststampSubfield.length() > 0 && tag.equalsIgnoreCase(indexingProfile.APICallNumberPoststampSubfield)) {
+											} else if (!indexingProfile.APICallNumberPoststampSubfield.isEmpty() && tag.equalsIgnoreCase(indexingProfile.APICallNumberPoststampSubfield)) {
 												itemField.addSubfield(marcFactory.newSubfield(indexingProfile.callNumberPoststampSubfield, content));
 											}
 											//else {
@@ -1673,11 +1677,11 @@ public class SierraExportAPIMain {
 										String content = curVarField.getString("content");
 										itemField.addSubfield(marcFactory.newSubfield(indexingProfile.callNumberSubfield, content));
 									}
-								} else if (indexingProfile.APIItemVolumeFieldTag.length() > 0 && fieldTag.equals(indexingProfile.APIItemVolumeFieldTag)) {
+								} else if (!indexingProfile.APIItemVolumeFieldTag.isEmpty() && fieldTag.equals(indexingProfile.APIItemVolumeFieldTag)) {
 									itemField.addSubfield(marcFactory.newSubfield(indexingProfile.volume, allFieldContent.toString()));
-								} else if (indexingProfile.APIItemURLFieldTag.length() > 0 && fieldTag.equals(indexingProfile.APIItemURLFieldTag)) {
+								} else if (!indexingProfile.APIItemURLFieldTag.isEmpty() && fieldTag.equals(indexingProfile.APIItemURLFieldTag)) {
 									itemField.addSubfield(marcFactory.newSubfield(indexingProfile.itemUrl, allFieldContent.toString()));
-								} else if (indexingProfile.APIItemEContentExportFieldTag.length() > 0 && fieldTag.equals(indexingProfile.APIItemEContentExportFieldTag)) {
+								} else if (!indexingProfile.APIItemEContentExportFieldTag.isEmpty() && fieldTag.equals(indexingProfile.APIItemEContentExportFieldTag)) {
 									itemField.addSubfield(marcFactory.newSubfield(indexingProfile.eContentDescriptor, allFieldContent.toString()));
 								}
 								//							else if (
@@ -2357,8 +2361,8 @@ public class SierraExportAPIMain {
 		}
 	}
 
-	private static StringBuffer     notes      = new StringBuffer();
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private static final StringBuffer     notes      = new StringBuffer();
+	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private static void addNoteToExportLog(String note) {
 		try {
