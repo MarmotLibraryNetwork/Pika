@@ -151,10 +151,10 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         //check cache for patron secret
         if (!$patron_ils_id || !$this->_getCachePatronSecret($patron_ils_id)) {
             $auth = $this->authenticatePatron($valid_barcode, $pin, $validatedViaSSO);
-            if($auth === null || !isset($auth['patron_id'])) {
+            if($auth === null || !isset($auth->PatronID)) {
                 return null;
             } else {
-                $patron_ils_id = $auth['patron_id'];
+                $patron_ils_id = $auth->PatronID;
             }
         }
 
@@ -622,7 +622,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         // Extract the timestamp and the timezone offset from the Microsoft date format
         if (preg_match('/^\/?Date\((\d+)([+-]\d{4})\)\/?$/', $microsoftDate, $matches)) {
             $timestamp = $matches[1] / 1000; // Convert milliseconds to seconds
-	          $timestamp = (int)$timestamp; // cast to an int in case of decimel
+            $timestamp = (int)$timestamp; // cast to an int in case of decimel
             $timezoneOffset = $matches[2];
 
             // Create a DateTime object from the timestamp
@@ -784,33 +784,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
 
         $request_url = $this->ws_url . '/patron/' . $patron->barcode . '/itemsout/all?excludeecontent=false';
-        if(!$patron_access_secret = $this->_getCachePatronSecret($patron->ilsUserId)) {
-            $patron_pin = $patron->getPassword();
-            $patron_access_secret = $this->authenticatePatron($patron->barcode, $patron_pin);
-        }
-        $hash = $this->_createHash('GET', $request_url, $patron_access_secret);
-
-        $headers = [
-            "PolarisDate: " . gmdate('r'),
-            "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
-            "Accept: application/json"
-        ];
-        $c_opts  = [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER     => $headers
-        ];
-
-        $c = new Curl();
-        $c->setOpts($c_opts);
-        $c->get($request_url);
-
-        if ($c->error || $c->httpStatusCode !== 200) {
-            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode], ['RequestURL' => $request_url, "Headers" => $headers]);
-            return null;
-        } elseif($error = $this->_isPapiError($c->response)) {
-            $this->_logPapiError($error);
-            return null;
-        }
+        $c = $this->_doPatronRequest($patron, 'GET', $request_url);
 
         $checkouts_response = $c->response->PatronItemsOutGetRows;
         if(count($checkouts_response) === 0) {
@@ -821,7 +795,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         foreach($checkouts_response as $c) {
             $checkout = []; // reset checkout
 
-            $bib_id = $c->BibID;
             $checkout['checkoutSource'] =  $this->accountProfile->recordSource;
             $checkout['recordId']       = $c->BibID;
             $checkout['id']             = $c->ItemID;
@@ -869,10 +842,11 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     {
         if(!$patron_access_secret = $this->_getCachePatronSecret($patron->ilsUserId)) {
             $patron_pin = $patron->getPassword();
-            $patron_access_secret = $this->authenticatePatron($patron->barcode, $patron_pin);
-            if(!isset($patron_access_secret)) {
+            $auth = $this->authenticatePatron($patron->barcode, $patron_pin);
+            if(!isset($auth)) {
                 return null;
             }
+            $patron_access_secret = $auth->AccessSecret;
         }
 
         $hash = $this->_createHash($method, $url, $patron_access_secret);
@@ -944,25 +918,26 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
 
         foreach ($c->response->PatronHoldRequestsGetRows as $hold) {
+            $pickup_branch_id = $this->polarisBranchIdToLocationId($hold->PickupBranchID);
             $h                       = [];
             $h['holdSource']         = $this->accountProfile->recordSource;
             $h['userId']             = $patron->id;
             $h['user']               = $patron->displayName;
             $h['cancelId']           = $hold->HoldRequestID;
             $h['cancelable']         = true;
-            $h['freezeable']         = $hold->CanSuspend === 1;
+            $h['freezeable']         = $hold->CanSuspend === true;
             $h['status']             = $hold->StatusDescription;
             $h['frozen']             = false;
             $h['location']           = $hold->PickupBranchName;
             $h['locationUpdateable'] = true;
             $h['position']           = $hold->QueuePosition . ' of ' . $hold->QueueTotal;
             $h['currentPickupName']  = $hold->PickupBranchName;
-            $h['currentPickupId']    = ''; // pickup branch id
+            $h['currentPickupId']    = $pickup_branch_id;
+            $h['automaticCancellation'] = isset($hold->notNeededAfterDate) ? strtotime($hold->notNeededAfterDate) : null;
 
             $h['create'] = '';
             if ($this->isMicrosoftDate($hold->ActivationDate)) {
                 $create = $this->microsoftDateToISO($hold->ActivationDate);
-
                 $h['create'] = strtotime($create);
             } else {
                 $h['create'] = strtotime($hold->ActivationDate);
@@ -1011,20 +986,22 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
 
         foreach ($c->response->PatronILLRequestsGetRows as $hold) {
+            $pickup_branch_id = $this->polarisBranchIdToLocationId($hold->PickupBranchID);
+
             $h                       = [];
+            //$h['freezeable']         = Not sure if ILL holds can be frozen, likely not
+            //$h['position']           = API doesn't provide this information for ILL holds
             $h['holdSource']         = $this->accountProfile->recordSource;
             $h['userId']             = $patron->id;
             $h['user']               = $patron->displayName;
             $h['cancelId']           = $hold->ILLRequestID;
-            $h['cancelable']         = true;
-            //$h['freezeable']         = Not sure if ILL holds can be frozen, likely not
+            $h['cancelable']         = true; // todo: can ill holds be canceled?
             $h['status']             = $hold->Status;
             $h['frozen']             = false;
             $h['location']           = $hold->PickupBranch;
             $h['locationUpdateable'] = true;
-            //$h['position']           = API doesn't provide this information for ILL holds
             $h['currentPickupName']  = $hold->PickupBranch;
-            $h['currentPickupId']    = ''; // todo: pickup branch id 
+            $h['currentPickupId']    = $pickup_branch_id; // todo: pickup branch id
 
             $h['create'] = '';
             if ($this->isMicrosoftDate($hold->ActivationDate)) {
@@ -1033,14 +1010,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             } else {
                 $h['create'] = strtotime($hold->ActivationDate);
             }
-
-            $h['expire'] = '';
-            if ($this->isMicrosoftDate($hold->ExpirationDate)) {
-                $expire = $this->microsoftDateToISO($hold->ExpirationDate);
-                $h['expire'] = strtotime($expire);
-            } else {
-                $h['expire'] = strtotime($hold->ExpirationDate);
-            }
+            // $h['expire'] = ''; // ILL request doesn't include expires date
 
             // load marc record
             $recordSourceAndId = new \SourceAndId($this->accountProfile->recordSource . ':' . $hold->BibRecordID);
@@ -1057,11 +1027,12 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             } else {
                 $title  = $this->cleanIllTitle($hold->Title);
                 $author = $this->cleanIllAuthor($hold->Author);
-
+                $cover_url = $this->getIllCover() ?? '';
                 $h['title']     = $title;
                 $h['sortTitle'] = $title;
                 $h['author']    = $author;
                 $h['format']    = $hold->Format;
+                $h['coverUrl']  = $cover_url;
             }
 
             if($hold->ILLStatusID === 10) {
@@ -1143,5 +1114,38 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     public function updatePatronInfo($patron, $canUpdateContactInfo)
     {
         // TODO: Implement updatePatronInfo() method.
+    }
+
+    public function getIllCover()
+    {
+        global $library;
+        $coverUrl = null;
+        // grab the theme for Inn reach cover
+        // start with the base theme and work up to local theme checking for image
+        if (!empty($library)) {
+            $themeParts = explode(',', $library->themeName);
+        } else {
+            $themeParts = explode(',', $this->configArray['Site']['theme']);
+        }
+        $themeParts = array_reverse($themeParts);
+        $path = $this->configArray['Site']['local'];
+        foreach ($themeParts as $themePart) {
+            $themePart = trim($themePart);
+            $imagePath = $path . '/interface/themes/' . $themePart . '/images/InnReachCover.png';
+            if (file_exists($imagePath)) {
+                $coverUrl = '/interface/themes/' . $themePart . '/images/InnReachCover.png';
+            }
+        }
+        return $coverUrl;
+    }
+
+    protected function polarisBranchIdToLocationId($branch_id)
+    {
+        $location = new Location();
+        $location->ilsLocationId = $branch_id;
+        if($location->find(true) && $location->N === 1 && isset($location->locationId)) {
+            return $location->locationId;
+        }
+        return null;
     }
 }
