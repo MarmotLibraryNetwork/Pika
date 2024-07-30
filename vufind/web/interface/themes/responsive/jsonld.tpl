@@ -1,7 +1,7 @@
-{strip}
-    {if $semanticData}
-	<script type="application/ld+json">
+{if $semanticData}
+	{strip}
+		<script type="application/ld+json">
 		{$semanticData}
-	</script>
-		{/if}
-{/strip}
+		</script>
+	{/strip}
+{/if}
