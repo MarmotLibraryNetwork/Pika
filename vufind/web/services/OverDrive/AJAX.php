@@ -272,11 +272,11 @@ class OverDrive_AJAX extends AJAXHandler {
 					}
 					if (!empty($_REQUEST['thawDate'])){
 						$thawDate = date('m-d-Y', $_REQUEST['thawDate']);
-						if ($thawDate){
-							$interface->assign('thawDate', $thawDate);
-						}
-
+					} else {
+						// Set a default selection of 7 days from now
+						$thawDate = date('m-d-Y', strtotime("+7 days"));
 					}
+					$interface->assign('thawDate', $thawDate);
 					$interface->assign('overDriveEmail', $user->overDriveEmail);
 					$interface->assign('promptForEmail', $promptForEmail);
 					$title       = translate('Freeze Hold');// language customization

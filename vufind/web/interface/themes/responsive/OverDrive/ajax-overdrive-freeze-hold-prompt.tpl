@@ -9,11 +9,11 @@
 
 	<div class="form-group">
 		<label for="thawDate">Select the date when you want the hold {translate text="thawed"}.</label>
-		<input type="text" name="thawDate" id="thawDate" class="form-control input-sm datePika"{if $thawDate} value="{$thawDate}"{/if}>
+		<input type="text" name="thawDate" id="thawDate" class="form-control required input-sm datePika" value="{if $thawDate}{$thawDate}{else}{/if}">
 	</div>
-		<p class="alert alert-info">
+		{*<p class="alert alert-info">
 			If a date is not selected, the hold will be {translate text="frozen"} until you {translate text="thaw"} it.
-		</p>
+		</p>*}
 	<script>
 {literal}
 $(function(){
