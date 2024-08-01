@@ -141,7 +141,7 @@ class OverDriveDriver4 {
 			$tokenData = $this->_connectToAPI($forceNewConnection);
 			if ($tokenData){
 				global $timer;
-				$timer->logTime("Connected to OverDrive API");
+				$timer->logTime('Connected to OverDrive API');
 
 				$websiteId = $this->getWebSiteId($user);
 				if (!$websiteId){
