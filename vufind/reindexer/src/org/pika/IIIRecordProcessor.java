@@ -348,7 +348,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		return false;
 	}
 
-	private HashMap<String, HoldabilityInformation> holdabilityCache = new HashMap<>();
+	private final HashMap<String, HoldabilityInformation> holdabilityCache = new HashMap<>();
 	@Override
 	protected HoldabilityInformation isItemHoldable(ItemInfo itemInfo, Scope curScope, HoldabilityInformation isHoldableUnscoped) {
 		//Check to make sure this isn't an unscoped record
@@ -385,7 +385,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		}
 	}
 
-	private HashMap<String, BookabilityInformation> bookabilityCache = new HashMap<>();
+	private final HashMap<String, BookabilityInformation> bookabilityCache = new HashMap<>();
 	@Override
 	protected BookabilityInformation isItemBookable(ItemInfo itemInfo, Scope curScope, BookabilityInformation isBookableUnscoped) {
 		String locationCode = itemInfo.getLocationCode();

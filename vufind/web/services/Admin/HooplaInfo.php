@@ -91,10 +91,34 @@ class Admin_HooplaInfo extends Admin_Admin {
 
 
 			if (!empty($_REQUEST['hooplaId'])){
+
+				if (!empty($_REQUEST['hooplaLibraryId']) && UserAccount::userHasRole('opacAdmin')){
+					$_REQUEST['hooplaLibraryId'] = trim($_REQUEST['hooplaLibraryId']);
+					if (ctype_digit($_REQUEST['hooplaLibraryId'])){
+						$hooplaLibraryId = $_REQUEST['hooplaLibraryId'];
+					}
+				}
+
 				$_REQUEST['hooplaId'] = trim(str_replace(['MWT', 'mwt'], '', $_REQUEST['hooplaId']));
 				$response             = $driver->getHooplaRecordMetaData($hooplaLibraryId, $_REQUEST['hooplaId']);
 				$hooplaData           = json_encode($response, JSON_PRETTY_PRINT);
-				$interface->assign('hooplaRecordData', $hooplaData);
+				if ($success = (!empty($response->titles[0]->id) && $_REQUEST['hooplaId'] == $response->titles[0]->id)){
+					$message = 'Matching Id found.';
+				} else {
+					$message = 'Matching ID not found.';
+				}
+				$interface->assign([
+					'hooplaRecordData' => $hooplaData,
+					'hooplaLibraryId'  => $hooplaLibraryId,
+					'message'          => $message,
+					'success'          => $success,
+				]);
+
+				$response = $driver->getHooplaTitleInfo($hooplaLibraryId, $_REQUEST['hooplaId']);
+				$contentInfo = json_encode($response, JSON_PRETTY_PRINT);
+				$interface->assign([
+					'hooplaContentInfo' => $contentInfo,
+				]);
 			}
 		}
 

@@ -66,6 +66,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 				}
 			}
 			// When an advantage account is shared, we will take over the pikalibraryIds so that 1 is the shared advantage account for the first overall account, 2 for the second advantage account for the 2nd shared
+			// As in shared by the consortium
 			String sharedAdvantageAccountKey = PikaConfigIni.getIniValue("OverDrive", "sharedAdvantageAccountKey");
 			if (sharedAdvantageAccountKey != null && !sharedAdvantageAccountKey.isEmpty()) {
 				String[] tempSharedAdvantageAccountKey = sharedAdvantageAccountKey.split(",");

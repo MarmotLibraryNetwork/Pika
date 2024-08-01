@@ -135,7 +135,7 @@ class SacramentoRecordProcessor extends SierraRecordProcessor {
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		//For arlington and sacramento, eContent will always have no items on the bib record.
 		List<DataField> items = MarcUtil.getDataFields(record, itemTag);
-		if (items.size() > 0) {
+		if (!items.isEmpty()) {
 			return unsuppressedEcontentRecords;
 		} else {
 			//No items so we can continue on.

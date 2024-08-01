@@ -25,8 +25,8 @@ import java.util.HashSet;
  * Time: 2:56 PM
  */
 public class HoldabilityInformation {
-	private boolean isHoldable;
-	private HashSet<Long> holdablePTypes;
+	private final boolean       isHoldable;
+	private final HashSet<Long> holdablePTypes;
 
 	public HoldabilityInformation(boolean holdable, HashSet<Long> holdablePTypes) {
 		this.isHoldable = holdable;

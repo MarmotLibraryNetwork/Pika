@@ -40,15 +40,16 @@ class DatabaseAuthentication implements Authentication {
 	}
 
 	private function login($username, $password){
-		global $configArray;
-		// todo: implement pin/password
+		// Assumes barcode/pin scheme
 		if (empty($username) || empty($password)) {
 			$user = new PEAR_Error('authentication_error_blank');
 		} else {
-			$user               = new User();
-			$user->cat_username = $username;
-			$user->setPassword($password);
+			$user          = new User();
+			$user->barcode = $username;
+			//$user->setPassword($password);
 			if (!$user->find(true)) {
+				$user = new PEAR_Error('authentication_error_invalid');
+			} elseif ($user->getPassword() !== $password){
 				$user = new PEAR_Error('authentication_error_invalid');
 			}
 		}

@@ -20,6 +20,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -112,8 +113,8 @@ class ExtractOverDriveInfo {
 	private PreparedStatement markGroupedWorkForBibAsChangedStmt;
 	private boolean           hadTimeoutsFromOverDrive;
 
-	private CRC32   checksumCalculator = new CRC32();
-	private boolean errorsWhileLoadingProducts;
+	private final CRC32   checksumCalculator = new CRC32();
+	private       boolean errorsWhileLoadingProducts;
 
 	private final Set<String> productsToMarkForReindexing = new HashSet<>();
 
@@ -196,9 +197,9 @@ class ExtractOverDriveInfo {
 			for (String tempAccountId : tempAccountIds) {
 				String tempId         = tempAccountId.trim();
 				String tempProductKey = tempProductKeys[i++].trim();
-				if (tempId.length() > 0) {
+				if (!tempId.isEmpty()) {
 					accountIds.add(tempId);
-					if (tempProductKey.length() > 0) {
+					if (!tempProductKey.isEmpty()) {
 						overDriveProductsKeys.put(tempId, tempProductKey);
 					}
 				}
@@ -282,7 +283,7 @@ class ExtractOverDriveInfo {
 			forceMetaDataUpdate = PikaConfigIni.getBooleanIniValue("OverDrive", "forceMetaDataUpdate");
 
 			try {
-				if (clientSecret == null || clientKey == null || clientSecret.length() == 0 || clientKey.length() == 0 || accountIds.isEmpty()) {
+				if (clientSecret == null || clientKey == null || clientSecret.isEmpty() || clientKey.isEmpty() || accountIds.isEmpty()) {
 					logEntry.addNote("Did not find correct configuration in config.ini, not loading overdrive titles");
 				} else {
 					if (individualIdToProcess == null) {
@@ -423,7 +424,7 @@ class ExtractOverDriveInfo {
 
 			int batchSize = 25;
 			int batchNum  = 1;
-			while (productsToUpdate.size() > 0) {
+			while (!productsToUpdate.isEmpty()) {
 				availabilityChangesMadeThisRound = 0;
 				availabilitiesCheckedThisRound   = 0;
 				ArrayList<MetaAvailUpdateData> productsToUpdateBatch = new ArrayList<>();
@@ -585,7 +586,7 @@ class ExtractOverDriveInfo {
 
 		//Delete any products that no longer exist, but only if we aren't only loading changes and also
 		//should not update if we had any timeouts loading products since those products would have been skipped.
-		if (lastUpdateTimeParam.length() == 0 && !hadTimeoutsFromOverDrive) {
+		if (lastUpdateTimeParam.isEmpty() && !hadTimeoutsFromOverDrive) {
 			for (String overDriveId : databaseProducts.keySet()) {
 				OverDriveDBInfo overDriveDBInfo = databaseProducts.get(overDriveId);
 				if (!overDriveDBInfo.isDeleted()) {
@@ -922,7 +923,7 @@ class ExtractOverDriveInfo {
 	 * @throws SocketTimeoutException
 	 */
 	private void loadProductsFromUrl(String libraryName, String productsUrl, long libraryId) throws JSONException, SocketTimeoutException {
-		if (lastUpdateTimeParam.length() > 0) {
+		if (!lastUpdateTimeParam.isEmpty()) {
 			// lastUpdateTimeParam is set when doing a partial extraction and is not set when doing a full Reload
 			productsUrl += productsUrl.contains("?") ? "&" + lastUpdateTimeParam : "?" + lastUpdateTimeParam;
 		}
@@ -942,7 +943,7 @@ class ExtractOverDriveInfo {
 			results.addNote("Loading OverDrive information for " + numProducts + " products for " + libraryName);
 
 			results.saveResults();
-			long batchSize = 300;
+			int batchSize = 300;
 			for (int i = 0; i < numProducts; i += batchSize) {
 
 				//Just search for the specific product
@@ -1070,7 +1071,7 @@ class ExtractOverDriveInfo {
 	}
 
 	private void updateOverDriveMetaDataBatch(List<MetaAvailUpdateData> productsToUpdateBatch) throws SocketTimeoutException {
-		if (productsToUpdateBatch.size() == 0) {
+		if (productsToUpdateBatch.isEmpty()) {
 			return;
 		}
 		//Check to see if we need to load metadata
@@ -1080,7 +1081,7 @@ class ExtractOverDriveInfo {
 		ArrayList<MetaAvailUpdateData> productsToUpdateMetadata = new ArrayList<>();
 		for (MetaAvailUpdateData curProduct : productsToUpdateBatch) {
 			if (!curProduct.metadataUpdated) {
-				if (productsToUpdateMetadata.size() >= 1) {
+				if (!productsToUpdateMetadata.isEmpty()) {
 					url.append(",");
 				}
 				url.append(curProduct.overDriveId);
@@ -1088,7 +1089,7 @@ class ExtractOverDriveInfo {
 			}
 		}
 
-		if (productsToUpdateMetadata.size() == 0) {
+		if (productsToUpdateMetadata.isEmpty()) {
 			return;
 		}
 
@@ -1397,7 +1398,7 @@ class ExtractOverDriveInfo {
 				String rawData = metaDataRS.getString("rawData");
 				metaData.setId(metaDataRS.getLong("id"));
 				metaData.setChecksum(metaDataRS.getLong("checksum"));
-				metaData.setHasRawData(rawData != null && rawData.length() > 0);
+				metaData.setHasRawData(rawData != null && !rawData.isEmpty());
 			}
 		} catch (SQLException e) {
 			logger.warn("Error loading product metadata ", e);
@@ -1584,15 +1585,15 @@ class ExtractOverDriveInfo {
 	 * @param libraryId The library id for the advantage or shared collection
 	 */
 	private boolean deleteOverDriveAvailability(long productId, long libraryId) {
-		try {
-			//No availability for this product
-			ResultSet existingAvailabilityRS  = checkForExistingAvailability(productId, libraryId);
-			boolean   hasExistingAvailability = existingAvailabilityRS.next();
+		//No availability for this product
+		try (ResultSet existingAvailabilityRS = checkForExistingAvailability(productId, libraryId)) {
+			boolean hasExistingAvailability = existingAvailabilityRS.next();
 			if (hasExistingAvailability) {
 				deleteAvailabilityStmt.setLong(1, existingAvailabilityRS.getLong("id"));
 				deleteAvailabilityStmt.executeUpdate();
 				return true;
 			}
+
 		} catch (Exception e) {
 			logger.error("Error deleting an availability entry", e);
 		}
@@ -1856,52 +1857,54 @@ class ExtractOverDriveInfo {
 	 *                         shared and advantage collections for the same title)
 	 * @param availabilityType The type of availability these copied have for this collection according to the API
 	 * @param databaseId       The id for this title in the pika overdrive_api_products table
-	 * @return Whether or not an availability entry was updated
-	 * @throws SQLException
+	 * @return Whether an availability entry was updated
 	 */
 	private boolean updateAvailability(long libraryId, boolean available, int copiesOwned, int copiesAvailable, int numberOfHolds, String availabilityType, long databaseId) throws SQLException {
 		//Get existing availability
-		ResultSet existingAvailabilityRS  = checkForExistingAvailability(databaseId, libraryId);
-		boolean   hasExistingAvailability = existingAvailabilityRS.next();
-		if (hasExistingAvailability) {
-			//Check to see if the availability has changed
-			if (available != existingAvailabilityRS.getBoolean("available") ||
-					copiesOwned != existingAvailabilityRS.getInt("copiesOwned") ||
-					copiesAvailable != existingAvailabilityRS.getInt("copiesAvailable") ||
-					numberOfHolds != existingAvailabilityRS.getInt("numberOfHolds") ||
-					!availabilityType.equals(existingAvailabilityRS.getString("availabilityType"))
-			) {
-				long existingId = existingAvailabilityRS.getLong("id");
-				updateAvailabilityStmt.setBoolean(1, available);
-				updateAvailabilityStmt.setInt(2, copiesOwned);
-				updateAvailabilityStmt.setInt(3, copiesAvailable);
-				updateAvailabilityStmt.setInt(4, numberOfHolds);
-				updateAvailabilityStmt.setString(5, availabilityType);
-				updateAvailabilityStmt.setLong(6, existingId);
-				updateAvailabilityStmt.executeUpdate();
+		try (ResultSet existingAvailabilityRS = checkForExistingAvailability(databaseId, libraryId)) {
+			boolean hasExistingAvailability = existingAvailabilityRS.next();
+			if (hasExistingAvailability) {
+				//Check to see if the availability has changed
+				if (available != existingAvailabilityRS.getBoolean("available") ||
+								copiesOwned != existingAvailabilityRS.getInt("copiesOwned") ||
+								copiesAvailable != existingAvailabilityRS.getInt("copiesAvailable") ||
+								numberOfHolds != existingAvailabilityRS.getInt("numberOfHolds") ||
+								!availabilityType.equals(existingAvailabilityRS.getString("availabilityType"))
+				) {
+					long existingId = existingAvailabilityRS.getLong("id");
+					updateAvailabilityStmt.setBoolean(1, available);
+					updateAvailabilityStmt.setInt(2, copiesOwned);
+					updateAvailabilityStmt.setInt(3, copiesAvailable);
+					updateAvailabilityStmt.setInt(4, numberOfHolds);
+					updateAvailabilityStmt.setString(5, availabilityType);
+					updateAvailabilityStmt.setLong(6, existingId);
+					updateAvailabilityStmt.executeUpdate();
+					availabilityChangesTracking(libraryId);
+					availabilityChangesMadeThisRound++;
+					availabilityChangesTotal++;
+					return true;
+				}
+			} else {
+				addAvailabilityStmt.setLong(1, databaseId);
+				addAvailabilityStmt.setLong(2, libraryId);
+				addAvailabilityStmt.setBoolean(3, available);
+				addAvailabilityStmt.setInt(4, copiesOwned);
+				addAvailabilityStmt.setInt(5, copiesAvailable);
+				addAvailabilityStmt.setInt(6, numberOfHolds);
+				addAvailabilityStmt.setString(7, availabilityType);
+				addAvailabilityStmt.executeUpdate();
 				availabilityChangesTracking(libraryId);
 				availabilityChangesMadeThisRound++;
 				availabilityChangesTotal++;
 				return true;
 			}
-		} else {
-			addAvailabilityStmt.setLong(1, databaseId);
-			addAvailabilityStmt.setLong(2, libraryId);
-			addAvailabilityStmt.setBoolean(3, available);
-			addAvailabilityStmt.setInt(4, copiesOwned);
-			addAvailabilityStmt.setInt(5, copiesAvailable);
-			addAvailabilityStmt.setInt(6, numberOfHolds);
-			addAvailabilityStmt.setString(7, availabilityType);
-			addAvailabilityStmt.executeUpdate();
-			availabilityChangesTracking(libraryId);
-			availabilityChangesMadeThisRound++;
-			availabilityChangesTotal++;
-			return true;
+		} catch (SQLException e){
+			logger.error("Error checking existing availability, databaseId:" + databaseId + " libraryId:" + libraryId, e);
 		}
 		return false;
 	}
 
-	private HashMap<Long, Long> availabilityChangesByLibrary = new HashMap<>();
+	private final HashMap<Long, Long> availabilityChangesByLibrary = new HashMap<>();
 
 	/**
 	 * Track the number of availability changes made per collection
@@ -2013,7 +2016,7 @@ class ExtractOverDriveInfo {
 			conn.setConnectTimeout(30000);
 			conn.setDoOutput(true);
 
-			try (OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream(), "UTF8")) {
+			try (OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream(), StandardCharsets.UTF_8)) {
 				wr.write("grant_type=client_credentials");
 				wr.flush();
 			}

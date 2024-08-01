@@ -280,7 +280,7 @@ public class FormatDetermination {
 						case "floppydisk":
 							// Mis-determined game formats of econtent
 						case "playstation":
-						case "xbox":
+						//case "xbox":
 						case "xbox360":
 							econtentItem.setFormat("Online Materials");
 							econtentItem.setFormatCategory("Other");
@@ -495,7 +495,7 @@ public class FormatDetermination {
 
 		// check for music recordings quickly so we can figure out if it is music
 		// for category (need to do here since checking what is on the Compact
-		// Disc/Phonograph, etc is difficult).
+		// Disc/Phonograph, etc. is difficult).
 		if (leaderBit != null) {
 			if (leaderBit.equals('j')) {
 				printFormats.add("MusicRecording");
@@ -514,11 +514,11 @@ public class FormatDetermination {
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
 		getGameFormatFrom753(record, printFormats);
 		getFormatFrom008(record, printFormats);
-		if (printFormats.size() == 0) {
+		if (printFormats.isEmpty()) {
 			//Only get from fixed field information if we don't have anything yet since the cataloging of
 			//fixed fields is not kept up to date reliably.  #D-87
 			getFormatFrom007(record, printFormats);
-			if (printFormats.size() == 0) {
+			if (printFormats.isEmpty()) {
 				ControlField          fixedField   = (ControlField) record.getVariableField("008");
 				getFormatFromLeader(printFormats, leader, fixedField);
 				if (printFormats.size() > 1){
@@ -537,7 +537,7 @@ public class FormatDetermination {
 //			accompanyingMaterialCheck(leaderBit, printFormats);
 //		}
 
-		if (printFormats.size() == 0){
+		if (printFormats.isEmpty()){
 //			if (fullReindex) {
 //				logger.warn("Did not get any formats for record " + recordInfo.getFullIdentifier() + ", assuming it is a book ");
 //			}
@@ -560,7 +560,7 @@ public class FormatDetermination {
 		return printFormats;
 	}
 
-	private HashSet<String> formatsToFilter = new HashSet<>();
+	private final HashSet<String> formatsToFilter = new HashSet<>();
 
 	private void getFormatFromDigitalFileCharacteristics(Record record, LinkedHashSet<String> printFormats) {
 		Set<String> fields = MarcUtil.getFieldList(record, "347b");
@@ -590,6 +590,15 @@ public class FormatDetermination {
 						printFormats.add("BookWithCDROM");
 						break;
 					}
+//				case 'm' :
+//					// Computer file : classes of electronic resources: computer software (including programs, games, fonts)
+//					// Games is of concern here
+//					if (printFormats.contains("XboxOne")){
+//						if (printFormats.contains("SoundDisc")) {
+//							printFormats.remove("SoundDisc");
+//						}
+//					}
+
 					/*if (printFormats.contains("DVD")){
 						printFormats.clear();
 						printFormats.add("BookWithDVD");
@@ -623,10 +632,11 @@ public class FormatDetermination {
 							if (mainPhysical.contains("pages") || mainPhysical.contains("p.") || mainPhysical.contains("pgs")) {
 								printFormats.clear();
 								printFormats.add("BookWithDVD");
-								break;
+								//break;
 							}
 						}
-						printFormats.add("DVD");
+						//printFormats.add("DVD"); This appears to be an unneeded determination.
+						// If it's needed an explanation needs to provided here
 					} else if (accompanying.contains("book") && !accompanying.contains("booklet") && !accompanying.contains("ebook") && !accompanying.contains("e-book")) {
 						if (printFormats.contains("SoundDisc")) {
 							printFormats.clear();
@@ -881,6 +891,10 @@ public class FormatDetermination {
 		if (printFormats.contains("PlayStation") && printFormats.contains("PlayStation3")){
 			printFormats.remove("PlayStation");
 		}
+		if (printFormats.contains("GraphicNovel") && printFormats.contains("PlayStation3")){
+			printFormats.remove("GraphicNovel");
+		}
+
 		if (printFormats.contains("XboxSeriesX") && printFormats.contains("XboxOne")){
 			printFormats.remove("XboxSeriesX");  // a lot of xbox one games will say mention the XboxSeriesX in system requirements as well
 		}
@@ -908,6 +922,8 @@ public class FormatDetermination {
 			printFormats.remove("Blu-ray");
 			printFormats.remove("4KUltraBlu-Ray");
 			printFormats.remove("PhysicalObject");
+			printFormats.remove("VideoDisc");
+			printFormats.remove("SoundDisc"); // example: xbox one disc with sound disc "1 computer optical disc : sound, color ; 4 3/4 in. + 1 sound disc (digital ; 4 3/4 in.)"
 		}
 
 		// Physical Object Things
@@ -1051,12 +1067,12 @@ public class FormatDetermination {
 		for (DataField edition : editions) {
 			if (edition != null) {
 				if (edition.getSubfield('a') != null) {
-					String editionData = edition.getSubfield('a').getData().toLowerCase();
+					String editionData = edition.getSubfield('a').getData().trim().toLowerCase();
 					if (editionData.contains("large type") || editionData.contains("large print")) {
 						result.add("LargePrint");
 //					} else if (editionData.contains("young reader")) {
 //						result.add("Young Reader");
-					} else if (editionData.matches(".*[^a-z]go reader.*")) {
+					} else if (editionData.equals("go reader") || editionData.matches(".*[^a-z]go reader.*")) {
 						result.add("GoReader");
 					}	 else if (editionData.contains("wonderbook")) {
 						result.add("WonderBook");
@@ -1066,7 +1082,7 @@ public class FormatDetermination {
 						result.add("IllustratedEdition");
 //			  } else if (find4KUltraBluRayPhrases(editionData)) {
 //					result.add("4KUltraBlu-Ray");
-						// not sure this is a good idea yet. see D-2432
+						// not sure if this is a good idea yet. see D-2432
 					} else {
 						String gameFormat = getGameFormatFromValue(editionData);
 						if (gameFormat != null) {
@@ -1126,7 +1142,7 @@ public class FormatDetermination {
 							result.add("PhysicalObject");
 						}
 						//Since this is fairly generic, only use it if we have no other formats yet
-						if (result.size() == 0 && subfield.getCode() == 'f' && physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")) {
+						if (result.isEmpty() && subfield.getCode() == 'f' && physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")) {
 							result.add("Book");
 						}
 					}
@@ -1253,22 +1269,41 @@ public class FormatDetermination {
 	private String getGameFormatFromValue(String value) {
 		if (value.contains("kinect sensor")) {
 			return "Kinect";
+			//TODO: Go through playstation checks first to help avoid playstation games
+			// that mention use of "Xbox Live"
+		} else if (value.contains("system requirements: xbox series x")){
+			// for case that includes "optimized for xbox series x" but we know is in fact the 'xbox series x'
+			//TODO; what to do with phrase "System requirements: : Xbox Series X or Xbox One consoles"
+			return "XboxSeriesX";
 		} else if (value.contains("xbox series x") && !value.contains("compatible") && !value.contains("optimized for xbox series x")) {
 			//xbox one games can contain the phrase "optimized for Xbox Series X"
 			return "XboxSeriesX";
 		} else if (value.contains("xbox one") && !value.contains("compatible")) {
 			return "XboxOne";
-		} else if (value.contains("xbox") && !value.contains("compatible")) {
+		} else if ((value.contains("xbox 360") || value.contains("xbox360")) && !value.contains("compatible")) {
+			if (logger.isInfoEnabled() && value.contains("xbox live")){
+				logger.info("Potential xbox game format string contains 'xbox live': " + value);
+			}
 			return "Xbox360";
 		} else if (value.contains("playstation vita") /*&& !value.contains("compatible")*/) {
 			return "PlayStationVita";
-		} else if ((value.contains("playstation 5") || value.matches(".*[^a-z]ps5.*")) && isNotBluRayPlayerDescription(value)) {
+		} else if ((value.contains("playstation 5") ||value.contains("playstation5") || value.equals("ps5") || value.matches(".*[^a-z]ps5.*")) && isNotBluRayPlayerDescription(value)) {
+			// If the entire value is "PS5", good reason to call this a playstation
+			if (value.contains("xbox live")){
+				logger.info("PS string mentioning xbox live :" + value);
+			}
 			return "PlayStation5";
-		} else if ((value.contains("playstation 4") || value.matches(".*[^a-z]ps4.*")) && isNotBluRayPlayerDescription(value)) {
+		} else if ((value.contains("playstation 4") ||value.contains("playstation4") || value.equals("ps4") || value.matches(".*[^a-z]ps4.*")) && isNotBluRayPlayerDescription(value)) {
+			if (value.contains("xbox live")){
+				logger.info("PS string mentioning xbox live :" + value);
+			}
 			return "PlayStation4";
-		} else if ((value.contains("playstation 3") || value.matches(".*[^a-z]ps3.*")) && isNotBluRayPlayerDescription(value)) {
+		} else if ((value.contains("playstation 3") ||value.contains("playstation3") || value.equals("ps3") || value.matches(".*[^a-z]ps3.*")) && isNotBluRayPlayerDescription(value)) {
+			if (value.contains("xbox live")){
+				logger.info("PS string mentioning xbox live :" + value);
+			}
 			return "PlayStation3";
-		} else if (value.contains("playstation") && isNotBluRayPlayerDescription(value)) {
+		} else if (value.replaceAll("playstation (plus|network)", "").contains("playstation") && isNotBluRayPlayerDescription(value)) {
 			return "PlayStation";
 		} else if (value.contains("wii u")) {
 			return "WiiU";
@@ -1294,9 +1329,14 @@ public class FormatDetermination {
 	 *  that a play station is compatible with Blu-ray players.
 	 *
 	 * @param value text of a subfield
-	 * @return
+	 * @return whether string is describing being Blu-ray compatible
 	 */
-	private static boolean isNotBluRayPlayerDescription(String value) {
+	private boolean isNotBluRayPlayerDescription(String value) {
+		if (logger.isInfoEnabled() && value.contains("compatible")){
+			logger.info("Blu-ray description test string w/ 'compatible' : " + value);
+			//  keying off only "compatible" is likely a false positive
+			//  since descriptions may be referring to other things.
+		}
 		return !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player") && !value.contains("blu-ray disc computer");
 	}
 

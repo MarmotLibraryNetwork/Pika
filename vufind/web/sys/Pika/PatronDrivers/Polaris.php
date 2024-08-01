@@ -35,16 +35,19 @@
 namespace Pika\PatronDrivers;
 
 use DateInterval;
+use MarcRecord;
 use Pika\Cache;
 use Pika\Logger;
 use Curl\Curl;
 use DateTime;
 use DateTimeZone;
 use User;
+use Location;
+use RecordDriverFactory;
 
 //use Memcache;
 
-class Polaris implements \DriverInterface
+class Polaris extends PatronDriverInterface implements \DriverInterface
 {
     /**
      * $api_access_key Polaris web service access key, maps to Catalog->clientKey
@@ -136,23 +139,93 @@ class Polaris implements \DriverInterface
             return null;
         }
 
-        $patron_ils_id = $this->getPatronIlsId($barcode);
-
-        // check cache for patron secret
-        if (!$patron_ils_id || !$this->_getCachePatronSecret($patron_ils_id)) {
-            [$patron_ils_id, $patron_secret] = $this->authenticatePatron($barcode, $pin, $validatedViaSSO);
+        // barcode might actually be username so well "validate" the patron first to make sure we have a good
+        // barcode.
+        $r = $this->validatePatron($barcode, $pin);
+        $valid_barcode = $r->PatronBarcode;
+        if($valid_barcode === null) {
+            return null;
         }
 
-        $patron = $this->getPatron($patron_ils_id, $barcode);
+        $patron_ils_id = $this->getPatronIlsId($valid_barcode);
+        //check cache for patron secret
+        if (!$patron_ils_id || !$this->_getCachePatronSecret($patron_ils_id)) {
+            $auth = $this->authenticatePatron($valid_barcode, $pin, $validatedViaSSO);
+            if($auth === null || !isset($auth->PatronID)) {
+                return null;
+            } else {
+                $patron_ils_id = $auth->PatronID;
+            }
+        }
+
+        $patron = $this->getPatron($patron_ils_id, $valid_barcode);
 
         // check for password update
+        $patron_pw = $patron->getPassword();
+        if(!isset($patron_pw) || $patron_pw !== $pin) {
+            $patron->updatePassword($pin);
+        }
         return $patron;
     }
 
-    protected function authenticatePatron($barcode, $pin, $validatedViaSSO = false)
+    /**
+     * Check if a patron exists in the Polaris database.
+     *
+     * This method will return a real barcode in case the patron is using a username. NOTE: When creating the header
+     * auth has the users password must be used in the auth hash.
+     *
+     * @param $barcode
+     * @param $pin
+     * @return null|JSON
+     * @see https://documentation.iii.com/polaris/PAPI/current/PAPIService/PAPIServicePatronValidate.htm#papiservicepatronvalidate_1221164799_1220680
+     */
+    protected function validatePatron($barcode, $pin)
+    {
+        $request_url = $this->ws_url . '/patron/' . $barcode;
+        $hash = $this->_createHash('GET', $request_url, $pin);
+
+        $headers = [
+            "PolarisDate: " . gmdate('r'),
+            "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
+            "Accept: application/json"
+        ];
+
+        $c_opts  = [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => $headers
+        ];
+
+        $c = new Curl();
+        $c->setOpts($c_opts);
+        $c->get($request_url);
+
+        if ($c->error || $c->httpStatusCode !== 200) {
+            $this->logger->error(
+                'Curl error: ' . $c->errorMessage,
+                ['http_code' => $c->httpStatusCode],
+                ['RequestURL' => $request_url, 'RequestHeaders' => $headers]
+            );
+            return null;
+        } elseif($error = $this->_isPapiError($c->response)) {
+            $this->_logPapiError($error);
+            return null;
+        }
+
+        return $c->response;
+    }
+
+    /**
+     * Authenticate a patron and return the patron id and patron access secret key.
+     *
+     * @param string $barcode
+     * @param string $pin
+     * @param bool $validatedViaSSO
+     * @return object|null
+     */
+    protected function authenticatePatron(string $barcode, string $pin, bool $validatedViaSSO = false): ?object
     {
         $request_url  = $this->ws_url . '/authenticator/patron';
-        $request_body = json_encode(['Barcode' => $barcode, 'Password' => $pin], JSON_THROW_ON_ERROR);
+        $request_body = json_encode(['Barcode' => $barcode, 'Password' => $pin]);
 
         $hash = $this->_createHash('POST', $request_url);
 
@@ -173,15 +246,20 @@ class Polaris implements \DriverInterface
         $c->post($request_url, $request_body);
 
         if ($c->error || $c->httpStatusCode !== 200) {
-            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode]);
+            $this->logger->error(
+                'Curl error: ' . $c->errorMessage,
+                ['http_code' => $c->httpStatusCode],
+                ['RequestURL' => $request_url, 'RequestHeaders' => $headers, 'RequestBody' => $request_body]
+            );
             return null;
         } elseif($error = $this->_isPapiError($c->response)) {
             $this->_logPapiError($error);
             return null;
         }
-        //$this->patron_access_secret = $c->response->AccessSecret;
+
         $this->_setCachePatronSecret($c->response->PatronID, $c->response->AccessSecret);
-        return ['patron_id' => $c->response->PatronID, 'patron_access_secret' => $c->response->AccessSecret];
+
+        return $c->response;
     }
 
     /**
@@ -202,6 +280,8 @@ class Polaris implements \DriverInterface
 
         $user = new User();
         $user->ilsUserId = $ils_id;
+        $user->source = 'ils';
+
         if (!$user->find(true) || $user->N === 0) {
             // if there's no patron in database
             $create_user = true;
@@ -234,7 +314,7 @@ class Polaris implements \DriverInterface
         $c->get($request_url);
 
         if ($c->error || $c->httpStatusCode !== 200) {
-            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode]);
+            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode], ['RequestURL' => $request_url, "Headers" => $headers]);
             return null;
         } elseif($error = $this->_isPapiError($c->response)) {
             $this->_logPapiError($error);
@@ -262,11 +342,36 @@ class Polaris implements \DriverInterface
             }
         }
 
-        // Patron information
-        if ($user->patronType !== $patron_response->PatronCodeID || $user->homeLibraryId !== $patron_response->PatronOrgID) {
-            $user->patronType = $patron_response->PatronCodeID;
-            $user->homeLibraryId = $patron_response->PatronOrgID;
-            if(!$create_user) {
+        // Patron location
+        // set location first then reference parentId to set library
+        $location = new Location();
+        $location->ilsLocationId = $patron_response->PatronOrgID;
+        if($location->find(true)) {
+            if ($user->homeLocationId !== $location->locationId) {
+                $user->homeLocationId = $location->locationId;
+                if (!$create_user) {
+                    $user->update();
+                }
+            }
+        } else {
+            $this->logger->error('Can not determine users home location. Defaulting to 1');
+            $user->homeLocationId = 1;
+            if (!$create_user) {
+                $user->update();
+            }
+        }
+
+        // Patron Library
+        // todo: call to /REST/public/{Version}/{LangID}/{AppID}/{OrgID}/organizations/all (cache result for a looooong time)
+        // todo: match OrganizationID to ilsLocationId
+        // todo: get ParentOrganizationID from match
+        // todo: use library->scope = ParentOrganizationID to find correct library.
+        $user->homeLibraryId = 2;
+
+        // Patron code
+        if ($user->patronType !== $patron_response->PatronCodeID) {
+            $user->patronType    = $patron_response->PatronCodeID;
+            if (!$create_user) {
                 $user->update();
             }
         }
@@ -340,20 +445,31 @@ class Polaris implements \DriverInterface
                 break;
         }
 
-        // Hold counts
+        // Checkouts and holds count
         // Polaris returns number of ILS AND number of ILL holds in counts.
-        //$user->numHoldsIls = $patron_response->HoldRequestsCurrentCount;
-        //$user->numHoldsAvailableIls = $patron_response->HoldRequestsHeldCount;
-				
-				
+        $user->numHoldsIls = $patron_response->HoldRequestsCurrentCount;
+        $user->numHoldsAvailableIls = $patron_response->HoldRequestsHeldCount;
+        $user->numHoldsRequestedIls = $patron_response->HoldRequestsTotalCount;
+        $user->numCheckedOutIls = $patron_response->ItemsOutCount;
+
+        // Fines
+        $user->finesVal = $patron_response->ChargeBalance;
+
         // Notes
-        $user->webNote = $patron_response->PatronNotes;
+        // todo: do we need this?
+        // $user->webNote = $patron_response->PatronNotes;
 
         $this->_setCachePatronObject($user);
 
         return $user;
     }
 
+    /**
+     * Get a patrons ILS patron id
+     *
+     * @param $barcode
+     * @return int|false
+     */
     protected function getPatronIlsId($barcode)
     {
         $patron = new User();
@@ -375,7 +491,7 @@ class Polaris implements \DriverInterface
     protected function _setCachePatronSecret($patron_ils_id, $patron_secret): bool
     {
         $patron_secret_cache_key = 'patronilsid'.$patron_ils_id.'secret';
-        $expires = new DateInterval('PT23H');
+        $expires = 60 * 60 * 23;
         return $this->cache->set($patron_secret_cache_key, $patron_secret, $expires);
     }
 
@@ -407,7 +523,7 @@ class Polaris implements \DriverInterface
     protected function _setCachePatronObject(User $patron)
     {
         $patron_object_cache_key = 'patronilsid'.$patron->ilsUserId.'object';
-        $expires = 10 * 60;
+        $expires = 30;
         return $this->cache->set($patron_object_cache_key, $patron, $expires);
     }
 
@@ -428,6 +544,18 @@ class Polaris implements \DriverInterface
             $this->logger->info('Patron object not found in cache.');
             return false;
         }
+    }
+
+    /**
+     * Remove a patron object from cache
+     *
+     * @param $patron_ils_id
+     * @return bool
+     */
+    protected function _deleteCachePatronObject($patron_ils_id)
+    {
+        $patron_object_cache_key = 'patronilsid'.$patron_ils_id.'object';
+        return $this->cache->delete($patron_object_cache_key);
     }
 
     protected function _deleteCachePatronObjectByPatronId($patron_ils_id)
@@ -494,6 +622,7 @@ class Polaris implements \DriverInterface
         // Extract the timestamp and the timezone offset from the Microsoft date format
         if (preg_match('/^\/?Date\((\d+)([+-]\d{4})\)\/?$/', $microsoftDate, $matches)) {
             $timestamp = $matches[1] / 1000; // Convert milliseconds to seconds
+            $timestamp = (int)$timestamp; // cast to an int in case of decimel
             $timezoneOffset = $matches[2];
 
             // Create a DateTime object from the timestamp
@@ -518,6 +647,116 @@ class Polaris implements \DriverInterface
         }
         return false;
     }
+
+    /**
+     * @param $item Checkout item
+     * @return bool
+     */
+    protected function isIllCheckout($item): bool
+    {
+        return $item->FormatDescription === "Interlibrary Loan";
+    }
+
+    /**
+     * Get the format from Polaris format ID
+     *
+     * @param int $material_format_id
+     * @return string
+     * @see https://documentation.iii.com/polaris/PAPI/current/PAPIService/PAPIServiceOverview.htm#papiserviceoverview_3170935956_1214294
+     */
+    protected function getMaterialFormatFromId(int $material_format_id): string
+    {
+        $media_types = [
+            1 => "Book",
+            2 => "Printed or Manuscript Music",
+            3 => "Cartographic Material",
+            4 => "Visual Materials",
+            5 => "Sound Recording",
+            6 => "Electronic Resources",
+            7 => "Archival Mixed Materials",
+            8 => "Serial",
+            9 => "Printed Music",
+            10 => "Manuscript Music",
+            11 => "Printed Cartographic Material",
+            12 => "Manuscript Cartographic Material",
+            13 => "Map",
+            14 => "Globe",
+            15 => "Manuscript Material",
+            16 => "Projected Medium",
+            17 => "Motion Picture",
+            18 => "Video Recording",
+            19 => "Two Dimensional Non-projected Graphic",
+            20 => "Three Dimensional Object",
+            21 => "Musical Sound Recording",
+            22 => "Nonmusical Sound Recording",
+            23 => "Kit",
+            24 => "Periodical",
+            25 => "Newspaper",
+            26 => "Microform",
+            27 => "Large Print",
+            28 => "Braille",
+            29 => "DVD",
+            30 => "Videotape",
+            31 => "Music CD",
+            32 => "eBook",
+            33 => "Audio Book",
+            38 => "Digital Collection",
+            39 => "Abstract",
+            40 => "Blu-ray Disc",
+            41 => "Eaudiobook",
+            42 => "Book + CD",
+            43 => "Book + Cassette",
+            44 => "Video Game",
+            45 => "Blu-ray + DVD",
+            46 => "Book + DVD",
+            47 => "Atlas",
+            48 => "Streaming Music",
+            49 => "Streaming Video",
+            50 => "Emagazine",
+            51 => "Vinyl",
+            52 => "Audio Book on CD",
+            53 => "Audio Book on Cassette"
+        ];
+
+        if(array_key_exists($material_format_id, $media_types)) {
+            return $media_types[$material_format_id];
+        }
+        return 'Unknown';
+    }
+
+    /**
+     * Clean an InReach author
+     *
+     * @param $author
+     * @return string If error, original string is returned. Cleaned string otherwise.
+     */
+    protected function cleanIllAuthor($author): string
+    {
+        // Use a regular expression to remove ", author" with optional spaces after the comma and optional
+        // ending period
+        $cleaned_author = preg_replace("/,\s*author\.?$/", "", $author);
+        return $cleaned_author ?? $author;
+    }
+
+    /**
+     * Clean an InReach title
+     *
+     * @param string $title
+     * @return string
+     */
+    protected function cleanIllTitle(string $title): string
+    {
+        if (preg_match('/ILL-(.*?)([:\/])/', $title, $matches)) {
+            return trim($matches[1]);
+        } else {
+            // If neither ":" nor "/" is found, return the entire string after "ILL-"
+            if (preg_match('/ILL-(.*)/', $title, $matches)) {
+                return trim($matches[1]);
+            }
+        }
+        return $title; // Return full title if ILL- isn't found
+    }
+
     /**
      * @inheritDoc
      */
@@ -538,10 +777,116 @@ class Polaris implements \DriverInterface
     /**
      * @inheritDoc
      */
-    public function getMyCheckouts($patron)
+    public function getMyCheckouts($patron, $linkedAccount = false): ?array
     {
-        return [];
-        // TODO: Implement getMyCheckouts() method.
+        if(!$linkedAccount) {
+            // do something
+        }
+
+        $request_url = $this->ws_url . '/patron/' . $patron->barcode . '/itemsout/all?excludeecontent=false';
+        $c = $this->_doPatronRequest($patron, 'GET', $request_url);
+
+        $checkouts_response = $c->response->PatronItemsOutGetRows;
+        if(count($checkouts_response) === 0) {
+            return [];
+        }
+
+        $checkouts = [];
+        foreach($checkouts_response as $c) {
+            $checkout = []; // reset checkout
+
+            $checkout['checkoutSource'] =  $this->accountProfile->recordSource;
+            $checkout['recordId']       = $c->BibID;
+            $checkout['id']             = $c->ItemID;
+            $checkout['dueDate']        = strtotime($c->DueDate);
+            $checkout['checkoutDate']   = strtotime($c->CheckOutDate);
+            $checkout['renewCount']     = $c->RenewalCount;
+            $checkout['barcode']        = $c->Barcode ?? '';
+            $checkout['itemid']         = $c->ItemID;
+            $checkout['renewIndicator'] = $c->ItemID;
+            $checkout['renewMessage']   = '';
+            $checkout['canrenew']       = $c->CanItemBeRenewed;
+
+            $recordDriver = new MarcRecord($this->accountProfile->recordSource . ':' . $c->BibID);
+            if ($recordDriver->isValid()) {
+                $checkout['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
+                $checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
+                $checkout['ratingData']    = $recordDriver->getRatingData();
+                $checkout['format']        = $recordDriver->getPrimaryFormat();
+                $checkout['author']        = $recordDriver->getPrimaryAuthor();
+                $checkout['title']         = $recordDriver->getTitle();
+                $checkout['title_sort']    = $recordDriver->getSortableTitle();
+                $checkout['link']          = $recordDriver->getLinkUrl();
+            } elseif($this->isIllCheckout($c) && (!$recordDriver->isValid() || null === $recordDriver->isValid())) {
+                // handle ILL checkouts
+                // Polaris creates marc records in the system for ILL checkouts.
+                // Only do special handling if marc record isn't available.
+                //$checkout['coverUrl']      = ''; // todo: inn-reach cover
+                $checkout['format']        = $this->getMaterialFormatFromId($c->FormatID);
+                $checkout['author']        = $this->cleanIllAuthor($c->Author);
+                $checkout['title']         = $this->cleanIllTitle($c->Title);
+                $checkout['title_sort']    = $checkout['title'];
+            } else {
+                $checkout['coverUrl']      = '';
+                $checkout['groupedWorkId'] = '';
+                $checkout['format']        = 'Unknown';
+                $checkout['author']        = '';
+            }
+
+            $checkouts[] = $checkout;
+        }
+        return $checkouts;
+    }
+
+    protected function _doPatronRequest(User $patron, string $method = 'GET', $url, array $body = [], $extra_headers = [])
+    {
+        if(!$patron_access_secret = $this->_getCachePatronSecret($patron->ilsUserId)) {
+            $patron_pin = $patron->getPassword();
+            $auth = $this->authenticatePatron($patron->barcode, $patron_pin);
+            if(!isset($auth)) {
+                return null;
+            }
+            $patron_access_secret = $auth->AccessSecret;
+        }
+
+        $hash = $this->_createHash($method, $url, $patron_access_secret);
+
+        $headers = [
+            "PolarisDate: " . gmdate('r'),
+            "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
+            "Accept: application/json"
+        ];
+
+        foreach ($extra_headers as $header => $value) {
+            $headers[] = $header . ": " . $value;
+        }
+
+        $c_opts  = [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => $headers
+        ];
+
+        $c = new Curl();
+        $c->setOpts($c_opts);
+
+        switch ($method) {
+            case 'GET':
+                $c->get($url);
+                break;
+            case 'POST':
+                $c->post($url, $body);
+                break;
+        }
+
+        if ($c->error || $c->httpStatusCode !== 200) {
+            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode], ['RequestURL' => $url, "Headers" => $headers]);
+            return null;
+        } elseif($error = $this->_isPapiError($c->response)) {
+            $this->_logPapiError($error);
+            return null;
+        }
+
+        return $c;
     }
 
     /**
@@ -557,8 +902,147 @@ class Polaris implements \DriverInterface
      */
     public function getMyHolds($patron)
     {
-        return [];
-        // TODO: Implement getMyHolds() method.
+
+        $availableHolds   = [];
+        $unavailableHolds = [];
+        // ILS HOLDS //////////////////////////////////////
+        /**
+         * @var $request_url
+         * @see: https://documentation.iii.com/polaris/PAPI/current/PAPIService/PAPIServicePatronHoldRequestsGet.htm#papiservicepatronholdrequestsget_314867296_1219168
+         */
+        $request_url = $this->ws_url . '/patron/' . $patron->barcode . '/holdrequests/all';
+        $c = $this->_doPatronRequest($patron, 'GET', $request_url);
+
+        if ($c === null || count($c->response->PatronHoldRequestsGetRows) === 0) {
+            return ['available' => $availableHolds, 'unavailable' => $unavailableHolds];
+        }
+
+        foreach ($c->response->PatronHoldRequestsGetRows as $hold) {
+            $pickup_branch_id = $this->polarisBranchIdToLocationId($hold->PickupBranchID);
+            $h                       = [];
+            $h['holdSource']         = $this->accountProfile->recordSource;
+            $h['userId']             = $patron->id;
+            $h['user']               = $patron->displayName;
+            $h['cancelId']           = $hold->HoldRequestID;
+            $h['cancelable']         = true;
+            $h['freezeable']         = $hold->CanSuspend === true;
+            $h['status']             = $hold->StatusDescription;
+            $h['frozen']             = false;
+            $h['location']           = $hold->PickupBranchName;
+            $h['locationUpdateable'] = true;
+            $h['position']           = $hold->QueuePosition . ' of ' . $hold->QueueTotal;
+            $h['currentPickupName']  = $hold->PickupBranchName;
+            $h['currentPickupId']    = $pickup_branch_id;
+            $h['automaticCancellation'] = isset($hold->notNeededAfterDate) ? strtotime($hold->notNeededAfterDate) : null;
+
+            $h['create'] = '';
+            if ($this->isMicrosoftDate($hold->ActivationDate)) {
+                $create = $this->microsoftDateToISO($hold->ActivationDate);
+                $h['create'] = strtotime($create);
+            } else {
+                $h['create'] = strtotime($hold->ActivationDate);
+            }
+
+            $h['expire'] = '';
+            if ($this->isMicrosoftDate($hold->ExpirationDate)) {
+                $expire = $this->microsoftDateToISO($hold->ExpirationDate);
+                $h['expire'] = strtotime($expire);
+            } else {
+                $h['expire'] = strtotime($hold->ExpirationDate);
+            }
+
+            // load marc record
+            $recordSourceAndId = new \SourceAndId($this->accountProfile->recordSource . ':' . $hold->BibID);
+            $record            = RecordDriverFactory::initRecordDriverById($recordSourceAndId);
+            if ($record->isValid()) {
+                $h['id']        = $record->getUniqueID();
+                $h['shortId']   = $record->getShortId();
+                $h['title']     = $record->getTitle();
+                $h['sortTitle'] = $record->getSortableTitle();
+                $h['author']    = $record->getPrimaryAuthor();
+                $h['format']    = $record->getFormat();
+                $h['link']      = $record->getRecordUrl();
+                $h['coverUrl']  = $record->getBookcoverUrl('medium');
+            } else {
+                // todo: fall back to API
+                $h['title']     = '';
+                $h['sortTitle'] = '';
+                $h['author']    = '';
+                $h['format']    = '';
+            }
+            if($hold->StatusID === 6) {
+                $availableHolds[] = $h;
+            } else {
+                $unavailableHolds[] = $h;
+            }
+        } // end foreach
+
+        // ILL HOLDS //////////////////////////////////////
+        $request_url = $this->ws_url . '/patron/' . $patron->barcode . '/illrequests/all';
+        $c = $this->_doPatronRequest($patron, 'GET', $request_url);
+
+        if ($c === null || count($c->response->PatronILLRequestsGetRows) === 0) {
+            return ['available' => $availableHolds, 'unavailable' => $unavailableHolds];
+        }
+
+        foreach ($c->response->PatronILLRequestsGetRows as $hold) {
+            $pickup_branch_id = $this->polarisBranchIdToLocationId($hold->PickupBranchID);
+
+            $h                       = [];
+            //$h['freezeable']         = Not sure if ILL holds can be frozen, likely not
+            //$h['position']           = API doesn't provide this information for ILL holds
+            $h['holdSource']         = $this->accountProfile->recordSource;
+            $h['userId']             = $patron->id;
+            $h['user']               = $patron->displayName;
+            $h['cancelId']           = $hold->ILLRequestID;
+            $h['cancelable']         = true; // todo: can ill holds be canceled?
+            $h['status']             = $hold->Status;
+            $h['frozen']             = false;
+            $h['location']           = $hold->PickupBranch;
+            $h['locationUpdateable'] = true;
+            $h['currentPickupName']  = $hold->PickupBranch;
+            $h['currentPickupId']    = $pickup_branch_id; // todo: pickup branch id
+
+            $h['create'] = '';
+            if ($this->isMicrosoftDate($hold->ActivationDate)) {
+                $create = $this->microsoftDateToISO($hold->ActivationDate);
+                $h['create'] = strtotime($create);
+            } else {
+                $h['create'] = strtotime($hold->ActivationDate);
+            }
+            // $h['expire'] = ''; // ILL request doesn't include expires date
+
+            // load marc record
+            $recordSourceAndId = new \SourceAndId($this->accountProfile->recordSource . ':' . $hold->BibRecordID);
+            $record            = RecordDriverFactory::initRecordDriverById($recordSourceAndId);
+            if ($record->isValid()) {
+                $h['id']        = $record->getUniqueID();
+                $h['shortId']   = $record->getShortId();
+                $h['title']     = $record->getTitle();
+                $h['sortTitle'] = $record->getSortableTitle();
+                $h['author']    = $record->getPrimaryAuthor();
+                $h['format']    = $record->getFormat();
+                $h['link']      = $record->getRecordUrl();
+                $h['coverUrl']  = $record->getBookcoverUrl('medium'); // todo: Prospector cover?
+            } else {
+                $title  = $this->cleanIllTitle($hold->Title);
+                $author = $this->cleanIllAuthor($hold->Author);
+                $cover_url = $this->getIllCover() ?? '';
+                $h['title']     = $title;
+                $h['sortTitle'] = $title;
+                $h['author']    = $author;
+                $h['format']    = $hold->Format;
+                $h['coverUrl']  = $cover_url;
+            }
+
+            if($hold->ILLStatusID === 10) {
+                $availableHolds[] = $h;
+            } else {
+                $unavailableHolds[] = $h;
+            }
+        } // end foreach
+
+        return ['available' => $availableHolds, 'unavailable' => $unavailableHolds];
     }
 
     /**
@@ -600,10 +1084,7 @@ class Polaris implements \DriverInterface
         // TODO: Implement changeHoldPickupLocation() method.
     }
 
-    protected function _doRequest($method = 'GET', $url, $params = [], $extraHeaders = null)
-    {
-        $date = gmdate('r');
-    }
+
 
     /**
      * Create a hash for API authentication.
@@ -628,5 +1109,43 @@ class Polaris implements \DriverInterface
         $hash = hash_hmac('sha1', $s, $this->configArray['Catalog']['clientKey'], true);
         // Encode the hash in base64 and return it
         return base64_encode($hash);
+    }
+
+    public function updatePatronInfo($patron, $canUpdateContactInfo)
+    {
+        // TODO: Implement updatePatronInfo() method.
+    }
+
+    public function getIllCover()
+    {
+        global $library;
+        $coverUrl = null;
+        // grab the theme for Inn reach cover
+        // start with the base theme and work up to local theme checking for image
+        if (!empty($library)) {
+            $themeParts = explode(',', $library->themeName);
+        } else {
+            $themeParts = explode(',', $this->configArray['Site']['theme']);
+        }
+        $themeParts = array_reverse($themeParts);
+        $path = $this->configArray['Site']['local'];
+        foreach ($themeParts as $themePart) {
+            $themePart = trim($themePart);
+            $imagePath = $path . '/interface/themes/' . $themePart . '/images/InnReachCover.png';
+            if (file_exists($imagePath)) {
+                $coverUrl = '/interface/themes/' . $themePart . '/images/InnReachCover.png';
+            }
+        }
+        return $coverUrl;
+    }
+
+    protected function polarisBranchIdToLocationId($branch_id)
+    {
+        $location = new Location();
+        $location->ilsLocationId = $branch_id;
+        if($location->find(true) && $location->N === 1 && isset($location->locationId)) {
+            return $location->locationId;
+        }
+        return null;
     }
 }

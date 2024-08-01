@@ -970,7 +970,7 @@ public class RecordGrouperMain {
 			pikaConn.prepareStatement("TRUNCATE grouped_work").executeUpdate();
 			pikaConn.prepareStatement("TRUNCATE grouped_work_primary_identifiers").executeUpdate();
 		} catch (Exception e) {
-			System.out.println("Error clearing database " + e.toString());
+			System.out.println("Error clearing database " + e);
 			System.exit(1);
 		}
 	}
@@ -1101,6 +1101,7 @@ public class RecordGrouperMain {
 						int    numRecordsRead      = 0;
 						try (FileInputStream marcFileStream = new FileInputStream(curBibFile)) {
 							MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, marcEncoding);
+							logger.info("Grouping file " + curBibFile.getAbsolutePath());
 							while (catalogReader.hasNext()) {
 								recordId = ""; // reset the record Id in case of exceptions
 								try {

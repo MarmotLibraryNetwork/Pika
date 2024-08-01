@@ -99,13 +99,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private int numCharsToCreateFolderFrom;
 	private boolean createFolderFromLeadingCharacters;
 
-	private HashMap<String, Integer> numberOfHoldsByIdentifier = new HashMap<>();
+	private final HashMap<String, Integer> numberOfHoldsByIdentifier = new HashMap<>();
 
 	HashMap<String, TranslationMap> translationMaps = new HashMap<>();
 	//The indexing profile based translation maps
-	private ArrayList<TimeToReshelve> timesToReshelve = new ArrayList<>();
+	private final ArrayList<TimeToReshelve> timesToReshelve = new ArrayList<>();
 
 	private FormatDetermination formatDetermination;
+
+	protected char isItemHoldableSubfield;
 
 	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, logger, fullReindex);
@@ -394,7 +396,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			//Since print formats are loaded at the record level, do it after we have loaded items
 			loadPrintFormatInformation(recordInfo, record);
 
-			//Do updates based on the overall bib (shared regardless of scoping)
+			//Do the updates based on the overall bib (shared regardless of scoping)
 			String primaryFormat = null;
 			for (RecordInfo ilsRecord : allRelatedRecords) {
 				primaryFormat = ilsRecord.getPrimaryFormat();
@@ -677,7 +679,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	protected void loadDateAdded(RecordIdentifier recordIdentifier, DataField itemField, ItemInfo itemInfo) {
 		String dateAddedStr = getItemSubfieldData(dateCreatedSubfield, itemField);
-		if (dateAddedStr != null && dateAddedStr.length() > 0) {
+		if (dateAddedStr != null && !dateAddedStr.isEmpty()) {
 			try {
 				if (dateAddedFormatter == null){
 					dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
@@ -705,6 +707,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		ItemInfo itemInfo = new ItemInfo();
 		//Load base information from the Marc Record
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
+		if (itemInfo.getItemIdentifier() == null && logger.isInfoEnabled() ){
+			logger.info("Found item with out identifier info " + identifier);
+		}
 
 		String itemStatus   = getItemStatus(itemField, identifier);
 		String itemLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
@@ -715,9 +720,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (itemStatus == null || itemStatus.isEmpty()) {
 			logger.warn("Item contained no status value for item " + itemInfo.getItemIdentifier() + " for location " + itemLocation + " in record " + identifier);
 		}
+		itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
+		// Process Collection ahead of shelf location, so that the collection can be used for Polaris shelf location
 
 		setShelfLocationCode(itemField, itemInfo, identifier);
 		itemInfo.setShelfLocation(getShelfLocationForItem(itemInfo, itemField, identifier));
+
+		setItemIsHoldableCode(itemField, itemInfo, identifier);
 
 		loadDateAdded(identifier, itemField, itemInfo);
 		getDueDate(itemField, itemInfo);
@@ -732,7 +741,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		loadItemCallNumber(record, itemField, itemInfo);
 
-		itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
 
 		if (lastCheckInFormatter != null) {
 			String lastCheckInDate = getItemSubfieldData(lastCheckInSubfield, itemField);
@@ -789,6 +797,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}else {
 			itemInfo.setShelfLocationCode(getItemSubfieldData(locationSubfieldIndicator, itemField));
 		}
+	}
+
+	protected void setItemIsHoldableCode(DataField itemField, ItemInfo itemInfo, RecordIdentifier recordIdentifier) {
+		// Do not by default
 	}
 
 	void scopeItems(RecordInfo recordInfo, GroupedWorkSolr groupedWork, Record record){
@@ -1061,7 +1073,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 		}
 		if (callNumber != null) {
-			if (volume != null && volume.length() > 0 && !callNumber.toString().endsWith(volume)){
+			if (volume != null && !volume.isEmpty() && !callNumber.toString().endsWith(volume)){
 				addTrailingSpace(callNumber);
 				callNumber.append(volume);
 			}
@@ -1089,41 +1101,39 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return true;
 	}
 
-	private HashMap<String, Boolean> iTypesThatHaveHoldabilityChecked = new HashMap<>();
-	private HashMap<String, Boolean> locationsThatHaveHoldabilityChecked = new HashMap<>();
-	private HashMap<String, Boolean> statusesThatHaveHoldabilityChecked = new HashMap<>();
+	private final HashMap<String, Boolean> iTypesThatHaveHoldabilityChecked    = new HashMap<>();
+	private final HashMap<String, Boolean> locationsThatHaveHoldabilityChecked = new HashMap<>();
+	private final HashMap<String, Boolean> statusesThatHaveHoldabilityChecked  = new HashMap<>();
 
-	private HoldabilityInformation isItemHoldableUnscoped(ItemInfo itemInfo){
+	protected HoldabilityInformation isItemHoldableUnscoped(ItemInfo itemInfo){
 		String itemItypeCode =  itemInfo.getITypeCode();
-		if (nonHoldableITypes != null && itemItypeCode != null && itemItypeCode.length() > 0){
+		if (nonHoldableITypes != null && itemItypeCode != null && !itemItypeCode.isEmpty()){
 			if (!iTypesThatHaveHoldabilityChecked.containsKey(itemItypeCode)){
 				iTypesThatHaveHoldabilityChecked.put(itemItypeCode, !nonHoldableITypes.matcher(itemItypeCode).matches());
 			}
 			if (!iTypesThatHaveHoldabilityChecked.get(itemItypeCode)){
-				return new HoldabilityInformation(false, new HashSet<Long>());
+				return new HoldabilityInformation(false, new HashSet<>());
 			}
 		}
 		String itemLocationCode =  itemInfo.getLocationCode();
-		if (nonHoldableLocations != null && itemLocationCode != null && itemLocationCode.length() > 0){
+		if (nonHoldableLocations != null && itemLocationCode != null && !itemLocationCode.isEmpty()){
 			if (!locationsThatHaveHoldabilityChecked.containsKey(itemLocationCode)){
 				locationsThatHaveHoldabilityChecked.put(itemLocationCode, !nonHoldableLocations.matcher(itemLocationCode).matches());
 			}
 			if (!locationsThatHaveHoldabilityChecked.get(itemLocationCode)){
-				return new HoldabilityInformation(false, new HashSet<Long>());
+				return new HoldabilityInformation(false, new HashSet<>());
 			}
 		}
 		String itemStatusCode = itemInfo.getStatusCode();
-		if (nonHoldableStatuses != null && itemStatusCode != null && itemStatusCode.length() > 0){
+		if (nonHoldableStatuses != null && itemStatusCode != null && !itemStatusCode.isEmpty()){
 			if (!statusesThatHaveHoldabilityChecked.containsKey(itemStatusCode)){
 				statusesThatHaveHoldabilityChecked.put(itemStatusCode, !nonHoldableStatuses.matcher(itemStatusCode).matches());
 			}
 			if (!statusesThatHaveHoldabilityChecked.get(itemStatusCode)){
-
-
-				return new HoldabilityInformation(false, new HashSet<Long>());
+				return new HoldabilityInformation(false, new HashSet<>());
 			}
 		}
-		return new HoldabilityInformation(true, new HashSet<Long>());
+		return new HoldabilityInformation(true, new HashSet<>());
 	}
 
 	protected HoldabilityInformation isItemHoldable(ItemInfo itemInfo, Scope curScope, HoldabilityInformation isHoldableUnscoped){
@@ -1313,7 +1323,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	protected char getSubfieldIndicatorFromConfig(ResultSet indexingProfileRS, String subfieldName) throws SQLException{
 		String subfieldString = indexingProfileRS.getString(subfieldName);
 		char subfield = ' ';
-		if (!indexingProfileRS.wasNull() && subfieldString.length() > 0)  {
+		if (!indexingProfileRS.wasNull() && !subfieldString.isEmpty())  {
 			subfield = subfieldString.charAt(0);
 		}
 		return subfield;

@@ -430,7 +430,7 @@ abstract class MarcRecordProcessor {
 
 	void loadEditions(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords) {
 		Set<String> editions = MarcUtil.getFieldList(record, "250a");
-		if (editions.size() > 0) {
+		if (!editions.isEmpty()) {
 			String edition = editions.iterator().next();
 			for (RecordInfo ilsRecord : ilsRecords) {
 				ilsRecord.setEdition(edition);
@@ -449,7 +449,7 @@ abstract class MarcRecordProcessor {
 
 	void loadPhysicalDescription(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords) {
 		Set<String> physicalDescriptions = MarcUtil.getFieldList(record, "300abcefg:530abcd");
-		if (physicalDescriptions.size() > 0){
+		if (!physicalDescriptions.isEmpty()){
 			String physicalDescription = physicalDescriptions.iterator().next();
 			for(RecordInfo ilsRecord : ilsRecords){
 				ilsRecord.setPhysicalDescription(physicalDescription);
@@ -536,14 +536,14 @@ abstract class MarcRecordProcessor {
 						targetAudiences.add(Character.toString(targetAudienceChar));
 					}
 				}
-				if (targetAudiences.size() == 0 && ohOhEightField != null
+				if (targetAudiences.isEmpty() && ohOhEightField != null
 						&& ohOhEightField.getData().length() > 22) {
 					targetAudienceChar = Character.toUpperCase(ohOhEightField.getData()
 							.charAt(22));
 					if (targetAudienceChar != ' ') {
 						targetAudiences.add(Character.toString(targetAudienceChar));
 					}
-				} else if (targetAudiences.size() == 0) {
+				} else if (targetAudiences.isEmpty()) {
 					targetAudiences.add("Unknown");
 				}
 			} else {
@@ -555,7 +555,7 @@ abstract class MarcRecordProcessor {
 			targetAudiences.add("Unknown");
 		}
 
-		if (targetAudiences.size() == 0) {
+		if (targetAudiences.isEmpty()) {
 			targetAudiences.add("Unknown");
 		}
 
@@ -585,13 +585,13 @@ abstract class MarcRecordProcessor {
 						literaryForms.add(Character.toString(literaryFormChar));
 					}
 				}
-				if (literaryForms.size() == 0 && ohOhEightField != null && ohOhEightField.getData().length() > 33) {
+				if (literaryForms.isEmpty() && ohOhEightField != null && ohOhEightField.getData().length() > 33) {
 					literaryFormChar = Character.toUpperCase(ohOhEightField.getData().charAt(33));
 					if (literaryFormChar != ' ') {
 						literaryForms.add(Character.toString(literaryFormChar));
 					}
 				}
-				if (literaryForms.size() == 0) {
+				if (literaryForms.isEmpty()) {
 					// Adding space character string will get translated below
 					// by the catchall translation: * = Not Coded
 					literaryForms.add(" ");
