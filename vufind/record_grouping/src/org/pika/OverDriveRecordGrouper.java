@@ -30,7 +30,7 @@ import java.util.Locale;
  */
 public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 
-	private Connection eContentConnection;
+	private final Connection eContentConnection;
 	PreparedStatement overDriveSubjectsStmt;
 
 	OverDriveRecordGrouper(Connection pikaConn, Connection eContentConnection, Logger logger) {
@@ -112,6 +112,10 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 		String groupingLanguage = "";
 			if (productLanguageCode != null) {
 				groupingLanguage = translationMaps.get("iso639-1TOiso639-2B").translateValue(productLanguageCode, primaryIdentifier);
+				if (groupingLanguage == null){
+					// So far this is the case when the overdrive language code is "xx", which isn't an ISO-639 code
+					groupingLanguage = "";
+				}
 			}
 
 			//Replace & with and for better matching

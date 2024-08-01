@@ -247,8 +247,8 @@ public class RecordGrouperMain {
 				ResultSet resultSet = preparedStatement.executeQuery();
 		) {
 			while (resultSet.next()) {
-				String           source           = resultSet.getString(1);
-				String           sourceId         = resultSet.getString(2);
+				String source   = resultSet.getString(1);
+				String sourceId = resultSet.getString(2);
 				if (!processSingleRecord(new RecordIdentifier(source, sourceId))){
 					success = false;
 				}
@@ -731,7 +731,7 @@ public class RecordGrouperMain {
 
 	private static void removeDeletedRecords(String source, String dataDirPath) {
 //		final boolean debugSierraExtract = logger.isDebugEnabled() && source.equals("ils");
-		if (marcRecordIdsInDatabase.size() > 0) {
+		if (!marcRecordIdsInDatabase.isEmpty()) {
 			addNoteToGroupingLog("Deleting " + marcRecordIdsInDatabase.size() + " record ids for profile " + source + " from the ils_marc_checksums table since they are no longer in the export.");
 			for (String recordNumber : marcRecordIdsInDatabase.keySet()) {
 				//Remove the record from the ils_marc_checksums table
@@ -754,7 +754,7 @@ public class RecordGrouperMain {
 			marcRecordIdsInDatabase.clear();
 		}
 
-		if (primaryIdentifiersInDatabase.size() > 0) {
+		if (!primaryIdentifiersInDatabase.isEmpty()) {
 			addNoteToGroupingLog("Deleting " + primaryIdentifiersInDatabase.size() + " primary identifiers for profile " + source + " from the database since they are no longer in the export.");
 
 			for (String recordNumber : primaryIdentifiersInDatabase.keySet()) {
@@ -773,7 +773,7 @@ public class RecordGrouperMain {
 				}
 			}
 			TreeSet<String> theList = new TreeSet<>(primaryIdentifiersInDatabase.keySet());
-			if (theList.size() > 0) {
+			if (!theList.isEmpty()) {
 				writeExistingRecordsFile(theList, "remaining_primary_identifiers_to_be_deleted", dataDirPath);
 			}
 			primaryIdentifiersInDatabase.clear();
@@ -1423,7 +1423,7 @@ public class RecordGrouperMain {
 		}
 	}
 
-	private static Pattern specialCharPattern = Pattern.compile("\\p{C}");
+	private static final Pattern specialCharPattern = Pattern.compile("\\p{C}");
 
 	private static long getChecksum(Record marcRecord) {
 		CRC32  crc32              = new CRC32();
@@ -1439,8 +1439,8 @@ public class RecordGrouperMain {
 		return crc32.getValue();
 	}
 
-	private static StringBuffer     notes      = new StringBuffer();
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private static final StringBuffer     notes      = new StringBuffer();
+	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private static void addNoteToGroupingLog(String note) {
 		try {

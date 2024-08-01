@@ -137,24 +137,24 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 			try {
 				MessageDigest idGenerator = MessageDigest.getInstance("MD5");
 				String        fullTitle   = getAuthoritativeTitle();
-				if (fullTitle.equals("")) {
+				if (fullTitle == null || fullTitle.isEmpty()) {
 					idGenerator.update("--null--".getBytes());
 				} else {
 					idGenerator.update(fullTitle.getBytes());
 				}
 
 				String author = getAuthoritativeAuthor();
-				if (author.equals("")) {
+				if (author == null || author.isEmpty()) {
 					idGenerator.update("--null--".getBytes());
 				} else {
 					idGenerator.update(author.getBytes());
 				}
-				if (groupingCategory.equals("")) {
+				if (groupingCategory == null || groupingCategory.isEmpty()) {
 					idGenerator.update("--null--".getBytes());
 				} else {
 					idGenerator.update(groupingCategory.getBytes());
 				}
-				if (groupingLanguage.equals("")) {
+				if (groupingLanguage == null || groupingLanguage.isEmpty()) {
 					idGenerator.update("--null--".getBytes());
 				} else {
 					idGenerator.update(groupingLanguage.getBytes());
