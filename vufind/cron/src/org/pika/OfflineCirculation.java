@@ -161,7 +161,7 @@ public class OfflineCirculation implements IProcessHandler {
 				String pickUpLocation  = encode(holdsToProcessRS.getString("pickupLocation"));
 				String placeHoldUrlStr = baseUrl + "/API/UserAPI?method=placeHold&userId=" + userId + "&token=" + token + "&bibId=" + bibId;
 
-				if (itemId != null && itemId.length() > 0) {
+				if (itemId != null && !itemId.isEmpty()) {
 					placeHoldUrlStr += "&itemId=" + itemId;
 				}
 				if (pickUpLocation != null && !pickUpLocation.isEmpty()){
@@ -233,7 +233,7 @@ public class OfflineCirculation implements IProcessHandler {
 			try (ResultSet sierraVendorOpacUrlRS = sierraVendorOpacUrlStmt.executeQuery()) {
 				if (sierraVendorOpacUrlRS.next()) {
 					String apiVersion = PikaConfigIni.getIniValue("Catalog", "api_version");
-					if (apiVersion == null || apiVersion.length() == 0) {
+					if (apiVersion == null || apiVersion.isEmpty()) {
 						logger.error("Sierra API version must be set.");
 					} else {
 						baseApiUrl = sierraVendorOpacUrlRS.getString("vendorOpacUrl") + "/iii/sierra-api/v" + apiVersion;
