@@ -858,7 +858,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $hash = $this->_createHash($method, $url, $patron_access_secret);
 
         $headers = [
-            "PolarisDate: " . gmdate('c'),
+            "PolarisDate: " . gmdate('r'),
             "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
             "Accept: application/json"
         ];
@@ -1088,7 +1088,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                     "PatronID" => (int)$patron_id,
                     "BibID" => (int)$recordId,
                     "PickupOrgID" => (int)$polaris_pu_branch_id,
-                    "ActivationDate" => gmdate('c'),
+                    "ActivationDate" => gmdate('r'),
                     "WorkstationID" => (int)$this->configArray['Polaris']['workstationId'],
                     "UserID" => (int)$this->configArray['Polaris']['staffUserId'],
                     "RequestingOrgID" => (int)$requesting_location
