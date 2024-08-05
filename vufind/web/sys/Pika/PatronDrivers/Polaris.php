@@ -842,7 +842,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $checkouts;
     }
 
-    protected function _doPatronRequest(User $patron, string $method = 'GET', $url, array $body = [], $extra_headers = []): ?Curl
+    protected function _doPatronRequest(User $patron, string $method = 'GET', $url, $body = [], $extra_headers = []): ?Curl
     {
         $this->papiLastPatronErrorMessage = null;
 
@@ -858,7 +858,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $hash = $this->_createHash($method, $url, $patron_access_secret);
 
         $headers = [
-            "PolarisDate: " . gmdate('r'),
+            "PolarisDate: " . gmdate('c'),
             "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
             "Accept: application/json"
         ];
@@ -1085,20 +1085,22 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $request_url  = $this->ws_url . '/holdrequest';
 
         $request_body = [
-                    "PatronID" => $patron_id,
-                    "BibID" => $recordId,
-                    "PickupOrgID" => $polaris_pu_branch_id,
+                    "PatronID" => (int)$patron_id,
+                    "BibID" => (int)$recordId,
+                    "PickupOrgID" => (int)$polaris_pu_branch_id,
                     "ActivationDate" => gmdate('c'),
-                    "WorkstationID" => $this->configArray['Polaris']['workstationId'],
-                    "UserID" => $this->configArray['Polaris']['staffUserId'],
-                    "RequestingOrgID" => $requesting_location
+                    "WorkstationID" => (int)$this->configArray['Polaris']['workstationId'],
+                    "UserID" => (int)$this->configArray['Polaris']['staffUserId'],
+                    "RequestingOrgID" => (int)$requesting_location
         ];
+	      $body_json = json_encode($request_body);
+				$body_length = strlen($body_json);
         $extra_headers = [
             "Content-Type: application/json",
-            "Content-Length: " . strlen($request_body)
+            "Content-Length: " . $body_length
         ];
         // initial hold request
-        $r = $this->_doPatronRequest($patron, 'POST', $request_url, $request_body, $extra_headers);
+        $r = $this->_doPatronRequest($patron, 'POST', $request_url, $body_json, $extra_headers);
 
         // errors
         if ($r === null) { // api or curl error
