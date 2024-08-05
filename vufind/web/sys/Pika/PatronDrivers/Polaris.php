@@ -896,7 +896,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $c;
     }
 
-    protected function _doSystemRequest(User $patron, string $method = 'GET', $url, $body = [], $extra_headers = []): ?Curl
+    protected function _doSystemRequest(string $method = 'GET', string $url, $body = [], $extra_headers = []): ?Curl
     {
         $this->papiLastPatronErrorMessage = null;
 
@@ -926,6 +926,9 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                 break;
             case 'POST':
                 $c->post($url, $body);
+                break;
+            case 'PUT':
+                $c->put($url, $body);
                 break;
         }
 
@@ -1145,7 +1148,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             "Content-Length: " . $body_length
         ];
         // initial hold request
-        $c = $this->_doSystemRequest($patron, 'POST', $request_url, $body_json, $extra_headers);
+        $c = $this->_doSystemRequest('POST', $request_url, $body_json, $extra_headers);
         $r = $c->response;
         // errors
         if ($c === null) { // api or curl error
@@ -1190,7 +1193,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
     }
 
-    protected function _placeHoldRequestReply($patron, $hold_response, $requesting_org_id): ?Curl
+    protected function _placeHoldRequestReply($hold_response, $requesting_org_id): ?Curl
     {
         $status_to_state = [
             2 => 1,
@@ -1202,14 +1205,16 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $request_url  = $this->ws_url . '/holdrequest/' . $hold_response->RequestGUID;
 
         $request_body = [
-              "TxnGroupQualifier" => $hold_response->TxnGroupQualifier,
+              "TxnGroupQualifier" => $hold_response->TxnGroupQualifer,
               "TxnQualifier" => $hold_response->TxnQualifier,
               "RequestingOrgID" => $requesting_org_id,
-              "Answer" => "1", // always answer yes (1)
+              "Answer" => 1, // always answer yes (1)
               "State" => $status_to_state[$hold_response->StatusValue]
         ];
-
-        return $this->_doSystemRequest($patron, 'POST', $request_url, $request_body);
+        $extra_headers = [
+            "Content-Type: application/json",
+        ];
+        return $this->_doSystemRequest('PUT', $request_url, $request_body, $extra_headers);
     }
 
     /**
