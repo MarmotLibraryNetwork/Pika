@@ -191,6 +191,7 @@ public class GroupingFormatDetermination {
 							break;
 						case "musicrecording":
 						case "musicalscore":
+						case "musiccd":
 							groupingCategories.add("music");
 							break;
 						case "movies":
