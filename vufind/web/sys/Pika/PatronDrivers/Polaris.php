@@ -896,6 +896,51 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $c;
     }
 
+    protected function _doSystemRequest(User $patron, string $method = 'GET', $url, $body = [], $extra_headers = []): ?Curl
+    {
+        $this->papiLastPatronErrorMessage = null;
+
+        $hash = $this->_createHash($method, $url);
+
+        $headers = [
+            "PolarisDate: " . gmdate('r'),
+            "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
+            "Accept: application/json"
+        ];
+
+        foreach ($extra_headers as $header) {
+            $headers[] = $header;
+        }
+
+        $c_opts  = [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => $headers
+        ];
+
+        $c = new Curl();
+        $c->setOpts($c_opts);
+
+        switch ($method) {
+            case 'GET':
+                $c->get($url);
+                break;
+            case 'POST':
+                $c->post($url, $body);
+                break;
+        }
+
+        if ($c->error || $c->httpStatusCode !== 200) {
+            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode], ['RequestURL' => $url, "Headers" => $headers]);
+            return null;
+        } elseif($error = $this->_isPapiError($c->response)) {
+            $this->_logPapiError($error);
+            $this->papiLastPatronErrorMessage = $c->response->ErrorMessage;
+            return null;
+        }
+
+        return $c;
+    }
+
     /**
      * @inheritDoc
      */
@@ -1093,17 +1138,17 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                     "UserID" => (int)$this->configArray['Polaris']['staffUserId'],
                     "RequestingOrgID" => (int)$requesting_location
         ];
-	      $body_json = json_encode($request_body);
-				$body_length = strlen($body_json);
+        $body_json = json_encode($request_body);
+        $body_length = strlen($body_json);
         $extra_headers = [
             "Content-Type: application/json",
             "Content-Length: " . $body_length
         ];
         // initial hold request
-        $r = $this->_doPatronRequest($patron, 'POST', $request_url, $body_json, $extra_headers);
-
+        $c = $this->_doSystemRequest($patron, 'POST', $request_url, $body_json, $extra_headers);
+        $r = $c->response;
         // errors
-        if ($r === null) { // api or curl error
+        if ($c === null) { // api or curl error
             if(isset($this->papiLastPatronErrorMessage)) {
                 return ['success' => false, 'message' => $this->papiLastPatronErrorMessage];
             }
@@ -1131,7 +1176,8 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         // continue to reply yes until hold is placed or we get an error
         $status_type = $r->StatusType;
         do {
-            $r = $this->_placeHoldRequestRepy($patron, $r, 3);
+            $c = $this->_placeHoldRequestReply($patron, $r, 3);
+            $r = $c->response;
             $status_type = $r->StatusType;
         } while ($status_type === 3);
 
@@ -1144,7 +1190,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
     }
 
-    protected function _placeHoldRequestRepy($patron, $hold_response, $requesting_org_id)
+    protected function _placeHoldRequestReply($patron, $hold_response, $requesting_org_id): ?Curl
     {
         $status_to_state = [
             2 => 1,
@@ -1163,7 +1209,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
               "State" => $status_to_state[$hold_response->StatusValue]
         ];
 
-        return $this->_doPatronRequest($patron, 'POST', $request_url, $request_body);
+        return $this->_doSystemRequest($patron, 'POST', $request_url, $request_body);
     }
 
     /**
