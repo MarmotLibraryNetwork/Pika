@@ -780,7 +780,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     public function getMyCheckouts($patron, $linkedAccount = false): ?array
     {
         if(!$linkedAccount) {
-            // do something
+            // todo: do something
         }
 
         $request_url = $this->ws_url . '/patron/' . $patron->barcode . '/itemsout/all?excludeecontent=false';
@@ -814,9 +814,13 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                 $checkout['ratingData']    = $recordDriver->getRatingData();
                 $checkout['format']        = $recordDriver->getPrimaryFormat();
                 $checkout['author']        = $recordDriver->getPrimaryAuthor();
-                $checkout['title']         = $recordDriver->getTitle();
                 $checkout['title_sort']    = $recordDriver->getSortableTitle();
                 $checkout['link']          = $recordDriver->getLinkUrl();
+                if($this->isIllCheckout($c)) {
+                    $checkout['title'] = $this->cleanIllTitle($c->Title);
+                } else {
+                    $checkout['title'] = $recordDriver->getTitle();
+                }
             } elseif($this->isIllCheckout($c) && (!$recordDriver->isValid() || null === $recordDriver->isValid())) {
                 // handle ILL checkouts
                 // Polaris creates marc records in the system for ILL checkouts.
