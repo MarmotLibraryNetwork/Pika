@@ -1026,7 +1026,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                 $h['format']    = '';
             }
             // special handling by status id
-            switch ($hold->StatusId) {
+            switch ($hold->StatusID) {
                 case 6: // ready for pickup
                     $h['cancelable']         = false; // holds ready for pickup can't be canceled in Polaris
                     $h['locationUpdateable'] = false;
@@ -1086,7 +1086,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             if ($record->isValid()) {
                 $h['id']        = $record->getUniqueID();
                 $h['shortId']   = $record->getShortId();
-                $h['title']     = $record->getTitle();
+                $h['title']     = $this->cleanIllTitle($record->getTitle());
                 $h['sortTitle'] = $record->getSortableTitle();
                 $h['author']    = $record->getPrimaryAuthor();
                 $h['format']    = $record->getFormat();
