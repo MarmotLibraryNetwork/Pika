@@ -928,12 +928,19 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                 $c->post($url, $body);
                 break;
             case 'PUT':
-                $c->put($url, $body);
+                // PUT will change the content-type header in the array passed to setOpts. Need to set it separately
+                // and use a custom request. this happens in the PHP curl extension itself and not in php-curl-class.
+                $c->setUrl($url);
+                $c->setOpt(CURLOPT_CUSTOMREQUEST, 'PUT');
+                $c->setOpt(CURLOPT_POSTFIELDS, $body);
+                // this needs to be set LAST!
+                $c->setOpt(CURLOPT_HTTPHEADER, $headers);
+                $c->exec();
                 break;
         }
 
         if ($c->error || $c->httpStatusCode !== 200) {
-            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode], ['RequestURL' => $url, "Headers" => $headers]);
+            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode, 'RequestURL' => $url, "Headers" => $c->requestHeaders]);
             return null;
         } elseif($error = $this->_isPapiError($c->response)) {
             $this->_logPapiError($error);
@@ -1114,6 +1121,9 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     }
 
     /**
+     * Place hold does not require user pw or secret as part of the harsh. When making the call only use METHOD . URI
+     * to create hash.
+     *
      * @inheritDoc
      */
     public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null)
@@ -1149,7 +1159,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         ];
         // initial hold request
         $c = $this->_doSystemRequest('POST', $request_url, $body_json, $extra_headers);
-        $r = $c->response;
+
         // errors
         if ($c === null) { // api or curl error
             if(isset($this->papiLastPatronErrorMessage)) {
@@ -1157,6 +1167,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             }
             return ['success' => false, 'message' => 'An error occurred while processing your request. Please try again later or contact your library.'];
         }
+        $r = $c->response;
         // age conflict
         if ($r->StatusValue === 10) {
             // todo: patron not old enough message
@@ -1179,7 +1190,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         // continue to reply yes until hold is placed or we get an error
         $status_type = $r->StatusType;
         do {
-            $c = $this->_placeHoldRequestReply($patron, $r, 3);
+            $c = $this->_placeHoldRequestReply($r, (int)$requesting_location);
             $r = $c->response;
             $status_type = $r->StatusType;
         } while ($status_type === 3);
@@ -1191,6 +1202,8 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             }
             return $return;
         }
+
+        return ['success' => false, 'message' => 'An error occurred while processing your request. Please try again later or contact your library.'];
     }
 
     protected function _placeHoldRequestReply($hold_response, $requesting_org_id): ?Curl
@@ -1211,7 +1224,8 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
               "Answer" => 1, // always answer yes (1)
               "State" => $status_to_state[$hold_response->StatusValue]
         ];
-        $extra_headers = [
+        $request_body = json_encode($request_body);
+        $extra_headers = [ // todo: can remove this
             "Content-Type: application/json",
         ];
         return $this->_doSystemRequest('PUT', $request_url, $request_body, $extra_headers);
