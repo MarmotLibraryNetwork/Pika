@@ -574,6 +574,9 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     {
         if(is_array($res)) {
             if ($res['PAPIErrorCode'] < 0) {
+                if(empty($res['ErrorMessage']) && in_array((string)$res['PAPIErrorCode'], $this->polaris_errors)) {
+                    $res['ErrorMessage'] = $this->polaris_errors[(string)$res['PAPIErrorCode']];
+                }
                 return [
                     'ErrorMessage'  => $res['ErrorMessage'],
                     'PAPIErrorCode' => $res['PAPIErrorCode']
@@ -581,8 +584,13 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             }
         } elseif(is_object($res)) {
             if ($res->PAPIErrorCode < 0) {
+                if(empty($res->ErrorMessage) && in_array((string)$res->PAPIErrorCode, $this->polaris_errors)) {
+                    $error_message = $this->polaris_errors[(string)$res->PAPIErrorCode];
+                } else {
+                    $error_message = $res->ErrorMessage;
+                }
                 return [
-                    'ErrorMessage'  => $res->ErrorMessage,
+                    'ErrorMessage'  => $error_message,
                     'PAPIErrorCode' => $res->PAPIErrorCode
                 ];
             }
@@ -1397,7 +1405,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return null;
     }
 
-    public array $errors = [
+    public array $polaris_errors = [
         '-201' => 'Failed to insert entry in addresses table',
         '-221' => 'Failed to insert entry in PostalCodes table',
         '-222' => 'Invalid PostalCodeLength',
