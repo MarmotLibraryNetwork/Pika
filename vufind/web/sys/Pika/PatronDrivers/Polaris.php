@@ -882,6 +882,24 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             case 'POST':
                 $c->post($url, $body);
                 break;
+            case 'PUT':
+                // PUT will change the content-type header in the array passed to setOpts. Need to set it separately
+                // and use a custom request. this happens in the PHP curl extension itself and not in php-curl-class.
+                
+	              // API server may or may not want content length-- hard to say. Throw it in and hope for the best.
+                if(!empty($body) && is_array($body)) {
+                    $body = json_encode($body);
+                    $c->setOpt(CURLOPT_POSTFIELDS, $body);
+                    $headers[] = 'Content-Length: ' . strlen($body);
+                } else {
+                    $headers[] = 'Content-Length: 0';
+                }
+                $c->setUrl($url);
+                $c->setOpt(CURLOPT_CUSTOMREQUEST, 'PUT');
+                // this needs to be set LAST!
+                $c->setOpt(CURLOPT_HTTPHEADER, $headers);
+                $c->exec();
+                break;
         }
 
         if ($c->error || $c->httpStatusCode !== 200) {
@@ -1047,7 +1065,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             }
             if($hold->StatusID === 6) { // ready for pickup
                 $availableHolds[] = $h;
-            } else {
+            } elseif ($hold->StatusID !== 16) {
                 $unavailableHolds[] = $h;
             }
         } // end foreach
@@ -1241,10 +1259,30 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
     /**
      * @inheritDoc
+     * Cancel hold requires patron secret to be at the end of string that will be hashed. Strange...
      */
     public function cancelHold($patron, $recordId, $cancelId)
     {
-        // TODO: Implement cancelHold() method.
+        // /public/patron/{PatronBarcode}/holdrequests/{RequestID}/cancelled
+        $barcode        = $patron->barcode;
+        $workstation_id = $this->configArray['Polaris']['workstationId'];
+        $staff_user_id  = $this->configArray['Polaris']['staffUserId'];
+        $request_url    = $this->ws_url ."/patron/{$barcode}/holdrequests/{$cancelId}/cancelled?wsid={$workstation_id}" .
+            "&userid={$staff_user_id}";
+
+        $r = $this->_doPatronRequest($patron, 'PUT', $request_url);
+
+        $return = ['success' => false, 'message' => 'Unable to cancel your hold.'];
+        if ($r === null) {
+            if(isset($this->papiLastPatronErrorMessage)) {
+                $return['message'] .=  ' ' . $this->papiLastPatronErrorMessage;
+            } else {
+                $return['message'] .= " Please contact your library for further assistance.";
+            }
+            return $return;
+        }
+
+        return ['success' => true, 'message' => 'Your hold has been canceled.'];
     }
 
     public function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate)
