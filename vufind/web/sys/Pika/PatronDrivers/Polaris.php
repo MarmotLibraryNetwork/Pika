@@ -903,9 +903,10 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
 
         if ($c->error || $c->httpStatusCode !== 200) {
-            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode], ['RequestURL' => $url, "Headers" => $headers]);
+            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode], ['RequestURL' => $url, "Headers" => $c->requestHeaders]);
             return null;
         } elseif($error = $this->_isPapiError($c->response)) {
+
             $this->_logPapiError($error);
             $this->papiLastPatronErrorMessage = $c->response->ErrorMessage;
             return null;
@@ -1292,7 +1293,21 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     public function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate)
     {
         ///public/1/patron/{PatronBarcode}/holdrequests/{RequestID}/inactive
-        // TODO: Implement freezeHold() method.
+        $barcode        = $patron->barcode;
+        $staff_user_id  = $this->configArray['Polaris']['staffUserId'];
+        $request_url    = $this->ws_url ."/patron/{$barcode}/holdrequests/{$itemToFreezeId}/inactive";
+        $request_body   = ["UserID" => $staff_user_id, "ActivationDate" => gmdate('r')];
+        $return = ['success' => false, 'message' => 'Unable to freeze your hold.'];
+
+        $r = $this->_doPatronRequest($patron, 'PUT', $request_url, $request_body);
+        if ($r === null) {
+            if(isset($this->papiLastPatronErrorMessage)) {
+                $return['message'] .=  ' ' . $this->papiLastPatronErrorMessage;
+            }
+            return $return;
+        }
+
+        return ['success' => true, 'message' => 'Your hold has been frozen.'];
     }
 
     public function thawHold($patron, $recordId, $itemToThawId)
