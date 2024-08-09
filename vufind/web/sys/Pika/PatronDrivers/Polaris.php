@@ -520,7 +520,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
      * @param User $patron
      * @return bool
      */
-    protected function _setCachePatronObject(User $patron)
+    protected function _setCachePatronObject(User $patron): bool
     {
         $patron_object_cache_key = 'patronilsid'.$patron->ilsUserId.'object';
         $expires = 30;
@@ -558,12 +558,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $this->cache->delete($patron_object_cache_key);
     }
 
-    protected function _deleteCachePatronObjectByPatronId($patron_ils_id)
-    {
-        $patron_object_cache_key = 'patronilsid'.$patron_ils_id.'object';
-        return $this->cache->delete($patron_object_cache_key);
-    }
-
     /**
      * Check Polaris web service return for an api error
      *
@@ -574,7 +568,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     {
         if(is_array($res)) {
             if ($res['PAPIErrorCode'] < 0) {
-                if(empty($res['ErrorMessage']) && in_array((string)$res['PAPIErrorCode'], $this->polaris_errors)) {
+                if(empty($res['ErrorMessage']) && in_array((string)$res['PAPIErrorCode'], $this->polaris_errors, false)) {
                     $res['ErrorMessage'] = $this->polaris_errors[(string)$res['PAPIErrorCode']];
                 }
                 return [
@@ -584,7 +578,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             }
         } elseif(is_object($res)) {
             if ($res->PAPIErrorCode < 0) {
-                if(empty($res->ErrorMessage) && in_array((string)$res->PAPIErrorCode, $this->polaris_errors)) {
+                if(empty($res->ErrorMessage) && in_array((string)$res->PAPIErrorCode, $this->polaris_errors, false)) {
                     $error_message = $this->polaris_errors[(string)$res->PAPIErrorCode];
                 } else {
                     $error_message = $res->ErrorMessage;
@@ -604,7 +598,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
      * @param array $e
      * @return void
      */
-    protected function _logPapiError(array $e): void
+    protected function _logPapiError($e): void
     {
         if(is_array($e['ErrorMessage'])) {
             $error_message = implode("\n", $e['ErrorMessage']);
@@ -852,8 +846,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
     protected function _doPatronRequest(User $patron, string $method = 'GET', $url, $body = [], $extra_headers = []): ?Curl
     {
-        $this->papiLastPatronErrorMessage = null;
-
         if(!$patron_access_secret = $this->_getCachePatronSecret($patron->ilsUserId)) {
             $patron_pin = $patron->getPassword();
             $auth = $this->authenticatePatron($patron->barcode, $patron_pin);
@@ -864,7 +856,19 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
 
         $hash = $this->_createHash($method, $url, $patron_access_secret);
+        $c = $this->_doRequest($hash, $method, $url, $body, $extra_headers);
+        return $c;
+    }
 
+    protected function _doSystemRequest(string $method = 'GET', string $url, $body = [], $extra_headers = []): ?Curl
+    {
+        $hash = $this->_createHash($method, $url);
+        $c = $this->_doRequest($hash, $method, $body, $extra_headers);
+        return $c;
+    }
+
+    protected function _doRequest(string $hash, string $method = 'GET', string $url, $body = [], $extra_headers = []): ?Curl
+    {
         $headers = [
             "PolarisDate: " . gmdate('r'),
             "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
@@ -904,62 +908,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                 }
                 $c->setUrl($url);
                 $c->setOpt(CURLOPT_CUSTOMREQUEST, 'PUT');
-                // this needs to be set LAST!
-                $c->setOpt(CURLOPT_HTTPHEADER, $headers);
-                $c->exec();
-                break;
-        }
-
-        if ($c->error || $c->httpStatusCode !== 200) {
-            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode], ['RequestURL' => $url, "Headers" => $c->requestHeaders]);
-            return null;
-        } elseif($error = $this->_isPapiError($c->response)) {
-
-            $this->_logPapiError($error);
-            $this->papiLastPatronErrorMessage = $c->response->ErrorMessage;
-            return null;
-        }
-
-        return $c;
-    }
-
-    protected function _doSystemRequest(string $method = 'GET', string $url, $body = [], $extra_headers = []): ?Curl
-    {
-        $this->papiLastPatronErrorMessage = null;
-
-        $hash = $this->_createHash($method, $url);
-
-        $headers = [
-            "PolarisDate: " . gmdate('r'),
-            "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
-            "Accept: application/json"
-        ];
-
-        foreach ($extra_headers as $header) {
-            $headers[] = $header;
-        }
-
-        $c_opts  = [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER     => $headers
-        ];
-
-        $c = new Curl();
-        $c->setOpts($c_opts);
-
-        switch ($method) {
-            case 'GET':
-                $c->get($url);
-                break;
-            case 'POST':
-                $c->post($url, $body);
-                break;
-            case 'PUT':
-                // PUT will change the content-type header in the array passed to setOpts. Need to set it separately
-                // and use a custom request. this happens in the PHP curl extension itself and not in php-curl-class.
-                $c->setUrl($url);
-                $c->setOpt(CURLOPT_CUSTOMREQUEST, 'PUT');
-                $c->setOpt(CURLOPT_POSTFIELDS, $body);
                 // this needs to be set LAST!
                 $c->setOpt(CURLOPT_HTTPHEADER, $headers);
                 $c->exec();
