@@ -2477,8 +2477,8 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @throws  object              PEAR Error
 	 * @return  array|null              The requested resource
 	 */
-	function getRecordByIsbn($isbn){
-		return $this->indexEngine->getRecordByIsbn($isbn, $this->getFieldsToReturn());
+	function getRecordByIsbn($isbn, $fieldsToReturn = null){
+		return $this->indexEngine->getRecordByIsbn($isbn, $fieldsToReturn ?? $this->getFieldsToReturn());
 	}
 
 	private function getFieldsToReturn(){

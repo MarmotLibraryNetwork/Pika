@@ -407,6 +407,29 @@ class Solr implements IndexEngine {
 		return $result['response']['docs'][0] ?? null;
 	}
 
+	function getRecordByTitleAuthor($title, $author, $fieldsToReturn = null){
+		if ($this->debug) {
+			$this->logger->debug("Get Record by Title, Author: '$title' by '$author'");
+		}
+		if (empty($fieldsToReturn)) {
+			$validFields    = $this->_loadValidFields();
+			$fieldsToReturn = implode(',', $validFields);
+		}
+
+		// Query String Parameters
+		$options = [
+			'q'  => "title_proper:\"$title\" author_additional:\"$author\"",
+			'fl' => $fieldsToReturn,
+			'q.op' => 'AND',
+		];
+		$result  = $this->_select('GET', $options);
+		if (PEAR_Singleton::isError($result)) {
+			PEAR_Singleton::raiseError($result);
+		}
+
+		return $result['response']['docs'][0] ?? null;
+	}
+
 	/**
 	 * @param string[] $ISBNs
 	 * @param string|null $fieldsToReturn

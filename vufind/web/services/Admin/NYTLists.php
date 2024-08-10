@@ -44,9 +44,8 @@ class NYTLists extends Admin_Admin {
 			$nyt_api = new ExternalEnrichment\NYTApi($api_key);
 
 			//Get the raw response from the API with a list of all the names
-			$availableListsRaw = $nyt_api->getList('names');
 			//Convert into an object that can be processed
-			$availableLists = json_decode($availableListsRaw);
+			$availableLists = $nyt_api->getList('names');
 
 			$interface->assign('availableLists', $availableLists);
 
@@ -61,7 +60,7 @@ class NYTLists extends Admin_Admin {
 					require_once ROOT_DIR . '/services/API/ListAPI.php';
 					$listApi = new ListAPI();
 					$results = $listApi->createUserListFromNYT($selectedList);
-					if ($results['success'] == false){
+					if (!$results['success']){
 						$interface->assign('error', $results['message']);
 					}else{
 						$interface->assign('successMessage', $results['message']);

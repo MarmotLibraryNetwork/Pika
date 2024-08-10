@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2024  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,36 +16,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/***************************************
- * Simple class to retrieve feed of NYT best sellers
- * documentation:
- * http://developer.nytimes.com/docs/read/best_sellers_api
- *
- * Last Updated: 2016-02-26 JN
- ***************************************
- */
-
 namespace ExternalEnrichment;
 
-class NYTApi {
+class NPRBestBooks {
 
-//	const BASE_URI = 'http://api.nytimes.com/svc/books/v2/lists/'; // old api url
-//	const BASE_URI = 'https://content.api.nytimes.com/svc/books/v2/lists/';
-	const BASE_URI = 'https://content.api.nytimes.com/svc/books/v3/lists/';
-	protected $api_key;
+	const NPRListTitlePrefix = 'NPR Books We Love';
 
-	public function __construct($key){
-		$this->api_key = $key;
-	}
+	const BASE_URL = 'https://apps.npr.org/best-books/';
 
-	protected function buildUrl($list_name){
-		$url = self::BASE_URI . $list_name;
-		$url .= '?api-key=' . $this->api_key;
-		return $url;
-	}
-
-	public function getList($listName){
-		$url = $this->buildUrl($listName);
+	public function getList($year){
+		$url = $this->buildUrl($year);
 
 		// array of request options
 		global $configArray;
@@ -67,12 +46,23 @@ class NYTApi {
 		$curl = curl_init();
 		// Set curl options
 		curl_setopt_array($curl, $curl_opts);
+		// Allow cURL to use gzip compression, or any other supported encoding
+// A blank string activates 'auto' mode
+		curl_setopt($curl, CURLOPT_ENCODING , '');
 		// Send the request & save response to $response
 		$response = curl_exec($curl);
 		// Close request to clear up some resources
 		curl_close($curl);
 		// return response
 		return json_decode($response);
+	}
+
+	private function buildUrl($year){
+		if (ctype_digit($year) && $year > 2012){
+			$url = self::BASE_URL . $year . '-detail.json';
+			return $url;
+		}
+		return false;
 	}
 
 }

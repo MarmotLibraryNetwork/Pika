@@ -777,7 +777,7 @@
 		<field name="author" type="text" indexed="true" stored="true" />
 		<!-- MARC tag 100abcdq or 110ab
 		Most common value from related records with format Book is used; if there is no related record with format Book,
-		the most common value from related records with format eBook is used; if there neither Book nor eBook, the most common
+		the most common value from related records with format eBook is used; if there is neither Book nor eBook, the most common
 		value is used.
 
 		In cases of equally common values, the longer value is used.
