@@ -970,7 +970,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             $h['cancelable']         = true;
             $h['freezeable']         = $hold->CanSuspend === true;
             $h['status']             = $hold->StatusDescription;
-            $h['frozen']             = false; // todo: how to know?
+            $h['frozen']             = false; // status will be inactive
             $h['location']           = $hold->PickupBranchName;
             $h['locationUpdateable'] = true;
             $h['position']           = $hold->QueuePosition . ' of ' . $hold->QueueTotal;
@@ -1015,6 +1015,10 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             }
             // special handling by status id
             switch ($hold->StatusID) {
+                case 1:
+                    $h['freezeable'] = false;
+                    $h['frozen']     = true;
+                    break;
                 case 5: // shipped
                     $h['cancelable']         = false; // holds ready for pickup can't be canceled in Polaris
                     $h['locationUpdateable'] = true;
@@ -1253,13 +1257,21 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     public function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate): array
     {
         // /public/1/patron/{PatronBarcode}/holdrequests/{RequestID}/inactive
+        // the Polaris API is very opinionated  about the format of this date.
+        // make sure it's in the future.
+        $date = new DateTime('now', new DateTimeZone('UTC'));
+        $date->modify('+30 days');
+        $active_date = $date->format('r');
+
         $barcode        = $patron->barcode;
         $staff_user_id  = $this->configArray['Polaris']['staffUserId'];
         $request_url    = $this->ws_url ."/patron/{$barcode}/holdrequests/{$itemToFreezeId}/inactive";
-        $request_body   = ["UserID" => $staff_user_id, "ActivationDate" => gmdate('r')];
+        $request_body   = ["UserID" => (int)$staff_user_id, "ActivationDate" => $active_date];
+        $extra_headers  = ['Content-Type: application/json'];
+
         $return = ['success' => false, 'message' => 'Unable to freeze your hold.'];
 
-        $r = $this->_doPatronRequest($patron, 'PUT', $request_url, $request_body);
+        $r = $this->_doPatronRequest($patron, 'PUT', $request_url, $request_body, $extra_headers);
         if ($r === null) {
             if(isset($this->papiLastErrorMessage)) {
                 $return['message'] .=  ' ' . $this->papiLastErrorMessage;
