@@ -87,7 +87,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
      * @see https://documentation.iii.com/polaris/PAPI/current/PAPIService/PAPIServiceOverview.htm#papiserviceoverview_3170935956_1213787
      */
     protected int $ws_app_id = 100;
-    protected $papiLastPatronErrorMessage;
+    protected $papiLastErrorMessage;
 
     public \AccountProfile $accountProfile;
     protected array $configArray;
@@ -593,7 +593,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     }
 
     /**
-     * Accepts return from _isPapiError and Writes the error to log
+     * Accepts return from _isPapiError and writes the error to log
      *
      * @param array $e
      * @return void
@@ -863,12 +863,13 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     protected function _doSystemRequest(string $method = 'GET', string $url, $body = [], $extra_headers = []): ?Curl
     {
         $hash = $this->_createHash($method, $url);
-        $c = $this->_doRequest($hash, $method, $body, $extra_headers);
+        $c = $this->_doRequest($hash, $method, $url, $body, $extra_headers);
         return $c;
     }
 
     protected function _doRequest(string $hash, string $method = 'GET', string $url, $body = [], $extra_headers = []): ?Curl
     {
+        $this->papiLastErrorMessage = null;
         $headers = [
             "PolarisDate: " . gmdate('r'),
             "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
@@ -903,6 +904,9 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                     $body = json_encode($body);
                     $c->setOpt(CURLOPT_POSTFIELDS, $body);
                     $headers[] = 'Content-Length: ' . strlen($body);
+                } elseif(is_string($body)) {
+                    $headers[] = 'Content-Length: ' . strlen($body);
+                    $c->setOpt(CURLOPT_POSTFIELDS, $body);
                 } else {
                     $headers[] = 'Content-Length: 0';
                 }
@@ -915,11 +919,13 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
 
         if ($c->error || $c->httpStatusCode !== 200) {
-            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode, 'RequestURL' => $url, "Headers" => $c->requestHeaders]);
+            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode,
+                                                                     'RequestURL' => $url,
+                                                                     'Headers' => $c->requestHeaders->__toString()]);
             return null;
         } elseif($error = $this->_isPapiError($c->response)) {
             $this->_logPapiError($error);
-            $this->papiLastPatronErrorMessage = $c->response->ErrorMessage;
+            $this->papiLastErrorMessage = $c->response->ErrorMessage;
             return null;
         }
 
@@ -1141,8 +1147,8 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
         // errors
         if ($c === null) { // api or curl error
-            if(isset($this->papiLastPatronErrorMessage)) {
-                return ['success' => false, 'message' => $this->papiLastPatronErrorMessage];
+            if(isset($this->papiLastErrorMessage)) {
+                return ['success' => false, 'message' => $this->papiLastErrorMessage];
             }
             return ['success' => false, 'message' => 'An error occurred while processing your request. Please try again later or contact your library.'];
         }
@@ -1204,9 +1210,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
               "State" => $status_to_state[$hold_response->StatusValue]
         ];
         $request_body = json_encode($request_body);
-        $extra_headers = [ // todo: can remove this
-            "Content-Type: application/json",
-        ];
+        $extra_headers = ['Content-Type: application/json'];
         return $this->_doSystemRequest('PUT', $request_url, $request_body, $extra_headers);
     }
 
@@ -1235,8 +1239,8 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
         $return = ['success' => false, 'message' => 'Unable to cancel your hold.'];
         if ($r === null) {
-            if(isset($this->papiLastPatronErrorMessage)) {
-                $return['message'] .=  ' ' . $this->papiLastPatronErrorMessage;
+            if(isset($this->papiLastErrorMessage)) {
+                $return['message'] .=  ' ' . $this->papiLastErrorMessage;
             } else {
                 $return['message'] .= " Please contact your library for further assistance.";
             }
@@ -1246,9 +1250,9 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return ['success' => true, 'message' => 'Your hold has been canceled.'];
     }
 
-    public function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate)
+    public function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate): array
     {
-        ///public/1/patron/{PatronBarcode}/holdrequests/{RequestID}/inactive
+        // /public/1/patron/{PatronBarcode}/holdrequests/{RequestID}/inactive
         $barcode        = $patron->barcode;
         $staff_user_id  = $this->configArray['Polaris']['staffUserId'];
         $request_url    = $this->ws_url ."/patron/{$barcode}/holdrequests/{$itemToFreezeId}/inactive";
@@ -1257,19 +1261,31 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
         $r = $this->_doPatronRequest($patron, 'PUT', $request_url, $request_body);
         if ($r === null) {
-            if(isset($this->papiLastPatronErrorMessage)) {
-                $return['message'] .=  ' ' . $this->papiLastPatronErrorMessage;
+            if(isset($this->papiLastErrorMessage)) {
+                $return['message'] .=  ' ' . $this->papiLastErrorMessage;
             }
             return $return;
         }
-
         return ['success' => true, 'message' => 'Your hold has been frozen.'];
     }
 
     public function thawHold($patron, $recordId, $itemToThawId)
     {
         // /public/1/patron/{PatronBarcode}/holdrequests/{RequestID}/active
-        // TODO: Implement thawHold() method.
+        $barcode        = $patron->barcode;
+        $staff_user_id  = $this->configArray['Polaris']['staffUserId'];
+        $request_url    = $this->ws_url ."/patron/{$barcode}/holdrequests/{$itemToThawId}/active";
+        $request_body   = ["UserID" => $staff_user_id, "ActivationDate" => gmdate('r')];
+        $return = ['success' => false, 'message' => 'Unable to thaw your hold.'];
+
+        $r = $this->_doPatronRequest($patron, 'PUT', $request_url, $request_body);
+        if ($r === null) {
+            if(isset($this->papiLastErrorMessage)) {
+                $return['message'] .=  ' ' . $this->papiLastErrorMessage;
+            }
+            return $return;
+        }
+        return ['success' => true, 'message' => 'Your hold has been thawed.'];
     }
 
     public function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation)
