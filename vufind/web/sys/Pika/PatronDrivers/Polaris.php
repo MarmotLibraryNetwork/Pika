@@ -789,19 +789,29 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $c = $this->_doPatronRequest($patron, 'GET', $request_url);
 
         $checkouts_response = $c->response->PatronItemsOutGetRows;
-        if(count($checkouts_response) === 0) {
+        if($c === null || count($checkouts_response) === 0) {
             return [];
         }
 
         $checkouts = [];
         foreach($checkouts_response as $c) {
             $checkout = []; // reset checkout
-
+            // handle dates
+            if($this->isMicrosoftDate($c->DueDate)) {
+                $due_date = strtotime($this->microsoftDateToISO($c->DueDate));
+            } else {
+                $due_date = strtotime($c->DueDate);
+            }
+						if($this->isMicrosoftDate($c->CheckOutDate)) {
+							$checkout_date = strtotime($this->microsoftDateToISO($c->CheckOutDate));
+						} else {
+							$checkout_date = strtotime($c->CheckOutDate);
+						}
             $checkout['checkoutSource'] =  $this->accountProfile->recordSource;
             $checkout['recordId']       = $c->BibID;
             $checkout['id']             = $c->ItemID;
-            $checkout['dueDate']        = strtotime($c->DueDate);
-            $checkout['checkoutDate']   = strtotime($c->CheckOutDate);
+            $checkout['dueDate']        = $due_date;
+            $checkout['checkoutDate']   = $checkout_date;
             $checkout['renewCount']     = $c->RenewalCount;
             $checkout['barcode']        = $c->Barcode ?? '';
             $checkout['itemid']         = $c->ItemID;
@@ -844,146 +854,33 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $checkouts;
     }
 
-    /**
-     * Executes a patron-specific HTTP request with the specified method, URL, and request body.
-     *
-     * This method handles requests that require patron-specific authentication. It retrieves
-     * the patron's access secret, creates an authorization hash, and then delegates the request execution
-     * to the `_doRequest` method. It supports various HTTP methods (GET, POST, PUT) and allows for
-     * additional headers and request body content to be included in the request.
-     *
-     * @param User $patron The patron object representing the user making the request.
-     * @param string $method The HTTP method to use for the request. Defaults to 'GET'. Supported methods: 'GET', 'POST', 'PUT'.
-     * @param string $url The URL to which the request is sent.
-     * @param array|string $body The request body to send, which can be an array or string. For GET requests, this is typically empty.
-     * @param array $extra_headers Additional headers to include in the request. These are merged with the default headers.
-     *
-     * @return ?Curl Returns a `Curl` object on successful request, or `null` if an error occurs.
-     */
-    protected function _doPatronRequest(User $patron, string $method = 'GET', $url, $body = [], $extra_headers = []): ?Curl
-    {
-        if(!$patron_access_secret = $this->_getCachePatronSecret($patron->ilsUserId)) {
-            $patron_pin = $patron->getPassword();
-            $auth = $this->authenticatePatron($patron->barcode, $patron_pin);
-            if(!isset($auth)) {
-                return null;
-            }
-            $patron_access_secret = $auth->AccessSecret;
-        }
 
-        $hash = $this->_createHash($method, $url, $patron_access_secret);
-        $c = $this->_doRequest($hash, $method, $url, $body, $extra_headers);
-        return $c;
-    }
-
-    /**
-     * Executes a system-level HTTP request with the specified method, URL, and request body.
-     *
-     * This method generates a hash for authorization and then delegates the actual request execution
-     * to the `_doRequest` method. It supports various HTTP methods (GET, POST, PUT) and allows for
-     * additional headers and request body content to be included in the request.
-     *
-     * @param string $method The HTTP method to use for the request. Defaults to 'GET'. Supported methods: 'GET', 'POST', 'PUT'.
-     * @param string $url The URL to which the request is sent.
-     * @param array|string $body The request body to send, which can be an array or string. For GET requests, this is typically empty.
-     * @param array $extra_headers Additional headers to include in the request. These are merged with the default headers.
-     *
-     * @return ?Curl Returns a `Curl` object on successful request, or `null` if an error occurs.
-     */
-    protected function _doSystemRequest(string $method = 'GET', string $url, $body = [], $extra_headers = []): ?Curl
-    {
-        $hash = $this->_createHash($method, $url);
-        $c = $this->_doRequest($hash, $method, $url, $body, $extra_headers);
-        return $c;
-    }
-
-    /**
-     * Executes an HTTP request using the provided method, URL, and request body.
-     *
-     * This method performs an HTTP request (GET, POST, or PUT) with the specified URL, method, and body.
-     * It constructs the necessary headers, including authorization and content type, and handles errors
-     * that may arise during the request. The method returns a `Curl` object on success, or `null` if an
-     * error occurs.
-     *
-     * @param string $hash A unique hash string used for authorization in the request header.
-     * @param string $method The HTTP method to use for the request. Defaults to 'GET'. Supported methods: 'GET', 'POST', 'PUT'.
-     * @param string $url The URL to which the request is sent.
-     * @param array|string $body The request body to send, which can be an array or string. For GET requests, this is typically empty.
-     * @param array $extra_headers Additional headers to include in the request. These are merged with the default headers.
-     *
-     * @return ?Curl Returns a `Curl` object on successful request, or `null` if an error occurs.
-     */
-    protected function _doRequest(string $hash, string $method = 'GET', string $url, $body = [], $extra_headers = []): ?Curl
-    {
-        $this->papiLastErrorMessage = null;
-        $headers = [
-            "PolarisDate: " . gmdate('r'),
-            "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
-            "Accept: application/json"
-        ];
-
-        foreach ($extra_headers as $header) {
-            $headers[] = $header;
-        }
-
-        $c_opts  = [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER     => $headers
-        ];
-
-        $c = new Curl();
-        $c->setOpts($c_opts);
-        // todo: check headers for content length and content type
-        switch ($method) {
-            case 'GET':
-                $c->get($url);
-                break;
-            case 'POST':
-                $c->post($url, $body);
-                break;
-            case 'PUT':
-                // PUT will change the content-type header in the array passed to setOpts. Need to set it separately
-                // and use a custom request. this happens in the PHP curl extension itself and not in php-curl-class.
-
-                // API server will want content length even if no body content is sent... maybe?
-                if(!empty($body) && is_array($body)) {
-                    $body = json_encode($body);
-                    $c->setOpt(CURLOPT_POSTFIELDS, $body);
-                    $headers[] = 'Content-Length: ' . strlen($body);
-                } elseif(is_string($body)) {
-                    $headers[] = 'Content-Length: ' . strlen($body);
-                    $c->setOpt(CURLOPT_POSTFIELDS, $body);
-                } else {
-                    $headers[] = 'Content-Length: 0';
-                }
-                $c->setUrl($url);
-                $c->setOpt(CURLOPT_CUSTOMREQUEST, 'PUT');
-                // this needs to be set LAST!
-                $c->setOpt(CURLOPT_HTTPHEADER, $headers);
-                $c->exec();
-                break;
-        }
-        // todo: request headers need to be an array or string to be logged.
-        if ($c->error || $c->httpStatusCode !== 200) {
-            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode,
-                                                                     'request_url' => $url,
-                                                                     'Headers' => implode(PHP_EOL, $c->requestHeaders)]);
-            return null;
-        } elseif($error = $this->_isPapiError($c->response)) {
-            $this->_logPapiError($error);
-            $this->papiLastErrorMessage = $c->response->ErrorMessage;
-            return null;
-        }
-
-        return $c;
-    }
 
     /**
      * @inheritDoc
+     *
      */
     public function renewItem($patron, $recordId, $itemId, $itemIndex)
     {
-        // TODO: Implement renewItem() method.
+        // /public/patron/{PatronBarcode}/itemsout/{ID}
+        $return = [ 'success' => false, 'message' => "Unable to renew your checkout."];
+        $request_url  = $this->ws_url . '/patron/' . $patron->barcode . '/itemsout/' . $itemId;
+        $request_body = json_encode([
+          "Action" => "renew",
+          "LogonBranchID" => 1,
+          "LogonUserID" => (int)$this->configArray['Polaris']['staffUserId'],
+          "LogonWorkstationID" => (int)$this->configArray['Polaris']['workstationId'],
+          "RenewData" => [
+              "IgnoreOverrideErrors" => true
+          ]
+        ]);
+
+        $extra_headers = ['Content-type: application/json'];
+        $c = $this->_doPatronRequest($patron, 'PUT', $request_url, $request_body, $extra_headers);
+        if($c === null) {
+            return $return;
+        }
+        return [ 'success' => true, 'message' => "Your checkout has been renewed."];
     }
 
     /**
@@ -1368,8 +1265,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         // TODO: Implement changeHoldPickupLocation() method.
     }
 
-
-
     /**
      * Create a hash for API authentication.
      *
@@ -1444,6 +1339,139 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return null;
     }
 
+    /**
+     * Executes a patron-specific HTTP request with the specified method, URL, and request body.
+     *
+     * This method handles requests that require patron-specific authentication. It retrieves
+     * the patron's access secret, creates an authorization hash, and then delegates the request execution
+     * to the `_doRequest` method. It supports various HTTP methods (GET, POST, PUT) and allows for
+     * additional headers and request body content to be included in the request.
+     *
+     * @param User $patron The patron object representing the user making the request.
+     * @param string $method The HTTP method to use for the request. Defaults to 'GET'. Supported methods: 'GET', 'POST', 'PUT'.
+     * @param string $url The URL to which the request is sent.
+     * @param array|string $body The request body to send, which can be an array or string. For GET requests, this is typically empty.
+     * @param array $extra_headers Additional headers to include in the request. These are merged with the default headers.
+     *
+     * @return ?Curl Returns a `Curl` object on successful request, or `null` if an error occurs.
+     */
+    protected function _doPatronRequest(User $patron, string $method = 'GET', $url, $body = [], $extra_headers = []): ?Curl
+    {
+        if(!$patron_access_secret = $this->_getCachePatronSecret($patron->ilsUserId)) {
+            $patron_pin = $patron->getPassword();
+            $auth = $this->authenticatePatron($patron->barcode, $patron_pin);
+            if(!isset($auth)) {
+                return null;
+            }
+            $patron_access_secret = $auth->AccessSecret;
+        }
+
+        $hash = $this->_createHash($method, $url, $patron_access_secret);
+        $c = $this->_doRequest($hash, $method, $url, $body, $extra_headers);
+        return $c;
+    }
+
+    /**
+     * Executes a system-level HTTP request with the specified method, URL, and request body.
+     *
+     * This method generates a hash for authorization and then delegates the actual request execution
+     * to the `_doRequest` method. It supports various HTTP methods (GET, POST, PUT) and allows for
+     * additional headers and request body content to be included in the request.
+     *
+     * @param string $method The HTTP method to use for the request. Defaults to 'GET'. Supported methods: 'GET', 'POST', 'PUT'.
+     * @param string $url The URL to which the request is sent.
+     * @param array|string $body The request body to send, which can be an array or string. For GET requests, this is typically empty.
+     * @param array $extra_headers Additional headers to include in the request. These are merged with the default headers.
+     *
+     * @return ?Curl Returns a `Curl` object on successful request, or `null` if an error occurs.
+     */
+    protected function _doSystemRequest(string $method = 'GET', string $url, $body = [], $extra_headers = []): ?Curl
+    {
+        $hash = $this->_createHash($method, $url);
+        $c = $this->_doRequest($hash, $method, $url, $body, $extra_headers);
+        return $c;
+    }
+
+    /**
+     * Executes an HTTP request using the provided method, URL, and request body.
+     *
+     * This method performs an HTTP request (GET, POST, or PUT) with the specified URL, method, and body.
+     * It constructs the necessary headers, including authorization and content type, and handles errors
+     * that may arise during the request. The method returns a `Curl` object on success, or `null` if an
+     * error occurs.
+     *
+     * @param string $hash A unique hash string used for authorization in the request header.
+     * @param string $method The HTTP method to use for the request. Defaults to 'GET'. Supported methods: 'GET', 'POST', 'PUT'.
+     * @param string $url The URL to which the request is sent.
+     * @param array|string $body The request body to send, which can be an array or string. For GET requests, this is typically empty.
+     * @param array $extra_headers Additional headers to include in the request. These are merged with the default headers.
+     *
+     * @return ?Curl Returns a `Curl` object on successful request, or `null` if an error occurs.
+     */
+    protected function _doRequest(string $hash, string $method = 'GET', string $url, $body = [], $extra_headers = []): ?Curl
+    {
+        $this->papiLastErrorMessage = null;
+        $headers = [
+            "PolarisDate: " . gmdate('r'),
+            "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
+            "Accept: application/json"
+        ];
+
+        foreach ($extra_headers as $header) {
+            $headers[] = $header;
+        }
+
+        $c_opts  = [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => $headers
+        ];
+
+        $c = new Curl();
+        $c->setOpts($c_opts);
+        // todo: check headers for content length and content type
+        switch ($method) {
+            case 'GET':
+                $c->get($url);
+                break;
+            case 'POST':
+                $c->post($url, $body);
+                break;
+            case 'PUT':
+                // PUT will change the content-type header in the array passed to setOpts. Need to set it separately
+                // and use a custom request. this happens in the PHP curl extension itself and not in php-curl-class.
+
+                // API server will want content length even if no body content is sent... maybe?
+                if(!empty($body) && is_array($body)) {
+                    $body = json_encode($body);
+                    $c->setOpt(CURLOPT_POSTFIELDS, $body);
+                    $headers[] = 'Content-Length: ' . strlen($body);
+                } elseif(is_string($body)) {
+                    $headers[] = 'Content-Length: ' . strlen($body);
+                    $c->setOpt(CURLOPT_POSTFIELDS, $body);
+                } else {
+                    $headers[] = 'Content-Length: 0';
+                }
+                $c->setUrl($url);
+                $c->setOpt(CURLOPT_CUSTOMREQUEST, 'PUT');
+                // this needs to be set LAST!
+                $c->setOpt(CURLOPT_HTTPHEADER, $headers);
+                $c->exec();
+                break;
+        }
+        // todo: request headers need to be an array or string to be logged.
+        if ($c->error || $c->httpStatusCode !== 200) {
+            $this->logger->error('Curl error: ' . $c->errorMessage, ['http_code' => $c->httpStatusCode,
+                                                                     'request_url' => $url,
+                                                                     'Headers' => implode(PHP_EOL, $c->requestHeaders)]);
+            return null;
+        } elseif($error = $this->_isPapiError($c->response)) {
+            $this->_logPapiError($error);
+            $this->papiLastErrorMessage = $c->response->ErrorMessage;
+            return null;
+        }
+
+        return $c;
+    }
     public array $polaris_errors = [
         '-201' => 'Failed to insert entry in addresses table',
         '-221' => 'Failed to insert entry in PostalCodes table',
