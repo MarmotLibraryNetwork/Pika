@@ -45,8 +45,8 @@ class MyAccount_Holds extends MyAccount{
 			$showPosition = (boolean)$configArray['OPAC']['showPosition'];
 		}
 		$showExpireTime                  = ($ils == 'Horizon' || $ils == 'Symphony');
-		$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'CarlX');
-		$showDateWhenSuspending          = ($ils == 'Horizon' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'CarlX');
+		$suspendRequiresReactivationDate = ($ils == 'Polaris' || $ils == 'Horizon' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'CarlX');
+		$showDateWhenSuspending          = ($ils == 'Polaris' || $ils == 'Horizon' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'CarlX');
 		$canChangePickupLocation         = ($ils != 'Koha');
 		$showPlacedColumn                = ($ils == 'Horizon' || $ils == 'Symphony' || !empty($configArray['OPAC']['showDatePlaced'])) ;
 		$interface->assign('suspendRequiresReactivationDate', $suspendRequiresReactivationDate);
