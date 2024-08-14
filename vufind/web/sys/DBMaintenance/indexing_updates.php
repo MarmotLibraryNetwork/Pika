@@ -39,6 +39,31 @@ function getIndexingUpdates(): array{
 
 	return [
 
+				'2024.03.0_create-polaris-export-log' => [
+					'release'         => '2024.03.0',
+					'title'           => 'Create Polaris Export Log',
+					'description'     => 'Export log to track record created, updated, deleted',
+					'continueOnError' => false,
+					'sql'             => [
+						'CREATE TABLE `polaris_export_log` (
+						  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+						  `startTime` INT(11) UNSIGNED NOT NULL,
+						  `endTime` INT(11) UNSIGNED NULL,
+						  `lastUpdate` INT(11) UNSIGNED NULL,
+						  `numRecordsToProcess` SMALLINT UNSIGNED NULL,
+						  `numRecordsProcessed` SMALLINT UNSIGNED NULL,
+						  `numRecordsAdded` SMALLINT UNSIGNED NULL,
+						  `numRecordsUpdated` SMALLINT UNSIGNED NULL,
+						  `numRecordsDeleted` SMALLINT UNSIGNED NULL,
+						  `numErrors` SMALLINT UNSIGNED NULL,
+						  `numRemainingRecords` SMALLINT UNSIGNED NULL,
+						  `notes` TEXT NULL,
+						  PRIMARY KEY (`id`),
+						  INDEX `index2` (`startTime` DESC))
+						ENGINE = InnoDB;',
+					]
+				],
+
 	];
 }
 
