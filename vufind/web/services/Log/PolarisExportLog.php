@@ -16,10 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+require_once ROOT_DIR . '/services/Log/LogAdmin.php';
 class PolarisExportLog extends Log_Admin {
 
 	public $pageTitle = 'Polaris Export Log';
-	public $logTemplate = 'sierraExportLog.tpl';
+	public $logTemplate = 'polarisExportLog.tpl';
 	public $columnToFilterBy = 'numRecordsToProcess';
 
 	function launch(){

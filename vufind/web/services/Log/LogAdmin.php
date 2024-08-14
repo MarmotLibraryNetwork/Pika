@@ -64,11 +64,11 @@ abstract class Log_Admin extends Admin_Admin {
 		$logEntry->limit(($page - 1) * $pageSize, $pageSize);
 		$logEntries = $logEntry->fetchAll();
 
-		$options = array(
+		$options = [
 			'totalItems' => $total,
 			'fileName'   => '/Log/' . $logClass . '?page=%d' . (empty($_REQUEST['filterCount']) ? '' : '&filterCount=' . $_REQUEST['filterCount']) . (empty($_REQUEST['pagesize']) ? '' : '&pagesize=' . $_REQUEST['pagesize']),
 			'perPage'    => $pageSize,
-		);
+		];
 		$pager   = new VuFindPager($options);
 
 

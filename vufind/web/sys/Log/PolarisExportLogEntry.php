@@ -16,10 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace Log;
 
-class PolarisExportLogEntry extends \LogEntry {
-	public $__table = 'sierra_api_export_log';   // table name
+require_once ROOT_DIR . '/sys/Log/LogEntry.php';
+
+class PolarisExportLogEntry extends LogEntry {
+	public $__table = 'polaris_export_log';   // table name
 	public $numRecordsToProcess;
 	public $numRecordsProcessed;
 	public $numRecordsAdded;
@@ -27,7 +28,7 @@ class PolarisExportLogEntry extends \LogEntry {
 	public $numRecordsDeleted;
 
 	public $numErrors;
-	public $numRemainingRecords;
+//	public $numRemainingRecords;
 
 
 }
