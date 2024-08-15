@@ -359,7 +359,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $c = new Curl();
         $c->setOpts($c_opts);
         $c->get($request_url);
-
+        // todo: log header from curl object
         if ($c->error || $c->httpStatusCode !== 200) {
             $this->logger->error(
                 'Curl error: ' . $c->errorMessage,
@@ -367,7 +367,9 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                 ['RequestURL' => $request_url, 'RequestHeaders' => $headers],
             );
             return null;
-        } elseif ($error = $this->_isPapiError($c->response)) {
+        }
+
+        if ($error = $this->_isPapiError($c->response)) {
             $this->_logPapiError($error);
             return null;
         }
@@ -815,7 +817,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             // Return the date in ISO 8601 format
             return $dateTime->format('c');
         } else {
-            throw new Exception("Invalid Microsoft date format: $microsoftDate");
+            throw new \RuntimeException("Invalid Microsoft date format: $microsoftDate");
         }
     }
 
@@ -925,6 +927,27 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             $checkouts[] = $checkout;
         }
         return $checkouts;
+    }
+
+    /**
+     * Executes a system-level HTTP request with the specified method, URL, and request body.
+     *
+     * This method generates a hash for authorization and then delegates the actual request execution
+     * to the `_doRequest` method. It supports various HTTP methods (GET, POST, PUT) and allows for
+     * additional headers and request body content to be included in the request.
+     *
+     * @param string $method The HTTP method to use for the request. Defaults to 'GET'. Supported methods: 'GET', 'POST', 'PUT'.
+     * @param string $url The URL to which the request is sent.
+     * @param array|string $body The request body to send, which can be an array or string. For GET requests, this is typically empty.
+     * @param array $extra_headers Additional headers to include in the request. These are merged with the default headers.
+     *
+     * @return ?Curl Returns a `Curl` object on successful request, or `null` if an error occurs.
+     */
+    protected function _doSystemRequest(string $method = 'GET', string $url, $body = [], $extra_headers = []): ?Curl
+    {
+        $hash = $this->_createHash($method, $url);
+        $c = $this->_doRequest($hash, $method, $url, $body, $extra_headers);
+        return $c;
     }
 
     /**
@@ -1395,13 +1418,17 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     }
 
     /**
-     * Place hold does not require user pw or secret as part of the harsh. When making the call only use METHOD . URI
-     * to create hash.
      *
      * @inheritDoc
      */
     public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null)
     {
+        // get title to use in return
+        $record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
+
+        if ($record->isValid()) {
+            $volumes = $record->getVolumeInfoForRecord();
+        }
         // lookup the pickup location Polaris branch id
         $location = new Location();
         $location->code = $pickupBranch;
@@ -1442,7 +1469,10 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         // errors
         if ($c === null) { // api or curl error
             if (isset($this->papiLastErrorMessage)) {
-                return ['success' => false, 'message' => $this->papiLastErrorMessage];
+                return [
+                    'success' => false,
+                    'message' => "Your hold could not be placed. {$this->papiLastErrorMessage}",
+                ];
             }
             return [
                 'success' => false,
@@ -1501,28 +1531,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
         return null;
     }
-
-    /**
-     * Executes a system-level HTTP request with the specified method, URL, and request body.
-     *
-     * This method generates a hash for authorization and then delegates the actual request execution
-     * to the `_doRequest` method. It supports various HTTP methods (GET, POST, PUT) and allows for
-     * additional headers and request body content to be included in the request.
-     *
-     * @param string $method The HTTP method to use for the request. Defaults to 'GET'. Supported methods: 'GET', 'POST', 'PUT'.
-     * @param string $url The URL to which the request is sent.
-     * @param array|string $body The request body to send, which can be an array or string. For GET requests, this is typically empty.
-     * @param array $extra_headers Additional headers to include in the request. These are merged with the default headers.
-     *
-     * @return ?Curl Returns a `Curl` object on successful request, or `null` if an error occurs.
-     */
-    protected function _doSystemRequest(string $method = 'GET', string $url, $body = [], $extra_headers = []): ?Curl
-    {
-        $hash = $this->_createHash($method, $url);
-        $c = $this->_doRequest($hash, $method, $url, $body, $extra_headers);
-        return $c;
-    }
-
+    
     protected function _placeHoldRequestReply($hold_response, $requesting_org_id): ?Curl
     {
         $status_to_state = [
@@ -1551,12 +1560,12 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
      */
     public function placeItemHold($patron, $recordId, $itemId, $pickupBranch)
     {
-        // TODO: Implement placeItemHold() method.
+        $recordId = trim($recordId);
     }
 
     /**
      * @inheritDoc
-     * Cancel hold requires patron secret to be at the end of string that will be hashed. Strange...
+     *
      */
     public function cancelHold($patron, $recordId, $cancelId)
     {
@@ -1583,7 +1592,18 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     }
 
     /**
-     * @throws \Exception
+     * Freezes a patron's hold request, setting it to become inactive until a specified reactivation date.
+     *
+     * This method sends a request to the library system's API to freeze a hold request for a patron.
+     * It accepts a reactivation date. The method uses `_doPatronRequest` to execute the API call and returns a success
+     * message if the hold is successfully frozen, or an error message if the request fails.
+     *
+     * @param User $patron The patron object representing the user whose hold is being frozen.
+     * @param int|string $recordId The ID of the record associated with the hold (not directly used in the request but kept for reference).
+     * @param int|string $itemToFreezeId The ID of the specific hold request to be frozen.
+     * @param string $dateToReactivate The date when the hold should be reactivated, in a format parsable by DateTime.
+     *
+     * @return array An array containing the success status (`true` or `false`) and a message indicating the result of the operation.
      */
     public function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate): array
     {
@@ -1616,7 +1636,21 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return ['success' => true, 'message' => "Your hold has been {$frozen}."];
     }
 
-    public function thawHold($patron, $recordId, $itemToThawId)
+    /**
+     * Thaws a patron's hold request (making it active again).
+     *
+     * This method reactivates a previously frozen hold request for a patron.
+     * It constructs the necessary request URL and body, and uses the `_doPatronRequest`
+     * method to perform the API call. The method returns a success message if the hold is successfully thawed,
+     * or an error message if the request fails.
+     *
+     * @param User $patron The patron object representing the user whose hold is being thawed.
+     * @param int|string $recordId The ID of the record associated with the hold (not directly used in the request but kept for reference).
+     * @param int|string $itemToThawId The ID of the specific hold request to be thawed.
+     *
+     * @return array An array containing the success status (`true` or `false`) and a message indicating the result of the operation.
+     */
+    public function thawHold($patron, $recordId, $itemToThawId): array
     {
         // /public/1/patron/{PatronBarcode}/holdrequests/{RequestID}/active
         // translations
@@ -1642,9 +1676,48 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return ['success' => true, 'message' => "Your hold has been {$thawed}."];
     }
 
+    /**
+     * Note: it seems the hold id comes across in the variable $itemToUpdateId
+     * Note: not in the documentation but holdPickupAreaID IS required. Set to 0 (zero)
+     * @param $patron
+     * @param $recordId
+     * @param $itemToUpdateId
+     * @param $newPickupLocation
+     * @return array
+     */
     public function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation)
     {
-        // TODO: Implement changeHoldPickupLocation() method.
+        // /public/patron/{PatronBarcode}/holdrequests/{RequestID}/pickupbranch?userid={user_id}&wsid={workstation_id}
+        // &pickupbranchid={pickupbranch_id}&holdPickupAreaID=0
+        // todo: if we ever have a Polaris library with pickup areas we'll need to rework this.
+        $staff_user_id = $this->configArray['Polaris']['staffUserId'];
+        $workstation_id = $this->configArray['Polaris']['workstationId'];
+        $pickup_branch_id = $this->locationCodeToPolarisBranchId($newPickupLocation);
+
+        $request_url = $this->ws_url . "/patron/{$patron->barcode}/holdrequests/{$itemToUpdateId}/pickupbranch?userid=" .
+            "{$staff_user_id}&wsid={$workstation_id}&pickupbranchid={$pickup_branch_id}&holdPickupAreaID=0";
+
+        $return = ['success' => false, 'message' => "Unable to change pickup location."];
+        $c = $this->_doPatronRequest($patron, 'PUT', $request_url);
+        if ($c === null) {
+            if (isset($this->papiLastErrorMessage)) {
+                $return['message'] .= ' ' . $this->papiLastErrorMessage;
+            } else {
+                $return['message'] .= " Please contact your library for further assistance.";
+            }
+            return $return;
+        }
+        return ['success' => true, 'message' => "The pickup location has been updated."];
+    }
+
+    protected function locationCodeToPolarisBranchId($branch_name)
+    {
+        $location = new Location();
+        $location->code = $branch_name;
+        if ($location->find(true) && $location->N === 1) {
+            return $location->ilsLocationId;
+        }
+        return null;
     }
 
     public function updatePatronInfo($patron, $canUpdateContactInfo)
@@ -1663,4 +1736,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $patron_object_cache_key = 'patronilsid' . $patron_ils_id . 'object';
         return $this->cache->delete($patron_object_cache_key);
     }
+
+
 } // end class Polaris
