@@ -37,7 +37,7 @@ class MyAccount_Holds extends MyAccount{
 
 		// Set Holds settings that are based on the ILS system
 		$ils          = $configArray['Catalog']['ils'];
-		$showPosition = ($ils == 'Horizon' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'CarlX');
+		$showPosition = ($ils == 'Horizon' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'CarlX' || $ils == 'Polaris');
 		// for other ils capable of showing hold position.
 		// If $showPosition is already true don't override that setting
 		// #D-3420

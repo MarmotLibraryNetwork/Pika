@@ -760,25 +760,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $user;
     }
 
-    /**
-     * Get a user object from cache
-     *
-     * @param $patron_ils_id
-     * @return false|mixed
-     */
-    protected function _getCachePatronObject($patron_ils_id)
-    {
-        $patron_object_cache_key = 'patronilsid' . $patron_ils_id . 'object';
-        $patron = $this->cache->get($patron_object_cache_key, false);
-        if ($patron) {
-            $this->logger->info('Patron object found in cache.');
-            return $patron;
-        } else {
-            $this->logger->info('Patron object not found in cache.');
-            return false;
-        }
-    }
-
     protected function isMicrosoftDate($microsoftDate)
     {
         if (preg_match('/^\/?Date\((\d+)([+-]\d{4})\)\/?$/', $microsoftDate, $matches)) {
@@ -1058,12 +1039,12 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                 $c->exec();
                 break;
         }
-        // todo: request headers need to be an array or string to be logged.
+        
         if ($c->error || $c->httpStatusCode !== 200) {
             $this->logger->error('Curl error: ' . $c->errorMessage, [
                 'http_code' => $c->httpStatusCode,
                 'request_url' => $url,
-                'Headers' => implode(PHP_EOL, $c->requestHeaders),
+                'Headers' => implode(PHP_EOL, implode(PHP_EOL, $c->requestHeaders)),
             ]);
             return null;
         } elseif ($error = $this->_isPapiError($c->response)) {
@@ -1094,11 +1075,11 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     {
         if (preg_match('/ILL-(.*?)([:\/])/', $title, $matches)) {
             return trim($matches[1]);
-        } else {
-            // If neither ":" nor "/" is found, return the entire string after "ILL-"
-            if (preg_match('/ILL-(.*)/', $title, $matches)) {
-                return trim($matches[1]);
-            }
+        }
+
+        // If neither ":" nor "/" is found, return the entire string after "ILL-"
+        if (preg_match('/ILL-(.*)/', $title, $matches)) {
+            return trim($matches[1]);
         }
         return $title; // Return full title if ILL- isn't found
     }
@@ -1384,15 +1365,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return ['available' => $availableHolds, 'unavailable' => $unavailableHolds];
     }
 
-    protected function polarisBranchIdToLocationId($branch_id)
-    {
-        $location = new Location();
-        $location->ilsLocationId = $branch_id;
-        if ($location->find(true) && $location->N === 1) {
-            return $location->locationId;
-        }
-        return null;
-    }
 
     public function getIllCover()
     {
@@ -1417,18 +1389,13 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $coverUrl;
     }
 
+    /********* HOLDS **********/
     /**
      *
      * @inheritDoc
      */
     public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null)
     {
-        // get title to use in return
-        $record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
-
-        if ($record->isValid()) {
-            $volumes = $record->getVolumeInfoForRecord();
-        }
         // lookup the pickup location Polaris branch id
         $location = new Location();
         $location->code = $pickupBranch;
@@ -1443,11 +1410,11 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $polaris_pu_branch_id = $location->ilsLocationId;
         $requesting_location = $this->locationIdToPolarisBranchId(
             $patron->homeLocationId,
-        ); // todo: should be the local interface
+        );
+
         $patron_id = $patron->ilsUserId;
 
         $request_url = $this->ws_url . '/holdrequest';
-
         $request_body = [
             "PatronID" => (int)$patron_id,
             "BibID" => (int)$recordId,
@@ -1521,40 +1488,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         ];
     }
 
-    protected function locationIdToPolarisBranchId($location_id)
-    {
-        $location = new Location();
-        $location->locationId = $location_id;
-
-        if ($location->find(true) && $location->N === 1 && isset($location->ilsLocationId)) {
-            return $location->ilsLocationId;
-        }
-        return null;
-    }
-    
-    protected function _placeHoldRequestReply($hold_response, $requesting_org_id): ?Curl
-    {
-        $status_to_state = [
-            2 => 1,
-            4 => 2,
-            5 => 3,
-            6 => 4,
-            7 => 5,
-        ];
-        $request_url = $this->ws_url . '/holdrequest/' . $hold_response->RequestGUID;
-
-        $request_body = [
-            "TxnGroupQualifier" => $hold_response->TxnGroupQualifer,
-            "TxnQualifier" => $hold_response->TxnQualifier,
-            "RequestingOrgID" => $requesting_org_id,
-            "Answer" => 1, // always answer yes (1)
-            "State" => $status_to_state[$hold_response->StatusValue],
-        ];
-        $request_body = json_encode($request_body);
-        $extra_headers = ['Content-Type: application/json'];
-        return $this->_doSystemRequest('PUT', $request_url, $request_body, $extra_headers);
-    }
-
     /**
      * @inheritDoc
      */
@@ -1562,7 +1495,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     {
         $recordId = trim($recordId);
     }
-
+    
     /**
      * @inheritDoc
      *
@@ -1710,6 +1643,40 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return ['success' => true, 'message' => "The pickup location has been updated."];
     }
 
+    protected function _placeHoldRequestReply($hold_response, $requesting_org_id): ?Curl
+    {
+        $status_to_state = [
+            2 => 1,
+            4 => 2,
+            5 => 3,
+            6 => 4,
+            7 => 5,
+        ];
+        $request_url = $this->ws_url . '/holdrequest/' . $hold_response->RequestGUID;
+
+        $request_body = [
+            "TxnGroupQualifier" => $hold_response->TxnGroupQualifer,
+            "TxnQualifier" => $hold_response->TxnQualifier,
+            "RequestingOrgID" => $requesting_org_id,
+            "Answer" => 1, // always answer yes (1)
+            "State" => $status_to_state[$hold_response->StatusValue],
+        ];
+        $request_body = json_encode($request_body);
+        $extra_headers = ['Content-Type: application/json'];
+        return $this->_doSystemRequest('PUT', $request_url, $request_body, $extra_headers);
+    }
+    
+//    protected function getBibVolumes($bib_id)
+//    {
+//        // /public/bib/{BibID}/holdings
+//        $requst_url = $this->ws_url . "/bib/{$bib_id}/holdings";
+//        
+//    }
+    public function updatePatronInfo($patron, $canUpdateContactInfo)
+    {
+        // TODO: Implement updatePatronInfo() method.
+    }
+
     protected function locationCodeToPolarisBranchId($branch_name)
     {
         $location = new Location();
@@ -1720,9 +1687,25 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return null;
     }
 
-    public function updatePatronInfo($patron, $canUpdateContactInfo)
+    protected function locationIdToPolarisBranchId($location_id)
     {
-        // TODO: Implement updatePatronInfo() method.
+        $location = new Location();
+        $location->locationId = $location_id;
+
+        if ($location->find(true) && $location->N === 1 && isset($location->ilsLocationId)) {
+            return $location->ilsLocationId;
+        }
+        return null;
+    }
+
+    protected function polarisBranchIdToLocationId($branch_id)
+    {
+        $location = new Location();
+        $location->ilsLocationId = $branch_id;
+        if ($location->find(true) && $location->N === 1) {
+            return $location->locationId;
+        }
+        return null;
     }
 
     /**
@@ -1737,5 +1720,22 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $this->cache->delete($patron_object_cache_key);
     }
 
-
+    /**
+     * Get a user object from cache
+     *
+     * @param $patron_ils_id
+     * @return false|mixed
+     */
+    protected function _getCachePatronObject($patron_ils_id)
+    {
+        $patron_object_cache_key = 'patronilsid' . $patron_ils_id . 'object';
+        $patron = $this->cache->get($patron_object_cache_key, false);
+        if ($patron) {
+            $this->logger->info('Patron object found in cache.');
+            return $patron;
+        } else {
+            $this->logger->info('Patron object not found in cache.');
+            return false;
+        }
+    }
 } // end class Polaris
