@@ -312,7 +312,7 @@
 				{/if}
 
 			{if $loggedIn && $userRoles && (in_array('libraryAdmin', $userRoles) || in_array('opacAdmin', $userRoles) || in_array('cataloging', $userRoles))}
-				{if in_array($action, array('RecordGroupingLog', 'ReindexLog', 'SierraExportLog', 'OverDriveExtractLog', 'HooplaExportLog', 'CronLog'))}
+				{if in_array($action, array('RecordGroupingLog', 'ReindexLog', 'SierraExportLog', 'PolarisExportLog', 'OverDriveExtractLog', 'HooplaExportLog', 'CronLog'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -334,6 +334,9 @@
 							<div class="adminMenuLink{if $action == "ReindexLog"} active{/if}"><a href="/Log/ReindexLog">Reindex Log</a></div>
 								{if ($ils == 'Sierra')}
 									<div class="adminMenuLink{if $action == "SierraExportLog"} active{/if}"><a href="/Log/SierraExportLog">Sierra Export Log</a></div>
+								{/if}
+								{if ($ils == 'Polaris')}
+									<div class="adminMenuLink{if $action == "PolarisExportLog"} active{/if}"><a href="/Log/PolarisExportLog">Polaris Export Log</a></div>
 								{/if}
 							<div class="adminMenuLink{if $action == "OverDriveExtractLog"} active{/if}"><a href="/Log/OverDriveExtractLog">OverDrive Extract Log</a></div>
 							<div class="adminMenuLink{if $action == "HooplaExportLog"} active{/if}"><a href="/Log/HooplaExportLog">Hoopla Export Log</a></div>

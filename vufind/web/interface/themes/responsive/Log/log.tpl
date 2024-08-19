@@ -5,7 +5,7 @@
 
 		{if $alert}{$alert}{/if}
 
-		<h4>Filter by</h4>
+		<div class="h4">Filter by</div>
 		<form class="navbar form-inline row">
         {if !empty($filterLabel)}
 					<div class="form-group col-xs-7">
