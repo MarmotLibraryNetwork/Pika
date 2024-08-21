@@ -336,6 +336,54 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     }
 
     /**
+     * Authenticate a patron and return the patron id and patron access secret key.
+     *
+     * @param string $barcode
+     * @param string $pin
+     * @param bool $validatedViaSSO
+     * @return object|null
+     */
+    protected function authenticatePatron(string $barcode, string $pin, bool $validatedViaSSO = false): ?object
+    {
+        $request_url = $this->ws_url . '/authenticator/patron';
+        $request_body = json_encode(['Barcode' => $barcode, 'Password' => $pin]);
+
+        $hash = $this->_createHash('POST', $request_url);
+
+        $headers = [
+            "PolarisDate: " . gmdate('r'),
+            "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
+            "Accept: application/json",
+            "Content-Type: application/json",
+            "Content-Length: " . strlen($request_body),
+        ];
+        $c_opts = [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => $headers,
+        ];
+
+        $c = new Curl();
+        $c->setOpts($c_opts);
+        $c->post($request_url, $request_body);
+
+        if ($c->error || $c->httpStatusCode !== 200) {
+            $this->logger->error(
+                'Curl error: ' . $c->errorMessage,
+                ['http_code' => $c->httpStatusCode],
+                ['RequestURL' => $request_url, 'RequestHeaders' => $headers, 'RequestBody' => $request_body],
+            );
+            return null;
+        } elseif ($error = $this->_isPapiError($c->response)) {
+            $this->_logPapiError($error);
+            return null;
+        }
+
+        $this->_setCachePatronSecret($c->response->PatronID, $c->response->AccessSecret);
+
+        return $c->response;
+    }
+
+    /**
      * Check if a patron exists in the Polaris database.
      *
      * This method will return a real barcode in case the patron is using a username. NOTE: When creating the header
@@ -383,6 +431,212 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $c->response;
     }
 
+    /**
+     * Check if user exists in database, create user if needed, update user if needed and return User object.
+     *
+     * @param $ils_id
+     * @param $barcode
+     * @return User|null
+     */
+    protected function getPatron($ils_id, $barcode): ?User
+    {
+        // get user from cache if cache object exists
+        if ($user = $this->_getCachePatronObject($ils_id)) {
+            //return $user;
+        }
+
+        $create_user = false;
+
+        $user = new User();
+        $user->ilsUserId = $ils_id;
+        $user->source = 'ils';
+
+        if (!$user->find(true) || $user->N === 0) {
+            // if there's no patron in database
+            $create_user = true;
+        }
+
+        if ($barcode && $user->barcode !== $barcode) {
+            $user->barcode = $barcode;
+            if (!$create_user) { // don't update the user if the user doesn't already exist
+                $user->update(); // update barcode immediately to avoid issues with ajax calls
+            }
+        }
+
+        // get the basic user data from the Polaris API
+        $request_url = $this->ws_url . '/patron/' . $barcode . '/basicdata?addresses=true';
+        $patron_access_secret = $this->_getCachePatronSecret($ils_id);
+        $hash = $this->_createHash('GET', $request_url, $patron_access_secret);
+
+        $headers = [
+            "PolarisDate: " . gmdate('r'),
+            "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
+            "Accept: application/json",
+        ];
+        $c_opts = [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => $headers,
+        ];
+
+        $c = new Curl();
+        $c->setOpts($c_opts);
+        $c->get($request_url);
+
+        if ($c->error || $c->httpStatusCode !== 200) {
+            $this->logger->error(
+                'Curl error: ' . $c->errorMessage,
+                ['http_code' => $c->httpStatusCode],
+                ['RequestURL' => $request_url, "Headers" => $headers],
+            );
+            return null;
+        } elseif ($error = $this->_isPapiError($c->response)) {
+            $this->_logPapiError($error);
+            return null;
+        }
+
+        $patron_response = $c->response->PatronBasicData;
+        /***
+         * Database checks and updates
+         */
+        // Names
+        if ($user->firstname !== $patron_response->NameFirst || $user->lastname !== $patron_response->NameLast) {
+            $user->firstname = $patron_response->NameFirst;
+            $user->lastname = $patron_response->NameLast;
+            if (!$create_user) {
+                $user->update();
+            }
+        }
+
+        // Email
+        if ($user->email !== $patron_response->EmailAddress) {
+            $user->email = $patron_response->EmailAddress;
+            if (!$create_user) {
+                $user->update();
+            }
+        }
+
+        // Patron library and location
+        $location = new Location();
+        $location->ilsLocationId = $patron_response->PatronOrgID;
+        if ($location->find(true)) {
+            // Set location
+            if ($user->homeLocationId !== $location->locationId) {
+                $user->homeLocationId = $location->locationId;
+                if (!$create_user) {
+                    $user->update();
+                }
+            }
+            // Set library
+            if ($user->homeLibraryId !== $location->libraryId) {
+                $user->homeLibraryId = $location->libraryId;
+                if (!$create_user) {
+                    $user->update();
+                }
+            }
+        } else {
+            $this->logger->error('Can not determine users home location. Defaulting to 1');
+            $user->homeLocationId = 1;
+            if (!$create_user) {
+                $user->update();
+            }
+        }
+
+        // Patron code
+        if ($user->patronType !== $patron_response->PatronCodeID) {
+            $user->patronType = $patron_response->PatronCodeID;
+            if (!$create_user) {
+                $user->update();
+            }
+        }
+
+        if ($create_user) {
+            $user->source = 'ils';
+            $user->created = date("Y-m-d H:i:s");
+            $user->insert();
+        }
+
+        /***
+         * The following class variables aren't stored in database and need to be created on demand
+         */
+        // Names
+        $user->fullname = $user->firstname . ' ' . $user->lastname;
+
+        // Expiration
+        // date can be returned in Microsoft format
+        if ($this->isMicrosoftDate($patron_response->ExpirationDate)) {
+            try {
+                $expiration_date = $this->microsoftDateToISO($patron_response->ExpirationDate);
+                $user->expires = $expiration_date;
+            } catch (Exception $e) {
+                $this->logger->error($e->getMessage());
+                $user->expires = null;
+            }
+        } else {
+            $user->expires = $patron_response->ExpirationDate;
+        }
+
+        // Address
+        $patron_address = $patron_response->PatronAddresses[0];
+        $user->address_id = $patron_address->AddressID;
+        $user->address1 = $patron_address->StreetOne;
+        $user->address2 = $patron_address->StreetTwo;
+        $user->city = $patron_address->City;
+        $user->state = $patron_address->State;
+        $user->zip = $patron_address->PostalCode;
+
+        // Phone
+        $user->phone = $patron_response->PhoneNumber;
+
+        // Notices
+        // Possible values in Polaris API
+        //1 - Mail
+        //2 - Email
+        //3 - Phone 1
+        //4 - Phone 2
+        //5 - Phone 3
+        //6 - Fax
+        //8 - Text Message
+        // todo: for now stuff these into a Pika accepted code- Mail, Telephone, E-mail
+        switch ($patron_response->DeliveryOptionID) {
+            case 1:
+                $user->noticePreferenceLabel = 'Mail';
+                break;
+            case 2:
+                $user->noticePreferenceLabel = 'E-mail';
+                break;
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+                // no 7 according to the docs
+            case 8:
+                // Assuming any ID >= 3 means 'Phone'
+                $user->noticePreferenceLabel = 'Phone';
+                break;
+            default:
+                $user->noticePreferenceLabel = null;
+                break;
+        }
+
+        // Checkouts and holds count
+        // Polaris returns number of ILS AND number of ILL holds in counts.
+        $user->numHoldsIls = $patron_response->HoldRequestsCurrentCount;
+        $user->numHoldsAvailableIls = $patron_response->HoldRequestsHeldCount;
+        $user->numHoldsRequestedIls = $patron_response->HoldRequestsTotalCount;
+        $user->numCheckedOutIls = $patron_response->ItemsOutCount;
+
+        // Fines
+        $user->finesVal = $patron_response->ChargeBalance;
+
+        // Notes
+        // todo: do we need this?
+        // $user->webNote = $patron_response->PatronNotes;
+
+        $this->_setCachePatronObject($user);
+
+        return $user;
+    }
+    
     /**
      * Create a hash for API authentication.
      *
@@ -500,53 +754,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
     /******************** Errors ********************/
 
-    /**
-     * Authenticate a patron and return the patron id and patron access secret key.
-     *
-     * @param string $barcode
-     * @param string $pin
-     * @param bool $validatedViaSSO
-     * @return object|null
-     */
-    protected function authenticatePatron(string $barcode, string $pin, bool $validatedViaSSO = false): ?object
-    {
-        $request_url = $this->ws_url . '/authenticator/patron';
-        $request_body = json_encode(['Barcode' => $barcode, 'Password' => $pin]);
 
-        $hash = $this->_createHash('POST', $request_url);
-
-        $headers = [
-            "PolarisDate: " . gmdate('r'),
-            "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
-            "Accept: application/json",
-            "Content-Type: application/json",
-            "Content-Length: " . strlen($request_body),
-        ];
-        $c_opts = [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER => $headers,
-        ];
-
-        $c = new Curl();
-        $c->setOpts($c_opts);
-        $c->post($request_url, $request_body);
-
-        if ($c->error || $c->httpStatusCode !== 200) {
-            $this->logger->error(
-                'Curl error: ' . $c->errorMessage,
-                ['http_code' => $c->httpStatusCode],
-                ['RequestURL' => $request_url, 'RequestHeaders' => $headers, 'RequestBody' => $request_body],
-            );
-            return null;
-        } elseif ($error = $this->_isPapiError($c->response)) {
-            $this->_logPapiError($error);
-            return null;
-        }
-
-        $this->_setCachePatronSecret($c->response->PatronID, $c->response->AccessSecret);
-
-        return $c->response;
-    }
 
     /**
      * Add patrons secret to cache
@@ -563,290 +771,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     }
 
     /******************** Checkouts ********************/
-
-    /**
-     * Check if user exists in database, create user if needed, update user if needed and return User object.
-     *
-     * @param $ils_id
-     * @param $barcode
-     * @return User|null
-     */
-    protected function getPatron($ils_id, $barcode): ?User
-    {
-        // get user from cache if cache object exists
-        if ($user = $this->_getCachePatronObject($ils_id)) {
-            return $user;
-        }
-
-        $create_user = false;
-
-        $user = new User();
-        $user->ilsUserId = $ils_id;
-        $user->source = 'ils';
-
-        if (!$user->find(true) || $user->N === 0) {
-            // if there's no patron in database
-            $create_user = true;
-        }
-
-        if ($barcode && $user->barcode !== $barcode) {
-            $user->barcode = $barcode;
-            if (!$create_user) { // don't update the user if the user doesn't already exist
-                $user->update(); // update barcode immediately to avoid issues with ajax calls
-            }
-        }
-
-        // get the basic user data from the Polaris API
-        $request_url = $this->ws_url . '/patron/' . $barcode . '/basicdata?addresses=true&notes=true';
-        $patron_access_secret = $this->_getCachePatronSecret($ils_id);
-        $hash = $this->_createHash('GET', $request_url, $patron_access_secret);
-
-        $headers = [
-            "PolarisDate: " . gmdate('r'),
-            "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
-            "Accept: application/json",
-        ];
-        $c_opts = [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER => $headers,
-        ];
-
-        $c = new Curl();
-        $c->setOpts($c_opts);
-        $c->get($request_url);
-
-        if ($c->error || $c->httpStatusCode !== 200) {
-            $this->logger->error(
-                'Curl error: ' . $c->errorMessage,
-                ['http_code' => $c->httpStatusCode],
-                ['RequestURL' => $request_url, "Headers" => $headers],
-            );
-            return null;
-        } elseif ($error = $this->_isPapiError($c->response)) {
-            $this->_logPapiError($error);
-            return null;
-        }
-
-        $patron_response = $c->response->PatronBasicData;
-        /***
-         * Database checks and updates
-         */
-        // Names
-        if ($user->firstname !== $patron_response->NameFirst || $user->lastname !== $patron_response->NameLast) {
-            $user->firstname = $patron_response->NameFirst;
-            $user->lastname = $patron_response->NameLast;
-            if (!$create_user) {
-                $user->update();
-            }
-        }
-
-        // Email
-        if ($user->email !== $patron_response->EmailAddress) {
-            $user->email = $patron_response->EmailAddress;
-            if (!$create_user) {
-                $user->update();
-            }
-        }
-
-        // Patron library and location
-        
-        $location = new Location();
-        $location->ilsLocationId = $patron_response->PatronOrgID;
-        if ($location->find(true)) {
-            // Set location
-            if ($user->homeLocationId !== $location->locationId) {
-                $user->homeLocationId = $location->locationId;
-                if (!$create_user) {
-                    $user->update();
-                }
-            }
-            // Set library
-            if ($user->homeLibraryId !== $location->libraryId) {
-                $user->homeLibraryId = $location->libraryId;
-                if (!$create_user) {
-                    $user->update();
-                }
-            }
-        } else {
-            $this->logger->error('Can not determine users home location. Defaulting to 1');
-            $user->homeLocationId = 1;
-            if (!$create_user) {
-                $user->update();
-            }
-        }
-
-        // Patron code
-        if ($user->patronType !== $patron_response->PatronCodeID) {
-            $user->patronType = $patron_response->PatronCodeID;
-            if (!$create_user) {
-                $user->update();
-            }
-        }
-
-        if ($create_user) {
-            $user->source = 'ils';
-            $user->created = date("Y-m-d H:i:s");
-            $user->insert();
-        }
-
-        /***
-         * The following class variables aren't stored in database and need to be created on demand
-         */
-
-        // Names
-        $user->fullname = $user->firstname . ' ' . $user->lastname;
-
-        // Expiration
-        // date can be returned in Microsoft format
-        if ($this->isMicrosoftDate($patron_response->ExpirationDate)) {
-            try {
-                $expiration_date = $this->microsoftDateToISO($patron_response->ExpirationDate);
-                $user->expires = $expiration_date;
-            } catch (Exception $e) {
-                $this->logger->error($e->getMessage());
-                $user->expires = null;
-            }
-        } else {
-            $user->expires = $patron_response->ExpirationDate;
-        }
-
-        // Address
-        $patron_address = $patron_response->PatronAddresses[0];
-        $user->address1 = $patron_address->StreetOne;
-        $user->address2 = $patron_address->StreetTwo;
-        $user->city = $patron_address->City;
-        $user->state = $patron_address->State;
-        $user->zip = $patron_address->PostalCode;
-
-        // Phone
-        $user->phone = $patron_response->PhoneNumber;
-
-        // Notices
-        // Possible values in Polaris API
-        //1 - Mail
-        //2 - Email
-        //3 - Phone 1
-        //4 - Phone 2
-        //5 - Phone 3
-        //6 - Fax
-        //8 - Text Message
-        // todo: for now stuff these into a Pika accepted code- Mail, Telephone, E-mail
-        switch ($patron_response->DeliveryOptionID) {
-            case 1:
-                $user->noticePreferenceLabel = 'Mail';
-                break;
-            case 2:
-                $user->noticePreferenceLabel = 'E-mail';
-                break;
-            case 3:
-            case 4:
-            case 5:
-            case 6:
-                // no 7 according to the docs
-            case 8:
-                // Assuming any ID >= 3 means 'Phone'
-                $user->noticePreferenceLabel = 'Phone';
-                break;
-            default:
-                $user->noticePreferenceLabel = null;
-                break;
-        }
-
-        // Checkouts and holds count
-        // Polaris returns number of ILS AND number of ILL holds in counts.
-        $user->numHoldsIls = $patron_response->HoldRequestsCurrentCount;
-        $user->numHoldsAvailableIls = $patron_response->HoldRequestsHeldCount;
-        $user->numHoldsRequestedIls = $patron_response->HoldRequestsTotalCount;
-        $user->numCheckedOutIls = $patron_response->ItemsOutCount;
-
-        // Fines
-        $user->finesVal = $patron_response->ChargeBalance;
-
-        // Notes
-        // todo: do we need this?
-        // $user->webNote = $patron_response->PatronNotes;
-
-        $this->_setCachePatronObject($user);
-
-        return $user;
-    }
-
-    /**
-     * Get a user object from cache
-     *
-     * @param $patron_ils_id
-     * @return false|mixed
-     */
-    protected function _getCachePatronObject($patron_ils_id)
-    {
-        $patron_object_cache_key = $this->cache->makePatronKey('patron', $patron_ils_id);
-        // $patron_object_cache_key = 'patronilsid' . $patron_ils_id . 'object';
-        $patron = $this->cache->get($patron_object_cache_key, false);
-        if ($patron) {
-            $this->logger->info('Patron object found in cache.');
-            return $patron;
-        } else {
-            $this->logger->info('Patron object not found in cache.');
-            return false;
-        }
-    }
-
-    /******************** Holds ********************/
-
-    protected function isMicrosoftDate($microsoftDate)
-    {
-        if (preg_match('/^\/?Date\((\d+)([+-]\d{4})\)\/?$/', $microsoftDate, $matches)) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Converts a Microsoft format date to ISO 8601 format.
-     *
-     * The Microsoft format date is typically in the form of "Date(1835074800000-0700)",
-     * where the number represents the number of milliseconds since the Unix epoch (January 1, 1970),
-     * and the timezone offset indicates the offset from UTC.
-     *
-     * @param string $microsoftDate The Microsoft format date string.
-     * @return string The date in ISO 8601 format.
-     * @throws Exception If the provided date string is not in a valid Microsoft format.
-     */
-    protected function microsoftDateToISO($microsoftDate)
-    {
-        // Extract the timestamp and the timezone offset from the Microsoft date format
-        if (preg_match('/^\/?Date\((\d+)([+-]\d{4})\)\/?$/', $microsoftDate, $matches)) {
-            $timestamp = $matches[1] / 1000; // Convert milliseconds to seconds
-            $timestamp = (int)$timestamp; // cast to an int in case of decimel
-            $timezoneOffset = $matches[2];
-
-            // Create a DateTime object from the timestamp
-            $dateTime = new DateTime("@$timestamp");
-
-            // Set the timezone offset
-            $hours = substr($timezoneOffset, 0, 3);
-            $minutes = substr($timezoneOffset, 0, 1) . substr($timezoneOffset, 3, 2);
-            $dateTime->setTimezone(new DateTimeZone("$hours:$minutes"));
-
-            // Return the date in ISO 8601 format
-            return $dateTime->format('c');
-        } else {
-            throw new \RuntimeException("Invalid Microsoft date format: $microsoftDate");
-        }
-    }
-
-    /**
-     * Save a user object to cache
-     *
-     * @param User $patron
-     * @return bool
-     */
-    protected function _setCachePatronObject(User $patron): bool
-    {
-        $patron_object_cache_key = 'patronilsid' . $patron->ilsUserId . 'object';
-        $expires = 30;
-        return $this->cache->set($patron_object_cache_key, $patron, $expires);
-    }
 
     /**
      * Retrieve a Patron's Checked Out Items
@@ -942,6 +866,114 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
         return $checkouts;
     }
+    
+    /**
+     * @inheritDoc
+     *
+     */
+    public function renewItem($patron, $recordId, $itemId, $itemIndex)
+    {
+        // /public/patron/{PatronBarcode}/itemsout/{ID}
+        $return = ['success' => false, 'message' => "Unable to renew your checkout."];
+        $request_url = $this->ws_url . '/patron/' . $patron->barcode . '/itemsout/' . $itemId;
+        $request_body = json_encode([
+            "Action" => "renew",
+            "LogonBranchID" => 1,
+            "LogonUserID" => (int)$this->configArray['Polaris']['staffUserId'],
+            "LogonWorkstationID" => (int)$this->configArray['Polaris']['workstationId'],
+            "RenewData" => [
+                "IgnoreOverrideErrors" => true,
+            ],
+        ]);
+
+        $extra_headers = ['Content-type: application/json'];
+        $c = $this->_doPatronRequest($patron, 'PUT', $request_url, $request_body, $extra_headers);
+        if ($c === null) {
+            return $return;
+        }
+        return ['success' => true, 'message' => "Your checkout has been renewed."];
+    }
+    
+    
+
+    /**
+     * Get a user object from cache
+     *
+     * @param $patron_ils_id
+     * @return false|mixed
+     */
+    protected function _getCachePatronObject($patron_ils_id)
+    {
+        $patron_object_cache_key = $this->cache->makePatronKey('patron', $patron_ils_id);
+        // $patron_object_cache_key = 'patronilsid' . $patron_ils_id . 'object';
+        $patron = $this->cache->get($patron_object_cache_key, false);
+        if ($patron) {
+            $this->logger->info('Patron object found in cache.');
+            return $patron;
+        } else {
+            $this->logger->info('Patron object not found in cache.');
+            return false;
+        }
+    }
+
+    /******************** Holds ********************/
+
+    protected function isMicrosoftDate($microsoftDate)
+    {
+        if (preg_match('/^\/?Date\((\d+)([+-]\d{4})\)\/?$/', $microsoftDate, $matches)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Converts a Microsoft format date to ISO 8601 format.
+     *
+     * The Microsoft format date is typically in the form of "Date(1835074800000-0700)",
+     * where the number represents the number of milliseconds since the Unix epoch (January 1, 1970),
+     * and the timezone offset indicates the offset from UTC.
+     *
+     * @param string $microsoftDate The Microsoft format date string.
+     * @return string The date in ISO 8601 format.
+     * @throws Exception If the provided date string is not in a valid Microsoft format.
+     */
+    protected function microsoftDateToISO($microsoftDate)
+    {
+        // Extract the timestamp and the timezone offset from the Microsoft date format
+        if (preg_match('/^\/?Date\((\d+)([+-]\d{4})\)\/?$/', $microsoftDate, $matches)) {
+            $timestamp = $matches[1] / 1000; // Convert milliseconds to seconds
+            $timestamp = (int)$timestamp; // cast to an int in case of decimel
+            $timezoneOffset = $matches[2];
+
+            // Create a DateTime object from the timestamp
+            $dateTime = new DateTime("@$timestamp");
+
+            // Set the timezone offset
+            $hours = substr($timezoneOffset, 0, 3);
+            $minutes = substr($timezoneOffset, 0, 1) . substr($timezoneOffset, 3, 2);
+            $dateTime->setTimezone(new DateTimeZone("$hours:$minutes"));
+
+            // Return the date in ISO 8601 format
+            return $dateTime->format('c');
+        } else {
+            throw new \RuntimeException("Invalid Microsoft date format: $microsoftDate");
+        }
+    }
+
+    /**
+     * Save a user object to cache
+     *
+     * @param User $patron
+     * @return bool
+     */
+    protected function _setCachePatronObject(User $patron): bool
+    {
+        $patron_object_cache_key = 'patronilsid' . $patron->ilsUserId . 'object';
+        $expires = 30;
+        return $this->cache->set($patron_object_cache_key, $patron, $expires);
+    }
+
+
 
     /**
      * Executes a patron-specific HTTP request with the specified method, URL, and request body.
@@ -1198,32 +1230,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $cleaned_author ?? $author;
     }
 
-    /**
-     * @inheritDoc
-     *
-     */
-    public function renewItem($patron, $recordId, $itemId, $itemIndex)
-    {
-        // /public/patron/{PatronBarcode}/itemsout/{ID}
-        $return = ['success' => false, 'message' => "Unable to renew your checkout."];
-        $request_url = $this->ws_url . '/patron/' . $patron->barcode . '/itemsout/' . $itemId;
-        $request_body = json_encode([
-            "Action" => "renew",
-            "LogonBranchID" => 1,
-            "LogonUserID" => (int)$this->configArray['Polaris']['staffUserId'],
-            "LogonWorkstationID" => (int)$this->configArray['Polaris']['workstationId'],
-            "RenewData" => [
-                "IgnoreOverrideErrors" => true,
-            ],
-        ]);
 
-        $extra_headers = ['Content-type: application/json'];
-        $c = $this->_doPatronRequest($patron, 'PUT', $request_url, $request_body, $extra_headers);
-        if ($c === null) {
-            return $return;
-        }
-        return ['success' => true, 'message' => "Your checkout has been renewed."];
-    }
 
     /**
      * @inheritDoc
@@ -1714,7 +1721,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
      * @param $newPickupLocation
      * @return array
      */
-    public function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation)
+    public function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation): array
     {
         // /public/patron/{PatronBarcode}/holdrequests/{RequestID}/pickupbranch?userid={user_id}&wsid={workstation_id}
         // &pickupbranchid={pickupbranch_id}&holdPickupAreaID=0
@@ -1774,19 +1781,57 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             return ['You can not update your information. Please contact your library for assistance.'];
         }
         /*
-        * If a method exits in a class extending this class it will be passed a User object.
+        * If a method exits in this class or a class extending this class it will be passed a User object.
         */
         if (isset($_REQUEST['profileUpdateAction']) && method_exists($this, $_REQUEST['profileUpdateAction'])) {
             $profileUpdateAction = trim($_POST['profileUpdateAction']);
             return $this->$profileUpdateAction($patron);
         }
-
+        
+        // if updateScope is contact 
         if ($_REQUEST['updateScope'] === 'contact') {
-            return $this->updatePatronContact();
+            return $this->updatePatronContact($patron);
         }
     }
 
-    public function resetPin($patron, $newPin, $resetToken) {}
+    private function updatePatronContact($patron) {
+        // /public/patron/{PatronBarcode}
+        $contact = [];
+       
+        // required credentials
+        $contact['LogonBranchID'] = 1; // default to system
+        $contact['LogonUserID'] = $this->configArray['Polaris']['staffUserId'];
+        $contact['LogonWorkstationID'] = $this->configArray['Polaris']['workstationId'];
+        // patron updates
+        $contact['AddressID'] = $patron->address_id;
+        $contact['StreetOne'] = $_REQUEST['address1'];
+        $contact['StreetTwo'] = $_REQUEST['address2'] ?? '';
+        $contact['City'] = strtoupper($_REQUEST['city']);
+        $contact['State'] = strtoupper($_REQUEST['state']);
+        $contact['PostalCode'] = $_REQUEST['zip'];
+        $contact['PhoneVoice1'] = $_REQUEST['phone'] ?? '';
+        $contact['EmailAddress'] = $_REQUEST['email'] ?? '';
+
+        $errors = [];
+        $request_url = $this->ws_url . "/patron/{$patron->barcode}";
+        $extra_headers = ["Content-Type: application/json"];
+        
+        $r = $this->_doPatronRequest($patron, 'PUT', $request_url, $contact, $extra_headers);
+        
+        if ($r === null) {
+            if (isset($this->papiLastErrorMessage)) {
+                $errors[] = $this->papiLastErrorMessage;
+            } else {
+                $errors[] = "Unable to update profile. Please contact your library for further assistance.";
+            }
+            return $errors;
+        }
+        return $errors;
+    }
+
+    public function resetPin($patron, $newPin, $resetToken) {
+        
+    }
 
     /**
      * If library uses username field
