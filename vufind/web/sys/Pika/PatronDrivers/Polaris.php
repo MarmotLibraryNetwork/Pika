@@ -625,11 +625,11 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $user->numHoldsRequestedIls = $patron_response->HoldRequestsTotalCount;
         $user->numCheckedOutIls = $patron_response->ItemsOutCount;
 
-        // Fines
+        // Fines // todo: why to separate fines fields? Do we need a currency symbol? 
         $user->finesVal = $patron_response->ChargeBalance;
-
+        $user->fines = number_format($patron_response->ChargeBalance, 2);
         // Notes
-        // todo: do we need this?
+        // todo: do we need this? Polaris notes seem to be only for staff
         // $user->webNote = $patron_response->PatronNotes;
 
         $this->_setCachePatronObject($user);
