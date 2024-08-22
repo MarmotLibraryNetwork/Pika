@@ -661,6 +661,75 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         // Encode the hash in base64 and return it
         return base64_encode($hash);
     }
+    
+    
+    /**
+     * Add patrons secret to cache
+     *
+     * @param $patron_ils_id
+     * @param $patron_secret
+     * @return bool
+     */
+    protected function _setCachePatronSecret($patron_ils_id, $patron_secret): bool
+    {
+        $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret';
+        $expires = 60 * 60 * 23;
+        return $this->cache->set($patron_secret_cache_key, $patron_secret, $expires);
+    }
+
+
+    /**
+     * Get a patrons ILS patron id
+     *
+     * @param $barcode
+     * @return int|false
+     */
+    protected function getPatronIlsId($barcode)
+    {
+        $patron = new User();
+        $patron->barcode = $barcode;
+        // if there's more than one patron with barcode don't return
+        if ($patron->find(true) && $patron->N === 1) {
+            return $patron->ilsUserId;
+        }
+        return false;
+    }
+
+    /**
+     * Get a patrons secret from cache
+     *
+     * @param $patron_ils_id
+     * @return false|string
+     */
+    protected function _getCachePatronSecret($patron_ils_id)
+    {
+        $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret';
+        $key = $this->cache->get($patron_secret_cache_key, false);
+        if ($key) {
+            $this->logger->info('Patron secret found in cache.');
+            return $key;
+        } else {
+            $this->logger->info('Patron secret not found in cache.');
+            return false;
+        }
+    }
+
+    /******************** Errors ********************/
+    /**
+     * Accepts return from _isPapiError and writes the error to log
+     *
+     * @param array $e
+     * @return void
+     */
+    protected function _logPapiError($e): void
+    {
+        if (is_array($e['ErrorMessage'])) {
+            $error_message = implode("\n", $e['ErrorMessage']);
+            $this->logger->error('Polaris API error: ' . $error_message, $e);
+        } else {
+            $this->logger->error('Polaris API error: ' . $e['ErrorMessage'], $e);
+        }
+    }
 
     /**
      * Check Polaris web service return for an api error
@@ -700,75 +769,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return false;
     }
 
-    /**
-     * Accepts return from _isPapiError and writes the error to log
-     *
-     * @param array $e
-     * @return void
-     */
-    protected function _logPapiError($e): void
-    {
-        if (is_array($e['ErrorMessage'])) {
-            $error_message = implode("\n", $e['ErrorMessage']);
-            $this->logger->error('Polaris API error: ' . $error_message, $e);
-        } else {
-            $this->logger->error('Polaris API error: ' . $e['ErrorMessage'], $e);
-        }
-    }
-
-    /**
-     * Get a patrons ILS patron id
-     *
-     * @param $barcode
-     * @return int|false
-     */
-    protected function getPatronIlsId($barcode)
-    {
-        $patron = new User();
-        $patron->barcode = $barcode;
-        // if there's more than one patron with barcode don't return
-        if ($patron->find(true) && $patron->N === 1) {
-            return $patron->ilsUserId;
-        }
-        return false;
-    }
-
-    /**
-     * Get a patrons secret from cache
-     *
-     * @param $patron_ils_id
-     * @return false|string
-     */
-    protected function _getCachePatronSecret($patron_ils_id)
-    {
-        $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret';
-        $key = $this->cache->get($patron_secret_cache_key, false);
-        if ($key) {
-            $this->logger->info('Patron secret found in cache.');
-            return $key;
-        } else {
-            $this->logger->info('Patron secret not found in cache.');
-            return false;
-        }
-    }
-
-    /******************** Errors ********************/
-
-
-
-    /**
-     * Add patrons secret to cache
-     *
-     * @param $patron_ils_id
-     * @param $patron_secret
-     * @return bool
-     */
-    protected function _setCachePatronSecret($patron_ils_id, $patron_secret): bool
-    {
-        $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret';
-        $expires = 60 * 60 * 23;
-        return $this->cache->set($patron_secret_cache_key, $patron_secret, $expires);
-    }
 
     /******************** Checkouts ********************/
 
@@ -779,7 +779,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
      * system. It processes the data returned by the API, transforming it into a structured array
      * that includes detailed information about each item, such as due dates, checkout dates,
      * renewability, bibliographic information, and cover images. The method supports handling
-     * special cases like interlibrary loans (ILL) and manages records even if they lack standard MARC data.
+     * special cases like inter-library loans (ILL) and manages records even if they lack standard MARC data.
      *
      * If the method encounters an issue (e.g., no data returned, an error in the request),
      * it will return an empty array.
@@ -1763,6 +1763,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     {
         // todo: what is this?
         // TODO: Implement getNumHoldsOnRecord() method.
+        return false;
     }
 
     /**
@@ -1770,7 +1771,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
      */
     public function hasNativeReadingHistory()
     {
-        // TODO: Implement hasNativeReadingHistory() method.
         return false;
     }
 
@@ -1788,12 +1788,29 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             return $this->$profileUpdateAction($patron);
         }
         
-        // if updateScope is contact 
-        if ($_REQUEST['updateScope'] === 'contact') {
-            return $this->updatePatronContact($patron);
+        $update_scope = trim($_REQUEST['updateScope']);
+        switch ($update_scope) {
+            case 'contact':
+                return $this->updatePatronContact($patron);
+                break;
+            case 'username': 
+                return $this->updatePatronUsername($patron);
+                break;
+            case 'pin':
+                return $this->updatePatronPin($patron);
         }
+        
+    }
+    
+    private function updatePatronUsername($patron) {
+        // /public/patron/{PatronBarcode}
+        // update patron username
     }
 
+    private function updatePatronPin($patron) {
+        // /public/patron/{PatronBarcode}
+        // update patron pin
+    }
     private function updatePatronContact($patron) {
         // /public/patron/{PatronBarcode}
         $contact = [];
