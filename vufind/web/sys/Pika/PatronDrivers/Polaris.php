@@ -320,19 +320,182 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
 
         $patron = $this->getPatron($patron_ils_id, $valid_barcode);
-        
+
         // check for password update
         $patron_pw = $patron->getPassword();
         if (!isset($patron_pw) || $patron_pw !== $pin) {
             $patron->updatePassword($pin);
         }
-        
+
         // if the barcode doesn't match valid_barcode consider it a username
         if ($valid_barcode !== $barcode) {
             $patron->alt_username = $barcode;
         }
 
         return $patron;
+    }
+
+    /**
+     * Check if a patron exists in the Polaris database.
+     *
+     * This method will return a real barcode in case the patron is using a username. NOTE: When creating the header
+     * auth has the users password must be used in the auth hash.
+     *
+     * @param $barcode
+     * @param $pin
+     * @return null|JSON
+     * @see https://documentation.iii.com/polaris/PAPI/current/PAPIService/PAPIServicePatronValidate.htm#papiservicepatronvalidate_1221164799_1220680
+     */
+    protected function validatePatron($barcode, $pin)
+    {
+        $request_url = $this->ws_url . '/patron/' . $barcode;
+        $hash = $this->_createHash('GET', $request_url, $pin);
+
+        $headers = [
+            "PolarisDate: " . gmdate('r'),
+            "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
+            "Accept: application/json",
+        ];
+
+        $c_opts = [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => $headers,
+        ];
+
+        $c = new Curl();
+        $c->setOpts($c_opts);
+        $c->get($request_url);
+        // todo: log header from curl object
+        if ($c->error || $c->httpStatusCode !== 200) {
+            $this->logger->error(
+                'Curl error: ' . $c->errorMessage,
+                ['http_code' => $c->httpStatusCode],
+                ['RequestURL' => $request_url, 'RequestHeaders' => $headers],
+            );
+            return null;
+        }
+
+        if ($error = $this->_isPapiError($c->response)) {
+            $this->_logPapiError($error);
+            return null;
+        }
+
+        return $c->response;
+    }
+
+    /**
+     * Create a hash for API authentication.
+     *
+     * This function generates a hash using HMAC-SHA1 encryption and base64 encoding.
+     * The hash is used for authenticating API requests. The date must be in GMT date/time format (RFC-1123).
+     *
+     * @param string $http_method The HTTP method (e.g., 'GET', 'POST', etc.).
+     * @param string $uri The URI of the API endpoint.
+     * @param string $patron_access_secret The password of the patron.
+     * @return string The base64-encoded hash.
+     */
+    protected function _createHash(string $http_method, string $uri, $patron_access_secret = false): string
+    {
+        $date = gmdate('r');
+        // Concatenate the input parameters into a single string
+        $s = $http_method . $uri . $date;
+        if ($patron_access_secret) {
+            $s .= $patron_access_secret;
+        }
+        // Generate the HMAC-SHA1 hash using the client key from the configuration
+        $hash = hash_hmac('sha1', $s, $this->configArray['Catalog']['clientKey'], true);
+        // Encode the hash in base64 and return it
+        return base64_encode($hash);
+    }
+
+    /**
+     * Check Polaris web service return for an api error
+     *
+     * @param array|object $res Return from web service as array or object
+     * @return array|false Returns array with two elements; ErrorMessage and PAPIErrorCode or false if no error.
+     */
+    protected function _isPapiError($res)
+    {
+        if (is_array($res)) {
+            if ($res['PAPIErrorCode'] < 0) {
+                if (empty($res['ErrorMessage']) && in_array(
+                        (string)$res['PAPIErrorCode'],
+                        $this->polaris_errors,
+                        false,
+                    )) {
+                    $res['ErrorMessage'] = $this->polaris_errors[(string)$res['PAPIErrorCode']];
+                }
+                return [
+                    'ErrorMessage' => $res['ErrorMessage'],
+                    'PAPIErrorCode' => $res['PAPIErrorCode'],
+                ];
+            }
+        } elseif (is_object($res)) {
+            if ($res->PAPIErrorCode < 0) {
+                if (empty($res->ErrorMessage) && in_array((string)$res->PAPIErrorCode, $this->polaris_errors, false)) {
+                    $error_message = $this->polaris_errors[(string)$res->PAPIErrorCode];
+                } else {
+                    $error_message = $res->ErrorMessage;
+                }
+                return [
+                    'ErrorMessage' => $error_message,
+                    'PAPIErrorCode' => $res->PAPIErrorCode,
+                ];
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Accepts return from _isPapiError and writes the error to log
+     *
+     * @param array $e
+     * @return void
+     */
+    protected function _logPapiError($e): void
+    {
+        if (is_array($e['ErrorMessage'])) {
+            $error_message = implode("\n", $e['ErrorMessage']);
+            $this->logger->error('Polaris API error: ' . $error_message, $e);
+        } else {
+            $this->logger->error('Polaris API error: ' . $e['ErrorMessage'], $e);
+        }
+    }
+
+    /**
+     * Get a patrons ILS patron id
+     *
+     * @param $barcode
+     * @return int|false
+     */
+    protected function getPatronIlsId($barcode)
+    {
+        $patron = new User();
+        $patron->barcode = $barcode;
+        // if there's more than one patron with barcode don't return
+        if ($patron->find(true) && $patron->N === 1) {
+            return $patron->ilsUserId;
+        }
+        return false;
+    }
+
+    /**
+     * Get a patrons secret from cache
+     *
+     * @param $patron_ils_id
+     * @return false|string
+     */
+    protected function _getCachePatronSecret($patron_ils_id)
+    {
+        $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret';
+        $key = $this->cache->get($patron_secret_cache_key, false);
+        if ($key) {
+            $this->logger->info('Patron secret found in cache.');
+            return $key;
+        } else {
+            $this->logger->info('Patron secret not found in cache.');
+            return false;
+        }
     }
 
     /**
@@ -383,52 +546,20 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $c->response;
     }
 
+    /******************** Errors ********************/
+
     /**
-     * Check if a patron exists in the Polaris database.
+     * Add patrons secret to cache
      *
-     * This method will return a real barcode in case the patron is using a username. NOTE: When creating the header
-     * auth has the users password must be used in the auth hash.
-     *
-     * @param $barcode
-     * @param $pin
-     * @return null|JSON
-     * @see https://documentation.iii.com/polaris/PAPI/current/PAPIService/PAPIServicePatronValidate.htm#papiservicepatronvalidate_1221164799_1220680
+     * @param $patron_ils_id
+     * @param $patron_secret
+     * @return bool
      */
-    protected function validatePatron($barcode, $pin)
+    protected function _setCachePatronSecret($patron_ils_id, $patron_secret): bool
     {
-        $request_url = $this->ws_url . '/patron/' . $barcode;
-        $hash = $this->_createHash('GET', $request_url, $pin);
-
-        $headers = [
-            "PolarisDate: " . gmdate('r'),
-            "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
-            "Accept: application/json",
-        ];
-
-        $c_opts = [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER => $headers,
-        ];
-
-        $c = new Curl();
-        $c->setOpts($c_opts);
-        $c->get($request_url);
-        // todo: log header from curl object
-        if ($c->error || $c->httpStatusCode !== 200) {
-            $this->logger->error(
-                'Curl error: ' . $c->errorMessage,
-                ['http_code' => $c->httpStatusCode],
-                ['RequestURL' => $request_url, 'RequestHeaders' => $headers],
-            );
-            return null;
-        }
-
-        if ($error = $this->_isPapiError($c->response)) {
-            $this->_logPapiError($error);
-            return null;
-        }
-
-        return $c->response;
+        $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret';
+        $expires = 60 * 60 * 23;
+        return $this->cache->set($patron_secret_cache_key, $patron_secret, $expires);
     }
 
     /**
@@ -518,7 +649,10 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         // Patron library and location
         $location = new Location();
         $location->ilsLocationId = $patron_response->PatronOrgID;
+        $patron_location_display_name = '';
         if ($location->find(true)) {
+            // Need this for display on account profile page 
+            $patron_location_display_name = $location->displayName;
             // Set location
             if ($user->homeLocationId !== $location->locationId) {
                 $user->homeLocationId = $location->locationId;
@@ -558,6 +692,10 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         /***
          * The following class variables aren't stored in database and need to be created on demand
          */
+
+        // Location name
+        $user->homeLocation = $patron_location_display_name;
+
         // Names
         $user->fullname = $user->firstname . ' ' . $user->lastname;
 
@@ -566,7 +704,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         if ($this->isMicrosoftDate($patron_response->ExpirationDate)) {
             try {
                 $expiration_date = $this->microsoftDateToISO($patron_response->ExpirationDate);
-                $user->expires = $expiration_date;
+                $user->expires = date('m-d-Y', strtotime($expiration_date));
             } catch (Exception $e) {
                 $this->logger->error($e->getMessage());
                 $user->expires = null;
@@ -635,138 +773,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $this->_setCachePatronObject($user);
 
         return $user;
-    }
-    
-    /**
-     * Create a hash for API authentication.
-     *
-     * This function generates a hash using HMAC-SHA1 encryption and base64 encoding.
-     * The hash is used for authenticating API requests. The date must be in GMT date/time format (RFC-1123).
-     *
-     * @param string $http_method The HTTP method (e.g., 'GET', 'POST', etc.).
-     * @param string $uri The URI of the API endpoint.
-     * @param string $patron_access_secret The password of the patron.
-     * @return string The base64-encoded hash.
-     */
-    protected function _createHash(string $http_method, string $uri, $patron_access_secret = false): string
-    {
-        $date = gmdate('r');
-        // Concatenate the input parameters into a single string
-        $s = $http_method . $uri . $date;
-        if ($patron_access_secret) {
-            $s .= $patron_access_secret;
-        }
-        // Generate the HMAC-SHA1 hash using the client key from the configuration
-        $hash = hash_hmac('sha1', $s, $this->configArray['Catalog']['clientKey'], true);
-        // Encode the hash in base64 and return it
-        return base64_encode($hash);
-    }
-    
-    
-    /**
-     * Add patrons secret to cache
-     *
-     * @param $patron_ils_id
-     * @param $patron_secret
-     * @return bool
-     */
-    protected function _setCachePatronSecret($patron_ils_id, $patron_secret): bool
-    {
-        $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret';
-        $expires = 60 * 60 * 23;
-        return $this->cache->set($patron_secret_cache_key, $patron_secret, $expires);
-    }
-
-
-    /**
-     * Get a patrons ILS patron id
-     *
-     * @param $barcode
-     * @return int|false
-     */
-    protected function getPatronIlsId($barcode)
-    {
-        $patron = new User();
-        $patron->barcode = $barcode;
-        // if there's more than one patron with barcode don't return
-        if ($patron->find(true) && $patron->N === 1) {
-            return $patron->ilsUserId;
-        }
-        return false;
-    }
-
-    /**
-     * Get a patrons secret from cache
-     *
-     * @param $patron_ils_id
-     * @return false|string
-     */
-    protected function _getCachePatronSecret($patron_ils_id)
-    {
-        $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret';
-        $key = $this->cache->get($patron_secret_cache_key, false);
-        if ($key) {
-            $this->logger->info('Patron secret found in cache.');
-            return $key;
-        } else {
-            $this->logger->info('Patron secret not found in cache.');
-            return false;
-        }
-    }
-
-    /******************** Errors ********************/
-    /**
-     * Accepts return from _isPapiError and writes the error to log
-     *
-     * @param array $e
-     * @return void
-     */
-    protected function _logPapiError($e): void
-    {
-        if (is_array($e['ErrorMessage'])) {
-            $error_message = implode("\n", $e['ErrorMessage']);
-            $this->logger->error('Polaris API error: ' . $error_message, $e);
-        } else {
-            $this->logger->error('Polaris API error: ' . $e['ErrorMessage'], $e);
-        }
-    }
-
-    /**
-     * Check Polaris web service return for an api error
-     *
-     * @param array|object $res Return from web service as array or object
-     * @return array|false Returns array with two elements; ErrorMessage and PAPIErrorCode or false if no error.
-     */
-    protected function _isPapiError($res)
-    {
-        if (is_array($res)) {
-            if ($res['PAPIErrorCode'] < 0) {
-                if (empty($res['ErrorMessage']) && in_array(
-                        (string)$res['PAPIErrorCode'],
-                        $this->polaris_errors,
-                        false,
-                    )) {
-                    $res['ErrorMessage'] = $this->polaris_errors[(string)$res['PAPIErrorCode']];
-                }
-                return [
-                    'ErrorMessage' => $res['ErrorMessage'],
-                    'PAPIErrorCode' => $res['PAPIErrorCode'],
-                ];
-            }
-        } elseif (is_object($res)) {
-            if ($res->PAPIErrorCode < 0) {
-                if (empty($res->ErrorMessage) && in_array((string)$res->PAPIErrorCode, $this->polaris_errors, false)) {
-                    $error_message = $this->polaris_errors[(string)$res->PAPIErrorCode];
-                } else {
-                    $error_message = $res->ErrorMessage;
-                }
-                return [
-                    'ErrorMessage' => $error_message,
-                    'PAPIErrorCode' => $res->PAPIErrorCode,
-                ];
-            }
-        }
-        return false;
     }
 
 
@@ -866,7 +872,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
         return $checkouts;
     }
-    
+
     /**
      * @inheritDoc
      *
@@ -893,30 +899,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
         return ['success' => true, 'message' => "Your checkout has been renewed."];
     }
-    
-    
-
-    /**
-     * Get a user object from cache
-     *
-     * @param $patron_ils_id
-     * @return false|mixed
-     */
-    protected function _getCachePatronObject($patron_ils_id)
-    {
-        $patron_object_cache_key = $this->cache->makePatronKey('patron', $patron_ils_id);
-        // $patron_object_cache_key = 'patronilsid' . $patron_ils_id . 'object';
-        $patron = $this->cache->get($patron_object_cache_key, false);
-        if ($patron) {
-            $this->logger->info('Patron object found in cache.');
-            return $patron;
-        } else {
-            $this->logger->info('Patron object not found in cache.');
-            return false;
-        }
-    }
-
-    /******************** Holds ********************/
 
     protected function isMicrosoftDate($microsoftDate)
     {
@@ -973,7 +955,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $this->cache->set($patron_object_cache_key, $patron, $expires);
     }
 
-
+   
 
     /**
      * Executes a patron-specific HTTP request with the specified method, URL, and request body.
@@ -1195,27 +1177,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return 'Unknown';
     }
 
-    /******************** Utilities ********************/
-    // Returns list of system, library and branch level organizations. The list can be filtered by system,
-    // library or branch.
-    protected function getPolarisOrganizations() {
-        // /public/organizations/all
-        $orgs_cache_key = "polaris_organizations_all";
-        if($orgs = $this->cache->get($orgs_cache_key)) {
-            return $orgs;
-        }
-        $request_url = $this->ws_url . "/organizations/all";
-        $orgs = $this->_doSystemRequest("GET", $request_url);
-        if($orgs === null) {
-            return $orgs;
-        }
-        // set a long-ish cache life
-        $ttl = 60 * 60 * 144;
-        $this->cache->set($orgs_cache_key, $orgs, $ttl);
-        return $orgs;
-    }
-    
-    
     /**
      * Clean an InReach author
      *
@@ -1230,7 +1191,31 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $cleaned_author ?? $author;
     }
 
+    /******************** Utilities ********************/
+    // Returns list of system, library and branch level organizations. The list can be filtered by system,
+    // library or branch.
 
+    /**
+     * Get a user object from cache
+     *
+     * @param $patron_ils_id
+     * @return false|mixed
+     */
+    protected function _getCachePatronObject($patron_ils_id)
+    {
+        $patron_object_cache_key = $this->cache->makePatronKey('patron', $patron_ils_id);
+        // $patron_object_cache_key = 'patronilsid' . $patron_ils_id . 'object';
+        $patron = $this->cache->get($patron_object_cache_key, false);
+        if ($patron) {
+            $this->logger->info('Patron object found in cache.');
+            return $patron;
+        } else {
+            $this->logger->info('Patron object not found in cache.');
+            return false;
+        }
+    }
+    
+    
 
     /**
      * @inheritDoc
@@ -1547,27 +1532,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return null;
     }
 
-    /**
-     * Executes a system-level HTTP request with the specified method, URL, and request body.
-     *
-     * This method generates a hash for authorization and then delegates the actual request execution
-     * to the `_doRequest` method. It supports various HTTP methods (GET, POST, PUT) and allows for
-     * additional headers and request body content to be included in the request.
-     *
-     * @param string $method The HTTP method to use for the request. Defaults to 'GET'. Supported methods: 'GET', 'POST', 'PUT'.
-     * @param string $url The URL to which the request is sent.
-     * @param array|string $body The request body to send, which can be an array or string. For GET requests, this is typically empty.
-     * @param array $extra_headers Additional headers to include in the request. These are merged with the default headers.
-     *
-     * @return ?Curl Returns a `Curl` object on successful request, or `null` if an error occurs.
-     */
-    protected function _doSystemRequest(string $method = 'GET', string $url, $body = [], $extra_headers = []): ?Curl
-    {
-        $hash = $this->_createHash($method, $url);
-        $c = $this->_doRequest($hash, $method, $url, $body, $extra_headers);
-        return $c;
-    }
-
     protected function _placeHoldRequestReply($hold_response, $requesting_org_id): ?Curl
     {
         $status_to_state = [
@@ -1787,34 +1751,27 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             $profileUpdateAction = trim($_POST['profileUpdateAction']);
             return $this->$profileUpdateAction($patron);
         }
-        
+
         $update_scope = trim($_REQUEST['updateScope']);
         switch ($update_scope) {
             case 'contact':
                 return $this->updatePatronContact($patron);
                 break;
-            case 'username': 
+            case 'username':
                 return $this->updatePatronUsername($patron);
                 break;
             case 'pin':
                 return $this->updatePatronPin($patron);
+                break;
+                
         }
-        
-    }
-    
-    private function updatePatronUsername($patron) {
-        // /public/patron/{PatronBarcode}
-        // update patron username
     }
 
-    private function updatePatronPin($patron) {
-        // /public/patron/{PatronBarcode}
-        // update patron pin
-    }
-    private function updatePatronContact($patron) {
+    private function updatePatronContact($patron)
+    {
         // /public/patron/{PatronBarcode}
         $contact = [];
-       
+
         // required credentials
         $contact['LogonBranchID'] = 1; // default to system
         $contact['LogonUserID'] = $this->configArray['Polaris']['staffUserId'];
@@ -1823,8 +1780,8 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $contact['AddressID'] = $patron->address_id;
         $contact['StreetOne'] = $_REQUEST['address1'];
         $contact['StreetTwo'] = $_REQUEST['address2'] ?? '';
-        $contact['City'] = strtoupper($_REQUEST['city']);
-        $contact['State'] = strtoupper($_REQUEST['state']);
+        $contact['City'] = $_REQUEST['city'];
+        $contact['State'] = $_REQUEST['state'];
         $contact['PostalCode'] = $_REQUEST['zip'];
         $contact['PhoneVoice1'] = $_REQUEST['phone'] ?? '';
         $contact['EmailAddress'] = $_REQUEST['email'] ?? '';
@@ -1832,9 +1789,9 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $errors = [];
         $request_url = $this->ws_url . "/patron/{$patron->barcode}";
         $extra_headers = ["Content-Type: application/json"];
-        
+
         $r = $this->_doPatronRequest($patron, 'PUT', $request_url, $contact, $extra_headers);
-        
+
         if ($r === null) {
             if (isset($this->papiLastErrorMessage)) {
                 $errors[] = $this->papiLastErrorMessage;
@@ -1846,9 +1803,38 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $errors;
     }
 
-    public function resetPin($patron, $newPin, $resetToken) {
+    private function updatePatronUsername($patron)
+    {
+        // /public/patron/{PatronBarcode}/username/{NewUsername}
+        // update patron username
+        if(empty($_REQUEST['alternate_username'])) {
+            return ['Username field is required.'];
+        }
+        $username = trim($_REQUEST['alternate_username']);
+        $request_url = $this->ws_url . "/patron/{$patron->barcode}/username/{$username}";
         
+        $r = $this->_doPatronRequest($patron, 'PUT', $request_url);
+        if ($r === null) {
+            $error_message = "Unable to update username.";
+            if (isset($this->papiLastErrorMessage)) {
+                $error_message .= ' ' . $this->papiLastErrorMessage;
+            } else {
+                $error_message .= ' Please contact your library for further assistance.';
+            }
+            return [$error_message];
+        }
+        return [];
     }
+
+    private function updatePatronPin($patron)
+    {
+        // /public/patron/{PatronBarcode}
+        // update patron pin
+        // Important: A success message won't be displayed unless the words are EXACTLY as below.
+        return 'Your ' . translate('pin') . ' was updated successfully.';
+    }
+
+    public function resetPin($patron, $newPin, $resetToken) {}
 
     /**
      * If library uses username field
@@ -1862,6 +1848,46 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         } else {
             return false;
         }
+    }
+
+
+    protected function getPolarisOrganizations()
+    {
+        // /public/organizations/all
+        $orgs_cache_key = "polaris_organizations_all";
+        if ($orgs = $this->cache->get($orgs_cache_key)) {
+            return $orgs;
+        }
+        $request_url = $this->ws_url . "/organizations/all";
+        $orgs = $this->_doSystemRequest("GET", $request_url);
+        if ($orgs === null) {
+            return $orgs;
+        }
+        // set a long-ish cache life
+        $ttl = 60 * 60 * 144;
+        $this->cache->set($orgs_cache_key, $orgs, $ttl);
+        return $orgs;
+    }
+
+    /**
+     * Executes a system-level HTTP request with the specified method, URL, and request body.
+     *
+     * This method generates a hash for authorization and then delegates the actual request execution
+     * to the `_doRequest` method. It supports various HTTP methods (GET, POST, PUT) and allows for
+     * additional headers and request body content to be included in the request.
+     *
+     * @param string $method The HTTP method to use for the request. Defaults to 'GET'. Supported methods: 'GET', 'POST', 'PUT'.
+     * @param string $url The URL to which the request is sent.
+     * @param array|string $body The request body to send, which can be an array or string. For GET requests, this is typically empty.
+     * @param array $extra_headers Additional headers to include in the request. These are merged with the default headers.
+     *
+     * @return ?Curl Returns a `Curl` object on successful request, or `null` if an error occurs.
+     */
+    protected function _doSystemRequest(string $method = 'GET', string $url, $body = [], $extra_headers = []): ?Curl
+    {
+        $hash = $this->_createHash($method, $url);
+        $c = $this->_doRequest($hash, $method, $url, $body, $extra_headers);
+        return $c;
     }
 
     protected function _updatePatron($patron, $patron_update) {}
