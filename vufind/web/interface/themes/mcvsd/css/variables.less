@@ -1,10 +1,19 @@
 // Variables Customizations for Mesa County Schools theme
-@header-height: 105px;
-@header-bg-color: #fff;
-@header-bottom-border-color: #00311A;
-@footer-top-border-color: #00311A;
-@home-search-top-color: #00703C;
-@home-search-bottom-color: #006234;
 
-@menu-bar-background-color: #006234;
-@menu-bar-selected-background-color: lighten(#00703C, .5);
+@sd51-green: #006234; // (contrast ratio 7.5)  https://webaim.org/resources/contrastchecker/?fcolor=006234&bcolor=FFFFFF
+@sd51-black: #00311A; // (contrast ratio 14.4) https://webaim.org/resources/contrastchecker/?fcolor=00311A&bcolor=FFFFFF
+@sd51-lighter-green: #00703C; // (contrast ratio 6.2) https://webaim.org/resources/contrastchecker/?fcolor=00703C&bcolor=FFFFFF
+
+@header-height: 105px;
+//@header-bg-color: #fff;
+@header-bottom-border-color: @sd51-black;
+@footer-top-border-color: @sd51-black;
+//@home-search-top-color: @sd51-lighter-green;
+@home-search-top-color: @sd51-green;
+@home-search-bottom-color: @sd51-green;
+
+@menu-bar-background-color: @sd51-green;
+@menu-bar-selected-background-color: @sd51-black;
+
+@category1MainColor: @sd51-green;
+@selectedCategoryBorderColor: @sd51-black;
