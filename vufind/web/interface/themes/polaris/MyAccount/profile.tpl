@@ -5,7 +5,8 @@
 
      NOTE :  There is more than one  *profile.tpl*  template file.
         Update all of them with your changes.
-
+    
+    polaris/MyAccount/profile.tpl
     ********************************************}
     <div id="main-content">
         {if $loggedIn}
@@ -34,8 +35,6 @@
                 {include file="MyAccount/switch-linked-user-form.tpl" label="View Account Settings for" actionPath="/MyAccount/Profile"}
                 <br>
                 <div class="panel-group" id="account-settings-accordion">
-
-                    {* ILS Settings *}
                     <div class="panel active">
                         <a data-toggle="collapse" data-parent="#account-settings-accordion" href="#basicPanel">
                             <div class="panel-heading">
@@ -46,66 +45,37 @@
                         </a>
                         <div id="basicPanel" class="panel-collapse collapse in">
                             <div class="panel-body">
-                                {* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
-                                <form class="form-horizontal"> {* formating is tied to this form class *}
-                                    <div class="form-group">
-                                        <div class="col-xs-4"><strong>{translate text='Full Name'}:</strong></div>
-                                        <div class="col-xs-8">{$profile->fullname|escape}</div>
-                                    </div>
-                                    {if $showUsernameField}
+                                <form action="" method="post" class="form-horizontal">
+                                <div class="form-group">
+                                    <div class="col-xs-4"><strong>{translate text='Full Name'}:</strong></div>
+                                    <div class="col-xs-8">{$profile->fullname|escape}</div>
+                                </div>
+                                {if !$offline}
+                                    {if $barcodePin}
+                                        {* Only Display Barcode when the barcode is used as a username and not a password *}
                                         <div class="form-group">
-                                            <div class="col-xs-4"><label for="alternate_username">Username:</label>
+                                            <div class="col-xs-4">
+                                                <strong>{translate text='Library Card Number'}:</strong>
                                             </div>
-                                            <div class="col-xs-8">
-                                                {if !empty($linkedUsers) && count($linkedUsers) > 1 && $selectedUser != $activeUserId}
-                                                    {*Security: Prevent changing email, username, or password for linked accounts. See D-4031 *}
-                                                    {if !empty(trim($profile->alt_username))}{$profile->alt_username|escape}{/if}
-                                                {else}
-                                                    <input type="text" name="alternate_username" id="alternate_username"
-                                                           value="{if !is_numeric(trim($profile->alt_username))}{$profile->alt_username|escape}{/if}"
-                                                           size="25" maxlength="25" class="form-control">
-                                                {/if}
-                                                <a href="#" onclick="$('#usernameHelp').toggle()">What is this?</a>
-                                                <div id="usernameHelp" style="display:none">
-                                                    A username is an optional feature. If you set one, your username can
-                                                    also be used to log into your account in place of your card number.
-                                                    <br/><br/>
-                                                    All usernames must be between 4 and 50 characters and begin with a
-                                                    letter. Usernames can contain letters, numbers, and special
-                                                    characters. Spaces are not allowed, and special characters cannot be
-                                                    contiguous.
-                                                </div>
-                                            </div>
-                                        </div>
-                                    {/if}
-                                    {if !$offline}
-                                        <div class="form-group">
-                                            <div class="col-xs-4"><strong>{translate text='Fines'}:</strong></div>
-                                            <div class="col-xs-8">{$profile->fines|escape}</div>
-                                        </div>
-                                        {if $barcodePin}
-                                            {* Only Display Barcode when the barcode is used as a username and not a password *}
-                                            <div class="form-group">
-                                                <div class="col-xs-4"><strong>{translate text='Library Card Number'}
-                                                        :</strong></div>
-                                                <div class="col-xs-8">{$profile->barcode|escape}</div>
-                                            </div>
-                                        {/if}
-                                        <div class="form-group">
-                                            <div class="col-xs-4"><strong>{translate text='Expiration Date'}:</strong>
-                                            </div>
-                                            <div class="col-xs-8">{$profile->expires|escape}</div>
+                                            <div class="col-xs-8">{$profile->barcode|escape}</div>
                                         </div>
                                     {/if}
                                     <div class="form-group">
-                                        <div class="col-xs-4"><strong>{translate text='Home Library'}:</strong></div>
-                                        <div class="col-xs-8">{$profile->homeLocation|escape}</div>
+                                        <div class="col-xs-4">
+                                            <strong>{translate text='Expiration Date'}:</strong>
+                                        </div>
+                                        <div class="col-xs-8">{$profile->expires|escape}</div>
                                     </div>
+                                {/if}
+                                <div class="form-group">
+                                    <div class="col-xs-4"><strong>{translate text='Home Library'}:</strong></div>
+                                    <div class="col-xs-8">{$profile->homeLocation|escape}</div>
+                                </div>
                                 </form>
                             </div>
                         </div>
                     </div>
-                    {if !$offline}
+                    
                     <div class="panel active">
                         <a data-toggle="collapse" data-parent="#account-settings-accordion" href="#contactPanel">
                             <div class="panel-heading">
@@ -116,90 +86,99 @@
                         </a>
                         <div id="contactPanel" class="panel-collapse collapse in">
                             <div class="panel-body">
+                                {* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
                                 <form action="" method="post" class="form-horizontal" id="contactUpdateForm">
                                     <input type="hidden" name="updateScope" value="contact">
-                                    <div class="form-group">
-                                        <div class="col-xs-4">
-                                            <label for="address1">{translate text='Address'}:</label>
+                                    
+                                    {if !$offline}
+                                        {* Don't show inputs for the Horizon ILS as updating those account settings has not been implemented in the Horizon Driver. *}
+                                        <div class="form-group">
+                                            <div class="col-xs-4">
+                                                <label for="address1">{translate text='Address'}:</label>
+                                            </div>
+                                            <div class="col-xs-8">
+                                                {if !$offline && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
+                                                    <input name="address1" id="address1"
+                                                           value='{$profile->address1|escape}' size="50" maxlength="75"
+                                                           class="form-control required" aria-required="true">
+                                                {elseif !$offline && $millenniumNoAddress}
+                                                    <input name="address1" id="address1"
+                                                           value='{$profile->address1|escape}' type="hidden">
+                                                    {if $profile->careOf}{$profile->careOf|escape}<br>{/if}
+                                                    {$profile->address1|escape}
+                                                {else}
+                                                    {$profile->address1|escape}
+                                                {/if}
+                                            </div>
                                         </div>
-                                        <div class="col-xs-8">
-                                            {if !$offline && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
-                                                <input name="address1" id="address1" value='{$profile->address1|escape}'
-                                                       size="50" maxlength="75" class="form-control required"
-                                                       aria-required="true">
-                                            {elseif !$offline && $millenniumNoAddress}
-                                                <input name="address1" id="address1" value='{$profile->address1|escape}'
-                                                       type="hidden">
-                                                {if $profile->careOf}{$profile->careOf|escape}<br>{/if}
-                                                {$profile->address1|escape}
-                                            {else}
-                                                {$profile->address1|escape}
-                                            {/if}
+                                        <div class="form-group">
+                                            <div class="col-xs-4"><label for="city">{translate text='City'}:</label>
+                                            </div>
+                                            <div class="col-xs-8">
+                                                {if !$offline && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
+                                                    <input name="city" id="city" value="{$profile->city|escape}"
+                                                           size="50" maxlength="75" class="form-control required">
+                                                {elseif !$offline && $millenniumNoAddress}
+                                                    <input name="city" id="city" value="{$profile->city|escape}"
+                                                           type="hidden">
+                                                    {$profile->city|escape}
+                                                {else}{$profile->city|escape}{/if}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="col-xs-4"><label for="city">{translate text='City'}:</label></div>
-                                        <div class="col-xs-8">
-                                            {if !$offline && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
-                                                <input name="city" id="city" value="{$profile->city|escape}" size="50"
-                                                       maxlength="75" class="form-control required">
-                                            {elseif !$offline && $millenniumNoAddress}
-                                                <input name="city" id="city" value="{$profile->city|escape}"
-                                                       type="hidden">
-                                                {$profile->city|escape}
-                                            {else}{$profile->city|escape}{/if}
+                                        <div class="form-group">
+                                            <div class="col-xs-4"><label for="state">{translate text='State'}:</label>
+                                            </div>
+                                            <div class="col-xs-8">
+                                                {if !$offline && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
+                                                    <input name='state' id="state" value="{$profile->state|escape}"
+                                                           size="50" maxlength="75" class="form-control required">
+                                                {elseif !$offline && $millenniumNoAddress}
+                                                    <input name="state" id="state" value="{$profile->state|escape}"
+                                                           type="hidden">
+                                                    {$profile->state|escape}
+                                                {else}{$profile->state|escape}{/if}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="col-xs-4"><label for="state">{translate text='State'}:</label></div>
-                                        <div class="col-xs-8">
-                                            {if !$offline && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
-                                                <input name='state' id="state" value="{$profile->state|escape}"
-                                                       size="50" maxlength="75" class="form-control required">
-                                            {elseif !$offline && $millenniumNoAddress}
-                                                <input name="state" id="state" value="{$profile->state|escape}"
-                                                       type="hidden">
-                                                {$profile->state|escape}
-                                            {else}{$profile->state|escape}{/if}
+                                        <div class="form-group">
+                                            <div class="col-xs-4"><label for="zip">{translate text='Zip'}:</label></div>
+                                            <div class="col-xs-8">
+                                                {if !$offline && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
+                                                    <input name="zip" id="zip" value="{$profile->zip|escape}" size="50"
+                                                           maxlength="75" class="form-control required">
+                                                {elseif !$offline && $millenniumNoAddress}
+                                                    <input name="zip" id="zip" value="{$profile->zip|escape}"
+                                                           type="hidden">
+                                                    {$profile->zip|escape}
+                                                {else}{$profile->zip|escape}{/if}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="col-xs-4"><label for="zip">{translate text='Zip'}:</label></div>
-                                        <div class="col-xs-8">
-                                            {if !$offline && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
-                                                <input name="zip" id="zip" value="{$profile->zip|escape}" size="50"
-                                                       maxlength="75" class="form-control required">
-                                            {elseif !$offline && $millenniumNoAddress}
-                                                <input name="zip" id="zip" value="{$profile->zip|escape}" type="hidden">
-                                                {$profile->zip|escape}
-                                            {else}{$profile->zip|escape}{/if}
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="col-xs-4"><label for="phone">{translate text='Primary Phone Number'}
-                                                :</label></div>
-                                        <div class="col-xs-8">
-                                            {if !$offline && $canUpdateContactInfo && ($ils != 'Horizon')}
-                                                <input type="tel" name="phone" id="phone"
-                                                       value="{$profile->phone|escape}" size="50" maxlength="75"
-                                                       class="form-control">
-                                            {else}
-                                                {$profile->phone|escape}
-                                            {/if}
-                                        </div>
-                                    </div>
-                                    {if $showWorkPhoneInProfile}
                                         <div class="form-group">
                                             <div class="col-xs-4"><label
-                                                        for="workPhone">{translate text='Work Phone Number'}:</label>
+                                                        for="phone">{translate text='Primary Phone Number'}:</label>
                                             </div>
-                                            <div class="col-xs-8">{if !$offline && $canUpdateContactInfo && $ils != 'Horizon'}
-                                                    <input name="workPhone" id="workPhone"
-                                                           value="{$profile->workPhone|escape}" size="50" maxlength="75"
-                                                           class="form-control">{else}{$profile->workPhone|escape}{/if}
+                                            <div class="col-xs-8">
+                                                {if !$offline && $canUpdateContactInfo && ($ils != 'Horizon')}
+                                                    <input type="tel" name="phone" id="phone"
+                                                           value="{$profile->phone|escape}" size="50" maxlength="75"
+                                                           class="form-control">
+                                                {else}
+                                                    {$profile->phone|escape}
+                                                {/if}
                                             </div>
                                         </div>
-                                    {/if}
+                                        {if $showWorkPhoneInProfile}
+                                            <div class="form-group">
+                                                <div class="col-xs-4"><label
+                                                            for="workPhone">{translate text='Work Phone Number'}
+                                                        :</label></div>
+                                                <div class="col-xs-8">{if !$offline && $canUpdateContactInfo && $ils != 'Horizon'}
+                                                        <input name="workPhone" id="workPhone"
+                                                               value="{$profile->workPhone|escape}" size="50"
+                                                               maxlength="75"
+                                                               class="form-control">{else}{$profile->workPhone|escape}{/if}
+                                                </div>
+                                            </div>
+                                        {/if}
                                     {/if}
                                     <div class="form-group">
                                         <div class="col-xs-4"><label for="email">{translate text='E-mail'}:</label>
@@ -220,13 +199,12 @@
                                     </div>
                                     {if $showPickupLocationInProfile}
                                         <div class="form-group">
-                                            <div class="col-xs-4"><label for="pickupLocation"
-                                                                         class="">{translate text='Pickup Location'}
-                                                    :</label></div>
+                                            <div class="col-xs-4">
+                                                <label for="pickupLocation" class="">{translate text='Pickup Location'}:</label>
+                                            </div>
                                             <div class="col-xs-8">
                                                 {if !$offline && $canUpdateContactInfo == true}
-                                                    <select name="pickupLocation" id="pickupLocation"
-                                                            class="form-control">
+                                                    <select name="pickupLocation" id="pickupLocation" class="form-control">
                                                         {if count($pickupLocations) > 0}
                                                             {foreach from=$pickupLocations item=location}
                                                                 <option value="{$location->code}"
@@ -263,147 +241,26 @@
                                             </div>
                                         </div>
                                     {/if}
-
-
                                 </form>
                             </div>
                         </div>
                     </div>
 
+                    {if !empty($linkedUsers) && count($linkedUsers) > 1 && $selectedUser != $activeUserId}
+                        {*Security: Prevent changing email, username, or password for linked accounts. See D-4031 *}
+                    {else}
+                        {include file="MyAccount/pinReset.tpl"}
+                        {* end of update pin section *}
+                    {/if}
+                    {* end of linked accounts checked for update pin section *}
+                    
+                    {include file="MyAccount/userName.tpl"}
+                    
                     {* SMS prefrences *}
                     {if $showSMSNoticesInProfile}
                         {include file="MyAccount/profile-sms-notices.tpl"}
                     {/if}
-                    {if !empty($linkedUsers) && count($linkedUsers) > 1 && $selectedUser != $activeUserId}
-                        {*Security: Prevent changing email, username, or password for linked accounts. See D-4031 *}
-                    {else}
-                        {if $allowPinReset && !$offline}
-                            <div class="panel active">
-                                <a data-toggle="collapse" data-parent="#account-settings-accordion" href="#pinPanel">
-                                    <div class="panel-heading">
-                                        <h2 class="panel-title">
-                                            {translate text='Update PIN'}
-                                        </h2>
-                                    </div>
-                                </a>
-                                <div id="pinPanel" class="panel-collapse collapse in">
-                                    <div class="panel-body">
-
-                                        {* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
-                                        <form action="" method="post" class="form-horizontal" id="pinForm">
-                                            <input type="hidden" name="updateScope" value="pin">
-                                            <div class="form-group">
-                                                <div class="col-xs-4"><label for="pin"
-                                                                             class="control-label">{translate text='Old PIN'}
-                                                        :</label></div>
-                                                <div class="col-xs-8">
-                                                    <div class="input-group">
-                                                        <input type="password" name="pin" id="pin" value=""
-                                                               class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}"
-                                                               aria-required="true">
-                                                        {* No size limits in case previously set password doesn't meet current restrictions *}
-                                                        <span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
-														<button aria-label="{translate text='PIN'} is hidden, click to show"
-                                                                onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin');"
-                                                                class="btn btn-default" type="button"><span
-                                                                    class="glyphicon glyphicon-eye-close"
-                                                                    aria-hidden="true"
-                                                                    title="Show {translate text='PIN'}"><div
-                                                                        class="hiddenText">{translate text='PIN'} is hidden, click to show.</div></span><span
-                                                                    class="glyphicon glyphicon-eye-open"
-                                                                    style="display: none"
-                                                                    title="Hide {translate text='PIN'}"><div
-                                                                        class="hiddenText">{translate text='PIN'} is visible, click to hide.</div></span></button>
-													</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <div class="col-xs-4"><label for="pin1"
-                                                                             class="control-label">{translate text='New PIN'}
-                                                        :</label></div>
-                                                <div class="col-xs-8">
-                                                    <div class="input-group">
-                                                        <input type="password" name="pin1" id="pin1" value=""
-                                                               size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}"
-                                                               maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}"
-                                                               class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}"
-                                                               aria-required="true">
-                                                        <span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
-														<button aria-label="{translate text='PIN'} is hidden, click to show"
-                                                                onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin1')"
-                                                                class="btn btn-default" type="button"><span
-                                                                    class="glyphicon glyphicon-eye-close"
-                                                                    aria-hidden="true"
-                                                                    title="Show {translate text='PIN'}"><div
-                                                                        class="hiddenText">{translate text='PIN'} is hidden, click to show.</div></span><span
-                                                                    class="glyphicon glyphicon-eye-open"
-                                                                    style="display: none"
-                                                                    title="Hide {translate text='PIN'}"><div
-                                                                        class="hiddenText">{translate text='PIN'} is visible, click to hide.</div></span></button>
-													</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <div class="col-xs-4"><label for="pin2"
-                                                                             class="control-label">{translate text='Re-enter New PIN'}
-                                                        :</label></div>
-                                                <div class="col-xs-8">
-                                                    <div class="input-group">
-                                                        <input type="password" name="pin2" id="pin2" value=""
-                                                               size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}"
-                                                               maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}"
-                                                               class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}"
-                                                               aria-required="true">
-                                                        <span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
-														<button aria-label="{translate text='PIN'} is hidden, click to show"
-                                                                onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin2')"
-                                                                class="btn btn-default" type="button"><span
-                                                                    class="glyphicon glyphicon-eye-close"
-                                                                    aria-hidden="true"
-                                                                    title="Show {translate text='PIN'}"><div
-                                                                        class="hiddenText">{translate text='PIN'} is hidden, click to show.</div></span><span
-                                                                    class="glyphicon glyphicon-eye-open"
-                                                                    style="display: none"
-                                                                    title="Hide {translate text='PIN'}"><div
-                                                                        class="hiddenText">{translate text='PIN'} is visible, click to hide.</div></span></button>
-													</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <div class="col-xs-8 col-xs-offset-4">
-                                                    <input type="submit" value="{translate text='Update PIN'}"
-                                                           name="update" class="btn btn-primary">
-                                                </div>
-                                            </div>
-                                            <script>
-                                                {* input classes  'required', 'digits', 'alphaNumeric' are validation rules for the validation plugin *}
-                                                {literal}
-                                                $("#pinForm").validate({
-                                                    rules: {
-                                                        pin1: {
-                                                            minlength: {/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}{literal},
-                                                            maxlength: {/literal}{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}{literal}},
-                                                        pin2: {
-                                                            equalTo: "#pin1",
-                                                            minlength: {/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}{literal}
-                                                        }
-                                                    },
-                                                    submitHandler: function (form) {
-                                                        $("#pinForm input[type=submit]").attr("disabled", true);
-                                                        form.submit(); /* Using function variable form prevents recursion error that would trigger new loop of validations */
-                                                    }
-                                                });
-                                                {/literal}
-                                            </script>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        {/if}{* end of update pin section *}
-                    {/if}{* end of linked accounts checked for update pin section *}
+                    
 
                     {*OverDrive Options*}
                     {if $profile->isValidForOverDrive()}
