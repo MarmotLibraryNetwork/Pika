@@ -88,7 +88,7 @@ class IndexingStats extends Admin_Admin {
 									//The scope Name for the first column of each row
 									$arrayOfDifferences[$curRowNumber][$columnNumber] = $curStat;
 								}elseif ($isSameSearchScope){
-									if ( $indexingStatHeader[$columnNumber] == $otherDayIndexingStatHeader[$columnNumber]){
+									if ( isset($indexingStatHeader[$columnNumber]) && isset($otherDayIndexingStatHeader[$columnNumber]) && $indexingStatHeader[$columnNumber] == $otherDayIndexingStatHeader[$columnNumber]){
 										// Double check that column labels are the same. (Columns will change as sideLoads are added or removed)
 
 //										$difference                                       = ($isPrimaryDateOlderThanCompareDate ? $curStat - $otherDayIndexingStats[$curRowNumber][$columnNumber] : $otherDayIndexingStats[$curRowNumber][$columnNumber] - $curStat);
