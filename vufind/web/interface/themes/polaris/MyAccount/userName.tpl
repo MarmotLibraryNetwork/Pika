@@ -23,13 +23,13 @@
                                    value="{if !is_numeric(trim($profile->alt_username))}{$profile->alt_username|escape}{/if}" size="25"
                                    maxlength="25" class="form-control">
                         {/if}
-                        <a href="#" onclick="$('#usernameHelp').toggle()">What is this?</a>
+                        <button href="#" class="btn-link" onclick="$('#usernameHelp').toggle()">What is this?</button>
                         <div id="usernameHelp" style="display:none">
-                            A username is an optional feature. If you set one, your username
-                            will be your alias on hold slips and can also be used to log into
-                            your account in place of your card number. A username can be set,
-                            reset or removed from the “Account Settings” section of your online
-                            account. Usernames must be between 6 and 25 characters (letters and
+                            A username is an optional feature. If you set one, your username&nbsp;
+                            will be your alias on hold slips and can also be used to log into&nbsp;
+                            your account in place of your card number. A username can be set,&nbsp;
+                            reset or removed from the “Account Settings” section of your online&nbsp;
+                            account. Usernames must be between 6 and 25 characters (letters and&nbsp;
                             number only, no special characters).
                         </div>
                     </div>
