@@ -1737,7 +1737,8 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     {
         return false;
     }
-
+    
+    /* Patron Updates */
     public function updatePatronInfo($patron, $canUpdateContactInfo)
     {
         // /public/patron/{PatronBarcode}
@@ -1776,16 +1777,17 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $contact['LogonBranchID'] = 1; // default to system
         $contact['LogonUserID'] = $this->configArray['Polaris']['staffUserId'];
         $contact['LogonWorkstationID'] = $this->configArray['Polaris']['workstationId'];
-        // patron updates
-        $contact['AddressID'] = $patron->address_id;
-        $contact['StreetOne'] = $_REQUEST['address1'];
-        $contact['StreetTwo'] = $_REQUEST['address2'] ?? '';
-        $contact['City'] = $_REQUEST['city'];
-        $contact['State'] = $_REQUEST['state'];
-        $contact['PostalCode'] = $_REQUEST['zip'];
-        $contact['PhoneVoice1'] = $_REQUEST['phone'] ?? '';
-        $contact['EmailAddress'] = $_REQUEST['email'] ?? '';
-
+        // patron address 
+        $address['AddressID'] = $patron->address_id;
+        $address['StreetOne'] = $_REQUEST['address1'];
+        $address['StreetTwo'] = $_REQUEST['address2'] ?? '';
+        $address['City'] = $_REQUEST['city'];
+        $address['State'] = $_REQUEST['state'];
+        $address['PostalCode'] = $_REQUEST['zip'];
+        $address['PhoneVoice1'] = $_REQUEST['phone'] ?? '';
+        $address['EmailAddress'] = $_REQUEST['email'] ?? '';
+        $contact['PatronAddresses'][] = $address;
+        
         $errors = [];
         $request_url = $this->ws_url . "/patron/{$patron->barcode}";
         $extra_headers = ["Content-Type: application/json"];
@@ -1803,6 +1805,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $errors;
     }
 
+    
     private function updatePatronUsername($patron)
     {
         // /public/patron/{PatronBarcode}/username/{NewUsername}
@@ -1829,12 +1832,31 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     private function updatePatronPin($patron)
     {
         // /public/patron/{PatronBarcode}
-        // update patron pin
-        // Important: A success message won't be displayed unless the words are EXACTLY as below.
+        // required credentials
+        $update['LogonBranchID'] = 1; // default to system
+        $update['LogonUserID'] = $this->configArray['Polaris']['staffUserId'];
+        $update['LogonWorkstationID'] = $this->configArray['Polaris']['workstationId'];
+        // new pin
+        $update['Password'] = trim($_REQUEST['pin1']);
+
+        $request_url = $this->ws_url . "/patron/{$patron->barcode}";
+        $extra_headers = ["Content-Type: application/json"];
+
+        $r = $this->_doPatronRequest($patron, 'PUT', $request_url, $update, $extra_headers);
+        if ($r === null) {
+            $error_message = "Unable to update pin.";
+            if (isset($this->papiLastErrorMessage)) {
+                $error_message .= ' ' . $this->papiLastErrorMessage;
+            }
+            return [$error_message];
+        }
+
         return 'Your ' . translate('pin') . ' was updated successfully.';
     }
 
-    public function resetPin($patron, $newPin, $resetToken) {}
+    public function resetPin($patron, $newPin, $resetToken) {
+        
+    }
 
     /**
      * If library uses username field
