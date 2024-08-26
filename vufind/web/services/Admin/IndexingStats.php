@@ -43,7 +43,12 @@ class IndexingStats extends Admin_Admin {
 			}
 		}
 		krsort($indexingStatFiles);
-		$interface->assign('availableDates', array_keys($indexingStatFiles));
+		$availableDates = array_keys($indexingStatFiles);
+		$today          = $availableDates[0];
+		$yesterday      = $availableDates[1];
+		$interface->assign('availableDates', $availableDates);
+		$interface->assign('today', $today);
+		$interface->assign('yesterday', $yesterday);
 
 		if (count($indexingStatFiles) != 0){
 			//Get the specified file, the file for today, or the most recent file

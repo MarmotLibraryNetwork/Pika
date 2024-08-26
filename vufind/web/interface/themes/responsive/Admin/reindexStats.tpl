@@ -5,32 +5,36 @@
 		</h1>
 
 		<div class="row">
+			<div class="col-tn-12"><a class="btn btn-default" href="/Admin/IndexingStats?day={$yesterday}&compareTo={$today}">Compare {$yesterday} to {$today}</a></div>
+			<br><br>
+		</div>
 
-		<form id="indexingDateSelection" name="indexingDateSelection" method="get" class="form form-inline">
-			<div class="col-sm-6">
-			<div class="form-group">
-				<label for="availableDates">Available Dates</label>
-				<select id="availableDates" name="day" class="form-control" onchange="$('#indexingDateSelection').submit()">
-					{foreach from=$availableDates item=date}
-						<option value="{$date}"{if $date == $indexingStatsDate} selected="selected"{/if}>{$date}</option>
-					{/foreach}
-				</select>
-			</div>
-{*			<button type="submit" class="btn btn-default btn-sm">Set Date</button>*}
-			</div>
-			<div class="col-sm-6">
-			<div class="form-group">
-				<label for="compareTo">Compare To</label>
-				<select id="compareTo" name="compareTo" class="form-control" onchange="$('#indexingDateSelection').submit()">
-					<option></option>
-					{foreach from=$availableDates item=date}
-						<option value="{$date}"{if $date == $indexingStatsDate} disabled="disabled"}{elseif $date == $compareTo} selected="selected"{/if}>{$date}</option>
-					{/foreach}
-				</select>
-			</div>
-{*			<button type="submit" class="btn btn-default btn-sm">Compare</button>*}
-			</div>
-		</form>
+		<div class="row">
+			<form id="indexingDateSelection" name="indexingDateSelection" method="get" class="form form-inline">
+				<div class="col-sm-6">
+				<div class="form-group">
+					<label for="availableDates">Available Dates</label>
+					<select id="availableDates" name="day" class="form-control" onchange="$('#indexingDateSelection').submit()">
+						{foreach from=$availableDates item=date}
+							<option value="{$date}"{if $date == $indexingStatsDate} selected="selected"{/if}>{$date}</option>
+						{/foreach}
+					</select>
+				</div>
+	{*			<button type="submit" class="btn btn-default btn-sm">Set Date</button>*}
+				</div>
+				<div class="col-sm-6">
+				<div class="form-group">
+					<label for="compareTo">Compare To</label>
+					<select id="compareTo" name="compareTo" class="form-control" onchange="$('#indexingDateSelection').submit()">
+						<option></option>
+						{foreach from=$availableDates item=date}
+							<option value="{$date}"{if $date == $indexingStatsDate} disabled="disabled"}{elseif $date == $compareTo} selected="selected"{/if}>{$date}</option>
+						{/foreach}
+					</select>
+				</div>
+	{*			<button type="submit" class="btn btn-default btn-sm">Compare</button>*}
+				</div>
+			</form>
 		</div>
 
 			<h4>Toggle columns:</h4>
