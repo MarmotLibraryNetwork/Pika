@@ -35,18 +35,17 @@
 
 namespace Pika\PatronDrivers;
 
-use DateInterval;
 use MarcRecord;
 use Pika\Cache;
 use Pika\Logger;
 use Curl\Curl;
 use DateTime;
 use DateTimeZone;
+use PinReset;
 use User;
 use Location;
 use RecordDriverFactory;
-
-//use Memcache;
+use PHPMailer\PHPMailer\PHPMailer;
 
 class Polaris extends PatronDriverInterface implements \DriverInterface
 {
@@ -1764,7 +1763,14 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             case 'pin':
                 return $this->updatePatronPin($patron);
                 break;
-                
+//            case 'overdrive':
+//                return false;
+//                break;
+//            case 'userPreferences':
+//                return false;
+//                break;
+            default:
+                return ['An error occurred. Please contact your library for assistance.'];
         }
     }
 
@@ -1777,7 +1783,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $contact['LogonBranchID'] = 1; // default to system
         $contact['LogonUserID'] = $this->configArray['Polaris']['staffUserId'];
         $contact['LogonWorkstationID'] = $this->configArray['Polaris']['workstationId'];
-        // patron address 
+        // patron address
         $address['AddressID'] = $patron->address_id;
         $address['StreetOne'] = $_REQUEST['address1'];
         $address['StreetTwo'] = $_REQUEST['address2'] ?? '';
@@ -1787,7 +1793,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $address['PhoneVoice1'] = $_REQUEST['phone'] ?? '';
         $address['EmailAddress'] = $_REQUEST['email'] ?? '';
         $contact['PatronAddresses'][] = $address;
-        
+
         $errors = [];
         $request_url = $this->ws_url . "/patron/{$patron->barcode}";
         $extra_headers = ["Content-Type: application/json"];
@@ -1805,7 +1811,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $errors;
     }
 
-    
+
     private function updatePatronUsername($patron)
     {
         // /public/patron/{PatronBarcode}/username/{NewUsername}
@@ -1855,9 +1861,83 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     }
 
     public function resetPin($patron, $newPin, $resetToken) {
-        
+        $pinReset         = new PinReset();
+        $pinReset->userId = $patron->id;
+        $pinReset->find(true);
+        if(!$pinReset->N) {
+            return ['error' => 'Unable to reset your ' . translate('pin') . '. Please try again later.'];
+        } elseif($pinReset->N == 0) {
+            return ['error' => 'Unable to reset your ' . translate('pin') . '. You have not requested a ' . translate('pin') . ' reset.'];
+        }
+        // expired?
+        if($pinReset->expires < time()) {
+            return ['error' => 'The reset token has expired. Please request a new ' . translate('pin') . ' reset.'];
+        }
+        $token = $pinReset->selector . $pinReset->token;
+        // make sure and type cast the two numbers
+        if ((int)$token != (int)$resetToken) {
+            return ['error' => 'Unable to reset your ' . translate('pin') . '. Invalid reset token.'];
+        }
+        // everything is good
     }
 
+    /**
+     * emailResetPin
+     *
+     * Sends an email reset link to the patrons email address
+     *
+     * @param string $barcode
+     * @return array|bool        true if email is sent, error array on fail
+     * @throws ErrorException
+     * @throws \PHPMailer\PHPMailer\Exception
+     */
+    public function emailResetPin(string $barcode) {
+        // It may be the case the patron updated their email via a means other than
+        // Pika. Don't rely on the email in the database as this can cause issues.
+        $patron_ils_id = $this->getPatronIlsId($barcode);
+        if(!$patron_ils_id) {
+            return ['error' => 'The barcode you provided is not valid. Please check the barcode and try again.'];
+        }
+        $patron = $this->getPatron($patron_ils_id, $barcode);
+
+        // If the email is empty at this point we don't have a good address for the patron.
+        if ($patron === null || empty($patron->email)){
+            return ['error' => 'You do not have an email address on your account. Please visit your library to reset your ' . translate('pin') . '.'];
+        }
+
+        // make sure there's no old token.
+        $pinReset         = new PinReset();
+        $pinReset->userId = $patron->id;
+        $pinReset->delete();
+
+        $pinReset->userId = $patron->id;
+
+        $resetToken = $pinReset->insertReset();
+        // build reset url (Note: the site url gets automatically set as the interface url
+        $resetUrl = $this->configArray['Site']['url'] . "/MyAccount/ResetPin?uid=".$patron->id.'&resetToken='.$resetToken;
+
+        // build the message
+        $pin     = translate('pin');
+        $subject = '[DO NOT REPLY] ' . ucfirst($pin) . ' Reset Link';
+
+        global $interface;
+        $interface->assign('pin', $pin);
+        $interface->assign('resetUrl', $resetUrl);
+        $htmlMessage = $interface->fetch('Emails/pin-reset-email.tpl');
+
+        $mail = new PHPMailer();
+        $mail->setFrom($this->configArray['Site']['email']);
+        $mail->addAddress($patron->email);
+        $mail->Subject = $subject;
+        $mail->msgHTML($htmlMessage);
+        $mail->AltBody = strip_tags($htmlMessage);
+
+        if(!$mail->send()) {
+            $this->logger->error('Can not send email from Sierra.php');
+            return ['error' => "We're sorry. We are unable to send mail at this time. Please try again."];
+        }
+        return true;
+    }
     /**
      * If library uses username field
      *
