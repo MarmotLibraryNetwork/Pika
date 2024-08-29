@@ -7,5 +7,5 @@
 	<a href="{$resetUrl}">{$resetUrl}</a>
 </p>
 <p>If you cannot access the reset form by clicking on the link above, copy and paste the link into your web browser's address bar.</p>
-<p>If you did not make this request, you can ignore this email</p>
+<p>If you did not make this request, you can ignore this email.</p>
 {/strip}
