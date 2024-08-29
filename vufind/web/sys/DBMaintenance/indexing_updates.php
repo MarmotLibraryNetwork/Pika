@@ -64,6 +64,22 @@ function getIndexingUpdates(): array{
 					]
 				],
 
+				'2024.03.0_add_adult_literacy_format'     => [
+					'release'           => '2024.03.0',
+					'title'             => 'Add Adult Literacy Book Format',
+					'description'       => 'Add Adult Literacy Book format to translation maps',
+					'continueOnError'   => true,
+					'sql'               =>[
+						"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'AdultLiteracyBook', 'Adult Literacy Book')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'AdultLiteracyBook', 'Books')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'AdultLiteracyBook', '10')"
+					],
+				],
+
 	];
 }
 
