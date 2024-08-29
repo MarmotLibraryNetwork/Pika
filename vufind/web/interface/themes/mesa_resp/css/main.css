@@ -10648,8 +10648,11 @@ hr.menu {
 .sidebar-links .panel-body {
   color: #333333;
   background-color: transparent;
-  /* border: 1px solid #c5c5c5; */
+  border: none;
 }
 search#horizontal-search-wrapper {
   padding-top: 10px;
+}
+.facetDetails {
+  border: none;
 }
