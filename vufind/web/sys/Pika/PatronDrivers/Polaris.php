@@ -35,18 +35,17 @@
 
 namespace Pika\PatronDrivers;
 
-use DateInterval;
 use MarcRecord;
 use Pika\Cache;
 use Pika\Logger;
 use Curl\Curl;
 use DateTime;
 use DateTimeZone;
+use PinReset;
 use User;
 use Location;
 use RecordDriverFactory;
-
-//use Memcache;
+use PHPMailer\PHPMailer\PHPMailer;
 
 class Polaris extends PatronDriverInterface implements \DriverInterface
 {
@@ -276,6 +275,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $this->ws_access_id = $configArray['Catalog']['clientSecret'];
     }
 
+    /******************** Authentication ********************/
     /**
      * patronLogin
      *
@@ -314,9 +314,8 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             $auth = $this->authenticatePatron($valid_barcode, $pin, $validatedViaSSO);
             if ($auth === null || !isset($auth->PatronID)) {
                 return null;
-            } else {
-                $patron_ils_id = $auth->PatronID;
             }
+            $patron_ils_id = $auth->PatronID;
         }
 
         $patron = $this->getPatron($patron_ils_id, $valid_barcode);
@@ -326,6 +325,12 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         if (!isset($patron_pw) || $patron_pw !== $pin) {
             $patron->updatePassword($pin);
         }
+
+        // if the barcode doesn't match valid_barcode consider it a username
+        if ($valid_barcode !== $barcode) {
+            $patron->alt_username = $barcode;
+        }
+
         return $patron;
     }
 
@@ -540,6 +545,8 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $c->response;
     }
 
+    /******************** Errors ********************/
+
     /**
      * Add patrons secret to cache
      *
@@ -565,7 +572,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     {
         // get user from cache if cache object exists
         if ($user = $this->_getCachePatronObject($ils_id)) {
-            return $user;
+            //return $user;
         }
 
         $create_user = false;
@@ -587,7 +594,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
 
         // get the basic user data from the Polaris API
-        $request_url = $this->ws_url . '/patron/' . $barcode . '/basicdata?addresses=true&notes=true';
+        $request_url = $this->ws_url . '/patron/' . $barcode . '/basicdata?addresses=true';
         $patron_access_secret = $this->_getCachePatronSecret($ils_id);
         $hash = $this->_createHash('GET', $request_url, $patron_access_secret);
 
@@ -638,13 +645,23 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             }
         }
 
-        // Patron location
-        // set location first then reference parentId to set library
+        // Patron library and location
         $location = new Location();
         $location->ilsLocationId = $patron_response->PatronOrgID;
+        $patron_location_display_name = '';
         if ($location->find(true)) {
+            // Need this for display on account profile page 
+            $patron_location_display_name = $location->displayName;
+            // Set location
             if ($user->homeLocationId !== $location->locationId) {
                 $user->homeLocationId = $location->locationId;
+                if (!$create_user) {
+                    $user->update();
+                }
+            }
+            // Set library
+            if ($user->homeLibraryId !== $location->libraryId) {
+                $user->homeLibraryId = $location->libraryId;
                 if (!$create_user) {
                     $user->update();
                 }
@@ -656,13 +673,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                 $user->update();
             }
         }
-
-        // Patron Library
-        // todo: call to /REST/public/{Version}/{LangID}/{AppID}/{OrgID}/organizations/all (cache result for a looooong time)
-        // todo: match OrganizationID to ilsLocationId
-        // todo: get ParentOrganizationID from match
-        // todo: use library->scope = ParentOrganizationID to find correct library.
-        $user->homeLibraryId = 2;
 
         // Patron code
         if ($user->patronType !== $patron_response->PatronCodeID) {
@@ -682,6 +692,9 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
          * The following class variables aren't stored in database and need to be created on demand
          */
 
+        // Location name
+        $user->homeLocation = $patron_location_display_name;
+
         // Names
         $user->fullname = $user->firstname . ' ' . $user->lastname;
 
@@ -690,7 +703,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         if ($this->isMicrosoftDate($patron_response->ExpirationDate)) {
             try {
                 $expiration_date = $this->microsoftDateToISO($patron_response->ExpirationDate);
-                $user->expires = $expiration_date;
+                $user->expires = date('m-d-Y', strtotime($expiration_date));
             } catch (Exception $e) {
                 $this->logger->error($e->getMessage());
                 $user->expires = null;
@@ -701,6 +714,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
         // Address
         $patron_address = $patron_response->PatronAddresses[0];
+        $user->address_id = $patron_address->AddressID;
         $user->address1 = $patron_address->StreetOne;
         $user->address2 = $patron_address->StreetTwo;
         $user->city = $patron_address->City;
@@ -748,11 +762,11 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $user->numHoldsRequestedIls = $patron_response->HoldRequestsTotalCount;
         $user->numCheckedOutIls = $patron_response->ItemsOutCount;
 
-        // Fines
+        // Fines // todo: why to separate fines fields? Do we need a currency symbol? 
         $user->finesVal = $patron_response->ChargeBalance;
-
+        $user->fines = number_format($patron_response->ChargeBalance, 2);
         // Notes
-        // todo: do we need this?
+        // todo: do we need this? Polaris notes seem to be only for staff
         // $user->webNote = $patron_response->PatronNotes;
 
         $this->_setCachePatronObject($user);
@@ -760,80 +774,28 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $user;
     }
 
-    protected function isMicrosoftDate($microsoftDate)
-    {
-        if (preg_match('/^\/?Date\((\d+)([+-]\d{4})\)\/?$/', $microsoftDate, $matches)) {
-            return true;
-        }
-        return false;
-    }
+
+    /******************** Checkouts ********************/
 
     /**
-     * Converts a Microsoft format date to ISO 8601 format.
+     * Retrieve a Patron's Checked Out Items
      *
-     * The Microsoft format date is typically in the form of "Date(1835074800000-0700)",
-     * where the number represents the number of milliseconds since the Unix epoch (January 1, 1970),
-     * and the timezone offset indicates the offset from UTC.
+     * This method retrieves all currently checked-out items for a specific patron from the library's
+     * system. It processes the data returned by the API, transforming it into a structured array
+     * that includes detailed information about each item, such as due dates, checkout dates,
+     * renewability, bibliographic information, and cover images. The method supports handling
+     * special cases like inter-library loans (ILL) and manages records even if they lack standard MARC data.
      *
-     * @param string $microsoftDate The Microsoft format date string.
-     * @return string The date in ISO 8601 format.
-     * @throws Exception If the provided date string is not in a valid Microsoft format.
-     */
-    protected function microsoftDateToISO($microsoftDate)
-    {
-        // Extract the timestamp and the timezone offset from the Microsoft date format
-        if (preg_match('/^\/?Date\((\d+)([+-]\d{4})\)\/?$/', $microsoftDate, $matches)) {
-            $timestamp = $matches[1] / 1000; // Convert milliseconds to seconds
-            $timestamp = (int)$timestamp; // cast to an int in case of decimel
-            $timezoneOffset = $matches[2];
-
-            // Create a DateTime object from the timestamp
-            $dateTime = new DateTime("@$timestamp");
-
-            // Set the timezone offset
-            $hours = substr($timezoneOffset, 0, 3);
-            $minutes = substr($timezoneOffset, 0, 1) . substr($timezoneOffset, 3, 2);
-            $dateTime->setTimezone(new DateTimeZone("$hours:$minutes"));
-
-            // Return the date in ISO 8601 format
-            return $dateTime->format('c');
-        } else {
-            throw new \RuntimeException("Invalid Microsoft date format: $microsoftDate");
-        }
-    }
-
-    /**
-     * Save a user object to cache
+     * If the method encounters an issue (e.g., no data returned, an error in the request),
+     * it will return an empty array.
      *
-     * @param User $patron
-     * @return bool
-     */
-    protected function _setCachePatronObject(User $patron): bool
-    {
-        $patron_object_cache_key = 'patronilsid' . $patron->ilsUserId . 'object';
-        $expires = 30;
-        return $this->cache->set($patron_object_cache_key, $patron, $expires);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function hasNativeReadingHistory()
-    {
-        // TODO: Implement hasNativeReadingHistory() method.
-        return false;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getNumHoldsOnRecord($id)
-    {
-        // TODO: Implement getNumHoldsOnRecord() method.
-    }
-
-    /**
-     * @inheritDoc
+     * @param User $patron The patron object representing the user whose checkouts are being retrieved.
+     * @param bool $linkedAccount (Optional) Indicates whether to retrieve checkouts for a linked account. Defaults
+     * to `false`.
+     *
+     * @return array|null An array of the patron's checkouts. Returns empty array if the request fails or if there
+     * are no checkouts.
+     * @access public
      */
     public function getMyCheckouts($patron, $linkedAccount = false): ?array
     {
@@ -911,25 +873,88 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     }
 
     /**
-     * Executes a system-level HTTP request with the specified method, URL, and request body.
+     * @inheritDoc
      *
-     * This method generates a hash for authorization and then delegates the actual request execution
-     * to the `_doRequest` method. It supports various HTTP methods (GET, POST, PUT) and allows for
-     * additional headers and request body content to be included in the request.
-     *
-     * @param string $method The HTTP method to use for the request. Defaults to 'GET'. Supported methods: 'GET', 'POST', 'PUT'.
-     * @param string $url The URL to which the request is sent.
-     * @param array|string $body The request body to send, which can be an array or string. For GET requests, this is typically empty.
-     * @param array $extra_headers Additional headers to include in the request. These are merged with the default headers.
-     *
-     * @return ?Curl Returns a `Curl` object on successful request, or `null` if an error occurs.
      */
-    protected function _doSystemRequest(string $method = 'GET', string $url, $body = [], $extra_headers = []): ?Curl
+    public function renewItem($patron, $recordId, $itemId, $itemIndex)
     {
-        $hash = $this->_createHash($method, $url);
-        $c = $this->_doRequest($hash, $method, $url, $body, $extra_headers);
-        return $c;
+        // /public/patron/{PatronBarcode}/itemsout/{ID}
+        $return = ['success' => false, 'message' => "Unable to renew your checkout."];
+        $request_url = $this->ws_url . '/patron/' . $patron->barcode . '/itemsout/' . $itemId;
+        $request_body = json_encode([
+            "Action" => "renew",
+            "LogonBranchID" => 1,
+            "LogonUserID" => (int)$this->configArray['Polaris']['staffUserId'],
+            "LogonWorkstationID" => (int)$this->configArray['Polaris']['workstationId'],
+            "RenewData" => [
+                "IgnoreOverrideErrors" => true,
+            ],
+        ]);
+
+        $extra_headers = ['Content-type: application/json'];
+        $c = $this->_doPatronRequest($patron, 'PUT', $request_url, $request_body, $extra_headers);
+        if ($c === null) {
+            return $return;
+        }
+        return ['success' => true, 'message' => "Your checkout has been renewed."];
     }
+
+    protected function isMicrosoftDate($microsoftDate)
+    {
+        if (preg_match('/^\/?Date\((\d+)([+-]\d{4})\)\/?$/', $microsoftDate, $matches)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Converts a Microsoft format date to ISO 8601 format.
+     *
+     * The Microsoft format date is typically in the form of "Date(1835074800000-0700)",
+     * where the number represents the number of milliseconds since the Unix epoch (January 1, 1970),
+     * and the timezone offset indicates the offset from UTC.
+     *
+     * @param string $microsoftDate The Microsoft format date string.
+     * @return string The date in ISO 8601 format.
+     * @throws Exception If the provided date string is not in a valid Microsoft format.
+     */
+    protected function microsoftDateToISO($microsoftDate)
+    {
+        // Extract the timestamp and the timezone offset from the Microsoft date format
+        if (preg_match('/^\/?Date\((\d+)([+-]\d{4})\)\/?$/', $microsoftDate, $matches)) {
+            $timestamp = $matches[1] / 1000; // Convert milliseconds to seconds
+            $timestamp = (int)$timestamp; // cast to an int in case of decimel
+            $timezoneOffset = $matches[2];
+
+            // Create a DateTime object from the timestamp
+            $dateTime = new DateTime("@$timestamp");
+
+            // Set the timezone offset
+            $hours = substr($timezoneOffset, 0, 3);
+            $minutes = substr($timezoneOffset, 0, 1) . substr($timezoneOffset, 3, 2);
+            $dateTime->setTimezone(new DateTimeZone("$hours:$minutes"));
+
+            // Return the date in ISO 8601 format
+            return $dateTime->format('c');
+        } else {
+            throw new \RuntimeException("Invalid Microsoft date format: $microsoftDate");
+        }
+    }
+
+    /**
+     * Save a user object to cache
+     *
+     * @param User $patron
+     * @return bool
+     */
+    protected function _setCachePatronObject(User $patron): bool
+    {
+        $patron_object_cache_key = 'patronilsid' . $patron->ilsUserId . 'object';
+        $expires = 30;
+        return $this->cache->set($patron_object_cache_key, $patron, $expires);
+    }
+
+   
 
     /**
      * Executes a patron-specific HTTP request with the specified method, URL, and request body.
@@ -1039,7 +1064,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                 $c->exec();
                 break;
         }
-        
+
         if ($c->error || $c->httpStatusCode !== 200) {
             $this->logger->error('Curl error: ' . $c->errorMessage, [
                 'http_code' => $c->httpStatusCode,
@@ -1165,32 +1190,31 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $cleaned_author ?? $author;
     }
 
-    /**
-     * @inheritDoc
-     *
-     */
-    public function renewItem($patron, $recordId, $itemId, $itemIndex)
-    {
-        // /public/patron/{PatronBarcode}/itemsout/{ID}
-        $return = ['success' => false, 'message' => "Unable to renew your checkout."];
-        $request_url = $this->ws_url . '/patron/' . $patron->barcode . '/itemsout/' . $itemId;
-        $request_body = json_encode([
-            "Action" => "renew",
-            "LogonBranchID" => 1,
-            "LogonUserID" => (int)$this->configArray['Polaris']['staffUserId'],
-            "LogonWorkstationID" => (int)$this->configArray['Polaris']['workstationId'],
-            "RenewData" => [
-                "IgnoreOverrideErrors" => true,
-            ],
-        ]);
+    /******************** Utilities ********************/
+    // Returns list of system, library and branch level organizations. The list can be filtered by system,
+    // library or branch.
 
-        $extra_headers = ['Content-type: application/json'];
-        $c = $this->_doPatronRequest($patron, 'PUT', $request_url, $request_body, $extra_headers);
-        if ($c === null) {
-            return $return;
+    /**
+     * Get a user object from cache
+     *
+     * @param $patron_ils_id
+     * @return false|mixed
+     */
+    protected function _getCachePatronObject($patron_ils_id)
+    {
+        $patron_object_cache_key = $this->cache->makePatronKey('patron', $patron_ils_id);
+        // $patron_object_cache_key = 'patronilsid' . $patron_ils_id . 'object';
+        $patron = $this->cache->get($patron_object_cache_key, false);
+        if ($patron) {
+            $this->logger->info('Patron object found in cache.');
+            return $patron;
+        } else {
+            $this->logger->info('Patron object not found in cache.');
+            return false;
         }
-        return ['success' => true, 'message' => "Your checkout has been renewed."];
     }
+    
+    
 
     /**
      * @inheritDoc
@@ -1365,6 +1389,15 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return ['available' => $availableHolds, 'unavailable' => $unavailableHolds];
     }
 
+    protected function polarisBranchIdToLocationId($branch_id)
+    {
+        $location = new Location();
+        $location->ilsLocationId = $branch_id;
+        if ($location->find(true) && $location->N === 1) {
+            return $location->locationId;
+        }
+        return null;
+    }
 
     public function getIllCover()
     {
@@ -1389,7 +1422,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $coverUrl;
     }
 
-    /********* HOLDS **********/
     /**
      *
      * @inheritDoc
@@ -1488,6 +1520,40 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         ];
     }
 
+    protected function locationIdToPolarisBranchId($location_id)
+    {
+        $location = new Location();
+        $location->locationId = $location_id;
+
+        if ($location->find(true) && $location->N === 1 && isset($location->ilsLocationId)) {
+            return $location->ilsLocationId;
+        }
+        return null;
+    }
+
+    protected function _placeHoldRequestReply($hold_response, $requesting_org_id): ?Curl
+    {
+        $status_to_state = [
+            2 => 1,
+            4 => 2,
+            5 => 3,
+            6 => 4,
+            7 => 5,
+        ];
+        $request_url = $this->ws_url . '/holdrequest/' . $hold_response->RequestGUID;
+
+        $request_body = [
+            "TxnGroupQualifier" => $hold_response->TxnGroupQualifer,
+            "TxnQualifier" => $hold_response->TxnQualifier,
+            "RequestingOrgID" => $requesting_org_id,
+            "Answer" => 1, // always answer yes (1)
+            "State" => $status_to_state[$hold_response->StatusValue],
+        ];
+        $request_body = json_encode($request_body);
+        $extra_headers = ['Content-Type: application/json'];
+        return $this->_doSystemRequest('PUT', $request_url, $request_body, $extra_headers);
+    }
+
     /**
      * @inheritDoc
      */
@@ -1495,7 +1561,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     {
         $recordId = trim($recordId);
     }
-    
+
     /**
      * @inheritDoc
      *
@@ -1618,7 +1684,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
      * @param $newPickupLocation
      * @return array
      */
-    public function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation)
+    public function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation): array
     {
         // /public/patron/{PatronBarcode}/holdrequests/{RequestID}/pickupbranch?userid={user_id}&wsid={workstation_id}
         // &pickupbranchid={pickupbranch_id}&holdPickupAreaID=0
@@ -1643,40 +1709,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return ['success' => true, 'message' => "The pickup location has been updated."];
     }
 
-    protected function _placeHoldRequestReply($hold_response, $requesting_org_id): ?Curl
-    {
-        $status_to_state = [
-            2 => 1,
-            4 => 2,
-            5 => 3,
-            6 => 4,
-            7 => 5,
-        ];
-        $request_url = $this->ws_url . '/holdrequest/' . $hold_response->RequestGUID;
-
-        $request_body = [
-            "TxnGroupQualifier" => $hold_response->TxnGroupQualifer,
-            "TxnQualifier" => $hold_response->TxnQualifier,
-            "RequestingOrgID" => $requesting_org_id,
-            "Answer" => 1, // always answer yes (1)
-            "State" => $status_to_state[$hold_response->StatusValue],
-        ];
-        $request_body = json_encode($request_body);
-        $extra_headers = ['Content-Type: application/json'];
-        return $this->_doSystemRequest('PUT', $request_url, $request_body, $extra_headers);
-    }
-    
-//    protected function getBibVolumes($bib_id)
-//    {
-//        // /public/bib/{BibID}/holdings
-//        $requst_url = $this->ws_url . "/bib/{$bib_id}/holdings";
-//        
-//    }
-    public function updatePatronInfo($patron, $canUpdateContactInfo)
-    {
-        // TODO: Implement updatePatronInfo() method.
-    }
-
     protected function locationCodeToPolarisBranchId($branch_name)
     {
         $location = new Location();
@@ -1687,26 +1719,280 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return null;
     }
 
-    protected function locationIdToPolarisBranchId($location_id)
+    /**
+     * @inheritDoc
+     */
+    public function getNumHoldsOnRecord($id)
     {
-        $location = new Location();
-        $location->locationId = $location_id;
-
-        if ($location->find(true) && $location->N === 1 && isset($location->ilsLocationId)) {
-            return $location->ilsLocationId;
-        }
-        return null;
+        // todo: what is this?
+        // TODO: Implement getNumHoldsOnRecord() method.
+        return false;
     }
 
-    protected function polarisBranchIdToLocationId($branch_id)
+    /**
+     * @inheritDoc
+     */
+    public function hasNativeReadingHistory()
     {
-        $location = new Location();
-        $location->ilsLocationId = $branch_id;
-        if ($location->find(true) && $location->N === 1) {
-            return $location->locationId;
-        }
-        return null;
+        return false;
     }
+    
+    /* Patron Updates */
+    public function updatePatronInfo($patron, $canUpdateContactInfo)
+    {
+        // /public/patron/{PatronBarcode}
+        if (!$canUpdateContactInfo) {
+            return ['You can not update your information. Please contact your library for assistance.'];
+        }
+        /*
+        * If a method exits in this class or a class extending this class it will be passed a User object.
+        */
+        if (isset($_REQUEST['profileUpdateAction']) && method_exists($this, $_REQUEST['profileUpdateAction'])) {
+            $profileUpdateAction = trim($_POST['profileUpdateAction']);
+            return $this->$profileUpdateAction($patron);
+        }
+
+        $update_scope = trim($_REQUEST['updateScope']);
+        switch ($update_scope) {
+            case 'contact':
+                return $this->updatePatronContact($patron);
+                break;
+            case 'username':
+                return $this->updatePatronUsername($patron);
+                break;
+            case 'pin':
+                return $this->updatePatronPin($patron);
+                break;
+//            case 'overdrive':
+//                return false;
+//                break;
+//            case 'userPreferences':
+//                return false;
+//                break;
+            default:
+                return ['An error occurred. Please contact your library for assistance.'];
+        }
+    }
+
+    private function updatePatronContact($patron)
+    {
+        // /public/patron/{PatronBarcode}
+        $contact = [];
+
+        // required credentials
+        $contact['LogonBranchID'] = 1; // default to system
+        $contact['LogonUserID'] = $this->configArray['Polaris']['staffUserId'];
+        $contact['LogonWorkstationID'] = $this->configArray['Polaris']['workstationId'];
+        // patron address
+        $address['AddressID'] = $patron->address_id;
+        $address['StreetOne'] = $_REQUEST['address1'];
+        $address['StreetTwo'] = $_REQUEST['address2'] ?? '';
+        $address['City'] = $_REQUEST['city'];
+        $address['State'] = $_REQUEST['state'];
+        $address['PostalCode'] = $_REQUEST['zip'];
+        $address['PhoneVoice1'] = $_REQUEST['phone'] ?? '';
+        $address['EmailAddress'] = $_REQUEST['email'] ?? '';
+        $contact['PatronAddresses'][] = $address;
+
+        $errors = [];
+        $request_url = $this->ws_url . "/patron/{$patron->barcode}";
+        $extra_headers = ["Content-Type: application/json"];
+
+        $r = $this->_doPatronRequest($patron, 'PUT', $request_url, $contact, $extra_headers);
+
+        if ($r === null) {
+            if (isset($this->papiLastErrorMessage)) {
+                $errors[] = $this->papiLastErrorMessage;
+            } else {
+                $errors[] = "Unable to update profile. Please contact your library for further assistance.";
+            }
+            return $errors;
+        }
+        return $errors;
+    }
+
+
+    private function updatePatronUsername($patron)
+    {
+        // /public/patron/{PatronBarcode}/username/{NewUsername}
+        // update patron username
+        if(empty($_REQUEST['alternate_username'])) {
+            return ['Username field is required.'];
+        }
+        $username = trim($_REQUEST['alternate_username']);
+        $request_url = $this->ws_url . "/patron/{$patron->barcode}/username/{$username}";
+        
+        $r = $this->_doPatronRequest($patron, 'PUT', $request_url);
+        if ($r === null) {
+            $error_message = "Unable to update username.";
+            if (isset($this->papiLastErrorMessage)) {
+                $error_message .= ' ' . $this->papiLastErrorMessage;
+            } else {
+                $error_message .= ' Please contact your library for further assistance.';
+            }
+            return [$error_message];
+        }
+        return [];
+    }
+
+    private function updatePatronPin($patron)
+    {
+        // /public/patron/{PatronBarcode}
+        // required credentials
+        $update['LogonBranchID'] = 1; // default to system
+        $update['LogonUserID'] = $this->configArray['Polaris']['staffUserId'];
+        $update['LogonWorkstationID'] = $this->configArray['Polaris']['workstationId'];
+        // new pin
+        $update['Password'] = trim($_REQUEST['pin1']);
+
+        $request_url = $this->ws_url . "/patron/{$patron->barcode}";
+        $extra_headers = ["Content-Type: application/json"];
+
+        $r = $this->_doPatronRequest($patron, 'PUT', $request_url, $update, $extra_headers);
+        if ($r === null) {
+            $error_message = "Unable to update pin.";
+            if (isset($this->papiLastErrorMessage)) {
+                $error_message .= ' ' . $this->papiLastErrorMessage;
+            }
+            return [$error_message];
+        }
+
+        return 'Your ' . translate('pin') . ' was updated successfully.';
+    }
+
+    public function resetPin($patron, $newPin, $resetToken) {
+        $pinReset         = new PinReset();
+        $pinReset->userId = $patron->id;
+        $pinReset->find(true);
+        if(!$pinReset->N) {
+            return ['error' => 'Unable to reset your ' . translate('pin') . '. Please try again later.'];
+        } elseif($pinReset->N == 0) {
+            return ['error' => 'Unable to reset your ' . translate('pin') . '. You have not requested a ' . translate('pin') . ' reset.'];
+        }
+        // expired?
+        if($pinReset->expires < time()) {
+            return ['error' => 'The reset token has expired. Please request a new ' . translate('pin') . ' reset.'];
+        }
+        $token = $pinReset->selector . $pinReset->token;
+        // make sure and type cast the two numbers
+        if ((int)$token != (int)$resetToken) {
+            return ['error' => 'Unable to reset your ' . translate('pin') . '. Invalid reset token.'];
+        }
+        // everything is good
+    }
+
+    /**
+     * emailResetPin
+     *
+     * Sends an email reset link to the patrons email address
+     *
+     * @param string $barcode
+     * @return array|bool        true if email is sent, error array on fail
+     * @throws ErrorException
+     * @throws \PHPMailer\PHPMailer\Exception
+     */
+    public function emailResetPin(string $barcode) {
+        // It may be the case the patron updated their email via a means other than
+        // Pika. Don't rely on the email in the database as this can cause issues.
+        $patron_ils_id = $this->getPatronIlsId($barcode);
+        if(!$patron_ils_id) {
+            return ['error' => 'The barcode you provided is not valid. Please check the barcode and try again.'];
+        }
+        $patron = $this->getPatron($patron_ils_id, $barcode);
+
+        // If the email is empty at this point we don't have a good address for the patron.
+        if ($patron === null || empty($patron->email)){
+            return ['error' => 'You do not have an email address on your account. Please visit your library to reset your ' . translate('pin') . '.'];
+        }
+
+        // make sure there's no old token.
+        $pinReset         = new PinReset();
+        $pinReset->userId = $patron->id;
+        $pinReset->delete();
+
+        $pinReset->userId = $patron->id;
+
+        $resetToken = $pinReset->insertReset();
+        // build reset url (Note: the site url gets automatically set as the interface url
+        $resetUrl = $this->configArray['Site']['url'] . "/MyAccount/ResetPin?uid=".$patron->id.'&resetToken='.$resetToken;
+
+        // build the message
+        $pin     = translate('pin');
+        $subject = '[DO NOT REPLY] ' . ucfirst($pin) . ' Reset Link';
+
+        global $interface;
+        $interface->assign('pin', $pin);
+        $interface->assign('resetUrl', $resetUrl);
+        $htmlMessage = $interface->fetch('Emails/pin-reset-email.tpl');
+
+        $mail = new PHPMailer();
+        $mail->setFrom($this->configArray['Site']['email']);
+        $mail->addAddress($patron->email);
+        $mail->Subject = $subject;
+        $mail->msgHTML($htmlMessage);
+        $mail->AltBody = strip_tags($htmlMessage);
+
+        if(!$mail->send()) {
+            $this->logger->error('Can not send email from Sierra.php');
+            return ['error' => "We're sorry. We are unable to send mail at this time. Please try again."];
+        }
+        return true;
+    }
+    /**
+     * If library uses username field
+     *
+     * @return bool
+     */
+    public function hasUsernameField()
+    {
+        if (isset($this->configArray['OPAC']['allowUsername'])) {
+            return (bool)$this->configArray['OPAC']['allowUsername'];
+        } else {
+            return false;
+        }
+    }
+
+
+    protected function getPolarisOrganizations()
+    {
+        // /public/organizations/all
+        $orgs_cache_key = "polaris_organizations_all";
+        if ($orgs = $this->cache->get($orgs_cache_key)) {
+            return $orgs;
+        }
+        $request_url = $this->ws_url . "/organizations/all";
+        $orgs = $this->_doSystemRequest("GET", $request_url);
+        if ($orgs === null) {
+            return $orgs;
+        }
+        // set a long-ish cache life
+        $ttl = 60 * 60 * 144;
+        $this->cache->set($orgs_cache_key, $orgs, $ttl);
+        return $orgs;
+    }
+
+    /**
+     * Executes a system-level HTTP request with the specified method, URL, and request body.
+     *
+     * This method generates a hash for authorization and then delegates the actual request execution
+     * to the `_doRequest` method. It supports various HTTP methods (GET, POST, PUT) and allows for
+     * additional headers and request body content to be included in the request.
+     *
+     * @param string $method The HTTP method to use for the request. Defaults to 'GET'. Supported methods: 'GET', 'POST', 'PUT'.
+     * @param string $url The URL to which the request is sent.
+     * @param array|string $body The request body to send, which can be an array or string. For GET requests, this is typically empty.
+     * @param array $extra_headers Additional headers to include in the request. These are merged with the default headers.
+     *
+     * @return ?Curl Returns a `Curl` object on successful request, or `null` if an error occurs.
+     */
+    protected function _doSystemRequest(string $method = 'GET', string $url, $body = [], $extra_headers = []): ?Curl
+    {
+        $hash = $this->_createHash($method, $url);
+        $c = $this->_doRequest($hash, $method, $url, $body, $extra_headers);
+        return $c;
+    }
+
+    protected function _updatePatron($patron, $patron_update) {}
 
     /**
      * Remove a patron object from cache
@@ -1716,26 +2002,10 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
      */
     protected function _deleteCachePatronObject($patron_ils_id)
     {
-        $patron_object_cache_key = 'patronilsid' . $patron_ils_id . 'object';
+        $patron_object_cache_key = $this->cache->makePatronKey('patron', $patron_ils_id);
+        //$patron_object_cache_key = 'patronilsid' . $patron_ils_id . 'object';
         return $this->cache->delete($patron_object_cache_key);
     }
 
-    /**
-     * Get a user object from cache
-     *
-     * @param $patron_ils_id
-     * @return false|mixed
-     */
-    protected function _getCachePatronObject($patron_ils_id)
-    {
-        $patron_object_cache_key = 'patronilsid' . $patron_ils_id . 'object';
-        $patron = $this->cache->get($patron_object_cache_key, false);
-        if ($patron) {
-            $this->logger->info('Patron object found in cache.');
-            return $patron;
-        } else {
-            $this->logger->info('Patron object not found in cache.');
-            return false;
-        }
-    }
+
 } // end class Polaris

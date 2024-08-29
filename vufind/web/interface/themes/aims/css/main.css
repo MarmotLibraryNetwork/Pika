@@ -7126,7 +7126,9 @@ table.dataTable.order-column.stripe tbody tr.odd > .sorting_3 a {
   color: #d6430a;
 }
 .star_rating input[class="star0"]:checked + label {
-  color: #d6430a;
+  color: transparent;
+  border-bottom-color: transparent;
+  display: none;
 }
 .star_rating [type="submit"] {
   float: none;
@@ -10458,8 +10460,8 @@ fieldset[disabled] .btn-masquerade.active {
 a .header-button {
   border: 0;
   border-radius: 0.5em;
-  color: #FFF;
-  background-color: #da1418;
+  color: #000;
+  background-color: #DDD;
   margin-top: 0;
   line-height: 30px;
   text-shadow: none;
@@ -10511,6 +10513,47 @@ a#headerLogoutLink {
 #horizontal-search-box {
   background-color: #221f1f;
   padding: 15px 0;
+}
+#horizontal-search-box .col-tn-3 > button:nth-child(1) {
+  color: #fff;
+  background-color: #da1418;
+  border-color: #c31215;
+}
+#horizontal-search-box .col-tn-3 > button:nth-child(1):hover,
+#horizontal-search-box .col-tn-3 > button:nth-child(1):focus,
+#horizontal-search-box .col-tn-3 > button:nth-child(1):active,
+#horizontal-search-box .col-tn-3 > button:nth-child(1).active,
+.open .dropdown-toggle#horizontal-search-box .col-tn-3 > button:nth-child(1) {
+  color: #fff;
+  background-color: #b51114;
+  border-color: #8b0d0f;
+}
+#horizontal-search-box .col-tn-3 > button:nth-child(1):active,
+#horizontal-search-box .col-tn-3 > button:nth-child(1).active,
+.open .dropdown-toggle#horizontal-search-box .col-tn-3 > button:nth-child(1) {
+  background-image: none;
+}
+#horizontal-search-box .col-tn-3 > button:nth-child(1).disabled,
+#horizontal-search-box .col-tn-3 > button:nth-child(1)[disabled],
+fieldset[disabled] #horizontal-search-box .col-tn-3 > button:nth-child(1),
+#horizontal-search-box .col-tn-3 > button:nth-child(1).disabled:hover,
+#horizontal-search-box .col-tn-3 > button:nth-child(1)[disabled]:hover,
+fieldset[disabled] #horizontal-search-box .col-tn-3 > button:nth-child(1):hover,
+#horizontal-search-box .col-tn-3 > button:nth-child(1).disabled:focus,
+#horizontal-search-box .col-tn-3 > button:nth-child(1)[disabled]:focus,
+fieldset[disabled] #horizontal-search-box .col-tn-3 > button:nth-child(1):focus,
+#horizontal-search-box .col-tn-3 > button:nth-child(1).disabled:active,
+#horizontal-search-box .col-tn-3 > button:nth-child(1)[disabled]:active,
+fieldset[disabled] #horizontal-search-box .col-tn-3 > button:nth-child(1):active,
+#horizontal-search-box .col-tn-3 > button:nth-child(1).disabled.active,
+#horizontal-search-box .col-tn-3 > button:nth-child(1)[disabled].active,
+fieldset[disabled] #horizontal-search-box .col-tn-3 > button:nth-child(1).active {
+  background-color: #da1418;
+  border-color: #c31215;
+}
+#horizontal-search-box .col-tn-3 > button:nth-child(1) .badge {
+  color: #da1418;
+  background-color: #fff;
 }
 #browse-label {
   height: 5px;

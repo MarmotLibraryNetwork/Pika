@@ -7130,7 +7130,9 @@ table.dataTable.order-column.stripe tbody tr.odd > .sorting_3 a {
   color: #d6430a;
 }
 .star_rating input[class="star0"]:checked + label {
-  color: #d6430a;
+  color: transparent;
+  border-bottom-color: transparent;
+  display: none;
 }
 .star_rating [type="submit"] {
   float: none;

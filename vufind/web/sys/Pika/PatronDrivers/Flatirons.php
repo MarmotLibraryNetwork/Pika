@@ -242,6 +242,10 @@ class Flatirons extends Sierra
 			if (!empty($_REQUEST['textInSpanish'])){
 				$extraSelfRegParams['varFields'][] = ['fieldTag' => 'i', 'content'  => 'spi'];
 			}
+
+			if (!empty($_REQUEST['guardianName'])){
+				$extraSelfRegParams['varFields'][] = ['fieldTag' => 'g', 'content'  => trim($_REQUEST['guardianName'])];
+			}
 		}
 
 		if (in_array($libSubDomain, ['boulder', 'broomfield'])){

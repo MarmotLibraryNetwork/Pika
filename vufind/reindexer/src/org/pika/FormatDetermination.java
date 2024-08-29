@@ -1349,7 +1349,8 @@ public class FormatDetermination {
 				field = fieldsIter.next();
 				List<Subfield> subfields = field.getSubfields();
 				for (Subfield subfield : subfields) {
-					if (subfield.getCode() == 'a'){
+					char subfieldCode = subfield.getCode();
+					if (subfieldCode == 'a'){
 						String subfieldData = subfield.getData().toLowerCase();
 						if (subfieldData.contains("large type") || subfieldData.contains("large print")) {
 							result.add("LargePrint");
@@ -1357,6 +1358,8 @@ public class FormatDetermination {
 							result.add("PlayawayView");
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
+						}else if (subfieldData.contains("readers for new literates")/* || subfieldData.contains("high interest-low vocabulary books")*/) {
+							result.add("AdultLiteracyBook");
 						}else if (subfieldData.contains("graphic novel")
 										|| subfieldData.contains("comic and graphic books")  // OverDrive Marc
 						) {
@@ -1377,7 +1380,7 @@ public class FormatDetermination {
 						}else if (subfieldData.contains("board books")){
 								result.add("BoardBook");
 						}
-					} else if (subfield.getCode() == 'v') {
+					} else if (subfieldCode == 'v') {
 						String subfieldData = subfield.getData().toLowerCase();
 						if (subfieldData.contains("comic books, strips, etc") || subfieldData.contains("comic books,strips, etc")) {
 							result.add("GraphicNovel");
@@ -1404,6 +1407,8 @@ public class FormatDetermination {
 							result.add("PlayawayView");
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
+						}else if (subfieldData.contains("readers for new literates") || subfieldData.contains("high interest-low vocabulary books")) {
+							result.add("AdultLiteracyBook");
 						}else if (subfieldData.contains("graphic novel")
 										|| subfieldData.contains("comic books, strips, etc") // Library of Congress authorized term
 						) {

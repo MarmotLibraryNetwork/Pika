@@ -8,7 +8,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Slab&display=swap');
 
 // Header
-.header-login-button-mixin(@aims-red, #FFF, 0, 30px);
+.header-login-button-mixin(#DDD, #000, 0, 30px);
 
 a .header-button:hover {
   border: none;
@@ -58,6 +58,9 @@ a#headerMyAccountLink, a#headerLoginLink, a#headerLogoutLink {
   //background: -webkit-linear-gradient(top,#006648,#004d36);
   //background: linear-gradient(to bottom,#006648,#004d36);
   padding: 15px 0;
+  .col-tn-3 > button:nth-child(1) {
+    .btn-primary();
+  }
 }
 
 

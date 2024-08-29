@@ -5,7 +5,8 @@
 
 	 NOTE :  There is more than one  *profile.tpl*  template file.
 		Update all of them with your changes.
-
+	
+	polaris/MyAccount/profile.tpl
 	********************************************}
 
 	<div id="main-content">

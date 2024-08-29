@@ -79,7 +79,6 @@
   cursor: pointer;
   /* Transparent border avoids jumping when a colored border is applied on :hover/:focus */
   border: 2px solid transparent;
-
 }
 
 .star_rating output {
@@ -116,7 +115,10 @@
 }
 
 .star_rating input[class="star0"]:checked+label {
-  color: #d6430a;
+  //color: #d6430a;
+  color: transparent;
+  border-bottom-color: transparent;
+  display: none; 
 }
 
 .star_rating [type="submit"] {
