@@ -10631,3 +10631,25 @@ hr.menu {
 .scrollerTitle.selected {
   border: 3px solid #336fa3;
 }
+.exploreMoreBar.row {
+  border: none;
+  border-bottom: 2px solid #d5d6da;
+}
+.exploreMoreBar.row #exploreMoreBarScroll .jcarousel-control-prev,
+.exploreMoreBar.row #exploreMoreBarScroll .jcarousel-control-next {
+  border: none;
+}
+.exploreMoreBar.row #exploreMoreBarScroll .jcarousel-control-prev i.glyphicon-chevron-left,
+.exploreMoreBar.row #exploreMoreBarScroll .jcarousel-control-next i.glyphicon-chevron-left,
+.exploreMoreBar.row #exploreMoreBarScroll .jcarousel-control-prev i.glyphicon-chevron-right,
+.exploreMoreBar.row #exploreMoreBarScroll .jcarousel-control-next i.glyphicon-chevron-right {
+  top: -20px;
+}
+.sidebar-links .panel-body {
+  color: #333333;
+  background-color: transparent;
+  /* border: 1px solid #c5c5c5; */
+}
+search#horizontal-search-wrapper {
+  padding-top: 10px;
+}
