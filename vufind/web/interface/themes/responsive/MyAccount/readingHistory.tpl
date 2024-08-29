@@ -91,7 +91,7 @@
 									<label for="searchTerm">Search Reading History</label>
 								</div>
 								<div class="col-xs-6">
-									<input type="search" name="searchTerm" id="searchTerm" class="form-control"  onkeydown="return event.key != 'Enter';" value="{if $searchTerm}{$searchTerm|escape}{*Escape to prevent javascript injection*}{/if}">
+									<input type="search" name="searchTerm" id="searchTerm" class="form-control"  onkeydown="{literal}if(event.key == 'Enter') {return Pika.Account.ReadingHistory.searchReadingHistoryAction();}{/literal}" value="{if $searchTerm}{$searchTerm|escape}{*Escape to prevent javascript injection*}{/if}">
 								</div>
 								<div class="col-xs-3">
 									<select name="searchBy" id="searchBy" class="form-control" aria-label="Search by">
