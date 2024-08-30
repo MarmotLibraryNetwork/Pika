@@ -4206,7 +4206,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
   padding: 8px 15px;
   margin-bottom: 26px;
   list-style: none;
-  background-color: #f5f5f5;
+  background-color: white;
   border-radius: 4px;
 }
 .breadcrumb > li {
@@ -6871,7 +6871,7 @@ body > .container {
   text-shadow: 1px 1px #fff;
 }
 .active .panel-heading {
-  background-color: #057DBC;
+  background-color: #0A5D66;
 }
 .active .panel-title {
   color: #fff;
@@ -6990,7 +6990,7 @@ a:focus img.listResultImage {
   outline: 2px solid white;
 }
 #vertical-menu-bar .menu-icon-selected:focus-within {
-  border: 2px solid #4e748b !important;
+  border: 2px solid #0A5D66 !important;
   outline: 2px solid white;
 }
 a:focus > .header-button {
@@ -7946,7 +7946,7 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
   }
 }
 .breadcrumbs {
-  background-color: #f5f5f5;
+  background-color: white;
   padding: 3px;
 }
 .breadcrumb {
@@ -7976,8 +7976,8 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
   height: 120px;
   min-height: 100px;
   padding-top: 0;
-  background-color: #fff;
-  border-bottom: 8px solid #8b8d4a;
+  background-color: #0A5D66;
+  border-bottom: 8px solid #0A5D66;
   margin-bottom: 0;
 }
 #header-logo {
@@ -7994,7 +7994,7 @@ a .header-button {
   text-align: center;
   line-height: 50px;
   color: #222;
-  background-color: #fff;
+  background-color: #0A5D66;
   border: 1px solid #555;
   margin-top: 35px;
 }
@@ -8031,7 +8031,7 @@ a .header-button:visited {
   font-size: 16px;
 }
 #footer-container {
-  border-top: 8px solid #8b8d4a;
+  border-top: 8px solid #D35E13;
   padding-top: 3px;
 }
 @media screen and (max-width: 767px) {
@@ -8066,7 +8066,7 @@ a .header-button:visited {
           text-decoration: underline dotted;
 }
 #navigation-controls {
-  border-top: 8px solid #8b8d4a;
+  border-top: 8px solid #D35E13;
   background: #fff;
 }
 @media print {
@@ -8076,7 +8076,7 @@ a .header-button:visited {
 }
 .menu-bar {
   color: #FFF;
-  background-color: #4e748b;
+  background-color: #0A5D66;
 }
 #horizontal-menu-bar-container {
   padding-left: 5px;
@@ -8096,7 +8096,7 @@ a .header-button:visited {
   float: left;
 }
 #horizontal-menu-bar-container .menu-icon.menu-icon-selected {
-  background-color: #CDD6DD;
+  background-color: #f5f5f5;
 }
 #horizontal-menu-bar-container.sticky-menu-bar {
   position: fixed;
@@ -8119,7 +8119,7 @@ a .header-button:visited {
   width: 40px;
   height: 2000px;
   height: 100vh;
-  background-color: #4e748b;
+  background-color: #0A5D66;
   color: #FFF;
   padding-left: 0;
   padding-right: 0;
@@ -8133,7 +8133,7 @@ a .header-button:visited {
   position: relative;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected {
-  background-color: #CDD6DD;
+  background-color: #f5f5f5;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
   color: #000;
@@ -8260,8 +8260,8 @@ a .header-button:visited {
   border: 2px solid #E15F15;
 }
 #home-page-search {
-  background-color: #4e748b;
-  background: linear-gradient(to bottom, #4e748b, #57829b);
+  background-color: #f5f5f5;
+  background: linear-gradient(to bottom, #f5f5f5, #f5f5f5);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8287,7 +8287,7 @@ a .header-button:visited {
 .searchSource {
   margin: 5px 0 0;
   color: #fff;
-  background-color: #4e748b;
+  background-color: #f5f5f5;
   border: none;
   width: 90% !important;
 }
@@ -8302,8 +8302,8 @@ a .header-button:visited {
           text-decoration: underline dotted;
 }
 #horizontal-search-box {
-  background-color: #4e748b;
-  background: linear-gradient(to bottom, #4e748b, #57829b);
+  background-color: #f5f5f5;
+  background: linear-gradient(to bottom, #f5f5f5, #f5f5f5);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -8353,7 +8353,7 @@ a .header-button:visited {
   margin-bottom: 0;
 }
 #home-page-login {
-  background-color: #524747;
+  background-color: #0A5D66;
   color: #FFF;
   font-size: 18px;
   padding: 5px;
@@ -8507,7 +8507,7 @@ hr.menu {
   background: #343a40;
 }
 #home-page-browse-header {
-  background-color: #CDD6DD;
+  background-color: white;
   padding-bottom: 15px;
 }
 #home-page-browse-content {
@@ -8523,8 +8523,8 @@ hr.menu {
 }
 #browse-category-picker .jcarousel-control-prev,
 #browse-category-picker .jcarousel-control-next {
-  background-color: #9e9fa3;
-  color: #8b8d4a;
+  background-color: white;
+  color: #0A5D66;
   font-size: 50px;
   border: none;
   padding-inline: 0;
@@ -8564,7 +8564,7 @@ hr.menu {
   border: 2px solid #E15F15;
 }
 #browse-category-carousel .browse-category button {
-  color: #fff;
+  color: #0A5D66;
   cursor: pointer;
   background: none;
   border: 0;
@@ -8579,38 +8579,38 @@ hr.menu {
   text-decoration: underline;
 }
 #browse-category-carousel .browse-category.selected {
-  border: 2px solid #8b8d4a;
+  border: 2px solid #84D1D9;
   font-size: 23px;
 }
 #browse-category-carousel .browse-category.selected:focus-within {
   border: #E15F15 2px solid;
 }
 #browse-category-carousel .browse-category.category0 {
-  background-color: #4e748b;
+  background-color: white;
 }
 #browse-category-carousel .browse-category.category1 {
-  background-color: #4e748b;
+  background-color: white;
 }
 #browse-category-carousel .browse-category.category2 {
-  background-color: #4e748b;
+  background-color: white;
 }
 #browse-category-carousel .browse-category.category3 {
-  background-color: #4e748b;
+  background-color: white;
 }
 #browse-category-carousel .browse-category.category4 {
-  background-color: #4e748b;
+  background-color: white;
 }
 #browse-category-carousel .browse-category.category5 {
-  background-color: #4e748b;
+  background-color: white;
 }
 #browse-category-carousel .browse-category.category6 {
-  background-color: #4e748b;
+  background-color: white;
 }
 #browse-category-carousel .browse-category.category7 {
-  background-color: #4e748b;
+  background-color: white;
 }
 #browse-category-carousel .browse-category.category8 {
-  background-color: #4e748b;
+  background-color: white;
 }
 #selected-browse-label {
   background-color: #fff;
@@ -8975,8 +8975,8 @@ a.browse-thumbnail-sorted.active {
   margin-right: 5px;
 }
 #browse-sub-category-menu button.selected {
-  color: #fff;
-  background-color: #4e748b;
+  color: black;
+  background-color: #84D1D9;
 }
 #browse-sub-category-menu button:focus {
   outline: #E15F15 solid 2px;
@@ -9673,7 +9673,7 @@ a.browse-thumbnail-sorted.active {
   width: 100%;
   display: inline-block;
   padding: 2px 2px 20px;
-  border-top: 5px solid #4e748b;
+  border-top: 5px solid #0A5D66;
   margin-top: 15px;
 }
 .combined-results-section .related-manifestation {
@@ -9688,8 +9688,8 @@ a.browse-thumbnail-sorted.active {
 .combined-results-button {
   float: right;
   margin-top: 4px;
-  background-color: #4e748b;
-  border-color: #4e748b;
+  background-color: #0A5D66;
+  border-color: #0A5D66;
 }
 #bookshelfContainer {
   max-height: 400px;
@@ -9889,15 +9889,15 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
 }
 #explore-more-sidebar {
-  background-color: #4e748b;
-  background: linear-gradient(to bottom, #4e748b, #57829b);
+  background-color: #f5f5f5;
+  background: linear-gradient(to bottom, #f5f5f5, #f5f5f5);
 }
 #explore-more-header {
   padding: 10px 25px 5px 0;
   margin-top: 5px;
   text-align: right;
   color: #FFF;
-  background-color: #45667b;
+  background-color: #08484f;
   font-variant: small-caps;
   font-weight: bold;
   font-size: 16px;
@@ -9914,7 +9914,7 @@ a.browse-thumbnail-sorted.active {
   text-transform: uppercase;
   font-weight: bold;
   color: #000075;
-  border-bottom: 2px solid #4e748b;
+  border-bottom: 2px solid #0A5D66;
   margin-top: 15px;
 }
 #explore-more-body .section {
@@ -9956,12 +9956,12 @@ a.browse-thumbnail-sorted.active {
   }
 }
 .exploreMoreBar {
-  border: solid 1px #4e748b;
+  border: solid 1px #0A5D66;
   margin: 10px 5px 15px;
 }
 .exploreMoreBar .exploreMoreBarLabel {
   color: #FFF;
-  background-color: #4e748b;
+  background-color: #0A5D66;
   font-weight: bold;
   text-transform: uppercase;
   white-space: nowrap;
@@ -9979,7 +9979,7 @@ a.browse-thumbnail-sorted.active {
 }
 .exploreMoreBar .label-left,
 .exploreMoreBar .label-left img {
-  background-color: #4e748b;
+  background-color: #0A5D66;
 }
 .exploreMoreBar .label-left .exploreMoreBarLabel {
   position: absolute;
@@ -9999,7 +9999,7 @@ a.browse-thumbnail-sorted.active {
 }
 .exploreMoreBar .label-top,
 .exploreMoreBar .label-top img {
-  background-color: #4e748b;
+  background-color: #0A5D66;
   display: inline-block;
 }
 .exploreMoreBar .label-top .exploreMoreBarLabel {
@@ -10069,10 +10069,10 @@ a.browse-thumbnail-sorted.active {
 #book-sections .jcarousel-control-next {
   height: 100%;
   background-color: transparent;
-  color: #4e748b;
+  color: #0A5D66;
   z-index: 2;
   box-shadow: white 0 0 0 0;
-  border: 1px solid #4e748b;
+  border: 1px solid #0A5D66;
 }
 #explore-more-body .jcarousel-control-prev,
 #relatedProjectScroller .jcarousel-control-prev,
@@ -10211,7 +10211,7 @@ a.browse-thumbnail-sorted.active {
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentControls,
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentSearchControls {
   color: #FFF;
-  background-color: #4e748b;
+  background-color: #0A5D66;
   padding: 10px 0;
   min-height: 124px;
 }
@@ -10221,7 +10221,7 @@ a.browse-thumbnail-sorted.active {
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox #searchComponentForm {
   background-color: white;
-  border: 1px solid #3c596a;
+  border: 1px solid #053338;
   padding: 3px;
   margin-left: 5px;
 }
@@ -10249,7 +10249,7 @@ a.browse-thumbnail-sorted.active {
   top: 65px;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader {
-  background-color: #4e748b;
+  background-color: #0A5D66;
   padding: 10px 10px 0;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader + .row {
@@ -10450,7 +10450,7 @@ fieldset[disabled] .btn-masquerade.active {
   background-color: #fff;
 }
 #header-container {
-  background: linear-gradient(to bottom, #CDD6DD, #CDD6DD 34px, #fff 34px, #fff 100%);
+  background: #0A5D66;
 }
 #header-container #header-logo {
   padding-top: 0;
@@ -10458,8 +10458,8 @@ fieldset[disabled] .btn-masquerade.active {
 a .header-button {
   border: 0;
   border-radius: 0.5em;
-  color: #fff;
-  background-color: rgba(51, 51, 51, 0.7);
+  color: black;
+  background-color: #84D1D9;
   margin-top: 20px;
   line-height: 60px;
   text-shadow: none;
@@ -10469,7 +10469,80 @@ a .header-button:hover {
   border-bottom: 0;
   box-shadow: 2px 2px 5px #fff;
 }
+a .header-button {
+  border-radius: 0;
+  font-weight: 700;
+  font-size: 14px;
+  height: 60px;
+  margin-top: 30px;
+}
+a .header-button:hover {
+  background: #84D1D9;
+  color: #0A5D66;
+  box-shadow: 2px 2px 5px #010809;
+}
 .result-tools-horizontal .btn {
-  background-color: #8b8d4a;
-  background: linear-gradient(to bottom, #8b8d4a, #6a6c38);
+  background-color: #84D1D9;
+  background: linear-gradient(to bottom, #84D1D9, #5dc2cd);
+}
+#header-logo {
+  padding: initial;
+  max-height: unset;
+  width: 175px;
+  position: relative;
+  top: 25px;
+  z-index: 2;
+  display: block;
+}
+search#horizontal-search-wrapper {
+  padding-left: 125px;
+  background: #f5f5f5;
+}
+search#horizontal-search-wrapper .btn.btn-default {
+  background: #0A5D66;
+  color: white;
+}
+search#horizontal-search-wrapper div#horizontal-search-additional {
+  padding-top: 5px;
+}
+search#horizontal-search-wrapper #advancedSearchLink {
+  color: #0A5D66;
+}
+#horizontal-search-wrapper + #content-container #home-page-login {
+  margin-top: 0;
+}
+.breadcrumbs {
+  border-bottom: 1px solid #cecece;
+}
+.panel-body {
+  padding: 0;
+}
+.panel-body a {
+  padding: 15px;
+}
+.panel-body div.active {
+  background: #84D1D9;
+}
+.panel-body div.active a {
+  color: black!important;
+}
+@media only screen and (max-width: 1200px) {
+  #header-logo {
+    width: 150px;
+  }
+  search#horizontal-search-wrapper {
+    padding-left: 50px;
+  }
+}
+@media only screen and (max-width: 991px) {
+  #header-logo {
+    width: 120px;
+    top: 0;
+  }
+  #horizontal-search-box #horizontal-search-label {
+    color: #0A5D66;
+  }
+  search#horizontal-search-wrapper {
+    padding: 0;
+  }
 }
