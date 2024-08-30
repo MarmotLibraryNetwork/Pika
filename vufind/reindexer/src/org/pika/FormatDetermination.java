@@ -186,7 +186,7 @@ public class FormatDetermination {
 				for (String format : printFormats) {
 					switch (format.toLowerCase()) {
 						case "adultliteracybook":
-							econtentItem.setFormat("AdultLiteracyEBook");
+							econtentItem.setFormat("Adult Literacy eBook");
 							econtentItem.setFormatCategory("eBook");
 							econtentRecord.setFormatBoost(10);
 							break;
@@ -241,7 +241,7 @@ public class FormatDetermination {
 							econtentRecord.setFormatBoost(5);
 							break;
 						case "musicalscore":
-							econtentItem.setFormat("MusicalScore");
+							econtentItem.setFormat("Musical Score");
 							econtentItem.setFormatCategory("eBook");
 							econtentRecord.setFormatBoost(5);
 							break;
@@ -257,12 +257,12 @@ public class FormatDetermination {
 							break;
 						case "photo":
 							econtentItem.setFormat("Photo");
-							econtentItem.setFormatCategory("Other");
+							//econtentItem.setFormatCategory("Other"); // Have no format category rather than other
 							econtentRecord.setFormatBoost(2);
 							break;
 						case "map":
 							econtentItem.setFormat("Map");
-							econtentItem.setFormatCategory("Other");
+							//econtentItem.setFormatCategory("Other"); // Have no format category rather than other
 							econtentRecord.setFormatBoost(2);
 							break;
 						case "newspaper":
@@ -271,7 +271,7 @@ public class FormatDetermination {
 							econtentRecord.setFormatBoost(2);
 							break;
 						default:
-							logger.warn("Could not find appropriate eContent format for " + format + " while side loading eContent " + econtentRecord.getFullIdentifier());
+							logger.warn("Could not find appropriate eContent format for {} while side loading eContent {}", format, econtentRecord.getFullIdentifier());
 							// Use the generic format determination for the cases below
 						case "electronic":
 						case "software":
@@ -288,7 +288,7 @@ public class FormatDetermination {
 						//case "xbox":
 						case "xbox360":
 							econtentItem.setFormat("Online Materials");
-							econtentItem.setFormatCategory("Other");
+							//econtentItem.setFormatCategory("Other"); // Have no format category rather than other
 							econtentRecord.setFormatBoost(2);
 					}
 				}
