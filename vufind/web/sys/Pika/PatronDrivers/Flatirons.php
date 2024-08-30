@@ -237,17 +237,6 @@ class Flatirons extends Sierra
 			}
 		}
 
-		if ($libSubDomain == 'broomfield'){
-			// MLN2 uses variable field i = spi for shoutbomb to use spanish
-			if (!empty($_REQUEST['textInSpanish'])){
-				$extraSelfRegParams['varFields'][] = ['fieldTag' => 'i', 'content'  => 'spi'];
-			}
-
-			if (!empty($_REQUEST['guardianName'])){
-				$extraSelfRegParams['varFields'][] = ['fieldTag' => 'g', 'content'  => trim($_REQUEST['guardianName'])];
-			}
-		}
-
 		if (in_array($libSubDomain, ['boulder', 'broomfield'])){
 			$this->capitalizeAllSelfRegistrationInputs(/*[Any fields that shouldn't be capitalized]*/);
 		} else {
@@ -256,6 +245,18 @@ class Flatirons extends Sierra
 			$_POST['city']    = strtoupper($_POST['city']);
 			$_POST['state']   = strtoupper($_POST['state']);
 			$_POST['zip']     = strtoupper($_POST['zip']);
+		}
+
+		if ($libSubDomain == 'broomfield'){
+			// MLN2 uses variable field i = spi for shoutbomb to use spanish
+			if (!empty($_REQUEST['textInSpanish'])){
+				$extraSelfRegParams['varFields'][] = ['fieldTag' => 'i', 'content'  => 'spi'];
+			}
+
+			// Set this field after capitalization above
+			if (!empty($_REQUEST['guardianName'])){
+				$extraSelfRegParams['varFields'][] = ['fieldTag' => 'g', 'content'  => trim($_REQUEST['guardianName'])];
+			}
 		}
 
 		$extraSelfRegParams['varFields'][] = ['fieldTag' => 'x', 'content'  => 'Created Online'];
