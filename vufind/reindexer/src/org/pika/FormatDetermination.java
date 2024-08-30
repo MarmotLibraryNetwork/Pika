@@ -185,6 +185,11 @@ public class FormatDetermination {
 				//Convert formats from print to eContent version
 				for (String format : printFormats) {
 					switch (format.toLowerCase()) {
+						case "adultliteracybook":
+							econtentItem.setFormat("AdultLiteracyEBook");
+							econtentItem.setFormatCategory("eBook");
+							econtentRecord.setFormatBoost(10);
+							break;
 						case "graphicnovel":
 						case "ecomic":
 							econtentItem.setFormat("eComic");
@@ -1407,7 +1412,7 @@ public class FormatDetermination {
 							result.add("PlayawayView");
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
-						}else if (subfieldData.contains("readers for new literates") || subfieldData.contains("high interest-low vocabulary books")) {
+						}else if (subfieldData.contains("readers for new literates")/* || subfieldData.contains("high interest-low vocabulary books")*/) {
 							result.add("AdultLiteracyBook");
 						}else if (subfieldData.contains("graphic novel")
 										|| subfieldData.contains("comic books, strips, etc") // Library of Congress authorized term
