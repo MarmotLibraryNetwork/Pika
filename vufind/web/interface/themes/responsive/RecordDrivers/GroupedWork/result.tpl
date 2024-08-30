@@ -53,6 +53,8 @@
 						>
 							{if $summRating.user}
 							<div class="text-left small">Your rating: {$summRating.user} stars</div>
+							{else}
+							<div class="text-left small">Rate this title:</div>	 
 							{/if}
 							{include file='MyAccount/star-rating.tpl' id=$summId ratingData=$summRating ratingTitle=$summTitle}
 						</div>
