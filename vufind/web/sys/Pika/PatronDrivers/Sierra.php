@@ -1672,7 +1672,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			$key = $field['property'];
 			if (!in_array($key, $exceptions)){
 				if (isset($_POST[$key])){ // :selfRegister() explicitly refers to $_POST instead of $_REQUEST
-					$_POST[$key] = strtoupper($_POST[$key]);
+					$_POST[$key] = strtoupper(trim($_POST[$key]));
 				}
 			}
 		}

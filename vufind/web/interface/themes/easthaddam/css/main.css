@@ -7127,7 +7127,7 @@ table.dataTable.order-column.stripe tbody tr.odd > .sorting_3 a {
 .star_rating input:focus + label {
   color: #d6430a;
 }
-.star_rating input[class="star0"]:checked + label {
+.star_rating input.star0:checked + label {
   color: transparent;
   border-bottom-color: transparent;
   display: none;
