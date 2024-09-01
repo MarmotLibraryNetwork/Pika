@@ -8274,12 +8274,18 @@ a .header-button:visited {
 #lookfor::-moz-placeholder {
   font-size: 0;
   color: transparent;
+  font-size: 1em;
+  color: #0A5D66;
+  opacity: .8;
   text-shadow: none;
   border: 0;
 }
 #lookfor::placeholder {
   font-size: 0;
   color: transparent;
+  font-size: 1em;
+  color: #0A5D66;
+  opacity: .8;
   text-shadow: none;
   border: 0;
 }
@@ -10526,7 +10532,7 @@ search#horizontal-search-wrapper #advancedSearchLink {
 .panel-body div.active a {
   color: black!important;
 }
-@media only screen and (max-width: 1200px) {
+@media only screen and (max-width: 1199px) {
   #header-logo {
     width: 150px;
   }
