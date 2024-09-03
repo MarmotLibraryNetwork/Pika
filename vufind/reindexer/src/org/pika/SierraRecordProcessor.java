@@ -35,7 +35,7 @@ import java.util.HashMap;
  * @author pbrammeier
  * 				Date:   9/17/2020
  */
-public class SierraRecordProcessor extends IIIRecordProcessor{
+public class SierraRecordProcessor extends IIIRecordProcessor {
 	private final HashMap<String, ArrayList<OrderInfo>> orderInfoFromExport = new HashMap<>();
 
 	private String                                exportPath;
@@ -61,8 +61,27 @@ public class SierraRecordProcessor extends IIIRecordProcessor{
 
 	}
 
+	/**
+	 * @param groupedWork
+	 * @param record
+	 * @param identifier
+	 * @param loadedNovelistSeries
+	 */
+	@Override
+	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier, boolean loadedNovelistSeries) {
+		super.updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier, loadedNovelistSeries);
+		//TODO: bibId w/o check digit, short Id, short Id w/o check digit
+		String identifierStr              = identifier.getIdentifier();
+		String shortBibId                 = identifierStr.replace(".b", "b");
+		String bibIdWithoutCheckDigit     = identifierStr.substring(0, identifierStr.length() - 1);
+		String shorBibIdWithoutCheckDigit = shortBibId.substring(0, shortBibId.length() - 1);
+		groupedWork.addAlternateId(shortBibId);
+		groupedWork.addAlternateId(bibIdWithoutCheckDigit);
+		groupedWork.addAlternateId(shorBibIdWithoutCheckDigit);
+	}
+
 	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems){
-		if (orderInfoFromExport.size() > 0){
+		if (!orderInfoFromExport.isEmpty()){
 			ArrayList<OrderInfo> orderItems = orderInfoFromExport.get(recordInfo.getRecordIdentifier().getIdentifier());
 			if (orderItems != null) {
 				for (OrderInfo orderItem : orderItems) {

@@ -255,7 +255,7 @@ class Flatirons extends Sierra
 
 			// Set this field after capitalization above
 			if (!empty($_REQUEST['guardianName'])){
-				$extraSelfRegParams['varFields'][] = ['fieldTag' => 'g', 'content'  => trim($_REQUEST['guardianName'])];
+				$extraSelfRegParams['varFields'][] = ['fieldTag' => 'g', 'content'  => trim($_POST['guardianName'])];
 			}
 		}
 
