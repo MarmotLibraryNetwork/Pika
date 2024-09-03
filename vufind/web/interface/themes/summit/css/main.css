@@ -8096,7 +8096,7 @@ a .header-button:visited {
   float: left;
 }
 #horizontal-menu-bar-container .menu-icon.menu-icon-selected {
-  background-color: #f5f5f5;
+  background-color: #f0f0f0;
 }
 #horizontal-menu-bar-container.sticky-menu-bar {
   position: fixed;
@@ -8133,7 +8133,7 @@ a .header-button:visited {
   position: relative;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected {
-  background-color: #f5f5f5;
+  background-color: #f0f0f0;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
   color: #000;
@@ -8260,8 +8260,8 @@ a .header-button:visited {
   border: 2px solid #E15F15;
 }
 #home-page-search {
-  background-color: #f5f5f5;
-  background: linear-gradient(to bottom, #f5f5f5, #f5f5f5);
+  background-color: #f0f0f0;
+  background: linear-gradient(to bottom, #f0f0f0, #f0f0f0);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8293,7 +8293,7 @@ a .header-button:visited {
 .searchSource {
   margin: 5px 0 0;
   color: #fff;
-  background-color: #f5f5f5;
+  background-color: #f0f0f0;
   border: none;
   width: 90% !important;
 }
@@ -8308,8 +8308,8 @@ a .header-button:visited {
           text-decoration: underline dotted;
 }
 #horizontal-search-box {
-  background-color: #f5f5f5;
-  background: linear-gradient(to bottom, #f5f5f5, #f5f5f5);
+  background-color: #f0f0f0;
+  background: linear-gradient(to bottom, #f0f0f0, #f0f0f0);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -9895,8 +9895,8 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
 }
 #explore-more-sidebar {
-  background-color: #f5f5f5;
-  background: linear-gradient(to bottom, #f5f5f5, #f5f5f5);
+  background-color: #f0f0f0;
+  background: linear-gradient(to bottom, #f0f0f0, #f0f0f0);
 }
 #explore-more-header {
   padding: 10px 25px 5px 0;
@@ -10488,8 +10488,8 @@ a .header-button:hover {
   box-shadow: 2px 2px 5px #010809;
 }
 .result-tools-horizontal .btn {
-  background-color: #84D1D9;
-  background: linear-gradient(to bottom, #84D1D9, #5dc2cd);
+  background: #84D1D9;
+  color: #031d20;
 }
 #header-logo {
   padding: initial;
@@ -10502,7 +10502,7 @@ a .header-button:hover {
 }
 search#horizontal-search-wrapper {
   padding-left: 125px;
-  background: #f5f5f5;
+  background: #f0f0f0;
 }
 search#horizontal-search-wrapper .btn.btn-default {
   background: #0A5D66;
@@ -10551,4 +10551,8 @@ search#horizontal-search-wrapper #advancedSearchLink {
   search#horizontal-search-wrapper {
     padding: 0;
   }
+}
+#keepFiltersSwitchLabel,
+#advancedSearchLink {
+  color: #0A5D66;
 }
