@@ -10670,3 +10670,6 @@ search#horizontal-search-wrapper {
 .titleScroller.tab-pane button.leftScrollerButton:hover {
   background: none;
 }
+#more-details-accordion .panel-body {
+  border: none;
+}
