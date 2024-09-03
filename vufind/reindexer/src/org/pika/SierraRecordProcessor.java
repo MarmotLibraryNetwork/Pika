@@ -70,7 +70,6 @@ public class SierraRecordProcessor extends IIIRecordProcessor {
 	@Override
 	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier, boolean loadedNovelistSeries) {
 		super.updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier, loadedNovelistSeries);
-		//TODO: bibId w/o check digit, short Id, short Id w/o check digit
 		String identifierStr              = identifier.getIdentifier();
 		String shortBibId                 = identifierStr.replace(".b", "b");
 		String bibIdWithoutCheckDigit     = identifierStr.substring(0, identifierStr.length() - 1);

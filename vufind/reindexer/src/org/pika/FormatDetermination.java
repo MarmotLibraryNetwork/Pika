@@ -504,11 +504,11 @@ public class FormatDetermination {
 		if (leaderBit != null) {
 			if (leaderBit.equals('j')) {
 				printFormats.add("MusicRecording");
+				//TODO: finish early?  Need to determine if music cd; and if has accompanying material
 			}
 			else if (leaderBit.equals('r')) {
 				printFormats.add("PhysicalObject");
 			}
-			//TODO: finish early?
 		}
 		getFormatFromPublicationInfo(record, printFormats);
 		getFormatFromNotes(record, printFormats);
@@ -550,7 +550,7 @@ public class FormatDetermination {
 		}else if (logger.isDebugEnabled()){
 			logger.debug("Pre-filtering found formats " + String.join(",", printFormats));
 		}
-		accompanyingMaterialCheck(record, printFormats);
+		accompanyingMaterialCheck(record, printFormats); //TODO: can this go before printFormats.isEmpty check?
 		filterPrintFormats(printFormats, record);
 
 		if (printFormats.size() > 1){
@@ -625,19 +625,20 @@ public class FormatDetermination {
 							printFormats.clear();
 							printFormats.add("BookWithDVDROM");
 						}
-					} else if (accompanying.contains("dvd")) {
-						String mainPhysical = null;
-						if (physicalDescription.getSubfield('a') != null) {
-							mainPhysical = physicalDescription.getSubfield('a').getData().toLowerCase();
-						}
+					} else if (accompanying.contains("dvd") || accompanying.contains("videodisc")) {
 						if (printFormats.contains("Book")) {
 							printFormats.clear();
 							printFormats.add("BookWithDVD");
-						} else if (mainPhysical != null) {
-							if (mainPhysical.contains("pages") || mainPhysical.contains("p.") || mainPhysical.contains("pgs")) {
-								printFormats.clear();
-								printFormats.add("BookWithDVD");
-								//break;
+						}else if (printFormats.contains("MusicCD")) {
+							printFormats.clear();
+							printFormats.add("MusicCDWithDVD");
+						} else {
+							if (physicalDescription.getSubfield('a') != null) {
+								String mainPhysical = physicalDescription.getSubfield('a').getData().toLowerCase();
+								if (mainPhysical.contains("pages") || mainPhysical.contains("p.") || mainPhysical.contains("pgs")) {
+									printFormats.clear();
+									printFormats.add("BookWithDVD");
+								}
 							}
 						}
 						//printFormats.add("DVD"); This appears to be an unneeded determination.
@@ -782,13 +783,13 @@ public class FormatDetermination {
 			// This is likely music phonographs, which get determined as music recordings
 			printFormats.remove("SoundDisc");
 		}
-		if (printFormats.contains("MusicRecording") && (printFormats.contains("CD") || printFormats.contains("CompactDisc")
-				|| printFormats.contains("DVD") || printFormats.contains("Blu-ray") /* likely accompanying material */
-		)){
+		if (printFormats.contains("MusicRecording") && (printFormats.contains("CD") || printFormats.contains("CompactDisc"))){
 			if (printFormats.contains("DVD")) {
+				// Probable Accompanying Material
 				printFormats.clear();
 				printFormats.add("MusicCDWithDVD");
 			} else if (printFormats.contains("Blu-ray")) {
+				//Probable Accompanying Material
 				printFormats.clear();
 				printFormats.add("MusicCDWithBluRay");
 			} else {
@@ -1111,7 +1112,7 @@ public class FormatDetermination {
 				boolean             hasSoundDisc = false;
 				List<Subfield> subFields = field.getSubfields();
 				for (Subfield subfield : subFields) {
-					if (subfield.getCode() != 'e') {
+					if (subfield.getCode() != 'e') { // Exclude accompanying material subfield e
 						String physicalDescriptionData = subfield.getData().toLowerCase();
 						if (physicalDescriptionData.contains("digital")){
 							hasDigital = true;
