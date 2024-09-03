@@ -10658,3 +10658,15 @@ search#horizontal-search-wrapper {
 .facetDetails {
   border: none;
 }
+.panel {
+  box-shadow: none;
+}
+.titleScroller.tab-pane button.rightScrollerButton,
+.titleScroller.tab-pane button.leftScrollerButton {
+  border: 0;
+  height: unset;
+}
+.titleScroller.tab-pane button.rightScrollerButton:hover,
+.titleScroller.tab-pane button.leftScrollerButton:hover {
+  background: none;
+}
