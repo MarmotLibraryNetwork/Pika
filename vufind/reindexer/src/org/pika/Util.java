@@ -51,7 +51,7 @@ public class Util {
 			@SuppressWarnings("unchecked")
 			Iterable<String> valuesIterable = (Iterable<String>)values;
 			for (String curValue : valuesIterable) {
-				if (curValue != null && curValue.length() > 0) {
+				if (curValue != null && !curValue.isEmpty()) {
 					if (crSeparatedString.length() > 0) {
 						crSeparatedString.append("\r\n");
 					}
@@ -63,14 +63,14 @@ public class Util {
 	}
 	
 	static String getCRSeparatedStringFromSet(Set<String> values) {
-		if (values.size() == 0){
+		if (values.isEmpty()){
 			return "";
 		}else if (values.size() == 1){
 			return values.iterator().next();
 		}
 		StringBuilder crSeparatedString = new StringBuilder();
 		for (String curValue : values) {
-			if (curValue != null && curValue.length() > 0) {
+			if (curValue != null && !curValue.isEmpty()) {
 				if (crSeparatedString.length() > 0) {
 					crSeparatedString.append("\r\n");
 				}
@@ -81,14 +81,14 @@ public class Util {
 	}
 
 	static String getCRSeparatedString(HashSet<String> values) {
-		if (values.size() == 0){
+		if (values.isEmpty()){
 			return "";
 		}else if (values.size() == 1){
 			return values.iterator().next();
 		}
 		StringBuilder crSeparatedString = new StringBuilder();
 		for (String curValue : values) {
-			if (curValue != null && curValue.length() > 0) {
+			if (curValue != null && !curValue.isEmpty()) {
 				if (crSeparatedString.length() > 0) {
 					crSeparatedString.append("\r\n");
 				}
@@ -99,7 +99,7 @@ public class Util {
 	}
 
 	static String getCsvSeparatedString(Set<String> values) {
-		if (values.size() == 0){
+		if (values.isEmpty()){
 			return "";
 		}else if (values.size() == 1){
 			return values.iterator().next();
@@ -126,31 +126,22 @@ public class Util {
 	}
 
 	static boolean copyFile(File sourceFile, File destFile) throws IOException {
-		if (!sourceFile.exists()){
+		if (!sourceFile.exists()) {
 			return false;
 		}
 		if (!destFile.exists()) {
-			if (!destFile.createNewFile()){
+			if (!destFile.createNewFile()) {
 				return false;
 			}
 		}
 
-		FileChannel source = null;
-		FileChannel destination = null;
-
-		try {
-			source = new FileInputStream(sourceFile).getChannel();
-			destination = new FileOutputStream(destFile).getChannel();
+		try (
+						FileChannel source = new FileInputStream(sourceFile).getChannel();
+						FileChannel destination = new FileOutputStream(destFile).getChannel()
+		) {
 			destination.transferFrom(source, 0, source.size());
-		}catch (Exception e){
+		} catch (Exception e) {
 			return false;
-		} finally {
-			if (source != null) {
-				source.close();
-			}
-			if (destination != null) {
-				destination.close();
-			}
 		}
 		return true;
 	}
@@ -273,7 +264,7 @@ public class Util {
 		}
 		return (indexDate.getTime() - curDate.getTime()) / (1000 * 60 * 60 * 24);
 	}
-	private static Date indexDate = new Date();
+	private static final Date indexDate = new Date();
 	static Date getIndexDate(){
 		return indexDate;
 	}
@@ -323,10 +314,7 @@ public class Util {
 
 
 	static boolean isNumeric(String stringToTest) {
-		if (stringToTest == null){
-			return false;
-		}
-		if (stringToTest.length() == 0){
+		if (stringToTest == null || stringToTest.isEmpty()){
 			return false;
 		}
 		int numDecimals = 0;
@@ -380,7 +368,7 @@ public class Util {
 	 * @return Numeric part of date String (or null)
 	 */
 	static String cleanDate(final String date) {
-		if (date == null || date.length() == 0){
+		if (date == null || date.isEmpty()){
 			return null;
 		}
 		Matcher matcher_braces = FOUR_DIGIT_PATTERN_BRACES.matcher(date);
@@ -446,11 +434,11 @@ public class Util {
 	 * string.
 	 */
 	private static String removeOuterBrackets(String origStr) {
-		if (origStr == null || origStr.length() == 0) return origStr;
+		if (origStr == null || origStr.isEmpty()) return origStr;
 
 		String result = origStr.trim();
 
-		if (result.length() > 0) {
+		if (!result.isEmpty()) {
 			boolean openBracketFirst = result.charAt(0) == '[';
 			boolean closeBracketLast = result.endsWith("]");
 			if (openBracketFirst && closeBracketLast && result.indexOf('[', 1) == -1 && result.lastIndexOf(']', result.length() - 2) == -1)
