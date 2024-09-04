@@ -49,6 +49,7 @@ public class OfflineCirculation implements IProcessHandler {
 	private       String              ils          = "Sierra";
 	private       String              userApiToken = "";
 	private       String              baseApiUrl;
+	private       String              pikaBaseUrl;
 
 	@Override
 	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
@@ -56,6 +57,7 @@ public class OfflineCirculation implements IProcessHandler {
 		processLog  = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Offline Circulation");
 		processLog.saveToDatabase(pikaConn, logger);
 		userApiToken = PikaConfigIni.getIniValue("System", "userApiToken");
+		pikaBaseUrl  = PikaConfigIni.getIniValue("Site", "url");
 
 //		ils = PikaConfigIni.getIniValue("Catalog", "ils"); //TODO: remove; was only used to check if millennium
 
@@ -226,9 +228,11 @@ public class OfflineCirculation implements IProcessHandler {
 		logger.info(note);
 		int numProcessed = 0;
 		try (
+			//PreparedStatement circulationEntryToProcessStmt = pikaConn.prepareStatement("SELECT offline_circulation.*, user.id AS userId FROM offline_circulation LEFT JOIN user ON user.barcode = offline_circulation.patronBarcode WHERE status='Not Processed' ORDER BY login ASC, patronBarcode ASC, timeEntered ASC");
 			PreparedStatement circulationEntryToProcessStmt = pikaConn.prepareStatement("SELECT offline_circulation.* FROM offline_circulation WHERE status='Not Processed' ORDER BY login ASC, patronBarcode ASC, timeEntered ASC");
 			PreparedStatement updateCirculationEntry        = pikaConn.prepareStatement("UPDATE offline_circulation SET timeProcessed = ?, status = ?, notes = ? WHERE id = ?");
-			PreparedStatement sierraVendorOpacUrlStmt       = pikaConn.prepareStatement("SELECT vendorOpacUrl FROM account_profiles WHERE name = 'ils'")
+			PreparedStatement sierraVendorOpacUrlStmt       = pikaConn.prepareStatement("SELECT vendorOpacUrl FROM account_profiles WHERE name = 'ils'");
+			//PreparedStatement patronPinStmt                 = pikaConn.prepareStatement("SELECT password FROM user WHERE barcode = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
 		){
 			try (ResultSet sierraVendorOpacUrlRS = sierraVendorOpacUrlStmt.executeQuery()) {
 				if (sierraVendorOpacUrlRS.next()) {
@@ -241,6 +245,7 @@ public class OfflineCirculation implements IProcessHandler {
 						try (ResultSet circulationEntriesToProcessRS = circulationEntryToProcessStmt.executeQuery()) {
 							while (circulationEntriesToProcessRS.next()) {
 								processOfflineCirculationEntryViaSierraAPI(updateCirculationEntry, baseApiUrl, circulationEntriesToProcessRS);
+								//processOfflineCirculationEntryViaSierraAPI(updateCirculationEntry, baseApiUrl, circulationEntriesToProcessRS, patronPinStmt);
 								numProcessed++;
 								if (numProcessed % 10 == 0){
 									try {
@@ -329,14 +334,24 @@ public class OfflineCirculation implements IProcessHandler {
 	}
 
 	private void processOfflineCirculationEntryViaSierraAPI(PreparedStatement updateCirculationEntry, String sierraApiUrl, ResultSet circulationEntriesToProcessRS) throws SQLException {
+		processOfflineCirculationEntryViaSierraAPI(updateCirculationEntry, sierraApiUrl, circulationEntriesToProcessRS, false);
+	}
+
+	private void processOfflineCirculationEntryViaSierraAPI(PreparedStatement updateCirculationEntry, String sierraApiUrl, ResultSet circulationEntriesToProcessRS, boolean usePin) throws SQLException {
 		long circulationEntryId = circulationEntriesToProcessRS.getLong("id");
 		updateCirculationEntry.clearParameters();
 		updateCirculationEntry.setLong(1, new Date().getTime() / 1000);
 		updateCirculationEntry.setLong(4, circulationEntryId);
-		String itemBarcode      = circulationEntriesToProcessRS.getString("itemBarcode");
-		String login            = circulationEntriesToProcessRS.getString("login");
-		String patronBarcode    = circulationEntriesToProcessRS.getString("patronBarcode");
-		OfflineCirculationResult result = processOfflineCheckout(sierraApiUrl, login, itemBarcode, patronBarcode);
+		String                   itemBarcode   = circulationEntriesToProcessRS.getString("itemBarcode");
+		String                   login         = circulationEntriesToProcessRS.getString("login");
+		String                   patronBarcode = circulationEntriesToProcessRS.getString("patronBarcode");
+		OfflineCirculationResult result;
+		if (usePin) {
+			String patronPikaId = circulationEntriesToProcessRS.getString("userId");
+			result = processOfflineCheckout(sierraApiUrl, login, itemBarcode, patronBarcode, patronPikaId);
+		} else {
+			result = processOfflineCheckout(sierraApiUrl, login, itemBarcode, patronBarcode);
+		}
 		if (result.isSuccess()){
 			processLog.incUpdated();
 			updateCirculationEntry.setString(2, "Processing Succeeded");
@@ -582,7 +597,78 @@ public class OfflineCirculation implements IProcessHandler {
 		return result;
 	}
 
-		private OfflineCirculationResult processOfflineCheckIn(String baseAirpacUrl, String login, String loginPassword, String initials, String initialsPassword, String itemBarcode, Long timeEntered) {
+	/**
+	 *  Allows to process offline checkout with supplied credential info from Pika User API
+	 * @param baseSierraApiUrl
+	 * @param sierraCircLogin
+	 * @param itemBarcode
+	 * @param patronBarcode
+	 * @param patronPikaId
+	 * @return
+	 */
+	private OfflineCirculationResult processOfflineCheckout(String baseSierraApiUrl, String sierraCircLogin, String itemBarcode, String patronBarcode, String patronPikaId) {
+		OfflineCirculationResult result      = new OfflineCirculationResult();
+		String                   checkoutUrl = baseSierraApiUrl + "/patrons/checkout";
+		String                   pin         = "";
+		try {
+			JSONObject json = new JSONObject()
+							.put("patronBarcode", patronBarcode)
+							.put("itemBarcode", itemBarcode)
+							.put("username", sierraCircLogin);
+			try {
+				if (patronPikaId != null && !patronPikaId.isEmpty()) {
+					String token                   = md5(patronBarcode);
+					String getPatronPinUrlStr      = pikaBaseUrl + "/API/UserAPI?method=getPatronPin&userId=" + patronPikaId + "&token=" + token;
+					URL    getPatronPinUrl         = new URL(getPatronPinUrlStr);
+					Object getPatronPinResponseRaw = getPatronPinUrl.getContent();
+					if (getPatronPinResponseRaw instanceof InputStream) {
+						String     getPatronPinJsonStr = Util.convertStreamToString((InputStream) getPatronPinResponseRaw);
+						JSONObject getPatronPin        = new JSONObject(getPatronPinJsonStr);
+						if (getPatronPin.has("pin")){
+							pin = getPatronPin.getString("pin");
+						}
+					}
+				}
+			} catch (IOException e) {
+				logger.error("Error on Pika API call", e);
+			} catch (JSONException e) {
+				logger.error("JSON error on getPatronPin API call" ,e);
+			}
+
+			if (!pin.isEmpty()){
+				json.put("patronPin", pin);
+			}
+			String checkoutJson = json.toString();
+			if (logger.isDebugEnabled()){
+				logger.debug("URL call : " + checkoutUrl);
+				logger.debug("POST body : " + checkoutJson);
+			}
+			JSONObject response = callSierraApiURL(checkoutUrl, checkoutJson/*, true*/);
+			if (response != null){
+				if (response.has("id")){
+					result.setSuccess(true);
+				} else {
+					logger.info("Check out failed. Request : " + checkoutJson  + "  Response : " + response);
+					String error = response.getString("name");
+					if (response.has("description")){
+						error += " : " + response.getString("description");
+					}
+					result.setSuccess(false);
+					result.setNote(error);
+				}
+
+			}
+		} catch (JSONException e) {
+			String message = "JSON error with post data or response";
+			logger.error(message, e);
+			result.setSuccess(false);
+			result.setNote(message);
+		}
+		return result;
+	}
+
+
+	private OfflineCirculationResult processOfflineCheckIn(String baseAirpacUrl, String login, String loginPassword, String initials, String initialsPassword, String itemBarcode, Long timeEntered) {
 		OfflineCirculationResult result = new OfflineCirculationResult();
 		Pattern errorRegex              = Pattern.compile("<h[123] class=\"error\">(.*?)</h[123]>");
 		try{
