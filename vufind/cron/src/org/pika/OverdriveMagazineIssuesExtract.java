@@ -58,9 +58,9 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 			for (String tempAccountId : tempAccountIds) {
 				String tempId         = tempAccountId.trim();
 				String tempProductKey = tempProductKeys[i++].trim();
-				if (tempId.length() > 0) {
+				if (!tempId.isEmpty()) {
 					accountIds.add(tempId);
-					if (tempProductKey.length() > 0) {
+					if (!tempProductKey.isEmpty()) {
 						overDriveProductsKeys.put(tempId, tempProductKey);
 					}
 				}
@@ -91,7 +91,6 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 						final String overDriveAdvantageProducts = advantageCollectionMapRS.getString(2);
 						if (overDriveAdvantageProducts != null && !overDriveAdvantageProducts.isEmpty()) {
 							advantageCollectionToLibMap.put(overDriveAdvantageProducts, pikaLibraryId);
-
 						}
 						long sharedCollectionId = advantageCollectionMapRS.getLong(3);
 						if (sharedCollectionId < 0L) {
@@ -111,7 +110,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 				Long   sharedCollectionId = (accountIds.indexOf(accountId) + 1) * -1L;
 				libToOverDriveAPIKeyMap.put(sharedCollectionId, productKey);
 			}
-			if (clientSecret == null || clientKey == null || clientSecret.length() == 0 || clientKey.length() == 0 || accountIds.isEmpty()) {
+			if (clientSecret == null || clientKey == null || clientSecret.isEmpty() || clientKey.isEmpty() || accountIds.isEmpty()) {
 				logger.info("Did not find correct configuration in config.ini, not loading overdrive magazines");
 			} else {
 				insertIssues = econtentConn.prepareStatement("INSERT INTO `overdrive_api_magazine_issues` " +

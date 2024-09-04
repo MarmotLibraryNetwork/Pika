@@ -88,7 +88,7 @@ public class Cron {
 			return;
 		}
 		String econtentConnectionInfo = PikaConfigIni.getIniValue("Database", "database_econtent_jdbc");
-		if (econtentConnectionInfo == null || econtentConnectionInfo.length() == 0) {
+		if (econtentConnectionInfo == null || econtentConnectionInfo.isEmpty()) {
 			logger.error("eContent Database connection information not found in General Settings.  Please specify connection information in a database key.");
 			return;
 		}
