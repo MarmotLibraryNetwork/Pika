@@ -147,7 +147,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 			}
 		} catch (Exception e) {
 			//TODO: Saw error message "There was an error retrieving your search result. " which I think came here; and
-			// should be caught earlier, probably in getNewMagazineIssuesById.  (this catch i think mean processing is over)
+			// should be caught earlier, probably in getNewMagazineIssuesById.  (this catch i think means processing is over)
 			logger.error(e.getMessage(), e);
 			processLog.incErrors();
 		}
@@ -223,6 +223,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 			}
 
 			int     x         = 0;
+			int     total     = 0;
 			boolean lastBatch = false;
 			do {
 				int       updates         = 0;
@@ -304,10 +305,11 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 					}
 				}
 
-
+				total += updates;
 			} while (!lastBatch);
+			logger.info("{} total issue updates made for {}", total, magazineParentId);
 		} catch (Exception e) {
-			logger.error("Fetch all issues - " +e.getMessage() + ": " + magazineParentId);
+			logger.error("Error in fetch all issues for {} - ", magazineParentId, e.getMessage());
 		}
 	}
 
@@ -384,6 +386,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 			}
 
 			int     x          = 0;
+			int     total      = 0;
 			boolean lastBatch  = false;
 			boolean hadUpdates = false;
 			do {
@@ -460,9 +463,10 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 						jsonObject = overdriveCall.getResponse();
 					}
 				}
-
-
+				total += updates;
 			} while (!lastBatch);
+			logger.info("{} total issue updates made for {}", total, magazineParentId);
+
 			if (hadUpdates){
 				try {
 					// Update Cover URL
@@ -484,7 +488,7 @@ public class OverdriveMagazineIssuesExtract implements IProcessHandler {
 						}
 					}
 				} catch (IOException e) {
-					//We can likely ignore all the time outs. As long as the Pika server received the cover url call, it should reload the cover for us.
+					//We can likely ignore all the time-outs. As long as the Pika server received the cover url call, it should reload the cover for us.
 					if (logger.isDebugEnabled()){
 						logger.debug("Error while updating Pika cover for OverDrive Magazine " + magazineParentId, e);
 					}
