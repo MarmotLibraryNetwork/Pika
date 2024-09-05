@@ -2,23 +2,26 @@
 	{* All CSS should be come before javascript for better browser performance *}
 	{if $debugCss}
     {css filename="main.css"}
-		<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/jquery.dataTables.min.css">
-
-
+		<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/jquery.dataTables.css">
 	{else}
 		{css filename="main.min.css"}
-		<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/jquery.dataTables.css">
-
+		<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/jquery.dataTables.min.css">
 	{/if}
+
 	{if $additionalCss}
 		<style>
 			{$additionalCss}
 		</style>
 	{/if}
-	<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/dropzone.css">
-	<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/simpleJson.css">
 
-	{* Include correct all javascript *}
+	{if ($action == 'Covers')}
+		<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/dropzone.css">
+	{/if}
+	{if ($action == 'NovelistInfo')}
+		<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/simpleJson.css">
+	{/if}
+
+	{* Include all javascript *}
 	{if $ie8}
 		{* include to give responsive capability to ie8 browsers, but only on successful detection of those browsers. For that reason, don't include in pika.min.js *}
 		<script src="/interface/themes/responsive/js/lib/respond.min.js?v={$gitBranch|urlencode}"></script>
@@ -29,9 +32,13 @@
 		{* Load Libraries*}
 {*
 		{* dropzone *}
+		{if ($action == 'Covers')}
 		<script src="/interface/themes/responsive/js/lib/dropzone.js"></script>
+		{/if}
 			{* json-tree *}
+		{if ($action == 'NovelistInfo')}
 			<script src="/interface/themes/responsive/js/lib/simpleJson.js?v={$gitBranch|urlencode}"></script>
+		{/if}
 		{* Validator has two library files *}
 		{*<script src="/interface/themes/responsive/js/lib/jquery.validate.js?v={$gitBranch|urlencode}"></script>*}
 		<script src="/interface/themes/responsive/js/lib/jquery.validate.min.js?v={$gitBranch|urlencode}"></script>
@@ -80,11 +87,14 @@
 		{* This is all merged using the merge_javascript.php file called automatically with a File Watcher*}
 		{* Code is minified using uglify.js *}
 		<script src="/interface/themes/responsive/js/pika.min.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/lib/dropzone.min.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/lib/simpleJson.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/jquery.dataTables.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/dataTables.bootstrap.min.js?v={$gitBranch|urlencode}"></script>
-		{*<script src="/interface/themes/responsive/js/pika.min.js?v={$gitBranch|urlencode}"></script>*}
+		{if ($action == 'Covers')}
+			<script src="/interface/themes/responsive/js/lib/dropzone.min.js?v={$gitBranch|urlencode}"></script>
+		{/if}
+		{if ($action == 'NovelistInfo')}
+			<script src="/interface/themes/responsive/js/lib/simpleJson.min.js?v={$gitBranch|urlencode}"></script>
+		{/if}
 	{/if}
 
 	{/strip}
