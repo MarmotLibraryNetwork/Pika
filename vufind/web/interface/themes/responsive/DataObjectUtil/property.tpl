@@ -165,7 +165,7 @@
 				<br>
 
 				<div class="col-md-2"><label for="fileName" class="label-left">File Name</label></div>
-				<div class="col-md-7"><input type="text" name="fileName" value="{$propValue}" class="form-control"></div>
+				<div class="col-md-7"><input type="text" id="fileName" name="fileName" value="{$propValue}" class="form-control"></div>
 
 			</div>
 			{/if}
@@ -174,56 +174,38 @@
 				var storagePath = "{$property.storagePath}";
 				var sendFile = "";
 				{literal}
-				$( document ).ready(function() {
+				$(function() {
+					$(prop).change(function(e){
+						var file = e.target.files[0].name;
+						var extension = file.substr((file.lastIndexOf('.') +1));
 
-
-				$(prop).change(function(e){
-					var file = e.target.files[0].name;
-					var extension = file.substr((file.lastIndexOf('.') +1));
-
-					if(this.files[0].size > 1900000){
-						$(':input[type="submit"]').prop('disabled', true);
-						$(".custom-file").append("<div class='alert alert-danger' id='sizeWarning'>The image is too large and upload will fail. Please resize and try again. Images must be under 1.8MB</div>");
-					}else{
-						$(':input[type="submit"]').prop('disabled', false);
-						$("#sizeWarning").remove();
-					}
-
-					if($("#fileName").length > 0)
-						{
-							var fileName = $("#fileName").val();
-
-
-							if(fileName.includes("."))
-								{
-									sendFile = fileName;
-								}
-							else
-							{
-								sendFile = fileName + "." + extension;
-							}
+						if(this.files[0].size > 1900000){
+							$(':input[type="submit"]').prop('disabled', true);
+							$(".custom-file").append("<div class='alert alert-danger' id='sizeWarning'>The image is too large and upload will fail. Please resize and try again. Images must be under 1.8MB</div>");
+						}else{
+							$(':input[type="submit"]').prop('disabled', false);
+							$("#sizeWarning").remove();
 						}
-					else
-					{
-						sendFile = file;
-					}
 
-					checkFile(storagePath, sendFile);
+						if ($("#fileName").length > 0) {
+							var fileName = $("#fileName").val();
+							sendFile = fileName.includes(".") ? fileName : fileName + "." + extension;
+						} else {
+							sendFile = file;
+						}
+
+						checkFile(storagePath, sendFile);
+					});
 				});
-	});
 
-				function checkFile(path, file)
-				{
+				function checkFile(path, file) {
 					$(':input[type="submit"]').prop('disabled', false);
 					$("#existsAlert").remove();
 					$.ajax({
 						url: "/Admin/AJAX?&method=fileExists&fileName=" + file + "&storagePath=" + path
-
 					})
-					.done (function(data)
-					{
-						if (data.exists == "true")
-							{
+						.done(function (data) {
+							if (data.exists == "true") {
 								$("<br><div class='row'><div class='col-md-12'><div id='existsAlert' class='alert alert-danger'>Filename Already Exists - submitting will replace an existing file. <label for='overWriteOverRide'>Overwrite: </label><input type='checkbox' id='overWriteOverRide'></div></div></div>").insertAfter(prop);
 
 								$(':input[type="submit"]').prop('disabled', true);
