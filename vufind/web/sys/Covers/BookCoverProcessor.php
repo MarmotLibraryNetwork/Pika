@@ -504,7 +504,7 @@ class BookCoverProcessor {
 				return false;
 			}
 
-			// Test Image for for partial load
+			// Test Image for partial load
 			if (!$imageResource = @imagecreatefromstring($image)){
 				if ($this->doCoverLogging){
 					$this->logger->error("Could not create image from string $url");
