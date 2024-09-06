@@ -41,7 +41,7 @@ trait PatronSelfRegistrationOperations {
 	 *                                  success - true/false
 	 *                                  barcode - the barcode for the self-registered user
 	 */
-	public abstract function selfRegister();
+	public abstract function selfRegister($extraSelfRegParams = false);
 
 	/**
 	 * @return array  An Object structure array to build the fields for the Self-Registration form.
