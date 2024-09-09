@@ -8,13 +8,21 @@ Disallow: /MyAccount/
 Allow: /MyAccount/MyList/
 Disallow: /images/fiveStar/
 Disallow: /vufind/
-Disallow: /Record/*/Search/
 Disallow: /Circa/
 
 User-agent: SemrushBot
 Disallow: /
 
 User-agent: SemrushBot-SA
+Disallow: /
+
+User-agent: DataForSeoBot
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /do-not-crawl/
+
+User-agent: Amazonbot
 Disallow: /
 
 User-agent: facebookexternalhit
