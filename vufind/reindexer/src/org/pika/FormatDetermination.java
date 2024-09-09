@@ -1122,7 +1122,10 @@ public class FormatDetermination {
 						} else if (physicalDescriptionData.contains("videodisc")){
 							result.add("VideoDisc");
 						}	else if (physicalDescriptionData.contains("cd-rom") || physicalDescriptionData.contains("cdrom") || physicalDescriptionData.contains("computer optical disc")) {
-							result.add("CDROM");
+							if (!result.contains("PlayStation3") && !result.contains("PlayStation4") && !result.contains("XboxSeriesX") && !result.contains("XboxOne")) {
+								// Prevent this determination for PlayStations, so that playstation/xbox records with a bad typeOfRecordLeaderChar of 'a' do not trigger accompanyingMaterialCheck determination of BookWithCD
+								result.add("CDROM");
+							}
 						} else if (physicalDescriptionData.contains("sound cassettes")) {
 							result.add("SoundCassette");
 						} else if (physicalDescriptionData.contains("compact disc")){
