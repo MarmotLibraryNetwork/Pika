@@ -144,6 +144,7 @@ class RecordGroupingProcessor {
 	}
 
 
+	//TODO: this is rather pointless function; just replace with marcRecord.getDataFields(tag)
 	List<DataField> getDataFields(Record marcRecord, String tag) {
 		return marcRecord.getDataFields(tag);
 	}

@@ -44,6 +44,7 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 	//private static final Pattern econtentURLsPattern = Pattern.compile("(?i)^http://.*?/ContentDetails\\.htm\\?id=[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$|^https?://link\\.overdrive\\.com.*|^https?://api\\.overdrive\\.com.*");
 	//private static final Pattern econtentURLsPattern = Pattern.compile("(?i)^https?://link\\.overdrive\\.com.*|^https?://api\\.overdrive\\.com.*|^https?://www\\.hoopladigital\\.com.*");
 	private static final Pattern econtentURLsPattern = Pattern.compile("(?i)^https?://link\\.overdrive\\.com.*|^https?://api\\.overdrive\\.com.*|^https?://www\\.hoopladigital\\.com.*|^https?://clearviewlibrary\\.kanopy\\.com.*");
+	//TODO: make pattern an confing.ini setting
 
 
 	/**
