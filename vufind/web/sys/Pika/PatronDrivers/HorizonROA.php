@@ -378,7 +378,9 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 						$cityState = $preferredAddress->address3;
 					}
 
-					if (strpos($cityState, ', ')) {
+					if (empty($cityState)){
+						$this->getLogger()->notice('No populated cityState string found in patron record');
+					} elseif (strpos($cityState, ', ')) {
 						[$City, $State] = explode(', ', $cityState);
 					} else {
 						$this->getLogger()->warn("Bad Horizon User CityState string '$cityState'", ['APIresponse' => json_encode($lookupMyAccountInfoResponse)]);
