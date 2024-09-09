@@ -127,6 +127,7 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_HEADER, false);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 15);
 
 		//global $instanceName;
 /*		if (stripos($instanceName, 'localhost') !== false){
