@@ -81,7 +81,10 @@ if [ $# = 1 ];then
   chown apache $WD/sites
   #-----------------
   echo "Creating symbolic link in /etc/httpd/conf.d to apache config file"
-  ln -s $WD/sites/$HOST/httpd-$HOST.conf /etc/httpd/conf.d/httpd-$HOST.conf
+  # for centos
+  #ln -s $WD/sites/$HOST/httpd-$HOST.conf /etc/httpd/conf.d/httpd-$HOST.conf
+  # for ubuntu
+  ln -s $WD/sites/$HOST/httpd-$HOST.conf /etc/apache2/sites-enabled/httpd-$HOST.conf
   #-----------------
   echo "Copying mysql config file to /etc/my.cnf.d"
   # Probably centos 7/mariadb setups only
