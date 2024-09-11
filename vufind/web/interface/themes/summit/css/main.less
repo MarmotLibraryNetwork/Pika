@@ -6,21 +6,112 @@
 @import "../../responsive/css/responsive_base.less";
 
 #header-container {
-  background: linear-gradient(to bottom, @summit-accent-gray, @summit-accent-gray 34px, #fff 34px, #fff 100%);
-
+  //background: linear-gradient(to bottom, @header-bg-color, @summit-accent-gray 34px, #fff 34px, #fff 100%);
+  background: @header-bg-color;
   #header-logo {
     padding-top: 0;
   }
 }
 
 //.header-login-button-mixin(@summit-gray);
-.header-login-button-mixin;
-
-.result-tools-horizontal .btn {
-  background-color: @summit-green;
-  background: linear-gradient(to bottom, @summit-green, darken(@summit-green, 10%));
+.header-login-button-mixin(@summit-light-brand,black);
+a .header-button {
+  border-radius: 0;
+  font-weight: 700;
+  font-size: 14px;
+  height: 60px;
+  margin-top: 30px;
+  &:hover{
+    background: @summit-light-brand;
+    color: @summit-brand;
+    box-shadow: 2px 2px 5px darken(@summit-brand, 20%);
+  }
 }
 
+.result-tools-horizontal .btn {
+  background: @summit-light-brand;
+  color: darken(@summit-brand, 15%);
+}
+
+#header-logo{
+  padding:initial;
+  max-height:unset;
+  width: 175px;
+  position: relative;
+  top: 25px;
+  z-index:2;
+  display:block;
+}
+
+search#horizontal-search-wrapper {
+  padding-left: 125px;
+  background: @home-search-top-color;
+
+  .btn.btn-default {
+    background: @summit-brand;
+    color: white;
+  }
+  div#horizontal-search-additional{
+    padding-top: 5px;
+  }
+  #advancedSearchLink{
+    color: @summit-brand;
+  }
+}
+#horizontal-search-wrapper + #content-container #home-page-login {
+  margin-top: 0;
+}
+
+.breadcrumbs{
+  border-bottom: 1px solid #cecece;
+}
+
+.panel-body{
+  padding: 0;
+  a {
+    padding: 15px;
+  }
+  div.active{
+    background: @summit-light-brand;
+    a {
+      color: black!important;
+    }
+  }
+}
+
+@media only screen and (max-width:1199px){
+  #header-logo{
+    width: 150px;
+  }
+  search#horizontal-search-wrapper {
+    padding-left:50px;
+  }
+
+}
+@media only screen and (max-width:991px){
+  #header-logo{
+    width: 120px;
+    top: 0;
+  }
+  #horizontal-search-box #horizontal-search-label {
+    color: @summit-brand;
+  }
+  search#horizontal-search-wrapper{
+    padding: 0;
+  }
+}
+
+.placeholder-mixin(){
+  font-size: 1em;
+  color: @summit-brand;
+  opacity: .8;
+  text-shadow: none;
+  border: 0;
+}
+
+#keepFiltersSwitchLabel, #advancedSearchLink{
+  color: @summit-brand;
+}
 //#header-container {
 //  background: linear-gradient(to bottom, @header-top-color, @header-middle-color 44%, @header-bottom-color 44%, @header-bottom-color);
 //}
