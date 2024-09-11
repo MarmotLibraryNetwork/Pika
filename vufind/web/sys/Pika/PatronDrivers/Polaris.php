@@ -1238,8 +1238,19 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $frozen = translate('frozen');
 
         foreach ($c->response->PatronHoldRequestsGetRows as $hold) {
-            $pickup_branch_id = $this->polarisBranchIdToLocationId($hold->PickupBranchID);
             $h = [];
+            $pickup_branch_id = $this->polarisBranchIdToLocationId($hold->PickupBranchID);
+            $h['currentPickupId'] = $pickup_branch_id;
+            if ($pickup_branch_id !== null) {
+                $location = new Location();
+                $location->locationId = $pickup_branch_id;
+                $location->find(true);
+                $h['currentPickupName'] = $location->displayName;
+                $h['location'] = $location->displayName;
+            } else {
+                $h['currentPickupName'] = $hold->PickupBranchName;
+                $h['location'] = $hold->PickupBranchName;
+            }
             $h['holdSource'] = $this->accountProfile->recordSource;
             $h['userId'] = $patron->id;
             $h['user'] = $patron->displayName;
@@ -1248,11 +1259,8 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             $h['freezeable'] = $hold->CanSuspend === true;
             $h['status'] = $hold->StatusDescription;
             $h['frozen'] = false; // status will be inactive if frozen
-            $h['location'] = $hold->PickupBranchName;
             $h['locationUpdateable'] = true;
             $h['position'] = $hold->QueuePosition . ' of ' . $hold->QueueTotal;
-            $h['currentPickupName'] = $hold->PickupBranchName;
-            $h['currentPickupId'] = $pickup_branch_id;
             $h['automaticCancellation'] = isset($hold->notNeededAfterDate) ? strtotime(
                 $hold->notNeededAfterDate,
             ) : null;
@@ -1335,6 +1343,18 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             $h = [];
             //$h['freezeable']         = Not sure if ILL holds can be frozen, likely not
             //$h['position']           = API doesn't provide this information for ILL holds
+            $pickup_branch_id = $this->polarisBranchIdToLocationId($hold->PickupBranchID);
+            $h['currentPickupId'] = $pickup_branch_id;
+            if ($pickup_branch_id !== null) {
+                $location = new Location();
+                $location->locationId = $pickup_branch_id;
+                $location->find(true);
+                $h['currentPickupName'] = $location->displayName;
+                $h['location'] = $location->displayName;
+            } else {
+                $h['currentPickupName'] = $hold->PickupBranchName;
+                $h['location'] = $hold->PickupBranch;
+            }
             $h['holdSource'] = $this->accountProfile->recordSource;
             $h['userId'] = $patron->id;
             $h['user'] = $patron->displayName;
@@ -1342,10 +1362,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             $h['cancelable'] = true; // todo: can ill holds be canceled?
             $h['status'] = $hold->Status;
             $h['frozen'] = false;
-            $h['location'] = $hold->PickupBranch;
             $h['locationUpdateable'] = true;
-            $h['currentPickupName'] = $hold->PickupBranch;
-            $h['currentPickupId'] = $pickup_branch_id; // todo: pickup branch id
 
             $h['create'] = '';
             if ($this->isMicrosoftDate($hold->ActivationDate)) {
