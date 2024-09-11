@@ -3299,9 +3299,6 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		// make the request using the proper method.
 		$method = strtolower($method);
 		switch($method) {
-			case 'get':
-				$c->get($operationUrl, $params);
-				break;
 			case 'post':
 				$c->setHeader('Content-Type', 'application/json');
 				$c->post($operationUrl, $params);
@@ -3317,6 +3314,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 					$c->delete($operationUrl);
 				}
 				break;
+			case 'get':
 			default:
 				$c->get($operationUrl, $params);
 		}
