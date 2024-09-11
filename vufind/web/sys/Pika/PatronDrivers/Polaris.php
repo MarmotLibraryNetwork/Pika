@@ -292,7 +292,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
      */
     public function patronLogin($barcode, $pin, $validatedViaSSO = false): ?User
     {
-        $barcode = str_replace("’", "'", trim($barcode));
+        $barcode = str_replace("’", "'", trim($barcode)); // clean input
         $pin = trim($pin);
 
         if ($validatedViaSSO) {
@@ -497,6 +497,11 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
     }
 
+    protected function _deleteCachePatronSecret($patron_ils_id)
+    {
+        $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret';
+        return $this->cache->delete($patron_secret_cache_key);
+    }
     /**
      * Authenticate a patron and return the patron id and patron access secret key.
      *
@@ -1294,10 +1299,9 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                 $h['link'] = $record->getRecordUrl();
                 $h['coverUrl'] = $record->getBookcoverUrl('medium');
             } else {
-                // todo: fall back to API
-                $h['title'] = '';
-                $h['sortTitle'] = '';
-                $h['author'] = '';
+                $h['title'] = $this->cleanIllTitle($hold->Title);
+                $h['sortTitle'] = $this->cleanIllTitle($hold->Title);
+                $h['author'] = $this->cleanIllAuthor($hold->Author);
                 $h['format'] = '';
             }
             // special handling by status id
@@ -1852,7 +1856,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return [];
     }
 
-    private function updatePatronPin($patron)
+    public function updatePin($patron)
     {
         // /public/patron/{PatronBarcode}
         // required credentials
@@ -1860,7 +1864,8 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $update['LogonUserID'] = $this->configArray['Polaris']['staffUserId'];
         $update['LogonWorkstationID'] = $this->configArray['Polaris']['workstationId'];
         // new pin
-        $update['Password'] = trim($_REQUEST['pin1']);
+        $new_pin = trim($_REQUEST['pin1']);
+        $update['Password'] = $new_pin;
 
         $request_url = $this->ws_url . "/patron/{$patron->barcode}";
         $extra_headers = ["Content-Type: application/json"];
@@ -1873,7 +1878,11 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             }
             return [$error_message];
         }
-
+        // success update the pin in the database
+        $patron->setPassword($new_pin);
+        // clear the cached patron secrete and patron object
+        $this->_deleteCachePatronSecret($patron->ilsUserId);
+        $this->_deleteCachePatronObject($patron->ilsUserId);
         return 'Your ' . translate('pin') . ' was updated successfully.';
     }
 
