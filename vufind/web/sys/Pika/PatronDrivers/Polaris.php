@@ -1310,6 +1310,15 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                     $h['freezeable'] = false;
                     $h['frozen'] = true;
                     $h['status'] = $frozen;
+                    // reactivation date 
+                    if ($this->isMicrosoftDate($hold->ActivationDate)) {
+                        $reactivate_date = $this->microsoftDateToISO($hold->ActivationDate);
+                        $h['reactivate'] = $reactivate_date;
+                        $h['reactivateTime'] = strtotime($reactivate_date);
+                    } else {
+                        $h['reactivate'] = $hold->ActivationDate;
+                        $h['reactivateTime'] = strtotime($hold->ActivationDate);
+                    }
                     break;
                 case 5: // shipped
                     $h['cancelable'] = false;
@@ -1328,7 +1337,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             }
             if ($hold->StatusID === 6) { // ready for pickup
                 $availableHolds[] = $h;
-            } elseif ($hold->StatusID !== 16) {
+            } elseif ($hold->StatusID !== 16) { // status 16 is canceled items. don't show unless ILL request
                 $unavailableHolds[] = $h;
             }
         } // end foreach
