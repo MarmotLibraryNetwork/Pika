@@ -1813,6 +1813,8 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $contact['LogonBranchID'] = 1; // default to system
         $contact['LogonUserID'] = $this->configArray['Polaris']['staffUserId'];
         $contact['LogonWorkstationID'] = $this->configArray['Polaris']['workstationId'];
+        $contact['PhoneVoice1'] = $_REQUEST['phone'] ?? '';
+        $contact['EmailAddress'] = $_REQUEST['email'] ?? '';
         // patron address
         $address['AddressID'] = $patron->address_id;
         $address['StreetOne'] = $_REQUEST['address1'];
@@ -1820,7 +1822,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $address['City'] = $_REQUEST['city'];
         $address['State'] = $_REQUEST['state'];
         $address['PostalCode'] = $_REQUEST['zip'];
-        $address['PhoneVoice1'] = $_REQUEST['phone'] ?? '';
         $address['EmailAddress'] = $_REQUEST['email'] ?? '';
         $contact['PatronAddresses'][] = $address;
 
@@ -2026,8 +2027,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $c = $this->_doRequest($hash, $method, $url, $body, $extra_headers);
         return $c;
     }
-
-    protected function _updatePatron($patron, $patron_update) {}
 
     /**
      * Remove a patron object from cache
