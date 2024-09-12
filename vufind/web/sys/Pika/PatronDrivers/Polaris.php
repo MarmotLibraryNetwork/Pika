@@ -1813,7 +1813,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $contact['LogonBranchID'] = 1; // default to system
         $contact['LogonUserID'] = $this->configArray['Polaris']['staffUserId'];
         $contact['LogonWorkstationID'] = $this->configArray['Polaris']['workstationId'];
-        $contact['PhoneVoice1'] = $_REQUEST['phone'] ?? '';
+        $contact['PhoneVoice1'] = $_REQUEST['phone'] ?? ''; // PhoneVoice1 maps to get patrons PhoneNumber. 
         $contact['EmailAddress'] = $_REQUEST['email'] ?? '';
         // patron address
         $address['AddressID'] = $patron->address_id;
@@ -1823,6 +1823,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $address['State'] = $_REQUEST['state'];
         $address['PostalCode'] = $_REQUEST['zip'];
         $address['EmailAddress'] = $_REQUEST['email'] ?? '';
+        // add address array to request.
         $contact['PatronAddresses'][] = $address;
 
         $errors = [];
