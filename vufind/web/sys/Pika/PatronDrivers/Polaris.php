@@ -310,13 +310,13 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
         $patron_ils_id = $this->getPatronIlsId($valid_barcode);
         //check cache for patron secret
-        if (!$patron_ils_id || !$this->_getCachePatronSecret($patron_ils_id)) {
-            $auth = $this->authenticatePatron($valid_barcode, $pin, $validatedViaSSO);
+//        if (!$patron_ils_id || !$this->_getCachePatronSecret($patron_ils_id)) {
+           $auth = $this->authenticatePatron($valid_barcode, $pin, $validatedViaSSO);
             if ($auth === null || !isset($auth->PatronID)) {
                 return null;
             }
             $patron_ils_id = $auth->PatronID;
-        }
+//        }
 
         $patron = $this->getPatron($patron_ils_id, $valid_barcode);
 
@@ -1869,6 +1869,10 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
     public function updatePin($patron)
     {
+        // clear the cached patron secrete and patron object
+        $this->_deleteCachePatronSecret($patron->ilsUserId);
+        $this->_deleteCachePatronObject($patron->ilsUserId);
+        $patron->clearCache();
         // /public/patron/{PatronBarcode}
         // required credentials
         $update['LogonBranchID'] = 1; // default to system
@@ -1891,9 +1895,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
         // success update the pin in the database
         $patron->setPassword($new_pin);
-        // clear the cached patron secrete and patron object
-        $this->_deleteCachePatronSecret($patron->ilsUserId);
-        $this->_deleteCachePatronObject($patron->ilsUserId);
+        
         return 'Your ' . translate('pin') . ' was updated successfully.';
     }
 
