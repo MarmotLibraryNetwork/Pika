@@ -41,9 +41,12 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 	public $accountProfile;
 	private Cache $cache;
 	protected Logger $logger;
+	private $timeout;
+
 	public function __construct($accountProfile){
 		global $configArray;
 		$this->clientId       = $configArray['Catalog']['clientId'];
+		$this->timeout        = $configArray['Catalog']['timeout'] ?? 15;
 		$this->accountProfile = $accountProfile;
 		$cache                = initCache();
 		$this->cache          = new Cache($cache);
@@ -127,7 +130,7 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_HEADER, false);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+		curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
 
 		//global $instanceName;
 /*		if (stripos($instanceName, 'localhost') !== false){
