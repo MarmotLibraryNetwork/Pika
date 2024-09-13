@@ -153,7 +153,7 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 			$return = json_decode($json);
 		}else{
 			$curl_error = curl_error($ch);
-			$this->getLogger()->warn('Curl error: ' . $curl_error);
+			$this->getLogger()->warn('URL: '. $url . ' Curl error: ' . $curl_error);
 			$return = false;
 		}
 		curl_close($ch);
