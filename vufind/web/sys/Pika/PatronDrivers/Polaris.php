@@ -310,13 +310,13 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
         $patron_ils_id = $this->getPatronIlsId($valid_barcode);
         //check cache for patron secret
-//        if (!$patron_ils_id || !$this->_getCachePatronSecret($patron_ils_id)) {
+        if (!$patron_ils_id || !$this->_getCachePatronSecret($patron_ils_id)) {
            $auth = $this->authenticatePatron($valid_barcode, $pin, $validatedViaSSO);
             if ($auth === null || !isset($auth->PatronID)) {
                 return null;
             }
             $patron_ils_id = $auth->PatronID;
-//        }
+        }
 
         $patron = $this->getPatron($patron_ils_id, $valid_barcode);
 
@@ -548,6 +548,49 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $this->_setCachePatronSecret($c->response->PatronID, $c->response->AccessSecret);
 
         return $c->response;
+    }
+    
+    
+    public function getMyFines($patron) {
+        // Polaris API function PatronAccountGet
+        // /public/patron/{PatronBarcode}/account/outstanding
+        // title, amount, date, reason, message
+        $request_url = $this->ws_url . "/patron/{$patron->barcode}/account/outstanding";
+        $c = $this->_doPatronRequest($patron, 'GET', $request_url);
+
+        if($c === null) {
+            return false;
+        }
+        
+        $patron_fines = [];
+        foreach ($c->response->PatronAccountGetRows as $row) {
+            if($this->isMicrosoftDate($row->TransactionDate)) {
+                $date = $this->microsoftDateToISO($row->TransactionDate);
+            } else {
+                $date = date('m-d-Y', strtotime($row->TransactionDate));
+            }
+            
+            $details = [];
+            if(!is_null($row->CheckOutDate) && $this->isMicrosoftDate($row->CheckOutDate)) {
+                $d = $this->microsoftDateToISO($row->CheckOutDate);
+                $checkout_date = date('m-d-Y', strtotime($d));
+                $details = [[
+                    "label" => "Checked out: ",
+                    "value" => date('m-d-Y', strtotime($checkout_date))
+                ]];
+            }
+            
+            $patron_fines[]    = [
+                'title'  => $row->Title ?? "unknown",
+                'date'   => $date,
+                'reason' => $row->TransactionTypeDescription . ", " . $row->FeeDescription,
+                'amount' => number_format($row->TransactionAmount, 2),
+                'amountOutstanding' => number_format($row->OutstandingAmount, 2),
+                'message' => $row->FreeTextNote ?? "",
+                'details' => $details
+            ];
+        }
+        return $patron_fines;
     }
 
     /******************** Errors ********************/
@@ -1218,8 +1261,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             return false;
         }
     }
-    
-    
 
     /**
      * @inheritDoc
@@ -1738,7 +1779,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
         return ['success' => true, 'message' => "The pickup location has been updated."];
     }
-
+    
     protected function locationCodeToPolarisBranchId($branch_name)
     {
         $location = new Location();
@@ -1804,7 +1845,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
     }
 
-    private function updatePatronContact($patron)
+    protected function updatePatronContact($patron)
     {
         // /public/patron/{PatronBarcode}
         $contact = [];
@@ -1842,9 +1883,8 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
         return $errors;
     }
-
-
-    private function updatePatronUsername($patron)
+    
+    protected function updatePatronUsername($patron)
     {
         // /public/patron/{PatronBarcode}/username/{NewUsername}
         // update patron username
@@ -1895,7 +1935,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
         // success update the pin in the database
         $patron->setPassword($new_pin);
-        
+        $patron->update();
         return 'Your ' . translate('pin') . ' was updated successfully.';
     }
 
@@ -1914,10 +1954,11 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
         $token = $pinReset->selector . $pinReset->token;
         // make sure and type cast the two numbers
-        if ((int)$token != (int)$resetToken) {
+        if ((int)$token !== (int)$resetToken) {
             return ['error' => 'Unable to reset your ' . translate('pin') . '. Invalid reset token.'];
         }
         // everything is good
+        return[];
     }
 
     /**
