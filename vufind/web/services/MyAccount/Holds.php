@@ -48,7 +48,7 @@ class MyAccount_Holds extends MyAccount{
 		$suspendRequiresReactivationDate = ($ils == 'Polaris' || $ils == 'Horizon' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'CarlX');
 		$showDateWhenSuspending          = ($ils == 'Polaris' || $ils == 'Horizon' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'CarlX');
 		$canChangePickupLocation         = ($ils != 'Koha');
-		$showPlacedColumn                = ($ils == 'Horizon' || $ils == 'Symphony' || !empty($configArray['OPAC']['showDatePlaced'])) ;
+		$showPlacedColumn                = ($ils != 'Polaris' || $ils == 'Horizon' || $ils == 'Symphony' || !empty($configArray['OPAC']['showDatePlaced']));
 		$interface->assign('suspendRequiresReactivationDate', $suspendRequiresReactivationDate);
 		$interface->assign('canChangePickupLocation', $canChangePickupLocation);
 		$interface->assign('showPlacedColumn', $showPlacedColumn);
