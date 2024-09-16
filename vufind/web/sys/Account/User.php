@@ -222,7 +222,7 @@ class User extends DB_DataObject {
 	/**
 	 * setPassword
 	 * Use when setting a password on a newly instantiated object or when the object will call update() later in the code.
-	 * This will not update the password in the database.
+	 * NOTE: This will not update (save) the password in the database.
 	 * @param $password
 	 * @return void
 	 */
