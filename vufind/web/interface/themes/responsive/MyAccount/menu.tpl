@@ -136,7 +136,7 @@
 							{* OPAC Admin Actions*}
 							{if in_array('opacAdmin', $userRoles)}
 								{* OPAC Admin Actions*}
-								{if ($ils == 'Sierra' || $ils == 'Horizon' || $ils == 'CarlX')}
+								{if ($ils == 'Sierra' || $ils == 'Horizon' || $ils == 'Polaris' || $ils == 'CarlX')}
 								<div class="adminMenuLink{if $action == "PTypes"} active{/if}"><a href="/Admin/PTypes">P-Types</a></div>
 								{/if}
 								{if ($ils == 'Sierra')}
