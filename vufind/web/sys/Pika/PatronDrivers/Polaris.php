@@ -577,9 +577,9 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
         $create_user = false;
 
-        $user = new User();
-        $user->ilsUserId = $ils_id;
-        $user->source = 'ils';
+	    $user            = new User();
+	    $user->ilsUserId = $ils_id;
+	    $user->source    = $this->accountProfile->recordSource;
 
         if (!$user->find(true) || $user->N === 0) {
             // if there's no patron in database
@@ -683,7 +683,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
 
         if ($create_user) {
-            $user->source = 'ils';
+            $user->source = $this->accountProfile->recordSource;
             $user->created = date("Y-m-d H:i:s");
             $user->insert();
         }
