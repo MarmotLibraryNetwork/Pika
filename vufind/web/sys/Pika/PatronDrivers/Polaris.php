@@ -502,6 +502,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret';
         return $this->cache->delete($patron_secret_cache_key);
     }
+    
     /**
      * Authenticate a patron and return the patron id and patron access secret key.
      *
@@ -549,8 +550,9 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
         return $c->response;
     }
-
-    /**
+    
+    /***************** READING HISTORY ****************/
+     /**
      * Fetch a patrons reading history from Polaris ILS
      *
      * @param User $patron
@@ -657,7 +659,75 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $history['titles'] = $titles;
         return $history;
     }
-   
+
+    /**
+     * Opts a patron into the reading history feature using the Polaris API.
+     *
+     * This function sends a request to the Polaris API to enable the reading history feature for a patron.
+     * If the API request fails, the function returns `false`; otherwise, it returns `true` indicating a successful opt-in.
+     *
+     * @param User $patron An object representing the patron, which should have a `barcode` property used to identify the patron in the API request.
+     *
+     * @return bool `true` if the opt-in is successful, `false` if the API request fails.
+     */
+    public function optInReadingHistory(User $patron): bool
+    {
+        $opt_in = [
+            "LogonBranchID" => 1,
+            "LogonUserID" => $this->configArray['Polaris']['staffUserId'],
+            "LogonWorkstationID" => $this->configArray['Polaris']['workstationId'],
+            "ReadingListFlag" => 1
+        ];
+        
+        $request_url = $this->ws_url . "/patron/{$patron->barcode}";
+        $extra_headers = ["Content-Type: application/json"];
+
+        $r = $this->_doPatronRequest($patron, 'PUT', $request_url, $opt_in, $extra_headers);
+        
+        if($r === null) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Opts a patron out of the reading history feature using the Polaris API.
+     *
+     * This function sends a request to the Polaris API to disable the reading history feature for a patron.
+     * If the API request fails, the function returns `false`; otherwise, it returns `true` indicating a successful opt-out.
+     *
+     * @param User $patron An object representing the patron, which should have a `barcode` property used to identify the patron in the API request.
+     *
+     * @return bool `true` if the opt-out is successful, `false` if the API request fails.
+     */
+    public function optOutReadingHistory($patron) {
+        $opt_out = [
+            "LogonBranchID" => 1,
+            "LogonUserID" => $this->configArray['Polaris']['staffUserId'],
+            "LogonWorkstationID" => $this->configArray['Polaris']['workstationId'],
+            "ReadingListFlag" => 0
+        ];
+
+        $request_url = $this->ws_url . "/patron/{$patron->barcode}";
+        $extra_headers = ["Content-Type: application/json"];
+
+        $r = $this->_doPatronRequest($patron, 'PUT', $request_url, $opt_out, $extra_headers);
+
+        if($r === null) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasNativeReadingHistory()
+    {
+        return true;
+    }
+    
+    /***************** FINES ****************/
     /**
      * Retrieves the outstanding fines for a specific patron from the Polaris API.
      *
@@ -1924,19 +1994,22 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     public function getNumHoldsOnRecord($id)
     {
         // todo: what is this?
-        // TODO: Implement getNumHoldsOnRecord() method.
-        return false;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function hasNativeReadingHistory()
-    {
         return false;
     }
     
     /* Patron Updates */
+    /**
+     * Updates the patron's information based on the specified update scope or profile update action.
+     *
+     * This function checks whether the patron is allowed to update their contact information.
+     * If updates are allowed, it performs the specified update action (contact information, username, or PIN)
+     * or calls a custom update method if defined. If updates are not allowed, an error message is returned.
+     *
+     * @param User $patron An object representing the patron, containing the patron's details required for updates.
+     * @param bool $canUpdateContactInfo A boolean flag indicating whether the patron is permitted to update their contact information.
+     *
+     * @return array An array containing the result of the update action, or an error message if the update is not permitted or fails.
+     */
     public function updatePatronInfo($patron, $canUpdateContactInfo)
     {
         // /public/patron/{PatronBarcode}
@@ -1960,20 +2033,25 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                 return $this->updatePatronUsername($patron);
                 break;
             case 'pin':
-                return $this->updatePatronPin($patron);
+                return $this->updatePin($patron);
                 break;
-//            case 'overdrive':
-//                return false;
-//                break;
-//            case 'userPreferences':
-//                return false;
-//                break;
             default:
                 return ['An error occurred. Please contact your library for assistance.'];
         }
     }
 
-    protected function updatePatronContact($patron)
+    /**
+     * Updates the contact information of a patron using the Polaris API.
+     *
+     * This function constructs a request to the Polaris API to update the patron's contact details, including phone number,
+     * email address, and mailing address. It uses required credentials such as branch ID, user ID, and workstation ID to
+     * authenticate the request. If the request fails, an error message is returned.
+     *
+     * @param User $patron An instance of the User class representing the patron whose contact information needs to be updated.
+     *
+     * @return array An array containing error messages if the update fails, or an empty array if the update is successful.
+     */
+    protected function updatePatronContact(User $patron): array
     {
         // /public/patron/{PatronBarcode}
         $contact = [];
@@ -2011,8 +2089,19 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
         return $errors;
     }
-    
-    protected function updatePatronUsername($patron)
+
+    /**
+     * Updates the username of a patron using the Polaris API.
+     *
+     * This function sends a request to the Polaris API to update the patron's username. The new username is retrieved
+     * from the request parameters. If the username field is empty or the update fails, an appropriate error message is returned.
+     *
+     * @param User $patron An instance of the User class representing the patron whose username needs to be updated.
+     *
+     * @return array An array containing error messages if the update fails or the username field is missing,
+     * or an empty array if the update is successful.
+     */
+    protected function updatePatronUsername(User $patron): array
     {
         // /public/patron/{PatronBarcode}/username/{NewUsername}
         // update patron username
@@ -2035,7 +2124,19 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return [];
     }
 
-    public function updatePin($patron)
+    /**
+     * Updates the PIN (Personal Identification Number) of a patron using the Polaris API.
+     *
+     * This function clears the cached patron secret and object, constructs a request to the Polaris API
+     * to update the patron's PIN, and handles the response. The new PIN is obtained from the request parameters.
+     * If the update is successful, the new PIN is updated in the local database. If the update fails,
+     * an error message is returned.
+     *
+     * @param User $patron An instance of the User class representing the patron whose PIN needs to be updated.
+     *
+     * @return string|array A success message indicating that the PIN was updated, or an array containing an error message if the update fails.
+     */
+    public function updatePin(User $patron)
     {
         // clear the cached patron secrete and patron object
         $this->_deleteCachePatronSecret($patron->ilsUserId);
@@ -2068,7 +2169,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     }
 
     public function resetPin($patron, $newPin, $resetToken) {
-        $pinReset         = new PinReset();
+        $pinReset = new PinReset();
         $pinReset->userId = $patron->id;
         $pinReset->find(true);
         if(!$pinReset->N) {
