@@ -1993,7 +1993,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
      */
     public function getNumHoldsOnRecord($id)
     {
-        // todo: what is this?
         return false;
     }
     
@@ -2105,10 +2104,11 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     {
         // /public/patron/{PatronBarcode}/username/{NewUsername}
         // update patron username
-        if(empty($_REQUEST['alternate_username'])) {
+        $username = trim($_REQUEST['alternate_username']);
+        if(empty($username)) {
             return ['Username field is required.'];
         }
-        $username = trim($_REQUEST['alternate_username']);
+        
         $request_url = $this->ws_url . "/patron/{$patron->barcode}/username/{$username}";
         
         $r = $this->_doPatronRequest($patron, 'PUT', $request_url);
@@ -2121,7 +2121,8 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             }
             return [$error_message];
         }
-        return [];
+        // todo: profile page success messages are difficult. Need a better solution
+        return ['Success. Your username has been updated.'];
     }
 
     /**
