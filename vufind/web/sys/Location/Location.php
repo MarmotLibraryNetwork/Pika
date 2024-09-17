@@ -330,6 +330,7 @@ class Location extends DB_DataObject {
 					['property' => 'showGoodReadsReviews', 'type' => 'checkbox', 'label' => 'Show GoodReads Reviews', 'description' => 'Whether or not reviews from GoodReads are displayed on the full record page.', 'hideInLists' => true, 'default' => true],
 					'showFavorites' => ['property' => 'showFavorites', 'type' => 'checkbox', 'label' => 'Enable User Lists', 'description' => 'Whether or not users can maintain favorites lists', 'hideInLists' => true, 'default' => 1],
 					//TODO database column rename?
+					'showComments'  => ['property' => 'showComments', 'type' => 'checkbox', 'label' => 'Enable User Reviews', 'description' => 'Whether or not user reviews are shown (also disables adding user reviews)', 'hideInLists' => true, 'default' => 1],
 				],
 			],
 
@@ -341,7 +342,6 @@ class Location extends DB_DataObject {
 //	disabled					'showTextThis'  => ['property' =>'showTextThis', 'type' =>'checkbox', 'label' =>'Show Text This', 'description' =>'Whether or not the Text This link is shown', 'hideInLists' => true, 'default' => 1],
 					'showEmailThis'            => ['property' => 'showEmailThis', 'type' => 'checkbox', 'label' => 'Show Email This', 'description' => 'Whether or not the Email This link is shown', 'hideInLists' => true, 'default' => 1],
 					'showShareOnExternalSites' => ['property' => 'showShareOnExternalSites', 'type' => 'checkbox', 'label' => 'Show Sharing To External Sites', 'description' => 'Whether or not sharing on external sites (Twitter, Facebook, Pinterest, etc. is shown)', 'hideInLists' => true, 'default' => 1],
-					'showComments'             => ['property' => 'showComments', 'type' => 'checkbox', 'label' => 'Enable User Reviews', 'description' => 'Whether or not user reviews are shown (also disables adding user reviews)', 'hideInLists' => true, 'default' => 1],
 					'showStaffView'            => ['property' => 'showStaffView', 'type' => 'checkbox', 'label' => 'Show Staff View', 'description' => 'Whether or not the staff view is displayed in full record view.', 'hideInLists' => true, 'default' => true],
 					'showQRCode'               => ['property' => 'showQRCode', 'type' => 'checkbox', 'label' => 'Show QR Code', 'description' => 'Whether or not the catalog should show a QR Code in full record view', 'hideInLists' => true, 'default' => 1],
 					'moreDetailsOptions'       => [

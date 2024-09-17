@@ -668,11 +668,11 @@ class Library extends DB_DataObject {
 					'showSimilarAuthors'       => ['property' =>'showSimilarAuthors', 'type' =>'checkbox', 'label' =>'Show Similar Authors', 'description' =>'Whether or not Similar Authors from Novelist is shown.', 'default' => 1, 'hideInLists' => true,],
 					'showSimilarTitles'        => ['property' =>'showSimilarTitles', 'type' =>'checkbox', 'label' =>'Show Similar Titles', 'description' =>'Whether or not Similar Titles from Novelist is shown.', 'default' => 1, 'hideInLists' => true,],
 					'showGoDeeper'             => ['property' =>'showGoDeeper', 'type' =>'checkbox', 'label' =>'Show Content Enrichment (TOC, Excerpts, etc)', 'description' =>'Whether or not additional content enrichment like Table of Contents, Exceprts, etc are shown to the user', 'default' => 1, 'hideInLists' => true,],
+					'showFavorites'            => ['property' =>'showFavorites', 'type' =>'checkbox', 'label' =>'Enable User Lists', 'description' =>'Whether or not users can maintain favorites lists', 'hideInLists' => true, 'default' => 1],
 					'showRatings'              => ['property' =>'showRatings', 'type' =>'checkbox', 'label' =>'Enable User Ratings', 'description' =>'Whether or not ratings are shown', 'hideInLists' => true, 'default' => 1],
 					'showComments'             => ['property' =>'showComments', 'type' =>'checkbox', 'label' =>'Enable User Reviews', 'description' =>'Whether or not user reviews are shown (also disables adding user reviews)', 'hideInLists' => true, 'default' => 1],
 					// showComments & hideCommentsWithBadWords moved from full record display to this section. plb 6-30-2015
 					'hideCommentsWithBadWords' => ['property' =>'hideCommentsWithBadWords', 'type' =>'checkbox', 'label' =>'Hide Comments with Bad Words', 'description' =>'If checked, any User Lists or User Reviews with bad words are completely removed from the user interface for everyone except the original poster.', 'hideInLists' => true,],
-					'showFavorites'            => ['property' =>'showFavorites', 'type' =>'checkbox', 'label' =>'Enable User Lists', 'description' =>'Whether or not users can maintain favorites lists', 'hideInLists' => true, 'default' => 1],
 					//TODO database column rename?
 					'showWikipediaContent'     => ['property' =>'showWikipediaContent', 'type' =>'checkbox', 'label' =>'Show Wikipedia Content', 'description' =>'Whether or not Wikipedia content should be shown on author page', 'default' =>'1', 'hideInLists' => true,],
 				]],
