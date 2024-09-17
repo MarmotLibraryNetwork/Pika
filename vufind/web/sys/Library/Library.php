@@ -452,7 +452,7 @@ class Library extends DB_DataObject {
 					'homeLinkText'                     => ['property' => 'homeLinkText', 'type' => 'text', 'label' => 'Home Link Text', 'description' => 'The text to show for the Home breadcrumb link', 'size' => '40', 'hideInLists' => true, 'default' => 'Home'],
 					'showLibraryHoursAndLocationsLink' => ['property' => 'showLibraryHoursAndLocationsLink', 'type' => 'checkbox', 'label' => 'Show Library Hours and Locations Link', 'description' => 'Whether or not the library hours and locations link is shown on the home page.', 'hideInLists' => true, 'default' => true],
 					'enableGenealogy'                  => ['property' => 'enableGenealogy', 'type' => 'checkbox', 'label' => 'Enable Genealogy Functionality', 'description' => 'Whether or not patrons can search genealogy.', 'hideInLists' => true, 'default' => 1],
-					'enableCourseReserves'             => ['property' => 'enableCourseReserves', 'type' => 'checkbox', 'label' => 'Enable Repeat Search in Course Reserves', 'description' => 'Whether or not patrons can repeat searches within course reserves.', 'hideInLists' => true,],
+					'enableCourseReserves'             => ['property' => 'enableCourseReserves', 'type' => 'checkbox', 'label' => 'Enable Repeat Search in Course Reserves (Sierra Only)', 'description' => 'Whether or not patrons can repeat searches within course reserves.', 'hideInLists' => true,],
 					'showPikaLogo'                     => ['property' => 'showPikaLogo', 'type' => 'checkbox', 'label' => 'Display Pika Logo', 'description' => 'Determines whether or not the Pika logo will be shown in the footer.', 'hideInLists' => true, 'default' => true],
 				],
 			],
