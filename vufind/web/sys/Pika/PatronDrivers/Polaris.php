@@ -549,15 +549,67 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
         return $c->response;
     }
-    
-    
+
+    /**
+     * Fetch a patrons reading history from Polaris ILS
+     *
+     * @param User $patron
+     * @param int $page
+     * @param int $recordsPerPage
+     * @param string $sortOption
+     * @return array
+     */
+    public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut")
+    {
+        // /public/patron/{PatronBarcode}/readinghistory
+        // history enabled?
+        if ($patron->trackReadingHistory != 1) {
+            return ['historyActive' => false, 'numTitles' => 0, 'titles' => []];
+        }
+        
+        $request_url = $this->ws_url . "/patron/{$patron->barcode}/readinghistory?rowsperpage=5&page=0";
+        $c = $this->_doPatronRequest($patron, 'GET', $request_url);
+        
+        if($c === null) {
+            return false;
+        }
+        
+        $history = ['historyActive' => true];
+        if($c->response->PAPIErrorCode === 0) {
+            $history['numTitles'] = 0;
+            $history['titles'] = [];
+            return $history;
+        }
+        
+        // when positive PAPIErrorCode is the number of items returned.
+        $history['numTitles'] = $c->response->PAPIErrorCode;
+        $titles = [];
+        foreach ($c->response->PatronReadingHistoryGetRows as $row) {
+            $record = new MarcRecord($this->accountProfile->recordSource . ':' . $row->BibId);
+            $title = [];
+            if ($record->isValid()) {
+                $title['permanentId'] = $record->getPermanentId();
+                $title['title'] = $record->getTitle();
+                $title['author'] = $record->getPrimaryAuthor();
+                $title['format'] = $record->getFormat();
+                $title['title_sort'] = $record->getSortableTitle();
+                $title['ratingData'] = $record->getRatingData();
+                $title['linkUrl'] = $record->getGroupedWorkDriver()->getLinkUrl();
+                $title['coverUrl'] = $record->getBookcoverUrl('medium');
+                //$title['format'] = $record->getFormats();
+            }
+            $titles[] = $title;
+        }
+        $history['titles'] = $titles;
+        return $history;
+    }
     public function getMyFines($patron) {
         // Polaris API function PatronAccountGet
         // /public/patron/{PatronBarcode}/account/outstanding
         // title, amount, date, reason, message
         $request_url = $this->ws_url . "/patron/{$patron->barcode}/account/outstanding";
         $c = $this->_doPatronRequest($patron, 'GET', $request_url);
-
+    
         if($c === null) {
             return false;
         }
@@ -566,27 +618,37 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         foreach ($c->response->PatronAccountGetRows as $row) {
             if($this->isMicrosoftDate($row->TransactionDate)) {
                 $date = $this->microsoftDateToISO($row->TransactionDate);
+                $date = date('m-d-Y', strtotime($date));
             } else {
                 $date = date('m-d-Y', strtotime($row->TransactionDate));
             }
             
             $details = [];
-            if(!is_null($row->CheckOutDate) && $this->isMicrosoftDate($row->CheckOutDate)) {
-                $d = $this->microsoftDateToISO($row->CheckOutDate);
-                $checkout_date = date('m-d-Y', strtotime($d));
-                $details = [[
-                    "label" => "Checked out: ",
+            if($row->CheckOutDate !== null) {
+                if($this->isMicrosoftDate($row->CheckOutDate)) {
+                    $d = $this->microsoftDateToISO($row->CheckOutDate);
+                    $checkout_date = date('m-d-Y', strtotime($d));
+                } else {
+                    $checkout_date = date('m-d-Y', strtotime($row->CheckOutDate));
+                }
+                $details[] = [
+                    "label" => "Out:",
                     "value" => date('m-d-Y', strtotime($checkout_date))
-                ]];
+                ];
+            }
+            if($row->FreeTextNote !== null) {
+                $details[] = [
+                    "label" => "Note:",
+                    "value" => $row->FreeTextNote
+                ];
             }
             
             $patron_fines[]    = [
-                'title'  => $row->Title ?? "unknown",
+                'title'  => $row->Title === '' ? "Unknown" : $row->Title,
                 'date'   => $date,
                 'reason' => $row->TransactionTypeDescription . ", " . $row->FeeDescription,
                 'amount' => number_format($row->TransactionAmount, 2),
                 'amountOutstanding' => number_format($row->OutstandingAmount, 2),
-                'message' => $row->FreeTextNote ?? "",
                 'details' => $details
             ];
         }
