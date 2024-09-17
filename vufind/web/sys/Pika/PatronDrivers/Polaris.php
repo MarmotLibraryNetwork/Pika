@@ -603,10 +603,75 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $history['titles'] = $titles;
         return $history;
     }
+
+    public function loadReadingHistoryFromIls($patron, $loadAdditional = null)
+    {
+        if ($patron->trackReadingHistory !== 1) {
+            return ['historyActive' => false, 'numTitles' => 0, 'titles' => []];
+        }
+
+        $request_url = $this->ws_url . "/patron/{$patron->barcode}/readinghistory?rowsperpage=5&page=0";
+        $c = $this->_doPatronRequest($patron, 'GET', $request_url);
+
+        if($c === null) {
+            return false;
+        }
+        
+        $history = [];
+        
+        if($c->response->PAPIErrorCode === 0) {
+            $history['numTitles'] = 0;
+            $history['titles'] = [];
+            return $history;
+        }
+        
+        $titles = [];
+        foreach ($c->response->PatronReadingHistoryGetRows as $row) {
+            $title = [];
+            if($this->isMicrosoftDate($row->CheckOutDate)) {
+                $date = $this->microsoftDateToISO($row->CheckOutDate);
+                $checkout_date = strtotime($date);
+            } else {
+                $checkout_date = strtotime($row->CheckOutDate);
+            }
+            $title['checkout'] = $checkout_date;
+            $title['ilsReadingHistoryId'] = $row->PatronReadingHistoryID;
+            $title['recordId'] = $row->BibId;
+            $title['checkout'] = $row->CheckOutDate;
+            $title['source'] = $this->accountProfile->recordSource;
+            
+            $record = new MarcRecord($this->accountProfile->recordSource . ':' . $row->BibId);
+            if ($record->isValid()) {
+                $title['permanentId'] = $record->getPermanentId();
+                $title['title'] = $record->getTitle();
+                $title['author'] = $record->getPrimaryAuthor();
+                $title['format'] = $record->getFormat();
+                $title['title_sort'] = $record->getSortableTitle();
+            } else {
+                $title['title'] = $row->Title;
+                $title['author'] = $row->Author;
+                $title['format'] = $row->FormatDescription;
+            }
+            $titles[] = $title;
+        }
+        $history['titles'] = $titles;
+        return $history;
+    }
+   
+    /**
+     * Retrieves the outstanding fines for a specific patron from the Polaris API.
+     *
+     * This function makes a request to the Polaris API to get the patron's outstanding account details,
+     * and processes the response to format the fines information in a structured array.
+     *
+     * @param object $patron An object representing the patron, which should have a `barcode` property used to identify the patron in the API request.
+     *
+     * @return array|false An array of fines associated with the patron, where each fine includes the title, date, reason, amount, outstanding amount,
+     * and any additional details. Returns `false` if the API request fails.
+     */
     public function getMyFines($patron) {
         // Polaris API function PatronAccountGet
         // /public/patron/{PatronBarcode}/account/outstanding
-        // title, amount, date, reason, message
         $request_url = $this->ws_url . "/patron/{$patron->barcode}/account/outstanding";
         $c = $this->_doPatronRequest($patron, 'GET', $request_url);
     
@@ -654,6 +719,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
         return $patron_fines;
     }
+    
 
     /******************** Errors ********************/
 
