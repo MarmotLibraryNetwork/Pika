@@ -1940,15 +1940,15 @@ class MarcRecord extends IndexRecord {
 		$holdInfo = null;
 		if (count($volumeData) > 0){
 			require_once ROOT_DIR . '/sys/Extracting/IlsHoldSummary.php';
-			$holdInfo = array();
+			$holdInfo = [];
 			foreach ($volumeData as $volumeInfo){
 				$ilsHoldInfo        = new IlsHoldSummary();
 				$ilsHoldInfo->ilsId = $volumeInfo->volumeId;
 				if ($ilsHoldInfo->find(true)){
-					$holdInfo[] = array(
+					$holdInfo[] = [
 						'label'    => $volumeInfo->displayLabel,
 						'numHolds' => $ilsHoldInfo->numHolds
-					);
+					];
 				}
 			}
 		}

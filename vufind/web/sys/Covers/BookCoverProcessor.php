@@ -133,7 +133,7 @@ class BookCoverProcessor {
 
 		}
 
-		// Build default cover or use place holder image
+		// Build default cover or use placeholder image
 		if ($this->doCoverLogging){
 			$this->logger->info('No image found, using default image');
 		}

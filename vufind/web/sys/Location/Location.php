@@ -1647,7 +1647,7 @@ class Location extends DB_DataObject {
 	private $opacStatus = null;
 
 	/**
-	 * Check whether or not the system is an opac station.
+	 * Check whether the system is an OPAC station.
 	 * - First check to see if an opac paramter has been passed.  If so, use that information and set a cookie for future pages.
 	 * - Next check the cookie to see if we have overridden the value
 	 * - Finally check to see if we have an active location based on the IP address.  If we do, use that to determine if this is an opac station

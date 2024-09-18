@@ -156,19 +156,19 @@ class GroupedWorkDriver extends RecordInterface {
 			if (isset($this->fields['author2-role'])){
 				$contributorsInIndex = $this->fields['author2-role'];
 				if (is_string($contributorsInIndex)){
-					$contributorsInIndex[] = $contributorsInIndex;
+					$contributorsInIndex = [$contributorsInIndex];
 				}
 				foreach ($contributorsInIndex as $contributor){
 					if (strpos($contributor, '|')){
 						$contributorInfo = explode('|', $contributor);
-						$curContributor  = array(
+						$curContributor  = [
 							'name' => $contributorInfo[0],
 							'role' => $contributorInfo[1],
-						);
+						];
 					}else{
-						$curContributor = array(
+						$curContributor = [
 							'name' => $contributor,
-						);
+						];
 					}
 					$this->detailedContributors[] = $curContributor;
 				}
@@ -777,7 +777,7 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	public function getListWidgetTitle(){
-		$widgetTitleInfo = array(
+		$widgetTitleInfo = [
 			'id'          => $this->getPermanentId(),
 			'shortId'     => $this->getPermanentId(),
 			'recordtype'  => 'grouped_work',
@@ -790,7 +790,7 @@ class GroupedWorkDriver extends RecordInterface {
 			'length'      => '',
 			'publisher'   => '',
 			'ratingData'  => $this->getRatingData(),
-		);
+		];
 		return $widgetTitleInfo;
 	}
 
@@ -2115,7 +2115,7 @@ class GroupedWorkDriver extends RecordInterface {
 		// * need to define a concept of holdable copies. eg checked out items count, but lost shouldn't  (this isn't the same as available copies)
 		// * holdable copies within the scope?
 		// * on order items included?
-		// Note: holdratio can be displayed in relatedRecords template for debugging
+		// Note: hold-ratio can be displayed in relatedRecords template for debugging
 		return $holdRatio;
 	}
 
@@ -2490,12 +2490,12 @@ class GroupedWorkDriver extends RecordInterface {
 		$coinsID = 'pika';
 
 		// Start an array of OpenURL parameters:
-		$params = array(
+		$params = [
 			'ctx_ver'   => 'Z39.88-2004',
 			'ctx_enc'   => 'info:ofi/enc:UTF-8',
 			'rfr_id'    => "info:sid/{$coinsID}:generator",
 			'rft.title' => $this->getTitle(),
-		);
+		];
 
 		// Get a representative publication date:
 		$pubDate = $this->getPublicationDates();

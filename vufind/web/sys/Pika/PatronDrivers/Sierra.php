@@ -3105,7 +3105,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 //			$r = $this->_doRequest($operation, $params);
 //
 //			if(!empty($r->barcodes)) {
-//				// Note: for sacramento student ids, this call doesn't not return any barcodes
+//				// Note: for sacramento student ids, this call doesn't return any barcodes
 //				$barcode             = $r->barcodes[0];
 //				$this->patronBarcode = $barcode;
 //				// this call also returns the sierra id; keep it so we can skip an extra call after pin validation
