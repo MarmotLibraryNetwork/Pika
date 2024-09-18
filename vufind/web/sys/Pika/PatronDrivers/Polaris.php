@@ -35,21 +35,27 @@
 
 namespace Pika\PatronDrivers;
 
-use MarcRecord;
-use Pika\Cache;
-use Pika\Logger;
+use AccountProfile;
 use Curl\Curl;
 use DateTime;
 use DateTimeZone;
-use PinReset;
-use User;
+use DriverInterface;
+use JsonException;
 use Location;
-use RecordDriverFactory;
+use MarcRecord;
+use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
+use Pika\Cache;
+use Pika\Logger;
+use PinReset;
+use RecordDriverFactory;
+use RuntimeException;
+use SourceAndId;
+use User;
 
-class Polaris extends PatronDriverInterface implements \DriverInterface
+class Polaris extends PatronDriverInterface implements DriverInterface
 {
-    public \AccountProfile $accountProfile;
+    public AccountProfile $accountProfile;
     public array $polaris_errors = [
         '-201' => 'Failed to insert entry in addresses table',
         '-221' => 'Failed to insert entry in PostalCodes table',
@@ -266,7 +272,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $this->accountProfile = $accountProfile;
         $this->logger = new Logger(__CLASS__);
 
-        $this->cache = new \Pika\Cache();
+        $this->cache = new Cache();
         $this->ws_base_url = trim($accountProfile->patronApiUrl, '/ ');
         $this->ws_version = $configArray['Catalog']['api_version'];
         $this->ws_url = $this->ws_base_url . '/' . $this->ws_version . '/' . $this->ws_lang_id . '/'
@@ -288,7 +294,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
      * @param string $pin
      * @param bool $validatedViaSSO
      * @return User|null
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function patronLogin($barcode, $pin, $validatedViaSSO = false): ?User
     {
@@ -311,7 +317,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $patron_ils_id = $this->getPatronIlsId($valid_barcode);
         //check cache for patron secret
         if (!$patron_ils_id || !$this->_getCachePatronSecret($patron_ils_id)) {
-           $auth = $this->authenticatePatron($valid_barcode, $pin, $validatedViaSSO);
+            $auth = $this->authenticatePatron($valid_barcode, $pin, $validatedViaSSO);
             if ($auth === null || !isset($auth->PatronID)) {
                 return null;
             }
@@ -502,7 +508,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret';
         return $this->cache->delete($patron_secret_cache_key);
     }
-    
+
     /**
      * Authenticate a patron and return the patron id and patron access secret key.
      *
@@ -550,9 +556,244 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
         return $c->response;
     }
+
+    /***************** SELF REGISTRATION ****************/
+    public function getSelfRegistrationFields(): array
+    {
+        $fields = [];
+
+        global $library;
+        // get the valid home/pickup locations
+        $l = new Location();
+        $l->libraryId = $library->libraryId;
+        $l->validHoldPickupBranch = '1';
+        $l->find();
+        $l->orderBy('displayName');
+        $homeLocations = $l->fetchAll('locationId', 'displayName');
+        $carrier_options = [
+            "0" => "None",
+            "-2" => "Unspecified",
+            "1" => "AT&T",
+            "26" => "AT&T Wireless MMS",
+            "2" => "Bell Canada",
+            "15" => "Bell South",
+            "17" => "Boost Mobile",
+            "3" => "Cellular One",
+            "24" => "Cellular South",
+            "4" => "Cingular (Now AT&T)",
+            "23" => "Cricket",
+            "19" => "Fido",
+            "18" => "Helio",
+            "16" => "MetroPCS",
+            "5" => "Nextel",
+            "6" => "Qwest",
+            "32" => "Republic Wireless",
+            "21" => "Rogers AT&T Wireless",
+            "22" => "Rogers Canada",
+            "7" => "Southwestern Bell",
+            "30" => "Straight Talk",
+            "31" => "Straight Talk MMS",
+            "20" => "Telus",
+            "10" => "Tracfone",
+            "14" => "USA Mobility",
+            "11" => "Verizon",
+            "27" => "Verizon MMS",
+            "12" => "Virgin Mobile",
+            "13" => "Virgin Mobile Canada",
+            "25" => "Wind Mobile Canada",
+            "29" => "Xfinity"
+        ];
+        
+        $ereceipt_options = [
+            '0' => 'None',
+            '2' => 'Email',
+            '8' => 'Text Message',
+            '100' => 'Email and Text Message'
+        ];
+        
+        $fields[] = [
+            'property' => 'NameFirst',
+            'type' => 'text',
+            'label' => 'First name',
+            'description' => 'Your first name',
+            'maxLength' => 50,
+            'required' => true,
+            'autocomplete' => 'given-name',
+        ];
+
+        $fields[] = [
+            'property' => 'NameMiddle',
+            'type' => 'text',
+            'label' => 'Middle name',
+            'description' => 'Your middle name or initial',
+            'maxLength' => 30,
+            'required' => false,
+            'autocomplete' => 'additional-name',
+        ];
+
+        $fields[] = [
+            'property' => 'NameLast',
+            'type' => 'text',
+            'label' => 'Last name',
+            'description' => 'Your last name (surname)',
+            'maxLength' => 40,
+            'required' => true,
+            'autocomplete' => 'family-name',
+        ];
+
+        $fields[] = [
+            'property' => 'Birthdate',
+            'type' => 'date',
+            'label' => 'Date of Birth (MM-DD-YYYY)',
+            'description' => 'Date of birth',
+            'maxLength' => 10,
+            'required' => true,
+            'autocomplete' => 'bday',
+        ];
+
+        $fields[] = [
+            'property' => 'PatronBranchID',
+            'type' => 'enum',
+            'label' => 'Home Library/Preferred pickup location',
+            'description' => 'Your home library and preferred pickup location.',
+            'values' => $homeLocations,
+            'required' => true,
+        ];
+        
+        $fields[] = [
+            'property' => 'StreetOne',
+            'type' => 'text',
+            'label' => 'Mailing Address 1',
+            'description' => 'Mailing Address line 1',
+            'maxLength' => 40,
+            'required' => true,
+            'autocomplete' => 'street-address',
+        ];
+
+        $fields[] = [
+            'property' => 'StreetTwo',
+            'type' => 'text',
+            'label' => 'Mailing Address 2',
+            'description' => 'Mailing Address line 2',
+            'maxLength' => 40,
+            'required' => false,
+            'autocomplete' => 'street-address',
+        ];
+
+        $fields[] = [
+            'property' => 'City',
+            'type' => 'text',
+            'label' => 'City',
+            'description' => 'The city you receive mail in.',
+            'maxLength' => 128,
+            'required' => true,
+            'autocomplete' => 'address-level2',
+        ];
+
+        $fields[] = [
+            'property' => 'State',
+            'type' => 'text',
+            'label' => 'State',
+            'description' => 'The state you receive mail in.',
+            'maxLength' => 20,
+            'required' => true,
+            'autocomplete' => 'address-level1',
+        ];
+
+        $fields[] = [
+            'property' => 'PostalCode',
+            'type' => 'text',
+            'label' => 'ZIP code',
+            'description' => 'The ZIP code for your mail.',
+            'maxLength' => 16,
+            'required' => true,
+            'autocomplete' => 'postal-code',
+        ];
+
+        $fields[] = [
+            'property' => 'PhoneVoice1',
+            'type' => 'tel',
+            'label' => 'Primary phone (XXX-XXX-XXXX)',
+            'description' => 'Your primary phone number.',
+            'maxLength' => 20,
+            'required' => false,
+            'autocomplete' => 'tel-national',
+        ];
+
+        $fields[] = [
+            'property' => 'Phone1CarrierID',
+            'type' => 'enum',
+            'label' => 'Primary Phone Carrier',
+            'description' => 'The carrier of your primary phone.',
+            'values' => $carrier_options,
+            'required' => false,
+        ];
+        
+        $fields[] = [
+            'property' => 'EmailAddress',
+            'type' => 'email',
+            'label' => 'Email Address',
+            'description' => 'Your email address',
+            'maxLength' => 128,
+            'required' => false,
+            'autocomplete' => 'email',
+        ];
+
+        $fields[] = [
+            'property' => 'EReceiptOptionID',
+            'type' => 'enum',
+            'label' => 'E-receipts',
+            'description' => 'How you would like to receive receipts.',
+            'values' => $ereceipt_options,
+            'required' => false,
+        ];
+        
+        $fields[] = [
+            'property' => 'UserName',
+            'type' => 'text',
+            'label' => 'Username',
+            'description' => 'Set an optional username.',
+            'maxLength' => 20,
+            'required' => false,
+            'autocomplete' => 'username',
+        ];
+        
+        $fields[] = [
+            'property' => 'Password',
+            'type' => 'pin',
+            'label' => translate('PIN'),
+            'description' => 'Please set a ' . translate('pin') . '.',
+            'maxLength' => 10,
+            'required' => true,
+        ];
+
+        $fields[] = [
+            'property' => 'Password2',
+            'type' => 'pin',
+            'label' => 'Confirm ' . translate('PIN'),
+            'description' => 'Please confirm your ' . translate('pin') . '.',
+            'maxLength' => 10,
+            'required' => true,
+        ];
+        
+        return $fields;
+    }
+
+    public function selfRegister($extra_params) {
+        
+        foreach ($_REQUEST as $key => $value) {
+            
+        }
+        
+        // EXTRA SELF REG PARAMETERS
+        // do this last in case there are any parameters set up that need to be overridden
+        if ($extra_params){
+
+        }
+    }
     
     /***************** READING HISTORY ****************/
-     /**
+    /**
      * Fetch a patrons reading history from Polaris ILS
      *
      * @param User $patron
@@ -569,20 +810,21 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             return ['historyActive' => false, 'numTitles' => 0, 'titles' => []];
         }
         
+        // rowsperpage=5&page=0 will return all reading history
         $request_url = $this->ws_url . "/patron/{$patron->barcode}/readinghistory?rowsperpage=5&page=0";
         $c = $this->_doPatronRequest($patron, 'GET', $request_url);
-        
-        if($c === null) {
+
+        if ($c === null) {
             return false;
         }
-        
+
         $history = ['historyActive' => true];
-        if($c->response->PAPIErrorCode === 0) {
+        if ($c->response->PAPIErrorCode === 0) {
             $history['numTitles'] = 0;
             $history['titles'] = [];
             return $history;
         }
-        
+
         // when positive PAPIErrorCode is the number of items returned.
         $history['numTitles'] = $c->response->PAPIErrorCode;
         $titles = [];
@@ -598,7 +840,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                 $title['ratingData'] = $record->getRatingData();
                 $title['linkUrl'] = $record->getGroupedWorkDriver()->getLinkUrl();
                 $title['coverUrl'] = $record->getBookcoverUrl('medium');
-                //$title['format'] = $record->getFormats();
             }
             $titles[] = $title;
         }
@@ -615,22 +856,22 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $request_url = $this->ws_url . "/patron/{$patron->barcode}/readinghistory?rowsperpage=5&page=0";
         $c = $this->_doPatronRequest($patron, 'GET', $request_url);
 
-        if($c === null) {
+        if ($c === null) {
             return false;
         }
-        
+
         $history = [];
-        
-        if($c->response->PAPIErrorCode === 0) {
+
+        if ($c->response->PAPIErrorCode === 0) {
             $history['numTitles'] = 0;
             $history['titles'] = [];
             return $history;
         }
-        
+
         $titles = [];
         foreach ($c->response->PatronReadingHistoryGetRows as $row) {
             $title = [];
-            if($this->isMicrosoftDate($row->CheckOutDate)) {
+            if ($this->isMicrosoftDate($row->CheckOutDate)) {
                 $date = $this->microsoftDateToISO($row->CheckOutDate);
                 $checkout_date = strtotime($date);
             } else {
@@ -641,7 +882,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             $title['recordId'] = $row->BibId;
             $title['checkout'] = $row->CheckOutDate;
             $title['source'] = $this->accountProfile->recordSource;
-            
+
             $record = new MarcRecord($this->accountProfile->recordSource . ':' . $row->BibId);
             if ($record->isValid()) {
                 $title['permanentId'] = $record->getPermanentId();
@@ -676,15 +917,15 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             "LogonBranchID" => 1,
             "LogonUserID" => $this->configArray['Polaris']['staffUserId'],
             "LogonWorkstationID" => $this->configArray['Polaris']['workstationId'],
-            "ReadingListFlag" => 1
+            "ReadingListFlag" => 1,
         ];
-        
+
         $request_url = $this->ws_url . "/patron/{$patron->barcode}";
         $extra_headers = ["Content-Type: application/json"];
 
         $r = $this->_doPatronRequest($patron, 'PUT', $request_url, $opt_in, $extra_headers);
-        
-        if($r === null) {
+
+        if ($r === null) {
             return false;
         }
         return true;
@@ -700,12 +941,13 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
      *
      * @return bool `true` if the opt-out is successful, `false` if the API request fails.
      */
-    public function optOutReadingHistory($patron) {
+    public function optOutReadingHistory($patron)
+    {
         $opt_out = [
             "LogonBranchID" => 1,
             "LogonUserID" => $this->configArray['Polaris']['staffUserId'],
             "LogonWorkstationID" => $this->configArray['Polaris']['workstationId'],
-            "ReadingListFlag" => 0
+            "ReadingListFlag" => 0,
         ];
 
         $request_url = $this->ws_url . "/patron/{$patron->barcode}";
@@ -713,7 +955,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
         $r = $this->_doPatronRequest($patron, 'PUT', $request_url, $opt_out, $extra_headers);
 
-        if($r === null) {
+        if ($r === null) {
             return false;
         }
         return true;
@@ -726,7 +968,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     {
         return true;
     }
-    
+
     /***************** FINES ****************/
     /**
      * Retrieves the outstanding fines for a specific patron from the Polaris API.
@@ -739,28 +981,29 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
      * @return array|false An array of fines associated with the patron, where each fine includes the title, date, reason, amount, outstanding amount,
      * and any additional details. Returns `false` if the API request fails.
      */
-    public function getMyFines($patron) {
+    public function getMyFines($patron)
+    {
         // Polaris API function PatronAccountGet
         // /public/patron/{PatronBarcode}/account/outstanding
         $request_url = $this->ws_url . "/patron/{$patron->barcode}/account/outstanding";
         $c = $this->_doPatronRequest($patron, 'GET', $request_url);
-    
-        if($c === null) {
+
+        if ($c === null) {
             return false;
         }
-        
+
         $patron_fines = [];
         foreach ($c->response->PatronAccountGetRows as $row) {
-            if($this->isMicrosoftDate($row->TransactionDate)) {
+            if ($this->isMicrosoftDate($row->TransactionDate)) {
                 $date = $this->microsoftDateToISO($row->TransactionDate);
                 $date = date('m-d-Y', strtotime($date));
             } else {
                 $date = date('m-d-Y', strtotime($row->TransactionDate));
             }
-            
+
             $details = [];
-            if($row->CheckOutDate !== null) {
-                if($this->isMicrosoftDate($row->CheckOutDate)) {
+            if ($row->CheckOutDate !== null) {
+                if ($this->isMicrosoftDate($row->CheckOutDate)) {
                     $d = $this->microsoftDateToISO($row->CheckOutDate);
                     $checkout_date = date('m-d-Y', strtotime($d));
                 } else {
@@ -768,28 +1011,28 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
                 }
                 $details[] = [
                     "label" => "Out:",
-                    "value" => date('m-d-Y', strtotime($checkout_date))
+                    "value" => date('m-d-Y', strtotime($checkout_date)),
                 ];
             }
-            if($row->FreeTextNote !== null) {
+            if ($row->FreeTextNote !== null) {
                 $details[] = [
                     "label" => "Note:",
-                    "value" => $row->FreeTextNote
+                    "value" => $row->FreeTextNote,
                 ];
             }
-            
-            $patron_fines[]    = [
-                'title'  => $row->Title === '' ? "Unknown" : $row->Title,
-                'date'   => $date,
+
+            $patron_fines[] = [
+                'title' => $row->Title === '' ? "Unknown" : $row->Title,
+                'date' => $date,
                 'reason' => $row->TransactionTypeDescription . ", " . $row->FeeDescription,
                 'amount' => number_format($row->TransactionAmount, 2),
                 'amountOutstanding' => number_format($row->OutstandingAmount, 2),
-                'details' => $details
+                'details' => $details,
             ];
         }
         return $patron_fines;
     }
-    
+
 
     /******************** Errors ********************/
 
@@ -1183,7 +1426,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             // Return the date in ISO 8601 format
             return $dateTime->format('c');
         } else {
-            throw new \RuntimeException("Invalid Microsoft date format: $microsoftDate");
+            throw new RuntimeException("Invalid Microsoft date format: $microsoftDate");
         }
     }
 
@@ -1200,7 +1443,6 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return $this->cache->set($patron_object_cache_key, $patron, $expires);
     }
 
-   
 
     /**
      * Executes a patron-specific HTTP request with the specified method, URL, and request body.
@@ -1526,7 +1768,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             }
 
             // load marc record
-            $recordSourceAndId = new \SourceAndId($this->accountProfile->recordSource . ':' . $hold->BibID);
+            $recordSourceAndId = new SourceAndId($this->accountProfile->recordSource . ':' . $hold->BibID);
             $record = RecordDriverFactory::initRecordDriverById($recordSourceAndId);
             if ($record->isValid()) {
                 $h['id'] = $record->getUniqueID();
@@ -1626,7 +1868,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             // $h['expire'] = ''; // ILL request doesn't include expires date
 
             // load marc record
-            $recordSourceAndId = new \SourceAndId($this->accountProfile->recordSource . ':' . $hold->BibRecordID);
+            $recordSourceAndId = new SourceAndId($this->accountProfile->recordSource . ':' . $hold->BibRecordID);
             $record = RecordDriverFactory::initRecordDriverById($recordSourceAndId);
             if ($record->isValid()) {
                 $h['id'] = $record->getUniqueID();
@@ -1977,7 +2219,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         }
         return ['success' => true, 'message' => "The pickup location has been updated."];
     }
-    
+
     protected function locationCodeToPolarisBranchId($branch_name)
     {
         $location = new Location();
@@ -1995,7 +2237,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
     {
         return false;
     }
-    
+
     /* Patron Updates */
     /**
      * Updates the patron's information based on the specified update scope or profile update action.
@@ -2105,12 +2347,12 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         // /public/patron/{PatronBarcode}/username/{NewUsername}
         // update patron username
         $username = trim($_REQUEST['alternate_username']);
-        if(empty($username)) {
+        if (empty($username)) {
             return ['Username field is required.'];
         }
-        
+
         $request_url = $this->ws_url . "/patron/{$patron->barcode}/username/{$username}";
-        
+
         $r = $this->_doPatronRequest($patron, 'PUT', $request_url);
         if ($r === null) {
             $error_message = "Unable to update username.";
@@ -2169,17 +2411,22 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         return 'Your ' . translate('pin') . ' was updated successfully.';
     }
 
-    public function resetPin($patron, $newPin, $resetToken) {
+    public function resetPin($patron, $newPin, $resetToken)
+    {
         $pinReset = new PinReset();
         $pinReset->userId = $patron->id;
         $pinReset->find(true);
-        if(!$pinReset->N) {
+        if (!$pinReset->N) {
             return ['error' => 'Unable to reset your ' . translate('pin') . '. Please try again later.'];
-        } elseif($pinReset->N == 0) {
-            return ['error' => 'Unable to reset your ' . translate('pin') . '. You have not requested a ' . translate('pin') . ' reset.'];
+        } elseif ($pinReset->N == 0) {
+            return [
+                'error' => 'Unable to reset your ' . translate('pin') . '. You have not requested a ' . translate(
+                        'pin',
+                    ) . ' reset.',
+            ];
         }
         // expired?
-        if($pinReset->expires < time()) {
+        if ($pinReset->expires < time()) {
             return ['error' => 'The reset token has expired. Please request a new ' . translate('pin') . ' reset.'];
         }
         $token = $pinReset->selector . $pinReset->token;
@@ -2188,7 +2435,7 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
             return ['error' => 'Unable to reset your ' . translate('pin') . '. Invalid reset token.'];
         }
         // everything is good
-        return[];
+        return [];
     }
 
     /**
@@ -2199,24 +2446,29 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
      * @param string $barcode
      * @return array|bool        true if email is sent, error array on fail
      * @throws ErrorException
-     * @throws \PHPMailer\PHPMailer\Exception
+     * @throws Exception
      */
-    public function emailResetPin(string $barcode) {
+    public function emailResetPin(string $barcode)
+    {
         // It may be the case the patron updated their email via a means other than
         // Pika. Don't rely on the email in the database as this can cause issues.
         $patron_ils_id = $this->getPatronIlsId($barcode);
-        if(!$patron_ils_id) {
+        if (!$patron_ils_id) {
             return ['error' => 'The barcode you provided is not valid. Please check the barcode and try again.'];
         }
         $patron = $this->getPatron($patron_ils_id, $barcode);
 
         // If the email is empty at this point we don't have a good address for the patron.
-        if ($patron === null || empty($patron->email)){
-            return ['error' => 'You do not have an email address on your account. Please visit your library to reset your ' . translate('pin') . '.'];
+        if ($patron === null || empty($patron->email)) {
+            return [
+                'error' => 'You do not have an email address on your account. Please visit your library to reset your ' . translate(
+                        'pin',
+                    ) . '.',
+            ];
         }
 
         // make sure there's no old token.
-        $pinReset         = new PinReset();
+        $pinReset = new PinReset();
         $pinReset->userId = $patron->id;
         $pinReset->delete();
 
@@ -2224,10 +2476,10 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
 
         $resetToken = $pinReset->insertReset();
         // build reset url (Note: the site url gets automatically set as the interface url
-        $resetUrl = $this->configArray['Site']['url'] . "/MyAccount/ResetPin?uid=".$patron->id.'&resetToken='.$resetToken;
+        $resetUrl = $this->configArray['Site']['url'] . "/MyAccount/ResetPin?uid=" . $patron->id . '&resetToken=' . $resetToken;
 
         // build the message
-        $pin     = translate('pin');
+        $pin = translate('pin');
         $subject = '[DO NOT REPLY] ' . ucfirst($pin) . ' Reset Link';
 
         global $interface;
@@ -2242,12 +2494,13 @@ class Polaris extends PatronDriverInterface implements \DriverInterface
         $mail->msgHTML($htmlMessage);
         $mail->AltBody = strip_tags($htmlMessage);
 
-        if(!$mail->send()) {
+        if (!$mail->send()) {
             $this->logger->error('Can not send email from Sierra.php');
             return ['error' => "We're sorry. We are unable to send mail at this time. Please try again."];
         }
         return true;
     }
+
     /**
      * If library uses username field
      *
