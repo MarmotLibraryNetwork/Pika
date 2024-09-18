@@ -45,8 +45,12 @@ class NYTLists extends Admin_Admin {
 
 			//Get the raw response from the API with a list of all the names
 			$availableListsRaw = $nyt_api->getList('names');
-			//Convert into an object that can be processed
-			$availableLists = json_decode($availableListsRaw);
+			//Convert into an array that can be processed
+			$availableLists = json_decode($availableListsRaw, true, 20,JSON_OBJECT_AS_ARRAY);
+			// Sort by the display names
+			usort($availableLists['results'], function ($a, $b) {
+				return strcmp($a["display_name"], $b["display_name"]);
+			});
 
 			$interface->assign('availableLists', $availableLists);
 
