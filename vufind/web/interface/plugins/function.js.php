@@ -41,7 +41,7 @@ function smarty_function_js($params, &$smarty){
 	global $configArray;
 
 	$local = $configArray['Site']['local'];
-	$themes = explode(',', $smarty->getVuFindTheme());
+	$themes = explode(',', $smarty->getPikaTheme());
 	$themes[] = 'default';
 	$filename = $params['filename'];
 
@@ -70,5 +70,5 @@ function smarty_function_js($params, &$smarty){
 
 	// We found the file -- build the script tag:
 //	global $interface;
-	return "<script type=\"text/javascript\" src=\"{$js}?v=" . urlencode($smarty->getVariable('gitBranch')) . "\"></script>";
+	return "<script src=\"{$js}?v=" . urlencode($smarty->getVariable('gitBranch')) . "\"></script>";
 }
