@@ -10,7 +10,8 @@
         <div id="usernamePanel" class="panel-collapse collapse in">
             <div class="panel-body">
                 <form action="" method="post" class="form-horizontal" id="usernameForm">
-                    <input type="hidden" name="updateScope" value="username">
+                    <input type="hidden" name="updateScope" value="contact">
+                    <input type="hidden" name="profileUpdateAction" value="updatePatronUsername">
                 <div class="form-group">
                     <div class="col-xs-4"><label for="alternate_username">Username:</label>
                     </div>
