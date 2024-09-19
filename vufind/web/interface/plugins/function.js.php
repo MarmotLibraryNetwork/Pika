@@ -40,8 +40,8 @@ function smarty_function_js($params, &$smarty){
 	// so we can find CSS files:
 	global $configArray;
 
-	$local = $configArray['Site']['local'];
-	$themes = explode(',', $smarty->getPikaTheme());
+	$local    = $configArray['Site']['local'];
+	$themes   = explode(',', $smarty->getPikaTheme());
 	$themes[] = 'default';
 	$filename = $params['filename'];
 
@@ -70,5 +70,5 @@ function smarty_function_js($params, &$smarty){
 
 	// We found the file -- build the script tag:
 //	global $interface;
-	return "<script src=\"{$js}?v=" . urlencode($smarty->getVariable('gitBranch')) . "\"></script>";
+	return "<script src=\"$js?v=" . urlencode($smarty->getVariable('gitBranch')) . '"></script>';
 }
