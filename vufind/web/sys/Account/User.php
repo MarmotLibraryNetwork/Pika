@@ -1089,7 +1089,7 @@ class User extends DB_DataObject {
 		//Get checked out titles from the ILS
 		$ilsCheckouts = $this->getCatalogDriver()->getMyCheckouts($this, !$includeLinkedUsers);
 		// When working with linked users with Sierra Encore, curl connections need to be reset for logins to process correctly
-		$timer->logTime("Loaded transactions from catalog.");
+		$timer->logTime('Loaded transactions from catalog.');
 
 		//Get checked out titles from OverDrive
 		//Do not load OverDrive titles if the parent barcode (if any) is the same as the current barcode
