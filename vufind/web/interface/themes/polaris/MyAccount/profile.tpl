@@ -246,6 +246,8 @@
                         </div>
                     </div>
 
+                    {include file="MyAccount/notifications.tpl"}
+                    
                     {if !empty($linkedUsers) && count($linkedUsers) > 1 && $selectedUser != $activeUserId}
                         {*Security: Prevent changing email, username, or password for linked accounts. See D-4031 *}
                     {else}
@@ -415,7 +417,7 @@
                                         <p>
                                             Linked accounts allow you to easily maintain multiple accounts for the
                                             library so you can see all of your information in one place. Information
-                                            from linked accounts will appear when you view your checkouts, holds, etc in
+                                            from linked accounts will appear when you view your checkouts, holds, etc. in
                                             the main account.
                                         </p>
                                         <p>
@@ -426,13 +428,6 @@
                                     </div>
                                     <div class="lead">Additional accounts to manage</div>
                                     <p>The following accounts can be managed from this account.</p>
-                                    {*<table class="table table-bordered">*}
-                                    {*{foreach from=$profile->linkedUsers item=tmpUser} *}{* Show linking for the account currently chosen for display in account settings *}
-                                    {*<tr><td>{$tmpUser->getNameAndLibraryLabel()}</td><td><button class="btn btn-xs btn-warning" onclick="Pika.Account.removeLinkedUser({$tmpUser->id});">Remove</button></td> </tr>*}
-                                    {*{foreachelse}*}
-                                    {*<tr><td>None</td></tr>*}
-                                    {*{/foreach}*}
-                                    {*</table>*}
                                     <ul>
                                         {foreach from=$profile->linkedUsers item=tmpUser}  {* Show linking for the account currently chosen for display in account settings *}
                                             <li>{$tmpUser->getNameAndLibraryLabel()}

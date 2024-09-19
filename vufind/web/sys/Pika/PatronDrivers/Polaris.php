@@ -61,183 +61,47 @@ use User;
 class Polaris extends PatronDriverInterface implements DriverInterface
 {
     public AccountProfile $accountProfile;
-    public array $polaris_errors = [
-        '-201' => 'Failed to insert entry in addresses table',
-        '-221' => 'Failed to insert entry in PostalCodes table',
-        '-222' => 'Invalid PostalCodeLength',
-        '-223' => 'Invalid PostalCodeFormat',
-        '-501' => 'Patron personal information change is not allowed',
-        '-3000' => 'Patron does not exist',
-        '-3001' => 'Failed to insert entry in Patrons table',
-        '-3400' => 'Failed to insert entry in Patronaddresses table',
-        '-3401' => 'Invalid AddressType',
-        '-3500' => 'Country code does not exist',
-        '-3501' => 'Patron branch is not defined',
-        '-3502' => 'Patron branch is not a valid branch',
-        '-3503' => 'Last name is not defined',
-        '-3504' => 'First name is not defined',
-        '-3505' => 'Barcode is already used for another patron',
-        '-3506' => 'Transaction branch is not defined',
-        '-3507' => 'Transaction user is not defined',
-        '-3508' => 'Transaction workstation is not defined',
-        '-3509' => 'Passwords do not match',
-        '-3510' => 'Postal code problems - mismatch city, state, county',
-        '-3511' => 'Postal code problems - mismatch city, state',
-        '-3512' => 'Postal code problems - mismatch city, county',
-        '-3513' => 'Postal code problems - mismatch state, county',
-        '-3514' => 'Postal code problems - mismatch county',
-        '-3515' => 'Postal code problems - mismatch state',
-        '-3516' => 'Postal code problems - mismatch city',
-        '-3517' => 'Postal code problems - postal code not found',
-        '-3518' => 'Invalid Email address',
-        '-3519' => 'Invalid DeliveryMethod Value (No Address for Patron)',
-        '-3520' => 'Invalid DeliveryMethod Value (No Email Address for Patron)',
-        '-3521' => 'Invalid DeliveryMethod Value (No PhoneVoice1 for Patron)',
-        '-3522' => 'Invalid DeliveryMethod Value (No PhoneVoice2 for Patron)',
-        '-3523' => 'Invalid DeliveryMethod Value (No PhoneVoice3 for Patron)',
-        '-3524' => 'Invalid DeliveryMethod Value (No PhoneFax for Patron)',
-        '-3525' => 'Invalid DeliveryMethod Value',
-        '-3526' => 'Invalid EmailFormat Value',
-        '-3527' => 'Invalid ReadingList Value',
-        '-3528' => 'Duplicate name',
-        '-3529' => 'Duplicate username',
-        '-3530' => 'Failed to insert entry in Patron Registration table',
-        '-3531' => 'Patron delivery notices address not defined',
-        '-3532' => 'Invalid PhoneVoice1 value',
-        '-3533' => 'Invalid Password format',
-        '-3534' => 'Invalid Password length',
-        '-3535' => 'Patron password change is not allowed',
-        '-3536' => 'Invalid GenderID for the Registered Branch',
-        '-3537' => 'Invalid LegalName Configuration',
-        '-3540' => 'Invalid Birthdate',
-        '-3541' => 'Invalid NameLast Length',
-        '-3542' => 'Invalid NameFirst Length',
-        '-3543' => 'Invalid NameMiddle Length',
-        '-3544' => 'Invalid LegalNameLast Length',
-        '-3545' => 'Invalid LegalNameFirst Length',
-        '-3546' => 'Invalid LegalNameMiddle Length',
-        '-3547' => 'Invalid Username Length',
-        '-3548' => 'Invalid Barcode Length',
-        '-3550' => 'Invalid Patron Barcode',
-        '-3551' => 'Patron Address Not Defined',
-        '-3552' => 'Patron Password Not Defined',
-        '-3553' => 'Patron Address Street One Invalid',
-        '-3554' => 'Patron Address Postal Code Invalid',
-        '-3555' => 'Patron Address City Invalid',
-        '-3556' => 'Patron Address State Invalid',
-        '-3557' => 'Patron Username Format Invalid',
-        '-3558' => 'Patron Address Country Not Defined',
-        '-3559' => 'Patron Delivery Notices Address Not Defined',
-        '-3560' => 'Patron Address Street Two Invalid',
-        '-3561' => 'Patron Address Street Three Invalid',
-        '-3562' => 'Patron Address Free Text Label Invalid',
-        '-3600' => 'Charge transaction does not exist',
-        '-3601' => 'Charge transaction for this patron does not exist',
-        '-3602' => 'Payment method for payment is invalid',
-        '-3603' => 'Invalid amount is being paid',
-        '-3604' => 'Invalid transaction type being paid',
-        '-3605' => 'General patron account database error',
-        '-3606' => 'Payment transaction does not exist',
-        '-3607' => 'Payment transaction for this patron does not exist',
-        '-3608' => 'Payment transaction cannot be voided because another action taken on payment',
-        '-3610' => 'Payment amount is more than the sum of the charges',
-        '-3612' => 'Invalid PatronCodeID',
-        '-3613' => 'Invalid PhoneVoice2',
-        '-3614' => 'Invalid PhoneVoice3',
-        '-3615' => 'Invalid Alt Email Address',
-        '-3616' => 'Invalid TXTPhoneNumber',
-        '-3617' => 'Invalid PhoneCarrier',
-        '-3619' => 'Invalid DeliveryMethod No Phone',
-        '-3620' => 'Invalid Email Address for EReceipt',
-        '-3621' => 'Patron Is Secure',
-        '-3622' => 'Invalid RequestPickupBranchID',
-        '-3623' => 'Invalid User1',
-        '-3624' => 'Invalid User2',
-        '-3625' => 'Invalid User3',
-        '-3626' => 'Invalid User4',
-        '-3627' => 'Invalid User5',
-        '-3628' => 'Invalid LanguageID',
-        '-3629' => 'Invalid FormerID',
-        '-3630' => 'Invalid StatisticalClassID for the Registered Branch',
-        '-3634' => 'Patron Required Fields Missing',
-        '-3635' => 'Invalid Patron Address Country',
-        '-4000' => 'Invalid application ID supplied',
-        '-4001' => 'Invalid patron ID supplied',
-        '-4002' => 'Invalid workstation ID supplied',
-        '-4003' => 'Invalid request ID supplied',
-        '-4004' => 'Invalid requesting org ID supplied',
-        '-4005' => 'Invalid patron barcode',
-        '-4006' => 'Invalid bibliographic record ID supplied',
-        '-4007' => 'Invalid pickup org ID supplied',
-        '-4016' => 'Cannot change pickup branch for request in statusID',
-        '-4019' => 'Hold Pickup Area SA disabled',
-        '-4020' => 'Hold Pickup Area Invalid for pickup branch',
-        '-4021' => 'Hold Pickup Area ID Invalid',
-        '-4022' => 'Hold Pickup Area not enabled for the pickup branch',
-        '-4023' => 'Hold Pickup Area already set',
-        '-4100' => 'Invalid request GUID supplied',
-        '-4101' => 'Invalid txn group qualifier supplied',
-        '-4102' => 'Invalid txn qualifier supplied',
-        '-4103' => 'Invalid answer supplied',
-        '-4104' => 'Invalid state supplied',
-        '-4201' => 'Invalid request ID supplied',
-        '-4202' => 'Invalid current org ID supplied',
-        '-4203' => 'Cancel prevented for hold requests with status of Held',
-        '-4204' => 'Cancel prevented for hold request with status of Unclaimed',
-        '-4205' => 'Cancel prevented for hold request with a status of Canceled',
-        '-4206' => 'Cancel prevented for hold request with a status of Expired',
-        '-4207' => 'Cancel prevented for hold request with a status of Out to Patron',
-        '-4208' => 'Cancel prevented for hold request with a status of Shipped',
-        '-4300' => 'No requests available to cancel',
-        '-4400' => 'Invalid Application date supplied',
-        '-4401' => 'Application date must be greater than or equal to today\'s date',
-        '-4402' => 'Application date must be earlier than 2 years from today',
-        '-4403' => 'Invalid pickup branch assigned to hold request',
-        '-4404' => 'Error occurred loading SA "days to expire"',
-        '-4405' => 'Request must have a status of Active, Inactive or Pending',
-        '-4406' => 'No requests available to suspend',
-        '-4407' => 'Request status invalid for this process',
-        '-4408' => 'Invalid request status change requested',
-        '-4409' => 'Invalid hold user not supplied reason',
-        '-4410' => 'This is the only item available for hold',
-        '-4411' => 'No other items at other branches are available to fill this hold',
-        '-5000' => 'Invalid OrganizationID specified',
-        '-6000' => 'Invalid loan unit supplied',
-        '-6001' => 'ItemCheckout record does not exist',
-        '-6101' => 'Patron block',
-        '-6103' => 'Item record status is not Final',
-        '-6104' => 'Item status is Returned-ILL',
-        '-6110' => 'Item Status is Non-Circulating',
-        '-6112' => 'Item block',
-        '-6113' => 'Item status is In-Transit',
-        '-6115' => 'Invalid item circulation period',
-        '-6116' => 'Item on-the-fly',
-        '-6117' => 'Multiple course reserves',
-        '-6118' => 'Overdue fine',
-        '-6119' => 'Renewal block',
-        '-7000' => 'Invalid CourseReserveID specified',
-        '-8000' => 'Invalid PolarisUserID specified',
-        '-8001' => 'Polaris user is not permitted',
-        '-8002' => 'StaffUser_NotSupplied',
-        '-8003' => 'StaffUser_NotFound',
-        '-8004' => 'StaffUser_Account_Disabled',
-        '-9000' => 'Invalid WorkstationID specified',
-    ];
 
     /**
-     * $ereceipt_options This value will likely be overriden in an extending cleass  
+     * $notification_options How the patron will receive notifications. This value will likely be overriden in an extending class.
+     * 
+     * @var array
+     */
+    public array $notification_options = [
+        1 => "Mail",
+        2 => "Email",
+        3 => "Phone 1",
+        4 => "Phone 2",
+        5 => "Phone 3",
+        6 => "Fax",
+        8 => "Text Message"
+    ];
+    
+    /**
+     * $ereceipt_options This value will likely be overriden in an extending class  
      * @var array
      */
     public array $ereceipt_options = [
-        1 => "Mail",
+        // 1 => "Mail", The documentation doesn't show this as an option
         2 => "Email",
-        3 => "Telephone 1",
-        4 => "Telephone 2",
-        5 => "Telephone 3",
-        6 => "FAX",
-        7 => "EDI",
-        8 => "TXT messaging"
+        3 => "Phone 1",
+        4 => "Phone 2",
+        5 => "Phone 3",
+        // 6 => "FAX", Current docuemntation doesn't show fax or EDI as options
+        // 7 => "EDI",
+        8 => "Text Message",
+        100 => "Email and Text Message"
     ];
+
+    /**
+     * $email_format_options Format of notices and receipts sent by email
+     * @var array
+     */
+    public array $email_format_options = [
+        1 => "Plain text",
+        2 => "HTML"
+    ];
+    
     /**
      * $api_access_key Polaris web service access key, maps to Catalog->clientKey
      * @var string
@@ -780,6 +644,22 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         }
     }
     
+    public function getNotificationOptions() {
+        return $this->notification_options;
+    }
+    
+    public function getErecieptionOptions() {
+        return $this->ereceipt_options;
+    }
+    
+    public function getEmailFormatOptions() {
+        return $this->email_format_options;
+    }
+    
+    public function getPhoneCarrierOptions() {
+        return $this->configArray['Carriers'];
+    }
+    
     /***************** READING HISTORY ****************/
     /**
      * Fetch a patrons reading history from Polaris ILS
@@ -1211,6 +1091,9 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         //6 - Fax
         //8 - Text Message
         // todo: for now stuff these into a Pika accepted code- Mail, Telephone, E-mail
+        
+        $user->noticePreferenceId = $patron_response->DeliveryOptionID;
+        
         switch ($patron_response->DeliveryOptionID) {
             case 1:
                 $user->noticePreferenceLabel = 'Mail';
@@ -1231,7 +1114,12 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 $user->noticePreferenceLabel = null;
                 break;
         }
-
+        
+        // The ID corresponding to the type of e receipt the patron has selected
+        $user->ereceiptId = $patron_response->EmailFormatID;
+        // The ID corresponding to the type of emails the patron want to receive (plain or HTMl)
+        $user->emailFormatId = $patron_response->EReceiptOptionID;
+        
         // Checkouts and holds count
         // Polaris returns number of ILS AND number of ILL holds in counts.
         $user->numHoldsIls = $patron_response->HoldRequestsCurrentCount;
@@ -2399,6 +2287,10 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         return 'Your ' . translate('pin') . ' was updated successfully.';
     }
 
+    protected function updateNotificationsPreferences($patron) {
+        
+    }
+
     public function resetPin($patron, $newPin, $resetToken)
     {
         $pinReset = new PinReset();
@@ -2408,9 +2300,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             return ['error' => 'Unable to reset your ' . translate('pin') . '. Please try again later.'];
         } elseif ($pinReset->N == 0) {
             return [
-                'error' => 'Unable to reset your ' . translate('pin') . '. You have not requested a ' . translate(
-                        'pin',
-                    ) . ' reset.',
+                'error' => 'Unable to reset your ' . translate('pin') . '. You have not requested a ' . 
+                    translate('pin',) . ' reset.'
             ];
         }
         // expired?
@@ -2556,5 +2447,166 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         return $this->cache->delete($patron_object_cache_key);
     }
 
-
+    protected array $polaris_errors = [
+        '-201' => 'Failed to insert entry in addresses table',
+        '-221' => 'Failed to insert entry in PostalCodes table',
+        '-222' => 'Invalid PostalCodeLength',
+        '-223' => 'Invalid PostalCodeFormat',
+        '-501' => 'Patron personal information change is not allowed',
+        '-3000' => 'Patron does not exist',
+        '-3001' => 'Failed to insert entry in Patrons table',
+        '-3400' => 'Failed to insert entry in Patronaddresses table',
+        '-3401' => 'Invalid AddressType',
+        '-3500' => 'Country code does not exist',
+        '-3501' => 'Patron branch is not defined',
+        '-3502' => 'Patron branch is not a valid branch',
+        '-3503' => 'Last name is not defined',
+        '-3504' => 'First name is not defined',
+        '-3505' => 'Barcode is already used for another patron',
+        '-3506' => 'Transaction branch is not defined',
+        '-3507' => 'Transaction user is not defined',
+        '-3508' => 'Transaction workstation is not defined',
+        '-3509' => 'Passwords do not match',
+        '-3510' => 'Postal code problems - mismatch city, state, county',
+        '-3511' => 'Postal code problems - mismatch city, state',
+        '-3512' => 'Postal code problems - mismatch city, county',
+        '-3513' => 'Postal code problems - mismatch state, county',
+        '-3514' => 'Postal code problems - mismatch county',
+        '-3515' => 'Postal code problems - mismatch state',
+        '-3516' => 'Postal code problems - mismatch city',
+        '-3517' => 'Postal code problems - postal code not found',
+        '-3518' => 'Invalid Email address',
+        '-3519' => 'Invalid DeliveryMethod Value (No Address for Patron)',
+        '-3520' => 'Invalid DeliveryMethod Value (No Email Address for Patron)',
+        '-3521' => 'Invalid DeliveryMethod Value (No PhoneVoice1 for Patron)',
+        '-3522' => 'Invalid DeliveryMethod Value (No PhoneVoice2 for Patron)',
+        '-3523' => 'Invalid DeliveryMethod Value (No PhoneVoice3 for Patron)',
+        '-3524' => 'Invalid DeliveryMethod Value (No PhoneFax for Patron)',
+        '-3525' => 'Invalid DeliveryMethod Value',
+        '-3526' => 'Invalid EmailFormat Value',
+        '-3527' => 'Invalid ReadingList Value',
+        '-3528' => 'Duplicate name',
+        '-3529' => 'Duplicate username',
+        '-3530' => 'Failed to insert entry in Patron Registration table',
+        '-3531' => 'Patron delivery notices address not defined',
+        '-3532' => 'Invalid PhoneVoice1 value',
+        '-3533' => 'Invalid Password format',
+        '-3534' => 'Invalid Password length',
+        '-3535' => 'Patron password change is not allowed',
+        '-3536' => 'Invalid GenderID for the Registered Branch',
+        '-3537' => 'Invalid LegalName Configuration',
+        '-3540' => 'Invalid Birthdate',
+        '-3541' => 'Invalid NameLast Length',
+        '-3542' => 'Invalid NameFirst Length',
+        '-3543' => 'Invalid NameMiddle Length',
+        '-3544' => 'Invalid LegalNameLast Length',
+        '-3545' => 'Invalid LegalNameFirst Length',
+        '-3546' => 'Invalid LegalNameMiddle Length',
+        '-3547' => 'Invalid Username Length',
+        '-3548' => 'Invalid Barcode Length',
+        '-3550' => 'Invalid Patron Barcode',
+        '-3551' => 'Patron Address Not Defined',
+        '-3552' => 'Patron Password Not Defined',
+        '-3553' => 'Patron Address Street One Invalid',
+        '-3554' => 'Patron Address Postal Code Invalid',
+        '-3555' => 'Patron Address City Invalid',
+        '-3556' => 'Patron Address State Invalid',
+        '-3557' => 'Patron Username Format Invalid',
+        '-3558' => 'Patron Address Country Not Defined',
+        '-3559' => 'Patron Delivery Notices Address Not Defined',
+        '-3560' => 'Patron Address Street Two Invalid',
+        '-3561' => 'Patron Address Street Three Invalid',
+        '-3562' => 'Patron Address Free Text Label Invalid',
+        '-3600' => 'Charge transaction does not exist',
+        '-3601' => 'Charge transaction for this patron does not exist',
+        '-3602' => 'Payment method for payment is invalid',
+        '-3603' => 'Invalid amount is being paid',
+        '-3604' => 'Invalid transaction type being paid',
+        '-3605' => 'General patron account database error',
+        '-3606' => 'Payment transaction does not exist',
+        '-3607' => 'Payment transaction for this patron does not exist',
+        '-3608' => 'Payment transaction cannot be voided because another action taken on payment',
+        '-3610' => 'Payment amount is more than the sum of the charges',
+        '-3612' => 'Invalid PatronCodeID',
+        '-3613' => 'Invalid PhoneVoice2',
+        '-3614' => 'Invalid PhoneVoice3',
+        '-3615' => 'Invalid Alt Email Address',
+        '-3616' => 'Invalid TXTPhoneNumber',
+        '-3617' => 'Invalid PhoneCarrier',
+        '-3619' => 'Invalid DeliveryMethod No Phone',
+        '-3620' => 'Invalid Email Address for EReceipt',
+        '-3621' => 'Patron Is Secure',
+        '-3622' => 'Invalid RequestPickupBranchID',
+        '-3623' => 'Invalid User1',
+        '-3624' => 'Invalid User2',
+        '-3625' => 'Invalid User3',
+        '-3626' => 'Invalid User4',
+        '-3627' => 'Invalid User5',
+        '-3628' => 'Invalid LanguageID',
+        '-3629' => 'Invalid FormerID',
+        '-3630' => 'Invalid StatisticalClassID for the Registered Branch',
+        '-3634' => 'Patron Required Fields Missing',
+        '-3635' => 'Invalid Patron Address Country',
+        '-4000' => 'Invalid application ID supplied',
+        '-4001' => 'Invalid patron ID supplied',
+        '-4002' => 'Invalid workstation ID supplied',
+        '-4003' => 'Invalid request ID supplied',
+        '-4004' => 'Invalid requesting org ID supplied',
+        '-4005' => 'Invalid patron barcode',
+        '-4006' => 'Invalid bibliographic record ID supplied',
+        '-4007' => 'Invalid pickup org ID supplied',
+        '-4016' => 'Cannot change pickup branch for request in statusID',
+        '-4019' => 'Hold Pickup Area SA disabled',
+        '-4020' => 'Hold Pickup Area Invalid for pickup branch',
+        '-4021' => 'Hold Pickup Area ID Invalid',
+        '-4022' => 'Hold Pickup Area not enabled for the pickup branch',
+        '-4023' => 'Hold Pickup Area already set',
+        '-4100' => 'Invalid request GUID supplied',
+        '-4101' => 'Invalid txn group qualifier supplied',
+        '-4102' => 'Invalid txn qualifier supplied',
+        '-4103' => 'Invalid answer supplied',
+        '-4104' => 'Invalid state supplied',
+        '-4201' => 'Invalid request ID supplied',
+        '-4202' => 'Invalid current org ID supplied',
+        '-4203' => 'Cancel prevented for hold requests with status of Held',
+        '-4204' => 'Cancel prevented for hold request with status of Unclaimed',
+        '-4205' => 'Cancel prevented for hold request with a status of Canceled',
+        '-4206' => 'Cancel prevented for hold request with a status of Expired',
+        '-4207' => 'Cancel prevented for hold request with a status of Out to Patron',
+        '-4208' => 'Cancel prevented for hold request with a status of Shipped',
+        '-4300' => 'No requests available to cancel',
+        '-4400' => 'Invalid Application date supplied',
+        '-4401' => 'Application date must be greater than or equal to today\'s date',
+        '-4402' => 'Application date must be earlier than 2 years from today',
+        '-4403' => 'Invalid pickup branch assigned to hold request',
+        '-4404' => 'Error occurred loading SA "days to expire"',
+        '-4405' => 'Request must have a status of Active, Inactive or Pending',
+        '-4406' => 'No requests available to suspend',
+        '-4407' => 'Request status invalid for this process',
+        '-4408' => 'Invalid request status change requested',
+        '-4409' => 'Invalid hold user not supplied reason',
+        '-4410' => 'This is the only item available for hold',
+        '-4411' => 'No other items at other branches are available to fill this hold',
+        '-5000' => 'Invalid OrganizationID specified',
+        '-6000' => 'Invalid loan unit supplied',
+        '-6001' => 'ItemCheckout record does not exist',
+        '-6101' => 'Patron block',
+        '-6103' => 'Item record status is not Final',
+        '-6104' => 'Item status is Returned-ILL',
+        '-6110' => 'Item Status is Non-Circulating',
+        '-6112' => 'Item block',
+        '-6113' => 'Item status is In-Transit',
+        '-6115' => 'Invalid item circulation period',
+        '-6116' => 'Item on-the-fly',
+        '-6117' => 'Multiple course reserves',
+        '-6118' => 'Overdue fine',
+        '-6119' => 'Renewal block',
+        '-7000' => 'Invalid CourseReserveID specified',
+        '-8000' => 'Invalid PolarisUserID specified',
+        '-8001' => 'Polaris user is not permitted',
+        '-8002' => 'StaffUser_NotSupplied',
+        '-8003' => 'StaffUser_NotFound',
+        '-8004' => 'StaffUser_Account_Disabled',
+        '-9000' => 'Invalid WorkstationID specified',
+    ];
 } // end class Polaris

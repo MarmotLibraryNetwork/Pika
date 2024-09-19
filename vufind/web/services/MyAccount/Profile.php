@@ -199,7 +199,14 @@ class MyAccount_Profile extends MyAccount {
 		//TODO: restrict to Sierra only? Is this needed for sierra any longer
 		$millenniumNoAddress = $canUpdateContactInfo && !$canUpdateAddress && $ils == 'Sierra';
 		$interface->assign('millenniumNoAddress', $millenniumNoAddress);
-
+        
+        // Polaris specific options
+        if($ils === 'Polaris') {
+            $driver = CatalogFactory::getCatalogConnectionInstance();
+            $interface->assign('notificationOptions', $driver->getNotificationOptions());
+            $interface->assign('eReceiptOptions', $driver->getErecieptionOptions());
+            $interface->assign('emailFormatOptions', $driver->getEmailFormatOptions());
+        }
 
 		// CarlX Specific Options
 		if ($ils == 'CarlX' && !$offlineMode) {
