@@ -25,7 +25,12 @@
  *
  * This class implements the Polaris API for patron interactions:
  * https://documentation.iii.com/polaris/PAPI/current/PAPIService/PAPIServiceOverview.htm
- *
+ * 
+ * Implementing the driver for new libraries
+ * * A [Carriers] section will be needed in the config files.
+ * * Override the class variable ereceipt_options to fit the libraries needs in an extending class
+ * 
+ * 
  * @category Pika
  * @package  PatronDrivers
  * @author   Chris Froese
@@ -217,6 +222,21 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         '-8003' => 'StaffUser_NotFound',
         '-8004' => 'StaffUser_Account_Disabled',
         '-9000' => 'Invalid WorkstationID specified',
+    ];
+
+    /**
+     * $ereceipt_options This value will likely be overriden in an extending cleass  
+     * @var array
+     */
+    public array $ereceipt_options = [
+        1 => "Mail",
+        2 => "Email",
+        3 => "Telephone 1",
+        4 => "Telephone 2",
+        5 => "Telephone 3",
+        6 => "FAX",
+        7 => "EDI",
+        8 => "TXT messaging"
     ];
     /**
      * $api_access_key Polaris web service access key, maps to Catalog->clientKey
@@ -570,39 +590,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $l->find();
         $l->orderBy('displayName');
         $homeLocations = $l->fetchAll('locationId', 'displayName');
-        $carrier_options = [
-            "0" => "None",
-            "-2" => "Unspecified",
-            "1" => "AT&T",
-            "26" => "AT&T Wireless MMS",
-            "2" => "Bell Canada",
-            "15" => "Bell South",
-            "17" => "Boost Mobile",
-            "3" => "Cellular One",
-            "24" => "Cellular South",
-            "4" => "Cingular (Now AT&T)",
-            "23" => "Cricket",
-            "19" => "Fido",
-            "18" => "Helio",
-            "16" => "MetroPCS",
-            "5" => "Nextel",
-            "6" => "Qwest",
-            "32" => "Republic Wireless",
-            "21" => "Rogers AT&T Wireless",
-            "22" => "Rogers Canada",
-            "7" => "Southwestern Bell",
-            "30" => "Straight Talk",
-            "31" => "Straight Talk MMS",
-            "20" => "Telus",
-            "10" => "Tracfone",
-            "14" => "USA Mobility",
-            "11" => "Verizon",
-            "27" => "Verizon MMS",
-            "12" => "Virgin Mobile",
-            "13" => "Virgin Mobile Canada",
-            "25" => "Wind Mobile Canada",
-            "29" => "Xfinity"
-        ];
+        $carrier_options = $this->configArray['Carriers'];
         
         $ereceipt_options = [
             '0' => 'None',
@@ -806,7 +794,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     {
         // /public/patron/{PatronBarcode}/readinghistory
         // history enabled?
-        if ($patron->trackReadingHistory != 1) {
+        if ($patron->trackReadingHistory !== 1) {
             return ['historyActive' => false, 'numTitles' => 0, 'titles' => []];
         }
         
@@ -981,7 +969,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
      * @return array|false An array of fines associated with the patron, where each fine includes the title, date, reason, amount, outstanding amount,
      * and any additional details. Returns `false` if the API request fails.
      */
-    public function getMyFines($patron)
+    public function getMyFines(User $patron)
     {
         // Polaris API function PatronAccountGet
         // /public/patron/{PatronBarcode}/account/outstanding
