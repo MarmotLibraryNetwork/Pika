@@ -64,6 +64,21 @@ function getIndexingUpdates(): array{
 					]
 				],
 
+				'2024.03.0_polaris-extract-table updates' => [
+							'release'         => '2024.03.0',
+							'title'           => 'Create item to record table',
+							'description'     => 'Create item id to record id table; add suppressed date to ils_extract_info',
+							'continueOnError' => true,
+							'sql'             => [
+						'ALTER TABLE `ils_extract_info` ADD COLUMN `suppressed` DATE NULL DEFAULT NULL AFTER `lastExtracted`;',
+						'CREATE TABLE `ils_itemIdToRecordId` (
+						  `itemId` INT UNSIGNED NOT NULL,
+						  `recordId` INT UNSIGNED NOT NULL,
+						  PRIMARY KEY (`itemId`),
+						  UNIQUE INDEX `itemId_UNIQUE` (`itemId` ASC));'
+					]
+				],
+
 				'2024.03.0_add_adult_literacy_format'     => [
 					'release'           => '2024.03.0',
 					'title'             => 'Add Adult Literacy Book Format',
