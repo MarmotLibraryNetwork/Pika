@@ -424,7 +424,14 @@ class CatalogConnection
 					//TODO: all drivers that fallback to this, need to implement the above method
 					// so that Pika can reliably maintain a patron's reading history
 					return $this->getReadingHistory($patron);
+				} else {
+					// No native reading history; return empty result so that the cron process can proceed to fetching current checkouts.
+					return [
+						'numTitles' => 0,
+						'titles'    => []
+					];
 				}
+
 		}
 		return false;
 	}
@@ -654,10 +661,11 @@ class CatalogConnection
 					$success = false;
 					$this->logger->warn('Failed to delete all reading history in ILS for an opt out for user ' . $patron->id);
 				}
-			}elseif (method_exists($this->driver, 'doReadingHistoryAction')){
-				//Deprecated process
-				$this->driver->doReadingHistoryAction($patron, 'deleteAll');
 			}
+//			elseif (method_exists($this->driver, 'doReadingHistoryAction')){
+//				//Deprecated process
+//				$this->driver->doReadingHistoryAction($patron, 'deleteAll');
+//			}
 
 			// Now opt of reading history in the ILS
 			if (method_exists($this->driver, 'optOutReadingHistory')){
@@ -666,10 +674,11 @@ class CatalogConnection
 					$success = false;
 					$this->logger->warn('Failed to opt out of reading history in ILS for user ' . $patron->id);
 				}
-			} elseif (method_exists($this->driver, 'doReadingHistoryAction')){
-				//Deprecated process
-				$this->driver->doReadingHistoryAction($patron, 'optOut');
 			}
+//			elseif (method_exists($this->driver, 'doReadingHistoryAction')){
+//				//Deprecated process
+//				$this->driver->doReadingHistoryAction($patron, 'optOut');
+//			}
 		}
 
 			//Delete the reading history (permanently this time since we are opting out)
@@ -677,7 +686,7 @@ class CatalogConnection
 			$readingHistoryDB         = new ReadingHistoryEntry();
 			$readingHistoryDB->userId = $patron->id;
 			$result                   = $readingHistoryDB->delete();
-			if ($result !== false){  // The delete can return 0 for no rows affected
+			if ($result !== false){  // The delete function can return 0 for no rows affected
 				$success = false;
 				$this->logger->warn('Failed to delete all reading history entries in Pika for user ' . $patron->id);
 			}
@@ -979,7 +988,7 @@ class CatalogConnection
 		$readingHistoryDB->whereAdd('checkInDate IS NULL');
 		$readingHistoryDB->find();
 
-		$activeHistoryTitles = array();
+		$activeHistoryTitles = [];
 		while ($readingHistoryDB->fetch()){
 			if ($readingHistoryDB->source == 'ILS'){
 				$readingHistoryDB->source = 'ils';
