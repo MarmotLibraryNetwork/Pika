@@ -68,6 +68,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
      * @var array
      */
     public array $notification_options = [
+        0 => "None",
         1 => "Mail",
         2 => "Email",
         3 => "Phone 1",
@@ -82,11 +83,13 @@ class Polaris extends PatronDriverInterface implements DriverInterface
      * @var array
      */
     public array $ereceipt_options = [
+        0 => "None",
+        // the documentation differs between create and update patron methods on what the options are for ereceipts.
         // 1 => "Mail", The documentation doesn't show this as an option
         2 => "Email",
-        3 => "Phone 1",
-        4 => "Phone 2",
-        5 => "Phone 3",
+        // 3 => "Phone 1",
+        // 4 => "Phone 2",
+        // 5 => "Phone 3",
         // 6 => "FAX", Current docuemntation doesn't show fax or EDI as options
         // 7 => "EDI",
         8 => "Text Message",
@@ -2177,6 +2180,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $contact['LogonBranchID'] = 1; // default to system
         $contact['LogonUserID'] = $this->configArray['Polaris']['staffUserId'];
         $contact['LogonWorkstationID'] = $this->configArray['Polaris']['workstationId'];
+        // patron updates
         $contact['PhoneVoice1'] = $_REQUEST['phone'] ?? ''; // PhoneVoice1 maps to get patrons PhoneNumber. 
         $contact['EmailAddress'] = $_REQUEST['email'] ?? '';
         // patron address
@@ -2237,10 +2241,10 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             } else {
                 $error_message .= ' Please contact your library for further assistance.';
             }
-            return [$error_message];
+            return [[$error_message]];
         }
         // todo: profile page success messages are difficult. Need a better solution
-        return ['Success. Your username has been updated.'];
+        return [['Your username has been updated successfully.']];
     }
 
     /**
@@ -2279,16 +2283,43 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             if (isset($this->papiLastErrorMessage)) {
                 $error_message .= ' ' . $this->papiLastErrorMessage;
             }
-            return [$error_message];
+            return [[$error_message]];
         }
         // success update the pin in the database
         $patron->setPassword($new_pin);
         $patron->update();
-        return 'Your ' . translate('pin') . ' was updated successfully.';
+        return [['Your ' . translate('pin') . ' was updated successfully.']];
     }
 
     protected function updateNotificationsPreferences($patron) {
         
+        $notification_preferences = [];
+        // required credentials
+        $notification_preferences['LogonBranchID'] = 1; // default to system
+        $notification_preferences['LogonUserID'] = $this->configArray['Polaris']['staffUserId'];
+        $notification_preferences['LogonWorkstationID'] = $this->configArray['Polaris']['workstationId'];
+        // notifications
+        $notification_preferences['DeliveryOptionID'] = $_REQUEST['notification_method'] ?? '';
+        $notification_preferences['EmailFormat'] = $_REQUEST['email_format'] ?? '';
+        $notification_preferences['EReceiptOptionID'] = $_REQUEST['ereceipt_method'] ?? '';
+        
+        $errors = [];
+        
+        $request_url = $this->ws_url . "/patron/{$patron->barcode}";
+        $extra_headers = ["Content-Type: application/json"];
+
+        $r = $this->_doPatronRequest($patron, 'PUT', $request_url, $notification_preferences, $extra_headers);
+
+        if ($r === null) {
+            if (isset($this->papiLastErrorMessage)) {
+                $errors[] = $this->papiLastErrorMessage;
+            } else {
+                $errors[] = "Unable to update notification preferences. Please contact your library for further assistance.";
+            }
+            return $errors;
+        }
+        $errors[] = "Your notification preferences have been updated successfully.";
+        return $errors;
     }
 
     public function resetPin($patron, $newPin, $resetToken)
