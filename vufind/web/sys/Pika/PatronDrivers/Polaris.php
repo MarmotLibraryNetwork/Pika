@@ -447,7 +447,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     /***************** SELF REGISTRATION ****************/
     public function getSelfRegistrationFields(): array
     {
-        $fields = [];
+        
 
         global $library;
         // get the valid home/pickup locations
@@ -457,13 +457,18 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $l->find();
         $l->orderBy('displayName');
         $homeLocations = $l->fetchAll('locationId', 'displayName');
-        $carrier_options = $this->configArray['Carriers'];
         
-        $ereceipt_options = [
-            '0' => 'None',
-            '2' => 'Email',
-            '8' => 'Text Message',
-            '100' => 'Email and Text Message'
+        $carrier_options = $this->configArray['Carriers'];
+        $ereceipt_options = $this->ereceipt_options;
+        $notice_options = $this->notification_options;
+        
+        $fields = [];
+        
+        $fields[] = [
+            'property' => 'personal-info',
+            'type' => 'header',
+            'value' => 'Personal Information',
+            'class'=> 'h3'
         ];
         
         $fields[] = [
@@ -513,6 +518,13 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'Your home library and preferred pickup location.',
             'values' => $homeLocations,
             'required' => true,
+        ];
+
+        $fields[] = [
+            'property' => 'contact-info',
+            'type' => 'header',
+            'value' => 'Contact Information',
+            'class'=> 'h3'
         ];
         
         $fields[] = [
@@ -595,12 +607,44 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         ];
 
         $fields[] = [
+            'property' => 'notifications-info',
+            'type' => 'header',
+            'value' => 'Notifications Settings',
+            'class'=> 'h3'
+        ];
+        
+        $fields[] = [
+            'property' => 'DeliveryOptionID',
+            'type' => 'enum',
+            'label' => 'How you would like to receive library notices?',
+            'description' => 'How you would like to receive library notices?',
+            'values' => $notice_options,
+            'required' => false,
+        ];
+
+        $fields[] = [
             'property' => 'EReceiptOptionID',
             'type' => 'enum',
-            'label' => 'E-receipts',
-            'description' => 'How you would like to receive receipts.',
+            'label' => 'How you would like to receive library receipts?',
+            'description' => 'How you would like to receive receipts?',
             'values' => $ereceipt_options,
             'required' => false,
+        ];
+
+        $fields[] = [
+            'property' => 'EReceiptOptionID',
+            'type' => 'enum',
+            'label' => 'How you would like to receive library receipts?',
+            'description' => 'How you would like to receive receipts?',
+            'values' => $ereceipt_options,
+            'required' => false,
+        ];
+
+        $fields[] = [
+            'property' => 'credentials-info',
+            'type' => 'header',
+            'value' => 'Username and Password',
+            'class'=> 'h3'
         ];
         
         $fields[] = [

@@ -146,8 +146,7 @@
                                                     <input name="zip" id="zip" value="{$profile->zip|escape}" size="50"
                                                            maxlength="75" class="form-control required">
                                                 {elseif !$offline && $millenniumNoAddress}
-                                                    <input name="zip" id="zip" value="{$profile->zip|escape}"
-                                                           type="hidden">
+                                                    <input name="zip" id="zip" value="{$profile->zip|escape}" type="hidden">
                                                     {$profile->zip|escape}
                                                 {else}{$profile->zip|escape}{/if}
                                             </div>
@@ -166,19 +165,20 @@
                                                 {/if}
                                             </div>
                                         </div>
-                                        {if $showWorkPhoneInProfile}
-                                            <div class="form-group">
-                                                <div class="col-xs-4"><label
-                                                            for="workPhone">{translate text='Work Phone Number'}
-                                                        :</label></div>
-                                                <div class="col-xs-8">{if !$offline && $canUpdateContactInfo && $ils != 'Horizon'}
-                                                        <input name="workPhone" id="workPhone"
-                                                               value="{$profile->workPhone|escape}" size="50"
-                                                               maxlength="75"
-                                                               class="form-control">{else}{$profile->workPhone|escape}{/if}
-                                                </div>
-                                            </div>
-                                        {/if}
+{* Polaris doesn't have work phone. Repourpose this for Polaris Phone2, Phone3 *}
+{*                                        {if $showWorkPhoneInProfile}*}
+{*                                            <div class="form-group">*}
+{*                                                <div class="col-xs-4">
+{*                                                   <label for="Phone2">Secondary Phone number:</label>*}
+{*</div>*}
+{*                                                <div class="col-xs-8">{if !$offline && $canUpdateContactInfo && $ils != 'Horizon'}*}
+{*                                                        <input name="Phone2" id="Phone2"*}
+{*                                                               value="{$profile->phone2|escape}" size="50"*}
+{*                                                               maxlength="75"*}
+{*                                                               class="form-control">{else}{$profile->phone2|escape}{/if}*}
+{*                                                </div>*}
+{*                                            </div>*}
+{*                                        {/if} *}
                                     {/if}
                                     <div class="form-group">
                                         <div class="col-xs-4"><label for="email">{translate text='E-mail'}:</label>
@@ -221,18 +221,6 @@
                                         </div>
                                     {/if}
 
-                                    {if $showNoticeTypeInProfile}
-                                        <p class="alert alert-info">
-                                            {translate text='account_profile_notification_notice'}
-                                        </p>
-                                        {if $ils != 'CarlX'}
-                                            {include file="MyAccount/profile-notification-preferences.tpl"}
-                                        {else}
-                                            {include file="MyAccount/profile-notification-preferences-carlx.tpl"}
-                                        {/if}
-
-                                    {/if}
-
                                     {if !$offline && $canUpdateContactInfo}
                                         <div class="form-group">
                                             <div class="col-xs-8 col-xs-offset-4">
@@ -245,8 +233,10 @@
                             </div>
                         </div>
                     </div>
-
+                
+                    {if $showNoticeTypeInProfile}
                     {include file="MyAccount/notifications.tpl"}
+                    {/if}
                     
                     {if !empty($linkedUsers) && count($linkedUsers) > 1 && $selectedUser != $activeUserId}
                         {*Security: Prevent changing email, username, or password for linked accounts. See D-4031 *}
@@ -258,12 +248,6 @@
                     
                     {include file="MyAccount/userName.tpl"}
                     
-                    {* SMS prefrences *}
-                    {if $showSMSNoticesInProfile}
-                        {include file="MyAccount/profile-sms-notices.tpl"}
-                    {/if}
-                    
-
                     {*OverDrive Options*}
                     {if $profile->isValidForOverDrive()}
                         <div class="panel active">
