@@ -24,7 +24,7 @@
 			let today = new Date();
 			let next_day = new Date(today);
 			next_day.setDate(today.getDate() + 2);
-			
+			// Polaris reactive date cannot be today or tomorrow.
 			$( "#reactivationDate" ).datepicker({
 				startDate: next_day,
 				orientation:"bottom"
