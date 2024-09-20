@@ -2343,9 +2343,9 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $notification_preferences['LogonUserID'] = $this->configArray['Polaris']['staffUserId'];
         $notification_preferences['LogonWorkstationID'] = $this->configArray['Polaris']['workstationId'];
         // notifications
-        $notification_preferences['DeliveryOptionID'] = $_REQUEST['notification_method'] ?? '';
-        $notification_preferences['EmailFormat'] = $_REQUEST['email_format'] ?? '';
-        $notification_preferences['EReceiptOptionID'] = $_REQUEST['ereceipt_method'] ?? '';
+        $notification_preferences['DeliveryOptionID'] = $_REQUEST['notification_method'];
+        $notification_preferences['EmailFormat'] = $_REQUEST['email_format'];
+        $notification_preferences['EReceiptOptionID'] = $_REQUEST['ereceipt_method'];
         
         $errors = [];
         
