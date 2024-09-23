@@ -2278,6 +2278,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $request_url = $this->ws_url . "/patron/{$patron->barcode}/username/{$username}";
 
         $r = $this->_doPatronRequest($patron, 'PUT', $request_url);
+        $errors = [];
         if ($r === null) {
             $error_message = "Unable to update username.";
             if (isset($this->papiLastErrorMessage)) {
@@ -2285,10 +2286,12 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             } else {
                 $error_message .= ' Please contact your library for further assistance.';
             }
-            return [[$error_message]];
+            $errors[] = $error_message;
+            return $errors;
         }
         // todo: profile page success messages are difficult. Need a better solution
-        return [['Your username has been updated successfully.']];
+        $errors[] = 'Your username has been updated successfully.';
+        return $errors;
     }
 
     /**
@@ -2320,19 +2323,22 @@ class Polaris extends PatronDriverInterface implements DriverInterface
 
         $request_url = $this->ws_url . "/patron/{$patron->barcode}";
         $extra_headers = ["Content-Type: application/json"];
-
+        
+        $errors = [];
         $r = $this->_doPatronRequest($patron, 'PUT', $request_url, $update, $extra_headers);
         if ($r === null) {
             $error_message = "Unable to update pin.";
             if (isset($this->papiLastErrorMessage)) {
                 $error_message .= ' ' . $this->papiLastErrorMessage;
             }
-            return [[$error_message]];
+            $errors[] = $error_message;
+            return $errors;
         }
         // success update the pin in the database
         $patron->setPassword($new_pin);
         $patron->update();
-        return [['Your ' . translate('pin') . ' was updated successfully.']];
+        $errors[] = 'Your ' . translate('pin') . ' was updated successfully.';
+        return $errors;
     }
 
     protected function updateNotificationsPreferences($patron) {
