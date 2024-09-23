@@ -104,6 +104,60 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         1 => "Plain text",
         2 => "HTML"
     ];
+
+    /**
+     * $valid_registration_fileds Valid fields for new patron registration
+     * @var array
+     */
+    public array $valid_registration_fileds = [
+        "PatronBranchID",
+        "PostalCode",
+        "ZipPlusFour",
+        "City",
+        "State",
+        "County",
+        "CountryID",
+        "StreetOne",
+        "StreetTwo",
+        "StreetThree",
+        "NameFirst",
+        "NameLast",
+        "NameMiddle",
+        "User1",
+        "User2",
+        "User3",
+        "User4",
+        "User5",
+        "Gender",
+        "Birthdate",
+        "PhoneVoice1",
+        "PhoneVoice2",
+        "PhoneVoice3",
+        "Phone1CarrierID",
+        "Phone2CarrierID",
+        "Phone3CarrierID",
+        "EmailAddress",
+        "AltEmailAddress",
+        "LanguageID",
+        "UserName",
+        "Password",
+        "Password2",
+        "DeliveryOptionID",
+        "EnableSMS",
+        "TxtPhoneNumber",
+        "Barcode",
+        "EReceiptOptionID",
+        "PatronCode",
+        "ExpirationDate",
+        "AddrCheckDate",
+        "GenderID",
+        "LegalNameFirst",
+        "LegalNameLast",
+        "LegalNameMiddle",
+        "UseLegalNameOnNotices",
+        "RequestPickupBranchID",
+        "UseSingleName"
+    ];
     
     /**
      * $api_access_key Polaris web service access key, maps to Catalog->clientKey
@@ -456,7 +510,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $l->validHoldPickupBranch = '1';
         $l->find();
         $l->orderBy('displayName');
-        $homeLocations = $l->fetchAll('locationId', 'displayName');
+        $homeLocations = $l->fetchAll('ilsLocationId', 'displayName');
         
         $carrier_options = $this->configArray['Carriers'];
         $ereceipt_options = $this->ereceipt_options;
@@ -632,15 +686,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         ];
 
         $fields[] = [
-            'property' => 'EReceiptOptionID',
-            'type' => 'enum',
-            'label' => 'How you would like to receive library receipts?',
-            'description' => 'How you would like to receive receipts?',
-            'values' => $ereceipt_options,
-            'required' => false,
-        ];
-
-        $fields[] = [
             'property' => 'credentials-info',
             'type' => 'header',
             'value' => 'Username and Password',
@@ -678,17 +723,62 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         return $fields;
     }
 
-    public function selfRegister($extra_params) {
+    /**
+     * Registers a new patron using the Polaris API.
+     *
+     * This method collects required registration details from the request, such as branch ID, user ID, and workstation ID,
+     * along with valid patron registration fields. If extra parameters are provided, they are merged into the registration details.
+     * It sends a request to the Polaris API to create a new patron account. The method returns a success flag and the new patron's
+     * barcode upon successful registration.
+     *
+     * @param array $extra_params Additional parameters for self-registration, allowing for library-specific customization.
+     *
+     * @return array An array containing the success status (`success` as `true` or `false`) and the patron's barcode if the registration is successful.
+     */
+    public function selfRegister($extra_params = []) {
+        // /public/patron
+        $patron_registration = [];
+        // required credentials
+        $patron_registration['LogonBranchID'] = 1; // default to system
+        $patron_registration['LogonUserID'] = $this->configArray['Polaris']['staffUserId'];
+        $patron_registration['LogonWorkstationID'] = $this->configArray['Polaris']['workstationId'];
         
         foreach ($_REQUEST as $key => $value) {
-            
+            if(in_array($key, $this->valid_registration_fileds, true)) {
+                if($key === 'Birthdate') {
+                    $patron_registration[$key] = gmdate('r',strtotime($value));
+                    continue;
+                }
+                $patron_registration[$key] = $value;
+            }
         }
         
         // EXTRA SELF REG PARAMETERS
-        // do this last in case there are any parameters set up that need to be overridden
+        // a class extending this class use this for library specific needs.
+        // do this last in case there are any parameters that need to be overridden
         if ($extra_params){
-
+            $patron_registration = array_merge($patron_registration, $extra_params);
         }
+
+        $return = ['success' => false, 'barcode' => ''];
+        
+        $request_url = $this->ws_url . "/patron";
+        $extra_headers = ["Content-Type: application/json"];
+        $c = $this->_doSystemRequest('POST', $request_url, $patron_registration, $extra_headers);
+        
+        // todo: self registration doesn't have any error return to display to the patron
+        // use this if that changes.
+        if ($c === null) {
+            if(isset($this->papiLastErrorMessage)) {
+                $self_reg_error_message = $this->papiLastErrorMessage;
+            }
+            return $return;
+        }
+        
+        $return['success'] = true;
+        $return['barcode'] = $c->response->Barcode;
+        
+        return $return;
     }
     
     public function getNotificationOptions() {
@@ -795,7 +885,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             $title['checkout'] = $checkout_date;
             $title['ilsReadingHistoryId'] = $row->PatronReadingHistoryID;
             $title['recordId'] = $row->BibId;
-            $title['checkout'] = $row->CheckOutDate;
             $title['source'] = $this->accountProfile->recordSource;
 
             $record = new MarcRecord($this->accountProfile->recordSource . ':' . $row->BibId);
@@ -1425,7 +1514,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         string $method = 'GET',
         string $url,
         $body = [],
-        $extra_headers = []
+        array $extra_headers = []
     ): ?Curl {
         $this->papiLastErrorMessage = null;
         $headers = [

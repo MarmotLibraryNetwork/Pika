@@ -82,7 +82,6 @@ class SelfReg extends Action {
 			if (!$recaptchaValid){
 				$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');
 			}else{
-
 				//Submit the form to ILS
 				$result = $this->catalog->selfRegister();
 				$interface->assign('selfRegResult', $result);
@@ -90,10 +89,11 @@ class SelfReg extends Action {
 
 			// Pre-fill form with user supplied data
 			foreach ($selfRegFields as &$property){
-				$userValue           = $_REQUEST[$property['property']];
-				$property['default'] = $userValue;
+                if(isset ($property['property'])) {
+				    $userValue           = $_REQUEST[$property['property']];
+				    $property['default'] = $userValue;
+                }
 			}
-
 		}
 
 		$interface->assign('submitUrl', '/MyAccount/SelfReg');
