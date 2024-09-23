@@ -1187,6 +1187,16 @@ class Polaris extends PatronDriverInterface implements DriverInterface
 
         // Location name
         $user->homeLocation = $patron_location_display_name;
+        
+        // Preferred pickup location
+        $pickup_location = new Location();
+        $pickup_location->ilsLocationId = $patron_response->RequestPickupBranchID;
+        if($pickup_location->find(true)){
+            $user->preferredPickupLocationCode = $pickup_location->code;
+        } else {
+            $user->preferredPickupLocationCode = ''; 
+        }
+        $user->preferredPickupLocationId = $patron_response->RequestPickupBranchID;
 
         // Names
         $user->fullname = $user->firstname . ' ' . $user->lastname;
@@ -2308,7 +2318,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     {
         // /public/patron/{PatronBarcode}
         $contact = [];
-
+        
         // required credentials
         $contact['LogonBranchID'] = 1; // default to system
         $contact['LogonUserID'] = $this->configArray['Polaris']['staffUserId'];
@@ -2316,6 +2326,13 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         // patron updates
         $contact['PhoneVoice1'] = $_REQUEST['phone'] ?? ''; // PhoneVoice1 maps to get patrons PhoneNumber. 
         $contact['EmailAddress'] = $_REQUEST['email'] ?? '';
+        // pickup branch 
+        $location = new Location();
+        $location->code = $_REQUEST['pickupLocation'];
+        if ($location->find(true) && $location->N === 1) {
+            $pickup_location_polaris_id = $location->ilsLocationId;
+            $contact['RequestPickupBranchID'] = $pickup_location_polaris_id;
+        }
         // patron address
         $address['AddressID'] = $patron->address_id;
         $address['StreetOne'] = $_REQUEST['address1'];
@@ -2326,7 +2343,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $address['EmailAddress'] = $_REQUEST['email'] ?? '';
         // add address array to request.
         $contact['PatronAddresses'][] = $address;
-
+        
         $errors = [];
         $request_url = $this->ws_url . "/patron/{$patron->barcode}";
         $extra_headers = ["Content-Type: application/json"];
