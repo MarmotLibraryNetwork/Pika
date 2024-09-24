@@ -208,7 +208,7 @@
                                                         {if count($pickupLocations) > 0}
                                                             {foreach from=$pickupLocations item=location}
                                                                 <option value="{$location->code}"
-                                                                        {if $location->displayName|escape == $profile->homeLocation|escape}selected="selected"{/if}>{$location->displayName}</option>
+                                                                        {if $location->displayName|escape == $profile->preferredPickupLocationCode|escape}selected="selected"{/if}>{$location->displayName}</option>
                                                             {/foreach}
                                                         {else}
                                                             <option>placeholder</option>
