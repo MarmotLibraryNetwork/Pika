@@ -740,13 +740,19 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $patron_registration = [];
         // required credentials
         $patron_registration['LogonBranchID'] = 1; // default to system
-        $patron_registration['LogonUserID'] = $this->configArray['Polaris']['staffUserId'];
-        $patron_registration['LogonWorkstationID'] = $this->configArray['Polaris']['workstationId'];
+        $patron_registration['LogonUserID'] = (int)$this->configArray['Polaris']['staffUserId'];
+        $patron_registration['LogonWorkstationID'] = (int)$this->configArray['Polaris']['workstationId'];
         
         foreach ($_REQUEST as $key => $value) {
             if(in_array($key, $this->valid_registration_fileds, true)) {
                 if($key === 'Birthdate') {
-                    $patron_registration[$key] = gmdate('r',strtotime($value));
+                    $ts = strtotime($value);
+                    $patron_registration[$key] = gmdate('r',);
+                    continue;
+                }
+                // type these fields as integers.
+                if(in_array($key, ["PatronBranchID", "DeliveryOptionID", "EReceiptOptionID", "RequestPickupBranchID", "Phone1CarrierID"])){
+                    $patron_registration[$key] = (int)$value;
                     continue;
                 }
                 $patron_registration[$key] = $value;
@@ -1550,6 +1556,9 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 $c->get($url);
                 break;
             case 'POST':
+                if(is_array($body)) {
+                    $body = json_encode($body);
+                }
                 $c->post($url, $body);
                 break;
             case 'PUT':
@@ -1579,7 +1588,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             $this->logger->error('Curl error: ' . $c->errorMessage, [
                 'http_code' => $c->httpStatusCode,
                 'request_url' => $url,
-                'Headers' => implode(PHP_EOL, implode(PHP_EOL, $c->requestHeaders)),
+                'Headers' => implode(PHP_EOL, $c->requestHeaders['data']),
             ]);
             return null;
         } elseif ($error = $this->_isPapiError($c->response)) {

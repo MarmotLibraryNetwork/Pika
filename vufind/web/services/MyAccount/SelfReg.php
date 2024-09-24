@@ -89,13 +89,14 @@ class SelfReg extends Action {
 
 			// Pre-fill form with user supplied data
 			foreach ($selfRegFields as &$property){
-                if(isset ($property['property'])) {
+                if(isset($property['property']) && $property['type'] !== 'header' ) {
 				    $userValue           = $_REQUEST[$property['property']];
 				    $property['default'] = $userValue;
                 }
 			}
+            unset($property);
 		}
-
+        
 		$interface->assign('submitUrl', '/MyAccount/SelfReg');
 		$interface->assign('structure', $selfRegFields);
 		$interface->assign('saveButtonText', 'Register');
