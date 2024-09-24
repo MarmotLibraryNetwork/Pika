@@ -71,9 +71,9 @@ function getIndexingUpdates(): array{
 							'continueOnError' => true,
 							'sql'             => [
 						'ALTER TABLE `ils_extract_info` ADD COLUMN `suppressed` DATE NULL DEFAULT NULL AFTER `lastExtracted`;',
-						'CREATE TABLE `ils_itemIdToRecordId` (
+						'CREATE TABLE `ils_itemid_to_ilsid` (
 						  `itemId` INT UNSIGNED NOT NULL,
-						  `recordId` INT UNSIGNED NOT NULL,
+						  `ilsId` INT UNSIGNED NOT NULL,
 						  PRIMARY KEY (`itemId`),
 						  UNIQUE INDEX `itemId_UNIQUE` (`itemId` ASC));'
 					]
