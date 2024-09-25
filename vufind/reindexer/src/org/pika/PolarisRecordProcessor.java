@@ -26,6 +26,13 @@ import java.util.HashSet;
 
 
 abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
+
+	protected HashSet<String> availableStatusCodes       = new HashSet<String>();
+	protected HashSet<String> libraryUseOnlyStatusCodes  = new HashSet<String>();
+	//protected HashSet<String> validCheckedOutStatusCodes = new HashSet<String>();
+	protected char isItemHoldableSubfield = '5';
+
+
 	PolarisRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 
@@ -48,14 +55,9 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 		}
 	}
 
-	protected HashSet<String> availableStatusCodes       = new HashSet<String>();
-	protected HashSet<String> libraryUseOnlyStatusCodes  = new HashSet<String>();
-	//protected HashSet<String> validCheckedOutStatusCodes = new HashSet<String>();
-	protected char isItemHoldableSubfield = '5';
-
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
-		String  status    = itemInfo.getStatusCode();
+		String status = itemInfo.getStatusCode();
 		return (status != null && !status.isEmpty() && availableStatusCodes.contains(status.toLowerCase()));
 	}
 

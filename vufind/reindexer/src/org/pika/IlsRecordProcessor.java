@@ -341,10 +341,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 
 		String subFolderName;
-		if (createFolderFromLeadingCharacters){
-			subFolderName        = shortId.substring(0, numCharsToCreateFolderFrom);
-		}else{
-			subFolderName        = shortId.substring(0, shortId.length() - numCharsToCreateFolderFrom);
+		if (createFolderFromLeadingCharacters) {
+			subFolderName = shortId.substring(0, numCharsToCreateFolderFrom);
+		} else {
+			subFolderName = shortId.substring(0, shortId.length() - numCharsToCreateFolderFrom);
 		}
 
 		String basePath           = individualMarcPath + "/" + subFolderName;
