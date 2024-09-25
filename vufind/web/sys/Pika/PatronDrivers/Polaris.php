@@ -2333,25 +2333,21 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $contact['LogonUserID'] = $this->configArray['Polaris']['staffUserId'];
         $contact['LogonWorkstationID'] = $this->configArray['Polaris']['workstationId'];
         // patron updates
-        $contact['PhoneVoice1'] = $_REQUEST['phone'] ?? ''; // PhoneVoice1 maps to get patrons PhoneNumber. 
-        $contact['EmailAddress'] = $_REQUEST['email'] ?? '';
-        // pickup branch 
-        $location = new Location();
-        $location->code = $_REQUEST['pickupLocation'];
-        if ($location->find(true) && $location->N === 1) {
-            $pickup_location_polaris_id = $location->ilsLocationId;
-            $contact['RequestPickupBranchID'] = $pickup_location_polaris_id;
-        }
+        // if a field isn't required and is not set, don't include in the update request
+        // PhoneVoice1 maps to get patrons PhoneNumber
+        if(isset($_REQUEST['phone'])) { $contact['PhoneVoice1'] = $_REQUEST['phone']; } 
+        if(isset($_REQUEST['email'])) $contact['EmailAddress'] = trim($_REQUEST['email']);
         // patron address
         $address['AddressID'] = $patron->address_id;
         $address['StreetOne'] = $_REQUEST['address1'];
-        $address['StreetTwo'] = $_REQUEST['address2'] ?? '';
+        if(isset($_REQUEST['address2'])) { $address['StreetTwo'] = $_REQUEST['address2']; }
         $address['City'] = $_REQUEST['city'];
         $address['State'] = $_REQUEST['state'];
         $address['PostalCode'] = $_REQUEST['zip'];
-        $address['EmailAddress'] = $_REQUEST['email'] ?? '';
         // add address array to request.
         $contact['PatronAddresses'][] = $address;
+        // pickup branch 
+        $contact['RequestPickupBranchID'] = $_REQUEST['pickupLocation'];
         
         $errors = [];
         $request_url = $this->ws_url . "/patron/{$patron->barcode}";
@@ -2570,7 +2566,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $mail->AltBody = strip_tags($htmlMessage);
 
         if (!$mail->send()) {
-            $this->logger->error('Can not send email from Sierra.php');
+            $this->logger->error('Failed to send email pin reset.');
             return ['error' => "We're sorry. We are unable to send mail at this time. Please try again."];
         }
         return true;

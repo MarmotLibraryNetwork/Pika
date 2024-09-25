@@ -29,7 +29,7 @@
                             A username is an optional feature. If you set one, your username&nbsp;
                             will be your alias on hold slips and can also be used to log into&nbsp;
                             your account in place of your card number. A username can be set,&nbsp;
-                            reset or removed from the “Account Settings” section of your online&nbsp;
+                            reset from the “Account Settings” section of your online&nbsp;
                             account. Usernames must be between 6 and 25 characters (letters and&nbsp;
                             number only, no special characters).
                         </div>
