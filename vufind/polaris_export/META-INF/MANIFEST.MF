@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Class-Path: ../java_libraries/ini4j/ini4j-0.5.2.jar ../java_libraries/log4j2/log4j-core-2.17.1.jar
+  ../java_libraries/log4j2/log4j-api-2.17.1.jar
+  ../java_libraries/mysql/mysql-5.1.15-bin.jar ../marc4j/marc4j-pika.jar
+  ../reindexer/reindexer.jar ../reindexer/lib/solr-solrj-8.7.0.jar
+  ../record_grouping/record_grouping.jar
+Main-Class: org.pika.PolarisExportMain
+

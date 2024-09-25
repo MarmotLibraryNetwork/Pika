@@ -32,6 +32,7 @@ public class PolarisRecordGrouper extends MarcRecordGrouper {
 	char itemRecordNumberSubfield;
 
 	private PreparedStatement itemToRecordStatement;
+	private PreparedStatement clearItemIdsForBibStatement;
 	/**
 	 * Creates a record grouping processor that saves results to the database.
 	 *
@@ -47,7 +48,9 @@ public class PolarisRecordGrouper extends MarcRecordGrouper {
 		}
 		itemRecordNumberSubfield = profile.itemRecordNumberSubfield;
 		try {
-			itemToRecordStatement = pikaConn.prepareStatement("INSERT INTO `ils_itemIdToRecordId` (itemId, recordId) VALUES (?, ?) ON DUPLICATE KEY UPDATE recordId=VALUE(recordId)");
+			itemToRecordStatement       = pikaConn.prepareStatement("INSERT INTO `ils_itemid_to_ilsid` (itemId, ilsId) VALUES (?, ?) ON DUPLICATE KEY UPDATE ilsId=VALUE(ilsId)");
+			clearItemIdsForBibStatement = pikaConn.prepareStatement("DELETE FROM `ils_itemid_to_ilsid` WHERE `ilsId` = ?");
+
 		} catch (SQLException e) {
 			logger.error("Error preparing statement for Polaris item to record Ids");
 		}
@@ -65,22 +68,34 @@ public class PolarisRecordGrouper extends MarcRecordGrouper {
 
 		if (identifier != null) {
 			List<DataField> itemFields = getDataFields(marcRecord, itemTag);
-			for (DataField itemField : itemFields) {
-				Subfield subfield = itemField.getSubfield(itemRecordNumberSubfield);
-				if (subfield != null) {
-					String   itemId   = subfield.getData();
-					try {
-						// Ignore for suppressed items
-						//TODO: should use a deleted date?  Delete with database clean-up at 6 months
-						itemToRecordStatement.setString(1, itemId);
-						itemToRecordStatement.setString(2, identifier.getIdentifier());
-						int result = itemToRecordStatement.executeUpdate();
-					} catch (SQLException e) {
-						logger.error("Error setting item to record entry");
-					}
-				} else {
-					if (!identifier.isSuppressed()) {
-						logger.error("On record {}, item without id: {}", identifier, itemField.toString());
+			if (!itemFields.isEmpty()) {
+				try {
+					clearItemIdsForBibStatement.setString(1, identifier.getIdentifier());
+					int result = clearItemIdsForBibStatement.executeUpdate();
+				} catch (SQLException e) {
+					logger.error("Error delete item Ids from database for bibId {}", identifier, e);
+				}
+				for (DataField itemField : itemFields) {
+					Subfield subfield = itemField.getSubfield(itemRecordNumberSubfield);
+					if (subfield != null) {
+						String itemId = subfield.getData();
+						if (!itemId.isEmpty()) {
+							try {
+								// Ignore for suppressed items
+								//TODO: should use a deleted date?  Delete with database clean-up at 6 months
+								itemToRecordStatement.setString(1, itemId);
+								itemToRecordStatement.setString(2, identifier.getIdentifier());
+								int result = itemToRecordStatement.executeUpdate();
+							} catch (SQLException e) {
+								logger.error("Error setting item to record entry");
+							}
+						} else {
+							logger.error("Error adding item Ids: empty item Id for {}", identifier.toString());
+						}
+					} else {
+						if (!identifier.isSuppressed()) {
+							logger.error("On record {}, item without id: {}", identifier.toString(), itemField.toString());
+						}
 					}
 				}
 			}

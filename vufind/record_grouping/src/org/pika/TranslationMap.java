@@ -82,7 +82,7 @@ public class TranslationMap {
 				String concatenatedValue = mapName + ":" + value;
 				if (!unableToTranslateWarnings.contains(concatenatedValue)) {
 					if (fullReindex && reportErrors) {
-						logger.warn("Could not translate '" + concatenatedValue + "' in profile " + profileName + " sample record " + identifier);
+						logger.warn("Could not translate '{}' in profile {} sample record {}", concatenatedValue, profileName, identifier);
 					}
 					unableToTranslateWarnings.add(concatenatedValue);
 				}
@@ -97,13 +97,12 @@ public class TranslationMap {
 					String concatenatedValue = mapName + ":" + value;
 					if (!unableToTranslateWarnings.contains(concatenatedValue)) {
 						if (fullReindex && reportErrors) {
-							logger.warn("Could not translate '" + concatenatedValue + "' in profile " + profileName + " sample record " + identifier);
+							logger.warn("Could not translate '{}' in profile {} sample record {}", concatenatedValue, profileName, identifier);
 						}
 						unableToTranslateWarnings.add(concatenatedValue);
 					}
-					if (!reportErrors){
-						translatedValue = null;
-					}else{
+					if (reportErrors) {
+						// when not reporting errors, translated value will be null
 						translatedValue = value;
 					}
 				}
@@ -113,7 +112,7 @@ public class TranslationMap {
 					translatedValue = value;
 				}else {
 					translatedValue = translatedValue.trim();
-					if (translatedValue.length() == 0) {
+					if (translatedValue.isEmpty()) {
 						translatedValue = null;
 					}
 				}
@@ -131,7 +130,7 @@ public class TranslationMap {
 				translatedCollection.add(translatedValue);
 			}
 		}
-		return  translatedCollection;
+		return translatedCollection;
 		// Stream version
 //		return values.stream().map((String values1) -> translateValue(values1, identifier)).collect(Collectors.toCollection(LinkedHashSet::new));
 	}

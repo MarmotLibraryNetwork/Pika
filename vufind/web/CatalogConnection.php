@@ -1083,7 +1083,7 @@ class CatalogConnection
 
 	/**
 	 * Return the number of holds that are on a record
-	 * @param $bibId Record Id Number
+	 * @param String $bibId Record ID Number
 	 * @return int|false
 	 */
 	public function getNumHoldsFromRecord($bibId){

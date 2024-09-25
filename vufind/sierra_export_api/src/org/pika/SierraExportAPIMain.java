@@ -1403,7 +1403,7 @@ public class SierraExportAPIMain {
 					logger.warn("Sierra MARC JSON missing leader information for " + id);
 				}
 				for (int i = 0; i < fields.length(); i++) {
-					JSONObject                                      fieldData = fields.getJSONObject(i);
+					JSONObject                   fieldData = fields.getJSONObject(i);
 					@SuppressWarnings("unchecked") Iterator<String> tags      = (Iterator<String>) fieldData.keys();
 					while (tags.hasNext()) {
 						String tag = tags.next();

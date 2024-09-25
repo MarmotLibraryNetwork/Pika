@@ -622,7 +622,8 @@ public class FormatDetermination {
 						}else if (printFormats.contains("MusicCD")) {
 							printFormats.clear();
 							printFormats.add("MusicCDWithDVD");
-						} else {
+						} else if (printFormats.contains("DVD")) //TODO: test
+						{
 							if (physicalDescription.getSubfield('a') != null) {
 								String mainPhysical = physicalDescription.getSubfield('a').getData().toLowerCase();
 								if (mainPhysical.contains("pages") || mainPhysical.contains("p.") || mainPhysical.contains("pgs")) {
@@ -1352,7 +1353,8 @@ public class FormatDetermination {
 			//  keying off only "compatible" is likely a false positive
 			//  since descriptions may be referring to other things.
 		}
-		return !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player") && !value.contains("blu-ray disc computer");
+		return !value.contains("blu-ray player") && !value.contains("blu-ray disc player") && !value.contains("blu-ray disc computer") && !value.contains("compatible");
+		// Order by the more specific phrases first, and save phrase compatible for last to reduce potential false positives here
 	}
 
 	private void getFormatFromSubjects(Record record, Set<String> result) {

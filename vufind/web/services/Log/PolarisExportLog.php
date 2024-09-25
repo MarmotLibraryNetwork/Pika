@@ -21,17 +21,17 @@ class PolarisExportLog extends Log_Admin {
 
 	public $pageTitle = 'Polaris Export Log';
 	public $logTemplate = 'polarisExportLog.tpl';
-	public $columnToFilterBy = 'numRecordsToProcess';
+	public $columnToFilterBy = null;
 
 	function launch(){
-		$remainingPolarisRecords = new Variable('remaining_polaris_records');
-		if (!empty($remainingPolarisRecords->value)){
-			global $interface;
-			$note       = "There are {$remainingPolarisRecords->value} changes to be processed from the Polaris API.";
-			$alertLevel = $remainingPolarisRecords->value > 500 ? 'alert-danger' : 'alert-warning';
-			$alert      = "<div class='alert $alertLevel'>$note</div>";
-			$interface->assign('alert', $alert);
-		}
+//		$remainingPolarisRecords = new Variable('remaining_polaris_records');
+//		if (!empty($remainingPolarisRecords->value)){
+//			global $interface;
+//			$note       = "There are {$remainingPolarisRecords->value} changes to be processed from the Polaris API.";
+//			$alertLevel = $remainingPolarisRecords->value > 500 ? 'alert-danger' : 'alert-warning';
+//			$alert      = "<div class='alert $alertLevel'>$note</div>";
+//			$interface->assign('alert', $alert);
+//		}
 
 		parent::launch();
 	}
