@@ -37,6 +37,11 @@ class MyAccount_Profile extends MyAccount {
 				}
 			}
 		}
+        if($ils === 'Polaris') {
+            $interface->assign('showLegalName', (bool)$configArray['Polaris']['showLegalName']);
+            $interface->assign('showPhone2', (bool)$configArray['Polaris']['showPhone2']);
+            $interface->assign('showPhone3', (bool)$configArray['Polaris']['showPhone3']);
+        }
 
 		if ($user) {
 
@@ -55,7 +60,7 @@ class MyAccount_Profile extends MyAccount {
 			$interface->assign('selectedUser', $patronId);
 			// Get Library Settings from the home library of the current user-account being displayed
 			$patronHomeLibrary = $patron->getHomeLibrary();
-			if ($patronHomeLibrary == null) {
+			if ($patronHomeLibrary === null) {
 				$canUpdateContactInfo                 = true;
 				$canUpdateAddress                     = true;
 				$showWorkPhoneInProfile               = false;
