@@ -41,6 +41,8 @@ class MyAccount_Profile extends MyAccount {
             $interface->assign('showLegalName', (bool)$configArray['Polaris']['showLegalName']);
             $interface->assign('showPhone2', (bool)$configArray['Polaris']['showPhone2']);
             $interface->assign('showPhone3', (bool)$configArray['Polaris']['showPhone3']);
+            $phone_carriers = $configArray['Carriers'];
+            $interface->assign('phoneCarriers', $phone_carriers);
         }
 
 		if ($user) {
