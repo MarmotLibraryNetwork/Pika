@@ -368,9 +368,9 @@ class MarcRecord extends IndexRecord {
 		$interface->assign('userIsStaff', $userIsStaff);
 
 		global $configArray;
-		if ($configArray['Catalog']['ils'] == 'Sierra'){
-			// Determine whether or not we need to show the Re-extract button
-			// (Right now, only appropriate for Sierra libraries)
+		if (in_array($configArray['Catalog']['ils'], ['Sierra', 'Polaris'])){
+			// Determine whether we need to show the Re-extract button
+			// (Right now, only appropriate for Sierra and Polaris libraries)
 			require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
 			$accountProfile   = new AccountProfile();
 			$ilsRecordSources = $accountProfile->fetchAll('id', 'recordSource');
