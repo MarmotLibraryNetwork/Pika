@@ -189,24 +189,17 @@ public class PolarisExportMain {
 		}
 
 		// Load translation maps for Polaris Extract
-		String mapFile = sitePath + "/translation_maps/circulationStatustoCode_map.properties";
-		File   curFile = new File(mapFile);
-		if (curFile.exists()) {
-			String mapName = curFile.getName().replace(".properties", "").replace("_map", "");
-			polarisExtractTranslationMaps.put(mapName, loadTranslationMap(curFile, mapName));
-		} else {
-			logger.error("circulationStatustoCode_map file not found.");
-			System.exit(0);
-		}
-
-		mapFile = sitePath + "/translation_maps/materialTypetoCode_map.properties";
-		curFile = new File(mapFile);
-		if (curFile.exists()) {
-			String mapName = curFile.getName().replace(".properties", "").replace("_map", "");
-			polarisExtractTranslationMaps.put(mapName, loadTranslationMap(curFile, mapName));
-		} else {
-			logger.error("materialTypetoCode_map file not found.");
-			System.exit(0);
+		String[] maps = {"circulationStatusToCode", "materialTypeToCode", "shelfLocationToCode"};
+		for (String map: maps) {
+			String mapFile = sitePath + "/translation_maps/"+ map + "_map.properties";
+			File   curFile = new File(mapFile);
+			if (curFile.exists()) {
+				String mapName = curFile.getName().replace(".properties", "").replace("_map", "");
+				polarisExtractTranslationMaps.put(mapName, loadTranslationMap(curFile, mapName));
+			} else {
+				logger.error("{} file not found.", mapFile);
+				System.exit(0);
+			}
 		}
 
 		String profileToLoad         = "ils";
@@ -1387,9 +1380,10 @@ public class PolarisExportMain {
 					JSONObject itemInfo       = entries.getJSONObject(0);
 					boolean    isDisplayInPAC = itemInfo.getBoolean("IsDisplayInPAC");
 					if (isDisplayInPAC) {
-						Long    parentBibId            = itemInfo.getLong("BibliographicRecordID");
-						boolean suppressLoggingWarning = itemInfo.has("Barcode") && itemInfo.getString("Barcode").startsWith("econtent");
-						Record  record                 = loadMarcRecordFromDisk(parentBibId, suppressLoggingWarning);
+						Long             parentBibId            = itemInfo.getLong("BibliographicRecordID");
+						RecordIdentifier identifier             = new RecordIdentifier(indexingProfile.sourceName, parentBibId.toString());
+						boolean          suppressLoggingWarning = itemInfo.has("Barcode") && itemInfo.getString("Barcode").startsWith("econtent");
+						Record           record                 = loadMarcRecordFromDisk(parentBibId, suppressLoggingWarning);
 						if (record != null) {
 							// Create new item record
 							DataField itemRecord = marcFactory.newDataField(indexingProfile.itemTag, ' ', ' ');
@@ -1402,6 +1396,7 @@ public class PolarisExportMain {
 							if (itemInfo.has("ShelfLocation")) {
 								String shelfLocation = itemInfo.getString("ShelfLocation");
 								if (shelfLocation != null) {
+									String shelfLocationCode = polarisExtractTranslationMaps.get("shelfLocationToCode").translateValue(shelfLocation, identifier);
 									itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.shelvingLocationSubfield, shelfLocation));
 								}
 							}
@@ -1415,7 +1410,7 @@ public class PolarisExportMain {
 							String circStatus = null;
 							if (itemInfo.has("CircStatus")) {
 								circStatus = itemInfo.getString("CircStatus");
-								String statusCode = polarisExtractTranslationMaps.get("circulationStatustoCode").translateValue(circStatus, new RecordIdentifier(indexingProfile.sourceName, parentBibId.toString()));
+								String statusCode = polarisExtractTranslationMaps.get("circulationStatusToCode").translateValue(circStatus, identifier);
 								itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.itemStatusSubfield, statusCode));
 							}
 							if (itemInfo.has("Barcode")) {
@@ -1449,7 +1444,7 @@ public class PolarisExportMain {
 							}
 							if (itemInfo.has("MaterialType")) {
 								String matType     = itemInfo.getString("MaterialType");
-								String matTypeCode = polarisExtractTranslationMaps.get("materialTypetoCode").translateValue(matType, new RecordIdentifier(indexingProfile.sourceName, parentBibId.toString()));
+								String matTypeCode = polarisExtractTranslationMaps.get("materialTypeToCode").translateValue(matType, identifier);
 								itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.iTypeSubfield, matTypeCode));
 							}
 							// Call does have entries for LastCircDate & DueDate
