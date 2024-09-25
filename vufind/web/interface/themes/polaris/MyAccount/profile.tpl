@@ -152,12 +152,12 @@
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <div class="col-xs-4"><label
-                                                        for="phone">{translate text='Primary Phone Number'}:</label>
+                                            <div class="col-xs-4">
+                                                <label for="phone">{translate text='Primary Phone Number'}:</label>
                                             </div>
                                             <div class="col-xs-8">
-                                                {if !$offline && $canUpdateContactInfo && ($ils != 'Horizon')}
-                                                    <input type="tel" name="phone" id="phone"
+                                                {if !$offline && $canUpdateContactInfo}
+                                                    <input type="tel" name="phone" id="phone" 
                                                            value="{$profile->phone|escape}" size="50" maxlength="75"
                                                            class="form-control">
                                                 {else}
@@ -207,8 +207,8 @@
                                                     <select name="pickupLocation" id="pickupLocation" class="form-control">
                                                         {if count($pickupLocations) > 0}
                                                             {foreach from=$pickupLocations item=location}
-                                                                <option value="{$location->code}"
-                                                                        {if $location->displayName|escape == $profile->preferredPickupLocationCode|escape}selected="selected"{/if}>{$location->displayName}</option>
+                                                                <option value="{$location->ilsLocationId}"
+                                                                        {if $location->ilsLocationId|escape == $profile->preferredPickupLocationId|escape}selected="selected"{/if}>{$location->displayName}</option>
                                                             {/foreach}
                                                         {else}
                                                             <option>placeholder</option>
