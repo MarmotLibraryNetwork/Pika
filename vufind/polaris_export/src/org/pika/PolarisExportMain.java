@@ -1387,8 +1387,9 @@ public class PolarisExportMain {
 					JSONObject itemInfo       = entries.getJSONObject(0);
 					boolean    isDisplayInPAC = itemInfo.getBoolean("IsDisplayInPAC");
 					if (isDisplayInPAC) {
-						Long   parentBibId = itemInfo.getLong("BibliographicRecordID");
-						Record record      = loadMarcRecordFromDisk(parentBibId);
+						Long    parentBibId            = itemInfo.getLong("BibliographicRecordID");
+						boolean suppressLoggingWarning = itemInfo.has("Barcode") && itemInfo.getString("Barcode").startsWith("econtent");
+						Record  record                 = loadMarcRecordFromDisk(parentBibId, suppressLoggingWarning);
 						if (record != null) {
 							// Create new item record
 							DataField itemRecord = marcFactory.newDataField(indexingProfile.itemTag, ' ', ' ');
@@ -1471,7 +1472,7 @@ public class PolarisExportMain {
 								logger.error("Error grouping and writing marc record for item {}, record Id {}", itemId, parentBibId);
 							}
 						} else {
-							if (itemInfo.has("Barcode") && itemInfo.getString("Barcode").startsWith("econtent")){
+							if (suppressLoggingWarning){
 								// Clearview ILS eContent items have barcode prefixes of "econtent"; ignore for logging
 								logger.debug("Failed to load probable suppressed eContent record {} with item id {}", parentBibId, itemId);
 							} else {
@@ -1840,6 +1841,9 @@ public class PolarisExportMain {
 	}
 
 	private static Record loadMarcRecordFromDisk(Long bibId) {
+		return loadMarcRecordFromDisk(bibId, false);
+	}
+	private static Record loadMarcRecordFromDisk(Long bibId, boolean suppressWarnings) {
 		Record record = null;
 		String individualFilename = getFileForIlsRecord(bibId.toString());
 		try {
@@ -1855,8 +1859,10 @@ public class PolarisExportMain {
 				}
 			}
 		}catch (FileNotFoundException fe){
-			logger.warn("Could not find MARC record at {} for {}", individualFilename, bibId);
-		} catch (Exception e) {
+            if (!suppressWarnings) {
+                logger.warn("Could not find MARC record at {} for {}", individualFilename, bibId);
+            }
+        } catch (Exception e) {
 			logger.error("Error reading data from ils file {}", individualFilename, e);
 		}
 		return record;
