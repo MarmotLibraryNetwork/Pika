@@ -1306,9 +1306,9 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         // Phones
         $user->phone = $patron_response->PhoneNumber;
         $user->phone_carrier_id = $patron_response->Phone1CarrierID;
-        $user->phone2 = $patron_response->PhoneNumber;
+        $user->phone2 = $patron_response->PhoneNumber2;
         $user->phone2_carrier_id = $patron_response->Phone2CarrierID;
-        $user->phone3 = $patron_response->PhoneNumber;
+        $user->phone3 = $patron_response->PhoneNumber2;
         $user->phone3_carrier_id = $patron_response->Phone3CarrierID;
         $user->txt_phone_id = $patron_response->TxtPhoneNumber;
 
@@ -2415,9 +2415,11 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $contact['LogonWorkstationID'] = $this->configArray['Polaris']['workstationId'];
         // patron updates
         // if a field isn't required and is not set, don't include in the update request
-        // PhoneVoice1 maps to get patrons PhoneNumber
-        if(isset($_REQUEST['phone'])) { $contact['PhoneVoice1'] = $_REQUEST['phone']; } 
-        if(isset($_REQUEST['email'])) $contact['EmailAddress'] = trim($_REQUEST['email']);
+        // PhoneVoice1 maps to get patrons PhoneNumber when "GET"ing the patron
+        if(isset($_REQUEST['phone'])) { $contact['PhoneVoice1'] = $_REQUEST['phone']; }
+        if(isset($_REQUEST['phone2'])) { $contact['PhoneVoice2'] = $_REQUEST['phone2']; }
+        if(isset($_REQUEST['phone3'])) { $contact['PhoneVoice3'] = $_REQUEST['phone3']; }
+        if(isset($_REQUEST['email'])) { $contact['EmailAddress'] = trim($_REQUEST['email']); }
         // patron address
         $address['AddressID'] = $patron->address_id;
         $address['StreetOne'] = $_REQUEST['address1'];
