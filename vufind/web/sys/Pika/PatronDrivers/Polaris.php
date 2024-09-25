@@ -501,8 +501,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     /***************** SELF REGISTRATION ****************/
     public function getSelfRegistrationFields(): array
     {
-        
-
         global $library;
         // get the valid home/pickup locations
         $l = new Location();
@@ -650,6 +648,48 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'required' => false,
         ];
         
+        if($this->configArray['Polaris']['showPhone2']) {
+            $fields[] = [
+                'property' => 'PhoneVoice2',
+                'type' => 'tel',
+                'label' => 'Secondary phone (XXX-XXX-XXXX)',
+                'description' => 'Your secondary phone number.',
+                'maxLength' => 20,
+                'required' => false,
+                'autocomplete' => 'tel-national',
+            ];
+
+            $fields[] = [
+                'property' => 'Phone2CarrierID',
+                'type' => 'enum',
+                'label' => 'Secondary Phone Carrier',
+                'description' => 'The carrier of your secondary phone.',
+                'values' => $carrier_options,
+                'required' => false,
+            ];
+        }
+
+        if($this->configArray['Polaris']['showPhone3']) {
+            $fields[] = [
+                'property' => 'PhoneVoice3',
+                'type' => 'tel',
+                'label' => 'Alternate phone (XXX-XXX-XXXX)',
+                'description' => 'Alternate phone number.',
+                'maxLength' => 20,
+                'required' => false,
+                'autocomplete' => 'tel-national',
+            ];
+
+            $fields[] = [
+                'property' => 'Phone3CarrierID',
+                'type' => 'enum',
+                'label' => 'Alternate Phone Carrier',
+                'description' => 'The carrier of your alternate phone.',
+                'values' => $carrier_options,
+                'required' => false,
+            ];
+        }
+        
         $fields[] = [
             'property' => 'EmailAddress',
             'type' => 'email',
@@ -666,6 +706,32 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'value' => 'Notifications Settings',
             'class'=> 'h3'
         ];
+        
+        // If multiple phone numbers are allowed, select the correct one for text messages
+        // If multiple phones aren't enabled, default to phone 1
+        if($this->configArray['Polaris']['showPhone2'] || $this->configArray['Polaris']['showPhone3']) {
+            $text_phone_options = [1 => 'Primary Phone'];
+            if($this->configArray['Polaris']['showPhone2']) {
+                $text_phone_options[2] = 'Secondary Phone';
+            }
+            if($this->configArray['Polaris']['showPhone3']) {
+                $text_phone_options[3] = 'Alternate Phone';
+            }
+            $fields[] = [
+                'property' => 'TxtPhoneNumber',
+                'type' => 'enum',
+                'label' => 'Phone number for text messages?',
+                'description' => 'Which phone number would you like to receive text messages on?',
+                'values' => $text_phone_options,
+                'required' => false,
+            ];
+        } else {
+            $fields[] = [
+                'property' => 'TxtPhoneNumber',
+                'type' => 'hidden',
+                'value' => '1',
+            ];
+        }
         
         $fields[] = [
             'property' => 'DeliveryOptionID',
@@ -684,6 +750,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'values' => $ereceipt_options,
             'required' => false,
         ];
+        
+        
 
         $fields[] = [
             'property' => 'credentials-info',
