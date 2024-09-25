@@ -64,7 +64,7 @@ function getIndexingUpdates(): array{
 					]
 				],
 
-				'2024.03.0_polaris-extract-table updates' => [
+				'2024.03.0_polaris-extract-table_updates' => [
 							'release'         => '2024.03.0',
 							'title'           => 'Create item to record table',
 							'description'     => 'Create item id to record id table; add suppressed date to ils_extract_info',
@@ -75,11 +75,26 @@ function getIndexingUpdates(): array{
 						  `itemId` INT UNSIGNED NOT NULL,
 						  `ilsId` INT UNSIGNED NOT NULL,
 						  PRIMARY KEY (`itemId`),
-						  UNIQUE INDEX `itemId_UNIQUE` (`itemId` ASC));'
+						  UNIQUE INDEX `itemId_UNIQUE` (`itemId` ASC));',
+						'ALTER TABLE `polaris_export_log` 
+							CHANGE COLUMN `numRemainingRecords` `numItemsUpdated` SMALLINT UNSIGNED NULL DEFAULT NULL ,
+							ADD COLUMN `numItemsDeleted` SMALLINT UNSIGNED NULL DEFAULT NULL AFTER `numItemsUpdated`;',
 					]
 				],
 
-				'2024.03.0_add_adult_literacy_format'     => [
+						'2024.03.0_ils_hold_sumary_update_time' => [
+							'release'         => '2024.03.0',
+							'title'           => 'Add update time to hold summary table.',
+							'description'     => 'Add update time column to ils_hold_sumary table.',
+							'continueOnError' => false,
+							'sql'             => [
+								'ALTER TABLE `ils_hold_summary` 
+									CHANGE COLUMN `numHolds` `numHolds` INT(11) UNSIGNED DEFAULT 0 ,
+									ADD COLUMN `updateTime` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() AFTER `numHolds`;',
+							]
+						],
+
+				'2024.03.0_add_adult_literacy_format' => [
 					'release'           => '2024.03.0',
 					'title'             => 'Add Adult Literacy Book Format',
 					'description'       => 'Add Adult Literacy Book format to translation maps',

@@ -6,7 +6,11 @@
 				<th>Records Added</th>
 				<th>Records Updated</th>
 				<th>Records Deleted</th>
-				<th>To Process</th><th>Processed</th><th>Errors</th><th>Remaining</th><th>Notes</th></tr>
+				<th>Errors</th>
+				<th>Items Updated/Added</th>
+				<th>Items Deleted</th>
+				<th>Marked To Process</th><th>Processed</th>
+				<th>Notes</th></tr>
 			</thead>
 			<tbody>
 			{foreach from=$logEntries item=logEntry}
@@ -19,10 +23,11 @@
 					<td>{$logEntry->numRecordsAdded}</td>
 					<td>{$logEntry->numRecordsUpdated}</td>
 					<td>{$logEntry->numRecordsDeleted}</td>
+					<td>{$logEntry->numErrors}</td>
+					<td>{$logEntry->numItemsUpdated}</td>
+					<td>{$logEntry->numItemsDeleted}</td>
 					<td>{$logEntry->numRecordsToProcess}</td>
 					<td>{$logEntry->numRecordsProcessed}</td>
-					<td>{$logEntry->numErrors}</td>
-					<td>{$logEntry->numRemainingRecords}</td>
 					<td><a class="btn btn-link" onclick="return Pika.Log.showNotes('{$logType}', '{$logEntry->id}');">Show Notes</a></td>
 				</tr>
 			{/foreach}
