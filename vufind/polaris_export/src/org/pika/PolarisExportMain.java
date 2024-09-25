@@ -1471,7 +1471,12 @@ public class PolarisExportMain {
 								logger.error("Error grouping and writing marc record for item {}, record Id {}", itemId, parentBibId);
 							}
 						} else {
-							logger.error("Failed to load record for bibID {} with item id {}, Item data : {}", parentBibId, itemId, itemInfo);
+							if (itemInfo.has("Barcode") && itemInfo.getString("Barcode").startsWith("econtent")){
+								// Clearview ILS eContent items have barcode prefixes of "econtent"; ignore for logging
+								logger.debug("Failed to load probable suppressed eContent record {} with item id {}", parentBibId, itemId);
+							} else {
+								logger.error("Failed to load record for bibID {} with item id {}, Item data : {}", parentBibId, itemId, itemInfo);
+							}
 						}
 					} else if (logger.isDebugEnabled()){
 						logger.debug("Did not add/update suppressed item {}", itemId);
