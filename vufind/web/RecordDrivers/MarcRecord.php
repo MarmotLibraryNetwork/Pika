@@ -1908,16 +1908,16 @@ class MarcRecord extends IndexRecord {
 		if ($this->numHolds != -1){
 			return $this->numHolds;
 		}
-		global $configArray;
-		global $timer;
-		if ($configArray['Catalog']['ils'] == 'Horizon'){
-			require_once ROOT_DIR . '/CatalogFactory.php';
-			global $pikaLogger;
-			$pikaLogger->debug('fetching num of Holds from MarcRecord');
-
-			$catalog        = CatalogFactory::getCatalogConnectionInstance();
-			$this->numHolds = $catalog->getNumHoldsFromRecord($this->getUniqueID());
-		}else{
+//		global $configArray;
+//		global $timer;
+//		if ($configArray['Catalog']['ils'] == 'Horizon'){
+//			require_once ROOT_DIR . '/CatalogFactory.php';
+//			global $pikaLogger;
+//			$pikaLogger->debug('fetching num of Holds from MarcRecord');
+//
+//			$catalog        = CatalogFactory::getCatalogConnectionInstance();
+//			$this->numHolds = $catalog->getNumHoldsFromRecord($this->getUniqueID());
+//		}else{
 			require_once ROOT_DIR . '/sys/Extracting/IlsHoldSummary.php';
 			$holdSummary        = new IlsHoldSummary();
 			$holdSummary->ilsId = $this->getUniqueID();
@@ -1926,9 +1926,9 @@ class MarcRecord extends IndexRecord {
 			}else{
 				$this->numHolds = 0;
 			}
-		}
+//		}
 
-		$timer->logTime('Loaded number of holds');
+//		$timer->logTime('Loaded number of holds');
 		return $this->numHolds;
 	}
 
