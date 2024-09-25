@@ -752,7 +752,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         ];
         
         
-
         $fields[] = [
             'property' => 'credentials-info',
             'type' => 'header',
@@ -1274,7 +1273,13 @@ class Polaris extends PatronDriverInterface implements DriverInterface
 
         // Names
         $user->fullname = $user->firstname . ' ' . $user->lastname;
-
+        // Legal name is Polaris specific
+        $user->legalFirstName = $patron_response->LegalNameFirst;
+        $user->legalMiddleName = $patron_response->LegalNameMiddle;
+        $user->legalLastName = $patron_response->LegalNameLast;
+        // Name preference for notices
+        $user->useLegalNameOnNotices = (bool)$patron_response->UseLegalNameOnNotices;
+        
         // Expiration
         // date can be returned in Microsoft format
         if ($this->isMicrosoftDate($patron_response->ExpirationDate)) {
@@ -1298,8 +1303,14 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $user->state = $patron_address->State;
         $user->zip = $patron_address->PostalCode;
 
-        // Phone
+        // Phones
         $user->phone = $patron_response->PhoneNumber;
+        $user->phone_carrier_id = $patron_response->Phone1CarrierID;
+        $user->phone2 = $patron_response->PhoneNumber;
+        $user->phone2_carrier_id = $patron_response->Phone2CarrierID;
+        $user->phone3 = $patron_response->PhoneNumber;
+        $user->phone3_carrier_id = $patron_response->Phone3CarrierID;
+        $user->txt_phone_id = $patron_response->TxtPhoneNumber;
 
         // Notices
         // Possible values in Polaris API
@@ -1310,8 +1321,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         //5 - Phone 3
         //6 - Fax
         //8 - Text Message
-        // todo: for now stuff these into a Pika accepted code- Mail, Telephone, E-mail
-        
         $user->noticePreferenceId = $patron_response->DeliveryOptionID;
         
         switch ($patron_response->DeliveryOptionID) {
@@ -2394,6 +2403,10 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     protected function updatePatronContact(User $patron): array
     {
         // /public/patron/{PatronBarcode}
+
+        $this->_deleteCachePatronObject($patron->ilsUserId);
+        $patron->clearCache();
+        
         $contact = [];
         
         // required credentials
@@ -2431,6 +2444,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             }
             return $errors;
         }
+        $errors[] = "Your contact information has been updated successfully.";
         return $errors;
     }
 
@@ -2448,6 +2462,9 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     protected function updatePatronUsername(User $patron): array
     {
         // /public/patron/{PatronBarcode}/username/{NewUsername}
+        $this->_deleteCachePatronObject($patron->ilsUserId);
+        $patron->clearCache();
+        
         // update patron username
         $username = trim($_REQUEST['alternate_username']);
         if (empty($username)) {
@@ -2521,6 +2538,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     }
 
     protected function updateNotificationsPreferences($patron) {
+        $this->_deleteCachePatronObject($patron->ilsUserId);
+        $patron->clearCache();
         
         $notification_preferences = [];
         // required credentials
