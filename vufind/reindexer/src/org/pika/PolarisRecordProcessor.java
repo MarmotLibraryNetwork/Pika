@@ -88,24 +88,34 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, RecordIdentifier identifier) {
-		// Shelf location will be a combination of organization and collection
-		String locationCode = null;
+		// Shelf location will be a combination of organization, shelf-location and collection
+		String translatedShelfLocation = "";
+		String collection              = itemInfo.getCollection();
+		String locationCode            = itemInfo.getLocationCode();
+		String shelfLocation           = null;
 		if (itemField != null) {
-			locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
+			shelfLocation = getItemSubfieldData(shelvingLocationSubfield, itemField);
 		}
-		String collection = itemInfo.getCollection();
-		if (locationCode == null || locationCode.isEmpty()/* || locationCode.equals("none")*/){
-			return collection;
-		}else {
+		if (locationCode != null && !locationCode.isEmpty()){
 			String organization = translateValue("organization", locationCode, identifier);
-			if (organization == null || organization.isEmpty()){
-				return collection;
-			} else if (collection != null && !collection.isEmpty()) {
-				return organization + " " + collection;
-			} else {
-				return organization;
+			translatedShelfLocation += organization;
+		}
+		if (shelfLocation != null && !shelfLocation.isEmpty()){
+			String translation = translateValue("shelf_location", shelfLocation, identifier);
+			if (translation != null && !translation.isEmpty()/* && !translation.equals(shelfLocation)*/) {
+				if (!translatedShelfLocation.isEmpty()) {
+					translatedShelfLocation += " ";
+				}
+				translatedShelfLocation += translation;
 			}
 		}
+		if (collection != null && !collection.isEmpty()) {
+			if (!translatedShelfLocation.isEmpty()) {
+				translatedShelfLocation += " ";
+			}
+			translatedShelfLocation += collection;
+		}
+		return translatedShelfLocation;
 	}
 
 //	protected String getItemStatus(DataField itemField, RecordIdentifier recordIdentifier) {
