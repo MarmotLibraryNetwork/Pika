@@ -391,7 +391,9 @@ class BookCoverProcessor {
 				$_GET['upc'] = current($_GET['upc']);
 			}
 			//Strip any leading zeroes
-			$this->upc = ltrim(preg_replace('/[^0-9xX]/', '', $_GET['upc']), '0');
+			//$this->upc = ltrim(preg_replace('/[^0-9xX]/', '', $_GET['upc']), '0');
+			// Stripping the leading zeroes results in a generic cover image from Syndetics for Clearview Library District
+			$this->upc = preg_replace('/[^0-9xX]/', '', $_GET['upc']);
 		}
 
 		if (isset($_GET['issn'])){
@@ -1360,19 +1362,22 @@ class BookCoverProcessor {
 		}
 
 		$url = empty($this->configArray['Syndetics']['url']) ? 'http://syndetics.com' : $this->configArray['Syndetics']['url'];
-		$url .= "/index.aspx?type=xw12&pagename={$size}&client={$key}";
+		//$url .= "/index.aspx?type=xw12&pagename={$size}&client={$key}"; // type parameter might not be needed any longer
+		$url .= "/index.aspx?pagename={$size}&client={$key}";
 		if (!empty($this->isn)){
-			$url .= "&isbn=" . $this->isn;
+			$url .= '&isbn=' . $this->isn;
 		}
 		if (!empty($this->upc)){
-			$url .= "&upc=" . $this->upc;
+			$url .= '&upc=' . $this->upc;
 		}
 		if (!empty($this->issn)){
-			$url .= "&issn=" . $this->issn;
+			$url .= '&issn=' . $this->issn;
 		}
 		if ($this->doCoverLogging){
 			$this->logger->debug("Syndetics url: $url");
 		}
+		//TODO: syndetics can do oclc number
+		// eg. https://secure.syndetics.com/index.aspx?isbn=/MC.GIF&client=[CLIENT]&oclc=945931618
 		return $this->processImageURL($url);
 	}
 
