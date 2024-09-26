@@ -250,12 +250,11 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         // barcode might actually be username so well "validate" the patron first to make sure we have a good
         // barcode.
         $r = $this->validatePatron($barcode, $pin);
-        $valid_barcode = $r->PatronBarcode;
-        if ($valid_barcode === null) {
+        if($r === null || !isset($r->PatronBarcode)) {
             return null;
         }
-
-        $patron_ils_id = $this->getPatronIlsId($valid_barcode);
+        $valid_barcode = $r->PatronBarcode;
+        $patron_ils_id = $r->PatronID;
         //check cache for patron secret
         if (!$patron_ils_id || !$this->_getCachePatronSecret($patron_ils_id)) {
             $auth = $this->authenticatePatron($valid_barcode, $pin, $validatedViaSSO);
@@ -271,6 +270,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $patron_pw = $patron->getPassword();
         if (!isset($patron_pw) || $patron_pw !== $pin) {
             $patron->updatePassword($pin);
+            $patron->update();
         }
 
         // if the barcode doesn't match valid_barcode consider it a username
@@ -311,7 +311,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $c = new Curl();
         $c->setOpts($c_opts);
         $c->get($request_url);
-        // todo: log header from curl object
+        
         if ($c->error || $c->httpStatusCode !== 200) {
             $this->logger->error(
                 'Curl error: ' . $c->errorMessage,
@@ -426,31 +426,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     }
 
     /**
-     * Get a patrons secret from cache
-     *
-     * @param $patron_ils_id
-     * @return false|string
-     */
-    protected function _getCachePatronSecret($patron_ils_id)
-    {
-        $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret';
-        $key = $this->cache->get($patron_secret_cache_key, false);
-        if ($key) {
-            $this->logger->info('Patron secret found in cache.');
-            return $key;
-        } else {
-            $this->logger->info('Patron secret not found in cache.');
-            return false;
-        }
-    }
-
-    protected function _deleteCachePatronSecret($patron_ils_id)
-    {
-        $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret';
-        return $this->cache->delete($patron_secret_cache_key);
-    }
-
-    /**
      * Authenticate a patron and return the patron id and patron access secret key.
      *
      * @param string $barcode
@@ -553,6 +528,10 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'autocomplete' => 'family-name',
         ];
 
+        if($this->configArray['Polaris']['showLegalName']) {
+            
+        }
+        
         $fields[] = [
             'property' => 'Birthdate',
             'type' => 'date',
@@ -1114,20 +1093,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     /******************** Errors ********************/
 
     /**
-     * Add patrons secret to cache
-     *
-     * @param $patron_ils_id
-     * @param $patron_secret
-     * @return bool
-     */
-    protected function _setCachePatronSecret($patron_ils_id, $patron_secret): bool
-    {
-        $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret';
-        $expires = 60 * 60 * 23;
-        return $this->cache->set($patron_secret_cache_key, $patron_secret, $expires);
-    }
-
-    /**
      * Check if user exists in database, create user if needed, update user if needed and return User object.
      *
      * @param $ils_id
@@ -1138,7 +1103,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     {
         // get user from cache if cache object exists
         if ($user = $this->_getCachePatronObject($ils_id)) {
-            //return $user;
+            return $user;
         }
 
         $create_user = false;
@@ -1161,7 +1126,12 @@ class Polaris extends PatronDriverInterface implements DriverInterface
 
         // get the basic user data from the Polaris API
         $request_url = $this->ws_url . '/patron/' . $barcode . '/basicdata?addresses=true';
-        $patron_access_secret = $this->_getCachePatronSecret($ils_id);
+        if(!$patron_access_secret = $this->_getCachePatronSecret($ils_id)) {
+            $pin = $user->getPassword();
+            $auth = $this->authenticatePatron($barcode, $pin);
+            $patron_access_secret = $auth->AccessSecret;
+        }
+        
         $hash = $this->_createHash('GET', $request_url, $patron_access_secret);
 
         $headers = [
@@ -1535,19 +1505,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         }
     }
 
-    /**
-     * Save a user object to cache
-     *
-     * @param User $patron
-     * @return bool
-     */
-    protected function _setCachePatronObject(User $patron): bool
-    {
-        $patron_object_cache_key = 'patronilsid' . $patron->ilsUserId . 'object';
-        $expires = 30;
-        return $this->cache->set($patron_object_cache_key, $patron, $expires);
-    }
-
 
     /**
      * Executes a patron-specific HTTP request with the specified method, URL, and request body.
@@ -1787,9 +1744,32 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     }
 
     /******************** Utilities ********************/
-    // Returns list of system, library and branch level organizations. The list can be filtered by system,
-    // library or branch.
-
+    
+    /** Caching **/
+    /**
+     * Save a user object to cache
+     *
+     * @param User $patron
+     * @return bool
+     */
+    protected function _setCachePatronObject(User $patron): bool
+    {
+        $patron_object_cache_key = $this->cache->makePatronKey('patron', $patron->ilsUserId);
+        $expires = 30;
+        return $this->cache->set($patron_object_cache_key, $patron, $expires);
+    }
+    
+    /**
+     * Remove a patron object from cache
+     *
+     * @param $patron_ils_id
+     * @return bool
+     */
+    protected function _deleteCachePatronObject($patron_ils_id)
+    {
+        $patron_object_cache_key = $this->cache->makePatronKey('patron', $patron_ils_id);
+        return $this->cache->delete($patron_object_cache_key);
+    }
     /**
      * Get a user object from cache
      *
@@ -1799,15 +1779,60 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     protected function _getCachePatronObject($patron_ils_id)
     {
         $patron_object_cache_key = $this->cache->makePatronKey('patron', $patron_ils_id);
-        // $patron_object_cache_key = 'patronilsid' . $patron_ils_id . 'object';
         $patron = $this->cache->get($patron_object_cache_key, false);
-        if ($patron) {
+        if($patron !== false) {
             $this->logger->info('Patron object found in cache.');
             return $patron;
         } else {
             $this->logger->info('Patron object not found in cache.');
             return false;
         }
+    }
+
+    /**
+     * Get a patrons secret from cache
+     *
+     * @param $patron_ils_id
+     * @return false|string
+     */
+    protected function _getCachePatronSecret($patron_ils_id)
+    {
+        return false;
+        $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret';
+        $key = $this->cache->get($patron_secret_cache_key, false);
+        if($key !== false) {
+            $this->logger->info('Patron secret found in cache.');
+            return $key;
+        } else {
+            $this->logger->info('Patron secret not found in cache.');
+            return false;
+        }
+    }
+
+    /**
+     * Remove patrons secret from cache
+     *
+     * @param $patron_ils_id
+     * @return bool
+     */
+    protected function _deleteCachePatronSecret($patron_ils_id): bool
+    {
+        $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret';
+        return $this->cache->delete($patron_secret_cache_key);
+    }
+
+    /**
+     * Add patrons secret to cache
+     *
+     * @param $patron_ils_id
+     * @param $patron_secret
+     * @return bool
+     */
+    protected function _setCachePatronSecret($patron_ils_id, $patron_secret): bool
+    {
+        $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret';
+        $expires = 60 * 60 * 23;
+        return $this->cache->set($patron_secret_cache_key, $patron_secret, $expires);
     }
 
     /**
@@ -2535,6 +2560,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         // success update the pin in the database
         $patron->setPassword($new_pin);
         $patron->update();
+        
         $errors[] = 'Your ' . translate('pin') . ' was updated successfully.';
         return $errors;
     }
@@ -2713,19 +2739,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $hash = $this->_createHash($method, $url);
         $c = $this->_doRequest($hash, $method, $url, $body, $extra_headers);
         return $c;
-    }
-
-    /**
-     * Remove a patron object from cache
-     *
-     * @param $patron_ils_id
-     * @return bool
-     */
-    protected function _deleteCachePatronObject($patron_ils_id)
-    {
-        $patron_object_cache_key = $this->cache->makePatronKey('patron', $patron_ils_id);
-        //$patron_object_cache_key = 'patronilsid' . $patron_ils_id . 'object';
-        return $this->cache->delete($patron_object_cache_key);
     }
 
     protected array $polaris_errors = [
