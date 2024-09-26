@@ -1126,7 +1126,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
 
         // get the basic user data from the Polaris API
         $request_url = $this->ws_url . '/patron/' . $barcode . '/basicdata?addresses=true';
-        if(!$patron_access_secret = $this->_getCachePatronSecret($ils_id)) {
+        $patron_access_secret = $this->_getCachePatronSecret($ils_id);
+        if($patron_access_secret === false) {
             $pin = $user->getPassword();
             $auth = $this->authenticatePatron($barcode, $pin);
             $patron_access_secret = $auth->AccessSecret;
