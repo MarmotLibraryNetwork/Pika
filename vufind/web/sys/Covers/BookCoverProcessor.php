@@ -1056,7 +1056,7 @@ class BookCoverProcessor {
 			$this->upc  = null;
 			$this->issn = null;
 
-			//Try best ISBN from search index
+			//Try the best ISBN from search index
 			$isbn = $this->groupedWork->getCleanISBN();
 			if (!empty($isbn)){
 				$this->isn = $isbn;
@@ -1069,13 +1069,14 @@ class BookCoverProcessor {
 			// Try UPCs from search index
 			if ($UPCs = $this->groupedWork->getUPCs()){
 				foreach ($UPCs as $upc){
-					$this->upc = ltrim($upc, '0');
+					$this->upc = $upc;
 					if ($this->getCoverFromProvider()){
 						return true;
 					}
-					//If we tried trimming the leading zeroes, also try without.
+					// Try with leading zeroes first now, then try without.
+					// (the problem is the syndetics will return a generic cover for trimmed upcs)
+					$this->upc = ltrim($upc, '0');
 					if ($this->upc !== $upc){
-						$this->upc = $upc;
 						if ($this->getCoverFromProvider()){
 							return true;
 						}
@@ -1266,13 +1267,14 @@ class BookCoverProcessor {
 		$UPCs = $driver->getCleanUPCs();
 		if (!empty($UPCs)){
 			foreach ($UPCs as $upc){
-				$this->upc = ltrim($upc, '0');
+				$this->upc = $upc;
 				if ($this->getCoverFromProvider()){
 					return true;
 				}
-				//If we tried trimming the leading zeroes, also try without.
+				// Try with leading zeroes first now, then try without.
+				// (the problem is the syndetics will return a generic cover for trimmed upcs)
+				$this->upc = ltrim($upc, '0');
 				if ($this->upc !== $upc){
-					$this->upc = $upc;
 					if ($this->getCoverFromProvider()){
 						return true;
 					}
