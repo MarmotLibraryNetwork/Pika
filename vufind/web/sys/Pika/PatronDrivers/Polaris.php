@@ -1955,7 +1955,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             }
             if ($hold->StatusID === 6) { // ready for pickup
                 $availableHolds[] = $h;
-            } elseif ($hold->StatusID !== 16) { // status 16 is canceled items. don't show unless ILL request
+            } elseif ($hold->StatusID !== 1 && $hold->StatusID !== 8 && $hold->StatusID !== 9  && $hold->StatusID !== 16) { // status 16 is canceled items. don't show unless ILL request
                 $unavailableHolds[] = $h;
             }
         } // end foreach
