@@ -645,7 +645,7 @@ public class RecordGrouperMain {
 
 			// Main Record Grouping Processing
 			if (indexingProfileToRun == null || indexingProfileToRun.equalsIgnoreCase("overdrive")) {
-//				groupOverDriveRecords(pikaConn, econtentConnection, explodeMarcsOnly);
+				groupOverDriveRecords(pikaConn, econtentConnection, explodeMarcsOnly);
 			}
 
 			ArrayList<IndexingProfile> indexingProfiles = null;
