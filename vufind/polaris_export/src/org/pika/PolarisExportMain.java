@@ -880,7 +880,7 @@ public class PolarisExportMain {
 						String identifier  = groupAndWriteTheMarcRecord(newRecord, bibId);
 						long   processedId = Long.parseLong(identifier);
 
-						logger.debug("Processed {}", processedId);
+						logger.debug("Processed {}", identifier);
 						return processedId;
 					}
 				} catch (MarcException e) {
@@ -1409,7 +1409,7 @@ public class PolarisExportMain {
 							}
 							String circStatus = null;
 							if (itemInfo.has("CircStatus")) {
-								circStatus = itemInfo.getString("CircStatus");
+								circStatus = itemInfo.getString("CircStatus").trim();
 								String statusCode = polarisExtractTranslationMaps.get("circulationStatusToCode").translateValue(circStatus, identifier);
 								itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.itemStatusSubfield, statusCode));
 							}
