@@ -88,13 +88,12 @@ abstract class Record_Record extends Action {
 			$recordId = $this->sourceAndId->getRecordId();
 			switch ($configArray['Catalog']['ils']){
 				case 'Sierra':
-					$catalogConnection  = CatalogFactory::getCatalogConnectionInstance(); // This will use the $activeRecordIndexingProfile to get the catalog connector
-					$classicOpacBaseURL = $catalogConnection->accountProfile->vendorOpacUrl;
-					if (!empty($classicOpacBaseURL)){
-						$classicId = substr($recordId, 1, strlen($recordId) - 2);
-						$interface->assign('classicId', $classicId);
+					$catalogConnection = CatalogFactory::getCatalogConnectionInstance(); // This will use the $activeRecordIndexingProfile to get the catalog connector
+					if (!empty($catalogConnection->accountProfile->vendorOpacUrl)){
 						global $searchSource;
-						$searchLocation = Location::getSearchLocation($searchSource);
+						$classicOpacBaseURL = $catalogConnection->accountProfile->vendorOpacUrl;
+						$classicId          = substr($recordId, 1, strlen($recordId) - 2);
+						$searchLocation     = Location::getSearchLocation($searchSource);
 						if (!empty($searchLocation->ilsLocationId)){
 							$sierraOpacScope = $searchLocation->ilsLocationId;
 						}else{
@@ -105,10 +104,17 @@ abstract class Record_Record extends Action {
 					}
 
 					break;
-				case 'Koha':
+				case 'Polaris':
+					$catalogConnection = CatalogFactory::getCatalogConnectionInstance(); // This will use the $activeRecordIndexingProfile to get the catalog connector
+					if (!empty($catalogConnection->accountProfile->vendorOpacUrl)){
+						$classicOpacBaseURL = $catalogConnection->accountProfile->vendorOpacUrl;
+						$interface->assign('classicUrl', rtrim($classicOpacBaseURL, '/') . '/search/title.aspx?ctx=1.1033.0.0.6&pos=1&cn=' . $recordId);
+						// Based on Clearview's Polaris OPAC
+					}
+					break;
+					case 'Koha':
 					$catalogConnection  = CatalogFactory::getCatalogConnectionInstance(); // This will use the $activeRecordIndexingProfile to get the catalog connector
 					$classicOpacBaseURL = $catalogConnection->accountProfile->vendorOpacUrl;
-					$interface->assign('classicId', $recordId);
 					$interface->assign('classicUrl', $classicOpacBaseURL . '/cgi-bin/koha/opac-detail.pl?biblionumber=' . $recordId);
 					$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/cgi-bin/koha/catalogue/detail.pl?biblionumber=' . $recordId);
 					break;
