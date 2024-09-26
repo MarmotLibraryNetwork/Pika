@@ -264,7 +264,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             $patron_ils_id = $auth->PatronID;
         }
 
-        $patron = $this->getPatron($patron_ils_id, $valid_barcode);
+        $patron = $this->getPatron($patron_ils_id, $valid_barcode, $pin);
 
         // check for password update
         $patron_pw = $patron->getPassword();
@@ -1097,9 +1097,10 @@ class Polaris extends PatronDriverInterface implements DriverInterface
      *
      * @param $ils_id
      * @param $barcode
+     * @param $pin
      * @return User|null
      */
-    protected function getPatron($ils_id, $barcode): ?User
+    protected function getPatron($ils_id, $barcode, $pin): ?User
     {
         // get user from cache if cache object exists
         if ($user = $this->_getCachePatronObject($ils_id)) {
@@ -1128,8 +1129,10 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $request_url = $this->ws_url . '/patron/' . $barcode . '/basicdata?addresses=true';
         $patron_access_secret = $this->_getCachePatronSecret($ils_id);
         if($patron_access_secret === false) {
-            $pin = $user->getPassword();
             $auth = $this->authenticatePatron($barcode, $pin);
+            if($auth === null) {
+                return null;
+            }
             $patron_access_secret = $auth->AccessSecret;
         }
         
