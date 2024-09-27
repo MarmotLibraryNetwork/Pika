@@ -738,7 +738,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'property' => 'UserName',
             'type' => 'text',
             'label' => 'Username',
-            'description' => 'Set an optional username.',
+            'description' => "All usernames must begin with a letter (a-z, A-Z), can contain letters, numbers, and the special characters - _ . @ <br>Spaces are not allowed, and special characters can not be contiguous.)",
             'maxLength' => 20,
             'required' => false,
             'autocomplete' => 'username',
