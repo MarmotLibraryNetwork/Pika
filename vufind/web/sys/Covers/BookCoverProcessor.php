@@ -464,6 +464,7 @@ class BookCoverProcessor {
 	 * @return bool
 	 */
 	function processImageURL($url, $cache = true, $attemptRefetch = true){
+		//TODO: cache URLs so that for grouped works we don't uselessly re-try URLs that have already been tried
 		if ($this->doCoverLogging){
 			$this->logger->info("Processing $url");
 		}
