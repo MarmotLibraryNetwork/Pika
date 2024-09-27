@@ -51,8 +51,13 @@
                                     <div class="col-xs-8">{$profile->fullname|escape}</div>
                                 </div>
                                 {if !$offline}
+                                    <div class="form-group">
+                                        <div class="col-xs-4"><strong>{translate text='Full Legal Name'}:</strong></div>
+                                        <div class="col-xs-8">{$profile->legalFullName|escape}</div>
+                                    </div>
+                                {/if}
+                                {if !$offline}
                                     {if $barcodePin}
-                                        {* Only Display Barcode when the barcode is used as a username and not a password *}
                                         <div class="form-group">
                                             <div class="col-xs-4">
                                                 <strong>{translate text='Library Card Number'}:</strong>
@@ -167,7 +172,7 @@
                                         </div>
                                         <div class="form-group">
                                         <div class="col-xs-4">
-                                            <label for="Phone2">Primary Phone Carrier:</label>
+                                            <label for="Phone1CarrierID">{translate text='Primary Phone Carrier'}:</label>
                                         </div>
                                         {if $canUpdateContactInfo}
                                         <div class="col-xs-8">
@@ -187,7 +192,7 @@
                                         {if $showPhone2}
                                             <div class="form-group">
                                                 <div class="col-xs-4">
-                                                   <label for="Phone2">Secondary Phone number:</label>
+                                                   <label for="Phone2">{translate text='Secondary Phone Number'}:</label>
                                                 </div>
                                                 <div class="col-xs-8">{if $canUpdateContactInfo}
                                                         <input name="Phone2" id="Phone2"
@@ -198,7 +203,7 @@
                                             </div>
                                             <div class="form-group">
                                                 <div class="col-xs-4">
-                                                    <label for="Phone2">Secondary Phone Carrier:</label>
+                                                    <label for="Phone2">{translate text='Secondary Phone Carrier'}:</label>
                                                 </div>
                                                 {if $canUpdateContactInfo}
                                                     <div class="col-xs-8">
@@ -219,7 +224,7 @@
                                         {if $showPhone3}
                                             <div class="form-group">
                                                 <div class="col-xs-4">
-                                                    <label for="Phone3">Alternate Phone number:</label>
+                                                    <label for="Phone3">{translate text='Alternate Phone Number'}:</label>
                                                 </div>
                                                 <div class="col-xs-8">{if $canUpdateContactInfo}
                                                         <input name="Phone3" id="Phone3"
@@ -230,7 +235,7 @@
                                             </div>
                                             <div class="form-group">
                                                 <div class="col-xs-4">
-                                                    <label for="Phone2">Alternate Phone Carrier:</label>
+                                                    <label for="Phone3CarrierID">{translate text='Alternate Phone Carrier'}:</label>
                                                 </div>
                                                 {if $canUpdateContactInfo}
                                                     <div class="col-xs-8">

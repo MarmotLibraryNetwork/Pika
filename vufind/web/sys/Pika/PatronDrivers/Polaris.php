@@ -223,6 +223,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     }
 
     /******************** Authentication ********************/
+    
     /**
      * patronLogin
      *
@@ -265,7 +266,10 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         }
 
         $patron = $this->getPatron($patron_ils_id, $valid_barcode, $pin);
-
+        if($patron === null) {
+            return null;
+        }
+        
         // check for password update
         $patron_pw = $patron->getPassword();
         if (!isset($patron_pw) || $patron_pw !== $pin) {
@@ -354,60 +358,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         return base64_encode($hash);
     }
 
-    /**
-     * Check Polaris web service return for an api error
-     *
-     * @param array|object $res Return from web service as array or object
-     * @return array|false Returns array with two elements; ErrorMessage and PAPIErrorCode or false if no error.
-     */
-    protected function _isPapiError($res)
-    {
-        if (is_array($res)) {
-            if ($res['PAPIErrorCode'] < 0) {
-                if (empty($res['ErrorMessage']) && in_array(
-                        (string)$res['PAPIErrorCode'],
-                        $this->polaris_errors,
-                        false,
-                    )) {
-                    $res['ErrorMessage'] = $this->polaris_errors[(string)$res['PAPIErrorCode']];
-                }
-                return [
-                    'ErrorMessage' => $res['ErrorMessage'],
-                    'PAPIErrorCode' => $res['PAPIErrorCode'],
-                ];
-            }
-        } elseif (is_object($res)) {
-            if ($res->PAPIErrorCode < 0) {
-                if (empty($res->ErrorMessage) && in_array((string)$res->PAPIErrorCode, $this->polaris_errors, false)) {
-                    $error_message = $this->polaris_errors[(string)$res->PAPIErrorCode];
-                } else {
-                    $error_message = $res->ErrorMessage;
-                }
-                return [
-                    'ErrorMessage' => $error_message,
-                    'PAPIErrorCode' => $res->PAPIErrorCode,
-                ];
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Accepts return from _isPapiError and writes the error to log
-     *
-     * @param array $e
-     * @return void
-     */
-    protected function _logPapiError($e): void
-    {
-        if (is_array($e['ErrorMessage'])) {
-            $error_message = implode("\n", $e['ErrorMessage']);
-            $this->logger->error('Polaris API error: ' . $error_message, $e);
-        } else {
-            $this->logger->error('Polaris API error: ' . $e['ErrorMessage'], $e);
-        }
-    }
-
+    
     /**
      * Get a patrons ILS patron id
      *
@@ -505,7 +456,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'Your first name',
             'maxLength' => 50,
             'required' => true,
-            'autocomplete' => 'given-name',
+            'autocomplete' => 'given-name'
         ];
 
         $fields[] = [
@@ -515,7 +466,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'Your middle name or initial',
             'maxLength' => 30,
             'required' => false,
-            'autocomplete' => 'additional-name',
+            'autocomplete' => 'additional-name'
         ];
 
         $fields[] = [
@@ -525,11 +476,56 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'Your last name (surname)',
             'maxLength' => 40,
             'required' => true,
-            'autocomplete' => 'family-name',
+            'autocomplete' => 'family-name'
         ];
 
         if($this->configArray['Polaris']['showLegalName']) {
+            $fields[] = [
+                'property' => 'personal-info',
+                'type' => 'header',
+                'value' => 'Legal Name',
+                'class'=> 'h4',
+                'description' => 'If the name on your identification is different than specified above, please indicate the full name on your identification. If you wish to use the name on your identification for receiving print or phone notices from the library, please check the box below.',
+                'showDescription' => true
+            ];
             
+            $fields[] = [
+                'property' => 'LegalNameFirst',
+                'type' => 'text',
+                'label' => 'Legal First name',
+                'description' => 'Your legal first name',
+                'maxLength' => 50,
+                'required' => false,
+                'autocomplete' => 'given-name'
+            ];
+
+            $fields[] = [
+                'property' => 'LegalNameMiddle',
+                'type' => 'text',
+                'label' => 'Legal Middle name',
+                'description' => 'Your legal middle name or initial',
+                'maxLength' => 30,
+                'required' => false,
+                'autocomplete' => 'additional-name'
+            ];
+
+            $fields[] = [
+                'property' => 'LegalNameLast',
+                'type' => 'text',
+                'label' => 'Legal Last name',
+                'description' => 'Your legal last name (surname)',
+                'maxLength' => 40,
+                'required' => false,
+                'autocomplete' => 'family-name'
+            ];
+
+            $fields[] = [
+                'property' => 'UseLegalNameOnNotices',
+                'type' => 'checkbox',
+                'label' => 'Use legal name on notices?',
+                'description' => 'Check this box if you wish to use legal name on notices.',
+                'required' => false
+            ];
         }
         
         $fields[] = [
@@ -539,7 +535,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'Date of birth',
             'maxLength' => 10,
             'required' => true,
-            'autocomplete' => 'bday',
+            'autocomplete' => 'bday'
         ];
 
         $fields[] = [
@@ -548,7 +544,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'label' => 'Home Library/Preferred pickup location',
             'description' => 'Your home library and preferred pickup location.',
             'values' => $homeLocations,
-            'required' => true,
+            'required' => true
         ];
 
         $fields[] = [
@@ -565,7 +561,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'Mailing Address line 1',
             'maxLength' => 40,
             'required' => true,
-            'autocomplete' => 'street-address',
+            'autocomplete' => 'street-address'
         ];
 
         $fields[] = [
@@ -575,7 +571,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'Mailing Address line 2',
             'maxLength' => 40,
             'required' => false,
-            'autocomplete' => 'street-address',
+            'autocomplete' => 'street-address'
         ];
 
         $fields[] = [
@@ -585,7 +581,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'The city you receive mail in.',
             'maxLength' => 128,
             'required' => true,
-            'autocomplete' => 'address-level2',
+            'autocomplete' => 'address-level2'
         ];
 
         $fields[] = [
@@ -595,7 +591,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'The state you receive mail in.',
             'maxLength' => 20,
             'required' => true,
-            'autocomplete' => 'address-level1',
+            'autocomplete' => 'address-level1'
         ];
 
         $fields[] = [
@@ -605,7 +601,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'The ZIP code for your mail.',
             'maxLength' => 16,
             'required' => true,
-            'autocomplete' => 'postal-code',
+            'autocomplete' => 'postal-code'
         ];
 
         $fields[] = [
@@ -615,7 +611,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'Your primary phone number.',
             'maxLength' => 20,
             'required' => false,
-            'autocomplete' => 'tel-national',
+            'autocomplete' => 'tel-national'
         ];
 
         $fields[] = [
@@ -624,7 +620,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'label' => 'Primary Phone Carrier',
             'description' => 'The carrier of your primary phone.',
             'values' => $carrier_options,
-            'required' => false,
+            'required' => false
         ];
         
         if($this->configArray['Polaris']['showPhone2']) {
@@ -635,7 +631,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 'description' => 'Your secondary phone number.',
                 'maxLength' => 20,
                 'required' => false,
-                'autocomplete' => 'tel-national',
+                'autocomplete' => 'tel-national'
             ];
 
             $fields[] = [
@@ -644,7 +640,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 'label' => 'Secondary Phone Carrier',
                 'description' => 'The carrier of your secondary phone.',
                 'values' => $carrier_options,
-                'required' => false,
+                'required' => false
             ];
         }
 
@@ -656,7 +652,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 'description' => 'Alternate phone number.',
                 'maxLength' => 20,
                 'required' => false,
-                'autocomplete' => 'tel-national',
+                'autocomplete' => 'tel-national'
             ];
 
             $fields[] = [
@@ -665,7 +661,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 'label' => 'Alternate Phone Carrier',
                 'description' => 'The carrier of your alternate phone.',
                 'values' => $carrier_options,
-                'required' => false,
+                'required' => false
             ];
         }
         
@@ -676,7 +672,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'Your email address',
             'maxLength' => 128,
             'required' => false,
-            'autocomplete' => 'email',
+            'autocomplete' => 'email'
         ];
 
         $fields[] = [
@@ -734,7 +730,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $fields[] = [
             'property' => 'credentials-info',
             'type' => 'header',
-            'value' => 'Username and Password',
+            'value' => 'Username and ' . translate('PIN'),
             'class'=> 'h3'
         ];
         
@@ -1091,6 +1087,73 @@ class Polaris extends PatronDriverInterface implements DriverInterface
 
 
     /******************** Errors ********************/
+    protected function _isError($r) {
+        if ($r->error || $r->httpStatusCode !== 200) {
+            $this->logger->error(
+                'Curl error: ' . $c->errorMessage,
+                ['http_code' => $c->httpStatusCode],
+                ['RequestURL' => $request_url, "Headers" => $headers],
+            );
+            return null;
+        } elseif ($error = $this->_isPapiError($c->response)) {
+            $this->_logPapiError($error);
+            return null;
+        }
+    }
+    
+    /**
+     * Check Polaris web service return for an api error
+     *
+     * @param array|object $res Return from web service as array or object
+     * @return array|false Returns array with two elements; ErrorMessage and PAPIErrorCode or false if no error.
+     */
+    protected function _isPapiError($res)
+    {
+        if (is_array($res)) {
+            if ($res['PAPIErrorCode'] < 0) {
+                if (empty($res['ErrorMessage']) && in_array(
+                        (string)$res['PAPIErrorCode'],
+                        $this->polaris_errors,
+                        false,
+                    )) {
+                    $res['ErrorMessage'] = $this->polaris_errors[(string)$res['PAPIErrorCode']];
+                }
+                return [
+                    'ErrorMessage' => $res['ErrorMessage'],
+                    'PAPIErrorCode' => $res['PAPIErrorCode'],
+                ];
+            }
+        } elseif (is_object($res)) {
+            if ($res->PAPIErrorCode < 0) {
+                if (empty($res->ErrorMessage) && in_array((string)$res->PAPIErrorCode, $this->polaris_errors, false)) {
+                    $error_message = $this->polaris_errors[(string)$res->PAPIErrorCode];
+                } else {
+                    $error_message = $res->ErrorMessage;
+                }
+                return [
+                    'ErrorMessage' => $error_message,
+                    'PAPIErrorCode' => $res->PAPIErrorCode,
+                ];
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Accepts return from _isPapiError and writes the error to log
+     *
+     * @param array $e
+     * @return void
+     */
+    protected function _logPapiError($e): void
+    {
+        if (is_array($e['ErrorMessage'])) {
+            $error_message = implode("\n", $e['ErrorMessage']);
+            $this->logger->error('Polaris API error: ' . $error_message, $e);
+        } else {
+            $this->logger->error('Polaris API error: ' . $e['ErrorMessage'], $e);
+        }
+    }
 
     /**
      * Check if user exists in database, create user if needed, update user if needed and return User object.
@@ -1251,6 +1314,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $user->legalFirstName = $patron_response->LegalNameFirst;
         $user->legalMiddleName = $patron_response->LegalNameMiddle;
         $user->legalLastName = $patron_response->LegalNameLast;
+        $user->legalFullName = $patron_response->LegalFullName;
         // Name preference for notices
         $user->useLegalNameOnNotices = (bool)$patron_response->UseLegalNameOnNotices;
         
@@ -1262,7 +1326,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 $user->expires = date('m-d-Y', strtotime($expiration_date));
             } catch (Exception $e) {
                 $this->logger->error($e->getMessage());
-                $user->expires = null;
+                $user->expires = $patron_response->ExpirationDate;
             }
         } else {
             $user->expires = $patron_response->ExpirationDate;
@@ -1801,7 +1865,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
      */
     protected function _getCachePatronSecret($patron_ils_id)
     {
-        return false;
         $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret';
         $key = $this->cache->get($patron_secret_cache_key, false);
         if($key !== false) {
@@ -2432,7 +2495,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     protected function updatePatronContact(User $patron): array
     {
         // /public/patron/{PatronBarcode}
-
         $this->_deleteCachePatronObject($patron->ilsUserId);
         $patron->clearCache();
         

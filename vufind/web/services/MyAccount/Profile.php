@@ -37,16 +37,22 @@ class MyAccount_Profile extends MyAccount {
 				}
 			}
 		}
+
+        // Polaris specific options
         if($ils === 'Polaris') {
             $interface->assign('showLegalName', (bool)$configArray['Polaris']['showLegalName']);
             $interface->assign('showPhone2', (bool)$configArray['Polaris']['showPhone2']);
             $interface->assign('showPhone3', (bool)$configArray['Polaris']['showPhone3']);
             $phone_carriers = $configArray['Carriers'];
             $interface->assign('phoneCarriers', $phone_carriers);
+
+            $driver = CatalogFactory::getCatalogConnectionInstance();
+            $interface->assign('notificationOptions', $driver->getNotificationOptions());
+            $interface->assign('eReceiptOptions', $driver->getErecieptionOptions());
+            $interface->assign('emailFormatOptions', $driver->getEmailFormatOptions());
         }
-
+        
 		if ($user) {
-
 			// Determine which user we are showing/updating settings for
 			$linkedUsers = $user->getLinkedUsers();
 			$patronId    = $_REQUEST['patronId'] ?? $user->id;
@@ -206,14 +212,6 @@ class MyAccount_Profile extends MyAccount {
 		//TODO: restrict to Sierra only? Is this needed for sierra any longer
 		$millenniumNoAddress = $canUpdateContactInfo && !$canUpdateAddress && $ils == 'Sierra';
 		$interface->assign('millenniumNoAddress', $millenniumNoAddress);
-        
-        // Polaris specific options
-        if($ils === 'Polaris') {
-            $driver = CatalogFactory::getCatalogConnectionInstance();
-            $interface->assign('notificationOptions', $driver->getNotificationOptions());
-            $interface->assign('eReceiptOptions', $driver->getErecieptionOptions());
-            $interface->assign('emailFormatOptions', $driver->getEmailFormatOptions());
-        }
 
 		// CarlX Specific Options
 		if ($ils == 'CarlX' && !$offlineMode) {
