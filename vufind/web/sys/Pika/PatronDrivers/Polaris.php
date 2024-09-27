@@ -738,7 +738,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'property' => 'UserName',
             'type' => 'text',
             'label' => 'Username',
-            'description' => "All usernames must begin with a letter (a-z, A-Z), can contain letters, numbers, and the special characters - _ . @ <br>Spaces are not allowed, and special characters can not be contiguous.)",
+            'description' => "All usernames must begin with a letter (a-z, A-Z), can contain letters, numbers, and the special characters - _ . @ <br>Spaces are not allowed, and special characters can not be contiguous.",
             'maxLength' => 20,
             'required' => false,
             'autocomplete' => 'username',
@@ -2019,7 +2019,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             }
             if ($hold->StatusID === 6) { // ready for pickup
                 $availableHolds[] = $h;
-            } elseif ($hold->StatusID !== 1 && $hold->StatusID !== 8 && $hold->StatusID !== 9  && $hold->StatusID !== 16) { // status 16 is canceled items. don't show unless ILL request
+            } elseif ($hold->StatusID !== 8 && $hold->StatusID !== 9  && $hold->StatusID !== 16) { // status 16 is canceled items. don't show unless ILL request
                 $unavailableHolds[] = $h;
             }
         } // end foreach
