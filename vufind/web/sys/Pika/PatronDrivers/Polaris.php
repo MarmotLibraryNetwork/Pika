@@ -742,6 +742,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'maxLength' => 20,
             'required' => false,
             'autocomplete' => 'username',
+            'showDescription' => true
         ];
         
         $fields[] = [
