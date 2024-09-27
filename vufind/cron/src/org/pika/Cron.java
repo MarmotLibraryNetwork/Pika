@@ -189,7 +189,7 @@ public class Cron {
 					//Log how long the process took
 					Date  endTime        = new Date();
 					long  elapsedMillis  = endTime.getTime() - currentTime.getTime();
-					float elapsedMinutes = (elapsedMillis) / 60000;
+					float elapsedMinutes = (float) (elapsedMillis) / 60000;
 					logger.info("Finished process " + processToRun.getProcessName() + " in " + elapsedMinutes + " minutes (" + elapsedMillis + " milliseconds)");
 					cronEntry.addNote("Finished process " + processToRun.getProcessName() + " in " + elapsedMinutes + " minutes (" + elapsedMillis + " milliseconds)");
 
