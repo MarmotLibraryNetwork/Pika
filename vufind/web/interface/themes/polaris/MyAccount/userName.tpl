@@ -24,7 +24,7 @@
                                    value="{if !is_numeric(trim($profile->alt_username))}{$profile->alt_username|escape}{/if}" size="25"
                                    maxlength="25" class="form-control">
                         {/if}
-                        <button href="#" class="btn-link" onclick="$('#usernameHelp').toggle()">What is this?</button>
+                        <button href="#" class="btn-link" onclick="$('#usernameHelp').toggle(); return false">What is this?</button>
                         <div id="usernameHelp" style="display:none">
                             A username is an optional feature. If you set one, your username&nbsp;
                             will be your alias on hold slips and can also be used to log into&nbsp;
