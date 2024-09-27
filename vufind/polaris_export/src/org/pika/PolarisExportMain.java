@@ -1388,20 +1388,20 @@ public class PolarisExportMain {
 							// Create new item record
 							DataField itemRecord = marcFactory.newDataField(indexingProfile.itemTag, ' ', ' ');
 							if (itemInfo.has("LocationID")) {
-								itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.locationSubfield, itemInfo.getString("LocationID")));
+								itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.locationSubfield, itemInfo.getString("LocationID").trim()));
 							}
 							if (itemInfo.has("CollectionID")) {
-								itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.collectionSubfield, itemInfo.getString("CollectionID")));
+								itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.collectionSubfield, itemInfo.getString("CollectionID").trim()));
 							}
 							if (itemInfo.has("ShelfLocation")) {
 								String shelfLocation = itemInfo.getString("ShelfLocation");
 								if (shelfLocation != null) {
-									String shelfLocationCode = polarisExtractTranslationMaps.get("shelfLocationToCode").translateValue(shelfLocation, identifier);
-									itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.shelvingLocationSubfield, shelfLocation));
+									String shelfLocationCode = polarisExtractTranslationMaps.get("shelfLocationToCode").translateValue(shelfLocation.trim(), identifier);
+									itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.shelvingLocationSubfield, shelfLocationCode));
 								}
 							}
 							if (itemInfo.has("ItemRecordID")) {
-								String itemRecordID = itemInfo.getString("ItemRecordID");
+								String itemRecordID = itemInfo.getString("ItemRecordID").trim();
 								if (!itemRecordID.equals(itemId)) {
 									logger.error("Fetched item id {} doesn't match requested item id {}", itemRecordID, itemId);
 								}
@@ -1416,7 +1416,7 @@ public class PolarisExportMain {
 							if (itemInfo.has("Barcode")) {
 								String barcode = itemInfo.getString("Barcode");
 								if (barcode != null) {
-									itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.barcodeSubfield, barcode));
+									itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.barcodeSubfield, barcode.trim()));
 								} else {
 									if (circStatus == null || !circStatus.equals("In-Process")){
 										logger.error("Item {} had no barcode: {}", itemId, itemInfo);
@@ -1429,13 +1429,13 @@ public class PolarisExportMain {
 							if (itemInfo.has("CallNumber")) {
 								String callNumber = itemInfo.getString("CallNumber");
 								if (callNumber != null) {
-									itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.callNumberSubfield, callNumber));
+									itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.callNumberSubfield, callNumber.trim()));
 								}
 							}
 							if (itemInfo.has("VolumeNumber")) {
 								String volumeNumber = itemInfo.getString("VolumeNumber");
 								if (volumeNumber != null) {
-									itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.volume, volumeNumber));
+									itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.volume, volumeNumber.trim()));
 								}
 							}
 							if (itemInfo.has("Holdable")) {
@@ -1444,7 +1444,7 @@ public class PolarisExportMain {
 							}
 							if (itemInfo.has("MaterialType")) {
 								String matType     = itemInfo.getString("MaterialType");
-								String matTypeCode = polarisExtractTranslationMaps.get("materialTypeToCode").translateValue(matType, identifier);
+								String matTypeCode = polarisExtractTranslationMaps.get("materialTypeToCode").translateValue(matType.trim(), identifier);
 								itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.iTypeSubfield, matTypeCode));
 							}
 							// Call does have entries for LastCircDate & DueDate
