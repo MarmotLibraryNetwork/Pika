@@ -1380,10 +1380,15 @@ public class PolarisExportMain {
 					JSONObject itemInfo       = entries.getJSONObject(0);
 					boolean    isDisplayInPAC = itemInfo.getBoolean("IsDisplayInPAC");
 					if (isDisplayInPAC) {
+						String barcode = null;
 						Long             parentBibId            = itemInfo.getLong("BibliographicRecordID");
 						RecordIdentifier identifier             = new RecordIdentifier(indexingProfile.sourceName, parentBibId.toString());
-						boolean          suppressLoggingWarning = itemInfo.has("Barcode") && itemInfo.getString("Barcode").startsWith("econtent");
-						Record           record                 = loadMarcRecordFromDisk(parentBibId, suppressLoggingWarning);
+						boolean          suppressLoggingWarning = false;
+						if (itemInfo.has("Barcode")){
+							barcode = itemInfo.getString("Barcode");
+							suppressLoggingWarning = barcode != null && barcode.startsWith("econtent");
+						}
+						Record record = loadMarcRecordFromDisk(parentBibId, suppressLoggingWarning);
 						if (record != null) {
 							// Create new item record
 							DataField itemRecord = marcFactory.newDataField(indexingProfile.itemTag, ' ', ' ');
@@ -1413,17 +1418,14 @@ public class PolarisExportMain {
 								String statusCode = polarisExtractTranslationMaps.get("circulationStatusToCode").translateValue(circStatus, identifier);
 								itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.itemStatusSubfield, statusCode));
 							}
-							if (itemInfo.has("Barcode")) {
-								String barcode = itemInfo.getString("Barcode");
-								if (barcode != null) {
-									itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.barcodeSubfield, barcode.trim()));
+							if (barcode != null) {
+								itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.barcodeSubfield, barcode.trim()));
+							} else {
+								if (circStatus == null || !circStatus.equals("In-Process")) {
+									logger.error("Item {} had no barcode: {}", itemId, itemInfo);
 								} else {
-									if (circStatus == null || !circStatus.equals("In-Process")){
-										logger.error("Item {} had no barcode: {}", itemId, itemInfo);
-									} else {
-										// Items with status "In-Process" regularly don't have a barcode yet.
-										logger.debug("In-Processing item {} had no barcode: {}", itemId, itemInfo);
-									}
+									// Items with status "In-Process" regularly don't have a barcode yet.
+									logger.debug("In-Processing item {} had no barcode: {}", itemId, itemInfo);
 								}
 							}
 							if (itemInfo.has("CallNumber")) {

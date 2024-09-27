@@ -860,7 +860,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     {
         // /public/patron/{PatronBarcode}/readinghistory
         // history enabled?
-        if ($patron->trackReadingHistory !== 1) {
+        if ($patron->trackReadingHistory != 1) {
             return ['historyActive' => false, 'numTitles' => 0, 'titles' => []];
         }
         
@@ -903,10 +903,13 @@ class Polaris extends PatronDriverInterface implements DriverInterface
 
     public function loadReadingHistoryFromIls($patron, $loadAdditional = null)
     {
-        if ($patron->trackReadingHistory !== 1) {
+        if ($patron->trackReadingHistory != 1) {
             return ['historyActive' => false, 'numTitles' => 0, 'titles' => []];
         }
 
+//        $request_url = $this->ws_url . "/patron/{$patron->barcode}/readinghistory?rowsperpage=5&page=-1";
+//				$c = $this->_doPatronRequest($patron, 'GET', $request_url);
+//				$total = $c->response->PAPIErrorCode;
         $request_url = $this->ws_url . "/patron/{$patron->barcode}/readinghistory?rowsperpage=5&page=0";
         $c = $this->_doPatronRequest($patron, 'GET', $request_url);
 
@@ -933,10 +936,10 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             }
             $title['checkout'] = $checkout_date;
             $title['ilsReadingHistoryId'] = $row->PatronReadingHistoryID;
-            $title['recordId'] = $row->BibId;
+            $title['recordId'] = $row->BibID;
             $title['source'] = $this->accountProfile->recordSource;
 
-            $record = new MarcRecord($this->accountProfile->recordSource . ':' . $row->BibId);
+            $record = new MarcRecord($this->accountProfile->recordSource . ':' . $row->BibID);
             if ($record->isValid()) {
                 $title['permanentId'] = $record->getPermanentId();
                 $title['title'] = $record->getTitle();

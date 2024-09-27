@@ -39,7 +39,7 @@ public class SierraExtractCleanup implements IProcessHandler{
 			) {
 				if (sierraVendorOpacUrlRS.next()) {
 					String apiVersion = PikaConfigIni.getIniValue("Catalog", "api_version");
-					if (apiVersion == null || apiVersion.length() == 0) {
+					if (apiVersion == null || apiVersion.isEmpty()) {
 						String message = "Sierra API version must be set.";
 						logger.error(message);
 						processLog.addNote(message);
