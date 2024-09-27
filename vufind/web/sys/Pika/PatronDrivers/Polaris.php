@@ -1314,7 +1314,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $user->legalFirstName = $patron_response->LegalNameFirst;
         $user->legalMiddleName = $patron_response->LegalNameMiddle;
         $user->legalLastName = $patron_response->LegalNameLast;
-        $user->legalFullName = $patron_response->LegalFullName;
+        $user->legalFullName = ($patron_response->LegalFullName === '') ? null : $patron_response->LegalFullName;
         // Name preference for notices
         $user->useLegalNameOnNotices = (bool)$patron_response->UseLegalNameOnNotices;
         
@@ -1346,7 +1346,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $user->phone_carrier_id = $patron_response->Phone1CarrierID;
         $user->phone2 = $patron_response->PhoneNumber2;
         $user->phone2_carrier_id = $patron_response->Phone2CarrierID;
-        $user->phone3 = $patron_response->PhoneNumber2;
+        $user->phone3 = $patron_response->PhoneNumber3;
         $user->phone3_carrier_id = $patron_response->Phone3CarrierID;
         $user->txt_phone_id = $patron_response->TxtPhoneNumber;
 
@@ -2510,16 +2510,26 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         if(isset($_REQUEST['phone'])) { $contact['PhoneVoice1'] = $_REQUEST['phone']; }
         if(isset($_REQUEST['phone2'])) { $contact['PhoneVoice2'] = $_REQUEST['phone2']; }
         if(isset($_REQUEST['phone3'])) { $contact['PhoneVoice3'] = $_REQUEST['phone3']; }
+        if(isset($_REQUEST['Phone1CarrierID'])) { $contact['Phone1CarrierID'] = (int)$_REQUEST['Phone1CarrierID']; }
+        if(isset($_REQUEST['Phone2CarrierID'])) { $contact['Phone2CarrierID'] = (int)$_REQUEST['Phone2CarrierID']; }
+        if(isset($_REQUEST['Phone3CarrierID'])) { $contact['Phone3CarrierID'] = (int)$_REQUEST['Phone3CarrierID']; }
         if(isset($_REQUEST['email'])) { $contact['EmailAddress'] = trim($_REQUEST['email']); }
         // patron address
-        $address['AddressID'] = $patron->address_id;
-        $address['StreetOne'] = $_REQUEST['address1'];
-        if(isset($_REQUEST['address2'])) { $address['StreetTwo'] = $_REQUEST['address2']; }
-        $address['City'] = $_REQUEST['city'];
-        $address['State'] = $_REQUEST['state'];
-        $address['PostalCode'] = $_REQUEST['zip'];
-        // add address array to request.
-        $contact['PatronAddresses'][] = $address;
+        $contact['AddressID'] = (int)$patron->address_id;
+        $contact['StreetOne'] = $_REQUEST['address1'];
+        if(isset($_REQUEST['address2'])) { $contact['StreetTwo'] = $_REQUEST['address2']; }
+        $contact['City'] = $_REQUEST['city'];
+        $contact['State'] = $_REQUEST['state'];
+        $contact['PostalCode'] = $_REQUEST['zip'];
+        
+//        $address['AddressID'] = (int)$patron->address_id;
+//        $address['StreetOne'] = $_REQUEST['address1'];
+//        if(isset($_REQUEST['address2'])) { $address['StreetTwo'] = $_REQUEST['address2']; }
+//        $address['City'] = $_REQUEST['city'];
+//        $address['State'] = $_REQUEST['state'];
+//        $address['PostalCode'] = $_REQUEST['zip'];
+//        // add address array to request.
+//        $contact['PatronAddresses'][]['Address'] = $address;
         // pickup branch 
         $contact['RequestPickupBranchID'] = $_REQUEST['pickupLocation'];
         

@@ -50,7 +50,7 @@
                                     <div class="col-xs-4"><strong>{translate text='Full Name'}:</strong></div>
                                     <div class="col-xs-8">{$profile->fullname|escape}</div>
                                 </div>
-                                {if !$offline}
+                                {if !$offline && !is_null($profile->legalFullName)}
                                     <div class="form-group">
                                         <div class="col-xs-4"><strong>{translate text='Full Legal Name'}:</strong></div>
                                         <div class="col-xs-8">{$profile->legalFullName|escape}</div>
@@ -179,7 +179,7 @@
                                             <select name="Phone1CarrierID" id="Phone1CarrierID" class="form-control">
                                                 {if count($phoneCarriers) > 0}
                                                     {foreach from=$phoneCarriers key=k item=carrier}
-                                                        <option value="$k"{if $k == $profile->phone_carrier_id} selected="selected"{/if}>{$carrier}</option>
+                                                        <option value="{$k}"{if $k == $profile->phone_carrier_id} selected="selected"{/if}>{$carrier}</option>
                                                     {/foreach}
                                                 {else}
                                                     <option>&nbsp</option>
@@ -192,10 +192,10 @@
                                         {if $showPhone2}
                                             <div class="form-group">
                                                 <div class="col-xs-4">
-                                                   <label for="Phone2">{translate text='Secondary Phone Number'}:</label>
+                                                   <label for="phone2">{translate text='Secondary Phone Number'}:</label>
                                                 </div>
                                                 <div class="col-xs-8">{if $canUpdateContactInfo}
-                                                        <input name="Phone2" id="Phone2"
+                                                        <input name="phone2" id="phone2"
                                                                value="{$profile->phone2|escape}" size="50"
                                                                maxlength="75"
                                                                class="form-control">{else}{$profile->phone2|escape}{/if}
@@ -210,7 +210,7 @@
                                                         <select name="Phone2CarrierID" id="Phone2CarrierID" class="form-control">
                                                             {if count($phoneCarriers) > 0}
                                                                 {foreach from=$phoneCarriers key=k item=carrier}
-                                                                    <option value="$k"{if $k == $profile->phone2_carrier_id} selected="selected"{/if}>{$carrier}</option>
+                                                                    <option value="{$k}"{if $k == $profile->phone2_carrier_id} selected="selected"{/if}>{$carrier}</option>
                                                                 {/foreach}
                                                             {else}
                                                                 <option>&nbsp</option>
@@ -224,10 +224,10 @@
                                         {if $showPhone3}
                                             <div class="form-group">
                                                 <div class="col-xs-4">
-                                                    <label for="Phone3">{translate text='Alternate Phone Number'}:</label>
+                                                    <label for="phone3">{translate text='Alternate Phone Number'}:</label>
                                                 </div>
                                                 <div class="col-xs-8">{if $canUpdateContactInfo}
-                                                        <input name="Phone3" id="Phone3"
+                                                        <input name="phone3" id="phone3"
                                                                value="{$profile->phone3|escape}" size="50"
                                                                maxlength="75"
                                                                class="form-control">{else}{$profile->phone3|escape}{/if}
@@ -242,7 +242,7 @@
                                                         <select name="Phone3CarrierID" id="Phone3CarrierID" class="form-control">
                                                             {if count($phoneCarriers) > 0}
                                                                 {foreach from=$phoneCarriers key=k item=carrier}
-                                                                    <option value="$k"{if $k == $profile->phone3_carrier_id} selected="selected"{/if}>{$carrier}</option>
+                                                                    <option value="{$k}"{if $k == $profile->phone3_carrier_id} selected="selected"{/if}>{$carrier}</option>
                                                                 {/foreach}
                                                             {else}
                                                                 <option>&nbsp</option>
