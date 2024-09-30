@@ -460,8 +460,9 @@ public class PolarisExportMain {
 
 		processDeletedBibs(deletionDateFormatted, updateTime);
 		getNewRecordsFromAPI(lastExtractDateTimeFormatted, nowFormatted, updateTime);
-		//TODO: Processed replaced bibs : /synch/bibs/replacementids?startdate=
 		getChangedRecordsFromAPI(lastExtractDateTimeFormatted, nowFormatted, updateTime);
+		getReplacedRecordsFromAPI(deletionDateFormatted, updateTime);
+		//TODO: Processed replaced bibs : /synch/bibs/replacementids?startdate=
 		getUpdatedItemsFromAPI(lastExtractDateTimeFormatted);
 		getDeletedItemsFromAPI(lastExtractDateTimeFormatted);
 	}
@@ -575,6 +576,7 @@ public class PolarisExportMain {
 		}
 		return false;
 	}
+
 	private static PreparedStatement markSuppressedExtractInfoStatement;
 
 	private static boolean markRecordSuppressedInExtractInfo(Long bibId) {
@@ -1194,6 +1196,37 @@ public class PolarisExportMain {
 			markGroupedWorkAsChangedStmt.executeUpdate();
 		} catch (SQLException e) {
 			logger.error("Error while marking a grouped work for reindexing", e);
+		}
+	}
+
+	private static void getReplacedRecordsFromAPI(String lastExtractDateFormatted, long updateTime){
+		String          url                = "/synch/bibs/replacementids?startdate=" + lastExtractDateFormatted;
+		JSONObject      replacedBibIdsJSON = callPolarisApiURL(url);
+		ArrayList<Long> replacedIds        = new ArrayList<>();
+		ArrayList<Long> newIds             = new ArrayList<>();
+		try {
+			if (replacedBibIdsJSON != null){
+				JSONArray entries = replacedBibIdsJSON.getJSONArray("BibReplacementIDRows");
+				for (int i = 0; i < entries.length(); i++) {
+					try {
+						JSONObject entry      = entries.getJSONObject(i);
+						Long       replacedId = entry.getLong("OriginalBibRecordID");
+						Long       newId      = entry.getLong("NewBibliographicRecordID");
+						if (!isAlreadyMarkedDeleted(replacedId)){
+							markRecordDeletedInExtractInfo(replacedId);
+							deleteRecordFromGrouping(updateTime, replacedId);
+						}
+						if (isAlreadyMarkedDeleted(newId)) {
+							newIds.add(newId);
+						}
+					} catch (JSONException e) {
+						logger.error("Error processing replaced Ids", e);
+					}
+				}
+				updateMarcAndRegroupRecordIds(newIds);
+			}
+		} catch (JSONException e) {
+			logger.error("Error fetching replaced Ids");
 		}
 	}
 
