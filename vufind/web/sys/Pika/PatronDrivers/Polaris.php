@@ -883,7 +883,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $history['numTitles'] = $c->response->PAPIErrorCode;
         $titles = [];
         foreach ($c->response->PatronReadingHistoryGetRows as $row) {
-            $record = new MarcRecord($this->accountProfile->recordSource . ':' . $row->BibId);
+            $record = new MarcRecord($this->accountProfile->recordSource . ':' . $row->BibID);
             $title = [];
             if ($record->isValid()) {
                 $title['permanentId'] = $record->getPermanentId();
