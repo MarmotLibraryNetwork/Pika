@@ -848,7 +848,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 //						$bibInfo                = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId, null, $sessionToken);
 						$bibInfo                = $this->getWebServiceResponse($webServiceURL . '/catalog/bib/key/' . $bibId, null, $sessionToken);
 						$curTitle['title']      = $bibInfo->fields->title;
-						$simpleSortTitle        = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove begining The or A
+						$simpleSortTitle        = preg_replace('/^The\s|^An?\s/i', '', $bibInfo->fields->title); // remove begining The or A
 						$curTitle['title_sort'] = empty($simpleSortTitle) ? $bibInfo->fields->title : $simpleSortTitle;
 						$curTitle['author']     = $bibInfo->fields->author;
 //						if (!empty($checkout->fields->item->fields->call->fields->dispCallNumber)) {

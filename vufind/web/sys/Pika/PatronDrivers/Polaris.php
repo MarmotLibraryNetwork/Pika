@@ -894,6 +894,10 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 $title['ratingData'] = $record->getRatingData();
                 $title['linkUrl'] = $record->getGroupedWorkDriver()->getLinkUrl();
                 $title['coverUrl'] = $record->getBookcoverUrl('medium');
+            } else {
+	            $title['title']  = $row->Title;
+	            $title['author'] = $row->Author;
+	            $title['format'] = $row->FormatDescription;
             }
             $titles[] = $title;
         }
@@ -946,10 +950,12 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 $title['author'] = $record->getPrimaryAuthor();
                 $title['format'] = $record->getFormat();
                 $title['title_sort'] = $record->getSortableTitle();
-            } else {
-                $title['title'] = $row->Title;
-                $title['author'] = $row->Author;
-                $title['format'] = $row->FormatDescription;
+            }else{
+	            $title['title']      = $row->Title;
+	            $title['author']     = $row->Author;
+	            $title['format']     = $row->FormatDescription;
+							$simpleSortTitle     = preg_replace('/^The\s|^An?\s/i', '', $row->Title); // remove beginning The, A, or An
+	            $title['title_sort'] = $simpleSortTitle;
             }
             $titles[] = $title;
         }
@@ -1499,8 +1505,9 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             } else {
                 $checkout['coverUrl'] = '';
                 $checkout['groupedWorkId'] = '';
-                $checkout['format'] = 'Unknown';
-                $checkout['author'] = '';
+								$checkout['title']  = $c->Title ?? '';
+                $checkout['format'] = $c->FormatDescription ?? 'Unknown';
+                $checkout['author'] = $c->Author ?? '';
             }
 
             $checkouts[] = $checkout;
