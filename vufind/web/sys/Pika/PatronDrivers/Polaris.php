@@ -2518,22 +2518,23 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         if(isset($_REQUEST['Phone2CarrierID'])) { $contact['Phone2CarrierID'] = (int)$_REQUEST['Phone2CarrierID']; }
         if(isset($_REQUEST['Phone3CarrierID'])) { $contact['Phone3CarrierID'] = (int)$_REQUEST['Phone3CarrierID']; }
         if(isset($_REQUEST['email'])) { $contact['EmailAddress'] = trim($_REQUEST['email']); }
+       
         // patron address
-        $contact['AddressID'] = (int)$patron->address_id;
-        $contact['StreetOne'] = $_REQUEST['address1'];
-        if(isset($_REQUEST['address2'])) { $contact['StreetTwo'] = $_REQUEST['address2']; }
-        $contact['City'] = $_REQUEST['city'];
-        $contact['State'] = $_REQUEST['state'];
-        $contact['PostalCode'] = $_REQUEST['zip'];
+//        $contact['AddressID'] = (int)$patron->address_id;
+//        $contact['StreetOne'] = $_REQUEST['address1'];
+//        if(isset($_REQUEST['address2'])) { $contact['StreetTwo'] = $_REQUEST['address2']; }
+//        $contact['City'] = $_REQUEST['city'];
+//        $contact['State'] = $_REQUEST['state'];
+//        $contact['PostalCode'] = $_REQUEST['zip'];
         
-//        $address['AddressID'] = (int)$patron->address_id;
-//        $address['StreetOne'] = $_REQUEST['address1'];
-//        if(isset($_REQUEST['address2'])) { $address['StreetTwo'] = $_REQUEST['address2']; }
-//        $address['City'] = $_REQUEST['city'];
-//        $address['State'] = $_REQUEST['state'];
-//        $address['PostalCode'] = $_REQUEST['zip'];
-//        // add address array to request.
-//        $contact['PatronAddresses'][]['Address'] = $address;
+        $address['AddressID'] = (int)$patron->address_id;
+        $address['StreetOne'] = $_REQUEST['address1'];
+        if(isset($_REQUEST['address2'])) { $address['StreetTwo'] = $_REQUEST['address2']; }
+        $address['City'] = $_REQUEST['city'];
+        $address['State'] = $_REQUEST['state'];
+        $address['PostalCode'] = $_REQUEST['zip'];
+        // add address array to request.
+        $contact['PatronAddresses'][] = $address;
         // pickup branch 
         $contact['RequestPickupBranchID'] = $_REQUEST['pickupLocation'];
         

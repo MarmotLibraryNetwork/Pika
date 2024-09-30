@@ -96,7 +96,6 @@
                                     <input type="hidden" name="updateScope" value="contact">
                                     
                                     {if !$offline}
-                                        {* Don't show inputs for the Horizon ILS as updating those account settings has not been implemented in the Horizon Driver. *}
                                         <div class="form-group">
                                             <div class="col-xs-4">
                                                 <label for="address1">{translate text='Address'}:</label>
@@ -113,6 +112,25 @@
                                                     {$profile->address1|escape}
                                                 {else}
                                                     {$profile->address1|escape}
+                                                {/if}
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-xs-4">
+                                                <label for="address2">{translate text='Address 2'}:</label>
+                                            </div>
+                                            <div class="col-xs-8">
+                                                {if $canUpdateContactInfo && $canUpdateAddress}
+                                                    <input name="address2" id="address2"
+                                                           value='{$profile->address2|escape}' size="50" maxlength="75"
+                                                           class="form-control required" aria-required="true">
+                                                {elseif !$offline && $millenniumNoAddress}
+                                                    <input name="address2" id="address2"
+                                                           value='{$profile->address2|escape}' type="hidden">
+                                                    {if $profile->careOf}{$profile->careOf|escape}<br>{/if}
+                                                    {$profile->address2|escape}
+                                                {else}
+                                                    {$profile->address2|escape}
                                                 {/if}
                                             </div>
                                         </div>
