@@ -1505,8 +1505,9 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             } else {
                 $checkout['coverUrl'] = '';
                 $checkout['groupedWorkId'] = '';
-                $checkout['format'] = 'Unknown';
-                $checkout['author'] = '';
+								$checkout['title']  = $c->Title ?? '';
+                $checkout['format'] = $c->FormatDescription ?? 'Unknown';
+                $checkout['author'] = $c->Author ?? '';
             }
 
             $checkouts[] = $checkout;
