@@ -257,7 +257,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $valid_barcode = $r->PatronBarcode;
         $patron_ils_id = $r->PatronID;
         //check cache for patron secret
-        if (!$patron_ils_id || !$this->_getCachePatronSecret($patron_ils_id)) {
+        if (!$patron_ils_id || !$this->_getCachePatronSecret($patron_ils_id, $pin)) {
             $auth = $this->authenticatePatron($valid_barcode, $pin, $validatedViaSSO);
             if ($auth === null || !isset($auth->PatronID)) {
                 return null;
@@ -419,7 +419,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             return null;
         }
 
-        $this->_setCachePatronSecret($c->response->PatronID, $c->response->AccessSecret);
+        $this->_setCachePatronSecret($c->response->PatronID, $c->response->AccessSecret, $pin);
 
         return $c->response;
     }
@@ -1194,7 +1194,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
 
         // get the basic user data from the Polaris API
         $request_url = $this->ws_url . '/patron/' . $barcode . '/basicdata?addresses=true';
-        $patron_access_secret = $this->_getCachePatronSecret($ils_id);
+        $patron_access_secret = $this->_getCachePatronSecret($ils_id, $pin);
         if($patron_access_secret === false) {
             $auth = $this->authenticatePatron($barcode, $pin);
             if($auth === null) {
@@ -1601,7 +1601,9 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $body = [],
         $extra_headers = []
     ): ?Curl {
-        if (!$patron_access_secret = $this->_getCachePatronSecret($patron->ilsUserId)) {
+
+        $patron_access_secret = $this->_getCachePatronSecret($patron->ilsUserId, $patron->getPassword());
+        if ($patron_access_secret === false) {
             $patron_pin = $patron->getPassword();
             $auth = $this->authenticatePatron($patron->barcode, $patron_pin);
             if (!isset($auth)) {
@@ -1867,9 +1869,9 @@ class Polaris extends PatronDriverInterface implements DriverInterface
      * @param $patron_ils_id
      * @return false|string
      */
-    protected function _getCachePatronSecret($patron_ils_id)
+    protected function _getCachePatronSecret($patron_ils_id, $patron_pin)
     {
-        $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret';
+        $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret_' . md5($patron_ils_id . $patron_pin);
         $key = $this->cache->get($patron_secret_cache_key, false);
         if($key !== false) {
             $this->logger->info('Patron secret found in cache.');
@@ -1886,9 +1888,9 @@ class Polaris extends PatronDriverInterface implements DriverInterface
      * @param $patron_ils_id
      * @return bool
      */
-    protected function _deleteCachePatronSecret($patron_ils_id): bool
+    protected function _deleteCachePatronSecret($patron_ils_id, $patron_pin): bool
     {
-        $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret';
+        $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret_' . md5($patron_ils_id . $patron_pin);
         return $this->cache->delete($patron_secret_cache_key);
     }
 
@@ -1899,9 +1901,9 @@ class Polaris extends PatronDriverInterface implements DriverInterface
      * @param $patron_secret
      * @return bool
      */
-    protected function _setCachePatronSecret($patron_ils_id, $patron_secret): bool
+    protected function _setCachePatronSecret($patron_ils_id, $patron_secret, $pin): bool
     {
-        $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret';
+        $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret_' . md5($patron_ils_id . $pin);
         $expires = 60 * 60 * 23;
         return $this->cache->set($patron_secret_cache_key, $patron_secret, $expires);
     }
@@ -2518,14 +2520,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         if(isset($_REQUEST['Phone2CarrierID'])) { $contact['Phone2CarrierID'] = (int)$_REQUEST['Phone2CarrierID']; }
         if(isset($_REQUEST['Phone3CarrierID'])) { $contact['Phone3CarrierID'] = (int)$_REQUEST['Phone3CarrierID']; }
         if(isset($_REQUEST['email'])) { $contact['EmailAddress'] = trim($_REQUEST['email']); }
-       
-        // patron address
-//        $contact['AddressID'] = (int)$patron->address_id;
-//        $contact['StreetOne'] = $_REQUEST['address1'];
-//        if(isset($_REQUEST['address2'])) { $contact['StreetTwo'] = $_REQUEST['address2']; }
-//        $contact['City'] = $_REQUEST['city'];
-//        $contact['State'] = $_REQUEST['state'];
-//        $contact['PostalCode'] = $_REQUEST['zip'];
         
         $address['AddressID'] = (int)$patron->address_id;
         $address['StreetOne'] = $_REQUEST['address1'];
@@ -2613,7 +2607,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     public function updatePin(User $patron)
     {
         // clear the cached patron secrete and patron object
-        $this->_deleteCachePatronSecret($patron->ilsUserId);
+        $this->_deleteCachePatronSecret($patron->ilsUserId, $patron->getPassword());
         $this->_deleteCachePatronObject($patron->ilsUserId);
         $patron->clearCache();
         // /public/patron/{PatronBarcode}
