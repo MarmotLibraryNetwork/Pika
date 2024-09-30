@@ -372,7 +372,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				logger.debug("Added record for " + identifier + " work now has " + groupedWork.getNumRecords() + " records");
 			}
 			loadUnsuppressedPrintItems(groupedWork, recordInfo, identifier, record);
-			loadOnOrderItems(groupedWork, recordInfo, record, recordInfo.getNumPrintCopies() > 0);
+			loadOnOrderItems(groupedWork, recordInfo, record);
 			//If we don't get anything remove the record we just added
 			boolean isItemlessPhysicalRecordToRemove = false;
 			if (checkIfBibShouldBeRemovedAsItemless(recordInfo)) {
@@ -433,12 +433,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			loadPopularity(groupedWork, identifier);
 			groupedWork.addBarcodes(MarcUtil.getFieldList(record, itemTag + barcodeSubfield));
 
+			// Add Order Record Ids if they are different than item ids
 			loadOrderIds(groupedWork, record);
-
-			int numPrintItems = recordInfo.getNumPrintCopies();
-
-			numPrintItems = checkForNonSuppressedItemlessBib(numPrintItems);
-//			groupedWork.addHoldings(numPrintItems + recordInfo.getNumCopiesOnOrder());
 
 			for (ItemInfo curItem : recordInfo.getRelatedItems()){
 				String itemIdentifier = curItem.getItemIdentifier();
@@ -451,39 +447,23 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				scopeItems(recordInfoTmp, groupedWork, record);
 			}
 		}catch (Exception e){
-			logger.error("Error updating grouped work " + groupedWork.getId() + " for MARC record with identifier " + identifier, e);
+			logger.error("Error updating grouped work {} for MARC record with identifier {}", groupedWork.getId(),  identifier, e);
 		}
 	}
 
 	boolean checkIfBibShouldBeRemovedAsItemless(RecordInfo recordInfo) {
-		return recordInfo.getNumPrintCopies() == 0 && recordInfo.getNumCopiesOnOrder() == 0 && suppressItemlessBibs;
-	}
-
-	/**
-	 * Check to see if we should increment the number of print items by one.   For bibs without items that should not be
-	 * suppressed.
-	 *
-	 * @param numPrintItems the number of print titles on the record
-	 * @return number of items that should be counted
-	 */
-	private int checkForNonSuppressedItemlessBib(int numPrintItems) {
-		if (!suppressItemlessBibs && numPrintItems == 0){
-			numPrintItems = 1;
-		}
-		return numPrintItems;
+		return !recordInfo.hasPrintCopies() && !recordInfo.hasOnOrderCopies() && suppressItemlessBibs;
 	}
 
 	protected boolean isBibSuppressed(Record record) {
-		if (bCode3sToSuppressPattern != null && sierraRecordFixedFieldsTag != null && sierraRecordFixedFieldsTag.length() > 0 && bCode3Subfield != ' ') {
+		if (bCode3sToSuppressPattern != null && sierraRecordFixedFieldsTag != null && !sierraRecordFixedFieldsTag.isEmpty() && bCode3Subfield != ' ') {
 			DataField sierraFixedField = record.getDataField(sierraRecordFixedFieldsTag);
 			if (sierraFixedField != null){
 				Subfield suppressionSubfield = sierraFixedField.getSubfield(bCode3Subfield);
 				if (suppressionSubfield != null){
 					String bCode3 = suppressionSubfield.getData().toLowerCase().trim();
 					if (bCode3sToSuppressPattern.matcher(bCode3).matches()){
-						if (logger.isDebugEnabled()) {
-							logger.debug("Bib record is suppressed due to BCode3 " + bCode3);
-						}
+						logger.debug("Bib record is suppressed due to BCode3 {}", bCode3);
 						return true;
 					}
 				}
@@ -496,7 +476,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		//By default, do nothing
 	}
 
-	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems){
+	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record){
 		//By default, do nothing
 	}
 
@@ -585,15 +565,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-//TODO: this should move to the iii handler; and a blank method put here instead
-	private void loadOrderIds(GroupedWorkSolr groupedWork, Record record) {
+	protected void loadOrderIds(GroupedWorkSolr groupedWork, Record record) {
 		//Load order ids from recordNumberTag
-		Set<String> recordIds = MarcUtil.getFieldList(record, recordNumberTag + "a"); //TODO: refactor to use the record number subfield indicator
-		for(String recordId : recordIds){
-			if (recordId.startsWith(".o")){
-				groupedWork.addAlternateId(recordId);
-			}
-		}
+//		Set<String> recordIds = MarcUtil.getFieldList(record, recordNumberTag + "a"); //TODO: refactor to use the record number subfield indicator
+//		for(String recordId : recordIds){
+//			if (recordId.startsWith(".o")){
+//				groupedWork.addAlternateId(recordId);
+//			}
+//		}
 	}
 
 	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, RecordIdentifier identifier, Record record){
@@ -718,7 +697,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		//if the status and location are null, we can assume this is not a valid item
 		if (!isItemValid(itemStatus, itemLocation)) return;
 		if (itemStatus == null || itemStatus.isEmpty()) {
-			logger.warn("Item contained no status value for item " + itemInfo.getItemIdentifier() + " for location " + itemLocation + " in record " + identifier);
+			logger.warn("Item contained no status value for item {} for location {} in record {}", itemInfo.getItemIdentifier(), itemLocation, identifier);
 		}
 		itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
 		// Process Collection ahead of shelf location, so that the collection can be used for Polaris shelf location

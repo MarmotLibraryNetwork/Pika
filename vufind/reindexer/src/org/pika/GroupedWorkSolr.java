@@ -305,7 +305,7 @@ public class GroupedWorkSolr implements Cloneable {
 		checkDefaultValue(targetAudience, "Unknown");
 		checkDefaultValue(targetAudience, "Other");
 		doc.addField("target_audience", targetAudience);
-		if (systemLists.size() > 0) {
+		if (!systemLists.isEmpty()) {
 			doc.addField("system_list", systemLists);
 		}
 		//Date added to catalog
@@ -329,7 +329,7 @@ public class GroupedWorkSolr implements Cloneable {
 				long bibDaysSinceAdded = (indexTime - publicationTime) / (long)(1000 * 60 * 60 * 24);
 				if (bibDaysSinceAdded < 0) {
 					if (groupedWorkIndexer.fullReindex) {
-						logger.warn("Using Publication date to calculate Days since added value " + bibDaysSinceAdded + " is negative for grouped work " + id);
+						logger.warn("Using Publication date to calculate Days since added value {} is negative for grouped work {}", bibDaysSinceAdded, id);
 					}
 					bibDaysSinceAdded = 0;
 					doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
@@ -351,13 +351,13 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("mpaa_rating", mpaaRatings);
 		doc.addField("awards_facet", awards);
 		doc.addField("lexile_score", lexileScore);
-		if (lexileCode.length() > 0) {
+		if (!lexileCode.isEmpty()) {
 			doc.addField("lexile_code", Util.trimTrailingPunctuation(lexileCode));
 		}
-		if (fountasPinnell.length() > 0){
+		if (!fountasPinnell.isEmpty()){
 			doc.addField("fountas_pinnell", fountasPinnell);
 		}
-		if (acceleratedReaderInterestLevel != null && acceleratedReaderInterestLevel.length() > 0) {
+		if (acceleratedReaderInterestLevel != null && !acceleratedReaderInterestLevel.isEmpty()) {
 			doc.addField("accelerated_reader_interest_level", Util.trimTrailingPunctuation(acceleratedReaderInterestLevel));
 		}
 		if (Util.isNumeric(acceleratedReaderReadingLevel)) {
@@ -367,7 +367,7 @@ public class GroupedWorkSolr implements Cloneable {
 			doc.addField("accelerated_reader_point_value", acceleratedReaderPointValue);
 		}
 		//EContent fields
-		if (econtentDevices.size() > 0) {
+		if (!econtentDevices.isEmpty()) {
 			doc.addField("econtent_device", econtentDevices);
 		}
 
