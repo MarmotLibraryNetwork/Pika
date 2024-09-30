@@ -462,7 +462,6 @@ public class PolarisExportMain {
 		getNewRecordsFromAPI(lastExtractDateTimeFormatted, nowFormatted, updateTime);
 		getChangedRecordsFromAPI(lastExtractDateTimeFormatted, nowFormatted, updateTime);
 		getReplacedRecordsFromAPI(deletionDateFormatted, updateTime);
-		//TODO: Processed replaced bibs : /synch/bibs/replacementids?startdate=
 		getUpdatedItemsFromAPI(lastExtractDateTimeFormatted);
 		getDeletedItemsFromAPI(lastExtractDateTimeFormatted);
 	}
@@ -1202,7 +1201,6 @@ public class PolarisExportMain {
 	private static void getReplacedRecordsFromAPI(String lastExtractDateFormatted, long updateTime){
 		String          url                = "/synch/bibs/replacementids?startdate=" + lastExtractDateFormatted;
 		JSONObject      replacedBibIdsJSON = callPolarisApiURL(url);
-		ArrayList<Long> replacedIds        = new ArrayList<>();
 		ArrayList<Long> newIds             = new ArrayList<>();
 		try {
 			if (replacedBibIdsJSON != null){
@@ -1212,17 +1210,22 @@ public class PolarisExportMain {
 						JSONObject entry      = entries.getJSONObject(i);
 						Long       replacedId = entry.getLong("OriginalBibRecordID");
 						Long       newId      = entry.getLong("NewBibliographicRecordID");
+						logger.info("Replacing Bib {} with {}", replacedId, newId);
 						if (!isAlreadyMarkedDeleted(replacedId)){
-							markRecordDeletedInExtractInfo(replacedId);
-							deleteRecordFromGrouping(updateTime, replacedId);
+							boolean marked = markRecordDeletedInExtractInfo(replacedId);
+							boolean ungrouped = deleteRecordFromGrouping(updateTime, replacedId);
+							logger.info("Replaced bib was " + (marked ? "" : " not ") + "marked as deleted; and was " + (ungrouped ? "" : " not ") + " ungrouped");
 						}
 						if (isAlreadyMarkedDeleted(newId)) {
 							newIds.add(newId);
+						} else {
+							logger.info("New bib {} has already been marked as deleted", newId);
 						}
 					} catch (JSONException e) {
 						logger.error("Error processing replaced Ids", e);
 					}
 				}
+				logger.info("Fetching bib dates for new Ids");
 				updateMarcAndRegroupRecordIds(newIds);
 			}
 		} catch (JSONException e) {
