@@ -239,7 +239,7 @@ class Flatirons extends Sierra
 
 		if (in_array($libSubDomain, ['boulder', 'broomfield'])){
 			$this->capitalizeAllSelfRegistrationInputs(/*[Any fields that shouldn't be capitalized]*/);
-		} else {
+		} elseif ($libSubDomain != 'longmont') {
 			// Capitalize Mailing address
 			$_POST['address'] = strtoupper($_POST['address']);
 			$_POST['city']    = strtoupper($_POST['city']);

@@ -41,9 +41,12 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 	public $accountProfile;
 	private Cache $cache;
 	protected Logger $logger;
+	private $timeout;
+
 	public function __construct($accountProfile){
 		global $configArray;
 		$this->clientId       = $configArray['Catalog']['clientId'];
+		$this->timeout        = $configArray['Catalog']['timeout'] ?? 15;
 		$this->accountProfile = $accountProfile;
 		$cache                = initCache();
 		$this->cache          = new Cache($cache);
@@ -127,7 +130,7 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_HEADER, false);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+		curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
 
 		//global $instanceName;
 /*		if (stripos($instanceName, 'localhost') !== false){
@@ -150,7 +153,7 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 			$return = json_decode($json);
 		}else{
 			$curl_error = curl_error($ch);
-			$this->getLogger()->warn('Curl error: ' . $curl_error);
+			$this->getLogger()->warn('URL: '. $url . ' Curl error: ' . $curl_error);
 			$return = false;
 		}
 		curl_close($ch);
@@ -519,19 +522,19 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 		// TODO: make ROA call
 		//This uses the standard / REST method to retrieve this information from the ILS.
 		// It isn't an ROA call.
-		global $configArray;
-		if (empty($configArray['Catalog']['offline'])){
-			$lookupTitleInfoUrl      = '/rest/standard/lookupTitleInfo?titleKey=' . $bibId . '&includeItemInfo=false&includeHoldCount=true';
-			$lookupTitleInfoResponse = $this->getWebServiceResponse($lookupTitleInfoUrl);
-			if (!empty($lookupTitleInfoResponse->titleInfo)){
-				if (is_array($lookupTitleInfoResponse->titleInfo) && isset($lookupTitleInfoResponse->titleInfo[0]->holdCount)){
-					return (int)$lookupTitleInfoResponse->titleInfo[0]->holdCount;
-				}elseif (isset($lookupTitleInfoResponse->titleInfo->holdCount)){
-					//TODO: I suspect that this never occurs
-					return (int)$lookupTitleInfoResponse->titleInfo->holdCount;
-				}
-			}
-		}
+//		global $configArray;
+//		if (empty($configArray['Catalog']['offline'])){
+//			$lookupTitleInfoUrl      = '/rest/standard/lookupTitleInfo?titleKey=' . $bibId . '&includeItemInfo=false&includeHoldCount=true';
+//			$lookupTitleInfoResponse = $this->getWebServiceResponse($lookupTitleInfoUrl);
+//			if (!empty($lookupTitleInfoResponse->titleInfo)){
+//				if (is_array($lookupTitleInfoResponse->titleInfo) && isset($lookupTitleInfoResponse->titleInfo[0]->holdCount)){
+//					return (int)$lookupTitleInfoResponse->titleInfo[0]->holdCount;
+//				}elseif (isset($lookupTitleInfoResponse->titleInfo->holdCount)){
+//					//TODO: I suspect that this never occurs
+//					return (int)$lookupTitleInfoResponse->titleInfo->holdCount;
+//				}
+//			}
+//		}
 		return false;
 	}
 
