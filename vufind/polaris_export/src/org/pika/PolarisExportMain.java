@@ -460,8 +460,8 @@ public class PolarisExportMain {
 
 		processDeletedBibs(deletionDateFormatted, updateTime);
 		getNewRecordsFromAPI(lastExtractDateTimeFormatted, nowFormatted, updateTime);
-		//TODO: Processed replaced bibs : /synch/bibs/replacementids?startdate=
 		getChangedRecordsFromAPI(lastExtractDateTimeFormatted, nowFormatted, updateTime);
+		getReplacedRecordsFromAPI(deletionDateFormatted, updateTime);
 		getUpdatedItemsFromAPI(lastExtractDateTimeFormatted);
 		getDeletedItemsFromAPI(lastExtractDateTimeFormatted);
 	}
@@ -575,6 +575,7 @@ public class PolarisExportMain {
 		}
 		return false;
 	}
+
 	private static PreparedStatement markSuppressedExtractInfoStatement;
 
 	private static boolean markRecordSuppressedInExtractInfo(Long bibId) {
@@ -1194,6 +1195,41 @@ public class PolarisExportMain {
 			markGroupedWorkAsChangedStmt.executeUpdate();
 		} catch (SQLException e) {
 			logger.error("Error while marking a grouped work for reindexing", e);
+		}
+	}
+
+	private static void getReplacedRecordsFromAPI(String lastExtractDateFormatted, long updateTime){
+		String          url                = "/synch/bibs/replacementids?startdate=" + lastExtractDateFormatted;
+		JSONObject      replacedBibIdsJSON = callPolarisApiURL(url);
+		ArrayList<Long> newIds             = new ArrayList<>();
+		try {
+			if (replacedBibIdsJSON != null){
+				JSONArray entries = replacedBibIdsJSON.getJSONArray("BibReplacementIDRows");
+				for (int i = 0; i < entries.length(); i++) {
+					try {
+						JSONObject entry      = entries.getJSONObject(i);
+						Long       replacedId = entry.getLong("OriginalBibRecordID");
+						Long       newId      = entry.getLong("NewBibliographicRecordID");
+						logger.info("Replacing Bib {} with {}", replacedId, newId);
+						if (!isAlreadyMarkedDeleted(replacedId)){
+							boolean marked = markRecordDeletedInExtractInfo(replacedId);
+							boolean ungrouped = deleteRecordFromGrouping(updateTime, replacedId);
+							logger.info("Replaced bib was " + (marked ? "" : " not ") + "marked as deleted; and was " + (ungrouped ? "" : " not ") + " ungrouped");
+						}
+						if (isAlreadyMarkedDeleted(newId)) {
+							newIds.add(newId);
+						} else {
+							logger.info("New bib {} has already been marked as deleted", newId);
+						}
+					} catch (JSONException e) {
+						logger.error("Error processing replaced Ids", e);
+					}
+				}
+				logger.info("Fetching bib dates for new Ids");
+				updateMarcAndRegroupRecordIds(newIds);
+			}
+		} catch (JSONException e) {
+			logger.error("Error fetching replaced Ids");
 		}
 	}
 
