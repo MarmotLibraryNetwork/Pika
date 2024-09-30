@@ -2672,10 +2672,8 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 					$titleEntry['format']      = $record->getFormat();
 					$titleEntry['title_sort']  = $record->getSortableTitle();
 					$titleEntry['ratingData']  = $record->getRatingData();
-					$titleEntry['permanentId'] = $record->getPermanentId();
 					$titleEntry['linkUrl']     = $record->getGroupedWorkDriver()->getLinkUrl();
 					$titleEntry['coverUrl']    = $record->getBookcoverUrl('medium');
-					$titleEntry['format']      = $record->getFormats();
 				}else{
 					// check the api
 					$operation = 'bibs/' . $bibMatch[1];
