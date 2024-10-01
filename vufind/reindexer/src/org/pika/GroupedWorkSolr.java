@@ -80,8 +80,6 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashSet<String>          keywords                 = new HashSet<>();
 	private HashSet<String>          languages                = new HashSet<>();
 	private HashSet<String>          translations             = new HashSet<>();
-	private Long                     languageBoost            = 1L;
-	private Long                     languageBoostSpanish     = 1L;
 //	private HashSet<String>          lccns                    = new HashSet<>();
 	private HashSet<String>          lcSubjects               = new HashSet<>();
 	private int                      lexileScore              = -1;
@@ -1685,18 +1683,6 @@ public class GroupedWorkSolr implements Cloneable {
 		this.eras.add(Util.trimTrailingPunctuation(fieldValue));
 	}
 
-//	void setLanguageBoost(Long languageBoost) {
-//		if (languageBoost > this.languageBoost){
-//			this.languageBoost = languageBoost;
-//		}
-//	}
-//
-//	void setLanguageBoostSpanish(Long languageBoostSpanish) {
-//		if (languageBoostSpanish > this.languageBoostSpanish){
-//			this.languageBoostSpanish = languageBoostSpanish;
-//		}
-//	}
-//
 //	void setLanguages(HashSet<String> languages) {
 //		this.languages.addAll(languages);
 //	}
