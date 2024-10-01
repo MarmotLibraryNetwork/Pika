@@ -1493,7 +1493,7 @@ public class FormatDetermination {
 	private void getFormatFrom008(ControlField formatField, Set<String> result) {
 		if (formatField != null) {
 			String formatFieldData = formatField.getData();
-			if (formatFieldData != null && formatFieldData.length() < 24) {
+			if (formatFieldData != null && formatFieldData.length() >= 24) {
 				char formatCode = Character.toLowerCase(formatFieldData.charAt(23));
 				if (formatCode == 'd') {
 					result.add("LargePrint");
