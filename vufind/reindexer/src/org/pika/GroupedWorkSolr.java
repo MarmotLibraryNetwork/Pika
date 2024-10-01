@@ -90,7 +90,6 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashMap<String, Integer> literaryFormFull         = new HashMap<>();
 	private HashMap<String, Integer> literaryForm             = new HashMap<>();
 	private HashSet<String>          mpaaRatings              = new HashSet<>();
-	private Long                     numHoldings              = 0L;
 	private HashSet<String>          oclcs                    = new HashSet<>();
 	private HashSet<String>          physicals                = new HashSet<>();
 	private double                   popularity;
@@ -400,7 +399,6 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("callnumber-subject", callNumberSubject);
 		//relevance determiners
 		doc.addField("popularity", Long.toString((long)popularity));
-//		doc.addField("num_holdings", numHoldings);
 		//pika enrichment
 		doc.addField("rating", userRating == 0.0f ? 2.5f : userRating); // Since the user rating is used in boost factor and sorting, when there has been no ratings, use a "neutral" value of 2.5
 		doc.addField("rating_facet", getUserRatingFacetValues(userRating));
@@ -1448,10 +1446,6 @@ public class GroupedWorkSolr implements Cloneable {
 	void setGroupingCategory(String groupingCategory) {
 		this.groupingCategory = groupingCategory;
 	}
-
-//	void addHoldings(int recordHoldings) {
-//		this.numHoldings += recordHoldings;
-//	}
 
 	void addPopularity(double itemPopularity) {
 		this.popularity += itemPopularity;
