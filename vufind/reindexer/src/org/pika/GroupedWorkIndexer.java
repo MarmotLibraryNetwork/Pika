@@ -873,23 +873,7 @@ public class GroupedWorkIndexer {
 			String            curDateFormatted = dayFormatter.format(curDate);
 			File              recordsFile      = new File(dataDir.getAbsolutePath() + "/reindex_stats_" + curDateFormatted + ".csv");
 			CSVWriter         recordWriter     = new CSVWriter(new FileWriter(recordsFile));
-			ArrayList<String> headers          = new ArrayList<>();
-			headers.add("Scope Name");
-			headers.add("Owned works");
-			headers.add("Total works");
-			TreeSet<String> recordProcessorNames = new TreeSet<>();
-			recordProcessorNames.addAll(indexingRecordProcessors.keySet());
-			recordProcessorNames.add("overdrive");
-			for (String processorName : recordProcessorNames){
-				headers.add("Owned " + processorName + " records");
-				headers.add("Owned " + processorName + " physical items");
-				headers.add("Owned " + processorName + " on order items");
-				headers.add("Owned " + processorName + " e-content items");
-				headers.add("Total " + processorName + " records");
-				headers.add("Total " + processorName + " physical items");
-				headers.add("Total " + processorName + " on order items");
-				headers.add("Total " + processorName + " e-content items");
-			}
+			ArrayList<String> headers          = getIndexStatsHeaders();
 			recordWriter.writeNext(headers.toArray(new String[headers.size()]));
 
 			//Write custom scopes
@@ -902,6 +886,26 @@ public class GroupedWorkIndexer {
 		} catch (IOException e) {
 			logger.error("Unable to write statistics", e);
 		}
+	}
+
+	private ArrayList<String> getIndexStatsHeaders() {
+		ArrayList<String> headers = new ArrayList<>();
+		headers.add("Scope Name");
+		headers.add("Owned works");
+		headers.add("Total works");
+		TreeSet<String> recordProcessorNames = new TreeSet<>(indexingRecordProcessors.keySet());
+		recordProcessorNames.add("overdrive");
+		for (String processorName : recordProcessorNames) {
+			headers.add("Owned " + processorName + " records");
+			headers.add("Owned " + processorName + " physical items");
+			headers.add("Owned " + processorName + " on order items");
+			headers.add("Owned " + processorName + " e-content items");
+			headers.add("Total " + processorName + " records");
+			headers.add("Total " + processorName + " physical items");
+			headers.add("Total " + processorName + " on order items");
+			headers.add("Total " + processorName + " e-content items");
+		}
+		return headers;
 	}
 
 	private void writeValidationInformation() {
@@ -963,7 +967,7 @@ public class GroupedWorkIndexer {
 			logger.info("Writing works with invalid literary forms");
 			File worksWithInvalidLiteraryFormsFile = new File(baseLogPath + "/" + serverName + "/worksWithInvalidLiteraryForms.txt");
 			try {
-				if (worksWithInvalidLiteraryForms.size() > 0) {
+				if (!worksWithInvalidLiteraryForms.isEmpty()) {
 					try (FileWriter writer = new FileWriter(worksWithInvalidLiteraryFormsFile, false)) {
 						final String message = "Found " + worksWithInvalidLiteraryForms.size() + " grouped works with invalid literary forms (fic vs nonfic)\r\n";
 						logger.info(message);
@@ -1060,7 +1064,7 @@ public class GroupedWorkIndexer {
 						if (indexerWorkCount >= 0) {
 							GroupedReindexMain.addNoteToReindexLog(numWorksProcessed + " works processed. Indexer works : " + indexerWorkCount + "  Interval for this batch (mins) : " + interval);
 							if (indexerWorkCount > 0 && lastIndexerWorkCount == indexerWorkCount){
-								logger.warn("Solr Indexer work count is not increasing; apparently stopped at " + indexerWorkCount);
+								logger.warn("Solr Indexer work count is not increasing; apparently stopped at {}", indexerWorkCount);
 								logger.warn("Re-initializing the solr update server");
 								initializeUpdateServer();
 							}
@@ -1086,9 +1090,8 @@ public class GroupedWorkIndexer {
 		} catch (SQLException e) {
 			logger.error("Unexpected SQL error", e);
 		}
-		if (logger.isInfoEnabled()) {
-			logger.info("Finished processing grouped works.  Processed a total of " + numWorksProcessed + " grouped works");
-		}
+		logger.info("Finished processing grouped works.  Processed a total of {} grouped works", numWorksProcessed);
+
 		if (orphanedGroupedWorkPrimaryIdentifiersProcessed > 0){
 			GroupedReindexMain.addNoteToReindexLog(orphanedGroupedWorkPrimaryIdentifiersProcessed + " orphaned Grouped Work Primary Identifiers were processed. (indexing profile no longer exists for the ids)");
 		}
@@ -1154,9 +1157,8 @@ public class GroupedWorkIndexer {
 		} catch (SQLException e) {
 			logger.error("Unexpected SQL error", e);
 		}
-		if (logger.isInfoEnabled()) {
-			logger.info("Finished processing grouped works.  Processed a total of " + numWorksProcessed + " grouped works");
-		}
+
+		logger.info("Finished processing grouped works.  Processed a total of {} grouped works", numWorksProcessed);
 		return numWorksProcessed;
 	}
 
@@ -1196,9 +1198,8 @@ public class GroupedWorkIndexer {
 				}
 				//Figure out how many records we had originally
 				int numRecords = groupedWork.getNumRecords();
-				if (logger.isDebugEnabled()) {
-					logger.debug("Processing " + identifier + " work currently has " + numRecords + " records");
-				}
+				logger.debug("Processing {} work currently has {} records", identifier, numRecords);
+
 
 				//This does the bulk of the work building fields for the solr document
 				if (updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier, loadedNovelistSeries)) {
@@ -1210,9 +1211,7 @@ public class GroupedWorkIndexer {
 						}
 						groupedWork = originalWork;
 					} else {
-						if (logger.isDebugEnabled()) {
-							logger.debug("Record " + identifier + " added to work " + permanentId);
-						}
+						logger.debug("Record {} added to work {}", identifier, permanentId);
 						numPrimaryIdentifiers++;
 					}
 				}
@@ -1247,12 +1246,10 @@ public class GroupedWorkIndexer {
 			if (!fullReindex){
 				try {
 					//Log that this record did not have primary identifiers after
-					if (logger.isDebugEnabled()) {
-						logger.debug("Grouped work " + permanentId + " did not have any primary identifiers for it, deleting solr document.");
-					}
+					logger.debug("Grouped work {} did not have any primary identifiers for it, deleting solr document.", permanentId);
 					updateServer.deleteById(permanentId);
 				}catch (Exception e){
-					logger.error("Error deleting suppressed work " + permanentId, e);
+					logger.error("Error deleting suppressed work {}", permanentId, e);
 				}
 			}
 
@@ -1316,9 +1313,8 @@ public class GroupedWorkIndexer {
 				}
 				//Figure out how many records we had originally
 				int numRecords = groupedWork.getNumRecords();
-				if (logger.isDebugEnabled()) {
-					logger.debug("Processing " + identifier + " work currently has " + numRecords + " records");
-				}
+				logger.debug("Processing {} work currently has {} records", identifier, numRecords);
+
 
 				//This does the bulk of the work building fields for the solr document
 				if (updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier, loadedNovelistSeries)) {
@@ -1330,9 +1326,7 @@ public class GroupedWorkIndexer {
 						}
 						groupedWork = originalWork;
 					} else {
-						if (logger.isDebugEnabled()) {
-							logger.debug("Record " + identifier + " added to work " + permanentId);
-						}
+						logger.debug("Record {} added to work {}", identifier, permanentId);
 						numPrimaryIdentifiers++;
 					}
 				}
