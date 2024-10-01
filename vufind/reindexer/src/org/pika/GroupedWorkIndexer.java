@@ -1683,7 +1683,7 @@ public class GroupedWorkIndexer {
 				dateFirstDetected = dateFirstDetectedRS.getLong("dateFirstDetected");
 			}
 		}catch (Exception e){
-			logger.error("Error loading date first detected for " + identifier);
+			logger.error("Error loading date first detected for {}", identifier);
 		}
 		if (dateFirstDetected != null){
 			return new Date(dateFirstDetected * 1000);

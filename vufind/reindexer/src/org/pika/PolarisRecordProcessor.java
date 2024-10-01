@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 
 
@@ -33,8 +34,10 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 	protected char isItemHoldableSubfield = '5';
 
 
+
 	PolarisRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
+		loadDateAddedFromRecord = true;
 
 		try {
 			String availableStatusString = indexingProfileRS.getString("availableStatuses");

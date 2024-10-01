@@ -64,6 +64,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private String lastCheckInFormat;
 	private char   dateCreatedSubfield;
 	private String dateAddedFormat;
+	protected boolean loadDateAddedFromRecord = false;
 	char locationSubfieldIndicator;
 	private Pattern nonHoldableLocations;
 	Pattern statusesToSuppressPattern    = null;
@@ -433,7 +434,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			loadPopularity(groupedWork, identifier);
 			groupedWork.addBarcodes(MarcUtil.getFieldList(record, itemTag + barcodeSubfield));
 
-			// Add Order Record Ids if they are different than item ids
+			// Add Order Record Ids if they are different from item ids
 			loadOrderIds(groupedWork, record);
 
 			for (ItemInfo curItem : recordInfo.getRelatedItems()){
@@ -592,14 +593,18 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	RecordInfo getEContentIlsRecord(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier, DataField itemField) {
-		ItemInfo itemInfo        = new ItemInfo();
-		String   itemLocation    = getItemSubfieldData(locationSubfieldIndicator, itemField);
+		ItemInfo itemInfo     = new ItemInfo();
+		String   itemLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
 
 		itemInfo.setIsEContent(true);
 		itemInfo.setLocationCode(itemLocation);
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
 		itemInfo.setShelfLocation(getShelfLocationForItem(itemInfo, itemField, identifier));
-		loadDateAdded(identifier, itemField, itemInfo);
+		if (loadDateAddedFromRecord){
+			loadDateAddedFromRecord(itemInfo, record, identifier);
+		} else {
+			loadDateAdded(identifier, itemField, itemInfo);
+		}
 		loadItemCallNumber(record, itemField, itemInfo);
 		if (iTypeSubfield != ' ') {
 			String iTypeValue = getItemSubfieldData(iTypeSubfield, itemField);
@@ -656,6 +661,29 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return "Unknown Source";
 	}
 
+	private SimpleDateFormat dateFormat008 = new SimpleDateFormat("yyMMdd");
+
+	protected void loadDateAddedFromRecord(ItemInfo itemInfo, Record record, RecordIdentifier identifier){
+		ControlField fixedField008 = (ControlField) record.getVariableField("008");
+		if (fixedField008 != null){
+			String dateAddData = fixedField008.getData();
+			if (dateAddData != null && dateAddData.length() >= 6){
+				String dateAddedStr = dateAddData.substring(0, 6);
+				try {
+					Date dateAdded = dateFormat008.parse(dateAddedStr);
+					itemInfo.setDateAdded(dateAdded);
+					return;
+				} catch (ParseException e) {
+					logger.error("Date parsing 008 string {} for {}", dateAddedStr, identifier);
+				}
+			}
+		}
+
+		// As fallback, use grouping first detected date
+		Date dateAdded = indexer.getDateFirstDetected(identifier);
+		itemInfo.setDateAdded(dateAdded);
+	}
+
 	protected void loadDateAdded(RecordIdentifier recordIdentifier, DataField itemField, ItemInfo itemInfo) {
 		String dateAddedStr = getItemSubfieldData(dateCreatedSubfield, itemField);
 		if (dateAddedStr != null && !dateAddedStr.isEmpty()) {
@@ -666,7 +694,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				Date dateAdded = dateAddedFormatter.parse(dateAddedStr);
 				itemInfo.setDateAdded(dateAdded);
 			} catch (ParseException e) {
-				logger.error("Error processing date added for record identifier " + recordIdentifier + " profile " + indexingProfileSourceDisplayName + " using format " + dateAddedFormat, e);
+				logger.error("Error processing date added for record identifier {} profile {} using format {}", recordIdentifier, indexingProfileSourceDisplayName, dateAddedFormat, e);
 			}
 		}
 	}
@@ -707,7 +735,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		setItemIsHoldableCode(itemField, itemInfo, identifier);
 
-		loadDateAdded(identifier, itemField, itemInfo);
+		if (loadDateAddedFromRecord){
+			loadDateAddedFromRecord(itemInfo, record, identifier);
+		} else {
+			loadDateAdded(identifier, itemField, itemInfo);
+		}
 		getDueDate(itemField, itemInfo);
 
 		if (iTypeSubfield != ' ') {
