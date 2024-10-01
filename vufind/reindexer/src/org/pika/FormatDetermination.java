@@ -530,13 +530,11 @@ public class FormatDetermination {
 				getFormatFromLeader(printFormats, leader, fixedField008);
 				if (printFormats.size() > 1){
 					if (logger.isInfoEnabled()) {
-						logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " looking at just the leader: " +  String.join(",",printFormats));
+						logger.info("Found more than 1 format for {} looking at just the leader: {}", recordInfo.getFullIdentifier(), String.join(",",printFormats));
 					}
 				}
 			} else if (printFormats.size() > 1){
-				if (logger.isInfoEnabled()) {
-					logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " looking at just 007");
-				}
+				logger.info("Found more than 1 format for {} looking at just 007", recordInfo.getFullIdentifier());
 			}
 		}
 
@@ -560,7 +558,7 @@ public class FormatDetermination {
 			if (!formatsToFilter.contains(formatsString)){
 				formatsToFilter.add(formatsString);
 				if (logger.isInfoEnabled()) {
-					logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " - " + formatsString);
+					logger.info("Found more than 1 format for {} - {}", recordInfo.getFullIdentifier(), formatsString);
 				}
 			}
 		}

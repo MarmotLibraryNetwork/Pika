@@ -360,10 +360,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		try{
 			//If the entire bib is suppressed, update stats and bail out now.
-			if (isBibSuppressed(record)){
-				if (logger.isDebugEnabled()) {
-					logger.debug("Bib record " + identifier + " is suppressed, skipping");
-				}
+			if (isBibSuppressed(record)) {
+				logger.debug("Bib record {} is suppressed, skipping", identifier);
 				return;
 			}
 
@@ -379,20 +377,18 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (checkIfBibShouldBeRemovedAsItemless(recordInfo)) {
 				isItemlessPhysicalRecordToRemove = true;
 				groupedWork.removeRelatedRecord(recordInfo);
-				if (logger.isDebugEnabled()) {
-					logger.debug("Removing related print record for " + identifier + " because there are no print copies, no on order copies and suppress itemless bibs is on");
-				}
+				logger.debug("Removing related print record for {} because there are no print copies, no on order copies and suppress itemless bibs is on", identifier);
 			}else{
 				allRelatedRecords.add(recordInfo);
 			}
 
 			//Now look for any eContent that is defined within the ils
-			List<RecordInfo> econtentRecords = loadUnsuppressedEContentItems(groupedWork, identifier, record);
-			if (isItemlessPhysicalRecordToRemove && econtentRecords.isEmpty()){
-				// If the ILS record is both an itemless record and isn't econtent skip further processing of the record
+			List<RecordInfo> eContentRecords = loadUnsuppressedEContentItems(groupedWork, identifier, record);
+			if (isItemlessPhysicalRecordToRemove && eContentRecords.isEmpty()){
+				// If the ILS record is both an itemless record and isn't eContent skip further processing of the record
 				return;
 			}
-			allRelatedRecords.addAll(econtentRecords);
+			allRelatedRecords.addAll(eContentRecords);
 
 			//Since print formats are loaded at the record level, do it after we have loaded items
 			loadPrintFormatInformation(recordInfo, record);
@@ -701,6 +697,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private SimpleDateFormat dateAddedFormatter = null;
 	private SimpleDateFormat lastCheckInFormatter = null;
+
 	void getPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField, RecordIdentifier identifier) {
 		if (dateAddedFormatter == null){
 			dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
