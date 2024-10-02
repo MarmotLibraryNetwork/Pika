@@ -31,7 +31,7 @@ class SelfReg extends Action {
 //			header('Location: ' . $library->externalSelfRegistrationUrl);
 //			die;
 //		}else
-		// Code block above is disabled because Sacramento would like use the Pika self-reg for patrons with out email addresses
+		// Code block above is disabled because Sacramento would like use the Pika self-reg for patrons without email addresses
 		// as a fallback from their default external service.
 			if (!$library->enableSelfRegistration){
 			// Do not display self-registration page or allow form-submission when the library hasn't enabled self-registration.
@@ -44,7 +44,7 @@ class SelfReg extends Action {
 		// Connect to Catalog
 		$this->catalog = CatalogFactory::getCatalogConnectionInstance();
 	}
-
+    
 	function launch($msg = null){
 		global $interface;
 		global $library;
@@ -60,7 +60,7 @@ class SelfReg extends Action {
 
 		if (isset($_REQUEST['submit'])){
 
-			if (isset($configArray['ReCaptcha']['privateKey'])){
+			if (!empty($configArray['ReCaptcha']['privateKey'])){
 				try {
 					$recaptchaValid = recaptchaCheckAnswer();
 				} catch (Exception $e){
@@ -102,7 +102,7 @@ class SelfReg extends Action {
 		$interface->assign('saveButtonText', 'Register');
 
 		// Set up captcha to limit spam self registrations
-		if (isset($configArray['ReCaptcha']['publicKey'])){
+		if (isset($configArray['ReCaptcha']['publicKey']) && $configArray['ReCaptcha']['publicKey'] !== ''){
 			$captchaCode = recaptchaGetQuestion();
 			$interface->assign('captcha', $captchaCode);
 		}
