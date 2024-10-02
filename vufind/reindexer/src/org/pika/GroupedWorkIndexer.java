@@ -1383,7 +1383,7 @@ public class GroupedWorkIndexer {
 			if (lexileInformation.containsKey(isbn)) {
 				LexileTitle lexileTitle = lexileInformation.get(isbn);
 				String      lexileCode  = lexileTitle.getLexileCode();
-				if (lexileCode.length() > 0) {
+				if (!lexileCode.isEmpty()) {
 					groupedWork.setLexileCode(this.translateSystemValue("lexile_code", lexileCode, groupedWork.getId()));
 				}
 				groupedWork.setLexileScore(lexileTitle.getLexileScore());
