@@ -39,13 +39,17 @@ import java.util.Date;
  * Time: 10:18 PM
  */
 public class HorizonExportMain {
-	private static Logger            logger;
-	private static String            serverName; //Pika instance name
-	private static IndexingProfile   indexingProfile;
-	private static Connection        pikaConn;
-	private static MarcRecordGrouper recordGroupingProcessor;
+	private static Logger              logger;
+	private static String              serverName; //Pika instance name
+	private static IndexingProfile     indexingProfile;
+	private static Connection          pikaConn;
+	private static MarcRecordGrouper   recordGroupingProcessor;
+	private static PikaSystemVariables systemVariables;
+	private static String              sysVarName = "holdsCountFileLastModTime";
+	private static boolean             hadErrors  = false;
 
 	private static PreparedStatement updateExtractInfoStatement;
+	private static long holdFileLastModified;
 
 	public static void main(String[] args) {
 		serverName = args[0];
@@ -61,7 +65,7 @@ public class HorizonExportMain {
 			System.out.println("Could not find log4j configuration " + log4jFile);
 			System.exit(1);
 		}
-		logger.info(startTime + ": Starting Horizon Export");
+		logger.info("{}: Starting Horizon Export", startTime);
 
 		// Read the base INI file to get information about the server (current directory/conf/config.ini)
 		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
@@ -75,10 +79,10 @@ public class HorizonExportMain {
 		pikaConn = null;
 		try {
 			String databaseConnectionInfo = PikaConfigIni.getIniValue("Database", "database_vufind_jdbc");
-			pikaConn                           = DriverManager.getConnection(databaseConnectionInfo);
-			updateExtractInfoStatement         = pikaConn.prepareStatement("INSERT INTO ils_extract_info (indexingProfileId, ilsId, lastExtracted) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted)"); // unique key is indexingProfileId and ilsId combined
+			pikaConn                   = DriverManager.getConnection(databaseConnectionInfo);
+			updateExtractInfoStatement = pikaConn.prepareStatement("INSERT INTO ils_extract_info (indexingProfileId, ilsId, lastExtracted) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted)"); // unique key is indexingProfileId and ilsId combined
 		} catch (Exception e) {
-			System.out.println("Error connecting to pika database " + e.toString());
+			System.out.println("Error connecting to pika database " + e);
 			System.exit(1);
 		}
 
@@ -87,10 +91,15 @@ public class HorizonExportMain {
 		//Setup other systems we will use
 		initializeRecordGrouper(pikaConn);
 
+		// Start up systemVariables
+		systemVariables = new PikaSystemVariables(logger, pikaConn);
+
+		//Check for a new holds file
+		processNewHoldsFile(pikaConn);
+
 		//Look for any exports from Horizon that have not been processed
 		processChangesFromHorizon();
 
-		//TODO: Get a list of records with holds on them?
 
 		//Cleanup
 		if (pikaConn != null) {
@@ -98,14 +107,102 @@ public class HorizonExportMain {
 				//Close the connection
 				pikaConn.close();
 			} catch (Exception e) {
-				System.out.println("Error closing connection: " + e.toString());
-				e.printStackTrace();
+				System.out.println("Error closing connection: " + e);
+				logger.error("Error closing connection", e);
 			}
 		}
 
 		Date currentTime = new Date();
-		logger.info(currentTime.toString() + ": Finished Horizon Export");
+		logger.info("{}: Finished Horizon Export", currentTime);
 	}
+
+	/**
+	 * Check the marc folder to see if the holds files have been updated since the last export time.
+	 * If so, load a count of holds per bib and then update the database.
+	 *
+	 * @param pikaConn       the connection to the database
+	 */
+	private static void processNewHoldsFile(Connection pikaConn) {
+		HashMap<Long, Integer> holdsByBib = new HashMap<>();
+		boolean                completed  = false;
+		boolean                writeHolds = false;
+		File                   holdFile   = new File(indexingProfile.marcPath + "/holdsCount.csv");
+		if (holdFile.exists()) {
+			Long lastProcessedFileModTime = systemVariables.getLongValuedVariable(sysVarName);
+			holdFileLastModified = holdFile.lastModified();
+			if (lastProcessedFileModTime == null || holdFileLastModified > lastProcessedFileModTime) {
+				long now = new Date().getTime();
+				if (now - holdFileLastModified > 2 * 24 * 60 * 60 * 1000) {
+					logger.warn("Holds File was last written more than 2 days ago");
+				} else {
+					writeHolds = true;
+					long lastCatalogIdRead = 0L;
+					try (
+									BufferedReader reader = new BufferedReader(new FileReader(holdFile));
+					){
+						// Ignore first three lines
+						reader.readLine();
+						reader.readLine();
+						reader.readLine();
+						String line = reader.readLine();
+						while (line != null) {
+							int firstComma = line.indexOf(',');
+							if (firstComma > 0) {
+								try {
+									String catalogIdStr = line.substring(0, firstComma).trim();
+									String countStr     = line.substring(firstComma + 1).trim();
+									long   catalogId    = Long.parseLong(catalogIdStr);
+									int    count        = Integer.parseInt(countStr);
+									holdsByBib.put(catalogId, count);
+									lastCatalogIdRead = catalogId;
+								} catch (NumberFormatException e) {
+									logger.error("Error parsing holds count file line : {}", line, e);
+								}
+							}
+							line = reader.readLine();
+						}
+					} catch (Exception e) {
+						logger.error("Error reading holds file ", e);
+						hadErrors = true;
+					}
+					logger.info("Read {} bibs with holds, lastCatalogIdRead = {}", holdsByBib.size(), lastCatalogIdRead);
+				}
+			}
+		} else {
+			logger.warn("No holds file found at " + indexingProfile.marcPath + "/holdsCount.csv");
+			hadErrors = true;
+		}
+
+		//Now that we've counted all the holds, update the database
+		if (!hadErrors && writeHolds) {
+			try {
+				pikaConn.setAutoCommit(false);
+				pikaConn.prepareCall("TRUNCATE ils_hold_summary").executeUpdate();  // Truncate so that id value doesn't grow beyond column size
+				logger.info("Removed existing hold counts");
+				PreparedStatement updateHoldsStmt = pikaConn.prepareStatement("INSERT INTO ils_hold_summary (ilsId, numHolds) VALUES (?, ?)");
+				for (long ilsId : holdsByBib.keySet()) {
+					Integer holdsCount = holdsByBib.get(ilsId);
+					updateHoldsStmt.setLong(1, ilsId);
+					updateHoldsStmt.setInt(2, holdsCount);
+					int numUpdates = updateHoldsStmt.executeUpdate();
+					if (numUpdates != 1) {
+						logger.warn("Hold was not inserted {}, {}", ilsId, holdsCount);
+					}
+				}
+				pikaConn.commit();
+				pikaConn.setAutoCommit(true);
+				logger.info("Finished adding new holds to the database");
+				completed = true;
+				} catch (Exception e) {
+				logger.error("Error updating holds database", e);
+				hadErrors = true;
+			}
+		}
+		if (completed){
+			systemVariables.setVariable(sysVarName, holdFileLastModified);
+		}
+	}
+
 
 	/**
 	 * Processes the exports from Horizon.  If a record appears in multiple extracts,
