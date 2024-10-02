@@ -275,7 +275,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 							translationMap.addValue(translationMapValuesRS.getString("value"), translationMapValuesRS.getString("translation"));
 						}
 					} catch (Exception e) {
-						logger.error("Error loading translation map " + mapName, e);
+						logger.error("Error loading translation map {}", mapName, e);
 					}
 					translationMaps.put(translationMap.getMapName(), translationMap);
 				}
@@ -348,7 +348,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			subFolderName = shortId.substring(0, shortId.length() - numCharsToCreateFolderFrom);
 		}
 
-		String basePath           = individualMarcPath + "/" + subFolderName;
+		String basePath = individualMarcPath + "/" + subFolderName;
 		return basePath + "/" + shortId + ".mrc";
 	}
 
@@ -360,10 +360,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		try{
 			//If the entire bib is suppressed, update stats and bail out now.
-			if (isBibSuppressed(record)){
-				if (logger.isDebugEnabled()) {
-					logger.debug("Bib record " + identifier + " is suppressed, skipping");
-				}
+			if (isBibSuppressed(record)) {
+				logger.debug("Bib record {} is suppressed, skipping", identifier);
 				return;
 			}
 
@@ -379,20 +377,18 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (checkIfBibShouldBeRemovedAsItemless(recordInfo)) {
 				isItemlessPhysicalRecordToRemove = true;
 				groupedWork.removeRelatedRecord(recordInfo);
-				if (logger.isDebugEnabled()) {
-					logger.debug("Removing related print record for " + identifier + " because there are no print copies, no on order copies and suppress itemless bibs is on");
-				}
+				logger.debug("Removing related print record for {} because there are no print copies, no on order copies and suppress itemless bibs is on", identifier);
 			}else{
 				allRelatedRecords.add(recordInfo);
 			}
 
 			//Now look for any eContent that is defined within the ils
-			List<RecordInfo> econtentRecords = loadUnsuppressedEContentItems(groupedWork, identifier, record);
-			if (isItemlessPhysicalRecordToRemove && econtentRecords.isEmpty()){
-				// If the ILS record is both an itemless record and isn't econtent skip further processing of the record
+			List<RecordInfo> eContentRecords = loadUnsuppressedEContentItems(groupedWork, identifier, record);
+			if (isItemlessPhysicalRecordToRemove && eContentRecords.isEmpty()){
+				// If the ILS record is both an itemless record and isn't eContent skip further processing of the record
 				return;
 			}
-			allRelatedRecords.addAll(econtentRecords);
+			allRelatedRecords.addAll(eContentRecords);
 
 			//Since print formats are loaded at the record level, do it after we have loaded items
 			loadPrintFormatInformation(recordInfo, record);
@@ -701,6 +697,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private SimpleDateFormat dateAddedFormatter = null;
 	private SimpleDateFormat lastCheckInFormatter = null;
+
 	void getPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField, RecordIdentifier identifier) {
 		if (dateAddedFormatter == null){
 			dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
@@ -714,8 +711,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		ItemInfo itemInfo = new ItemInfo();
 		//Load base information from the Marc Record
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
-		if (itemInfo.getItemIdentifier() == null && logger.isInfoEnabled() ){
-			logger.info("Found item with out identifier info " + identifier);
+		if (itemInfo.getItemIdentifier() == null){
+			logger.info("Found item with out identifier info {}", identifier);
 		}
 
 		String itemStatus   = getItemStatus(itemField, identifier);
@@ -784,7 +781,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 						recordInfo.setFormatBoost(Integer.parseInt(formatBoost));
 					}
 				} catch (Exception e) {
-					logger.warn("Could not get boost for format " + format);
+					logger.warn("Could not get boost for format {}", format);
 				}
 			}
 		}
@@ -793,6 +790,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		//loadScopeInfoForPrintIlsItem(recordInfo, groupedWork.getTargetAudiences(), itemInfo, record);
 
 		groupedWork.addKeywords(itemLocation);
+		// Adds untranslated location codes, why?
+		//TODO: explain use-case here; otherwise this looks unneeded and should be removed
+
 
 		recordInfo.addItem(itemInfo);
 	}
@@ -1302,9 +1302,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 				//Suppress iCode2 codes
 				if (iCode2sToSuppressPattern.matcher(iCode2).matches()) {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Item record is suppressed due to ICode2 " + iCode2);
-					}
+					logger.debug("Item record is suppressed due to ICode2 {}", iCode2);
 					return true;
 				}
 			}
