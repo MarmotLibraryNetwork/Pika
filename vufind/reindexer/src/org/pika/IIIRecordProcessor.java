@@ -474,7 +474,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	}
 
 	public boolean isEmptyDueDate(String dueDate) {
-		return dueDate == null || dueDate.length() == 0 || dueDate.trim().equals("-  -");
+		return dueDate == null || dueDate.isEmpty() || dueDate.trim().equals("-  -");
 	}
 
 	private SimpleDateFormat displayDateFormatter = new SimpleDateFormat("MMM d, yyyy");
