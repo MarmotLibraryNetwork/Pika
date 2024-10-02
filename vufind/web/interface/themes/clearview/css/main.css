@@ -345,7 +345,7 @@ h6,
 .h5,
 .h6 {
   font-family: "Sen", sans-serif;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.1;
   color: #2D5D82;
 }
@@ -3262,6 +3262,8 @@ input[type="button"].btn-block {
   font-size: 13px;
   line-height: 1.5;
   border-radius: 3px;
+  font-family: "Noto Sans", sans-serif;
+  font-size: 12.5px;
 }
 .btn-group-lg > .btn {
   padding: 10px 16px;
@@ -10470,4 +10472,13 @@ fieldset[disabled] .btn-masquerade.active {
 .result-title:active,
 .result-title:visited {
   color: #2D5D82;
+}
+.btn-sm {
+  font-family: "Noto Sans", sans-serif;
+  font-size: 12.5px;
+}
+@media only screen and (max-width: 1199px) and (min-width: 768px) {
+  .facetList .facetTitle.panel-title {
+    font-size: 15px;
+  }
 }
