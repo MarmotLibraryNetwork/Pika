@@ -1460,11 +1460,13 @@ public class PolarisExportMain {
 							if (barcode != null) {
 								itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.barcodeSubfield, barcode.trim()));
 							} else {
-								if (circStatus == null || !circStatus.equals("In-Process")) {
-									logger.error("Item {} had no barcode: {}", itemId, itemInfo);
+								if (circStatus == null){
+									logger.error("Status-less item {} had no barcode: {}", itemId, itemInfo);
+								}	else if (!circStatus.equals("In-Process") && !circStatus.equals("On-Order")) {
+									logger.error("Item {} with status {} had no barcode: {}", itemId, circStatus, itemInfo);
 								} else {
-									// Items with status "In-Process" regularly don't have a barcode yet.
-									logger.debug("In-Processing item {} had no barcode: {}", itemId, itemInfo);
+									// Items with status "In-Process" or "On-Order" regularly don't have a barcode yet.
+									logger.debug("{} item {} had no barcode: {}", circStatus, itemId, itemInfo);
 								}
 							}
 							if (itemInfo.has("CallNumber")) {
