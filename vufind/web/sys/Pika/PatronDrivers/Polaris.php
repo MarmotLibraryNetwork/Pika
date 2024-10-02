@@ -25,12 +25,12 @@
  *
  * This class implements the Polaris API for patron interactions:
  * https://documentation.iii.com/polaris/PAPI/current/PAPIService/PAPIServiceOverview.htm
- * 
+ *
  * Implementing the driver for new libraries
  * * A [Carriers] section will be needed in the config files.
  * * Override the class variable ereceipt_options to fit the libraries needs in an extending class
- * 
- * 
+ *
+ *
  * @category Pika
  * @package  PatronDrivers
  * @author   Chris Froese
@@ -64,7 +64,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
 
     /**
      * $notification_options How the patron will receive notifications. This value will likely be overriden in an extending class.
-     * 
+     *
      * @var array
      */
     public array $notification_options = [
@@ -75,25 +75,25 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         4 => "Phone 2",
         5 => "Phone 3",
         6 => "Fax",
-        8 => "Text Message"
+        8 => "Text Message",
     ];
-    
+
     /**
-     * $ereceipt_options This value will likely be overriden in an extending class  
+     * $ereceipt_options This value will likely be overriden in an extending class
      * @var array
      */
     public array $ereceipt_options = [
         0 => "None",
-        // the documentation differs between create and update patron methods on what the options are for ereceipts.
+        // the documentation differs between create and update patron methods on what the options for ereceipts.
         // 1 => "Mail", The documentation doesn't show this as an option
         2 => "Email",
-        // 3 => "Phone 1",
-        // 4 => "Phone 2",
-        // 5 => "Phone 3",
-        // 6 => "FAX", Current docuemntation doesn't show fax or EDI as options
+        3 => "Phone 1",
+        4 => "Phone 2",
+        5 => "Phone 3",
+        // 6 => "FAX", Current documentation doesn't show fax or EDI as options
         // 7 => "EDI",
         8 => "Text Message",
-        100 => "Email and Text Message"
+        100 => "Email and Text Message",
     ];
 
     /**
@@ -109,7 +109,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
      * $valid_registration_fileds Valid fields for new patron registration
      * @var array
      */
-    public array $valid_registration_fileds = [
+    public array $valid_registration_fields = [
         "PatronBranchID",
         "PostalCode",
         "ZipPlusFour",
@@ -156,9 +156,9 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         "LegalNameMiddle",
         "UseLegalNameOnNotices",
         "RequestPickupBranchID",
-        "UseSingleName"
+        "UseSingleName",
     ];
-    
+
     /**
      * $api_access_key Polaris web service access key, maps to Catalog->clientKey
      * @var string
@@ -223,7 +223,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     }
 
     /******************** Authentication ********************/
-    
+
     /**
      * patronLogin
      *
@@ -251,7 +251,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         // barcode might actually be username so well "validate" the patron first to make sure we have a good
         // barcode.
         $r = $this->validatePatron($barcode, $pin);
-        if($r === null || !isset($r->PatronBarcode)) {
+        if ($r === null || !isset($r->PatronBarcode)) {
             return null;
         }
         $valid_barcode = $r->PatronBarcode;
@@ -266,10 +266,10 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         }
 
         $patron = $this->getPatron($patron_ils_id, $valid_barcode, $pin);
-        if($patron === null) {
+        if ($patron === null) {
             return null;
         }
-        
+
         // check for password update
         $patron_pw = $patron->getPassword();
         if (!isset($patron_pw) || $patron_pw !== $pin) {
@@ -315,7 +315,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $c = new Curl();
         $c->setOpts($c_opts);
         $c->get($request_url);
-        
+
         if ($c->error || $c->httpStatusCode !== 200) {
             $this->logger->error(
                 'Curl error: ' . $c->errorMessage,
@@ -358,7 +358,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         return base64_encode($hash);
     }
 
-    
+
     /**
      * Get a patrons ILS patron id
      *
@@ -435,20 +435,20 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $l->find();
         $l->orderBy('displayName');
         $homeLocations = $l->fetchAll('ilsLocationId', 'displayName');
-        
+
         $carrier_options = $this->configArray['Carriers'];
         $ereceipt_options = $this->ereceipt_options;
         $notice_options = $this->notification_options;
-        
+
         $fields = [];
-        
+
         $fields[] = [
             'property' => 'personal-info',
             'type' => 'header',
             'value' => 'Personal Information',
-            'class'=> 'h3'
+            'class' => 'h3',
         ];
-        
+
         $fields[] = [
             'property' => 'NameFirst',
             'type' => 'text',
@@ -456,7 +456,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'Your first name',
             'maxLength' => 50,
             'required' => true,
-            'autocomplete' => 'given-name'
+            'autocomplete' => 'given-name',
         ];
 
         $fields[] = [
@@ -466,7 +466,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'Your middle name or initial',
             'maxLength' => 30,
             'required' => false,
-            'autocomplete' => 'additional-name'
+            'autocomplete' => 'additional-name',
         ];
 
         $fields[] = [
@@ -476,19 +476,19 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'Your last name (surname)',
             'maxLength' => 40,
             'required' => true,
-            'autocomplete' => 'family-name'
+            'autocomplete' => 'family-name',
         ];
 
-        if($this->configArray['Polaris']['showLegalName']) {
+        if ($this->configArray['Polaris']['showLegalName']) {
             $fields[] = [
                 'property' => 'personal-info',
                 'type' => 'header',
                 'value' => 'Legal Name',
-                'class'=> 'h4',
+                'class' => 'h4',
                 'description' => 'If the name on your identification is different than specified above, please indicate the full name on your identification. If you wish to use the name on your identification for receiving print or phone notices from the library, please check the box below.',
-                'showDescription' => true
+                'showDescription' => true,
             ];
-            
+
             $fields[] = [
                 'property' => 'LegalNameFirst',
                 'type' => 'text',
@@ -496,7 +496,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 'description' => 'Your legal first name',
                 'maxLength' => 50,
                 'required' => false,
-                'autocomplete' => 'given-name'
+                'autocomplete' => 'given-name',
             ];
 
             $fields[] = [
@@ -506,7 +506,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 'description' => 'Your legal middle name or initial',
                 'maxLength' => 30,
                 'required' => false,
-                'autocomplete' => 'additional-name'
+                'autocomplete' => 'additional-name',
             ];
 
             $fields[] = [
@@ -516,7 +516,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 'description' => 'Your legal last name (surname)',
                 'maxLength' => 40,
                 'required' => false,
-                'autocomplete' => 'family-name'
+                'autocomplete' => 'family-name',
             ];
 
             $fields[] = [
@@ -524,10 +524,10 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 'type' => 'checkbox',
                 'label' => 'Use legal name on notices?',
                 'description' => 'Check this box if you wish to use legal name on notices.',
-                'required' => false
+                'required' => false,
             ];
         }
-        
+
         $fields[] = [
             'property' => 'Birthdate',
             'type' => 'date',
@@ -535,7 +535,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'Date of birth',
             'maxLength' => 10,
             'required' => true,
-            'autocomplete' => 'bday'
+            'autocomplete' => 'bday',
         ];
 
         $fields[] = [
@@ -544,16 +544,16 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'label' => 'Home Library/Preferred pickup location',
             'description' => 'Your home library and preferred pickup location.',
             'values' => $homeLocations,
-            'required' => true
+            'required' => true,
         ];
 
         $fields[] = [
             'property' => 'contact-info',
             'type' => 'header',
             'value' => 'Contact Information',
-            'class'=> 'h3'
+            'class' => 'h3',
         ];
-        
+
         $fields[] = [
             'property' => 'StreetOne',
             'type' => 'text',
@@ -561,7 +561,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'Mailing Address line 1',
             'maxLength' => 40,
             'required' => true,
-            'autocomplete' => 'street-address'
+            'autocomplete' => 'street-address',
         ];
 
         $fields[] = [
@@ -571,7 +571,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'Mailing Address line 2',
             'maxLength' => 40,
             'required' => false,
-            'autocomplete' => 'street-address'
+            'autocomplete' => 'street-address',
         ];
 
         $fields[] = [
@@ -581,7 +581,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'The city you receive mail in.',
             'maxLength' => 128,
             'required' => true,
-            'autocomplete' => 'address-level2'
+            'autocomplete' => 'address-level2',
         ];
 
         $fields[] = [
@@ -591,7 +591,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'The state you receive mail in.',
             'maxLength' => 20,
             'required' => true,
-            'autocomplete' => 'address-level1'
+            'autocomplete' => 'address-level1',
         ];
 
         $fields[] = [
@@ -601,7 +601,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'The ZIP code for your mail.',
             'maxLength' => 16,
             'required' => true,
-            'autocomplete' => 'postal-code'
+            'autocomplete' => 'postal-code',
         ];
 
         $fields[] = [
@@ -611,7 +611,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'Your primary phone number.',
             'maxLength' => 20,
             'required' => false,
-            'autocomplete' => 'tel-national'
+            'autocomplete' => 'tel-national',
         ];
 
         $fields[] = [
@@ -620,10 +620,10 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'label' => 'Primary Phone Carrier',
             'description' => 'The carrier of your primary phone.',
             'values' => $carrier_options,
-            'required' => false
+            'required' => false,
         ];
-        
-        if($this->configArray['Polaris']['showPhone2']) {
+
+        if ($this->configArray['Polaris']['showPhone2']) {
             $fields[] = [
                 'property' => 'PhoneVoice2',
                 'type' => 'tel',
@@ -631,7 +631,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 'description' => 'Your secondary phone number.',
                 'maxLength' => 20,
                 'required' => false,
-                'autocomplete' => 'tel-national'
+                'autocomplete' => 'tel-national',
             ];
 
             $fields[] = [
@@ -640,11 +640,11 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 'label' => 'Secondary Phone Carrier',
                 'description' => 'The carrier of your secondary phone.',
                 'values' => $carrier_options,
-                'required' => false
+                'required' => false,
             ];
         }
 
-        if($this->configArray['Polaris']['showPhone3']) {
+        if ($this->configArray['Polaris']['showPhone3']) {
             $fields[] = [
                 'property' => 'PhoneVoice3',
                 'type' => 'tel',
@@ -652,7 +652,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 'description' => 'Alternate phone number.',
                 'maxLength' => 20,
                 'required' => false,
-                'autocomplete' => 'tel-national'
+                'autocomplete' => 'tel-national',
             ];
 
             $fields[] = [
@@ -661,10 +661,10 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 'label' => 'Alternate Phone Carrier',
                 'description' => 'The carrier of your alternate phone.',
                 'values' => $carrier_options,
-                'required' => false
+                'required' => false,
             ];
         }
-        
+
         $fields[] = [
             'property' => 'EmailAddress',
             'type' => 'email',
@@ -672,24 +672,24 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'description' => 'Your email address',
             'maxLength' => 128,
             'required' => false,
-            'autocomplete' => 'email'
+            'autocomplete' => 'email',
         ];
 
         $fields[] = [
             'property' => 'notifications-info',
             'type' => 'header',
             'value' => 'Notifications Settings',
-            'class'=> 'h3'
+            'class' => 'h3',
         ];
-        
+
         // If multiple phone numbers are allowed, select the correct one for text messages
         // If multiple phones aren't enabled, default to phone 1
-        if($this->configArray['Polaris']['showPhone2'] || $this->configArray['Polaris']['showPhone3']) {
+        if ($this->configArray['Polaris']['showPhone2'] || $this->configArray['Polaris']['showPhone3']) {
             $text_phone_options = [1 => 'Primary Phone'];
-            if($this->configArray['Polaris']['showPhone2']) {
+            if ($this->configArray['Polaris']['showPhone2']) {
                 $text_phone_options[2] = 'Secondary Phone';
             }
-            if($this->configArray['Polaris']['showPhone3']) {
+            if ($this->configArray['Polaris']['showPhone3']) {
                 $text_phone_options[3] = 'Alternate Phone';
             }
             $fields[] = [
@@ -707,7 +707,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 'value' => '1',
             ];
         }
-        
+
         $fields[] = [
             'property' => 'DeliveryOptionID',
             'type' => 'enum',
@@ -725,15 +725,15 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'values' => $ereceipt_options,
             'required' => false,
         ];
-        
-        
+
+
         $fields[] = [
             'property' => 'credentials-info',
             'type' => 'header',
             'value' => 'Username and ' . translate('PIN'),
-            'class'=> 'h3'
+            'class' => 'h3',
         ];
-        
+
         $fields[] = [
             'property' => 'UserName',
             'type' => 'text',
@@ -742,9 +742,9 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'maxLength' => 20,
             'required' => false,
             'autocomplete' => 'username',
-            'showDescription' => true
+            'showDescription' => true,
         ];
-        
+
         $fields[] = [
             'property' => 'Password',
             'type' => 'pin',
@@ -762,7 +762,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'maxLength' => 10,
             'required' => true,
         ];
-        
+
         return $fields;
     }
 
@@ -778,24 +778,41 @@ class Polaris extends PatronDriverInterface implements DriverInterface
      *
      * @return array An array containing the success status (`success` as `true` or `false`) and the patron's barcode if the registration is successful.
      */
-    public function selfRegister($extra_params = []) {
+    public function selfRegister(array $extra_params = []): array
+    {
         // /public/patron
         $patron_registration = [];
         // required credentials
         $patron_registration['LogonBranchID'] = 1; // default to system
         $patron_registration['LogonUserID'] = (int)$this->configArray['Polaris']['staffUserId'];
         $patron_registration['LogonWorkstationID'] = (int)$this->configArray['Polaris']['workstationId'];
-        
+
         foreach ($_REQUEST as $key => $value) {
-            if(in_array($key, $this->valid_registration_fileds, true)) {
-                if($key === 'Birthdate') {
+            if (in_array($key, $this->valid_registration_fields, true)) {
+                if ($key === 'Birthdate') {
                     $ts = strtotime($value);
-                    $patron_registration[$key] = gmdate('r',);
+                    $patron_registration[$key] = gmdate('r', $ts);
                     continue;
                 }
-                // type these fields as integers.
-                if(in_array($key, ["PatronBranchID", "DeliveryOptionID", "EReceiptOptionID", "RequestPickupBranchID", "Phone1CarrierID"])){
-                    $patron_registration[$key] = (int)$value;
+                if($key === 'UseLegalNameOnNotices' && $value === 'on') {
+                    $patron_registration[$key] = true;
+                    continue;
+                }
+                // type these fields as integers and remove the added *Select from the string.
+                if (in_array($key,
+                    [
+                        // handle the added *Select to the id and name fields. Not sure why this is added-- not needed.
+                        "PatronBranchIDSelect",
+                        "DeliveryOptionIDSelect",
+                        "EReceiptOptionIDSelect",
+                        "RequestPickupBranchIDSelect",
+                        "Phone1CarrierIDSelect",
+                        "Phone2CarrierIDSelect",
+                        "Phone3CarrierIDSelect"
+                    ],
+                )) {
+                    $new_key = str_ireplace('select', '', $key);
+                    $patron_registration[$new_key] = (int)$value;
                     continue;
                 }
                 $patron_registration[$key] = $value;
@@ -805,47 +822,109 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         // EXTRA SELF REG PARAMETERS
         // a class extending this class use this for library specific needs.
         // do this last in case there are any parameters that need to be overridden
-        if ($extra_params){
+        if ($extra_params) {
             $patron_registration = array_merge($patron_registration, $extra_params);
         }
 
         $return = ['success' => false, 'barcode' => ''];
-        
+
         $request_url = $this->ws_url . "/patron";
         $extra_headers = ["Content-Type: application/json"];
         $c = $this->_doSystemRequest('POST', $request_url, $patron_registration, $extra_headers);
-        
+
         // todo: self registration doesn't have any error return to display to the patron
         // use this if that changes.
         if ($c === null) {
-            if(isset($this->papiLastErrorMessage)) {
+            if (isset($this->papiLastErrorMessage)) {
                 $self_reg_error_message = $this->papiLastErrorMessage;
             }
             return $return;
         }
         
+        // send self registration email
+        if(!empty($_REQUEST['EmailAddress']) && trim($_REQUEST['EmailAddress']) !== '') {
+            $email_vars = [
+                'email' => trim($_REQUEST['EmailAddress']),
+                'barcode' => $c->response->Barcode,
+                'ils_branch_id' => $_REQUEST['PatronBranchID'],
+                'name' => $_REQUEST['NameFirst'] . ' ' . $_REQUEST['NameLast']
+            ];
+            $email_sent = $this->sendSelfRegSuccessEmail($email_vars);
+        }
+        
         $return['success'] = true;
         $return['barcode'] = $c->response->Barcode;
-        
+
         return $return;
     }
+
+    /**
+     * Sends a confirmation email to the patron after a successful self-registration.
+     *
+     * This method composes and sends an email to the newly registered patron, using the provided email variables.
+     * The email includes the patron's barcode, name, and the library's name and catalog URL. The email content is
+     * generated using a template file. If the email is successfully sent, the method returns `true`; otherwise,
+     * it returns `false` in case of failure or if the library location cannot be found.
+     *
+     * @param array $email_vars An array of variables needed for the email, including the patron's email, name,
+     * library branch ID, and barcode.
+     *
+     * @return bool `true` if the email is sent successfully, `false` if there is an error or the location cannot be found.
+     */
+    public function sendSelfRegSuccessEmail(aray $email_vars): bool
+    {
+        global $interface;
+        
+        $location_id = $this->polarisBranchIdToLocationId($email_vars['ils_branch_id']);
+        $location = new Location();
+        $location->locationId = $location_id;
+        if(!$location->find(true)) {
+            return false;
+        }
+        
+        $location_name = $location->displayName;
+        $catalog_url = $location->catalogUrl ?? $_SERVER['REMOTE_HOST'];
+
+        $interface->assign('emailAddress', $email_vars['email']);
+        $interface->assign('patronName', $email_vars['name']);
+        $interface->assign('libraryName', $location_name);
+        $interface->assign('catalogUrl', $catalog_url);
+        $interface->assign('barcode', $email_vars['barcode']);
+        $emailBody = $interface->fetch('Emails/self-registration.tpl');
+        try {
+            $mailer = new PHPMailer;
+            $mailer->setFrom($this->configArray['Site']['email']);
+            $mailer->addAddress($email_vars['email']);
+            $mailer->Subject = '[DO NOT REPLY] Your new library card at ' . $location_name;
+            $mailer->Body    = $emailBody;
+            $mailer->send();
+        } catch (\Exception $e) {
+            $this->logger->error($mailer->ErrorInfo);
+            return false;
+        }
+        return true;
+    }
     
-    public function getNotificationOptions() {
+    public function getNotificationOptions()
+    {
         return $this->notification_options;
     }
-    
-    public function getErecieptionOptions() {
+
+    public function getErecieptionOptions()
+    {
         return $this->ereceipt_options;
     }
-    
-    public function getEmailFormatOptions() {
+
+    public function getEmailFormatOptions()
+    {
         return $this->email_format_options;
     }
-    
-    public function getPhoneCarrierOptions() {
+
+    public function getPhoneCarrierOptions()
+    {
         return $this->configArray['Carriers'];
     }
-    
+
     /***************** READING HISTORY ****************/
     /**
      * Fetch a patrons reading history from Polaris ILS
@@ -863,7 +942,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         if ($patron->trackReadingHistory != 1) {
             return ['historyActive' => false, 'numTitles' => 0, 'titles' => []];
         }
-        
+
         // rowsperpage=5&page=0 will return all reading history
         $request_url = $this->ws_url . "/patron/{$patron->barcode}/readinghistory?rowsperpage=5&page=0";
         $c = $this->_doPatronRequest($patron, 'GET', $request_url);
@@ -895,9 +974,9 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 $title['linkUrl'] = $record->getGroupedWorkDriver()->getLinkUrl();
                 $title['coverUrl'] = $record->getBookcoverUrl('medium');
             } else {
-	            $title['title']  = $row->Title;
-	            $title['author'] = $row->Author;
-	            $title['format'] = $row->FormatDescription;
+                $title['title'] = $row->Title;
+                $title['author'] = $row->Author;
+                $title['format'] = $row->FormatDescription;
             }
             $titles[] = $title;
         }
@@ -950,12 +1029,12 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 $title['author'] = $record->getPrimaryAuthor();
                 $title['format'] = $record->getFormat();
                 $title['title_sort'] = $record->getSortableTitle();
-            }else{
-	            $title['title']      = $row->Title;
-	            $title['author']     = $row->Author;
-	            $title['format']     = $row->FormatDescription;
-							$simpleSortTitle     = preg_replace('/^The\s|^An?\s/i', '', $row->Title); // remove beginning The, A, or An
-	            $title['title_sort'] = $simpleSortTitle;
+            } else {
+                $title['title'] = $row->Title;
+                $title['author'] = $row->Author;
+                $title['format'] = $row->FormatDescription;
+                $simpleSortTitle = preg_replace('/^The\s|^An?\s/i', '', $row->Title); // remove beginning The, A, or An
+                $title['title_sort'] = $simpleSortTitle;
             }
             $titles[] = $title;
         }
@@ -1097,20 +1176,21 @@ class Polaris extends PatronDriverInterface implements DriverInterface
 
 
     /******************** Errors ********************/
-    protected function _isError($r) {
-        if ($r->error || $r->httpStatusCode !== 200) {
-            $this->logger->error(
-                'Curl error: ' . $c->errorMessage,
-                ['http_code' => $c->httpStatusCode],
-                ['RequestURL' => $request_url, "Headers" => $headers],
-            );
-            return null;
-        } elseif ($error = $this->_isPapiError($c->response)) {
-            $this->_logPapiError($error);
-            return null;
-        }
+    protected function _isError($r)
+    { // todo: finish this up
+//        if ($r->error || $r->httpStatusCode !== 200) {
+//            $this->logger->error(
+//                'Curl error: ' . $c->errorMessage,
+//                ['http_code' => $c->httpStatusCode],
+//                ['RequestURL' => $request_url, "Headers" => $headers],
+//            );
+//            return null;
+//        } elseif ($error = $this->_isPapiError($c->response)) {
+//            $this->_logPapiError($error);
+//            return null;
+//        }
     }
-    
+
     /**
      * Check Polaris web service return for an api error
      *
@@ -1182,9 +1262,9 @@ class Polaris extends PatronDriverInterface implements DriverInterface
 
         $create_user = false;
 
-	    $user            = new User();
-	    $user->ilsUserId = $ils_id;
-	    $user->source    = $this->accountProfile->recordSource;
+        $user = new User();
+        $user->ilsUserId = $ils_id;
+        $user->source = $this->accountProfile->recordSource;
 
         if (!$user->find(true) || $user->N === 0) {
             // if there's no patron in database
@@ -1201,14 +1281,14 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         // get the basic user data from the Polaris API
         $request_url = $this->ws_url . '/patron/' . $barcode . '/basicdata?addresses=true';
         $patron_access_secret = $this->_getCachePatronSecret($ils_id, $pin);
-        if($patron_access_secret === false) {
+        if ($patron_access_secret === false) {
             $auth = $this->authenticatePatron($barcode, $pin);
-            if($auth === null) {
+            if ($auth === null) {
                 return null;
             }
             $patron_access_secret = $auth->AccessSecret;
         }
-        
+
         $hash = $this->_createHash('GET', $request_url, $patron_access_secret);
 
         $headers = [
@@ -1307,14 +1387,14 @@ class Polaris extends PatronDriverInterface implements DriverInterface
 
         // Location name
         $user->homeLocation = $patron_location_display_name;
-        
+
         // Preferred pickup location
         $pickup_location = new Location();
         $pickup_location->ilsLocationId = $patron_response->RequestPickupBranchID;
-        if($pickup_location->find(true)){
+        if ($pickup_location->find(true)) {
             $user->preferredPickupLocationCode = $pickup_location->code;
         } else {
-            $user->preferredPickupLocationCode = ''; 
+            $user->preferredPickupLocationCode = '';
         }
         $user->preferredPickupLocationId = $patron_response->RequestPickupBranchID;
 
@@ -1327,7 +1407,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $user->legalFullName = ($patron_response->LegalFullName === '') ? null : $patron_response->LegalFullName;
         // Name preference for notices
         $user->useLegalNameOnNotices = (bool)$patron_response->UseLegalNameOnNotices;
-        
+
         // Expiration
         // date can be returned in Microsoft format
         if ($this->isMicrosoftDate($patron_response->ExpirationDate)) {
@@ -1370,7 +1450,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         //6 - Fax
         //8 - Text Message
         $user->noticePreferenceId = $patron_response->DeliveryOptionID;
-        
+
         switch ($patron_response->DeliveryOptionID) {
             case 1:
                 $user->noticePreferenceLabel = 'Mail';
@@ -1391,12 +1471,12 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 $user->noticePreferenceLabel = null;
                 break;
         }
-        
+
         // The ID corresponding to the type of e receipt the patron has selected
-        $user->ereceiptId = $patron_response->EmailFormatID;
+        $user->ereceiptId = $patron_response->EReceiptOptionID;
         // The ID corresponding to the type of emails the patron want to receive (plain or HTMl)
-        $user->emailFormatId = $patron_response->EReceiptOptionID;
-        
+        $user->emailFormatId = $patron_response->EmailFormatID;
+
         // Checkouts and holds count
         // Polaris returns number of ILS AND number of ILL holds in counts.
         $user->numHoldsIls = $patron_response->HoldRequestsCurrentCount;
@@ -1505,7 +1585,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             } else {
                 $checkout['coverUrl'] = '';
                 $checkout['groupedWorkId'] = '';
-								$checkout['title']  = $c->Title ?? '';
+                $checkout['title'] = $c->Title ?? '';
                 $checkout['format'] = $c->FormatDescription ?? 'Unknown';
                 $checkout['author'] = $c->Author ?? '';
             }
@@ -1542,48 +1622,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         return ['success' => true, 'message' => "Your checkout has been renewed."];
     }
 
-    protected function isMicrosoftDate($microsoftDate)
-    {
-        if (preg_match('/^\/?Date\((\d+)([+-]\d{4})\)\/?$/', $microsoftDate, $matches)) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Converts a Microsoft format date to ISO 8601 format.
-     *
-     * The Microsoft format date is typically in the form of "Date(1835074800000-0700)",
-     * where the number represents the number of milliseconds since the Unix epoch (January 1, 1970),
-     * and the timezone offset indicates the offset from UTC.
-     *
-     * @param string $microsoftDate The Microsoft format date string.
-     * @return string The date in ISO 8601 format.
-     * @throws Exception If the provided date string is not in a valid Microsoft format.
-     */
-    protected function microsoftDateToISO($microsoftDate)
-    {
-        // Extract the timestamp and the timezone offset from the Microsoft date format
-        if (preg_match('/^\/?Date\((\d+)([+-]\d{4})\)\/?$/', $microsoftDate, $matches)) {
-            $timestamp = $matches[1] / 1000; // Convert milliseconds to seconds
-            $timestamp = (int)$timestamp; // cast to an int in case of decimel
-            $timezoneOffset = $matches[2];
-
-            // Create a DateTime object from the timestamp
-            $dateTime = new DateTime("@$timestamp");
-
-            // Set the timezone offset
-            $hours = substr($timezoneOffset, 0, 3);
-            $minutes = substr($timezoneOffset, 0, 1) . substr($timezoneOffset, 3, 2);
-            $dateTime->setTimezone(new DateTimeZone("$hours:$minutes"));
-
-            // Return the date in ISO 8601 format
-            return $dateTime->format('c');
-        } else {
-            throw new RuntimeException("Invalid Microsoft date format: $microsoftDate");
-        }
-    }
-
 
     /**
      * Executes a patron-specific HTTP request with the specified method, URL, and request body.
@@ -1608,7 +1646,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $body = [],
         $extra_headers = []
     ): ?Curl {
-
         $patron_access_secret = $this->_getCachePatronSecret($patron->ilsUserId, $patron->getPassword());
         if ($patron_access_secret === false) {
             $patron_pin = $patron->getPassword();
@@ -1671,7 +1708,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 $c->get($url);
                 break;
             case 'POST':
-                if(is_array($body)) {
+                if (is_array($body)) {
                     $body = json_encode($body);
                 }
                 $c->post($url, $body);
@@ -1825,7 +1862,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     }
 
     /******************** Utilities ********************/
-    
+
     /** Caching **/
     /**
      * Save a user object to cache
@@ -1839,7 +1876,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $expires = 30;
         return $this->cache->set($patron_object_cache_key, $patron, $expires);
     }
-    
+
     /**
      * Remove a patron object from cache
      *
@@ -1851,6 +1888,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $patron_object_cache_key = $this->cache->makePatronKey('patron', $patron_ils_id);
         return $this->cache->delete($patron_object_cache_key);
     }
+
     /**
      * Get a user object from cache
      *
@@ -1861,7 +1899,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     {
         $patron_object_cache_key = $this->cache->makePatronKey('patron', $patron_ils_id);
         $patron = $this->cache->get($patron_object_cache_key, false);
-        if($patron !== false) {
+        if ($patron !== false) {
             $this->logger->info('Patron object found in cache.');
             return $patron;
         } else {
@@ -1880,7 +1918,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     {
         $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret_' . md5($patron_ils_id . $patron_pin);
         $key = $this->cache->get($patron_secret_cache_key, false);
-        if($key !== false) {
+        if ($key !== false) {
             $this->logger->info('Patron secret found in cache.');
             return $key;
         } else {
@@ -1911,7 +1949,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     protected function _setCachePatronSecret($patron_ils_id, $patron_secret, $pin): bool
     {
         $patron_secret_cache_key = 'patronilsid' . $patron_ils_id . 'secret_' . md5($patron_ils_id . $pin);
-        $expires = 60 * 60 * 23;
+        $expires = 60 * 60; // todo: one hour until we get an expiration date and time from the api
         return $this->cache->set($patron_secret_cache_key, $patron_secret, $expires);
     }
 
@@ -2031,7 +2069,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             }
             if ($hold->StatusID === 6) { // ready for pickup
                 $availableHolds[] = $h;
-            } elseif ($hold->StatusID !== 8 && $hold->StatusID !== 9  && $hold->StatusID !== 16) { // status 16 is canceled items. don't show unless ILL request
+            } elseif ($hold->StatusID !== 8 && $hold->StatusID !== 9 && $hold->StatusID !== 16) { // status 16 is canceled items. don't show unless ILL request
                 $unavailableHolds[] = $h;
             }
         } // end foreach
@@ -2123,6 +2161,16 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         return null;
     }
 
+    protected function locationCodeToPolarisBranchId($branch_name)
+    {
+        $location = new Location();
+        $location->code = $branch_name;
+        if ($location->find(true) && $location->N === 1) {
+            return $location->ilsLocationId;
+        }
+        return null;
+    }
+    
     public function getIllCover()
     {
         global $library;
@@ -2433,16 +2481,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         return ['success' => true, 'message' => "The pickup location has been updated."];
     }
 
-    protected function locationCodeToPolarisBranchId($branch_name)
-    {
-        $location = new Location();
-        $location->code = $branch_name;
-        if ($location->find(true) && $location->N === 1) {
-            return $location->ilsLocationId;
-        }
-        return null;
-    }
-
     /**
      * @inheritDoc
      */
@@ -2510,9 +2548,9 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         // /public/patron/{PatronBarcode}
         $this->_deleteCachePatronObject($patron->ilsUserId);
         $patron->clearCache();
-        
+
         $contact = [];
-        
+
         // required credentials
         $contact['LogonBranchID'] = 1; // default to system
         $contact['LogonUserID'] = $this->configArray['Polaris']['staffUserId'];
@@ -2520,17 +2558,33 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         // patron updates
         // if a field isn't required and is not set, don't include in the update request
         // PhoneVoice1 maps to get patrons PhoneNumber when "GET"ing the patron
-        if(isset($_REQUEST['phone'])) { $contact['PhoneVoice1'] = $_REQUEST['phone']; }
-        if(isset($_REQUEST['phone2'])) { $contact['PhoneVoice2'] = $_REQUEST['phone2']; }
-        if(isset($_REQUEST['phone3'])) { $contact['PhoneVoice3'] = $_REQUEST['phone3']; }
-        if(isset($_REQUEST['Phone1CarrierID'])) { $contact['Phone1CarrierID'] = (int)$_REQUEST['Phone1CarrierID']; }
-        if(isset($_REQUEST['Phone2CarrierID'])) { $contact['Phone2CarrierID'] = (int)$_REQUEST['Phone2CarrierID']; }
-        if(isset($_REQUEST['Phone3CarrierID'])) { $contact['Phone3CarrierID'] = (int)$_REQUEST['Phone3CarrierID']; }
-        if(isset($_REQUEST['email'])) { $contact['EmailAddress'] = trim($_REQUEST['email']); }
-        
+        if (isset($_REQUEST['phone'])) {
+            $contact['PhoneVoice1'] = $_REQUEST['phone'];
+        }
+        if (isset($_REQUEST['phone2'])) {
+            $contact['PhoneVoice2'] = $_REQUEST['phone2'];
+        }
+        if (isset($_REQUEST['phone3'])) {
+            $contact['PhoneVoice3'] = $_REQUEST['phone3'];
+        }
+        if (isset($_REQUEST['Phone1CarrierID'])) {
+            $contact['Phone1CarrierID'] = (int)$_REQUEST['Phone1CarrierID'];
+        }
+        if (isset($_REQUEST['Phone2CarrierID'])) {
+            $contact['Phone2CarrierID'] = (int)$_REQUEST['Phone2CarrierID'];
+        }
+        if (isset($_REQUEST['Phone3CarrierID'])) {
+            $contact['Phone3CarrierID'] = (int)$_REQUEST['Phone3CarrierID'];
+        }
+        if (isset($_REQUEST['email'])) {
+            $contact['EmailAddress'] = trim($_REQUEST['email']);
+        }
+
         $address['AddressID'] = (int)$patron->address_id;
         $address['StreetOne'] = $_REQUEST['address1'];
-        if(isset($_REQUEST['address2'])) { $address['StreetTwo'] = $_REQUEST['address2']; }
+        if (isset($_REQUEST['address2'])) {
+            $address['StreetTwo'] = $_REQUEST['address2'];
+        }
         $address['City'] = $_REQUEST['city'];
         $address['State'] = $_REQUEST['state'];
         $address['PostalCode'] = $_REQUEST['zip'];
@@ -2538,7 +2592,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $contact['PatronAddresses'][] = $address;
         // pickup branch 
         $contact['RequestPickupBranchID'] = $_REQUEST['pickupLocation'];
-        
+
         $errors = [];
         $request_url = $this->ws_url . "/patron/{$patron->barcode}";
         $extra_headers = ["Content-Type: application/json"];
@@ -2573,7 +2627,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         // /public/patron/{PatronBarcode}/username/{NewUsername}
         $this->_deleteCachePatronObject($patron->ilsUserId);
         $patron->clearCache();
-        
+
         // update patron username
         $username = trim($_REQUEST['alternate_username']);
         if (empty($username)) {
@@ -2628,7 +2682,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
 
         $request_url = $this->ws_url . "/patron/{$patron->barcode}";
         $extra_headers = ["Content-Type: application/json"];
-        
+
         $errors = [];
         $r = $this->_doPatronRequest($patron, 'PUT', $request_url, $update, $extra_headers);
         if ($r === null) {
@@ -2642,27 +2696,28 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         // success update the pin in the database
         $patron->setPassword($new_pin);
         $patron->update();
-        
+
         $errors[] = 'Your ' . translate('pin') . ' was updated successfully.';
         return $errors;
     }
 
-    protected function updateNotificationsPreferences($patron) {
+    protected function updateNotificationsPreferences($patron)
+    {
         $this->_deleteCachePatronObject($patron->ilsUserId);
         $patron->clearCache();
-        
+
         $notification_preferences = [];
         // required credentials
         $notification_preferences['LogonBranchID'] = 1; // default to system
-        $notification_preferences['LogonUserID'] = $this->configArray['Polaris']['staffUserId'];
-        $notification_preferences['LogonWorkstationID'] = $this->configArray['Polaris']['workstationId'];
+        $notification_preferences['LogonUserID'] = (int)$this->configArray['Polaris']['staffUserId'];
+        $notification_preferences['LogonWorkstationID'] = (int)$this->configArray['Polaris']['workstationId'];
         // notifications
-        $notification_preferences['DeliveryOptionID'] = $_REQUEST['notification_method'];
-        $notification_preferences['EmailFormat'] = $_REQUEST['email_format'];
-        $notification_preferences['EReceiptOptionID'] = $_REQUEST['ereceipt_method'];
-        
+        $notification_preferences['DeliveryOptionID'] = (int)$_REQUEST['notification_method'];
+        $notification_preferences['EmailFormat'] = (int)$_REQUEST['email_format'];
+        $notification_preferences['EReceiptOptionID'] = (int)$_REQUEST['ereceipt_method'];
+
         $errors = [];
-        
+
         $request_url = $this->ws_url . "/patron/{$patron->barcode}";
         $extra_headers = ["Content-Type: application/json"];
 
@@ -2689,8 +2744,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             return ['error' => 'Unable to reset your ' . translate('pin') . '. Please try again later.'];
         } elseif ($pinReset->N == 0) {
             return [
-                'error' => 'Unable to reset your ' . translate('pin') . '. You have not requested a ' . 
-                    translate('pin',) . ' reset.'
+                'error' => 'Unable to reset your ' . translate('pin') . '. You have not requested a ' .
+                    translate('pin') . ' reset.',
             ];
         }
         // expired?
@@ -2782,8 +2837,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             return false;
         }
     }
-
-
+    
     protected function getPolarisOrganizations()
     {
         // /public/organizations/all
@@ -2823,6 +2877,47 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         return $c;
     }
 
+    protected function isMicrosoftDate($microsoftDate)
+    {
+        if (preg_match('/^\/?Date\((\d+)([+-]\d{4})\)\/?$/', $microsoftDate, $matches)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Converts a Microsoft format date to ISO 8601 format.
+     *
+     * The Microsoft format date is typically in the form of "Date(1835074800000-0700)",
+     * where the number represents the number of milliseconds since the Unix epoch (January 1, 1970),
+     * and the timezone offset indicates the offset from UTC.
+     *
+     * @param string $microsoftDate The Microsoft format date string.
+     * @return string The date in ISO 8601 format.
+     * @throws Exception If the provided date string is not in a valid Microsoft format.
+     */
+    protected function microsoftDateToISO($microsoftDate)
+    {
+        // Extract the timestamp and the timezone offset from the Microsoft date format
+        if (preg_match('/^\/?Date\((\d+)([+-]\d{4})\)\/?$/', $microsoftDate, $matches)) {
+            $timestamp = $matches[1] / 1000; // Convert milliseconds to seconds
+            $timestamp = (int)$timestamp; // cast to an int in case of decimel
+            $timezoneOffset = $matches[2];
+
+            // Create a DateTime object from the timestamp
+            $dateTime = new DateTime("@$timestamp");
+
+            // Set the timezone offset
+            $hours = substr($timezoneOffset, 0, 3);
+            $minutes = substr($timezoneOffset, 0, 1) . substr($timezoneOffset, 3, 2);
+            $dateTime->setTimezone(new DateTimeZone("$hours:$minutes"));
+
+            // Return the date in ISO 8601 format
+            return $dateTime->format('c');
+        } else {
+            throw new RuntimeException("Invalid Microsoft date format: $microsoftDate");
+        }
+    }
     protected array $polaris_errors = [
         '-201' => 'Failed to insert entry in addresses table',
         '-221' => 'Failed to insert entry in PostalCodes table',
