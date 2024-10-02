@@ -80,8 +80,6 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashSet<String>          keywords                 = new HashSet<>();
 	private HashSet<String>          languages                = new HashSet<>();
 	private HashSet<String>          translations             = new HashSet<>();
-	private Long                     languageBoost            = 1L;
-	private Long                     languageBoostSpanish     = 1L;
 //	private HashSet<String>          lccns                    = new HashSet<>();
 	private HashSet<String>          lcSubjects               = new HashSet<>();
 	private int                      lexileScore              = -1;
@@ -90,7 +88,6 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashMap<String, Integer> literaryFormFull         = new HashMap<>();
 	private HashMap<String, Integer> literaryForm             = new HashMap<>();
 	private HashSet<String>          mpaaRatings              = new HashSet<>();
-	private Long                     numHoldings              = 0L;
 	private HashSet<String>          oclcs                    = new HashSet<>();
 	private HashSet<String>          physicals                = new HashSet<>();
 	private double                   popularity;
@@ -305,7 +302,7 @@ public class GroupedWorkSolr implements Cloneable {
 		checkDefaultValue(targetAudience, "Unknown");
 		checkDefaultValue(targetAudience, "Other");
 		doc.addField("target_audience", targetAudience);
-		if (systemLists.size() > 0) {
+		if (!systemLists.isEmpty()) {
 			doc.addField("system_list", systemLists);
 		}
 		//Date added to catalog
@@ -329,7 +326,7 @@ public class GroupedWorkSolr implements Cloneable {
 				long bibDaysSinceAdded = (indexTime - publicationTime) / (long)(1000 * 60 * 60 * 24);
 				if (bibDaysSinceAdded < 0) {
 					if (groupedWorkIndexer.fullReindex) {
-						logger.warn("Using Publication date to calculate Days since added value " + bibDaysSinceAdded + " is negative for grouped work " + id);
+						logger.warn("Using Publication date to calculate Days since added value {} is negative for grouped work {}", bibDaysSinceAdded, id);
 					}
 					bibDaysSinceAdded = 0;
 					doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
@@ -351,13 +348,13 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("mpaa_rating", mpaaRatings);
 		doc.addField("awards_facet", awards);
 		doc.addField("lexile_score", lexileScore);
-		if (lexileCode.length() > 0) {
+		if (!lexileCode.isEmpty()) {
 			doc.addField("lexile_code", Util.trimTrailingPunctuation(lexileCode));
 		}
-		if (fountasPinnell.length() > 0){
+		if (!fountasPinnell.isEmpty()){
 			doc.addField("fountas_pinnell", fountasPinnell);
 		}
-		if (acceleratedReaderInterestLevel != null && acceleratedReaderInterestLevel.length() > 0) {
+		if (acceleratedReaderInterestLevel != null && !acceleratedReaderInterestLevel.isEmpty()) {
 			doc.addField("accelerated_reader_interest_level", Util.trimTrailingPunctuation(acceleratedReaderInterestLevel));
 		}
 		if (Util.isNumeric(acceleratedReaderReadingLevel)) {
@@ -367,7 +364,7 @@ public class GroupedWorkSolr implements Cloneable {
 			doc.addField("accelerated_reader_point_value", acceleratedReaderPointValue);
 		}
 		//EContent fields
-		if (econtentDevices.size() > 0) {
+		if (!econtentDevices.isEmpty()) {
 			doc.addField("econtent_device", econtentDevices);
 		}
 
@@ -400,7 +397,6 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("callnumber-subject", callNumberSubject);
 		//relevance determiners
 		doc.addField("popularity", Long.toString((long)popularity));
-//		doc.addField("num_holdings", numHoldings);
 		//pika enrichment
 		doc.addField("rating", userRating == 0.0f ? 2.5f : userRating); // Since the user rating is used in boost factor and sorting, when there has been no ratings, use a "neutral" value of 2.5
 		doc.addField("rating_facet", getUserRatingFacetValues(userRating));
@@ -691,7 +687,7 @@ public class GroupedWorkSolr implements Cloneable {
 					ScopingInfo otherScope = curScopingInfo.get(otherScopeName);
 					if (!otherScope.equals(curScope)) {
 						Scope otherScopeDetails = otherScope.getScope();
-						if (otherScopeDetails.getAdditionalLocationsToShowAvailabilityFor().length() > 0){
+						if (!otherScopeDetails.getAdditionalLocationsToShowAvailabilityFor().isEmpty()){
 							if (otherScopeDetails.getAdditionalLocationsToShowAvailabilityForPattern().matcher(curScopeName).matches()){
 								addAvailabilityToggleValues(doc, curRecord, otherScopeName, availabilityToggleValues);
 								addUniqueFieldValue(doc, "owning_location_" + otherScopeName, owningLocationFacetLabel);
@@ -827,7 +823,7 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	private void addUniqueFieldValues(SolrInputDocument doc, String fieldName, Collection<String> values){
-		if (values.size() == 0) return;
+		if (values.isEmpty()) return;
 		for (String value : values){
 			addUniqueFieldValue(doc, fieldName, value);
 		}
@@ -988,7 +984,7 @@ public class GroupedWorkSolr implements Cloneable {
 		//Remove the default value if we get something more specific
 		if (valuesCollection.contains(defaultValue) && valuesCollection.size() > 1){
 			valuesCollection.remove(defaultValue);
-		}else if (valuesCollection.size() == 0){
+		}else if (valuesCollection.isEmpty()){
 			valuesCollection.add(defaultValue);
 		}
 	}
@@ -997,7 +993,7 @@ public class GroupedWorkSolr implements Cloneable {
 		//Remove the default value if we get something more specific
 		if (valuesCollection.containsKey(defaultValue) && valuesCollection.size() > 1){
 			valuesCollection.remove(defaultValue);
-		}else if (valuesCollection.size() == 0){
+		}else if (valuesCollection.isEmpty()){
 			valuesCollection.put(defaultValue, 1);
 		}
 	}
@@ -1055,13 +1051,13 @@ public class GroupedWorkSolr implements Cloneable {
 			if (updateTitle){
 				//Strip out anything in brackets unless that would cause us to show nothing
 				String tmpTitle = removeBracketsPattern.matcher(shortTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0 && !punctuationPattern.matcher(tmpTitle).replaceAll("").trim().isEmpty()){
+				if (!tmpTitle.isEmpty() && !punctuationPattern.matcher(tmpTitle).replaceAll("").trim().isEmpty()){
 					// Also avoid trimming titles like: [Alpha], [beta], [gamma]-- [zeta]
 					shortTitle = tmpTitle;
 				}
 				//Remove common formats
 				tmpTitle = commonSubtitlePattern.matcher(shortTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0){
+				if (!tmpTitle.isEmpty()){
 					shortTitle = tmpTitle;
 				}
 				this.title       = shortTitle;
@@ -1071,12 +1067,12 @@ public class GroupedWorkSolr implements Cloneable {
 					sortableTitle = Util.trimTrailingPunctuation(sortableTitle);
 					//Strip out anything in brackets unless that would cause us to show nothing
 					tmpTitle = removeBracketsPattern.matcher(sortableTitle).replaceAll("").trim();
-					if (tmpTitle.length() > 0 && !punctuationPattern.matcher(tmpTitle).replaceAll("").trim().isEmpty()) {
+					if (!tmpTitle.isEmpty() && !punctuationPattern.matcher(tmpTitle).replaceAll("").trim().isEmpty()) {
 						sortableTitle = tmpTitle;
 					}
 					//Remove common formats
 					tmpTitle = commonSubtitlePattern.matcher(sortableTitle).replaceAll("").trim();
-					if (tmpTitle.length() > 0) {
+					if (!tmpTitle.isEmpty()) {
 						sortableTitle = tmpTitle;
 					}
 					//remove punctuation from the sortable title
@@ -1088,14 +1084,14 @@ public class GroupedWorkSolr implements Cloneable {
 				displayTitle = Util.trimTrailingPunctuation(displayTitle);
 				//Strip out anything in brackets unless that would cause us to show nothing
 				tmpTitle = removeBracketsPattern.matcher(displayTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0 && !punctuationPattern.matcher(tmpTitle).replaceAll("").trim().isEmpty()){
+				if (!tmpTitle.isEmpty() && !punctuationPattern.matcher(tmpTitle).replaceAll("").trim().isEmpty()){
 					// prevent empty display title
 					// also prevent display title of only punctuation
 					displayTitle = tmpTitle;
 				}
 				//Remove common formats
 				tmpTitle = commonSubtitlePattern.matcher(displayTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0){
+				if (!tmpTitle.isEmpty()){
 					displayTitle = tmpTitle;
 				}
 				this.displayTitle = displayTitle.trim();
@@ -1120,12 +1116,12 @@ public class GroupedWorkSolr implements Cloneable {
 			subTitle = Util.trimTrailingPunctuation(subTitle);
 			//Strip out anything in brackets unless that would cause us to show nothing
 			String tmpTitle = removeBracketsPattern.matcher(subTitle).replaceAll("").trim();
-			if (tmpTitle.length() > 0){
+			if (!tmpTitle.isEmpty()){
 				subTitle = tmpTitle;
 			}
 			//Remove common formats
 			tmpTitle = commonSubtitlePattern.matcher(subTitle).replaceAll("").trim();
-			if (tmpTitle.length() > 0){
+			if (!tmpTitle.isEmpty()){
 				subTitle = tmpTitle;
 			}
 			this.subTitle = subTitle;
@@ -1449,10 +1445,6 @@ public class GroupedWorkSolr implements Cloneable {
 		this.groupingCategory = groupingCategory;
 	}
 
-//	void addHoldings(int recordHoldings) {
-//		this.numHoldings += recordHoldings;
-//	}
-
 	void addPopularity(double itemPopularity) {
 		this.popularity += itemPopularity;
 	}
@@ -1691,18 +1683,6 @@ public class GroupedWorkSolr implements Cloneable {
 		this.eras.add(Util.trimTrailingPunctuation(fieldValue));
 	}
 
-//	void setLanguageBoost(Long languageBoost) {
-//		if (languageBoost > this.languageBoost){
-//			this.languageBoost = languageBoost;
-//		}
-//	}
-//
-//	void setLanguageBoostSpanish(Long languageBoostSpanish) {
-//		if (languageBoostSpanish > this.languageBoostSpanish){
-//			this.languageBoostSpanish = languageBoostSpanish;
-//		}
-//	}
-//
 //	void setLanguages(HashSet<String> languages) {
 //		this.languages.addAll(languages);
 //	}
@@ -1730,7 +1710,7 @@ public class GroupedWorkSolr implements Cloneable {
 		if (cleanDate != null){
 			this.publicationDates.add(cleanDate);
 			//Convert the date to a long and see if it is before the current date
-			Long pubDateLong = Long.parseLong(cleanDate);
+			long pubDateLong = Long.parseLong(cleanDate);
 			if (earliestPublicationDate == null || pubDateLong < earliestPublicationDate){
 				earliestPublicationDate = pubDateLong;
 			}
@@ -1826,7 +1806,7 @@ public class GroupedWorkSolr implements Cloneable {
 		if (averagePatronRating > 0) {
 			patronRatingFacet.add("oneStar");
 		}
-		if (patronRatingFacet.size() == 0) {
+		if (patronRatingFacet.isEmpty()) {
 			patronRatingFacet.add("Unrated");
 		}
 		return patronRatingFacet;
@@ -1853,7 +1833,7 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void setFountasPinnell(String fountasPinnell){
-		if (this.fountasPinnell.length() == 0) {
+		if (this.fountasPinnell.isEmpty()) {
 			this.fountasPinnell = fountasPinnell;
 		}
 	}
@@ -1900,7 +1880,7 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void addDescription(String description, @NotNull String recordFormat){
-		if (description == null || description.length() == 0){
+		if (description == null || description.isEmpty()){
 			return;
 		}
 		this.description.add(description);

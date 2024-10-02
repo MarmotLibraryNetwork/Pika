@@ -134,6 +134,17 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		return !status.isEmpty() && validOnOrderRecordStatus.indexOf(status.charAt(0)) >= 0;
 	}
 
+	@Override
+	protected void loadOrderIds(GroupedWorkSolr groupedWork, Record record) {
+		//Load order ids from recordNumberTag
+		Set<String> recordIds = MarcUtil.getFieldList(record, recordNumberTag + "a"); //TODO: refactor to use the record number subfield indicator
+		for(String recordId : recordIds){
+			if (recordId.startsWith(".o")){
+				groupedWork.addAlternateId(recordId);
+			}
+		}
+	}
+
 	private void loadLoanRuleInformation(Connection pikaConn, Logger logger) {
 		if (!loanRuleDataLoaded) {
 			//Load loan rules
@@ -186,7 +197,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	 * Several pieces of logic and fields are specific to Sierra (probably Millennium in the past)
 	 *
 	 */
-//	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems){
+//	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record){
 //		List<DataField> orderFields = MarcUtil.getDataFields(record, orderTag);
 //		for (DataField curOrderField : orderFields){
 //			//Check here to make sure the order item is valid before doing further processing.
@@ -252,7 +263,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 //				}
 //			}
 //		}
-//		if (!hasTangibleItems && recordInfo.getNumCopiesOnOrder() > 0){
+//		if (!recordInfo.getNumPrintCopies() > 0 && recordInfo.getNumCopiesOnOrder() > 0){
 //			groupedWork.addKeywords("On Order");
 //			groupedWork.addKeywords("Coming Soon");
 //			/*//Don't do this anymore, see D-1893
@@ -317,7 +328,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 								break;
 							} else {
 								pTypesNotAccountedFor.removeAll(curDeterminer.getPatronTypes());
-								if (pTypesNotAccountedFor.size() == 0) {
+								if (pTypesNotAccountedFor.isEmpty()) {
 									break;
 								}
 							}
@@ -335,7 +346,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 
 	private boolean isPTypeValid(HashSet<Long> determinerPatronTypes, HashSet<Long> pTypesToCheck) {
 		//For our case,
-		if (pTypesToCheck.size() == 0){
+		if (pTypesToCheck.isEmpty()){
 			return true;
 		}
 		for (Long determinerPType : determinerPatronTypes){
@@ -472,7 +483,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			Date dateAdded = dueDateFormatter.parse(dueDate);
 			return displayDateFormatter.format(dateAdded);
 		}catch (Exception e){
-			logger.warn("Could not load display due date for dueDate " + dueDate + " for identifier " + identifier, e);
+			logger.warn("Could not load display due date for dueDate {} for identifier {}", dueDate, identifier, e);
 		}
 		return "Unknown";
 	}

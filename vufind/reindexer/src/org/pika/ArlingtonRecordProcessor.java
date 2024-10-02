@@ -276,29 +276,29 @@ class ArlingtonRecordProcessor extends SierraRecordProcessor {
 		return unsuppressedEcontentRecords;
 	}
 
-	boolean checkIfBibShouldBeRemovedAsItemless(RecordInfo recordInfo) {
-		if (recordInfo.getNumPrintCopies() == 0 && recordInfo.getNumCopiesOnOrder() == 0 && suppressItemlessBibs){
-			return true;
-			//Need to do additional work to determine exactly how Arlington wants bibs with volumes, but no items
-			//to show.  See #D-81
-/*			boolean hasVolumeRecords = recordsWithVolumes.contains(recordInfo.getFullIdentifier());
-			if (hasVolumeRecords){
-				//Add a fake record for use in scoping
-				recordInfo.setHasVolumes(true);
-				ItemInfo volumeInfo = new ItemInfo();
-				volumeInfo.setItemIdentifier("tmpVolume");
-				for (Scope scope: indexer.getScopes()){
-					volumeInfo.addScope(scope);
-				}
-				recordInfo.addItem(volumeInfo);
-				return false;
-			}else{
-				return true;
-			}*/
-		}else{
-			return false;
-		}
-	}
+//	boolean checkIfBibShouldBeRemovedAsItemless(RecordInfo recordInfo) {
+//		if (super.checkIfBibShouldBeRemovedAsItemless(recordInfo)){
+//			return true;
+//			//Need to do additional work to determine exactly how Arlington wants bibs with volumes, but no items
+//			//to show.  See #D-81
+///*			boolean hasVolumeRecords = recordsWithVolumes.contains(recordInfo.getFullIdentifier());
+//			if (hasVolumeRecords){
+//				//Add a fake record for use in scoping
+//				recordInfo.setHasVolumes(true);
+//				ItemInfo volumeInfo = new ItemInfo();
+//				volumeInfo.setItemIdentifier("tmpVolume");
+//				for (Scope scope: indexer.getScopes()){
+//					volumeInfo.addScope(scope);
+//				}
+//				recordInfo.addItem(volumeInfo);
+//				return false;
+//			}else{
+//				return true;
+//			}*/
+//		}else{
+//			return false;
+//		}
+//	}
 
 	/**
 	 * For Arlington do not load Bisac Subjects and load full stings with subfields for topics

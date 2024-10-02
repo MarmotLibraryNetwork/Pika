@@ -18,13 +18,23 @@
 // Core variables and mixins
 @import (reference) "../../responsive/css/variables.less";
 @import (reference) "variables.less";
+@import (reference) "fonts.less";
 
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
-
 .result-title {
   .allLinkStates({
-    color: @clearviewBlack;
+    color: @headings-color;
   })
+}
+
+.btn-sm{
+  font-family: @noto;
+  font-size:12.5px;
+}
+@media only screen and (max-width:1199px) and (min-width:768px) {
+  .facetList .facetTitle.panel-title {
+    font-size: 15px;
+  }
 }

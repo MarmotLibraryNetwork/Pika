@@ -265,7 +265,7 @@ html {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 body {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Noto Sans", sans-serif;
   font-size: 15px;
   line-height: 1.734;
   color: #333333;
@@ -344,10 +344,10 @@ h6,
 .h4,
 .h5,
 .h6 {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-weight: 500;
+  font-family: "Sen", sans-serif;
+  font-weight: 700;
   line-height: 1.1;
-  color: #181818;
+  color: #2D5D82;
 }
 h1 small,
 h2 small,
@@ -3262,6 +3262,8 @@ input[type="button"].btn-block {
   font-size: 13px;
   line-height: 1.5;
   border-radius: 3px;
+  font-family: "Noto Sans", sans-serif;
+  font-size: 12.5px;
 }
 .btn-group-lg > .btn {
   padding: 10px 16px;
@@ -6808,7 +6810,7 @@ a:hover {
           text-decoration: underline dotted;
 }
 body {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Noto Sans", sans-serif;
   background-color: #fff;
   color: #454545;
 }
@@ -9929,7 +9931,7 @@ a.browse-thumbnail-sorted.active {
 #explore-more-body .sectionHeader {
   text-transform: uppercase;
   font-weight: bold;
-  color: #000075;
+  color: #2D5D82;
   border-bottom: 2px solid #0072BC;
   margin-top: 15px;
 }
@@ -9938,7 +9940,7 @@ a.browse-thumbnail-sorted.active {
   margin-bottom: 20px;
 }
 #explore-more-body .subsectionTitle {
-  color: #000075;
+  color: #2D5D82;
 }
 #explore-more-body .jcarousel-wrapper {
   margin-left: -5px;
@@ -10469,5 +10471,14 @@ fieldset[disabled] .btn-masquerade.active {
 .result-title:hover,
 .result-title:active,
 .result-title:visited {
-  color: #181818;
+  color: #2D5D82;
+}
+.btn-sm {
+  font-family: "Noto Sans", sans-serif;
+  font-size: 12.5px;
+}
+@media only screen and (max-width: 1199px) and (min-width: 768px) {
+  .facetList .facetTitle.panel-title {
+    font-size: 15px;
+  }
 }

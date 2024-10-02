@@ -64,6 +64,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private String lastCheckInFormat;
 	private char   dateCreatedSubfield;
 	private String dateAddedFormat;
+	protected boolean loadDateAddedFromRecord = false;
 	char locationSubfieldIndicator;
 	private Pattern nonHoldableLocations;
 	Pattern statusesToSuppressPattern    = null;
@@ -274,7 +275,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 							translationMap.addValue(translationMapValuesRS.getString("value"), translationMapValuesRS.getString("translation"));
 						}
 					} catch (Exception e) {
-						logger.error("Error loading translation map " + mapName, e);
+						logger.error("Error loading translation map {}", mapName, e);
 					}
 					translationMaps.put(translationMap.getMapName(), translationMap);
 				}
@@ -347,7 +348,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			subFolderName = shortId.substring(0, shortId.length() - numCharsToCreateFolderFrom);
 		}
 
-		String basePath           = individualMarcPath + "/" + subFolderName;
+		String basePath = individualMarcPath + "/" + subFolderName;
 		return basePath + "/" + shortId + ".mrc";
 	}
 
@@ -359,10 +360,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		try{
 			//If the entire bib is suppressed, update stats and bail out now.
-			if (isBibSuppressed(record)){
-				if (logger.isDebugEnabled()) {
-					logger.debug("Bib record " + identifier + " is suppressed, skipping");
-				}
+			if (isBibSuppressed(record)) {
+				logger.debug("Bib record {} is suppressed, skipping", identifier);
 				return;
 			}
 
@@ -372,26 +371,24 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				logger.debug("Added record for " + identifier + " work now has " + groupedWork.getNumRecords() + " records");
 			}
 			loadUnsuppressedPrintItems(groupedWork, recordInfo, identifier, record);
-			loadOnOrderItems(groupedWork, recordInfo, record, recordInfo.getNumPrintCopies() > 0);
+			loadOnOrderItems(groupedWork, recordInfo, record);
 			//If we don't get anything remove the record we just added
 			boolean isItemlessPhysicalRecordToRemove = false;
 			if (checkIfBibShouldBeRemovedAsItemless(recordInfo)) {
 				isItemlessPhysicalRecordToRemove = true;
 				groupedWork.removeRelatedRecord(recordInfo);
-				if (logger.isDebugEnabled()) {
-					logger.debug("Removing related print record for " + identifier + " because there are no print copies, no on order copies and suppress itemless bibs is on");
-				}
+				logger.debug("Removing related print record for {} because there are no print copies, no on order copies and suppress itemless bibs is on", identifier);
 			}else{
 				allRelatedRecords.add(recordInfo);
 			}
 
 			//Now look for any eContent that is defined within the ils
-			List<RecordInfo> econtentRecords = loadUnsuppressedEContentItems(groupedWork, identifier, record);
-			if (isItemlessPhysicalRecordToRemove && econtentRecords.isEmpty()){
-				// If the ILS record is both an itemless record and isn't econtent skip further processing of the record
+			List<RecordInfo> eContentRecords = loadUnsuppressedEContentItems(groupedWork, identifier, record);
+			if (isItemlessPhysicalRecordToRemove && eContentRecords.isEmpty()){
+				// If the ILS record is both an itemless record and isn't eContent skip further processing of the record
 				return;
 			}
-			allRelatedRecords.addAll(econtentRecords);
+			allRelatedRecords.addAll(eContentRecords);
 
 			//Since print formats are loaded at the record level, do it after we have loaded items
 			loadPrintFormatInformation(recordInfo, record);
@@ -433,12 +430,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			loadPopularity(groupedWork, identifier);
 			groupedWork.addBarcodes(MarcUtil.getFieldList(record, itemTag + barcodeSubfield));
 
+			// Add Order Record Ids if they are different from item ids
 			loadOrderIds(groupedWork, record);
-
-			int numPrintItems = recordInfo.getNumPrintCopies();
-
-			numPrintItems = checkForNonSuppressedItemlessBib(numPrintItems);
-//			groupedWork.addHoldings(numPrintItems + recordInfo.getNumCopiesOnOrder());
 
 			for (ItemInfo curItem : recordInfo.getRelatedItems()){
 				String itemIdentifier = curItem.getItemIdentifier();
@@ -451,39 +444,23 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				scopeItems(recordInfoTmp, groupedWork, record);
 			}
 		}catch (Exception e){
-			logger.error("Error updating grouped work " + groupedWork.getId() + " for MARC record with identifier " + identifier, e);
+			logger.error("Error updating grouped work {} for MARC record with identifier {}", groupedWork.getId(),  identifier, e);
 		}
 	}
 
 	boolean checkIfBibShouldBeRemovedAsItemless(RecordInfo recordInfo) {
-		return recordInfo.getNumPrintCopies() == 0 && recordInfo.getNumCopiesOnOrder() == 0 && suppressItemlessBibs;
-	}
-
-	/**
-	 * Check to see if we should increment the number of print items by one.   For bibs without items that should not be
-	 * suppressed.
-	 *
-	 * @param numPrintItems the number of print titles on the record
-	 * @return number of items that should be counted
-	 */
-	private int checkForNonSuppressedItemlessBib(int numPrintItems) {
-		if (!suppressItemlessBibs && numPrintItems == 0){
-			numPrintItems = 1;
-		}
-		return numPrintItems;
+		return !recordInfo.hasPrintCopies() && !recordInfo.hasOnOrderCopies() && suppressItemlessBibs;
 	}
 
 	protected boolean isBibSuppressed(Record record) {
-		if (bCode3sToSuppressPattern != null && sierraRecordFixedFieldsTag != null && sierraRecordFixedFieldsTag.length() > 0 && bCode3Subfield != ' ') {
+		if (bCode3sToSuppressPattern != null && sierraRecordFixedFieldsTag != null && !sierraRecordFixedFieldsTag.isEmpty() && bCode3Subfield != ' ') {
 			DataField sierraFixedField = record.getDataField(sierraRecordFixedFieldsTag);
 			if (sierraFixedField != null){
 				Subfield suppressionSubfield = sierraFixedField.getSubfield(bCode3Subfield);
 				if (suppressionSubfield != null){
 					String bCode3 = suppressionSubfield.getData().toLowerCase().trim();
 					if (bCode3sToSuppressPattern.matcher(bCode3).matches()){
-						if (logger.isDebugEnabled()) {
-							logger.debug("Bib record is suppressed due to BCode3 " + bCode3);
-						}
+						logger.debug("Bib record is suppressed due to BCode3 {}", bCode3);
 						return true;
 					}
 				}
@@ -496,7 +473,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		//By default, do nothing
 	}
 
-	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems){
+	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record){
 		//By default, do nothing
 	}
 
@@ -585,15 +562,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-//TODO: this should move to the iii handler; and a blank method put here instead
-	private void loadOrderIds(GroupedWorkSolr groupedWork, Record record) {
+	protected void loadOrderIds(GroupedWorkSolr groupedWork, Record record) {
 		//Load order ids from recordNumberTag
-		Set<String> recordIds = MarcUtil.getFieldList(record, recordNumberTag + "a"); //TODO: refactor to use the record number subfield indicator
-		for(String recordId : recordIds){
-			if (recordId.startsWith(".o")){
-				groupedWork.addAlternateId(recordId);
-			}
-		}
+//		Set<String> recordIds = MarcUtil.getFieldList(record, recordNumberTag + "a"); //TODO: refactor to use the record number subfield indicator
+//		for(String recordId : recordIds){
+//			if (recordId.startsWith(".o")){
+//				groupedWork.addAlternateId(recordId);
+//			}
+//		}
 	}
 
 	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, RecordIdentifier identifier, Record record){
@@ -613,14 +589,18 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	RecordInfo getEContentIlsRecord(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier, DataField itemField) {
-		ItemInfo itemInfo        = new ItemInfo();
-		String   itemLocation    = getItemSubfieldData(locationSubfieldIndicator, itemField);
+		ItemInfo itemInfo     = new ItemInfo();
+		String   itemLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
 
 		itemInfo.setIsEContent(true);
 		itemInfo.setLocationCode(itemLocation);
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
 		itemInfo.setShelfLocation(getShelfLocationForItem(itemInfo, itemField, identifier));
-		loadDateAdded(identifier, itemField, itemInfo);
+		if (loadDateAddedFromRecord){
+			loadDateAddedFromRecord(itemInfo, record, identifier);
+		} else {
+			loadDateAdded(identifier, itemField, itemInfo);
+		}
 		loadItemCallNumber(record, itemField, itemInfo);
 		if (iTypeSubfield != ' ') {
 			String iTypeValue = getItemSubfieldData(iTypeSubfield, itemField);
@@ -677,6 +657,29 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return "Unknown Source";
 	}
 
+	private SimpleDateFormat dateFormat008 = new SimpleDateFormat("yyMMdd");
+
+	protected void loadDateAddedFromRecord(ItemInfo itemInfo, Record record, RecordIdentifier identifier){
+		ControlField fixedField008 = (ControlField) record.getVariableField("008");
+		if (fixedField008 != null){
+			String dateAddData = fixedField008.getData();
+			if (dateAddData != null && dateAddData.length() >= 6){
+				String dateAddedStr = dateAddData.substring(0, 6);
+				try {
+					Date dateAdded = dateFormat008.parse(dateAddedStr);
+					itemInfo.setDateAdded(dateAdded);
+					return;
+				} catch (ParseException e) {
+					logger.error("Date parsing 008 string {} for {}", dateAddedStr, identifier);
+				}
+			}
+		}
+
+		// As fallback, use grouping first detected date
+		Date dateAdded = indexer.getDateFirstDetected(identifier);
+		itemInfo.setDateAdded(dateAdded);
+	}
+
 	protected void loadDateAdded(RecordIdentifier recordIdentifier, DataField itemField, ItemInfo itemInfo) {
 		String dateAddedStr = getItemSubfieldData(dateCreatedSubfield, itemField);
 		if (dateAddedStr != null && !dateAddedStr.isEmpty()) {
@@ -687,13 +690,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				Date dateAdded = dateAddedFormatter.parse(dateAddedStr);
 				itemInfo.setDateAdded(dateAdded);
 			} catch (ParseException e) {
-				logger.error("Error processing date added for record identifier " + recordIdentifier + " profile " + indexingProfileSourceDisplayName + " using format " + dateAddedFormat, e);
+				logger.error("Error processing date added for record identifier {} profile {} using format {}", recordIdentifier, indexingProfileSourceDisplayName, dateAddedFormat, e);
 			}
 		}
 	}
 
 	private SimpleDateFormat dateAddedFormatter = null;
 	private SimpleDateFormat lastCheckInFormatter = null;
+
 	void getPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField, RecordIdentifier identifier) {
 		if (dateAddedFormatter == null){
 			dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
@@ -707,8 +711,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		ItemInfo itemInfo = new ItemInfo();
 		//Load base information from the Marc Record
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
-		if (itemInfo.getItemIdentifier() == null && logger.isInfoEnabled() ){
-			logger.info("Found item with out identifier info " + identifier);
+		if (itemInfo.getItemIdentifier() == null){
+			logger.info("Found item with out identifier info {}", identifier);
 		}
 
 		String itemStatus   = getItemStatus(itemField, identifier);
@@ -718,7 +722,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		//if the status and location are null, we can assume this is not a valid item
 		if (!isItemValid(itemStatus, itemLocation)) return;
 		if (itemStatus == null || itemStatus.isEmpty()) {
-			logger.warn("Item contained no status value for item " + itemInfo.getItemIdentifier() + " for location " + itemLocation + " in record " + identifier);
+			logger.warn("Item contained no status value for item {} for location {} in record {}", itemInfo.getItemIdentifier(), itemLocation, identifier);
 		}
 		itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
 		// Process Collection ahead of shelf location, so that the collection can be used for Polaris shelf location
@@ -728,7 +732,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		setItemIsHoldableCode(itemField, itemInfo, identifier);
 
-		loadDateAdded(identifier, itemField, itemInfo);
+		if (loadDateAddedFromRecord){
+			loadDateAddedFromRecord(itemInfo, record, identifier);
+		} else {
+			loadDateAdded(identifier, itemField, itemInfo);
+		}
 		getDueDate(itemField, itemInfo);
 
 		if (iTypeSubfield != ' ') {
@@ -773,7 +781,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 						recordInfo.setFormatBoost(Integer.parseInt(formatBoost));
 					}
 				} catch (Exception e) {
-					logger.warn("Could not get boost for format " + format);
+					logger.warn("Could not get boost for format {}", format);
 				}
 			}
 		}
@@ -782,6 +790,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		//loadScopeInfoForPrintIlsItem(recordInfo, groupedWork.getTargetAudiences(), itemInfo, record);
 
 		groupedWork.addKeywords(itemLocation);
+		// Adds untranslated location codes, why?
+		//TODO: explain use-case here; otherwise this looks unneeded and should be removed
+
 
 		recordInfo.addItem(itemInfo);
 	}
@@ -1291,9 +1302,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 				//Suppress iCode2 codes
 				if (iCode2sToSuppressPattern.matcher(iCode2).matches()) {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Item record is suppressed due to ICode2 " + iCode2);
-					}
+					logger.debug("Item record is suppressed due to ICode2 {}", iCode2);
 					return true;
 				}
 			}

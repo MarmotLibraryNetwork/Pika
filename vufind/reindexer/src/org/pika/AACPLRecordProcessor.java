@@ -179,9 +179,9 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		itemInfo.setShelfLocationCode(subfieldData);
 	}
 
-	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems) {
+	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record) {
 		if (bibsWithOrders.contains(recordInfo.getRecordIdentifier().getIdentifier())) {
-			if (recordInfo.getNumPrintCopies() == 0 && recordInfo.getNumCopiesOnOrder() == 0) {
+			if (!recordInfo.hasPrintCopies() && !recordInfo.hasOnOrderCopies()) {
 				ItemInfo itemInfo = new ItemInfo();
 				itemInfo.setLocationCode("aacpl");
 				itemInfo.setItemIdentifier(recordInfo.getRecordIdentifier().getIdentifier());

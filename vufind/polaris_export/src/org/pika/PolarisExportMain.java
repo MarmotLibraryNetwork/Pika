@@ -913,36 +913,37 @@ public class PolarisExportMain {
 
 		try {
 			JSONObject bibsCallResult = null;
-				// TODO: limit of 50 records per call
-			String polarisUrl = "/synch/bibs/MARCXML?includeitems=1&bibids=" + idsToProcess;
-			if (logger.isDebugEnabled()) {
-				logger.debug("Loading marc records with bulk method : {}", polarisUrl);
-			}
+			String     polarisUrl     = "/synch/bibs/MARCXML?includeitems=1&bibids=" + idsToProcess;
+			logger.debug("Loading marc records with bulk method : {}", polarisUrl);
 			int bibsUpdated = 0;
 			bibsCallResult = callPolarisApiURL(polarisUrl, debug);
 			if (bibsCallResult != null && bibsCallResult.has("GetBibsByIDRows")) {
 				//ArrayList<Long> processedIds = new ArrayList<>();
-				JSONArray       entries      = bibsCallResult.getJSONArray("GetBibsByIDRows");
-				for (int i = 0; i < entries.length(); i++) {
-					Long bibId = null;
-					try {
-						JSONObject entry = entries.getJSONObject(i);
-						bibId = entry.getLong("BibliographicRecordID");
-						String marcXML     = entry.getString("BibliographicRecordXML");
-						Long   processedId = convertMarcXmlAndWriteMarcRecord(marcXML, bibId);
-						if (processedId != null && processedId > 0){
-							//bibIdsUpdated.add(bibId);
-							bibsUpdated++;
+				try {
+					JSONArray       entries      = bibsCallResult.getJSONArray("GetBibsByIDRows");
+					for (int i = 0; i < entries.length(); i++) {
+						Long bibId = null;
+						try {
+							JSONObject entry = entries.getJSONObject(i);
+							bibId = entry.getLong("BibliographicRecordID");
+							String marcXML     = entry.getString("BibliographicRecordXML");
+							Long   processedId = convertMarcXmlAndWriteMarcRecord(marcXML, bibId);
+							if (processedId != null && processedId > 0){
+								//bibIdsUpdated.add(bibId);
+								bibsUpdated++;
+							}
+						} catch (JSONException e) {
+							if (bibId != null) {
+								logger.error("Error processing JSON for bib {}", bibId ,e);
+								bibsWithErrors.add(bibId);
+							} else {
+								logger.error("Error processing JSON for a bib", e);
+							}
 						}
-					} catch (JSONException e) {
-						if (bibId != null) {
-							logger.error("Error processing JSON for bib {}", bibId ,e);
-							bibsWithErrors.add(bibId);
-						} else {
-							logger.error("Error processing JSON for a bib", e);
-						}
-					}
-				} // end of for loop
+					} // end of for loop
+				} catch (JSONException e) {
+					logger.error("Error fetching JSON Array : {}", bibsCallResult, e);
+				}
 			} else {
 				logger.info("API call for specified bibs returned response with no entries");
 			}
@@ -1226,7 +1227,9 @@ public class PolarisExportMain {
 					}
 				}
 				logger.info("Fetching bib dates for new Ids");
-				updateMarcAndRegroupRecordIds(newIds);
+				if (!newIds.isEmpty()) {
+					updateMarcAndRegroupRecordIds(newIds);
+				}
 			}
 		} catch (JSONException e) {
 			logger.error("Error fetching replaced Ids");
@@ -1457,11 +1460,13 @@ public class PolarisExportMain {
 							if (barcode != null) {
 								itemRecord.addSubfield(marcFactory.newSubfield(indexingProfile.barcodeSubfield, barcode.trim()));
 							} else {
-								if (circStatus == null || !circStatus.equals("In-Process")) {
-									logger.error("Item {} had no barcode: {}", itemId, itemInfo);
+								if (circStatus == null){
+									logger.error("Status-less item {} had no barcode: {}", itemId, itemInfo);
+								}	else if (!circStatus.equals("In-Process") && !circStatus.equals("On-Order")) {
+									logger.error("Item {} with status {} had no barcode: {}", itemId, circStatus, itemInfo);
 								} else {
-									// Items with status "In-Process" regularly don't have a barcode yet.
-									logger.debug("In-Processing item {} had no barcode: {}", itemId, itemInfo);
+									// Items with status "In-Process" or "On-Order" regularly don't have a barcode yet.
+									logger.debug("{} item {} had no barcode: {}", circStatus, itemId, itemInfo);
 								}
 							}
 							if (itemInfo.has("CallNumber")) {
