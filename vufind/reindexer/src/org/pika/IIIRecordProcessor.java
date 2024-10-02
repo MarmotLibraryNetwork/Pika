@@ -483,7 +483,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			Date dateAdded = dueDateFormatter.parse(dueDate);
 			return displayDateFormatter.format(dateAdded);
 		}catch (Exception e){
-			logger.warn("Could not load display due date for dueDate " + dueDate + " for identifier " + identifier, e);
+			logger.warn("Could not load display due date for dueDate {} for identifier {}", dueDate, identifier, e);
 		}
 		return "Unknown";
 	}

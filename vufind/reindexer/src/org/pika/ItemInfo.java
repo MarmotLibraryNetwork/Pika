@@ -80,6 +80,10 @@ public class ItemInfo {
 		this.detailedStatus = detailedStatus;
 	}
 
+	public String getDetailedStatus() {
+		return detailedStatus;
+	}
+
 	public String getLocationCode() {
 		return locationCode;
 	}

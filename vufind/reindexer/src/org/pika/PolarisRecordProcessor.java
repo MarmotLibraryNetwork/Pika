@@ -21,6 +21,7 @@ import org.marc4j.marc.Record;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
@@ -121,11 +122,22 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 		return translatedShelfLocation;
 	}
 
-//	protected String getItemStatus(DataField itemField, RecordIdentifier recordIdentifier) {
+	private Date tomorrow = Date.from(new Date().toInstant().plus(1, ChronoUnit.DAYS));
+
+	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record) {
+		for (ItemInfo curItem : recordInfo.getRelatedItems()) {
+			if (curItem.getDetailedStatus().equals("On Order")){
+				curItem.setIsOrderItem(true);
+				curItem.setDateAdded(tomorrow);
+			}
+		}
+	}
+
+	//	protected String getItemStatus(DataField itemField, RecordIdentifier recordIdentifier) {
 //		String itemStatus = super.getItemStatus(itemField, recordIdentifier);
-//		if (itemStatus != null && logger.isDebugEnabled()){
-//			logger.debug("Polaris indexer, record " + recordIdentifier + ", got status code : " + itemStatus);
-//		}
+////		if (itemStatus != null && logger.isDebugEnabled()){
+////			logger.debug("Polaris indexer, record {}, got status code : {}", recordIdentifier, itemStatus);
+////		}
 //		return itemStatus;
 //	}
 

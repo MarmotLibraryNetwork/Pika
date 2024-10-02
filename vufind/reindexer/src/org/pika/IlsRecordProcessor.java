@@ -275,7 +275,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 							translationMap.addValue(translationMapValuesRS.getString("value"), translationMapValuesRS.getString("translation"));
 						}
 					} catch (Exception e) {
-						logger.error("Error loading translation map " + mapName, e);
+						logger.error("Error loading translation map {}", mapName, e);
 					}
 					translationMaps.put(translationMap.getMapName(), translationMap);
 				}
@@ -348,7 +348,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			subFolderName = shortId.substring(0, shortId.length() - numCharsToCreateFolderFrom);
 		}
 
-		String basePath           = individualMarcPath + "/" + subFolderName;
+		String basePath = individualMarcPath + "/" + subFolderName;
 		return basePath + "/" + shortId + ".mrc";
 	}
 
@@ -711,8 +711,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		ItemInfo itemInfo = new ItemInfo();
 		//Load base information from the Marc Record
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
-		if (itemInfo.getItemIdentifier() == null && logger.isInfoEnabled() ){
-			logger.info("Found item with out identifier info " + identifier);
+		if (itemInfo.getItemIdentifier() == null){
+			logger.info("Found item with out identifier info {}", identifier);
 		}
 
 		String itemStatus   = getItemStatus(itemField, identifier);
@@ -781,7 +781,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 						recordInfo.setFormatBoost(Integer.parseInt(formatBoost));
 					}
 				} catch (Exception e) {
-					logger.warn("Could not get boost for format " + format);
+					logger.warn("Could not get boost for format {}", format);
 				}
 			}
 		}
@@ -790,6 +790,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		//loadScopeInfoForPrintIlsItem(recordInfo, groupedWork.getTargetAudiences(), itemInfo, record);
 
 		groupedWork.addKeywords(itemLocation);
+		// Adds untranslated location codes, why?
+		//TODO: explain use-case here; otherwise this looks unneeded and should be removed
+
 
 		recordInfo.addItem(itemInfo);
 	}
@@ -1299,9 +1302,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 				//Suppress iCode2 codes
 				if (iCode2sToSuppressPattern.matcher(iCode2).matches()) {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Item record is suppressed due to ICode2 " + iCode2);
-					}
+					logger.debug("Item record is suppressed due to ICode2 {}", iCode2);
 					return true;
 				}
 			}
