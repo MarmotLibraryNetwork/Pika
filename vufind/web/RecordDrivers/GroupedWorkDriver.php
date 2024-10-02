@@ -1531,18 +1531,20 @@ class GroupedWorkDriver extends RecordInterface {
 				$relatedManifestations[$curRecord['format']]['onOrderCopies'] += $curRecord['onOrderCopies'];
 			}
 // For Reference
-//			static $statusRankings = array(
-//				'currently unavailable' => 1,
-//			  'available to order'    => 1.6,
-//				'on order'              => 2,
-//				'coming soon'           => 3,
-//				'in processing'         => 3.5,
-//				'checked out'           => 4,
-//				'library use only'      => 5,
-//				'available online'      => 6,
-//				'in transit'           => 6.5,
-//				'on shelf'              => 7
-//			);
+//			static $statusRankings = [
+//				'Currently Unavailable' => 1,
+//				//Unknown Grouped Status   2,
+//				'Available to Order'    => 3,
+//				'On Order'              => 4,
+//				'Coming Soon'           => 5,
+//				'In Processing'         => 6,
+//				'Checked Out'           => 7,
+//				'Shelving'              => 8,
+//				'Library Use Only'      => 9,
+//				'Available Online'      => 10,
+//				'In Transit'            => 11,
+//				'On Shelf'              => 12
+//			];
 			if (!empty($curRecord['groupedStatus'])){
 				$manifestationCurrentGroupedStatus = $relatedManifestations[$curRecord['format']]['groupedStatus'];
 
