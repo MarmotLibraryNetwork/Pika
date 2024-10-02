@@ -45,7 +45,6 @@ public class HorizonExportMain {
 	private static Connection          pikaConn;
 	private static MarcRecordGrouper   recordGroupingProcessor;
 	private static PikaSystemVariables systemVariables;
-	private static String              sysVarName = "holdsCountFileLastModTime";
 	private static boolean             hadErrors  = false;
 
 	private static PreparedStatement updateExtractInfoStatement;
@@ -126,7 +125,9 @@ public class HorizonExportMain {
 		HashMap<Long, Integer> holdsByBib = new HashMap<>();
 		boolean                completed  = false;
 		boolean                writeHolds = false;
-		File                   holdFile   = new File(indexingProfile.marcPath + "/holdsCount.csv");
+		String                 pathname   = indexingProfile.marcPath + "/holdsCount.csv";
+		File                   holdFile   = new File(pathname);
+		String                 sysVarName = "holdsCountFileLastModTime";
 		if (holdFile.exists()) {
 			Long lastProcessedFileModTime = systemVariables.getLongValuedVariable(sysVarName);
 			holdFileLastModified = holdFile.lastModified();
@@ -162,20 +163,21 @@ public class HorizonExportMain {
 							line = reader.readLine();
 						}
 					} catch (Exception e) {
-						logger.error("Error reading holds file ", e);
+						logger.error("Error reading holds file; lastCatalogIdRead = {}", lastCatalogIdRead, e);
 						hadErrors = true;
 					}
 					logger.info("Read {} bibs with holds, lastCatalogIdRead = {}", holdsByBib.size(), lastCatalogIdRead);
 				}
 			}
 		} else {
-			logger.warn("No holds file found at " + indexingProfile.marcPath + "/holdsCount.csv");
+			logger.warn("No holds file found at {]", pathname);
 			hadErrors = true;
 		}
 
 		//Now that we've counted all the holds, update the database
 		if (!hadErrors && writeHolds) {
 			try {
+				int numInserts = 0;
 				pikaConn.setAutoCommit(false);
 				pikaConn.prepareCall("TRUNCATE ils_hold_summary").executeUpdate();  // Truncate so that id value doesn't grow beyond column size
 				logger.info("Removed existing hold counts");
@@ -187,11 +189,13 @@ public class HorizonExportMain {
 					int numUpdates = updateHoldsStmt.executeUpdate();
 					if (numUpdates != 1) {
 						logger.warn("Hold was not inserted {}, {}", ilsId, holdsCount);
+					} else {
+						numInserts++;
 					}
 				}
 				pikaConn.commit();
 				pikaConn.setAutoCommit(true);
-				logger.info("Finished adding new holds to the database");
+				logger.info("Finished adding {} new hold counts to the database", numInserts);
 				completed = true;
 				} catch (Exception e) {
 				logger.error("Error updating holds database", e);
@@ -218,7 +222,7 @@ public class HorizonExportMain {
 		final String exportPath          = sitesDirectory.getAbsolutePath() + "/marc_updates";
 		File         exportFile          = new File(exportPath);
 		if (!exportFile.exists()) {
-			logger.error("Export path " + exportPath + " does not exist");
+			logger.error("Export path {} does not exist", exportPath);
 			return;
 		}
 		File[] files = exportFile.listFiles((dir, name) -> name.matches(".*\\.mrc"));
@@ -250,16 +254,16 @@ public class HorizonExportMain {
 						String recordId = getRecordIdFromMarcRecord(curBib);
 						recordsToUpdate.put(recordId, curBib);
 					} catch (MarcException me) {
-						logger.info("File " + file + " has not been fully written", me);
+						logger.info("File {} has not been fully written", file, me);
 						filesToProcess.remove(fileName);
 						break;
 					}
 				}
 			} catch (EOFException e) {
-				logger.error("File " + file + " has not been fully written", e);
+				logger.error("File {} has not been fully written", file, e);
 				filesToProcess.remove(fileName);
 			} catch (Exception e) {
-				logger.error("Unable to read file " + file + " not processing", e);
+				logger.error("Unable to read file {} not processing", file, e);
 				filesToProcess.remove(fileName);
 			}
 		}
@@ -272,16 +276,15 @@ public class HorizonExportMain {
 			for (String recordId : recordsToUpdate.keySet()) {
 				Record recordToUpdate = recordsToUpdate.get(recordId);
 				if (!updateMarc(recordId, recordToUpdate, updateTime)) {
-					logger.error("Error updating marc record " + recordId);
+					logger.error("Error updating marc record {}",  recordId);
 					errorUpdatingDatabase = true;
 				}
-				numUpdates++;
-				if (numUpdates % 50 == 0) {
+				if (++numUpdates % 50 == 0) {
 					pikaConn.commit();
 				}
 			}
 		} catch (Exception e) {
-			logger.error("Error updating marc records");
+			logger.error("Error updating marc records", e);
 			errorUpdatingDatabase = true;
 		} finally {
 			try {
@@ -293,17 +296,18 @@ public class HorizonExportMain {
 			}
 		}
 
-		logger.info("Updated a total of " + numUpdates + " from " + filesToProcess.size() + " files");
+		int numFilesProcessed = filesToProcess.size();
+		logger.info("Updated a total of {} from {} files", numUpdates, numFilesProcessed);
 
 		if (!errorUpdatingDatabase) {
 			//Finally, move all files we have processed to another folder (or delete) so we don't process them again
 			for (File file : filesToProcess.values()) {
-				logger.info("Deleting " + file.getName() + " since it has been processed");
+				logger.info("Deleting {} since it has been processed", file.getName());
 				if (!file.delete()) {
-					logger.warn("Could not delete " + file.getName());
+					logger.warn("Could not delete {}", file.getName());
 				}
 			}
-			logger.info("Deleted " + filesToProcess.size() + " files that were processed successfully.");
+			logger.info("Deleted {} files that were processed successfully.", numFilesProcessed);
 		} else {
 			logger.error("There were errors updating the database, not clearing the files so they will be processed next time");
 		}
@@ -317,7 +321,7 @@ public class HorizonExportMain {
 				//This is a new record, we can just skip it for now.
 //				logger.info("New record " + recordId + " found in partial export wasn't written and not processed.");
 //				return true;
-				logger.info("New record " + recordId + " found in partial export and will be grouped.");
+				logger.info("New record {} found in partial export and will be grouped.", recordId);
 				// The file exist check above should be redundant now with the record grouping below.
 			}
 
@@ -331,9 +335,9 @@ public class HorizonExportMain {
 				// Set up the grouped work for the record.  This will take care of either adding it to the proper grouped work
 				// or creating a new grouped work
 				if (!recordGroupingProcessor.processMarcRecord(recordToUpdate, true)) {
-					logger.warn(recordId + " was suppressed");
+					logger.warn("{} was suppressed", recordId);
 				} else {
-					logger.debug("Finished record grouping for " + recordId);
+					logger.debug("Finished record grouping for {}", recordId);
 				}
 
 				try {
@@ -343,13 +347,13 @@ public class HorizonExportMain {
 					updateExtractInfoStatement.setLong(3, updateTime);
 					updateExtractInfoStatement.executeUpdate();
 				} catch (SQLException e) {
-					logger.error("Could not mark that " + recordId + " was extracted due to error ", e);
+					logger.error("Could not mark that {} was extracted due to error ", recordId, e);
 					return false;
 				}
 				return true;
 			}
 		} catch (Exception e) {
-			logger.error("Error saving changed MARC record");
+			logger.error("Error saving changed MARC record", e);
 			return false;
 		}
 
