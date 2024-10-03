@@ -72,7 +72,7 @@ class SelfReg extends Action {
 			if ($library->enableSelfRegistration && isset($_POST['pin'])){
 				$pinLength = strlen($_POST['pin']);
 				if ($pinLength < $pinMinimumLength or $pinLength > $pinMaximumLength){
-					if ($pinMinimumLength == $pinMaximumLength){
+					if ($pinMinimumLength === $pinMaximumLength){
 						return 'New ' . translate('pin') . ' must be exactly ' . $pinMinimumLength . ' characters.';
 					}else{
 						return 'New ' . translate('pin') . ' must be ' . $pinMinimumLength . " to " . $pinMaximumLength . ' characters.';

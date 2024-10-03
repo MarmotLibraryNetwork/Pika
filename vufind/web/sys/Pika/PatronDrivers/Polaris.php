@@ -787,6 +787,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $patron_registration['LogonUserID'] = (int)$this->configArray['Polaris']['staffUserId'];
         $patron_registration['LogonWorkstationID'] = (int)$this->configArray['Polaris']['workstationId'];
 
+        $return = ['success' => false, 'barcode' => '', 'message'=> ''];
         foreach ($_REQUEST as $key => $value) {
             if (in_array($key, $this->valid_registration_fields, true)) {
                 if ($key === 'Birthdate') {
@@ -794,9 +795,33 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                     $patron_registration[$key] = gmdate('r', $ts);
                     continue;
                 }
+                // check if both first and last legal names are set
                 if($key === 'UseLegalNameOnNotices' && $value === 'on') {
-                    $patron_registration[$key] = true;
-                    continue;
+                    if(!empty($_REQUEST['LegalNameFirst']) && !empty($_REQUEST['LegalNameLast'])) {
+                        $patron_registration[$key] = true;
+                        continue;
+                    } else {
+                        $self_reg_error_message = 'Please include both a first and last legal name.';
+                        $return['message'] = $self_reg_error_message;
+                        return $return;
+                    }
+                } else {
+                    $patron_registration[$key] = false;
+                }
+                // make sure we have a phone number for the selected phone to receive texts on
+                if($key === 'TxtPhoneNumber') {
+                    if(($value === 1) && !empty($_REQUEST['PhoneVoice1'])) {
+                        $patron_registration[$key] = $value;
+                        continue;
+                    }
+                    if(($value === 2) && !empty($_REQUEST['PhoneVoice2'])) {
+                        $patron_registration[$key] = $value;
+                        continue;
+                    }
+                    if(($value === 3) && !empty($_REQUEST['PhoneVoice3'])) {
+                        $patron_registration[$key] = $value;
+                        continue;
+                    }
                 }
                 // type these fields as integers and remove the added *Select from the string.
                 if (in_array($key,
@@ -826,22 +851,22 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             $patron_registration = array_merge($patron_registration, $extra_params);
         }
 
-        $return = ['success' => false, 'barcode' => ''];
-
         $request_url = $this->ws_url . "/patron";
         $extra_headers = ["Content-Type: application/json"];
         $c = $this->_doSystemRequest('POST', $request_url, $patron_registration, $extra_headers);
-
-        // todo: self registration doesn't have any error return to display to the patron
-        // use this if that changes.
+        
         if ($c === null) {
             if (isset($this->papiLastErrorMessage)) {
-                $self_reg_error_message = $this->papiLastErrorMessage;
+                $self_reg_error_message = "We're sorry, we could not complete your registration request. " . $this->papiLastErrorMessage;
+            } else {
+                $self_reg_error_message = "We're sorry, we could not complete your registration request. Please contact the library for further assistance.";
             }
+            $return['message'] = $self_reg_error_message;
             return $return;
         }
         
         // send self registration email
+        $email_sent = false;
         if(!empty($_REQUEST['EmailAddress']) && trim($_REQUEST['EmailAddress']) !== '') {
             $email_vars = [
                 'email' => trim($_REQUEST['EmailAddress']),
@@ -852,9 +877,13 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             $email_sent = $this->sendSelfRegSuccessEmail($email_vars);
         }
         
+        if($email_sent) {
+            $return['message'] = "Thank you for registering . We will contact you shortly.";
+        }
+        
         $return['success'] = true;
         $return['barcode'] = $c->response->Barcode;
-
+        
         return $return;
     }
 
@@ -871,7 +900,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
      *
      * @return bool `true` if the email is sent successfully, `false` if there is an error or the location cannot be found.
      */
-    public function sendSelfRegSuccessEmail(aray $email_vars): bool
+    public function sendSelfRegSuccessEmail(array $email_vars): bool
     {
         global $interface;
         
@@ -989,10 +1018,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         if ($patron->trackReadingHistory != 1) {
             return ['historyActive' => false, 'numTitles' => 0, 'titles' => []];
         }
-
-//        $request_url = $this->ws_url . "/patron/{$patron->barcode}/readinghistory?rowsperpage=5&page=-1";
-//				$c = $this->_doPatronRequest($patron, 'GET', $request_url);
-//				$total = $c->response->PAPIErrorCode;
+        
         $request_url = $this->ws_url . "/patron/{$patron->barcode}/readinghistory?rowsperpage=5&page=0";
         $c = $this->_doPatronRequest($patron, 'GET', $request_url);
 
