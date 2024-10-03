@@ -89,8 +89,8 @@ class SelfReg extends Action {
 
 			// Pre-fill form with user supplied data
 			foreach ($selfRegFields as &$property){
-                if(isset($property['property']) && $property['type'] !== 'header' ) {
-				    $userValue           = $_REQUEST[$property['property']];
+                if(!empty($property['property']) && $property['type'] !== 'header' ) {
+                    $userValue           = $_REQUEST[$property['property']];
 				    $property['default'] = $userValue;
                 }
 			}
