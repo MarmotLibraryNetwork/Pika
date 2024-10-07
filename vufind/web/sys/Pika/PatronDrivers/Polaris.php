@@ -1020,14 +1020,46 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $history['titles'] = $titles;
         return $history;
     }
-
+    
+    protected function _getReadingHistoryCount($patron) {
+        $request_url = $this->ws_url . "/patron/{$patron->barcode}/readinghistory?rowsperpage=1&page=-1";
+        $c = $this->_doPatronRequest($patron, 'GET', $request_url);
+        
+        if ($c === null) {
+            return false;
+        }
+        
+        return $c->response->PAPIErrorCode;
+    }
+    
     public function loadReadingHistoryFromIls($patron, $loadAdditional = null)
     {
-        if ($patron->trackReadingHistory != 1) {
+        $per_round = 10;
+        if ((int)$patron->trackReadingHistory !== 1) {
             return ['historyActive' => false, 'numTitles' => 0, 'titles' => []];
         }
         
-        $request_url = $this->ws_url . "/patron/{$patron->barcode}/readinghistory?rowsperpage=5&page=0";
+        // get the total number of entries
+        $num_titles_total = $this->_getReadingHistoryCount($patron);
+        
+        if($num_titles_total === false) {
+            // return an error?
+            return false;
+        }
+        
+        // no reading history in ILS
+        if($num_titles_total === 0) {
+            return ['historyActive' => true, 'numTitles' => 0, 'titles' => []];
+        }
+        
+        // additional calls to complete load
+        $page = $loadAdditional ?? 1;
+        $next_page = $page + 1;
+        if(($next_page * $per_round) > $num_titles_total) {
+            $next_page = false;
+        }
+        
+        $request_url = $this->ws_url . "/patron/{$patron->barcode}/readinghistory?rowsperpage={$per_round}&page={$page}";
         $c = $this->_doPatronRequest($patron, 'GET', $request_url);
 
         if ($c === null) {
@@ -1072,7 +1104,14 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             }
             $titles[] = $title;
         }
+        
+        
+        $num_titles = count($titles);
+        if ($next_page !== false){
+            $history['nextRound'] = $next_page;
+        }
         $history['titles'] = $titles;
+        $history['numTitles'] = $num_titles;
         return $history;
     }
 
