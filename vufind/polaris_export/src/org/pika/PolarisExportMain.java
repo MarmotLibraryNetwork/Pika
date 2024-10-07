@@ -246,7 +246,7 @@ public class PolarisExportMain {
 				apiBaseUrl = polarisUrl + "/" + apiVersion + "/" + langId + "/" + appId + "/" + orgId;
 			}
 		} catch (SQLException e) {
-			logger.error("Error retrieving account profile for " + indexingProfile.sourceName, e);
+			logger.error("Error retrieving account profile for {}", indexingProfile.sourceName, e);
 		}
 		if (apiBaseUrl == null || apiBaseUrl.isEmpty()) {
 			logger.error("Polaris API url must be set in account profile column patronApiUrl.");
@@ -259,10 +259,13 @@ public class PolarisExportMain {
 
 		// Get stored token data so we don't have to re-authorize every time this process is ran
 		Long expiration = systemVariables.getLongValuedVariable("polarisAPIExpiration");
-		if (expiration != null && expiration > new Date().getTime()) {
-			polarisAPIExpiration = expiration;
-			polarisAPIToken      = systemVariables.getStringValuedVariable("polarisAPIToken");
-			polarisAPISecret     = systemVariables.getStringValuedVariable("polarisAPISecret");
+		if (expiration != null) {
+			expiration *= 1000; // Convert to milliseconds
+			if (expiration > new Date().getTime()) {
+				polarisAPIExpiration = expiration;
+				polarisAPIToken      = systemVariables.getStringValuedVariable("polarisAPIToken");
+				polarisAPISecret     = systemVariables.getStringValuedVariable("polarisAPISecret");
+			}
 		}
 
 		//Extract a Single Bib/Record
@@ -292,7 +295,7 @@ public class PolarisExportMain {
 		//Integer minutesToProcessFor = PikaConfigIni.getIntIniValue("Catalog", "minutesToProcessExport");
 		//minutesToProcessExport = (minutesToProcessFor == null) ? 5 : minutesToProcessFor;
 
-	initializeExportLogEntry();
+		initializeExportLogEntry();
 
 		//Setup other systems we will use
 		initializeRecordGrouper();
@@ -333,16 +336,14 @@ public class PolarisExportMain {
 		closeDBConnections(pikaConn);
 		Date currentTime = new Date();
 		if (logger.isInfoEnabled()) {
-			logger.info(currentTime + " : Finished Polaris Extract");
+			logger.info("{} : Finished Polaris Extract", currentTime);
 		}
 
 	} // End of main
 
 	private static void initializeExportLogEntry() {
 		//Start an export log entry
-		if (logger.isInfoEnabled()) {
-			logger.info("Creating log entry for Polaris Extract");
-		}
+		logger.info("Creating log entry for Polaris Extract");
 		try (PreparedStatement createLogEntryStatement = pikaConn.prepareStatement("INSERT INTO " + logTable + " (startTime, lastUpdate, notes) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS)) {
 			createLogEntryStatement.setLong(1, startTime.getTime() / 1000);
 			createLogEntryStatement.setLong(2, startTime.getTime() / 1000);
@@ -516,7 +517,6 @@ public class PolarisExportMain {
 	 */
 	private static String getPolarisAPIDateTimeString(Date dateTime) {
 		SimpleDateFormat dateTimeFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-		// TODO: Polaris deleted date-time format is : YYYY-MM-DDTHH:MM:SS
 		//dateTimeFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 		return dateTimeFormatter.format(dateTime);
 	}
@@ -1773,22 +1773,24 @@ public class PolarisExportMain {
 				response = getTheResponse(conn.getInputStream());
 				try {
 					JSONObject parser = new JSONObject(response.toString());
-					String  polarisUserId            = parser.getString("PolarisUserID");
+					//String  polarisUserId            = parser.getString("PolarisUserID");
 					String  polarisAuthExpirationStr = parser.getString("AuthExpDate"); // eg /Date(1723247367963-0600)/
 					Long timeStamp = getTimeStampMillisecondFromMicrosoftDateString(polarisAuthExpirationStr);
 					if (timeStamp != null) {
-						polarisAPIExpiration = timeStamp - 10000;
-						logger.debug("Polaris token is {} : {}", polarisAPIExpiration, new Date(polarisAPIExpiration));
+						polarisAPIExpiration = timeStamp - 300000; // Include a five-minute buffer
+						if (logger.isDebugEnabled()) {
+							logger.debug("Polaris token expiration is {} : {}", polarisAPIExpiration, new Date(polarisAPIExpiration));
+						}
 
 						polarisAPIToken  = parser.getString("AccessToken");
 						polarisAPISecret = parser.getString("AccessSecret");
 
 						// Store our authorization tokens so that we can re-use throughout the day
-						systemVariables.setVariable("polarisAPIExpiration", polarisAPIExpiration);
+						timeStamp /= 1000;
+						systemVariables.setVariable("polarisAPIExpiration", timeStamp); // Save in seconds instead of milliseconds
 						systemVariables.setVariable("polarisAPIToken", polarisAPIToken);
 						systemVariables.setVariable("polarisAPISecret", polarisAPISecret);
 					} else {
-						//TODO: bad time stamp? what to do
 						logger.fatal("Failed to parse Polaris API expiration date-time : {}", polarisAuthExpirationStr);
 						return false;
 					}
