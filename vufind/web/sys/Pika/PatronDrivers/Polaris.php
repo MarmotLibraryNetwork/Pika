@@ -1103,6 +1103,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         if ($r === null) {
             return false;
         }
+        $this->_deleteCachePatronObject($patron->ilsUserId);
         return true;
     }
 
@@ -1116,7 +1117,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
      *
      * @return bool `true` if the opt-out is successful, `false` if the API request fails.
      */
-    public function optOutReadingHistory($patron)
+    public function optOutReadingHistory(User $patron)
     {
         $opt_out = [
             "LogonBranchID" => 1,
@@ -1133,6 +1134,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         if ($r === null) {
             return false;
         }
+        $this->_deleteCachePatronObject($patron->ilsUserId);
         return true;
     }
 
