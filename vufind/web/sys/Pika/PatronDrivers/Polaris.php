@@ -823,6 +823,12 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                         continue;
                     }
                 }
+                // cast TxtPhoneNumber to integer
+                if($key === "TxtPhoneNumber") {
+                    $patron_registration[$key] = (int)$value;
+                    continue;
+                }
+                
                 // type these fields as integers and remove the added *Select from the string.
                 if (in_array($key,
                     [
@@ -833,13 +839,15 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                         "RequestPickupBranchIDSelect",
                         "Phone1CarrierIDSelect",
                         "Phone2CarrierIDSelect",
-                        "Phone3CarrierIDSelect"
+                        "Phone3CarrierIDSelect",
+                        "TxtPhoneNumberSelect"
                     ],
                 )) {
                     $new_key = str_ireplace('select', '', $key);
                     $patron_registration[$new_key] = (int)$value;
                     continue;
                 }
+                // all other request parameters
                 $patron_registration[$key] = $value;
             }
         }
