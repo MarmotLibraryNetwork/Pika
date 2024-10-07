@@ -920,7 +920,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         }
         
         $location_name = $location->displayName;
-        $catalog_url = $location->catalogUrl ?? 'your local library';
+        $catalog_url = $location->catalogUrl ?? $_SERVER['SERVER_NAME'];
 
         $interface->assign('emailAddress', $email_vars['email']);
         $interface->assign('patronName', $email_vars['name']);
