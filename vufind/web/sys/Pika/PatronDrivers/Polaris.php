@@ -2274,34 +2274,34 @@ class Polaris extends PatronDriverInterface implements DriverInterface
      */
     public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null)
     {
-			// Determine if item-level hold is needed
+		// Determine if item-level hold is needed
 	    $sourceAndId = new SourceAndId($this->accountProfile->recordSource . ':' . $recordId);
-			$recordDriver = new MarcRecord($sourceAndId);
-			if ($recordDriver->isValid() && in_array('Journal', $recordDriver->getFormats())) {
-				$items = [];
-				$itemIdsToBarcode = $recordDriver->getItemIdsAndBarcodes();
-				$solrRecord = $recordDriver->getGroupedWorkDriver()->getRelatedRecord($sourceAndId->getSourceAndId());
-				foreach ($solrRecord['itemDetails'] as $itemDetails) {
-					if ($itemDetails['holdable']){
-						$items[] = [
-							//'itemNumber' => $itemDetails['itemId'],
-							'itemNumber' => $itemIdsToBarcode[$itemDetails['itemId']],
-							// Return the barcode as the item number to be used to place the item level hold
-							'location'   => $itemDetails['shelfLocation'],
-							'callNumber' => $itemDetails['callNumber'],
-							'status'     => $itemDetails['status'],
-							//'barcode'    => $itemIdsToBarcode[$itemDetails['itemId']], //TODO: set as volume?
-						];
-					}
-				}
-				$return         = [
-					'message'    => 'This title requires item level holds, please select an item to place a hold on.',
-					'success'    => 'true',
-					'canceldate' => $cancelDate,
-					'items'      => $items
-				];
-				return $return;
-			}
+        $record = new MarcRecord($sourceAndId);
+        if ($record->isValid() && in_array('Journal', $record->getFormats())) {
+            $items = [];
+            $itemIdsToBarcode = $record->getItemIdsAndBarcodes();
+            $solrRecord = $record->getGroupedWorkDriver()->getRelatedRecord($sourceAndId->getSourceAndId());
+            foreach ($solrRecord['itemDetails'] as $itemDetails) {
+                if ($itemDetails['holdable']){
+                    $items[] = [
+                        //'itemNumber' => $itemDetails['itemId'],
+                        'itemNumber' => $itemIdsToBarcode[$itemDetails['itemId']],
+                        // Return the barcode as the item number to be used to place the item level hold
+                        'location'   => $itemDetails['shelfLocation'],
+                        'callNumber' => $itemDetails['callNumber'],
+                        'status'     => $itemDetails['status'],
+                        //'barcode'    => $itemIdsToBarcode[$itemDetails['itemId']], //TODO: set as volume?
+                    ];
+                }
+            }
+            $return         = [
+                'message'    => 'This title requires item level holds, please select an item to place a hold on.',
+                'success'    => 'true',
+                'canceldate' => $cancelDate,
+                'items'      => $items
+            ];
+            return $return;
+        }
         // lookup the pickup location Polaris branch id
         $location = new Location();
         $location->code = $pickupBranch;
@@ -2358,7 +2358,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             // todo: patron not old enough message
         }
         // get title to use in return
-        $record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
         $title = false;
         if ($record->isValid()) {
             $title = trim($record->getTitle());
@@ -2394,6 +2393,107 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         ];
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function placeItemHold($patron, $recordId, $itemId, $pickupBranch)
+    {
+        $bib_id = trim($recordId);
+        $barcode = trim($itemId);
+        // lookup the pickup location Polaris branch id
+        $location = new Location();
+        $location->code = $pickupBranch;
+        if (!$location->find(true) || $location->N = 0) {
+            $this->logger->error('ERROR: Bad location code: ' . $pickupBranch);
+            return [
+                'success' => false,
+                'message' => 'An error occurred while processing your request. Please try again later or contact your library.',
+            ];
+        }
+
+        $polaris_pu_branch_id = $location->ilsLocationId;
+        $requesting_location = $this->locationIdToPolarisBranchId(
+            $patron->homeLocationId,
+        );
+
+        $patron_id = $patron->ilsUserId;
+
+        $request_url = $this->ws_url . '/holdrequest';
+        $request_body = [
+            "PatronID" => (int)$patron_id,
+            "BibID" => (int)$bib_id,
+            "ItemBarcode" => (int)$barcode,
+            "PickupOrgID" => (int)$polaris_pu_branch_id,
+            "ActivationDate" => gmdate('r'),
+            "WorkstationID" => (int)$this->configArray['Polaris']['workstationId'],
+            "UserID" => (int)$this->configArray['Polaris']['staffUserId'],
+            "RequestingOrgID" => (int)$requesting_location,
+        ];
+        $body_json = json_encode($request_body);
+        $body_length = strlen($body_json);
+        $extra_headers = [
+            "Content-Type: application/json",
+            "Content-Length: " . $body_length,
+        ];
+        // initial hold request
+        $c = $this->_doSystemRequest('POST', $request_url, $body_json, $extra_headers);
+
+        // errors
+        if ($c === null) { // api or curl error
+            if (isset($this->papiLastErrorMessage)) {
+                return [
+                    'success' => false,
+                    'message' => "Your hold could not be placed. {$this->papiLastErrorMessage}",
+                ];
+            }
+            return [
+                'success' => false,
+                'message' => 'An error occurred while processing your request. Please try again later or contact your library.',
+            ];
+        }
+        $r = $c->response;
+        // age conflict
+        if ($r->StatusValue === 10) {
+            // todo: patron not old enough message
+        }
+        // get title to use in return
+        $record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bib_id);
+        $title = false;
+        if ($record->isValid()) {
+            $title = trim($record->getTitle());
+        }
+        // success // all done // there will likely be a message that needs a response.
+        if ($r->StatusValue === 1) {
+            $return = ['success' => true, 'message' => 'Your hold was successfully placed.'];
+            if ($title) {
+                $return['message'] = "Your hold for <strong>{$title}</strong> was successfully placed.";
+            }
+            return $return;
+        }
+
+        // continue to reply yes until hold is placed or we get an error
+        $status_type = $r->StatusType;
+        do {
+            $c = $this->_placeHoldRequestReply($r, (int)$requesting_location);
+            $r = $c->response;
+            $status_type = $r->StatusType;
+        } while ($status_type === 3);
+
+        if ($r->StatusValue === 1) {
+            $return = ['success' => true, 'message' => 'Your hold was successfully placed.'];
+            if ($title) {
+                $return['message'] = "Your hold for <strong>{$title}</strong> was successfully placed.";
+            }
+            return $return;
+        }
+
+        return [
+            'success' => false,
+            'message' => 'An error occurred while processing your request. Please try again later or contact your library.',
+        ];
+    }
+    
+    
     protected function locationIdToPolarisBranchId($location_id)
     {
         $location = new Location();
@@ -2426,14 +2526,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $request_body = json_encode($request_body);
         $extra_headers = ['Content-Type: application/json'];
         return $this->_doSystemRequest('PUT', $request_url, $request_body, $extra_headers);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function placeItemHold($patron, $recordId, $itemId, $pickupBranch)
-    {
-        $recordId = trim($recordId);
     }
 
     /**
