@@ -976,7 +976,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     {
         // /public/patron/{PatronBarcode}/readinghistory
         // history enabled?
-        if ($patron->trackReadingHistory != 1) {
+        if ($patron->trackReadingHistory !== 1) {
             return ['historyActive' => false, 'numTitles' => 0, 'titles' => []];
         }
 
@@ -1034,7 +1034,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     
     public function loadReadingHistoryFromIls($patron, $loadAdditional = null)
     {
-        $per_round = 10;
+        $per_round = 1000;
         if ((int)$patron->trackReadingHistory !== 1) {
             return ['historyActive' => false, 'numTitles' => 0, 'titles' => []];
         }
@@ -1067,7 +1067,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         }
 
         $history = [];
-
+        
+        // no reading history, PAPI error code will be number of items if positive
         if ($c->response->PAPIErrorCode === 0) {
             $history['numTitles'] = 0;
             $history['titles'] = [];
@@ -1104,7 +1105,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             }
             $titles[] = $title;
         }
-        
         
         $num_titles = count($titles);
         if ($next_page !== false){
