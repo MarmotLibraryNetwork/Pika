@@ -38,6 +38,7 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.*;
 
@@ -612,10 +613,10 @@ public class SierraExportAPIMain {
 		if (bufferInterval == null || bufferInterval < 0) {
 			bufferInterval = 300; // 5 mins
 		}
-		lastExtractDate = new Date((lastSierraExtractTime - bufferInterval) * 1000);
+		lastExtractDate = Date.from(Instant.ofEpochSecond(lastSierraExtractTime).minus(bufferInterval, ChronoUnit.SECONDS));
 
 		Date now       = new Date();
-		Date yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+		Date yesterday = Date.from(now.toInstant().minus(1, ChronoUnit.DAYS));
 		if (lastExtractDate.before(yesterday)) {
 			logger.warn("Last Extract date was more than 24 hours ago.");
 			// We used to only extract the last 24 hours because there would have been a full export marc file delivered,
