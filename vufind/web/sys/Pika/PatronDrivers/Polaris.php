@@ -918,7 +918,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         if(!$location->find(true)) {
             return false;
         }
-        
         $location_name = $location->displayName;
         $catalog_url = $location->catalogUrl ?? $_SERVER['SERVER_NAME'];
 
@@ -2275,6 +2274,34 @@ class Polaris extends PatronDriverInterface implements DriverInterface
      */
     public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null)
     {
+			// Determine if item-level hold is needed
+	    $sourceAndId = new SourceAndId($this->accountProfile->recordSource . ':' . $recordId);
+			$recordDriver = new MarcRecord($sourceAndId);
+			if ($recordDriver->isValid() && in_array('Journal', $recordDriver->getFormats())) {
+				$items = [];
+				$itemIdsToBarcode = $recordDriver->getItemIdsAndBarcodes();
+				$solrRecord = $recordDriver->getGroupedWorkDriver()->getRelatedRecord($sourceAndId->getSourceAndId());
+				foreach ($solrRecord['itemDetails'] as $itemDetails) {
+					if ($itemDetails['holdable']){
+						$items[] = [
+							//'itemNumber' => $itemDetails['itemId'],
+							'itemNumber' => $itemIdsToBarcode[$itemDetails['itemId']],
+							// Return the barcode as the item number to be used to place the item level hold
+							'location'   => $itemDetails['shelfLocation'],
+							'callNumber' => $itemDetails['callNumber'],
+							'status'     => $itemDetails['status'],
+							//'barcode'    => $itemIdsToBarcode[$itemDetails['itemId']], //TODO: set as volume?
+						];
+					}
+				}
+				$return         = [
+					'message'    => 'This title requires item level holds, please select an item to place a hold on.',
+					'success'    => 'true',
+					'canceldate' => $cancelDate,
+					'items'      => $items
+				];
+				return $return;
+			}
         // lookup the pickup location Polaris branch id
         $location = new Location();
         $location->code = $pickupBranch;

@@ -1871,14 +1871,13 @@ class MarcRecord extends IndexRecord {
 	 * @param File_MARC_Data_Field[] $tocFields
 	 * @return array
 	 */
-	function processTableOfContentsFields($tocFields)
-	{
-		$notes = array();
-		foreach ($tocFields as $marcField) {
+	function processTableOfContentsFields($tocFields){
+		$notes = [];
+		foreach ($tocFields as $marcField){
 			$curNote = '';
 			/** @var File_MARC_Subfield $subfield */
-			foreach ($marcField->getSubfields() as $subfield) {
-				$note = $subfield->getData();
+			foreach ($marcField->getSubfields() as $subfield){
+				$note    = $subfield->getData();
 				$curNote .= " " . $note;
 				$curNote = trim($curNote);
 //				if (strlen($curNote) > 0 && in_array($subfield->getCode(), array('t', 'a'))){
@@ -1886,16 +1885,16 @@ class MarcRecord extends IndexRecord {
 //					$curNote = '';
 //				}
 // 20131112 split 505 contents notes on double-hyphens instead of title subfields (which created bad breaks mis-associating titles and authors)
-				if (preg_match("/--$/", $curNote)) {
+				if (preg_match("/--$/", $curNote)){
 					$notes[] = $curNote;
 					$curNote = '';
-				} elseif (strpos($curNote, '--') !== false) {
+				}elseif (strpos($curNote, '--') !== false){
 					$brokenNotes = explode('--', $curNote);
-					$notes = array_merge($notes, $brokenNotes);
-					$curNote = '';
+					$notes       = array_merge($notes, $brokenNotes);
+					$curNote     = '';
 				}
 			}
-			if ($curNote != '') {
+			if ($curNote != ''){
 				$notes[] = $curNote;
 			}
 		}
@@ -1981,7 +1980,7 @@ class MarcRecord extends IndexRecord {
 		$notes = array();
 
 		if ($this->getMarcRecord()){
-			$additionalNotesFields = array(
+			$additionalNotesFields = [
 				'310' => 'Current Publication Frequency',
 				'321' => 'Former Publication Frequency',
 				'351' => 'Organization & arrangement of materials',
@@ -2030,19 +2029,19 @@ class MarcRecord extends IndexRecord {
 				'586' => 'Awards',
 				'590' => 'Local note',
 				'599' => 'Differentiable Local note',
-			);
+			];
 			foreach ($additionalNotesFields as $tag => $label){
 				/** @var File_MARC_Data_Field[] $marcFields */
 				$marcFields = $this->marcRecord->getFields($tag);
 				foreach ($marcFields as $marcField){
-					$noteText = array();
+					$noteText = [];
 					foreach ($marcField->getSubFields() as $subfield){
 						/** @var File_MARC_Subfield $subfield */
 						$noteText[] = $subfield->getData();
 					}
 					$note = implode(',', $noteText);
 					if (strlen($note) > 0){
-						$notes[] = array('label' => $label, 'note' => $note);
+						$notes[] = ['label' => $label, 'note' => $note];
 					}
 				}
 			}
@@ -2216,6 +2215,35 @@ class MarcRecord extends IndexRecord {
 		return $issueSummaries;
 	}
 
+	/**
+	 * Fetch an array of Item Ids and barcode. Used for Polaris Item-level holds
+	 * @return array
+	 */
+	public function getItemIdsAndBarcodes(){
+		$itemTag          = $this->indexingProfile->itemTag;
+		$itemIdField      = $this->indexingProfile->itemRecordNumber;
+		$itemBarcodeField = $this->indexingProfile->barcode;
+		$return           = [];
+		if ($this->isValid()){
+			$marcRecord = $this->getMarcRecord();
+			if ($marcRecord){
+				// Try to look up the specified field, return empty array if it doesn't exist.
+				$fields = $marcRecord->getFields($itemTag);
+
+				// Extract all the requested subfields, if applicable.
+				foreach ($fields as $currentField){
+					$itemId   = $this->getSubfieldData($currentField, $itemIdField);
+					$barcode  = $this->getSubfieldData($currentField, $itemBarcodeField);
+					$return[$itemId] = $barcode;
+//					$return[] = [
+//						'itemNumber' => $itemId,
+//						'barcode'    => $barcode,
+//					];
+				}
+			}
+		}
+	return $return;
+	}
 	private function getLinks(){
 		$links      = [];
 		$marcRecord = $this->getMarcRecord();
