@@ -219,7 +219,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 								if (patronDataJson != null && !patronDataJson.isEmpty()) {
 									if (logger.isDebugEnabled()) {
 										logger.debug(patronApiUrl.toString());
-										logger.debug("Json for patron reading history " + patronDataJson);
+										logger.debug("Json for patron reading history {}", patronDataJson);
 									}
 									patronDataJson = stripPHPNoticeFromJSONResponse(patronDataJson);
 
