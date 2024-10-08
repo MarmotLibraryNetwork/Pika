@@ -114,7 +114,7 @@ class AJAX extends AJAXHandler {
 		$searchType        = $_REQUEST['type'] ?? '';
 		$cacheKey          = 'auto_suggest_list_' .$solrScope. '_' . urlencode($searchType) . '_' . urlencode($searchTerm);
 		$searchSuggestions = $memCache->get($cacheKey);
-		if ($searchSuggestions == false || isset($_REQUEST['reload']) || !is_array($searchSuggestions)){
+		if (!$searchSuggestions || isset($_REQUEST['reload']) || !is_array($searchSuggestions)){
 			$searchSuggestions = [];
 			$commonSearches    = SearchSuggestions::getAllSuggestions($searchTerm, $searchType);
 			foreach ($commonSearches as $searchTerm){
