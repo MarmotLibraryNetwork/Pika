@@ -110,7 +110,6 @@ public class PolarisExportMain {
 	private static char isHoldableSubfieldChar     = '5'; // Using Clearview export field
 	private static char isDisplayInPACSubfieldChar = '4'; // Using Clearview export field
 
-
 	public static void main(String[] args) {
 		serverName = args[0];
 
@@ -502,6 +501,8 @@ public class PolarisExportMain {
 		return null;
 	}
 
+	private static final DateTimeFormatter polarisDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss").withZone(ZoneId.systemDefault());
+
 	/**
 	 * Build a string that is in the format for a dateTime expected by the Polaris API from a Date
 	 * (in ISO 8601 format (yyyy-MM-dd'T'HH:mm:ssZ))
@@ -510,7 +511,7 @@ public class PolarisExportMain {
 	 * @return a string representing the dateTime in the expected format
 	 */
 	private static String getPolarisAPIDateTimeString(Instant dateTime) {
-		return DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss").withZone(ZoneId.systemDefault()).format(dateTime);
+		return polarisDateTimeFormatter.format(dateTime);
 	}
 
 	private static PreparedStatement updateExtractInfoStatement;
@@ -601,6 +602,8 @@ public class PolarisExportMain {
 		return false;
 	}
 
+	private static final DateTimeFormatter polarisDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault());
+
 	/**
 	 * Build a string that is in the format for a date (date only, no time component) expected by the Polaris API
 	 * from an Instant
@@ -609,7 +612,7 @@ public class PolarisExportMain {
 	 * @return a string representing the date (date only, no time component) in the expected format
 	 */
 	private static String getPolarisAPIDateString(Instant dateTime) {
-		return DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault()).format(dateTime);
+		return polarisDateFormatter.format(dateTime);
 	}
 
 	private static void updatePolarisExtractLogNumToMarkedToProcess(int numRecordsToProcess) {
@@ -764,15 +767,15 @@ public class PolarisExportMain {
 
 						for (ControlField curField : marcRecord.getControlFields()) {
 							if (curField.getTag().equals("008")) {
-								boolean addDate;
+								boolean addDate = true; // if 008 shorter than 6 characters, we will add date by default
 								String  remainder008 = "";
 								String  dateAddData  = curField.getData();
 								if (dateAddData != null && dateAddData.length() >= 6) {
 									String dateAddedStr = dateAddData.substring(0, 6);
-									addDate      = !isNumeric(dateAddedStr);
-									remainder008 = dateAddData.substring(6);
-								} else {
-									addDate = true;
+									addDate = !isNumeric(dateAddedStr);
+									if (addDate) {
+										remainder008 = dateAddData.substring(6);
+									}
 								}
 								if (addDate) {
 									Long timeStampMillisecond = getTimeStampMillisecondFromMicrosoftDateString(creationDate);
@@ -1166,6 +1169,7 @@ public class PolarisExportMain {
 
 			String solrPort = PikaConfigIni.getIniValue("Reindex", "solrPort");
 			updateServer = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped").withQueueSize(500).withThreadCount(8).build();
+			logger.debug("Initialized Solr Indexer Core");
 			// Including the reindexer.jar in the IntelliJ module build and configuration appears to be necessary for the updateServer to initiate correctly.
 			// (Otherwise an java.lang.NoClassDefFoundError error is triggered.)
 		}
