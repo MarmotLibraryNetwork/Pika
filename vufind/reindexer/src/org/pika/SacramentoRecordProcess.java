@@ -109,7 +109,7 @@ class SacramentoRecordProcessor extends SierraRecordProcessor {
 					String   itemStatus   = "KitKeeperStatus";
 
 					//if the status and location are null, we can assume this is not a valid item
-					if (!isItemValid(itemStatus, locationCode)) return;
+					if (itemNotValid(itemStatus, locationCode)) return;
 
 					itemInfo.setLocationCode(locationCode);
 					itemInfo.setShelfLocationCode(locationCode);

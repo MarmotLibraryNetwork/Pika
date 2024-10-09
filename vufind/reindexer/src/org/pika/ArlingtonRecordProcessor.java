@@ -168,7 +168,7 @@ class ArlingtonRecordProcessor extends SierraRecordProcessor {
 					itemInfo.setLocationCode(locationCode);
 
 					//if the status and location are null, we can assume this is not a valid item
-					if (!isItemValid(itemStatus, locationCode)) return;
+					if (itemNotValid(itemStatus, locationCode)) return;
 
 					itemInfo.setShelfLocationCode(locationCode);
 					itemInfo.setShelfLocation(getShelfLocationForItem(itemInfo, null, identifier));

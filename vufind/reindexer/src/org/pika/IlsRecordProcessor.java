@@ -720,7 +720,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		itemInfo.setLocationCode(itemLocation);
 
 		//if the status and location are null, we can assume this is not a valid item
-		if (!isItemValid(itemStatus, itemLocation)) return;
+		if (itemNotValid(itemStatus, itemLocation)) return;
 		if (itemStatus == null || itemStatus.isEmpty()) {
 			logger.warn("Item contained no status value for item {} for location {} in record {}", itemInfo.getItemIdentifier(), itemLocation, identifier);
 		}
@@ -1005,8 +1005,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return itemPopularity;
 	}
 
-	protected boolean isItemValid(String itemStatus, String itemLocation) {
-		return !(itemStatus == null && itemLocation == null);
+	/**
+	 * Check if the item is invalid
+	 */
+	protected boolean itemNotValid(String itemStatus, String itemLocation) {
+		return itemStatus == null && itemLocation == null;
 	}
 
 	void loadItemCallNumber(Record record, DataField itemField, ItemInfo itemInfo) {

@@ -111,8 +111,8 @@ class NashvilleSchoolsRecordProcessor extends IlsRecordProcessor {
 		}
 	}
 
-	protected boolean isItemValid(String itemStatus, String itemLocation) {
-		return itemLocation != null;
+	protected boolean itemNotValid(String itemStatus, String itemLocation) {
+		return itemLocation == null;
 	}
 
 	protected boolean isItemSuppressed(DataField curItem, RecordIdentifier identifier) {
