@@ -737,11 +737,12 @@ public class PolarisExportMain {
 	}
 
 
-	private static Long convertMarcXmlAndWriteMarcRecord(String marcXML, long bibId){
-		return convertMarcXmlAndWriteMarcRecord(marcXML, bibId, true);
+	private static Long convertMarcXmlAndWriteMarcRecord(String marcXML, long bibId, String creationDate){
+		return convertMarcXmlAndWriteMarcRecord(marcXML, bibId, creationDate, true);
 	}
+	private static final DateTimeFormatter dateFormat008 = DateTimeFormatter.ofPattern("yyMMdd").withZone(ZoneId.systemDefault());
 
-	private static Long convertMarcXmlAndWriteMarcRecord(String marcXML, long bibId, boolean checkEcontentSupression){
+	private static Long convertMarcXmlAndWriteMarcRecord(String marcXML, long bibId, String creationDate, boolean checkEcontentSupression){
 		byte[]        bytes   = marcXML.getBytes(StandardCharsets.UTF_8);
 		MarcXmlReader marcXmlReader;
 		try (ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes)) {
@@ -762,11 +763,33 @@ public class PolarisExportMain {
 						Record newRecord = new SortedMarcFactoryImpl().newRecord(marcRecord.getLeader()); // Use the SortedMarcFactoryImpl (which puts the tags in numerical order
 
 						for (ControlField curField : marcRecord.getControlFields()) {
+							if (curField.getTag().equals("008")) {
+								boolean addDate;
+								String  remainder008 = "";
+								String  dateAddData  = curField.getData();
+								if (dateAddData != null && dateAddData.length() >= 6) {
+									String dateAddedStr = dateAddData.substring(0, 6);
+									addDate      = !isNumeric(dateAddedStr);
+									remainder008 = dateAddData.substring(6);
+								} else {
+									addDate = true;
+								}
+								if (addDate) {
+									Long timeStampMillisecond = getTimeStampMillisecondFromMicrosoftDateString(creationDate);
+									if (timeStampMillisecond != null) {
+										Instant date   = Instant.ofEpochMilli(timeStampMillisecond);
+										String  new008 = dateFormat008.format(date) + remainder008;
+										logger.info("Invalid 008 creation date '{}' was repopulated with '{}'", curField, new008);
+										curField.setData(new008);
+									}
+								}
+							}
 							newRecord.addVariableField(curField);
 						}
 
 						for (DataField curField : marcRecord.getDataFields()) {
 							boolean addField = true;
+
 							if (curField.getTag().equals("852")) {
 								String    itemRecordNumber = curField.getSubfieldsAsString("d");
 								DataField dataField        = marcFactory.newDataField(indexingProfile.itemTag, ' ', ' ');
@@ -888,7 +911,6 @@ public class PolarisExportMain {
 	}
 
 	private static void updateMarcAndRegroupRecordIds(List<Long> idArray) {
-		//TreeSet<Long> bibIdsUpdated = new TreeSet<>();
 		StringBuilder idsToProcess  = new StringBuilder();
 		int j = 0;
 		for (long id: idArray){
@@ -896,53 +918,56 @@ public class PolarisExportMain {
 				idsToProcess.append(",");
 			}
 			idsToProcess.append(id);
-			if (++j % 50 == 0){
-				try {
-					JSONObject bibsCallResult = null;
-					String     polarisUrl     = "/synch/bibs/MARCXML?includeitems=1&bibids=" + idsToProcess;
-					logger.debug("Loading marc records with bulk method : {}", polarisUrl);
-					int bibsUpdated = 0;
-					bibsCallResult = callPolarisApiURL(polarisUrl, debug);
-					if (bibsCallResult != null && bibsCallResult.has("GetBibsByIDRows")) {
-						//ArrayList<Long> processedIds = new ArrayList<>();
-						try {
-							JSONArray entries = bibsCallResult.getJSONArray("GetBibsByIDRows");
-							for (int i = 0; i < entries.length(); i++) {
-								Long bibId = null;
-								try {
-									JSONObject entry = entries.getJSONObject(i);
-									bibId = entry.getLong("BibliographicRecordID");
-									String marcXML     = entry.getString("BibliographicRecordXML");
-									Long   processedId = convertMarcXmlAndWriteMarcRecord(marcXML, bibId);
-									if (processedId != null && processedId > 0){
-										//bibIdsUpdated.add(bibId);
-										bibsUpdated++;
-									}
-								} catch (JSONException e) {
-									if (bibId != null) {
-										logger.error("Error processing JSON for bib {}", bibId ,e);
-										bibsWithErrors.add(bibId);
-									} else {
-										logger.error("Error processing JSON for a bib", e);
-									}
-								}
-							} // end of for loop
-						} catch (JSONException e) {
-							logger.error("Error fetching JSON Array : {}", bibsCallResult, e);
-						}
-					} else {
-						logger.info("API call for specified bibs returned response with no entries");
-					}
-
-					updatePolarisExtractLogNumMarkedToProcessProcessed(bibsUpdated);
-				} catch (Exception e) {
-					logger.error("Error processing newly created bibs", e);
-				}
-
-				// Set up next round
-				j = 0;
+			if (++j % 50 == 0) {
+				updateMarcAndRegroupRecordIds(idsToProcess.toString());
 				idsToProcess = new StringBuilder();
+				j            = 0;
 			}
+		}
+		if (j != 0){
+			updateMarcAndRegroupRecordIds(idsToProcess.toString());
+		}
+	}
+
+	private static void updateMarcAndRegroupRecordIds(String idsToProcess){
+		try {
+			String     polarisUrl     = "/synch/bibs/MARCXML?includeitems=1&bibids=" + idsToProcess;
+			logger.debug("Loading marc records with bulk method : {}", polarisUrl);
+			int        bibsUpdated    = 0;
+			JSONObject bibsCallResult = callPolarisApiURL(polarisUrl, debug);
+			if (bibsCallResult != null && bibsCallResult.has("GetBibsByIDRows")) {
+				try {
+					JSONArray entries = bibsCallResult.getJSONArray("GetBibsByIDRows");
+					for (int i = 0; i < entries.length(); i++) {
+						Long bibId = null;
+						try {
+							JSONObject entry = entries.getJSONObject(i);
+							bibId = entry.getLong("BibliographicRecordID");
+							String marcXML      = entry.getString("BibliographicRecordXML");
+							String creationDate = entry.getString("CreationDate");
+							Long   processedId  = convertMarcXmlAndWriteMarcRecord(marcXML, bibId, creationDate);
+							if (processedId != null && processedId > 0){
+								bibsUpdated++;
+							}
+						} catch (JSONException e) {
+							if (bibId != null) {
+								logger.error("Error processing JSON for bib {}", bibId ,e);
+								bibsWithErrors.add(bibId);
+							} else {
+								logger.error("Error processing JSON for a bib", e);
+							}
+						}
+					} // end of for loop
+				} catch (JSONException e) {
+					logger.error("Error fetching JSON Array : {}", bibsCallResult, e);
+				}
+			} else {
+				logger.info("API call for specified bibs returned response with no entries");
+			}
+
+			updatePolarisExtractLogNumMarkedToProcessProcessed(bibsUpdated);
+		} catch (Exception e) {
+			logger.error("Error processing newly created bibs", e);
 		}
 	}
 
@@ -1260,10 +1285,10 @@ public class PolarisExportMain {
 								logger.info("Failed to delete from index 'updated but suppressed' bib Id  {}", bibId);
 							}
 						} else {
-							//String creationDate = curBib.getString("CreationDate"); // TODO: extract from microsoft format
+							String creationDate = curBib.getString("CreationDate");
 							//String updateDate   = curBib.getString("ModificationDate");  // TODO: extract from microsoft format
 							String marcXML      = curBib.getString("BibliographicRecordXML");
-							if (convertMarcXmlAndWriteMarcRecord(marcXML, bibId) != null) {
+							if (convertMarcXmlAndWriteMarcRecord(marcXML, bibId, creationDate) != null) {
 								numChangedRecordsThisRound++;
 								changedBibs.add(bibId);
 							} else {
@@ -1327,12 +1352,12 @@ public class PolarisExportMain {
 								logger.info("Failed to delete from index newly created but suppressed bib Id  {}", bibId);
 							}
 						} else {
-							//String creationDate = curBib.getString("CreationDate"); // TODO: extract from microsoft format
+							String creationDate = curBib.getString("CreationDate");
 							//String updateDate   = curBib.getString("ModificationDate");  // TODO: extract from microsoft format
 							String marcXML      = curBib.getString("BibliographicRecordXML");
 							createdBibs.add(bibId); // Need to maintain a clean sort of ids fetched by this method only
 
-							if (convertMarcXmlAndWriteMarcRecord(marcXML, bibId) != null) {
+							if (convertMarcXmlAndWriteMarcRecord(marcXML, bibId, creationDate) != null) {
 								numNewRecords++;
 								addedBibs.add(bibId);
 							}
