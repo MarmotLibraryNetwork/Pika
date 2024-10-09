@@ -761,7 +761,7 @@ public class PolarisExportMain {
 						suppressedEcontentIds.add(bibId);
 						// Since bib is eContent suppressed by grouping, update the last extract time.
 						updateLastExtractTimeForRecord(Long.toString(bibId)); //TODO: mark as suppressed in ils extract info instead? markRecordSuppressedInExtractInfo()
-						return null;
+						return 0L; // Since null signifies an error, return zero to treat as okay exception
 					} else {
 						Record newRecord = new SortedMarcFactoryImpl().newRecord(marcRecord.getLeader()); // Use the SortedMarcFactoryImpl (which puts the tags in numerical order
 
