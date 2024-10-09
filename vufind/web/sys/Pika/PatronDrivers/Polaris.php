@@ -919,9 +919,9 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             return false;
         }
         $location_name = $location->displayName;
-//        $catalog_url = $location->catalogUrl ?? $_SERVER['SERVER_NAME'];
-        $catalog_url = $library->catalogURL;
-        $interface->assign('emailAddress', $email_vars['email']);
+		    $catalog_url  = empty($library->catalogUrl) ? $this->configArray['Site']['url'] : $_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl;
+
+		    $interface->assign('emailAddress', $email_vars['email']);
         $interface->assign('patronName', $email_vars['name']);
         $interface->assign('libraryName', $location_name);
         $interface->assign('catalogUrl', $catalog_url);
