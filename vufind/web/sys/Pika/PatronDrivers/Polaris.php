@@ -823,6 +823,12 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                         continue;
                     }
                 }
+                // cast TxtPhoneNumber to integer
+                if($key === "TxtPhoneNumber") {
+                    $patron_registration[$key] = (int)$value;
+                    continue;
+                }
+                
                 // type these fields as integers and remove the added *Select from the string.
                 if (in_array($key,
                     [
@@ -833,13 +839,15 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                         "RequestPickupBranchIDSelect",
                         "Phone1CarrierIDSelect",
                         "Phone2CarrierIDSelect",
-                        "Phone3CarrierIDSelect"
+                        "Phone3CarrierIDSelect",
+                        "TxtPhoneNumberSelect"
                     ],
                 )) {
                     $new_key = str_ireplace('select', '', $key);
                     $patron_registration[$new_key] = (int)$value;
                     continue;
                 }
+                // all other request parameters
                 $patron_registration[$key] = $value;
             }
         }
@@ -903,17 +911,16 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     public function sendSelfRegSuccessEmail(array $email_vars): bool
     {
         global $interface;
-        
+        global $library;
         $location_id = $this->polarisBranchIdToLocationId($email_vars['ils_branch_id']);
         $location = new Location();
         $location->locationId = $location_id;
         if(!$location->find(true)) {
             return false;
         }
-        
         $location_name = $location->displayName;
-        $catalog_url = $location->catalogUrl ?? 'your local library';
-
+//        $catalog_url = $location->catalogUrl ?? $_SERVER['SERVER_NAME'];
+        $catalog_url = $library->catalogURL;
         $interface->assign('emailAddress', $email_vars['email']);
         $interface->assign('patronName', $email_vars['name']);
         $interface->assign('libraryName', $location_name);
@@ -968,7 +975,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     {
         // /public/patron/{PatronBarcode}/readinghistory
         // history enabled?
-        if ($patron->trackReadingHistory != 1) {
+        if ($patron->trackReadingHistory !== 1) {
             return ['historyActive' => false, 'numTitles' => 0, 'titles' => []];
         }
 
@@ -1012,14 +1019,46 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $history['titles'] = $titles;
         return $history;
     }
-
+    
+    protected function _getReadingHistoryCount($patron) {
+        $request_url = $this->ws_url . "/patron/{$patron->barcode}/readinghistory?rowsperpage=1&page=-1";
+        $c = $this->_doPatronRequest($patron, 'GET', $request_url);
+        
+        if ($c === null) {
+            return false;
+        }
+        
+        return $c->response->PAPIErrorCode;
+    }
+    
     public function loadReadingHistoryFromIls($patron, $loadAdditional = null)
     {
-        if ($patron->trackReadingHistory != 1) {
+        $per_round = 1000;
+        if ((int)$patron->trackReadingHistory !== 1) {
             return ['historyActive' => false, 'numTitles' => 0, 'titles' => []];
         }
         
-        $request_url = $this->ws_url . "/patron/{$patron->barcode}/readinghistory?rowsperpage=5&page=0";
+        // get the total number of entries
+        $num_titles_total = $this->_getReadingHistoryCount($patron);
+        
+        if($num_titles_total === false) {
+            // return an error?
+            return false;
+        }
+        
+        // no reading history in ILS
+        if($num_titles_total === 0) {
+            return ['historyActive' => true, 'numTitles' => 0, 'titles' => []];
+        }
+        
+        // additional calls to complete load
+        $page = $loadAdditional ?? 1;
+        $next_page = $page + 1;
+        if(($next_page * $per_round) > $num_titles_total) {
+            $next_page = false;
+        }
+        
+        $request_url = $this->ws_url . "/patron/{$patron->barcode}/readinghistory?rowsperpage={$per_round}&page={$page}";
         $c = $this->_doPatronRequest($patron, 'GET', $request_url);
 
         if ($c === null) {
@@ -1027,7 +1066,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         }
 
         $history = [];
-
+        
+        // no reading history, PAPI error code will be number of items if positive
         if ($c->response->PAPIErrorCode === 0) {
             $history['numTitles'] = 0;
             $history['titles'] = [];
@@ -1064,7 +1104,13 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             }
             $titles[] = $title;
         }
+        
+        $num_titles = count($titles);
+        if ($next_page !== false){
+            $history['nextRound'] = $next_page;
+        }
         $history['titles'] = $titles;
+        $history['numTitles'] = $num_titles;
         return $history;
     }
 
@@ -1095,6 +1141,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         if ($r === null) {
             return false;
         }
+        $this->_deleteCachePatronObject($patron->ilsUserId);
         return true;
     }
 
@@ -1108,7 +1155,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
      *
      * @return bool `true` if the opt-out is successful, `false` if the API request fails.
      */
-    public function optOutReadingHistory($patron)
+    public function optOutReadingHistory(User $patron)
     {
         $opt_out = [
             "LogonBranchID" => 1,
@@ -1125,6 +1172,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         if ($r === null) {
             return false;
         }
+        $this->_deleteCachePatronObject($patron->ilsUserId);
         return true;
     }
 
@@ -2226,6 +2274,34 @@ class Polaris extends PatronDriverInterface implements DriverInterface
      */
     public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null)
     {
+		// Determine if item-level hold is needed
+	    $sourceAndId = new SourceAndId($this->accountProfile->recordSource . ':' . $recordId);
+        $record = new MarcRecord($sourceAndId);
+        if ($record->isValid() && in_array('Journal', $record->getFormats())) {
+            $items = [];
+            $itemIdsToBarcode = $record->getItemIdsAndBarcodes();
+            $solrRecord = $record->getGroupedWorkDriver()->getRelatedRecord($sourceAndId->getSourceAndId());
+            foreach ($solrRecord['itemDetails'] as $itemDetails) {
+                if ($itemDetails['holdable']){
+                    $items[] = [
+                        //'itemNumber' => $itemDetails['itemId'],
+                        'itemNumber' => $itemIdsToBarcode[$itemDetails['itemId']],
+                        // Return the barcode as the item number to be used to place the item level hold
+                        'location'   => $itemDetails['shelfLocation'],
+                        'callNumber' => $itemDetails['callNumber'],
+                        'status'     => $itemDetails['status'],
+                        //'barcode'    => $itemIdsToBarcode[$itemDetails['itemId']], //TODO: set as volume?
+                    ];
+                }
+            }
+            $return         = [
+                'message'    => 'This title requires item level holds, please select an item to place a hold on.',
+                'success'    => 'true',
+                'canceldate' => $cancelDate,
+                'items'      => $items
+            ];
+            return $return;
+        }
         // lookup the pickup location Polaris branch id
         $location = new Location();
         $location->code = $pickupBranch;
@@ -2282,7 +2358,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             // todo: patron not old enough message
         }
         // get title to use in return
-        $record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
         $title = false;
         if ($record->isValid()) {
             $title = trim($record->getTitle());
@@ -2318,6 +2393,107 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         ];
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function placeItemHold($patron, $recordId, $itemId, $pickupBranch)
+    {
+        $bib_id = trim($recordId);
+        $barcode = trim($itemId);
+        // lookup the pickup location Polaris branch id
+        $location = new Location();
+        $location->code = $pickupBranch;
+        if (!$location->find(true) || $location->N = 0) {
+            $this->logger->error('ERROR: Bad location code: ' . $pickupBranch);
+            return [
+                'success' => false,
+                'message' => 'An error occurred while processing your request. Please try again later or contact your library.',
+            ];
+        }
+
+        $polaris_pu_branch_id = $location->ilsLocationId;
+        $requesting_location = $this->locationIdToPolarisBranchId(
+            $patron->homeLocationId,
+        );
+
+        $patron_id = $patron->ilsUserId;
+
+        $request_url = $this->ws_url . '/holdrequest';
+        $request_body = [
+            "PatronID" => (int)$patron_id,
+            "BibID" => (int)$bib_id,
+            "ItemBarcode" => (int)$barcode,
+            "PickupOrgID" => (int)$polaris_pu_branch_id,
+            "ActivationDate" => gmdate('r'),
+            "WorkstationID" => (int)$this->configArray['Polaris']['workstationId'],
+            "UserID" => (int)$this->configArray['Polaris']['staffUserId'],
+            "RequestingOrgID" => (int)$requesting_location,
+        ];
+        $body_json = json_encode($request_body);
+        $body_length = strlen($body_json);
+        $extra_headers = [
+            "Content-Type: application/json",
+            "Content-Length: " . $body_length,
+        ];
+        // initial hold request
+        $c = $this->_doSystemRequest('POST', $request_url, $body_json, $extra_headers);
+
+        // errors
+        if ($c === null) { // api or curl error
+            if (isset($this->papiLastErrorMessage)) {
+                return [
+                    'success' => false,
+                    'message' => "Your hold could not be placed. {$this->papiLastErrorMessage}",
+                ];
+            }
+            return [
+                'success' => false,
+                'message' => 'An error occurred while processing your request. Please try again later or contact your library.',
+            ];
+        }
+        $r = $c->response;
+        // age conflict
+        if ($r->StatusValue === 10) {
+            // todo: patron not old enough message
+        }
+        // get title to use in return
+        $record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bib_id);
+        $title = false;
+        if ($record->isValid()) {
+            $title = trim($record->getTitle());
+        }
+        // success // all done // there will likely be a message that needs a response.
+        if ($r->StatusValue === 1) {
+            $return = ['success' => true, 'message' => 'Your hold was successfully placed.'];
+            if ($title) {
+                $return['message'] = "Your hold for <strong>{$title}</strong> was successfully placed.";
+            }
+            return $return;
+        }
+
+        // continue to reply yes until hold is placed or we get an error
+        $status_type = $r->StatusType;
+        do {
+            $c = $this->_placeHoldRequestReply($r, (int)$requesting_location);
+            $r = $c->response;
+            $status_type = $r->StatusType;
+        } while ($status_type === 3);
+
+        if ($r->StatusValue === 1) {
+            $return = ['success' => true, 'message' => 'Your hold was successfully placed.'];
+            if ($title) {
+                $return['message'] = "Your hold for <strong>{$title}</strong> was successfully placed.";
+            }
+            return $return;
+        }
+
+        return [
+            'success' => false,
+            'message' => 'An error occurred while processing your request. Please try again later or contact your library.',
+        ];
+    }
+    
+    
     protected function locationIdToPolarisBranchId($location_id)
     {
         $location = new Location();
@@ -2350,14 +2526,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $request_body = json_encode($request_body);
         $extra_headers = ['Content-Type: application/json'];
         return $this->_doSystemRequest('PUT', $request_url, $request_body, $extra_headers);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function placeItemHold($patron, $recordId, $itemId, $pickupBranch)
-    {
-        $recordId = trim($recordId);
     }
 
     /**

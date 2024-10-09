@@ -10630,13 +10630,15 @@ a .header-button:hover {
 #advancedSearchLink {
   text-shadow: 1px 1px #333;
 }
-#more-details-accordion a:hover,
 #account-settings-accordion a:hover,
 .sidebar-links a:hover,
-#more-details-accordion a:visited,
 #account-settings-accordion a:visited,
 .sidebar-links a:visited {
-  color: #FFF;
+  color: #fff;
+}
+#more-details-accordion a:hover :not(.btn),
+#more-details-accordion a:visited :not(.btn) {
+  color: #fff;
 }
 .sidebar-links .panel.active > a,
 .sidebar-links .panel.active > a:visited,

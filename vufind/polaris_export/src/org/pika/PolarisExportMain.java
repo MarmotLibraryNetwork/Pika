@@ -29,13 +29,13 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,7 +63,7 @@ public class PolarisExportMain {
 	private static PikaSystemVariables  systemVariables;
 	private static Connection           pikaConn;
 	private static Long                 lastPolarisExtractTime;
-	private static Date                 lastExtractDate; // Will include buffered value
+	private static Instant              lastExtractDate; // Will include buffered value
 	private static IndexingProfile      indexingProfile;
 	private static PolarisRecordGrouper recordGroupingProcessor;
 	private static String               apiBaseUrl = null;
@@ -81,8 +81,8 @@ public class PolarisExportMain {
 	private static final HashMap<String, TranslationMap> polarisExtractTranslationMaps = new HashMap<>();
 
 	private static       boolean debug     = false;
-	//private static int     minutesToProcessExport;
-	private static final Date    startTime = new Date();
+	//private static       int     minutesToProcessExport;
+	private static final Instant startTime = Instant.now();
 
 	// Connector to Solr for deleting index entries
 	private static ConcurrentUpdateSolrClient updateServer = null;
@@ -93,11 +93,11 @@ public class PolarisExportMain {
 	private final static String appId      = "100";
 	private final static String orgId      = "1";
 
-	private static String apiUser;
-	private static String apiSecret;
-	private static String polarisAPIToken;
-	private static String polarisAPISecret;
-	private static long   polarisAPIExpiration;
+	private static String  apiUser;
+	private static String  apiSecret;
+	private static String  polarisAPIToken;
+	private static String  polarisAPISecret;
+	private static Instant polarisAPIExpiration;
 
 	private static final String logTable = "polaris_export_log";
 
@@ -126,9 +126,7 @@ public class PolarisExportMain {
 			System.exit(1);
 		}
 
-		if (logger.isInfoEnabled()) {
-			logger.info(startTime + " : Starting Polaris Extract");
-		}
+		logger.info("{} : Starting Polaris Extract", startTime);
 
 		// Read the base INI file to get information about the server (current directory/cron/config.ini)
 		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
@@ -191,7 +189,7 @@ public class PolarisExportMain {
 		// Load translation maps for Polaris Extract
 		String[] maps = {"circulationStatusToCode", "materialTypeToCode", "shelfLocationToCode"};
 		for (String map: maps) {
-			String mapFile = sitePath + "/translation_maps/"+ map + "_map.properties";
+			String mapFile = sitePath + "/translation_maps/" + map + "_map.properties";
 			File   curFile = new File(mapFile);
 			if (curFile.exists()) {
 				String mapName = curFile.getName().replace(".properties", "").replace("_map", "");
@@ -246,7 +244,7 @@ public class PolarisExportMain {
 				apiBaseUrl = polarisUrl + "/" + apiVersion + "/" + langId + "/" + appId + "/" + orgId;
 			}
 		} catch (SQLException e) {
-			logger.error("Error retrieving account profile for " + indexingProfile.sourceName, e);
+			logger.error("Error retrieving account profile for {}", indexingProfile.sourceName, e);
 		}
 		if (apiBaseUrl == null || apiBaseUrl.isEmpty()) {
 			logger.error("Polaris API url must be set in account profile column patronApiUrl.");
@@ -259,10 +257,12 @@ public class PolarisExportMain {
 
 		// Get stored token data so we don't have to re-authorize every time this process is ran
 		Long expiration = systemVariables.getLongValuedVariable("polarisAPIExpiration");
-		if (expiration != null && expiration > new Date().getTime()) {
-			polarisAPIExpiration = expiration;
-			polarisAPIToken      = systemVariables.getStringValuedVariable("polarisAPIToken");
-			polarisAPISecret     = systemVariables.getStringValuedVariable("polarisAPISecret");
+		if (expiration != null) {
+			if (expiration > Instant.now().getEpochSecond()) {
+				polarisAPIExpiration = Instant.ofEpochSecond(expiration);
+				polarisAPIToken      = systemVariables.getStringValuedVariable("polarisAPIToken");
+				polarisAPISecret     = systemVariables.getStringValuedVariable("polarisAPISecret");
+			}
 		}
 
 		//Extract a Single Bib/Record
@@ -292,7 +292,7 @@ public class PolarisExportMain {
 		//Integer minutesToProcessFor = PikaConfigIni.getIntIniValue("Catalog", "minutesToProcessExport");
 		//minutesToProcessExport = (minutesToProcessFor == null) ? 5 : minutesToProcessFor;
 
-	initializeExportLogEntry();
+		initializeExportLogEntry();
 
 		//Setup other systems we will use
 		initializeRecordGrouper();
@@ -317,35 +317,30 @@ public class PolarisExportMain {
 		if (holdsCountsUpdated > 0){
 			addNoteToExportLog("The holds counts for " + holdsCountsUpdated + " bibs processed in this extraction round were updated.");
 		}
-		long nextStartTime = startTime.getTime() / 1000;
+		long nextStartTime = startTime.getEpochSecond();
 		updateLastExportTime(nextStartTime);
 		addNoteToExportLog("Setting last export time to " + nextStartTime + " (" + startTime + ")");
 
-		addNoteToExportLog("Finished exporting Polaris data " + new Date());
-		long endTime     = new Date().getTime();
-		long elapsedTime = endTime - startTime.getTime();
-		addNoteToExportLog("Elapsed Minutes " + (elapsedTime / 60000));
+		Instant end         = Instant.now();
+		long    endTime     = end.getEpochSecond();
+		long    elapsedTime = endTime - nextStartTime;
+		addNoteToExportLog("Finished exporting Polaris data " + end);
+		addNoteToExportLog("Elapsed Minutes " + (elapsedTime / 60));
 
 		finalizeExportLogEntry(endTime);
 
 		updatePartialExtractRunning(false);
 
 		closeDBConnections(pikaConn);
-		Date currentTime = new Date();
-		if (logger.isInfoEnabled()) {
-			logger.info(currentTime + " : Finished Polaris Extract");
-		}
-
+		logger.info("Finished Polaris Extract");
 	} // End of main
 
 	private static void initializeExportLogEntry() {
 		//Start an export log entry
-		if (logger.isInfoEnabled()) {
-			logger.info("Creating log entry for Polaris Extract");
-		}
+		logger.info("Creating log entry for Polaris Extract");
 		try (PreparedStatement createLogEntryStatement = pikaConn.prepareStatement("INSERT INTO " + logTable + " (startTime, lastUpdate, notes) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS)) {
-			createLogEntryStatement.setLong(1, startTime.getTime() / 1000);
-			createLogEntryStatement.setLong(2, startTime.getTime() / 1000);
+			createLogEntryStatement.setLong(1, startTime.getEpochSecond());
+			createLogEntryStatement.setLong(2, startTime.getEpochSecond());
 			createLogEntryStatement.setString(3, "Initialization of Polaris API Extract complete");
 			createLogEntryStatement.executeUpdate();
 			ResultSet generatedKeys = createLogEntryStatement.getGeneratedKeys();
@@ -364,12 +359,12 @@ public class PolarisExportMain {
 	}
 
 	private static void finalizeExportLogEntry() {
-		finalizeExportLogEntry(new Date().getTime());
+		finalizeExportLogEntry(Instant.now().getEpochSecond());
 	}
 
 	private static void finalizeExportLogEntry(long endTime) {
 		try (PreparedStatement finishedStatement = pikaConn.prepareStatement("UPDATE " + logTable + " SET endTime = ? WHERE id = ?")) {
-			finishedStatement.setLong(1, endTime / 1000);
+			finishedStatement.setLong(1, endTime);
 			finishedStatement.setLong(2, exportLogId);
 			finishedStatement.executeUpdate();
 		} catch (SQLException e) {
@@ -378,15 +373,15 @@ public class PolarisExportMain {
 	}
 
 
-	private static final StringBuffer     notes      = new StringBuffer();
-	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private static final StringBuffer      notes      = new StringBuffer();
+	private static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
 
 	private static void addNoteToExportLog(String note) {
 		try {
-			Date date = new Date();
+			Instant date = Instant.now();
 			notes.append("<br>").append(dateFormat.format(date)).append(": ").append(note);
 			addNoteToExportLogStmt.setString(1, trimLogNotes(notes.toString()));
-			addNoteToExportLogStmt.setLong(2, new Date().getTime() / 1000);
+			addNoteToExportLogStmt.setLong(2, date.getEpochSecond());
 			addNoteToExportLogStmt.setLong(3, exportLogId);
 			addNoteToExportLogStmt.executeUpdate();
 			logger.info(note);
@@ -439,23 +434,23 @@ public class PolarisExportMain {
 		if (bufferInterval == null || bufferInterval < 0) {
 			bufferInterval = 300; // 5 minutes
 		}
-		lastExtractDate = new Date((lastPolarisExtractTime - bufferInterval) * 1000);
+		lastExtractDate = Instant.ofEpochSecond(lastPolarisExtractTime).minus(bufferInterval, ChronoUnit.SECONDS);
 
-		Date now       = new Date();
-		Date yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-		//Date tomorrow  = new Date(now.getTime() + 24 * 60 * 60 * 1000); // Use for ending time range
-		if (lastExtractDate.before(yesterday)) {
-			//TODO: we do get nightly export, so should reset to arrival of the export
-			logger.warn("Last Extract date was more than 24 hours ago.");
+		Instant now       = Instant.now();
+		Instant yesterday = now.minus(1, ChronoUnit.DAYS);
+		if (lastExtractDate.isBefore(yesterday)) {
+			logger.warn("Last Extract date was more than 24 hours ago.  Just getting the last 24 hours since we should have a full extract.");
+			lastExtractDate = yesterday;
 			// We used to only extract the last 24 hours because there would have been a full export marc file delivered,
 			// but with this process that isn't a good assumption any longer.  Now we will just issue a warning
+
 		}
 
 		String lastExtractDateTimeFormatted = getPolarisAPIDateTimeString(lastExtractDate);
 		String nowFormatted                 = getPolarisAPIDateTimeString(now);
 		String deletionDateFormatted        = getPolarisAPIDateString(yesterday); // date component only, is needed for fetching deleted things
 		// Use yesterday to ensure we don't have any timezone issues
-		long   updateTime                   = now.getTime() / 1000;
+		long   updateTime                   = now.getEpochSecond();
 		addNoteToExportLog("Loading records changed since " + lastExtractDate);
 
 		processDeletedBibs(deletionDateFormatted, updateTime);
@@ -514,15 +509,8 @@ public class PolarisExportMain {
 	 * @param dateTime the dateTime to format
 	 * @return a string representing the dateTime in the expected format
 	 */
-	private static String getPolarisAPIDateTimeString(Date dateTime) {
-		SimpleDateFormat dateTimeFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-		// TODO: Polaris deleted date-time format is : YYYY-MM-DDTHH:MM:SS
-		//dateTimeFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-		return dateTimeFormatter.format(dateTime);
-	}
-
 	private static String getPolarisAPIDateTimeString(Instant dateTime) {
-		return getPolarisAPIDateTimeString(Date.from(dateTime));
+		return DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss").withZone(ZoneId.systemDefault()).format(dateTime);
 	}
 
 	private static PreparedStatement updateExtractInfoStatement;
@@ -532,7 +520,7 @@ public class PolarisExportMain {
 	}
 
 	private static void updateLastExtractTimeForRecord(String identifier) {
-		updateLastExtractTimeForRecord(identifier, startTime.getTime() / 1000);
+		updateLastExtractTimeForRecord(identifier, startTime.getEpochSecond());
 	}
 
 	private static void updateLastExtractTimeForRecord(String identifier, Long lastExtractTime) {
@@ -560,8 +548,8 @@ public class PolarisExportMain {
 		try {
 			markDeletedExtractInfoStatement.setLong(1, indexingProfile.id);
 			markDeletedExtractInfoStatement.setString(2, identifier);
-			markDeletedExtractInfoStatement.setLong(3, startTime.getTime() / 1000);
-			markDeletedExtractInfoStatement.setDate(4, new java.sql.Date(startTime.getTime()));
+			markDeletedExtractInfoStatement.setLong(3, startTime.getEpochSecond());
+			markDeletedExtractInfoStatement.setDate(4, new java.sql.Date(startTime.getEpochSecond()));
 			int result = markDeletedExtractInfoStatement.executeUpdate();
 			try {
 				deleteHoldsCountStatement.setLong(1, bibId);
@@ -583,8 +571,8 @@ public class PolarisExportMain {
 		try {
 			markSuppressedExtractInfoStatement.setLong(1, indexingProfile.id);
 			markSuppressedExtractInfoStatement.setString(2, identifier);
-			markSuppressedExtractInfoStatement.setLong(3, startTime.getTime() / 1000);
-			markSuppressedExtractInfoStatement.setDate(4, new java.sql.Date(startTime.getTime()));
+			markSuppressedExtractInfoStatement.setLong(3, startTime.getEpochSecond());
+			markSuppressedExtractInfoStatement.setDate(4, new java.sql.Date(startTime.getEpochSecond()));
 			int result = markSuppressedExtractInfoStatement.executeUpdate();
 			return result == 1 || result == 2;
 		} catch (Exception e) {
@@ -615,17 +603,14 @@ public class PolarisExportMain {
 
 	/**
 	 * Build a string that is in the format for a date (date only, no time component) expected by the Polaris API
-	 * from a Date (in ISO 8601 format (yyyy-MM-dd'T'HH:mm:ssZZ))
+	 * from an Instant
 	 *
 	 * @param dateTime the dateTime to format
 	 * @return a string representing the date (date only, no time component) in the expected format
 	 */
-	private static String getPolarisAPIDateString(Date dateTime) {
-		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
-		dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-		return dateFormatter.format(dateTime);
+	private static String getPolarisAPIDateString(Instant dateTime) {
+		return DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault()).format(dateTime);
 	}
-
 
 	private static void updatePolarisExtractLogNumToMarkedToProcess(int numRecordsToProcess) {
 		// Log how many bibs are left to process
@@ -795,6 +780,7 @@ public class PolarisExportMain {
 												dataField.addSubfield(marcFactory.newSubfield(indexingProfile.locationSubfield, subfieldValue));
 											} else {
 												logger.error("Bad value {} for Assigned Branch for an item on {}", subfieldValue, bibId);
+												addField = false;
 											}
 											break;
 										case 'b': // Assigned Collection
@@ -816,6 +802,7 @@ public class PolarisExportMain {
 												dataField.addSubfield(marcFactory.newSubfield(indexingProfile.itemRecordNumberSubfield, subfieldValue));
 											} else {
 												logger.error("Bad value {} for Item record number for an item on {}", subfieldValue, bibId);
+												addField = false;
 											}
 											break;
 										case 'e': // Circulation Status
@@ -870,7 +857,9 @@ public class PolarisExportMain {
 								}
 								curField = dataField;
 							} // End of 852 tag
+							if (addField) {
 								newRecord.addVariableField(curField);
+							}
 						} // End of record tags
 
 						//TODO: Set record tag with bib suppression field, creation date field, update date field
@@ -901,56 +890,59 @@ public class PolarisExportMain {
 	private static void updateMarcAndRegroupRecordIds(List<Long> idArray) {
 		//TreeSet<Long> bibIdsUpdated = new TreeSet<>();
 		StringBuilder idsToProcess  = new StringBuilder();
+		int j = 0;
 		for (long id: idArray){
 			if (idsToProcess.length() > 0) {
 				idsToProcess.append(",");
 			}
 			idsToProcess.append(id);
-		}
-		if (idArray.size() > 50){
-			logger.error("More than 50 bibs to extract; call currently isn't limited to 50");
-		}
-
-		try {
-			JSONObject bibsCallResult = null;
-			String     polarisUrl     = "/synch/bibs/MARCXML?includeitems=1&bibids=" + idsToProcess;
-			logger.debug("Loading marc records with bulk method : {}", polarisUrl);
-			int bibsUpdated = 0;
-			bibsCallResult = callPolarisApiURL(polarisUrl, debug);
-			if (bibsCallResult != null && bibsCallResult.has("GetBibsByIDRows")) {
-				//ArrayList<Long> processedIds = new ArrayList<>();
+			if (++j % 50 == 0){
 				try {
-					JSONArray       entries      = bibsCallResult.getJSONArray("GetBibsByIDRows");
-					for (int i = 0; i < entries.length(); i++) {
-						Long bibId = null;
+					JSONObject bibsCallResult = null;
+					String     polarisUrl     = "/synch/bibs/MARCXML?includeitems=1&bibids=" + idsToProcess;
+					logger.debug("Loading marc records with bulk method : {}", polarisUrl);
+					int bibsUpdated = 0;
+					bibsCallResult = callPolarisApiURL(polarisUrl, debug);
+					if (bibsCallResult != null && bibsCallResult.has("GetBibsByIDRows")) {
+						//ArrayList<Long> processedIds = new ArrayList<>();
 						try {
-							JSONObject entry = entries.getJSONObject(i);
-							bibId = entry.getLong("BibliographicRecordID");
-							String marcXML     = entry.getString("BibliographicRecordXML");
-							Long   processedId = convertMarcXmlAndWriteMarcRecord(marcXML, bibId);
-							if (processedId != null && processedId > 0){
-								//bibIdsUpdated.add(bibId);
-								bibsUpdated++;
-							}
+							JSONArray entries = bibsCallResult.getJSONArray("GetBibsByIDRows");
+							for (int i = 0; i < entries.length(); i++) {
+								Long bibId = null;
+								try {
+									JSONObject entry = entries.getJSONObject(i);
+									bibId = entry.getLong("BibliographicRecordID");
+									String marcXML     = entry.getString("BibliographicRecordXML");
+									Long   processedId = convertMarcXmlAndWriteMarcRecord(marcXML, bibId);
+									if (processedId != null && processedId > 0){
+										//bibIdsUpdated.add(bibId);
+										bibsUpdated++;
+									}
+								} catch (JSONException e) {
+									if (bibId != null) {
+										logger.error("Error processing JSON for bib {}", bibId ,e);
+										bibsWithErrors.add(bibId);
+									} else {
+										logger.error("Error processing JSON for a bib", e);
+									}
+								}
+							} // end of for loop
 						} catch (JSONException e) {
-							if (bibId != null) {
-								logger.error("Error processing JSON for bib {}", bibId ,e);
-								bibsWithErrors.add(bibId);
-							} else {
-								logger.error("Error processing JSON for a bib", e);
-							}
+							logger.error("Error fetching JSON Array : {}", bibsCallResult, e);
 						}
-					} // end of for loop
-				} catch (JSONException e) {
-					logger.error("Error fetching JSON Array : {}", bibsCallResult, e);
-				}
-			} else {
-				logger.info("API call for specified bibs returned response with no entries");
-			}
+					} else {
+						logger.info("API call for specified bibs returned response with no entries");
+					}
 
-			updatePolarisExtractLogNumMarkedToProcessProcessed(bibsUpdated);
-		} catch (Exception e) {
-			logger.error("Error processing newly created bibs", e);
+					updatePolarisExtractLogNumMarkedToProcessProcessed(bibsUpdated);
+				} catch (Exception e) {
+					logger.error("Error processing newly created bibs", e);
+				}
+
+				// Set up next round
+				j = 0;
+				idsToProcess = new StringBuilder();
+			}
 		}
 	}
 
@@ -1243,7 +1235,7 @@ public class PolarisExportMain {
 		long    recordIdToStartWith    = 0;
 		int     numSuppressedRecords   = 0;
 		int     totalNumChangedRecords = 0;
-		ArrayList<Long> changedBibs    = new ArrayList<Long>();
+		ArrayList<Long> changedBibs    = new ArrayList<>();
 
 		do {
 			int numChangedRecordsThisRound = 0;
@@ -1703,7 +1695,7 @@ public class PolarisExportMain {
 	private static boolean connectToPolarisAPI() {
 		//Check to see if we already have a valid token
 		if (polarisAPIToken != null) {
-			if (polarisAPIExpiration - new Date().getTime() > 0) {
+			if (polarisAPIExpiration.isAfter(Instant.now())) {
 				//logger.debug("token is still valid");
 				return true;
 			} else {
@@ -1773,22 +1765,22 @@ public class PolarisExportMain {
 				response = getTheResponse(conn.getInputStream());
 				try {
 					JSONObject parser = new JSONObject(response.toString());
-					String  polarisUserId            = parser.getString("PolarisUserID");
+					//String  polarisUserId            = parser.getString("PolarisUserID");
 					String  polarisAuthExpirationStr = parser.getString("AuthExpDate"); // eg /Date(1723247367963-0600)/
 					Long timeStamp = getTimeStampMillisecondFromMicrosoftDateString(polarisAuthExpirationStr);
 					if (timeStamp != null) {
-						polarisAPIExpiration = timeStamp - 10000;
-						logger.debug("Polaris token is {} : {}", polarisAPIExpiration, new Date(polarisAPIExpiration));
+						polarisAPIExpiration = Instant.ofEpochMilli(timeStamp).minus(5, ChronoUnit.MINUTES);
+						// Include a five-minute buffer
+						logger.debug("Polaris token expiration is {} : {}", timeStamp, polarisAPIExpiration);
 
 						polarisAPIToken  = parser.getString("AccessToken");
 						polarisAPISecret = parser.getString("AccessSecret");
 
 						// Store our authorization tokens so that we can re-use throughout the day
-						systemVariables.setVariable("polarisAPIExpiration", polarisAPIExpiration);
+						systemVariables.setVariable("polarisAPIExpiration", timeStamp / 1000); // Save in seconds instead of milliseconds
 						systemVariables.setVariable("polarisAPIToken", polarisAPIToken);
 						systemVariables.setVariable("polarisAPISecret", polarisAPISecret);
 					} else {
-						//TODO: bad time stamp? what to do
 						logger.fatal("Failed to parse Polaris API expiration date-time : {}", polarisAuthExpirationStr);
 						return false;
 					}

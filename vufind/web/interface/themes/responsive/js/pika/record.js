@@ -148,7 +148,7 @@ Pika.Record = (function(){
 			if (volume.length > 0){
 				params['volume'] = volume.val();
 			}
-			if (params['campus'] == 'undefined'){
+			if (params['campus'] === 'undefined'){
 				alert("Please select a location to pick up your hold when it is ready.");
 				return false;
 			}
