@@ -888,7 +888,7 @@ public class PolarisExportMain {
 							}
 						} // End of record tags
 
-						//TODO: Set record tag with bib suppression field, creation date field, update date field
+						//TODO: Set record tag with bib suppression field, update date field
 						//DataField extractedByAPIField = marcFactory.newDataField("999", ' ', ' ');
 						//boolean bibLevelDisplayInPAC =
 
@@ -1536,6 +1536,7 @@ public class PolarisExportMain {
 								logger.debug("Failed to load probable suppressed eContent record {} with item id {}", parentBibId, itemId);
 							} else {
 								logger.error("Failed to load record for bibID {} with item id {}, Item data : {}", parentBibId, itemId, itemInfo);
+								bibsWithErrors.add(parentBibId);
 							}
 						}
 					} else if (logger.isDebugEnabled()){
