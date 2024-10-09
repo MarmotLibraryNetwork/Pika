@@ -2649,25 +2649,26 @@ class GroupedWorkDriver extends RecordInterface {
 		'Coming Soon'           => 5,
 		'In Processing'         => 6,
 		'Checked Out'           => 7,
-		'Shelving'              => 8,
+		'Shelving'              => 8, // Shelving & Recently Returned are equivalent
+		'Recently Returned'     => 8,
 		'Library Use Only'      => 9,
 		'Available Online'      => 10,
 		'In Transit'            => 11,
-		'On Shelf'              => 12
+		'On Shelf'              => 12,
 	];
 
 	/**
 	 * Rank Grouped status according to their relative available-ness (the array above) to the patron.
 	 * Unknown grouped statuses get a value of 2, higher than unavailable but lower than all other grouped statuses
 	 *
-	 * @param $groupedStatus
 	 * @param $groupedStatus1
+	 * @param $groupedStatus2
 	 * @return int
 	 */
-	public static function keepBestGroupedStatus($groupedStatus, $groupedStatus1){
-		$ranking1 = GroupedWorkDriver::$statusRankings[$groupedStatus] ?? 2;
-		$ranking2 = GroupedWorkDriver::$statusRankings[$groupedStatus1] ?? 2;
-		return $ranking1 > $ranking2 ? $groupedStatus : $groupedStatus1;
+	public static function keepBestGroupedStatus($groupedStatus1, $groupedStatus2){
+		$ranking1 = GroupedWorkDriver::$statusRankings[$groupedStatus1] ?? 2;
+		$ranking2 = GroupedWorkDriver::$statusRankings[$groupedStatus2] ?? 2;
+		return $ranking1 > $ranking2 ? $groupedStatus1 : $groupedStatus2;
 	}
 
 	public function getItemActions($itemInfo){
