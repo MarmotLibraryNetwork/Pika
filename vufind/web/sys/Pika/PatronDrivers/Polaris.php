@@ -2141,7 +2141,13 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                     $h['freezeable'] = false;
                     break;
             }
-            if ($hold->StatusID === 6) { // ready for pickup
+
+	        // Item Level hold
+	        if ($hold->ItemLevelHold) {
+		        $h['volume'] = $hold->CallNumber;
+	        }
+
+	        if ($hold->StatusID === 6) { // ready for pickup
                 $availableHolds[] = $h;
             } elseif ($hold->StatusID !== 8 && $hold->StatusID !== 9 && $hold->StatusID !== 16) { // status 16 is canceled items. don't show unless ILL request
                 $unavailableHolds[] = $h;
