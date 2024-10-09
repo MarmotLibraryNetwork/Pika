@@ -890,56 +890,59 @@ public class PolarisExportMain {
 	private static void updateMarcAndRegroupRecordIds(List<Long> idArray) {
 		//TreeSet<Long> bibIdsUpdated = new TreeSet<>();
 		StringBuilder idsToProcess  = new StringBuilder();
+		int j = 0;
 		for (long id: idArray){
 			if (idsToProcess.length() > 0) {
 				idsToProcess.append(",");
 			}
 			idsToProcess.append(id);
-		}
-		if (idArray.size() > 50){
-			logger.error("More than 50 bibs to extract; call currently isn't limited to 50");
-		}
-
-		try {
-			JSONObject bibsCallResult = null;
-			String     polarisUrl     = "/synch/bibs/MARCXML?includeitems=1&bibids=" + idsToProcess;
-			logger.debug("Loading marc records with bulk method : {}", polarisUrl);
-			int bibsUpdated = 0;
-			bibsCallResult = callPolarisApiURL(polarisUrl, debug);
-			if (bibsCallResult != null && bibsCallResult.has("GetBibsByIDRows")) {
-				//ArrayList<Long> processedIds = new ArrayList<>();
+			if (++j % 50 == 0){
 				try {
-					JSONArray       entries      = bibsCallResult.getJSONArray("GetBibsByIDRows");
-					for (int i = 0; i < entries.length(); i++) {
-						Long bibId = null;
+					JSONObject bibsCallResult = null;
+					String     polarisUrl     = "/synch/bibs/MARCXML?includeitems=1&bibids=" + idsToProcess;
+					logger.debug("Loading marc records with bulk method : {}", polarisUrl);
+					int bibsUpdated = 0;
+					bibsCallResult = callPolarisApiURL(polarisUrl, debug);
+					if (bibsCallResult != null && bibsCallResult.has("GetBibsByIDRows")) {
+						//ArrayList<Long> processedIds = new ArrayList<>();
 						try {
-							JSONObject entry = entries.getJSONObject(i);
-							bibId = entry.getLong("BibliographicRecordID");
-							String marcXML     = entry.getString("BibliographicRecordXML");
-							Long   processedId = convertMarcXmlAndWriteMarcRecord(marcXML, bibId);
-							if (processedId != null && processedId > 0){
-								//bibIdsUpdated.add(bibId);
-								bibsUpdated++;
-							}
+							JSONArray entries = bibsCallResult.getJSONArray("GetBibsByIDRows");
+							for (int i = 0; i < entries.length(); i++) {
+								Long bibId = null;
+								try {
+									JSONObject entry = entries.getJSONObject(i);
+									bibId = entry.getLong("BibliographicRecordID");
+									String marcXML     = entry.getString("BibliographicRecordXML");
+									Long   processedId = convertMarcXmlAndWriteMarcRecord(marcXML, bibId);
+									if (processedId != null && processedId > 0){
+										//bibIdsUpdated.add(bibId);
+										bibsUpdated++;
+									}
+								} catch (JSONException e) {
+									if (bibId != null) {
+										logger.error("Error processing JSON for bib {}", bibId ,e);
+										bibsWithErrors.add(bibId);
+									} else {
+										logger.error("Error processing JSON for a bib", e);
+									}
+								}
+							} // end of for loop
 						} catch (JSONException e) {
-							if (bibId != null) {
-								logger.error("Error processing JSON for bib {}", bibId ,e);
-								bibsWithErrors.add(bibId);
-							} else {
-								logger.error("Error processing JSON for a bib", e);
-							}
+							logger.error("Error fetching JSON Array : {}", bibsCallResult, e);
 						}
-					} // end of for loop
-				} catch (JSONException e) {
-					logger.error("Error fetching JSON Array : {}", bibsCallResult, e);
-				}
-			} else {
-				logger.info("API call for specified bibs returned response with no entries");
-			}
+					} else {
+						logger.info("API call for specified bibs returned response with no entries");
+					}
 
-			updatePolarisExtractLogNumMarkedToProcessProcessed(bibsUpdated);
-		} catch (Exception e) {
-			logger.error("Error processing newly created bibs", e);
+					updatePolarisExtractLogNumMarkedToProcessProcessed(bibsUpdated);
+				} catch (Exception e) {
+					logger.error("Error processing newly created bibs", e);
+				}
+
+				// Set up next round
+				j = 0;
+				idsToProcess = new StringBuilder();
+			}
 		}
 	}
 
