@@ -127,7 +127,7 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record) {
 		for (ItemInfo curItem : recordInfo.getRelatedItems()) {
 			if (curItem.getDetailedStatus().equals("On Order")){
-				curItem.setIsOrderItem(true);
+				curItem.setIsOrderItem();
 				curItem.setDateAdded(tomorrow);
 			}
 		}

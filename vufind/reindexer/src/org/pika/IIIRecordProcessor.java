@@ -14,21 +14,17 @@
 
 package org.pika;
 
-import au.com.bytecode.opencsv.CSVReader;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
 
-import java.io.File;
-import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * Record Processor to handle processing records from iii's Sierra ILS
@@ -500,7 +496,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		itemInfo.setItemIdentifier(orderNumber);
 		itemInfo.setNumCopies(orderItem.getNumCopies());
 		itemInfo.setIsEContent(false);
-		itemInfo.setIsOrderItem(true);
+		itemInfo.setIsOrderItem();
 		itemInfo.setCallNumber("ON ORDER");
 		itemInfo.setSortableCallNumber("ON ORDER");
 		itemInfo.setDetailedStatus("On Order");

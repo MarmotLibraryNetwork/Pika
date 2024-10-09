@@ -488,7 +488,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		itemInfo.setItemIdentifier(orderNumber);
 		itemInfo.setNumCopies(copies);
 		itemInfo.setIsEContent(false);
-		itemInfo.setIsOrderItem(true);
+		itemInfo.setIsOrderItem();
 		itemInfo.setCallNumber("ON ORDER");
 		itemInfo.setSortableCallNumber("ON ORDER");
 		itemInfo.setDetailedStatus("On Order");
@@ -657,7 +657,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return "Unknown Source";
 	}
 
-	private SimpleDateFormat dateFormat008 = new SimpleDateFormat("yyMMdd");
+	private final SimpleDateFormat dateFormat008 = new SimpleDateFormat("yyMMdd");
 
 	protected void loadDateAddedFromRecord(ItemInfo itemInfo, Record record, RecordIdentifier identifier){
 		ControlField fixedField008 = (ControlField) record.getVariableField("008");
@@ -1229,7 +1229,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			List<Subfield> subfields = itemField.getSubfields(subfieldIndicator);
 			if (subfields.size() == 1) {
 				return subfields.get(0).getData();
-			} else if (subfields.size() == 0) {
+			} else if (subfields.isEmpty()) {
 				return null;
 			} else {
 				StringBuilder subfieldData = new StringBuilder();
