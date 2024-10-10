@@ -657,7 +657,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return "Unknown Source";
 	}
 
-	private final SimpleDateFormat dateFormat008 = new SimpleDateFormat("yyMMdd");
+	protected final SimpleDateFormat dateFormat008 = new SimpleDateFormat("yyMMdd");
 
 	protected void loadDateAddedFromRecord(ItemInfo itemInfo, Record record, RecordIdentifier identifier){
 		ControlField fixedField008 = (ControlField) record.getVariableField("008");
@@ -670,7 +670,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					itemInfo.setDateAdded(dateAdded);
 					return;
 				} catch (ParseException e) {
-					logger.error("Date parsing 008 string {} for {}", dateAddedStr, identifier);
+					logger.error("Invalid date in 008 '{}' for {}", dateAddedStr, identifier);
 				}
 			}
 		}

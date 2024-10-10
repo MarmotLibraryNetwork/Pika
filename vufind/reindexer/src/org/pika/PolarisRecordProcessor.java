@@ -15,12 +15,12 @@
 package org.pika;
 
 import org.apache.logging.log4j.Logger;
+import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.text.ParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Date;
@@ -34,13 +34,16 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 	//protected HashSet<String> validCheckedOutStatusCodes = new HashSet<String>();
 	protected char isItemHoldableSubfield = '5';
 
-
+	private PreparedStatement updateExtractInfoStatement;
+	private int indexingProfileId;
 
 	PolarisRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 		loadDateAddedFromRecord = true;
 
 		try {
+			indexingProfileId = indexingProfileRS.getInt("id");
+
 			String availableStatusString = indexingProfileRS.getString("availableStatuses");
 			//String checkedOutStatuses     = indexingProfileRS.getString("checkedOutStatuses");
 			String libraryUseOnlyStatuses = indexingProfileRS.getString("libraryUseOnlyStatuses");
@@ -53,6 +56,8 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 			if (libraryUseOnlyStatuses != null && !libraryUseOnlyStatuses.isEmpty()){
 				libraryUseOnlyStatusCodes.addAll(Arrays.asList(libraryUseOnlyStatuses.split("\\|")));
 			}
+
+			updateExtractInfoStatement = pikaConn.prepareStatement("INSERT INTO `ils_extract_info` (indexingProfileId, ilsId, lastExtracted) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted)"); // unique key is indexingProfileId and ilsId combined
 
 		} catch (SQLException e) {
 			logger.error("Error loading indexing profile information from database for PolarisRecordProcessor", e);
@@ -122,7 +127,7 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 		return translatedShelfLocation;
 	}
 
-	private Date tomorrow = Date.from(new Date().toInstant().plus(1, ChronoUnit.DAYS));
+	private final Date tomorrow = Date.from(new Date().toInstant().plus(1, ChronoUnit.DAYS));
 
 	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record) {
 		for (ItemInfo curItem : recordInfo.getRelatedItems()) {
@@ -133,13 +138,42 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 		}
 	}
 
-	//	protected String getItemStatus(DataField itemField, RecordIdentifier recordIdentifier) {
-//		String itemStatus = super.getItemStatus(itemField, recordIdentifier);
-////		if (itemStatus != null && logger.isDebugEnabled()){
-////			logger.debug("Polaris indexer, record {}, got status code : {}", recordIdentifier, itemStatus);
-////		}
-//		return itemStatus;
-//	}
+	@Override
+	protected void loadDateAddedFromRecord(ItemInfo itemInfo, Record record, RecordIdentifier identifier){
+		ControlField fixedField008 = (ControlField) record.getVariableField("008");
+		if (fixedField008 != null){
+			String dateAddData = fixedField008.getData();
+			if (dateAddData != null && dateAddData.length() >= 6){
+				String dateAddedStr = dateAddData.substring(0, 6);
+				try {
+					Date dateAdded = dateFormat008.parse(dateAddedStr);
+					itemInfo.setDateAdded(dateAdded);
+					return;
+				} catch (ParseException e) {
+					logger.warn("Invalid date in 008 '{}' for {}; Marking to extract to correct.", dateAddedStr, identifier);
+					// Mark for Extraction
+					updateLastExtractTimeForRecord(identifier.getIdentifier());
+				}
+			}
+		}
+
+		// As fallback, use grouping first detected date
+		Date dateAdded = indexer.getDateFirstDetected(identifier);
+		itemInfo.setDateAdded(dateAdded);
+	}
+
+	private void updateLastExtractTimeForRecord(String identifier) {
+		if (identifier != null && !identifier.isEmpty()) {
+			try {
+				updateExtractInfoStatement.setInt(1, indexingProfileId);
+				updateExtractInfoStatement.setString(2, identifier);
+				updateExtractInfoStatement.setNull(3, Types.INTEGER);
+				int result = updateExtractInfoStatement.executeUpdate();
+			} catch (SQLException e) {
+				logger.error("Unable to update ils_extract_info table for {}", identifier, e);
+			}
+		}
+	}
 
 	//TODO:
 //	RecordInfo getEContentIlsRecord(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier, DataField itemField){
