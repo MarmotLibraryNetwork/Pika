@@ -796,18 +796,21 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                     continue;
                 }
                 // check if both first and last legal names are set
-                if($key === 'UseLegalNameOnNotices' && $value === 'on') {
-                    if(!empty($_REQUEST['LegalNameFirst']) && !empty($_REQUEST['LegalNameLast'])) {
-                        $patron_registration[$key] = true;
-                        continue;
+                if($key === 'UseLegalNameOnNotices') {
+                    if($value === 'on') {
+                        if (!empty($_REQUEST['LegalNameFirst']) && !empty($_REQUEST['LegalNameLast'])) {
+                            $patron_registration[$key] = true;
+                            continue;
+                        } else {
+                            $self_reg_error_message = 'Please include both a first and last legal name.';
+                            $return['message'] = $self_reg_error_message;
+                            return $return;
+                        }
                     } else {
-                        $self_reg_error_message = 'Please include both a first and last legal name.';
-                        $return['message'] = $self_reg_error_message;
-                        return $return;
+                        $patron_registration[$key] = false;
+                        continue;
                     }
-                } else {
-                    $patron_registration[$key] = false;
-                }
+                } 
                 // make sure we have a phone number for the selected phone to receive texts on
                 if($key === 'TxtPhoneNumber') {
                     if(($value === 1) && !empty($_REQUEST['PhoneVoice1'])) {
