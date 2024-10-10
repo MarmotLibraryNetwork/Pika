@@ -43,9 +43,9 @@ class GroupedWorkDriver extends RecordInterface {
 	 * @var    array
 	 * @access protected
 	 */
-	protected $snippetCaptions = array(
+	protected $snippetCaptions = [
 		'display_description' => 'Description'
-	);
+	];
 
 	/**
 	 * Should we include snippets in search results?
