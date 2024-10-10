@@ -704,7 +704,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             $fields[] = [
                 'property' => 'TxtPhoneNumber',
                 'type' => 'hidden',
-                'value' => '1',
+                'default' => '1',
             ];
         }
 
@@ -833,18 +833,17 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 if (in_array($key,
                     [
                         // handle the added *Select to the id and name fields. Not sure why this is added-- not needed.
-                        "PatronBranchIDSelect",
-                        "DeliveryOptionIDSelect",
-                        "EReceiptOptionIDSelect",
-                        "RequestPickupBranchIDSelect",
-                        "Phone1CarrierIDSelect",
-                        "Phone2CarrierIDSelect",
-                        "Phone3CarrierIDSelect",
-                        "TxtPhoneNumberSelect"
+                        "PatronBranchID",
+                        "DeliveryOptionID",
+                        "EReceiptOptionID",
+                        "RequestPickupBranchID",
+                        "Phone1CarrierID",
+                        "Phone2CarrierID",
+                        "Phone3CarrierID",
+                        "TxtPhoneNumber"
                     ],
                 )) {
-                    $new_key = str_ireplace('select', '', $key);
-                    $patron_registration[$new_key] = (int)$value;
+                    $patron_registration[$key] = (int)$value;
                     continue;
                 }
                 // all other request parameters
