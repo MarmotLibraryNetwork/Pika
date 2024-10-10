@@ -29,10 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -543,6 +540,7 @@ public class PolarisExportMain {
 
 	private static PreparedStatement markDeletedExtractInfoStatement;
 	private static PreparedStatement deleteHoldsCountStatement;
+	private static final DateTimeFormatter sqlDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault());
 
 	private static boolean markRecordDeletedInExtractInfo(Long bibId) {
 		String identifier = bibId.toString();
@@ -550,7 +548,7 @@ public class PolarisExportMain {
 			markDeletedExtractInfoStatement.setLong(1, indexingProfile.id);
 			markDeletedExtractInfoStatement.setString(2, identifier);
 			markDeletedExtractInfoStatement.setLong(3, startTime.getEpochSecond());
-			markDeletedExtractInfoStatement.setDate(4, new java.sql.Date(startTime.getEpochSecond()));
+			markDeletedExtractInfoStatement.setString(4, sqlDateFormat.format(startTime));
 			int result = markDeletedExtractInfoStatement.executeUpdate();
 			try {
 				deleteHoldsCountStatement.setLong(1, bibId);
@@ -573,7 +571,7 @@ public class PolarisExportMain {
 			markSuppressedExtractInfoStatement.setLong(1, indexingProfile.id);
 			markSuppressedExtractInfoStatement.setString(2, identifier);
 			markSuppressedExtractInfoStatement.setLong(3, startTime.getEpochSecond());
-			markSuppressedExtractInfoStatement.setDate(4, new java.sql.Date(startTime.getEpochSecond()));
+			markSuppressedExtractInfoStatement.setString(4, sqlDateFormat.format(startTime));
 			int result = markSuppressedExtractInfoStatement.executeUpdate();
 			return result == 1 || result == 2;
 		} catch (Exception e) {
@@ -942,12 +940,25 @@ public class PolarisExportMain {
 				try {
 					JSONArray entries = bibsCallResult.getJSONArray("GetBibsByIDRows");
 					for (int i = 0; i < entries.length(); i++) {
-						Long bibId = null;
+						Long    bibId        = null;
+						boolean isSuppressed = false;
 						try {
 							JSONObject entry = entries.getJSONObject(i);
 							bibId = entry.getLong("BibliographicRecordID");
 							String marcXML      = entry.getString("BibliographicRecordXML");
 							String creationDate = entry.getString("CreationDate");
+							if (entry.has("IsDisplayInPAC")) {
+								isSuppressed = !entry.getBoolean("IsDisplayInPAC");
+							}
+							if (isSuppressed) {
+								suppressedIds.add(bibId);
+								if (deleteRecordFromGrouping(Instant.now().getEpochSecond(), bibId) && markRecordSuppressedInExtractInfo(bibId)) {
+									//numSuppressedRecords++;
+									logger.info("Supressed bib {}", bibId);
+								} else {
+									logger.info("Failed to delete from index 'updated but suppressed' bib Id  {}", bibId);
+								}
+							}
 							Long   processedId  = convertMarcXmlAndWriteMarcRecord(marcXML, bibId, creationDate);
 							if (processedId != null && processedId > 0){
 								bibsUpdated++;
@@ -1282,6 +1293,7 @@ public class PolarisExportMain {
 							isSuppressed = !curBib.getBoolean("IsDisplayInPAC");
 						}
 						if (isSuppressed) {
+							logger.info("Changed records reports suppressed bib {}", bibId);
 							suppressedIds.add(bibId);
 							if (deleteRecordFromGrouping(updateTime, bibId) && markRecordSuppressedInExtractInfo(bibId)) {
 								numSuppressedRecords++;
@@ -1973,7 +1985,7 @@ public class PolarisExportMain {
 					logger.warn("Failed to set record identifier in record grouper getPrimaryIdentifierFromMarcRecord(); possible error or automatic econtent suppression trigger.");
 				}
 			} catch (Exception e) {
-				logger.error("catch for id " + id + " or record Identifier " + recordIdentifier, e);
+				logger.error("Generic catch for id {} or record Identifier {}", id, recordIdentifier, e);
 				throw e;
 			}
 		}
