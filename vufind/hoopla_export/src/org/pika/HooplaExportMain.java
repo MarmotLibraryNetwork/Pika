@@ -374,7 +374,6 @@ public class HooplaExportMain {
 				JSONObject curTitle = responseTitles.getJSONObject(i);
 				titleId = curTitle.getLong("titleId");
 				try {
-				//if (logger.isDebugEnabled()){
 					String purchaseModel = curTitle.getString("purchaseModel");
 					if (!purchaseModel.equals("INSTANT") && !purchaseModel.equals("FLEX")){
 						logger.warn("Found new purchase model '{}' for {}", purchaseModel, titleId);
@@ -383,70 +382,56 @@ public class HooplaExportMain {
 					if (logger.isDebugEnabled() && id != titleId){
 						logger.debug("Id ({}) doesn't match titleId ({})", id, titleId);
 					}
-				//}
-				updateHooplaTitleInDB.setLong(1, titleId);
-				final boolean isActive = curTitle.getBoolean("active");
-				updateHooplaTitleInDB.setBoolean(2, isActive);
-				//updateHooplaTitleInDB.setString(3, removeBadChars(curTitle.getString("title")));
-				updateHooplaTitleInDB.setString(3, curTitle.getString("title"));
-				updateHooplaTitleInDB.setString(4, curTitle.getString("kind"));
-				updateHooplaTitleInDB.setBoolean(5, curTitle.getBoolean("pa"));
-				updateHooplaTitleInDB.setBoolean(6, curTitle.getBoolean("demo"));
-				updateHooplaTitleInDB.setBoolean(7, curTitle.getBoolean("profanity"));
-				updateHooplaTitleInDB.setString(8, curTitle.has("rating") ? curTitle.getString("rating") : "");
+					updateHooplaTitleInDB.setLong(1, titleId);
+					final boolean isActive = curTitle.getBoolean("active");
+					updateHooplaTitleInDB.setBoolean(2, isActive);
+					//updateHooplaTitleInDB.setString(3, removeBadChars(curTitle.getString("title")));
+					updateHooplaTitleInDB.setString(3, curTitle.getString("title"));
+					updateHooplaTitleInDB.setString(4, curTitle.getString("kind"));
+					updateHooplaTitleInDB.setBoolean(5, curTitle.getBoolean("pa"));
+					updateHooplaTitleInDB.setBoolean(6, curTitle.getBoolean("demo"));
+					updateHooplaTitleInDB.setBoolean(7, curTitle.getBoolean("profanity"));
+					updateHooplaTitleInDB.setString(8, curTitle.has("rating") ? curTitle.getString("rating") : "");
 
-				updateHooplaTitleInDB.setBoolean(9, curTitle.getBoolean("abridged"));
-				updateHooplaTitleInDB.setBoolean(10, curTitle.getBoolean("children"));
-				double price = 0;
-				if (curTitle.has("price")) {
-					price = curTitle.getDouble("price");
-				} else if (isActive) {
-					// Only warn about missing price for active hoopla titles
-					logger.warn("Active Hoopla title {} has no price set.", titleId);
-				}
-				if (!isActive) numMarkedInactive++;
-				updateHooplaTitleInDB.setDouble(11, price);
-				updateHooplaTitleInDB.setBoolean(12, curTitle.getBoolean("fiction"));
-				updateHooplaTitleInDB.setString(13, curTitle.getString("language"));
-				updateHooplaTitleInDB.setString(14, curTitle.getString("publisher"));
-				String duration = curTitle.getString("duration");
-				if (duration.equals("0m 0s")){
-					updateHooplaTitleInDB.setNull(15, Types.VARCHAR);
-				} else {
-					updateHooplaTitleInDB.setString(15, duration);
-				}
-				if (curTitle.has("series")){
-					updateHooplaTitleInDB.setString(16, curTitle.getString("series"));
-				} else {
-					updateHooplaTitleInDB.setNull(16, Types.VARCHAR);
-				}
-				if (curTitle.has("season")){
-					updateHooplaTitleInDB.setString(17, curTitle.getString("season"));
-				} else {
-					updateHooplaTitleInDB.setNull(17, Types.VARCHAR);
-				}
+					updateHooplaTitleInDB.setBoolean(9, curTitle.getBoolean("abridged"));
+					updateHooplaTitleInDB.setBoolean(10, curTitle.getBoolean("children"));
+					double price = 0;
+					if (curTitle.has("price")) {
+						price = curTitle.getDouble("price");
+					} else if (isActive) {
+						// Only warn about missing price for active hoopla titles
+						logger.warn("Active Hoopla title {} has no price set.", titleId);
+					}
+					if (!isActive) numMarkedInactive++;
+					updateHooplaTitleInDB.setDouble(11, price);
+					updateHooplaTitleInDB.setBoolean(12, curTitle.getBoolean("fiction"));
+					updateHooplaTitleInDB.setString(13, curTitle.getString("language"));
+					updateHooplaTitleInDB.setString(14, curTitle.getString("publisher"));
+					String duration = curTitle.getString("duration");
+					if (duration.equals("0m 0s")){
+						updateHooplaTitleInDB.setNull(15, Types.VARCHAR);
+					} else {
+						updateHooplaTitleInDB.setString(15, duration);
+					}
+					if (curTitle.has("series")){
+						updateHooplaTitleInDB.setString(16, curTitle.getString("series"));
+					} else {
+						updateHooplaTitleInDB.setNull(16, Types.VARCHAR);
+					}
+					if (curTitle.has("season")){
+						updateHooplaTitleInDB.setString(17, curTitle.getString("season"));
+					} else {
+						updateHooplaTitleInDB.setNull(17, Types.VARCHAR);
+					}
 
-				int updated = updateHooplaTitleInDB.executeUpdate();
-				if (updated > 0) {
-					numUpdates++;
-					markGroupedWorkForReindexing(pikaConn, titleId);
-				}
+					int updated = updateHooplaTitleInDB.executeUpdate();
+					if (updated > 0) {
+						numUpdates++;
+						markGroupedWorkForReindexing(pikaConn, titleId);
+					}
 				} catch (Exception e) {
 					String message = "Error updating hoopla data in Pika database for title " + titleId;
-					if (e.getMessage().contains("Data too long for column")){
-						Pattern pattern = Pattern.compile("Data too long for column '(.*?)'");
-						Matcher matcher = pattern.matcher(e.getMessage());
-						if (matcher.find()) {
-							String column = matcher.group(1);
-							if (curTitle.has(column)){
-								String value = curTitle.getString(column);
-								message += " has length " + value.length() + ", '"+ value + "'";
-								addNoteToHooplaExportLog(message);
-								updateTitlesInDBHadErrors = true;
-							}
-						}
-						logger.error(message);
-					} else {
+					if (!checkErrorForColumSizeError(e, curTitle, message)) {
 						logger.error(message, e);
 						addNoteToHooplaExportLog(message + " " + e);
 						updateTitlesInDBHadErrors = true;
@@ -463,6 +448,28 @@ public class HooplaExportMain {
 		return numUpdates;
 	}
 
+	private static boolean checkErrorForColumSizeError(Exception e, JSONObject curTitle, String message){
+		if (e.getMessage().contains("Data too long for column")){
+			Pattern pattern = Pattern.compile("Data too long for column '(.*?)'");
+			Matcher matcher = pattern.matcher(e.getMessage());
+			if (matcher.find()) {
+				String column = matcher.group(1);
+				if (curTitle.has(column)){
+					try {
+						String value = curTitle.getString(column);
+						message += " has length " + value.length() + ", '"+ value + "'";
+					} catch (JSONException ex) {
+						logger.error("Error fetching column {} from JSON Object", column, e);
+					}
+					addNoteToHooplaExportLog(message);
+					updateTitlesInDBHadErrors = true;
+				}
+			}
+			logger.error(message);
+			return true;
+		}
+		return false;
+	}
 	/**
 	 * Remove UTF8mb4 (4bytes) characters from string.
 	 * eg. emojis
