@@ -89,12 +89,12 @@ class SelfReg extends Action {
 
 			// Pre-fill form with user supplied data
 			foreach ($selfRegFields as &$property){
-                if(!empty($property['property']) && $property['type'] !== 'header' ) {
-                    $userValue           = $_REQUEST[$property['property']];
-				    $property['default'] = $userValue;
-                }
+				if (!empty($property['property']) && $property['type'] !== 'header' && isset($_REQUEST[$property['property']])){
+					$userValue           = $_REQUEST[$property['property']];
+					$property['default'] = $userValue;
+				}
 			}
-            unset($property);
+			unset($property);
 		}
         
 		$interface->assign('submitUrl', '/MyAccount/SelfReg');
