@@ -39,7 +39,7 @@ public class AddisonRecordProcessor extends SierraRecordProcessor {
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		//For arlington and sacramento, eContent will always have no items on the bib record.
 		List<DataField> items = MarcUtil.getDataFields(record, itemTag);
-		if (items.size() > 0) {
+		if (!items.isEmpty()) {
 			return unsuppressedEcontentRecords;
 		} else {
 			//No items so we can continue on.
@@ -97,10 +97,10 @@ public class AddisonRecordProcessor extends SierraRecordProcessor {
 				unsuppressedEcontentRecords.add(relatedRecord);
 			}
 //			else {
-//                //TODO: temporary. just for debugging econtent records
-//                if (urls.size() > 0) {
-//                    logger.warn("Itemless record " + identifier + " had 856u URLs but none had a expected econtent source.");
-//                }
+//				//TODO: temporary. just for debugging econtent records
+//				if (!urls.isEmpty()) {
+//					logger.warn("Itemless record " + identifier + " had 856u URLs but none had a expected econtent source.");
+//				}
 //			}
 
 		}

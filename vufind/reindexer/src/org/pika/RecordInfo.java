@@ -328,7 +328,7 @@ public class RecordInfo {
 			indexingRecordProcessorStats stats      = scopedStats.indexingRecordProcessorStats.get(sourceName.toLowerCase());
 			if (stats != null) {
 				HashSet<ItemInfo> itemsForScope = getRelatedItemsForScope(scopedStats.getScopeName());
-				if (itemsForScope.size() > 0) {
+				if (!itemsForScope.isEmpty()) {
 					stats.numRecordsTotal++;
 					boolean recordLocallyOwned = false;
 					for (ItemInfo curItem : itemsForScope) {

@@ -575,14 +575,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, RecordIdentifier identifier, Record record){
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
 		if (logger.isDebugEnabled()) {
-			logger.debug("Found " + itemRecords.size() + " items for record " + identifier);
+			logger.debug("Found {} items for record {}", itemRecords.size(), identifier);
 		}
 		for (DataField itemField : itemRecords){
 			if (!isItemSuppressed(itemField, identifier)){
 				getPrintIlsItem(groupedWork, recordInfo, record, itemField, identifier);
 				//Can return null if the record does not have status and location
 				//This happens with secondary call numbers sometimes.
-			}else if (logger.isDebugEnabled()){
+			}else {
 				logger.debug("item was suppressed");
 			}
 		}

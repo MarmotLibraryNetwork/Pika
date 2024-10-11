@@ -1965,7 +1965,7 @@ public class GroupedWorkSolr implements Cloneable {
 			HashSet<RecordInfo> relatedRecordsForScope = new HashSet<>();
 			HashSet<ItemInfo>   relatedItems           = new HashSet<>();
 			loadRelatedRecordsAndItemsForScope(scope, relatedRecordsForScope, relatedItems);
-			if (relatedRecordsForScope.size() > 0){
+			if (!relatedRecordsForScope.isEmpty()){
 				ScopedIndexingStats stats = indexingStats.get(scope.getScopeName());
 				stats.numTotalWorks++;
 				if ((scope.isLocationScope() && isLocallyOwned(relatedItems, scope)) || (scope.isLibraryScope() && isLibraryOwned(relatedItems, scope))){
@@ -1983,7 +1983,7 @@ public class GroupedWorkSolr implements Cloneable {
 		HashSet<RecordInfo> relatedRecordsForScope = new HashSet<>();
 		HashSet<ItemInfo>   relatedItems           = new HashSet<>();
 		loadRelatedRecordsAndItemsForScope(scope, relatedRecordsForScope, relatedItems);
-		if (relatedRecordsForScope.size() > 0) {
+		if (!relatedRecordsForScope.isEmpty()) {
 			return isLibraryOwned(relatedItems, scope);
 		}
 		return false;

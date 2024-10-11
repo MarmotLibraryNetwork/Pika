@@ -85,7 +85,7 @@ public class UserListSolr {
 		for (String scopeName: getScopes()) {
 				if (created != 0) {
 					doc.addField("local_days_since_added_" + scopeName, daysSinceAdded);
-					if (timeSinceAdded.size() > 0) {
+					if (!timeSinceAdded.isEmpty()) {
 						doc.addField("local_time_since_added_" + scopeName, timeSinceAdded);
 					}
 				}
