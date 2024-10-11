@@ -78,7 +78,7 @@
 			</div>
 		{elseif $property.type == 'tel'}
 			<input type="tel" name='{$propName}' id='{$propName}' value='{$propValue|escape}' pattern="[0-9]{ldelim}3{rdelim}-[0-9]{ldelim}3{rdelim}-[0-9]{ldelim}4{rdelim}" {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class="form-control {if $property.required}required{/if}"{if $property.required} aria-required="true"{/if}{if $property.autocomplete} autocomplete="{$property.autocomplete}"{/if}>
-		{elseif $property.type == 'text' || $property.type == 'folder'}
+    {elseif $property.type == 'text' || $property.type == 'folder'}
 			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class="form-control {if $property.required}required{/if}"{if $property.required} aria-required="true"{/if}{if $property.autocomplete} autocomplete="{$property.autocomplete}"{/if}>
 		{elseif $property.type == 'integer'}
 			<input type="number" name='{$propName}' id='{$propName}' value='{$propValue|escape}'{if isset($property.max)} max="{$property.max}"{/if}{if isset($property.min)} min="{$property.min}"{/if}{if $property.maxLength} maxlength='{$property.maxLength}'{/if}{if $property.size} size='{$property.size}'{/if}{if $property.step} step='{$property.step}'{/if} class="form-control{if $property.required} required{/if}{if isset($property.min)} minimum{/if}{if isset($property.max)} maximum{/if}"{if $property.required} aria-required="true"{/if}{if $property.autocomplete} autocomplete="{$property.autocomplete}"{/if}>
