@@ -594,8 +594,8 @@ class Location extends DB_DataObject {
 
 		if (isset($homeLibrary) && $homeLibrary->inSystemPickupsOnly == 1){
 			/** The user can only pickup within their home system */
-			if (strlen($homeLibrary->validPickupSystems) > 0){
-				/** The system has additional related systems that you can pickup within */
+			if (!empty($homeLibrary->validPickupSystems)){
+				/** The system has additional related systems that you can pick up within */
 				$pickupIds          = [];
 				$pickupIds[]        = $homeLibrary->libraryId;
 				$validPickupSystems = explode('|', $homeLibrary->validPickupSystems);
