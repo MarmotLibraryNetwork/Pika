@@ -285,7 +285,7 @@ class MarcUtil {
 			Subfield link = dfield.getSubfield('6');
 			if (link != null && link.getData().startsWith(tag)) {
 				List<Subfield> subList = dfield.getSubfields();
-				StringBuilder buf = new StringBuilder("");
+				StringBuilder buf = new StringBuilder();
 				for (Subfield subF : subList) {
 					boolean addIt = false;
 					if (subfieldPattern != null) {
