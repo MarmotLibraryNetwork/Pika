@@ -430,9 +430,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			loadPopularity(groupedWork, identifier);
 			groupedWork.addBarcodes(MarcUtil.getFieldList(record, itemTag + barcodeSubfield));
 
-			// Add Order Record Ids if they are different from item ids
-			loadOrderIds(groupedWork, record);
-
 			for (ItemInfo curItem : recordInfo.getRelatedItems()){
 				String itemIdentifier = curItem.getItemIdentifier();
 				if (itemIdentifier != null && !itemIdentifier.isEmpty()) {
@@ -560,16 +557,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				}
 			}
 		}
-	}
-
-	protected void loadOrderIds(GroupedWorkSolr groupedWork, Record record) {
-		//Load order ids from recordNumberTag
-//		Set<String> recordIds = MarcUtil.getFieldList(record, recordNumberTag + "a"); //TODO: refactor to use the record number subfield indicator
-//		for(String recordId : recordIds){
-//			if (recordId.startsWith(".o")){
-//				groupedWork.addAlternateId(recordId);
-//			}
-//		}
 	}
 
 	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, RecordIdentifier identifier, Record record){

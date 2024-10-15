@@ -130,16 +130,6 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		return !status.isEmpty() && validOnOrderRecordStatus.indexOf(status.charAt(0)) >= 0;
 	}
 
-	@Override
-	protected void loadOrderIds(GroupedWorkSolr groupedWork, Record record) {
-		//Load order ids from recordNumberTag
-		Set<String> recordIds = MarcUtil.getFieldList(record, recordNumberTag + "a"); //TODO: refactor to use the record number subfield indicator
-		for(String recordId : recordIds){
-			if (recordId.startsWith(".o")){
-				groupedWork.addAlternateId(recordId);
-			}
-		}
-	}
 
 	private void loadLoanRuleInformation(Connection pikaConn, Logger logger) {
 		if (!loanRuleDataLoaded) {
