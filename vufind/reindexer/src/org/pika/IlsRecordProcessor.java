@@ -1081,6 +1081,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			final String str = callNumber.toString().trim();
 			itemInfo.setCallNumber(str);
 			itemInfo.setSortableCallNumber(str);
+			if (fullReindex && str.contains("|")){
+				logger.warn("Call number with pipe character(|) '{}' item {} on bib {}", str, itemInfo.getItemIdentifier(), itemInfo.getFullRecordIdentifier());
+			}
 			return;
 		}
 		// Create an item level call number that is just a volume See D-782
