@@ -506,7 +506,6 @@ public class FormatDetermination {
 		if (typeOfRecordLeaderChar != null) {
 			if (typeOfRecordLeaderChar.equals('j')) {
 				printFormats.add("MusicRecording");
-				//TODO: finish early?  Need to determine if music cd; and if has accompanying material
 			}
 			else if (typeOfRecordLeaderChar.equals('r')) {
 				printFormats.add("PhysicalObject");
@@ -1143,6 +1142,12 @@ public class FormatDetermination {
 							result.add("VoxBooks");
 						}else if (physicalDescriptionData.contains("hotspot device") || physicalDescriptionData.contains("mobile hotspot") || physicalDescriptionData.contains("hot spot") || physicalDescriptionData.contains("hotspot")){
 							result.add("PhysicalObject");
+						} else if (result.contains("MusicRecording") && (physicalDescriptionData.contains(" cd :") || physicalDescriptionData.contains(" cds :"))) {
+							// If we know the record is Music (due to 007 MusicRecording determination,
+							// allow phrases like "CD : digital" or "CDs : digital" to get us to MusicCD
+							// e.g. 300			 |a 1 CD : |b digital, stereophonic ; |c 4 3/4 inches.
+							// e.g. 300			 |a 2 CDs : |b digital, stereo, mono ;
+							hasSoundDisc = true;
 						}
 						//Since this is fairly generic, only use it if we have no other formats yet
 						if (result.isEmpty() && subfield.getCode() == 'f' && physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")) {
@@ -1538,6 +1543,7 @@ public class FormatDetermination {
 					}
 					break;
 				case 'C':
+					// https://www.loc.gov/marc/bibliographic/bd007c.html
 					switch (specificMaterial) {
 						case 'A':
 							result.add("TapeCartridge");
