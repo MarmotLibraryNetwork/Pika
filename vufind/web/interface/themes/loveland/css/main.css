@@ -8973,6 +8973,7 @@ a.browse-thumbnail-sorted.active {
 }
 #browse-sub-category-menu button {
   margin-right: 5px;
+  margin-bottom: 5px;
 }
 #browse-sub-category-menu button.selected {
   color: #333;
@@ -10554,9 +10555,6 @@ a .header-button:hover {
 .sidebar-button {
   background: #003149;
   padding: 5px 0;
-}
-#browse-sub-category-menu button {
-  margin-bottom: 10px;
 }
 #browse-sub-category-menu button:active,
 #browse-subcategory-menu button:focus,
