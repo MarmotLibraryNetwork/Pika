@@ -1095,9 +1095,10 @@ public class FormatDetermination {
 
 
 	private void getFormatFromPhysicalDescription(Record record, Set<String> result) {
-		List<DataField> physicalDescription = MarcUtil.getDataFields(record, "300");
+		//List<DataField> physicalDescription = MarcUtil.getDataFields(record, "300");
+		List<DataField> physicalDescription = record.getDataFields("300");
 		if (physicalDescription != null) {
-			Iterator<DataField> fieldsIter   = physicalDescription.iterator();
+			Iterator<DataField> fieldsIter = physicalDescription.iterator();
 			DataField           field;
 			while (fieldsIter.hasNext()) {
 				field = fieldsIter.next();
@@ -1149,19 +1150,31 @@ public class FormatDetermination {
 						}
 					}
 				}
-				if (hasSoundDisc && hasDigital){
-					if (result.contains("MusicRecording")){
-						// Since MusicRecording is determined by leader at beginning of format determination,
-						// it should be reliably already determined at this point
-						result.add("MusicCD");
-						result.remove("SoundDisc");
-						result.remove("MusicRecording");
+				if (hasSoundDisc)
+					if (hasDigital) {
+						if (result.contains("MusicRecording")) {
+							// Since MusicRecording is determined by leader at beginning of format determination,
+							// it should be reliably already determined at this point
+							result.add("MusicCD");
+							result.remove("SoundDisc");
+							result.remove("MusicRecording");
+						} else {
+							// Otherwise it should be an audio CD (the translation for SoundDisc).
+							// (I might be wrong here, remove or refine if you determine so.)
+							result.add("SoundDisc");
+						}
 					} else {
-						// Otherwise it should be an audio CD (the translation for SoundDisc).
-						// (I might be wrong here, remove or refine if you determine so.)
-						result.add("SoundDisc");
+						List<DataField> soundCharacteristics = record.getDataFields("344");
+						for (DataField field1 : soundCharacteristics){
+							String typeOfRecording = String.valueOf(MarcUtil.getSpecifiedSubfieldsAsString(field1, "a", " ")).trim();
+							if (typeOfRecording.equalsIgnoreCase("digital")){
+								result.add("MusicCD");
+								result.remove("SoundDisc");
+								result.remove("MusicRecording");
+								break;
+							}
+						}
 					}
-				}
 			}
 		}
 	}
