@@ -431,7 +431,7 @@ public class HooplaExportMain {
 					}
 				} catch (Exception e) {
 					String message = "Error updating hoopla data in Pika database for title " + titleId;
-					if (!checkErrorForColumSizeError(e, curTitle, message)) {
+					if (!checkErrorForColumnSizeError(e, curTitle, message)) {
 						logger.error(message, e);
 						addNoteToHooplaExportLog(message + " " + e);
 						updateTitlesInDBHadErrors = true;
@@ -448,7 +448,7 @@ public class HooplaExportMain {
 		return numUpdates;
 	}
 
-	private static boolean checkErrorForColumSizeError(Exception e, JSONObject curTitle, String message){
+	private static boolean checkErrorForColumnSizeError(Exception e, JSONObject curTitle, String message){
 		if (e.getMessage().contains("Data too long for column")){
 			Pattern pattern = Pattern.compile("Data too long for column '(.*?)'");
 			Matcher matcher = pattern.matcher(e.getMessage());
@@ -462,7 +462,7 @@ public class HooplaExportMain {
 						logger.error("Error fetching column {} from JSON Object", column, e);
 					}
 					addNoteToHooplaExportLog(message);
-					updateTitlesInDBHadErrors = true;
+					//updateTitlesInDBHadErrors = true;
 				}
 			}
 			logger.error(message);

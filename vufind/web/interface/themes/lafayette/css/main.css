@@ -8973,6 +8973,7 @@ a.browse-thumbnail-sorted.active {
 }
 #browse-sub-category-menu button {
   margin-right: 5px;
+  margin-bottom: 5px;
 }
 #browse-sub-category-menu button.selected {
   color: #3b3f43;
@@ -10473,9 +10474,6 @@ h6 {
 h3 {
   color: #3276b1;
 }
-#browse-sub-category-menu button {
-  margin-bottom: 10px;
-}
 #more-browse-results:after {
   content: "Get More Results";
   margin-left: 5px;
@@ -10538,9 +10536,6 @@ a .header-button:hover {
 .jcarousel-control-next,
 .jcarousel-control-prev {
   box-shadow: none;
-}
-#browse-sub-category-menu button {
-  margin-bottom: 10px;
 }
 .sidebar-links .panel-heading {
   background: #e7e7e7;
