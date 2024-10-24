@@ -118,7 +118,7 @@ class SacramentoRecordProcessor extends SierraRecordProcessor {
 					itemInfo.setStatusCode(itemStatus);
 
 					setDetailedStatus(itemInfo, null, itemStatus, identifier);
-					loadItemCallNumber(record, null, itemInfo);
+					loadItemCallNumber(record, null, itemInfo, identifier);
 
 					// Get the url for the action button display
 					itemInfo.seteContentUrl(url);

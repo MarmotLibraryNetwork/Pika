@@ -173,7 +173,7 @@ class ArlingtonRecordProcessor extends SierraRecordProcessor {
 					itemInfo.setShelfLocationCode(locationCode);
 					itemInfo.setShelfLocation(getShelfLocationForItem(itemInfo, null, identifier));
 
-					loadItemCallNumber(record, null, itemInfo);
+					loadItemCallNumber(record, null, itemInfo, identifier);
 
 					itemInfo.setCollection(translateValue("collection", locationCode, recordInfo.getRecordIdentifier()));
 

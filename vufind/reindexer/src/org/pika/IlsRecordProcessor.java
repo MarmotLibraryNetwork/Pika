@@ -588,7 +588,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		} else {
 			loadDateAdded(identifier, itemField, itemInfo);
 		}
-		loadItemCallNumber(record, itemField, itemInfo);
+		loadItemCallNumber(record, itemField, itemInfo, identifier);
 		if (iTypeSubfield != ' ') {
 			String iTypeValue = getItemSubfieldData(iTypeSubfield, itemField);
 			if (iTypeValue != null && !iTypeValue.isEmpty()) {
@@ -734,7 +734,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		double itemPopularity = getItemPopularity(itemField, identifier);
 		groupedWork.addPopularity(itemPopularity);
 
-		loadItemCallNumber(record, itemField, itemInfo);
+		loadItemCallNumber(record, itemField, itemInfo, identifier);
 
 
 		if (lastCheckInFormatter != null) {
@@ -999,7 +999,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return itemStatus == null && itemLocation == null;
 	}
 
-	void loadItemCallNumber(Record record, DataField itemField, ItemInfo itemInfo) {
+	void loadItemCallNumber(Record record, DataField itemField, ItemInfo itemInfo, RecordIdentifier identifier) {
 		String volume = null;
 		if (itemField != null){
 			volume = getItemSubfieldData(volumeSubfield, itemField);
@@ -1035,12 +1035,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (fullCallNumber.length() > 0 && volume != null && !volume.isEmpty()){
 				addTrailingSpace(fullCallNumber);
 				fullCallNumber.append(volume);
+				//fullCallNumber.append(volume.replace("|a", " "));
 			}
 			if (fullCallNumber.length() > 0){
 				itemInfo.setCallNumber(fullCallNumber.toString().trim());
 				itemInfo.setSortableCallNumber(sortableCallNumber.toString().trim());
 				if (fullReindex && fullCallNumber.toString().contains("|")){
-					logger.warn("Call number with pipe character(|) '{}' item {} on bib {}", fullCallNumber, itemInfo.getItemIdentifier(), itemInfo.getFullRecordIdentifier());
+					logger.warn("Call number with pipe character(|) '{}' item {} on bib {}", fullCallNumber, itemInfo.getItemIdentifier(), identifier);
 				}
 				return;
 			}
@@ -1084,6 +1085,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			final String str = callNumber.toString().trim();
 			itemInfo.setCallNumber(str);
 			itemInfo.setSortableCallNumber(str);
+			if (fullReindex && str.contains("|")){
+				logger.warn("Call number with pipe character(|) '{}' item {} on bib {}", str, itemInfo.getItemIdentifier(), identifier);
+			}
 			return;
 		}
 		// Create an item level call number that is just a volume See D-782

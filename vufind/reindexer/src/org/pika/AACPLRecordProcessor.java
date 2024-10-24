@@ -246,7 +246,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		itemInfo.setLocationCode(itemLocation);
 		itemInfo.setITypeCode(getItemSubfieldData(iTypeSubfield, itemField));
 		itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), identifier));
-		loadItemCallNumber(record, itemField, itemInfo);
+		loadItemCallNumber(record, itemField, itemInfo, identifier);
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
 
 		String econtentSource = MarcUtil.getFirstFieldVal(record, "092a");
