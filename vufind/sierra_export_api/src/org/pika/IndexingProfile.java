@@ -116,7 +116,7 @@ public class IndexingProfile {
 
 	private char getCharFromString(String stringValue) {
 		char result = ' ';
-		if (stringValue != null && stringValue.length() > 0) {
+		if (stringValue != null && !stringValue.isEmpty()) {
 			result = stringValue.charAt(0);
 		}
 		return result;

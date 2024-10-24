@@ -1573,11 +1573,12 @@ public class SierraExportAPIMain {
 				try {
 					if (itemIds.has("code")) {
 						if (itemIds.getInt("code") != 404) {
-							logger.error("Error getting information about items " + itemIds.toString());
+							logger.error("Error getting information about items {}", itemIds);
 						}
 					} else {
-						String    itemId  = "0"; // Initialize just to avoid having to check later
-						JSONArray entries = itemIds.getJSONArray("entries");
+						boolean   lookingForEContent = !indexingProfile.APIItemEContentExportFieldTag.isEmpty();
+						String    itemId             = "0"; // Initialize just to avoid having to check later
+						JSONArray entries            = itemIds.getJSONArray("entries");
 						if (logger.isDebugEnabled()) {
 							logger.debug("fetching items for " + id + " elapsed time " + (new Date().getTime() - startTime) + "ms found " + entries.length());
 						}
@@ -1658,11 +1659,10 @@ public class SierraExportAPIMain {
 							//						boolean hadCallNumberVarField = false;
 							//Process variable fields
 							for (int j = 0; j < varFields.length(); j++) {
-								JSONObject    curVarField          = varFields.getJSONObject(j);
-								String        fieldTag             = curVarField.getString("fieldTag");
-								StringBuilder allFieldContent      = new StringBuilder();
-								JSONArray     subfields            = null;
-								boolean       lookingForEContent   = !indexingProfile.APIItemEContentExportFieldTag.isEmpty();
+								JSONObject    curVarField             = varFields.getJSONObject(j);
+								String        fieldTag                = curVarField.getString("fieldTag");
+								StringBuilder allFieldContent         = new StringBuilder();
+								JSONArray     subfields               = null;
 								boolean       isThisAnEContentItemURL = lookingForEContent && curVarField.has("marcTag") && curVarField.getString("marcTag").equals("856");
 								if (curVarField.has("subfields")) {
 									subfields = curVarField.getJSONArray("subfields");
