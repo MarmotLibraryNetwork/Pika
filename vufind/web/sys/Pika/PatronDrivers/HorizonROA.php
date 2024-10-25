@@ -615,7 +615,7 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 				}else{
 					// If we don't have good marc record, ask the ILS for title info
 					[$title, $author] = $this->getTitleAuthorForBib($bibId, $patron);
-					$simpleSortTitle        = preg_replace('/^The\s|^A\s/i', '', $title); // remove beginning The or A
+					$simpleSortTitle        = preg_replace('/^The\s|^An?\s/i', '', $title); // remove beginning The or A
 					$curTitle['title']      = $title;
 					$curTitle['title_sort'] = empty($simpleSortTitle) ? $title : $simpleSortTitle;
 					$curTitle['author']     = $author;
@@ -822,7 +822,7 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 				} else {
 					// If we don't have good marc record, ask the ILS for title info
 					[$title, $author] = $this->getTitleAuthorForBib($bibId, $patron);
-					$simpleSortTitle      = preg_replace('/^The\s|^A\s/i', '', $title); // remove beginning The or A
+					$simpleSortTitle      = preg_replace('/^The\s|^An?\s/i', '', $title); // remove beginning The or A
 					$curHold['title']     = $title;
 					$curHold['sortTitle'] = empty($simpleSortTitle) ? $title : $simpleSortTitle;
 					$curHold['author']    = $author;

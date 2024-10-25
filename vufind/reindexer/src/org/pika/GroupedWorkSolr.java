@@ -528,10 +528,7 @@ public class GroupedWorkSolr implements Cloneable {
 								//Return number of days since the given year
 								Calendar publicationDate = GregorianCalendar.getInstance();
 								publicationDate.set(earliestPublicationDate.intValue(), Calendar.DECEMBER, 31);
-
-								long indexTime       = Util.getIndexDate().getTime();
-								long publicationTime = publicationDate.getTime().getTime();
-								daysSinceAdded = (indexTime - publicationTime) / (long) (1000 * 60 * 60 * 24);
+								daysSinceAdded = Util.getDaysSinceAddedForDate(publicationDate.getTime());
 							}else{
 								daysSinceAdded = Integer.MAX_VALUE;
 							}

@@ -431,9 +431,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			loadPopularity(groupedWork, identifier);
 			groupedWork.addBarcodes(MarcUtil.getFieldList(record, itemTag + barcodeSubfield));
 
-			// Add Order Record Ids if they are different from item ids
-			loadOrderIds(groupedWork, record);
-
 			for (ItemInfo curItem : recordInfo.getRelatedItems()){
 				String itemIdentifier = curItem.getItemIdentifier();
 				if (itemIdentifier != null && !itemIdentifier.isEmpty()) {
@@ -562,16 +559,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected void loadOrderIds(GroupedWorkSolr groupedWork, Record record) {
-		//Load order ids from recordNumberTag
-//		Set<String> recordIds = MarcUtil.getFieldList(record, recordNumberTag + "a"); //TODO: refactor to use the record number subfield indicator
-//		for(String recordId : recordIds){
-//			if (recordId.startsWith(".o")){
-//				groupedWork.addAlternateId(recordId);
-//			}
-//		}
-	}
-
 	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, RecordIdentifier identifier, Record record){
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
 		if (logger.isDebugEnabled()) {
@@ -601,7 +588,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		} else {
 			loadDateAdded(identifier, itemField, itemInfo);
 		}
-		loadItemCallNumber(record, itemField, itemInfo);
+		loadItemCallNumber(record, itemField, itemInfo, identifier);
 		if (iTypeSubfield != ' ') {
 			String iTypeValue = getItemSubfieldData(iTypeSubfield, itemField);
 			if (iTypeValue != null && !iTypeValue.isEmpty()) {
@@ -747,7 +734,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		double itemPopularity = getItemPopularity(itemField, identifier);
 		groupedWork.addPopularity(itemPopularity);
 
-		loadItemCallNumber(record, itemField, itemInfo);
+		loadItemCallNumber(record, itemField, itemInfo, identifier);
 
 
 		if (lastCheckInFormatter != null) {
@@ -1011,91 +998,74 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return itemStatus == null && itemLocation == null;
 	}
 
-	void loadItemCallNumber(Record record, DataField itemField, ItemInfo itemInfo) {
+	void loadItemCallNumber(Record record, DataField itemField, ItemInfo itemInfo, RecordIdentifier identifier) {
 		String volume = null;
-		if (itemField != null){
+		if (itemField != null) {
 			volume = getItemSubfieldData(volumeSubfield, itemField);
-		}
-		if (useItemBasedCallNumbers && itemField != null) {
-			String callNumberPreStamp  = getItemSubfieldDataWithoutTrimming(callNumberPrestampSubfield, itemField);
-			String callNumber          = getItemSubfieldDataWithoutTrimming(callNumberSubfield, itemField);
-			String callNumberCutter    = getItemSubfieldDataWithoutTrimming(callNumberCutterSubfield, itemField);
-			String callNumberPostStamp = getItemSubfieldData(callNumberPoststampSubfield, itemField);
 
-			StringBuilder fullCallNumber     = new StringBuilder();
-			StringBuilder sortableCallNumber = new StringBuilder();
-			if (callNumberPreStamp != null) {
-				fullCallNumber.append(callNumberPreStamp);
-			}
-			if (callNumber != null){
-				addTrailingSpace(fullCallNumber);
-				fullCallNumber.append(callNumber);
-				sortableCallNumber.append(callNumber);
-			}
-			if (callNumberCutter != null){
-				addTrailingSpace(fullCallNumber);
-				fullCallNumber.append(callNumberCutter);
-				addTrailingSpace(sortableCallNumber);
-				sortableCallNumber.append(callNumberCutter);
-			}
-			if (callNumberPostStamp != null){
-				addTrailingSpace(fullCallNumber);
-				fullCallNumber.append(callNumberPostStamp);
-				addTrailingSpace(sortableCallNumber);
-				sortableCallNumber.append(callNumberPostStamp);
-			}
-			if (fullCallNumber.length() > 0 && volume != null && !volume.isEmpty()){
-				addTrailingSpace(fullCallNumber);
-				fullCallNumber.append(volume);
-			}
-			if (fullCallNumber.length() > 0){
-				itemInfo.setCallNumber(fullCallNumber.toString().trim());
-				itemInfo.setSortableCallNumber(sortableCallNumber.toString().trim());
-				return;
+			if (useItemBasedCallNumbers) {
+				String callNumberPreStamp  = getItemSubfieldDataWithoutTrimming(callNumberPrestampSubfield, itemField);
+				String callNumber          = getItemSubfieldDataWithoutTrimming(callNumberSubfield, itemField);
+				String callNumberCutter    = getItemSubfieldDataWithoutTrimming(callNumberCutterSubfield, itemField);
+				String callNumberPostStamp = getItemSubfieldData(callNumberPoststampSubfield, itemField);
+
+				StringBuilder fullCallNumber     = new StringBuilder();
+				StringBuilder sortableCallNumber = new StringBuilder();
+				if (callNumberPreStamp != null) {
+					fullCallNumber.append(callNumberPreStamp);
+				}
+				if (callNumber != null) {
+					appendWithSpace(fullCallNumber, callNumber);
+					sortableCallNumber.append(callNumber);
+				}
+				if (callNumberCutter != null) {
+					appendWithSpace(fullCallNumber, callNumberCutter);
+					appendWithSpace(sortableCallNumber, callNumberCutter);
+				}
+				if (callNumberPostStamp != null) {
+					appendWithSpace(fullCallNumber, callNumberPostStamp);
+					appendWithSpace(sortableCallNumber, callNumberPostStamp);
+				}
+				if (fullCallNumber.length() > 0 && volume != null && !volume.isEmpty()) {
+					appendWithSpace(fullCallNumber, volume);
+				}
+				if (fullCallNumber.length() > 0) {
+					if (fullReindex && fullCallNumber.toString().contains("|")) {
+						logger.warn("Call number with pipe character(|) '{}' item {} on bib {}", fullCallNumber, itemInfo.getItemIdentifier(), identifier);
+					}
+					itemInfo.setCallNumber(fullCallNumber.toString().replaceAll("\\|\\w", " ").trim());
+					itemInfo.setSortableCallNumber(sortableCallNumber.toString().replaceAll("\\|\\w", " ").trim());
+					return;
+				}
 			}
 		}
+
 		// Attempt to build bib-level call number now
 		StringBuilder callNumber = null;
-		if (use099forBibLevelCallNumbers()) {
-			DataField localCallNumberField = record.getDataField("099");
+		for (String bibCallNumberTag: bibLevelCallNumberTags){
+			DataField localCallNumberField = record.getDataField(bibCallNumberTag);
 			if (localCallNumberField != null) {
 				callNumber = new StringBuilder();
 				for (Subfield curSubfield : localCallNumberField.getSubfields()) {
 					callNumber.append(" ").append(curSubfield.getData().trim());
 				}
+				break;
 			}
 		}
-		//MDN #ARL-217 do not use 099 as a call number
-		if (callNumber == null) {
-			DataField deweyCallNumberField = record.getDataField("092");
-			if (deweyCallNumberField != null) {
-				callNumber = new StringBuilder();
-				for (Subfield curSubfield : deweyCallNumberField.getSubfields()) {
-					callNumber.append(" ").append(curSubfield.getData().trim());
-				}
-			}
-		}
-		// Sacramento - look in the 932
-		if (callNumber == null) {
-			DataField sacramentoCallNumberField = record.getDataField("932");
-			if (sacramentoCallNumberField != null) {
-				callNumber = new StringBuilder();
-				for (Subfield curSubfield : sacramentoCallNumberField.getSubfields()) {
-					callNumber.append(" ").append(curSubfield.getData().trim());
-				}
-			}
-		}
+
 		if (callNumber != null) {
 			if (volume != null && !volume.isEmpty() && !callNumber.toString().endsWith(volume)){
-				addTrailingSpace(callNumber);
-				callNumber.append(volume);
+				appendWithSpace(callNumber, volume);
 			}
-			final String str = callNumber.toString().trim();
+			if (fullReindex && callNumber.toString().contains("|")){
+				logger.warn("Call number with pipe character(|) '{}' item {} on bib {}", callNumber, itemInfo.getItemIdentifier(), identifier);
+			}
+			final String str = callNumber.toString().replaceAll("\\|\\w", " ").trim();
 			itemInfo.setCallNumber(str);
 			itemInfo.setSortableCallNumber(str);
 			return;
 		}
-		// Create an item level call number that is just a volume See D-782
+		// Create an item level call number that is just a volume. See D-782
 		// This is needed for periodicals which may only have the volume part for the call number
 		// (It is also needed for when selecting an item in item-level holds in Sierra)
 		if (useItemBasedCallNumbers && volume != null && !volume.isEmpty()){
@@ -1110,9 +1080,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected boolean use099forBibLevelCallNumbers() {
-		return true;
+	private void appendWithSpace(StringBuilder stringBuilder, String substring) {
+		if (stringBuilder.length() > 0 && stringBuilder.charAt(stringBuilder.length() - 1) != ' ') {
+			stringBuilder.append(' ');
+		}
+		stringBuilder.append(substring);
 	}
+
+	protected List<String> bibLevelCallNumberTags = new ArrayList<>(Arrays.asList("099", "092"));
+	// 092 may have been for Arlington only. I can't tell for certain based on code and tickets. Pascal 10/25/2024
 
 	private final HashMap<String, Boolean> iTypesThatHaveHoldabilityChecked    = new HashMap<>();
 	private final HashMap<String, Boolean> locationsThatHaveHoldabilityChecked = new HashMap<>();
@@ -1210,9 +1186,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 						logger.error("Error determining if the new value of subfield is already part of the string", e);
 					}
 					if (okToAdd) {
-						addTrailingSpace(subfieldData);
-						subfieldData.append(trimmedValue);
-					}else if (logger.isDebugEnabled()){
+						appendWithSpace(subfieldData, trimmedValue);
+					}else {
 						logger.debug("Not appending subfield because the value looks redundant");
 					}
 				}
@@ -1236,8 +1211,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			} else {
 				StringBuilder subfieldData = new StringBuilder();
 				for (Subfield subfield:subfields) {
-					addTrailingSpace(subfieldData);
-					subfieldData.append(subfield.getData());
+					appendWithSpace(subfieldData, subfield.getData());
 				}
 				return subfieldData.toString();
 			}

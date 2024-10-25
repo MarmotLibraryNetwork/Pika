@@ -116,7 +116,7 @@ public class IndexingProfile {
 
 	private char getCharFromString(String stringValue) {
 		char result = ' ';
-		if (stringValue != null && stringValue.length() > 0) {
+		if (stringValue != null && !stringValue.isEmpty()) {
 			result = stringValue.charAt(0);
 		}
 		return result;
@@ -262,7 +262,7 @@ public class IndexingProfile {
 						}
 					}
 				} else {
-					logger.error("Unable to find " + profileToLoad + " indexing profile, please create a profile with the name ils.");
+					logger.error("Unable to find {} indexing profile, please create a profile with the name ils.", profileToLoad);
 				}
 			}
 
@@ -305,23 +305,23 @@ public class IndexingProfile {
 		indexingProfile.specifiedGroupingCategory         = indexingProfileRS.getString("specifiedGroupingCategory");
 		indexingProfile.setCollectionSubfield(indexingProfileRS.getString("collection"));
 		String locationsToSuppress = indexingProfileRS.getString("locationsToSuppress");
-		if (locationsToSuppress != null && locationsToSuppress.length() > 0) {
+		if (locationsToSuppress != null && !locationsToSuppress.isEmpty()) {
 			indexingProfile.locationsToSuppressPattern = Pattern.compile(locationsToSuppress);
 		}
 		String collectionsToSuppress = indexingProfileRS.getString("collectionsToSuppress");
-		if (collectionsToSuppress != null && collectionsToSuppress.length() > 0) {
+		if (collectionsToSuppress != null && !collectionsToSuppress.isEmpty()) {
 			indexingProfile.collectionsToSuppressPattern = Pattern.compile(collectionsToSuppress);
 		}
 		String statusesToSuppress = indexingProfileRS.getString("statusesToSuppress");
-		if (statusesToSuppress != null && statusesToSuppress.length() > 0) {
+		if (statusesToSuppress != null && !statusesToSuppress.isEmpty()) {
 			indexingProfile.statusesToSuppressPattern = Pattern.compile(statusesToSuppress);
 		}
 		String iCode2sToSuppress = indexingProfileRS.getString("iCode2sToSuppress");
-		if (iCode2sToSuppress != null && iCode2sToSuppress.length() > 0) {
+		if (iCode2sToSuppress != null && !iCode2sToSuppress.isEmpty()) {
 			indexingProfile.iCode2sToSuppressPattern = Pattern.compile(iCode2sToSuppress);
 		}
 		String iTypesToSuppress = indexingProfileRS.getString("iTypesToSuppress");
-		if (iTypesToSuppress != null && iTypesToSuppress.length() > 0) {
+		if (iTypesToSuppress != null && !iTypesToSuppress.isEmpty()) {
 			indexingProfile.iTypesToSuppressPattern = Pattern.compile(iTypesToSuppress);
 		}
 

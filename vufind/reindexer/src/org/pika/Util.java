@@ -262,7 +262,7 @@ public class Util {
 		if (curDate == null){
 			return null;
 		}
-		return (indexDate.getTime() - curDate.getTime()) / (1000 * 60 * 60 * 24);
+		return (indexDate.getTime() - curDate.getTime()) / (long)  (1000 * 60 * 60 * 24);
 	}
 	private static final Date indexDate = new Date();
 	static Date getIndexDate(){

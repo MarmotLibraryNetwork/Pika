@@ -180,7 +180,7 @@ public class FormatDetermination {
 					long formatBoost = Long.parseLong(formatBoostStr);
 					econtentRecord.setFormatBoost(formatBoost);
 				}catch (Exception e){
-					logger.warn("Unable to parse format boost " + formatBoostStr + " for format " + firstFormat + " " + econtentRecord.getFullIdentifier());
+					logger.warn("Unable to parse format boost {} for format {} {}", formatBoostStr, firstFormat, econtentRecord.getFullIdentifier());
 					econtentRecord.setFormatBoost(1);
 				}
 			} else {
@@ -506,7 +506,6 @@ public class FormatDetermination {
 		if (typeOfRecordLeaderChar != null) {
 			if (typeOfRecordLeaderChar.equals('j')) {
 				printFormats.add("MusicRecording");
-				//TODO: finish early?  Need to determine if music cd; and if has accompanying material
 			}
 			else if (typeOfRecordLeaderChar.equals('r')) {
 				printFormats.add("PhysicalObject");
@@ -515,7 +514,7 @@ public class FormatDetermination {
 		getFormatFromPublicationInfo(record, printFormats);
 		getFormatFromNotes(record, printFormats);
 		getFormatFromEdition(record, printFormats);
-		getFormatFromPhysicalDescription(record, printFormats);
+		getFormatFromPhysicalDescription(record, printFormats, recordInfo.getRecordIdentifier());
 		getFormatFromSubjects(record, printFormats);
 		getFormatFromTitle(record, printFormats);
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
@@ -589,6 +588,12 @@ public class FormatDetermination {
 				if (printFormats.contains("CDROM")) {
 					printFormats.clear();
 					printFormats.add("BookWithCDROM");
+					return;
+				}
+				if (printFormats.contains("CompactDisc")){
+					// Likely coming from an 007 "sd f"
+					printFormats.clear();
+					printFormats.add("BookWithAudioCD");
 					return;
 				}
 //				else if (typeOfRecordLeaderChar == 'm') {
@@ -927,15 +932,15 @@ public class FormatDetermination {
 			// Seed packets
 			printFormats.remove("PhysicalObject");
 		}
-		if (printFormats.contains("PhysicalObject")){
-				// Probable DVD players
-				printFormats.remove("DVD");
-				// Probable Blu-ray players
-				printFormats.remove("Blu-ray");
-				// record player?
-				printFormats.remove("SoundDisc");
-				// Possibly MP3 player; probably obsolete
-				printFormats.remove("MP3");
+		if (printFormats.contains("PhysicalObject")) {
+			// Probable DVD players
+			printFormats.remove("DVD");
+			// Probable Blu-ray players
+			printFormats.remove("Blu-ray");
+			// record player?
+			printFormats.remove("SoundDisc");
+			// Possibly MP3 player; probably obsolete
+			printFormats.remove("MP3");
 		}
 	}
 
@@ -1094,7 +1099,7 @@ public class FormatDetermination {
 	}
 
 
-	private void getFormatFromPhysicalDescription(Record record, Set<String> result) {
+	private void getFormatFromPhysicalDescription(Record record, Set<String> result, RecordIdentifier recordIdentifier) {
 		//List<DataField> physicalDescription = MarcUtil.getDataFields(record, "300");
 		List<DataField> physicalDescription = record.getDataFields("300");
 		if (physicalDescription != null) {
@@ -1130,6 +1135,7 @@ public class FormatDetermination {
 							result.add("SoundCassette");
 						} else if (physicalDescriptionData.contains("compact disc")){
 							result.add("CompactDisc");
+							logger.debug("Got format determination 'CompactDisc' on {}", recordIdentifier);
 							//TODO: likely need to additional logic to set to something more specific
 						} else if (physicalDescriptionData.contains("sound disc") || physicalDescriptionData.contains("audio disc")) {
 							hasSoundDisc = true;
@@ -1143,6 +1149,12 @@ public class FormatDetermination {
 							result.add("VoxBooks");
 						}else if (physicalDescriptionData.contains("hotspot device") || physicalDescriptionData.contains("mobile hotspot") || physicalDescriptionData.contains("hot spot") || physicalDescriptionData.contains("hotspot")){
 							result.add("PhysicalObject");
+						} else if (result.contains("MusicRecording") && (physicalDescriptionData.contains(" cd :") || physicalDescriptionData.contains(" cds :"))) {
+							// If we know the record is Music (due to 007 MusicRecording determination,
+							// allow phrases like "CD : digital" or "CDs : digital" to get us to MusicCD
+							// e.g. 300			 |a 1 CD : |b digital, stereophonic ; |c 4 3/4 inches.
+							// e.g. 300			 |a 2 CDs : |b digital, stereo, mono ;
+							hasSoundDisc = true;
 						}
 						//Since this is fairly generic, only use it if we have no other formats yet
 						if (result.isEmpty() && subfield.getCode() == 'f' && physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")) {
@@ -1405,8 +1417,8 @@ public class FormatDetermination {
 							if (okToAdd){
 								result.add("GraphicNovel");
 							}
-						}else if (subfieldData.contains("board books")){
-								result.add("BoardBook");
+						} else if (subfieldData.contains("board books")) {
+							result.add("BoardBook");
 						}
 					} else if (subfieldCode == 'v') {
 						String subfieldData = subfield.getData().toLowerCase();
@@ -1538,6 +1550,7 @@ public class FormatDetermination {
 					}
 					break;
 				case 'C':
+					// https://www.loc.gov/marc/bibliographic/bd007c.html
 					switch (specificMaterial) {
 						case 'A':
 							result.add("TapeCartridge");
@@ -1814,9 +1827,11 @@ public class FormatDetermination {
 		}
 		return translatedValues;
 	}
+
 	public String translateValue(String mapName, String value, RecordIdentifier identifier){
 		return translateValue(mapName, value, identifier, true);
 	}
+
 	public String translateValue(String mapName, String value, RecordIdentifier identifier, boolean reportErrors){
 		if (value == null){
 			return null;
