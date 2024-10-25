@@ -35,6 +35,8 @@ class ArlingtonRecordProcessor extends SierraRecordProcessor {
 
 	ArlingtonRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
+		bibLevelCallNumberTags = new ArrayList<>(Collections.singletonList("092"));
+		// #ARL-217 do not use 099 as a call number
 	}
 
 
@@ -95,7 +97,7 @@ class ArlingtonRecordProcessor extends SierraRecordProcessor {
 			String locationCode = printItem.getShelfLocationCode();
 			if (addTargetAudienceBasedOnLocationCode(targetAudiences, locationCode)) break;
 		}
-		if (targetAudiences.size() == 0){
+		if (targetAudiences.isEmpty()){
 			Set<String> bibLocations = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + "a");
 			for (String bibLocation : bibLocations){
 				if (bibLocation.length() <= 5) {
@@ -103,7 +105,7 @@ class ArlingtonRecordProcessor extends SierraRecordProcessor {
 				}
 			}
 		}
-		if (targetAudiences.size() == 0){
+		if (targetAudiences.isEmpty()){
 			targetAudiences.add("Other");
 		}
 		groupedWork.addTargetAudiences(targetAudiences);
@@ -349,7 +351,4 @@ class ArlingtonRecordProcessor extends SierraRecordProcessor {
 		}
 	}
 
-	protected boolean use099forBibLevelCallNumbers() {
-		return false;
-	}
 }

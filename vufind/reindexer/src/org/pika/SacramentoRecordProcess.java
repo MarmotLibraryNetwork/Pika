@@ -38,6 +38,7 @@ class SacramentoRecordProcessor extends SierraRecordProcessor {
 
 	SacramentoRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
+		bibLevelCallNumberTags.add("932");
 	}
 
 	// This version of this method has a special case for KitKeepers
