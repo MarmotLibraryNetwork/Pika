@@ -724,7 +724,7 @@ EOD;
 							$curHold['link']            = $recordDriver->getRecordUrl();
 							$curHold['ratingData']      = $recordDriver->getRatingData(); //Load rating information
 						}else{
-							$simpleSortTitle      = preg_replace('/^The\s|^A\s/i', '', $curRow['title']); // remove beginning The or A
+							$simpleSortTitle      = preg_replace('/^The\s|^An?\s/i', '', $curRow['title']); // remove beginning The or A
 							$curHold['sortTitle'] = empty($simpleSortTitle) ? $curRow['title'] : $simpleSortTitle;
 						}
 					}

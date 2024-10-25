@@ -2109,7 +2109,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 $h['coverUrl'] = $record->getBookcoverUrl('medium');
             } else {
                 $h['title'] = $this->cleanIllTitle($hold->Title);
-                $h['sortTitle'] = $this->cleanIllTitle($hold->Title);
+                $h['sortTitle'] = preg_replace('/^The\s|^An?\s/i', '', $this->cleanIllTitle($hold->Title));
                 $h['author'] = $this->cleanIllAuthor($hold->Author);
                 $h['format'] = '';
             }
@@ -2216,7 +2216,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
 							$author         = $this->cleanIllAuthor($hold->Author);
 							$cover_url      = $this->getIllCover() ?? '';
 							$h['title']     = $title;
-							$h['sortTitle'] = $title;
+							$h['sortTitle'] = preg_replace('/^The\s|^An?\s/i', '', $title);
 							$h['author']    = $author;
 							$h['format']    = $hold->Format;
 							$h['coverUrl']  = $cover_url;
