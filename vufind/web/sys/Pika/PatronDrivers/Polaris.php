@@ -2044,7 +2044,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $request_url = $this->ws_url . '/patron/' . $patron->barcode . '/holdrequests/all';
         $c = $this->_doPatronRequest($patron, 'GET', $request_url);
 
-        if ($c === null || count($c->response->PatronHoldRequestsGetRows) === 0) {
+        if ($c === null /*|| count($c->response->PatronHoldRequestsGetRows) === 0*/) {
+					// Can not return early till ILL holds are checked
             return ['available' => $availableHolds, 'unavailable' => $unavailableHolds];
         }
         // translations
@@ -2165,69 +2166,67 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         }
 
         foreach ($c->response->PatronILLRequestsGetRows as $hold) {
-            $pickup_branch_id = $this->polarisBranchIdToLocationId($hold->PickupBranchID);
 
-            $h = [];
-            //$h['freezeable']         = Not sure if ILL holds can be frozen, likely not
-            //$h['position']           = API doesn't provide this information for ILL holds
-            $pickup_branch_id = $this->polarisBranchIdToLocationId($hold->PickupBranchID);
-            $h['currentPickupId'] = $pickup_branch_id;
-            if ($pickup_branch_id !== null) {
-                $location = new Location();
-                $location->locationId = $pickup_branch_id;
-                $location->find(true);
-                $h['currentPickupName'] = $location->displayName;
-                $h['location'] = $location->displayName;
-            } else {
-                $h['currentPickupName'] = $hold->PickupBranchName;
-                $h['location'] = $hold->PickupBranch;
-            }
-            $h['holdSource'] = $this->accountProfile->recordSource;
-            $h['userId'] = $patron->id;
-            $h['user'] = $patron->displayName;
-            $h['cancelId'] = $hold->ILLRequestID;
-            $h['cancelable'] = true; // todo: can ill holds be canceled?
-            $h['status'] = $hold->Status;
-            $h['frozen'] = false;
-            $h['locationUpdateable'] = true;
-
-            $h['create'] = '';
-            if ($this->isMicrosoftDate($hold->ActivationDate)) {
-                $create = $this->microsoftDateToISO($hold->ActivationDate);
-                $h['create'] = strtotime($create);
-            } else {
-                $h['create'] = strtotime($hold->ActivationDate);
-            }
-            // $h['expire'] = ''; // ILL request doesn't include expires date
-
-            // load marc record
-            $recordSourceAndId = new SourceAndId($this->accountProfile->recordSource . ':' . $hold->BibRecordID);
-            $record = RecordDriverFactory::initRecordDriverById($recordSourceAndId);
-            if ($record->isValid()) {
-                $h['id'] = $record->getUniqueID();
-                $h['shortId'] = $record->getShortId();
-                $h['title'] = $this->cleanIllTitle($record->getTitle());
-                $h['sortTitle'] = $record->getSortableTitle();
-                $h['author'] = $record->getPrimaryAuthor();
-                $h['format'] = $record->getFormat();
-                $h['link'] = $record->getRecordUrl();
-                $h['coverUrl'] = $record->getBookcoverUrl('medium'); // todo: Prospector cover?
-            } else {
-                $title = $this->cleanIllTitle($hold->Title);
-                $author = $this->cleanIllAuthor($hold->Author);
-                $cover_url = $this->getIllCover() ?? '';
-                $h['title'] = $title;
-                $h['sortTitle'] = $title;
-                $h['author'] = $author;
-                $h['format'] = $hold->Format;
-                $h['coverUrl'] = $cover_url;
-            }
-
-            if ($hold->ILLStatusID === 10) {
-                $availableHolds[] = $h;
-            } else {
-                $unavailableHolds[] = $h;
-            }
+					if (!in_array($hold->Status, ['Received', 'Cancelled', 'Returned'])){
+						$pickup_branch_id = $this->polarisBranchIdToLocationId($hold->PickupBranchID);
+						$h                = [];//$h['freezeable']         = Not sure if ILL holds can be frozen, likely not
+						//$h['position']           = API doesn't provide this information for ILL holds
+						$pickup_branch_id     = $this->polarisBranchIdToLocationId($hold->PickupBranchID);
+						$h['currentPickupId'] = $pickup_branch_id;
+						if ($pickup_branch_id !== null){
+							$location             = new Location();
+							$location->locationId = $pickup_branch_id;
+							$location->find(true);
+							$h['currentPickupName'] = $location->displayName;
+							$h['location']          = $location->displayName;
+						}else{
+							$h['currentPickupName'] = $hold->PickupBranchName ?? $hold->PickupBranch ?? null;
+							$h['location']          = $hold->PickupBranch;
+						}
+						$h['holdSource']         = $this->accountProfile->recordSource;
+						$h['userId']             = $patron->id;
+						$h['user']               = $patron->displayName;
+						$h['cancelId']           = $hold->ILLRequestID;
+						$h['cancelable']         = true;// todo: can ill holds be canceled?
+						$h['status']             = $hold->Status;
+						$h['frozen']             = false;
+						$h['locationUpdateable'] = true;
+						if ($this->isMicrosoftDate($hold->ActivationDate)){
+							$create      = $this->microsoftDateToISO($hold->ActivationDate);
+							$h['create'] = strtotime($create);
+						}else{
+							$h['create'] = strtotime($hold->ActivationDate);
+						}
+						// $h['expire'] = ''; // ILL request doesn't include expires date
+// Pika won't have marc data for ILL holds
+//						// load marc record
+//						$recordSourceAndId = new SourceAndId($this->accountProfile->recordSource . ':' . $hold->BibRecordID);
+//						$record            = RecordDriverFactory::initRecordDriverById($recordSourceAndId);
+//						if ($record->isValid()){
+//							$h['id']        = $record->getUniqueID();
+//							$h['shortId']   = $record->getShortId();
+//							$h['title']     = $this->cleanIllTitle($record->getTitle());
+//							$h['sortTitle'] = $record->getSortableTitle();
+//							$h['author']    = $record->getPrimaryAuthor();
+//							$h['format']    = $record->getFormat();
+//							$h['link']      = $record->getRecordUrl();
+//							$h['coverUrl']  = $record->getBookcoverUrl('medium'); // todo: Prospector cover?
+//						}else{
+							$title          = $this->cleanIllTitle($hold->Title);
+							$author         = $this->cleanIllAuthor($hold->Author);
+							$cover_url      = $this->getIllCover() ?? '';
+							$h['title']     = $title;
+							$h['sortTitle'] = $title;
+							$h['author']    = $author;
+							$h['format']    = $hold->Format;
+							$h['coverUrl']  = $cover_url;
+//						}
+						if ($hold->ILLStatusID === 10){
+							$availableHolds[] = $h;
+						}else{
+							$unavailableHolds[] = $h;
+						}
+					}
         } // end foreach
 
         return ['available' => $availableHolds, 'unavailable' => $unavailableHolds];
@@ -2237,7 +2236,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     {
         $location = new Location();
         $location->ilsLocationId = $branch_id;
-        if ($location->find(true) && $location->N === 1) {
+        if ($location->find(true) === 1) {
             return $location->locationId;
         }
         return null;
@@ -2247,7 +2246,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     {
         $location = new Location();
         $location->code = $branch_name;
-        if ($location->find(true) && $location->N === 1) {
+        if ($location->find(true) === 1) {
             return $location->ilsLocationId;
         }
         return null;
