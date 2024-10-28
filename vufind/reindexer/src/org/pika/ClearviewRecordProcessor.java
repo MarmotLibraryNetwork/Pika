@@ -24,6 +24,7 @@ public class ClearviewRecordProcessor extends PolarisRecordProcessor{
 	ClearviewRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 		isItemHoldableSubfield = '5';
+		callnumberPipeRegex = "\\|\\|\\|.*";
 	}
 
 }

@@ -109,6 +109,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private FormatDetermination formatDetermination;
 
 	protected char isItemHoldableSubfield;
+	protected String callnumberPipeRegex = "\\|\\w";
 
 	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, logger, fullReindex);
@@ -1034,8 +1035,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					if (fullReindex && fullCallNumber.toString().contains("|")) {
 						logger.warn("Call number with pipe character(|) '{}' item {} on bib {}", fullCallNumber, itemInfo.getItemIdentifier(), identifier);
 					}
-					itemInfo.setCallNumber(fullCallNumber.toString().replaceAll("\\|\\w", " ").trim());
-					itemInfo.setSortableCallNumber(sortableCallNumber.toString().replaceAll("\\|\\w", " ").trim());
+					itemInfo.setCallNumber(fullCallNumber.toString().replaceAll(callnumberPipeRegex, " ").trim());
+					itemInfo.setSortableCallNumber(sortableCallNumber.toString().replaceAll(callnumberPipeRegex, " ").trim());
 					return;
 				}
 			}
@@ -1061,7 +1062,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (fullReindex && callNumber.toString().contains("|")){
 				logger.warn("Call number with pipe character(|) '{}' item {} on bib {}", callNumber, itemInfo.getItemIdentifier(), identifier);
 			}
-			final String str = callNumber.toString().replaceAll("\\|\\w", " ").trim();
+			final String str = callNumber.toString().replaceAll(callnumberPipeRegex, " ").trim();
 			itemInfo.setCallNumber(str);
 			itemInfo.setSortableCallNumber(str);
 			return;
