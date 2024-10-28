@@ -310,6 +310,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $c_opts = [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => $headers,
+            //CURLOPT_SSL_VERIFYPEER => 0,
+            //CURLOPT_SSL_VERIFYHOST => 0
         ];
 
         $c = new Curl();
@@ -401,6 +403,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $c_opts = [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => $headers,
+            //CURLOPT_SSL_VERIFYPEER => 0,
+            //CURLOPT_SSL_VERIFYHOST => 0
         ];
 
         $c = new Curl();
@@ -1375,6 +1379,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $c_opts = [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => $headers,
+            //CURLOPT_SSL_VERIFYPEER => 0,
+            //CURLOPT_SSL_VERIFYHOST => 0
         ];
 
         $c = new Curl();
@@ -1774,6 +1780,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $c_opts = [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => $headers,
+            //CURLOPT_SSL_VERIFYPEER => 0,
+            //CURLOPT_SSL_VERIFYHOST => 0
         ];
 
         $c = new Curl();
@@ -3112,6 +3120,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             // Set the timezone offset
             $hours = substr($timezoneOffset, 0, 3);
             $minutes = substr($timezoneOffset, 0, 1) . substr($timezoneOffset, 3, 2);
+            // remove possible "-" from minutes
+            $minutes = str_replace("-", "", $minutes);
             $dateTime->setTimezone(new DateTimeZone("$hours:$minutes"));
 
             // Return the date in ISO 8601 format

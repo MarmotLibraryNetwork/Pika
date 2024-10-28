@@ -47,13 +47,11 @@ $memoryWatcher = new MemoryWatcher();
 $pikaLogger = new Pika\Logger('Pika', true);
 $timer->logTime('Initialized Pika\Logger');
 
-
-//global $app;
-//$app = new \Pika\App();
-
+// TODO: how does this interactg with other error reporting?
 if ($configArray['System']['debug']) {
 	ini_set('display_errors', true);
-	error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
+    // don't display warnings, smarty 2 will fill the page with them otherwise. (PHP8)
+	error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT & ~E_WARNING); 
 } else {
 	ini_set('display_errors', 0);
 	ini_set('html_errors', 0);
