@@ -39,7 +39,9 @@
 #masquerade-header {
   height: @masquerade-bar-height;
   background-color: @masquerade-background-color;
-  color:  @masquerade-color;
+  &, h4, h5 {
+    color:  @masquerade-color;
+  }
 }
 #masquerade-header-content {
   padding: 5px;
