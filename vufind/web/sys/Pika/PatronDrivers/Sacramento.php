@@ -634,10 +634,10 @@ class Sacramento extends Sierra {
 		];
 		$fields[] = [
 			'property'     => 'primaryphone',
-			'type'         => 'tel',
-			'label'        => 'Phone',
-			'description'  => 'Phone',
-			'maxLength'    => 20,
+			'type'         => (isset($library->subdomain) && $library->subdomain == "folsom") ? 'integer': 'tel',
+			'label'        => (isset($library->subdomain) && $library->subdomain == "folsom") ? 'Phone (xxxxxxxxx)':'Phone (xxx-xxx-xxxx)',
+			'maxLength'    => (isset($library->subdomain) && $library->subdomain == "folsom") ? 10 : 20,
+			'description'  => (isset($library->subdomain) && $library->subdomain == "folsom") ? 'Phone (xxxxxxxxx)':'Phone (xxx-xxx-xxxx)',
 			'required'     => (isset($library->subdomain) && $library->subdomain == "folsom"), // require phone for folsom
 			'autocomplete' => 'tel-national',
 		];
