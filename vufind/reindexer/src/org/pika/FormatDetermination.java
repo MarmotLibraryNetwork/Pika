@@ -180,7 +180,7 @@ public class FormatDetermination {
 					long formatBoost = Long.parseLong(formatBoostStr);
 					econtentRecord.setFormatBoost(formatBoost);
 				}catch (Exception e){
-					logger.warn("Unable to parse format boost " + formatBoostStr + " for format " + firstFormat + " " + econtentRecord.getFullIdentifier());
+					logger.warn("Unable to parse format boost {} for format {} {}", formatBoostStr, firstFormat, econtentRecord.getFullIdentifier());
 					econtentRecord.setFormatBoost(1);
 				}
 			} else {

@@ -10392,6 +10392,10 @@ a.browse-thumbnail-sorted.active {
 #masquerade-header {
   height: 50px;
   background-color: #6200a4;
+}
+#masquerade-header,
+#masquerade-header h4,
+#masquerade-header h5 {
   color: #FFF;
 }
 #masquerade-header-content {

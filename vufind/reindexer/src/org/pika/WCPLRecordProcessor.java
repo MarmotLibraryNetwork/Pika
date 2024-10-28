@@ -35,6 +35,7 @@ class WCPLRecordProcessor extends HorizonRecordProcessor {
 
 	WCPLRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
+		callnumberPipeRegex = "\\|"; // Remove only pipe characters
 	}
 
 //	private Pattern availableStati = Pattern.compile("^(csa|dc|fd|i|int|os|s|ref|rs|rw|st)$");
