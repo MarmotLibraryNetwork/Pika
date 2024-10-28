@@ -31,11 +31,13 @@ class ScopingInfo {
 	private       boolean  holdable;
 	private       boolean  locallyOwned;
 	private       boolean  bookable;
+	private       boolean  isHomePickUpOnly = false;
 	private       boolean  inLibraryUseOnly;
 	private       boolean  libraryOwned;
 	private       String   holdablePTypes;
-	private       String   bookablePTypes;
-	private       String   localUrl;
+	private       String bookablePTypes;
+	private       String homePickUpPTypes = "";
+	private       String localUrl;
 
 	ScopingInfo(Scope scope, ItemInfo item){
 		this.item = item;
@@ -48,6 +50,10 @@ class ScopingInfo {
 
 	void setHoldablePTypes(String holdablePTypes) {
 		this.holdablePTypes = holdablePTypes;
+	}
+
+	void setHomePickUpPTypes(String homePickUpPTypes){
+		this.homePickUpPTypes = homePickUpPTypes;
 	}
 
 	void setBookablePTypes(String bookablePTypes) {
@@ -68,6 +74,14 @@ class ScopingInfo {
 
 	void setHoldable(boolean holdable) {
 		this.holdable = holdable;
+	}
+
+	void setIsHomePickUpOnly(){
+		isHomePickUpOnly = true;
+	}
+
+	public boolean isHomePickUpOnly(){
+		return isHomePickUpOnly;
 	}
 
 	boolean isLocallyOwned() {
@@ -111,8 +125,10 @@ class ScopingInfo {
 						(bookable ? "1" : "0") + "|" +
 						(inLibraryUseOnly ? "1" : "0") + "|" +
 						(libraryOwned ? "1" : "0") + "|" +
+						(isHomePickUpOnly ? "1" : "0") + "|" +
 						Util.getCleanDetailValue(holdablePTypes) + "|" +
 						Util.getCleanDetailValue(bookablePTypes) + "|" +
+						Util.getCleanDetailValue(homePickUpPTypes) + "|" +
 						Util.getCleanDetailValue(localUrl)
 						;
 	}

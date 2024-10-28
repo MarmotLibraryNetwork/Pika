@@ -18,7 +18,7 @@
 		<div class="row">
 			<div class="col-tn-12">
 				<div class="alert alert-info">
-					<p>To reload loan rules:
+					<strong>To reload loan rules:</strong>
 					<ol>
 						<li>Open Sierra</li>
 						<li>Go to the Loan Rules configuration page (In Circulation module go to Admin &gt; Parameters &gt; Circulation &gt; Loan Rules.)</li>
@@ -26,7 +26,6 @@
 						<li>Paste the data in the text area below.</li>
 						<li>Select the Reload Data button.</li>
 					</ol>
-					</p>
 				</div>
 			</div>
 		</div>
@@ -35,11 +34,18 @@
 				<form name="importLoanRules" action="/Admin/LoanRules" method="post">
 					<fieldset>
 						<input type="hidden" name="objectAction" value="doLoanRuleReload">
-						<div class="col-xs-12">
-							<textarea rows="20" cols="80" name="loanRuleData"></textarea>
+						<div class="row">
+						<div class="col-tn-12">
+							<label for="loanRuleData">Loan Rule data :</label>
+							<p>
+								<textarea rows="20" cols="80" name="loanRuleData" id="loanRuleData"></textarea>
+							</p>
 						</div>
-						<div class="col-xs-12">
+						</div>
+						<div class="row">
+						<div class="col-tn-12">
 							<input type="submit" name="reload" value="Reload Data" class="btn btn-primary pull-right">
+						</div>
 						</div>
 					</fieldset>
 				</form>

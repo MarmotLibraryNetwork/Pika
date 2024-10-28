@@ -861,10 +861,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		String itemLocation    = itemInfo.getLocationCode();
 
-		HoldabilityInformation isHoldableUnscoped = isItemHoldableUnscoped(itemInfo);
-		BookabilityInformation isBookableUnscoped = isItemBookableUnscoped();
-		String                 originalUrl        = itemInfo.geteContentUrl();
-		String                 primaryFormat      = recordInfo.getPrimaryFormat();
+		HoldabilityInformation isHoldableUnscoped   = isItemHoldableUnscoped(itemInfo);
+		BookabilityInformation isBookableUnscoped   = isItemBookableUnscoped();
+		HomePickUpInformation  isHomePickUpUnscoped = isItemHomePickUpUnscoped();
+		String                 originalUrl          = itemInfo.geteContentUrl();
+		String                 primaryFormat        = recordInfo.getPrimaryFormat();
 		for (Scope curScope : indexer.getScopes()) {
 			//Check to see if the record is holdable for this scope
 			HoldabilityInformation isHoldable = isItemHoldable(itemInfo, curScope, isHoldableUnscoped);
@@ -873,11 +874,16 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (result.isIncluded){
 				BookabilityInformation isBookable  = isItemBookable(itemInfo, curScope, isBookableUnscoped);
 				ScopingInfo            scopingInfo = itemInfo.addScope(curScope);
+				HomePickUpInformation isHomePickUp = isItemHomePickUp(itemInfo, curScope, isHomePickUpUnscoped);
 				scopingInfo.setAvailable(available);
 				scopingInfo.setHoldable(isHoldable.isHoldable());
 				scopingInfo.setHoldablePTypes(isHoldable.getHoldablePTypes());
 				scopingInfo.setBookable(isBookable.isBookable());
 				scopingInfo.setBookablePTypes(isBookable.getBookablePTypes());
+				if (isHomePickUp.isHomePickup()) {
+					scopingInfo.setIsHomePickUpOnly();
+					scopingInfo.setHomePickUpPTypes(isHomePickUp.getHomePickUpPTypes());
+				}
 
 				scopingInfo.setInLibraryUseOnly(isLibraryUseOnly(itemInfo));
 
@@ -1132,11 +1138,19 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	private BookabilityInformation isItemBookableUnscoped(){
-		return new BookabilityInformation(false, new HashSet<Long>());
+		return new BookabilityInformation(false, new HashSet<>());
 	}
 
 	protected BookabilityInformation isItemBookable(ItemInfo itemInfo, Scope curScope, BookabilityInformation isBookableUnscoped) {
 		return isBookableUnscoped;
+	}
+
+	private HomePickUpInformation isItemHomePickUpUnscoped(){
+		return new HomePickUpInformation(false, new HashSet<>());
+	}
+
+	protected HomePickUpInformation isItemHomePickUp(ItemInfo itemInfo, Scope curScope, HomePickUpInformation isHomePickUpUnscoped) {
+		return isHomePickUpUnscoped;
 	}
 
 	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, RecordIdentifier identifier) {
