@@ -2789,8 +2789,8 @@ class GroupedWorkDriver extends RecordInterface {
 				$scopingInfoRaw = [$scopingInfoRaw];
 			}
 			foreach ($scopingInfoRaw as $tmpItem){
-				$scopingDetailsArray         = explode('|', $tmpItem);
-				$scopeDetails = new \Pika\BibliographicDrivers\GroupedWork\ScopeDetails($scopingDetailsArray);
+				$scopingDetailsArray    = explode('|', $tmpItem);
+				$scopeDetails           = new \Pika\BibliographicDrivers\GroupedWork\ScopeDetails($scopingDetailsArray);
 				$scopeKey               = $scopeDetails->recordFullIdentifier . ':' . $scopeDetails->itemIdentifier;
 				$scopingInfo[$scopeKey] = $scopeDetails;
 				$validRecordIds[]       = $scopeDetails->recordFullIdentifier;
@@ -2816,7 +2816,7 @@ class GroupedWorkDriver extends RecordInterface {
 			}
 			foreach ($relatedRecordIdsRaw as $tmpItem){
 				$recordDetailsArray = explode('|', $tmpItem);
-				$recordDetails = new \Pika\BibliographicDrivers\GroupedWork\RecordDetails($recordDetailsArray);
+				$recordDetails      = new \Pika\BibliographicDrivers\GroupedWork\RecordDetails($recordDetailsArray);
 				//Check to see if the record is valid
 				if (in_array($recordDetails->recordFullIdentifier, $validRecordIds)){
 					$recordsFromIndex[$recordDetails->recordFullIdentifier] = $recordDetails;
@@ -2853,7 +2853,7 @@ class GroupedWorkDriver extends RecordInterface {
 		}
 	}
 
-	const SIERRA_PTYPE_WILDCARDS = ['999', '9999'];
+	const SIERRA_PTYPE_WILDCARDS = ['9999'];
 
 	/**
 	 * @param \Pika\BibliographicDrivers\GroupedWork\RecordDetails $recordDetails
