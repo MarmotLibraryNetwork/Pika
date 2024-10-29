@@ -274,10 +274,10 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 //	}
 
 	private boolean isWildCardValue(String value) {
-		return value.equals("9999") || value.equals("999");
+		return value.equals("9999");
 	}
 
-	private HashMap<String, HashMap<RelevantLoanRule, LoanRuleDeterminer>> cachedRelevantLoanRules = new HashMap<>();
+	private final HashMap<String, HashMap<RelevantLoanRule, LoanRuleDeterminer>> cachedRelevantLoanRules = new HashMap<>();
 	private HashMap<RelevantLoanRule, LoanRuleDeterminer> getRelevantLoanRules(String iType, String locationCode, HashSet<Long> pTypesToCheck) {
 		return getRelevantLoanRules(iType, locationCode, pTypesToCheck, null);
 	}
@@ -395,6 +395,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	}
 
 	private final HashMap<String, BookabilityInformation> bookabilityCache = new HashMap<>();
+
 	@Override
 	protected BookabilityInformation isItemBookable(ItemInfo itemInfo, Scope curScope, BookabilityInformation isBookableUnscoped) {
 		String locationCode = itemInfo.getLocationCode();
