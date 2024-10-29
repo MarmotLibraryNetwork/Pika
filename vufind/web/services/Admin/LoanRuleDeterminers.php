@@ -45,9 +45,10 @@ class LoanRuleDeterminers extends ObjectEditor {
 					$loanRuleDeterminerNew->ageRange   = trim($dataFields[4]);
 					$loanRuleDeterminerNew->loanRuleId = trim($dataFields[5]);
 					$loanRuleDeterminerNew->active     = strcasecmp(trim($dataFields[6]), 'y') == 0;
-					$loanRuleDeterminerNew->insert();
+					$loanRuleDeterminerNew->insert(false);
 				}
 			}
+			$loanRuleDeterminer->setFullReindexMarker();
 
 			//Show the results
 			$_REQUEST['objectAction'] = 'list';

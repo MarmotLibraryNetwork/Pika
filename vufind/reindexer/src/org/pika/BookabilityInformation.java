@@ -17,7 +17,7 @@ package org.pika;
 import java.util.HashSet;
 
 /**
- * Information about bookability for a title, includes related pTypes when applicable
+ * Information about book-ability for a title, includes related pTypes when applicable
  * Pika
  * User: Mark Noble
  * Date: 8/26/2015
@@ -37,7 +37,7 @@ public class BookabilityInformation {
 	}
 
 	public String getBookablePTypes() {
-		if (bookablePTypes.contains(9999L) || bookablePTypes.contains(999L)){
+		if (bookablePTypes.contains(9999L)){
 			return "9999";
 		}else{
 			return Util.getCsvSeparatedStringFromLongs(bookablePTypes);

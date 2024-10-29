@@ -51,8 +51,8 @@ class LoanRuleDeterminer extends DB_DataObject {
 		return $structure;
 	}
 
-	function insert(){
-		if (parent::insert()){
+	function insert($markFullReindex = true){
+		if (parent::insert() && $markFullReindex){
 			$this->setFullReindexMarker();
 		}
 
@@ -133,7 +133,7 @@ class LoanRuleDeterminer extends DB_DataObject {
 //		}
 //	}
 
-	private function setFullReindexMarker(): void{
+	function setFullReindexMarker(): void{
 		/** @var User $user */
 		$user = UserAccount::getLoggedInUser();
 		$indexingProfile = new IndexingProfile();

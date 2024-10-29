@@ -45,7 +45,7 @@ class LoanRule extends DB_DataObject {
 		return ['id'];
 	}
 
-	function getObjectStructure(){
+	static function getObjectStructure(){
 		$structure = [
 			'id'               => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the p-type within the database', 'hideInLists' => true],
 			'loanRuleId'       => ['property' => 'loanRuleId', 'type' => 'integer', 'label' => 'Loan Rule Id', 'description' => 'The id of the loan rule', 'hideInLists' => false],
@@ -54,14 +54,14 @@ class LoanRule extends DB_DataObject {
 			'normalLoanPeriod' => ['property' => 'normalLoanPeriod', 'type' => 'integer', 'label' => 'Normal Loan Period', 'description' => 'The normal loan period for the loan rule'],
 			'holdable'         => ['property' => 'holdable', 'type' => 'checkbox', 'label' => 'Holdable', 'description' => 'Whether or not items are holdable'],
 			'bookable'         => ['property' => 'bookable', 'type' => 'checkbox', 'label' => 'Bookable', 'description' => 'Whether or not items are bookable'],
-			'homePickup'       => ['property' => 'homePickup', 'type' => 'checkbox', 'label' => 'Home Pickup', 'description' => 'Whether or not items are available for Home Pickup', 'hideInLists' => true],
+			'homePickup'       => ['property' => 'homePickup', 'type' => 'checkbox', 'label' => 'Home Pickup', 'description' => 'Whether or not items are available for Home Pickup'],
 			'shippable'        => ['property' => 'shippable', 'type' => 'checkbox', 'label' => 'Shippable', 'description' => 'Whether or not items are shippable', 'hideInLists' => true],
 		];
 		return $structure;
 	}
 
-	function insert(){
-		if (parent::insert()){
+	function insert($markFullReindex = true){
+		if (parent::insert() && $markFullReindex) {
 			$this->setFullReindexMarker();
 		}
 
@@ -83,7 +83,7 @@ class LoanRule extends DB_DataObject {
 	}
 
 
-	private function setFullReindexMarker(): void{
+	public function setFullReindexMarker(): void{
 		/** @var User $user */
 		$user = UserAccount::getLoggedInUser();
 		$indexingProfile = new IndexingProfile();
