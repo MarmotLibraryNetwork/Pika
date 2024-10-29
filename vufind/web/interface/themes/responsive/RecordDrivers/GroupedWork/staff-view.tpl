@@ -70,13 +70,13 @@
 				<h4>{$field|escape}</h4>
 				<table id="scoping_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: anywhere; font-size: smaller;table-layout: fixed">
 					<tr>
-						<th>Bib Id</th><th>Item Id</th><th>Grouped Status</th><th>Status</th><th>Locally Owned</th><th>Available</th><th>Holdable</th><th>Bookable</th><th>In Library Use Only</th><th>Library Owned</th><th>Holdable PTypes</th><th>Bookable PTypes</th><th>Local Url</th>
+						<th>Bib Id</th><th>Item Id</th><th>Grouped Status</th><th>Status</th><th>Locally Owned</th><th>Available</th><th>Holdable</th><th>Bookable</th><th>In Library Use Only</th><th>Library Owned</th><th>Is Home Pick Up Only</th><th>Holdable PTypes</th><th>Bookable PTypes</th><th>Home Pick Up PTypes</th><th>Local Url</th>
 					</tr>
 					{foreach from=$values item="item"}
 					<tr>
 						{assign var="details" value="|"|explode:$item}
 						{foreach from=$details item='detail' key="k"}
-						<td{if in_array($k, array(0,1))} style="overflow-wrap: anywhere; min-width: 50px" {/if}>{if in_array($k, array(4,5,6,7,8,9))}{if $detail}true{else}false{/if}{else}{$detail|replace:',':', '}{/if}</td>
+						<td{if in_array($k, array(0,1))} style="overflow-wrap: anywhere; min-width: 50px" {/if}>{if in_array($k, array(4,5,6,7,8,9,10))}{if $detail}true{else}false{/if}{else}{$detail|replace:',':', '}{/if}</td>
 					{/foreach}
 					</tr>
 					{/foreach}
@@ -87,7 +87,7 @@
 				<h4>{$field|escape}</h4>
 					<table id="item_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: break-word; font-size: smaller;table-layout: fixed">
 						<tr>
-							<th>Bib Id</th><th>Item Id</th><th>Shelf Location</th><th>Call Num</th><th>Format</th><th>Format Category</th><th>Num Copies</th><th>Is Order Item</th><th>Is eContent</th><th>eContent Source</th>{*<th>eContent File</th>*}<th>eContent URL</th>{*<th>subformat</th>*}<th>Detailed Status</th><th>Last Checkin</th><th>Location</th>{*<th>Sub-location</th>*}
+							<th>Bib Id</th><th>Item Id</th><th>Shelf Location</th><th>Call Num</th><th>Format</th><th>Format Category</th><th>Num Copies</th><th>Is Order Item</th><th>Is eContent</th><th>eContent Source</th>{*<th>eContent File</th>*}<th>eContent URL</th>{*<th>subformat</th>*}<th>Detailed Status</th><th>Last Checkin</th><th>Location</th>
 						</tr>
               {foreach from=$values item="item"}
 								<tr>
