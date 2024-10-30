@@ -139,16 +139,21 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 					ResultSet loanRulesRS = loanRuleStmt.executeQuery()
 			) {
 				while (loanRulesRS.next()) {
-					LoanRule loanRule = new LoanRule();
-					loanRule.setLoanRuleId(loanRulesRS.getLong("loanRuleId"));
-					loanRule.setName(loanRulesRS.getString("name"));
-					loanRule.setHoldable(loanRulesRS.getBoolean("holdable"));
-					loanRule.setBookable(loanRulesRS.getBoolean("bookable"));
+					try {
+						LoanRule loanRule = new LoanRule();
+						loanRule.setLoanRuleId(loanRulesRS.getLong("loanRuleId"));
+						loanRule.setName(loanRulesRS.getString("name"));
+						loanRule.setHoldable(loanRulesRS.getBoolean("holdable"));
+						loanRule.setBookable(loanRulesRS.getBoolean("bookable"));
+						loanRule.setIsHomePickup(loanRulesRS.getBoolean("homePickup"));
 
-					loanRules.put(loanRule.getLoanRuleId(), loanRule);
+						loanRules.put(loanRule.getLoanRuleId(), loanRule);
+					} catch (SQLException e) {
+						logger.error("Error while loading loan rules", e);
+					}
 				}
 				if (logger.isDebugEnabled()) {
-					logger.debug("Loaded " + loanRules.size() + " loan rules");
+					logger.debug("Loaded {} loan rules", loanRules.size());
 				}
 
 				try (
@@ -156,19 +161,26 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 						ResultSet loanRuleDeterminersRS = loanRuleDeterminersStmt.executeQuery()
 				) {
 					while (loanRuleDeterminersRS.next()) {
-						LoanRuleDeterminer loanRuleDeterminer = new LoanRuleDeterminer(logger);
-						loanRuleDeterminer.setRowNumber(loanRuleDeterminersRS.getLong("rowNumber"));
-						loanRuleDeterminer.setLocation(loanRuleDeterminersRS.getString("location"));
-						loanRuleDeterminer.setPatronType(loanRuleDeterminersRS.getString("patronType"));
-						loanRuleDeterminer.setItemType(loanRuleDeterminersRS.getString("itemType"));
-						loanRuleDeterminer.setLoanRuleId(loanRuleDeterminersRS.getLong("loanRuleId"));
-						loanRuleDeterminer.setActive(loanRuleDeterminersRS.getBoolean("active"));
+						try {
+							boolean isActive = loanRuleDeterminersRS.getBoolean("active");
+							if (isActive) { // Only load active determiners
+								LoanRuleDeterminer loanRuleDeterminer = new LoanRuleDeterminer(logger);
+								loanRuleDeterminer.setRowNumber(loanRuleDeterminersRS.getLong("rowNumber"));
+								loanRuleDeterminer.setLocation(loanRuleDeterminersRS.getString("location"));
+								loanRuleDeterminer.setPatronType(loanRuleDeterminersRS.getString("patronType"));
+								loanRuleDeterminer.setItemType(loanRuleDeterminersRS.getString("itemType"));
+								loanRuleDeterminer.setLoanRuleId(loanRuleDeterminersRS.getLong("loanRuleId"));
+								loanRuleDeterminer.setActive(isActive);
 
-						loanRuleDeterminers.add(loanRuleDeterminer);
+								loanRuleDeterminers.add(loanRuleDeterminer);
+							}
+						} catch (SQLException e) {
+							logger.error("Error while loading loan rule determiners", e);
+						}
 					}
 
 					if (logger.isDebugEnabled()) {
-						logger.debug("Loaded " + loanRuleDeterminers.size() + " loan rule determiner");
+						logger.debug("Loaded {} loan rule determiner", loanRuleDeterminers.size());
 					}
 				}
 			} catch (SQLException e) {
@@ -262,10 +274,10 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 //	}
 
 	private boolean isWildCardValue(String value) {
-		return value.equals("9999") || value.equals("999");
+		return value.equals("9999");
 	}
 
-	private HashMap<String, HashMap<RelevantLoanRule, LoanRuleDeterminer>> cachedRelevantLoanRules = new HashMap<>();
+	private final HashMap<String, HashMap<RelevantLoanRule, LoanRuleDeterminer>> cachedRelevantLoanRules = new HashMap<>();
 	private HashMap<RelevantLoanRule, LoanRuleDeterminer> getRelevantLoanRules(String iType, String locationCode, HashSet<Long> pTypesToCheck) {
 		return getRelevantLoanRules(iType, locationCode, pTypesToCheck, null);
 	}
@@ -383,6 +395,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	}
 
 	private final HashMap<String, BookabilityInformation> bookabilityCache = new HashMap<>();
+
 	@Override
 	protected BookabilityInformation isItemBookable(ItemInfo itemInfo, Scope curScope, BookabilityInformation isBookableUnscoped) {
 		String locationCode = itemInfo.getLocationCode();
@@ -401,6 +414,28 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			bookabilityCache.put(key, new BookabilityInformation(isBookable, bookablePTypes));
 		}
 		return bookabilityCache.get(key);
+	}
+
+	private final HashMap<String, HomePickUpInformation> homePickupCache = new HashMap<>();
+
+	@Override
+	protected HomePickUpInformation isItemHomePickUp(ItemInfo itemInfo, Scope curScope, HomePickUpInformation isHomePickUpUnscoped) {
+		String locationCode = itemInfo.getLocationCode();
+		String itemIType    = itemInfo.getITypeCode();
+		String key          = curScope.getScopeName() + "-" + locationCode + "-" + itemIType;
+		if (!homePickupCache.containsKey(key)) {
+			HashMap<RelevantLoanRule, LoanRuleDeterminer> relevantLoanRules = getRelevantLoanRules(itemIType, locationCode, curScope.getRelatedNumericPTypes());
+			HashSet<Long> homePickUpPTypes = new HashSet<>();
+			boolean isHomePickup = false;
+			for (RelevantLoanRule loanRule : relevantLoanRules.keySet()) {
+				if (loanRule.getLoanRule().getIsHomePickup()) {
+					homePickUpPTypes.addAll(loanRule.getPatronTypes());
+					isHomePickup = true;
+				}
+			}
+			homePickupCache.put(key, new HomePickUpInformation(isHomePickup, homePickUpPTypes));
+		}
+		return homePickupCache.get(key);
 	}
 
 	protected String getDisplayGroupedStatus(ItemInfo itemInfo, RecordIdentifier identifier) {

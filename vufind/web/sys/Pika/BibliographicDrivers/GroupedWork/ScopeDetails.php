@@ -40,8 +40,10 @@ class ScopeDetails {
 	public bool $bookable;
 	public bool $inLibraryUseOnly;
 	public bool $libraryOwned;
+	public bool $isHomePickUpOnly;
 	public $holdablePTypes;
 	public $bookablePTypes;
+	public $homePickUpPTypes;
 	public $localUrl;
 
 	/**
@@ -52,14 +54,16 @@ class ScopeDetails {
 		$this->itemIdentifier       = $scopeDetailArray[1];
 		$this->groupedStatus        = $scopeDetailArray[2];
 		$this->status               = $scopeDetailArray[3];
-		$this->locallyOwned         = $scopeDetailArray[4] == '1' || $scopeDetailArray[4] == 'true';
-		$this->available            = $scopeDetailArray[5] == '1' || $scopeDetailArray[5] == 'true';
-		$this->holdable             = $scopeDetailArray[6] == '1' || $scopeDetailArray[6] == 'true';
-		$this->bookable             = $scopeDetailArray[7] == '1' || $scopeDetailArray[7] == 'true';
-		$this->inLibraryUseOnly     = $scopeDetailArray[8] == '1' || $scopeDetailArray[8] == 'true';
-		$this->libraryOwned         = $scopeDetailArray[9] == '1' || $scopeDetailArray[9] == 'true';
-		$this->holdablePTypes       = $scopeDetailArray[10] ?? '';
-		$this->bookablePTypes       = $scopeDetailArray[11] ?? '';
-		$this->localUrl             = $scopeDetailArray[12] ?? '';
+		$this->locallyOwned         = $scopeDetailArray[4] == '1' /*|| $scopeDetailArray[4] == 'true'*/;
+		$this->available            = $scopeDetailArray[5] == '1' /*|| $scopeDetailArray[5] == 'true'*/;
+		$this->holdable             = $scopeDetailArray[6] == '1' /*|| $scopeDetailArray[6] == 'true'*/;
+		$this->bookable             = $scopeDetailArray[7] == '1' /*|| $scopeDetailArray[7] == 'true'*/;
+		$this->inLibraryUseOnly     = $scopeDetailArray[8] == '1' /*|| $scopeDetailArray[8] == 'true'*/;
+		$this->libraryOwned         = $scopeDetailArray[9] == '1' /*|| $scopeDetailArray[9] == 'true'*/;
+		$this->isHomePickUpOnly     = $scopeDetailArray[10] == '1' /*|| $scopeDetailArray[10] == 'true'*/;
+		$this->holdablePTypes       = $scopeDetailArray[11] ?? '';
+		$this->bookablePTypes       = $scopeDetailArray[12] ?? '';
+		$this->homePickUpPTypes     = $scopeDetailArray[13] ?? '';
+		$this->localUrl             = $scopeDetailArray[14] ?? '';
 	}
 }

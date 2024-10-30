@@ -19,6 +19,7 @@ public class LoanRule {
 	private String  name;
 	private Boolean holdable;
 	private Boolean bookable;
+	private Boolean isHomePickup;
 
 	public Boolean getBookable() {
 		return bookable;
@@ -52,5 +53,11 @@ public class LoanRule {
 		this.holdable = holdable;
 	}
 
+ public void setIsHomePickup(Boolean isHomePickup) {
+		this.isHomePickup = isHomePickup;
+	}
 
+	public Boolean getIsHomePickup(){
+		return isHomePickup;
+	}
 }
