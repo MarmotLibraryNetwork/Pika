@@ -1596,7 +1596,7 @@ class GroupedWorkDriver extends RecordInterface {
 							$availableAtLocationsToMatch = $result;
 						}else{
 							$recordsOwned = new LocationRecordOwned();
-							$recordsOwned->query('SELECT location FROM location_records_owned LEFT JOIN location USING (locationId) WHERE facetLabel = "' . $selectedDetailedAvailability . '"');
+							$recordsOwned->query('SELECT `location` FROM `location_records_owned` LEFT JOIN `location` USING (locationId) WHERE `facetLabel` = "' . $selectedDetailedAvailability . '"');
 							if ($recordsOwned->N){
 								while ($recordsOwned->fetch()){
 									// strip out simple regex found in some of the codes
@@ -1611,7 +1611,7 @@ class GroupedWorkDriver extends RecordInterface {
 								}
 							}
 							// Check if we are fetching location codes owned by the library instead.
-							$recordsOwned->query('SELECT location FROM library_records_owned LEFT JOIN library USING (libraryId) WHERE facetLabel = "' . $selectedDetailedAvailability . '"');
+							$recordsOwned->query('SELECT location FROM `library_records_owned` LEFT JOIN `library` USING (libraryId) WHERE `facetLabel` = "' . $selectedDetailedAvailability . '"');
 							if ($recordsOwned->N){
 								while ($recordsOwned->fetch()){
 									// strip out simple regex found in some of the codes
@@ -2269,31 +2269,31 @@ class GroupedWorkDriver extends RecordInterface {
 	public function getExploreMoreInfo(){
 		global $interface;
 		global $configArray;
-		$exploreMoreOptions = array();
+		$exploreMoreOptions = [];
 		if ($configArray['Catalog']['showExploreMoreForFullRecords']){
 			$interface->assign('showMoreLikeThisInExplore', true);
 			$interface->assign('showExploreMore', true);
 			if ($this->getCleanISBN()){
 				if ($interface->getVariable('showSimilarTitles')){
-					$exploreMoreOptions['similarTitles'] = array(
+					$exploreMoreOptions['similarTitles'] = [
 						'label'         => 'Similar Titles From NoveList',
 						'body'          => '<div id="novelisttitlesPlaceholder"></div>',
 						'hideByDefault' => true
-					);
+					];
 				}
 				if ($interface->getVariable('showSimilarAuthors')){
-					$exploreMoreOptions['similarAuthors'] = array(
+					$exploreMoreOptions['similarAuthors'] = [
 						'label'         => 'Similar Authors From NoveList',
 						'body'          => '<div id="novelistauthorsPlaceholder"></div>',
 						'hideByDefault' => true
-					);
+					];
 				}
 				if ($interface->getVariable('showSimilarTitles')){
-					$exploreMoreOptions['similarSeries'] = array(
+					$exploreMoreOptions['similarSeries'] = [
 						'label'         => 'Similar Series From NoveList',
 						'body'          => '<div id="novelistseriesPlaceholder"></div>',
 						'hideByDefault' => true
-					);
+					];
 				}
 			}
 		}
@@ -2854,6 +2854,23 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	const SIERRA_PTYPE_WILDCARDS = ['9999'];
+	/**
+	 * Determine holdable, bookable, or "is home pickup" by checking the Patron Type values
+	 * @param array $activePTypes  Patron Types of the user, library and location interface
+	 * @param string $actionPTypes  The Applicable Ptypes for the action (hold, book, home pick up)
+	 * @param bool $isActionable  The boolean for the action from the solr item details table
+	 * @return bool  The calculated boolean for the action
+	 */
+	private function calculateForActionByPtype(array $activePTypes, string $actionPTypes, bool $isActionable){
+		if (strlen($actionPTypes) > 0 && !in_array($actionPTypes, self::SIERRA_PTYPE_WILDCARDS)){
+			$actionPTypes   = explode(',', $actionPTypes);
+			$matchingPTypes = array_intersect($actionPTypes, $activePTypes);
+			if (count($matchingPTypes) == 0){
+				$isActionable = false;
+			}
+		}
+		return $isActionable;
+	}
 
 	/**
 	 * @param \Pika\BibliographicDrivers\GroupedWork\RecordDetails $recordDetails
@@ -2969,10 +2986,12 @@ class GroupedWorkDriver extends RecordInterface {
 			$available        = $scopingDetails->available;
 			$holdable         = $scopingDetails->holdable;
 			$bookable         = $scopingDetails->bookable;
+			//$isHomePickUp     = $scopingDetails->isHomePickUpOnly;
 			$inLibraryUseOnly = $scopingDetails->inLibraryUseOnly;
 			$libraryOwned     = $scopingDetails->libraryOwned;
 			$holdablePTypes   = $scopingDetails->holdablePTypes;
 			$bookablePTypes   = $scopingDetails->bookablePTypes;
+			//$homePickUpPTypes = $scopingDetails->homePickUpPTypes;
 			$status           = $curItem->detailedStatus;
 
 			if (!$available && strtolower($status) == 'library use only'){
@@ -2983,31 +3002,20 @@ class GroupedWorkDriver extends RecordInterface {
 			}
 
 			// If holdable pTypes were calculated for this scope, determine if the record is holdable to the scope's pTypes
-			if (strlen($holdablePTypes) > 0 && !in_array($holdablePTypes, self::SIERRA_PTYPE_WILDCARDS)){
-				$holdablePTypes = explode(',', $holdablePTypes);
-				$matchingPTypes = array_intersect($holdablePTypes, $activePTypes);
-				if (count($matchingPTypes) == 0){
-					$holdable = false;
-				}
-			}
+			$holdable = $this->calculateForActionByPtype($activePTypes, $holdablePTypes, $holdable);
 			if ($holdable){
 				// If this item is holdable, then treat the record as holdable when building action buttons
 				$recordHoldable = true;
 			}
 
 			// If bookable pTypes were calculated for this scope, determine if the record is bookable to the scope's pTypes
-			if (strlen($bookablePTypes) > 0 && !in_array($bookablePTypes, self::SIERRA_PTYPE_WILDCARDS)){
-				$bookablePTypes = explode(',', $bookablePTypes);
-				$matchingPTypes = array_intersect($bookablePTypes, $activePTypes);
-				if (count($matchingPTypes) == 0){
-					$bookable = false;
-				}
-			}
+			$bookable = $this->calculateForActionByPtype($activePTypes, $bookablePTypes, $bookable);
 			if ($bookable){
 				// If this item is bookable, then treat the record as bookable when building action buttons
 				$recordBookable = true;
 			}
 
+			//$isHomePickUp = $this->calculateForActionByPtype($activePTypes, $homePickUpPTypes, $isHomePickUp);
 
 			//Update the record with information from the item and from scoping.
 			if ($isEcontent){
@@ -3416,6 +3424,7 @@ class GroupedWorkDriver extends RecordInterface {
 				return 'WebPage';
 
 			default:
+				$this->logger->notice("No schema.org format set for $pikaFormat");
 				return 'CreativeWork';
 		}
 	}
@@ -3445,6 +3454,7 @@ class GroupedWorkDriver extends RecordInterface {
 				return 'Paperback';
 
 			default:
+				$this->logger->notice("No schema.org book format set for $pikaFormat");
 				return '';
 		}
 	}
