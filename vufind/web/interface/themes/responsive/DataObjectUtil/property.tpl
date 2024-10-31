@@ -25,7 +25,7 @@
 				<a href="{$property.helpLink}" aria-label="Help Link" target="_blank"><span class="help-icon glyphicon glyphicon-question-sign" title="Help" aria-hidden="true"></span></a>
 			</div>
 			</div>
-		{elseif $property.type != 'section' && $property.type != 'checkbox' && $property.type != 'header'}
+		{elseif $property.type != 'section' && $property.type != 'checkbox' && $property.type != 'checkboxWarn' && $property.type != 'header'}
 			{if !empty($property.helpLink)}
 				<div class="row">
 					<div class="col-xs-11">
@@ -234,7 +234,28 @@
 					{/if}
 				</label>
 			</div>
+    {elseif $property.type == 'checkboxWarn'}
 
+			<div class="checkboxWarn">
+				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>
+					<input type="checkbox" name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked="checked"{/if}> {$property.label}
+            {if $property.isIndexingSetting}
+							&nbsp;<span class="glyphicon glyphicon-time" aria-hidden="true" title="This setting is a change to indexing"></span>
+            {/if}
+				</label>
+			</div>
+			<script>
+				$('#{$propName}').on('click', function(d){ldelim}
+							  varSelectorId = '#'+this.id;
+								if ($(varSelectorId).is(":checked")){ldelim}
+											$(varSelectorId).prop('checked',false);
+											Pika.confirm("Enabling {$property.label} will cause permanent changes. This cannot be undone. Please make sure you are aware of the risks before saving", function(){ldelim}
+												$(varSelectorId).prop('checked',true);
+												$('.modal-footer button.btn-default').click();
+											{rdelim});
+										{rdelim}
+				{rdelim});
+			</script>
 		{elseif $property.type == 'oneToMany'}
 			{include file="DataObjectUtil/oneToMany.tpl"}
 		{/if}
