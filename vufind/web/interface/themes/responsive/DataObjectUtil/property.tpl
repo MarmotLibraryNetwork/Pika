@@ -234,28 +234,20 @@
 					{/if}
 				</label>
 			</div>
-    {elseif $property.type == 'checkboxWarn'}
-
-			<div class="checkboxWarn">
-				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>
-					<input type="checkbox" name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked="checked"{/if}> {$property.label}
-            {if $property.isIndexingSetting}
-							&nbsp;<span class="glyphicon glyphicon-time" aria-hidden="true" title="This setting is a change to indexing"></span>
-            {/if}
-				</label>
-			</div>
+			{if isset($property.warning)}
 			<script>
 				$('#{$propName}').on('click', function(d){ldelim}
-							  varSelectorId = '#'+this.id;
-								if ($(varSelectorId).is(":checked")){ldelim}
-											$(varSelectorId).prop('checked',false);
-											Pika.confirm("Enabling {$property.label} will cause permanent changes. This cannot be undone. Please make sure you are aware of the risks before saving", function(){ldelim}
-												$(varSelectorId).prop('checked',true);
-												$('.modal-footer button.btn-default').click();
-											{rdelim});
-										{rdelim}
-				{rdelim});
+					varSelectorId = '#'+this.id;
+					if ($(varSelectorId).is(":checked")){ldelim}
+						$(varSelectorId).prop('checked',false);
+						Pika.confirm("{$property.warning}. This cannot be undone. Please make sure you are aware of the risks before saving", function(){ldelim}
+							$(varSelectorId).prop('checked',true);
+							$('.modal-footer button.btn-default').click();
+                {rdelim});
+              {rdelim}
+            {rdelim});
 			</script>
+		{/if}
 		{elseif $property.type == 'oneToMany'}
 			{include file="DataObjectUtil/oneToMany.tpl"}
 		{/if}
