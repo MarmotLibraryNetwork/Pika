@@ -1457,7 +1457,7 @@ class GroupedWorkDriver extends RecordInterface {
 					'isEContent'           => false,
 					'relatedRecords'       => [],
 					'preferredEdition'     => null,
-					'statusMessage'        => '',
+					//'statusMessage'        => '',
 					'itemLocations'        => [],
 					'availableLocally'     => false,
 					'availableOnline'      => false,
@@ -1665,7 +1665,7 @@ class GroupedWorkDriver extends RecordInterface {
 						}
 					}
 					if ($promptForAlternateEdition){
-						$alteredActions = array();
+						$alteredActions = [];
 						foreach ($bestRecord['actions'] as $action){
 							$action['onclick'] = str_replace('Record.showPlaceHold', 'Record.showPlaceHoldEditions', $action['onclick']);
 							$alteredActions[]  = $action;
