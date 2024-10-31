@@ -1371,7 +1371,7 @@ class MarcRecord extends IndexRecord {
 			];
 		}
 
-		//Special Itemless Print Record Actions with url links, like KitKeeper Records
+		//Special Item-less Print Record Actions with url links, like KitKeeper Records
 		if (empty($actions) && !empty($relatedUrls) && $isAvailable){
 			//TODO: not sure what the best check is at this point
 			foreach ($relatedUrls as $relatedUrl){
