@@ -57,5 +57,15 @@ function getLibraryLocationUpdates(): array{
 			]
 		],
 
+		'2024.04.0_add_archive_only_interface_setting_to_library' => [
+			'release'         => '2024.04.0',
+			'title'           => 'Add archive only interface to Library settings',
+			'description'     => 'Add an option to library settings to enable an archive only view',
+			'continueOnError' => false,
+			'sql'             => [
+				'ALTER TABLE library ADD COLUMN `archiveOnlyInterface` TINYINT DEFAULT 0;'
+			]
+		],
+
 	];
 }

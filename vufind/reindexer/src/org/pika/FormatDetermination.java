@@ -202,6 +202,7 @@ public class FormatDetermination {
 						case "book":
 						case "bookwithcdrom":
 						case "bookwithdvd":
+						case "bookwithaudiocd":
 						case "bookwithvideodisc":
 						case "largeprint":
 						case "illustratededition":
@@ -262,6 +263,7 @@ public class FormatDetermination {
 							//econtentItem.setFormatCategory("Other"); // Have no format category rather than other
 							econtentRecord.setFormatBoost(2);
 							break;
+						case "atlas":
 						case "map":
 							econtentItem.setFormat("Map");
 							//econtentItem.setFormatCategory("Other"); // Have no format category rather than other
@@ -731,6 +733,11 @@ public class FormatDetermination {
 				printFormats.add("DVDBlu-rayCombo");
 				return;
 			}
+			if (printFormats.contains("CompactDisc")){
+				printFormats.remove("CompactDisc");
+				// possible DVD with CD
+				//300  |a 1 videodisc (60 min.) : |b sd., col. ; |c 4 3/4 in. + 1 compact disc (4 3/4 in.) (51 min.)
+			}
 		}
 		if (printFormats.contains("Video")){
 			if (printFormats.contains("DVD")
@@ -777,6 +784,9 @@ public class FormatDetermination {
 		if (printFormats.contains("SoundDisc") && printFormats.contains("MusicRecording")) {
 			// This is likely music phonographs, which get determined as music recordings
 			printFormats.remove("SoundDisc");
+		}
+		if (printFormats.contains("CompactDisc") && printFormats.contains("MusicCD")){
+			printFormats.remove("CompactDisc");
 		}
 		if (printFormats.contains("MusicRecording") && (printFormats.contains("CD") || printFormats.contains("CompactDisc"))){
 			if (printFormats.contains("DVD")) {
@@ -828,9 +838,8 @@ public class FormatDetermination {
 			//TODO: Likely obsolete - no determinations of CD
 			printFormats.remove("CD");
 		}
-		if (printFormats.contains("AudioCD") && printFormats.contains("CD")){
-			//TODO: Likely obsolete - no determinations of AudioCD
-			printFormats.remove("AudioCD");
+		if (printFormats.contains("MP3") && printFormats.contains("CompactDisc")){
+			printFormats.remove("MP3");
 		}
 		if (printFormats.contains("DVD") && printFormats.contains("SoundDisc")){
 			printFormats.remove("DVD");
@@ -1135,7 +1144,7 @@ public class FormatDetermination {
 							result.add("SoundCassette");
 						} else if (physicalDescriptionData.contains("compact disc")){
 							result.add("CompactDisc");
-							logger.debug("Got format determination 'CompactDisc' on {}", recordIdentifier);
+							logger.info("Got format determination 'CompactDisc' on {}", recordIdentifier);
 							//TODO: likely need to additional logic to set to something more specific
 						} else if (physicalDescriptionData.contains("sound disc") || physicalDescriptionData.contains("audio disc")) {
 							hasSoundDisc = true;
@@ -1150,7 +1159,7 @@ public class FormatDetermination {
 						}else if (physicalDescriptionData.contains("hotspot device") || physicalDescriptionData.contains("mobile hotspot") || physicalDescriptionData.contains("hot spot") || physicalDescriptionData.contains("hotspot")){
 							result.add("PhysicalObject");
 						} else if (result.contains("MusicRecording") && (physicalDescriptionData.contains(" cd :") || physicalDescriptionData.contains(" cds :"))) {
-							// If we know the record is Music (due to 007 MusicRecording determination,
+							// If we know the record is Music (due to typeOfRecordLeaderChar MusicRecording determination),
 							// allow phrases like "CD : digital" or "CDs : digital" to get us to MusicCD
 							// e.g. 300			 |a 1 CD : |b digital, stereophonic ; |c 4 3/4 inches.
 							// e.g. 300			 |a 2 CDs : |b digital, stereo, mono ;

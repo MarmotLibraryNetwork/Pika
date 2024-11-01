@@ -178,7 +178,6 @@ public class GroupingFormatDetermination {
 						case "sounddisc":
 						case "playaway":
 						case "cdrom":
-						case "chipcartridge":
 						case "soundcassette":
 						case "compactdisc":
 						case "eaudio":
@@ -187,6 +186,13 @@ public class GroupingFormatDetermination {
 						case "photo":
 						case "map":
 						case "newspaper":
+						// Below are likely bad marc data for econtent records
+						case "tapereel":
+						case "tapecassette":
+						case "tapecartridge":
+						case "disccartridge":
+						case "chipcartridge":
+						case "floppydisk":
 							groupingCategories.add("book");
 							break;
 						case "musicrecording":

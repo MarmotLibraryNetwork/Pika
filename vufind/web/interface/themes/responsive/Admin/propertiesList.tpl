@@ -240,8 +240,7 @@
 											.appendTo($(column.header()))
 											.on('change', function(){
 												var val = $.fn.dataTable.util.escapeRegex( $(this).val() );
-												column.search( val ? '^'+val+'$' : '', true, false)
-													.draw();
+												column.search( val ? '^'+val+'$' : '', true, false).draw();
 											})
 											.on('click', function(e){e.stopPropagation();});
 							column.data().unique().sort().each(function (d,j) {
@@ -265,10 +264,38 @@
 			});
 		}
 		$(function(){
+			{/literal}{if $objectType == "LoanRuleDeterminer"}{literal}
+				$('#adminTable thead th:nth-child(-n+4), #adminTable thead th:nth-child(6)').each( function () {
+					var title = $(this).text();
+					$(this).html(title + '<br><input type="text" placeholder="Search ' + title + '">');
+				});
+			{/literal}{/if}{literal}
+			{/literal}{if $objectType == "LoanRule"}{literal}
+				$('#adminTable thead th:nth-child(-n+4)').each( function(){
+					var title = $(this).text();
+					$(this).html(title + '<br><input type="text" placeholder="Search ' + title + '">');
+				});
+			{/literal}{/if}{literal}
 			$('#adminTable').DataTable({
 				pageLength: 100,
 				"columnDefs": [{"orderDataType": "dom-numeric", "type": "numeric", "targets": 0}],
 					{/literal}
+				{if $objectType == "LoanRule" || $objectType == "LoanRuleDeterminer" }
+					{literal}
+						initComplete: function(){
+							this.api().columns([0, 1, 2, 3{/literal}{if $objectType == "LoanRuleDeterminer"}{literal}, 5{/literal}{/if}{literal}]).every(function () {
+								let that = this;
+								$('input', this.header())
+										.on('keyup change clear', function(){
+											if (that.search() !== this.value) {
+												that.search(this.value).draw();
+											}
+										}).on('click', function (e) {e.stopPropagation();});
+							});
+						},
+					{/literal}
+				{/if}
+
 				{if $objectType == "MergedGroupedWork" || $objectType == "NonGroupedRecord"}
 					{* TODO: CJ this sort column is actually mysql date time string. Initial glances this looks to be sorting okay
 					 but there could be a better sorting method to pick out. - pascal *}
@@ -280,7 +307,8 @@
 				"order": [[0, "asc"]]
 					{/literal}
 				{/if}
-					{literal}
+				{literal}
+
 			});
 		});
 
