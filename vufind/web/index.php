@@ -401,9 +401,14 @@ function loadModuleActionId(){
 
 	//Find a reasonable default location to go to
 	if ($module == null && $action == null){
-		//We have no information about where to go, go to the default location from config
-		global $configArray;
-		$module = $configArray['Site']['defaultModule'];
+		global $library;
+		if ($library->archiveOnlyInterface ?? false){
+				$module = 'Archive';
+		}else{
+			//We have no information about where to go, go to the default location from config
+			global $configArray;
+			$module = $configArray['Site']['defaultModule'];
+		}
 		$action = 'Home';
 	}elseif ($action == null){
 		$action = 'Home';

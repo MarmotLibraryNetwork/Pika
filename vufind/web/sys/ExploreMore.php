@@ -28,6 +28,7 @@ class ExploreMore {
 		global $interface;
 		global $configArray;
 		global $timer;
+		global $library;
 
 		if (isset($configArray['Islandora']) && isset($configArray['Islandora']['solrUrl'])) {
 			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
@@ -119,16 +120,20 @@ class ExploreMore {
 			}
 
 			//Find content from the catalog that is directly related to the object or collection based on linked data
-			$relatedPikaContent = $archiveDriver->getRelatedPikaContent();
-			if (count($relatedPikaContent) > 0){
-				$exploreMoreSectionsToShow['linkedCatalogRecords'] = [
-//						'title' => 'Librarian Picks',
-						'format' => 'scroller',
-						'values' => $relatedPikaContent
-				];
-			}
-			$timer->logTime('Loaded related Pika content');
 
+			if ($library->archiveOnlyInterface ?? false){
+				$timer->logTime('Skipped Pika Content');
+			}else{
+				$relatedPikaContent = $archiveDriver->getRelatedPikaContent();
+				if (count($relatedPikaContent) > 0){
+					$exploreMoreSectionsToShow['linkedCatalogRecords'] = [
+							//						'title' => 'Librarian Picks',
+														'format' => 'scroller',
+														'values' => $relatedPikaContent
+					];
+				}
+				$timer->logTime('Loaded related Pika content');
+			}
 			//Find other entities
 		}
 
@@ -230,7 +235,7 @@ class ExploreMore {
 			];
 		}
 
-		if ($activeSection != 'catalog'){
+		if ($activeSection != 'catalog' && !$library->archiveOnlyInterface){
 			$relatedWorks = $this->getRelatedWorks($quotedSubjectsForSearching, $relatedPikaContent);
 			if ($relatedWorks['numFound'] > 0){
 				$exploreMoreSectionsToShow['relatedCatalog'] = [
