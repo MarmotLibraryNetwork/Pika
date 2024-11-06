@@ -489,8 +489,8 @@ class GroupedWorkDriver extends RecordInterface {
 		//Build the link URL.
 		//If there is only one record for the work we will link straight to that.
 		$relatedRecords = $this->getRelatedRecords();
-		$timer->logTime("Loaded related records");
-		$memoryWatcher->logMemory("Loaded related records");
+		$timer->logTime('Loaded related records');
+		$memoryWatcher->logMemory('Loaded related records');
 		if (count($relatedRecords) == 1){
 			$firstRecord = reset($relatedRecords);
 			$linkUrl     = $firstRecord['url'];
@@ -1442,9 +1442,11 @@ class GroupedWorkDriver extends RecordInterface {
 		//Group the records based on format
 		$relatedManifestations = [];
 		foreach ($relatedRecords as $curRecord){
-			if (!array_key_exists($curRecord['format'], $relatedManifestations)){
-				$relatedManifestations[$curRecord['format']] = [
-					'format'               => $curRecord['format'],
+			$currentManifestation = $curRecord['format'];
+			if (!array_key_exists($currentManifestation, $relatedManifestations)){
+				// Create array structure for first occurrence of the format
+				$relatedManifestations[$currentManifestation] = [
+					'format'               => $currentManifestation,
 					'formatCategory'       => $curRecord['formatCategory'],
 					'copies'               => 0,
 					'availableCopies'      => 0,
@@ -1458,7 +1460,7 @@ class GroupedWorkDriver extends RecordInterface {
 					'relatedRecords'       => [],
 					'preferredEdition'     => null,
 					//'statusMessage'        => '',
-					'itemLocations'        => [],
+					//'itemLocations'        => [],
 					'availableLocally'     => false,
 					'availableOnline'      => false,
 					'availableHere'        => false,
@@ -1466,69 +1468,69 @@ class GroupedWorkDriver extends RecordInterface {
 					'allLibraryUseOnly'    => true,
 					'hideByDefault'        => false,
 					'itemSummary'          => [],
-					'itemSummaryLocal'     => [],
+					//'itemSummaryLocal'     => [],
 					'groupedStatus'        => ''
 				];
 			}
 			if (isset($curRecord['availableLocally']) && $curRecord['availableLocally'] == true){
-				$relatedManifestations[$curRecord['format']]['availableLocally'] = true;
+				$relatedManifestations[$currentManifestation]['availableLocally'] = true;
 			}
 			if (isset($curRecord['availableHere']) && $curRecord['availableHere'] == true){
-				$relatedManifestations[$curRecord['format']]['availableHere'] = true;
+				$relatedManifestations[$currentManifestation]['availableHere'] = true;
 			}
 			if ($curRecord['available'] && $curRecord['locationLabel'] === 'Online'){
-				$relatedManifestations[$curRecord['format']]['availableOnline'] = true;
+				$relatedManifestations[$currentManifestation]['availableOnline'] = true;
 			}
 			if (isset($curRecord['availableOnline']) && $curRecord['availableOnline']){
-				$relatedManifestations[$curRecord['format']]['availableOnline'] = true;
+				$relatedManifestations[$currentManifestation]['availableOnline'] = true;
 			}
 			if (isset($curRecord['isEContent']) && $curRecord['isEContent']){
-				$relatedManifestations[$curRecord['format']]['isEContent'] = true;
+				$relatedManifestations[$currentManifestation]['isEContent'] = true;
 
 				//Set Manifestation eContent Source
-				if (empty($relatedManifestations[$curRecord['format']]['eContentSource'])){
-					$relatedManifestations[$curRecord['format']]['eContentSource'] = $curRecord['eContentSource'];
-				}elseif ($curRecord['eContentSource'] != $relatedManifestations[$curRecord['format']]['eContentSource']){
+				if (empty($relatedManifestations[$currentManifestation]['eContentSource'])){
+					$relatedManifestations[$currentManifestation]['eContentSource'] = $curRecord['eContentSource'];
+				}elseif ($curRecord['eContentSource'] != $relatedManifestations[$currentManifestation]['eContentSource']){
 
-					$this->logger->warning("Format Manifestation has multiple econtent sources containing record {$curRecord['id']}");
+					$this->logger->warning("Format Manifestation has multiple eContent sources containing record {$curRecord['id']}");
 				}
 			}
-			if (!$relatedManifestations[$curRecord['format']]['available'] && $curRecord['available']){
-				$relatedManifestations[$curRecord['format']]['available'] = $curRecord['available'];
+			if (!$relatedManifestations[$currentManifestation]['available'] && $curRecord['available']){
+				$relatedManifestations[$currentManifestation]['available'] = true;
 			}
 			if ($curRecord['inLibraryUseOnly']){
-				$relatedManifestations[$curRecord['format']]['inLibraryUseOnly'] = true;
+				$relatedManifestations[$currentManifestation]['inLibraryUseOnly'] = true;
 			}else{
-				$relatedManifestations[$curRecord['format']]['allLibraryUseOnly'] = false;
+				$relatedManifestations[$currentManifestation]['allLibraryUseOnly'] = false;
 			}
-			if (!$relatedManifestations[$curRecord['format']]['hasLocalItem'] && $curRecord['hasLocalItem']){
-				$relatedManifestations[$curRecord['format']]['hasLocalItem'] = $curRecord['hasLocalItem'];
+			if (!$relatedManifestations[$currentManifestation]['hasLocalItem'] && $curRecord['hasLocalItem']){
+				$relatedManifestations[$currentManifestation]['hasLocalItem'] = true;
 			}
 			if ($curRecord['shelfLocation']){
-				$relatedManifestations[$curRecord['format']]['shelfLocation'][$curRecord['shelfLocation']] = $curRecord['shelfLocation'];
+				$relatedManifestations[$currentManifestation]['shelfLocation'][$curRecord['shelfLocation']] = $curRecord['shelfLocation'];
 			}
 			if ($curRecord['callNumber']){
-				$relatedManifestations[$curRecord['format']]['callNumber'][$curRecord['callNumber']] = $curRecord['callNumber'];
+				$relatedManifestations[$currentManifestation]['callNumber'][$curRecord['callNumber']] = $curRecord['callNumber'];
 			}
-			$relatedManifestations[$curRecord['format']]['relatedRecords'][] = $curRecord;
+			$relatedManifestations[$currentManifestation]['relatedRecords'][] = $curRecord;
 
-			$relatedManifestations[$curRecord['format']]['copies']           += $curRecord['copies'];
-			$relatedManifestations[$curRecord['format']]['availableCopies']  += $curRecord['availableCopies'];
+			$relatedManifestations[$currentManifestation]['copies']          += $curRecord['copies'];
+			$relatedManifestations[$currentManifestation]['availableCopies'] += $curRecord['availableCopies'];
 
 
 
 			if ($curRecord['hasLocalItem']){
-				$relatedManifestations[$curRecord['format']]['localCopies']          += ($curRecord['localCopies'] ?? 0);
-				$relatedManifestations[$curRecord['format']]['localAvailableCopies'] += ($curRecord['localAvailableCopies'] ?? 0);
+				$relatedManifestations[$currentManifestation]['localCopies']          += ($curRecord['localCopies'] ?? 0);
+				$relatedManifestations[$currentManifestation]['localAvailableCopies'] += ($curRecord['localAvailableCopies'] ?? 0);
 			}
 			if (isset($curRecord['itemSummary'])){
-				$relatedManifestations[$curRecord['format']]['itemSummary'] = $this->mergeItemSummary($relatedManifestations[$curRecord['format']]['itemSummary'], $curRecord['itemSummary']);
+				$relatedManifestations[$currentManifestation]['itemSummary'] = $this->mergeItemSummary($relatedManifestations[$currentManifestation]['itemSummary'], $curRecord['itemSummary']);
 			}
-			if ($curRecord['numHolds']){
-				$relatedManifestations[$curRecord['format']]['numHolds'] += $curRecord['numHolds'];
+			if (!empty($curRecord['numHolds'])){
+				$relatedManifestations[$currentManifestation]['numHolds'] += $curRecord['numHolds'];
 			}
-			if (isset($curRecord['onOrderCopies'])){
-				$relatedManifestations[$curRecord['format']]['onOrderCopies'] += $curRecord['onOrderCopies'];
+			if (!empty($curRecord['onOrderCopies'])){
+				$relatedManifestations[$currentManifestation]['onOrderCopies'] += $curRecord['onOrderCopies'];
 			}
 // For Reference
 //			static $statusRankings = [
@@ -1546,7 +1548,7 @@ class GroupedWorkDriver extends RecordInterface {
 //				'On Shelf'              => 12
 //			];
 			if (!empty($curRecord['groupedStatus'])){
-				$manifestationCurrentGroupedStatus = $relatedManifestations[$curRecord['format']]['groupedStatus'];
+				$manifestationCurrentGroupedStatus = $relatedManifestations[$currentManifestation]['groupedStatus'];
 
 				//Check to see if we have a better status here
 				if (array_key_exists(strtolower($curRecord['groupedStatus']), $statusRankings)){
@@ -1556,8 +1558,8 @@ class GroupedWorkDriver extends RecordInterface {
 						$manifestationCurrentGroupedStatus = $curRecord['groupedStatus']; // Update to the better ranked status if we find a better ranked one
 					}
 					//Update the manifestation's grouped status elements
-					$relatedManifestations[$curRecord['format']]['groupedStatus']      = $manifestationCurrentGroupedStatus;
-					$relatedManifestations[$curRecord['format']]['isAvailableToOrder'] = $manifestationCurrentGroupedStatus == 'Available to Order';
+					$relatedManifestations[$currentManifestation]['groupedStatus']      = $manifestationCurrentGroupedStatus;
+					$relatedManifestations[$currentManifestation]['isAvailableToOrder'] = $manifestationCurrentGroupedStatus == 'Available to Order';
 				}
 			}
 		}
@@ -1586,48 +1588,7 @@ class GroupedWorkDriver extends RecordInterface {
 					$selectedDetailedAvailability = urldecode($matches[1]);
 					$availableAtLocationsToMatch = [];
 					if (!empty($selectedDetailedAvailability)){
-						// Look up the location codes of the records owned for the location matching the facet we are filtering by
-						global $serverName;
-						global $memCache;
-						/** @var Memcache $memCache */
-						$memCacheKey = "availableAtLocationsToMatch_{$selectedDetailedAvailability}_{$serverName}";
-						$result = $memCache->get($memCacheKey);
-						if (is_array($result)){
-							$availableAtLocationsToMatch = $result;
-						}else{
-							$recordsOwned = new LocationRecordOwned();
-							$recordsOwned->query('SELECT `location` FROM `location_records_owned` LEFT JOIN `location` USING (locationId) WHERE `facetLabel` = "' . $selectedDetailedAvailability . '"');
-							if ($recordsOwned->N){
-								while ($recordsOwned->fetch()){
-									// strip out simple regex found in some of the codes
-									$loc = str_replace('.*', '', $recordsOwned->location);
-									if (strlen($loc)){
-										if (strpos($loc, '|') !== false){
-											$availableAtLocationsToMatch = array_merge($availableAtLocationsToMatch, explode('|', $loc));
-										} else{
-											$availableAtLocationsToMatch[] = $loc;
-										}
-									}
-								}
-							}
-							// Check if we are fetching location codes owned by the library instead.
-							$recordsOwned->query('SELECT location FROM `library_records_owned` LEFT JOIN `library` USING (libraryId) WHERE `facetLabel` = "' . $selectedDetailedAvailability . '"');
-							if ($recordsOwned->N){
-								while ($recordsOwned->fetch()){
-									// strip out simple regex found in some of the codes
-									$loc = str_replace('.*', '', $recordsOwned->location);
-									if (strlen($loc)){
-										if (strpos($loc, '|') !== false){
-											$availableAtLocationsToMatch = array_merge($availableAtLocationsToMatch, explode('|', $loc));
-										} else{
-											$availableAtLocationsToMatch[] = $loc;
-										}
-									}
-								}
-							}
-							global $configArray;
-							$memCache->set($memCacheKey, $availableAtLocationsToMatch, 0, $configArray['Caching']['solr_record']);
-						}
+						$availableAtLocationsToMatch = $this->getAvailableAtLocationsToMatch($selectedDetailedAvailability);
 					}
 				}
 			}
@@ -1762,7 +1723,7 @@ class GroupedWorkDriver extends RecordInterface {
 			// Set Up Manifestation Display when a eContent source facet is set
 			if ($selectedEcontentSource && (
 				(!$manifestation['isEContent'] && empty($manifestation['isSelectedNonEcontentFormat']))
-				// Hide non-econtent unless it is also a chosen format facet
+				// Hide non-eontent unless it is also a chosen format facet
 					|| (!empty($manifestation['eContentSource']) && !in_array($manifestation['eContentSource'], $selectedEcontentSource))
 				)
 			){
@@ -1781,7 +1742,7 @@ class GroupedWorkDriver extends RecordInterface {
 				}
 			}
 
-			// Set Up Manifestation Display when a availability facet is set
+			// Set Up Manifestation Display when an availability facet is set
 			if ($selectedAvailability == 'Available Online' && !($manifestation['availableOnline'])){
 				$manifestation['hideByDefault'] = true;
 			}elseif ($selectedAvailability == 'Available Now'){
@@ -1840,6 +1801,53 @@ class GroupedWorkDriver extends RecordInterface {
 		return $relatedManifestations;
 	}
 
+	private function getAvailableAtLocationsToMatch(string $selectedDetailedAvailability) : array{
+		// Look up the location codes of the records owned for the location matching the facet we are filtering by
+		global $serverName;
+		global $memCache;
+		/** @var Memcache $memCache */
+		$memCacheKey = "availableAtLocationsToMatch_{$selectedDetailedAvailability}_{$serverName}";
+		$result = $memCache->get($memCacheKey);
+		if (is_array($result)){
+			$availableAtLocationsToMatch = $result;
+		}else{
+			$availableAtLocationsToMatch = [];
+			$recordsOwned = new LocationRecordOwned();
+			$recordsOwned->query('SELECT `location` FROM `location_records_owned` LEFT JOIN `location` USING (locationId) WHERE `facetLabel` = "' . $selectedDetailedAvailability . '"');
+			if ($recordsOwned->N){
+				while ($recordsOwned->fetch()){
+					// strip out simple regex found in some of the codes
+					$loc = str_replace('.*', '', $recordsOwned->location);
+					if (strlen($loc)){
+						if (strpos($loc, '|') !== false){
+							$availableAtLocationsToMatch = array_merge($availableAtLocationsToMatch, explode('|', $loc));
+						} else{
+							$availableAtLocationsToMatch[] = $loc;
+						}
+					}
+				}
+			}
+
+			// Look up the location codes of the records owned for the libary matching the facet we are filtering by
+			$recordsOwned->query('SELECT `location` FROM `library_records_owned` LEFT JOIN `library` USING (libraryId) WHERE `facetLabel` = "' . $selectedDetailedAvailability . '"');
+			if ($recordsOwned->N){
+				while ($recordsOwned->fetch()){
+					// strip out simple regex found in some of the codes
+					$loc = str_replace('.*', '', $recordsOwned->location);
+					if (strlen($loc)){
+						if (strpos($loc, '|') !== false){
+							$availableAtLocationsToMatch = array_merge($availableAtLocationsToMatch, explode('|', $loc));
+						} else{
+							$availableAtLocationsToMatch[] = $loc;
+						}
+					}
+				}
+			}
+			global $configArray;
+			$memCache->set($memCacheKey, $availableAtLocationsToMatch, 0, $configArray['Caching']['solr_record']);
+		}
+		return $availableAtLocationsToMatch;
+	}
 	/**
 	 * Master sort function for ordering all the related records/editions for display in the related manifestations table
 	 * of a Grouped Work
@@ -2467,8 +2475,12 @@ class GroupedWorkDriver extends RecordInterface {
 			if (isset($localCopies[$key])){
 				$localCopies[$key]['totalCopies']     += $item['totalCopies'];
 				$localCopies[$key]['availableCopies'] += $item['availableCopies'];
+				//TODO: locationCode & available
 				if ($item['displayByDefault']){
 					$localCopies[$key]['displayByDefault'] = true;
+				}
+				if ($item['available']){
+					$localCopies[$key]['available'] = true;
 				}
 			}else{
 				$localCopies[$key] = $item;
@@ -2898,7 +2910,7 @@ class GroupedWorkDriver extends RecordInterface {
 
 //		$volumeData = $recordDriver->getVolumeInfoForRecord();
 
-		//Setup the base record
+		//Set up the base record
 		$relatedRecord = [
 			'id'                     => $recordDetails->recordFullIdentifier,
 			'driver'                 => $recordDriver,
@@ -3099,7 +3111,6 @@ class GroupedWorkDriver extends RecordInterface {
 				$description = $shelfLocation . ':' . $callNumber;
 //			}
 
-			$section = 'Other Locations';
 			if ($locallyOwned){
 				if ($localShelfLocation == null){
 					$localShelfLocation = $shelfLocation;
@@ -3114,7 +3125,6 @@ class GroupedWorkDriver extends RecordInterface {
 				}
 				$relatedRecord['localCopies']  += $numCopies;
 				$relatedRecord['hasLocalItem'] = true;
-				$key                           = '1 ' . $description;
 				$sectionId                     = 1;
 				$section                       = 'In this library';
 			}elseif ($libraryOwned){
@@ -3131,17 +3141,16 @@ class GroupedWorkDriver extends RecordInterface {
 				if ($searchLocation == null || $isEcontent){
 					$relatedRecord['hasLocalItem'] = true;
 				}
-				$key       = '5 ' . $description;
 				$sectionId = 5;
 				$section   = $library->displayName;
 			}elseif ($isOrderItem){
-				$key       = '7 ' . $description;
 				$sectionId = 7;
 				$section   = 'On Order';
 			}else{
-				$key       = '6 ' . $description;
 				$sectionId = 6;
+				$section   = 'Other Locations';
 			}
+			$itemSummaryKey = $sectionId . ' ' . $section;
 
 //			if ((strlen($volumeRecordLabel) > 0) && !substr($callNumber, -strlen($volumeRecordLabel)) == $volumeRecordLabel){
 //				$callNumber = trim($callNumber . ' ' . $volumeRecordLabel);
@@ -3180,23 +3189,28 @@ class GroupedWorkDriver extends RecordInterface {
 			}
 
 			//Group the item based on location and call number for display in the summary
-			if (isset($relatedRecord['itemSummary'][$key])){
-				$relatedRecord['itemSummary'][$key]['totalCopies']++;
-				$relatedRecord['itemSummary'][$key]['availableCopies'] += $itemSummaryInfo['availableCopies'];
+			if (isset($relatedRecord['itemSummary'][$itemSummaryKey])){
+				//TODO: The if/else block is duplicative or similar to method mergeItemSummary()
+				$relatedRecord['itemSummary'][$itemSummaryKey]['totalCopies']++;
+				$relatedRecord['itemSummary'][$itemSummaryKey]['availableCopies'] += $itemSummaryInfo['availableCopies'];
 				if ($itemSummaryInfo['displayByDefault']){
-					$relatedRecord['itemSummary'][$key]['displayByDefault'] = true;
+					$relatedRecord['itemSummary'][$itemSummaryKey]['displayByDefault'] = true;
 				}
-				$relatedRecord['itemSummary'][$key]['onOrderCopies'] += $itemSummaryInfo['onOrderCopies'];
-				$lastStatus                                          = $relatedRecord['itemSummary'][$key]['status'];
-				$relatedRecord['itemSummary'][$key]['status']        = GroupedWorkDriver::keepBestGroupedStatus($lastStatus, $groupedStatus);
-				if ($lastStatus != $relatedRecord['itemSummary'][$key]['status']){
-					$relatedRecord['itemSummary'][$key]['statusFull'] = $itemSummaryInfo['statusFull'];
+				if ($itemSummaryInfo['available']){
+					// Needed for 'Available At' facet, especially if the first item that populated the itemSummary was unavailable
+					$relatedRecord['itemSummary'][$itemSummaryKey]['available'] = true;
+				}
+				$relatedRecord['itemSummary'][$itemSummaryKey]['onOrderCopies'] += $itemSummaryInfo['onOrderCopies'];
+				$lastStatus                                                     = $relatedRecord['itemSummary'][$itemSummaryKey]['status'];
+				$relatedRecord['itemSummary'][$itemSummaryKey]['status']        = GroupedWorkDriver::keepBestGroupedStatus($lastStatus, $groupedStatus);
+				if ($lastStatus != $relatedRecord['itemSummary'][$itemSummaryKey]['status']){
+					$relatedRecord['itemSummary'][$itemSummaryKey]['statusFull'] = $itemSummaryInfo['statusFull'];
 				}
 			}else{
-				$relatedRecord['itemSummary'][$key] = $itemSummaryInfo;
+				$relatedRecord['itemSummary'][$itemSummaryKey] = $itemSummaryInfo;
 			}
 			//Also add to the details for display in the full list
-			$relatedRecord['itemDetails'][$key . $i++] = $itemSummaryInfo;
+			$relatedRecord['itemDetails'][$itemSummaryKey . $i++] = $itemSummaryInfo;
 		}
 		if ($localShelfLocation != null){
 			$relatedRecord['shelfLocation'] = $localShelfLocation;
