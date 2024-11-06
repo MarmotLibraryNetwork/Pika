@@ -1156,6 +1156,7 @@ class Library extends DB_DataObject {
 			// restrict permissions for library managers, unless they also have higher permissions of library or opac admin
 			$structure['subdomain']['type']   = 'label';
 			$structure['displayName']['type'] = 'label';
+			$structure['archiveOnlyInterface']['type'] = 'label';
 			unset($structure['showDisplayNameInHeader']);
 			unset($structure['displaySection']);
 			unset($structure['ilsSection']);
@@ -1499,6 +1500,17 @@ class Library extends DB_DataObject {
 			$this->showLoginButton = false;
 			$this->enableArchive = true;
 			$this->clearHooplaSettings();
+			$this->includeNovelistEnrichment = false;
+			$this->includeNovelistEnrichment = false;
+			$this->showGoodReadsReviews = false;
+			$this->showStandardReviews = false;
+			$this->preferSyndeticsSummary = false;
+			$this->showSimilarAuthors = false;
+			$this->showSimilarTitles = false;
+			$this->showWikipediaContent = false;
+			$this->showFavorites = false;
+			$this->showRatings = false;
+			$this->hideCommentsWithBadWords = false;
 		}
 		$ret = parent::update();
 		if ($ret !== false){
@@ -1566,6 +1578,16 @@ class Library extends DB_DataObject {
 			$this->showLoginButton = false;
 			$this->enableArchive = true;
 			$this->clearHooplaSettings();
+			$this->includeNovelistEnrichment = false;
+			$this->showGoodReadsReviews = false;
+			$this->showStandardReviews = false;
+			$this->preferSyndeticsSummary = false;
+			$this->showSimilarAuthors = false;
+			$this->showSimilarTitles = false;
+			$this->showWikipediaContent = false;
+			$this->showFavorites = false;
+			$this->showRatings = false;
+			$this->hideCommentsWithBadWords = false;
 		}
 		$ret = parent::insert();
 		if ($ret !== false){
