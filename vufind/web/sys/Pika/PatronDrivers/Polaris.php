@@ -296,16 +296,36 @@ class Polaris extends PatronDriverInterface implements DriverInterface
      * @return null|JSON
      * @see https://documentation.iii.com/polaris/PAPI/current/PAPIService/PAPIServicePatronValidate.htm#papiservicepatronvalidate_1221164799_1220680
      */
-    protected function validatePatron($barcode, $pin)
+    protected function validatePatron($barcode, $pin = null, $use_staff_session = false): ?User
     {
+        if($pin === null && $use_staff_session === false) {
+            $this->logger->error("No pin provided for patron login.");
+            return null;
+        }
         $request_url = $this->ws_url . '/patron/' . $barcode;
-        $hash = $this->_createHash('GET', $request_url, $pin);
-
+        
+        if($use_staff_session === false) {
+            $hash = $this->_createHash('GET', $request_url, $pin);
+        } else {
+            $auth = $this->authenticateStaff();
+            if ($auth === null) { 
+                $this->logger->error("Unable to authenticate as staff user.");
+                return null;
+            }
+            $staff_secret = $auth->AccessSecret;
+            $staff_token = $auth->AccessToken;
+            $hash = $this->_createHash('GET', $request_url, $staff_secret);
+        }
+        
         $headers = [
             "PolarisDate: " . gmdate('r'),
             "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
             "Accept: application/json",
         ];
+        
+        if($use_staff_session === true) {
+            $headers[] = "X-PAPI-AccessToken: " . $staff_token;
+        }
 
         $c_opts = [
             CURLOPT_RETURNTRANSFER => true,
@@ -424,6 +444,49 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         return $c->response;
     }
 
+    protected function authenticateStaff() {
+        // /protected/v1/1033/100/1/authenticator/staff
+        $protected_url = str_replace('public', 'protected', $this->ws_url);
+        $request_url = $protected_url . '/' . $this->ws_version . '/' . $this->ws_lang_id . '/' . $this->ws_app_id 
+            . '/1/authenticator/staff';
+        [$domain, $username] = explode('@', $this->configArray['Polaris']['staffUserName']);
+        $pw = $this->configArray['Polaris']['staffPassword'];
+        
+        $request_body = json_encode(['Domain' => $domain, 'Username' => $username, 'Password' => $pw]);
+
+        $hash = $this->_createHash('POST', $request_url);
+
+        $headers = [
+            "PolarisDate: " . gmdate('r'),
+            "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
+            "Accept: application/json",
+            "Content-Type: application/json",
+            "Content-Length: " . strlen($request_body),
+        ];
+        $c_opts = [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => $headers,
+        ];
+
+        $c = new Curl();
+        $c->setOpts($c_opts);
+        $c->post($request_url, $request_body);
+
+        if ($c->error || $c->httpStatusCode !== 200) {
+            $this->logger->error(
+                'Curl error: ' . $c->errorMessage,
+                ['http_code' => $c->httpStatusCode],
+                ['RequestURL' => $request_url, 'RequestHeaders' => $headers, 'RequestBody' => $request_body],
+            );
+            return null;
+        } elseif ($error = $this->_isPapiError($c->response)) {
+            $this->_logPapiError($error);
+            return null;
+        }
+
+        return $c->response;
+    }
+    
     /***************** SELF REGISTRATION ****************/
     public function getSelfRegistrationFields(): array
     {
@@ -2974,20 +3037,60 @@ class Polaris extends PatronDriverInterface implements DriverInterface
      */
     public function emailResetPin(string $barcode)
     {
-        // It may be the case the patron updated their email via a means other than
-        // Pika. Don't rely on the email in the database as this can cause issues.
-        $patron_ils_id = $this->getPatronIlsId($barcode);
-        if (!$patron_ils_id) {
+        // check if the user is valid, use staff session 
+        $res = $this->validatePatron($barcode, null, true);
+        if($res === null) {
             return ['error' => 'The barcode you provided is not valid. Please check the barcode and try again.'];
         }
-        $patron = $this->getPatron($patron_ils_id, $barcode);
+        
+        // get the patron info from the Polaris, don't count on Pika database being correct.
+        // use staff credentials for the request.
+        $staff_auth = $this->authenticateStaff();
+        if($staff_auth === null) {
+            return ['error' => 'An error occurred while processing your request. Please try again later or contact your library administrator.'];
+        }
+        
+        $staff_secret = $staff_auth->AccessSecret;
+        $staff_token = $staff_auth->AccessToken;
 
+        $request_url = $this->ws_url . '/patron/' . $barcode . '/basicdata?addresses=true';
+        $hash = $this->_createHash('GET', $request_url, $staff_secret);
+
+        $headers = [
+            "PolarisDate: " . gmdate('r'),
+            "X-PAPI-AccessToken: " . $staff_token,
+            "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
+            "Accept: application/json",
+        ];
+        
+        $c_opts = [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => $headers,
+        ];
+
+        $c = new Curl();
+        $c->setOpts($c_opts);
+        $c->get($request_url);
+
+        if ($c->error || $c->httpStatusCode !== 200) {
+            $this->logger->error(
+                'Curl error: ' . $c->errorMessage,
+                ['http_code' => $c->httpStatusCode],
+                ['RequestURL' => $request_url, 'RequestHeaders' => $headers],
+            );
+            return ['error' => 'An error occurred while processing your request. Please try again later or contact your library administrator.'];
+        }
+
+        if ($error = $this->_isPapiError($c->response)) {
+            $this->_logPapiError($error);
+            return ['error' => 'An error occurred while processing your request. ' . $error['ErrorMessage']];
+        }
+        
+        
         // If the email is empty at this point we don't have a good address for the patron.
-        if ($patron === null || empty($patron->email)) {
+        if (empty($patron->email)) {
             return [
-                'error' => 'You do not have an email address on your account. Please visit your library to reset your ' . translate(
-                        'pin',
-                    ) . '.',
+                'error' => 'You do not have an email address on your account. Please visit your library to reset your ' . translate('pin') . '.',
             ];
         }
 
