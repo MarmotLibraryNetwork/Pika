@@ -38,5 +38,5 @@ trait PatronListOperations {
 	 * @param  User $patron
 	 * @return array - an array of results including the names of the lists that were imported as well as number of titles.
 	 */
-	public abstract function importListsFromIls($patron);
+	public abstract function importListsFromIls(User $patron);
 }

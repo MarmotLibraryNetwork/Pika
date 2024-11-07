@@ -30,6 +30,7 @@
 namespace Pika;
 
 use Curl\Curl;
+use User;
 
 require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/PatronListOperations.php";
 
@@ -44,10 +45,10 @@ trait SierraPatronListOperations {
 	/**
 	 * Import Lists from the ILS
 	 *
-	 * @param  \User $patron
+	 * @param  User $patron
 	 * @return array - an array of results including the names of the lists that were imported as well as number of titles.
 	 */
-	function importListsFromIls(\User $patron){
+	function importListsFromIls(User $patron){
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 
