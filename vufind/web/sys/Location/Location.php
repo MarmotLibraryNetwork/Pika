@@ -715,7 +715,7 @@ class Location extends DB_DataObject {
 	 *
 	 * @return Location|null
 	 */
-	function getActiveLocation(){
+	static function getActiveLocation(){
 		if (Location::$activeLocation != 'unset'){
 			return Location::$activeLocation;
 		}
@@ -731,7 +731,8 @@ class Location extends DB_DataObject {
 		}else{
 
 			//Check to see if a branch location has been specified.
-			$locationCode = $this->getBranchLocationCode();
+			$_location = new Location();
+            $locationCode = $_location->getBranchLocationCode();
 			if (!empty($locationCode) && $locationCode != 'all'){
 				//Check to see if we can get the active location based off the location's code
 				$activeLocation       = new Location();
@@ -747,13 +748,14 @@ class Location extends DB_DataObject {
 				}
 			}else{
 				// Check if we know physical location by the ip table
-				$physicalLocation = $this->getPhysicalLocation();
-				if ($physicalLocation != null){
-					if ($library->libraryId == $physicalLocation->libraryId){
-						Location::$activeLocation = $physicalLocation;
+                $_location = new Location();
+				$physicalLocation = $_location->getPhysicalLocation();
+				if ($physicalLocation !== null){
+					if ($library->libraryId === $physicalLocation->libraryId){
+						self::$activeLocation = $physicalLocation;
 					}else{
 						// If the physical location doesn't belong to the library we are browsing at, turn off the active location
-						Location::$activeLocation = null;
+						self::$activeLocation = null;
 					}
 				}
 			}
