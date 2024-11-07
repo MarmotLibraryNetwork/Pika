@@ -28,7 +28,7 @@
 
 
 namespace Pika;
-
+use User;
 
 trait PatronListOperations {
 
