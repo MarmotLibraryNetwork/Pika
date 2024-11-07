@@ -1504,6 +1504,7 @@ class GroupedWorkDriver extends RecordInterface {
 				$relatedManifestations[$currentManifestation]['allLibraryUseOnly'] = false;
 			}
 			if (!$relatedManifestations[$currentManifestation]['hasLocalItem'] && $curRecord['hasLocalItem']){
+//				$relatedManifestations[$currentManifestationFormat]['hasLocalItem'] = $curRecord['hasLocalItem'];
 				$relatedManifestations[$currentManifestation]['hasLocalItem'] = true;
 			}
 			if ($curRecord['shelfLocation']){
@@ -1588,6 +1589,8 @@ class GroupedWorkDriver extends RecordInterface {
 					$selectedDetailedAvailability = urldecode($matches[1]);
 					$availableAtLocationsToMatch = [];
 					if (!empty($selectedDetailedAvailability)){
+						// Look up the location codes of the records owned for
+						// the location matching the facet we are filtering by
 						$availableAtLocationsToMatch = $this->getAvailableAtLocationsToMatch($selectedDetailedAvailability);
 					}
 				}
@@ -1720,10 +1723,10 @@ class GroupedWorkDriver extends RecordInterface {
 //				}
 //			}
 
-			// Set Up Manifestation Display when a eContent source facet is set
+			// Set Up Manifestation Display when an eContent source facet is set
 			if ($selectedEcontentSource && (
 				(!$manifestation['isEContent'] && empty($manifestation['isSelectedNonEcontentFormat']))
-				// Hide non-eontent unless it is also a chosen format facet
+				// Hide non-eContent unless it is also a chosen format facet
 					|| (!empty($manifestation['eContentSource']) && !in_array($manifestation['eContentSource'], $selectedEcontentSource))
 				)
 			){
@@ -1849,7 +1852,7 @@ class GroupedWorkDriver extends RecordInterface {
 		return $availableAtLocationsToMatch;
 	}
 	/**
-	 * Master sort function for ordering all the related records/editions for display in the related manifestations table
+	 * Main sort function for ordering all the related records/editions for display in the related manifestations table
 	 * of a Grouped Work
 	 *
 	 * @param array $a Record Details array of a related record to sort
@@ -2475,7 +2478,6 @@ class GroupedWorkDriver extends RecordInterface {
 			if (isset($localCopies[$key])){
 				$localCopies[$key]['totalCopies']     += $item['totalCopies'];
 				$localCopies[$key]['availableCopies'] += $item['availableCopies'];
-				//TODO: locationCode & available
 				if ($item['displayByDefault']){
 					$localCopies[$key]['displayByDefault'] = true;
 				}
@@ -3150,7 +3152,7 @@ class GroupedWorkDriver extends RecordInterface {
 				$sectionId = 6;
 				$section   = 'Other Locations';
 			}
-			$itemSummaryKey = $sectionId . ' ' . $section;
+			$itemSummaryKey = $sectionId . ' ' . $description;
 
 //			if ((strlen($volumeRecordLabel) > 0) && !substr($callNumber, -strlen($volumeRecordLabel)) == $volumeRecordLabel){
 //				$callNumber = trim($callNumber . ' ' . $volumeRecordLabel);
