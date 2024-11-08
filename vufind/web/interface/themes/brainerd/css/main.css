@@ -8262,7 +8262,7 @@ a .header-button:visited {
 .jcarousel .active figure.thumbnail img {
   border: 2px solid #E15F15;
 }
-#home-page-search {
+.home-page-search {
   background-color: #AC1939;
   background: linear-gradient(to bottom, #AC1939, #8B001F);
   padding: 20px 0 10px;
