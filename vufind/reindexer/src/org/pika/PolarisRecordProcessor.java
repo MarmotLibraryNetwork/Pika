@@ -161,8 +161,8 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 		Date dateAdded = indexer.getDateFirstDetected(identifier);
 		itemInfo.setDateAdded(dateAdded);
 	}
-
-	private void updateLastExtractTimeForRecord(String identifier) {
+	@Override
+	protected void updateLastExtractTimeForRecord(String identifier) {
 		if (identifier != null && !identifier.isEmpty()) {
 			try {
 				updateExtractInfoStatement.setInt(1, indexingProfileId);

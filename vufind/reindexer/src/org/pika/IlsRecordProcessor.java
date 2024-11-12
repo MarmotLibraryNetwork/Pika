@@ -330,13 +330,18 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 		}catch (FileNotFoundException fe){
 			logger.warn("Could not find MARC record at " + individualFilename + " for " + identifier);
+			updateLastExtractTimeForRecord(identifier.getIdentifier());
 		} catch (Exception e) {
 			logger.error("Error reading data from ils file " + individualFilename, e);
 		}
 		return record;
 	}
 
-	private String getFileForIlsRecord(String recordNumber) {
+	protected void updateLastExtractTimeForRecord(String identifier) {
+		// Implement in drivers that have ILSes where we support near real time extraction
+	}
+
+		private String getFileForIlsRecord(String recordNumber) {
 		StringBuilder shortId = new StringBuilder(recordNumber.replace(".", ""));
 		while (shortId.length() < 9){
 			shortId.insert(0, "0");
