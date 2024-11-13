@@ -2138,10 +2138,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             $h['frozen'] = false; // status will be inactive if frozen
             $h['locationUpdateable'] = true;
             $h['position'] = $hold->QueuePosition . ' of ' . $hold->QueueTotal;
-//            Don't add to display
-//            $h['automaticCancellation'] = isset($hold->notNeededAfterDate) ? strtotime(
-//                $hold->notNeededAfterDate,
-//            ) : null;
 
             $h['create'] = '';
             if ($this->isMicrosoftDate($hold->ActivationDate)) {
@@ -2150,14 +2146,14 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             } else {
                 $h['create'] = strtotime($hold->ActivationDate);
             }
-
-            $h['expire'] = '';
-            if ($this->isMicrosoftDate($hold->ExpirationDate)) {
-                $expire = $this->microsoftDateToISO($hold->ExpirationDate);
-                $h['expire'] = strtotime($expire);
-            } else {
-                $h['expire'] = strtotime($hold->ExpirationDate);
-            }
+//          This displays as Pickup By date in holds interface and doesn't represent the actual date the patron needs to pickup by
+//            $h['expire'] = '';
+//            if ($this->isMicrosoftDate($hold->ExpirationDate)) {
+//                $expire = $this->microsoftDateToISO($hold->ExpirationDate);
+//                $h['expire'] = strtotime($expire);
+//            } else {
+//                $h['expire'] = strtotime($hold->ExpirationDate);
+//            }
 
             // load marc record
             $recordSourceAndId = new SourceAndId($this->accountProfile->recordSource . ':' . $hold->BibID);
