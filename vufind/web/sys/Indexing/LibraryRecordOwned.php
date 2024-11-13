@@ -51,4 +51,8 @@ class LibraryRecordOwned extends RecordOwned {
 
 		return $structure;
 	}
+    
+    public function __isset($name) {
+        return isset($this->$name);
+    }
 }

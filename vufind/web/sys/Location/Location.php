@@ -716,18 +716,18 @@ class Location extends DB_DataObject {
 	 * @return Location|null
 	 */
 	static function getActiveLocation(){
-		if (Location::$activeLocation != 'unset'){
-			return Location::$activeLocation;
+		if (self::$activeLocation !== 'unset'){
+			return self::$activeLocation;
 		}
 
 		//default value
-		Location::$activeLocation = null;
+		self::$activeLocation = null;
 
 		//load information about the library we are in.
 		global $library;
 		if (is_null($library)){
 			//If we are not in a library, then do not allow branch scoping, etc.
-			Location::$activeLocation = null;
+			self::$activeLocation = null;
 		}else{
 
 			//Check to see if a branch location has been specified.
@@ -740,10 +740,10 @@ class Location extends DB_DataObject {
 				if ($activeLocation->find(true)){
 					//Only use the location if we are in the subdomain for the parent library
 					if ($library->libraryId == $activeLocation->libraryId){
-						Location::$activeLocation = clone $activeLocation;
+						self::$activeLocation = clone $activeLocation;
 					}else{
 						// If the active location doesn't belong to the library we are browsing at, turn off the active location
-						Location::$activeLocation = null;
+						self::$activeLocation = null;
 					}
 				}
 			}else{
@@ -1396,7 +1396,7 @@ class Location extends DB_DataObject {
 		if (isset ($this->recordsToInclude) && is_array($this->recordsToInclude)){
 			/** @var LibraryRecordOwned $object */
 			foreach ($this->recordsToInclude as $object){
-				if (isset($object->deleteOnSave) && $object->deleteOnSave == true){
+				if (isset($object->deleteOnSave) && $object->deleteOnSave === true){
 					$object->delete();
 				}else{
 					if (isset($object->id) && is_numeric($object->id)){
@@ -1410,6 +1410,10 @@ class Location extends DB_DataObject {
 			unset($this->recordsToInclude);
 		}
 	}
+    
+    public function __isset($name) {
+        return isset($this->$name);
+    }
 
 	public function clearRecordsToInclude(){
 		$object             = new LibraryRecordToInclude();
