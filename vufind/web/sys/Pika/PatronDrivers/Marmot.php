@@ -48,6 +48,28 @@ class Marmot extends Sierra {
 		parent::__construct($accountProfile);
 	}
 
+	/**
+	 * @param Library $library
+	 * @return array
+	 */
+	protected function getSelfRegHomeLocations(Library $library): array{
+		$homeLocations = [];
+		$l                        = new Location();
+		$l->libraryId             = $library->libraryId;
+		$l->validHoldPickupBranch = '1';
+		$l->orderBy('displayName');
+		if ($l->find()){
+			$homeLocations = $l->fetchAll('code', 'displayName');
+			if ($library->subdomain == 'evld'){
+				// For Eagle Valley, remove lib-lockers and bookmobile
+				$homeLocations = array_filter($homeLocations, function($code){
+					return !in_array($code, ['evall', 'evgll', 'evb']);
+				}, ARRAY_FILTER_USE_KEY);
+			}
+		}
+		return $homeLocations;
+	}
+
 	public function getSelfRegistrationFields(){
 		/** @var Library $library */
 		global $library;

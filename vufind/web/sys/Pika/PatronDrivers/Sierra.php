@@ -1471,19 +1471,9 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 	 */
 	public function getSelfRegistrationFields(){
 		$fields = [];
+
 		/** @var Library $library */
 		global $library;
-		// get the valid home/pickup locations
-		$l                        = new Location();
-		$l->libraryId             = $library->libraryId;
-		$l->validHoldPickupBranch = '1';
-		$l->find();
-		// todo: pulling this code to accommodate NorthernWaters setup. Should return an empty array if nothing is found.
-		//if(!$l->N) {
-			//return ['success'=>false, 'barcode'=>''];
-		//}
-		$l->orderBy('displayName');
-		$homeLocations = $l->fetchAll('code', 'displayName');
 
 		$fields[] = [
 			'property'     => 'firstname',
@@ -1514,6 +1504,9 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			'required'     => true,
 			'autocomplete' => 'family-name',
 		];
+
+		// get the valid home/pickup locations
+		$homeLocations = $this->getSelfRegHomeLocations($library);
 
 		$fields[] = [
 			'property'    => 'homelibrarycode',
@@ -3479,6 +3472,22 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 
 		$c->close();
 		return $success;
+	}
+
+	/**
+	 * @param Library $library
+	 * @return array
+	 */
+	protected function getSelfRegHomeLocations(Library $library): array{
+		$homeLocations = [];
+		$l                        = new Location();
+		$l->libraryId             = $library->libraryId;
+		$l->validHoldPickupBranch = '1';
+		$l->orderBy('displayName');
+		if ($l->find()){
+			$homeLocations = $l->fetchAll('code', 'displayName');
+		}
+		return $homeLocations;
 	}
 
 	/**
