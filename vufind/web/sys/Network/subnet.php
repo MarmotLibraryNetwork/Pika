@@ -33,7 +33,7 @@ class subnet extends DB_DataObject {
 	public $endIpVal;
 
 	function keys(){
-		return array('id', 'locationid', 'ip');
+		return ['id', 'locationid', 'ip'];
 	}
 
 	function label(){
