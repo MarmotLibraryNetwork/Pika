@@ -183,6 +183,10 @@ class Marmot extends Sierra {
 			case 'bemis' :
 				$extraSelfRegParams['homeLibraryCode'] = 'be';
 				break;
+			case 'basalt' :
+				$extraSelfRegParams['patronCodes']['pcode1'] = 'a'; // adult
+				$this->capitalizeAllSelfRegistrationInputs(/*[Any fields that shouldn't be capitalized]*/);
+				break;
 		}
 		return parent::selfRegister($extraSelfRegParams);
 	}
