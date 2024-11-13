@@ -29,15 +29,15 @@ class Role extends DB_DataObject {
 	public $description;       //varchar(100)
 
 	function keys(){
-		return array('roleId');
+		return ['roleId'];
 	}
 
 	function getObjectStructure(){
-		$structure = array(
-			'roleId'      => array('property' => 'roleId', 'type' => 'label', 'label' => 'Role Id', 'description' => 'The unique id of the role within the database'),
-			'name'        => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'maxLength' => 50, 'description' => 'The full name of the role.'),
-			'description' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'maxLength' => 100, 'description' => 'The full name of the role.'),
-		);
+		$structure = [
+			'roleId'      => ['property' => 'roleId', 'type' => 'label', 'label' => 'Role Id', 'description' => 'The unique id of the role within the database'],
+			'name'        => ['property' => 'name', 'type' => 'text', 'label' => 'Name', 'maxLength' => 50, 'description' => 'The full name of the role.'],
+			'description' => ['property' => 'name', 'type' => 'text', 'label' => 'Name', 'maxLength' => 100, 'description' => 'The full name of the role.'],
+		];
 		return $structure;
 	}
 
@@ -49,7 +49,7 @@ class Role extends DB_DataObject {
 		$role = new Role();
 		$role->orderBy('name');
 		$role->find();
-		$roleList = array();
+		$roleList = [];
 		while ($role->fetch()){
 			$roleList[$role->roleId] = $role->name . ($includeRoleDescription ? ' - ' . $role->description : '');
 		}
