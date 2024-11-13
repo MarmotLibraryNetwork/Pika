@@ -63,7 +63,7 @@ function getLibraryLocationUpdates(): array{
 			'description'     => 'Add an option to library settings to enable an archive only view',
 			'continueOnError' => false,
 			'sql'             => [
-				'ALTER TABLE library ADD COLUMN `archiveOnlyInterface` TINYINT DEFAULT 0;'
+				'ALTER TABLE library ADD COLUMN `archiveOnlyInterface` TINYINT(1) DEFAULT 0;'
 			]
 		],
 
