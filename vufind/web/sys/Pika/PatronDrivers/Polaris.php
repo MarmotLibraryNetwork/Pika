@@ -2138,9 +2138,10 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             $h['frozen'] = false; // status will be inactive if frozen
             $h['locationUpdateable'] = true;
             $h['position'] = $hold->QueuePosition . ' of ' . $hold->QueueTotal;
-            $h['automaticCancellation'] = isset($hold->notNeededAfterDate) ? strtotime(
-                $hold->notNeededAfterDate,
-            ) : null;
+//            Don't add to display
+//            $h['automaticCancellation'] = isset($hold->notNeededAfterDate) ? strtotime(
+//                $hold->notNeededAfterDate,
+//            ) : null;
 
             $h['create'] = '';
             if ($this->isMicrosoftDate($hold->ActivationDate)) {
@@ -2232,7 +2233,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
 
 					if (!in_array($hold->Status, ['Received', 'Cancelled', 'Returned'])){
 						$pickup_branch_id = $this->polarisBranchIdToLocationId($hold->PickupBranchID);
-						$h                = [];//$h['freezeable']         = Not sure if ILL holds can be frozen, likely not
+						$h                = [];
+                        //$h['freezeable']         = Not sure if ILL holds can be frozen, likely not
 						//$h['position']           = API doesn't provide this information for ILL holds
 						$pickup_branch_id     = $this->polarisBranchIdToLocationId($hold->PickupBranchID);
 						$h['currentPickupId'] = $pickup_branch_id;
@@ -2260,9 +2262,10 @@ class Polaris extends PatronDriverInterface implements DriverInterface
 						}else{
 							$h['create'] = strtotime($hold->ActivationDate);
 						}
-						// $h['expire'] = ''; // ILL request doesn't include expires date
-// Pika won't have marc data for ILL holds
-//						// load marc record
+						 $h['expire'] = ''; 
+                        // ~~ILL request doesn't include expires date Pika won't have marc data for ILL holds~~
+                        // the above is incorrect. MARC records are created when the title is received by library
+						// load marc record
 //						$recordSourceAndId = new SourceAndId($this->accountProfile->recordSource . ':' . $hold->BibRecordID);
 //						$record            = RecordDriverFactory::initRecordDriverById($recordSourceAndId);
 //						if ($record->isValid()){
@@ -2283,7 +2286,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
 							$h['author']    = $author;
 							$h['format']    = $hold->Format;
 							$h['coverUrl']  = $cover_url;
-//						}
+						//}
 						if ($hold->ILLStatusID === 10){
 							$availableHolds[] = $h;
 						}else{
