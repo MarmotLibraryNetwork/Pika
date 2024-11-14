@@ -3322,7 +3322,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			$this->apiLastError = $message;
 			$this->logger->warning($message, ['backtrace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)]);
 			return false;
-		} elseif ($c->isHttpError()) {
+		} elseif ($c->isHttpError() || isset($c->response->code)) {
 			// this will be a 4xx response
 			// first we need to check the response for a code, message from the API because many failed operations (ie,
 			// freezeing a hold) will send back a 4xx response code if the operation couldn't be completed.
@@ -3340,7 +3340,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 				//$message = 'API Error: ' . $c->response->code . ': ' . $c->response->name;
 				$message = 'API Error: ' . $c->response->code . ': '; // name usually redundant part of the description below
 				if(isset($c->response->description)){
-					$message                     = $message . ' ' . $c->response->description;
+					$message .= ' ' . $c->response->description;
 					$this->apiLastErrorForPatron = $c->response->description;
 					$this->logger->warning($message, ['api_response' => $c->response]);
 				} elseif (isset($c->response->name)){
