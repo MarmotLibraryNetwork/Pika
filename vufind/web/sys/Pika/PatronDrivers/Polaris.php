@@ -296,7 +296,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
      * @return null|JSON
      * @see https://documentation.iii.com/polaris/PAPI/current/PAPIService/PAPIServicePatronValidate.htm#papiservicepatronvalidate_1221164799_1220680
      */
-    protected function validatePatron($barcode, $pin = null, $use_staff_session = false): ?User
+    protected function validatePatron($barcode, $pin = null, $use_staff_session = false)
     {
         if($pin === null && $use_staff_session === false) {
             $this->logger->error("No pin provided for patron login.");
@@ -447,10 +447,9 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     protected function authenticateStaff() {
         // /protected/v1/1033/100/1/authenticator/staff
         $protected_url = str_replace('public', 'protected', $this->ws_url);
-        $request_url = $protected_url . '/' . $this->ws_version . '/' . $this->ws_lang_id . '/' . $this->ws_app_id 
-            . '/1/authenticator/staff';
+        $request_url = $protected_url . '/authenticator/staff';
         [$domain, $username] = explode('@', $this->configArray['Polaris']['staffUserName']);
-        $pw = $this->configArray['Polaris']['staffPassword'];
+        $pw = $this->configArray['Polaris']['staffUserPw'];
         
         $request_body = json_encode(['Domain' => $domain, 'Username' => $username, 'Password' => $pw]);
 
@@ -986,7 +985,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $location_name = $location->displayName;
 		    $catalog_url  = empty($library->catalogUrl) ? $this->configArray['Site']['url'] : $_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl;
 
-		    $interface->assign('emailAddress', $email_vars['email']);
+		$interface->assign('emailAddress', $email_vars['email']);
         $interface->assign('patronName', $email_vars['name']);
         $interface->assign('libraryName', $location_name);
         $interface->assign('catalogUrl', $catalog_url);
@@ -3051,8 +3050,10 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         
         $staff_secret = $staff_auth->AccessSecret;
         $staff_token = $staff_auth->AccessToken;
-
-        $request_url = $this->ws_url . '/patron/' . $barcode . '/basicdata?addresses=true';
+        
+        // get patron data
+        // we need to find an email address for this patron
+        $request_url = $this->ws_url . '/patron/' . $barcode . '/basicdata?addresses=false';
         $hash = $this->_createHash('GET', $request_url, $staff_secret);
 
         $headers = [
@@ -3079,26 +3080,37 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             );
             return ['error' => 'An error occurred while processing your request. Please try again later or contact your library administrator.'];
         }
-
+        
         if ($error = $this->_isPapiError($c->response)) {
             $this->_logPapiError($error);
             return ['error' => 'An error occurred while processing your request. ' . $error['ErrorMessage']];
         }
         
-        
+        $patron_email = $c->response->PatronBasicData->EmailAddress ?? null;
+        $patron_ils_id = $c->response->PatronBasicData->PatronID ?? null;
         // If the email is empty at this point we don't have a good address for the patron.
-        if (empty($patron->email)) {
+        if ($patron_email === null) {
             return [
                 'error' => 'You do not have an email address on your account. Please visit your library to reset your ' . translate('pin') . '.',
             ];
         }
-
+        // check for a pika user
+        $patron = new User();
+        $patron->barcode = $barcode;
+        $patron->ilsUserId = $patron_ils_id;
+        
+        if($patron->find(true)) {
+            $patron_id = $patron->id;
+        } else {
+            $patron_id = $patron_ils_id;
+        }
+        
         // make sure there's no old token.
         $pinReset = new PinReset();
-        $pinReset->userId = $patron->id;
+        $pinReset->userId = $patron_id;
         $pinReset->delete();
 
-        $pinReset->userId = $patron->id;
+        $pinReset->userId = $patron_id;
 
         $resetToken = $pinReset->insertReset();
         // build reset url (Note: the site url gets automatically set as the interface url
