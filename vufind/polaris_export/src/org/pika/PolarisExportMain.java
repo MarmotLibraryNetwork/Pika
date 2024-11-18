@@ -1915,8 +1915,9 @@ public class PolarisExportMain {
 	private static Record loadMarcRecordFromDisk(Long bibId) {
 		return loadMarcRecordFromDisk(bibId, false);
 	}
+
 	private static Record loadMarcRecordFromDisk(Long bibId, boolean suppressWarnings) {
-		Record record = null;
+		Record record             = null;
 		String individualFilename = getFileForIlsRecord(bibId.toString());
 		try {
 			byte[] fileContents = readFileBytes(individualFilename);
@@ -1930,11 +1931,11 @@ public class PolarisExportMain {
 					record = marcReader.next();
 				}
 			}
-		}catch (FileNotFoundException fe){
-            if (!suppressWarnings) {
-                logger.warn("Could not find MARC record at {} for {}", individualFilename, bibId);
-            }
-        } catch (Exception e) {
+		} catch (FileNotFoundException fe) {
+			if (!suppressWarnings) {
+				logger.warn("Could not find MARC record at {} for {}", individualFilename, bibId);
+			}
+		} catch (Exception e) {
 			logger.error("Error reading data from ils file {}", individualFilename, e);
 		}
 		return record;
@@ -1977,7 +1978,7 @@ public class PolarisExportMain {
 		RecordIdentifier recordIdentifier = null;
 		if (id != null) {
 			identifier = id.toString();
-			try {
+			try { //TODO: this block isn't needed; getPrimaryIdentifierFromMarcRecord is called in recordGroupingProcessor.processMarcRecord(marcRecord, true)
 				recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.sourceName, indexingProfile.doAutomaticEcontentSuppression);
 				if (recordIdentifier != null) {
 					identifier = recordIdentifier.getIdentifier();
@@ -1999,9 +2000,9 @@ public class PolarisExportMain {
 		//or creating a new grouped work
 		final boolean grouped = (recordIdentifier != null) ? recordGroupingProcessor.processMarcRecord(marcRecord, true, recordIdentifier) : recordGroupingProcessor.processMarcRecord(marcRecord, true);
 		if (!grouped) {
-			logger.warn(identifier + " was not grouped");
-		} else if (logger.isDebugEnabled()) {
-			logger.debug("Finished record grouping for " + identifier);
+			logger.warn("{} was not grouped", identifier);
+		} else {
+			logger.debug("Finished record grouping for {}", identifier);
 		}
 		return identifier;
 	}
