@@ -647,9 +647,6 @@ function setUpSearchDisplayOptions($module, $action){
 	}
 
 	global $searchSource;
-	if($library->archiveOnlyInterface ?? false){
-		$searchSource = "islandora";
-	}
 	$interface->assign('searchSource', $searchSource);
 	// Set $_REQUEST['type']
 	switch ($searchSource){

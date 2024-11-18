@@ -21,6 +21,7 @@ import org.marc4j.marc.Subfield;
 
 import java.sql.*;
 import java.text.SimpleDateFormat;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.Date;
 
@@ -518,7 +519,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		String   orderNumber = orderItem.getOrderRecordId();
 		String   location    = orderItem.getLocationCode();
 		if (location == null) {
-			logger.warn("No location set for order " + orderNumber + " skipping");
+			logger.warn("No location set for order {} skipping", orderNumber);
 			return;
 		}
 		itemInfo.setLocationCode(location);
@@ -531,8 +532,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		itemInfo.setDetailedStatus("On Order");
 		itemInfo.setCollection("On Order");
 		//Since we don't know when the item will arrive, assume it will come tomorrow.
-		Date tomorrow = new Date();
-		tomorrow.setTime(tomorrow.getTime() + 1000 * 60 * 60 * 24);
+		Date tomorrow = Date.from(new Date().toInstant().plus(1, ChronoUnit.DAYS));
 		itemInfo.setDateAdded(tomorrow);
 
 		//Format and Format Category should be set at the record level, so we don't need to set them here.
