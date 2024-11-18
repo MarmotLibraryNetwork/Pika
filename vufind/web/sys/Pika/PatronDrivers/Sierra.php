@@ -3322,14 +3322,14 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			$this->apiLastError = $message;
 			$this->logger->warning($message, ['backtrace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)]);
 			return false;
-		} elseif ($c->isHttpError() || isset($c->response->code)) {
+		} elseif (isset($c->response->code) || $c->isHttpError()) {
 			// this will be a 4xx response
 			// first we need to check the response for a code, message from the API because many failed operations (ie,
 			// freezeing a hold) will send back a 4xx response code if the operation couldn't be completed.
 
 			// when authenticating with pins, a 400 response will be returned for bad credentials.
 			// check for failed authentication
-			if($c->errorCode == 400 && $c->response->code == 108) {
+			if($c->errorCode === 400 && $c->response->code === 108) {
 				// bad credentials
 				$message = 'Authentication Error: ' . $c->response->httpStatus . ': ' . $c->response->name;
 				$this->apiLastError = $message;

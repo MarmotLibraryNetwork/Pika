@@ -2146,13 +2146,13 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 $h['create'] = strtotime($hold->ActivationDate);
             }
 //          This displays as Pickup By date in holds interface and doesn't represent the actual date the patron needs to pickup by
-//            $h['expire'] = '';
-//            if ($this->isMicrosoftDate($hold->ExpirationDate)) {
-//                $expire = $this->microsoftDateToISO($hold->ExpirationDate);
-//                $h['expire'] = strtotime($expire);
-//            } else {
-//                $h['expire'] = strtotime($hold->ExpirationDate);
-//            }
+            $h['expire'] = '';
+            if ($this->isMicrosoftDate($hold->ExpirationDate)) {
+                $expire = $this->microsoftDateToISO($hold->ExpirationDate);
+                $h['expire'] = strtotime($expire);
+            } else {
+                $h['expire'] = strtotime($hold->ExpirationDate);
+            }
 
             // load marc record
             $recordSourceAndId = new SourceAndId($this->accountProfile->recordSource . ':' . $hold->BibID);
@@ -2258,21 +2258,23 @@ class Polaris extends PatronDriverInterface implements DriverInterface
 							$h['create'] = strtotime($hold->ActivationDate);
 						}
 						 $h['expire'] = ''; 
-                        // ~~ILL request doesn't include expires date Pika won't have marc data for ILL holds~~
-                        // the above is incorrect. MARC records are created when the title is received by library
+                        // ILL request doesn't include expires date 
+                        // ~~Pika won't have marc data for ILL holds~~
+                        // The above is incorrect. MARC records are created when the title is received by library and Pika
+                        // will have access to MARC data.
 						// load marc record
-//						$recordSourceAndId = new SourceAndId($this->accountProfile->recordSource . ':' . $hold->BibRecordID);
-//						$record            = RecordDriverFactory::initRecordDriverById($recordSourceAndId);
-//						if ($record->isValid()){
-//							$h['id']        = $record->getUniqueID();
-//							$h['shortId']   = $record->getShortId();
-//							$h['title']     = $this->cleanIllTitle($record->getTitle());
-//							$h['sortTitle'] = $record->getSortableTitle();
-//							$h['author']    = $record->getPrimaryAuthor();
-//							$h['format']    = $record->getFormat();
-//							$h['link']      = $record->getRecordUrl();
-//							$h['coverUrl']  = $record->getBookcoverUrl('medium'); // todo: Prospector cover?
-//						}else{
+						$recordSourceAndId = new SourceAndId($this->accountProfile->recordSource . ':' . $hold->BibRecordID);
+						$record            = RecordDriverFactory::initRecordDriverById($recordSourceAndId);
+						if ($record->isValid()){
+							$h['id']        = $record->getUniqueID();
+							$h['shortId']   = $record->getShortId();
+							$h['title']     = $this->cleanIllTitle($record->getTitle());
+							$h['sortTitle'] = $record->getSortableTitle();
+							$h['author']    = $record->getPrimaryAuthor();
+							$h['format']    = $record->getFormat();
+							$h['link']      = $record->getRecordUrl();
+							$h['coverUrl']  = $record->getBookcoverUrl('medium'); // todo: Prospector cover?
+						}else{
 							$title          = $this->cleanIllTitle($hold->Title);
 							$author         = $this->cleanIllAuthor($hold->Author);
 							$cover_url      = $this->getIllCover() ?? '';
@@ -2281,7 +2283,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
 							$h['author']    = $author;
 							$h['format']    = $hold->Format;
 							$h['coverUrl']  = $cover_url;
-						//}
+						}
 						if ($hold->ILLStatusID === 10){
 							$availableHolds[] = $h;
 						}else{
@@ -2999,12 +3001,15 @@ class Polaris extends PatronDriverInterface implements DriverInterface
 
     public function resetPin($patron, $newPin, $resetToken)
     {
+        // for Polaris implementation of resetPin, we don't need a user in database
+        // thus the user id can be either an ILS id or a Pika id.
+        $user_id = trim($_REQUEST['uid']);
+        $barcode = trim($_REQUEST['bc']);
+        
         $pinReset = new PinReset();
-        $pinReset->userId = $patron->id;
+        $pinReset->userId = $user_id;
         $pinReset->find(true);
-        if (!$pinReset->N) {
-            return ['error' => 'Unable to reset your ' . translate('pin') . '. Please try again later.'];
-        } elseif ($pinReset->N == 0) {
+        if ($pinReset->N === 0) {
             return [
                 'error' => 'Unable to reset your ' . translate('pin') . '. You have not requested a ' .
                     translate('pin') . ' reset.',
@@ -3019,7 +3024,62 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         if ((int)$token !== (int)$resetToken) {
             return ['error' => 'Unable to reset your ' . translate('pin') . '. Invalid reset token.'];
         }
-        // everything is good
+        
+        // everything is good, update PIN in Polaris
+        // use staff credentials 
+        $staff_auth = $this->authenticateStaff();
+        if($staff_auth === null) {
+            return ['error' => 'An error occurred while processing your request. Please visit your library to reset your ' . translate('pin') . '.'];
+        }
+        $staff_secret = $staff_auth->AccessSecret;
+        $staff_token = $staff_auth->AccessToken;
+        
+        $request_url = $this->ws_url . "/patron/{$patron->barcode}";
+        $hash = $this->_createHash('PUT', $request_url, $staff_secret);
+        
+        $body['LogonBranchID'] = 1; // default to system
+        $body['LogonUserID'] = $this->configArray['Polaris']['staffUserId'];
+        $body['LogonWorkstationID'] = $this->configArray['Polaris']['workstationId'];
+        $body['Password'] = $newPin;
+
+        $headers = [
+            "PolarisDate: " . gmdate('r'),
+            "X-PAPI-AccessToken: " . $staff_token,
+            "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
+            "Accept: application/json",
+            "Content-Type: application/json",
+        ];
+
+        $c_opts = [
+            CURLOPT_RETURNTRANSFER => true,
+        ];
+
+        $c = new Curl();
+        $c->setOpt(CURLOPT_RETURNTRANSFER, true);
+        $body = json_encode($body);
+        $c->setOpt(CURLOPT_POSTFIELDS, $body);
+        $headers[] = 'Content-Length: ' . strlen($body);
+        $c->setOpts($c_opts);
+        $c->setUrl($request_url);
+        $c->setOpt(CURLOPT_CUSTOMREQUEST, 'PUT');
+        // this needs to be set LAST!
+        $c->setOpt(CURLOPT_HTTPHEADER, $headers);
+        $c->exec();
+
+        // errors
+        if ($c->error || $c->httpStatusCode !== 200) {
+            $this->logger->error('Curl error: ' . $c->errorMessage, [
+                'http_code' => $c->httpStatusCode,
+                'request_url' => $request_url,
+                'Headers' => implode(PHP_EOL, $c->requestHeaders['data']),
+            ]);
+            return ['error' => 'An error occurred while processing your request. Please visit your library to reset your ' . translate('pin') . '.'];
+        } elseif ($error = $this->_isPapiError($c->response)) {
+            $this->_logPapiError($error);
+            $this->papiLastErrorMessage = $c->response->ErrorMessage;
+            return ['error' => 'An error occurred while processing your request.' . $c->response->ErrorMessage];
+        }
+        
         return [];
     }
 
@@ -3041,11 +3101,14 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             return ['error' => 'The barcode you provided is not valid. Please check the barcode and try again.'];
         }
         
+        if($res->ValidPatron === false) {
+            return ['error' => 'The barcode you provided is not valid. Please check with your local library to reset your .'];
+        }
         // get the patron info from the Polaris, don't count on Pika database being correct.
         // use staff credentials for the request.
         $staff_auth = $this->authenticateStaff();
         if($staff_auth === null) {
-            return ['error' => 'An error occurred while processing your request. Please try again later or contact your library administrator.'];
+            return ['error' => 'An error occurred while processing your request. Please visit your library to reset your ' . translate('pin') . '.'];
         }
         
         $staff_secret = $staff_auth->AccessSecret;
@@ -3094,6 +3157,12 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 'error' => 'You do not have an email address on your account. Please visit your library to reset your ' . translate('pin') . '.',
             ];
         }
+        
+        if ($patron_ils_id === null) {
+            return [
+                'error' => 'We are unable to find your account. Please visit your library to reset your ' . translate('pin') . '.',
+            ];
+        }
         // check for a pika user
         $patron = new User();
         $patron->barcode = $barcode;
@@ -3110,11 +3179,11 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $pinReset->userId = $patron_id;
         $pinReset->delete();
 
-        $pinReset->userId = $patron_id;
-
         $resetToken = $pinReset->insertReset();
         // build reset url (Note: the site url gets automatically set as the interface url
-        $resetUrl = $this->configArray['Site']['url'] . "/MyAccount/ResetPin?uid=" . $patron->id . '&resetToken=' . $resetToken;
+        // for Polaris, add the barcode to the URL so we can properly find the patron in the ILS
+        $resetUrl = $this->configArray['Site']['url'] . "/MyAccount/ResetPin?uid=" . $patron_id . '&resetToken=' . $resetToken . 
+        '&bc=' . $barcode;
 
         // build the message
         $pin = translate('pin');
@@ -3126,14 +3195,14 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $htmlMessage = $interface->fetch('Emails/pin-reset-email.tpl');
 
         $mail = new PHPMailer();
-        $mail->setFrom($this->configArray['Site']['email']);
+        $mail->setFrom($this->configArray['Site']['email'], $this->configArray['Site']['title'], 0);
         $mail->addAddress($patron->email);
         $mail->Subject = $subject;
         $mail->msgHTML($htmlMessage);
         $mail->AltBody = strip_tags($htmlMessage);
 
         if (!$mail->send()) {
-            $this->logger->error('Failed to send email pin reset.');
+            $this->logger->error('Failed to send email pin reset. ' . $mail->ErrorInfo);
             return ['error' => "We're sorry. We are unable to send mail at this time. Please try again."];
         }
         return true;
