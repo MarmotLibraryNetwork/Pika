@@ -2145,13 +2145,15 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             } else {
                 $h['create'] = strtotime($hold->ActivationDate);
             }
-//          This displays as Pickup By date in holds interface and doesn't represent the actual date the patron needs to pickup by
+//          "expire" displays as Pickup By date in holds interface
             $h['expire'] = '';
-            if ($this->isMicrosoftDate($hold->ExpirationDate)) {
-                $expire = $this->microsoftDateToISO($hold->ExpirationDate);
-                $h['expire'] = strtotime($expire);
-            } else {
-                $h['expire'] = strtotime($hold->ExpirationDate);
+            if(isset($hold->PickupByDate)) {
+                if ($this->isMicrosoftDate($hold->PickupByDate)) {
+                    $expire = $this->microsoftDateToISO($hold->PickupByDate);
+                    $h['expire'] = strtotime($expire);
+                } else {
+                    $h['expire'] = strtotime($hold->PickupByDate);
+                }
             }
 
             // load marc record
@@ -2227,7 +2229,6 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         foreach ($c->response->PatronILLRequestsGetRows as $hold) {
 
 					if (!in_array($hold->Status, ['Received', 'Cancelled', 'Returned'])){
-						$pickup_branch_id = $this->polarisBranchIdToLocationId($hold->PickupBranchID);
 						$h                = [];
                         //$h['freezeable']         = Not sure if ILL holds can be frozen, likely not
 						//$h['position']           = API doesn't provide this information for ILL holds
@@ -3034,7 +3035,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $staff_secret = $staff_auth->AccessSecret;
         $staff_token = $staff_auth->AccessToken;
         
-        $request_url = $this->ws_url . "/patron/{$patron->barcode}";
+        $request_url = $this->ws_url . "/patron/" . $barcode;
         $hash = $this->_createHash('PUT', $request_url, $staff_secret);
         
         $body['LogonBranchID'] = 1; // default to system
