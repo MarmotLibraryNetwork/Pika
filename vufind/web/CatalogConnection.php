@@ -50,7 +50,7 @@ class CatalogConnection
 	 * The object of the appropriate driver.
 	 *
 	 * @access private
-	 * @var    \Pika\PatronDrivers\Sierra|\Pika\PatronDrivers\HorizonROA|HorizonAPI3_23|SirsiDynixROA|DriverInterface
+	 * @var    \Pika\PatronDrivers\Sierra|\Pika\PatronDrivers\HorizonROA|\Pika\PatronDrivers\Polaris|HorizonAPI3_23|SirsiDynixROA|DriverInterface
 	 */
 	public $driver;
 
