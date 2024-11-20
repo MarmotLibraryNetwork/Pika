@@ -57,6 +57,7 @@ class Library extends DB_DataObject {
 	public $themeName; 				//varchar(15)
 	public $restrictSearchByLibrary;
 	public $archiveOnlyInterface;
+	public $partnerOfSystem;
 	public $allowProfileUpdates;   //tinyint(4)
 	public $allowFreezeHolds;   //tinyint(4)
 	public $scope; 					//smallint(6) // The Sierra OPAC scope
@@ -423,6 +424,7 @@ class Library extends DB_DataObject {
 
 		$innReachEncoreName = $configArray['InterLibraryLoan']['innReachEncoreName'];
 
+
 		//$Instructions = 'For more information on ???, see the <a href="">online documentation</a>.';
 
 		$structure = [
@@ -434,6 +436,7 @@ class Library extends DB_DataObject {
 			'showDisplayNameInHeader'  => ['property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false],
 			'abbreviatedDisplayName'   => ['property' => 'abbreviatedDisplayName', 'type' => 'text', 'label' => 'Abbreviated Display Name', 'description' => 'A short name to identify the library when space is low', 'size' => '40'],
 			'archiveOnlyInterface'     => ['property' => 'archiveOnlyInterface', 'type'=> 'checkbox', 'warning' => 'Enabling this feature will cause permanent changes to this library.', 'label' => 'Archive Only Interface', 'description' => 'Whether or not the interface should only include archive objects', 'hideInLists' => true, 'default' => false],
+			'partnerOfSystem'          => ['property'=> 'partnerOfSystem', 'type'=> 'enum', 'values'=> self::getLibrariesForPartner(), 'description' => 'Which library is this library partner to?', 'label'=>'Partner Of', 'hideInLists' => true],
 			'changeRequiresReindexing' => ['property' => 'changeRequiresReindexing', 'type' => 'dateReadOnly', 'label' => 'Change Requires Reindexing', 'description' => 'Date Time for when this library changed settings needing re-indexing'],
 			'systemMessage'            => ['property'      => 'systemMessage', 'type' => 'html', 'label' => 'System Message', 'description' => 'A message to be displayed at the top of the screen', 'size' => '80', 'hideInLists' => true,
 			                               'allowableTags' => '<p><div><span><a><strong><b><em><i><ul><ol><li><br><hr><h1><h2><h3><h4><h5><h6><sub><sup><img><script>'],
@@ -1152,11 +1155,19 @@ class Library extends DB_DataObject {
 			],
 		];
 
-		if (UserAccount::userHasRole('libraryManager') && !UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin'])){
+	if(!self::isArchiveOnly()){
+		unset($structure['partnerOfSystem']);
+	}
+
+
+		if (UserAccount::userHasRole('libraryManager') && !UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin', 'partnerAdmin'])){
 			// restrict permissions for library managers, unless they also have higher permissions of library or opac admin
 			$structure['subdomain']['type']   = 'label';
 			$structure['displayName']['type'] = 'label';
 			$structure['archiveOnlyInterface']['type'] = 'label';
+			if($structure['partnerOfSystem']){
+				$structure['partnerOfSystem']['type'] = 'label';
+			}
 			unset($structure['showDisplayNameInHeader']);
 			unset($structure['displaySection']);
 			unset($structure['ilsSection']);
@@ -1387,6 +1398,7 @@ class Library extends DB_DataObject {
 			default:
 				return $this->data[$name];
 		}
+
 	}
 
 	public function __set($name, $value){
@@ -1615,6 +1627,19 @@ class Library extends DB_DataObject {
 			$this->saveOneToManyOptions($this->browseCategories);
 			unset($this->browseCategories);
 		}
+	}
+
+	public function isArchiveOnly($libraryId = null){
+		if ($libraryId == null && !empty($_GET['id'])){
+			$libraryId = $_GET['id'];
+		}
+		$library = new Library();
+		$library->libraryId = $libraryId;
+		$library->find();
+		while ($library->fetch()){
+			return $library->archiveOnlyInterface;
+		}
+		return false;
 	}
 
 	public function clearBrowseCategories(){
@@ -1997,6 +2022,25 @@ class Library extends DB_DataObject {
 		$location            = new Location;
 		$location->libraryId = $this->libraryId;
 		return $location->count();
+	}
+
+	/**
+	 * Return array of library names and ids to populate partner box
+	 * @return array
+	 */
+	public function getLibrariesForPartner(): array{
+		$library = new Library();
+		$library->orderBy('displayName');
+		if (!UserAccount::userHasRole('opacAdmin') && UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager', 'locationManager'])){
+			$homeLibrary        = UserAccount::getUserHomeLibrary();
+			$library->libraryId = $homeLibrary->libraryId;
+		}
+		$library->find();
+		$libraryList = UserAccount::userHasRole('opacAdmin') ? ['' => 'Choose a Library'] : [];
+		while ($library->fetch()){
+			$libraryList[$library->libraryId] = $library->displayName;
+		}
+		return $libraryList;
 	}
 
 	/**

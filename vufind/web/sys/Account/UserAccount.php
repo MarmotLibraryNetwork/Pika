@@ -244,6 +244,23 @@ class UserAccount {
 		return false;
 	}
 
+	public static function getUserPartnerLibraries(){
+		$userLibrary = self::getUserHomeLibrary();
+		$userLibraryId = $userLibrary->libraryId;
+		$library = new Library();
+		$library->partnerOfSystem = $userLibraryId;
+		$library->find();
+		$partners = [];
+		while ($library->fetch()){
+			$partners[$library->libraryId] = $library->displayName;
+		}
+		if (empty($partners)){
+			return false;
+		}else{
+			return $partners;
+		}
+	}
+
 	public static function isUserMasquerading(){
 		return !empty($_SESSION['guidingUserId']);
 	}

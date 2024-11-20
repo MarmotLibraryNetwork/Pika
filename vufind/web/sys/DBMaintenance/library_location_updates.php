@@ -66,6 +66,15 @@ function getLibraryLocationUpdates(): array{
 				'ALTER TABLE library ADD COLUMN `archiveOnlyInterface` TINYINT(1) DEFAULT 0;'
 			]
 		],
+		'2024.04.0_add_partner_library_setting' => [
+			'release'         => '2024.04.0',
+			'title'           => 'Add partner setting to library interface',
+			'description'     => 'Add an option to library settings to link an archive only partner interface to the parent library',
+			'continueOnError' => false,
+			'sql'             => [
+				'ALTER TABLE library ADD COLUMN `partnerOfSystem` INT(11)  DEFAULT NULL;'
+			]
+		],
 
 	];
 }
