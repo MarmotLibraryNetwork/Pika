@@ -669,11 +669,11 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 		$relatedRecords = $recordDriver->getRelatedRecords();
 		$interface->assign('relatedRecords', $relatedRecords);
-		$results = array(
+		$results = [
 			'title'        => 'Share via SMS Message',
 			'modalBody'    => $interface->fetch("GroupedWork/sms-form-body.tpl"),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.GroupedWork.sendSMS(\"{$id}\"); return false;'>Send Text</button>",
-		);
+		];
 		return $results;
 	}
 
@@ -704,7 +704,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function getSeriesEmailForm(){
-		$id     =$_REQUEST['id'];
+		$id           = $_REQUEST['id'];
 		$recordDriver = new GroupedWorkDriver($id);
 		global $interface;
 		$interface->assign('id', $id);
