@@ -33,6 +33,9 @@
 				{if $userID}
 					<input type="hidden" name="uid" value="{$userID}">
 				{/if}
+				{if $bc}
+					<input type="hidden" name="bc" value="{$bc}">
+				{/if}
 				<div class="form-group">
 					<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New PIN'}:</label></div>
 					<div class="col-xs-8">
