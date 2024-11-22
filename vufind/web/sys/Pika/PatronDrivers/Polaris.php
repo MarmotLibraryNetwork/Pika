@@ -2945,7 +2945,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $new_pin = trim($_REQUEST['pin1']);
         $update['Password'] = $new_pin;
 
-        $request_url = $this->ws_url . "/patron/{$patron->barcode}";
+        $request_url = $this->ws_url . "/patron/" . $patron->barcode;
         $extra_headers = ["Content-Type: application/json"];
 
         $errors = [];
@@ -3038,29 +3038,26 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $request_url = $this->ws_url . "/patron/" . $barcode;
         $hash = $this->_createHash('PUT', $request_url, $staff_secret);
         
-        $body['LogonBranchID'] = 1; // default to system
-        $body['LogonUserID'] = $this->configArray['Polaris']['staffUserId'];
-        $body['LogonWorkstationID'] = $this->configArray['Polaris']['workstationId'];
-        $body['Password'] = $newPin;
+        $body['LogonBranchID'] = (int)1; // default to system
+        $body['LogonUserID'] = (int)$this->configArray['Polaris']['staffUserId'];
+        $body['LogonWorkstationID'] = (int)$this->configArray['Polaris']['workstationId'];
+        $body['Password'] = (string)$newPin;
 
         $headers = [
             "PolarisDate: " . gmdate('r'),
-            "X-PAPI-AccessToken: " . $staff_token,
+            "X-PAPI-AccessToken:" . $staff_token,
             "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
             "Accept: application/json",
             "Content-Type: application/json",
         ];
 
-        $c_opts = [
-            CURLOPT_RETURNTRANSFER => true,
-        ];
-
+        $body = json_encode($body);
+        $body_length = strlen($body);
+        $headers[] = 'Content-Length: ' . $body_length;
+        
         $c = new Curl();
         $c->setOpt(CURLOPT_RETURNTRANSFER, true);
-        $body = json_encode($body);
         $c->setOpt(CURLOPT_POSTFIELDS, $body);
-        $headers[] = 'Content-Length: ' . strlen($body);
-        $c->setOpts($c_opts);
         $c->setUrl($request_url);
         $c->setOpt(CURLOPT_CUSTOMREQUEST, 'PUT');
         // this needs to be set LAST!
@@ -3072,7 +3069,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             $this->logger->error('Curl error: ' . $c->errorMessage, [
                 'http_code' => $c->httpStatusCode,
                 'request_url' => $request_url,
-                'Headers' => implode(PHP_EOL, $c->requestHeaders['data']),
+                'Headers' => var_export($c->requestHeaders, true),
             ]);
             return ['error' => 'An error occurred while processing your request. Please visit your library to reset your ' . translate('pin') . '.'];
         } elseif ($error = $this->_isPapiError($c->response)) {
