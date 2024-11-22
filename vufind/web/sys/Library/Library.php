@@ -1629,15 +1629,16 @@ class Library extends DB_DataObject {
 		}
 	}
 
-	public function isArchiveOnly($libraryId = null){
-		if ($libraryId == null && !empty($_GET['id'])){
+	static function isArchiveOnly($libraryId = null){
+		if ($libraryId == null && !empty($_GET['id']) && ctype_digit($_GET['id'])){
 			$libraryId = $_GET['id'];
 		}
-		$library = new Library();
-		$library->libraryId = $libraryId;
-		$library->find();
-		while ($library->fetch()){
-			return $library->archiveOnlyInterface;
+		if (!empty($libraryId)){
+			$library            = new Library();
+			$library->libraryId = $libraryId;
+			if ($library->find(true)){
+				return $library->archiveOnlyInterface;
+			}
 		}
 		return false;
 	}
