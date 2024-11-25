@@ -2036,6 +2036,7 @@ class Library extends DB_DataObject {
 			$homeLibrary        = UserAccount::getUserHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}
+		$library->archiveOnlyInterface = false;
 		$library->find();
 		$libraryList = UserAccount::userHasRole('opacAdmin') ? ['' => 'Choose a Library'] : [];
 		while ($library->fetch()){

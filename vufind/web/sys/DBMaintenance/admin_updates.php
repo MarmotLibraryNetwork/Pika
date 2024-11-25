@@ -41,7 +41,7 @@ function getAdminUpdates() {
 			'description'     => 'Add a role to allow library admin to modify partner interfaces',
 			'continueOnError' => false,
 			'sql'             => [
-				'INSERT INTO `roles` (`name`, `description`) VALUES (\'partnerAdmin\', \'Allows users to administrate partner libraries\');'
+				'INSERT INTO `roles` (`name`, `description`) VALUES (\'partnerAdmin\', \'Allows user to update the library configuration for a partner system of their home library.\');'
 			]
 		]
 	];
