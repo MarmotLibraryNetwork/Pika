@@ -3027,9 +3027,11 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         if ((int)$token !== (int)$resetToken) {
             return ['error' => 'Unable to reset your ' . translate('pin') . '. Invalid reset token.'];
         }
+
+        // delete possible cached user object
+        $this->_deleteCachePatronObject($user_id);
         
         // everything is good, update PIN in Polaris
-        
         // use staff credentials for public call
         $login_user_id = (int)$this->configArray['Polaris']['staffUserId'];
         $login_user_workstation_id = (int)$this->configArray['Polaris']['workstationId'];
