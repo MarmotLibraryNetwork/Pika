@@ -1264,7 +1264,7 @@ class User extends DB_DataObject {
 	 * and filtering to make sure that the user is able to
 	 *
 	 * @param string $recordSource The source of the record that we are placing a hold on
-	 * @param bool $includeLinkedAccounts Whether or not to include accounts linked to this account
+	 * @param bool $includeLinkedAccounts Whether to include accounts linked to this account
 	 * @return Location[]
 	 */
 	public function getValidPickupBranches($recordSource, $includeLinkedAccounts = true){
