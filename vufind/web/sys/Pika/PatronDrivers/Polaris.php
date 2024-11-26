@@ -478,7 +478,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
                 ['RequestURL' => $request_url, 'RequestHeaders' => $headers, 'RequestBody' => $request_body],
             );
             return null;
-        } elseif ($error = $this->_isPapiError($c->response)) {
+        } 
+        if ($error = $this->_isPapiError($c->response)) {
             $this->_logPapiError($error);
             return null;
         }
@@ -3006,6 +3007,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         // thus the user id can be either an ILS id or a Pika id.
         $user_id = trim($_REQUEST['uid']);
         $barcode = trim($_REQUEST['bc']);
+        $pin = $newPin;
         
         $pinReset = new PinReset();
         $pinReset->userId = $user_id;
@@ -3027,38 +3029,40 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         }
         
         // everything is good, update PIN in Polaris
-        // use staff credentials 
+        
+        // use staff credentials for public call
+        $login_user_id = (int)$this->configArray['Polaris']['staffUserId'];
+        $login_user_workstation_id = (int)$this->configArray['Polaris']['workstationId'];
+
         $staff_auth = $this->authenticateStaff();
         if($staff_auth === null) {
             return ['error' => 'An error occurred while processing your request. Please visit your library to reset your ' . translate('pin') . '.'];
         }
         $staff_secret = $staff_auth->AccessSecret;
         $staff_token = $staff_auth->AccessToken;
-        
-        $request_url = $this->ws_url . "/patron/" . $barcode;
+
+        $request_url = $this->ws_url . '/patron/' . $barcode;
         $hash = $this->_createHash('PUT', $request_url, $staff_secret);
-        
-        $body['LogonBranchID'] = (int)1; // default to system
-        $body['LogonUserID'] = (int)$this->configArray['Polaris']['staffUserId'];
-        $body['LogonWorkstationID'] = (int)$this->configArray['Polaris']['workstationId'];
-        $body['Password'] = (string)$newPin;
+
+        $body['LogonBranchID'] = 1; // default to system
+        $body['LogonUserID'] = $login_user_id;
+        $body['LogonWorkstationID'] = $login_user_workstation_id;
+        $body['Password'] = (string)$pin;
+        $body = json_encode($body);
 
         $headers = [
             "PolarisDate: " . gmdate('r'),
             "X-PAPI-AccessToken:" . $staff_token,
-            "Authorization: PWS " . $this->ws_access_id . ":" . $hash,
+            "Authorization: PWS pika:" . $hash,
             "Accept: application/json",
             "Content-Type: application/json",
+            'Content-Length: ' . strlen($body)
         ];
 
-        $body = json_encode($body);
-        $body_length = strlen($body);
-        $headers[] = 'Content-Length: ' . $body_length;
-        
         $c = new Curl();
+        $c->setUrl($request_url);
         $c->setOpt(CURLOPT_RETURNTRANSFER, true);
         $c->setOpt(CURLOPT_POSTFIELDS, $body);
-        $c->setUrl($request_url);
         $c->setOpt(CURLOPT_CUSTOMREQUEST, 'PUT');
         // this needs to be set LAST!
         $c->setOpt(CURLOPT_HTTPHEADER, $headers);
@@ -3069,7 +3073,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             $this->logger->error('Curl error: ' . $c->errorMessage, [
                 'http_code' => $c->httpStatusCode,
                 'request_url' => $request_url,
-                'Headers' => var_export($c->requestHeaders, true),
+                'Headers' => var_export($c->requestHeaders, true)
             ]);
             return ['error' => 'An error occurred while processing your request. Please visit your library to reset your ' . translate('pin') . '.'];
         } elseif ($error = $this->_isPapiError($c->response)) {
@@ -3077,8 +3081,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             $this->papiLastErrorMessage = $c->response->ErrorMessage;
             return ['error' => 'An error occurred while processing your request.' . $c->response->ErrorMessage];
         }
-        
-        return [];
+        $pinReset->delete();
+        return true;
     }
 
     /**
