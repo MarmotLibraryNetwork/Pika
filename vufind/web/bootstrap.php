@@ -496,6 +496,9 @@ function vufind_autoloader($class) {
 		}elseif (file_exists('sys/Archive/' . $class . '.php')){
 		    $className = ROOT_DIR . '/sys/Archive/' . $class . '.php';
 		    require_once $className;
+        }elseif (file_exists('sys/Account/' . $class . '.php')){
+            $className = ROOT_DIR . '/sys/Account/' . $class . '.php';
+            require_once $className;
         }elseif (file_exists('sys/' . $nameSpaceClass)){
 			require_once 'sys/' . $nameSpaceClass;
 		}else{
