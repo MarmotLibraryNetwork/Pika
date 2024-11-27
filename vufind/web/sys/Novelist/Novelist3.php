@@ -760,6 +760,7 @@ class Novelist3{
 			// There is an array index mismatch. Count returns a number one less than the needed limit.
 			// An extra value is added, for cases where this mismatch occurs. In the event that it isn't
 			// needed, no value is found. Do not remove.
+			//TODO: Investigate whether we need the limit at all
 			$searchObject->setLimit(count($items)+1);
 			$response = $searchObject->processSearch(true, false, false);
 
