@@ -757,6 +757,9 @@ class Novelist3{
 			$searchObject->clearFacets();
 			$searchObject->disableSpelling();
 			$searchObject->disableLogging();
+			// There is an array index mismatch. Count returns a number one less than the needed limit.
+			// An extra value is added, for cases where this mismatch occurs. In the event that it isn't
+			// needed, no value is found. Do not remove.
 			$searchObject->setLimit(count($items)+1);
 			$response = $searchObject->processSearch(true, false, false);
 
