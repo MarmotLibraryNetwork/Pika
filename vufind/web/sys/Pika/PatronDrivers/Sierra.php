@@ -2165,7 +2165,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		// delete memcache holds
 		$patronHoldsCacheKey = $this->cache->makePatronKey('holds', $patron->id);
 		if(!$this->cache->delete($patronHoldsCacheKey)) {
-			$this->logger->warn("Failed to remove holds from memcache: ".$patronHoldsCacheKey);
+			$this->logger->warn("Failed to remove holds from memcache: " . $patronHoldsCacheKey);
 		}
 
 		// because the patron object has holds information we need to clear that cache too.
@@ -2484,25 +2484,24 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 	 *
 	 * @return array|null
 	 */
-	protected function _getApiInfo() {
-
-		$r = $this->_doRequest('about');
-		$r = strip_tags($r);
-		$info = [];
+	protected function _getApiInfo(){
+		$r     = $this->_doRequest('about');
+		$r     = strip_tags($r);
+		$info  = [];
 		$lines = preg_split('/\n/', $r, -1, PREG_SPLIT_NO_EMPTY);
 
-		foreach ($lines as $line) {
+		foreach ($lines as $line){
 			$line = trim($line);
-			if(empty($line) || !strpos($line, ':')) {
+			if (empty($line) || !strpos($line, ':')){
 				continue;
 			}
 			$parts = explode(':', $line);
 			$index = trim($parts[0]);
 			$index = str_replace(' ', '', $index);
 
-			if($index == "Version") {
+			if ($index == "Version"){
 				$indexParts = explode('.', $parts[1]);
-				if(count($indexParts) >= 2) {
+				if (count($indexParts) >= 2){
 					$info['VersionMajor'] = (int)$indexParts[0];
 					$info['VersionMinor'] = (int)$indexParts[1];
 					if ($info['VersionMajor'] > $this->configArray['Catalog']['api_version']){
@@ -2512,9 +2511,9 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			}
 			$info[$index] = trim($parts[1]);
 		}
-
 		return $info;
 	}
+
 	/**
 	 * Delete all Reading History within the ILS for the patron.
 	 *
