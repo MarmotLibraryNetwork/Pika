@@ -4562,7 +4562,7 @@ a.thumbnail.active {
   color: inherit;
 }
 .alert-success {
-  background-color: #104A1D;
+  background-color: #dff0d8;
   border-color: #d6e9c6;
   color: #3c763d;
 }
@@ -4573,7 +4573,7 @@ a.thumbnail.active {
   color: #2b542c;
 }
 .alert-info {
-  background-color: #e8f4fa;
+  background-color: #104A1D;
   border-color: #cbedf4;
   color: #285d77;
 }
