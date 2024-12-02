@@ -232,7 +232,7 @@ class CatalogConnection
 	$readingHistoryDB          = new ReadingHistoryEntry();
 	$readingHistoryDB->whereAdd('userId = ' . $patron->id);
 	$readingHistoryDB->whereAdd('deleted = 0'); //Only show titles that have not been deleted
-	$readingHistoryDB->whereAdd('groupedWorkPermanentId != ""'); // Exclude entries with out a grouped work (typically ILL items)
+	$readingHistoryDB->whereAdd('groupedWorkPermanentId != ""'); // Exclude entries without a grouped work (typically ILL items)
 	$readingHistoryDB->selectAdd();
 	$readingHistoryDB->selectAdd('id, groupedWorkPermanentId, source, sourceId, title, author, checkInDate');
 	$readingHistoryDB->selectAdd('MAX(checkOutDate) as checkOutDate');

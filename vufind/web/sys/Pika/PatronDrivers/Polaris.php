@@ -3063,6 +3063,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
 
         $c = new Curl();
         $c->setUrl($request_url);
+		    // NOTE: Setting the URL first before setting the options is important to get a good response from Polaris
         $c->setOpt(CURLOPT_RETURNTRANSFER, true);
         $c->setOpt(CURLOPT_POSTFIELDS, $body);
         $c->setOpt(CURLOPT_CUSTOMREQUEST, 'PUT');

@@ -760,7 +760,8 @@ class Novelist3{
 			// There is an array index mismatch. Count returns a number one less than the needed limit.
 			// An extra value is added, for cases where this mismatch occurs. In the event that it isn't
 			// needed, no value is found. Do not remove.
-			//TODO: Investigate whether we need the limit at all
+			// Search object has a default limit of 20; solr itself also has a default limit (20) when not specified (Set in solrconfig.xml <int name="rows"> piece of /select request handler)
+			// so an alternate limit is required.
 			$searchObject->setLimit(count($items)+1);
 			$response = $searchObject->processSearch(true, false, false);
 
