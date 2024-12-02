@@ -168,7 +168,7 @@ public class CleanUpMarcRecs implements IProcessHandler {
 			if (curVariableField instanceof DataField) {
 				DataField curRecordNumberField = (DataField) curVariableField;
 				Subfield  recordNumberSubfield = curRecordNumberField.getSubfield(profile.recordNumberField);
-				if (recordNumberSubfield != null && (profile.getRecordNumberPrefix().length() == 0 || recordNumberSubfield.getData().length() > profile.getRecordNumberPrefix().length())) {
+				if (recordNumberSubfield != null && (profile.getRecordNumberPrefix().isEmpty() || recordNumberSubfield.getData().length() > profile.getRecordNumberPrefix().length())) {
 					if (curRecordNumberField.getSubfield(profile.recordNumberField).getData().startsWith(profile.getRecordNumberPrefix())) {
 						recordNumber = curRecordNumberField.getSubfield(profile.recordNumberField).getData().trim();
 						break;
@@ -206,7 +206,7 @@ public class CleanUpMarcRecs implements IProcessHandler {
 				profile.setRecordNumberTag(indexingProfilesRS.getString("recordNumberTag"));
 				profile.setDoAutomaticEcontentSuppression(indexingProfilesRS.getBoolean("doAutomaticEcontentSuppression"));
 				String eContentDescriptorStr = indexingProfilesRS.getString("eContentDescriptor");
-				char   eContentDescriptor    = (eContentDescriptorStr == null || eContentDescriptorStr.trim().length() == 0) ? ' ' : eContentDescriptorStr.charAt(0);
+				char   eContentDescriptor    = (eContentDescriptorStr == null || eContentDescriptorStr.trim().isEmpty()) ? ' ' : eContentDescriptorStr.charAt(0);
 				profile.setEContentDescriptor(eContentDescriptor);
 
 				indexingProfiles.add(profile);
@@ -220,7 +220,7 @@ public class CleanUpMarcRecs implements IProcessHandler {
 
 	private char getCharFromString(String stringValue) {
 		char result = ' ';
-		if (stringValue != null && stringValue.length() > 0) {
+		if (stringValue != null && !stringValue.isEmpty()) {
 			result = stringValue.charAt(0);
 		}
 		return result;
