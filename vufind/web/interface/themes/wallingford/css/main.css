@@ -10611,3 +10611,7 @@ a .header-button:hover {
 .breadcrumb {
   background-color: white;
 }
+#browse-category-picker .jcarousel-control-next,
+#browse-category-picker .jcarousel-control-prev {
+  z-index: 2;
+}
