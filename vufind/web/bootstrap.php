@@ -269,17 +269,15 @@ function handleCookie($cookieName, $cookieValue){
 	global $configArray;
 	if (!isset($_COOKIE[$cookieName]) || $cookieValue != $_COOKIE[$cookieName]){
 		if ($cookieValue == ''){
-			if(!$configArray['Site']['isDevelopment']){
+			if (!$configArray['Site']['isDevelopment']){
 				setcookie($cookieName, $cookieValue, time() - 1000, '/', null, 1, 1);
 			}else{
 				setcookie($cookieName, $cookieValue, time() - 1000, '/', null, 0, 1);
 			}
 		}else{
-			if(!$configArray['Site']['isDevelopment']){
+			if (!$configArray['Site']['isDevelopment']){
 				setcookie($cookieName, $cookieValue, 0, '/', null, 1, 1);
-			}
-			else
-			{
+			}else{
 				setcookie($cookieName, $cookieValue, 0, '/', null, 0, 1);
 			}
 		}
@@ -496,6 +494,9 @@ function vufind_autoloader($class) {
 		}elseif (file_exists('sys/Archive/' . $class . '.php')){
 		    $className = ROOT_DIR . '/sys/Archive/' . $class . '.php';
 		    require_once $className;
+        }elseif (file_exists('sys/Account/' . $class . '.php')){
+            $className = ROOT_DIR . '/sys/Account/' . $class . '.php';
+            require_once $className;
         }elseif (file_exists('sys/' . $nameSpaceClass)){
 			require_once 'sys/' . $nameSpaceClass;
 		}else{

@@ -494,7 +494,9 @@ public class GroupedWorkIndexer {
 				"additionalLocationsToShowAvailabilityFor, " +
 				"sharedOverdriveCollection, includeOverdriveAdult, includeOverdriveTeen, includeOverdriveKids, " +
 				"includeAllRecordsInShelvingFacets, includeAllRecordsInDateAddedFacets, includeOnOrderRecordsInDateAddedFacetValues, includeOnlineMaterialsInAvailableToggle " +
-				"FROM library ORDER BY subdomain ASC",
+				"FROM library " +
+				"WHERE archiveOnlyInterface != 1 " + // Exclude archive only interfaces
+				"ORDER BY subdomain ASC",
 				ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement libraryOwnedRecordRulesStmt = pikaConn.prepareStatement("SELECT library_records_owned.*, indexing_profiles.sourceName FROM library_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		libraryRecordInclusionRulesStmt = pikaConn.prepareStatement("SELECT library_records_to_include.*, indexing_profiles.sourceName FROM library_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -507,7 +509,7 @@ public class GroupedWorkIndexer {
 				facetLabel = displayName;
 			}
 			//These options determine how scoping is done
-			Long   libraryId = libraryInformationRS.getLong("libraryId");
+			long   libraryId = libraryInformationRS.getLong("libraryId");
 			String pTypes    = libraryInformationRS.getString("pTypes");
 			if (pTypes == null) {pTypes = "";}
 			boolean includeOverdrive            = libraryInformationRS.getBoolean("enableOverdriveCollection");

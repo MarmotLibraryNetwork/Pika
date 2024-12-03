@@ -25,6 +25,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 
 
 abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
@@ -34,6 +35,8 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 	//protected HashSet<String> validCheckedOutStatusCodes = new HashSet<String>();
 	protected char isItemHoldableSubfield = '5';
 
+	private PreparedStatement itemToRecordStatement;
+	private PreparedStatement clearItemIdsForBibStatement;
 	private PreparedStatement updateExtractInfoStatement;
 	private int indexingProfileId;
 
@@ -57,11 +60,18 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 				libraryUseOnlyStatusCodes.addAll(Arrays.asList(libraryUseOnlyStatuses.split("\\|")));
 			}
 
-			updateExtractInfoStatement = pikaConn.prepareStatement("INSERT INTO `ils_extract_info` (indexingProfileId, ilsId, lastExtracted) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted)"); // unique key is indexingProfileId and ilsId combined
-
 		} catch (SQLException e) {
 			logger.error("Error loading indexing profile information from database for PolarisRecordProcessor", e);
 		}
+		try {
+			updateExtractInfoStatement = pikaConn.prepareStatement("INSERT INTO `ils_extract_info` (indexingProfileId, ilsId, lastExtracted) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted)");
+			// unique key is indexingProfileId and ilsId combined
+			itemToRecordStatement       = pikaConn.prepareStatement("INSERT INTO `ils_itemid_to_ilsid` (itemId, ilsId) VALUES (?, ?) ON DUPLICATE KEY UPDATE ilsId=VALUE(ilsId)");
+			clearItemIdsForBibStatement = pikaConn.prepareStatement("DELETE FROM `ils_itemid_to_ilsid` WHERE `ilsId` = ?");
+		} catch (SQLException e) {
+			logger.error("Error preparing statement for Polaris item to record Ids");
+		}
+
 	}
 
 	@Override
@@ -127,6 +137,41 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 		return translatedShelfLocation;
 	}
 
+	@Override
+	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, RecordIdentifier identifier, Record record){
+		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
+		if (!itemRecords.isEmpty()) {
+			removeItemIdToRecordIdEntries(identifier);
+			for (DataField itemField : itemRecords) {
+				setItemIdToRecordIdEntry(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField), identifier);
+				if (!isItemSuppressed(itemField, identifier)) {
+					getPrintIlsItem(groupedWork, recordInfo, record, itemField, identifier);
+				}
+			}
+		}
+	}
+
+	private void removeItemIdToRecordIdEntries(RecordIdentifier identifier) {
+		try {
+			clearItemIdsForBibStatement.setString(1, identifier.getIdentifier());
+			int result = clearItemIdsForBibStatement.executeUpdate();
+		} catch (SQLException e) {
+			logger.error("Error delete item Ids from database for bibId {}", identifier, e);
+		}
+	}
+
+	private void setItemIdToRecordIdEntry(String itemId, RecordIdentifier identifier) {
+		try {
+			// TODO: Ignore for suppressed items?
+			// TODO: Should use a deleted date?  Delete with database clean-up at 6 months
+			itemToRecordStatement.setString(1, itemId);
+			itemToRecordStatement.setString(2, identifier.getIdentifier());
+			int result = itemToRecordStatement.executeUpdate();
+		} catch (SQLException e) {
+			logger.error("Error setting item to record entry");
+		}
+	}
+
 	private final Date tomorrow = Date.from(new Date().toInstant().plus(1, ChronoUnit.DAYS));
 
 	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record) {
@@ -161,8 +206,8 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 		Date dateAdded = indexer.getDateFirstDetected(identifier);
 		itemInfo.setDateAdded(dateAdded);
 	}
-
-	private void updateLastExtractTimeForRecord(String identifier) {
+	@Override
+	protected void updateLastExtractTimeForRecord(String identifier) {
 		if (identifier != null && !identifier.isEmpty()) {
 			try {
 				updateExtractInfoStatement.setInt(1, indexingProfileId);

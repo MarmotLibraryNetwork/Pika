@@ -1,7 +1,7 @@
 Pika.Account.ReadingHistory = (function(){
 	return {
 		deletedMarkedAction: function (){
-			Pika.confirm('The marked items will be irreversibly deleted from your reading history.  Proceed?',function () {
+			Pika.confirm('<p class="alert alert-warning">The marked items will be irreversibly deleted from your reading history.  Proceed?</p>',function () {
 				$('#readingHistoryAction').val('deleteMarked');
 				$('#readingListForm').submit();
 			});
@@ -9,7 +9,7 @@ Pika.Account.ReadingHistory = (function(){
 		},
 
 		deleteAllAction: function (){
-			Pika.confirm('Your entire reading history will be irreversibly deleted.  Proceed?',function(){
+			Pika.confirm('<p class="alert alert-danger">Your entire reading history will be irreversibly deleted.  Proceed?</p>',function(){
 				$('#readingHistoryAction').val('deleteAll');
 				$('#readingListForm').submit();
 			});
@@ -17,7 +17,7 @@ Pika.Account.ReadingHistory = (function(){
 		},
 
 		optOutAction: function (){
-			Pika.confirm('Opting out of Reading History will also delete your entire reading history irreversibly.  Proceed?', function(){
+			Pika.confirm('<p class="alert alert-danger">Opting out of Reading History will also <strong>delete your entire reading history</strong> irreversibly.  Proceed?</p>', function(){
 				$('#readingHistoryAction').val('optOut');
 				$('#readingListForm').submit();
 			});

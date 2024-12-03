@@ -61,9 +61,19 @@ class Admin_Libraries extends ObjectEditor {
 			while ($library->fetch()){
 				$libraryList[$library->libraryId] = clone $library;
 			}
-		}elseif (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager'])){
+		}elseif (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager', 'partnerAdmin'])){
 			$patronLibrary                          = UserAccount::getUserHomeLibrary();
 			$libraryList[$patronLibrary->libraryId] = clone $patronLibrary;
+		}
+
+		if (UserAccount::userHasRole('partnerAdmin') && count($libraryList) == 1){
+			$partnerLibrary = new Library();
+			$partnerLibrary->partnerOfSystem = UserAccount::getUserHomeLibrary()->libraryId;
+			$partnerLibrary->archiveOnlyInterface = true;
+			$partnerLibrary->find();
+			while ($partnerLibrary->fetch()){
+				$libraryList[$partnerLibrary->libraryId] = clone $partnerLibrary;
+			}
 		}
 
 		return $libraryList;
@@ -95,7 +105,7 @@ class Admin_Libraries extends ObjectEditor {
 	}
 
 	function getAllowableRoles(){
-		return ['opacAdmin', 'libraryAdmin', 'libraryManager'];
+		return ['opacAdmin', 'libraryAdmin', 'libraryManager', 'partnerAdmin'];
 	}
 
 	function canAddNew(){

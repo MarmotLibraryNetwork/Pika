@@ -33,18 +33,18 @@ class MyAccount_AJAX extends AJAXHandler {
 		'GetListTitles', // only used by MyAccount/ImportListsFromClassic.php && ajax.js //not checked
 //		'GetPreferredBranches', //not checked
 		'getCreateListForm', 'getBulkAddToListForm', 'AddList', 'getCreateListMultipleForm',
-		'addListMultiple',
-		'getEmailMyListForm', 'sendMyListEmail', 'setListEntryPositions',
+		'addListMultiple', 'getEmailMyListForm', 'sendMyListEmail', 'setListEntryPositions',
+		'transferList', 'isStaffUser', 'transferListToUser','copyListPrompt', 'copyList',
 		'removeTag',
 		'saveSearch', 'deleteSavedSearch',
-		'confirmCancelHold', 'cancelHold', 'cancelHolds', 'freezeHold', 'thawHold', 'getChangeHoldLocationForm', 'changeHoldLocation',
+		'confirmCancelHold', 'cancelHold', 'cancelHolds', 'freezeHold', 'thawHold',
+		'getChangeHoldLocationForm', 'changeHoldLocation',
+		'getFreezeHoldsForm','freezeHolds', 'thawHolds',
 		'getReactivationDateForm', //not checked
 		'renewItem', 'renewAll', 'renewSelectedItems',
 		'getAddAccountLinkForm', 'addAccountLink', 'removeAccountLink', 'removeViewingAccount',
 		'cancelBooking', 'getCitationFormatsForm', 'getAddBrowseCategoryFromListForm',
 		'getMasqueradeAsForm', 'initiateMasquerade', 'endMasquerade', 'getMenuData',
-		'transferList', 'isStaffUser', 'transferListToUser','copyListPrompt',
-		'copyList', 'getFreezeHoldsForm','freezeHolds', 'thawHolds',
 		'updatePin'
 	];
 

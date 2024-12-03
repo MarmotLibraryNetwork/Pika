@@ -45,6 +45,9 @@ class ResetPin extends Action{
 		if (!empty($_REQUEST['uid'])) {
 			$interface->assign('userID', $_REQUEST['uid']);
 		}
+        if (!empty($_REQUEST['bc'])) {
+            $interface->assign('bc', $_REQUEST['bc']);
+        }
 
 		global $configArray;
 		$numericOnlyPins      = $configArray['Catalog']['numericOnlyPins'];
@@ -68,12 +71,16 @@ class ResetPin extends Action{
 				$confirmNewPin = trim($_REQUEST['pin2']);
 				$resetToken    = $_REQUEST['resetToken'];
 				$userID        = $_REQUEST['uid'];
+                $bc            = $_REQUEST['bc'];
 				$newPinLength  = strlen($newPin);
-				if (!empty($userID)){
+			
+                if (!empty($userID)){
+                    
 					$patron = new User;
 					$patron->get($userID);
-
-					if (empty($patron->id)){
+                    
+                    // For Polaris, we don't need to have a user in Pika to update the PIN.
+					if (empty($patron->id) && $driver !== "Polaris"){
 						// Did not find a matching user to the uid
 						// This check could be optional if the resetPin method verifies that the ILS user matches the Pika user.
 						$resetPinResult = [

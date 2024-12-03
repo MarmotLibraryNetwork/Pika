@@ -202,6 +202,7 @@ public class FormatDetermination {
 						case "book":
 						case "bookwithcdrom":
 						case "bookwithdvd":
+						case "bookwithaudiocd":
 						case "bookwithvideodisc":
 						case "largeprint":
 						case "illustratededition":
@@ -262,6 +263,7 @@ public class FormatDetermination {
 							//econtentItem.setFormatCategory("Other"); // Have no format category rather than other
 							econtentRecord.setFormatBoost(2);
 							break;
+						case "atlas":
 						case "map":
 							econtentItem.setFormat("Map");
 							//econtentItem.setFormatCategory("Other"); // Have no format category rather than other

@@ -15,7 +15,13 @@
   {if $widget->customCss}
   	<link rel="stylesheet" type="text/css" href="{$widget->customCss}">
   {/if}
-  <base href="" target="_parent">{* Sets the default target of all links in the list widget to the parent page *}
+	{if $widget->additionalCss}
+		<style>
+			{$widget->additionalCss}
+		</style>
+	{/if}
+
+	<base href="" target="_parent">{* Sets the default target of all links in the list widget to the parent page *}
 </head>
 
 <body class="embeddedListWidgetBody">

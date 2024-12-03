@@ -26,6 +26,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -330,13 +331,18 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 		}catch (FileNotFoundException fe){
 			logger.warn("Could not find MARC record at " + individualFilename + " for " + identifier);
+			updateLastExtractTimeForRecord(identifier.getIdentifier());
 		} catch (Exception e) {
 			logger.error("Error reading data from ils file " + individualFilename, e);
 		}
 		return record;
 	}
 
-	private String getFileForIlsRecord(String recordNumber) {
+	protected void updateLastExtractTimeForRecord(String identifier) {
+		// Implement in drivers that have ILSes where we support near real time extraction
+	}
+
+		private String getFileForIlsRecord(String recordNumber) {
 		StringBuilder shortId = new StringBuilder(recordNumber.replace(".", ""));
 		while (shortId.length() < 9){
 			shortId.insert(0, "0");
@@ -490,8 +496,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		itemInfo.setCallNumber("ON ORDER");
 		itemInfo.setSortableCallNumber("ON ORDER");
 		itemInfo.setDetailedStatus("On Order");
-		Date tomorrow = new Date();
-		tomorrow.setTime(tomorrow.getTime() + 1000 * 60 * 60 * 24);
+		Date tomorrow = Date.from(new Date().toInstant().plus(1, ChronoUnit.DAYS));
 		itemInfo.setDateAdded(tomorrow);
 		//Format and Format Category should be set at the record level, so we don't need to set them here.
 
@@ -740,16 +745,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		if (lastCheckInFormatter != null) {
 			String lastCheckInDate = getItemSubfieldData(lastCheckInSubfield, itemField);
-			Date lastCheckIn = null;
-			if (lastCheckInDate != null && !lastCheckInDate.isEmpty())
+			Date   lastCheckIn     = null;
+			if (lastCheckInDate != null && !lastCheckInDate.isEmpty()) {
 				try {
 					lastCheckIn = lastCheckInFormatter.parse(lastCheckInDate);
 				} catch (ParseException e) {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Could not parse check in date " + lastCheckInDate, e);
-					}
+					logger.debug("Could not parse check-in date {}", lastCheckInDate, e);
 				}
-			itemInfo.setLastCheckinDate(lastCheckIn);
+				itemInfo.setLastCheckinDate(lastCheckIn);
+			}
 		}
 
 		//set status towards the end so we can access date added and other things that may need to

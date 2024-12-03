@@ -57,5 +57,24 @@ function getLibraryLocationUpdates(): array{
 			]
 		],
 
+		'2024.04.0_add_archive_only_interface_setting_to_library' => [
+			'release'         => '2024.04.0',
+			'title'           => 'Add archive only interface to Library settings',
+			'description'     => 'Add an option to library settings to enable an archive only view',
+			'continueOnError' => false,
+			'sql'             => [
+				'ALTER TABLE library ADD COLUMN `archiveOnlyInterface` TINYINT(1) DEFAULT 0;'
+			]
+		],
+		'2024.04.0_add_partner_library_setting' => [
+			'release'         => '2024.04.0',
+			'title'           => 'Add partner setting to library interface',
+			'description'     => 'Add an option to library settings to link an archive only partner interface to the parent library',
+			'continueOnError' => false,
+			'sql'             => [
+				'ALTER TABLE library ADD COLUMN `partnerOfSystem` INT(11)  DEFAULT NULL;'
+			]
+		],
+
 	];
 }

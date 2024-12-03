@@ -65,6 +65,20 @@ class NorthernWaters extends Sierra {
 		return $this->importListsFromIlsFromTrait($patron);
 	}
 
+	/**
+	 * Return all locations that are valid pick up locations
+	 *
+	 * @param \Library $libraryIgnored Parameter not used
+	 * @return array
+	 */
+	protected function getSelfRegHomeLocations($libraryIgnored): array{
+		$loc                        = new Location();
+		$loc->validHoldPickupBranch = '1';
+		$loc->orderBy('displayName');
+		$loc->find();
+		$homeLocations = $loc->fetchAll('code', 'displayName');
+		return $homeLocations;
+	}
 	public function getSelfRegistrationFields(){
 		$fields = parent::getSelfRegistrationFields();
 
@@ -72,20 +86,8 @@ class NorthernWaters extends Sierra {
 			return $fields;
 		}
 
-		// override home/pickup locations
-		$loc                        = new Location();
-		$loc->validHoldPickupBranch = '1';
-		$loc->find();
-		if (!$loc->N){
-			return ['success' => false, 'barcode' => ''];
-		}
-		$loc->orderBy('displayName');
-		$homeLocations = $loc->fetchAll('code', 'displayName');
-
 		for ($i = 0;$i < count($fields);$i++){
-			if ($fields[$i]['property'] == 'homelibrarycode'){
-				$fields[$i]['values'] = $homeLocations;
-			}elseif ($fields[$i]['property'] == 'zip'){
+			if ($fields[$i]['property'] == 'zip'){
 				$result = array_splice($fields, ++$i, 0, [[
 					'property'    => 'otheraddress',
 					'type'        => 'text',

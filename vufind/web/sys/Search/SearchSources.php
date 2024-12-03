@@ -281,6 +281,27 @@ class SearchSources {
 			];
 		}
 
+		if (isset($library) && $library->archiveOnlyInterface ?? false){
+			unset($searchOptions);
+			if ($searchArchive){
+				$searchOptions['islandora'] = [
+					'name'        => 'Local Digital Archive',
+					'description' => 'Local Digital Archive in Colorado',
+					'catalogType' => 'islandora'
+				];
+			}
+
+			//Genealogy Search
+			if ($searchGenealogy){
+				$searchOptions['genealogy'] = [
+					'name'        => 'Genealogy Records',
+					'description' => 'Genealogy Records from Colorado',
+					'catalogType' => 'genealogy'
+				];
+			}
+
+		}
+
 		return $searchOptions;
 	}
 

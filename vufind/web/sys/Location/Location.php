@@ -1668,18 +1668,16 @@ class Location extends DB_DataObject {
 				if ($_GET['opac'] == ''){
 					//Clear any existing cookie
 
-					if(!$configArray['Site']['isDevelopment']){
+					if (!$configArray['Site']['isDevelopment']){
 						setcookie('opac', $this->opacStatus, time() - 1000, '/', null, 1, 1);
-					}
-					else{
+					}else{
 						setcookie('opac', $this->opacStatus, time() - 1000, '/', null, 0, 1);
 					}
 				}elseif (!isset($_COOKIE['opac']) || $this->opacStatus != $_COOKIE['opac']){
 					if(!$configArray['Site']['isDevelopment']){
 					setcookie('opac', $this->opacStatus ? '1' : '0', 0, '/', NULL, 1, 1);
-				}
-					else{
-						setcookie('opac', $this->opacStatus ? '1' : '0', 0, '/', NULL, 0, 1);
+					}else{
+						setcookie('opac', $this->opacStatus ? '1' : '0', 0, '/', null, 0, 1);
 					}
 				}
 			}elseif (isset($_COOKIE['opac'])){

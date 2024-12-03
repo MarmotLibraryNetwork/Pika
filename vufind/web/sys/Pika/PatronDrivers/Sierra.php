@@ -1471,19 +1471,9 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 	 */
 	public function getSelfRegistrationFields(){
 		$fields = [];
+
 		/** @var Library $library */
 		global $library;
-		// get the valid home/pickup locations
-		$l                        = new Location();
-		$l->libraryId             = $library->libraryId;
-		$l->validHoldPickupBranch = '1';
-		$l->find();
-		// todo: pulling this code to accommodate NorthernWaters setup. Should return an empty array if nothing is found.
-		//if(!$l->N) {
-			//return ['success'=>false, 'barcode'=>''];
-		//}
-		$l->orderBy('displayName');
-		$homeLocations = $l->fetchAll('code', 'displayName');
 
 		$fields[] = [
 			'property'     => 'firstname',
@@ -1514,6 +1504,9 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			'required'     => true,
 			'autocomplete' => 'family-name',
 		];
+
+		// get the valid home/pickup locations
+		$homeLocations = $this->getSelfRegHomeLocations($library);
 
 		$fields[] = [
 			'property'    => 'homelibrarycode',
@@ -2172,7 +2165,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		// delete memcache holds
 		$patronHoldsCacheKey = $this->cache->makePatronKey('holds', $patron->id);
 		if(!$this->cache->delete($patronHoldsCacheKey)) {
-			$this->logger->warn("Failed to remove holds from memcache: ".$patronHoldsCacheKey);
+			$this->logger->warn("Failed to remove holds from memcache: " . $patronHoldsCacheKey);
 		}
 
 		// because the patron object has holds information we need to clear that cache too.
@@ -2491,25 +2484,24 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 	 *
 	 * @return array|null
 	 */
-	protected function _getApiInfo() {
-
-		$r = $this->_doRequest('about');
-		$r = strip_tags($r);
-		$info = [];
+	protected function _getApiInfo(){
+		$r     = $this->_doRequest('about');
+		$r     = strip_tags($r);
+		$info  = [];
 		$lines = preg_split('/\n/', $r, -1, PREG_SPLIT_NO_EMPTY);
 
-		foreach ($lines as $line) {
+		foreach ($lines as $line){
 			$line = trim($line);
-			if(empty($line) || !strpos($line, ':')) {
+			if (empty($line) || !strpos($line, ':')){
 				continue;
 			}
 			$parts = explode(':', $line);
 			$index = trim($parts[0]);
 			$index = str_replace(' ', '', $index);
 
-			if($index == "Version") {
+			if ($index == "Version"){
 				$indexParts = explode('.', $parts[1]);
-				if(count($indexParts) >= 2) {
+				if (count($indexParts) >= 2){
 					$info['VersionMajor'] = (int)$indexParts[0];
 					$info['VersionMinor'] = (int)$indexParts[1];
 					if ($info['VersionMajor'] > $this->configArray['Catalog']['api_version']){
@@ -2519,9 +2511,9 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			}
 			$info[$index] = trim($parts[1]);
 		}
-
 		return $info;
 	}
+
 	/**
 	 * Delete all Reading History within the ILS for the patron.
 	 *
@@ -3329,14 +3321,14 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			$this->apiLastError = $message;
 			$this->logger->warning($message, ['backtrace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)]);
 			return false;
-		} elseif ($c->isHttpError()) {
+		} elseif (isset($c->response->code) || $c->isHttpError()) {
 			// this will be a 4xx response
 			// first we need to check the response for a code, message from the API because many failed operations (ie,
 			// freezeing a hold) will send back a 4xx response code if the operation couldn't be completed.
 
 			// when authenticating with pins, a 400 response will be returned for bad credentials.
 			// check for failed authentication
-			if($c->errorCode == 400 && $c->response->code == 108) {
+			if($c->errorCode === 400 && $c->response->code === 108) {
 				// bad credentials
 				$message = 'Authentication Error: ' . $c->response->httpStatus . ': ' . $c->response->name;
 				$this->apiLastError = $message;
@@ -3347,7 +3339,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 				//$message = 'API Error: ' . $c->response->code . ': ' . $c->response->name;
 				$message = 'API Error: ' . $c->response->code . ': '; // name usually redundant part of the description below
 				if(isset($c->response->description)){
-					$message                     = $message . ' ' . $c->response->description;
+					$message .= ' ' . $c->response->description;
 					$this->apiLastErrorForPatron = $c->response->description;
 					$this->logger->warning($message, ['api_response' => $c->response]);
 				} elseif (isset($c->response->name)){
@@ -3479,6 +3471,22 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 
 		$c->close();
 		return $success;
+	}
+
+	/**
+	 * @param Library $library
+	 * @return array
+	 */
+	protected function getSelfRegHomeLocations(Library $library): array{
+		$homeLocations = [];
+		$l                        = new Location();
+		$l->libraryId             = $library->libraryId;
+		$l->validHoldPickupBranch = '1';
+		$l->orderBy('displayName');
+		if ($l->find()){
+			$homeLocations = $l->fetchAll('code', 'displayName');
+		}
+		return $homeLocations;
 	}
 
 	/**

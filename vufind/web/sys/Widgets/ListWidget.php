@@ -32,6 +32,7 @@ class ListWidget extends DB_DataObject {
 	public $showTitle;
 	public $showAuthor;
 	public $onSelectCallback;
+	public $additionalCss;
 	public $customCss;
 	public $listDisplayType;
 	public $showMultipleTitles;
@@ -228,11 +229,19 @@ class ListWidget extends DB_DataObject {
 				'property'    => 'customCss',
 				'type'        => 'url',
 				'label'       => 'Custom CSS File',
-				'maxLength'   => 255,
+				'maxLength'   => 500,
 				'size'        => 100,
 				'description' => 'The URL to an external css file to be included when rendering as an iFrame.',
 				'storeDb'     => true,
 				'required'    => false,
+				'hideInLists' => true,
+			],
+			'additionalCss' => [
+				'property'    => 'additionalCss',
+				'type'        => 'textarea',
+				'label'       => 'Additional CSS',
+				'rows'        => 7,
+				'description' => 'Extra CSS to apply to the widget.',
 				'hideInLists' => true,
 			],
 			'listDisplayType' => [

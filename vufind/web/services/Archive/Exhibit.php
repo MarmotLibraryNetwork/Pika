@@ -531,14 +531,14 @@ class Archive_Exhibit extends Archive_Object {
 					foreach ($response['response']['docs'] as $objectInCollection){
 						/** @var IslandoraDriver $firstObjectDriver */
 						$firstObjectDriver                                = RecordDriverFactory::initRecordDriver($objectInCollection);
-						$relatedImages[$firstObjectDriver->getUniqueID()] = array(
+						$relatedImages[$firstObjectDriver->getUniqueID()] = [
 							'pid'         => $firstObjectDriver->getUniqueID(),
 							'title'       => $firstObjectDriver->getTitle(),
 							'description' => $firstObjectDriver->getDescription(),
 							'image'       => $firstObjectDriver->getBookcoverUrl('medium'),
 							'link'        => $firstObjectDriver->getRecordUrl(),
 							'recordIndex' => $recordIndex++,
-						);
+						];
 
 						if (!($firstObjectDriver instanceof CollectionDriver)){
 							$allObjectsAreCollections = false;

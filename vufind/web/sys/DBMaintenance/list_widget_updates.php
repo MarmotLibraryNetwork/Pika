@@ -37,6 +37,15 @@ function getListWidgetUpdates(){
 //		],
 
 	return [
+		'2024.04.0_list-widget-css' => [
+			'release'         => '2024.04.0',
+			'title'           => 'Add text box for list widget CSS rules',
+			'description'     => 'Allow for CSS rules in addition to CSS file.',
+			'continueOnError' => true,
+			'sql'             => [
+				'ALTER TABLE `list_widgets` ADD COLUMN `additionalCss` LONGTEXT NULL DEFAULT NULL AFTER `customCss`;',
+			]
+		],
 
 	];
 }

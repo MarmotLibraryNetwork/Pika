@@ -19,12 +19,11 @@ import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.SimpleDateFormat;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.Date;
 
 /**
  * Record Processor to handle processing records from iii's Sierra ILS
@@ -50,6 +49,9 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	HashSet<String> validCheckedOutStatusCodes = new HashSet<String>() {{
 		add("-");
 	}};
+
+	private PreparedStatement updateExtractInfoStatement;
+	private int indexingProfileId;
 
 	private boolean hasSierraLanguageFixedField;
 
@@ -90,6 +92,9 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 //			orderCopiesSubfield         = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderCopies");
 //			orderStatusSubfield         = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderStatus");
 //			orderCode3Subfield          = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderCode3");
+
+			indexingProfileId = indexingProfileRS.getInt("id");
+			updateExtractInfoStatement = pikaConn.prepareStatement("INSERT INTO `ils_extract_info` (indexingProfileId, ilsId, lastExtracted) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted)"); // unique key is indexingProfileId and ilsId combined
 
 		} catch (SQLException e) {
 			logger.error("Error loading indexing profile information from database for IIIRecordProcessor", e);
@@ -514,7 +519,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		String   orderNumber = orderItem.getOrderRecordId();
 		String   location    = orderItem.getLocationCode();
 		if (location == null) {
-			logger.warn("No location set for order " + orderNumber + " skipping");
+			logger.warn("No location set for order {} skipping", orderNumber);
 			return;
 		}
 		itemInfo.setLocationCode(location);
@@ -527,8 +532,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		itemInfo.setDetailedStatus("On Order");
 		itemInfo.setCollection("On Order");
 		//Since we don't know when the item will arrive, assume it will come tomorrow.
-		Date tomorrow = new Date();
-		tomorrow.setTime(tomorrow.getTime() + 1000 * 60 * 60 * 24);
+		Date tomorrow = Date.from(new Date().toInstant().plus(1, ChronoUnit.DAYS));
 		itemInfo.setDateAdded(tomorrow);
 
 		//Format and Format Category should be set at the record level, so we don't need to set them here.
@@ -670,6 +674,20 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			}
 			ilsRecord.setLanguages(languageNames);
 			ilsRecord.setTranslations(translationsNames);
+		}
+	}
+
+	@Override
+	protected void updateLastExtractTimeForRecord(String identifier) {
+		if (identifier != null && !identifier.isEmpty()) {
+			try {
+				updateExtractInfoStatement.setInt(1, indexingProfileId);
+				updateExtractInfoStatement.setString(2, identifier);
+				updateExtractInfoStatement.setNull(3, Types.INTEGER);
+				int result = updateExtractInfoStatement.executeUpdate();
+			} catch (SQLException e) {
+				logger.error("Unable to update ils_extract_info table for {}", identifier, e);
+			}
 		}
 	}
 
