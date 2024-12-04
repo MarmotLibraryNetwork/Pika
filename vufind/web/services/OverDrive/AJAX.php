@@ -583,8 +583,8 @@ class OverDrive_AJAX extends AJAXHandler {
 					$formats[$format->textId] = $format->name;
 				}
 				$interface->assign('formats', $formats);
+				$interface->assign('overDriveId', $overDriveId); // return id now that we know its a valid one
 			}
-			$interface->assign('overDriveId', $overDriveId);
 		}
 
 		$results = [
@@ -664,30 +664,30 @@ class OverDrive_AJAX extends AJAXHandler {
 	function getOverDriveIssueCheckoutPrompt(){
 
 		global $interface;
-		$overdriveId = $_REQUEST['overdriveId'];
-		$issues = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIMagazineIssues;
-		$issues->overdriveId = $overdriveId;
-		$issues->find();
-		$issues->orderBy("pubDate DESC");
-		$title = '';
-		$coverUrl = '';
-		$edition = '';
-		$description = '';
-		$parentId = '';
-		while ($issues->fetch()){
-			$title =  $issues->title;
-			$coverUrl = $issues->coverUrl;
-			$edition = $issues->edition;
-			$description = $issues->description;
-			$parentId = $issues->parentId;
+		$overdriveId         = $_REQUEST['overdriveId'];
+		$issue              = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIMagazineIssues;
+		$issue->overdriveId = $overdriveId;
+		if ($issue->find(true)){
+			$parentId = $issue->parentId;
+			$interface->assign([
+				'title'       => $issue->title,
+				'coverUrl'    => $issue->coverUrl,
+				'edition'     => $issue->edition,
+				'description' => $issue->description,
+				'parentId'    => $issue->parentId,
+			]);
+
+			return [
+				'title'   => 'Checkout Magazine Issue',
+				'body'    => $interface->fetch('OverDrive/overdrive-magazine-issue-popup.tpl'),
+				'buttons' => "<button class='btn btn-primary' onclick=\"Pika.OverDrive.checkOutOverDriveTitle('$parentId','magazine-overdrive','$overdriveId')\">Checkout</button>"
+			];
+		} else {
+			return [
+				'title' => 'Checkout Magazine Issue',
+				'body' => '<p class="alert alert-warning">Issue not found.</p>',
+			];
 		}
-
-		return [
-			'title' => "Checkout Magazine Issue",
-			'body' => "<div class='row'><div class='col-sm-3'><img class='img-responsive' src='". $coverUrl ."' /></div><div class='col-sm-9'><div class='row' ><strong>". $title ."</strong> - ". $edition ."</div><div class='row' style='max-height:300px;overflow:hidden;'>". $description ."</div></div></div></div>",
-			'buttons' =>"<button class='btn btn-primary' onclick=\"Pika.OverDrive.checkOutOverDriveTitle('". $parentId ."','magazine-overdrive', '". $overdriveId."')\">Checkout</button>"
-		];
-
 	}
 
 

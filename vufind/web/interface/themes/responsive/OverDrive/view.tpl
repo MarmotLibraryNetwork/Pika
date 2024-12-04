@@ -1,7 +1,7 @@
 {include file="GroupedWork/load-full-record-view-enrichment.tpl"}
 
 {strip}
-	<div class="col-xs-12" xmlns="http://www.w3.org/1999/html">
+	<div class="col-tn-12" xmlns="http://www.w3.org/1999/html">
 		{* Search Navigation *}
 		{include file="GroupedWork/search-results-navigation.tpl"}
 
@@ -19,7 +19,7 @@
 			<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
 				{if $disableCoverArt != 1}
 					<div id="recordcover" class="text-center row">
-						<img alt="{translate text='Book Cover'}" class="img-thumbnail" src="{$recordDriver->getBookcoverUrl('medium')}">
+						<img alt="{translate text='Book Cover'} for &quot;{$recordDriver->getTitle()|removeTrailingPunctuation|escape}&quot;" class="img-thumbnail" src="{$recordDriver->getBookcoverUrl('medium')}">
 					</div>
 				{/if}
 				{if $showRatings}

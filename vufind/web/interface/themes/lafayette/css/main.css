@@ -6911,7 +6911,7 @@ body > .container {
 }
 .modal-header .close {
   margin-top: -10px;
-  font-size: 40px;
+  font-size: 43px;
   opacity: .4;
 }
 .btn:active,
@@ -8259,7 +8259,7 @@ a .header-button:visited {
 .jcarousel .active figure.thumbnail img {
   border: 2px solid #E15F15;
 }
-#home-page-search {
+.home-page-search {
   background-color: #3b3f43;
   background: linear-gradient(to bottom, #3b3f43, #3b3f43);
   padding: 20px 0 10px;
@@ -8973,6 +8973,7 @@ a.browse-thumbnail-sorted.active {
 }
 #browse-sub-category-menu button {
   margin-right: 5px;
+  margin-bottom: 5px;
 }
 #browse-sub-category-menu button.selected {
   color: #3b3f43;
@@ -10373,6 +10374,10 @@ a.browse-thumbnail-sorted.active {
 #masquerade-header {
   height: 50px;
   background-color: #6200a4;
+}
+#masquerade-header,
+#masquerade-header h4,
+#masquerade-header h5 {
   color: #FFF;
 }
 #masquerade-header-content {
@@ -10473,9 +10478,6 @@ h6 {
 h3 {
   color: #3276b1;
 }
-#browse-sub-category-menu button {
-  margin-bottom: 10px;
-}
 #more-browse-results:after {
   content: "Get More Results";
   margin-left: 5px;
@@ -10538,9 +10540,6 @@ a .header-button:hover {
 .jcarousel-control-next,
 .jcarousel-control-prev {
   box-shadow: none;
-}
-#browse-sub-category-menu button {
-  margin-bottom: 10px;
 }
 .sidebar-links .panel-heading {
   background: #e7e7e7;

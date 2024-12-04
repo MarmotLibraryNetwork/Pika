@@ -281,6 +281,27 @@ class SearchSources {
 			];
 		}
 
+		if (isset($library) && $library->archiveOnlyInterface ?? false){
+			unset($searchOptions);
+			if ($searchArchive){
+				$searchOptions['islandora'] = [
+					'name'        => 'Local Digital Archive',
+					'description' => 'Local Digital Archive in Colorado',
+					'catalogType' => 'islandora'
+				];
+			}
+
+			//Genealogy Search
+			if ($searchGenealogy){
+				$searchOptions['genealogy'] = [
+					'name'        => 'Genealogy Records',
+					'description' => 'Genealogy Records from Colorado',
+					'catalogType' => 'genealogy'
+				];
+			}
+
+		}
+
 		return $searchOptions;
 	}
 
@@ -354,7 +375,7 @@ class SearchSources {
 				}
 				return $worldCatLink;
 			case 'overdrive':
-				$overDriveUrl = $configArray['OverDrive']['url'];
+				$overDriveUrl = rtrim($configArray['OverDrive']['url'], '/');
 				return "$overDriveUrl/search?query=" . urlencode($lookFor);
 //			case 'overdriveKids':
 //				$overDriveUrl = $configArray['OverDrive']['url'];
@@ -382,7 +403,7 @@ class SearchSources {
 				return "$classicOpacBaseURL/search~S{$library->scope}/p?SEARCH=" . urlencode($lookFor);
 			default:
 				if (strpos($searchSource, 'overdrive') === 0){
-					$overDriveUrl              = $configArray['OverDrive']['url'];
+					$overDriveUrl              = rtrim($configArray['OverDrive']['url'], '/');
 					$alternateOverDriveLibrary = str_replace('overdrive', '', $searchSource);
 					return "$overDriveUrl/library/$alternateOverDriveLibrary/search?query=" . urlencode($lookFor);
 				} else{

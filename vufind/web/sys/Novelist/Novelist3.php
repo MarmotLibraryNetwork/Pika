@@ -125,7 +125,7 @@ class Novelist3{
 				$doUpdate = true;
 			}
 		}
-		return array($novelistData, $doUpdate);
+		return [$novelistData, $doUpdate];
 
 	}
 
@@ -160,7 +160,7 @@ class Novelist3{
 
 			if (!isset($_REQUEST['reload']) && !empty($novelistData->primaryISBN)){
 				//Just check the primary ISBN since we know that was good.
-				$ISBNs = array($novelistData->primaryISBN);
+				$ISBNs = [$novelistData->primaryISBN];
 			}
 
 			if (count($ISBNs)){
@@ -269,7 +269,7 @@ class Novelist3{
 		//When loading full data, we always need to load the data since we can't cache due to terms of service
 		if (!$doFullUpdate && !isset($_REQUEST['reload']) && !empty($novelistData->primaryISBN)){
 			//Just check the primary ISBN since we know that was good.
-			$ISBNs = array($novelistData->primaryISBN);
+			$ISBNs = [$novelistData->primaryISBN];
 		}
 
 		if (count($ISBNs)){
@@ -405,7 +405,7 @@ class Novelist3{
 		//When loading full data, we aways need to load the data since we can't cache due to terms of sevice
 		if (!$doFullUpdate && !isset($_REQUEST['reload']) && !empty($novelistData->primaryISBN)){
 			//Just check the primary ISBN since we know that was good.
-			$ISBNs = array($novelistData->primaryISBN);
+			$ISBNs = [$novelistData->primaryISBN];
 		}
 
 		//Update the last update time to optimize caching
@@ -495,7 +495,7 @@ class Novelist3{
 		//When loading full data, we aways need to load the data since we can't cache due to terms of sevice
 		if (!$doFullUpdate && !isset($_REQUEST['reload']) && !empty($novelistData->primaryISBN)){
 			//Just check the primary ISBN since we know that was good.
-			$ISBNs = array($novelistData->primaryISBN);
+			$ISBNs = [$novelistData->primaryISBN];
 		}
 
 		//Update the last update time to optimize caching
@@ -556,14 +556,14 @@ class Novelist3{
 	}
 
 	private function loadSimilarAuthorInfo($feature, &$enrichment){
-		$authors = array();
+		$authors = [];
 		$items   = $feature->authors;
 		foreach ($items as $item){
-			$authors[] = array(
+			$authors[] = [
 				'name'   => $item->full_name,
 				'reason' => $item->reason,
 				'link'   => '/Author/Home/?author="' . urlencode($item->full_name) . '"',
-			);
+			];
 		}
 		$enrichment->authors            = $authors;
 		$enrichment->similarAuthorCount = count($authors);
@@ -601,7 +601,7 @@ class Novelist3{
 		//When loading full data, we always need to load the data since we can't cache due to terms of service
 		if (!$doFullUpdate && !isset($_REQUEST['reload']) && !empty($novelistData->primaryISBN)){
 			//Just check the primary ISBN since we know that was good.
-			$ISBNs = array($novelistData->primaryISBN);
+			$ISBNs = [$novelistData->primaryISBN];
 		}
 
 		if (count($ISBNs)){
@@ -671,7 +671,7 @@ class Novelist3{
 
 	private function loadSeriesInfo($currentId, $seriesData, &$novelistData){
 		$titlesOwned  = 0;
-		$seriesTitles = array();
+		$seriesTitles = [];
 		$seriesName   = $seriesData->full_title;
 		$items        = $seriesData->series_titles;
 		$this->loadNoveListTitles($currentId, $items, $seriesTitles, $titlesOwned, $seriesName);
@@ -699,14 +699,14 @@ class Novelist3{
 	}
 
 	private function loadSimilarSeries($similarSeriesData, &$enrichment){
-		$similarSeries = array();
+		$similarSeries = [];
 		foreach ($similarSeriesData->series as $similarSeriesInfo){
-			$similarSeries[] = array(
+			$similarSeries[] = [
 				'title'  => $similarSeriesInfo->full_name,
 				'author' => $similarSeriesInfo->author,
 				'reason' => $similarSeriesInfo->reason,
 				'link'   => 'Union/Search/?lookfor=' . $similarSeriesInfo->full_name . " AND " . $similarSeriesInfo->author,
-			);
+			];
 		}
 		$enrichment->similarSeries      = $similarSeries;
 		$enrichment->similarSeriesCount = count($similarSeries);
@@ -715,7 +715,7 @@ class Novelist3{
 	private function loadSimilarTitleInfo($currentId, $similarTitles, &$enrichment){
 		$items               = $similarTitles->titles;
 		$titlesOwned         = 0;
-		$similarTitlesReturn = array();
+		$similarTitlesReturn = [];
 		$this->loadNoveListTitles($currentId, $items, $similarTitlesReturn, $titlesOwned);
 		$enrichment->similarTitles          = $similarTitlesReturn;
 		$enrichment->similarTitleCount      = count($items);
@@ -742,12 +742,12 @@ class Novelist3{
 				disableErrorHandler();
 			}
 
-			//Get all of the records that could match based on ISBN
+			//Get all the records that could match based on ISBN
 			$allIsbnsArray     = [];
 			$limitISBNSperItem = (int)1000 / count($items);
 			// We have to limit the number of ISBNs to search for because some titles will have so many isbns associated with it
 			// that the isbn search we build will be too large for a search query.
-			// Using a 1,000 ISBNs as a safe total number; then split the total so each series entry as the same upper limit of ISBNs to use.
+			// Using a 1,000 ISBNs a.b66343562s a safe total number; then split the total so each series entry as the same upper limit of ISBNs to use.
 			foreach ($items as $item){
 				$allIsbnsArray = array_merge($allIsbnsArray, array_slice($item->isbns, 0, $limitISBNSperItem));
 			}
@@ -757,6 +757,11 @@ class Novelist3{
 			$searchObject->clearFacets();
 			$searchObject->disableSpelling();
 			$searchObject->disableLogging();
+			// There is an array index mismatch. Count returns a number one less than the needed limit.
+			// An extra value is added, for cases where this mismatch occurs. In the event that it isn't
+			// needed, no value is found. Do not remove.
+			// Search object has a default limit of 20; solr itself also has a default limit (20) when not specified (Set in solrconfig.xml <int name="rows"> piece of /select request handler)
+			// so an alternate limit is required.
 			$searchObject->setLimit(count($items)+1);
 			$response = $searchObject->processSearch(true, false, false);
 
@@ -876,20 +881,20 @@ class Novelist3{
 	}
 
 //	private function loadRelatedContent($relatedContent, &$enrichment){
-//		$relatedContentReturn = array();
+//		$relatedContentReturn = [];
 //		foreach ($relatedContent->doc_types as $contentSection){
-//			$section = array(
+//			$section = [
 //				'title'   => $contentSection->doc_type,
-//				'content' => array(),
-//			);
+//				'content' => [],
+//			];
 //			foreach ($contentSection->content as $content){
 //				//print_r($content);
 //				$contentUrl           = $content->links[0]->url;
-//				$section['content'][] = array(
+//				$section['content'][] = [
 //					'author'     => $content->feature_author,
 //					'title'      => $content->title,
 //					'contentUrl' => $contentUrl,
-//				);
+//				];
 //			}
 //			$relatedContentReturn[] = $section;
 //		}
@@ -897,13 +902,13 @@ class Novelist3{
 //	}
 
 	private function loadGoodReads($goodReads, &$enrichment){
-		$goodReadsInfo         = array(
+		$goodReadsInfo         = [
 			'inGoodReads'      => $goodReads->is_in_goodreads,
 			'averageRating'    => $goodReads->average_rating,
 			'numRatings'       => $goodReads->ratings_count,
 			'numReviews'       => $goodReads->reviews_count,
 			'sampleReviewsUrl' => $goodReads->links[0]->url,
-		);
+		];
 		$enrichment->goodReads = $goodReadsInfo;
 	}
 

@@ -97,9 +97,7 @@ public class HooplaExportMain {
 
 		Date startTime = new Date();
 		startTimeStamp = startTime.getTime() / 1000;
-		if (logger.isInfoEnabled()) {
-			logger.info(startTime + ": Starting Hoopla Export");
-		}
+		logger.info("Starting Hoopla Export : {}", startTime);
 
 		// Read the base INI file to get information about the server (current directory/conf/config.ini)
 		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
@@ -218,13 +216,13 @@ public class HooplaExportMain {
 						updateTitlesInDB(pikaConn, responseTitles);
 						return !updateTitlesInDBHadErrors;
 					} else {
-						logger.error("Returned title " + titleId + " from API was not the title asked for: " + hooplaId);
+						logger.error("Returned title {} from API was not the title asked for: {}", titleId, hooplaId);
 					}
 				}
 			}
-			logger.error("API did not find info for the Id: " + hooplaId);
+			logger.error("API did not find info for the Id: {}", hooplaId);
 		} catch (NumberFormatException e) {
-			logger.error("Invalid Hoopla Record Id: " + singleRecordToExport, e);
+			logger.error("Invalid Hoopla Record Id: {}", singleRecordToExport, e);
 		} catch (Exception e) {
 			logger.error("Error exporting hoopla data", e);
 		}
@@ -277,12 +275,12 @@ public class HooplaExportMain {
 				if (responseTitles != null && responseTitles.length() > 0) {
 					numProcessed += updateTitlesInDB(pikaConn, responseTitles);
 				} else {
-					logger.warn("Hoopla Extract call had no titles for updating: " + url);
+					logger.warn("Hoopla Extract call had no titles for updating: {}", url);
 					if (startTime != null) {
 						addNoteToHooplaExportLog("Hoopla had no updates since " + startTime);
 					} else if (doFullReload) {
 						addNoteToHooplaExportLog("Hoopla gave no information for a full Reload");
-						logger.error("Hoopla gave no information for a full Reload. " + url);
+						logger.error("Hoopla gave no information for a full Reload. {}", url);
 					}
 					// If working on a short time frame, it is possible there are no updates. But we expect to do this no more that once a day at this point,
 					// so we expect there to be changes.
@@ -376,78 +374,64 @@ public class HooplaExportMain {
 				JSONObject curTitle = responseTitles.getJSONObject(i);
 				titleId = curTitle.getLong("titleId");
 				try {
-				//if (logger.isDebugEnabled()){
-					if (!curTitle.getString("purchaseModel").equals("INSTANT") && !curTitle.getString("purchaseModel").equals("FLEX")){
-						logger.warn("Found new purchase model '" + curTitle.getString("purchaseModel") + "' for " + titleId);
+					String purchaseModel = curTitle.getString("purchaseModel");
+					if (!purchaseModel.equals("INSTANT") && !purchaseModel.equals("FLEX")){
+						logger.warn("Found new purchase model '{}' for {}", purchaseModel, titleId);
 					}
 					long id = curTitle.getLong("id");
-					if (id != titleId){
-						logger.warn("Id (" + id + " ) doesn't match titleId (" + titleId + ")");
+					if (logger.isDebugEnabled() && id != titleId){
+						logger.debug("Id ({}) doesn't match titleId ({})", id, titleId);
 					}
-				//}
-				updateHooplaTitleInDB.setLong(1, titleId);
-				final boolean isActive = curTitle.getBoolean("active");
-				updateHooplaTitleInDB.setBoolean(2, isActive);
-				//updateHooplaTitleInDB.setString(3, removeBadChars(curTitle.getString("title")));
-				updateHooplaTitleInDB.setString(3, curTitle.getString("title"));
-				updateHooplaTitleInDB.setString(4, curTitle.getString("kind"));
-				updateHooplaTitleInDB.setBoolean(5, curTitle.getBoolean("pa"));
-				updateHooplaTitleInDB.setBoolean(6, curTitle.getBoolean("demo"));
-				updateHooplaTitleInDB.setBoolean(7, curTitle.getBoolean("profanity"));
-				updateHooplaTitleInDB.setString(8, curTitle.has("rating") ? curTitle.getString("rating") : "");
+					updateHooplaTitleInDB.setLong(1, titleId);
+					final boolean isActive = curTitle.getBoolean("active");
+					updateHooplaTitleInDB.setBoolean(2, isActive);
+					//updateHooplaTitleInDB.setString(3, removeBadChars(curTitle.getString("title")));
+					updateHooplaTitleInDB.setString(3, curTitle.getString("title"));
+					updateHooplaTitleInDB.setString(4, curTitle.getString("kind"));
+					updateHooplaTitleInDB.setBoolean(5, curTitle.getBoolean("pa"));
+					updateHooplaTitleInDB.setBoolean(6, curTitle.getBoolean("demo"));
+					updateHooplaTitleInDB.setBoolean(7, curTitle.getBoolean("profanity"));
+					updateHooplaTitleInDB.setString(8, curTitle.has("rating") ? curTitle.getString("rating") : "");
 
-				updateHooplaTitleInDB.setBoolean(9, curTitle.getBoolean("abridged"));
-				updateHooplaTitleInDB.setBoolean(10, curTitle.getBoolean("children"));
-				double price = 0;
-				if (curTitle.has("price")) {
-					price = curTitle.getDouble("price");
-				} else if (isActive) {
-					// Only warn about missing price for active hoopla titles
-					logger.warn("Active Hoopla title " + titleId + " has no price set.");
-				}
-				if (!isActive) numMarkedInactive++;
-				updateHooplaTitleInDB.setDouble(11, price);
-				updateHooplaTitleInDB.setBoolean(12, curTitle.getBoolean("fiction"));
-				updateHooplaTitleInDB.setString(13, curTitle.getString("language"));
-				updateHooplaTitleInDB.setString(14, curTitle.getString("publisher"));
-				String duration = curTitle.getString("duration");
-				if (duration.equals("0m 0s")){
-					updateHooplaTitleInDB.setNull(15, Types.VARCHAR);
-				} else {
-					updateHooplaTitleInDB.setString(15, duration);
-				}
-				if (curTitle.has("series")){
-					updateHooplaTitleInDB.setString(16, curTitle.getString("series"));
-				} else {
-					updateHooplaTitleInDB.setNull(16, Types.VARCHAR);
-				}
-				if (curTitle.has("season")){
-					updateHooplaTitleInDB.setString(17, curTitle.getString("season"));
-				} else {
-					updateHooplaTitleInDB.setNull(17, Types.VARCHAR);
-				}
+					updateHooplaTitleInDB.setBoolean(9, curTitle.getBoolean("abridged"));
+					updateHooplaTitleInDB.setBoolean(10, curTitle.getBoolean("children"));
+					double price = 0;
+					if (curTitle.has("price")) {
+						price = curTitle.getDouble("price");
+					} else if (isActive) {
+						// Only warn about missing price for active hoopla titles
+						logger.warn("Active Hoopla title {} has no price set.", titleId);
+					}
+					if (!isActive) numMarkedInactive++;
+					updateHooplaTitleInDB.setDouble(11, price);
+					updateHooplaTitleInDB.setBoolean(12, curTitle.getBoolean("fiction"));
+					updateHooplaTitleInDB.setString(13, curTitle.getString("language"));
+					updateHooplaTitleInDB.setString(14, curTitle.getString("publisher"));
+					String duration = curTitle.getString("duration");
+					if (duration.equals("0m 0s")){
+						updateHooplaTitleInDB.setNull(15, Types.VARCHAR);
+					} else {
+						updateHooplaTitleInDB.setString(15, duration);
+					}
+					if (curTitle.has("series")){
+						updateHooplaTitleInDB.setString(16, curTitle.getString("series"));
+					} else {
+						updateHooplaTitleInDB.setNull(16, Types.VARCHAR);
+					}
+					if (curTitle.has("season")){
+						updateHooplaTitleInDB.setString(17, curTitle.getString("season"));
+					} else {
+						updateHooplaTitleInDB.setNull(17, Types.VARCHAR);
+					}
 
-				int updated = updateHooplaTitleInDB.executeUpdate();
-				if (updated > 0) {
-					numUpdates++;
-					markGroupedWorkForReindexing(pikaConn, titleId);
-				}
+					int updated = updateHooplaTitleInDB.executeUpdate();
+					if (updated > 0) {
+						numUpdates++;
+						markGroupedWorkForReindexing(pikaConn, titleId);
+					}
 				} catch (Exception e) {
 					String message = "Error updating hoopla data in Pika database for title " + titleId;
-					if (e.getMessage().contains("Data too long for column")){
-						Pattern pattern = Pattern.compile("Data too long for column '(.*?)'");
-						Matcher matcher = pattern.matcher(e.getMessage());
-						if (matcher.find()) {
-							String column = matcher.group(1);
-							if (curTitle.has(column)){
-								String value = curTitle.getString(column);
-								message += " has length " + value.length() + ", '"+ value + "'";
-								addNoteToHooplaExportLog(message);
-								updateTitlesInDBHadErrors = true;
-							}
-						}
-						logger.error(message);
-					} else {
+					if (!checkErrorForColumnSizeError(e, curTitle, message)) {
 						logger.error(message, e);
 						addNoteToHooplaExportLog(message + " " + e);
 						updateTitlesInDBHadErrors = true;
@@ -464,6 +448,28 @@ public class HooplaExportMain {
 		return numUpdates;
 	}
 
+	private static boolean checkErrorForColumnSizeError(Exception e, JSONObject curTitle, String message){
+		if (e.getMessage().contains("Data too long for column")){
+			Pattern pattern = Pattern.compile("Data too long for column '(.*?)'");
+			Matcher matcher = pattern.matcher(e.getMessage());
+			if (matcher.find()) {
+				String column = matcher.group(1);
+				if (curTitle.has(column)){
+					try {
+						String value = curTitle.getString(column);
+						message += " has length " + value.length() + ", '"+ value + "'";
+					} catch (JSONException ex) {
+						logger.error("Error fetching column {} from JSON Object", column, e);
+					}
+					addNoteToHooplaExportLog(message);
+					//updateTitlesInDBHadErrors = true;
+				}
+			}
+			logger.error(message);
+			return true;
+		}
+		return false;
+	}
 	/**
 	 * Remove UTF8mb4 (4bytes) characters from string.
 	 * eg. emojis
@@ -573,13 +579,13 @@ public class HooplaExportMain {
 			}
 
 		} catch (SocketTimeoutException e) {
-			logger.error("Timeout connecting to URL (" + url + ")", e);
+			logger.error("Timeout connecting to URL ({})", url, e);
 			retVal = new URLPostResponse(false, -1, "Timeout connecting to URL (" + url + ")");
 		} catch (MalformedURLException e) {
-			logger.error("URL to post (" + url + ") is malformed", e);
+			logger.error("URL to post ({}) is malformed", url, e);
 			retVal = new URLPostResponse(false, -1, "URL to post (" + url + ") is malformed");
 		} catch (IOException e) {
-			logger.error("Error posting to url \r\n" + url, e);
+			logger.error("Error posting to url {}", url, e);
 			retVal = new URLPostResponse(false, -1, "Error posting to url \r\n" + url + "\r\n" + e);
 		} finally {
 			if (conn != null) conn.disconnect();
@@ -650,13 +656,13 @@ public class HooplaExportMain {
 			}
 
 		} catch (SocketTimeoutException e) {
-			logger.error("Timeout connecting to URL (" + url + ")", e);
+			logger.error("Timeout connecting to URL ({})", url, e);
 			retVal = new URLPostResponse(false, -1, "Timeout connecting to URL (" + url + ")");
 		} catch (MalformedURLException e) {
-			logger.error("URL to get (" + url + ") is malformed", e);
+			logger.error("URL to get ({}) is malformed", url, e);
 			retVal = new URLPostResponse(false, -1, "URL to get (" + url + ") is malformed");
 		} catch (IOException e) {
-			logger.error("Error getting url \r\n" + url, e);
+			logger.error("Error getting url {}", url, e);
 			retVal = new URLPostResponse(false, -1, "Error getting url \r\n" + url + "\r\n" + e);
 		} finally {
 			if (conn != null) conn.disconnect();

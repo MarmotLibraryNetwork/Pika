@@ -6,7 +6,6 @@
 @import "../../responsive/css/responsive_base.less";
 
 #header-container {
-  height: 150px;
   border-bottom-width: 3px;
 }
 
@@ -16,7 +15,7 @@
   max-height: @header-logo-max-height;
 }
 
-.header-login-button-mixin(@header-buttons-background-color); // to match logo. plb 3-31-2015
+.header-login-button-mixin(@header-buttons-background-color, #fff, 35px, 60px); // to match logo. plb 3-31-2015
 
 #horizontal-search-label,
 #keepFiltersSwitchLabel, #advancedSearchLink,
@@ -75,6 +74,9 @@
   }
 }
 
+#library-name-header{
+  padding-top:35px;
+}
 
 #anythink-browse-category-picker(@browseCarouselControlColor, @selectedCategoryColor, @content-bg);
 

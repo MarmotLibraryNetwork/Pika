@@ -252,9 +252,18 @@ public class RecordInfo {
 		return numOrders;
 	}
 
+	boolean hasOnOrderCopies() {
+		for (ItemInfo curItem : relatedItems) {
+			if (curItem.isOrderItem()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	String getFullIdentifier() {
 		String fullIdentifier;
-		if (subSource != null && subSource.length() > 0) {
+		if (subSource != null && !subSource.isEmpty()) {
 			fullIdentifier = recordIdentifier.getSource() + ":" + subSource + ":" + recordIdentifier.getIdentifier();
 		} else {
 			fullIdentifier = recordIdentifier.getSourceAndId();
@@ -270,6 +279,15 @@ public class RecordInfo {
 			}
 		}
 		return numPrintCopies;
+	}
+
+	boolean hasPrintCopies() {
+		for (ItemInfo curItem : relatedItems) {
+			if (!curItem.isOrderItem() && !curItem.isEContent()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	HashSet<String> getAllEContentSources() {
@@ -310,7 +328,7 @@ public class RecordInfo {
 			indexingRecordProcessorStats stats      = scopedStats.indexingRecordProcessorStats.get(sourceName.toLowerCase());
 			if (stats != null) {
 				HashSet<ItemInfo> itemsForScope = getRelatedItemsForScope(scopedStats.getScopeName());
-				if (itemsForScope.size() > 0) {
+				if (!itemsForScope.isEmpty()) {
 					stats.numRecordsTotal++;
 					boolean recordLocallyOwned = false;
 					for (ItemInfo curItem : itemsForScope) {

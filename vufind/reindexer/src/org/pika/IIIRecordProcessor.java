@@ -14,21 +14,16 @@
 
 package org.pika;
 
-import au.com.bytecode.opencsv.CSVReader;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
 
-import java.io.File;
-import java.io.FileReader;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.SimpleDateFormat;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.regex.Pattern;
+import java.util.Date;
 
 /**
  * Record Processor to handle processing records from iii's Sierra ILS
@@ -54,6 +49,9 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	HashSet<String> validCheckedOutStatusCodes = new HashSet<String>() {{
 		add("-");
 	}};
+
+	private PreparedStatement updateExtractInfoStatement;
+	private int indexingProfileId;
 
 	private boolean hasSierraLanguageFixedField;
 
@@ -95,6 +93,9 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 //			orderStatusSubfield         = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderStatus");
 //			orderCode3Subfield          = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderCode3");
 
+			indexingProfileId = indexingProfileRS.getInt("id");
+			updateExtractInfoStatement = pikaConn.prepareStatement("INSERT INTO `ils_extract_info` (indexingProfileId, ilsId, lastExtracted) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted)"); // unique key is indexingProfileId and ilsId combined
+
 		} catch (SQLException e) {
 			logger.error("Error loading indexing profile information from database for IIIRecordProcessor", e);
 		}
@@ -134,6 +135,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		return !status.isEmpty() && validOnOrderRecordStatus.indexOf(status.charAt(0)) >= 0;
 	}
 
+
 	private void loadLoanRuleInformation(Connection pikaConn, Logger logger) {
 		if (!loanRuleDataLoaded) {
 			//Load loan rules
@@ -142,16 +144,21 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 					ResultSet loanRulesRS = loanRuleStmt.executeQuery()
 			) {
 				while (loanRulesRS.next()) {
-					LoanRule loanRule = new LoanRule();
-					loanRule.setLoanRuleId(loanRulesRS.getLong("loanRuleId"));
-					loanRule.setName(loanRulesRS.getString("name"));
-					loanRule.setHoldable(loanRulesRS.getBoolean("holdable"));
-					loanRule.setBookable(loanRulesRS.getBoolean("bookable"));
+					try {
+						LoanRule loanRule = new LoanRule();
+						loanRule.setLoanRuleId(loanRulesRS.getLong("loanRuleId"));
+						loanRule.setName(loanRulesRS.getString("name"));
+						loanRule.setHoldable(loanRulesRS.getBoolean("holdable"));
+						loanRule.setBookable(loanRulesRS.getBoolean("bookable"));
+						loanRule.setIsHomePickup(loanRulesRS.getBoolean("homePickup"));
 
-					loanRules.put(loanRule.getLoanRuleId(), loanRule);
+						loanRules.put(loanRule.getLoanRuleId(), loanRule);
+					} catch (SQLException e) {
+						logger.error("Error while loading loan rules", e);
+					}
 				}
 				if (logger.isDebugEnabled()) {
-					logger.debug("Loaded " + loanRules.size() + " loan rules");
+					logger.debug("Loaded {} loan rules", loanRules.size());
 				}
 
 				try (
@@ -159,19 +166,26 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 						ResultSet loanRuleDeterminersRS = loanRuleDeterminersStmt.executeQuery()
 				) {
 					while (loanRuleDeterminersRS.next()) {
-						LoanRuleDeterminer loanRuleDeterminer = new LoanRuleDeterminer(logger);
-						loanRuleDeterminer.setRowNumber(loanRuleDeterminersRS.getLong("rowNumber"));
-						loanRuleDeterminer.setLocation(loanRuleDeterminersRS.getString("location"));
-						loanRuleDeterminer.setPatronType(loanRuleDeterminersRS.getString("patronType"));
-						loanRuleDeterminer.setItemType(loanRuleDeterminersRS.getString("itemType"));
-						loanRuleDeterminer.setLoanRuleId(loanRuleDeterminersRS.getLong("loanRuleId"));
-						loanRuleDeterminer.setActive(loanRuleDeterminersRS.getBoolean("active"));
+						try {
+							boolean isActive = loanRuleDeterminersRS.getBoolean("active");
+							if (isActive) { // Only load active determiners
+								LoanRuleDeterminer loanRuleDeterminer = new LoanRuleDeterminer(logger);
+								loanRuleDeterminer.setRowNumber(loanRuleDeterminersRS.getLong("rowNumber"));
+								loanRuleDeterminer.setLocation(loanRuleDeterminersRS.getString("location"));
+								loanRuleDeterminer.setPatronType(loanRuleDeterminersRS.getString("patronType"));
+								loanRuleDeterminer.setItemType(loanRuleDeterminersRS.getString("itemType"));
+								loanRuleDeterminer.setLoanRuleId(loanRuleDeterminersRS.getLong("loanRuleId"));
+								loanRuleDeterminer.setActive(isActive);
 
-						loanRuleDeterminers.add(loanRuleDeterminer);
+								loanRuleDeterminers.add(loanRuleDeterminer);
+							}
+						} catch (SQLException e) {
+							logger.error("Error while loading loan rule determiners", e);
+						}
 					}
 
 					if (logger.isDebugEnabled()) {
-						logger.debug("Loaded " + loanRuleDeterminers.size() + " loan rule determiner");
+						logger.debug("Loaded {} loan rule determiner", loanRuleDeterminers.size());
 					}
 				}
 			} catch (SQLException e) {
@@ -186,7 +200,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	 * Several pieces of logic and fields are specific to Sierra (probably Millennium in the past)
 	 *
 	 */
-//	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems){
+//	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record){
 //		List<DataField> orderFields = MarcUtil.getDataFields(record, orderTag);
 //		for (DataField curOrderField : orderFields){
 //			//Check here to make sure the order item is valid before doing further processing.
@@ -252,7 +266,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 //				}
 //			}
 //		}
-//		if (!hasTangibleItems && recordInfo.getNumCopiesOnOrder() > 0){
+//		if (!recordInfo.getNumPrintCopies() > 0 && recordInfo.getNumCopiesOnOrder() > 0){
 //			groupedWork.addKeywords("On Order");
 //			groupedWork.addKeywords("Coming Soon");
 //			/*//Don't do this anymore, see D-1893
@@ -265,10 +279,10 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 //	}
 
 	private boolean isWildCardValue(String value) {
-		return value.equals("9999") || value.equals("999");
+		return value.equals("9999");
 	}
 
-	private HashMap<String, HashMap<RelevantLoanRule, LoanRuleDeterminer>> cachedRelevantLoanRules = new HashMap<>();
+	private final HashMap<String, HashMap<RelevantLoanRule, LoanRuleDeterminer>> cachedRelevantLoanRules = new HashMap<>();
 	private HashMap<RelevantLoanRule, LoanRuleDeterminer> getRelevantLoanRules(String iType, String locationCode, HashSet<Long> pTypesToCheck) {
 		return getRelevantLoanRules(iType, locationCode, pTypesToCheck, null);
 	}
@@ -317,7 +331,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 								break;
 							} else {
 								pTypesNotAccountedFor.removeAll(curDeterminer.getPatronTypes());
-								if (pTypesNotAccountedFor.size() == 0) {
+								if (pTypesNotAccountedFor.isEmpty()) {
 									break;
 								}
 							}
@@ -335,7 +349,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 
 	private boolean isPTypeValid(HashSet<Long> determinerPatronTypes, HashSet<Long> pTypesToCheck) {
 		//For our case,
-		if (pTypesToCheck.size() == 0){
+		if (pTypesToCheck.isEmpty()){
 			return true;
 		}
 		for (Long determinerPType : determinerPatronTypes){
@@ -386,6 +400,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	}
 
 	private final HashMap<String, BookabilityInformation> bookabilityCache = new HashMap<>();
+
 	@Override
 	protected BookabilityInformation isItemBookable(ItemInfo itemInfo, Scope curScope, BookabilityInformation isBookableUnscoped) {
 		String locationCode = itemInfo.getLocationCode();
@@ -404,6 +419,28 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			bookabilityCache.put(key, new BookabilityInformation(isBookable, bookablePTypes));
 		}
 		return bookabilityCache.get(key);
+	}
+
+	private final HashMap<String, HomePickUpInformation> homePickupCache = new HashMap<>();
+
+	@Override
+	protected HomePickUpInformation isItemHomePickUp(ItemInfo itemInfo, Scope curScope, HomePickUpInformation isHomePickUpUnscoped) {
+		String locationCode = itemInfo.getLocationCode();
+		String itemIType    = itemInfo.getITypeCode();
+		String key          = curScope.getScopeName() + "-" + locationCode + "-" + itemIType;
+		if (!homePickupCache.containsKey(key)) {
+			HashMap<RelevantLoanRule, LoanRuleDeterminer> relevantLoanRules = getRelevantLoanRules(itemIType, locationCode, curScope.getRelatedNumericPTypes());
+			HashSet<Long> homePickUpPTypes = new HashSet<>();
+			boolean isHomePickup = false;
+			for (RelevantLoanRule loanRule : relevantLoanRules.keySet()) {
+				if (loanRule.getLoanRule().getIsHomePickup()) {
+					homePickUpPTypes.addAll(loanRule.getPatronTypes());
+					isHomePickup = true;
+				}
+			}
+			homePickupCache.put(key, new HomePickUpInformation(isHomePickup, homePickUpPTypes));
+		}
+		return homePickupCache.get(key);
 	}
 
 	protected String getDisplayGroupedStatus(ItemInfo itemInfo, RecordIdentifier identifier) {
@@ -463,7 +500,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	}
 
 	public boolean isEmptyDueDate(String dueDate) {
-		return dueDate == null || dueDate.length() == 0 || dueDate.trim().equals("-  -");
+		return dueDate == null || dueDate.isEmpty() || dueDate.trim().equals("-  -");
 	}
 
 	private SimpleDateFormat displayDateFormatter = new SimpleDateFormat("MMM d, yyyy");
@@ -472,7 +509,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			Date dateAdded = dueDateFormatter.parse(dueDate);
 			return displayDateFormatter.format(dateAdded);
 		}catch (Exception e){
-			logger.warn("Could not load display due date for dueDate " + dueDate + " for identifier " + identifier, e);
+			logger.warn("Could not load display due date for dueDate {} for identifier {}", dueDate, identifier, e);
 		}
 		return "Unknown";
 	}
@@ -482,21 +519,20 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		String   orderNumber = orderItem.getOrderRecordId();
 		String   location    = orderItem.getLocationCode();
 		if (location == null) {
-			logger.warn("No location set for order " + orderNumber + " skipping");
+			logger.warn("No location set for order {} skipping", orderNumber);
 			return;
 		}
 		itemInfo.setLocationCode(location);
 		itemInfo.setItemIdentifier(orderNumber);
 		itemInfo.setNumCopies(orderItem.getNumCopies());
 		itemInfo.setIsEContent(false);
-		itemInfo.setIsOrderItem(true);
+		itemInfo.setIsOrderItem();
 		itemInfo.setCallNumber("ON ORDER");
 		itemInfo.setSortableCallNumber("ON ORDER");
 		itemInfo.setDetailedStatus("On Order");
 		itemInfo.setCollection("On Order");
 		//Since we don't know when the item will arrive, assume it will come tomorrow.
-		Date tomorrow = new Date();
-		tomorrow.setTime(tomorrow.getTime() + 1000 * 60 * 60 * 24);
+		Date tomorrow = Date.from(new Date().toInstant().plus(1, ChronoUnit.DAYS));
 		itemInfo.setDateAdded(tomorrow);
 
 		//Format and Format Category should be set at the record level, so we don't need to set them here.
@@ -638,6 +674,20 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			}
 			ilsRecord.setLanguages(languageNames);
 			ilsRecord.setTranslations(translationsNames);
+		}
+	}
+
+	@Override
+	protected void updateLastExtractTimeForRecord(String identifier) {
+		if (identifier != null && !identifier.isEmpty()) {
+			try {
+				updateExtractInfoStatement.setInt(1, indexingProfileId);
+				updateExtractInfoStatement.setString(2, identifier);
+				updateExtractInfoStatement.setNull(3, Types.INTEGER);
+				int result = updateExtractInfoStatement.executeUpdate();
+			} catch (SQLException e) {
+				logger.error("Unable to update ils_extract_info table for {}", identifier, e);
+			}
 		}
 	}
 

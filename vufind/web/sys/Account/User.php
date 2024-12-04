@@ -222,7 +222,7 @@ class User extends DB_DataObject {
 	/**
 	 * setPassword
 	 * Use when setting a password on a newly instantiated object or when the object will call update() later in the code.
-	 * This will not update the password in the database.
+	 * NOTE: This will not update (save) the password in the database.
 	 * @param $password
 	 * @return void
 	 */
@@ -258,13 +258,13 @@ class User extends DB_DataObject {
 	 * @param string  $password
 	 * @return string Encrypted password
 	 */
-	private function _encryptPassword($password) {
+	private function _encryptPassword($password){
 		global $configArray;
-		$key = base64_decode($configArray["Site"]["passwordEncryptionKey"]);
-		$v   = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
-		$e   = openssl_encrypt($password, 'aes-256-cbc', $key, 0, $v);
-		$p   = base64_encode($e . '::' . $v);
-		return $p;
+		$key         = base64_decode($configArray["Site"]["passwordEncryptionKey"]);
+		$initVector  = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
+		$encryptedPW = openssl_encrypt($password, 'aes-256-cbc', $key, 0, $initVector);
+		$string      = base64_encode($encryptedPW . '::' . $initVector);
+		return $string;
 	}
 
 	/**
@@ -272,15 +272,15 @@ class User extends DB_DataObject {
 	 *
 	 * @return string Decrypted password
 	 */
-	private function _decryptPassword() {
+	private function _decryptPassword(){
 		if (empty($this->password)){
 			$password = '';
 		}else{
 			global $configArray;
 			$key    = base64_decode($configArray['Site']['passwordEncryptionKey']);
 			$string = base64_decode($this->password);
-			[$encryptedPW, $v] = explode('::', $string, 2);
-			$password = openssl_decrypt($encryptedPW, 'aes-256-cbc', $key, 0, $v);
+			[$encryptedPW, $initVector] = explode('::', $string, 2);
+			$password = openssl_decrypt($encryptedPW, 'aes-256-cbc', $key, 0, $initVector);
 		}
 		return $password;
 	}
@@ -1089,7 +1089,7 @@ class User extends DB_DataObject {
 		//Get checked out titles from the ILS
 		$ilsCheckouts = $this->getCatalogDriver()->getMyCheckouts($this, !$includeLinkedUsers);
 		// When working with linked users with Sierra Encore, curl connections need to be reset for logins to process correctly
-		$timer->logTime("Loaded transactions from catalog.");
+		$timer->logTime('Loaded transactions from catalog.');
 
 		//Get checked out titles from OverDrive
 		//Do not load OverDrive titles if the parent barcode (if any) is the same as the current barcode
@@ -1264,7 +1264,7 @@ class User extends DB_DataObject {
 	 * and filtering to make sure that the user is able to
 	 *
 	 * @param string $recordSource The source of the record that we are placing a hold on
-	 * @param bool $includeLinkedAccounts Whether or not to include accounts linked to this account
+	 * @param bool $includeLinkedAccounts Whether to include accounts linked to this account
 	 * @return Location[]
 	 */
 	public function getValidPickupBranches($recordSource, $includeLinkedAccounts = true){

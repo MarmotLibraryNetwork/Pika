@@ -45,6 +45,7 @@ class Flatirons extends Sierra
 		$homeLibraryCode = $location->code;
 
 		$fields   = [];
+		// Preset the self reg user's homelibarycode to the first location for the library
 		$fields[] = [
 			'property' => 'homelibrarycode',
 			'type'     => 'hidden',

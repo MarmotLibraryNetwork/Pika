@@ -50,9 +50,14 @@
                                     <div class="col-xs-4"><strong>{translate text='Full Name'}:</strong></div>
                                     <div class="col-xs-8">{$profile->fullname|escape}</div>
                                 </div>
+                                {if !$offline && !is_null($profile->legalFullName)}
+                                    <div class="form-group">
+                                        <div class="col-xs-4"><strong>{translate text='Full Legal Name'}:</strong></div>
+                                        <div class="col-xs-8">{$profile->legalFullName|escape}</div>
+                                    </div>
+                                {/if}
                                 {if !$offline}
                                     {if $barcodePin}
-                                        {* Only Display Barcode when the barcode is used as a username and not a password *}
                                         <div class="form-group">
                                             <div class="col-xs-4">
                                                 <strong>{translate text='Library Card Number'}:</strong>
@@ -91,13 +96,12 @@
                                     <input type="hidden" name="updateScope" value="contact">
                                     
                                     {if !$offline}
-                                        {* Don't show inputs for the Horizon ILS as updating those account settings has not been implemented in the Horizon Driver. *}
                                         <div class="form-group">
                                             <div class="col-xs-4">
                                                 <label for="address1">{translate text='Address'}:</label>
                                             </div>
                                             <div class="col-xs-8">
-                                                {if !$offline && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
+                                                {if $canUpdateContactInfo && $canUpdateAddress}
                                                     <input name="address1" id="address1"
                                                            value='{$profile->address1|escape}' size="50" maxlength="75"
                                                            class="form-control required" aria-required="true">
@@ -112,10 +116,29 @@
                                             </div>
                                         </div>
                                         <div class="form-group">
+                                            <div class="col-xs-4">
+                                                <label for="address2">{translate text='Address 2'}:</label>
+                                            </div>
+                                            <div class="col-xs-8">
+                                                {if $canUpdateContactInfo && $canUpdateAddress}
+                                                    <input name="address2" id="address2"
+                                                           value='{$profile->address2|escape}' size="50" maxlength="75"
+                                                           class="form-control required" aria-required="true">
+                                                {elseif !$offline && $millenniumNoAddress}
+                                                    <input name="address2" id="address2"
+                                                           value='{$profile->address2|escape}' type="hidden">
+                                                    {if $profile->careOf}{$profile->careOf|escape}<br>{/if}
+                                                    {$profile->address2|escape}
+                                                {else}
+                                                    {$profile->address2|escape}
+                                                {/if}
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
                                             <div class="col-xs-4"><label for="city">{translate text='City'}:</label>
                                             </div>
                                             <div class="col-xs-8">
-                                                {if !$offline && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
+                                                {if $canUpdateContactInfo && $canUpdateAddress}
                                                     <input name="city" id="city" value="{$profile->city|escape}"
                                                            size="50" maxlength="75" class="form-control required">
                                                 {elseif !$offline && $millenniumNoAddress}
@@ -129,7 +152,7 @@
                                             <div class="col-xs-4"><label for="state">{translate text='State'}:</label>
                                             </div>
                                             <div class="col-xs-8">
-                                                {if !$offline && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
+                                                {if $canUpdateContactInfo && $canUpdateAddress}
                                                     <input name='state' id="state" value="{$profile->state|escape}"
                                                            size="50" maxlength="75" class="form-control required">
                                                 {elseif !$offline && $millenniumNoAddress}
@@ -142,23 +165,22 @@
                                         <div class="form-group">
                                             <div class="col-xs-4"><label for="zip">{translate text='Zip'}:</label></div>
                                             <div class="col-xs-8">
-                                                {if !$offline && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
+                                                {if $canUpdateContactInfo && $canUpdateAddress}
                                                     <input name="zip" id="zip" value="{$profile->zip|escape}" size="50"
                                                            maxlength="75" class="form-control required">
                                                 {elseif !$offline && $millenniumNoAddress}
-                                                    <input name="zip" id="zip" value="{$profile->zip|escape}"
-                                                           type="hidden">
+                                                    <input name="zip" id="zip" value="{$profile->zip|escape}" type="hidden">
                                                     {$profile->zip|escape}
                                                 {else}{$profile->zip|escape}{/if}
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <div class="col-xs-4"><label
-                                                        for="phone">{translate text='Primary Phone Number'}:</label>
+                                            <div class="col-xs-4">
+                                                <label for="phone">{translate text='Primary Phone Number'}:</label>
                                             </div>
                                             <div class="col-xs-8">
-                                                {if !$offline && $canUpdateContactInfo && ($ils != 'Horizon')}
-                                                    <input type="tel" name="phone" id="phone"
+                                                {if $canUpdateContactInfo}
+                                                    <input type="tel" name="phone" id="phone" 
                                                            value="{$profile->phone|escape}" size="50" maxlength="75"
                                                            class="form-control">
                                                 {else}
@@ -166,17 +188,86 @@
                                                 {/if}
                                             </div>
                                         </div>
-                                        {if $showWorkPhoneInProfile}
+                                        <div class="form-group">
+                                        <div class="col-xs-4">
+                                            <label for="Phone1CarrierID">{translate text='Primary Phone Carrier'}:</label>
+                                        </div>
+                                        {if $canUpdateContactInfo}
+                                        <div class="col-xs-8">
+                                            <select name="Phone1CarrierID" id="Phone1CarrierID" class="form-control">
+                                                {if count($phoneCarriers) > 0}
+                                                    {foreach from=$phoneCarriers key=k item=carrier}
+                                                        <option value="{$k}"{if $k == $profile->phone_carrier_id} selected="selected"{/if}>{$carrier}</option>
+                                                    {/foreach}
+                                                {else}
+                                                    <option>&nbsp</option>
+                                                {/if}
+                                            </select>
+                                        </div>
+                                        {/if}
+                                        </div>
+                                        
+                                        {if $showPhone2}
                                             <div class="form-group">
-                                                <div class="col-xs-4"><label
-                                                            for="workPhone">{translate text='Work Phone Number'}
-                                                        :</label></div>
-                                                <div class="col-xs-8">{if !$offline && $canUpdateContactInfo && $ils != 'Horizon'}
-                                                        <input name="workPhone" id="workPhone"
-                                                               value="{$profile->workPhone|escape}" size="50"
-                                                               maxlength="75"
-                                                               class="form-control">{else}{$profile->workPhone|escape}{/if}
+                                                <div class="col-xs-4">
+                                                   <label for="phone2">{translate text='Secondary Phone Number'}:</label>
                                                 </div>
+                                                <div class="col-xs-8">{if $canUpdateContactInfo}
+                                                        <input name="phone2" id="phone2"
+                                                               value="{$profile->phone2|escape}" size="50"
+                                                               maxlength="75"
+                                                               class="form-control">{else}{$profile->phone2|escape}{/if}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-xs-4">
+                                                    <label for="Phone2">{translate text='Secondary Phone Carrier'}:</label>
+                                                </div>
+                                                {if $canUpdateContactInfo}
+                                                    <div class="col-xs-8">
+                                                        <select name="Phone2CarrierID" id="Phone2CarrierID" class="form-control">
+                                                            {if count($phoneCarriers) > 0}
+                                                                {foreach from=$phoneCarriers key=k item=carrier}
+                                                                    <option value="{$k}"{if $k == $profile->phone2_carrier_id} selected="selected"{/if}>{$carrier}</option>
+                                                                {/foreach}
+                                                            {else}
+                                                                <option>&nbsp</option>
+                                                            {/if}
+                                                        </select>
+                                                    </div>
+                                                {/if}
+                                            </div>
+                                        {/if}
+
+                                        {if $showPhone3}
+                                            <div class="form-group">
+                                                <div class="col-xs-4">
+                                                    <label for="phone3">{translate text='Alternate Phone Number'}:</label>
+                                                </div>
+                                                <div class="col-xs-8">{if $canUpdateContactInfo}
+                                                        <input name="phone3" id="phone3"
+                                                               value="{$profile->phone3|escape}" size="50"
+                                                               maxlength="75"
+                                                               class="form-control">{else}{$profile->phone3|escape}{/if}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-xs-4">
+                                                    <label for="Phone3CarrierID">{translate text='Alternate Phone Carrier'}:</label>
+                                                </div>
+                                                {if $canUpdateContactInfo}
+                                                    <div class="col-xs-8">
+                                                        <select name="Phone3CarrierID" id="Phone3CarrierID" class="form-control">
+                                                            {if count($phoneCarriers) > 0}
+                                                                {foreach from=$phoneCarriers key=k item=carrier}
+                                                                    <option value="{$k}"{if $k == $profile->phone3_carrier_id} selected="selected"{/if}>{$carrier}</option>
+                                                                {/foreach}
+                                                            {else}
+                                                                <option>&nbsp</option>
+                                                            {/if}
+                                                        </select>
+                                                    </div>
+                                                {/if}
                                             </div>
                                         {/if}
                                     {/if}
@@ -207,8 +298,8 @@
                                                     <select name="pickupLocation" id="pickupLocation" class="form-control">
                                                         {if count($pickupLocations) > 0}
                                                             {foreach from=$pickupLocations item=location}
-                                                                <option value="{$location->code}"
-                                                                        {if $location->displayName|escape == $profile->homeLocation|escape}selected="selected"{/if}>{$location->displayName}</option>
+                                                                <option value="{$location->ilsLocationId}"
+                                                                        {if $location->ilsLocationId|escape == $profile->preferredPickupLocationId|escape}selected="selected"{/if}>{$location->displayName}</option>
                                                             {/foreach}
                                                         {else}
                                                             <option>placeholder</option>
@@ -219,18 +310,6 @@
                                                 {/if}
                                             </div>
                                         </div>
-                                    {/if}
-
-                                    {if $showNoticeTypeInProfile}
-                                        <p class="alert alert-info">
-                                            {translate text='account_profile_notification_notice'}
-                                        </p>
-                                        {if $ils != 'CarlX'}
-                                            {include file="MyAccount/profile-notification-preferences.tpl"}
-                                        {else}
-                                            {include file="MyAccount/profile-notification-preferences-carlx.tpl"}
-                                        {/if}
-
                                     {/if}
 
                                     {if !$offline && $canUpdateContactInfo}
@@ -245,7 +324,11 @@
                             </div>
                         </div>
                     </div>
-
+                
+                    {if $showNoticeTypeInProfile}
+                    {include file="MyAccount/notifications.tpl"}
+                    {/if}
+                    
                     {if !empty($linkedUsers) && count($linkedUsers) > 1 && $selectedUser != $activeUserId}
                         {*Security: Prevent changing email, username, or password for linked accounts. See D-4031 *}
                     {else}
@@ -256,12 +339,6 @@
                     
                     {include file="MyAccount/userName.tpl"}
                     
-                    {* SMS prefrences *}
-                    {if $showSMSNoticesInProfile}
-                        {include file="MyAccount/profile-sms-notices.tpl"}
-                    {/if}
-                    
-
                     {*OverDrive Options*}
                     {if $profile->isValidForOverDrive()}
                         <div class="panel active">
@@ -415,7 +492,7 @@
                                         <p>
                                             Linked accounts allow you to easily maintain multiple accounts for the
                                             library so you can see all of your information in one place. Information
-                                            from linked accounts will appear when you view your checkouts, holds, etc in
+                                            from linked accounts will appear when you view your checkouts, holds, etc. in
                                             the main account.
                                         </p>
                                         <p>
@@ -426,13 +503,6 @@
                                     </div>
                                     <div class="lead">Additional accounts to manage</div>
                                     <p>The following accounts can be managed from this account.</p>
-                                    {*<table class="table table-bordered">*}
-                                    {*{foreach from=$profile->linkedUsers item=tmpUser} *}{* Show linking for the account currently chosen for display in account settings *}
-                                    {*<tr><td>{$tmpUser->getNameAndLibraryLabel()}</td><td><button class="btn btn-xs btn-warning" onclick="Pika.Account.removeLinkedUser({$tmpUser->id});">Remove</button></td> </tr>*}
-                                    {*{foreachelse}*}
-                                    {*<tr><td>None</td></tr>*}
-                                    {*{/foreach}*}
-                                    {*</table>*}
                                     <ul>
                                         {foreach from=$profile->linkedUsers item=tmpUser}  {* Show linking for the account currently chosen for display in account settings *}
                                             <li>{$tmpUser->getNameAndLibraryLabel()}

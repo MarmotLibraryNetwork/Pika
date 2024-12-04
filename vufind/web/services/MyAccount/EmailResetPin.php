@@ -35,13 +35,22 @@ require_once ROOT_DIR . '/CatalogConnection.php';
 class EmailResetPin extends Action {
 
 	function __construct(){
+//		$catalogConnection = CatalogFactory::getCatalogConnectionInstance(); // This will use the $activeRecordIndexingProfile to get the catalog connector
+//		if (!empty($catalogConnection->accountProfile->driver)){
+//			if (strpos($catalogConnection->accountProfile->driver, "\Clearview") !== false){
+//				$classicOpacBaseURL = rtrim($catalogConnection->accountProfile->vendorOpacUrl, '/');
+//				header("Location: $classicOpacBaseURL/logon.aspx?forgotPassword=1&ctx=1.1033.0.0.6");
+//				die;
+//			}
+//		}
+
 	}
 
 	function launch($msg = null){
 		global $interface;
 		global $user;
 		if (!empty($user) && $user->pinUpdateRequired){
-			// Because we are forcing a Pin update we can not display the convince buttons at the top of page and side bars
+			// Because we are forcing a Pin update we can not display the convince buttons at the top of page and sidebars
 			$interface->assign('isUpdatePinPage', true);
 			$interface->assign('displaySidebarMenu', false);
 			$sidebarTemplate = '';

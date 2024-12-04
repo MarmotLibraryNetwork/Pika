@@ -6911,7 +6911,7 @@ body > .container {
 }
 .modal-header .close {
   margin-top: -10px;
-  font-size: 40px;
+  font-size: 43px;
   opacity: .4;
 }
 .btn:active,
@@ -8259,7 +8259,7 @@ a .header-button:visited {
 .jcarousel .active figure.thumbnail img {
   border: 2px solid #E15F15;
 }
-#home-page-search {
+.home-page-search {
   background-color: #0E632C;
   background: linear-gradient(to bottom, #0E632C, #0E632C);
   padding: 20px 0 10px;
@@ -8973,6 +8973,7 @@ a.browse-thumbnail-sorted.active {
 }
 #browse-sub-category-menu button {
   margin-right: 5px;
+  margin-bottom: 5px;
 }
 #browse-sub-category-menu button.selected {
   color: #fff;
@@ -10373,6 +10374,10 @@ a.browse-thumbnail-sorted.active {
 #masquerade-header {
   height: 50px;
   background-color: #6200a4;
+}
+#masquerade-header,
+#masquerade-header h4,
+#masquerade-header h5 {
   color: #FFF;
 }
 #masquerade-header-content {

@@ -6,7 +6,8 @@
 //
 
 // Side-bar Search Box
-#home-page-search {
+// Switched to css class instead of id attribute to overcome chrome device bug with background color. See D-4911
+.home-page-search {
   background-color: @home-search-top-color;
   background: linear-gradient(to bottom, @home-search-top-color, @home-search-bottom-color);
   padding: 20px 0 10px;
@@ -15,7 +16,7 @@
 
 //TODO: update any themes that actually use a gradient to have the mixin
 #home-page-search-gradient(@home-search-top-color, @home-search-bottom-color){
-  #home-page-search {
+  .home-page-search {
     background: linear-gradient(to bottom, @home-search-top-color, @home-search-bottom-color);
   }
 }

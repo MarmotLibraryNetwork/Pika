@@ -301,6 +301,9 @@ public class RecordGrouperMain {
 					case "HooplaRecordGrouper":
 						recordGroupingProcessor = new HooplaRecordGrouper(pikaConn, curProfile, logger);
 						break;
+					case "PolarisRecordGrouper":
+						recordGroupingProcessor = new PolarisRecordGrouper(pikaConn, curProfile, logger);
+						break;
 					default:
 						logger.error("Unknown class for record grouping " + curProfile.groupingClass);
 						continue;
@@ -1079,6 +1082,9 @@ public class RecordGrouperMain {
 							break;
 						case "HooplaRecordGrouper":
 							recordGroupingProcessor = new HooplaRecordGrouper(pikaConn, curProfile, logger, fullRegroupingNoClear || fullRegroupingClearGroupingTables);
+							break;
+						case "PolarisRecordGrouper":
+							recordGroupingProcessor = new PolarisRecordGrouper(pikaConn, curProfile, logger);
 							break;
 						default:
 							logger.error("Unknown class for record grouping " + curProfile.groupingClass);

@@ -38,6 +38,7 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.*;
 
@@ -67,9 +68,9 @@ public class SierraExportAPIMain {
 	private static boolean allowFastExportMethod = true;
 
 	private static final TreeSet<Long> allBibsToUpdate = new TreeSet<>();
-	private static final TreeSet<Long> bibsToProcess  = new TreeSet<>();
-	private static final TreeSet<Long> allDeletedIds  = new TreeSet<>();
-	private static final TreeSet<Long> bibsWithErrors = new TreeSet<>();
+	private static final TreeSet<Long> bibsToProcess   = new TreeSet<>();
+	private static final TreeSet<Long> allDeletedIds   = new TreeSet<>();
+	private static final TreeSet<Long> bibsWithErrors  = new TreeSet<>();
 
 	//Reporting information
 	private static long              exportLogId;
@@ -251,6 +252,7 @@ public class SierraExportAPIMain {
 					// We will need better handling for dealing with deleted records with the fast export method.
 				setUpSqlStatements(pikaConn);
 				updateMarcAndRegroupRecordIds(singleRecordToProcess, Collections.singletonList(id));
+				//TODO: shouldn't this just go straigth to updateMarcAndRegroupRecordId(). If not, explain why here. Maybe just deleted records above?
 				String message = "Extract process for record " + singleRecordToProcess + " finished.";
 				logger.info(message);
 				System.out.println(message);
@@ -312,20 +314,21 @@ public class SierraExportAPIMain {
 
 		updateSierraExtractLogNumToProcess(pikaConn, numRecordsProcessed);
 
-		updateLastExportTime(startTime.getTime() / 1000, allBibsToUpdate.size());
-		addNoteToExportLog("Setting last export time to " + (startTime.getTime() / 1000));
-
-
-		addNoteToExportLog("Finished exporting sierra data " + new Date().toString());
-		long endTime     = new Date().getTime();
-		long elapsedTime = endTime - startTime.getTime();
-		addNoteToExportLog("Elapsed Minutes " + (elapsedTime / 60000));
-
 		if (!lastCallTimedOut) {
 			retrieveDataFromSierraDNA(pikaConn);
 		} else {
 			logger.warn("Skipping Sierra DNA connection because we had time out errors. Trying to prevent getting stuck.");
 		}
+
+		// Wrap up
+		long nextStartTime = startTime.getTime() / 1000;
+		updateLastExportTime(nextStartTime, allBibsToUpdate.size());
+		addNoteToExportLog("Setting last export time to " + nextStartTime + " (" + startTime.toString() + ")");
+
+		addNoteToExportLog("Finished exporting sierra data " + new Date().toString());
+		long endTime     = new Date().getTime();
+		long elapsedTime = endTime - startTime.getTime();
+		addNoteToExportLog("Elapsed Minutes " + (elapsedTime / 60000));
 
 		finalizeExportLogEntry(pikaConn, endTime);
 
@@ -371,6 +374,33 @@ public class SierraExportAPIMain {
 		}
 	}
 
+	private static final StringBuffer     notes      = new StringBuffer();
+	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+	private static void addNoteToExportLog(String note) {
+		try {
+			Date date = new Date();
+			notes.append("<br>").append(dateFormat.format(date)).append(": ").append(note);
+			addNoteToExportLogStmt.setString(1, trimLogNotes(notes.toString()));
+			addNoteToExportLogStmt.setLong(2, new Date().getTime() / 1000);
+			addNoteToExportLogStmt.setLong(3, exportLogId);
+			addNoteToExportLogStmt.executeUpdate();
+			logger.info(note);
+		} catch (SQLException e) {
+			logger.error("Error adding note to Export Log", e);
+		}
+	}
+
+	private static String trimLogNotes(String stringToTrim) {
+		if (stringToTrim == null) {
+			return null;
+		}
+		if (stringToTrim.length() > 65535) {
+			stringToTrim = stringToTrim.substring(0, 65535);
+		}
+		return stringToTrim.trim();
+	}
+
 	private static void closeDBConnections(Connection connection) {
 		try {
 			//Close the connection
@@ -386,6 +416,7 @@ public class SierraExportAPIMain {
 	}
 
 	private static void retrieveDataFromSierraDNA(Connection pikaConn) {
+		logger.info("Starting SierraDNA connection");
 		//Connect to the sierra database
 		String url              = PikaConfigIni.getIniValue("Catalog", "sierra_db");
 		String sierraDBUser     = PikaConfigIni.getIniValue("Catalog", "sierra_db_user");
@@ -578,14 +609,14 @@ public class SierraExportAPIMain {
 
 		//Last Update time in UTC
 		// Use a buffer value to cover gaps in extraction rounds
-		Integer bufferInterval = PikaConfigIni.getIntIniValue("Catalog", "SierraAPIExtractBuffer");
+		Integer bufferInterval = PikaConfigIni.getIntIniValue("Catalog", "ilsAPIExtractBuffer");
 		if (bufferInterval == null || bufferInterval < 0) {
 			bufferInterval = 300; // 5 mins
 		}
-		lastExtractDate = new Date((lastSierraExtractTime - bufferInterval) * 1000);
+		lastExtractDate = Date.from(Instant.ofEpochSecond(lastSierraExtractTime).minus(bufferInterval, ChronoUnit.SECONDS));
 
 		Date now       = new Date();
-		Date yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+		Date yesterday = Date.from(now.toInstant().minus(1, ChronoUnit.DAYS));
 		if (lastExtractDate.before(yesterday)) {
 			logger.warn("Last Extract date was more than 24 hours ago.");
 			// We used to only extract the last 24 hours because there would have been a full export marc file delivered,
@@ -597,9 +628,8 @@ public class SierraExportAPIMain {
 		String deletionDateFormatted        = getSierraAPIDateString(yesterday); // date component only, is needed for fetching deleted things
 																						// Use yesterday to ensure we don't have any timezone issues
 		long   updateTime                   = new Date().getTime() / 1000;
-		if (logger.isInfoEnabled()) {
-			logger.info("Loading records changed since " + lastExtractDateTimeFormatted);
-		}
+		logger.info("Loading records changed since {}", lastExtractDate.toString());
+
 
 		setUpSqlStatements(pikaConn);
 		processDeletedBibs(deletionDateFormatted, updateTime);
@@ -908,7 +938,7 @@ public class SierraExportAPIMain {
 	/**
 	 * Checks the API if the Bib is deleted or suppressed
 	 *
-	 * @param id Bib Id with out the .b prefix or the trailing check digit
+	 * @param id Bib Id without the .b prefix or the trailing check digit
 	 * @return
 	 */
 	private static boolean isDeletedInAPI(long id) {
@@ -1000,7 +1030,7 @@ public class SierraExportAPIMain {
 			deletePrimaryIdentifierStmt.setLong(1, primaryIdentifierId);
 			deletePrimaryIdentifierStmt.executeUpdate();
 		} catch (SQLException e) {
-			logger.error("Error deleting grouped work primary identifier from database", e);
+			logger.error("Error deleting grouped work primary identifier " + primaryIdentifierId + " from database ", e);
 		}
 	}
 
@@ -1319,7 +1349,7 @@ public class SierraExportAPIMain {
 					}
 					if ((deletedItems.has("total") && deletedItems.getLong("total") >= bufferSize) || entries.length() >= bufferSize) {
 						hasMoreItems      = true;
-						itemIdToStartWith = deletedItemIds.last() + 1; // Get largest current value to use as starting point in next round
+						itemIdToStartWith = deletedItemIds.last() + 1; // Get the largest current value to use as starting point in next round
 					}
 					//Get the grouped work id for the new bib
 				} catch (Exception e) {
@@ -1374,7 +1404,7 @@ public class SierraExportAPIMain {
 					logger.warn("Sierra MARC JSON missing leader information for " + id);
 				}
 				for (int i = 0; i < fields.length(); i++) {
-					JSONObject                                      fieldData = fields.getJSONObject(i);
+					JSONObject                   fieldData = fields.getJSONObject(i);
 					@SuppressWarnings("unchecked") Iterator<String> tags      = (Iterator<String>) fieldData.keys();
 					while (tags.hasNext()) {
 						String tag = tags.next();
@@ -1543,11 +1573,12 @@ public class SierraExportAPIMain {
 				try {
 					if (itemIds.has("code")) {
 						if (itemIds.getInt("code") != 404) {
-							logger.error("Error getting information about items " + itemIds.toString());
+							logger.error("Error getting information about items {}", itemIds);
 						}
 					} else {
-						String    itemId  = "0"; // Initialize just to avoid having to check later
-						JSONArray entries = itemIds.getJSONArray("entries");
+						boolean   lookingForEContent = !indexingProfile.APIItemEContentExportFieldTag.isEmpty();
+						String    itemId             = "0"; // Initialize just to avoid having to check later
+						JSONArray entries            = itemIds.getJSONArray("entries");
 						if (logger.isDebugEnabled()) {
 							logger.debug("fetching items for " + id + " elapsed time " + (new Date().getTime() - startTime) + "ms found " + entries.length());
 						}
@@ -1628,11 +1659,10 @@ public class SierraExportAPIMain {
 							//						boolean hadCallNumberVarField = false;
 							//Process variable fields
 							for (int j = 0; j < varFields.length(); j++) {
-								JSONObject    curVarField          = varFields.getJSONObject(j);
-								String        fieldTag             = curVarField.getString("fieldTag");
-								StringBuilder allFieldContent      = new StringBuilder();
-								JSONArray     subfields            = null;
-								boolean       lookingForEContent   = !indexingProfile.APIItemEContentExportFieldTag.isEmpty();
+								JSONObject    curVarField             = varFields.getJSONObject(j);
+								String        fieldTag                = curVarField.getString("fieldTag");
+								StringBuilder allFieldContent         = new StringBuilder();
+								JSONArray     subfields               = null;
 								boolean       isThisAnEContentItemURL = lookingForEContent && curVarField.has("marcTag") && curVarField.getString("marcTag").equals("856");
 								if (curVarField.has("subfields")) {
 									subfields = curVarField.getJSONArray("subfields");
@@ -1723,10 +1753,11 @@ public class SierraExportAPIMain {
 			JSONObject marcResults = null;
 			if (allowFastExportMethod) {
 				//Don't log errors since we get regular errors if we exceed the export rate.
+				String sierraUrl = apiBaseUrl + "/bibs/marc?id=" + ids;
 				if (logger.isDebugEnabled()) {
-					logger.debug("Loading marc records with fast method " + apiBaseUrl + "/bibs/marc?id=" + ids);
+					logger.debug("Loading marc records with fast method {}", sierraUrl);
 				}
-				marcResults = callSierraApiURL(apiBaseUrl + "/bibs/marc?id=" + ids, debug);
+				marcResults = callSierraApiURL(sierraUrl, debug);
 			}
 			if (marcResults != null && marcResults.has("file")) {
 				logger.debug("Got results with fast method");
@@ -1873,9 +1904,9 @@ public class SierraExportAPIMain {
 			markDeletedExtractInfoStatement.setLong(3, startTime.getTime() / 1000);
 			markDeletedExtractInfoStatement.setDate(4, new java.sql.Date(startTime.getTime()));
 			int result = markDeletedExtractInfoStatement.executeUpdate();
-			return result == 1 || result == 2;
+			return result == 1 || result == 2;  // TODO: what causes (result == 2) ?
 		} catch (Exception e) {
-			logger.error("Failed to mark record as deleted in extract info table", e);
+			logger.error("Failed to mark record {} as deleted in extract info table", bibId, e);
 		}
 		return false;
 	}
@@ -2359,33 +2390,6 @@ public class SierraExportAPIMain {
 		} else {
 			return Integer.toString(modValue);
 		}
-	}
-
-	private static final StringBuffer     notes      = new StringBuffer();
-	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-	private static void addNoteToExportLog(String note) {
-		try {
-			Date date = new Date();
-			notes.append("<br>").append(dateFormat.format(date)).append(": ").append(note);
-			addNoteToExportLogStmt.setString(1, trimLogNotes(notes.toString()));
-			addNoteToExportLogStmt.setLong(2, new Date().getTime() / 1000);
-			addNoteToExportLogStmt.setLong(3, exportLogId);
-			addNoteToExportLogStmt.executeUpdate();
-			logger.info(note);
-		} catch (SQLException e) {
-			logger.error("Error adding note to Export Log", e);
-		}
-	}
-
-	private static String trimLogNotes(String stringToTrim) {
-		if (stringToTrim == null) {
-			return null;
-		}
-		if (stringToTrim.length() > 65535) {
-			stringToTrim = stringToTrim.substring(0, 65535);
-		}
-		return stringToTrim.trim();
 	}
 
 }

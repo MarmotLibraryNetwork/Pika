@@ -71,20 +71,17 @@ Pika.Lists = (function(){
 			return false;
 		},
 
-		checkUser: function(id){
+		checkUser: function (id){
 			var url = "/MyAccount/AJAX?method=isStaffUser&barcode=" + id;
-			$.getJSON(url, function(data){
-				if($("#barcode").val().length > 0)
-				{
-					$("#validation").show();
-					if(data.isStaff == true)
-					{
-						$("#validation").html("<span style='color:green;'>Valid Barcode</span>");
+			$.getJSON(url, function (data){
+				if ($("#barcode").val().length > 0){
+					let validation = $("#validation");
+					validation.show();
+					if (data.isStaff == true){
+						validation.html("<span style='color:green;'>Valid Barcode</span>");
 						$("#transfer").prop('disabled', false);
-					}
-					else
-					{
-						$("#validation").html("<span style='color:darkred;'>Invalid Barcode</span>");
+					}else{
+						validation.html("<span style='color:darkred;'>Invalid Barcode</span>");
 						$("#transfer").prop('disabled', true);
 					}
 				}
@@ -99,38 +96,38 @@ Pika.Lists = (function(){
 		},
 
 		// No references to the method found. 1/19/23
-		clearSelectedList: function (){
-			var ids = Array();
-			var idStr = $('#myListActionData').val();
-			if(idStr.length > 2){
+		// clearSelectedList: function (){
+		// 	var ids = Array(),
+		// 			idStr = $('#myListActionData').val();
+		// 	if(idStr.length >= 2){
+		// 		var pos = idStr.lastIndexOf(',');
+		// 		idStr = idStr.substring(0,pos);
+		// 		ids = idStr.split(",");
+		// 		var x = ids.length,
+		// 				list = " list";
+		// 		if(x !== 1){list = " lists";}
+		// 		if(confirm("Are you sure you want to remove all items from " + x + list + "? This cannot be undone.")){
+		// 			this.submitToLists("clearSelectedLists");
+		// 		}
+		// 	}else{
+		// 		Pika.showMessage("Error","Please select a list to clear.");
+		// 		return false;
+		// 	}
+		// },
+
+		deleteSelectedList: function (){
+			var ids = Array(),
+			 idStr = $('#myListActionData').val();
+			if(idStr.length >= 2){
 				var pos = idStr.lastIndexOf(',');
 				idStr = idStr.substring(0,pos);
 				ids = idStr.split(",");
-				var x = ids.length;
-				var list = " list";
-				if (x !=1){list = " lists";}
-				if(confirm("Are you sure you want to remove all items from " + x + list + "? This cannot be undone.")){
-					this.submitToLists("clearSelectedLists");
-				}
-			}else{
-				alert("Please select a list to clear");
-			}
-		},
-
-		deleteSelectedList: function (){
-			var ids = Array();
-			var idStr = $('#myListActionData').val();
-			if(idStr.length > 2){
-			var pos = idStr.lastIndexOf(',');
-			idStr = idStr.substring(0,pos);
-			ids = idStr.split(",");
-			var x = ids.length;
-			var list = " list";
-			if(x !=1){list = " lists";}
-			Pika.confirm("<p class='alert alert-danger'>Are you sure you want to delete <strong>" + x + "</strong>" + list + "? <strong>This cannot be undone.</strong></p>", function () {
-				return Pika.Lists.submitToLists("deleteSelectedLists");
-
-			});
+				var x = ids.length,
+				 list = " list";
+				if(x !== 1){list = " lists";}
+				Pika.confirm("<p class='alert alert-danger'>Are you sure you want to delete <strong>" + x + "</strong>" + list + "? <strong>This cannot be undone.</strong></p>", function () {
+					return Pika.Lists.submitToLists("deleteSelectedLists");
+				});
 				return false;
 			}else{
 				Pika.showMessage("Error","Please select a list to delete.");

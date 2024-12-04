@@ -178,7 +178,6 @@ public class GroupingFormatDetermination {
 						case "sounddisc":
 						case "playaway":
 						case "cdrom":
-						case "chipcartridge":
 						case "soundcassette":
 						case "compactdisc":
 						case "eaudio":
@@ -187,6 +186,13 @@ public class GroupingFormatDetermination {
 						case "photo":
 						case "map":
 						case "newspaper":
+						// Below are likely bad marc data for econtent records
+						case "tapereel":
+						case "tapecassette":
+						case "tapecartridge":
+						case "disccartridge":
+						case "chipcartridge":
+						case "floppydisk":
 							groupingCategories.add("book");
 							break;
 						case "musicrecording":
@@ -369,7 +375,7 @@ public class GroupingFormatDetermination {
 
 		// check for music recordings quickly so we can figure out if it is music
 		// for category (need to do here since checking what is on the Compact
-		// Disc/Phonograph, etc is difficult).
+		// Disc/Phonograph, etc. is difficult).
 		if (leaderBit != null && leaderBit.equals('j')) {
 			printFormats.add("MusicRecording");
 			//TODO: finish early?
@@ -387,11 +393,11 @@ public class GroupingFormatDetermination {
 			//fixed fields is not kept up to date reliably.  #D-87
 			getFormatFrom007(record, printFormats);
 			if (printFormats.isEmpty()) {
-				ControlField          fixedField   = (ControlField) record.getVariableField("008");
+				ControlField fixedField = (ControlField) record.getVariableField("008");
 				getFormatFromLeader(printFormats, leader, fixedField);
 				if (printFormats.size() > 1){
 					if (logger.isDebugEnabled()) {
-						logger.debug("Found more than 1 format for " + identifier + " looking at just the leader: " + String.join(",", printFormats));
+						logger.debug("Found more than 1 format for {} looking at just the leader: {}", identifier, String.join(",", printFormats));
 					}
 				}
 			} else if (printFormats.size() > 1){

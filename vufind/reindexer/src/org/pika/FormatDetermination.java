@@ -61,6 +61,8 @@ public class FormatDetermination {
 	String materialTypeSubField;
 	String matTypesToIgnore;
 
+	private Character typeOfRecordLeaderChar = null;
+
 	FormatDetermination(ResultSet indexingProfileRS, HashMap<String, TranslationMap> translationMaps, Logger logger) throws SQLException {
 		this.logger = logger;
 		this.translationMaps = translationMaps;
@@ -178,7 +180,7 @@ public class FormatDetermination {
 					long formatBoost = Long.parseLong(formatBoostStr);
 					econtentRecord.setFormatBoost(formatBoost);
 				}catch (Exception e){
-					logger.warn("Unable to parse format boost " + formatBoostStr + " for format " + firstFormat + " " + econtentRecord.getFullIdentifier());
+					logger.warn("Unable to parse format boost {} for format {} {}", formatBoostStr, firstFormat, econtentRecord.getFullIdentifier());
 					econtentRecord.setFormatBoost(1);
 				}
 			} else {
@@ -200,6 +202,7 @@ public class FormatDetermination {
 						case "book":
 						case "bookwithcdrom":
 						case "bookwithdvd":
+						case "bookwithaudiocd":
 						case "bookwithvideodisc":
 						case "largeprint":
 						case "illustratededition":
@@ -260,6 +263,7 @@ public class FormatDetermination {
 							//econtentItem.setFormatCategory("Other"); // Have no format category rather than other
 							econtentRecord.setFormatBoost(2);
 							break;
+						case "atlas":
 						case "map":
 							econtentItem.setFormat("Map");
 							//econtentItem.setFormatCategory("Other"); // Have no format category rather than other
@@ -496,45 +500,42 @@ public class FormatDetermination {
 	LinkedHashSet<String> getFormatsFromBib(Record record, RecordInfo recordInfo){
 		LinkedHashSet<String> printFormats = new LinkedHashSet<>();
 		String                leader       = record.getLeader().toString();
-		Character             leaderBit    = leader.length() >= 6 ? Character.toLowerCase(leader.charAt(6)) : null;
+		typeOfRecordLeaderChar = leader.length() >= 6 ? Character.toLowerCase(leader.charAt(6)) : null;
 
 		// check for music recordings quickly so we can figure out if it is music
 		// for category (need to do here since checking what is on the Compact
 		// Disc/Phonograph, etc. is difficult).
-		if (leaderBit != null) {
-			if (leaderBit.equals('j')) {
+		if (typeOfRecordLeaderChar != null) {
+			if (typeOfRecordLeaderChar.equals('j')) {
 				printFormats.add("MusicRecording");
-				//TODO: finish early?  Need to determine if music cd; and if has accompanying material
 			}
-			else if (leaderBit.equals('r')) {
+			else if (typeOfRecordLeaderChar.equals('r')) {
 				printFormats.add("PhysicalObject");
 			}
 		}
 		getFormatFromPublicationInfo(record, printFormats);
 		getFormatFromNotes(record, printFormats);
 		getFormatFromEdition(record, printFormats);
-		getFormatFromPhysicalDescription(record, printFormats);
+		getFormatFromPhysicalDescription(record, printFormats, recordInfo.getRecordIdentifier());
 		getFormatFromSubjects(record, printFormats);
 		getFormatFromTitle(record, printFormats);
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
 		getGameFormatFrom753(record, printFormats);
-		getFormatFrom008(record, printFormats);
 		if (printFormats.isEmpty()) {
 			//Only get from fixed field information if we don't have anything yet since the cataloging of
 			//fixed fields is not kept up to date reliably.  #D-87
 			getFormatFrom007(record, printFormats);
 			if (printFormats.isEmpty()) {
-				ControlField          fixedField   = (ControlField) record.getVariableField("008");
-				getFormatFromLeader(printFormats, leader, fixedField);
+				ControlField fixedField008 = (ControlField) record.getVariableField("008");
+				getFormatFrom008(fixedField008, printFormats);
+				getFormatFromLeader(printFormats, leader, fixedField008);
 				if (printFormats.size() > 1){
 					if (logger.isInfoEnabled()) {
-						logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " looking at just the leader: " +  String.join(",",printFormats));
+						logger.info("Found more than 1 format for {} looking at just the leader: {}", recordInfo.getFullIdentifier(), String.join(",",printFormats));
 					}
 				}
 			} else if (printFormats.size() > 1){
-				if (logger.isInfoEnabled()) {
-					logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " looking at just 007");
-				}
+				logger.info("Found more than 1 format for {} looking at just 007", recordInfo.getFullIdentifier());
 			}
 		}
 
@@ -558,7 +559,7 @@ public class FormatDetermination {
 			if (!formatsToFilter.contains(formatsString)){
 				formatsToFilter.add(formatsString);
 				if (logger.isInfoEnabled()) {
-					logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " - " + formatsString);
+					logger.info("Found more than 1 format for {} - {}", recordInfo.getFullIdentifier(), formatsString);
 				}
 			}
 		}
@@ -583,38 +584,32 @@ public class FormatDetermination {
 	}
 
 	private void accompanyingMaterialCheck(Record record, LinkedHashSet<String> printFormats){
-		String leader = record.getLeader().toString();
-		char leaderRecordType;
-		if (leader.length() >= 6){
-			leaderRecordType = leader.charAt(6);
-			switch (leaderRecordType){
-				case 'a' :
-					// Language material  (text/books generally)
-					if (printFormats.contains("CDROM")){
-						printFormats.clear();
-						printFormats.add("BookWithCDROM");
-						break;
-					}
-//				case 'm' :
+		if (typeOfRecordLeaderChar != null){
+			if (typeOfRecordLeaderChar == 'a') {
+				// Language material  (text/books generally)
+				if (printFormats.contains("CDROM")) {
+					printFormats.clear();
+					printFormats.add("BookWithCDROM");
+					return;
+				}
+				if (printFormats.contains("CompactDisc")){
+					// Likely coming from an 007 "sd f"
+					printFormats.clear();
+					printFormats.add("BookWithAudioCD");
+					return;
+				}
+//				else if (typeOfRecordLeaderChar == 'm') {
 //					// Computer file : classes of electronic resources: computer software (including programs, games, fonts)
 //					// Games is of concern here
-//					if (printFormats.contains("XboxOne")){
+//					if (printFormats.contains("XboxOne")) {
 //						if (printFormats.contains("SoundDisc")) {
 //							printFormats.remove("SoundDisc");
 //						}
 //					}
-
-					/*if (printFormats.contains("DVD")){
-						printFormats.clear();
-						printFormats.add("BookWithDVD");
-						break;
-					}
-					if (printFormats.contains("VideoDisc")){
-						printFormats.clear();
-						printFormats.add("BookWithVideoDisc");
-					}*/
+//				}
 			}
 		}
+
 		List<DataField> physicalDescriptions = record.getDataFields("300");
 		for (DataField physicalDescription : physicalDescriptions) {
 			if (physicalDescription != null) {
@@ -632,7 +627,8 @@ public class FormatDetermination {
 						}else if (printFormats.contains("MusicCD")) {
 							printFormats.clear();
 							printFormats.add("MusicCDWithDVD");
-						} else {
+						} else if (printFormats.contains("DVD")) //TODO: test
+						{
 							if (physicalDescription.getSubfield('a') != null) {
 								String mainPhysical = physicalDescription.getSubfield('a').getData().toLowerCase();
 								if (mainPhysical.contains("pages") || mainPhysical.contains("p.") || mainPhysical.contains("pgs")) {
@@ -729,12 +725,18 @@ public class FormatDetermination {
 			printFormats.add("GoReader");
 			return;
 		}
+
 		// Video Things
 		if (printFormats.contains("DVD") || printFormats.contains("Blu-ray")) {
 			if (isComboPack(record)) {
 				printFormats.clear();
 				printFormats.add("DVDBlu-rayCombo");
 				return;
+			}
+			if (printFormats.contains("CompactDisc")){
+				printFormats.remove("CompactDisc");
+				// possible DVD with CD
+				//300  |a 1 videodisc (60 min.) : |b sd., col. ; |c 4 3/4 in. + 1 compact disc (4 3/4 in.) (51 min.)
 			}
 		}
 		if (printFormats.contains("Video")){
@@ -782,6 +784,9 @@ public class FormatDetermination {
 		if (printFormats.contains("SoundDisc") && printFormats.contains("MusicRecording")) {
 			// This is likely music phonographs, which get determined as music recordings
 			printFormats.remove("SoundDisc");
+		}
+		if (printFormats.contains("CompactDisc") && printFormats.contains("MusicCD")){
+			printFormats.remove("CompactDisc");
 		}
 		if (printFormats.contains("MusicRecording") && (printFormats.contains("CD") || printFormats.contains("CompactDisc"))){
 			if (printFormats.contains("DVD")) {
@@ -833,9 +838,8 @@ public class FormatDetermination {
 			//TODO: Likely obsolete - no determinations of CD
 			printFormats.remove("CD");
 		}
-		if (printFormats.contains("AudioCD") && printFormats.contains("CD")){
-			//TODO: Likely obsolete - no determinations of AudioCD
-			printFormats.remove("AudioCD");
+		if (printFormats.contains("MP3") && printFormats.contains("CompactDisc")){
+			printFormats.remove("MP3");
 		}
 		if (printFormats.contains("DVD") && printFormats.contains("SoundDisc")){
 			printFormats.remove("DVD");
@@ -937,15 +941,15 @@ public class FormatDetermination {
 			// Seed packets
 			printFormats.remove("PhysicalObject");
 		}
-		if (printFormats.contains("PhysicalObject")){
-				// Probable DVD players
-				printFormats.remove("DVD");
-				// Probable Blu-ray players
-				printFormats.remove("Blu-ray");
-				// record player?
-				printFormats.remove("SoundDisc");
-				// Possibly MP3 player; probably obsolete
-				printFormats.remove("MP3");
+		if (printFormats.contains("PhysicalObject")) {
+			// Probable DVD players
+			printFormats.remove("DVD");
+			// Probable Blu-ray players
+			printFormats.remove("Blu-ray");
+			// record player?
+			printFormats.remove("SoundDisc");
+			// Possibly MP3 player; probably obsolete
+			printFormats.remove("MP3");
 		}
 	}
 
@@ -1066,9 +1070,6 @@ public class FormatDetermination {
 	}
 
 	private void getFormatFromEdition(Record record, Set<String> result) {
-		// Check for large print book (large format in 650, 300, or 250 fields)
-		// Check for blu-ray in 300 fields
-//		DataField edition = record.getDataField("250");
 		List<DataField> editions = record.getDataFields("250");
 		for (DataField edition : editions) {
 			if (edition != null) {
@@ -1084,7 +1085,7 @@ public class FormatDetermination {
 						result.add("WonderBook");
 					} else if (editionData.contains("board book")) {
 						result.add("BoardBook");
-					} else if  (editionData.contains("illustrated ed")){
+					} else if (editionData.contains("illustrated ed")){
 						result.add("IllustratedEdition");
 //			  } else if (find4KUltraBluRayPhrases(editionData)) {
 //					result.add("4KUltraBlu-Ray");
@@ -1093,6 +1094,12 @@ public class FormatDetermination {
 						String gameFormat = getGameFormatFromValue(editionData);
 						if (gameFormat != null) {
 							result.add(gameFormat);
+							if (typeOfRecordLeaderChar != null) {
+								// if the leader isn't "Language material", check for video game format phrases
+								// This helps to avoid books about game systems; especially books with CD-ROMs
+								//TODO: determine if the leader character check should only be for windows game
+								logger.info("Game format determination from 250 (editions) {} has Type of Record Leader Character {}", gameFormat, typeOfRecordLeaderChar);
+							}
 						}
 					}
 				}
@@ -1101,10 +1108,11 @@ public class FormatDetermination {
 	}
 
 
-	private void getFormatFromPhysicalDescription(Record record, Set<String> result) {
-		List<DataField> physicalDescription = MarcUtil.getDataFields(record, "300");
+	private void getFormatFromPhysicalDescription(Record record, Set<String> result, RecordIdentifier recordIdentifier) {
+		//List<DataField> physicalDescription = MarcUtil.getDataFields(record, "300");
+		List<DataField> physicalDescription = record.getDataFields("300");
 		if (physicalDescription != null) {
-			Iterator<DataField> fieldsIter   = physicalDescription.iterator();
+			Iterator<DataField> fieldsIter = physicalDescription.iterator();
 			DataField           field;
 			while (fieldsIter.hasNext()) {
 				field = fieldsIter.next();
@@ -1128,11 +1136,15 @@ public class FormatDetermination {
 						} else if (physicalDescriptionData.contains("videodisc")){
 							result.add("VideoDisc");
 						}	else if (physicalDescriptionData.contains("cd-rom") || physicalDescriptionData.contains("cdrom") || physicalDescriptionData.contains("computer optical disc")) {
-							result.add("CDROM");
+							if (!result.contains("PlayStation3") && !result.contains("PlayStation4") && !result.contains("XboxSeriesX") && !result.contains("XboxOne")) {
+								// Prevent this determination for PlayStations, so that playstation/xbox records with a bad typeOfRecordLeaderChar of 'a' do not trigger accompanyingMaterialCheck determination of BookWithCD
+								result.add("CDROM");
+							}
 						} else if (physicalDescriptionData.contains("sound cassettes")) {
 							result.add("SoundCassette");
 						} else if (physicalDescriptionData.contains("compact disc")){
 							result.add("CompactDisc");
+							logger.info("Got format determination 'CompactDisc' on {}", recordIdentifier);
 							//TODO: likely need to additional logic to set to something more specific
 						} else if (physicalDescriptionData.contains("sound disc") || physicalDescriptionData.contains("audio disc")) {
 							hasSoundDisc = true;
@@ -1146,6 +1158,12 @@ public class FormatDetermination {
 							result.add("VoxBooks");
 						}else if (physicalDescriptionData.contains("hotspot device") || physicalDescriptionData.contains("mobile hotspot") || physicalDescriptionData.contains("hot spot") || physicalDescriptionData.contains("hotspot")){
 							result.add("PhysicalObject");
+						} else if (result.contains("MusicRecording") && (physicalDescriptionData.contains(" cd :") || physicalDescriptionData.contains(" cds :"))) {
+							// If we know the record is Music (due to typeOfRecordLeaderChar MusicRecording determination),
+							// allow phrases like "CD : digital" or "CDs : digital" to get us to MusicCD
+							// e.g. 300			 |a 1 CD : |b digital, stereophonic ; |c 4 3/4 inches.
+							// e.g. 300			 |a 2 CDs : |b digital, stereo, mono ;
+							hasSoundDisc = true;
 						}
 						//Since this is fairly generic, only use it if we have no other formats yet
 						if (result.isEmpty() && subfield.getCode() == 'f' && physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")) {
@@ -1153,25 +1171,37 @@ public class FormatDetermination {
 						}
 					}
 				}
-				if (hasSoundDisc && hasDigital){
-					if (result.contains("MusicRecording")){
-						// Since MusicRecording is determined by leader at beginning of format determination,
-						// it should be reliably already determined at this point
-						result.add("MusicCD");
-						result.remove("SoundDisc");
-						result.remove("MusicRecording");
+				if (hasSoundDisc)
+					if (hasDigital) {
+						if (result.contains("MusicRecording")) {
+							// Since MusicRecording is determined by leader at beginning of format determination,
+							// it should be reliably already determined at this point
+							result.add("MusicCD");
+							result.remove("SoundDisc");
+							result.remove("MusicRecording");
+						} else {
+							// Otherwise it should be an audio CD (the translation for SoundDisc).
+							// (I might be wrong here, remove or refine if you determine so.)
+							result.add("SoundDisc");
+						}
 					} else {
-						// Otherwise it should be an audio CD (the translation for SoundDisc).
-						// (I might be wrong here, remove or refine if you determine so.)
-						result.add("SoundDisc");
+						List<DataField> soundCharacteristics = record.getDataFields("344");
+						for (DataField field1 : soundCharacteristics){
+							String typeOfRecording = String.valueOf(MarcUtil.getSpecifiedSubfieldsAsString(field1, "a", " ")).trim();
+							if (typeOfRecording.equalsIgnoreCase("digital")){
+								result.add("MusicCD");
+								result.remove("SoundDisc");
+								result.remove("MusicRecording");
+								break;
+							}
+						}
 					}
-				}
 			}
 		}
 	}
 
 	private void getFormatFromNotes(Record record, Set<String> result) {
-		// Check for formats in the 538 field
+		// Check for formats in the 538 field (System Details Note)
 		List<DataField> systemDetailsNotes = record.getDataFields("538");
 		for (DataField sysDetailsNote2 : systemDetailsNotes) {
 			if (sysDetailsNote2 != null) {
@@ -1180,6 +1210,12 @@ public class FormatDetermination {
 					String gameFormat      = getGameFormatFromValue(sysDetailsValue);
 					if (gameFormat != null) {
 						result.add(gameFormat);
+						if (typeOfRecordLeaderChar != null) {
+							// if the leader isn't "Language material", check for video game format phrases
+							// This helps to avoid books about game systems; especially books with CD-ROMs
+							//TODO: determine if the leader character check should only be for windows game
+							logger.info("Game format determination from 538 {} has Type of Record Leader Character {}", gameFormat, typeOfRecordLeaderChar);
+						}
 					} else {
 						if (sysDetailsValue.contains("playaway view")) {
 							result.add("PlayawayView");
@@ -1201,7 +1237,7 @@ public class FormatDetermination {
 			}
 		}
 
-		// Check for formats in the 500 tag
+		// Check for formats in the 500 tag  (General Note)
 		List<DataField> noteFields = record.getDataFields("500");
 		for (DataField noteField : noteFields) {
 			if (noteField != null) {
@@ -1231,7 +1267,7 @@ public class FormatDetermination {
 			}
 		}
 
-		// Check for formats in the 502 tag
+		// Check for formats in the 502 tag (Dissertation Note)
 		// 502a Dissertation Note -- Designation of an academic dissertation or thesis and the institution to which it was presented.
 		DataField dissertationNoteField = record.getDataField("502");
 		if (dissertationNoteField != null) {
@@ -1243,7 +1279,7 @@ public class FormatDetermination {
 			}
 		}
 
-		// Check for formats in the 590 tag
+		// Check for formats in the 590 tag  (Local Note)
 		List<DataField> noteField = record.getDataFields("590");
 		for(DataField localNoteField : noteField) {
 			if (localNoteField != null) {
@@ -1267,6 +1303,12 @@ public class FormatDetermination {
 				String gameFormat = getGameFormatFromValue(sysDetailsValue);
 				if (gameFormat != null){
 					result.add(gameFormat);
+					if (typeOfRecordLeaderChar != null) {
+						// if the leader isn't "Language material", check for video game format phrases
+						// This helps to avoid books about game systems; especially books with CD-ROMs
+						//TODO: determine if the leader character check should only be for windows game
+						logger.info("Game format determination from 753 {} has Type of Record Leader Character {}", gameFormat, typeOfRecordLeaderChar);
+					}
 				}
 			}
 		}
@@ -1343,7 +1385,8 @@ public class FormatDetermination {
 			//  keying off only "compatible" is likely a false positive
 			//  since descriptions may be referring to other things.
 		}
-		return !value.contains("compatible") && !value.contains("blu-ray disc player") && !value.contains("blu-ray player") && !value.contains("blu-ray disc computer");
+		return !value.contains("blu-ray player") && !value.contains("blu-ray disc player") && !value.contains("blu-ray disc computer") && !value.contains("compatible");
+		// Order by the more specific phrases first, and save phrase compatible for last to reduce potential false positives here
 	}
 
 	private void getFormatFromSubjects(Record record, Set<String> result) {
@@ -1383,8 +1426,8 @@ public class FormatDetermination {
 							if (okToAdd){
 								result.add("GraphicNovel");
 							}
-						}else if (subfieldData.contains("board books")){
-								result.add("BoardBook");
+						} else if (subfieldData.contains("board books")) {
+							result.add("BoardBook");
 						}
 					} else if (subfieldCode == 'v') {
 						String subfieldData = subfield.getData().toLowerCase();
@@ -1479,21 +1522,20 @@ public class FormatDetermination {
 		}
 	}
 
-	private void getFormatFrom008(Record record, Set<String> result) {
-		ControlField formatField = MarcUtil.getControlField(record, "008");
+	private void getFormatFrom008(ControlField formatField, Set<String> result) {
 		if (formatField != null) {
-			if (formatField.getData() == null || formatField.getData().length() < 24) {
-				return;
-			}
-			char formatCode = formatField.getData().toUpperCase().charAt(23);
-			if (formatCode == 'D') {
-				result.add("LargePrint");
+			String formatFieldData = formatField.getData();
+			if (formatFieldData != null && formatFieldData.length() >= 24) {
+				char formatCode = Character.toLowerCase(formatFieldData.charAt(23));
+				if (formatCode == 'd') {
+					result.add("LargePrint");
+				}
 			}
 		}
 	}
 
 	private void getFormatFrom007(Record record, Set<String> result) {
-		ControlField formatField = MarcUtil.getControlField(record, "007");
+		ControlField formatField = (ControlField) record.getVariableField( "007");
 		if (formatField != null){
 			if (formatField.getData() == null || formatField.getData().length() < 2) {
 				return;
@@ -1517,6 +1559,7 @@ public class FormatDetermination {
 					}
 					break;
 				case 'C':
+					// https://www.loc.gov/marc/bibliographic/bd007c.html
 					switch (specificMaterial) {
 						case 'A':
 							result.add("TapeCartridge");
@@ -1685,56 +1728,55 @@ public class FormatDetermination {
 	}
 
 
-	private void getFormatFromLeader(Set<String> result, String leader, ControlField fixedField) {
-		char leaderBit;
-		char formatCode;// check the Leader at position 6
-		if (leader.length() >= 6) {
-			leaderBit = leader.charAt(6);
-			switch (Character.toUpperCase(leaderBit)) {
-				case 'C':
-				case 'D':
+	private void getFormatFromLeader(Set<String> result, String leader, ControlField fixedField008) {
+		if (typeOfRecordLeaderChar != null) {
+			switch (typeOfRecordLeaderChar) {
+				//TODO: create case 'a' = book at this point? does it require checking the leader 07 below?
+				case 'c':
+				case 'd':
 					result.add("MusicalScore");
 					break;
-				case 'E':
-				case 'F':
+				case 'e':
+				case 'f':
 					result.add("Map");
 					break;
-				case 'G':
+				case 'g':
 					// We appear to have a number of items without 007 tags marked as G's.
 					// These seem to be Videos rather than Slides.
 					// result.add("Slide");
 					result.add("Video");
 					break;
-				case 'I':
+				case 'i':
 					result.add("SoundRecording");
 					break;
-				case 'J':
+				case 'j':
 					result.add("MusicRecording");
 					break;
-				case 'K':
+				case 'k':
 					result.add("Photo");
 					break;
-				case 'M':
+				case 'm':
 					result.add("Electronic");
 					break;
-				case 'O':
+				case 'o':
 					result.add("Kit");
 					break;
-				case 'P':
+				case 'p':
 					result.add("MixedMaterials");
 					break;
-				case 'R':
+				case 'r':
 					result.add("PhysicalObject");
 					break;
-				case 'T':
+				case 't':
 					result.add("Manuscript");
 					break;
 			}
 		}
 
 		if (leader.length() >= 7) {
+
 			// check the Leader at position 7
-			leaderBit = leader.charAt(7);
+			char leaderBit = leader.charAt(7);
 			switch (Character.toUpperCase(leaderBit)) {
 				// Monograph
 				case 'M':
@@ -1745,8 +1787,8 @@ public class FormatDetermination {
 				// Serial
 				case 'S':
 					// Look in 008 to determine what type of Continuing Resource
-					if (fixedField != null && fixedField.getData().length() >= 22) {
-						formatCode = fixedField.getData().toUpperCase().charAt(21);
+					if (fixedField008 != null && fixedField008.getData().length() >= 22) {
+						char formatCode = Character.toUpperCase(fixedField008.getData().charAt(21));
 						switch (formatCode) {
 							case 'N':
 								result.add("Newspaper");
@@ -1794,9 +1836,11 @@ public class FormatDetermination {
 		}
 		return translatedValues;
 	}
+
 	public String translateValue(String mapName, String value, RecordIdentifier identifier){
 		return translateValue(mapName, value, identifier, true);
 	}
+
 	public String translateValue(String mapName, String value, RecordIdentifier identifier, boolean reportErrors){
 		if (value == null){
 			return null;

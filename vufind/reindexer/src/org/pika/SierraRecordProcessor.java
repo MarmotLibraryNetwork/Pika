@@ -79,21 +79,21 @@ public class SierraRecordProcessor extends IIIRecordProcessor {
 		groupedWork.addAlternateId(shorBibIdWithoutCheckDigit);
 	}
 
-	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems){
+	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record){
 		if (!orderInfoFromExport.isEmpty()){
 			ArrayList<OrderInfo> orderItems = orderInfoFromExport.get(recordInfo.getRecordIdentifier().getIdentifier());
 			if (orderItems != null) {
 				for (OrderInfo orderItem : orderItems) {
 					createAndAddOrderItem(groupedWork, recordInfo, orderItem, record);
 				}
-				if (!hasTangibleItems && recordInfo.getNumCopiesOnOrder() > 0) {
+				if (!recordInfo.hasPrintCopies() && recordInfo.hasOnOrderCopies()) {
 					groupedWork.addKeywords("On Order");
 					groupedWork.addKeywords("Coming Soon");
 				}
 			}
 		}
 //		else{
-//			super.loadOnOrderItems(groupedWork, recordInfo, record, hasTangibleItems);
+//			super.loadOnOrderItems(groupedWork, recordInfo, record);
 //		}
 	}
 

@@ -32,11 +32,11 @@ import java.util.regex.Pattern;
 
 public class Util {
 	static byte[] readFileBytes(String filename) throws IOException {
-		FileInputStream f = new FileInputStream( filename );
-		FileChannel fileChannel = f.getChannel();
-		long fileSize = fileChannel.size();
-		byte[] fileBytes = new byte[(int)fileSize];
-		ByteBuffer buffer = ByteBuffer.wrap(fileBytes);
+		FileInputStream f           = new FileInputStream(filename);
+		FileChannel     fileChannel = f.getChannel();
+		long            fileSize    = fileChannel.size();
+		byte[]          fileBytes   = new byte[(int) fileSize];
+		ByteBuffer      buffer      = ByteBuffer.wrap(fileBytes);
 		fileChannel.read(buffer);
 		fileChannel.close();
 		f.close();
@@ -262,7 +262,7 @@ public class Util {
 		if (curDate == null){
 			return null;
 		}
-		return (indexDate.getTime() - curDate.getTime()) / (1000 * 60 * 60 * 24);
+		return (indexDate.getTime() - curDate.getTime()) / (long)  (1000 * 60 * 60 * 24);
 	}
 	private static final Date indexDate = new Date();
 	static Date getIndexDate(){

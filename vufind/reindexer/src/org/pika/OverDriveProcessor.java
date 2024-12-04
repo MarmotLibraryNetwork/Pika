@@ -46,6 +46,7 @@ public class OverDriveProcessor {
 	private PreparedStatement  getProductLanguagesStmt;
 	private PreparedStatement  getProductSubjectsStmt;
 	private PreparedStatement  getProductIdentifiersStmt;
+	private PreparedStatement  getMagazineIssueIdentifiersStmt;
 
 	public OverDriveProcessor(GroupedWorkIndexer groupedWorkIndexer, Connection econtentConn, Logger logger, boolean fullReindex, String serverName) {
 		this.indexer = groupedWorkIndexer;
@@ -67,6 +68,7 @@ public class OverDriveProcessor {
 			getProductLanguagesStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_languages INNER JOIN overdrive_api_product_languages_ref ON overdrive_api_product_languages.id = languageId WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getProductSubjectsStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_subjects INNER JOIN overdrive_api_product_subjects_ref ON overdrive_api_product_subjects.id = subjectId WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getProductIdentifiersStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_identifiers WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getMagazineIssueIdentifiersStmt = econtentConn.prepareStatement("SELECT overdriveId, crossRefId FROM overdrive_api_magazine_issues  WHERE parentId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		} catch (SQLException e) {
 			logger.error("Error setting up overdrive processor", e);
 		}
@@ -244,6 +246,11 @@ public class OverDriveProcessor {
 
 								loadOverDriveIdentifiers(groupedWork, productId, primaryFormat);
 
+								if (primaryFormat.equals("eMagazine")){
+									loadMagazineIssueIdentifiers(groupedWork, identifier);
+								}
+
+
 								//Load availability & determine which scopes are valid for the record
 								getProductAvailabilityStmt.setLong(1, productId);
 								int totalCopiesOwned;
@@ -361,7 +368,6 @@ public class OverDriveProcessor {
 										}//End processing availability
 									}
 								}
-//								groupedWork.addHoldings(totalCopiesOwned);
 							}
 						}
 					}
@@ -372,18 +378,38 @@ public class OverDriveProcessor {
 		}
 	}
 
-	private void loadOverDriveIdentifiers(GroupedWorkSolr groupedWork, Long productId, String primaryFormat) throws SQLException {
-		getProductIdentifiersStmt.setLong(1, productId);
-		ResultSet identifiersRS = getProductIdentifiersStmt.executeQuery();
-		while (identifiersRS.next()){
-			String type = identifiersRS.getString("type");
-			String value = identifiersRS.getString("value");
-			//For now, ignore anything that isn't an ISBN
-			if (type.equals("ISBN")){
-				groupedWork.addIsbn(value, primaryFormat);
+	private void loadOverDriveIdentifiers(GroupedWorkSolr groupedWork, Long productId, String primaryFormat) {
+		try {
+			getProductIdentifiersStmt.setLong(1, productId);
+			ResultSet identifiersRS = getProductIdentifiersStmt.executeQuery();
+			while (identifiersRS.next()){
+				String type = identifiersRS.getString("type");
+				String value = identifiersRS.getString("value");
+				//For now, ignore anything that isn't an ISBN
+				if (type.equals("ISBN")){
+					groupedWork.addIsbn(value, primaryFormat);
+				}
 			}
+		} catch (SQLException e) {
+			logger.error("Error adding ISBNs to index for OverDrive product {}", productId, e);
 		}
 	}
+
+	private void loadMagazineIssueIdentifiers(GroupedWorkSolr groupedWork, String identifier) {
+		try {
+			getMagazineIssueIdentifiersStmt.setString(1, identifier);
+			ResultSet identifiersRS = getMagazineIssueIdentifiersStmt.executeQuery();
+			while (identifiersRS.next()){
+				String overdriveId = identifiersRS.getString("overdriveId").toLowerCase();
+				String crossRefId  = identifiersRS.getString("crossRefId");
+				groupedWork.addAlternateId(overdriveId); // TODO: currently stored in database with uppercase hashes
+				groupedWork.addAlternateId(crossRefId);
+			}
+		} catch (SQLException e) {
+			logger.error("Error adding magazine issue ids to index for parent id {}", identifier, e);
+		}
+	}
+
 
 	/**
 	 * Load information based on subjects for the record
@@ -468,10 +494,10 @@ public class OverDriveProcessor {
 				groupedWork.addTopicFacet(topics);
 				groupedWork.addGenre(genres);
 				groupedWork.addGenreFacet(genres);
-				if (literaryForm.size() > 0) {
+				if (!literaryForm.isEmpty()) {
 					groupedWork.addLiteraryForms(literaryForm);
 				}
-				if (literaryFormFull.size() > 0) {
+				if (!literaryFormFull.isEmpty()) {
 					groupedWork.addLiteraryFormsFull(literaryFormFull);
 				}
 			}

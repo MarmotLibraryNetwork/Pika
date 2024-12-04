@@ -6916,7 +6916,7 @@ body > .container {
 }
 .modal-header .close {
   margin-top: -10px;
-  font-size: 40px;
+  font-size: 43px;
   opacity: .4;
 }
 .btn:active,
@@ -8264,7 +8264,7 @@ a .header-button:visited {
 .jcarousel .active figure.thumbnail img {
   border: 2px solid #E15F15;
 }
-#home-page-search {
+.home-page-search {
   background-color: #006aac;
   background: linear-gradient(to bottom, #006aac, #1878D3);
   padding: 20px 0 10px;
@@ -8977,6 +8977,7 @@ a.browse-thumbnail-sorted.active {
 }
 #browse-sub-category-menu button {
   margin-right: 5px;
+  margin-bottom: 5px;
 }
 #browse-sub-category-menu button.selected {
   color: #333;
@@ -10377,6 +10378,10 @@ a.browse-thumbnail-sorted.active {
 #masquerade-header {
   height: 50px;
   background-color: #6200a4;
+}
+#masquerade-header,
+#masquerade-header h4,
+#masquerade-header h5 {
   color: #FFF;
 }
 #masquerade-header-content {
@@ -10591,8 +10596,6 @@ a .header-button:hover {
 }
 #browse-sub-category-menu .btn {
   padding: 6px 10px;
-  margin-right: 5px;
-  margin-bottom: 5px;
 }
 #browse-sub-category-menu button.selected {
   border: 1px solid #006aac;
@@ -10630,13 +10633,15 @@ a .header-button:hover {
 #advancedSearchLink {
   text-shadow: 1px 1px #333;
 }
-#more-details-accordion a:hover,
 #account-settings-accordion a:hover,
 .sidebar-links a:hover,
-#more-details-accordion a:visited,
 #account-settings-accordion a:visited,
 .sidebar-links a:visited {
-  color: #FFF;
+  color: #fff;
+}
+#more-details-accordion a:hover :not(.btn),
+#more-details-accordion a:visited :not(.btn) {
+  color: #fff;
 }
 .sidebar-links .panel.active > a,
 .sidebar-links .panel.active > a:visited,

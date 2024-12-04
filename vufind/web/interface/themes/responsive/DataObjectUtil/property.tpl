@@ -25,7 +25,7 @@
 				<a href="{$property.helpLink}" aria-label="Help Link" target="_blank"><span class="help-icon glyphicon glyphicon-question-sign" title="Help" aria-hidden="true"></span></a>
 			</div>
 			</div>
-		{elseif $property.type != 'section' && $property.type != 'checkbox'}
+		{elseif $property.type != 'section' && $property.type != 'checkbox' && $property.type != 'checkboxWarn' && $property.type != 'header'}
 			{if !empty($property.helpLink)}
 				<div class="row">
 					<div class="col-xs-11">
@@ -77,8 +77,8 @@
 				</div>
 			</div>
 		{elseif $property.type == 'tel'}
-			<input type="tel" name='{$propName}' id='{$propName}' value='{$propValue|escape}' pattern="(?:\d{ldelim}1{rdelim}\s)?\(?(\d{ldelim}3{rdelim})\)?-?\s?(\d{ldelim}3{rdelim})-?\s?(\d{ldelim}4{rdelim})" {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class="form-control {if $property.required}required{/if}"{if $property.required} aria-required="true"{/if}{if $property.autocomplete} autocomplete="{$property.autocomplete}"{/if}>
-		{elseif $property.type == 'text' || $property.type == 'folder'}
+			<input type="tel" name='{$propName}' id='{$propName}' value='{$propValue|escape}' pattern="[0-9]{ldelim}3{rdelim}-[0-9]{ldelim}3{rdelim}-[0-9]{ldelim}4{rdelim}" {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class="form-control {if $property.required}required{/if}"{if $property.required} aria-required="true"{/if}{if $property.autocomplete} autocomplete="{$property.autocomplete}"{/if}>
+    {elseif $property.type == 'text' || $property.type == 'folder'}
 			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class="form-control {if $property.required}required{/if}"{if $property.required} aria-required="true"{/if}{if $property.autocomplete} autocomplete="{$property.autocomplete}"{/if}>
 		{elseif $property.type == 'integer'}
 			<input type="number" name='{$propName}' id='{$propName}' value='{$propValue|escape}'{if isset($property.max)} max="{$property.max}"{/if}{if isset($property.min)} min="{$property.min}"{/if}{if $property.maxLength} maxlength='{$property.maxLength}'{/if}{if $property.size} size='{$property.size}'{/if}{if $property.step} step='{$property.step}'{/if} class="form-control{if $property.required} required{/if}{if isset($property.min)} minimum{/if}{if isset($property.max)} maximum{/if}"{if $property.required} aria-required="true"{/if}{if $property.autocomplete} autocomplete="{$property.autocomplete}"{/if}>
@@ -111,7 +111,9 @@
 		{elseif $property.type == 'pin'}
 			<input type="password" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class="form-control{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}{if $property.required} required{/if}"{* doesn't work {if $pinMinimumLength > 0} data-rule-minlength="{$pinMinimumLength}"{/if}*} {if $property.required} aria-required="true"{/if}{if $property.autocomplete} autocomplete="{$property.autocomplete}"{/if}>
 
-
+		{elseif $property.type == 'header'}
+			<h2 id="{$propName}"{if $property.class} class="{$property.class}"{/if}>{$property.value|escape}</h2>
+		
 		{elseif $property.type == 'currency'}
 			{include file="DataObjectUtil/currency.tpl"}
 
@@ -165,7 +167,7 @@
 				<br>
 
 				<div class="col-md-2"><label for="fileName" class="label-left">File Name</label></div>
-				<div class="col-md-7"><input type="text" name="fileName" value="{$propValue}" class="form-control"></div>
+				<div class="col-md-7"><input type="text" id="fileName" name="fileName" value="{$propValue}" class="form-control"></div>
 
 			</div>
 			{/if}
@@ -174,56 +176,38 @@
 				var storagePath = "{$property.storagePath}";
 				var sendFile = "";
 				{literal}
-				$( document ).ready(function() {
+				$(function() {
+					$(prop).change(function(e){
+						var file = e.target.files[0].name;
+						var extension = file.substr((file.lastIndexOf('.') +1));
 
-
-				$(prop).change(function(e){
-					var file = e.target.files[0].name;
-					var extension = file.substr((file.lastIndexOf('.') +1));
-
-					if(this.files[0].size > 1900000){
-						$(':input[type="submit"]').prop('disabled', true);
-						$(".custom-file").append("<div class='alert alert-danger' id='sizeWarning'>The image is too large and upload will fail. Please resize and try again. Images must be under 1.8MB</div>");
-					}else{
-						$(':input[type="submit"]').prop('disabled', false);
-						$("#sizeWarning").remove();
-					}
-
-					if($("#fileName").length > 0)
-						{
-							var fileName = $("#fileName").val();
-
-
-							if(fileName.includes("."))
-								{
-									sendFile = fileName;
-								}
-							else
-							{
-								sendFile = fileName + "." + extension;
-							}
+						if(this.files[0].size > 1900000){
+							$(':input[type="submit"]').prop('disabled', true);
+							$(".custom-file").append("<div class='alert alert-danger' id='sizeWarning'>The image is too large and upload will fail. Please resize and try again. Images must be under 1.8MB</div>");
+						}else{
+							$(':input[type="submit"]').prop('disabled', false);
+							$("#sizeWarning").remove();
 						}
-					else
-					{
-						sendFile = file;
-					}
 
-					checkFile(storagePath, sendFile);
+						if ($("#fileName").length > 0) {
+							var fileName = $("#fileName").val();
+							sendFile = fileName.includes(".") ? fileName : fileName + "." + extension;
+						} else {
+							sendFile = file;
+						}
+
+						checkFile(storagePath, sendFile);
+					});
 				});
-	});
 
-				function checkFile(path, file)
-				{
+				function checkFile(path, file) {
 					$(':input[type="submit"]').prop('disabled', false);
 					$("#existsAlert").remove();
 					$.ajax({
 						url: "/Admin/AJAX?&method=fileExists&fileName=" + file + "&storagePath=" + path
-
 					})
-					.done (function(data)
-					{
-						if (data.exists == "true")
-							{
+						.done(function (data) {
+							if (data.exists == "true") {
 								$("<br><div class='row'><div class='col-md-12'><div id='existsAlert' class='alert alert-danger'>Filename Already Exists - submitting will replace an existing file. <label for='overWriteOverRide'>Overwrite: </label><input type='checkbox' id='overWriteOverRide'></div></div></div>").insertAfter(prop);
 
 								$(':input[type="submit"]').prop('disabled', true);
@@ -250,7 +234,20 @@
 					{/if}
 				</label>
 			</div>
-
+			{if isset($property.warning)}
+			<script>
+				$('#{$propName}').on('click', function(d){ldelim}
+					varSelectorId = '#'+this.id;
+					if ($(varSelectorId).is(":checked")){ldelim}
+						$(varSelectorId).prop('checked',false);
+						Pika.confirm("{$property.warning}. This cannot be undone. Please make sure you are aware of the risks before saving", function(){ldelim}
+							$(varSelectorId).prop('checked',true);
+							$('.modal-footer button.btn-default').click();
+                {rdelim});
+              {rdelim}
+            {rdelim});
+			</script>
+		{/if}
 		{elseif $property.type == 'oneToMany'}
 			{include file="DataObjectUtil/oneToMany.tpl"}
 		{/if}

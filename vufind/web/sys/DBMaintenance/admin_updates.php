@@ -35,7 +35,15 @@ function getAdminUpdates() {
 //		],
 
 	return [
-
+		'2024.04.0_add_library_partner_role' => [
+			'release'         => '2024.04.0',
+			'title'           => 'Add library partner role',
+			'description'     => 'Add a role to allow library admin to modify partner interfaces',
+			'continueOnError' => false,
+			'sql'             => [
+				'INSERT INTO `roles` (`name`, `description`) VALUES (\'partnerAdmin\', \'Allows user to update the library configuration for a partner system of their home library.\');'
+			]
+		]
 	];
 }
 

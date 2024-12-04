@@ -82,8 +82,7 @@ class MarcSplitOption {
 		if (validBib) {
 			MarcFactory factory = MarcFactory.newInstance();
 			//if we have a valid bib, make a copy and write it to the split marc
-			Record marcCopy = factory.newRecord();
-			marcCopy.setLeader(curBib.getLeader());
+			Record marcCopy = factory.newRecord(curBib.getLeader());
 			for (ControlField curField : curBib.getControlFields()) {
 				marcCopy.addVariableField(curField);
 			}

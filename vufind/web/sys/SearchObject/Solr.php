@@ -38,7 +38,7 @@ class SearchObject_Solr extends SearchObject_Base {
 	// Index
 	private $index = null;
 	// Field List
-	private static $fields = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,title_sub,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisher,publishDate,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed';
+	private static $fields = 'accelerated_reader_interest_level,accelerated_reader_point_value,accelerated_reader_reading_level,auth_author2,author,author2-role,author_display,display_description,display_description,fountas_pinnell,id,isbn,issn,item_details,last_indexed,lexile_code,lexile_score,literary_form,literary_form_full,mpaaRating,num_titles,primary_isbn,primary_upc,publishDate,publisher,record_details,recordtype,series,series_with_volume,subject_facet,title_display,title_full,title_short,title_sub,topic_facet,upc';
 	private $fieldsFull = '*,score';
 	// HTTP Method
 	private $method = 'GET';

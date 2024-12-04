@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -179,20 +180,19 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		itemInfo.setShelfLocationCode(subfieldData);
 	}
 
-	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems) {
+	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record) {
 		if (bibsWithOrders.contains(recordInfo.getRecordIdentifier().getIdentifier())) {
-			if (recordInfo.getNumPrintCopies() == 0 && recordInfo.getNumCopiesOnOrder() == 0) {
+			if (!recordInfo.hasPrintCopies() && !recordInfo.hasOnOrderCopies()) {
 				ItemInfo itemInfo = new ItemInfo();
 				itemInfo.setLocationCode("aacpl");
 				itemInfo.setItemIdentifier(recordInfo.getRecordIdentifier().getIdentifier());
 				itemInfo.setNumCopies(1);
 				itemInfo.setIsEContent(false);
-				itemInfo.setIsOrderItem(true);
+				itemInfo.setIsOrderItem();
 				itemInfo.setCallNumber("ON ORDER");
 				itemInfo.setSortableCallNumber("ON ORDER");
 				itemInfo.setDetailedStatus("On Order");
-				Date tomorrow = new Date();
-				tomorrow.setTime(tomorrow.getTime() + 1000 * 60 * 60 * 24);
+				Date tomorrow = Date.from(new Date().toInstant().plus(1, ChronoUnit.DAYS));
 				itemInfo.setDateAdded(tomorrow);
 				//Format and Format Category should be set at the record level, so we don't need to set them here.
 
@@ -246,7 +246,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		itemInfo.setLocationCode(itemLocation);
 		itemInfo.setITypeCode(getItemSubfieldData(iTypeSubfield, itemField));
 		itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), identifier));
-		loadItemCallNumber(record, itemField, itemInfo);
+		loadItemCallNumber(record, itemField, itemInfo, identifier);
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
 
 		String econtentSource = MarcUtil.getFirstFieldVal(record, "092a");

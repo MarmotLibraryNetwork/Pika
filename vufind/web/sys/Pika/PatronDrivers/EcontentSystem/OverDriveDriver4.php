@@ -1121,8 +1121,9 @@ class OverDriveDriver4 {
 		$curl->setOpts($curlopts);
 		$curl->setHeaders($headers);
 		$response = $curl->get($url);
-		$hData = array();
-		$fields = explode("\r\n",preg_replace('/\x0D\x0A[\x09\x20]+/','',$response));
+		$hData    = [];
+		$fields   = explode("\r\n", preg_replace('/\x0D\x0A[\x09\x20]+/', '', $response));
+		//TODO: explain the purpose of the preg_replace expression here
 		foreach($fields as $field)
 		{
 			if(preg_match('/(?=Location:).*/m',$field,$match)){

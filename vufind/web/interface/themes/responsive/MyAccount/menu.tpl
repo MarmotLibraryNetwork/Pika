@@ -90,7 +90,7 @@
 			<span id="tagsMenu-placeholder"></span>
 
 			{* Admin Functionality if Available *}
-			{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('contentEditor', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
+			{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('partnerAdmin', $userRoles) || in_array('contentEditor', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
 				{if in_array($action, array('Libraries', 'Locations', 'IPAddresses', 'ListWidgets', 'BrowseCategories', 'PTypes', 'LoanRules', 'LoanRuleDeterminers', 'AccountProfiles', 'NYTLists', 'BlockPatronAccountLinks', 'UserAdmin'))}
 					{assign var="curSection" value=true}
 				{else}
@@ -107,7 +107,7 @@
 					<div id="pikaMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
 							{* Library Admin Actions *}
-							{if (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles))}
+							{if (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('partnerAdmin', $userRoles) || in_array('libraryManager', $userRoles))}
 								<div class="adminMenuLink{if $action == "Libraries"} active{/if}"><a href="/Admin/Libraries">Library Systems</a></div>
 							{/if}
 							{if (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
@@ -127,16 +127,19 @@
 							{/if}
 
 							{* Content Editor Actions *}
-							<div class="adminMenuLink{if $action == "ListWidgets"} active{/if}"><a href="/Admin/ListWidgets">List Widgets</a></div>
-							<div class="adminMenuLink{if $action == "BrowseCategories"} active{/if}"><a href="/Admin/BrowseCategories">Browse Categories</a></div>
-							{if (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('contentEditor', $userRoles))}
-								<div class="adminMenuLink{if $action == "NYTLists"} active{/if}"><a href="/Admin/NYTLists">NY Times Lists</a></div>
+							{if count($userRoles) == 1 && $userRoles[0] == 'partnerAdmin'}
+									{* In the unlikely event that a user only has the parterAdmin Role, don't display things they don't need. *}
+							{else}
+								<div class="adminMenuLink{if $action == "ListWidgets"} active{/if}"><a href="/Admin/ListWidgets">List Widgets</a></div>
+								<div class="adminMenuLink{if $action == "BrowseCategories"} active{/if}"><a href="/Admin/BrowseCategories">Browse Categories</a></div>
+								{if (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('contentEditor', $userRoles))}
+									<div class="adminMenuLink{if $action == "NYTLists"} active{/if}"><a href="/Admin/NYTLists">NY Times Lists</a></div>
+								{/if}
 							{/if}
-
 							{* OPAC Admin Actions*}
 							{if in_array('opacAdmin', $userRoles)}
 								{* OPAC Admin Actions*}
-								{if ($ils == 'Sierra' || $ils == 'Horizon' || $ils == 'CarlX')}
+								{if ($ils == 'Sierra' || $ils == 'Horizon' || $ils == 'Polaris' || $ils == 'CarlX')}
 								<div class="adminMenuLink{if $action == "PTypes"} active{/if}"><a href="/Admin/PTypes">P-Types</a></div>
 								{/if}
 								{if ($ils == 'Sierra')}

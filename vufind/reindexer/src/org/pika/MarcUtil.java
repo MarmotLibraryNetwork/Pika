@@ -138,12 +138,12 @@ class MarcUtil {
 		// Loop through Data and Control Fields
 		List<VariableField> varFlds = record.getVariableFields(fldTag);
 		for (VariableField vf : varFlds) {
-			if (!isControlField(fldTag) && subfield != null) {
+			if (isNotControlField(fldTag) && subfield != null) {
 				// Data Field
 				DataField dfield = (DataField) vf;
 				if (subfield.length() > 1) {
 					// automatic concatenation of grouped subFields
-					StringBuilder buffer = new StringBuilder("");
+					StringBuilder buffer = new StringBuilder();
 					List<Subfield> subFields = dfield.getSubfields();
 					for (Subfield sf : subFields) {
 						if (subfield.indexOf(sf.getCode()) != -1
@@ -204,13 +204,13 @@ class MarcUtil {
 			return resultSet;
 		}
 		for (VariableField vf : varFlds) {
-			if (!isControlField(fldTag) && subfieldsStr != null) {
+			if (isNotControlField(fldTag) && subfieldsStr != null) {
 				// DataField
 				DataField dfield = (DataField) vf;
 
 				if (subfieldsStr.length() > 1 || separator != null) {
 					// concatenate subfields using specified separator or space
-					StringBuilder buffer = new StringBuilder("");
+					StringBuilder buffer = new StringBuilder();
 					List<Subfield> subFields = dfield.getSubfields();
 					for (Subfield sf : subFields) {
 						if (subfieldsStr.indexOf(sf.getCode()) != -1) {
@@ -229,9 +229,10 @@ class MarcUtil {
 					for (Subfield sf : subFields) {
 						resultSet.add(sf.getData().trim());
 					}
-				} else {
-					//logger.warn("No subfield provided when getting getSubfieldDataAsSet for " + fldTag);
 				}
+//				else {
+//					//logger.warn("No subfield provided when getting getSubfieldDataAsSet for " + fldTag);
+//				}
 			} else {
 				// Control Field
 				resultSet.add(((ControlField) vf).getData().trim());
@@ -240,9 +241,9 @@ class MarcUtil {
 		return resultSet;
 	}
 
-	private static Pattern controlFieldPattern = Pattern.compile("00[0-9]");
-	private static boolean isControlField(String fieldTag) {
-		return controlFieldPattern.matcher(fieldTag).matches();
+	private static final Pattern controlFieldPattern = Pattern.compile("00[0-9]");
+	private static boolean isNotControlField(String fieldTag) {
+		return !controlFieldPattern.matcher(fieldTag).matches();
 	}
 
 	private static HashMap<String, Pattern> subfieldPatterns = new HashMap<>();
@@ -284,7 +285,7 @@ class MarcUtil {
 			Subfield link = dfield.getSubfield('6');
 			if (link != null && link.getData().startsWith(tag)) {
 				List<Subfield> subList = dfield.getSubfields();
-				StringBuilder buf = new StringBuilder("");
+				StringBuilder buf = new StringBuilder();
 				for (Subfield subF : subList) {
 					boolean addIt = false;
 					if (subfieldPattern != null) {
@@ -360,10 +361,10 @@ class MarcUtil {
 	}
 
 	static StringBuilder getSpecifiedSubfieldsAsString(DataField marcField, String validSubfields, String separator) {
-		StringBuilder buffer = new StringBuilder("");
+		StringBuilder buffer = new StringBuilder();
 		List<Subfield> subFields = marcField.getSubfields();
 		for (Subfield subfield : subFields) {
-			if (validSubfields.length() == 0 || validSubfields.contains("" + subfield.getCode())){
+			if (validSubfields.isEmpty() || validSubfields.contains("" + subfield.getCode())){
 				if (buffer.length() > 0) {
 					buffer.append(separator != null ? separator : " ");
 				}
@@ -406,7 +407,7 @@ class MarcUtil {
 	 */
 	@SuppressWarnings("unchecked")
 	static String getAllSearchableFields(Record record, int lowerBound, int upperBound) {
-		StringBuilder buffer = new StringBuilder("");
+		StringBuilder buffer = new StringBuilder();
 
 		List<DataField> fields = record.getDataFields();
 		for (DataField field : fields) {
@@ -429,7 +430,7 @@ class MarcUtil {
 
 	static String getFirstFieldVal(Record record, String fieldSpec) {
 		Set<String> result = MarcUtil.getFieldList(record, fieldSpec);
-		if (result.size() == 0){
+		if (result.isEmpty()){
 			return null;
 		}else{
 			return result.iterator().next();

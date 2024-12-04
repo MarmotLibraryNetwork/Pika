@@ -88,7 +88,7 @@ public class Cron {
 			return;
 		}
 		String econtentConnectionInfo = PikaConfigIni.getIniValue("Database", "database_econtent_jdbc");
-		if (econtentConnectionInfo == null || econtentConnectionInfo.length() == 0) {
+		if (econtentConnectionInfo == null || econtentConnectionInfo.isEmpty()) {
 			logger.error("eContent Database connection information not found in General Settings.  Please specify connection information in a database key.");
 			return;
 		}
@@ -189,7 +189,7 @@ public class Cron {
 					//Log how long the process took
 					Date  endTime        = new Date();
 					long  elapsedMillis  = endTime.getTime() - currentTime.getTime();
-					float elapsedMinutes = (elapsedMillis) / 60000;
+					float elapsedMinutes = (float) (elapsedMillis) / 60000;
 					logger.info("Finished process " + processToRun.getProcessName() + " in " + elapsedMinutes + " minutes (" + elapsedMillis + " milliseconds)");
 					cronEntry.addNote("Finished process " + processToRun.getProcessName() + " in " + elapsedMinutes + " minutes (" + elapsedMillis + " milliseconds)");
 

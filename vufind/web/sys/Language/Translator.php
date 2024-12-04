@@ -71,11 +71,10 @@ class I18N_Translator
 	 * @param   string $langCode    The ISO 639-1 Language Code
 	 * @access  public
 	 */
-	function __construct($path, $langCode, $debug = false)
-	{
+	function __construct($path, $langCode, $debug = false){
 		global $timer;
 		global $configArray;
-		$this->path = $path;
+		$this->path     = $path;
 		$this->langCode = preg_replace('/[^\w\-]/', '', $langCode);
 
 		if ($debug) {
@@ -88,7 +87,7 @@ class I18N_Translator
 			if ($this->langCode != '' && is_file($file)) {
 				$this->words = $this->parseLanguageFile($file);
 			} else {
-				return new PEAR_Error("Unknown language file");
+				return new PEAR_Error('Unknown language file');
 			}
 			closedir($dh);
 		} else {

@@ -208,7 +208,7 @@ class UInterface extends Smarty {
 	 * @access  public
 	 * @return  string
 	 */
-	public function getVuFindTheme(){
+	public function getPikaTheme(){
 		return $this->pikaTheme;
 	}
 

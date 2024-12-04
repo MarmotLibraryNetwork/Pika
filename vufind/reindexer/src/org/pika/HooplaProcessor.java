@@ -291,7 +291,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 		//Load editions
 		Set<String> editions = MarcUtil.getFieldList(record, "250a");
-		if (editions.size() > 0) {
+		if (!editions.isEmpty()) {
 			groupedWork.addEditions(editions);
 			String primaryEdition = editions.iterator().next();
 			recordInfo.setEdition(primaryEdition);
@@ -300,7 +300,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		//Load publication details
 		//Load publishers
 		Set<String> publishers = this.getPublishers(record);
-		if (publishers.size() > 0) {
+		if (!publishers.isEmpty()) {
 			groupedWork.addPublishers(publishers);
 			String publisher = publishers.iterator().next();
 			recordInfo.setPublisher(publisher);
@@ -308,7 +308,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 		//Load publication dates
 		Set<String> publicationDates = this.getPublicationDates(record);
-		if (publicationDates.size() > 0) {
+		if (!publicationDates.isEmpty()) {
 			groupedWork.addPublicationDates(publicationDates);
 			String publicationDate = publicationDates.iterator().next();
 			recordInfo.setPublicationDate(publicationDate);
@@ -316,7 +316,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 		//Load physical description
 		Set<String> physicalDescriptions = MarcUtil.getFieldList(record, "300abcefg:530abcd");
-		if (physicalDescriptions.size() > 0) {
+		if (!physicalDescriptions.isEmpty()) {
 			groupedWork.addPhysical(physicalDescriptions);
 			String physicalDescription = physicalDescriptions.iterator().next();
 			recordInfo.setPhysicalDescription(physicalDescription);
@@ -375,8 +375,6 @@ class HooplaProcessor extends MarcRecordProcessor {
 		//From Pika to Hoopla, but that wouldn't count plays directly within the app
 		//(which may be ok).
 		groupedWork.addPopularity(1);
-
-//		groupedWork.addHoldings(1);
 	}
 
 	private void loadScopeInfoForEContentItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, ItemInfo itemInfo, Record record) {

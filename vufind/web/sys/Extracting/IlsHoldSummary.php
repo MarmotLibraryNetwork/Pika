@@ -34,6 +34,6 @@ class IlsHoldSummary extends DB_DataObject{
 	public $numHolds;
 
 	function keys() {
-		return array('id');
+		return ['id'];
 	}
 }

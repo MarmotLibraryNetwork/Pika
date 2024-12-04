@@ -35,6 +35,8 @@ class ArlingtonRecordProcessor extends SierraRecordProcessor {
 
 	ArlingtonRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
+		bibLevelCallNumberTags = new ArrayList<>(Collections.singletonList("092"));
+		// #ARL-217 do not use 099 as a call number
 	}
 
 
@@ -95,7 +97,7 @@ class ArlingtonRecordProcessor extends SierraRecordProcessor {
 			String locationCode = printItem.getShelfLocationCode();
 			if (addTargetAudienceBasedOnLocationCode(targetAudiences, locationCode)) break;
 		}
-		if (targetAudiences.size() == 0){
+		if (targetAudiences.isEmpty()){
 			Set<String> bibLocations = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + "a");
 			for (String bibLocation : bibLocations){
 				if (bibLocation.length() <= 5) {
@@ -103,7 +105,7 @@ class ArlingtonRecordProcessor extends SierraRecordProcessor {
 				}
 			}
 		}
-		if (targetAudiences.size() == 0){
+		if (targetAudiences.isEmpty()){
 			targetAudiences.add("Other");
 		}
 		groupedWork.addTargetAudiences(targetAudiences);
@@ -168,12 +170,12 @@ class ArlingtonRecordProcessor extends SierraRecordProcessor {
 					itemInfo.setLocationCode(locationCode);
 
 					//if the status and location are null, we can assume this is not a valid item
-					if (!isItemValid(itemStatus, locationCode)) return;
+					if (itemNotValid(itemStatus, locationCode)) return;
 
 					itemInfo.setShelfLocationCode(locationCode);
 					itemInfo.setShelfLocation(getShelfLocationForItem(itemInfo, null, identifier));
 
-					loadItemCallNumber(record, null, itemInfo);
+					loadItemCallNumber(record, null, itemInfo, identifier);
 
 					itemInfo.setCollection(translateValue("collection", locationCode, recordInfo.getRecordIdentifier()));
 
@@ -194,7 +196,7 @@ class ArlingtonRecordProcessor extends SierraRecordProcessor {
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		//For arlington, eContent will always have no items on the bib record.
 		List<DataField> items = MarcUtil.getDataFields(record, itemTag);
-		if (items.size() > 0){
+		if (!items.isEmpty()){
 			return unsuppressedEcontentRecords;
 		}else{
 			//No items so we can continue on.
@@ -276,29 +278,29 @@ class ArlingtonRecordProcessor extends SierraRecordProcessor {
 		return unsuppressedEcontentRecords;
 	}
 
-	boolean checkIfBibShouldBeRemovedAsItemless(RecordInfo recordInfo) {
-		if (recordInfo.getNumPrintCopies() == 0 && recordInfo.getNumCopiesOnOrder() == 0 && suppressItemlessBibs){
-			return true;
-			//Need to do additional work to determine exactly how Arlington wants bibs with volumes, but no items
-			//to show.  See #D-81
-/*			boolean hasVolumeRecords = recordsWithVolumes.contains(recordInfo.getFullIdentifier());
-			if (hasVolumeRecords){
-				//Add a fake record for use in scoping
-				recordInfo.setHasVolumes(true);
-				ItemInfo volumeInfo = new ItemInfo();
-				volumeInfo.setItemIdentifier("tmpVolume");
-				for (Scope scope: indexer.getScopes()){
-					volumeInfo.addScope(scope);
-				}
-				recordInfo.addItem(volumeInfo);
-				return false;
-			}else{
-				return true;
-			}*/
-		}else{
-			return false;
-		}
-	}
+//	boolean checkIfBibShouldBeRemovedAsItemless(RecordInfo recordInfo) {
+//		if (super.checkIfBibShouldBeRemovedAsItemless(recordInfo)){
+//			return true;
+//			//Need to do additional work to determine exactly how Arlington wants bibs with volumes, but no items
+//			//to show.  See #D-81
+///*			boolean hasVolumeRecords = recordsWithVolumes.contains(recordInfo.getFullIdentifier());
+//			if (hasVolumeRecords){
+//				//Add a fake record for use in scoping
+//				recordInfo.setHasVolumes(true);
+//				ItemInfo volumeInfo = new ItemInfo();
+//				volumeInfo.setItemIdentifier("tmpVolume");
+//				for (Scope scope: indexer.getScopes()){
+//					volumeInfo.addScope(scope);
+//				}
+//				recordInfo.addItem(volumeInfo);
+//				return false;
+//			}else{
+//				return true;
+//			}*/
+//		}else{
+//			return false;
+//		}
+//	}
 
 	/**
 	 * For Arlington do not load Bisac Subjects and load full stings with subfields for topics
@@ -349,7 +351,4 @@ class ArlingtonRecordProcessor extends SierraRecordProcessor {
 		}
 	}
 
-	protected boolean use099forBibLevelCallNumbers() {
-		return false;
-	}
 }

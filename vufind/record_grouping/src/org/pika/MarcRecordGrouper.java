@@ -44,13 +44,14 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 	//private static final Pattern econtentURLsPattern = Pattern.compile("(?i)^http://.*?/ContentDetails\\.htm\\?id=[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$|^https?://link\\.overdrive\\.com.*|^https?://api\\.overdrive\\.com.*");
 	//private static final Pattern econtentURLsPattern = Pattern.compile("(?i)^https?://link\\.overdrive\\.com.*|^https?://api\\.overdrive\\.com.*|^https?://www\\.hoopladigital\\.com.*");
 	private static final Pattern econtentURLsPattern = Pattern.compile("(?i)^https?://link\\.overdrive\\.com.*|^https?://api\\.overdrive\\.com.*|^https?://www\\.hoopladigital\\.com.*|^https?://clearviewlibrary\\.kanopy\\.com.*");
+	//TODO: make pattern an config.ini setting
 
 
 	/**
 	 * Creates a record grouping processor that saves results to the database.
 	 *  @param pikaConn   - The Connection to the Pika database
 	 * @param profile        - The profile that we are grouping records for
- * @param logger         - A logger to store debug and error messages to.
+   * @param logger         - A logger to store debug and error messages to.
 	 */
 	public MarcRecordGrouper(Connection pikaConn, IndexingProfile profile, Logger logger) {
 		this(pikaConn, profile, logger, false);
@@ -250,7 +251,7 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 		if (doAutomaticEcontentSuppression) {
 			// Suppress Overdrive (or Hoopla for Marmot with ils eContent record with items) records from grouping, typically from the ils profile
 			// This is based on the assumption that OverDrive records will be loaded through APIs
-			// (or sideloaded for Hoopla)
+			// (or side-loaded for Hoopla)
 			if (logger.isDebugEnabled()) {
 				logger.debug("getPrimaryIdentifierFromMarcRecord - Doing automatic eContent Suppression");
 			}

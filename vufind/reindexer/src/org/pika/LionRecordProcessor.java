@@ -33,6 +33,7 @@ import java.util.HashSet;
 class LionRecordProcessor extends SierraRecordProcessor {
 	LionRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
+		callnumberPipeRegex = "\\|"; // Remove only pipe characters
 	}
 
 	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {

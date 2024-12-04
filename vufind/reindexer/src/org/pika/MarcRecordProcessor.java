@@ -762,7 +762,7 @@ abstract class MarcRecordProcessor {
 		//Load publishers
 		Set<String> publishers = this.getPublishers(record);
 		groupedWork.addPublishers(publishers);
-		if (publishers.size() > 0){
+		if (!publishers.isEmpty()){
 			String publisher = publishers.iterator().next();
 			for(RecordInfo ilsRecord : ilsRecords){
 				ilsRecord.setPublisher(publisher);
@@ -772,7 +772,7 @@ abstract class MarcRecordProcessor {
 		//Load publication dates
 		Set<String> publicationDates = this.getPublicationDates(record);
 		groupedWork.addPublicationDates(publicationDates);
-		if (publicationDates.size() > 0){
+		if (!publicationDates.isEmpty()){
 			String publicationDate = publicationDates.iterator().next();
 			for(RecordInfo ilsRecord : ilsRecords){
 				ilsRecord.setPublicationDate(publicationDate);
@@ -782,12 +782,12 @@ abstract class MarcRecordProcessor {
 	}
 
 	Set<String> getPublicationDates(Record record) {
-		@SuppressWarnings("unchecked")
+		/*@SuppressWarnings("unchecked")*/
 		List<DataField> rdaFields = record.getDataFields("264");
 		HashSet<String> publicationDates = new HashSet<>();
 		String date;
 		//Try to get from RDA data
-		if (rdaFields.size() > 0){
+		if (!rdaFields.isEmpty()){
 			for (DataField dataField : rdaFields){
 				if (dataField.getIndicator2() == '1'){
 					Subfield subFieldC = dataField.getSubfield('c');
@@ -799,11 +799,11 @@ abstract class MarcRecordProcessor {
 			}
 		}
 		//Try to get from 260
-		if (publicationDates.size() ==0) {
+		if (publicationDates.isEmpty()) {
 			publicationDates.addAll(MarcUtil.getFieldList(record, "260c"));
 		}
 		//Try to get from 008, but only need to do if we don't have anything else
-		if (/**/publicationDates.size() == 0) {
+		if (publicationDates.isEmpty()) {
 			publicationDates.add(MarcUtil.getFirstFieldVal(record, "008[7-10]"));
 		}
 
@@ -813,10 +813,10 @@ abstract class MarcRecordProcessor {
 	Set<String> getPublishers(Record record){
 		Set<String> publisher = new LinkedHashSet<>();
 		//First check for 264 fields
-		@SuppressWarnings("unchecked")
+		/*@SuppressWarnings("unchecked")*/
 
 		List<DataField> rdaFields = MarcUtil.getDataFields(record, "264");
-		if (rdaFields.size() > 0){
+		if (!rdaFields.isEmpty()){
 			for (DataField curField : rdaFields){
 				if (curField.getIndicator2() == '1'){
 					Subfield subFieldB = curField.getSubfield('b');

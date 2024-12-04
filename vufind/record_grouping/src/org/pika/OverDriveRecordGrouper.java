@@ -42,7 +42,7 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 
 		File   curFile = new File("../../sites/default/translation_maps/iso639-1TOiso639-2B_map.properties");
 		if (curFile.exists()) {
-			String mapName                        = curFile.getName().replace(".properties", "").replace("_map", "");
+			String mapName = curFile.getName().replace(".properties", "").replace("_map", "");
 			translationMaps.put(mapName, loadTranslationMap(curFile, mapName));
 		} else {
 			logger.error("Language code converting map for OverDrive grouping not found");

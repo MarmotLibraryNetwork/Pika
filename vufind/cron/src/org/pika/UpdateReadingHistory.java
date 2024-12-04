@@ -58,7 +58,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 		processLog.addNote("Updating Reading History");
 
 		pikaUrl = PikaConfigIni.getIniValue("Site", "url");
-		if (pikaUrl == null || pikaUrl.length() == 0) {
+		if (pikaUrl == null || pikaUrl.isEmpty()) {
 			logger.error("Unable to get URL for Pika in ConfigIni settings.  Please add a url key to the Site section.");
 			processLog.incErrors();
 			processLog.addNote("Unable to get URL for Pika in ConfigIni settings.  Please add a url key to the Site section.");
@@ -66,7 +66,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 		}
 
 		userApiToken = PikaConfigIni.getIniValue("System", "userApiToken");
-		if (userApiToken == null || userApiToken.length() == 0) {
+		if (userApiToken == null || userApiToken.isEmpty()) {
 			logger.error("Unable to get user API token for Pika in ConfigIni settings.  Please add token to the System section.");
 			processLog.incErrors();
 			processLog.addNote("Unable to get user API token for Pika in ConfigIni settings.  Please add token to the System section.");
@@ -112,7 +112,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 							initialHistoriesLoaded++;
 						} else {
 							errorLoadingInitialReadingHistory = true;
-							logger.warn("Failed loading Initial Reading History for user id " + userId);
+							logger.warn("Failed loading Initial Reading History for user id {}", userId);
 							initialHistoriesFailedToBeLoaded++;
 						}
 					} catch (SQLException e) {
@@ -139,9 +139,8 @@ public class UpdateReadingHistory implements IProcessHandler {
 						}
 					}
 
-					if (logger.isInfoEnabled()) {
-						logger.info("Loading Reading History for patron user Id " + userId);
-					}
+					logger.info("Loading Reading History for patron user Id {}", userId);
+
 					processTitlesForUser(userId, barcode, checkedOutTitlesAlreadyInReadingHistory);
 
 					//Any titles that are left in checkedOutTitlesAlreadyInReadingHistory were checked out previously and are no longer checked out.
@@ -184,7 +183,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 		} catch (SQLException e) {
 			logger.error("Unable get a list of users that need to have their reading list updated ", e);
 			processLog.incErrors();
-			processLog.addNote("Unable get a list of users that need to have their reading list updated " + e.toString());
+			processLog.addNote("Unable get a list of users that need to have their reading list updated " + e);
 		}
 
 		processLog.setFinished();
@@ -203,9 +202,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 		if (barcode != null && !barcode.isEmpty()) {
 				try {
 					String token = md5(barcode);
-					if (logger.isInfoEnabled()) {
-						logger.info("Loading initial reading history from ils for user Id " + userId);
-					}
+					logger.info("Loading initial reading history from ils for user Id {}",  userId);
 					do {
 						additionalRoundRequired = false;
 						// Call the patron API to get their checked out items
@@ -219,10 +216,10 @@ public class UpdateReadingHistory implements IProcessHandler {
 							String patronDataJson = "";
 							try {
 								patronDataJson = Util.convertStreamToString((InputStream) patronDataRaw);
-								if (patronDataJson != null && patronDataJson.length() > 0) {
+								if (patronDataJson != null && !patronDataJson.isEmpty()) {
 									if (logger.isDebugEnabled()) {
 										logger.debug(patronApiUrl.toString());
-										logger.debug("Json for patron reading history " + patronDataJson);
+										logger.debug("Json for patron reading history {}", patronDataJson);
 									}
 									patronDataJson = stripPHPNoticeFromJSONResponse(patronDataJson);
 
@@ -232,9 +229,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 										if (result.has("nextRound")) {
 											nextRound               = result.getString("nextRound");
 											additionalRoundRequired = true;
-											if (logger.isInfoEnabled()) {
-												logger.info("Another round of calling the User API is required. Next Round is : " + nextRound);
-											}
+											logger.info("Another round of calling the User API is required. Next Round is : {}", nextRound);
 										}
 										if (result.get("readingHistory").getClass() == JSONObject.class) {
 											JSONObject readingHistoryItems = result.getJSONObject("readingHistory");
@@ -255,35 +250,32 @@ public class UpdateReadingHistory implements IProcessHandler {
 											numInitialReadingHistoryEntries += readingHistoryItems.length();
 										} else {
 											processLog.incErrors();
-											processLog.addNote("Unexpected JSON for patron reading history " + result.get("readingHistory").getClass());
+											String message = "Unexpected JSON for patron reading history " + result.get("readingHistory").getClass();
+											processLog.addNote(message);
 											if (logger.isInfoEnabled()) {
-												logger.info("Unexpected JSON for patron reading history " + result.get("readingHistory").getClass());
+												logger.info(message);
 											}
 											hadError = true;
 										}
 									} else {
-										logger.warn("Call to loadReadingHistoryFromIls returned a success code of false for user Id " + userId);
+										logger.warn("Call to loadReadingHistoryFromIls returned a success code of false for user Id {}", userId);
 										hadError = true;
 									}
 								} else {
-									logger.error("Empty response loading initial history for user Id " + userId);
+									logger.error("Empty response loading initial history for user Id {}", userId);
 									hadError = true;
 								}
 							} catch (IOException e) {
-								logger.error("Error reading input stream for user Id " + userId, e);
+								logger.error("Error reading input stream for user Id {}", userId, e);
 								hadError = true;
 							} catch (JSONException e) {
-								final String message = "Unable to load patron information for user Id " + userId + ", exception loading response ";
-								logger.error(message, e);
+								logger.error("Unable to load patron information for user Id {}, exception loading response ", userId, e);
 								logger.error(patronDataRaw); // Display the raw response when we have a JSON exception
 								processLog.incErrors();
-//								processLog.addNote(message); // removed error message.
-								//TODO: I'm not sure adding this to the cron log entries is needed, especially on test where most errors are JSON errors
 								hadError = true;
 							}
 						} else {
-							logger.error("Unable to load patron information for user id " + userId + ": expected to get back an input stream, received a "
-									+ patronDataRaw.getClass().getName());
+							logger.error("Unable to load patron information for user id {}: expected to get back an input stream, received a {}", userId, patronDataRaw.getClass().getName());
 							processLog.incErrors();
 							hadError = true;
 						}
@@ -293,17 +285,16 @@ public class UpdateReadingHistory implements IProcessHandler {
 					processLog.incErrors();
 					hadError = true;
 				} catch (IOException e) {
-					logger.error("Unable to retrieve information from patron API for initial load for user Id " + userId, e);
+					logger.error("Unable to retrieve information from patron API for initial load for user Id {}", userId, e);
 					processLog.incErrors();
 					hadError = true;
 				}
 		} else {
 			hadError = true;
-			logger.error("A pika user's barcode was empty for user Id " + userId);
+			logger.error("A pika user's barcode was empty for user Id {}", userId);
 		}
-		if (logger.isInfoEnabled()){
-			logger.info("Loaded " + numInitialReadingHistoryEntries + " initial reading history entries for user Id " + userId);
-		}
+		logger.info("Loaded {} initial reading history entries for user Id {}", numInitialReadingHistoryEntries, userId);
+
 		return !hadError;
 	}
 
@@ -324,7 +315,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 		if (readingHistoryTitle.has("author")) {
 			author = readingHistoryTitle.getString("author");
 		}
-		if ((sourceId == null || sourceId.length() == 0) && (title == null || title.length() == 0) && (author == null || author.length() == 0)) {
+		if ((sourceId == null || sourceId.isEmpty()) && (title == null || title.isEmpty()) && (author == null || author.isEmpty())) {
 			//Don't try to add records we know nothing about.
 			//Note: Source & sourceID won't exist for InterLibrary Loan titles
 			return;
@@ -332,6 +323,9 @@ public class UpdateReadingHistory implements IProcessHandler {
 		if (title != null && title.contains("WISCAT LOAN")){
 			// Ignore Northern Waters WISCAT ILL entries in Sierra Reading History because they contain no usable information
 			return;
+		}
+		if (title != null){
+			title = title.replaceAll("/+$", "");
 		}
 		if (readingHistoryTitle.has("permanentId")) {
 			groupedWorkId = readingHistoryTitle.getString("permanentId");
@@ -341,7 +335,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 		}
 		if (readingHistoryTitle.has("format")) {
 			format = readingHistoryTitle.getString("format");
-			if (format.startsWith("[")) {
+			if (format != null && format.startsWith("[")) {
 				//This is an array of formats, just grab one
 				format = format.replace("[", "");
 				format = format.replace("]", "");

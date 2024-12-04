@@ -94,7 +94,7 @@ public class LexileTitle {
 
 	public void setAwards(String awards) {
 		//Remove anything in quotes
-		if (awards != null && awards.length() > 0) {
+		if (awards != null && !awards.isEmpty()) {
 			awards = awards.replaceAll("\\(.*?\\)", "");
 			String[] individualAwards = awards.split(",");
 			for (String individualAward : individualAwards) {

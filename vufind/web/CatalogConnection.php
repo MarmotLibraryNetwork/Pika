@@ -50,7 +50,7 @@ class CatalogConnection
 	 * The object of the appropriate driver.
 	 *
 	 * @access private
-	 * @var    \Pika\PatronDrivers\Sierra|\Pika\PatronDrivers\HorizonROA|HorizonAPI3_23|SirsiDynixROA|DriverInterface
+	 * @var    \Pika\PatronDrivers\Sierra|\Pika\PatronDrivers\HorizonROA|\Pika\PatronDrivers\Polaris|HorizonAPI3_23|SirsiDynixROA|DriverInterface
 	 */
 	public $driver;
 
@@ -232,7 +232,7 @@ class CatalogConnection
 	$readingHistoryDB          = new ReadingHistoryEntry();
 	$readingHistoryDB->whereAdd('userId = ' . $patron->id);
 	$readingHistoryDB->whereAdd('deleted = 0'); //Only show titles that have not been deleted
-	$readingHistoryDB->whereAdd('groupedWorkPermanentId != ""'); // Exclude entries with out a grouped work (typically ILL items)
+	$readingHistoryDB->whereAdd('groupedWorkPermanentId != ""'); // Exclude entries without a grouped work (typically ILL items)
 	$readingHistoryDB->selectAdd();
 	$readingHistoryDB->selectAdd('id, groupedWorkPermanentId, source, sourceId, title, author, checkInDate');
 	$readingHistoryDB->selectAdd('MAX(checkOutDate) as checkOutDate');

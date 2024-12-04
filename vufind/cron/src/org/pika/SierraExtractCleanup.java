@@ -39,7 +39,7 @@ public class SierraExtractCleanup implements IProcessHandler{
 			) {
 				if (sierraVendorOpacUrlRS.next()) {
 					String apiVersion = PikaConfigIni.getIniValue("Catalog", "api_version");
-					if (apiVersion == null || apiVersion.length() == 0) {
+					if (apiVersion == null || apiVersion.isEmpty()) {
 						String message = "Sierra API version must be set.";
 						logger.error(message);
 						processLog.addNote(message);
@@ -203,6 +203,7 @@ public class SierraExtractCleanup implements IProcessHandler{
 					//logger.debug("Token expires in " + parser.getLong("expires_in") + " seconds");
 					sierraAPIExpiration = new Date().getTime() + (parser.getLong("expires_in") * 1000) - 10000;
 					//logger.debug("Sierra token is " + sierraAPIToken);
+					//TODO: store in System Variables table
 				} catch (JSONException jse) {
 					logger.error("Error parsing response to json " + response.toString(), jse);
 					return false;

@@ -56,6 +56,8 @@ class Library extends DB_DataObject {
 	public $ilsCode;
 	public $themeName; 				//varchar(15)
 	public $restrictSearchByLibrary;
+	public $archiveOnlyInterface;
+	public $partnerOfSystem;
 	public $allowProfileUpdates;   //tinyint(4)
 	public $allowFreezeHolds;   //tinyint(4)
 	public $scope; 					//smallint(6) // The Sierra OPAC scope
@@ -422,6 +424,7 @@ class Library extends DB_DataObject {
 
 		$innReachEncoreName = $configArray['InterLibraryLoan']['innReachEncoreName'];
 
+
 		//$Instructions = 'For more information on ???, see the <a href="">online documentation</a>.';
 
 		$structure = [
@@ -432,6 +435,8 @@ class Library extends DB_DataObject {
 			'displayName'              => ['property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'A name to identify the library within the system', 'size' => '40'],
 			'showDisplayNameInHeader'  => ['property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false],
 			'abbreviatedDisplayName'   => ['property' => 'abbreviatedDisplayName', 'type' => 'text', 'label' => 'Abbreviated Display Name', 'description' => 'A short name to identify the library when space is low', 'size' => '40'],
+			'archiveOnlyInterface'     => ['property' => 'archiveOnlyInterface', 'type'=> 'checkbox', 'warning' => 'Enabling this feature will cause permanent changes to this library.', 'label' => 'Archive Only Interface', 'description' => 'Whether or not the interface should only include archive objects', 'hideInLists' => true, 'default' => false],
+			'partnerOfSystem'          => ['property'=> 'partnerOfSystem', 'type'=> 'enum', 'values'=> self::getLibrariesForPartner(), 'description' => 'Which library is this library partner to?', 'label'=>'Partner Of', 'hideInLists' => true],
 			'changeRequiresReindexing' => ['property' => 'changeRequiresReindexing', 'type' => 'dateReadOnly', 'label' => 'Change Requires Reindexing', 'description' => 'Date Time for when this library changed settings needing re-indexing'],
 			'systemMessage'            => ['property'      => 'systemMessage', 'type' => 'html', 'label' => 'System Message', 'description' => 'A message to be displayed at the top of the screen', 'size' => '80', 'hideInLists' => true,
 			                               'allowableTags' => '<p><div><span><a><strong><b><em><i><ul><ol><li><br><hr><h1><h2><h3><h4><h5><h6><sub><sup><img><script>'],
@@ -452,7 +457,7 @@ class Library extends DB_DataObject {
 					'homeLinkText'                     => ['property' => 'homeLinkText', 'type' => 'text', 'label' => 'Home Link Text', 'description' => 'The text to show for the Home breadcrumb link', 'size' => '40', 'hideInLists' => true, 'default' => 'Home'],
 					'showLibraryHoursAndLocationsLink' => ['property' => 'showLibraryHoursAndLocationsLink', 'type' => 'checkbox', 'label' => 'Show Library Hours and Locations Link', 'description' => 'Whether or not the library hours and locations link is shown on the home page.', 'hideInLists' => true, 'default' => true],
 					'enableGenealogy'                  => ['property' => 'enableGenealogy', 'type' => 'checkbox', 'label' => 'Enable Genealogy Functionality', 'description' => 'Whether or not patrons can search genealogy.', 'hideInLists' => true, 'default' => 1],
-					'enableCourseReserves'             => ['property' => 'enableCourseReserves', 'type' => 'checkbox', 'label' => 'Enable Repeat Search in Course Reserves', 'description' => 'Whether or not patrons can repeat searches within course reserves.', 'hideInLists' => true,],
+					'enableCourseReserves'             => ['property' => 'enableCourseReserves', 'type' => 'checkbox', 'label' => 'Enable Repeat Search in Course Reserves (Sierra Only)', 'description' => 'Whether or not patrons can repeat searches within course reserves.', 'hideInLists' => true,],
 					'showPikaLogo'                     => ['property' => 'showPikaLogo', 'type' => 'checkbox', 'label' => 'Display Pika Logo', 'description' => 'Determines whether or not the Pika logo will be shown in the footer.', 'hideInLists' => true, 'default' => true],
 				],
 			],
@@ -477,7 +482,7 @@ class Library extends DB_DataObject {
 			'ilsSection' => ['property' =>'ilsSection', 'type' => 'section', 'label' =>'ILS/Account Integration', 'hideInLists' => true,
 			                 'helpLink' =>'https://marmot-support.atlassian.net/l/c/SaLWEWH7', 'properties' => [
 					'ilsCode'                              => ['property' =>'ilsCode', 'type' =>'text', 'label' =>'ILS Code', 'description' =>'The location code that all items for this location start with.', 'size' =>'4', 'hideInLists' => false,],
-					'scope'                                => ['property' =>'scope', 'type' =>'text', 'label' =>'Sierra Scope', 'description' =>'The scope for the system in Sierra. Used for Bookings', 'size' =>'4', 'hideInLists' => true,],
+					'scope'                                => ['property' =>'scope', 'type' =>'text', 'label' =>'Polaris Organization Id / Sierra Scope', 'description' =>'Polaris Organization Id for the Library; Or the scope for the system in Sierra. Used for Bookings', 'size' =>'4', 'hideInLists' => true,],
 					'showExpirationWarnings'               => ['property' =>'showExpirationWarnings', 'type' =>'checkbox', 'label' =>'Show Expiration Warnings', 'description' =>'Whether or not the user should be shown expiration warnings if their card is nearly expired.', 'hideInLists' => true, 'default' => 1],
 					'expirationNearMessage'                => ['property' =>'expirationNearMessage', 'type' =>'text', 'label' =>'Expiration Near Message (use the token %date% to insert the expiration date)', 'description' =>'A message to show in the menu when the user account will expire soon', 'hideInLists' => true, 'default' => ''],
 					'expiredMessage'                       => ['property' =>'expiredMessage', 'type' =>'text', 'label' =>'Expired Message (use the token %date% to insert the expiration date)', 'description' =>'A message to show in the menu when the user account has expired', 'hideInLists' => true, 'default' => ''],
@@ -504,8 +509,6 @@ class Library extends DB_DataObject {
 							'allowPatronAddressUpdates'            => ['property' => 'allowPatronAddressUpdates', 'type' =>'checkbox', 'label' =>'Allow Patrons to Update Their Address', 'description' =>'Whether or not patrons should be able to update their own address in their profile.', 'hideInLists' => true, 'default' => 1],
 							'showAlternateLibraryOptionsInProfile' => ['property' => 'showAlternateLibraryOptionsInProfile', 'type' =>'checkbox', 'label' =>'Allow Patrons to Update their Alternate Libraries', 'description' =>'Allow Patrons to See and Change Alternate Library Settings in the Catalog Options Tab in their profile.', 'hideInLists' => true, 'default' => 1],
 							'showWorkPhoneInProfile'               => ['property' => 'showWorkPhoneInProfile', 'type' =>'checkbox', 'label' =>'Show Work Phone in Profile', 'description' =>'Whether or not patrons should be able to change a secondary/work phone number in their profile.', 'hideInLists' => true, 'default' => 0],
-							'treatPrintNoticesAsPhoneNotices'      => ['property' => 'treatPrintNoticesAsPhoneNotices', 'type' => 'checkbox', 'label' => 'Treat Print Notices As Phone Notices', 'description' => 'When showing detailed information about hold notices, treat print notices as if they are phone calls', 'hideInLists' => true, 'default' => 0],
-							'showNoticeTypeInProfile'              => ['property' => 'showNoticeTypeInProfile', 'type' =>'checkbox', 'label' =>'Show Notice Type in Profile', 'description' =>'Whether or not patrons should be able to change how they receive notices in their profile.', 'hideInLists' => true, 'default' => 0],
 							'showPickupLocationInProfile'          => ['property' => 'showPickupLocationInProfile', 'type' =>'checkbox', 'label' =>'Allow Patrons to Update Their Preferred Pickup Location/Home Branch', 'description' => 'Whether or not patrons should be able to update their preferred pickup location in their profile.', 'hideInLists' => true, 'default' => 0],
 							'maxFinesToAllowAccountUpdates'        => ['property' => 'maxFinesToAllowAccountUpdates', 'type' =>'currency', 'displayFormat' =>'%0.2f', 'label' =>'Maximum Fine Amount to Allow Account Updates', 'description' =>'The maximum amount that a patron can owe and still update their account. Any value <= 0 will disable this functionality.', 'hideInLists' => true, 'default' => 10]
 						]],
@@ -549,10 +552,15 @@ class Library extends DB_DataObject {
 						]],
 					'masqueradeModeSection' => ['property'   => 'masqueradeModeSection', 'type' => 'section', 'label' => 'Masquerade Mode', 'hideInLists' => true,
 					                            'helpLink' =>'https://marmot-support.atlassian.net/l/c/Vfk2LzSr', 'properties' => [
-						                            'allowMasqueradeMode'                        => ['property' =>'allowMasqueradeMode', 'type' =>'checkbox', 'label' =>'Allow Masquerade Mode', 'description' => 'Whether or not staff users (depending on pType setting) can use Masquerade Mode.', 'hideInLists' => true, 'default' => false],
-						                            'masqueradeAutomaticTimeoutLength'           => ['property' =>'masqueradeAutomaticTimeoutLength', 'type' =>'integer', 'label' =>'Masquerade Mode Automatic Timeout Length', 'description' =>'The length of time before an idle user\'s Masquerade session automatically ends in seconds.', 'size' =>'8', 'hideInLists' => true, 'max' => 600],
-						                            'allowReadingHistoryDisplayInMasqueradeMode' => ['property' =>'allowReadingHistoryDisplayInMasqueradeMode', 'type' =>'checkbox', 'label' =>'Allow Display of Reading History in Masquerade Mode', 'description' =>'This option allows Guiding Users to view the Reading History of the masqueraded user.', 'hideInLists' => true, 'default' => false],
-					                            ]],
+						'allowMasqueradeMode'                        => ['property' =>'allowMasqueradeMode', 'type' =>'checkbox', 'label' =>'Allow Masquerade Mode', 'description' => 'Whether or not staff users (depending on pType setting) can use Masquerade Mode.', 'hideInLists' => true, 'default' => false],
+						'masqueradeAutomaticTimeoutLength'           => ['property' =>'masqueradeAutomaticTimeoutLength', 'type' =>'integer', 'label' =>'Masquerade Mode Automatic Timeout Length', 'description' =>'The length of time before an idle user\'s Masquerade session automatically ends in seconds.', 'size' =>'8', 'hideInLists' => true, 'max' => 600],
+						'allowReadingHistoryDisplayInMasqueradeMode' => ['property' =>'allowReadingHistoryDisplayInMasqueradeMode', 'type' =>'checkbox', 'label' =>'Allow Display of Reading History in Masquerade Mode', 'description' =>'This option allows Guiding Users to view the Reading History of the masqueraded user.', 'hideInLists' => true, 'default' => false],
+					]],
+					'notificationPreferenceSection' => ['property'   => 'notificationPreferenceSection', 'type' => 'section', 'label' => 'Notification Preferences', 'hideInLists' => true,
+					                           /* 'helpLink' =>'https://marmot-support.atlassian.net/l/c/Vfk2LzSr',*/ 'properties' => [
+							'showNoticeTypeInProfile'              => ['property' => 'showNoticeTypeInProfile', 'type' =>'checkbox', 'label' =>'Show Notice Type in Profile', 'description' =>'Whether or not patrons should be able to change how they receive notices in their profile.', 'hideInLists' => true, 'default' => 0],
+							'treatPrintNoticesAsPhoneNotices'      => ['property' => 'treatPrintNoticesAsPhoneNotices', 'type' => 'checkbox', 'label' => 'Treat Print Notices As Phone Notices', 'description' => 'When showing detailed information about hold notices, treat print notices as if they are phone calls', 'hideInLists' => true, 'default' => 0],
+					]],
 				]],
 
 			'ecommerceSection' => ['property' =>'ecommerceSection', 'type' => 'section', 'label' =>'Fines/e-commerce', 'hideInLists' => true,
@@ -665,11 +673,11 @@ class Library extends DB_DataObject {
 					'showSimilarAuthors'       => ['property' =>'showSimilarAuthors', 'type' =>'checkbox', 'label' =>'Show Similar Authors', 'description' =>'Whether or not Similar Authors from Novelist is shown.', 'default' => 1, 'hideInLists' => true,],
 					'showSimilarTitles'        => ['property' =>'showSimilarTitles', 'type' =>'checkbox', 'label' =>'Show Similar Titles', 'description' =>'Whether or not Similar Titles from Novelist is shown.', 'default' => 1, 'hideInLists' => true,],
 					'showGoDeeper'             => ['property' =>'showGoDeeper', 'type' =>'checkbox', 'label' =>'Show Content Enrichment (TOC, Excerpts, etc)', 'description' =>'Whether or not additional content enrichment like Table of Contents, Exceprts, etc are shown to the user', 'default' => 1, 'hideInLists' => true,],
+					'showFavorites'            => ['property' =>'showFavorites', 'type' =>'checkbox', 'label' =>'Enable User Lists', 'description' =>'Whether or not users can maintain favorites lists', 'hideInLists' => true, 'default' => 1],
 					'showRatings'              => ['property' =>'showRatings', 'type' =>'checkbox', 'label' =>'Enable User Ratings', 'description' =>'Whether or not ratings are shown', 'hideInLists' => true, 'default' => 1],
 					'showComments'             => ['property' =>'showComments', 'type' =>'checkbox', 'label' =>'Enable User Reviews', 'description' =>'Whether or not user reviews are shown (also disables adding user reviews)', 'hideInLists' => true, 'default' => 1],
 					// showComments & hideCommentsWithBadWords moved from full record display to this section. plb 6-30-2015
 					'hideCommentsWithBadWords' => ['property' =>'hideCommentsWithBadWords', 'type' =>'checkbox', 'label' =>'Hide Comments with Bad Words', 'description' =>'If checked, any User Lists or User Reviews with bad words are completely removed from the user interface for everyone except the original poster.', 'hideInLists' => true,],
-					'showFavorites'            => ['property' =>'showFavorites', 'type' =>'checkbox', 'label' =>'Enable User Lists', 'description' =>'Whether or not users can maintain favorites lists', 'hideInLists' => true, 'default' => 1],
 					//TODO database column rename?
 					'showWikipediaContent'     => ['property' =>'showWikipediaContent', 'type' =>'checkbox', 'label' =>'Show Wikipedia Content', 'description' =>'Whether or not Wikipedia content should be shown on author page', 'default' =>'1', 'hideInLists' => true,],
 				]],
@@ -1147,10 +1155,19 @@ class Library extends DB_DataObject {
 			],
 		];
 
-		if (UserAccount::userHasRole('libraryManager') && !UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin'])){
+	if(!self::isArchiveOnly()){
+		unset($structure['partnerOfSystem']);
+	}
+
+
+		if (UserAccount::userHasRole('libraryManager') && !UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin', 'partnerAdmin'])){
 			// restrict permissions for library managers, unless they also have higher permissions of library or opac admin
 			$structure['subdomain']['type']   = 'label';
 			$structure['displayName']['type'] = 'label';
+			$structure['archiveOnlyInterface']['type'] = 'label';
+			if($structure['partnerOfSystem']){
+				$structure['partnerOfSystem']['type'] = 'label';
+			}
 			unset($structure['showDisplayNameInHeader']);
 			unset($structure['displaySection']);
 			unset($structure['ilsSection']);
@@ -1381,6 +1398,7 @@ class Library extends DB_DataObject {
 			default:
 				return $this->data[$name];
 		}
+
 	}
 
 	public function __set($name, $value){
@@ -1487,6 +1505,25 @@ class Library extends DB_DataObject {
 			// convert array to string before storing in database
 			$this->showInSearchResultsMainDetails = serialize($this->showInSearchResultsMainDetails);
 		}
+		if ($this->archiveOnlyInterface ?? false){
+			$this->clearRecordsOwned();
+			$this->clearRecordsToInclude();
+			$this->enableOverdriveCollection = false;
+			$this->showLoginButton = false;
+			$this->enableArchive = true;
+			$this->clearHooplaSettings();
+			$this->includeNovelistEnrichment = false;
+			$this->includeNovelistEnrichment = false;
+			$this->showGoodReadsReviews = false;
+			$this->showStandardReviews = false;
+			$this->preferSyndeticsSummary = false;
+			$this->showSimilarAuthors = false;
+			$this->showSimilarTitles = false;
+			$this->showWikipediaContent = false;
+			$this->showFavorites = false;
+			$this->showRatings = false;
+			$this->hideCommentsWithBadWords = false;
+		}
 		$ret = parent::update();
 		if ($ret !== false){
 			$this->saveHolidays();
@@ -1546,6 +1583,24 @@ class Library extends DB_DataObject {
 			// convert array to string before storing in database
 			$this->showInSearchResultsMainDetails = serialize($this->showInSearchResultsMainDetails);
 		}
+		if ($this->archiveOnlyInterface ?? false){
+			$this->clearRecordsOwned();
+			$this->clearRecordsToInclude();
+			$this->enableOverdriveCollection = false;
+			$this->showLoginButton = false;
+			$this->enableArchive = true;
+			$this->clearHooplaSettings();
+			$this->includeNovelistEnrichment = false;
+			$this->showGoodReadsReviews = false;
+			$this->showStandardReviews = false;
+			$this->preferSyndeticsSummary = false;
+			$this->showSimilarAuthors = false;
+			$this->showSimilarTitles = false;
+			$this->showWikipediaContent = false;
+			$this->showFavorites = false;
+			$this->showRatings = false;
+			$this->hideCommentsWithBadWords = false;
+		}
 		$ret = parent::insert();
 		if ($ret !== false){
 			$this->saveHolidays();
@@ -1572,6 +1627,20 @@ class Library extends DB_DataObject {
 			$this->saveOneToManyOptions($this->browseCategories);
 			unset($this->browseCategories);
 		}
+	}
+
+	static function isArchiveOnly($libraryId = null){
+		if ($libraryId == null && !empty($_GET['id']) && ctype_digit($_GET['id'])){
+			$libraryId = $_GET['id'];
+		}
+		if (!empty($libraryId)){
+			$library            = new Library();
+			$library->libraryId = $libraryId;
+			if ($library->find(true)){
+				return $library->archiveOnlyInterface;
+			}
+		}
+		return false;
 	}
 
 	public function clearBrowseCategories(){
@@ -1761,7 +1830,7 @@ class Library extends DB_DataObject {
 
 	/**
 	 * Delete any Hoopla settings there are for this library
-	 * @return bool  Whether or not the deletion was successful
+	 * @return bool  Whether the deletion was successful or not
 	 */
 	public function clearHooplaSettings(){
 		$success = $this->clearOneToManyOptions('LibraryHooplaSettings');
@@ -1954,6 +2023,26 @@ class Library extends DB_DataObject {
 		$location            = new Location;
 		$location->libraryId = $this->libraryId;
 		return $location->count();
+	}
+
+	/**
+	 * Return array of library names and ids to populate partner box
+	 * @return array
+	 */
+	public function getLibrariesForPartner(): array{
+		$library = new Library();
+		$library->orderBy('displayName');
+		if (!UserAccount::userHasRole('opacAdmin') && UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager', 'locationManager'])){
+			$homeLibrary        = UserAccount::getUserHomeLibrary();
+			$library->libraryId = $homeLibrary->libraryId;
+		}
+		$library->archiveOnlyInterface = false;
+		$library->find();
+		$libraryList = UserAccount::userHasRole('opacAdmin') ? ['' => 'Choose a Library'] : [];
+		while ($library->fetch()){
+			$libraryList[$library->libraryId] = $library->displayName;
+		}
+		return $libraryList;
 	}
 
 	/**

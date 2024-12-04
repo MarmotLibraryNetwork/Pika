@@ -632,7 +632,7 @@ class CarlX extends SIP2Driver{
 					}
 				}
 				if (empty($curTitle['title_sort'])){
-					$curTitle['title_sort']  = preg_replace('/^The\s|^A\s/i', '',$curTitle['title']);
+					$curTitle['title_sort']  = preg_replace('/^The\s|^An?\s/i', '',$curTitle['title']);
 				}
 				$checkedOutTitles[] = $curTitle;
 			}

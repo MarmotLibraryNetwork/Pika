@@ -42,11 +42,11 @@ class Logger extends MonoLogger {
 		parent::__construct($name);
 		global $configArray;
 
-		$logLevel = isset($configArray['Logging']['logLevel']) ? strtoupper($configArray['Logging']['logLevel']) : "ERROR";
-		$logPath = $configArray['Logging']['file'];
+		$logLevel     = isset($configArray['Logging']['logLevel']) ? strtoupper($configArray['Logging']['logLevel']) : 'ERROR';
+		$logPath      = $configArray['Logging']['file'];
 		$logPathParts = explode(":", $logPath);
-		$logFile = $logPathParts[0];
-		if($configArray['System']['debug'] == true) {
+		$logFile      = $logPathParts[0];
+		if ($configArray['System']['debug'] == true){
 			$this->pushHandler(new BrowserConsoleHandler(MonoLogger::DEBUG));
 		}
 

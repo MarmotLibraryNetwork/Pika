@@ -12,9 +12,20 @@
  *
  */
 
-namespace Pika\PatronDrivers;
 
+namespace Pika\PatronDrivers;
 class Clearview extends Polaris
 {
+    public array $ereceipt_options = [
+        0 => "None",
+        2 => "Email",
+        8 => "Text Message",
+        100 => "Email and Text Message",
+    ];
 
+    public array $notification_options = [
+        2 => "Email",
+        8 => "Text Message",
+    ];
+    
 }

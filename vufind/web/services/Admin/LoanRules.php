@@ -46,9 +46,10 @@ class LoanRules extends ObjectEditor {
 					$loanRuleNew->bookable         = strcasecmp(trim($dataFields[5]), 'y') == 0;
 					$loanRuleNew->homePickup       = strcasecmp(trim($dataFields[6]), 'y') == 0;
 					$loanRuleNew->shippable        = strcasecmp(trim($dataFields[7]), 'y') == 0;
-					$loanRuleNew->insert();
+					$loanRuleNew->insert(false);
 				}
 			}
+			$loanRule->setFullReindexMarker();
 
 			//Show the results
 			$_REQUEST['objectAction'] = 'list';

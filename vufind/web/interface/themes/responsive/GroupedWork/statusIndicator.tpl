@@ -23,7 +23,10 @@
 		{elseif $scopeType == 'Location'}
 			<div class="related-manifestation-shelf-status availableOther">Available at another branch</div>
 		{else}
-			<div class="related-manifestation-shelf-status available">{translate text='On Shelf'}</div>
+{*			<div class="related-manifestation-shelf-status available">{translate text='On Shelf'}</div>*}
+			<div class="related-manifestation-shelf-status available">{if empty($statusInformation.groupedStatus)}{translate text='On Shelf'}{else}{$statusInformation.groupedStatus}{/if}</div>
+			{* Should be "On Shelf" most of the time, but this allows for other available statuses,
+			like "Shelving"; or "Recently Returned" for Clearview *}
 			{*TODO:  Need a condition when all the holdable copies are checked out and the remaining copies are library use only*}
 		{/if}
 	{elseif $statusInformation.availableOnline}

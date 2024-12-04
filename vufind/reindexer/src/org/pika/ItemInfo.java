@@ -80,6 +80,10 @@ public class ItemInfo {
 		this.detailedStatus = detailedStatus;
 	}
 
+	public String getDetailedStatus() {
+		return detailedStatus;
+	}
+
 	public String getLocationCode() {
 		return locationCode;
 	}
@@ -155,8 +159,8 @@ public class ItemInfo {
 		return isOrderItem;
 	}
 
-	void setIsOrderItem(boolean isOrderItem) {
-		this.isOrderItem = isOrderItem;
+	void setIsOrderItem() {
+		this.isOrderItem = true;
 	}
 
 	boolean isEContent() {
@@ -167,8 +171,8 @@ public class ItemInfo {
 		this.isEContent = isEContent;
 	}
 
-	private SimpleDateFormat lastCheckinDateFormatter = new SimpleDateFormat("MMM dd, yyyy");
-	private String baseDetails = null;
+	private final SimpleDateFormat lastCheckinDateFormatter = new SimpleDateFormat("MMM dd, yyyy");
+	private       String           baseDetails              = null;
 	String getDetails() {
 		if (baseDetails == null) {
 			String formattedLastCheckinDate = "";

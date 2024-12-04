@@ -122,14 +122,7 @@
 </div>
 
 
-
-
-
-
-
-
 {if $objectType == "Cover"}
-
 	<script>
 	var storagePath = "{$structure.cover.storagePath}";
 	var processing = true;
@@ -165,20 +158,21 @@
 			coverDrop.processQueue();
 		});
 	});
-	coverDrop.on("addedfile", function(file){
 
-			var fileName = file.name;
-			$.ajax({
-				url: "/Admin/AJAX?&method=fileExists&fileName=" + fileName + "&storagePath=" + storagePath
-
-			})
-					.done (function(data)
-					{
-						if (data.exists == "true")
-						{
-							$(file.previewElement).css({"border":"solid red 2px", "background-color":"#FFC5C6", "text-align":"center"}).append("<strong style='color:darkred;'>file already exists</strong>");
-						}
-					})
+	coverDrop.on("addedfile", function (file) {
+		var fileName = file.name;
+		$.ajax({
+			url: "/Admin/AJAX?&method=fileExists&fileName=" + fileName + "&storagePath=" + storagePath
+		})
+		.done(function (data) {
+			if (data.exists == "true") {
+				$(file.previewElement).css({
+					"border": "solid red 2px",
+					"background-color": "#FFC5C6",
+					"text-align": "center"
+				}).append("<strong style='color:darkred;'>file already exists</strong>");
+			}
+		})
 		return false;
 	});
 	coverDrop.on("sending", function(file, xhr, formData){
@@ -197,10 +191,9 @@
 		$(".start").remove();
 	});
 
-
 	{/literal}
 	</script>
-{/if}
+{/if} {* End of Cover js *}
 {if $canAddNew}
 	<form action="" method="get" id="addNewFormBottom">
 		<div>
@@ -214,11 +207,8 @@
 	{if !is_null($customAction.action)}
 		<form action="" method="get">
 			<div>
-
 				<input type="hidden" name="objectAction" value='{$customAction.action}'>
-
 				<button type="submit" value='{$customAction.action}' class="btn btn-small btn-default">{$customAction.label}</button>
-
 			</div>
 		</form>
 	{/if}
@@ -238,31 +228,21 @@
 					return $('a', td).text().trim() * 1;
 				});
 			}
-			$(document).ready(function(){
+			$(function(){
 				$('.table').DataTable({
-
 					columnDefs: [{orderable: true, targets: [1,2,3,4,5]}],
 					pageLength: 100,
 					"columnDefs": [{"orderDataType": "dom-numeric", "type": "numeric", "targets": 0}],
 					initComplete: function(){
-
 						this.api().columns([1,2,3,4]).every( function(){
-
 							var column = this;
-
-							var select= $('<select><option value =""></option></select>')
+							var select = $('<select><option value =""></option></select>')
 											.appendTo($(column.header()))
 											.on('change', function(){
-												var val =$.fn.dataTable.util.escapeRegex(
-																$(this).val()
-												);
-												column
-																.search( val ? '^'+val+'$' : '', true, false)
-																.draw();
+												var val = $.fn.dataTable.util.escapeRegex( $(this).val() );
+												column.search( val ? '^'+val+'$' : '', true, false).draw();
 											})
-											.on('click', function(e){
-													e.stopPropagation();
-											});
+											.on('click', function(e){e.stopPropagation();});
 							column.data().unique().sort().each(function (d,j) {
 								select.append('<option value"' +d+'">'+d+'</option>')
 							});
@@ -283,11 +263,39 @@
 				return $('a', td).text().trim() * 1;
 			});
 		}
-		$(document).ready(function(){
+		$(function(){
+			{/literal}{if $objectType == "LoanRuleDeterminer"}{literal}
+				$('#adminTable thead th:nth-child(-n+4), #adminTable thead th:nth-child(6)').each( function () {
+					var title = $(this).text();
+					$(this).html(title + '<br><input type="text" placeholder="Search ' + title + '">');
+				});
+			{/literal}{/if}{literal}
+			{/literal}{if $objectType == "LoanRule"}{literal}
+				$('#adminTable thead th:nth-child(-n+4)').each( function(){
+					var title = $(this).text();
+					$(this).html(title + '<br><input type="text" placeholder="Search ' + title + '">');
+				});
+			{/literal}{/if}{literal}
 			$('#adminTable').DataTable({
 				pageLength: 100,
 				"columnDefs": [{"orderDataType": "dom-numeric", "type": "numeric", "targets": 0}],
 					{/literal}
+				{if $objectType == "LoanRule" || $objectType == "LoanRuleDeterminer" }
+					{literal}
+						initComplete: function(){
+							this.api().columns([0, 1, 2, 3{/literal}{if $objectType == "LoanRuleDeterminer"}{literal}, 5{/literal}{/if}{literal}]).every(function () {
+								let that = this;
+								$('input', this.header())
+										.on('keyup change clear', function(){
+											if (that.search() !== this.value) {
+												that.search(this.value).draw();
+											}
+										}).on('click', function (e) {e.stopPropagation();});
+							});
+						},
+					{/literal}
+				{/if}
+
 				{if $objectType == "MergedGroupedWork" || $objectType == "NonGroupedRecord"}
 					{* TODO: CJ this sort column is actually mysql date time string. Initial glances this looks to be sorting okay
 					 but there could be a better sorting method to pick out. - pascal *}
@@ -299,7 +307,8 @@
 				"order": [[0, "asc"]]
 					{/literal}
 				{/if}
-					{literal}
+				{literal}
+
 			});
 		});
 

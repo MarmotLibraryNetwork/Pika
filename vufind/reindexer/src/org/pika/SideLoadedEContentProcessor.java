@@ -80,14 +80,12 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 				groupedWork.addKeywords(record.getControlNumber());
 			}
 
-			//Do updates based on items
 			groupedWork.addPopularity(1);
 
-//			groupedWork.addHoldings(1);
-
+			// Do updates based on the items
 			scopeItems(recordInfo, groupedWork, record);
 		}catch (Exception e){
-			logger.error("Error updating grouped work for MARC record with identifier " + identifier, e);
+			logger.error("Error updating grouped work for MARC record with identifier {}", identifier, e);
 		}
 	}
 

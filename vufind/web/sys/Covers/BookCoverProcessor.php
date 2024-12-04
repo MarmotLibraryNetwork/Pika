@@ -133,7 +133,7 @@ class BookCoverProcessor {
 
 		}
 
-		// Build default cover or use place holder image
+		// Build default cover or use placeholder image
 		if ($this->doCoverLogging){
 			$this->logger->info('No image found, using default image');
 		}
@@ -391,7 +391,9 @@ class BookCoverProcessor {
 				$_GET['upc'] = current($_GET['upc']);
 			}
 			//Strip any leading zeroes
-			$this->upc = ltrim(preg_replace('/[^0-9xX]/', '', $_GET['upc']), '0');
+			//$this->upc = ltrim(preg_replace('/[^0-9xX]/', '', $_GET['upc']), '0');
+			// Stripping the leading zeroes results in a generic cover image from Syndetics for Clearview Library District
+			$this->upc = preg_replace('/[^0-9xX]/', '', $_GET['upc']);
 		}
 
 		if (isset($_GET['issn'])){
@@ -462,6 +464,7 @@ class BookCoverProcessor {
 	 * @return bool
 	 */
 	function processImageURL($url, $cache = true, $attemptRefetch = true){
+		//TODO: cache URLs so that for grouped works we don't uselessly re-try URLs that have already been tried
 		if ($this->doCoverLogging){
 			$this->logger->info("Processing $url");
 		}
@@ -504,7 +507,7 @@ class BookCoverProcessor {
 				return false;
 			}
 
-			// Test Image for for partial load
+			// Test Image for partial load
 			if (!$imageResource = @imagecreatefromstring($image)){
 				if ($this->doCoverLogging){
 					$this->logger->error("Could not create image from string $url");
@@ -1054,7 +1057,7 @@ class BookCoverProcessor {
 			$this->upc  = null;
 			$this->issn = null;
 
-			//Try best ISBN from search index
+			//Try the best ISBN from search index
 			$isbn = $this->groupedWork->getCleanISBN();
 			if (!empty($isbn)){
 				$this->isn = $isbn;
@@ -1067,13 +1070,14 @@ class BookCoverProcessor {
 			// Try UPCs from search index
 			if ($UPCs = $this->groupedWork->getUPCs()){
 				foreach ($UPCs as $upc){
-					$this->upc = ltrim($upc, '0');
+					$this->upc = $upc;
 					if ($this->getCoverFromProvider()){
 						return true;
 					}
-					//If we tried trimming the leading zeroes, also try without.
+					// Try with leading zeroes first now, then try without.
+					// (the problem is the syndetics will return a generic cover for trimmed upcs)
+					$this->upc = ltrim($upc, '0');
 					if ($this->upc !== $upc){
-						$this->upc = $upc;
 						if ($this->getCoverFromProvider()){
 							return true;
 						}
@@ -1264,13 +1268,14 @@ class BookCoverProcessor {
 		$UPCs = $driver->getCleanUPCs();
 		if (!empty($UPCs)){
 			foreach ($UPCs as $upc){
-				$this->upc = ltrim($upc, '0');
+				$this->upc = $upc;
 				if ($this->getCoverFromProvider()){
 					return true;
 				}
-				//If we tried trimming the leading zeroes, also try without.
+				// Try with leading zeroes first now, then try without.
+				// (the problem is the syndetics will return a generic cover for trimmed upcs)
+				$this->upc = ltrim($upc, '0');
 				if ($this->upc !== $upc){
-					$this->upc = $upc;
 					if ($this->getCoverFromProvider()){
 						return true;
 					}
@@ -1360,19 +1365,22 @@ class BookCoverProcessor {
 		}
 
 		$url = empty($this->configArray['Syndetics']['url']) ? 'http://syndetics.com' : $this->configArray['Syndetics']['url'];
-		$url .= "/index.aspx?type=xw12&pagename={$size}&client={$key}";
+		//$url .= "/index.aspx?type=xw12&pagename={$size}&client={$key}"; // type parameter might not be needed any longer
+		$url .= "/index.aspx?pagename={$size}&client={$key}";
 		if (!empty($this->isn)){
-			$url .= "&isbn=" . $this->isn;
+			$url .= '&isbn=' . $this->isn;
 		}
 		if (!empty($this->upc)){
-			$url .= "&upc=" . $this->upc;
+			$url .= '&upc=' . $this->upc;
 		}
 		if (!empty($this->issn)){
-			$url .= "&issn=" . $this->issn;
+			$url .= '&issn=' . $this->issn;
 		}
 		if ($this->doCoverLogging){
 			$this->logger->debug("Syndetics url: $url");
 		}
+		//TODO: syndetics can do oclc number
+		// eg. https://secure.syndetics.com/index.aspx?isbn=/MC.GIF&client=[CLIENT]&oclc=945931618
 		return $this->processImageURL($url);
 	}
 
