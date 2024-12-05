@@ -71,8 +71,8 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 			try {
 				exportPath = indexingProfileRS.getString("marcPath");
 				loadDueDateInformation();
-			}catch (Exception e){
-				logger.error("Unable to load marc path from indexing profile");
+			} catch (Exception e) {
+				logger.error("Unable to load marc path from indexing profile; or load due dates");
 			}
 
 
@@ -242,9 +242,11 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 		File   dueDatesFile = new File(filePath);
 		int    i            = 0;
 		if (dueDatesFile.exists()) {
-			Instant fileDate = Instant.ofEpochMilli(dueDatesFile.lastModified());
-			if (fileDate.isBefore(Instant.now().minus(1, ChronoUnit.DAYS))){
-				logger.warn("Due date report more than a day old. Please investigate.");
+			if (fullReindex) {
+				Instant fileDate = Instant.ofEpochMilli(dueDatesFile.lastModified());
+				if (fileDate.isBefore(Instant.now().minus(1, ChronoUnit.DAYS))){
+					logger.warn("Due date report more than a day old. Please investigate.");
+				}
 			}
 			try (CSVReader reader = new CSVReader(new FileReader(dueDatesFile))) {
 				reader.readNext(); // ignore first line
@@ -259,7 +261,7 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 				logger.error("Error loading due dates from due date report", e);
 			}
 			logger.info("Loaded {} item due dates from {} file lines", dueDateInfoFromExport.size(), i);
-		} else {
+		} else if (fullReindex) {
 			logger.warn("Due dates report file not found. {}", filePath);
 		}
 	}
