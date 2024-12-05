@@ -46,7 +46,7 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 	private PreparedStatement updateExtractInfoStatement;
 	private int indexingProfileId;
 
-	private       String                       exportPath;
+	private       String                     exportPath;
 	private final HashMap<String, LocalDate> dueDateInfoFromExport = new HashMap<>();
 
 	PolarisRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
