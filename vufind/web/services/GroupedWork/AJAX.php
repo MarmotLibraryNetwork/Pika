@@ -354,7 +354,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function getWorkInfo(){
-		global $interface;
+		global $interface, $scopeType;
 
 		//Indicate we are showing search results so we don't get hold buttons
 		$interface->assign('displayingSearchResults', true);
@@ -392,17 +392,20 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$buttonLabel = translate('Add to favorites');
 
 		// button template
-		$interface->assign('escapeId', $escapedId);
-		$interface->assign('buttonLabel', $buttonLabel);
-		$interface->assign('url', $url);
-		$interface->assign('inPopUp', true);
+		$interface->assign([
+			'escapeId'    => $escapedId,
+			'buttonLabel' => $buttonLabel,
+			'url'         => $url,
+			'inPopUp'     => true,
+			'scopeType'   => $scopeType, // Required when location scope is effect and title is available at another branch
+		]);
 
-		$results = array(
+		$results = [
 			'title'        => "<a href='$url'>{$recordDriver->getTitle()}</a>",
 			'modalBody'    => $interface->fetch('GroupedWork/work-details.tpl'),
 			'modalButtons' => "<button onclick=\"return Pika.GroupedWork.showSaveToListForm(this, '$escapedId');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$buttonLabel</button>"
 				. "<a href='$url'><button class='modal-buttons btn btn-primary'>More Info</button></a>",
-		);
+		];
 		return $results;
 	}
 
