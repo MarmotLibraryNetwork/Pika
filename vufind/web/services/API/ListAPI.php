@@ -1299,7 +1299,6 @@ class ListAPI extends AJAXHandler {
 						}
 					}
 
-					//TODO: User tags
 				} // End of foreach ($nprBookList
 
 				if ($results['success']){
