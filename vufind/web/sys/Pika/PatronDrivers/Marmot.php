@@ -475,7 +475,7 @@ class Marmot extends Sierra {
 		}
 	}
 
-	public function cancelAllBookedMaterial($patron){
+	public function cancelAllBookedMaterial(User $patron){
 		//NOTE the library's scope for the classic OPAC is needed to delete bookings!
 		$post = [
 			'canbookall' => 'YES'
@@ -526,7 +526,7 @@ class Marmot extends Sierra {
 	 *
 	 * @return string  An HTML table
 	 */
-	public function getBookingCalendar(User $patron, \SourceAndId $sourceAndId){
+	public function getBookingCalendar(User $patron, $sourceAndId){
 		// Create Hourly Calendar URL
 		$bib       = $this->getShortId($sourceAndId->getRecordId());
 		$scope     = $this->getLibrarySierraScope();
