@@ -228,7 +228,7 @@ class Marmot extends Sierra {
 		return [];
 	}
 
-	public function bookMaterial(User $patron, \SourceAndId $recordId, $startDate, $startTime = null, $endDate = null, $endTime = null){
+	public function bookMaterial($patron, $recordId, $startDate, $startTime = null, $endDate = null, $endTime = null){
 		if (empty($recordId) || empty($startDate)){ // at least these two fields should be required input
 			return ['success' => false, 'message' => empty($startDate) ? 'Start Date Required.' : 'Record ID required'];
 		}
