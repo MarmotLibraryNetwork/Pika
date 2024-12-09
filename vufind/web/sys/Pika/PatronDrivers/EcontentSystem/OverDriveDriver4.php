@@ -1088,7 +1088,10 @@ class OverDriveDriver4 {
 		global $timer;
 		$tokenData = $this->_connectToPatronAPI($user);
 		$timer->logTime("Checked to see if the user {$user->id} is valid for OverDrive");
-		return !empty($tokenData) && !array_key_exists('error', $tokenData);
+        if (is_array($tokenData)) {
+            return !empty($tokenData) && !array_key_exists('error', $tokenData);
+        }
+        return false;
 	}
 
 	/**
