@@ -18,6 +18,7 @@
  */
 
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
+require_once ROOT_DIR . '/sys/Location/Location.php';
 
 class Locations extends ObjectEditor {
 
@@ -78,7 +79,8 @@ class Locations extends ObjectEditor {
 	}
 
 	function getObjectStructure(){
-		return Location::getObjectStructure();
+        $location = new Location();
+		return $location->getObjectStructure();
 	}
 
 	function getPrimaryKeyColumn(){
@@ -93,17 +95,17 @@ class Locations extends ObjectEditor {
 		return ['opacAdmin', 'libraryAdmin', 'libraryManager', 'locationManager'];
 	}
 
-	function canAddNew(){
+	public function canAddNew(){
 		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
 
-	function canDelete(){
+	public function canDelete(){
 		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
 
-	function copyDataFromLocation(){
+	public function copyDataFromLocation(){
 		$locationId = $_REQUEST['id'];
 		if (isset($_REQUEST['submit'])){
 			$location             = new Location();

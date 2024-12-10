@@ -56,7 +56,7 @@ class LibraryArchiveSearchFacetSetting extends FacetSetting {
 			$libraryList[$library->libraryId] = $library->displayName;
 		}
 
-		$structure = parent::getObjectStructure(self::getAvailableFacets());
+		$structure = parent::getObjectStructure(getAvailableFacets());
 		$structure['libraryId'] = array('property'=>'libraryId', 'type'=>'enum', 'values'=>$libraryList, 'label'=>'Library', 'description'=>'The id of a library');
 		//TODO: needed? for copy facets button?
 
@@ -74,5 +74,3 @@ class LibraryArchiveSearchFacetSetting extends FacetSetting {
 
 	}
 }
-
-

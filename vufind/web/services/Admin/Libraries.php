@@ -80,7 +80,8 @@ class Admin_Libraries extends ObjectEditor {
 	}
 
 	function getObjectStructure(){
-		$objectStructure = Library::getObjectStructure();
+        $lib = new Library();
+		$objectStructure = $lib->getObjectStructure();
 		$user            = UserAccount::getLoggedInUser();
 		if (!UserAccount::userHasRole('opacAdmin')){
 			unset($objectStructure['isDefault']);
