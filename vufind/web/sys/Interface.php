@@ -27,7 +27,7 @@ class UInterface extends Smarty {
 	private $isMobile;  // Leave unset till isMobile() is called
 	private $url;
 
-	function __construct(){
+	public function __construct(){
 		parent::__construct();
 
 		global $configArray;
@@ -66,13 +66,13 @@ class UInterface extends Smarty {
 		$md5               = md5($this->pikaTheme);
 		$this->compile_dir = "$local/interface/compile/$md5";
 		if (!is_dir($this->compile_dir)){
-			if (!mkdir($this->compile_dir)){
+			if (!mkdir($conDirectory = $this->compile_dir) && !is_dir($conDirectory)){
 				die("Could not create compile directory {$this->compile_dir}");
 			}
 		}
 		$this->cache_dir = "$local/interface/cache/$md5";
 		if (!is_dir($this->cache_dir)){
-			if (!mkdir($this->cache_dir)){
+			if (!mkdir($conDirectory1 = $this->cache_dir) && !is_dir($conDirectory1)){
 				die("Could not create cache directory {$this->cache_dir}");
 			}
 		}
@@ -82,6 +82,7 @@ class UInterface extends Smarty {
 		// 0 will turn caching off. Not sure what a false value will do.
 		$this->caching       = false;
 		$this->debugging     = false;
+        $this->error_reporting= E_ERROR;
 		$this->compile_check = true;
 		// debugging
 		if (!empty($configArray['System']['debug'])){
@@ -158,7 +159,6 @@ class UInterface extends Smarty {
 		}
 
 		$timer->logTime('Interface basic configuration');
-
 	}
 
 	/**
