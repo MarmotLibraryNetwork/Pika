@@ -14,31 +14,40 @@
 
 package org.pika;
 
+import au.com.bytecode.opencsv.CSVReader;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
 
+import java.io.File;
+import java.io.FileReader;
 import java.sql.*;
 import java.text.ParseException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
+import java.util.*;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
 
 
 abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 
-	protected HashSet<String> availableStatusCodes       = new HashSet<String>();
-	protected HashSet<String> libraryUseOnlyStatusCodes  = new HashSet<String>();
-	//protected HashSet<String> validCheckedOutStatusCodes = new HashSet<String>();
+	protected HashSet<String> availableStatusCodes       = new HashSet<>();
+	protected HashSet<String> libraryUseOnlyStatusCodes  = new HashSet<>();
+	protected HashSet<String> validCheckedOutStatusCodes = new HashSet<>();
 	protected char isItemHoldableSubfield = '5';
 
 	private PreparedStatement itemToRecordStatement;
 	private PreparedStatement clearItemIdsForBibStatement;
 	private PreparedStatement updateExtractInfoStatement;
 	private int indexingProfileId;
+
+	private       String                     exportPath;
+	private final HashMap<String, LocalDate> dueDateInfoFromExport = new HashMap<>();
 
 	PolarisRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
@@ -48,17 +57,24 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 			indexingProfileId = indexingProfileRS.getInt("id");
 
 			String availableStatusString = indexingProfileRS.getString("availableStatuses");
-			//String checkedOutStatuses     = indexingProfileRS.getString("checkedOutStatuses");
+			String checkedOutStatuses     = indexingProfileRS.getString("checkedOutStatuses");
 			String libraryUseOnlyStatuses = indexingProfileRS.getString("libraryUseOnlyStatuses");
 			if (availableStatusString != null && !availableStatusString.isEmpty()) {
 				availableStatusCodes.addAll(Arrays.asList(availableStatusString.split("\\|")));
 			}
-			//if (checkedOutStatuses != null && !checkedOutStatuses.isEmpty()){
-			//	validCheckedOutStatusCodes.addAll(Arrays.asList(checkedOutStatuses.split("\\|")));
-			//}
+			if (checkedOutStatuses != null && !checkedOutStatuses.isEmpty()){
+				validCheckedOutStatusCodes.addAll(Arrays.asList(checkedOutStatuses.split("\\|")));
+			}
 			if (libraryUseOnlyStatuses != null && !libraryUseOnlyStatuses.isEmpty()){
 				libraryUseOnlyStatusCodes.addAll(Arrays.asList(libraryUseOnlyStatuses.split("\\|")));
 			}
+			try {
+				exportPath = indexingProfileRS.getString("marcPath");
+				loadDueDateInformation();
+			} catch (Exception e) {
+				logger.error("Unable to load marc path from indexing profile; or load due dates");
+			}
+
 
 		} catch (SQLException e) {
 			logger.error("Error loading indexing profile information from database for PolarisRecordProcessor", e);
@@ -218,6 +234,74 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 				logger.error("Unable to update ils_extract_info table for {}", identifier, e);
 			}
 		}
+	}
+
+	private static final DateTimeFormatter dueDateReportFormatter = DateTimeFormatter.ofPattern("M/d/yyyy h:mm:ss a").withZone(ZoneId.systemDefault());
+	void loadDueDateInformation() {
+		String filePath     = exportPath + "/due_dates.csv";
+		File   dueDatesFile = new File(filePath);
+		int    i            = 0;
+		if (dueDatesFile.exists()) {
+			if (fullReindex) {
+				Instant fileDate = Instant.ofEpochMilli(dueDatesFile.lastModified());
+				if (fileDate.isBefore(Instant.now().minus(1, ChronoUnit.DAYS))){
+					logger.warn("Due date report more than a day old. Please investigate.");
+				}
+			}
+			try (CSVReader reader = new CSVReader(new FileReader(dueDatesFile))) {
+				reader.readNext(); // ignore first line
+				String[] dueDateData;
+				while ((dueDateData = reader.readNext()) != null) {
+					LocalDate dueDate = LocalDate.parse(dueDateData[0], dueDateReportFormatter);
+					String    itemId  = dueDateData[1];
+					dueDateInfoFromExport.put(itemId, dueDate);
+					i++;
+				}
+			} catch (Exception e) {
+				logger.error("Error loading due dates from due date report", e);
+			}
+			logger.info("Loaded {} item due dates from {} file lines", dueDateInfoFromExport.size(), i);
+		} else if (fullReindex) {
+			logger.warn("Due dates report file not found. {}", filePath);
+		}
+	}
+
+	protected void getDueDate(DataField itemField, ItemInfo itemInfo) {
+		LocalDate dueDate = dueDateInfoFromExport.get(itemInfo.getItemIdentifier());
+		if (dueDate == null) {
+			itemInfo.setDueDate("");
+		}else{
+			itemInfo.setDueDate(displayDateFormatter.format(dueDate));
+		}
+	}
+
+	protected void setDetailedStatus(ItemInfo itemInfo, DataField itemField, String itemStatus, RecordIdentifier identifier) {
+		//See if we need to override based on the last check in date
+		String overriddenStatus = getOverriddenStatus(itemInfo, false);
+		if (overriddenStatus != null) {
+			itemInfo.setDetailedStatus(overriddenStatus);
+		}else {
+			if (validCheckedOutStatusCodes.contains(itemStatus)) {
+				LocalDate dueDate = dueDateInfoFromExport.get(itemInfo.getItemIdentifier());
+				if (dueDate == null) {
+					itemInfo.setDetailedStatus(translateValue("item_status", itemStatus, identifier));
+				}else{
+					itemInfo.setDetailedStatus("Due " + getDisplayDueDate(dueDate, itemInfo.getItemIdentifier()));
+				}
+			} else {
+				itemInfo.setDetailedStatus(translateValue("item_status", itemStatus, identifier));
+			}
+		}
+	}
+
+	private static final DateTimeFormatter displayDateFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy").withZone(ZoneId.systemDefault());
+	private String getDisplayDueDate(LocalDate dueDate, String identifier){
+		try {
+			return displayDateFormatter.format(dueDate);
+		}catch (Exception e){
+			logger.warn("Could not load display due date for dueDate {} for identifier {}", dueDate, identifier, e);
+		}
+		return "Unknown";
 	}
 
 	//TODO:
