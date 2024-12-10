@@ -135,11 +135,11 @@ class Location extends DB_DataObject {
 	 * Needed override for OneToManyDataObjectOperations
 	 * @return string
 	 */
-	function getKeyOther(){
+	public function getKeyOther(){
 		return 'locationId';
 	}
 
-	function getObjectStructure(){
+	public function getObjectStructure(){
 		//Load Libraries for lookup values
 		$library = new Library();
 		$library->orderBy('displayName');
