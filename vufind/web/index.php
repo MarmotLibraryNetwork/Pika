@@ -692,7 +692,7 @@ function setUpSearchDisplayOptions($module, $action){
 		}
 	}
 
-	if ($library->enableArchive){
+	if (!empty($configArray['Islandora']['enabled']) && $library->enableArchive){
 		$islandoraSearchObject = SearchObjectFactory::initSearchObject('Islandora');
 		if ($islandoraSearchObject != false){
 			$interface->assign('islandoraSearchTypes', $islandoraSearchObject->getBasicTypes() ?? []);

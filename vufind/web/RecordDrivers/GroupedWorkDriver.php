@@ -1079,9 +1079,10 @@ class GroupedWorkDriver extends RecordInterface {
 	 */
 	static function loadArchiveLinksForWorks($groupedWorkIds){
 		global $library;
+		global $configArray;
 		global $timer;
 		$archiveLink = null;
-		if ($library->enableArchive && count($groupedWorkIds) > 0){
+		if (count($groupedWorkIds) > 0 && $library->enableArchive && !empty($configArray['Islandora']['enabled'])){
 			require_once ROOT_DIR . '/sys/Islandora/IslandoraSamePikaCache.php';
 			$groupedWorkIdsToSearch = [];
 			foreach ($groupedWorkIds as $groupedWorkId){
@@ -1157,8 +1158,9 @@ class GroupedWorkDriver extends RecordInterface {
 		//Check to see if the record is available within the archive
 		global $library;
 		global $timer;
+		global $configArray;
 		$archiveLink = '';
-		if ($library->enableArchive){
+		if ($library->enableArchive && !empty($configArray['Islandora']['enabled'])){
 			if (array_key_exists($groupedWorkId, GroupedWorkDriver::$archiveLinksForWorkIds)){
 				$archiveLink = GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId];
 			}else{
