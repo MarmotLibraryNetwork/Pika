@@ -30,7 +30,7 @@ class ExploreMore {
 		global $timer;
 		global $library;
 
-		if (isset($configArray['Islandora']) && isset($configArray['Islandora']['solrUrl'])) {
+		if (!empty($configArray['Islandora']['solrUrl'])) {
 			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 			$fedoraUtils = FedoraUtils::getInstance();
 		}
