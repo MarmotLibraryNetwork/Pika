@@ -724,7 +724,7 @@ class Archive_AJAX extends AJAXHandler {
 		$timer->logTime("Called loadExploreMoreSidebar");
 
 		$relatedSubjects = $recordDriver->getAllSubjectHeadings(true, 5);
-		$ebscoMatches    = $exploreMore->loadEbscoOptions('archive', [], implode($relatedSubjects, ' or '));
+		$ebscoMatches    = $exploreMore->loadEbscoOptions('archive', [], implode( ' or ', $relatedSubjects));
 		if (!empty($ebscoMatches)){
 			$interface->assign('relatedArticles', $ebscoMatches);
 		}
