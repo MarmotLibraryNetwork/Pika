@@ -72,7 +72,7 @@ class NYTApi {
 		// Close request to clear up some resources
 		curl_close($curl);
 		// return response
-		return json_decode($response);
+		return json_decode($response, true);
 	}
 
 }
