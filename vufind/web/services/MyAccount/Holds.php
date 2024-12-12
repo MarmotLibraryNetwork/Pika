@@ -207,7 +207,7 @@ class MyAccount_Holds extends MyAccount{
 	public function exportToExcel($result, $exportType, $showDateWhenSuspending, $showPosition, $showExpireTime) {
 		//PHPEXCEL
 		// Create new PHPExcel object
-		$objPHPExcel = new PHPExcel();
+		$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 		// Set properties
 		global $interface;
@@ -374,7 +374,7 @@ class MyAccount_Holds extends MyAccount{
 		header('Content-Disposition: attachment;filename="Holds.xls"');
 		header('Cache-Control: max-age=0');
 
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, 'Xls');
 		$objWriter->save('php://output');
 		exit;
 
