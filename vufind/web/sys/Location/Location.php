@@ -110,7 +110,9 @@ class Location extends DB_DataObject {
 	public $combinedResultsLabel;
 	public $defaultToCombinedResults;
 	public $useLibraryCombinedResultsSettings;
-
+    
+    // Used to track multiple linked users having the same pick-up locations
+    public $pickupUsers;
 	public $changeRequiresReindexing;
 
 	/** @var  array $data */
@@ -571,9 +573,7 @@ class Location extends DB_DataObject {
 		}
 		return $structure;
 	}
-
-	public $pickupUsers;
-	// Used to track multiple linked users having the same pick-up locations
+	
 
 	/**
 	 * @param User $patronProfile
