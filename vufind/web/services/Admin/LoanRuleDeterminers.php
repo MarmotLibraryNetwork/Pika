@@ -20,6 +20,7 @@
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Pika/CirculationSystemDrivers/LoanRuleDeterminer.php';
 
+use Pika\Logger;
 class LoanRuleDeterminers extends ObjectEditor {
 	function launch(){
 		$objectAction = $_REQUEST['objectAction'] ?? null;
@@ -30,7 +31,12 @@ class LoanRuleDeterminers extends ObjectEditor {
 			$loanRuleDeterminerData = $_REQUEST['loanRuleDeterminerData'];
 			//Truncate the current data
 			$loanRuleDeterminer = new LoanRuleDeterminer();
-			$loanRuleDeterminer->query('TRUNCATE table ' . $loanRuleDeterminer->__table);
+            $logger = new Logger('LoanRuleDeterminers');
+            try {
+                $loanRuleDeterminer->query('TRUNCATE table ' . $loanRuleDeterminer->__table);
+            } catch (Exception $e) {
+                $logger->warning($e->getMessage());
+            }
 
 			//Parse the new data
 			$data = preg_split('/\\r\\n|\\r|\\n/', $loanRuleDeterminerData);
