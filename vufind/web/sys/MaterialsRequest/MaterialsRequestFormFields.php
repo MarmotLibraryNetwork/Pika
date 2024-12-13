@@ -36,7 +36,7 @@ class MaterialsRequestFormFields extends DB_DataObject {
 	public $fieldLabel; // unique
 	public $fieldType;
 
-	static $fieldTypeOptions = array(
+	static $fieldTypeOptions = [
 //		'text'    => 'text',
 //		'textbox' => 'textarea',
 //		'yes/no'  => 'yes/no',
@@ -66,28 +66,29 @@ class MaterialsRequestFormFields extends DB_DataObject {
 		'publicationYear'    => 'Publication Year',
 		'id'                 => 'Request ID Number (staff view only)',
 		'status'             => 'Status (staff view only)',
+		'staffComments'      => 'Staff Comments (staff view only)',
 		'title'              => 'Title',
 		'upc'                => 'UPC',
-	);
+	];
 
 
 	static function getObjectStructure() {
-		$structure = array(
-			'id'            => array('property' => 'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of this association'),
-//			'libraryId'     => array(), // hidden value or internally updated.
-			'formCategory'  => array('property' => 'formCategory', 'type' => 'text', 'label' => 'Form Category', 'description' => 'The name of the section this field will belong in.'),
-			'fieldLabel'    => array('property' => 'fieldLabel', 'type' => 'text', 'label' => 'Field Label', 'description' => 'Label for this field that will be displayed to users.'),
-			'fieldType'     => array('property' => 'fieldType', 'type' => 'enum', 'label' => 'Field Type', 'description' => 'Type of data this field will be', 'values' => self::$fieldTypeOptions, 'default' => 'text'),
-			//			'required'      => array(), // checkbox
-			'weight'        => array('property' => 'weight', 'type'=>'integer', 'label'=>'Weight', 'description'=>'The sort order of rule', 'default' => 0),
-		);
+		$structure = [
+			'id'            => ['property' => 'id', 'type' =>'label', 'label' =>'Id', 'description' =>'The unique id of this association'],
+//			'libraryId'     => [], // hidden value or internally updated.
+			'formCategory'  => ['property' => 'formCategory', 'type' => 'text', 'label' => 'Form Category', 'description' => 'The name of the section this field will belong in.'],
+			'fieldLabel'    => ['property' => 'fieldLabel', 'type' => 'text', 'label' => 'Field Label', 'description' => 'Label for this field that will be displayed to users.'],
+			'fieldType'     => ['property' => 'fieldType', 'type' => 'enum', 'label' => 'Field Type', 'description' => 'Type of data this field will be', 'values' => self::$fieldTypeOptions, 'default' => 'text'],
+//			'required'      => [], // checkbox
+			'weight'        => ['property' => 'weight', 'type' =>'integer', 'label' =>'Weight', 'description' =>'The sort order of rule', 'default' => 0],
+		];
 		return $structure;
 	}
 
 
 	static function getDefaultFormFields($libraryId = -1){
 		global $configArray;
-		$defaultFieldsToDisplay = array();
+		$defaultFieldsToDisplay = [];
 
 		//This Replicates MyRequest Form structure.
 
@@ -231,6 +232,14 @@ class MaterialsRequestFormFields extends DB_DataObject {
 		$defaultField->formCategory = 'Staff Information';
 		$defaultField->fieldLabel   = 'Status';
 		$defaultField->fieldType    = 'status';
+		$defaultField->weight       = count($defaultFieldsToDisplay) + 1;
+		$defaultFieldsToDisplay[]   = $defaultField;
+
+		$defaultField               = new MaterialsRequestFormFields();
+		$defaultField->libraryId    = $libraryId;
+		$defaultField->formCategory = 'Staff Information';
+		$defaultField->fieldLabel   = 'Staff Comments';
+		$defaultField->fieldType    = 'staffComments';
 		$defaultField->weight       = count($defaultFieldsToDisplay) + 1;
 		$defaultFieldsToDisplay[]   = $defaultField;
 

@@ -212,6 +212,7 @@ necassary *}
 				{* Text Area Fields*}
 			{elseif
 			$formField->fieldType == 'comments' ||
+			$formField->fieldType == 'staffComments' ||
 			$formField->fieldType == 'about'}
 
 				{assign var="materialRequestTableColumnName" value=$formField->fieldType}

@@ -63,6 +63,7 @@ class MaterialsRequest extends DB_DataObject {
 	public $holdPickupLocation;
 	public $bookmobileStop;
 	public $assignedTo;
+	public $staffComments;
 
 	//Dynamic properties setup by joins
 	public $numRequests;
@@ -70,6 +71,14 @@ class MaterialsRequest extends DB_DataObject {
 	public $userId;
 	public $firstName;
 	public $lastName;
+	private $staffOnlyFields = [
+		'assignedTo',
+		'createdBy',
+		'libraryCardNumber',
+		'id',
+		'status',
+		'staffComments'
+	];
 
 	function keys(){
 		return ['id'];
@@ -201,7 +210,7 @@ class MaterialsRequest extends DB_DataObject {
 
 		if (!$isStaffRequest){
 			foreach ($fieldsToSortByCategory as $fieldKey => $fieldDetails){
-				if (in_array($fieldDetails->fieldType, ['assignedTo', 'createdBy', 'libraryCardNumber', 'id', 'status'])){
+				if (in_array($fieldDetails->fieldType, $this->staffOnlyFields)){
 					unset($fieldsToSortByCategory[$fieldKey]);
 				}
 			}
