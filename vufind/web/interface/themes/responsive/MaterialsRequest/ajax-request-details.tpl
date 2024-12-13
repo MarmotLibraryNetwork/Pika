@@ -113,8 +113,6 @@
 
 						{elseif
 						$formField->fieldType == 'id' ||
-						$formField->fieldType == 'comments' ||
-						$formField->fieldType == 'about' ||
 						$formField->fieldType == 'title' ||
 						$formField->fieldType == 'ageLevel' ||
 						$formField->fieldType == 'isbn'||
@@ -138,6 +136,22 @@
 							<label class="request_detail_field_label col-sm-3">{$formField->fieldLabel}: </label>
 							<div class="request_detail_field_value col-sm-9">
 								{$materialsRequest->$materialRequestTableColumnName}
+							</div>
+						</div>
+
+						{elseif
+						$formField->fieldType == 'comments' ||
+						$formField->fieldType == 'staffComments' ||
+						$formField->fieldType == 'about'}
+						{assign var="materialRequestTableColumnName" value=$formField->fieldType}
+						<div class="request_detail_field row">
+							<label class="request_detail_field_label col-sm-3">{$formField->fieldLabel}: </label>
+							<div class="request_detail_field_value col-sm-9">
+								{if !empty(trim($materialsRequest->$materialRequestTableColumnName))}
+									<pre>{strip}
+										{$materialsRequest->$materialRequestTableColumnName}
+									</pre>{/strip}
+								{/if}
 							</div>
 						</div>
 

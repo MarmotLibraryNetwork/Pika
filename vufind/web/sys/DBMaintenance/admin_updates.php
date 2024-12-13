@@ -43,7 +43,17 @@ function getAdminUpdates() {
 			'sql'             => [
 				'INSERT INTO `roles` (`name`, `description`) VALUES (\'partnerAdmin\', \'Allows user to update the library configuration for a partner system of their home library.\');'
 			]
-		]
+		],
+
+		'2024.04.1_materials_request_staff_comments' => [
+			'release'         => '2024.04.1',
+			'title'           => 'Add Materials Request staff comments',
+			'description'     => 'Add a field for internal comments not seen by the patron.',
+			'continueOnError' => true,
+			'sql'             => [
+				'ALTER TABLE `materials_request` ADD COLUMN `staffComments` LONGTEXT NULL DEFAULT NULL AFTER `assignedTo`; '
+			]
+		],
 	];
 }
 

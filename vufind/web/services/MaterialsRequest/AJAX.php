@@ -253,7 +253,7 @@ class MaterialsRequest_AJAX extends AJAXHandler {
 					$materialsRequest     = new MaterialsRequest();
 					$materialsRequest->id = $id;
 
-					$staffView         = isset($_REQUEST['staffView']) ? $_REQUEST['staffView'] : true;
+					$staffView         = $_REQUEST['staffView'] ?? true;
 					$requestFormFields = $materialsRequest->getRequestFormFields($requestLibrary->libraryId, $staffView);
 					$interface->assign('requestFormFields', $requestFormFields);
 
@@ -303,10 +303,7 @@ class MaterialsRequest_AJAX extends AJAXHandler {
 								$interface->assign('requestUser', $requestUser);
 
 								// Get Barcode Column
-								$barCodeColumn = null;
-								if ($accountProfile = $requestUser->getAccountProfile()){
-									$barCodeColumn = 'barcode';
-								}
+								$barCodeColumn = 'barcode';
 								$interface->assign('barCodeColumn', $barCodeColumn);
 							}
 						}else{
@@ -322,11 +319,11 @@ class MaterialsRequest_AJAX extends AJAXHandler {
 				$interface->assign('error', 'Invalid Request ID.');
 			}
 		}
-		$return = array(
+		$return = [
 			'title'        => translate('Materials_Request_alt') . ' Details',
 			'modalBody'    => $interface->fetch('MaterialsRequest/ajax-request-details.tpl'),
 			'modalButtons' => '' //TODO idea: add Update Request button (for staff only?)
-		);
+		];
 		return $return;
 	}
 
