@@ -2644,26 +2644,22 @@ class DB_DataObject extends DB_DataObject_Overload
         if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
             $this->debug(serialize($result), 'RESULT',5);
         }
-        if(!is_string($result) && !is_object($result) && !is_array($result)) {
-            $result = (string)$result;
-        }
-        if(is_array($result)) {
-            $result = serialize($result);
-        }
-        if (method_exists($result, 'numRows')) {
-            if ($_DB_driver == 'DB') {
-                $DB->expectError(DB_ERROR_UNSUPPORTED);
-            } else {
-                $DB->expectError(MDB2_ERROR_UNSUPPORTED);
+        if(is_object($result) || is_string($result)) {
+            if (method_exists($result, 'numRows')) {
+                if ($_DB_driver == 'DB') {
+                    $DB->expectError(DB_ERROR_UNSUPPORTED);
+                } else {
+                    $DB->expectError(MDB2_ERROR_UNSUPPORTED);
+                }
+
+                $this->N = $result->numRows();
+                //var_dump($this->N);
+
+                if (is_object($this->N) && is_a($this->N, 'PEAR_Error')) {
+                    $this->N = true;
+                }
+                $DB->popExpect();
             }
-            
-            $this->N = $result->numRows();
-            //var_dump($this->N);
-            
-            if (is_object($this->N) && is_a($this->N,'PEAR_Error')) {
-                $this->N = true;
-            }
-            $DB->popExpect();
         }
     }
 
