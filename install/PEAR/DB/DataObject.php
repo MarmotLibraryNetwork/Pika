@@ -2644,10 +2644,11 @@ class DB_DataObject extends DB_DataObject_Overload
         if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
             $this->debug(serialize($result), 'RESULT',5);
         }
-        if(!is_string($result) && !is_object($result)) {
-            if(!is_array($result)) {
-                $result = (string)$result;
-            }
+        if(!is_string($result) && !is_object($result) && !is_array($result)) {
+            $result = (string)$result;
+        }
+        if(is_array($result)) {
+            $result = serialize($result);
         }
         if (method_exists($result, 'numRows')) {
             if ($_DB_driver == 'DB') {
