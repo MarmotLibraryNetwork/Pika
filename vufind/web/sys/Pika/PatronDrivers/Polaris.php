@@ -469,6 +469,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $c_opts = [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => $headers,
+            //CURLOPT_SSL_VERIFYPEER => 0,
+            //CURLOPT_SSL_VERIFYHOST => 0
         ];
 
         $c = new Curl();
@@ -858,8 +860,10 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         foreach ($_REQUEST as $key => $value) {
             if (in_array($key, $this->valid_registration_fields, true)) {
                 if ($key === 'Birthdate') {
-                    $ts = strtotime($value);
-                    $patron_registration[$key] = gmdate('r', $ts);
+                    //$ts = strtotime($value);
+                    $bd = date_create_from_format('m-d-Y', $value);
+                    $bd_ts = date_format($bd, 'U');
+                    $patron_registration[$key] = gmdate('r', $bd_ts);
                     continue;
                 }
                 // check if both first and last legal names are set
@@ -3142,6 +3146,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $c_opts = [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => $headers,
+            //CURLOPT_SSL_VERIFYPEER => 0,
+            //CURLOPT_SSL_VERIFYHOST => 0
         ];
 
         $c = new Curl();
