@@ -330,8 +330,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $c_opts = [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => $headers,
-            //CURLOPT_SSL_VERIFYPEER => 0,
-            //CURLOPT_SSL_VERIFYHOST => 0
+            CURLOPT_SSL_VERIFYPEER => 0,
+            CURLOPT_SSL_VERIFYHOST => 0
         ];
 
         $c = new Curl();
@@ -423,8 +423,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $c_opts = [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => $headers,
-            //CURLOPT_SSL_VERIFYPEER => 0,
-            //CURLOPT_SSL_VERIFYHOST => 0
+            CURLOPT_SSL_VERIFYPEER => 0,
+            CURLOPT_SSL_VERIFYHOST => 0
         ];
 
         $c = new Curl();
@@ -1446,8 +1446,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $c_opts = [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => $headers,
-            //CURLOPT_SSL_VERIFYPEER => 0,
-            //CURLOPT_SSL_VERIFYHOST => 0
+            CURLOPT_SSL_VERIFYPEER => 0,
+            CURLOPT_SSL_VERIFYHOST => 0
         ];
 
         $c = new Curl();
@@ -1847,8 +1847,8 @@ class Polaris extends PatronDriverInterface implements DriverInterface
         $c_opts = [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => $headers,
-            //CURLOPT_SSL_VERIFYPEER => 0,
-            //CURLOPT_SSL_VERIFYHOST => 0
+            CURLOPT_SSL_VERIFYPEER => 0,
+            CURLOPT_SSL_VERIFYHOST => 0
         ];
 
         $c = new Curl();
