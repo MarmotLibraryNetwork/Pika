@@ -2056,6 +2056,28 @@ class User extends DB_DataObject {
 		}
 	}
 
+	public function getReadingHistoryActions(){
+		$actions = new \Account\ReadingHistoryActions();
+		$actions->userId = $this->id;
+		$history = array();
+		$actions->find();
+		while ($actions->fetch()){
+			$history[] = array( 'action' => $actions->action, 'date' => $actions->date );
+		}
+		return count($history) > 0 ? $history: false;
+	}
+
+	public function newReadingHistoryAction(string $action){
+		$history = new \Account\ReadingHistoryActions();
+		$history->userId = $this->id;
+		$history->action = $action;
+		$history->date = new \DateTime();
+		if ($history->insert()){
+			return array ('success' => true);
+		}else{
+			return array ('success' => false);
+		}
+	}
 	public function canMasquerade(){
 		return $this->getMasqueradeLevel() != 'none';
 	}

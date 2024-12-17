@@ -102,6 +102,43 @@
 				{/foreach}
 			</table>
 		{/if}
+	  <form name="checkUserReadingHistoryActions" method="post" enctype="multipart/form-data" class="form-horizontal">
+		  <fieldset>
+			  <legend>Check User Reading History Actions</legend>
+
+			  <input type="hidden" name="userAction" value="showReadingHistoryActions">
+			  <div class="row form-group">
+				  <label for="barcode" class="col-sm-2 control-label">Barcode: </label>
+				  <div class="col-sm-6">
+					  <input type="text" name="barcode" id="barcode" class="form-control"{if $readingHistoryBarcode} value="{$readingHistoryBarcode}"{/if}>
+				  </div>
+				  <div class="col-sm-2">
+					  <button type="submit" class="btn btn-primary">Look up Reading History Actions</button>
+				  </div>
+			  </div>
+			  <div class="form-group">
+			  </div>
+		  </fieldset>
+	  </form>
+	  {if !empty($readingHistoryActions) && $readingHistorySuccess}
+			<table class="table-responsive table-striped dataTable">
+				<thead>
+				<tr>
+					<th>Date</th>
+					<th>Action</th>
+				</tr>
+				</thead>
+		  {foreach from=$readingHistoryActions item=historyAction}
+				<tr>
+					<td><strong>{$historyAction.date|date_format:'%m/%d/%Y %I:%M:%S'}</strong></td>
+					<td>{$historyAction.action}</td>
+				</tr>
+			{/foreach}
+			</table>
+	  {elseif $readingHistoryError}
+		  <p class="alert-warning">The user account with barcode {$readingHistoryBarcode} has not enabled/disabled/cleared their reading history.</p>
+	  {/if}
+
   {/if}
 </div>
 {/strip}
