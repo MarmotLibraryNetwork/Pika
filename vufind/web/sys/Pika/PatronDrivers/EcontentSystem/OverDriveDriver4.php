@@ -79,8 +79,8 @@ class OverDriveDriver4 {
 			CURLOPT_FOLLOWLOCATION => true,
 			CURLOPT_HEADER         => false,
 			CURLOPT_AUTOREFERER    => true,
-			CURLOPT_SSL_VERIFYPEER => false,
-			CURLOPT_SSL_VERIFYHOST => false,
+			//CURLOPT_SSL_VERIFYPEER => false,
+			//CURLOPT_SSL_VERIFYHOST => false,
 			//CURLOPT_HEADER         => true, // debugging only
 			//CURLOPT_VERBOSE        => true, // debugging only
 		];
@@ -157,10 +157,24 @@ class OverDriveDriver4 {
 				$patronBarcode = $user->barcode;
 				if ($this->getRequirePin($user)){
 					$patronPin  = urlencode($user->getAccountProfile()->usingPins() ? $user->getPassword() : $user->barcode);
-					$postFields = "grant_type=password&username={$patronBarcode}&password={$patronPin}&password_required=true&scope=websiteId:{$websiteId}+ilsname:{$ILSName}";
-				}else{
-					$postFields = "grant_type=password&username={$patronBarcode}&password=ignore&password_required=false&scope=websiteId:{$websiteId}+ilsname:{$ILSName}";
-				}
+					//$postFields = "grant_type=password&username={$patronBarcode}&password={$patronPin}&password_required=true&scope=websiteId:{$websiteId}+ilsname:{$ILSName}";
+                    $postFields = [
+                        'grant_type' => 'password',
+                        'username' => $patronBarcode,
+                        'password' => $patronPin,
+                        'password_required' => true,
+                        'scope' => "websiteId:{$websiteId}+ilsname:{$ILSName}"
+                    ];
+                }else{
+					//$postFields = "grant_type=password&username={$patronBarcode}&password=ignore&password_required=false&scope=websiteId:{$websiteId}+ilsname:{$ILSName}";
+				    $postFields = [
+                        'grant_type' => 'password',
+                        'username' => $patronBarcode,
+                        'password' => 'ignore',
+                        'password_required' => false,
+                        'scope'=> "websiteId:{$websiteId}+ilsname:{$ILSName}"
+                    ];
+                }
 
 				$url             = 'https://oauth-patron.overdrive.com/patrontoken';
 				$headers         = $this->_authorizationHeaders($url);
@@ -173,10 +187,10 @@ class OverDriveDriver4 {
 					return $patronTokenData;
 				}
 				if (isset($patronTokenData->error)){
-					if ($patronTokenData->error == 'unauthorized_client'){
+					if ($patronTokenData->error === 'unauthorized_client'){
 						global $configArray;
 						if ($configArray['System']['debug']){
-							$this->logger->warn('Error connecting to OverDrive patron APIs', ['overdrive_error' => $patronTokenData]);
+							$this->logger->error('Error connecting to OverDrive patron APIs', ['overdrive_error' => $patronTokenData]);
 						}
 					}else{
 						$this->logger->error('Error connecting to OverDrive patron APIs', ['overdrive_error' => $patronTokenData]);
@@ -227,7 +241,7 @@ class OverDriveDriver4 {
 		if ($tokenData){
 			$curl      = $this->initCurlObject(['Authorization' => "{$tokenData->token_type} {$tokenData->access_token}"]);
 			$returnVal = $curl->get($url);
-			if ($returnVal != null){
+			if ($returnVal !== null){
 				if (!isset($returnVal->message) || $returnVal->message != 'An unexpected error has occurred.'){
 					return $returnVal;
 				}
@@ -365,13 +379,14 @@ class OverDriveDriver4 {
 			}
 			//$curlInfo = $curl->getInfo(); // for debugging
 
-			if (empty($returnVal)){
-				return $curl->httpStatusCode == 204; // Code 204 is success
-			}elseif (!isset($returnVal->message) || $returnVal->message != 'An unexpected error has occurred.'){
-				return $returnVal;
-			}
+            if ($curl->httpStatusCode === 204) {
+                return true; // Code 204 is success
+            }
 
-		}
+            if (!isset($returnVal->message)) { // || $returnVal->message != 'An unexpected error has occurred.'
+                return $returnVal;
+            }
+        }
 		return false;
 	}
 
@@ -539,7 +554,6 @@ class OverDriveDriver4 {
 								//TODO: Now make call to the API for additional information
 							}
 						}
-
 
 						// Download options for when a format isn't locked in
 						if (!$bookshelfItem['isFormatSelected'] && isset($curTitle->actions->format)){
@@ -1089,8 +1103,9 @@ class OverDriveDriver4 {
 		global $timer;
 		$tokenData = $this->_connectToPatronAPI($user);
 		$timer->logTime("Checked to see if the user {$user->id} is valid for OverDrive");
-        if (is_array($tokenData)) {
-            return !empty($tokenData) && !array_key_exists('error', $tokenData);
+        //if (!is_array($tokenData)) {
+        if (!isset($tokenData->error)){
+            return true; //!empty($tokenData) && !array_key_exists('error', $tokenData);
         }
         return false;
 	}
