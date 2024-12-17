@@ -157,23 +157,23 @@ class OverDriveDriver4 {
 				$patronBarcode = $user->barcode;
 				if ($this->getRequirePin($user)){
 					$patronPin  = urlencode($user->getAccountProfile()->usingPins() ? $user->getPassword() : $user->barcode);
-					//$postFields = "grant_type=password&username={$patronBarcode}&password={$patronPin}&password_required=true&scope=websiteId:{$websiteId}+ilsname:{$ILSName}";
-                    $postFields = [
-                        'grant_type' => 'password',
-                        'username' => $patronBarcode,
-                        'password' => $patronPin,
-                        'password_required' => true,
-                        'scope' => "websiteId:{$websiteId}+ilsname:{$ILSName}"
-                    ];
+					$postFields = "grant_type=password&username={$patronBarcode}&password={$patronPin}&password_required=true&scope=websiteId:{$websiteId}+ilsname:{$ILSName}";
+//                    $postFields = [
+//                        'grant_type' => 'password',
+//                        'username' => $patronBarcode,
+//                        'password' => $patronPin,
+//                        'password_required' => true,
+//                        'scope' => "websiteId:{$websiteId}+ilsname:{$ILSName}"
+//                    ];
                 }else{
-					//$postFields = "grant_type=password&username={$patronBarcode}&password=ignore&password_required=false&scope=websiteId:{$websiteId}+ilsname:{$ILSName}";
-				    $postFields = [
-                        'grant_type' => 'password',
-                        'username' => $patronBarcode,
-                        'password' => 'ignore',
-                        'password_required' => false,
-                        'scope'=> "websiteId:{$websiteId}+ilsname:{$ILSName}"
-                    ];
+					$postFields = "grant_type=password&username={$patronBarcode}&password=ignore&password_required=false&scope=websiteId:{$websiteId}+ilsname:{$ILSName}";
+//				    $postFields = [
+//                        'grant_type' => 'password',
+//                        'username' => $patronBarcode,
+//                        'password' => 'ignore',
+//                        'password_required' => false,
+//                        'scope'=> "websiteId:{$websiteId}+ilsname:{$ILSName}"
+//                    ];
                 }
 
 				$url             = 'https://oauth-patron.overdrive.com/patrontoken';
