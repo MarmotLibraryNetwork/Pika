@@ -2073,7 +2073,7 @@ class User extends DB_DataObject {
 		$history->action = $action;
 		$history->date = new \DateTime();
 		if ($history->insert()){
-			return array ('success' => true);
+			return array ('success' => true, 'id' => $history->id);
 		}else{
 			return array ('success' => false);
 		}
