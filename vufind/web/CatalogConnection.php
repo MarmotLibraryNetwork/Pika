@@ -639,6 +639,7 @@ class CatalogConnection
 		if($result !== false) {
 			$result = true;
 		}
+		$this->readingHistoryLogAction($patron, 'Opted in to reading history');
 		return $result;
 		//return $result !== false;  // The update can return 0 for no rows affected
 	}
@@ -694,6 +695,7 @@ class CatalogConnection
 			//Opt out within Pika since the ILS does not seem to implement this functionality
 			$patron->trackReadingHistory         = false;
 			$patron->initialReadingHistoryLoaded = false;
+			$this->readingHistoryLogAction($patron, 'opted out of reading history');
 			$result                              = $patron->update();
 			if ($result !== false){  // The update can return 0 for no rows affected
 				$success = false;
@@ -737,6 +739,7 @@ class CatalogConnection
 //					}
 //				}
 //			}
+			$this->readingHistoryLogAction($patron, 'deleted all reading history entries');
 			return $success;
 		}
 		return false;
@@ -791,6 +794,9 @@ class CatalogConnection
 						}
 					}
 				}
+			}
+			if (count($selectedTitles) > 5){
+				$this->readingHistoryLogAction($patron, "deleted " . count($selectedTitles) . " reading history entries");
 			}
 			return $success;
 		}
@@ -1204,5 +1210,13 @@ class CatalogConnection
 		}else{
 			return false;
 		}
+	}
+
+	public function readingHistoryLogAction($patron, $message){
+		$userId = $patron->id;
+		$user = new User();
+		$user->id = $userId;
+		$user->find(true);
+		$user->newReadingHistoryAction($message);
 	}
 }

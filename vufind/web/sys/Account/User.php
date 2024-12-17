@@ -2071,7 +2071,7 @@ class User extends DB_DataObject {
 		$history = new \Account\ReadingHistoryActions();
 		$history->userId = $this->id;
 		$history->action = $action;
-		$history->date = new \DateTime();
+		$history->date = time();
 		if ($history->insert()){
 			return array ('success' => true, 'id' => $history->id);
 		}else{

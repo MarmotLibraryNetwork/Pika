@@ -138,7 +138,6 @@
 	  {elseif $readingHistoryError}
 		  <p class="alert-warning">The user account with barcode {$readingHistoryBarcode} has not enabled/disabled/cleared their reading history.</p>
 	  {/if}
-
   {/if}
 </div>
 {/strip}
