@@ -36,9 +36,16 @@ function getUserUpdates(): array{
 //			]
 //		],
 
-
 	return [
-
+		'2025.01.0_add_reading_history_action_log' => [
+			'release'         => '2025.01.0',
+			'title'           => 'Add reading history action log',
+			'description'     => 'Add a table to log when reading history is cleared or deleted',
+			'continueOnError' => false,
+			'sql'             => [
+				'CREATE TABLE `user_reading_history_action`(`id` INT NOT NULL, `userId` INT NOT NULL, `action` VARCHAR(45) NOT NULL, `date` DATETIME NOT NULL, PRIMARY KEY(`id`))'
+			]
+		]
 	];
 }
 
