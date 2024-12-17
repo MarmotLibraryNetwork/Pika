@@ -79,8 +79,8 @@ class OverDriveDriver4 {
 			CURLOPT_FOLLOWLOCATION => true,
 			CURLOPT_HEADER         => false,
 			CURLOPT_AUTOREFERER    => true,
-			//CURLOPT_SSL_VERIFYPEER => false,
-			//CURLOPT_SSL_VERIFYHOST => false,
+			CURLOPT_SSL_VERIFYPEER => false,
+			CURLOPT_SSL_VERIFYHOST => false,
 			//CURLOPT_HEADER         => true, // debugging only
 			//CURLOPT_VERBOSE        => true, // debugging only
 		];
