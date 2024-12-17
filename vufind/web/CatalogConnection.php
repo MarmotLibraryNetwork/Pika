@@ -639,7 +639,7 @@ class CatalogConnection
 		if($result !== false) {
 			$result = true;
 		}
-		$this->readingHistoryLogAction($patron, 'Opted in to reading history');
+		$this->readingHistoryLogAction($patron, 'opted in to reading history');
 		return $result;
 		//return $result !== false;  // The update can return 0 for no rows affected
 	}
