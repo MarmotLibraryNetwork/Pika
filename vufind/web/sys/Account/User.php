@@ -2064,6 +2064,8 @@ class User extends DB_DataObject {
 		while ($actions->fetch()){
 			$history[] = array( 'action' => $actions->action, 'date' => $actions->date );
 		}
+		$sort = array_column($history, 'date');
+		array_multisort($sort, SORT_DESC, $history);
 		return count($history) > 0 ? $history: false;
 	}
 
