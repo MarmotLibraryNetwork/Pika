@@ -149,8 +149,9 @@ class Admin_UserAdmin extends Admin_Admin {
 			}
 		}
 
-		$readingHistoryLogStart = new Variable('reading_history_action_log_start');
-		$interface->assign('readingHistoryLogStart', $readingHistoryLogStart);
+		$readingHistoryLogStartDate = new Variable('reading_history_action_log_start');
+		$interface->assign('readingHistoryLogStartDate', $readingHistoryLogStartDate->value);
+
 		$this->display('userAdmin.tpl', 'User Admin');
 	}
 

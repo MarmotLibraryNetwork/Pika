@@ -104,7 +104,7 @@
 		{/if}
 	  <form name="checkUserReadingHistoryActions" method="post" enctype="multipart/form-data" class="form-horizontal">
 		  <fieldset>
-			  <legend>Check User Reading History Actions <small>(after {$readingHistoryLogStart|date_format})</small></legend>
+			  <legend>Check User Reading History Actions <small>(after {$readingHistoryLogStartDate|date_format})</small></legend>
 
 			  <input type="hidden" name="userAction" value="showReadingHistoryActions">
 			  <div class="row form-group">
