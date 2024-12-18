@@ -53,6 +53,6 @@ function getUserUpdates(): array{
 // Functions definitions that get executed by any of the updates above
 
 function setReadingHistoryActionStart(){
-	$variable = new Variable('reading_history_action_start');
+	$variable = new Variable('reading_history_action_log_start');
 	return $variable->setWithTimeStampValue();
 }
