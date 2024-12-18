@@ -2057,29 +2057,31 @@ class User extends DB_DataObject {
 	}
 
 	public function getReadingHistoryActions(){
-		$actions = new \Account\ReadingHistoryActions();
+		$actions         = new \Account\ReadingHistoryActions();
 		$actions->userId = $this->id;
-		$history = array();
-		$actions->find();
-		while ($actions->fetch()){
-			$history[] = array( 'action' => $actions->action, 'date' => $actions->date );
+		$actions->orderBy("date DESC");
+		$history         = [];
+		if ($actions->find()){
+			while ($actions->fetch()){
+				$history[] = ['action' => $actions->action, 'date' => $actions->date];
+			}
+			return $history;
 		}
-		$sort = array_column($history, 'date');
-		array_multisort($sort, SORT_DESC, $history);
-		return count($history) > 0 ? $history: false;
+		return false;
 	}
 
 	public function newReadingHistoryAction(string $action){
-		$history = new \Account\ReadingHistoryActions();
+		$history         = new \Account\ReadingHistoryActions();
 		$history->userId = $this->id;
 		$history->action = $action;
-		$history->date = time();
+		$history->date   = time();
 		if ($history->insert()){
-			return array ('success' => true, 'id' => $history->id);
+			return ['success' => true, 'id' => $history->id];
 		}else{
-			return array ('success' => false);
+			return ['success' => false];
 		}
 	}
+
 	public function canMasquerade(){
 		return $this->getMasqueradeLevel() != 'none';
 	}
