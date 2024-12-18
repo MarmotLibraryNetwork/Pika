@@ -289,7 +289,7 @@ class MyAccount_MyList extends MyAccount {
 
 		//PHPEXCEL
 		// Create new PHPExcel object
-		$objPHPExcel = new PHPExcel();
+		$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 		// Set properties
 		$gitBranch = $interface->getVariable('gitBranch');
@@ -406,7 +406,7 @@ class MyAccount_MyList extends MyAccount {
 		header('Content-Disposition: attachment;filename="' . substr($listTitle, 0, 27) . '.xls"');
 		header('Cache-Control: max-age=0');
 
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, 'Xls');
 		$objWriter->save('php://output');
 
 		exit;

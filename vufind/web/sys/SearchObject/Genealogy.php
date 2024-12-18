@@ -1022,7 +1022,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		ini_set('include_path', ini_get('include_path' . ';/PHPExcel/Classes'));
 		include 'PHPExcel.php';
 		include 'PHPExcel/Writer/Excel2007.php';
-		$objPHPExcel = new PHPExcel();
+		$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 		$objPHPExcel->getProperties()->setTitle("Search Results");
 
 		$objPHPExcel->setActiveSheetIndex(0);
@@ -1080,7 +1080,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 		header('Content-Disposition: attachment;filename="Results.xlsx"');
 
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+		$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, 'Xlsx');
 		$objWriter->save('php://output'); //THIS DOES NOT WORK WHY?
 		$objPHPExcel->disconnectWorksheets();
 		unset($objPHPExcel);

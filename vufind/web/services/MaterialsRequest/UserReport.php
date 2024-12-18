@@ -148,7 +148,7 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 	function exportToExcel($userData, $statuses, $creator){
 		//PHPEXCEL
 		// Create new PHPExcel object
-		$objPHPExcel = new PHPExcel();
+		$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 		// Set properties
 		$objPHPExcel->getProperties()->setCreator($creator)
@@ -198,7 +198,7 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		header('Content-Disposition: attachment;filename="MaterialsRequestUserReport.xls"');
 		header('Cache-Control: max-age=0');
 
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, 'Xls');
 		$objWriter->save('php://output');
 		exit;
 

@@ -314,7 +314,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		set_time_limit(600);
 		//PHPEXCEL
 		// Create new PHPExcel object
-		$objPHPExcel = new PHPExcel();
+		$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 		// Set properties
 		global $interface;
@@ -465,7 +465,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		header('Content-Disposition: attachment;filename=MaterialsRequests.xls');
 		header('Cache-Control: max-age=0');
 
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, 'Xls');
 		$objWriter->save('php://output');
 		exit;
 	}
