@@ -351,10 +351,10 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			$activeSheet->setCellValue([$curCol++, $curRow], 'Age Level');
 		}
 		$activeSheet->setCellValue([$curCol++, $curRow], 'ISBN');
-		$objPHPExcel->getActiveSheet()->getStyle($curCol . $curRow)->getNumberFormat()->setFormatCode(PHPExcel_Style_numberFormat::FORMAT_NUMBER);
+		$objPHPExcel->getActiveSheet()->getStyle($curCol . $curRow)->getNumberFormat()->setFormatCode(PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER);
 		$activeSheet->setCellValue([$curCol++, $curRow], 'UPC');
 		$activeSheet->setCellValue([$curCol++, $curRow], 'ISSN');
-		$objPHPExcel->getActiveSheet()->getStyle($curCol . $curRow)->getNumberFormat()->setFormatCode(PHPExcel_Style_numberFormat::FORMAT_NUMBER);
+		$objPHPExcel->getActiveSheet()->getStyle($curCol . $curRow)->getNumberFormat()->setFormatCode(PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER);
 		$activeSheet->setCellValue([$curCol++, $curRow], 'OCLC Number');
 		$activeSheet->setCellValue([$curCol++, $curRow], 'Publisher');
 		$activeSheet->setCellValue([$curCol++, $curRow], 'Publication Year');
