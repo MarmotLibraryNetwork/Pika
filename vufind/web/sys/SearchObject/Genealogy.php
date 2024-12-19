@@ -1028,7 +1028,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		//Add headers to the table
 		$sheet  = $objPHPExcel->getActiveSheet();
 		$curRow = 1;
-		$curCol = 0;
+		$curCol = 1;
 		$sheet->setCellValue([$curCol++, $curRow], 'First Name');
 		$sheet->setCellValue([$curCol++, $curRow], 'Last Name');
 		$sheet->setCellValue([$curCol++, $curRow], 'Birth Date');
@@ -1045,7 +1045,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		for ($i = 0;$i < $_count;$i++){
 			$curDoc = $result['response']['docs'][$i];
 			$curRow++;
-			$curCol = 0;
+			$curCol = 1;
 			//Get supplemental information from the database
 			require_once ROOT_DIR . '/sys/Genealogy/Person.php';
 			$person           = new Person();

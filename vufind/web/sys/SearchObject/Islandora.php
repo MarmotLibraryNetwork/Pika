@@ -1297,7 +1297,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 		for ($i = 0; $i < $_count; $i++) {
 			$curDoc = $result['response']['docs'][$i];
 			$curRow++;
-			$curCol = 0;
+			$curCol = 1;
 			//TODO: Need to export information to Excel
 		}
 

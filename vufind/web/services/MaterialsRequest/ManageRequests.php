@@ -333,7 +333,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 
 		//Define table headers
 		$curRow = 3;
-		$curCol = 0;
+		$curCol = 1;
 
 		$activeSheet->setCellValue([$curCol++, $curRow], 'ID');
 		$activeSheet->setCellValue([$curCol++, $curRow], 'Title');
@@ -381,7 +381,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		foreach ($allRequests as $request){
 			if (array_key_exists($request->id, $selectedRequestIds)){
 				$curRow++;
-				$curCol = 0;
+				$curCol = 1;
 
 				$activeSheet->setCellValue([$curCol++, $curRow], $request->id);
 				$activeSheet->setCellValue([$curCol++, $curRow], $request->title);
