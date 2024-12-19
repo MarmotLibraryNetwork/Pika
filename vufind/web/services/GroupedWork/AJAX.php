@@ -1753,7 +1753,7 @@ function getSaveSeriesToListForm(){
 
 		$a = 4;
 		foreach ($seriesEntries as $entry) {
-			$objPHPExcel->getActiveSheet()->getStyle('D' . $a)->getNumberFormat()->setFormatCode(PHPExcel_Style_numberFormat::FORMAT_NUMBER);
+			$objPHPExcel->getActiveSheet()->getStyle('D' . $a)->getNumberFormat()->setFormatCode(PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER);
 			$objPHPExcel->setActiveSheetIndex(0)
 				->setCellValue('A' . $a, $entry['title'])
 				->setCellValue('B' . $a, $entry['author'])
