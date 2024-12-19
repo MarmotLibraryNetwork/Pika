@@ -215,16 +215,16 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		$activeSheet->setCellValue('A3', 'Date');
 		$column = 1;
 		foreach ($statuses as $statusLabel){
-			$activeSheet->setCellValueByColumnAndRow($column++, 3, $statusLabel);
+			$activeSheet->setCellValue([$column++, 3], $statusLabel);
 		}
 
 		$row    = 4;
 		$column = 0;
 		//Loop Through The Report Data
 		foreach ($periodData as $date => $periodInfo){
-			$activeSheet->setCellValueByColumnAndRow($column++, $row, date('M-d-Y', $date));
+			$activeSheet->setCellValue([$column++, $row], date('M-d-Y', $date));
 			foreach ($statuses as $status => $statusLabel){
-				$activeSheet->setCellValueByColumnAndRow($column++, $row, $periodInfo[$status] ?? 0);
+				$activeSheet->setCellValue([$column++, $row], $periodInfo[$status] ?? 0);
 			}
 			$row++;
 			$column = 0;

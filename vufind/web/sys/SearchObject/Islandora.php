@@ -1271,9 +1271,6 @@ class SearchObject_Islandora extends SearchObject_Base {
 		}
 
 		// Prepare the spreadsheet
-		ini_set('include_path', ini_get('include_path'.';/PHPExcel/Classes'));
-		include 'PHPExcel.php';
-		include 'PHPExcel/Writer/Excel2007.php';
 		$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 		$objPHPExcel->getProperties()->setTitle("Search Results");
 
@@ -1283,20 +1280,21 @@ class SearchObject_Islandora extends SearchObject_Base {
 		//Add headers to the table
 		$sheet = $objPHPExcel->getActiveSheet();
 		$curRow = 1;
-		$curCol = 0;
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'First Name');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Last Name');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Birth Date');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Death Date');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Veteran Of');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Cemetery');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Addition');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Block');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Lot');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Grave');
+		$curCol = 1;
+		$sheet->setCellValue([$curCol++, $curRow], 'First Name');
+		$sheet->setCellValue([$curCol++, $curRow], 'Last Name');
+		$sheet->setCellValue([$curCol++, $curRow], 'Birth Date');
+		$sheet->setCellValue([$curCol++, $curRow], 'Death Date');
+		$sheet->setCellValue([$curCol++, $curRow], 'Veteran Of');
+		$sheet->setCellValue([$curCol++, $curRow], 'Cemetery');
+		$sheet->setCellValue([$curCol++, $curRow], 'Addition');
+		$sheet->setCellValue([$curCol++, $curRow], 'Block');
+		$sheet->setCellValue([$curCol++, $curRow], 'Lot');
+		$sheet->setCellValue([$curCol++, $curRow], 'Grave');
 		$maxColumn = $curCol -1;
-
-		for ($i = 0; $i < count($result['response']['docs']); $i++) {
+        
+        $_count = count($result['response']['docs']);
+		for ($i = 0; $i < $_count; $i++) {
 			$curDoc = $result['response']['docs'][$i];
 			$curRow++;
 			$curCol = 0;

@@ -167,21 +167,21 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		$activeSheet->setCellValue('C3', 'Barcode');
 		$column = 3;
 		foreach ($statuses as $statusLabel){
-			$activeSheet->setCellValueByColumnAndRow($column++, 3, $statusLabel);
+			$activeSheet->setCellValue([$column++, 3], $statusLabel);
 		}
-		$activeSheet->setCellValueByColumnAndRow($column, 3, 'Total');
+		$activeSheet->setCellValue([$column, 3], 'Total');
 
 		$row    = 4;
 		$column = 0;
 		//Loop Through The Report Data
 		foreach ($userData as $userInfo){
-			$activeSheet->setCellValueByColumnAndRow($column++, $row, $userInfo['lastName']);
-			$activeSheet->setCellValueByColumnAndRow($column++, $row, $userInfo['firstName']);
-			$activeSheet->setCellValueByColumnAndRow($column++, $row, $userInfo['barcode']);
+			$activeSheet->setCellValue([$column++, $row], $userInfo['lastName']);
+			$activeSheet->setCellValue([$column++, $row], $userInfo['firstName']);
+			$activeSheet->setCellValue([$column++, $row], $userInfo['barcode']);
 			foreach ($statuses as $status => $statusLabel){
-				$activeSheet->setCellValueByColumnAndRow($column++, $row, $userInfo['requestsByStatus'][$status] ?? 0);
+				$activeSheet->setCellValue([$column++, $row], $userInfo['requestsByStatus'][$status] ?? 0);
 			}
-			$activeSheet->setCellValueByColumnAndRow($column, $row, $userInfo['totalRequests']);
+			$activeSheet->setCellValue([$column, $row], $userInfo['totalRequests']);
 			$row++;
 			$column = 0;
 		}
