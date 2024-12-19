@@ -329,7 +329,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 
 		// Add some data
 		$activeSheet = $objPHPExcel->setActiveSheetIndex(0);
-		$activeSheet->setCellValue([0, 1], 'Materials Requests');
+		$activeSheet->setCellValue([1, 1], 'Materials Requests');
 
 		//Define table headers
 		$curRow = 3;
