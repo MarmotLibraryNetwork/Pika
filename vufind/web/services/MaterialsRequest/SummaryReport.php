@@ -200,7 +200,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 
 	function exportToExcel($periodData, $statuses, $creator){
 		// Create new PHPExcel object
-		$objPHPExcel = new PHPExcel();
+		$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 		// Set properties
 		$objPHPExcel->getProperties()->setCreator($creator)
@@ -242,7 +242,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		header('Content-Disposition: attachment;filename="MaterialsRequestSummaryReport.xls"');
 		header('Cache-Control: max-age=0');
 
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, 'Xls');
 		$objWriter->save('php://output');
 		exit;
 

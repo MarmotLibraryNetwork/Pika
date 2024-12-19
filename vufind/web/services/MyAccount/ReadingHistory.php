@@ -177,7 +177,7 @@ class ReadingHistory extends MyAccount {
 	public function exportToExcel($readingHistory){
 		//PHPEXCEL
 		// Create new PHPExcel object
-		$objPHPExcel = new PHPExcel();
+		$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 		// Set properties
 		global $interface;
@@ -227,7 +227,7 @@ class ReadingHistory extends MyAccount {
 		header('Content-Disposition: attachment;filename="ReadingHistory.xls"');
 		header('Cache-Control: max-age=0');
 
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, 'Xls');
 		$objWriter->save('php://output');
 		exit;
 
