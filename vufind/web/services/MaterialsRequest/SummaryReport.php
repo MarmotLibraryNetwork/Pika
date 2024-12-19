@@ -185,14 +185,15 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		$interface->assign('statuses', $statuses);
 
 		//Check to see if we are exporting to Excel
-		if (isset($_REQUEST['exportToExcel'])){
-			global $configArray;
-			$libraryName = !empty($userHomeLibrary->displayName) ? $userHomeLibrary->displayName : $configArray['Site']['libraryName'];
-			$this->exportToExcel($periodData, $statuses, $libraryName);
-		}else{
-			//Generate the graph
-			$this->generateGraph($periodData, $statuses);
-		}
+		if (isset($_REQUEST['exportToExcel'])) {
+            global $configArray;
+            $libraryName = !empty($userHomeLibrary->displayName) ? $userHomeLibrary->displayName : $configArray['Site']['libraryName'];
+            $this->exportToExcel($periodData, $statuses, $libraryName);
+        }
+//		}else{
+//			//Generate the graph
+//			//$this->generateGraph($periodData, $statuses);
+//		}
 
 		$this->display('summaryReport.tpl', 'Materials Request Summary Report');
 	}
@@ -248,50 +249,52 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 	}
 
 	function generateGraph($periodData, $statuses){
-		$reportData = new pData();
-
-		//Add points for each status
-		$periodsFormatted = [];
-		foreach ($statuses as $status => $statusLabel){
-			$statusData = [];
-			foreach ($periodData as $date => $periodInfo){
-				$periodsFormatted[$date] = date('M-d-y', $date);
-				$statusData[$date]       = $periodInfo[$status] ?? 0;
-			}
-			$reportData->addPoints($statusData, $status);
-		}
-
-		$reportData->setAxisName(0, 'Requests');
-		$reportData->addPoints($periodsFormatted, 'Dates');
-		$reportData->setAbscissa('Dates');
-
-		// Create the pChart object
-		$imageWidth     = 880;
-		$imageHeight    = 600;
-		$legendWidth    = 150;
-		$fontProperties = ['FontName' => ROOT_DIR . '/sys/pChart/Fonts/verdana.ttf', 'FontSize' => 9];
-		$gridGray       = ['GridR' => 225, 'GridG' => 225, 'GridB' => 225];
-		$myPicture      = new pImage($imageWidth, $imageWidth, $reportData);
-
-		// Add a border to the picture
-		$myPicture->drawRectangle(0, 0, $imageWidth-1, $imageHeight-1, ['R' => 0, 'G' => 0, 'B' => 0]);
-
-		$myPicture->setFontProperties($fontProperties);
-		$myPicture->setGraphArea(50, 20, $imageWidth-($legendWidth+10), $imageHeight-100);
-		$myPicture->drawScale(array_merge(['DrawSubTicks' => true, 'LabelRotation' => 90], $gridGray));
-		$myPicture->drawLineChart(['DisplayValues' => true, 'DisplayColor' => DISPLAY_AUTO]);
-
-		// Write the chart legend
-		$myPicture->drawLegend($imageWidth-$legendWidth, 20, ["Style" => LEGEND_NOBORDER]);
-
-		// Render the picture (choose the best way)
-		global $configArray;
-		global $interface;
-		$chartHref = '/images/charts/materialsRequestSummary' . time() . '.png';
-		$chartPath = $configArray['Site']['local'] . $chartHref;
-		$myPicture->render($chartPath);
-		$interface->assign('chartPath', $chartHref);
-	}
+        // pChart is dead.
+//		$reportData = new pData();
+//
+//		//Add points for each status
+//		$periodsFormatted = [];
+//		foreach ($statuses as $status => $statusLabel){
+//			$statusData = [];
+//			foreach ($periodData as $date => $periodInfo){
+//				$periodsFormatted[$date] = date('M-d-y', $date);
+//				$statusData[$date]       = $periodInfo[$status] ?? 0;
+//			}
+//			$reportData->addPoints($statusData, $status);
+//		}
+//
+//		$reportData->setAxisName(0, 'Requests');
+//		$reportData->addPoints($periodsFormatted, 'Dates');
+//		$reportData->setAbscissa('Dates');
+//
+//		// Create the pChart object
+//		$imageWidth     = 880;
+//		$imageHeight    = 600;
+//		$legendWidth    = 150;
+//		$fontProperties = ['FontName' => ROOT_DIR . '/sys/pChart/Fonts/verdana.ttf', 'FontSize' => 9];
+//		$gridGray       = ['GridR' => 225, 'GridG' => 225, 'GridB' => 225];
+//		$myPicture      = new pImage($imageWidth, $imageWidth, $reportData);
+//
+//		// Add a border to the picture
+//		$myPicture->drawRectangle(0, 0, $imageWidth-1, $imageHeight-1, ['R' => 0, 'G' => 0, 'B' => 0]);
+//
+//		$myPicture->setFontProperties($fontProperties);
+//		$myPicture->setGraphArea(50, 20, $imageWidth-($legendWidth+10), $imageHeight-100);
+//		$myPicture->drawScale(array_merge(['DrawSubTicks' => true, 'LabelRotation' => 90], $gridGray));
+//		$myPicture->drawLineChart(['DisplayValues' => true, 'DisplayColor' => DISPLAY_AUTO]);
+//
+//		// Write the chart legend
+//		$myPicture->drawLegend($imageWidth-$legendWidth, 20, ["Style" => LEGEND_NOBORDER]);
+//
+//		// Render the picture (choose the best way)
+//		global $configArray;
+//		global $interface;
+//		$chartHref = '/images/charts/materialsRequestSummary' . time() . '.png';
+//		$chartPath = $configArray['Site']['local'] . $chartHref;
+//		$myPicture->render($chartPath);
+//		$interface->assign('chartPath', $chartHref);
+	    
+    }
 
 	function getAllowableRoles(){
 		return ['library_material_requests'];
