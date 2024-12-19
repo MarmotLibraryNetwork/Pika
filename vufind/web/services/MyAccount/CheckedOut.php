@@ -239,7 +239,7 @@ class MyAccount_CheckedOut extends MyAccount{
 				$formatString ='';
 			}
 			$activeSheet = $objPHPExcel->setActiveSheetIndex(0);
-			$curCol = 0;
+			$curCol = 1;
 			$activeSheet->setCellValue([$curCol++, $a], $titleCell);
 			$activeSheet->setCellValue([$curCol++, $a], $authorCell);
 			$activeSheet->setCellValue([$curCol++, $a], $formatString);
