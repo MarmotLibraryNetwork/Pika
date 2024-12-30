@@ -281,12 +281,12 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 		String overriddenStatus = getOverriddenStatus(itemInfo, false);
 		if (overriddenStatus != null) {
 			itemInfo.setDetailedStatus(overriddenStatus);
-		}else {
+		} else {
 			if (validCheckedOutStatusCodes.contains(itemStatus)) {
 				LocalDate dueDate = dueDateInfoFromExport.get(itemInfo.getItemIdentifier());
 				if (dueDate == null) {
 					itemInfo.setDetailedStatus(translateValue("item_status", itemStatus, identifier));
-				}else{
+				} else {
 					itemInfo.setDetailedStatus("Due " + getDisplayDueDate(dueDate, itemInfo.getItemIdentifier()));
 				}
 			} else {
