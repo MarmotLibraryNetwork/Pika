@@ -260,7 +260,8 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 			} catch (Exception e) {
 				logger.error("Error loading due dates from due date report", e);
 			}
-			logger.info("Loaded {} item due dates from {} file lines", dueDateInfoFromExport.size(), i);
+			String message = "Loaded " + dueDateInfoFromExport.size() + " item due dates from " + i + " file lines";
+			GroupedReindexMain.addNoteToReindexLog(message);
 		} else if (fullReindex) {
 			logger.warn("Due dates report file not found. {}", filePath);
 		}
