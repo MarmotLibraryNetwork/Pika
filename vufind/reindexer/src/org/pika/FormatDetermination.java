@@ -309,7 +309,7 @@ public class FormatDetermination {
 		}*/
 		HashSet<String> translatedFormats = translateCollection("format", printFormats, recordInfo.getRecordIdentifier());
 		if (translatedFormats.isEmpty()){
-			logger.warn("Did not find a format for " + recordInfo.getRecordIdentifier() + " using standard format method " + printFormats.toString());
+			logger.warn("Did not find a format for {} using standard format method {}", recordInfo.getRecordIdentifier(), printFormats.toString());
 		}
 		HashSet<String> translatedFormatCategories = translateCollection("format_category", printFormats, recordInfo.getRecordIdentifier());
 		recordInfo.addFormats(translatedFormats);
@@ -320,7 +320,7 @@ public class FormatDetermination {
 			if (Util.isNumeric(tmpFormatBoost)) {
 				formatBoost = Math.max(formatBoost, Long.parseLong(tmpFormatBoost));
 			} else {
-				logger.warn("Format boost invalid for format " + tmpFormatBoost + " profile " + profileType + " for " + recordInfo.getRecordIdentifier());
+				logger.warn("Format boost invalid for format {} profile {} for {}", tmpFormatBoost, profileType, recordInfo.getRecordIdentifier());
 			}
 		}
 		recordInfo.setFormatBoost(formatBoost);
@@ -346,16 +346,16 @@ public class FormatDetermination {
 								recordInfo.setFormatBoost(tmpFormatBoostLong);
 								return;
 							} catch (NumberFormatException e) {
-								logger.warn("Could not load format boost for format " + formatBoost + " profile " + profileType + " for " + recordInfo.getRecordIdentifier() + "; Falling back to default format determination process");
+								logger.warn("Could not load format boost for format {} profile {} for {}", formatBoost, profileType, recordInfo.getRecordIdentifier() + "; Falling back to default format determination process");
 							}
-						} else if (logger.isInfoEnabled()) {
-							logger.info("Material Type " + matType + " had no translation, falling back to default format determination.");
+						} else {
+							logger.info("Material Type {} had no translation, falling back to default format determination.", matType);
 						}
-					} else if (logger.isInfoEnabled()) {
-						logger.info("Material Type for " + recordInfo.getRecordIdentifier() + " has ignored value '" + matType + "', falling back to default format determination.");
+					} else {
+						logger.info("Material Type for {} has ignored value '{}', falling back to default format determination.", recordInfo.getRecordIdentifier(), matType);
 					}
-				} else if (logger.isInfoEnabled()) {
-					logger.info(recordInfo.getRecordIdentifier() + " did not have a material type, falling back to default format determination.");
+				} else {
+					logger.info("{} did not have a material type, falling back to default format determination.", recordInfo.getRecordIdentifier());
 				}
 			} else {
 				logger.error("The materialTypeSubField is not set. Material Type format determination skipped.");
@@ -406,7 +406,7 @@ public class FormatDetermination {
 			}
 		}
 
-		if (itemTypeToFormat.size() == 0 || itemTypeToFormat.get(mostPopularIType) == null || itemTypeToFormat.get(mostPopularIType).length() == 0){
+		if (itemTypeToFormat.isEmpty() || itemTypeToFormat.get(mostPopularIType) == null || itemTypeToFormat.get(mostPopularIType).isEmpty()){
 			//We didn't get any formats from the collections, get formats from the base method (007, 008, etc).
 			//logger.debug("All formats are books or there were no formats found, loading format information from the bib");
 			loadPrintFormatFromBib(recordInfo, record);
@@ -471,10 +471,8 @@ public class FormatDetermination {
 				return true;
 			}else{
 				String iType = iTypeSubfieldValue.getData().trim();
-				if (iTypesToSuppressPattern != null && iTypesToSuppressPattern.matcher(iType).matches()){
-					if (logger.isDebugEnabled()) {
-						logger.debug("Item record is suppressed due to Itype " + iType);
-					}
+				if (iTypesToSuppressPattern != null && iTypesToSuppressPattern.matcher(iType).matches()) {
+					logger.debug("Item record is suppressed due to Itype {}", iType);
 					return true;
 				}
 			}
@@ -486,9 +484,7 @@ public class FormatDetermination {
 
 				//Suppress iCode2 codes
 				if (iCode2sToSuppressPattern != null && iCode2sToSuppressPattern.matcher(iCode2).matches()) {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Item record is suppressed due to ICode2 " + iCode2);
-					}
+					logger.debug("Item record is suppressed due to ICode2 {}", iCode2);
 					return true;
 				}
 			}
@@ -531,7 +527,7 @@ public class FormatDetermination {
 				getFormatFromLeader(printFormats, leader, fixedField008);
 				if (printFormats.size() > 1){
 					if (logger.isInfoEnabled()) {
-						logger.info("Found more than 1 format for {} looking at just the leader: {}", recordInfo.getFullIdentifier(), String.join(",",printFormats));
+						logger.info("Found more than 1 format for {} looking at just the leader: {}", recordInfo.getFullIdentifier(), String.join(",", printFormats));
 					}
 				}
 			} else if (printFormats.size() > 1){
@@ -1116,9 +1112,10 @@ public class FormatDetermination {
 			DataField           field;
 			while (fieldsIter.hasNext()) {
 				field = fieldsIter.next();
-				boolean             hasDigital   = false;
-				boolean             hasSoundDisc = false;
-				List<Subfield> subFields = field.getSubfields();
+				boolean        hasDigital        = false;
+				boolean        hasSoundDisc      = false;
+				boolean        hasMusicRecording = result.contains("MusicRecording");
+				List<Subfield> subFields         = field.getSubfields();
 				for (Subfield subfield : subFields) {
 					if (subfield.getCode() != 'e') { // Exclude accompanying material subfield e
 						String physicalDescriptionData = subfield.getData().toLowerCase();
@@ -1158,7 +1155,7 @@ public class FormatDetermination {
 							result.add("VoxBooks");
 						}else if (physicalDescriptionData.contains("hotspot device") || physicalDescriptionData.contains("mobile hotspot") || physicalDescriptionData.contains("hot spot") || physicalDescriptionData.contains("hotspot")){
 							result.add("PhysicalObject");
-						} else if (result.contains("MusicRecording") && (physicalDescriptionData.contains(" cd :") || physicalDescriptionData.contains(" cds :"))) {
+						} else if (hasMusicRecording && (physicalDescriptionData.contains(" cd :") || physicalDescriptionData.contains(" cds :"))) {
 							// If we know the record is Music (due to typeOfRecordLeaderChar MusicRecording determination),
 							// allow phrases like "CD : digital" or "CDs : digital" to get us to MusicCD
 							// e.g. 300			 |a 1 CD : |b digital, stereophonic ; |c 4 3/4 inches.
@@ -1171,9 +1168,9 @@ public class FormatDetermination {
 						}
 					}
 				}
-				if (hasSoundDisc)
+				if (hasSoundDisc) {
 					if (hasDigital) {
-						if (result.contains("MusicRecording")) {
+						if (hasMusicRecording) {
 							// Since MusicRecording is determined by leader at beginning of format determination,
 							// it should be reliably already determined at this point
 							result.add("MusicCD");
@@ -1184,11 +1181,11 @@ public class FormatDetermination {
 							// (I might be wrong here, remove or refine if you determine so.)
 							result.add("SoundDisc");
 						}
-					} else {
+					} else if (hasMusicRecording) {
 						List<DataField> soundCharacteristics = record.getDataFields("344");
-						for (DataField field1 : soundCharacteristics){
+						for (DataField field1 : soundCharacteristics) {
 							String typeOfRecording = String.valueOf(MarcUtil.getSpecifiedSubfieldsAsString(field1, "a", " ")).trim();
-							if (typeOfRecording.equalsIgnoreCase("digital")){
+							if (typeOfRecording.equalsIgnoreCase("digital")) {
 								result.add("MusicCD");
 								result.remove("SoundDisc");
 								result.remove("MusicRecording");
@@ -1196,6 +1193,7 @@ public class FormatDetermination {
 							}
 						}
 					}
+				}
 			}
 		}
 	}
