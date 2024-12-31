@@ -77,7 +77,7 @@ class MaterialsRequest extends DB_DataObject {
 		'libraryCardNumber',
 		'id',
 		'status',
-		'staffComments'
+		'staffComments',
 	];
 
 	function keys(){
