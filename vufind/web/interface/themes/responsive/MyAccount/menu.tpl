@@ -137,7 +137,7 @@
 								{if (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('contentEditor', $userRoles))}
 									<hr class="menu">
 									<div class="adminMenuLink{if $action == "NYTLists"} active{/if}"><a href="/Admin/NYTLists">NY Times Lists</a></div>
-									<div class="adminMenuLink{if $action == "NPRBestBooksLists"} active{/if}"><a href="/Admin/NPRBestBooksLists">NPR Best Books Lists</a></div>
+									<div class="adminMenuLink{if $action == "NPRBestBooksLists"} active{/if}"><a href="/Admin/NPRBestBooksLists">NPR Books We Love Lists</a></div>
 								{/if}
 							{/if}
 							{* OPAC Admin Actions*}

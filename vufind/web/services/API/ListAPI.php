@@ -1032,15 +1032,15 @@ class ListAPI extends AJAXHandler {
 		//Get a list of titles from NYT API
 		$availableLists = $nyt_api->getList($selectedList);
 		$numTitlesAdded = 0;
-		foreach ($availableLists->results as $titleResult){
+		$titleResults = $availableLists->results;
+		foreach ($availableLists->results->books as $bookDetails){
 			$pikaID = null;
 			// go through each list item
 
 			require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
 			// Try fetching the primary ISBN first
-			if (!empty($titleResult->book_details)){
+			if (!empty($bookDetails)){
 				$ISBNs = [];
-				$bookDetails       = $titleResult->book_details[0];
 				if (!empty($bookDetails->primary_isbn13) && strcasecmp($bookDetails->primary_isbn13, 'none') != 0){
 					$ISBNs[] = $bookDetails->primary_isbn13;
 				}
@@ -1056,10 +1056,10 @@ class ListAPI extends AJAXHandler {
 			// If no luck with Primary ISBNs, or no primary ISBNs, try the rest of the ISBNs
 			if ($pikaID == null){
 				$ISBNs = [];
-				if (!empty($titleResult->isbns)){
+				if (!empty($bookDetails->isbns)){
 					//Note : each entry typically comes with an isbn10 & isbn13, which are usually equivalent; but we have seen
 					//  an example of this not being so (and the isbn10 being the one we needed [once converted to isbn13]).
-					foreach ($titleResult->isbns as $isbnEntry){
+					foreach ($bookDetails->isbns as $isbnEntry){
 						if (!empty($isbnEntry->isbn13) && ISBN::isValidISBN13($isbnEntry->isbn13)){
 							$ISBNs[] = $isbnEntry->isbn13;
 						}
@@ -1077,12 +1077,12 @@ class ListAPI extends AJAXHandler {
 			}
 
 			if ($pikaID != null){
-				$note = "#{$titleResult->rank} on the {$titleResult->display_name} list for {$titleResult->published_date}.";
-				if ($titleResult->rank_last_week != 0){
-					$note .= '  Last week it was ranked ' . $titleResult->rank_last_week . '.';
+				$note = "#{$bookDetails->rank} on the {$titleResults->display_name} list for {$titleResults->published_date}.";
+				if ($bookDetails->rank_last_week != 0){
+					$note .= '  Last week it was ranked ' . $bookDetails->rank_last_week . '.';
 				}
-				if ($titleResult->weeks_on_list != 0){
-					$note .= "  It has been on the list for {$titleResult->weeks_on_list} week(s).";
+				if ($bookDetails->weeks_on_list != 0){
+					$note .= "  It has been on the list for {$bookDetails->weeks_on_list} week(s).";
 				}
 
 				$userListEntry                         = new UserListEntry();
@@ -1094,7 +1094,7 @@ class ListAPI extends AJAXHandler {
 					$existingEntry = true;
 				}
 
-				$userListEntry->weight    = $titleResult->rank;
+				$userListEntry->weight    = $bookDetails->rank;
 				$userListEntry->notes     = $note;
 				$userListEntry->dateAdded = time();
 				if ($existingEntry){
