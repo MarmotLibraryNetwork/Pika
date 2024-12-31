@@ -1660,7 +1660,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 	 * @return void
 	 */
 	function capitalizeAllSelfRegistrationInputs($exceptions = []) : void {
-		$exceptions = [... $exceptions, ... ['pin', 'pinconfirm', 'langPref', 'notices']];
+		$exceptions = [... $exceptions, ... ['homelibrarycode', 'pin', 'pinconfirm', 'langPref', 'notices']];
 		foreach ($this->getSelfRegistrationFields() as $field){
 			$key = $field['property'];
 			if (!in_array($key, $exceptions)){
