@@ -1,7 +1,7 @@
 {strip}
 	<h1 role="heading" aria-level="1" class="h2">Pika Lists based on {$listsTitle}</h1>
 	<div class="alert alert-info">
-		For more information on using the {$listsTitle} lists, see the <a href="https://marmot-support.atlassian.net/l/c/QiEJFkxb">online documentation</a>.
+		For more information on using the {$listsTitle} lists, see the <a href="https://marmot-support.atlassian.net/l/cp/cQdAwr4B">online documentation</a>.
 	</div>
 
 
