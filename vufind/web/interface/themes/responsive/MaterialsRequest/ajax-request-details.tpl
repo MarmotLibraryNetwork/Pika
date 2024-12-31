@@ -261,42 +261,9 @@
 								{/if}
 							{/if}
 						{/if}
-{*
-					</div>
-*}
+
 				{/foreach}
 			</fieldset>
 		{/foreach}
 
-
-
-
-<!--
-
-		<fieldset>
-			<legend>Basic Information</legend>
-			{*<div class="request_detail_field row">*}
-				{*<label class="request_detail_field_label col-sm-3">Format: </label>*}
-				{*<div class=" request_detail_field_value col-sm-9">{$materialsRequest->format}</div>*}
-			{*</div>*}
-			{*<div class=" request_detail_field row">*}
-				{*<label class="request_detail_field_label col-sm-3">Title: </label>*}
-				{*<div class=" request_detail_field_value col-sm-9">{$materialsRequest->title}</div>*}
-			{*</div>*}
-
-
-
-		</fieldset>
-
-		<fieldset>
-			<legend>Supplemental Details</legend>
-			{if $materialsRequest->bookType}
-				<div class=" request_detail_field row">
-					<label class="request_detail_field_label col-sm-3">Type: </label>
-					<div class="request_detail_field_value col-sm-9">{$materialsRequest->bookType|translate|ucfirst}</div>
-				</div>
-			{/if}
-		</fieldset>
-
-	-->
 {/if}

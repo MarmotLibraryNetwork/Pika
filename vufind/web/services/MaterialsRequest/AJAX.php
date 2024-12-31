@@ -230,11 +230,11 @@ class MaterialsRequest_AJAX extends AJAXHandler {
 				$interface->assign('error', 'Sorry, invalid id for a ' . translate('materials request') . '.');
 			}
 		}
-		$return = array(
+		$return = [
 			'title'        => 'Update Materials Request',
 			'modalBody'    => $interface->fetch('MaterialsRequest/ajax-update-request.tpl'),
 			'modalButtons' => $interface->get_template_vars('error') == null ? "<button class='btn btn-primary' onclick='$(\"#materialsRequestUpdateForm\").submit();'>Update Request</button>" : '',
-		);
+		];
 		return $return;
 	}
 
@@ -253,7 +253,10 @@ class MaterialsRequest_AJAX extends AJAXHandler {
 					$materialsRequest     = new MaterialsRequest();
 					$materialsRequest->id = $id;
 
-					$staffView         = $_REQUEST['staffView'] ?? true;
+					$staffView = false;
+					if ($_REQUEST['staffView'] == 'true' || $_REQUEST['staffView'] == '1') {
+						$staffView = true;
+					}
 					$requestFormFields = $materialsRequest->getRequestFormFields($requestLibrary->libraryId, $staffView);
 					$interface->assign('requestFormFields', $requestFormFields);
 
