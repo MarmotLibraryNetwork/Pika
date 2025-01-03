@@ -983,7 +983,7 @@ class ListAPI extends AJAXHandler {
 		$nytList          = new UserList();
 		$nytList->user_id = $pikaUser->id;
 		$nytList->title   = $selectedListTitle;
-		$listExistsInPika = $nytList->find(1);
+		$listExistsInPika = $nytList->find(true);
 
 		//We didn't find the list in Pika, create one
 		if (!$listExistsInPika){
