@@ -24,9 +24,111 @@ use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 class Help_AJAX extends AJAXHandler {
 	protected $methodsThatRespondWithJSONUnstructured = [
 		"submitAccessibilityReport",
+		"submitOverDriveForm",
 	];
 	protected $methodsThatRespondThemselves = [];
 
+	function submitOverDriveForm() {
+		global $interface;
+		global $configArray;
+
+		if (isset($_REQUEST['submit'])){
+			if (isset($configArray['ReCaptcha']['privateKey'])) {
+				try{
+					$recaptchaValid = recaptchaCheckAnswer();
+				}catch (Exception $ex){
+					$recaptchaValid = false;
+				}
+			}else{
+				$recaptchaValid = true;
+			}
+			if (!$recaptchaValid) {
+				return [
+					'title' => "OverDrive Support Form Not Sent",
+					'message' => "<p class='alert alert-danger'>The CAPTCHA response was incorrect.</p>"
+					. "<p>Please try again.</p>",
+				];
+			}else{
+				require_once  ROOT_DIR . '/sys/Mailer.php';
+				$mail           = new VuFindMailer();
+				$currentLibrary = Library::getActiveLibrary();
+				if (!empty($currentLibrary->eContentSupportAddress)) {
+					$to = $currentLibrary->eContentSupportAddress;
+				}elseif (!empty($configArray['Site']['email'])) {
+					$to = $configArray['Site']['email'];
+				}else{
+					global $pikaLogger;
+					$pikaLogger->error("No email for Site. Please check that an OverDrive email is available");
+					return [
+						'title'   => 'Support Request Not Sent',
+						'message' => "<p>We're sorry, but your request could not be submitted because we do not have a support email address on file.</p><p>Please contact your local library.</p>"
+					];
+				}
+				if (!empty($configArray['Site']['email'])){
+					$sendingAddress = $configArray['Site']['email'];
+				}else {
+					$sendingAddress = $_REQUEST['email'];
+				}
+				$multipleEmailAddresses = preg_split('/[;,]/', $to, null, PREG_SPLIT_NO_EMPTY);
+				if (!empty($multipleEmailAddresses)){
+					$to             = str_replace(';', ',', $to); //The newer mailer needs 'to' addresses to be separated by commas rather than semicolon
+				}
+				$user = null;
+				$cardNumber  = !empty($_REQUEST['libraryCardNumber']) ? $_REQUEST['libraryCardNumber'] : 'Not provided';
+				if(UserAccount::isLoggedIn()){
+					$user = UserAccount::getLoggedInUser();
+					$cardNumber = $user->barcode;
+					$userLibrary = $user->homeLibraryName;
+				}else{
+					$tempUser = new User();
+					$tempUser->barcode = $cardNumber;
+					$tempUser->find(true);
+					$userLibrary = $tempUser->homeLibraryName;
+				}
+				$name       = $_REQUEST['name'];
+				$subject     = 'OverDrive Site Support Request From: ' . $name;
+				$patronEmail = $user != null ? $user->email :$_REQUEST['email'];
+				$browser     = !empty($_REQUEST['browser']) ? $_REQUEST['browser'] : 'Not Entered';
+				$interface->assign('libraryName', empty($userLibrary) ? $currentLibrary->displayName : $userLibrary);
+				$interface->assign('problem', $_REQUEST['problem']);
+				$interface->assign('name', $name);
+				$interface->assign('title', $_REQUEST['title']);
+				$interface->assign('email', $patronEmail);
+				$interface->assign('format', $_REQUEST['format']);
+				$interface->assign('operatingSystem', $_REQUEST['operatingSystem']);
+				$interface->assign('browser', $browser);
+				$interface->assign('libraryCardNumber', $cardNumber);
+				$interface->assign('subject', $subject);
+				$body        = $interface->fetch('Help/overdriveSupportEmail.tpl');
+				$emailResult = $mail->send($to, $sendingAddress, $subject, $body, $patronEmail);
+				global $pikaLogger;
+				if (PEAR::isError($emailResult)){
+					$pikaLogger->error('OverDrive support email not sent: ' . $emailResult->getMessage());
+					return [
+						'title'   => "OverDrive support email not sent:",
+						'message' => "<p class='alert alert-danger'>We're sorry, an error occurred while submitting your report.</p>" . $emailResult->getMessage()
+					];
+				}elseif ($emailResult){
+					$pikaLogger->warn('OverDrive support email was sent successfully with the following message: ' . $emailResult);
+					return [
+						'title'   => "OverDrive support email was sent",
+						'message' => "<p class='alert alert-success'>Your report was sent to our team.</p><p>Thank you for using the catalog.</p>"
+					];
+				}else{
+					$pikaLogger->warn('There was an unknown error sending the OverDrive support email');
+					return [
+						'title'   => "Support Request Not Sent",
+						'message' => "<p class='alert alert-danger'>We're sorry, but your request could not be submitted to our support team at this time.</p><p>Please try again later.</p>"
+					];
+				}
+			}
+		}else{
+			return [
+				'title' => "Error",
+				'message' => "<p class='alert alert-danger'>We're sorry, but your request could not be submitted to our support team at this time.</p><p>Please try again later.</p>"
+			];
+		}
+	}
 	function submitAccessibilityReport(){
 		global $interface;
 		global $configArray;
@@ -76,7 +178,7 @@ class Help_AJAX extends AJAXHandler {
 				}
 
 				$name        = $_REQUEST['name'];
-				$subject     = 'Accessibility Issue Report from ' . $name;
+				$subject     = 'Accessibility Issue Report From ' . $name;
 				$patronEmail = $_REQUEST['email'];
 				$cardNumber  = !empty($_REQUEST['libraryCardNumber']) ? $_REQUEST['libraryCardNumber'] : 'Not Entered';
 				$browser     = !empty($_REQUEST['browser']) ? $_REQUEST['browser'] : 'Not Entered';
