@@ -467,6 +467,15 @@ var Pika = (function(){
 			return false;
 		},
 
+		submitOverDriveForm: function() {
+			$.post('/Help/AJAX?method=submitOverDriveForm', $("#overdriveSupport").serialize(),
+					function(data){
+						Pika.showMessage(data.title, data.message, 0, true);
+					},
+					'json').fail(Pika.ajaxFail);
+			return false;
+		},
+
 		toggleCheckboxes: function (checkboxSelector, toggleSelector){
 			var toggle = $(toggleSelector);
 			var value = toggle.prop('checked');

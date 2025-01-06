@@ -6,8 +6,6 @@
 	<form id="accessibilityReport" action="/Help/accessibilityReportForm" method="post">
 		<input type="hidden" name="submit" value="submitted">
 
-
-
 		<div class="form-group">
 			<label for="name" class="control-label">Name: <span class="required-input">*</span></label><input type="text" name="name" aria-required="true" id="name" class="required form-control" maxlength="120" size="60" value="{$name}">
 		</div>
