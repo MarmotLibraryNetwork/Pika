@@ -172,7 +172,7 @@ class ExternalReviews {
 		//find out if there are any reviews
 		try {
 			$curl = new Curl();
-			$curl->setXmlDecoder('DOMDocument::loadXML');
+			$curl->setXmlDecoder('loadXMLForExternalReviews');
 			/** @var DOMDocument $xmlDoc */
 			$xmlDoc = $curl->get($url);
 		} catch (Exception $e){
@@ -184,8 +184,7 @@ class ExternalReviews {
 			$this->logger->warning($message);
 			return [];
 		}
-
-
+        
 		$review = [];
 		$i      = 0;
 		foreach ($sourceList as $source => $sourceInfo){
@@ -339,4 +338,17 @@ class ExternalReviews {
 		}
 		return $reviewData;
 	}
+    
+    
+}
+
+/**
+ * Loads xml string into a dom document object and returns.
+ * @param string $xml
+ * @return DOMDocument
+ */
+function loadXMLForExternalReviews($xml) {
+    $dom_doc = new DOMDocument();
+    $dom_doc->loadXML($xml);
+    return $dom_doc;
 }

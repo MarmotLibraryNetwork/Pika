@@ -455,14 +455,14 @@ function loadUserData(){
 		if ($userRoles && UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin', 'cataloging', 'libraryManager', 'locationManager'])){
 			$variable       = new Variable();
 			$variable->name = 'lastFullReindexFinish';
-			if ($variable->find(true)){
+			if ($variable->find(true) && $variable->value !== ''){
 				$interface->assign('lastFullReindexFinish', date('m-d-Y H:i:s', $variable->value));
 			}else{
 				$interface->assign('lastFullReindexFinish', 'Unknown');
 			}
 			$variable       = new Variable();
 			$variable->name = 'lastPartialReindexFinish';
-			if ($variable->find(true)){
+			if ($variable->find(true) && $variable->value !== ''){
 				$interface->assign('lastPartialReindexFinish', date('m-d-Y H:i:s', $variable->value));
 			}else{
 				$interface->assign('lastPartialReindexFinish', 'Unknown');

@@ -1731,7 +1731,7 @@ function getSaveSeriesToListForm(){
 			];
 		}
 		global $interface;
-		$objPHPExcel = new PHPExcel();
+		$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 		$gitBranch   = $interface->getVariable('gitBranch');
 		$objPHPExcel->getProperties()->setCreator('Pika ' . $gitBranch)
 			->setLastModifiedBy('Pika ' . $gitBranch)
@@ -1753,7 +1753,7 @@ function getSaveSeriesToListForm(){
 
 		$a = 4;
 		foreach ($seriesEntries as $entry) {
-			$objPHPExcel->getActiveSheet()->getStyle('D' . $a)->getNumberFormat()->setFormatCode(PHPExcel_Style_numberFormat::FORMAT_NUMBER);
+			$objPHPExcel->getActiveSheet()->getStyle('D' . $a)->getNumberFormat()->setFormatCode(PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER);
 			$objPHPExcel->setActiveSheetIndex(0)
 				->setCellValue('A' . $a, $entry['title'])
 				->setCellValue('B' . $a, $entry['author'])
@@ -1784,7 +1784,7 @@ function getSaveSeriesToListForm(){
 		header('Content-Type: application/vnd.ms-excel');
 		header('Content-Disposition: attachment;filename="' . substr($excelTitle,0,27) . '.xls"');
 		header('Cache-Control: max-age=0');
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, 'Xls');
 
 
 			$objWriter->save('php://output');
