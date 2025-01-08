@@ -3,7 +3,7 @@
 	<div class="alert alert-info">
 		Need help downloading a title or using the title on your device?  Please fill out this support form.
 	</div>
-	<form id="overdriveSupport" action="/Help/overdriveSupportForm" method="post">
+	<form id="overdriveSupport" action="/Help/OverDriveSupport" method="post">
 		<input type="hidden" name="submit" value="submitted">
 
 		{if !$loggedIn}
