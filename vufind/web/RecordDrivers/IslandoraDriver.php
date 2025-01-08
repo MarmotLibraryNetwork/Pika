@@ -1915,11 +1915,9 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 	}
 
-	public function getExtension($mimeType)
-	{
-		if(empty($mimeType)) return false;
-		switch($mimeType)
-		{
+	public function getExtension($mimeType){
+		if (empty($mimeType)) return false;
+		switch ($mimeType){
 			case 'image/bmp': return '.bmp';
 			case 'image/cis-cod': return '.cod';
 			case 'image/gif': return '.gif';
@@ -2518,20 +2516,20 @@ abstract class IslandoraDriver extends RecordInterface {
 
 		$interface->assign('hasEducationInfo', false);
 		$academicRecordSections = $this->getModsValues('academicRecord', 'marmot');
-		$hasEducationInfo = false;
-		$academicRecords = [];
+		$hasEducationInfo       = false;
+		$academicRecords        = [];
 		foreach ($academicRecordSections as $academicRecordSection){
 			$academicRecord = [];
 			$academicPosition = $this->getModsValue('academicPosition', 'marmot', $academicRecordSection);
 			if ($academicPosition){
-				$academicPositionTitle = FedoraUtils::cleanValue($this->getModsValue('positionTitle', 'marmot', $academicPosition));
-				$academicRecord['academicPosition'] = [];
+				$academicPositionTitle                       = FedoraUtils::cleanValue($this->getModsValue('positionTitle', 'marmot', $academicPosition));
+				$academicRecord['academicPosition']          = [];
 				$academicRecord['academicPosition']['title'] = $academicPositionTitle;
-				$employerEntity = $this->getModsValue('relatedPersonOrg', 'marmot', $academicPosition);
-				$employerEntityPid = FedoraUtils::cleanValue($this->getModsValue('entityPid', 'marmot', $employerEntity));
-				$employerEntityTitle = FedoraUtils::cleanValue($this->getModsValue('entityTitle', 'marmot', $employerEntity));
-				$employerData = false;
-				$validEmployer = false;
+				$employerEntity                              = $this->getModsValue('relatedPersonOrg', 'marmot', $academicPosition);
+				$employerEntityPid                           = FedoraUtils::cleanValue($this->getModsValue('entityPid', 'marmot', $employerEntity));
+				$employerEntityTitle                         = FedoraUtils::cleanValue($this->getModsValue('entityTitle', 'marmot', $employerEntity));
+				$employerData                                = false;
+				$validEmployer                               = false;
 				if ($employerEntityPid) {
 					$employerObj = $fedoraUtils->getObject($employerEntityPid);
 					if ($employerObj){
@@ -2553,17 +2551,17 @@ abstract class IslandoraDriver extends RecordInterface {
 					$hasEducationInfo = true;
 				}
 				$startDate = $this->loadFormattedDateFromMods('positionStartDate', 'marmot', $academicPosition);
-				$endDate = $this->loadFormattedDateFromMods('positionEndDate', 'marmot', $academicPosition);
+				$endDate   = $this->loadFormattedDateFromMods('positionEndDate', 'marmot', $academicPosition);
 				if ($startDate || $endDate){
 					$academicRecord['academicPosition']['startDate'] = $startDate;
-					$academicRecord['academicPosition']['endDate'] = $endDate;
+					$academicRecord['academicPosition']['endDate']   = $endDate;
 
 					$hasEducationInfo = true;
 				}
 			}
 
 			$researchInterestsRaw = $this->getModsValues('researchInterests', 'marmot', $academicRecordSection);
-			$researchInterests = [];
+			$researchInterests    = [];
 			foreach ($researchInterestsRaw as $researchInterest){
 				$researchInterest = FedoraUtils::cleanValue($researchInterest);
 				if (strlen($researchInterest)){
@@ -2651,12 +2649,12 @@ abstract class IslandoraDriver extends RecordInterface {
 			}
 
 			$publicationSections = $this->getModsValues('publication', 'marmot', $academicRecordSection);
-			$publications = [];
+			$publications        = [];
 			if ($publicationSections){
 				foreach ($publicationSections as $publicationSection){
 					$publicationTitle = $this->getModsValue('academicPublicatonTitle', 'marmot', $publicationSection);
-					$publicationPid = $this->getModsValue('entityPid', 'marmot', $publicationSection);
-					$publicationLink = $this->getModsValue('academicPublicationLink', 'marmot', $publicationSection);
+					$publicationPid   = $this->getModsValue('entityPid', 'marmot', $publicationSection);
+					$publicationLink  = $this->getModsValue('academicPublicationLink', 'marmot', $publicationSection);
 					if ($publicationPid) {
 						$publicationObj = $fedoraUtils->getObject($publicationPid);
 						if ($publicationObj){
@@ -2702,12 +2700,12 @@ abstract class IslandoraDriver extends RecordInterface {
 			$militaryRecords = [];
 			foreach ($militaryServices as $militaryServiceRecord){
 				/** @var SimpleXMLElement $record */
-				$militaryBranch = $this->getModsValue('militaryBranch', 'marmot', $militaryServiceRecord);
+				$militaryBranch   = $this->getModsValue('militaryBranch', 'marmot', $militaryServiceRecord);
 				$militaryConflict = $this->getModsValue('militaryConflict', 'marmot', $militaryServiceRecord);
 				$serviceDateStart = $this->loadFormattedDateFromMods('serviceDateStart', 'marmot', $militaryServiceRecord);
-				$serviceDateEnd = $this->loadFormattedDateFromMods('serviceDateEnd', 'marmot', $militaryServiceRecord);
-				$rank = $this->getModsValue('militaryRank', 'marmot', $militaryServiceRecord);
-				$prisonerOfWar = $this->getModsValue('prisonerOfWar', 'marmot', $militaryServiceRecord);
+				$serviceDateEnd   = $this->loadFormattedDateFromMods('serviceDateEnd', 'marmot', $militaryServiceRecord);
+				$rank             = $this->getModsValue('militaryRank', 'marmot', $militaryServiceRecord);
+				$prisonerOfWar    = $this->getModsValue('prisonerOfWar', 'marmot', $militaryServiceRecord);
 				if ($militaryBranch != 'none' || $militaryConflict != 'none') {
 					$militaryRecord = [
 						'branch'           => $militaryBranch == 'none' ? '' : $fedoraUtils->getObjectLabel($militaryBranch),
@@ -2720,9 +2718,9 @@ abstract class IslandoraDriver extends RecordInterface {
 						'prisonerOfWar'    => $prisonerOfWar,
 					];
 					//Link in the locations served
-					$relatedPlaces = $this->relatedPlaces;
-					$unlinkedEntities = $this->unlinkedEntities;
-					$locationsServed = $this->getModsValues('relatedPlace', 'marmot', $militaryServiceRecord);
+					$relatedPlaces                     = $this->relatedPlaces;
+					$unlinkedEntities                  = $this->unlinkedEntities;
+					$locationsServed                   = $this->getModsValues('relatedPlace', 'marmot', $militaryServiceRecord);
 					$militaryRecord['locationsServed'] = [];
 					foreach ($locationsServed as $locationServed){
 						$entityPid = $this->getModsValue('entityPid', 'marmot', $locationServed);
