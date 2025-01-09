@@ -71,7 +71,7 @@ Marmot has been working on their open source Pika Discovery Layer since 2009.  P
 
 ### Prerequisites
 
-* PHP 7
+* PHP 8
 * Java 8
 * MariaDB
 
