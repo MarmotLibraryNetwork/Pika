@@ -2240,10 +2240,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		}
 
 		// Prepare the spreadsheet
-		ini_set('include_path', ini_get('include_path').';/PHPExcel/Classes');
-		include ROOT_DIR . '/PHPExcel.php';
-		include ROOT_DIR . '/PHPExcel/Writer/Excel2007.php';
-		$objPHPExcel = new PHPExcel();
+		$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 		$objPHPExcel->getProperties()->setTitle("Search Results");
 
 		$objPHPExcel->setActiveSheetIndex(0);
@@ -2252,15 +2249,15 @@ class SearchObject_Solr extends SearchObject_Base {
 		//Add headers to the table
 		$sheet  = $objPHPExcel->getActiveSheet();
 		$curRow = 1;
-		$curCol = 0;
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Record #');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Title');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Author');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Publisher');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Published');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Call Number');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Item Type');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Location');
+		$curCol = 1;
+		$sheet->setCellValue([$curCol++, $curRow], 'Record #');
+		$sheet->setCellValue([$curCol++, $curRow], 'Title');
+		$sheet->setCellValue([$curCol++, $curRow], 'Author');
+		$sheet->setCellValue([$curCol++, $curRow], 'Publisher');
+		$sheet->setCellValue([$curCol++, $curRow], 'Published');
+		$sheet->setCellValue([$curCol++, $curRow], 'Call Number');
+		$sheet->setCellValue([$curCol++, $curRow], 'Item Type');
+		$sheet->setCellValue([$curCol++, $curRow], 'Location');
 
 		$maxColumn = $curCol - 1;
 
@@ -2268,28 +2265,28 @@ class SearchObject_Solr extends SearchObject_Base {
 		foreach ($result['response']['docs'] as $curDoc){
 			//Output the row to excel
 			$curRow++;
-			$curCol = 0;
+			$curCol = 1;
 			//Output the row to excel
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['id']) ? $curDoc['id'] : '');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['title_display']) ? $curDoc['title_display'] : '');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['author']) ? $curDoc['author'] : '');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publisher']) ? implode(', ', $curDoc['publisher']) : '');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publishDate']) ? implode(', ', $curDoc['publishDate']) : '');
+			$sheet->setCellValue([$curCol++, $curRow], isset($curDoc['id']) ? $curDoc['id'] : '');
+			$sheet->setCellValue([$curCol++, $curRow], isset($curDoc['title_display']) ? $curDoc['title_display'] : '');
+			$sheet->setCellValue([$curCol++, $curRow], isset($curDoc['author']) ? $curDoc['author'] : '');
+			$sheet->setCellValue([$curCol++, $curRow], isset($curDoc['publisher']) ? implode(', ', $curDoc['publisher']) : '');
+			$sheet->setCellValue([$curCol++, $curRow], isset($curDoc['publishDate']) ? implode(', ', $curDoc['publishDate']) : '');
 			$callNumber = '';
 			if (isset($curDoc['local_callnumber_' . $solrScope])){
 				$callNumber = is_array($curDoc['local_callnumber_' . $solrScope]) ? $curDoc['local_callnumber_' . $solrScope][0] : $curDoc['local_callnumber_' . $solrScope];
 			}
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $callNumber);
+			$sheet->setCellValue([$curCol++, $curRow], $callNumber);
 			$iType = '';
 			if (isset($curDoc['itype_' . $solrScope])){
 				$iType = is_array($curDoc['itype_' . $solrScope]) ? $curDoc['itype_' . $solrScope][0] : $curDoc['itype_' . $solrScope];
 			}
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $iType);
+			$sheet->setCellValue([$curCol++, $curRow], $iType);
 			$location = '';
 			if (isset($curDoc['detailed_location_' . $solrScope])){
 				$location = is_array($curDoc['detailed_location_' . $solrScope]) ? $curDoc['detailed_location_' . $solrScope][0] : $curDoc['detailed_location_' . $solrScope];
 			}
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $location);
+			$sheet->setCellValue([$curCol++, $curRow], $location);
 		}
 
 		for ($i = 0;$i < $maxColumn;$i++){
@@ -2304,7 +2301,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 		header('Content-Disposition: attachment;filename="Results.xlsx"');
 
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+		$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, 'Xlsx');
 		$objWriter->save('php://output'); //THIS DOES NOT WORK WHY?
 		$objPHPExcel->disconnectWorksheets();
 		unset($objPHPExcel);
@@ -2477,8 +2474,8 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @throws  object              PEAR Error
 	 * @return  array|null              The requested resource
 	 */
-	function getRecordByIsbn($isbn){
-		return $this->indexEngine->getRecordByIsbn($isbn, $this->getFieldsToReturn());
+	function getRecordByIsbn($isbn, $fieldsToReturn = null){
+		return $this->indexEngine->getRecordByIsbn($isbn, $fieldsToReturn ?? $this->getFieldsToReturn());
 	}
 
 	private function getFieldsToReturn(){

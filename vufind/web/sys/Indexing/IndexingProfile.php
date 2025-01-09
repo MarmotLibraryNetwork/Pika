@@ -293,7 +293,7 @@ class IndexingProfile extends DB_DataObject{
 					                             , 'changeRequiresReindexing' => true],
 					'checkedOutStatuses'     => ['property'    => 'checkedOutStatuses',
 					                             'type'        => 'text',
-					                             'label'       => 'Checked Out Statuses (Sierra ils profiles only, lists of codes seperated by pipe character |)',
+					                             'label'       => 'Checked Out Statuses (Sierra & Polaris ils profiles only, lists of codes seperated by pipe character |)',
 					                             'maxLength'   => 255,
 //					                             'default'     => "-",
 					                             'description' => 'A list of characters that are valid checked out item statuses.'

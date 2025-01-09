@@ -49,7 +49,7 @@ class MaterialsRequest_MyRequests extends MyAccount {
 		$interface->assign('defaultStatus', $defaultStatus->id);
 
 		//Get a list of all materials requests for the user
-		$allRequests = array();
+		$allRequests = [];
 		if (UserAccount::isLoggedIn()){
 			$materialsRequests            = new MaterialsRequest();
 			$materialsRequests->createdBy = UserAccount::getActiveUserId();
@@ -89,12 +89,13 @@ class MaterialsRequest_MyRequests extends MyAccount {
 			$materialsRequests->joinAdd($statusQuery);
 			$materialsRequests->selectAdd();
 			$materialsRequests->selectAdd('materials_request.*, description as statusLabel');
-			$materialsRequests->find();
-			while ($materialsRequests->fetch()){
-				if (array_key_exists($materialsRequests->format, $formats)){
-					$materialsRequests->format = $formats[$materialsRequests->format];
+			if ($materialsRequests->find()){
+				while ($materialsRequests->fetch()){
+					if (array_key_exists($materialsRequests->format, $formats)){
+						$materialsRequests->format = $formats[$materialsRequests->format];
+					}
+					$allRequests[] = clone $materialsRequests;
 				}
-				$allRequests[] = clone $materialsRequests;
 			}
 		}else{
 			header('Location:/MyAccount/Home?followupModule=MaterialsRequest&followupAction=MyRequests');

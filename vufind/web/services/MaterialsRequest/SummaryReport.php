@@ -23,7 +23,6 @@ require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestStatus.php';
 require_once ROOT_DIR . "/sys/pChart/class/pData.class.php";
 require_once ROOT_DIR . "/sys/pChart/class/pDraw.class.php";
 require_once ROOT_DIR . "/sys/pChart/class/pImage.class.php";
-require_once ROOT_DIR . "/PHPExcel.php";
 
 class MaterialsRequest_SummaryReport extends Admin_Admin {
 
@@ -190,6 +189,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 			global $configArray;
 			$libraryName = !empty($userHomeLibrary->displayName) ? $userHomeLibrary->displayName : $configArray['Site']['libraryName'];
 			$this->exportToExcel($periodData, $statuses, $libraryName);
+
 		}else{
 			//Generate the graph
 			$this->generateGraph($periodData, $statuses);
@@ -200,7 +200,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 
 	function exportToExcel($periodData, $statuses, $creator){
 		// Create new PHPExcel object
-		$objPHPExcel = new PHPExcel();
+		$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 		// Set properties
 		$objPHPExcel->getProperties()->setCreator($creator)
@@ -216,16 +216,16 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		$activeSheet->setCellValue('A3', 'Date');
 		$column = 1;
 		foreach ($statuses as $statusLabel){
-			$activeSheet->setCellValueByColumnAndRow($column++, 3, $statusLabel);
+			$activeSheet->setCellValue([$column++, 3], $statusLabel);
 		}
 
 		$row    = 4;
 		$column = 0;
 		//Loop Through The Report Data
 		foreach ($periodData as $date => $periodInfo){
-			$activeSheet->setCellValueByColumnAndRow($column++, $row, date('M-d-Y', $date));
+			$activeSheet->setCellValue([$column++, $row], date('M-d-Y', $date));
 			foreach ($statuses as $status => $statusLabel){
-				$activeSheet->setCellValueByColumnAndRow($column++, $row, $periodInfo[$status] ?? 0);
+				$activeSheet->setCellValue([$column++, $row], $periodInfo[$status] ?? 0);
 			}
 			$row++;
 			$column = 0;
@@ -242,13 +242,14 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		header('Content-Disposition: attachment;filename="MaterialsRequestSummaryReport.xls"');
 		header('Cache-Control: max-age=0');
 
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, 'Xls');
 		$objWriter->save('php://output');
 		exit;
 
 	}
 
 	function generateGraph($periodData, $statuses){
+		// pChart is dead.
 		$reportData = new pData();
 
 		//Add points for each status
@@ -292,7 +293,8 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		$chartPath = $configArray['Site']['local'] . $chartHref;
 		$myPicture->render($chartPath);
 		$interface->assign('chartPath', $chartHref);
-	}
+	    
+    }
 
 	function getAllowableRoles(){
 		return ['library_material_requests'];

@@ -185,7 +185,7 @@ class Marmot extends Sierra {
 				break;
 			case 'basalt' :
 				$extraSelfRegParams['patronCodes']['pcode1'] = 'a'; // adult
-				$this->capitalizeAllSelfRegistrationInputs(/*[Any fields that shouldn't be capitalized]*/);
+				$this->capitalizeAllSelfRegistrationInputs(['homelibrarycode']);
 				break;
 		}
 		return parent::selfRegister($extraSelfRegParams);
@@ -228,7 +228,7 @@ class Marmot extends Sierra {
 		return [];
 	}
 
-	public function bookMaterial(User $patron, \SourceAndId $recordId, $startDate, $startTime = null, $endDate = null, $endTime = null){
+	public function bookMaterial($patron, $recordId, $startDate, $startTime = null, $endDate = null, $endTime = null){
 		if (empty($recordId) || empty($startDate)){ // at least these two fields should be required input
 			return ['success' => false, 'message' => empty($startDate) ? 'Start Date Required.' : 'Record ID required'];
 		}
@@ -475,7 +475,7 @@ class Marmot extends Sierra {
 		}
 	}
 
-	public function cancelAllBookedMaterial($patron){
+	public function cancelAllBookedMaterial(User $patron){
 		//NOTE the library's scope for the classic OPAC is needed to delete bookings!
 		$post = [
 			'canbookall' => 'YES'
@@ -526,7 +526,7 @@ class Marmot extends Sierra {
 	 *
 	 * @return string  An HTML table
 	 */
-	public function getBookingCalendar(User $patron, \SourceAndId $sourceAndId){
+	public function getBookingCalendar(User $patron, $sourceAndId){
 		// Create Hourly Calendar URL
 		$bib       = $this->getShortId($sourceAndId->getRecordId());
 		$scope     = $this->getLibrarySierraScope();

@@ -230,11 +230,11 @@ class MaterialsRequest_AJAX extends AJAXHandler {
 				$interface->assign('error', 'Sorry, invalid id for a ' . translate('materials request') . '.');
 			}
 		}
-		$return = array(
+		$return = [
 			'title'        => 'Update Materials Request',
 			'modalBody'    => $interface->fetch('MaterialsRequest/ajax-update-request.tpl'),
 			'modalButtons' => $interface->get_template_vars('error') == null ? "<button class='btn btn-primary' onclick='$(\"#materialsRequestUpdateForm\").submit();'>Update Request</button>" : '',
-		);
+		];
 		return $return;
 	}
 
@@ -253,7 +253,10 @@ class MaterialsRequest_AJAX extends AJAXHandler {
 					$materialsRequest     = new MaterialsRequest();
 					$materialsRequest->id = $id;
 
-					$staffView         = isset($_REQUEST['staffView']) ? $_REQUEST['staffView'] : true;
+					$staffView = false;
+					if ($_REQUEST['staffView'] == 'true' || $_REQUEST['staffView'] == '1') {
+						$staffView = true;
+					}
 					$requestFormFields = $materialsRequest->getRequestFormFields($requestLibrary->libraryId, $staffView);
 					$interface->assign('requestFormFields', $requestFormFields);
 
@@ -303,10 +306,7 @@ class MaterialsRequest_AJAX extends AJAXHandler {
 								$interface->assign('requestUser', $requestUser);
 
 								// Get Barcode Column
-								$barCodeColumn = null;
-								if ($accountProfile = $requestUser->getAccountProfile()){
-									$barCodeColumn = 'barcode';
-								}
+								$barCodeColumn = 'barcode';
 								$interface->assign('barCodeColumn', $barCodeColumn);
 							}
 						}else{
@@ -322,11 +322,11 @@ class MaterialsRequest_AJAX extends AJAXHandler {
 				$interface->assign('error', 'Invalid Request ID.');
 			}
 		}
-		$return = array(
+		$return = [
 			'title'        => translate('Materials_Request_alt') . ' Details',
 			'modalBody'    => $interface->fetch('MaterialsRequest/ajax-request-details.tpl'),
 			'modalButtons' => '' //TODO idea: add Update Request button (for staff only?)
-		);
+		];
 		return $return;
 	}
 

@@ -112,6 +112,7 @@
 							{/if}
 							{if (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
 								<div class="adminMenuLink{if $action == "Locations"} active{/if}"><a href="/Admin/Locations">Locations</a></div>
+								<hr class="menu">
 							{/if}
 							{if (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
 								<div class="adminMenuLink{if $action == "BlockPatronAccountLinks"} active{/if}"><a href="/Admin/BlockPatronAccountLinks">Block Patron Account Linking</a></div>
@@ -130,14 +131,18 @@
 							{if count($userRoles) == 1 && $userRoles[0] == 'partnerAdmin'}
 									{* In the unlikely event that a user only has the parterAdmin Role, don't display things they don't need. *}
 							{else}
+								<hr class="menu">
 								<div class="adminMenuLink{if $action == "ListWidgets"} active{/if}"><a href="/Admin/ListWidgets">List Widgets</a></div>
 								<div class="adminMenuLink{if $action == "BrowseCategories"} active{/if}"><a href="/Admin/BrowseCategories">Browse Categories</a></div>
 								{if (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('contentEditor', $userRoles))}
+									<hr class="menu">
 									<div class="adminMenuLink{if $action == "NYTLists"} active{/if}"><a href="/Admin/NYTLists">NY Times Lists</a></div>
+									<div class="adminMenuLink{if $action == "NPRBestBooksLists"} active{/if}"><a href="/Admin/NPRBestBooksLists">NPR Books We Love Lists</a></div>
 								{/if}
 							{/if}
 							{* OPAC Admin Actions*}
 							{if in_array('opacAdmin', $userRoles)}
+								<hr class="menu">
 								{* OPAC Admin Actions*}
 								{if ($ils == 'Sierra' || $ils == 'Horizon' || $ils == 'Polaris' || $ils == 'CarlX')}
 								<div class="adminMenuLink{if $action == "PTypes"} active{/if}"><a href="/Admin/PTypes">P-Types</a></div>
@@ -147,6 +152,7 @@
 								<div class="adminMenuLink{if $action == "LoanRuleDeterminers"} active{/if}"><a href="/Admin/LoanRuleDeterminers">Loan Rule Determiners</a></div>
 								{/if}
 								{* OPAC Admin Actions*}
+								<hr class="menu">
 								<div class="adminMenuLink{if $action == "AccountProfiles"} active{/if}"><a href="/Admin/AccountProfiles">Account Profiles</a></div>
 							{/if}
 

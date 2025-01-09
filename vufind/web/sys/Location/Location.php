@@ -110,7 +110,9 @@ class Location extends DB_DataObject {
 	public $combinedResultsLabel;
 	public $defaultToCombinedResults;
 	public $useLibraryCombinedResultsSettings;
-
+    
+    // Used to track multiple linked users having the same pick-up locations
+    public $pickupUsers;
 	public $changeRequiresReindexing;
 
 	/** @var  array $data */
@@ -135,11 +137,11 @@ class Location extends DB_DataObject {
 	 * Needed override for OneToManyDataObjectOperations
 	 * @return string
 	 */
-	function getKeyOther(){
+	public function getKeyOther(){
 		return 'locationId';
 	}
 
-	function getObjectStructure(){
+	public function getObjectStructure(){
 		//Load Libraries for lookup values
 		$library = new Library();
 		$library->orderBy('displayName');
@@ -571,9 +573,7 @@ class Location extends DB_DataObject {
 		}
 		return $structure;
 	}
-
-	public $pickupUsers;
-	// Used to track multiple linked users having the same pick-up locations
+	
 
 	/**
 	 * @param User $patronProfile
@@ -715,23 +715,24 @@ class Location extends DB_DataObject {
 	 *
 	 * @return Location|null
 	 */
-	function getActiveLocation(){
-		if (Location::$activeLocation != 'unset'){
-			return Location::$activeLocation;
+	static function getActiveLocation(){
+		if (self::$activeLocation !== 'unset'){
+			return self::$activeLocation;
 		}
 
 		//default value
-		Location::$activeLocation = null;
+		self::$activeLocation = null;
 
 		//load information about the library we are in.
 		global $library;
 		if (is_null($library)){
 			//If we are not in a library, then do not allow branch scoping, etc.
-			Location::$activeLocation = null;
+			self::$activeLocation = null;
 		}else{
 
 			//Check to see if a branch location has been specified.
-			$locationCode = $this->getBranchLocationCode();
+			$_location = new Location();
+            $locationCode = $_location->getBranchLocationCode();
 			if (!empty($locationCode) && $locationCode != 'all'){
 				//Check to see if we can get the active location based off the location's code
 				$activeLocation       = new Location();
@@ -739,21 +740,22 @@ class Location extends DB_DataObject {
 				if ($activeLocation->find(true)){
 					//Only use the location if we are in the subdomain for the parent library
 					if ($library->libraryId == $activeLocation->libraryId){
-						Location::$activeLocation = clone $activeLocation;
+						self::$activeLocation = clone $activeLocation;
 					}else{
 						// If the active location doesn't belong to the library we are browsing at, turn off the active location
-						Location::$activeLocation = null;
+						self::$activeLocation = null;
 					}
 				}
 			}else{
 				// Check if we know physical location by the ip table
-				$physicalLocation = $this->getPhysicalLocation();
-				if ($physicalLocation != null){
-					if ($library->libraryId == $physicalLocation->libraryId){
-						Location::$activeLocation = $physicalLocation;
+                $_location = new Location();
+				$physicalLocation = $_location->getPhysicalLocation();
+				if ($physicalLocation !== null){
+					if ($library->libraryId === $physicalLocation->libraryId){
+						self::$activeLocation = $physicalLocation;
 					}else{
 						// If the physical location doesn't belong to the library we are browsing at, turn off the active location
-						Location::$activeLocation = null;
+						self::$activeLocation = null;
 					}
 				}
 			}
@@ -1394,7 +1396,7 @@ class Location extends DB_DataObject {
 		if (isset ($this->recordsToInclude) && is_array($this->recordsToInclude)){
 			/** @var LibraryRecordOwned $object */
 			foreach ($this->recordsToInclude as $object){
-				if (isset($object->deleteOnSave) && $object->deleteOnSave == true){
+				if (isset($object->deleteOnSave) && $object->deleteOnSave === true){
 					$object->delete();
 				}else{
 					if (isset($object->id) && is_numeric($object->id)){
@@ -1408,6 +1410,10 @@ class Location extends DB_DataObject {
 			unset($this->recordsToInclude);
 		}
 	}
+    
+    public function __isset($name) {
+        return isset($this->$name);
+    }
 
 	public function clearRecordsToInclude(){
 		$object             = new LibraryRecordToInclude();

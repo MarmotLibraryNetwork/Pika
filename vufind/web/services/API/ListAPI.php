@@ -913,17 +913,16 @@ class ListAPI extends AJAXHandler {
 
 		// Get the raw response from the API with a list of all the names
 		$nyt_api = new ExternalEnrichment\NYTApi($api_key);
-		$results = $nyt_api->getList($listName);
-		return json_decode($results);
+		return $nyt_api->getList($listName);
 	}
 
 	/**
 	 * Creates or updates a user defined list from information obtained from the New York Times API
 	 *
-	 * @param string $selectedList machine readable name of the new york times list
+	 * @param string|null $selectedList machine-readable name of the new york times list
 	 * @return array
 	 */
-	public function createUserListFromNYT($selectedList = null){
+	public function createUserListFromNYT(string $selectedList = null){
 		global $configArray;
 
 		if ($selectedList == null){
@@ -955,11 +954,9 @@ class ListAPI extends AJAXHandler {
 			];
 		}
 
-		//Get the raw response from the API with a list of all the names
-		$nyt_api           = new ExternalEnrichment\NYTApi($api_key);
-		$availableListsRaw = $nyt_api->getList('names');
-		//Convert into an object that can be processed
-		$availableLists = json_decode($availableListsRaw);
+		//Get from the API with a list of all the names
+		$nyt_api        = new ExternalEnrichment\NYTApi($api_key);
+		$availableLists = $nyt_api->getList('names');
 
 		//Get the human-readable title for our selected list
 		$selectedListTitle       = null;
@@ -970,14 +967,14 @@ class ListAPI extends AJAXHandler {
 			if ($listInformation->list_name_encoded == $selectedList){
 				$selectedListTitle       = 'NYT - ' . $listInformation->display_name;
 				$selectedListTitleShort  = $listInformation->display_name;
-				$selectedListDescription = "New York Times - " . $selectedListTitleShort . " - Published on " . $listInformation->newest_published_date;
+				$selectedListDescription = 'New York Times - ' . $selectedListTitleShort . ' - Published on ' . $listInformation->newest_published_date;
 				break;
 			}
 		}
 		if (empty($selectedListTitleShort)){
 			return [
 				'success' => false,
-				'message' => "We did not find list '{$selectedList}' in The New York Times API",
+				'message' => "We did not find list '$selectedList' in The New York Times API",
 			];
 		}
 
@@ -986,7 +983,7 @@ class ListAPI extends AJAXHandler {
 		$nytList          = new UserList();
 		$nytList->user_id = $pikaUser->id;
 		$nytList->title   = $selectedListTitle;
-		$listExistsInPika = $nytList->find(1);
+		$listExistsInPika = $nytList->find(true);
 
 		//We didn't find the list in Pika, create one
 		if (!$listExistsInPika){
@@ -1033,18 +1030,17 @@ class ListAPI extends AJAXHandler {
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 
 		//Get a list of titles from NYT API
-		$availableListsRaw = $nyt_api->getList($selectedList);
-		$availableLists    = json_decode($availableListsRaw);
-		$numTitlesAdded    = 0;
-		foreach ($availableLists->results as $titleResult){
+		$availableLists = $nyt_api->getList($selectedList);
+		$numTitlesAdded = 0;
+		$titleResults = $availableLists->results;
+		foreach ($availableLists->results->books as $bookDetails){
 			$pikaID = null;
 			// go through each list item
 
 			require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
 			// Try fetching the primary ISBN first
-			if (!empty($titleResult->book_details)){
+			if (!empty($bookDetails)){
 				$ISBNs = [];
-				$bookDetails       = $titleResult->book_details[0];
 				if (!empty($bookDetails->primary_isbn13) && strcasecmp($bookDetails->primary_isbn13, 'none') != 0){
 					$ISBNs[] = $bookDetails->primary_isbn13;
 				}
@@ -1053,17 +1049,17 @@ class ListAPI extends AJAXHandler {
 					$ISBNs[] = $isbnObj->get13();
 				}
 				if (!empty($ISBNs)){
-					$searchDocument = $searchObject->getRecordByIsbn(array_unique($ISBNs));
+					$searchDocument = $searchObject->getRecordByIsbn(array_unique($ISBNs), 'id');
 					$pikaID         = $searchDocument['id'] ?? null;
 				}
 			}
 			// If no luck with Primary ISBNs, or no primary ISBNs, try the rest of the ISBNs
 			if ($pikaID == null){
 				$ISBNs = [];
-				if (!empty($titleResult->isbns)){
+				if (!empty($bookDetails->isbns)){
 					//Note : each entry typically comes with an isbn10 & isbn13, which are usually equivalent; but we have seen
 					//  an example of this not being so (and the isbn10 being the one we needed [once converted to isbn13]).
-					foreach ($titleResult->isbns as $isbnEntry){
+					foreach ($bookDetails->isbns as $isbnEntry){
 						if (!empty($isbnEntry->isbn13) && ISBN::isValidISBN13($isbnEntry->isbn13)){
 							$ISBNs[] = $isbnEntry->isbn13;
 						}
@@ -1076,17 +1072,17 @@ class ListAPI extends AJAXHandler {
 						}
 					}
 				}
-				$searchDocument = $searchObject->getRecordByIsbn(array_unique($ISBNs));
+				$searchDocument = $searchObject->getRecordByIsbn(array_unique($ISBNs), 'id');
 				$pikaID         = $searchDocument['id'] ?? null;
 			}
 
 			if ($pikaID != null){
-				$note = "#{$titleResult->rank} on the {$titleResult->display_name} list for {$titleResult->published_date}.";
-				if ($titleResult->rank_last_week != 0){
-					$note .= '  Last week it was ranked ' . $titleResult->rank_last_week . '.';
+				$note = "#{$bookDetails->rank} on the {$titleResults->display_name} list for {$titleResults->published_date}.";
+				if ($bookDetails->rank_last_week != 0){
+					$note .= '  Last week it was ranked ' . $bookDetails->rank_last_week . '.';
 				}
-				if ($titleResult->weeks_on_list != 0){
-					$note .= "  It has been on the list for {$titleResult->weeks_on_list} week(s).";
+				if ($bookDetails->weeks_on_list != 0){
+					$note .= "  It has been on the list for {$bookDetails->weeks_on_list} week(s).";
 				}
 
 				$userListEntry                         = new UserListEntry();
@@ -1098,7 +1094,7 @@ class ListAPI extends AJAXHandler {
 					$existingEntry = true;
 				}
 
-				$userListEntry->weight    = $titleResult->rank;
+				$userListEntry->weight    = $bookDetails->rank;
 				$userListEntry->notes     = $note;
 				$userListEntry->dateAdded = time();
 				if ($existingEntry){
@@ -1120,6 +1116,210 @@ class ListAPI extends AJAXHandler {
 			}
 		}
 
+		return $results;
+	}
+
+	/**
+	 * Creates or updates a user defined list from information obtained from the New York Times API
+	 *
+	 * @param string|null $selectedList machine-readable name of the new york times list
+	 * @return array
+	 */
+	public function createUserListFromNPRBestBooks(string $selectedList = null){
+		global $configArray;
+
+		if ($selectedList == null){
+			$selectedList = $_REQUEST['listToUpdate'];
+		}
+
+		$pikaUsername = $configArray['NYT_API']['pika_username'];
+		$pikaPassword = $configArray['NYT_API']['pika_password'];
+
+		if (empty($pikaUsername) || empty($pikaPassword)){
+			return [
+				'success' => false,
+				'message' => 'Pika NY Times user not set',
+			];
+		}
+
+		$pikaUser = UserAccount::validateAccount($pikaUsername, $pikaPassword);
+		if (!$pikaUser || PEAR_Singleton::isError($pikaUser)){
+			return [
+				'success' => false,
+				'message' => 'Invalid Pika NY Times user',
+			];
+		}
+
+		if (ctype_digit($selectedList) && $selectedList > 2012){
+
+			//Get a list of titles from NPR site
+			$nprBestBooks = new ExternalEnrichment\NPRBestBooks();
+			$nprBookList  = $nprBestBooks->getList($selectedList);
+			if (!empty($nprBookList)){
+				$selectedListTitle = $nprBestBooks::NPRListTitlePrefix . " - $selectedList";
+
+				// Look for selected List
+				require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+				$nprList          = new UserList();
+				$nprList->user_id = $pikaUser->id;
+				$nprList->title   = $selectedListTitle;
+				$listExistsInPika = $nprList->find(true);
+
+				//We didn't find the list in Pika, create one
+				if (!$listExistsInPika){
+					$nprList              = new UserList();
+					$nprList->title       = $selectedListTitle;
+					$nprList->description = 'List of titles based on ' . $nprBestBooks::NPRListTitlePrefix . ' found at ' .  $nprBestBooks::BASE_URL;
+					$nprList->public      = 1;
+					$nprList->defaultSort = 'custom';
+					$nprList->user_id     = $pikaUser->id;
+					$success              = $nprList->insert();
+					$nprList->find(true);
+
+					if ($success){
+						$listID  = $nprList->id;
+						$results = [
+							'success' => true,
+							'message' => "Created list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>",
+						];
+					}else{
+						return [
+							'success' => false,
+							'message' => 'Could not create list',
+						];
+					}
+
+				}else{
+					$listID  = $nprList->id;
+					$results = [
+						'success' => true,
+						'message' => "Updated list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>",
+					];
+					//We already have a list, clear the contents, so we don't have titles from last time
+					$nprList->removeAllListEntries();
+				}
+
+				// We need to add titles to the list //
+
+//			// Include Search Engine Class
+//			require_once ROOT_DIR . '/sys/Search/' . $configArray['Index']['engine'] . '.php';
+//			/** @var SearchObject_Solr $searchObject */
+//			$searchObject = SearchObjectFactory::initSearchObject();
+
+				$class = $configArray['Index']['engine'];
+				$url   = $configArray['Index']['url'];
+				/** @var Solr $solr */
+				$solr = new $class($url);
+
+
+				// Include UserListEntry Class
+				require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+				require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
+
+				require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
+				$numTitlesAdded = $total = 0;
+				foreach ($nprBookList as $titleResult){
+					$total++;
+					$pikaID = null;
+					// go through each list item
+
+					// Try fetching the primary ISBN first
+					if (!empty($titleResult->isbn13)){
+						$searchDocument = $solr->getRecordByIsbn([$titleResult->isbn13], 'id');
+						$pikaID         = $searchDocument['id'] ?? null;
+					}
+
+					// If no luck with Primary ISBNs, or no primary ISBNs, try the rest of the ISBNs
+					if ($pikaID == null){
+						$ISBNs = [];
+						if (!empty($titleResult->isbn10)){
+							$isbnObj = new ISBN($titleResult->isbn10);
+							if ($isbnObj->isValid()){
+								$ISBNs[] = $isbnObj->get13();
+							}
+						}
+						if (!empty($titleResult->isbn)){
+							$isbnObj = new ISBN($titleResult->isbn);
+							if ($isbnObj->isValid()){
+								$ISBNs[] = $isbnObj->get13();
+							}
+						}
+
+						$searchDocument = $solr->getRecordByIsbn(array_unique($ISBNs), 'id');
+						$pikaID         = $searchDocument['id'] ?? null;
+					}
+
+					if ($pikaID == null){
+						$searchDocument = $solr->getRecordByTitleAuthor($titleResult->title, $titleResult->author, 'id');
+						$pikaID         = $searchDocument['id'] ?? null;
+						if ($pikaID == null && stripos($titleResult->title, ': A novel') !== false){
+							$searchDocument = $solr->getRecordByTitleAuthor(str_ireplace(': A Novel', '', $titleResult->title), $titleResult->author, 'id');
+							$pikaID         = $searchDocument['id'] ?? null;
+						}
+					}
+					if ($pikaID != null){
+						$note = "# $titleResult->id<br>";
+						$note .= $titleResult->text;
+						foreach ($titleResult->links as $linkArray){
+							$note .= "<p><a href='$linkArray->url'>$linkArray->source article : \"$linkArray->text\"</a></p>";
+						}
+
+						$userListEntry                         = new UserListEntry();
+						$userListEntry->listId                 = $nprList->id;
+						$userListEntry->groupedWorkPermanentId = $pikaID;
+
+						$existingEntry = false;
+						if ($userListEntry->find(true)){
+							$existingEntry = true;
+						}
+
+						$userListEntry->weight    = $titleResult->id;
+						$userListEntry->notes     = $note;
+						$userListEntry->dateAdded = time();
+						if ($existingEntry){
+							if ($userListEntry->update()){
+								$numTitlesAdded++;
+							}
+						}else{
+							if ($userListEntry->insert()){
+								$numTitlesAdded++;
+							}
+						}
+
+						// Add their tags
+						foreach ($titleResult->tags as $tag){
+							$userTag                         = new UserTag();
+							$userTag->userId                 = $pikaUser->id;
+							$userTag->groupedWorkPermanentId = $pikaID;
+							$userTag->tag                    = $nprBestBooks::NPRListTitlePrefix . ' tag: ' . ucwords($tag);
+							if (!$userTag->find()){
+								$userTag->dateTagged = time();
+								$userTag->insert();
+							}
+						}
+					}
+
+				} // End of foreach ($nprBookList
+
+				if ($results['success']){
+					$results['message'] .= "<br> Added $numTitlesAdded Titles to the list of the total : " . $total;
+					if ($listExistsInPika){
+						$nprList->update(); // set a new update time on the main list when it already exists
+					}
+				}
+			} else {
+				$results = [
+					'success' => false,
+					'message' => 'Failed to find list for that year, or another error fetching list.',
+				];
+			}
+
+		} else {
+			$results = [
+				'success' => false,
+				'message' => "Invalid year selected."
+			];
+		}
 		return $results;
 	}
 

@@ -87,9 +87,10 @@ class SearchSources {
 		if (isset($library)){
 			$searchGenealogy      = $library->enableGenealogy;
 			$repeatCourseReserves = $library->enableCourseReserves == 1;
-			$searchArchive        = $library->enableArchive == 1;
-			//TODO: Re-enable once we do full EDS integration
+			$searchArchive        = $library->enableArchive == 1 && !empty($configArray['Islandora']['enabled']);
+			// Enable archive search if the archive is enabled
 			//$searchEbsco = $library->edsApiProfile != '';
+			//TODO: Re-enable once we do full EDS integration
 		}
 
 		[$enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName] = self::getCombinedSearchSetupParameters($location, $library);

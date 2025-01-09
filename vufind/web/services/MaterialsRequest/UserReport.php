@@ -23,7 +23,6 @@ require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestStatus.php';
 require_once ROOT_DIR . "/sys/pChart/class/pData.class.php";
 require_once ROOT_DIR . "/sys/pChart/class/pDraw.class.php";
 require_once ROOT_DIR . "/sys/pChart/class/pImage.class.php";
-require_once ROOT_DIR . "/PHPExcel.php";
 
 class MaterialsRequest_UserReport extends Admin_Admin {
 
@@ -148,7 +147,7 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 	function exportToExcel($userData, $statuses, $creator){
 		//PHPEXCEL
 		// Create new PHPExcel object
-		$objPHPExcel = new PHPExcel();
+		$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 		// Set properties
 		$objPHPExcel->getProperties()->setCreator($creator)
@@ -168,21 +167,21 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		$activeSheet->setCellValue('C3', 'Barcode');
 		$column = 3;
 		foreach ($statuses as $statusLabel){
-			$activeSheet->setCellValueByColumnAndRow($column++, 3, $statusLabel);
+			$activeSheet->setCellValue([$column++, 3], $statusLabel);
 		}
-		$activeSheet->setCellValueByColumnAndRow($column, 3, 'Total');
+		$activeSheet->setCellValue([$column, 3], 'Total');
 
 		$row    = 4;
 		$column = 0;
 		//Loop Through The Report Data
 		foreach ($userData as $userInfo){
-			$activeSheet->setCellValueByColumnAndRow($column++, $row, $userInfo['lastName']);
-			$activeSheet->setCellValueByColumnAndRow($column++, $row, $userInfo['firstName']);
-			$activeSheet->setCellValueByColumnAndRow($column++, $row, $userInfo['barcode']);
+			$activeSheet->setCellValue([$column++, $row], $userInfo['lastName']);
+			$activeSheet->setCellValue([$column++, $row], $userInfo['firstName']);
+			$activeSheet->setCellValue([$column++, $row], $userInfo['barcode']);
 			foreach ($statuses as $status => $statusLabel){
-				$activeSheet->setCellValueByColumnAndRow($column++, $row, $userInfo['requestsByStatus'][$status] ?? 0);
+				$activeSheet->setCellValue([$column++, $row], $userInfo['requestsByStatus'][$status] ?? 0);
 			}
-			$activeSheet->setCellValueByColumnAndRow($column, $row, $userInfo['totalRequests']);
+			$activeSheet->setCellValue([$column, $row], $userInfo['totalRequests']);
 			$row++;
 			$column = 0;
 		}
@@ -198,7 +197,7 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		header('Content-Disposition: attachment;filename="MaterialsRequestUserReport.xls"');
 		header('Cache-Control: max-age=0');
 
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, 'Xls');
 		$objWriter->save('php://output');
 		exit;
 

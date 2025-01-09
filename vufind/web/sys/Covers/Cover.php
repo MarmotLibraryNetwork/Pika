@@ -43,7 +43,7 @@ class Cover extends DB_DataObject {
 		return 'coverId';
 	}
 
-	function getObjectStructure(){
+	public static function getObjectStructure(){
 		global $configArray;
 		$storagePath = $configArray['Site']['coverPath'];
 		$structure   = [

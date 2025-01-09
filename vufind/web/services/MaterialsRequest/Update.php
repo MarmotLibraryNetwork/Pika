@@ -88,6 +88,7 @@ class MaterialsRequest_Update extends Action {
 				$materialsRequest->publicationYear        = empty($_REQUEST['publicationYear']) ? '' : strip_tags($_REQUEST['publicationYear']);
 				$materialsRequest->about                  = empty($_REQUEST['about']) ? '' : strip_tags($_REQUEST['about']);
 				$materialsRequest->comments               = empty($_REQUEST['comments']) ? '' : strip_tags($_REQUEST['comments']);
+				$materialsRequest->staffComments          = empty($_REQUEST['staffComments']) ? '' : strip_tags($_REQUEST['staffComments']);
 				$materialsRequest->placeHoldWhenAvailable = empty($_REQUEST['placeHoldWhenAvailable']) ? 0 : $_REQUEST['placeHoldWhenAvailable'];
 				$materialsRequest->holdPickupLocation     = empty($_REQUEST['holdPickupLocation']) ? '' : $_REQUEST['holdPickupLocation'];
 				$materialsRequest->bookmobileStop         = empty($_REQUEST['bookmobileStop']) ? '' : $_REQUEST['bookmobileStop'];

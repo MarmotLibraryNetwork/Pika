@@ -31,7 +31,8 @@ namespace ExternalEnrichment;
 class NYTApi {
 
 //	const BASE_URI = 'http://api.nytimes.com/svc/books/v2/lists/'; // old api url
-	const BASE_URI = 'https://content.api.nytimes.com/svc/books/v2/lists/';
+//	const BASE_URI = 'https://content.api.nytimes.com/svc/books/v2/lists/';
+	const BASE_URI = 'https://content.api.nytimes.com/svc/books/v3/lists/';
 	protected $api_key;
 
 	public function __construct($key){
@@ -44,10 +45,12 @@ class NYTApi {
 		return $url;
 	}
 
-	public function getList($list_name){
-		$url = $this->buildUrl($list_name);
+	public function getList($listName){
+		$url = $this->buildUrl($listName);
 
 		// array of request options
+		global $configArray;
+		$userAgent = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
 		$curl_opts = [
 			// set request url
 			CURLOPT_URL            => $url,
@@ -56,8 +59,8 @@ class NYTApi {
 			// do not include header in result
 			CURLOPT_HEADER         => 0,
 			// set user agent
-			CURLOPT_USERAGENT      => 'Pika app cURL Request',
-			CURLOPT_SSL_VERIFYPEER => false,
+			CURLOPT_USERAGENT      => $userAgent,
+			//CURLOPT_SSL_VERIFYPEER => false,
 			CURLOPT_FOLLOWLOCATION => true,
 		];
 		// Get cURL resource
@@ -69,7 +72,7 @@ class NYTApi {
 		// Close request to clear up some resources
 		curl_close($curl);
 		// return response
-		return $response;
+		return json_decode($response);
 	}
 
 }

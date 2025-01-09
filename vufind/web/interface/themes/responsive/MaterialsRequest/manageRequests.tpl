@@ -190,7 +190,7 @@
 										</td>
 									{elseif $column == 'abridged'}
 										<td>{if $request->$column == 1}Yes{elseif $request->$column == 2}N/A{else}No{/if}</td>
-									{elseif $column == 'about' || $column == 'comments'}
+									{elseif $column == 'about' || $column == 'comments' || $column == 'staffComments'}
 										<td>
 											{if !empty($request->$column)}
 												<textarea cols="30" rows="4" readonly disabled aria-label="{$column}">

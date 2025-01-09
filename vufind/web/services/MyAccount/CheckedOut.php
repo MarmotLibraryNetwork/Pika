@@ -174,7 +174,7 @@ class MyAccount_CheckedOut extends MyAccount{
 		global $interface;
 		//PHPEXCEL
 		// Create new PHPExcel object
-		$objPHPExcel = new PHPExcel();
+		$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 		// Set properties
 		$gitBranch = $interface->getVariable('gitBranch');
@@ -188,22 +188,22 @@ class MyAccount_CheckedOut extends MyAccount{
 
 		$activeSheet = $objPHPExcel->setActiveSheetIndex(0);
 		$curRow = 1;
-		$curCol = 0;
-		$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, 'Checked Out Items');
+		$curCol = 1;
+		$activeSheet->setCellValue([$curCol, $curRow], 'Checked Out Items');
 		$curRow = 3;
-		$curCol = 0;
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Title');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Author');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Format');
+		$curCol = 1;
+		$activeSheet->setCellValue([$curCol++, $curRow], 'Title');
+		$activeSheet->setCellValue([$curCol++, $curRow], 'Author');
+		$activeSheet->setCellValue([$curCol++, $curRow], 'Format');
 		if ($showOut){
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Out');
+			$activeSheet->setCellValue([$curCol++, $curRow], 'Out');
 		}
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Due');
+		$activeSheet->setCellValue([$curCol++, $curRow], 'Due');
 		if ($showRenewed){
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Renewed');
+			$activeSheet->setCellValue([$curCol++, $curRow], 'Renewed');
 		}
 		if ($showWaitList){
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Wait List');
+			$activeSheet->setCellValue([$curCol++, $curRow], 'Wait List');
 		}
 
 
@@ -239,28 +239,28 @@ class MyAccount_CheckedOut extends MyAccount{
 				$formatString ='';
 			}
 			$activeSheet = $objPHPExcel->setActiveSheetIndex(0);
-			$curCol = 0;
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $a, $titleCell);
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $a, $authorCell);
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $a, $formatString);
+			$curCol = 1;
+			$activeSheet->setCellValue([$curCol++, $a], $titleCell);
+			$activeSheet->setCellValue([$curCol++, $a], $authorCell);
+			$activeSheet->setCellValue([$curCol++, $a], $formatString);
 			if ($showOut){
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $a, date('M d, Y', $row['checkoutdate']));
+				$activeSheet->setCellValue([$curCol++, $a], date('M d, Y', $row['checkoutdate']));
 			}
 			if (isset($row['dueDate'])){
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $a, date('M d, Y', $row['dueDate']));
+				$activeSheet->setCellValue([$curCol++, $a], date('M d, Y', $row['dueDate']));
 			}else{
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $a, '');
+				$activeSheet->setCellValue([$curCol++, $a], '');
 			}
 
 			if ($showRenewed){
 				if (isset($row['dueDate'])) {
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $a, isset($row['renewCount']) ? $row['renewCount'] : '');
+					$activeSheet->setCellValue([$curCol++, $a], isset($row['renewCount']) ? $row['renewCount'] : '');
 				}else{
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $a, '');
+					$activeSheet->setCellValue([$curCol++, $a], '');
 				}
 			}
 			if ($showWaitList){
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $a, $row['holdQueueLength']);
+				$activeSheet->setCellValue([$curCol++, $a], $row['holdQueueLength']);
 			}
 
 			$a++;
@@ -281,7 +281,7 @@ class MyAccount_CheckedOut extends MyAccount{
 		header('Content-Disposition: attachment;filename="CheckedOutItems.xls"');
 		header('Cache-Control: max-age=0');
 
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, 'Xls');
 		$objWriter->save('php://output');
 		exit;
 

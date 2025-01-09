@@ -30,7 +30,7 @@ use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 
 class GroupedWork_AJAX extends AJAXHandler {
 
-	protected $methodsThatRespondWithJSONUnstructured = array(
+	protected $methodsThatRespondWithJSONUnstructured = [
 		'clearUserRating',
 		'deleteUserReview',
 		'forceRegrouping',
@@ -73,11 +73,11 @@ class GroupedWork_AJAX extends AJAXHandler {
 		'createSeriesList',
 		'openBookshelf',
 
-	);
+	];
 
-	protected array $methodsThatRespondThemselves = array(
+	protected array $methodsThatRespondThemselves = [
 		'exportSeriesToExcel',
-	);
+	];
 
 
 	/**
@@ -91,7 +91,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 	function deleteUserReview(){
 		$id     = $_REQUEST['id'];
-		$result = array('result' => false);
+		$result = ['result' => false];
 		if (!UserAccount::isLoggedIn()){
 			$result['message'] = 'You must be logged in to delete ratings.';
 		}else{
@@ -101,7 +101,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 			$userWorkReview->userId                 = UserAccount::getActiveUserId();
 			if ($userWorkReview->find(true)){
 				$userWorkReview->delete();
-				$result = array('result' => true, 'message' => 'We successfully deleted the rating for you.');
+				$result = ['result' => true, 'message' => 'We successfully deleted the rating for you.'];
 			}else{
 				$result['message'] = 'Sorry, we could not find that review in the system.';
 			}
@@ -337,14 +337,14 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function getTitles(){
-		require_once ROOT_DIR. '/RecordDrivers/GroupedWorkDriver.php';
-		$ids = $_REQUEST["ids"];
-		$titles = array();
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$ids    = $_REQUEST["ids"];
+		$titles = [];
 		foreach ($ids as $id){
 			$recordDriver = new GroupedWorkDriver($id);
-			$titles[] = [
+			$titles[]     = [
 				'title' => $recordDriver->getTitleShort(),
-				'id'  => $id
+				'id'    => $id
 			];
 		}
 		return [
@@ -354,7 +354,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function getWorkInfo(){
-		global $interface;
+		global $interface, $scopeType;
 
 		//Indicate we are showing search results so we don't get hold buttons
 		$interface->assign('displayingSearchResults', true);
@@ -392,17 +392,20 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$buttonLabel = translate('Add to favorites');
 
 		// button template
-		$interface->assign('escapeId', $escapedId);
-		$interface->assign('buttonLabel', $buttonLabel);
-		$interface->assign('url', $url);
-		$interface->assign('inPopUp', true);
+		$interface->assign([
+			'escapeId'    => $escapedId,
+			'buttonLabel' => $buttonLabel,
+			'url'         => $url,
+			'inPopUp'     => true,
+			'scopeType'   => $scopeType, // Required when location scope is effect and title is available at another branch
+		]);
 
-		$results = array(
+		$results = [
 			'title'        => "<a href='$url'>{$recordDriver->getTitle()}</a>",
 			'modalBody'    => $interface->fetch('GroupedWork/work-details.tpl'),
 			'modalButtons' => "<button onclick=\"return Pika.GroupedWork.showSaveToListForm(this, '$escapedId');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$buttonLabel</button>"
 				. "<a href='$url'><button class='modal-buttons btn btn-primary'>More Info</button></a>",
-		);
+		];
 		return $results;
 	}
 
@@ -562,7 +565,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		if ($user){
 			$user->noPromptForUserReviews = 1;
 			$success                      = $user->update();
-			return array('success' => $success);
+			return ['success' => $success];
 		}
 	}
 
@@ -599,7 +602,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function saveReview(){
-		$result = array();
+		$result = [];
 
 		if (UserAccount::isLoggedIn() == false){
 			$result['success'] = false;
@@ -1146,11 +1149,11 @@ function getCreateSeriesForm(){
 		$interface->assign('listTitle', $seriesTitle);
 	}
 
-	return array(
+	return [
 		'title'        => 'Create new List',
 		'modalBody'    => $interface->fetch("GroupedWork/series-list-form.tpl"),
 		'modalButtons' => "<span class='tool btn btn-primary' onclick='return Pika.GroupedWork.createSeriesList(\"{$id}\");'>Create List</span>",
-	);
+	];
 }
 
 function createSeriesList(){
@@ -1158,8 +1161,8 @@ function createSeriesList(){
 	$id = $_REQUEST['groupedWorkId'];
 
 
-	$recordsToAdd = array();
-	$return      = array();
+	$recordsToAdd = [];
+	$return       = [];
 	if (UserAccount::isLoggedIn()){
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
@@ -1264,10 +1267,10 @@ function getSaveMultipleToListForm(){
 
 		foreach($ids as $id){
 			$groupedWork = new GroupedWorkDriver($id);
-			$titles[] = array(
+			$titles[] = [
 				'title' => $groupedWork->getTitleShort(),
 				'id'    => $id
-			);
+			];
 		}
 
 		$userLists  = new UserList();
@@ -1425,21 +1428,21 @@ function getSaveSeriesToListForm(){
 		$smsResult = $sms->text($_REQUEST['provider'], $_REQUEST['sms_phone_number'], $configArray['Site']['email'], $message);
 
 		if ($smsResult === true){
-			$result = array(
+			$result = [
 				'result'  => true,
 				'message' => 'Your text message was sent successfully.',
-			);
+			];
 		}elseif (PEAR_Singleton::isError($smsResult)){
-			$result = array(
+			$result = [
 				'result'  => false,
 				'message' => 'Your text message was count not be sent {$smsResult}.'
 				//			'message' => "Your text message count not be sent: {$smsResult->message}."
-			);
+			];
 		}else{
-			$result = array(
+			$result = [
 				'result'  => false,
 				'message' => 'Your text message could not be sent due to an unknown error.',
-			);
+			];
 		}
 
 		return $result;
@@ -1460,22 +1463,22 @@ function getSaveSeriesToListForm(){
 					// Reset any cached suggestion browse category for the user
 					$this->clearMySuggestionsBrowseCategoryCache();
 
-					$result = array(
+					$result = [
 						'result'  => true,
 						'message' => "You won't be shown this title in the future.",
-					);
+					];
 				}
 			}else{
-				$result = array(
+				$result = [
 					'result'  => false,
 					'message' => "This record was already marked as something you aren't interested in.",
-				);
+				];
 			}
 		}else{
-			$result = array(
+			$result = [
 				'result'  => false,
 				'message' => "Please log in.",
-			);
+			];
 		}
 		return $result;
 	}
@@ -1486,10 +1489,10 @@ function getSaveSeriesToListForm(){
 		$notInterested         = new NotInterested();
 		$notInterested->userId = UserAccount::getActiveUserId();
 		$notInterested->id     = $idToClear;
-		$result                = array('result' => false);
+		$result                = ['result' => false];
 		if ($notInterested->find(true)){
 			$notInterested->delete();
-			$result = array('result' => true);
+			$result = ['result' => true];
 		}
 		return $result;
 	}
@@ -1499,17 +1502,17 @@ function getSaveSeriesToListForm(){
 		$id = $_REQUEST['id'];
 		$interface->assign('id', $id);
 
-		$results = array(
+		$results = [
 			'title'        => 'Add Tag',
 			'modalBody'    => $interface->fetch("GroupedWork/addtag.tpl"),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.GroupedWork.saveTag(\"{$id}\"); return false;'>Add Tags</button>",
-		);
+		];
 		return $results;
 	}
 
 	function saveTag(){
 		if (!UserAccount::isLoggedIn()){
-			return array('success' => false, 'message' => '<div class="alert alert-danger">Sorry, you must be logged in to add tags.</div>');
+			return ['success' => false, 'message' => '<div class="alert alert-danger">Sorry, you must be logged in to add tags.</div>'];
 		}
 
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
@@ -1528,18 +1531,18 @@ function getSaveSeriesToListForm(){
 				//This is a new tag
 				$userTag->dateTagged = time();
 				if ($userTag->insert()){
-					return array('success' => true, 'message' => '<div class="alert alert-success">All tags have been added to the title.  Refresh to view updated tag list.</div>');
+					return ['success' => true, 'message' => '<div class="alert alert-success">All tags have been added to the title.  Refresh to view updated tag list.</div>'];
 				}
 			}else{
-				return array('success' => false, 'message' => '<div class="alert alert-danger">This tag has already been added.</div>');
+				return ['success' => false, 'message' => '<div class="alert alert-danger">This tag has already been added.</div>'];
 			}
 		}
-		return array('success' => false, 'message' => '<div class="alert alert-danger">Sorry, failed to save the tag.</div>');
+		return ['success' => false, 'message' => '<div class="alert alert-danger">Sorry, failed to save the tag.</div>'];
 	}
 
 	function removeTag(){
 		if (!UserAccount::isLoggedIn()){
-			return array('success' => false, 'message' => '<div class="alert alert-danger">Sorry, you must be logged in to remove tags.</div>');
+			return ['success' => false, 'message' => '<div class="alert alert-danger">Sorry, you must be logged in to remove tags.</div>'];
 		}
 
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
@@ -1553,13 +1556,13 @@ function getSaveSeriesToListForm(){
 		if ($userTag->find(true)){
 			//This is a new tag
 			if ($userTag->delete()){
-				return array('success' => true, 'message' => '<div class="alert alert-success">Removed your tag from the title.  Refresh to view updated tag list.</div>');
+				return ['success' => true, 'message' => '<div class="alert alert-success">Removed your tag from the title.  Refresh to view updated tag list.</div>'];
 			}
 		}else{
 			//This tag has already been added
-			return array('success' => true, 'message' => '<div class="alert alert-danger">We could not find that tag for this record.</div>');
+			return ['success' => true, 'message' => '<div class="alert alert-danger">We could not find that tag for this record.</div>'];
 		}
-		return array('success' => false, 'message' => '<div class="alert alert-danger">Sorry, failed to remove tag.</div>');
+		return ['success' => false, 'message' => '<div class="alert alert-danger">Sorry, failed to remove tag.</div>'];
 	}
 
 	function getProspectorInfo(){
@@ -1583,26 +1586,25 @@ function getSaveSeriesToListForm(){
 		require_once ROOT_DIR . '/sys/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
 		$prospector = new $ILLDriver();
 
-		$searchTerms = array(
-			array(
-				'lookfor' => $record['title_short'],
-				'index'   => 'Title',
-			),
-		);
+		$searchTerms =
+			[[
+				 'lookfor' => $record['title_short'],
+				 'index'   => 'Title',
+			 ],];
 		if (isset($record['author'])){
-			$searchTerms[] = array(
+			$searchTerms[] = [
 				'lookfor' => $record['author'],
 				'index'   => 'Author',
-			);
+			];
 		}
 
 		$prospectorResults = $prospector->getTopSearchResults($searchTerms, 10);
 		$interface->assign('prospectorResults', $prospectorResults['records']);
 
-		$result = array(
+		$result = [
 			'numTitles'     => count($prospectorResults),
 			'formattedData' => $interface->fetch('GroupedWork/ajax-prospector.tpl'),
-		);
+		];
 		return $result;
 	}
 
@@ -1618,7 +1620,6 @@ function getSaveSeriesToListForm(){
 
 	function reloadCover(){
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		global $configArray;
 		$id           = $_REQUEST['id'];
 		$recordDriver = new GroupedWorkDriver($id);
 
@@ -1671,10 +1672,10 @@ function getSaveSeriesToListForm(){
 			$cacheMessage = 'Data not cached for same pika link';
 		}
 
-		return array(
+		return [
 			'success' => $samePikaCleared,
 			'message' => $cacheMessage,
-		);
+		];
 	}
 
 	/**
@@ -1688,7 +1689,7 @@ function getSaveSeriesToListForm(){
 		$idString = $_REQUEST['ids'];
 		$ids = explode(',', $idString);
 		$idString = "'" . $idString . "'";
-		$items = array();
+		$items = [];
 		foreach($ids as $id){
 			$recordDriver = new GroupedWorkDriver($id);
 			$description = $recordDriver->getDescriptionFast(false);
@@ -1702,7 +1703,7 @@ function getSaveSeriesToListForm(){
 		$interface->assign('items',$items);
 		$interface->assign('idString', $idString);
 		$message = $interface->fetch('Search/bookshelf.tpl');
-		return array('success' => true, 'title'=>$title, 'message' => $message, 'buttons'=> '<button id="addItemsToList" onclick="Pika.GroupedWork.addSelectedToList('.$idString.')" class="tool btn btn-primary">Add All To List</button>');
+		return ['success' => true, 'title' =>$title, 'message' => $message, 'buttons' => '<button id="addItemsToList" onclick="Pika.GroupedWork.addSelectedToList('.$idString.')" class="tool btn btn-primary">Add All To List</button>'];
 	}
 
 
@@ -1730,7 +1731,7 @@ function getSaveSeriesToListForm(){
 			];
 		}
 		global $interface;
-		$objPHPExcel = new PHPExcel();
+		$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 		$gitBranch   = $interface->getVariable('gitBranch');
 		$objPHPExcel->getProperties()->setCreator('Pika ' . $gitBranch)
 			->setLastModifiedBy('Pika ' . $gitBranch)
@@ -1752,7 +1753,7 @@ function getSaveSeriesToListForm(){
 
 		$a = 4;
 		foreach ($seriesEntries as $entry) {
-			$objPHPExcel->getActiveSheet()->getStyle('D' . $a)->getNumberFormat()->setFormatCode(PHPExcel_Style_numberFormat::FORMAT_NUMBER);
+			$objPHPExcel->getActiveSheet()->getStyle('D' . $a)->getNumberFormat()->setFormatCode(PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER);
 			$objPHPExcel->setActiveSheetIndex(0)
 				->setCellValue('A' . $a, $entry['title'])
 				->setCellValue('B' . $a, $entry['author'])
@@ -1770,9 +1771,11 @@ function getSaveSeriesToListForm(){
 		$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
 
 		// Rename sheet
-		$strip = array("~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "=", "+", "[", "{", "]",
-		               "}", "\\", "|", ";", ":", "\"", "'", "&#8216;", "&#8217;", "&#8220;", "&#8221;", "&#8211;", "&#8212;",
-		               "â€”", "â€“", ",", "<", ".", ">", "/", "?");
+		$strip = [
+			"~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "=", "+", "[", "{", "]",
+			"}", "\\", "|", ";", ":", "\"", "'", "&#8216;", "&#8217;", "&#8220;", "&#8221;", "&#8211;", "&#8212;",
+			"â€”", "â€“", ",", "<", ".", ">", "/", "?"
+		];
 		$excelTitle = trim(str_replace($strip, "", strip_tags($seriesTitle)));
 		$excelTitle = str_replace(" ", "_", $excelTitle );
 		$objPHPExcel->getActiveSheet()->setTitle(substr($excelTitle,0,30));
@@ -1781,7 +1784,7 @@ function getSaveSeriesToListForm(){
 		header('Content-Type: application/vnd.ms-excel');
 		header('Content-Disposition: attachment;filename="' . substr($excelTitle,0,27) . '.xls"');
 		header('Cache-Control: max-age=0');
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, 'Xls');
 
 
 			$objWriter->save('php://output');
