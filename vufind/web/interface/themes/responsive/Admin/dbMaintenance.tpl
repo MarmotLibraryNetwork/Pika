@@ -29,7 +29,7 @@
 						<td>{$update.description}</td>
 						<td>{if $update.alreadyRun}Yes{else}No{/if}</td>
 						{if $showStatus}
-						<td>{if is_array($update.status)}{$update.status|@implode:"<br>"}{else}{$update.status}{/if}</td>
+						<td>{if is_array($update.status)}{foreach from=$update.status item=status}{$status}<br>{/foreach}{*smarty implode broke with php 8*}{else}{$update.status}{/if}</td>
 						{/if}
 					</tr>
 					{/foreach}
