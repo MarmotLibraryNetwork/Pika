@@ -40,7 +40,7 @@ class ArrayUtils
         return $array;
     }
 
-    function encode_item(&$item, &$key)
+    function encode_item(&$item, $key)
     {
         $utf8 = 'UTF-8';
         $possible_encodings = 'UTF-8, ISO-8859-1'; //This will likely need expanded other encodings we encounter
