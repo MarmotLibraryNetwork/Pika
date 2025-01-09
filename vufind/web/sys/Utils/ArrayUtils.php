@@ -30,7 +30,7 @@ class ArrayUtils
         return key($array);
     }
 
-    public static function utf8EncodeArray($array)
+    public static function utf8EncodeArray(&$array)
     {
         if (function_exists('mb_convert_encoding')) {
             array_walk_recursive($array, 'encode_item');
