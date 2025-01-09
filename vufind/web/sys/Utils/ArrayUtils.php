@@ -57,7 +57,7 @@ class ArrayUtils
         }
 
 
-    function old_encode_item(&$item, &$key)
+    function old_encode_item(&$item, $key)
     {
         if (is_array($item)) {
             ArrayUtils::old_encode_item($item, $key);
@@ -69,7 +69,7 @@ class ArrayUtils
 }
 
 // [PHP8] array_walk_recursive can not use a static class method.
-function encode_item(&$item, &$key)
+function encode_item(&$item, $key)
 {
     $utf8 = 'UTF-8';
     $possible_encodings = 'UTF-8, ISO-8859-1'; //This will likely need expanded other encodings we encounter
