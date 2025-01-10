@@ -56,13 +56,13 @@ abstract class GenealogyObjectEditor extends ObjectEditor {
 		if ($validationResults['validatedOk']){
 			$ret = $newObject->insert();
 			if (!$ret){
-
 				if ($newObject->_lastError){
 					$errorDescription = $newObject->_lastError->getUserInfo();
 				}else{
 					$errorDescription = 'Unknown error';
 				}
-				$this->logger->debug('Could not insert new object ' . $ret . ' ' . $errorDescription);
+				global $pikaLogger;
+				$pikaLogger->debug('Could not insert new object ' . $ret . ' ' . $errorDescription);
 				@session_start();
 				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br>{$errorDescription}";
 
