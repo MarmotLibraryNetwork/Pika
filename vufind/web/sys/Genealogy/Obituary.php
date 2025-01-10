@@ -51,7 +51,7 @@ class Obituary extends DB_DataObject {
 		return $this->source . ' ' . $this->sourcePage . ' ' . $this->date;
 	}
 
-	function getObjectStructure(){
+	static function getObjectStructure(){
 		global $configArray;
 		$storagePath = $configArray['Genealogy']['imagePath'];
 		$structure   = [
