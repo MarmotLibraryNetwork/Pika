@@ -320,7 +320,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		if (isset($_REQUEST['submitStay']) || $errorOccurred){
 			header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=$id");
 		}elseif (isset($_REQUEST['submitAddAnother'])){
-			header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=addNew");
+			$this->addAnotherRedirect();
 		}else{
 			$redirectLocation = $this->getRedirectLocation($curObject, $objectAction);
 			if (is_null($redirectLocation)){
@@ -396,6 +396,13 @@ abstract class ObjectEditor extends Admin_Admin {
 		}
 		$interface->assign('shortPageTitle', $pageTitle);
 		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate);
+	}
+
+	/**
+	 * @return void
+	 */
+	public function addAnotherRedirect(): void{
+		header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=addNew");
 	}
 
 }

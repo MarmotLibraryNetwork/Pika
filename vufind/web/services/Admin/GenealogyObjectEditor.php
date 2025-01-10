@@ -84,4 +84,14 @@ abstract class GenealogyObjectEditor extends ObjectEditor {
 		return $newObject;
 	}
 
+	public function addAnotherRedirect(): void{
+		$personId = strip_tags($_GET['personId']);
+		if (ctype_digit($personId)){
+			header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=addNew&personId={$personId}");
+		} else{
+			//TODO: really should just return genealogy search if we don't have the person id or its invalid.
+			header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=addNew");
+		}
+	}
+
 }
