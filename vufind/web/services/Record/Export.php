@@ -21,8 +21,8 @@ require_once 'Record.php';
 
 class Record_Export extends Record_Record {
 
-	function __construct($record_id = null){
-		parent::__construct($record_id);
+	function __construct($recordId = null){
+		parent::__construct($recordId);
 		$marcRecord = $this->recordDriver->getMarcRecord();
 		if ($marcRecord){
 			global $interface;
@@ -39,7 +39,7 @@ class Record_Export extends Record_Record {
 		if (!empty($tpl)){
 			$interface->display($tpl);
 		}else{
-			die(translate("Unsupported export format."));
+			die(translate('Unsupported export format.'));
 		}
 	}
 }
