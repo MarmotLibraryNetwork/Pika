@@ -28,18 +28,33 @@ abstract class Record_Record extends Action {
 	/** @var MarcRecord|HooplaRecordDriver $recordDriver */
 	protected $recordDriver;
 
-	function __construct($record_id = null){
-		global $interface;
-
+	function __construct($recordId = null){
 		//Load basic information needed in subclasses
-		$this->sourceAndId = new SourceAndId(empty($record_id) ? $_GET['id'] : $record_id);
-		$interface->assign('id', $this->sourceAndId->getRecordId());
+		$this->sourceAndId = new SourceAndId(empty($recordId) ? $_GET['id'] : $recordId);
 
 		//Check to see if the record exists within the resources table
 		$this->recordDriver = RecordDriverFactory::initRecordDriverById($this->sourceAndId);
-		if (is_null($this->recordDriver) || !$this->recordDriver->isValid()){  // initRecordDriverById itself does a validity check and returns null if not.
-			$this->displayInvalidRecord();
+		if (is_null($this->recordDriver) || !$this->recordDriver->isValid()){
+			// initRecordDriverById itself does a validity check and returns null if not.
+
+			global $configArray;
+			if ($this->sourceAndId->getSource() == 'ils' && $configArray['Catalog']['ils'] == 'Sierra'){
+				// Redirect Sierra Record Ids without check digit present to the URL with the record checkdigit present
+				$newRecordId = $this->buildrecordIdWithCheckDigit($this->sourceAndId->getRecordId());
+				if ($newRecordId){
+					$this->sourceAndId  = new SourceAndId($this->sourceAndId->getSource() . ':' . $newRecordId);
+					$this->recordDriver = RecordDriverFactory::initRecordDriverById($this->sourceAndId);
+					if ($this->recordDriver->isValid()){
+						global $module;
+						header("Location: /$module/$newRecordId");
+					}
+				}
+				$this->displayInvalidRecord();
+			}
 		}
+
+		global $interface;
+		$interface->assign('id', $this->sourceAndId->getRecordId());
 		$interface->assign('recordDriver', $this->recordDriver);
 
 		$groupedWork = $this->recordDriver->getGroupedWorkDriver();
@@ -49,9 +64,7 @@ abstract class Record_Record extends Action {
 
 		$this->setClassicViewLinks();
 
-		//Do actions needed if this is the main action.
-
-		if (substr($this->sourceAndId->getRecordId(), 0, 1) == '.'){
+		if (str_starts_with($this->sourceAndId->getRecordId(), '.')){
 			$interface->assign('shortId', substr($this->sourceAndId->getRecordId(), 1));
 		}else{
 			$interface->assign('shortId', $this->sourceAndId->getRecordId());
@@ -136,7 +149,25 @@ abstract class Record_Record extends Action {
 
 		$mainTemplate = $module == 'Record' ? 'invalidRecord.tpl' :'../Record/invalidRecord.tpl';
 		$this->display($mainTemplate, 'Invalid Record');
-		die();
+		die;
+	}
+
+	private function buildrecordIdWithCheckDigit($recordId){
+		$sumOfDigits = 0;
+		$baseId = str_replace(['.b', 'b'], '', $recordId);
+		if (ctype_digit($baseId)) {
+			$strlen = strlen($baseId);
+			for ($i = 0;$i < $strlen;$i++) {
+				$multiplier = (($strlen +1) - $i);
+				$sumOfDigits += $multiplier * substr($baseId, $i, 1);
+			}
+			$modValue = $sumOfDigits % 11;
+			if ($modValue == 10) {
+				return $recordId . 'x';
+			}
+			return $recordId . $modValue;
+		}
+		return false;
 	}
 
 }
