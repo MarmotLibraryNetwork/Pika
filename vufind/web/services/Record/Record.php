@@ -47,6 +47,7 @@ abstract class Record_Record extends Action {
 					if ($this->recordDriver->isValid()){
 						global $module;
 						header("Location: /$module/$newRecordId");
+						die;
 					}
 				}
 				$this->displayInvalidRecord();
