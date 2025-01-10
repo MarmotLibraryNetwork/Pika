@@ -131,6 +131,7 @@ class TopFacets implements RecommendationInterface {
 					'eAudio',
 					'Music',
 					'Movies',
+					'Video Games',
 				];
 
 				//add an image name for display in the template
@@ -256,6 +257,7 @@ function format_category_comparator($a, $b){
 		'eAudio'      => 4,
 		'Music'       => 5,
 		'Movies'      => 6,
+		'Video Games' => 7,
 	];
 
 	$a = $formatCategorySortOrder[$a];
