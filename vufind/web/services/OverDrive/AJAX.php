@@ -648,7 +648,7 @@ class OverDrive_AJAX extends AJAXHandler {
 			}elseif ($emailResult){
 				return [
 					'title'   => "Support Request Sent",
-					'message' => "<p>Your request was sent to our support team.  We will respond to your request as quickly as possible.</p><p>Thank you for using the catalog.</p>"
+					'message' => "<p class='alert alert-success'>Thank you for reporting your issue using OverDrive. Library staff will review your report and reach out to you directly for resolution.</p>"
 				];
 			}else{
 				return [
