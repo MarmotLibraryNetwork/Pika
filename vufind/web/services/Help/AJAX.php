@@ -25,6 +25,7 @@ class Help_AJAX extends AJAXHandler {
 	protected $methodsThatRespondWithJSONUnstructured = [
 		"submitAccessibilityReport",
 		"submitOverDriveForm",
+		"submitOverDrivePurchaseForm",
 	];
 	protected $methodsThatRespondThemselves = [];
 
@@ -126,6 +127,107 @@ class Help_AJAX extends AJAXHandler {
 			return [
 				'title' => "Error",
 				'message' => "<p class='alert alert-danger'>We're sorry, but your request could not be submitted to our support team at this time.</p><p>Please try again later.</p>"
+			];
+		}
+	}
+
+	function submitOverDrivePurchaseForm() {
+		global $interface;
+		global $configArray;
+
+		if (isset($_REQUEST['submit'])){
+			if (isset($configArray['ReCaptcha']['privateKey'])) {
+				try{
+					$recaptchaValid = recaptchaCheckAnswer();
+				}catch (Exception $ex){
+					$recaptchaValid = false;
+				}
+			}else{
+				$recaptchaValid = true;
+			}
+			if (!$recaptchaValid) {
+				return [
+					'title' => "OverDrive Purchase Request Form Not Sent",
+					'message' => "<p class='alert alert-danger'>The CAPTCHA response was incorrect.</p>"
+						. "<p>Please try again.</p>",
+				];
+			}else{
+				require_once  ROOT_DIR . '/sys/Mailer.php';
+				$mail           = new VuFindMailer();
+				$currentLibrary = Library::getActiveLibrary();
+				if (!empty($currentLibrary->eContentSupportAddress)) {
+					$to = $currentLibrary->eContentSupportAddress;
+				}elseif (!empty($configArray['Site']['email'])) {
+					$to = $configArray['Site']['email'];
+				}else{
+					global $pikaLogger;
+					$pikaLogger->error("No email for Site. Please check that an eContent support email is available");
+					return [
+						'title'   => 'Purchase Request Not Sent',
+						'message' => "<p>We're sorry, but your purchase request could not be submitted.</p><p>Please contact your local library.</p>"
+					];
+				}
+				if (!empty($configArray['Site']['email'])){
+					$sendingAddress = $configArray['Site']['email'];
+				}else {
+					$sendingAddress = $_REQUEST['email'];
+				}
+				$multipleEmailAddresses = preg_split('/[;,]/', $to, null, PREG_SPLIT_NO_EMPTY);
+				if (!empty($multipleEmailAddresses)){
+					$to             = str_replace(';', ',', $to); //The newer mailer needs 'to' addresses to be separated by commas rather than semicolon
+				}
+				$user = null;
+				$cardNumber  = !empty($_REQUEST['libraryCardNumber']) ? $_REQUEST['libraryCardNumber'] : 'Not provided';
+				if(UserAccount::isLoggedIn()){
+					$user = UserAccount::getLoggedInUser();
+					$cardNumber = $user->barcode;
+					$userLibrary = $user->homeLibraryName;
+				}else{
+					$tempUser = new User();
+					$tempUser->barcode = $cardNumber;
+					$tempUser->find(true);
+					$userLibrary = $tempUser->homeLibraryName;
+				}
+				$name       = $_REQUEST['name'];
+				$subject     = 'OverDrive Purchase Request From: ' . $name;
+				$patronEmail = $user != null ? $user->email :$_REQUEST['email'];
+				$browser     = !empty($_REQUEST['browser']) ? $_REQUEST['browser'] : 'Not Entered';
+				$interface->assign('libraryName', empty($userLibrary) ? $currentLibrary->displayName : $userLibrary);
+				$interface->assign('comments', $_REQUEST['comments']);
+				$interface->assign('name', $name);
+				$interface->assign('title', $_REQUEST['title']);
+				$interface->assign('author', $_REQUEST['author']);
+				$interface->assign('email', $patronEmail);
+				$interface->assign('format', $_REQUEST['format']);
+				$interface->assign('libraryCardNumber', $cardNumber);
+				$interface->assign('subject', $subject);
+				$body        = $interface->fetch('Help/overdrivePurchaseEmail.tpl');
+				$emailResult = $mail->send($to, $sendingAddress, $subject, $body, $patronEmail);
+				global $pikaLogger;
+				if (PEAR::isError($emailResult)){
+					$pikaLogger->error('OverDrive purchase request email not sent: ' . $emailResult->getMessage());
+					return [
+						'title'   => "OverDrive purchase request not sent:",
+						'message' => "<p class='alert alert-danger'>We're sorry, an error occurred while submitting your request.</p>" . $emailResult->getMessage()
+					];
+				}elseif ($emailResult){
+					$pikaLogger->warn('OverDrive purchase request was sent successfully with the following message: ' . $emailResult);
+					return [
+						'title'   => "OverDrive purchase request was sent",
+						'message' => "<p class='alert alert-success'>Thank you for making an OverDrive purchase request. Library staff will review your request and reach out to you directly with any questions.</p>"
+					];
+				}else{
+					$pikaLogger->warn('There was an unknown error sending the OverDrive purchase request');
+					return [
+						'title'   => "OverDrive purchase request not sent",
+						'message' => "<p class='alert alert-danger'>We're sorry, but your purchase request could not be submitted to our team at this time.</p><p>Please try again later.</p>"
+					];
+				}
+			}
+		}else{
+			return [
+				'title' => "Error",
+				'message' => "<p class='alert alert-danger'>We're sorry, but your purchase request could not be submitted to our team at this time.</p><p>Please try again later.</p>"
 			];
 		}
 	}
