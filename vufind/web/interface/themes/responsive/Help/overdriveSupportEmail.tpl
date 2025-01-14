@@ -11,8 +11,5 @@ Operating System: {$operatingSystem}
 Problem Description:
 {$problem}
 
-{if !empty($overDriveErrorMessages)}
-	Error information reported by the OverDrive content server:
-
-	{$overDriveErrorMessages}
-{/if}
+Note:
+This email was originated from the OverDrive website at https://marmot.overdrive.com/support/members

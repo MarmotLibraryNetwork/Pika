@@ -86,7 +86,7 @@ class Help_AJAX extends AJAXHandler {
 					$userLibrary = $tempUser->homeLibraryName;
 				}
 				$name       = $_REQUEST['name'];
-				$subject     = 'OverDrive Site Support Request From: ' . $name;
+				$subject     = 'OverDrive Support Request From: ' . $name;
 				$patronEmail = $user != null ? $user->email :$_REQUEST['email'];
 				$browser     = !empty($_REQUEST['browser']) ? $_REQUEST['browser'] : 'Not Entered';
 				$interface->assign('libraryName', empty($userLibrary) ? $currentLibrary->displayName : $userLibrary);
@@ -112,7 +112,7 @@ class Help_AJAX extends AJAXHandler {
 					$pikaLogger->warn('OverDrive support email was sent successfully with the following message: ' . $emailResult);
 					return [
 						'title'   => "OverDrive support email was sent",
-						'message' => "<p class='alert alert-success'>Your report was sent to our team.</p><p>Thank you for using the catalog.</p>"
+						'message' => "<p class='alert alert-success'>Thank you for reporting your issue using OverDrive. Library staff will review your report and reach out to you directly for resolution.</p>"
 					];
 				}else{
 					$pikaLogger->warn('There was an unknown error sending the OverDrive support email');
