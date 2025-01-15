@@ -235,7 +235,7 @@ class IndexingProfile extends DB_DataObject{
 
 			'bibRecordSection' => ['property' =>'bibRecordSection', 'type' => 'section', 'label' =>'Record Settings', 'hideInLists' => true, 'open' => true,
 			                       'helpLink' => '', 'properties' => [
-					'recordNumberTag'            => ['property' => 'recordNumberTag', 'type' => 'text', 'label' => 'Record Number Tag', 'maxLength' => 3, 'description' => 'The MARC tag where the record number can be found', 'required' => true, 'changeRequiresReindexing' => true],
+					'recordNumberTag'            => ['property' => 'recordNumberTag', 'type' => 'text', 'label' => 'Record Number Tag (If not 001, make sure to update mergeConfig.ini)', 'maxLength' => 3, 'description' => 'The MARC tag where the record number can be found', 'required' => true, 'changeRequiresReindexing' => true],
 					'recordNumberField'          => ['property' => 'recordNumberField', 'type' => 'text', 'label' => 'Record Number Field', 'maxLength' => 1, 'description' => 'The subfield of the record number tag where the record number can be found', 'required' => true, 'default' => 'a', 'changeRequiresReindexing' => true],
 					'recordNumberPrefix'         => ['property' => 'recordNumberPrefix', 'type' => 'text', 'label' => 'Record Number Prefix', 'maxLength' => 10, 'description' => 'A prefix to identify the bib record number if multiple MARC tags exist', 'changeRequiresReindexing' => true],
 					'sierraRecordFixedFieldsTag' => ['property' => 'sierraRecordFixedFieldsTag', 'type' => 'text', 'label' => 'Sierra Record/Bib level Fixed Fields Tag (ils profile only)', 'maxLength' => 3, 'description' => 'The MARC tag where the Sierra fixed fields can be found, specifically the bcode3', 'changeRequiresReindexing' => true],
