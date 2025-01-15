@@ -3546,16 +3546,17 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		return $return;
 	}
 
-	protected function getCheckDigit($baseId){
-		$baseId = preg_replace('/\.?[bij]/', '', $baseId);
+	protected function getCheckDigit($recordId){
+		$baseId      = preg_replace('/\.?[bij]/', '', $recordId);
 		$sumOfDigits = 0;
-		for ($i = 0; $i < strlen($baseId); $i++){
-			$curDigit = substr($baseId, $i, 1);
-			$sumOfDigits += ((strlen($baseId) + 1) - $i) * $curDigit;
+		for ($i = 0;$i < strlen($baseId);$i++){
+			$curDigit    = substr($baseId, $i, 1);
+			$multiplier  = (strlen($baseId) + 1) - $i;
+			$sumOfDigits += $multiplier * $curDigit;
 		}
 		$modValue = $sumOfDigits % 11;
 		if ($modValue == 10){
-			return "x";
+			return 'x';
 		}else{
 			return $modValue;
 		}

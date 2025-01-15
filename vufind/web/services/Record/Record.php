@@ -153,17 +153,23 @@ abstract class Record_Record extends Action {
 		die;
 	}
 
+	/**
+	 * Same as Sierra driver method getCheckDigit()
+	 * @param $recordId
+	 * @return false|string
+	 */
 	private function buildrecordIdWithCheckDigit($recordId){
 		$sumOfDigits = 0;
-		$baseId = str_replace(['.b', 'b'], '', $recordId);
-		if (ctype_digit($baseId)) {
+		$baseId      = str_replace(['.b', 'b'], '', $recordId);
+		if (ctype_digit($baseId)){
 			$strlen = strlen($baseId);
-			for ($i = 0;$i < $strlen;$i++) {
-				$multiplier = (($strlen +1) - $i);
-				$sumOfDigits += $multiplier * substr($baseId, $i, 1);
+			for ($i = 0;$i < $strlen;$i++){
+				$multiplier  = (($strlen + 1) - $i);
+				$curDigit    = substr($baseId, $i, 1);
+				$sumOfDigits += $multiplier * $curDigit;
 			}
 			$modValue = $sumOfDigits % 11;
-			if ($modValue == 10) {
+			if ($modValue == 10){
 				return $recordId . 'x';
 			}
 			return $recordId . $modValue;
