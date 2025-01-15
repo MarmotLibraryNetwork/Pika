@@ -27,9 +27,9 @@ class Fines extends MyAccount {
 		       $configArray;
 
 		$ils = $configArray['Catalog']['ils'];
-		$interface->assign('showDate', $ils == 'Symphony' || $ils == 'Horizon' || $ils == 'Koha' || $ils == 'CarlX' || $ils == 'Polaris');
+		$interface->assign('showDate', $ils == 'Polaris' || $ils == 'Symphony' || $ils == 'Horizon' || $ils == 'Koha' || $ils == 'CarlX');
 		$interface->assign('showReason', $ils != 'Koha');
-		$useOutstanding = ($ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
+		$useOutstanding = ($ils == 'Polaris' || $ils == 'Symphony' || $ils == 'Koha');
 		$interface->assign('showOutstanding', $useOutstanding);
 
 		if (UserAccount::isLoggedIn()) {
