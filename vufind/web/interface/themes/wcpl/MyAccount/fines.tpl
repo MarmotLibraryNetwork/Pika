@@ -18,8 +18,8 @@
 		{if count($userFines) == 1 && $user->fines}
 			<p>Your account has <strong>{$user->fines}</strong> in fines.</p>
 		{/if}
-				{*<p>The items below are far enough past their due date that they have been assigned replacement fees. If you return the items, these fees will be removed. If the items are truly lost or damaged, you may <a title="Pay Fines Online" href="https://wakenc.comprisesmartpay.com/">pay online</a> now with a Visa, Mastercard or Discover credit card. <a href="https://askwcpl.wake.gov/admin/faq?faqid=230727 ">See other payment options.</a></p>*}
-				<p>The items below are far enough past their due date that they have been assigned replacement fees. If you return the items, these fees will be removed. If the items are truly lost or damaged, you may <a title="Pay Fines Online" href="{$ecommerceLink}">pay online</a> now with a Visa, Mastercard or Discover credit card. <a href="https://askwcpl.wake.gov/admin/faq?faqid=230727 ">See other payment options.</a></p>
+				{*<p>The items below are far enough past their due date that they have been assigned replacement fees. If you return the items, these fees will be removed. If the items are truly lost or damaged, you may <a title="Pay Fines Online" href="https://wakenc.comprisesmartpay.com/">pay online</a> now with a Visa, Mastercard or Discover credit card. <a href="https://askwcpl.wake.gov/faq/230727">See other payment options.</a></p>*}
+				<p>The items below are far enough past their due date that they have been assigned replacement fees. If you return the items, these fees will be removed. If the items are truly lost or damaged, you may <a title="Pay Fines Online" href="{$ecommerceLink}">pay online</a> now with a Visa, Mastercard or Discover credit card. <a href="https://askwcpl.wake.gov/faq/230727">See other payment options.</a></p>
 			</div>
 
 		{foreach from=$userFines item=fines key=userId name=fineTable}
