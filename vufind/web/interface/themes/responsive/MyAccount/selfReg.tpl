@@ -1,6 +1,10 @@
 {strip}
 <h1 role="heading" aria-level="1" class="h2">{translate text='Register for a Library Card'}</h1>
 <div class="page">
+	{if $offline}
+		<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to process registrations at this time.</div>
+	{else}
+
 		{if (isset($selfRegResult) && $selfRegResult.success)}
 			<div id="selfRegSuccess" class="alert alert-success">
 				{if $selfRegistrationSuccessMessage}
@@ -59,8 +63,10 @@
 				{$selfRegForm}
 			</div>
 		{/if}
+	{/if}
 </div>
 {/strip}
+{if !offline}
 <script>
 	{if $promptForBirthDateInSelfReg}
 	{* #borrower_note is birthdate for anythink *}
@@ -174,3 +180,4 @@
 	});
 	{/literal}
 </script>
+{/if}
