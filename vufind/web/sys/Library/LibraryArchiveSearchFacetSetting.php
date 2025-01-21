@@ -44,7 +44,7 @@ class LibraryArchiveSearchFacetSetting extends FacetSetting {
 //		'ancestors_ms'                                                   => "Included In"
 	];
 
-	static function getObjectStructure($availableFacets = NULL){
+	static function getObjectStructure($availableFacets = null){
 		$library = new Library();
 		$library->orderBy('displayName');
 		if (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager'])){
@@ -56,7 +56,7 @@ class LibraryArchiveSearchFacetSetting extends FacetSetting {
 			$libraryList[$library->libraryId] = $library->displayName;
 		}
 
-		$structure = parent::getObjectStructure(getAvailableFacets());
+		$structure = parent::getObjectStructure(self::getAvailableFacets());
 		$structure['libraryId'] = ['property' =>'libraryId', 'type' =>'enum', 'values' =>$libraryList, 'label' =>'Library', 'description' =>'The id of a library'];
 		//TODO: needed? for copy facets button?
 
@@ -67,10 +67,9 @@ class LibraryArchiveSearchFacetSetting extends FacetSetting {
 		return '/Admin/LibraryArchiveSearchFacetSettings?objectAction=edit&id=' . $this->id;
 	}
 
-	public function getAvailableFacets(){
+	static public function getAvailableFacets(){
 		$config            = getExtraConfigArray('islandoraFacets');
 		$availableFacets = $config['Results'] ?? self::$defaultFacetList;
 		return $availableFacets;
-
 	}
 }
