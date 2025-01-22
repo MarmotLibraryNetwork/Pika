@@ -30,69 +30,53 @@ class ArrayUtils
         return key($array);
     }
 
-    public static function utf8EncodeArray(&$array)
+    /**
+     * Recursively ensure all keys and values are encoded as UTF-8.
+     * If mb_convert_encoding is available, it will be used;
+     * otherwise fallback to utf8_encode.
+     */
+    public static function utf8EncodeArray(array $array): array
     {
-        if (function_exists('mb_convert_encoding')) {
-            array_walk_recursive($array, 'encode_item');
-        } else {
-            array_walk_recursive($array, 'old_encode_item');
-        }
-        return $array;
+        $useMb = function_exists('mb_convert_encoding');
+        return self::recursiveUtf8Encode($array, $useMb);
     }
 
-    function encode_item(&$item, $key)
+    /**
+     * Internal helper that recursively encodes all keys/values as UTF-8.
+     */
+    private static function recursiveUtf8Encode(array $array, bool $useMb): array
     {
+        $encodedArray = [];
         $utf8 = 'UTF-8';
-        $possible_encodings = 'UTF-8, ISO-8859-1'; //This will likely need expanded other encodings we encounter
-        if (is_array($item)) {
-            ArrayUtils::encode_item($item, $key);
-        } elseif (is_string($item)) {
-                if (!mb_check_encoding($key, $utf8)) {
-                    $key = mb_convert_encoding($key, $utf8, $possible_encodings);
-                }
-                if (!mb_check_encoding($item, $utf8)) {
-                    $item = mb_convert_encoding($item, $utf8, $possible_encodings);
-                }
+        $possibleEncodings = 'UTF-8, ISO-8859-1';
+
+        foreach($array as $key => $value) {
+            // Encode the array key if it's a string
+            if(is_string($key)) {
+                $key = $useMb
+                    ? (mb_check_encoding($key, $utf8)
+                        ? $key
+                        : mb_convert_encoding($key, $utf8, $possibleEncodings))
+                    : utf8_encode($key);
+            }
+
+            // Recurse or encode the value
+            if(is_array($value)) {
+                // Recurse for sub-arrays
+                $encodedArray[$key] = self::recursiveUtf8Encode($value, $useMb);
+            } elseif(is_string($value)) {
+                // Encode strings
+                $encodedArray[$key] = $useMb
+                    ? (mb_check_encoding($value, $utf8)
+                        ? $value
+                        : mb_convert_encoding($value, $utf8, $possibleEncodings))
+                    : utf8_encode($value);
+            } else {
+                // For non-string, just assign them directly
+                $encodedArray[$key] = $value;
             }
         }
 
-
-    function old_encode_item(&$item, $key)
-    {
-        if (is_array($item)) {
-            ArrayUtils::old_encode_item($item, $key);
-        } elseif (is_string($item)) {
-                $key = utf8_encode($key);
-                $item = utf8_encode($item);
-        }
+        return $encodedArray;
     }
-}
-
-// [PHP8] array_walk_recursive can not use a static class method.
-function encode_item(&$item, $key)
-{
-    $utf8 = 'UTF-8';
-    $possible_encodings = 'UTF-8, ISO-8859-1'; //This will likely need expanded other encodings we encounter
-    if (is_array($item)) {
-        encode_item($item, $key);
-    } elseif (is_string($item)) {
-        if (!mb_check_encoding($key, $utf8)) {
-            $key = mb_convert_encoding($key, $utf8, $possible_encodings);
-        }
-        if (!mb_check_encoding($item, $utf8)) {
-            $item = mb_convert_encoding($item, $utf8, $possible_encodings);
-        }
-    }
-}
-
-
-function old_encode_item(&$item, &$key)
-{
-    if (is_array($item)) {
-        old_encode_item($item, $key);
-    } elseif (is_string($item)) {
-            $key = utf8_encode($key);
-            $item = utf8_encode($item);
-    }
-    
 }
