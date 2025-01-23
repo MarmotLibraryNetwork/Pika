@@ -228,8 +228,8 @@ public class OfflineCirculation implements IProcessHandler {
 		logger.info(note);
 		int numProcessed = 0;
 		try (
-			//PreparedStatement circulationEntryToProcessStmt = pikaConn.prepareStatement("SELECT offline_circulation.*, user.id AS userId FROM offline_circulation LEFT JOIN user ON user.barcode = offline_circulation.patronBarcode WHERE status='Not Processed' ORDER BY login ASC, patronBarcode ASC, timeEntered ASC");
-			PreparedStatement circulationEntryToProcessStmt = pikaConn.prepareStatement("SELECT offline_circulation.* FROM offline_circulation WHERE status='Not Processed' ORDER BY login ASC, patronBarcode ASC, timeEntered ASC");
+			PreparedStatement circulationEntryToProcessStmt = pikaConn.prepareStatement("SELECT offline_circulation.*, user.id AS userId FROM offline_circulation LEFT JOIN user ON user.barcode = offline_circulation.patronBarcode WHERE status='Not Processed' ORDER BY login ASC, patronBarcode ASC, timeEntered ASC");
+			//PreparedStatement circulationEntryToProcessStmt = pikaConn.prepareStatement("SELECT offline_circulation.* FROM offline_circulation WHERE status='Not Processed' ORDER BY login ASC, patronBarcode ASC, timeEntered ASC");
 			PreparedStatement updateCirculationEntry        = pikaConn.prepareStatement("UPDATE offline_circulation SET timeProcessed = ?, status = ?, notes = ? WHERE id = ?");
 			PreparedStatement sierraVendorOpacUrlStmt       = pikaConn.prepareStatement("SELECT vendorOpacUrl FROM account_profiles WHERE name = 'ils'");
 			//PreparedStatement patronPinStmt                 = pikaConn.prepareStatement("SELECT password FROM user WHERE barcode = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
@@ -244,7 +244,8 @@ public class OfflineCirculation implements IProcessHandler {
 
 						try (ResultSet circulationEntriesToProcessRS = circulationEntryToProcessStmt.executeQuery()) {
 							while (circulationEntriesToProcessRS.next()) {
-								processOfflineCirculationEntryViaSierraAPI(updateCirculationEntry, baseApiUrl, circulationEntriesToProcessRS);
+								//processOfflineCirculationEntryViaSierraAPI(updateCirculationEntry, baseApiUrl, circulationEntriesToProcessRS);
+								processOfflineCirculationEntryViaSierraAPI(updateCirculationEntry, baseApiUrl, circulationEntriesToProcessRS, true);
 								//processOfflineCirculationEntryViaSierraAPI(updateCirculationEntry, baseApiUrl, circulationEntriesToProcessRS, patronPinStmt);
 								numProcessed++;
 								if (numProcessed % 10 == 0){
@@ -320,7 +321,7 @@ public class OfflineCirculation implements IProcessHandler {
 			result = processOfflineCheckIn(baseAirpacUrl, login, loginPassword, initials, initialsPassword, itemBarcode, timeEntered);
 		} else{
 			String patronBarcode = circulationEntriesToProcessRS.getString("patronBarcode");
-			result = processOfflineCheckout(baseAirpacUrl, login, loginPassword, initials, initialsPassword, itemBarcode, patronBarcode);
+			result = processOfflineCheckoutCirca(baseAirpacUrl, login, loginPassword, initials, initialsPassword, itemBarcode, patronBarcode);
 		}
 		if (result.isSuccess()){
 			processLog.incUpdated();
@@ -343,14 +344,22 @@ public class OfflineCirculation implements IProcessHandler {
 		updateCirculationEntry.setLong(1, new Date().getTime() / 1000);
 		updateCirculationEntry.setLong(4, circulationEntryId);
 		String                   itemBarcode   = circulationEntriesToProcessRS.getString("itemBarcode");
-		String                   login         = circulationEntriesToProcessRS.getString("login");
+		String                   sierraLogin   = circulationEntriesToProcessRS.getString("login");
 		String                   patronBarcode = circulationEntriesToProcessRS.getString("patronBarcode");
+		String                   statGroup     = circulationEntriesToProcessRS.getString("statgroup");
 		OfflineCirculationResult result;
 		if (usePin) {
 			String patronPikaId = circulationEntriesToProcessRS.getString("userId");
-			result = processOfflineCheckout(sierraApiUrl, login, itemBarcode, patronBarcode, patronPikaId);
+			if (patronPikaId != null && !patronPikaId.isEmpty()) {
+				result = processOfflineCheckoutRestAPI(sierraApiUrl, sierraLogin, statGroup, itemBarcode, patronBarcode, patronPikaId);
+			} else {
+				logger.error("Didn't find pika user Id for offline circ for patron barcode {}", patronBarcode);
+				result = new OfflineCirculationResult();
+				result.setSuccess(false);
+				result.setNote("Failed to find Pika user Id");
+			}
 		} else {
-			result = processOfflineCheckout(sierraApiUrl, login, itemBarcode, patronBarcode);
+			result = processOfflineCheckoutRestAPI(sierraApiUrl, sierraLogin,itemBarcode, patronBarcode);
 		}
 		if (result.isSuccess()){
 			processLog.incUpdated();
@@ -387,7 +396,7 @@ public class OfflineCirculation implements IProcessHandler {
 	 * @param patronBarcode
 	 * @return
 	 */
-	private OfflineCirculationResult processOfflineCheckout(String baseAirpacUrl, String login, String loginPassword, String initials, String initialsPassword, String itemBarcode, String patronBarcode) {
+	private OfflineCirculationResult processOfflineCheckoutCirca(String baseAirpacUrl, String login, String loginPassword, String initials, String initialsPassword, String itemBarcode, String patronBarcode) {
 		OfflineCirculationResult result = new OfflineCirculationResult();
 		try{
 			//Login to airpac (login)
@@ -561,7 +570,7 @@ public class OfflineCirculation implements IProcessHandler {
 		return result;
 	}
 
-	private OfflineCirculationResult processOfflineCheckout(String baseSierraApiUrl, String sierraCircLogin, String itemBarcode, String patronBarcode) {
+	private OfflineCirculationResult processOfflineCheckoutRestAPI(String baseSierraApiUrl, String sierraCircLogin, String itemBarcode, String patronBarcode) {
 		OfflineCirculationResult result      = new OfflineCirculationResult();
 		String                   checkoutUrl = baseSierraApiUrl + "/patrons/checkout";
 		try {
@@ -606,15 +615,29 @@ public class OfflineCirculation implements IProcessHandler {
 	 * @param patronPikaId
 	 * @return
 	 */
-	private OfflineCirculationResult processOfflineCheckout(String baseSierraApiUrl, String sierraCircLogin, String itemBarcode, String patronBarcode, String patronPikaId) {
+	private OfflineCirculationResult processOfflineCheckoutRestAPI(String baseSierraApiUrl, String sierraCircLogin, String sierraStatGroup, String itemBarcode, String patronBarcode, String patronPikaId) {
 		OfflineCirculationResult result      = new OfflineCirculationResult();
 		String                   checkoutUrl = baseSierraApiUrl + "/patrons/checkout";
 		String                   pin         = "";
 		try {
+//			JSONObject json = new JSONObject()
+//							.put("patronBarcode", patronBarcode)
+//							.put("itemBarcode", itemBarcode)
+//							.put("username", sierraCircLogin);
 			JSONObject json = new JSONObject()
 							.put("patronBarcode", patronBarcode)
-							.put("itemBarcode", itemBarcode)
-							.put("username", sierraCircLogin);
+							.put("itemBarcode", itemBarcode);
+			if (!sierraCircLogin.isEmpty()) {
+							json.put("username", sierraCircLogin);
+			}
+			if (!sierraStatGroup.isEmpty()){
+				try {
+					int statGroupNumber = Integer.parseInt(sierraStatGroup);
+					json.put("statgroup", statGroupNumber);
+				} catch (NumberFormatException | JSONException e) {
+					logger.error("Error processing stat group number {}", sierraStatGroup, e);
+				}
+			}
 			try {
 				if (patronPikaId != null && !patronPikaId.isEmpty()) {
 					String token                   = md5(patronBarcode);
@@ -626,6 +649,8 @@ public class OfflineCirculation implements IProcessHandler {
 						JSONObject getPatronPin        = new JSONObject(getPatronPinJsonStr);
 						if (getPatronPin.has("pin")){
 							pin = getPatronPin.getString("pin");
+						} else {
+							logger.error("Pin not found for pika user id {} with barcode {} : {}", patronPikaId, patronBarcode, getPatronPin);
 						}
 					}
 				}
@@ -648,7 +673,7 @@ public class OfflineCirculation implements IProcessHandler {
 				if (response.has("id")){
 					result.setSuccess(true);
 				} else {
-					logger.info("Check out failed. Request : " + checkoutJson  + "  Response : " + response);
+					logger.info("Check out failed. Request : {}  Response : {}", checkoutJson, response);
 					String error = response.getString("name");
 					if (response.has("description")){
 						error += " : " + response.getString("description");
@@ -932,10 +957,10 @@ public class OfflineCirculation implements IProcessHandler {
 					//}
 				}
 
-			} catch (java.net.SocketTimeoutException e) {
+			} catch (SocketTimeoutException e) {
 				logger.error("Socket timeout talking to sierra API (callSierraApiURL) " + sierraUrl + " - " + e);
 				lastCallTimedOut = true;
-			} catch (java.net.ConnectException e) {
+			} catch (ConnectException e) {
 				logger.error("Timeout connecting to sierra API (callSierraApiURL) " + sierraUrl + " - " + e);
 				lastCallTimedOut = true;
 			} catch (Exception e) {
