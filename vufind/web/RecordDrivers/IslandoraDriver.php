@@ -1567,7 +1567,7 @@ abstract class IslandoraDriver extends RecordInterface {
 					}
 				}
 			}
-			$timer->logTime("Loaded links");
+			$timer->logTime('Loaded links');
 		}
 		return $this->links;
 	}
