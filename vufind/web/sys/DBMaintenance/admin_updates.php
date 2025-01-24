@@ -54,6 +54,16 @@ function getAdminUpdates() {
 				'ALTER TABLE `materials_request` ADD COLUMN `staffComments` LONGTEXT NULL DEFAULT NULL AFTER `assignedTo`; '
 			]
 		],
+
+		'2025.01.0_offline_circ_statGroup' => [
+			'release'         => '2025.01.0',
+			'title'           => 'Add Stat Group to Offline Circ table',
+			'description'     => 'Add Sierra statGroup column so that offline checkouts can populate sierra stat groups.',
+			'continueOnError' => true,
+			'sql'             => [
+				'ALTER TABLE `offline_circulation` ADD COLUMN `statGroup` VARCHAR(5) NULL DEFAULT NULL AFTER `loginPassword`;'
+			]
+		],
 	];
 }
 
