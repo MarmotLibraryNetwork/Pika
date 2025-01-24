@@ -870,9 +870,9 @@ class GroupedWork_AJAX extends AJAXHandler {
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 			$result['success'] = true;
-			$id                = $_REQUEST['id'];
-			$listId            = $_REQUEST['listId'];
-			$notes             = $_REQUEST['notes'];
+			$groupedWorkId     = $_REQUEST['id'];
+			$listId            = $_REQUEST['listId'] ?? null;
+			$notes             = $_REQUEST['notes'] ?? null;
 
 			//Check to see if we need to create a list
 			$userList = new UserList();
@@ -896,11 +896,11 @@ class GroupedWork_AJAX extends AJAXHandler {
 				$userListEntry         = new UserListEntry();
 				$userListEntry->listId = $userList->id;
 				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-				if (!GroupedWork::validGroupedWorkId($id)){
+				if (!GroupedWork::validGroupedWorkId($groupedWorkId)){
 					$result['success'] = false;
 					$result['message'] = 'Sorry, that is not a valid entry for the list.';
 				}else{
-					$userListEntry->groupedWorkPermanentId = $id;
+					$userListEntry->groupedWorkPermanentId = $groupedWorkId;
 					$existingEntry                         = $userListEntry->find(true);
 					$userListEntry->notes                  = strip_tags($notes);
 					$userListEntry->dateAdded              = time();

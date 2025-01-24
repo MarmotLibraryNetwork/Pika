@@ -71,15 +71,15 @@ class ResetPin extends Action{
 				$confirmNewPin = trim($_REQUEST['pin2']);
 				$resetToken    = $_REQUEST['resetToken'];
 				$userID        = $_REQUEST['uid'];
-                $bc            = $_REQUEST['bc'];
+				$bc            = $_REQUEST['bc'] ?? null; //TODO: php variable $bc not being used?
 				$newPinLength  = strlen($newPin);
-			
-                if (!empty($userID)){
-                    
+
+				if (!empty($userID)){
+
 					$patron = new User;
 					$patron->get($userID);
-                    
-                    // For Polaris, we don't need to have a user in Pika to update the PIN.
+
+					// For Polaris, we don't need to have a user in Pika to update the PIN.
 					if (empty($patron->id) && $driver !== "Polaris"){
 						// Did not find a matching user to the uid
 						// This check could be optional if the resetPin method verifies that the ILS user matches the Pika user.

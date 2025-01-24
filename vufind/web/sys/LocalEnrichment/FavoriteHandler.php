@@ -560,6 +560,11 @@ class FavoriteHandler {
 		$interface->assign('recordsPerPage', $pageInfo['perPage']);
 
 		$link = $sortOptions[$this->sort]['sortUrl']; // Use sanitized url to prevent cross-site script injection via url variables
+		//TODO: what to do when $this->sort isn't set
+		if (is_null($this->sort)){
+			global $pikaLogger;
+			$pikaLogger->error("List sort not set when it should always have a value" . $_SERVER["REQUEST_URI"]);
+		}
 		if (preg_match('/[&?]page=/', $link)){
 			$link = preg_replace("/page=\\d+/", 'page=%d', $link);
 		}elseif (strpos($link, '?') > 0){
