@@ -906,7 +906,7 @@ class User extends DB_DataObject {
 			}
 		}
 		if (isset($_POST['myLocation2'])){
-			if ($_POST['myLocation2'] == 0){
+			if ($_POST['myLocation2'] === 0){
 				$this->myLocation2Id = $_POST['myLocation2'];
 			}else{
 				$location = new Location();
@@ -939,11 +939,11 @@ class User extends DB_DataObject {
 	 * @return  bool       true if this user can edit passed list
 	 */
 	function canEditList($list){
-		if ($this->id == $list->user_id){
+		if($this->id == $list->user_id) {
 			return true;
-		}elseif ($this->hasRole('opacAdmin')){
+		} elseif ($this->hasRole('opacAdmin')) {
 			return true;
-		}elseif ($this->hasRole('libraryAdmin') || $this->hasRole('contentEditor') || $this->hasRole('libraryManager')){
+		} elseif ($this->hasRole('libraryAdmin') || $this->hasRole('contentEditor') || $this->hasRole('libraryManager')){
 			$listUser     = new User();
 			$listUser->id = $list->user_id;
 			$listUser->find(true);
@@ -957,11 +957,11 @@ class User extends DB_DataObject {
 				//Allow NYT Times lists to be edited by any library admins and library managers
 				return true;
 			}
-		}elseif ($this->hasRole('locationManager')){
+		} elseif ($this->hasRole('locationManager')){
 			$listUser     = new User();
 			$listUser->id = $list->user_id;
 			$listUser->find(true);
-			if ($this->homeLocationId == $listUser->homeLocationId){
+			if($this->homeLocationId === $listUser->homeLocationId) {
 				return true;
 			}
 		}
@@ -975,7 +975,7 @@ class User extends DB_DataObject {
 		// Note: Use this for one persistent User.
 		// If fetching multiple Users in a fetch loop use Library::getPatronHomeLibrary($user) instead
 
-		if ($this->homeLibrary == null){
+		if ($this->homeLibrary === null){
 			$this->homeLibrary = Library::getPatronHomeLibrary($this);
 		}
 		return $this->homeLibrary;
@@ -995,7 +995,7 @@ class User extends DB_DataObject {
 		$this->updateRuntimeInformation();
 		$myCheckouts = $this->numCheckedOutIls + $this->numCheckedOutOverDrive + $this->numCheckedOutHoopla;
 		if ($includeLinkedUsers){
-			if ($this->getLinkedUsers() != null){
+			if($this->getLinkedUsers() !== null){
 				/** @var User $user */
 				foreach ($this->getLinkedUsers() as $user){
 					$myCheckouts += $user->getNumCheckedOutTotal(false);
@@ -1271,7 +1271,7 @@ class User extends DB_DataObject {
 		//Get the list of pickup branch locations for display in the user interface.
 		// using $user to be consistent with other code use of getPickupBranches()
 		$userLocation = new Location();
-		if ($recordSource == $this->getAccountProfile()->recordSource){
+		if ($recordSource === $this->getAccountProfile()->recordSource){
 			$locations = $userLocation->getPickupBranches($this, $this->homeLocationId);
 		}else{
 			$locations = [];
