@@ -450,10 +450,10 @@ class MyAccount_AJAX extends AJAXHandler {
 	}
 
 	function cancelHolds(){ // for cancelling multiple holds
-		$success = array();
-		$failed = array();
-		$result = array();
-		$cancelId = array();
+		$success  = [];
+		$failed   = [];
+		$result   = [];
+		$cancelId = [];
 		//TODO: likely obsolete or needs refactoring to be used
 		try {
 			global $configArray;
@@ -464,34 +464,30 @@ class MyAccount_AJAX extends AJAXHandler {
 			if (!empty($_REQUEST['holdselected'])){
 				$cancelId = $_REQUEST['holdselected'];
 			}
-//			$locationId = isset($_REQUEST['location']) ? $_REQUEST['location'] : null; //not passed via ajax. don't think it's needed
-			foreach($cancelId as $cancel)
-				{
-					if(!strstr($cancel, "~overdrive~")){
-						$result = $catalog->driver->cancelHold($user, null, $cancel);
-						if($result['success'] == true)
-						{
-							$success[] = $result;
-							$result['titles'] = $cancel;
-						}else{
-							$failed[] = $cancel;
-						}
+			foreach ($cancelId as $cancel){
+				if (!strstr($cancel, "~overdrive~")){
+					$result = $catalog->driver->cancelHold($user, null, $cancel);
+					if ($result['success'] == true){
+						$success[]        = $result;
+						$result['titles'] = $cancel;
 					}else{
-					$overdriveCancel = explode("~",$cancel);
-					$overdriveId = $overdriveCancel[2];
+						$failed[] = $cancel;
+					}
+				}else{
+					$overdriveCancel = explode("~", $cancel);
+					$overdriveId     = $overdriveCancel[2];
 
 					$overdrive = \Pika\PatronDrivers\EcontentSystem\OverDriveDriverFactory::getDriver();
-					$result = $overdrive->cancelOverDriveHold($overdriveId, $user);
-						if($result['success'] == true)
-						{
-							$result['titles'] = $cancel;
-							$success[] = $result;
-						}else{
-							$failed[] = $cancel;
-						}
-
+					$result    = $overdrive->cancelOverDriveHold($overdriveId, $user);
+					if ($result['success'] == true){
+						$result['titles'] = $cancel;
+						$success[]        = $result;
+					}else{
+						$failed[] = $cancel;
 					}
+
 				}
+			}
 		} catch (PDOException $e){
 			// What should we do with this error?
 			if ($configArray['System']['debug']){

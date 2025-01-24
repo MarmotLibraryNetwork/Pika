@@ -1021,7 +1021,8 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 
 			return [
 				'success' => false,
-				'message' => 'Sorry, the hold was not canceled'];
+				'message' => 'Sorry, the hold was not canceled'
+			];
 		}
 	}
 
