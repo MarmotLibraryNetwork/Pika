@@ -477,12 +477,12 @@ class BookCoverProcessor {
 		]);
 
 		$this->logTime('Fetch image from external url');
-		if ($image = @file_get_contents($url, false, $context)){
+		if (isset($url) && $image = @file_get_contents($url, false, $context)){
 			$this->logTime('Fetched image from external url');
 			// Figure out file paths -- $tempFile will be used to store the downloaded
 			// image for analysis.  $finalFile will be used for long-term storage if
 			// $cache is true or for temporary display purposes if $cache is false.
-			$tempFile  = str_replace('.png', uniqid(), $this->cacheFile);
+			$tempFile  = str_replace('.png', uniqid('', true), $this->cacheFile);
 			$finalFile = $cache ? $this->cacheFile : $tempFile . '.png';
 			if ($this->doCoverLogging){
 				$this->logger->debug("Processing url $url to $finalFile");
