@@ -74,17 +74,15 @@ class Record_AJAX extends AJAXHandler {
 			$linkedUsers                    = $user->getLinkedUsers();
 			if (count($linkedUsers) >= 1){
 				foreach ($locations as $location){
-					if (count($location->pickupUsers) > 1){
-                        if (is_array($location->pickupUsers)){
-                            $_pu = implode(',', $location->pickupUsers);
-                            unset($location->pickupUsers);
-                            $location->pickupUsers = $_pu;
-                        }
-                        $multipleAccountPickupLocations = true;
+					if (!empty($location->pickupUsers) && is_array($location->pickupUsers) && count($location->pickupUsers) > 1){
+						$_pu = implode(',', $location->pickupUsers);
+						unset($location->pickupUsers);
+						$location->pickupUsers          = $_pu;
+						$multipleAccountPickupLocations = true;
 					}
 				}
 			}
-            
+
 			$interface->assign('pickupLocations', $locations);
 			$interface->assign('multipleUsers', $multipleAccountPickupLocations); // switch for displaying the account drop-down (used for linked accounts)
 
