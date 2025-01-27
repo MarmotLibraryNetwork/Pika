@@ -3,6 +3,7 @@
     "vendor-dir": "/usr/share/composer/vendor"
   },
   "require": {
+    "php": ">=8.3",
     "php-curl-class/php-curl-class": "~8-stable",
     "monolog/monolog": "~1.2",
     "php-console/php-console": "~3.1",
