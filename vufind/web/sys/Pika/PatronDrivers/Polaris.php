@@ -1891,7 +1891,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             $this->logger->error('Curl error: ' . $c->errorMessage, [
                 'http_code' => $c->httpStatusCode,
                 'request_url' => $url,
-                'Headers' => implode(PHP_EOL, $c->requestHeaders['data']),
+                'Headers' => var_export($c->requestHeaders, true),
             ]);
             return null;
         } elseif ($error = $this->_isPapiError($c->response)) {
