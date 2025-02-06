@@ -89,8 +89,11 @@ class WCPLRecordProcessor extends HorizonRecordProcessor {
 
 	@Override
 	protected void loadDateAdded(RecordIdentifier identifier, DataField itemField, ItemInfo itemInfo) {
-		Date dateAdded = indexer.getDateFirstDetected(identifier);
-		itemInfo.setDateAdded(dateAdded);
+		super.loadDateAdded(identifier, itemField, itemInfo);
+		if (itemInfo.getDateAdded() == null) {
+			Date dateAdded = indexer.getDateFirstDetected(identifier);
+			itemInfo.setDateAdded(dateAdded);
+		}
 	}
 
 	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, RecordIdentifier identifier) {
