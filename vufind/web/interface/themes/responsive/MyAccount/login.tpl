@@ -13,9 +13,9 @@
 		</p>
 		{if $action == "WSJ"}
 			<div class="alert alert-info">
-				<p>In order for you to access the <em>Wall Street Journal</em> as provided	by <em>{$WSJLibraryName}</em> you are required to log in on this page with {$usernameLabel|strtolower} and {$passwordLabel|strtolower}.</p>
+				<p>In order for you to access the <em>Wall Street Journal</em> as provided by <em>{$WSJLibraryName}</em> you are required to log in on this page with {$usernameLabel|strtolower} and {$passwordLabel|strtolower}.</p>
 				<p>Once you log in with the requested credentials, you will be directed to the <em>Wall Street Journal</em> site for <em>{$WSJLibraryName}</em>, where you will set up <em>WSJ.com</em> login credentials, and then you can browse and read articles and full issues of the Wall Street Journal.</p>
-				<p>You will have access, from anywhere, for the next 10 days. After 10 days, you can return to your library's site and redeem access - with the same login credentials - for another 10 days, and repeat this process as often as you would like.</p>
+				<p>You will have access, from anywhere, for the next {translate text="wsj_access_period"}. After {translate text="wsj_access_period"}, you can return to your library's site and redeem access - with the same login credentials - for another {translate text="wsj_access_period"}, and repeat this process as often as you would like.</p>
 			</div>
 		{/if}
 		{if $offline && !$enableLoginWhileOffline}
