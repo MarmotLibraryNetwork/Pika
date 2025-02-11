@@ -43,7 +43,7 @@ class Archive_Place extends Archive_Entity{
 		$addressInfo = $interface->getVariable('addressInfo');
 		if (empty($addressInfo) && $geoData != null){
 
-			$addressInfo['latitude'] = $geoData['latitude'];
+			$addressInfo['latitude']  = $geoData['latitude'];
 			$addressInfo['longitude'] = $geoData['longitude'];
 
 			$interface->assign('addressInfo', $addressInfo);

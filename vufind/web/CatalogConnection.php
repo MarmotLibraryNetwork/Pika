@@ -1141,19 +1141,19 @@ class CatalogConnection
 			return $this->driver->renewAll($patron);
 		}else{
 			//Get all list of all transactions
-			$currentTransactions = $this->driver->getMyCheckouts($patron);
-			$renewResult = [
+			$currentTransactions  = $this->driver->getMyCheckouts($patron);
+			$renewResult          = [
 				'success'   => true,
 				'message'   => [],
 				'Renewed'   => 0,
 				'Unrenewed' => 0
 			];
 			$renewResult['Total'] = count($currentTransactions);
-			$numRenewals = 0;
-			$failure_messages = array();
+			$numRenewals          = 0;
+			$failure_messages     = [];
 			foreach ($currentTransactions as $transaction){
 				if ((isset($transaction['canrenew']) && $transaction['canrenew'] == true) || !isset($transaction['canrenew'])) {
-					// If we are calculating canrew, make a renewall attempt.  If we are though, don't make an attempt if canrenew is false
+					// If we are calculating canrew, make a renewall attempt. If we are though, don't make an attempt if canrenew is false
 					$curResult = $this->renewItem($patron, $transaction['recordId'], $transaction['renewIndicator'], null);
 					if ($curResult['success']){
 						$numRenewals++;
@@ -1164,13 +1164,13 @@ class CatalogConnection
 					$failure_messages[] = '"' . $transaction['title'] . '" can not be renewed';
 				}
 			}
-			$renewResult['Renewed'] += $numRenewals;
+			$renewResult['Renewed']   += $numRenewals;
 			$renewResult['Unrenewed'] = $renewResult['Total'] - $renewResult['Renewed'];
 			if ($renewResult['Unrenewed'] > 0) {
 				$renewResult['success'] = false;
 				$renewResult['message'] = $failure_messages;
 			}else{
-				$renewResult['message'][] = "All items were renewed successfully.";
+				$renewResult['message'][] = 'All items were renewed successfully.';
 			}
 			return $renewResult;
 		}

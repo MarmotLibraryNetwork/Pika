@@ -100,11 +100,11 @@ class PersonDriver extends IslandoraDriver {
 
 		$relatedPeople = $this->getRelatedPeople();
 		if (count($relatedPeople)){
-			$moreDetailsOptions['familyDetails'] = array(
+			$moreDetailsOptions['familyDetails'] = [
 				'label'         => 'Family Details',
 				'body'          => $interface->fetch('Archive/relatedPeopleSection.tpl'),
 				'hideByDefault' => false,
-			);
+			];
 			unset($moreDetailsOptions['relatedPeople']);
 		}
 

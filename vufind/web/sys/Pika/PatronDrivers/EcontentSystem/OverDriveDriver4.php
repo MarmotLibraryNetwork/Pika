@@ -122,7 +122,7 @@ class OverDriveDriver4 {
 				}
 			}else{
 				// OverDrive is not configured
-				$this->logger->warning("Overdrive missing configuration.");
+				$this->logger->warning('Overdrive missing configuration.');
 				return false;
 			}
 		}
