@@ -41,6 +41,8 @@ abstract class IslandoraDriver extends RecordInterface {
 	protected $archiveObject = null;
 
 	protected $modsData = null;
+	private $hiddenLinkTypes = ['wikipedia', 'geoNames', 'whosOnFirst', 'relatedPika', 'fortlewisgeoplaces'];
+
 	/**
 	 * Constructor.  We build the object using all the data retrieved
 	 * from the (Solr) index.  Since we have to
@@ -1557,7 +1559,7 @@ abstract class IslandoraDriver extends RecordInterface {
 									$linkText = $linkType;
 							}
 						}
-						$isHidden      = in_array($linkType, ['wikipedia', 'geoNames', 'whosOnFirst', 'relatedPika']);
+						$isHidden      = in_array($linkType, $this->hiddenLinkTypes);
 						$this->links[] = [
 							'type'   => $linkType,
 							'link'   => $link,
