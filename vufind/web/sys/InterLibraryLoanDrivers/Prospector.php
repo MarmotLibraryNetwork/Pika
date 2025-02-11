@@ -48,9 +48,12 @@ class Prospector {
 
 		//Load the HTML from Prospector
 		try {
-			$curl            = new Curl();
+			global $configArray;
+			$userAgent = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
+			$curl      = new Curl();
 			$curl->setOpts([
 				CURLOPT_SSL_VERIFYPEER => false, // Something strange going on with Prospector's peer cert, curl doesn't  validate
+				CURLOPT_USERAGENT      => $userAgent,
 			]);
 			$prospectorInfo = $curl->get($prospectorUrl);
 		} catch (ErrorException $e){
@@ -139,19 +142,19 @@ class Prospector {
 			}
 
 			$prospectorTitles = array_slice($prospectorTitles, 0, $maxResults, true);
-			return array(
+			return [
 				'firstRecord' => $firstResult,
 				'lastRecord'  => $lastResult,
 				'resultTotal' => $numberOfResults,
 				'records'     => $prospectorTitles,
-			);
+			];
 		}else{
-			return array(
+			return [
 				'firstRecord' => 0,
 				'lastRecord'  => 0,
 				'resultTotal' => 0,
-				'records'     => array(),
-			);
+				'records'     => [],
+			];
 		}
 
 	}
