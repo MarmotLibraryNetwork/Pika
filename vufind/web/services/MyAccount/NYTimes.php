@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,21 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/**
- *
- *
- * @category Pika
- * @author: Pascal Brammeier
- * Date: 12/1/2020
- *
- */
-
 require_once ROOT_DIR . '/services/MyAccount/NewspaperLogin.php';
 
-class WSJ extends NewspaperLogin {
+class NYTimes extends NewspaperLogin {
 
-	public String $newpaperName = 'Wall Street Journal';
+	public string $newpaperName = 'New York Times';
 
-	public String $newpaperUrl = 'wsjUrl';
+	public string $newpaperUrl = 'nytimesUrl';
 
 }
