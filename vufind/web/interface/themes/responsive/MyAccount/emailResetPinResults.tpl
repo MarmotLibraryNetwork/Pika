@@ -4,7 +4,9 @@
 		{if $emailResult.error}
 			<p class="alert alert-danger">{$emailResult.error}</p>
 			<div>
+				{if $offline == false}
 				<a class="btn btn-primary" role="button" href="/MyAccount/EmailResetPin">Try Again</a>
+				{/if}
 			</div>
 		{else}
 			<p class="alert alert-success">
