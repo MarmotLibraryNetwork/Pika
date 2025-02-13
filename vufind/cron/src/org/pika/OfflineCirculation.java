@@ -627,10 +627,10 @@ public class OfflineCirculation implements IProcessHandler {
 			JSONObject json = new JSONObject()
 							.put("patronBarcode", patronBarcode)
 							.put("itemBarcode", itemBarcode);
-			if (!sierraCircLogin.isEmpty()) {
+			if (sierraCircLogin != null && !sierraCircLogin.isEmpty()) {
 							json.put("username", sierraCircLogin);
 			}
-			if (!sierraStatGroup.isEmpty()){
+			if (sierraStatGroup != null && !sierraStatGroup.isEmpty()){
 				try {
 					int statGroupNumber = Integer.parseInt(sierraStatGroup);
 					json.put("statgroup", statGroupNumber);
