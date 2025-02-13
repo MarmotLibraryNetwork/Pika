@@ -1191,6 +1191,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		// Pika. Don't rely on the email in the database as this can cause issues.
 		$patronId = $this->getPatronId($barcode);
 		if(!$patronId) {
+			//TODO: better error message for when sierra is unresponsive.
 			return ['error' => 'The barcode you provided is not valid. Please check the barcode and try again.'];
 		}
 		// getPatron fetches new user data from Sierra and updates any conflicting details and returns a fresh user

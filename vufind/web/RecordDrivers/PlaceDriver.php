@@ -91,7 +91,8 @@ class PlaceDriver extends IslandoraDriver {
 						$whosOnFirstData = json_decode($whosOnFirstDataRaw, true);
 						if ($whosOnFirstData == null){
 							if (preg_match('/<a href="(.*\\.geojson)"/', $whosOnFirstDataRaw, $matches)){
-								$newLink                                            = 'https://whosonfirst.mapzen.com' . $matches[1];
+								//$newLink                                            = 'https://whosonfirst.mapzen.com' . $matches[1];
+								$newLink                                            = 'https://spelunker.whosonfirst.org/' . $matches[1];
 								$whosOnFirstDataRaw                                 = file_get_contents($newLink);
 								$this->archiveObject->getDatastream('WOF')->content = $whosOnFirstDataRaw;
 								$whosOnFirstData                                    = json_decode($whosOnFirstDataRaw, true);
