@@ -205,15 +205,16 @@ public class OfflineCirculation implements IProcessHandler {
 
 		} catch (IOException | SQLException e) {
 			processLog.incErrors();
-			processLog.addNote("Error processing offline hold " + holdId + " - " + e.toString());
+			String note = "Error processing offline hold " + holdId + " - " + e;
+			processLog.addNote(note);
 			updateHold.setString(2, "Hold Failed");
-			updateHold.setString(3, "Error processing offline hold " + holdId + " - " + e.toString());
+			updateHold.setString(3, note);
 		}
 		try {
 			updateHold.executeUpdate();
 		} catch (SQLException e) {
 			processLog.incErrors();
-			processLog.addNote("Error updating hold status for hold " + holdId + " - " + e.toString());
+			processLog.addNote("Error updating hold status for hold " + holdId + " - " + e);
 		}
 	}
 
@@ -231,7 +232,7 @@ public class OfflineCirculation implements IProcessHandler {
 			PreparedStatement circulationEntryToProcessStmt = pikaConn.prepareStatement("SELECT offline_circulation.*, user.id AS userId FROM offline_circulation LEFT JOIN user ON user.barcode = offline_circulation.patronBarcode WHERE status='Not Processed' ORDER BY login ASC, patronBarcode ASC, timeEntered ASC");
 			//PreparedStatement circulationEntryToProcessStmt = pikaConn.prepareStatement("SELECT offline_circulation.* FROM offline_circulation WHERE status='Not Processed' ORDER BY login ASC, patronBarcode ASC, timeEntered ASC");
 			PreparedStatement updateCirculationEntry        = pikaConn.prepareStatement("UPDATE offline_circulation SET timeProcessed = ?, status = ?, notes = ? WHERE id = ?");
-			PreparedStatement sierraVendorOpacUrlStmt       = pikaConn.prepareStatement("SELECT vendorOpacUrl FROM account_profiles WHERE name = 'ils'");
+			PreparedStatement sierraVendorOpacUrlStmt       = pikaConn.prepareStatement("SELECT vendorOpacUrl, loginConfiguration FROM account_profiles WHERE name = 'ils'");
 			//PreparedStatement patronPinStmt                 = pikaConn.prepareStatement("SELECT password FROM user WHERE barcode = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
 		){
 			try (ResultSet sierraVendorOpacUrlRS = sierraVendorOpacUrlStmt.executeQuery()) {
@@ -241,11 +242,26 @@ public class OfflineCirculation implements IProcessHandler {
 						logger.error("Sierra API version must be set.");
 					} else {
 						baseApiUrl = sierraVendorOpacUrlRS.getString("vendorOpacUrl") + "/iii/sierra-api/v" + apiVersion;
+						String loginConfiguration = sierraVendorOpacUrlRS.getString("loginConfiguration");
+						boolean usePin = loginConfiguration.equalsIgnoreCase("barcode_pin");
+						if (usePin){
+							boolean isAllowPinOn = PikaConfigIni.getBooleanIniValue("System", "allowGetPatronPin");
+							if (!isAllowPinOn){
+								String message = "Patron pins required for processing offline circs, but config.ini setting 'allowGetPatronPin' is off.";
+								logger.error(message);
+								processLog.incErrors();
+								processLog.addNote(message);
+								processLog.setFinished();
+								processLog.saveToDatabase(pikaConn, logger);
+								System.out.println(message);
+								System.exit(1);
+							}
+						}
 
 						try (ResultSet circulationEntriesToProcessRS = circulationEntryToProcessStmt.executeQuery()) {
 							while (circulationEntriesToProcessRS.next()) {
 								//processOfflineCirculationEntryViaSierraAPI(updateCirculationEntry, baseApiUrl, circulationEntriesToProcessRS);
-								processOfflineCirculationEntryViaSierraAPI(updateCirculationEntry, baseApiUrl, circulationEntriesToProcessRS, true);
+								processOfflineCirculationEntryViaSierraAPI(updateCirculationEntry, baseApiUrl, circulationEntriesToProcessRS, usePin);
 								//processOfflineCirculationEntryViaSierraAPI(updateCirculationEntry, baseApiUrl, circulationEntriesToProcessRS, patronPinStmt);
 								numProcessed++;
 								if (numProcessed % 10 == 0){
