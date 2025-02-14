@@ -1080,9 +1080,9 @@ class Library extends DB_DataObject {
 				// TODO: Add documentation link.
 				//'helpLink'   => '',
 				'properties' => [
-					'nytimes' => ['property' => 'nytimesUrl', 'type' => 'text', 'label' => 'NY Times Subscription URL', 'description' => 'The URL to provide to an authenticated patron for access to the newspaper'],
-					'wp'      => ['property' => 'wpUrl', 'type' => 'text', 'label' => 'Washington Post Subscription URL', 'description' => 'The URL to provide to an authenticated patron for access to the newspaper', 'hideInLists' => true],
-					'wsj'     => ['property' => 'wsjUrl', 'type' => 'text', 'label' => 'Wallstreet Journal Subscription URL', 'description' => 'The URL to provide to an authenticated patron for access to the newspaper', 'hideInLists' => true],
+					'nytimes' => ['property' => 'nytimesUrl', 'type' => 'text', 'label' => 'NY Times Subscription URL',            'description' => 'The URL to provide to an authenticated patron for access to the newspaper'],
+					'wsj'     => ['property' => 'wsjUrl',     'type' => 'text', 'label' => 'Wall Street Journal Subscription URL', 'description' => 'The URL to provide to an authenticated patron for access to the newspaper'],
+					'wp'      => ['property' => 'wpUrl',      'type' => 'text', 'label' => 'Washington Post Subscription URL',     'description' => 'The URL to provide to an authenticated patron for access to the newspaper'],
 				],
 			],
 
