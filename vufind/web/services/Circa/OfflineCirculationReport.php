@@ -28,6 +28,7 @@
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Circa/OfflineCirculationEntry.php';
 class Circa_OfflineCirculationReport extends Admin_Admin{
+	private $daysDueFromNow = 21;
 	public function launch(){
 		global $interface;
 
@@ -43,6 +44,8 @@ class Circa_OfflineCirculationReport extends Admin_Admin{
 			$endDate = new DateTime();
 		}
 		$endDate->setTime(23,59,59); //second before midnight
+
+		$exportToSierra   = !empty($_REQUEST['exportToSierra']);
 		$typesToInclude   = $_REQUEST['typesToInclude'] ?? 'checkouts';
 		$loginsToInclude  = $_REQUEST['loginsToInclude'] ?? '';
 		$hideNotProcessed = isset($_REQUEST['hideNotProcessed']);
@@ -89,12 +92,36 @@ class Circa_OfflineCirculationReport extends Admin_Admin{
 				$offlineCirculationEntryObj->whereAdd("login IN ($loginsToFind)", 'AND');
 			}
 		}
+
+		if ($exportToSierra){
+			$sierraCircs = [];
+			$dueDate     = date('YmdHi', strtotime("+$this->daysDueFromNow days"));
+		}
+		if (!empty($_REQUEST['fetchStatGroups'])){
+			require_once ROOT_DIR . '/sys/Pika/CirculationSystemDrivers/SierraDNA.php';
+			$sierraDna           = new Pika\CirculationSystemDrivers\SierraDNA();
+			$loginsAndStatGroups = $sierraDna->fetchSierraLoginsAndStatGroupNumbers();
+		}
 		$offlineCirculationEntryObj->find();
 		$totalRecords      = 0;
 		$totalPassed       = 0;
 		$totalFailed       = 0;
 		$totalNotProcessed = 0;
 		while ($offlineCirculationEntryObj->fetch()){
+
+			// Special Actions
+			if (!empty($_REQUEST['markExported'])){
+				$offlineCirculationEntryObj->status = 'Processing Succeeded';
+				$offlineCirculationEntryObj->notes  = 'Marked as processed for the export to Sierra Offline Circulation App';
+				$offlineCirculationEntryObj->update();
+			} elseif (!empty($_REQUEST['fetchStatGroups'])){
+				if (!empty($offlineCirculationEntryObj->login) && array_key_exists($offlineCirculationEntryObj->login, $loginsAndStatGroups)){
+					$offlineCirculationEntryObj->statGroup = $loginsAndStatGroups[$offlineCirculationEntryObj->login];
+					$offlineCirculationEntryObj->update();
+				}
+			}
+
+			// Regular Display
 			$offlineCirculationEntries[] = clone $offlineCirculationEntryObj;
 			$totalRecords++;
 			if ($offlineCirculationEntryObj->status == 'Not Processed'){
@@ -104,12 +131,37 @@ class Circa_OfflineCirculationReport extends Admin_Admin{
 			}else{
 				$totalFailed++;
 			}
+
+			// Export for processing is Sierra Offline Circulation App
+			if ($exportToSierra){
+				// Type of offline circ to process
+				$cirLine = ($typesToInclude == 'checkouts') ? 'o' : (($typesToInclude == 'checkins') ? 'i' : 'r' /* renewals */ );
+				$cirLine .= ':';
+				$cirLine .= date('YmdHi', $offlineCirculationEntryObj->timeEntered);
+				$cirLine .= ':';
+				$cirLine .= 'b' . $offlineCirculationEntryObj->itemBarcode;
+				$cirLine .= ':';
+				$cirLine .= 'b' . $offlineCirculationEntryObj->patronBarcode;
+				$cirLine .= ':';
+				$cirLine .= $dueDate;
+				$cirLine .= ':';
+				$cirLine .= $offlineCirculationEntryObj->statGroup ?? 0;  // Stat group
+				$sierraCircs[] = $cirLine . PHP_EOL;
+			}
 		}
+
+		// Summary stats
 		$interface->assign('totalRecords', $totalRecords);
 		$interface->assign('totalPassed', $totalPassed);
 		$interface->assign('totalFailed', $totalFailed);
 		$interface->assign('totalNotProcessed', $totalNotProcessed);
 		$interface->assign('offlineCirculation', $offlineCirculationEntries);
+		if ($exportToSierra){
+			$interface->assign([
+				'sierraCircs'   => $sierraCircs,
+				'dueDateNotice' => "<strong>Due Date:</strong> $dueDate ($this->daysDueFromNow days from now)",
+			]);
+		}
 
 		$this->display('offlineCirculationReport.tpl', 'Offline Circulation Report');
 	}

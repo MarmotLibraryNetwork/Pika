@@ -71,13 +71,25 @@
 						<div>
 							<input type="submit" name="updateFilters" value="Update Filters" class="btn btn-primary">
 						</div>
+							{if in_array('opacAdmin', $userRoles) && count($offlineCirculation) > 0}
+								<div class="text-center">
+									<div class="btn-group-vertical">
+										<input type="submit" name="fetchStatGroups" value="Set Sierra Stat Group Numbers for circs"
+										       class="btn btn-default">
+										<input type="submit" name="exportToSierra" value="Export for Sierra Offline Circulation App"
+										       class="btn btn-default">
+										<input type="submit" name="markExported" value="Mark these circs as processed via export"
+										       class="btn btn-default">
+									</div>
+								</div>
+							{/if}
 						</div>
 
-					</form>
-				</div>
+				</form>
 			</div>
-
 		</div>
+
+	</div>
 
 		<div id="main-content">
 			<h2>Offline Circulation Summary</h2>
@@ -88,15 +100,23 @@
 				<tr><th>Failed</th><td>{$totalFailed}</td></tr>
 			</table>
 
-			<h1 role="heading" aria-level="1" class="h2">Offline Circulation</h1>
-			{if count($offlineCirculation) > 0}
+			{if !empty($sierraCircs)}
+				<h1 role="heading" aria-level="1" class="h2">Offline Circulation Export</h1>
+				<p>{$dueDateNotice}</p>
+				<pre>
+					{foreach from=$sierraCircs item=circ}
+						{$circ}
+					{/foreach}
+				</pre>
+			{elseif count($offlineCirculation) > 0}
+				<h1 role="heading" aria-level="1" class="h2">Offline Circulation</h1>
 				<table class="table stripe" id="offlineCirculationReport">
 					<thead>
-					<tr><th>#</th><th>Login</th>{*<th>Initials</th><th>Type</th>*}<th>Item Barcode</th><th>Patron Barcode</th><th>Date Entered</th><th>Status</th><th>Notes</th></tr>
+					<tr><th>#</th><th>Login</th><th>Stat Group</th>{*<th>Initials</th><th>Type</th>*}<th>Item Barcode</th><th>Patron Barcode</th><th>Date Entered</th><th>Status</th><th>Notes</th></tr>
 					</thead>
 					<tbody>
 					{foreach from=$offlineCirculation item=offlineCircEntry name='offlinecircs'}
-						<tr><td>{$smarty.foreach.offlinecircs.iteration}</td><td>{$offlineCircEntry->login}</td>{*<td>{$offlineCircEntry->initials}</td><td>{$offlineCircEntry->type}</td>*}<td>{$offlineCircEntry->itemBarcode}</td><td>{$offlineCircEntry->patronBarcode}</td><td>{$offlineCircEntry->timeEntered|date_format}</td><td>{$offlineCircEntry->status}</td><td>{$offlineCircEntry->notes}</td></tr>
+						<tr><td>{$smarty.foreach.offlinecircs.iteration}</td><td>{$offlineCircEntry->login}</td><td>{$offlineCircEntry->statGroup}</td>{*<td>{$offlineCircEntry->initials}</td><td>{$offlineCircEntry->type}</td>*}<td>{$offlineCircEntry->itemBarcode}</td><td>{$offlineCircEntry->patronBarcode}</td><td>{$offlineCircEntry->timeEntered|date_format}</td><td>{$offlineCircEntry->status}</td><td>{$offlineCircEntry->notes}</td></tr>
 					{/foreach}
 					</tbody>
 				</table>
