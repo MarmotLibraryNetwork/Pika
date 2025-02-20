@@ -10803,6 +10803,7 @@ a.btn.btn-sm.btn-default {
   background-position: bottom right;
   background-repeat: no-repeat;
   background-size: 310px;
+  z-index: -10;
 }
 #footer-container {
   position: relative;
