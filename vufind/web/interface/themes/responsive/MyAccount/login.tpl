@@ -1,5 +1,9 @@
 {strip}
-	{assign var=isNewspaperLogin value=in_array($action, array("WSJ", "WP", "NYTimes"))}
+	{if in_array($action, array("WSJ", "WP", "NYTimes"))}
+		{assign var=isNewspaperLogin value=true}
+	{else}
+		{assign var=isNewspaperLogin value=false}
+	{/if}
 <div id="page-content" class="col-xs-12">
 	<h1 role="heading" aria-level="1" class="h2">{if $isNewspaperLogin}Log into your account to access {$newspaperName} site{elseif $action == "eContentSupport"}Log into your account to submit eContent support request{else}{translate text='Log into your account'}{/if}</h1>
 	<div id="loginFormWrapper">
