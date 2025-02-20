@@ -36,10 +36,11 @@ class OfflineCirculationEntry extends DB_DataObject {
 	public $patronBarcode;
 	public $patronId;
 	public $login;
+	public $statGroup;  // Sierra stat group
 	public $loginPassword;
 	public $initials;
 	public $initialsPassword;
-	public $type; //valid values - 'Check In', 'Check Out'
-	public $status; //valid values - 'Not Processed', 'Hold Placed', 'Hold Failed'
+	public $type;   // valid values - 'Check In', 'Check Out'
+	public $status; // valid values - 'Not Processed', 'Hold Placed', 'Hold Failed'
 	public $notes;
 }

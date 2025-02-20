@@ -86,6 +86,31 @@ class SierraDNA {
 	}
 
 	/**
+	 * Fetch sierra login names and stat group numbers from sierra DNA.
+	 * Used to populate offline circs for export to be used in Sierra Offline Circulation App
+	 * @return array|false Returns false on error.
+	 */
+	public function fetchSierraLoginsAndStatGroupNumbers(){
+		$connection = $this->_connect();
+		if (!$connection){
+			return false;
+		}
+		$sql    = "SELECT name AS login, statistic_group_code_num AS statgroup FROM sierra_view.iii_user WHERE statistic_group_code_num IS NOT NULL";
+		$result = pg_query($connection, $sql);
+		if (!$result){
+			$error = pg_result_error($result);
+			$this->logger->error('Error querying SierraDNA', ['error' => $error]);
+			return false;
+		}
+		$loginsAndStatGroups = [];
+		while ($row = pg_fetch_assoc($result)) {
+			$loginsAndStatGroups[$row['login']] = $row['statgroup'];
+		}
+		pg_close($connection);
+		return $loginsAndStatGroups;
+	}
+
+	/**
 	 * Fetch pTypes and maxHolds from sierra DNA.
 	 * @return array|false Returns false on error.
 	 */

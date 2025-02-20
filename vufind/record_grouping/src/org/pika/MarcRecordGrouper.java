@@ -217,16 +217,15 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 							if (!recordNumber.contains("/") && !recordNumber.contains("\\")) {
 								identifier = new RecordIdentifier(recordSource, recordNumber);
 								if (recordNumberFields.size() > 1){
-									final String message = "Record found with multiple recordNumber Tags for " + identifier;
 									if (fullRegrouping) {
-										logger.warn(message);
+										logger.warn("Record found with multiple recordNumber Tags for {}", identifier);
 									} else {
-										logger.info(message);
+										logger.info("Record found with multiple recordNumber Tags for {}", identifier);
 									}
 								}
 								break;
 							} else {
-								logger.warn("Record number contained a / or \\ character for " + recordSource + " : " + recordNumber + "; Skipping grouping for this record.");
+								logger.warn("Record number contained a / or \\ character for {} : {}; Skipping grouping for this record.", recordSource, recordNumber);
 							}
 						}
 					}
@@ -303,7 +302,7 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 		}
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("identifier : " + identifier + (identifier != null && identifier.isSuppressed() ? " - suppressed" : ""));
+			logger.debug("identifier : {} {}", identifier, (identifier != null && identifier.isSuppressed() ? " - suppressed" : ""));
 		}
 		if (identifier != null && identifier.isValid()) {
 			return identifier;

@@ -76,5 +76,17 @@ function getLibraryLocationUpdates(): array{
 			]
 		],
 
+		'2025.01.0_add_newspaper_subscription_url' => [
+			'release'         => '2024.04.0',
+			'title'           => 'Add Newspaper subscription URLs to library settings',
+			'description'     => 'Allow patron authentication for libraries\' newspaper subscriptions',
+			'continueOnError' => false,
+			'sql'             => [
+				'ALTER TABLE `library` ADD COLUMN `nytimesUrl` VARCHAR(128) NULL ',
+				'ALTER TABLE `library` ADD COLUMN `wpUrl` VARCHAR(128) NULL ',
+				'ALTER TABLE `library` ADD COLUMN `wsjUrl` VARCHAR(128) NULL ',
+			]
+		],
+
 	];
 }

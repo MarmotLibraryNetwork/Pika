@@ -26,30 +26,12 @@
  *
  */
 
-require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
+require_once ROOT_DIR . '/services/MyAccount/NewspaperLogin.php';
 
-class WSJ extends MyAccount {
+class WSJ extends NewspaperLogin {
 
-	function launch(){
-		/** @var Library $library */
-		global $configArray;
-		$library = UserAccount::getUserHomeLibrary();
-		if (!empty($configArray['WSJ']['url'][$library->subdomain])){
-			header('Location: ' . $configArray['WSJ']['url'][$library->subdomain]);
-			exit();
-		}else{
-			$this->display('../WSJ/noAccess.tpl', "No Access");
-		}
-	}
+	public String $newpaperName = 'Wall Street Journal';
 
+	public String $newpaperUrl = 'wsjUrl';
 
-	public function __construct(){
-		/** @var Library $library */
-		global $library;
-		global $interface;
-		$interface->assign('WSJLibraryName', $library->displayName);
-		// Need to set the display name for the information blurb on the login page because the traditional
-		// $librarySystemName template variable is set to the location display name when the location is known.
-		parent::__construct();
-	}
 }

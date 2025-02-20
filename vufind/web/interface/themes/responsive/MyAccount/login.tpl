@@ -1,6 +1,11 @@
 {strip}
+	{if in_array($action, array("WSJ", "WP", "NYTimes"))}
+		{assign var=isNewspaperLogin value=true}
+	{else}
+		{assign var=isNewspaperLogin value=false}
+	{/if}
 <div id="page-content" class="col-xs-12">
-	<h1 role="heading" aria-level="1" class="h2">{if $action == "WSJ"}Log into your account to access WSJ site{elseif $action == "eContentSupport"}Log into your account to submit eContent support request{else}{translate text='Log into your account'}{/if}</h1>
+	<h1 role="heading" aria-level="1" class="h2">{if $isNewspaperLogin}Log into your account to access {$newspaperName} site{elseif $action == "eContentSupport"}Log into your account to submit eContent support request{else}{translate text='Log into your account'}{/if}</h1>
 	<div id="loginFormWrapper">
 		{if $message}{* Errors for Full Login Page *}
 			<p class="alert alert-danger" id="loginError" >{$message|translate}</p>
@@ -11,11 +16,11 @@
 		<p class="alert alert-info" id="loading" style="display: none">
 			Logging you in now. Please wait.
 		</p>
-		{if $action == "WSJ"}
+		{if $isNewspaperLogin}
 			<div class="alert alert-info">
-				<p>In order for you to access the <em>Wall Street Journal</em> as provided by <em>{$WSJLibraryName}</em> you are required to log in on this page with {$usernameLabel|strtolower} and {$passwordLabel|strtolower}.</p>
-				<p>Once you log in with the requested credentials, you will be directed to the <em>Wall Street Journal</em> site for <em>{$WSJLibraryName}</em>, where you will set up <em>WSJ.com</em> login credentials, and then you can browse and read articles and full issues of the Wall Street Journal.</p>
-				<p>You will have access, from anywhere, for the next {translate text="wsj_access_period"}. After {translate text="wsj_access_period"}, you can return to your library's site and redeem access - with the same login credentials - for another {translate text="wsj_access_period"}, and repeat this process as often as you would like.</p>
+				<p>In order for you to access the {$newspaperName} as provided by {$newspaperLibraryName} you are required to log in on this page with library card number and password.</p>
+				<p>Once you log in with the requested credentials on this page, you will be directed to the {$newspaperName} site for {$newspaperLibraryName}, where you will set up login credentials, and then you can browse and read articles and full issues of the {$newspaperName}.</p>
+				<p>Please reference the landing page for the {$newspaperName} for more information about ongoing access and other account details.</p>
 			</div>
 		{/if}
 		{if $offline && !$enableLoginWhileOffline}

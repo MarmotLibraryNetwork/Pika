@@ -20,10 +20,11 @@ class OnCampusAccessRecord extends SideLoadedRecord {
 
 	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null, $volumeData = null){
 		$actions = [];
+		//$title   = "On-Campus Access Only";
+		$title   = "Campus Use Only";
+		//$title   = translate('externalEcontent_url_action');
 		foreach ($relatedUrls as $urlInfo){
-			$title     = "On-Campus Access Only";
-//			$title     = translate('externalEcontent_url_action');
-			$alt       = 'Available online from ' . $urlInfo['source'];
+			$alt = 'Available online from ' . $urlInfo['source'];
 			if (!empty($urlInfo['url'])){
 				$actions[] = [
 					'url'          => $urlInfo['url'],

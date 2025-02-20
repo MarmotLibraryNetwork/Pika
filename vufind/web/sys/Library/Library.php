@@ -278,6 +278,10 @@ class Library extends DB_DataObject {
 
 	public $changeRequiresReindexing;
 
+	public $nytimesUrl;
+	public $wpUrl;
+	public $wsjUrl;
+
 
 	// Use this to set which details will be shown in the Main Details section of the record view.
 	// You should be able to add options here without needing to change the database.
@@ -1071,6 +1075,17 @@ class Library extends DB_DataObject {
 				],
 			],
 
+			'NewspaperAuthenticationSection' => [
+				'property'   => 'NewspaperAuthenticationSection', 'type' => 'section', 'label' => 'Newspaper Authentication', 'hideInLists' => true,
+				// TODO: Add documentation link.
+				//'helpLink'   => '',
+				'properties' => [
+					'nytimes' => ['property' => 'nytimesUrl', 'type' => 'text', 'label' => 'NY Times Subscription URL (MyAccount/NYTimes)',        'description' => 'The URL to provide to an authenticated patron for access to the newspaper'],
+					'wsj'     => ['property' => 'wsjUrl',     'type' => 'text', 'label' => 'Wall Street Journal Subscription URL (MyAccount/WSJ)', 'description' => 'The URL to provide to an authenticated patron for access to the newspaper'],
+					'wp'      => ['property' => 'wpUrl',      'type' => 'text', 'label' => 'Washington Post Subscription URL (MyAccount/WP)',      'description' => 'The URL to provide to an authenticated patron for access to the newspaper'],
+				],
+			],
+
 			'holidays' => [
 				'property'      => 'holidays',
 				'type'          => 'oneToMany',
@@ -1490,10 +1505,10 @@ class Library extends DB_DataObject {
 	 */
 	public function update($dataObject = false){
 		$this->showTextThis = "null";
-		if((isset($this->selfRegistrationDefaultpType) && (int)$this->selfRegistrationDefaultpType < 0) || empty($this->selfRegistrationDefaultpType) ) {
+		if ((isset($this->selfRegistrationDefaultpType) && (int)$this->selfRegistrationDefaultpType < 0) || empty($this->selfRegistrationDefaultpType)){
 			$this->selfRegistrationDefaultpType = "null";
 		}
-		if(empty($this->selfRegistrationAgencyCode)) {
+		if (empty($this->selfRegistrationAgencyCode)){
 			$this->selfRegistrationAgencyCode = "null";
 		}
 		if (isset($this->showInMainDetails) && is_array($this->showInMainDetails)){
@@ -1507,21 +1522,20 @@ class Library extends DB_DataObject {
 		if ($this->archiveOnlyInterface ?? false){
 			$this->clearRecordsOwned();
 			$this->clearRecordsToInclude();
-			$this->enableOverdriveCollection = false;
-			$this->showLoginButton = false;
-			$this->enableArchive = true;
 			$this->clearHooplaSettings();
+			$this->enableArchive             = true;
+			$this->enableOverdriveCollection = false;
+			$this->showLoginButton           = false;
 			$this->includeNovelistEnrichment = false;
-			$this->includeNovelistEnrichment = false;
-			$this->showGoodReadsReviews = false;
-			$this->showStandardReviews = false;
-			$this->preferSyndeticsSummary = false;
-			$this->showSimilarAuthors = false;
-			$this->showSimilarTitles = false;
-			$this->showWikipediaContent = false;
-			$this->showFavorites = false;
-			$this->showRatings = false;
-			$this->hideCommentsWithBadWords = false;
+			$this->showGoodReadsReviews      = false;
+			$this->showStandardReviews       = false;
+			$this->preferSyndeticsSummary    = false;
+			$this->showSimilarAuthors        = false;
+			$this->showSimilarTitles         = false;
+			$this->showWikipediaContent      = false;
+			$this->showFavorites             = false;
+			$this->showRatings               = false;
+			$this->hideCommentsWithBadWords  = false;
 		}
 		$ret = parent::update();
 		if ($ret !== false){

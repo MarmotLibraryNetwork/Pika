@@ -340,6 +340,7 @@ class UInterface extends Smarty {
     if (!empty($configArray['Maps']['browserKey'])){
       $mapsKey = $configArray['Maps']['browserKey'];
       $this->assign('mapsBrowserKey', $mapsKey);
+			// This is used for archive pages as well
     }
 		// todo: google analytics obsolete July 2023. only ga4 will work
     // Google Analytics --
@@ -352,8 +353,8 @@ class UInterface extends Smarty {
     $this->assign('trackTranslation', $trackTranslation);
     $this->assign('googleAnalyticsLinkingId', $googleAnalyticsLinkingId);
 		if ($googleAnalyticsId){
-      $googleAnalyticsDomainName = isset($configArray['Analytics']['domainName']) ? $configArray['Analytics']['domainName'] : strstr($_SERVER['SERVER_NAME'], '.');
-      // check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
+      $googleAnalyticsDomainName = !empty($configArray['Analytics']['domainName']) ? $configArray['Analytics']['domainName'] : strstr($_SERVER['SERVER_NAME'], '.');
+      // check for a config setting, use that if found, otherwise grab domain name but remove the first subdomain
       $this->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
     }
 		// GA4
@@ -391,7 +392,7 @@ class UInterface extends Smarty {
 		// Footer Info
 		$sessionId = session_id();
 		if ($sessionId){
-			$rememberMe = isset($_COOKIE['rememberMe']) ? $_COOKIE['rememberMe'] : false;
+			$rememberMe = $_COOKIE['rememberMe'] ?? false;
 			$sessionStr = $sessionId . ', remember me : ' . ($rememberMe ? 1 : 0);
 		} else {
 			$sessionStr = ' - not saved';
