@@ -7,32 +7,21 @@
 
 
 // Log-in & Out buttons
-
-// Gets the border around the button
-.header-primary {
-  border: 1px solid #ccc
-}
-
-// Gets rid of the blue links that underline the text
-a#headerLogoutLink, a#headerLogoutLink, a#headerMyAccountLink {
-  color: #333;
-}
-
-// Styles most of the button
 a .header-button {
-  border-radius: .5em;
-  color: #333!important;
-  border-color: #ccc;
-  background-color: #fff;
-  margin-top: 20px;
-  line-height: 60px!important;
+  color: @bwml-color-white;
+  border-color: transparent;
+  background-color: @bwml-color-olive-green;
+  margin-top: 5px;
   text-shadow: none;
+  font-weight: bold;
+  transition: .3s;
 
   // Gets rid of the blue thick border under the button when mousing over
   &:hover {
     color: #333;
-    background-color: #ebebeb;
-    border-color: #adadad;
+    background-color: @bwml-color-bloodstone;
+    color: @bwml-color-white;
+    border-color: @bwml-color-bloodstone;
     //border-bottom: 1px solid #adadad;
   }
 }
@@ -47,6 +36,17 @@ a .header-button:hover {
 // library override
 a .header-button:hover {
   border-bottom: 4px solid #7B1405;
+}
+
+
+// Gets the border around the button
+.header-primary {
+  border: 1px solid #ccc
+}
+
+// Gets rid of the blue links that underline the text
+a#headerLogoutLink, a#headerLogoutLink, a#headerMyAccountLink {
+  color: #333;
 }
 
 
@@ -87,7 +87,6 @@ a .header-button:hover {
     border: none;
     background-color: @selectedCategoryColor;
     background: @selectedCategoryColor;
-    background: linear-gradient(to bottom, @selectedCategoryColor 0%, @steamboat-darkgoldengreen2 75%, #fff 75%, #fff 80%, #CCC 80%, #fff 100%);
 
     // Drives the white text in each selected browse box
     button {
@@ -98,38 +97,38 @@ a .header-button:hover {
   }
   a { // Keeps the links green when mousing over the boxes in the carousel
     &:visited, &:hover, &:active {
-      color: @steamboat-darkgoldengreen;
+      color: @bwml-color-olive-green;
     }
   }
 }
 
 // Drives the color for the horizontal rule for the name of the selected browse list
 #selected-browse-label {
-  background: linear-gradient(to bottom, #FFFFFF, #FFFFFF 50%, @steamboat-goldengreen 30%, @steamboat-goldengreen 33%, #FFFFFF 56%) repeat scroll 0 0 rgba(0, 0, 0, 0);
+  background: linear-gradient(to bottom, #FFFFFF, #FFFFFF 50%, @bwml-color-olive-green 30%, @bwml-color-olive-green 33%, #FFFFFF 56%) repeat scroll 0 0 rgba(0, 0, 0, 0);
   //TODO: repeat scroll needed in main stylesheet?
 }
 
-//// Horizontal Search Box
-
 #header-container {
-  border-bottom: 0;
+  border-bottom: none;
+  min-height:65px;
 }
 
-#searchSource {
-  background-color: #fff;
-  border: medium none;
-}
 
+  #lookfor{
+    border-radius:0;
+    background: @bwml-color-tan;
+    resize: none;
+  }
 
 //// Left search side-bar menu
 
 // This is the big SEARCH box at the top
 .home-page-search {
-  background: linear-gradient(to bottom, @steamboat-lightgoldengreen, @steamboat-goldengreen3) repeat scroll 0 0 rgba(0, 0, 0, 0);
+  background: linear-gradient(to bottom, @bwml-color-olive-green, @bwml-color-olive-green) repeat scroll 0 0 rgba(0, 0, 0, 0);
 }
 
 .searchTypeHome {
-  background-color: @steamboat-goldengreen3;
+  background-color: @bwml-color-burgandy;
 }
 
 // Mouseover for the Facet Categories
@@ -156,7 +155,7 @@ a .header-button:hover {
 
 #explore-more-body .jcarousel-control-next, #explore-more-body .jcarousel-control-prev,
 .exploreMoreBar .jcarousel-control-next, .exploreMoreBar  .jcarousel-control-prev {
-  color: @steamboat-darkred;
+  color: @bwml-color-bloodstone;
   text-shadow: none;
 }
 
@@ -198,15 +197,6 @@ a .header-button:hover {
   border-bottom: 0;
 }
 
-#horizontal-search-box {
-  background-color: #a3a60f;
-  background: linear-gradient(to bottom, #a3a60f, #a3a60f);
-}
-
-#searchSource {
-  background-color: #fff;
-  border: medium none;
-}
 
 /**** Search Results Page Buttons ****/
 
@@ -279,4 +269,88 @@ a.btn.btn-sm.btn-default {
 
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox #searchComponentForm {
   margin-right: 10px;
+}
+
+#basicSearchTypes,#searchSource,#genealogySearchTypes{
+  background: @bwml-color-tan;
+  color: @bwml-color-bloodstone;
+}
+
+#horizontal-search-button-container button[type=submit]{
+  background: @bwml-color-burgandy;
+  color: @bwml-color-tan;
+  border: 1px #CCC solid;
+  border-radius:0;
+  transition: .3s;
+  &:hover{
+    text-decoration: underline;
+    color: @bwml-color-white;
+  }
+}
+#keepFiltersSwitchLabel, #advancedSearchLink{
+  font-size:95%;
+}
+#content-container{
+
+  &::before{
+    content: "";
+    display: block;
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    max-height: 550px;
+    background-image: url(../images/bwml-welcome-books-simplify-min.svg);
+    background-size: auto 85%;
+    background-position: left bottom;
+    background-repeat: no-repeat;
+    z-index: -10;
+    opacity: .75;
+  }
+  &::after{
+    content: "";
+    display:block;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    max-height: 350px;
+    background-image: url(../images/bwml-welcome-rocks-simplify-min.svg);
+    background-position: bottom right;
+    background-repeat: no-repeat;
+    background-size: 310px;
+  }
+}
+
+#footer-container{
+  position: relative;
+  &::before {
+    content: "";
+    display: block;
+    height: 100%;
+    width: 100%;
+    position:absolute;
+    background:@bwml-color-tan;
+    opacity: .95;
+  }
+  &::after {
+    content:"";
+    display: block;
+    position: absolute;
+    bottom: 160px;
+    right: -60px;
+    width:100%;
+    height: 100%;
+    background-image: url(../images/bwml-trees-simplify-min.svg);
+    background-position: bottom right -90px;
+    background-repeat: no-repeat;
+    z-index: -1;
+  }
+}
+
+.navbar.navbar-static-bottom{
+  margin-bottom:0;
+  padding-bottom:20px;
 }
