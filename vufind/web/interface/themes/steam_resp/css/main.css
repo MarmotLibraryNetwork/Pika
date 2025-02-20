@@ -10806,6 +10806,8 @@ a.btn.btn-sm.btn-default {
 }
 #footer-container {
   position: relative;
+  padding-left: 0;
+  padding-top: 0;
 }
 #footer-container::before {
   content: "";
@@ -10816,20 +10818,8 @@ a.btn.btn-sm.btn-default {
   background: #F5F4ED;
   opacity: 0.95;
 }
-#footer-container::after {
-  content: "";
-  display: block;
-  position: absolute;
-  bottom: 160px;
-  right: -60px;
-  width: 100%;
-  height: 100%;
-  background-image: url(../images/bwml-trees-simplify-min.svg);
-  background-position: bottom right -90px;
-  background-repeat: no-repeat;
-  z-index: -1;
-}
 .navbar.navbar-static-bottom {
   margin-bottom: 0;
   padding-bottom: 20px;
+  padding-left: 40px;
 }
