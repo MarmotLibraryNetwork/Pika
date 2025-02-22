@@ -11,8 +11,8 @@
 		{if $shortPageTitle}
 			<em aria-current="page">{$shortPageTitle}</em>
 		{else}
-			<em>{$pageTemplate|replace:'.tpl':''|capitalize|translate}</em>
+			<em aria-current="page">{$pageTemplate|replace:'.tpl':''|capitalize|translate}</em>
 		{/if}
-		<span class="divider">&raquo;</span>
+		 <span class="divider">&raquo;</span>
 	</li>
 {/strip}
