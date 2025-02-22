@@ -10577,7 +10577,6 @@ a .header-button {
   transition: 0.3s;
 }
 a .header-button:hover {
-  color: #333;
   background-color: #400B00;
   color: #FFFFFF;
   border-color: #400B00;
