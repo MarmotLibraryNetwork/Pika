@@ -78,7 +78,7 @@ class CitationBuilder {
 		$apa = array(
 			'title'     => $this->getAPATitle(),
 			'authors'   => $this->getAPAAuthors(),
-			'publisher' => $this->getPublisher(),
+			'publisher' => $this->getAPAPublisher(),
 			'year'      => $this->getYear(),
 			'edition'   => $this->getEdition()
 		);
@@ -397,6 +397,11 @@ class CitationBuilder {
 		if (isset($this->details['authors']) && is_array($this->details['authors'])){
 			$i = 0;
 			foreach ($this->details['authors'] as $author){
+				$pattern = "/\s\d\d\d\d-(\d\d\d\d|.)[,.\s]$/";
+				$matches = array();
+				if (preg_match($pattern, $author, $matches)){
+							$author = str_replace($matches[0], '', $author);
+				    }
 				$author = $this->abbreviateName($author);
 				if (($i + 1 == count($this->details['authors'])) && ($i > 0)){ // Last
 					$authorStr .= ', & ' . $this->stripPunctuation($author) . '.';
@@ -544,7 +549,7 @@ class CitationBuilder {
 
 	/**
 	 * Get publisher information (place: name) for inclusion in a citation.
-	 * Shared by APA and MLA functionality.
+	 * For MLA functionality.
 	 *
 	 * @access  private
 	 * @return  string
@@ -554,6 +559,24 @@ class CitationBuilder {
 		if (isset($this->details['pubPlace']) && !empty($this->details['pubPlace'])){
 			$parts[] = $this->stripPunctuation($this->details['pubPlace']);
 		}
+		if (isset($this->details['pubName']) && !empty($this->details['pubName'])){
+			$parts[] = $this->details['pubName'];
+		}
+		if (empty($parts)){
+			return false;
+		}
+		return $this->stripPunctuation(implode(', ', $parts));
+	}
+
+	/**
+	 * Get publisher information (place: name) for inclusion in a citation.
+	 * For APA functionality.
+	 *
+	 * @access  private
+	 * @return  string
+	 */
+	private function getAPAPublisher(){
+		$parts = array();
 		if (isset($this->details['pubName']) && !empty($this->details['pubName'])){
 			$parts[] = $this->details['pubName'];
 		}
