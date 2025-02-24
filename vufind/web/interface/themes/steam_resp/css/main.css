@@ -10157,6 +10157,7 @@ a.browse-thumbnail-sorted.active {
   text-align: center;
 }
 #explore-more-body .jcarousel .thumbnail,
+#relatedProjectsLibraryScroller .jcarousel .thumbnail,
 #relatedProjectScroller .jcarousel .thumbnail,
 #relatedTitlesLibraryContainer .jcarousel .thumbnail,
 #relatedProjectOtherScroller .jcarousel .thumbnail,
@@ -10168,6 +10169,7 @@ a.browse-thumbnail-sorted.active {
   border: 0 solid white;
 }
 #explore-more-body .jcarousel-control-prev,
+#relatedProjectsLibraryScroller .jcarousel-control-prev,
 #relatedProjectScroller .jcarousel-control-prev,
 #relatedTitlesLibraryContainer .jcarousel-control-prev,
 #relatedProjectOtherScroller .jcarousel-control-prev,
@@ -10175,6 +10177,7 @@ a.browse-thumbnail-sorted.active {
 .exploreMoreBar .jcarousel-control-prev,
 #book-sections .jcarousel-control-prev,
 #explore-more-body .jcarousel-control-next,
+#relatedProjectsLibraryScroller .jcarousel-control-next,
 #relatedProjectScroller .jcarousel-control-next,
 #relatedTitlesLibraryContainer .jcarousel-control-next,
 #relatedProjectOtherScroller .jcarousel-control-next,
@@ -10189,6 +10192,7 @@ a.browse-thumbnail-sorted.active {
   border: 1px solid #404D0E;
 }
 #explore-more-body .jcarousel-control-prev,
+#relatedProjectsLibraryScroller .jcarousel-control-prev,
 #relatedProjectScroller .jcarousel-control-prev,
 #relatedTitlesLibraryContainer .jcarousel-control-prev,
 #relatedProjectOtherScroller .jcarousel-control-prev,
@@ -10199,6 +10203,7 @@ a.browse-thumbnail-sorted.active {
   padding-inline: 0;
 }
 #explore-more-body .jcarousel-control-next,
+#relatedProjectsLibraryScroller .jcarousel-control-next,
 #relatedProjectScroller .jcarousel-control-next,
 #relatedTitlesLibraryContainer .jcarousel-control-next,
 #relatedProjectOtherScroller .jcarousel-control-next,
@@ -10209,6 +10214,7 @@ a.browse-thumbnail-sorted.active {
   padding-inline: 0;
 }
 #explore-more-body .panel-body,
+#relatedProjectsLibraryScroller .panel-body,
 #relatedProjectScroller .panel-body,
 #relatedTitlesLibraryContainer .panel-body,
 #relatedProjectOtherScroller .panel-body,

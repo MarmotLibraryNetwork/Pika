@@ -202,7 +202,7 @@ table {
     max-width: 100% !important;
   }
   @page {
-    margin: 2cm .5cm;
+    margin: 2cm 0.5cm;
   }
   p,
   h2,
@@ -708,13 +708,83 @@ pre code {
 .row:after {
   clear: both;
 }
-.col-tn-1, .col-xs-1, .col-sm-1, .col-md-1, .col-lg-1, .col-tn-2, .col-xs-2, .col-sm-2, .col-md-2, .col-lg-2, .col-tn-3, .col-xs-3, .col-sm-3, .col-md-3, .col-lg-3, .col-tn-4, .col-xs-4, .col-sm-4, .col-md-4, .col-lg-4, .col-tn-5, .col-xs-5, .col-sm-5, .col-md-5, .col-lg-5, .col-tn-6, .col-xs-6, .col-sm-6, .col-md-6, .col-lg-6, .col-tn-7, .col-xs-7, .col-sm-7, .col-md-7, .col-lg-7, .col-tn-8, .col-xs-8, .col-sm-8, .col-md-8, .col-lg-8, .col-tn-9, .col-xs-9, .col-sm-9, .col-md-9, .col-lg-9, .col-tn-10, .col-xs-10, .col-sm-10, .col-md-10, .col-lg-10, .col-tn-11, .col-xs-11, .col-sm-11, .col-md-11, .col-lg-11, .col-tn-12, .col-xs-12, .col-sm-12, .col-md-12, .col-lg-12 {
+.col-tn-1,
+.col-xs-1,
+.col-sm-1,
+.col-md-1,
+.col-lg-1,
+.col-tn-2,
+.col-xs-2,
+.col-sm-2,
+.col-md-2,
+.col-lg-2,
+.col-tn-3,
+.col-xs-3,
+.col-sm-3,
+.col-md-3,
+.col-lg-3,
+.col-tn-4,
+.col-xs-4,
+.col-sm-4,
+.col-md-4,
+.col-lg-4,
+.col-tn-5,
+.col-xs-5,
+.col-sm-5,
+.col-md-5,
+.col-lg-5,
+.col-tn-6,
+.col-xs-6,
+.col-sm-6,
+.col-md-6,
+.col-lg-6,
+.col-tn-7,
+.col-xs-7,
+.col-sm-7,
+.col-md-7,
+.col-lg-7,
+.col-tn-8,
+.col-xs-8,
+.col-sm-8,
+.col-md-8,
+.col-lg-8,
+.col-tn-9,
+.col-xs-9,
+.col-sm-9,
+.col-md-9,
+.col-lg-9,
+.col-tn-10,
+.col-xs-10,
+.col-sm-10,
+.col-md-10,
+.col-lg-10,
+.col-tn-11,
+.col-xs-11,
+.col-sm-11,
+.col-md-11,
+.col-lg-11,
+.col-tn-12,
+.col-xs-12,
+.col-sm-12,
+.col-md-12,
+.col-lg-12 {
   position: relative;
   min-height: 1px;
   padding-left: 15px;
   padding-right: 15px;
 }
-.col-tn-1, .col-tn-2, .col-tn-3, .col-tn-4, .col-tn-5, .col-tn-6, .col-tn-7, .col-tn-8, .col-tn-9, .col-tn-10, .col-tn-11, .col-tn-12 {
+.col-tn-1,
+.col-tn-2,
+.col-tn-3,
+.col-tn-4,
+.col-tn-5,
+.col-tn-6,
+.col-tn-7,
+.col-tn-8,
+.col-tn-9,
+.col-tn-10,
+.col-tn-11,
+.col-tn-12 {
   float: left;
 }
 .col-tn-12 {
@@ -871,7 +941,18 @@ pre code {
   margin-left: 0%;
 }
 @media (min-width: 480px) {
-  .col-xs-1, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9, .col-xs-10, .col-xs-11, .col-xs-12 {
+  .col-xs-1,
+  .col-xs-2,
+  .col-xs-3,
+  .col-xs-4,
+  .col-xs-5,
+  .col-xs-6,
+  .col-xs-7,
+  .col-xs-8,
+  .col-xs-9,
+  .col-xs-10,
+  .col-xs-11,
+  .col-xs-12 {
     float: left;
   }
   .col-xs-12 {
@@ -1029,7 +1110,18 @@ pre code {
   }
 }
 @media (min-width: 768px) {
-  .col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12 {
+  .col-sm-1,
+  .col-sm-2,
+  .col-sm-3,
+  .col-sm-4,
+  .col-sm-5,
+  .col-sm-6,
+  .col-sm-7,
+  .col-sm-8,
+  .col-sm-9,
+  .col-sm-10,
+  .col-sm-11,
+  .col-sm-12 {
     float: left;
   }
   .col-sm-12 {
@@ -1187,7 +1279,18 @@ pre code {
   }
 }
 @media (min-width: 992px) {
-  .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-md-10, .col-md-11, .col-md-12 {
+  .col-md-1,
+  .col-md-2,
+  .col-md-3,
+  .col-md-4,
+  .col-md-5,
+  .col-md-6,
+  .col-md-7,
+  .col-md-8,
+  .col-md-9,
+  .col-md-10,
+  .col-md-11,
+  .col-md-12 {
     float: left;
   }
   .col-md-12 {
@@ -1345,7 +1448,18 @@ pre code {
   }
 }
 @media (min-width: 1200px) {
-  .col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12 {
+  .col-lg-1,
+  .col-lg-2,
+  .col-lg-3,
+  .col-lg-4,
+  .col-lg-5,
+  .col-lg-6,
+  .col-lg-7,
+  .col-lg-8,
+  .col-lg-9,
+  .col-lg-10,
+  .col-lg-11,
+  .col-lg-12 {
     float: left;
   }
   .col-lg-12 {
@@ -3800,8 +3914,8 @@ textarea.input-group-sm > .input-group-btn > .btn {
 }
 .container > .navbar-header,
 .container > .navbar-collapse {
-  margin-right: -15px;
-  margin-left: -15px;
+  margin-right: -15px px;
+  margin-left: -15px px;
 }
 @media (min-width: 768px) {
   .container > .navbar-header,
@@ -4366,7 +4480,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 }
 .label {
   display: inline;
-  padding: .2em .6em .3em;
+  padding: 0.2em 0.6em 0.3em;
   font-size: 75%;
   font-weight: bold;
   line-height: 1;
@@ -4374,7 +4488,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
   text-align: center;
   white-space: nowrap;
   vertical-align: baseline;
-  border-radius: .25em;
+  border-radius: 0.25em;
 }
 .label[href]:hover,
 .label[href]:focus {
@@ -6912,7 +7026,7 @@ body > .container {
 .modal-header .close {
   margin-top: -10px;
   font-size: 43px;
-  opacity: .4;
+  opacity: 0.4;
 }
 .btn:active,
 .btn.active {
@@ -7135,7 +7249,6 @@ table.dataTable.order-column.stripe tbody tr.odd > .sorting_3 a {
 .visuallyhidden {
   border: 0;
   clip: rect(0 0 0 0);
-  -webkit-clip-path: inset(50%);
   clip-path: inset(50%);
   height: 1px;
   margin: -1px;
@@ -7996,7 +8109,7 @@ a .header-button {
   color: #222;
   background-color: #fff;
   border: 1px solid #555;
-  margin-top: 35px;
+  margin-top: 70px / 2;
 }
 a .header-button:hover {
   color: #fff;
@@ -9199,10 +9312,10 @@ a.browse-thumbnail-sorted.active {
   *display: inline;
 }
 .scrollerTitle img {
-  opacity: .6;
+  opacity: 0.6;
 }
 .scrollerTitle:hover img {
-  opacity: .8;
+  opacity: 0.8;
 }
 .scrollerTitle.selected {
   border: 3px solid #00125E;
@@ -10044,6 +10157,7 @@ a.browse-thumbnail-sorted.active {
   text-align: center;
 }
 #explore-more-body .jcarousel .thumbnail,
+#relatedProjectsLibraryScroller .jcarousel .thumbnail,
 #relatedProjectScroller .jcarousel .thumbnail,
 #relatedTitlesLibraryContainer .jcarousel .thumbnail,
 #relatedProjectOtherScroller .jcarousel .thumbnail,
@@ -10055,6 +10169,7 @@ a.browse-thumbnail-sorted.active {
   border: 0 solid white;
 }
 #explore-more-body .jcarousel-control-prev,
+#relatedProjectsLibraryScroller .jcarousel-control-prev,
 #relatedProjectScroller .jcarousel-control-prev,
 #relatedTitlesLibraryContainer .jcarousel-control-prev,
 #relatedProjectOtherScroller .jcarousel-control-prev,
@@ -10062,6 +10177,7 @@ a.browse-thumbnail-sorted.active {
 .exploreMoreBar .jcarousel-control-prev,
 #book-sections .jcarousel-control-prev,
 #explore-more-body .jcarousel-control-next,
+#relatedProjectsLibraryScroller .jcarousel-control-next,
 #relatedProjectScroller .jcarousel-control-next,
 #relatedTitlesLibraryContainer .jcarousel-control-next,
 #relatedProjectOtherScroller .jcarousel-control-next,
@@ -10076,6 +10192,7 @@ a.browse-thumbnail-sorted.active {
   border: 1px solid #50A647;
 }
 #explore-more-body .jcarousel-control-prev,
+#relatedProjectsLibraryScroller .jcarousel-control-prev,
 #relatedProjectScroller .jcarousel-control-prev,
 #relatedTitlesLibraryContainer .jcarousel-control-prev,
 #relatedProjectOtherScroller .jcarousel-control-prev,
@@ -10086,6 +10203,7 @@ a.browse-thumbnail-sorted.active {
   padding-inline: 0;
 }
 #explore-more-body .jcarousel-control-next,
+#relatedProjectsLibraryScroller .jcarousel-control-next,
 #relatedProjectScroller .jcarousel-control-next,
 #relatedTitlesLibraryContainer .jcarousel-control-next,
 #relatedProjectOtherScroller .jcarousel-control-next,
@@ -10096,6 +10214,7 @@ a.browse-thumbnail-sorted.active {
   padding-inline: 0;
 }
 #explore-more-body .panel-body,
+#relatedProjectsLibraryScroller .panel-body,
 #relatedProjectScroller .panel-body,
 #relatedTitlesLibraryContainer .panel-body,
 #relatedProjectOtherScroller .panel-body,
@@ -10453,10 +10572,6 @@ fieldset[disabled] .btn-masquerade.active {
 .btn-masquerade .badge {
   color: #f1dbff;
   background-color: #fff;
-}
-@font-face {
-}
-@font-face {
 }
 #header-container {
   min-height: 120px;
